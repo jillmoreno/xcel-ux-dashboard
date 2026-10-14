@@ -7,7 +7,8 @@
  */
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { isEricAtlasWhiteLike } from '@/data/dashboardVersions'
+import { isEricAtlasWhiteLike, resolveDashboardVersion } from '@/data/dashboardVersions'
+import { useAccount } from '@/context/AccountContext'
 import {
   AngleRightRegular,
   AngleRightSolid,
@@ -145,7 +146,13 @@ export function AtlasHomeEricE2E({
   const [searchParams, setParams] = useSearchParams()
   // Eric/Atlas White renders this Home too, on its white page (2026-10-14).
   // End-to-End Demo is White's duplicate, so it is "on White" here.
-  const onWhite = isEricAtlasWhiteLike(searchParams.get('version'))
+  /* ⚠ RESOLVED, NOT RAW — 2026-10-14, the day this version became the
+     default. On a bare `?demo=1` the raw param is null, so this answered
+     false and the baseline drew WIP's toned layout with the course tabs
+     instead of its own. `DefaultVersionResolution.test.tsx` pins the two
+     renders equal. */
+  const { brand: e2eBrand } = useAccount()
+  const onWhite = isEricAtlasWhiteLike(resolveDashboardVersion(searchParams.get('version'), e2eBrand))
   // White's course-head panel, measured so Quick Links can take its height
   // (2026-10-14, Eric's request).
   const [headEl, setHeadEl] = useState<HTMLDivElement | null>(null)

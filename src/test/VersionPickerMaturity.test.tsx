@@ -183,7 +183,7 @@ describe('the shipped versions', () => {
      on the promotion, deliberately, by a person. If the answer comes back yes,
      this test flips to assert they are ready — and the one BELOW it is what
      keeps the two halves honest in the meantime. */
-  it('are ready except the Atlas PARENT, which is deliberately not pickable', () => {
+  it('are ready except the Atlas parent and Eric\u2019s unpromoted versions', () => {
     const unmarked = DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => v.maturity !== 'ready')
     /* ⚠ ONE, NOT TWO, SINCE 2026-10-05 — promote-to-prototype made Eric/Atlas
        V1 pickable and left the parent alone. They render the same pages today
@@ -196,10 +196,20 @@ describe('the shipped versions', () => {
        should have to come through here and say why. */
     /* ⚠ AND ERIC/ATLAS V2 since 2026-10-07 — new, so not decided yet; it is
        design-site only until a promotion says otherwise. */
-    // (List order: Eric/Atlas WIP leads Eric's versions since 2026-10-12.)
-    expect(unmarked.map((v) => v.id)).toEqual(['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e', 'discoverability-atlas-compass-nav', 'eric-atlas-v2'])
-    /* The gate is now FILTERING, not merely armed — the demo site is short by
-       exactly those two, and nothing else moved. */
+    /* ⚠ 2026-10-14 — `promote-to-prototype` on Eric's merge. END-TO-END DEMO
+       LEFT THIS LIST the way the note above says it should: it is `ready` AND
+       it is the default, still two separate acts. WIP, White and Right SB
+       Quick Links stay unmarked — not decided against, not decided yet.
+       Hybrid V1 and the pacing fork keep `ready`: displaced, not retired.
+       (List order: Eric/Atlas WIP leads Eric's versions since 2026-10-12.) */
+    expect(unmarked.map((v) => v.id)).toEqual([
+      'eric-atlas-v3',
+      'eric-atlas-white',
+      'discoverability-atlas-compass-nav',
+      'eric-atlas-v2',
+    ])
+    /* The gate is FILTERING, not merely armed — the demo site is short by
+       exactly those, and nothing else moved. */
     expect(dashboardVersionsForAudience(true)).toHaveLength(
       DISCOVERABILITY_DASHBOARD_VERSIONS.length - unmarked.length,
     )
@@ -207,9 +217,10 @@ describe('the shipped versions', () => {
        the stakeholder picker; V1 is now the Atlas row stakeholders get, and the
        PARENT is the one held back. Both directions are pinned so neither can
        drift without a failure. */
-    /* ⚠ 2026-10-12: Eric/Atlas V1 came OFF the picker (Eric's request), so the
-       demo site has no Atlas row until another version is marked ready. */
+    /* ⚠ 2026-10-12: Eric/Atlas V1 came OFF the picker (Eric's request). End-to-End
+       Demo is the Atlas row stakeholders get since 2026-10-14. */
     expect(dashboardVersionsForAudience(true).map((v) => v.id)).not.toContain('eric-atlas-v1')
+    expect(dashboardVersionsForAudience(true).map((v) => v.id)).toContain('eric-atlas-e2e')
     expect(dashboardVersionsForAudience(true).map((v) => v.id)).not.toContain(
       'discoverability-atlas-compass-nav',
     )

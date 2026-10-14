@@ -2,7 +2,7 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { BookOpenRegular, HouseRegular } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
-import { isEricAtlasWhiteLike } from '@/data/dashboardVersions'
+import { isEricAtlasWhiteLike, isHybridVersion } from '@/data/dashboardVersions'
 import { AtlasTopNavCoursesDropdown } from './AtlasTopNavCoursesDropdown'
 import { ATLAS_HOME_REFRESH } from './atlasHomeRefresh'
 import './atlasHeader.css'
@@ -57,8 +57,22 @@ const COMPASS_LINKS: readonly TopNavLink[] = [
  *  button slides its links out to its right, easing in and out, and the button
  *  after it is pushed over in the same motion (it is in the same row, so the
  *  layout carries it). Switching buttons closes one tray as the other opens. */
-export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
+export function AtlasTopNav({
+  expanding = false,
+  versionId,
+}: {
+  expanding?: boolean
+  /** The RESOLVED dashboard version — `Header` passes its `rebrandVersion`.
+   *  Added 2026-10-14 when End-to-End Demo became the default: the raw
+   *  `?version=` is null on a bare `?demo=1`, and the version questions below
+   *  must answer for the default too. Absent (a standalone render), the raw
+   *  param is read, as before. */
+  versionId?: string | null
+}) {
   const [params, setParams] = useSearchParams()
+  const version = versionId ?? params.get('version')
+  // Jill's Hybrids take the Atlas chrome and keep the pill's old label.
+  const hybridNav = isHybridVersion(version)
   const section = params.get('section')
   const coursePage = params.get('coursePage')
   // On the COURSE page (the player) the Top Nav's Course Overview button sits
@@ -95,7 +109,7 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
   // should be White's). On WIP a course pick changes `?whiteCourse=`, which
   // only White's Home reads.
   const whiteNav =
-    !expanding && (isEricAtlasWhiteLike(params.get('version')) || params.get('version') === 'eric-atlas-v3')
+    !expanding && (isEricAtlasWhiteLike(version) || version === 'eric-atlas-v3')
   const coursesDropdown = whiteNav && topNavPick === 'dropdown'
   // …and Home Only (2026-10-12): the Course Overview button is not drawn.
   const homeOnly = whiteNav && topNavPick === 'home-only'
@@ -135,9 +149,17 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
         // "My Learning" with FA's `book-open` (Regular, the weight of Home's
         // house) — 2026-10-01, the designer's request; it was "Compass
         // Learning" with `circle-location-arrow`.
+        /* ⚠ THE ID STAYS `nav.compass` THOUGH THE PILL READS "My Learning" (or
+           "Course Overview" on Eric's versions). `TESTABLE_CTAS` forbids
+           renaming an id once a session has used it — a link already handed
+           out would silently revive the control. The catalog's LABEL is what
+           moved to match the screen. */
+        ctaId="nav.compass"
         // Reads "Course Overview" since 2026-10-07 (Eric's request; it was
-        // "My Learning") — it opens the course's Overview page.
-        label="Course Overview"
+        // "My Learning") — it opens the course's Overview page. ⚠ NOT ON THE
+        // HYBRIDS (2026-10-14, the merge): the rename is Eric's versions' own;
+        // Jill's keep "My Learning".
+        label={hybridNav ? 'My Learning' : 'Course Overview'}
         // 13px — 2026-10-01, the designer's request; it was 14.
         icon={<BookOpenRegular size={13} aria-hidden />}
         current={current === 'compass'}
@@ -157,6 +179,7 @@ function TopNavItem({
   icon,
   current,
   onClick,
+  ctaId,
   links,
   isCurrentLink,
   onLink,
@@ -166,6 +189,14 @@ function TopNavItem({
   icon: ReactNode
   current: boolean
   onClick: () => void
+  /** A `TESTABLE_CTAS` id, when this pill is one a user test may kill.
+   *
+   *  ⚠ ON THE BUTTON, NOT THE TRAY. `CtaTestContext` intercepts on the closest
+   *  `[data-cta-id]` ancestor of the click, so putting it on the wrapper would
+   *  also swallow the Expanding arm's TRAY LINKS — different destinations,
+   *  different questions, and killing them by accident would read as the pill
+   *  being broken rather than as the run's own rigging. */
+  ctaId?: string
   /** Present on the Expanding Top Nav: the tray's links. */
   links: readonly TopNavLink[] | null
   isCurrentLink: (l: TopNavLink) => boolean
@@ -188,6 +219,7 @@ function TopNavItem({
       aria-current={current ? 'page' : undefined}
       className={pill ? 'cre-atlas-hdr-pill' : current ? 'cre-atlas-topnav-btn is-current' : 'cre-atlas-topnav-btn'}
       onClick={onClick}
+      data-cta-id={ctaId}
       style={pill ? undefined : BUTTON}
     >
       {pill ? null : icon}

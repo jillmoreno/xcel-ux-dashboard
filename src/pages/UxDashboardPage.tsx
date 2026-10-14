@@ -21,9 +21,11 @@ import { GeneratedThumb, THUMB_W, THUMB_H } from '@/components/prototype/Generat
 import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { ArchiveTable } from '@/components/prototype/ArchiveTable'
 import { QaNotesPanel } from '@/components/prototype/QaNotesPanel'
-import { DemoPanel, LinksPanel } from '@/components/prototype/LinksPanel'
+import { DemoPanel, LinksPanel, PrdsPanel, ResearchPanel } from '@/components/prototype/LinksPanel'
 import { useLinkCount } from '@/data/linkStore'
 import { useDemoCount } from '@/data/demoStore'
+import { useResearchCount } from '@/data/researchStore'
+import { usePrdCount } from '@/data/prdStore'
 import { useQaNoteCount } from '@/data/qaNoteStore'
 import { UX_TOKEN_BRIDGE, mirrorPaletteToRoot } from '@/components/prototype/uxPaletteBridge'
 import {
@@ -114,6 +116,7 @@ import { isPublicGateway } from '@/data/gatewayMode'
 type UxSection =
   | 'demo'
   | 'links'
+  | 'prds'
   | 'prototypes'
   | 'research'
   | 'design'
@@ -172,15 +175,6 @@ type SectionDef = {
   count?: number
 }
 
-/** Authored, because the Research page is an iframe of a static HTML build
- *  (`public/research-rationale/`) with no array to count — so nothing can
- *  derive this and nothing will warn when it drifts.
- *
- *  PartnerHub's 14 entries are generated from `docs/ux-decisions.md` in the
- *  partnerhub-designs repo. Regenerate that page and update this number in the
- *  same commit; the page itself repeats the instruction in its own header. */
-const RESEARCH_DECISIONS = 0
-
 /** Open sections first, then the restricted group. The order here IS the nav
  *  order; the divider is drawn where `restricted` starts. */
 const SECTIONS: SectionDef[] = [
@@ -224,10 +218,15 @@ const SECTIONS: SectionDef[] = [
       'Work in review — branches, components and explorations the team is discussing. As many as you like; nothing here is the source of truth. Added on the page, not in code.',
   },
   {
+    // A BOARD since 2026-10-07, authored on the page like Resources — before
+    // that an empty state waiting for a generated decisions log XCEL never
+    // grew. Ungated, so a stakeholder can read the evidence behind a decision.
+    // No `count` field for the same reason Links has none: the number is live,
+    // from `useResearchCount`.
     id: 'research',
     label: 'Research',
-    blurb: 'The reasoning behind the designs — one entry per decision.',
-    count: RESEARCH_DECISIONS,
+    blurb:
+      'The evidence behind the designs — studies, findings, rationale and references. Added on the page, not in code.',
   },
   {
     // UNGATED, which is the decision in this entry. (It sat directly under
@@ -240,16 +239,30 @@ const SECTIONS: SectionDef[] = [
     // being the place you send someone; behind the shared password it would be
     // a bookmark file.
     //
-    // Labelled "Other Links" (2026-09-18) so it reads as the catch-all beside
+    // Labelled "Other Links" (2026-09-18) so it read as the catch-all beside
     // Refinement, whose rows are ALSO links — briefs, boards, Figma files,
-    // anything that is not a branch under review.
+    // anything that is not a branch under review. RENAMED "Resources"
+    // 2026-10-07, the day Research and PRDs became boards: with three
+    // sibling boards "Other" no longer said which one this was. The id stays
+    // `links` so `?section=links`, the `links` store and `/api/links` do not
+    // churn — the same call as Refinement keeping id `demo`.
     //
     // No `count` field: links are authored on the page, so a static number is
     // wrong the moment one is added. Supplied live below, like To Do's and QA
     // Notes'.
     id: 'links',
-    label: 'Other Links',
+    label: 'Resources',
     blurb: 'Everything that lives elsewhere — briefs, boards, builds and references. Added on the page, not in code.',
+  },
+  {
+    // The fourth board (2026-10-07), Research's twin: the product requirements
+    // documents the designs answer. A section rather than a Type on Other
+    // Links because "the brief" is a different question from "everything
+    // else". Ungated like its siblings; count is live, from `usePrdCount`.
+    id: 'prds',
+    label: 'PRDs',
+    blurb:
+      'The product requirements the designs answer — one link per document. Added on the page, not in code.',
   },
   {
     id: 'design',
@@ -355,7 +368,7 @@ const FIRST_RESTRICTED = VISIBLE_SECTIONS.findIndex((s) => s.gate)
  * row. Each names the row it sits directly above:
  *
  *   Demo             → Prototypes
- *   Design & Research → Refinement, Research, Other Links
+ *   Design & Research → Refinement, Research, Resources
  *   Dev Handoff      → Development, Done
  *
  * Deliberately separate from `FIRST_RESTRICTED` / "Designers" below,
@@ -1334,6 +1347,11 @@ export function UxDashboardPage() {
    *  shown, so the badge counts only those — a badge over a shorter list reads
    *  as a load failure. Same mechanism as `useLinkCount`; see `demoStore.ts`. */
   const demoCount = useDemoCount(isPublicGateway() ? (l) => l.isPublic : undefined)
+  /** Live research-link count. Same mechanism as `useLinkCount`; see
+   *  `researchStore.ts`. */
+  const researchCount = useResearchCount()
+  /** Live PRD-link count. Same mechanism again; see `prdStore.ts`. */
+  const prdCount = usePrdCount()
 
   const bySection = useMemo(() => {
     const out: Record<UxSection, PrototypeFeature[]> = {
@@ -1344,7 +1362,9 @@ export function UxDashboardPage() {
       // Not a list of features — the Links panel owns its own data, so this
       // stays empty by design and the nav count comes from `useLinkCount`.
       links: [],
+      // Same again: boards, counted by `useResearchCount` / `usePrdCount`.
       research: [],
+      prds: [],
       design: [],
       exploration: [],
       development: [],
@@ -1446,7 +1466,11 @@ export function UxDashboardPage() {
                   ? linkCount
                   : s.id === 'demo'
                     ? demoCount
-                      : (s.count ?? bySection[s.id].length)
+                    : s.id === 'research'
+                      ? researchCount
+                      : s.id === 'prds'
+                        ? prdCount
+                        : (s.count ?? bySection[s.id].length)
             const locked = Boolean(s.gate) && !isOpen(s)
             return (
               <div key={s.id}>
@@ -1609,6 +1633,8 @@ export function UxDashboardPage() {
         </header>
 
         {section === 'research' ? (
+          // The Links panel over the research board — see `ResearchPanel` in
+          // `LinksPanel.tsx`. No bridge wrapper, same reason as Links below.
           <ResearchPanel />
         ) : section === 'qa-notes' ? (
           // Same bridge the archive table uses: the panel is styled on brand
@@ -1622,6 +1648,8 @@ export function UxDashboardPage() {
           // `--ux-*` palette rather than the brand tokens, like `TodoPanel`, so
           // it already re-skins with the four schemes and four appearances.
           <LinksPanel />
+        ) : section === 'prds' ? (
+          <PrdsPanel />
         ) : section === 'demo' ? (
           // The same panel as Links with a different board behind it — see
           // `LinkBoardPanel`. Read-only and filtered to public rows on the
@@ -1984,66 +2012,6 @@ function ProjectRow({
       <Toast open={copied} onClose={() => setCopied(false)} title="Link copied" tone="success">
         {external ? href : `${window.location.origin}${href}`}
       </Toast>
-    </div>
-  )
-}
-
-/** Research is not a list of features — it is the decisions log. The archive
- *  moved out to its own section beneath Development. */
-/**
- * XCEL has no decisions log yet, so this section is deliberately EMPTY rather
- * than carrying a row that links to a page which does not exist.
- *
- * In the Common LMS and PartnerHub dashboards this renders one row into
- * `/research-rationale`, an iframe of a static HTML build generated from that
- * project's `ux-decisions.md`. XCEL has no equivalent file — its reasoning
- * currently lives inside the wireframes page (the inventory table and the four
- * hatched "not designed" frames) and in the exam task-type spec, neither of
- * which is a per-decision log.
- *
- * So the honest state is an empty section that names what would fill it. When
- * XCEL grows a decisions log: generate `public/research-rationale/index.html`
- * from it, restore the row below, and set `RESEARCH_DECISIONS` to the entry
- * count — it is authored by hand because nothing derives it and nothing warns
- * when it drifts.
- *
- * The row markup, kept for that restore:
- *
- *   <Link to="/research-rationale" style={{ ...rowStyle, background: 'var(--ux-card)',
- *     borderBottom: 'none', borderRadius: 'var(--radius-lg)' }}>
- *     <GeneratedThumb accent="teal">
- *       <Lightbulb size={34} />
- *     </GeneratedThumb>
- *     <span style={bodyStyle}>
- *       <span style={nameStyle}>XCEL</span>
- *       <span style={blurbStyle}>The UX research and reasoning behind these
- *         designs — one entry per decision, each with sources.</span>
- *     </span>
- *     <ChevronRight aria-hidden size={15} style={{ flex: 'none', color: 'var(--ux-text-3)' }} />
- *   </Link>
- */
-function ResearchPanel() {
-  return (
-    <div
-      style={{
-        ...listStyle,
-        padding: '38px 28px',
-        textAlign: 'center',
-        color: 'var(--ux-text-2)',
-      }}
-    >
-      <p style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 600, color: 'var(--ux-text-1)' }}>
-        No decisions log yet
-      </p>
-      <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, maxWidth: '56ch', marginInline: 'auto' }}>
-        XCEL&rsquo;s reasoning currently lives inside the wireframes page — the inventory
-        table and the four hatched &ldquo;not designed&rdquo; frames — and in the exam
-        task-type spec. Neither is a per-decision log. When there is one, generate{' '}
-        <code style={{ fontFamily: 'ui-monospace, monospace', fontSize: 12 }}>
-          public/research-rationale/
-        </code>{' '}
-        from it and restore the row documented above this component.
-      </p>
     </div>
   )
 }

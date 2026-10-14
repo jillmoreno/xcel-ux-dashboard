@@ -154,7 +154,9 @@ describe('Testing 2 is reached deliberately, not by default', () => {
        2026-10-02, when Testing 3 became the default and brought a rail of six
        square tiles that have nothing to do with Study Pace. The claim is and
        always was "the LIVE PACE TILE is not here". */
-    expect(screen.queryByText('Study Pace')).toBeNull()
+    /* ⚠ THE TEXT CHECK WENT 2026-10-14: End-to-End Demo (the default since)
+       has a "Study Pace" panel of its own on Home, which is not the tile. The
+       tile's Adjust button is what only Testing 2 draws. */
     expect(screen.queryByRole('button', { name: 'Adjust' })).toBeNull()
   })
 })

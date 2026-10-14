@@ -2,6 +2,7 @@ import { useMemo, useState, type CSSProperties } from 'react'
 import { CalendarTearOff } from '@/components/ui/CalendarTearOff'
 import { ArrowLeft, ArrowRight, HourglassClock, PenToSquare } from '@/icons'
 import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
+import { FlipCountdown } from '@/components/ui/FlipCountdown'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import { GET_LICENSED_STEPS } from '@/data/nyProducerRequirements'
@@ -106,6 +107,8 @@ export function ExamScheduleWidget({
   stateName = 'New York',
   today = FIXTURE_TODAY,
   compact = false,
+  countdown = 'text',
+  treatment = 'default',
 }: {
   shell: CSSProperties
   /**
@@ -125,6 +128,42 @@ export function ExamScheduleWidget({
    * flag separately is how they come to disagree.
    */
   compact?: boolean
+  /**
+   * How the days-until-exam figure is DRAWN in the saved state — 2026-10-05.
+   *
+   * `text` (default) is the one-line readout every version has had.
+   * `flip` draws a split-flap board, the old flip-clock treatment.
+   *
+   * ⚠ OPT-IN, AND IT MUST STAY THAT WAY. This card renders on QE Focused,
+   * Testing, Testing 2 and Testing 3 as well as Hybrid V1; defaulting to the
+   * board would re-style four versions to suit one. Hybrid V1 asks for it, the
+   * rest are untouched — the same shape `compact` uses.
+   */
+  countdown?: 'text' | 'flip'
+  /**
+   * WHICH CARD TREATMENT TO DRAW — 2026-10-07.
+   *
+   * ⚠ IT REPLACED FOUR BOOLEANS, and the reason is worth keeping. Hybrid —
+   * Pacing Exploration asked for its unset card to drop the eyebrow, ask in the
+   * heading face, lead with the affirmative, and sit its saved date closer to
+   * the eyebrow. Each arrived separately and each became its own opt-in, which
+   * by the fourth was four independent flags describing ONE look — and nothing
+   * in the signature said they belonged together or that three of them only
+   * make sense set as a group (`promptHeading` without the eyebrow dropped is a
+   * heading under a heading).
+   *
+   * ⚠ OPT-IN STILL, which is the part that must not change. This widget has
+   * four callers — `StudyJourneyWidget`, `LearnerFocusedBand`, `HybridHomeV1`
+   * and `HybridPacingHome` — and one of them is the shipped Hybrid V1 baseline.
+   * `default` is every existing caller, byte for byte.
+   *
+   * ⚠ AND IF A FIFTH DIFFERENCE ARRIVES, FORK THE WIDGET. One named treatment
+   * is a reasonable amount of branching for a shared component; a second one,
+   * or a treatment that needs its own sub-options, is the point where copying
+   * it costs less than threading it — the same call CLAUDE.md makes about
+   * components generally, and the one already made for the home itself.
+   */
+  treatment?: 'default' | 'pacing'
   /** Opens a sheet by id. This card only ever sends `EXAM_DETAILS_STEP_ID` —
    *  the menu it opens is what sends the real step ids back. */
   onOpenStep?: (id: string) => void
@@ -145,7 +184,7 @@ export function ExamScheduleWidget({
   const activePhase: Phase = phase ?? (stored ? 'scheduled' : 'prompt')
   /* THE CARD'S GROUND — `exam-card-background`. See the flag for why the tint is
      bound to the rail's token rather than copied. */
-  const tinted = useFeatureFlag('exam-card-background').variant === 'tint'
+  const ground = useFeatureFlag('exam-card-background').variant
   /* ⚠ HIDES THE "EXAM DETAILS" LINK ONLY. When `journey-quick-links` is on, the
      Quick links card below carries that destination, so keeping it here would
      be the second copy. Clear exam date is NOT a way into a sheet — it is a
@@ -169,8 +208,13 @@ export function ExamScheduleWidget({
      ⚠ THE FULL SAVED READOUT STILL GETS NONE. `ScheduledState` draws its own
      ("Your exam date") in a row with Edit, and two eyebrows stacked is what
      this condition exists to prevent. */
+  /* ⚠ `unsetEyebrow` GATES ONLY THIS ARM — the unset phases. The saved arm
+     below keeps its own rule; see the prop's note. */
+  const pacing = treatment === 'pacing'
   const eyebrow = activePhase !== 'scheduled'
-    ? /* "State Exam", NOT "Quick question" — 2026-10-02, the direct ask.
+    ? pacing
+      ? null
+      : /* "State Exam", NOT "Quick question" — 2026-10-02, the direct ask.
   
          ⚠ IT GIVES UP WHAT THE OLD WORDING BOUGHT, and that is worth knowing
          rather than discovering. "Quick question" was restored from the Figma
@@ -180,7 +224,7 @@ export function ExamScheduleWidget({
          which reads as a section label like every other eyebrow on the page.
          That is more consistent and less self-describing; the card's lack of a
          number is now the only thing saying it is not a step. */
-      'State Exam'
+        'State Exam'
     : compact
       ? 'Exam Date'
       : null
@@ -210,7 +254,25 @@ export function ExamScheduleWidget({
   }
 
   return (
-    <section aria-label="Exam Date" style={tinted ? { ...shell, background: CARD_TINT } : shell}>
+    <section
+      aria-label="Exam Date"
+      style={
+        ground === 'tint'
+          ? { ...shell, background: CARD_TINT }
+          : ground === 'outline'
+            ? /* ⚠ THE SHADOW GOES WITH THE FILL. `shell` carries both, and an
+                 elevation under a transparent card is a shadow cast by nothing
+                 — the thing that makes an outline treatment look like a bug
+                 rather than a choice. */
+              {
+                ...shell,
+                background: 'transparent',
+                boxShadow: 'none',
+                border: '1px solid var(--color-border-subtle)',
+              }
+            : shell
+      }
+    >
       {/* "QUICK QUESTION", not "Step N" — 2026-09-29, and it is the Figma's own
           eyebrow restored.
 
@@ -236,14 +298,36 @@ export function ExamScheduleWidget({
 
           ⚠ THE FULL SAVED STATE IS UNCHANGED — still no eyebrow, because it
           keeps that heading. The two arms differ here deliberately. */}
+      {/* ⚠ EDIT RIDES THE EYEBROW IN THE FLIP VARIANT — 2026-10-05, the direct
+          ask ("move up to be horizontally aligned with the exam date in top
+          right"). It sat beside the DATE, one row down, which was right while
+          the date and the countdown shared a line; with the board on its own
+          row the date line is short and Edit floated in the middle of the card
+          with nothing to align to.
+
+          ⚠ RENDERED HERE, NOT IN `ScheduledState`, because the eyebrow is this
+          component's — the saved state never sees it. `openPicker` is already
+          in scope, which is the same handler the card was passing down. Only
+          the flip arm does this; every other version keeps Edit on the date
+          row where it still has a long line to sit against. */}
       {eyebrow && (
-        <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
-          {eyebrow}
-        </p>
+        <div style={eyebrowActionRowStyle}>
+          <p className="cre-eyebrow-ink" style={{ ...widgetEyebrowStyle, margin: 0 }}>
+            {eyebrow}
+          </p>
+          {countdown === 'flip' && activePhase === 'scheduled' && stored ? (
+            <button type="button" style={editLinkStyle} onClick={() => openPicker('scheduled')}>
+              <PenToSquare size={12} aria-hidden />
+              Edit
+            </button>
+          ) : null}
+        </div>
       )}
 
       {activePhase === 'prompt' && (
         <PromptState
+          heading={pacing}
+          affirmativeFirst={pacing}
           stateName={stateName}
           onNotYet={() => setPhase('not-yet')}
           onYes={() => openPicker('prompt')}
@@ -271,6 +355,8 @@ export function ExamScheduleWidget({
           examDate={stored}
           today={today}
           compact={compact}
+          countdown={countdown}
+          tight={pacing}
           onEdit={() => openPicker('scheduled')}
         />
       )}
@@ -327,10 +413,14 @@ function PromptState({
   stateName,
   onNotYet,
   onYes,
+  heading = false,
+  affirmativeFirst = false,
 }: {
   stateName: string
   onNotYet: () => void
   onYes: () => void
+  heading?: boolean
+  affirmativeFirst?: boolean
 }) {
   return (
     <>
@@ -341,23 +431,48 @@ function PromptState({
           ambiguous thing on the card. Lowercase "state exam" here because this
           is a sentence. The saved readout does not name the state at all — see
           the note on `ScheduledState`. */}
-      <p style={questionStyle}>Have you scheduled your {stateName} state exam?</p>
-      {/* ⚠ "Not yet" FIRST IN THE DOM, so the affirmative sits on the right.
-          Order here is also TAB order — rendering them visually swapped (with
-          `order`) would leave a keyboard user reaching them right-to-left while
-          a mouse user reads left-to-right. */}
+      {/* ⚠ THE HEADING ARM RESTATES THE ATLAS h8 TYPE rather than importing it.
+          `STEP_TITLE` lives in the compass homes and this component sits in
+          `learning/`; the tokens are the shared thing (`--type-atlas-h8-*`),
+          and depending on a home's private style object would couple a widget
+          four callers share to one of them. The fallbacks match that object. */}
+      <p style={heading ? questionHeadingStyle : questionStyle}>
+        Have you scheduled your {stateName} state exam?
+      </p>
+      {/* ⚠ ORDER HERE IS TAB ORDER, which is why both arrangements are DOM
+          order and neither uses CSS `order`. A visual swap would leave a
+          keyboard user reaching the two right-to-left while a mouse user reads
+          them left-to-right.
+
+          "Not yet" leads by default, putting the affirmative on the right where
+          a primary action usually sits. `affirmativeFirst` leads with "Yes, I
+          know the date" instead — 2026-10-07 — on the reading that the card is
+          a QUESTION and the likelier answer should be the first thing under it. */}
       <div style={promptButtonRowStyle}>
-        <button type="button" style={notYetButtonStyle} onClick={onNotYet}>
-          Not yet
-        </button>
-        <button type="button" style={yesButtonStyle} onClick={onYes}>
-          {/* "Yes, I know the date" — 2026-10-02, the direct ask. A bare "Yes"
-              answers the question but says nothing about what pressing it DOES;
-              this names the thing the picker is about to ask for. Its partner
-              stays "Not yet", which is already specific enough to be its
-              opposite. */}
-          Yes, I know the date
-        </button>
+        {/* "Yes, I know the date" — 2026-10-02, the direct ask. A bare "Yes"
+            answers the question but says nothing about what pressing it DOES;
+            this names the thing the picker is about to ask for. Its partner
+            stays "Not yet", which is already specific enough to be its
+            opposite. */}
+        {affirmativeFirst ? (
+          <>
+            <button type="button" style={yesButtonStyle} onClick={onYes}>
+              Yes, I know the date
+            </button>
+            <button type="button" style={notYetButtonStyle} onClick={onNotYet}>
+              Not yet
+            </button>
+          </>
+        ) : (
+          <>
+            <button type="button" style={notYetButtonStyle} onClick={onNotYet}>
+              Not yet
+            </button>
+            <button type="button" style={yesButtonStyle} onClick={onYes}>
+              Yes, I know the date
+            </button>
+          </>
+        )}
       </div>
     </>
   )
@@ -373,7 +488,27 @@ function NotYetState({ onSchedule }: { onSchedule: () => void }) {
           same reason: it decorated a line that already says what it is rather
           than naming anything the words did not. The row wrapper went with it,
           since there is nothing left to sit beside. */}
-      <p style={notYetHeadingStyle}>No exam date yet? That’s okay.</p>
+      {/* ⚠ THE BREAK IS BETWEEN THE SENTENCES — 2026-10-07, the direct ask
+          ("wrap that's ok to the 2nd line"). At the side column's width the
+          heading wraps on its own, and where it chose to break was mid-phrase:
+          "No exam date yet? That's / okay." — which splits the reassurance in
+          half and leaves one orphaned word under it.
+
+          ⚠ A BLOCK SPAN RATHER THAN `<br>`. The break is a consequence of the
+          two sentences being two thoughts, not a line of markup inside a
+          sentence — so a wider column still gets the same two lines, and
+          nothing has to be re-measured if the copy changes. It also stays one
+          `<p>`, which is what a screen reader should hear.
+
+          ⚠ AND THE SPACE BEFORE THE SPAN IS NOT OPTIONAL. Without it the
+          paragraph's `textContent` is "No exam date yet?That’s okay." — the
+          break is visual only, so a screen reader runs the two sentences
+          together and so does anything else reading the text. It costs nothing
+          on screen: trailing whitespace at the end of a line collapses, and the
+          span is a block, so the line ends there either way. */}
+      <p style={notYetHeadingStyle}>
+        No exam date yet? <span style={{ display: 'block' }}>That’s okay.</span>
+      </p>
       <p style={notYetBodyStyle}>
         You can register for your exam{' '}
         {/* ⚠ NEW TAB, and `rel` with it. This leaves XCEL for PSI, and a learner
@@ -590,6 +725,8 @@ function ScheduledState({
   examDate,
   today,
   compact = false,
+  countdown: countdownStyle = 'text',
+  tight = false,
   onEdit,
 }: {
   examLabel: string
@@ -597,6 +734,11 @@ function ScheduledState({
   today: Date
   /** The one-line readout — see `compact` on `ExamScheduleWidget`. */
   compact?: boolean
+  /** `flip` draws the split-flap board instead of the text figure — see
+   *  `countdown` on `ExamScheduleWidget`. */
+  countdown?: 'text' | 'flip'
+  /** Pull the date block up under the eyebrow — `treatment: 'pacing'`. */
+  tight?: boolean
   onEdit: () => void
 }) {
   const days = daysUntilIso(examDate, today) ?? 0
@@ -611,6 +753,34 @@ function ScheduledState({
        cannot hide that the way two stacked lines do, so this composes the
        suffix only where it is true. */
     const countdownLine = days > 0 ? `${countdown} until your exam` : countdown
+    /* ⚠ THE BOARD REPLACES THE COUNTDOWN, NOT THE DATE, and it moves to its own
+       line. The text form fits "May 30, 2026 | 19 days until your exam" on one
+       line because it is all 15px text; 34px-tall cards on that line would push
+       the date out of a 260px column. The date stays the headline, the board
+       sits under it. */
+    if (countdownStyle === 'flip' && days > 0) {
+      return (
+        /* ⚠ A COLUMN, NOT `compactRowStyle`. That style is
+           `space-between` across one baseline — right for three pieces of text,
+           wrong the moment one of them is a 34px board: the date and the caption
+           get squeezed into narrow columns and wrap a word per line. The date
+           keeps its own row with Edit; the board takes the row beneath. */
+        <div style={tight ? compactFlipColumnTightStyle : compactFlipColumnStyle}>
+          {/* ⚠ NO EDIT HERE — it moved up onto the eyebrow row (see the note
+              at the eyebrow in `ExamScheduleWidget`). `onEdit` is still a
+              required prop and still used by the text arm below. */}
+          <p style={compactLineStyle}>
+            <span style={compactDateStyle}>{mediumDate(examDate)}</span>
+          </p>
+          <FlipCountdown
+            value={days}
+            label={days === 1 ? 'day until your exam' : 'days until your exam'}
+            ariaLabel={countdownLine}
+          />
+          <p style={srOnlyDateStyle}>Exam scheduled for {longDate(examDate)}</p>
+        </div>
+      )
+    }
     return (
       <div style={compactRowStyle}>
         <p style={compactLineStyle}>
@@ -747,6 +917,33 @@ function longDate(iso: string): string {
 /* The line and Edit on one row, Edit pinned right — the same shape
    `scheduledHeaderRowStyle` gives the full readout, so the two arms put their
    Edit control in the same place and switching between them does not move it. */
+/** The eyebrow and its trailing action, baseline-aligned across the card. */
+const eyebrowActionRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 12,
+}
+
+/** The flip variant's outer stack — see the note at its render site. */
+const compactFlipColumnStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 10,
+  marginTop: 6,
+}
+/* ⚠ THE SAME STACK, PULLED UP UNDER `treatment: 'pacing'` — 2026-10-07, the
+   direct ask to reduce the space between the eyebrow and the date. The gap was
+   22px: the section's own `gap: 16` plus this block's `marginTop: 6`. A
+   negative margin is what reaches it, because the 16 belongs to the section and
+   every other row in the card wants it. -6 nets 10px.
+   ⚠ IT IS NOT A CHANGE TO THE STACK ABOVE, deliberately: Hybrid V1 draws the
+   same flip arm and is the shipped baseline. */
+const compactFlipColumnTightStyle: CSSProperties = {
+  ...compactFlipColumnStyle,
+  marginTop: -6,
+}
+
 const compactRowStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'baseline',
@@ -789,6 +986,15 @@ const compactSepStyle: CSSProperties = {
    — this project has no Georgia anywhere — so it renders on `--font-heading`,
    which every other heading in this app uses. */
 
+const questionHeadingStyle: CSSProperties = {
+  margin: '6px 0 0',
+  fontFamily: 'var(--font-heading-serif)',
+  fontWeight: 400,
+  fontSize: 'var(--type-atlas-h8-base-size, 20px)',
+  lineHeight: 'var(--type-atlas-h8-base-line, 24px)',
+  letterSpacing: '-0.01em',
+  color: 'var(--color-text-primary)',
+}
 const questionStyle: CSSProperties = {
   /* 6px under the eyebrow. The question only ever renders WITH one — there is
      no stored date in the prompt phase — so this offset is unconditional. */

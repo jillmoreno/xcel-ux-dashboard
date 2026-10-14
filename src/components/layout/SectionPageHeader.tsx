@@ -41,25 +41,47 @@ export function SectionPageHeader({
 }) {
   return (
     <header style={pageHeaderWrapStyle}>
-      {/* A <p> for the same reason Home's eyebrow is one: it is the line above
-          the title, not a heading of its own. */}
-      <p style={crumbRowStyle}>
-        <button
-          type="button"
-          onClick={onBack}
-          /* The crumb is the only way back to Home that this arm's tiles
-             imply, so it is worth being able to kill for a session — "do they
-             look for the header's Home, or for the crumb?" */
-          data-cta-id="nav.back-home"
-          className="cre-link-action cre-cta-ink"
-          style={crumbButtonStyle}
-        >
-          <ArrowLeft size={13} aria-hidden />
-          Back to Home
-        </button>
-      </p>
+      <SectionBackCrumb onBack={onBack} />
       <h1 style={pageHeaderTitleStyle}>{title}</h1>
     </header>
+  )
+}
+
+/**
+ * JUST THE CRUMB — split out 2026-10-07, for Resources.
+ *
+ * ⚠ RESOURCES TAKES THE LINK WITHOUT TAKING THE HEADER, and that is the whole
+ * reason this is a separate export rather than a third `BREADCRUMB_SECTIONS`
+ * entry. The ask was "a back to Home link in the top left (same as my
+ * courses)" — the LINK, not the treatment. The Atlas/Compass Resources page
+ * draws its own serif title and lede (see `SectionShell`'s `atlasResources`
+ * branch), and routing it through `SectionPageHeader` would either replace
+ * that header with Home's 28/700 one or stack two titles, neither of which was
+ * asked for.
+ *
+ * So the crumb renders INSIDE that page's own header, above its `<h1>`, where
+ * it inherits the section's gutter and cannot drift away from the title it
+ * sits over.
+ */
+export function SectionBackCrumb({ onBack }: { onBack: () => void }) {
+  return (
+    /* A <p> for the same reason Home's eyebrow is one: it is the line above
+       the title, not a heading of its own. */
+    <p style={crumbRowStyle}>
+      <button
+        type="button"
+        onClick={onBack}
+        /* The crumb is the only way back to Home that this arm's tiles
+           imply, so it is worth being able to kill for a session — "do they
+           look for the header's Home, or for the crumb?" */
+        data-cta-id="nav.back-home"
+        className="cre-link-action cre-cta-ink"
+        style={crumbButtonStyle}
+      >
+        <ArrowLeft size={13} aria-hidden />
+        Back to Home
+      </button>
+    </p>
   )
 }
 

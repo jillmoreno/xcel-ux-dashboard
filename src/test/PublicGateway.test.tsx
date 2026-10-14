@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { readFileSync, readdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
@@ -48,7 +48,7 @@ function renderAt(Page: React.ComponentType, path: string) {
 // 2026-09-23 (see `NAV_EYEBROWS` in UxDashboardPage.tsx) — they show here now,
 // under their own "Dev Handoff" eyebrow, alongside "Demo" and "Design &
 // Research" over the sections that were already public.
-const PUBLIC_SECTIONS = ['Prototypes', 'Refinement', 'Research', 'Other Links', 'Development', 'Done']
+const PUBLIC_SECTIONS = ['Prototypes', 'Refinement', 'Research', 'Resources', 'PRDs', 'Development', 'Done']
 const GATED_SECTIONS = ['Design', 'Exploration', 'Archive', 'QA Notes']
 
 beforeEach(() => {
@@ -255,7 +255,7 @@ describe('shared Blobs store', () => {
       expect(src).toContain("from '../lib/store'")
       expect(src).not.toMatch(/\bgetStore\(/)
     }
-    for (const fn of ['links', 'demos']) {
+    for (const fn of ['links', 'demos', 'research', 'prds']) {
       const src = readFileSync(resolve(here, `../../netlify/functions/${fn}.ts`), 'utf8')
       expect(src).toContain("from '../lib/linkBoard'")
       expect(src).not.toMatch(/\bgetStore\(/)
@@ -345,20 +345,58 @@ describe('the demo site offers only the finished demo controls', () => {
      The READY half still works and is kept — it is the half that says a trim
      for one audience is not a removal. */
 
-  it('gives the demo site its finished controls, and no design bar', { timeout: 20_000 }, async () => {
+  it('hides the design bar on the demo site behind the robot', { timeout: 20_000 }, async () => {
     /* ⚠ THIS TEST WAS DELETED BY ACCIDENT ON 2026-10-05 and restored the same
        day. A slice meant to remove the dead `WIP` constant took the whole `it`
-       with it — and the half that mattered was never about `wip` at all: it
-       says the trim KEEPS the finished controls, including Reset, which is the
-       only way a stakeholder gets out of a state they wandered into.
+       with it — and the half that mattered was never about `wip` at all: it says
+       the trim KEEPS the finished controls, including Reset, which is the only
+       way a stakeholder gets out of a state they wandered into.
 
-       ⚠ ITS ABSENCE CLAIM IS THE DESIGN BAR NOW. Every control left on the demo
-       bar is `ready`, so there is no longer a single control to assert gone —
-       but the design bar must never reach the demo site at all, which is a
-       larger claim than any one control was. */
+       ⚠ ITS OTHER HALF MOVED TWICE IN ONE DAY. It said "no design bar on the
+       demo site"; on 2026-10-06 the bar was allowed there; hours later the ask
+       narrowed to AVAILABLE, NOT ON DISPLAY. So the claim now has four parts:
+
+         1. the bar does not render on first load, and no pill offers it;
+         2. the robot's dropdown offers exactly one row, which reveals it;
+         3. that dropdown does NOT offer the Feature Flag sheet;
+         4. nor does the revealed bar.
+
+       ⚠ (3) AND (4) ARE THE LOAD-BEARING ONES, and they are one claim through
+       two doors. The sheet is the full catalog, `wip` rows included — the single
+       reason the robot was withheld from the demo site in the first place
+       (2026-09-24). The robot is back now; if either door opens, that gate is
+       undone, from a button that is invisible at rest.
+
+       ⚠ localStorage IS CLEARED because the toggle persists. Without it this
+       reads whatever an earlier test left under `cgp.designControlsOpen` and
+       passes or fails on test ORDER. */
+    window.localStorage.clear()
     await bar('public')
     expect(screen.queryByRole('region', { name: 'Design controls' })).toBeNull()
-    expect(screen.getByRole('button', { name: /Progress/i })).toBeTruthy()
+    /* No pill either — a pill IS display, which is the distinction the ask
+       turns on. */
+    expect(screen.queryByRole('button', { name: /design controls$/i })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: /^Admin tools$/i }))
+    const menu = screen.getByRole('menu', { name: /Admin tools/i })
+    expect(within(menu).queryByText(/Feature Flag/i)).toBeNull()
+    const row = within(menu).getByRole('menuitemcheckbox', { name: /Design controls/i })
+    expect(row.getAttribute('aria-checked')).toBe('false')
+    /* ⚠ EXACTLY ONE ROW, so a row added later without a `!stakeholder` guard
+       fails here rather than shipping. `AdminToolsMenu`'s list is
+       allow-by-default — the opposite of `DemoControlsBar`'s `only` — and this
+       count is the backstop that makes that safe. */
+    expect(
+      menu.querySelectorAll('[role^="menuitem"]'),
+      'the Demo Hub dropdown should carry the design row and nothing else',
+    ).toHaveLength(1)
+
+    fireEvent.click(row)
+    const designBar = screen.getByRole('region', { name: 'Design controls' })
+    expect(within(designBar).getByRole('button', { name: /^Lo-fi (on|off)$/ })).toBeTruthy()
+    expect(within(designBar).queryByRole('button', { name: /Feature flags/i })).toBeNull()
+
+    expect(within(screen.getByRole('region', { name: 'Demo controls' })).getByRole('button', { name: /Progress/i })).toBeTruthy()
     expect(screen.getByRole('button', { name: /^Reset$/ })).toBeTruthy()
   })
 
@@ -368,14 +406,19 @@ describe('the demo site offers only the finished demo controls', () => {
        to assert — so what is left is the inverse, which still catches a mark
        rendered unconditionally. */
     await bar('full')
-    /* ⚠ THE POSITIVE HALF OF EVERY ABSENCE ABOVE. Without this, both "no design
-       bar" assertions would pass against a bar that never rendered anywhere —
-       an absence proves nothing unless the presence is proved somewhere. */
+    /* ⚠ THE POSITIVE HALF OF EVERY ABSENCE ABOVE, and three claims rather than
+       one since 2026-10-06: the design site shows the bar WITHOUT being asked,
+       shows the pill that hides it, and keeps the flag sheet a designer came
+       for. Each is the inverse of a Demo Hub assertion, and an absence proves
+       nothing unless the presence is proved somewhere. */
     expect(screen.getByRole('region', { name: 'Design controls' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /design controls$/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Feature flags/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /^Lo-fi (on|off)$/ })).toBeTruthy()
     /* Anchored on the eyebrow. Not strictly required any more — the mark's
        hidden text used to contain "work in progress" and made this ambiguous —
        but naming the control exactly is the right assertion either way. */
-    expect(screen.getByRole('button', { name: /^Progress:/i }).textContent).not.toContain(
+    expect(within(screen.getByRole('region', { name: 'Demo controls' })).getByRole('button', { name: /^Progress:/i }).textContent).not.toContain(
       'not on the demo site',
     )
   })
@@ -389,16 +432,26 @@ describe('the demo site offers only the finished demo controls', () => {
        this param. This test is now the only thing standing between `?as=demo`
        and a silent rot, because nothing in the UI reaches it any more. */
     await bar('full', '/dashboard-rebrand?as=demo')
-    /* ⚠ THE LENS HAS A NEW SUBJECT, and a better one. It used to assert that a
-       `wip` CONTROL dropped out; the demo bar has none left since Lo-fi moved
-       to the design bar (2026-10-05). What the lens hides now is the whole
-       DESIGN BAR — a bigger claim and an easier one to break, because that bar
-       is rendered by a different branch of `PrototypeChrome` from the `only`
-       list the lens was built around. If this regressed, a designer previewing
-       the stakeholder view would see their own controls and conclude
-       stakeholders have them. */
-    expect(screen.queryByRole('region', { name: 'Design controls' })).toBeNull()
-    expect(screen.getByRole('button', { name: /Progress/i })).toBeTruthy()
+    /* ⚠ THE LENS'S SUBJECT CHANGED THREE TIMES IN TWO DAYS, and what it tracks
+       is the Demo Hub, never a fixed claim. It asserted a `wip` CONTROL dropped
+       out; then "the whole design bar is hidden" (2026-10-05, when Lo-fi left
+       the demo bar); and now what the Demo Hub actually does — no pill, the
+       robot carrying the design row, the flag sheet withheld on both the
+       dropdown and the bar. A lens is worth having only while it agrees with
+       the build it previews.
+
+       ⚠ ONE THING IT CANNOT BORROW, deliberately: the hidden-by-default start.
+       The toggle persists per browser, so a designer previewing sees their own
+       stored choice rather than a stakeholder's first load. REACHABILITY is
+       what the lens answers for, which is why nothing below asserts the bar is
+       absent — only that the ways to the catalog are shut. */
+    expect(screen.queryByRole('button', { name: /design controls$/i })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Feature flags/i })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: /^Admin tools$/i }))
+    const lensMenu = screen.getByRole('menu', { name: /Admin tools/i })
+    expect(within(lensMenu).queryByText(/Feature Flag/i)).toBeNull()
+    expect(within(lensMenu).getByRole('menuitemcheckbox', { name: /Design controls/i })).toBeTruthy()
+    expect(within(screen.getByRole('region', { name: 'Demo controls' })).getByRole('button', { name: /Progress/i })).toBeTruthy()
   })
 
   it('no longer offers a View as demo toggle anywhere', { timeout: 20_000 }, async () => {
@@ -450,16 +503,24 @@ describe('the row kebab is design-site only', () => {
   })
 })
 
-describe('the admin robot is design-site only', () => {
+describe('the admin robot carries a different payload on each site', () => {
   /*
    * 2026-09-24, the direct ask: hide the robot on the demo site so nobody can
-   * click it there.
+   * click it there. ⚠ THAT ASK WAS SUPERSEDED ON 2026-10-06 — the robot is back
+   * on the Demo Hub holding the one way to the design controls — and this
+   * suite's name and both assertions changed with it.
    *
-   * ⚠ WHY IT MATTERS MORE THAN IT LOOKS. The robot opens the FULL Feature Flag
-   * sheet on `/dashboard-rebrand` — the whole catalog, `wip` flags included. So
-   * it routes straight around the maturity gate: trimming the demo bar to the
+   * ⚠ WHAT DID NOT CHANGE IS WHAT THE GATE WAS FOR, and keeping that straight
+   * is the only reason the reversal is safe. Its words were never "hide the
+   * robot"; they were: the robot opens the FULL Feature Flag sheet on
+   * `/dashboard-rebrand` — the whole catalog, `wip` flags included — so it
+   * routes straight around the maturity gate, and trimming the demo bar to the
    * finished axes buys nothing if a stakeholder is one click from the raw
-   * catalog. This suite and the maturity one above are guarding the same door.
+   * catalog. That door is still shut, by `stakeholder` in `AdminToolsMenu`
+   * rather than by the robot's absence. The suite above asserts the dropdown's
+   * CONTENTS; this one asserts the BUTTON's behaviour, which is the other half
+   * — on the design site it opens the sheet directly with no dropdown at all,
+   * and that shortcut is exactly what must not exist on the Demo Hub.
    *
    * ⚠ AND IT WAS NEVER VISIBLE AT REST — `opacity: 0` with a hover/focus reveal.
    * That is exactly why a "can you see it?" check is the wrong assertion and
@@ -501,17 +562,29 @@ describe('the admin robot is design-site only', () => {
      passes vacuously on the other route. */
   const ROBOT = /^(Settings|Admin tools)$/i
 
-  it('is absent from the DOM on the demo site, not merely hidden', { timeout: 20_000 }, async () => {
+  it('is present on the demo site, as a dropdown and not the sheet', { timeout: 20_000 }, async () => {
+    /* ⚠ THIS ASSERTION WAS INVERTED ON 2026-10-06. It read "absent from the
+       DOM, not merely hidden". Restoring the old rule means putting
+       `isPublicGateway() ? undefined :` back on `adminTools` in
+       `PrototypeChrome` — at which point the design bar has no way in on the
+       Demo Hub and would have to go back to always-shown, or go away.
+
+       ⚠ THE LABEL IS THE ASSERTION, not an incidental selector. The button
+       relabels itself by what it does — "Settings" when it opens the flag sheet
+       directly, "Admin tools" when it opens a dropdown — so a robot calling
+       itself Settings here would be one that had the shortcut back. */
     await bar('public')
-    expect(screen.queryByRole('button', { name: ROBOT })).toBeNull()
+    expect(screen.getByRole('button', { name: /^Admin tools$/i })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /^Settings$/i })).toBeNull()
   })
 
-  it('is still there on the design site', { timeout: 20_000 }, async () => {
+  it('still opens the sheet directly on the design site', { timeout: 20_000 }, async () => {
     /* The direction that matters as much: this is a trim for one audience. The
        people who need the flag catalog are the ones on the design site, and a
        fix that took it from them too would be found the hard way. */
     await bar('full')
     expect(screen.getByRole('button', { name: ROBOT })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /^Settings$/i })).toBeTruthy()
   })
 })
 

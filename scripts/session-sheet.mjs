@@ -25,7 +25,8 @@
  * Usage:
  *   node scripts/session-sheet.mjs --out sheet.html \
  *     --sha 731a293 --branch test/session-1 --tag session-2026-09-24-pace \
- *     --persona progress-on-track --nav option-2 \
+ *     --version hybrid-pacing --persona progress-on-track --nav option-2 \
+ *     --ff exam-card-background:outline --controls off \
  *     --dead nav.courses,home.exam-date-save
  *
  * Only `--out` is required. Everything else describes the session; omitted, the
@@ -77,6 +78,29 @@ const session = {
   persona: opts.persona ?? '',
   nav: opts.nav ?? '',
   dead: (opts.dead ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+  /* ⚠ `--version` ADDED 2026-10-07, AND THE SHEET WAS WRONG WITHOUT IT. Every
+     link this script built pointed at `/dashboard-rebrand` bare, which renders
+     whichever version `defaultDiscoverabilityVersionFor` returns — fine while
+     the only thing ever tested WAS the default, and silently wrong the first
+     time a session tested a fork. A sheet is trusted without checking, so this
+     is exactly the kind of error it exists to prevent rather than commit.
+
+     Omitted, the links stay as they were: no `version=`, the site's own
+     default. Nothing about an existing session moves. */
+  version: opts.version ?? '',
+  /* ⚠ RAW FLAG PAIRS, for anything `--persona` and `--nav` cannot say. The two
+     named flags are the session axes this script was built around; a run that
+     needs a THIRD (the Hybrid Pacing session wants
+     `exam-card-background:outline`, which the test site has no stored value
+     for) had no way to express it, and the sheet would have printed a link
+     missing it — confidently. Appended after the named pairs so the axes still
+     read first. */
+  ff: opts.ff ?? '',
+  /* ⚠ PARTICIPANT ONLY, and that asymmetry is the point. `?controls=off` hides
+     the demo bar for the person being tested; the MODERATOR needs it, because
+     it is where Progress is set before the laptop is handed over. Putting it on
+     both links would take the moderator's only in-session control away. */
+  controls: opts.controls ?? '',
 }
 
 // ─── the catalog, read from source ──────────────────────────────────────────
@@ -117,13 +141,25 @@ if (unknown.length > 0) {
 const ff = [
   session.persona && `dashboard-progress-state:${session.persona}`,
   session.nav && `dashboard-navigation:${session.nav}`,
+  session.ff,
 ].filter(Boolean).join(',')
 
-const query = [ff && `ff=${ff}`, session.dead.length && `dead=${session.dead.join(',')}`]
+/* ⚠ `version` LEADS. It is not a session RIGGING the way `ff=` and `dead=` are
+   — it chooses which product is on screen — and a moderator scanning a long
+   link should see that first. */
+const query = [
+  session.version && `version=${session.version}`,
+  ff && `ff=${ff}`,
+  session.dead.length && `dead=${session.dead.join(',')}`,
+]
   .filter(Boolean)
   .join('&')
 
-const participant = SITE + SURFACE + (query ? `?${query}` : '')
+const hideControls = session.controls === 'off'
+const pQuery = [query, hideControls && 'controls=off'].filter(Boolean).join('&')
+
+const participant = SITE + SURFACE + (pQuery ? `?${pQuery}` : '')
+/* No `controls=off` here — see the note on `session.controls`. */
 const moderator = SITE + SURFACE + `?test=0${query ? `&${query}` : ''}`
 
 // ─── render ─────────────────────────────────────────────────────────────────
@@ -371,6 +407,15 @@ git push origin session-$(date +%F)-slug</pre>
 
 <script>
   var BASE = ${JSON.stringify(SITE + SURFACE)};
+  /* The session's version, fixed for this sheet — the builder below re-ticks
+     personas and dead ends, but the VERSION is what the sheet is about and is
+     not something to flip mid-session. */
+  var VERSION = ${JSON.stringify(session.version)};
+  /* Extra flag pairs and the participant-only control hider, both fixed for
+     this sheet — the builder below re-ticks personas and dead ends, and these
+     two describe the session itself. */
+  var EXTRA_FF = ${JSON.stringify(session.ff)};
+  var HIDE_CONTROLS = ${JSON.stringify(hideControls)};
   var CAT = ${catalogJson};
 
   function render() {
@@ -389,12 +434,14 @@ git push origin session-$(date +%F)-slug</pre>
       row.classList.toggle('flag', flag);
     });
 
-    var ff = [persona, nav].filter(Boolean).join(',');
+    var ff = [persona, nav, EXTRA_FF].filter(Boolean).join(',');
     var parts = [];
+    if (VERSION) parts.push('version=' + VERSION);
     if (ff) parts.push('ff=' + ff);
     if (dead.length) parts.push('dead=' + dead.join(','));
 
-    var q = parts.length ? '?' + parts.join('&') : '';
+    var pParts = HIDE_CONTROLS ? parts.concat(['controls=off']) : parts;
+    var q = pParts.length ? '?' + pParts.join('&') : '';
     document.getElementById('urlP').textContent = BASE + q;
     document.getElementById('urlM').textContent =
       BASE + '?test=0' + (parts.length ? '&' + parts.join('&') : '');

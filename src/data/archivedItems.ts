@@ -56,6 +56,20 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'research-rationale-iframe',
+    name: 'Research & Rationale — the iframed decisions log',
+    what:
+      'The `/research-rationale` route rendering what was `public/research-rationale/index.html` — the Learner Platform UX Research & Rationale hub carried over from the LMS dashboard — inside the prototype frame with a Back to the overview, plus the Research section’s authored empty state ("No decisions log yet") and the hand-maintained `RESEARCH_DECISIONS` count.',
+    location:
+      'public/archive/research-rationale-index.html (intact, unreferenced; MOVED from public/research-rationale/index.html because a folder with an index page under public/ is served by vite and by Netlify BEFORE the SPA fallback, so it shadowed the route it was meant to redirect) · src/pages/ResearchRationalePage.tsx (now a redirect into `/?section=research`, the same shape as LinksPage.tsx; the iframe version is in git at this date) · src/pages/UxDashboardPage.tsx (the local `ResearchPanel` and `RESEARCH_DECISIONS` are gone; the section now renders `ResearchPanel` from src/components/prototype/LinksPanel.tsx)',
+    flag: 'none — the `/research-rationale` route, which still exists and redirects',
+    dateRemoved: '2026-10-07',
+    reason:
+      'Jillienne’s request: make Research work like Resources, with links attached on the page. The iframe pointed at an LMS document that was never XCEL’s, and the section beneath it had sat on an authored empty state since the port waiting for a generated decisions log that never came. A board the team fills in the browser is the honest replacement.',
+    restoreNote:
+      '1. In src/pages/ResearchRationalePage.tsx replace the `<Navigate>` with the iframe version from git at this date (a `PrototypeBar` with `back={{ to: \'/\' }}` over an `<iframe src={`${import.meta.env.BASE_URL}research-rationale/index.html`}>`) — then `git mv public/archive/research-rationale-index.html public/research-rationale/index.html`, or point the iframe at the archive path instead; it has to be reachable as a file either way, and if it goes back under `public/research-rationale/` it will again be served ahead of the React route (which is fine for an iframe target, and was the state before 2026-10-07). 2. In src/pages/UxDashboardPage.tsx: give the `research` section a `count` again (it was `RESEARCH_DECISIONS`, authored by hand, 0 for XCEL), take `s.id === \'research\'` out of the nav-badge chain, and swap the `<ResearchPanel />` in the section switch for a local one rendering a row `<Link to="/research-rationale">` — the row markup was in a comment above the old panel, also in git at this date. 3. DELIBERATELY NOT RESTORED by those steps: the research BOARD. `netlify/functions/research.ts`, `src/data/researchStore.ts`, the `/api/research` redirects in netlify.toml and `ResearchPanel` in LinksPanel.tsx all stay, because the `research` Blobs store holds whatever the team attached and deleting the endpoint would strand it — retire the board with its own row if that is the decision. 4. `Research.test.tsx` pins the board and the redirect; the redirect case and the gateway case change back with step 1 and 2.',
+  },
+  {
     id: 'lms-flag-pages',
     name: 'Five flag-panel pages — Recommended for You, Course Catalog, Learning Path, Resource Library, Purchases',
     what:
@@ -377,5 +391,32 @@ export const ARCHIVED_ITEMS: ArchivedItem[] = [
       'Editorial — removed at Jillienne’s request. The header’s account trigger gained the learner’s photo AND name on the same day, so this was the second portrait-and-name of the same person in one viewport, a few hundred pixels apart. The rail now opens on MY LEARNING, which is its job.',
     restoreNote:
       'Re-add `<div style={{ flexShrink: 0 }}><NavProfileHeader isMember={isMember} onSelect={onSelect} /></div>` as the first child of the `<nav>` in `PlatformSideNav`, and restore `const isMember = membership === \'member\'` with `membership` back in that component’s `useAccount()` destructure — `NavProfileHeader` is its only consumer, so it was dropped with it. Nothing INSIDE the header changed: the component, `NavMotivationQuote`, `NavMotivationStatementButton`, `NavMembershipSummary` and `MotivationalStatementPanel` are all intact. Two things to decide rather than restore blindly: (1) the header’s account trigger now shows the same photo and name, so bringing this back re-creates the duplication that removed it — consider dropping the name from `.cre-account-pill` instead; (2) `brandRing` on `Avatar` has NO other call site, and it exists to mark this avatar as the learner’s own, so restoring the header restores the only thing that uses it. Deliberately NOT restored with it: nothing — this row is self-contained.',
+  },
+  {
+    id: 'support-contact-us-sheet',
+    name: 'Contact Us sheet (Help & Support)',
+    what: 'A slide-over behind the Help & Support section’s fourth card, listing the brand’s “Give Us a Call” phone lines from `SupportConfig.phoneLines`.',
+    location:
+      'src/components/support/ContactUsSheet.tsx (kept, unreferenced — it was the file’s only import). The `phoneLines` field and its `SupportPhoneLine` type are STILL in src/data/support/supportFixtures.ts and still typed on every brand, so the data the sheet read is intact and nothing reads it now.',
+    flag: 'None — the card is unconditional on `?section=support`, and also inside `HelpSheet` (the `nav-help` arms) and Hybrid’s header Help, which renders that same panel.',
+    dateRemoved: '2026-10-07',
+    reason:
+      'The sheet listed phone numbers and XCEL — the only brand in the union — has `phoneLines: []`, with a TODO in the fixture saying the number is unknown and deliberately not invented. So every learner who pressed Contact Us got a slide-over with nothing in it. The card now opens xcelsolutions.com/contact-us, which carries the real routes. ⚠ The argument is the EMPTY FIXTURE, not the sheet: if a confirmed phone line ever lands in `phoneLines`, a sheet showing it beats a page the learner has to search, and this is worth reversing.',
+    restoreNote:
+      '1. In src/components/support/HelpSupportPanel.tsx: re-add `import { ContactUsSheet } from \'./ContactUsSheet\'`, `const [contactOpen, setContactOpen] = useState(false)`, swap the Contact Us card’s `onSelect` back to `() => setContactOpen(true)`, and render `<ContactUsSheet open={contactOpen} onClose={() => setContactOpen(false)} />` beside `CustomerSupportSheet`. 2. Put the card’s copy back: `description="Reach our support team by phone."` and `action="Get help"` — both were reworded because they described the sheet (see the comment at the card). ⚠ THE TRAP: `contactUrl` on `SupportConfig` is REQUIRED, so removing it is a compile error across the brand record — leave the field in place even if nothing reads it, or remove it from the type and every brand in the same edit. ⚠ AND RESTORING THE SHEET DOES NOT REFILL IT: `phoneLines` is still `[]` for XCEL, so the sheet comes back empty unless a confirmed number lands first — that emptiness is the whole reason this row exists. Deliberately NOT restored: nothing inside ContactUsSheet.tsx was edited, and no test changed — the panel had no coverage of this card either way.',
+  },
+  {
+    id: 'refinement-pacing-exploration',
+    name: 'Pacing Exploration',
+    what: 'The Refinement row for `feat/pacing-logic`, as the reviewer was asked to read it: “The pace panel at 0% and in progress, the Requirements / What to expect / How to apply sheets, and four brand palettes on the design bar. Does the pace chooser give enough to decide on, and do the sheets read as one treatment?”',
+    location:
+      '⚠ THE BRANCH BUILD IS GONE — `feat/pacing-logic` was deleted when this row was retired, so https://feat-pacing-logic--ux-design-xceldashboard.netlify.app 404s. The work is on `main`: merged 2026-10-08 as `6f8b0d9`, 49 commits. The version is `hybrid-pacing` in src/data/dashboardVersions.ts and its home is src/components/compass/HybridPacingHome.tsx. The frozen user-test build of the same work survives separately at `test/session-1` (e09d10c), tagged `session-2026-10-07-hybrid-pacing` — that ref does NOT depend on the deleted branch.',
+    flag:
+      'The row pinned no `?ff=`; its URL carried `?demo=1&version=hybrid-pacing`, which is now the default and needs neither param. The exploration’s four design controls — `hybrid-lesson-block`, `hybrid-title-lesson`, `hybrid-pace-standing`, `hybrid-course-expiry` — are all `surface: \'design\'` and shipped with it, so they are on the design site’s green bar and reachable there rather than through this row.',
+    dateRemoved: '2026-10-08',
+    reason:
+      'PROMOTED, not declined — the ending this row existed to reach. `promote-to-prototype` made `hybrid-pacing` the Prototypes baseline and the default dashboard version on 2026-10-08, displacing Hybrid V1, so a bare `?demo=1` on both sites now renders exactly what this row pointed at. The branch build was deleted because the PRODUCT is the record: a second viewable copy that drifts from `main` silently is worth keeping only when the argument is visual and the words cannot carry it, and here the words are "open the product".',
+    restoreNote:
+      'Nothing to restore — this is a retired REVIEW ROW, not retired code, and every line it showed is live on `main`. To put the work back on Refinement (a second review round, say): run `/promote-to-refinement` from a branch, which opens the full site’s Add form prefilled; a branch build only exists while a branch does, so the deleted one cannot be revived by re-adding a row. ⚠ THE TRAP IS THE OPPOSITE OF THE USUAL ONE: do not re-create this row pointing at the old URL — it 404s, and a dead link with a note attached is what this skill exists to prevent. ⚠ AND DO NOT CONFUSE IT WITH THE FROZEN TEST BUILD: `test/session-1` at e09d10c is a DIFFERENT, older tree (it predates the promotion commit and the rebase onto Eric’s gateway work), kept for the moderated session and reachable by that branch and its tag. Deliberately NOT archived with this: the version, its home component, its four design flags and the four palette themes are all shipped product now and have no archive rows of their own.',
   },
 ]

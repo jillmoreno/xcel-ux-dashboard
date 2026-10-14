@@ -23,6 +23,13 @@ import { AtlasHomeEricV2 } from '@/components/compass/AtlasHomeEricV2'
 import { AtlasHomeEricV3 } from '@/components/compass/AtlasHomeEricV3'
 import { AtlasHomeEricWhite } from '@/components/compass/AtlasHomeEricWhite'
 import { AtlasHomeEricE2E } from '@/components/compass/AtlasHomeEricE2E'
+import { HybridHomeV1 } from '@/components/compass/HybridHomeV1'
+import { HybridPacingHome } from '@/components/compass/HybridPacingHome'
+import {
+  isHybridPacingVersion,
+  isHybridV1Version,
+  resolveDashboardVersion,
+} from '@/data/dashboardVersions'
 import { HomeNavTileColumn } from '@/components/layout/HomeNavTiles'
 import { HomeTileGrid } from '@/components/layout/HomeTileGrid'
 import { HomeReadinessStub } from '@/components/layout/HomeReadinessStub'
@@ -704,16 +711,29 @@ export function LearnerFocusedBand({
   /* THE ATLAS HOME'S LAYOUT — `atlas-home-layout` (2026-10-02). V2 renders
      `AtlasHomeV2` in place of this band's Atlas layout; read unconditionally
      (rules of hooks), applied only on the Atlas home (`framedPace`). */
+  const [hybridVersionParams] = useSearchParams()
   const atlasHomeV2 = useFeatureFlag('atlas-home-layout').variant === 'v2'
-  // Eric/Atlas V2 renders its own copy of the Atlas Home (2026-10-07).
-  const [bandParams] = useSearchParams()
-  const ericAtlasV2 = bandParams.get('version') === 'eric-atlas-v2'
-  // …and Eric/Atlas V3 its own, a copy of V2's (2026-10-07).
-  const ericAtlasV3 = bandParams.get('version') === 'eric-atlas-v3'
-  // …and Eric/Atlas White its own, a copy of V3's (2026-10-12).
-  const ericAtlasWhite = bandParams.get('version') === 'eric-atlas-white'
-  // …and End-to-End Demo its own, a copy of the Home White shows (2026-10-14).
-  const ericAtlasE2E = bandParams.get('version') === 'eric-atlas-e2e'
+  /* Which of the two forked homes this version wants. Read from `?version=`
+     rather than a flag: the fork IS the version, so a flag would be a second
+     switch that could disagree with the picker. */
+  /* ⚠ RESOLVED, NOT RAW — 2026-10-06, and this is the read whose absence was
+     VISIBLE: on a bare `?demo=1` it answered false while the shell's chrome
+     answered true, so the page drew Atlas navigation over Testing 3's combined
+     course card. One screen, two versions. See `resolveDashboardVersion`. */
+  const hybridVersionId = resolveDashboardVersion(hybridVersionParams.get('version'), brand)
+  const hybridV1 = isHybridV1Version(hybridVersionId)
+  /* ⚠ THE ONE PLACE THAT ASKS WHICH HYBRID — 2026-10-07. Everything else asks
+     `isHybridVersion` (the family) because the chrome is shared; this picks
+     between two forked HOMES, which is the only thing that differs. */
+  const hybridPacing = isHybridPacingVersion(hybridVersionId)
+  /* Eric's forked Homes, resolved the same way — 2026-10-14, when End-to-End
+     Demo became the default: on a bare `?demo=1` a raw read answered false
+     for all four and the band fell through to `AtlasHomeV2` under his chrome.
+     One id, resolved once above, for every version question in this band. */
+  const ericAtlasV2 = hybridVersionId === 'eric-atlas-v2'
+  const ericAtlasV3 = hybridVersionId === 'eric-atlas-v3'
+  const ericAtlasWhite = hybridVersionId === 'eric-atlas-white'
+  const ericAtlasE2E = hybridVersionId === 'eric-atlas-e2e'
   /* NOT ON THE ATLAS HOME (merged 2026-10-02): its Study Pace card is part of
      the Atlas design (the brand's hover fill, the Primary 200 stroke), so the
      baseline's hiding flag does not reach it. */
@@ -1256,6 +1276,55 @@ export function LearnerFocusedBand({
   /* THE ATLAS HOME, V2 (Figma 161:662, 2026-10-02) — the whole layout, in place
      of this band's Atlas arrangement, when `atlas-home-layout` is V2. Fed the
      band's own figures and handlers, so it moves with the same demo controls. */
+  /* ⚠ HYBRID V1 TAKES ITS OWN HOME — 2026-10-05. Same props, same figures, same
+     handlers; a forked layout. Checked BEFORE the Atlas arm because Hybrid also
+     answers true to `isAtlasCompassNavVersion` (it wants Eric's chrome), so the
+     order is what keeps it on its own screen rather than his. */
+  /* ⚠ THE PACING FORK IS ITS OWN ARM, and it is tested first for the same
+     reason the Hybrid arm is tested before Eric's: it answers `isHybridVersion`
+     too, so a later arm would never be reached. Two identical screens today —
+     the point of the arm is that they can stop being identical without this
+     line moving. */
+  if (framedPace && atlasHomeV2 && resume && hybridPacing) {
+    return (
+      <HybridPacingHome
+        path={path}
+        courseTitle={path.title}
+        coverUrl={resume.imageUrl ?? getCourseImage(resume.id)}
+        percent={percent}
+        today={FIXTURE_TODAY}
+        hoursRemaining={resume.hours * (1 - (resume.progress ?? 0) / 100)}
+        accessExpiresAt={resume.expiresAt}
+        examDate={examDate}
+        notStarted={(resume.progress ?? 0) <= 0}
+        onBegin={onResume}
+        onOverview={onOverview}
+        onOpenStop={onOpenStop}
+        onOpenStep={onOpenStep}
+        onOpenRequirements={onViewDetails}
+      />
+    )
+  }
+  if (framedPace && atlasHomeV2 && resume && hybridV1) {
+    return (
+      <HybridHomeV1
+        path={path}
+        courseTitle={path.title}
+        coverUrl={resume.imageUrl ?? getCourseImage(resume.id)}
+        percent={percent}
+        today={FIXTURE_TODAY}
+        hoursRemaining={resume.hours * (1 - (resume.progress ?? 0) / 100)}
+        accessExpiresAt={resume.expiresAt}
+        examDate={examDate}
+        notStarted={(resume.progress ?? 0) <= 0}
+        onBegin={onResume}
+        onOverview={onOverview}
+        onOpenStop={onOpenStop}
+        onOpenStep={onOpenStep}
+        onOpenRequirements={onViewDetails}
+      />
+    )
+  }
   if (framedPace && atlasHomeV2 && resume) {
     /* ERIC/ATLAS WHITE SHOWS WIP'S HOME (2026-10-14, Eric's request: "replace
        the contents below the header with the WIP version but on a white

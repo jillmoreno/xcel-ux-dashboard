@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 import { AccountContext, type Brand } from '@/context/AccountContext'
-import { useAtlasSkin, type AtlasSkin } from '@/components/layout/atlasBrandSkin'
+import { useAtlasSkin, type AtlasBrandSkin } from '@/components/layout/atlasBrandSkin'
 
 /**
  * Multi-brand logo. Reads the active brand from AccountContext (or accepts
@@ -106,7 +106,13 @@ const IMAGE_SOURCES: Partial<
  * rules. They are NOT `Brand` entries — the product is still XCEL's; only the
  * Atlas pages change clothes.
  */
-const SKIN_LOGOS: Record<Exclude<AtlasSkin, 'xcel' | 'xcel-blue-cta' | 'global'>, ImageSource> = {
+/* ⚠ KEYED BY `AtlasBrandSkin`, NOT BY THE WHOLE UNION — changed 2026-10-08
+   when four PALETTE skins joined. They are colours with no company behind them
+   and no lockup to show, so they are not absent from this map by oversight;
+   they are a different kind of thing. The narrow key is what keeps both halves
+   honest: a new BRAND skin fails to compile until its artwork is here, and a
+   new palette one never has to be excluded by name. */
+const SKIN_LOGOS: Record<AtlasBrandSkin, ImageSource> = {
   // Reduced to sit with McKissock (132 × 36) and Elite (115 × 36) in the
   // header (2026-10-09, Eric's request): it rendered 210 × 36 — a 5.8:1
   // lockup at their height reads far larger. 23px tall → 134 wide.
@@ -225,9 +231,16 @@ export function Logo({ variant = 'default', height = 40, className, brand: brand
     )
   }
   const imageSet = IMAGE_SOURCES[brand]
+  /* ⚠ `in SKIN_LOGOS` RATHER THAN A LIST OF EXCLUSIONS — 2026-10-08. The test
+     used to be `skin !== 'xcel' && skin !== 'global'`, which meant "any skin
+     that is not one of these two HAS a logo". That stopped being true when the
+     four palette skins arrived: they are colours only, and the old test would
+     have indexed the map with a key it does not hold and rendered nothing at
+     all. Asking the map directly is the version of this that cannot go stale —
+     a skin shows its own lockup when it has one, and keeps the page's otherwise. */
   const entry =
-    !brandProp && variant === 'default' && skin && skin !== 'xcel' && skin !== 'xcel-blue-cta' && skin !== 'global'
-      ? SKIN_LOGOS[skin]
+    !brandProp && variant === 'default' && skin && skin in SKIN_LOGOS
+      ? SKIN_LOGOS[skin as AtlasBrandSkin]
       : imageSet?.[variant]
   // A brand may ship the lockup and not the square mark (XCEL does). Falling
   // through to the text wordmark for the missing variant is deliberate — the

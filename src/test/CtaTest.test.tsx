@@ -1,7 +1,7 @@
 import { pinLeftRail } from './pinNavPlacement'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { render, screen, fireEvent, act } from '@testing-library/react'
+import { render, screen, fireEvent, act, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
@@ -503,8 +503,17 @@ describe('?test=1 — the moderated session view', () => {
        that a normal load is NOT whitelisted, so every name here has to be a
        control that is genuinely on screen — a false negative would read as the
        whitelist working. */
+    /* ⚠ SCOPED TO THE DEMO BAR since 2026-10-14: End-to-End Demo is the default
+       and its Design bar carries Eric's own "Progress" control, so an unscoped
+       query finds two. The claim is about the demo bar's controls. */
+    const demoBar = screen.getByRole('region', { name: 'Demo controls' })
     for (const there of [/Progress/i, /Lo-fi/i, /^Reset$/]) {
-      expect(screen.getByRole('button', { name: there }), String(there)).toBeTruthy()
+      expect(
+        there.source === '^Reset$' || /Progress/.test(there.source)
+          ? within(demoBar).getByRole('button', { name: there })
+          : screen.getByRole('button', { name: there }),
+        String(there),
+      ).toBeTruthy()
     }
   })
 

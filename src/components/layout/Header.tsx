@@ -25,7 +25,9 @@ import {
   writeDefaultDashboardVersion,
   dashboardVersionsForAudience,
   defaultDiscoverabilityVersionFor,
+  resolveDashboardVersion,
   isAtlasCompassNavVersion,
+  isHybridVersion,
   type DashboardVersionId,
 } from '@/data/dashboardVersions'
 import {
@@ -141,8 +143,29 @@ export function Header() {
   // ~98px wide — just clear of the brand guide's 95px minimum width). Desktop only;
   // every other version keeps 72 / 52. `PlatformShell` reads the same rule
   // to pin its rails under it.
-  const rebrandVersion = new URLSearchParams(search).get('version')
+  /* ⚠ RESOLVED, NOT RAW — 2026-10-06. With the raw param this answered false on
+     a bare `?demo=1`, so the slim Atlas header went missing the day an Atlas
+     version became the default while the body rendered as one. See
+     `resolveDashboardVersion`. */
+  const rebrandVersion = resolveDashboardVersion(new URLSearchParams(search).get('version'), brand)
   const atlasSlimHeader = platformNav && !mobile && isAtlasCompassNavVersion(rebrandVersion)
+  /* Hybrid V1 only — it answers true to `isAtlasCompassNavVersion` as well (it
+     takes the Atlas chrome), so anything that must differ between the two asks
+     this instead. */
+  /* ⚠ THE FAMILY, NOT THE ID — the pacing fork takes Hybrid's header too. */
+  const hybridVersion = isHybridVersion(rebrandVersion)
+  /* HYBRID'S HELP OPENS THE SHEET — 2026-10-07, the direct ask ("when icon is
+     clicked, show the sheet view version"), and the second half of turning
+     that control into a glyph the same day.
+
+     ⚠ IT IS NOT `nav-help`, even though it now does the same thing. That flag
+     chooses between a `?` in the header and a row in the account menu, for the
+     versions whose Help has nowhere else to live. This is the ATLAS header's
+     own control, which exists on its own terms — Hybrid simply wants it to
+     behave like the `?` rather than navigate. Keying it to the version keeps
+     "where does Help go" one question per version instead of making Hybrid
+     depend on an arm it does not read. */
+  const hybridHelpSheet = atlasSlimHeader && hybridVersion
   // Nav Version → Top Nav (2026-09-30): Home + Compass Learning in the header,
   // their left edge on the Atlas rail's right edge. See `AtlasTopNav`.
   // …and Expanding Top Nav (2026-10-01), the same buttons with slide-out links.
@@ -310,14 +333,76 @@ export function Header() {
       {/* RESOURCES · GET HELP — the Atlas header's text links, 40px left of
           the bell (2026-10-01, the designer's request): the group's 12px gap
           plus 28. They change only the section, so the demo's params survive. */}
+      {/* ⚠ HYBRID V1 DIFFERS TWICE HERE — 2026-10-06, both direct asks, both
+          scoped to that version so Eric's header is untouched.
+
+            • RESOURCES IS NOT IN THE HEADER. It moved into the Quick Links
+              card, under My Certificates (`HybridHomeV1`), where the rest of
+              the destinations already live. Two places to reach Resources was
+              the thing to remove, not the header link per se.
+            • HELP IS AN ICON — 2026-10-07, the direct ask, replacing the
+              "Help" label this note previously recorded ("HELP", NOT "GET
+              HELP", 2026-10-06). Once Resources moved out, the word was a lone
+              piece of text sitting 28px off a run of icons, which is what made
+              it read as left over rather than as part of the cluster. As a
+              glyph it joins the bell and the avatar — and those three ARE one
+              group: utilities about you and your account.
+
+          The `<nav aria-label="Help">` stays either way — it is the landmark
+          for this cluster, and on Hybrid it just holds one control. */}
       {atlasSlimHeader && (
-        <nav aria-label="Help" style={{ display: 'flex', alignItems: 'center', gap: 24, marginRight: 28 }}>
-          <Link to={atlasSectionHref('resources')} className="cre-atlas-header-link">
-            Resources
-          </Link>
-          <Link to={atlasSectionHref('support')} className="cre-atlas-header-link">
-            Get Help
-          </Link>
+        <nav
+          aria-label="Help"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 24,
+            /* ⚠ NO EXTRA MARGIN ONCE IT IS A GLYPH. The 28 (plus the group's
+               own 12) held TEXT off the icon run so the two did not read as
+               one row of controls. An icon is meant to join that run, and
+               keeping the 28 would leave a 40px hole between Help and the bell
+               while the bell and the avatar sit 12 apart. */
+            marginRight: hybridVersion ? 0 : 28,
+          }}
+        >
+          {hybridVersion ? null : (
+            <Link to={atlasSectionHref('resources')} className="cre-atlas-header-link">
+              Resources
+            </Link>
+          )}
+          {hybridVersion ? (
+            /* ⚠ A BUTTON OPENING THE SHEET, NOT A LINK TO `?section=support` —
+               2026-10-07, the direct ask, and it reverses the note that stood
+               here for the few hours between the two: "still a `<Link>`… the
+               ask was to change how it is DRAWN". Drawing it as a glyph is what
+               raised the question — a `?` that navigates to a full page is not
+               what a `?` in a utility cluster promises, and the same glyph two
+               controls away already opens the sheet.
+
+               ⚠ IT SHARES `setHelpOpen` WITH THAT ONE, deliberately: one sheet,
+               one piece of state, so the two triggers cannot drift into opening
+               different things. What it does NOT share is the `nav-help` gate —
+               see `hybridHelpSheet`.
+
+               ⚠ `aria-label` DOES THE WORK THE TEXT USED TO, and `aria-haspopup`
+               is what now says this opens something rather than going
+               somewhere. `cre-icon-pill` carries the bell's and the avatar's
+               size, hover and focus ring without restating any of it. */
+            <button
+              type="button"
+              onClick={() => setHelpOpen(true)}
+              aria-label="Help"
+              aria-haspopup="dialog"
+              data-cta-id="nav.support"
+              className="cre-icon-pill"
+            >
+              <HelpCircle size={20} aria-hidden />
+            </button>
+          ) : (
+            <Link to={atlasSectionHref('support')} className="cre-atlas-header-link">
+              Get Help
+            </Link>
+          )}
         </nav>
       )}
       {/* HELP, AS A `?` — `nav-help: header-icon`. LEFT OF THE BELL, which is
@@ -491,8 +576,26 @@ export function Header() {
               group so the row centres it vertically. Inert in the locked focus
               / Share Demo views, like the rest of the header's navigation. */}
           {atlasTopNav && (
-            <div inert={noHeaderNav || undefined} style={{ marginLeft: 32, flexShrink: 0 }}>
-              <AtlasTopNav expanding={navPlacement === 'expanding-top'} />
+            <div
+              inert={noHeaderNav || undefined}
+              style={{
+                /* ⚠ 12 ON HYBRID V1, 32 EVERYWHERE ELSE — 2026-10-06, the
+                   direct ask to shift the pills left. Eric's 32 is measured off
+                   the Atlas rail's edge (see the note above); Hybrid has no
+                   rail on Home, so the gap was holding the pills off nothing. */
+                marginLeft: hybridVersion ? 12 : 32,
+                flexShrink: 0,
+                /* ⚠ THE IDLE PILL LOSES ITS STROKE on Hybrid, by neutralising
+                   the TOKEN here rather than editing `.cre-atlas-topnav-btn` —
+                   that class is Eric's too, and only the Global skin sets a
+                   stroke at all. An inline custom property on this wrapper
+                   cascades to the buttons inside it and to nothing else. */
+                ...(hybridVersion
+                  ? { ['--color-atlas-topnav-idle-stroke' as string]: 'transparent' }
+                  : null),
+              }}
+            >
+              <AtlasTopNav expanding={navPlacement === 'expanding-top'} versionId={rebrandVersion} />
             </div>
           )}
         </div>
@@ -640,8 +743,17 @@ export function Header() {
           rather than beside either control because the `?` icon and the account
           menu's Help row are in different components and must open the same
           thing. Mounted whenever the control is available and gated on `open`
-          inside `Sheet`, the same shape as the panels above it. */}
-      {showHelpControl && <HelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} />}
+          inside `Sheet`, the same shape as the panels above it.
+
+          ⚠ THREE TRIGGERS SINCE 2026-10-07, and the third does not come in
+          through `nav-help` — Hybrid's header Help is the Atlas link turned
+          into a sheet opener (see `hybridHelpSheet`). So the gate is the OR
+          rather than `showHelpControl` alone: on an arm where that is false,
+          Hybrid's button would otherwise press and open nothing, which is the
+          kind of dead control nothing fails on. */}
+      {(showHelpControl || hybridHelpSheet) && (
+        <HelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} />
+      )}
       <MembershipVersionsPanel
         open={membershipVersionsOpen}
         onClose={closeMembershipVersionsPanel}

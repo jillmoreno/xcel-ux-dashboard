@@ -34,7 +34,12 @@ export function HelpSheet({ open, onClose }: { open: boolean; onClose: () => voi
     <Sheet open={open} onClose={onClose} title="Help" width={480}>
       <SheetHeader title="Help" onClose={onClose} />
       <div style={SHEET_BODY}>
-        <HelpSupportPanel />
+        {/* ⚠ THE SHEET ASKS FOR THE COMPACT CARDS — 2026-10-07, the direct
+            ask. The section's card is sized for a wide grid where four share a
+            row and their dividers line up; in this 480px column that alignment
+            buys nothing and the four cards cost a scroll. Same component, so
+            the two surfaces still cannot say different things. */}
+        <HelpSupportPanel compact />
       </div>
     </Sheet>
   )

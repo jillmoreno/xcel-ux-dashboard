@@ -197,11 +197,14 @@ describe('the Feature Flag panel', () => {
     /* ⚠ THE SAME RESOLUTION THE DEMO BAR USES. Reading only `?version=` would
        make the panel resolve to Jill on every fresh load regardless of which
        version is actually rendering — right today by accident, wrong the day a
-       brand's default belongs to someone else. */
+       brand's default belongs to someone else.
+       ⚠ THAT DAY WAS 2026-10-14: End-to-End Demo, Eric's, became XCEL's default
+       (`promote-to-prototype`), so the panel now opens on his tab from a bare
+       URL — which is the behaviour this test was written to protect. */
     const fallback = defaultDiscoverabilityVersionFor('xcel')
     const version = DISCOVERABILITY_DASHBOARD_VERSIONS.find((v) => v.id === fallback)
     expect(version).toBeTruthy()
-    expect(flagOwner(version!)).toBe('jill')
+    expect(flagOwner(version!)).toBe('eric')
   })
 
   /* ⚠ NOT TESTABLE YET, and named rather than skipped: "selecting Eric's

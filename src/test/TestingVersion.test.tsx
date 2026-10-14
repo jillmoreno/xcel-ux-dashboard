@@ -21,7 +21,7 @@ import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
-  DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3,
+  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E,
   defaultDiscoverabilityVersionFor,
   isQualifyingEducationVersion,
 } from '@/data/dashboardVersions'
@@ -211,11 +211,30 @@ describe('the Testing version is registered without displacing anything', () => 
        bending to code. The subject is unchanged: XCEL resolves to ONE named
        version, and whatever the picker marks "Default" must be it.
 
+       ⚠ FOURTH OWNER, 2026-10-06: HYBRID V1, via `promote-to-prototype`. Same
+       pin, same reason it keeps firing — the line moved because someone decided
+       it should, and this test is what made them say so. Testing 3 is DISPLACED,
+       not retired: it keeps `maturity: 'ready'`, so it stays in the demo site's
+       picker and the swap is reversible by a URL rather than a deploy. The
+       `not.toBe` below still names Testing, because this file is Testing's and
+       the claim it has always made is that Testing is not the landing page.
+
+       ⚠ FIFTH OWNER, 2026-10-08: HYBRID - PACING EXPLORATION, via
+       `promote-to-prototype` again. Hybrid V1 held the line for two days and is
+       DISPLACED, not retired — it keeps `maturity: 'ready'` exactly as Testing 3
+       did, so three versions now sit in the demo site's picker and the swap
+       stays reversible by a URL. The pin keeps firing because the line keeps
+       moving by decision, which is the whole reason it is written this way.
+
        ⚠ TESTING IS NOT ARCHIVED by losing the default — it still leads the
        picker and everything else in this file still describes it. What changed
        is which version a bare `/dashboard-rebrand` opens. */
+    /* ⚠ SIXTH OWNER, 2026-10-14: END-TO-END DEMO — Eric's, the first default that
+       is not Jillienne's — via `promote-to-prototype` on his merge. The pacing
+       fork and Hybrid V1 are DISPLACED, not retired: both keep `maturity:
+       'ready'`, so four versions sit in the demo site's picker. */
     expect(defaultDiscoverabilityVersionFor('xcel')).toBe(
-      DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3.id,
+      DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E.id,
     )
     expect(defaultDiscoverabilityVersionFor('xcel')).not.toBe(
       DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id,

@@ -208,7 +208,7 @@
           <rect x="8" y="8" width="84" height="134" rx="6" fill="#f5f5f5"/>
           <text x="18" y="34" font-size="10" fill="#6b7280">Prototypes</text>
           <rect x="12" y="42" width="76" height="20" rx="4" fill="#1f4e88"/><text x="18" y="56" font-size="10" fill="#fff" font-weight="700">Refinement</text>
-          <text x="18" y="82" font-size="10" fill="#6b7280">Other Links</text><text x="18" y="102" font-size="10" fill="#6b7280">Research</text>
+          <text x="18" y="82" font-size="10" fill="#6b7280">Resources</text><text x="18" y="102" font-size="10" fill="#6b7280">Research</text>
           <text x="104" y="26" font-size="12" font-weight="700" fill="#1b1d21">Refinement</text>
           <rect x="248" y="14" width="62" height="20" rx="5" fill="#1f4e88"/><text x="279" y="28" text-anchor="middle" font-size="9.5" fill="#fff" font-weight="700">Add link</text>
           <rect x="104" y="42" width="206" height="100" rx="8" fill="#fff" stroke="#dfe3e8"/>
@@ -338,8 +338,8 @@
   <table>
     <thead><tr><th>Site</th><th>Who opens it · what for</th><th>What it shows</th></tr></thead>
     <tbody>
-      <tr><td>The <strong>full</strong> site</td><td><strong>Designers and developers.</strong><br /><span class="small">Used for refinement and hand-offs.</span></td><td>Everything — Prototypes, Refinement, Other Links, Research, and the whole <em>UX &amp; Dev Access</em> group (Design, Exploration, Sandbox, Development, Done, Archive, QA Notes, To Do, and this guide).</td></tr>
-      <tr><td>The <strong>public</strong> site</td><td><strong>Designers and stakeholders.</strong><br /><span class="small">Used for demos and training.</span></td><td>Only Prototypes, Refinement, Other Links and Research. The rest is not locked — it is <em>absent</em>. Refinement shows only the rows someone has flipped to public, and is read-only there.</td></tr>
+      <tr><td>The <strong>full</strong> site</td><td><strong>Designers and developers.</strong><br /><span class="small">Used for refinement and hand-offs.</span></td><td>Everything — Prototypes, Refinement, Resources, Research, and the whole <em>UX &amp; Dev Access</em> group (Design, Exploration, Sandbox, Development, Done, Archive, QA Notes, To Do, and this guide).</td></tr>
+      <tr><td>The <strong>public</strong> site</td><td><strong>Designers and stakeholders.</strong><br /><span class="small">Used for demos and training.</span></td><td>Only Prototypes, Refinement, Resources and Research. The rest is not locked — it is <em>absent</em>. Refinement shows only the rows someone has flipped to public, and is read-only there.</td></tr>
     </tbody>
   </table>
   </div>
@@ -548,7 +548,7 @@
     <div class="field"><b>Show on public site</b><span>A checkbox, <strong>off by default</strong>. The hint under it reads: <em>“Off: only the team sees this row. On: stakeholders with the public link see it too.”</em></span></div>
   </div>
   <p>On the list, each row carries a chip — <strong>Team only</strong> or <strong>Public</strong> — so you can see at a glance what stakeholders can see. The nav badge on Refinement counts all rows on the full site and only the public ones on the public site.</p>
-  <p class="small">There is no <em>Type</em> field here, unlike Other Links. Every Refinement row is the same kind of thing — work in review — and the toggle is what tells rows apart.</p>
+  <p class="small">There is no <em>Type</em> field here, unlike Resources. Every Refinement row is the same kind of thing — work in review — and the toggle is what tells rows apart.</p>
 </section>
 
 <!-- ───────────────────────────────────────────────────────────────────── -->
@@ -604,7 +604,7 @@
       <tr><td>Feature flag</td><td>A named switch in <code>FEATURE_FLAGS</code>. Off on <code>main</code> until promoted; on on your branch so your build shows it.</td></tr>
       <tr><td>Prototypes</td><td>The section holding the live product build at <code>main</code>'s flag defaults. One row. Changed only by merging.</td></tr>
       <tr><td>Refinement</td><td>The review inbox: links added on the page, team-only until flipped public. Its internal id is <code>demo</code> — you will see that in URLs (<code>?section=demo</code>) and code.</td></tr>
-      <tr><td>Other Links</td><td>Everything else that lives elsewhere: briefs, boards, Figma files. Also added on the page.</td></tr>
+      <tr><td>Resources</td><td>Everything else that lives elsewhere: briefs, boards, Figma files. Also added on the page.</td></tr>
       <tr><td>Promote</td><td>Two skills bracket the loop. <code>promote-to-refinement</code> (yours, on the branch) opens the Refinement form prefilled with your branch address. <code>promote-to-prototype</code> (Jillienne's, on the PR) decides per flag whether its "on" default ships in Prototypes.</td></tr>
       <tr><td>Full site / public site</td><td>The everything site for designers and developers, and the demo-and-training site for designers and stakeholders. Same code; one build-time switch.</td></tr>
     </tbody>

@@ -5,8 +5,10 @@ import { useSearchParams } from 'react-router-dom'
 import { useAccount, supportsMembership, type Brand } from '@/context/AccountContext'
 import {
   defaultDiscoverabilityVersionFor,
+  resolveDashboardVersion,
   isAtlasCompassNavVersion,
   isEricAtlasWhiteLike,
+  isHybridVersion,
   type DashboardLayout,
 } from '@/data/dashboardVersions'
 import { SectionContent } from '@/components/membership/v7/MembershipV7'
@@ -113,7 +115,7 @@ import { CompassLearningPage } from '@/components/learning/CompassLearningPage'
 import { CompassSessionPage } from '@/components/learning/CompassSessionPage'
 import { HomePageHeader } from './HomePageHeader'
 import { AtlasSectionPageHeader } from './AtlasSectionPageHeader'
-import { SectionPageHeader } from './SectionPageHeader'
+import { SectionBackCrumb, SectionPageHeader } from './SectionPageHeader'
 import { ATLAS_HEADER_V2_HEIGHT, useAtlasHeaderV2 } from './atlasHeaderV2'
 import { useAtlasBackgroundSwitch } from './atlasBackground'
 import { useCompassCourseFigures } from '@/components/learning/compassCourseFigures'
@@ -350,13 +352,24 @@ function PlatformShellBody() {
   // which has no collapse control — so it never collapses, not even for the
   // Compass launcher. A collapsed column with no way to re-open it would strand
   // the learner in a 76px strip.
-  const atlasNav = isAtlasCompassNavVersion(
-    params.get('version') ?? defaultDiscoverabilityVersionFor(brand),
-  )
+  /* Hybrid V1 specifically — it answers true to `isAtlasCompassNavVersion` too
+     (it takes the Atlas chrome), so anything that must differ between the two
+     asks this instead. */
+  /* ⚠ RESOLVED, NOT RAW — 2026-10-06. `atlasNav` below already did this and
+     `hybridVersion` did not, which is the split that drew the Atlas top nav
+     over Testing 3's course card on the day Hybrid V1 became the default. One
+     spelling now, in `resolveDashboardVersion`, which carries the full note. */
+  const shellVersion = resolveDashboardVersion(params.get('version'), brand)
+  /* ⚠ THE FAMILY, NOT THE ID — 2026-10-07. The pacing fork is a copy of
+     Hybrid V1 and must wear the same chrome; asking for V1's id here would
+     have given it Eric's header and his section rail instead. */
+  const hybridVersion = isHybridVersion(shellVersion)
+  const atlasNav = isAtlasCompassNavVersion(shellVersion)
   // The two-row Atlas header (2026-10-13): read here, above the mobile
-  // return, for the header height further down. The RAW `?version=`, as
-  // `Header` reads it, so the two cannot disagree.
-  const atlasHeaderV2 = useAtlasHeaderV2(params.get('version'))
+  // return, for the header height further down. RESOLVED, not raw, since
+  // 2026-10-14 (End-to-End Demo became the default): `Header` resolves too,
+  // so the two cannot disagree on a bare `?demo=1`.
+  const atlasHeaderV2 = useAtlasHeaderV2(shellVersion)
   // The Design bar's Background control ↔ WIP / White (2026-10-14).
   useAtlasBackgroundSwitch()
   // Nav Version → Expanding Top Nav (2026-10-01, the designer's request): NO
@@ -376,16 +389,39 @@ function PlatformShellBody() {
      `expanding-top` drops the rail on EVERY page; `top` drops it on Home only
      and the inner pages keep it. That asymmetry is Eric's and is the whole
      difference between his two top-nav arms, so it survives the unification
-     rather than being flattened into "top means no rail". (My Courses is
-     exempt from the asymmetry: no rail under `top` either.) */
+     rather than being flattened into "top means no rail". */
+  // Which page of the `course` section is showing. Overview drops the param, as
+  // Home drops `section`. Declared here rather than beside the rest of the
+  // course logic because `atlasNoRail` below has to read it.
+  const coursePage = atlasCoursePageFor(params.get('coursePage')).id
+  // An actual Compass LMS course page — the course rail's "Course" row. It
+  // gets the Compass rail (Figma 49:2922) instead of the Atlas course rail.
+  const compassCourseRail = atlasNav && active === 'course' && coursePage === 'course'
+  /* ⚠ HYBRID V1 HAS NO SECTION RAIL AT ALL — 2026-10-06, the direct ask: "when
+     clicking into courses or certificates, i do NOT want this left rail to show
+     up, i just want the back to home link at the top left."
+
+     ⚠ EXCEPT THE COMPASS COURSE PLAYER, which is the one thing this must not
+     take with it. `atlasNoRail` empties the whole rail COLUMN, and the player's
+     contents tree is drawn inside it — so a flat `hybridVersion` here would
+     have left the course player with no way to move between its pages. The ask
+     was about the section pages; the player's rail is its own surface.
+
+     ⚠ AND IT ALSO RETIRES THE COLLAPSE TRAP that prompted this. `atlasRailToggle`
+     is `!atlasNoRail`, so Hybrid never renders the toggle and `atlasRailClosed`
+     can never be set — which is what used to survive a trip through Home and
+     leave Courses looking empty until a reload. */
+  const hybridNoSectionRail = hybridVersion && !compassCourseRail
   // …and Eric/Atlas WIP's CERTIFICATES (2026-10-13, Eric's request): no rail,
-  // Quick Links at the right of the cards, as its My Courses.
+  // Quick Links at the right of the cards, as its My Courses. (My Courses is
+  // exempt from the asymmetry: no rail under `top` either.)
   // …and Eric/Atlas White's, which shows WIP's Certificates page (2026-10-14).
   const wipCertificates =
-    active === 'certificates' && (params.get('version') === 'eric-atlas-v3' || isEricAtlasWhiteLike(params.get('version')))
+    active === 'certificates' && (shellVersion === 'eric-atlas-v3' || isEricAtlasWhiteLike(shellVersion))
   const atlasNoRail =
     atlasNav &&
-    (navPlacement === 'expanding-top' ||
+    (hybridNoSectionRail ||
+      navPlacement === 'expanding-top' ||
       (navPlacement === 'top' && (active === 'dashboard' || active === 'courses' || wipCertificates)))
   // Wherever an Atlas rail is drawn it can collapse; collapsed, its column is
   // the toggle's own width, so only that frame stays at the left edge.
@@ -428,7 +464,7 @@ function PlatformShellBody() {
   const atlasSkinFlagAll = useFeatureFlag('atlas-brand-skin')
   const atlasSkinFlagV3 = useFeatureFlag('atlas-brand-skin-v3')
   // …and Eric/Atlas White, WIP's duplicate (2026-10-12), shares it.
-  const atlasSkinFlag = (params.get('version') === 'eric-atlas-v3' || isEricAtlasWhiteLike(params.get('version'))) ? atlasSkinFlagV3 : atlasSkinFlagAll
+  const atlasSkinFlag = (shellVersion === 'eric-atlas-v3' || isEricAtlasWhiteLike(shellVersion)) ? atlasSkinFlagV3 : atlasSkinFlagAll
   const atlasSkin = atlasSkinFor(
     atlasSkinParam && ATLAS_SKINS.some((s) => s.skin === atlasSkinParam)
       ? atlasSkinParam
@@ -618,10 +654,10 @@ function PlatformShellBody() {
   }
   // The Atlas COURSE rail's sub-pages (Figma 49:3536) — `?coursePage=` inside
   // the `course` section. Overview drops the param, as Home drops `section`.
-  const coursePage = atlasCoursePageFor(params.get('coursePage')).id
-  // An actual Compass LMS course page — the course rail's "Course" row. It
-  // gets the Compass rail (Figma 49:2922) instead of the Atlas course rail.
-  const compassCourseRail = atlasNav && active === 'course' && coursePage === 'course'
+  /* ⚠ `coursePage` AND `compassCourseRail` ARE DECLARED FURTHER UP, beside
+     `atlasNoRail` — 2026-10-06. That predicate has to know whether the Compass
+     course rail is in play, and a second copy of the expression here would be
+     the drift this file keeps paying for. */
   const selectCoursePage = (id: AtlasCoursePageId) => {
     launcher.close()
     resourceLauncher.close()
@@ -1011,7 +1047,7 @@ function PlatformShellBody() {
         // (2026-10-14, Eric's request).
         ...(atlasNav &&
         (active === 'dashboard' || active === 'courses' || active === 'certificates') &&
-        isEricAtlasWhiteLike(params.get('version'))
+        isEricAtlasWhiteLike(shellVersion)
           ? { background: 'var(--color-fixed-light)' }
           : atlasNav && (active === 'dashboard' || active === 'course' || active === 'resources')
             ? { background: 'var(--color-compass-page)' }
@@ -1346,7 +1382,7 @@ function PlatformShellBody() {
           ...(topNav && !compassCourseRail
             ? {
                 maxWidth:
-                  active === 'dashboard' && (params.get('version') === 'eric-atlas-v3' || isEricAtlasWhiteLike(params.get('version')))
+                  active === 'dashboard' && (shellVersion === 'eric-atlas-v3' || isEricAtlasWhiteLike(shellVersion))
                     ? 1278
                     : 1172,
                 width: '100%',
@@ -1355,7 +1391,13 @@ function PlatformShellBody() {
             : null),
         }}
       >
-        {homeHeader && !launcher.courseId ? <HomePageHeader /> : null}
+        {/* ⚠ 56 ON HYBRID V1, matching the gutter its section below takes (see
+            the `padding` on that `<section>`). Everything else keeps the shared
+            40 — the greeting lines up with the card it heads either way, which
+            is the thing that has to stay true. */}
+        {homeHeader && !launcher.courseId ? (
+          <HomePageHeader align={hybridVersion ? { inset: 56, maxWidth: 1200 } : undefined} />
+        ) : null}
         {/* Same slot as Home's header and for the same reason: it sits ABOVE
             `SectionPanel` so the section keeps its own 40px gutter without the
             header being nested inside the padded `<section>`. `SectionShell`
@@ -2048,13 +2090,19 @@ function SectionShell({
   children: ReactNode
 }) {
   const [shellParams] = useSearchParams()
-  const atlasHome =
-    active === 'dashboard' && isAtlasCompassNavVersion(shellParams.get('version'))
+  /* ⚠ HOISTED ABOVE THE VERSION READS — it used to be declared ~60 lines down,
+     beside `hasMembership`, and the three predicates below need it now that
+     they resolve the default rather than reading the raw param. */
+  const { brand } = useAccount()
+  const sectionVersion = resolveDashboardVersion(shellParams.get('version'), brand)
+  const atlasHome = active === 'dashboard' && isAtlasCompassNavVersion(sectionVersion)
+  /* Hybrid V1's Home only — it answers true to `atlasHome` as well (it takes
+     the Atlas chrome), so this is tested FIRST at the padding below. */
+  const hybridHome = active === 'dashboard' && isHybridVersion(sectionVersion)
   // The Atlas RESOURCES page in the Compass treatment (2026-10-01, the
   // designer's request): no brand band — a serif title and a plain lede on
   // the Compass page, at the Overview's 56px margin. See `ResourcesPanel`.
-  const atlasResources =
-    active === 'resources' && isAtlasCompassNavVersion(shellParams.get('version'))
+  const atlasResources = active === 'resources' && isAtlasCompassNavVersion(sectionVersion)
   /* ⚠ COURSES AND CERTIFICATES NO LONGER TITLE THEMSELVES FROM HERE.
      `SectionPageHeader` draws their title (at Home's size) above this shell, so
      both the hero and the `<h1>` below have to stand down — two titles is the
@@ -2111,7 +2159,6 @@ function SectionShell({
     active === 'learning-path' && isHomeActive(lpCount, lpVersion, lpSelected)
   // Partner Offers + Free Content only show the hero search once the list
   // is long enough to be worth filtering (> 12 items); short lists drop it.
-  const { brand } = useAccount()
   const hasMembership = supportsMembership(brand)
   // Declared here rather than beside `libraryHero` above because `heroFor` is
   // brand-aware now and `brand` is not in scope until this line.
@@ -2162,15 +2209,22 @@ function SectionShell({
            `HomePageHeader` or `SectionPageHeader` already carried it. Atlas
            draws neither of those headers, so folding it in would have taken
            56px off the top of a page nothing was sitting above. */
+        /* ⚠ HYBRID V1 DROPS THE TOP 56 — 2026-10-05, the direct ask, and it is
+           scoped to that version on purpose. The 56 is Eric's page margin on
+           all four sides and his home is built against it; changing the Atlas
+           arm outright would move his screen to suit a fork of it. Sides and
+           bottom are unchanged, so the card still sits on the same gutter. */
+        padding: hybridHome
+          ? '0 56px 56px'
         /* Eric/Atlas V3's Home sits 24px closer to the header — 32 on top, 56
            on the other sides (2026-10-09, Eric's request). */
         // …and White's 32 a side, for its two rails (2026-10-12; 24 briefly).
         // White takes WIP's padding with WIP's Home (2026-10-14); its own was
         // 32px 32px 56px, for its left rail and exam-date rail.
         // …and White's top 8 more, 40 (2026-10-14, Eric's request).
-        padding: atlasHome && isEricAtlasWhiteLike(shellParams.get('version'))
+        : atlasHome && isEricAtlasWhiteLike(sectionVersion)
           ? '40px 56px 56px'
-          : atlasHome && shellParams.get('version') === 'eric-atlas-v3'
+          : atlasHome && sectionVersion === 'eric-atlas-v3'
           ? '32px 56px 56px'
           : atlasHome || atlasResources
           ? 56
@@ -2216,6 +2270,22 @@ function SectionShell({
         />
       ) : atlasResources ? (
         <header style={{ margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {/* ⚠ HYBRID ONLY, 2026-10-07 — the direct ask, and the same standing
+              instruction that shaped the section rail: nothing changes for any
+              other version. It is not an arbitrary scope. Hybrid is the family
+              that drops the rail on its section pages
+              (`hybridNoSectionRail`), so Resources there has no Home control
+              on screen at all; Eric's Atlas versions keep the rail on inner
+              pages, where a crumb would be a second way back to a place the
+              learner can already see — the argument `useSectionBreadcrumb`
+              makes for excluding the left-nav arm, applied here.
+
+              ⚠ NOT ROUTED THROUGH `BREADCRUMB_SECTIONS`. That list swaps the
+              page's title for Home's, which this page must not do — it owns a
+              serif title and a lede. See `SectionBackCrumb`. */}
+          {isHybridVersion(sectionVersion) ? (
+            <SectionBackCrumb onBack={() => onSelect('dashboard')} />
+          ) : null}
           {/* DM Serif Display — the Atlas heading face (`--font-heading-serif`,
               which the Headings dropdown can still swap) — at Serif H4, the
               Course Overview's title step. */}
@@ -2289,13 +2359,13 @@ function SectionPanel({
 }) {
   const [panelParams, setPanelParams] = useSearchParams()
   const atlasCourse = useAtlasCourse()
-  const { user } = useAccount()
+  const { user, brand } = useAccount()
   // The Compass course OVERVIEW (Figma 44:2211) — full-bleed on its own warm
   // page, so outside SectionShell like Membership below; it carries its own
   // (visually hidden) "Overview" <h1>. Atlas/Compass version only.
   if (
     active === 'course' &&
-    isAtlasCompassNavVersion(panelParams.get('version') ?? '') &&
+    isAtlasCompassNavVersion(resolveDashboardVersion(panelParams.get('version'), brand)) &&
     atlasCoursePageFor(panelParams.get('coursePage')).id === 'overview'
   ) {
     const openCoursePage = (page: AtlasCoursePageId) =>
@@ -2483,7 +2553,12 @@ function LearningPathSection() {
  *  (2026-10-01) — read here, so `ResourcesPanel` stays router-free. */
 function ShellResourcesPanel() {
   const [params] = useSearchParams()
-  return <ResourcesPanel compass={isAtlasCompassNavVersion(params.get('version'))} />
+  const { brand } = useAccount()
+  return (
+    <ResourcesPanel
+      compass={isAtlasCompassNavVersion(resolveDashboardVersion(params.get('version'), brand))}
+    />
+  )
 }
 
 /* My Courses in the shell. On the Atlas versions the filter column gives way to
@@ -2491,14 +2566,17 @@ function ShellResourcesPanel() {
 function MyCoursesSection() {
   const [params, setParams] = useSearchParams()
   const { brand } = useAccount()
-  const atlas = isAtlasCompassNavVersion(params.get('version') ?? defaultDiscoverabilityVersionFor(brand))
+  /* ⚠ RESOLVED, NOT RAW — 2026-10-14, when End-to-End Demo became the default
+     and a bare `?demo=1` had to render Eric's page. See `resolveDashboardVersion`. */
+  const sectionVersion = resolveDashboardVersion(params.get('version'), brand)
+  const atlas = isAtlasCompassNavVersion(sectionVersion)
   /* Eric/Atlas WIP (2026-10-13, Eric's request): Quick Links as a RIGHT rail,
      with its Home's links — everything but the course's own Flashcards and
      Exam Simulator. The other Atlas versions keep the left column and all. */
   // WIP's page — and Eric/Atlas White's, a duplicate of it on a white page
   // (2026-10-14, Eric's request).
-  const wip = (params.get('version') === 'eric-atlas-v3' || isEricAtlasWhiteLike(params.get('version')))
-  const white = isEricAtlasWhiteLike(params.get('version'))
+  const wip = (sectionVersion === 'eric-atlas-v3' || isEricAtlasWhiteLike(sectionVersion))
+  const white = isEricAtlasWhiteLike(sectionVersion)
   const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
   /* The Home course's card opens the Compass course page; the P&C card is the
      demo's invented course, so it is not wired. */
@@ -2557,9 +2635,12 @@ const WIP_QUICK_LINKS: CSSProperties = { border: '1px solid color-mix(in srgb, v
    its left rail there (`wipCertificates`). The other versions keep all. */
 function CertificatesSection() {
   const [params] = useSearchParams()
+  const { brand } = useAccount()
+  // Resolved, not raw (2026-10-14) — as MyCoursesSection above.
+  const sectionVersion = resolveDashboardVersion(params.get('version'), brand)
   // WIP's page — and Eric/Atlas White's, a duplicate of it on a white page
   // (2026-10-14, Eric's request).
-  const wip = (params.get('version') === 'eric-atlas-v3' || isEricAtlasWhiteLike(params.get('version')))
+  const wip = (sectionVersion === 'eric-atlas-v3' || isEricAtlasWhiteLike(sectionVersion))
   const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
   return (
     <CertificatesPage
@@ -2582,9 +2663,9 @@ function CertificatesSection() {
       // other brands read the same tan.
       // …and WIP's (Toned) status bars in the guide's Secondary 200 (same day);
       // White keeps Secondary 300.
-      atlasBarColor={params.get('version') === 'eric-atlas-v3' ? 'var(--color-atlas-tan-200)' : undefined}
+      atlasBarColor={sectionVersion === 'eric-atlas-v3' ? 'var(--color-atlas-tan-200)' : undefined}
       atlasCardStyle={
-        isEricAtlasWhiteLike(params.get('version'))
+        isEricAtlasWhiteLike(sectionVersion)
           ? { background: 'var(--color-atlas-tan-100)', border: '1px solid var(--color-atlas-tan-200)' }
           : undefined
       }
@@ -2592,7 +2673,7 @@ function CertificatesSection() {
       // with a Secondary 300 stroke, its text and glyph Secondary 700
       // (2026-10-14, Eric's requests).
       atlasInProgressPill={
-        isEricAtlasWhiteLike(params.get('version'))
+        isEricAtlasWhiteLike(sectionVersion)
           ? {
               background: 'var(--color-atlas-tan-200)',
               border: '1px solid var(--color-atlas-tan-300)',

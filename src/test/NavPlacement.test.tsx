@@ -101,8 +101,34 @@ describe('nav-placement — the unified axis', () => {
   })
 
   it('OFF means `left` on the shipped versions…', () => {
-    renderTopNav('?ff=nav-placement:off')
+    /* ⚠ IT NAMES A VERSION NOW, AND IT HAD TO — 2026-10-06. It read
+       `?ff=nav-placement:off` with no `?version=` and relied on the brand
+       DEFAULT being a non-Atlas version to mean "a shipped version". That held
+       while the default was Testing 3 and expired the day Hybrid V1 took it:
+       `useNavPlacement` resolves the default now, so a bare URL IS an Atlas
+       version and correctly answers `top` — which is the sibling test below.
+
+       ⚠ THE SUBJECT IS UNCHANGED and is why the test survives rather than being
+       deleted: a shipped NON-Atlas version gets the left rail when the flag is
+       off. What changed is that the version has to be said out loud instead of
+       inherited, which is the same correction the production code took. */
+    renderTopNav('?ff=nav-placement:off&version=discoverability-testing-3')
     expect(placement()).toBe('left')
+  })
+
+  it('…and OFF on a bare URL follows the DEFAULT version, whatever it is', () => {
+    /* ⚠ THE REGRESSION THIS WHOLE PASS EXISTS FOR, pinned from the nav side.
+       With no `?version=` the placement must match what the brand default
+       ships — `top`, because that default is Hybrid V1. Before 2026-10-06
+       `useNavPlacement` read the raw param and answered `left` here, which put
+       a left rail under an Atlas top nav on every bare `?demo=1`.
+
+       ⚠ NOT ASSERTED AGAINST `defaultDiscoverabilityVersionFor`, deliberately:
+       a test that recomputes the answer from the function under test passes
+       whatever that function returns. When the default moves to a non-Atlas
+       version this flips to `left` and the move is what says so. */
+    renderTopNav('?ff=nav-placement:off')
+    expect(placement()).toBe('top')
   })
 
   it('…and `top` on the Atlas ones, because that is what THEY ship', () => {
@@ -150,8 +176,11 @@ describe('nav-placement', () => {
   })
 
   it('resolves to the shipped rail when the flag is switched OFF', () => {
-    /* Not to "no navigation". Off means the product as it ships. */
-    renderTopNav('?ff=nav-placement:off')
+    /* Not to "no navigation". Off means the product as it ships.
+       ⚠ NAMES THE VERSION since 2026-10-06 — see the fuller note on the twin of
+       this assertion above. A bare URL now resolves to the default, which is an
+       Atlas version and ships the top nav. */
+    renderTopNav('?ff=nav-placement:off&version=discoverability-testing-3')
     expect(screen.getByTestId('placement').textContent).toBe('left')
   })
 

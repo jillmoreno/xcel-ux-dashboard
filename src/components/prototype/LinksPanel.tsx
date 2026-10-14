@@ -70,6 +70,8 @@ import {
   type StoredLink,
 } from '@/data/linkStore'
 import { DEMO_BOARD } from '@/data/demoStore'
+import { RESEARCH_BOARD } from '@/data/researchStore'
+import { PRD_BOARD } from '@/data/prdStore'
 import { GeneratedThumb } from './GeneratedThumb'
 import { accentsByHost, hostKey, linkThumbKind } from './linkRowThumb'
 import { isPublicGateway } from '@/data/gatewayMode'
@@ -100,14 +102,14 @@ export type LinkBoardPresentation = {
    *
    * A FLAG rather than "every board gets one", because the two boards are not
    * the same kind of list. A Refinement row is a PLACE you go and look at —
-   * it earns a picture. Other Links is a bibliography: briefs, Figma files,
+   * it earns a picture. Resources is a bibliography: briefs, Figma files,
    * reference docs, most of them on hosts this repo knows nothing about, where
    * a tile derived from the URL would assert a kind it cannot actually read.
    */
   showThumb: boolean
   /**
    * Whether the Product control, its tag and the All / XCEL / Compass filter
-   * render. Refinement only — Other Links points at briefs and Figma files that
+   * render. Refinement only — Resources points at briefs and Figma files that
    * are not "a product's branch" at all, so the question does not apply there.
    */
   showProduct: boolean
@@ -115,7 +117,7 @@ export type LinkBoardPresentation = {
    * Whether the visibility, product and author facts render as BADGES under the
    * title instead of as a chip above it and a clause in the meta line.
    *
-   * Refinement only, and a flag rather than a rewrite because Other Links has
+   * Refinement only, and a flag rather than a rewrite because Resources has
    * one fact (its type) where Refinement has three — a badge row of one is just
    * a chip that moved, and `Links.test.tsx` pins the meta line's exact shape
    * including the missing-author case.
@@ -153,7 +155,7 @@ export type LinkBoardPresentation = {
    *
    * It is a PRESENTATION flag rather than something the strip decides for
    * itself, because the reason it is off is editorial in two different ways at
-   * once: Other Links is not about branches at all, and the public build must
+   * once: Resources is not about branches at all, and the public build must
    * never show branch names — `feat/drop-the-renewal-band` on a stakeholder's
    * screen is a roadmap they were never shown. The endpoint refuses there too
    * (see `netlify/functions/branches.ts`); this is the half of that a reader
@@ -1567,6 +1569,63 @@ export function LinksPanel() {
 }
 
 /**
+ * Research (2026-10-07): the evidence behind the decisions — studies, findings,
+ * rationale docs, surveys — authored on the page. Links' shape exactly (the
+ * type taxonomy, no public toggle, no product tag) because the request was the
+ * same one: attach a link without a code change. Authorable on BOTH sites, like
+ * Links, because the section is ungated and a stakeholder reading the research
+ * behind a decision is the point. See `researchStore.ts`.
+ */
+const RESEARCH_PRESENTATION: LinkBoardPresentation = {
+  board: RESEARCH_BOARD,
+  noun: 'link',
+  nounPlural: 'links',
+  showType: true,
+  showThumb: false,
+  showProduct: false,
+  showBadges: false,
+  showPublicToggle: false,
+  publicOnly: false,
+  readOnly: false,
+  emptyHint:
+    'Nothing here yet. Attach the studies, findings and rationale behind the designs — everything is added on the page, not in code.',
+  saveHint:
+    'Saved to the shared store — everyone who opens this site sees it, and it survives a cleared cache. The date is stamped for you.',
+}
+
+export function ResearchPanel() {
+  return <LinkBoardPanel p={RESEARCH_PRESENTATION} />
+}
+
+/**
+ * PRDs (2026-10-07): the product requirements documents the designs answer,
+ * authored on the page. Research's twin — Links' shape, its own store — and a
+ * section rather than a Type because "the brief", "the evidence" and
+ * "everything else" are three different questions a reviewer asks. See
+ * `prdStore.ts`.
+ */
+const PRD_PRESENTATION: LinkBoardPresentation = {
+  board: PRD_BOARD,
+  noun: 'link',
+  nounPlural: 'links',
+  showType: true,
+  showThumb: false,
+  showProduct: false,
+  showBadges: false,
+  showPublicToggle: false,
+  publicOnly: false,
+  readOnly: false,
+  emptyHint:
+    'Nothing here yet. Attach the PRDs and requirement docs the designs answer — everything is added on the page, not in code.',
+  saveHint:
+    'Saved to the shared store — everyone who opens this site sees it, and it survives a cleared cache. The date is stamped for you.',
+}
+
+export function PrdsPanel() {
+  return <LinkBoardPanel p={PRD_PRESENTATION} />
+}
+
+/**
  * Refinement (section id `demo`): the work-in-review inbox. Authorable on the
  * FULL site only; the public build renders it read-only and filtered to the
  * rows someone has flipped public. That asymmetry IS the review gate — see
@@ -1600,7 +1659,7 @@ export function DemoPanel({
     saveHint:
       'Saved to the shared store — the team sees it on the full site right away. The date is stamped for you.',
     // From `/?section=demo&add=1&url=…&title=…&note=…` — what
-    // `promote-to-refinement` opens. Refinement only: Other Links is authored
+    // `promote-to-refinement` opens. Refinement only: Resources is authored
     // by hand, so `LinksPanel` passes nothing.
     prefill,
     onPrefillConsumed,

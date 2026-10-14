@@ -449,9 +449,20 @@ describe('DemoControlsBar — the Dashboard Version control', () => {
     /* ⚠ THE SAME RESOLUTION `PlatformShell` USES. Reading only `?version=`
        would leave the label blank on the landing screen — the common case — or
        worse, name a version other than the one rendering. */
+    /* ⚠ THE NAME TRACKS `defaultDiscoverabilityVersionFor` AND HAS MOVED WITH
+       IT — Testing 3 until 2026-10-06, Hybrid V1 until 2026-10-08, the pacing
+       fork until 2026-10-14, Eric's End-to-End Demo since (`promote-to-prototype`,
+       each time). Spelled out rather than
+       read from that function: a test that recomputes the answer from the thing
+       it is checking passes whatever that thing returns, including a blank
+       label, which is the exact failure this pins.
+
+       ⚠ MATCHED ON THE FULL LABEL, not on "Hybrid" — the picker now holds TWO
+       versions whose names begin with it, and a loose matcher would pass
+       against either. */
     renderBar('/dashboard-rebrand')
     expect(
-      screen.getByRole('button', { name: /Dashboard version:\s*Testing 3/i }),
+      screen.getByRole('button', { name: /Dashboard version:\s*End-to-End Demo/i }),
     ).toBeTruthy()
   })
 })

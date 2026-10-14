@@ -1,5 +1,7 @@
 import type { CSSProperties } from 'react'
 import { X } from '@/icons'
+import { ProseFacts, ProseItem, ProseText } from './sheetProse'
+import { proseSectionStyle, proseSectionTitleStyle, proseListStyle } from './sheetProseStyles'
 import {
   jurisdictionName,
   type LicensingStep,
@@ -59,21 +61,42 @@ export function GetLicensedStepPanel({
         </button>
         <p style={eyebrowStyle}>Post-course process</p>
         <h2 style={titleStyle}>{step.title}</h2>
-        <p style={subStyle}>
-          {/* The OWNER leads, because it is the fact that makes this section
-              exist: nothing on these three steps happens inside the LMS. */}
-          {[step.owner, where ? `${where} licence` : null, step.fee]
-            .filter(Boolean)
-            .join(' · ')}
-        </p>
       </div>
 
       <div style={bodyStyle}>
         <p style={leadStyle}>{step.detail}</p>
+        {/* ⚠ THE META LINE BECAME A FACT ROW — 2026-10-07, the direct ask ("do
+            the same for How to apply and what to expect"), matching the
+            Requirements sheet it opens beside. It was "NY Dept. of Financial
+            Services · New York licence · $80 application fee" at 12px under
+            the title: three separate facts punctuated into one grey line, and
+            the FEE — the thing a learner is most likely to have come for —
+            had the least weight on the page.
+
+            ⚠ IT MOVED OUT OF THE PINNED HEADER AND INTO THE SCROLLING BODY.
+            The header is sticky and a three-cell row there would cost its
+            height on every scroll, for facts you read once.
+
+            ⚠ THE OWNER STILL LEADS, which is the point the old note made and
+            is worth keeping: nothing on these three steps happens inside the
+            LMS, and the first cell is what says so. */}
+        <div style={{ marginTop: 16 }}>
+          <ProseFacts
+            facts={[
+              { label: 'Handled by', value: step.owner },
+              ...(where ? [{ label: 'Jurisdiction', value: `${where} licence` }] : []),
+              ...(step.fee ? [{ label: 'Fee', value: step.fee }] : []),
+            ]}
+          />
+        </div>
         {step.sections?.map((section, i) => (
-          <section key={section.heading ?? `lead-${i}`} style={{ marginTop: i === 0 ? 18 : 22 }}>
-            {section.heading ? <h3 style={headingStyle}>{section.heading}</h3> : null}
-            <ul style={listStyle}>
+          /* ⚠ A HAIRLINE ABOVE EVERY SECTION, including the first — it is what
+             separates the rules from the lead and the fact row above them.
+             The old `marginTop: i === 0 ? 18 : 22` made the first section's
+             gap smaller than the rest for no reason a reader could see. */
+          <section key={section.heading ?? `lead-${i}`} style={proseSectionStyle}>
+            {section.heading ? <h3 style={proseSectionTitleStyle}>{section.heading}</h3> : null}
+            <ul style={proseListStyle}>
               {section.bullets.map((b) => (
                 <Bullet key={b.text} bullet={b} />
               ))}
@@ -97,43 +120,74 @@ export function GetLicensedStepPanel({
   )
 }
 
-function Bullet({ bullet }: { bullet: LicensingStepBullet }) {
+function Bullet({ bullet, nested }: { bullet: LicensingStepBullet; nested?: boolean }) {
   return (
-    <li style={itemStyle}>
-      <span>
-        {bullet.text}
-        {bullet.href ? (
-          <>
-            {' '}
-            {/* `.cre-cta-ink` and NO inline colour — the CTA ramp is a FILL
-                colour on XCEL and cta-500 as TEXT is 1.84:1 on the dark page,
-                so the class swaps to the light stop under `[data-theme='dark']`
-                and an inline value would beat it while looking right.
+    <ProseItem nested={nested}>
+      {/* ⚠ `ProseText`, so "Exam fee — $40" reads as a labelled fact rather than
+          a sentence fragment. Most entries in this data are written that way
+          and the page was throwing the structure away — see `splitLead` for
+          the guard that keeps it off the mid-sentence dashes. */}
+      <ProseText text={bullet.text} />
+      {bullet.href ? (
+        <>
+          {' '}
+          {/* ⚠ THE LINK IS LABELLED BY ITS HOST — 2026-10-07. It rendered the
+              raw `href`, and a 64-character DFS URL set in bold wrapped across
+              two lines and became the loudest thing on the sheet: most of the
+              "chaos" on step 3 was one link. The host is what a reader
+              actually checks before leaving the product, the full address is
+              still the `href`, and an entry that wants to say more sets
+              `linkLabel`.
 
-                New tab: these leave XCEL for PSI, DFS and NIPR, and a learner
-                mid-application should not lose the dashboard to a registration
-                flow. */}
-            <a
-              href={bullet.href}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="cre-link-action cre-cta-ink"
-              style={{ fontWeight: 700, overflowWrap: 'anywhere' }}
-            >
-              {bullet.linkLabel ?? bullet.href}
-            </a>
-          </>
-        ) : null}
-      </span>
+              `.cre-cta-ink` and NO inline colour — the CTA ramp is a FILL
+              colour on XCEL and cta-500 as TEXT is 1.84:1 on the dark page,
+              so the class swaps to the light stop under `[data-theme='dark']`
+              and an inline value would beat it while looking right.
+
+              New tab: these leave XCEL for PSI, DFS and NIPR, and a learner
+              mid-application should not lose the dashboard to a registration
+              flow. */}
+          <a
+            href={bullet.href}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="cre-link-action cre-cta-ink"
+            style={{ fontWeight: 700, overflowWrap: 'anywhere' }}
+          >
+            {bullet.linkLabel ?? hostLabel(bullet.href)}
+          </a>
+        </>
+      ) : null}
       {bullet.children && bullet.children.length > 0 ? (
-        <ul style={{ ...listStyle, marginTop: 8 }}>
+        <ul style={{ ...proseListStyle, marginTop: 7 }}>
           {bullet.children.map((c) => (
-            <Bullet key={c.text} bullet={c} />
+            <Bullet key={c.text} bullet={c} nested />
           ))}
         </ul>
       ) : null}
-    </li>
+    </ProseItem>
   )
+}
+
+/**
+ * The host of a URL, without the scheme or a leading `www.` — "dfs.ny.gov",
+ * "nipr.com", "test-takers.psiexams.com".
+ *
+ * ⚠ THE PATH IS DROPPED ON PURPOSE and the `href` keeps it, so the link still
+ * lands where it did. Keeping it was the problem: these paths run to
+ * "/apps_and_licensing/agents_and_brokers/home", which is not a thing anyone
+ * reads and is long enough to set the sheet's effective line length.
+ *
+ * ⚠ FALLS BACK TO THE WHOLE STRING. `URL` throws on anything it cannot parse,
+ * and a malformed entry should render as itself rather than vanish — the data
+ * file already records one URL that had to be corrected on the way in.
+ */
+function hostLabel(href: string): string {
+  try {
+    return new URL(href).hostname.replace(/^www\./, '')
+  } catch {
+    return href
+  }
 }
 
 /* ─── styles ──────────────────────────────────────────────────────────── */
@@ -171,12 +225,6 @@ const titleStyle: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 
-const subStyle: CSSProperties = {
-  margin: '4px 0 0',
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  color: 'var(--color-text-secondary)',
-}
 
 /* `flex: 1` + `overflow-y: auto` — the Sheet's body scrolls, and step 3's
    content is long enough to need it. */
@@ -194,30 +242,10 @@ const leadStyle: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 
-const headingStyle: CSSProperties = {
-  margin: '0 0 8px',
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  fontWeight: 700,
-  color: 'var(--color-text-primary)',
-}
-
-const listStyle: CSSProperties = {
-  margin: 0,
-  paddingLeft: 18,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 10,
-}
 
 
 
 
 
 
-const itemStyle: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  lineHeight: '19px',
-  color: 'var(--color-text-secondary)',
-}
+

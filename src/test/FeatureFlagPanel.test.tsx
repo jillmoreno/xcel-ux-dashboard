@@ -22,12 +22,19 @@ import { flagScopeForPath } from '@/components/account/FeatureFlagPanel'
  */
 /* ⚠ OWNED BY JILL TOO, ADDED 2026-10-05. The panel reads the owner off the
    ACTIVE VERSION and lists only that designer's flags (`ownedDefinitions`), and
-   these tests render with no `?version=` — so they land on the default, Testing
-   3, which is Jill's. Counting the whole catalog here counted Eric's four Atlas
-   flags as well, and every count assertion went out by four the moment they
-   were marked his. Derived rather than literal for the same reason the scope
-   filter is: the number is how the behaviour becomes observable, never the
-   subject. */
+   these tests rendered with no `?version=` — so they landed on the default,
+   Testing 3, which is Jill's. Counting the whole catalog here counted Eric's four
+   Atlas flags as well, and every count assertion went out by four the moment
+   they were marked his. Derived rather than literal for the same reason the
+   scope filter is: the number is how the behaviour becomes observable, never
+   the subject.
+
+   ⚠ AND THE DEFAULT IS ERIC'S SINCE 2026-10-14 (End-to-End Demo,
+   `promote-to-prototype`), so a bare `/dashboard-rebrand` now opens the panel
+   on HIS tab — `FlagPanelOwners.test.tsx` pins that. These tests are about
+   Jill's scope on the rebrand page, so they NAME one of her versions instead of
+   relying on the default being hers. */
+const JILL_REBRAND = '/dashboard-rebrand?version=hybrid-pacing'
 const ownedByJill = (f: { owner?: DesignerId }) => flagOwner(f) === 'jill'
 const REBRAND_SCOPED_COUNT = (() => {
   const scope = new Set(flagScopeForPath('/dashboard-rebrand') ?? [])
@@ -134,8 +141,8 @@ describe('FeatureFlagPanel — page selector', () => {
     // is still literal on purpose: they are small and stable, and a wrong one
     // should be visible in the diff.
     /* `ownedByJill` for the same reason as `REBRAND_SCOPED_COUNT` above — the
-       panel lists the ACTIVE VERSION's owner's flags, and no `?version=` means
-       Testing 3, which is hers. */
+       panel lists the ACTIVE VERSION's owner's flags, and `JILL_REBRAND` names
+       one of hers (the default has been Eric's since 2026-10-14). */
     const rebrandCount = FEATURE_FLAGS.filter(
       (f) =>
         ownedByJill(f) &&
@@ -165,7 +172,7 @@ describe('FeatureFlagPanel — page selector', () => {
   it('navigates back to the page selector via the back button', () => {
     // Drills into Dashboard Rebrand rather than Dashboard: the latter has no
     // flags left after the 2026-09-16 audit, so its card no longer renders.
-    renderDashboardWithPanel('/dashboard-rebrand')
+    renderDashboardWithPanel(JILL_REBRAND)
     act(() => {
       fireEvent.click(screen.getByRole('button', { name: 'open-panel' }))
     })
@@ -193,8 +200,8 @@ describe('FeatureFlagPanel — page selector', () => {
 })
 
 describe('FeatureFlagPanel — per-feature scope', () => {
-  it('scopes /dashboard-rebrand to its flags across four pages (no version param)', () => {
-    renderDashboardWithPanel('/dashboard-rebrand')
+  it('scopes /dashboard-rebrand to its flags across four pages (a Jill version named)', () => {
+    renderDashboardWithPanel(JILL_REBRAND)
     act(() => {
       fireEvent.click(screen.getByRole('button', { name: 'open-panel' }))
     })
@@ -228,7 +235,7 @@ describe('FeatureFlagPanel — per-feature scope', () => {
   })
 
   it('does not offer the removed / KPI-band flags in the Dashboard Rebrand scope', () => {
-    renderDashboardWithPanel('/dashboard-rebrand')
+    renderDashboardWithPanel(JILL_REBRAND)
     act(() => {
       fireEvent.click(screen.getByRole('button', { name: 'open-panel' }))
     })
@@ -267,7 +274,7 @@ describe('FeatureFlagPanel — per-feature scope', () => {
     // render site since), so by the 2026-09-16 audit the flag's only surviving
     // effect was a condition inside `dashboard-clp-fullwidth`'s secondary axis —
     // which went with it.
-    renderDashboardWithPanel('/dashboard-rebrand')
+    renderDashboardWithPanel(JILL_REBRAND)
     act(() => {
       fireEvent.click(screen.getByRole('button', { name: 'open-panel' }))
     })
@@ -412,7 +419,7 @@ describe('FeatureFlagPanel — the 2026-09-16 XCEL flag audit', () => {
       'cgp.featureFlags',
       JSON.stringify({ 'nav-gray-scale': { enabled: false } }),
     )
-    renderDashboardWithPanel('/dashboard-rebrand')
+    renderDashboardWithPanel(JILL_REBRAND)
     act(() => {
       fireEvent.click(screen.getByRole('button', { name: 'open-panel' }))
     })
@@ -439,7 +446,7 @@ describe('FeatureFlagPanel — collapsible groups', () => {
    * group across several flag pages wants it collapsed on all of them.
    */
   const openRebrandPanel = () => {
-    renderDashboardWithPanel('/dashboard-rebrand')
+    renderDashboardWithPanel(JILL_REBRAND)
     act(() => {
       fireEvent.click(screen.getByRole('button', { name: 'open-panel' }))
     })

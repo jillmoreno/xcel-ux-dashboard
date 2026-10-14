@@ -31,8 +31,12 @@ mirror to keep in step. See "The six prototype pages" below. `xcel-admin-tool.ht
 was always the exception with no upstream — now nothing has one.
 
 Same class of problem, unchanged from the siblings: any authored count with no
-array behind it. `RESEARCH_DECISIONS` is 0 here because XCEL has no decisions
-log; nothing derives it and nothing warns when that stops being true.
+array behind it. `RESEARCH_DECISIONS` was the example here — 0 because XCEL had
+no decisions log, with nothing to derive it and nothing to warn when that
+stopped being true. It went on 2026-10-07 when Research became a board
+authored on the page (`docs/gateway.md`, "Research is a board too"); the count
+is live now, like Resources'. The rot it illustrated is still the thing to
+watch for, so the references below keep its name.
 
 
 ## The six prototype pages (`public/prototypes/`)

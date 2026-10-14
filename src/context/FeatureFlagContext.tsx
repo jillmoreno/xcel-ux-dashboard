@@ -706,13 +706,36 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Exam card — background',
     description:
-      'The GROUND the `ask-first` exam card sits on. `white` is the default and is what ships \u2014 the card carries no background of its own, so it takes `--color-surface-card` like every other widget in the column. `tint` fills it with the SELECTED RAIL ITEM\u2019s colour, which is what makes the pair worth comparing: that colour already means \u201cthis is where you are\u201d in this product, so putting it behind the exam card says the card is the live one rather than merely another widget. \u26a0 THE TINT IS BOUND TO THE RAIL\u2019S OWN TOKEN, not a copied hex \u2014 `color-mix(in srgb, var(--color-nav-icon-active-primary) 12%, \u2026)`, so the two cannot drift apart if the rail\u2019s colour is ever retuned. The STRENGTH is deliberately half the rail\u2019s 24%: the two do the same job at very different sizes, and what reads as a selection on a 40px nav row reads as a coloured panel across a whole card. It composites over `--color-surface-card` rather than `transparent` (which is what the rail does) because the card has its own white ground and the page behind it is grey \u2014 mixing to transparent would let that grey through and land a different colour from the rail it is quoting. Variant-only.',
+      'The GROUND the `ask-first` exam card sits on. `white` is the default and is what ships \u2014 the card carries no background of its own, so it takes `--color-surface-card` like every other widget in the column. `tint` fills it with the SELECTED RAIL ITEM\u2019s colour, which is what makes the pair worth comparing: that colour already means \u201cthis is where you are\u201d in this product, so putting it behind the exam card says the card is the live one rather than merely another widget. `outline` is the third answer and the only one that is not a fill \u2014 no ground, a hairline border, and NO SHADOW, because an elevation under a transparent card is a shadow cast by nothing. \u26a0 THE TINT IS BOUND TO THE RAIL\u2019S OWN TOKEN, not a copied hex \u2014 `color-mix(in srgb, var(--color-nav-icon-active-primary) 12%, \u2026)`, so the two cannot drift apart if the rail\u2019s colour is ever retuned. The STRENGTH is deliberately half the rail\u2019s 24%: the two do the same job at very different sizes, and what reads as a selection on a 40px nav row reads as a coloured panel across a whole card. It composites over `--color-surface-card` rather than `transparent` (which is what the rail does) because the card has its own white ground and the page behind it is grey \u2014 mixing to transparent would let that grey through and land a different colour from the rail it is quoting. Variant-only.',
     maturity: 'wip',
     defaultEnabled: true,
+    /* ⚠ STAYS `white`, AND THE ATTEMPT TO PROMOTE `outline` IS THE NOTE.
+       2026-10-08: the pacing fork became the baseline and its side column is
+       drawn as outlined cards, so `outline` looked like the obvious promotion.
+       It is not — this flag has NO `versions` scope, so flipping its default
+       gives EVERY version a bordered exam card, and `Testing3Version.test.tsx`
+       says exactly what that costs: "a border added to the SHARED shell would
+       silently reverse their own 2026-09-21 'remove stroke' ask" for Testing,
+       Testing 2 and Testing 3.
+
+       So the pacing version gets its outline BY CONSTRUCTION instead — it hands
+       `ExamScheduleWidget` its own `SIDE_CARD` shell without the lifted
+       override, the same bordered-and-unfilled shell its Quick Links card uses.
+       The version's own column decides how the version's own column looks; the
+       flag stays what it was, the axis for comparing a ground across versions. */
     defaultVariant: 'white',
     variants: [
       { value: 'white', label: 'White (no background)' },
       { value: 'tint', label: 'Light blue — the selected-rail wash' },
+      /* ⚠ `outline` ADDED 2026-10-07, the direct ask. The third answer to the
+         same question and the only one that is not a FILL: no ground at all, a
+         hairline instead, so the card reads as an outlined region of the page
+         rather than a panel sitting on it. ⚠ IT ALSO DROPS THE SHADOW, which
+         is not decoration — an elevation under a transparent card is a shadow
+         cast by nothing, and it is the giveaway that makes an outline-only
+         treatment look broken. Additive: `white` is still the default, so no
+         version moves until someone picks this. */
+      { value: 'outline', label: 'Outline only — no fill' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -1302,6 +1325,180 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'hybrid-course-expiry',
+    /* HOW CLOSE THE ACCESS DEADLINE IS — 2026-10-07, the direct ask for a demo
+       control showing the course expiring, nearly expired, and expired.
+
+       ⚠ IT OVERRIDES THE DATE, NOT JUST THE COLOUR, and it has to. "Access ends
+       June 11" over an amber warning icon is a contradiction: the whole claim
+       of the amber state is that the date is CLOSE. Each arm restates the date
+       from `today`, so the wording, the colour and the icon agree.
+
+       ⚠ `expired` IS THE ONLY ARM THAT LEAVES THE LINE. It greys the product
+       and makes it unclickable — see `[data-course-expired]` in tokens.css. The
+       greyscale lands on `.min-h-screen`, the app root INSIDE the prototype
+       chrome, deliberately: greying the whole document would also grey the
+       design bar this control lives on, and making THAT unclickable would trap
+       a designer in the state with no way out.
+
+       ⚠ NOTHING IS CLICKABLE IN `expired` "for now" — the ask's own words. It
+       is `pointer-events: none`, which stops the mouse and NOT the keyboard; a
+       tab-through still reaches every control. Real expiry handling is a
+       product decision — what CAN you still do, renew, view certificates? — and
+       this arm exists to ask that question rather than to answer it. */
+    surface: 'design',
+    owner: 'jill',
+    versions: ['hybrid-pacing'],
+    group: 'Widgets',
+    label: 'Course expiration',
+    description:
+      'The access deadline\u2019s urgency on Hybrid \u2014 Pacing Exploration, and the state of the screen under it. `Normal` (default) is the real date in grey. `Ending soon` is inside seven days \u2014 amber with a warning triangle. `Ends in 2 days` is amber\u2019s next step \u2014 red with a calendar-exclamation. `Expired` turns the line charcoal and puts the whole product into greyscale with nothing clickable. \u26a0 EACH ARM RESTATES THE DATE from today, because a colour saying "close" over a date two months out is a contradiction. \u26a0 The greyscale covers the APP, not the prototype bars \u2014 otherwise the control that sets this would be greyed and unclickable too.',
+    defaultEnabled: true,
+    defaultVariant: 'normal',
+    variants: [
+      { value: 'normal', label: 'Normal', maturity: 'ready' },
+      { value: 'soon', label: 'Ending soon (under 7 days)', maturity: 'ready' },
+      { value: 'urgent', label: 'Ends in 2 days', maturity: 'ready' },
+      { value: 'expired', label: 'Expired', maturity: 'ready' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'hybrid-pace-standing',
+    /* HOW THE LEARNER IS DOING AGAINST THEIR GOAL — 2026-10-07, the direct ask
+       for "a demo tool that shows Pacing goals and include On Track, Off Track
+       and all the other possible messaging we need to give the users".
+
+       ⚠ IT FORCES A STATE, IT DOES NOT MEASURE ONE, and that is deliberate
+       rather than a shortcut. `studyPace` already has the real machinery —
+       `weekStanding` and `observedPace` — and both need `weekMinutes`, a
+       seven-day fixture of what was actually studied, which this home is never
+       handed. Wiring that through is a separate and much larger job; what a
+       copy exploration needs first is every message on screen side by side, and
+       a forced state is the only way to see the ones a fixture does not reach.
+
+       ⚠ SO THE HOURS FIGURE IS SCENARIO DATA, derived from the chosen arm
+       against the goal's own `minsPerWeek` rather than from anything observed.
+       It moves with the pace the learner picked, so the two numbers in the
+       sentence are always consistent with each other — but it is NOT a reading
+       of behaviour and must not be presented to a stakeholder as one.
+
+       ⚠ THE ARMS ARE THE MESSAGES, which is why there are five and not three.
+       "Behind" and "off track" are different things to say — one is a nudge the
+       learner can act on this week, the other is an admission the goal no
+       longer fits and sends them to the Study Plan. Collapsing them was the
+       first draft and it lost the only message that has an action attached. */
+    surface: 'design',
+    owner: 'jill',
+    versions: ['hybrid-pacing'],
+    group: 'Widgets',
+    label: 'Pacing standing',
+    description:
+      'Which standing Hybrid \u2014 Pacing Exploration reports against the study goal, and therefore which message the pace panel shows. `On track` (default) is the shipped case. `Ahead` finishes early. `Behind` is a gap the learner can still close this week. `Off track` says the goal no longer fits and sends them to the Study Plan \u2014 the only arm with an action attached. `No data yet` is the first week, before there is an average to report. \u26a0 FORCED, NOT MEASURED: the hours figure is derived from the arm against the goal\u2019s own weekly minutes, so the two numbers agree \u2014 it is not a reading of behaviour. In-progress only; at 0% the panel asks for a pace instead.',
+    defaultEnabled: true,
+    defaultVariant: 'on-track',
+    variants: [
+      { value: 'on-track', label: 'On track', maturity: 'ready' },
+      { value: 'ahead', label: 'Ahead of goal', maturity: 'ready' },
+      { value: 'behind', label: 'Behind — recoverable', maturity: 'ready' },
+      { value: 'off-track', label: 'Off track — adjust the goal', maturity: 'ready' },
+      { value: 'no-data', label: 'No data yet', maturity: 'ready' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'hybrid-title-lesson',
+    /* THE CURRENT LESSON AS A LINE UNDER THE COURSE TITLE — 2026-10-07, the
+       direct ask, and the counterpart to `hybrid-lesson-block` beside it.
+
+       ⚠ THE TWO ARE THE SAME FACT IN TWO PLACES, which is the comparison they
+       exist to make. The journey block names the lesson where the learner is
+       in the LIST; this names it beside Resume Course, where the action is. Off
+       in the journey and on here is the pairing this version ships with, so the
+       lesson is stated once and next to the button that opens it.
+
+       ⚠ BOTH ON IS A VALID STATE AND IS NOT A DEFECT — it is what you set to
+       see whether the repetition reads as reinforcement or as noise. Both off
+       is valid too: the stop keeps "26 of 42 Completed" either way, so the
+       screen still says where the learner is, just not which lesson.
+
+       ⚠ IN PROGRESS ONLY. At 0% there is no lesson in progress to name, and the
+       title area carries Begin Course rather than Resume — see `showLesson`. */
+    surface: 'design',
+    owner: 'jill',
+    versions: ['hybrid-pacing'],
+    group: 'Widgets',
+    label: 'Lesson line under title',
+    description:
+      'Whether Hybrid \u2014 Pacing Exploration names the lesson in progress on one line under the course title, above Course Overview and Resume Course. ON by default as of 2026-10-07, as the replacement for the journey\u2019s lesson block (`hybrid-lesson-block`, off). \u26a0 THE TWO CAN BOTH BE ON \u2014 that is the comparison, not a bug. \u26a0 In-progress only: at 0% there is no lesson to name and the button beside it reads Begin Course.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'hybrid-lesson-block',
+    /* THE CURRENT LESSON UNDER THE COUNTED STOP — 2026-10-07, the direct ask:
+       "is showing this here triggered by a feature flag? if not - i want to put
+       it behind a feature flag and hide it."
+
+       It was not. The block was gated on DATA alone (`showLesson` — started, a
+       count above zero, a count below the total), which is right for "is there
+       a lesson to name" and says nothing about "should we name it". This is the
+       second question, and it now has a switch.
+
+       ⚠ OFF BY DEFAULT, WHICH IS THE ASK AND IS ALSO THE INVERTED DIRECTION
+       this catalog normally avoids — `hybrid-quick-links-style` next door
+       argues that an unset flag should render what the version ships. The
+       difference is that here "hidden" IS what the version ships from today;
+       the flag exists to bring the block BACK for comparison, not to take it
+       away. If the block is ever restored as the default, flip
+       `defaultEnabled` and the test below rather than inverting the read.
+
+       ⚠ SCOPED TO THE PACING FORK, and deliberately not to Hybrid V1. V1 is
+       the Prototypes baseline as of 2026-10-06 — what a stakeholder lands on —
+       and `HybridHomeV1.tsx` does not read this flag at all, so no default
+       here can reach it. Hiding the block there is a separate decision about
+       the product. */
+    surface: 'design',
+    owner: 'jill',
+    versions: ['hybrid-pacing'],
+    group: 'Widgets',
+    label: 'Current lesson block',
+    description:
+      'Whether Hybrid \u2014 Pacing Exploration names the lesson in progress under the Pre-Licensing Lessons stop \u2014 the eyebrow ("Lesson 27 \u00b7 About 18 minutes"), the chapter title, and the hover row that resumes the course. OFF by default as of 2026-10-07. \u26a0 THE STOP\u2019S OWN COUNT IS NOT AFFECTED: "26 of 42 Completed" stays either way, so what this hides is the NAMING of the current lesson and the second way into the course, not the progress. \u26a0 It has no effect where there is no lesson to name \u2014 before the first one, or once the count reaches the total.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'hybrid-quick-links-style',
+    /* HYBRID V1'S QUICK LINKS SHAPE — 2026-10-05, the direct ask: bring back
+       the tile treatment and put both within reach.
+
+       ⚠ ITS OWN FLAG, NOT `home-tile-style`. That one drives Testing 3's
+       `HomeTileGrid`, and a flag is GLOBAL STATE however the bar scopes the
+       control — flipping it here to look at Hybrid would have silently
+       reshaped Testing 3's rail too. Two versions asking the same question is
+       not a reason to share the answer.
+
+       ⚠ `rows` IS THE DEFAULT so an unset flag is the shape the version ships
+       with; `=== 'tiles'` is the opt-in, the same direction `home-tile-style`
+       chose and for the same reason — an inverted test makes "no decision"
+       render as a decision. */
+    surface: 'design',
+    owner: 'jill',
+    versions: ['hybrid-v1'],
+    group: 'Widgets',
+    label: 'Quick Links shape',
+    description:
+      'How Hybrid V1\u2019s Quick Links card draws its seven destinations. `Rows` (default) is the stacked list with an icon, a label and a hover-revealed chevron. `Tiles` is the square, outlined treatment \u2014 two across, icon over label, filling on hover. ⚠ THE SAME SEVEN IN THE SAME ORDER WITH THE SAME HANDLERS either way; only the shape changes, which is what makes the two comparable. ⚠ Six squares two-across is a TALL block, so the thing to judge is what it does to the length of the right column, not the tiles themselves.',
+    defaultEnabled: true,
+    defaultVariant: 'rows',
+    variants: [
+      { value: 'rows', label: 'Rows — stacked list', maturity: 'ready' },
+      { value: 'tiles', label: 'Tiles — square, outlined', maturity: 'ready' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-brand-skin',
     /* ERIC'S BRAND SKIN, ON THE DESIGN BAR — 2026-10-05, converted the same way
        as `atlas-heading-font` beside it and for the same reason: brand COLOURS
@@ -1325,11 +1522,31 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        same caveat applies to `atlas-heading-font` below. Worth a real
        dependency if a third control ever joins them.
 
-       ⚠ `?skin=` STILL WINS WHEN PRESENT, as an alias. */
+       ⚠ `?skin=` STILL WINS WHEN PRESENT, as an alias.
+
+       ⚠ `hybrid-pacing` JOINED THE SCOPE 2026-10-08, the direct ask ("I want to
+       bring in the brand colour concept Eric was using"). Nothing about the
+       MECHANISM changed, and that is the point: Hybrid answers
+       `isAtlasCompassNavVersion`, so `PlatformShell` was already mirroring
+       `data-atlas-palette` and `data-atlas-brand` on it, and the Hybrid home's
+       own `--color-compass-page-button` already resolves through the brand
+       ramps these skins re-point. Checked in the browser before the edit:
+       `?skin=cre` on `hybrid-pacing` re-dressed the logo, the CTAs and the nav
+       pills with no code at all. The `versions` list was the only thing holding
+       the CONTROL off that bar.
+
+       ⚠ SHARED, NOT FORKED. A second flag of Jill's own would be two controls
+       writing one `data-atlas-brand`, and the skins would drift apart the first
+       time Eric retuned a ramp. `owner` stays `eric` — it is his control and
+       his palette; the `versions` list is what decides whose BAR it appears on,
+       which is exactly the split the note at `atlas-heading-font` below
+       records. The default (`global`) is what Hybrid already rendered, so
+       nothing moves until someone picks another. */
     surface: 'design',
     owner: 'eric',
     // V3 left on 2026-10-09 for its own copy, `atlas-brand-skin-v3`, below.
-    versions: ['eric-atlas-v1', 'eric-atlas-v2', 'discoverability-atlas-compass-nav'],
+    // Hybrid - Pacing Exploration joined on main, 2026-10-08 (see above).
+    versions: ['eric-atlas-v1', 'eric-atlas-v2', 'discoverability-atlas-compass-nav', 'hybrid-pacing'],
     group: 'Widgets',
     label: 'Brand',
     description:
@@ -1338,6 +1555,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // XCEL loads first (2026-10-06, Eric's request). Global leads the list
     // since 2026-10-08 (Eric: "move the global brand to the first item"),
     // with XCEL second — the order moved, the default did not.
+    /* ⚠ KEPT AT XCEL ON THE 2026-10-14 PROMOTION, knowingly. The baseline
+       (End-to-End Demo) reads `atlas-brand-skin-v3`, not this, so this default
+       decides how HYBRID looks when a stakeholder picks it from the menu —
+       XCEL now, Global before the merge. Jillienne chose to let it change
+       rather than give Hybrid its own copy; `?skin=global` restores the
+       old look on any link. */
     defaultVariant: 'xcel',
     variants: [
       { value: 'global', label: 'Atlas' },
@@ -1346,6 +1569,16 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'cre', label: 'Colibri Real Estate' },
       { value: 'mckissock', label: 'McKissock Learning' },
       { value: 'elite', label: 'Elite Learning' },
+      /* ⚠ PALETTES, NOT BRANDS — 2026-10-08, the direct ask. The five above are
+         Colibri companies and swap the LOGO as well as the colours; these four
+         are colour palettes with no company behind them, so the page keeps
+         whichever logo it had. `AtlasPaletteSkin` in `atlasBrandSkin.ts` marks
+         the split, and `Logo` asks `SKIN_LOGOS` whether a skin has artwork
+         rather than listing the ones that do not. */
+      { value: 'grasslands', label: 'Grasslands' },
+      { value: 'everglade', label: 'Everglade' },
+      { value: 'harbor', label: 'Harbor' },
+      { value: 'marigold', label: 'Marigold' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -1374,6 +1607,18 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'cre', label: 'Colibri Real Estate' },
       { value: 'mckissock', label: 'McKissock Learning' },
       { value: 'elite', label: 'Elite Learning' },
+      // The four palettes (main, 2026-10-08) — same list as `atlas-brand-skin`,
+      // kept on both controls so the two Brand dropdowns never differ.
+      /* ⚠ PALETTES, NOT BRANDS — 2026-10-08, the direct ask. The five above are
+         Colibri companies and swap the LOGO as well as the colours; these four
+         are colour palettes with no company behind them, so the page keeps
+         whichever logo it had. `AtlasPaletteSkin` in `atlasBrandSkin.ts` marks
+         the split, and `Logo` asks `SKIN_LOGOS` whether a skin has artwork
+         rather than listing the ones that do not. */
+      { value: 'grasslands', label: 'Grasslands' },
+      { value: 'everglade', label: 'Everglade' },
+      { value: 'harbor', label: 'Harbor' },
+      { value: 'marigold', label: 'Marigold' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -1410,6 +1655,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     defaultEnabled: true,
     // Playfair 2 is the face a fresh demo loads (2026-10-07, Eric's request);
     // Source Serif 4 was from 2026-10-06, DM Serif Display before that.
+    /* ⚠ REACHES PROTOTYPES SINCE 2026-10-14 — `promote-to-prototype`. End-to-End
+       Demo is the baseline and reads this default (its own bar hides the
+       control), so Playfair 2 is what a stakeholder's `?demo=1` renders. The
+       flag has ONE default, so Hybrid takes Playfair 2 too when picked — DM
+       Serif Display before the merge; decided, not drifted. */
     defaultVariant: 'playfair-2',
     // Playfair 2 heads the list and is the default (2026-10-07, Eric's
     // request); every other face stays in the dropdown.

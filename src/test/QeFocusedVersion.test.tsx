@@ -267,6 +267,16 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
       // Eric/Atlas V1 came off the picker 2026-10-12 (still renders by link).
       // Eric/Atlas V2 (2026-10-07) — V1 with its own copy of the Home page.
       'eric-atlas-v2',
+      /* ⚠ HYBRID V1 JOINED 2026-10-05 — Jill's, and it sits after the two Atlas
+         entries because it is built FROM them: it takes the Atlas chrome and
+         forks only the home. Reading the picker top to bottom is the lineage. */
+      'hybrid-v1',
+      /* ⚠ AND ITS COPY, 2026-10-07 — "Hybrid - Pacing Exploration", directly
+         behind the version it was forked from, for the same lineage reason
+         Testing 3 sits behind Testing. It is identical to `hybrid-v1` today
+         apart from which home component it draws; the fork exists so pacing
+         ideas cannot reach the baseline. */
+      'hybrid-pacing',
       'discoverability-learner-focused',
     ])
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).not.toContain(
@@ -1388,14 +1398,22 @@ describe('the Get Licensed section', () => {
        
        So the assertion moves to where the link lives: the sheet. What it still
        pins is unchanged — one confirmed destination, opening in a new tab, and
-       no invented href anywhere. */
+       no invented href anywhere.
+
+       ⚠ MATCHED ON `href`, NOT ON THE LINK'S TEXT — 2026-10-07. It read the
+       accessible NAME, which was the raw URL until the step sheets started
+       labelling links by host ("test-takers.psiexams.com") to stop a
+       64-character address setting the sheet's line length. The destination is
+       what this test is about; the label is presentation and is free to
+       change. */
     const { container } = renderShell(QE_URL)
     fireEvent.click(
       within(container).getByRole('button', { name: new RegExp(withHref[0].title, 'i') }),
     )
-    const link = within(screen.getByRole('dialog')).getByRole('link', {
-      name: new RegExp(withHref[0].href!.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'),
-    })
+    const link = within(screen.getByRole('dialog'))
+      .getAllByRole('link')
+      .find((a) => a.getAttribute('href') === withHref[0].href)!
+    expect(link).toBeTruthy()
     expect(link).toHaveAttribute('target', '_blank')
     expect(link).toHaveAttribute('rel', expect.stringContaining('noreferrer'))
   })

@@ -61,9 +61,11 @@ component detail; **ask Jillienne for it, never draft it** — see
 ## The home page (`/`)
 
 [`UxDashboardPage.tsx`](src/pages/UxDashboardPage.tsx) — a left nav over a
-project list. Unchanged from the LMS original apart from three strings (the
-brand sub-line, the Research row label, `RESEARCH_DECISIONS`), so anything the
-LMS `CLAUDE.md` says about it holds here.
+project list. Unchanged from the LMS original apart from two strings (the
+brand sub-line, the Research row label) and, since 2026-10-07, the Research
+section itself — a board, see below — so anything the LMS `CLAUDE.md` says
+about it holds here. (`RESEARCH_DECISIONS`, the hand-authored count the LMS
+original carries, is gone with the empty state it counted for.)
 
 **Sections.** Six open, under three eyebrows added 2026-09-23 for the public
 Demo build — **Demo** (Prototypes), **Design & Research** (Refinement · Other
@@ -169,8 +171,11 @@ older notes that say "the Demo row" or "the Demo baseline" mean this section.
 (`?section=demo`, the `demos` store, `/api/demos`, `DemoPanel`, `Demo.test.tsx`).
 It was labelled Demo for a few hours and renamed at Jillienne's request —
 Refinement is what happens there — and the id was kept so nothing churned.
-Likewise "Other Links" is section id `links`. Read `demo` in code as
-Refinement. Its Add button says **"Add link"**, the same verb as Other Links,
+Likewise "Resources" is section id `links` — it was labelled "Other Links"
+from 2026-09-18 until 2026-10-07, when Research and PRDs became boards and
+"Other" stopped saying which of three siblings this was; older notes that say
+Other Links mean this section. Read `demo` in code as Refinement.
+Its Add button says **"Add link"**, the same verb as Resources,
 because what a designer adds IS a link (to their branch); the two boards are
 told apart by the public toggle and the Type field, not the verb.
 
@@ -209,6 +214,54 @@ false`), so a Links record cannot quietly acquire one. Demo has no `type` for
 the mirror reason. The client type `StoredLink` carries both fields for both
 boards and normalises the absent one, so a consumer never asks which board a
 record came from.
+
+### Research is a board too (2026-10-07)
+
+**The Research section is the THIRD instance of the same board** — section id
+`research`, the `research` Blobs store, `/api/research`
+(`netlify/functions/research.ts`), `researchStore.ts`, `ResearchPanel` in
+`LinksPanel.tsx`, `Research.test.tsx`. Jillienne asked for it to work like
+Resources, and it is Links' shape exactly: the Type taxonomy, no public
+toggle, no product tag, authorable on both sites. What the rows MEAN is the
+difference — a Links row is "everything that lives elsewhere"; a Research row
+is a study, a finding, a survey, a rationale doc: the evidence behind a
+decision. Ungated, like Links, because a stakeholder reading that evidence is
+the point.
+
+Before this the section was an authored empty state ("No decisions log yet")
+and `/research-rationale` iframed the LMS's own decisions log out of
+`public/research-rationale/` — a document that was never XCEL's. The route
+now redirects into `/?section=research`, the same shape as `/links`. The HTML
+is still in the repo, unreferenced, at `public/archive/research-rationale-
+index.html` — **moved, not just unwired**, because a folder with an index page
+under `public/` is served by vite and by Netlify ahead of the SPA fallback, so
+left in place it answered `/research-rationale` itself and the redirect never
+ran. The `research-rationale-iframe` row in `archivedItems.ts` says how to
+bring the old arrangement back without stranding what the team has attached.
+
+**The one shared-code change was a regex.** `linkBoardHandler` strips the path
+up to the segment with `^.*\/segment\/?`, and with a greedy `.*` the
+Research board's `/api/research/research-001` matched through the first
+`/research/` and treated the id's own `research` as the segment, leaving
+`-001` — a 400 on every single-record request. Links and Demo never hit it
+because `link` ≠ `links`. It is `.*?` now, and `Research.test.tsx` drives the
+real handler over a mocked store to pin it.
+
+### PRDs is the fourth (2026-10-07, same day)
+
+Section id `prds`, the `prds` Blobs store, `/api/prds`
+(`netlify/functions/prds.ts`, ids `prd-NNN`), `prdStore.ts`, `PrdsPanel` in
+`LinksPanel.tsx`, the `/prds` door (`PrdsPage.tsx`), `Prds.test.tsx`.
+Research's twin in every mechanical respect — Links' shape, no public toggle,
+ungated — and a separate SECTION rather than a Type on Resources because
+"the brief", "the evidence" and "everything else" are three different
+questions a reviewer asks, and a filter pill is not an answer to "where are
+the PRDs". It sits directly after Resources in the rail; the Links suite
+pins the four sections before it and `Prds.test.tsx` pins the one after.
+
+So the Design & Research group is now Refinement · Research · Resources ·
+PRDs, all four boards over one handler and one panel. Adding a fifth is the
+same seven files; nothing shared should need to change.
 
 **Why a branch is reviewable at all: branch deploys.** A designer sets their
 flag's default ON on their branch, pushes, and
@@ -346,7 +399,7 @@ token, so there is nothing to call with. (2) `VITE_GATEWAY_MODE=public` makes
 the endpoint **404 outright**. One would be enough right up until someone sets
 the Blobs vars on the public project to share a store, which is a reasonable
 thing to do and would silently switch (1) off. `showBranches` on the
-presentation is the client half — Other Links is not about branches either.
+presentation is the client half — Resources is not about branches either.
 
 **Config, and the fallback is the point.** `NETLIFY_API_TOKEN` +
 `NETLIFY_SITE_ID` (the site whose BRANCH DEPLOYS these are — the **public** one,
@@ -372,7 +425,7 @@ dropped, so a designer who cannot find their branch can see why.
 
 `Branches.test.tsx` pins the selection rules, that Add writes nothing, that the
 note stays empty and the toggle off, the absence on the public build and on
-Other Links, and both halves of the public-build guard at source. The pure
+Resources, and both halves of the public-build guard at source. The pure
 selection logic is `netlify/lib/branchDeploys.ts` — split out so a test can
 reach it without a network or a token, the same split `linkBoard.ts` makes by
 exporting `validateRecord`.

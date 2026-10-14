@@ -588,13 +588,14 @@ describe('the Links section on the gateway', () => {
     mockEndpoint([])
     renderDashboard()
 
-    await user.click(screen.getByRole('button', { name: /^Other Links/ }))
+    await user.click(screen.getByRole('button', { name: /^Resources/ }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(await screen.findByRole('heading', { level: 1, name: 'Other Links' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Resources' })).toBeInTheDocument()
 
-    // Position: Prototypes · Refinement · Research · Other Links, in that
-    // order (Research moved above Other Links 2026-09-29). What this assertion
-    // is actually FOR is unchanged by that: Other Links has to sit inside the
+    // Position: Prototypes · Refinement · Research · Resources, in that
+    // order (Research moved above it 2026-09-29; it was labelled "Other
+    // Links" until 2026-10-07). What this assertion
+    // is actually FOR is unchanged by that: Resources has to sit inside the
     // open group, above the gated pipeline sections — the argument being that
     // it belongs with the front door, not behind the password.
     const labels = screen
@@ -602,7 +603,7 @@ describe('the Links section on the gateway', () => {
       .map((b) => b.textContent?.replace(/\d+$/, '').trim())
     const protoAt = labels.indexOf('Prototypes')
     expect(protoAt).toBeGreaterThanOrEqual(0)
-    expect(labels.slice(protoAt, protoAt + 4)).toEqual(['Prototypes', 'Refinement', 'Research', 'Other Links'])
+    expect(labels.slice(protoAt, protoAt + 4)).toEqual(['Prototypes', 'Refinement', 'Research', 'Resources'])
   })
 
   it('a deep link into the section opens it', async () => {
@@ -630,7 +631,7 @@ describe('the Links section on the gateway', () => {
     renderDashboard('/?section=links')
 
     const badge = () =>
-      screen.getByRole('button', { name: /^Other Links/ }).textContent?.replace(/\D/g, '')
+      screen.getByRole('button', { name: /^Resources/ }).textContent?.replace(/\D/g, '')
     await waitFor(() => expect(badge()).toBe('0'))
 
     await openComposer(user)

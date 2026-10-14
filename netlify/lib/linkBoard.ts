@@ -3,10 +3,11 @@
  *
  * Links (2026-09-10) was the first. Demo (2026-09-18) is the second — the same
  * shape (title · url · note · addedBy · date) plus one field Links does not
- * have, `isPublic`, and minus one it does (`type`). Two hand-copied functions
- * is how a validation rule gets fixed in one and not the other, so both are
- * this factory with a config; `netlify/functions/links.ts` and `demos.ts` are
- * each a few lines.
+ * have, `isPublic`, and minus one it does (`type`). Research (2026-10-07) is
+ * the third, and it is Links' shape exactly, under a different store. Two
+ * hand-copied functions is how a validation rule gets fixed in one and not the
+ * other, so all three are this factory with a config; `netlify/functions/
+ * links.ts`, `demos.ts` and `research.ts` are each a few lines.
  *
  * SECURITY — the one thing this file exists to hold. Every stored `url` is
  * rendered as an `<a href>` by the client, and `javascript:` in an href
@@ -197,7 +198,13 @@ async function highestStored(store: Store, prefix: string): Promise<number> {
  */
 export function linkBoardHandler(cfg: BoardConfig): (req: Request) => Promise<Response> {
   const keyPattern = new RegExp(`^${cfg.idPrefix}-\\d{3}$`)
-  const tailPattern = new RegExp(`^.*\\/${cfg.segment}\\/?`)
+  // NON-GREEDY `.*?`, since 2026-10-07. The Research board's prefix EQUALS its
+  // segment (`/api/research/research-001`), and a greedy `.*` swallowed the
+  // first `/research/` and matched the id's own `research` as the segment,
+  // leaving `-001` as the tail — a 400 on every single-record request. Links
+  // and Demo never hit it because `link` ≠ `links`; `Research.test.tsx` pins
+  // the case.
+  const tailPattern = new RegExp(`^.*?\\/${cfg.segment}\\/?`)
 
   return async function handler(req: Request): Promise<Response> {
     const url = new URL(req.url)

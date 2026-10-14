@@ -61,7 +61,7 @@ It is now three things, and where a new screen belongs depends on which:
 
 | Surface | Lives in | Reached at |
 |---|---|---|
-| The UX Dashboard gateway | `src/pages/UxDashboardPage.tsx` + friends | `/`, `/prototype/:id`, `/research-rationale`, `/qa-notes`, `/links` |
+| The UX Dashboard gateway | `src/pages/UxDashboardPage.tsx` + friends | `/`, `/prototype/:id`, `/research-rationale`, `/qa-notes`, `/links`, `/prds` |
 | The XCEL product app | `src/pages/*`, `src/components/*` | `/dashboard-rebrand` + ~28 product routes |
 | The standalone prototypes | `public/prototypes/*.html` | `/prototypes/…`, opened in a tab or iframed |
 
@@ -183,7 +183,7 @@ file, so the two cannot drift apart.
 | Routing | react-router-dom v7 |
 | Icons | Font Awesome 7 Pro Light — self-hosted SVGs in `src/icons/` via `vite-plugin-svgr` |
 | Tokens | `src/styles/tokens.css` (`@theme inline`) |
-| Server code | Three Netlify functions over Netlify Blobs — QA Notes + captures, and Links |
+| Server code | Netlify functions over Netlify Blobs — QA Notes + captures, and the four link boards (Links, Refinement, Research, PRDs) — plus the read-only branch list |
 | Tests | Vitest + @testing-library/react |
 
 

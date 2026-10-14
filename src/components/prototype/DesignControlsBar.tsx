@@ -36,17 +36,44 @@ import { useDemoMenus, DEMO_HOVER_FILL, DESIGN_ACCENT } from './demoBarUtil'
  * place: three Atlas/Compass controls added to the shared bar while it was
  * being restructured underneath them.
  *
- * ⚠ DESIGN SITE ONLY, never stakeholders. `PrototypeChrome` does not render it
- * on the public build at all — there is no `maturity` gate per control here,
- * because the whole SURFACE is the gate. A design decision that is worth
- * showing stakeholders belongs on the demo bar instead.
+ * ⚠ IT IS NO LONGER DESIGN-SITE-ONLY (2026-10-06, the direct ask). It renders
+ * on the Demo Hub too, and the sentence this replaces — "the whole SURFACE is
+ * the gate" — has stopped being true. The gate moved a level up: the demo site
+ * lists `maturity: 'ready'` VERSIONS only, and `designControlsFor` scopes every
+ * control to the version on screen. So what a stakeholder may touch is still
+ * chosen deliberately; it is chosen by promoting a version.
  *
- * ⚠ IT ALWAYS RENDERS ON THE DESIGN SITE. It did return null on a version with
- * no design flags, until Lo-fi moved here on 2026-10-05 — the bar now carries
- * Lo-fi and the flag sheet's icon whatever version is up, so it is never empty.
- * A designer on somebody else's version still wants both of those.
+ * ⚠ AND IT IS NOT ON DISPLAY THERE. On the Demo Hub the bar starts HIDDEN and
+ * the robot's dropdown is the only way to it — see `demoControlsVisibility` for
+ * the per-site default and `AdminToolsMenu` for the row. The prototype bar's
+ * "Design" pill stays design-site-only, which is the distinction the ask turns
+ * on: available is not the same as on display.
+ *
+ * ⚠ `stakeholder` WITHHOLDS ONE THING — the Feature Flag sheet. It opens the
+ * FULL catalog, `wip` rows included, which is the single reason the robot was
+ * kept off the demo site at all (2026-09-24); letting it back in through this
+ * bar would have undone that gate without anyone noticing. The robot's own
+ * `stakeholder` guard shuts the same door on its side, and either one left open
+ * reaches the same place.
+ *
+ * ⚠ LO-FI CROSSES, which its old note argues FOR rather than against. That note
+ * said a stakeholder "handed a control that greys the product out has been given
+ * a way to break their own demo" — handed being the operative word. Two hidden
+ * surfaces deep nobody is handed it, which is the same reasoning that let the
+ * robot stay reachable under `?demo=1` in the first place.
+ *
+ * ⚠ SO THE BAR IS STILL NEVER EMPTY, on either site, and Lo-fi is what
+ * guarantees it: a version with no design flags of its own still has one
+ * button. If Lo-fi is ever withheld too, the null return has to come back.
  */
-export function DesignControlsBar({ fullBleed = false }: { fullBleed?: boolean }) {
+export function DesignControlsBar({
+  fullBleed = false,
+  stakeholder = false,
+}: {
+  fullBleed?: boolean
+  /** The stakeholder's copy — the Demo Hub, and `?as=demo` previewing it. */
+  stakeholder?: boolean
+}) {
   const [params] = useSearchParams()
   const { brand } = useAccount()
   const { flags, setEnabled, setVariant } = useFeatureFlags()
@@ -61,11 +88,10 @@ export function DesignControlsBar({ fullBleed = false }: { fullBleed?: boolean }
   const version = DISCOVERABILITY_DASHBOARD_VERSIONS.find((v) => v.id === versionId)
   const controls = designControlsFor(versionId, flagOwner(version ?? {}))
 
-  /* ⚠ IT NO LONGER RETURNS NULL WHEN THE VERSION HAS NO DESIGN FLAGS, and that
-     changed on 2026-10-05 when Lo-fi moved here. The bar always carries Lo-fi
-     and the flag sheet's icon now, so it is never empty — and a designer on a
-     version with no flags of its own still wants both of those. The old rule
-     existed to avoid an empty strip; there is no longer a way to get one. */
+  /* ⚠ STILL NO NULL RETURN, on either site. It went on 2026-10-05 when Lo-fi
+     moved here and made the bar impossible to empty, and Lo-fi crossing to the
+     Demo Hub is what keeps that true for the stakeholder copy too. The one
+     change that would bring the empty strip back is withholding Lo-fi. */
 
   return (
     <DemoBar
@@ -95,6 +121,10 @@ export function DesignControlsBar({ fullBleed = false }: { fullBleed?: boolean }
           }}
         />
       ))}
+      {/* THE TOOLS. ⚠ THE SPLIT IS INSIDE THIS BLOCK, NOT AROUND IT
+          (2026-10-06): Lo-fi crosses to the Demo Hub, the flag sheet does
+          not. The header note carries the reason for each. One wrapper is
+          what holds them together at the bar's right edge. */}
       <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
         {/* LO-FI — moved here from the demo bar, 2026-10-05, the direct ask.
             Its own note on that bar always said lo-fi is "a tool for the people
@@ -143,31 +173,39 @@ export function DesignControlsBar({ fullBleed = false }: { fullBleed?: boolean }
         >
           <Sliders size={16} aria-hidden />
         </button>
-        {/* ⚠ THE FLAG ICON MOVED HERE FROM THE DEMO BAR (2026-10-05, the direct
-            choice). It opens the Feature Flag sheet, which is a designer's tool
-            and shows this same version's flags — so it belongs beside the
-            controls it is the long form of, not beside the stakeholder ones. */}
+        {/* The sheet moved here from the demo bar on 2026-10-05: it shows
+          this same version's flags, so it belongs beside the controls it is
+          the long form of, not beside the stakeholder ones.
+          ⚠ IT STOPS AT THE DESIGN SITE. It opens the FULL catalog, `wip`
+          rows included — the single reason the robot was withheld from the
+          demo site at all. `AdminToolsMenu` guards the same door on its
+          side; this is the other half.
+          ⚠ AND THIS COMMENT STAYS OUTSIDE THE `(`. A JSX comment in
+          root-return position is a second root node — a parse error that
+          reads like an unclosed tag, and this file has paid for it once. */}
+      {stakeholder ? null : (
         <button
-          type="button"
-          className="cre-demo-controls-btn"
-          aria-label="Feature flags"
-          title="Feature flags"
-          style={iconBtnStyle}
-          onClick={() => {
-            openFeatureFlagPanel()
-            close()
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = DEMO_HOVER_FILL
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent'
-            e.currentTarget.style.borderColor = 'transparent'
-          }}
-        >
-          <Flag size={16} aria-hidden />
-        </button>
+            type="button"
+            className="cre-demo-controls-btn"
+            aria-label="Feature flags"
+            title="Feature flags"
+            style={iconBtnStyle}
+            onClick={() => {
+              openFeatureFlagPanel()
+              close()
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = DEMO_HOVER_FILL
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.borderColor = 'transparent'
+            }}
+          >
+            <Flag size={16} aria-hidden />
+          </button>
+      )}
       </div>
     </DemoBar>
   )

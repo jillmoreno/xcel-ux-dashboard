@@ -13,6 +13,8 @@ import {
   X,
 } from '@/icons'
 import { Sheet } from '@/components/ui/Sheet'
+import { ProseFacts, ProseList } from './sheetProse'
+import { proseSectionStyle, proseSectionTitleStyle, splitLead } from './sheetProseStyles'
 import { useCourseLauncher } from '@/components/layout/CourseLauncherContext'
 import { useAccount } from '@/context/AccountContext'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
@@ -606,45 +608,63 @@ export function LearningPathDetailPanelContent({
           </>
         ) : requirements ? (
           <>
-            <div style={reqBoxStyle}>
-              <dl style={reqGridStyle}>
-                {/* Each fact renders only when the entry states it. A
-                    pre-licensing licence has no renewal cycle and no
-                    Mandatory / Elective split, and a `0` in either slot reads
-                    as a stated requirement of zero rather than as "n/a" — the
-                    blank-Seat-cell rule from the admin roster. */}
-                <ReqFact label="Total hours required" value={String(requirements.totalHours)} />
-                {requirements.mandatoryHours != null && (
-                  <ReqFact label={`${mandatoryLabel} hours`} value={String(requirements.mandatoryHours)} />
-                )}
-                {requirements.electiveHours != null && (
-                  <ReqFact label={`${electiveLabel} hours`} value={String(requirements.electiveHours)} />
-                )}
-                {(requirements.renewalCycleYears ?? 0) > 0 && (
-                  <ReqFact label="Renewal cycle" value={`${requirements.renewalCycleYears} years`} />
-                )}
-                {path.licenseExpiresOn && <ReqFact label={deadlineLabel} value={path.licenseExpiresOn} />}
-              </dl>
-            </div>
-            <p style={reqHeadStyle}>{requirements.heading}</p>
-            <ul style={reqListStyle}>
-              {requirements.items.map((item) => (
-                <li key={item} style={reqItemStyle}>
-                  {item}
-                </li>
-              ))}
-            </ul>
+            {/* ⚠ A ROW OF FACTS, NOT A TWO-COLUMN `dl` — 2026-10-07, the
+                direct ask ("the layout for this sheet is bland"). The old
+                shape put the label and its number on one line inside a grey
+                box, so five facts read as five more sentences on a page that
+                is already a wall of them. As cells with the label above the
+                number, the facts are the one thing on the page you can take in
+                without reading — which is what the top of a reference sheet is
+                for.
+
+                ⚠ `auto-fit` BECAUSE THE COUNT VARIES FROM TWO TO FIVE. A
+                pre-licensing path states hours and a target date; a CE path
+                adds the Mandatory/Elective split and a renewal cycle. Fixed
+                columns would have left either a gap or a cramped row depending
+                on which path opened the sheet. */}
+            {/* Each fact appears only when the entry states it. A pre-licensing
+                licence has no renewal cycle and no Mandatory / Elective split,
+                and a `0` in either slot reads as a stated requirement of zero
+                rather than as "n/a" — the blank-Seat-cell rule from the admin
+                roster. */}
+            <ProseFacts
+              facts={[
+                { label: 'Total hours required', value: String(requirements.totalHours) },
+                ...(requirements.mandatoryHours != null
+                  ? [{ label: `${mandatoryLabel} hours`, value: String(requirements.mandatoryHours) }]
+                  : []),
+                ...(requirements.electiveHours != null
+                  ? [{ label: `${electiveLabel} hours`, value: String(requirements.electiveHours) }]
+                  : []),
+                ...((requirements.renewalCycleYears ?? 0) > 0
+                  ? [{ label: 'Renewal cycle', value: `${requirements.renewalCycleYears} years` }]
+                  : []),
+                ...(path.licenseExpiresOn
+                  ? [{ label: deadlineLabel, value: path.licenseExpiresOn }]
+                  : []),
+              ]}
+            />
+            {/* ⚠ THE AUTHORITY BECOMES AN EYEBROW. Every `heading` in the
+                fixtures is "<who sets this> — <what it is>:" ("New York
+                Department of Financial Services — what the state requires…",
+                "Florida Board of Nursing — biennial CE requirements:"), which
+                is two facts in one long bold line. Split, the WHO sits above
+                in the eyebrow idiom and the WHAT is a title the same size as
+                the sections below it, so the page has one heading scale
+                instead of two. ⚠ And it degrades: a heading with no dash, or
+                with a long one, renders whole as the title — see `splitLead`. */}
+            <ReqHeading text={requirements.heading} />
+            <ReqList items={requirements.items} />
             {requirements.sections?.map((section) => (
-              <div key={section.title} style={reqSectionStyle}>
-                <p style={reqSectionTitleStyle}>{section.title}</p>
+              /* ⚠ A HAIRLINE ABOVE EACH SECTION. Six sections of identical
+                 bold-title-then-list had no rhythm — the ask's "chaos" is
+                 mostly this: nothing on the page said where one topic ended.
+                 A rule costs no vertical space the margin was not already
+                 spending. */
+              <div key={section.title} style={proseSectionStyle}>
+                <p style={proseSectionTitleStyle}>{section.title}</p>
                 {section.intro && <p style={reqSectionIntroStyle}>{section.intro}</p>}
-                <ul style={reqListStyle}>
-                  {section.items.map((item) => (
-                    <li key={item} style={reqItemStyle}>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+                <ReqList items={section.items} />
               </div>
             ))}
             {requirements.note && (
@@ -1114,12 +1134,29 @@ function StatTile({
 
 /* ─── Requirements fact ──────────────────────────────────────────────── */
 
-function ReqFact({ label, value }: { label: string; value: string }) {
+/* ⚠ THE FACT ROW, THE BULLETS AND THE LABEL SPLIT ALL MOVED TO `sheetProse`
+   on 2026-10-07, when the step sheets were asked for the same treatment. They
+   were written here first; nothing about them was ever specific to this sheet.
+   `ReqList` stays as a local name so the call sites above read in this file's
+   own vocabulary. */
+const ReqList = ProseList
+
+/** The authority above, what it requires below — see the note at the call site. */
+function ReqHeading({ text }: { text: string }) {
+  const split = splitLead(text)
+  /* ⚠ TWO FIXES THE SPLIT CREATES, both from the same cause: the second half
+     was written to continue a sentence, not to start one. It ends in a colon
+     that now introduces nothing, and it begins lower-case ("…— what the state
+     requires…"). Mending both here rather than rewriting the fixtures keeps
+     every entry readable as a flat sentence for anything that still renders it
+     whole, this component's own `splitLead` miss included. */
+  const raw = (split?.rest ?? text).replace(/:\s*$/, '')
+  const title = raw.charAt(0).toUpperCase() + raw.slice(1)
   return (
-    <>
-      <dt style={{ color: 'var(--color-text-secondary)' }}>{label}</dt>
-      <dd style={{ margin: 0, fontWeight: 700, textAlign: 'right' }}>{value}</dd>
-    </>
+    <div style={reqHeadWrapStyle}>
+      {split ? <p style={reqHeadEyebrowStyle}>{split.lead}</p> : null}
+      <p style={reqHeadStyle}>{title}</p>
+    </div>
   )
 }
 
@@ -1420,42 +1457,23 @@ const certLinkStyle: CSSProperties = {
   color: 'var(--color-action)',
   textDecoration: 'none',
 }
-const reqBoxStyle: CSSProperties = {
-  background: 'var(--color-neutral-75)',
-  borderRadius: 'var(--radius-md)',
-  padding: '14px 16px',
+const reqHeadWrapStyle: CSSProperties = { margin: '22px 0 10px' }
+const reqHeadEyebrowStyle: CSSProperties = {
+  margin: '0 0 3px',
   fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  lineHeight: '20px',
-}
-const reqGridStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: '1fr auto',
-  gap: '6px 12px',
-  margin: 0,
+  fontSize: 10,
+  lineHeight: '14px',
+  fontWeight: 600,
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: 'var(--color-text-secondary)',
 }
 const reqHeadStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontWeight: 700,
-  margin: '16px 0 8px',
-  color: 'var(--color-text-primary)',
-}
-// No bullets — the board's rules read as plain lines (Figma node 312:518).
-const reqListStyle: CSSProperties = { listStyle: 'none', margin: 0, padding: 0 }
-const reqItemStyle: CSSProperties = {
-  marginBottom: 8,
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  lineHeight: '19px',
-  color: 'var(--color-text-primary)',
-}
-// Titled sub-section (e.g. "First renewal — salesperson") below the summary.
-const reqSectionStyle: CSSProperties = { marginTop: 18 }
-const reqSectionTitleStyle: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontWeight: 700,
   fontSize: 14,
-  margin: '0 0 4px',
+  lineHeight: '19px',
+  margin: 0,
   color: 'var(--color-text-primary)',
 }
 const reqSectionIntroStyle: CSSProperties = {
