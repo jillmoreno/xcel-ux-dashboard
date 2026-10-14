@@ -848,7 +848,7 @@ function Step({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
         <p style={{ ...STEP_EYEBROW, fontWeight: 700 }}>Step {number}</p>
         {onTitle ? (
-          <button type="button" className="cre-atlas-step-title-link" onClick={onTitle} style={{ ...STEP_TITLE, ...STEP_TITLE_LINK }}>
+          <button type="button" className="cre-atlas-step-title-link" onClick={onTitle} style={{ ...STEP_TITLE, color: undefined, ...STEP_TITLE_LINK }}>
             {title}
           </button>
         ) : (
@@ -1159,9 +1159,10 @@ const STEP_EYEBROW: CSSProperties = {
   color: 'var(--color-compass-page-eyebrow)',
 }
 /* Serif H8 (20 / 24). */
-/* The step title as a trigger (2026-10-14): the title's own type in the brand
-   blue, a bare button; `.cre-atlas-step-title-link` (tokens.css) underlines it
-   on hover and focus. */
+/* The step title as a trigger (2026-10-14): the title's own type, a bare
+   button. ⚠ NO `color` INLINE — `.cre-atlas-step-title-link` (tokens.css) owns
+   it, the brand blue at rest and darker on hover; an inline value would beat
+   the hover in the cascade, the trap `SideLink`'s note records. */
 const STEP_TITLE_LINK: CSSProperties = {
   padding: 0,
   border: 'none',
@@ -1169,7 +1170,6 @@ const STEP_TITLE_LINK: CSSProperties = {
   cursor: 'pointer',
   textAlign: 'left',
   alignSelf: 'flex-start',
-  color: 'var(--color-compass-page-button)',
 }
 const STEP_TITLE: CSSProperties = {
   margin: 0,
