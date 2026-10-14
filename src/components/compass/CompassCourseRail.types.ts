@@ -71,6 +71,8 @@ export type CompassCourseRailConfig = {
   courseTitle: string
   /** 0–100. Printed as "N% Complete". Read it from the page's own resolver. */
   progressPct: number
+  /** No progress row (Eric/Atlas WIP, 2026-10-14). */
+  hideProgress?: boolean
   toc: readonly CompassTocSection[]
   resources: readonly CompassResourceLink[]
 }

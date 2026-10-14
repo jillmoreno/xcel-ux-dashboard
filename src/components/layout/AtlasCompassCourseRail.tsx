@@ -51,6 +51,8 @@ export function AtlasCompassCourseRail({
            { label: 'Course Overview', onSelect: onOverview }, { label: 'Course' }]}.
          `onHome` and `onOverview` are kept as props for exactly that. */
       courseTitle={hideTitle ? '' : title}
+      // …and no progress row on WIP either (2026-10-14, Eric's request).
+      hideProgress={hideTitle}
       progressPct={pct}
       toc={COMPASS_SAMPLE_TOC_FROM_DESIGN}
       resources={[{ id: 'get-help', label: 'Get Help', onSelect: onGetHelp }]}
