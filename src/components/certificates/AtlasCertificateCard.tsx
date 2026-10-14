@@ -31,12 +31,15 @@ export function AtlasCertificateCard({
   onOpen,
   onOptions,
   inProgress = false,
+  style,
 }: {
   data: Certificate
   /** A certificate not yet earned — the course is still under way (Eric/Atlas
    *  WIP's Life & Health, 2026-10-13): the bar reads IN-PROGRESS with no
    *  Certificate pill, and the issued and reporting lines are hidden. */
   inProgress?: boolean
+  /** Merged over the card (Eric/Atlas White's outline, 2026-10-14). */
+  style?: CSSProperties
   /** Open the action-required detail slide-over. */
   onOpen?: (id: string) => void
   /** Kebab (⋮) menu click — falls back to a console stub. */
@@ -69,7 +72,7 @@ export function AtlasCertificateCard({
             }
           : undefined
       }
-      style={{ ...CARD, cursor: clickable ? 'pointer' : 'default' }}
+      style={{ ...CARD, ...style, cursor: clickable ? 'pointer' : 'default' }}
     >
       {/* The status bar across the top (Figma 379:1368): the Certificate pill
           left, the status word right. */}
@@ -148,7 +151,10 @@ const CARD: CSSProperties = {
   padding: 24,
   boxSizing: 'border-box',
   borderRadius: 16,
-  background: 'var(--color-surface-card)',
+  // White, on WIP (2026-10-14, Eric's request) — slate 100, tan 200 and
+  // tan 100 were each tried that day. White's own fill and outline come in
+  // through `style` (PlatformShell).
+  background: 'var(--color-fixed-light)',
   overflow: 'hidden',
 }
 /* Figma 379:1374 — the bar and the ⋮ beside it, 4 apart. */
@@ -164,7 +170,8 @@ const STATUS_BAR: CSSProperties = {
   minHeight: 28,
   boxSizing: 'border-box',
   borderRadius: 20,
-  background: 'var(--color-tertiary-200)',
+  // Tertiary 300 (Figma 411:1382, 2026-10-14) — it was 200.
+  background: 'var(--color-atlas-tan-300)',
 }
 const PILL: CSSProperties = {
   flex: 'none',
@@ -190,8 +197,9 @@ const STATUS: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 11,
   lineHeight: '14px',
-  letterSpacing: '0.94px',
-  textTransform: 'uppercase',
+  // Medium, sentence case, no tracking (Figma 411:1382, 2026-10-14) — it
+  // was Regular capitals at 0.94px.
+  fontWeight: 500,
   color: 'var(--color-compass-page-heading)',
   whiteSpace: 'nowrap',
 }
@@ -226,7 +234,7 @@ const KEBAB: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'var(--color-tertiary-200)',
+  background: 'var(--color-atlas-tan-200)',
   color: 'var(--color-text-primary)',
   border: 'none',
   cursor: 'pointer',

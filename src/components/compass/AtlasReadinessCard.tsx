@@ -87,7 +87,7 @@ function HalfDial({ level }: { level: Level }) {
     // 8px closer to the question above (-8 off the card's 16 gap; 2026-10-09, Eric).
     <div style={{ position: 'relative', alignSelf: 'center', width: w, height: 109, marginTop: -8 }}>
       <svg width={w} height={80} viewBox={`0 0 ${w} 80`} aria-hidden style={{ display: 'block' }}>
-        <path d={d} fill="none" style={{ stroke: 'var(--color-tertiary-500)' }} strokeWidth={3} />
+        <path d={d} fill="none" style={{ stroke: 'var(--color-atlas-tan-500)' }} strokeWidth={3} />
         <path
           d={d}
           fill="none"
@@ -120,7 +120,7 @@ const CARD: CSSProperties = {
   padding: '24px 24px 24px',
   boxSizing: 'border-box',
   borderRadius: 20,
-  background: 'var(--color-tertiary-200)',
+  background: 'var(--color-atlas-tan-200)',
   cursor: 'pointer',
   userSelect: 'none',
 }
@@ -138,7 +138,7 @@ const EYEBROW: CSSProperties = {
   color: 'var(--color-primary-500)',
 }
 // The design's Tertiary 300 hairline (it was Primary 200 on the single card).
-const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-tertiary-300)' }
+const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-tan-300)' }
 const QUESTION: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-body)',

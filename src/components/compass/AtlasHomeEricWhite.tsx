@@ -518,7 +518,7 @@ function WhiteLeftRail({
       <section aria-label="My active courses" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <p style={RAIL_EYEBROW}>My active courses</p>
-          <span aria-hidden style={{ display: 'block', height: 1, background: 'var(--color-secondary-100)' }} />
+          <span aria-hidden style={{ display: 'block', height: 1, background: 'var(--color-atlas-slate-100)' }} />
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {courses.map((c, i) => (
@@ -578,7 +578,7 @@ const RAIL_EYEBROW: CSSProperties = {
   letterSpacing: '1.76px',
   textTransform: 'uppercase',
   whiteSpace: 'nowrap',
-  color: 'var(--color-tertiary-700)',
+  color: 'var(--color-atlas-tan-700)',
 }
 const RAIL_COURSE: CSSProperties = {
   fontFamily: 'var(--font-body)',

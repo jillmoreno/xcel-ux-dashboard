@@ -33,11 +33,31 @@ export type AtlasCourseCardData = {
   completed?: boolean
 }
 
-export function AtlasCourseCard({ data, onAction }: { data: AtlasCourseCardData; onAction?: () => void }) {
+export function AtlasCourseCard({
+  data,
+  onAction,
+  activeFill,
+}: {
+  data: AtlasCourseCardData
+  onAction?: () => void
+  /** The fill of an ACTIVE (not completed) card, in place of the course-card
+   *  surface — Eric/Atlas White's Primary 100 (2026-10-14). Such a card drops
+   *  its outline too (transparent, so it keeps its size). */
+  activeFill?: string
+}) {
   return (
     // A completed card has NO FILL, only its outline (2026-10-06) — it steps
     // back from the courses still in play.
-    <article aria-label={data.title} style={data.completed ? { ...CARD, background: 'transparent' } : CARD}>
+    <article
+      aria-label={data.title}
+      style={
+        data.completed
+          ? { ...CARD, background: 'transparent' }
+          : activeFill
+            ? { ...CARD, background: activeFill, borderColor: 'transparent' }
+            : CARD
+      }
+    >
       {/* The badge rides the image's top-left corner, 6px up and left of its
           frame — into the card's padding, which is left as it is (2026-10-06,
           Eric's request; it sat above the title). */}

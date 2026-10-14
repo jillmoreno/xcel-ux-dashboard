@@ -572,7 +572,7 @@ export function AtlasHomeEricV3({
           onOpenRequirements={onOpenRequirements}
           // Outlined in Secondary 100 darkened 5% (2026-10-13, Eric's request;
           // 15% was tried and reverted); the exam-date card keeps Primary 200.
-          style={{ ...RAIL_CARD_BORDER, border: '1px solid color-mix(in srgb, var(--color-secondary-100) 95%, black)' }}
+          style={{ ...RAIL_CARD_BORDER, border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)' }}
         />
 
       </div>

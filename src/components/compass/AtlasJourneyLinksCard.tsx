@@ -162,7 +162,7 @@ const SIDE_CARD: CSSProperties = {
   border: '1px solid var(--color-atlas-nav-rule)',
 }
 /* The Readiness card's Tertiary 300 hairline. */
-const TITLE_RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-tertiary-300)' }
+const TITLE_RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-tan-300)' }
 /* Serif H8 — Home V2's STEP_TITLE. */
 const TITLE: CSSProperties = {
   margin: 0,

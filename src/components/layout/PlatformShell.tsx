@@ -379,7 +379,9 @@ function PlatformShellBody() {
      exempt from the asymmetry: no rail under `top` either.) */
   // …and Eric/Atlas WIP's CERTIFICATES (2026-10-13, Eric's request): no rail,
   // Quick Links at the right of the cards, as its My Courses.
-  const wipCertificates = active === 'certificates' && params.get('version') === 'eric-atlas-v3'
+  // …and Eric/Atlas White's, which shows WIP's Certificates page (2026-10-14).
+  const wipCertificates =
+    active === 'certificates' && ['eric-atlas-v3', 'eric-atlas-white'].includes(params.get('version') ?? '')
   const atlasNoRail =
     atlasNav &&
     (navPlacement === 'expanding-top' ||
@@ -1004,7 +1006,11 @@ function PlatformShellBody() {
         ['--cre-shell-top' as string]: `${headerBottom}px`,
         // Eric/Atlas White's Home is on WHITE (2026-10-12, Eric's request;
         // Figma 312:1649) — the course header keeps its own panel.
-        ...(atlasNav && active === 'dashboard' && params.get('version') === 'eric-atlas-white'
+        // …and its My Courses and Certificates, WIP's pages on White's white
+        // (2026-10-14, Eric's request).
+        ...(atlasNav &&
+        (active === 'dashboard' || active === 'courses' || active === 'certificates') &&
+        params.get('version') === 'eric-atlas-white'
           ? { background: 'var(--color-fixed-light)' }
           : atlasNav && (active === 'dashboard' || active === 'course' || active === 'resources')
             ? { background: 'var(--color-compass-page)' }
@@ -2485,7 +2491,10 @@ function MyCoursesSection() {
   /* Eric/Atlas WIP (2026-10-13, Eric's request): Quick Links as a RIGHT rail,
      with its Home's links — everything but the course's own Flashcards and
      Exam Simulator. The other Atlas versions keep the left column and all. */
-  const wip = params.get('version') === 'eric-atlas-v3'
+  // WIP's page — and Eric/Atlas White's, a duplicate of it on a white page
+  // (2026-10-14, Eric's request).
+  const wip = ['eric-atlas-v3', 'eric-atlas-white'].includes(params.get('version') ?? '')
+  const white = params.get('version') === 'eric-atlas-white'
   const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
   /* The Home course's card opens the Compass course page; the P&C card is the
      demo's invented course, so it is not wired. */
@@ -2516,7 +2525,14 @@ function MyCoursesSection() {
         atlas ? (
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, ${ATLAS_COURSE_CARD_W}px)`, gap: 16 }}>
             {ATLAS_MY_COURSES.map((c, i) => (
-              <AtlasCourseCard key={c.id} data={c} onAction={i === 0 ? openCourse : undefined} />
+              <AtlasCourseCard
+                key={c.id}
+                data={c}
+                onAction={i === 0 ? openCourse : undefined}
+                // White's active cards in Primary 100 on its white page
+                // (2026-10-14, Eric's request); completed cards keep no fill.
+                activeFill={white ? 'var(--color-primary-100)' : undefined}
+              />
             ))}
           </div>
         ) : undefined
@@ -2529,7 +2545,7 @@ function MyCoursesSection() {
    darkened 5%. */
 // 234, so the longest label's hover weight fits on one line (2026-10-14).
 const WIP_QUICK_LINKS_W = 234
-const WIP_QUICK_LINKS: CSSProperties = { border: '1px solid color-mix(in srgb, var(--color-secondary-100) 95%, black)', padding: 24 }
+const WIP_QUICK_LINKS: CSSProperties = { border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)', padding: 24 }
 
 /* Certificates in the shell. Eric/Atlas WIP drops the page's search, result
    count and filter rail, and status tabs (2026-10-13, Eric's request), and
@@ -2537,7 +2553,9 @@ const WIP_QUICK_LINKS: CSSProperties = { border: '1px solid color-mix(in srgb, v
    its left rail there (`wipCertificates`). The other versions keep all. */
 function CertificatesSection() {
   const [params] = useSearchParams()
-  const wip = params.get('version') === 'eric-atlas-v3'
+  // WIP's page — and Eric/Atlas White's, a duplicate of it on a white page
+  // (2026-10-14, Eric's request).
+  const wip = ['eric-atlas-v3', 'eric-atlas-white'].includes(params.get('version') ?? '')
   const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
   return (
     <CertificatesPage
@@ -2555,6 +2573,14 @@ function CertificatesSection() {
       // way, so its certificate is not earned yet.
       atlasCards={wip}
       inProgressIds={wip ? ['cert-xcel-lh-prelicense'] : undefined}
+      // White's cards: the guide's Secondary 100 fill with a 1px Secondary 200
+      // outline (2026-10-14, Eric's request) — the tan ramp, by role, so the
+      // other brands read the same tan.
+      atlasCardStyle={
+        params.get('version') === 'eric-atlas-white'
+          ? { background: 'var(--color-atlas-tan-100)', border: '1px solid var(--color-atlas-tan-200)' }
+          : undefined
+      }
     />
   )
 }

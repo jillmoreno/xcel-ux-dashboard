@@ -25,11 +25,11 @@ export function useAtlasBackgroundSwitch(): void {
   // What the last run saw, so a run can tell WHICH side moved.
   const lastVersion = useRef<string | null | undefined>(undefined)
   const lastPicked = useRef<string | undefined>(undefined)
-  // A sync this hook has asked for and not yet seen land. Until it lands, a
-  // change of the control is not a pick — on a fresh `?demo=1` load the flag
-  // provider resets its values AFTER this mounts, which is also why the sync
-  // waits a tick (it would otherwise be overwritten).
-  const expected = useRef<string | null>(null)
+  // Until this time, a mismatch is put right, never read as a pick. A fresh
+  // `?demo=1` load resets the flags AFTER this mounts — sometimes after its
+  // first sync has already landed — and that reset (back to Toned) must not
+  // send a White page to WIP. Picks happen later, by hand.
+  const syncUntil = useRef(0)
 
   useEffect(() => {
     const onToned = version === ATLAS_BACKGROUND_VERSIONS.toned
@@ -38,32 +38,24 @@ export function useAtlasBackgroundSwitch(): void {
     if (lastVersion.current !== version) {
       // The VERSION moved (or first load): the control follows the page.
       lastVersion.current = version
-      lastPicked.current = picked
-      expected.current = null
-      if ((onToned || onWhite) && picked !== current) {
-        expected.current = current
-        window.setTimeout(() => setVariant('atlas-background', current), 0)
-      }
+      syncUntil.current = Date.now() + 1500
+    }
+    const pickedChanged = picked !== lastPicked.current
+    lastPicked.current = picked
+    if (!onToned && !onWhite || picked === current) return
+    if (Date.now() < syncUntil.current) {
+      // Settling: match the page (a tick later, past any reset in flight).
+      window.setTimeout(() => setVariant('atlas-background', current), 0)
       return
     }
-    if (expected.current) {
-      if (picked === expected.current) {
-        expected.current = null
-        lastPicked.current = picked
-      }
-      return
-    }
-    if (picked !== lastPicked.current) {
-      // The CONTROL moved: the page follows it.
-      lastPicked.current = picked
-      if (!onToned && !onWhite) return
-      const target = ATLAS_BACKGROUND_VERSIONS[picked as keyof typeof ATLAS_BACKGROUND_VERSIONS]
-      if (!target || target === version) return
-      setParams((prev) => {
-        const next = new URLSearchParams(prev)
-        next.set('version', target)
-        return next
-      })
-    }
+    if (!pickedChanged) return
+    // The CONTROL moved, by hand: the page follows it.
+    const target = ATLAS_BACKGROUND_VERSIONS[picked as keyof typeof ATLAS_BACKGROUND_VERSIONS]
+    if (!target || target === version) return
+    setParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('version', target)
+      return next
+    })
   }, [picked, version, setVariant, setParams])
 }

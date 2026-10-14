@@ -5238,6 +5238,32 @@ a.cre-library-card-title::after {
    NOT CHANGED: Rubi's orange (#b4552f) — not in the guide; neutrals (Nectar).
    DARK VALUES ARE NOT FROM THE GUIDE, which is light only. */
 [data-brand='xcel'][data-atlas-palette] {
+  /* ROLE NAMES FOR THE ATLAS PAGES' TWO WARM/COOL RAMPS (2026-10-14). The
+     Atlas Style Guide swapped its Secondary and Tertiary — Secondary is the
+     tan ramp now, Tertiary the slate — and only the guide's own skins (below)
+     take the new names. Everything on the Atlas pages asks for TAN or SLATE
+     by role, so it reads the same whichever name a skin files the ramp
+     under. Here, the XCEL palette: tan is Tertiary, slate Secondary. */
+  --color-atlas-tan-50: var(--color-tertiary-50);
+  --color-atlas-tan-100: var(--color-tertiary-100);
+  --color-atlas-tan-200: var(--color-tertiary-200);
+  --color-atlas-tan-300: var(--color-tertiary-300);
+  --color-atlas-tan-400: var(--color-tertiary-400);
+  --color-atlas-tan-500: var(--color-tertiary-500);
+  --color-atlas-tan-600: var(--color-tertiary-600);
+  --color-atlas-tan-700: var(--color-tertiary-700);
+  --color-atlas-tan-800: var(--color-tertiary-800);
+  --color-atlas-tan-900: var(--color-tertiary-900);
+  --color-atlas-slate-50: var(--color-secondary-50);
+  --color-atlas-slate-100: var(--color-secondary-100);
+  --color-atlas-slate-200: var(--color-secondary-200);
+  --color-atlas-slate-300: var(--color-secondary-300);
+  --color-atlas-slate-400: var(--color-secondary-400);
+  --color-atlas-slate-500: var(--color-secondary-500);
+  --color-atlas-slate-600: var(--color-secondary-600);
+  --color-atlas-slate-700: var(--color-secondary-700);
+  --color-atlas-slate-800: var(--color-secondary-800);
+  --color-atlas-slate-900: var(--color-secondary-900);
   --color-primary-100: #eaeef1;
   --color-primary-200: #cbd5dc;
   --color-primary-300: #96acb9;
@@ -5341,12 +5367,12 @@ a.cre-library-card-title::after {
   --color-compass-page-button-ink: var(--color-atlas-on-cta);
   --color-compass-player-on-ink: var(--color-atlas-on-cta);
   --color-atlas-active-fill: var(--color-cta-100);
-  --color-atlas-eyebrow: var(--color-tertiary-600);
+  --color-atlas-eyebrow: var(--color-atlas-tan-600);
   --color-eyebrow-text: var(--color-atlas-eyebrow);
   /* The side rules on Steps 3 and 4 (the pending licensing steps): secondary
      300, the tan counterpart of the blue 300 they had (2026-09-29, the
      designer's request). */
-  --color-atlas-step-rule: var(--color-tertiary-300);
+  --color-atlas-step-rule: var(--color-atlas-tan-300);
 
   /* LEFT NAVIGATION (both rails) takes the SECONDARY tan, not the red
      (2026-09-28, the designer's request): the active row is tan-700 ink and a
@@ -5357,17 +5383,17 @@ a.cre-library-card-title::after {
      Measured: tan-700 on tan-200 6.4:1 · cta-500 on tan-100 7.6:1, on
      tan-200 6.3:1. */
   --color-atlas-nav-caption: var(--color-atlas-eyebrow);
-  --color-atlas-nav-active-ink: var(--color-tertiary-700);
+  --color-atlas-nav-active-ink: var(--color-atlas-tan-700);
   /* The parent-level active row's fill is secondary 100 (2026-09-29, the
      designer's request; it was 200). The TOC's current lesson keeps 200 —
      see --color-compass-rail-current-fill below. Idle rows also hover to 100,
      so the active row is told apart by its bar, ink and weight. */
-  --color-atlas-nav-active-fill: var(--color-tertiary-100);
+  --color-atlas-nav-active-fill: var(--color-atlas-tan-100);
   /* The active row's left stroke: secondary 500 (2026-09-29, the designer's
      request; it was the row's tan-700 ink). A 3px bar, not text, so 500's
      3.7:1 is fine. */
-  --color-atlas-nav-active-bar: var(--color-tertiary-500);
-  --color-atlas-nav-hover: var(--color-tertiary-100);
+  --color-atlas-nav-active-bar: var(--color-atlas-tan-500);
+  --color-atlas-nav-hover: var(--color-atlas-tan-100);
   --color-atlas-nav-hover-ink: var(--color-atlas-cta-ink);
   /* ATLAS TOP NAV (Nav Version → Top Nav, 2026-09-30; Figma 160:616): the
      current button filled in the rail's active ink, the other in its hover
@@ -5389,28 +5415,28 @@ a.cre-library-card-title::after {
   --color-compass-rail-current-ink: var(--color-atlas-nav-active-ink);
   --color-compass-rail-caption: var(--color-atlas-eyebrow);
   --color-compass-rail-link: var(--color-atlas-nav-active-ink);
-  --color-compass-rail-current-fill: var(--color-tertiary-200);
-  --color-compass-rail-active-halo: var(--color-tertiary-200);
+  --color-compass-rail-current-fill: var(--color-atlas-tan-200);
+  --color-compass-rail-active-halo: var(--color-atlas-tan-200);
   --color-compass-rail-hover: var(--color-atlas-nav-hover);
-  --color-compass-rail-pill: var(--color-tertiary-100);
-  --color-compass-rail-spine: var(--color-tertiary-300);
+  --color-compass-rail-pill: var(--color-atlas-tan-100);
+  --color-compass-rail-spine: var(--color-atlas-tan-300);
   /* The rail's last blues — section dots and titles, done ticks, the progress
      spine, the hover ring — are SECONDARY 600, #7E6748 (2026-09-28, the
      designer's request). 5.4:1 on white, so it holds for the section titles. */
-  --color-compass-rail-section-ink: var(--color-tertiary-600);
-  --color-compass-rail-ink: var(--color-tertiary-600);
+  --color-compass-rail-section-ink: var(--color-atlas-tan-600);
+  --color-compass-rail-ink: var(--color-atlas-tan-600);
   /* TOC section titles by state (2026-09-28, the designer's request; first
      600 / 800 / 400): completed and active secondary 800 (the active one is
      SemiBold), not started 600. 600 is 5.4:1 on white, 800 12:1. */
-  --color-compass-rail-section-done-text: var(--color-tertiary-800);
-  --color-compass-rail-section-current-text: var(--color-tertiary-800);
-  --color-compass-rail-upcoming-section-text: var(--color-tertiary-600);
+  --color-compass-rail-section-done-text: var(--color-atlas-tan-800);
+  --color-compass-rail-section-current-text: var(--color-atlas-tan-800);
+  --color-compass-rail-upcoming-section-text: var(--color-atlas-tan-600);
   /* Not-started LESSON titles: secondary 600 (2026-09-28, the designer's
      request) — 5.4:1 on white, where the grey #818181 was 3.90:1 and failed
      AA at 12px. Their ring marks stay tan-400 (2.18:1), as asked. */
-  --color-compass-rail-upcoming-text: var(--color-tertiary-600);
-  --color-compass-rail-upcoming-section-mark: var(--color-tertiary-300);
-  --color-compass-rail-upcoming-lesson-mark: var(--color-tertiary-400);
+  --color-compass-rail-upcoming-text: var(--color-atlas-tan-600);
+  --color-compass-rail-upcoming-section-mark: var(--color-atlas-tan-300);
+  --color-compass-rail-upcoming-lesson-mark: var(--color-atlas-tan-400);
 
   /* Compass pages (Home course card, Overview, player content box). */
   /* The content area: #F5F5F5 on EVERY brand skin (2026-09-30, the designer's
@@ -5418,7 +5444,7 @@ a.cre-library-card-title::after {
      100 at 50% on white, #FAF9F7, from 2026-09-28; CRE, McKissock and Elite
      each had a tint of their own, now removed so they inherit this. */
   --color-compass-page: #f5f5f5;
-  --color-compass-page-rule: var(--color-tertiary-200);
+  --color-compass-page-rule: var(--color-atlas-tan-200);
   --color-compass-page-eyebrow: var(--color-atlas-eyebrow);
   --color-compass-page-card: var(--color-primary-100);
   /* THE GLOBAL CARD TREATMENT ON EVERY SKIN (2026-09-30, the designer's
@@ -5440,25 +5466,25 @@ a.cre-library-card-title::after {
   --color-compass-page-pill-ink: var(--color-primary-600);
   /* The "Day one" pill in the secondary (tan) ramp (2026-09-29, the designer's
      request; it was blue 100 / 200 / 600). Ink secondary 600 on 100 is 5.0:1. */
-  --color-compass-day-pill: var(--color-tertiary-100);
-  --color-compass-day-pill-border: var(--color-tertiary-200);
-  --color-compass-day-pill-ink: var(--color-tertiary-600);
+  --color-compass-day-pill: var(--color-atlas-tan-100);
+  --color-compass-day-pill-border: var(--color-atlas-tan-200);
+  --color-compass-day-pill-ink: var(--color-atlas-tan-600);
   --color-compass-page-button: var(--color-atlas-cta);
   /* Charts take the guide's secondary (tan) and its tints (2026-09-28, the
      designer's request): the Study Pace week bars (`barTone`) and the
      Overview's readiness ring. Fills, not text, so tan-500 is fine here. */
-  --color-atlas-chart-200: var(--color-tertiary-200);
-  --color-atlas-chart-300: var(--color-tertiary-300);
-  --color-atlas-chart-400: var(--color-tertiary-400);
-  --color-atlas-chart-500: var(--color-tertiary-500);
-  --color-atlas-chart-700: var(--color-tertiary-700);
-  --color-compass-page-ring-1: var(--color-tertiary-200);
-  --color-compass-page-ring-2: var(--color-tertiary-300);
-  --color-compass-page-ring-3: var(--color-tertiary-400);
-  --color-compass-page-ring-4: var(--color-tertiary-500);
-  --color-compass-page-ring-5: var(--color-tertiary-600);
-  --color-compass-content-border: var(--color-tertiary-200);
-  --color-compass-content-placeholder: var(--color-tertiary-300);
+  --color-atlas-chart-200: var(--color-atlas-tan-200);
+  --color-atlas-chart-300: var(--color-atlas-tan-300);
+  --color-atlas-chart-400: var(--color-atlas-tan-400);
+  --color-atlas-chart-500: var(--color-atlas-tan-500);
+  --color-atlas-chart-700: var(--color-atlas-tan-700);
+  --color-compass-page-ring-1: var(--color-atlas-tan-200);
+  --color-compass-page-ring-2: var(--color-atlas-tan-300);
+  --color-compass-page-ring-3: var(--color-atlas-tan-400);
+  --color-compass-page-ring-4: var(--color-atlas-tan-500);
+  --color-compass-page-ring-5: var(--color-atlas-tan-600);
+  --color-compass-content-border: var(--color-atlas-tan-200);
+  --color-compass-content-placeholder: var(--color-atlas-tan-300);
 
   /* Compass player bar — its filled controls are buttons. */
   --color-compass-player-ink: var(--color-atlas-cta);
@@ -5469,9 +5495,9 @@ a.cre-library-card-title::after {
   --color-atlas-cta: var(--color-cta-500);
   --color-atlas-active: var(--color-cta-200);
   --color-atlas-active-fill: rgb(154 27 30 / 0.28);
-  --color-atlas-eyebrow: var(--color-tertiary-300);
-  --color-atlas-nav-active-ink: var(--color-tertiary-300);
-  --color-atlas-nav-active-bar: var(--color-tertiary-400);
+  --color-atlas-eyebrow: var(--color-atlas-tan-300);
+  --color-atlas-nav-active-ink: var(--color-atlas-tan-300);
+  --color-atlas-nav-active-bar: var(--color-atlas-tan-400);
   --color-atlas-nav-active-fill: rgb(157 129 90 / 0.24);
   --color-atlas-nav-hover: rgb(157 129 90 / 0.12);
   --color-atlas-nav-hover-ink: var(--color-cta-200);
@@ -5482,12 +5508,12 @@ a.cre-library-card-title::after {
   --color-compass-rail-active-halo: var(--color-primary-700);
   --color-compass-rail-pill: var(--color-neutral-100);
   --color-compass-rail-spine: var(--color-primary-700);
-  --color-compass-rail-section-ink: var(--color-tertiary-300);
-  --color-compass-rail-ink: var(--color-tertiary-300);
-  --color-compass-rail-section-done-text: var(--color-tertiary-300);
-  --color-compass-rail-section-current-text: var(--color-tertiary-200);
-  --color-compass-rail-upcoming-section-text: var(--color-tertiary-500);
-  --color-compass-rail-upcoming-text: var(--color-tertiary-500);
+  --color-compass-rail-section-ink: var(--color-atlas-tan-300);
+  --color-compass-rail-ink: var(--color-atlas-tan-300);
+  --color-compass-rail-section-done-text: var(--color-atlas-tan-300);
+  --color-compass-rail-section-current-text: var(--color-atlas-tan-200);
+  --color-compass-rail-upcoming-section-text: var(--color-atlas-tan-500);
+  --color-compass-rail-upcoming-text: var(--color-atlas-tan-500);
   --color-compass-rail-upcoming-section-mark: var(--color-primary-700);
   --color-compass-rail-upcoming-lesson-mark: var(--color-primary-500);
   --color-compass-page: var(--color-surface-page);
@@ -5502,7 +5528,7 @@ a.cre-library-card-title::after {
   --color-compass-page-pill-ink: var(--color-primary-200);
   --color-compass-day-pill: rgb(157 129 90 / 0.16);
   --color-compass-day-pill-border: rgb(157 129 90 / 0.4);
-  --color-compass-day-pill-ink: var(--color-tertiary-300);
+  --color-compass-day-pill-ink: var(--color-atlas-tan-300);
   --color-compass-content-border: var(--color-border-subtle);
   --color-compass-content-placeholder: var(--color-text-tertiary);
   --color-compass-player-rubi: var(--color-surface-card);
@@ -5640,27 +5666,27 @@ a.cre-library-card-title::after {
      this file: Primary #9A1B1E → --color-cta-*; Secondary #9D815A (brown) →
      --color-tertiary-*; Tertiary #2D5872 (steel blue) → --color-primary-*.
      --color-secondary-* here is the older Saffron yellow, not the guide's. */
-  --color-atlas-dial-ring: var(--color-tertiary-600);
-  --color-atlas-dial-track: var(--color-tertiary-200);
+  --color-atlas-dial-ring: var(--color-atlas-tan-600);
+  --color-atlas-dial-track: var(--color-atlas-tan-200);
   /* Every icon on the Home V2 page (and the journey-links card it shares with
      My Courses) in the guide's SECONDARY 500, #9D815A (2026-10-05, the
      designer's request). Text links keep the button colour. */
-  --color-atlas-home-icon: var(--color-tertiary-500);
+  --color-atlas-home-icon: var(--color-atlas-tan-500);
   /* The journey's CURRENT stop — its title and its dot — in SECONDARY 600,
      #7E6748 (same day). */
-  --color-atlas-home-current-stop: var(--color-tertiary-600);
+  --color-atlas-home-current-stop: var(--color-atlas-tan-600);
   /* Home's Course Overview outline button in the browns (2026-10-06, the
      designer's request): SECONDARY 600 ink and border, #7E6748 — 5.2:1 on the
      course card, where 500 would fail AA for its 13.5px label. */
-  --color-atlas-home-secondary-ink: var(--color-tertiary-600);
+  --color-atlas-home-secondary-ink: var(--color-atlas-tan-600);
   /* …its STROKE one step lighter, SECONDARY 500 #9D815A (same day). A border
      is a non-text edge: 3.6:1 on the card, over the 3:1 it needs. */
-  --color-atlas-home-secondary-border: var(--color-tertiary-500);
+  --color-atlas-home-secondary-border: var(--color-atlas-tan-500);
   /* The Course progress panel's eyebrows in SECONDARY 600, #7E6748 — 4.71:1 on
      the panel's #F3F0EA, passing AA for the 11px caps. The design's Secondary
      500 (Figma 217:3793) is 3.23:1 there and fails; swapped 2026-10-06 after a
      contrast check, at the designer's request. */
-  --color-atlas-home-eyebrow: var(--color-tertiary-600);
+  --color-atlas-home-eyebrow: var(--color-atlas-tan-600);
 }
 
 /* ⚠ UNWIRED 2026-10-09 — Colibri Real Estate became the Atlas skin with its own
@@ -5747,7 +5773,7 @@ a.cre-library-card-title::after {
      for normal text, passing for large text only. 500 was 2.95:1. */
   --color-atlas-cta: var(--color-primary-600);
   --color-atlas-on-cta: #ffffff;
-  --color-atlas-eyebrow: var(--color-tertiary-700);
+  --color-atlas-eyebrow: var(--color-atlas-tan-700);
   /* The left nav's active row AND hover: Primary 100 at 70% on white, a solid
      #EEF2DC (2026-09-30, the designer's request). The course page's left nav
      hover follows through --color-compass-rail-hover. */
@@ -6036,24 +6062,29 @@ a.cre-library-card-title::after {
   --color-primary-700: #253645;
   --color-primary-800: #18242e;
   --color-primary-900: #0c1217;
-  --color-secondary-100: #e9ecee;
-  --color-secondary-200: #c9cfd3;
-  --color-secondary-300: #939ea8;
-  --color-secondary-400: #72818d;
-  --color-secondary-500: #263d50;
-  --color-secondary-600: #1e3140;
-  --color-secondary-700: #172530;
-  --color-secondary-800: #0f1820;
-  --color-secondary-900: #080c10;
-  --color-tertiary-100: #f9f8f6;
-  --color-tertiary-200: #f0eee9;
-  --color-tertiary-300: #e1ddd2;
-  --color-tertiary-400: #d8d3c5;
-  --color-tertiary-500: #c3bba5;
-  --color-tertiary-600: #9c9684;
-  --color-tertiary-700: #757063;
-  --color-tertiary-800: #4e4b42;
-  --color-tertiary-900: #272521;
+  /* SECONDARY AND TERTIARY SWAPPED 2026-10-14, with the guide's own update:
+     Secondary is the tan ramp now, Tertiary the slate. The values moved, not
+     the colours — the Atlas pages ask by role (`--color-atlas-tan-*`,
+     `--color-atlas-slate-*`, re-pointed at the end of this block), so nothing
+     changed colour. */
+  --color-secondary-100: #f9f8f6;
+  --color-secondary-200: #f0eee9;
+  --color-secondary-300: #e1ddd2;
+  --color-secondary-400: #d8d3c5;
+  --color-secondary-500: #c3bba5;
+  --color-secondary-600: #9c9684;
+  --color-secondary-700: #757063;
+  --color-secondary-800: #4e4b42;
+  --color-secondary-900: #272521;
+  --color-tertiary-100: #e9ecee;
+  --color-tertiary-200: #c9cfd3;
+  --color-tertiary-300: #939ea8;
+  --color-tertiary-400: #72818d;
+  --color-tertiary-500: #263d50;
+  --color-tertiary-600: #1e3140;
+  --color-tertiary-700: #172530;
+  --color-tertiary-800: #0f1820;
+  --color-tertiary-900: #080c10;
 
   --color-atlas-cta: #3d5a73;
   --color-atlas-cta-ink: #3d5a73;
@@ -6147,7 +6178,54 @@ a.cre-library-card-title::after {
   --color-compass-page-ring-3: #808b8c;
   --color-compass-page-ring-4: #5f7280;
   --color-compass-page-ring-5: #3d5a73;
+
+  /* The guide's names (2026-10-14): tan is Secondary, slate Tertiary. */
+  --color-atlas-tan-100: var(--color-secondary-100);
+  --color-atlas-tan-200: var(--color-secondary-200);
+  --color-atlas-tan-300: var(--color-secondary-300);
+  --color-atlas-tan-400: var(--color-secondary-400);
+  --color-atlas-tan-500: var(--color-secondary-500);
+  --color-atlas-tan-600: var(--color-secondary-600);
+  --color-atlas-tan-700: var(--color-secondary-700);
+  --color-atlas-tan-800: var(--color-secondary-800);
+  --color-atlas-tan-900: var(--color-secondary-900);
+  --color-atlas-slate-100: var(--color-tertiary-100);
+  --color-atlas-slate-200: var(--color-tertiary-200);
+  --color-atlas-slate-300: var(--color-tertiary-300);
+  --color-atlas-slate-400: var(--color-tertiary-400);
+  --color-atlas-slate-500: var(--color-tertiary-500);
+  --color-atlas-slate-600: var(--color-tertiary-600);
+  --color-atlas-slate-700: var(--color-tertiary-700);
+  --color-atlas-slate-800: var(--color-tertiary-800);
+  --color-atlas-slate-900: var(--color-tertiary-900);
+
+  /* The site-wide tokens built from these two ramps keep their colours on
+     the guide's skins too — the same swap, by role (2026-10-14). */
+  --ink-community: var(--color-atlas-slate-700);
+  --color-nav-active: var(--color-atlas-slate-500);
+  --color-category-elective: var(--color-atlas-slate-600);
+  --color-eyebrow-text: var(--color-atlas-slate-700);
+  --podcast-accent: var(--color-atlas-tan-700);
+  --podcast-surface: var(--color-atlas-tan-700);
+  --podcast-surface-hover: var(--color-atlas-tan-800);
+  --podcast-surface-deep: var(--color-atlas-tan-800);
+  --podcast-surface-ring: var(--color-atlas-tan-200);
+  --podcast-fill: var(--color-atlas-tan-500);
+  --podcast-on-surface-strong: var(--color-atlas-tan-100);
+  --podcast-on-surface-muted: var(--color-atlas-tan-200);
+  --podcast-pill-bg: var(--color-atlas-tan-100);
+  --podcast-pill-text: var(--color-atlas-tan-800);
 }
+/* …and its dark eyebrow (the base's Secondary 300 — slate), by role. */
+[data-theme='dark'][data-brand='xcel'][data-atlas-palette][data-atlas-brand='global'],
+[data-theme='dark'][data-brand='xcel'][data-atlas-palette][data-atlas-brand='cre'],
+[data-theme='dark'][data-brand='xcel'][data-atlas-palette][data-atlas-brand='mckissock'],
+[data-theme='dark'][data-brand='xcel'][data-atlas-palette][data-atlas-brand='elite'],
+[data-theme='dark'][data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel'],
+[data-theme='dark'][data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel-blue-cta'] {
+  --color-eyebrow-text: var(--color-atlas-slate-300);
+}
+
 /* Focus is slate, 2px, per the file. */
 [data-atlas-brand='global'] .cre-atlas-nav-row:focus-visible,
 [data-atlas-brand='cre'] .cre-atlas-nav-row:focus-visible,

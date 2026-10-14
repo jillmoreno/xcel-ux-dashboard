@@ -38,6 +38,7 @@ export function CertificatesPage({
   asideRight = false,
   atlasCards = false,
   inProgressIds,
+  atlasCardStyle,
 }: {
   embedded?: boolean
   hideSearch?: boolean
@@ -60,6 +61,8 @@ export function CertificatesPage({
   /** Atlas cards to draw as not yet earned (`AtlasCertificateCard`'s
    *  `inProgress`). */
   inProgressIds?: readonly string[]
+  /** Merged over each Atlas card (Eric/Atlas White's outline). */
+  atlasCardStyle?: CSSProperties
 } = {}) {
   const { brand } = useAccount()
   const all = useMemo(() => certificatesFor(brand), [brand])
@@ -274,7 +277,12 @@ export function CertificatesPage({
                 // stretch), so every card matches the tallest in its row.
                 <div key={cert.id} role="listitem" style={{ display: 'grid' }}>
                   {atlasCards ? (
-                    <AtlasCertificateCard data={cert} onOpen={setDetailId} inProgress={inProgressIds?.includes(cert.id)} />
+                    <AtlasCertificateCard
+                      data={cert}
+                      onOpen={setDetailId}
+                      inProgress={inProgressIds?.includes(cert.id)}
+                      style={atlasCardStyle}
+                    />
                   ) : (
                     <CertificateCard data={cert} onOpen={setDetailId} />
                   )}

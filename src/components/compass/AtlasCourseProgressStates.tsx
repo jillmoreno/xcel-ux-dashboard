@@ -219,7 +219,7 @@ function Dial({ percent, tracking }: { percent: number; tracking?: string }) {
   return (
     <div role="img" aria-label={`${pct}% complete`} style={{ position: 'relative', width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden style={{ display: 'block' }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" style={{ stroke: 'var(--color-tertiary-300)' }} strokeWidth={3} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" style={{ stroke: 'var(--color-atlas-tan-300)' }} strokeWidth={3} />
         <circle
           cx={size / 2}
           cy={size / 2}
