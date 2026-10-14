@@ -144,17 +144,30 @@ Jill's" is how that gets decided by accident.
 
 ### ⚠ Owner action — each group is its owner's; the default version and the merge are Jillienne's
 
-Work out who is running this, once, before step 3:
+Work out who is running this, once, before step 3 — **the PR's author first,
+git identity second:**
 
 ```bash
-git config user.email; git config user.name
+gh pr view --json author --jq .author.login 2>/dev/null   # who opened the PR for this branch
+git config user.email; git config user.name                # fallback when there is no PR yet
 ```
 
-| Who | Matches | May decide |
-|---|---|---|
-| Jillienne | `jilliennemoreno@gmail.com`, `jill.moreno@scorebuilders.com` | end-to-end and invite groups · `maturity` on her versions · **the default dashboard version** |
-| Eric | `eric.norman@simplenursing.com` | `maturity` on his versions (`owner: 'eric'`) |
-| Anjani | no commit of hers is in the history yet — match `user.name` containing *Anjani*, and say you did; add her email here the day she has one | the Compass group |
+⚠ **THE PR AUTHOR IS THE SIGNAL, NOT THE COMMIT AUTHOR.** Anjani works through
+the Claude web app, and its GitHub app writes her commits as
+`Claude <noreply@anthropic.com>` — PR #3 (2026-09-28, her Compass prototype) is
+exactly that: two commits by "claude", PR by `Anjanisatya5`. `git log` will
+never name her, and `git config` inside her session may not either. The PR
+does. The same is true of anyone else who commits through Claude on the web.
+
+| Who | GitHub login | Git identity (fallback) | May decide |
+|---|---|---|---|
+| Jillienne | `jillmoreno` | `jilliennemoreno@gmail.com`, `jill.moreno@scorebuilders.com` | end-to-end and invite groups · `maturity` on her versions · **the default dashboard version** |
+| Eric | `EnormanColibri` | `eric.norman@simplenursing.com` | `maturity` on his versions (`owner: 'eric'`) |
+| Anjani | `Anjanisatya5` | none in the history — her commits are authored as Claude, see above | the Compass group |
+
+No PR and a `Claude <noreply@anthropic.com>` git identity means the skill
+cannot tell who is asking: say so and ask, naming the three, rather than
+guessing from the branch name.
 
 A group the caller does not own is **listed, not asked** — not "shall I?", not
 "she will need to": raising a decision somebody cannot make reads as an
