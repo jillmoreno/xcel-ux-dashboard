@@ -200,22 +200,25 @@ Refinement and promoted by `promote-to-prototype` flipping flag defaults on
 ### Phase 1 — the skills know about scopes and owners (2026-10-14)
 
 Same day, Jillienne's decisions: **Anjani owns the Compass baseline; anyone
-promotes to Refinement; only Jillienne promotes to Prototypes.** Three
-consequences, each in the file that carries it:
+promotes to Refinement; only Jillienne promotes to `main`.** The last one was
+first read as "only Jillienne runs `promote-to-prototype`" and the skill was
+made owner-only in full; she corrected it the same afternoon — a promotion is
+a commit of defaults on the designer's branch, and what is hers is the MERGE.
+Three consequences, each in the file that carries it:
 
 - `PROTOTYPE_SCOPES` gained `owner` — a display name, not a `DesignerId`,
   because Anjani has no flags or versions yet and a tab for her would be empty
   in two panels. It is design authority (what the surface should be), not
   merge authority. `UxDashboard.smoke.test.tsx` pins that Compass is hers.
-- **`promote-to-prototype` is owner-only in full.** Flag defaults and
-  `maturity` had been open to whoever ran it; the skill's own text argued that
-  gating `maturity` would leave designers unable to show anyone anything. The
-  answer is that the demo site's picker is a stakeholder surface, so "pickable"
-  is a promotion, and Refinement is the designer's way to show anyone anything.
-  A non-owner now gets the candidate list — grouped by the Prototypes row each
-  candidate reaches — and no edits. A group owned by someone else (Compass)
-  gets a sign-off question before its multiSelect, and the commit body names
-  both people.
+- **`promote-to-prototype` is per-group, and each group is its owner's.**
+  Candidates are grouped by the Prototypes row they reach; the scope owner
+  answers their group's questions and commits on the branch, a group the
+  caller does not own is listed and left alone, and `maturity` is the version
+  owner's (Eric's for his). The default dashboard version stays Jillienne's.
+  The shipper may apply an owner's already-made decision at merge time, asked
+  as a sign-off rather than a promotion, with both names in the commit body.
+  **`ship-to-main` gained the matching check**: a branch with a group its
+  owner has not decided is not ready, and the merge does not decide it.
 - **The Refinement hand-off carries `product`.** `LinkPrefill` gained the
   field, the page reads `?product=` with the other four params and validates it
   against `LINK_PRODUCTS`, and the form opens with that segment selected

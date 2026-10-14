@@ -495,9 +495,10 @@ describe('Prototypes — one row per scope, every row the same build', () => {
   })
 
   it('every scope names who decides what the surface should be', () => {
-    // 2026-10-14: design authority per scope (Anjani owns Compass), while
-    // promotion itself stays Jillienne's — see the note on PROTOTYPE_SCOPES.
-    // The skill reads this to know whose sign-off a Compass candidate needs.
+    // 2026-10-14: design authority per scope — Anjani owns Compass and runs
+    // the promotion for it on her branch; the merge stays Jillienne's. See the
+    // note on PROTOTYPE_SCOPES. The skill reads this to know whose group is
+    // whose.
     for (const s of PROTOTYPE_SCOPES) expect(s.owner, `${s.id} needs an owner`).toBeTruthy()
     expect(PROTOTYPE_SCOPES.find((s) => s.id === 'compass')?.owner).toBe('Anjani')
   })

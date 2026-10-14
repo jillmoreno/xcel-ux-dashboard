@@ -72,6 +72,15 @@ first, on this branch, before the merge.** Merging publishes to both sites, so
 the baseline has to be decided beforehand. Adding a NEW field (`maturity`,
 say) is not a baseline change — only a changed default is.
 
+⚠ **EVERY GROUP, NOT JUST A COMMIT (2026-10-14).** Candidates are grouped by
+the Prototypes row they reach, and each group is decided by its scope owner —
+Anjani for Compass, Jillienne for the rest (`PROTOTYPE_SCOPES` in
+`prototypeFeatures.ts`). A promotion commit on the branch is not enough on its
+own: check its body covers every group whose defaults changed. A group it
+names as *waiting on its owner*, or does not name at all, is NOT READY — hand
+the branch back to that owner. Do not decide it here: this skill is the merge,
+and the merge is the one thing on this list that is Jillienne's alone.
+
 ### 3. Verify — all three, on this branch
 
 ```bash
@@ -190,7 +199,8 @@ netlify api listSiteDeploys --data '{"site_id":"ux-demo-xceldashboard.netlify.ap
 - **Owner only.** A designer's branch is ready; Jillienne ships it.
 - **Never `git switch main`** — it is a worktree. Use `/Users/jill.moreno/xcel-main`.
 - **Never `git add -A`** without reading `git status --short` first.
-- **Flag defaults are decided before the merge**, via `promote-to-prototype`.
+- **Flag defaults are decided before the merge**, via `promote-to-prototype`,
+  **by each group's owner.** An undecided group does not merge.
 - **`--ff-only`.** A refusal means rebase, not `--no-ff`.
 - **Tree-identical before pushing `main`.** No exceptions — it is two live sites.
 - **Lint the diff, not the repo**, and never through a pipe.

@@ -131,14 +131,16 @@ export type FeatureCategory =
  *  decision, and the two halves of it are deliberately different people for
  *  Compass:
  *
- *    • The owner decides what the surface SHOULD be. Anjani owns Compass: her
- *      Refinement rows (tagged `product: 'compass'`) are the stream of work
- *      this row absorbs, and whether a Compass candidate becomes the baseline
- *      is her call on the design.
- *    • Only Jillienne PROMOTES — flag defaults, the default version, and
- *      `maturity` alike. `promote-to-prototype` stops for anyone else. So a
- *      Compass promotion is Anjani's decision applied by Jillienne's hand, and
- *      the skill asks for the sign-off and records both names.
+ *    • The owner decides what the surface SHOULD be, and RUNS
+ *      `promote-to-prototype` for it on their own branch. Anjani owns Compass:
+ *      her Refinement rows (tagged `product: 'compass'`) are the stream of
+ *      work this row absorbs, and which of her defaults become the baseline is
+ *      her call, committed by her. A promotion is a commit on a branch; it
+ *      reaches no stakeholder on its own.
+ *    • Only Jillienne MERGES — `ship-to-main` — and only she sets the default
+ *      dashboard version. That is the lock, for every scope. (For a few hours
+ *      on 2026-10-14 the whole promotion was hers too; she drew the line at
+ *      the merge instead, where it belongs.)
  *    • Anyone promotes to REFINEMENT; nothing about that changed.
  *
  *  A display name rather than a `DesignerId`, on purpose: Anjani has no flags
@@ -151,8 +153,9 @@ export const PROTOTYPE_SCOPES: ReadonlyArray<{
   id: PrototypeScope
   label: string
   question: string
-  /** Who decides what this surface should be. See the note above: not who
-   *  may promote it — that is Jillienne, for every scope. */
+  /** Who decides what this surface should be and promotes it on their branch.
+   *  See the note above: not who may MERGE it — that is Jillienne, for every
+   *  scope. */
   owner: string
 }> = [
   {
