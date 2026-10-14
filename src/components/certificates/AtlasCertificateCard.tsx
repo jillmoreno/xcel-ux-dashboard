@@ -32,6 +32,7 @@ export function AtlasCertificateCard({
   onOptions,
   inProgress = false,
   style,
+  barColor,
 }: {
   data: Certificate
   /** A certificate not yet earned — the course is still under way (Eric/Atlas
@@ -40,6 +41,9 @@ export function AtlasCertificateCard({
   inProgress?: boolean
   /** Merged over the card (Eric/Atlas White's outline, 2026-10-14). */
   style?: CSSProperties
+  /** The status bar's fill, in place of tan 300 (Eric/Atlas WIP's Secondary
+   *  200, 2026-10-14). */
+  barColor?: string
   /** Open the action-required detail slide-over. */
   onOpen?: (id: string) => void
   /** Kebab (⋮) menu click — falls back to a console stub. */
@@ -77,7 +81,7 @@ export function AtlasCertificateCard({
       {/* The status bar across the top (Figma 379:1368): the Certificate pill
           left, the status word right. */}
       <div style={TOP_ROW}>
-        <div style={STATUS_BAR}>
+        <div style={barColor ? { ...STATUS_BAR, background: barColor } : STATUS_BAR}>
           {inProgress ? null : (
             <span style={PILL}>
               <span aria-hidden style={{ display: 'inline-flex', justifyContent: 'center', width: 14 }}>

@@ -2576,6 +2576,9 @@ function CertificatesSection() {
       // White's cards: the guide's Secondary 100 fill with a 1px Secondary 200
       // outline (2026-10-14, Eric's request) — the tan ramp, by role, so the
       // other brands read the same tan.
+      // …and WIP's (Toned) status bars in the guide's Secondary 200 (same day);
+      // White keeps Secondary 300.
+      atlasBarColor={params.get('version') === 'eric-atlas-v3' ? 'var(--color-atlas-tan-200)' : undefined}
       atlasCardStyle={
         params.get('version') === 'eric-atlas-white'
           ? { background: 'var(--color-atlas-tan-100)', border: '1px solid var(--color-atlas-tan-200)' }

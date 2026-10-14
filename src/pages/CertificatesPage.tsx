@@ -39,6 +39,7 @@ export function CertificatesPage({
   atlasCards = false,
   inProgressIds,
   atlasCardStyle,
+  atlasBarColor,
 }: {
   embedded?: boolean
   hideSearch?: boolean
@@ -63,6 +64,8 @@ export function CertificatesPage({
   inProgressIds?: readonly string[]
   /** Merged over each Atlas card (Eric/Atlas White's outline). */
   atlasCardStyle?: CSSProperties
+  /** Each Atlas card's status-bar fill (Eric/Atlas WIP's). */
+  atlasBarColor?: string
 } = {}) {
   const { brand } = useAccount()
   const all = useMemo(() => certificatesFor(brand), [brand])
@@ -282,6 +285,7 @@ export function CertificatesPage({
                       onOpen={setDetailId}
                       inProgress={inProgressIds?.includes(cert.id)}
                       style={atlasCardStyle}
+                      barColor={atlasBarColor}
                     />
                   ) : (
                     <CertificateCard data={cert} onOpen={setDetailId} />
