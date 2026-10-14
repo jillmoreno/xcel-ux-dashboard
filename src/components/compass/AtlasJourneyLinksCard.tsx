@@ -42,9 +42,21 @@ export type AtlasJourneyLinksCardProps = {
   /** A 1px rule under the title, 16 either side as the Readiness card's
    *  (Eric/Atlas WIP's Home, 2026-10-13). */
   titleRule?: boolean
+  /** Merged over the title — End-to-End Demo passes its step EYEBROW (10px
+   *  uppercase, 2026-10-14, Jillienne's request: "Change to Eyebrow text") so
+   *  the card's label stops competing with the step titles beside it. Absent,
+   *  the Serif H8 every other host has. */
+  titleStyle?: CSSProperties
 }
 
-export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, withoutCoursePages = false, titleRule = false }: AtlasJourneyLinksCardProps) {
+export function AtlasJourneyLinksCard({
+  onOpenStep,
+  onOpenRequirements,
+  style,
+  withoutCoursePages = false,
+  titleRule = false,
+  titleStyle,
+}: AtlasJourneyLinksCardProps) {
   const [params, setParams] = useSearchParams()
   /* Which link is the page you are on — the four that are pages; the three
      sheet links never are. */
@@ -69,7 +81,7 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
           designer's request; the design sets it in Open Sans SemiBold 16). */}
       {/* "Quick Links" since 2026-10-07 (Eric's request); it was "More
           Information for Your Journey" ("Other …" before 2026-10-06). */}
-      <p style={TITLE}>Quick Links</p>
+      <p style={{ ...TITLE, ...titleStyle }}>Quick Links</p>
       {/* The card's 16 gap below it; 8 above — the gap less 8 (2026-10-13,
           Eric's request). */}
       {titleRule ? <span aria-hidden style={{ ...TITLE_RULE, marginTop: -8 }} /> : null}

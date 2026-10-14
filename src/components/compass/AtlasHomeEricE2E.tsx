@@ -718,6 +718,9 @@ export function AtlasHomeEricE2E({
           withoutCoursePages
           onOpenStep={onOpenStep}
           onOpenRequirements={onOpenRequirements}
+          // The title as the steps' eyebrow — "QUICK LINKS" at 10px, bold
+          // (2026-10-14, Jillienne's request: "Change to Eyebrow text").
+          titleStyle={{ ...STEP_EYEBROW, fontWeight: 700 }}
           // Outlined in Secondary 100 darkened 5% (2026-10-13, Eric's request;
           // 15% was tried and reverted); the exam-date card keeps Primary 200.
           // On White, as tall as the course-head panel beside it (2026-10-14,
