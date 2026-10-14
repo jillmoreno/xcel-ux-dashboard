@@ -972,7 +972,9 @@ const WHITE_PROGRESS_PANEL: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 16,
-  padding: '24px 32px',
+  // 8 top and bottom (2026-10-14, Eric's request: 24, then 16 less) — the
+  // cards inside keep their own 24.
+  padding: '8px 32px',
   boxSizing: 'border-box',
   borderRadius: 20,
   // Quick Links' border (2026-10-14, Eric's request; Primary 200 before).
