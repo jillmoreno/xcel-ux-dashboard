@@ -629,7 +629,8 @@ export function AtlasHomeEricE2E({
             <Step
               number={2}
               title={pass.title}
-              detail={pass.detail}
+              // No detail copy under the title (2026-10-14, Jillienne's request:
+              // "remove"). `pass.detail` still exists; pass it back to restore.
               link={pass.detailLabel ?? 'What to expect'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(pass.id) : undefined}
               /* THE TITLE IS THE WAY INTO THE EXAM INFORMATION SHEET — 2026-10-14,
@@ -667,24 +668,24 @@ export function AtlasHomeEricE2E({
             <Step
               number={3}
               title={state ? `Get Licensed in ${state}` : 'Get Licensed'}
-              detail={apply.detail}
+              // No detail copy here either (same day). `apply.detail` to restore.
               link={apply.detailLabel ?? 'How to apply'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(apply.id) : undefined}
               // …and this title opens the State Requirements sheet (same day,
               // Jillienne's request: "add same logic to the Get Licensed line").
               onTitle={onOpenRequirements}
             />
-            {onOpenRequirements ? (
-              <button
-                type="button"
-                data-cta-id="home.state-requirements"
-                className="cre-compass-secondary"
-                onClick={onOpenRequirements}
-                style={REQUIREMENTS}
-              >
-                {state ? `${state} State Requirements` : 'State Requirements'}
-              </button>
-            ) : null}
+            {/* THE "STATE REQUIREMENTS" BUTTON IS GONE on End-to-End Demo
+                (2026-10-14, Jillienne's request: "remove") — Step 3's title opens
+                that sheet now, and Quick Links still carries the row. ⚠ IT TOOK
+                `home.state-requirements` WITH IT: that CTA id no longer renders on
+                this version, so a user test cannot rig it here (Hybrid is the
+                same). To restore:
+                {onOpenRequirements ? (
+                  <button type="button" data-cta-id="home.state-requirements" className="cre-compass-secondary" onClick={onOpenRequirements} style={REQUIREMENTS}>
+                    {state ? `${state} State Requirements` : 'State Requirements'}
+                  </button>
+                ) : null} */}
           </div>
         </div>
       </section>
@@ -1221,6 +1222,8 @@ const CHEVRON: CSSProperties = {
   color: 'var(--color-compass-page-button)',
 }
 /* Hugs its label with 24 a side (2026-10-09, Eric) — it filled the column. */
+/* `REQUIREMENTS` — the State Requirements button's style, unreferenced since the
+   button went (2026-10-14). Kept for the restore note at the call site:
 const REQUIREMENTS: CSSProperties = {
   alignSelf: 'flex-start',
   padding: '0 24px',
@@ -1232,6 +1235,7 @@ const REQUIREMENTS: CSSProperties = {
   fontWeight: 700,
   fontSize: 14,
 }
+*/
 
 /* The Design bar's Progress control → the module's opening state and figure. */
 /* The Readiness level each Progress stage opens on (0 Novice … 4 Exam Ready).
