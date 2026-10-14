@@ -249,7 +249,8 @@ export function AtlasExamDateCard({
             </div>
             <div style={DAYS_TILE}>
               <HourglassClockThin size={35} aria-hidden />
-              <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: 11, lineHeight: '12px', textAlign: 'center', color: 'var(--color-text-primary)' }}>
+              {/* 16, the date's line height beside it (2026-10-14, Eric's request; it was 12). */}
+              <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: 11, lineHeight: '16px', textAlign: 'center', color: 'var(--color-text-primary)' }}>
                 <strong style={{ fontWeight: 700 }}>
                   {daysLeft === 0 ? 'Today' : `${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}`}
                 </strong>{' '}
@@ -405,6 +406,9 @@ const DAYS_TILE: CSSProperties = {
   ...TILE,
   flex: '1 1 0',
   minWidth: 0,
-  gap: 8,
+  // 7, not 8 (2026-10-14, Eric's request): the hourglass is 35 to the
+  // calendar's 38, so 35 + 7 puts this tile's text on the date tile's lines
+  // (38 + its 4 gap) — both 50 from the top.
+  gap: 7,
   background: 'var(--color-primary-100)',
 }
