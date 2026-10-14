@@ -126,6 +126,24 @@ export type FeatureCategory =
  *  three rows in one section each say which door they are. `question` is the
  *  one the row answers, and it is the test of whether a candidate row is a
  *  new scope or a second copy of an existing one.
+ *
+ *  `owner` IS DESIGN AUTHORITY, NOT MERGE AUTHORITY — 2026-10-14, Jillienne's
+ *  decision, and the two halves of it are deliberately different people for
+ *  Compass:
+ *
+ *    • The owner decides what the surface SHOULD be. Anjani owns Compass: her
+ *      Refinement rows (tagged `product: 'compass'`) are the stream of work
+ *      this row absorbs, and whether a Compass candidate becomes the baseline
+ *      is her call on the design.
+ *    • Only Jillienne PROMOTES — flag defaults, the default version, and
+ *      `maturity` alike. `promote-to-prototype` stops for anyone else. So a
+ *      Compass promotion is Anjani's decision applied by Jillienne's hand, and
+ *      the skill asks for the sign-off and records both names.
+ *    • Anyone promotes to REFINEMENT; nothing about that changed.
+ *
+ *  A display name rather than a `DesignerId`, on purpose: Anjani has no flags
+ *  or versions yet, so a designer tab for her would be an empty tab in two
+ *  panels. When she does, add her to `FLAG_DESIGNERS` and make this the id.
  * ───────────────────────────────────────────────────────────────────────── */
 export type PrototypeScope = 'invite' | 'end-to-end' | 'compass'
 
@@ -133,6 +151,9 @@ export const PROTOTYPE_SCOPES: ReadonlyArray<{
   id: PrototypeScope
   label: string
   question: string
+  /** Who decides what this surface should be. See the note above: not who
+   *  may promote it — that is Jillienne, for every scope. */
+  owner: string
 }> = [
   {
     id: 'invite',
@@ -140,16 +161,19 @@ export const PROTOTYPE_SCOPES: ReadonlyArray<{
     // No row yet (2026-10-14). The React flow does not exist; the lo-fi
     // argument for it is the walk-through and wireframes rows in Exploration.
     question: 'How does a learner get into the product?',
+    owner: 'Jillienne',
   },
   {
     id: 'end-to-end',
     label: 'End to end',
     question: 'What is the XCEL product right now?',
+    owner: 'Jillienne',
   },
   {
     id: 'compass',
     label: 'Compass',
     question: 'What is the study experience inside a course?',
+    owner: 'Anjani',
   },
 ]
 

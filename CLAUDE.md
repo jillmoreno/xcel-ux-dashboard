@@ -46,6 +46,18 @@ A scope with no row is a surface not built yet: `invite` is listed and empty
 until the purchase flow exists as a React route behind a flag and is promoted.
 A Prototypes row is `ready` by definition, so nothing is added before that.
 
+**Who decides, and who promotes, are two different columns (2026-10-14).**
+Each scope names an `owner`, which is design authority: Anjani owns Compass,
+so whether a Compass candidate becomes the baseline is her call on the design,
+made in Refinement or in conversation. **Promotion itself is Jillienne's for
+every scope** — flag defaults, the default dashboard version, and `maturity`
+alike. `promote-to-prototype` stops for anyone else and hands back the
+candidate list grouped by row; for a Compass group it asks whether Anjani has
+signed off before anything moves, and records both names in the commit.
+**Anyone promotes to Refinement**, and that door is unchanged —
+`promote-to-refinement` now reads the branch and tags the row's product
+(Compass files → Compass), which is the tag the Compass row later absorbs.
+
 Two things that follow, and both have bitten:
 
 - **A Refinement row pinned with `?ff=` tracks `main`,** so it goes stale

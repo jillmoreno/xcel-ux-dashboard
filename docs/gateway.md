@@ -195,8 +195,37 @@ a React route yet, and a Prototypes row is `ready` by definition.
 
 What this did NOT change: how work gets in. A branch is still reviewed in
 Refinement and promoted by `promote-to-prototype` flipping flag defaults on
-`main`; the skill's per-scope grouping and the Refinement form's product
-prefill are the next step, not this one. **It was called Demo
+`main`.
+
+### Phase 1 — the skills know about scopes and owners (2026-10-14)
+
+Same day, Jillienne's decisions: **Anjani owns the Compass baseline; anyone
+promotes to Refinement; only Jillienne promotes to Prototypes.** Three
+consequences, each in the file that carries it:
+
+- `PROTOTYPE_SCOPES` gained `owner` — a display name, not a `DesignerId`,
+  because Anjani has no flags or versions yet and a tab for her would be empty
+  in two panels. It is design authority (what the surface should be), not
+  merge authority. `UxDashboard.smoke.test.tsx` pins that Compass is hers.
+- **`promote-to-prototype` is owner-only in full.** Flag defaults and
+  `maturity` had been open to whoever ran it; the skill's own text argued that
+  gating `maturity` would leave designers unable to show anyone anything. The
+  answer is that the demo site's picker is a stakeholder surface, so "pickable"
+  is a promotion, and Refinement is the designer's way to show anyone anything.
+  A non-owner now gets the candidate list — grouped by the Prototypes row each
+  candidate reaches — and no edits. A group owned by someone else (Compass)
+  gets a sign-off question before its multiSelect, and the commit body names
+  both people.
+- **The Refinement hand-off carries `product`.** `LinkPrefill` gained the
+  field, the page reads `?product=` with the other four params and validates it
+  against `LINK_PRODUCTS`, and the form opens with that segment selected
+  (`Demo.test.tsx`). `promote-to-refinement` reads the tag off the branch:
+  Compass files only → `compass`, mixed → `both`, else `xcel`. That tag is what
+  the Compass Prototypes row later absorbs, so it stops being a filter and
+  starts being a destination.
+
+`retire-from-refinement` asks for one more word in the Archive row's `reason`:
+WHICH Prototypes row the work reached, since "promoted" no longer says. **It was called Demo
 until 2026-09-18**, and the product build was promoted into it on 2026-09-08;
 older notes that say "the Demo row" or "the Demo baseline" mean this section.
 

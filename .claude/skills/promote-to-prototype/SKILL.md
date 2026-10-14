@@ -1,9 +1,9 @@
 ---
 name: promote-to-prototype
-description: At merge time, decide which of a branch's changes become the PROTOTYPES baseline — the live XCEL product build stakeholders see. Run it ON THE PR, BEFORE MERGING. Diffs the branch against main, surfaces every flag whose committed default the branch changed (including flags gating new components) AND any change to the default DASHBOARD VERSION, asks per candidate whether — and to which variant — it becomes the baseline, asks which `wip` versions stakeholders should be able to pick, lists `surface: 'design'` controls separately because they never reach Prototypes, applies the FEATURE_FLAGS / dashboardVersions edits plus the docs note, commits, and reminds you to retire the branch's Refinement row. Making a version PICKABLE by stakeholders (`maturity`) is open to anyone; setting the DEFAULT dashboard version is OWNER-ONLY. Never moves tiles. Formerly "promote-to-demo" — that name still works as an alias. Trigger on "promote to prototype", "promote to demo", "merge this branch", "which changes go in the prototype", "ready to merge", "include in the prototype", "/promote-to-prototype", "/promote-to-demo".
-version: 1.1.0
+description: At merge time, decide which of a branch's changes become the PROTOTYPES baseline — the live XCEL product build stakeholders see. Run it ON THE PR, BEFORE MERGING. Diffs the branch against main, surfaces every flag whose committed default the branch changed (including flags gating new components) AND any change to the default DASHBOARD VERSION, asks per candidate whether — and to which variant — it becomes the baseline, asks which `wip` versions stakeholders should be able to pick, lists `surface: 'design'` controls separately because they never reach Prototypes, groups every candidate by the Prototypes ROW it reaches (end to end · Compass · invite) and asks for the scope owner's sign-off where that is not the caller, applies the FEATURE_FLAGS / dashboardVersions edits plus the docs note, commits, and reminds you to retire the branch's Refinement row. OWNER-ONLY since 2026-10-14 — flag defaults, `maturity` and the default version alike are Jillienne's; anyone else gets the candidate list as a hand-off and no edits. Never moves tiles. Formerly "promote-to-demo" — that name still works as an alias. Trigger on "promote to prototype", "promote to demo", "merge this branch", "which changes go in the prototype", "ready to merge", "include in the prototype", "/promote-to-prototype", "/promote-to-demo".
+version: 1.2.0
 author: UX Design — Colibri
-last_updated: 2026-10-05
+last_updated: 2026-10-14
 status: active
 ---
 
@@ -54,11 +54,46 @@ There is deliberately no "create a second prototype" skill. A new SCOPE is a
 `PROTOTYPE_SCOPES` decision, not a skill; a second row for an existing scope is
 Refinement. See CLAUDE.md, "Prototypes is the source of truth".
 
-⚠ **NOT YET DONE HERE (2026-10-14):** this skill still reads the baseline as
-ONE list. The next step is to group candidates by the scope they belong to —
-a Compass flag is a Compass-row decision — and to check ownership per row
-rather than against Jillienne alone. Until then, say which row each candidate
-reaches when you present it.
+## ⚠ Every candidate is grouped by the ROW it reaches, and each row has an owner
+
+Added 2026-10-14 with the second row. One list of flags was fine when there
+was one row to reach; with three, "promote this" has to say promote it WHERE,
+and the person whose design it is differs by row.
+
+| Scope | Row | Decides what it SHOULD be | Applies the promotion |
+|---|---|---|---|
+| `end-to-end` | `xcel-dashboard` | Jillienne | Jillienne |
+| `compass` | `xcel-compass` | **Anjani** | Jillienne |
+| `invite` | none yet | Jillienne | Jillienne |
+
+The table is `PROTOTYPE_SCOPES` in `prototypeFeatures.ts` — read `owner` from
+there, not from here, if they ever disagree.
+
+**How a candidate gets its scope** — mechanical first, judgement second:
+
+```bash
+grep -rl "<flag-key>" src/components src/pages | head     # where is it read?
+```
+
+- Read under `src/components/compass/` or `src/components/learning/Compass*`,
+  or a key beginning `compass-` → **`compass`**.
+- Everything else, including every dashboard VERSION → **`end-to-end`**. The
+  version decides which dashboard renders; that is the end-to-end row's
+  question.
+- ⚠ **A VERSION CAN REACH BOTH ROWS.** Hybrid draws Anjani's Compass rail, so a
+  version swap moves what the Compass row opens as well. List it under
+  end-to-end (where the lever is) AND name its Compass effect in the Compass
+  group, so Anjani's sign-off covers it.
+- `invite` has no row and no flags yet. When the flow exists its flags live
+  under its own route and this list grows a bullet.
+
+**What the owner column means in step 3.** For a group whose owner is not the
+caller — today that is every Compass candidate, since only Jillienne runs this
+— the question is not "promote?" but *"has Anjani decided this is what Compass
+should be?"* Her decision is made in Refinement (her rows are tagged
+`product: 'compass'` there) or in conversation; this skill does not make it
+for her and does not override it. The answer and both names go in the commit
+body: *Compass decisions Anjani's, applied by Jillienne.*
 
 ## ⚠ The baseline has TWO levers, and only one of them is a flag
 
@@ -92,8 +127,9 @@ are this skill's. Separate them before asking anything:**
   (`dashboardVersionsForAudience`); absent means `wip`, so it fails CLOSED and a
   version nobody marked stays design-site-only. The design site badges those
   rows "Design site only" so a designer can see which is which. **This is the
-  question most of Eric's work needs and the only version question anyone but
-  Jillienne may be asked.**
+  question most of Eric's work needs.** Until 2026-10-14 it was the one
+  version question anyone could answer; it is Jillienne's now, like the rest —
+  see the owner section below.
 - **The default** is `defaultDiscoverabilityVersionFor`. That IS the baseline,
   and it is a SWAP — see below.
 
@@ -103,24 +139,36 @@ The designer tabs let two designers each own versions; Prototypes still has
 exactly one answer, and an ask phrased as "add Eric's" when it means "replace
 Jill's" is how that gets decided by accident.
 
-### ⚠ Owner action — the default version is Jillienne's alone
+### ⚠ Owner action — ALL of it is Jillienne's (2026-10-14)
 
-`git config user.email` must be Jillienne's to change
-`defaultDiscoverabilityVersionFor`. If it is not, **do not ask the question at
-all** — not "shall I?", not "she will need to": raising a decision somebody
-cannot make reads as an invitation. Promote what they can (flag defaults, and
-the `maturity` question above, which is open to anyone), and name the version
-line in the hand-off as hers.
+```bash
+git config user.email      # jilliennemoreno@gmail.com or jill.moreno@scorebuilders.com
+```
 
-⚠ **`maturity` IS NOT OWNER-GATED and must not drift into being so.** Making
-Eric's version pickable by stakeholders is a readiness statement about his own
-work; replacing what the product IS is not. Conflating them would leave every
-designer waiting on Jillienne to show anyone anything.
+If that is not Jillienne, **this skill makes no edits and asks no promotion
+question** — not "shall I?", not "she will need to": raising a decision
+somebody cannot make reads as an invitation. Do steps 1 and 2 only, hand back
+the candidate list grouped by row as a note for her, and point at
+`promote-to-refinement`, which is the designer's door and is unchanged: anyone
+promotes to Refinement, and a Refinement row flipped public is visible to
+stakeholders without a single commit.
 
-This is a skill-level boundary, not a hook: `dashboardVersions.ts` is
-deliberately NOT in CLAUDE.md's protected table, because adding a version — the
-reachable act above — is something any designer should be able to do. It is the
-one line that chooses between them that is hers.
+⚠ **THIS WIDENED ON 2026-10-14, and the old text argued the other way.** Until
+then flag defaults were decided by whoever ran the skill and `maturity` was
+explicitly NOT owner-gated, on the argument that gating it "would leave every
+designer waiting on Jillienne to show anyone anything." Jillienne's decision:
+the demo site's picker is a stakeholder surface, so making a version pickable
+there IS a promotion, and the designer's way to show anyone anything is
+Refinement. All three levers — flag defaults, `maturity`, the default version —
+are hers. What a scope's OWNER has is design authority over what that row
+should be (Anjani, for Compass), which is a different thing and is asked for
+in step 3, not a permission to run this.
+
+This is a skill-level boundary, not a hook: `dashboardVersions.ts` and
+`FeatureFlagContext.tsx` are deliberately NOT in CLAUDE.md's protected table,
+because adding a version or a flag — the reachable act above — is something
+any designer must be able to do. It is the defaults, the one line that chooses
+between versions, and the readiness mark that are hers.
 
 ## ⚠ A DESIGN CONTROL IS NOT A BASELINE CANDIDATE
 
@@ -265,6 +313,12 @@ is, and say plainly that the default does not move — the most common answer is
 "yes, pickable, and Testing 3 is still the baseline", and an ask that does not
 make that obvious invites a no out of caution.
 
+**Then group the whole list by scope** — end-to-end · Compass · invite — using
+the rule in the scope section above, and head each group with its row and its
+owner: *"Compass (`xcel-compass`) — Anjani decides, Jillienne applies."* A
+candidate that reaches two rows appears under the one with the lever and is
+cross-referenced from the other. An empty group is omitted, not shown empty.
+
 ### 3. Ask which to include (never assume)
 
 Present the candidates with **AskUserQuestion**, `multiSelect: true`, one
@@ -281,7 +335,17 @@ and name it in the hand-off as hers.
 **`maturity` candidates go in a multiSelect of their own**, phrased as
 visibility rather than promotion: *"Which versions should stakeholders be able
 to pick?"*, with the current default named in the question so nobody reads a yes
-as a swap. Anyone may answer this one.
+as a swap.
+
+**A group owned by someone else gets a sign-off question FIRST**, before its
+multiSelect: *"These reach the Compass row, which is Anjani's. Has she decided
+these are what Compass should be?"* — options: *yes, as the branch has them* ·
+*yes, with changes (say which)* · *not yet — hold the Compass group*. A hold
+means every candidate in that group is treated as declined for THIS promotion
+(reverted to `main`'s value, step 4) and named in the hand-off as waiting on
+her, not as rejected. Do not fold this into the promotion multiSelect: a
+reviewer ticking boxes is deciding flags, and "did someone else agree" is not a
+flag.
 
 **Design controls get asked only when a default looks like a bad starting
 point** — *"`atlas-fonts` opens on DM Serif; is that where a reviewer should
@@ -376,7 +440,11 @@ git push
 
 The commit body is where the ARGUMENT goes — for each declined candidate, what
 was actually wrong with it. "Not promoted" is worthless in six months; the
-reason is what tells the next reader whether it still holds.
+reason is what tells the next reader whether it still holds. **Head each
+group with its row, and for a group owned by someone else name both people**
+— *Compass: Anjani's decision, applied by Jillienne* — because the row's
+`owner` says who decides and the commit's author says who typed, and the two
+being different is exactly the fact worth recording.
 
 Then tell Jillienne the branch is ready to merge, and summarise: which flag
 defaults now ship in Prototypes, and what stayed sandbox-only.
@@ -400,16 +468,20 @@ surface instead. Retiring it is for when the conversation is over.
   edit. Prototypes has one row per scope and a two-directional test.
 - **Diff `dashboardVersions.ts` too.** The default version is the biggest lever
   on the baseline and is not in the flag catalog.
-- **The default version is Jillienne's alone.** Anyone may ADD a version;
-  only she chooses which one Prototypes renders. Stop at that candidate and
-  hand it back.
+- **Promotion is Jillienne's alone — all three levers.** Anyone may ADD a
+  flag or a version; only she decides a default, the default version, or a
+  `maturity`. If the caller is not her, produce the grouped candidate list as
+  a hand-off and change nothing.
+- **A scope's owner decides what the row should be.** Compass is Anjani's:
+  ask for her sign-off per group before any Compass candidate is promoted,
+  and record both names in the commit body.
 - **Promoting a version displaces one.** Name the one being replaced when you
   ask, or the decision gets made by accident.
 - **`maturity` and the default are DIFFERENT QUESTIONS.** One adds a choice for
   stakeholders; the other changes what the product is. Never one question.
-- **Anyone may answer the `maturity` one.** It is a readiness statement about a
-  designer's own work; gating it would leave everyone waiting on Jillienne to
-  show anyone anything.
+- **`maturity` is a promotion too** (2026-10-14; it was open to anyone before).
+  The demo site's picker is a stakeholder surface. The designer's way to show
+  anyone anything is Refinement.
 - **A `surface: 'design'` flag is NOT a baseline candidate.** It never reaches
   Prototypes, and declining it the way you decline a product flag turns off a
   control on its author's own bar.

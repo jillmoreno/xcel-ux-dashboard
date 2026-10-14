@@ -164,7 +164,12 @@ export type LinkBoardPresentation = {
   showBranches?: boolean
 }
 
-export type LinkPrefill = { url: string; title: string; note: string }
+/** What `promote-to-refinement` hands the page. `product` arrived 2026-10-14:
+ *  the skill reads it off the branch (Compass files → `compass`), so a row
+ *  for Anjani's work opens already tagged and the Compass filter — and the
+ *  Compass Prototypes row it will one day be promoted into — can find it.
+ *  Absent or unreadable means the form's own default, exactly as before. */
+export type LinkPrefill = { url: string; title: string; note: string; product?: LinkProduct }
 
 /** One glyph per `LinkThumbKind`. Kept HERE rather than in `linkRowThumb.ts`
  *  so that module stays free of JSX and can be unit-tested as plain functions. */
@@ -1138,7 +1143,14 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     // edits it, so it cannot be derived during render.
     /* eslint-disable react-hooks/set-state-in-effect */
     setPrefillConsumed(true)
-    setDraft({ ...EMPTY_DRAFT, addedBy: readLastAuthor(), url: prefill.url, title: prefill.title, note: prefill.note })
+    setDraft({
+      ...EMPTY_DRAFT,
+      addedBy: readLastAuthor(),
+      url: prefill.url,
+      title: prefill.title,
+      note: prefill.note,
+      product: prefill.product ?? DEFAULT_PRODUCT,
+    })
     setErrors([])
     setEditing('new')
     /* eslint-enable react-hooks/set-state-in-effect */

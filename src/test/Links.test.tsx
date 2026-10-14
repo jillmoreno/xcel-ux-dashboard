@@ -660,4 +660,22 @@ describe('the Links section on the gateway', () => {
       PROTOTYPE_FEATURES.filter((f) => f.category === 'prototype').map((f) => f.title),
     )
   })
+
+  it('reads ?product= off the promote-to-refinement hand-off and opens the form on it', async () => {
+    // 2026-10-14. The page owns the five params (`demoPrefill`); the panel
+    // test covers what the panel does with a product, this covers that the
+    // page actually parses it and strips it with the others. `compass` is
+    // not the form's default, so a pass here cannot be the default matching.
+    mockEndpoint([])
+    renderDashboard('/?section=demo&add=1&url=https%3A%2F%2Ffeat-x--site.netlify.app%2F&title=X&note=&product=compass')
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('radio', { name: 'Compass' })).toBeChecked()
+  })
+
+  it('ignores a ?product= it does not recognise', async () => {
+    mockEndpoint([])
+    renderDashboard('/?section=demo&add=1&url=https%3A%2F%2Ffeat-x--site.netlify.app%2F&title=X&note=&product=marketing')
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('radio', { name: 'Both' })).toBeChecked()
+  })
 })

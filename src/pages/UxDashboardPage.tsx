@@ -23,7 +23,7 @@ import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { ArchiveTable } from '@/components/prototype/ArchiveTable'
 import { QaNotesPanel } from '@/components/prototype/QaNotesPanel'
 import { DemoPanel, LinksPanel, PrdsPanel, ResearchPanel } from '@/components/prototype/LinksPanel'
-import { useLinkCount } from '@/data/linkStore'
+import { LINK_PRODUCTS, useLinkCount, type LinkProduct } from '@/data/linkStore'
 import { useDemoCount } from '@/data/demoStore'
 import { useResearchCount } from '@/data/researchStore'
 import { usePrdCount } from '@/data/prdStore'
@@ -1194,24 +1194,33 @@ export function UxDashboardPage() {
   }
 
   /**
-   * `?section=demo&add=1&url=…&title=…&note=…` — the `promote-to-refinement`
-   * skill's hand-off (2026-09-21). The page owns the router state, so it is
-   * the page that reads the four params and takes them off the address once
+   * `?section=demo&add=1&url=…&title=…&note=…&product=…` — the
+   * `promote-to-refinement` skill's hand-off (2026-09-21; `product` added
+   * 2026-10-14 so a Compass branch opens tagged Compass). The page owns the
+   * router state, so it is
+   * the page that reads the five params and takes them off the address once
    * `DemoPanel` has opened its form with them; the panel stripping them itself
    * via `history.replaceState` would leave the router believing they were
    * still there, and the next `setSection` would write them straight back.
    * Read once, into state, so the object identity is stable across renders.
    */
-  const [demoPrefill] = useState(() =>
-    params.has('add')
-      ? { url: params.get('url') ?? '', title: params.get('title') ?? '', note: params.get('note') ?? '' }
-      : null,
-  )
+  const [demoPrefill] = useState(() => {
+    if (!params.has('add')) return null
+    // Validated against the catalog, not trusted: an unknown tag falls back to
+    // the form's own default rather than reaching the draft as a string.
+    const product = params.get('product')
+    return {
+      url: params.get('url') ?? '',
+      title: params.get('title') ?? '',
+      note: params.get('note') ?? '',
+      product: LINK_PRODUCTS.some((x) => x.id === product) ? (product as LinkProduct) : undefined,
+    }
+  })
   const consumeDemoPrefill = useCallback(() => {
     setParams(
       (prev) => {
         const p = new URLSearchParams(prev)
-        for (const k of ['add', 'url', 'title', 'note']) p.delete(k)
+        for (const k of ['add', 'url', 'title', 'note', 'product']) p.delete(k)
         return p
       },
       { replace: true },

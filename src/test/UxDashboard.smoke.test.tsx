@@ -494,6 +494,14 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     }
   })
 
+  it('every scope names who decides what the surface should be', () => {
+    // 2026-10-14: design authority per scope (Anjani owns Compass), while
+    // promotion itself stays Jillienne's — see the note on PROTOTYPE_SCOPES.
+    // The skill reads this to know whose sign-off a Compass candidate needs.
+    for (const s of PROTOTYPE_SCOPES) expect(s.owner, `${s.id} needs an owner`).toBeTruthy()
+    expect(PROTOTYPE_SCOPES.find((s) => s.id === 'compass')?.owner).toBe('Anjani')
+  })
+
   it('no row outside Prototypes carries a scope', () => {
     // The field means "which door of the product is this the source of truth
     // for". On an Exploration or handoff row it would be a claim the section
