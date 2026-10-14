@@ -1,4 +1,6 @@
 import { useEffect, type CSSProperties } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useEndToEndDemoParams } from './endToEndDemo'
 
 /**
  * INVITED PRODUCT DETAIL — `/end-to-end-demo` (2026-10-14, Eric's request;
@@ -9,8 +11,9 @@ import { useEffect, type CSSProperties } from 'react'
  *
  * DEMO DATA: the partner name is the design's own.
  *
- * The design's own fonts and colours throughout (Eric's request): Inter,
- * Rockwell (for the design's Amasis MT) and Avenir, #E6E6E6 / #D1D1D1 — the `--font-e2e-*` and
+ * The design's own fonts and colours throughout (Eric's request): Avenir
+ * (the header's Inter too, since 2026-10-14) and Rockwell (for the design's
+ * Amasis MT), #E6E6E6 / #D1D1D1 — the `--font-e2e-*` and
  * `--color-e2e-*` tokens (tokens.css says which of the faces can load where).
  * The logo is the repo's copy of the design's artwork.
  *
@@ -19,7 +22,7 @@ import { useEffect, type CSSProperties } from 'react'
  * so this page puts the palette on <html> as the dashboard's shell does
  * (`data-atlas-palette` / `data-atlas-brand`), and takes it off on leaving.
  * Under that, the course header (Figma 420:2080): breadcrumb, title, and the
- * price card with Add to Cart (not wired yet). Then the course details, Figma
+ * price card, whose Purchase Now opens the checkout (`InvitedCheckoutPage`). Then the course details, Figma
  * 420:2099 — a 640 column 240 in, its copy verbatim from the design; the two
  * links are not wired either. Last, the footer, Figma 420:2176 — its links are
  * the design's labels, not wired.
@@ -28,6 +31,9 @@ import { useEffect, type CSSProperties } from 'react'
  * CTA brick navy.
  */
 export function InvitedProductDetailPage() {
+  const navigate = useNavigate()
+  const [params] = useSearchParams()
+  useEndToEndDemoParams()
   useEffect(() => {
     const root = document.documentElement
     const before = { palette: root.dataset.atlasPalette, brand: root.dataset.atlasBrand }
@@ -39,16 +45,9 @@ export function InvitedProductDetailPage() {
     const titleTimer = window.setTimeout(() => {
       document.title = 'Invited Product Detail'
     }, 0)
-    // Inter, the header's face — the only one of the design's three on Google
-    // Fonts.
-    const link = document.createElement('link')
-    link.rel = 'stylesheet'
-    link.href = INTER_HREF
-    document.head.appendChild(link)
     return () => {
       window.clearTimeout(titleTimer)
       document.title = titleBefore
-      link.remove()
       if (before.palette == null) delete root.dataset.atlasPalette
       else root.dataset.atlasPalette = before.palette
       if (before.brand == null) delete root.dataset.atlasBrand
@@ -100,8 +99,14 @@ export function InvitedProductDetailPage() {
           </div>
           <div style={PRICE_CARD}>
             <p style={PRICE}>$299.00</p>
-            <button type="button" className="cre-e2e-add-to-cart" style={ADD_TO_CART}>
-              Add to Cart
+            {/* Straight to the checkout (2026-10-14, Eric's request). */}
+            <button
+              type="button"
+              className="cre-e2e-add-to-cart"
+              style={ADD_TO_CART}
+              onClick={() => navigate(`/end-to-end-demo/checkout?${params.toString()}`)}
+            >
+              Purchase Now
             </button>
           </div>
         </div>
@@ -279,7 +284,6 @@ const HOW_IT_WORKS = [
   'Step 4 - Pass Your Exam! After successfully completing the 3-part training program in its entirety, you will have learned all the material needed to pass your exam on the first attempt.',
 ]
 
-const INTER_HREF = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap'
 
 const PAGE: CSSProperties = {
   minHeight: '100vh',
@@ -289,20 +293,24 @@ const PAGE: CSSProperties = {
 /* 64 tall: 8 above and below the 48 logo (2026-10-14, Eric's request: 24
    less than the design's 88, which had 20). The 1px outline is inset, as
    Figma draws its stroke inside the frame, so it adds no height. */
+/* Right-aligned, its logo ending 32 from the window's right edge (2026-10-14,
+   Eric's requests: centred, then on the content's 240, then 56, 40, 32). */
 const HEADER: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center',
+  justifyContent: 'flex-end',
   gap: 16,
-  padding: '8px 40px',
+  padding: '8px 32px',
   background: 'var(--color-fixed-light)',
   boxShadow: 'inset 0 0 0 1px var(--color-e2e-partner-outline)',
 }
 
+/* Both lines the same: Avenir Heavy 13 (2026-10-14, Eric's request; the
+   design's Inter Bold). */
 const TEXT: CSSProperties = {
   margin: 0,
-  fontFamily: 'var(--font-e2e-inter)',
-  fontWeight: 700,
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 800,
   fontSize: 13,
   lineHeight: 'normal',
   color: 'var(--color-neutral-950)',
@@ -426,7 +434,7 @@ const COURSE_TITLE: CSSProperties = {
   color: 'var(--color-fixed-light)',
 }
 
-/* 350 wide, 1px #DDD, 10 radius: the price, then Add to Cart 25 in from
+/* 350 wide, 1px #DDD, 10 radius: the price, then Purchase Now (the design's Add to Cart) 25 in from
    each side. */
 const PRICE_CARD: CSSProperties = {
   width: 350,

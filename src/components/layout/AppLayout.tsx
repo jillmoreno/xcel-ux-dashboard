@@ -18,8 +18,15 @@ import { FeatureFlagPanel } from '@/components/account/FeatureFlagPanel'
 import { DeviceFrameProvider, DeviceFrame } from './DeviceFrameContext'
 import { PrototypeChrome } from './PrototypeChrome'
 import { MobileNavProvider } from './MobileNavContext'
+import { EndToEndPageSync } from '@/pages/EndToEndPageSync'
 
-export function AppLayout() {
+/**
+ * `bare` (2026-10-14, Eric's request) — the providers and the prototype chrome
+ * (both control bars) WITHOUT the product's Header: for pages that draw their
+ * own header, like the End-to-End Demo's partner pages. The page renders as is,
+ * with no <main> around it (it brings its own).
+ */
+export function AppLayout({ bare = false }: { bare?: boolean } = {}) {
   const { pathname } = useLocation()
   const onRebrand = pathname === '/dashboard-rebrand'
   const [navBlocked, setNavBlocked] = useState(false)
@@ -72,6 +79,9 @@ export function AppLayout() {
                     (default) renders full-width. The FeatureFlagPanel stays
                     OUTSIDE the frame so its slide-over covers the viewport. */}
                 <DeviceFrameProvider>
+                  {/* The End-to-End Demo's Page control ↔ its route. Here, under
+                      the flag store, because its pages span both layouts. */}
+                  <EndToEndPageSync />
                   {/* MobileNavProvider bridges the header's hamburger to the
                       mobile shell's nav drawer (see MobileNavContext). */}
                   <MobileNavProvider>
@@ -79,6 +89,9 @@ export function AppLayout() {
                         passed to DeviceFrame so it can render full-width ABOVE
                         the centered browser-window card in the Demo frame. */}
                     <DeviceFrame chrome={<PrototypeChrome />}>
+                      {bare ? (
+                        <Outlet />
+                      ) : (
                       <div
                         className="min-h-screen flex flex-col"
                         style={{ background: 'var(--color-surface-page)' }}
@@ -115,6 +128,7 @@ export function AppLayout() {
                           <Outlet />
                         </main>
                       </div>
+                      )}
                     </DeviceFrame>
                   </MobileNavProvider>
                   <FeatureFlagPanel />
