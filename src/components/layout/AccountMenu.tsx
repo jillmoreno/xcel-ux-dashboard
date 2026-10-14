@@ -43,7 +43,9 @@ export function AccountMenu({
   // initials and an avatar, but no email. Left as an authored default rather
   // than derived from the name — `first.last@gmail.com` would be a guess
   // rendered as a fact, which is the `addedBy` rule from the Links panel.
-  email = 'alicia.navarro@gmail.com',
+  // Jordan's since 2026-10-14 (Jillienne's request) — the name has been Jordan
+  // Navarro since 2026-09-29 and the two-row Atlas header shows the same pair.
+  email = 'jordan.navarro@gmail.com',
   avatarUrl: avatarUrlProp,
   isPro = true,
   onOpenHelp,

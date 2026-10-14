@@ -58,7 +58,10 @@ export function AtlasHeaderConnected() {
       current={current}
       user={{
         name: `${user.firstName} ${user.lastName}`,
-        email: 'alicia.navarro@gmail.com',
+        // Jordan's, to match the name above (2026-10-14, Jillienne's request —
+        // it read alicia.navarro under "Jordan Navarro"). Authored, not derived:
+        // `DemoUser` carries no email, the same note as `AccountMenu`.
+        email: 'jordan.navarro@gmail.com',
         photoUrl: avatarOverride ?? user.avatarUrl,
       }}
       notificationCount={unread}

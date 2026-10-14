@@ -537,8 +537,10 @@ export function AtlasHomeEricE2E({
             )}
           </div>
 
-          {/* 8 more on each side of it on White (2026-10-14, Eric's request). */}
-          <span aria-hidden style={{ width: 1, flex: 'none', background: 'var(--color-primary-100)', ...(onWhite ? { marginLeft: 8, marginRight: 8 } : null) }} />
+          {/* THE 1px RULE BETWEEN THE COLUMNS IS GONE on End-to-End Demo
+              (2026-10-14, Jillienne's request, the day it became the baseline).
+              WIP's and White's Homes keep theirs. To bring it back:
+              <span aria-hidden style={{ width: 1, flex: 'none', background: 'var(--color-primary-100)', marginLeft: 8, marginRight: 8 }} /> */}
 
           {/* Right: the journey — at most 335, White's (2026-10-13, Eric's
               request). */}
