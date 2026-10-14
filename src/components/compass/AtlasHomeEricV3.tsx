@@ -653,6 +653,8 @@ export function AtlasHomeEricV3({
             ...RAIL_CARD_BORDER,
             border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)',
             ...(onWhite && headH ? { height: headH } : null),
+            // …and its 20 corners (same day).
+            ...(onWhite ? { borderRadius: 20 } : null),
           }}
         />
 
@@ -803,7 +805,8 @@ const PAGE: CSSProperties = {
    and the progress figures' labels, re-pointed here so WIP is untouched. */
 const WHITE_PAGE: CSSProperties = {
   ...PAGE,
-  gap: 40,
+  // 32 between Quick Links and the course card (2026-10-14: 40, then 8 less).
+  gap: 32,
   ['--color-compass-page-eyebrow' as string]: 'var(--color-neutral-800)',
   ['--atlas-progress-label' as string]: 'var(--color-neutral-800)',
 }
