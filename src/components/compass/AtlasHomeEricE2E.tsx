@@ -712,7 +712,10 @@ export function AtlasHomeEricE2E({
           // Eric's request).
           style={{
             ...RAIL_CARD_BORDER,
-            border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)',
+            // NO OUTLINE on End-to-End Demo (2026-10-14, Jillienne's request:
+            // "remove the outline"). WIP's and White's cards keep the Secondary
+            // 100 darkened 5% stroke this replaced; the padding stays.
+            border: 'none',
             ...(onWhite && headH ? { height: headH } : null),
             // …and its 20 corners (same day).
             ...(onWhite ? { borderRadius: 20 } : null),
