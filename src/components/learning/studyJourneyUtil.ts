@@ -478,10 +478,18 @@ export function journeyStopsFor(
                The stop already carries `completed` and `hours`, so the rail
                composes from the same two numbers this line used to interpolate
                — there is no second source and the two cannot disagree. */
+            /* ⚠ THE STOP'S OWN COUNT, NOT THE NEW YORK CONSTANT — 2026-10-15,
+               when the Course control gave the qualifying journey a Florida
+               and a Texas arm. This read `NY_LH_PRELICENSING_LESSONS` (42)
+               while the row's figures come from the PATH, so a Florida course
+               titled itself "(42)" above its own 36 — the two-sources failure
+               the notes above are entirely about, arriving from a direction
+               they did not anticipate. The fallback keeps New York's 42 for a
+               path that states no count of its own. */
             title:
               opts.lessonProgressTitle && typeof courseStops[0].completed === 'number'
                 ? 'Pre-Licensing Lessons'
-                : `Pre-Licensing Lessons (${NY_LH_PRELICENSING_LESSONS})`,
+                : `Pre-Licensing Lessons (${courseStops[0].hours ?? NY_LH_PRELICENSING_LESSONS})`,
           },
         ]
       : courseStops
