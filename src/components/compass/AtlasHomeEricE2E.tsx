@@ -137,10 +137,7 @@ export function AtlasHomeEricE2E({
   examDate,
   notStarted = false,
   onBegin,
-  /* `onOverview` is NOT read here since 2026-10-15 (Jillienne's request):
-     this Home gives no way into the course overview. The prop stays in the
-     type so `LearnerFocusedBand` passes it unchanged; WIP, V3 and White keep
-     their Course Overview buttons. */
+  onOverview,
   onOpenStop,
   onOpenStep,
   onOpenRequirements,
@@ -374,6 +371,7 @@ export function AtlasHomeEricE2E({
             cover={shownCover ?? undefined}
             title={shownTitle}
             onCover={() => setWhiteHead(false)}
+            onOverview={onOverview}
             onBegin={onBegin}
             beginLabel={progressPick === 'not-started' ? 'Begin Course' : 'Resume Course'}
             meta={courseMeta}
@@ -401,13 +399,25 @@ export function AtlasHomeEricE2E({
               </h2>
               {courseMeta}
             </div>
-            {/* The card's action, at the main buttons' size (2026-10-06, the
-                designer's request): Begin Course, MOVED here from the Study
-                Journey's current stop. Course Overview — the outline button
-                beside it, a 10px chip before that — was REMOVED 2026-10-15
-                (Jillienne's request): the Atlas Learning row gives no way into
-                the course overview. */}
+            {/* The card's two actions, at the main buttons' size (2026-10-06,
+                the designer's request): Course Overview — was a 10px chip —
+                as the outline button, and Begin Course, MOVED here from the
+                Study Journey's current stop. */}
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              {onOverview ? (
+                <button
+                  type="button"
+                  className="cre-compass-secondary cre-atlas-home-secondary"
+                  // DISABLED on this Home (2026-10-15, Jillienne's request):
+                  // the button stays, the course overview is not reachable
+                  // from it. `onOverview` is deliberately not wired.
+                  disabled
+                  // Two weights under the buttons' Bold, Medium 500 (2026-10-06).
+                  style={{ ...HEADER_BUTTON, ...OVERVIEW_DISABLED }}
+                >
+                  Course Overview
+                </button>
+              ) : null}
               <button
                 type="button"
                 className="cre-compass-primary cre-compass-btn-primary"
@@ -929,8 +939,9 @@ function WhiteStyleHead({
           <button
             type="button"
             className="cre-compass-secondary cre-atlas-home-secondary"
-            onClick={onOverview}
-            style={{ ...HEADER_BUTTON, fontWeight: 500, width: 130, flex: 'none' }}
+            // DISABLED, as the card's own layout has it (2026-10-15).
+            disabled
+            style={{ ...HEADER_BUTTON, ...OVERVIEW_DISABLED, width: 130, flex: 'none' }}
           >
             Course Overview
           </button>
@@ -1131,6 +1142,9 @@ const HEADER_BUTTON: CSSProperties = {
   fontSize: 13.5,
   lineHeight: '20.25px',
 }
+/* Course Overview, disabled (2026-10-15, Jillienne's request): Medium 500 as
+   before, faded as `.cre-compass-step:disabled` fades, no pointer. */
+const OVERVIEW_DISABLED: CSSProperties = { fontWeight: 500, opacity: 0.4, cursor: 'default' }
 const CHEVRON: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
