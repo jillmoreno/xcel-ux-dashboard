@@ -18,7 +18,7 @@ import {
 import { COMPASS_BUTTON } from './compassButton'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
 import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
-import { clearExamDate, readExamDate, useExamDate } from '@/data/examDateStore'
+import { clearExamDate, readExamDate } from '@/data/examDateStore'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
@@ -269,8 +269,6 @@ export function AtlasHomeEricE2E({
      another version is gone once this one is opened at 0% — acceptable because
      it is reviewer input, not product data; the card offers the date again. */
   const atNotStarted = notStarted || progressPick === 'not-started'
-  // The stored date, for the Quick Links card's "Quick Question" eyebrow.
-  const storedExamDate = useExamDate()
   useEffect(() => {
     if (!atNotStarted) return
     if (readExamDate()) clearExamDate()
@@ -441,6 +439,25 @@ export function AtlasHomeEricE2E({
         )}
 
         </div>
+        {/* THE EXAM-DATE LINE, UNDER THE CURRENT COURSE PANEL — 2026-10-14,
+            Jillienne's request ("we had a exam date line that was the same
+            width as the current course section, lets bring that back and place
+            it under the current course widget"). The under-course placement
+            Testing 3 had: `ExamScheduleWidget` compact — the "State Exam"
+            eyebrow and the question until a date exists, then one line, `May 26,
+            2026 | 15 days until your exam`, with Edit. A sibling of the head
+            panel in the card's column, so it is the panel's width by layout,
+            on the panel's own surface (`EXAM_LINE_SHELL`). It moved here from
+            the Quick Links card the same day; before that, Step 2. */}
+        {onWhite ? (
+          <ExamScheduleWidget
+            key={refreshKey}
+            shell={EXAM_LINE_SHELL}
+            onOpenStep={onOpenStep}
+            stateName={state || undefined}
+            compact
+          />
+        ) : null}
         {onWhite ? null : <span aria-hidden style={RULE} />}
 
         {/* 32 either side of the rule, White's (2026-10-13, Eric's request);
@@ -711,31 +728,10 @@ export function AtlasHomeEricE2E({
           // The title as the steps' eyebrow — "QUICK LINKS" at 10px, bold
           // (2026-10-14, Jillienne's request: "Change to Eyebrow text").
           titleStyle={{ ...STEP_EYEBROW, fontWeight: 700 }}
-          /* THE EXAM-DATE QUESTION, UNDER THE LINKS — 2026-10-14, Jillienne's
-             request: a divider, the "Quick Question" eyebrow (the Figma card's
-             own, see `ExamScheduleWidget`), then Hybrid's logic: the question
-             in the heading face, "Yes, I know the date" first, the date to the
-             shared store, the compact readout with the flip countdown. The
-             eyebrow shows only while no date is stored — the saved readout
-             carries its own "Exam Date" eyebrow, and two stacked would be the
-             heading-under-a-heading the widget's notes warn about. */
-          footer={
-            <>
-              <span aria-hidden style={RULE} />
-              {storedExamDate ? null : <p style={{ ...STEP_EYEBROW, fontWeight: 700 }}>Quick Question</p>}
-              <ExamScheduleWidget
-                key={refreshKey}
-                shell={E2E_EXAM_SHELL}
-                onOpenStep={onOpenStep}
-                stateName={state || undefined}
-                compact
-                countdown="flip"
-                // `plain`: pacing's flow, the question in the links' own 13px
-                // body text (2026-10-14, Jillienne: "make this normal text").
-                treatment="plain"
-              />
-            </>
-          }
+          /* The exam-date question sat here for part of 2026-10-14 (a divider,
+             a "Quick Question" eyebrow, the widget in its `plain` treatment)
+             and moved under the Current course panel the same day — see
+             `EXAM_LINE_SHELL`. The card's `footer` slot stays. */
           // Outlined in Secondary 100 darkened 5% (2026-10-13, Eric's request;
           // 15% was tried and reverted); the exam-date card keeps Primary 200.
           // On White, as tall as the course-head panel beside it (2026-10-14,
@@ -1149,10 +1145,17 @@ const TITLE: CSSProperties = {
 }
 // Page and step dividers in primary-100 (2026-10-09, Eric; briefly 200) — were the warm nav rule.
 const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-primary-100)' }
-/* The exam-date widget's `shell` inside Step 2: no card at all (2026-10-14). The
-   `exam-card-background` flag still spreads over this, so `tint` / `outline`
-   would frame it — the baseline is `white`, which is this. */
-const E2E_EXAM_SHELL: CSSProperties = {}
+/* The exam-date LINE under the Current course panel (2026-10-14): the panel's
+   own surface and corners, slimmer — 16 top and bottom, the panel's 40 at the
+   sides so the eyebrow lines up with the course title above it. The
+   `exam-card-background` flag still spreads over this (`tint` / `outline`);
+   the baseline is `white`, which is this. */
+const EXAM_LINE_SHELL: CSSProperties = {
+  padding: '16px 40px',
+  borderRadius: 20,
+  background: 'var(--color-primary-100)',
+  boxSizing: 'border-box',
+}
 /* The design's text links: Open Sans Bold 13, the brand's button colour. */
 const LINK: CSSProperties = {
   alignSelf: 'flex-start',
