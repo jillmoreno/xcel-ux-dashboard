@@ -1142,9 +1142,11 @@ const HEADER_BUTTON: CSSProperties = {
   fontSize: 13.5,
   lineHeight: '20.25px',
 }
-/* Course Overview, disabled (2026-10-15, Jillienne's request): Medium 500 as
-   before, faded as `.cre-compass-step:disabled` fades, no pointer. */
-const OVERVIEW_DISABLED: CSSProperties = { fontWeight: 500, opacity: 0.4, cursor: 'default' }
+/* Course Overview, disabled (2026-10-15, Jillienne's request): DRAWN EXACTLY
+   AS BEFORE — Medium 500, full colour, the same outline — and inert, the way
+   `.cre-compass-player-btn:disabled` is: not faded ("it should match what it
+   was before"), no hover, no pointer. */
+const OVERVIEW_DISABLED: CSSProperties = { fontWeight: 500, pointerEvents: 'none' }
 const CHEVRON: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
