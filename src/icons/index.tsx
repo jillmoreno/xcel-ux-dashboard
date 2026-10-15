@@ -12,6 +12,9 @@ import type { CSSProperties, SVGProps } from 'react'
 // Raw SVG-as-React-component imports (vite-plugin-svgr).
 import ArrowLeftSvg from './arrow-left.svg?react'
 import ArrowLeftSolidSvg from './arrow-left-solid.svg?react'
+import SquareSvg from './square.svg?react'
+import SquareCheckSvg from './square-check.svg?react'
+import CircleXmarkThinSvg from './circle-xmark-thin.svg?react'
 import BarsSvg from './bars.svg?react'
 import ArrowRightSvg from './arrow-right.svg?react'
 import ArrowsRotateSvg from './arrows-rotate.svg?react'
@@ -238,6 +241,9 @@ function makeIcon(Svg: React.FC<SVGProps<SVGSVGElement>>) {
    FA 7 Pro Light source. */
 export const ArrowLeft = makeIcon(ArrowLeftSvg)
 export const ArrowLeftSolid = makeIcon(ArrowLeftSolidSvg) // FA: arrow-left (solid), 7.3.1
+export const Square = makeIcon(SquareSvg) // FA: square (light), 7.3.1
+export const SquareCheck = makeIcon(SquareCheckSvg) // FA: square-check (light), 7.3.1
+export const CircleXmarkThin = makeIcon(CircleXmarkThinSvg) // FA: circle-xmark (thin), 7.3.1
 export const Bars = makeIcon(BarsSvg) // FA: bars (hamburger)
 export const ArrowRight = makeIcon(ArrowRightSvg)
 export const ArrowsRotate = makeIcon(ArrowsRotateSvg) // FA: arrows-rotate (renewal)

@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from
 import { useSearchParams } from 'react-router-dom'
 import { isEricAtlasWhiteLike, resolveDashboardVersion } from '@/data/dashboardVersions'
 import { useEndToEndCourseTitle } from '@/pages/endToEndDemo'
+import { AffidavitModal } from '@/components/e2e/AffidavitModal'
 import { useAccount } from '@/context/AccountContext'
 import {
   AngleRightRegular,
@@ -680,6 +681,23 @@ export function AtlasHomeEricE2E({
         />
 
       </div>
+      {/* THE AFFIDAVIT, over Home on arrival from Confirmation & Password
+          (`?affidavit=1`, 2026-10-15, Eric's request). Closing it drops the
+          param, so a refresh does not bring it back. */}
+      {searchParams.get('affidavit') === '1' ? (
+        <AffidavitModal
+          onClose={() =>
+            setParams(
+              (prev) => {
+                const next = new URLSearchParams(prev)
+                next.delete('affidavit')
+                return next
+              },
+              { replace: true },
+            )
+          }
+        />
+      ) : null}
     </div>
   )
 }

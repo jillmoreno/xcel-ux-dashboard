@@ -7251,6 +7251,8 @@ a.cre-library-card-title::after {
   --color-e2e-form-text: #4a5568;
   --color-e2e-form-placeholder: #4b5563;
   --color-e2e-form-shadow: rgb(0 0 0 / 0.05);
+  /* The Affidavit modal's scrim — Home darkened behind it. */
+  --color-e2e-scrim: rgb(0 0 0 / 0.5);
 }
 
 /* ── Help & Support entry cards ─────────────────────────────────────────

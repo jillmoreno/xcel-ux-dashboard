@@ -59,7 +59,8 @@ export function InvitedConfirmationPage() {
             style={FORM}
             onSubmit={(e) => {
               e.preventDefault()
-              if (password) navigate(`/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}`)
+              // `affidavit=1`: Home opens the Affidavit modal over itself.
+              if (password) navigate(`/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}&affidavit=1`)
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
