@@ -1,12 +1,12 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeftSolid, LockSolid } from '@/icons'
+import { useNavigate } from 'react-router-dom'
+import { LockSolid } from '@/icons'
 import { END_TO_END_VERSION, useEndToEndCourseTitle, useEndToEndDemoParams } from './endToEndDemo'
 
 /**
  * CHECKOUT — `/end-to-end-demo/checkout` (2026-10-14, Eric's request), Figma
  * "Atlas UX Design" 420:2392. The End-to-End Demo's next page: Invited Product
- * Detail's Purchase Now opens it, and Return to cart goes back.
+ * Detail's Purchase Now opens it.
  *
  * A MOCK THAT WALKS THROUGH, and sends nothing (2026-10-15, Eric's request):
  * clicking a card field fills it with TEST data — the published Visa test card
@@ -26,7 +26,6 @@ import { END_TO_END_VERSION, useEndToEndCourseTitle, useEndToEndDemoParams } fro
  */
 export function InvitedCheckoutPage() {
   const [method, setMethod] = useState<'card' | 'google-pay' | 'paypal'>('card')
-  const [params] = useSearchParams()
   const navigate = useNavigate()
   // Which card fields have been clicked (and so filled), and the store box.
   const [filled, setFilled] = useState<Partial<Record<CardField, boolean>>>({})
@@ -50,13 +49,12 @@ export function InvitedCheckoutPage() {
   return (
     <div style={PAGE}>
       {/* The header, Figma 423:2522 (2026-10-15, Eric's request; 420:2392's
-          logo-left header before): Return to Cart, Secure Checkout centred,
-          the logo on the right — the partner header's frame. */}
+          logo-left header before): Secure Checkout centred, the logo on the
+          right — the partner header's frame. Return to Cart was removed
+          2026-10-15 (Eric's request); an empty slot the logo's width keeps
+          Secure Checkout on the page's centre. */}
       <header style={HEADER}>
-        <Link to={`/end-to-end-demo?${params.toString()}`} style={RETURN_LINK}>
-          <ArrowLeftSolid size={13} aria-hidden />
-          Return to Cart
-        </Link>
+        <span aria-hidden style={{ width: 115, flex: 'none' }} />
         <p style={SECURE_CHECKOUT}>
           Secure Checkout
           <LockSolid size={13} aria-hidden />
@@ -384,20 +382,6 @@ const SECURE_CHECKOUT: CSSProperties = {
   fontSize: 13,
   lineHeight: 'normal',
   color: 'var(--color-neutral-950)',
-  whiteSpace: 'nowrap',
-}
-
-const RETURN_LINK: CSSProperties = {
-  flex: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  gap: 8,
-  fontFamily: 'var(--font-body)',
-  fontWeight: 700,
-  fontSize: 13,
-  lineHeight: 'normal',
-  color: 'var(--color-e2e-return)',
-  textDecoration: 'none',
   whiteSpace: 'nowrap',
 }
 
