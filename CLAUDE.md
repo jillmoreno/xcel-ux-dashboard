@@ -86,8 +86,9 @@ reaches no stakeholder by itself. **Only Jillienne merges** — `ship-to-main`,
 which refuses a branch with a group its owner has not decided — **and only she
 sets the default dashboard version.** That is the lock, for every scope.
 **Anyone promotes to Refinement**, and that door is unchanged —
-`promote-to-refinement` now reads the branch and tags the row's product
-(Compass files → Compass), which is the tag the Compass row later absorbs.
+`share` — `promote-to-refinement` until 2026-10-15, and that name still works —
+reads the branch and tags the row's product (Compass files → Compass), which is
+the tag the Compass row later absorbs.
 
 Two things that follow, and both have bitten:
 
@@ -110,7 +111,7 @@ anyone can do either. Remove still deletes. The nav count and the branch
 strip both treat an archived row as off the board. Refinement only — the
 other three boards keep free-text authors and no archive.
 
-The ways in are already built: `promote-to-refinement` (a branch),
+The ways in are already built: `share` (a branch),
 `promote-component` (one widget's variants), `promote-to-prototype` (moving
 something into the source of truth). There is deliberately no "create a second
 prototype" skill: a new SCOPE is a decision Jillienne makes in
@@ -187,13 +188,18 @@ scope — the product IS React here now, exactly as it is in the LMS.
    you cannot conflict with whoever else is editing it. **Fork the layout, import
    the data:** if both versions duplicate the content, the comparison is no longer
    about your change. Say `/promote-component` and it will do this with you.
-3. **Check it** — *"Run the type check, the tests and lint."* Add *"and the smoke
-   suites"* if you touched `public/prototypes/`.
-4. **Publish** — *"Commit everything and push it to `feat/your-thing`."* Netlify
-   builds your branch at its own address; that address plus
-   `/dashboard-rebrand?demo=1` is the review link.
-5. **Share it** — Refinement → Add link on the Hub, or say
-   `/promote-to-refinement` and click the link it gives you.
+3. **Share it — say `/share`.** One command, and it was three until
+   2026-10-15: it runs the type check and the tests, commits, pushes (Netlify
+   builds your branch at its own address), waits for that build, and hands you
+   a link that opens Refinement's **Add link** form already filled in — the
+   address, the title, the product, and the **feature** this is a chunk of. You
+   check the note and click Add. Then it offers to cut your next branch.
+
+   By hand, if you would rather: *"Run the type check, the tests and lint"*
+   (add *"and the smoke suites"* if you touched `public/prototypes/`), then
+   *"Commit everything and push it to `feat/your-thing`"*, then Refinement →
+   Add link on the Hub. `/promote-to-refinement` is the old name for `/share`
+   and still works.
 
 **You never run the site on your own computer.** There is no localhost step; the
 branch build IS the preview. Nothing here needs a terminal — every step above is
@@ -265,7 +271,7 @@ file, so the two cannot drift apart.
 | `src/components/prototype/DemoControlsBar.tsx`, `src/components/prototype/DemoBar.tsx`, `src/components/prototype/demoBarUtil.ts` | the demo controls bar — which controls every reviewer sees |
 | `src/components/prototype/DesignControlsBar.tsx` | the design controls bar — you do not edit it to get a control on it (see below) |
 | `src/components/layout/AdminToolsMenu.tsx` | the robot — the UI/UX Demo Tools menu |
-| `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `promote-to-refinement`, `promote-component`, `promote-to-testing`, `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
+| `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `share` (was `promote-to-refinement`, kept as a pointer), `promote-component`, `promote-to-testing`, `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
 | `public/contributing/`, `public/about/` | the two guides (regenerate the PDFs if you do edit them) |
 
 ## Stack
