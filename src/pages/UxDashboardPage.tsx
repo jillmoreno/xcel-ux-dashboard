@@ -1838,6 +1838,13 @@ function ProjectRow({
   const hasPreview = Boolean(feature.thumbnail || preview)
   const href = feature.externalUrl ?? feature.to ?? `/prototype/${feature.id}`
   const external = Boolean(feature.externalUrl)
+  /* A PLACEHOLDER — 2026-10-14, the Admin row. `coming-soon` with nothing to
+     open: it is drawn, not linked. No `<a>` (an href to a gateway for a
+     surface that does not exist would open an empty page), no hover, no
+     chevron, no kebab (every action in it is about a row that goes somewhere),
+     and the status tag is shown even where the section hides status —
+     "Coming soon" is the one thing this row has to say. */
+  const placeholder = feature.status === 'coming-soon' && !feature.to && !feature.externalUrl
   // Three labels, answering "how much of the product is this?":
   //   Standalone HTML — leaves the app entirely (the route column used to be
   //     the only thing that said so; with it gone the kind tag carries it)
@@ -1955,16 +1962,21 @@ function ProjectRow({
             {m}
           </span>
         ))}
-        {showStatus && (
+        {(showStatus || placeholder) && (
           <span style={{ ...metaChipStyle, ...statusTagStyle(chip.color) }}>{chip.label}</span>
         )}
       </span>
 
-      <ChevronRight
-        aria-hidden
-        size={15}
-        style={{ flex: 'none', color: hover ? 'var(--ux-accent)' : 'var(--ux-text-3)' }}
-      />
+      {placeholder ? (
+        // Keeps the chevron's column so the tags line up with the rows above.
+        <span aria-hidden style={{ flex: 'none', width: 15 }} />
+      ) : (
+        <ChevronRight
+          aria-hidden
+          size={15}
+          style={{ flex: 'none', color: hover ? 'var(--ux-accent)' : 'var(--ux-text-3)' }}
+        />
+      )}
     </>
   )
 
@@ -1997,6 +2009,14 @@ function ProjectRow({
           onOpen(feature.id)
         }
       : undefined,
+  }
+
+  if (placeholder) {
+    return (
+      <div style={{ ...wrap, background: 'var(--ux-card)' }} aria-disabled="true" data-placeholder={feature.id}>
+        <span style={{ ...rowLinkStyle, flex: 1, opacity: 0.62, cursor: 'default' }}>{inner}</span>
+      </div>
+    )
   }
 
   return (

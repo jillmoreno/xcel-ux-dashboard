@@ -26,14 +26,13 @@ what they **land in** (the dashboard, end to end), and where they **study**
 section holds one row per door, declared in `PROTOTYPE_SCOPES` in
 `prototypeFeatures.ts`, and the guarantee the one-row rule gave is kept in a
 stricter mechanical form that `UxDashboard.smoke.test.tsx` pins: **every row
-is `main`'s build** — same origin, never a branch URL, never an `?ff=` pin,
-never a pinned `version=`. A route row enters the product app at `?demo=1`
-through one of its doors (`/dashboard-rebrand`, `/end-to-end-demo`). A
-document row — the Admin Tool, the one of them — is a file under
-`public/prototypes/` that the public build allows by exact path in
-`scripts/public-redirects.mjs`, because that folder is otherwise 404'd there
-and a row stakeholders cannot open is not a row. Four rows, one build, one
-committed baseline.
+that opens is `main`'s build at `?demo=1`**, entered through one of the product
+app's doors (`/dashboard-rebrand`, `/end-to-end-demo`) — same origin, never a
+branch URL, never an `?ff=` pin, never a pinned `version=`, never an HTML
+document (the public build 404s `/prototypes/*`). A scope whose surface is not
+built yet may hold a **placeholder**: a `coming-soon` row with nothing to open,
+drawn disabled with a "Coming soon" tag. The Admin row is one. Four rows, one
+build, one committed baseline.
 
 So when you want several things visible at once FOR THE SAME SURFACE — two
 pacing treatments, a component's variants, a branch under discussion — **they
@@ -46,11 +45,13 @@ carries no `gate`, so it renders on the public build as well as the full one.
 | **Prototypes** | this IS the product | one per surface, all on `main` | flag defaults on `main` |
 | **Refinement** | under discussion | as many as you like | Netlify Blobs, authored on the page |
 
-Four doors as of the evening of 2026-10-14, in journey order: **Invite &
-Purchase** (`/end-to-end-demo`, Eric's End-to-End Demo — the Invited Product
-Detail page, its checkout, then the dashboard), **End-to-End User Experience
-(Atlas & Compass)**, **Compass Learning**, and **Admin Tool** (the PartnerHub
-fork, a document). A fifth is a `PROTOTYPE_SCOPES` decision first and a row
+Four doors as of the evening of 2026-10-14, the product first and then the
+doors around it: **End-to-End User Experience (Atlas & Compass)** — always the
+first row — then **Invite & Purchase** (`/end-to-end-demo`, Eric's End-to-End
+Demo — the Invited Product Detail page, its checkout, then the dashboard),
+**Compass Learning**, and **Admin Tool** — a placeholder
+until the admin surface is built in React; the PartnerHub-fork exploration
+stays in Exploration. A fifth is a `PROTOTYPE_SCOPES` decision first and a row
 second.
 
 **Who promotes, and who merges, are two different columns (2026-10-14).**

@@ -111,18 +111,22 @@ export type FeatureCategory =
  *  holds ONE ROW PER SCOPE, and what the old rule actually guaranteed is kept
  *  by a stricter mechanical form, pinned in `UxDashboard.smoke.test.tsx`:
  *
- *    • every row is `main`'s build — never a branch URL, never an `?ff=` pin.
- *      A ROUTE row enters the product app at `?demo=1` through one of its
- *      doors (`/dashboard-rebrand`, `/end-to-end-demo`). A DOCUMENT row (the
- *      admin tool, 2026-10-14) is a file under `public/prototypes/` that the
- *      public build ALLOWS by exact path (`scripts/public-redirects.mjs`),
- *      because the folder is otherwise 404'd there and a Prototypes row that
- *      stakeholders cannot open is not a row. Four rows, one build.
+ *    • every row that opens is `main`'s build, entered at `?demo=1` through
+ *      one of the product app's doors (`/dashboard-rebrand`,
+ *      `/end-to-end-demo`) — never a branch URL, never an `?ff=` pin, never
+ *      an HTML document (the public build 404s `/prototypes/*`, so a document
+ *      row would open to not-found for exactly its audience).
+ *    • a scope whose surface is NOT BUILT YET may hold a PLACEHOLDER: a
+ *      `status: 'coming-soon'` row with no `to` and no `externalUrl`, which
+ *      the section draws disabled — a name, a blurb and a "Coming soon" tag,
+ *      nothing to click. It says the door exists before the room does. The
+ *      Admin row is one (2026-10-14, Jillienne: "not hooked up yet").
  *    • no scope has two rows. "I want two of the same thing visible" is still
  *      a REFINEMENT job, exactly as before.
  *
- *  The order here is the order the section reads in: the journey, left to
- *  right. A scope with NO row is a surface that has not been built yet — it is
+ *  The order here is the order the section reads in: THE PRODUCT FIRST
+ *  (2026-10-14, Jillienne: "always have this be the first option"), then the
+ *  doors around it in journey order — in, study, admin. A scope with NO row is a surface that has not been built yet — it is
  *  listed so the plan is in the type, but a Prototypes row is `ready` by
  *  definition, so nothing is added until the build exists on `main`.
  *
@@ -163,20 +167,20 @@ export const PROTOTYPE_SCOPES: ReadonlyArray<{
   owner: string
 }> = [
   {
+    id: 'end-to-end',
+    // "End to end" until 2026-10-14; renamed with the row's title, which now
+    // says end-to-end itself, so the tag names the two halves instead.
+    label: 'Atlas & Compass',
+    question: 'What is the XCEL product right now?',
+    owner: 'Jillienne',
+  },
+  {
     id: 'invite',
     label: 'Invite & purchase',
     // Row `xcel-invite` (2026-10-14, the same evening the flow landed on
     // `main` in Eric's End-to-End Demo). The lo-fi argument for it is still the
     // walk-through and wireframes rows in Exploration.
     question: 'How does a learner get into the product?',
-    owner: 'Jillienne',
-  },
-  {
-    id: 'end-to-end',
-    // "End to end" until 2026-10-14; renamed with the row's title, which now
-    // says end-to-end itself, so the tag names the two halves instead.
-    label: 'Atlas & Compass',
-    question: 'What is the XCEL product right now?',
     owner: 'Jillienne',
   },
   {
@@ -188,8 +192,10 @@ export const PROTOTYPE_SCOPES: ReadonlyArray<{
   {
     id: 'admin',
     label: 'Admin',
-    // The other persona. Row `xcel-admin-tool` — a standalone HTML document,
-    // the one Prototypes row that is not a React route; see the note above.
+    // The other persona. Row `xcel-admin-coming-soon`, a disabled placeholder
+    // until the admin surface is built in React — see the note above. The
+    // PartnerHub-fork exploration (`xcel-admin-tool`) stays in Exploration;
+    // it is the argument for the surface, not the surface.
     question: 'What does an agency admin see?',
     owner: 'Jillienne',
   },
@@ -1088,41 +1094,6 @@ const JUMP_BACK_IN_HANDOFF: DevHandoffComponent = {
 export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
   {
     /*
-     * THE INVITE ROW — 2026-10-14, Jillienne's ask, the evening Eric's
-     * End-to-End Demo merged. The first door of the journey: how a learner
-     * gets INTO the product. It opens the Invited Product Detail page, whose
-     * Purchase Now opens the checkout, which lands on the dashboard.
-     *
-     * `/end-to-end-demo`, not `/dashboard-rebrand` — the second product door
-     * the smoke test admits. `?demo=1` for the usual reason. ⚠ THE PAGE PINS
-     * ITS OWN VERSION: `useEndToEndDemoParams` writes `version=eric-atlas-e2e`
-     * onto the address, because the page IS that version's way in. So this is
-     * the one row whose dashboard does not follow `defaultDiscoverabilityVersionFor`
-     * — the page's rule, not the row's, and the row carries no `version=` of
-     * its own so the test's pin still holds. Today the two agree anyway: that
-     * version is the baseline.
-     *
-     * No `thumbnail`; the preview boots the page in a scaled frame, the third
-     * live frame in this section. Add captures if that starts to cost.
-     */
-    id: 'xcel-invite',
-    title: 'Invite & Purchase — Live Product Build',
-    accent: 'gold',
-    icon: 'flag',
-    blurb:
-      'How a learner gets into the product: the Invited Product Detail page under the partner header — the personal welcome, the course header with its price card — whose Purchase Now opens the checkout, which lands on the dashboard. Eric’s End-to-End Demo, in the same React build as the other rows, entered at its first page rather than its dashboard.',
-    tileBlurb:
-      'The way in: invited product detail, Purchase Now, checkout, then the dashboard. The same build as the other rows, entered at its first page.',
-    kind: 'explore',
-    status: 'ready',
-    category: 'prototype',
-    prototypeScope: 'invite',
-    pinned: true,
-    to: '/end-to-end-demo?demo=1',
-    brands: ['xcel'],
-  },
-  {
-    /*
      * THE IN-APP ROW THAT WAS THE ONLY ONE until 2026-10-14 — the invite row
      * above and the Compass row below are routes too now; the admin row is the
      * document. Everything else here opens a standalone HTML
@@ -1184,6 +1155,42 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
   },
   {
     /*
+     * THE INVITE ROW — 2026-10-14, Jillienne's ask, the evening Eric's
+     * End-to-End Demo merged. The first door of the journey — how a learner
+     * gets INTO the product — listed SECOND, because the product itself is
+     * always the first row (see `PROTOTYPE_SCOPES`). It opens the Invited Product Detail page, whose
+     * Purchase Now opens the checkout, which lands on the dashboard.
+     *
+     * `/end-to-end-demo`, not `/dashboard-rebrand` — the second product door
+     * the smoke test admits. `?demo=1` for the usual reason. ⚠ THE PAGE PINS
+     * ITS OWN VERSION: `useEndToEndDemoParams` writes `version=eric-atlas-e2e`
+     * onto the address, because the page IS that version's way in. So this is
+     * the one row whose dashboard does not follow `defaultDiscoverabilityVersionFor`
+     * — the page's rule, not the row's, and the row carries no `version=` of
+     * its own so the test's pin still holds. Today the two agree anyway: that
+     * version is the baseline.
+     *
+     * No `thumbnail`; the preview boots the page in a scaled frame, the third
+     * live frame in this section. Add captures if that starts to cost.
+     */
+    id: 'xcel-invite',
+    title: 'Invite & Purchase — Live Product Build',
+    accent: 'gold',
+    icon: 'flag',
+    blurb:
+      'How a learner gets into the product: the Invited Product Detail page under the partner header — the personal welcome, the course header with its price card — whose Purchase Now opens the checkout, which lands on the dashboard. Eric’s End-to-End Demo, in the same React build as the other rows, entered at its first page rather than its dashboard.',
+    tileBlurb:
+      'The way in: invited product detail, Purchase Now, checkout, then the dashboard. The same build as the other rows, entered at its first page.',
+    kind: 'explore',
+    status: 'ready',
+    category: 'prototype',
+    prototypeScope: 'invite',
+    pinned: true,
+    to: '/end-to-end-demo?demo=1',
+    brands: ['xcel'],
+  },
+  {
+    /*
      * THE COMPASS ROW — 2026-10-14, the first second row on Prototypes, and
      * the one that restated the rule as one-row-per-scope (`PROTOTYPE_SCOPES`).
      *
@@ -1224,6 +1231,36 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // asserts every Prototypes row has this shape. `section=compass` is the
     // deep link `PlatformShell` honours under either navigation.
     to: '/dashboard-rebrand?demo=1&section=compass',
+    brands: ['xcel'],
+  },
+  {
+    /*
+     * THE ADMIN PLACEHOLDER — 2026-10-14, Jillienne: the Admin door exists on
+     * the section before the surface does. `status: 'coming-soon'` with no
+     * `to` and no `externalUrl` is what `ProjectRow` draws DISABLED: the
+     * generated thumbnail, the title, the blurb, the scope tag and a "Coming
+     * soon" tag, no link, no chevron, no kebab. It is the one Prototypes row
+     * a stakeholder cannot open, and it says so instead of opening something
+     * that is not the product (the PartnerHub-fork exploration was briefly
+     * wired here and un-wired the same evening; see `xcel-admin-tool`).
+     *
+     * Replacing it is the usual promotion: build the admin surface as a React
+     * route behind a flag, then give THIS row a `to` and `status: 'ready'`
+     * — the id and scope stay, so nothing that points here moves.
+     */
+    id: 'xcel-admin-coming-soon',
+    title: 'Admin Tool',
+    accent: 'neutral',
+    icon: 'grid',
+    blurb:
+      'The agency admin’s door — roster, seats, compliance, who is stuck — once it is built in React. Not wired yet. The PartnerHub-fork exploration that argues for it is in Exploration as “XCEL Admin Tool — Forked Roster”.',
+    tileBlurb:
+      'The agency admin’s door — roster, seats, compliance. Not built yet; the PartnerHub-fork exploration is in Exploration.',
+    kind: 'explore',
+    status: 'coming-soon',
+    category: 'prototype',
+    prototypeScope: 'admin',
+    pinned: true,
     brands: ['xcel'],
   },
   {
@@ -1309,17 +1346,13 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     kind: 'explore',
     kindLabel: 'Standalone HTML',
     status: 'ready',
-    /* PROMOTED TO PROTOTYPES 2026-10-14, Jillienne's ask — the Admin row, the
-       other persona's door. It was an Exploration row until then. It is the
-       ONE Prototypes row that is a document rather than a React route, which
-       costs two things worth knowing: the public build must ALLOW this exact
-       path through its `/prototypes/*` block (`scripts/public-redirects.mjs`,
-       `ALLOWED`), and the document's masthead links to its sibling
-       explorations still 404 there, correctly. The tile's tag reads "Admin"
-       (the scope label) rather than "Standalone HTML"; the row still opens in
-       a new tab like any document. */
-    category: 'prototype',
-    prototypeScope: 'admin',
+    /* NOT the Admin Prototypes row — 2026-10-14. It was promoted for an hour
+       and put back: Jillienne had not meant the fork to be hooked up as the
+       product's admin door, and a document row would have needed a hole in the
+       public build's `/prototypes/*` block to be openable at all. The Admin
+       row is the `xcel-admin-coming-soon` placeholder in Prototypes; this
+       stays the exploration it always was. */
+    category: 'exploration',
     externalUrl: `${PROTOTYPE_BASE}/xcel-admin-tool.html`,
     livePreviewUrl: `${PROTOTYPE_BASE}/xcel-admin-tool.html`,
     brands: ['xcel'],

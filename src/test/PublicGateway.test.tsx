@@ -79,8 +79,9 @@ describe('gatewayMode — parsing', () => {
     // passwordless viewer can reach is the concern and a derived list would
     // pass whatever the data said.
     const pub = PROTOTYPE_FEATURES.filter(isPublicFeature).map((f) => f.id)
-    // Four since the evening of 2026-10-14: the invite and admin rows.
-    expect(pub).toEqual(['xcel-invite', 'xcel-dashboard', 'xcel-compass', 'xcel-admin-tool'])
+    // Four since the evening of 2026-10-14: the invite row and the Admin
+    // placeholder (a coming-soon row that opens nothing — see the smoke test).
+    expect(pub).toEqual(['xcel-dashboard', 'xcel-invite', 'xcel-compass', 'xcel-admin-coming-soon'])
   })
 })
 
@@ -169,24 +170,11 @@ describe('public build — the edge rules', () => {
     expect(m).not.toBeNull()
     const blocked = [...m![1].matchAll(/'([^']+)'/g)].map((x) => x[1])
     expect(blocked).toContain('/prototypes/*')
-    const a = script.match(/const ALLOWED = \[([^\]]*)\]/)
-    expect(a, 'the ALLOWED list (2026-10-14) was renamed or removed').not.toBeNull()
-    const allowed = [...a![1].matchAll(/'([^']+)'/g)].map((x) => x[1])
-    // Every document row's externalUrl must fall under a blocked prefix — and
-    // since 2026-10-14 a document row IN PROTOTYPES must ALSO be allowed back
-    // through by exact path, while a gated one must not be. The admin tool is
-    // the one of the former; `UxDashboard.smoke.test.tsx` pins that list.
+    // Every document row's externalUrl must fall under a blocked prefix.
     for (const f of PROTOTYPE_FEATURES) {
       if (!f.externalUrl) continue
       expect(blocked.some((b) => f.externalUrl!.startsWith(b.replace('*', '')))).toBe(true)
-      expect(allowed.includes(f.externalUrl!), `${f.id}: allowed iff it is a Prototypes row`).toBe(
-        isPublicFeature(f),
-      )
     }
-    // Exact paths only. A wildcard here would reopen the folder the block exists to close.
-    expect(allowed.every((p) => !p.includes('*'))).toBe(true)
-    // And written before the block, since the first matching rule wins.
-    expect(script.indexOf('...ALLOWED.map')).toBeLessThan(script.indexOf('...BLOCKED.map'))
     // And the Links endpoint must NOT be — the section is ungated.
     expect(blocked.some((b) => b.startsWith('/api'))).toBe(false)
     // The rules point at the committed 404 page, which vite copies into dist.

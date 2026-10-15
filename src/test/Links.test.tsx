@@ -656,8 +656,10 @@ describe('the Links section on the gateway', () => {
       .map((b) => b.getAttribute('aria-label')?.replace(/^Actions for /, ''))
     // Read from the data rather than written out: this test's claim is that
     // Links added nothing, not what Prototypes holds — the smoke test owns that.
+    // The kebabs are the rows that OPEN; a coming-soon placeholder (2026-10-14,
+    // the Admin row) is drawn without one.
     expect(rows).toEqual(
-      PROTOTYPE_FEATURES.filter((f) => f.category === 'prototype').map((f) => f.title),
+      PROTOTYPE_FEATURES.filter((f) => f.category === 'prototype' && (f.to || f.externalUrl)).map((f) => f.title),
     )
   })
 

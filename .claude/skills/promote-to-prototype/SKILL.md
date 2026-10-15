@@ -65,7 +65,7 @@ and the person whose design it is differs by row.
 | `end-to-end` | `xcel-dashboard` | Jillienne | Jillienne |
 | `compass` | `xcel-compass` | **Anjani** | Jillienne |
 | `invite` | `xcel-invite` | Jillienne | Jillienne |
-| `admin` | `xcel-admin-tool` — an HTML document, no flags | Jillienne | Jillienne |
+| `admin` | `xcel-admin-coming-soon` — a placeholder until the surface is built | Jillienne | Jillienne |
 
 The table is `PROTOTYPE_SCOPES` in `prototypeFeatures.ts` — read `owner` from
 there, not from here, if they ever disagree. The last column never varies: a
@@ -90,9 +90,9 @@ grep -rl "<flag-key>" src/components src/pages | head     # where is it read?
   group, so Anjani's sign-off covers it.
 - Read under `src/pages/Invited*`, `src/pages/endToEndDemo.ts` or the
   `/end-to-end-demo` routes → **`invite`** (row `xcel-invite`, Jillienne's).
-- **`admin` never has candidates.** Its row is a standalone HTML document under
-  `public/prototypes/`; a change to it is a file change that merges as itself,
-  with the smoke suites (`npm run smoke`) as its gate, not a flag default.
+- **`admin` has no candidates yet.** Its row is a `coming-soon` placeholder;
+  the surface is not built. When it is — a React route behind a flag — its
+  flags are read under that route and this bullet names the path.
 
 **What the owner column means in step 3.** The owner runs this skill on the
 branch and answers their group's questions; a group the caller does NOT own

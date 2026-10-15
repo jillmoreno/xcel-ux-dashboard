@@ -172,7 +172,8 @@ which one is real. What changed is that the product now has three doors on one
 learner journey — how they get in (invite and purchase), what they land in
 (the dashboard, end to end), where they study (Compass) — and each is its own
 source of truth for a different question. `PROTOTYPE_SCOPES` in
-`prototypeFeatures.ts` declares them in journey order; every
+`prototypeFeatures.ts` declares them in reading order — the product first, by
+Jillienne's rule, then the doors around it; every
 `category: 'prototype'` row carries a `prototypeScope`; the tile's kind tag
 shows the scope label instead of "Full platform", because three rows that all
 open the same build need the one word that tells them apart.
@@ -203,19 +204,22 @@ the evening Jillienne had asked for its row and for an Admin row:
   (`useEndToEndDemoParams` writes `version=eric-atlas-e2e`), so this is the one
   row whose dashboard does not follow `defaultDiscoverabilityVersionFor` — the
   page's rule, not the row's; the row itself carries no `version=`.
-- **`xcel-admin-tool`** — the PartnerHub-fork admin tool, moved from
-  Exploration. The ONE document row in Prototypes, and the reason
-  `scripts/public-redirects.mjs` grew an `ALLOWED` list: the public build 404s
-  `/prototypes/*` at the edge, so without an exact-path allow rule written
-  BEFORE the block the stakeholder front door would carry a row that opens to
-  not-found. `PublicGateway.test.tsx` pins that a document row is allowed
-  there iff it is a Prototypes row, that the list holds no wildcard, and that
-  it is emitted first. The document's masthead links to its sibling
-  explorations still 404 on the public build, which is correct.
+- **`xcel-admin-coming-soon`** — the Admin door as a PLACEHOLDER: a
+  `coming-soon` row with no `to` and no `externalUrl`, which `ProjectRow` draws
+  disabled — generated thumbnail, title, blurb, the "Admin" scope tag and a
+  "Coming soon" tag, no link, no chevron, no kebab. ⚠ For about an hour the
+  Admin row was the PartnerHub-fork document (`xcel-admin-tool`) instead, with
+  an exact-path allow rule punched through the public build's `/prototypes/*`
+  block so stakeholders could open it. Jillienne had not meant the fork to be
+  hooked up as the product's admin door, so it went back to Exploration, the
+  allow rule went with it, and the placeholder took the row. The lesson is in
+  the smoke test: a document row is not admitted, and a placeholder is the
+  only row that opens nothing. When the admin surface is built in React, this
+  row gains a `to` and `status: 'ready'`; the id and scope stay.
 
-Four live frames would be the cost of four route rows; it is three (the admin
-tool opens in a new tab and keeps its generated thumbnail), which was judged
-fine. Add captures to `public/prototype-thumbs/` if the landing page slows.
+Three live frames on the landing page now (invite, end to end, Compass); the
+placeholder draws its generated thumbnail. Add captures to
+`public/prototype-thumbs/` if the page slows.
 
 What this did NOT change: how work gets in. A branch is still reviewed in
 Refinement and promoted by `promote-to-prototype` flipping flag defaults on

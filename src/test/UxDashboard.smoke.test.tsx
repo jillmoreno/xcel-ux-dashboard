@@ -134,8 +134,9 @@ describe('section routing (sectionOf)', () => {
     'xcel-walkthrough': 'exploration',
     'xcel-wireframes': 'exploration',
     'xcel-admin': 'exploration',
-    // Promoted 2026-10-14 — the Admin row, the one document in Prototypes.
-    'xcel-admin-tool': 'prototypes',
+    'xcel-admin-tool': 'exploration',
+    // The Admin placeholder (2026-10-14) — a coming-soon row that opens nothing.
+    'xcel-admin-coming-soon': 'prototypes',
     'xcel-exam-spec': 'exploration',
     // The first handoff row (2026-09-24) — `devStatus: 'in-development'`.
     'atlas-home-course-card': 'development',
@@ -209,12 +210,21 @@ describe('section routing (sectionOf)', () => {
     // ⚠ ONE ROW PER SCOPE since 2026-10-14 — it was exactly one row from
     // 2026-09-28. The list is still written out, in section order, so adding
     // a row is a deliberate edit here and not something a category typo does.
+    // The product FIRST (2026-10-14, Jillienne: "always have this be the
+    // first option"), then the doors around it.
     expect(rows).toEqual([
-      'Invite & Purchase — Live Product Build',
       'End-to-End User Experience (Atlas & Compass)',
+      'Invite & Purchase — Live Product Build',
       'Compass Learning — Live Product Build',
-      'XCEL Admin Tool — Forked Roster',
     ])
+    // …plus the Admin PLACEHOLDER, which has no kebab because it goes nowhere:
+    // drawn disabled, titled, tagged "Coming soon", and not a link.
+    const placeholder = document.querySelector('[data-placeholder="xcel-admin-coming-soon"]')
+    expect(placeholder).not.toBeNull()
+    expect(placeholder!.getAttribute('aria-disabled')).toBe('true')
+    expect(placeholder!.querySelector('a')).toBeNull()
+    expect(placeholder!.textContent).toContain('Admin Tool')
+    expect(placeholder!.textContent).toContain('Coming soon')
 
     // …and a gated row is still not among them.
     expect(screen.queryByText('XCEL LMS — Desktop Platform')).not.toBeInTheDocument()
@@ -301,12 +311,19 @@ describe('prototype URLs — served from this repo', () => {
    * way, and `a guided row opens its own gateway` below is what now catches it.
    */
   const gatewayRows = PROTOTYPE_FEATURES.filter((f) => f.kind === 'guided')
-  const documentRows = PROTOTYPE_FEATURES.filter((f) => !f.to && f.kind !== 'guided')
+  // A coming-soon PLACEHOLDER (no `to`, no `externalUrl`) is neither — see the
+  // Prototypes block below, which pins its shape.
+  const documentRows = PROTOTYPE_FEATURES.filter(
+    (f) => !f.to && f.kind !== 'guided' && !(f.status === 'coming-soon' && !f.externalUrl),
+  )
   const routeRows = PROTOTYPE_FEATURES.filter((f) => f.to)
 
   it('every non-guided row is either a document or a route, never both and never neither', () => {
     for (const f of PROTOTYPE_FEATURES) {
       if (f.kind === 'guided') continue // → its own gateway; asserted below
+      // A coming-soon PLACEHOLDER has neither, on purpose: it is drawn disabled
+      // (2026-10-14, the Admin row). The Prototypes block below pins its shape.
+      if (f.status === 'coming-soon' && !f.to && !f.externalUrl) continue
       expect(
         Boolean(f.to) !== Boolean(f.externalUrl),
         `${f.id} needs exactly one of to / externalUrl`,
@@ -480,10 +497,10 @@ describe('the Prototypes row opens the committed configuration', () => {
  * public build cannot serve — because each of those is a row that would stop
  * tracking the product, or stop opening, the moment `main` moved under it.
  *
- * Two shapes since 2026-10-14: a ROUTE row enters the product app through one
- * of its doors; a DOCUMENT row (the admin tool) is a file under
- * `public/prototypes/` that `scripts/public-redirects.mjs` allows by exact
- * path on the public build, read from that file here so the two cannot drift. */
+ * Two shapes since 2026-10-14: a row that OPENS enters the product app through
+ * one of its doors; a PLACEHOLDER (`coming-soon`, nothing to open) is drawn
+ * disabled and says the door exists before the room does. A document row is
+ * not admitted: the public build 404s `/prototypes/*`. */
 describe('Prototypes — one row per scope, every row the same build', () => {
   const prototypeRows = PROTOTYPE_FEATURES.filter((f) => f.category === 'prototype')
 
@@ -523,19 +540,14 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     }
   })
 
-  /** The product app's doors — the pathnames a route row may enter at. */
+  /** The product app's doors — the pathnames a row may enter at. */
   const PRODUCT_DOORS = ['/dashboard-rebrand', '/end-to-end-demo']
-  /** The exact `/prototypes/` paths the PUBLIC build serves despite its folder
-   *  block — parsed from the script, the `BLOCKED` pattern in PublicGateway.test. */
-  const publicAllowed = (() => {
-    const here = dirname(fileURLToPath(import.meta.url))
-    const script = readFileSync(resolve(here, '../../scripts/public-redirects.mjs'), 'utf8')
-    const m = script.match(/const ALLOWED = \[([^\]]*)\]/)
-    return m ? [...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1]) : []
-  })()
+  const isPlaceholder = (f: (typeof prototypeRows)[number]) =>
+    f.status === 'coming-soon' && !f.to && !f.externalUrl
 
-  it('every Prototypes ROUTE row opens the product on main at the committed baseline', () => {
-    for (const f of prototypeRows.filter((f) => !f.externalUrl)) {
+  it('every Prototypes row that opens enters the product on main at the committed baseline', () => {
+    for (const f of prototypeRows.filter((f) => !isPlaceholder(f))) {
+      expect(f.externalUrl, `${f.id}: a Prototypes row is a route, never a document`).toBeUndefined()
       expect(f.to, `${f.id} needs a \`to\``).toBeTruthy()
       const url = new URL(f.to!, 'https://same.origin')
       expect(url.origin, `${f.id} must be same-origin — a branch URL is a second build`).toBe('https://same.origin')
@@ -546,23 +558,19 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     }
   })
 
-  it('every Prototypes DOCUMENT row is a committed file the public build allows by exact path', () => {
-    // 2026-10-14, the Admin row. A stakeholder is sent to this section, and
-    // the public build 404s `/prototypes/*` at the edge — so a document here
-    // that is not on the allow list is a row that opens to a not-found page
-    // for exactly the audience it exists for.
-    const docs = prototypeRows.filter((f) => f.externalUrl)
-    expect(docs.map((f) => f.id)).toEqual(['xcel-admin-tool'])
-    for (const f of docs) {
-      expect(f.to, `${f.id}: a document row has no \`to\``).toBeUndefined()
-      const url = new URL(f.externalUrl!, 'https://same.origin')
-      expect(url.origin, `${f.id} must be same-origin — it is main's build or it is nothing`).toBe('https://same.origin')
-      expect(url.pathname.startsWith('/prototypes/'), `${f.id} must live under /prototypes/`).toBe(true)
-      expect(publicAllowed, `${f.id} must be allowed through the public build's folder block`).toContain(url.pathname)
+  it('a placeholder is the only row that opens nothing, and it says so', () => {
+    // 2026-10-14, the Admin row. Written out so a second placeholder is a
+    // deliberate edit here, and so a row that LOSES its `to` by accident is
+    // caught as "not a placeholder" rather than quietly becoming one.
+    expect(prototypeRows.filter(isPlaceholder).map((f) => f.id)).toEqual(['xcel-admin-coming-soon'])
+    for (const f of prototypeRows.filter(isPlaceholder)) {
+      expect(f.status).toBe('coming-soon')
+      expect(f.kind, `${f.id}: a guided placeholder would try to open a gateway`).toBe('explore')
     }
   })
 
-  it('the rows read in journey order — the order PROTOTYPE_SCOPES declares', () => {
+  it('the rows read in the order PROTOTYPE_SCOPES declares — the product first', () => {
+    expect(PROTOTYPE_SCOPES[0].id, 'the end-to-end row is always first').toBe('end-to-end')
     const order = PROTOTYPE_SCOPES.map((s) => s.id)
     const got = prototypeRows.map((f) => order.indexOf(f.prototypeScope!))
     expect(got, 'reorder the rows in prototypeFeatures.ts to match PROTOTYPE_SCOPES').toEqual([...got].sort((a, b) => a - b))
