@@ -248,13 +248,25 @@ describe('badges sit under the title', () => {
     const li = (await screen.findByText('A branch')).closest('li')!
     const vis = within(li).getByText('UX Only')
     const prod = within(li).getByText('Compass')
-    // The first attempt tinted both from the palette's hues and they collapsed
-    // to the same fill in the dark theme — `--ux-hue-blue` and `--ux-accent`
-    // are the same hex in one palette, and `--ux-chip` is accent-derived. This
-    // asserts the difference is fill-vs-no-fill, which no palette can undo.
-    expect(vis.style.background).not.toBe(prod.style.background)
+    // Both are outlined TAGS since 2026-10-15 (the gateway's Prototypes rows'
+    // shape), so the difference moved from the fill to the BORDER: the
+    // visibility state wears the accent, the product its own fixed hue. And
+    // the two sit in different columns — the product in the stack, the state
+    // to its right — so they never read as one row of chips.
     expect(vis.style.background).toBe('transparent')
-    expect(prod.style.background).not.toBe('transparent')
+    expect(prod.style.background).toBe('transparent')
+    expect(vis.style.border).toContain('var(--ux-accent)')
+    expect(prod.style.border).not.toContain('var(--ux-accent)')
+    expect(vis.parentElement).not.toBe(prod.parentElement)
+  })
+
+  it('makes Public the one solid tag in the row', async () => {
+    // The only state with a consequence outside the team stays the loudest.
+    mockEndpoint([row({ title: 'A branch', product: 'compass', isPublic: true })])
+    render(<DemoPanel />)
+    const li = (await screen.findByText('A branch')).closest('li')!
+    expect(within(li).getByText('Public').style.background).toBe('var(--ux-accent)')
+    expect(within(li).getByText('Compass').style.background).toBe('transparent')
   })
 
   it('gives XCEL, Compass and Both three different colours', async () => {
@@ -276,12 +288,14 @@ describe('badges sit under the title', () => {
     ]
     const fills = pairs.map(([t, l]) => badge(t, l).style.background)
     const borders = pairs.map(([t, l]) => badge(t, l).style.border)
-    // Three distinct hues, not one chip three times. Both halves matter: the
-    // fill has to stay pale for the label to clear 4.5:1 in BOTH themes, so the
-    // border is where most of the hue difference lives (measured: fill ΔE 6–19,
-    // border ΔE 15–42).
-    expect(new Set(fills).size).toBe(3)
+    const inks = pairs.map(([t, l]) => badge(t, l).style.color)
+    // Three distinct hues, not one tag three times. Outlined since 2026-10-15,
+    // so the hue lives in the border and the text, and the fill is none — the
+    // old concern (a pale fill that still clears 4.5:1 in both themes) is gone
+    // with the fill; the text is each hue's own foreground token.
+    expect(new Set(fills)).toEqual(new Set(['transparent']))
     expect(new Set(borders).size).toBe(3)
+    expect(new Set(inks).size).toBe(3)
   })
 
   it('renders no author badge when nobody signed it', async () => {
@@ -368,13 +382,23 @@ describe('the row menu', () => {
     expect(screen.getByRole('menuitem', { name: 'Edit' })).toBeInTheDocument()
   })
 
-  it('puts the author beside the menu, with no pill around the name', async () => {
-    mockEndpoint([row({ title: 'A branch', addedBy: 'Anjani' })])
+  it('puts the author at the top of the tag stack, as an outlined tag with the user icon', async () => {
+    // 2026-10-15: the gateway's Prototypes rows wear the author this way and
+    // the Refinement row now matches — a square-cornered outline, not the
+    // pill that read as a status the person was IN, and the icon so the name
+    // is read as "who" without the word.
+    mockEndpoint([row({ title: 'A branch', addedBy: 'Anjani', product: 'compass', updatedAt: '2026-10-14T15:51:11Z' })])
     render(<DemoPanel />)
     const li = (await screen.findByText('A branch')).closest('li')!
     const name = within(li).getByText('Anjani')
-    // A pill around a name reads as a status the person is IN.
-    expect(name.style.borderRadius).toBe('')
-    expect(name.style.background).toBe('')
+    expect(name.style.borderRadius).toBe('4px')
+    expect(name.style.background).toBe('transparent')
+    expect(name.querySelector('svg')).not.toBeNull()
+    // Order in the stack: who, when, what.
+    const stack = name.parentElement!
+    const texts = [...stack.children].map((c) => c.textContent)
+    expect(texts[0]).toContain('Anjani')
+    expect(texts[1]).toMatch(/^Updated /)
+    expect(texts[2]).toBe('Compass')
   })
 })

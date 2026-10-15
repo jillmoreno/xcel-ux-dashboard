@@ -345,6 +345,18 @@ Research and PRDs — a brief does not move. `Demo.test.tsx` pins the render and
 reads the stamp out of the server source; `Links.test.tsx` pins that Resources
 stays as it was.
 
+**A Refinement row's tags match the gateway's Prototypes rows (2026-10-15).**
+Jillienne: "update the refinement tags to better match what we did on this
+page." The same shape and the same order: a 156px STACK of outlined,
+square-cornered, sentence-case tags — who (the author, with the user icon),
+when (the Updated stamp), what (the product, outlined in its fixed hue, no
+fill) — then an 84px column for the row's STATUS (UX Only outlined in the
+accent, Public solid in it — the one state with a consequence outside the team
+stays the loudest), then the kebab in the tertiary ink. Fixed widths so the
+stacks and kebabs line up down the list. The same evening the gateway's own
+stack went owner → Updated → scope, with Coming soon moved to the right of the
+stack, and this follows it. `LinkRowThumb.test.tsx` pins the shape.
+
 **The one field Demo adds is `isPublic`, and it is the review gate.** Off by
 default. The FULL site shows every row with a Public / Team-only chip and the
 toggle in the form; the PUBLIC build renders `DemoPanel` read-only and filtered
