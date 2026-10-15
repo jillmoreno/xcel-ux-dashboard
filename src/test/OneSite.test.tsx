@@ -178,7 +178,7 @@ describe('the edge rules', () => {
 describe('the three guides', () => {
   const pub = resolve(here, '../../public')
 
-  it('each is a self-contained page with its PDF beside it and the one shared stylesheet', () => {
+  it('each is a self-contained page with its PDF beside it', () => {
     for (const [folder, pdf] of [
       ['contributing', 'contributing.pdf'],
       ['about', 'about.pdf'],
@@ -189,11 +189,24 @@ describe('the three guides', () => {
       ['designer-workflow', 'designer-workflow.pdf'],
     ] as const) {
       const html = readFileSync(resolve(pub, folder, 'index.html'), 'utf8')
-      expect(html).toContain('href="../guides/guide.css"')
       expect(html).toContain(`href="${pdf}" download`)
       // Nothing from the app — the page has to render on its own and in print.
       expect(html).not.toMatch(/src="\/assets\//)
       expect(readFileSync(resolve(pub, folder, pdf)).subarray(0, 5).toString()).toBe('%PDF-')
+    }
+  })
+
+  it('the two guides on the shared stylesheet still use it', () => {
+    // `designer-workflow` deliberately does NOT. It was authored as a
+    // published Artifact with its own design — the rail, the speech bubbles,
+    // Bricolage Grotesque — and that design is the reason it reads the way it
+    // does, so it came over whole rather than being restyled onto this sheet.
+    // Its fonts are the one external request any guide makes, which is why the
+    // check below is scoped to the other two rather than dropped.
+    for (const folder of ['contributing', 'about'] as const) {
+      const html = readFileSync(resolve(pub, folder, 'index.html'), 'utf8')
+      expect(html).toContain('href="../guides/guide.css"')
+      expect(html).not.toMatch(/fonts\.googleapis\.com/)
     }
     expect(() => readFileSync(resolve(pub, 'guides/guide.css'))).not.toThrow()
   })
