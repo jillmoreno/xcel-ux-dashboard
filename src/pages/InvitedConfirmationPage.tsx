@@ -50,10 +50,11 @@ export function InvitedConfirmationPage() {
        sweeping over a faint ring with a slower arc running the other way and
        a breathing dot at the centre, and the line's ellipsis typing itself.
        The motion classes live in tokens.css beside `cre-setup-spin` and stop
-       under reduced motion. It never resolves; see the file comment. */
+       under reduced motion. No partner header (2026-10-15, Jillienne: "remove
+       this part when loading gif is going") — the page is the map and the
+       spinner alone, edge to edge. It never resolves; see the file comment. */
     return (
       <div style={PAGE}>
-        <PartnerHeader />
         <main style={LOADING_PAGE}>
           <TopoBackground />
           <div role="status" aria-live="polite" style={LOADING_STACK}>
@@ -371,8 +372,8 @@ const RULES: CSSProperties = {
 
 const RULE_LIST: CSSProperties = { margin: 0, paddingLeft: 19.5, listStyle: 'disc' }
 
-/* THE LOADING PAGE. Centred in the body under the partner header, the topo
-   map absolutely behind it (hence `position: relative`); the line under the
+/* THE LOADING PAGE. Centred in the body, no header above it, the topo map
+   absolutely behind it (hence `position: relative`); the line under the
    spinner is Open Sans 16 / 24 as the body copy on the Invited Product
    Detail page, its dots in a monospace-ish fixed width so they type in place. */
 const LOADING_PAGE: CSSProperties = {

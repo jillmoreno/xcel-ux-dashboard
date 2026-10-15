@@ -76,6 +76,8 @@ describe('e2e-ends-at-password', () => {
     expect(screen.queryByRole('heading', { name: 'Create password' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Confirm' })).toBeNull()
     expect(screen.queryByText('Thank you for your order!')).toBeNull()
+    // …and so is the partner header: the loading page is the map and the spinner alone.
+    expect(screen.queryByText('Official Partner of')).toBeNull()
     expect(screen.getByTestId('location').textContent).toMatch(new RegExp(`^${CONFIRMATION}`))
     expect(screen.getByTestId('location').textContent).not.toContain('affidavit')
   })
