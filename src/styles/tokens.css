@@ -4417,6 +4417,84 @@ a.cre-library-card-title::after {
   }
 }
 
+/* THE INVITE & PURCHASE FLOW'S LOADING PAGE (2026-10-15). An outer brick arc
+   that sweeps with an ease, an inner faint arc running the other way, a
+   centre dot that breathes, the ellipsis typing itself, and the topo map
+   behind it all drifting over forty seconds. All visual; the status text is
+   announced once, and every motion stops under reduced motion. */
+.cre-e2e-loading-arc {
+  transform-origin: 50% 50%;
+  animation: cre-e2e-arc 1.6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+}
+.cre-e2e-loading-arc-inner {
+  transform-origin: 50% 50%;
+  animation: cre-e2e-arc-back 2.6s linear infinite;
+}
+.cre-e2e-loading-pulse {
+  transform-origin: 50% 50%;
+  animation: cre-e2e-pulse 1.6s ease-in-out infinite;
+}
+.cre-e2e-loading-dot {
+  animation: cre-e2e-dot 1.6s ease-in-out infinite;
+}
+.cre-e2e-loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.cre-e2e-loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+.cre-e2e-loading-topo {
+  transform-origin: 50% 50%;
+  animation: cre-e2e-drift 40s ease-in-out infinite alternate;
+}
+@keyframes cre-e2e-arc {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes cre-e2e-arc-back {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes cre-e2e-pulse {
+  0%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+@keyframes cre-e2e-dot {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  35% {
+    opacity: 1;
+  }
+}
+@keyframes cre-e2e-drift {
+  from {
+    transform: scale(1) translate(0, 0);
+  }
+  to {
+    transform: scale(1.06) translate(-1.5%, 1%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cre-e2e-loading-arc,
+  .cre-e2e-loading-arc-inner,
+  .cre-e2e-loading-pulse,
+  .cre-e2e-loading-dot,
+  .cre-e2e-loading-topo {
+    animation: none;
+  }
+}
+
 /* ============================================================================
    Learning Resources Updates (/resource-updates) — interaction + responsive.
    Inline styles can't express :hover / :focus-visible / media queries, so the
@@ -7239,6 +7317,9 @@ a.cre-library-card-title::after {
   --color-e2e-header-shadow: rgb(0 0 0 / 0.1);
   --color-e2e-recaptcha: #1a73e8;
   --color-e2e-recaptcha-ground: #f9f9f9;
+  /* The loading page's topo contours (2026-10-15): very light gray, a step
+     between neutral-100 and neutral-200 so they read as texture, not lines. */
+  --color-e2e-topo: #e3e3e3;
   --color-e2e-recaptcha-shadow: #808080;
   /* The checkout header's Return to Cart (Figma 423:2522, the design's
      cta/500 — the product's base blue, which the XCEL skin re-points). */

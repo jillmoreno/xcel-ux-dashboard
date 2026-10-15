@@ -67,7 +67,11 @@ describe('e2e-ends-at-password', () => {
 
     const status = screen.getByRole('status')
     expect(status).toHaveTextContent('Taking you to your learning dashboard…')
-    expect(status.querySelector('.cre-setup-spin')).not.toBeNull()
+    expect(status.querySelector('.cre-e2e-loading-arc')).not.toBeNull()
+    // The topo map behind it: generated contours, drawn in the one token.
+    const topo = document.querySelector('.cre-e2e-loading-topo')
+    expect(topo).not.toBeNull()
+    expect(topo?.querySelectorAll('path').length).toBeGreaterThan(10)
     // The whole page is the loading page: the form and the order panel are gone.
     expect(screen.queryByRole('heading', { name: 'Create password' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Confirm' })).toBeNull()

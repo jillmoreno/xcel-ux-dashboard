@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { CircleCheckSolid } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { PartnerHeader } from '@/components/e2e/PartnerHeader'
+import { TopoBackground } from '@/components/e2e/TopoBackground'
 import { END_TO_END_VERSION, useEndToEndDemoParams, useEndToEndPageChrome } from './endToEndDemo'
 
 /**
@@ -10,8 +11,9 @@ import { END_TO_END_VERSION, useEndToEndDemoParams, useEndToEndPageChrome } from
  * Eric's request), Figma "Atlas UX Design" 425:2597, under the partner header.
  * The End-to-End Demo's step after Checkout: Place your order opens it, and
  * Confirm ENDS THE FLOW HERE (2026-10-15, Jillienne: "it should END after
- * user puts in a password") — the page becomes a LOADING PAGE, a spinner
- * over "Taking you to your learning dashboard…", and nothing navigates: the
+ * user puts in a password") — the page becomes a LOADING PAGE, a compass of
+ * arcs over a topo map, "Taking you to your learning dashboard…" typing its
+ * dots, and nothing navigates: the
  * dashboard is the Atlas Learning row's, not this one's. That is
  * `e2e-ends-at-password`, on by default; off, Confirm opens the demo's Home
  * with the Affidavit modal over it, Eric's hand-off from earlier the same
@@ -43,16 +45,54 @@ export function InvitedConfirmationPage() {
   const endsHere = useFeatureFlag('e2e-ends-at-password').enabled
 
   if (done) {
-    /* THE END OF THE FLOW: the loading page. The spinner is CSS, not a gif —
-       `cre-setup-spin` already honours reduced motion — on the brick the
-       order panel's check uses. It never resolves; see the file comment. */
+    /* THE END OF THE FLOW: the loading page. SVG and CSS, not a gif, so every
+       colour is a token: the topo map behind (`TopoBackground`), a brick arc
+       sweeping over a faint ring with a slower arc running the other way and
+       a breathing dot at the centre, and the line's ellipsis typing itself.
+       The motion classes live in tokens.css beside `cre-setup-spin` and stop
+       under reduced motion. It never resolves; see the file comment. */
     return (
       <div style={PAGE}>
         <PartnerHeader />
         <main style={LOADING_PAGE}>
+          <TopoBackground />
           <div role="status" aria-live="polite" style={LOADING_STACK}>
-            <span aria-hidden className="cre-setup-spin" style={SPINNER} />
-            <p style={LOADING_TEXT}>Taking you to your learning dashboard…</p>
+            <svg aria-hidden viewBox="0 0 72 72" width={72} height={72} style={{ display: 'block', overflow: 'visible' }}>
+              <circle cx={36} cy={36} r={32} fill="none" strokeWidth={3} style={{ stroke: 'var(--color-e2e-form-outline)' }} />
+              <circle
+                className="cre-e2e-loading-arc"
+                cx={36}
+                cy={36}
+                r={32}
+                fill="none"
+                strokeWidth={3}
+                strokeLinecap="round"
+                strokeDasharray="56 145"
+                style={{ stroke: 'var(--color-xcel-brick-600)' }}
+              />
+              <circle
+                className="cre-e2e-loading-arc-inner"
+                cx={36}
+                cy={36}
+                r={21}
+                fill="none"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeDasharray="30 102"
+                strokeOpacity={0.4}
+                style={{ stroke: 'var(--color-xcel-brick-600)' }}
+              />
+              <circle className="cre-e2e-loading-pulse" cx={36} cy={36} r={5} style={{ fill: 'var(--color-xcel-brick-600)' }} />
+            </svg>
+            <p style={LOADING_TEXT}>
+              Taking you to your learning dashboard
+              <span style={SR_ONLY}>…</span>
+              <span aria-hidden>
+                <span className="cre-e2e-loading-dot">.</span>
+                <span className="cre-e2e-loading-dot">.</span>
+                <span className="cre-e2e-loading-dot">.</span>
+              </span>
+            </p>
           </div>
         </main>
       </div>
@@ -331,30 +371,24 @@ const RULES: CSSProperties = {
 
 const RULE_LIST: CSSProperties = { margin: 0, paddingLeft: 19.5, listStyle: 'disc' }
 
-/* THE LOADING PAGE. Centred in the body under the partner header; the
-   spinner is a 48 ring on the form outline with a brick arc, the line under
-   it Open Sans 16 / 24 as the body copy on the Invited Product Detail page. */
+/* THE LOADING PAGE. Centred in the body under the partner header, the topo
+   map absolutely behind it (hence `position: relative`); the line under the
+   spinner is Open Sans 16 / 24 as the body copy on the Invited Product
+   Detail page, its dots in a monospace-ish fixed width so they type in place. */
 const LOADING_PAGE: CSSProperties = {
   ...BODY,
+  position: 'relative',
   alignItems: 'center',
   justifyContent: 'center',
   padding: 40,
 }
 
 const LOADING_STACK: CSSProperties = {
+  position: 'relative',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: 24,
-}
-
-const SPINNER: CSSProperties = {
-  display: 'block',
-  width: 48,
-  height: 48,
-  borderRadius: '50%',
-  border: '4px solid var(--color-e2e-form-outline)',
-  borderTopColor: 'var(--color-xcel-brick-600)',
+  gap: 28,
 }
 
 const LOADING_TEXT: CSSProperties = {
@@ -364,4 +398,15 @@ const LOADING_TEXT: CSSProperties = {
   lineHeight: '24px',
   color: 'var(--color-neutral-950)',
   textAlign: 'center',
+}
+
+/* Screen readers get the ellipsis as one character; sighted viewers get the
+   three dots typing themselves. */
+const SR_ONLY: CSSProperties = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
 }
