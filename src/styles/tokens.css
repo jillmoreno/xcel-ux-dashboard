@@ -7240,6 +7240,9 @@ a.cre-library-card-title::after {
   --color-e2e-recaptcha: #1a73e8;
   --color-e2e-recaptcha-ground: #f9f9f9;
   --color-e2e-recaptcha-shadow: #808080;
+  /* The checkout header's Return to Cart (Figma 423:2522, the design's
+     cta/500 — the product's base blue, which the XCEL skin re-points). */
+  --color-e2e-return: #02568f;
 }
 
 /* ── Help & Support entry cards ─────────────────────────────────────────

@@ -1,16 +1,20 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
-import { useEndToEndDemoParams } from './endToEndDemo'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { ArrowLeftSolid, LockSolid } from '@/icons'
+import { END_TO_END_VERSION, useEndToEndDemoParams } from './endToEndDemo'
 
 /**
  * CHECKOUT — `/end-to-end-demo/checkout` (2026-10-14, Eric's request), Figma
  * "Atlas UX Design" 420:2392. The End-to-End Demo's next page: Invited Product
  * Detail's Purchase Now opens it, and Return to cart goes back.
  *
- * A STATIC MOCK, deliberately: the card fields hold nothing and send nothing,
- * Place your order stays disabled (the design draws it at 50%), and the Edit
- * buttons, the Terms link and Apply are not wired. The payment methods do
- * switch — Credit Card shows the card form, the other two hide it.
+ * A MOCK THAT WALKS THROUGH, and sends nothing (2026-10-15, Eric's request):
+ * clicking a card field fills it with TEST data — the published Visa test card
+ * 4242 4242 4242 4242, never a real one — ticking "Securely store…" turns Place
+ * your order on (the design's 50% is its off state), and placing the order
+ * opens the demo's Home. The Edit buttons, the Terms link and Apply are not
+ * wired. The payment methods switch — Credit Card shows the card form, the
+ * other two hide it.
  *
  * DEMO DATA: the learner is the demo's, Jordan Navarro, at an invented address
  * and a 555 number. The Figma frame carries what looks like a real home address
@@ -23,6 +27,11 @@ import { useEndToEndDemoParams } from './endToEndDemo'
 export function InvitedCheckoutPage() {
   const [method, setMethod] = useState<'card' | 'google-pay' | 'paypal'>('card')
   const [params] = useSearchParams()
+  const navigate = useNavigate()
+  // Which card fields have been clicked (and so filled), and the store box.
+  const [filled, setFilled] = useState<Partial<Record<CardField, boolean>>>({})
+  const fill = (f: CardField) => setFilled((prev) => ({ ...prev, [f]: true }))
+  const [stored, setStored] = useState(false)
   useEndToEndDemoParams()
 
   useEffect(() => {
@@ -39,15 +48,19 @@ export function InvitedCheckoutPage() {
 
   return (
     <div style={PAGE}>
+      {/* The header, Figma 423:2522 (2026-10-15, Eric's request; 420:2392's
+          logo-left header before): Return to Cart, Secure Checkout centred,
+          the logo on the right — the partner header's frame. */}
       <header style={HEADER}>
-        <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={HEADER_LOGO} />
+        <Link to={`/end-to-end-demo?${params.toString()}`} style={RETURN_LINK}>
+          <ArrowLeftSolid size={13} aria-hidden />
+          Return to Cart
+        </Link>
         <p style={SECURE_CHECKOUT}>
           Secure Checkout
-          <img src="/brand/checkout/lock.svg" alt="" width={11} height={15.714} style={{ display: 'block' }} />
+          <LockSolid size={13} aria-hidden />
         </p>
-        <Link to={`/end-to-end-demo?${params.toString()}`} style={RETURN_LINK}>
-          Return to cart
-        </Link>
+        <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={HEADER_LOGO} />
       </header>
 
       <main style={MAIN}>
@@ -66,7 +79,8 @@ export function InvitedCheckoutPage() {
 
         {/* 2. PAYMENT */}
         <section aria-labelledby="checkout-payment" style={COLUMN}>
-          <div style={{ position: 'relative' }}>
+          {/* "Secure" on the title's baseline (2026-10-15, Eric's request). */}
+          <div style={PAYMENT_TITLE_ROW}>
             <h3 id="checkout-payment" style={STEP_TITLE}>
               2. Payment
             </h3>
@@ -93,14 +107,30 @@ export function InvitedCheckoutPage() {
             {method === 'card' ? (
               <div style={CARD_FORM}>
                 <div style={FIELD_GRID}>
-                  <Field label="Card number" />
-                  <Field label="Security code" />
-                  <Field label="Expiration date" select />
-                  <Field label="Expiration year" hiddenLabel select />
+                  <Field label="Card number" value={filled.number ? TEST_CARD.number : ''} onFill={() => fill('number')} />
+                  <Field label="Security code" value={filled.cvc ? TEST_CARD.cvc : ''} onFill={() => fill('cvc')} />
+                  <Field
+                    label="Expiration date"
+                    select
+                    value={filled.month ? TEST_CARD.month : ''}
+                    onFill={() => fill('month')}
+                  />
+                  <Field
+                    label="Expiration year"
+                    hiddenLabel
+                    select
+                    value={filled.year ? TEST_CARD.year : ''}
+                    onFill={() => fill('year')}
+                  />
                 </div>
                 <div style={STORE_ROW}>
                   <label style={STORE_LABEL}>
-                    <input type="checkbox" style={CHECKBOX} />
+                    <input
+                      type="checkbox"
+                      checked={stored}
+                      onChange={(e) => setStored(e.target.checked)}
+                      style={CHECKBOX}
+                    />
                     Securely store credit card for later use.
                   </label>
                   <img src="/brand/checkout/help.svg" alt="What is this?" width={16} height={16} style={{ display: 'block' }} />
@@ -192,7 +222,13 @@ export function InvitedCheckoutPage() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 30, padding: '25px 20px 0' }}>
-            <button type="button" disabled style={PLACE_ORDER}>
+            {/* On once "Securely store…" is ticked; it opens the demo's Home. */}
+            <button
+              type="button"
+              disabled={!stored}
+              style={stored ? PLACE_ORDER_ON : PLACE_ORDER}
+              onClick={() => navigate(`/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}`)}
+            >
               Place your order
             </button>
             <p style={TERMS}>
@@ -267,17 +303,47 @@ function MethodRow({
   )
 }
 
-function Field({ label, select = false, hiddenLabel = false }: { label: string; select?: boolean; hiddenLabel?: boolean }) {
+type CardField = 'number' | 'cvc' | 'month' | 'year'
+
+/* TEST DATA ONLY — Visa's published test card, not a real one. */
+const TEST_CARD: Record<CardField, string> = {
+  number: '4242 4242 4242 4242',
+  cvc: '123',
+  month: '12',
+  year: '2030',
+}
+
+/* A field that fills itself with the test card's value when clicked. A
+   button, not an input: there is nothing to type, and nothing is sent. */
+function Field({
+  label,
+  value,
+  onFill,
+  select = false,
+  hiddenLabel = false,
+}: {
+  label: string
+  value: string
+  onFill: () => void
+  select?: boolean
+  hiddenLabel?: boolean
+}) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <span style={hiddenLabel ? { ...FIELD_LABEL, visibility: 'hidden' } : FIELD_LABEL}>
         {label} <span style={{ fontSize: 12 }}>*</span>
       </span>
-      <span style={FIELD} aria-hidden>
+      <button
+        type="button"
+        onClick={onFill}
+        aria-label={`${label}${value ? `: ${value}` : ', click to fill'}`}
+        style={select ? FIELD : { ...FIELD, paddingRight: 10 }}
+      >
+        {value}
         {select ? (
           <img src="/brand/checkout/select-chevron.svg" alt="" width={12} height={8} style={SELECT_CHEVRON} />
         ) : null}
-      </span>
+      </button>
     </div>
   )
 }
@@ -286,60 +352,69 @@ function Field({ label, select = false, hiddenLabel = false }: { label: string; 
 
 const PAGE: CSSProperties = { minHeight: '100vh', background: 'var(--color-fixed-light)' }
 
-/* 89.87 tall, a soft shadow below; the logo 8 in from the top and bottom
-   and 236 from the left, "Secure checkout" centred, Return to cart 236 from
-   the right. */
+/* 88 tall: 20 above and below the 48 logo, 32 in each side, a 1px #E6E6E6
+   outline drawn inside (as Figma strokes). Three parts, 16 apart; the middle
+   one takes the room and centres its words. */
 const HEADER: CSSProperties = {
-  position: 'relative',
-  height: 89.87,
-  boxSizing: 'border-box',
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'space-between',
-  padding: '8px 236px',
+  gap: 16,
+  padding: '20px 32px',
   background: 'var(--color-fixed-light)',
-  filter: 'drop-shadow(0 4px 2px var(--color-e2e-header-shadow))',
+  boxShadow: 'inset 0 0 0 1px var(--color-e2e-partner-outline)',
 }
 
-const HEADER_LOGO: CSSProperties = { display: 'block', width: 201.31, height: 73.87, objectFit: 'contain' }
+const HEADER_LOGO: CSSProperties = { display: 'block', width: 115, height: 48, flex: 'none', objectFit: 'contain' }
 
 const SECURE_CHECKOUT: CSSProperties = {
-  position: 'absolute',
-  left: '50%',
-  transform: 'translateX(-50%)',
+  flex: '1 0 0',
+  minWidth: 1,
   margin: 0,
   display: 'flex',
   alignItems: 'center',
-  gap: 5,
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontSize: 18,
-  lineHeight: '27px',
-  textTransform: 'uppercase',
-  color: 'var(--color-text-secondary)',
+  justifyContent: 'center',
+  // 8 between the words and the lock (2026-10-15, Eric's request; the
+  // design's 16).
+  gap: 8,
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 13,
+  lineHeight: 'normal',
+  color: 'var(--color-neutral-950)',
+  whiteSpace: 'nowrap',
 }
 
 const RETURN_LINK: CSSProperties = {
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 500,
-  fontSize: 18,
-  lineHeight: '27px',
-  color: 'var(--color-e2e-link)',
-  textDecoration: 'underline',
-  textDecorationThickness: 1,
+  flex: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 13,
+  lineHeight: 'normal',
+  color: 'var(--color-e2e-return)',
+  textDecoration: 'none',
+  whiteSpace: 'nowrap',
 }
 
-/* Three 384 columns, 24 apart, 240 in; 55 below the header. */
+/* Three 384 columns, 48 apart (2026-10-15, Eric's request; the design's
+   24), centred as a block — 1248 wide, which no longer fits the design's 240
+   gutters at 1680; 55 below the header. */
 const MAIN: CSSProperties = {
   display: 'flex',
   alignItems: 'flex-start',
-  gap: 24,
-  padding: '55px 240px 80px',
+  justifyContent: 'center',
+  gap: 48,
+  padding: '55px 24px 80px',
 }
 
 const COLUMN: CSSProperties = { width: 384, flex: 'none', display: 'flex', flexDirection: 'column' }
 
+/* 4 below each column's title, before its panel (2026-10-15, Eric's
+   request). */
 const STEP_TITLE: CSSProperties = {
-  margin: 0,
+  margin: '0 0 4px',
   height: 45,
   display: 'flex',
   alignItems: 'center',
@@ -350,10 +425,15 @@ const STEP_TITLE: CSSProperties = {
   color: 'var(--color-neutral-950)',
 }
 
+const PAYMENT_TITLE_ROW: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  // Flush with the panel's right edge (2026-10-15, Eric's request; 20 in
+  // before).
+  justifyContent: 'space-between',
+}
+
 const SECURE_TAG: CSSProperties = {
-  position: 'absolute',
-  right: 20,
-  top: 19,
   display: 'flex',
   alignItems: 'center',
   gap: 4,
@@ -463,6 +543,19 @@ const FIELD_LABEL: CSSProperties = {
 
 const FIELD: CSSProperties = {
   position: 'relative',
+  display: 'block',
+  width: '100%',
+  // 30 on the right for a select's chevron; one line, the card number
+  // included, at 14.
+  padding: '0 30px 0 10px',
+  textAlign: 'left',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontSize: 14,
+  lineHeight: '36px',
+  color: 'var(--color-text-primary)',
+  cursor: 'text',
   height: 38,
   boxSizing: 'border-box',
   borderRadius: 5,
@@ -609,7 +702,7 @@ const TOTAL_ROW: CSSProperties = {
   justifyContent: 'space-between',
 }
 
-/* Disabled until the form is complete — the design's 50%. */
+/* Off until "Securely store…" is ticked — the design's 50%. */
 const PLACE_ORDER: CSSProperties = {
   height: 60,
   border: 'none',
@@ -622,6 +715,14 @@ const PLACE_ORDER: CSSProperties = {
   lineHeight: '27px',
   color: 'var(--color-fixed-light)',
   cursor: 'not-allowed',
+}
+
+/* On: XCEL's red, the brick (2026-10-15, Eric's request). */
+const PLACE_ORDER_ON: CSSProperties = {
+  ...PLACE_ORDER,
+  background: 'var(--color-xcel-brick)',
+  opacity: 1,
+  cursor: 'pointer',
 }
 
 const TERMS: CSSProperties = {

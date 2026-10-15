@@ -11,6 +11,7 @@ import type { CSSProperties, SVGProps } from 'react'
 
 // Raw SVG-as-React-component imports (vite-plugin-svgr).
 import ArrowLeftSvg from './arrow-left.svg?react'
+import ArrowLeftSolidSvg from './arrow-left-solid.svg?react'
 import BarsSvg from './bars.svg?react'
 import ArrowRightSvg from './arrow-right.svg?react'
 import ArrowsRotateSvg from './arrows-rotate.svg?react'
@@ -236,6 +237,7 @@ function makeIcon(Svg: React.FC<SVGProps<SVGSVGElement>>) {
    (see brand file's icon-mapping table). The right-hand SVG is the
    FA 7 Pro Light source. */
 export const ArrowLeft = makeIcon(ArrowLeftSvg)
+export const ArrowLeftSolid = makeIcon(ArrowLeftSolidSvg) // FA: arrow-left (solid), 7.3.1
 export const Bars = makeIcon(BarsSvg) // FA: bars (hamburger)
 export const ArrowRight = makeIcon(ArrowRightSvg)
 export const ArrowsRotate = makeIcon(ArrowsRotateSvg) // FA: arrows-rotate (renewal)
