@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { Logo } from '@/components/brand/Logo'
 import { ClipboardList, ClipboardListCheckRegular, GearRegular, LockRegular, Notebook, RubiLogo } from '@/icons'
 import {
   COMPASS_RAIL_ASK_RUBI,
@@ -7,7 +6,6 @@ import {
   COMPASS_RAIL_LOCKED,
   COMPASS_RAIL_LOCKED_HEADING,
   COMPASS_RAIL_SETTINGS,
-  COMPASS_RAIL_WORDMARK,
   lockedTip,
   type CompassLockedRow,
 } from '@/data/compassRailFixtures'
@@ -25,7 +23,7 @@ import './compassAnjani.css'
  *
  * | | `CompassSidebar` | Hers, now |
  * |---|---|---|
- * | Top | Home crumb, course title, days left, a 62% bar | the XCEL lockup + "Compass" |
+ * | Top | Home crumb, course title, days left, a 62% bar | nothing — the header above carries the logo (the lockup went 2026-10-15) |
  * | Rows | eight pages, icon + label | Overview · Learn · Study planner · Ask Rubi · Progress, icon + label |
  * | Then | — | an EXAM PREP rule and three LOCKED rows: Practice, Flashcards, Exam Simulator |
  * | Bottom | nothing | Settings, then the learner |
@@ -76,12 +74,11 @@ export function CompassRail({
 
   return (
     <aside className="cre-rail">
-      {/* The lockup, not a crumb. `Logo` follows the brand skin. */}
-      <div className="cre-rail__brand">
-        <Logo height={28} />
-        <span className="cre-rail__wordmark">{COMPASS_RAIL_WORDMARK}</span>
-      </div>
-
+      {/* ⚠ NO LOCKUP — 2026-10-15, the direct ask ("remove", pointing at it).
+          Her standalone file has no global header, so its rail carries the
+          XCEL logo and "Compass"; inside the shell the header above already
+          shows the logo, and the rail's copy read as a duplicate. The
+          wordmark stays in the fixtures for the day the rail stands alone. */}
       <nav aria-label="Course pages" className="cre-rail__nav">
         <ul className="cre-rail__list">
           {pages.flatMap((p) => {
