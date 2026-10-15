@@ -214,7 +214,7 @@ describe('section routing (sectionOf)', () => {
     // The product FIRST (2026-10-14, Jillienne: "always have this be the
     // first option"), then the doors around it.
     expect(rows).toEqual([
-      'End-to-End User Experience (Atlas & Compass)',
+      'End-to-End User Experience (Invite, Atlas, Compass)',
       'Invite & Purchase — Live Product Build',
       'Atlas Learning — Work in Progress',
       'Compass Learning — Live Product Build',

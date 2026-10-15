@@ -46,7 +46,7 @@ carries no `gate`, so it renders on the public build as well as the full one.
 | **Refinement** | under discussion | as many as you like | Netlify Blobs, authored on the page |
 
 Five rows as of the evening of 2026-10-14, the product first and then the
-doors around it: **End-to-End User Experience (Atlas & Compass)** — always the
+doors around it: **End-to-End User Experience (Invite, Atlas, Compass)** — always the
 first row — then **Invite & Purchase** (`/end-to-end-demo`, Eric's End-to-End
 Demo — the Invited Product Detail page, its checkout, then the dashboard),
 **Atlas Learning — Work in Progress** (the end-to-end's middle: Home and the

@@ -1136,7 +1136,10 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // ask, when the Compass row arrived beside it: the row is the whole learner
     // journey, Atlas (the dashboard) and Compass (the study experience) in one
     // build, and the old name said only the first half.
-    title: 'End-to-End User Experience (Atlas & Compass)',
+    // …and again the same evening, "(Atlas & Compass)" → "(Invite, Atlas,
+    // Compass)", once the three doors around this row each had a row of
+    // their own: the parenthesis names what this one contains, in order.
+    title: 'End-to-End User Experience (Invite, Atlas, Compass)',
     accent: 'blue',
     icon: 'grid',
     blurb:
