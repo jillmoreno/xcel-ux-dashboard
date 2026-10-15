@@ -1646,9 +1646,9 @@ export function UxDashboardPage() {
         ) : (
         <>
         <header style={headerStyle}>
-          <p style={{ ...eyebrowStyle, color: 'var(--ux-eyebrow)' }}>
-            Prototype demo, features and specifications
-          </p>
+          {/* No eyebrow over the section title — 2026-10-14, Jillienne on the
+              preview: "remove the eyebrow from all the pages". Every section
+              shares this header, so this is every page. */}
           <h1 style={h1Style}>{VISIBLE_SECTIONS.find((s) => s.id === section)!.label}</h1>
           {VISIBLE_SECTIONS.find((s) => s.id === section)!.blurb && (
             <p style={ledeStyle}>{VISIBLE_SECTIONS.find((s) => s.id === section)!.blurb}</p>
@@ -2387,14 +2387,6 @@ const swatchDotStyle: CSSProperties = {
 const mainStyle: CSSProperties = { padding: '40px 32px 72px', maxWidth: 1080 }
 const headerStyle: CSSProperties = { marginBottom: 22 }
 
-const eyebrowStyle: CSSProperties = {
-  margin: 0,
-  fontSize: 12,
-  fontWeight: 700,
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase',
-  color: 'var(--ux-accent)',
-}
 
 const h1Style: CSSProperties = {
   margin: '10px 0 0',
