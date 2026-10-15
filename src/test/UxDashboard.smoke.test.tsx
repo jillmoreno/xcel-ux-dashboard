@@ -208,7 +208,7 @@ describe('section routing (sectionOf)', () => {
     // 2026-09-28. The list is still written out, in section order, so adding
     // a row is a deliberate edit here and not something a category typo does.
     expect(rows).toEqual([
-      'XCEL Dashboard — Live Product Build',
+      'End-to-End User Experience (Atlas & Compass)',
       'Compass Learning — Live Product Build',
     ])
 

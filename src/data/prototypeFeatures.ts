@@ -1095,7 +1095,11 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
      * to Design or Development and it vanishes from the front door.
      */
     id: 'xcel-dashboard',
-    title: 'XCEL Dashboard — Live Product Build',
+    // Renamed 2026-10-14 from "XCEL Dashboard — Live Product Build", Jillienne's
+    // ask, when the Compass row arrived beside it: the row is the whole learner
+    // journey, Atlas (the dashboard) and Compass (the study experience) in one
+    // build, and the old name said only the first half.
+    title: 'End-to-End User Experience (Atlas & Compass)',
     accent: 'blue',
     icon: 'grid',
     blurb:
