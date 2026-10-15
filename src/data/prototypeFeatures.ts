@@ -168,7 +168,9 @@ export const PROTOTYPE_SCOPES: ReadonlyArray<{
   },
   {
     id: 'end-to-end',
-    label: 'End to end',
+    // "End to end" until 2026-10-14; renamed with the row's title, which now
+    // says end-to-end itself, so the tag names the two halves instead.
+    label: 'Atlas & Compass',
     question: 'What is the XCEL product right now?',
     owner: 'Jillienne',
   },
