@@ -296,13 +296,17 @@ function normalise(v: StoredLink): StoredLink {
   }
 }
 
-/** Newest first, so a link just added is at the top where the author is
- *  looking. Ties break on id, which is monotonic, so the order is total. */
+/** Most recently SAVED first (2026-10-14, Jillienne: "most recent at the
+ *  top"), so a row just added or just edited is where the author is looking.
+ *  A row written before `updatedAt` existed has no stamp and sorts by the day
+ *  it was added instead — the two keys compare as strings because both begin
+ *  `yyyy-mm-dd`, and a stamped row on a given day sorts above an unstamped
+ *  one from that day, which is the honest order. Ties break on id, which is
+ *  monotonic, so the order is total. */
 function sortLinks(links: StoredLink[]): StoredLink[] {
+  const key = (l: StoredLink) => l.updatedAt || l.addedDate
   return [...links].sort((a, b) =>
-    a.addedDate === b.addedDate
-      ? b.id.localeCompare(a.id)
-      : b.addedDate.localeCompare(a.addedDate),
+    key(a) === key(b) ? b.id.localeCompare(a.id) : key(b).localeCompare(key(a)),
   )
 }
 

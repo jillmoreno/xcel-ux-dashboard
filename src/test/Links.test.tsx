@@ -386,6 +386,23 @@ describe('LinksPanel', () => {
     expect(titles).toEqual(['Newest — same day', 'Middle — same day', 'Oldest'])
   })
 
+  it('sorts a row by when it was last SAVED, so an edit brings it to the top', async () => {
+    // 2026-10-14, Jillienne: "most recent at the top". The oldest-added row
+    // was edited after the others were added, so it leads; the row with no
+    // stamp (written before the field) sorts by its added day.
+    mockEndpoint([
+      link({ id: 'link-001', title: 'Oldest, edited today', addedDate: '2026-09-01', updatedAt: '2026-10-14T18:00:00Z' }),
+      link({ id: 'link-002', title: 'Added later, never edited', addedDate: '2026-10-10', updatedAt: '' }),
+      link({ id: 'link-003', title: 'Added later, saved once', addedDate: '2026-10-12', updatedAt: '2026-10-12T09:00:00Z' }),
+    ])
+    render(<LinksPanel />)
+    await waitFor(() => expect(screen.getByText('3 links')).toBeInTheDocument())
+    const titles = screen
+      .getAllByRole('link')
+      .map((a) => a.textContent?.replace(/\s*— opens in a new tab$/, '').trim())
+    expect(titles).toEqual(['Oldest, edited today', 'Added later, saved once', 'Added later, never edited'])
+  })
+
   it('carries the hover/focus classes, and they beat the inline styles', async () => {
     /*
      * jsdom has no `:hover`, so this asserts the two halves that CAN be checked
