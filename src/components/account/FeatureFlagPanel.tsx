@@ -83,6 +83,9 @@ function flagPageIdForPath(pathname: string): FeatureFlagPageId | null {
 // color/style, learning-path width/breakdown, learning-vibrant) + the dead
 // Featured Products flag were removed in the flag audit.
 const REBRAND_FLAGS = [
+  // Compass Learning — whose surface renders there, and the planner's concept.
+  'compass-surface',
+  'compass-planner-rubi',
   // My Purchases — order ledger vs. the not-built-yet placeholder, and the
   // cards-vs-table layout A/B on top of it.
   'account-purchases-ledger',

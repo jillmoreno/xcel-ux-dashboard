@@ -20,10 +20,8 @@ import {
   Sliders,
   X,
 } from '@/icons'
-import { useSearchParams } from 'react-router-dom'
-import { useAccount } from '@/context/AccountContext'
-import { isHybridVersion, resolveDashboardVersion } from '@/data/dashboardVersions'
 import { HYBRID_COMPASS_PAGES } from './compassPages'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import {
   NY_LH_COURSE_CHAPTERS,
   NY_LH_CURRENT_CHAPTER_INDEX,
@@ -335,12 +333,11 @@ export function CompassSidebar({
    *  line is dropped rather than rendered empty. */
   timeRemaining?: string
 }) {
-  /* ⚠ THE RAIL IS PER VERSION — 2026-10-08. Hybrid draws Anjani's six rows;
-     every other version draws the eight the Atlas design has. See
-     `HYBRID_COMPASS_PAGES`. */
-  const { brand: railBrand } = useAccount()
-  const [railParams] = useSearchParams()
-  const hybridRail = isHybridVersion(resolveDashboardVersion(railParams.get('version'), railBrand))
+  /* ⚠ THE RAIL FOLLOWS `compass-surface`, NOT THE VERSION — 2026-10-15; it was
+     `isHybridVersion` from 2026-10-08. Anjani's six rows on her arm, the eight
+     the Atlas design has on `atlas`. See `HYBRID_COMPASS_PAGES`, and the note
+     in `CompassLearningPage` for why the gate moved. */
+  const hybridRail = useFeatureFlag('compass-surface').variant === 'anjani'
   const pages = hybridRail ? HYBRID_COMPASS_PAGES : COMPASS_PAGES
   const activeLabel = pages.find((p) => p.id === page)?.label ?? ''
   /*

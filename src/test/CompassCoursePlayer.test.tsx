@@ -62,7 +62,14 @@ function seed(extra: Record<string, unknown> = {}) {
     'cgp.featureFlags',
     JSON.stringify({
       ...PRE_PROMOTION_BASELINE,
-      ...PRE_PROMOTION_BASELINE,
+      /* ⚠ THE ATLAS ARM, PINNED — 2026-10-15. This file is about the player's
+         OWN rail: the table of contents it swaps in on its Course page. On
+         Anjani's Compass (`compass-surface: anjani`, the default since that
+         day) the six-row rail never swaps and her course landing is the body
+         instead — pinned in `AtlasTopNav.test.tsx`. Without this pin every
+         contents-tree case below reads her rail and fails for the wrong
+         reason. */
+      'compass-surface': { enabled: true, variant: 'atlas' },
       ...extra,
     }),
   )

@@ -4373,3 +4373,64 @@ On the Atlas versions, My Courses (`section=courses`):
 The card's three sheet links go Home with `?open=exam-details | step:<id> |
 requirements`, which `MembershipOverview` opens once and strips. Home's "All
 courses ›" (course tabs) opens My Courses.
+
+### Compass is Anjani's on a flag, and her Study planner lands (2026-10-15)
+
+The direct ask: *"Anjani updated her refinement link. I want what she did to
+be put into the Prototype - Compass Learning section only."* Her Refinement
+link is the OCT2 master of `public/prototypes/xcel-compass-nudge-journey.html`
+(PR #3, her branch `claude/gallant-feynman-aj0m0i`); against the v5.5 export
+the earlier port was measured from, it adds ONE screen — the Study planner —
+and swaps the Rubi mark. The rail and the course landing were unchanged, so
+the 2026-10-08 port of those still describes her file.
+
+**The gate moved from a version to a flag, and that is the half that matters
+for the Prototypes row.** From the 8th her rail (`CompassRail`) and course
+landing (`CompassCourseLanding`) rendered when `isHybridVersion(...)` was
+true, which was right while Hybrid was the default: the Compass row
+(`xcel-compass`, `?demo=1&section=compass`) opens the DEFAULT version, so it
+showed hers. On the 14th Eric's End-to-End Demo became the default, and the
+same gate would have put his eight-row sidebar on the row that is hers. So:
+
+- **`compass-surface`** (`anjani` | `atlas`, default `anjani` on this branch)
+  decides whose Compass renders — at `?section=compass` and inside the course
+  player's shared sidebar — on EVERY dashboard version, Eric's included,
+  because the Compass surface has one owner however you reached it. `atlas`
+  keeps the shared `CompassSidebar`, its eight pages and the player's own
+  table of contents. It is what `promote-to-prototype` can surface under the
+  Compass group; a version check is invisible to it. `owner: 'jill'` is the
+  AUTHOR — `DesignerId` has no `anjani`, and the flag panel lists a flag only
+  on versions its owner owns, which she has none of — the scope's design
+  authority is in `PROTOTYPE_SCOPES`.
+- The tests that pinned "Eric's keeps…" (`AtlasTopNav.test.tsx`,
+  `CompassLearningPage.test.tsx`, `CompassCoursePlayer.test.tsx`) now pin the
+  `atlas` ARM, reached by `?ff=compass-surface:atlas`, not his version.
+
+**The Study planner** — `CompassStudyPlanner`, the rail's third row, which had
+opened on `CompassPageBody`'s empty ground since the 8th. Her `screen-planner`
+end to end: the plan bar (exam · pace · finish), the pace editor (three
+presets, seven day sliders, Save plan / Undo changes, and the "Done" that
+HIDES while the plan is dirty — her rule), the norm note under 7h, a month /
+week calendar where a click takes a day off and shift-click takes off a
+range, and Rubi's panel with three starters that rebuild the plan and undo
+newest-first. `compassStudyPlannerModel.ts` is her `plSchedule` as pure
+functions; `compassStudyPlannerFixtures.ts` is her fixed clock (today 22 Sep
+2026, exam 20 Nov) and words, with the same "second home, invented figures"
+warning the course landing carries. Nothing reads `examDateStore` or the
+pace flags, and Save plan writes nowhere — deliberately, see the component.
+
+- **`compass-planner-rubi`** (`surface: 'design'`, on by default) is her
+  "Prototype · Rubi on / Rubi off" toggle made a design control: off drops
+  the panel, widens the calendar and puts the norm note in the product's
+  voice. ⚠ With no `versions` it rides Jill's versions' bar and not Eric's
+  default — `designControlsFor`'s rule — so on the Compass row the second
+  concept is `?ff=compass-planner-rubi:off`.
+- One departure from her file, recorded in the component: the cells that
+  FLASH after a Rubi change are the ones whose plan differs before and after;
+  hers computed the flash after the change, so "Fridays are clear" lit
+  nothing.
+
+**What is still hers to decide.** `compass-surface` reaches the Compass row
+through `promote-to-prototype`, where the Compass group is Anjani's and the
+merge is Jillienne's. Her Refinement row stays until that lands; the two HTML
+files it points at live on `main` once PR #3 merges.

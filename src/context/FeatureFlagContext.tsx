@@ -1374,6 +1374,71 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-surface',
+    /* WHOSE COMPASS — 2026-10-15, the direct ask: "I want what she did to be
+       put into the Prototype - Compass Learning section only."
+
+       Anjani's Compass — her rail (`CompassRail`), her course landing
+       (`CompassCourseLanding`) and, with the OCT2 master, her study planner
+       (`CompassStudyPlanner`) — had been gated on `isHybridVersion` since
+       2026-10-08. The Compass Prototypes row (`xcel-compass`) opens the DEFAULT
+       version, and on 2026-10-14 that became Eric's End-to-End Demo, so the
+       version gate would have put the shared eight-row sidebar on the row that
+       is hers. A flag is what `promote-to-prototype` can see and group under
+       the Compass row; a version check is not.
+
+       ⚠ `anjani` IS THE DEFAULT ON THIS BRANCH, which is the designer rule
+       (CLAUDE.md: a flag whose default is ON on your branch), and it is the
+       Compass scope owner's call at promotion — see `PROTOTYPE_SCOPES`. It
+       applies on EVERY dashboard version, Eric's included, because the Compass
+       surface has one owner however you reached it; `atlas` is the arm that
+       keeps his sidebar and its eight pages for anyone who needs the old page.
+
+       ⚠ `owner: 'jill'` IS THE AUTHOR, NOT THE SCOPE OWNER. `DesignerId` has no
+       `anjani` yet (the 2026-10-14 note: a tab for her would be empty in two
+       panels), and the flag panel lists a flag only on versions its owner
+       owns — she owns none — so an `anjani` owner would make this reachable by
+       `?ff=` alone. The scope's design authority is recorded where it lives,
+       in `PROTOTYPE_SCOPES`. */
+    owner: 'jill',
+    group: 'Navigation',
+    label: 'Compass surface',
+    description:
+      'Whose Compass Learning renders at `?section=compass` and inside the course player. `anjani` (default) is her design: the six-row rail with the XCEL lockup and the course-hours / exam / learner footer, the Course landing with the resume card and five modules, and the Study planner — pace, weekly hours, days off, a calendar and Rubi rebuilding the plan. `atlas` is the shared `CompassSidebar` with the Atlas design\u2019s eight pages and bare grounds. Applies on every dashboard version.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'anjani',
+    variants: [
+      { value: 'anjani', label: 'Anjani\u2019s — rail, course landing, study planner' },
+      { value: 'atlas', label: 'Atlas — the shared sidebar and its eight pages' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-planner-rubi',
+    /* THE PLANNER'S TWO CONCEPTS — Rubi on / Rubi off — 2026-10-15. Her OCT2
+       file draws this as an in-page control marked "Prototype", dashed so it
+       reads as scaffolding; here it is a design control, which is what the
+       product does with scaffolding. ON: the Rubi panel on the right, three
+       starters, and the norm note in her voice. OFF: no panel, the calendar
+       widens, and the norm note reads "Good to know".
+
+       ⚠ NO `versions`, so the bar carries it on the versions its OWNER owns —
+       Jill's — and not on Eric's default, where the Compass row opens. That is
+       the design bar's rule (`designControlsFor`), not a choice; on the
+       default, `?ff=compass-planner-rubi:off` is the way to the second
+       concept. A Compass scope with its own versions would fix it properly. */
+    surface: 'design',
+    owner: 'jill',
+    group: 'Widgets',
+    label: 'Planner: Rubi',
+    description:
+      'Whether the Study planner\u2019s Rubi panel is part of the learner\u2019s package. ON: the panel, its three starters and the undo stack; the norm note speaks as Rubi. OFF: the planner alone, wider, and the note reads "Good to know".',
+    maturity: 'wip',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'hybrid-course-expiry',
     /* HOW CLOSE THE ACCESS DEADLINE IS — 2026-10-07, the direct ask for a demo
        control showing the course expiring, nearly expired, and expired.

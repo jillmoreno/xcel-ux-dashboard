@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { AtlasTopNav } from '@/components/layout/AtlasTopNav'
@@ -24,6 +24,19 @@ import { CompassLearningPage } from '@/components/learning/CompassLearningPage'
 function Search() {
   return <span data-testid="search">{useLocation().search}</span>
 }
+
+/* ⚠ THE COMPASS SURFACE IS A FLAG, NOT A VERSION — 2026-10-15. From the 8th
+   Anjani's rail and course landing were gated on `isHybridVersion`; when Eric's
+   End-to-End Demo became the default (10-14) that gate would have put his
+   sidebar on the Compass Prototypes row, which is hers. `compass-surface`
+   decides now, `anjani` by default on EVERY version, Eric's included. So the
+   cases below that pin "Eric's keeps…" pin the `atlas` ARM, reached the way a
+   reviewer reaches it: `?ff=`, which the provider reads off `window.location`
+   rather than the router. `afterEach` puts the URL back. */
+function atlasArm() {
+  window.history.replaceState({}, '', '/dashboard-rebrand?ff=compass-surface:atlas')
+}
+afterEach(() => window.history.replaceState({}, '', '/'))
 function renderNav(search: string, expanding = false) {
   const sep = search.startsWith('?') ? '&' : '?'
   const url = `/dashboard-rebrand${search}${sep}version=eric-atlas-v1`
@@ -227,6 +240,7 @@ describe('the Compass rail is Anjani’s on Hybrid', () => {
   })
 
   it('⚠ and Eric’s keeps all eight', () => {
+    atlasArm()
     renderRail('eric-atlas-v1')
     expect(railOf()).toHaveLength(8)
     expect(railOf()).toContain('Rubi Insights')
@@ -265,6 +279,7 @@ describe('the Compass rail is Anjani’s on Hybrid', () => {
 
   it('⚠ the shared sidebar still names its course', () => {
     /* The other half: nothing about hers reached Eric's. */
+    atlasArm()
     renderRail('eric-atlas-v1')
     const rail = document.querySelector('aside')!
     expect(rail.textContent).toContain('New York Life and Health Pre-licensing')
@@ -326,6 +341,7 @@ describe('Hybrid’s Course row opens Anjani’s course landing', () => {
     /* His course page IS the player, and its rail is how a learner moves
        between lessons. The alternative reading of the ask would have deleted
        it; this is what says we did not. */
+    atlasArm()
     openCourse('eric-atlas-v1')
     expect(document.querySelector('nav[aria-label="Course pages"]')).toBeNull()
     /* ⚠ NOT `queryByRole('region', {name: 'Course page'})` — `CompassPageBody`

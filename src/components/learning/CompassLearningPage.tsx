@@ -4,10 +4,9 @@ import { HYBRID_COMPASS_PAGES } from './compassPages'
 import { CompassRail } from './CompassRail'
 import { CompassLearningOverview } from './CompassLearningOverview'
 import { CompassCourseLanding } from './CompassCourseLanding'
-import { useAccount } from '@/context/AccountContext'
-import { isHybridVersion, resolveDashboardVersion } from '@/data/dashboardVersions'
-import { useSearchParams } from 'react-router-dom'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { useNavPlacement } from '@/components/layout/navPlacement'
+import { CompassStudyPlanner } from './CompassStudyPlanner'
 
 /**
  * COMPASS LEARNING — the top nav's second destination (Figma 765:3471).
@@ -56,12 +55,17 @@ export function CompassLearningPage({
   onStartSession?: () => void
 }) {
   const [page, setPage] = useState<CompassPage>('overview')
-  /* ⚠ HYBRID'S COURSE ROW OPENS A PAGE, NOT A BLANK — 2026-10-08. Everywhere
-     else `course` falls through to `CompassPageBody`'s empty ground, which is
-     what it has always drawn here; on Hybrid it is Anjani's course landing. */
-  const { brand } = useAccount()
-  const [compassParams] = useSearchParams()
-  const hybrid = isHybridVersion(resolveDashboardVersion(compassParams.get('version'), brand))
+  /* ⚠ ANJANI'S COMPASS IS A FLAG, NOT A VERSION — 2026-10-15. From 2026-10-08
+     her rail and course landing were gated on `isHybridVersion`, which was
+     right while Hybrid was the default: the Compass Prototypes row opens the
+     default version, so it showed hers. On 2026-10-14 Eric's End-to-End Demo
+     became the default and the same gate would have put HIS eight-row sidebar
+     on the row that is hers. `compass-surface` is what `promote-to-prototype`
+     can surface under the Compass group — a version check is invisible to
+     it — and its `anjani` arm is what this branch's default says. The `atlas`
+     arm keeps the shared sidebar for anyone who needs the old page. */
+  const anjani = useFeatureFlag('compass-surface').variant === 'anjani'
+  const hybrid = anjani
   /* Option 3 only — the header and the rail both carry a Home there, so the
      sidebar's trail would be the third. See the prop. */
   const hideCrumb = useNavPlacement() === 'hybrid'
@@ -87,6 +91,13 @@ export function CompassLearningPage({
         timeRemaining={timeRemaining}
       />
       )}
+      {hybrid && page === 'study-planner' ? (
+        /* Her Study planner — the screen the rail's third row opened on an
+           empty ground from 2026-10-08 until the OCT2 master drew it. It is
+           its own two-column layout (the plan and calendar, Rubi's panel), so
+           it stands where the scroll column would be rather than inside it. */
+        <CompassStudyPlanner />
+      ) : (
       <div style={mainStyle}>
         {page === 'overview' ? (
           <>
@@ -107,6 +118,7 @@ export function CompassLearningPage({
           <CompassPageBody page={page} />
         )}
       </div>
+      )}
     </div>
   )
 }

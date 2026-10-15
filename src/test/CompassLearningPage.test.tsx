@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { CompassLearningPage } from '@/components/learning/CompassLearningPage'
@@ -16,12 +16,18 @@ import { COMPASS_ASSIGNMENTS } from '@/data/compassLearningFixtures'
  * states apart.
  */
 
-/* ⚠ PINS ERIC'S VERSION — 2026-10-08. This file is about the SHARED
-   `CompassSidebar` and the Overview body it opens on. Hybrid draws a different
-   rail entirely (`CompassRail` — the XCEL lockup, no course title, no progress
-   bar) and became the brand DEFAULT the same day, so a bare URL had quietly
-   stopped describing the page this file tests. Hybrid's own rail is pinned in
-   `AtlasTopNav.test.tsx`. */
+/* ⚠ PINS THE `atlas` ARM OF `compass-surface` — 2026-10-15; it pinned Eric's
+   VERSION from 2026-10-08. This file is about the SHARED `CompassSidebar` and
+   the Overview body it opens on. Anjani draws a different rail entirely
+   (`CompassRail` — the XCEL lockup, no course title, no progress bar), and
+   from the 15th hers is the default on every version — the gate moved from
+   `isHybridVersion` to the flag when Eric's End-to-End Demo became the default
+   dashboard, so that the Compass Prototypes row (which opens the default)
+   stayed hers. The version pin is kept so the Overview body is still Eric's;
+   the arm pin is what keeps the sidebar shared. Her rail is pinned in
+   `AtlasTopNav.test.tsx`; her planner in `CompassStudyPlanner.test.tsx`. */
+beforeEach(() => window.history.replaceState({}, '', '/dashboard-rebrand?ff=compass-surface:atlas'))
+afterEach(() => window.history.replaceState({}, '', '/'))
 function renderPage() {
   return render(
     <MemoryRouter initialEntries={['/dashboard-rebrand?version=eric-atlas-v1']}>
