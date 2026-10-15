@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useCourseDemo, useFeatureFlag } from '@/context/FeatureFlagContext'
+import { jurisdictionName } from '@/data/nyProducerRequirements'
 
 /** The End-to-End Demo's dashboard version (`dashboardVersions.ts`). */
 export const END_TO_END_VERSION = 'eric-atlas-e2e'
@@ -103,12 +104,15 @@ export function useEndToEndCourseTitle(): string {
  */
 export function useDashboardCourseTitle(): string {
   const long = useFeatureFlag('atlas-home-long-title').enabled
-  const { course } = useCourseDemo()
-  const short = course === 'tx' ? TX_COURSE_TITLE_SHORT : E2E_COURSE_TITLE_SHORT
+  const { state } = useCourseDemo()
+  /* ⚠ `auto` KEEPS THE INVITE DOOR'S STRING, which is Florida's — and that is
+     deliberate even though the dashboard's qualifying journey resolves New
+     York under `auto`. The mismatch is `main`'s, not this branch's: the
+     End-to-End card has read "Florida Life and Health Pre-licensing" beside a
+     New York Get Licensed block since the version shipped, because the title
+     is the advertised PRODUCT's and the journey is the demo persona's.
+     Preserving it is what keeps a plain load unchanged. Picking a
+     jurisdiction explicitly is what resolves it. */
+  const short = state ? `${jurisdictionName(state)} Life and Health Pre-licensing` : E2E_COURSE_TITLE_SHORT
   return long ? `${short} with Comprehensive Exam Simulators` : short
 }
-
-/** ⚠ INVENTED, like every other Texas string on this axis — the product name
- *  XCEL sells in Texas is not confirmed. It mirrors the Florida one's shape so
- *  the two read as the same product in two states. */
-const TX_COURSE_TITLE_SHORT = 'Texas Life and Health Pre-licensing'

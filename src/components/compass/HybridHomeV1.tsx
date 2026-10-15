@@ -19,7 +19,7 @@ import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJo
 import { widgetEyebrowStyle } from '@/components/learning/widgetStyles'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import {
-  GET_LICENSED_STEPS,
+  getLicensedStepsFor,
   jurisdictionName,
   NY_LH_CURRENT_CHAPTER,
   NY_LH_LESSON_MINUTES_INVENTED,
@@ -182,8 +182,17 @@ export function HybridHomeV1({
     !!lessonStop?.hours &&
     lessonsDone < lessonStop.hours
 
-  const pass = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 2]
-  const apply = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1]
+  /* ⚠ THE STEPS FOLLOW THE PATH'S JURISDICTION — 2026-10-15. They were
+     `GET_LICENSED_STEPS`, which is NEW YORK's, while the heading two lines
+     down has always read `jurisdictionName(path.state)`. On a New York path
+     the two agreed and nobody noticed; on any other path the card would have
+     said "Get Licensed in Florida" above PSI's New York registration link,
+     a $40 New York exam fee and the NY Department of Financial Services.
+     `getLicensedStepsFor` falls back to Florida and resolves 'NY' to the very
+     same array, so the New York demo is byte-identical. */
+  const licensedSteps = getLicensedStepsFor(path.state)
+  const pass = licensedSteps[licensedSteps.length - 2]
+  const apply = licensedSteps[licensedSteps.length - 1]
   const state = jurisdictionName(path.state)
   /* ⚠ `=== 'tiles'` IS THE OPT-IN. An unset flag renders rows, the shape this
      version ships with — the inverted test would make "no decision" look like

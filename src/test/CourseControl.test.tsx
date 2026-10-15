@@ -10,12 +10,13 @@ import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext
 import {
   COURSE_FLAG_KEY,
   COURSE_PICKER,
+  chosenCourse,
   courseCePathIdFor,
   coursePathIdFor,
   isCoursePathCe,
   courseStateFor,
   isRegulatedCourse,
-  resolveCourse,
+  resolveSelection,
 } from '@/data/courseFixtures'
 import {
   COMPASS_SAMPLE_TOC_FROM_DESIGN,
@@ -102,36 +103,54 @@ describe('the committed defaults — a plain load of main is unchanged', () => {
 
   it('is in the catalog, with both axes', () => {
     expect(def).toBeDefined()
-    expect(def.variants?.map((v) => v.value)).toEqual(['fl', 'tx'])
+    expect(def.variants?.map((v) => v.value)).toEqual(['auto', 'ny', 'fl', 'tx'])
     expect(def.secondaryVariants?.map((v) => v.value)).toEqual(['unregulated', 'regulated'])
   })
 
-  /* ⚠ THE LOAD-BEARING ASSERTION IN THIS FILE. Every surface the axis reaches
-     was authored against Florida with free navigation; these two defaults are
-     what makes the branch additive. Changing them is a `promote-to-prototype`
+  /* ⚠ THE LOAD-BEARING ASSERTION IN THIS FILE. `auto` + `unregulated` is what
+     makes the branch additive. Changing them is a `promote-to-prototype`
      decision, not an edit — if this fails, that is the conversation. */
-  it('opens on Florida, unregulated', () => {
-    expect(def.defaultVariant).toBe('fl')
+  it('opens on Automatic, unregulated', () => {
+    expect(def.defaultVariant).toBe('auto')
     expect(def.defaultSecondaryVariant).toBe('unregulated')
-    expect(resolveCourse(def.defaultVariant)).toBe('fl')
+    expect(resolveSelection(def.defaultVariant)).toBe('auto')
+    expect(chosenCourse('auto')).toBeUndefined()
     expect(isRegulatedCourse(def.defaultSecondaryVariant)).toBe(false)
   })
 
-  it('degrades an unrecognised variant to Florida rather than throwing', () => {
+  /*
+   * ⚠ WHY `auto` AND NOT A JURISDICTION — the assertion that explains the
+   * design, and the one that caught two wrong defaults in a day.
+   *
+   * `main` does not demo ONE licence: the qualifying journey has shown New
+   * York since 2026-09-16 and CE and exam prep have always shown Florida.
+   * `fl` as the default therefore changed the page every stakeholder lands
+   * on; `ny` changed Learner Focused's renewal cycle, which
+   * `QeFocusedVersion.test.tsx` has a test about by name. `auto` changes
+   * neither, because it passes no course at all.
+   */
+  it('on Automatic, every journey resolves what it resolved before the axis', () => {
+    const auto = chosenCourse('auto')
+    expect(dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe', auto)!.path.state).toBe('NY')
+    expect(dashboardProgressPersonaFor('xcel', 'progress-on-track', 'ce', auto)!.path.state).toBe('FL')
+    expect(
+      dashboardProgressPersonaFor('xcel', 'progress-on-track', 'exam-prep', auto)!.path.state,
+    ).toBe('FL')
+  })
+
+  it('degrades an unrecognised variant to Automatic rather than throwing', () => {
     // A stale `?ff=dashboard-course-state:ca` from a shared link, or a
     // localStorage entry written by a future build.
-    expect(resolveCourse('ca')).toBe('fl')
-    expect(resolveCourse(undefined)).toBe('fl')
+    expect(resolveSelection('ca')).toBe('auto')
+    expect(resolveSelection(undefined)).toBe('auto')
     expect(isRegulatedCourse('whatever')).toBe(false)
   })
 })
 
 describe('the Course dropdown on the Demo Controls bar', () => {
-  it('shows the active course on the pill, Florida by default', () => {
+  it('shows the active selection on the pill, Automatic by default', () => {
     renderBar()
-    expect(
-      screen.getByRole('button', { name: /Course:.*Florida Life & Health Pre-Licensing/i }),
-    ).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Course:.*Automatic/i })).toBeTruthy()
   })
 
   /* TWO GROUPS, TWO ROLES. The panel is a `menu` holding two radiogroups
@@ -144,14 +163,16 @@ describe('the Course dropdown on the Demo Controls bar', () => {
     expect(within(sequencingGroup()).getAllByRole('radio')).toHaveLength(2)
   })
 
-  it('offers both courses, with Florida checked', () => {
+  it('offers every course plus Automatic, with Automatic checked', () => {
     renderBar()
     openCourse()
-    const [fl, tx] = within(courseGroup()).getAllByRole('radio')
+    const [auto, ny, fl, tx] = within(courseGroup()).getAllByRole('radio')
+    expect(auto.textContent).toMatch(/Automatic/)
+    expect(ny.textContent).toMatch(/New York Life & Health Pre-Licensing/)
     expect(fl.textContent).toMatch(/Florida Life & Health Pre-Licensing/)
     expect(tx.textContent).toMatch(/Texas Life & Health Pre-Licensing/)
-    expect(fl.getAttribute('aria-checked')).toBe('true')
-    expect(tx.getAttribute('aria-checked')).toBe('false')
+    expect(auto.getAttribute('aria-checked')).toBe('true')
+    expect(fl.getAttribute('aria-checked')).toBe('false')
   })
 
   it('picks Texas, and the pill follows', () => {
@@ -347,11 +368,33 @@ describe('New York is untouched', () => {
     expect(governingAgencyFor('NY')).toBe(NY_GOVERNING_AGENCY)
   })
 
-  it('leaves the QE persona on New York whichever course is picked', () => {
-    for (const course of ['fl', 'tx'] as const) {
-      const qe = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe', course)!
-      expect(qe.path.state, course).toBe('NY')
-      expect(qe.path.title, course).toMatch(/New York/)
+  /*
+   * ⚠ THIS USED TO ASSERT THE OPPOSITE — "leaves the QE persona on New York
+   * whichever course is picked" — and the change is the point of the second
+   * pass. Pinning qualifying to New York is what put "Get Licensed in New
+   * York" under a Course pill reading Florida. The control is a JURISDICTION
+   * axis now: picking one moves every journey, including qualifying.
+   *
+   * What is preserved is the thing that actually mattered — New York's
+   * CONTENT. Picking `ny` resolves the published profile itself, not a copy.
+   */
+  it('resolves the published New York profile when New York is picked', () => {
+    const qe = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe', 'ny')!
+    expect(qe.path.state).toBe('NY')
+    expect(qe.path.title).toMatch(/New York/)
+    // …and the same object `auto` reaches, so the two cannot drift.
+    expect(qe.path.title).toBe(
+      dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe', undefined)!.path.title,
+    )
+  })
+
+  /* EVERY JOURNEY ANSWERS FOR EVERY COURSE. A gap here means that journey
+     falls back to its own default and renders a jurisdiction the Course pill
+     does not name — the contradiction the whole second pass was about. */
+  it.each(['ce', 'qe', 'exam-prep'] as const)('answers for every course — %s', (edu) => {
+    for (const course of ['ny', 'fl', 'tx'] as const) {
+      const p = dashboardProgressPersonaFor('xcel', 'progress-on-track', edu, course)!
+      expect(p.path.state, `${edu}/${course}`).toBe(courseStateFor(course))
     }
   })
 

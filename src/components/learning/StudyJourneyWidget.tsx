@@ -12,6 +12,7 @@ import { dateFromIso } from '@/lib/studyPace'
 import { longDate } from './learningPathsHomeUtil'
 import {
   GET_LICENSED_STEPS,
+  getLicensedStepsFor,
   jurisdictionName,
   type LicensingStep,
 } from '@/data/nyProducerRequirements'
@@ -303,8 +304,13 @@ export function StudyJourneyWidget({
      ⚠ NO RENUMBERING FOLLOWS. The card consumes no step number on this arm
      (see the note above), so removing it closes no gap and moves nothing. */
   const examHere = !examElsewhere
-  const promoted = examFirst && examHere ? GET_LICENSED_STEPS[0] : null
-  const licensingAfter = (examFirst ? GET_LICENSED_STEPS.slice(1) : GET_LICENSED_STEPS).filter(
+  /* ⚠ THE PATH'S OWN JURISDICTION — 2026-10-15, the same correction the Atlas
+     homes and the rail took. These were New York's steps under a heading that
+     reads `jurisdictionName(path.state)`; `getLicensedStepsFor` resolves 'NY'
+     to that very array, so nothing moves on the New York demo. */
+  const licensedSteps = getLicensedStepsFor(path.state)
+  const promoted = examFirst && examHere ? licensedSteps[0] : null
+  const licensingAfter = (examFirst ? licensedSteps.slice(1) : licensedSteps).filter(
     (step) => examHere || step.id !== 'schedule-exam',
   )
   /* COLLAPSED — `dashboard-journey-complete`, and it only means anything at
@@ -364,7 +370,7 @@ export function StudyJourneyWidget({
         height: 1,
         background: 'var(--color-atlas-nav-rule)',
       }
-      const licensingSteps = GET_LICENSED_STEPS.map((step, i) => (
+      const licensingSteps = licensedSteps.map((step, i) => (
         <LicensingStepWidget
           key={step.id}
           step={step}
@@ -397,7 +403,7 @@ export function StudyJourneyWidget({
              do to get there. The other two are named by their published step
              title, which already reads as an action. */
           heading={
-            i === GET_LICENSED_STEPS.length - 1
+            i === licensedSteps.length - 1
               ? jurisdictionName(path.state)
                 ? `Get Licensed in ${jurisdictionName(path.state)}`
                 : 'Get Licensed'

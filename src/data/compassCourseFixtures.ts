@@ -124,6 +124,18 @@ export const COMPASS_TOC_TX: readonly CompassTocSection[] = [
 const TOC_BY_COURSE: Record<CourseId, readonly CompassTocSection[]> = {
   fl: COMPASS_SAMPLE_TOC_FROM_DESIGN,
   tx: COMPASS_TOC_TX,
+  /* ⚠ NEW YORK AND FLORIDA SHARE THE DESIGN'S SAMPLE, and that is honest
+     rather than lazy — 2026-10-15. The sample is explicitly NOT a syllabus
+     (see its own note); its rows are the Figma's placeholders renamed by the
+     designer. The rail that draws it is titled "New York Life and Health
+     Pre-licensing", so if anything the sample has always been New York's.
+     Pointing both here says "neither of these is the course's real outline",
+     which is true, instead of inventing a second fake tree to make the
+     control look busier. Texas has its own only because it was written to
+     show the control re-resolving.
+
+     Replace both the day Compass supplies real outlines. */
+  ny: COMPASS_SAMPLE_TOC_FROM_DESIGN,
 }
 
 /**

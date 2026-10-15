@@ -346,6 +346,29 @@ const _LEARNING_PATHS_BY_BRAND: Record<Brand, LearningPathSummary[]> = {
       mandatory: { completed: 6, required: 12 },
       elective: { completed: 0, required: 12 },
     },
+    /**
+     * NEW YORK LIFE & HEALTH CE — ⚠ INVENTED, 2026-10-15.
+     *
+     * New York's licence has only ever demoed the QUALIFYING journey here;
+     * there is no New York renewal cycle in this repo and none published on
+     * the requirements page this file's New York figures come from. It exists
+     * so the CE journey answers for every course on the Course control — see
+     * `XCEL_CE_NY`. TODO(data): New York's real CE requirement and renewal
+     * rule.
+     */
+    {
+      id: 'xcel-ny-lh-ce',
+      title: 'New York Life & Health CE',
+      category: 'Insurance Continuing Education',
+      state: 'NY',
+      hours: 24,
+      licenseExpiresOn: '12/31/2026',
+      timeLeftLabel: '30 Weeks Left to Renewal',
+      progressPct: 25,
+      lastViewedAt: '2026-05-12T14:00:00Z',
+      mandatory: { completed: 5, required: 10 },
+      elective: { completed: 1, required: 14 },
+    },
   ],
 }
 
@@ -563,6 +586,24 @@ const _LEARNING_PATH_CARDS_BY_BRAND: Record<Brand, LearningPathCardData[]> = {
       totalTimeSpent: { hours: 5.5 },
       lastActivityDays: 9,
       resumeUrl: '/my-learning/path?path=xcel-tx-lh-ce',
+    },
+    /* Mirrors the New York CE path added above. ⚠ Every figure invented. */
+    {
+      id: 'xcel-ny-lh-ce',
+      title: 'New York Life & Health CE',
+      programType: 'Insurance Continuing Education',
+      credentialType: 'CE',
+      jurisdiction: 'NY',
+      totalHours: 24,
+      status: 'on-track',
+      progressPct: 25,
+      hoursCompleted: 6,
+      enrolledDate: '2026-01-08',
+      expiresDate: '2026-12-31',
+      daysLeftToComplete: 226,
+      totalTimeSpent: { hours: 5.5 },
+      lastActivityDays: 9,
+      resumeUrl: '/my-learning/path?path=xcel-ny-lh-ce',
     },
   ],
 }

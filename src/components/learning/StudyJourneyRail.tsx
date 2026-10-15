@@ -11,7 +11,7 @@ import {
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ChevronRight, CircleCheck } from '@/icons'
 import type { LearningPathSummary } from '@/data/learningFixtures'
-import { GET_LICENSED_STEPS, jurisdictionName } from '@/data/nyProducerRequirements'
+import { getLicensedStepsFor, jurisdictionName } from '@/data/nyProducerRequirements'
 import { journeyStopsFor, metaWords, statusWords, type JourneyStop } from './studyJourneyUtil'
 import { unitCount } from '@/utils/unitLabel'
 import { widgetEyebrowStyle } from './widgetStyles'
@@ -1053,6 +1053,14 @@ export function GetLicensedRail({
 } = {}) {
   const syllabus = useFeatureFlag('dashboard-journey-style').variant === 'syllabus'
   const where = jurisdictionName(state)
+  /* ⚠ THE STEPS FOLLOW THE SAME `state` THE HEADING DOES — 2026-10-15. They
+     were `GET_LICENSED_STEPS`, which is New York's, under a heading that has
+     always read `jurisdictionName(state)`. The two agreed on a New York path
+     and nobody noticed; anywhere else the rail said "Get Licensed in Florida"
+     above PSI's New York registration link and the NY Department of Financial
+     Services. `getLicensedStepsFor('NY')` is that same array, so the New York
+     demo is byte-identical. */
+  const steps = getLicensedStepsFor(state)
   return (
     /* ITS OWN CARD on the syllabus treatment — two distinct sections rather
        than one block divided by a rule. What changes between them is WHO owns
@@ -1108,7 +1116,7 @@ export function GetLicensedRail({
           Spacing comes from `itemStyle`'s `paddingBottom` in both lists now, so
           the sequence is evenly spaced end to end. */}
       <ol style={{ ...listStyle, marginTop: 12 }}>
-        {GET_LICENSED_STEPS.map((step, i) => (
+        {steps.map((step, i) => (
           <li
             key={step.id}
             style={itemStyle}
@@ -1144,7 +1152,7 @@ export function GetLicensedRail({
                   is the Get Licensed list, and its rows are unchanged, so
                   shortening only its connector would leave a stub between
                   nodes that are still 55px apart. */}
-              {i < GET_LICENSED_STEPS.length - 1 && (
+              {i < steps.length - 1 && (
                 <span style={syllabus ? syllabusStepSpineStyle : spineStyle} />
               )}
             </span>
@@ -1206,7 +1214,7 @@ function GetLicensedRow({
   onOpenStep,
   syllabus = false,
 }: {
-  step: (typeof GET_LICENSED_STEPS)[number]
+  step: ReturnType<typeof getLicensedStepsFor>[number]
   onOpenStep?: (id: string) => void
   /** The `syllabus` treatment — see `dashboard-journey-style`. */
   syllabus?: boolean

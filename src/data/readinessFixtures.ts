@@ -331,6 +331,98 @@ const XCEL_TX_LH_READINESS: ReadinessData = {
 }
 
 /**
+ * New York Life & Health Pre-Licensing — the Course control's third course,
+ * added 2026-10-15 when New York joined the axis.
+ *
+ * ⚠ THE ONE FIXTURE HERE WHOSE EXAM FACTS ARE REAL. `examState: 'NY'` sends
+ * the "On the day" table to `EXAM_FACTS_BY_STATE.NY`, which was confirmed on
+ * 2026-09-16 against XCEL's published requirements page — 150 scored
+ * questions, 150 minutes, 70%, PSI. Florida's are published too; only Texas's
+ * are invented. That makes New York the one course where this page states
+ * nothing it cannot support, which is worth knowing before anyone reaches for
+ * a screenshot.
+ *
+ * ⚠ THE CHAPTER OUTLINE IS STILL REPRESENTATIVE. `NY_LH_GUIDE_CHAPTERS_PARTIAL`
+ * is a partial extraction this repo deliberately never renders, and the course
+ * is 42 lessons with no published chapter list. The 20 below are the shape of
+ * a Life & Health syllabus ending in New York law, not XCEL's outline.
+ *
+ * TODO(data): replace with the real New York content outline if one ever
+ * lands. The exam facts above do not need replacing.
+ */
+const XCEL_NY_LH_READINESS: ReadinessData = {
+  pathTitle: 'New York Life and Health Pre-licensing',
+  examState: 'NY',
+  score: 47,
+  scoreExplanation:
+    'This score combines how much of the course you have completed with how you have scored on practice exams and simulator attempts. To improve your chance of passing, aim for the green before your next attempt.',
+  frequencyNote: READINESS_FREQUENCY_NOTE,
+  progress: [
+    { label: 'Course Progress', value: '90%', pct: 90 },
+    { label: 'Chapters Completed', value: '18 of 20' },
+    { label: 'Topics Covered', value: '12 of 14' },
+    { label: 'Total Questions Answered', value: '120 of 200' },
+    { label: 'Answered Correctly', value: '56 of 120' },
+  ],
+  chapters: [
+    { number: '01', title: 'Insurance Basics & Risk', pct: 41 },
+    { number: '02', title: 'Contract Law & Policy Provisions', pct: 49 },
+    { number: '03', title: 'Life Insurance Basics', pct: 58 },
+    { number: '04', title: 'Life Policy Riders', pct: 14 },
+    { number: '05', title: 'Annuities', pct: 87 },
+    { number: '06', title: 'Group Life & Underwriting', pct: 31 },
+    { number: '07', title: 'Health Policy Provisions', pct: 19 },
+    { number: '08', title: 'Disability Income', pct: 71 },
+    { number: '09', title: 'Medical Expense Plans', pct: 27 },
+    { number: '10', title: 'Medicare & Medicare Supplements', pct: 65 },
+    { number: '11', title: 'Long-Term Care', pct: 30 },
+    { number: '12', title: 'Health Maintenance Organizations', pct: 17 },
+    { number: '13', title: 'Taxation of Life & Health', pct: 74 },
+    { number: '14', title: 'New York Insurance Law — General', pct: 52 },
+    { number: '15', title: 'Licensing, Appointment & Renewal (NY)', pct: 89 },
+    { number: '16', title: 'Marketing & Unfair Trade Practices', pct: 57 },
+    { number: '17', title: 'Ethics & Fiduciary Duty', pct: 80 },
+    { number: '18', title: 'NY Regulation 60 — Replacement', pct: 45 },
+    { number: '19', title: 'NY Regulation 187 — Suitability', pct: 39 },
+    { number: '20', title: 'Department of Financial Services Rules', pct: 47 },
+  ],
+  topics: [
+    { title: 'Policy Riders', pct: 9 },
+    { title: 'HMO Structures', pct: 17 },
+    { title: 'New York Portion of Exam', pct: 33 },
+    { title: 'Taxation', pct: 42 },
+    { title: 'Group Underwriting', pct: 45 },
+    { title: 'Disability Income', pct: 54 },
+    { title: 'Medical Expense Plans', pct: 56 },
+    { title: 'Medicare', pct: 61 },
+    { title: 'Long-Term Care', pct: 66 },
+    { title: 'Life Policy Types', pct: 72 },
+    { title: 'Annuities', pct: 81 },
+    { title: 'Contract Law', pct: 82 },
+    { title: 'Ethics', pct: 84 },
+    { title: 'Licensing Rules', pct: 95 },
+  ],
+  // XCEL's three Exam Simulators — a product, not a state requirement, so
+  // they carry across jurisdictions unchanged.
+  practiceExams: [
+    { id: 'pe-sim-3', date: '2026-04-12', score: 84, passed: true, label: 'Exam Simulator 3' },
+    { id: 'pe-sim-2', date: '2026-03-19', score: 90, passed: true, label: 'Exam Simulator 2' },
+    { id: 'pe-sim-1', date: '2026-03-07', score: 37, passed: false, label: 'Exam Simulator 1' },
+  ],
+  licensingExams: [
+    {
+      id: 'le-1',
+      date: '2026-04-15',
+      score: 44,
+      passed: false,
+      // PSI is CONFIRMED for New York — the registration URL is on XCEL's own
+      // requirements page. No warning marker needed, unlike Texas's.
+      label: 'New York Insurance Producer Exam · PSI',
+    },
+  ],
+}
+
+/**
  * Readiness for a brand, per course.
  *
  * ⚠ IT WAS KEYED ON BRAND ALONE UNTIL 2026-10-15, and the brand was doing two
@@ -344,6 +436,7 @@ const READINESS_BY_BRAND: Record<Brand, Record<CourseId, ReadinessData>> = {
   xcel: {
     fl: XCEL_FL_LH_READINESS,
     tx: XCEL_TX_LH_READINESS,
+    ny: XCEL_NY_LH_READINESS,
   },
 }
 

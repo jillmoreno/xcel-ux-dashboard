@@ -14,11 +14,13 @@ import {
 import { isTestingGateway } from '@/data/gatewayMode'
 import {
   COURSE_FLAG_KEY,
+  chosenCourse,
   coursePathIdFor,
   courseStateFor,
   isRegulatedCourse,
-  resolveCourse,
+  resolveSelection,
   type CourseId,
+  type CourseSelection,
 } from '@/data/courseFixtures'
 
 /**
@@ -2468,11 +2470,18 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     key: 'dashboard-course-state',
     label: 'Course',
     description:
-      'Which XCEL pre-licensing course the dashboard demos — Florida or Texas Life & Health. It re-points every course-aware surface at that course’s own content: the Exam Readiness chapter and topic breakdown, its facts table, the Study Plan and its week themes, the Compass course content tree, and the Exam Prep band on Home. Sequencing (secondary): Unregulated leaves every item in the pre-licensing course open in any order (today’s behaviour); Regulated unlocks them in sequence — the next not-started item is open and everything after it carries a padlock. ⚠ Every TEXAS figure is INVENTED and marked as such pending XCEL’s own Texas requirements. The QE journey’s New York licence is a separate axis and is untouched. XCEL only.',
+      'Which licence the dashboard demos — New York, Florida or Texas Life & Health. It re-points every course-aware surface at that jurisdiction’s own content: the Current Learning Path band and its Jump Back In card, the Study Journey and the Get Licensed steps under it, the Exam Readiness breakdown and its facts table, the Study Plan and its week themes, and the Compass course content tree. All three of the dashboard’s journeys (CE renewal, qualifying education, exam prep) answer for all three courses, so the control and the page can never name different jurisdictions. Sequencing (secondary): Unregulated leaves every item in Step 1 open in any order (today’s behaviour); Regulated unlocks them in sequence — everything after the item you are on carries a padlock. ⚠ Only the NEW YORK qualifying licence is confirmed against XCEL’s published page; Texas is invented throughout, and New York’s CE and exam-prep arms are invented so the control cannot lie. XCEL only.',
     defaultEnabled: true,
-    defaultVariant: 'fl',
+    /* ⚠ `auto`, BECAUSE NO SINGLE COURSE PRESERVES `main` — see
+       `CourseSelection` in `courseFixtures.ts` for the two wrong defaults
+       this went through. The dashboard demos New York on the qualifying
+       journey and Florida on CE and exam prep, and that split is a decision
+       with a test on it. `auto` means "whatever this journey already did". */
+    defaultVariant: 'auto',
     variants: [
-      { value: 'fl', label: 'Florida Life & Health Pre-Licensing', description: 'The course every XCEL fixture in this repo was authored against. The default — picking it changes nothing.' },
+      { value: 'auto', label: 'Automatic', description: 'Each journey keeps the licence it already demoed — New York for qualifying education, Florida for CE and exam prep. The committed default, and the only row that names no jurisdiction.' },
+      { value: 'ny', label: 'New York Life & Health Pre-Licensing', description: 'The licence the qualifying journey has demoed since 2026-09-16, and the only one whose exam facts are confirmed against XCEL’s published page. Picking it explicitly puts CE and exam prep on New York too.' },
+      { value: 'fl', label: 'Florida Life & Health Pre-Licensing', description: 'The course the CE and exam-prep fixtures were authored against. Published exam facts; ⚠ invented qualifying lesson count.' },
       { value: 'tx', label: 'Texas Life & Health Pre-Licensing', description: 'Its own curriculum (general knowledge, then the Texas Insurance Code), study plan and content tree. ⚠ Every figure invented.' },
     ],
     secondaryVariants: [
@@ -3504,19 +3513,30 @@ export function useReadinessState(): string {
  * matching `useFeatureFlag`.
  */
 export function useCourseDemo(): {
-  course: CourseId
-  /** The two-letter jurisdiction — what `examFactsFor` and friends key on. */
-  state: string
-  /** The course's Learning Path id. */
-  pathId: string
+  /** What the control is SET to — `auto` included. For the pill. */
+  selection: CourseSelection
+  /**
+   * The chosen course, or `undefined` under `auto`.
+   *
+   * ⚠ PASS IT THROUGH UNDEFINED. Every data function on this axis treats a
+   * missing course as "resolve what you always resolved", which is precisely
+   * what `auto` means — so a consumer never needs to branch on it.
+   */
+  course: CourseId | undefined
+  /** The two-letter jurisdiction, or `undefined` under `auto`. */
+  state: string | undefined
+  /** The course's Learning Path id, or `undefined` under `auto`. */
+  pathId: string | undefined
   regulated: boolean
 } {
   const flag = useFeatureFlag(COURSE_FLAG_KEY)
-  const course = resolveCourse(flag.variant)
+  const selection = resolveSelection(flag.variant)
+  const course = chosenCourse(selection)
   return {
+    selection,
     course,
-    state: courseStateFor(course),
-    pathId: coursePathIdFor(course),
+    state: course ? courseStateFor(course) : undefined,
+    pathId: course ? coursePathIdFor(course) : undefined,
     regulated: isRegulatedCourse(flag.secondaryVariant),
   }
 }

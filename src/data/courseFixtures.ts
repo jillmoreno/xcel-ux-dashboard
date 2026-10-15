@@ -1,55 +1,76 @@
 /**
  * ─────────────────────────────────────────────────────────────────────────
- *  THE COURSE AXIS — which XCEL pre-licensing course the dashboard demos
+ *  THE COURSE AXIS — which licence the dashboard demos
  * ─────────────────────────────────────────────────────────────────────────
  *
  *  Added 2026-10-15 with the Demo Controls bar's Course dropdown.
  *
- *  ⚠ IT IS A SECOND AXIS, NOT A RENAME OF THE FIRST. The dashboard already
- *  carries a jurisdiction: `dashboard-education-type` picks the JOURNEY (CE
- *  renewal / qualifying education / exam prep) and the QE journey has demoed
- *  **New York** since 2026-09-16. Nothing here touches that — see
- *  `nyProducerRequirements.ts`, whose figures are confirmed against XCEL's own
- *  published page and must keep rendering exactly as they do.
+ *  ⚠ IT STARTED AS A PRODUCT AXIS AND BECAME A JURISDICTION ONE, the same
+ *  day, and the rewrite of this header is the record of why. It shipped as
+ *  Florida vs Texas, with New York deliberately outside it because the
+ *  qualifying journey's New York licence is the one set of figures in this
+ *  repo confirmed against XCEL's published page. Holding it outside is what
+ *  put "Get Licensed in New York" on a page whose Course pill read Florida.
  *
- *  What this axis answers is the question the rest of the dashboard was built
- *  around and never had a control for: **which pre-licensing COURSE is the
- *  learner taking?** Readiness, the Study Plan, the Compass content tree and
- *  the exam-prep band were all authored against Florida Life & Health, as a
- *  single hardcoded course. They are parameterized now, and Florida is simply
- *  the default value rather than the only one.
+ *  So the axis is the LICENCE now, all three of them, and the rule that falls
+ *  out of that is the one to hold on to: **every journey answers for every
+ *  course.** The dashboard runs three journeys — CE renewal, qualifying
+ *  education, exam prep (`dashboard-education-type`) — and if any one of them
+ *  lacks an entry for the selected course it falls back to its own default,
+ *  the page shows a jurisdiction the pill does not name, and the
+ *  contradiction is back on a version nobody touched. `COURSE_PROFILES` in
+ *  `dashboardProgressFixtures.ts` holds the nine, and a test walks them.
+ *
+ *  ⚠ WHAT THE AXIS IS NOT: a claim that XCEL sells all three in all three
+ *  journeys. New York's CE cycle and exam-prep arm are INVENTED here so the
+ *  control cannot lie; Texas is invented throughout. Only the New York
+ *  qualifying licence is confirmed. Every invented figure is marked where it
+ *  lands — see `nyProducerRequirements.ts`'s header for the standard.
  *
  *  ── The two-letter code is the join ────────────────────────────────────────
  *  Every state-aware helper in this repo already keys on a two-letter
  *  jurisdiction code — `examFactsFor('FL')`, `jurisdictionName('NY')`,
- *  `governingAgencyFor('TX')`. A course resolves to one (`courseStateFor`), and
- *  that code is what gets threaded into them. The course id (`'fl'` / `'tx'`)
- *  is the FLAG's vocabulary; the state code is the DATA's. Keeping the two
- *  distinct is what lets the QE journey pass 'NY' through the same helpers
- *  without ever having a course id of its own.
+ *  `governingAgencyFor('TX')`. A course resolves to one (`courseStateFor`),
+ *  and that code is what gets threaded into them. The course id (`'fl'`) is
+ *  the FLAG's vocabulary; the state code (`'FL'`) is the DATA's.
  *
  *  ── Why its own file ───────────────────────────────────────────────────────
- *  `readinessFixtures.ts` keeps `READINESS_PICKER` beside its own fixtures, and
- *  that was the model. It does not fit here: the course picker is imported by
- *  Readiness, the study calendar, the progress profiles, the Compass rail AND
- *  the demo bar, so parking it in any one of those makes the other four import
- *  across a boundary that means nothing. This file owns the axis and holds no
- *  course CONTENT — the content stays in the fixture file that already owns its
- *  surface.
+ *  `readinessFixtures.ts` keeps `READINESS_PICKER` beside its own fixtures,
+ *  and that was the model. It does not fit here: the course picker is imported
+ *  by Readiness, the study calendar, the progress profiles, the Compass rail
+ *  AND the demo bar, so parking it in any one of those makes the other four
+ *  import across a boundary that means nothing. This file owns the axis and
+ *  holds no course CONTENT — the content stays in the fixture file that
+ *  already owns its surface.
  */
 
 /**
  * A course the dashboard can demo.
  *
+ * ⚠ NEW YORK JOINED ON 2026-10-15, and it is the entry that changed what this
+ * axis IS. Florida and Texas were two pre-licensing courses; New York was the
+ * jurisdiction the QUALIFYING journey has demoed since 2026-09-16 and was
+ * deliberately held outside the control. Holding it outside is what put
+ * "Get Licensed in New York" on a page whose Course pill said Florida — the
+ * control and the screen disagreeing in the same eyeful.
+ *
+ * So the axis is a JURISDICTION now, not a product line, and the rule that
+ * follows is the important one: **every journey must have an entry for every
+ * course.** A journey missing one falls back to its own default, the page
+ * shows a different jurisdiction from the pill, and the contradiction is back.
+ * `COURSE_PROFILES` in `dashboardProgressFixtures.ts` is where that is kept
+ * honest, and a test walks all nine combinations.
+ *
  * ⚠ ADDING ONE IS NOT A ONE-LINE CHANGE, and the union is deliberately narrow
- * so the compiler says so. A third course needs: a state entry in
+ * so the compiler says so. A fourth course needs: a state entry in
  * `EXAM_FACTS_BY_STATE`, `GOVERNING_AGENCY_BY_STATE`, `LICENSED_STEPS_BY_STATE`
  * and `JURISDICTION_NAMES` (`nyProducerRequirements.ts`), a readiness fixture,
- * a study calendar, a learning-path pair, an exam-prep profile and a Compass
- * TOC. Every one of those is a `Record<CourseId, …>`, so the build fails until
- * all of them exist rather than falling back to Florida at runtime.
+ * a study calendar, a learning path and a CE path, a Compass TOC, and a
+ * profile for all THREE journeys. Every one of those is a
+ * `Record<CourseId, …>`, so the build fails until they exist rather than
+ * degrading to Florida at run time.
  */
-export type CourseId = 'fl' | 'tx'
+export type CourseId = 'fl' | 'tx' | 'ny'
 
 /**
  * How the pre-licensing course content tree behaves — Phase 1 of the regulated
@@ -73,10 +94,38 @@ export type CourseSequencing = 'unregulated' | 'regulated'
 export const COURSE_FLAG_KEY = 'dashboard-course-state'
 
 /**
- * ⚠ FLORIDA, AND THAT IS THE WHOLE POINT OF THE DEFAULT. Every surface this
- * axis reaches was authored against Florida Life & Health, so `fl` means "what
- * the dashboard already showed". A plain load of `main` renders byte-identical
- * to the build before this branch; nothing moves until a reviewer picks Texas.
+ * What the control can be set to: a course, or `auto`.
+ *
+ * ⚠ `auto` EXISTS BECAUSE NO SINGLE COURSE PRESERVES `main`, and finding that
+ * out cost two wrong defaults in one day. The dashboard does not demo one
+ * jurisdiction: the QUALIFYING journey has shown New York since 2026-09-16,
+ * while CE and EXAM PREP have always shown Florida — and that split is a
+ * decision with a test on it (`QeFocusedVersion.test.tsx`, "does NOT move the
+ * Continuing Ed persona off Florida": switching the demo licence must not
+ * silently switch jurisdiction on the versions that were not asking).
+ *
+ * So `fl` as the default changed the page every stakeholder lands on, and
+ * `ny` changed Learner Focused's renewal cycle. `auto` changes neither: it
+ * means "whatever this journey already resolved", which is exactly the
+ * fallback `profileFor` has always done when handed no course.
+ *
+ * ⚠ AND IT IS WHY THE PILL READS "Automatic" RATHER THAN A JURISDICTION. A
+ * pill naming one licence while another journey on the same build shows a
+ * different one is the contradiction this whole axis exists to remove; under
+ * `auto` the control names no jurisdiction, because it is not choosing one.
+ */
+export type CourseSelection = CourseId | 'auto'
+
+/** The control's committed default — see `CourseSelection`. */
+export const DEFAULT_SELECTION: CourseSelection = 'auto'
+
+/**
+ * The course the DATA layer falls back to when nothing has chosen one.
+ *
+ * ⚠ FLORIDA, AND IT IS NOT THE CONTROL'S DEFAULT. This is the answer to "no
+ * course was specified" for the fixtures that have always had exactly one —
+ * Readiness, the Compass tree — and Florida is what they rendered before this
+ * branch. The CONTROL's default is `auto`, which is a different question.
  */
 export const DEFAULT_COURSE: CourseId = 'fl'
 
@@ -87,6 +136,7 @@ export const DEFAULT_SEQUENCING: CourseSequencing = 'unregulated'
 const COURSE_STATES: Record<CourseId, string> = {
   fl: 'FL',
   tx: 'TX',
+  ny: 'NY',
 }
 
 /**
@@ -100,6 +150,8 @@ const COURSE_STATES: Record<CourseId, string> = {
 const COURSE_PATH_IDS: Record<CourseId, string> = {
   fl: 'xcel-fl-lh-prelicensing',
   tx: 'xcel-tx-lh-prelicensing',
+  // The path the qualifying journey has used since 2026-09-16 — not a new one.
+  ny: 'xcel-ny-producer-prelicensing',
 }
 
 /**
@@ -120,6 +172,11 @@ const COURSE_PATH_IDS: Record<CourseId, string> = {
 const COURSE_CE_PATH_IDS: Record<CourseId, string> = {
   fl: 'xcel-fl-lh-ce',
   tx: 'xcel-tx-lh-ce',
+  // ⚠ INVENTED, 2026-10-15. New York has no CE renewal cycle in this repo —
+  // the qualifying journey is the only thing its licence has ever demoed. It
+  // gets one so the axis is complete: every journey answers for every course,
+  // or the pill and the page disagree on a version nobody touched.
+  ny: 'xcel-ny-lh-ce',
 }
 
 /**
@@ -129,7 +186,14 @@ const COURSE_CE_PATH_IDS: Record<CourseId, string> = {
  * the PRODUCT's names — what XCEL sells — not the licence, the same call
  * `dashboardProgressFixtures` makes for the New York title.
  */
-export const COURSE_PICKER: { course: CourseId; label: string }[] = [
+export const COURSE_PICKER: { course: CourseSelection; label: string }[] = [
+  /* AUTOMATIC FIRST, because it is the default and because it is the only row
+     that is not a claim about a jurisdiction — see `CourseSelection`. */
+  { course: 'auto', label: 'Automatic' },
+  /* Then New York: the incumbent, the licence the qualifying journey has
+     demoed since 2026-09-16, and the only one here whose figures are
+     confirmed against XCEL's published page. */
+  { course: 'ny', label: 'New York Life & Health Pre-Licensing' },
   { course: 'fl', label: 'Florida Life & Health Pre-Licensing' },
   { course: 'tx', label: 'Texas Life & Health Pre-Licensing' },
 ]
@@ -143,9 +207,23 @@ export const SEQUENCING_PICKER: { mode: CourseSequencing; label: string }[] = [
   { mode: 'regulated', label: 'Regulated' },
 ]
 
-/** Normalise a flag variant to a course. Anything unrecognised is Florida. */
-export function resolveCourse(variant: string | undefined): CourseId {
-  return variant === 'tx' ? 'tx' : DEFAULT_COURSE
+/** Normalise a flag variant to a selection. Anything unrecognised is `auto`. */
+export function resolveSelection(variant: string | undefined): CourseSelection {
+  return variant === 'tx' || variant === 'fl' || variant === 'ny' ? variant : DEFAULT_SELECTION
+}
+
+/**
+ * The CHOSEN course, or `undefined` under `auto`.
+ *
+ * ⚠ `undefined` IS THE WHOLE MECHANISM, not a missing value. Every data
+ * function on this axis takes an optional course and falls back to what it
+ * resolved before the control existed — `profileFor` to the journey's own
+ * profile, Readiness and the Compass tree to `DEFAULT_COURSE`. Passing
+ * `undefined` is therefore "do what you always did", which is what `auto`
+ * means, and it needs no second code path to maintain.
+ */
+export function chosenCourse(selection: CourseSelection): CourseId | undefined {
+  return selection === 'auto' ? undefined : selection
 }
 
 /** Normalise a flag SECONDARY variant to a sequencing mode. */
@@ -176,9 +254,9 @@ export function coursePathIdFor(course: CourseId): string {
   return COURSE_PATH_IDS[course]
 }
 
-/** The picker label for a course — for the bar's pill and for test queries. */
-export function courseLabelFor(course: CourseId): string {
-  return COURSE_PICKER.find((c) => c.course === course)?.label ?? COURSE_PICKER[0].label
+/** The picker label for a selection — for the bar's pill and for test queries. */
+export function courseLabelFor(selection: CourseSelection): string {
+  return COURSE_PICKER.find((c) => c.course === selection)?.label ?? COURSE_PICKER[0].label
 }
 
 /** The CE path id for a course. */

@@ -56,10 +56,10 @@ import { READINESS_PICKER } from '@/data/readinessFixtures'
 import {
   COURSE_FLAG_KEY,
   COURSE_PICKER,
-  DEFAULT_COURSE,
+  DEFAULT_SELECTION,
   DEFAULT_SEQUENCING,
   SEQUENCING_PICKER,
-  resolveCourse,
+  resolveSelection,
   resolveSequencing,
 } from '@/data/courseFixtures'
 import { railHidesSection } from '@/components/layout/dashboardRail'
@@ -315,7 +315,7 @@ export function DemoControlsBar({
      consuming surface wants and not what a picker needs. The picker needs to
      know which row to tick. */
   const courseState = useFeatureFlag(COURSE_FLAG_KEY)
-  const activeCourse = resolveCourse(courseState.variant)
+  const activeCourse = resolveSelection(courseState.variant)
   const activeSequencing = resolveSequencing(courseState.secondaryVariant)
   const navLayoutState = useFeatureFlag('nav-placement')
   // The What's New / Featured toggle was removed 2026-09-16 with its flag (see
@@ -1409,7 +1409,7 @@ export function DemoControlsBar({
                  defaults. Both halves, because Reset means "what a plain load
                  of this build shows" and a bar that restored the course while
                  leaving the lessons locked would be the worse half of each. */
-              setVariant(COURSE_FLAG_KEY, DEFAULT_COURSE)
+              setVariant(COURSE_FLAG_KEY, DEFAULT_SELECTION)
               setSecondaryVariant(COURSE_FLAG_KEY, DEFAULT_SEQUENCING)
               // (dashboard-clp-layout removed 2026-08-17 — V1 is baked in.)
               // What's New back to Off (the combined band restored).

@@ -9,7 +9,7 @@ import { useFeatureFlag, useCourseDemo } from '@/context/FeatureFlagContext'
 import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
 import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { applyJourneySequencing, journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
-import { GET_LICENSED_STEPS, jurisdictionName } from '@/data/nyProducerRequirements'
+import { getLicensedStepsFor, jurisdictionName } from '@/data/nyProducerRequirements'
 import { defaultPreset, formatPaceDate, studyPace, daysUntil, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
 import type { LearningPathSummary } from '@/data/learningFixtures'
 
@@ -147,8 +147,17 @@ export function AtlasHomeEricV2({
     0,
     stops.findIndex((s) => s.status === 'in-progress'),
   )
-  const pass = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 2]
-  const apply = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1]
+  /* ⚠ THE STEPS FOLLOW THE PATH'S JURISDICTION — 2026-10-15. They were
+     `GET_LICENSED_STEPS`, which is NEW YORK's, while the heading two lines
+     down has always read `jurisdictionName(path.state)`. On a New York path
+     the two agreed and nobody noticed; on any other path the card would have
+     said "Get Licensed in Florida" above PSI's New York registration link,
+     a $40 New York exam fee and the NY Department of Financial Services.
+     `getLicensedStepsFor` falls back to Florida and resolves 'NY' to the very
+     same array, so the New York demo is byte-identical. */
+  const licensedSteps = getLicensedStepsFor(path.state)
+  const pass = licensedSteps[licensedSteps.length - 2]
+  const apply = licensedSteps[licensedSteps.length - 1]
   const state = jurisdictionName(path.state)
   const longTitle = useFeatureFlag('atlas-home-long-title').enabled
   const currentTitle = longTitle ? V2_LONG_TITLE : courseTitle

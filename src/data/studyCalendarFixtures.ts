@@ -1346,6 +1346,27 @@ export const XCEL_CE_PATH_ID = 'xcel-fl-lh-ce'
  * TODO(data): confirm Texas's required CE topics, its hour split and its
  * renewal rule against the Texas Department of Insurance.
  */
+/** ⚠ INVENTED — a New York renewal plan, so the CE journey answers for the
+ *  New York licence too. Same derivation as the Texas one, and the Florida
+ *  cycle's warning about non-uniform CE deadlines applies here in full.
+ *  TODO(data): New York's real CE topics, hour split and renewal rule. */
+function buildXcelNyCeCalendar(): StudyCalendar {
+  const tasks: StudyTask[] = XCEL_CE_STUDY_CALENDAR.tasks.map((t) =>
+    t.title.includes('Florida') ? { ...t, title: t.title.replace(/Florida/g, 'New York') } : t,
+  )
+  return {
+    ...XCEL_CE_STUDY_CALENDAR,
+    id: 'xcel-ny-ce-cycle',
+    name: 'New York Life & Health CE — 24 Hour Renewal Plan',
+    examName: 'New York Life & Health licence renewal',
+    examDate: '2026-12-31',
+    weekThemes: (XCEL_CE_STUDY_CALENDAR.weekThemes ?? []).map((w) =>
+      w.replace(/Florida/g, 'New York'),
+    ),
+    tasks,
+  }
+}
+
 function buildXcelTxCeCalendar(): StudyCalendar {
   const tasks: StudyTask[] = XCEL_CE_STUDY_CALENDAR.tasks.map((t) =>
     t.title.includes('Florida') ? { ...t, title: t.title.replace(/Florida/g, 'Texas') } : t,
@@ -1492,6 +1513,9 @@ export function studyCalendarFor(pathId?: string): StudyCalendar {
   }
   if (pathId === courseCePathIdFor('tx')) {
     return buildXcelTxCeCalendar()
+  }
+  if (pathId === courseCePathIdFor('ny')) {
+    return buildXcelNyCeCalendar()
   }
   if (pathId === STC_OFF_TRACK_PATH_ID) {
     return buildOffTrackCalendar()

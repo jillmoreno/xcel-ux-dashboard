@@ -26,9 +26,9 @@ import {
 } from '@/data/nyProducerRequirements'
 import { XCEL_NY_PRODUCER_PATH_ID } from '@/data/studyCalendarFixtures'
 import {
-  DEFAULT_COURSE,
   courseCePathIdFor,
   coursePathIdFor,
+  courseStateFor,
   type CourseId,
 } from '@/data/courseFixtures'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
@@ -489,6 +489,104 @@ const XCEL_CE_TX: BrandProgressProfile = {
  * `profileFor` checks this map BEFORE `PROFILES` for each type in the fallback
  * chain, so an entry here wins for the course it names and nothing else moves.
  */
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────
+ *  THE NEW YORK ARMS, AND THE QUALIFYING JOURNEY'S OTHER TWO — 2026-10-15
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * When New York joined the Course control the axis stopped being "which
+ * pre-licensing product" and became "which LICENCE", and that imposed one
+ * rule: every journey answers for every course. Three journeys, three
+ * courses, nine profiles — anything missing falls back to its journey's own
+ * default and puts a jurisdiction on screen that the Course pill does not
+ * name, which is the exact contradiction New York joining was meant to end.
+ *
+ * Six of the nine already existed. These are the other three.
+ *
+ * ⚠ ALL THREE ARE INVENTED, and the asymmetry is worth stating plainly: the
+ * New York QUALIFYING licence is the one thing in this repo confirmed against
+ * XCEL's published requirements page, and it is untouched below. A New York
+ * CE renewal cycle and a New York exam-prep arm are not products this repo
+ * knows anything about — they exist so the control cannot lie. Likewise the
+ * Florida and Texas qualifying arms: the paths are real fixtures, the LESSON
+ * COUNTS are not.
+ *
+ * TODO(data): confirm against XCEL's own state catalogues. Until then these
+ * are shapes with placeholder numbers in them.
+ */
+
+/** ⚠ INVENTED — a New York renewal cycle, so the CE journey answers for the
+ *  New York licence. Derived from Florida's; only identity and the deadline
+ *  differ. TODO(data): New York's real CE requirement and renewal rule. */
+const XCEL_CE_NY: BrandProgressProfile = {
+  ...PROFILES.ce.xcel!,
+  pathId: courseCePathIdFor('ny'),
+  title: 'New York Life & Health CE',
+  state: 'NY',
+  licenseExpiresOn: '12/31/2026',
+  upNext: { ...PROFILES.ce.xcel!.upNext, id: 'jbi-xcel-ce-ny-ethics', title: 'New York Insurance Ethics', state: 'NY' },
+  resumeMid: { ...PROFILES.ce.xcel!.resumeMid, id: 'jbi-xcel-ce-ny-ltc', title: 'Long-Term Care Partnership (NY)', state: 'NY' },
+  resumeEarly: { ...PROFILES.ce.xcel!.resumeEarly, id: 'jbi-xcel-ce-ny-annuity', title: 'Annuity Suitability (NY)', state: 'NY' },
+}
+
+/** ⚠ INVENTED — a New York exam-prep arm. The 3-Part Training Program is a
+ *  PRODUCT structure and carries across jurisdictions unchanged, so only the
+ *  path, the title and the jurisdiction on the cards differ. */
+const XCEL_EXAM_PREP_NY: BrandProgressProfile = {
+  ...PROFILES['exam-prep'].xcel!,
+  pathId: coursePathIdFor('ny'),
+  title: 'New York Life & Health Exam Prep',
+  state: 'NY',
+  licenseExpiresOn: '12/15/2026',
+  upNext: { ...PROFILES['exam-prep'].xcel!.upNext, id: 'jbi-xcel-ep-ny-prep', title: 'Prep Review Course — New York L&H', state: 'NY' },
+  resumeMid: { ...PROFILES['exam-prep'].xcel!.resumeMid, id: 'jbi-xcel-ep-ny-sim1', title: 'Exam Simulator 1 — New York L&H', state: 'NY' },
+  resumeEarly: { ...PROFILES['exam-prep'].xcel!.resumeEarly, id: 'jbi-xcel-ep-ny-cram', title: 'Exam Cram — New York L&H', state: 'NY' },
+}
+
+/**
+ * The QUALIFYING journey for Florida and Texas — ⚠ INVENTED lesson counts.
+ *
+ * Derived from the New York qualifying profile, which is the one this repo
+ * has reasoned about hardest (see `nyProducerRequirements.ts`). What carries
+ * across unchanged is the SHAPE: one counted category, the pre-licensing
+ * course, measured in lessons, with Parts 2 and 3 following as uncounted
+ * steps on the journey. That shape is XCEL's product, not New York's law.
+ *
+ * ⚠ WHAT DOES NOT CARRY IS THE COUNT. New York's 42 comes from the LMS course
+ * card for that specific course. Nothing states Florida's or Texas's, so the
+ * figures below are placeholders chosen to be visibly different from each
+ * other and from 42 — a reviewer flipping the control should see the
+ * denominator move, and nobody should mistake these for published counts.
+ */
+function xcelQualifyingFor(
+  course: 'fl' | 'tx',
+  title: string,
+  /** ⚠ INVENTED lesson count. TODO(data): the LMS course card for this course. */
+  lessons: number,
+): BrandProgressProfile {
+  const ny = PROFILES.qe.xcel!
+  return {
+    ...ny,
+    pathId: coursePathIdFor(course),
+    title,
+    state: courseStateFor(course),
+    mandatoryReq: lessons,
+    categories: [
+      { key: 'pre-license', label: 'Pre-licensing Course', required: lessons, segment: 'mandatory' },
+    ],
+    // The resume card is the PART the learner is on, and its image is New
+    // York's course art — dropped rather than re-pointed, so no card claims
+    // a jurisdiction it does not have.
+    upNext: { ...ny.upNext, id: `jbi-xcel-qe-${course}`, imageUrl: undefined, hours: lessons, state: courseStateFor(course) },
+    resumeMid: { ...ny.resumeMid, id: `jbi-xcel-qe-${course}`, imageUrl: undefined, hours: lessons, state: courseStateFor(course) },
+    resumeEarly: { ...ny.resumeEarly, id: `jbi-xcel-qe-${course}`, imageUrl: undefined, hours: lessons, state: courseStateFor(course) },
+  }
+}
+
+const XCEL_QE_FL = xcelQualifyingFor('fl', 'Florida Life and Health Pre-licensing', 36)
+const XCEL_QE_TX = xcelQualifyingFor('tx', 'Texas Life and Health Pre-licensing', 30)
+
 const COURSE_PROFILES: Partial<
   Record<EducationType, Partial<Record<Brand, Record<CourseId, BrandProgressProfile>>>>
 > = {
@@ -496,12 +594,26 @@ const COURSE_PROFILES: Partial<
     xcel: {
       fl: PROFILES['exam-prep'].xcel!,
       tx: XCEL_EXAM_PREP_TX,
+      ny: XCEL_EXAM_PREP_NY,
+    },
+  },
+  /* ⚠ THE QUALIFYING JOURNEY IS HERE NOW, and its New York arm is the
+     UNTOUCHED published profile — `PROFILES.qe.xcel` itself, not a copy. With
+     New York selected (the default) this map resolves to exactly what
+     `profileFor` resolved before the Course control existed, which is what
+     keeps a plain load of `main` unchanged. */
+  qe: {
+    xcel: {
+      fl: XCEL_QE_FL,
+      tx: XCEL_QE_TX,
+      ny: PROFILES.qe.xcel!,
     },
   },
   ce: {
     xcel: {
       fl: PROFILES.ce.xcel!,
       tx: XCEL_CE_TX,
+      ny: XCEL_CE_NY,
     },
   },
 }
@@ -523,15 +635,21 @@ const PROFILE_FALLBACK: Record<EducationType, EducationType[]> = {
 function profileFor(
   brand: Brand,
   educationType: EducationType,
-  course: CourseId = DEFAULT_COURSE,
+  course?: CourseId,
 ): BrandProgressProfile | undefined {
   for (const t of PROFILE_FALLBACK[educationType]) {
-    /* The course-aware profile wins for its type, when there is one. The
-       lookup is INSIDE the fallback walk rather than before it, so a brand
-       whose `exam-prep` is course-aware and whose `qe` is not degrades the way
-       it always did instead of skipping a rung. */
-    const byCourse = COURSE_PROFILES[t]?.[brand]
-    if (byCourse) return byCourse[course]
+    /* ⚠ NO COURSE MEANS "WHAT THIS JOURNEY ALWAYS RESOLVED", and that is the
+       whole of how the control's `auto` default works — see `CourseSelection`.
+       There is no default course applied here on purpose: defaulting to
+       Florida would drag the qualifying journey off New York, and defaulting
+       to New York would drag CE off Florida. Both of those were tried, both
+       changed what a plain load of `main` renders, and one has a test on it.
+
+       The lookup is INSIDE the fallback walk rather than before it, so a
+       brand whose `exam-prep` is course-aware and whose `qe` is not degrades
+       the way it always did instead of skipping a rung. */
+    const byCourse = course ? COURSE_PROFILES[t]?.[brand] : undefined
+    if (byCourse) return byCourse[course!]
     const found = PROFILES[t][brand]
     if (found) return found
   }
@@ -1112,16 +1230,17 @@ function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVar
  * brand. Returns `null` for brands without a progress profile so callers fall
  * back to today's default learning-path resolution.
  *
- * `course` (2026-10-15) is the Demo Controls bar's Course axis. It DEFAULTS TO
- * FLORIDA, which is what every caller resolved to before the axis existed — so
- * a caller that does not pass it gets exactly the persona it always got, and
- * the eighty-odd existing call sites needed no edit.
+ * `course` (2026-10-15) is the Demo Controls bar's Course axis, and it is
+ * OPTIONAL BY DESIGN: omitted — which is what the control's `auto` default
+ * resolves to — every journey returns exactly the persona it returned before
+ * the axis existed. That is what let the eighty-odd existing call sites stay
+ * untouched, and what keeps a plain load of `main` unchanged.
  */
 export function dashboardProgressPersonaFor(
   brand: Brand,
   variant: string | undefined,
   educationType: EducationType = 'ce',
-  course: CourseId = DEFAULT_COURSE,
+  course?: CourseId,
 ): DashboardProgressPersona | null {
   const profile = profileFor(brand, educationType, course)
   if (!profile) return null
