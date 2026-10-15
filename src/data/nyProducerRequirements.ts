@@ -546,42 +546,77 @@ const EXAM_FACTS_BY_STATE: Record<string, ExamFacts> = {
   // Florida 2-15. The published figures at time of writing — NOT invented, but
   // still carrying the original `TODO(data)`: confirm against the current PSI
   // bulletin before this is shown to a real learner.
+  /**
+   * ⚠ CORRECTED 2026-10-15 against XCEL's own Florida requirements page, and
+   * every field below moved. This block was marked `invented: false` and was
+   * WRONG — which is worse than a flagged guess, because `invented: false` is
+   * what stops the surface apologising for itself. It had been live on `main`
+   * stating all four to stakeholders without a caveat.
+   *
+   *   - questions  165 → **150**. The 165 was the MINUTES figure in the
+   *     questions field; the page's table totals 150 scored questions.
+   *   - time       "3 hours 15 minutes" (195 min) → **165 minutes**. Once 165
+   *     had been read as a question count, a time was invented to sit beside
+   *     it — and 3h15 is 165 with the units changed, which is the fingerprint
+   *     of the original slip.
+   *   - where      PSI → **Pearson VUE**. A different company.
+   *   - whereNote  "or online with remote proctoring" → the page says the
+   *     opposite in so many words: "OnVUE online remote proctored exams are
+   *     not available."
+   *
+   * ⚠ THE LESSON IS THE ONE THE NEW YORK BLOCK ALREADY RECORDS, arriving from
+   * the other direction: there, three of four guessed figures were wrong and
+   * the file learned to mark guesses. Here the figures were not marked as
+   * guesses at all, so nothing invited anyone to check them. A number is
+   * confirmed by a source, not by a field saying it is.
+   *
+   * Source, read 2026-10-15:
+   * https://www.xcelsolutions.com/florida/insurance-license/requirements
+   */
   FL: {
     state: 'FL',
-    exam: 'Florida 2-15 Health & Life',
-    examNote: 'including Annuities & Variable Contracts',
-    questions: '165 scored',
-    questionsNote: 'plus unscored pretest items',
-    timeAllowed: '3 hours 15 minutes',
+    exam: 'Florida Life & Health (2-15)',
+    examNote: '150 scored questions across life, health and Florida law',
+    questions: '150 scored',
+    questionsNote: '20 of them Florida laws common to all lines',
+    timeAllowed: '165 minutes',
     passMark: 70,
-    where: 'A PSI test centre',
-    whereNote: 'or online with remote proctoring',
+    where: 'A Pearson VUE test centre',
+    whereNote: 'in person only — online remote proctoring is not available',
     invented: false,
   },
   /**
-   * TEXAS Life & Health — added 2026-10-15 with the Course control.
+   * TEXAS Life & Health — CONFIRMED 2026-10-15 against XCEL's own Texas
+   * requirements page. Every figure below is published there; the block
+   * shipped invented eight hours earlier and all of it has been replaced.
    *
-   * ⚠ EVERY FIGURE HERE IS INVENTED, which is what `invented: true` says and
-   * what the surfaces then say out loud. Nothing below has been read off a
-   * published page the way the New York block was, and New York is the
-   * cautionary tale: of the four figures guessed there, three turned out
-   * wrong — the question count, the time allowed, and the provider.
+   * ⚠ TEXAS SITS LIFE AND HEALTH AS TWO SEPARATE PAPERS, and the page's table
+   * has a column for each rather than a combined row. The figures here are the
+   * **Health** sitting, because that column is the one that also carries the
+   * life content — its rows include Life Insurance types, provisions,
+   * underwriting and retirement concepts alongside the health material, where
+   * the Life column carries no health rows at all. A learner working XCEL's
+   * Life & Health course towards both authorities is preparing for this paper.
    *
-   * TODO(data): confirm against XCEL's own Texas requirements page and the
-   * Texas Department of Insurance, then flip `invented` to false — the same
-   * pass the New York figures went through on 2026-09-16.
+   * ⚠ WHAT THE PAGE DOES NOT SAY, and so neither does this: whether someone
+   * licensed for both lines sits ONE paper or TWO. `questionsNote` names the
+   * Life alternative so the surface is not silently claiming there is only
+   * one. If that is ever settled, this is keyed by STATE and will need to move
+   * with the line of authority — the same caveat the New York block carries.
+   *
+   * Source: https://www.xcelsolutions.com/texas/insurance-license/requirements
    */
   TX: {
     state: 'TX',
-    exam: 'Texas Life, Accident & Health',
-    examNote: '⚠ INVENTED — the line-of-authority name is not confirmed',
-    questions: '150 scored',
-    questionsNote: '⚠ INVENTED',
-    timeAllowed: '2 hours 30 minutes',
+    exam: 'Texas Health (Life & Health)',
+    examNote: 'the Health paper, which carries the life content too',
+    questions: '130 scored',
+    questionsNote: 'the Life-only paper is 80 in 120 minutes',
+    timeAllowed: '150 minutes',
     passMark: 70,
     where: 'A Pearson VUE test centre',
-    whereNote: '⚠ INVENTED — the proctor for Texas is not confirmed',
-    invented: true,
+    whereNote: 'Pearson Professional Assessments',
+    invented: false,
   },
   // CONFIRMED 2026-09-16 against XCEL's own published requirements page (see
   // this file's header). Every figure below is stated there.
@@ -783,48 +818,67 @@ export type GoverningAgency = {
   name: string
   phone: string
   website: string
-  email: string
+  /**
+   * ⚠ OPTIONAL SINCE 2026-10-15, because two of the three real pages do not
+   * publish one. Florida's and Texas's requirements pages both render their
+   * licensing address through Cloudflare's JavaScript email protection, so
+   * there is no literal address in the page to read — and inventing a
+   * plausible `licensing@` is exactly the move that put a wrong PSI into the
+   * Florida exam block. Absent → the block omits the row.
+   */
+  email?: string
   address: string
   /** True when the contact details still need confirming against the board. */
   invented?: boolean
 }
 
 /**
- * FLORIDA's governing agency — ⚠ INVENTED, 2026-10-15.
+ * FLORIDA's governing agency — CONFIRMED 2026-10-15 against XCEL's own Florida
+ * requirements page. It shipped invented eight hours earlier; the name, phone
+ * and postcode have all moved.
  *
- * Florida has demoed the dashboard since this repo started and has never
- * needed an agency block: the Get Licensed section is a QE Focused surface and
- * QE Focused demos New York. So there is no published Florida content here to
- * generalise FROM, only a shape to fill.
+ *   - name    "Florida Department of Financial Services" → it is the
+ *             **Bureau of Licensing** within it, which is the office a
+ *             licensee actually writes to.
+ *   - phone   877-693-5236 (the Department's general line, guessed) →
+ *             **850-413-3137**, the Bureau's own.
+ *   - address gained its ZIP+4, `-0319`, which routes to the Bureau.
  *
- * TODO(data): confirm every field against the Florida Department of Financial
- * Services' own licensing pages before this reaches a stakeholder.
+ * ⚠ NO EMAIL. The page protects it with Cloudflare's JavaScript obfuscation,
+ * so there is nothing to read; the invented `agentlicensing@myfloridacfo.com`
+ * is gone rather than kept as a plausible guess.
  */
-const FL_GOVERNING_AGENCY_INVENTED: GoverningAgency = {
-  name: 'Florida Department of Financial Services',
-  phone: '877-693-5236',
-  website: 'https://www.myfloridacfo.com/division/agents/',
-  email: 'agentlicensing@myfloridacfo.com',
-  address: '200 East Gaines Street, Tallahassee, FL 32399',
-  invented: true,
+const FL_GOVERNING_AGENCY: GoverningAgency = {
+  name: 'Florida Department of Financial Services — Bureau of Licensing',
+  phone: '850-413-3137',
+  website: 'https://www.myfloridacfo.com/Division/Agents/',
+  address: '200 East Gaines Street, Tallahassee, FL 32399-0319',
 }
 
-/** TEXAS's governing agency — ⚠ INVENTED, 2026-10-15. Same caveat as Florida:
- *  nothing here has been read off a published page. TODO(data): confirm against
- *  the Texas Department of Insurance. */
-const TX_GOVERNING_AGENCY_INVENTED: GoverningAgency = {
-  name: 'Texas Department of Insurance',
-  phone: '800-578-4677',
-  website: 'https://www.tdi.texas.gov/agent/',
-  email: 'license@tdi.texas.gov',
-  address: '1601 Congress Avenue, Austin, TX 78701',
-  invented: true,
+/**
+ * TEXAS's governing agency — CONFIRMED 2026-10-15 against XCEL's own Texas
+ * requirements page. Every field moved from the invented block it replaces.
+ *
+ *   - name    "Texas Department of Insurance" → **Agent and Adjuster
+ *             Licensing**, the division named on the page.
+ *   - phone   800-578-4677 (TDI's consumer help line, guessed) →
+ *             **512-676-6500**, the licensing division's own.
+ *   - address a street address was invented; it is a **PO box**, and the mail
+ *             code `MC CO-AAL` is part of it rather than decoration.
+ *
+ * ⚠ NO EMAIL, same as Florida — the page obfuscates it through Cloudflare.
+ */
+const TX_GOVERNING_AGENCY: GoverningAgency = {
+  name: 'Texas Department of Insurance — Agent and Adjuster Licensing',
+  phone: '512-676-6500',
+  website: 'https://www.tdi.texas.gov/',
+  address: 'P.O. Box 1230, MC CO-AAL, Austin, TX 78711-2030',
 }
 
 const GOVERNING_AGENCY_BY_STATE: Record<string, GoverningAgency> = {
   NY: NY_GOVERNING_AGENCY,
-  FL: FL_GOVERNING_AGENCY_INVENTED,
-  TX: TX_GOVERNING_AGENCY_INVENTED,
+  FL: FL_GOVERNING_AGENCY,
+  TX: TX_GOVERNING_AGENCY,
 }
 
 /**
@@ -970,8 +1024,9 @@ export const GET_LICENSED_STEPS: LicensingStep[] = [
  * twenty chances to get it wrong — so the constant keeps its meaning and the
  * FUNCTION below is what the course-aware surfaces call.
  *
- * ⚠ THE TWO ARRAYS BELOW ARE INVENTED IN FULL — 2026-10-15, with the Course
- * control. New York's steps came off XCEL's own published requirements page as
+ * ⚠ THE TWO ARRAYS BELOW WERE INVENTED IN FULL FOR ONE MORNING — 2026-10-15,
+ * with the Course control — AND ARE NOT ANY MORE. Both were confirmed the
+ * same day against XCEL's own state requirements pages. New York's steps came off XCEL's own published requirements page as
  * screenshots, quoted close to the source because they are fees, ID rules and
  * a retake policy. NOTHING of the kind exists in this repo for Florida or
  * Texas. What is below is the SHAPE of that content with placeholder figures
@@ -983,24 +1038,40 @@ export const GET_LICENSED_STEPS: LicensingStep[] = [
  * wearing a warning.
  */
 
-/** FLORIDA's steps 2-4 — ⚠ INVENTED. See the block comment above. */
+/**
+ * FLORIDA's steps 2-5 — CONFIRMED 2026-10-15 against XCEL's own Florida
+ * requirements page, replacing the invented block that shipped that morning.
+ *
+ * ⚠ FLORIDA FINGERPRINTS LAST — it is the page's STEP 5, after the
+ * application, where Texas fingerprints at step 3 before the exam. That is a
+ * real difference between the two states and the reason it is a bullet on the
+ * step each page attaches it to rather than a shared row. Do not "tidy" them
+ * into the same position.
+ */
 const FL_GET_LICENSED_STEPS: LicensingStep[] = [
   {
     id: 'schedule-exam',
     detailLabel: 'Schedule State Exam',
     title: 'Schedule State Exam',
     detail: 'Schedule your exam when you’re ready.',
-    owner: 'PSI',
-    fee: '⚠ $44 exam fee (INVENTED)',
-    href: 'https://www.psiexams.com/',
+    owner: 'Pearson VUE',
+    fee: '$44 exam fee',
+    href: 'https://www.pearsonvue.com/fl/insurance',
     sections: [
       {
         bullets: [
           {
-            text: '⚠ INVENTED — registration is believed to be online with PSI, but the Florida route has not been confirmed:',
-            href: 'https://www.psiexams.com/',
+            text: 'Registration is completed online with Pearson Professional Assessments:',
+            href: 'https://www.pearsonvue.com/fl/insurance',
           },
-          { text: '⚠ INVENTED — exam fee $44.' },
+          { text: 'Exam fee — $44' },
+          {
+            /* The page states this as a flat negative, and it is the one line
+               here a learner can act on wrongly: the previous fixture claimed
+               the opposite and would have sent someone looking for a remote
+               sitting that does not exist. */
+            text: 'OnVUE online remote proctored exams are not available — the Florida sitting is in person.',
+          },
         ],
       },
     ],
@@ -1009,11 +1080,8 @@ const FL_GET_LICENSED_STEPS: LicensingStep[] = [
     id: 'pass-exam',
     detailLabel: 'What to expect',
     title: 'Pass State Exam',
-    // The question count, time and pass mark come from `EXAM_FACTS_BY_STATE.FL`
-    // in spirit, but are restated here as copy rather than read — the same
-    // split the New York step makes. If the facts table changes, change this.
-    detail: '165 scored questions in 3 hours 15 minutes. 70% to pass.',
-    owner: 'PSI',
+    detail: '150 scored questions in 165 minutes. 70% to pass.',
+    owner: 'Pearson VUE',
     sections: [
       {
         bullets: [
@@ -1021,7 +1089,7 @@ const FL_GET_LICENSED_STEPS: LicensingStep[] = [
             text: "Take advantage of XCEL's 3-Part training program — the Prep Review Course and the Exam Simulators are the two parts students tell us matter most in the run-up to the exam.",
           },
           {
-            text: '⚠ INVENTED — the identification requirements for a Florida sitting have not been confirmed.',
+            text: 'The paper is 150 scored questions across life, health and Florida law — 50 of them Florida statutes and rules.',
           },
         ],
       },
@@ -1031,42 +1099,83 @@ const FL_GET_LICENSED_STEPS: LicensingStep[] = [
     id: 'apply-license',
     detailLabel: 'How to apply',
     title: 'Apply for your License',
-    detail: 'Submit your certificate of completion with the application.',
+    detail: 'Apply online, then submit your fingerprints.',
     owner: 'FL Dept. of Financial Services',
     ownerShort: 'FL',
-    fee: '⚠ $55 application fee (INVENTED)',
+    fee: '$50 application + $5 State I.D.',
+    href: 'https://dice.fldfs.com/public/pb_index.aspx',
     sections: [
       {
         bullets: [
           {
-            text: '⚠ INVENTED — the application is believed to be filed with the Department:',
-            href: 'https://www.myfloridacfo.com/division/agents/',
+            text: 'Submit your licence application online through DICE:',
+            href: 'https://dice.fldfs.com/public/pb_index.aspx',
           },
-          { text: 'Or electronically through NIPR:', href: 'https://www.nipr.com/' },
+          { text: 'Application fee — $50.00, plus a $5.00 State I.D. fee' },
+        ],
+      },
+      {
+        heading: 'Fingerprints — Florida’s final step',
+        bullets: [
+          {
+            text: 'Fingerprints are submitted AFTER the application, and Florida accepts them from its own vendor only: "Fingerprint results from other vendors or states are not accepted."',
+          },
+          { text: 'Fingerprint fee — $50.75 plus tax' },
+          {
+            text: 'Your licence status and next steps are tracked in MyProfile:',
+            href: 'https://myfloridacfo.com/division/agents/licensing/myprofile-info-and-tutorials',
+          },
         ],
       },
     ],
   },
 ]
 
-/** TEXAS's steps 2-4 — ⚠ INVENTED. See the block comment above. */
+/**
+ * TEXAS's steps 2-5 — CONFIRMED 2026-10-15 against XCEL's own Texas
+ * requirements page, replacing the invented block from that morning.
+ *
+ * ⚠ TEXAS FINGERPRINTS BEFORE THE EXAM — the page's step 3, between
+ * scheduling and sitting, and the receipt has to be attached to the
+ * application later. It is a bullet on the SCHEDULE step for that reason.
+ * See the Florida block, where the same requirement falls last.
+ */
 const TX_GET_LICENSED_STEPS: LicensingStep[] = [
   {
     id: 'schedule-exam',
     detailLabel: 'Schedule State Exam',
     title: 'Schedule State Exam',
-    detail: 'Schedule your exam when you’re ready.',
+    detail: 'Schedule your exam, then get fingerprinted.',
     owner: 'Pearson VUE',
-    fee: '⚠ $43 exam fee (INVENTED)',
+    fee: '$39 single line · $49 general lines',
     href: 'https://home.pearsonvue.com/tx/insurance',
     sections: [
       {
         bullets: [
           {
-            text: '⚠ INVENTED — registration is believed to be online with Pearson VUE, but the Texas proctor has not been confirmed:',
+            text: 'Registration is completed online with Pearson Professional Assessments:',
             href: 'https://home.pearsonvue.com/tx/insurance',
           },
-          { text: '⚠ INVENTED — exam fee $43.' },
+          {
+            /* ⚠ THE PAGE STATES BOTH FEES AND DEFINES NEITHER TERM. Quoted as
+               printed rather than resolved to one number — picking the likely
+               one would be a guess wearing a published figure's clothes. */
+            text: 'Exam fees — single line $39, general lines $49. The page does not say which applies to a Life & Health candidate.',
+          },
+        ],
+      },
+      {
+        heading: 'Fingerprints — before you sit',
+        bullets: [
+          {
+            text: 'Texas takes fingerprints at step 3, BEFORE the exam, through IdentoGo:',
+            href: 'https://uenroll.identogo.com/workflows/11G6QF',
+          },
+          { text: 'Fingerprint service code — 11G6QF' },
+          { text: 'Fingerprint fee — $50.25' },
+          {
+            text: 'Save your fingerprint receipt: a copy has to be attached to the licence application.',
+          },
         ],
       },
     ],
@@ -1075,7 +1184,7 @@ const TX_GET_LICENSED_STEPS: LicensingStep[] = [
     id: 'pass-exam',
     detailLabel: 'What to expect',
     title: 'Pass State Exam',
-    detail: '⚠ INVENTED — 150 scored questions in 2 hours 30 minutes. 70% to pass.',
+    detail: '130 scored questions in 150 minutes. 70% to pass.',
     owner: 'Pearson VUE',
     sections: [
       {
@@ -1084,10 +1193,10 @@ const TX_GET_LICENSED_STEPS: LicensingStep[] = [
             text: "Take advantage of XCEL's 3-Part training program — the Prep Review Course and the Exam Simulators are the two parts students tell us matter most in the run-up to the exam.",
           },
           {
-            text: '⚠ INVENTED — the identification requirements for a Texas sitting have not been confirmed.',
+            text: 'Texas sits Life and Health as two papers. The Health paper is 130 questions in 150 minutes and carries the life content too; the Life-only paper is 80 questions in 120 minutes.',
           },
           {
-            text: '⚠ INVENTED — Texas requires fingerprinting before a licence is issued; where that sits in the sequence is not confirmed.',
+            text: '⚠ The page does not say whether a candidate licensed for both lines sits one paper or two.',
           },
         ],
       },
@@ -1097,18 +1206,22 @@ const TX_GET_LICENSED_STEPS: LicensingStep[] = [
     id: 'apply-license',
     detailLabel: 'How to apply',
     title: 'Apply for your License',
-    detail: 'Submit your certificate of completion with the application.',
+    detail: 'Apply through SIRCON or NIPR, with your fingerprint receipt.',
     owner: 'Texas Dept. of Insurance',
     ownerShort: 'TX',
-    fee: '⚠ $50 application fee (INVENTED)',
+    fee: '$50 application fee, plus processing',
+    href: 'https://www.sircon.com/texas',
     sections: [
       {
         bullets: [
-          {
-            text: '⚠ INVENTED — the application is believed to be filed with the Department:',
-            href: 'https://www.tdi.texas.gov/agent/',
-          },
+          { text: 'Apply through SIRCON:', href: 'https://www.sircon.com/texas' },
           { text: 'Or electronically through NIPR:', href: 'https://www.nipr.com/' },
+          {
+            /* The page says "plus processing fee" and names no amount, so
+               neither does this. */
+            text: 'Application fee — $50, plus a processing fee the page does not state.',
+          },
+          { text: 'Attach a copy of your fingerprint receipt.' },
         ],
       },
     ],

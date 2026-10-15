@@ -286,6 +286,22 @@ const _LEARNING_PATHS_BY_BRAND: Record<Brand, LearningPathSummary[]> = {
       title: 'Texas Life & Health Pre-Licensing',
       category: 'Insurance Pre-Licensing',
       state: 'TX',
+      /* ⚠ TEXAS REQUIRES NO PRE-LICENSING EDUCATION AT ALL — confirmed
+         2026-10-15 against XCEL's own Texas requirements page: "The state of
+         Texas has no formal pre-licensing education requirement however it is
+         recommended as the prelicensing course is designed to prepare
+         candidates for the State Licensing Examination."
+
+         So this figure is NOT a state requirement, unlike Florida's 60 and
+         New York's 40 — it is the length of XCEL's own course, and the page
+         publishes no hour count for it. Kept at 40 as a placeholder so the
+         gauge has a denominator, and flagged because a Texas learner shown
+         "of 40 required hours" is being told something the state does not ask
+         of them.
+
+         TODO(data): either XCEL's own Texas course length, or a decision to
+         render this path with no hour requirement at all — which is the more
+         honest shape and a bigger change than a number. */
       hours: 40,
       examDate: '06/26/2026',
       timeLeftLabel: '5 Weeks Left to Exam',

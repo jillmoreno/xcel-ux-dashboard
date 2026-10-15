@@ -50,11 +50,19 @@ export function GoverningAgencyBlock() {
             href={NY_GOVERNING_AGENCY.website}
             external
           />
-          <Field
-            label="Email"
-            value={NY_GOVERNING_AGENCY.email}
-            href={`mailto:${NY_GOVERNING_AGENCY.email}`}
-          />
+          {/* ⚠ ONLY WHEN THERE IS ONE — 2026-10-15. New York publishes a
+              licensing address; Florida's and Texas's requirements pages both
+              hide theirs behind Cloudflare's JavaScript email protection, so
+              there is nothing to link. An omitted row is the honest render;
+              the alternative was a plausible invented `licensing@`, which is
+              the move that put a wrong exam provider on the Florida block. */}
+          {NY_GOVERNING_AGENCY.email ? (
+            <Field
+              label="Email"
+              value={NY_GOVERNING_AGENCY.email}
+              href={`mailto:${NY_GOVERNING_AGENCY.email}`}
+            />
+          ) : null}
           <Field label="Address" value={NY_GOVERNING_AGENCY.address} />
         </dl>
       </section>

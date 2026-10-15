@@ -335,18 +335,85 @@ describe('Texas is a second COURSE, not a relabelled Florida', () => {
     expect(JSON.stringify(compassTocFor('tx'))).toMatch(/Texas/)
   })
 
-  /* ⚠ EVERY TEXAS FIGURE SHIPS FLAGGED. The surfaces read `invented` and
-     apologise for themselves; a future pass confirming the real numbers flips
-     this and this test with it. Until then, silently dropping the marker
-     would present guesses as published regulatory facts — the exact failure
-     `nyProducerRequirements.ts`'s header was written about. */
-  it('ships every Texas figure marked invented', () => {
-    expect(examFactsFor('TX').invented).toBe(true)
-    expect(governingAgencyFor('TX').invented).toBe(true)
-    expect(governingAgencyFor('FL').invented).toBe(true)
+  /*
+   * ⚠ THIS TEST ASSERTED THE OPPOSITE FOR EIGHT HOURS, and flipping it was
+   * the point of writing it.
+   *
+   * It read "ships every Texas figure marked invented" — because on
+   * 2026-10-15 they were, and the risk was someone quietly dropping a marker
+   * and presenting a guess as a published regulatory fact. That afternoon the
+   * figures were confirmed against XCEL's own Texas requirements page, so the
+   * markers came off deliberately and this came with them.
+   *
+   * What it guards now is the other direction: that `invented: false` means
+   * somebody read a page. FLORIDA is the cautionary half — its block carried
+   * `invented: false` from the start and three of its four facts were wrong
+   * (165 questions for 150, PSI for Pearson VUE, remote proctoring that the
+   * page says is unavailable). A flag claiming confirmation is worth exactly
+   * as much as the reading behind it.
+   *
+   * Sources, read 2026-10-15:
+   *   …/texas/insurance-license/requirements
+   *   …/florida/insurance-license/requirements
+   */
+  it('ships the confirmed Texas and Florida figures, unflagged', () => {
+    expect(examFactsFor('TX').invented).toBe(false)
+    expect(governingAgencyFor('TX').invented).toBeUndefined()
+    expect(governingAgencyFor('FL').invented).toBeUndefined()
     for (const step of getLicensedStepsFor('TX')) {
-      expect(JSON.stringify(step), step.id).toMatch(/INVENTED/)
+      expect(JSON.stringify(step), step.id).not.toMatch(/INVENTED/)
     }
+    for (const step of getLicensedStepsFor('FL')) {
+      expect(JSON.stringify(step), step.id).not.toMatch(/INVENTED/)
+    }
+  })
+
+  /* THE FIGURES THEMSELVES, so a later edit cannot drift them back off the
+     page they came from. Texas sits Life and Health as two papers; these are
+     the HEALTH one, which carries the life content too. */
+  it('states the published Texas exam facts', () => {
+    const tx = examFactsFor('TX')
+    expect(tx.questions).toMatch(/130/)
+    expect(tx.timeAllowed).toMatch(/150/)
+    expect(tx.passMark).toBe(70)
+    expect(tx.where).toMatch(/Pearson/)
+  })
+
+  /* ⚠ FLORIDA'S WERE WRONG WHILE CLAIMING TO BE CONFIRMED, and were live on
+     `main`. 150 questions in 165 minutes at Pearson VUE, in person only. */
+  it('states the corrected Florida exam facts', () => {
+    const fl = examFactsFor('FL')
+    expect(fl.questions).toMatch(/150/)
+    expect(fl.timeAllowed).toMatch(/165/)
+    expect(fl.where).toMatch(/Pearson/)
+    expect(fl.where).not.toMatch(/PSI/)
+    // The page says remote proctoring is NOT available; the fixture used to
+    // say it was.
+    expect(fl.whereNote).toMatch(/not available/)
+  })
+
+  /* ⚠ NEITHER PAGE PUBLISHES A LICENSING EMAIL — both obfuscate it through
+     Cloudflare — so the block omits the row rather than inventing a
+     plausible `licensing@`. New York's is published and stays. */
+  it('carries no invented email for Florida or Texas', () => {
+    expect(governingAgencyFor('FL').email).toBeUndefined()
+    expect(governingAgencyFor('TX').email).toBeUndefined()
+    expect(governingAgencyFor('NY').email).toBeTruthy()
+  })
+
+  /* ⚠ FINGERPRINTING FALLS IN DIFFERENT PLACES, and that is a real difference
+     between the two states rather than an inconsistency to tidy: Texas takes
+     prints at step 3 BEFORE the exam, Florida at step 5 AFTER the
+     application. */
+  it('puts fingerprinting where each state puts it', () => {
+    const tx = JSON.stringify(getLicensedStepsFor('TX').find((x) => x.id === 'schedule-exam'))
+    const fl = JSON.stringify(getLicensedStepsFor('FL').find((x) => x.id === 'apply-license'))
+    expect(tx).toMatch(/[Ff]ingerprint/)
+    expect(fl).toMatch(/[Ff]ingerprint/)
+    // …and NOT on the other step, which would reverse the sequence.
+    expect(
+      JSON.stringify(getLicensedStepsFor('TX').find((x) => x.id === 'apply-license')),
+    ).not.toMatch(/IdentoGo/)
   })
 })
 
