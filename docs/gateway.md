@@ -190,13 +190,32 @@ what the Compass row opens, which is what keeps the two from competing. It
 exists because the study experience has its own owner and its own stream of
 Refinement work (Anjani's, tagged `product: 'compass'` there), and "what is
 Compass right now?" deserved an answer that does not route through the
-dashboard. The `invite` scope has no row yet. When this was written in the
-morning the purchase flow did not exist as a React route; by the afternoon
-Eric's End-to-End Demo had merged with exactly that flow — `/end-to-end-demo`
-(the Invited Product Detail page) → `/end-to-end-demo/checkout` → the dashboard
-on `eric-atlas-e2e`, now the baseline version. So the row is a decision for
-Jillienne as the scope's owner rather than a build, and the smoke test's
-`/dashboard-rebrand` pin grows a second route when she makes it.
+dashboard.
+
+**The invite and admin rows arrived the same evening (2026-10-14).** When the
+morning's text was written the purchase flow did not exist as a React route; by
+the afternoon Eric's End-to-End Demo had merged with exactly that flow, and by
+the evening Jillienne had asked for its row and for an Admin row:
+
+- **`xcel-invite`** → `/end-to-end-demo?demo=1`, the Invited Product Detail
+  page → its checkout → the dashboard. The second product DOOR the smoke test
+  admits beside `/dashboard-rebrand`. ⚠ The page pins its own version
+  (`useEndToEndDemoParams` writes `version=eric-atlas-e2e`), so this is the one
+  row whose dashboard does not follow `defaultDiscoverabilityVersionFor` — the
+  page's rule, not the row's; the row itself carries no `version=`.
+- **`xcel-admin-tool`** — the PartnerHub-fork admin tool, moved from
+  Exploration. The ONE document row in Prototypes, and the reason
+  `scripts/public-redirects.mjs` grew an `ALLOWED` list: the public build 404s
+  `/prototypes/*` at the edge, so without an exact-path allow rule written
+  BEFORE the block the stakeholder front door would carry a row that opens to
+  not-found. `PublicGateway.test.tsx` pins that a document row is allowed
+  there iff it is a Prototypes row, that the list holds no wildcard, and that
+  it is emitted first. The document's masthead links to its sibling
+  explorations still 404 on the public build, which is correct.
+
+Four live frames would be the cost of four route rows; it is three (the admin
+tool opens in a new tab and keeps its generated thumbnail), which was judged
+fine. Add captures to `public/prototype-thumbs/` if the landing page slows.
 
 What this did NOT change: how work gets in. A branch is still reviewed in
 Refinement and promoted by `promote-to-prototype` flipping flag defaults on

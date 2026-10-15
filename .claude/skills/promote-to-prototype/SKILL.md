@@ -36,7 +36,7 @@ has to ask which one is real.
 
 Since 2026-10-14 it holds one row per product SURFACE, declared in
 `PROTOTYPE_SCOPES` in `prototypeFeatures.ts`: how a learner gets in (`invite`,
-no row yet — the flow is Eric's End-to-End Demo at `/end-to-end-demo`), what they land in (`end-to-end`,
+`xcel-invite`, Eric's End-to-End Demo at `/end-to-end-demo`), what they land in (`end-to-end`,
 `xcel-dashboard`), where they study (`compass`, `xcel-compass`). Every row is
 `main`'s build at `?demo=1` — the smoke test pins that none is a branch URL, an
 `?ff=` pin, or a pinned `version=` — so there is still nothing to ask "which one
@@ -64,7 +64,8 @@ and the person whose design it is differs by row.
 |---|---|---|---|
 | `end-to-end` | `xcel-dashboard` | Jillienne | Jillienne |
 | `compass` | `xcel-compass` | **Anjani** | Jillienne |
-| `invite` | none yet | Jillienne | Jillienne |
+| `invite` | `xcel-invite` | Jillienne | Jillienne |
+| `admin` | `xcel-admin-tool` — an HTML document, no flags | Jillienne | Jillienne |
 
 The table is `PROTOTYPE_SCOPES` in `prototypeFeatures.ts` — read `owner` from
 there, not from here, if they ever disagree. The last column never varies: a
@@ -88,9 +89,10 @@ grep -rl "<flag-key>" src/components src/pages | head     # where is it read?
   end-to-end (where the lever is) AND name its Compass effect in the Compass
   group, so Anjani's sign-off covers it.
 - Read under `src/pages/Invited*`, `src/pages/endToEndDemo.ts` or the
-  `/end-to-end-demo` routes → **`invite`**. The flow landed 2026-10-14 (Eric's
-  End-to-End Demo); the scope has no ROW yet, so until Jillienne adds one its
-  candidates are listed under `invite` and decided by her like end-to-end.
+  `/end-to-end-demo` routes → **`invite`** (row `xcel-invite`, Jillienne's).
+- **`admin` never has candidates.** Its row is a standalone HTML document under
+  `public/prototypes/`; a change to it is a file change that merges as itself,
+  with the smoke suites (`npm run smoke`) as its gate, not a flag default.
 
 **What the owner column means in step 3.** The owner runs this skill on the
 branch and answers their group's questions; a group the caller does NOT own

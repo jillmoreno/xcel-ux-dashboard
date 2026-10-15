@@ -25,11 +25,15 @@ what they **land in** (the dashboard, end to end), and where they **study**
 (Compass) — and each is its own source of truth for a different question. The
 section holds one row per door, declared in `PROTOTYPE_SCOPES` in
 `prototypeFeatures.ts`, and the guarantee the one-row rule gave is kept in a
-stricter mechanical form that `UxDashboard.smoke.test.tsx` pins: **every row's
-route is `main`'s build at `?demo=1`** — same origin, never a branch URL, never
-an `?ff=` pin, never a pinned `version=`, never an HTML document. Three rows,
-one build, one committed baseline. (An HTML document could not be a row anyway:
-`/prototypes/*` is 404'd on the public build.)
+stricter mechanical form that `UxDashboard.smoke.test.tsx` pins: **every row
+is `main`'s build** — same origin, never a branch URL, never an `?ff=` pin,
+never a pinned `version=`. A route row enters the product app at `?demo=1`
+through one of its doors (`/dashboard-rebrand`, `/end-to-end-demo`). A
+document row — the Admin Tool, the one of them — is a file under
+`public/prototypes/` that the public build allows by exact path in
+`scripts/public-redirects.mjs`, because that folder is otherwise 404'd there
+and a row stakeholders cannot open is not a row. Four rows, one build, one
+committed baseline.
 
 So when you want several things visible at once FOR THE SAME SURFACE — two
 pacing treatments, a component's variants, a branch under discussion — **they
@@ -42,12 +46,12 @@ carries no `gate`, so it renders on the public build as well as the full one.
 | **Prototypes** | this IS the product | one per surface, all on `main` | flag defaults on `main` |
 | **Refinement** | under discussion | as many as you like | Netlify Blobs, authored on the page |
 
-A scope with no row is a surface whose row has not been decided: `invite` is
-listed and empty. The flow itself landed on `main` on 2026-10-14 in Eric's
-End-to-End Demo — `/end-to-end-demo`, the Invited Product Detail page, its
-checkout, then the dashboard — so the row is now a decision (Jillienne's, as
-the scope's owner), not a build. When it arrives, the smoke test's route pin
-grows a second product route beside `/dashboard-rebrand`.
+Four doors as of the evening of 2026-10-14, in journey order: **Invite &
+Purchase** (`/end-to-end-demo`, Eric's End-to-End Demo — the Invited Product
+Detail page, its checkout, then the dashboard), **End-to-End User Experience
+(Atlas & Compass)**, **Compass Learning**, and **Admin Tool** (the PartnerHub
+fork, a document). A fifth is a `PROTOTYPE_SCOPES` decision first and a row
+second.
 
 **Who promotes, and who merges, are two different columns (2026-10-14).**
 Each scope names an `owner`, and the owner both decides what that surface

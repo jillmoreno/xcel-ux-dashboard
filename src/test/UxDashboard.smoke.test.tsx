@@ -127,13 +127,15 @@ describe('section routing (sectionOf)', () => {
   const EXPECTED_PLACEMENT: Record<string, string> = {
     // The in-app rows — the only feature rows on the ungated front door. One
     // per `prototypeScope`; see "Prototypes holds exactly the rows" below.
+    'xcel-invite': 'prototypes',
     'xcel-dashboard': 'prototypes',
     'xcel-compass': 'prototypes',
     'xcel-lms': 'exploration',
     'xcel-walkthrough': 'exploration',
     'xcel-wireframes': 'exploration',
     'xcel-admin': 'exploration',
-    'xcel-admin-tool': 'exploration',
+    // Promoted 2026-10-14 — the Admin row, the one document in Prototypes.
+    'xcel-admin-tool': 'prototypes',
     'xcel-exam-spec': 'exploration',
     // The first handoff row (2026-09-24) — `devStatus: 'in-development'`.
     'atlas-home-course-card': 'development',
@@ -208,8 +210,10 @@ describe('section routing (sectionOf)', () => {
     // 2026-09-28. The list is still written out, in section order, so adding
     // a row is a deliberate edit here and not something a category typo does.
     expect(rows).toEqual([
+      'Invite & Purchase — Live Product Build',
       'End-to-End User Experience (Atlas & Compass)',
       'Compass Learning — Live Product Build',
+      'XCEL Admin Tool — Forked Roster',
     ])
 
     // …and a gated row is still not among them.
@@ -459,6 +463,7 @@ describe('the Prototypes row opens the committed configuration', () => {
     expect(PROTOTYPE_FEATURES.filter((f) => f.to).map((f) => f.id).sort()).toEqual([
       'xcel-compass',
       'xcel-dashboard',
+      'xcel-invite',
     ])
   })
 })
@@ -471,9 +476,14 @@ describe('the Prototypes row opens the committed configuration', () => {
  * block is the stricter mechanical form of what the one-row rule guaranteed:
  * every row is `main`'s build at the committed baseline, so there is nothing
  * to ask "which one is real?" about. The thing to notice is what is NOT
- * allowed — a branch URL, an `?ff=` pin, a pinned `version=`, an external
- * document — because each of those is a row that would stop tracking the
- * product the moment `main` moved under it. */
+ * allowed — a branch URL, an `?ff=` pin, a pinned `version=`, a document the
+ * public build cannot serve — because each of those is a row that would stop
+ * tracking the product, or stop opening, the moment `main` moved under it.
+ *
+ * Two shapes since 2026-10-14: a ROUTE row enters the product app through one
+ * of its doors; a DOCUMENT row (the admin tool) is a file under
+ * `public/prototypes/` that `scripts/public-redirects.mjs` allows by exact
+ * path on the public build, read from that file here so the two cannot drift. */
 describe('Prototypes — one row per scope, every row the same build', () => {
   const prototypeRows = PROTOTYPE_FEATURES.filter((f) => f.category === 'prototype')
 
@@ -513,16 +523,42 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     }
   })
 
-  it('every Prototypes row opens the product on main at the committed baseline', () => {
-    for (const f of prototypeRows) {
-      expect(f.externalUrl, `${f.id}: a Prototypes row is a route, never a document`).toBeUndefined()
+  /** The product app's doors — the pathnames a route row may enter at. */
+  const PRODUCT_DOORS = ['/dashboard-rebrand', '/end-to-end-demo']
+  /** The exact `/prototypes/` paths the PUBLIC build serves despite its folder
+   *  block — parsed from the script, the `BLOCKED` pattern in PublicGateway.test. */
+  const publicAllowed = (() => {
+    const here = dirname(fileURLToPath(import.meta.url))
+    const script = readFileSync(resolve(here, '../../scripts/public-redirects.mjs'), 'utf8')
+    const m = script.match(/const ALLOWED = \[([^\]]*)\]/)
+    return m ? [...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1]) : []
+  })()
+
+  it('every Prototypes ROUTE row opens the product on main at the committed baseline', () => {
+    for (const f of prototypeRows.filter((f) => !f.externalUrl)) {
       expect(f.to, `${f.id} needs a \`to\``).toBeTruthy()
       const url = new URL(f.to!, 'https://same.origin')
       expect(url.origin, `${f.id} must be same-origin — a branch URL is a second build`).toBe('https://same.origin')
-      expect(url.pathname, `${f.id} must enter the product app`).toBe('/dashboard-rebrand')
+      expect(PRODUCT_DOORS, `${f.id} must enter the product app through one of its doors`).toContain(url.pathname)
       expect(url.searchParams.get('demo'), `${f.id} must open the committed baseline`).toBe('1')
       expect(url.searchParams.has('ff'), `${f.id} must not pin flags — it would stop tracking main`).toBe(false)
       expect(url.searchParams.has('version'), `${f.id} must not pin a version — the baseline chooses it`).toBe(false)
+    }
+  })
+
+  it('every Prototypes DOCUMENT row is a committed file the public build allows by exact path', () => {
+    // 2026-10-14, the Admin row. A stakeholder is sent to this section, and
+    // the public build 404s `/prototypes/*` at the edge — so a document here
+    // that is not on the allow list is a row that opens to a not-found page
+    // for exactly the audience it exists for.
+    const docs = prototypeRows.filter((f) => f.externalUrl)
+    expect(docs.map((f) => f.id)).toEqual(['xcel-admin-tool'])
+    for (const f of docs) {
+      expect(f.to, `${f.id}: a document row has no \`to\``).toBeUndefined()
+      const url = new URL(f.externalUrl!, 'https://same.origin')
+      expect(url.origin, `${f.id} must be same-origin — it is main's build or it is nothing`).toBe('https://same.origin')
+      expect(url.pathname.startsWith('/prototypes/'), `${f.id} must live under /prototypes/`).toBe(true)
+      expect(publicAllowed, `${f.id} must be allowed through the public build's folder block`).toContain(url.pathname)
     }
   })
 
