@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useMemo, useState, type CSSProperties, Fragment } from 'react'
 import { CalendarTearOff } from '@/components/ui/CalendarTearOff'
 import { ArrowLeft, ArrowRight, HourglassClock, PenToSquare } from '@/icons'
 import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
@@ -109,6 +109,7 @@ export function ExamScheduleWidget({
   compact = false,
   countdown = 'text',
   treatment = 'default',
+  promptLayout = 'stacked',
 }: {
   shell: CSSProperties
   /**
@@ -173,6 +174,13 @@ export function ExamScheduleWidget({
      fork because the only thing that differs is one paragraph's style; the
      moment a second phase needs its own look, fork. */
   treatment?: 'default' | 'pacing' | 'plain'
+  /** How the PROMPT phase lays out — 2026-10-14, End-to-End Demo's exam line
+   *  under the course panel (Jillienne's request: "shift these to the right of
+   *  the question"). `stacked` (default) is the question over the buttons,
+   *  as everywhere; `inline` puts the buttons on the question's row, at the
+   *  right, wrapping under it when the row is too narrow. The eyebrow above
+   *  is untouched. Prompt phase only — the picker and readout are unchanged. */
+  promptLayout?: 'stacked' | 'inline'
   /** Opens a sheet by id. This card only ever sends `EXAM_DETAILS_STEP_ID` —
    *  the menu it opens is what sends the real step ids back. */
   onOpenStep?: (id: string) => void
@@ -337,6 +345,7 @@ export function ExamScheduleWidget({
         <PromptState
           heading={pacing}
           plain={treatment === 'plain'}
+          inline={promptLayout === 'inline'}
           // `plain` leads with "Not yet" (2026-10-14, Jillienne: "swap these 2
           // buttons"); `pacing` keeps the affirmative first.
           affirmativeFirst={treatment === 'pacing'}
@@ -427,6 +436,7 @@ function PromptState({
   onYes,
   heading = false,
   plain = false,
+  inline = false,
   affirmativeFirst = false,
 }: {
   stateName: string
@@ -436,10 +446,19 @@ function PromptState({
   /** The question as PLAIN body text (`treatment: 'plain'`): 13/18 in the
    *  primary ink, the Quick Links rows' type. Wins over `heading`. */
   plain?: boolean
+  /** Buttons on the question's row, at the right — `promptLayout: 'inline'`. */
+  inline?: boolean
   affirmativeFirst?: boolean
 }) {
+  /* `inline`: one flex row, question first and the buttons pushed right by
+     `space-between`; `flexWrap` lets the buttons drop under a long question
+     rather than squeeze it. The stacked arm is a fragment, byte for byte. */
+  const Wrap = inline ? 'div' : Fragment
+  const wrapProps = inline
+    ? { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' } as CSSProperties }
+    : {}
   return (
-    <>
+    <Wrap {...wrapProps}>
       {/* ⚠ THE STATE IS NAMED IN EVERY PHASE — 2026-09-29. A learner holding
           licences in more than one jurisdiction, or working a course for a state
           they do not live in, cannot tell which exam this card means from "your
@@ -453,9 +472,9 @@ function PromptState({
           and depending on a home's private style object would couple a widget
           four callers share to one of them. The fallbacks match that object. */}
       {plain ? (
-        <p style={questionPlainStyle}>Have you scheduled your {stateName} state exam?</p>
+        <p style={inline ? { ...questionPlainStyle, flex: '1 1 auto' } : questionPlainStyle}>Have you scheduled your {stateName} state exam?</p>
       ) : (
-        <p style={heading ? questionHeadingStyle : questionStyle}>
+        <p style={{ ...(heading ? questionHeadingStyle : questionStyle), ...(inline ? { margin: 0, flex: '1 1 auto' } : null) }}>
           Have you scheduled your {stateName} state exam?
         </p>
       )}
@@ -468,7 +487,7 @@ function PromptState({
           a primary action usually sits. `affirmativeFirst` leads with "Yes, I
           know the date" instead — 2026-10-07 — on the reading that the card is
           a QUESTION and the likelier answer should be the first thing under it. */}
-      <div style={promptButtonRowStyle}>
+      <div style={inline ? { ...promptButtonRowStyle, marginTop: 0, alignSelf: 'center' } : promptButtonRowStyle}>
         {/* "Yes, I know the date" — 2026-10-02, the direct ask. A bare "Yes"
             answers the question but says nothing about what pressing it DOES;
             this names the thing the picker is about to ask for. Its partner
@@ -494,7 +513,7 @@ function PromptState({
           </>
         )}
       </div>
-    </>
+    </Wrap>
   )
 }
 

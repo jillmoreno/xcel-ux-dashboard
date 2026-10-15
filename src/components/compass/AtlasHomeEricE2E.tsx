@@ -456,6 +456,9 @@ export function AtlasHomeEricE2E({
             onOpenStep={onOpenStep}
             stateName={state || undefined}
             compact
+            // The buttons at the right of the question (2026-10-14, Jillienne's
+            // request: "shift these to the right of the question").
+            promptLayout="inline"
           />
         ) : null}
         {onWhite ? null : <span aria-hidden style={RULE} />}
