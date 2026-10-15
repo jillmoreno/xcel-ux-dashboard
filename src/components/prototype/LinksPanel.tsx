@@ -546,7 +546,7 @@ const stripStyle: CSSProperties = {
   borderRadius: 12,
   background: 'var(--ux-card)',
   padding: '12px 13px',
-  marginBottom: 16,
+  marginTop: 16,
 }
 
 const stripHeadStyle: CSSProperties = {
@@ -1164,15 +1164,6 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
 
   return (
     <div style={p.showThumb ? wrapThumbStyle : wrapStyle}>
-      {/* ── the automatic branch list ──
-          Above the rows, and only where this panel can author: on the public
-          build there is nothing to add with, and while the endpoint is down an
-          Add button would fail on click — the rule the composer already
-          follows. */}
-      {p.showBranches && canAuthor && (
-        <BranchStrip boardUrls={boardUrls} onAdd={beginAddFromBranch} />
-      )}
-
       {/* ── toolbar ── */}
       {index.links.length > 0 && (
         <div style={toolbarStyle}>
@@ -1432,6 +1423,17 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
             )
           })}
         </ul>
+      )}
+
+      {/* ── the automatic branch list ──
+          BELOW the rows since 2026-10-15 (Jillienne: "put these at the bottom
+          of the page"). It sat above them from 2026-10-02; nine branches at
+          the top pushed the board's own rows — the thing the section is for —
+          below the fold. Only where this panel can author: while the endpoint
+          is down an Add button would fail on click, the rule the composer
+          already follows. */}
+      {p.showBranches && canAuthor && (
+        <BranchStrip boardUrls={boardUrls} onAdd={beginAddFromBranch} />
       )}
 
       <LinkFormModal

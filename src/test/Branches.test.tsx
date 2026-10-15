@@ -238,6 +238,16 @@ describe('the Refinement branch strip', () => {
      the one it must not: "where to look" is what only the person who did the
      work knows, and a plausible wrong note reads as reviewed when nobody
      wrote it. */
+  it('sits BELOW the rows, not above them (2026-10-15)', async () => {
+    // Jillienne: "put these at the bottom of the page". Nine branches at the
+    // top pushed the board's own rows below the fold.
+    mockEndpoints({ rows: [row({ title: 'A row on the board' })], branches: ok })
+    render(<DemoPanel />)
+    const strip = await screen.findByText('Branch builds')
+    const rowEl = await screen.findByText('A row on the board')
+    expect(rowEl.compareDocumentPosition(strip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
   it('leaves the note empty', async () => {
     const user = userEvent.setup()
     mockEndpoints({ branches: ok })
