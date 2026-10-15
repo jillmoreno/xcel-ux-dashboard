@@ -217,7 +217,7 @@ describe('section routing (sectionOf)', () => {
       'End-to-End User Experience (Invite, Atlas, Compass)',
       'Invite & Purchase — Live Product Build',
       'Atlas Learning — Work in Progress',
-      'Compass Learning — Live Product Build',
+      'Compass Learning — Work in Progress',
     ])
     // …plus the Admin PLACEHOLDER, which has no kebab because it goes nowhere:
     // drawn disabled, titled, tagged "Coming soon", and not a link.

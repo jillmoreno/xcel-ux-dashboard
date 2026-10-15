@@ -1271,7 +1271,10 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
      * add captures if the section grows past three.
      */
     id: 'xcel-compass',
-    title: 'Compass Learning — Live Product Build',
+    // "— Live Product Build" until the evening of 2026-10-14; "— Work in
+    // Progress" since, Jillienne's ask on the preview, matching the Atlas row:
+    // both are surfaces still being shaped, and the title should say so.
+    title: 'Compass Learning — Work in Progress',
     accent: 'teal',
     icon: 'monitor',
     blurb:
