@@ -1326,7 +1326,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Course content',
     description:
       'Whether the Compass SESSION takes the whole screen or sits under the global header. `full-screen` is what ships: the page calls `setCourseChrome(\'takeover\')`, the app header stands down, and the session\u2019s own bar is the only chrome. `in-shell` uses `courseTakeover`\u2019s other arm (`course`), which keeps the header and gives it a thicker bottom stroke \u2014 so the learner stays inside the product\u2019s navigation while studying. \u26a0 ON `in-shell` THE TWO BARS STACK: the session draws its own 53px bar (lesson position, chapter, progress, Notes, Rubi) under the global header, ~114px of chrome before any lesson content. That is the agreed state while the fix is decided \u2014 it is not the two-logos case, because the session bar carries no lockup. Variant-only.',
-    maturity: 'wip',
     defaultEnabled: true,
     defaultVariant: 'full-screen',
     variants: [
@@ -1367,7 +1366,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Compass surface',
     description:
       'Whose Compass Learning renders at `?section=compass` and inside the course player. `anjani` (default) is her design: the six-row rail with the XCEL lockup and the course-hours / exam / learner footer, the Course landing with the resume card and five modules, and the Study planner — pace, weekly hours, days off, a calendar and Rubi rebuilding the plan. `atlas` is the shared `CompassSidebar` with the Atlas design\u2019s eight pages and bare grounds. Applies on every dashboard version.',
-    maturity: 'wip',
     defaultEnabled: true,
     defaultVariant: 'anjani',
     variants: [
@@ -1396,7 +1394,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Planner: Rubi',
     description:
       'Whether the Study planner\u2019s Rubi panel is part of the learner\u2019s package. ON: the panel, its three starters and the undo stack; the norm note speaks as Rubi. OFF: the planner alone, wider, and the note reads "Good to know".',
-    maturity: 'wip',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
