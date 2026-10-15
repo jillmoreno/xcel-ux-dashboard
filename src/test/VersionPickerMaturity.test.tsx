@@ -202,9 +202,12 @@ describe('the shipped versions', () => {
        Quick Links stay unmarked — not decided against, not decided yet.
        Hybrid V1 and the pacing fork keep `ready`: displaced, not retired.
        (List order: Eric/Atlas WIP leads Eric's versions since 2026-10-12.) */
+    /* ⚠ AND JILL/E2E TWEAKS since 2026-10-14 (evening) — End-to-End Demo's fork,
+       hers, listed right after it; not decided yet either. */
     expect(unmarked.map((v) => v.id)).toEqual([
       'eric-atlas-v3',
       'eric-atlas-white',
+      'jill-e2e',
       'discoverability-atlas-compass-nav',
       'eric-atlas-v2',
     ])

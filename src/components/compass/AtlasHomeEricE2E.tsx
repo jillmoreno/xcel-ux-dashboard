@@ -17,9 +17,6 @@ import {
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
-import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
-import { clearExamDate, readExamDate } from '@/data/examDateStore'
-import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
@@ -156,11 +153,17 @@ export function AtlasHomeEricE2E({
      renders equal. */
   const { brand: e2eBrand } = useAccount()
   const onWhite = isEricAtlasWhiteLike(resolveDashboardVersion(searchParams.get('version'), e2eBrand))
-  /* White's course-head panel used to be measured here so Quick Links could
-     take its height. Gone 2026-10-14: the card carries the exam-date question
-     now and grows with it — and in this copy the measuring ref was never
-     attached, so the height was always undefined. `AtlasHomeEricWhite` keeps
-     the real one. */
+  // White's course-head panel, measured so Quick Links can take its height
+  // (2026-10-14, Eric's request).
+  const [headEl, setHeadEl] = useState<HTMLDivElement | null>(null)
+  const [headH, setHeadH] = useState<number | undefined>(undefined)
+  useEffect(() => {
+    // No reset when it goes: the height is only read on White, where it exists.
+    if (!headEl) return
+    const ro = new ResizeObserver(() => setHeadH(headEl.getBoundingClientRect().height))
+    ro.observe(headEl)
+    return () => ro.disconnect()
+  }, [headEl])
   const go = (section: string, coursePage?: string) =>
     setParams((prev) => {
       const next = new URLSearchParams(prev)
@@ -257,22 +260,6 @@ export function AtlasHomeEricE2E({
   const longTitle = useFeatureFlag('atlas-home-long-title').enabled
   // The Design bar's Progress (V3 only, 2026-10-09) — which module state and figure.
   const progressPick = useFeatureFlag('atlas-v3-progress').variant ?? 'not-started'
-  /* ⚠ 0% CLEARS THE BOOKED EXAM DATE — ported from Hybrid - Pacing Exploration
-     (2026-10-14, Jillienne's request: "follow the logic from the latest hybrid
-     version"). The date is per-browser reviewer input (`cgp.examDate`) and
-     survives the Progress control, so arriving at Not Started otherwise shows
-     a learner who has not begun the course already holding a booking.
-     ⚠ ON ENTERING 0%, NOT CONTINUOUSLY — the dependency is the stage alone, so
-     a date entered WHILE at 0% stays. Here 0% is the band's `notStarted` OR
-     this version's own Progress control at Not Started (its default, so a
-     fresh load clears a stale date too). ⚠ THE STORE IS GLOBAL: a date set on
-     another version is gone once this one is opened at 0% — acceptable because
-     it is reviewer input, not product data; the card offers the date again. */
-  const atNotStarted = notStarted || progressPick === 'not-started'
-  useEffect(() => {
-    if (!atNotStarted) return
-    if (readExamDate()) clearExamDate()
-  }, [atNotStarted])
   // The Design bar's Link tiles (V3 only, 2026-10-09) — Stacked (default) or Inline.
   const stackedTiles = (useFeatureFlag('atlas-v3-link-tiles').variant ?? 'stacked') !== 'inline'
   // The Design bar's Quick Links side (2026-10-13) — Left (default) or Right.
@@ -361,7 +348,7 @@ export function AtlasHomeEricE2E({
             tabs hidden), with no
             rule under it (2026-10-14, Eric's request). On WIP the wrapper is
             `display: contents`, so nothing about WIP's layout moves. */}
-        <div style={onWhite ? WHITE_COURSE_HEAD : { display: 'contents' }}>
+        <div ref={onWhite ? setHeadEl : undefined} style={onWhite ? WHITE_COURSE_HEAD : { display: 'contents' }}>
         {/* No tabs on White (2026-10-14, Eric's request). */}
         {SHOW_COURSE_TABS && !onWhite && tabs.length > 1 ? (
           <AtlasCourseTabs courses={tabs} activeId={activeTab?.id ?? path.id} onSelect={selectCourse} onAllCourses={onAllCourses ?? (() => go('courses'))} />
@@ -439,28 +426,6 @@ export function AtlasHomeEricE2E({
         )}
 
         </div>
-        {/* THE EXAM-DATE LINE, UNDER THE CURRENT COURSE PANEL — 2026-10-14,
-            Jillienne's request ("we had a exam date line that was the same
-            width as the current course section, lets bring that back and place
-            it under the current course widget"). The under-course placement
-            Testing 3 had: `ExamScheduleWidget` compact — the "State Exam"
-            eyebrow and the question until a date exists, then one line, `May 26,
-            2026 | 15 days until your exam`, with Edit. A sibling of the head
-            panel in the card's column, so it is the panel's width by layout,
-            on the panel's own surface (`EXAM_LINE_SHELL`). It moved here from
-            the Quick Links card the same day; before that, Step 2. */}
-        {onWhite ? (
-          <ExamScheduleWidget
-            key={refreshKey}
-            shell={EXAM_LINE_SHELL}
-            onOpenStep={onOpenStep}
-            stateName={state || undefined}
-            compact
-            // The buttons at the right of the question (2026-10-14, Jillienne's
-            // request: "shift these to the right of the question").
-            promptLayout="inline"
-          />
-        ) : null}
         {onWhite ? null : <span aria-hidden style={RULE} />}
 
         {/* 32 either side of the rule, White's (2026-10-13, Eric's request);
@@ -572,10 +537,8 @@ export function AtlasHomeEricE2E({
             )}
           </div>
 
-          {/* THE 1px RULE BETWEEN THE COLUMNS IS GONE on End-to-End Demo
-              (2026-10-14, Jillienne's request, the day it became the baseline).
-              WIP's and White's Homes keep theirs. To bring it back:
-              <span aria-hidden style={{ width: 1, flex: 'none', background: 'var(--color-primary-100)', marginLeft: 8, marginRight: 8 }} /> */}
+          {/* 8 more on each side of it on White (2026-10-14, Eric's request). */}
+          <span aria-hidden style={{ width: 1, flex: 'none', background: 'var(--color-primary-100)', ...(onWhite ? { marginLeft: 8, marginRight: 8 } : null) }} />
 
           {/* Right: the journey — at most 335, White's (2026-10-13, Eric's
               request). */}
@@ -645,59 +608,29 @@ export function AtlasHomeEricE2E({
             <Step
               number={2}
               title={pass.title}
-              // No detail copy under the title (2026-10-14, Jillienne's request:
-              // "remove"). `pass.detail` still exists; pass it back to restore.
+              detail={pass.detail}
               link={pass.detailLabel ?? 'What to expect'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(pass.id) : undefined}
-              /* THE TITLE IS THE WAY INTO THE EXAM INFORMATION SHEET — 2026-10-14,
-                 Jillienne's request ("make this blue, and on hover will be an
-                 underline. this will trigger sheet view = Exam information").
-                 The same sheet Quick Links' "Exam Information" row opens. */
-              onTitle={onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : undefined}
-              /* THE EXAM-DATE QUESTION LIVED IN THIS STEP for a few hours on
-                 2026-10-14 and MOVED TO THE QUICK LINKS CARD the same day
-                 (Jillienne's request: "add a divider line and then the 'Quick
-                 Question' eyebrow, have you scheduled your NY state exam logic
-                 below it"). The `after` slot stays for the day it comes back
-                 here; the widget's `step` treatment became `plain`. The note that
-                 follows is the original placement's. */
-              /* THE EXAM-DATE QUESTION LIVES IN THIS STEP — 2026-10-14, Jillienne's
-                 request, the day this version became the baseline: "the logic of
-                 'Do you know your state exam date?' needs to be added in this Pass
-                 State Exam section. Follow the logic from the latest hybrid version."
-                 That logic is `ExamScheduleWidget` as Hybrid - Pacing Exploration
-                 draws it: the question in the heading face with no eyebrow, "Yes, I
-                 know the date" first, the date written to `examDateStore` (which
-                 this Home's pace model already reads through `examDate`), then the
-                 saved readout with Edit and the split-flap countdown.
-                 ⚠ BARE, NOT A CARD: `shell` is empty so the widget sits in the step's
-                 column like the detail copy, rather than drawing a card inside the
-                 step. ⚠ ERIC'S `AtlasExamDateCard` IS UNTOUCHED — it still renders on
-                 WIP's course panel; this version (White-like) had dropped it, which
-                 is why the question had no home here. */
             />
             <span aria-hidden style={RULE} />
             <Step
               number={3}
               title={state ? `Get Licensed in ${state}` : 'Get Licensed'}
-              // No detail copy here either (same day). `apply.detail` to restore.
+              detail={apply.detail}
               link={apply.detailLabel ?? 'How to apply'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(apply.id) : undefined}
-              // …and this title opens the State Requirements sheet (same day,
-              // Jillienne's request: "add same logic to the Get Licensed line").
-              onTitle={onOpenRequirements}
             />
-            {/* THE "STATE REQUIREMENTS" BUTTON IS GONE on End-to-End Demo
-                (2026-10-14, Jillienne's request: "remove") — Step 3's title opens
-                that sheet now, and Quick Links still carries the row. ⚠ IT TOOK
-                `home.state-requirements` WITH IT: that CTA id no longer renders on
-                this version, so a user test cannot rig it here (Hybrid is the
-                same). To restore:
-                {onOpenRequirements ? (
-                  <button type="button" data-cta-id="home.state-requirements" className="cre-compass-secondary" onClick={onOpenRequirements} style={REQUIREMENTS}>
-                    {state ? `${state} State Requirements` : 'State Requirements'}
-                  </button>
-                ) : null} */}
+            {onOpenRequirements ? (
+              <button
+                type="button"
+                data-cta-id="home.state-requirements"
+                className="cre-compass-secondary"
+                onClick={onOpenRequirements}
+                style={REQUIREMENTS}
+              >
+                {state ? `${state} State Requirements` : 'State Requirements'}
+              </button>
+            ) : null}
           </div>
         </div>
       </section>
@@ -728,27 +661,14 @@ export function AtlasHomeEricE2E({
           withoutCoursePages
           onOpenStep={onOpenStep}
           onOpenRequirements={onOpenRequirements}
-          // The title as the steps' eyebrow — "QUICK LINKS" at 10px, bold
-          // (2026-10-14, Jillienne's request: "Change to Eyebrow text").
-          titleStyle={{ ...STEP_EYEBROW, fontWeight: 700 }}
-          /* The exam-date question sat here for part of 2026-10-14 (a divider,
-             a "Quick Question" eyebrow, the widget in its `plain` treatment)
-             and moved under the Current course panel the same day — see
-             `EXAM_LINE_SHELL`. The card's `footer` slot stays. */
           // Outlined in Secondary 100 darkened 5% (2026-10-13, Eric's request;
           // 15% was tried and reverted); the exam-date card keeps Primary 200.
           // On White, as tall as the course-head panel beside it (2026-10-14,
           // Eric's request).
           style={{
             ...RAIL_CARD_BORDER,
-            // NO OUTLINE on End-to-End Demo (2026-10-14, Jillienne's request:
-            // "remove the outline"). WIP's and White's cards keep the Secondary
-            // 100 darkened 5% stroke this replaced; the padding stays.
-            border: 'none',
-            // ⚠ NOT PINNED TO THE COURSE PANEL'S HEIGHT any more (2026-10-14):
-            // the card carries the exam-date question now and grows with it.
-            // White's own Home still matches its card to the panel; this Home
-            // is End-to-End Demo's only.
+            border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)',
+            ...(onWhite && headH ? { height: headH } : null),
             // …and its 20 corners (same day).
             ...(onWhite ? { borderRadius: 20 } : null),
           }}
@@ -850,33 +770,18 @@ function Step({
   detail,
   link,
   onLink,
-  after,
-  onTitle,
 }: {
   number: number
   title: string
   detail?: string
   link: string
   onLink?: () => void
-  /** Set, the TITLE is a link-styled button (brand blue, underline on hover)
-   *  calling this — Step 2 opens Exam Information, Step 3 State Requirements
-   *  (2026-10-14). Absent, the title is plain text, as before. */
-  onTitle?: () => void
-  /** Rendered after the detail and the link — Step 2's exam-date question
-   *  (2026-10-14). */
-  after?: ReactNode
 }) {
   return (
     <section aria-label={title} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
         <p style={{ ...STEP_EYEBROW, fontWeight: 700 }}>Step {number}</p>
-        {onTitle ? (
-          <button type="button" className="cre-atlas-step-title-link" onClick={onTitle} style={{ ...STEP_TITLE, color: undefined, ...STEP_TITLE_LINK }}>
-            {title}
-          </button>
-        ) : (
-          <p style={STEP_TITLE}>{title}</p>
-        )}
+        <p style={STEP_TITLE}>{title}</p>
       </div>
       {detail ? <p style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }}>{detail}</p> : null}
       {onLink ? (
@@ -884,7 +789,6 @@ function Step({
           {link} →
         </button>
       ) : null}
-      {after}
     </section>
   )
 }
@@ -1148,17 +1052,6 @@ const TITLE: CSSProperties = {
 }
 // Page and step dividers in primary-100 (2026-10-09, Eric; briefly 200) — were the warm nav rule.
 const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-primary-100)' }
-/* The exam-date LINE under the Current course panel (2026-10-14): the panel's
-   own surface and corners, slimmer — 16 top and bottom, the panel's 40 at the
-   sides so the eyebrow lines up with the course title above it. The
-   `exam-card-background` flag still spreads over this (`tint` / `outline`);
-   the baseline is `white`, which is this. */
-const EXAM_LINE_SHELL: CSSProperties = {
-  padding: '16px 40px',
-  borderRadius: 20,
-  background: 'var(--color-primary-100)',
-  boxSizing: 'border-box',
-}
 /* The design's text links: Open Sans Bold 13, the brand's button colour. */
 const LINK: CSSProperties = {
   alignSelf: 'flex-start',
@@ -1189,18 +1082,6 @@ const STEP_EYEBROW: CSSProperties = {
   color: 'var(--color-compass-page-eyebrow)',
 }
 /* Serif H8 (20 / 24). */
-/* The step title as a trigger (2026-10-14): the title's own type, a bare
-   button. ⚠ NO `color` INLINE — `.cre-atlas-step-title-link` (tokens.css) owns
-   it, the brand blue at rest and darker on hover; an inline value would beat
-   the hover in the cascade, the trap `SideLink`'s note records. */
-const STEP_TITLE_LINK: CSSProperties = {
-  padding: 0,
-  border: 'none',
-  background: 'none',
-  cursor: 'pointer',
-  textAlign: 'left',
-  alignSelf: 'flex-start',
-}
 const STEP_TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading-serif)',
@@ -1251,8 +1132,6 @@ const CHEVRON: CSSProperties = {
   color: 'var(--color-compass-page-button)',
 }
 /* Hugs its label with 24 a side (2026-10-09, Eric) — it filled the column. */
-/* `REQUIREMENTS` — the State Requirements button's style, unreferenced since the
-   button went (2026-10-14). Kept for the restore note at the call site:
 const REQUIREMENTS: CSSProperties = {
   alignSelf: 'flex-start',
   padding: '0 24px',
@@ -1264,7 +1143,6 @@ const REQUIREMENTS: CSSProperties = {
   fontWeight: 700,
   fontSize: 14,
 }
-*/
 
 /* The Design bar's Progress control → the module's opening state and figure. */
 /* The Readiness level each Progress stage opens on (0 Novice … 4 Exam Ready).

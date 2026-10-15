@@ -20,6 +20,7 @@ export type DashboardVersionId =
   | 'eric-atlas-v3'
   | 'eric-atlas-white'
   | 'eric-atlas-e2e'
+  | 'jill-e2e'
   | 'hybrid-v1'
   | 'hybrid-pacing'
   | 'discoverability-testing-3'
@@ -447,12 +448,30 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E: DashboardVersion 
     'Eric\u2019s Atlas dashboard, end to end: the two-row Atlas header with its My Courses dropdown, a Home with the course card, the combined Progress / Readiness panel, the exam-date card and Quick Links, and the Atlas My Courses and Certificates pages. The Invited Product Detail page at /end-to-end-demo is the way in.',
 }
 
-/** Eric/Atlas White — and End-to-End Demo, its duplicate. Every place White
- *  differs from WIP asks this, so the duplicate follows without a second edit. */
+// "Jill/E2E Tweaks" — 2026-10-14, Jillienne's. End-to-End Demo with HER Home
+// (`JillE2EHome`, a sibling of `AtlasHomeEricE2E` forked that evening after a
+// day of tweaking the baseline directly). Everything else is End-to-End Demo's:
+// it answers `isEricAtlasWhiteLike`, so the shell, header and section pages
+// treat it as White's duplicate, and Eric's design controls name it. Design
+// site only (no `maturity`) — the default stays Eric's until decided.
+export const DISCOVERABILITY_DASHBOARD_VERSION_JILL_E2E: DashboardVersion = {
+  id: 'jill-e2e',
+  owner: 'jill',
+  label: 'Jill/E2E Tweaks',
+  createdAt: '2026-10-14',
+  modifiedAt: '2026-10-14',
+  description:
+    'End-to-End Demo with Jillienne\u2019s Home: the exam-date line under the current course panel, step titles that open the Exam Information and State Requirements sheets, Quick Links as an eyebrow card with no outline, and no detail copy under Steps 2 and 3. Eric\u2019s pages and controls otherwise.',
+}
+
+/** Eric/Atlas White — and End-to-End Demo, its duplicate, and Jill/E2E Tweaks,
+ *  the duplicate's fork. Every place White differs from WIP asks this, so the
+ *  copies follow without a second edit. */
 export function isEricAtlasWhiteLike(versionId: string | null | undefined): boolean {
   return (
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE.id ||
-    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E.id
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_JILL_E2E.id
   )
 }
 
@@ -561,6 +580,7 @@ export function isAtlasCompassNavVersion(versionId: string | null | undefined): 
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3.id ||
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE.id ||
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_JILL_E2E.id ||
     /* Both Hybrids take the Atlas CHROME (rail, slim header, palette) and fork
        only the home content — see their entries above. */
     isHybridVersion(versionId)
@@ -658,6 +678,8 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE,
   // End-to-End Demo (2026-10-14) — White's duplicate, right after it.
   DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E,
+  // Jill/E2E Tweaks (2026-10-14) — End-to-End Demo's fork, right after it.
+  DISCOVERABILITY_DASHBOARD_VERSION_JILL_E2E,
   DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV,
   /* ⚠ ERIC/ATLAS V1 TAKEN OFF THE PICKER 2026-10-12 (Eric: "delete Eric/Atlas
      V1"). The definition above is kept and `?version=eric-atlas-v1` still

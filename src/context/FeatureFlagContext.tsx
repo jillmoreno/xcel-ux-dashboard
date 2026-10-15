@@ -1593,7 +1593,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `?skin=` wins — holds here too. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
+    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e', 'jill-e2e'],
     group: 'Widgets',
     label: 'Brand',
     description:
@@ -1683,7 +1683,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `AtlasHomeEricV2`, so on any other version this would change nothing. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v2', 'eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
+    versions: ['eric-atlas-v2', 'eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e', 'jill-e2e'],
     group: 'Widgets',
     label: 'Long title',
     description:
@@ -1745,6 +1745,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        same version-is-the-truth shape as `atlas-background`. */
     surface: 'design',
     owner: 'eric',
+    // End-to-End Demo's ONLY — its page sync keys on that id, not the fork's.
     versions: ['eric-atlas-e2e'],
     group: 'Navigation',
     label: 'Page',
@@ -1796,7 +1797,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Static, with no control. Restore the line below to bring it back. */
     // surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
+    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e', 'jill-e2e'],
     group: 'Navigation',
     label: 'Top Nav',
     description:
@@ -1825,7 +1826,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Stacked, with no control. Restore the line below to bring it back. */
     // surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
+    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e', 'jill-e2e'],
     group: 'Widgets',
     label: 'Link tiles',
     description:
@@ -1849,7 +1850,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        still steps through the states from wherever this put it. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
+    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e', 'jill-e2e'],
     group: 'Widgets',
     label: 'Progress',
     description:
