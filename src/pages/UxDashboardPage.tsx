@@ -13,6 +13,7 @@ import {
   PROTOTYPE_FEATURES,
   prototypeFeatureById,
   prototypeScopeLabel,
+  prototypeScopeOwner,
   type PrototypeFeature,
 } from '@/data/prototypeFeatures'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
@@ -1845,6 +1846,16 @@ function ProjectRow({
      and the status tag is shown even where the section hides status —
      "Coming soon" is the one thing this row has to say. */
   const placeholder = feature.status === 'coming-soon' && !feature.to && !feature.externalUrl
+  const isPrototypeRow = feature.category === 'prototype'
+  /* The three facts a Prototypes row carries beside its title (2026-10-14):
+     which door it is (an empty scope label means none — the product row),
+     whose surface it is, and when that surface last changed on `main`. */
+  const owner = prototypeScopeOwner(feature.prototypeScope)
+  const prototypeTags = [
+    prototypeScopeLabel(feature.prototypeScope) || null,
+    owner ? `Owner: ${owner}` : null,
+    feature.lastUpdated ? `Updated ${formatUpdated(feature.lastUpdated)}` : null,
+  ].filter((t): t is string => Boolean(t))
   // Three labels, answering "how much of the product is this?":
   //   Standalone HTML — leaves the app entirely (the route column used to be
   //     the only thing that said so; with it gone the kind tag carries it)
@@ -1971,16 +1982,33 @@ function ProjectRow({
           "this goes somewhere"), and putting the two tags in a fixed column
           means they line up down the list instead of starting at whatever
           x-position the blurb happened to end on. */}
-      <span style={showStatus ? tagColStyle : tagColSoloStyle}>
-        {meta.map((m) => (
-          <span key={m} style={metaChipStyle}>
-            {m}
-          </span>
-        ))}
-        {(showStatus || placeholder) && (
-          <span style={{ ...metaChipStyle, ...statusTagStyle(chip.color) }}>{chip.label}</span>
-        )}
-      </span>
+      {isPrototypeRow ? (
+        /* A PROTOTYPES ROW'S TAG COLUMN — 2026-10-14, Jillienne on the preview:
+           outlined, square-cornered TAGS rather than filled pills, stacked —
+           the scope, who owns the surface, and when it last changed on main.
+           A placeholder adds its "Coming soon" tag and has no Updated. */
+        <span style={tagColPrototypeStyle}>
+          {prototypeTags.map((t) => (
+            <span key={t} style={prototypeTagStyle}>
+              {t}
+            </span>
+          ))}
+          {placeholder && (
+            <span style={{ ...prototypeTagStyle, color: chip.color, borderColor: chip.color }}>{chip.label}</span>
+          )}
+        </span>
+      ) : (
+        <span style={showStatus ? tagColStyle : tagColSoloStyle}>
+          {meta.map((m) => (
+            <span key={m} style={metaChipStyle}>
+              {m}
+            </span>
+          ))}
+          {showStatus && (
+            <span style={{ ...metaChipStyle, ...statusTagStyle(chip.color) }}>{chip.label}</span>
+          )}
+        </span>
+      )}
 
       {placeholder ? (
         // Keeps the chevron's column so the tags line up with the rows above.
@@ -2028,14 +2056,19 @@ function ProjectRow({
 
   if (placeholder) {
     return (
-      <div style={{ ...wrap, background: 'var(--ux-card)' }} aria-disabled="true" data-placeholder={feature.id}>
+      <div
+        style={{ ...wrap, background: 'var(--ux-card)' }}
+        aria-disabled="true"
+        data-row={feature.id}
+        data-placeholder={feature.id}
+      >
         <span style={{ ...rowLinkStyle, flex: 1, opacity: 0.62, cursor: 'default' }}>{inner}</span>
       </div>
     )
   }
 
   return (
-    <div style={wrap} onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave}>
+    <div style={wrap} data-row={feature.id} onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave}>
       {external ? (
         <a href={href} target="_blank" rel="noopener noreferrer" {...linkProps}>
           {inner}
@@ -2520,6 +2553,30 @@ const tagColStyle: CSSProperties = {
  *  the chevron. The kind column keeps its width, so the tag still lines up
  *  down the list. */
 const tagColSoloStyle: CSSProperties = { ...tagColStyle, gridTemplateColumns: '104px' }
+
+/** The Prototypes rows' column: one tag per line, wide enough for
+ *  "Updated Oct 14, 8:47 PM" at the tag's own size. */
+const tagColPrototypeStyle: CSSProperties = { ...tagColStyle, gridTemplateColumns: '156px' }
+
+/** An outlined, square-cornered TAG — what the Prototypes rows wear instead
+ *  of the filled pill (2026-10-14, Jillienne: "tags instead of badges,
+ *  outlined, more square looking"). Same size and weight as the chip so the
+ *  two never sit side by side at different scales. */
+const prototypeTagStyle: CSSProperties = {
+  ...metaChipStyle,
+  background: 'transparent',
+  border: '1px solid var(--ux-border)',
+  borderRadius: 4,
+  fontWeight: 600,
+}
+
+/** "Oct 14, 8:47 PM" in the viewer's own zone — the stamp is UTC, and a
+ *  reviewer reads a clock, not an offset. */
+function formatUpdated(iso: string): string {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(d)
+}
 
 /** The status as a TAG rather than a dot + coloured text, so it reads as the
  *  same object as the kind chip beside it. The fill is a low mix of the status

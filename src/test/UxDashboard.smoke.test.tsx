@@ -576,6 +576,44 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     expect(kebab.style.color).toBe('var(--ux-text-3)')
   })
 
+  it('every Prototypes row that opens carries a valid lastUpdated stamp', () => {
+    // 2026-10-14. The "Updated" tag reads it; `ship-to-main` maintains it. An
+    // ISO timestamp with a zone, so the viewer's clock can render it.
+    for (const f of prototypeRows.filter((f) => !isPlaceholder(f))) {
+      expect(f.lastUpdated, `${f.id} needs a lastUpdated`).toBeTruthy()
+      expect(Number.isNaN(Date.parse(f.lastUpdated!)), `${f.id}: lastUpdated must parse`).toBe(false)
+      expect(f.lastUpdated, `${f.id}: lastUpdated must carry a zone (Z or offset)`).toMatch(/(Z|[+-]\d{2}:\d{2})$/)
+    }
+    for (const f of prototypeRows.filter(isPlaceholder)) {
+      expect(f.lastUpdated, `${f.id}: a placeholder has nothing to have updated`).toBeUndefined()
+    }
+  })
+
+  it('a Prototypes row wears its scope, its owner and its Updated time as tags', () => {
+    renderDashboard()
+    const compass = document.querySelector('[data-row="xcel-compass"]')!
+    // Leaf spans only: the title wrapper's textContent also starts "Compass…".
+    const tags = [...compass.querySelectorAll('span')]
+      .filter((s) => s.children.length === 0)
+      .map((s) => s.textContent ?? '')
+      .filter((t) => /^(Compass$|Owner: |Updated )/.test(t))
+    expect(tags[0]).toBe('Compass')
+    expect(tags[1]).toBe('Owner: Anjani')
+    expect(tags[2]).toMatch(/^Updated \w{3} \d{1,2}, \d{1,2}:\d{2}/)
+    // The product row has no scope tag, so its first tag is the owner.
+    const e2e = document.querySelector('[data-row="xcel-dashboard"]')!
+    const e2eTags = [...e2e.querySelectorAll('span')]
+      .filter((s) => s.children.length === 0)
+      .map((s) => s.textContent ?? '')
+      .filter((t) => /^(Owner: |Updated )/.test(t))
+    expect(e2eTags[0]).toBe('Owner: Jillienne')
+    // The placeholder names its owner and says Coming soon, with no Updated.
+    const ph = document.querySelector('[data-placeholder="xcel-admin-coming-soon"]')!
+    expect(ph.textContent).toContain('Owner: Jillienne')
+    expect(ph.textContent).toContain('Coming soon')
+    expect(ph.textContent).not.toContain('Updated ')
+  })
+
   it('a placeholder is the only row that opens nothing, and it says so', () => {
     // 2026-10-14, the Admin row. Written out so a second placeholder is a
     // deliberate edit here, and so a row that LOSES its `to` by accident is

@@ -223,6 +223,11 @@ export function prototypeScopeLabel(scope: PrototypeScope | undefined): string |
   return PROTOTYPE_SCOPES.find((s) => s.id === scope)?.label
 }
 
+/** Who decides what the scope's surface should be — the row's "Owner" tag. */
+export function prototypeScopeOwner(scope: PrototypeScope | undefined): string | undefined {
+  return PROTOTYPE_SCOPES.find((s) => s.id === scope)?.owner
+}
+
 /** A feature flag (from the Admin tools → Feature Flag panel) that drives one
  *  of this feature's variants. Listed on the gateway so reviewers know which
  *  toggles to flip while demoing. */
@@ -556,6 +561,20 @@ export type PrototypeFeature = {
    * `main`'s build at `?demo=1`) and `UxDashboard.smoke.test.tsx` for the pin.
    */
   prototypeScope?: PrototypeScope
+  /**
+   * When this row's surface last changed on `main` — an ISO timestamp, shown
+   * on the row as its "Updated" tag (2026-10-14, Jillienne's ask). Prototypes
+   * rows only; required on every one that opens, and `UxDashboard.smoke.test`
+   * checks the shape.
+   *
+   * ⚠ AUTHORED, AND MAINTAINED AT THE MERGE. A row renders `main`'s build, so
+   * the honest stamp is the time of the last commit on `main` that changed
+   * the surface — which a client cannot know at run time, and a Netlify build
+   * cannot compute from its shallow clone. So `ship-to-main` stamps it: for
+   * each Prototypes row whose surface the branch changed, set this to the
+   * merge time. Seeded 2026-10-14 from `git log -1` on each surface's paths.
+   */
+  lastUpdated?: string
   /**
    * When true, the tile is password-gated: it shows a "Locked" badge and the
    * first click per session opens the prototype password modal before
@@ -1157,6 +1176,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // whole product; the Compass row below is one surface INSIDE it, reached
     // from here by clicking into a course, and the two render the same build.
     prototypeScope: 'end-to-end',
+    lastUpdated: '2026-10-15T00:47:16Z',
     pinned: true,
     // An in-app route, not a document. `to` is what makes the tile navigate
     // rather than open a new tab, and it is also what the row's live preview
@@ -1209,6 +1229,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'invite',
+    lastUpdated: '2026-10-14T21:35:24Z',
     pinned: true,
     to: '/end-to-end-demo?demo=1',
     brands: ['xcel'],
@@ -1248,6 +1269,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'atlas',
+    lastUpdated: '2026-10-15T00:47:16Z',
     pinned: true,
     to: '/dashboard-rebrand?demo=1&section=dashboard',
     brands: ['xcel'],
@@ -1292,6 +1314,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'compass',
+    lastUpdated: '2026-10-14T15:51:11Z',
     pinned: true,
     // Same-origin product route at the committed baseline — the smoke test
     // asserts every Prototypes row has this shape. `section=compass` is the

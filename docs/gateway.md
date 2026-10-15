@@ -227,8 +227,17 @@ the evening Jillienne had asked for its row and for an Admin row:
   only row that opens nothing. When the admin surface is built in React, this
   row gains a `to` and `status: 'ready'`; the id and scope stay.
 
-Three live frames on the landing page now (invite, end to end, Compass); the
-placeholder draws its generated thumbnail. Add captures to
+**The tag column on a Prototypes row (2026-10-14, Jillienne on the preview)**
+is outlined, square-cornered tags rather than filled pills, stacked: the scope
+(none on the product row), `Owner: <name>` from `PROTOTYPE_SCOPES`, and
+`Updated <date, time>` from the row's `lastUpdated` — an ISO stamp of the last
+commit on `main` that changed the surface, seeded from `git log` and kept true
+by `ship-to-main` (its step 2b). A placeholder shows its owner and "Coming
+soon" and no Updated. The row's kebab in this section offers Copy link only,
+and every project row's kebab is drawn in the tertiary ink rather than amber.
+
+Four live frames on the landing page now (end to end, invite, Atlas, Compass);
+the placeholder draws its generated thumbnail. Add captures to
 `public/prototype-thumbs/` if the page slows.
 
 What this did NOT change: how work gets in. A branch is still reviewed in
