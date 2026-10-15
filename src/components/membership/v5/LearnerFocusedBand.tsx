@@ -9,6 +9,7 @@ import type { CourseCardData } from '@/components/courses/CourseCard'
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import { statusTreatment, displayedProgressPct, timeRemaining, resolveRenewal, type HomeStatus, CURRENT_LEARNING_EYEBROW, timeRemainingText} from '@/components/learning/learningPathsHomeUtil'
 import { myCoursesFor, FIXTURE_TODAY } from '@/data/myCoursesFixtures'
+import { isCoursePathCe } from '@/data/courseFixtures'
 import { ProgressDonut, CategoryBars } from '@/components/learning/progressGauge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
@@ -54,7 +55,6 @@ import {
 } from '@/data/nyProducerRequirements'
 import {
   hasStudyCalendarFor,
-  XCEL_CE_PATH_ID,
   STUDY_CALENDAR_TODAY,
   studyCalendarFor,
   supportsStudyPlan,
@@ -457,7 +457,9 @@ export function LearnerFocusedBand({
   // The CE path's plan is behind `ce-study-plan` (default ON). Off, CE falls
   // back to the empty branch it used to take — and therefore to Up Next here.
   const ceStudyPlan = useCeStudyPlanEnabled()
-  const ceSuppressed = !ceStudyPlan && path.id === XCEL_CE_PATH_ID
+  // `isCoursePathCe` since 2026-10-15 — there are two CE paths now; see the
+  // same gate in `PlatformShell`.
+  const ceSuppressed = !ceStudyPlan && isCoursePathCe(path.id)
   const pathHasPlan =
     supportsStudyPlan(brand) && hasStudyCalendarFor(brand, path.id) && !ceSuppressed
   // The Study Journey takes the lower half when asked for, and it needs no

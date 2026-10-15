@@ -32,7 +32,8 @@ import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelC
 import { isHomeActive } from '@/components/learning/learningPathsHomeUtil'
 import { useLearningPathSummariesForBrand } from '@/data/learningPathsCountVariant'
 import { activePathIdFor, learningPathsFor } from '@/data/learningFixtures'
-import { XCEL_CE_PATH_ID, hasStudyCalendarFor, studyCalendarFor } from '@/data/studyCalendarFixtures'
+import { hasStudyCalendarFor, studyCalendarFor } from '@/data/studyCalendarFixtures'
+import { isCoursePathCe } from '@/data/courseFixtures'
 import { InlineStudyCalendar } from '@/components/learning/study-calendar/InlineStudyCalendar'
 import { useCeStudyPlanEnabled, useCourseDemo, useFeatureFlag } from '@/context/FeatureFlagContext'
 import { StudyWeekSummary } from '@/components/learning/study-calendar/StudyWeekSummary'
@@ -2472,7 +2473,11 @@ function StudyPlanSection() {
      already — the CE branch below returns early, so a flag read placed with the
      strip would be a conditional hook call. */
   const weekSummaryOn = useFeatureFlag('dashboard-week-summary').enabled
-  if (!ceStudyPlan && pathId === XCEL_CE_PATH_ID) {
+  /* `isCoursePathCe`, NOT `=== XCEL_CE_PATH_ID` — 2026-10-15, when the Course
+     control gave CE a second course. An equality against Florida's id let the
+     Texas CE path straight through this gate, so `ce-study-plan` off would
+     have suppressed the plan on one course and silently not on the other. */
+  if (!ceStudyPlan && isCoursePathCe(pathId)) {
     return <InlineStudyCalendar />
   }
   // The Progress tile reports the SAME course progress Home and Readiness do —

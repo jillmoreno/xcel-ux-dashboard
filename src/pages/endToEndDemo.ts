@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useCourseDemo, useFeatureFlag } from '@/context/FeatureFlagContext'
 
 /** The End-to-End Demo's dashboard version (`dashboardVersions.ts`). */
 export const END_TO_END_VERSION = 'eric-atlas-e2e'
@@ -65,7 +65,50 @@ export const E2E_COURSE_TITLE_LONG = `${E2E_COURSE_TITLE_SHORT} with Comprehensi
  * control picks it (2026-10-15, Eric's request: "make the long title design
  * control work"). One answer for every page the title appears on — Home,
  * Invited Product Detail and Checkout — so they never disagree.
+ *
+ * ⚠ THIS ONE IS THE INVITE DOOR'S, AND IT STAYS FLORIDA. `/end-to-end-demo`'s
+ * Invited Product Detail and Checkout pages belong to the Invite & Purchase
+ * scope (Afsana and Eric), and the Course control is not theirs to re-point.
+ * The DASHBOARD's title follows the course — see `useDashboardCourseTitle`
+ * below.
  */
 export function useEndToEndCourseTitle(): string {
   return useFeatureFlag('atlas-home-long-title').enabled ? E2E_COURSE_TITLE_LONG : E2E_COURSE_TITLE_SHORT
 }
+
+/**
+ * The same title, FOLLOWING THE COURSE CONTROL — 2026-10-15.
+ *
+ * ⚠ IT EXISTS BECAUSE THE DEFAULT VERSION'S HOME IS THE LANDING PAGE. End-to-End
+ * Demo is what a bare `/dashboard-rebrand?demo=1` resolves to, its Home is
+ * `AtlasHomeEricE2E`, and that card's title was a module constant — so the
+ * Course control could re-point Readiness, the Study Plan and the Compass tree
+ * and the first thing every stakeholder saw still read "Florida". A demo axis
+ * that cannot be seen on the landing page reads as a broken control, and that
+ * is exactly how it was reported.
+ *
+ * ⚠ A SECOND FUNCTION RATHER THAN A COURSE ARGUMENT ON THE FIRST, deliberately.
+ * The two callers want different things and the split says so: the invite door
+ * is selling ONE advertised product and must not change under a demo control
+ * that belongs to the dashboard, while the dashboard is showing whichever
+ * course the reviewer picked. Collapsing them would quietly drag
+ * `/end-to-end-demo` across a scope boundary.
+ *
+ * ⚠ KNOWN DISAGREEMENT, and it is the boundary rather than a bug: with Texas
+ * picked, the invite door still advertises the Florida course while the
+ * dashboard it hands off to says Texas. Flagged to Jillienne for Afsana and
+ * Eric — extending it is deleting this split.
+ *
+ * The long-title control still applies, on whichever course is active.
+ */
+export function useDashboardCourseTitle(): string {
+  const long = useFeatureFlag('atlas-home-long-title').enabled
+  const { course } = useCourseDemo()
+  const short = course === 'tx' ? TX_COURSE_TITLE_SHORT : E2E_COURSE_TITLE_SHORT
+  return long ? `${short} with Comprehensive Exam Simulators` : short
+}
+
+/** ⚠ INVENTED, like every other Texas string on this axis — the product name
+ *  XCEL sells in Texas is not confirmed. It mirrors the Florida one's shape so
+ *  the two read as the same product in two states. */
+const TX_COURSE_TITLE_SHORT = 'Texas Life and Health Pre-licensing'

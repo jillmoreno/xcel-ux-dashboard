@@ -3,7 +3,12 @@
 // scoped to a single Learning Path per the QE PRD; V1 ships canned data
 // for an STC SIE prep path until per-path calendars exist server-side.
 
-import { COURSE_PATH_ID_LIST, coursePathIdFor } from './courseFixtures'
+import {
+  COURSE_CE_PATH_ID_LIST,
+  COURSE_PATH_ID_LIST,
+  courseCePathIdFor,
+  coursePathIdFor,
+} from './courseFixtures'
 
 export type StudyTaskKind = 'video' | 'quiz' | 'exam' | 'reading' | 'custom'
 export type StudyTaskStatus = 'completed' | 'in-progress' | 'upcoming' | 'overdue'
@@ -1312,8 +1317,51 @@ export const XCEL_CE_STUDY_CALENDAR: StudyCalendar = {
   ],
 }
 
-/** The CE path id, named because two surfaces gate on it specifically. */
+/**
+ * The CE path id, named because two surfaces gate on it specifically.
+ *
+ * ⚠ IT IS FLORIDA'S, AND SINCE 2026-10-15 THERE ARE TWO CE PATHS. The two
+ * gates (`PlatformShell`, `LearnerFocusedBand`) ask "is this the CE path" to
+ * suppress the plan when `ce-study-plan` is off — use `isCoursePathCe` for
+ * that question, not an equality against this, or the flag works on Florida
+ * and silently not on Texas.
+ */
 export const XCEL_CE_PATH_ID = 'xcel-fl-lh-ce'
+
+/**
+ * TEXAS LIFE & HEALTH CE — the renewal plan for the Course control's second
+ * course (2026-10-15).
+ *
+ * DERIVED from the Florida cycle, like every other sibling in this file. The
+ * SHAPE of a renewal cycle — a handful of required courses spread over months,
+ * paced by hours against a deadline — is the product's, not a state's; what
+ * differs is the jurisdiction's own required topics.
+ *
+ * ⚠ THE TOPICS AND THE DEADLINE ARE INVENTED, and the Florida cycle's own
+ * preamble is the warning to read first: CE deadlines are NOT uniform, can
+ * fall on the licence anniversary or the licensee's birthday, and are not
+ * annual everywhere. One concrete date for the demo, matching the
+ * `xcel-tx-lh-ce` path's `licenseExpiresOn`. If you change one, change both.
+ *
+ * TODO(data): confirm Texas's required CE topics, its hour split and its
+ * renewal rule against the Texas Department of Insurance.
+ */
+function buildXcelTxCeCalendar(): StudyCalendar {
+  const tasks: StudyTask[] = XCEL_CE_STUDY_CALENDAR.tasks.map((t) =>
+    t.title.includes('Florida') ? { ...t, title: t.title.replace(/Florida/g, 'Texas') } : t,
+  )
+  return {
+    ...XCEL_CE_STUDY_CALENDAR,
+    id: 'xcel-tx-ce-cycle',
+    name: 'Texas Life & Health CE — 24 Hour Renewal Plan',
+    examName: 'Texas Life & Health licence renewal',
+    examDate: '2026-11-30',
+    weekThemes: (XCEL_CE_STUDY_CALENDAR.weekThemes ?? []).map((w) =>
+      w.replace(/Florida/g, 'Texas'),
+    ),
+    tasks,
+  }
+}
 
 /**
  * XCEL Learning Path ids with a Study Plan.
@@ -1343,7 +1391,9 @@ const XCEL_PATHS_WITH_CALENDAR = new Set<string>([
   // ship with a plan that the Study Plan tab reports as unassigned.
   ...COURSE_PATH_ID_LIST,
   'xcel-fl-pc-prelicensing',
-  XCEL_CE_PATH_ID,
+  // Both CE renewal cycles, for the same reason the two pre-licensing courses
+  // are a list rather than a literal.
+  ...COURSE_CE_PATH_ID_LIST,
 ])
 
 /** XCEL path treated as "not yet started" by the demo — see STC's equivalent. */
@@ -1439,6 +1489,9 @@ export function studyCalendarFor(pathId?: string): StudyCalendar {
   }
   if (pathId === XCEL_CE_PATH_ID) {
     return XCEL_CE_STUDY_CALENDAR
+  }
+  if (pathId === courseCePathIdFor('tx')) {
+    return buildXcelTxCeCalendar()
   }
   if (pathId === STC_OFF_TRACK_PATH_ID) {
     return buildOffTrackCalendar()

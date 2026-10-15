@@ -25,7 +25,12 @@ import {
   NY_PRODUCER_HOURS_INVENTED,
 } from '@/data/nyProducerRequirements'
 import { XCEL_NY_PRODUCER_PATH_ID } from '@/data/studyCalendarFixtures'
-import { DEFAULT_COURSE, coursePathIdFor, type CourseId } from '@/data/courseFixtures'
+import {
+  DEFAULT_COURSE,
+  courseCePathIdFor,
+  coursePathIdFor,
+  type CourseId,
+} from '@/data/courseFixtures'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import type { Brand } from '@/context/AccountContext'
 import type { CourseCardData } from '@/components/courses/CourseCard'
@@ -391,26 +396,95 @@ const XCEL_EXAM_PREP_TX: BrandProgressProfile = {
   title: 'Texas Life & Health Exam Prep',
   state: 'TX',
   licenseExpiresOn: '06/26/2026',
-  upNext: { ...PROFILES['exam-prep'].xcel!.upNext, state: 'TX' },
-  resumeMid: { ...PROFILES['exam-prep'].xcel!.resumeMid, state: 'TX' },
-  resumeEarly: { ...PROFILES['exam-prep'].xcel!.resumeEarly, state: 'TX' },
+  /*
+   * ⚠ THE JUMP BACK IN CARDS ARE RE-AUTHORED, not spread with `state: 'TX'`
+   * — corrected 2026-10-15, the same day, after the control shipped looking
+   * broken.
+   *
+   * The first version of this profile changed `pathId`, `title`, `state` and
+   * `licenseExpiresOn` and nothing else. Every one of those is invisible on
+   * Home: the band prints the CATEGORY bars, the JUMP BACK IN course and
+   * TODAY'S TASKS, and `licenseExpiresOn` is overwritten downstream by
+   * `RENEWAL_BY_VARIANT` (the Progress axis owns the deadline, not the
+   * course). So flipping to Texas re-resolved the persona and rendered a
+   * byte-identical page — the axis was working and could not be seen to.
+   *
+   * The lesson generalises: a demo axis is only real if it moves something
+   * the band actually PRINTS. Check against the three above before adding a
+   * course.
+   *
+   * ⚠ The COUNTS stay Florida's (8 / 6 / 8). XCEL's 3-Part Training Program
+   * is a product structure and carries across jurisdictions unchanged — the
+   * same reasoning `nyProducerRequirements`'s header gives for not treating
+   * the four categories as a state requirement. What is Texan is which
+   * course you are sitting in, not how many simulators XCEL sells.
+   */
+  upNext: { ...PROFILES['exam-prep'].xcel!.upNext, id: 'jbi-xcel-ep-tx-prep', title: 'Prep Review Course — Texas L&H', state: 'TX' },
+  resumeMid: { ...PROFILES['exam-prep'].xcel!.resumeMid, id: 'jbi-xcel-ep-tx-sim1', title: 'Exam Simulator 1 — Texas L&H', state: 'TX' },
+  resumeEarly: { ...PROFILES['exam-prep'].xcel!.resumeEarly, id: 'jbi-xcel-ep-tx-cram', title: 'Exam Cram — Texas L&H', state: 'TX' },
+}
+
+/**
+ * TEXAS LIFE & HEALTH CE — the Course control's second renewal cycle,
+ * 2026-10-15.
+ *
+ * ⚠ IT EXISTS BECAUSE OF WHERE THE CONTROL IS USED, NOT BECAUSE THE DATA WAS
+ * READY. The first pass deliberately left CE on Florida: a renewal cycle is a
+ * different object from a pre-licensing course — deadlines can fall on the
+ * licence anniversary or the licensee's birthday and are not annual
+ * everywhere — so a Texas one has to be invented rather than derived. That
+ * reasoning has not changed and the warning below is the price of overriding
+ * it.
+ *
+ * What changed is the consequence. Home's band resolves `ce` by DEFAULT and
+ * `qe` (New York) on QE Focused, so with CE outside the axis the only arm the
+ * Course control touched was `exam-prep` — which no version opens on. The
+ * control did nothing on the landing page, which is the one page every
+ * stakeholder sees.
+ *
+ * ⚠ EVERY FIGURE BELOW IS INVENTED: the 24-hour total, the 12/12 split, the
+ * renewal date, and the course names. Texas's real CE requirement, its ethics
+ * component and its renewal rule are all unconfirmed.
+ *
+ * TODO(data): confirm against XCEL's Texas CE catalogue and the Texas
+ * Department of Insurance, then strip the markers. The FLORIDA entry above is
+ * itself only representative (see its own TODO), so neither is a rule.
+ */
+const XCEL_CE_TX: BrandProgressProfile = {
+  ...PROFILES.ce.xcel!,
+  pathId: courseCePathIdFor('tx'),
+  title: 'Texas Life & Health CE',
+  state: 'TX',
+  /* ⚠ INVENTED — an even 12/12 against Florida's 10/14, so the two cycles are
+     visibly different cycles rather than one cycle with a different name.
+     Texas's own split is unconfirmed. */
+  mandatoryReq: 12,
+  electiveReq: 12,
+  /* ⚠ INVENTED. Texas renewals are believed to run on the licence
+     anniversary, which is exactly the kind of rule the Florida entry's own
+     note says not to generalise. One concrete date for the demo. */
+  licenseExpiresOn: '11/30/2026',
+  upNext: { ...PROFILES.ce.xcel!.upNext, id: 'jbi-xcel-ce-tx-ethics', title: 'Texas Insurance Ethics', state: 'TX' },
+  resumeMid: { ...PROFILES.ce.xcel!.resumeMid, id: 'jbi-xcel-ce-tx-ltc', title: 'Long-Term Care Partnership (TX)', state: 'TX' },
+  resumeEarly: { ...PROFILES.ce.xcel!.resumeEarly, id: 'jbi-xcel-ce-tx-annuity', title: 'Annuity Certification (TX)', state: 'TX' },
 }
 
 /**
  * The profiles the COURSE axis re-points, keyed education type → brand →
  * course.
  *
- * ⚠ ONLY `exam-prep` IS HERE, AND THAT IS A DECISION rather than an omission.
+ * ⚠ `qe` IS NOT HERE, AND THAT IS A DECISION rather than an omission. It demos
+ * NEW YORK and has since 2026-09-16. The Course control is a Florida/Texas
+ * axis; it has no New York arm and must not acquire one by accident, so the
+ * qualifying journey stays outside it.
  *
- *   - `qe` demos NEW YORK and has since 2026-09-16. The Course control is a
- *     Florida/Texas axis; it has no New York arm and must not acquire one by
- *     accident, so the QE journey is deliberately outside it.
- *   - `ce` is Florida and stays Florida for this pass — confirmed with
- *     Jillienne on 2026-10-15. A renewal cycle is a different object from a
- *     pre-licensing course (variable, sometimes birthday-based deadlines; see
- *     the `XCEL_CE_STUDY_CALENDAR` preamble), and giving the CE persona a
- *     Texas arm would mean inventing a Texas renewal rule as well as a Texas
- *     course. Add a `ce` entry here if that changes — it is one object.
+ * ⚠ `ce` WAS NOT HERE FOR HALF A DAY, and the gap is worth recording because
+ * it is the kind that passes every test. Leaving CE on Florida was the right
+ * call about the DATA — a Texas renewal cycle has to be invented — and it made
+ * the control inert on the one page everybody opens: Home's band is `ce` by
+ * default, `qe` on QE Focused, so `exam-prep` was the only arm the axis
+ * touched and no version opens on it. The axis worked on Readiness and the
+ * Compass tree and nowhere a stakeholder would look first.
  *
  * `profileFor` checks this map BEFORE `PROFILES` for each type in the fallback
  * chain, so an entry here wins for the course it names and nothing else moves.
@@ -422,6 +496,12 @@ const COURSE_PROFILES: Partial<
     xcel: {
       fl: PROFILES['exam-prep'].xcel!,
       tx: XCEL_EXAM_PREP_TX,
+    },
+  },
+  ce: {
+    xcel: {
+      fl: PROFILES.ce.xcel!,
+      tx: XCEL_CE_TX,
     },
   },
 }

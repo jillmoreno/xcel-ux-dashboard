@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { isEricAtlasWhiteLike, resolveDashboardVersion } from '@/data/dashboardVersions'
-import { useEndToEndCourseTitle } from '@/pages/endToEndDemo'
+import { useDashboardCourseTitle } from '@/pages/endToEndDemo'
 import { AffidavitModal } from '@/components/e2e/AffidavitModal'
 import { useAccount } from '@/context/AccountContext'
 import {
@@ -155,8 +155,11 @@ export function AtlasHomeEricE2E({
      renders equal. */
   const { brand: e2eBrand } = useAccount()
   const onWhite = isEricAtlasWhiteLike(resolveDashboardVersion(searchParams.get('version'), e2eBrand))
-  // The demo's course title — short, or long when the Long title control is on.
-  const e2eTitle = useEndToEndCourseTitle()
+  /* The demo's course title — short, or long when the Long title control is
+     on, and FOLLOWING THE COURSE CONTROL since 2026-10-15. This is the
+     dashboard, so it shows the course the reviewer picked; the invite door at
+     `/end-to-end-demo` keeps `useEndToEndCourseTitle` and stays Florida. */
+  const e2eTitle = useDashboardCourseTitle()
   // White's course-head panel, measured so Quick Links can take its height
   // (2026-10-14, Eric's request).
   const [headEl, setHeadEl] = useState<HTMLDivElement | null>(null)

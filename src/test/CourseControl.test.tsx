@@ -10,7 +10,9 @@ import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext
 import {
   COURSE_FLAG_KEY,
   COURSE_PICKER,
+  courseCePathIdFor,
   coursePathIdFor,
+  isCoursePathCe,
   courseStateFor,
   isRegulatedCourse,
   resolveCourse,
@@ -23,6 +25,7 @@ import {
 import { readinessFor, readinessForState } from '@/data/readinessFixtures'
 import { studyCalendarFor } from '@/data/studyCalendarFixtures'
 import { learningPathsFor } from '@/data/learningFixtures'
+import { E2E_COURSE_TITLE_SHORT } from '@/pages/endToEndDemo'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import {
   GET_LICENSED_STEPS,
@@ -242,6 +245,56 @@ describe('Texas is a second COURSE, not a relabelled Florida', () => {
     expect(tx.path.title).toMatch(/Texas/)
   })
 
+  it('has its own CE renewal cycle', () => {
+    const fl = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'ce', 'fl')!
+    const tx = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'ce', 'tx')!
+    expect(fl.path.id).toBe(courseCePathIdFor('fl'))
+    expect(tx.path.id).toBe(courseCePathIdFor('tx'))
+    expect(tx.path.title).toMatch(/Texas/)
+    expect(studyCalendarFor(courseCePathIdFor('tx')).examName).toMatch(/Texas/)
+  })
+
+  /*
+   * ⚠ THE REGRESSION THIS FILE WAS MISSING, AND IT SHIPPED ONCE.
+   *
+   * The first Texas exam-prep profile was a spread of Florida's that changed
+   * `pathId`, `title`, `state` and `licenseExpiresOn` — and NOT ONE of those
+   * renders in the Home band. It prints the category bars, the Jump Back In
+   * course and Today's Tasks; `licenseExpiresOn` is overwritten downstream by
+   * `RENEWAL_BY_VARIANT`, because the Progress axis owns the deadline. So the
+   * axis resolved a different persona and drew a byte-identical page: the
+   * control worked and could not be seen to work, which is how it was
+   * reported — "switching the courses isn't doing anything".
+   *
+   * This asserts on what the band actually PRINTS, for both journeys Home can
+   * resolve. A new course that forgets to move these is caught here rather
+   * than by someone looking at the page.
+   */
+  it.each(['ce', 'exam-prep'] as const)(
+    'moves something Home actually prints — %s',
+    (educationType) => {
+      const fl = dashboardProgressPersonaFor('xcel', 'progress-on-track', educationType, 'fl')!
+      const tx = dashboardProgressPersonaFor('xcel', 'progress-on-track', educationType, 'tx')!
+      // The Jump Back In card's title — the one line of the band a reviewer
+      // reads first.
+      expect(tx.path.jumpBackIn?.title ?? tx.path.title).not.toBe(
+        fl.path.jumpBackIn?.title ?? fl.path.title,
+      )
+      // …and Today's Tasks, which resolve through the path id's own calendar.
+      expect(studyCalendarFor(tx.path.id).id).not.toBe(studyCalendarFor(fl.path.id).id)
+    },
+  )
+
+  /* THE LANDING PAGE. End-to-End Demo is what a bare `/dashboard-rebrand`
+     resolves to, and its Home card took its title from a module constant — so
+     the control re-pointed Readiness, the Study Plan and the Compass tree
+     while the first thing every stakeholder saw still read "Florida".
+     The INVITE DOOR keeps the fixed string: `/end-to-end-demo` belongs to
+     Afsana and Eric's scope, and this axis is not theirs to move. */
+  it('leaves the invite door’s own title fixed on Florida', () => {
+    expect(E2E_COURSE_TITLE_SHORT).toMatch(/Florida/)
+  })
+
   it('has its own content tree', () => {
     expect(compassTocFor('fl')).toBe(COMPASS_SAMPLE_TOC_FROM_DESIGN)
     expect(compassTocFor('tx')).not.toBe(COMPASS_SAMPLE_TOC_FROM_DESIGN)
@@ -260,6 +313,19 @@ describe('Texas is a second COURSE, not a relabelled Florida', () => {
     for (const step of getLicensedStepsFor('TX')) {
       expect(JSON.stringify(step), step.id).toMatch(/INVENTED/)
     }
+  })
+})
+
+describe('the CE gate asks a predicate, not an equality', () => {
+  /* `ce-study-plan` off suppresses the CE plan in two places (`PlatformShell`,
+     `LearnerFocusedBand`). Both compared against Florida's id until
+     2026-10-15; with a second CE course that gate would have held on one and
+     silently let the other through. */
+  it('recognises both CE paths and no others', () => {
+    expect(isCoursePathCe(courseCePathIdFor('fl'))).toBe(true)
+    expect(isCoursePathCe(courseCePathIdFor('tx'))).toBe(true)
+    expect(isCoursePathCe(coursePathIdFor('fl'))).toBe(false)
+    expect(isCoursePathCe(undefined)).toBe(false)
   })
 })
 

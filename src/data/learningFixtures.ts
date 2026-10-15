@@ -326,6 +326,26 @@ const _LEARNING_PATHS_BY_BRAND: Record<Brand, LearningPathSummary[]> = {
       mandatory: { completed: 5, required: 10 },
       elective: { completed: 1, required: 14 },
     },
+    /**
+     * TEXAS LIFE & HEALTH CE — the Course control's second renewal cycle
+     * (2026-10-15). ⚠ Every figure invented; see `XCEL_CE_TX` in
+     * `dashboardProgressFixtures.ts` for why CE joined the axis and what is
+     * still unconfirmed. The 12/12 split and the 11/30 renewal date are
+     * deliberately NOT Florida's, so the two cycles read as two cycles.
+     */
+    {
+      id: 'xcel-tx-lh-ce',
+      title: 'Texas Life & Health CE',
+      category: 'Insurance Continuing Education',
+      state: 'TX',
+      hours: 24,
+      licenseExpiresOn: '11/30/2026',
+      timeLeftLabel: '26 Weeks Left to Renewal',
+      progressPct: 25,
+      lastViewedAt: '2026-05-12T14:00:00Z',
+      mandatory: { completed: 6, required: 12 },
+      elective: { completed: 0, required: 12 },
+    },
   ],
 }
 
@@ -525,6 +545,24 @@ const _LEARNING_PATH_CARDS_BY_BRAND: Record<Brand, LearningPathCardData[]> = {
       totalTimeSpent: { hours: 5.5 },
       lastActivityDays: 9,
       resumeUrl: '/my-learning/path?path=xcel-fl-lh-ce',
+    },
+    /* Mirrors the Texas CE path added above. ⚠ Every figure invented. */
+    {
+      id: 'xcel-tx-lh-ce',
+      title: 'Texas Life & Health CE',
+      programType: 'Insurance Continuing Education',
+      credentialType: 'CE',
+      jurisdiction: 'TX',
+      totalHours: 24,
+      status: 'on-track',
+      progressPct: 25,
+      hoursCompleted: 6,
+      enrolledDate: '2026-01-08',
+      expiresDate: '2026-11-30',
+      daysLeftToComplete: 195,
+      totalTimeSpent: { hours: 5.5 },
+      lastActivityDays: 9,
+      resumeUrl: '/my-learning/path?path=xcel-tx-lh-ce',
     },
   ],
 }

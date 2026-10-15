@@ -103,6 +103,26 @@ const COURSE_PATH_IDS: Record<CourseId, string> = {
 }
 
 /**
+ * Course → its CONTINUING EDUCATION path id.
+ *
+ * ⚠ CE JOINED THE AXIS ON 2026-10-15, reversing the call made earlier the same
+ * day. The first pass left CE on Florida, on the reasoning that a renewal
+ * cycle is a different object from a pre-licensing course and a Texas one
+ * would have to be invented wholesale. Both halves of that are still true —
+ * and it made the control INERT ON HOME, which is the page a reviewer lands
+ * on: Home's band resolves `ce` by default and `qe` (New York) on QE Focused,
+ * so `exam-prep` was the only arm the axis touched and no version opens on it.
+ * A control that does nothing where you first look is not a control.
+ *
+ * So the Texas renewal cycle is invented, and marked everywhere it lands. See
+ * `XCEL_CE_TX` in `dashboardProgressFixtures.ts`.
+ */
+const COURSE_CE_PATH_IDS: Record<CourseId, string> = {
+  fl: 'xcel-fl-lh-ce',
+  tx: 'xcel-tx-lh-ce',
+}
+
+/**
  * The rows the Demo Controls bar's Course dropdown offers, in display order.
  *
  * Florida first because it is the default and the incumbent. The labels are
@@ -161,8 +181,30 @@ export function courseLabelFor(course: CourseId): string {
   return COURSE_PICKER.find((c) => c.course === course)?.label ?? COURSE_PICKER[0].label
 }
 
+/** The CE path id for a course. */
+export function courseCePathIdFor(course: CourseId): string {
+  return COURSE_CE_PATH_IDS[course]
+}
+
 /**
  * Every course's path id, for the lookups that ask "is this one of ours?"
  * (`XCEL_PATHS_WITH_CALENDAR`, and anything like it that follows).
  */
 export const COURSE_PATH_ID_LIST: readonly string[] = Object.values(COURSE_PATH_IDS)
+
+/** The same, for the CE paths. */
+export const COURSE_CE_PATH_ID_LIST: readonly string[] = Object.values(COURSE_CE_PATH_IDS)
+
+/**
+ * Is this one of XCEL's CE renewal paths?
+ *
+ * ⚠ A PREDICATE, NOT AN `=== XCEL_CE_PATH_ID` — 2026-10-15, when CE grew a
+ * second course. Two surfaces gate on "is this the CE path" to suppress the CE
+ * study plan when `ce-study-plan` is off (`PlatformShell`,
+ * `LearnerFocusedBand`), and an equality check against the Florida id alone
+ * would have let the Texas CE path straight through the gate — the flag would
+ * work on one course and silently not on the other.
+ */
+export function isCoursePathCe(pathId: string | undefined): boolean {
+  return pathId != null && COURSE_CE_PATH_ID_LIST.includes(pathId)
+}
