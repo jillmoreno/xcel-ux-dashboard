@@ -7,10 +7,12 @@
 <title>Contributing to the XCEL UX Dashboard</title>
 <!--
   The DESIGNER guide — how a second designer gets work onto this dashboard.
-  Served from the FULL site as the "Contributing" section (an iframe of this
-  page) and at /contributing/ directly. (Until 2026-10-15 a public build 404'd the folder; one site now, so the folder is
-  404'd at the edge (scripts/public-redirects.mjs): it describes the team's
-  working process, which is not for stakeholders — they get /about/ instead.
+  Served from the Hub as the "Contributing" section (an iframe of this page)
+  and at /contributing/ directly. Until 2026-10-15 the stakeholder site 404'd
+  the folder at the edge, because it describes the team's working process. One
+  site now, and this folder is NOT blocked on it (scripts/public-redirects.mjs
+  keeps one rule, for /recaps/*): hiding the guide from the one site would hide
+  it from the designers it is written for. Stakeholders get /about/.
 
   Self-contained: system fonts, one shared stylesheet (../guides/guide.css), no
   app code. The PDF beside this file is rendered FROM this file:
@@ -18,7 +20,8 @@
       weasyprint public/contributing/index.html public/contributing/contributing.pdf
 
   Regenerate it whenever this page changes — a test asserts the PDF exists and
-  is newer than nothing, but cannot know it is current. Last updated 2026-09-21.
+  is newer than nothing, but cannot know it is current. Last updated 2026-10-15
+  (the public toggle removed throughout, Feature Refinement added, /share).
 -->
 <link rel="stylesheet" href="../guides/guide.css" />
 </head>
@@ -40,11 +43,11 @@
     </div>
   </div>
   <p class="lede">How to get your work in front of the team and then in front of stakeholders — from getting the project onto your computer to seeing your change land in Prototypes. Everything happens in the <strong>Claude desktop app</strong>: each step is a sentence you say to Claude. Nothing is typed into a terminal, and github.com is only opened once, to accept the invitation.</p>
-  <p class="meta">Last updated 21 September 2026 · Owner: Jillienne Moreno · Applies to <code>jillmoreno/xcel-ux-dashboard</code></p>
+  <p class="meta">Last updated 15 October 2026 · Owner: Jillienne Moreno · Applies to <code>jillmoreno/xcel-ux-dashboard</code></p>
 </header>
 
 <!-- ── View switch: Quick walkthrough (default) · Full guide ─────────────
-     Two views of one document. The quick view is nine illustrated cards for a
+     Two views of one document. The quick view is eight illustrated cards for a
      first read; the full guide is the reference. Both are in this file, so the
      PDF carries both (print shows quick first, then the full guide) and neither
      can drift from the other's facts without the diff showing it. -->
@@ -61,7 +64,7 @@
 
 <section id="q-loop">
   <h2>The loop, in one picture</h2>
-  <div class="shot wide" role="img" aria-label="Diagram: your branch is built by Netlify at its own address; you add that address to Refinement on the full site, where the team sees it; everyone with the Hub link sees it there; a pull request and the promote step move it into Prototypes.">
+  <div class="shot wide" role="img" aria-label="Diagram: your branch is built by Netlify at its own address; you add that address to Refinement, where it joins the other chunks of the same feature and everyone with the Hub link can open it; a pull request and the promote step move it into Prototypes.">
     <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
       <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#6b7280"/></marker></defs>
       <!-- you -->
@@ -81,14 +84,13 @@
       <text x="360" y="92" text-anchor="middle" font-size="10" fill="#6b7280">paste</text>
       <rect x="384" y="30" width="170" height="146" rx="10" fill="#fff" stroke="#dfe3e8"/>
       <text x="469" y="54" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1.2">REFINEMENT</text>
-      <rect x="400" y="66" width="138" height="30" rx="6" fill="#f5f5f5" stroke="#dfe3e8"/>
-      <text x="410" y="85" font-size="11" fill="#1b1d21">Your link</text>
-      <rect x="480" y="72" width="50" height="18" rx="9" fill="#fff" stroke="#dfe3e8"/><text x="505" y="85" text-anchor="middle" font-size="9" font-weight="700" fill="#454b55">Team only</text>
-      <text x="469" y="118" text-anchor="middle" font-size="10.5" fill="#454b55">designers + developers see it</text>
-      <rect x="400" y="128" width="138" height="30" rx="6" fill="#e9eef4" stroke="#dfe3e8"/>
-      <text x="410" y="147" font-size="11" fill="#1b1d21">Your link</text>
-      <rect x="492" y="134" width="38" height="18" rx="9" fill="#1f4e88"/><text x="511" y="147" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">Public</text>
-      <text x="469" y="172" text-anchor="middle" font-size="10" fill="#6b7280">↑ everyone with the Hub link sees it</text>
+      <text x="400" y="72" font-size="8.5" font-weight="700" fill="#6b7280" letter-spacing="0.9">STUDY STREAK CARD</text>
+      <rect x="400" y="78" width="138" height="28" rx="6" fill="#e9eef4" stroke="#dfe3e8"/>
+      <text x="410" y="96" font-size="11" fill="#1b1d21">Your new chunk</text>
+      <rect x="400" y="110" width="138" height="24" rx="6" fill="#fafafa" stroke="#eceef1"/>
+      <text x="410" y="126" font-size="10" fill="#8a9099">1 earlier chunk</text>
+      <text x="469" y="152" text-anchor="middle" font-size="10.5" fill="#454b55">chunks of one feature,</text>
+      <text x="469" y="166" text-anchor="middle" font-size="10.5" fill="#454b55">newest first</text>
       <!-- prototypes -->
       <line x1="554" y1="103" x2="598" y2="103" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar)"/>
       <text x="576" y="92" text-anchor="middle" font-size="10" fill="#6b7280">PR</text>
@@ -98,11 +100,11 @@
       <text x="654" y="128" text-anchor="middle" font-size="10.5" fill="#cfdcec">promote → merge</text>
     </svg>
   </div>
-  <p class="small">Left to right: you make a branch and Claude pushes your work to it, Netlify builds it at its own address, you paste that address into Refinement where the team sees it, a toggle shows it to stakeholders, and a PR plus the promote step lands it in Prototypes. Everything below is one of those boxes in detail.</p>
+  <p class="small">Left to right: you make a branch and Claude pushes your work to it, Netlify builds it at its own address, that address goes into Refinement where it joins the other chunks of the same feature, and a PR plus the promote step lands it in Prototypes. Everyone with the Hub link — the team and stakeholders alike — sees a Refinement row the moment it is added. Everything below is one of those boxes in detail.</p>
 </section>
 
 <section id="q-steps">
-  <h2>Nine steps</h2>
+  <h2>Eight steps</h2>
   <div class="qgrid">
 
     <article class="qcard">
@@ -203,7 +205,7 @@
 
     <article class="qcard">
       <h3><span class="n">6</span>Add it to Refinement</h3>
-      <div class="shot" role="img" aria-label="The Refinement section on the full site with an Add link button, and the form: Address, Title, Note, Added by">
+      <div class="shot" role="img" aria-label="The Refinement section on the Hub with an Add link button, and the form: Address, Title, Note, Feature">
         <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
           <rect x="8" y="8" width="84" height="134" rx="6" fill="#f5f5f5"/>
           <text x="18" y="34" font-size="10" fill="#6b7280">Prototypes</text>
@@ -216,22 +218,22 @@
             <text x="114" y="60">Address</text><rect x="170" y="50" width="130" height="14" rx="3" fill="#f5f5f5"/><text x="175" y="60" font-size="8" fill="#1b1d21" font-family="ui-monospace, Menlo, monospace">https://feat-…?demo=1</text>
             <text x="114" y="80">Title</text><rect x="170" y="70" width="130" height="14" rx="3" fill="#f5f5f5"/><text x="175" y="80" font-size="8" fill="#1b1d21">Streak card — feat/…</text>
             <text x="114" y="100">Note</text><rect x="170" y="90" width="130" height="14" rx="3" fill="#f5f5f5"/><text x="175" y="100" font-size="8" fill="#1b1d21">Home, under Current Progress</text>
-            <rect x="114" y="116" width="11" height="11" rx="2" fill="#fff" stroke="#6b7280"/><text x="131" y="125"></text>
+            <text x="114" y="120">Feature</text><rect x="170" y="110" width="130" height="14" rx="3" fill="#f5f5f5"/><text x="175" y="120" font-size="8" fill="#1b1d21">Study streak card</text>
           </g>
         </svg>
       </div>
-      <p>On the <strong>full site</strong>: Refinement → <strong>Add link</strong>. Paste the address, title it with your branch name, say where to look. Everyone with the Hub link sees it the moment you click Add.</p>
-      <p><strong>Faster:</strong> in your Claude chat, say <code>/promote-to-refinement</code>. It works out the branch address, checks the push, drafts the title and note, and gives you a link that opens this form already filled in — you check it and click Add.</p>
+      <p>Refinement → <strong>Add link</strong>. Paste the address, title it with your branch name, say where to look, and name the <strong>feature</strong> this is a chunk of. Everyone with the Hub link — the team and stakeholders alike — sees it the moment you click Add.</p>
+      <p><strong>Much faster — it covers steps 4 and 5 as well:</strong> in your Claude chat, say <code>/share</code>. It runs the checks, commits, pushes, waits for Netlify to build your branch, works out the address, drafts the title and note, asks what feature this is a chunk of, and gives you a link that opens this form already filled in — you check it and click Add. Then it offers to cut your next branch. (<code>/promote-to-refinement</code> is the old name and still works.)</p>
     </article>
 
     <article class="qcard">
       <h3><span class="n">7</span>Discuss and iterate</h3>
-      <div class="shot" role="img" aria-label="A Refinement row marked Team only, with edit and remove buttons, and an arrow looping back to push again">
+      <div class="shot" role="img" aria-label="A Refinement row under its feature heading, with an edit button, and an arrow looping back to push again">
         <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif"><defs><marker id="ar7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#6b7280"/></marker></defs>
           <rect x="12" y="24" width="296" height="56" rx="8" fill="#fff" stroke="#dfe3e8"/>
           <text x="24" y="46" font-size="11" font-weight="600" fill="#1b1d21">Study streak card — feat/…</text>
           <text x="24" y="64" font-size="9.5" fill="#6b7280">netlify.app · added 18 Sep · by Sam</text>
-          <rect x="222" y="36" width="52" height="16" rx="8" fill="#fff" stroke="#dfe3e8"/><text x="248" y="47.5" text-anchor="middle" font-size="8.5" font-weight="700" fill="#454b55">Team only</text>
+          <text x="24" y="20" font-size="8" font-weight="700" fill="#6b7280" letter-spacing="0.9">STUDY STREAK CARD</text>
           <rect x="280" y="34" width="20" height="20" rx="4" fill="#fff" stroke="#dfe3e8"/><text x="290" y="48" text-anchor="middle" font-size="10" fill="#454b55">✎</text>
           <path d="M160 96 C160 130 60 130 60 100" fill="none" stroke="#1f4e88" stroke-width="1.5" marker-end="url(#ar7)"/>
           <text x="130" y="140" text-anchor="middle" font-size="9.5" fill="#1f4e88">change → checks → Claude pushes · same address</text>
@@ -243,30 +245,7 @@
     </article>
 
     <article class="qcard">
-      <h3><span class="n">8</span>Flip it public</h3>
-      <div class="shot" role="img" aria-label="The Show on public site checkbox ticked, the row's chip now reads Public, and a stakeholder icon on the public site sees the same row">
-        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif"><defs><marker id="ar8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#6b7280"/></marker></defs>
-          <rect x="12" y="16" width="150" height="118" rx="8" fill="#fff" stroke="#dfe3e8"/>
-          <text x="24" y="36" font-size="9.5" font-weight="700" fill="#6b7280" letter-spacing="1">FULL SITE · EDIT</text>
-          <rect x="24" y="52" width="12" height="12" rx="2" fill="#1f4e88"/><text x="30" y="62" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">✓</text>
-          <text x="42" y="62" font-size="9.5" fill="#1b1d21">Show on public site</text>
-          <rect x="24" y="80" width="126" height="40" rx="6" fill="#e9eef4"/>
-          <text x="32" y="97" font-size="9.5" font-weight="600" fill="#1b1d21">Study streak card</text>
-          <rect x="32" y="103" width="36" height="13" rx="6.5" fill="#1f4e88"/><text x="50" y="112.5" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">Public</text>
-          <line x1="164" y1="75" x2="196" y2="75" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar8)"/>
-          <rect x="198" y="16" width="110" height="118" rx="8" fill="#f5f5f5" stroke="#dfe3e8"/>
-          <text x="253" y="36" text-anchor="middle" font-size="9.5" font-weight="700" fill="#6b7280" letter-spacing="1">PUBLIC SITE</text>
-          <circle cx="253" cy="64" r="12" fill="#dfe3e8"/><circle cx="253" cy="60" r="4.5" fill="#6b7280"/><path d="M243 74 a10 7 0 0 1 20 0z" fill="#6b7280"/>
-          <rect x="210" y="86" width="86" height="34" rx="6" fill="#fff" stroke="#dfe3e8"/>
-          <text x="218" y="101" font-size="9" font-weight="600" fill="#1b1d21">Study streak card</text>
-          <text x="218" y="113" font-size="8.5" fill="#6b7280">read-only</text>
-        </svg>
-      </div>
-      <p>There is no second step since 2026-10-15: the Hub is the one site, stakeholders are given its link, and a Refinement row is visible to them the moment it is added. Remove the row to take it back — nothing else is deleted.</p>
-    </article>
-
-    <article class="qcard">
-      <h3><span class="n">9</span>PR → promote → merge → retire</h3>
+      <h3><span class="n">8</span>PR → promote → merge → retire</h3>
       <div class="shot" role="img" aria-label="A pull request card, then a promote checklist deciding each flag, then a merge into main, then the Refinement row removed">
         <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif"><defs><marker id="ar9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#6b7280"/></marker></defs>
           <rect x="10" y="30" width="86" height="64" rx="8" fill="#fff" stroke="#dfe3e8"/>
@@ -284,13 +263,13 @@
           <line x1="228" y1="62" x2="244" y2="62" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar9)"/>
           <rect x="246" y="30" width="64" height="64" rx="8" fill="#1f4e88"/>
           <text x="278" y="56" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">merge</text>
-          <text x="278" y="72" text-anchor="middle" font-size="9" fill="#cfdcec">both sites</text>
-          <text x="278" y="84" text-anchor="middle" font-size="9" fill="#cfdcec">rebuild</text>
+          <text x="278" y="72" text-anchor="middle" font-size="9" fill="#cfdcec">the Hub</text>
+          <text x="278" y="84" text-anchor="middle" font-size="9" fill="#cfdcec">rebuilds</text>
           <rect x="60" y="118" width="200" height="22" rx="6" fill="#f5f5f5" stroke="#dfe3e8" stroke-dasharray="3 3"/>
-          <text x="160" y="133" text-anchor="middle" font-size="9.5" fill="#6b7280">then: Remove the Refinement row — it lives in Prototypes now</text>
+          <text x="160" y="133" text-anchor="middle" font-size="9.5" fill="#6b7280">then: /retire-from-refinement — it lives in Prototypes now</text>
         </svg>
       </div>
-      <p>Tell Claude <em>"Open a pull request from feat/your-thing to main and add Jillienne as reviewer."</em> She runs <code>promote-to-prototype</code> on your branch — each flag your branch changed is kept on or set back to <code>main</code>'s value — then merges. Both sites rebuild. Remove your Refinement row.</p>
+      <p>Tell Claude <em>"Open a pull request from feat/your-thing to main and add Jillienne as reviewer."</em> She runs <code>promote-to-prototype</code> on your branch — each flag your branch changed is kept on or set back to <code>main</code>'s value — then merges. The Hub rebuilds. Then say <code>/retire-from-refinement</code> to take the row off — it records what was decided before it goes.</p>
     </article>
 
   </div>
@@ -319,7 +298,7 @@
   <ol>
     <li><a href="#big-picture">The big picture</a></li>
     <li><a href="#need">What you need before you start</a></li>
-    <li><a href="#steps">The nine steps</a></li>
+    <li><a href="#steps">The eight steps</a></li>
     <li><a href="#two-kinds">Two kinds of work, two homes</a></li>
     <li><a href="#flags">Feature flags — the one rule</a></li>
     <li><a href="#refinement-form">The Refinement form, field by field</a></li>
@@ -348,13 +327,13 @@
 
   <p>Two sections do the work of getting a design in front of people, and they are different acts:</p>
   <ul>
-    <li><strong>Refinement</strong> is the review inbox. It is a list of links you add <em>on the page</em> — no code, no commit. A row points at your branch's own build (or an HTML file on it). Everyone with the Hub link sees every row.</li>
+    <li><strong>Refinement</strong> is the review inbox. It is a list of links you add <em>on the page</em> — no code, no commit. A row points at your branch's own build (or an HTML file on it), and it is <strong>one chunk of work</strong>: rows group under the <em>feature</em> they are chunks of, newest first, so a run of small branches reads as one piece of work with a history you can still click through. Everyone with the Hub link sees every row.</li>
     <li><strong>Prototypes</strong> is the product as it stands — the live React build at the flag defaults committed on <code>main</code>. Only a merge to <code>main</code> changes it, and only Jillienne decides what merges into that baseline.</li>
   </ul>
 
   <p>So the loop is:</p>
   <div class="flow">
-    <span>branch</span><i>→</i><span>push</span><i>→</i><span>Refinement · Add link (or <code>/promote-to-refinement</code>)</span><i>→</i><span>team discusses</span><i>→</i><span>flip public</span><i>→</i><span>stakeholders</span><i>→</i><span>PR</span><i>→</i><span>promote</span><i>→</i><span>merge</span><i>→</i><span>retire the row</span>
+    <span>branch</span><i>→</i><span><code>/share</code></span><i>→</i><span>everyone with the Hub link sees it</span><i>→</i><span>discuss &amp; iterate</span><i>→</i><span>PR</span><i>→</i><span>promote</span><i>→</i><span>merge</span><i>→</i><span>retire the row</span><i>→</i><span>next chunk</span>
   </div>
   <p class="small">The rest of this guide walks each of those, in order, with the exact commands and the exact fields.</p>
 </section>
@@ -376,7 +355,7 @@
 
 <!-- ───────────────────────────────────────────────────────────────────── -->
 <section id="steps">
-  <h2><span class="num">03</span>The nine steps</h2>
+  <h2><span class="num">03</span>The eight steps</h2>
 
   <div class="step">
     <h3><span class="n">1</span>Get the project onto your computer</h3>
@@ -399,7 +378,7 @@
   <div class="step">
     <h3><span class="n">2</span>Make a branch</h3>
     <p class="who">You · every time you start a piece of work · one line to Claude</p>
-    <p><strong>What a branch is, in plain words.</strong> The project has one official copy, called <code>main</code>. That is what both websites are built from. A <em>branch</em> is your own private copy of the project, with a name on it. You make your changes there. Nothing you do on your branch changes <code>main</code> — or either website — until Jillienne merges it in step 9. So you cannot break anything by working on a branch. That is the whole point of having one.</p>
+    <p><strong>What a branch is, in plain words.</strong> The project has one official copy, called <code>main</code>. That is what both websites are built from. A <em>branch</em> is your own private copy of the project, with a name on it. You make your changes there. Nothing you do on your branch changes <code>main</code> — or either website — until Jillienne merges it in step 8. So you cannot break anything by working on a branch. That is the whole point of having one.</p>
     <ol>
       <li><strong>Choose a name.</strong> The pattern is <code>feat/</code> plus two or three words joined with dashes — for example <code>feat/study-streak-card</code>. All lowercase, no spaces. (Use <code>explore/</code> for an exploration or <code>fix/</code> for a fix; <code>feat/</code> is right for most things.)</li>
       <li><strong>Tell Claude.</strong> In the Claude desktop app, in your project chat, send:<br /><em>"Make a new branch called feat/study-streak-card from main and switch to it."</em><br />Claude makes the branch on your computer and moves your folder onto it, so everything you do from here lands there. If the name breaks the rule, Claude will say so — accept its suggestion.</li>
@@ -465,12 +444,13 @@
 
   <div class="step">
     <h3><span class="n">6</span>Add it to Refinement</h3>
-    <p class="who">You · on the full site</p>
-    <p>Open the <strong>full</strong> site, click <strong>Refinement</strong> in the left nav, then <strong>Add link</strong> (or <strong>Add the first link</strong> if the list is empty). Paste the address from step 5, give it a title, and write a one-line note saying where to look. Leave <strong>Show on public site</strong> off. Section 06 has every field.</p>
-    <p>The row appears immediately for everyone on the full site. It is saved to a shared store, not to your browser, so the team sees it the moment you save.</p>
+    <p class="who">You · on the Hub</p>
+    <p>Open the Hub, click <strong>Refinement</strong> in the left nav, then <strong>Add link</strong> (or <strong>Add the first link</strong> if the list is empty). Paste the address from step 5, give it a title, write a one-line note saying where to look, and name the <strong>feature</strong> this is a chunk of. Section 06 has every field.</p>
+    <p>The row appears immediately for everyone with the Hub link — the team and stakeholders alike. It is saved to a shared store, not to your browser, so it is there the moment you save.</p>
+    <p><strong>A row is one chunk of work, not one branch you live on.</strong> Rows group under their feature, newest chunk first, and when a new chunk carries on from an older one the older one folds under <em>“1 earlier chunk”</em> — still there, still clickable. That is the payoff for working small: the feature keeps a history you can open in a review, which one long-running branch cannot give you. If two chunks are two treatments meant to be seen side by side, say so in the form — <em>Replaces: nothing</em> — and both stay up.</p>
     <div class="callout tip">
       <span class="lab">The short way</span>
-      <p>In your project chat in the Claude desktop app, say <code>/promote-to-refinement</code>. The skill works out the branch address (dashes and all), confirms the branch is pushed and built, drafts the title from your commits, asks you for the one-line note, and gives you a link that opens the full site with the Add form already filled in. You click the link, look, and click <strong>Add link</strong> — nothing is saved without that click, and the public toggle stays off. Its twin, <code>promote-to-prototype</code>, is what Jillienne runs at the other end of the loop (step 9).</p>
+      <p>In your project chat in the Claude desktop app, say <code>/share</code>. It asks you once — checks, commit, push, open the form? — and then does the lot: runs the type check and the tests, commits what is uncommitted, pushes, works out the branch address (dashes and all), waits for Netlify to finish building, drafts the title from your commits, asks you for the one-line note and for the <strong>feature</strong> this is a chunk of, and gives you a link that opens the Hub with the Add form already filled in. You click the link, look, and click <strong>Add link</strong> — nothing is saved without that click. Then it offers to cut your next branch, which is the habit worth having: small chunks, one per branch. (<code>/promote-to-refinement</code> is what this was called until 2026-10-15; the old name still reaches it.) Its twin, <code>promote-to-prototype</code>, is what Jillienne runs at the other end of the loop (step 8).</p>
     </div>
   </div>
 
@@ -479,17 +459,11 @@
     <p class="who">You and the team</p>
     <p>The team opens your row, looks, and talks — wherever the team talks. You make changes with Claude (step 3), ask for the checks (step 4), and ask Claude to commit and push again (step 5). The address does not change, so the Refinement row is still right. If what the row <em>is</em> changes, use <strong>Edit</strong> on the row to update its title or note.</p>
     <p class="small">There is deliberately no comment thread on the row. Refinement is a list of things to look at, not a place to record the discussion; that stays where the team already talks.</p>
+    <p><strong>When the work turns into a different piece of work, start a new branch</strong> rather than letting this one grow. Say <code>/share</code> again from the new branch and name the same feature: the new chunk goes to the top of the group and this one folds underneath it. <code>/share</code> will say something if a branch has got long — more than about ten commits, or older than a week — and that is the moment to split, not later.</p>
   </div>
 
   <div class="step">
-    <h3><span class="n">8</span>Flip it public when it is ready for stakeholders</h3>
-    <p class="who">Jillienne — or you, once agreed</p>
-    <p>Edit the row and switch <strong>Show on public site</strong> on. From that moment the row shows on the public site's Refinement list, read-only, and stakeholders with the public link can open your branch build. Switch it off again to take it back out — nothing is deleted.</p>
-    <p>The convention is that Jillienne flips it, because the public list is what stakeholders read as "what the team wants us to look at". If she has asked you to flip your own, go ahead.</p>
-  </div>
-
-  <div class="step">
-    <h3><span class="n">9</span>Open a pull request → promote → merge → retire the row</h3>
+    <h3><span class="n">8</span>Open a pull request → promote → merge → retire the row</h3>
     <p class="who">You open the PR · Jillienne promotes and merges</p>
     <p><strong>What a pull request is.</strong> It is the formal "please bring my branch into <code>main</code>" — a page on GitHub that shows every change, where Jillienne reviews and merges. You open it; she does the rest.</p>
     <ol>
@@ -498,10 +472,10 @@
     </ol>
     <p class="small"><strong>If Claude says it cannot open a pull request</strong>, the GitHub connection may not have that permission — send Jillienne the branch name and the build address instead, and she will open it.</p>
     <p>Jillienne then runs the <code>promote-to-prototype</code> skill <em>on your branch, before merging</em>. It lists every feature flag your branch changed and asks her, flag by flag, whether that default ships in Prototypes. Approved flags keep your "on"; declined ones are set back to <code>main</code>'s value, so the work lands in the sandbox sections of the full site without reaching the public product.</p>
-    <p>She merges. Both sites rebuild. The last step is retiring your Refinement row — <strong>Remove</strong> on the row — because the thing it pointed at is now in Prototypes (or the branch is gone).</p>
+    <p>She merges and the Hub rebuilds. The last step is retiring your Refinement row, and the way to do it is <code>/retire-from-refinement</code> rather than <strong>Remove</strong>: a row's build lives on a Netlify branch deploy, so deleting the branch deletes the only viewable copy of the work, and “we tried this and decided not to” otherwise leaves no trace anywhere. The skill makes the keep-or-delete-the-branch call explicit and writes the Archive row before the Refinement row goes.</p>
     <div class="callout good">
       <span class="lab">Done looks like</span>
-      <p>Your flag's default is on in <code>main</code>, the Prototypes section shows your work at <code>/dashboard-rebrand?demo=1</code>, and Refinement no longer lists your branch.</p>
+      <p>Your flag's default is on in <code>main</code>, the Prototypes section shows your work at <code>/dashboard-rebrand?demo=1</code>, and Refinement no longer lists this chunk — though the feature's earlier chunks are still there to scroll back through, if any are.</p>
     </div>
   </div>
 </section>
@@ -521,7 +495,7 @@
   </div>
   <div class="callout warn">
     <span class="lab">Why <code>public/demos/</code> and not <code>public/prototypes/</code></span>
-    <p>The public site 404s everything under <code>/prototypes/</code> at the edge — that folder holds the finished FinServ explorations, which are gated. A file there is invisible on your branch's public build too. <code>public/demos/</code> is deliberately left open for exactly this: HTML in review. Nothing should live there long, and nothing there gets a row in the feature list — the Refinement panel is its listing.</p>
+    <p><code>public/prototypes/</code> holds the finished standalone explorations — each one has a row in the feature list and its own smoke assertions, and the user-test build 404s the whole folder at the edge. <code>public/demos/</code> is the folder for HTML in review, and it is deliberately left open everywhere. Nothing should live there long, and nothing there gets a row in the feature list — the Refinement panel is its listing.</p>
   </div>
 </section>
 
@@ -529,7 +503,7 @@
 <section id="flags">
   <h2><span class="num">05</span>Feature flags — the one rule</h2>
   <p>Every change to the product starts <strong>invisible to Prototypes</strong>: behind a flag whose default on <code>main</code> is off (or set to the existing variant). That is what lets many designers work on the same product without anyone's half-finished idea appearing in front of stakeholders.</p>
-  <p>On <strong>your branch</strong>, you set that flag's default <em>on</em>. That is what makes your branch build show your work at <code>?demo=1</code>. It also means the promote skill can see, mechanically, exactly which defaults your branch changed — the list it asks Jillienne about in step 9 is the diff of the flag catalog between your branch and <code>main</code>.</p>
+  <p>On <strong>your branch</strong>, you set that flag's default <em>on</em>. That is what makes your branch build show your work at <code>?demo=1</code>. It also means the promote skill can see, mechanically, exactly which defaults your branch changed — the list it asks Jillienne about in step 8 is the diff of the flag catalog between your branch and <code>main</code>.</p>
   <ul>
     <li>Flags live in <code>src/context/FeatureFlagContext.tsx</code>, in <code>FEATURE_FLAGS</code>. Ask Claude to add yours there and to add it to the <code>/dashboard-rebrand</code> panel scope so reviewers can toggle it.</li>
     <li>Reviewers can flip flags live on your build: hover the prototype bar and find the robot icon, which opens the flag sheet. In demo mode those flips are temporary and reset on exit.</li>
@@ -540,26 +514,28 @@
 <!-- ───────────────────────────────────────────────────────────────────── -->
 <section id="refinement-form">
   <h2><span class="num">06</span>The Refinement form, field by field</h2>
-  <p>This is what <strong>Add link</strong> opens on the full site.</p>
-  <div class="ui" role="img" aria-label="The Add link form: Address, Title, Note, Added by, and the Show on public site toggle">
+  <p>This is what <strong>Add link</strong> opens on the Hub.</p>
+  <div class="ui" role="img" aria-label="The Add link form: Address, Title, Note, Added by, Product, Feature, and Replaces">
     <div class="uihead">Refinement · Add link</div>
     <div class="field"><b>Address</b><span>The full <code>https://…</code> link. Required. Only <code>http</code> and <code>https</code> addresses are accepted — anything else is refused, on purpose, because every address here is rendered as a real link for everyone.</span></div>
     <div class="field"><b>Title</b><span>What it is, in a few words. Required. Include the branch name so the row can be matched to a PR later: <em>“Study streak card — feat/study-streak-card”</em>.</span></div>
     <div class="field"><b>Note</b><span>Optional, but use it. Say where to look and what question you want answered: <em>“Home, under Current Progress. Is the streak motivating or nagging?”</em></span></div>
-    <div class="field"><b>Added by</b><span>Your name. Optional; remembered in your browser so you type it once. It is a label, not a login — nothing checks it.</span></div>
-    <div class="field"><b>Show on public site</b><span>A checkbox, <strong>off by default</strong>. The hint under it reads: <em>“Off: only the team sees this row. On: stakeholders with the public link see it too.”</em></span></div>
+    <div class="field"><b>Added by</b><span>Your name, from the roster. Optional; remembered in your browser so you choose it once. It is a label, not a login — nothing checks it — and it is what the filter pills along the top of the list filter on.</span></div>
+    <div class="field"><b>Product</b><span>Atlas · Compass · Both. Which product this work is about, which is also which Prototypes row it is heading for. <code>/share</code> reads it off your branch, so it is usually already right.</span></div>
+    <div class="field"><b>Feature</b><span>What this chunk is <em>part of</em>. Optional, free text, and the field the list groups on. Start typing and the features already on the board are offered — take one if it fits, because <em>“Streak card”</em> and <em>“streak card”</em> are the same group but <em>“Streaks”</em> is a different one. There is no fixed list to pick from on purpose: a new feature should never wait on someone else adding a value.</span></div>
+    <div class="field"><b>Replaces</b><span>Only appears once the feature you typed already has chunks on the board. It defaults to <strong>your own newest chunk</strong> of that feature, because that is usually what this is — the next piece of the same work. The first option is <em>“Nothing — these sit side by side”</em>, and that is a real answer: two treatments of one surface, both up at once, is exactly what Refinement is for.</span></div>
   </div>
-  <p>On the list, each row carries a chip — <strong>Team only</strong> or <strong>Public</strong> — so you can see at a glance what stakeholders can see. The nav badge on Refinement counts all rows on the full site and only the public ones on the public site.</p>
-  <p class="small">There is no <em>Type</em> field here, unlike Resources. Every Refinement row is the same kind of thing — work in review — and the toggle is what tells rows apart.</p>
+  <p>On the list, rows sit under their feature, newest chunk first; a chunk something else replaced folds under <strong>“N earlier chunks”</strong>, one click from being open again. A row with no feature has no heading and sits where its date puts it, exactly as every row did before this existed — there was no backfill, so the board is mixed for a while.</p>
+  <p class="small">There is no <em>Type</em> field here, unlike Resources: every Refinement row is the same kind of thing — one chunk of work in review. There is no <em>public</em> toggle either. There was one until 2026-10-15, when the separate stakeholder site was retired; a row is now visible to everyone with the Hub link the moment it is added.</p>
 </section>
 
 <!-- ───────────────────────────────────────────────────────────────────── -->
 <section id="dont">
   <h2><span class="num">07</span>Things not to do</h2>
   <ul>
-    <li><strong>Don't push to <code>main</code>.</strong> Every push to <code>main</code> rebuilds the public site. Always be on a branch before asking Claude to push — step 2 — and get to <code>main</code> only through a pull request.</li>
+    <li><strong>Don't push to <code>main</code>.</strong> Every push to <code>main</code> rebuilds the Hub, which stakeholders are looking at. Always be on a branch before asking Claude to push — step 2 — and get to <code>main</code> only through a pull request.</li>
     <li><strong>Don't add a row to Prototypes</strong> or change a row's <code>category</code> to <code>'prototype'</code>. Promotion is a flag default, never a tile move.</li>
-    <li><strong>Don't put review HTML in <code>public/prototypes/</code>.</strong> It is 404'd on the public build. Use <code>public/demos/</code>.</li>
+    <li><strong>Don't put review HTML in <code>public/prototypes/</code>.</strong> That folder is the finished standalone explorations, each with a row in the feature list and its own smoke assertions. Work in review goes in <code>public/demos/</code>, which exists for exactly that and gets no row.</li>
     <li><strong>Don't change a flag's default on <code>main</code> yourself.</strong> That is the promote step, and it is Jillienne's call.</li>
     <li><strong>Send your branch build, never the main dashboard.</strong> Your branch address shows your work; the main address shows what is already decided, and everything else the team is doing.</li>
     <li><strong>Don't invent data.</strong> A number, a URL, a lesson count or a fee that XCEL has not published is flagged as <code>INVENTED</code> in the code and named as such on screen. <code>CLAUDE.md</code> records why, several times over.</li>
@@ -579,7 +555,9 @@
       <tr><td>The demo looks different on one laptop only</td><td>That browser holds a saved "Set as default" flag snapshot, which wins over the committed default per key.</td><td>In that browser's DevTools → Application → Local Storage, delete <code>cgp.featureFlags.customDefaults</code>.</td></tr>
       <tr><td>Claude says it cannot reach GitHub, clone, or push</td><td>The GitHub connector is not connected, or its sign-in expired.</td><td>Claude desktop → <em>Settings → Connectors → GitHub</em> → Connect (or Reconnect), sign in, allow. Then ask again.</td></tr>
       <tr><td>Row shows "not a linkable address"</td><td>The address wasn't <code>http(s)</code>, or was saved by an older version.</td><td>Edit the row and paste the full <code>https://</code> address.</td></tr>
-      <tr><td>Stakeholder can't see your row</td><td><em>Show on public site</em> is off.</td><td>Edit the row → switch it on. Check the chip reads <strong>Public</strong>.</td></tr>
+      <tr><td>Stakeholder can't see your row</td><td>They don't have the Hub link or the site password — there has been no per-row visibility switch since 2026-10-15.</td><td>Send them the Hub link. Every row is visible to everyone who can open the site.</td></tr>
+      <tr><td>Your chunk isn't under the feature you expected</td><td>The feature was typed slightly differently — grouping ignores case and spacing, but not different words.</td><td>Edit the row and pick the feature from the suggestions rather than retyping it. The group takes its spelling from its newest chunk.</td></tr>
+      <tr><td>An older chunk vanished from the board</td><td>It didn't — a newer chunk replaced it, so it folded under <strong>“N earlier chunks”</strong> at the top of the group.</td><td>Click that. If it should not have been replaced, edit the newer row and set <em>Replaces</em> to <em>Nothing</em>.</td></tr>
       <tr><td>Tests fail on something you didn't touch</td><td>A decision is pinned — nav order, section contents, a colour that must keep failing.</td><td>Ask Claude what the failing test protects — it reads the test's comment. Either your change re-decides it (Claude updates the test and says so in the commit) or it found a real regression.</td></tr>
       <tr><td>Claude cannot find your project files</td><td>The chat is not connected to the project folder, or it is connected to the wrong one.</td><td>Start a new chat and choose the <em>xcel-ux-dashboard</em> folder when it asks. Claude should be able to list <code>CLAUDE.md</code> and <code>src</code>.</td></tr>
       <tr><td>Claude says something is locked or "another process is running"</td><td>An earlier action did not finish cleanly.</td><td>Say: <em>"Clear the git lock and try again."</em> Claude knows what to do.</td></tr>
@@ -605,10 +583,10 @@
       <tr><td><code>?demo=1</code></td><td>Demo mode: render the committed flag defaults, ignore the viewer's own saved toggles, don't persist flips.</td></tr>
       <tr><td>Feature flag</td><td>A named switch in <code>FEATURE_FLAGS</code>. Off on <code>main</code> until promoted; on on your branch so your build shows it.</td></tr>
       <tr><td>Prototypes</td><td>The section holding the live product build at <code>main</code>'s flag defaults. One row per product surface, all the same build. Changed only by merging.</td></tr>
-      <tr><td>Refinement</td><td>The review inbox: links added on the page, team-only until flipped public. Its internal id is <code>demo</code> — you will see that in URLs (<code>?section=demo</code>) and code.</td></tr>
+      <tr><td>Refinement</td><td>The review inbox: links added on the page, each one a chunk of work, grouped under the feature it belongs to. Its internal id is <code>demo</code> — you will see that in URLs (<code>?section=demo</code>) and code.</td></tr>
       <tr><td>Resources</td><td>Everything else that lives elsewhere: briefs, boards, Figma files. Also added on the page.</td></tr>
-      <tr><td>Promote</td><td>Two skills bracket the loop. <code>promote-to-refinement</code> (yours, on the branch) opens the Refinement form prefilled with your branch address. <code>promote-to-prototype</code> (Jillienne's, on the PR) decides per flag whether its "on" default ships in Prototypes.</td></tr>
-      <tr><td>Full site / public site</td><td>The everything site for designers and developers, and the demo-and-training site for designers and stakeholders. Same code; one build-time switch.</td></tr>
+      <tr><td>Promote</td><td>Two skills bracket the loop. <code>/share</code> (yours, on the branch — called <code>promote-to-refinement</code> until 2026-10-15) checks, commits, pushes and opens the Refinement form prefilled with your branch address. <code>promote-to-prototype</code> (Jillienne's, on the PR) decides per flag whether its "on" default ships in Prototypes.</td></tr>
+      <tr><td>The Hub</td><td>The one site, behind one password, that designers, developers and stakeholders are all given. Until 2026-10-15 there was a second, trimmed site for stakeholders; you may still see “full site” in older notes, and it means this one. A separate user-test build still exists and is not it.</td></tr>
     </tbody>
   </table>
   </div>
@@ -655,7 +633,7 @@
 </script>
 
 <footer>
-  <p>Part of the XCEL UX Dashboard. The reasoning behind every decision described here is in the repo's <code>CLAUDE.md</code>; the one-time site setup is in <code>README.md</code> under “Two Netlify sites, one repo”. Stakeholders get a shorter companion page, <a href="/about/">How to read this dashboard</a>.</p>
+  <p>Part of the XCEL UX Dashboard. The reasoning behind every decision described here is in the repo's <code>CLAUDE.md</code>; the one-time site setup is in <code>README.md</code>. Stakeholders get a shorter companion page, <a href="/about/">How to read this dashboard</a>.</p>
 </footer>
 
 </div>
