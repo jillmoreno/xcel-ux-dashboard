@@ -1465,17 +1465,10 @@ export function UxDashboardPage() {
                 is XCEL, the dashboard being built is Atlas, and the lockup
                 names the two surfaces the Hub holds — Atlas and Compass. */}
             <span style={{ ...brandSubStyle, color: nav.muted }}>Atlas LMS &amp; Compass Learning</span>
-            {/* WHICH DASHBOARD YOU ARE ON — 2026-09-24. The two builds are
-                otherwise told apart only by which sections are in the rail,
-                which you have to already know to read. `isPublicGateway()` is
-                the same switch that decides what is in it.
-
-                It takes the eyebrow accent rather than the muted grey, so the
-                lockup's third line reads as a LABEL for the rail beneath it
-                rather than as a quieter second sub-line. */}
-            <span style={{ ...brandSubStyle, color: nav.eyebrow, fontWeight: 700 }}>
-              {isPublicGateway() ? 'Demo Link' : 'Design Link'}
-            </span>
+            {/* The lockup's third line — "Design Link" / "Demo Link", which
+                build you were on — was REMOVED 2026-10-15 (Jillienne), the
+                first step of retiring the demo site: with one site there is
+                no second build to be told apart from. */}
           </span>
         </div>
         {/* Same rule as the one above the restricted group, so the rail reads as
