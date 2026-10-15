@@ -63,8 +63,8 @@ Demo — the Invited Product Detail page, its checkout, then the dashboard),
 learning pages, same build at Home, Eric's), **Compass Learning**, and **Admin
 Tool** — a placeholder
 until the admin surface is built in React; the PartnerHub-fork exploration
-stays in Exploration. A fifth is a `PROTOTYPE_SCOPES` decision first and a row
-second.
+stays a document, in the Explorations card under PRDs. A fifth is a
+`PROTOTYPE_SCOPES` decision first and a row second.
 
 **Who promotes, and who merges, are two different columns (2026-10-14).**
 Each scope names an `owner`, and the owner both decides what that surface
@@ -102,8 +102,19 @@ deletes the only viewable copy of the work, and "we tried this and decided not
 to" otherwise leaves no trace anywhere. It reads the row, makes the
 keep-or-delete-the-branch call explicit, writes the Archive row from what the
 reviewer actually wrote, and only then removes the row. It does NOT move work
-into Exploration — that section is for documents authored to be kept, and the
+into the Explorations card — that is for documents authored to be kept, and the
 skill records why.
+
+**THE DESIGNERS GROUP IS GONE (2026-10-15).** The rail used to end in a
+divider under a "Designers" eyebrow holding Design · Exploration · Archive ·
+QA Notes behind one (unenforced) gate. One site behind one password needs no
+second door, so: **Design is retired** (it listed nothing; the team does not
+work in a design/development split), **Exploration's seven documents list
+under PRDs** in an "Explorations" card — the brief and the document answering
+it on one page — and **Archive and QA Notes sit under Dev Handoff**, ungated.
+Nine sections. `?section=exploration` still lands on the rows. The three
+`archivedItems.ts` rows `design-section`, `exploration-section` and
+`designers-gate` say how it was wired.
 
 ## Scope — read before adding a route
 
@@ -112,7 +123,7 @@ It is now three things, and where a new screen belongs depends on which:
 
 | Surface | Lives in | Reached at |
 |---|---|---|
-| The UX Dashboard gateway | `src/pages/UxDashboardPage.tsx` + friends | `/`, `/prototype/:id`, `/research-rationale`, `/qa-notes`, `/links`, `/prds` |
+| The UX Dashboard gateway | `src/pages/UxDashboardPage.tsx` + friends | `/`, `/prototype/:id`, `/research-rationale`, `/qa-notes`, `/links`, `/prds` (nine sections — Prototypes · Refinement · Research · Resources · PRDs · Development · Done · Archive · QA Notes) |
 | The XCEL product app | `src/pages/*`, `src/components/*` | `/dashboard-rebrand` + ~28 product routes |
 | The standalone prototypes | `public/prototypes/*.html` | `/prototypes/…`, opened in a tab or iframed |
 
@@ -121,7 +132,8 @@ section exists to prevent.** If it is a REACT surface of the product — a page 
 the shell, a panel, a card — it belongs in `src/` as a route. If it is a
 hand-authored HTML exploration answering a brief, it belongs in
 `public/prototypes/` as a document, and it gets a `PROTOTYPE_FEATURES` row, not
-a route.
+a route — `category: 'exploration'`, no `devStatus`, and it lists in the
+Explorations card under PRDs.
 
 The old warning still holds in its narrow form: **do not rebuild one of the six
 standalone prototypes as a React route.** That is the "two sources of truth"

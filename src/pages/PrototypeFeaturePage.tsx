@@ -64,17 +64,13 @@ const MEMBERSHIP_FILTER_TABS: PillTabItem<Membership>[] = [
 /** The home-page section a feature lands in, as a URL. Kept in step with
  *  `sectionOf` in UxDashboardPage — same order of precedence, same fallbacks. */
 function backSectionHref(feature: PrototypeFeature): string {
-  const st = feature.devStatus
-  if (st) {
-    return st === 'ready-for-dev' || st === 'in-development' || st === 'blocked'
-      ? '/?section=development'
-      : '/?section=design'
-  }
+  // Any authored status is a position on the Development board (Design is
+  // retired, 2026-10-15); documents list under PRDs, in the Explorations card.
+  if (feature.devStatus) return '/?section=development'
   if (feature.category === 'prototype' || feature.category === 'demo' || feature.category === 'dashboard')
     return '/?section=prototypes'
   if (feature.category === 'testing') return '/?section=development'
-  if (feature.category === 'exploration') return '/?section=exploration'
-  return '/?section=design'
+  return '/?section=prds'
 }
 
 export function PrototypeFeaturePage({

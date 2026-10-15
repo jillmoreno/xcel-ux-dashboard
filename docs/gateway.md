@@ -64,6 +64,40 @@ pointed at it through `BLOBS_SITE_ID` / `BLOBS_TOKEN` (README, "Netlify"). If
 that project was deleted rather than unpublished, the store went with it. If
 the boards still load, it was not.
 
+## The Designers group is gone (2026-10-15)
+
+The rail ended in a divider under a **Designers** eyebrow holding Design ·
+Exploration · Archive · QA Notes, one shared gate id
+(`design-and-development`) that had not asked for a password since
+2026-09-18 and, since the demo site went, filtered nothing either. Jillienne,
+the same day the demo site was deleted: "already have a site password,
+nothing needs to be locked." So:
+
+- **Design is retired.** It listed nothing — no row carries `in-design` or
+  `needs-discussion` — and the team does not work in a design/development
+  split: a surface is a scope with an owner on Prototypes, a branch under
+  discussion on Refinement, or a handoff on Development. `sectionOf` now
+  sends ANY authored `devStatus` to Development; the status chip says which
+  stage. `?section=design` is a legacy alias of Development.
+- **Exploration's seven documents list under PRDs,** in an **Explorations**
+  card beneath the board — the brief and the document answering it on one
+  page. The rows, their thumbnails, kebabs and files are untouched; `groupRows`
+  wraps them under the card label and the `prds` render branch draws the board
+  then the card. `?section=exploration` is an alias of `prds`, so shared links
+  still land on the rows. Moved as a card, not converted into board links, for
+  the reason `retire-from-refinement` gives: a document kept in code has a
+  commit trail; a Blob does not.
+- **Archive and QA Notes sit under Dev Handoff,** ungated. The `gate` field,
+  `DEV_GATE_ID`, `ENFORCE_SECTION_GATE`, `FIRST_RESTRICTED`, the lock glyph and
+  the modal wiring are gone from the page. `PrototypeLock.tsx` and
+  `prototypeLockUtil.ts` stay — the archived tile landing reads them.
+
+Nine sections: Prototypes · Refinement · Research · Resources · PRDs ·
+Development · Done · Archive · QA Notes. The three `archivedItems.ts` rows
+`design-section`, `exploration-section` and `designers-gate` carry the
+restore notes. The "Sections" and "Exploration" passages below describe the
+rail as it was and are kept as history.
+
 ## Gateway sync — read before touching `src/pages` or `src/components`
 
 The gateway code here is a **copy** of the LMS dashboard's
@@ -104,7 +138,8 @@ section itself — a board, see below — so anything the LMS `CLAUDE.md` says
 about it holds here. (`RESEARCH_DECISIONS`, the hand-authored count the LMS
 original carries, is gone with the empty state it counted for.)
 
-**Sections.** Six open, under three eyebrows added 2026-09-23 for the public
+**Sections** (as of 2026-09-23 — see "The Designers group is gone" above for
+the 2026-10-15 shape). Six open, under three eyebrows added 2026-09-23 for the public
 Demo build — **Demo** (Prototypes), **Design & Research** (Refinement · Other
 Links · Research), **Dev Handoff** (Development · Done) — then a divider
 under a **UX & DEV ACCESS** eyebrow holding Design · Exploration · Sandbox ·
@@ -673,7 +708,9 @@ the `category` guess was removed (LMS `8005c5a`, synced here 2026-09-18), so a
 mis-placed row shows no warning on the page. `EXPECTED_PLACEMENT` in the smoke
 test is what catches it now.
 
-**All five XCEL rows sit in Exploration** (moved there 2026-09-02 from Design).
+**All five XCEL rows sit in Exploration** (moved there 2026-09-02 from Design;
+since 2026-10-15 the same rows, seven by then, sit in the Explorations card
+under PRDs — the rule below is unchanged, only the section's name).
 The same rows are in **Design** over in the LMS dashboard, and that difference is
 deliberate rather than drift: there they are five artifacts among many competing
 for one designer's attention, so dev-cycle status is the useful axis; here they

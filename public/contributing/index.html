@@ -332,17 +332,19 @@
 <!-- ───────────────────────────────────────────────────────────────────── -->
 <section id="big-picture">
   <h2><span class="num">01</span>The big picture</h2>
-  <p>The dashboard is <strong>one codebase deployed to two websites</strong>. Every <code>git push</code> to <code>main</code> rebuilds both.</p>
+  <p>The dashboard is <strong>one codebase deployed to one website</strong> — the Hub, behind one site password that designers, developers and stakeholders are all given. Every <code>git push</code> to <code>main</code> rebuilds it. (Until 2026-10-15 there was a second, trimmed site for stakeholders; it is retired.)</p>
 
   <div class="tablewrap">
   <table>
-    <thead><tr><th>Site</th><th>Who opens it · what for</th><th>What it shows</th></tr></thead>
+    <thead><tr><th>Group in the rail</th><th>Sections</th><th>What they are</th></tr></thead>
     <tbody>
-      <tr><td>The <strong>full</strong> site</td><td><strong>Designers and developers.</strong><br /><span class="small">Used for refinement and hand-offs.</span></td><td>Everything — Prototypes, Refinement, Resources, Research, and the whole <em>UX &amp; Dev Access</em> group (Design, Exploration, Sandbox, Development, Done, Archive, QA Notes, To Do, and this guide).</td></tr>
-      <tr><td>The <strong>public</strong> site</td><td><strong>Designers and stakeholders.</strong><br /><span class="small">Used for demos and training.</span></td><td>Only Prototypes, Refinement, Resources and Research. The rest is not locked — it is <em>absent</em>. Refinement shows only the rows someone has flipped to public, and is read-only there.</td></tr>
+      <tr><td><strong>Demo</strong></td><td>Prototypes</td><td>The product as it stands — one row per surface, every row <code>main</code>’s build.</td></tr>
+      <tr><td><strong>Design &amp; Research</strong></td><td>Refinement · Research · Resources · PRDs</td><td>Boards authored on the page. PRDs also carries the <em>Explorations</em> card — the hand-authored documents.</td></tr>
+      <tr><td><strong>Dev Handoff</strong></td><td>Development · Done · Archive · QA Notes</td><td>What engineering is building, what shipped, what was removed, and design-vs-build findings.</td></tr>
     </tbody>
   </table>
   </div>
+  <p class="small">Nothing in the rail is locked: the site password is the only door. The old <em>Designers</em> group (Design · Exploration behind a second gate) went on 2026-10-15.</p>
 
   <p>Two sections do the work of getting a design in front of people, and they are different acts:</p>
   <ul>

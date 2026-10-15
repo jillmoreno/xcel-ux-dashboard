@@ -336,8 +336,10 @@ say so with the ratio (e.g. *"`tertiary-700` — the lightest cyan clearing AA a
 ## Home-page fields
 
 The home page (`/`, `UxDashboardPage`) is a **left nav over a project list** —
-Demo · Research, then a divider and the restricted group Design · Exploration ·
-Development. The tile grid it replaced is archived (`prototype-tile-landing`).
+Prototypes · Refinement · Research · Resources · PRDs · Development · Done ·
+Archive · QA Notes (nine since 2026-10-15 — Design and Exploration are retired,
+the documents list under PRDs). The tile grid it replaced is archived
+(`prototype-tile-landing`).
 
 | Field | Rule |
 |---|---|
@@ -384,11 +386,12 @@ a silent default — but the default is what catches the miss.
 
 `sectionOf()` in `UxDashboardPage.tsx` is the only rule, and it reads:
 
-1. **`devStatus` wins.** `ready-for-dev` / `in-development` / `blocked` →
-   **Development**; `in-design` / `needs-discussion` → **Design**.
-2. **Otherwise it falls back to `category`** — `demo` and `dashboard` → Demo,
-   `testing` → Development, `exploration` → Exploration, everything else →
-   Design.
+1. **`devStatus` wins.** Any authored status → **Development** (since
+   2026-10-15; `in-design` / `needs-discussion` used to go to Design, which is
+   retired — the chip still shows the stage).
+2. **Otherwise it falls back to `category`** — `prototype` / `demo` /
+   `dashboard` → Prototypes, `testing` and `dev-handoff` → Development,
+   `exploration` and everything else → the Explorations card under PRDs.
 
 **Author `devStatus` on every new feature.** Step 2 is a guess, and **the page
 no longer says so**: the Design and Development sections used to render a banner

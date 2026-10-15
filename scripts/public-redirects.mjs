@@ -47,7 +47,9 @@ const TRIMMED = new Set(['testing'])
 const context = (process.env.CONTEXT ?? '').trim().toLowerCase()
 
 /**
- * Everything the gated sections point at that is a FILE rather than a route.
+ * Everything the team-only sections point at that is a FILE rather than a
+ * route (they were the gated sections until 2026-10-15; the testing build is
+ * the only one that trims anything now).
  * `/prototypes/` is the six documents plus the row-less companions; `/testing/`
  * and `/ngat-admin/` are static explorations that came over with the LMS
  * product app; `/archive/` and `/qa/` are the Archive and QA Notes sections'

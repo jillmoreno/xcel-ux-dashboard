@@ -42,7 +42,6 @@ import {
   setFeatureRollupStatus,
   type DevStatus,
   type FeatureStatusKey,
-  isDevelopmentStatus,
 } from '@/components/prototype/devHandoffStatusUtil'
 import {
   getDoneOverrides,
@@ -64,7 +63,6 @@ import {
   Grid,
   Circle,
   Lightbulb,
-  Lock,
   LockSolid,
   MessageCircle,
   Monitor,
@@ -76,8 +74,6 @@ import {
   User,
   X, HourglassClock} from '@/icons'
 import { Toast } from '@/components/ui/Toast'
-import { PrototypePasswordModal } from '@/components/prototype/PrototypeLock'
-import { isPrototypeUnlocked, markPrototypeUnlocked } from '@/components/prototype/prototypeLockUtil'
 
 /**
  * UX dashboard — the prototype's front door, at `/` (and still reachable at
@@ -87,9 +83,9 @@ import { isPrototypeUnlocked, markPrototypeUnlocked } from '@/components/prototy
  *
  * Two things it changed:
  *
- *   1. A persistent left nav — Demo · Research · Design · Exploration ·
- *      Development · Archive — instead of the section-chooser-then-tabs the old
- *      landing used. Every section is one click from every other, and the
+ *   1. A persistent left nav — Demo · Research · Development · Archive, and
+ *      until 2026-10-15 Design · Exploration — instead of the
+ *      section-chooser-then-tabs the old landing used. Every section is one click from every other, and the
  *      current one is always named.
  *   2. Projects as a LIST rather than a tile grid, in the shape of a hosting
  *      dashboard: thumbnail, name, meta, status right, kebab. At 26 features a
@@ -111,7 +107,8 @@ import { isPrototypeUnlocked, markPrototypeUnlocked } from '@/components/prototy
  * writes the SAME per-browser stores the feature gateways read
  * (`cgp.devHandoffStatus`, `cgp.prototypeDone`), so a status set here shows on
  * the gateway and vice versa. An override beats the authored `devStatus`, which
- * is why setting one can move a row between Design and Development.
+ * is why setting one used to move a row between Design and Development — since
+ * 2026-10-15 there is no Design, and a status only changes the chip.
  */
 
 /* ── The taxonomy ─────────────────────────────────────────────────────────── */
@@ -122,64 +119,32 @@ type UxSection =
   | 'prds'
   | 'prototypes'
   | 'research'
-  | 'design'
-  | 'exploration'
   | 'development'
   | 'done'
   | 'archive'
   | 'qa-notes'
 
-/**
- * ONE gate for every restricted section — Design, Exploration, Archive and QA
- * Notes all share this id, so a reviewer types the password once and the whole
- * group opens. (Sandbox, To Do and Contributing were in this list until they
- * were archived on 2026-09-29; they shared this id too, so restoring any of
- * them is a `gate` field copied from a sibling, not a new password.) (Exploration used to
- * carry its own id and its own hardcoded password, which meant two prompts
- * for one body of work and, worse, a password the Admin tools override could
- * not reach.)
- *
- * Development and Done shared it too until 2026-09-23, when they were pulled
- * out and ungated (see the comments on those two `SectionDef`s) so they could
- * show on the public Demo build under their own "Dev Handoff" eyebrow.
- *
- * The id matches the one the archived tile landing uses, so unlocking on either
- * surface carries to the other. The password itself is not here: it comes from
- * `getPrototypePassword()` — DEFAULT_PROTOTYPE_PASSWORD unless an admin has
- * set one (Admin tools → Prototype Password).
+/*
+ * THERE IS NO SECTION GATE (2026-10-15). Until then Design, Exploration,
+ * Archive and QA Notes shared one gate id (`design-and-development`), drawn in
+ * the rail as a divider under a "Designers" eyebrow and, before 2026-09-18, as
+ * a password modal. The Netlify site password is the only lock now — one site,
+ * one door — so the gate, its modal wiring and the eyebrow went together, and
+ * Archive and QA Notes moved under Dev Handoff. The `designers-gate` row in
+ * `src/data/archivedItems.ts` says how it was wired. `PrototypeLock.tsx` and
+ * `prototypeLockUtil.ts` are untouched — the archived tile landing reads them.
  */
-const DEV_GATE_ID = 'design-and-development'
-
-/**
- * Whether the in-app password is ENFORCED. `false` since 2026-09-18, at
- * Jillienne's request, and the reasoning is the two-site split:
- *
- * - On the FULL site the Netlify site password is already the lock. Asking
- *   for a second one inside the app was a second door on a room the reviewer
- *   had already been let into.
- * - On the PUBLIC site the gated sections are not locked, they are ABSENT
- *   (`VISIBLE_SECTIONS`), so there is nothing for a password to guard.
- *
- * So on neither build does the modal have a job. The `gate` field on each
- * `SectionDef` STAYS — it is no longer "ask for a password" but "this section
- * is not for stakeholders", and it is what the public build filters on. Do not
- * strip the gates to remove the prompt; flip this instead. Flipping it back
- * restores the modal, the lock glyphs and the deep-link hold exactly as before.
- */
-const ENFORCE_SECTION_GATE = false
 
 type SectionDef = {
   id: UxSection
   label: string
   blurb: string
-  /** Which gate guards it, if any. Open sections omit this. */
-  gate?: { id: string; title: string; password?: string }
   /** Sections that are not lists of features declare their own count. */
   count?: number
 }
 
-/** Open sections first, then the restricted group. The order here IS the nav
- *  order; the divider is drawn where `restricted` starts. */
+/** The order here IS the nav order. Every section is open — see the note on
+ *  the retired gate above. */
 const SECTIONS: SectionDef[] = [
   {
     // FIRST, and the landing section: the product as it stands — the live
@@ -271,23 +236,22 @@ const SECTIONS: SectionDef[] = [
     // documents the designs answer. A section rather than a Type on Other
     // Links because "the brief" is a different question from "everything
     // else". Ungated like its siblings; count is live, from `usePrdCount`.
+    //
+    // Since 2026-10-15 the section also carries the EXPLORATIONS card under the
+    // board — the seven hand-authored documents that had their own Exploration
+    // section until the Designers group was retired. The brief and the document
+    // answering it, on one page. See `groupRows` and the `prds` render branch.
     id: 'prds',
     label: 'PRDs',
     blurb:
       'The product requirements the designs answer — one link per document. Added on the page, not in code.',
   },
-  {
-    id: 'design',
-    label: 'Design',
-    blurb: 'In exploration or in design — decisions still open.',
-    gate: { id: DEV_GATE_ID, title: 'Design' },
-  },
-  {
-    id: 'exploration',
-    label: 'Exploration',
-    blurb: 'Outside products and ideas rebuilt on our tokens, components and UX conventions.',
-    gate: { id: DEV_GATE_ID, title: 'Exploration' },
-  },
+  // ARCHIVED 2026-10-15 — Design and Exploration stood here, first in the
+  // old restricted group. Design listed nothing (no row carries an in-design
+  // status) and the team no longer uses the stage; Exploration's seven
+  // documents list under PRDs now, in the "Explorations" card. See the
+  // `design-section` and `exploration-section` rows in
+  // `src/data/archivedItems.ts`.
   // ARCHIVED 2026-09-29 — Sandbox stood here, between Exploration and
   // Development. Unwired, not deleted: see the `sandbox-section` row in
   // `src/data/archivedItems.ts`.
@@ -316,22 +280,19 @@ const SECTIONS: SectionDef[] = [
     blurb: 'Finished and signed off — kept for reference, not in flight.',
   },
   {
-    // Last, and gated like the rest of the restricted group — the archive used
-    // to live inside Design & Development's Archive tab and was behind that
-    // same password, so keeping it there preserves who can read it.
+    // Ungated since 2026-10-15 with the rest of the old restricted group — the
+    // site password is the lock. Sits under Dev Handoff with QA Notes.
     id: 'archive',
     label: 'Archive',
     blurb:
       'Components and variants removed from the project — what each was, where the code still lives, and how to bring it back.',
-    gate: { id: DEV_GATE_ID, title: 'Archive' },
     count: ARCHIVED_ITEMS.length,
   },
   {
-    // Directly above To Do, and gated with the same id as the rest of the
-    // restricted group — the shared password IS the access control here, the
-    // same as it is for Archive and To Do.
+    // Ungated since 2026-10-15, like Archive — the site password is the lock.
     //
-    // It briefly carried a feature flag on top of that, defaulting off. That was
+    // It briefly carried a feature flag on top of the old group gate, defaulting
+    // off. That was
     // a second lock on an already-locked door, and it put the key on the wrong
     // side of it: the Feature Flag panel only mounts inside `AppLayout`, which
     // this page sits outside, so there was no way to switch the section on from
@@ -340,7 +301,6 @@ const SECTIONS: SectionDef[] = [
     label: 'QA Notes',
     blurb:
       'Findings from design-vs-build review — an Expected and an Actual capture, the detail, and where each one stands.',
-    gate: { id: DEV_GATE_ID, title: 'QA Notes' },
     // No `count` here: findings can be authored on the page, so a static number
     // is wrong as soon as one is added. Supplied live below, like To Do's.
   },
@@ -371,10 +331,6 @@ const VISIBLE_SECTIONS: SectionDef[] = SECTIONS
  *  from the URL when this is selected, so the landing address stays clean. */
 const DEFAULT_SECTION: UxSection = 'prototypes'
 
-/** Where the divider goes — the first restricted section. `-1` on the public
- *  build, so the divider and its "Designers" eyebrow never draw. */
-const FIRST_RESTRICTED = VISIBLE_SECTIONS.findIndex((s) => s.gate)
-
 /**
  * Eyebrow labels drawn above specific ungated rows in the nav rail, added
  * 2026-09-23 for the public Demo build — keyed by section id rather than
@@ -382,13 +338,11 @@ const FIRST_RESTRICTED = VISIBLE_SECTIONS.findIndex((s) => s.gate)
  * row. Each names the row it sits directly above:
  *
  *   Demo             → Prototypes
- *   Design & Research → Refinement, Research, Resources
- *   Dev Handoff      → Development, Done
+ *   Design & Research → Refinement, Research, Resources, PRDs
+ *   Dev Handoff      → Development, Done, Archive, QA Notes
  *
- * Deliberately separate from `FIRST_RESTRICTED` / "Designers" below,
- * which is computed rather than authored here — that one has to keep finding
- * whichever section is first to still carry a `gate`, and stays untouched by
- * this table.
+ * Archive and QA Notes joined Dev Handoff on 2026-10-15, when the divider and
+ * the "Designers" eyebrow that stood above them went with the section gate.
  */
 const NAV_EYEBROWS: Partial<Record<UxSection, string>> = {
   prototypes: 'Demo',
@@ -406,7 +360,11 @@ const LEGACY_SECTIONS: Record<string, UxSection> = {
   // Prototypes now rather than Demo.
   dashboard: 'prototypes',
   dev: 'development',
-  exploration: 'exploration',
+  // The two sections retired 2026-10-15. Exploration's documents list under
+  // PRDs now; anything Design would have held (a row with a status) sits on
+  // the Development board.
+  exploration: 'prds',
+  design: 'development',
 }
 
 function sectionFromParam(value: string | null, tab: string | null): UxSection | null {
@@ -1063,10 +1021,11 @@ const PALETTES: Record<UxPaletteId, Record<UxTheme, UxVars>> = {
  *      status pills, so reusing it means one field feeds three surfaces rather
  *      than adding a fourth that can disagree with them.
  *   2. Otherwise fall back to category. `demo` and `dashboard` are things you
- *      show; `testing` is build infrastructure; everything else is design.
+ *      show; `testing` is build infrastructure; everything else is a document,
+ *      listed under PRDs in the Explorations card.
  *
- * Step 2 is the guess. Authoring `devStatus` on the remaining 22 features would
- * remove it entirely — see the note the page renders under the Design section.
+ * Step 2 is the guess. Authoring `devStatus` on the remaining features would
+ * remove it entirely.
  */
 /* Not exported: this file exports a component, and react-refresh needs a
    component-only module. If another surface ever needs this rule, it moves to
@@ -1082,14 +1041,15 @@ function sectionOf(
   isDone?: boolean,
 ): UxSection {
   // Done outranks the rest: it is where a feature ENDS, so it should not also
-  // sit in Design or Development claiming to be in flight.
+  // sit in Development claiming to be in flight.
   if (isDone ?? f.done) return 'done'
   const status = effective && effective !== 'mixed' ? effective : f.devStatus
-  if (status) {
-    // One resolver, in devHandoffStatusUtil beside the labels and colours — see
-    // `isDevelopmentStatus`, and the note there on why `not-ready` is in it.
-    return isDevelopmentStatus(status) ? 'development' : 'design'
-  }
+  // Any authored status puts the row on the Development board (2026-10-15 —
+  // Design, where `in-design` and `needs-discussion` used to land, is retired;
+  // the status chip says which stage the row is at). `isDevelopmentStatus` in
+  // devHandoffStatusUtil still names the development-side half, for the chip
+  // colours and the filter order.
+  if (status) return 'development'
   // The product build. `demo` / `dashboard` are the LMS's names for the same
   // thing and route here too; nothing routes to the Demo SECTION, which is a
   // panel authored on the page rather than a list of rows (2026-09-18).
@@ -1098,22 +1058,24 @@ function sectionOf(
   /* A dev handoff belongs on the Development board even with no authored
      status — paired with the `not-ready` default in `featureStatusKeyOf`, that
      means forgetting to author one puts the row in front of engineering marked
-     "don't start", rather than hiding it in Design where they never look. */
+     "don't start", rather than hiding it among the documents where they never
+     look. */
   if (f.category === 'dev-handoff') return 'development'
-  // Ported outside products get their own section rather than sitting in Design
-  // — they are a different kind of thing, and they carry their own gate.
-  if (f.category === 'exploration') return 'exploration'
+  // Ported outside products and hand-authored documents list under PRDs, in
+  // the Explorations card (2026-10-15; their own Exploration section before
+  // that) — the brief and the document answering it, on one page.
+  if (f.category === 'exploration') return 'prds'
   // ARCHIVED 2026-09-29 — the Sandbox SECTION is gone, but `'sandbox'` stays in
   // `FeatureCategory` because that union is verbatim from the LMS (CLAUDE.md,
   // "Data files"), so a row ported carrying it must still compile.
   //
   // THIS BRANCH IS DELIBERATELY EXPLICIT RATHER THAN DELETED. Delete it and the
-  // category falls through to the `return 'design'` below, reaching the same
+  // category falls through to the `return 'prds'` below, reaching the same
   // place — which is the silent failure `archive-a-feature` warns about: it
   // type-checks, it passes, and nobody can tell "routed here on purpose" from
   // "routed here because the branch that caught it is gone". One line to say so.
-  if (f.category === 'sandbox') return 'design'
-  return 'design'
+  if (f.category === 'sandbox') return 'prds'
+  return 'prds'
 }
 
 /* ── Page ─────────────────────────────────────────────────────────────────── */
@@ -1177,18 +1139,7 @@ export function UxDashboardPage() {
   // works between sections — the tile landing behaved this way and reviewers
   // have links that depend on it.
   const urlSection = sectionFromParam(params.get('section'), params.get('tab'))
-  // A deep link into a RESTRICTED section has to meet the same gate the nav
-  // does. It did not: `section` was seeded straight from the URL, so
-  // `?section=design` rendered the list with no password asked — and now that a
-  // row's whole spec can be deep-linked with `?open=`, that hole leaks more
-  // than a list of titles. The link is not discarded, just held: the reviewer
-  // lands on Demo with the modal up, and unlocking restores the target below.
-  const urlDef = urlSection ? VISIBLE_SECTIONS.find((d) => d.id === urlSection) : undefined
-  const urlLocked =
-    ENFORCE_SECTION_GATE && Boolean(urlDef?.gate) && !isPrototypeUnlocked(urlDef!.gate!.id)
-  const [section, setSectionState] = useState<UxSection>(
-    urlLocked ? DEFAULT_SECTION : (urlSection ?? DEFAULT_SECTION),
-  )
+  const [section, setSectionState] = useState<UxSection>(urlSection ?? DEFAULT_SECTION)
   const setSection = (next: UxSection) => {
     setSectionState(next)
     const p = new URLSearchParams(params)
@@ -1234,15 +1185,6 @@ export function UxDashboardPage() {
     )
   }, [setParams])
 
-  // Session unlock state, seeded from the shared store so a section already
-  // opened on the landing page opens straight through here.
-  const [unlocked, setUnlocked] = useState<Record<string, boolean>>(() => ({
-    [DEV_GATE_ID]: isPrototypeUnlocked(DEV_GATE_ID),
-  }))
-  // The section a password is currently being asked for. Selecting a locked
-  // section does NOT change `section` — the reviewer stays where they are until
-  // the gate opens, so a cancel cannot strand them on a section they cannot see.
-  const [asking, setAsking] = useState<SectionDef | null>(urlLocked ? urlDef! : null)
   // Per-browser overrides, held in state so a kebab change re-renders — and, via
   // sectionOf, can move a row into another section immediately.
   const [done, setDone] = useState<Record<string, boolean>>(getDoneOverrides)
@@ -1305,8 +1247,6 @@ export function UxDashboardPage() {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<FeatureStatusKey | 'all'>('all')
 
-  const isOpen = (def: SectionDef) => !ENFORCE_SECTION_GATE || !def.gate || unlocked[def.gate.id]
-
   // Demo shows no dev-cycle status. Everything in it is presentation-ready by
   // definition — that is what the section IS — so a status tag there either
   // says "Ready" (no information) or contradicts the section's own promise.
@@ -1321,16 +1261,14 @@ export function UxDashboardPage() {
   // opposite of what they are for. Everything else is a spec you read while
   // working the board, so it keeps the nav.
   //
-  // The gate is checked against the FEATURE'S OWN section, not the one being
-  // viewed: `?open=` must not be a side door around a locked section, and
-  // cancelling the password modal must leave it shut rather than revealing the
-  // spec behind it.
+  // Resolved against the FEATURE'S OWN section, so a row no section lists
+  // cannot be opened in-frame by naming it.
   const openId = params.get('open')
   const openCandidate = openId ? prototypeFeatureById(openId) : undefined
   const openDef = openCandidate
     ? VISIBLE_SECTIONS.find((d) => d.id === sectionOf(openCandidate, rollupOf(openCandidate)))
     : undefined
-  const openFeature = openCandidate && openDef && isOpen(openDef) ? openCandidate : undefined
+  const openFeature = openCandidate && openDef ? openCandidate : undefined
   const opensInFrame = (f: PrototypeFeature) => section !== 'prototypes' && !f.externalUrl && !f.to
   const setOpen = (id: string | null) => {
     const p = new URLSearchParams(params)
@@ -1388,8 +1326,6 @@ export function UxDashboardPage() {
       // Same again: boards, counted by `useResearchCount` / `usePrdCount`.
       research: [],
       prds: [],
-      design: [],
-      exploration: [],
       development: [],
       done: [],
       archive: [],
@@ -1447,6 +1383,46 @@ export function UxDashboardPage() {
   // colours. Cleaned up on unmount so the palette never outlives the page.
   useEffect(() => mirrorPaletteToRoot(paletteVars as Record<string, string>), [paletteVars])
 
+  /* The grouped row list — one card per group, rows inside. Shared by the
+     feature sections (Development, Done) and the Explorations card under PRDs.
+
+     PROTOTYPES IS TWO LISTS — 2026-10-14, Jillienne on the preview: "this is
+     the same as the main branch, so can we have it separated from the rest to
+     better indicate that it's the Final Prototype, Source of Truth". The
+     end-to-end row stands in its own card under its own heading; the doors
+     around it — the work in progress — sit in a second card beneath. PRDs
+     wraps its rows in one labelled card (2026-10-15); every other section is
+     the one unlabelled list it always was. */
+  const rowGroups = groupRows(section, rows).map((g) => (
+    <div key={g.id} data-group={g.id}>
+      {g.label && (
+        <div style={groupHeadStyle}>
+          <p style={groupLabelStyle}>{g.label}</p>
+          {g.note && <p style={groupNoteStyle}>{g.note}</p>}
+        </div>
+      )}
+      <div style={listStyle}>
+        {g.rows.map((f, i) => (
+          <ProjectRow
+            key={f.id}
+            feature={f}
+            first={i === 0}
+            last={i === g.rows.length - 1}
+            statusKey={statusKeyOf(f, done, inDesign)}
+            isDone={done[f.id] ?? !!f.done}
+            isInDesign={inDesign[f.id] ?? !!f.inProgress}
+            onToggleDone={toggleDone}
+            onToggleInDesign={toggleInDesign}
+            onSetRollup={setRollup}
+            dark={dark}
+            onOpen={opensInFrame(f) ? setOpen : undefined}
+            showStatus={showStatus}
+          />
+        ))}
+      </div>
+    </div>
+  ))
+
   return (
     // The palette is applied here as custom properties rather than in
     // tokens.css: it is scoped to this page by construction, and the
@@ -1490,7 +1466,6 @@ export function UxDashboardPage() {
                       : s.id === 'prds'
                         ? prdCount
                         : (s.count ?? bySection[s.id].length)
-            const locked = Boolean(s.gate) && !isOpen(s)
             return (
               <div key={s.id}>
                 {/* NAV_EYEBROWS rows first — authored, by id, above specific
@@ -1503,24 +1478,9 @@ export function UxDashboardPage() {
                     <p style={{ ...navEyebrowStyle, color: nav.eyebrow }}>{NAV_EYEBROWS[s.id]}</p>
                   </>
                 )}
-                {/* The divider and its eyebrow are drawn ONCE, before the first
-                    restricted section, so adding another restricted section
-                    below needs no change here. */}
-                {i === FIRST_RESTRICTED && (
-                  <>
-                    <hr style={{ ...dividerStyle, borderTopColor: nav.border }} />
-                    {/* "Designers", not "UX & Dev Access" — 2026-09-24. The
-                        old label named the GATE (who can get in); this names
-                        the audience, like the three eyebrows above it — Demo,
-                        Design & Research, Dev Handoff all say who a group is
-                        for. It only ever draws on the full build, so it is the
-                        design dashboard's own word for its own sections. */}
-                    <p style={{ ...navEyebrowStyle, color: nav.eyebrow }}>Designers</p>
-                  </>
-                )}
                 <button
                   type="button"
-                  onClick={() => (isOpen(s) ? setSection(s.id) : setAsking(s))}
+                  onClick={() => setSection(s.id)}
                   aria-current={active ? 'page' : undefined}
                   style={{
                     ...navItemStyle,
@@ -1531,12 +1491,6 @@ export function UxDashboardPage() {
                 >
                   <span style={navItemLabelStyle}>
                     {s.label}
-                    {locked && (
-                      <>
-                        <Lock size={11} aria-hidden style={{ color: nav.muted }} />
-                        <span className="cre-visually-hidden"> — locked</span>
-                      </>
-                    )}
                   </span>
                   <span
                     style={{
@@ -1637,7 +1591,9 @@ export function UxDashboardPage() {
                 aria-hidden
                 style={{ transform: 'rotate(180deg)', flex: 'none' }}
               />
-              All {VISIBLE_SECTIONS.find((s) => s.id === section)!.label.toLowerCase()} projects
+              {section === 'prds'
+                ? 'All explorations'
+                : `All ${VISIBLE_SECTIONS.find((s) => s.id === section)!.label.toLowerCase()} projects`}
             </button>
             <PrototypeFeaturePage featureId={openFeature.id} embedded />
           </>
@@ -1670,7 +1626,14 @@ export function UxDashboardPage() {
           // it already re-skins with the four schemes and four appearances.
           <LinksPanel />
         ) : section === 'prds' ? (
-          <PrdsPanel />
+          // The board, then the Explorations card beneath it (2026-10-15) — the
+          // seven documents that had their own Exploration section until the
+          // Designers group was retired. Same rows, same kebab; no search box
+          // or status pills over seven rows under a board that has its own.
+          <>
+            <PrdsPanel />
+            {rowGroups}
+          </>
         ) : section === 'demo' ? (
           // The same panel as Links with a different board behind it — see
           // `LinkBoardPanel`. Read-only and filtered to public rows on the
@@ -1728,69 +1691,13 @@ export function UxDashboardPage() {
                 {q ? `Nothing matches “${query}”.` : 'Nothing in this section yet.'}
               </p>
             ) : (
-              /* PROTOTYPES IS TWO LISTS — 2026-10-14, Jillienne on the preview:
-                 "this is the same as the main branch, so can we have it
-                 separated from the rest to better indicate that it's the Final
-                 Prototype, Source of Truth". The end-to-end row stands in its
-                 own card under its own heading; the doors around it — the
-                 work in progress — sit in a second card beneath. Every other
-                 section is the one list it always was. */
-              groupRows(section, rows).map((g) => (
-                <div key={g.id} data-group={g.id}>
-                  {g.label && (
-                    <div style={groupHeadStyle}>
-                      <p style={groupLabelStyle}>{g.label}</p>
-                      {g.note && <p style={groupNoteStyle}>{g.note}</p>}
-                    </div>
-                  )}
-                  <div style={listStyle}>
-                    {g.rows.map((f, i) => (
-                      <ProjectRow
-                        key={f.id}
-                        feature={f}
-                        first={i === 0}
-                        last={i === g.rows.length - 1}
-                        statusKey={statusKeyOf(f, done, inDesign)}
-                        isDone={done[f.id] ?? !!f.done}
-                        isInDesign={inDesign[f.id] ?? !!f.inProgress}
-                        onToggleDone={toggleDone}
-                        onToggleInDesign={toggleInDesign}
-                        onSetRollup={setRollup}
-                        dark={dark}
-                        onOpen={opensInFrame(f) ? setOpen : undefined}
-                        showStatus={showStatus}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))
+              rowGroups
             )}
           </>
         )}
         </>
         )}
       </main>
-
-      {asking && (
-        <PrototypePasswordModal
-          featureTitle={asking.gate!.title}
-          password={asking.gate!.password}
-          onClose={() => setAsking(null)}
-          onUnlock={() => {
-            markPrototypeUnlocked(asking.gate!.id)
-            setUnlocked((u) => ({ ...u, [asking.gate!.id]: true }))
-            // Not `setSection`, which clears `?open=` — a gated deep link that
-            // named a feature should land on that feature once it opens.
-            setSectionState(asking.id)
-            const p = new URLSearchParams(params)
-            if (asking.id === DEFAULT_SECTION) p.delete('section')
-            else p.set('section', asking.id)
-            if (asking.id !== urlSection) p.delete('open')
-            setParams(p, { replace: true })
-            setAsking(null)
-          }}
-        />
-      )}
     </div>
   )
 }
@@ -2504,13 +2411,23 @@ const statusDotStyle: CSSProperties = { width: 7, height: 7, borderRadius: '50%'
 
 const countStyle: CSSProperties = { marginLeft: 'auto', fontSize: 12.5, color: 'var(--ux-text-2)' }
 
-/** How a section's rows are grouped into cards. Only Prototypes splits (see
- *  the render site); an empty group is dropped so a filtered search never
- *  shows a heading over nothing. */
+/** How a section's rows are grouped into cards. Prototypes splits in two,
+ *  PRDs wraps its documents in the one labelled Explorations card, everything
+ *  else is a single unlabelled list (see the render site). An empty group is
+ *  dropped so a filtered search never shows a heading over nothing. */
 function groupRows(
   section: UxSection,
   rows: PrototypeFeature[],
 ): { id: string; label?: string; note?: string; rows: PrototypeFeature[] }[] {
+  if (section === 'prds')
+    return [
+      {
+        id: 'explorations',
+        label: 'Explorations',
+        note: 'Outside products and ideas rebuilt on our tokens, components and UX conventions — documents, kept in code.',
+        rows,
+      },
+    ].filter((g) => g.rows.length > 0)
   if (section !== 'prototypes') return [{ id: 'all', rows }]
   const truth = rows.filter((f) => f.prototypeScope === 'end-to-end')
   const rest = rows.filter((f) => f.prototypeScope !== 'end-to-end')

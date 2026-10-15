@@ -59,8 +59,6 @@ const ALL_SECTIONS = [
   'Research',
   'Resources',
   'PRDs',
-  'Design',
-  'Exploration',
   'Development',
   'Done',
   'Archive',
@@ -91,7 +89,7 @@ describe('one site — a stale public value trims nothing', () => {
   /* The regression that would be silent: the env var is set per Netlify
      project, and the retired project's setting could survive on a clone or a
      branch. Every section, every kebab — all there. */
-  it('renders the whole nav, with the Designers divider', async () => {
+  it('renders the whole nav — and no Designers divider, which is gone for everyone', async () => {
     const Page = await loadPage('public')
     renderAt(Page, '/')
     const rail = screen.getByRole('complementary', { name: 'Sections' })
@@ -100,7 +98,7 @@ describe('one site — a stale public value trims nothing', () => {
       .map((b) => (b.textContent ?? '').replace(/\d+$/, '').trim())
       .filter((t) => ALL_SECTIONS.includes(t))
     expect(labels).toEqual(ALL_SECTIONS)
-    expect(within(rail).getByText(/^Designers$/i)).toBeInTheDocument()
+    expect(within(rail).queryByText(/^Designers$/i)).toBeNull()
   })
 
   it('puts the kebab on every row that opens', async () => {
@@ -109,8 +107,10 @@ describe('one site — a stale public value trims nothing', () => {
     expect(screen.getAllByRole('button', { name: /^Actions for / }).length).toBeGreaterThan(0)
   })
 
-  it('still never asks for a password — the modal was retired long before the site', async () => {
+  it('still never asks for a password — the modal wiring went with the group gate', async () => {
     const Page = await loadPage('full')
+    // `design` is a legacy alias now (→ Development); the other two are the
+    // last of the old restricted group, ungated.
     for (const path of ['/?section=design', '/?section=archive', '/?section=qa-notes']) {
       const { unmount } = renderAt(Page, path)
       expect(screen.queryByRole('dialog')).toBeNull()

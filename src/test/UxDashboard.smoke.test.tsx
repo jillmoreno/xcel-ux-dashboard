@@ -38,19 +38,16 @@ function renderDashboard(initialPath = '/') {
   )
 }
 
-/** The nav order is load-bearing: the ungated sections first (Prototypes ·
- *  Refinement · Research · Resources · PRDs · Development · Done — Development and
- *  Done were pulled out of the shared gate 2026-09-23, see `NAV_EYEBROWS` in
- *  UxDashboardPage.tsx), then the still-gated group, with the divider drawn
- *  where the first gated one starts. */
+/** The nav order is load-bearing — see `NAV_EYEBROWS` in UxDashboardPage.tsx.
+ *  Nine sections since 2026-10-15: Design and Exploration are retired with the
+ *  Designers group they headed (Exploration's rows list under PRDs), and
+ *  Archive and QA Notes sit under Dev Handoff, ungated. */
 const EXPECTED_SECTIONS = [
   'Prototypes',
   'Refinement',
   'Research',
   'Resources',
   'PRDs',
-  'Design',
-  'Exploration',
   'Development',
   'Done',
   'Archive',
@@ -132,19 +129,21 @@ describe('section routing (sectionOf)', () => {
     'xcel-atlas-learning': 'prototypes',
     'xcel-dashboard': 'prototypes',
     'xcel-compass': 'prototypes',
-    'xcel-lms': 'exploration',
-    'xcel-walkthrough': 'exploration',
-    'xcel-wireframes': 'exploration',
-    'xcel-admin': 'exploration',
-    'xcel-admin-tool': 'exploration',
+    // The seven documents — the Explorations card under PRDs since 2026-10-15,
+    // their own Exploration section before that.
+    'xcel-lms': 'prds',
+    'xcel-walkthrough': 'prds',
+    'xcel-wireframes': 'prds',
+    'xcel-admin': 'prds',
+    'xcel-admin-tool': 'prds',
     // The Admin placeholder (2026-10-14) — a coming-soon row that opens nothing.
     'xcel-admin-coming-soon': 'prototypes',
-    'xcel-exam-spec': 'exploration',
+    'xcel-exam-spec': 'prds',
     // The first handoff row (2026-09-24) — `devStatus: 'in-development'`.
     'atlas-home-course-card': 'development',
     // Added 2026-09-22 — see the row's own note in `prototypeFeatures.ts` for
     // why this page stopped being masthead-only and took a tile.
-    'xcel-pace-presets': 'exploration',
+    'xcel-pace-presets': 'prds',
     // Added 2026-09-24 — the repo's FIRST authored dev handoff. `devStatus:
     // 'in-design'` is what places it, and `sectionOf` reads that BEFORE
     // `category`, so changing the status moves the row between Design and
@@ -158,14 +157,15 @@ describe('section routing (sectionOf)', () => {
     expect(ids).toEqual(Object.keys(EXPECTED_PLACEMENT).sort())
   })
 
-  it('no Exploration or Sandbox row carries a devStatus', () => {
+  it('no Explorations row carries a devStatus', () => {
     // The inverse of the rule below, and the one that actually bites in this
     // repo. `sectionOf` checks devStatus BEFORE category, so a status added to
-    // one of these rows silently pulls it out of Exploration and into Design —
-    // no error, and it reads as the row simply vanishing from the section.
+    // one of these rows silently pulls it out of the Explorations card and onto
+    // the Development board — no error, and it reads as the row simply
+    // vanishing from under PRDs.
     for (const f of PROTOTYPE_FEATURES) {
       const placed = EXPECTED_PLACEMENT[f.id]
-      if (placed !== 'exploration' && placed !== 'sandbox') continue
+      if (placed !== 'prds') continue
       expect(
         f.devStatus,
         `${f.id} is in ${placed}, so it must NOT carry a devStatus`,
@@ -173,10 +173,10 @@ describe('section routing (sectionOf)', () => {
     }
   })
 
-  it('every Design/Development row carries an authored devStatus', () => {
+  it('every Development row carries an authored devStatus', () => {
     for (const f of PROTOTYPE_FEATURES) {
       const placed = EXPECTED_PLACEMENT[f.id]
-      if (placed !== 'design' && placed !== 'development') continue
+      if (placed !== 'development') continue
       expect(f.devStatus, `${f.id} needs an authored devStatus`).toBeTruthy()
     }
   })
@@ -244,35 +244,42 @@ describe('section routing (sectionOf)', () => {
 })
 
 /**
- * The in-app password is NOT enforced on the full build (2026-09-18). The
- * Netlify site password is the lock on the full site, and on the public site
- * the restricted group is absent altogether (PublicGateway.test.tsx) — so the
- * modal had no job on either. These used to assert the opposite; they are
- * inverted rather than deleted so re-enabling `ENFORCE_SECTION_GATE` fails
- * here and gets re-decided.
+ * THE DESIGNERS GROUP IS GONE (2026-10-15). Design, Exploration, Archive and QA
+ * Notes shared a gate id drawn as a divider under a "Designers" eyebrow — and,
+ * until 2026-09-18, a password modal. One site behind one Netlify password
+ * needs no second door: Design (empty, unused) is retired, Exploration's
+ * documents list under PRDs in an "Explorations" card, and Archive and QA
+ * Notes sit under Dev Handoff. These pin each half.
  */
-describe('the restricted group is open on the full build', () => {
-  it('opens Exploration on click — no password, no lock glyph', async () => {
+describe('the Designers group is gone (2026-10-15)', () => {
+  it('lists the explorations under PRDs, in their own card, with no lock', async () => {
     const user = userEvent.setup()
     renderDashboard()
     expect(screen.queryByText(/— locked/)).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: /Exploration/ }))
+    await user.click(screen.getByRole('button', { name: /PRDs/ }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    const card = document.querySelector('[data-group="explorations"]')
+    expect(card).not.toBeNull()
+    expect(card!.textContent).toContain('Explorations')
+    expect(card!.textContent).toContain('XCEL LMS — Desktop Platform')
+    // Every document, and nothing else lists here.
+    expect(card!.querySelectorAll('[data-row]').length).toBe(
+      PROTOTYPE_FEATURES.filter((f) => f.category === 'exploration').length,
+    )
+  })
+
+  it('a legacy ?section=exploration deep link lands on PRDs', () => {
+    renderDashboard('/?section=exploration')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('PRDs')
     expect(screen.getByText('XCEL LMS — Desktop Platform')).toBeInTheDocument()
   })
 
-  it('a deep link into a restricted section lands on it directly', () => {
-    renderDashboard('/?section=exploration')
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Exploration')
-  })
-
-  it('the gate metadata is still there — the public build filters on it', () => {
-    // Not a DOM assertion: the divider and its eyebrow are what the metadata
-    // draws on the full build, so their presence proves the `gate` fields
-    // survived the un-enforcement.
+  it('draws no Designers eyebrow, and neither retired section has a nav row', () => {
     renderDashboard()
-    expect(screen.getByText(/^Designers$/i)).toBeInTheDocument()
+    expect(screen.queryByText(/^Designers$/i)).toBeNull()
+    const nav = screen.getByRole('navigation')
+    expect(within(nav).queryByRole('button', { name: /^Design\b/ })).toBeNull()
+    expect(within(nav).queryByRole('button', { name: /Exploration/ })).toBeNull()
   })
 })
 

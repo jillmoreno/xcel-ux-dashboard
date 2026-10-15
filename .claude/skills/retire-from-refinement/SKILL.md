@@ -41,17 +41,19 @@ that is what it is for.
 
 ## ⚠ Where this does NOT send things
 
-**Not to Exploration.** That was considered on 2026-09-29 and rejected, and the
-reasoning is worth keeping because the idea comes back:
+**Not to the Explorations card** (under PRDs since 2026-10-15; its own
+Exploration section before that). That was considered on 2026-09-29 and
+rejected, and the reasoning is worth keeping because the idea comes back:
 
-- An Exploration row is a `PROTOTYPE_FEATURES` entry in code pointing at a
+- An Explorations row is a `PROTOTYPE_FEATURES` entry in code pointing at a
   committed HTML document in `public/prototypes/`. A Refinement row is a Blob
   pointing at a branch deploy. Moving one to the other is not a move, it is
   authoring a new document — a real cost, paid on every declined experiment,
   and it stops happening after the third one.
-- Exploration means one thing today: outside products and ideas rebuilt on our
-  tokens and conventions. Add "work we did not ship" and it means two things,
-  and so does Archive. That is the same failure as a second Prototypes row.
+- The Explorations card means one thing today: outside products and ideas
+  rebuilt on our tokens and conventions. Add "work we did not ship" and it
+  means two things, and so does Archive. That is the same failure as a second
+  Prototypes row.
 
 **Not to Design or Development.** Those are states in the dev pipeline, driven by
 `devStatus` on a feature row. A branch nobody is building is not "in design".
@@ -148,8 +150,8 @@ people will ask for in three months.
   only viewable copy of the work. Never default it.
 - **Archive row first, row removal second.** In that order, or a crash between
   the two loses the record it was written to preserve.
-- **Never route to Exploration** — see above. If someone asks, that section is
-  for documents authored to be kept, and a branch is not one.
+- **Never route to the Explorations card** — see above. If someone asks, that
+  card is for documents authored to be kept, and a branch is not one.
 - **A declined row still gets a row.** "We tried it and did not ship it" is the
   most valuable thing in the Archive, because it is the only place it is written
   down.
