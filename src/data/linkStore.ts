@@ -91,7 +91,11 @@ export function linkTypeLabel(type: LinkType): string {
  * which is true of it: it predates the distinction, so it claims neither.
  */
 export const LINK_PRODUCTS = [
-  { id: 'xcel', label: 'XCEL' },
+  // Labelled "Atlas" since 2026-10-15 (Jillienne, on the board): the product
+  // is XCEL, but the work on this side of the line is the Atlas dashboard, and
+  // that is the word the tag should say beside "Compass". The ID stays `xcel`
+  // — it is what every stored record carries.
+  { id: 'xcel', label: 'Atlas' },
   { id: 'compass', label: 'Compass' },
   { id: 'both', label: 'Both' },
 ] as const

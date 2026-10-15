@@ -194,7 +194,7 @@ describe('product tagging', () => {
     render(<DemoPanel />)
     await screen.findByText('Only XCEL')
 
-    await user.click(screen.getByRole('button', { name: 'XCEL' }))
+    await user.click(screen.getByRole('button', { name: 'Atlas' }))
     expect(screen.getByText('Only XCEL')).toBeInTheDocument()
     expect(screen.getByText('Shared work')).toBeInTheDocument()
     expect(screen.queryByText('Only Compass')).not.toBeInTheDocument()
@@ -216,7 +216,7 @@ describe('product tagging', () => {
     await user.click(await screen.findByRole('button', { name: /Add the first|Add link/ }))
 
     expect(screen.getByRole('radio', { name: 'Both' })).toBeChecked()
-    await user.click(screen.getByRole('radio', { name: 'XCEL' }))
+    await user.click(screen.getByRole('radio', { name: 'Atlas' }))
     await user.type(screen.getByLabelText('Address'), 'https://feat-x--y.netlify.app/dashboard-rebrand')
     await user.type(screen.getByLabelText('Title'), 'A branch')
     await user.click(screen.getByRole('button', { name: 'Add link' }))
@@ -282,7 +282,7 @@ describe('badges sit under the title', () => {
     const badge = (title: string, label: string) =>
       within(screen.getByText(title).closest('li')!).getByText(label)
     const pairs: [string, string][] = [
-      ['One', 'XCEL'],
+      ['One', 'Atlas'],
       ['Two', 'Compass'],
       ['Three', 'Both'],
     ]
