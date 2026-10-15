@@ -56,6 +56,8 @@ const MAX_TITLE = 200
 const MAX_URL = 2000
 const MAX_NOTE = 500
 const MAX_ADDED_BY = 100
+/** A full ISO timestamp with a zone — what `new Date().toISOString()` writes. */
+const ISO_STAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/
 
 export type BoardConfig = {
   /** Netlify Blobs store name — `links`, `demos`. */
@@ -70,6 +72,10 @@ export type BoardConfig = {
   /** Whether records carry `product`. Demo only: dropped on the way in
    *  elsewhere, so a Links record cannot quietly acquire one. */
   products: boolean
+  /** Whether records can be ARCHIVED — `archivedAt` / `archivedBy`, hidden
+   *  from the board rather than deleted (2026-10-15). Demo only, same rule
+   *  as `products`: dropped on the way in everywhere else. */
+  archivable: boolean
 }
 
 type Json = Record<string, unknown>
@@ -159,6 +165,23 @@ export function validateRecord(
   if (cfg.products) {
     const product = str(b.product)?.trim() ?? ''
     out.product = ALLOWED_PRODUCTS.includes(product) ? product : DEFAULT_PRODUCT
+  }
+
+  // Archive (2026-10-15, Jillienne — Refinement's kebab gained "Archive", and
+  // "Show archive" top right lists what it hid). `archived` is the client's
+  // INTENT; the stamp is the server's — set the first time a record is
+  // archived, carried through later saves while it stays archived (the client
+  // echoes `archivedAt` back when editing an archived row), and cleared the
+  // moment it is unarchived. `archivedBy` is a typed label, like `addedBy`.
+  // Boards without the control drop all of it, so a Links record cannot
+  // quietly acquire an archive state it has no way to show or undo.
+  if (cfg.archivable) {
+    const archived = b.archived === true
+    const prior = str(b.archivedAt) ?? ''
+    out.archivedAt = archived ? (ISO_STAMP.test(prior) ? prior : new Date().toISOString()) : ''
+    const archivedBy = str(b.archivedBy)?.trim() ?? ''
+    if (archivedBy.length > MAX_ADDED_BY) errors.push(`archivedBy is longer than ${MAX_ADDED_BY} characters.`)
+    else out.archivedBy = archived ? archivedBy : ''
   }
 
   // `isPublic` is DROPPED on the way in since 2026-10-15: the public site it

@@ -117,6 +117,34 @@ export function matchesProduct(row: LinkProduct, filter: LinkProduct | ''): bool
   return row === filter
 }
 
+/* ── the designers ────────────────────────────────────────────────────────── */
+
+/**
+ * The team roster — the Refinement board's filter pills and its Added by
+ * choices (2026-10-15, Jillienne: "go with roster and match those options in
+ * the Added By field"). A FIXED list rather than whatever names happen to be
+ * on the board, so the pills never drift with a typo and a designer with no
+ * row yet still has a pill. The same five people `PROTOTYPE_SCOPES` names as
+ * owners, in the order the scopes list them.
+ */
+export const DESIGNERS = ['Jillienne', 'Anjani', 'Eric', 'Afsana', 'Cody'] as const
+
+export type Designer = (typeof DESIGNERS)[number]
+
+/** Whether a row's typed author is this designer. Case-insensitive and a
+ *  CONTAINS match, so the free-text names on records written before Added by
+ *  became a choice — "eric w", "Afsana & Eric" — land under the right pill
+ *  (and a shared row under both). '' is All. */
+export function matchesDesigner(addedBy: string, filter: Designer | ''): boolean {
+  if (!filter) return true
+  return addedBy.toLowerCase().includes(filter.toLowerCase())
+}
+
+/** A row that is on the board, as opposed to in its archive. */
+export function isLive(link: StoredLink): boolean {
+  return !link.archivedAt
+}
+
 export type StoredLink = {
   /** `link-007`, allocated server-side. */
   id: string
@@ -141,6 +169,14 @@ export type StoredLink = {
    *  (2026-10-14). '' on a record written before the field existed — those
    *  rows show no "Updated" rather than a guess. Shown on Refinement only. */
   updatedAt: string
+  /** ISO timestamp of when the row was ARCHIVED — hidden from the board, not
+   *  deleted (2026-10-15, Jillienne). '' means it is live, which is every row
+   *  on every board but Refinement, the only one with the control. Stamped
+   *  server-side the first time a record is archived and cleared when it is
+   *  unarchived; see `isLive`. */
+  archivedAt: string
+  /** Who archived it — a typed label like `addedBy`, '' when live. */
+  archivedBy: string
 }
 
 /** The editable fields. `id`, `addedDate` and `updatedAt` are not among them —
@@ -150,6 +186,13 @@ export type StoredLink = {
 export type LinkDraft = Pick<StoredLink, 'title' | 'url' | 'note' | 'addedBy' | 'type'> & {
   /** Optional on the way IN because only one board has the control for it. */
   product?: LinkProduct
+  /** The archive state, Refinement only. `archived` is the intent; the server
+   *  owns the stamp and keeps the one the client echoes back (`archivedAt`)
+   *  while a record stays archived, so editing an archived row does not
+   *  re-date or un-archive it. See `archiveLink`. */
+  archived?: boolean
+  archivedAt?: string
+  archivedBy?: string
 }
 
 export type LinkIndex = {
@@ -290,6 +333,10 @@ function normalise(v: StoredLink): StoredLink {
     // record that still carries it is simply a row, like every other.
     addedDate: typeof v.addedDate === 'string' ? v.addedDate : '',
     updatedAt: typeof v.updatedAt === 'string' ? v.updatedAt : '',
+    // Absent on every record written before the archive existed, and on every
+    // board but Refinement — both read as live, which is what they are.
+    archivedAt: typeof v.archivedAt === 'string' ? v.archivedAt : '',
+    archivedBy: typeof v.archivedBy === 'string' ? v.archivedBy : '',
   }
 }
 
@@ -409,6 +456,26 @@ export function createLinkBoard(cfg: LinkBoardConfig) {
     return body.link
   }
 
+  /**
+   * Archive or unarchive a row (2026-10-15). A SAVE of the record with the flag
+   * flipped rather than a verb of its own on the endpoint, so the server owns
+   * the stamp the way it owns `updatedAt`, and a board without the control
+   * simply drops the fields. `by` is the label for who did it — the browser's
+   * last author, the same source the Add form prefills from.
+   */
+  async function archiveLink(link: StoredLink, archived: boolean, by: string): Promise<StoredLink> {
+    return saveLink(link.id, {
+      title: link.title,
+      url: link.url,
+      note: link.note,
+      addedBy: link.addedBy,
+      type: link.type,
+      product: link.product,
+      archived,
+      archivedBy: archived ? by : '',
+    })
+  }
+
   async function deleteLink(id: string): Promise<void> {
     const res = await fetch(`${cfg.base}/${encodeURIComponent(id)}`, { method: 'DELETE' })
     if (!res.ok) throw new LinkWriteError(await problems(res, `Could not delete (${res.status}).`))
@@ -484,6 +551,7 @@ export function createLinkBoard(cfg: LinkBoardConfig) {
     listLinks,
     createLink,
     saveLink,
+    archiveLink,
     deleteLink,
     useLinks,
     useLinkCount,

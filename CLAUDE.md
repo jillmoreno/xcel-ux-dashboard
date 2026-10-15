@@ -88,6 +88,17 @@ Two things that follow, and both have bitten:
   when. It is a working surface, not a decision log — the decisions log on a dev
   handoff is where a decision gets recorded.
 
+**Refinement filters by DESIGNER and has an archive (2026-10-15).** The pills
+over the board are the five names in `DESIGNERS` (`linkStore.ts`) — the same
+people `PROTOTYPE_SCOPES` names as owners — and Added by is a choice from that
+roster, so a row always lands under a pill; the product (Atlas · Compass ·
+Both) stays as the tag on the row. The row kebab has **Archive** beside
+Remove: archive HIDES a row (stamped who and when, server-side), **Show
+archive** top right lists what was hidden, **Unarchive** puts it back, and
+anyone can do either. Remove still deletes. The nav count and the branch
+strip both treat an archived row as off the board. Refinement only — the
+other three boards keep free-text authors and no archive.
+
 The ways in are already built: `promote-to-refinement` (a branch),
 `promote-component` (one widget's variants), `promote-to-prototype` (moving
 something into the source of truth). There is deliberately no "create a second

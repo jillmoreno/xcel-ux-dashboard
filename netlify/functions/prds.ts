@@ -26,4 +26,5 @@ export default linkBoardHandler({
   segment: 'prds',
   types: ALLOWED_TYPES,
   products: false,
+  archivable: false,
 })

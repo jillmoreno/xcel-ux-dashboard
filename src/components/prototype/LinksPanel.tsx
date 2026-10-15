@@ -36,12 +36,15 @@
 
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import {
+  ArrowLeft,
+  ArrowRotateLeft,
   ArrowUpRightFromSquare,
   BrowserWindow,
   ClipboardList,
   FileText,
   Grid,
   Layout,
+  Package,
   PenToSquare,
   Plus,
   Share2,
@@ -52,17 +55,21 @@ import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu'
 import { Modal } from '@/components/ui/Modal'
 import {
   DEFAULT_PRODUCT,
+  DESIGNERS,
   LINKS_BOARD,
   LINK_PRODUCTS,
   LINK_TYPES,
   LinkWriteError,
   draftProblems,
   hostOf,
+  isLive,
   linkProductLabel,
   linkTypeLabel,
+  matchesDesigner,
   matchesProduct,
   safeHref,
   toMarkdown,
+  type Designer,
   type LinkBoard,
   type LinkDraft,
   type LinkProduct,
@@ -131,6 +138,23 @@ export type LinkBoardPresentation = {
    * turning this on elsewhere is one line.
    */
   showUpdated?: boolean
+  /**
+   * Whether the filter pills are the DESIGNERS (`DESIGNERS` in linkStore) and
+   * the Added by field is a choice from that roster (2026-10-15, Jillienne:
+   * "based on the Designers name … match those options in the Added By
+   * field"). Refinement only. It REPLACES the product pills — the product
+   * stays as the tag on the row — because two pill rows over one list is two
+   * questions where a reviewer has one: whose work am I looking at.
+   */
+  showDesigners?: boolean
+  /**
+   * Whether a row can be ARCHIVED — "Archive" in the kebab hides it from the
+   * board, "Show archive" top right lists what was hidden, "Unarchive" puts it
+   * back (2026-10-15, Jillienne). Hidden, not deleted: Remove stays beside it
+   * for the rows that should never have been there. Refinement only — the
+   * server drops the fields everywhere else (`archivable` in linkBoard.ts).
+   */
+  archivable?: boolean
   /** The empty-state sentence when the endpoint IS reachable. */
   emptyHint: string
   /** The sentence under the form's fields. */
@@ -520,6 +544,21 @@ const toolbarStyle: CSSProperties = {
   flexWrap: 'wrap',
 }
 
+/** The "Show archive" / "Back to board" door, top right — link-shaped, in the
+ *  accent, so it reads as a place to go rather than as another action button. */
+const archiveLinkStyle: CSSProperties = {
+  ...btnStyle,
+  border: '1px solid transparent',
+  background: 'transparent',
+  color: 'var(--ux-accent)',
+}
+
+const archiveNoteStyle: CSSProperties = {
+  margin: '-6px 0 14px',
+  fontSize: 13,
+  color: 'var(--ux-text-2)',
+}
+
 const EMPTY_DRAFT: LinkDraft = {
   title: '',
   url: '',
@@ -838,13 +877,36 @@ function LinkFormModal({
           <label style={labelStyle} htmlFor="link-added-by">
             Added by <span style={optionalStyle}>— optional</span>
           </label>
-          <input
-            id="link-added-by"
-            value={draft.addedBy}
-            onChange={(e) => onChange({ addedBy: e.target.value })}
-            placeholder="Your name"
-            style={fieldStyle}
-          />
+          {p.showDesigners ? (
+            /* The roster, so what is typed here is what the pills above the
+               list filter on (2026-10-15). A record from before this was a
+               choice may carry a name that is not on it — offered as its own
+               option, so editing that row does not silently reassign it. */
+            <select
+              id="link-added-by"
+              value={draft.addedBy}
+              onChange={(e) => onChange({ addedBy: e.target.value })}
+              style={fieldStyle}
+            >
+              <option value="">—</option>
+              {DESIGNERS.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+              {draft.addedBy && !(DESIGNERS as readonly string[]).includes(draft.addedBy) && (
+                <option value={draft.addedBy}>{draft.addedBy}</option>
+              )}
+            </select>
+          ) : (
+            <input
+              id="link-added-by"
+              value={draft.addedBy}
+              onChange={(e) => onChange({ addedBy: e.target.value })}
+              placeholder="Your name"
+              style={fieldStyle}
+            />
+          )}
         </div>
 
         {p.showProduct && (
@@ -903,7 +965,7 @@ function LinkFormModal({
 
 export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
   const { index: rawIndex, refresh } = p.board.useLinks()
-  const { createLink, saveLink, deleteLink, readLastAuthor, rememberLastAuthor } = p.board
+  const { createLink, saveLink, archiveLink, deleteLink, readLastAuthor, rememberLastAuthor } = p.board
   // Every row, every build (2026-10-15): the public build that filtered this
   // index to the rows flipped public is retired, and the toggle went with it.
   const index = rawIndex
@@ -922,14 +984,28 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
   const [typeFilter, setTypeFilter] = useState<string>('')
   /* '' is All. A `both` row matches every pill — see `matchesProduct`. */
   const [productFilter, setProductFilter] = useState<LinkProduct | ''>('')
+  /* '' is All. Matched loosely against the typed author — see `matchesDesigner`. */
+  const [designerFilter, setDesignerFilter] = useState<Designer | ''>('')
+  /* Which half of the board the list shows. The archive is the SAME store,
+     split on `archivedAt`; nothing moves anywhere when a row is archived. */
+  const [showArchive, setShowArchive] = useState(false)
+
+  /* Archived rows are HIDDEN, not deleted (2026-10-15): the board lists the
+     live ones, and "Show archive" flips the list to the others. A board without
+     the control has no archived rows, so `live` is its whole index. */
+  const live = useMemo(() => index.links.filter(isLive), [index.links])
+  const archived = useMemo(() => index.links.filter((l) => !isLive(l)), [index.links])
+  const inArchive = Boolean(p.archivable) && showArchive
+  const source = inArchive ? archived : live
 
   const q = query.trim().toLowerCase()
   const rows = useMemo(
     () =>
-      index.links.filter(
+      source.filter(
         (l) =>
           (!typeFilter || l.type === typeFilter) &&
           matchesProduct(l.product, productFilter) &&
+          matchesDesigner(l.addedBy, designerFilter) &&
           (!q ||
             l.title.toLowerCase().includes(q) ||
             l.url.toLowerCase().includes(q) ||
@@ -937,7 +1013,7 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
             l.addedBy.toLowerCase().includes(q) ||
             linkTypeLabel(l.type).toLowerCase().includes(q)),
       ),
-    [index.links, q, typeFilter, productFilter],
+    [source, q, typeFilter, productFilter, designerFilter],
   )
 
   /* Assigned across the WHOLE list, before any row draws — a per-row
@@ -956,7 +1032,9 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
   /** Every URL on the board — what the strip matches a branch against so a
    *  branch already up for review is not offered again. Read from the UNFILTERED
    *  index, not `rows`: a branch is already on the board whether or not the
-   *  current search or type filter happens to be showing it. */
+   *  current search or type filter happens to be showing it. ARCHIVED rows
+   *  count too (2026-10-15, Jillienne): an archived branch was hidden on
+   *  purpose, and a strip that offered it straight back would undo the click. */
   const boardUrls = useMemo(() => index.links.map((l) => l.url), [index.links])
 
   const change = (patch: Partial<LinkDraft>) => setDraft((d) => ({ ...d, ...patch }))
@@ -1051,6 +1129,11 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
       addedBy: link.addedBy,
       type: link.type,
       product: link.product,
+      // Carried through, so editing an archived row leaves it archived with
+      // its original stamp — the server keeps the `archivedAt` it is handed.
+      archived: !isLive(link),
+      archivedAt: link.archivedAt,
+      archivedBy: link.archivedBy,
     })
     setErrors([])
     setEditing(link)
@@ -1080,6 +1163,24 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     }
   }
 
+  /**
+   * Archive hides; Remove deletes. No confirm here, because it is reversible
+   * from the archive view — that is the whole reason it exists beside Remove.
+   * `readLastAuthor()` is the best label this browser has for who did it: the
+   * same name the Add form prefills, which since the roster is one of the five.
+   */
+  const archive = async (link: StoredLink, archived: boolean) => {
+    setBusy(true)
+    try {
+      await archiveLink(link, archived, readLastAuthor())
+      await refresh()
+    } catch (err) {
+      setErrors(err instanceof LinkWriteError ? err.errors : [archived ? 'Could not archive.' : 'Could not unarchive.'])
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const remove = async (link: StoredLink) => {
     // Confirmed because it is destructive and there is no undo — the store is
     // the only copy of a link, which is the same reason `Copy as markdown`
@@ -1099,7 +1200,9 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
 
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(toMarkdown(index.links))
+      // What the list is SHOWING — the archive when that is open — not the
+      // whole store, so a paste matches the page the reader is looking at.
+      await navigator.clipboard.writeText(toMarkdown(source))
       setCopied(true)
       window.setTimeout(() => setCopied(false), 1500)
     } catch {
@@ -1150,6 +1253,23 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
         onSelect: () => void share(link),
       })
     }
+    if (p.archivable && canAuthor) {
+      items.push(
+        isLive(link)
+          ? {
+              id: 'archive',
+              label: 'Archive',
+              icon: <Package size={13} aria-hidden />,
+              onSelect: () => void archive(link, true),
+            }
+          : {
+              id: 'unarchive',
+              label: 'Unarchive',
+              icon: <ArrowRotateLeft size={13} aria-hidden />,
+              onSelect: () => void archive(link, false),
+            },
+      )
+    }
     if (canAuthor) {
       items.push({
         id: 'remove',
@@ -1167,11 +1287,17 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
       {/* ── toolbar ── */}
       {index.links.length > 0 && (
         <div style={toolbarStyle}>
-          {canAuthor && (
+          {canAuthor && !inArchive && (
             <button type="button" onClick={beginAdd} style={primaryBtnStyle}>
               <Plus size={12} aria-hidden />
               Add {p.noun}
             </button>
+          )}
+          {inArchive && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--ux-text)' }}>
+              <Package size={13} aria-hidden />
+              Archive
+            </span>
           )}
           {index.links.length >= SEARCH_THRESHOLD && (
             <input
@@ -1189,6 +1315,62 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
             <ClipboardList size={12} aria-hidden />
             {copied ? 'Copied' : 'Copy as markdown'}
           </button>
+          {/* ── the archive door ──
+              Top right, a link-shaped button rather than a pill in the filter
+              strip: the archive is not a filter over the board, it is the
+              other half of the store, and the strip's pills still apply inside
+              it. Offered only once something is archived — "Show archive · 0"
+              is a door to an empty room. */}
+          {p.archivable && !inArchive && archived.length > 0 && (
+            <button type="button" onClick={() => setShowArchive(true)} style={archiveLinkStyle}>
+              <Package size={12} aria-hidden />
+              Show archive · {archived.length}
+            </button>
+          )}
+          {inArchive && (
+            <button type="button" onClick={() => setShowArchive(false)} style={archiveLinkStyle}>
+              <ArrowLeft size={12} aria-hidden />
+              Back to board
+            </button>
+          )}
+        </div>
+      )}
+
+      {inArchive && (
+        <p style={archiveNoteStyle}>
+          {archived.length === 0
+            ? 'Nothing in the archive.'
+            : `${archived.length} ${archived.length === 1 ? p.noun : p.nounPlural} hidden from the board. Unarchive one to put it back.`}
+        </p>
+      )}
+
+      {/* ── designer filter ──
+          The roster, every name, every time — a pill for a designer with no
+          row yet is still the right thing to offer (the same reasoning as the
+          product strip it replaced). Matched loosely against the typed Added
+          by, so the rows written before the field became a choice still land
+          under the right name. */}
+      {p.showDesigners && (
+        <div style={filterRowStyle} role="group" aria-label="Filter by designer">
+          <button
+            type="button"
+            onClick={() => setDesignerFilter('')}
+            aria-pressed={designerFilter === ''}
+            style={designerFilter === '' ? filterPillActiveStyle : filterPillStyle}
+          >
+            All
+          </button>
+          {DESIGNERS.map((d) => (
+            <button
+              key={d}
+              type="button"
+              onClick={() => setDesignerFilter(designerFilter === d ? '' : d)}
+              aria-pressed={designerFilter === d}
+              style={designerFilter === d ? filterPillActiveStyle : filterPillStyle}
+            >
+              {d}
+            </button>
+          ))}
         </div>
       )}
 
@@ -1197,8 +1379,9 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
           below: `both` rows mean a pill can be empty and still be the right
           thing to offer, and the three pills are the section's stated
           vocabulary rather than a summary of what happens to be in the list
-          today. */}
-      {p.showProduct && (
+          today. NOT when the designer pills are on (2026-10-15) — those took
+          its place, and the product stays as the tag on the row. */}
+      {p.showProduct && !p.showDesigners && (
         <div style={filterRowStyle} role="group" aria-label="Filter by product">
           <button
             type="button"
@@ -1269,7 +1452,17 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
         </div>
       ) : rows.length === 0 ? (
         <p style={{ fontSize: 13, color: 'var(--ux-text-3)' }}>
-          No {p.nounPlural} match {q && typeFilter ? 'that search and type' : q ? 'that search' : 'that type'}.
+          {inArchive && archived.length === 0
+            ? `No archived ${p.nounPlural}.`
+            : `No ${p.nounPlural} match ${
+                q && (typeFilter || designerFilter)
+                  ? 'that search and filter'
+                  : q
+                    ? 'that search'
+                    : designerFilter
+                      ? 'that designer'
+                      : 'that type'
+              }.`}
         </p>
       ) : (
         <ul style={listStyle}>
@@ -1375,6 +1568,12 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                       )}
                       {p.showUpdated && link.updatedAt && (
                         <span style={linkTagStyle}>Updated {formatUpdated(link.updatedAt)}</span>
+                      )}
+                      {!isLive(link) && (
+                        <span style={linkTagStyle}>
+                          Archived {formatUpdated(link.archivedAt)}
+                          {link.archivedBy.trim() && ` · ${link.archivedBy.trim()}`}
+                        </span>
                       )}
                       {p.showProduct && (
                         <span style={productBadgeStyle(link.product)}>
@@ -1547,6 +1746,10 @@ export function DemoPanel({
     showProduct: true,
     showBadges: true,
     showUpdated: true,
+    // 2026-10-15, Jillienne: pills by designer, product stays a tag; Archive
+    // in the kebab, Show archive top right. Refinement only, both.
+    showDesigners: true,
+    archivable: true,
     emptyHint:
       'Push a branch, paste its Netlify URL here, and everyone with the Hub link can open it.',
     saveHint:

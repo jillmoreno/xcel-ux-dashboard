@@ -35,6 +35,8 @@ const demo = (over: Partial<StoredLink> = {}): StoredLink => ({
   product: 'both',
   addedDate: '2026-09-18',
   updatedAt: '',
+  archivedAt: '',
+  archivedBy: '',
   ...over,
 })
 
@@ -221,5 +223,232 @@ describe('Refinement — the Updated stamp (2026-10-14)', () => {
     const board = readFileSync(resolve(here, '../../netlify/lib/linkBoard.ts'), 'utf8')
     expect(board).toMatch(/out\.updatedAt = new Date\(\)\.toISOString\(\)/)
     expect(board).not.toMatch(/b\.updatedAt/)
+  })
+})
+
+/* ── designer pills and the archive (2026-10-15) ─────────────────────────── */
+
+/**
+ * Jillienne, on the preview, the day the Designers group was retired: "i want
+ * these quick filter pills to be based on the Designers name. I also want the
+ * refinement ellipsis to have an archive option. This will simply hide them
+ * from the main view, there will be a separate link button top right to Show
+ * Archive." Eight follow-up calls, pinned here: the roster (not the names on
+ * the board) is the pill set and the Added by choices; the product stays as the
+ * tag; Refinement only; Archive sits beside Remove; the archive is stamped
+ * with who and when; anyone can unarchive; the branch strip hides an archived
+ * build; the nav count excludes archived rows.
+ */
+describe('Refinement — designer pills and the archive (2026-10-15)', () => {
+  /** A store whose PUT actually flips the archive state, so the re-read after
+   *  a write shows the row where it now belongs. */
+  function liveEndpoint(initial: StoredLink[]) {
+    const rows = [...initial]
+    const writes: { method: string; url: string; body: Record<string, unknown> }[] = []
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: unknown, init?: RequestInit) => {
+        const url = String(input)
+        const method = init?.method ?? 'GET'
+        const ok = (body: unknown, status = 200) =>
+          new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
+        if (method === 'PUT') {
+          const body = JSON.parse(String(init?.body)) as Record<string, unknown>
+          writes.push({ method, url, body })
+          const id = decodeURIComponent(url.split('/').pop() ?? '')
+          const i = rows.findIndex((r) => r.id === id)
+          const archived = body.archived === true
+          rows[i] = {
+            ...rows[i],
+            archivedAt: archived ? rows[i].archivedAt || '2026-10-15T12:00:00.000Z' : '',
+            archivedBy: archived ? String(body.archivedBy ?? '') : '',
+          }
+          return ok({ link: rows[i] })
+        }
+        if (method !== 'GET') {
+          writes.push({ method, url, body: init?.body ? JSON.parse(String(init.body)) : {} })
+          return ok({ link: demo() }, 201)
+        }
+        return ok({ links: rows })
+      }),
+    )
+    return { writes, rows }
+  }
+
+  const pills = () =>
+    within(screen.getByRole('group', { name: 'Filter by designer' }))
+      .getAllByRole('button')
+      .map((b) => b.textContent)
+
+  it('offers the roster as pills — every name, in order — and no product pills', async () => {
+    mockEndpoint([demo()])
+    render(<DemoPanel />)
+    await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
+    expect(pills()).toEqual(['All', 'Jillienne', 'Anjani', 'Eric', 'Afsana', 'Cody'])
+    expect(screen.queryByRole('group', { name: 'Filter by product' })).toBeNull()
+  })
+
+  it('filters on the typed Added by, loosely — "eric w" and "Afsana & Eric" are both Eric', async () => {
+    const user = userEvent.setup()
+    mockEndpoint([
+      demo({ id: 'demo-001', title: 'Eric’s rail', addedBy: 'eric w' }),
+      demo({ id: 'demo-002', title: 'Anjani’s landing', addedBy: 'Anjani' }),
+      demo({ id: 'demo-003', title: 'Shared checkout', addedBy: 'Afsana & Eric' }),
+    ])
+    render(<DemoPanel />)
+    await waitFor(() => expect(screen.getByText('3 links')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: 'Eric' }))
+    expect(screen.getByText('Eric’s rail')).toBeInTheDocument()
+    expect(screen.getByText('Shared checkout')).toBeInTheDocument()
+    expect(screen.queryByText('Anjani’s landing')).not.toBeInTheDocument()
+    expect(screen.getByText('2 links')).toBeInTheDocument()
+
+    // A shared row sits under both of its names.
+    await user.click(screen.getByRole('button', { name: 'Afsana' }))
+    expect(screen.getByText('Shared checkout')).toBeInTheDocument()
+    expect(screen.queryByText('Eric’s rail')).not.toBeInTheDocument()
+
+    // Clicking the active pill clears it.
+    await user.click(screen.getByRole('button', { name: 'Afsana' }))
+    expect(screen.getByText('3 links')).toBeInTheDocument()
+  })
+
+  it('keeps the product as the tag on the row', async () => {
+    mockEndpoint([demo({ product: 'compass' })])
+    const { container } = render(<DemoPanel />)
+    await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
+    const tags = [...container.querySelectorAll('ul span')].map((el) => el.textContent?.trim())
+    expect(tags).toContain('Compass')
+  })
+
+  it('Added by is a choice from the roster, with a legacy name kept as its own option', async () => {
+    const user = userEvent.setup()
+    mockEndpoint([demo({ addedBy: 'Sam' })])
+    render(<DemoPanel />)
+    await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: 'Add link' }))
+    const field = await screen.findByLabelText(/Added by/)
+    expect(field.tagName).toBe('SELECT')
+    const options = [...(field as HTMLSelectElement).options].map((o) => o.value)
+    expect(options).toEqual(['', 'Jillienne', 'Anjani', 'Eric', 'Afsana', 'Cody'])
+    await user.keyboard('{Escape}')
+
+    // Editing Sam's row does not silently reassign it: Sam is an option there.
+    await user.click(screen.getByRole('button', { name: /^Actions for / }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Edit' }))
+    const edit = (await screen.findByLabelText(/Added by/)) as HTMLSelectElement
+    expect(edit.value).toBe('Sam')
+    expect([...edit.options].map((o) => o.value)).toContain('Sam')
+  })
+
+  it('Resources keeps the free-text field and no designer pills', async () => {
+    const user = userEvent.setup()
+    mockEndpoint([])
+    render(<LinksPanel />)
+    await user.click(await screen.findByRole('button', { name: 'Add the first link' }))
+    expect((await screen.findByLabelText(/Added by/)).tagName).toBe('INPUT')
+    expect(screen.queryByRole('group', { name: 'Filter by designer' })).toBeNull()
+  })
+
+  it('Archive hides the row, Show archive lists it with who and when, Unarchive puts it back', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem('cgp.links.lastAuthor', 'Jillienne')
+    const { writes } = liveEndpoint([
+      demo({ id: 'demo-001', title: 'Keep me' }),
+      demo({ id: 'demo-002', title: 'Hide me' }),
+    ])
+    render(<DemoPanel />)
+    await waitFor(() => expect(screen.getByText('2 links')).toBeInTheDocument())
+    // No door until something is archived.
+    expect(screen.queryByRole('button', { name: /Show archive/ })).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: 'Actions for Hide me' }))
+    const menu = await screen.findByRole('menu')
+    // Archive sits beside Remove, not instead of it.
+    expect(within(menu).getByRole('menuitem', { name: 'Archive' })).toBeInTheDocument()
+    expect(within(menu).getByRole('menuitem', { name: 'Remove' })).toBeInTheDocument()
+    await user.click(within(menu).getByRole('menuitem', { name: 'Archive' }))
+
+    // A SAVE with the intent and the label; the stamp is the server's.
+    await waitFor(() => expect(writes).toHaveLength(1))
+    expect(writes[0].method).toBe('PUT')
+    expect(writes[0].url).toBe('/api/demos/demo-002')
+    expect(writes[0].body.archived).toBe(true)
+    expect(writes[0].body.archivedBy).toBe('Jillienne')
+    expect(writes[0].body).not.toHaveProperty('archivedAt', expect.stringMatching(/\d/))
+
+    // Hidden from the board, counted in the door.
+    await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
+    expect(screen.queryByText('Hide me')).not.toBeInTheDocument()
+    expect(screen.getByText('Keep me')).toBeInTheDocument()
+    const door = screen.getByRole('button', { name: 'Show archive · 1' })
+
+    // The archive view: the hidden row, its stamp, no Add button, a way back.
+    await user.click(door)
+    expect(screen.getByText('Hide me')).toBeInTheDocument()
+    expect(screen.queryByText('Keep me')).not.toBeInTheDocument()
+    expect(screen.getByText(/^Archived .*· Jillienne$/)).toBeInTheDocument()
+    expect(screen.getByText('1 link hidden from the board. Unarchive one to put it back.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Add link' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Back to board' })).toBeInTheDocument()
+
+    // Anyone can unarchive — no owner check, the same kebab.
+    await user.click(screen.getByRole('button', { name: 'Actions for Hide me' }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Unarchive' }))
+    await waitFor(() => expect(writes).toHaveLength(2))
+    expect(writes[1].body.archived).toBe(false)
+    expect(writes[1].body.archivedBy).toBe('')
+    await waitFor(() => expect(screen.getByText('No archived links.')).toBeInTheDocument())
+
+    await user.click(screen.getByRole('button', { name: 'Back to board' }))
+    await waitFor(() => expect(screen.getByText('2 links')).toBeInTheDocument())
+    expect(screen.getByText('Hide me')).toBeInTheDocument()
+  })
+
+  it('editing an archived row carries its archive state through, so a save does not un-archive it', async () => {
+    const user = userEvent.setup()
+    const { writes } = liveEndpoint([
+      demo({ id: 'demo-001', title: 'Live one' }),
+      demo({ id: 'demo-002', title: 'Old one', archivedAt: '2026-10-10T09:00:00.000Z', archivedBy: 'Eric' }),
+    ])
+    render(<DemoPanel />)
+    await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
+    await user.click(screen.getByRole('button', { name: 'Show archive · 1' }))
+    await user.click(screen.getByRole('button', { name: 'Actions for Old one' }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Edit' }))
+    await user.click(await screen.findByRole('button', { name: 'Save changes' }))
+    await waitFor(() => expect(writes).toHaveLength(1))
+    expect(writes[0].body.archived).toBe(true)
+    expect(writes[0].body.archivedAt).toBe('2026-10-10T09:00:00.000Z')
+    expect(writes[0].body.archivedBy).toBe('Eric')
+  })
+
+  it('the nav count excludes archived rows', async () => {
+    mockEndpoint([demo({ id: 'demo-001' }), demo({ id: 'demo-002', archivedAt: '2026-10-15T12:00:00.000Z' })])
+    const { useDemoCount } = await import('@/data/demoStore')
+    function Probe() {
+      return <output>{useDemoCount()}</output>
+    }
+    render(<Probe />)
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('1'))
+  })
+
+  it('the branch strip still treats an archived row’s URL as "already on the board"', () => {
+    // Source-level: `boardUrls` is read from the UNFILTERED index, which holds
+    // archived rows too, and the comment beside it says why. A strip that
+    // offered an archived branch straight back would undo the click.
+    const panel = readFileSync(resolve(here, '../../src/components/prototype/LinksPanel.tsx'), 'utf8')
+    expect(panel).toMatch(/const boardUrls = useMemo\(\(\) => index\.links\.map\(\(l\) => l\.url\)/)
+  })
+
+  it('the endpoint stamps archivedAt itself, keeps the one it is handed, and only on Refinement', () => {
+    const board = readFileSync(resolve(here, '../../netlify/lib/linkBoard.ts'), 'utf8')
+    expect(board).toMatch(/if \(cfg\.archivable\)/)
+    expect(board).toMatch(/out\.archivedAt = archived \? \(ISO_STAMP\.test\(prior\) \? prior : new Date\(\)\.toISOString\(\)\) : ''/)
+    const fn = (name: string) => readFileSync(resolve(here, `../../netlify/functions/${name}.ts`), 'utf8')
+    expect(fn('demos')).toMatch(/archivable: true/)
+    for (const other of ['links', 'research', 'prds']) expect(fn(other)).toMatch(/archivable: false/)
   })
 })

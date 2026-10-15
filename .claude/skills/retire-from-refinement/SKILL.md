@@ -39,6 +39,14 @@ At the END of a Refinement row's life, both ways it can end:
 Not for a row someone is still discussing. Refinement is allowed to be untidy;
 that is what it is for.
 
+**Not the same as the row's own Archive (2026-10-15).** The kebab on a
+Refinement row has an "Archive" item that HIDES the row — reversible from
+"Show archive" top right, stamped with who and when, no branch decision, no
+Archive-table row. That is for tidying the board. THIS skill is for ending the
+work: it decides the branch's fate out loud and writes the record. A row that
+was archived on the board and is never coming back still deserves this skill
+when the branch is deleted; until then, hidden is fine.
+
 ## ⚠ Where this does NOT send things
 
 **Not to Explorations** (the section called Exploration until 2026-10-15,

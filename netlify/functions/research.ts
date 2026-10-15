@@ -34,4 +34,5 @@ export default linkBoardHandler({
   segment: 'research',
   types: ALLOWED_TYPES,
   products: false,
+  archivable: false,
 })

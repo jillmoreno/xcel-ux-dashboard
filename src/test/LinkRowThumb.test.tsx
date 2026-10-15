@@ -37,6 +37,8 @@ const row = (over: Partial<StoredLink> = {}): StoredLink => ({
   product: 'both',
   addedDate: '2026-09-22',
   updatedAt: '',
+  archivedAt: '',
+  archivedBy: '',
   ...over,
 })
 
@@ -183,29 +185,26 @@ describe('product tagging', () => {
     expect(matchesProduct(DEFAULT_PRODUCT, '')).toBe(true)
   })
 
-  it('shows only the matching rows, and Both under either pill', async () => {
-    const user = userEvent.setup()
+  it('the product is a TAG on the row, not a pill over the list (2026-10-15)', async () => {
+    /* This test used to click Atlas / Compass pills and watch the list narrow.
+       Jillienne replaced those pills with the designers' names ("stay as the
+       tag" for the product), so the pills are gone and the rule they drove —
+       `matchesProduct`, pinned just above — now serves the tag and nothing
+       filters on it. What remains to pin is the half she kept. */
     mockEndpoint([
       row({ id: 'demo-003', title: 'Only XCEL', product: 'xcel' }),
       row({ id: 'demo-002', title: 'Only Compass', product: 'compass' }),
       row({ id: 'demo-001', title: 'Shared work', product: 'both' }),
     ])
-    render(<DemoPanel />)
+    const { container } = render(<DemoPanel />)
     await screen.findByText('Only XCEL')
 
-    await user.click(screen.getByRole('button', { name: 'Atlas' }))
-    expect(screen.getByText('Only XCEL')).toBeInTheDocument()
-    expect(screen.getByText('Shared work')).toBeInTheDocument()
-    expect(screen.queryByText('Only Compass')).not.toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: 'Compass' }))
-    expect(screen.getByText('Only Compass')).toBeInTheDocument()
-    expect(screen.getByText('Shared work')).toBeInTheDocument()
-    expect(screen.queryByText('Only XCEL')).not.toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: 'All' }))
-    expect(screen.getByText('Only XCEL')).toBeInTheDocument()
-    expect(screen.getByText('Only Compass')).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Filter by product' })).toBeNull()
+    expect(screen.getByRole('group', { name: 'Filter by designer' })).toBeInTheDocument()
+    const tags = [...container.querySelectorAll('ul span')].map((el) => el.textContent?.trim())
+    expect(tags).toContain('Atlas')
+    expect(tags).toContain('Compass')
+    expect(tags).toContain('Both')
   })
 
   it('defaults a new row to Both, and saves what was picked', async () => {

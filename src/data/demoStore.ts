@@ -19,7 +19,7 @@
  * Shares `cgp.links.lastAuthor` with Links on purpose — it is a fact about the
  * person at this keyboard, and they are the same person on both boards.
  */
-import { createLinkBoard } from './linkStore'
+import { createLinkBoard, isLive } from './linkStore'
 
 export const DEMO_BOARD = createLinkBoard({
   base: '/api/demos',
@@ -27,8 +27,10 @@ export const DEMO_BOARD = createLinkBoard({
   lastAuthorKey: 'cgp.links.lastAuthor',
 })
 
-export const {
-  listLinks: listDemos,
-  useLinks: useDemos,
-  useLinkCount: useDemoCount,
-} = DEMO_BOARD
+export const { listLinks: listDemos, useLinks: useDemos } = DEMO_BOARD
+
+/** The nav badge counts LIVE rows only (2026-10-15): an archived row is hidden
+ *  from the board, so a badge that counted it would read 5 over a list of 4 —
+ *  the same "a badge over a list it does not match reads as a load failure"
+ *  rule the public build's count followed. */
+export const useDemoCount = (): number => DEMO_BOARD.useLinkCount(isLive)

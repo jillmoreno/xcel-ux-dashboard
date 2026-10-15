@@ -369,6 +369,36 @@ WHICH Prototypes row the work reached, since "promoted" no longer says. **It was
 until 2026-09-18**, and the product build was promoted into it on 2026-09-08;
 older notes that say "the Demo row" or "the Demo baseline" mean this section.
 
+### Refinement — designer pills and the archive (2026-10-15)
+
+Jillienne, on the preview the day the Designers group was retired: "i want
+these quick filter pills to be based on the Designers name. I also want the
+refinement ellipsis to have an archive option. This will simply hide them from
+the main view, there will be a separate link button top right to Show
+Archive." Mocked up first, then eight calls, all hers:
+
+| Question | Call |
+|---|---|
+| Where do the pill names come from? | The fixed **roster** — `DESIGNERS` in `linkStore.ts`: Jillienne · Anjani · Eric · Afsana · Cody — and the Added by field offers the same five, so what is typed is what the pills filter on. `matchesDesigner` reads the free-text names on older rows loosely ("eric w", "Afsana & Eric" → Eric; a shared row lands under both). |
+| The Atlas / Compass pills? | Gone from Refinement; the **product stays as the tag** on the row. |
+| Other boards? | **Refinement only.** Research, Resources and PRDs keep the free-text author and have no archive. |
+| Archive or Remove? | **Both.** Archive hides and is reversible; Remove deletes and is confirmed. |
+| Stamp who and when? | **Yes** — `archivedAt` and `archivedBy`, stamped by the endpoint (`archivable` in `linkBoard.ts`), shown as an "Archived <date, time> · <name>" tag in the archive view. `archivedBy` is the browser's last author, the same label the Add form prefills — so it is blank in a browser that has never saved a link. |
+| Who can unarchive? | **Anyone.** Same kebab, no owner check. |
+| The branch strip? | **Hides a build whose row is archived** — `boardUrls` reads the whole index, archived rows included, so the strip does not offer the branch straight back. |
+| The nav count? | **Excludes archived rows** — `useDemoCount` counts `isLive` rows. |
+
+Mechanically: `StoredLink` gained `archivedAt` / `archivedBy` ('' when live);
+`archiveLink` on the board is a SAVE with `archived` flipped, so the server
+owns the stamp the way it owns `updatedAt` and keeps the stamp it is handed
+while a record stays archived (editing an archived row does not un-archive
+it). `LinkBoardPresentation` gained `showDesigners` and `archivable`, both on
+for `DemoPanel` only. "Show archive · N" appears top right only once something
+is archived; inside the archive the toolbar reads "Archive", the Add button
+is gone, and "Back to board" returns. `Demo.test.tsx` pins every row of the
+table above; `LinkRowThumb.test.tsx`'s product-pill test became the
+tag-stays test.
+
 ### Refinement is the review inbox; Prototypes is the product (2026-09-18)
 
 **Labels vs ids, because they differ.** The review inbox is LABELLED
