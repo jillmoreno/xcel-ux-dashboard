@@ -956,6 +956,37 @@ now carry the whole meaning rather than a caveat.
 | `home-tile-style` | `stacked` | **Promoted 2026-10-05. Testing 3 only.** The six right-rail destinations — My Courses, My Certificates, Flashcards, Exam Information, Applying for License, State Requirements — are full-width stacked rows with no outline and a 20% tint on hover. `square` draws them as outlined square tiles instead (`?ff=home-tile-style:square`). ⚠ SAME SIX, SAME ORDER, SAME CTA IDS in both arms, so the variant compares LAYOUT and nothing else. ⚠ Three of the six open a SHEET and three move the page, drawn identically — a tile's appearance does not predict whether you leave Home |
 | `combined-progress-bar` | off | **Nothing, and that is the reviewed answer — declined 2026-10-05.** The 8px bar under Testing 3's course title. It shipped ON on the branch so it could be seen beside the gauge, and the comparison found the defect: the bar fills from `percent`, which is LESSON progress (62%), while the gauge a few lines below is weighted across the whole JOURNEY (37%) — one course, two fills of different lengths. The timeline carries the figure and the marker, so it was the half that could stand alone. One URL away (`?ff=combined-progress-bar:on`), and the live question again if the two measures are ever reconciled |
 | `exam-card-placement` | `journey-column` | **Nothing — declined 2026-10-05.** The shipped position: the exam-date card is the first card of the right-hand Study Journey column. `under-course` moves it below the Current course card at that card's full width (`?ff=exam-card-placement:under-course`). The argument that decided it: in the column the card sits in a sequence that explains it — Step 1 coursework, Step 2 exam — and under the course card it stands alone, so the question has to carry itself. ⚠ NOT TESTING 3'S QUESTION AT ALL: `LearnerFocusedBand` gates the move on `!combinedCoursework`, so the promoted version overrides this flag and renders the card in the column either way. This row is about Testing, Testing 2 and QE Focused |
+| `dashboard-course-state` | `auto` · `unregulated` | **Promoted 2026-10-15 — the Course control, and its baseline is "change nothing".** A Demo Controls dropdown picking which LICENCE the dashboard demos — New York, Florida or Texas — with a Regulated / Unregulated sequencing toggle nested under it. ⚠ `auto` IS THE BASELINE BECAUSE NO SINGLE COURSE PRESERVES IT: the qualifying journey has demoed New York since 2026-09-16 and CE and exam prep have always demoed Florida, and that split has a test on it by name. `fl` as the default changed the landing page; `ny` changed Learner Focused's renewal cycle. `auto` passes no course at all, so every journey resolves exactly what it resolved before. Picking a licence moves ALL of them together — the Current Learning Path band, the Study Journey, the Get Licensed steps, Readiness and its facts table, the Study Plan, and the Compass content tree. ⚠ Regulated locks Step 1 in sequence (grey padlocks); Unregulated is today's free navigation. ⚠ Only the NEW YORK qualifying figures are confirmed against XCEL's published page — Texas is invented throughout and New York's CE and exam-prep arms are invented so the control cannot name a jurisdiction the page does not show |
+| `dashboard-course-expiry` | `auto` | **Promoted 2026-10-15 — the Expires control, same shape of baseline.** A dropdown setting how many days of course access are left: 1, 7, 15, 30, 90, 120, 400. It moves one date that three surfaces read — the course header's countdown, the ceiling the Study Pace plans against, and the Jump Back In card's expiring-soon badge. ⚠ `auto` BECAUSE EACH PROGRESS STATE AUTHORS ITS OWN WINDOW (On Track 29 days, At Risk 3, Off Track a deliberately unreachable 11) and a day count as the baseline would overwrite all three. A chosen count overrides every one of them, which is the point: a reviewer asking for "1 day" is asking to see one day left. ⚠ The spread crosses every threshold on purpose — 1/7/15 badge, 30 and up do not, and 1 day is short enough that no honest pace fits |
+
+
+⚠ **TWO CHANGES ON THE 2026-10-15 COURSE-CONTROL MERGE ARE NOT BEHIND ANY FLAG**,
+and they are the whole of what that merge moved on a fresh `?demo=1`. Both land
+on the End-to-End Demo's Home — which is the `xcel-dashboard` row AND the
+`xcel-atlas-learning` one, because it is one build. Everything else was
+byte-identical: Readiness, QE Focused, Learner Focused, the Compass row, the
+Compass course rail and the Invite door.
+
+  - **Step 1's lesson row derives instead of transcribing.** It read
+    `Pre-Licensing Lessons (13 of 42 completed)` — a string copied verbatim
+    from Figma 265:8144 — and now reads the persona, so it opens at 26 of 42
+    and follows the Progress dropdown (0 at Not Started, 42 of 42 at
+    Completed). The frame's 13 is 31% on a page whose Progress pill reads
+    ~63%. *Atlas Learning is Eric's row: his decision, applied by Jillienne.*
+  - **The Study Pace sentence derives, and it reads 2 weeks rather than 3.**
+    Two causes, both fixed: the sentence was a literal from Figma 267:8266,
+    and the Jump Back In card's `progress` was authored at 45 while the path's
+    came from the Progress dropdown at 62 — one course, two percentages, on
+    one screen. The stale 45 had the pace plan for 22 hours when 15 remained
+    and print a 3-week plan under an 18-day access window. `personaFor` now
+    gives the card the path's progress WHERE THE CARD IS THE WHOLE PATH (a
+    single requirement category); a CE or exam-prep card is one course of
+    several and keeps its own. Past eight weeks the sentence switches to
+    months, so the 400-day row reads 13 months rather than 56 weeks.
+
+Neither is reversible by URL. `ProgressAgreement.test.tsx` pins both — the
+card/path agreement in each direction, and that the recommended pace always
+fits inside the access window.
 
 ⚠ ONE CHANGE ON THE 2026-09-29 MERGE IS NOT BEHIND ANY FLAG, and it is the one
 to know about because no `?ff=` will turn it off. **The Governing Agency contact
