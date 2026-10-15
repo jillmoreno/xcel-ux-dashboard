@@ -10,6 +10,9 @@
  * - `archivedAt` / `archivedBy` (2026-10-15) — a row can be ARCHIVED: hidden
  *   from the board and listed under "Show archive", reversible, stamped
  *   server-side. Remove still deletes.
+ * - `feature` / `supersedes` (2026-10-15) — Feature Refinement: a row is one
+ *   CHUNK of work, `feature` is what it is part of and the axis the board
+ *   groups on, and `supersedes` is the id of the chunk this one replaces.
  * - No `type` field. Demo rows are all the same kind of thing.
  *
  * `isPublic` was the fourth until 2026-10-15, when the public site it gated
@@ -31,4 +34,5 @@ export default linkBoardHandler({
   types: null,
   products: true,
   archivable: true,
+  features: true,
 })

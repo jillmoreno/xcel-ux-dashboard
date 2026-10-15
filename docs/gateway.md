@@ -383,6 +383,52 @@ WHICH Prototypes row the work reached, since "promoted" no longer says. **It was
 until 2026-09-18**, and the product build was promoted into it on 2026-09-08;
 older notes that say "the Demo row" or "the Demo baseline" mean this section.
 
+### Feature Refinement — a row is a CHUNK, a group is the feature (2026-10-15)
+
+Jillienne, the evening the one-site change landed: "I want the designers to
+work on smaller chunks of branches and push those accordingly, then start a new
+branch etc. I want them to be in the habit of not just using the same branch
+over and over."
+
+**The board was pushing the other way, and that is what this changes.** A
+Refinement row WAS a branch URL, so pushing again to the same branch kept the
+row correct for free, while starting a new branch cost a new row — and two rows
+for one feature made the board ambiguous in exactly the way the one-row rule
+protects Prototypes from. The tidy, cheap move was to live on one branch
+forever. Nothing marked a chunk finished, and nothing made an old branch look
+old.
+
+So a row is now one CHUNK of work and `feature` is what it is a chunk of:
+
+| Question | Call |
+|---|---|
+| Where does `feature` come from? | **Free text, with the board's own features offered as suggestions** (a `datalist`). A curated list like `DESIGNERS` was the alternative and was rejected: every new piece of work would wait on Jillienne to add a value, which is friction at the exact moment the point is to make cutting a branch cheap. `featureKey` is the mitigation — grouping is case- and space-insensitive, and the label printed is the newest chunk's own spelling, so a corrected capitalisation wins from then on. |
+| What happens to the chunk a new one replaces? | **It collapses and stays viewable** — folded under "N earlier chunks", still clickable, never auto-archived. That clickable history IS the reward for working small: a string of chunks is a progression you can open in a review, where one long branch gives you a single URL and no history at all. Auto-archiving was considered and rejected for taking that away again. |
+| Who decides a chunk was replaced? | **The newer chunk**, via `supersedes` — one writer for the relation, so nothing reaches back and stamps a row it does not own. `isSuperseded` asks the board. Archive the newer chunk and the older one comes back out of the collapsed list, which is the honest reading. |
+| Is replacing automatic? | **No — it is a prefilled choice.** Typing a feature the author already has a live chunk of fills "Replaces" with that chunk, because that is what usually happened. The first option says *Nothing — these sit side by side*, which is a real answer and the one Refinement exists to allow: two treatments of one surface, up at once (CLAUDE.md). |
+| Can Eric supersede Anjani's chunk? | **Yes.** The options are not scoped to the author — picking up where someone else left off happens, and refusing would leave two live rows each claiming to be the current answer. Only the DEFAULT is author-scoped (`latestChunkFor`). |
+| Rows with no feature? | **Unchanged, and left where their date puts them** — no header, no group, interleaved with the groups rather than swept into a trailing bucket. There is no backfill: the board is mixed on purpose while the habit forms, and a bucket of everything written before today would read as a backlog to clear. |
+| Other boards? | **Refinement only.** `features` in `linkBoard.ts` drops both fields on the way in everywhere else, the same rule `products` and the archive follow — a Resources row belongs to no branch, so "what is this part of" has no answer there. |
+| A `supersedes` whose row was deleted? | **Accepted, and supersedes nothing.** Refusing the write would mean a designer cannot save because of something someone else did. |
+
+Mechanically: `StoredLink` gained `feature` and `supersedes` (both '' on every
+record written before today); `linkStore.ts` gained `featureKey`,
+`knownFeatures`, `isSuperseded`, `groupByFeature` and `latestChunkFor`;
+`LinkBoardPresentation` gained `showFeature`, on for `DemoPanel` only. The
+list's row body came out of its `.map` into `renderRow` so the same row draws
+inside a group and on its own, and `FeatureGroupBlock` is the header plus the
+"N earlier chunks" door. `LinkPrefill` gained `feature`, which is how
+`share` (the renamed `promote-to-refinement`) lands the next branch in the same
+group without anyone retyping it. `FeatureRefinement.test.tsx` pins every row of the table
+above.
+
+**Still to come, and all three are about making the habit stick rather than
+making it possible:** the chunk showing its own age ("7 commits · 9 days", from
+the branch deploy data the strip already reads), `promote-to-refinement`
+noticing that a branch already has a live row and offering to close that chunk
+and cut a fresh branch, and `retire-from-refinement` asking what the next chunk
+is so finishing one and starting the next is a single move.
+
 ### Refinement — designer pills and the archive (2026-10-15)
 
 Jillienne, on the preview the day the Designers group was retired: "i want

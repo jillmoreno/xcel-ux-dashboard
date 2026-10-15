@@ -44,6 +44,7 @@ const DEMO: BoardConfig = {
   types: null,
   products: true,
   archivable: true,
+  features: true,
 }
 
 describe('the map', () => {

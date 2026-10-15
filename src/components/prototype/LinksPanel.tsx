@@ -34,7 +34,14 @@
  * settles, "no endpoint" is not yet a fact.
  */
 
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react'
 import {
   ArrowLeft,
   ArrowRotateLeft,
@@ -57,19 +64,26 @@ import {
   DEFAULT_PRODUCT,
   DESIGNERS,
   LINKS_BOARD,
+  MAX_FEATURE,
   LINK_PRODUCTS,
   LINK_TYPES,
   LinkWriteError,
   draftProblems,
+  featureKey,
+  groupByFeature,
   hostOf,
   isLive,
+  knownFeatures,
+  latestChunkFor,
   linkProductLabel,
   linkTypeLabel,
   matchesDesigner,
   matchesProduct,
   safeHref,
   toMarkdown,
+  type BoardItem,
   type Designer,
+  type FeatureGroup,
   type LinkBoard,
   type LinkDraft,
   type LinkProduct,
@@ -155,6 +169,19 @@ export type LinkBoardPresentation = {
    * server drops the fields everywhere else (`archivable` in linkBoard.ts).
    */
   archivable?: boolean
+  /**
+   * FEATURE REFINEMENT — group the rows by `feature`, offer the field in the
+   * form, and collapse a chunk that a later one supersedes (2026-10-15,
+   * Jillienne). Refinement only; the server drops the fields everywhere else
+   * (`features` in linkBoard.ts).
+   *
+   * The reason it is a flag and not simply how the board renders: a Resources
+   * row is a destination that lives elsewhere and belongs to no branch, so
+   * "what is this part of" has no answer there. Refinement is the one board
+   * whose rows are CHUNKS OF WORK, and grouping is only meaningful because
+   * those chunks come in sequence.
+   */
+  showFeature?: boolean
   /** The empty-state sentence when the endpoint IS reachable. */
   emptyHint: string
   /** The sentence under the form's fields. */
@@ -193,7 +220,17 @@ export type LinkBoardPresentation = {
  *  for Anjani's work opens already tagged and the Compass filter — and the
  *  Compass Prototypes row it will one day be promoted into — can find it.
  *  Absent or unreadable means the form's own default, exactly as before. */
-export type LinkPrefill = { url: string; title: string; note: string; product?: LinkProduct }
+export type LinkPrefill = {
+  url: string
+  title: string
+  note: string
+  product?: LinkProduct
+  /** The feature this chunk is part of — `promote-to-refinement` passes the
+   *  one the branch's previous chunk used, so a designer cutting the next
+   *  branch lands in the same group without retyping it (2026-10-15).
+   *  Absent leaves the field empty and the row ungrouped, as before. */
+  feature?: string
+}
 
 /** One glyph per `LinkThumbKind`. Kept HERE rather than in `linkRowThumb.ts`
  *  so that module stays free of JSX and can be unit-tested as plain functions. */
@@ -235,6 +272,15 @@ const labelStyle: CSSProperties = {
 }
 
 const optionalStyle: CSSProperties = { fontWeight: 400, textTransform: 'none' }
+
+/** The sentence under a field that needs one. Quieter than the label and the
+ *  value, so it reads as help rather than as part of the form. */
+const hintStyle: CSSProperties = {
+  margin: '4px 0 0',
+  fontSize: 11,
+  lineHeight: 1.4,
+  color: 'var(--ux-text-3)',
+}
 
 const fieldWrapStyle: CSSProperties = { marginBottom: 12 }
 
@@ -566,6 +612,8 @@ const EMPTY_DRAFT: LinkDraft = {
   addedBy: '',
   type: '',
   product: DEFAULT_PRODUCT,
+  feature: '',
+  supersedes: '',
 }
 
 /** Below this the search field is a dead control — it costs a row of chrome to
@@ -768,6 +816,98 @@ function BranchStrip({
   )
 }
 
+/* ── a feature group ──────────────────────────────────────────────────────── */
+
+/** The group header — quiet, and a label over the chunks under it rather than
+ *  another row, so the eye does not read it as one more thing to open. */
+const featureHeadStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  justifyContent: 'space-between',
+  gap: 8,
+  padding: '10px 12px 6px',
+  borderBottom: '1px solid var(--ux-border-subtle)',
+}
+
+const featureNameStyle: CSSProperties = {
+  fontSize: 12,
+  fontWeight: 700,
+  letterSpacing: 0.6,
+  textTransform: 'uppercase',
+  color: 'var(--ux-text-2)',
+  minWidth: 0,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+}
+
+/** The "3 earlier chunks" door. Link-shaped, like "Show archive" — the same
+ *  kind of move (reveal what is deliberately out of the way) should look the
+ *  same on this board. */
+const earlierToggleStyle: CSSProperties = {
+  background: 'none',
+  border: 'none',
+  padding: 0,
+  fontSize: 12,
+  fontWeight: 600,
+  color: 'var(--ux-text-3)',
+  cursor: 'pointer',
+  textDecoration: 'underline',
+  textUnderlineOffset: 3,
+  whiteSpace: 'nowrap',
+}
+
+/**
+ * One feature and its chunks.
+ *
+ * FEATURE REFINEMENT, 2026-10-15. The group exists to make a string of small
+ * branches read as one piece of work with a history, which is the whole reason
+ * a designer would cut a fresh branch instead of pushing to the same one for a
+ * fortnight: the earlier chunks stay clickable, so the progression is something
+ * you can show in a review.
+ *
+ * Superseded chunks COLLAPSE, they are never hidden — "collapses, stays
+ * viewable" (Jillienne, 2026-10-15), chosen over auto-archiving them precisely
+ * because archiving would take that history away again and leave the board
+ * where it started.
+ */
+function FeatureGroupBlock({
+  group,
+  expanded,
+  onToggle,
+  renderRow,
+}: {
+  group: FeatureGroup
+  expanded: boolean
+  onToggle: () => void
+  renderRow: (link: StoredLink, last: boolean) => ReactNode
+}) {
+  const earlier = group.earlier.length
+  const shown = expanded ? [...group.current, ...group.earlier] : group.current
+  return (
+    <li style={{ listStyle: 'none', padding: 0 }}>
+      <div style={featureHeadStyle}>
+        <span style={featureNameStyle} title={group.label}>
+          {group.label}
+        </span>
+        {earlier > 0 && (
+          <button
+            type="button"
+            onClick={onToggle}
+            style={earlierToggleStyle}
+            aria-expanded={expanded}
+          >
+            {expanded ? 'Hide earlier' : `${earlier} earlier ${earlier === 1 ? 'chunk' : 'chunks'}`}
+          </button>
+        )}
+      </div>
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+        {shown.map((link, i) => renderRow(link, i === shown.length - 1))}
+      </ul>
+    </li>
+  )
+}
+
 /* ── the form ─────────────────────────────────────────────────────────────── */
 
 function LinkFormModal({
@@ -777,8 +917,10 @@ function LinkFormModal({
   errors,
   busy,
   onChange,
+  onChooseSupersedes,
   onSubmit,
   onClose,
+  links,
 }: {
   p: LinkBoardPresentation
   editing: Editing
@@ -786,10 +928,35 @@ function LinkFormModal({
   errors: string[]
   busy: boolean
   onChange: (patch: Partial<LinkDraft>) => void
+  /** Separate from `onChange` because choosing here also marks the field
+   *  TOUCHED, which stops the feature field re-deriving a default over the top
+   *  of a deliberate answer. See `chooseSupersedes` in the panel. */
+  onChooseSupersedes: (id: string) => void
   onSubmit: () => void
   onClose: () => void
+  /** Every row on the board — the feature suggestions and the "Replaces"
+   *  options are both derived from it. The whole index, not the filtered rows:
+   *  a feature does not stop existing because a search is on. */
+  links: StoredLink[]
 }) {
   const isEdit = editing !== null && editing !== 'new'
+  /** The chunks this one could be replacing: the same feature, still live, and
+   *  never the row being edited. NOT scoped to the author — picking up where
+   *  someone else left off is a real thing that happens, and refusing to let
+   *  Eric supersede Anjani's chunk would just leave two live rows each claiming
+   *  to be the current answer. The author only decides the DEFAULT
+   *  (`latestChunkFor`). Empty — a brand new feature, or none typed yet — and
+   *  the control does not render at all, because a select whose only option
+   *  says "nothing" is a question with no answer in it. */
+  const replaceable =
+    p.showFeature && featureKey(draft.feature ?? '')
+      ? links.filter(
+          (l) =>
+            isLive(l) &&
+            l.id !== (isEdit ? (editing as StoredLink).id : '') &&
+            featureKey(l.feature) === featureKey(draft.feature ?? ''),
+        )
+      : []
   return (
     <Modal
       open={editing !== null}
@@ -909,6 +1076,73 @@ function LinkFormModal({
           )}
         </div>
 
+        {p.showFeature && (
+          <>
+            <div style={fieldWrapStyle}>
+              <label style={labelStyle} htmlFor="link-feature">
+                Feature <span style={optionalStyle}>— optional</span>
+              </label>
+              {/* FREE TEXT with suggestions, not a list to choose from
+                  (2026-10-15, Jillienne). A curated list would mean every new
+                  piece of work waits on someone to add a value, which is
+                  friction at the exact moment the point is to make cutting a
+                  fresh branch cheap. The `datalist` is how the board's own
+                  spellings get reused without anyone being forced into them;
+                  grouping is case-insensitive, so a near miss costs a duplicate
+                  group rather than a lost row. */}
+              <input
+                id="link-feature"
+                list="link-feature-options"
+                value={draft.feature ?? ''}
+                maxLength={MAX_FEATURE}
+                onChange={(e) => onChange({ feature: e.target.value })}
+                placeholder="What this is part of — e.g. Study streak card"
+                style={fieldStyle}
+              />
+              <datalist id="link-feature-options">
+                {knownFeatures(links).map((f) => (
+                  <option key={f} value={f} />
+                ))}
+              </datalist>
+              <p style={hintStyle}>
+                Chunks of the same feature group together on the board, newest first.
+              </p>
+            </div>
+
+            {replaceable.length > 0 && (
+              <div style={fieldWrapStyle}>
+                <label style={labelStyle} htmlFor="link-supersedes">
+                  Replaces
+                </label>
+                {/* Prefilled with the author's newest chunk of this feature —
+                    the habit this board is trying to build is "finish a chunk,
+                    start the next", and the default should be the thing that
+                    usually happens. Saying these sit side by side is one click,
+                    and it is a real answer: two treatments of one surface up at
+                    once is what Refinement is FOR (CLAUDE.md), which is why
+                    this is a choice and not automatic. */}
+                <select
+                  id="link-supersedes"
+                  value={draft.supersedes ?? ''}
+                  onChange={(e) => onChooseSupersedes(e.target.value)}
+                  style={fieldStyle}
+                >
+                  <option value="">Nothing — these sit side by side</option>
+                  {replaceable.map((l) => (
+                    <option key={l.id} value={l.id}>
+                      {l.title}
+                    </option>
+                  ))}
+                </select>
+                <p style={hintStyle}>
+                  The chunk this one carries on from. It folds under “earlier chunks” and stays
+                  clickable.
+                </p>
+              </div>
+            )}
+          </>
+        )}
+
         {p.showProduct && (
           <div style={fieldWrapStyle}>
             <span style={labelStyle} id="link-product-label">
@@ -1016,6 +1250,32 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     [source, q, typeFilter, productFilter, designerFilter],
   )
 
+  /**
+   * The board arranged for rendering — feature groups and ungrouped singles,
+   * interleaved by date (2026-10-15). See `groupByFeature`.
+   *
+   * Whether a chunk is superseded is decided against the UNFILTERED index, not
+   * against `rows`: it is a fact about the work, not about what the current
+   * search happens to be showing. A board without `showFeature` gets one single
+   * per row, which is exactly the flat list it had before.
+   */
+  const items = useMemo(
+    () =>
+      p.showFeature
+        ? groupByFeature(rows, index.links)
+        : rows.map((link): BoardItem => ({ kind: 'single', key: link.id, link })),
+    [rows, index.links, p.showFeature],
+  )
+
+  /* Which feature groups have their earlier chunks showing. Per-session and
+     per-browser — deliberately not stored: "show me the history of this one" is
+     a question asked while looking, not a preference about the board. */
+  const [expandedFeatures, setExpandedFeatures] = useState<string[]>([])
+  const toggleFeature = (key: string) =>
+    setExpandedFeatures((keys) =>
+      keys.includes(key) ? keys.filter((k) => k !== key) : [...keys, key],
+    )
+
   /* Assigned across the WHOLE list, before any row draws — a per-row
      derivation cannot know which hosts came before it. Recomputed when the
      rows do, so filtering the list re-packs the hues onto what is visible. */
@@ -1037,7 +1297,37 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
    *  purpose, and a strip that offered it straight back would undo the click. */
   const boardUrls = useMemo(() => index.links.map((l) => l.url), [index.links])
 
-  const change = (patch: Partial<LinkDraft>) => setDraft((d) => ({ ...d, ...patch }))
+  /* Whether the designer has answered "Replaces" themselves. Until they have,
+     typing a feature re-derives the default; once they have, nothing overwrites
+     it — including typing the feature again. */
+  const [supersedesTouched, setSupersedesTouched] = useState(false)
+
+  const chooseSupersedes = (id: string) => {
+    setSupersedesTouched(true)
+    setDraft((d) => ({ ...d, supersedes: id }))
+  }
+
+  /**
+   * A patch into the draft — plus the one derived field on this board.
+   *
+   * Typing a FEATURE the author already has a live chunk of prefills "Replaces"
+   * with that chunk, because that is what usually happened: this branch carries
+   * on from the last one. It is a default and not a rule — the select's first
+   * option says these sit side by side, which is the honest other answer and
+   * the one Refinement exists to allow (two treatments of one surface, up at
+   * once). Only while untouched, and only when ADDING: a row being edited
+   * already has whatever answer it was given.
+   */
+  const change = (patch: Partial<LinkDraft>) =>
+    setDraft((d) => {
+      const next = { ...d, ...patch }
+      const reconsider = 'feature' in patch || 'addedBy' in patch
+      if (p.showFeature && reconsider && !supersedesTouched && editing === 'new') {
+        next.supersedes =
+          latestChunkFor(index.links, next.feature ?? '', next.addedBy ?? '')?.id ?? ''
+      }
+      return next
+    })
 
   /**
    * Stable identity, and that is load-bearing rather than tidiness.
@@ -1053,6 +1343,7 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     setEditing(null)
     setDraft(EMPTY_DRAFT)
     setErrors([])
+    setSupersedesTouched(false)
   }, [])
 
   const beginAdd = () => {
@@ -1112,12 +1403,24 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
       title: prefill.title,
       note: prefill.note,
       product: prefill.product ?? DEFAULT_PRODUCT,
+      // The feature the branch's previous chunk used, when the skill could work
+      // one out — so cutting the next branch lands in the same group without
+      // retyping it. "Replaces" is derived from it the moment the form opens,
+      // exactly as it would be if it had been typed.
+      feature: prefill.feature ?? '',
+      supersedes: prefill.feature
+        ? (latestChunkFor(index.links, prefill.feature, readLastAuthor())?.id ?? '')
+        : '',
     })
     setErrors([])
     setEditing('new')
     /* eslint-enable react-hooks/set-state-in-effect */
     onPrefillConsumed?.()
-  }, [prefillConsumed, prefill, canAuthor, readLastAuthor, onPrefillConsumed])
+    // `index.links` is in here because the prefill's feature derives its
+    // "Replaces" default from the board. Re-running is harmless and never
+    // reopens the form: `prefillConsumed` is set on the first pass and is the
+    // effect's own guard.
+  }, [prefillConsumed, prefill, canAuthor, readLastAuthor, onPrefillConsumed, index.links])
 
   const beginEdit = (link: StoredLink) => {
     // The record's OWN author, not this browser's last one — editing someone
@@ -1134,8 +1437,13 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
       archived: !isLive(link),
       archivedAt: link.archivedAt,
       archivedBy: link.archivedBy,
+      feature: link.feature,
+      supersedes: link.supersedes,
     })
     setErrors([])
+    // An existing row's answer is already an answer — re-deriving it from the
+    // feature on the next keystroke would rewrite a decision somebody made.
+    setSupersedesTouched(true)
     setEditing(link)
   }
 
@@ -1280,6 +1588,171 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
       })
     }
     return items
+  }
+
+  /**
+   * One row.
+   *
+   * Lifted out of the list's `.map` on 2026-10-15 so the same row can be drawn
+   * in two places — on its own, and inside a feature group — without a second
+   * copy of it. `last` was `i === rows.length - 1` back when there was one flat
+   * list; a grouped board has a last row per block, so the caller is now the
+   * only thing that can know.
+   */
+  const renderRow = (link: StoredLink, last: boolean) => {
+    // Re-checked at the point of USE, not trusted from the store — see
+    // `safeHref`. A row whose address cannot be linked still shows, as
+    // text, so it can be found and fixed rather than silently vanishing.
+    const href = safeHref(link.url)
+    // Assembled rather than interpolated, so an absent author leaves no
+    // stray separator — a trailing "·" reads as a value that failed to
+    // load, which is the same reason a self-paid Seat cell on the admin
+    // roster is blank rather than "n/a".
+    const meta = [
+      hostOf(link.url),
+      link.addedDate && `added ${link.addedDate}`,
+      // Not here when it is a badge instead — printing it twice would
+      // make the row look like two different facts about one person.
+      !p.showBadges && link.addedBy.trim() && `by ${link.addedBy.trim()}`,
+      !href && 'not a linkable address',
+    ].filter(Boolean)
+    return (
+      <li
+        key={link.id}
+        // Hover / focus-within live in `tokens.css` — inline
+        // `CSSProperties` cannot carry a pseudo-class.
+        className="cre-uxlinks-row"
+        style={{
+          ...itemStyle,
+          // The tile is a real third column rather than a float, so the
+          // text block wraps beside it instead of under it, and every
+          // row's text starts at the same x whatever its note's length.
+          ...(p.showThumb
+            ? {
+                gridTemplateColumns: `${ICON_BOX}px minmax(0,1fr) auto`,
+                alignItems: 'start',
+                padding: '12px',
+              }
+            : null),
+          borderBottom: last ? 'none' : itemStyle.borderBottom,
+        }}
+      >
+        {p.showThumb && (
+          <GeneratedThumb
+            accent={thumbAccents[hostKey(link.url)]}
+            boost={1.7}
+            width={ICON_BOX}
+            height={ICON_BOX}
+          >
+            {/* 20 in a 44 box. The 34 an Exploration tile uses swims
+                here and, at this size, clips against the corners. */}
+            {(() => {
+              const Glyph = THUMB_GLYPH[linkThumbKind(link.url)]
+              return <Glyph size={20} />
+            })()}
+          </GeneratedThumb>
+        )}
+        <div style={{ minWidth: 0 }}>
+          {p.showType && link.type && (
+            <span style={{ ...chipStyle, marginBottom: 4 }}>
+              {linkTypeLabel(link.type)}
+            </span>
+          )}
+          {href ? (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cre-uxlinks-title"
+              style={titleLinkStyle}
+            >
+              {link.title}
+              <ArrowUpRightFromSquare size={11} aria-hidden style={{ flex: 'none' }} />
+              <span className="cre-visually-hidden"> — opens in a new tab</span>
+            </a>
+          ) : (
+            <span style={{ ...titleLinkStyle, color: 'var(--ux-text-2)' }}>
+              {link.title}
+              <span className="cre-visually-hidden"> — address cannot be opened</span>
+            </span>
+          )}
+          <p style={metaStyle}>{meta.join(' · ')}</p>
+          {link.note.trim() && <p style={noteTextStyle}>{link.note}</p>}
+        </div>
+        {p.showBadges ? (
+          /* THE REFINEMENT ROW'S TAGS MATCH THE PROTOTYPES ROWS' —
+             2026-10-15, Jillienne: "update the refinement tags to
+             better match what we did on this page". The same shape
+             and the same order: a STACK of outlined, sentence-case
+             tags — who (the author, with the user icon), when (the
+             Updated stamp), what (the product, in its hue) — then a
+             column to the right for the row's STATUS (Public / UX
+             Only, where the gateway's rows put Coming soon), then the
+             kebab. The column is present on every row, so the stacks
+             line up down the list. */
+          <div style={sideAreaStyle}>
+            <div style={tagStackStyle}>
+              {link.addedBy.trim() && (
+                <span style={{ ...linkTagStyle, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <User size={11} aria-hidden style={{ flex: 'none' }} />
+                  <span className="cre-visually-hidden">Added by </span>
+                  {link.addedBy.trim()}
+                </span>
+              )}
+              {p.showUpdated && link.updatedAt && (
+                <span style={linkTagStyle}>Updated {formatUpdated(link.updatedAt)}</span>
+              )}
+              {!isLive(link) && (
+                <span style={linkTagStyle}>
+                  Archived {formatUpdated(link.archivedAt)}
+                  {link.archivedBy.trim() && ` · ${link.archivedBy.trim()}`}
+                </span>
+              )}
+              {p.showProduct && (
+                <span style={productBadgeStyle(link.product)}>
+                  {linkProductLabel(link.product)}
+                </span>
+              )}
+            </div>
+            <div style={statusColStyle}>
+              {shared === link.id && <span style={linkTagStyle}>Link copied</span>}
+            </div>
+            {rowActions(link).length > 0 && (
+              <ActionMenu
+                label={`Actions for ${link.title}`}
+                items={rowActions(link)}
+                triggerStyle={{ color: 'var(--ux-text-3)' }}
+              />
+            )}
+          </div>
+        ) : (
+          canAuthor && (
+            <div style={{ display: 'flex', gap: 6, flex: 'none' }}>
+              <button
+                type="button"
+                onClick={() => beginEdit(link)}
+                disabled={busy}
+                className="cre-uxlinks-action"
+                style={iconBtnStyle}
+                aria-label={`Edit ${link.title}`}
+              >
+                <PenToSquare size={12} aria-hidden />
+              </button>
+              <button
+                type="button"
+                onClick={() => void remove(link)}
+                disabled={busy}
+                className="cre-uxlinks-action"
+                style={iconBtnStyle}
+                aria-label={`Remove ${link.title}`}
+              >
+                <Trash size={12} aria-hidden />
+              </button>
+            </div>
+          )
+        )}
+      </li>
+    )
   }
 
   return (
@@ -1466,161 +1939,19 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
         </p>
       ) : (
         <ul style={listStyle}>
-          {rows.map((link, i) => {
-            // Re-checked at the point of USE, not trusted from the store — see
-            // `safeHref`. A row whose address cannot be linked still shows, as
-            // text, so it can be found and fixed rather than silently vanishing.
-            const href = safeHref(link.url)
-            // Assembled rather than interpolated, so an absent author leaves no
-            // stray separator — a trailing "·" reads as a value that failed to
-            // load, which is the same reason a self-paid Seat cell on the admin
-            // roster is blank rather than "n/a".
-            const meta = [
-              hostOf(link.url),
-              link.addedDate && `added ${link.addedDate}`,
-              // Not here when it is a badge instead — printing it twice would
-              // make the row look like two different facts about one person.
-              !p.showBadges && link.addedBy.trim() && `by ${link.addedBy.trim()}`,
-              !href && 'not a linkable address',
-            ].filter(Boolean)
-            return (
-              <li
-                key={link.id}
-                // Hover / focus-within live in `tokens.css` — inline
-                // `CSSProperties` cannot carry a pseudo-class.
-                className="cre-uxlinks-row"
-                style={{
-                  ...itemStyle,
-                  // The tile is a real third column rather than a float, so the
-                  // text block wraps beside it instead of under it, and every
-                  // row's text starts at the same x whatever its note's length.
-                  ...(p.showThumb
-                    ? {
-                        gridTemplateColumns: `${ICON_BOX}px minmax(0,1fr) auto`,
-                        alignItems: 'start',
-                        padding: '12px',
-                      }
-                    : null),
-                  borderBottom: i === rows.length - 1 ? 'none' : itemStyle.borderBottom,
-                }}
-              >
-                {p.showThumb && (
-                  <GeneratedThumb
-                    accent={thumbAccents[hostKey(link.url)]}
-                    boost={1.7}
-                    width={ICON_BOX}
-                    height={ICON_BOX}
-                  >
-                    {/* 20 in a 44 box. The 34 an Exploration tile uses swims
-                        here and, at this size, clips against the corners. */}
-                    {(() => {
-                      const Glyph = THUMB_GLYPH[linkThumbKind(link.url)]
-                      return <Glyph size={20} />
-                    })()}
-                  </GeneratedThumb>
-                )}
-                <div style={{ minWidth: 0 }}>
-                  {p.showType && link.type && (
-                    <span style={{ ...chipStyle, marginBottom: 4 }}>
-                      {linkTypeLabel(link.type)}
-                    </span>
-                  )}
-                  {href ? (
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="cre-uxlinks-title"
-                      style={titleLinkStyle}
-                    >
-                      {link.title}
-                      <ArrowUpRightFromSquare size={11} aria-hidden style={{ flex: 'none' }} />
-                      <span className="cre-visually-hidden"> — opens in a new tab</span>
-                    </a>
-                  ) : (
-                    <span style={{ ...titleLinkStyle, color: 'var(--ux-text-2)' }}>
-                      {link.title}
-                      <span className="cre-visually-hidden"> — address cannot be opened</span>
-                    </span>
-                  )}
-                  <p style={metaStyle}>{meta.join(' · ')}</p>
-                  {link.note.trim() && <p style={noteTextStyle}>{link.note}</p>}
-                </div>
-                {p.showBadges ? (
-                  /* THE REFINEMENT ROW'S TAGS MATCH THE PROTOTYPES ROWS' —
-                     2026-10-15, Jillienne: "update the refinement tags to
-                     better match what we did on this page". The same shape
-                     and the same order: a STACK of outlined, sentence-case
-                     tags — who (the author, with the user icon), when (the
-                     Updated stamp), what (the product, in its hue) — then a
-                     column to the right for the row's STATUS (Public / UX
-                     Only, where the gateway's rows put Coming soon), then the
-                     kebab. The column is present on every row, so the stacks
-                     line up down the list. */
-                  <div style={sideAreaStyle}>
-                    <div style={tagStackStyle}>
-                      {link.addedBy.trim() && (
-                        <span style={{ ...linkTagStyle, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                          <User size={11} aria-hidden style={{ flex: 'none' }} />
-                          <span className="cre-visually-hidden">Added by </span>
-                          {link.addedBy.trim()}
-                        </span>
-                      )}
-                      {p.showUpdated && link.updatedAt && (
-                        <span style={linkTagStyle}>Updated {formatUpdated(link.updatedAt)}</span>
-                      )}
-                      {!isLive(link) && (
-                        <span style={linkTagStyle}>
-                          Archived {formatUpdated(link.archivedAt)}
-                          {link.archivedBy.trim() && ` · ${link.archivedBy.trim()}`}
-                        </span>
-                      )}
-                      {p.showProduct && (
-                        <span style={productBadgeStyle(link.product)}>
-                          {linkProductLabel(link.product)}
-                        </span>
-                      )}
-                    </div>
-                    <div style={statusColStyle}>
-                      {shared === link.id && <span style={linkTagStyle}>Link copied</span>}
-                    </div>
-                    {rowActions(link).length > 0 && (
-                      <ActionMenu
-                        label={`Actions for ${link.title}`}
-                        items={rowActions(link)}
-                        triggerStyle={{ color: 'var(--ux-text-3)' }}
-                      />
-                    )}
-                  </div>
-                ) : (
-                  canAuthor && (
-                    <div style={{ display: 'flex', gap: 6, flex: 'none' }}>
-                      <button
-                        type="button"
-                        onClick={() => beginEdit(link)}
-                        disabled={busy}
-                        className="cre-uxlinks-action"
-                        style={iconBtnStyle}
-                        aria-label={`Edit ${link.title}`}
-                      >
-                        <PenToSquare size={12} aria-hidden />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void remove(link)}
-                        disabled={busy}
-                        className="cre-uxlinks-action"
-                        style={iconBtnStyle}
-                        aria-label={`Remove ${link.title}`}
-                      >
-                        <Trash size={12} aria-hidden />
-                      </button>
-                    </div>
-                  )
-                )}
-              </li>
-            )
-          })}
+          {items.map((item, i) =>
+            item.kind === 'single' ? (
+              renderRow(item.link, i === items.length - 1)
+            ) : (
+              <FeatureGroupBlock
+                key={item.key}
+                group={item}
+                expanded={expandedFeatures.includes(item.key)}
+                onToggle={() => toggleFeature(item.key)}
+                renderRow={renderRow}
+              />
+            ),
+          )}
         </ul>
       )}
 
@@ -1642,8 +1973,10 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
         errors={errors}
         busy={busy}
         onChange={change}
+        onChooseSupersedes={chooseSupersedes}
         onSubmit={() => void submit()}
         onClose={close}
+        links={index.links}
       />
     </div>
   )
@@ -1750,6 +2083,9 @@ export function DemoPanel({
     // in the kebab, Show archive top right. Refinement only, both.
     showDesigners: true,
     archivable: true,
+    // Feature Refinement (2026-10-15): rows group under the feature they are a
+    // chunk of, and a chunk replaced by a later one folds under "earlier".
+    showFeature: true,
     emptyHint:
       'Push a branch, paste its Netlify URL here, and everyone with the Hub link can open it.',
     saveHint:

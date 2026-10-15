@@ -35,4 +35,5 @@ export default linkBoardHandler({
   types: ALLOWED_TYPES,
   products: false,
   archivable: false,
+  features: false,
 })

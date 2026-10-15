@@ -37,6 +37,8 @@ const demo = (over: Partial<StoredLink> = {}): StoredLink => ({
   updatedAt: '',
   archivedAt: '',
   archivedBy: '',
+  feature: '',
+  supersedes: '',
   ...over,
 })
 

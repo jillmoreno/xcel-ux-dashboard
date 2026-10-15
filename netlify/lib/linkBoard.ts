@@ -122,6 +122,9 @@ const MAX_TITLE = 200
 const MAX_URL = 2000
 const MAX_NOTE = 500
 const MAX_ADDED_BY = 100
+/** Long enough for a real feature name ("Invited product detail — checkout"),
+ *  short enough that the group header stays one line. */
+const MAX_FEATURE = 80
 /** A full ISO timestamp with a zone — what `new Date().toISOString()` writes. */
 const ISO_STAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/
 
@@ -142,6 +145,11 @@ export type BoardConfig = {
    *  from the board rather than deleted (2026-10-15). Demo only, same rule
    *  as `products`: dropped on the way in everywhere else. */
   archivable: boolean
+  /** Whether records carry `feature` and `supersedes` — the Feature Refinement
+   *  grouping (2026-10-15). Demo only, same rule as `products`: dropped on the
+   *  way in everywhere else, so a Links record cannot acquire a grouping the
+   *  Links board has no control for and no way to show. */
+  features: boolean
 }
 
 type Json = Record<string, unknown>
@@ -250,6 +258,34 @@ export function validateRecord(
     const archivedBy = str(b.archivedBy)?.trim() ?? ''
     if (archivedBy.length > MAX_ADDED_BY) errors.push(`archivedBy is longer than ${MAX_ADDED_BY} characters.`)
     else out.archivedBy = archived ? archivedBy : ''
+  }
+
+  // FEATURE REFINEMENT (2026-10-15). `feature` is free text and is NOT
+  // validated against a list: it is the designer's own word for the work, and
+  // the grouping is case-insensitive on the client (`featureKey`), so a
+  // near-miss spelling costs a duplicate group rather than a lost row. Only
+  // the length is policed, for the same reason every other free-text field's
+  // is — the store is not somewhere to park arbitrary data.
+  //
+  // `supersedes` is an id, and it is checked against the board's OWN key shape
+  // rather than against the store: a row may legitimately point at a record
+  // that was deleted later, and refusing the write for that would mean a
+  // designer cannot save because of something someone else did. A dangling id
+  // simply supersedes nothing — see `isSuperseded`, which asks the board.
+  if (cfg.features) {
+    const feature = str(b.feature)?.trim() ?? ''
+    if (feature.length > MAX_FEATURE) errors.push(`feature is longer than ${MAX_FEATURE} characters.`)
+    else out.feature = feature
+
+    const supersedes = str(b.supersedes)?.trim() ?? ''
+    if (supersedes && !new RegExp(`^${cfg.idPrefix}-\\d{3}$`).test(supersedes)) {
+      errors.push('supersedes must be the id of a row on this board.')
+    } else if (supersedes === id) {
+      // Only reachable by hand — the form excludes the row being edited — but
+      // a row that supersedes itself would collapse into its own group and
+      // never come back, so it is refused rather than normalised away.
+      errors.push('supersedes cannot be the row itself.')
+    } else out.supersedes = supersedes
   }
 
   // `isPublic` is DROPPED on the way in since 2026-10-15: the public site it

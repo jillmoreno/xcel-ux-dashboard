@@ -1191,11 +1191,12 @@ export function UxDashboardPage() {
   }
 
   /**
-   * `?section=demo&add=1&url=…&title=…&note=…&product=…` — the
-   * `promote-to-refinement` skill's hand-off (2026-09-21; `product` added
-   * 2026-10-14 so a Compass branch opens tagged Compass). The page owns the
-   * router state, so it is
-   * the page that reads the five params and takes them off the address once
+   * `?section=demo&add=1&url=…&title=…&note=…&product=…&feature=…` — the
+   * `share` skill's hand-off (2026-09-21, when it was `promote-to-refinement`;
+   * `product` added 2026-10-14 so a Compass branch opens tagged Compass, and
+   * `feature` 2026-10-15 so the next chunk of a feature lands in the group the
+   * last one is already in). The page owns the router state, so it is
+   * the page that reads the params and takes them off the address once
    * `DemoPanel` has opened its form with them; the panel stripping them itself
    * via `history.replaceState` would leave the router believing they were
    * still there, and the next `setSection` would write them straight back.
@@ -1211,13 +1212,17 @@ export function UxDashboardPage() {
       title: params.get('title') ?? '',
       note: params.get('note') ?? '',
       product: LINK_PRODUCTS.some((x) => x.id === product) ? (product as LinkProduct) : undefined,
+      // Free text, so there is nothing to validate it against — the form caps
+      // its length and the board groups case-insensitively, which is the whole
+      // of the contract. Absent leaves the field empty and the row ungrouped.
+      feature: params.get('feature') ?? '',
     }
   })
   const consumeDemoPrefill = useCallback(() => {
     setParams(
       (prev) => {
         const p = new URLSearchParams(prev)
-        for (const k of ['add', 'url', 'title', 'note', 'product']) p.delete(k)
+        for (const k of ['add', 'url', 'title', 'note', 'product', 'feature']) p.delete(k)
         return p
       },
       { replace: true },

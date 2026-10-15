@@ -140,6 +140,169 @@ export function matchesDesigner(addedBy: string, filter: Designer | ''): boolean
   return addedBy.toLowerCase().includes(filter.toLowerCase())
 }
 
+/* ── the features ───────────────────────────────────────────────── */
+
+/**
+ * FEATURE REFINEMENT — 2026-10-15, Jillienne.
+ *
+ * A Refinement row is one CHUNK of work: a branch, built, put up to be looked
+ * at. `feature` is what the chunk is part of, and it is the axis the board
+ * groups on — so three small branches on the study streak card read as one
+ * feature with a history, instead of three rows nobody can tell apart.
+ *
+ * FREE TEXT, with the features already on the board offered as suggestions.
+ * A curated list was the alternative and was rejected on 2026-10-15: every new
+ * piece of work would wait on Jillienne to add a value, and that is friction at
+ * exactly the moment the point is to make cutting a fresh branch cheap. The
+ * cost is that "Streak card" and "streak card" could become two groups, which
+ * `featureKey` is the mitigation for — grouping is case- and space-insensitive,
+ * and the label shown is the one the newest chunk typed.
+ *
+ * '' is a real state and the one every record written before today is in: an
+ * ungrouped row, which renders exactly as a row does now. There is no backfill
+ * and no migration — the board is mixed on purpose while the habit forms.
+ */
+export const MAX_FEATURE = 80
+
+/** The grouping key. Case- and whitespace-insensitive, so "Streak card" and
+ *  "streak  Card" are one feature. Returns '' for an ungrouped row. */
+export function featureKey(feature: string): string {
+  return feature.trim().toLowerCase().replace(/\s+/g, ' ')
+}
+
+/**
+ * Every feature on the board, most recently touched first — the Add form's
+ * suggestions.
+ *
+ * Deduplicated by `featureKey` and labelled with the spelling of the row that
+ * comes first, which (given the board sorts newest first) is the most recent
+ * one. So a designer who corrects a capitalisation sees their correction
+ * offered from then on, rather than the original typo winning forever.
+ *
+ * Reads ARCHIVED rows too: a feature does not stop being a word the team uses
+ * because its last chunk was archived, and leaving it out would invite a
+ * near-miss spelling the next time someone picks the work back up.
+ */
+export function knownFeatures(links: StoredLink[]): string[] {
+  const seen = new Map<string, string>()
+  for (const l of links) {
+    const key = featureKey(l.feature)
+    if (key && !seen.has(key)) seen.set(key, l.feature.trim())
+  }
+  return [...seen.values()]
+}
+
+/**
+ * Whether `link` has been replaced by a later chunk — some other LIVE row
+ * pointing at it with `supersedes`.
+ *
+ * Derived from the board rather than stored on the superseded row, so the
+ * relation has exactly one writer: the newer chunk says what it replaces, and
+ * nothing has to reach back and stamp a row it does not own. The consequence
+ * worth knowing: ARCHIVE the newer chunk and the older one comes back out of
+ * the collapsed list, which is the honest reading — the thing that replaced it
+ * is no longer on the board.
+ */
+export function isSuperseded(link: StoredLink, all: StoredLink[]): boolean {
+  return all.some((other) => isLive(other) && other.supersedes === link.id)
+}
+
+/**
+ * The board, arranged for rendering: a list of GROUPS (a feature and its
+ * chunks, newest first) and SINGLES (a row with no feature), ordered together
+ * by how recently each was touched.
+ *
+ * Interleaved rather than "all the groups, then the ungrouped" on purpose. The
+ * board is mixed while the habit forms, and a trailing bucket of everything
+ * written before today would read as a backlog to clear — these are just rows,
+ * and they should stay where their date puts them.
+ *
+ * `all` is the UNFILTERED index and is what decides whether a chunk is
+ * superseded; `rows` is what the filters left. A chunk stays in the collapsed
+ * half of its group when a search is on, because whether it was replaced is a
+ * fact about the work, not about what is currently on screen.
+ */
+export type FeatureGroup = {
+  kind: 'group'
+  /** The grouping key — stable, lowercased. */
+  key: string
+  /** What to print: the newest chunk's own spelling. */
+  label: string
+  /** Not superseded — the chunks that are still the current answer. */
+  current: StoredLink[]
+  /** Superseded by a later chunk. Collapsed behind a toggle, never hidden. */
+  earlier: StoredLink[]
+}
+
+export type FeatureSingle = { kind: 'single'; key: string; link: StoredLink }
+
+export type BoardItem = FeatureGroup | FeatureSingle
+
+/** The sort key `sortLinks` uses, so an item orders by the same clock its rows
+ *  do. */
+function rowKey(l: StoredLink): string {
+  return l.updatedAt || l.addedDate
+}
+
+export function groupByFeature(rows: StoredLink[], all: StoredLink[]): BoardItem[] {
+  const groups = new Map<string, FeatureGroup>()
+  const items: BoardItem[] = []
+
+  for (const link of rows) {
+    const key = featureKey(link.feature)
+    if (!key) {
+      items.push({ kind: 'single', key: link.id, link })
+      continue
+    }
+    let group = groups.get(key)
+    if (!group) {
+      // `rows` arrives newest-first, so the first chunk seen is the newest and
+      // its spelling is the label — the same rule `knownFeatures` follows.
+      group = { kind: 'group', key, label: link.feature.trim(), current: [], earlier: [] }
+      groups.set(key, group)
+      items.push(group)
+    }
+    if (isSuperseded(link, all)) group.earlier.push(link)
+    else group.current.push(link)
+  }
+
+  // Already in order: `rows` is newest-first and each item was pushed when its
+  // newest row was seen. Sorting again would be a second, subtly different
+  // answer to a question already settled.
+  return items
+}
+
+/** The newest chunk of this feature by this author, or null — what the form
+ *  offers as "Replaces". Excludes `exclude` (the row being edited), so a row
+ *  cannot be offered the chance to replace itself. */
+export function latestChunkFor(
+  links: StoredLink[],
+  feature: string,
+  addedBy: string,
+  exclude?: string,
+): StoredLink | null {
+  const key = featureKey(feature)
+  if (!key) return null
+  const who = addedBy.trim().toLowerCase()
+  const mine = links.filter(
+    (l) =>
+      isLive(l) &&
+      l.id !== exclude &&
+      featureKey(l.feature) === key &&
+      // No author typed yet → every chunk of the feature is a candidate, which
+      // is the useful answer while the form is still being filled in. With one
+      // typed, match it loosely in both directions for the same reason
+      // `matchesDesigner` does: the board carries "eric w" and "Afsana & Eric"
+      // as well as roster names.
+      (!who ||
+        !l.addedBy.trim() ||
+        l.addedBy.toLowerCase().includes(who) ||
+        who.includes(l.addedBy.trim().toLowerCase())),
+  )
+  if (!mine.length) return null
+  return [...mine].sort((a, b) => rowKey(b).localeCompare(rowKey(a)))[0]
+}
+
 /** A row that is on the board, as opposed to in its archive. */
 export function isLive(link: StoredLink): boolean {
   return !link.archivedAt
@@ -177,6 +340,13 @@ export type StoredLink = {
   archivedAt: string
   /** Who archived it — a typed label like `addedBy`, '' when live. */
   archivedBy: string
+  /** What this chunk is PART OF — the grouping axis (2026-10-15). Free text,
+   *  '' when ungrouped, which is every record written before the field
+   *  existed. See the features block above. */
+  feature: string
+  /** The id of the chunk this one REPLACES, or '' — written by the newer
+   *  chunk, never by the older one. See `isSuperseded`. */
+  supersedes: string
 }
 
 /** The editable fields. `id`, `addedDate` and `updatedAt` are not among them —
@@ -193,6 +363,11 @@ export type LinkDraft = Pick<StoredLink, 'title' | 'url' | 'note' | 'addedBy' | 
   archived?: boolean
   archivedAt?: string
   archivedBy?: string
+  /** Refinement only, both of them — the boards without the controls drop the
+   *  fields on the way in, so a Resources row cannot quietly acquire a feature
+   *  nothing on that board can show or edit. */
+  feature?: string
+  supersedes?: string
 }
 
 export type LinkIndex = {
@@ -337,6 +512,11 @@ function normalise(v: StoredLink): StoredLink {
     // board but Refinement — both read as live, which is what they are.
     archivedAt: typeof v.archivedAt === 'string' ? v.archivedAt : '',
     archivedBy: typeof v.archivedBy === 'string' ? v.archivedBy : '',
+    // Absent on every record written before Feature Refinement, and on every
+    // board but Refinement. Both read as an ungrouped row, which is what they
+    // are — there is no backfill, by design.
+    feature: typeof v.feature === 'string' ? v.feature : '',
+    supersedes: typeof v.supersedes === 'string' ? v.supersedes : '',
   }
 }
 
