@@ -14,7 +14,6 @@ import { NotificationsMenu } from '@/components/notifications/NotificationsMenu'
 import { LearningPathsPanel } from '@/components/learning/LearningPathsPanel'
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
 import { DashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanel'
-import { isPublicGateway } from '@/data/gatewayMode'
 import { useDashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanelContext'
 import { MembershipVersionsPanel } from '@/components/membership/MembershipVersionsPanel'
 import { useMembershipVersionsPanel } from '@/components/membership/MembershipVersionsPanelContext'
@@ -23,12 +22,12 @@ import { useJumpBackInPanel } from '@/components/dashboard/JumpBackInPanelContex
 import {
   readDefaultDashboardVersion,
   writeDefaultDashboardVersion,
-  dashboardVersionsForAudience,
   defaultDiscoverabilityVersionFor,
   resolveDashboardVersion,
   isAtlasCompassNavVersion,
   isHybridVersion,
   type DashboardVersionId,
+  DISCOVERABILITY_DASHBOARD_VERSIONS,
 } from '@/data/dashboardVersions'
 import {
   readDefaultMembershipVersion,
@@ -697,11 +696,9 @@ export function Header() {
         <DashboardVersionsPanel
           open={versionsOpen}
           onClose={closeVersionsPanel}
-          versions={
-            /* The AUDIENCE filter: `ready` versions only on the demo site.
-               (Eric's V1 gate went with V1, 2026-10-12.) */
-            dashboardVersionsForAudience(isPublicGateway())
-          }
+          /* Every version, for everyone — the audience filter went with the
+             demo site, 2026-10-15. */
+          versions={DISCOVERABILITY_DASHBOARD_VERSIONS}
           designerTabs
           activeVersionId={
             (new URLSearchParams(search).get('version') as DashboardVersionId | null) ??

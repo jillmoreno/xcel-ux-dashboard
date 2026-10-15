@@ -4,10 +4,7 @@ import {
   DashboardVersionsPanel,
   type VersionPickerItem,
 } from '@/components/dashboard/DashboardVersionsPanel'
-import {
-  DISCOVERABILITY_DASHBOARD_VERSIONS,
-  dashboardVersionsForAudience,
-} from '@/data/dashboardVersions'
+import { DISCOVERABILITY_DASHBOARD_VERSIONS } from '@/data/dashboardVersions'
 
 /**
  * WHICH VERSIONS EACH AUDIENCE CAN PICK — `maturity` on `DashboardVersion`,
@@ -29,43 +26,26 @@ import {
 const ITEMS: VersionPickerItem[] = [
   {
     id: 'finished',
-    label: 'Finished Version',
+    label: 'First Version',
     createdAt: '2026-10-01',
     modifiedAt: '2026-10-01',
-    description: 'Ready for anyone.',
-    maturity: 'ready',
+    description: 'The first one.',
   },
   {
     id: 'half-built',
-    label: 'Half Built Version',
+    label: 'Second Version',
     createdAt: '2026-10-04',
     modifiedAt: '2026-10-04',
-    description: 'Still being argued about.',
-    maturity: 'wip',
+    description: 'A second one.',
   },
   {
     id: 'unmarked',
-    label: 'Unmarked Version',
+    label: 'Third Version',
     createdAt: '2026-10-05',
     modifiedAt: '2026-10-05',
-    description: 'Someone forgot the field.',
+    description: 'A third one.',
   },
 ]
-
-function renderPicker() {
-  return render(
-    <DashboardVersionsPanel
-      open
-      onClose={() => {}}
-      activeVersionId="finished"
-      defaultVersionId="finished"
-      onSelectVersion={() => {}}
-      onSetDefault={() => {}}
-      versions={ITEMS}
-      hideSetDefault
-    />,
-  )
-}
 
 afterEach(cleanup)
 
@@ -129,101 +109,6 @@ describe('the designer tabs over the LIVE catalog', () => {
     )
     expect(screen.getByText('Testing 3')).toBeTruthy()
     expect(screen.queryByText('Eric/Atlas V1')).toBeNull()
-  })
-})
-
-describe('the design site’s picker', () => {
-  it('lists every version, finished or not', () => {
-    /* It is the designers' site; hiding work from them is the opposite of what
-       this field is for. */
-    renderPicker()
-    for (const label of ['Finished Version', 'Half Built Version', 'Unmarked Version']) {
-      expect(screen.getByText(label)).toBeTruthy()
-    }
-  })
-
-  it('marks the ones a stakeholder cannot pick', () => {
-    /* ⚠ THE SILENT HALF. Without this a designer reads a list of five versions
-       with no way to know which two the demo site drops — and the omission
-       looks exactly like a complete list. */
-    renderPicker()
-    expect(screen.getAllByText('Design site only')).toHaveLength(2)
-  })
-
-  it('treats a MISSING maturity as design-site-only', () => {
-    /* The field's own default, made visible. A version added without one is
-       the common mistake, and it should look unfinished rather than finished. */
-    renderPicker()
-    const unmarked = screen.getByText('Unmarked Version').closest('button')!
-    expect(unmarked.textContent).toContain('Design site only')
-  })
-
-  it('leaves the ready one unmarked', () => {
-    renderPicker()
-    const ready = screen.getByText('Finished Version').closest('button')!
-    expect(ready.textContent).not.toContain('Design site only')
-  })
-})
-
-describe('the shipped versions', () => {
-  /* ⚠ THIS WAS "are all ready, so nothing is filtered or marked yet" UNTIL
-     2026-10-05, AND IT FIRED EXACTLY AS IT WAS WRITTEN TO. Its note said "the
-     day that stops being true is the day someone should notice here"; the
-     Atlas merge was that day, and this is the noticing.
-
-     Eric's two versions arrive REACHABLE but not `ready` — so the demo site
-     filters them out and the design site badges them "Design site only". That
-     is the gate working, not a defect: `maturity` is absent rather than an
-     explicit `wip`, which says "not decided yet" rather than "decided
-     against", and the decision is `promote-to-prototype`'s `maturity`
-     question, not a merge resolution.
-
-     ⚠ DO NOT "FIX" THIS BY MARKING THEM READY. Making a version pickable by
-     stakeholders is a readiness statement about someone's work; it is answered
-     on the promotion, deliberately, by a person. If the answer comes back yes,
-     this test flips to assert they are ready — and the one BELOW it is what
-     keeps the two halves honest in the meantime. */
-  it('are ready except the Atlas parent and Eric\u2019s unpromoted versions', () => {
-    const unmarked = DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => v.maturity !== 'ready')
-    /* ⚠ ONE, NOT TWO, SINCE 2026-10-05 — promote-to-prototype made Eric/Atlas
-       V1 pickable and left the parent alone. They render the same pages today
-       (`isAtlasCompassNavVersion` answers true for both), so listing both would
-       have given stakeholders two identical-looking Atlas rows; V1 is the one
-       carrying a name and a date.
-
-       ⚠ THE PARENT'S ABSENCE IS A DECISION, NOT AN OVERSIGHT, and it is the
-       half worth pinning: a later branch adding `maturity: 'ready'` to it
-       should have to come through here and say why. */
-    /* ⚠ AND ERIC/ATLAS V2 since 2026-10-07 — new, so not decided yet; it is
-       design-site only until a promotion says otherwise. */
-    /* ⚠ 2026-10-14 — `promote-to-prototype` on Eric's merge. END-TO-END DEMO
-       LEFT THIS LIST the way the note above says it should: it is `ready` AND
-       it is the default, still two separate acts. WIP, White and Right SB
-       Quick Links stay unmarked — not decided against, not decided yet.
-       Hybrid V1 and the pacing fork keep `ready`: displaced, not retired.
-       (List order: Eric/Atlas WIP leads Eric's versions since 2026-10-12.) */
-    expect(unmarked.map((v) => v.id)).toEqual([
-      'eric-atlas-v3',
-      'eric-atlas-white',
-      'discoverability-atlas-compass-nav',
-      'eric-atlas-v2',
-    ])
-    /* The gate is FILTERING, not merely armed — the demo site is short by
-       exactly those, and nothing else moved. */
-    expect(dashboardVersionsForAudience(true)).toHaveLength(
-      DISCOVERABILITY_DASHBOARD_VERSIONS.length - unmarked.length,
-    )
-    /* ⚠ FLIPPED 2026-10-05 WITH THE PROMOTION. It asserted V1 was absent from
-       the stakeholder picker; V1 is now the Atlas row stakeholders get, and the
-       PARENT is the one held back. Both directions are pinned so neither can
-       drift without a failure. */
-    /* ⚠ 2026-10-12: Eric/Atlas V1 came OFF the picker (Eric's request). End-to-End
-       Demo is the Atlas row stakeholders get since 2026-10-14. */
-    expect(dashboardVersionsForAudience(true).map((v) => v.id)).not.toContain('eric-atlas-v1')
-    expect(dashboardVersionsForAudience(true).map((v) => v.id)).toContain('eric-atlas-e2e')
-    expect(dashboardVersionsForAudience(true).map((v) => v.id)).not.toContain(
-      'discoverability-atlas-compass-nav',
-    )
   })
 })
 

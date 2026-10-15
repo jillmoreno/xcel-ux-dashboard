@@ -3,8 +3,6 @@ import { ChevronDown, Check } from '@/icons'
 import {
   DEMO_BAR,
   DEMO_COUNT_BADGE,
-  DEMO_WIP_DOT,
-  SR_ONLY,
   DEMO_DOT,
   DESIGN_ACCENT,
   DESIGN_RULE,
@@ -139,7 +137,6 @@ export function DemoDropdown({
   panelMinWidth = 220,
   disabledNote,
   hidden = false,
-  wip = false,
   children,
 }: {
   id: string
@@ -166,20 +163,6 @@ export function DemoDropdown({
    * task. `DemoControlsBar`'s `only` prop is the one caller.
    */
   hidden?: boolean
-  /**
-   * NOT FINISHED ENOUGH FOR THE DEMO SITE — 2026-09-24. The third state, and
-   * the design site is the only place it shows.
-   *
-   * `hidden` removes the control from an audience that must not meet it;
-   * `disabledNote` greys one that has nowhere to land. This one is fully LIVE —
-   * a designer can open it and use it normally — and merely says that the
-   * stakeholder build does not carry it. Without the mark, the design site's
-   * bar makes every axis look equally agreed, and the person deciding what to
-   * show stakeholders has to hold the answer in their head.
-   *
-   * Driven by `maturity` in the flag catalog — see `demoControlMaturity`.
-   */
-  wip?: boolean
   children: ReactNode
 }) {
   if (hidden) return null
@@ -232,12 +215,6 @@ export function DemoDropdown({
             `/Progress/i` and started matching Persona, Pacing and Education
             too. Hidden text still lands in the accessible name; word it as if
             it were visible, because to a query it is. */}
-        {wip && (
-          <>
-            <span aria-hidden style={DEMO_WIP_DOT} />
-            <span style={SR_ONLY}> (not on the demo site)</span>
-          </>
-        )}
         <ChevronDown
           size={13}
           aria-hidden

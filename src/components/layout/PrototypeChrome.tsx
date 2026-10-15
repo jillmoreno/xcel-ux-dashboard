@@ -11,7 +11,6 @@ import {
   useDemoControlsVisibility,
   useDesignControlsVisibility,
 } from '@/components/prototype/demoControlsVisibility'
-import { demoSiteControls } from '@/data/demoControlMaturity'
 
 /**
  * The prototype "chrome" — the dark PrototypeBar + the navy stakeholder Demo
@@ -60,19 +59,13 @@ export function PrototypeChrome() {
   // the flag survives in-shell navigation on the shared link. (After all hooks —
   // rules-of-hooks.)
   const params = new URLSearchParams(search)
-  // `?as=demo` — THE DESIGN SITE'S PREVIEW LENS, 2026-09-24. Renders this build's
-  // controls bar the way the DEMO site would: the `wip` controls drop out, and
-  // the bar says so. It is a lens, not a setting — URL-only, never persisted, and
-  // it changes nothing about the page under the bar. The question it answers is
-  // the one that used to need a second deploy: "what does a stakeholder actually
-  // get?" (No effect on the demo site itself, where the answer is already yes.)
-  const asDemo = params.get('as') === 'demo'
-  /* THE STAKEHOLDER VIEW — the Demo Hub, and `?as=demo` previewing it from the
-     design site. Derived once and handed to both the robot and the design bar,
-     because those two now have to agree: the robot's dropdown is the only way to
-     a bar that starts hidden, so a build where one read the lens and the other
-     did not would leave the controls unreachable. */
-  const stakeholderView = isPublicGateway() || asDemo
+  /* `?as=demo` — the design site's preview lens — stood here 2026-09-24 →
+     2026-10-15. It rendered the bar as the demo site would. No demo site, no
+     lens. THE STAKEHOLDER VIEW is now the testing build alone: derived once
+     and handed to both the robot and the design bar, because those two have
+     to agree — the robot's dropdown is the only way to a bar that starts
+     hidden. */
+  const stakeholderView = isPublicGateway()
   /* ⚠ THE DESIGN TOGGLE WAS GATED ON `hasDesignControls` AND NO LONGER IS
      (2026-10-05). The gate existed because the bar returned null on a version
      with no design flags, and a toggle revealing an empty strip reads as
@@ -200,7 +193,6 @@ export function PrototypeChrome() {
       <DemoControlsBar
         open={demoOpen}
         fullBleed={framed}
-        only={isPublicGateway() || asDemo ? demoSiteControls() : undefined}
       />
       {/* THE DESIGN BAR, under the demo one — 2026-10-05.
 

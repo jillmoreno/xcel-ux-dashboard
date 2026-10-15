@@ -23,8 +23,6 @@ import {
 } from '@/icons'
 import { useDemoShareRegistry } from './demoShareActions'
 import { DemoBar, DemoDropdown } from './DemoBar'
-import { isPublicGateway } from '@/data/gatewayMode'
-import { controlMaturity, variantsForDemo } from '@/data/demoControlMaturity'
 import { licensedProfessionsFor } from '@/data/licensedStatesFixtures'
 import { readDemoDayOffset, setDemoDayOffset } from '@/data/demoDay'
 import {
@@ -258,11 +256,9 @@ export function DemoControlsBar({
 }) {
   /** Is this control in the session's whitelist? See `only`. */
   const show = (id: string) => only == null || only.includes(id)
-  /* Mark the axes a stakeholder will not get — DESIGN SITE ONLY. On the demo
-     site (and inside the lens) those controls are already gone, so a mark would
-     have nothing to sit on; in a participant session the mark would be noise
-     about a decision they are not part of. */
-  const markWip = only == null && !isPublicGateway()
+  /* `markWip` stood here — the dot on the axes a stakeholder would not get.
+     The demo site is retired (2026-10-15) and `maturity` with it; every
+     control here is for everyone. */
   const { pathname } = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const { brand, membership, tier, setTier, setBrand } = useAccount()
@@ -492,10 +488,7 @@ export function DemoControlsBar({
      have been added in the catalog and forgotten here. `variantsForDemo` then
      drops any arm marked `wip` on the demo site, the same gate every other
      variant picker on this bar goes through. */
-  const navLayoutOptions = variantsForDemo(
-    FEATURE_FLAGS.find((f) => f.key === 'nav-placement')?.variants ?? [],
-    'nav-placement',
-  )
+  const navLayoutOptions = FEATURE_FLAGS.find((f) => f.key === 'nav-placement')?.variants ?? []
 
   const readinessReachable = !railHidesSection(
     searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand),
@@ -729,7 +722,6 @@ export function DemoControlsBar({
         <DemoDropdown
           id="brand"
           hidden={!show('brand')}
-          wip={markWip && controlMaturity('brand') === 'wip'}
           label={brandLabel}
           eyebrow="Brand"
           openId={openId}
@@ -778,7 +770,6 @@ export function DemoControlsBar({
         <DemoDropdown
           id="quick"
           hidden={!show('quick')}
-          wip={markWip && controlMaturity('quick') === 'wip'}
           label={activeQuickView ? activeQuickView.label : 'Quick views'}
           eyebrow={activeQuickView ? 'Quick view' : undefined}
           openId={openId}
@@ -820,7 +811,6 @@ export function DemoControlsBar({
         <DemoDropdown
           id="persona"
           hidden={!show('persona')}
-          wip={markWip && controlMaturity('persona') === 'wip'}
           label="Persona"
           eyebrow="Persona"
           openId={openId}
@@ -950,7 +940,6 @@ export function DemoControlsBar({
         <DemoDropdown
           id="progress"
           hidden={!show('progress')}
-          wip={markWip && controlMaturity('progress') === 'wip'}
           label={progressLabel}
           eyebrow="Progress"
           openId={openId}
@@ -1062,7 +1051,6 @@ export function DemoControlsBar({
           <DemoDropdown
             id="nav-layout"
             hidden={!show('nav-layout')}
-            wip={markWip && controlMaturity('nav-layout') === 'wip'}
             label={
               navLayoutOptions.find((o) => o.value === (navLayoutState.variant ?? 'top'))?.label ??
               'Top nav'
@@ -1100,7 +1088,6 @@ export function DemoControlsBar({
         <DemoDropdown
           id="readiness"
           hidden={!show('readiness')}
-          wip={markWip && controlMaturity('readiness') === 'wip'}
           /* NOT the resolved state when there is no section: a greyed pill
              still reading "On Track" is the same false claim, just dimmer. */
           label={readinessReachable ? readinessLabel : 'Not on this version'}
@@ -1189,7 +1176,6 @@ export function DemoControlsBar({
           <DemoDropdown
             id="education"
             hidden={!show('education')}
-            wip={markWip && controlMaturity('education') === 'wip'}
             label={educationLabel}
             eyebrow="Education"
             openId={openId}

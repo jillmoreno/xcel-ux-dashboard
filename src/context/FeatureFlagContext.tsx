@@ -39,22 +39,12 @@ import { isTestingGateway } from '@/data/gatewayMode'
  *  a string-keyed variant list. The `variant` field is optional even
  *  when `variants` is provided — `undefined` means "use the default
  *  visual" at the consumer site. */
-/**
- * HOW FINISHED A CONTROL IS — the demo site's only gate, added 2026-09-24.
- *
- * `ready` means a stakeholder can be handed it: the axis is agreed, the
- * variants are real, and someone changing it is exploring a decision we meant
- * to offer. `wip` means the opposite, and is THE DEFAULT WHEN THE FIELD IS
- * ABSENT — omitting it hides the control from the demo site rather than
- * exposing it.
- *
- * ⚠ THE DEFAULT IS THE WHOLE POINT. Forgetting to write `maturity` means a
- * stakeholder sees LESS than they could, which costs a conversation. The
- * opposite default would mean forgetting leaks a half-built axis to the people
- * we are asking to approve it, which costs the decision. Promotion is a
- * deliberate act; exposure is never an accident.
- */
-export type Maturity = 'wip' | 'ready'
+/* `Maturity` (`wip` | `ready`) STOOD HERE from 2026-09-24 to 2026-10-15 — the
+ * demo site's only gate: a flag, a variant or a demo-bar control reached the
+ * stakeholder site only once marked `ready`, and absent meant `wip`. The demo
+ * site is retired (see `gatewayMode.ts`) and the field went with it: a
+ * readiness mark that gates nothing is one a reader trusts and is misled by.
+ * The `archivedItems.ts` row says how it was wired. */
 
 export type FeatureFlagVariant = {
   /** Stable identifier stored to localStorage / passed to consumers. */
@@ -64,12 +54,6 @@ export type FeatureFlagVariant = {
   /** Optional short description shown under the variant label when the
    *  variant is selected. Helps reviewers understand what changes. */
   description?: string
-  /** How finished THIS VARIANT is — the within-a-control half of the gate.
-   *  A `ready` flag can still carry a `wip` variant, which the demo site
-   *  drops from the picker while the design site keeps it. Absent means the
-   *  variant inherits the flag's own maturity (NOT `wip`) — otherwise every
-   *  existing variant of a promoted flag would vanish at once. */
-  maturity?: Maturity
 }
 
 export type FeatureFlagDefinition = {
@@ -80,11 +64,6 @@ export type FeatureFlagDefinition = {
   label: string
   /** Short helper text shown under the label. */
   description: string
-  /** How finished this flag is — see `Maturity`. Absent means `wip`, so a
-   *  flag reaches the DEMO site's controls bar only once someone writes
-   *  `maturity: 'ready'` here. Design-site behaviour is unaffected: the
-   *  design bar shows everything, marking the `wip` ones. */
-  maturity?: Maturity
   /** Default on/off state. */
   defaultEnabled: boolean
   /** Optional variant list. Omit for simple on/off flags. */
@@ -697,7 +676,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Journey — quick links',
     description:
       'Where the journey column\u2019s SHEET LINKS live. ON (the default) collects them into a Quick links card under the last step \u2014 Exam Information, How to Get Your License, State Requirements \u2014 and HIDES the per-card ones: \u201cExam Details\u201d on the exam card, \u201cWhat to expect\u201d on Pass State Exam, \u201cHow to apply\u201d on Get Licensed. Off puts each link back on the card it belongs to and removes the Quick links card. \u26a0 IT IS ONE DECISION, NOT TWO, which is why one flag drives both halves: the question is whether these sheets are read as part of the step you are on or looked up when you want them, and running both at once would put every destination on the page twice. \u26a0 THE SHEETS AND THEIR DESTINATIONS ARE IDENTICAL EITHER WAY \u2014 only the way in moves, so what is being compared is findability and nothing else. \u26a0 IT MOVES WHAT A USER TEST CAN RIG: on the default, `home.schedule-exam`, `home.what-to-expect` and `home.how-to-apply` do not render, and the three quick-link ids do. `CtaTest`\u2019s unconditional list follows the default, and `promote-to-testing` freezes a SHA, so a session sheet cut from an older build still names the controls that build had.',
-    maturity: 'wip',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
@@ -707,7 +685,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Exam card — background',
     description:
       'The GROUND the `ask-first` exam card sits on. `white` is the default and is what ships \u2014 the card carries no background of its own, so it takes `--color-surface-card` like every other widget in the column. `tint` fills it with the SELECTED RAIL ITEM\u2019s colour, which is what makes the pair worth comparing: that colour already means \u201cthis is where you are\u201d in this product, so putting it behind the exam card says the card is the live one rather than merely another widget. `outline` is the third answer and the only one that is not a fill \u2014 no ground, a hairline border, and NO SHADOW, because an elevation under a transparent card is a shadow cast by nothing. \u26a0 THE TINT IS BOUND TO THE RAIL\u2019S OWN TOKEN, not a copied hex \u2014 `color-mix(in srgb, var(--color-nav-icon-active-primary) 12%, \u2026)`, so the two cannot drift apart if the rail\u2019s colour is ever retuned. The STRENGTH is deliberately half the rail\u2019s 24%: the two do the same job at very different sizes, and what reads as a selection on a 40px nav row reads as a coloured panel across a whole card. It composites over `--color-surface-card` rather than `transparent` (which is what the rail does) because the card has its own white ground and the page behind it is grey \u2014 mixing to transparent would let that grey through and land a different colour from the rail it is quoting. Variant-only.',
-    maturity: 'wip',
     defaultEnabled: true,
     /* ⚠ STAYS `white`, AND THE ATTEMPT TO PROMOTE `outline` IS THE NOTE.
        2026-10-08: the pacing fork became the baseline and its side column is
@@ -745,7 +722,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Exam calendar — treatment',
     description:
       'How the in-card month picker is DRAWN, on the `ask-first` exam card. Raised 2026-09-29 from a review note that the picker \u201cfeels a little muted and minimalistic-looking\u201d \u2014 a judgement about PRESENCE, which is not one dial, so the three arms each turn a different one up rather than being three steps along one slider. `minimal` is the control and is byte-for-byte what shipped: a hairline box on the page ground, 22px nav, 11.5px numerals, recessive because it is a field rather than a feature. `framed` gives the same calendar ROOM and a surface \u2014 a raised card, a rule under the month, square day cells about half again as large, a real hover \u2014 arguing the picker was thin rather than wrong. `branded` draws it as an OBJECT: a navy cap across the top carrying the month in white, round day cells, the selected day a filled navy disc. \u26a0 `branded` IS THE SAVED STATE\u2019S TEAR-OFF, EARLIER \u2014 the readout you get after saving is a navy-capped calendar, so this makes the thing you pick from and the thing you end up with visibly one object; the cost is that it becomes the loudest element on a card whose job is to ask a one-line question. \u26a0 SKINS ONLY: every arm renders the same grid from the same cells with the same disabled / today / selected logic, so the comparison is the drawing and nothing else. Only affects `exam-step-style: ask-first`; the other two arms have their own pickers. Variant-only.',
-    maturity: 'wip',
     defaultEnabled: true,
     defaultVariant: 'framed',
     variants: [
@@ -761,7 +737,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Journey step order',
     description:
       'Which step the right-hand journey column opens with. `coursework-first` (default) is what ships \u2014 Complete Coursework as Step 1, then Schedule State Exam, Pass State Exam and Get Licensed. `exam-first` promotes SCHEDULE STATE EXAM to Step 1 and drops Coursework to Step 2, on the argument that booking the exam is the thing a learner can do today and the one that dates everything else \u2014 the Study Pace tile already derives its plan from the exam date. ⚠ THE NUMBERS MOVE WITH THE CARDS: the eyebrows renumber so the column still reads 1-2-3-4 top to bottom. Four cards cannot draw a continuous spine, so the numbering IS the sequence; an order change that left the numbers behind would read as four unrelated things. Variant-only.',
-    maturity: 'wip',
     defaultEnabled: true,
     defaultVariant: 'exam-first',
     variants: [
@@ -776,7 +751,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Study Pace — hide',
     description:
       'Removes the Study Pace tile from the home screen. OFF by default, so the shipped dashboard is unchanged; turn it on to see the page without it. ⚠ NOT THE SAME AS `study-pace-widget`, which swaps the live tile for the lo-fi PLACEHOLDER — that one changes what the tile shows, this one removes it. On the Testing version the tile owns the whole row, so the row goes with it; on every other version Readiness stays and takes the full width. Both behaviours are the ones a completed course already produces, reused rather than re-derived.',
-    maturity: 'wip',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
@@ -786,7 +760,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Rail icons',
     description:
       'Whether the primary rail\u2019s items carry an icon, and how big. `standard` (default) is what ships \u2014 17px beside the label. `small` keeps them at 14px, so the label leads and the glyph reads as a marker rather than a peer. `none` drops them entirely and the labels left-align against the row padding, which is what a rail of four short words arguably wants. ⚠ THE COLLAPSED RAIL IS UNAFFECTED by all three: it steps its glyph to 20px and sets 10px text under it, and an unlabelled OR unglyphed collapsed rail is the thing every nav study finds people mis-click. Variant-only.',
-    maturity: 'wip',
     defaultEnabled: true,
     defaultVariant: 'small',
     variants: [
@@ -802,7 +775,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Rail group captions',
     description:
       'Whether the primary rail shows its group captions \u2014 MY LEARNING, EXPLORE, SUPPORT. On by default, as shipped. Off removes the uppercase headings and lets the items run as one list, which suits a short rail where the captions are most of the ink. ⚠ THE GROUPS KEEP THEIR ACCESSIBLE NAMES either way: with the caption hidden the `<ul>` carries it as `aria-label`, so a screen reader still hears "My Learning" and "Support" as the groups they are. Hiding the name with the text would make this an accessibility regression rather than a layout change \u2014 the same rule the collapsed rail already follows.',
-    maturity: 'wip',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
@@ -812,7 +784,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Left nav background',
     description:
       'Whether the left rail paints its own surface ON HOME. `filled` (default) is what ships \u2014 the rail sits on `--color-nav-surface`, a panel beside the content. `none` drops that fill so the rail sits directly on the page, and the column reads as part of the page rather than as a docked panel. \u26a0 HOME ONLY, deliberately: it is the one screen where the rail stands beside a full layout rather than a single body, so it is where the panel edge is doing the least work. Every other section keeps the surface under both settings. `none-aligned` does the same and also drops the rows 16px, so the first nav item\u2019s top edge meets the top of the content\u2019s first card instead of floating above it \u2014 16 is the measured difference, not a nudge. \u26a0 THE RIGHT BORDER IS ALREADY TRANSPARENT in every mode (see the rail column in `PlatformShell`), so dropping the fill leaves no seam behind \u2014 nothing else has to change for this to read.',
-    maturity: 'wip',
     defaultEnabled: true,
     defaultVariant: 'filled',
     variants: [
@@ -828,7 +799,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Nav placement',
     description:
       'WHERE THE PRIMARY NAVIGATION LIVES \u2014 one axis, two answers. **`left`**: the rail carries the destinations, as it ships, plus a Compass Learning row so both arms offer the same places. **`top`**: a row in the header carries Home \u00b7 Compass Learning (Figma 765:3801), the shell drops the rail column and the content runs full width \u2014 and everything the rail used to hold is RE-HOMED rather than dropped: My Courses and Certificates become tile buttons above the Quick Question card on Home, and Help gets a control of its own (see `nav-help`). \u26a0 THE TWO ARE EXCLUSIVE as of 2026-10-01, and that is the restructure. The old `hybrid` drew the header AND the rail, so Home lit up in two navigations at once; if the header is the navigation there is no rail for it to disagree with. \u26a0 THE GREETING IS NOT PART OF THIS CHOICE any more \u2014 the Home page header (\u201cWelcome to your learning experience, Jordan\u201d + \u201cHome\u201d) renders under BOTH, so switching arms compares navigation and nothing else. \u26a0 `hybrid` AND `hybrid-tabs` ARE OFF THE PICKER, NOT GONE: both still resolve from `?ff=nav-placement:hybrid` so the new shape can be held against what it replaces while the decision is open. Nothing new is built on them. Turning the flag OFF resolves to `left` AND drops the exploration\u2019s own additions (the Compass row, the greeting), so off is the shipped product rather than a half-migrated one.',
-    maturity: 'wip',
     defaultEnabled: true,
     /* ⚠ `top` IS THE BRANCH DEFAULT as of 2026-10-01 — it was `hybrid`, which is
        no longer on the picker. The whole of this pass is the top-nav arm (the
@@ -849,14 +819,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        the EXPLORATION is undecided (that is the flag), but each treatment is
        finished enough for a stakeholder to look at (that is the arms). */
     variants: [
-      { value: 'left', label: 'Left nav', maturity: 'ready' },
-      { value: 'top', label: 'Top nav', maturity: 'ready' },
+      { value: 'left', label: 'Left nav' },
+      { value: 'top', label: 'Top nav' },
       /* ⚠ ERIC'S THIRD ARM, FOLDED IN 2026-10-05. It was `?nav=expanding-top-nav`
          on a parallel axis of its own; see `navPlacement.ts` for why there is
          one axis now. The label names Atlas because that is where it LOOKS
          different — off the Atlas versions it resolves like `top` rather than
          doing nothing, so it is never a dead option. */
-      { value: 'expanding-top', label: 'Expanding top nav (Atlas)', maturity: 'ready' },
+      { value: 'expanding-top', label: 'Expanding top nav (Atlas)' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -866,7 +836,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Help placement (top nav)',
     description:
       'WHERE HELP LIVES WHEN THE TOP NAV IS UP \u2014 2026-10-01. `header-icon` puts a `?` in the header utilities, immediately left of the notifications bell; `profile-menu` puts a Help row in the account dropdown, directly above Logout. \u26a0 BOTH OPEN THE SAME SHEET (`HelpSheet`, the Help & Support panel), which is the entire point of the pair \u2014 the question under test is DISCOVERABILITY versus a tidier header, not two different help experiences. Changing the variant moves one trigger; it never changes what Help is. \u26a0 NO EFFECT UNDER `nav-placement: left`, where the rail\u2019s own Get Help row carries it and a second control would be a duplicate \u2014 the predicate is the rail\u2019s absence, not the top nav\u2019s presence. \u26a0 THE RAIL\u2019S GET HELP STILL OPENS THE SECTION, not this sheet, so the two arms answer Help differently today. That is the ask as given (the sheet was scoped to the top nav) and it is the thing to look at second.',
-    maturity: 'wip',
     defaultEnabled: true,
     defaultVariant: 'header-icon',
     variants: [
@@ -881,7 +850,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Combined course card \u2014 progress bar',
     description:
       'Whether Testing 3\u2019s combined course card draws the 8px progress bar under its title. \u26a0 REVIEWED AND DECLINED 2026-10-05 \u2014 it ships OFF, and the reason is the defect the ON arm carried: THE CARD STATED ITS PROGRESS TWICE, with two numbers that disagreed. The bar fills from the card\u2019s `percent` prop, which is lesson progress (62%); the gauge running down the coursework timeline a few lines below is weighted across the whole journey (37%). One course, two fills of visibly different lengths. The timeline carries the figure AND the \u201cyou are here\u201d marker, so it was the half that could stand alone. \u26a0 THE BAR IS NOT BROKEN AND IS ONE URL AWAY (`?ff=combined-progress-bar:on`) \u2014 if the two measures are ever reconciled, this becomes the live question again: does a bar read faster than a column? No effect outside Testing 3.',
-    maturity: 'wip',
     /* ⚠ OFF IS THE REVIEWED BASELINE, not a flag nobody got to. It was `true`
        on the branch so the bar could be seen beside the gauge; the comparison
        happened and the gauge won. See the description for the argument. */
@@ -894,7 +862,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Coursework timeline \u2014 unreached stops',
     description:
       'WHAT A STOP THE LEARNER HAS NOT REACHED LOOKS LIKE on Testing 3\u2019s timeline. `circle` (default) is the dashed ring the rail has always drawn, shrunk to 10px under the gauge. `dash` replaces it with a short horizontal tick across the line \u2014 a mark ON the timeline rather than a node hung off it. \u26a0 THE ARGUMENT: a ring is a PLACE, and six places read as six equal claims when five of them are not yet real. A tick reads as a graduation on a scale, which is what the gauge arm has made this \u2014 so the two flags are related, and `dash` is most legible with `journey-scale-style: gauge`. \u26a0 THE DONE AND CURRENT STOPS ARE UNAFFECTED under both: a completed tick and a \u201cyou are here\u201d tick would give up the one distinction the column cannot lose. No effect outside Testing 3.',
-    maturity: 'wip',
     defaultEnabled: true,
     /* ⚠ `dash` IS THE DEFAULT as of 2026-10-02, the direct ask ("make these
        current settings the default"). A diff of the live store against this
@@ -914,7 +881,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Coursework timeline \u2014 how 0/100 is shown',
     description:
       'FOUR WAYS TO PUT A PERCENTAGE ON Testing 3\u2019s vertical coursework timeline. **`gauge`** (default) turns the spine itself into one continuous track filled to the figure, with 0 at its top, 100 at its foot and the figure at the fill boundary; the stop nodes ride on it. **`axis`** is the first attempt: the per-stop spine kept, with 0 and 100 as digits bracketing the list and the figure beside the progress caret. **`chip`** drops 0 and 100 entirely and puts the figure as a small pill on the stop the learner is on. **`header`** lifts the whole scale out of the column into one horizontal track under \u201cComplete Coursework\u201d, leaving the timeline a plain list. \u26a0 THE TENSION THEY ANSWER DIFFERENTLY: the rows are spaced by their CONTENT\u2019s height, not by how much work each stop is \u2014 so a figure placed next to the current stop is in the right place but not at the right HEIGHT, and a figure placed at its true height sits beside a stop the learner has not reached. `axis` and `chip` choose position; `gauge` and `header` choose proportion. \u26a0 ALL FOUR STATE THE SAME NUMBER, and the nodes still say which stop is live under every one, so none of them loses \u201cwhere am I\u201d. No effect outside Testing 3.',
-    maturity: 'wip',
     defaultEnabled: true,
     /* ⚠ `gauge` OPENS, not `axis`. The ask that started this was that the axis
        "is not doing great" — so the arm that answers its actual defect
@@ -935,7 +901,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Right rail \u2014 tile shape',
     description:
       'HOW THE RIGHT RAIL\u2019S SIX DESTINATIONS ARE DRAWN on Testing 3. `square` (default) is the grid two across \u2014 icon over label, each tile a true square by `aspect-ratio`. `stacked` is one column of long horizontal buttons, icon left of the label. \u26a0 THE SAME SIX, THE SAME ORDER, THE SAME CTA IDS \u2014 only the shape changes, which is what makes the two comparable. \u26a0 THE TRADE IS HEIGHT AGAINST PRESENCE: six squares two-across is a tall block that gives each destination a face, where six rows read as a menu and take about half the room. \u26a0 Both arms wear `.cre-tile-cta`, so the outline-at-rest and fill-on-hover treatment is identical and the comparison is about layout alone. No effect outside Testing 3, which is the only version drawing this grid.',
-    maturity: 'wip',
     defaultEnabled: true,
     /* ⚠ `stacked` IS THE DEFAULT as of 2026-10-02, the direct ask. It was
        `square` for a day — the shape the rail was built as, kept while the
@@ -957,7 +922,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Quick question \u2014 where the exam card sits',
     description:
       'WHICH COLUMN THE EXAM-DATE CARD LIVES IN. `under-course` (default) puts it in the LEFT column, directly below the Current course card and at that card\u2019s full width \u2014 the same slot Option 4\u2019s tab strip hangs off, which is the only place "under the current course card" stays true. `journey-column` is where it shipped: the first card of the right-hand Study Journey column, promoted above the coursework card by `journey-step-order: exam-first`. \u26a0 IT MOVES THE CARD, IT DOES NOT COPY IT \u2014 `StudyJourneyWidget` drops the card from BOTH of its own call sites (the promoted slot and the licensing list) when this is `under-course`, or the learner would be asked the same question twice on one screen. \u26a0 THE NUMBERING IS UNAFFECTED either way, because the card already consumed no step number: it asks a question rather than naming a step, so the three licensing cards are numbered by a running count that skips it. \u26a0 WHAT THE MOVE COSTS: in the journey column the card sat in a sequence that explained it \u2014 Step 1 coursework, Step 2 exam. Under the course card it stands alone, so the question has to carry itself. That is the thing to judge.',
-    maturity: 'wip',
     defaultEnabled: true,
     /* ⚠ REVIEWED AND DECLINED, 2026-10-05 (`promote-to-prototype`). It was the
        BRANCH default at `under-course` — 2026-10-01, the direct ask ("set it as
@@ -998,7 +962,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Course entry — Details link',
     description:
       'Whether the combined course entry card shows its `Details →` link, which opens the Current Learning Path detail panel. ⚠ OFF BY DEFAULT (2026-09-28, the direct ask): the card is the one place a learner is meant to press Resume, and a second link beside it competes for that press. Turning it on is how to compare the two, not a setting to leave on absent-mindedly. Applies to `combined` only — the split header has its own Details link, unaffected.',
-    maturity: 'wip',
     defaultEnabled: false,
     page: 'dashboard-rebrand',
   },
@@ -1008,7 +971,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Course entry',
     description:
       'Whether the course header and the Jump Back In card are two blocks or ONE. `split` (default) is what ships: a COURSE PROGRESS header — cover, name, bar, the percentage and the stat pairs — with a separate ruled card under it carrying the lesson and the Resume CTA. `combined` renders both halves inside a single bordered card (`CourseEntryCard`), eyebrow "Current course:", divided by a hairline. ⚠ IT IS A LAYOUT CHANGE ONLY: the same figures, the same three CTA shapes (Start course / Resume / Review course), the same `Details →`. Deliberately NOT carried over from the reference design it came from — the Target exam date cell (removed 2026-09-21 and still echoed on Schedule State Exam) and the Course Overview button. Variant-only.',
-    maturity: 'wip',
     defaultEnabled: true,
     defaultVariant: 'combined',
     variants: [
@@ -1356,10 +1318,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     defaultEnabled: true,
     defaultVariant: 'normal',
     variants: [
-      { value: 'normal', label: 'Normal', maturity: 'ready' },
-      { value: 'soon', label: 'Ending soon (under 7 days)', maturity: 'ready' },
-      { value: 'urgent', label: 'Ends in 2 days', maturity: 'ready' },
-      { value: 'expired', label: 'Expired', maturity: 'ready' },
+      { value: 'normal', label: 'Normal' },
+      { value: 'soon', label: 'Ending soon (under 7 days)' },
+      { value: 'urgent', label: 'Ends in 2 days' },
+      { value: 'expired', label: 'Expired' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -1398,11 +1360,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     defaultEnabled: true,
     defaultVariant: 'on-track',
     variants: [
-      { value: 'on-track', label: 'On track', maturity: 'ready' },
-      { value: 'ahead', label: 'Ahead of goal', maturity: 'ready' },
-      { value: 'behind', label: 'Behind — recoverable', maturity: 'ready' },
-      { value: 'off-track', label: 'Off track — adjust the goal', maturity: 'ready' },
-      { value: 'no-data', label: 'No data yet', maturity: 'ready' },
+      { value: 'on-track', label: 'On track' },
+      { value: 'ahead', label: 'Ahead of goal' },
+      { value: 'behind', label: 'Behind — recoverable' },
+      { value: 'off-track', label: 'Off track — adjust the goal' },
+      { value: 'no-data', label: 'No data yet' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -1493,8 +1455,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     defaultEnabled: true,
     defaultVariant: 'rows',
     variants: [
-      { value: 'rows', label: 'Rows — stacked list', maturity: 'ready' },
-      { value: 'tiles', label: 'Tiles — square, outlined', maturity: 'ready' },
+      { value: 'rows', label: 'Rows — stacked list' },
+      { value: 'tiles', label: 'Tiles — square, outlined' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -2168,7 +2130,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       "Which learning-progress + compliance state the member's Dashboard Rebrand renders — a populated Current Learning Path (gauge %, status band, deadline). Compliance status follows progress + time-to-deadline: Not Started (0%), On Track (progress + time remaining), At Risk (<30 days left & requirement <25% done), Expired (deadline passed, unmet), Completed (100% in time). Variant-only. Applies to every brand's Current Learning Path (each has its own renewal-cycle persona).",
     // READY: the axis the demo exists to show — an empty dashboard vs. a
     // populated one. Nothing about it is unsettled.
-    maturity: 'ready',
     defaultEnabled: true,
     // Project default: On Track (populated dashboard) — per demo baseline.
     defaultVariant: 'progress-on-track',
@@ -2295,7 +2256,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       "Which readiness state the Exam Readiness section shows. Not Started is genuinely different from a low score — the learner has answered nothing, so the gauge shows no score and no status chip, the Chapter & Topic breakdown is empty, and there are no exam attempts. Off Track / At Risk / On Track vary the score, the course-progress figures, the number of simulator attempts, and shift the chapter and topic percentages together (relative strengths stay put; the level moves). Variant-only.",
     // READY: four agreed states of a shipped widget.
-    maturity: 'ready',
     defaultEnabled: true,
     defaultVariant: 'on-track',
     variants: [
