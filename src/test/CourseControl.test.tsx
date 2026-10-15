@@ -39,6 +39,8 @@ import {
 import type { CompassTocSection } from '@/components/compass/CompassCourseRail.types'
 import {
   applyJourneySequencing,
+  journeyStopsFor,
+  whiteJourneyTitles,
   type JourneyStop,
 } from '@/components/learning/studyJourneyUtil'
 
@@ -625,5 +627,70 @@ describe('regulated sequencing — the Study Journey draws the same rule', () =>
       true,
       false,
     ])
+  })
+})
+
+describe('the landing page’s Step 1 list follows the course', () => {
+  /*
+   * ⚠ THE SURFACE REPORTED TWICE. End-to-End Demo is what a bare
+   * `/dashboard-rebrand?demo=1` resolves to, and its Step 1 was seven string
+   * literals transcribed from Figma 265:8144 — "(13 of 42 completed)"
+   * included. So the Course control re-pointed the card, the Get Licensed
+   * block, Readiness and the Compass tree while the list under them stayed a
+   * drawing of a frame.
+   *
+   * Eric's SEVEN-step decomposition is kept; only the counts are derived.
+   */
+  const lessonRow = (course: 'ny' | 'fl' | 'tx' | undefined) => {
+    const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe', course)!
+    const stops = journeyStopsFor(persona.path).filter(
+      (st) => st.id !== 'attestation-and-affidavit',
+    )
+    return whiteJourneyTitles(stops[0])[1]
+  }
+
+  it('names the chosen course’s own lesson count', () => {
+    expect(lessonRow('ny')).toMatch(/of 42 completed/)
+    expect(lessonRow('fl')).toMatch(/of 36 completed/)
+    expect(lessonRow('tx')).toMatch(/of 30 completed/)
+  })
+
+  it('on Automatic, stays on New York’s 42 — the count it always printed', () => {
+    expect(lessonRow(undefined)).toMatch(/of 42 completed/)
+  })
+
+  /* ⚠ THE PRODUCT COUNTS DO NOT MOVE. Prep Review's 23 and the three
+     simulators are XCEL's 3-Part Training Program — a product structure that
+     carries across jurisdictions, not a state requirement. */
+  it('leaves the 3-Part Program’s own counts alone', () => {
+    for (const course of ['ny', 'fl', 'tx'] as const) {
+      const rows = (() => {
+        const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe', course)!
+        const stops = journeyStopsFor(persona.path).filter(
+          (st) => st.id !== 'attestation-and-affidavit',
+        )
+        return whiteJourneyTitles(stops[0])
+      })()
+      expect(rows[2], course).toBe('Prep Review (23)')
+      expect(rows[3], course).toBe('Simulated Exams (3)')
+      // And the rows that never carried a count are untouched.
+      expect(rows[0], course).toBe('Pre-course Affidavit')
+      expect(rows[6], course).toBe('Survey & Certificate')
+    }
+  })
+
+  /* A BONUS THE TRANSCRIPTION COULD NOT GIVE: the row now agrees with the
+     Progress dropdown. The frame's "13 of 42" is 31% on a page whose Progress
+     pill reads ~63%. */
+  it('tracks the Progress axis as well as the course', () => {
+    const at = (variant: string) => {
+      const persona = dashboardProgressPersonaFor('xcel', variant, 'qe', 'ny')!
+      const stops = journeyStopsFor(persona.path).filter(
+        (st) => st.id !== 'attestation-and-affidavit',
+      )
+      return whiteJourneyTitles(stops[0])[1]
+    }
+    expect(at('setup-complete-0')).toMatch(/\(0 of 42/)
+    expect(at('complete-100')).toMatch(/\(42 of 42/)
   })
 })

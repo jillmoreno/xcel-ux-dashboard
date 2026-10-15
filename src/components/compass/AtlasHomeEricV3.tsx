@@ -16,7 +16,12 @@ import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag, useFeatureFlags, useCourseDemo } from '@/context/FeatureFlagContext'
 import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
 import { WHITE_COURSES, WHITE_COURSE_PARAM, whiteCourseFor } from '@/data/atlasWhiteCourses'
-import { applyJourneySequencing, journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
+import {
+  applyJourneySequencing,
+  journeyStopsFor,
+  whiteJourneyTitles,
+  type JourneyStop,
+} from '@/components/learning/studyJourneyUtil'
 import { getLicensedStepsFor, jurisdictionName } from '@/data/nyProducerRequirements'
 import { defaultPreset, formatPaceDate, studyPace, daysUntil, dateFromIso, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
 import type { LearningPathSummary } from '@/data/learningFixtures'
@@ -237,12 +242,12 @@ export function AtlasHomeEricV3({
 
      ⚠ IT WRAPS `shownStops`, NOT `stops`, and wrapping the wrong one is how
      this shipped doing nothing. The White journey REBUILDS its rows from
-     `WHITE_JOURNEY_TITLES`, spreading `stops[0]` into each — so a `locked`
+     `whiteJourneyTitles`, spreading `stops[0]` into each — so a `locked`
      derived upstream is overwritten by the spread before anything renders.
      Sequence what is DRAWN, which is the array below. */
   const shownStops: readonly JourneyStop[] = applyJourneySequencing(
     onWhite && stops.length
-      ? WHITE_JOURNEY_TITLES.map((title, i) => ({
+      ? whiteJourneyTitles(stops[0]).map((title, i) => ({
           ...stops[0],
           id: `white-${i}`,
           title,
@@ -817,16 +822,6 @@ function Step({
   )
 }
 
-/* Eric/Atlas White's journey stops, verbatim from Figma 265:8144. */
-const WHITE_JOURNEY_TITLES = [
-  'Pre-course Affidavit',
-  'Pre-Licensing Lessons (13 of 42 completed)',
-  'Prep Review (23)',
-  'Simulated Exams (3)',
-  'Study-manual Notice Affidavit',
-  'Final Course Exam',
-  'Survey & Certificate',
-]
 
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 

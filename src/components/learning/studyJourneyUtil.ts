@@ -736,3 +736,52 @@ export function applyJourneySequencing(
     return { ...stop, locked: true }
   })
 }
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────
+ *  ERIC/ATLAS WHITE'S SEVEN-STEP JOURNEY — Figma 265:8144
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * The End-to-End Demo and Eric/Atlas WIP draw Step 1 as SEVEN rows rather
+ * than the five `journeyStopsFor` derives, and the two decompositions are
+ * genuinely different: this one separates the pre-course affidavit, the
+ * study-manual notice and the final exam, where the derived journey merges
+ * the exam with its attestation. So the list stays Eric's.
+ *
+ * ⚠ WHAT CHANGED IS THAT THE COUNTS ARE NO LONGER TRANSCRIBED — 2026-10-15,
+ * the direct ask ("the step 1 list on the landing page should follow too").
+ * All seven rows were string literals copied from the frame, "(13 of 42
+ * completed)" included, so the landing page's Step 1 was a drawing rather
+ * than a derivation and the Course control could not move it. Only one row
+ * carries a figure that belongs to a COURSE; it reads the stop now.
+ *
+ * ⚠ TWO COUNTS STAY CONSTANT ON PURPOSE. Prep Review's 23 and the three
+ * Simulated Exams are XCEL's 3-Part Training Program — a PRODUCT structure,
+ * which `nyProducerRequirements`'s header says carries across jurisdictions
+ * unchanged, and the simulator count is the one figure on the journey that
+ * was never in doubt. They are not state requirements and must not move with
+ * the licence.
+ *
+ * ⚠ AND THE LESSON ROW NOW AGREES WITH THE PROGRESS DROPDOWN, which the
+ * transcription did not. The frame's "13 of 42" is 31% on a page whose
+ * Progress pill reads ~63%; the stop's own figures are 26 of 42, which is the
+ * number the band beside it is already showing. That is a change to what a
+ * plain load renders, and it is the kind this repo usually refuses — it is
+ * here because the alternative is a hand-typed figure that contradicts a
+ * control on the same bar, which is the defect `ProgressAgreement.test.tsx`
+ * exists to catch one surface over. Put `13` back as a literal if the frame's
+ * number matters more than the agreement.
+ */
+export function whiteJourneyTitles(lessonStop: JourneyStop | undefined): string[] {
+  const total = lessonStop?.hours ?? NY_LH_PRELICENSING_LESSONS
+  const done = lessonStop?.completed ?? 0
+  return [
+    'Pre-course Affidavit',
+    `Pre-Licensing Lessons (${done} of ${total} completed)`,
+    `Prep Review (${NY_LH_PREP_REVIEW_LESSONS})`,
+    `Simulated Exams (${NY_LH_EXAM_SIMULATORS})`,
+    'Study-manual Notice Affidavit',
+    'Final Course Exam',
+    'Survey & Certificate',
+  ]
+}
