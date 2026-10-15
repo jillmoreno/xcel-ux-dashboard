@@ -1191,7 +1191,10 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
      * live frame in this section. Add captures if that starts to cost.
      */
     id: 'xcel-invite',
-    title: 'Invite & Purchase — Live Product Build',
+    // "— Work in Progress", like the Atlas and Compass rows (2026-10-14,
+    // Jillienne on the preview): every door around the end-to-end row is
+    // still being shaped, and the titles say so.
+    title: 'Invite & Purchase — Work in Progress',
     accent: 'gold',
     icon: 'flag',
     blurb:

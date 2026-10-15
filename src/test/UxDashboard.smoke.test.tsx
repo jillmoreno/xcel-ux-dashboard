@@ -215,7 +215,7 @@ describe('section routing (sectionOf)', () => {
     // first option"), then the doors around it.
     expect(rows).toEqual([
       'End-to-End User Experience (Invite, Atlas, Compass)',
-      'Invite & Purchase — Live Product Build',
+      'Invite & Purchase — Work in Progress',
       'Atlas Learning — Work in Progress',
       'Compass Learning — Work in Progress',
     ])
