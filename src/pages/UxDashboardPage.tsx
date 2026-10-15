@@ -204,8 +204,11 @@ const SECTIONS: SectionDef[] = [
        of rows, is authored in the browser, and is visible to stakeholders too
        (it carries no `gate`). `UxDashboard.smoke.test.tsx` compares this
        section in both directions and pins the shape of every row's route. */
-    blurb:
-      'The live product build — where we have landed, at the committed baseline. One row per surface, all the same build: each is the current source of truth for the door it names.',
+    // NO BLURB — 2026-10-14, Jillienne on the preview: "remove this". The
+    // rows carry the explanation now (scope, owner, Updated, Coming soon),
+    // and a sentence over them repeated it. Empty draws no lede at all; see
+    // the render site, which skips the <p> rather than drawing a blank one.
+    blurb: '',
   },
   {
     // The REVIEW INBOX, authored on the page (2026-09-18) — labelled
@@ -1647,7 +1650,9 @@ export function UxDashboardPage() {
             Prototype demo, features and specifications
           </p>
           <h1 style={h1Style}>{VISIBLE_SECTIONS.find((s) => s.id === section)!.label}</h1>
-          <p style={ledeStyle}>{VISIBLE_SECTIONS.find((s) => s.id === section)!.blurb}</p>
+          {VISIBLE_SECTIONS.find((s) => s.id === section)!.blurb && (
+            <p style={ledeStyle}>{VISIBLE_SECTIONS.find((s) => s.id === section)!.blurb}</p>
+          )}
         </header>
 
         {section === 'research' ? (
