@@ -1856,11 +1856,17 @@ function ProjectRow({
   //     in that section all open the same build, so "Full platform" three
   //     times would say nothing, and the scope label is the one thing that
   //     tells them apart at a glance.
-  const meta = [
-    prototypeScopeLabel(feature.prototypeScope) ??
-      feature.kindLabel ??
-      (external ? 'Standalone HTML' : feature.kind === 'explore' ? 'Full platform' : 'Feature'),
-  ]
+  //   An EMPTY scope label means no kind tag at all (the end-to-end row,
+  //     2026-10-14) — the column stays so the other rows' tags still line up.
+  const scopeLabel = prototypeScopeLabel(feature.prototypeScope)
+  const meta =
+    scopeLabel === ''
+      ? []
+      : [
+          scopeLabel ??
+            feature.kindLabel ??
+            (external ? 'Standalone HTML' : feature.kind === 'explore' ? 'Full platform' : 'Feature'),
+        ]
   // The row's status chip and the pill that filters it are the same resolver,
   // so a pill can never disagree with the rows it produces.
   const chip = featureStatusChipFor(statusKey, dark)

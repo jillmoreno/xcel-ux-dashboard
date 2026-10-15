@@ -168,9 +168,13 @@ export const PROTOTYPE_SCOPES: ReadonlyArray<{
 }> = [
   {
     id: 'end-to-end',
-    // "End to end" until 2026-10-14; renamed with the row's title, which now
-    // says end-to-end itself, so the tag names the two halves instead.
-    label: 'Atlas & Compass',
+    // NO TAG — 2026-10-14, Jillienne on the preview: "remove this tag". It
+    // read "End to end", then "Atlas & Compass"; once the title named all
+    // three doors the tag was repeating the title, and the product row reads
+    // cleaner without one. An EMPTY label means "draw no kind tag at all" in
+    // `ProjectRow` — not "fall back to Full platform" — because that fallback
+    // is the word the tag was removed to avoid.
+    label: '',
     question: 'What is the XCEL product right now?',
     owner: 'Jillienne',
   },
