@@ -52,6 +52,20 @@ as written. What is true now:
 - **Refinement has no public toggle.** A row is a row the moment it is added.
   The server drops `isPublic` on save; older records keep the key until their
   next save and nothing reads it.
+- **The retired HOST, and what still pointed at it (same day).** Deleting the
+  demo project deleted `ux-demo-xceldashboard.netlify.app` and every branch
+  alias under it, and Netlify does not redirect a deleted project — those
+  addresses answer its "Site not found" page. Three things were still handing
+  them out, and the first is the one that showed: **Refinement rows written
+  before today**, which carry the address they were added with and so opened a
+  404 for work that is still built. `netlify/lib/linkBoard.ts` now holds
+  `RETIRED_HOSTS` and swaps the host **on the way out as well as in**, so those
+  rows open today with no migration to run — a stored row is rewritten the next
+  time it is saved. The other two were `BRANCH_SITE_HOST`'s default in
+  `netlify/functions/branches.ts` (the Branch builds strip's fallback address,
+  reached only for a deploy with no alias of its own, which is why it hid) and
+  the prototype bar's "Go to Demo Hub" item, now "Go to Design Hub".
+  `RetiredHost.test.tsx` pins all three plus the swap itself.
 - **`maturity` is gone** from flags, variants, demo-bar controls and versions,
   with `demoControlMaturity.ts`, the picker's "Design site only" badge, the
   demo bar's `wip` dot and the `?as=demo` lens. Every control and every

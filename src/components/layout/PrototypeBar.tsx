@@ -327,28 +327,30 @@ export function PrototypeBar({
  * reviewer lands home with a clean slate.
  */
 /**
- * THE DEMO HUB — the public Netlify project's gateway, 2026-10-01.
+ * THE HUB — the gateway at the top of the one site, 2026-10-01, re-pointed
+ * 2026-10-15.
  *
- * The link handed to stakeholders: `VITE_GATEWAY_MODE=public`, so it carries
- * only the ungated sections (Demo · Links · Research) and builds `main` ONLY.
- * Both of those matter to anyone pressing this from a branch build — the hub
- * will not show the work they are standing in until it merges.
+ * It builds `main` ONLY, which matters to anyone pressing this from a branch
+ * build: the Hub will not show the work they are standing in until it merges.
  *
- * ⚠ THIS IS THE **DEMO** HOST, NOT THE DESIGN ONE, and the two differ by one
- * word. `ux-design-xceldashboard.netlify.app` is the full site that branch
- * builds deploy to; `ux-demo-…` is this. Sending a stakeholder to the design
- * host hands them a password prompt. `docs/gateway.md` is the source for both.
+ * ⚠ IT USED TO BE `ux-demo-xceldashboard.netlify.app` — the second Netlify
+ * project, trimmed for stakeholders. That project was DELETED on 2026-10-15
+ * when the Hub became the one site, and a deleted Netlify project does not
+ * redirect — it answers Netlify's own "Site not found" page, which is what
+ * this item opened. There is one host now, and `docs/gateway.md` is the
+ * source for it.
  *
  * Hard-coded rather than derived from `window.location`, because the whole
- * point is to leave THIS origin — on localhost there is nothing to derive from.
+ * point is to leave THIS origin — a branch build's own address is a branch
+ * build, and on localhost there is nothing to derive from.
  */
-const DEMO_HUB_URL = 'https://ux-demo-xceldashboard.netlify.app/'
+const HUB_URL = 'https://ux-design-xceldashboard.netlify.app/'
 
 /**
  * The prototype's own actions — moved here from the demo bar on 2026-10-05 and
  * sat to the RIGHT OF THE DEVICE TOGGLE, which is the ask and also the right
  * grouping: these three are about the PROTOTYPE (copy a link to this view, copy
- * a presentation link, open the Demo Hub), where every control on the bars
+ * a presentation link, open the Design Hub), where every control on the bars
  * below sets the learner's scenario.
  *
  * ⚠ RENDERS NOTHING UNTIL THE DEMO BAR PUBLISHES. `useDemoShareActions` is null
@@ -387,10 +389,10 @@ function PrototypeActionsMenu() {
         },
         {
           id: 'demo-hub',
-          label: 'Go to Demo Hub',
+          label: 'Go to Design Hub',
           icon: <ArrowUpRightFromSquare size={15} aria-hidden />,
-          description: 'The stakeholders\u2019 site, in a new tab. Your settings don\u2019t carry over.',
-          onSelect: () => window.open(DEMO_HUB_URL, '_blank', 'noopener,noreferrer'),
+          description: 'The Hub\u2019s project list, in a new tab. Your settings don\u2019t carry over.',
+          onSelect: () => window.open(HUB_URL, '_blank', 'noopener,noreferrer'),
         },
       ]}
     />

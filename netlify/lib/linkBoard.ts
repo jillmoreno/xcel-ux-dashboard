@@ -29,6 +29,72 @@ import { openStore, type Store } from './store'
 export const ALLOWED_PROTOCOLS = ['http:', 'https:']
 
 /**
+ * THE RETIRED HOST — 2026-10-15.
+ *
+ * The demo project (`ux-demo-xceldashboard`) was deleted when the Hub became
+ * the one site. Netlify does not redirect a deleted project: every address
+ * under that host, and every BRANCH alias under it
+ * (`feat-x--ux-demo-xceldashboard.netlify.app`), answers Netlify's own
+ * "Site not found" page. Rows written before that day still carry those
+ * addresses, so the Refinement board — the surface whose whole job is to not
+ * lose work — was handing out 404s for work that is still built and still
+ * reachable, one hostname away.
+ *
+ * The map is applied in BOTH directions, which is the point:
+ *
+ *  - on the way IN (`validateRecord`), so a row pasted from an old link, an
+ *    old bookmark or an old skill run cannot re-seed the dead host; and
+ *  - on the way OUT (`serveRecord`), so the rows already in Blobs open
+ *    correctly TODAY, with no migration to run and no credentials needed to
+ *    run it. A row is rewritten in the store the next time it is saved; until
+ *    then the stored text is stale and what is served is right. That order is
+ *    deliberate — a migration that has to be run is a migration someone has
+ *    to remember, and this had already been missed once.
+ *
+ * It is a HOST swap only. The path, query and branch prefix are carried
+ * across untouched, because the Hub builds every branch the demo site did —
+ * `feat-x--ux-demo-…/dashboard-rebrand?demo=1` is the same build at
+ * `feat-x--ux-design-…/dashboard-rebrand?demo=1`. A branch whose build has
+ * since been deleted 404s on the Hub too, and that is a different, honest
+ * failure: the branch is gone, not the site.
+ *
+ * ⚠ Entries are PERMANENT. Removing one does not tidy the map, it re-breaks
+ * every row still carrying that host.
+ */
+export const RETIRED_HOSTS: Readonly<Record<string, string>> = {
+  'ux-demo-xceldashboard.netlify.app': 'ux-design-xceldashboard.netlify.app',
+}
+
+/**
+ * Swap a retired host for its live one, preserving a `<branch>--` alias
+ * prefix. Anything this does not recognise — another host, a non-URL — comes
+ * back exactly as it went in: this corrects a known rename, it does not
+ * police where a link may point.
+ */
+export function rehostRetired(raw: string): string {
+  let parsed: URL
+  try {
+    parsed = new URL(raw)
+  } catch {
+    return raw
+  }
+  const host = parsed.hostname.toLowerCase()
+  for (const [dead, live] of Object.entries(RETIRED_HOSTS)) {
+    if (host === dead) {
+      parsed.hostname = live
+      return parsed.toString()
+    }
+    // `feat-x--dead.host` → `feat-x--live.host`. The `--` is required, so a
+    // host that merely ENDS with the dead one is left alone.
+    if (host.endsWith(`--${dead}`)) {
+      parsed.hostname = host.slice(0, host.length - dead.length) + live
+      return parsed.toString()
+    }
+  }
+  return raw
+}
+
+/**
  * The Links taxonomy, re-declared here rather than imported from
  * `src/data/linkStore.ts`, because this is a trust boundary and `LINK_TYPES`
  * is a compile-time claim about code we wrote. `Links.test.tsx` parses both
@@ -129,8 +195,10 @@ export function validateRecord(
       errors.push('url must start with http:// or https://.')
     } else {
       // Store the PARSED form, so what the page renders is what the checks
-      // above ran against rather than the original text beside it.
-      out.url = parsed.toString()
+      // above ran against rather than the original text beside it — then the
+      // retired-host swap, so a row cannot be written pointing at a site that
+      // no longer exists. See `RETIRED_HOSTS`.
+      out.url = rehostRetired(parsed.toString())
     }
   }
 
@@ -221,6 +289,23 @@ async function highestStored(store: Store, prefix: string): Promise<number> {
 }
 
 /**
+ * What a stored record looks like on the way OUT. The ONE thing that differs
+ * from what is in Blobs is the retired-host swap, so a record written before
+ * 2026-10-15 opens rather than 404s. Nothing else is derived or defaulted
+ * here: a reader seeing a field it does not know is the client's problem to
+ * ignore, and silently filling fields in on read is how a store and its
+ * readers stop agreeing.
+ */
+function serveRecord(record: unknown): unknown {
+  if (typeof record !== 'object' || record === null) return record
+  const r = record as Json
+  const url = str(r.url)
+  if (!url) return r
+  const fixed = rehostRetired(url)
+  return fixed === url ? r : { ...r, url: fixed }
+}
+
+/**
  * Build the handler for one board. The response shape uses the word `links`
  * for the collection and `link` for one record on EVERY board — the client
  * store is shared too, and a per-board key name would be a second thing for
@@ -248,7 +333,7 @@ export function linkBoardHandler(cfg: BoardConfig): (req: Request) => Promise<Re
       if (req.method === 'GET') {
         const { blobs } = await store.list()
         const links = await Promise.all(blobs.map((b) => store.get(b.key, { type: 'json' })))
-        return json({ links: links.filter(Boolean) })
+        return json({ links: links.filter(Boolean).map(serveRecord) })
       }
 
       if (req.method === 'POST') {
@@ -280,7 +365,7 @@ export function linkBoardHandler(cfg: BoardConfig): (req: Request) => Promise<Re
     if (req.method === 'GET') {
       const found = await store.get(id, { type: 'json' })
       if (!found) return json({ errors: ['Not found'] }, 404)
-      return json({ link: found })
+      return json({ link: serveRecord(found) })
     }
 
     if (req.method === 'PUT') {

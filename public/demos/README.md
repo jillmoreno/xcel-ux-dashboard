@@ -16,7 +16,7 @@ branch deploys, which is where a stakeholder review link points.
 
 1. On your branch, add `public/demos/<your-thing>.html`.
 2. Push. Netlify builds the branch; your file is at
-   `https://<branch>--ux-demo-xceldashboard.netlify.app/demos/<your-thing>.html`.
+   `https://<branch>--ux-design-xceldashboard.netlify.app/demos/<your-thing>.html`.
 3. On the full site, Refinement → Add link → paste that URL. Leave "Show on
    public site" off until it is ready for stakeholders.
 4. When it is promoted, it moves out of here — into `public/prototypes/` with a

@@ -117,9 +117,10 @@ time, so the ONLY per-site difference is what each project sets in
    To point it somewhere else, set these on the FULL site instead:
    - `NETLIFY_API_TOKEN` — a personal access token (store it as a **secret**)
    - `NETLIFY_SITE_ID` — the Project ID of the site whose BRANCH DEPLOYS these
-     are, which is the **public** site (that is where a branch is reviewed)
+     are, which is the **Hub** — the one site since 2026-10-15, and where
+     every branch builds
    - `BRANCH_SITE_HOST` — optional, only used if a deploy does not carry its
-     own branch alias. Defaults to `ux-demo-xceldashboard.netlify.app`.
+     own branch alias. Defaults to `ux-design-xceldashboard.netlify.app`.
    - `PRODUCTION_BRANCH` — optional, defaults to `main`.
 
    It lists only branches whose latest build **succeeded**, so every address in

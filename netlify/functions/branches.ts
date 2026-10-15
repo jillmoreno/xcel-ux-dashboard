@@ -29,12 +29,12 @@
  * ── CONFIG ──────────────────────────────────────────────────────────────────
  *   NETLIFY_API_TOKEN  a Netlify personal access token (User settings →
  *                      Applications → Personal access tokens)
- *   NETLIFY_SITE_ID    the project whose BRANCH DEPLOYS these are — the PUBLIC
- *                      site, because that is where a branch build is reviewed
- *                      (no password in front of it; see CLAUDE.md, "Why a
- *                      branch is reviewable at all")
+ *   NETLIFY_SITE_ID    the project whose BRANCH DEPLOYS these are — the Hub,
+ *                      the one site since 2026-10-15, which is where every
+ *                      branch builds. It used to be the public demo project;
+ *                      that project is deleted.
  *   BRANCH_SITE_HOST   optional. Only used if Netlify's own branch alias is
- *                      missing from a deploy; `ux-demo-xceldashboard.netlify.app`
+ *                      missing from a deploy; `ux-design-xceldashboard.netlify.app`
  *                      by default.
  *   PRODUCTION_BRANCH  optional, `main`.
  *
@@ -57,7 +57,19 @@ export const config = {
   path: '/api/branches',
 }
 
-const DEFAULT_SITE_HOST = 'ux-demo-xceldashboard.netlify.app'
+/**
+ * The Hub — the one site since 2026-10-15, and the host every branch builds
+ * under.
+ *
+ * ⚠ THIS WAS `ux-demo-xceldashboard.netlify.app` UNTIL 2026-10-15, and it was
+ * left behind when that project was deleted. It is a FALLBACK — reached only
+ * when a deploy carries no branch alias of its own — which is exactly why it
+ * went unnoticed: most rows on the strip were right, and the occasional one
+ * pointed at a site that no longer exists. Keep it in step with
+ * `branch_host` in `.claude/skills/promote-to-refinement`, which derives the
+ * same address by hand.
+ */
+const DEFAULT_SITE_HOST = 'ux-design-xceldashboard.netlify.app'
 
 /** How many deploys to look back through. The feed is a history and a busy
  *  week is a lot of builds, so this is a window rather than everything: 100 is
