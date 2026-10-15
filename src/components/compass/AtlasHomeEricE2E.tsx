@@ -137,7 +137,10 @@ export function AtlasHomeEricE2E({
   examDate,
   notStarted = false,
   onBegin,
-  onOverview,
+  /* `onOverview` is NOT read here since 2026-10-15 (Jillienne's request):
+     this Home gives no way into the course overview. The prop stays in the
+     type so `LearnerFocusedBand` passes it unchanged; WIP, V3 and White keep
+     their Course Overview buttons. */
   onOpenStop,
   onOpenStep,
   onOpenRequirements,
@@ -371,7 +374,6 @@ export function AtlasHomeEricE2E({
             cover={shownCover ?? undefined}
             title={shownTitle}
             onCover={() => setWhiteHead(false)}
-            onOverview={onOverview}
             onBegin={onBegin}
             beginLabel={progressPick === 'not-started' ? 'Begin Course' : 'Resume Course'}
             meta={courseMeta}
@@ -399,22 +401,13 @@ export function AtlasHomeEricE2E({
               </h2>
               {courseMeta}
             </div>
-            {/* The card's two actions, at the main buttons' size (2026-10-06,
-                the designer's request): Course Overview — was a 10px chip —
-                as the outline button, and Begin Course, MOVED here from the
-                Study Journey's current stop. */}
+            {/* The card's action, at the main buttons' size (2026-10-06, the
+                designer's request): Begin Course, MOVED here from the Study
+                Journey's current stop. Course Overview — the outline button
+                beside it, a 10px chip before that — was REMOVED 2026-10-15
+                (Jillienne's request): the Atlas Learning row gives no way into
+                the course overview. */}
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              {onOverview ? (
-                <button
-                  type="button"
-                  className="cre-compass-secondary cre-atlas-home-secondary"
-                  onClick={onOverview}
-                  // Two weights under the buttons' Bold, Medium 500 (2026-10-06).
-                  style={{ ...HEADER_BUTTON, fontWeight: 500 }}
-                >
-                  Course Overview
-                </button>
-              ) : null}
               <button
                 type="button"
                 className="cre-compass-primary cre-compass-btn-primary"
@@ -626,17 +619,11 @@ export function AtlasHomeEricE2E({
               link={apply.detailLabel ?? 'How to apply'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(apply.id) : undefined}
             />
-            {onOpenRequirements ? (
-              <button
-                type="button"
-                data-cta-id="home.state-requirements"
-                className="cre-compass-secondary"
-                onClick={onOpenRequirements}
-                style={REQUIREMENTS}
-              >
-                {state ? `${state} State Requirements` : 'State Requirements'}
-              </button>
-            ) : null}
+            {/* The "<State> State Requirements" button that closed the journey
+                column was REMOVED on 2026-10-15 (Jillienne's request, on the
+                preview). The sheet it opened is still one click away: Quick
+                Links' State Requirements row, in the side column, takes the
+                same `onOpenRequirements`. WIP, V3 and White keep theirs. */}
           </div>
         </div>
       </section>
@@ -1154,19 +1141,6 @@ const CHEVRON: CSSProperties = {
   cursor: 'pointer',
   color: 'var(--color-compass-page-button)',
 }
-/* Hugs its label with 24 a side (2026-10-09, Eric) — it filled the column. */
-const REQUIREMENTS: CSSProperties = {
-  alignSelf: 'flex-start',
-  padding: '0 24px',
-  height: 40,
-  borderRadius: 8,
-  border: '1px solid',
-  cursor: 'pointer',
-  fontFamily: 'var(--font-body)',
-  fontWeight: 700,
-  fontSize: 14,
-}
-
 /* The Design bar's Progress control → the module's opening state and figure. */
 /* The Readiness level each Progress stage opens on (0 Novice … 4 Exam Ready).
    Expired has no obvious level, so it starts over at Novice. */
