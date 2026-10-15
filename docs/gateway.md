@@ -79,22 +79,23 @@ nothing needs to be locked." So:
   discussion on Refinement, or a handoff on Development. `sectionOf` now
   sends ANY authored `devStatus` to Development; the status chip says which
   stage. `?section=design` is a legacy alias of Development.
-- **Exploration's seven documents list under PRDs,** in an **Explorations**
-  card beneath the board — the brief and the document answering it on one
-  page. The rows, their thumbnails, kebabs and files are untouched; `groupRows`
-  wraps them under the card label and the `prds` render branch draws the board
-  then the card. `?section=exploration` is an alias of `prds`, so shared links
-  still land on the rows. Moved as a card, not converted into board links, for
-  the reason `retire-from-refinement` gives: a document kept in code has a
-  commit trail; a Blob does not.
+- **Exploration is renamed Explorations and moved up to sit directly under
+  PRDs** — the briefs and the documents answering them, side by side in the
+  nav. The rows, their thumbnails, kebabs and files are untouched, and the
+  section id stays `exploration`, so `?section=exploration` links and
+  `category: exploration` need no alias. ⚠ For an hour it was a card under
+  the PRDs board instead; Jillienne on the preview: "explorations should be
+  its own page below the PRDs option in the left nav." Kept in code rather
+  than converted into board links, for the reason `retire-from-refinement`
+  gives: a document kept in code has a commit trail; a Blob does not.
 - **Archive and QA Notes sit under Dev Handoff,** ungated. The `gate` field,
   `DEV_GATE_ID`, `ENFORCE_SECTION_GATE`, `FIRST_RESTRICTED`, the lock glyph and
   the modal wiring are gone from the page. `PrototypeLock.tsx` and
   `prototypeLockUtil.ts` stay — the archived tile landing reads them.
 
-Nine sections: Prototypes · Refinement · Research · Resources · PRDs ·
-Development · Done · Archive · QA Notes. The three `archivedItems.ts` rows
-`design-section`, `exploration-section` and `designers-gate` carry the
+Ten sections: Prototypes · Refinement · Research · Resources · PRDs ·
+Explorations · Development · Done · Archive · QA Notes. The two
+`archivedItems.ts` rows `design-section` and `designers-gate` carry the
 restore notes. The "Sections" and "Exploration" passages below describe the
 rail as it was and are kept as history.
 
@@ -709,8 +710,8 @@ mis-placed row shows no warning on the page. `EXPECTED_PLACEMENT` in the smoke
 test is what catches it now.
 
 **All five XCEL rows sit in Exploration** (moved there 2026-09-02 from Design;
-since 2026-10-15 the same rows, seven by then, sit in the Explorations card
-under PRDs — the rule below is unchanged, only the section's name).
+since 2026-10-15 the section is called Explorations and sits under PRDs — the
+rule below is unchanged, only the section's name and place).
 The same rows are in **Design** over in the LMS dashboard, and that difference is
 deliberate rather than drift: there they are five artifacts among many competing
 for one designer's attention, so dev-cycle status is the useful axis; here they

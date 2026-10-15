@@ -39,8 +39,8 @@ function renderDashboard(initialPath = '/') {
 }
 
 /** The nav order is load-bearing — see `NAV_EYEBROWS` in UxDashboardPage.tsx.
- *  Nine sections since 2026-10-15: Design and Exploration are retired with the
- *  Designers group they headed (Exploration's rows list under PRDs), and
+ *  Ten sections since 2026-10-15: Design is retired with the Designers group
+ *  it headed, Explorations (was Exploration) moved up to sit under PRDs, and
  *  Archive and QA Notes sit under Dev Handoff, ungated. */
 const EXPECTED_SECTIONS = [
   'Prototypes',
@@ -48,6 +48,7 @@ const EXPECTED_SECTIONS = [
   'Research',
   'Resources',
   'PRDs',
+  'Explorations',
   'Development',
   'Done',
   'Archive',
@@ -129,21 +130,20 @@ describe('section routing (sectionOf)', () => {
     'xcel-atlas-learning': 'prototypes',
     'xcel-dashboard': 'prototypes',
     'xcel-compass': 'prototypes',
-    // The seven documents — the Explorations card under PRDs since 2026-10-15,
-    // their own Exploration section before that.
-    'xcel-lms': 'prds',
-    'xcel-walkthrough': 'prds',
-    'xcel-wireframes': 'prds',
-    'xcel-admin': 'prds',
-    'xcel-admin-tool': 'prds',
+    // The seven documents — Explorations, directly under PRDs since 2026-10-15.
+    'xcel-lms': 'exploration',
+    'xcel-walkthrough': 'exploration',
+    'xcel-wireframes': 'exploration',
+    'xcel-admin': 'exploration',
+    'xcel-admin-tool': 'exploration',
     // The Admin placeholder (2026-10-14) — a coming-soon row that opens nothing.
     'xcel-admin-coming-soon': 'prototypes',
-    'xcel-exam-spec': 'prds',
+    'xcel-exam-spec': 'exploration',
     // The first handoff row (2026-09-24) — `devStatus: 'in-development'`.
     'atlas-home-course-card': 'development',
     // Added 2026-09-22 — see the row's own note in `prototypeFeatures.ts` for
     // why this page stopped being masthead-only and took a tile.
-    'xcel-pace-presets': 'prds',
+    'xcel-pace-presets': 'exploration',
     // Added 2026-09-24 — the repo's FIRST authored dev handoff. `devStatus:
     // 'in-design'` is what places it, and `sectionOf` reads that BEFORE
     // `category`, so changing the status moves the row between Design and
@@ -160,12 +160,12 @@ describe('section routing (sectionOf)', () => {
   it('no Explorations row carries a devStatus', () => {
     // The inverse of the rule below, and the one that actually bites in this
     // repo. `sectionOf` checks devStatus BEFORE category, so a status added to
-    // one of these rows silently pulls it out of the Explorations card and onto
-    // the Development board — no error, and it reads as the row simply
-    // vanishing from under PRDs.
+    // one of these rows silently pulls it out of Explorations and onto the
+    // Development board — no error, and it reads as the row simply vanishing
+    // from the section.
     for (const f of PROTOTYPE_FEATURES) {
       const placed = EXPECTED_PLACEMENT[f.id]
-      if (placed !== 'prds') continue
+      if (placed !== 'exploration') continue
       expect(
         f.devStatus,
         `${f.id} is in ${placed}, so it must NOT carry a devStatus`,
@@ -247,39 +247,46 @@ describe('section routing (sectionOf)', () => {
  * THE DESIGNERS GROUP IS GONE (2026-10-15). Design, Exploration, Archive and QA
  * Notes shared a gate id drawn as a divider under a "Designers" eyebrow — and,
  * until 2026-09-18, a password modal. One site behind one Netlify password
- * needs no second door: Design (empty, unused) is retired, Exploration's
- * documents list under PRDs in an "Explorations" card, and Archive and QA
- * Notes sit under Dev Handoff. These pin each half.
+ * needs no second door: Design (empty, unused) is retired, Explorations moved
+ * up to sit directly under PRDs, and Archive and QA Notes sit under Dev
+ * Handoff. These pin each half.
  */
 describe('the Designers group is gone (2026-10-15)', () => {
-  it('lists the explorations under PRDs, in their own card, with no lock', async () => {
+  it('opens Explorations on click — no password, no lock glyph', async () => {
     const user = userEvent.setup()
     renderDashboard()
     expect(screen.queryByText(/— locked/)).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: /PRDs/ }))
+    await user.click(screen.getByRole('button', { name: /Explorations/ }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    const card = document.querySelector('[data-group="explorations"]')
-    expect(card).not.toBeNull()
-    expect(card!.textContent).toContain('Explorations')
-    expect(card!.textContent).toContain('XCEL LMS — Desktop Platform')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Explorations')
+    expect(screen.getByText('XCEL LMS — Desktop Platform')).toBeInTheDocument()
     // Every document, and nothing else lists here.
-    expect(card!.querySelectorAll('[data-row]').length).toBe(
+    expect(document.querySelectorAll('[data-row]').length).toBe(
       PROTOTYPE_FEATURES.filter((f) => f.category === 'exploration').length,
     )
   })
 
-  it('a legacy ?section=exploration deep link lands on PRDs', () => {
-    renderDashboard('/?section=exploration')
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('PRDs')
-    expect(screen.getByText('XCEL LMS — Desktop Platform')).toBeInTheDocument()
+  it('Explorations sits directly under PRDs in the nav', () => {
+    renderDashboard()
+    const labels = within(screen.getByRole('navigation'))
+      .getAllByRole('button')
+      .map((b) => b.textContent ?? '')
+    const prds = labels.findIndex((l) => l.includes('PRDs'))
+    expect(prds).toBeGreaterThan(-1)
+    expect(labels[prds + 1]).toContain('Explorations')
   })
 
-  it('draws no Designers eyebrow, and neither retired section has a nav row', () => {
+  it('a ?section=exploration deep link lands on it directly', () => {
+    renderDashboard('/?section=exploration')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Explorations')
+  })
+
+  it('draws no Designers eyebrow, and Design has no nav row', () => {
     renderDashboard()
     expect(screen.queryByText(/^Designers$/i)).toBeNull()
     const nav = screen.getByRole('navigation')
     expect(within(nav).queryByRole('button', { name: /^Design\b/ })).toBeNull()
-    expect(within(nav).queryByRole('button', { name: /Exploration/ })).toBeNull()
   })
 })
 

@@ -59,6 +59,7 @@ const ALL_SECTIONS = [
   'Research',
   'Resources',
   'PRDs',
+  'Explorations',
   'Development',
   'Done',
   'Archive',

@@ -336,10 +336,10 @@ say so with the ratio (e.g. *"`tertiary-700` — the lightest cyan clearing AA a
 ## Home-page fields
 
 The home page (`/`, `UxDashboardPage`) is a **left nav over a project list** —
-Prototypes · Refinement · Research · Resources · PRDs · Development · Done ·
-Archive · QA Notes (nine since 2026-10-15 — Design and Exploration are retired,
-the documents list under PRDs). The tile grid it replaced is archived
-(`prototype-tile-landing`).
+Prototypes · Refinement · Research · Resources · PRDs · Explorations ·
+Development · Done · Archive · QA Notes (ten since 2026-10-15 — Design is
+retired and Explorations moved up under PRDs). The tile grid it replaced is
+archived (`prototype-tile-landing`).
 
 | Field | Rule |
 |---|---|
@@ -391,7 +391,7 @@ a silent default — but the default is what catches the miss.
    retired — the chip still shows the stage).
 2. **Otherwise it falls back to `category`** — `prototype` / `demo` /
    `dashboard` → Prototypes, `testing` and `dev-handoff` → Development,
-   `exploration` and everything else → the Explorations card under PRDs.
+   `exploration` and everything else → Explorations.
 
 **Author `devStatus` on every new feature.** Step 2 is a guess, and **the page
 no longer says so**: the Design and Development sections used to render a banner

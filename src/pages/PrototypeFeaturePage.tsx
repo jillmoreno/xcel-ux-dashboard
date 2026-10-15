@@ -65,12 +65,13 @@ const MEMBERSHIP_FILTER_TABS: PillTabItem<Membership>[] = [
  *  `sectionOf` in UxDashboardPage — same order of precedence, same fallbacks. */
 function backSectionHref(feature: PrototypeFeature): string {
   // Any authored status is a position on the Development board (Design is
-  // retired, 2026-10-15); documents list under PRDs, in the Explorations card.
+  // retired, 2026-10-15); everything else without a product category is a
+  // document, which is Explorations.
   if (feature.devStatus) return '/?section=development'
   if (feature.category === 'prototype' || feature.category === 'demo' || feature.category === 'dashboard')
     return '/?section=prototypes'
   if (feature.category === 'testing') return '/?section=development'
-  return '/?section=prds'
+  return '/?section=exploration'
 }
 
 export function PrototypeFeaturePage({

@@ -119,6 +119,7 @@ type UxSection =
   | 'prds'
   | 'prototypes'
   | 'research'
+  | 'exploration'
   | 'development'
   | 'done'
   | 'archive'
@@ -129,8 +130,9 @@ type UxSection =
  * Archive and QA Notes shared one gate id (`design-and-development`), drawn in
  * the rail as a divider under a "Designers" eyebrow and, before 2026-09-18, as
  * a password modal. The Netlify site password is the only lock now — one site,
- * one door — so the gate, its modal wiring and the eyebrow went together, and
- * Archive and QA Notes moved under Dev Handoff. The `designers-gate` row in
+ * one door — so the gate, its modal wiring and the eyebrow went together:
+ * Design is retired, Explorations moved up under PRDs, and Archive and QA
+ * Notes moved under Dev Handoff. The `designers-gate` row in
  * `src/data/archivedItems.ts` says how it was wired. `PrototypeLock.tsx` and
  * `prototypeLockUtil.ts` are untouched — the archived tile landing reads them.
  */
@@ -236,21 +238,29 @@ const SECTIONS: SectionDef[] = [
     // documents the designs answer. A section rather than a Type on Other
     // Links because "the brief" is a different question from "everything
     // else". Ungated like its siblings; count is live, from `usePrdCount`.
-    //
-    // Since 2026-10-15 the section also carries the EXPLORATIONS card under the
-    // board — the seven hand-authored documents that had their own Exploration
-    // section until the Designers group was retired. The brief and the document
-    // answering it, on one page. See `groupRows` and the `prds` render branch.
     id: 'prds',
     label: 'PRDs',
     blurb:
       'The product requirements the designs answer — one link per document. Added on the page, not in code.',
   },
-  // ARCHIVED 2026-10-15 — Design and Exploration stood here, first in the
-  // old restricted group. Design listed nothing (no row carries an in-design
-  // status) and the team no longer uses the stage; Exploration's seven
-  // documents list under PRDs now, in the "Explorations" card. See the
-  // `design-section` and `exploration-section` rows in
+  {
+    // The hand-authored documents — outside products and ideas rebuilt on our
+    // tokens and conventions. Seven `PROTOTYPE_FEATURES` rows with
+    // `category: exploration` and no `devStatus`. MOVED HERE 2026-10-15, from
+    // the retired Designers group at the foot of the rail to directly under
+    // PRDs — the briefs and the documents answering them, side by side in the
+    // nav — and renamed from "Exploration". Jillienne on the preview, after a
+    // card-under-the-board version: "explorations should be its own page
+    // below the PRDs option in the left nav." The id stays `exploration` so
+    // `?section=exploration` links and `category: exploration` need no alias.
+    id: 'exploration',
+    label: 'Explorations',
+    blurb: 'Outside products and ideas rebuilt on our tokens, components and UX conventions — documents, kept in code.',
+  },
+  // ARCHIVED 2026-10-15 — Design stood here, first in the old restricted
+  // group, with Exploration beneath it (moved up under PRDs, above). Design
+  // listed nothing (no row carries an in-design status) and the team no
+  // longer uses the stage. See the `design-section` row in
   // `src/data/archivedItems.ts`.
   // ARCHIVED 2026-09-29 — Sandbox stood here, between Exploration and
   // Development. Unwired, not deleted: see the `sandbox-section` row in
@@ -338,11 +348,12 @@ const DEFAULT_SECTION: UxSection = 'prototypes'
  * row. Each names the row it sits directly above:
  *
  *   Demo             → Prototypes
- *   Design & Research → Refinement, Research, Resources, PRDs
+ *   Design & Research → Refinement, Research, Resources, PRDs, Explorations
  *   Dev Handoff      → Development, Done, Archive, QA Notes
  *
- * Archive and QA Notes joined Dev Handoff on 2026-10-15, when the divider and
- * the "Designers" eyebrow that stood above them went with the section gate.
+ * Explorations joined Design & Research and Archive and QA Notes joined Dev
+ * Handoff on 2026-10-15, when the divider and the "Designers" eyebrow that
+ * stood above them went with the section gate.
  */
 const NAV_EYEBROWS: Partial<Record<UxSection, string>> = {
   prototypes: 'Demo',
@@ -360,10 +371,8 @@ const LEGACY_SECTIONS: Record<string, UxSection> = {
   // Prototypes now rather than Demo.
   dashboard: 'prototypes',
   dev: 'development',
-  // The two sections retired 2026-10-15. Exploration's documents list under
-  // PRDs now; anything Design would have held (a row with a status) sits on
-  // the Development board.
-  exploration: 'prds',
+  // Design was retired 2026-10-15; anything it would have held (a row with a
+  // status) sits on the Development board.
   design: 'development',
 }
 
@@ -1022,7 +1031,7 @@ const PALETTES: Record<UxPaletteId, Record<UxTheme, UxVars>> = {
  *      than adding a fourth that can disagree with them.
  *   2. Otherwise fall back to category. `demo` and `dashboard` are things you
  *      show; `testing` is build infrastructure; everything else is a document,
- *      listed under PRDs in the Explorations card.
+ *      which is Explorations.
  *
  * Step 2 is the guess. Authoring `devStatus` on the remaining features would
  * remove it entirely.
@@ -1061,21 +1070,20 @@ function sectionOf(
      "don't start", rather than hiding it among the documents where they never
      look. */
   if (f.category === 'dev-handoff') return 'development'
-  // Ported outside products and hand-authored documents list under PRDs, in
-  // the Explorations card (2026-10-15; their own Exploration section before
-  // that) — the brief and the document answering it, on one page.
-  if (f.category === 'exploration') return 'prds'
+  // Ported outside products and hand-authored documents get their own section
+  // — they are a different kind of thing from a feature row.
+  if (f.category === 'exploration') return 'exploration'
   // ARCHIVED 2026-09-29 — the Sandbox SECTION is gone, but `'sandbox'` stays in
   // `FeatureCategory` because that union is verbatim from the LMS (CLAUDE.md,
   // "Data files"), so a row ported carrying it must still compile.
   //
   // THIS BRANCH IS DELIBERATELY EXPLICIT RATHER THAN DELETED. Delete it and the
-  // category falls through to the `return 'prds'` below, reaching the same
+  // category falls through to the `return 'exploration'` below, reaching the same
   // place — which is the silent failure `archive-a-feature` warns about: it
   // type-checks, it passes, and nobody can tell "routed here on purpose" from
   // "routed here because the branch that caught it is gone". One line to say so.
-  if (f.category === 'sandbox') return 'prds'
-  return 'prds'
+  if (f.category === 'sandbox') return 'exploration'
+  return 'exploration'
 }
 
 /* ── Page ─────────────────────────────────────────────────────────────────── */
@@ -1326,6 +1334,7 @@ export function UxDashboardPage() {
       // Same again: boards, counted by `useResearchCount` / `usePrdCount`.
       research: [],
       prds: [],
+      exploration: [],
       development: [],
       done: [],
       archive: [],
@@ -1383,16 +1392,14 @@ export function UxDashboardPage() {
   // colours. Cleaned up on unmount so the palette never outlives the page.
   useEffect(() => mirrorPaletteToRoot(paletteVars as Record<string, string>), [paletteVars])
 
-  /* The grouped row list — one card per group, rows inside. Shared by the
-     feature sections (Development, Done) and the Explorations card under PRDs.
+  /* The grouped row list — one card per group, rows inside.
 
      PROTOTYPES IS TWO LISTS — 2026-10-14, Jillienne on the preview: "this is
      the same as the main branch, so can we have it separated from the rest to
      better indicate that it's the Final Prototype, Source of Truth". The
      end-to-end row stands in its own card under its own heading; the doors
-     around it — the work in progress — sit in a second card beneath. PRDs
-     wraps its rows in one labelled card (2026-10-15); every other section is
-     the one unlabelled list it always was. */
+     around it — the work in progress — sit in a second card beneath. Every
+     other section is the one unlabelled list it always was. */
   const rowGroups = groupRows(section, rows).map((g) => (
     <div key={g.id} data-group={g.id}>
       {g.label && (
@@ -1591,9 +1598,7 @@ export function UxDashboardPage() {
                 aria-hidden
                 style={{ transform: 'rotate(180deg)', flex: 'none' }}
               />
-              {section === 'prds'
-                ? 'All explorations'
-                : `All ${VISIBLE_SECTIONS.find((s) => s.id === section)!.label.toLowerCase()} projects`}
+              All {VISIBLE_SECTIONS.find((s) => s.id === section)!.label.toLowerCase()} projects
             </button>
             <PrototypeFeaturePage featureId={openFeature.id} embedded />
           </>
@@ -1626,14 +1631,7 @@ export function UxDashboardPage() {
           // it already re-skins with the four schemes and four appearances.
           <LinksPanel />
         ) : section === 'prds' ? (
-          // The board, then the Explorations card beneath it (2026-10-15) — the
-          // seven documents that had their own Exploration section until the
-          // Designers group was retired. Same rows, same kebab; no search box
-          // or status pills over seven rows under a board that has its own.
-          <>
-            <PrdsPanel />
-            {rowGroups}
-          </>
+          <PrdsPanel />
         ) : section === 'demo' ? (
           // The same panel as Links with a different board behind it — see
           // `LinkBoardPanel`. Read-only and filtered to public rows on the
@@ -2411,23 +2409,13 @@ const statusDotStyle: CSSProperties = { width: 7, height: 7, borderRadius: '50%'
 
 const countStyle: CSSProperties = { marginLeft: 'auto', fontSize: 12.5, color: 'var(--ux-text-2)' }
 
-/** How a section's rows are grouped into cards. Prototypes splits in two,
- *  PRDs wraps its documents in the one labelled Explorations card, everything
- *  else is a single unlabelled list (see the render site). An empty group is
- *  dropped so a filtered search never shows a heading over nothing. */
+/** How a section's rows are grouped into cards. Only Prototypes splits (see
+ *  the render site); an empty group is dropped so a filtered search never
+ *  shows a heading over nothing. */
 function groupRows(
   section: UxSection,
   rows: PrototypeFeature[],
 ): { id: string; label?: string; note?: string; rows: PrototypeFeature[] }[] {
-  if (section === 'prds')
-    return [
-      {
-        id: 'explorations',
-        label: 'Explorations',
-        note: 'Outside products and ideas rebuilt on our tokens, components and UX conventions — documents, kept in code.',
-        rows,
-      },
-    ].filter((g) => g.rows.length > 0)
   if (section !== 'prototypes') return [{ id: 'all', rows }]
   const truth = rows.filter((f) => f.prototypeScope === 'end-to-end')
   const rest = rows.filter((f) => f.prototypeScope !== 'end-to-end')
