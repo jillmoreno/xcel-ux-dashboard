@@ -30,6 +30,5 @@ export default linkBoardHandler({
   idPrefix: 'demo',
   segment: 'demos',
   types: null,
-  publicFlag: true,
   products: true,
 })

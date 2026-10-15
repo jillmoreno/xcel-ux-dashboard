@@ -74,7 +74,6 @@ import { RESEARCH_BOARD } from '@/data/researchStore'
 import { PRD_BOARD } from '@/data/prdStore'
 import { GeneratedThumb } from './GeneratedThumb'
 import { accentsByHost, hostKey, linkThumbKind } from './linkRowThumb'
-import { isPublicGateway } from '@/data/gatewayMode'
 import {
   isBranchOnBoard,
   safeBranchHref,
@@ -132,14 +131,6 @@ export type LinkBoardPresentation = {
    * turning this on elsewhere is one line.
    */
   showUpdated?: boolean
-  /** Whether the form carries the "Show on public site" toggle and rows show a
-   *  Public / Team chip. Demo only. */
-  showPublicToggle: boolean
-  /** Show only rows with `isPublic` — the public build's Demo. */
-  publicOnly: boolean
-  /** No Add / Edit / Remove anywhere, whatever the endpoint says. The public
-   *  build's Demo: stakeholders read it, designers author it on the full site. */
-  readOnly: boolean
   /** The empty-state sentence when the endpoint IS reachable. */
   emptyHint: string
   /** The sentence under the form's fields. */
@@ -372,46 +363,12 @@ const filterPillActiveStyle: CSSProperties = {
 /* ── the switch ──
    40x22 with an 18px knob: the track has to read as a track at a glance, and
    below about 36px wide the two states differ by a few pixels of travel. */
-const switchStyle: CSSProperties = {
-  position: 'relative',
-  flex: 'none',
-  width: 40,
-  height: 22,
-  padding: 0,
-  borderRadius: 999,
-  border: '1px solid var(--ux-border)',
-  background: 'var(--ux-chip)',
-  cursor: 'pointer',
-  transition: 'background 120ms, border-color 120ms',
-}
 
-const switchOnStyle: CSSProperties = {
-  ...switchStyle,
-  background: 'var(--ux-accent)',
-  borderColor: 'var(--ux-accent)',
-}
 
 /* The knob is its own element so the travel can animate. `--ux-card` rather
    than white: on the dark themes white would be the brightest thing on the
    panel. */
-const switchKnobStyle: CSSProperties = {
-  position: 'absolute',
-  top: 1,
-  left: 1,
-  width: 18,
-  height: 18,
-  borderRadius: '50%',
-  background: 'var(--ux-card)',
-  border: '1px solid var(--ux-border)',
-  transition: 'transform 120ms',
-  transform: 'translateX(0)',
-}
 
-const switchKnobOnStyle: CSSProperties = {
-  ...switchKnobStyle,
-  borderColor: 'var(--ux-accent-strong)',
-  transform: 'translateX(18px)',
-}
 
 /* ── the segmented product control ── */
 const segmentRowStyle: CSSProperties = {
@@ -510,22 +467,6 @@ const linkTagStyle: CSSProperties = {
    Fill-vs-no-fill cannot collapse that way whatever the tokens resolve to, and
    it keeps Public as the loudest thing in the row — which it should be, being
    the one state with a consequence outside the team. */
-/* The two visibility states keep their accent — UX Only outlined, Public solid:
-   Public is the one state with a consequence outside the team and should be
-   the loudest thing in the row — but take the tag's square corners and
-   sentence case (2026-10-15) so they sit with the stack beside them. */
-const uxOnlyBadgeStyle: CSSProperties = {
-  ...linkTagStyle,
-  border: '1px solid var(--ux-accent)',
-  color: 'var(--ux-accent)',
-}
-const publicBadgeStyle: CSSProperties = {
-  ...linkTagStyle,
-  border: '1px solid var(--ux-accent)',
-  background: 'var(--ux-accent)',
-  color: 'var(--ux-on-accent)',
-}
-
 /* ── the product tags ──
    One hue each, FIXED per product — which is what makes them readable beside
    the row's tile, since that is tinted from the same four hues. The tile's hue
@@ -585,7 +526,6 @@ const EMPTY_DRAFT: LinkDraft = {
   note: '',
   addedBy: '',
   type: '',
-  isPublic: false,
   product: DEFAULT_PRODUCT,
 }
 
@@ -943,35 +883,6 @@ function LinkFormModal({
           </div>
         )}
 
-        {p.showPublicToggle && (
-          <div style={fieldWrapStyle}>
-            {/* A switch, not a checkbox: this is a live state someone flips back
-                and forth as a row moves through review, not a form value
-                submitted once. `role="switch"` on a real button keeps Space,
-                Enter and the accessible name that a styled `<input>` would have
-                had. Off by default — a row is UX-only until someone decides
-                otherwise, never the reverse. */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={draft.isPublic === true}
-                aria-label="Show on public site"
-                onClick={() => onChange({ isPublic: draft.isPublic !== true })}
-                style={draft.isPublic === true ? switchOnStyle : switchStyle}
-              >
-                <span
-                  aria-hidden
-                  style={draft.isPublic === true ? switchKnobOnStyle : switchKnobStyle}
-                />
-              </button>
-              <span style={{ ...labelStyle, marginBottom: 0 }}>Show on public site</span>
-            </div>
-            <p style={{ ...optionalStyle, margin: '5px 0 0', fontSize: 12 }}>
-              Off: only the team sees this row. On: stakeholders with the public link see it too.
-            </p>
-          </div>
-        )}
 
         <p style={modalHintStyle}>{p.saveHint}</p>
       </div>
@@ -993,15 +904,10 @@ function LinkFormModal({
 export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
   const { index: rawIndex, refresh } = p.board.useLinks()
   const { createLink, saveLink, deleteLink, readLastAuthor, rememberLastAuthor } = p.board
-  // `publicOnly` filters at the INDEX, not at render, so the count, the search
-  // and the empty state all describe the same list a stakeholder can see.
-  const index = useMemo(
-    () => (p.publicOnly ? { ...rawIndex, links: rawIndex.links.filter((l) => l.isPublic) } : rawIndex),
-    [rawIndex, p.publicOnly],
-  )
-  // What "can author here" means: the endpoint answers AND this build is not
-  // read-only. Every Add / Edit / Remove affordance below reads this one flag.
-  const canAuthor = index.available && !p.readOnly
+  // Every row, every build (2026-10-15): the public build that filtered this
+  // index to the rows flipped public is retired, and the toggle went with it.
+  const index = rawIndex
+  const canAuthor = index.available
   const [editing, setEditing] = useState<Editing>(null)
   const [draft, setDraft] = useState<LinkDraft>(EMPTY_DRAFT)
   const [errors, setErrors] = useState<string[]>([])
@@ -1144,7 +1050,6 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
       note: link.note,
       addedBy: link.addedBy,
       type: link.type,
-      isPublic: link.isPublic,
       product: link.product,
     })
     setErrors([])
@@ -1487,11 +1392,6 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                       )}
                     </div>
                     <div style={statusColStyle}>
-                      {p.showPublicToggle && !p.publicOnly && (
-                        <span style={link.isPublic ? publicBadgeStyle : uxOnlyBadgeStyle}>
-                          {link.isPublic ? 'Public' : 'UX Only'}
-                        </span>
-                      )}
                       {shared === link.id && <span style={linkTagStyle}>Link copied</span>}
                     </div>
                     {rowActions(link).length > 0 && (
@@ -1558,9 +1458,6 @@ const LINKS_PRESENTATION: LinkBoardPresentation = {
   showThumb: false,
   showProduct: false,
   showBadges: false,
-  showPublicToggle: false,
-  publicOnly: false,
-  readOnly: false,
   emptyHint: 'Everything here is added on the page — nothing is authored in code.',
   saveHint:
     'Saved to the shared store — everyone who opens this site sees it, and it survives a cleared cache. The date is stamped for you.',
@@ -1588,9 +1485,6 @@ const RESEARCH_PRESENTATION: LinkBoardPresentation = {
   showThumb: false,
   showProduct: false,
   showBadges: false,
-  showPublicToggle: false,
-  publicOnly: false,
-  readOnly: false,
   emptyHint:
     'Nothing here yet. Attach the studies, findings and rationale behind the designs — everything is added on the page, not in code.',
   saveHint:
@@ -1616,9 +1510,6 @@ const PRD_PRESENTATION: LinkBoardPresentation = {
   showThumb: false,
   showProduct: false,
   showBadges: false,
-  showPublicToggle: false,
-  publicOnly: false,
-  readOnly: false,
   emptyHint:
     'Nothing here yet. Attach the PRDs and requirement docs the designs answer — everything is added on the page, not in code.',
   saveHint:
@@ -1642,7 +1533,6 @@ export function DemoPanel({
   prefill?: LinkPrefill | null
   onPrefillConsumed?: () => void
 } = {}) {
-  const pub = isPublicGateway()
   const p: LinkBoardPresentation = {
     board: DEMO_BOARD,
     // "link", not "demo" — what the designer is adding IS a link (to their
@@ -1655,12 +1545,8 @@ export function DemoPanel({
     showProduct: true,
     showBadges: true,
     showUpdated: true,
-    showPublicToggle: true,
-    publicOnly: pub,
-    readOnly: pub,
-    emptyHint: pub
-      ? 'Nothing is being shown for review right now.'
-      : 'Push a branch, paste its Netlify URL here, and the team can open it. Flip "Show on public site" when it is ready for stakeholders.',
+    emptyHint:
+      'Push a branch, paste its Netlify URL here, and everyone with the Hub link can open it.',
     saveHint:
       'Saved to the shared store — the team sees it on the full site right away. The date is stamped for you.',
     // From `/?section=demo&add=1&url=…&title=…&note=…` — what
@@ -1672,7 +1558,7 @@ export function DemoPanel({
     // the in-page twin of what `promote-to-refinement` does from Claude Code:
     // both derive the branch's address and open this form with it, and neither
     // saves anything.
-    showBranches: !pub,
+    showBranches: true,
   }
   return <LinkBoardPanel p={p} />
 }

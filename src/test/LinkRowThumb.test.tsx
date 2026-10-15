@@ -35,7 +35,6 @@ const row = (over: Partial<StoredLink> = {}): StoredLink => ({
   addedBy: 'JM',
   type: '',
   product: 'both',
-  isPublic: false,
   addedDate: '2026-09-22',
   updatedAt: '',
   ...over,
@@ -229,7 +228,7 @@ describe('product tagging', () => {
 /* ── the badges ───────────────────────────────────────────────────────────── */
 
 describe('badges sit under the title', () => {
-  it('renders visibility, product and author as badges', async () => {
+  it('renders product and author as tags', async () => {
     mockEndpoint([row({ title: 'A branch', addedBy: 'Anjani', product: 'compass' })])
     render(<DemoPanel />)
     const title = await screen.findByText('A branch')
@@ -237,36 +236,9 @@ describe('badges sit under the title', () => {
     // that the three strings exist somewhere on the page.
     const li = title.closest('li')!
     const text = li.textContent ?? ''
-    expect(text.indexOf('A branch')).toBeLessThan(text.indexOf('UX Only'))
+    expect(text.indexOf('A branch')).toBeLessThan(text.indexOf('Compass'))
     expect(text).toContain('Compass')
     expect(text).toContain('Anjani')
-  })
-
-  it('gives the visibility badge a different treatment from the product tag', async () => {
-    mockEndpoint([row({ title: 'A branch', product: 'compass' })])
-    render(<DemoPanel />)
-    const li = (await screen.findByText('A branch')).closest('li')!
-    const vis = within(li).getByText('UX Only')
-    const prod = within(li).getByText('Compass')
-    // Both are outlined TAGS since 2026-10-15 (the gateway's Prototypes rows'
-    // shape), so the difference moved from the fill to the BORDER: the
-    // visibility state wears the accent, the product its own fixed hue. And
-    // the two sit in different columns — the product in the stack, the state
-    // to its right — so they never read as one row of chips.
-    expect(vis.style.background).toBe('transparent')
-    expect(prod.style.background).toBe('transparent')
-    expect(vis.style.border).toContain('var(--ux-accent)')
-    expect(prod.style.border).not.toContain('var(--ux-accent)')
-    expect(vis.parentElement).not.toBe(prod.parentElement)
-  })
-
-  it('makes Public the one solid tag in the row', async () => {
-    // The only state with a consequence outside the team stays the loudest.
-    mockEndpoint([row({ title: 'A branch', product: 'compass', isPublic: true })])
-    render(<DemoPanel />)
-    const li = (await screen.findByText('A branch')).closest('li')!
-    expect(within(li).getByText('Public').style.background).toBe('var(--ux-accent)')
-    expect(within(li).getByText('Compass').style.background).toBe('transparent')
   })
 
   it('gives XCEL, Compass and Both three different colours', async () => {
@@ -314,32 +286,6 @@ describe('badges sit under the title', () => {
     render(<LinksPanel />)
     expect(await screen.findByText(/added 2026-09-10 · by Jill/)).toBeInTheDocument()
     expect(screen.queryByRole('radio', { name: 'Both' })).not.toBeInTheDocument()
-  })
-})
-
-/* ── the switch ───────────────────────────────────────────────────────────── */
-
-describe('the public toggle is a switch', () => {
-  it('exposes switch semantics, not a checkbox', async () => {
-    const user = userEvent.setup()
-    mockEndpoint([])
-    render(<DemoPanel />)
-    await user.click(await screen.findByRole('button', { name: /Add the first|Add link/ }))
-
-    const sw = screen.getByRole('switch', { name: 'Show on public site' })
-    expect(sw).not.toBeChecked()
-    // A styled `<div>` would pass a screenshot and fail here.
-    await user.click(sw)
-    expect(sw).toBeChecked()
-  })
-
-  it('is off for a new row', async () => {
-    const user = userEvent.setup()
-    mockEndpoint([])
-    render(<DemoPanel />)
-    await user.click(await screen.findByRole('button', { name: /Add the first|Add link/ }))
-    // A row is UX-only until someone decides otherwise, never the reverse.
-    expect(screen.getByRole('switch', { name: 'Show on public site' })).not.toBeChecked()
   })
 })
 

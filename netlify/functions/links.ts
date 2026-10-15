@@ -28,6 +28,5 @@ export default linkBoardHandler({
   idPrefix: 'link',
   segment: 'links',
   types: ALLOWED_TYPES,
-  publicFlag: false,
   products: false,
 })

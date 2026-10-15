@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import type { ReactElement } from 'react'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { UxDashboardPage } from '@/pages/UxDashboardPage'
@@ -38,8 +38,7 @@ import {
 } from '@/data/giftRecipientsFixtures'
 import { recCardEnvTarget, recCardTestPath } from '@/data/recCardTest'
 import { demoEnvTarget } from '@/data/demoPin'
-import { isPublicGateway, isPublicFeature, isTestingGateway } from '@/data/gatewayMode'
-import { prototypeFeatureById } from '@/data/prototypeFeatures'
+import { isTestingGateway } from '@/data/gatewayMode'
 
 /**
  * On the PUBLIC Netlify project (`VITE_GATEWAY_MODE=public`) the gated
@@ -66,17 +65,10 @@ function TestingGate({ children }: { children: ReactElement }) {
   return children
 }
 
-function PublicGate({ featureId, children }: { featureId?: string; children: ReactElement }) {
-  if (isTestingGateway()) return <Navigate to="/dashboard-rebrand" replace />
-  if (!isPublicGateway()) return children
-  const feature = featureId ? prototypeFeatureById(featureId) : undefined
-  return feature && isPublicFeature(feature) ? children : <Navigate to="/" replace />
-}
-
-function GatedPrototypeRoute({ children }: { children: ReactElement }) {
-  const { featureId } = useParams()
-  return <PublicGate featureId={featureId}>{children}</PublicGate>
-}
+/* `PublicGate` and `GatedPrototypeRoute` stood here until 2026-10-15: on the
+   public build a gated feature's gateway redirected home. The public build is
+   retired (see `gatewayMode.ts`), so a feature route is gated by the testing
+   build alone, like every other gateway route. */
 
 /**
  * Gates the classic `/dashboard` route behind the `dashboard-tab` flag (OFF by
@@ -167,9 +159,9 @@ export default function App() {
       <Route
         path="/prototype/:featureId"
         element={
-          <GatedPrototypeRoute>
+          <TestingGate>
             <PrototypeFeaturePage />
-          </GatedPrototypeRoute>
+          </TestingGate>
         }
       />
       {/* The exploration's own route, kept so links already shared still work.
@@ -181,9 +173,9 @@ export default function App() {
       <Route
         path="/qa-notes"
         element={
-          <PublicGate>
+          <TestingGate>
             <QaNotesPage />
-          </PublicGate>
+          </TestingGate>
         }
       />
       {/* Both redirect into the gateway shell, which owns the section chrome —
@@ -209,9 +201,9 @@ export default function App() {
       <Route
         path="/prototype/:featureId/handoff/:componentId"
         element={
-          <GatedPrototypeRoute>
+          <TestingGate>
             <PrototypeHandoffDetailPage />
-          </GatedPrototypeRoute>
+          </TestingGate>
         }
       />
       <Route element={<AppLayout />}>

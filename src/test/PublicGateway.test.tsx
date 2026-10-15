@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { AccountProvider } from '@/context/AccountContext'
 import { ThemeProvider } from '@/context/ThemeContext'
 import { PROTOTYPE_FEATURES } from '@/data/prototypeFeatures'
-import { parseGatewayMode, isPublicFeature } from '@/data/gatewayMode'
+import { parseGatewayMode } from '@/data/gatewayMode'
 
 /**
  * The PUBLIC build (`VITE_GATEWAY_MODE=public`) — the Netlify project
@@ -73,22 +73,6 @@ describe('gatewayMode — parsing', () => {
     expect(parseGatewayMode('full')).toBe('full')
   })
 
-  it('treats exactly the Prototypes rows as public — every other authored row is not', () => {
-    // ⚠ TWO SINCE 2026-10-14 — one row per `prototypeScope`, both the same
-    // build on `main`. Written out rather than derived, because what a
-    // passwordless viewer can reach is the concern and a derived list would
-    // pass whatever the data said.
-    const pub = PROTOTYPE_FEATURES.filter(isPublicFeature).map((f) => f.id)
-    // Four since the evening of 2026-10-14: the invite row and the Admin
-    // placeholder (a coming-soon row that opens nothing — see the smoke test).
-    expect(pub).toEqual([
-      'xcel-dashboard',
-      'xcel-invite',
-      'xcel-atlas-learning',
-      'xcel-compass',
-      'xcel-admin-coming-soon',
-    ])
-  })
 })
 
 describe('public build — the nav', () => {
@@ -151,13 +135,6 @@ describe('public build — the nav', () => {
     }
   })
 
-  it('does not open a gated row in-frame via ?open=', async () => {
-    const Page = await loadPublicPage()
-    const gated = PROTOTYPE_FEATURES.find((f) => !isPublicFeature(f))!
-    renderAt(Page, `/?section=exploration&open=${gated.id}`)
-    expect(screen.queryByRole('dialog')).toBeNull()
-    expect(screen.queryByText(gated.title)).toBeNull()
-  })
 })
 
 describe('public build — the edge rules', () => {

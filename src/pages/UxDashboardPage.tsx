@@ -78,7 +78,6 @@ import {
 import { Toast } from '@/components/ui/Toast'
 import { PrototypePasswordModal } from '@/components/prototype/PrototypeLock'
 import { isPrototypeUnlocked, markPrototypeUnlocked } from '@/components/prototype/prototypeLockUtil'
-import { isPublicGateway } from '@/data/gatewayMode'
 
 /**
  * UX dashboard — the prototype's front door, at `/` (and still reachable at
@@ -361,9 +360,11 @@ const SECTIONS: SectionDef[] = [
  * `SECTIONS` above stays the authored full set; everything that renders or
  * resolves a section reads THIS list. A new gated section needs no change here.
  */
-const VISIBLE_SECTIONS: SectionDef[] = isPublicGateway()
-  ? SECTIONS.filter((s) => !s.gate)
-  : SECTIONS
+// Every section, on every build that renders the gateway (2026-10-15: the
+// public build that filtered out the gated ones is retired; the testing build
+// never renders this page). `gate` on a section is now a note about who it is
+// for, not a filter anything reads.
+const VISIBLE_SECTIONS: SectionDef[] = SECTIONS
 
 /** The section a bare `/` opens — the first in the nav, and the one a
  *  stakeholder should see first: the product itself. `?section=` is dropped
@@ -1368,7 +1369,7 @@ export function UxDashboardPage() {
   /** Live demo count. On the public build only the rows flipped public are
    *  shown, so the badge counts only those — a badge over a shorter list reads
    *  as a load failure. Same mechanism as `useLinkCount`; see `demoStore.ts`. */
-  const demoCount = useDemoCount(isPublicGateway() ? (l) => l.isPublic : undefined)
+  const demoCount = useDemoCount()
   /** Live research-link count. Same mechanism as `useLinkCount`; see
    *  `researchStore.ts`. */
   const researchCount = useResearchCount()
@@ -2114,7 +2115,7 @@ function ProjectRow({
             preview, "have these all vertically align". Conditional exactly
             as the kebab is, so the public build (no kebabs anywhere) stays
             aligned too. */}
-        {!isPublicGateway() && <span aria-hidden style={{ flex: 'none', width: 32 }} />}
+        <span aria-hidden style={{ flex: 'none', width: 32 }} />
       </div>
     )
   }
@@ -2145,7 +2146,7 @@ function ProjectRow({
         question "why can't I?", which is a conversation the demo is not for.
         Same call as the admin robot.
       */}
-      {!isPublicGateway() && (
+      {(
         <span style={{ flex: 'none' }}>
           {/* Gray, not the amber accent the shared kebab defaults to —
               2026-10-14, Jillienne on the preview ("make the ellipsis gray").

@@ -1,43 +1,36 @@
 /**
- * Env-var GATEWAY MODE — which of the two Netlify projects this build is for.
+ * Env-var GATEWAY MODE — which build this is.
  *
- * The same repo and branch deploy to TWO Netlify projects (2026-09-18):
+ * ⚠ THE PUBLIC MODE WAS RETIRED ON 2026-10-15 (Jillienne: "we will be using
+ * this Design hub as the source of truth for everything"). From 2026-09-18 the
+ * same repo deployed to TWO Netlify projects — a FULL site for the team and a
+ * PUBLIC site for stakeholders that trimmed the project list to its ungated
+ * sections, 404'd the standalone documents at the edge, hid the kebabs and the
+ * flag sheet, and showed only the Refinement rows flipped public. One site
+ * now, behind one password, and stakeholders are given its link. The
+ * `archivedItems.ts` row for the public build says how it was wired and what
+ * putting it back would take.
  *
- *   PUBLIC     — the link handed to stakeholders. Shows ONLY the ungated
- *                sections (Demo · Links · Research). Everything behind the
- *                Design & Development password is not locked here, it is
- *                ABSENT: no nav rows, no divider, no password modal, and the
- *                deep links into it redirect home. The standalone prototype
- *                documents under /prototypes/ are also 404'd at the edge
- *                (see `scripts/public-redirects.mjs`), because a client-side
- *                gate cannot hide a static file.
- *   FULL       — everything, locked and unlocked, exactly as before.
- *
- * ONE build-time env var decides it, set per project in the Netlify UI:
- *
- *   VITE_GATEWAY_MODE = public
- *
- * The full project sets nothing (or `full`), so an unset var is the whole app —
- * the same shape as `VITE_DEMO_TARGET` in `demoPin.ts`, and for the same
- * reason: no per-project code, no divergent branch. One push builds both.
+ * Two modes remain:
+ *   FULL     — everything. The default; an unset var is the whole app.
+ *   TESTING  — the moderated user-test build (`VITE_GATEWAY_MODE = testing`),
+ *              which hides the gateway entirely; see `isTestingGateway`.
  *
  * Read at BUILD time (Vite inlines `VITE_*`), so it has to be a Netlify build
- * env var, not a runtime one, and a change to it needs a redeploy.
- *
- * Tests: `import.meta.env` is read through `readGatewayModeRaw` so a test can
- * stub it with `vi.stubEnv('VITE_GATEWAY_MODE', 'public')`.
+ * env var, not a runtime one, and a change to it needs a redeploy. Tests stub
+ * it with `vi.stubEnv('VITE_GATEWAY_MODE', 'testing')`.
  */
 
-export type GatewayMode = 'public' | 'full' | 'testing'
+export type GatewayMode = 'full' | 'testing'
 
 /** Parse a raw `VITE_GATEWAY_MODE` value. Anything that is not exactly
- *  `public` (case-insensitive, trimmed) is the full app — a typo must fail
- *  towards showing the maintainer everything, never towards hiding it. */
+ *  `testing` (case-insensitive, trimmed) is the full app — a typo must fail
+ *  towards showing the maintainer everything, never towards hiding it. A
+ *  leftover `public` from the retired site reads as full, on purpose: the
+ *  site that set it no longer exists, and there is nothing to trim towards. */
 export function parseGatewayMode(raw: unknown): GatewayMode {
   if (typeof raw !== 'string') return 'full'
-  const v = raw.trim().toLowerCase()
-  if (v === 'public') return 'public'
-  if (v === 'testing') return 'testing'
+  if (raw.trim().toLowerCase() === 'testing') return 'testing'
   return 'full'
 }
 
@@ -46,17 +39,17 @@ export function gatewayMode(): GatewayMode {
 }
 
 /**
- * True where the gateway is TRIMMED — the stakeholder build and the moderated
- * user-test build both.
- *
- * ⚠ `testing` IS INCLUDED DELIBERATELY. Everything `public` hides, `testing`
- * must hide too; it then hides more (see `isTestingGateway`). Writing this as
- * `!== 'full'` rather than listing modes means a fourth mode inherits the
- * trim by default, which is the safe direction — a new mode that forgets to
- * opt in shows a stakeholder the Design section.
+ * True where the build is TRIMMED for an audience that must not see the
+ * design surfaces — which, since the public site was retired (2026-10-15), is
+ * the user-test build alone. The name is kept because some twenty call sites
+ * read it to hide a kebab, a flag sheet or a branch name, and every one of
+ * those trims is still right for a test participant; renaming them all would
+ * be churn with no behaviour behind it. Read it as "is this the testing
+ * build". It was `!== 'full'` so a new mode inherited the trim by default;
+ * with one trimmed mode left, that is the same thing written down.
  */
 export function isPublicGateway(): boolean {
-  return gatewayMode() !== 'full'
+  return gatewayMode() === 'testing'
 }
 
 /**
@@ -81,21 +74,6 @@ export function isPublicGateway(): boolean {
  */
 export function isTestingGateway(): boolean {
   return gatewayMode() === 'testing'
-}
-
-/**
- * Is a feature row reachable on the public build? Only rows that live in
- * Prototypes — the one ungated FEATURE section (Demo is a panel, not a list
- * of rows). This deliberately re-derives a NARROWER rule than `sectionOf` on
- * the home page: that one lets a per-browser "mark done" override move a row,
- * and honours `devStatus`, both of which can only move a row OUT of
- * Prototypes, never into it. So the category is the necessary condition, and
- * a row that fails it can never be a Prototypes row.
- */
-export function isPublicFeature(feature: { category: string }): boolean {
-  return (
-    feature.category === 'prototype' || feature.category === 'demo' || feature.category === 'dashboard'
-  )
 }
 
 /**

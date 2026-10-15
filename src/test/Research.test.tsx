@@ -38,7 +38,6 @@ const row = (over: Partial<StoredLink> = {}): StoredLink => ({
   addedBy: 'Jill',
   type: 'reference',
   product: 'both',
-  isPublic: false,
   addedDate: '2026-10-07',
   updatedAt: '',
   ...over,
@@ -87,7 +86,6 @@ describe('the research endpoint', () => {
     expect(fn).toMatch(/storeName: 'research'/)
     // Links' shape: a type taxonomy, no public flag, no product tag.
     expect(fn).toMatch(/types: ALLOWED_TYPES/)
-    expect(fn).toMatch(/publicFlag: false/)
     expect(fn).toMatch(/products: false/)
     const toml = readFileSync(resolve(here, '../../netlify.toml'), 'utf8')
     expect(toml).toContain('from = "/api/research/*"')

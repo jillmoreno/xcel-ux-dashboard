@@ -76,9 +76,9 @@ describe('VITE_GATEWAY_MODE=testing — every gateway route lands in the product
     expect(screen.getByTestId('at').textContent).toBe('/')
   })
 
-  it('leaves the public build serving its trimmed gateway', { timeout: 20_000 }, async () => {
-    /* `public` TRIMS and still serves; `testing` removes. If these two ever
-       collapse into one behaviour, the stakeholder link stops working. */
+  it('reads a leftover `public` as the full build, gateway and all', { timeout: 20_000 }, async () => {
+    /* The public site is retired (2026-10-15). A stale env value on some
+       deploy must not strip anything: it parses as full. */
     await renderAppAt('/', 'public')
     expect(screen.getByTestId('at').textContent).toBe('/')
   })
