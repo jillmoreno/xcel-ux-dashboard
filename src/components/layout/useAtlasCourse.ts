@@ -17,12 +17,13 @@ export function useAtlasCourse(): { title: string; progressPct: number } {
   const educationFlag = useFeatureFlag('dashboard-education-type').variant
   // The Course axis (2026-10-15) — the Atlas course header has to name the
   // same course the Compass rail below it is listing.
-  const { course } = useCourseDemo()
+  const { course, expiryDays } = useCourseDemo()
   const persona = dashboardProgressPersonaFor(
     brand,
     progressVariant,
     educationFlag === 'exam-prep' ? 'exam-prep' : 'qe',
     course,
+    expiryDays,
   )
   return {
     title: persona?.path.title ?? 'Course',

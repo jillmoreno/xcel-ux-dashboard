@@ -56,9 +56,14 @@ import { READINESS_PICKER } from '@/data/readinessFixtures'
 import {
   COURSE_FLAG_KEY,
   COURSE_PICKER,
+  DEFAULT_EXPIRY,
   DEFAULT_SELECTION,
   DEFAULT_SEQUENCING,
+  EXPIRY_FLAG_KEY,
+  EXPIRY_PICKER,
   SEQUENCING_PICKER,
+  expiryLabelFor,
+  resolveExpiry,
   resolveSelection,
   resolveSequencing,
 } from '@/data/courseFixtures'
@@ -167,6 +172,10 @@ type ControlKey =
      shown — the same kind of thing as Progress and Education — not a decision
      still open inside one designer's exploration. */
   | 'course'
+  /* EXPIRES — 2026-10-15, the direct ask. Same bar, same reasoning: how much
+     access a learner has left is a fact about the PRODUCT a stakeholder is
+     being shown, like Progress and Course beside it. */
+  | 'expiry'
 
 const SHOW_CONTROL: Record<ControlKey, boolean> = {
   persona: false,
@@ -176,6 +185,10 @@ const SHOW_CONTROL: Record<ControlKey, boolean> = {
      see the dashboard re-resolve for a second course; a control they have to
      be told about is one nobody uses. */
   course: true,
+  /* ON. It drives the one date three surfaces read, and two of its rows reach
+     states the bar could not otherwise show — the expiring-soon badge, and the
+     pace card's "no honest pace fits". */
+  expiry: true,
   /* DASHBOARD VERSION — 2026-10-05, the direct ask. It is the one control here
      that chooses WHICH DASHBOARD renders rather than who the learner is, and it
      is on the bar for a reason the rest of that line does not cover: the robot
@@ -317,6 +330,10 @@ export function DemoControlsBar({
   const courseState = useFeatureFlag(COURSE_FLAG_KEY)
   const activeCourse = resolveSelection(courseState.variant)
   const activeSequencing = resolveSequencing(courseState.secondaryVariant)
+  /* THE ACCESS-WINDOW AXIS — 2026-10-15. Read raw here for the same reason the
+     course is: this control WRITES the flag, so it needs the selection to tick
+     a row, not the resolved day count a consuming surface wants. */
+  const activeExpiry = resolveExpiry(useFeatureFlag(EXPIRY_FLAG_KEY).variant)
   const navLayoutState = useFeatureFlag('nav-placement')
   // The What's New / Featured toggle was removed 2026-09-16 with its flag (see
   // the note in the Persona dropdown below). `whatsNewOn` is pinned off so the
@@ -1143,6 +1160,46 @@ export function DemoControlsBar({
           </DemoDropdown>
         )}
 
+        {/* EXPIRES — how much course access is left. 2026-10-15, the direct
+            ask. Its OWN pill rather than a third group nested under Course:
+            eight rows is too many to bury, and a reviewer reaching for "what
+            does one day left look like" should not have to open a menu about
+            jurisdictions to find it. */}
+        {showControl.expiry && (
+          <DemoDropdown
+            id="expiry"
+            hidden={!show('expiry')}
+            label={expiryLabelFor(activeExpiry)}
+            eyebrow="Expires"
+            openId={openId}
+            onToggle={toggle}
+            panelRole="radiogroup"
+            panelLabel="Course access remaining"
+            panelMinWidth={200}
+          >
+            {EXPIRY_PICKER.map((opt) => {
+              const active = opt.value === activeExpiry
+              return (
+                <button
+                  key={String(opt.value)}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  tabIndex={active ? 0 : -1}
+                  className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                  onClick={() => {
+                    setVariant(EXPIRY_FLAG_KEY, String(opt.value))
+                    close()
+                  }}
+                >
+                  <span style={{ flex: 1 }}>{opt.label}</span>
+                  {active && <Check size={15} aria-hidden />}
+                </button>
+              )
+            })}
+          </DemoDropdown>
+        )}
+
         {/* Readiness state — single-select radiogroup. Drives the Exam Readiness
             section only; it does not touch the dashboard's own progress axis,
             which is a different question (how far through the COURSE you are,
@@ -1411,6 +1468,8 @@ export function DemoControlsBar({
                  leaving the lessons locked would be the worse half of each. */
               setVariant(COURSE_FLAG_KEY, DEFAULT_SELECTION)
               setSecondaryVariant(COURSE_FLAG_KEY, DEFAULT_SEQUENCING)
+              // …and the access window back to each state's own.
+              setVariant(EXPIRY_FLAG_KEY, String(DEFAULT_EXPIRY))
               // (dashboard-clp-layout removed 2026-08-17 — V1 is baked in.)
               // What's New back to Off (the combined band restored).
               setEnabled('dashboard-clp-fullwidth', true)

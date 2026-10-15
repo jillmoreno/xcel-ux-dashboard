@@ -215,6 +215,39 @@ describe('the study pace fits inside the access window', () => {
    * literal from Figma 267:8266; the home had computed the real pace all
    * along for the "At current pace" date two lines up.
    */
+  /* ⚠ AND ACROSS THE EXPIRES CONTROL'S WHOLE RANGE — 2026-10-15. The pace
+     the card prints is the gentlest preset that FITS, not `defaultPreset`,
+     which returns the recommended one whether or not it does: at 7 days that
+     one wants 3192 minutes a week and reports `no`, while relaxed fits the
+     same window at 1064. Reading the wrong preset had the card announce
+     "there isn't enough access left" with a workable plan one row up. */
+  it.each([7, 15, 30, 90, 120, 400])('fits a pace inside a %i-day window', (days) => {
+    const p = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe', undefined, days)!
+    const card = p.path.jumpBackIn!
+    const model = studyPace({
+      today: FIXTURE_TODAY,
+      hoursRemaining: card.hours * (1 - (card.progress ?? 0) / 100),
+      accessExpiresAt: card.expiresAt,
+    })
+    const chosen = defaultPreset(model)
+    const fit = chosen.state === 'no' ? model.presets.find((x) => x.state !== 'no') : chosen
+    expect(fit, `${days} days`).toBeDefined()
+    expect(fit!.days, `${days} days`).toBeLessThanOrEqual(daysUntil(card.expiresAt!, FIXTURE_TODAY)!)
+  })
+
+  /* ONE DAY IS THE EXCEPTION, and it is the row that exists to show it: no
+     preset fits, and the card says so instead of naming a number. */
+  it('reports that nothing fits in a 1-day window', () => {
+    const p = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe', undefined, 1)!
+    const card = p.path.jumpBackIn!
+    const model = studyPace({
+      today: FIXTURE_TODAY,
+      hoursRemaining: card.hours * (1 - (card.progress ?? 0) / 100),
+      accessExpiresAt: card.expiresAt,
+    })
+    expect(model.presets.every((x) => x.state === 'no')).toBe(true)
+  })
+
   it('recommends a pace no longer than the access left', () => {
     for (const course of ['ny', 'fl', 'tx'] as const) {
       const p = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe', course)!

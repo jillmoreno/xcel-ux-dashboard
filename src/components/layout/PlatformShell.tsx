@@ -2445,12 +2445,13 @@ function StudyPlanSection() {
   // The Course axis (2026-10-15). The shell resolves the path id every other
   // surface hangs off, so the course has to reach it here or Home switches
   // course while the Study Plan stays on the old one.
-  const { course: demoCourse } = useCourseDemo()
+  const { course: demoCourse, expiryDays } = useCourseDemo()
   const homePersona = dashboardProgressPersonaFor(
     brand,
     progressVariant,
     educationType,
     demoCourse,
+    expiryDays,
   )
   // Validated against the BRAND's paths, not `paths` — that list is filtered by
   // the `learning-paths-count` flag and holds one entry by default, so checking

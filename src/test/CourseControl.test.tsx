@@ -17,6 +17,10 @@ import {
   courseStateFor,
   isRegulatedCourse,
   resolveSelection,
+  EXPIRY_FLAG_KEY,
+  EXPIRY_PICKER,
+  chosenExpiryDays,
+  resolveExpiry,
 } from '@/data/courseFixtures'
 import {
   COMPASS_SAMPLE_TOC_FROM_DESIGN,
@@ -26,6 +30,9 @@ import {
 import { readinessFor, readinessForState } from '@/data/readinessFixtures'
 import { studyCalendarFor } from '@/data/studyCalendarFixtures'
 import { learningPathsFor } from '@/data/learningFixtures'
+import { courseExpiryState } from '@/data/courseExpiry'
+import { daysUntil } from '@/lib/studyPace'
+import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { E2E_COURSE_TITLE_SHORT } from '@/pages/endToEndDemo'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import {
@@ -692,5 +699,91 @@ describe('the landing page’s Step 1 list follows the course', () => {
     }
     expect(at('setup-complete-0')).toMatch(/\(0 of 42/)
     expect(at('complete-100')).toMatch(/\(42 of 42/)
+  })
+})
+
+describe('the access-window control — "Expires"', () => {
+  /*
+   * "A demo selector for a course to expire in 1 day, 7 days, 15 days, 30
+   * days, 90 days, 120 days, 400 days" — 2026-10-15.
+   *
+   * It moves one date, which three surfaces read: the course header's
+   * countdown, the ceiling the Study Pace plans against, and the Jump Back
+   * In card's expiring-soon badge.
+   */
+  const def = FEATURE_FLAGS.find((f) => f.key === EXPIRY_FLAG_KEY)!
+  const DAYS = [1, 7, 15, 30, 90, 120, 400]
+
+  it('offers Automatic plus the seven day counts', () => {
+    expect(def.variants?.map((v) => v.value)).toEqual(['auto', ...DAYS.map(String)])
+    expect(EXPIRY_PICKER.map((o) => o.value)).toEqual(['auto', ...DAYS])
+  })
+
+  /* ⚠ THE DEFAULT IS `auto`, and it has to be: each Progress state already
+     authors its own window — On Track 29 days, At Risk 3, Off Track a
+     deliberately unreachable 11 — and a day count as the default would
+     overwrite every one of those stories. */
+  it('opens on Automatic, leaving each Progress state’s own window', () => {
+    expect(def.defaultVariant).toBe('auto')
+    expect(chosenExpiryDays(resolveExpiry(def.defaultVariant))).toBeUndefined()
+    for (const variant of ['progress-on-track', 'progress-at-risk', 'progress-off-track']) {
+      const auto = dashboardProgressPersonaFor('xcel', variant, 'qe')!
+      const explicit = dashboardProgressPersonaFor('xcel', variant, 'qe', undefined, undefined)!
+      expect(explicit.path.jumpBackIn?.expiresAt, variant).toBe(auto.path.jumpBackIn?.expiresAt)
+    }
+  })
+
+  it('degrades an unrecognised variant to Automatic', () => {
+    expect(resolveExpiry('99')).toBe('auto')
+    expect(resolveExpiry(undefined)).toBe('auto')
+    expect(resolveExpiry('nonsense')).toBe('auto')
+  })
+
+  /*
+   * ⚠ "7 days" MUST MEAN SEVEN. The first build borrowed `accessWindowFor`'s
+   * `+ 1` — which exists so the PACE card's usable-day figure matches the
+   * header — and every row rendered one too many: "1 day" showed 2, "400"
+   * showed 401. This control is read the other way round.
+   */
+  it.each(DAYS)('puts the expiry exactly %i days out', (days) => {
+    const p = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe', undefined, days)!
+    expect(daysUntil(p.path.jumpBackIn!.expiresAt!, FIXTURE_TODAY)).toBe(days)
+  })
+
+  /* ⚠ IT OVERRIDES EVERY PROGRESS STATE, including the two that author their
+     own window. A reviewer picking "1 day" is asking to see one day left, and
+     a Progress state quietly winning would make the control look broken on
+     exactly the states most worth demoing it on. */
+  it.each(['progress-on-track', 'progress-at-risk', 'progress-off-track'])(
+    'wins over %s’s own window',
+    (variant) => {
+      const p = dashboardProgressPersonaFor('xcel', variant, 'qe', undefined, 90)!
+      expect(daysUntil(p.path.jumpBackIn!.expiresAt!, FIXTURE_TODAY)).toBe(90)
+    },
+  )
+
+  /* THE SPREAD CROSSES THE BADGE THRESHOLD, which is what makes it a demo
+     control rather than a date picker: `courseExpiry` warns inside 60 days
+     clamped to half the enrolment window, so the short rows badge and the
+     long ones do not. If this fails, the control has stopped showing the
+     state it exists to show. */
+  it('badges the short windows and not the long ones', () => {
+    const stateFor = (days: number) => {
+      const p = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe', undefined, days)!
+      return courseExpiryState(p.path.jumpBackIn!, new Date(FIXTURE_TODAY))
+    }
+    for (const d of [1, 7, 15]) expect(stateFor(d), `${d} days`).toBe('expiring-soon')
+    for (const d of [30, 90, 120, 400]) expect(stateFor(d), `${d} days`).toBe('none')
+  })
+
+  /* ⚠ A LONG WINDOW MUST NOT DATE THE ENROLMENT IN THE FUTURE. The shared
+     `accessWindowFor` puts enrolment exactly 30 days before expiry, which at
+     400 days would be 371 days from now — and `warnWindowFor` halves that
+     window to decide whether to badge. */
+  it('never enrols the learner after today', () => {
+    for (const d of DAYS) {
+      const p = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe', undefined, d)!
+      expect(daysUntil(p.path.jumpBackIn!.enrolledAt!, FIXTURE_TODAY), `${d} days`).toBeLessThanOrEqual(0)
+    }
   })
 })

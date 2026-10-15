@@ -40,6 +40,9 @@ const INTENTIONALLY_OUT_OF_PANEL = new Set([
      carries BOTH its axes on the bar: the course, and the Regulated /
      Unregulated sequencing nested under it. */
   'dashboard-course-state',
+  /* THE ACCESS-WINDOW DROPDOWN — 2026-10-15, "Expires". Its own pill on the
+     same bar; eight rows is too many to nest under Course. */
+  'dashboard-course-expiry',
 
   /* ⚠ REVIEWED AND EMPTIED, 2026-09-28. Four flags sat here as "unreviewed"
      for one commit — `study-pace-widget`, `dashboard-journey-complete`,

@@ -64,10 +64,16 @@ export function AtlasCourseProgressStates({
    * (`studyPace` → `defaultPreset`) for the "At current pace" figure two
    * lines up, so the number was available all along and simply not asked for.
    *
+   * ⚠ `'none'` IS NOT ZERO WEEKS — it is "no honest pace fits", which the
+   * model reports as `state: 'no'` and the Expires control reaches on its
+   * 1-day row. Passing `undefined` there fell back to the design's 3 and the
+   * card promised three weeks of study inside one day of access. The sentence
+   * changes entirely rather than printing a number.
+   *
    * ⚠ DEFAULTS TO THE DESIGN'S 3 so a caller that has no pace model renders
    * exactly what it rendered before.
    */
-  paceWeeks?: number
+  paceWeeks?: number | 'none'
   /** When given, a click (or Enter / Space) calls this INSTEAD of stepping
    *  the module's own state — V3 uses it to step the Design bar's Progress,
    *  so the whole page follows (2026-10-09). */
@@ -140,11 +146,24 @@ export function AtlasCourseProgressStates({
               </span>
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <p style={{ ...BODY, fontWeight: 700 }}>We’ve set up a moderate study plan for you.</p>
-              <p style={BODY}>
-                This study pace will have you prepared to pass your course exam in{' '}
-                {paceWeeks ?? 3} {(paceWeeks ?? 3) === 1 ? 'week' : 'weeks'} time.
-              </p>
+              {paceWeeks === 'none' ? (
+                <>
+                  <p style={{ ...BODY, fontWeight: 700 }}>
+                    There isn’t enough access left to finish this course.
+                  </p>
+                  <p style={BODY}>
+                    No study pace fits in the time remaining. Extend your access to get a plan.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p style={{ ...BODY, fontWeight: 700 }}>We’ve set up a moderate study plan for you.</p>
+                  <p style={BODY}>
+                    This study pace will have you prepared to pass your course exam in{' '}
+                    {paceWeeks ?? 3} {(paceWeeks ?? 3) === 1 ? 'week' : 'weeks'} time.
+                  </p>
+                </>
+              )}
             </div>
           </div>
           {/* No rule above the link when bare (2026-10-14, Eric's request). */}

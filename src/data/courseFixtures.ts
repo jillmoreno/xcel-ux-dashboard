@@ -286,3 +286,71 @@ export const COURSE_CE_PATH_ID_LIST: readonly string[] = Object.values(COURSE_CE
 export function isCoursePathCe(pathId: string | undefined): boolean {
   return pathId != null && COURSE_CE_PATH_ID_LIST.includes(pathId)
 }
+
+/* ─── The ACCESS WINDOW axis ──────────────────────────────────────────────
+ *
+ * How many days of course access are left — 2026-10-15, the direct ask: "a
+ * demo selector for a course to expire in 1 day, 7 days, 15 days, 30 days,
+ * 90 days, 120 days, 400 days."
+ *
+ * ⚠ A SECOND AXIS ON THE COURSE, NOT A COURSE. It changes nothing about WHICH
+ * licence is demoed; it moves the one date every expiry-shaped surface reads —
+ * the header's "Course Access Ends", the Study Pace's ceiling, and the Jump
+ * Back In card's expiring-soon badge. Kept here beside `CourseSelection`
+ * because both are properties of the course the dashboard is showing and the
+ * demo bar imports them together.
+ *
+ * ⚠ THE SPREAD IS CHOSEN TO CROSS EVERY THRESHOLD, which is what makes it a
+ * demo control rather than a date picker. `courseExpiry.ts` warns inside
+ * `DEFAULT_WARN_DAYS` (60) clamped to half the enrolment window, so 1 / 7 / 15
+ * land in the badge and 30 / 90 / 120 / 400 do not; 1 day is short enough that
+ * no honest study pace fits, which is the `state: 'no'` branch the pace card
+ * otherwise only reaches on one persona. 400 is past a year, where the
+ * countdown has to read as a date rather than a sprint.
+ */
+export type ExpirySelection = 'auto' | number
+
+/** The flag key for the access-window axis. */
+export const EXPIRY_FLAG_KEY = 'dashboard-course-expiry'
+
+/**
+ * ⚠ `auto`, FOR THE REASON THE COURSE AXIS LEARNED THE HARD WAY. Each Progress
+ * state already authors its own window — On Track gets 29 days, At Risk 3,
+ * Off Track its deliberately unreachable 11 — and those are stories somebody
+ * wrote. A day count as the default would overwrite all of them; `auto` means
+ * "whatever this Progress state already said".
+ */
+export const DEFAULT_EXPIRY: ExpirySelection = 'auto'
+
+/** The rows the bar offers, in display order. */
+export const EXPIRY_PICKER: { value: ExpirySelection; label: string }[] = [
+  { value: 'auto', label: 'Automatic' },
+  { value: 1, label: '1 day' },
+  { value: 7, label: '7 days' },
+  { value: 15, label: '15 days' },
+  { value: 30, label: '30 days' },
+  { value: 90, label: '90 days' },
+  { value: 120, label: '120 days' },
+  { value: 400, label: '400 days' },
+]
+
+/** Normalise a flag variant to a selection. Anything unrecognised is `auto`. */
+export function resolveExpiry(variant: string | undefined): ExpirySelection {
+  const n = Number(variant)
+  return EXPIRY_PICKER.some((o) => o.value === n) ? n : DEFAULT_EXPIRY
+}
+
+/**
+ * The chosen day count, or `undefined` under `auto`.
+ *
+ * Same mechanism as `chosenCourse`: `undefined` means "resolve what you always
+ * resolved", so no consumer needs a second code path.
+ */
+export function chosenExpiryDays(selection: ExpirySelection): number | undefined {
+  return selection === 'auto' ? undefined : selection
+}
+
+/** The picker label for a selection — the bar's pill, and test queries. */
+export function expiryLabelFor(selection: ExpirySelection): string {
+  return EXPIRY_PICKER.find((o) => o.value === selection)?.label ?? EXPIRY_PICKER[0].label
+}

@@ -109,8 +109,8 @@ function useReadiness(): ReadinessData {
      the call Home makes for the figure this page has to agree with. Passing it
      to one and not the other would put a Texas chapter list above a Florida
      course percentage — the drift this hook's own doc exists to prevent. */
-  const { course } = useCourseDemo()
-  const persona = dashboardProgressPersonaFor(brand, progressVariant, educationType, course)
+  const { course, expiryDays } = useCourseDemo()
+  const persona = dashboardProgressPersonaFor(brand, progressVariant, educationType, course, expiryDays)
   // No persona for this brand/education pair means Home is showing no populated
   // path either, so there is no progress to agree with — 0 is then honest
   // rather than a guess.

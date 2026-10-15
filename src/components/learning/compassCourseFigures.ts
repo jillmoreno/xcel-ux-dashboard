@@ -38,8 +38,8 @@ export function useCompassCourseFigures(): {
   // The Course axis (2026-10-15) — same reason the education type is here:
   // these figures head the Compass course page and must name the course the
   // content tree beside them is listing.
-  const { course } = useCourseDemo()
-  const persona = dashboardProgressPersonaFor(brand, progressVariant, educationType, course)
+  const { course, expiryDays } = useCourseDemo()
+  const persona = dashboardProgressPersonaFor(brand, progressVariant, educationType, course, expiryDays)
   const paths = learningPathsFor(brand)
   /*
    * ⚠ THE PERSONA'S PATH OBJECT, TAKEN WHOLE — never looked up in `paths`

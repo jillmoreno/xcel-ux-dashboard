@@ -14,7 +14,11 @@ import {
 import { isTestingGateway } from '@/data/gatewayMode'
 import {
   COURSE_FLAG_KEY,
+  EXPIRY_FLAG_KEY,
   chosenCourse,
+  chosenExpiryDays,
+  resolveExpiry,
+  type ExpirySelection,
   coursePathIdFor,
   courseStateFor,
   isRegulatedCourse,
@@ -2493,6 +2497,44 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    /**
+     * THE ACCESS-WINDOW AXIS — 2026-10-15, the direct ask: "a demo selector
+     * for a course to expire in 1 day, 7 days, 15 days, 30 days, 90 days,
+     * 120 days, 400 days."
+     *
+     * ⚠ IT IS NOT THE COURSE AXIS. That one picks WHICH licence; this moves
+     * the one date every expiry-shaped surface reads — the header's "Course
+     * Access Ends", the Study Pace's ceiling, and the Jump Back In card's
+     * expiring-soon badge. The two compose.
+     *
+     * ⚠ DEFAULT `auto` SO `main` IS UNCHANGED. Each Progress state already
+     * authors its own window — On Track 29 days, At Risk 3, Off Track a
+     * deliberately unreachable 11 — and those are stories somebody wrote. A
+     * day count as the default would overwrite every one of them.
+     *
+     * ⚠ NOT IN `REBRAND_FLAGS`: it has a dedicated dropdown on the
+     * always-visible Demo Controls bar. `FlagPanelScope.test.ts` is where
+     * that exclusion has to be declared or the suite fails.
+     */
+    key: 'dashboard-course-expiry',
+    label: 'Expires',
+    description:
+      'How many days of course access are left. Moves every expiry-shaped surface at once: the "Course Access Ends" date and countdown on the course header, the ceiling the Study Pace plans against, and the Jump Back In card’s expiring-soon badge. The spread crosses every threshold on purpose — 1, 7 and 15 days fall inside the warning window and badge; 30 and up do not; 1 day is short enough that no honest study pace fits, which is the "no pace works" state the card otherwise reaches on one persona only; 400 days is past a year, where the countdown has to read as a date rather than a sprint. Automatic (the default) leaves each Progress state on the window it already authored. XCEL only.',
+    defaultEnabled: true,
+    defaultVariant: 'auto',
+    variants: [
+      { value: 'auto', label: 'Automatic', description: 'Each Progress state keeps its own window — On Track 29 days, At Risk 3, Off Track 11. The committed default.' },
+      { value: '1', label: '1 day', description: 'Expiring tomorrow. Badges, and no study pace fits.' },
+      { value: '7', label: '7 days', description: 'Inside the warning window — the card badges.' },
+      { value: '15', label: '15 days', description: 'The badge’s edge: half the 30-day enrolment window.' },
+      { value: '30', label: '30 days', description: 'A full window, just outside the badge.' },
+      { value: '90', label: '90 days', description: 'A quarter out.' },
+      { value: '120', label: '120 days', description: 'Four months out.' },
+      { value: '400', label: '400 days', description: 'Past a year — the countdown has to read as a date.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'dashboard-week-summary',
     group: 'Widgets',
     label: 'Week summary band',
@@ -3528,16 +3570,30 @@ export function useCourseDemo(): {
   /** The course's Learning Path id, or `undefined` under `auto`. */
   pathId: string | undefined
   regulated: boolean
+  /** What the ACCESS-WINDOW control is set to — `auto` included. For the pill. */
+  expiry: ExpirySelection
+  /**
+   * Days of access left, or `undefined` under `auto`.
+   *
+   * ⚠ A SECOND AXIS RIDING THE SAME HOOK, not a property of the course. It is
+   * here because every consumer that resolves a persona needs both and two
+   * hooks would be two chances to pass one and forget the other — which is
+   * exactly how the course axis reached Readiness and not Home.
+   */
+  expiryDays: number | undefined
 } {
   const flag = useFeatureFlag(COURSE_FLAG_KEY)
   const selection = resolveSelection(flag.variant)
   const course = chosenCourse(selection)
+  const expiry = resolveExpiry(useFeatureFlag(EXPIRY_FLAG_KEY).variant)
   return {
     selection,
     course,
     state: course ? courseStateFor(course) : undefined,
     pathId: course ? coursePathIdFor(course) : undefined,
     regulated: isRegulatedCourse(flag.secondaryVariant),
+    expiry,
+    expiryDays: chosenExpiryDays(expiry),
   }
 }
 

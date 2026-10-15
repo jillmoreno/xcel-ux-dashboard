@@ -824,6 +824,43 @@ function accessWindowFor(daysLeft: number): { enrolledAt: string; expiresAt: str
 }
 
 /**
+ * The window the ACCESS-WINDOW CONTROL asks for — 2026-10-15.
+ *
+ * ⚠ A SECOND BUILDER RATHER THAN A WIDER `accessWindowFor`, and the clamp is
+ * why. That one puts enrolment exactly `COURSE_ACCESS_DAYS` before expiry,
+ * which is right for every figure it serves (all ≤ 30) and nonsense past
+ * that: 400 days of access would date the enrolment 371 days into the FUTURE,
+ * and `warnWindowFor` divides that window in half to decide whether to badge.
+ * Here enrolment is never later than today — a longer window means the
+ * learner bought a longer product, not that they bought it next year.
+ *
+ * ⚠ IT DOES NOT TOUCH `accessWindowFor`, deliberately. Clamping there would
+ * move `not-started`'s enrolment (today + 1 on `main`) back to today, widening
+ * its window from 30 days to 31 and its badge threshold from 15 to 15.5 —
+ * enough to flip the expiring-soon badge on a persona nobody asked to change.
+ *
+ * ⚠ AND THERE IS NO `+ 1` HERE, which is the other difference from
+ * `accessWindowFor`. That one adds a day so the PACE card's usable-days
+ * figure matches the header's countdown. This control is read the other way
+ * round: a reviewer picking "7 days" is asking the header to say 7, and the
+ * first build of this shipped saying 8. The pace ceiling is then `expires`
+ * minus one, which is correct on its own terms — finishing on the day access
+ * dies is not finishing — so "1 day" leaves no usable day at all and the pace
+ * card drops into its no-honest-pace branch, which is the state that row is
+ * there to demo.
+ */
+function demoExpiryWindowFor(daysLeft: number): { enrolledAt: string; expiresAt: string } {
+  const expires = new Date(FIXTURE_TODAY)
+  expires.setDate(expires.getDate() + daysLeft)
+  const enrolled = new Date(expires)
+  enrolled.setDate(enrolled.getDate() - COURSE_ACCESS_DAYS)
+  const today = new Date(FIXTURE_TODAY)
+  const iso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  return { enrolledAt: iso(enrolled > today ? today : enrolled), expiresAt: iso(expires) }
+}
+
+/**
  * The states whose course window is aligned to their countdown.
  *
  * NOT ALL OF THEM, by instruction. `progress-off-track` authors its own short
@@ -1086,7 +1123,12 @@ function buildPath(
   }
 }
 
-function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVariant): DashboardProgressPersona {
+function personaFor(
+  profile: BrandProgressProfile,
+  variant: DashboardProgressVariant,
+  /** The access-window control's day count, or undefined under `auto`. */
+  expiryDays?: number,
+): DashboardProgressPersona {
   const ratio = PROGRESS_RATIOS[variant]
   /*
    * SEQUENTIAL (WATERFALL) ALLOCATION — changed 2026-09-16.
@@ -1239,7 +1281,7 @@ function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVar
    */
   const pathPct = pathProgressPct(mandatory, elective, categories)
   const cardIsWholePath = categories?.length === 1
-  const jumpBackInAligned =
+  const jumpBackInProgressAligned =
     jumpBackInWindowed && cardIsWholePath
       ? {
           ...jumpBackInWindowed,
@@ -1251,6 +1293,21 @@ function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVar
               : 'not-started') as CourseStatus,
         }
       : jumpBackInWindowed
+  /*
+   * THE ACCESS-WINDOW CONTROL, applied LAST — 2026-10-15.
+   *
+   * ⚠ IT OVERRIDES EVERY OTHER WINDOW ON PURPOSE, including the three states
+   * in `ALIGNED_WINDOW_VARIANTS` and the two that author their own
+   * (`progress-off-track`'s deliberately short 11 days, `progress-expired`'s
+   * date in the past). A reviewer who picks "1 day" is asking to see one day
+   * left, and a Progress state quietly winning that argument would make the
+   * control look broken on exactly the two states most worth demoing it on.
+   * `auto` leaves all of them exactly as they were.
+   */
+  const jumpBackInAligned =
+    jumpBackInProgressAligned && expiryDays != null
+      ? { ...jumpBackInProgressAligned, ...demoExpiryWindowFor(expiryDays) }
+      : jumpBackInProgressAligned
   // Jump Back In slot mode — auto-derived from the variant. A not-started course
   // is "Up Next" (launch), a partial course is "Resume", and the discovery
   // states send the learner to the catalog.
@@ -1304,12 +1361,18 @@ export function dashboardProgressPersonaFor(
   variant: string | undefined,
   educationType: EducationType = 'ce',
   course?: CourseId,
+  /**
+   * The access-window control's day count (2026-10-15), or omitted under its
+   * `auto` default — in which case every Progress state keeps the window it
+   * already authored.
+   */
+  expiryDays?: number,
 ): DashboardProgressPersona | null {
   const profile = profileFor(brand, educationType, course)
   if (!profile) return null
   const v = (variant ?? 'progress-on-track') as DashboardProgressVariant
   const safe: DashboardProgressVariant = PROGRESS_RATIOS[v] ? v : 'progress-on-track'
-  return personaFor(profile, safe)
+  return personaFor(profile, safe, expiryDays)
 }
 
 /**

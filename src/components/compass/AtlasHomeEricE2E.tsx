@@ -199,6 +199,22 @@ export function AtlasHomeEricE2E({
     [today, hoursRemaining, accessExpiresAt, examDate, notStarted],
   )
   const preset = defaultPreset(model)
+  /*
+   * THE GENTLEST PACE THAT ACTUALLY FITS — 2026-10-15, with the Expires
+   * control.
+   *
+   * ⚠ `defaultPreset` RETURNS THE RECOMMENDED ONE WHETHER OR NOT IT FITS, and
+   * reading its `state` as "no pace exists" is wrong by one preset. At 7 days
+   * of access the recommended pace wants 3192 minutes a week and reports
+   * `no` — while RELAXED fits the same window at 1064, heavy but real. The
+   * card said "there isn't enough access left to finish this course" with a
+   * workable plan sitting in the model one row up.
+   *
+   * `presets` is ordered relaxed → recommended → focused, so the first that
+   * is not `no` is the gentlest that fits. Everything `no` — the 1-day row —
+   * means none does, and THAT is when the card says so.
+   */
+  const paceFit = preset.state === 'no' ? model.presets.find((x) => x.state !== 'no') : preset
   const accessDays = accessExpiresAt ? Math.max(0, daysUntil(accessExpiresAt, today) ?? 0) : null
   /* EXPIRES · DAYS TO COMPLETE, under the course title (Figma 368:519,
      2026-10-13, Eric's request). The course's own access end and the days
@@ -499,10 +515,14 @@ export function AtlasHomeEricE2E({
                  "18 days to complete" — a plan that did not fit the window
                  printed beside it. `preset.days` is what `expected` already
                  renders as a finish DATE; this is the same thing in weeks. */
-              paceWeeks={preset.state === 'no' ? undefined : Math.max(1, Math.round(preset.days / 7))}
+              paceWeeks={paceFit ? Math.max(1, Math.round(paceFit.days / 7)) : 'none'}
               expected={{
                 // "Nov. 5" where the pace model has no finish date — a DEMO date.
-                value: preset.state === 'no' ? 'Nov. 5' : formatPaceDate(preset.finishIso),
+                /* THE SAME RESOLVED PACE the sentence below reads, so the
+                   finish DATE and the week count cannot describe two
+                   different plans. The demo date survives for the case where
+                   nothing fits at all. */
+                value: paceFit ? formatPaceDate(paceFit.finishIso) : 'Nov. 5',
                 note: 'At current pace',
               }}
               access={

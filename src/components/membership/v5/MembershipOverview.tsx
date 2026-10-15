@@ -380,11 +380,11 @@ export function MembershipOverview({
      Texas course under a Florida licence they entered two screens ago. It
      stays on the default, which is what it resolved to before this axis
      existed. */
-  const { course: demoCourse } = useCourseDemo()
+  const { course: demoCourse, expiryDays } = useCourseDemo()
   const basePersona = personaEnabled
     ? justOnboarded
       ? dashboardProgressPersonaFor(brand, 'setup-complete-0')
-      : dashboardProgressPersonaFor(brand, progressVariant, educationType, demoCourse)
+      : dashboardProgressPersonaFor(brand, progressVariant, educationType, demoCourse, expiryDays)
     : null
   // When reached by finishing onboarding, enrich the setup-complete-0 persona
   // with the entered license + course/modality picks so the Current Learning
