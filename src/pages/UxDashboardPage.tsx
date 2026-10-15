@@ -1884,10 +1884,13 @@ function ProjectRow({
   /* The owner tag is a user ICON and the name, not the word "Owner" — Jillienne
      on the preview, 2026-10-14. The word stays for a screen reader, visually
      hidden, so the tag still reads "Owner: Anjani" where it is read aloud. */
+  // Owner, then Updated, then the scope LAST — 2026-10-15, Jillienne on the
+  // live site: "move these top ones to the bottom". Who and when lead; what
+  // door it is closes the stack.
   const prototypeTags: { key: string; text: string; icon?: ReactNode; srPrefix?: string }[] = [
-    { key: 'scope', text: prototypeScopeLabel(feature.prototypeScope) || '' },
     { key: 'owner', text: owner ?? '', icon: <User size={11} aria-hidden style={{ flex: 'none' }} />, srPrefix: 'Owner: ' },
     { key: 'updated', text: feature.lastUpdated ? `Updated ${formatUpdated(feature.lastUpdated)}` : '' },
+    { key: 'scope', text: prototypeScopeLabel(feature.prototypeScope) || '' },
   ].filter((t) => t.text)
   // Three labels, answering "how much of the product is this?":
   //   Standalone HTML — leaves the app entirely (the route column used to be
@@ -2020,22 +2023,29 @@ function ProjectRow({
            outlined, square-cornered TAGS rather than filled pills, stacked —
            the scope, who owns the surface, and when it last changed on main.
            A placeholder adds its "Coming soon" tag and has no Updated. */
-        <span style={tagColPrototypeStyle}>
-          {prototypeTags.map((t) => (
-            <span key={t.key} style={t.icon ? { ...prototypeTagStyle, display: 'inline-flex', alignItems: 'center', gap: 4 } : prototypeTagStyle}>
-              {t.icon}
-              {t.srPrefix && <span className="cre-visually-hidden">{t.srPrefix}</span>}
-              {t.text}
-            </span>
-          ))}
-          {placeholder && (
-            // The whole `border` shorthand, not `borderColor` over it: React
-            // writes the longhand after the shorthand and the browser drops
-            // the widths, so the tag drew with no border at all.
-            <span style={{ ...prototypeTagStyle, color: chip.color, border: `1px solid ${chip.color}` }}>
-              {chip.label}
-            </span>
-          )}
+        <span style={tagAreaPrototypeStyle}>
+          <span style={tagStackStyle}>
+            {prototypeTags.map((t) => (
+              <span key={t.key} style={t.icon ? { ...prototypeTagStyle, display: 'inline-flex', alignItems: 'center', gap: 4 } : prototypeTagStyle}>
+                {t.icon}
+                {t.srPrefix && <span className="cre-visually-hidden">{t.srPrefix}</span>}
+                {t.text}
+              </span>
+            ))}
+          </span>
+          {/* "Coming soon" sits to the RIGHT of the stack, not under it —
+              2026-10-15, Jillienne on the live site. The column is there on
+              every row, empty on the ones that open, so the stacks and the
+              chevrons stay aligned down the list. The whole `border`
+              shorthand, not `borderColor` over it: React writes the longhand
+              after the shorthand and the browser drops the widths. */}
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            {placeholder && (
+              <span style={{ ...prototypeTagStyle, color: chip.color, border: `1px solid ${chip.color}` }}>
+                {chip.label}
+              </span>
+            )}
+          </span>
         </span>
       ) : (
         <span style={showStatus ? tagColStyle : tagColSoloStyle}>
@@ -2632,9 +2642,18 @@ const tagColStyle: CSSProperties = {
  *  down the list. */
 const tagColSoloStyle: CSSProperties = { ...tagColStyle, gridTemplateColumns: '104px' }
 
-/** The Prototypes rows' column: one tag per line, wide enough for
- *  "Updated Oct 14, 8:47 PM" at the tag's own size. */
-const tagColPrototypeStyle: CSSProperties = { ...tagColStyle, gridTemplateColumns: '156px' }
+/** The Prototypes rows' tag area: the STACK (one tag per line, wide enough for
+ *  "Updated Oct 14, 8:47 PM" at the tag's own size) and, to its right, a column
+ *  for the status tag — "Coming soon" on a placeholder, empty otherwise, and
+ *  present on every row so nothing shifts between them. */
+const tagAreaPrototypeStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: '156px 84px',
+  alignItems: 'center',
+  gap: 6,
+  flex: 'none',
+}
+const tagStackStyle: CSSProperties = { display: 'grid', gridTemplateColumns: '156px', alignItems: 'center', gap: 6 }
 
 /** An outlined, square-cornered TAG — what the Prototypes rows wear instead
  *  of the filled pill (2026-10-14, Jillienne: "tags instead of badges,

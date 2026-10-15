@@ -629,16 +629,19 @@ describe('Prototypes — one row per scope, every row the same build', () => {
         .filter((s) => s.style.border && s.style.borderRadius === '4px')
         .map((s) => s.textContent ?? '')
     const tags = tagsOf(compass)
-    expect(tags[0]).toBe('Compass')
-    expect(tags[1]).toBe('Owner: Anjani')
-    expect(tags[2]).toMatch(/^Updated \w{3} \d{1,2}, \d{1,2}:\d{2}/)
+    // Owner, Updated, then the scope last (2026-10-15: "move these top ones
+    // to the bottom").
+    expect(tags[0]).toBe('Owner: Anjani')
+    expect(tags[1]).toMatch(/^Updated \w{3} \d{1,2}, \d{1,2}:\d{2}/)
+    expect(tags[2]).toBe('Compass')
     // The product row stacks the same three, its scope reading "End-to-End",
     // and — held back — a Coming soon tag under them.
     const e2e = document.querySelector('[data-row="xcel-dashboard"]')!
     const e2eTags = tagsOf(e2e)
-    expect(e2eTags[0]).toBe('End-to-End')
-    expect(e2eTags[1]).toBe('Owner: Jillienne')
-    expect(e2eTags[2]).toMatch(/^Updated /)
+    // …and "Coming soon" to the right of the stack, so it reads last in DOM order.
+    expect(e2eTags[0]).toBe('Owner: Jillienne')
+    expect(e2eTags[1]).toMatch(/^Updated /)
+    expect(e2eTags[2]).toBe('End-to-End')
     expect(e2eTags[3]).toBe('Coming soon')
     // The placeholder names its owner and says Coming soon, with no Updated.
     const ph = document.querySelector('[data-placeholder="xcel-admin-coming-soon"]')!
