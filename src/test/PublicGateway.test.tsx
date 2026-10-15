@@ -102,11 +102,10 @@ describe('public build — the nav', () => {
     expect(labels).toEqual(PUBLIC_SECTIONS)
     for (const s of GATED_SECTIONS) expect(screen.queryByText(s)).toBeNull()
     expect(screen.queryByText(/^Designers$/i)).toBeNull()
-    // The lockup's third line says WHICH BUILD you are on — the two sites are
-    // otherwise told apart only by which sections are in the rail, which you
-    // have to already know to read. It is OUTSIDE `nav`, in the brand block, so
-    // this is not the section eyebrow asserted just below.
-    expect(screen.getByText('Demo Link')).toBeInTheDocument()
+    // The lockup's third line ("Demo Link" / "Design Link") is gone since
+    // 2026-10-15 — the demo site is being retired, so there is no second build
+    // for a label to tell apart.
+    expect(screen.queryByText('Demo Link')).toBeNull()
     expect(screen.queryByText('Design Link')).toBeNull()
     expect(screen.getByText('UX Design Hub')).toBeInTheDocument()
     // The three eyebrows over the sections that ARE public still draw here —

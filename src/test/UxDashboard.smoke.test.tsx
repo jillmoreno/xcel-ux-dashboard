@@ -71,8 +71,9 @@ describe('XCEL dashboard — mount and nav', () => {
     // Both products, because the hub is now explicitly about both — XCEL LMS
     // alone read as the name of the only thing in here.
     expect(screen.getByText('Atlas LMS & Compass Learning')).toBeInTheDocument()
-    // The third line says WHICH BUILD you are on. This is the full site.
-    expect(screen.getByText('Design Link')).toBeInTheDocument()
+    // No third line since 2026-10-15: "Design Link" said which build you were
+    // on, and the demo site is being retired — one site, nothing to tell apart.
+    expect(screen.queryByText('Design Link')).toBeNull()
   })
 
   it('renders the full section set, in order', () => {
