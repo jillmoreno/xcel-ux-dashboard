@@ -70,7 +70,7 @@ describe('XCEL dashboard — mount and nav', () => {
     expect(screen.getByText('UX Hub')).toBeInTheDocument()
     // Both products, because the hub is now explicitly about both — XCEL LMS
     // alone read as the name of the only thing in here.
-    expect(screen.getByText('XCEL LMS & Compass Learning')).toBeInTheDocument()
+    expect(screen.getByText('Atlas LMS & Compass Learning')).toBeInTheDocument()
     // The third line says WHICH BUILD you are on. This is the full site.
     expect(screen.getByText('Design Link')).toBeInTheDocument()
   })
