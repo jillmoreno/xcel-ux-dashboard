@@ -1,6 +1,6 @@
 ---
 name: promote-to-prototype
-description: At merge time, decide which of a branch's changes become the PROTOTYPES baseline — the live XCEL product build stakeholders see. Run it ON THE PR, BEFORE MERGING. Diffs the branch against main, surfaces every flag whose committed default the branch changed (including flags gating new components) AND any change to the default DASHBOARD VERSION, asks per candidate whether — and to which variant — it becomes the baseline, asks which `wip` versions stakeholders should be able to pick, lists `surface: 'design'` controls separately because they never reach Prototypes, groups every candidate by the Prototypes ROW it reaches (end to end · Compass · invite) and asks for the scope owner's sign-off where that is not the caller, applies the FEATURE_FLAGS / dashboardVersions edits plus the docs note, commits, and reminds you to retire the branch's Refinement row. Each group is its scope OWNER's to decide and commit on the branch — Anjani for Compass, Jillienne for end to end and invite — and `maturity` is the version owner's; the default dashboard version and the merge itself (`ship-to-main`) are Jillienne's alone. Never moves tiles. Formerly "promote-to-demo" — that name still works as an alias. Trigger on "promote to prototype", "promote to demo", "merge this branch", "which changes go in the prototype", "ready to merge", "include in the prototype", "/promote-to-prototype", "/promote-to-demo".
+description: At merge time, decide which of a branch's changes become the PROTOTYPES baseline — the live XCEL product build stakeholders see. Run it ON THE PR, BEFORE MERGING. Diffs the branch against main, surfaces every flag whose committed default the branch changed (including flags gating new components) AND any change to the default DASHBOARD VERSION, asks per candidate whether — and to which variant — it becomes the baseline, lists `surface: 'design'` controls separately because they never reach Prototypes, groups every candidate by the Prototypes ROW it reaches (end to end · Compass · invite) and asks for the scope owner's sign-off where that is not the caller, applies the FEATURE_FLAGS / dashboardVersions edits plus the docs note, commits, and reminds you to retire the branch's Refinement row. Each group is its scope OWNER's to decide and commit on the branch — Anjani for Compass, Jillienne for end to end and invite — the default dashboard version and the merge itself (`ship-to-main`) are Jillienne's alone. Never moves tiles. Formerly "promote-to-demo" — that name still works as an alias. Trigger on "promote to prototype", "promote to demo", "merge this branch", "which changes go in the prototype", "ready to merge", "include in the prototype", "/promote-to-prototype", "/promote-to-demo".
 version: 1.2.0
 author: UX Design — Colibri
 last_updated: 2026-10-14
@@ -11,7 +11,7 @@ status: active
 
 The gate between a **designer's branch** and the **Prototypes** section — the
 live XCEL product build at its committed flag baseline, which is what
-stakeholders are sent to see on the public site.
+stakeholders are sent to see on the Hub.
 
 ## Vocabulary, because it moved on 2026-09-18
 
@@ -19,7 +19,7 @@ The XCEL UX Dashboard has two ungated sections and they are different acts:
 
 | Section | What it is | How things get in |
 |---|---|---|
-| **Refinement** (section id `demo`) | The review inbox. A designer's branch, built by Netlify at its own URL, put up for the team (and, once flipped public, stakeholders) to discuss. | Added on the page — Refinement → Add link. No commit. |
+| **Refinement** (section id `demo`) | The review inbox. A designer's branch, built by Netlify at its own URL, put up for everyone with the Hub link to discuss. | Added on the page — Refinement → Add link. No commit. |
 | **Prototypes** | The product as it stands, one row per surface — `xcel-dashboard` → `/dashboard-rebrand?demo=1`, `xcel-compass` → the same build at `?section=compass` — rendering the committed defaults in `FEATURE_FLAGS`. | **This skill.** A flag-baseline change on `main`. Never a new row for a surface that has one. |
 
 Until 2026-09-18 the product build sat in a section called Demo and this skill
@@ -126,27 +126,25 @@ the first place anyone looks for "what does Prototypes render" does not contain
 the answer. Every flag below it is read INSIDE whichever version is rendering —
 several have no effect at all under the others.
 
-**THREE different acts get called "promoting a version", and only the last two
-are this skill's. Separate them before asking anything:**
+**TWO different acts get called "promoting a version", and only the second is
+this skill's. Separate them before asking anything:**
 
 | Act | What changes | This skill? |
 |---|---|---|
 | **Reachable** | a new entry in `DISCOVERABILITY_DASHBOARD_VERSIONS`, carrying `owner` | **No** — rides in on the merge. Do not ask. |
-| **Pickable by stakeholders** | `maturity: 'ready'` on that entry | **Yes** — the usual case |
 | **The default** | `defaultDiscoverabilityVersionFor` returns it | **Yes** — owner only |
 
-- **Reachable** is just code merging. The version appears in the design site's
-  picker immediately (that list is unfiltered) and in its owner's tab. Nothing
-  about Prototypes moves. Do not raise it.
-- **Pickable** is `maturity`, added 2026-10-05 with the version control on the
-  demo bar. The demo site lists `ready` versions only
-  (`dashboardVersionsForAudience`); absent means `wip`, so it fails CLOSED and a
-  version nobody marked stays design-site-only. The design site badges those
-  rows "Design site only" so a designer can see which is which. **This is the
-  question most of Eric's work needs, and it is the version OWNER's** — Eric's
-  for his versions — see the owner section below.
+- **Reachable** is just code merging. The version appears in the picker
+  immediately — the one picker lists every version, for everyone, since the
+  demo site was retired on 2026-10-15 — and in its owner's tab. Nothing about
+  Prototypes moves. Do not raise it.
 - **The default** is `defaultDiscoverabilityVersionFor`. That IS the baseline,
   and it is a SWAP — see below.
+
+⚠ **A THIRD ACT STOOD HERE until 2026-10-15 — "pickable by stakeholders",
+`maturity: 'ready'`.** It decided what the DEMO site's picker offered. That site
+is retired and the field with it (`archivedItems.ts`, `maturity-gate`). Do not
+ask it; there is nothing it would change.
 
 ⚠ **ONLY ONE VERSION CAN BE THE DEFAULT, so promoting one DISPLACES another.**
 Say that out loud at the point of asking, naming the version being displaced.
@@ -173,8 +171,8 @@ does. The same is true of anyone else who commits through Claude on the web.
 
 | Who | GitHub login | Git identity (fallback) | May decide |
 |---|---|---|---|
-| Jillienne | `jillmoreno` | `jilliennemoreno@gmail.com`, `jill.moreno@scorebuilders.com` | end-to-end and invite groups · `maturity` on her versions · **the default dashboard version** |
-| Eric | `EnormanColibri` | `eric.norman@simplenursing.com` | the `atlas` group · `maturity` on his versions (`owner: 'eric'`) |
+| Jillienne | `jillmoreno` | `jilliennemoreno@gmail.com`, `jill.moreno@scorebuilders.com` | end-to-end and invite groups · **the default dashboard version** |
+| Eric | `EnormanColibri` | `eric.norman@simplenursing.com` | the `atlas` group |
 | Anjani | `Anjanisatya5` | none in the history — her commits are authored as Claude, see above | the Compass group |
 | Cody | not a collaborator on the repo yet (2026-10-14) — add his login and email here the day he is | the `admin` group, once the surface exists |
 | Afsana | not a collaborator on the repo yet (2026-10-14) — add her login and email here the day she is | the `invite` group, with Eric |
@@ -196,9 +194,8 @@ of you.** At noon the whole skill became Jillienne-only, on a first reading of
 It is a commit of defaults on the designer's own branch that reaches no
 stakeholder until she merges it, so the person whose design it is can make it.
 What stays hers is the merge, and the one lever that chooses which dashboard
-renders for everyone. The 2026-10-05 argument for leaving `maturity` with the
-version's owner — gating it would leave designers unable to show anyone
-anything — stands again, narrowed to the owner rather than anyone.
+renders for everyone. (`maturity`, the third lever, was retired the same day
+with the demo site it fed.)
 
 This is a skill-level boundary, not a hook: `dashboardVersions.ts` and
 `FeatureFlagContext.tsx` are deliberately NOT in CLAUDE.md's protected table,
@@ -239,11 +236,10 @@ switch that becomes part of the pitch. That means moving it from the green bar
 to the amber one, which is:
 
 1. drop `surface: 'design'` from the flag;
-2. add a `DemoControlsBar` control and a `DEMO_CONTROLS` row for it;
-3. decide its `maturity`, as for any demo control.
+2. add a `DemoControlsBar` control for it.
 
-⚠ **OWNER ONLY.** Step 2 edits protected chrome — `DemoControlsBar.tsx` and
-`demoControlMaturity.ts` are in CLAUDE.md's table. If the caller is not
+⚠ **OWNER ONLY.** Step 2 edits protected chrome — `DemoControlsBar.tsx` is in
+CLAUDE.md's table. If the caller is not
 Jillienne, do not ask: note it in the hand-off as hers, the way the default
 version is noted.
 
@@ -300,16 +296,12 @@ step surfaced nothing — the change was spotted by reading the file by hand. A
 diff that touches only the flag catalog will silently promote (or silently
 decline) a whole dashboard.
 
-In the `dashboardVersions.ts` diff, look for TWO things:
+In the `dashboardVersions.ts` diff, look for ONE thing:
+**`defaultDiscoverabilityVersionFor` returning a different id** — the swap.
 
-1. **`defaultDiscoverabilityVersionFor` returning a different id** — the swap.
-2. **A version in the catalog whose `maturity` is not `ready`** — a candidate to
-   make pickable. Check the whole list, not just the diff: a version added on an
-   earlier branch and never marked is still sitting there design-site-only, and
-   it will not show up in THIS diff at all.
-
-A new ENTRY in `DISCOVERABILITY_DASHBOARD_VERSIONS` is not itself a candidate —
-see the three acts above. It becomes one only through its `maturity`.
+A new ENTRY in `DISCOVERABILITY_DASHBOARD_VERSIONS` is not a candidate — see
+the two acts above. It is reachable, and in the one picker, the moment it
+merges.
 
 Read the `FeatureFlagContext.tsx` diff closely — that is where the rest of the
 candidates are decided.
@@ -342,12 +334,6 @@ on: *"`atlas-fonts` — Eric's, on the Atlas/Compass bar. Branch default: DM
 Serif."* They are not baseline candidates and the list exists so a reviewer can
 see what arrived without being asked to rule on it.
 
-**Each `wip` version is its own candidate too**, written as what it actually
-asks: *should stakeholders be able to pick this?* Name who owns it and what it
-is, and say plainly that the default does not move — the most common answer is
-"yes, pickable, and Testing 3 is still the baseline", and an ask that does not
-make that obvious invites a no out of caution.
-
 **Then group the whole list by scope** — end-to-end · Compass · invite — using
 the rule in the scope section above, and head each group with its row and its
 owner: *"Compass (`xcel-compass`) — Anjani decides, Jillienne applies."* A
@@ -366,11 +352,6 @@ because it is not the same kind of choice: it displaces something, the flags do
 not. Phrase it as the swap it is — *"Prototypes renders X today; make it Y?"* —
 and if the caller is not Jillienne, do not ask it at all: promote what they can
 and name it in the hand-off as hers.
-
-**`maturity` candidates go in a multiSelect of their own**, phrased as
-visibility rather than promotion: *"Which versions should stakeholders be able
-to pick?"*, with the current default named in the question so nobody reads a yes
-as a swap.
 
 **A group the caller does not own gets NO multiSelect.** It is written into
 the hand-off as that owner's, with its candidates listed, and nothing in it
@@ -418,15 +399,6 @@ declined**, set it back to `main`'s — a branch that made its own version the
 default must have that reverted, or merging promotes a whole dashboard by
 accident. This is the same rule as a declined flag and it is easier to miss,
 because nothing in the flag catalog shows it.
-
-**For each version made pickable**: set `maturity: 'ready'` on its entry. **For
-each declined**, leave the field ABSENT rather than writing `maturity: 'wip'` —
-absent is the default and says "not decided yet", while an explicit `wip` reads
-as "decided against", and the two want different conversations next time.
-
-⚠ **THE PICKER BADGES WHAT YOU LEAVE.** A version without `ready` shows "Design
-site only" in `DashboardVersionsPanel` on the design site, so a decline is
-visible to designers rather than silent. There is nothing to update by hand.
 
 Then update the **COMMITTED REBRAND DEMO DEFAULTS** table — it lives in
 [`docs/product-app.md`](../../docs/product-app.md), not in CLAUDE.md, which this
@@ -524,11 +496,6 @@ surface instead. Retiring it is for when the conversation is over.
   chooses what renders for everyone, in every scope.
 - **Promoting a version displaces one.** Name the one being replaced when you
   ask, or the decision gets made by accident.
-- **`maturity` and the default are DIFFERENT QUESTIONS.** One adds a choice for
-  stakeholders; the other changes what the product is. Never one question.
-- **`maturity` is the version OWNER's.** Eric marks Eric's versions pickable.
-  Not anyone (the 2026-10-05 wording), not Jillienne alone (the noon
-  2026-10-14 wording) — the owner.
 - **A `surface: 'design'` flag is NOT a baseline candidate.** It never reaches
   Prototypes, and declining it the way you decline a product flag turns off a
   control on its author's own bar.

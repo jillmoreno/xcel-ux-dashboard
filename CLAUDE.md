@@ -29,7 +29,7 @@ stricter mechanical form that `UxDashboard.smoke.test.tsx` pins: **every row
 that opens is `main`'s build at `?demo=1`**, entered through one of the product
 app's doors (`/dashboard-rebrand`, `/end-to-end-demo`) — same origin, never a
 branch URL, never an `?ff=` pin, never a pinned `version=`, never an HTML
-document (the public build 404s `/prototypes/*`). A `coming-soon` row is a
+document (a document is an exploration, not `main`'s build of the product). A `coming-soon` row is a
 **placeholder**: drawn disabled with a "Coming soon" tag, nothing to click —
 either nothing is built yet (the Admin row) or the surface is **held back**
 with its route kept on record while its owner decides what it carries (the
@@ -39,13 +39,21 @@ build, one committed baseline.
 So when you want several things visible at once FOR THE SAME SURFACE — two
 pacing treatments, a component's variants, a branch under discussion — **they
 go in Refinement**, which takes any number of rows, is authored in the browser
-(no code, no commit, no deploy), and is **visible to stakeholders too**: it
-carries no `gate`, so it renders on the public build as well as the full one.
+(no code, no commit, no deploy), and is **visible to stakeholders too** —
+there is one site since 2026-10-15, and they are given its link.
 
 | Section | Means | Rows | Lives in |
 |---|---|---|---|
 | **Prototypes** | this IS the product | one per surface, all on `main` | flag defaults on `main` |
 | **Refinement** | under discussion | as many as you like | Netlify Blobs, authored on the page |
+
+**ONE SITE since 2026-10-15.** The demo site — a second Netlify project that
+trimmed the gateway for stakeholders — is retired, with the Refinement
+public toggle and the `maturity` gate that only existed to feed it. The Hub
+is behind one password; stakeholders are given its link and see everything
+the team sees, except the review recaps, which the production deploy 404s
+at the edge. The three `archivedItems.ts` rows dated 2026-10-15 say how it
+was wired. The user-test build is unaffected.
 
 Five rows as of the evening of 2026-10-14, the product first and then the
 doors around it: **End-to-End User Experience (Invite, Atlas, Compass)** — always the
@@ -62,8 +70,7 @@ second.
 Each scope names an `owner`, and the owner both decides what that surface
 should be and runs `promote-to-prototype` for it on their own branch: Anjani
 for Compass, Eric for Atlas Learning, Afsana and Eric for Invite & Purchase,
-Cody for Admin, Jillienne for end to end. `maturity` on a version is
-the version owner's. A promotion is a commit of defaults on a branch and
+Cody for Admin, Jillienne for end to end. A promotion is a commit of defaults on a branch and
 reaches no stakeholder by itself. **Only Jillienne merges** — `ship-to-main`,
 which refuses a branch with a group its owner has not decided — **and only she
 sets the default dashboard version.** That is the lock, for every scope.
@@ -144,7 +151,7 @@ scope — the product IS React here now, exactly as it is in the LMS.
 4. **Publish** — *"Commit everything and push it to `feat/your-thing`."* Netlify
    builds your branch at its own address; that address plus
    `/dashboard-rebrand?demo=1` is the review link.
-5. **Share it** — Refinement → Add link on the full site, or say
+5. **Share it** — Refinement → Add link on the Hub, or say
    `/promote-to-refinement` and click the link it gives you.
 
 **You never run the site on your own computer.** There is no localhost step; the
@@ -152,7 +159,7 @@ branch build IS the preview. Nothing here needs a terminal — every step above 
 a sentence you say to Claude with the project folder connected.
 
 The full version, with pictures and the failure modes, is the **Contributing
-guide**: `/contributing/` on the full site, or `public/contributing/index.html`.
+guide**: `/contributing/` on the Hub, or `public/contributing/index.html`.
 
 ## What you do not need to touch
 
@@ -194,9 +201,11 @@ not. Name `versions: [...]` too when you have more than one version and the
 control belongs to only one of them; leave it off and the control follows you to
 every version you own.
 
-⚠ **THE DESIGN BAR IS DESIGN-SITE-ONLY, as a whole surface.** There is no
-per-control readiness gate on it, because a design decision worth showing a
-stakeholder belongs on the DEMO bar instead — and that one is Jillienne's.
+⚠ **THE DESIGN BAR STARTS HIDDEN, behind the robot's dropdown**, and anyone
+on the Hub can open it (one site since 2026-10-15; until then it was the
+design site's alone). A design decision worth putting in front of a
+stakeholder by default belongs on the DEMO bar instead — and that one is
+Jillienne's.
 
 `FeatureFlagPanel.tsx` is deliberately NOT protected either: adding your flag
 keys to `REBRAND_FLAGS` is something you must be able to do, or your flags are
@@ -210,11 +219,10 @@ file, so the two cannot drift apart.
 | `src/data/prototypeFeatures.ts` | the project rows and where each one points |
 | `src/data/archivedItems.ts` | the Archive table |
 | `src/data/gatewayMode.ts`, `src/data/deployContext.ts` | the per-site and per-context build switches |
-| `netlify.toml`, `scripts/public-redirects.mjs` | how the two sites and branch builds differ |
+| `netlify.toml`, `scripts/public-redirects.mjs` | the edge rules, and how branch builds differ from production |
 | `netlify/functions/`, `netlify/lib/` | the Refinement / Links / QA Notes endpoints |
 | `src/components/prototype/DemoControlsBar.tsx`, `src/components/prototype/DemoBar.tsx`, `src/components/prototype/demoBarUtil.ts` | the demo controls bar — which controls every reviewer sees |
 | `src/components/prototype/DesignControlsBar.tsx` | the design controls bar — you do not edit it to get a control on it (see below) |
-| `src/data/demoControlMaturity.ts` | which of those controls the DEMO site offers |
 | `src/components/layout/AdminToolsMenu.tsx` | the robot — the UI/UX Demo Tools menu |
 | `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `promote-to-refinement`, `promote-component`, `promote-to-testing`, `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
 | `public/contributing/`, `public/about/` | the two guides (regenerate the PDFs if you do edit them) |
@@ -278,7 +286,7 @@ nothing can assert it is current.
 | File | What is in it |
 |---|---|
 | [`docs/product-app.md`](docs/product-app.md) | **Most design work needs this one.** The dashboard versions, Readiness, the Study Journey, notifications, the flag catalog, and the 2026-09-08 migration |
-| [`docs/gateway.md`](docs/gateway.md) | The project list at `/` — sections, Refinement, Links, the two Netlify sites, branch deploys, the guides |
+| [`docs/gateway.md`](docs/gateway.md) | The project list at `/` — sections, Refinement, Links, the one Netlify site (and the two it used to be), branch deploys, the guides |
 | [`docs/prototypes.md`](docs/prototypes.md) | The standalone HTML explorations and what each argues |
 | [`docs/admin-tool.md`](docs/admin-tool.md) | The PartnerHub fork answering the admin flows |
 | [`docs/testing.md`](docs/testing.md) | What each suite pins, and the two fragile-test rules |

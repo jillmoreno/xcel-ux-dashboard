@@ -22,8 +22,9 @@ one of them, written down because they were all hit.
 
 ## ⚠ Before anything: this is an owner action
 
-`main` is live on two Netlify sites — the DESIGN site (designers + developers)
-and the DEMO site (stakeholders). A designer's branch does not ship itself.
+`main` is live on the Hub — the one Netlify site since 2026-10-15, for
+designers, developers and stakeholders alike. A designer's branch does not ship
+itself.
 
 If `git config user.email` is not Jillienne's, **stop and say so**: the branch is
 ready, and she merges it. (The framework-protection hook already blocks the file
@@ -205,8 +206,7 @@ each:
 
 | Site | Who | Notes |
 |---|---|---|
-| `ux-design-xceldashboard` | designers + developers | every control, every section |
-| `ux-demo-xceldashboard` | stakeholders | gated sections absent; demo bar carries only `maturity: 'ready'` controls |
+| `ux-design-xceldashboard` | everyone — designers, developers, stakeholders | every control, every section; the production deploy 404s `/recaps/*` |
 
 The user-testing site is **not** affected — it tracks the frozen `test/session-1`
 and moves only by a deliberate force-push. Say so if a session is running.
@@ -216,7 +216,7 @@ down — Netlify keeps serving the last good deploy — so the failure mode is a
 change that silently never arrives:
 
 ```bash
-netlify api listSiteDeploys --data '{"site_id":"ux-demo-xceldashboard.netlify.app"}'
+netlify api listSiteDeploys --data '{"site_id":"ux-design-xceldashboard.netlify.app"}'
 ```
 
 ## Guardrails

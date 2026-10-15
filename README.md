@@ -139,7 +139,7 @@ Demo for a few hours. Read `demo` in code as Refinement.)
 |---|---|---|
 | What | The live product build at its committed flag baseline | Work in review — a designer's branch URL, or an HTML file in `public/demos/` |
 | Who adds | Jillienne, by promoting a flag default on `main` | Any designer, on the full site: **Refinement → Add link** |
-| Stakeholders see it when | It is merged to `main` | Someone flips the row's **Show on public site** on |
+| Stakeholders see it when | It is merged to `main` | The moment it is added — one site since 2026-10-15 |
 | Where it is authored | `FEATURE_FLAGS` in code, via `.claude/skills/promote-to-prototype` | On the page (Netlify Blobs) — no commit |
 
 The loop, in one line: branch → push → add to Refinement (team-only) → discuss →
