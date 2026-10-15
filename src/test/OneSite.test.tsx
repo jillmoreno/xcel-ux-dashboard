@@ -175,13 +175,18 @@ describe('the edge rules', () => {
   })
 })
 
-describe('the two guides', () => {
+describe('the three guides', () => {
   const pub = resolve(here, '../../public')
 
   it('each is a self-contained page with its PDF beside it and the one shared stylesheet', () => {
     for (const [folder, pdf] of [
       ['contributing', 'contributing.pdf'],
       ['about', 'about.pdf'],
+      // The third, 2026-10-15 — the working guide for the five people on the
+      // team now, reached from a Resources row rather than from the nav. Its
+      // draft is the Claude doc "Designer Workflow on the Hub"; this is what
+      // the Hub serves.
+      ['designer-workflow', 'designer-workflow.pdf'],
     ] as const) {
       const html = readFileSync(resolve(pub, folder, 'index.html'), 'utf8')
       expect(html).toContain('href="../guides/guide.css"')
