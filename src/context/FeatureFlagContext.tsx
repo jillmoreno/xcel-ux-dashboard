@@ -1936,7 +1936,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        the page's submit rather than a sibling page: the page is 300 lines
        and this changes only its last step. The Design bar's Page control
        still lists Home; this flag decides what CONFIRM does, not what the
-       control can open. */
+       control can open.
+       PROMOTED 2026-10-15 (promote-to-prototype): ON is the baseline on the
+       invite row — its owners' (Afsana & Eric) decision, applied by
+       Jillienne. No `owner`: it resolves to jill, whose call it was. */
     group: 'Navigation',
     label: 'Invite flow ends at the password',
     description:
