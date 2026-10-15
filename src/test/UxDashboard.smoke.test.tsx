@@ -561,6 +561,21 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     }
   })
 
+  it('a Prototypes row\u2019s kebab offers Copy link and nothing else', async () => {
+    // 2026-10-14, Jillienne on the preview. Mark in design, Mark done and the
+    // roll-up statuses are dev-cycle actions; a row that IS the product has
+    // no dev cycle to set. The Design/Development rows keep the full menu.
+    const user = userEvent.setup()
+    renderDashboard()
+    await user.click(screen.getByRole('button', { name: 'Actions for Compass Learning — Work in Progress' }))
+    const menu = await screen.findByRole('menu')
+    expect(within(menu).getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['Copy link'])
+    await user.keyboard('{Escape}')
+    // …and the kebab is drawn in the gateway's tertiary ink, not the amber accent.
+    const kebab = screen.getByRole('button', { name: 'Actions for Compass Learning — Work in Progress' })
+    expect(kebab.style.color).toBe('var(--ux-text-3)')
+  })
+
   it('a placeholder is the only row that opens nothing, and it says so', () => {
     // 2026-10-14, the Admin row. Written out so a second placeholder is a
     // deliberate edit here, and so a row that LOSES its `to` by accident is

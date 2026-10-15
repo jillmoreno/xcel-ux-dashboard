@@ -1885,13 +1885,22 @@ function ProjectRow({
     setCopied(true)
   }
 
-  const items = [
-    {
-      id: 'copy-link',
-      label: 'Copy link',
-      icon: <Share2 size={15} aria-hidden />,
-      onSelect: copyLink,
-    },
+  /* A PROTOTYPES ROW'S KEBAB IS "COPY LINK" AND NOTHING ELSE — 2026-10-14,
+     Jillienne on the preview. `showStatus` is false exactly in Prototypes (see
+     the note on it), and every other item here is a dev-cycle action — Mark
+     in design, Mark done, the six roll-up statuses — which says nothing about
+     a row that IS the product. Keyed off `showStatus` rather than a new prop
+     because the two are one fact: a section that shows no status has no
+     status to set. */
+  const copyOnly = !showStatus
+  const copyItem = {
+    id: 'copy-link',
+    label: 'Copy link',
+    icon: <Share2 size={15} aria-hidden />,
+    onSelect: copyLink,
+  }
+  const items = copyOnly ? [copyItem] : [
+    copyItem,
     ...(canSetRollup
       ? [
           ...DEV_STATUS_SEQUENCE.map((st) => ({
@@ -2053,7 +2062,16 @@ function ProjectRow({
       */}
       {!isPublicGateway() && (
         <span style={{ flex: 'none' }}>
-          <ActionMenu label={`Actions for ${feature.title}`} items={items} />
+          {/* Gray, not the amber accent the shared kebab defaults to —
+              2026-10-14, Jillienne on the preview ("make the ellipsis gray").
+              On a project row the dots are the quietest thing in the row;
+              amber made them the loudest. `--ux-text-3` is the gateway's own
+              tertiary ink, the colour the chevron rests in. */}
+          <ActionMenu
+            label={`Actions for ${feature.title}`}
+            items={items}
+            triggerStyle={{ color: 'var(--ux-text-3)' }}
+          />
         </span>
       )}
       <Toast open={copied} onClose={() => setCopied(false)} title="Link copied" tone="success">
