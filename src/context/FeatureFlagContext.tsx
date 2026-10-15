@@ -12,6 +12,14 @@ import {
   type ReactNode,
 } from 'react'
 import { isTestingGateway } from '@/data/gatewayMode'
+import {
+  COURSE_FLAG_KEY,
+  coursePathIdFor,
+  courseStateFor,
+  isRegulatedCourse,
+  resolveCourse,
+  type CourseId,
+} from '@/data/courseFixtures'
 
 /**
  * Platform-wide feature-flag system. Powers the "Feature Flag" panel
@@ -2432,6 +2440,50 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    /**
+     * THE COURSE AXIS — 2026-10-15, Jillienne's brief. A Demo Controls
+     * dropdown; `courseFixtures.ts` says what the axis is and
+     * `DemoControlsBar` draws it.
+     *
+     * ⚠ IT IS NOT THE EDUCATION TYPE, AND IT IS NOT NEW YORK. The flag above
+     * picks the JOURNEY (CE renewal / qualifying / exam prep); the qualifying
+     * journey has demoed New York since 2026-09-16 and keeps doing so. This
+     * picks which pre-licensing COURSE the Florida-authored surfaces —
+     * Readiness, the Study Plan, the Compass content tree, the Exam Prep band
+     * — are showing. Two axes, two questions.
+     *
+     * ⚠ DEFAULTS `fl` + `unregulated` SO `main` IS UNCHANGED. Every surface
+     * this reaches was authored against Florida with free navigation, so the
+     * committed defaults are "what the dashboard already did" and nothing
+     * moves until a reviewer touches the control. Confirmed with Jillienne
+     * 2026-10-15 before building.
+     *
+     * ⚠ NOT IN `REBRAND_FLAGS`, deliberately — it has a dedicated dropdown on
+     * the always-visible Demo Controls bar, so a panel row would be a
+     * redundant and worse copy of a control already on screen. Same call
+     * `dashboard-progress-state` and `dashboard-education-type` carry, and
+     * `FlagPanelScope.test.ts` is where that exclusion has to be DECLARED or
+     * the suite fails.
+     */
+    key: 'dashboard-course-state',
+    label: 'Course',
+    description:
+      'Which XCEL pre-licensing course the dashboard demos — Florida or Texas Life & Health. It re-points every course-aware surface at that course’s own content: the Exam Readiness chapter and topic breakdown, its facts table, the Study Plan and its week themes, the Compass course content tree, and the Exam Prep band on Home. Sequencing (secondary): Unregulated leaves every item in the pre-licensing course open in any order (today’s behaviour); Regulated unlocks them in sequence — the next not-started item is open and everything after it carries a padlock. ⚠ Every TEXAS figure is INVENTED and marked as such pending XCEL’s own Texas requirements. The QE journey’s New York licence is a separate axis and is untouched. XCEL only.',
+    defaultEnabled: true,
+    defaultVariant: 'fl',
+    variants: [
+      { value: 'fl', label: 'Florida Life & Health Pre-Licensing', description: 'The course every XCEL fixture in this repo was authored against. The default — picking it changes nothing.' },
+      { value: 'tx', label: 'Texas Life & Health Pre-Licensing', description: 'Its own curriculum (general knowledge, then the Texas Insurance Code), study plan and content tree. ⚠ Every figure invented.' },
+    ],
+    secondaryVariants: [
+      { value: 'unregulated', label: 'Unregulated', description: 'Every item in the pre-licensing course is open, in any order. Today’s behaviour.' },
+      { value: 'regulated', label: 'Regulated', description: 'Items unlock in sequence: the next not-started item is open, everything after it is locked.' },
+    ],
+    defaultSecondaryVariant: 'unregulated',
+    secondaryVariantLabel: 'Sequencing',
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'dashboard-week-summary',
     group: 'Widgets',
     label: 'Week summary band',
@@ -3431,6 +3483,42 @@ export function useDemoMode(): boolean {
  */
 export function useReadinessState(): string {
   return useFeatureFlag('readiness-state').variant ?? 'on-track'
+}
+
+/**
+ * The COURSE the dashboard is demoing, and how its content tree sequences —
+ * 2026-10-15, with the Demo Controls bar's Course dropdown.
+ *
+ * ONE HOOK rather than a bare flag read at each site, for the reason
+ * `useStudyPlanKind` gives above and Readiness learned the hard way: every
+ * surface that resolves a course has to agree. Readiness showing Texas
+ * chapters while the Study Plan paced Florida weeks is exactly the drift
+ * `ProgressAgreement.test.tsx` exists to catch — and it would be invisible
+ * until someone held two tabs side by side.
+ *
+ * It returns BOTH halves of the flag because they travel together: a surface
+ * that needs the course usually needs to know whether it is regulated, and
+ * two reads of one key is two chances to read a different one.
+ *
+ * Outside a provider it returns the catalog defaults (Florida, unregulated),
+ * matching `useFeatureFlag`.
+ */
+export function useCourseDemo(): {
+  course: CourseId
+  /** The two-letter jurisdiction — what `examFactsFor` and friends key on. */
+  state: string
+  /** The course's Learning Path id. */
+  pathId: string
+  regulated: boolean
+} {
+  const flag = useFeatureFlag(COURSE_FLAG_KEY)
+  const course = resolveCourse(flag.variant)
+  return {
+    course,
+    state: courseStateFor(course),
+    pathId: coursePathIdFor(course),
+    regulated: isRegulatedCourse(flag.secondaryVariant),
+  }
 }
 
 export function useCeStudyPlanEnabled(): boolean {

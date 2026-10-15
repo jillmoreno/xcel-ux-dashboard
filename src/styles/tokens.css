@@ -972,6 +972,13 @@
      fill is translucent, and a translucent halo would let the line through. */
   --color-compass-rail-active-halo: #eceef0;
   --color-compass-rail-upcoming-lesson-mark: #baa78b;
+  /* LOCKED entries — the Course control's Regulated sequencing, 2026-10-15.
+     GREY rather than the beige every other not-reached mark takes, and that
+     is the direct ask ("the small gray lock icon"): beige is this rail's "not
+     yet", grey is "not yours to open", and a learner scanning the spine has
+     to tell the two apart without reading. The LABEL stays on the upcoming
+     token — only the mark is making the stronger claim. */
+  --color-compass-rail-locked-mark: var(--color-neutral-400);
 }
 [data-theme='dark'][data-brand='xcel'] {
   --color-compass-rail-ink: var(--color-primary-200);
@@ -990,6 +997,10 @@
   --color-compass-rail-upcoming-section-mark: var(--color-primary-700);
   --color-compass-rail-upcoming-lesson-mark: var(--color-primary-500);
   --color-compass-rail-active-halo: var(--color-primary-700);
+  /* Dark: the grey has to stay READ as grey beside a primary-500 beige-
+     equivalent, so it sits on the neutral ramp here too rather than taking a
+     primary tint. */
+  --color-compass-rail-locked-mark: var(--color-neutral-500);
 }
 
 /* COMPASS COURSE OVERVIEW PAGE — `CompassCourseOverview`, Figma 44:2211,
@@ -1367,6 +1378,18 @@
 }
 .cre-compass-toc-child.is-upcoming:hover .cre-compass-toc-label {
   color: var(--color-compass-rail-text);
+}
+
+/* LOCKED LESSONS — the Course control's Regulated sequencing, 2026-10-15.
+   The same muted base as not-started, and DELIBERATELY NO :hover BLOCK: the
+   hover above is an affordance, and a row that cannot be opened must not
+   offer one. (`applyCourseSequencing` also strips `onSelect`, so the row is
+   static text — this is the visual half of the same promise.) */
+.cre-compass-toc-child.is-locked .cre-compass-toc-spine {
+  background: var(--color-compass-rail-spine);
+}
+.cre-compass-toc-child.is-locked .cre-compass-toc-label {
+  color: var(--color-compass-rail-upcoming-text);
 }
 
 /* A TOC entry that opens something (`onSelect`). None does yet — the rows

@@ -1,5 +1,5 @@
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useCourseDemo, useFeatureFlag } from '@/context/FeatureFlagContext'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { activePathIdFor, learningPathsFor } from '@/data/learningFixtures'
 import { displayedProgressPct, resolveRenewal, timeRemainingText } from './learningPathsHomeUtil'
@@ -35,7 +35,11 @@ export function useCompassCourseFigures(): {
   const { brand } = useAccount()
   const progressVariant = useFeatureFlag('dashboard-progress-state').variant ?? 'progress-on-track'
   const educationType = (useFeatureFlag('dashboard-education-type').variant ?? 'ce') as 'ce' | 'qe'
-  const persona = dashboardProgressPersonaFor(brand, progressVariant, educationType)
+  // The Course axis (2026-10-15) — same reason the education type is here:
+  // these figures head the Compass course page and must name the course the
+  // content tree beside them is listing.
+  const { course } = useCourseDemo()
+  const persona = dashboardProgressPersonaFor(brand, progressVariant, educationType, course)
   const paths = learningPathsFor(brand)
   /*
    * ⚠ THE PERSONA'S PATH OBJECT, TAKEN WHOLE — never looked up in `paths`

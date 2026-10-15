@@ -53,6 +53,15 @@ import {
   dashboardEducationSupported,
 } from '@/data/dashboardProgressFixtures'
 import { READINESS_PICKER } from '@/data/readinessFixtures'
+import {
+  COURSE_FLAG_KEY,
+  COURSE_PICKER,
+  DEFAULT_COURSE,
+  DEFAULT_SEQUENCING,
+  SEQUENCING_PICKER,
+  resolveCourse,
+  resolveSequencing,
+} from '@/data/courseFixtures'
 import { railHidesSection } from '@/components/layout/dashboardRail'
 import { educationTypesFor } from '@/data/onboarding/onboardingContent'
 import { PROTOTYPE_SHARE_ORIGIN, copyToClipboard } from './shareLink'
@@ -152,11 +161,21 @@ type ControlKey =
      all of the top navs in one control" is the ask it answers, and it cannot be
      answered from the Feature Flag panel, which is design-site-only. */
   | 'navLayout'
+  /* COURSE — 2026-10-15, Jillienne's brief. It belongs on THIS bar rather
+     than the design one by the two-bar table's own rule: which course a
+     learner is taking is a fact about the PRODUCT a stakeholder is being
+     shown — the same kind of thing as Progress and Education — not a decision
+     still open inside one designer's exploration. */
+  | 'course'
 
 const SHOW_CONTROL: Record<ControlKey, boolean> = {
   persona: false,
   progress: true,
   readiness: false,
+  /* ON. The axis is new and the whole point of it is that a stakeholder can
+     see the dashboard re-resolve for a second course; a control they have to
+     be told about is one nobody uses. */
+  course: true,
   /* DASHBOARD VERSION — 2026-10-05, the direct ask. It is the one control here
      that chooses WHICH DASHBOARD renders rather than who the learner is, and it
      is on the bar for a reason the rest of that line does not cover: the robot
@@ -290,6 +309,14 @@ export function DemoControlsBar({
   // this one belongs to one section. Add it to `readDemoParams` if a shared
   // link ever needs to open on a specific readiness state.
   const readinessState = useFeatureFlag('readiness-state')
+  /* THE COURSE AXIS — 2026-10-15. Read as the raw flag rather than through
+     `useCourseDemo`, because this control is the thing that WRITES it: the
+     hook resolves a course into a state code and a path id, which is what a
+     consuming surface wants and not what a picker needs. The picker needs to
+     know which row to tick. */
+  const courseState = useFeatureFlag(COURSE_FLAG_KEY)
+  const activeCourse = resolveCourse(courseState.variant)
+  const activeSequencing = resolveSequencing(courseState.secondaryVariant)
   const navLayoutState = useFeatureFlag('nav-placement')
   // The What's New / Featured toggle was removed 2026-09-16 with its flag (see
   // the note in the Persona dropdown below). `whatsNewOn` is pinned off so the
@@ -1015,6 +1042,107 @@ export function DemoControlsBar({
           })}
         </DemoDropdown>
 
+        {/* COURSE — which pre-licensing course the dashboard demos, plus how
+            its content tree sequences. 2026-10-15, Jillienne's brief.
+
+            ⚠ TWO GROUPS IN ONE PANEL, which is why `panelRole` is `menu` here
+            and `radiogroup` on every other dropdown on this bar. A radiogroup
+            holding two independent sets of radios is one group announcing
+            four options when there are two questions; the role goes on each
+            inner group instead, so each announces its own count and its own
+            label.
+
+            ⚠ THE SEQUENCING ROW IS NESTED UNDER THE COURSE, not beside it on
+            the bar. It is a property OF the course — "is this course
+            regulated" — and a pill of its own would read as a third demo axis
+            with equal standing, which is three words of chrome for a toggle
+            that only means anything once a course is chosen. */}
+        {showControl.course && (
+          <DemoDropdown
+            id="course"
+            hidden={!show('course')}
+            label={COURSE_PICKER.find((c) => c.course === activeCourse)?.label ?? 'Course'}
+            eyebrow="Course"
+            openId={openId}
+            onToggle={toggle}
+            panelLabel="Course"
+            panelMinWidth={300}
+          >
+            <div role="radiogroup" aria-label="Course">
+              {COURSE_PICKER.map((opt) => {
+                const active = opt.course === activeCourse
+                return (
+                  <button
+                    key={opt.course}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    tabIndex={active ? 0 : -1}
+                    className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                    onClick={() => {
+                      setVariant(COURSE_FLAG_KEY, opt.course)
+                      close()
+                    }}
+                  >
+                    <span style={{ flex: 1 }}>{opt.label}</span>
+                    {active && <Check size={15} aria-hidden />}
+                  </button>
+                )
+              })}
+            </div>
+            {/* The divider and its eyebrow, inline rather than as a shared
+                constant: no other panel on this bar has two groups, and a
+                style constant for one caller is a thing to find later for no
+                reason. Lift it if a second panel ever needs one. */}
+            <div
+              style={{
+                marginTop: 6,
+                paddingTop: 6,
+                borderTop: '1px solid var(--color-border-subtle)',
+              }}
+            >
+              <p
+                style={{
+                  margin: '0 0 2px',
+                  padding: '0 10px',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                  color: 'var(--color-text-tertiary)',
+                }}
+              >
+                Sequencing
+              </p>
+              <div role="radiogroup" aria-label="Sequencing">
+                {SEQUENCING_PICKER.map((opt) => {
+                  const active = opt.mode === activeSequencing
+                  return (
+                    <button
+                      key={opt.mode}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      tabIndex={active ? 0 : -1}
+                      className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                      onClick={() => {
+                        /* `setSecondaryVariant`, which already exists on
+                           `useFeatureFlags` and is already called below by the
+                           Reset block — a new caller, not new plumbing. */
+                        setSecondaryVariant(COURSE_FLAG_KEY, opt.mode)
+                        close()
+                      }}
+                    >
+                      <span style={{ flex: 1 }}>{opt.label}</span>
+                      {active && <Check size={15} aria-hidden />}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </DemoDropdown>
+        )}
+
         {/* Readiness state — single-select radiogroup. Drives the Exam Readiness
             section only; it does not touch the dashboard's own progress axis,
             which is a different question (how far through the COURSE you are,
@@ -1277,6 +1405,12 @@ export function DemoControlsBar({
               setVariant('profession-count', 'single')
               setVariant('dashboard-progress-state', DEFAULT_PROGRESS)
               setVariant('dashboard-education-type', DEFAULT_EDUCATION)
+              /* The Course axis back to Florida / Unregulated — the committed
+                 defaults. Both halves, because Reset means "what a plain load
+                 of this build shows" and a bar that restored the course while
+                 leaving the lessons locked would be the worse half of each. */
+              setVariant(COURSE_FLAG_KEY, DEFAULT_COURSE)
+              setSecondaryVariant(COURSE_FLAG_KEY, DEFAULT_SEQUENCING)
               // (dashboard-clp-layout removed 2026-08-17 — V1 is baked in.)
               // What's New back to Off (the combined band restored).
               setEnabled('dashboard-clp-fullwidth', true)

@@ -1,5 +1,6 @@
 import { CompassCourseFooter } from '@/components/compass/CompassCourseFooter'
-import { COMPASS_SAMPLE_TOC_FROM_DESIGN } from '@/data/compassCourseFixtures'
+import { applyCourseSequencing, compassTocFor } from '@/data/compassCourseFixtures'
+import { useCourseDemo } from '@/context/FeatureFlagContext'
 
 /**
  * The adapter for the Compass course navigation footer on the ONE page that
@@ -15,7 +16,14 @@ import { COMPASS_SAMPLE_TOC_FROM_DESIGN } from '@/data/compassCourseFixtures'
  * than as buttons that go nowhere. Pass `onSelect` once lessons exist.
  */
 export function AtlasCompassCourseFooter() {
-  const sections = COMPASS_SAMPLE_TOC_FROM_DESIGN
+  /* THE SEQUENCED TREE (2026-10-15) — this footer's whole job is naming what
+     comes next, and under Regulated sequencing "next" may be locked. Reading
+     the raw tree would offer Next on a lesson the rail draws with a padlock,
+     which is the footer and the rail disagreeing about the same step. The
+     steps already render disabled (no lesson has a page), so a locked Next
+     shows as the label it is rather than as a dead control. */
+  const { course, regulated } = useCourseDemo()
+  const sections = applyCourseSequencing(compassTocFor(course), regulated)
   const sectionIndex = sections.findIndex((s) => s.status === 'current')
   const lessons = sections[sectionIndex]?.children ?? []
   const lessonIndex = lessons.findIndex((l) => l.status === 'current')

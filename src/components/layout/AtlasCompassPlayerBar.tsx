@@ -1,5 +1,6 @@
 import { CompassPlayerBar } from '@/components/compass/CompassPlayerBar'
-import { COMPASS_SAMPLE_TOC_FROM_DESIGN, currentSectionProgress } from '@/data/compassCourseFixtures'
+import { compassTocFor, currentSectionProgress } from '@/data/compassCourseFixtures'
+import { useCourseDemo } from '@/context/FeatureFlagContext'
 
 /**
  * The adapter that fills the Compass Course Player controls bar for the ONE
@@ -29,8 +30,16 @@ export function AtlasCompassPlayerBar({
   onRubi: () => void
   onClose: () => void
 }) {
-  // Shared with the course rail's "% Complete" pill, so the two always match.
-  const { label, pct } = currentSectionProgress(COMPASS_SAMPLE_TOC_FROM_DESIGN)
+  /* Shared with the course rail's "% Complete" pill, so the two always match
+     — including which COURSE they are counting (2026-10-15).
+
+     ⚠ THE UNSEQUENCED TREE, deliberately, and it is the one place that is
+     right. `currentSectionProgress` counts `done` lessons in the CURRENT
+     section, and locking never touches either — so the figure is identical
+     and taking the raw tree keeps this bar free of a flag it has no other use
+     for. The rail sequences because it DRAWS the locks. */
+  const { course } = useCourseDemo()
+  const { label, pct } = currentSectionProgress(compassTocFor(course))
   return (
     <CompassPlayerBar
       // The Section progress pill is ARCHIVED here (2026-10-01, the

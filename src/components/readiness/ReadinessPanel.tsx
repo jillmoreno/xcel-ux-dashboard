@@ -1,6 +1,6 @@
 import { useState, type CSSProperties } from 'react'
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag, useReadinessState } from '@/context/FeatureFlagContext'
+import { useCourseDemo, useFeatureFlag, useReadinessState } from '@/context/FeatureFlagContext'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { examFactsFor } from '@/data/nyProducerRequirements'
 import { displayedProgressPct } from '@/components/learning/learningPathsHomeUtil'
@@ -103,7 +103,14 @@ function useReadiness(): ReadinessData {
   const { brand } = useAccount()
   const progressVariant = useFeatureFlag('dashboard-progress-state').variant ?? 'progress-on-track'
   const educationType = (useFeatureFlag('dashboard-education-type').variant ?? 'ce') as 'ce' | 'qe'
-  const persona = dashboardProgressPersonaFor(brand, progressVariant, educationType)
+  /* THE COURSE AXIS — 2026-10-15. Threaded into BOTH calls below for exactly
+     the reason the education type already is: the course picks which chapter
+     and topic breakdown this page shows, and `dashboardProgressPersonaFor` is
+     the call Home makes for the figure this page has to agree with. Passing it
+     to one and not the other would put a Texas chapter list above a Florida
+     course percentage — the drift this hook's own doc exists to prevent. */
+  const { course } = useCourseDemo()
+  const persona = dashboardProgressPersonaFor(brand, progressVariant, educationType, course)
   // No persona for this brand/education pair means Home is showing no populated
   // path either, so there is no progress to agree with — 0 is then honest
   // rather than a guess.
@@ -112,7 +119,7 @@ function useReadiness(): ReadinessData {
   // persona's field is 14 while its hours give the 15 Home renders, which read
   // as a rounding bug rather than as two sources.
   const coursePct = persona ? displayedProgressPct(persona.path) : 0
-  return readinessForState(brand, useReadinessState() as ReadinessState, coursePct)
+  return readinessForState(brand, useReadinessState() as ReadinessState, coursePct, course)
 }
 
 /* ─── Tab 1 · Exam Readiness ──────────────────────────────────────────── */

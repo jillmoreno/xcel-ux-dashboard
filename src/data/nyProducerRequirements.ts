@@ -558,6 +558,31 @@ const EXAM_FACTS_BY_STATE: Record<string, ExamFacts> = {
     whereNote: 'or online with remote proctoring',
     invented: false,
   },
+  /**
+   * TEXAS Life & Health — added 2026-10-15 with the Course control.
+   *
+   * ⚠ EVERY FIGURE HERE IS INVENTED, which is what `invented: true` says and
+   * what the surfaces then say out loud. Nothing below has been read off a
+   * published page the way the New York block was, and New York is the
+   * cautionary tale: of the four figures guessed there, three turned out
+   * wrong — the question count, the time allowed, and the provider.
+   *
+   * TODO(data): confirm against XCEL's own Texas requirements page and the
+   * Texas Department of Insurance, then flip `invented` to false — the same
+   * pass the New York figures went through on 2026-09-16.
+   */
+  TX: {
+    state: 'TX',
+    exam: 'Texas Life, Accident & Health',
+    examNote: '⚠ INVENTED — the line-of-authority name is not confirmed',
+    questions: '150 scored',
+    questionsNote: '⚠ INVENTED',
+    timeAllowed: '2 hours 30 minutes',
+    passMark: 70,
+    where: 'A Pearson VUE test centre',
+    whereNote: '⚠ INVENTED — the proctor for Texas is not confirmed',
+    invented: true,
+  },
   // CONFIRMED 2026-09-16 against XCEL's own published requirements page (see
   // this file's header). Every figure below is stated there.
   NY: {
@@ -637,6 +662,9 @@ export function examFactsFor(state: string | undefined): ExamFacts {
 const JURISDICTION_NAMES: Record<string, string> = {
   NY: 'New York',
   FL: 'Florida',
+  // Added 2026-10-15 with the Course control. The NAME is not an invented
+  // figure — it is the expansion of a code — so it carries no warning.
+  TX: 'Texas',
 }
 
 export function jurisdictionName(state: string | undefined): string {
@@ -749,6 +777,70 @@ export const NY_GOVERNING_AGENCY = {
   email: 'licensing@dfs.ny.gov',
   address: 'One Commerce Plaza, Suite 2003 Albany, NY 12257',
 } as const
+
+/** The shape every jurisdiction's agency block fills. */
+export type GoverningAgency = {
+  name: string
+  phone: string
+  website: string
+  email: string
+  address: string
+  /** True when the contact details still need confirming against the board. */
+  invented?: boolean
+}
+
+/**
+ * FLORIDA's governing agency — ⚠ INVENTED, 2026-10-15.
+ *
+ * Florida has demoed the dashboard since this repo started and has never
+ * needed an agency block: the Get Licensed section is a QE Focused surface and
+ * QE Focused demos New York. So there is no published Florida content here to
+ * generalise FROM, only a shape to fill.
+ *
+ * TODO(data): confirm every field against the Florida Department of Financial
+ * Services' own licensing pages before this reaches a stakeholder.
+ */
+const FL_GOVERNING_AGENCY_INVENTED: GoverningAgency = {
+  name: 'Florida Department of Financial Services',
+  phone: '877-693-5236',
+  website: 'https://www.myfloridacfo.com/division/agents/',
+  email: 'agentlicensing@myfloridacfo.com',
+  address: '200 East Gaines Street, Tallahassee, FL 32399',
+  invented: true,
+}
+
+/** TEXAS's governing agency — ⚠ INVENTED, 2026-10-15. Same caveat as Florida:
+ *  nothing here has been read off a published page. TODO(data): confirm against
+ *  the Texas Department of Insurance. */
+const TX_GOVERNING_AGENCY_INVENTED: GoverningAgency = {
+  name: 'Texas Department of Insurance',
+  phone: '800-578-4677',
+  website: 'https://www.tdi.texas.gov/agent/',
+  email: 'license@tdi.texas.gov',
+  address: '1601 Congress Avenue, Austin, TX 78701',
+  invented: true,
+}
+
+const GOVERNING_AGENCY_BY_STATE: Record<string, GoverningAgency> = {
+  NY: NY_GOVERNING_AGENCY,
+  FL: FL_GOVERNING_AGENCY_INVENTED,
+  TX: TX_GOVERNING_AGENCY_INVENTED,
+}
+
+/**
+ * The agency for a jurisdiction, falling back to Florida — the licence every
+ * other XCEL fixture is authored against, exactly as `examFactsFor` falls back.
+ *
+ * ⚠ `NY_GOVERNING_AGENCY` IS STILL THE EXPORT THE NEW YORK SURFACES READ, and
+ * that is deliberate rather than an oversight. Every consumer of it today —
+ * `GoverningAgencyBlock`, the Get Licensed sheets, the Atlas homes — renders
+ * the QE Focused version's New York demo and only that. Pointing them at
+ * `governingAgencyFor('NY')` would be the same constant spelled longer. The
+ * function is here for the surfaces that resolve a state from the COURSE.
+ */
+export function governingAgencyFor(state: string | undefined): GoverningAgency {
+  return GOVERNING_AGENCY_BY_STATE[state ?? ''] ?? GOVERNING_AGENCY_BY_STATE.FL
+}
 
 export const GET_LICENSED_STEPS: LicensingStep[] = [
   {
@@ -868,3 +960,178 @@ export const GET_LICENSED_STEPS: LicensingStep[] = [
     ],
   },
 ]
+
+/* ─── Getting licensed, per jurisdiction ─────────────────────────────────
+ *
+ * ⚠ `GET_LICENSED_STEPS` ABOVE IS NEW YORK'S, AND IT STAYS THAT WAY. Twenty
+ * components import it directly and every one of them draws the QE Focused
+ * version's New York demo. Rewriting those call sites to say
+ * `getLicensedStepsFor('NY')` would be the same array spelled longer, with
+ * twenty chances to get it wrong — so the constant keeps its meaning and the
+ * FUNCTION below is what the course-aware surfaces call.
+ *
+ * ⚠ THE TWO ARRAYS BELOW ARE INVENTED IN FULL — 2026-10-15, with the Course
+ * control. New York's steps came off XCEL's own published requirements page as
+ * screenshots, quoted close to the source because they are fees, ID rules and
+ * a retake policy. NOTHING of the kind exists in this repo for Florida or
+ * Texas. What is below is the SHAPE of that content with placeholder figures
+ * in it, so the axis is complete and a reviewer can see the surface move.
+ *
+ * TODO(data): source both from XCEL's own state requirements pages, the way
+ * the New York steps were on 2026-09-17, and strip the ⚠ markers as each
+ * figure is confirmed. Until then every fee, provider and URL here is a guess
+ * wearing a warning.
+ */
+
+/** FLORIDA's steps 2-4 — ⚠ INVENTED. See the block comment above. */
+const FL_GET_LICENSED_STEPS: LicensingStep[] = [
+  {
+    id: 'schedule-exam',
+    detailLabel: 'Schedule State Exam',
+    title: 'Schedule State Exam',
+    detail: 'Schedule your exam when you’re ready.',
+    owner: 'PSI',
+    fee: '⚠ $44 exam fee (INVENTED)',
+    href: 'https://www.psiexams.com/',
+    sections: [
+      {
+        bullets: [
+          {
+            text: '⚠ INVENTED — registration is believed to be online with PSI, but the Florida route has not been confirmed:',
+            href: 'https://www.psiexams.com/',
+          },
+          { text: '⚠ INVENTED — exam fee $44.' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'pass-exam',
+    detailLabel: 'What to expect',
+    title: 'Pass State Exam',
+    // The question count, time and pass mark come from `EXAM_FACTS_BY_STATE.FL`
+    // in spirit, but are restated here as copy rather than read — the same
+    // split the New York step makes. If the facts table changes, change this.
+    detail: '165 scored questions in 3 hours 15 minutes. 70% to pass.',
+    owner: 'PSI',
+    sections: [
+      {
+        bullets: [
+          {
+            text: "Take advantage of XCEL's 3-Part training program — the Prep Review Course and the Exam Simulators are the two parts students tell us matter most in the run-up to the exam.",
+          },
+          {
+            text: '⚠ INVENTED — the identification requirements for a Florida sitting have not been confirmed.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'apply-license',
+    detailLabel: 'How to apply',
+    title: 'Apply for your License',
+    detail: 'Submit your certificate of completion with the application.',
+    owner: 'FL Dept. of Financial Services',
+    ownerShort: 'FL',
+    fee: '⚠ $55 application fee (INVENTED)',
+    sections: [
+      {
+        bullets: [
+          {
+            text: '⚠ INVENTED — the application is believed to be filed with the Department:',
+            href: 'https://www.myfloridacfo.com/division/agents/',
+          },
+          { text: 'Or electronically through NIPR:', href: 'https://www.nipr.com/' },
+        ],
+      },
+    ],
+  },
+]
+
+/** TEXAS's steps 2-4 — ⚠ INVENTED. See the block comment above. */
+const TX_GET_LICENSED_STEPS: LicensingStep[] = [
+  {
+    id: 'schedule-exam',
+    detailLabel: 'Schedule State Exam',
+    title: 'Schedule State Exam',
+    detail: 'Schedule your exam when you’re ready.',
+    owner: 'Pearson VUE',
+    fee: '⚠ $43 exam fee (INVENTED)',
+    href: 'https://home.pearsonvue.com/tx/insurance',
+    sections: [
+      {
+        bullets: [
+          {
+            text: '⚠ INVENTED — registration is believed to be online with Pearson VUE, but the Texas proctor has not been confirmed:',
+            href: 'https://home.pearsonvue.com/tx/insurance',
+          },
+          { text: '⚠ INVENTED — exam fee $43.' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'pass-exam',
+    detailLabel: 'What to expect',
+    title: 'Pass State Exam',
+    detail: '⚠ INVENTED — 150 scored questions in 2 hours 30 minutes. 70% to pass.',
+    owner: 'Pearson VUE',
+    sections: [
+      {
+        bullets: [
+          {
+            text: "Take advantage of XCEL's 3-Part training program — the Prep Review Course and the Exam Simulators are the two parts students tell us matter most in the run-up to the exam.",
+          },
+          {
+            text: '⚠ INVENTED — the identification requirements for a Texas sitting have not been confirmed.',
+          },
+          {
+            text: '⚠ INVENTED — Texas requires fingerprinting before a licence is issued; where that sits in the sequence is not confirmed.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'apply-license',
+    detailLabel: 'How to apply',
+    title: 'Apply for your License',
+    detail: 'Submit your certificate of completion with the application.',
+    owner: 'Texas Dept. of Insurance',
+    ownerShort: 'TX',
+    fee: '⚠ $50 application fee (INVENTED)',
+    sections: [
+      {
+        bullets: [
+          {
+            text: '⚠ INVENTED — the application is believed to be filed with the Department:',
+            href: 'https://www.tdi.texas.gov/agent/',
+          },
+          { text: 'Or electronically through NIPR:', href: 'https://www.nipr.com/' },
+        ],
+      },
+    ],
+  },
+]
+
+const LICENSED_STEPS_BY_STATE: Record<string, LicensingStep[]> = {
+  NY: GET_LICENSED_STEPS,
+  FL: FL_GET_LICENSED_STEPS,
+  TX: TX_GET_LICENSED_STEPS,
+}
+
+/**
+ * Steps 2-4 for a jurisdiction, falling back to Florida — the same fallback
+ * `examFactsFor` and `governingAgencyFor` make, for the same reason: an
+ * unknown state degrades to a coherent screen rather than an empty rail.
+ *
+ * Every array is the SAME THREE STEP IDS in the same order (`schedule-exam`,
+ * `pass-exam`, `apply-license`), because the sequence is the product's, not a
+ * state's — what varies is the fee, the proctor and the department. Callers
+ * index by `id` rather than by position anyway (`APPLY_LICENSE_STEP_ID`), so a
+ * jurisdiction that one day has four steps does not break them.
+ */
+export function getLicensedStepsFor(state: string | undefined): LicensingStep[] {
+  return LICENSED_STEPS_BY_STATE[state ?? ''] ?? LICENSED_STEPS_BY_STATE.FL
+}

@@ -36,6 +36,10 @@ const INTENTIONALLY_OUT_OF_PANEL = new Set([
   /* `dashboard-navigation` was the fourth. Archived 2026-10-01 with its
      dropdown; a key that is not in the catalog cannot be out of the panel. */
   'readiness-state',
+  /* THE COURSE DROPDOWN — 2026-10-15. Same reason as the three above, and it
+     carries BOTH its axes on the bar: the course, and the Regulated /
+     Unregulated sequencing nested under it. */
+  'dashboard-course-state',
 
   /* ⚠ REVIEWED AND EMPTIED, 2026-09-28. Four flags sat here as "unreviewed"
      for one commit — `study-pace-widget`, `dashboard-journey-complete`,

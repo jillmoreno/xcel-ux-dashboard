@@ -3,6 +3,8 @@
 // scoped to a single Learning Path per the QE PRD; V1 ships canned data
 // for an STC SIE prep path until per-path calendars exist server-side.
 
+import { COURSE_PATH_ID_LIST, coursePathIdFor } from './courseFixtures'
+
 export type StudyTaskKind = 'video' | 'quiz' | 'exam' | 'reading' | 'custom'
 export type StudyTaskStatus = 'completed' | 'in-progress' | 'upcoming' | 'overdue'
 
@@ -1032,6 +1034,56 @@ function buildXcelNotStartedCalendar(): StudyCalendar {
 }
 
 /**
+ * TEXAS LIFE & HEALTH — the Course control's second plan (2026-10-15).
+ *
+ * DERIVED from `XCEL_LH_STUDY_CALENDAR` for the same reason the New York plan
+ * below is: it is the same 20-day course schedule for the same line of
+ * authority, and a hand-authored second copy would be forty tasks to keep in
+ * step with the first. What differs is identity, the exam it names, the week
+ * themes, and the task titles that name a jurisdiction.
+ *
+ * ⚠ THE JURISDICTION-NAMED TASKS ARE REWRITTEN, not left alone, and that is
+ * the difference between this and a relabel. A Texas plan whose week 3 reads
+ * "Florida laws & rules" is the Study Plan contradicting the course above it —
+ * the same incoherence as securities tasks under an insurance path, which
+ * `studyCalendarFor` refuses to let happen by never falling through to Series
+ * 79. The rewrite is a plain swap over titles that mention Florida; everything
+ * else is the shared course schedule and stays shared.
+ *
+ * ⚠ DATES ARE DELIBERATELY UNCHANGED, as in the New York plan: every
+ * date-driven surface is anchored to `STUDY_CALENDAR_TODAY`, and re-pacing the
+ * run renders the week strip, the plan grid and the Readiness hand-off empty.
+ * Keeping the dates keeps the demo mid-plan, which is the state worth showing.
+ *
+ * ⚠ `examDate` MATCHES the `xcel-tx-lh-prelicensing` path's exactly. If you
+ * change one, change both.
+ *
+ * TODO(data): the lesson titles are the Florida plan's representative demo
+ * content with the state-specific ones re-pointed. Swap the whole run for
+ * XCEL's real Texas Life & Health outline when one exists.
+ */
+function buildXcelTxLhCalendar(): StudyCalendar {
+  const tasks: StudyTask[] = XCEL_LH_STUDY_CALENDAR.tasks.map((t) =>
+    t.title.includes('Florida') ? { ...t, title: t.title.replace(/Florida/g, 'Texas') } : t,
+  )
+  return {
+    ...XCEL_LH_STUDY_CALENDAR,
+    id: 'xcel-tx-lh-20day',
+    name: 'Texas Life & Health — 20 Day Study Plan',
+    examName: 'Texas Life, Accident & Health Insurance Producer Exam',
+    examDate: '2026-06-26',
+    weekThemes: [
+      'Life insurance basics',
+      'Health insurance & policy provisions',
+      'Texas Insurance Code & TDI rules',
+      'Prep review course',
+      'Final review & exam',
+    ],
+    tasks,
+  }
+}
+
+/**
  * NEW YORK INSURANCE PRODUCER — the QE Focused version's plan (2026-09-16).
  *
  * DERIVED from `XCEL_LH_STUDY_CALENDAR`, not hand-authored, and that is the
@@ -1286,7 +1338,10 @@ export const XCEL_NY_PRODUCER_PATH_ID = 'xcel-ny-producer-prelicensing'
 
 const XCEL_PATHS_WITH_CALENDAR = new Set<string>([
   XCEL_NY_PRODUCER_PATH_ID,
-  'xcel-fl-lh-prelicensing',
+  // Both pre-licensing courses the Demo Controls bar's Course dropdown offers
+  // — `COURSE_PATH_ID_LIST` rather than two literals, so a third course cannot
+  // ship with a plan that the Study Plan tab reports as unassigned.
+  ...COURSE_PATH_ID_LIST,
   'xcel-fl-pc-prelicensing',
   XCEL_CE_PATH_ID,
 ])
@@ -1376,8 +1431,11 @@ export function studyCalendarFor(pathId?: string): StudyCalendar {
   if (pathId === XCEL_NY_PRODUCER_PATH_ID) {
     return buildXcelNyProducerCalendar()
   }
-  if (pathId === 'xcel-fl-lh-prelicensing') {
+  if (pathId === coursePathIdFor('fl')) {
     return XCEL_LH_STUDY_CALENDAR
+  }
+  if (pathId === coursePathIdFor('tx')) {
+    return buildXcelTxLhCalendar()
   }
   if (pathId === XCEL_CE_PATH_ID) {
     return XCEL_CE_STUDY_CALENDAR

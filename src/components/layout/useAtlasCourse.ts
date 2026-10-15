@@ -1,5 +1,5 @@
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useCourseDemo, useFeatureFlag } from '@/context/FeatureFlagContext'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { displayedProgressPct } from '@/components/learning/learningPathsHomeUtil'
 
@@ -15,10 +15,14 @@ export function useAtlasCourse(): { title: string; progressPct: number } {
   const { brand } = useAccount()
   const progressVariant = useFeatureFlag('dashboard-progress-state').variant
   const educationFlag = useFeatureFlag('dashboard-education-type').variant
+  // The Course axis (2026-10-15) — the Atlas course header has to name the
+  // same course the Compass rail below it is listing.
+  const { course } = useCourseDemo()
   const persona = dashboardProgressPersonaFor(
     brand,
     progressVariant,
     educationFlag === 'exam-prep' ? 'exam-prep' : 'qe',
+    course,
   )
   return {
     title: persona?.path.title ?? 'Course',

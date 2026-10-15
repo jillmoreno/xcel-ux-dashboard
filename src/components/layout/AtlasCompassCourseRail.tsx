@@ -1,5 +1,10 @@
 import { CompassCourseRail } from '@/components/compass/CompassCourseRail'
-import { COMPASS_SAMPLE_TOC_FROM_DESIGN, currentSectionProgress } from '@/data/compassCourseFixtures'
+import {
+  applyCourseSequencing,
+  compassTocFor,
+  currentSectionProgress,
+} from '@/data/compassCourseFixtures'
+import { useCourseDemo } from '@/context/FeatureFlagContext'
 import { useSearchParams } from 'react-router-dom'
 import { useAtlasCourse } from './useAtlasCourse'
 
@@ -42,7 +47,18 @@ export function AtlasCompassCourseRail({
   const { title } = useAtlasCourse()
   // No course name on Eric/Atlas WIP — as its Overview rail (2026-10-14).
   const hideTitle = useSearchParams()[0].get('version') === 'eric-atlas-v3'
-  const { pct } = currentSectionProgress(COMPASS_SAMPLE_TOC_FROM_DESIGN)
+  /* THE COURSE AXIS — 2026-10-15. The tree is the course's own, and the
+     Regulated sequencing is applied HERE rather than inside the rail: the
+     rail draws a `CompassCourseRailConfig` and resolves nothing, which is
+     what makes it reusable. `applyCourseSequencing` returns the tree
+     unchanged by identity under Unregulated, so the default path is free. */
+  const { course, regulated } = useCourseDemo()
+  const toc = applyCourseSequencing(compassTocFor(course), regulated)
+  /* ⚠ `% Complete` READS THE SEQUENCED TREE, which is the same tree the rail
+     lists. Locking never touches a `done` entry, so the figure is identical
+     either way — but reading the unsequenced one would be two sources for one
+     number, which is how they come apart later. */
+  const { pct } = currentSectionProgress(toc)
   return (
     <CompassCourseRail
       /* NO BREADCRUMB since 2026-10-01 (the designer's request). It was
@@ -54,7 +70,7 @@ export function AtlasCompassCourseRail({
       // …and no progress row on WIP either (2026-10-14, Eric's request).
       hideProgress={hideTitle}
       progressPct={pct}
-      toc={COMPASS_SAMPLE_TOC_FROM_DESIGN}
+      toc={toc}
       resources={[{ id: 'get-help', label: 'Get Help', onSelect: onGetHelp }]}
     />
   )

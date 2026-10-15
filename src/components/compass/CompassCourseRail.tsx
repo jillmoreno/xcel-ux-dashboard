@@ -6,6 +6,7 @@ import {
   CircleSolid,
   ClockRegular,
   HouseRegular,
+  LockRegular,
   SlashForwardSolid,
 } from '@/icons'
 import type {
@@ -76,11 +77,19 @@ export function CompassCourseRail({
   resources,
 }: CompassCourseRailConfig) {
   const currentIndex = toc.findIndex((s) => s.status === 'current')
-  // "Up next" goes on the FIRST not-started section after the current one —
-  // derived here so it moves by itself when the current section changes.
+  /* "Up next" goes on the FIRST section after the current one that has not
+     been reached — derived here so it moves by itself when the current
+     section changes.
+     ⚠ `locked` COUNTS, 2026-10-15. Under the Course control's Regulated
+     sequencing the next section is usually locked rather than not-started,
+     and a test of `status === 'not-started'` alone would have made the "Up
+     next" note silently vanish the moment a reviewer flipped the toggle.
+     "Up next" is a statement about the CURRICULUM's order — still true of a
+     locked section; the padlock is what says you cannot jump to it yet. */
   const upNextId =
     currentIndex >= 0
-      ? toc.slice(currentIndex + 1).find((s) => s.status === 'not-started')?.id
+      ? toc.slice(currentIndex + 1).find((s) => s.status === 'not-started' || s.status === 'locked')
+          ?.id
       : undefined
   const pct = Math.max(0, Math.min(100, Math.round(progressPct)))
 
@@ -224,6 +233,12 @@ const STATUS_WORDS: Record<CompassTocStatus, string> = {
   done: 'completed',
   current: 'in progress',
   'not-started': 'not started',
+  /* ⚠ "locked", NOT "not started" — 2026-10-15, with the Course control's
+     Regulated sequencing. The padlock is `aria-hidden` like every other mark
+     on this rail, so this string is the ONLY way a screen reader learns the
+     row cannot be opened. "Not started" would leave a learner hunting for a
+     control that is deliberately not there. */
+  locked: 'locked until the previous item is complete',
 }
 
 /**
@@ -243,7 +258,13 @@ const STATUS_WORDS: Record<CompassTocStatus, string> = {
  */
 function SectionRow({ section }: { section: CompassTocSection }) {
   const current = section.status === 'current'
-  const upcoming = section.status === 'not-started'
+  /* LOCKED TAKES THE UPCOMING TREATMENT — the muted dot, the muted title, the
+     upcoming row metrics — and differs only in its MARK (a grey padlock, see
+     `StatusIcon`) and in the words it states. Both mean "not reached"; the
+     lock adds why. A third visual treatment would be a third thing to learn
+     for a distinction one icon already carries. Section rows have no hover
+     affordance, so unlike `ChildRow` there is nothing here to withhold. */
+  const upcoming = section.status === 'not-started' || section.status === 'locked'
   const done = section.status === 'done'
   const content = (
     <>
@@ -313,6 +334,14 @@ function SectionRow({ section }: { section: CompassTocSection }) {
  */
 function ChildRow({ child }: { child: CompassTocChild }) {
   const current = child.status === 'current'
+  const locked = child.status === 'locked'
+  /* ⚠ TWO FLAGS, NOT ONE, and the split is the whole lock. `muted` is the
+     COLOUR family — locked rows look like not-started rows, which is right.
+     `upcoming` is the HOVER CLASS, and locked rows must not get it: the
+     `.is-upcoming:hover` rule turns the spine navy and the label dark, which
+     is an invitation to click a row that cannot be clicked. `.is-locked`
+     carries the same base colours with no hover block. */
+  const muted = child.status === 'not-started' || locked
   const upcoming = child.status === 'not-started'
   const content = (
     <>
@@ -320,8 +349,8 @@ function ChildRow({ child }: { child: CompassTocChild }) {
         <StatusIcon status={child.status} size="child" />
       </span>
       <span
-        className={upcoming ? 'cre-compass-toc-label' : undefined}
-        style={current ? CHILD_LABEL_CURRENT : upcoming ? CHILD_LABEL_UPCOMING : CHILD_LABEL}
+        className={muted ? 'cre-compass-toc-label' : undefined}
+        style={current ? CHILD_LABEL_CURRENT : muted ? CHILD_LABEL_UPCOMING : CHILD_LABEL}
       >
         {child.label}
       </span>
@@ -333,7 +362,13 @@ function ChildRow({ child }: { child: CompassTocChild }) {
   )
   return (
     <li
-      className={upcoming ? 'cre-compass-toc-child is-upcoming' : undefined}
+      className={
+        upcoming
+          ? 'cre-compass-toc-child is-upcoming'
+          : locked
+            ? 'cre-compass-toc-child is-locked'
+            : undefined
+      }
       style={CHILD_ROW}
       aria-current={current ? 'step' : undefined}
     >
@@ -342,11 +377,16 @@ function ChildRow({ child }: { child: CompassTocChild }) {
           hover, are the class's. */}
       <span
         aria-hidden
-        className={upcoming ? 'cre-compass-toc-spine' : undefined}
-        style={upcoming ? SPINE : SPINE_PROGRESS}
+        className={muted ? 'cre-compass-toc-spine' : undefined}
+        style={muted ? SPINE : SPINE_PROGRESS}
       />
       <span style={current ? CHILD_INNER_CURRENT : CHILD_INNER}>
-        {child.onSelect ? (
+        {/* A LOCKED ROW NEVER BECOMES A BUTTON, even if a page handed one an
+            `onSelect`. `applyCourseSequencing` strips it on the way through,
+            and this is the belt to that braces: the rail is the last thing
+            between a locked lesson and a click, and it should not depend on
+            an upstream map having run. */}
+        {child.onSelect && !locked ? (
           <button type="button" className="cre-compass-toc-row" onClick={child.onSelect} style={ROW_BUTTON}>
             {content}
           </button>
@@ -376,6 +416,27 @@ function NoteRow({ children, bar = false }: { children: ReactNode; bar?: boolean
  * upcoming = a beige ring.
  */
 function StatusIcon({ status, size }: { status: CompassTocStatus; size: 'section' | 'child' }) {
+  /* LOCKED — the Course control's Regulated sequencing, 2026-10-15, and the
+     direct ask: "show the small gray lock icon on the left instead of the
+     outline circle".
+
+     ⚠ ONE BRANCH FOR BOTH SIZES, ahead of the section/lesson split below.
+     Every other mark here differs between a section and a lesson — a section's
+     done is a SOLID check, a lesson's is the outline — because the design
+     draws them differently. The design draws no lock at all, so inventing two
+     would be inventing a distinction nobody asked for. 15px, the lesson
+     ring's size, which is what it replaces.
+
+     The colour is its own token rather than the beige `upcoming` mark: beige
+     is "not yet", grey is "not yours to open", and the two have to be
+     tellable apart at a glance down the spine. */
+  if (status === 'locked') {
+    return (
+      <span aria-hidden style={{ ...MARK, color: 'var(--color-compass-rail-locked-mark)' }}>
+        <LockRegular size={size === 'section' ? 14 : 15} aria-hidden />
+      </span>
+    )
+  }
   if (size === 'section') {
     if (status === 'done') {
       return (

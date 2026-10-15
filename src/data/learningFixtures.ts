@@ -263,6 +263,38 @@ const _LEARNING_PATHS_BY_BRAND: Record<Brand, LearningPathSummary[]> = {
       // (see `supportsStudyPlan`).
       layoutVariant: 'study-calendar-in-tab',
     },
+    /**
+     * TEXAS LIFE & HEALTH — the Course control's second course (2026-10-15).
+     *
+     * A SIBLING of the Florida path above, not a replacement: the Course
+     * dropdown picks between the two, Florida stays the default, and this
+     * entry is unreachable until a reviewer asks for it. It sits AFTER
+     * Florida deliberately — `learningPathsFor(brand)[0]` and `activePathIdFor`
+     * must keep landing where they do.
+     *
+     * ⚠ EVERY FIGURE IS INVENTED. Texas has no published requirements page in
+     * this repo — `EXAM_FACTS_BY_STATE.TX` and the Texas licensing steps in
+     * `nyProducerRequirements.ts` carry the same warning. The 40 hours are
+     * Florida's, held constant so the two courses are comparable rather than
+     * because Texas requires 40.
+     *
+     * TODO(data): confirm the hour requirement, and keep `examDate` equal to
+     * `buildXcelTxLhCalendar`'s — if you change one, change both.
+     */
+    {
+      id: 'xcel-tx-lh-prelicensing',
+      title: 'Texas Life & Health Pre-Licensing',
+      category: 'Insurance Pre-Licensing',
+      state: 'TX',
+      hours: 40,
+      examDate: '06/26/2026',
+      timeLeftLabel: '5 Weeks Left to Exam',
+      progressPct: 30,
+      lastViewedAt: '2026-05-19T08:15:00Z',
+      mandatory: { completed: 12, required: 24 },
+      elective: { completed: 0, required: 16 },
+      layoutVariant: 'study-calendar-in-tab',
+    },
     {
       id: 'xcel-fl-pc-prelicensing',
       title: 'Florida Property & Casualty Pre-Licensing',
@@ -439,6 +471,26 @@ const _LEARNING_PATH_CARDS_BY_BRAND: Record<Brand, LearningPathCardData[]> = {
       totalTimeSpent: { hours: 11 },
       lastActivityDays: 1,
       resumeUrl: '/my-learning/path?path=xcel-fl-lh-prelicensing',
+    },
+    /* Mirrors the Texas path added to `_LEARNING_PATHS_BY_BRAND.xcel` above,
+       and sits in the same position for the same reason. ⚠ Every figure is
+       invented — see that entry's note. */
+    {
+      id: 'xcel-tx-lh-prelicensing',
+      title: 'Texas Life & Health Pre-Licensing',
+      programType: 'Insurance Pre-Licensing',
+      credentialType: 'Exam Prep',
+      jurisdiction: 'TX',
+      totalHours: 40,
+      status: 'on-track',
+      progressPct: 30,
+      hoursCompleted: 12,
+      enrolledDate: '2026-02-16',
+      expiresDate: '2026-06-26',
+      daysLeftToComplete: 38,
+      totalTimeSpent: { hours: 11 },
+      lastActivityDays: 1,
+      resumeUrl: '/my-learning/path?path=xcel-tx-lh-prelicensing',
     },
     {
       id: 'xcel-fl-pc-prelicensing',

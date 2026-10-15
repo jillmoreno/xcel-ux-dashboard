@@ -25,6 +25,7 @@ import {
   NY_PRODUCER_HOURS_INVENTED,
 } from '@/data/nyProducerRequirements'
 import { XCEL_NY_PRODUCER_PATH_ID } from '@/data/studyCalendarFixtures'
+import { DEFAULT_COURSE, coursePathIdFor, type CourseId } from '@/data/courseFixtures'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import type { Brand } from '@/context/AccountContext'
 import type { CourseCardData } from '@/components/courses/CourseCard'
@@ -339,7 +340,7 @@ const PROFILES: Record<EducationType, Partial<Record<Brand, BrandProgressProfile
    */
   'exam-prep': {
     xcel: {
-      pathId: 'xcel-fl-lh-prelicensing',
+      pathId: coursePathIdFor('fl'),
       title: 'Florida Life & Health Exam Prep',
       category: 'Insurance Exam Preparation',
       state: 'FL',
@@ -369,6 +370,63 @@ const PROFILES: Record<EducationType, Partial<Record<Brand, BrandProgressProfile
 }
 
 /**
+ * TEXAS LIFE & HEALTH EXAM PREP — the Course control's second exam-prep
+ * profile (2026-10-15).
+ *
+ * SPREAD FROM FLORIDA'S rather than hand-authored, and the spread is doing
+ * real work: the four `categories` and their hour splits are XCEL's 3-Part
+ * Training Program, which is a PRODUCT structure and carries across
+ * jurisdictions unchanged — the same reasoning `nyProducerRequirements`'s
+ * header gives for not treating the categories as a state requirement. What is
+ * state-specific is the path it points at, what it is called, and the
+ * jurisdiction stamped on the Jump Back In cards.
+ *
+ * ⚠ THE EXAM DATE (`licenseExpiresOn`) IS TEXAS'S, matching the Texas path and
+ * the Texas study plan. The three have to agree — that is what
+ * `ProgressAgreement.test.tsx` is for.
+ */
+const XCEL_EXAM_PREP_TX: BrandProgressProfile = {
+  ...PROFILES['exam-prep'].xcel!,
+  pathId: coursePathIdFor('tx'),
+  title: 'Texas Life & Health Exam Prep',
+  state: 'TX',
+  licenseExpiresOn: '06/26/2026',
+  upNext: { ...PROFILES['exam-prep'].xcel!.upNext, state: 'TX' },
+  resumeMid: { ...PROFILES['exam-prep'].xcel!.resumeMid, state: 'TX' },
+  resumeEarly: { ...PROFILES['exam-prep'].xcel!.resumeEarly, state: 'TX' },
+}
+
+/**
+ * The profiles the COURSE axis re-points, keyed education type → brand →
+ * course.
+ *
+ * ⚠ ONLY `exam-prep` IS HERE, AND THAT IS A DECISION rather than an omission.
+ *
+ *   - `qe` demos NEW YORK and has since 2026-09-16. The Course control is a
+ *     Florida/Texas axis; it has no New York arm and must not acquire one by
+ *     accident, so the QE journey is deliberately outside it.
+ *   - `ce` is Florida and stays Florida for this pass — confirmed with
+ *     Jillienne on 2026-10-15. A renewal cycle is a different object from a
+ *     pre-licensing course (variable, sometimes birthday-based deadlines; see
+ *     the `XCEL_CE_STUDY_CALENDAR` preamble), and giving the CE persona a
+ *     Texas arm would mean inventing a Texas renewal rule as well as a Texas
+ *     course. Add a `ce` entry here if that changes — it is one object.
+ *
+ * `profileFor` checks this map BEFORE `PROFILES` for each type in the fallback
+ * chain, so an entry here wins for the course it names and nothing else moves.
+ */
+const COURSE_PROFILES: Partial<
+  Record<EducationType, Partial<Record<Brand, Record<CourseId, BrandProgressProfile>>>>
+> = {
+  'exam-prep': {
+    xcel: {
+      fl: PROFILES['exam-prep'].xcel!,
+      tx: XCEL_EXAM_PREP_TX,
+    },
+  },
+}
+
+/**
  * Fallback chain, declared once: `exam-prep` → `qe` → `ce`.
  *
  * A brand degrades to the nearest journey it actually has, so no caller gets
@@ -382,8 +440,18 @@ const PROFILE_FALLBACK: Record<EducationType, EducationType[]> = {
   'exam-prep': ['exam-prep', 'qe', 'ce'],
 }
 
-function profileFor(brand: Brand, educationType: EducationType): BrandProgressProfile | undefined {
+function profileFor(
+  brand: Brand,
+  educationType: EducationType,
+  course: CourseId = DEFAULT_COURSE,
+): BrandProgressProfile | undefined {
   for (const t of PROFILE_FALLBACK[educationType]) {
+    /* The course-aware profile wins for its type, when there is one. The
+       lookup is INSIDE the fallback walk rather than before it, so a brand
+       whose `exam-prep` is course-aware and whose `qe` is not degrades the way
+       it always did instead of skipping a rung. */
+    const byCourse = COURSE_PROFILES[t]?.[brand]
+    if (byCourse) return byCourse[course]
     const found = PROFILES[t][brand]
     if (found) return found
   }
@@ -963,13 +1031,19 @@ function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVar
  * Resolve the `dashboard-progress-state` flag variant to a demo persona for the
  * brand. Returns `null` for brands without a progress profile so callers fall
  * back to today's default learning-path resolution.
+ *
+ * `course` (2026-10-15) is the Demo Controls bar's Course axis. It DEFAULTS TO
+ * FLORIDA, which is what every caller resolved to before the axis existed — so
+ * a caller that does not pass it gets exactly the persona it always got, and
+ * the eighty-odd existing call sites needed no edit.
  */
 export function dashboardProgressPersonaFor(
   brand: Brand,
   variant: string | undefined,
   educationType: EducationType = 'ce',
+  course: CourseId = DEFAULT_COURSE,
 ): DashboardProgressPersona | null {
-  const profile = profileFor(brand, educationType)
+  const profile = profileFor(brand, educationType, course)
   if (!profile) return null
   const v = (variant ?? 'progress-on-track') as DashboardProgressVariant
   const safe: DashboardProgressVariant = PROGRESS_RATIOS[v] ? v : 'progress-on-track'

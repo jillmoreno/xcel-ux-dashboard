@@ -1,0 +1,438 @@
+import { render, screen, fireEvent, within } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { DemoControlsBar } from '@/components/prototype/DemoControlsBar'
+import { CompassCourseRail } from '@/components/compass/CompassCourseRail'
+import { AccountProvider } from '@/context/AccountContext'
+import { DashboardVersionsPanelProvider } from '@/components/dashboard/DashboardVersionsPanelContext'
+import { FeatureFlagPanelProvider } from '@/components/account/FeatureFlagPanelContext'
+import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import {
+  COURSE_FLAG_KEY,
+  COURSE_PICKER,
+  coursePathIdFor,
+  courseStateFor,
+  isRegulatedCourse,
+  resolveCourse,
+} from '@/data/courseFixtures'
+import {
+  COMPASS_SAMPLE_TOC_FROM_DESIGN,
+  applyCourseSequencing,
+  compassTocFor,
+} from '@/data/compassCourseFixtures'
+import { readinessFor, readinessForState } from '@/data/readinessFixtures'
+import { studyCalendarFor } from '@/data/studyCalendarFixtures'
+import { learningPathsFor } from '@/data/learningFixtures'
+import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
+import {
+  GET_LICENSED_STEPS,
+  NY_GOVERNING_AGENCY,
+  examFactsFor,
+  getLicensedStepsFor,
+  governingAgencyFor,
+  jurisdictionName,
+} from '@/data/nyProducerRequirements'
+import type { CompassTocSection } from '@/components/compass/CompassCourseRail.types'
+
+/**
+ * THE COURSE AXIS — Florida / Texas, and the Regulated sequencing nested under
+ * it. Added 2026-10-15 with the Demo Controls bar's Course dropdown.
+ *
+ * What this file is actually guarding, in order of how badly it would hurt:
+ *
+ *   1. **`main` DID NOT MOVE.** The whole axis is a second option beside what
+ *      the dashboard already showed, and the committed defaults say so. If
+ *      the Florida/Unregulated defaults ever drift, every stakeholder link
+ *      that has ever been shared starts opening on something else.
+ *   2. **NEW YORK IS UNTOUCHED.** The QE journey's licence is a different
+ *      axis with confirmed, published figures. This control has no New York
+ *      arm and must not grow one by accident.
+ *   3. **TEXAS IS A COURSE, NOT A RELABEL.** A flip has to re-resolve the
+ *      fixtures, not re-render Florida's with a word swapped — which is the
+ *      cheap failure this axis exists to avoid.
+ *   4. **THE LOCK IS DERIVED AND IT IS UNCLICKABLE**, in that order.
+ */
+
+function seedXcel() {
+  window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'non-member' }))
+}
+
+function renderBar() {
+  return render(
+    <MemoryRouter initialEntries={['/dashboard-rebrand']}>
+      <AccountProvider>
+        <FeatureFlagProvider>
+          <FeatureFlagPanelProvider>
+            <DashboardVersionsPanelProvider>
+              <DemoControlsBar />
+            </DashboardVersionsPanelProvider>
+          </FeatureFlagPanelProvider>
+        </FeatureFlagProvider>
+      </AccountProvider>
+    </MemoryRouter>,
+  )
+}
+
+/** Open the Course dropdown. */
+function openCourse() {
+  fireEvent.click(screen.getByRole('button', { name: /Course:/i }))
+}
+
+/* `radiogroup` is its own ARIA role, not a flavour of `group` — querying for
+   `group` finds neither of these, which is the first thing this file got
+   wrong. */
+const courseGroup = () => screen.getByRole('radiogroup', { name: 'Course' })
+const sequencingGroup = () => screen.getByRole('radiogroup', { name: 'Sequencing' })
+
+beforeEach(() => {
+  window.localStorage.clear()
+  window.sessionStorage.clear()
+  seedXcel()
+})
+
+describe('the committed defaults — a plain load of main is unchanged', () => {
+  const def = FEATURE_FLAGS.find((f) => f.key === COURSE_FLAG_KEY)!
+
+  it('is in the catalog, with both axes', () => {
+    expect(def).toBeDefined()
+    expect(def.variants?.map((v) => v.value)).toEqual(['fl', 'tx'])
+    expect(def.secondaryVariants?.map((v) => v.value)).toEqual(['unregulated', 'regulated'])
+  })
+
+  /* ⚠ THE LOAD-BEARING ASSERTION IN THIS FILE. Every surface the axis reaches
+     was authored against Florida with free navigation; these two defaults are
+     what makes the branch additive. Changing them is a `promote-to-prototype`
+     decision, not an edit — if this fails, that is the conversation. */
+  it('opens on Florida, unregulated', () => {
+    expect(def.defaultVariant).toBe('fl')
+    expect(def.defaultSecondaryVariant).toBe('unregulated')
+    expect(resolveCourse(def.defaultVariant)).toBe('fl')
+    expect(isRegulatedCourse(def.defaultSecondaryVariant)).toBe(false)
+  })
+
+  it('degrades an unrecognised variant to Florida rather than throwing', () => {
+    // A stale `?ff=dashboard-course-state:ca` from a shared link, or a
+    // localStorage entry written by a future build.
+    expect(resolveCourse('ca')).toBe('fl')
+    expect(resolveCourse(undefined)).toBe('fl')
+    expect(isRegulatedCourse('whatever')).toBe(false)
+  })
+})
+
+describe('the Course dropdown on the Demo Controls bar', () => {
+  it('shows the active course on the pill, Florida by default', () => {
+    renderBar()
+    expect(
+      screen.getByRole('button', { name: /Course:.*Florida Life & Health Pre-Licensing/i }),
+    ).toBeTruthy()
+  })
+
+  /* TWO GROUPS, TWO ROLES. The panel is a `menu` holding two radiogroups
+     rather than one radiogroup holding four radios — otherwise a screen
+     reader announces "1 of 4" across two unrelated questions. */
+  it('holds a Course group and a Sequencing group, each its own radiogroup', () => {
+    renderBar()
+    openCourse()
+    expect(within(courseGroup()).getAllByRole('radio')).toHaveLength(COURSE_PICKER.length)
+    expect(within(sequencingGroup()).getAllByRole('radio')).toHaveLength(2)
+  })
+
+  it('offers both courses, with Florida checked', () => {
+    renderBar()
+    openCourse()
+    const [fl, tx] = within(courseGroup()).getAllByRole('radio')
+    expect(fl.textContent).toMatch(/Florida Life & Health Pre-Licensing/)
+    expect(tx.textContent).toMatch(/Texas Life & Health Pre-Licensing/)
+    expect(fl.getAttribute('aria-checked')).toBe('true')
+    expect(tx.getAttribute('aria-checked')).toBe('false')
+  })
+
+  it('picks Texas, and the pill follows', () => {
+    renderBar()
+    openCourse()
+    fireEvent.click(within(courseGroup()).getByRole('radio', { name: /Texas/i }))
+    expect(
+      screen.getByRole('button', { name: /Course:.*Texas Life & Health Pre-Licensing/i }),
+    ).toBeTruthy()
+  })
+
+  it('picks Regulated without disturbing the course', () => {
+    renderBar()
+    openCourse()
+    fireEvent.click(within(courseGroup()).getByRole('radio', { name: /Texas/i }))
+    openCourse()
+    fireEvent.click(within(sequencingGroup()).getByRole('radio', { name: 'Regulated' }))
+    openCourse()
+    // The two axes are independent: setting one must not reset the other.
+    expect(
+      within(courseGroup()).getByRole('radio', { name: /Texas/i }).getAttribute('aria-checked'),
+    ).toBe('true')
+    expect(
+      within(sequencingGroup())
+        .getByRole('radio', { name: 'Regulated' })
+        .getAttribute('aria-checked'),
+    ).toBe('true')
+  })
+})
+
+describe('Texas is a second COURSE, not a relabelled Florida', () => {
+  it('resolves its own jurisdiction and path id', () => {
+    expect(courseStateFor('fl')).toBe('FL')
+    expect(courseStateFor('tx')).toBe('TX')
+    expect(coursePathIdFor('tx')).toBe('xcel-tx-lh-prelicensing')
+    expect(jurisdictionName('TX')).toBe('Texas')
+  })
+
+  it('has its own readiness breakdown, a different shape from Florida’s', () => {
+    const fl = readinessFor('xcel', 'fl')
+    const tx = readinessFor('xcel', 'tx')
+    expect(tx.pathTitle).toMatch(/Texas/)
+    // Not the same chapter list with one word changed — a different length.
+    expect(tx.chapters.length).not.toBe(fl.chapters.length)
+    expect(tx.chapters.map((c) => c.title)).not.toEqual(fl.chapters.map((c) => c.title))
+    // And nothing Floridian survived the swap.
+    expect(JSON.stringify(tx)).not.toMatch(/Florida/)
+  })
+
+  /* THE STAT CELL COUNTS THE COURSE IT IS SHOWING. It read "of 20" and "of
+     14" from literals, which were Florida's counts — on Texas that would have
+     printed a denominator the breakdown below it could not support. */
+  it('counts chapters and topics from the course, not from a literal', () => {
+    const tx = readinessForState('xcel', 'on-track', 90, 'tx')
+    const chapters = tx.progress.find((p) => p.label === 'Chapters Completed')!
+    const topics = tx.progress.find((p) => p.label === 'Topics Covered')!
+    expect(chapters.value).toMatch(new RegExp(`of ${readinessFor('xcel', 'tx').chapters.length}$`))
+    expect(topics.value).toMatch(new RegExp(`of ${readinessFor('xcel', 'tx').topics.length}$`))
+  })
+
+  it('has its own study plan, named for its own exam', () => {
+    const plan = studyCalendarFor(coursePathIdFor('tx'))
+    expect(plan.examName).toMatch(/Texas/)
+    expect(plan.weekThemes?.join(' ')).toMatch(/Texas/)
+    expect(plan.weekThemes?.join(' ')).not.toMatch(/Florida/)
+    // No task may still name the other state — that is the plan contradicting
+    // the course heading above it.
+    expect(plan.tasks.some((t) => t.title.includes('Florida'))).toBe(false)
+  })
+
+  /* ONE DATE, TWO FILES — the invariant the Florida pair already holds, now
+     held by the Texas pair too. The path fixture and the study plan both name
+     an exam date, and a learner reads them on adjacent surfaces.
+
+     ⚠ NOT THE PERSONA'S `licenseExpiresOn`, which is a different fact:
+     `personaFor` overwrites it from `RENEWAL_BY_VARIANT`, so it follows the
+     PROGRESS axis (how long this demo learner has left) rather than the
+     course. Asserting on it here would have been testing the Progress
+     dropdown and calling it the Course one. */
+  it('agrees with its own path about when the exam is', () => {
+    for (const course of ['fl', 'tx'] as const) {
+      const plan = studyCalendarFor(coursePathIdFor(course))
+      const path = learningPathsFor('xcel').find((p) => p.id === coursePathIdFor(course))!
+      // The plan is ISO, the path is mm/dd/yyyy — the same day either way.
+      const [y, m, d] = plan.examDate.split('-')
+      expect(path.examDate, course).toBe(`${m}/${d}/${y}`)
+    }
+  })
+
+  it('has its own exam-prep persona, pointed at its own path', () => {
+    const fl = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'exam-prep', 'fl')!
+    const tx = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'exam-prep', 'tx')!
+    expect(fl.path.id).toBe(coursePathIdFor('fl'))
+    expect(tx.path.id).toBe(coursePathIdFor('tx'))
+    expect(tx.path.title).toMatch(/Texas/)
+  })
+
+  it('has its own content tree', () => {
+    expect(compassTocFor('fl')).toBe(COMPASS_SAMPLE_TOC_FROM_DESIGN)
+    expect(compassTocFor('tx')).not.toBe(COMPASS_SAMPLE_TOC_FROM_DESIGN)
+    expect(JSON.stringify(compassTocFor('tx'))).toMatch(/Texas/)
+  })
+
+  /* ⚠ EVERY TEXAS FIGURE SHIPS FLAGGED. The surfaces read `invented` and
+     apologise for themselves; a future pass confirming the real numbers flips
+     this and this test with it. Until then, silently dropping the marker
+     would present guesses as published regulatory facts — the exact failure
+     `nyProducerRequirements.ts`'s header was written about. */
+  it('ships every Texas figure marked invented', () => {
+    expect(examFactsFor('TX').invented).toBe(true)
+    expect(governingAgencyFor('TX').invented).toBe(true)
+    expect(governingAgencyFor('FL').invented).toBe(true)
+    for (const step of getLicensedStepsFor('TX')) {
+      expect(JSON.stringify(step), step.id).toMatch(/INVENTED/)
+    }
+  })
+})
+
+describe('New York is untouched', () => {
+  /* The QE journey's licence is confirmed against XCEL's published page. The
+     Course control is a Florida/Texas axis and has no New York arm; these are
+     the assertions that keep it that way. */
+  it('still resolves the published New York facts', () => {
+    expect(examFactsFor('NY').invented).toBe(false)
+    expect(examFactsFor('NY').questions).toBe('150 scored questions')
+  })
+
+  it('reaches the same steps and agency through the new functions', () => {
+    expect(getLicensedStepsFor('NY')).toBe(GET_LICENSED_STEPS)
+    expect(governingAgencyFor('NY')).toBe(NY_GOVERNING_AGENCY)
+  })
+
+  it('leaves the QE persona on New York whichever course is picked', () => {
+    for (const course of ['fl', 'tx'] as const) {
+      const qe = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe', course)!
+      expect(qe.path.state, course).toBe('NY')
+      expect(qe.path.title, course).toMatch(/New York/)
+    }
+  })
+
+  it('falls back to Florida for a state nobody has modelled', () => {
+    expect(examFactsFor('CA').state).toBe('FL')
+    expect(governingAgencyFor('CA')).toBe(governingAgencyFor('FL'))
+    expect(getLicensedStepsFor(undefined)).toBe(getLicensedStepsFor('FL'))
+  })
+})
+
+describe('regulated sequencing — the rule', () => {
+  const flat = (toc: readonly CompassTocSection[]) =>
+    toc.flatMap((s) => [
+      { id: s.id, status: s.status },
+      ...(s.children ?? []).map((c) => ({ id: c.id, status: c.status })),
+    ])
+
+  it('returns the tree UNCHANGED BY IDENTITY when unregulated', () => {
+    // Not merely equal — the same object, so the default path allocates
+    // nothing and a `===` in a memo upstream still holds.
+    const toc = compassTocFor('fl')
+    expect(applyCourseSequencing(toc, false)).toBe(toc)
+  })
+
+  it('never touches what has been reached', () => {
+    const before = flat(compassTocFor('fl'))
+    const after = flat(applyCourseSequencing(compassTocFor('fl'), true))
+    for (const [i, entry] of before.entries()) {
+      if (entry.status === 'done' || entry.status === 'current') {
+        expect(after[i], entry.id).toEqual(entry)
+      }
+    }
+  })
+
+  /* THE RULE ITSELF: the next not-started entry stays open — that is what
+     "you may move on when the one before it is complete" means in a tree —
+     and everything after it locks. */
+  it('leaves exactly one not-started entry open and locks the rest', () => {
+    const after = flat(applyCourseSequencing(compassTocFor('fl'), true))
+    expect(after.filter((e) => e.status === 'not-started')).toHaveLength(1)
+    expect(after.filter((e) => e.status === 'locked').length).toBeGreaterThan(0)
+    // …and the one left open is the FIRST of them, in reading order.
+    const firstUnreached = after.findIndex(
+      (e) => e.status === 'not-started' || e.status === 'locked',
+    )
+    expect(after[firstUnreached].status).toBe('not-started')
+  })
+
+  /* A COURSE NOBODY HAS STARTED is the shape Jillienne described: "the first
+     item is clickable, the others are locked". It falls out of the same rule
+     rather than needing one of its own. */
+  it('on an untouched course, opens the first item and locks every other', () => {
+    const fresh: CompassTocSection[] = [
+      { id: 'a', label: 'A', status: 'not-started' },
+      { id: 'b', label: 'B', status: 'not-started' },
+      { id: 'c', label: 'C', status: 'not-started' },
+    ]
+    expect(flat(applyCourseSequencing(fresh, true)).map((e) => e.status)).toEqual([
+      'not-started',
+      'locked',
+      'locked',
+    ])
+  })
+
+  /* THE ALLOWANCE IS SPENT ONCE, ACROSS THE WHOLE TREE. Per-section, a
+     section whose lessons were all locked would hand a fresh allowance to the
+     section below it — two open items instead of one. */
+  it('does not hand a second allowance to the next section', () => {
+    const toc: CompassTocSection[] = [
+      {
+        id: 's1',
+        label: 'S1',
+        status: 'current',
+        children: [
+          { id: 'l1', label: 'L1', status: 'not-started' },
+          { id: 'l2', label: 'L2', status: 'not-started' },
+        ],
+      },
+      { id: 's2', label: 'S2', status: 'not-started' },
+    ]
+    expect(flat(applyCourseSequencing(toc, true)).map((e) => e.status)).toEqual([
+      'current',
+      'not-started',
+      'locked',
+      'locked',
+    ])
+  })
+
+  it('strips onSelect from what it locks, and only from that', () => {
+    const noop = () => {}
+    const toc: CompassTocSection[] = [
+      {
+        id: 's1',
+        label: 'S1',
+        status: 'current',
+        children: [
+          { id: 'open', label: 'Open', status: 'not-started', onSelect: noop },
+          { id: 'shut', label: 'Shut', status: 'not-started', onSelect: noop },
+        ],
+      },
+    ]
+    const [section] = applyCourseSequencing(toc, true)
+    expect(section.children![0].onSelect).toBe(noop)
+    expect(section.children![1].onSelect).toBeUndefined()
+  })
+})
+
+describe('regulated sequencing — how the rail draws it', () => {
+  const LOCKED: CompassTocSection[] = [
+    {
+      id: 's1',
+      label: 'Chapter 1',
+      status: 'current',
+      children: [
+        { id: 'open', label: 'Open lesson', status: 'not-started' },
+        { id: 'shut', label: 'Shut lesson', status: 'locked', onSelect: () => {} },
+      ],
+    },
+  ]
+
+  function renderRail() {
+    return render(
+      <CompassCourseRail courseTitle="Course" progressPct={0} toc={LOCKED} resources={[]} />,
+    )
+  }
+
+  /* ⚠ THE PADLOCK IS `aria-hidden`, like every mark on this rail, so the
+     STATUS IN WORDS is the only thing a screen reader gets. "Not started"
+     there would send a learner hunting for a control that is deliberately
+     not present. */
+  it('states the lock in words, not only in an icon', () => {
+    renderRail()
+    expect(screen.getByText(/Shut lesson/).closest('li')!.textContent).toMatch(/locked/i)
+    expect(screen.getByText(/Open lesson/).closest('li')!.textContent).toMatch(/not started/i)
+  })
+
+  /* BELT AND BRACES. `applyCourseSequencing` strips `onSelect`; this fixture
+     deliberately keeps one, because the rail is the last thing between a
+     locked lesson and a click and must not depend on the map having run. */
+  it('never renders a locked row as a button, even when handed an onSelect', () => {
+    renderRail()
+    const row = screen.getByText(/Shut lesson/).closest('li')!
+    expect(within(row).queryByRole('button')).toBeNull()
+  })
+
+  it('withholds the hover affordance from a locked row', () => {
+    renderRail()
+    const row = screen.getByText(/Shut lesson/).closest('li')!
+    // `.is-upcoming:hover` turns the spine navy and the label dark — an
+    // invitation to click. A locked row gets the muted base without it.
+    expect(row.className).toContain('is-locked')
+    expect(row.className).not.toContain('is-upcoming')
+  })
+})

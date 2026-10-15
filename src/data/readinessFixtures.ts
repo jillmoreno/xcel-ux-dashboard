@@ -1,4 +1,5 @@
 import type { Brand } from '@/context/AccountContext'
+import { DEFAULT_COURSE, type CourseId } from './courseFixtures'
 
 /**
  * Exam Readiness — the data behind the `readiness` rail section.
@@ -104,8 +105,13 @@ export type ReadinessData = {
    * falls back to Florida — the licence every other XCEL fixture is authored
    * against — rather than rendering an empty facts table.
    *
-   * Set by `useReadiness`, not by `readinessForState`, because it comes from the
-   * learner's PATH rather than from the readiness state.
+   * ⚠ SET BY THE FIXTURE SINCE 2026-10-15, not by the caller. It was
+   * documented as "set by `useReadiness`, because it comes from the learner's
+   * PATH rather than from the readiness state" — and nothing ever set it, so
+   * every state fell through to the Florida default. That was invisible while
+   * Florida was the only course. It is the COURSE's jurisdiction now, which is
+   * the same fact the fixture already carries in its `pathTitle`, so the two
+   * cannot disagree.
    */
   examState?: string
   /** 0-100, or `null` for a learner who has answered nothing. `null` is NOT
@@ -153,6 +159,11 @@ export const READINESS_FREQUENCY_NOTE =
  */
 const XCEL_FL_LH_READINESS: ReadinessData = {
   pathTitle: 'Florida Life & Health Pre-Licensing',
+  // STATED rather than left to the fallback, 2026-10-15. `examFactsFor`
+  // defaults to Florida, so this changes nothing on screen — but with a second
+  // course on the axis, "Florida because it was authored as Florida" and
+  // "Florida because nobody said" need to be different things in the file.
+  examState: 'FL',
   score: 47,
   scoreExplanation:
     'This score combines how much of the course you have completed with how you have scored on practice exams and simulator attempts. To improve your chance of passing, aim for the green before your next attempt.',
@@ -224,15 +235,120 @@ const XCEL_FL_LH_READINESS: ReadinessData = {
 }
 
 /**
- * Readiness for a brand. Brand-keyed for the same reason every fixture here is
- * — the `Record<Brand, …>` fails to compile until a new brand has an entry.
+ * Texas Life & Health Pre-Licensing — the Course control's second course,
+ * added 2026-10-15.
+ *
+ * ⚠ IT IS NOT A RELABELLED FLORIDA, and that is the one thing that would have
+ * been easy and wrong. Texas sits its Life & Health candidates on a paper that
+ * splits into a GENERAL KNOWLEDGE portion and a TEXAS-SPECIFIC portion, so the
+ * run below ends in Texas statutes and TDI rules where Florida's ends in three
+ * Florida-law chapters — a different shape, not the same shape with the word
+ * swapped. A reviewer flipping the Course control is meant to see the
+ * curriculum change, not just the heading.
+ *
+ * ⚠ THE OUTLINE IS REPRESENTATIVE, NOT SOURCED. No Texas content outline
+ * exists in this repo, and XCEL's Texas product page has not been read the way
+ * the New York one was on 2026-09-16. The chapter NAMES are plausible demo
+ * content; the SCORES are authored the way Florida's are, to span all three
+ * bands with the pain where it realistically falls.
+ *
+ * TODO(data): replace with XCEL's published Texas Life & Health content
+ * outline. Nothing here should be read as curriculum until that happens.
+ *
+ * The scores are deliberately NOT Florida's: a reviewer holding the two side
+ * by side should be able to tell at a glance that the breakdown re-resolved
+ * rather than re-rendered.
  */
-const READINESS_BY_BRAND: Record<Brand, ReadinessData> = {
-  xcel: XCEL_FL_LH_READINESS,
+const XCEL_TX_LH_READINESS: ReadinessData = {
+  pathTitle: 'Texas Life & Health Pre-Licensing',
+  examState: 'TX',
+  score: 47,
+  scoreExplanation:
+    'This score combines how much of the course you have completed with how you have scored on practice exams and simulator attempts. To improve your chance of passing, aim for the green before your next attempt.',
+  frequencyNote: READINESS_FREQUENCY_NOTE,
+  progress: [
+    { label: 'Course Progress', value: '90%', pct: 90 },
+    { label: 'Chapters Completed', value: '16 of 18' },
+    { label: 'Topics Covered', value: '11 of 13' },
+    { label: 'Total Questions Answered', value: '120 of 200' },
+    { label: 'Answered Correctly', value: '56 of 120' },
+  ],
+  chapters: [
+    { number: '01', title: 'General Insurance Concepts', pct: 44 },
+    { number: '02', title: 'Contract Law & Policy Provisions', pct: 51 },
+    { number: '03', title: 'Types of Life Policies', pct: 62 },
+    { number: '04', title: 'Life Policy Provisions, Options & Riders', pct: 18 },
+    { number: '05', title: 'Annuities', pct: 85 },
+    { number: '06', title: 'Group Life Insurance', pct: 29 },
+    { number: '07', title: 'Life Underwriting & Policy Delivery', pct: 57 },
+    { number: '08', title: 'Accident & Health Policy Provisions', pct: 21 },
+    { number: '09', title: 'Disability Income & Related Insurance', pct: 70 },
+    { number: '10', title: 'Medical Expense & Major Medical Plans', pct: 34 },
+    { number: '11', title: 'Medicare & Medicare Supplements', pct: 63 },
+    { number: '12', title: 'Long-Term Care & the Texas LTC Partnership', pct: 25 },
+    { number: '13', title: 'Managed Care & HMOs', pct: 16 },
+    { number: '14', title: 'Taxation of Life & Health Products', pct: 72 },
+    { number: '15', title: 'Texas Insurance Code — General Provisions', pct: 48 },
+    { number: '16', title: 'Texas Department of Insurance Rules', pct: 41 },
+    { number: '17', title: 'Agent Licensing, Appointment & Renewal (TX)', pct: 88 },
+    { number: '18', title: 'Texas Marketing Practices & Ethics', pct: 66 },
+  ],
+  topics: [
+    { title: 'Policy Options & Riders', pct: 12 },
+    { title: 'Managed Care & HMOs', pct: 18 },
+    { title: 'Texas Portion of Exam', pct: 35 },
+    { title: 'Long-Term Care', pct: 38 },
+    { title: 'Medical Expense Plans', pct: 44 },
+    { title: 'Group Underwriting', pct: 49 },
+    { title: 'Health Policy Provisions', pct: 55 },
+    { title: 'Medicare', pct: 61 },
+    { title: 'Disability Income', pct: 68 },
+    { title: 'Life Policy Types', pct: 73 },
+    { title: 'Taxation', pct: 76 },
+    { title: 'Annuities', pct: 84 },
+    { title: 'Texas Licensing Rules', pct: 93 },
+  ],
+  // The same three XCEL Exam Simulators — they are a PRODUCT, not a state
+  // requirement, so they carry across jurisdictions unchanged. Only the
+  // licensing sitting below is Texas's.
+  practiceExams: [
+    { id: 'pe-sim-3', date: '2026-04-12', score: 81, passed: true, label: 'Exam Simulator 3' },
+    { id: 'pe-sim-2', date: '2026-03-19', score: 88, passed: true, label: 'Exam Simulator 2' },
+    { id: 'pe-sim-1', date: '2026-03-07', score: 39, passed: false, label: 'Exam Simulator 1' },
+  ],
+  licensingExams: [
+    {
+      id: 'le-1',
+      date: '2026-04-15',
+      score: 46,
+      passed: false,
+      // ⚠ INVENTED — the proctor for a Texas sitting is not confirmed. It is
+      // the same guess `EXAM_FACTS_BY_STATE.TX` carries, and the two have to
+      // agree: this label and that `where` sit one tab apart.
+      label: 'Texas Life, Accident & Health Exam · Pearson VUE',
+    },
+  ],
 }
 
-export function readinessFor(brand: Brand): ReadinessData {
-  return READINESS_BY_BRAND[brand]
+/**
+ * Readiness for a brand, per course.
+ *
+ * ⚠ IT WAS KEYED ON BRAND ALONE UNTIL 2026-10-15, and the brand was doing two
+ * jobs: `xcel` meant both "this brand's readiness" and "the Florida Life &
+ * Health course". That was true while Florida was the only course XCEL demoed
+ * and became wrong the moment there were two. The nesting says which is which
+ * — the outer key is the brand (so a `Record<Brand, …>` still fails to compile
+ * until a new brand has an entry), the inner key is the course.
+ */
+const READINESS_BY_BRAND: Record<Brand, Record<CourseId, ReadinessData>> = {
+  xcel: {
+    fl: XCEL_FL_LH_READINESS,
+    tx: XCEL_TX_LH_READINESS,
+  },
+}
+
+export function readinessFor(brand: Brand, course: CourseId = DEFAULT_COURSE): ReadinessData {
+  return READINESS_BY_BRAND[brand][course]
 }
 
 /* ─── Demo states ──────────────────────────────────────────────────────── */
@@ -312,13 +428,23 @@ const STATE_OVERRIDES: Record<
 function progressStatsFor(
   coursePct: number,
   o: (typeof STATE_OVERRIDES)[ReadinessState],
+  base: ReadinessData,
 ): CourseProgressStat[] {
   const pct = Math.max(0, Math.min(100, Math.round(coursePct)))
   const answered = o.score === null ? 0 : 120
+  /* THE DENOMINATORS COME FROM THE COURSE, NOT FROM A LITERAL — 2026-10-15.
+     They were `20` and `14` typed in, which was Florida's chapter and topic
+     count and was correct while Florida was the only course. Texas runs 18
+     chapters and 13 topics, so the literals would have had the stat cell
+     reading "16 of 20" above a breakdown listing eighteen — the same class of
+     disagreement `ProgressAgreement.test.tsx` exists to catch, one panel
+     apart instead of one tab. */
+  const chapters = base.chapters.length
+  const topics = base.topics.length
   return [
     { label: 'Course Progress', value: `${pct}%`, pct },
-    { label: 'Chapters Completed', value: `${Math.round((pct / 100) * 20)} of 20` },
-    { label: 'Topics Covered', value: `${Math.round((pct / 100) * 14)} of 14` },
+    { label: 'Chapters Completed', value: `${Math.round((pct / 100) * chapters)} of ${chapters}` },
+    { label: 'Topics Covered', value: `${Math.round((pct / 100) * topics)} of ${topics}` },
     { label: 'Total Questions Answered', value: `${answered} of 200` },
     { label: 'Answered Correctly', value: `${o.correct} of ${answered}` },
   ]
@@ -337,14 +463,15 @@ export function readinessForState(
   brand: Brand,
   state: ReadinessState,
   coursePct: number,
+  course: CourseId = DEFAULT_COURSE,
 ): ReadinessData {
-  const base = READINESS_BY_BRAND[brand]
+  const base = READINESS_BY_BRAND[brand][course]
   const o = STATE_OVERRIDES[state]
   const empty = state === 'not-started'
   return {
     ...base,
     score: o.score,
-    progress: progressStatsFor(coursePct, o),
+    progress: progressStatsFor(coursePct, o, base),
     chapters: empty ? [] : base.chapters.map((c) => ({ ...c, pct: clampPct(c.pct + o.shift) })),
     topics: empty ? [] : base.topics.map((t) => ({ ...t, pct: clampPct(t.pct + o.shift) })),
     // Attempts accumulate with progress — the simulators are authored newest

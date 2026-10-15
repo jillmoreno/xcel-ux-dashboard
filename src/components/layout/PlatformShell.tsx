@@ -34,7 +34,7 @@ import { useLearningPathSummariesForBrand } from '@/data/learningPathsCountVaria
 import { activePathIdFor, learningPathsFor } from '@/data/learningFixtures'
 import { XCEL_CE_PATH_ID, hasStudyCalendarFor, studyCalendarFor } from '@/data/studyCalendarFixtures'
 import { InlineStudyCalendar } from '@/components/learning/study-calendar/InlineStudyCalendar'
-import { useCeStudyPlanEnabled, useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useCeStudyPlanEnabled, useCourseDemo, useFeatureFlag } from '@/context/FeatureFlagContext'
 import { StudyWeekSummary } from '@/components/learning/study-calendar/StudyWeekSummary'
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { useTheme, type NavVariant } from '@/context/ThemeContext'
@@ -2441,7 +2441,16 @@ function StudyPlanSection() {
   // stays as the fallback for a brand or education type with no persona.
   const progressVariant = useFeatureFlag('dashboard-progress-state').variant ?? 'progress-on-track'
   const educationType = (useFeatureFlag('dashboard-education-type').variant ?? 'ce') as 'ce' | 'qe'
-  const homePersona = dashboardProgressPersonaFor(brand, progressVariant, educationType)
+  // The Course axis (2026-10-15). The shell resolves the path id every other
+  // surface hangs off, so the course has to reach it here or Home switches
+  // course while the Study Plan stays on the old one.
+  const { course: demoCourse } = useCourseDemo()
+  const homePersona = dashboardProgressPersonaFor(
+    brand,
+    progressVariant,
+    educationType,
+    demoCourse,
+  )
   // Validated against the BRAND's paths, not `paths` — that list is filtered by
   // the `learning-paths-count` flag and holds one entry by default, so checking
   // membership there rejected the CE persona's own id and silently fell back to

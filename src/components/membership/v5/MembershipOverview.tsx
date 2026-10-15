@@ -14,7 +14,7 @@ import {
 import { ArrowRight } from '@/icons'
 import { useAccount, supportsMembership } from '@/context/AccountContext'
 import { tierBadgeIcon } from '@/components/ui/membershipTierBadge'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useCourseDemo, useFeatureFlag } from '@/context/FeatureFlagContext'
 import { getCourseImage } from '@/utils/courseImage'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { displayedProgressPct, longDate, resolveRenewal, timeRemainingText } from '@/components/learning/learningPathsHomeUtil'
@@ -371,10 +371,20 @@ export function MembershipOverview({
   // In-shell course launcher for the Study Journey's stops. Safe outside the
   // provider (`available` is false), which is what the standalone pages get.
   const journeyLauncher = useCourseLauncher()
+  /* THE COURSE AXIS — 2026-10-15. Home is where a stakeholder watches the
+     course change, so this is the call that matters most.
+
+     ⚠ THE ONBOARDING HAND-OFF DELIBERATELY DOES NOT TAKE IT. That branch
+     renders what the learner just typed INTO the setup wizard, and the wizard
+     has no course step — handing it a course from the demo bar would put a
+     Texas course under a Florida licence they entered two screens ago. It
+     stays on the default, which is what it resolved to before this axis
+     existed. */
+  const { course: demoCourse } = useCourseDemo()
   const basePersona = personaEnabled
     ? justOnboarded
       ? dashboardProgressPersonaFor(brand, 'setup-complete-0')
-      : dashboardProgressPersonaFor(brand, progressVariant, educationType)
+      : dashboardProgressPersonaFor(brand, progressVariant, educationType, demoCourse)
     : null
   // When reached by finishing onboarding, enrich the setup-complete-0 persona
   // with the entered license + course/modality picks so the Current Learning
