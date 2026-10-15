@@ -67,7 +67,7 @@ beforeEach(() => {
 describe('XCEL dashboard — mount and nav', () => {
   it('mounts and renders the brand lockup', () => {
     renderDashboard()
-    expect(screen.getByText('UX Hub')).toBeInTheDocument()
+    expect(screen.getByText('UX Design Hub')).toBeInTheDocument()
     // Both products, because the hub is now explicitly about both — XCEL LMS
     // alone read as the name of the only thing in here.
     expect(screen.getByText('Atlas LMS & Compass Learning')).toBeInTheDocument()
