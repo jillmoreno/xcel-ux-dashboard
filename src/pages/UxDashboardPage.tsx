@@ -1461,7 +1461,10 @@ export function UxDashboardPage() {
               sitting above a sub-line indented past it. */}
           <span style={brandTextStyle}>
             UX Hub
-            <span style={{ ...brandSubStyle, color: nav.muted }}>XCEL LMS &amp; Compass Learning</span>
+            {/* "Atlas LMS", not "XCEL LMS" — 2026-10-15, Jillienne: the product
+                is XCEL, the dashboard being built is Atlas, and the lockup
+                names the two surfaces the Hub holds — Atlas and Compass. */}
+            <span style={{ ...brandSubStyle, color: nav.muted }}>Atlas LMS &amp; Compass Learning</span>
             {/* WHICH DASHBOARD YOU ARE ON — 2026-09-24. The two builds are
                 otherwise told apart only by which sections are in the rail,
                 which you have to already know to read. `isPublicGateway()` is
