@@ -316,8 +316,11 @@ describe('Rubi rebuilds the plan', () => {
 })
 
 describe('the Overview reads the same plan', () => {
-  it('Tonight is the plan’s first session, and the rail opens the planner', () => {
+  it('Tonight is the plan’s first session, under her header, and the rail opens the planner', () => {
     renderCompass()
+    expect(screen.getByRole('heading', { level: 1, name: 'Your learning journey' })).toBeTruthy()
+    expect(screen.getByText('Welcome back, Jordan')).toBeTruthy()
+    expect(screen.queryByText('Compass Learning')).toBeNull()
     expect(screen.getByText('Policy provisions · 1h 30m')).toBeTruthy()
     expect(screen.getByText('Session 1 of 4 this week.')).toBeTruthy()
     expect(screen.getByText('4 sessions · 6h left')).toBeTruthy()

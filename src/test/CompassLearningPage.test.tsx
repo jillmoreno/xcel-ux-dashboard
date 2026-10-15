@@ -85,20 +85,22 @@ describe('the Compass Learning page', () => {
     const table = screen.getByRole('table')
     for (const a of COMPASS_ASSIGNMENTS) {
       expect(within(table).getByText(a.name), `${a.name} missing`).toBeTruthy()
-      expect(within(table).getByText(a.readinessLabel), `${a.name} readiness`).toBeTruthy()
+      /* The label, not its hover tooltip, which repeats the state's name. */
+      expect(within(table).getByText(a.readinessLabel, { selector: '.cre-ov__rlabel' }), `${a.name} readiness`).toBeTruthy()
     }
   })
 
-  it('offers an action only where there is one to take', () => {
-    /* Done topics and the locked simulator offer nothing — a button on those
-       rows would be a dead control in a page full of live ones. */
+  it('draws no action column — the two routes into the session are Start session and Start practice', () => {
+    /* ⚠ FLIPPED 2026-10-15 from "offers an action only where there is one".
+       The 09-23 port drew Practice again / Continue / Start in a fourth
+       column; Anjani's second master's table has none, and this body is a
+       transcription of her file on both arms. */
     renderPage()
     const table = screen.getByRole('table')
-    expect(within(table).getByRole('button', { name: 'Continue' })).toBeTruthy()
-    expect(within(table).getByRole('button', { name: 'Practice again' })).toBeTruthy()
-    expect(within(table).queryAllByRole('button')).toHaveLength(
-      COMPASS_ASSIGNMENTS.filter((a) => a.action).length,
-    )
+    expect(within(table).queryAllByRole('button')).toHaveLength(0)
+    expect(within(table).getAllByRole('columnheader').map((th) => th.textContent)).toEqual(['Assignment', 'Readiness', 'Due'])
+    expect(screen.getByRole('button', { name: 'Start session' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Start practice' })).toBeTruthy()
   })
 
   it('keeps the exam-date strip honest about what it can change', () => {

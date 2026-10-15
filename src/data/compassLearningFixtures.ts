@@ -19,6 +19,29 @@
  * ring reads a persona and the table does not, is the state worth avoiding.
  */
 
+/** The page header on Anjani's surface — hers, not the Figma frame's "Let's
+ *  get started / Compass Learning", which stays on the `atlas` arm. ⚠ The
+ *  exam date here (Aug 14, 8 days out) disagrees with the planner's Nov 20;
+ *  that is her file's own inconsistency, carried faithfully. */
+export const COMPASS_OVERVIEW_HEADER = {
+  welcome: 'Welcome back, Jordan',
+  title: 'Your learning journey',
+  metaLead: 'Life & Health · Florida · Exam Aug 14 · ',
+  metaStrong: '8 days out',
+}
+
+/** "How do we figure this out?" — the popover behind the ring's question. */
+export const COMPASS_READINESS_EXPLAINER = {
+  title: 'How we figure this out',
+  body: "We look at how much of the exam you've practiced and how well you're doing on it. Topics that count more on the real exam count more here too.",
+  makeup: [
+    { tone: 'proven', share: '62% Proven', note: "practiced until it's solid" },
+    { tone: 'covered', share: '25% Covered', note: 'read, not yet proven' },
+    { tone: 'new', share: '13% New', note: 'not yet tested' },
+  ],
+  foot: 'It changes as you go — every practice set, flashcard round, and exam-sim question moves it.',
+} as const
+
 /** The Tonight card's two labels. ⚠ EVERYTHING ELSE IT SAID — the date, the
  *  session, "Session 3 of 5", the week strip and its sentence — now comes from
  *  the plan (`compassPlanStore`), 2026-10-15, so the card and the Study
@@ -63,8 +86,9 @@ export type CompassAssignment = {
   /** 0–100. The bar is the label's evidence, not a second claim. */
   barPct: number
   due: string
-  /** Absent ⇒ no button. Done topics and a locked one offer nothing. */
-  action?: string
+  /** The hover tooltip on the readiness label — the state's name, then what
+   *  it means for this topic. Hers, word for word. */
+  tip: { head: string; body: string }
 }
 
 export const COMPASS_ASSIGNMENTS: readonly CompassAssignment[] = [
@@ -75,6 +99,7 @@ export const COMPASS_ASSIGNMENTS: readonly CompassAssignment[] = [
     readinessLabel: 'Proven',
     barPct: 100,
     due: 'Done',
+    tip: { head: 'Proven', body: "Practiced until it's solid, and proved on a scored check. This topic is holding your readiness up." },
   },
   {
     name: 'Provisions',
@@ -83,7 +108,7 @@ export const COMPASS_ASSIGNMENTS: readonly CompassAssignment[] = [
     readinessLabel: 'Not proven',
     barPct: 52,
     due: 'Done',
-    action: 'Practice again',
+    tip: { head: 'Not proven', body: "You've finished the course, but your scored answers don't yet match how sure you felt. More practice closes the gap." },
   },
   {
     name: 'Annuities',
@@ -92,7 +117,7 @@ export const COMPASS_ASSIGNMENTS: readonly CompassAssignment[] = [
     readinessLabel: 'In progress · 10 min left',
     barPct: 80,
     due: 'Aug 9',
-    action: 'Continue',
+    tip: { head: 'In progress', body: "You're partway through the course. Readiness fills in as you finish and prove it on a check." },
   },
   {
     name: 'Health & disability',
@@ -101,7 +126,7 @@ export const COMPASS_ASSIGNMENTS: readonly CompassAssignment[] = [
     readinessLabel: 'Not started · 20 min',
     barPct: 0,
     due: 'Aug 11',
-    action: 'Start',
+    tip: { head: 'Not started', body: 'Nothing done yet. 20% of the exam comes from this one — worth starting soon.' },
   },
   {
     name: 'Exam Simulator',
@@ -110,6 +135,7 @@ export const COMPASS_ASSIGNMENTS: readonly CompassAssignment[] = [
     readinessLabel: 'Locked · unlocks Aug 13',
     barPct: 0,
     due: 'Aug 13',
+    tip: { head: 'Locked', body: "Your group's exam window opens Aug 13 — it'll unlock then." },
   },
 ]
 

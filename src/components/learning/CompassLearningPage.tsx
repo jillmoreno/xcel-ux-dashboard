@@ -2,7 +2,7 @@ import { useState, type CSSProperties } from 'react'
 import { CompassSidebar, CompassPageBody, type CompassPage } from './CompassCoursePlayer'
 import { HYBRID_COMPASS_PAGES } from './compassPages'
 import { CompassRail } from './CompassRail'
-import { CompassLearningOverview } from './CompassLearningOverview'
+import { CompassLearningOverview, OverviewHeader } from './CompassLearningOverview'
 import { CompassCourseLanding } from './CompassCourseLanding'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { useNavPlacement } from '@/components/layout/navPlacement'
@@ -103,16 +103,24 @@ export function CompassLearningPage({
            it stands where the scroll column would be rather than inside it. */
         <CompassStudyPlanner />
       ) : (
-      <div style={mainStyle}>
+      <div style={hybrid ? mainAnjaniStyle : mainStyle}>
         {page === 'overview' ? (
           <>
-            <header style={headerStyle}>
-              <div style={{ minWidth: 0 }}>
-                <p style={eyebrowStyle}>Let’s get started</p>
-                <h1 style={titleStyle}>Compass Learning</h1>
-              </div>
-              <ExamDateStrip />
-            </header>
+            {/* ⚠ TWO HEADERS. Hers — "Welcome back, Jordan / Your learning
+                journey" — on her surface (2026-10-15, "the overview page does
+                not match anjanis link"); the Figma frame's "Let's get started /
+                Compass Learning" with the exam strip stays on the atlas arm. */}
+            {hybrid ? (
+              <OverviewHeader />
+            ) : (
+              <header style={headerStyle}>
+                <div style={{ minWidth: 0 }}>
+                  <p style={eyebrowStyle}>Let’s get started</p>
+                  <h1 style={titleStyle}>Compass Learning</h1>
+                </div>
+                <ExamDateStrip />
+              </header>
+            )}
             <CompassLearningOverview onStartSession={onStartSession} onViewPlan={() => setPage('study-planner')} />
           </>
         ) : hybrid && page === 'course' ? (
@@ -165,6 +173,15 @@ const pageStyle: CSSProperties = {
 }
 /* The scroll container. The sidebar stays put and this column moves, which is
    what the frame draws and what the player does. */
+/* Her `#screen-dashboard .main`: 36/44 padding, 1120 wide, the long bottom
+   pad that keeps the last band clear of the docked Ask Rubi bar in her file. */
+const mainAnjaniStyle: CSSProperties = {
+  flex: 1,
+  minWidth: 0,
+  minHeight: 0,
+  overflowY: 'auto',
+  padding: '36px 44px 140px',
+}
 const mainStyle: CSSProperties = {
   flex: 1,
   minWidth: 0,

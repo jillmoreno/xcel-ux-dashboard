@@ -1,11 +1,13 @@
-import { useState, type CSSProperties } from 'react'
+import { useState } from 'react'
 import { ArrowRight, Check, ChevronRight, CircleInfo, Lock, RubiLogo } from '@/icons'
 import {
   COMPASS_ASSIGNMENTS,
   COMPASS_ASSIGNMENTS_SUMMARY,
   COMPASS_INSIGHTS,
   COMPASS_INSIGHTS_CAPTION,
+  COMPASS_OVERVIEW_HEADER,
   COMPASS_READINESS,
+  COMPASS_READINESS_EXPLAINER,
   COMPASS_TONIGHT,
   type AssignmentState,
 } from '@/data/compassLearningFixtures'
@@ -13,29 +15,32 @@ import { DOW_SHORT, fmtHM } from './compassStudyPlannerModel'
 import { returnInfo, schedule, tonight, tonightOff, tonightUndo, weekItems, weekSummary } from './compassPlanStore'
 import { useCompassPlan } from './compassPlanHooks'
 import './compassStudyPlanner.css'
+import './compassOverview.css'
 
 /**
- * The Compass Learning overview body — Figma 765:3471.
+ * The Compass Learning overview body — Anjani's `screen-dashboard`.
  *
- * Four bands: TONIGHT (the one session to do), WHERE YOU ARE (the readiness
- * ring plus Rubi's nudge), YOUR ASSIGNMENTS (the topic table) and WHAT YOUR
- * ANSWERS SHOW.
+ * First built 2026-09-23 off the Figma frame (765:3471), whose body is two
+ * pasted screenshots of her prototype; redrawn 2026-10-15 from her second
+ * master, class for class (`compassOverview.css`), after "the overview page
+ * does not match anjanis link". Four bands: TONIGHT (read from the plan),
+ * WHERE YOU ARE (the ring, its explainer popover, Rubi's nudge), YOUR
+ * ASSIGNMENTS (the table, with her hover tooltips on each readiness label),
+ * and WHAT YOUR ANSWERS SHOW.
  *
- * ⚠ A SIBLING OF `CompassOverviewSections`, NOT A REPLACEMENT FOR IT. That one
- * renders the same four bands as lo-fi blocks and is what the COURSE LAUNCHER
- * still shows; this is the populated version the TOP NAV opens. Forking rather
- * than filling in the placeholders is deliberate — the lo-fi Overview is a
- * live prototype surface with its own note explaining why it is bare, and
- * replacing its body would have quietly retired that argument. See
- * `compassLearningFixtures` for where the content came from.
+ * ⚠ THE HEADER IS THE PAGE'S, NOT THIS BODY'S. On Anjani's surface
+ * `CompassLearningPage` draws her "Welcome back, Jordan / Your learning
+ * journey" (`OverviewHeader` below); on the `atlas` arm it keeps the Figma
+ * frame's "Let's get started / Compass Learning" and the exam strip.
  *
- * ⚠ THREE CONTROLS GO SOMEWHERE; THE REST DO NOT. Start session, Start
- * practice and the table's Continue / Start / Practice again all open the
- * SESSION (`CompassSessionPage`), which is what they do in the prototype. Every
- * other control here — the skip link, Change your plan, How do we figure this
- * out, the insight links — is inert by design: the figures behind them are demo
- * data, so wiring them would claim a connection this page does not have. They
- * are `<button>`s only where the design draws a button.
+ * ⚠ THE TABLE HAS NO ACTION BUTTONS NOW. The 2026-09-23 port drew Practice
+ * again / Continue / Start in a fourth column, reasoning that one destination
+ * with three routes made the page feel like one thing. Her second master's
+ * table has an empty fourth column and no buttons; the two routes into the
+ * session are Start session and Start practice, as she draws them.
+ *
+ * ⚠ A SIBLING OF `CompassOverviewSections`, NOT A REPLACEMENT FOR IT — that
+ * one is the lo-fi Overview the course launcher still shows.
  */
 
 export function CompassLearningOverview({
@@ -47,26 +52,40 @@ export function CompassLearningOverview({
   onViewPlan?: () => void
 }) {
   return (
-    <div style={columnStyle}>
+    <div className="cre-ov">
       <TonightCallout onStart={onStartSession} onViewPlan={onViewPlan} />
       <ReadinessBand onStart={onStartSession} />
-      <AssignmentsTable onStart={onStartSession} />
+      <AssignmentsTable />
       <InsightsBand />
     </div>
+  )
+}
+
+/** Her page header — drawn by `CompassLearningPage` above this body on
+ *  Anjani's surface. */
+export function OverviewHeader() {
+  const h = COMPASS_OVERVIEW_HEADER
+  return (
+    <header className="cre-ov cre-ov__hdr">
+      <p className="cre-ov__welcome">{h.welcome}</p>
+      <h1 className="cre-ov__h1">{h.title}</h1>
+      <p className="cre-ov__meta">
+        {h.metaLead}
+        <b>{h.metaStrong}</b>
+      </p>
+    </header>
   )
 }
 
 /* ─── TONIGHT ──────────────────────────────────────────────────────────── */
 
 /**
- * ⚠ READ FROM THE PLAN, NOT THE FIXTURE — 2026-10-15, her second master:
- * "the Tonight card and the strip share one source of truth." The date, the
- * session and "Session 1 of 4 this week" come from `compassPlanStore`'s
- * schedule, so they agree with the Study planner to the day; "Can't study
- * tonight" takes tonight off in that same plan, says what moved, and can be
- * undone. The week strip is hidden by default ("Jeff didn't want it there
- * all the time") behind a Show my week switch, and "View your plan" opens the
- * planner. `COMPASS_TONIGHT` keeps only the two labels.
+ * ⚠ READ FROM THE PLAN, NOT A FIXTURE — "the Tonight card and the strip share
+ * one source of truth." The date, the session and "Session 1 of 4 this week"
+ * come from `compassPlanStore`'s schedule, so they agree with the Study
+ * planner to the day; "Can't study tonight" takes tonight off in that same
+ * plan, says what moved, and can be undone. The week strip is hidden by
+ * default behind Show my week; "View your plan" opens the planner.
  */
 function TonightCallout({ onStart, onViewPlan }: { onStart?: () => void; onViewPlan?: () => void }) {
   const { plan, dispatch, controls } = useCompassPlan()
@@ -75,34 +94,28 @@ function TonightCallout({ onStart, onViewPlan }: { onStart?: () => void; onViewP
   const t = tonight(plan, sched)
   const items = weekItems(plan, sched)
   const R = plan.tonightUndo ? null : returnInfo(plan, controls.returnVer)
-  const go = R
-    ? R.catchup
-      ? `Quick review first: ${R.recap.join(' and ')}`
-      : R.next
-        ? `${R.isToday ? 'Tonight' : 'Next'}: ${R.next.topic}`
-        : ''
-    : ''
+  const go = R ? (R.catchup ? `Quick review first: ${R.recap.join(' and ')}` : R.next ? `${R.isToday ? 'Tonight' : 'Next'}: ${R.next.topic}` : '') : ''
   return (
     <section>
-      <p style={eyebrowStyle}>Tonight</p>
-      <div style={calloutStyle}>
-        <div style={calloutRowStyle}>
-          <div>
-            <div style={dateNumberStyle}>{t.dayNumber}</div>
-            <div style={dateDayStyle}>{t.dayName}</div>
+      <p className="cre-ov__eyebrow">Tonight</p>
+      <div className="cre-ov__callout">
+        <div className="cre-ov__row">
+          <div className="cre-ov__date">
+            {t.dayNumber}
+            <span>{t.dayName}</span>
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={calloutTitleStyle}>{t.title}</div>
-            <div style={calloutDetailStyle}>{t.subline}</div>
+            <div className="cre-ov__title">{t.title}</div>
+            <div className="cre-ov__sub">{t.subline}</div>
           </div>
           {t.canSkip ? (
-            <button type="button" style={skipStyle} onClick={() => dispatch(tonightOff)}>
+            <button type="button" className="cre-ov__skip" onClick={() => dispatch(tonightOff)}>
               {COMPASS_TONIGHT.skipLabel}
             </button>
           ) : (
             <span />
           )}
-          <button type="button" style={filledButtonStyle} onClick={onStart}>
+          <button type="button" className="cre-ov__btn" onClick={onStart}>
             <ChevronRight size={12} aria-hidden />
             {t.startLabel}
           </button>
@@ -117,7 +130,7 @@ function TonightCallout({ onStart, onViewPlan }: { onStart?: () => void; onViewP
               </span>
               Show my week
             </button>
-            <button type="button" style={quietLinkStyle} onClick={onViewPlan}>
+            <button type="button" className="cre-ov__link" onClick={onViewPlan}>
               {COMPASS_TONIGHT.planLabel}
               <ArrowRight size={14} aria-hidden />
             </button>
@@ -189,47 +202,63 @@ function TonightCallout({ onStart, onViewPlan }: { onStart?: () => void; onViewP
 
 function ReadinessBand({ onStart }: { onStart?: () => void }) {
   const { percent, ringLabel, lead, explainLabel, rubi, eyebrow, tag } = COMPASS_READINESS
+  const x = COMPASS_READINESS_EXPLAINER
   return (
     <section>
-      <p style={{ ...eyebrowStyle, display: 'flex', alignItems: 'center', gap: 10 }}>
+      <p className="cre-ov__eyebrow cre-ov__eyebrow--where">
         {eyebrow}
-        <span style={tagStyle}>{tag}</span>
+        <span className="cre-ov__tag">{tag}</span>
       </p>
-      <div style={readinessGridStyle}>
-        {/* The ring is a conic sweep with a punched-out centre — the same
-            construction the prototype uses. `role="img"` with the percentage
-            in the label, because the number inside is drawn in two pieces
-            (numeral, then a superscript %) and would otherwise be read apart. */}
+      <div className="cre-ov__where">
+        {/* The ring is a conic sweep with a punched-out centre. `role="img"`
+            with the percentage in the label, because the number inside is
+            drawn in two pieces and would otherwise be read apart. */}
         <div
           role="img"
           aria-label={`${percent}% ready`}
-          style={{
-            ...ringStyle,
-            background: `conic-gradient(var(--color-primary-500) ${percent}%, var(--color-border-subtle) 0)`,
-          }}
+          className="cre-ov__ring"
+          style={{ background: `conic-gradient(var(--color-primary-500) ${percent}%, var(--color-compass-page-ring-1) 0)` }}
         >
-          <span aria-hidden style={ringHoleStyle} />
-          <span aria-hidden style={ringFigureStyle}>
+          <span aria-hidden className="cre-ov__ring-inner" />
+          <b aria-hidden>
             {percent}
-            <sup style={ringSupStyle}>%</sup>
-            <span style={ringLabelStyle}>{ringLabel}</span>
-          </span>
+            <sup>%</sup>
+            <span>{ringLabel}</span>
+          </b>
         </div>
-        <div>
-          <p style={leadStyle}>{lead}</p>
-          <button type="button" style={explainStyle}>
-            <CircleInfo size={15} aria-hidden />
-            {explainLabel}
-          </button>
+        <div className="cre-ov__lead">
+          <p>{lead}</p>
+          {/* Her explainer: a hover / focus popover with the make-up of the
+              figure. */}
+          <div className="cre-ov__calc">
+            <button type="button" aria-describedby="cre-ov-explainer">
+              <CircleInfo size={15} aria-hidden />
+              {explainLabel}
+            </button>
+            <div className="cre-ov__pop" id="cre-ov-explainer" role="tooltip">
+              <h4>{x.title}</h4>
+              <p>{x.body}</p>
+              <div className="cre-ov__make">
+                {x.makeup.map((m) => (
+                  <div key={m.tone}>
+                    <span className={`sw sw--${m.tone}`} aria-hidden />
+                    <b>{m.share}</b>
+                    <span>{m.note}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="foot">{x.foot}</p>
+            </div>
+          </div>
         </div>
-        <div style={rubiPanelStyle}>
-          <p style={rubiEyebrowStyle}>
+        <div className="cre-ov__rubi">
+          <p className="k">
             <RubiLogo size={13} aria-hidden />
             {rubi.eyebrow}
           </p>
-          <h3 style={rubiTitleStyle}>{rubi.title}</h3>
-          <p style={rubiDetailStyle}>{rubi.detail}</p>
-          <button type="button" style={outlineButtonStyle} onClick={onStart}>
+          <h3>{rubi.title}</h3>
+          <p>{rubi.detail}</p>
+          <button type="button" className="cre-ov__btn cre-ov__btn--out" onClick={onStart}>
             {rubi.action}
           </button>
         </div>
@@ -240,59 +269,49 @@ function ReadinessBand({ onStart }: { onStart?: () => void }) {
 
 /* ─── YOUR ASSIGNMENTS ─────────────────────────────────────────────────── */
 
-function AssignmentsTable({ onStart }: { onStart?: () => void }) {
+function AssignmentsTable() {
   return (
     <section>
-      <p style={{ ...eyebrowStyle, display: 'flex', gap: 14, alignItems: 'baseline' }}>
+      <p className="cre-ov__eyebrow" style={{ margin: '34px 0 4px', alignItems: 'baseline', gap: 14 }}>
         Your assignments
-        <span style={summaryStyle}>{COMPASS_ASSIGNMENTS_SUMMARY}</span>
+        <span className="stat">{COMPASS_ASSIGNMENTS_SUMMARY}</span>
       </p>
-      <table style={tableStyle}>
+      <table className="cre-ov__table">
         <thead>
           <tr>
-            <th style={thStyle}>Assignment</th>
-            <th style={{ ...thStyle, width: '40%' }}>Readiness</th>
-            <th style={thStyle}>Due</th>
-            {/* Named for assistive tech even though the column is visually
-                blank — a bare `<th>` leaves the action buttons in an unlabelled
-                column. */}
-            <th style={{ ...thStyle, textAlign: 'right' }}>
-              <span style={srOnlyStyle}>Action</span>
-            </th>
+            <th>Assignment</th>
+            <th style={{ width: '40%' }}>Readiness</th>
+            <th>Due</th>
           </tr>
         </thead>
         <tbody>
           {COMPASS_ASSIGNMENTS.map((a) => (
             <tr key={a.name}>
-              <td style={tdStyle}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <td>
+                <div className="cre-ov__aname">
                   <Marker state={a.state} />
                   <div style={{ minWidth: 0 }}>
-                    <div style={assignmentNameStyle(a.state)}>{a.name}</div>
-                    <div style={assignmentWeightStyle}>{a.weight}</div>
+                    <div className={`nm${a.state === 'locked' ? ' nm--muted' : ''}`}>{a.name}</div>
+                    <div className="wt">{a.weight}</div>
                   </div>
                 </div>
               </td>
-              <td style={tdStyle}>
-                <span style={readinessLabelStyle(a.state)}>{a.readinessLabel}</span>
-                <div style={barTrackStyle}>
-                  <span
-                    style={{ ...barFillStyle, width: `${a.barPct}%`, background: barFill(a.state) }}
-                  />
+              <td>
+                <span className="cre-ov__tt-wrap">
+                  <span className={`cre-ov__rlabel cre-ov__rlabel--${a.state}`} tabIndex={0} aria-describedby={`cre-ov-tt-${a.name}`}>
+                    {a.readinessLabel}
+                  </span>
+                  <span className="cre-ov__tt" id={`cre-ov-tt-${a.name}`} role="tooltip">
+                    <span className="th">{a.tip.head}</span>
+                    <span className="tb">{a.tip.body}</span>
+                  </span>
+                </span>
+                <div className="cre-ov__pbar">
+                  {a.state === 'locked' ? null : <i className={a.state} style={{ width: `${a.barPct}%` }} />}
                 </div>
               </td>
-              <td style={{ ...tdStyle, color: 'var(--color-text-secondary)', fontSize: 13 }}>
-                {a.due}
-              </td>
-              <td style={{ ...tdStyle, textAlign: 'right' }}>
-                {a.action ? (
-                  /* Practice again / Continue / Start all open the session, as
-                     they do in the prototype — one destination, three routes
-                     into it, which is what makes the page feel like one thing. */
-                  <button type="button" style={outlineButtonStyle} onClick={onStart}>
-                    {a.action}
-                  </button>
-                ) : null}
+              <td>
+                <span className="cre-ov__due">{a.due}</span>
               </td>
             </tr>
           ))}
@@ -303,53 +322,29 @@ function AssignmentsTable({ onStart }: { onStart?: () => void }) {
 }
 
 function Marker({ state }: { state: AssignmentState }) {
-  if (state === 'proven' || state === 'not-proven') {
-    const fill = state === 'proven' ? 'var(--color-success-600)' : 'var(--color-warning-600)'
-    return (
-      <span aria-hidden style={{ ...markerStyle, background: fill, color: '#fff' }}>
-        <Check size={13} />
-      </span>
-    )
-  }
-  if (state === 'locked') {
-    return (
-      <span
-        aria-hidden
-        style={{ ...markerStyle, background: 'var(--color-text-primary)', color: '#fff' }}
-      >
-        <Lock size={12} />
-      </span>
-    )
-  }
-  /* In progress and not started differ only by ring colour — the state's word
-     is in the readiness cell, so the marker never has to carry it alone. */
-  const ring =
-    state === 'in-progress' ? 'var(--color-primary-500)' : 'var(--color-border-subtle)'
-  return <span aria-hidden style={{ ...markerStyle, border: `2px solid ${ring}` }} />
-}
-
-function barFill(state: AssignmentState): string {
-  if (state === 'proven') return 'var(--color-success-600)'
-  if (state === 'not-proven') return 'var(--color-warning-600)'
-  return 'var(--color-primary-500)'
+  return (
+    <span aria-hidden className={`cre-ov__marker cre-ov__marker--${state}`}>
+      {state === 'proven' || state === 'not-proven' ? <Check size={13} /> : state === 'locked' ? <Lock size={12} /> : null}
+    </span>
+  )
 }
 
 /* ─── WHAT YOUR ANSWERS SHOW ───────────────────────────────────────────── */
 
 function InsightsBand() {
   return (
-    <section style={insightsSectionStyle}>
-      <p style={{ ...eyebrowStyle, display: 'flex', gap: 12, alignItems: 'baseline' }}>
-        What your answers show
-        <span style={summaryStyle}>{COMPASS_INSIGHTS_CAPTION}</span>
-      </p>
-      <div style={insightsGridStyle}>
+    <section className="cre-ov__insights">
+      <div className="cre-ov__ins-head">
+        <span className="e">What your answers show</span>
+        <span className="c">{COMPASS_INSIGHTS_CAPTION}</span>
+      </div>
+      <div className="cre-ov__ins-grid">
         {COMPASS_INSIGHTS.map((ins) => (
-          <div key={ins.tag} style={insightStyle}>
-            <p style={insightTagStyle}>{ins.tag}</p>
-            <h4 style={insightHeadlineStyle}>{ins.headline}</h4>
-            <p style={insightDetailStyle}>{ins.detail}</p>
-            <button type="button" style={quietLinkStyle}>
+          <div key={ins.tag} className="cre-ov__ins">
+            <p className="tag2">{ins.tag}</p>
+            <h4>{ins.headline}</h4>
+            <p>{ins.detail}</p>
+            <button type="button" className="cre-ov__link">
               {ins.action}
               <ArrowRight size={14} aria-hidden />
             </button>
@@ -358,311 +353,4 @@ function InsightsBand() {
       </div>
     </section>
   )
-}
-
-/* ─── styles ───────────────────────────────────────────────────────────── */
-
-const columnStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 34,
-  maxWidth: 1120,
-}
-const eyebrowStyle: CSSProperties = {
-  margin: '0 0 12px',
-  fontSize: 11,
-  letterSpacing: '0.14em',
-  textTransform: 'uppercase',
-  color: 'var(--color-text-secondary)',
-}
-const summaryStyle: CSSProperties = {
-  fontSize: 12,
-  letterSpacing: 0,
-  textTransform: 'none',
-  fontWeight: 400,
-  color: 'var(--color-text-tertiary)',
-}
-const calloutStyle: CSSProperties = {
-  background: 'var(--color-surface-card)',
-  border: '1px solid var(--color-border-subtle)',
-  borderRadius: 14,
-  padding: '22px 26px',
-}
-const calloutRowStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'auto 1fr auto auto',
-  gap: 22,
-  alignItems: 'center',
-}
-const dateNumberStyle: CSSProperties = {
-  fontFamily: 'var(--font-heading, Georgia, serif)',
-  fontSize: 34,
-  fontWeight: 500,
-  lineHeight: 1,
-  color: 'var(--color-text-primary)',
-}
-const dateDayStyle: CSSProperties = {
-  fontSize: 12,
-  color: 'var(--color-text-secondary)',
-  marginTop: 2,
-}
-const calloutTitleStyle: CSSProperties = {
-  fontFamily: 'var(--font-heading, Georgia, serif)',
-  fontSize: 20,
-  fontWeight: 600,
-  letterSpacing: '-0.01em',
-  color: 'var(--color-text-primary)',
-}
-const calloutDetailStyle: CSSProperties = {
-  color: 'var(--color-text-secondary)',
-  fontSize: 13.5,
-  marginTop: 3,
-}
-const skipStyle: CSSProperties = {
-  color: 'var(--color-text-secondary)',
-  fontSize: 13,
-  background: 'transparent',
-  border: 'none',
-  cursor: 'pointer',
-  textDecoration: 'underline',
-  textUnderlineOffset: 3,
-  fontFamily: 'inherit',
-  whiteSpace: 'nowrap',
-}
-const filledButtonStyle: CSSProperties = {
-  background: 'var(--color-primary-500)',
-  color: 'var(--color-text-inverse)',
-  border: 'none',
-  borderRadius: 9,
-  padding: '11px 18px',
-  fontWeight: 600,
-  fontSize: 13.5,
-  cursor: 'pointer',
-  fontFamily: 'inherit',
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 7,
-  whiteSpace: 'nowrap',
-}
-const outlineButtonStyle: CSSProperties = {
-  background: 'transparent',
-  color: 'var(--color-primary-700)',
-  border: '1px solid var(--color-primary-700)',
-  borderRadius: 9,
-  padding: '7px 14px',
-  fontWeight: 600,
-  fontSize: 13,
-  cursor: 'pointer',
-  fontFamily: 'inherit',
-  whiteSpace: 'nowrap',
-}
-const quietLinkStyle: CSSProperties = {
-  color: 'var(--color-primary-700)',
-  fontWeight: 600,
-  fontSize: 13,
-  background: 'transparent',
-  border: 'none',
-  padding: 0,
-  cursor: 'pointer',
-  fontFamily: 'inherit',
-  whiteSpace: 'nowrap',
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 6,
-}
-const tagStyle: CSSProperties = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: 'var(--color-primary-700)',
-  background: 'var(--color-primary-100)',
-  border: '1px solid var(--color-primary-200)',
-  padding: '2px 10px',
-  borderRadius: 20,
-  textTransform: 'none',
-  letterSpacing: 0,
-}
-const readinessGridStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: '170px minmax(0, 1fr) 400px',
-  gap: 30,
-  alignItems: 'center',
-  paddingBottom: 28,
-  borderBottom: '1px solid var(--color-border-subtle)',
-}
-const ringStyle: CSSProperties = {
-  width: 160,
-  height: 160,
-  borderRadius: '50%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  position: 'relative',
-}
-const ringHoleStyle: CSSProperties = {
-  position: 'absolute',
-  inset: 14,
-  background: 'var(--color-surface-card)',
-  borderRadius: '50%',
-}
-const ringFigureStyle: CSSProperties = {
-  position: 'relative',
-  fontFamily: 'var(--font-heading, Georgia, serif)',
-  fontSize: 34,
-  fontWeight: 600,
-  lineHeight: 1,
-  textAlign: 'center',
-  color: 'var(--color-text-primary)',
-}
-const ringSupStyle: CSSProperties = { fontSize: 16, fontWeight: 500, marginLeft: 1 }
-const ringLabelStyle: CSSProperties = {
-  display: 'block',
-  fontFamily: 'var(--font-body)',
-  fontSize: 10,
-  letterSpacing: '0.14em',
-  color: 'var(--color-text-secondary)',
-  fontWeight: 600,
-  marginTop: 3,
-  textTransform: 'uppercase',
-}
-const leadStyle: CSSProperties = {
-  margin: 0,
-  fontSize: 15,
-  lineHeight: 1.6,
-  maxWidth: '46ch',
-  color: 'var(--color-text-primary)',
-}
-const explainStyle: CSSProperties = {
-  ...quietLinkStyle,
-  marginTop: 14,
-  fontWeight: 500,
-  fontSize: 14,
-  textDecoration: 'underline',
-  textUnderlineOffset: 3,
-}
-const rubiPanelStyle: CSSProperties = {
-  borderLeft: '2px solid var(--color-error-600, #b23b2e)',
-  paddingLeft: 20,
-}
-const rubiEyebrowStyle: CSSProperties = {
-  margin: '0 0 7px',
-  fontSize: 11,
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase',
-  color: 'var(--color-error-600, #b23b2e)',
-  fontWeight: 700,
-  display: 'flex',
-  alignItems: 'center',
-  gap: 6,
-}
-const rubiTitleStyle: CSSProperties = {
-  margin: '0 0 8px',
-  fontFamily: 'var(--font-heading, Georgia, serif)',
-  fontWeight: 500,
-  fontSize: 19,
-  lineHeight: 1.28,
-  color: 'var(--color-text-primary)',
-}
-const rubiDetailStyle: CSSProperties = {
-  color: 'var(--color-text-secondary)',
-  fontSize: 13.5,
-  lineHeight: 1.5,
-  margin: '0 0 14px',
-}
-const tableStyle: CSSProperties = { width: '100%', borderCollapse: 'collapse', marginTop: 12 }
-const thStyle: CSSProperties = {
-  textAlign: 'left',
-  fontSize: 11,
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase',
-  color: 'var(--color-text-secondary)',
-  fontWeight: 600,
-  padding: '10px 12px',
-  borderBottom: '1px solid var(--color-border-subtle)',
-}
-const tdStyle: CSSProperties = {
-  padding: '16px 12px',
-  borderBottom: '1px solid var(--color-border-subtle)',
-  fontSize: 14,
-  verticalAlign: 'middle',
-}
-const markerStyle: CSSProperties = {
-  width: 24,
-  height: 24,
-  borderRadius: '50%',
-  flex: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  boxSizing: 'border-box',
-}
-const assignmentNameStyle = (state: AssignmentState): CSSProperties => ({
-  fontSize: 14.5,
-  color: state === 'locked' ? 'var(--color-text-secondary)' : 'var(--color-text-primary)',
-})
-const assignmentWeightStyle: CSSProperties = {
-  fontSize: 11.5,
-  color: 'var(--color-text-tertiary)',
-  marginTop: 1,
-}
-const readinessLabelStyle = (state: AssignmentState): CSSProperties => ({
-  fontSize: 12,
-  marginBottom: 6,
-  display: 'inline-block',
-  fontWeight: state === 'proven' || state === 'not-proven' ? 600 : 400,
-  color:
-    state === 'proven'
-      ? 'var(--color-success-600)'
-      : state === 'not-proven'
-        ? 'var(--color-warning-700)'
-        : 'var(--color-text-secondary)',
-})
-const barTrackStyle: CSSProperties = {
-  height: 7,
-  background: 'var(--color-border-subtle)',
-  borderRadius: 4,
-  overflow: 'hidden',
-}
-const barFillStyle: CSSProperties = { display: 'block', height: '100%', borderRadius: 4 }
-const insightsSectionStyle: CSSProperties = {
-  borderTop: '1px solid var(--color-border-subtle)',
-  paddingTop: 24,
-}
-const insightsGridStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: '1fr 1fr',
-  gap: 28,
-}
-const insightStyle: CSSProperties = {
-  paddingLeft: 18,
-  borderLeft: '2px solid var(--color-border-subtle)',
-}
-const insightTagStyle: CSSProperties = {
-  margin: '0 0 7px',
-  fontSize: 11,
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase',
-  fontWeight: 600,
-  color: 'var(--color-text-secondary)',
-}
-const insightHeadlineStyle: CSSProperties = {
-  margin: '0 0 5px',
-  fontFamily: 'var(--font-heading, Georgia, serif)',
-  fontSize: 17,
-  fontWeight: 500,
-  lineHeight: 1.3,
-  color: 'var(--color-text-primary)',
-}
-const insightDetailStyle: CSSProperties = {
-  margin: '0 0 10px',
-  fontSize: 13.5,
-  lineHeight: 1.55,
-  color: 'var(--color-text-secondary)',
-}
-const srOnlyStyle: CSSProperties = {
-  position: 'absolute',
-  width: 1,
-  height: 1,
-  overflow: 'hidden',
-  clip: 'rect(0 0 0 0)',
-  whiteSpace: 'nowrap',
 }
