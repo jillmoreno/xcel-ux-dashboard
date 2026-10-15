@@ -136,6 +136,7 @@ const REBRAND_FLAGS = [
   'atlas-wip-quick-links-side',
   'atlas-background',
   'atlas-e2e-page',
+  'e2e-ends-at-password',
   'atlas-header-v2',
   'atlas-white-top-nav',
   'atlas-brand-skin',

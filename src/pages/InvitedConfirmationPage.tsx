@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CircleCheckSolid } from '@/icons'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { PartnerHeader } from '@/components/e2e/PartnerHeader'
 import { END_TO_END_VERSION, useEndToEndDemoParams, useEndToEndPageChrome } from './endToEndDemo'
 
@@ -8,13 +9,17 @@ import { END_TO_END_VERSION, useEndToEndDemoParams, useEndToEndPageChrome } from
  * CONFIRMATION & PASSWORD — `/end-to-end-demo/confirmation` (2026-10-15,
  * Eric's request), Figma "Atlas UX Design" 425:2597, under the partner header.
  * The End-to-End Demo's step after Checkout: Place your order opens it, and
- * Confirm opens the demo's Home.
+ * Confirm ENDS THE FLOW HERE (2026-10-15, Jillienne: "it should END after
+ * user puts in a password") — the password column becomes "Password
+ * created" and nothing navigates. That is `e2e-ends-at-password`, on by
+ * default; off, Confirm opens the demo's Home with the Affidavit modal over
+ * it, Eric's hand-off from earlier the same day.
  *
  * Left, the order confirmation on the guide's Secondary 200; right, the
  * Create password form. Clicking the password field fills it with a TEST
  * password that meets the rules (2026-10-15, Eric's request), the rules
  * (Figma 425:3001) show under it, and Confirm turns on — XCEL's brick, as
- * Checkout's Place your order — and opens the demo's Atlas Home. The field
+ * Checkout's Place your order. The field
  * still takes typing, and the eye shows or hides it. Nothing is stored or
  * sent.
  *
@@ -29,6 +34,9 @@ export function InvitedConfirmationPage() {
   const navigate = useNavigate()
   const [password, setPassword] = useState('')
   const [shown, setShown] = useState(false)
+  // Confirmed: the flow's end state, when `e2e-ends-at-password` is on.
+  const [done, setDone] = useState(false)
+  const endsHere = useFeatureFlag('e2e-ends-at-password').enabled
 
   return (
     <div style={PAGE}>
@@ -53,14 +61,28 @@ export function InvitedConfirmationPage() {
         {/* CREATE PASSWORD */}
         <section aria-labelledby="create-password" style={PASSWORD_COLUMN}>
           <h2 id="create-password" style={TITLE}>
-            Create password
+            {done ? 'Password created' : 'Create password'}
           </h2>
+          {done ? (
+            /* THE END OF THE FLOW. The same card as the form, with the check
+               the order panel uses; no link out — the dashboard is the Atlas
+               Learning row's, not this one's. */
+            <div role="status" style={{ ...FORM, alignItems: 'flex-start', gap: 16 }}>
+              <CircleCheckSolid size={32} aria-hidden style={{ color: 'var(--color-xcel-brick-600)', display: 'block' }} />
+              <p style={DONE_TEXT}>
+                You’re all set. Sign in to XCEL with <strong style={{ fontWeight: 700 }}>{DEMO_EMAIL}</strong> and your
+                new password to start your course.
+              </p>
+            </div>
+          ) : (
           <form
             style={FORM}
             onSubmit={(e) => {
               e.preventDefault()
-              // `affidavit=1`: Home opens the Affidavit modal over itself.
-              if (password) navigate(`/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}&affidavit=1`)
+              if (!password) return
+              if (endsHere) setDone(true)
+              // Off: `affidavit=1`, and Home opens the Affidavit modal over itself.
+              else navigate(`/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}&affidavit=1`)
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -119,6 +141,7 @@ export function InvitedConfirmationPage() {
               </button>
             </div>
           </form>
+          )}
         </section>
       </main>
     </div>
@@ -299,3 +322,13 @@ const RULES: CSSProperties = {
 }
 
 const RULE_LIST: CSSProperties = { margin: 0, paddingLeft: 19.5, listStyle: 'disc' }
+
+/* The end state's one line: Open Sans 16 / 24, as the body copy on the
+   Invited Product Detail page. */
+const DONE_TEXT: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 16,
+  lineHeight: '24px',
+  color: 'var(--color-neutral-950)',
+}

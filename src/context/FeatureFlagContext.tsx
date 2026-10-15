@@ -1923,6 +1923,27 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'e2e-ends-at-password',
+    /* THE INVITE & PURCHASE FLOW ENDS AT THE PASSWORD (2026-10-15,
+       Jillienne: "it should END after user puts in a password"). ON (the
+       baseline): Confirmation & Password's Confirm closes the flow on the
+       page — the Create password column becomes "Password created", and
+       nothing navigates. OFF: Eric's hand-off, which the row carried from the
+       morning of 2026-10-15 until this flag — Confirm opens the demo's Home
+       with the Affidavit modal over it (`?affidavit=1`). The modal and the
+       hand-off are intact on the off arm, not archived. One conditional at
+       the page's submit rather than a sibling page: the page is 300 lines
+       and this changes only its last step. The Design bar's Page control
+       still lists Home; this flag decides what CONFIRM does, not what the
+       control can open. */
+    group: 'Navigation',
+    label: 'Invite flow ends at the password',
+    description:
+      'On, Confirm on Confirmation & Password ends the Invite & Purchase flow there: the password column becomes \u201cPassword created\u201d and nothing navigates. Off, Confirm opens the End-to-End Demo\u2019s Home with the Affidavit modal over it.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-header-v2',
     /* THE ATLAS HEADER, ON THE DESIGN BAR (2026-10-13, Eric's request:
        "replace the nav … with the new nav"). On (default), Eric's Atlas
