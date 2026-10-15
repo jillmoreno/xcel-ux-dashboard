@@ -586,6 +586,24 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     expect(kebab.style.color).toBe('var(--ux-text-3)')
   })
 
+  it('Prototypes is two cards: the source of truth alone, then the work in progress', () => {
+    // 2026-10-14, Jillienne on the preview: "this is the same as the main
+    // branch, so can we have it separated from the rest to better indicate
+    // that it's the Final Prototype, Source of Truth".
+    renderDashboard()
+    const groups = [...document.querySelectorAll('main [data-group]')]
+    expect(groups.map((g) => g.getAttribute('data-group'))).toEqual(['source-of-truth', 'in-progress'])
+    expect(groups[0].textContent).toContain('Final prototype — source of truth')
+    expect([...groups[0].querySelectorAll('[data-row]')].map((r) => r.getAttribute('data-row'))).toEqual(['xcel-dashboard'])
+    expect(groups[1].textContent).toContain('Work in progress')
+    expect([...groups[1].querySelectorAll('[data-row]')].map((r) => r.getAttribute('data-row'))).toEqual([
+      'xcel-invite',
+      'xcel-atlas-learning',
+      'xcel-compass',
+      'xcel-admin-coming-soon',
+    ])
+  })
+
   it('every Prototypes row that opens carries a valid lastUpdated stamp', () => {
     // 2026-10-14. The "Updated" tag reads it; `ship-to-main` maintains it. An
     // ISO timestamp with a zone, so the viewer's clock can render it.
@@ -604,8 +622,12 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     const compass = document.querySelector('[data-row="xcel-compass"]')!
     // The outlined tags are the spans that carry a border; the owner tag's
     // textContent is its hidden "Owner: " label plus the name.
+    // Outlined tags are the 4px-radius bordered spans; the generated thumbnail
+    // is bordered too, at the radius token, so the radius is the tell.
     const tagsOf = (row: Element) =>
-      [...row.querySelectorAll('span')].filter((s) => s.style.border).map((s) => s.textContent ?? '')
+      [...row.querySelectorAll('span')]
+        .filter((s) => s.style.border && s.style.borderRadius === '4px')
+        .map((s) => s.textContent ?? '')
     const tags = tagsOf(compass)
     expect(tags[0]).toBe('Compass')
     expect(tags[1]).toBe('Owner: Anjani')

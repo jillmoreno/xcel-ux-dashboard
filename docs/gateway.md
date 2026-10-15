@@ -236,6 +236,14 @@ the evening Jillienne had asked for its row and for an Admin row:
   only row that opens nothing. When the admin surface is built in React, this
   row gains a `to` and `status: 'ready'`; the id and scope stay.
 
+**Prototypes is two cards (2026-10-14, later still).** "This is the same as
+the `main` branch, so can we have it separated from the rest to better
+indicate that it's the Final Prototype, Source of Truth." The end-to-end row
+stands alone under "Final prototype — source of truth"; the doors around it sit
+in a second card under "Work in progress". `groupRows` in `UxDashboardPage`
+is the split and every other section is still one list; the smoke test pins
+which rows land in which card.
+
 **The tag column on a Prototypes row (2026-10-14, Jillienne on the preview)**
 is outlined, square-cornered tags rather than filled pills, stacked: the scope
 (none on the product row), `Owner: <name>` from `PROTOTYPE_SCOPES`, and

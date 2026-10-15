@@ -1730,25 +1730,42 @@ export function UxDashboardPage() {
                 {q ? `Nothing matches “${query}”.` : 'Nothing in this section yet.'}
               </p>
             ) : (
-              <div style={listStyle}>
-                {rows.map((f, i) => (
-                  <ProjectRow
-                    key={f.id}
-                    feature={f}
-                    first={i === 0}
-                    last={i === rows.length - 1}
-                    statusKey={statusKeyOf(f, done, inDesign)}
-                    isDone={done[f.id] ?? !!f.done}
-                    isInDesign={inDesign[f.id] ?? !!f.inProgress}
-                    onToggleDone={toggleDone}
-                    onToggleInDesign={toggleInDesign}
-                    onSetRollup={setRollup}
-                    dark={dark}
-                    onOpen={opensInFrame(f) ? setOpen : undefined}
-                    showStatus={showStatus}
-                  />
-                ))}
-              </div>
+              /* PROTOTYPES IS TWO LISTS — 2026-10-14, Jillienne on the preview:
+                 "this is the same as the main branch, so can we have it
+                 separated from the rest to better indicate that it's the Final
+                 Prototype, Source of Truth". The end-to-end row stands in its
+                 own card under its own heading; the doors around it — the
+                 work in progress — sit in a second card beneath. Every other
+                 section is the one list it always was. */
+              groupRows(section, rows).map((g) => (
+                <div key={g.id} data-group={g.id}>
+                  {g.label && (
+                    <div style={groupHeadStyle}>
+                      <p style={groupLabelStyle}>{g.label}</p>
+                      {g.note && <p style={groupNoteStyle}>{g.note}</p>}
+                    </div>
+                  )}
+                  <div style={listStyle}>
+                    {g.rows.map((f, i) => (
+                      <ProjectRow
+                        key={f.id}
+                        feature={f}
+                        first={i === 0}
+                        last={i === g.rows.length - 1}
+                        statusKey={statusKeyOf(f, done, inDesign)}
+                        isDone={done[f.id] ?? !!f.done}
+                        isInDesign={inDesign[f.id] ?? !!f.inProgress}
+                        onToggleDone={toggleDone}
+                        onToggleInDesign={toggleInDesign}
+                        onSetRollup={setRollup}
+                        dark={dark}
+                        onOpen={opensInFrame(f) ? setOpen : undefined}
+                        showStatus={showStatus}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))
             )}
           </>
         )}
@@ -2478,6 +2495,42 @@ const pillCountActiveStyle: CSSProperties = {
 const statusDotStyle: CSSProperties = { width: 7, height: 7, borderRadius: '50%', flex: 'none' }
 
 const countStyle: CSSProperties = { marginLeft: 'auto', fontSize: 12.5, color: 'var(--ux-text-2)' }
+
+/** How a section's rows are grouped into cards. Only Prototypes splits (see
+ *  the render site); an empty group is dropped so a filtered search never
+ *  shows a heading over nothing. */
+function groupRows(
+  section: UxSection,
+  rows: PrototypeFeature[],
+): { id: string; label?: string; note?: string; rows: PrototypeFeature[] }[] {
+  if (section !== 'prototypes') return [{ id: 'all', rows }]
+  const truth = rows.filter((f) => f.prototypeScope === 'end-to-end')
+  const rest = rows.filter((f) => f.prototypeScope !== 'end-to-end')
+  return [
+    {
+      id: 'source-of-truth',
+      label: 'Final prototype — source of truth',
+      note: 'What the product is right now: main, at the committed baseline.',
+      rows: truth,
+    },
+    {
+      id: 'in-progress',
+      label: 'Work in progress',
+      note: 'The doors around it, each its owner’s. What is picked from here becomes the final prototype.',
+      rows: rest,
+    },
+  ].filter((g) => g.rows.length > 0)
+}
+
+const groupHeadStyle: CSSProperties = { margin: '22px 0 10px' }
+const groupLabelStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-heading)',
+  fontSize: 15,
+  fontWeight: 700,
+  color: 'var(--ux-text)',
+}
+const groupNoteStyle: CSSProperties = { margin: '3px 0 0', fontSize: 12.5, color: 'var(--ux-text-2)' }
 
 const listStyle: CSSProperties = {
   border: '1px solid var(--ux-border)',
