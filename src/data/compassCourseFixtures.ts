@@ -143,18 +143,24 @@ export function compassTocFor(course: CourseId = DEFAULT_COURSE): readonly Compa
  *  REGULATED SEQUENCING — phase 1 of the regulated course rules (2026-10-15)
  * ─────────────────────────────────────────────────────────────────────────
  *
- * THE RULE, and it is deliberately the only one:
+ * THE RULE, in one line: everything up to and including the first entry that
+ * is not DONE stays open; everything after it locks.
  *
- *   Walk the tree in reading order — sections, and the lessons inside the
- *   section that is current. Anything `done` or `current` is left alone: it
- *   has been reached. The FIRST `not-started` entry is left alone too — that
- *   is the next thing the learner may open, which is what "you can move on
- *   when the one before it is complete" means in a tree. Every `not-started`
- *   entry after it becomes `locked`.
+ * Spelled out, in reading order — sections, and the lessons inside the current
+ * one. `done` is always open: it has been finished. `current` is always open
+ * too (locking what a learner is inside would be absurd) but it CLOSES THE
+ * GATE BEHIND IT — the brief's rule is "the next item opens once the one
+ * before it is marked complete", and a lesson someone is part-way through is
+ * not complete. Every `not-started` entry from there on is `locked`.
  *
- * On a course nobody has started — everything `not-started` — this comes out
- * as exactly what Jillienne asked for: the first item is clickable, the rest
- * carry the padlock.
+ * On a course nobody has started there is no `current` entry, the allowance
+ * survives to the first row, and the result is exactly what Jillienne asked
+ * for: the first item is clickable, the rest carry the padlock.
+ *
+ * ⚠ IT MUST MATCH `applyJourneySequencing` (`studyJourneyUtil.ts`), which
+ * applies the same rule to the Study Journey's version of Step 1. A learner
+ * can see both in one session; if the two forked they would disagree about
+ * which lesson is open.
  *
  * ⚠ IT IS A PURE FUNCTION OVER A TREE, NOT A FLAG READ, and that split is the
  * point. `isRegulatedCourse` (`courseFixtures.ts`) is the only thing that
@@ -177,16 +183,21 @@ export function applyCourseSequencing(
   regulated: boolean,
 ): readonly CompassTocSection[] {
   if (!regulated) return toc
-  /* One walk, one flag. `nextOpen` is the allowance for the single
-     not-started entry a learner may open; it is spent by the first one
-     encountered, and everything after it locks. Deliberately NOT per-section:
-     a section whose lessons are all locked must not hand out a fresh
-     allowance to the section below it. */
-  let nextOpen = true
+  /* One walk, one flag. `open` is the allowance for the single entry a learner
+     may open next; `current` and the first `not-started` both spend it, and
+     everything after locks. Deliberately NOT per-section: a section whose
+     lessons are all locked must not hand a fresh allowance to the one below
+     it. */
+  let open = true
   const lockChild = (child: CompassTocChild): CompassTocChild => {
+    if (child.status === 'done') return child
+    if (child.status === 'current') {
+      open = false
+      return child
+    }
     if (child.status !== 'not-started') return child
-    if (nextOpen) {
-      nextOpen = false
+    if (open) {
+      open = false
       return child
     }
     return { ...child, status: 'locked', onSelect: undefined }
@@ -197,8 +208,10 @@ export function applyCourseSequencing(
        children before deciding the section would let a section's first lesson
        claim the allowance the section header is standing in front of. */
     let status = section.status
-    if (status === 'not-started') {
-      if (nextOpen) nextOpen = false
+    if (status === 'current') {
+      open = false
+    } else if (status === 'not-started') {
+      if (open) open = false
       else status = 'locked'
     }
     const children = section.children?.map(lockChild)

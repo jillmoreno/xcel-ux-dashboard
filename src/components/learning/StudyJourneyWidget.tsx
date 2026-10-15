@@ -6,7 +6,7 @@ import { ExamScheduleWidget } from './ExamScheduleWidget'
 import { COMPASS_BUTTON } from '@/components/compass/compassButton'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import { useState, type CSSProperties, type ReactNode } from 'react'
-import { journeyStopsFor } from './studyJourneyUtil'
+import { applyJourneySequencing, journeyStopsFor } from './studyJourneyUtil'
 import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
 import { dateFromIso } from '@/lib/studyPace'
 import { longDate } from './learningPathsHomeUtil'
@@ -22,7 +22,7 @@ import {
   widgetEyebrowStyle,
   widgetRuleStyle,
 } from './widgetStyles'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useFeatureFlag, useCourseDemo } from '@/context/FeatureFlagContext'
 
 /**
  * STUDY JOURNEY WIDGET — the QE Focused version's own card (2026-09-16).
@@ -214,7 +214,15 @@ export function StudyJourneyWidget({
   const shell: CSSProperties = atlasHome
     ? { ...paddedShell, borderRadius: 'var(--radius-lg)' }
     : paddedShell
-  const stops = journeyStopsFor(path)
+  const { regulated } = useCourseDemo()
+  /* REGULATED SEQUENCING (2026-10-15) — Step 1's stops lock behind the one
+     the learner may open next. The rule lives in `applyJourneySequencing`,
+     not here, so every drawing of this journey agrees. Unregulated returns
+     the same array. */
+  const stops = applyJourneySequencing(
+    journeyStopsFor(path),
+    regulated,
+  )
   /*
    * THE LICENSING CARDS START AT 2 — 2026-09-23, the direct ask: "This whole
    * section will be Step 1 - Complete Coursework. Step 2 - Schedule State

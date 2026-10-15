@@ -5,15 +5,16 @@ import {
   AngleRightSolid,
   BookOpen,
   FileCertificateLight,
+  LockRegular,
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
-import { useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
+import { useFeatureFlag, useFeatureFlags, useCourseDemo } from '@/context/FeatureFlagContext'
 import { type AtlasCourseTab } from './AtlasCourseTabs'
-import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
+import { applyJourneySequencing, journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
 import { GET_LICENSED_STEPS, jurisdictionName } from '@/data/nyProducerRequirements'
 import { WHITE_COURSES, WHITE_COURSE_PARAM, WHITE_FIRST_COURSE_ID, whiteCourseFor } from '@/data/atlasWhiteCourses'
 import { defaultPreset, formatPaceDate, studyPace, daysUntil, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
@@ -150,7 +151,15 @@ export function AtlasHomeEricWhite({
 
   // V3 drops the Attestation & Affidavit stop on every progress stage
   // (2026-10-09, Eric's request). The stop still exists in the shared journey.
-  const stops = journeyStopsFor(path).filter((s) => s.id !== 'attestation-and-affidavit')
+  const { regulated } = useCourseDemo()
+  /* REGULATED SEQUENCING (2026-10-15) — Step 1's stops lock behind the one
+     the learner may open next. The rule lives in `applyJourneySequencing`,
+     not here, so every drawing of this journey agrees. Unregulated returns
+     the same array. */
+  const stops = applyJourneySequencing(
+    journeyStopsFor(path).filter((s) => s.id !== 'attestation-and-affidavit'),
+    regulated,
+  )
   const currentIdx = Math.max(
     0,
     stops.findIndex((s) => s.status === 'in-progress'),
@@ -645,7 +654,20 @@ function JourneyRow({
   return (
     <li style={{ display: 'flex', gap: 8, alignItems: 'flex-start', minHeight: current ? 42 : 36 }}>
       <span aria-hidden style={{ width: 14, flex: 'none', alignSelf: 'stretch', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, paddingTop: current ? 7 : 3 }}>
-        {current ? <span style={MARK_CURRENT} /> : <span style={MARK} />}
+        {/* ⚠ THE LOCK REPLACES THE RING, ON THE LEFT — 2026-10-15, the direct
+            ask ("show the small gray lock icon on the left instead of the
+            outline circle"). A lock on the RIGHT is what this row used to
+            carry and what was removed on 2026-10-06; this is the other side
+            and a different claim. The ring says "not reached yet", the
+            padlock says "not yours to open", and they occupy one slot
+            because a row is in exactly one of those states. */}
+        {current ? (
+          <span style={MARK_CURRENT} />
+        ) : stop.locked ? (
+          <LockRegular size={12} aria-hidden style={LOCK_MARK} />
+        ) : (
+          <span style={MARK} />
+        )}
         {last ? null : <span style={SPINE} />}
       </span>
       <span
@@ -817,6 +839,23 @@ const MARK_CURRENT: CSSProperties = {
   border: '2px solid var(--color-atlas-home-current-stop, var(--color-compass-page-button))',
   flex: 'none',
 }
+/**
+ * The REGULATED lock mark, in the ring's slot — 2026-10-15, the direct ask
+ * ("show the small gray lock icon on the left instead of the outline circle").
+ *
+ * 12px, the ring's own box, so the spine it hangs on does not step sideways
+ * when a row locks. `--color-border-subtle` is the ring's colour too: the lock
+ * is `aria-hidden` decoration beside a label that is already dimmed, so it
+ * should not outweigh the words it annotates — the same call Hybrid's
+ * `MARK_LOCK` records for the same glyph.
+ */
+const LOCK_MARK: CSSProperties = {
+  width: 12,
+  height: 12,
+  flex: 'none',
+  color: 'var(--color-border-subtle)',
+}
+
 const MARK: CSSProperties = {
   width: 12,
   height: 12,

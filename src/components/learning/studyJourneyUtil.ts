@@ -157,6 +157,20 @@ export type JourneyStop = {
    * the preference.
    */
   blocked?: boolean
+  /**
+   * HELD UNTIL THE STOP BEFORE IT IS DONE — the Course control's Regulated
+   * sequencing, 2026-10-15. Derived by `applyJourneySequencing`, never
+   * authored: a stop that carried its own `locked` would stay locked under
+   * Unregulated, which is the one thing the toggle must not do.
+   *
+   * ⚠ IT IS NOT `blocked`, and the two are different claims a learner acts on
+   * differently. `blocked` is the PRODUCT's own rule — Parts 2 and 3 unlock on
+   * completion of Part 1, the completion tasks need the coursework done — and
+   * it is true on every build, published on XCEL's own page. This is the
+   * REGULATOR's rule, modelled for a demo, and it is off by default. A stop
+   * can be both; `blocked` keeps its own rendering.
+   */
+  locked?: boolean
 }
 
 /**
@@ -650,5 +664,67 @@ export function journeyStepRows(path: LearningPathSummary): JourneyStepRow[] {
       status: statusWords(stop),
       blocked: Boolean(stop.blocked),
     }
+  })
+}
+
+/**
+ * ─────────────────────────────────────────────────────────────────────────
+ *  REGULATED SEQUENCING, FOR THE STUDY JOURNEY — 2026-10-15
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * The same rule `applyCourseSequencing` applies to the Compass content tree,
+ * applied to Step 1's stops. THE RULE, in one line: everything up to and
+ * including the first stop that is not COMPLETE stays open; everything after
+ * it locks.
+ *
+ * ⚠ TWO TREES, ONE RULE, AND THEY HAVE TO AGREE. The Compass rail and this
+ * journey are two drawings of the same Step 1, and a learner can see both in
+ * one session. If the rule ever forks, they will disagree about which lesson
+ * is open — so when phase 2's rules arrive, they extend BOTH of these or
+ * neither, and the pair is the reason to consider merging them first.
+ *
+ * ⚠ `blocked` STOPS LOCK AND NEVER SPEND THE ALLOWANCE, and the first version
+ * of this function got that backwards — it SKIPPED them, on the reasoning that
+ * Parts 2 and 3 and the completion tasks are already held by the product's own
+ * published rule and that locking them again would be the demo claiming credit
+ * for a real gate. Clever, and wrong twice over:
+ *
+ *   1. `blocked` DRAWS NOTHING on these rows. The lock it used to carry on the
+ *      right was removed on 2026-10-06 at the designer's request, so the gate
+ *      is invisible — there was no treatment to double up on, only a ring that
+ *      says "not reached yet" like every other.
+ *   2. On the default journey EVERY remaining stop is blocked, so the skip
+ *      made the rule a no-op: Regulated locked nothing, anywhere. Which is how
+ *      it was reported.
+ *
+ * Unregulated returns the array UNCHANGED BY IDENTITY, so the default path
+ * allocates nothing.
+ */
+export function applyJourneySequencing(
+  stops: readonly JourneyStop[],
+  regulated: boolean,
+): readonly JourneyStop[] {
+  if (!regulated) return stops
+  let open = true
+  return stops.map((stop) => {
+    if (stop.status === 'completed') return stop
+    /* ⚠ IN PROGRESS CLOSES THE GATE BEHIND IT. The rule is "the next item
+       opens once the one before it is COMPLETE" — so a stop the learner is
+       part-way through does not hand the allowance on. It stays open itself
+       (locking what someone is inside would be absurd) and everything after
+       it locks. On a course nobody has started there is no in-progress stop,
+       the allowance survives to the first row, and the result is the shape
+       Jillienne described: the first item clickable, the rest locked. */
+    if (stop.status === 'in-progress') {
+      open = false
+      return stop
+    }
+    // Held by the product's own rule as well: locked, allowance untouched.
+    if (stop.blocked) return { ...stop, locked: true }
+    if (open) {
+      open = false
+      return stop
+    }
+    return { ...stop, locked: true }
   })
 }

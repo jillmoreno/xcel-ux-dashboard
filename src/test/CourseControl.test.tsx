@@ -36,6 +36,10 @@ import {
   jurisdictionName,
 } from '@/data/nyProducerRequirements'
 import type { CompassTocSection } from '@/components/compass/CompassCourseRail.types'
+import {
+  applyJourneySequencing,
+  type JourneyStop,
+} from '@/components/learning/studyJourneyUtil'
 
 /**
  * THE COURSE AXIS — Florida / Texas, and the Regulated sequencing nested under
@@ -382,18 +386,33 @@ describe('regulated sequencing — the rule', () => {
     }
   })
 
-  /* THE RULE ITSELF: the next not-started entry stays open — that is what
-     "you may move on when the one before it is complete" means in a tree —
-     and everything after it locks. */
-  it('leaves exactly one not-started entry open and locks the rest', () => {
+  /* THE RULE ITSELF: everything up to and including the first entry that is
+     not DONE stays open; everything after it locks. A `current` entry is open
+     — locking what a learner is inside would be absurd — but it CLOSES THE
+     GATE behind it, because the brief's rule is "the next item opens once the
+     one before it is marked complete", and part-way through is not complete.
+
+     ⚠ THE FIRST VERSION WAS LOOSER, leaving the next not-started entry open
+     after an in-progress one. It read plausibly and it is not what the brief
+     says. */
+  it('locks everything after the first entry that is not done', () => {
     const after = flat(applyCourseSequencing(compassTocFor('fl'), true))
-    expect(after.filter((e) => e.status === 'not-started')).toHaveLength(1)
+    const firstNotDone = after.findIndex((e) => e.status !== 'done')
+    expect(firstNotDone).toBeGreaterThanOrEqual(0)
+    for (const [i, entry] of after.entries()) {
+      if (i <= firstNotDone) expect(entry.status, entry.id).not.toBe('locked')
+      else if (entry.status !== 'done' && entry.status !== 'current')
+        expect(entry.status, entry.id).toBe('locked')
+    }
     expect(after.filter((e) => e.status === 'locked').length).toBeGreaterThan(0)
-    // …and the one left open is the FIRST of them, in reading order.
-    const firstUnreached = after.findIndex(
-      (e) => e.status === 'not-started' || e.status === 'locked',
-    )
-    expect(after[firstUnreached].status).toBe('not-started')
+  })
+
+  it('never locks a lesson the learner is inside', () => {
+    const before = flat(compassTocFor('fl'))
+    const after = flat(applyCourseSequencing(compassTocFor('fl'), true))
+    for (const [i, entry] of before.entries()) {
+      if (entry.status === 'current') expect(after[i].status, entry.id).toBe('current')
+    }
   })
 
   /* A COURSE NOBODY HAS STARTED is the shape Jillienne described: "the first
@@ -428,9 +447,11 @@ describe('regulated sequencing — the rule', () => {
       },
       { id: 's2', label: 'S2', status: 'not-started' },
     ]
+    /* The CURRENT section spends the allowance, so both its lessons and the
+       section after them lock. */
     expect(flat(applyCourseSequencing(toc, true)).map((e) => e.status)).toEqual([
       'current',
-      'not-started',
+      'locked',
       'locked',
       'locked',
     ])
@@ -442,7 +463,9 @@ describe('regulated sequencing — the rule', () => {
       {
         id: 's1',
         label: 'S1',
-        status: 'current',
+        // `done`, not `current`: a current section spends the allowance, and
+        // this test is about `onSelect`, not about who gets it.
+        status: 'done',
         children: [
           { id: 'open', label: 'Open', status: 'not-started', onSelect: noop },
           { id: 'shut', label: 'Shut', status: 'not-started', onSelect: noop },
@@ -500,5 +523,64 @@ describe('regulated sequencing — how the rail draws it', () => {
     // invitation to click. A locked row gets the muted base without it.
     expect(row.className).toContain('is-locked')
     expect(row.className).not.toContain('is-upcoming')
+  })
+})
+
+describe('regulated sequencing — the Study Journey draws the same rule', () => {
+  /*
+   * ⚠ THE SURFACE THIS WAS REPORTED ON. The lock shipped in the Compass course
+   * rail only, and the Study Journey on HOME — the ordered list under "Step 1",
+   * the one on the landing page — kept drawing an outline ring for every stop.
+   * Two drawings of the same Step 1; the rule has to reach both.
+   */
+  const stop = (id: string, status: JourneyStop['status'], blocked = false): JourneyStop => ({
+    id,
+    title: id,
+    group: 'g',
+    hours: null,
+    status,
+    milestone: false,
+    blocked,
+  })
+  const locks = (stops: JourneyStop[]) =>
+    applyJourneySequencing(stops, true).map((s) => Boolean(s.locked))
+
+  it('returns the array unchanged by identity when unregulated', () => {
+    const stops = [stop('a', 'not-started')]
+    expect(applyJourneySequencing(stops, false)).toBe(stops)
+  })
+
+  it('locks everything after the stop in progress', () => {
+    expect(
+      locks([
+        stop('done', 'completed'),
+        stop('here', 'in-progress'),
+        stop('next', 'not-started'),
+        stop('later', 'not-started'),
+      ]),
+    ).toEqual([false, false, true, true])
+  })
+
+  it('on an untouched journey, opens the first stop and locks the rest', () => {
+    expect(
+      locks([stop('a', 'not-started'), stop('b', 'not-started'), stop('c', 'not-started')]),
+    ).toEqual([false, true, true])
+  })
+
+  /* ⚠ `blocked` LOCKS AND NEVER SPENDS THE ALLOWANCE. The first version
+     SKIPPED blocked stops — and on the default journey every remaining stop is
+     blocked, so Regulated locked nothing at all, anywhere. */
+  it('locks the product-blocked stops rather than skipping them', () => {
+    expect(
+      locks([stop('here', 'in-progress'), stop('part2', 'not-started', true), stop('tail', 'not-started')]),
+    ).toEqual([false, true, true])
+  })
+
+  it('does not let a blocked stop hand the allowance to a later one', () => {
+    // The blocked stop locks; the allowance it did not spend opens `tail`.
+    expect(locks([stop('part2', 'not-started', true), stop('tail', 'not-started')])).toEqual([
+      true,
+      false,
+    ])
   })
 })
