@@ -83,7 +83,8 @@ describe('the boundary between the two bars', () => {
       'src/components/prototype/DesignControlsBar.tsx',
       'src/components/prototype/DemoBar.tsx',
       'src/components/prototype/demoBarUtil.ts',
-      'src/data/demoControlMaturity.ts',
+      // `src/data/demoControlMaturity.ts` was in this list until 2026-10-15,
+      // when `maturity` was retired with the demo site and the file deleted.
       'src/components/layout/AdminToolsMenu.tsx',
     ]) {
       expect(isProtected(f), `${f} should be protected`).toBe(true)
