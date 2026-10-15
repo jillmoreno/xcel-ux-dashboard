@@ -1,0 +1,281 @@
+import type { MouseEvent } from 'react'
+import { Bell, ChevronDown, CircleUserLight, FileText, LogOut, Receipt, User } from '@/icons'
+import { AtlasHeaderMenu, AtlasHeaderMenuDivider, AtlasHeaderMenuItem } from './AtlasHeaderMenu'
+import './atlasHeader.css'
+
+/**
+ * ATLAS HEADER (2026-10-13) — the two-row learner header designed outside
+ * this repo: Figma "Atlas UX Design" 333:594 (header), 333:620 (profile
+ * dropdown), 334:594 (My Courses dropdown); reference build
+ * `atlas-header/index.html`.
+ *
+ *   EYEBROW   24px, tinted, right-aligned: English ▾ | Help
+ *   MAIN ROW  72px incl. a 1px rule: logo · Home · My Courses ▾ ……… 🔔 · 👤 Name ▾
+ *
+ * NOT WIRED INTO THE APP. It is a standalone component shown at
+ * `/atlas-header-preview`; `Header` / `AtlasTopNav` are untouched. Whether
+ * and where it replaces them is the project owner's call.
+ *
+ * Open in the design, so left as placeholders here:
+ *   - "English" is only a trigger — the language menu is not designed.
+ *   - The bell is only a button — the notifications panel is not designed.
+ *   - Every destination defaults to `#`.
+ *   - Desktop only: designed at 1680px, no tablet or mobile treatment.
+ */
+
+export type AtlasHeaderUser = {
+  name: string
+  email: string
+  /** Shown in the profile dropdown; initials stand in when absent. */
+  photoUrl?: string
+}
+
+export type AtlasHeaderCourse = { id: string; title: string; href?: string; onSelect?: () => void }
+
+/** Destinations. Each defaults to `#` — none is decided yet. */
+export type AtlasHeaderLinks = Partial<
+  Record<'home' | 'help' | 'allCourses' | 'profile' | 'notifications' | 'transcripts' | 'purchases' | 'logout', string>
+>
+
+export function AtlasHeader({
+  current = 'home',
+  user,
+  notificationCount = 0,
+  courses,
+  links = {},
+  onLogout,
+  onNavigate,
+  showCourses = true,
+  onHelp,
+}: {
+  /** Which nav pill is filled. */
+  current?: 'home' | 'courses' | null
+  user: AtlasHeaderUser
+  notificationCount?: number
+  courses: readonly AtlasHeaderCourse[]
+  links?: AtlasHeaderLinks
+  onLogout?: () => void
+  /** In an app with a router: called with a link's href instead of a page
+   *  load. Absent, links are plain anchors. */
+  onNavigate?: (href: string) => void
+  /** The My Courses dropdown. Off, the nav is Home alone. */
+  showCourses?: boolean
+  /** HELP OPENS A SHEET, NOT A PAGE — 2026-10-14, Jillienne's request ("have
+   *  the help trigger the sheet view that i use in the hybrid version"). Set,
+   *  the eyebrow's Help is a button calling this; absent, it stays the link to
+   *  `links.help`, as the standalone preview still has it. The sheet itself is
+   *  the shared `Header`'s (`HelpSheet`), the same one Hybrid's Help opens. */
+  onHelp?: () => void
+}) {
+  const to = (k: keyof AtlasHeaderLinks) => links[k] ?? '#'
+  // A link's href, routed through `onNavigate` when there is one.
+  const go = (k: keyof AtlasHeaderLinks) => ({
+    href: to(k),
+    onClick: onNavigate
+      ? (e: MouseEvent) => {
+          e.preventDefault()
+          onNavigate(to(k))
+        }
+      : undefined,
+  })
+  const pick = (k: keyof AtlasHeaderLinks) => (onNavigate ? () => onNavigate(to(k)) : undefined)
+  return (
+    <div className="cre-atlas-hdr">
+      {/* EYEBROW */}
+      <div style={EYEBROW}>
+        {/* Trigger only: the language menu is not designed yet. */}
+        <button type="button" className="cre-atlas-hdr-eyebrow-link" aria-label="Language: English" aria-haspopup="menu" aria-expanded={false}>
+          English
+          <ChevronDown size={10} aria-hidden />
+        </button>
+        <span aria-hidden style={{ color: 'var(--atlas-hdr-divider-char)' }}>
+          |
+        </span>
+        {onHelp ? (
+          <button type="button" className="cre-atlas-hdr-eyebrow-link" onClick={onHelp}>
+            Help
+          </button>
+        ) : (
+          <a {...go('help')} className="cre-atlas-hdr-eyebrow-link">
+            Help
+          </a>
+        )}
+      </div>
+
+      {/* MAIN ROW */}
+      <header style={MAIN}>
+        <a {...go('home')} className="cre-atlas-hdr-logo" aria-label="XCEL Insurance Training by Colibri — home" style={{ display: 'flex', flex: 'none' }}>
+          <img src="/brand/xcel-logo.webp" alt="" width={110} height={40} style={{ display: 'block' }} />
+        </a>
+
+        <nav aria-label="Primary" style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 32 }}>
+          <a {...go('home')} className="cre-atlas-hdr-pill" aria-current={current === 'home' ? 'page' : undefined}>
+            Home
+          </a>
+          {showCourses ? (
+          <AtlasHeaderMenu align="left" trigger="My Courses" selected={current === 'courses'} panelStyle={COURSES_PANEL}>
+            {courses.map((c) => (
+              <AtlasHeaderMenuItem key={c.id} href={c.href} onSelect={c.onSelect}>
+                {c.title}
+              </AtlasHeaderMenuItem>
+            ))}
+            {courses.length ? <AtlasHeaderMenuDivider /> : null}
+            <AtlasHeaderMenuItem href={to('allCourses')} onSelect={pick('allCourses')}>View all courses</AtlasHeaderMenuItem>
+          </AtlasHeaderMenu>
+          ) : null}
+        </nav>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
+          {/* Button only: the notifications panel is not designed yet. */}
+          <button
+            type="button"
+            className="cre-atlas-hdr-pill cre-atlas-hdr-pill--icon"
+            aria-label={notificationCount ? `Notifications, ${notificationCount} unread` : 'Notifications'}
+            style={{ position: 'relative' }}
+          >
+            {/* Glyph width (the bell's viewBox is 448×512), not a 22px square — as the icon font draws it. */}
+            <Bell size={22} aria-hidden style={{ width: (22 * 448) / 512 }} />
+            {notificationCount ? (
+              <span aria-hidden style={BADGE}>
+                {notificationCount}
+              </span>
+            ) : null}
+          </button>
+
+          <AtlasHeaderMenu
+            align="right"
+            triggerLabel={`Account menu for ${user.name}`}
+            trigger={
+              <>
+                <CircleUserLight size={22} aria-hidden />
+                {user.name}
+              </>
+            }
+            panelStyle={PROFILE_PANEL}
+          >
+            <div style={IDENTITY}>
+              <AtlasHeaderAvatar user={user} />
+              <span style={{ fontSize: 16, lineHeight: '28px', fontWeight: 700, color: 'var(--atlas-hdr-name)', whiteSpace: 'nowrap' }}>{user.name}</span>
+              <span style={{ fontSize: 12, lineHeight: '16px', fontWeight: 400, color: 'var(--atlas-hdr-email)', whiteSpace: 'nowrap' }}>{user.email}</span>
+            </div>
+            <AtlasHeaderMenuDivider />
+            <AtlasHeaderMenuItem href={to('profile')} onSelect={pick('profile')} icon={<User size={18} />}>
+              Profile
+            </AtlasHeaderMenuItem>
+            <AtlasHeaderMenuItem href={to('notifications')} onSelect={pick('notifications')} icon={<Bell size={18} />}>
+              Notifications
+            </AtlasHeaderMenuItem>
+            <AtlasHeaderMenuItem href={to('transcripts')} onSelect={pick('transcripts')} icon={<FileText size={18} />}>
+              Transcripts
+            </AtlasHeaderMenuItem>
+            <AtlasHeaderMenuItem href={to('purchases')} onSelect={pick('purchases')} icon={<Receipt size={18} />}>
+              My Purchases
+            </AtlasHeaderMenuItem>
+            <AtlasHeaderMenuDivider />
+            <AtlasHeaderMenuItem href={to('logout')} onSelect={onLogout} icon={<LogOut size={18} />}>
+              Logout
+            </AtlasHeaderMenuItem>
+          </AtlasHeaderMenu>
+        </div>
+      </header>
+    </div>
+  )
+}
+
+/** 80px circle: the learner's photo, else their initials on the tint. */
+function AtlasHeaderAvatar({ user }: { user: AtlasHeaderUser }) {
+  const box = { width: 80, height: 80, marginBottom: 8, borderRadius: '50%', flex: 'none' } as const
+  if (user.photoUrl) return <img src={user.photoUrl} alt="" style={{ ...box, display: 'block', objectFit: 'cover' }} />
+  const initials = user.name
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+  return (
+    <span
+      aria-hidden
+      style={{
+        ...box,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 24,
+        lineHeight: '32px',
+        fontWeight: 600,
+        color: 'var(--atlas-hdr-navy)',
+        background: 'var(--atlas-hdr-tint)',
+      }}
+    >
+      {initials}
+    </span>
+  )
+}
+
+const EYEBROW = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-end',
+  gap: 12,
+  boxSizing: 'border-box',
+  height: 24,
+  padding: '0 36px',
+  fontSize: 12,
+  lineHeight: '16px',
+  background: 'var(--atlas-hdr-tint)',
+} as const
+
+const MAIN = {
+  display: 'flex',
+  alignItems: 'center',
+  boxSizing: 'border-box',
+  height: 72,
+  padding: '0 24px',
+  background: 'var(--atlas-hdr-surface)',
+  borderBottom: '1px solid var(--atlas-hdr-rule)',
+} as const
+
+/* 20px across: a 16px disc inside a 2px white ring, over the bell's top
+   right — its top 4px above the bell's, as in the reference. */
+const BADGE = {
+  position: 'absolute',
+  top: -1,
+  left: 16,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minWidth: 16,
+  height: 16,
+  padding: '0 1px',
+  fontFamily: 'var(--font-body)',
+  fontSize: 10,
+  lineHeight: '16px',
+  fontWeight: 700,
+  color: 'var(--atlas-hdr-surface)',
+  background: 'var(--atlas-hdr-badge)',
+  border: '2px solid var(--atlas-hdr-surface)',
+  borderRadius: 9999,
+} as const
+
+const COURSES_PANEL = {
+  minWidth: 256,
+  padding: 4,
+  border: '1px solid var(--atlas-hdr-menu-rule)',
+  borderRadius: 6,
+} as const
+
+const PROFILE_PANEL = {
+  width: 256,
+  padding: 8,
+  border: '1px solid var(--atlas-hdr-rule)',
+  borderRadius: 12,
+} as const
+
+const IDENTITY = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 4,
+  padding: '16px 16px 24px',
+} as const

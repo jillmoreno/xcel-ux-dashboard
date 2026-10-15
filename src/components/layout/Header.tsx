@@ -41,6 +41,9 @@ import { activePathIdFor, learningPathsFor } from '@/data/learningFixtures'
 import { useDeviceFrame } from './DeviceFrameContext'
 import { useMobileNav } from './MobileNavContext'
 import { AtlasTopNav } from './AtlasTopNav'
+import { AtlasHeaderConnected } from './AtlasHeaderConnected'
+import { useAtlasHeaderV2 } from './atlasHeaderV2'
+import { useAtlasSkin } from './atlasBrandSkin'
 
 /** Height of the Demo-frame browser-chrome strip (traffic lights). Shared by
  *  the strip itself + the header's sticky offset so they stay in sync. */
@@ -171,6 +174,19 @@ export function Header() {
      honours a pinned `?nav=` URL), so this asks the same question every other
      navigation reader asks instead of a second one that could disagree. */
   const atlasTopNav = atlasSlimHeader && showsTopNav(navPlacement)
+  /* THE TWO-ROW ATLAS HEADER (2026-10-13, Eric's request) — `atlas-header-v2`,
+     on Eric's Atlas versions, desktop only (it rides `atlasSlimHeader`). It
+     replaces the whole bar below — logo, Top Nav, Resources / Get Help, bell,
+     account menu — and draws its own bottom rule. Off, the bar is untouched.
+     `PlatformShell` asks the same question to pin its rails under it. */
+  const atlasHeaderV2 = useAtlasHeaderV2(rebrandVersion) && atlasSlimHeader
+  /* THE OTHER BRANDS' LOGOS SIT 6px HIGH in the slim header (2026-10-13,
+     Eric's request) — Colibri Real Estate, McKissock and Elite, the Brand
+     control's own lockups. XCEL / XCEL Blue CTA / Atlas keep the XCEL logo
+     centred. The slim header only: the two-row header is unchanged. */
+  const atlasSkin = useAtlasSkin()
+  const raiseSkinLogo =
+    atlasSlimHeader && (atlasSkin === 'cre' || atlasSkin === 'mckissock' || atlasSkin === 'elite')
   const headerHeight = atlasSlimHeader ? ATLAS_HEADER_HEIGHT : 72
   const desktopLogoHeight = atlasSlimHeader ? ATLAS_LOGO_HEIGHT : 52
   // Demo frame: the shell renders inside a browser-style window (see
@@ -288,7 +304,6 @@ export function Header() {
   // `?section=…`, which is a shell address. On the classic routes those links
   // would leave the layout the learner is standing in.
   const showBell = useFeatureFlag('header-notifications').enabled && platformNav
-  const ericAtlasV1 = useFeatureFlag('dashboard-version-eric-atlas-v1').enabled
   // A shell address for one section, keeping every other param (the demo's).
   const atlasSectionHref = (section: string) => {
     const next = new URLSearchParams(search)
@@ -464,8 +479,9 @@ export function Header() {
            an accent marking a place rather than as a hairline someone
            darkened. Weight and colour move together — either alone is weaker
            than the pair. */
-        borderBottom:
-          courseChrome === 'course'
+        borderBottom: atlasHeaderV2
+          ? 'none'
+          : courseChrome === 'course'
             ? '2px solid var(--color-primary-500)'
             : '1px solid var(--color-border-subtle)',
         // On the rebrand shell the white bar is capped at the 1440 rail+content
@@ -489,6 +505,16 @@ export function Header() {
           logo flush-left over the rail and the utility icons aligned to the
           content's right edge (instead of drifting to the far viewport edge on
           wide screens). */}
+      {atlasHeaderV2 ? (
+        <div inert={noHeaderNav || undefined}>
+          {/* HELP OPENS THE SHEET HERE TOO — 2026-10-14, Jillienne's request,
+              the day End-to-End Demo became the baseline: the two-row
+              header's eyebrow Help behaves as Hybrid's does (`hybridHelpSheet`)
+              rather than navigating to Support. Same `setHelpOpen`, same
+              sheet; the gate below includes `atlasHeaderV2`. */}
+          <AtlasHeaderConnected onHelp={() => setHelpOpen(true)} />
+        </div>
+      ) : (
       <div
         // `justify-content` is an inline style, NOT the Tailwind `justify-between`
         // class: that class is used nowhere else, and inside a template literal
@@ -543,7 +569,10 @@ export function Header() {
             exactly this reason). `aria-label` stays: the logo is still the
             brand's name to a screen reader, it just is not a destination.
           */}
-          <span aria-label={logoLabel} style={{ minWidth: 0 }}>
+          <span
+            aria-label={logoLabel}
+            style={{ minWidth: 0, ...(raiseSkinLogo ? { position: 'relative', top: -6 } : null) }}
+          >
             <Logo height={platformNav ? (mobile ? MOBILE_LOGO_HEIGHT : desktopLogoHeight) : 40} />
           </span>
           {/* TOP NAV — 40px right of the logo, whatever the logo's width
@@ -571,7 +600,7 @@ export function Header() {
                   : null),
               }}
             >
-              <AtlasTopNav expanding={navPlacement === 'expanding-top'} />
+              <AtlasTopNav expanding={navPlacement === 'expanding-top'} versionId={rebrandVersion} />
             </div>
           )}
         </div>
@@ -631,6 +660,7 @@ export function Header() {
           {utilities}
         </div>
       </div>
+      )}
       <LearningPathsPanel
         open={pathsOpen}
         // The context selection (set from the rebrand dashboard) takes precedence
@@ -668,23 +698,9 @@ export function Header() {
           open={versionsOpen}
           onClose={closeVersionsPanel}
           versions={
-            /* ⚠ TWO FILTERS, BOTH KEPT (merged 2026-10-05). The AUDIENCE one
-               lists `ready` versions only on the demo site — the picker became
-               reachable by stakeholders when it moved to the demo bar. Eric's
-               V1 gate is narrower and older: that version is hidden from
-               everyone until its own flag is on. They stack; neither replaces
-               the other.
-
-               ⚠ A PLAIN COMMENT INSIDE THE BRACES. A JSX comment in an
-               ATTRIBUTE position is a syntax error, which is how this landed
-               broken the first time — and writing the JSX comment delimiters
-               out here to explain that closed this comment early, which is how
-               it landed broken the second. */
-            ericAtlasV1
-              ? dashboardVersionsForAudience(isPublicGateway())
-              : dashboardVersionsForAudience(isPublicGateway()).filter(
-                  (v) => v.id !== 'eric-atlas-v1',
-                )
+            /* The AUDIENCE filter: `ready` versions only on the demo site.
+               (Eric's V1 gate went with V1, 2026-10-12.) */
+            dashboardVersionsForAudience(isPublicGateway())
           }
           designerTabs
           activeVersionId={
@@ -740,7 +756,9 @@ export function Header() {
           rather than `showHelpControl` alone: on an arm where that is false,
           Hybrid's button would otherwise press and open nothing, which is the
           kind of dead control nothing fails on. */}
-      {(showHelpControl || hybridHelpSheet) && (
+      {/* …and a FOURTH since 2026-10-14: the two-row Atlas header's eyebrow
+          Help (`atlasHeaderV2`), wired the same way as Hybrid's. */}
+      {(showHelpControl || hybridHelpSheet || atlasHeaderV2) && (
         <HelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} />
       )}
       <MembershipVersionsPanel

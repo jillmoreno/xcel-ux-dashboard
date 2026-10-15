@@ -19,9 +19,12 @@ import { SquareTile } from './SquareTile'
 import { TaskRow } from '@/components/learning/study-calendar/TaskRow'
 import { ScheduleExamBanner, StudyJourneyWidget } from '@/components/learning/StudyJourneyWidget'
 import { AtlasHomeV2 } from '@/components/compass/AtlasHomeV2'
+import { AtlasHomeEricV2 } from '@/components/compass/AtlasHomeEricV2'
+import { AtlasHomeEricV3 } from '@/components/compass/AtlasHomeEricV3'
+import { AtlasHomeEricWhite } from '@/components/compass/AtlasHomeEricWhite'
+import { AtlasHomeEricE2E } from '@/components/compass/AtlasHomeEricE2E'
 import { HybridHomeV1 } from '@/components/compass/HybridHomeV1'
 import { HybridPacingHome } from '@/components/compass/HybridPacingHome'
-import { useSearchParams } from 'react-router-dom'
 import {
   isHybridPacingVersion,
   isHybridV1Version,
@@ -59,6 +62,11 @@ import {
   type StudyTask,
 } from '@/data/studyCalendarFixtures'
 import { useCeStudyPlanEnabled, useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useSearchParams } from 'react-router-dom'
+
+/** Eric/Atlas White renders WIP's Home (`AtlasHomeEricV3`) on its white page
+ *  (2026-10-14). False brings White's own Home (`AtlasHomeEricWhite`) back. */
+const WHITE_SHOWS_WIP_HOME: boolean = true
 
 /**
  * How many of today's tasks the card shows before deferring to the Study Plan.
@@ -718,6 +726,14 @@ export function LearnerFocusedBand({
      `isHybridVersion` (the family) because the chrome is shared; this picks
      between two forked HOMES, which is the only thing that differs. */
   const hybridPacing = isHybridPacingVersion(hybridVersionId)
+  /* Eric's forked Homes, resolved the same way — 2026-10-14, when End-to-End
+     Demo became the default: on a bare `?demo=1` a raw read answered false
+     for all four and the band fell through to `AtlasHomeV2` under his chrome.
+     One id, resolved once above, for every version question in this band. */
+  const ericAtlasV2 = hybridVersionId === 'eric-atlas-v2'
+  const ericAtlasV3 = hybridVersionId === 'eric-atlas-v3'
+  const ericAtlasWhite = hybridVersionId === 'eric-atlas-white'
+  const ericAtlasE2E = hybridVersionId === 'eric-atlas-e2e'
   /* NOT ON THE ATLAS HOME (merged 2026-10-02): its Study Pace card is part of
      the Atlas design (the brand's hover fill, the Primary 200 stroke), so the
      baseline's hiding flag does not reach it. */
@@ -1310,8 +1326,23 @@ export function LearnerFocusedBand({
     )
   }
   if (framedPace && atlasHomeV2 && resume) {
+    /* ERIC/ATLAS WHITE SHOWS WIP'S HOME (2026-10-14, Eric's request: "replace
+       the contents below the header with the WIP version but on a white
+       page") — the page stays White's white (PlatformShell). White's own Home,
+       `AtlasHomeEricWhite`, is unchanged and kept: set WHITE_SHOWS_WIP_HOME
+       false to bring it back. */
+    const Home =
+      ericAtlasE2E
+        ? AtlasHomeEricE2E
+        : ericAtlasWhite && !WHITE_SHOWS_WIP_HOME
+        ? AtlasHomeEricWhite
+        : ericAtlasV3 || ericAtlasWhite
+          ? AtlasHomeEricV3
+          : ericAtlasV2
+            ? AtlasHomeEricV2
+            : AtlasHomeV2
     return (
-      <AtlasHomeV2
+      <Home
         path={path}
         courseTitle={path.title}
         coverUrl={resume.imageUrl ?? getCourseImage(resume.id)}

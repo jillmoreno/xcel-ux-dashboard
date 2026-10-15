@@ -300,7 +300,7 @@
   <h2>Four rules that cover most mistakes</h2>
   <div class="qrules">
     <div class="callout warn"><span class="lab">Never push to main</span><p>Every push to <code>main</code> rebuilds the public site. Branch, then PR.</p></div>
-    <div class="callout warn"><span class="lab">Promotion is a flag, not a tile</span><p>Prototypes holds exactly one row and a test guards it. Your work reaches it by a flag default flipping on <code>main</code>.</p></div>
+    <div class="callout warn"><span class="lab">Promotion is a flag, not a tile</span><p>Prototypes holds one row per product surface — the dashboard, Compass — and a test guards the list. Your work reaches a row by a flag default flipping on <code>main</code>.</p></div>
     <div class="callout warn"><span class="lab">Review HTML goes in public/demos/</span><p>Both folders work on your branch build. <code>public/demos/</code> is for work in review and is meant to be short-lived; <code>public/prototypes/</code> is for a document that is becoming a permanent row. Only the second needs a row in the project list.</p></div>
     <div class="callout warn"><span class="lab">Every branch gets an address</span><p>Anyone with the link and the site password can open it — including work you are not ready to show. Nothing confidential on a branch.</p></div>
   </div>
@@ -531,7 +531,7 @@
   <ul>
     <li>Flags live in <code>src/context/FeatureFlagContext.tsx</code>, in <code>FEATURE_FLAGS</code>. Ask Claude to add yours there and to add it to the <code>/dashboard-rebrand</code> panel scope so reviewers can toggle it.</li>
     <li>Reviewers can flip flags live on your build: hover the prototype bar and find the robot icon, which opens the flag sheet. In demo mode those flips are temporary and reset on exit.</li>
-    <li>Do not promote by adding a row to Prototypes. That section holds exactly one row — the product build — and a test compares it in both directions, so a second row fails the suite.</li>
+    <li>Do not promote by adding a row to Prototypes. That section holds one row per product surface — all the same build on <code>main</code> — and a test compares it in both directions, so an unexpected row fails the suite.</li>
   </ul>
 </section>
 
@@ -602,7 +602,7 @@
       <tr><td>Branch deploy</td><td>The website Netlify builds for one branch: <code>&lt;branch&gt;--ux-design-xceldashboard.netlify.app</code>.</td></tr>
       <tr><td><code>?demo=1</code></td><td>Demo mode: render the committed flag defaults, ignore the viewer's own saved toggles, don't persist flips.</td></tr>
       <tr><td>Feature flag</td><td>A named switch in <code>FEATURE_FLAGS</code>. Off on <code>main</code> until promoted; on on your branch so your build shows it.</td></tr>
-      <tr><td>Prototypes</td><td>The section holding the live product build at <code>main</code>'s flag defaults. One row. Changed only by merging.</td></tr>
+      <tr><td>Prototypes</td><td>The section holding the live product build at <code>main</code>'s flag defaults. One row per product surface, all the same build. Changed only by merging.</td></tr>
       <tr><td>Refinement</td><td>The review inbox: links added on the page, team-only until flipped public. Its internal id is <code>demo</code> — you will see that in URLs (<code>?section=demo</code>) and code.</td></tr>
       <tr><td>Resources</td><td>Everything else that lives elsewhere: briefs, boards, Figma files. Also added on the page.</td></tr>
       <tr><td>Promote</td><td>Two skills bracket the loop. <code>promote-to-refinement</code> (yours, on the branch) opens the Refinement form prefilled with your branch address. <code>promote-to-prototype</code> (Jillienne's, on the PR) decides per flag whether its "on" default ships in Prototypes.</td></tr>

@@ -21,7 +21,7 @@ import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
-  DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_PACING,
+  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E,
   defaultDiscoverabilityVersionFor,
   isQualifyingEducationVersion,
 } from '@/data/dashboardVersions'
@@ -229,8 +229,12 @@ describe('the Testing version is registered without displacing anything', () => 
        ⚠ TESTING IS NOT ARCHIVED by losing the default — it still leads the
        picker and everything else in this file still describes it. What changed
        is which version a bare `/dashboard-rebrand` opens. */
+    /* ⚠ SIXTH OWNER, 2026-10-14: END-TO-END DEMO — Eric's, the first default that
+       is not Jillienne's — via `promote-to-prototype` on his merge. The pacing
+       fork and Hybrid V1 are DISPLACED, not retired: both keep `maturity:
+       'ready'`, so four versions sit in the demo site's picker. */
     expect(defaultDiscoverabilityVersionFor('xcel')).toBe(
-      DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_PACING.id,
+      DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E.id,
     )
     expect(defaultDiscoverabilityVersionFor('xcel')).not.toBe(
       DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id,

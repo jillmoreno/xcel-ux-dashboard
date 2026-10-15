@@ -255,10 +255,18 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
          at all, so the two Atlas versions queue BEHIND it rather than being
          appended next to Testing where the branch had them. */
       'discoverability-testing-3',
+      // Eric/Atlas WIP (eric-atlas-v3) leads Eric's versions since 2026-10-12.
+      'eric-atlas-v3',
+      // Eric/Atlas White (2026-10-12) — WIP's duplicate, right after it.
+      'eric-atlas-white',
+      // End-to-End Demo (2026-10-14) — White's duplicate, right after it.
+      'eric-atlas-e2e',
       // From feat/atlas-compass-global-nav: Atlas/Compass, and Eric/Atlas V1
       // behind its flag (the Header filters it).
       'discoverability-atlas-compass-nav',
-      'eric-atlas-v1',
+      // Eric/Atlas V1 came off the picker 2026-10-12 (still renders by link).
+      // Eric/Atlas V2 (2026-10-07) — V1 with its own copy of the Home page.
+      'eric-atlas-v2',
       /* ⚠ HYBRID V1 JOINED 2026-10-05 — Jill's, and it sits after the two Atlas
          entries because it is built FROM them: it takes the Atlas chrome and
          forks only the home. Reading the picker top to bottom is the lineage. */
@@ -398,13 +406,16 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
   it('Home V2 (Figma 161:662) is the default: one course card, the exam-date card and the links card', () => {
     renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
     const card = screen.getByRole('region', { name: 'Current course' })
-    expect(within(card).getByText('Expected completion date')).toBeTruthy()
-    expect(within(card).getByText('Days to review')).toBeTruthy()
+    // One Course progress panel since 2026-10-06 (Figma 217:3793): Expected
+    // completion + Course access; Days to review and the pace goal are gone.
+    const progress = within(card).getByRole('region', { name: 'Course progress' })
+    expect(within(progress).getByText('Expected completion')).toBeTruthy()
+    expect(within(card).queryByText('Days to review')).toBeNull()
     expect(within(card).getByRole('img', { name: /Course progress \d+% complete/ })).toBeTruthy()
     expect(within(card).getByRole('button', { name: 'Begin Course' })).toBeTruthy()
     expect(within(card).getByRole('region', { name: 'Pass State Exam' })).toBeTruthy()
     expect(screen.getByRole('region', { name: 'Do you know your state exam date?' })).toBeTruthy()
-    const links = screen.getByRole('navigation', { name: 'Other information for your journey' })
+    const links = screen.getByRole('navigation', { name: 'Quick links' })
     for (const name of ['My Courses', 'My Certificates', 'Flashcards', 'Exam Simulator', 'Exam Information', 'Applying for a License', 'State Requirements']) {
       expect(within(links).getByRole('button', { name })).toBeTruthy()
     }
@@ -427,8 +438,13 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
        the lineage rule that says a version lists directly after its parent.
        Anchored to Testing 3 rather than to a number so the next version added
        between them moves this assertion rather than silently satisfying it. */
+    /* ⚠ 2026-10-12: Eric/Atlas WIP (eric-atlas-v3) now leads Eric's
+       versions, so it sits between Testing 3 and this one. */
+    expect(ids.indexOf('eric-atlas-v3')).toBe(ids.indexOf('discoverability-testing-3') + 1)
+    // …and Eric/Atlas White after it (2026-10-12), then End-to-End Demo
+    // (2026-10-14).
     expect(ids.indexOf('discoverability-atlas-compass-nav')).toBe(
-      ids.indexOf('discoverability-testing-3') + 1,
+      ids.indexOf('discoverability-testing-3') + 4,
     )
     expect(DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV.label).toBe(
       'Atlas/Compass Global Navigation',
@@ -767,13 +783,17 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     // An inline padding / colour / background would win over
     // `[aria-current='page']` and the active row would look idle.
     renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&nav=left-rail')
-    const home = screen.getByRole('button', { name: 'Home' })
+    // The RAIL's Home row — the journey-links card has its own "Home" link
+    // since 2026-10-07, so the name alone is no longer unique.
+    const home = screen.getAllByRole('button', { name: 'Home' }).find((b) => b.classList.contains('cre-atlas-nav-row'))!
     expect(home.style.padding).toBe('')
     expect(home.style.paddingLeft).toBe('')
     expect(home.style.color).toBe('')
     expect(home.style.background).toBe('')
     const css = readFileSync('src/styles/tokens.css', 'utf8')
-    expect(css).toMatch(/\.cre-atlas-nav-row\[aria-current='page'\]\s*\{[^}]*border-left: 3px solid/)
+    // The active row is its fill and ink — no left rule since 2026-10-06.
+    expect(css).toMatch(/\.cre-atlas-nav-row\[aria-current='page'\]\s*\{[^}]*background: var\(--color-atlas-nav-active-fill\)/)
+    expect(css).not.toMatch(/\.cre-atlas-nav-row\[aria-current='page'\]\s*\{[^}]*border-left:/)
   })
 })
 

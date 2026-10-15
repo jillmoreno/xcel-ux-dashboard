@@ -71,6 +71,7 @@ export function CompassCourseRail({
   breadcrumb,
   courseTitle,
   progressPct,
+  hideProgress = false,
   toc,
   resources,
 }: CompassCourseRailConfig) {
@@ -88,12 +89,17 @@ export function CompassCourseRail({
       {breadcrumb && breadcrumb.length > 0 ? <Breadcrumb crumbs={breadcrumb} /> : null}
 
       <div style={BODY}>
+        {/* Neither a title nor progress (Eric/Atlas WIP, 2026-10-14) → no
+            block at all, so the list is not pushed down by an empty one. */}
+        {!courseTitle && hideProgress ? null : (
         <div style={TITLE_BLOCK}>
-          <p style={COURSE_TITLE}>{courseTitle}</p>
+          {/* An empty title draws nothing (Eric/Atlas WIP hides it, 2026-10-14). */}
+          {courseTitle ? <p style={COURSE_TITLE}>{courseTitle}</p> : null}
           {/* THE PLAYER BAR'S PROGRESS TRACK in place of the "N% Complete"
               pill (2026-10-01, the designer's request): the same 4px track,
               fill to the knob and 13px knob as the bar's Section pill, with
               the figure beside it. */}
+          {hideProgress ? null : (
           <div style={PROGRESS_ROW}>
             <span
               role="progressbar"
@@ -110,7 +116,9 @@ export function CompassCourseRail({
             </span>
             <span style={PROGRESS_TEXT}>{pct}% Complete</span>
           </div>
+          )}
         </div>
+        )}
 
         <nav aria-labelledby="compass-rail-toc">
           <p id="compass-rail-toc" style={CAPTION}>

@@ -36,15 +36,26 @@ import { useSyncExternalStore } from 'react'
  */
 export type AtlasBrandSkin = 'cre' | 'mckissock' | 'elite'
 export type AtlasPaletteSkin = 'grasslands' | 'everglade' | 'harbor' | 'marigold'
-export type AtlasSkin = 'global' | 'xcel' | AtlasBrandSkin | AtlasPaletteSkin
+/* XCEL BLUE CTA (2026-10-09, Eric) is a third kind — XCEL's own colours with
+   steel-blue buttons and links. No lockup of its own: it keeps the XCEL logo,
+   as `global` and `xcel` do, so it is named here beside them rather than
+   joining either union (merged with the palette split, 2026-10-14). */
+export type AtlasSkin = 'global' | 'xcel' | 'xcel-blue-cta' | AtlasBrandSkin | AtlasPaletteSkin
 
 export const ATLAS_SKINS: readonly { skin: AtlasSkin; label: string }[] = [
+  // XCEL first, and the default (2026-10-06, Eric's request); Global second.
+  { skin: 'xcel', label: 'XCEL (Insurance)' },
+  // XCEL BLUE CTA (2026-10-09, Eric) — the ATLAS skin in every respect but
+  // one: its buttons and text links in XCEL's steel blue, #2D5872. See
+  // tokens.css ("XCEL BLUE CTA").
+  { skin: 'xcel-blue-cta', label: 'XCEL Blue CTA' },
   // GLOBAL (2026-09-30) — no brand: the Atlas experience in the Compass Design
   // System v5's own colours (steel, slate, terracotta, one white surface), for
   // an instance that is not any Colibri brand. Colours only — the file's fonts
   // and component styles are deliberately not taken. See tokens.css.
-  { skin: 'global', label: 'Global' },
-  { skin: 'xcel', label: 'XCEL (Insurance)' },
+  // Shown as "Atlas" since 2026-10-09 (Eric); the value stays `global` so
+  // every `?skin=global` link keeps working.
+  { skin: 'global', label: 'Atlas' },
   { skin: 'cre', label: 'Colibri Real Estate' },
   { skin: 'mckissock', label: 'McKissock Learning' },
   { skin: 'elite', label: 'Elite Learning' },
@@ -62,9 +73,9 @@ export const ATLAS_SKINS: readonly { skin: AtlasSkin; label: string }[] = [
 
 export const ATLAS_SKIN_PARAM = 'skin'
 
-/** The skin a link with no `?skin=` shows: GLOBAL since 2026-10-01 (the
- *  designer's request; it was XCEL). */
-export const ATLAS_SKIN_DEFAULT: AtlasSkin = 'global'
+/** The skin a link with no `?skin=` shows: XCEL again since 2026-10-06 (the
+ *  designer's request); it was Global from 2026-10-01. */
+export const ATLAS_SKIN_DEFAULT: AtlasSkin = 'xcel'
 
 /** `?skin=` → a known skin, else the default. Validated, not cast: a
  *  hand-edited link can name anything. */

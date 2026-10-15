@@ -45,9 +45,14 @@ describe('Atlas Top Nav', () => {
     expect(current()).toEqual(['Home'])
   })
 
-  it('marks My Learning current on the Overview and Course pages', () => {
+  it('marks Course Overview (was My Learning) current on the Overview and Course pages', () => {
     renderNav('?section=course&coursePage=overview')
-    expect(current()).toEqual(['My Learning'])
+    expect(current()).toEqual(['Course Overview'])
+  })
+
+  it('leaves Course Overview in its default state on the Course page (plain Top Nav)', () => {
+    renderNav('?section=course&coursePage=course')
+    expect(current()).toEqual([])
   })
 
   it('marks neither on another section', () => {
@@ -57,7 +62,7 @@ describe('Atlas Top Nav', () => {
 
   it('navigates by section only, keeping the demo params', () => {
     renderNav('?demo=1&skin=global&nav=top-nav')
-    fireEvent.click(screen.getByRole('button', { name: /My Learning/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Course Overview/ }))
     const search = screen.getByTestId('search').textContent ?? ''
     expect(search).toContain('section=course')
     expect(search).toContain('coursePage=overview')
@@ -100,7 +105,7 @@ describe('Atlas Expanding Top Nav', () => {
     const search = screen.getByTestId('search').textContent ?? ''
     expect(search).toContain('section=course')
     expect(search).toContain('coursePage=flashcards')
-    expect(current()).toEqual(['My Learning', 'Flashcards'])
+    expect(current()).toEqual(['Course Overview', 'Flashcards'])
     fireEvent.click(screen.getByRole('button', { name: 'Certificates' }))
     expect(screen.getByTestId('search').textContent).toContain('section=certificates')
     expect(current()).toEqual(['Home', 'Certificates'])
@@ -112,7 +117,7 @@ describe('Atlas Expanding Top Nav', () => {
     const search = screen.getByTestId('search').textContent ?? ''
     expect(search).toContain('section=course')
     expect(search).toContain('coursePage=course')
-    expect(current()).toEqual(['My Learning', 'Course'])
+    expect(current()).toEqual(['Course Overview', 'Course'])
     fireEvent.click(screen.getByRole('button', { name: 'Study Plan' }))
     expect(screen.getByTestId('search').textContent).toContain('section=study-plan')
     expect(current()).toEqual(['Home', 'Study Plan'])
@@ -161,11 +166,18 @@ describe('Hybrid’s second pill is a different control', () => {
     expect(current()).toEqual(['Course Overview'])
   })
 
-  it('⚠ and Eric’s keeps the word and the destination', () => {
-    /* The standing instruction, pinned beside the change it constrains. */
-    renderNav('?section=course&coursePage=overview')
-    expect(screen.getByRole('button', { name: /My Learning/ })).toBeTruthy()
-    expect(screen.queryByRole('button', { name: /Course Overview/ })).toBeNull()
+  it('⚠ and Eric’s keeps its destination', () => {
+    /* The standing instruction, pinned beside the change it constrains. The
+       WORD is the same on both since the 2026-10-15 merge of main — Eric's
+       pill was renamed "Course Overview" on 2026-10-07 — so what still tells
+       the two apart is where it goes: his to the Atlas course overview, never
+       to Compass Learning. */
+    renderNav('?demo=1&nav=top-nav')
+    fireEvent.click(screen.getByRole('button', { name: /Course Overview/ }))
+    const search = screen.getByTestId('search').textContent ?? ''
+    expect(search).toContain('section=course')
+    expect(search).toContain('coursePage=overview')
+    expect(search).not.toContain('section=compass')
   })
 })
 

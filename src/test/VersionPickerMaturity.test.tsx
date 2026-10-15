@@ -84,7 +84,7 @@ afterEach(cleanup)
  * only one here that would have.
  */
 describe('the designer tabs over the LIVE catalog', () => {
-  it('gives Eric his two Atlas versions, not an empty tab', () => {
+  it('gives Eric his four Atlas versions, not an empty tab', () => {
     render(
       <DashboardVersionsPanel
         open
@@ -99,11 +99,18 @@ describe('the designer tabs over the LIVE catalog', () => {
       />,
     )
     fireEvent.click(screen.getByRole('tab', { name: 'Eric' }))
-    expect(screen.getByText('Eric/Atlas V1')).toBeTruthy()
+    // V1 came off the picker and V2 was renamed on 2026-10-12.
+    expect(screen.queryByText('Eric/Atlas V1')).toBeNull()
+    expect(screen.getByText('Eric/Atlas Right SB Quick Links')).toBeTruthy()
+    expect(screen.getByText('Eric/Atlas WIP')).toBeTruthy()
+    expect(screen.getByText('Eric/Atlas White')).toBeTruthy()
+    expect(screen.getByText('End-to-End Demo')).toBeTruthy()
     expect(screen.getByText('Atlas/Compass Global Navigation')).toBeTruthy()
     /* The count beside the strip is read off the FILTERED list, so "0 versions"
-       on a populated tab is the exact symptom this pins. */
-    expect(screen.getByText(/2 versions/)).toBeTruthy()
+       on a populated tab is the exact symptom this pins. Four: V1 came off
+       and Eric/Atlas White joined, both 2026-10-12; five with End-to-End
+       Demo, 2026-10-14. */
+    expect(screen.getByText(/5 versions/)).toBeTruthy()
   })
 
   it('still shows Jill hers, so the filter is filtering and not emptying', () => {
@@ -176,7 +183,7 @@ describe('the shipped versions', () => {
      on the promotion, deliberately, by a person. If the answer comes back yes,
      this test flips to assert they are ready — and the one BELOW it is what
      keeps the two halves honest in the meantime. */
-  it('are ready except the Atlas parent and the pacing exploration', () => {
+  it('are ready except the Atlas parent and Eric\u2019s unpromoted versions', () => {
     const unmarked = DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => v.maturity !== 'ready')
     /* ⚠ ONE, NOT TWO, SINCE 2026-10-05 — promote-to-prototype made Eric/Atlas
        V1 pickable and left the parent alone. They render the same pages today
@@ -187,30 +194,21 @@ describe('the shipped versions', () => {
        ⚠ THE PARENT'S ABSENCE IS A DECISION, NOT AN OVERSIGHT, and it is the
        half worth pinning: a later branch adding `maturity: 'ready'` to it
        should have to come through here and say why. */
-    /* ⚠ BACK TO ONE, 2026-10-06. Hybrid V1 joined this list on 2026-10-05 while
-       it was being built and left it the way the note above said it would —
-       through `promote-to-prototype`, not by being marked here. It is `ready`
-       now, AND it is the default, which are two separate acts: `maturity` says
-       a stakeholder may pick it, `defaultDiscoverabilityVersionFor` says what
-       they land on. This test only knows about the first.
-
-       ⚠ THE ATLAS PARENT IS THE WHOLE LIST AGAIN, which is the state this
-       started in, so the note above it is the one that still matters: a later
-       branch marking it `ready` should have to come through here and say why. */
-    /* ⚠ AND BACK TO ONE ON 2026-10-08 — the pacing fork left this list exactly
-       as the note above predicted, through `promote-to-prototype` rather than by
-       being marked here. It was unmarked for a single day.
-
-       It is `ready` now AND it is the default, which are still two separate
-       acts: `maturity` says a stakeholder may pick it,
-       `defaultDiscoverabilityVersionFor` says what they land on with no pick at
-       all. This test only knows about the first.
-
-       ⚠ THE ATLAS PARENT IS THE WHOLE LIST ONCE MORE, which is the state this
-       started in — so the note above it is again the one that matters: a later
-       branch marking it `ready` should have to come through here and say why. */
-    expect(unmarked.map((v) => v.id)).toEqual(['discoverability-atlas-compass-nav'])
-    /* The gate is still FILTERING, not merely armed — the demo site is short by
+    /* ⚠ AND ERIC/ATLAS V2 since 2026-10-07 — new, so not decided yet; it is
+       design-site only until a promotion says otherwise. */
+    /* ⚠ 2026-10-14 — `promote-to-prototype` on Eric's merge. END-TO-END DEMO
+       LEFT THIS LIST the way the note above says it should: it is `ready` AND
+       it is the default, still two separate acts. WIP, White and Right SB
+       Quick Links stay unmarked — not decided against, not decided yet.
+       Hybrid V1 and the pacing fork keep `ready`: displaced, not retired.
+       (List order: Eric/Atlas WIP leads Eric's versions since 2026-10-12.) */
+    expect(unmarked.map((v) => v.id)).toEqual([
+      'eric-atlas-v3',
+      'eric-atlas-white',
+      'discoverability-atlas-compass-nav',
+      'eric-atlas-v2',
+    ])
+    /* The gate is FILTERING, not merely armed — the demo site is short by
        exactly those, and nothing else moved. */
     expect(dashboardVersionsForAudience(true)).toHaveLength(
       DISCOVERABILITY_DASHBOARD_VERSIONS.length - unmarked.length,
@@ -219,7 +217,10 @@ describe('the shipped versions', () => {
        the stakeholder picker; V1 is now the Atlas row stakeholders get, and the
        PARENT is the one held back. Both directions are pinned so neither can
        drift without a failure. */
-    expect(dashboardVersionsForAudience(true).map((v) => v.id)).toContain('eric-atlas-v1')
+    /* ⚠ 2026-10-12: Eric/Atlas V1 came OFF the picker (Eric's request). End-to-End
+       Demo is the Atlas row stakeholders get since 2026-10-14. */
+    expect(dashboardVersionsForAudience(true).map((v) => v.id)).not.toContain('eric-atlas-v1')
+    expect(dashboardVersionsForAudience(true).map((v) => v.id)).toContain('eric-atlas-e2e')
     expect(dashboardVersionsForAudience(true).map((v) => v.id)).not.toContain(
       'discoverability-atlas-compass-nav',
     )

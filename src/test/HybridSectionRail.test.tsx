@@ -113,12 +113,20 @@ describe('no other version moved', () => {
 
      What these two prove is the thing that actually shares the code path: the
      versions that answer `isAtlasCompassNavVersion` keep their rails while
-     Hybrid, which answers it too, does not. */
+     Hybrid, which answers it too, does not.
+
+     ⚠ PINNED ON CERTIFICATES SINCE 2026-10-14, NOT MY COURSES. Eric's own branch
+     (2026-10-05, before Hybrid existed) dropped the rail on My Courses for
+     every Atlas version — his journey-links card is the way around there —
+     and that merged with his promotion. So My Courses no longer tells the two
+     apart; Certificates does (only WIP and White lose it there, by his
+     `wipCertificates`). The claim is unchanged: his versions keep the rail
+     Hybrid gave up. */
   it.each([
     ['Eric/Atlas V1', 'eric-atlas-v1'],
     ['the Atlas parent', 'discoverability-atlas-compass-nav'],
-  ])('%s still has its rail on My Courses', (_label, version) => {
-    renderShell(`/dashboard-rebrand?demo=1&version=${version}&section=courses`)
+  ])('%s still has its rail on Certificates', (_label, version) => {
+    renderShell(`/dashboard-rebrand?demo=1&version=${version}&section=certificates`)
     expect(rail()).toBeTruthy()
   })
 
@@ -127,7 +135,7 @@ describe('no other version moved', () => {
        is the correct outcome of "don't change any other version" and NOT an
        oversight — if his trap is ever worth fixing it is his call, and the fix
        is a reset on `atlasNoRail`, not this. */
-    renderShell('/dashboard-rebrand?demo=1&version=eric-atlas-v1&section=courses')
+    renderShell('/dashboard-rebrand?demo=1&version=eric-atlas-v1&section=certificates')
     expect(screen.getByRole('button', { name: /Collapse sidebar/i })).toBeTruthy()
   })
 })

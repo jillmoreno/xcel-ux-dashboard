@@ -1,20 +1,13 @@
-import { useMemo, type CSSProperties, type ReactNode } from 'react'
+import { useMemo, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   AngleRightRegular,
-  BallotCheckRegular,
-  BookRegular,
-  CircleInfoRegular,
-  ClipboardListCheckRegular,
-  FileCertificateRegular,
-  GaugeThin,
-  NotebookRegular,
-  PenFieldRegular,
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
+import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
+import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
 import { GET_LICENSED_STEPS, jurisdictionName } from '@/data/nyProducerRequirements'
-import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import { defaultPreset, formatPaceDate, studyPace, daysUntil, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
 import type { LearningPathSummary } from '@/data/learningFixtures'
 
@@ -60,7 +53,23 @@ export type AtlasHomeV2Props = {
   onOpenStop?: (courseId: string) => void
   onOpenStep?: (id: string) => void
   onOpenRequirements?: () => void
+  /** The learner's ACTIVE courses, for the tab strip above the title. Two or
+   *  more shows the strip; one hides it. Unset = this course plus the demo's
+   *  invented second course (below). */
+  courses?: AtlasCourseTab[]
+  onSelectCourse?: (id: string) => void
+  /** "All courses ›" — defaults to the same destination as the side card's
+   *  My Courses link (`section=courses`). */
+  onAllCourses?: () => void
 }
+
+/* THE DEMO'S OTHER ACTIVE COURSE (Figma 188:1006). INVENTED — no fixture has a
+   New York P&C course. Choosing its tab swaps the title and cover image only;
+   everything below them (figures, pace, journey) is a DUPLICATE of the Life &
+   Health course's content (2026-10-05, the designer's request). */
+const DEMO_OTHER_COURSES: AtlasCourseTab[] = [
+  { id: 'demo-ny-pc', title: 'New York Property & Casualty', coverUrl: '/courses/ny-property-casualty.webp' },
+]
 
 export function AtlasHomeV2({
   path,
@@ -77,6 +86,9 @@ export function AtlasHomeV2({
   onOpenStop,
   onOpenStep,
   onOpenRequirements,
+  courses,
+  onSelectCourse,
+  onAllCourses,
 }: AtlasHomeV2Props) {
   const [, setParams] = useSearchParams()
   const go = (section: string, coursePage?: string) =>
@@ -101,14 +113,7 @@ export function AtlasHomeV2({
     [today, hoursRemaining, accessExpiresAt, examDate, notStarted],
   )
   const preset = defaultPreset(model)
-  const reviewDays = Math.max(0, model.daysToCeiling - preset.days)
   const accessDays = accessExpiresAt ? Math.max(0, daysUntil(accessExpiresAt, today) ?? 0) : null
-  /* THE WEEK GOAL IS THE DESIGN'S 3 (2026-10-02, the designer's request), not
-     derived. ⚠ It was `preset.days / 7` rounded, which read "2 Week Goal" for
-     the 13 days the model gives this demo — so the goal and the Expected
-     completion date above it no longer come from one figure. To derive it
-     again: `Math.max(1, Math.round(preset.days / 7))`. */
-  const weeks: number = 3
 
   const stops = journeyStopsFor(path)
   const currentIdx = Math.max(
@@ -118,44 +123,90 @@ export function AtlasHomeV2({
   const pass = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 2]
   const apply = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1]
   const state = jurisdictionName(path.state)
+  const tabs = courses ?? [{ id: path.id, title: courseTitle, coverUrl }, ...DEMO_OTHER_COURSES]
+  const [activeTabId, setActiveTabId] = useState(path.id)
+  const activeTab = tabs.find((t) => t.id === activeTabId) ?? tabs[0]
+  const shownTitle = activeTab?.title ?? courseTitle
+  const shownCover = activeTab?.coverUrl ?? coverUrl
+  const selectCourse = (id: string) => {
+    setActiveTabId(id)
+    onSelectCourse?.(id)
+  }
 
   return (
     <div style={PAGE}>
       {/* ── The course card ── */}
-      <section aria-label="Current course" style={CARD}>
+      <section aria-label="Current course" style={tabs.length > 1 ? CARD : { ...CARD, paddingTop: 48 }}>
+        {tabs.length > 1 ? (
+          <AtlasCourseTabs courses={tabs} activeId={activeTab?.id ?? path.id} onSelect={selectCourse} onAllCourses={onAllCourses ?? (() => go('courses'))} />
+        ) : null}
         <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
-          {coverUrl ? <img src={coverUrl} alt="" aria-hidden style={COVER} /> : null}
+          {shownCover ? (
+            <span aria-hidden style={COVER_FRAME}>
+              <img src={shownCover} alt="" style={COVER} />
+            </span>
+          ) : null}
           <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 15, justifyContent: 'center' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <p style={EYEBROW}>Current course:</p>
-              <h2 className="cre-compass-course-title" style={TITLE}>
-                {courseTitle}
+              <h2 className="cre-compass-course-title cre-atlas-home-course-title" style={TITLE}>
+                {shownTitle}
               </h2>
             </div>
-            {onOverview ? (
-              <button type="button" className="cre-compass-home-chip" onClick={onOverview} style={CHIP}>
-                Course Overview
+            {/* The card's two actions, at the main buttons' size (2026-10-06,
+                the designer's request): Course Overview — was a 10px chip —
+                as the outline button, and Begin Course, MOVED here from the
+                Study Journey's current stop. */}
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              {onOverview ? (
+                <button
+                  type="button"
+                  className="cre-compass-secondary cre-atlas-home-secondary"
+                  onClick={onOverview}
+                  // Two weights under the buttons' Bold, Medium 500 (2026-10-06).
+                  style={{ ...HEADER_BUTTON, fontWeight: 500 }}
+                >
+                  Course Overview
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="cre-compass-primary cre-compass-btn-primary"
+                onClick={onBegin}
+                disabled={!onBegin}
+                style={HEADER_BUTTON}
+              >
+                Begin Course
               </button>
-            ) : null}
+            </div>
           </div>
         </div>
 
         <span aria-hidden style={RULE} />
 
         <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
-          {/* Left: the figures, then progress and pace. */}
-          <div style={{ width: 200, flex: 'none', display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 8 }}>
+          {/* Left: ONE "Course progress" panel — the dial, then the figures
+              (Figma 217:3793, 2026-10-06, the designer's request: the figures
+              list and the Study Pace panel reworked into one module). The
+              design drops three things the two had: DAYS TO REVIEW, the
+              "N Week Goal" with its gauge and copy, and CUSTOMIZE YOUR PACE.
+              To bring them back, lift them from commit 0d637ef. */}
+          <section aria-label="Course progress" style={{ ...PROGRESS_PANEL, width: 200, flex: 'none', alignSelf: 'flex-start' }}>
+            {/* Centred over the dial (2026-10-06, the designer's request). */}
+            <p style={{ ...PANEL_EYEBROW, alignSelf: 'stretch', textAlign: 'center' }}>Course progress</p>
+            <div style={{ paddingTop: 4, alignSelf: 'center' }}>
+              <ProgressDial percent={percent} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignSelf: 'stretch' }}>
+              <span aria-hidden style={PANEL_RULE} />
               <Figure
-                label="Expected completion date"
+                label="Expected completion"
                 value={preset.state === 'no' ? 'Not achievable' : formatPaceDate(preset.finishIso)}
                 note="At current pace"
               />
-              <span aria-hidden style={RULE} />
-              <Figure label="Days to review" value={`${reviewDays} ${reviewDays === 1 ? 'Day' : 'Days'}`} note="Extra Prep Time" />
               {accessDays != null && accessExpiresAt ? (
                 <>
-                  <span aria-hidden style={RULE} />
+                  <span aria-hidden style={PANEL_RULE} />
                   <Figure
                     label="Course access"
                     value={`${accessDays} ${accessDays === 1 ? 'Day' : 'Days'}`}
@@ -163,33 +214,9 @@ export function AtlasHomeV2({
                   />
                 </>
               ) : null}
+              <span aria-hidden style={PANEL_RULE} />
             </div>
-
-            <div style={PACE_PANEL}>
-              {/* The eyebrow heads the whole panel, above the dial (2026-10-02,
-                  the designer's request; the design sets it under it). */}
-              <p style={{ ...EYEBROW, alignSelf: 'stretch' }}>Your study pace</p>
-              <ProgressDial percent={percent} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 11, alignSelf: 'stretch' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-compass-page-button)' }}>
-                    <GaugeThin size={33} aria-hidden />
-                  </span>
-                  <span style={{ ...BODY_TEXT, fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                    {weeks} Week Goal
-                  </span>
-                </div>
-                <p style={SMALL_TEXT}>
-                  Your default pace is set for you to complete your course in {weeks}{' '}
-                  {weeks === 1 ? 'week' : 'weeks'}. You can change your pace below.
-                </p>
-                <button type="button" className="cre-compass-v2-link" onClick={() => go('study-plan')} style={LINK}>
-                  Customize Your Pace
-                  <AngleRightRegular size={13} aria-hidden />
-                </button>
-              </div>
-            </div>
-          </div>
+          </section>
 
           <span aria-hidden style={{ width: 1, flex: 'none', background: 'var(--color-atlas-nav-rule)' }} />
 
@@ -210,7 +237,6 @@ export function AtlasHomeV2({
                     stop={stop}
                     current={i === currentIdx}
                     last={i === stops.length - 1}
-                    onBegin={onBegin}
                     onOpen={onOpenStop ? () => onOpenStop(stop.id) : undefined}
                   />
                 ))}
@@ -250,10 +276,12 @@ export function AtlasHomeV2({
 
       {/* ── The side column ── */}
       <div style={{ width: 260, flex: 'none', display: 'flex', flexDirection: 'column', gap: 24 }}>
-        {/* No stroke and the Compass medium shadow, with the course card's
-            fill so the card has a surface to lift (2026-10-02, the
-            designer's request). The links card below keeps the outline. */}
-        <section aria-label="Do you know your state exam date?" style={{ ...SIDE_CARD, ...SIDE_CARD_LIFTED }}>
+        {/* The links card's treatment — no fill, no shadow, the nav-rule
+            outline — on every brand (2026-10-06, the designer's request). It
+            was lifted from 2026-10-02: no stroke, the course card's fill and
+            the Compass medium shadow (`--color-compass-course-card` +
+            `--shadow-compass-md`), to put back if asked. */}
+        <section aria-label="Do you know your state exam date?" style={SIDE_CARD}>
           <p style={STEP_TITLE}>Do you know your state exam date?</p>
           {/* NOT WIRED YET — as on V1's banner, neither answer leads anywhere
               until one is designed. */}
@@ -268,41 +296,22 @@ export function AtlasHomeV2({
           <p style={SMALL_TEXT}>If you know when your state exam is we can help you plan and pass your course easier.</p>
         </section>
 
-        <nav aria-label="Other information for your journey" style={SIDE_CARD}>
-          {/* The exam-date card's heading style — Serif H8 (2026-10-02, the
-              designer's request; the design sets it in Open Sans SemiBold 16). */}
-          <p style={STEP_TITLE}>Other Information for Your Journey</p>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" onClick={() => go('courses')} />
-            <SideLink icon={<FileCertificateRegular size={13} aria-hidden />} label="My Certificates" onClick={() => go('certificates')} />
-            <SideLink icon={<NotebookRegular size={13} aria-hidden />} label="Flashcards" onClick={() => go('course', 'flashcards')} />
-            <SideLink icon={<BallotCheckRegular size={13} aria-hidden />} label="Exam Simulator" onClick={() => go('course', 'exam-simulator')} />
-            <SideLink
-              icon={<CircleInfoRegular size={13} aria-hidden />}
-              label="Exam Information"
-              onClick={onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : undefined}
-            />
-            <SideLink
-              icon={<PenFieldRegular size={13} aria-hidden />}
-              label="Applying for a License"
-              onClick={onOpenStep ? () => onOpenStep(apply.id) : undefined}
-            />
-            <SideLink icon={<ClipboardListCheckRegular size={13} aria-hidden />} label="State Requirements" onClick={onOpenRequirements} />
-          </ul>
-        </nav>
+        <AtlasJourneyLinksCard onOpenStep={onOpenStep} onOpenRequirements={onOpenRequirements} />
       </div>
     </div>
   )
 }
 
+/* One figure in the Course progress panel (Figma 217:3832): an 11px brand
+   eyebrow over a 13px line — the value Bold, a Light dash, the note Regular. */
 function Figure({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <p style={FIGURE_LABEL}>{label}</p>
-      <p style={{ margin: 0, lineHeight: '20px', color: 'var(--color-text-primary)', whiteSpace: 'nowrap' }}>
-        <span style={{ fontFamily: 'var(--font-heading-serif)', fontSize: 16 }}>{value}</span>
-        <span style={{ ...BODY_TEXT, fontSize: 16, fontWeight: 300 }}> - </span>
-        <span style={{ ...BODY_TEXT, fontSize: 12 }}>{note}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <p style={{ ...PANEL_EYEBROW, letterSpacing: '0.1em' }}>{label}</p>
+      <p style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '20px', color: 'var(--color-text-primary)', whiteSpace: 'nowrap' }}>
+        <span style={{ fontWeight: 700 }}>{value}</span>
+        <span style={{ fontWeight: 300 }}> - </span>
+        <span style={{ fontWeight: 400 }}>{note}</span>
       </p>
     </div>
   )
@@ -319,25 +328,36 @@ function ProgressDial({ percent }: { percent: number }) {
   return (
     <div role="img" aria-label={`Course progress ${pct}% complete`} style={{ position: 'relative', width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden style={{ display: 'block' }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" style={{ stroke: 'var(--color-atlas-nav-rule)' }} strokeWidth={3} />
+        {/* The track: each brand's Primary 100 (2026-10-06, the designer's
+            request; it was the nav rule). XCEL keeps its own through
+            --color-atlas-dial-track (tokens.css). */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={r}
           fill="none"
-          style={{ stroke: 'var(--color-compass-page-button)' }}
-          strokeWidth={6}
+          style={{ stroke: 'var(--color-atlas-dial-track, var(--color-primary-100))' }}
+          strokeWidth={3}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          // The brand button colour over the nav rule; the XCEL skin re-points
+          // both through --color-atlas-dial-ring / -track (tokens.css).
+          style={{ stroke: 'var(--color-atlas-dial-ring, var(--color-compass-page-button))' }}
+          // 8, was 6 (2026-10-06, the designer's request). Same radius as the
+          // track, so it stays centred on it; 70 + 4 fits the 149 box's 74.5.
+          strokeWidth={8}
           strokeLinecap="round"
           strokeDasharray={`${(c * pct) / 100} ${c}`}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </svg>
+      {/* The figure and "Complete" only — the panel's eyebrow now says
+          "Course progress" (Figma 217:3799). */}
       <div aria-hidden style={DIAL_TEXT}>
-        <span style={DIAL_CAPTION}>
-          Course
-          <br />
-          Progress
-        </span>
         <span style={DIAL_FIGURE}>{pct}%</span>
         <span style={DIAL_CAPTION}>Complete</span>
       </div>
@@ -349,13 +369,11 @@ function JourneyRow({
   stop,
   current,
   last,
-  onBegin,
   onOpen,
 }: {
   stop: JourneyStop
   current: boolean
   last: boolean
-  onBegin?: () => void
   onOpen?: () => void
 }) {
   return (
@@ -373,18 +391,20 @@ function JourneyRow({
           lineHeight: '18px',
           paddingTop: current ? 5 : 0,
           fontWeight: current ? 600 : 400,
-          color: current ? 'var(--color-compass-page-button)' : 'var(--color-text-secondary)',
+          color: current ? 'var(--color-atlas-home-current-stop, var(--color-compass-page-button))' : 'var(--color-text-secondary)',
         }}
       >
         {stop.title}
       </span>
-      {current ? (
-        <button type="button" className="cre-compass-primary cre-compass-btn-primary" onClick={onBegin} disabled={!onBegin} style={BEGIN}>
-          Begin Course
-        </button>
-      ) : onOpen ? (
+      {/* The current stop carries no button — Begin Course moved up beside
+          the course title (2026-10-06). */}
+      {/* UPCOMING stops show NOTHING on the right (2026-10-06, the designer's
+          request: the lock icons removed). They were locked from 2026-10-05 —
+          the FA lock (`LockRegular`, still in the icon registry), not a button;
+          before that, the open chevron. Still not openable. */}
+      {current ? null : stop.status === 'not-started' ? null : onOpen ? (
         <button type="button" className="cre-compass-v2-link" onClick={onOpen} aria-label={`Open ${stop.title}`} style={CHEVRON}>
-          <AngleRightRegular size={13} aria-hidden />
+          <AngleRightRegular size={13} aria-hidden style={{ color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }} />
         </button>
       ) : null}
     </li>
@@ -420,22 +440,6 @@ function Step({
   )
 }
 
-function SideLink({ icon, label, onClick }: { icon: ReactNode; label: string; onClick?: () => void }) {
-  return (
-    <li>
-      <button type="button" className="cre-compass-v2-row" onClick={onClick} disabled={!onClick} style={SIDE_ROW}>
-        <span aria-hidden style={{ width: 18, flex: 'none', display: 'inline-flex', justifyContent: 'center', color: 'var(--color-compass-page-button)' }}>
-          {icon}
-        </span>
-        <span style={{ flex: '1 1 0', minWidth: 0, textAlign: 'left' }}>{label}</span>
-        <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-compass-page-button)' }}>
-          <AngleRightRegular size={13} aria-hidden />
-        </span>
-      </button>
-    </li>
-  )
-}
-
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
 const BODY_TEXT: CSSProperties = { fontFamily: 'var(--font-body)' }
@@ -448,12 +452,15 @@ const PAGE: CSSProperties = {
 }
 /* The Home course card's surface — 48 in, 14 radius (Figma). */
 const CARD: CSSProperties = {
-  flex: '0 1 711px',
+  // 750, was the design's 711 (2026-10-08, Eric's request) — as V2 and V3.
+  // The left columns stay 200 (cover, progress panel); the 39 goes right.
+  flex: '0 1 750px',
   minWidth: 0,
   display: 'flex',
   flexDirection: 'column',
   gap: 24,
-  padding: 48,
+  // 24 on top, not 48 — the course tabs sit above the title (Figma 188:1006).
+  padding: '24px 48px 48px',
   boxSizing: 'border-box',
   borderRadius: 14,
   background: 'var(--color-compass-course-card)',
@@ -461,12 +468,26 @@ const CARD: CSSProperties = {
   // shadow lifts it instead (the small one was tried the same day).
   boxShadow: 'var(--shadow-compass-md)',
 }
-const COVER: CSSProperties = {
+/* The cover FILLS THE ROW'S HEIGHT — the eyebrow, title and buttons beside it
+   (2026-10-06, Eric's request). A frame stretched by the row, the image
+   absolutely inside it, so the photo's own proportions cannot set the row's
+   height; `cover` crops. Switching course tabs no longer depends on the
+   photos' proportions either (they set it from 2026-10-05 to 2026-10-06, at
+   the L&H photo's 1312 × 980). */
+const COVER_FRAME: CSSProperties = {
+  position: 'relative',
   width: 200,
-  minHeight: 142,
   flex: 'none',
-  objectFit: 'cover',
+  alignSelf: 'stretch',
   borderRadius: 8,
+  overflow: 'hidden',
+}
+const COVER: CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
   display: 'block',
 }
 const EYEBROW: CSSProperties = {
@@ -488,41 +509,37 @@ const TITLE: CSSProperties = {
   letterSpacing: '-0.01em',
   color: 'var(--color-compass-page-heading)',
 }
-const CHIP: CSSProperties = {
-  alignSelf: 'flex-start',
-  padding: '2px 8px 4px',
-  borderRadius: 4,
-  border: '1px solid var(--color-compass-page-card-border)',
-  fontFamily: 'var(--font-body)',
-  fontWeight: 600,
-  fontSize: 10,
-  lineHeight: '13px',
-  color: 'var(--color-neutral-600)',
-  whiteSpace: 'nowrap',
-}
 const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-nav-rule)' }
-const FIGURE_LABEL: CSSProperties = {
+/* The Course progress panel (Figma 217:3793): the Study Pace panel's tint,
+   24 in, 8 radius, no shadow (tried on the old pace panel 2026-10-02 and
+   removed the same day — the tint carries it). */
+const PROGRESS_PANEL: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: 16,
+  padding: 24,
+  boxSizing: 'border-box',
+  borderRadius: 8,
+  background: 'var(--color-atlas-outlined-card, var(--color-compass-page-card))',
+}
+/* The panel's eyebrows — 11px SemiBold caps in the guide's Secondary 500 on
+   XCEL (--color-atlas-home-eyebrow, tokens.css), the page eyebrow elsewhere. */
+const PANEL_EYEBROW: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-body)',
   fontWeight: 600,
-  fontSize: 10,
+  fontSize: 11,
   lineHeight: '14px',
-  letterSpacing: '0.14em',
+  letterSpacing: '0.16em',
   textTransform: 'uppercase',
-  color: 'var(--color-text-secondary)',
+  color: 'var(--color-atlas-home-eyebrow, var(--color-compass-page-eyebrow))',
 }
-/* The pale panel — the brand's Study Pace tint (`--color-atlas-outlined-card`). */
-const PACE_PANEL: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: 16,
-  // 22 across, not 24, so "Customize Your Pace ›" fits one line (156 > 152).
-  padding: '24px 22px',
-  borderRadius: 8,
-  background: 'var(--color-atlas-outlined-card, var(--color-compass-page-card))',
-  // No shadow — tried 2026-10-02 (Compass small, then 2px at 10–20%) and
-  // removed the same day; the tint carries the panel.
+/* The panel's rules take the dial track's colour — Secondary 200 on XCEL. */
+const PANEL_RULE: CSSProperties = {
+  display: 'block',
+  height: 1,
+  background: 'var(--color-atlas-dial-track, var(--color-atlas-nav-rule))',
 }
 const DIAL_TEXT: CSSProperties = {
   position: 'absolute',
@@ -562,8 +579,6 @@ const LINK: CSSProperties = {
   alignSelf: 'flex-start',
   display: 'inline-flex',
   alignItems: 'center',
-  // 8, not the design's 10, so "Customize Your Pace ›" holds one line in the
-  // pace panel.
   gap: 8,
   whiteSpace: 'nowrap',
   textAlign: 'left',
@@ -572,7 +587,9 @@ const LINK: CSSProperties = {
   background: 'none',
   cursor: 'pointer',
   fontFamily: 'var(--font-body)',
-  fontWeight: 700,
+  // SemiBold 600, one weight under Bold (2026-10-06, the designer's request) —
+  // the "→" is part of the label, so it thins with it.
+  fontWeight: 600,
   fontSize: 13,
   lineHeight: '19.5px',
   color: 'var(--color-compass-page-button)',
@@ -601,8 +618,9 @@ const MARK_CURRENT: CSSProperties = {
   height: 14,
   boxSizing: 'border-box',
   borderRadius: '50%',
-  background: 'var(--color-compass-page-button)',
-  border: '2px solid var(--color-compass-page-button)',
+  // The current stop's title colour (XCEL: Secondary 600 brown).
+  background: 'var(--color-atlas-home-current-stop, var(--color-compass-page-button))',
+  border: '2px solid var(--color-atlas-home-current-stop, var(--color-compass-page-button))',
   flex: 'none',
 }
 const MARK: CSSProperties = {
@@ -616,7 +634,9 @@ const MARK: CSSProperties = {
   flex: 'none',
 }
 const SPINE: CSSProperties = { flex: '1 1 0', minHeight: 1, width: 0, borderLeft: '2px solid var(--color-border-subtle)' }
-const BEGIN: CSSProperties = {
+/* The course card's actions — the page's main button size (the Begin Course
+   button's, 13.5 / 20.25 with 5×8 padding), side by side. */
+const HEADER_BUTTON: CSSProperties = {
   ...COMPASS_BUTTON,
   minHeight: 0,
   padding: '5px 8px',
@@ -652,29 +672,10 @@ const SIDE_CARD: CSSProperties = {
   borderRadius: 12,
   border: '1px solid var(--color-atlas-nav-rule)',
 }
-const SIDE_CARD_LIFTED: CSSProperties = {
-  border: 'none',
-  background: 'var(--color-compass-course-card)',
-  boxShadow: 'var(--shadow-compass-md)',
-}
 const SIDE_BUTTON: CSSProperties = {
   flex: '1 1 0',
   minHeight: 0,
   padding: '5px 8px',
   fontSize: 13.5,
   lineHeight: '20.25px',
-}
-const SIDE_ROW: CSSProperties = {
-  width: '100%',
-  display: 'flex',
-  alignItems: 'center',
-  gap: 8,
-  padding: 0,
-  border: 'none',
-  background: 'none',
-  cursor: 'pointer',
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  lineHeight: '18px',
-  // Colour on `.cre-compass-v2-row` (tokens.css), so the hover can win.
 }

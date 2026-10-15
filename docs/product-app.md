@@ -785,19 +785,30 @@ copy is absent.
 
 > ⚠ **NO LONGER XCEL'S DEFAULT EITHER — and neither is what displaced it, nor
 > what displaced THAT.** `defaultDiscoverabilityVersionFor('xcel')` returns
-> **Hybrid - Pacing Exploration** (`hybrid-pacing`) as of 2026-10-08. This
-> paragraph has now been wrong four times in the same way, which is why it keeps
-> its history rather than being rewritten: QE Focused was the default, then
-> Testing, then Testing 3, then Hybrid V1, now the pacing fork. All of them
-> still resolve by `?version=` and all of them are still tested, which is why
-> their sections stay.
+> **End-to-End Demo** (`eric-atlas-e2e`) as of 2026-10-14. This paragraph has
+> now been wrong five times in the same way, which is why it keeps its history
+> rather than being rewritten: QE Focused was the default, then Testing, then
+> Testing 3, then Hybrid V1, then the pacing fork, now Eric's End-to-End Demo.
+> All of them still resolve by `?version=` and all of them are still tested,
+> which is why their sections stay.
 >
-> What a fresh `/dashboard-rebrand?demo=1` lands on is **Hybrid - Pacing
-> Exploration** — Hybrid V1 plus the study-pace panel (a chooser at 0%, the
-> standing messaging in progress, the course-expiry states). That is a data
-> change in `dashboardVersions.ts`, **not a flag** — worth knowing, because the
-> flag catalog is the first place anyone looks for "what does Prototypes render"
-> and this line is not in it.
+> What a fresh `/dashboard-rebrand?demo=1` lands on is **End-to-End Demo** —
+> Eric's Atlas dashboard: the two-row Atlas header with its My Courses
+> dropdown, his Home (`AtlasHomeEricE2E`: the course card, the combined
+> Progress / Readiness panel, the exam-date card, Quick Links) and the Atlas My
+> Courses and Certificates pages, with `/end-to-end-demo` (Invited Product
+> Detail) as the way in. That is a data change in `dashboardVersions.ts`, **not
+> a flag** — worth knowing, because the flag catalog is the first place anyone
+> looks for "what does Prototypes render" and this line is not in it.
+>
+> ⚠ **THE FIRST DEFAULT THAT IS NOT JILLIENNE'S**, promoted from
+> `feat/atlas-compass-global-nav` with these decisions: End-to-End Demo is
+> `ready` AND the default; WIP, White and Right SB Quick Links stay design-site
+> only; the shared design defaults ride in as Eric set them — `atlas-heading-font`
+> Playfair 2 (which the baseline renders) and `atlas-brand-skin` XCEL (which the
+> baseline does not read — it has `atlas-brand-skin-v3`, Atlas/Global — but the
+> Hybrids do when picked). Hybrid keeps "My Learning" on the top nav; the Course
+> Overview page's dial and the notification badge fix reach every Atlas version.
 
 ### Eric's Atlas versions — reachable, and one of them pickable (2026-10-05)
 
@@ -872,15 +883,24 @@ behind the robot's dropdown. The robot came back to the demo site to carry it,
 withholding the Feature Flag sheet — see `AdminToolsMenu`'s `stakeholder` prop
 and `PublicGateway.test.tsx`, which pins that the dropdown has exactly one row.
 
-**THE COMMITTED REBRAND DEMO DEFAULTS**, as of 2026-10-08 — what `?demo=1`
+**THE COMMITTED REBRAND DEMO DEFAULTS**, as of 2026-10-14 — what `?demo=1`
 renders with nothing stored. Kept here rather than in the catalog because the
 catalog says what each flag DOES; this says which way the baseline is set.
 
 ⚠ **THE VERSION IS NOT IN THIS TABLE AND IS THE BIGGEST LINE OF ALL.** Every
 flag below is read INSIDE whichever dashboard version is rendering, and that
-version is **`hybrid-pacing`** since 2026-10-08, set in `dashboardVersions.ts`.
-Hybrid V1 kept `maturity: 'ready'` when it was displaced, exactly as Testing 3
-did before it, so all three stay in the demo site's picker.
+version is **`eric-atlas-e2e`** (End-to-End Demo) since 2026-10-14, set in
+`dashboardVersions.ts`. Hybrid - Pacing Exploration and Hybrid V1 kept
+`maturity: 'ready'` when displaced, exactly as Testing 3 did before them, so
+all four stay in the demo site's picker.
+
+⚠ **MOST ROWS BELOW ARE INERT ON A FRESH LOAD NOW.** End-to-End Demo renders
+Eric's own Home and section pages, which read none of the Testing-era flags
+in this table. The rows are kept because every one of them still configures
+the Hybrid and Testing versions when a stakeholder picks one, and because the
+table is the record of reviewed decisions. What the baseline's LOOK comes
+from is two design controls that have no row here on purpose:
+`atlas-brand-skin-v3` (Atlas/Global) and `atlas-heading-font` (Playfair 2).
 
 ⚠ **AND FOUR DESIGN CONTROLS ARRIVED WITH IT THAT ARE NOT IN THIS TABLE EITHER,
 on purpose.** `hybrid-lesson-block`, `hybrid-title-lesson`,
@@ -4329,3 +4349,27 @@ Study Journey with Begin Course on the current stop — beside "Do you know your
 state exam date?" (Yes / No, not wired) and "Other Information for Your
 Journey" (My Courses, My Certificates, Flashcards, Exam Simulator, Exam
 Information, Applying for a License, State Requirements).
+
+### Home V2 — course tabs (2026-10-05, Figma 188:1006)
+
+`AtlasCourseTabs` (src/components/compass/) sits above the Home V2 course card's
+title when the learner has two or more active courses: "COURSES:", one tab per
+course (the current one a folder tab in the Study Pace tint, joined to the rule),
+and "All courses ›". The tabs slide horizontally for any number of courses —
+hidden scrollbar, edge fades, and a chevron on whichever side is clipped. The
+card's top padding drops 48 → 24 only while the strip shows. The demo's second
+course ("New York Property & Casualty") is invented and not wired; selecting a
+tab and All courses call `onSelectCourse` / `onAllCourses`, unset for now.
+
+### Atlas My Courses (2026-10-05)
+
+On the Atlas versions, My Courses (`section=courses`):
+- has **no left nav rail** on the Top Nav version (as Home);
+- replaces its filter column (result count, Sort By, filter accordions) with
+  Home V2's journey-links card — now `AtlasJourneyLinksCard`, shared by both pages,
+  passed through `MyCoursesPage`'s `aside` prop;
+- sets its title in the Compass serif (Serif H4, via `PageHeader`'s `titleStyle`).
+
+The card's three sheet links go Home with `?open=exam-details | step:<id> |
+requirements`, which `MembershipOverview` opens once and strips. Home's "All
+courses ›" (course tabs) opens My Courses.

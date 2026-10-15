@@ -48,6 +48,7 @@ const row = (over: Partial<StoredLink> = {}): StoredLink => ({
   product: 'both',
   isPublic: false,
   addedDate: '2026-09-18',
+  updatedAt: '',
   ...over,
 })
 

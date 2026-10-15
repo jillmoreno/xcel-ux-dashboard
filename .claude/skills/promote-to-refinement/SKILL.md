@@ -1,9 +1,9 @@
 ---
 name: promote-to-refinement
 description: Put the branch you are on in front of the team — derive its Netlify branch-build URL, make sure it is pushed and built, draft the Refinement row (title, where-to-look note), and open the full site's Refinement section with the Add form prefilled so the designer checks it and clicks Add. Step 6 of the Contributing guide, without retyping a URL. Pairs with promote-to-prototype, which later takes the row off. Trigger on "promote to refinement", "add this to refinement", "share this branch", "put this up for review", "share with the team", "/promote-to-refinement".
-version: 1.0.0
+version: 1.1.0
 author: UX Design — Colibri
-last_updated: 2026-09-21
+last_updated: 2026-10-14
 status: active
 ---
 
@@ -90,12 +90,41 @@ git diff --name-only origin/main...HEAD -- public/demos/ | grep '\.html$'
 - Ask ONE question with **AskUserQuestion** only if there is a real choice
   (several demo files, or demo files AND product changes under `src/`).
 
+### 3b. Which product? (2026-10-14)
+
+Refinement rows carry `product: xcel | compass | both`, and since 2026-10-14
+the Prototypes section has a row per surface — so the tag is not just a
+filter, it says which Prototypes row this work is heading for. Read it off the
+branch rather than asking:
+
+```bash
+git diff --name-only origin/main...HEAD -- src | grep -Ei 'components/compass/|components/learning/Compass|compass' | wc -l
+git diff --name-only origin/main...HEAD -- src | grep -Eiv 'components/compass/|components/learning/Compass|compass' | wc -l
+```
+
+| Compass files | Other `src` files | `product` |
+|---|---|---|
+| some | none | `compass` |
+| some | some | `both` |
+| none | any | `xcel` |
+| none | none (a `public/demos/` file) | ask, defaulting to `xcel` |
+
+**Anjani's branches are Compass.** She owns what that surface should be (see
+`PROTOTYPE_SCOPES` in `prototypeFeatures.ts`), and a row tagged `compass` is
+what `promote-to-prototype` later reads as a Compass-row decision of hers. If
+the heuristic says otherwise for a branch of hers, say so and let her pick —
+the tag is hers to set; this step only saves the click.
+
+The form validates the value and falls back to its own default (`both`) for
+anything it does not recognise, so a wrong guess costs one click, not a bad row.
+
 ### 4. Draft the row
 
 | Field | Draft |
 |---|---|
 | **Title** | A short description of the work + the branch name, e.g. `Study streak card — feat/study-streak-card`. Take the description from the branch's commit subjects (`git log origin/main..HEAD --format=%s`); if they do not say, ask. |
 | **Note** | Where to look and what question is being asked. Ask the designer for one sentence if the commits do not make it obvious: *"Home, under Current Progress. Is the streak motivating or nagging?"* |
+| **Product** | From step 3b. Shown in the draft so the designer can disagree before the form opens. |
 | **Added by** | Not needed — the form prefills it from the browser's last author. |
 | **Show on public site** | Left OFF. Always. That toggle is Jillienne's decision, made on the page. |
 
@@ -119,10 +148,13 @@ URL-encode each field and open the full site:
 
 ```bash
 node -e '
-const [site,url,title,note]=process.argv.slice(1);
-const q=new URLSearchParams({section:"demo",add:"1",url,title,note});
-console.log(`${site}/?${q}`)' "$FULL_SITE" "$URL" "$TITLE" "$NOTE"
+const [site,url,title,note,product]=process.argv.slice(1);
+const q=new URLSearchParams({section:"demo",add:"1",url,title,note,product});
+console.log(`${site}/?${q}`)' "$FULL_SITE" "$URL" "$TITLE" "$NOTE" "$PRODUCT"
 ```
+
+The page reads `product` with the other four (`UxDashboardPage`, the
+`demoPrefill` note) and the form opens with that segment selected.
 
 **Give the designer that address as a clickable link** — in the Claude desktop
 app the sandbox cannot open their browser, so the link IS the hand-off. (In a

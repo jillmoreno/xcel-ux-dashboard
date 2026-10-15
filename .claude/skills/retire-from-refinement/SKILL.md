@@ -111,7 +111,11 @@ skill adds is the content, drawn from the row:
   branch was deleted, say the build is gone and name the merge commit or the
   closed PR instead, so there is still somewhere to go.
 - `reason` — the argument for the ending. For a decline: what was actually wrong
-  with it, not "not promoted".
+  with it, not "not promoted". **Since 2026-10-14, name the Prototypes ROW** the
+  work reached or was declined from — end to end (`xcel-dashboard`) or Compass
+  (`xcel-compass`) — because there are two now and "promoted" no longer says
+  where. For a Compass row, the decision was Anjani's and the promotion
+  Jillienne's; write both, the way the promotion commit does.
 - `flag` — any `?ff=` the row's URL pinned, since that is how someone reproduces
   the configuration on a build that still exists.
 

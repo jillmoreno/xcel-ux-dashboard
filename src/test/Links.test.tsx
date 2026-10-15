@@ -26,6 +26,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { LinksPanel } from '@/components/prototype/LinksPanel'
 import { UxDashboardPage } from '@/pages/UxDashboardPage'
+import { PROTOTYPE_FEATURES } from '@/data/prototypeFeatures'
 import { AccountProvider } from '@/context/AccountContext'
 import { ThemeProvider } from '@/context/ThemeContext'
 import {
@@ -50,6 +51,7 @@ const link = (over: Partial<StoredLink> = {}): StoredLink => ({
   product: 'both',
   isPublic: false,
   addedDate: '2026-09-10',
+  updatedAt: '',
   ...over,
 })
 
@@ -384,6 +386,23 @@ describe('LinksPanel', () => {
     expect(titles).toEqual(['Newest — same day', 'Middle — same day', 'Oldest'])
   })
 
+  it('sorts a row by when it was last SAVED, so an edit brings it to the top', async () => {
+    // 2026-10-14, Jillienne: "most recent at the top". The oldest-added row
+    // was edited after the others were added, so it leads; the row with no
+    // stamp (written before the field) sorts by its added day.
+    mockEndpoint([
+      link({ id: 'link-001', title: 'Oldest, edited today', addedDate: '2026-09-01', updatedAt: '2026-10-14T18:00:00Z' }),
+      link({ id: 'link-002', title: 'Added later, never edited', addedDate: '2026-10-10', updatedAt: '' }),
+      link({ id: 'link-003', title: 'Added later, saved once', addedDate: '2026-10-12', updatedAt: '2026-10-12T09:00:00Z' }),
+    ])
+    render(<LinksPanel />)
+    await waitFor(() => expect(screen.getByText('3 links')).toBeInTheDocument())
+    const titles = screen
+      .getAllByRole('link')
+      .map((a) => a.textContent?.replace(/\s*— opens in a new tab$/, '').trim())
+    expect(titles).toEqual(['Oldest, edited today', 'Added later, saved once', 'Added later, never edited'])
+  })
+
   it('carries the hover/focus classes, and they beat the inline styles', async () => {
     /*
      * jsdom has no `:hover`, so this asserts the two halves that CAN be checked
@@ -653,6 +672,41 @@ describe('the Links section on the gateway', () => {
     const rows = screen
       .getAllByRole('button', { name: /^Actions for / })
       .map((b) => b.getAttribute('aria-label')?.replace(/^Actions for /, ''))
-    expect(rows).toEqual(['XCEL Dashboard — Live Product Build'])
+    // Read from the data rather than written out: this test's claim is that
+    // Links added nothing, not what Prototypes holds — the smoke test owns that.
+    // The kebabs are the rows that OPEN; a coming-soon placeholder (2026-10-14,
+    // the Admin row) is drawn without one.
+    expect(rows).toEqual(
+      PROTOTYPE_FEATURES.filter((f) => f.category === 'prototype' && f.status !== 'coming-soon').map((f) => f.title),
+    )
+  })
+
+  it('reads ?product= off the promote-to-refinement hand-off and opens the form on it', async () => {
+    // 2026-10-14. The page owns the five params (`demoPrefill`); the panel
+    // test covers what the panel does with a product, this covers that the
+    // page actually parses it and strips it with the others. `compass` is
+    // not the form's default, so a pass here cannot be the default matching.
+    mockEndpoint([])
+    renderDashboard('/?section=demo&add=1&url=https%3A%2F%2Ffeat-x--site.netlify.app%2F&title=X&note=&product=compass')
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('radio', { name: 'Compass' })).toBeChecked()
+  })
+
+  it('ignores a ?product= it does not recognise', async () => {
+    mockEndpoint([])
+    renderDashboard('/?section=demo&add=1&url=https%3A%2F%2Ffeat-x--site.netlify.app%2F&title=X&note=&product=marketing')
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('radio', { name: 'Both' })).toBeChecked()
+  })
+})
+
+describe('Resources — no Updated stamp on the row (2026-10-14)', () => {
+  it('keeps the meta line as it was even when the record carries updatedAt', async () => {
+    // The server stamps every board's records; only Refinement SHOWS it. A
+    // brief on Resources does not move, and `showUpdated` is off here.
+    mockEndpoint([link({ updatedAt: '2026-10-14T15:51:11Z' })])
+    render(<LinksPanel />)
+    await screen.findByText('FinServ Learner Brief')
+    expect(screen.queryByText(/^Updated /)).toBeNull()
   })
 })

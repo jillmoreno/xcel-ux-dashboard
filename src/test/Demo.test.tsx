@@ -35,6 +35,7 @@ const demo = (over: Partial<StoredLink> = {}): StoredLink => ({
   product: 'both',
   isPublic: false,
   addedDate: '2026-09-18',
+  updatedAt: '',
   ...over,
 })
 
@@ -160,6 +161,7 @@ describe('DemoPanel on the full site', () => {
           url: 'https://feat-streak--ux-demo-xceldashboard.netlify.app/dashboard-rebrand?demo=1',
           title: 'Study streak card — feat/streak',
           note: 'Home, under Current Progress.',
+          product: 'compass',
         }}
         onPrefillConsumed={consumed}
       />,
@@ -170,10 +172,24 @@ describe('DemoPanel on the full site', () => {
     )
     expect(within(dialog).getByLabelText('Title')).toHaveValue('Study streak card — feat/streak')
     expect(within(dialog).getByLabelText(/^Note/)).toHaveValue('Home, under Current Progress.')
+    // The product tag rides in since 2026-10-14 — the skill reads it off the
+    // branch, so Anjani's Compass work opens already tagged.
+    expect(within(dialog).getByRole('radio', { name: 'Compass' })).toBeChecked()
     // Team-only by default, whatever the hand-off says — the toggle is a decision.
     expect(within(dialog).getByLabelText('Show on public site')).not.toBeChecked()
     expect(consumed).toHaveBeenCalledTimes(1)
     expect(writes).toHaveLength(0)
+  })
+
+  it('a prefill with no product opens on the form’s own default', async () => {
+    // A hand-off from before the field existed, or one that could not tell,
+    // must not change what the form would have done on its own.
+    mockEndpoint([])
+    render(
+      <DemoPanel prefill={{ url: 'https://x.netlify.app/dashboard-rebrand?demo=1', title: 'X', note: '' }} />,
+    )
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('radio', { name: 'Both' })).toBeChecked()
   })
 
   it('a prefill does nothing on the public build — it cannot author', async () => {
@@ -252,5 +268,31 @@ describe('LinksPanel keeps its own shape', () => {
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).queryByLabelText('Show on public site')).not.toBeInTheDocument()
     expect(within(dialog).getByLabelText(/^Type/)).toBeInTheDocument()
+  })
+})
+
+describe('Refinement — the Updated stamp (2026-10-14)', () => {
+  it('shows "Updated <date, time>" on a row the server has stamped, in the viewer\u2019s zone', async () => {
+    mockEndpoint([demo({ updatedAt: '2026-10-14T15:51:11Z' })])
+    render(<DemoPanel />)
+    const tag = await screen.findByText(/^Updated \w{3} \d{1,2}, \d{1,2}:\d{2}/)
+    expect(tag).toBeInTheDocument()
+  })
+
+  it('shows nothing for a record written before the field existed', async () => {
+    // '' is how `normalise` reads an absent stamp. No "Updated" and no guess.
+    mockEndpoint([demo({ updatedAt: '' })])
+    render(<DemoPanel />)
+    await screen.findByText('Study streak card — feat/streak')
+    expect(screen.queryByText(/^Updated /)).toBeNull()
+  })
+
+  it('is stamped by the endpoint on every write, never taken from the client', () => {
+    // Read from the real server source, the `isPublic` pattern above: the
+    // stamp is `new Date().toISOString()` in `validateRecord`, which both the
+    // create and the edit path run, and no `b.updatedAt` is ever read.
+    const board = readFileSync(resolve(here, '../../netlify/lib/linkBoard.ts'), 'utf8')
+    expect(board).toMatch(/out\.updatedAt = new Date\(\)\.toISOString\(\)/)
+    expect(board).not.toMatch(/b\.updatedAt/)
   })
 })

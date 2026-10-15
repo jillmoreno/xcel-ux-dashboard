@@ -9,6 +9,9 @@ import { QaNotesPage } from '@/pages/QaNotesPage'
 import { LinksPage } from '@/pages/LinksPage'
 import { PrdsPage } from '@/pages/PrdsPage'
 import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
+import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
+import { InvitedProductDetailPage } from '@/pages/InvitedProductDetailPage'
+import { InvitedCheckoutPage } from '@/pages/InvitedCheckoutPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DashboardRebrandPage } from '@/pages/DashboardRebrandPage'
 import { RecommendedCardABComparePage } from '@/pages/RecommendedCardABComparePage'
@@ -192,6 +195,17 @@ export default function App() {
           than their whole branch. Takes its entire definition from the URL, so
           it needs no per-component code. See `ComponentReviewPage`. */}
       <Route path="/review" element={<TestingGate><ComponentReviewPage /></TestingGate>} />
+      {/* The Atlas header on its own, not wired into the shell. See `AtlasHeader`. */}
+      <Route path="/atlas-header-preview" element={<TestingGate><AtlasHeaderPreviewPage /></TestingGate>} />
+      {/* The End-to-End Demo's first page, before its dashboard: blank under the
+          partner header. "Invited Product Detail" — see `InvitedProductDetailPage`. */}
+      {/* Under the app's providers and prototype chrome — the demo and design
+          bars — but not its Header: the pages draw their own (`bare`). */}
+      <Route element={<AppLayout bare />}>
+        <Route path="/end-to-end-demo" element={<TestingGate><InvitedProductDetailPage /></TestingGate>} />
+        {/* …and its checkout, which Purchase Now opens. See `InvitedCheckoutPage`. */}
+        <Route path="/end-to-end-demo/checkout" element={<TestingGate><InvitedCheckoutPage /></TestingGate>} />
+      </Route>
       <Route
         path="/prototype/:featureId/handoff/:componentId"
         element={

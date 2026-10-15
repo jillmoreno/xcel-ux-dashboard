@@ -16,6 +16,10 @@ export type DashboardVersionId =
   | 'discoverability-testing-2'
   | 'discoverability-atlas-compass-nav'
   | 'eric-atlas-v1'
+  | 'eric-atlas-v2'
+  | 'eric-atlas-v3'
+  | 'eric-atlas-white'
+  | 'eric-atlas-e2e'
   | 'hybrid-v1'
   | 'hybrid-pacing'
   | 'discoverability-testing-3'
@@ -373,6 +377,85 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1: DashboardVersion =
     'Eric\u2019s Atlas/Compass work as of 2026-10-02: the Top Nav (Home \u00b7 My Learning) over the Global brand, no left rail on Home, the Schedule State Exam banner, the one-frame right rail, the collapsible left rail on the course pages, the course player with Rubi beside it, and the Compass Resources page. Shares the Atlas/Compass code. Feature-flagged.',
 }
 
+// "Eric/Atlas V2" — 2026-10-07, the designer's request: "duplicate this home
+// page as V2 and add it to my dashboard versions". The Atlas/Compass pages again
+// (`isAtlasCompassNavVersion` answers true), with ONE difference: Home renders
+// `AtlasHomeEricV2`, a copy made that day, so V2's Home can move on while V1's
+// stays put. Design site only (no `maturity`) until it is promoted.
+export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V2: DashboardVersion = {
+  id: 'eric-atlas-v2',
+  owner: 'eric',
+  // Renamed 2026-10-12 (Eric); the id stays `eric-atlas-v2`.
+  label: 'Eric/Atlas Right SB Quick Links',
+  createdAt: '2026-10-07',
+  modifiedAt: '2026-10-07',
+  description:
+    'Eric\u2019s Atlas/Compass work from 2026-10-07 on: the same pages as Eric/Atlas V1, with its own copy of the Home page (AtlasHomeEricV2) so Home can change here without changing V1.',
+}
+
+// "Eric/Atlas V3" — 2026-10-07, the designer's request: Home duplicated again,
+// as its own Dashboard Version (it was a third variant of `atlas-home-layout`
+// briefly first). The Atlas/Compass pages with Home rendered by
+// `AtlasHomeEricV3`, a copy of V2's Home that day. Design site only.
+export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3: DashboardVersion = {
+  id: 'eric-atlas-v3',
+  owner: 'eric',
+  // Shown as "Eric/Atlas WIP" since 2026-10-12 (Eric); the id stays
+  // `eric-atlas-v3` so every ?version= link keeps working.
+  label: 'Eric/Atlas WIP',
+  createdAt: '2026-10-07',
+  modifiedAt: '2026-10-07',
+  description:
+    'Eric\u2019s Atlas/Compass work from 2026-10-07 on: the same pages as Eric/Atlas V2, with its own copy of the Home page (AtlasHomeEricV3), so Home can change here without changing V2 or V1.',
+}
+
+// "Eric/Atlas White" — 2026-10-12, Eric's request: a duplicate of Eric/Atlas
+// WIP, with its own copy of the Home page (`AtlasHomeEricWhite`). Design site
+// only.
+export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE: DashboardVersion = {
+  id: 'eric-atlas-white',
+  owner: 'eric',
+  label: 'Eric/Atlas White',
+  createdAt: '2026-10-12',
+  modifiedAt: '2026-10-12',
+  description:
+    'A duplicate of Eric/Atlas WIP from 2026-10-12, with its own copy of the Home page (AtlasHomeEricWhite) so Home can change here without changing WIP. Shares WIP’s Design-bar controls.',
+}
+
+// "End-to-End Demo" — 2026-10-14, Eric's request: a duplicate of Eric/Atlas
+// White. The shell treats it as White (`isEricAtlasWhiteLike`); its Home is its
+// own copy (`AtlasHomeEricE2E`, of WIP/White's that day), so the demo can move
+// on without moving White.
+export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E: DashboardVersion = {
+  id: 'eric-atlas-e2e',
+  owner: 'eric',
+  /* `ready` — 2026-10-14, `promote-to-prototype`, the same day it was made.
+     Offered to stakeholders on the demo site, where the picker lists `ready`
+     versions only. ⚠ IT IS ALSO THE DEFAULT, which is a SECOND and larger
+     act — see `defaultDiscoverabilityVersionFor`. This field only decides
+     whether a stakeholder can PICK it; that function decides what they land
+     on. WIP, White and Right SB Quick Links stay unmarked: not decided
+     against, not decided yet. */
+  maturity: 'ready',
+  label: 'End-to-End Demo',
+  createdAt: '2026-10-14',
+  modifiedAt: '2026-10-14',
+  /* What a stakeholder reads in the picker, so it says what the page SHOWS.
+     Mechanically it is Eric/Atlas White's duplicate with its own Home file
+     (`AtlasHomeEricE2E`), so the demo can move without moving White. */
+  description:
+    'Eric\u2019s Atlas dashboard, end to end: the two-row Atlas header with its My Courses dropdown, a Home with the course card, the combined Progress / Readiness panel, the exam-date card and Quick Links, and the Atlas My Courses and Certificates pages. The Invited Product Detail page at /end-to-end-demo is the way in.',
+}
+
+/** Eric/Atlas White — and End-to-End Demo, its duplicate. Every place White
+ *  differs from WIP asks this, so the duplicate follows without a second edit. */
+export function isEricAtlasWhiteLike(versionId: string | null | undefined): boolean {
+  return (
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E.id
+  )
+}
+
 // "Hybrid V1" — 2026-10-05, Jillienne's. Eric's Atlas home (the layout, the
 // figures column, the step list) carrying Testing 3's answers to the questions
 // that version had already settled: the coursework timeline with its percentage
@@ -467,12 +550,17 @@ export function isHybridV1Version(versionId: string | null | undefined): boolean
 }
 
 /** True for the Atlas/Compass Global Navigation version — and for Eric/Atlas
- *  V1, which is the same pages under its own name. One helper so the shell and
+ *  V1, V2 and V3, which are the same pages under their own names (V2's and
+ *  V3's Home are their own copies). One helper so the shell and
  *  the demo bar cannot disagree about which version is on. */
 export function isAtlasCompassNavVersion(versionId: string | null | undefined): boolean {
   return (
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV.id ||
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V2.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E.id ||
     /* Both Hybrids take the Atlas CHROME (rail, slim header, palette) and fork
        only the home content — see their entries above. */
     isHybridVersion(versionId)
@@ -564,8 +652,21 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   // Atlas/Compass (and Eric/Atlas V1, behind `dashboard-version-eric-atlas-v1`
   // — the Header filters it out of the picker when the flag is off) come from
   // feat/atlas-compass-global-nav.
+  // Eric/Atlas WIP (V3) LEADS Eric's versions (2026-10-12, his request).
+  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3,
+  // Eric/Atlas White (2026-10-12) — WIP's duplicate, listed right after it.
+  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE,
+  // End-to-End Demo (2026-10-14) — White's duplicate, right after it.
+  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E,
   DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV,
-  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1,
+  /* ⚠ ERIC/ATLAS V1 TAKEN OFF THE PICKER 2026-10-12 (Eric: "delete Eric/Atlas
+     V1"). The definition above is kept and `?version=eric-atlas-v1` still
+     renders (isAtlasCompassNavVersion). Its picker flag
+     `dashboard-version-eric-atlas-v1` was removed with it. To restore: re-add
+     DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1 here, after Atlas/Compass.
+     It was the Atlas row the DEMO site offered (`maturity: 'ready'`). End-to-End
+     Demo took that place on 2026-10-14 — `ready`, and the default. */
+  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V2,
   DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1,
   DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_PACING,
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
@@ -655,10 +756,29 @@ export function dashboardVersionLabel(id: string): string {
  * default" (`hideSetDefault`), so this IS the default, per brand.
  */
 export function defaultDiscoverabilityVersionFor(brand: Brand): string {
-  /* ⚠ HYBRID - PACING EXPLORATION SINCE 2026-10-08, DISPLACING HYBRID V1 —
-     `promote-to-prototype`, the owner's call. This one line IS the Prototypes
-     baseline: it decides which dashboard renders at all, and every flag below
-     it is read INSIDE whichever version this returns.
+  /* ⚠ END-TO-END DEMO SINCE 2026-10-14, DISPLACING HYBRID - PACING EXPLORATION
+     — `promote-to-prototype` on Eric's `feat/atlas-compass-global-nav`, the
+     owner's call. This one line IS the Prototypes baseline: it decides which
+     dashboard renders at all, and every flag below it is read INSIDE
+     whichever version this returns.
+
+     ⚠ THE FIRST DEFAULT THAT IS NOT JILLIENNE'S, and the first in the Atlas
+     family proper rather than a Hybrid fork of it. Two things followed from
+     that on the day, both recorded where they live: (1) every raw
+     `?version=` read of Eric's ids was changed to resolve the default
+     (`resolveDashboardVersion`), or a bare `?demo=1` drew the plain Atlas
+     Home under his chrome — the 2026-10-06 bug again; (2) the shared design
+     defaults `atlas-heading-font` (Playfair 2) now reach Prototypes, and
+     `atlas-brand-skin` (XCEL) reaches Hybrid when picked. The notes on those
+     flags say so.
+
+     ⚠ THE DISPLACED VERSIONS ARE NOT RETIRED. Hybrid - Pacing Exploration and
+     Hybrid V1 keep `maturity: 'ready'`, as Testing 3 did — all stay in the
+     demo site's picker, so the swap is reversible by a URL rather than a
+     deploy. The history below is kept as it was written.
+
+     ⚠ HYBRID - PACING EXPLORATION WAS THE DEFAULT 2026-10-08 → 2026-10-14,
+     DISPLACING HYBRID V1 — `promote-to-prototype`, the owner's call.
 
      ⚠ THE DISPLACED VERSION IS NOT RETIRED, which is now true twice over.
      Hybrid V1 keeps `maturity: 'ready'`, exactly as Testing 3 did when Hybrid
@@ -682,7 +802,7 @@ export function defaultDiscoverabilityVersionFor(brand: Brand): string {
      entry is "may a stakeholder pick it". Conflating them is how a version gets
      promoted by accident — see the skill. */
   return brand === 'xcel'
-    ? DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_PACING.id
+    ? DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E.id
     : DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED.id
 }
 

@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { HouseRegular, SlashForwardSolid } from '@/icons'
 import { useAtlasCourse } from './useAtlasCourse'
 import { ATLAS_COURSE_PAGES, type AtlasCoursePageId } from './dashboardRail'
@@ -46,6 +47,9 @@ export function AtlasCourseSideNav({
   onHome: () => void
 }) {
   const courseTitle = useAtlasCourse().title
+  /* No course name over the list on Eric/Atlas WIP (2026-10-14, Eric's
+     request); the other versions keep it. */
+  const hideTitle = useSearchParams()[0].get('version') === 'eric-atlas-v3'
   const current = ATLAS_COURSE_PAGES.find((p) => p.id === page) ?? ATLAS_COURSE_PAGES[0]
 
   return (
@@ -83,7 +87,7 @@ export function AtlasCourseSideNav({
           </ol>
         </nav>
       ) : null}
-      <p style={COURSE_TITLE}>{courseTitle}</p>
+      {hideTitle ? null : <p style={COURSE_TITLE}>{courseTitle}</p>}
       <nav aria-label="Course">
         <ul style={LIST}>
           {ATLAS_COURSE_PAGES.map((item) => (

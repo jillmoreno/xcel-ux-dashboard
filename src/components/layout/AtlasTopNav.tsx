@@ -1,8 +1,11 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { BookOpenRegular, HouseRegular } from '@/icons'
-import { useAccount } from '@/context/AccountContext'
-import { isHybridVersion, resolveDashboardVersion } from '@/data/dashboardVersions'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { isEricAtlasWhiteLike, isHybridVersion } from '@/data/dashboardVersions'
+import { AtlasTopNavCoursesDropdown } from './AtlasTopNavCoursesDropdown'
+import { ATLAS_HOME_REFRESH } from './atlasHomeRefresh'
+import './atlasHeader.css'
 
 /**
  * ATLAS TOP NAV (Figma "Atlas-Compass-Global-Navigation" 160:616, 2026-09-30)
@@ -54,17 +57,34 @@ const COMPASS_LINKS: readonly TopNavLink[] = [
  *  button slides its links out to its right, easing in and out, and the button
  *  after it is pushed over in the same motion (it is in the same row, so the
  *  layout carries it). Switching buttons closes one tray as the other opens. */
-export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
+export function AtlasTopNav({
+  expanding = false,
+  versionId,
+}: {
+  expanding?: boolean
+  /** The RESOLVED dashboard version — `Header` passes its `rebrandVersion`.
+   *  Added 2026-10-14 when End-to-End Demo became the default: the raw
+   *  `?version=` is null on a bare `?demo=1`, and the version questions below
+   *  must answer for the default too. Absent (a standalone render), the raw
+   *  param is read, as before. */
+  versionId?: string | null
+}) {
   const [params, setParams] = useSearchParams()
+  const version = versionId ?? params.get('version')
+  // Jill's Hybrids take the Atlas chrome and keep the pill's old label.
+  const hybridNav = isHybridVersion(version)
   const section = params.get('section')
   const coursePage = params.get('coursePage')
   /* ⚠ HYBRID'S SECOND PILL IS A DIFFERENT CONTROL — 2026-10-08, two direct
-     asks. It is LABELLED "Course Overview" rather than "My Learning", and it
-     goes to COMPASS LEARNING rather than to the Atlas course overview.
-     Scoped to the Hybrid family so Eric's versions keep both the word and the
-     destination they have. */
-  const { brand } = useAccount()
-  const hybrid = isHybridVersion(resolveDashboardVersion(params.get('version'), brand))
+     asks. It goes to COMPASS LEARNING rather than to the Atlas course
+     overview, and it is labelled "Course Overview" there too (see the label
+     below — the 2026-10-14 merge note that said the Hybrids keep "My
+     Learning" predates this branch's ask). `hybridNav` above is the resolved
+     check, so a bare `?demo=1` on a Hybrid default answers the same way. */
+  // On the COURSE page (the player) the Top Nav's Course Overview button sits
+  // in its default state, not current (2026-10-08, Eric's request) — it names
+  // the Overview, which is not where you are. The Expanding Top Nav keeps it
+  // current there, because its tray marks the Course link inside it.
   // Home's own sections (Study Plan, Certificates, Resources) keep Home
   // current, so its tray stays open on them. Not its Course link: that is a
   // page of the course, which is Compass Learning's.
@@ -73,7 +93,8 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
     section === 'dashboard' ||
     HOME_LINKS.some((l) => !l.coursePage && l.section === section)
       ? 'home'
-      : section === 'course' || section === 'compass'
+      : (section === 'course' && !(coursePage === 'course' && !expanding)) ||
+          section === 'compass'
       ? 'compass'
       : null
 
@@ -87,29 +108,67 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
   }
   const isCurrentLink = (l: TopNavLink) =>
     l.section === section && (l.coursePage ? l.coursePage === (coursePage ?? 'overview') : true)
+  // ERIC/ATLAS WHITE's Top Nav = Dropdown (2026-10-12, Eric's request): the
+  // second button is the "My Courses" dropdown instead of Course Overview.
+  // Plain Top Nav only; Home keeps no dropdown.
+  const topNavPick = useFeatureFlag('atlas-white-top-nav').variant
+  // …and Eric/Atlas WIP's too, since 2026-10-13 (Eric's request: WIP's nav
+  // should be White's). On WIP a course pick changes `?whiteCourse=`, which
+  // only White's Home reads.
+  const whiteNav =
+    !expanding && (isEricAtlasWhiteLike(version) || version === 'eric-atlas-v3')
+  const coursesDropdown = whiteNav && topNavPick === 'dropdown'
+  // …and Home Only (2026-10-12): the Course Overview button is not drawn.
+  const homeOnly = whiteNav && topNavPick === 'home-only'
 
   return (
-    <nav aria-label="Global" style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+    /* WIP's and White's buttons are THE TWO-ROW HEADER'S PILLS (2026-10-13,
+       Eric's request: "style the buttons as in the new nav but retain the
+       dropdown style from this nav") — `cre-atlas-hdr` brings that header's
+       variables and pill class (atlasHeader.css), 8 apart as there. The My
+       Courses dropdown keeps its own open frame. */
+    <nav
+      aria-label="Global"
+      className={whiteNav ? 'cre-atlas-hdr' : undefined}
+      style={{ display: 'flex', alignItems: 'center', gap: whiteNav ? 8 : 11 }}
+    >
       <TopNavItem
         label="Home"
         // 1px up, the house's optical centre (2026-10-01, the designer's request).
         icon={<HouseRegular size={12} aria-hidden style={{ position: 'relative', top: -1 }} />}
         current={current === 'home'}
-        onClick={() => navigate(null, null)}
+        // …and the Home cards start over (2026-10-12, Eric's request): WIP's
+        // and White's Homes listen for this and reset Progress, Readiness and
+        // the State Exam card.
+        onClick={() => {
+          navigate(null, null)
+          window.dispatchEvent(new Event(ATLAS_HOME_REFRESH))
+        }}
         links={expanding ? HOME_LINKS : null}
+        pill={whiteNav}
         isCurrentLink={isCurrentLink}
         onLink={(l) => navigate(l.section, l.coursePage ?? null)}
       />
+      {homeOnly ? null : coursesDropdown ? (
+        <AtlasTopNavCoursesDropdown selected={section === 'courses'} />
+      ) : (
       <TopNavItem
         // "My Learning" with FA's `book-open` (Regular, the weight of Home's
         // house) — 2026-10-01, the designer's request; it was "Compass
         // Learning" with `circle-location-arrow`.
-        label={hybrid ? 'Course Overview' : 'My Learning'}
         /* ⚠ THE ID STAYS `nav.compass` WHATEVER THE PILL READS.
            `TESTABLE_CTAS` forbids renaming an id once a session has used it —
            a link already handed out would silently revive the control. The
            catalog's LABEL is what moved to match the screen. */
         ctaId="nav.compass"
+        // Reads "Course Overview" since 2026-10-07 (Eric's request; it was
+        // "My Learning") — on his versions it opens the course's Overview
+        // page. ⚠ THE HYBRIDS SAY IT TOO, SINCE 2026-10-08 (this branch): the
+        // 2026-10-14 merge had them keep "My Learning", but Jillienne's ask on
+        // the 8th was that BOTH "Course Overview" controls — this pill and the
+        // rail's — land on Anjani's dashboard, so the word is the same and the
+        // destination differs (below).
+        label="Course Overview"
         // 13px — 2026-10-01, the designer's request; it was 14.
         icon={<BookOpenRegular size={13} aria-hidden />}
         current={current === 'compass'}
@@ -120,11 +179,13 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
            bands from the same transcribed content (see
            `compassLearningFixtures`). Pointing at an existing route rather than
            forking a third overview is what keeps one dashboard, one source. */
-        onClick={() => (hybrid ? navigate('compass', null) : navigate('course', 'overview'))}
+        onClick={() => (hybridNav ? navigate('compass', null) : navigate('course', 'overview'))}
         links={expanding ? COMPASS_LINKS : null}
+        pill={whiteNav}
         isCurrentLink={isCurrentLink}
         onLink={(l) => navigate(l.section, l.coursePage ?? null)}
       />
+      )}
     </nav>
   )
 }
@@ -138,6 +199,7 @@ function TopNavItem({
   links,
   isCurrentLink,
   onLink,
+  pill = false,
 }: {
   label: string
   icon: ReactNode
@@ -155,6 +217,8 @@ function TopNavItem({
   links: readonly TopNavLink[] | null
   isCurrentLink: (l: TopNavLink) => boolean
   onLink: (l: TopNavLink) => void
+  /** WIP and White: the two-row header's pill — no icon (2026-10-13). */
+  pill?: boolean
 }) {
   // Open once mounted, a frame late, so a page that LOADS on this version
   // slides its tray out too rather than drawing it already open.
@@ -169,12 +233,12 @@ function TopNavItem({
     <button
       type="button"
       aria-current={current ? 'page' : undefined}
-      className={current ? 'cre-atlas-topnav-btn is-current' : 'cre-atlas-topnav-btn'}
+      className={pill ? 'cre-atlas-hdr-pill' : current ? 'cre-atlas-topnav-btn is-current' : 'cre-atlas-topnav-btn'}
       onClick={onClick}
       data-cta-id={ctaId}
-      style={BUTTON}
+      style={pill ? undefined : BUTTON}
     >
-      {icon}
+      {pill ? null : icon}
       {label}
       {/* The pointer under the current button is GONE from the plain Top Nav
           (2026-10-02, the designer's request; `POINTER` is kept for a

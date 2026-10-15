@@ -114,11 +114,28 @@ describe('the owner axis', () => {
       /* ⚠ THE TWO CONVERTED CONTROLS LEAD, in catalog order — they sit beside
          `dashboard-heading-font` where a reader looks for them. */
       'atlas-brand-skin',
+      // Joined 2026-10-09 — V3's own Brand control, Global by default.
+      'atlas-brand-skin-v3',
       'atlas-heading-font',
+      // Joined 2026-10-07 — V2's long-title reference toggle, beside Headings.
+      'atlas-home-long-title',
+      // Joined 2026-10-13 — WIP's Quick Links, left or right.
+      'atlas-wip-quick-links-side',
+      // Joined 2026-10-14 — Background: Toned (WIP) or White (White).
+      'atlas-background',
+      // Joined 2026-10-14 — End-to-End Demo's Page: its three pages.
+      'atlas-e2e-page',
+      // Joined 2026-10-13 — the two-row Atlas header, on or off.
+      'atlas-header-v2',
+      // Joined 2026-10-12 — Eric/Atlas White's Static / Dropdown Top Nav.
+      'atlas-white-top-nav',
+      // Joined 2026-10-09 — V3's Stacked / Inline link tiles.
+      'atlas-v3-link-tiles',
+      // Joined 2026-10-09 — V3's own Progress control.
+      'atlas-v3-progress',
       'atlas-home-layout',
       'atlas-xcel-palette',
       'atlas-right-rail-layout',
-      'dashboard-version-eric-atlas-v1',
     ])
     /* ⚠ `prototype-bar-branch-home` IS NOT HIS, deliberately — it arrived on
        the same branch and is prototype-bar chrome rather than Atlas work, so it
@@ -129,7 +146,10 @@ describe('the owner axis', () => {
     )
     expect(
       DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => flagOwner(v) === 'eric').map((v) => v.id),
-    ).toEqual(['discoverability-atlas-compass-nav', 'eric-atlas-v1'])
+      // Eric/Atlas V2 joined 2026-10-07 — V1 with its own copy of the Home page.
+      // Eric/Atlas WIP (eric-atlas-v3) leads them since 2026-10-12.
+      // End-to-End Demo, White's duplicate, joined 2026-10-14.
+    ).toEqual(['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e', 'discoverability-atlas-compass-nav', 'eric-atlas-v2'])
   })
 
   it('puts Jill first, which is what makes her the default tab', () => {
@@ -179,11 +199,14 @@ describe('the Feature Flag panel', () => {
     /* ⚠ THE SAME RESOLUTION THE DEMO BAR USES. Reading only `?version=` would
        make the panel resolve to Jill on every fresh load regardless of which
        version is actually rendering — right today by accident, wrong the day a
-       brand's default belongs to someone else. */
+       brand's default belongs to someone else.
+       ⚠ THAT DAY WAS 2026-10-14: End-to-End Demo, Eric's, became XCEL's default
+       (`promote-to-prototype`), so the panel now opens on his tab from a bare
+       URL — which is the behaviour this test was written to protect. */
     const fallback = defaultDiscoverabilityVersionFor('xcel')
     const version = DISCOVERABILITY_DASHBOARD_VERSIONS.find((v) => v.id === fallback)
     expect(version).toBeTruthy()
-    expect(flagOwner(version!)).toBe('jill')
+    expect(flagOwner(version!)).toBe('eric')
   })
 
   /* ⚠ NOT TESTABLE YET, and named rather than skipped: "selecting Eric's

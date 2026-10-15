@@ -12,6 +12,8 @@ import { Link, useSearchParams } from 'react-router-dom'
 import {
   PROTOTYPE_FEATURES,
   prototypeFeatureById,
+  prototypeScopeLabel,
+  prototypeScopeOwner,
   type PrototypeFeature,
 } from '@/data/prototypeFeatures'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
@@ -22,7 +24,8 @@ import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { ArchiveTable } from '@/components/prototype/ArchiveTable'
 import { QaNotesPanel } from '@/components/prototype/QaNotesPanel'
 import { DemoPanel, LinksPanel, PrdsPanel, ResearchPanel } from '@/components/prototype/LinksPanel'
-import { useLinkCount } from '@/data/linkStore'
+import { LINK_PRODUCTS, useLinkCount, type LinkProduct } from '@/data/linkStore'
+import { formatUpdated } from '@/components/prototype/formatUpdated'
 import { useDemoCount } from '@/data/demoStore'
 import { useResearchCount } from '@/data/researchStore'
 import { usePrdCount } from '@/data/prdStore'
@@ -70,6 +73,7 @@ import {
   Share2,
   Sliders,
   Sun,
+  User,
   X, HourglassClock} from '@/icons'
 import { Toast } from '@/components/ui/Toast'
 import { PrototypePasswordModal } from '@/components/prototype/PrototypeLock'
@@ -180,23 +184,32 @@ type SectionDef = {
 const SECTIONS: SectionDef[] = [
   {
     // FIRST, and the landing section: the product as it stands — the live
-    // React build at its committed flag baseline. ONE row (`xcel-dashboard`),
-    // and promoting a feature here means flipping its flag default on `main` —
-    // `.claude/skills/promote-to-prototype` — never adding a row. Ungated,
-    // because this is the thing stakeholders are sent to see.
-    // `UxDashboard.smoke.test.tsx` compares the whole section against an
-    // expected set, in both directions.
+    // React build at its committed flag baseline. ONE ROW PER SCOPE
+    // (`PROTOTYPE_SCOPES` in prototypeFeatures.ts), and promoting a feature
+    // here means flipping its flag default on `main` —
+    // `.claude/skills/promote-to-prototype` — never adding a row for a scope
+    // that already has one. Ungated, because this is the thing stakeholders
+    // are sent to see. `UxDashboard.smoke.test.tsx` compares the whole section
+    // against an expected set, in both directions.
     id: 'prototypes',
     label: 'Prototypes',
-    /* ⚠ ONE ROW, AND THAT IS THE FEATURE (2026-09-28). Prototypes is the SOURCE
-       OF TRUTH for developers and stakeholders: what the product currently is.
-       A second row destroys the only question this section answers, because
-       everyone then has to ask which one is real. Several things to look at at
-       once belong in REFINEMENT, which takes any number of rows, is authored in
-       the browser, and is visible to stakeholders too (it carries no `gate`).
-       `UxDashboard.smoke.test.tsx` compares this section in both directions. */
-    blurb:
-      'The live product build — where we have landed, at the committed baseline. One row, on purpose: this is the current source of truth.',
+    /* ⚠ ONE ROW PER SCOPE, AND THAT IS THE FEATURE (2026-09-28, restated
+       2026-10-14). Prototypes is the SOURCE OF TRUTH for developers and
+       stakeholders: what the product currently is. It held exactly one row
+       until 2026-10-14, when the product grew three doors on one journey —
+       how a learner gets in, what they land in, where they study — and each
+       became a row. What the one-row rule actually guaranteed is kept in a
+       stricter form: every row is the SAME build (`main`, at `?demo=1`), so
+       there is still nothing to ask "which one is real?" about. Two things to
+       look at for the SAME scope belong in REFINEMENT, which takes any number
+       of rows, is authored in the browser, and is visible to stakeholders too
+       (it carries no `gate`). `UxDashboard.smoke.test.tsx` compares this
+       section in both directions and pins the shape of every row's route. */
+    // NO BLURB — 2026-10-14, Jillienne on the preview: "remove this". The
+    // rows carry the explanation now (scope, owner, Updated, Coming soon),
+    // and a sentence over them repeated it. Empty draws no lede at all; see
+    // the render site, which skips the <p> rather than drawing a blank one.
+    blurb: '',
   },
   {
     // The REVIEW INBOX, authored on the page (2026-09-18) — labelled
@@ -1187,24 +1200,33 @@ export function UxDashboardPage() {
   }
 
   /**
-   * `?section=demo&add=1&url=…&title=…&note=…` — the `promote-to-refinement`
-   * skill's hand-off (2026-09-21). The page owns the router state, so it is
-   * the page that reads the four params and takes them off the address once
+   * `?section=demo&add=1&url=…&title=…&note=…&product=…` — the
+   * `promote-to-refinement` skill's hand-off (2026-09-21; `product` added
+   * 2026-10-14 so a Compass branch opens tagged Compass). The page owns the
+   * router state, so it is
+   * the page that reads the five params and takes them off the address once
    * `DemoPanel` has opened its form with them; the panel stripping them itself
    * via `history.replaceState` would leave the router believing they were
    * still there, and the next `setSection` would write them straight back.
    * Read once, into state, so the object identity is stable across renders.
    */
-  const [demoPrefill] = useState(() =>
-    params.has('add')
-      ? { url: params.get('url') ?? '', title: params.get('title') ?? '', note: params.get('note') ?? '' }
-      : null,
-  )
+  const [demoPrefill] = useState(() => {
+    if (!params.has('add')) return null
+    // Validated against the catalog, not trusted: an unknown tag falls back to
+    // the form's own default rather than reaching the draft as a string.
+    const product = params.get('product')
+    return {
+      url: params.get('url') ?? '',
+      title: params.get('title') ?? '',
+      note: params.get('note') ?? '',
+      product: LINK_PRODUCTS.some((x) => x.id === product) ? (product as LinkProduct) : undefined,
+    }
+  })
   const consumeDemoPrefill = useCallback(() => {
     setParams(
       (prev) => {
         const p = new URLSearchParams(prev)
-        for (const k of ['add', 'url', 'title', 'note']) p.delete(k)
+        for (const k of ['add', 'url', 'title', 'note', 'product']) p.delete(k)
         return p
       },
       { replace: true },
@@ -1625,11 +1647,13 @@ export function UxDashboardPage() {
         ) : (
         <>
         <header style={headerStyle}>
-          <p style={{ ...eyebrowStyle, color: 'var(--ux-eyebrow)' }}>
-            Prototype demo, features and specifications
-          </p>
+          {/* No eyebrow over the section title — 2026-10-14, Jillienne on the
+              preview: "remove the eyebrow from all the pages". Every section
+              shares this header, so this is every page. */}
           <h1 style={h1Style}>{VISIBLE_SECTIONS.find((s) => s.id === section)!.label}</h1>
-          <p style={ledeStyle}>{VISIBLE_SECTIONS.find((s) => s.id === section)!.blurb}</p>
+          {VISIBLE_SECTIONS.find((s) => s.id === section)!.blurb && (
+            <p style={ledeStyle}>{VISIBLE_SECTIONS.find((s) => s.id === section)!.blurb}</p>
+          )}
         </header>
 
         {section === 'research' ? (
@@ -1707,25 +1731,42 @@ export function UxDashboardPage() {
                 {q ? `Nothing matches “${query}”.` : 'Nothing in this section yet.'}
               </p>
             ) : (
-              <div style={listStyle}>
-                {rows.map((f, i) => (
-                  <ProjectRow
-                    key={f.id}
-                    feature={f}
-                    first={i === 0}
-                    last={i === rows.length - 1}
-                    statusKey={statusKeyOf(f, done, inDesign)}
-                    isDone={done[f.id] ?? !!f.done}
-                    isInDesign={inDesign[f.id] ?? !!f.inProgress}
-                    onToggleDone={toggleDone}
-                    onToggleInDesign={toggleInDesign}
-                    onSetRollup={setRollup}
-                    dark={dark}
-                    onOpen={opensInFrame(f) ? setOpen : undefined}
-                    showStatus={showStatus}
-                  />
-                ))}
-              </div>
+              /* PROTOTYPES IS TWO LISTS — 2026-10-14, Jillienne on the preview:
+                 "this is the same as the main branch, so can we have it
+                 separated from the rest to better indicate that it's the Final
+                 Prototype, Source of Truth". The end-to-end row stands in its
+                 own card under its own heading; the doors around it — the
+                 work in progress — sit in a second card beneath. Every other
+                 section is the one list it always was. */
+              groupRows(section, rows).map((g) => (
+                <div key={g.id} data-group={g.id}>
+                  {g.label && (
+                    <div style={groupHeadStyle}>
+                      <p style={groupLabelStyle}>{g.label}</p>
+                      {g.note && <p style={groupNoteStyle}>{g.note}</p>}
+                    </div>
+                  )}
+                  <div style={listStyle}>
+                    {g.rows.map((f, i) => (
+                      <ProjectRow
+                        key={f.id}
+                        feature={f}
+                        first={i === 0}
+                        last={i === g.rows.length - 1}
+                        statusKey={statusKeyOf(f, done, inDesign)}
+                        isDone={done[f.id] ?? !!f.done}
+                        isInDesign={inDesign[f.id] ?? !!f.inProgress}
+                        onToggleDone={toggleDone}
+                        onToggleInDesign={toggleInDesign}
+                        onSetRollup={setRollup}
+                        dark={dark}
+                        onOpen={opensInFrame(f) ? setOpen : undefined}
+                        showStatus={showStatus}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))
             )}
           </>
         )}
@@ -1818,10 +1859,36 @@ function ProjectRow({
   // The same picture the feature's gateway header shows — an authored
   // `thumbnail` if there is one, else a live miniature of its preview. Rows
   // whose feature has neither keep the generated accent + icon mark.
+  /* A PLACEHOLDER — 2026-10-14. A `coming-soon` row is drawn, not linked:
+     no `<a>`, no hover, no chevron, no kebab (every action in it is about a
+     row that goes somewhere), and the status tag is shown even where the
+     section hides status — "Coming soon" is the one thing the row has to say.
+     Two kinds: nothing built yet (the Admin row, no `to`), and a surface HELD
+     BACK with its `to` kept on record (the end-to-end row, the same evening:
+     "don't remove the work, just hide users from clicking on it"). Either
+     kind draws the generated mark, not a live frame — see `hasPreview`. */
+  const placeholder = feature.status === 'coming-soon'
   const preview = primaryPreviewSrc(feature)
-  const hasPreview = Boolean(feature.thumbnail || preview)
+  // A placeholder shows the GENERATED mark whatever it has on record — Jillienne
+  // on the preview, 2026-10-14: "make that image a default icon image like the
+  // admin tool to show it's disabled". A live frame of the surface behind a
+  // held-back row read as an invitation; the abstract mark reads as closed.
+  const hasPreview = !placeholder && Boolean(feature.thumbnail || preview)
   const href = feature.externalUrl ?? feature.to ?? `/prototype/${feature.id}`
   const external = Boolean(feature.externalUrl)
+  const isPrototypeRow = feature.category === 'prototype'
+  /* The three facts a Prototypes row carries beside its title (2026-10-14):
+     which door it is (an empty scope label means none — the product row),
+     whose surface it is, and when that surface last changed on `main`. */
+  const owner = prototypeScopeOwner(feature.prototypeScope)
+  /* The owner tag is a user ICON and the name, not the word "Owner" — Jillienne
+     on the preview, 2026-10-14. The word stays for a screen reader, visually
+     hidden, so the tag still reads "Owner: Anjani" where it is read aloud. */
+  const prototypeTags: { key: string; text: string; icon?: ReactNode; srPrefix?: string }[] = [
+    { key: 'scope', text: prototypeScopeLabel(feature.prototypeScope) || '' },
+    { key: 'owner', text: owner ?? '', icon: <User size={11} aria-hidden style={{ flex: 'none' }} />, srPrefix: 'Owner: ' },
+    { key: 'updated', text: feature.lastUpdated ? `Updated ${formatUpdated(feature.lastUpdated)}` : '' },
+  ].filter((t) => t.text)
   // Three labels, answering "how much of the product is this?":
   //   Standalone HTML — leaves the app entirely (the route column used to be
   //     the only thing that said so; with it gone the kind tag carries it)
@@ -1829,10 +1896,21 @@ function ProjectRow({
   //   Feature         — one feature. Every `guided` tile is one, and so are the
   //     `explore` tiles that open a single page rather than the platform, which
   //     say so via `kindLabel`.
-  const meta = [
-    feature.kindLabel ??
-      (external ? 'Standalone HTML' : feature.kind === 'explore' ? 'Full platform' : 'Feature'),
-  ]
+  //   A PROTOTYPES row says which DOOR it is instead (2026-10-14): three rows
+  //     in that section all open the same build, so "Full platform" three
+  //     times would say nothing, and the scope label is the one thing that
+  //     tells them apart at a glance.
+  //   An EMPTY scope label means no kind tag at all (the end-to-end row,
+  //     2026-10-14) — the column stays so the other rows' tags still line up.
+  const scopeLabel = prototypeScopeLabel(feature.prototypeScope)
+  const meta =
+    scopeLabel === ''
+      ? []
+      : [
+          scopeLabel ??
+            feature.kindLabel ??
+            (external ? 'Standalone HTML' : feature.kind === 'explore' ? 'Full platform' : 'Feature'),
+        ]
   // The row's status chip and the pill that filters it are the same resolver,
   // so a pill can never disagree with the rows it produces.
   const chip = featureStatusChipFor(statusKey, dark)
@@ -1851,13 +1929,22 @@ function ProjectRow({
     setCopied(true)
   }
 
-  const items = [
-    {
-      id: 'copy-link',
-      label: 'Copy link',
-      icon: <Share2 size={15} aria-hidden />,
-      onSelect: copyLink,
-    },
+  /* A PROTOTYPES ROW'S KEBAB IS "COPY LINK" AND NOTHING ELSE — 2026-10-14,
+     Jillienne on the preview. `showStatus` is false exactly in Prototypes (see
+     the note on it), and every other item here is a dev-cycle action — Mark
+     in design, Mark done, the six roll-up statuses — which says nothing about
+     a row that IS the product. Keyed off `showStatus` rather than a new prop
+     because the two are one fact: a section that shows no status has no
+     status to set. */
+  const copyOnly = !showStatus
+  const copyItem = {
+    id: 'copy-link',
+    label: 'Copy link',
+    icon: <Share2 size={15} aria-hidden />,
+    onSelect: copyLink,
+  }
+  const items = copyOnly ? [copyItem] : [
+    copyItem,
     ...(canSetRollup
       ? [
           ...DEV_STATUS_SEQUENCE.map((st) => ({
@@ -1928,22 +2015,51 @@ function ProjectRow({
           "this goes somewhere"), and putting the two tags in a fixed column
           means they line up down the list instead of starting at whatever
           x-position the blurb happened to end on. */}
-      <span style={showStatus ? tagColStyle : tagColSoloStyle}>
-        {meta.map((m) => (
-          <span key={m} style={metaChipStyle}>
-            {m}
-          </span>
-        ))}
-        {showStatus && (
-          <span style={{ ...metaChipStyle, ...statusTagStyle(chip.color) }}>{chip.label}</span>
-        )}
-      </span>
+      {isPrototypeRow ? (
+        /* A PROTOTYPES ROW'S TAG COLUMN — 2026-10-14, Jillienne on the preview:
+           outlined, square-cornered TAGS rather than filled pills, stacked —
+           the scope, who owns the surface, and when it last changed on main.
+           A placeholder adds its "Coming soon" tag and has no Updated. */
+        <span style={tagColPrototypeStyle}>
+          {prototypeTags.map((t) => (
+            <span key={t.key} style={t.icon ? { ...prototypeTagStyle, display: 'inline-flex', alignItems: 'center', gap: 4 } : prototypeTagStyle}>
+              {t.icon}
+              {t.srPrefix && <span className="cre-visually-hidden">{t.srPrefix}</span>}
+              {t.text}
+            </span>
+          ))}
+          {placeholder && (
+            // The whole `border` shorthand, not `borderColor` over it: React
+            // writes the longhand after the shorthand and the browser drops
+            // the widths, so the tag drew with no border at all.
+            <span style={{ ...prototypeTagStyle, color: chip.color, border: `1px solid ${chip.color}` }}>
+              {chip.label}
+            </span>
+          )}
+        </span>
+      ) : (
+        <span style={showStatus ? tagColStyle : tagColSoloStyle}>
+          {meta.map((m) => (
+            <span key={m} style={metaChipStyle}>
+              {m}
+            </span>
+          ))}
+          {showStatus && (
+            <span style={{ ...metaChipStyle, ...statusTagStyle(chip.color) }}>{chip.label}</span>
+          )}
+        </span>
+      )}
 
-      <ChevronRight
-        aria-hidden
-        size={15}
-        style={{ flex: 'none', color: hover ? 'var(--ux-accent)' : 'var(--ux-text-3)' }}
-      />
+      {placeholder ? (
+        // Keeps the chevron's column so the tags line up with the rows above.
+        <span aria-hidden style={{ flex: 'none', width: 15 }} />
+      ) : (
+        <ChevronRight
+          aria-hidden
+          size={15}
+          style={{ flex: 'none', color: hover ? 'var(--ux-accent)' : 'var(--ux-text-3)' }}
+        />
+      )}
     </>
   )
 
@@ -1978,8 +2094,27 @@ function ProjectRow({
       : undefined,
   }
 
+  if (placeholder) {
+    return (
+      <div
+        style={{ ...wrap, background: 'var(--ux-card)' }}
+        aria-disabled="true"
+        data-row={feature.id}
+        data-placeholder={feature.id}
+      >
+        <span style={{ ...rowLinkStyle, flex: 1, opacity: 0.62, cursor: 'default' }}>{inner}</span>
+        {/* Where the kebab would be. Without it the row's grid is a kebab wider
+            and its tags sit 40px right of the rows above — Jillienne on the
+            preview, "have these all vertically align". Conditional exactly
+            as the kebab is, so the public build (no kebabs anywhere) stays
+            aligned too. */}
+        {!isPublicGateway() && <span aria-hidden style={{ flex: 'none', width: 32 }} />}
+      </div>
+    )
+  }
+
   return (
-    <div style={wrap} onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave}>
+    <div style={wrap} data-row={feature.id} onMouseEnter={handlers.onMouseEnter} onMouseLeave={handlers.onMouseLeave}>
       {external ? (
         <a href={href} target="_blank" rel="noopener noreferrer" {...linkProps}>
           {inner}
@@ -2006,7 +2141,16 @@ function ProjectRow({
       */}
       {!isPublicGateway() && (
         <span style={{ flex: 'none' }}>
-          <ActionMenu label={`Actions for ${feature.title}`} items={items} />
+          {/* Gray, not the amber accent the shared kebab defaults to —
+              2026-10-14, Jillienne on the preview ("make the ellipsis gray").
+              On a project row the dots are the quietest thing in the row;
+              amber made them the loudest. `--ux-text-3` is the gateway's own
+              tertiary ink, the colour the chevron rests in. */}
+          <ActionMenu
+            label={`Actions for ${feature.title}`}
+            items={items}
+            triggerStyle={{ color: 'var(--ux-text-3)' }}
+          />
         </span>
       )}
       <Toast open={copied} onClose={() => setCopied(false)} title="Link copied" tone="success">
@@ -2262,20 +2406,16 @@ const swatchDotStyle: CSSProperties = {
   border: '1px solid rgb(0 0 0 / 0.12)',
 }
 
-const mainStyle: CSSProperties = { padding: '40px 32px 72px', maxWidth: 1080 }
+// 24 on top, not 40 — 2026-10-14, Jillienne on the preview ("reduce top
+// padding"), once the eyebrow above the title had gone and the title sat alone
+// under a deep band of nothing.
+const mainStyle: CSSProperties = { padding: '24px 32px 72px', maxWidth: 1080 }
 const headerStyle: CSSProperties = { marginBottom: 22 }
 
-const eyebrowStyle: CSSProperties = {
-  margin: 0,
-  fontSize: 12,
-  fontWeight: 700,
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase',
-  color: 'var(--ux-accent)',
-}
 
 const h1Style: CSSProperties = {
-  margin: '10px 0 0',
+  // Was 10 on top, which spaced the title off the eyebrow; no eyebrow now.
+  margin: 0,
   fontFamily: 'var(--font-heading)',
   fontSize: 34,
   fontWeight: 500,
@@ -2356,6 +2496,42 @@ const pillCountActiveStyle: CSSProperties = {
 const statusDotStyle: CSSProperties = { width: 7, height: 7, borderRadius: '50%', flex: 'none' }
 
 const countStyle: CSSProperties = { marginLeft: 'auto', fontSize: 12.5, color: 'var(--ux-text-2)' }
+
+/** How a section's rows are grouped into cards. Only Prototypes splits (see
+ *  the render site); an empty group is dropped so a filtered search never
+ *  shows a heading over nothing. */
+function groupRows(
+  section: UxSection,
+  rows: PrototypeFeature[],
+): { id: string; label?: string; note?: string; rows: PrototypeFeature[] }[] {
+  if (section !== 'prototypes') return [{ id: 'all', rows }]
+  const truth = rows.filter((f) => f.prototypeScope === 'end-to-end')
+  const rest = rows.filter((f) => f.prototypeScope !== 'end-to-end')
+  return [
+    {
+      id: 'source-of-truth',
+      label: 'Final prototype — source of truth',
+      note: 'What the product is right now: main, at the committed baseline.',
+      rows: truth,
+    },
+    {
+      id: 'in-progress',
+      label: 'Work in progress',
+      note: 'The doors around it, each its owner’s. What is picked from here becomes the final prototype.',
+      rows: rest,
+    },
+  ].filter((g) => g.rows.length > 0)
+}
+
+const groupHeadStyle: CSSProperties = { margin: '22px 0 10px' }
+const groupLabelStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-heading)',
+  fontSize: 15,
+  fontWeight: 700,
+  color: 'var(--ux-text)',
+}
+const groupNoteStyle: CSSProperties = { margin: '3px 0 0', fontSize: 12.5, color: 'var(--ux-text-2)' }
 
 const listStyle: CSSProperties = {
   border: '1px solid var(--ux-border)',
@@ -2455,6 +2631,23 @@ const tagColStyle: CSSProperties = {
  *  the chevron. The kind column keeps its width, so the tag still lines up
  *  down the list. */
 const tagColSoloStyle: CSSProperties = { ...tagColStyle, gridTemplateColumns: '104px' }
+
+/** The Prototypes rows' column: one tag per line, wide enough for
+ *  "Updated Oct 14, 8:47 PM" at the tag's own size. */
+const tagColPrototypeStyle: CSSProperties = { ...tagColStyle, gridTemplateColumns: '156px' }
+
+/** An outlined, square-cornered TAG — what the Prototypes rows wear instead
+ *  of the filled pill (2026-10-14, Jillienne: "tags instead of badges,
+ *  outlined, more square looking"). Same size and weight as the chip so the
+ *  two never sit side by side at different scales. */
+const prototypeTagStyle: CSSProperties = {
+  ...metaChipStyle,
+  background: 'transparent',
+  border: '1px solid var(--ux-border)',
+  borderRadius: 4,
+  fontWeight: 600,
+}
+
 
 /** The status as a TAG rather than a dot + coloured text, so it reads as the
  *  same object as the kind chip beside it. The fill is a low mix of the status

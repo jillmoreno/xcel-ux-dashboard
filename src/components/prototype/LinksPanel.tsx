@@ -82,6 +82,7 @@ import {
   useBranches,
   type BranchDeploy,
 } from '@/data/branchStore'
+import { formatUpdated } from './formatUpdated'
 
 /**
  * What one board CALLS things and SHOWS. `LinksPanel` and `DemoPanel` below
@@ -123,6 +124,14 @@ export type LinkBoardPresentation = {
    * including the missing-author case.
    */
   showBadges: boolean
+  /**
+   * Whether a row shows "Updated <date, time>" from its `updatedAt` stamp
+   * (2026-10-14, Jillienne). Refinement only: a branch under review changes,
+   * and when it last did is the fact a reviewer wants; a brief on Resources
+   * does not move. The server stamps every board's records regardless, so
+   * turning this on elsewhere is one line.
+   */
+  showUpdated?: boolean
   /** Whether the form carries the "Show on public site" toggle and rows show a
    *  Public / Team chip. Demo only. */
   showPublicToggle: boolean
@@ -164,7 +173,12 @@ export type LinkBoardPresentation = {
   showBranches?: boolean
 }
 
-export type LinkPrefill = { url: string; title: string; note: string }
+/** What `promote-to-refinement` hands the page. `product` arrived 2026-10-14:
+ *  the skill reads it off the branch (Compass files → `compass`), so a row
+ *  for Anjani's work opens already tagged and the Compass filter — and the
+ *  Compass Prototypes row it will one day be promoted into — can find it.
+ *  Absent or unreadable means the form's own default, exactly as before. */
+export type LinkPrefill = { url: string; title: string; note: string; product?: LinkProduct }
 
 /** One glyph per `LinkThumbKind`. Kept HERE rather than in `linkRowThumb.ts`
  *  so that module stays free of JSX and can be unit-tested as plain functions. */
@@ -536,6 +550,19 @@ const publicBadgeStyle: CSSProperties = {
   ...badgeStyle,
   background: 'var(--ux-accent)',
   color: 'var(--ux-on-accent)',
+}
+
+/* "Updated Oct 14, 8:47 PM" — an outlined, sentence-case TAG rather than an
+   uppercase badge: it is a fact about time, not a category, and the Prototypes
+   rows on the gateway wear the same outlined shape for theirs. */
+const updatedBadgeStyle: CSSProperties = {
+  ...badgeStyle,
+  background: 'transparent',
+  border: '1px solid var(--ux-border)',
+  borderRadius: 4,
+  textTransform: 'none',
+  letterSpacing: 0,
+  fontWeight: 600,
 }
 
 /* ── the product tags ──
@@ -1138,7 +1165,14 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     // edits it, so it cannot be derived during render.
     /* eslint-disable react-hooks/set-state-in-effect */
     setPrefillConsumed(true)
-    setDraft({ ...EMPTY_DRAFT, addedBy: readLastAuthor(), url: prefill.url, title: prefill.title, note: prefill.note })
+    setDraft({
+      ...EMPTY_DRAFT,
+      addedBy: readLastAuthor(),
+      url: prefill.url,
+      title: prefill.title,
+      note: prefill.note,
+      product: prefill.product ?? DEFAULT_PRODUCT,
+    })
     setErrors([])
     setEditing('new')
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -1496,6 +1530,9 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                           {linkProductLabel(link.product)}
                         </span>
                       )}
+                      {p.showUpdated && link.updatedAt && (
+                        <span style={updatedBadgeStyle}>Updated {formatUpdated(link.updatedAt)}</span>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -1650,6 +1687,7 @@ export function DemoPanel({
     showThumb: true,
     showProduct: true,
     showBadges: true,
+    showUpdated: true,
     showPublicToggle: true,
     publicOnly: pub,
     readOnly: pub,

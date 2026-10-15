@@ -451,7 +451,8 @@ describe('DemoControlsBar — the Dashboard Version control', () => {
        worse, name a version other than the one rendering. */
     /* ⚠ THE NAME TRACKS `defaultDiscoverabilityVersionFor` AND HAS MOVED WITH
        IT — Testing 3 until 2026-10-06, Hybrid V1 until 2026-10-08, the pacing
-       fork since (`promote-to-prototype`, each time). Spelled out rather than
+       fork until 2026-10-14, Eric's End-to-End Demo since (`promote-to-prototype`,
+       each time). Spelled out rather than
        read from that function: a test that recomputes the answer from the thing
        it is checking passes whatever that thing returns, including a blank
        label, which is the exact failure this pins.
@@ -461,7 +462,7 @@ describe('DemoControlsBar — the Dashboard Version control', () => {
        against either. */
     renderBar('/dashboard-rebrand')
     expect(
-      screen.getByRole('button', { name: /Dashboard version:\s*Hybrid - Pacing Exploration/i }),
+      screen.getByRole('button', { name: /Dashboard version:\s*End-to-End Demo/i }),
     ).toBeTruthy()
   })
 })

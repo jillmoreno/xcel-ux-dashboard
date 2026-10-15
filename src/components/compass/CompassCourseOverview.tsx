@@ -71,7 +71,12 @@ export function CompassCourseOverview({
         <section aria-label="Your course" style={CARD}>
           <div style={CARD_HEAD}>
             <p style={{ ...EYEBROW_WIDE, margin: 0 }}>Course:</p>
-            <h2 style={COURSE_TITLE}>{courseTitle}</h2>
+            {/* The Home course title's class (2026-10-06, the designer's request:
+                one weight lighter) — under Source Serif 4 that is 400 against
+                every other heading's 500; under Open Sans, 500 against 600. */}
+            <h2 className="cre-compass-course-title" style={COURSE_TITLE}>
+              {courseTitle}
+            </h2>
             <p style={FACTS}>
               <span style={FACT}>
                 <span style={FACT_LABEL}>Target exam date:</span>
@@ -119,6 +124,7 @@ export function CompassCourseOverview({
                 shows the scale rather than a score, so there is no fill amount
                 to derive. `role="img"` so its label is read once. */}
             <div role="img" aria-label="Readiness: beginning your journey" style={RING}>
+              <OverviewDial />
               <span aria-hidden style={RING_FACE}>
                 {d.ringLabel.map((w) => (
                   <span key={w} style={{ display: 'block' }}>
@@ -344,22 +350,18 @@ const WHERE_ROW: CSSProperties = {
   paddingBottom: 29,
   borderBottom: RULE,
 }
-/* The design's conic ring, stop for stop (its foreignObject is rotated -90°,
-   so the net start angle is 0). A 14px band around a 132px white face. */
 const RING: CSSProperties = {
   position: 'relative',
   flex: 'none',
   width: 160,
   height: 160,
   borderRadius: '50%',
-  background:
-    'conic-gradient(from 0deg, var(--color-compass-page-ring-1) -72%, var(--color-compass-page-ring-2) -47%, var(--color-compass-page-ring-3) -22%, var(--color-compass-page-ring-4) 3%, var(--color-compass-page-ring-5) 28%, var(--color-compass-page-ring-1) 28%, var(--color-compass-page-ring-2) 53%, var(--color-compass-page-ring-3) 78%, var(--color-compass-page-ring-4) 103%, var(--color-compass-page-ring-5) 128%)',
 }
 const RING_FACE: CSSProperties = {
   position: 'absolute',
   inset: 14,
   borderRadius: '50%',
-  background: 'var(--color-compass-page-ring-face)',
+  // No fill (2026-10-06): it was --color-compass-page-ring-face (white).
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
@@ -569,4 +571,133 @@ const TIP_BODY: CSSProperties = {
   fontSize: 13.5,
   lineHeight: '18px',
   color: 'var(--color-compass-page-body)',
+}
+
+/* ── The Overview dial — the HOME page's style ────────────────────────────────
+   2026-10-06, the designer's request: "swap it out on the page for the style
+   that is used on the home page". Home V2's ProgressDial, at this ring's 160:
+   a thin track under a thicker arc with a round end, from 12 o'clock
+   clockwise, in the same two tokens — so a brand that re-colours the Home dial
+   re-colours this one. Its run is the design ring's own dark run, 28% (the day
+   one ring shows the scale, not a score). The label stays the RING_FACE text. */
+const DIAL_SIZE = 160
+const DIAL_STROKE = 8
+const DIAL_R = DIAL_SIZE / 2 - DIAL_STROKE / 2 - 1
+const DIAL_RUN = 0.28
+
+function OverviewDial() {
+  const c = 2 * Math.PI * DIAL_R
+  const mid = DIAL_SIZE / 2
+  return (
+    <svg
+      width={DIAL_SIZE}
+      height={DIAL_SIZE}
+      viewBox={`0 0 ${DIAL_SIZE} ${DIAL_SIZE}`}
+      aria-hidden
+      style={{ position: 'absolute', inset: 0, display: 'block' }}
+    >
+      <circle
+        cx={mid}
+        cy={mid}
+        r={DIAL_R}
+        fill="none"
+        style={{ stroke: 'var(--color-atlas-dial-track, var(--color-primary-100))' }}
+        strokeWidth={3}
+      />
+      <circle
+        cx={mid}
+        cy={mid}
+        r={DIAL_R}
+        fill="none"
+        style={{ stroke: 'var(--color-atlas-dial-ring, var(--color-compass-page-button))' }}
+        strokeWidth={DIAL_STROKE}
+        strokeLinecap="round"
+        strokeDasharray={`${c * DIAL_RUN} ${c}`}
+        transform={`rotate(-90 ${mid} ${mid})`}
+      />
+    </svg>
+  )
+}
+
+/* ── The readiness ring, in SVG — KEPT FOR REFERENCE ─────────────────────────
+   ⚠ NOT RENDERED since 2026-10-06 ("keep this ring for reference but lets swap
+   it out on the page for the style that is used on the home page"). To bring it
+   back, render `<ReadinessRingSvg />` in place of `<OverviewDial />` inside the
+   RING div. Exported only so the compiler keeps it; nothing imports it.
+
+   2026-10-06, the designer's request: "replace the rings with coded rings that
+   look the same … so that there's no bitmapped edges". It was a CSS
+   conic-gradient masked to a band, and a mask's edge is rasterised — the
+   jaggies. SVG draws the band as vector strokes, so both edges anti-alias.
+
+   SVG has no conic gradient, so the design's one is rebuilt as RING_STEPS short
+   arcs, each in the gradient's colour at its midpoint (a `color-mix` of the two
+   ring tokens either side, so the brand skins still re-point it). Each arc runs
+   a hair past its end so neighbours overlap and no seam shows.
+
+   The design's stops, as % of a turn (the old conic-gradient, unchanged):
+     dark run  ring-1 -72 · ring-2 -47 · ring-3 -22 · ring-4 3 · ring-5 28
+     light run ring-1 28 · ring-2 53 · ring-3 78 · ring-4 103 · ring-5 128
+   with a hard stop at 28%. The ring is TURNED by that 28% (2026-10-06) so the
+   hard stop — and the round end cap on the dark run — sit at 12 o'clock. */
+const RING_SIZE = 160
+const RING_BAND = 14
+const RING_R = RING_SIZE / 2 - RING_BAND / 2
+const RING_END = 28
+const RING_STEPS = 144
+const DARK_RUN: readonly [number, number][] = [[-72, 1], [-47, 2], [-22, 3], [3, 4], [28, 5]]
+const LIGHT_RUN: readonly [number, number][] = [[28, 1], [53, 2], [78, 3], [103, 4], [128, 5]]
+
+/** The gradient's colour at `s` (% of the turn, design frame) as CSS. */
+function ringColour(s: number): string {
+  const run = s < RING_END ? DARK_RUN : LIGHT_RUN
+  for (let k = 0; k < run.length - 1; k++) {
+    const [s0, c0] = run[k]
+    const [s1, c1] = run[k + 1]
+    if (s >= s0 && s <= s1) {
+      const t = (s - s0) / (s1 - s0)
+      return `color-mix(in srgb, var(--color-compass-page-ring-${c1}) ${(t * 100).toFixed(1)}%, var(--color-compass-page-ring-${c0}))`
+    }
+  }
+  return `var(--color-compass-page-ring-${run[run.length - 1][1]})`
+}
+
+/** A point on the band's centre line, `a` turns clockwise from 12 o'clock. */
+function ringPoint(a: number): [number, number] {
+  const rad = a * 2 * Math.PI
+  return [RING_SIZE / 2 + RING_R * Math.sin(rad), RING_SIZE / 2 - RING_R * Math.cos(rad)]
+}
+
+/* Built once — the shape never changes, only the tokens behind the colours. */
+const RING_ARCS = Array.from({ length: RING_STEPS }, (_, i) => {
+  // Screen position: 0 = 12 o'clock, i.e. the design's 28% (the hard stop).
+  const a0 = i / RING_STEPS
+  const a1 = Math.min(1, (i + 1) / RING_STEPS + 0.002)
+  const [x0, y0] = ringPoint(a0)
+  const [x1, y1] = ringPoint(a1)
+  const sMid = (((a0 + a1) / 2) * 100 + RING_END) % 100
+  return { d: `M ${x0} ${y0} A ${RING_R} ${RING_R} 0 0 1 ${x1} ${y1}`, colour: ringColour(sMid) }
+})
+
+// eslint-disable-next-line react-refresh/only-export-components -- reference copy, see above
+export function ReadinessRingSvg() {
+  return (
+    <svg
+      width={RING_SIZE}
+      height={RING_SIZE}
+      viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}
+      aria-hidden
+      // MIRRORED left-to-right (2026-10-06, the designer's request) so the
+      // dark run leaves 12 o'clock CLOCKWISE and the tan comes round after it.
+      // The cap is top-centre, so the mirror leaves it where it is.
+      style={{ position: 'absolute', inset: 0, display: 'block', transform: 'scaleX(-1)' }}
+    >
+      {RING_ARCS.map((arc, i) => (
+        <path key={i} d={arc.d} fill="none" strokeWidth={RING_BAND} style={{ stroke: arc.colour }} />
+      ))}
+      {/* The ROUND END on the dark run: a disc the band's width in its last
+          colour, centred on the hard stop at the top, overlapping the tan. */}
+      <circle cx={RING_SIZE / 2} cy={RING_BAND / 2} r={RING_BAND / 2} style={{ fill: 'var(--color-compass-page-ring-5)' }} />
+    </svg>
+  )
 }

@@ -72,6 +72,40 @@ first, on this branch, before the merge.** Merging publishes to both sites, so
 the baseline has to be decided beforehand. Adding a NEW field (`maturity`,
 say) is not a baseline change — only a changed default is.
 
+⚠ **EVERY GROUP, NOT JUST A COMMIT (2026-10-14).** Candidates are grouped by
+the Prototypes row they reach, and each group is decided by its scope owner —
+Anjani for Compass, Jillienne for the rest (`PROTOTYPE_SCOPES` in
+`prototypeFeatures.ts`). A promotion commit on the branch is not enough on its
+own: check its body covers every group whose defaults changed. A group it
+names as *waiting on its owner*, or does not name at all, is NOT READY — hand
+the branch back to that owner. Do not decide it here: this skill is the merge,
+and the merge is the one thing on this list that is Jillienne's alone.
+
+### 2b. Stamp the Prototypes rows the branch changed (2026-10-14)
+
+Every row on the Prototypes section carries `lastUpdated` — the time its
+surface last changed on `main` — and shows it as an "Updated" tag. A client
+cannot know that at run time and a Netlify build cannot compute it from its
+shallow clone, so THIS step is where it is kept true:
+
+```bash
+git diff --name-only origin/main...HEAD -- src public | sort
+```
+
+Map the changed paths to scopes with the rule in `promote-to-prototype`
+("How a candidate gets its scope"): Compass paths → `xcel-compass`; the Atlas
+home and learning pages → `xcel-atlas-learning`; the invite pages →
+`xcel-invite`; anything under the product app → `xcel-dashboard` as well,
+since the end-to-end row shows all of it. Set each affected row's
+`lastUpdated` in `prototypeFeatures.ts` to now, in UTC:
+
+```bash
+date -u +%Y-%m-%dT%H:%M:%SZ
+```
+
+Commit it with the branch (it is data; the smoke test checks the shape). A
+branch that changes only the gateway, docs or tests stamps nothing.
+
 ### 3. Verify — all three, on this branch
 
 ```bash
@@ -190,7 +224,8 @@ netlify api listSiteDeploys --data '{"site_id":"ux-demo-xceldashboard.netlify.ap
 - **Owner only.** A designer's branch is ready; Jillienne ships it.
 - **Never `git switch main`** — it is a worktree. Use `/Users/jill.moreno/xcel-main`.
 - **Never `git add -A`** without reading `git status --short` first.
-- **Flag defaults are decided before the merge**, via `promote-to-prototype`.
+- **Flag defaults are decided before the merge**, via `promote-to-prototype`,
+  **by each group's owner.** An undecided group does not merge.
 - **`--ff-only`.** A refusal means rebase, not `--no-ff`.
 - **Tree-identical before pushing `main`.** No exceptions — it is two live sites.
 - **Lint the diff, not the repo**, and never through a pipe.

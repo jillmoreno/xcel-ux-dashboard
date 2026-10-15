@@ -1593,19 +1593,71 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        nothing moves until someone picks another. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v1', 'discoverability-atlas-compass-nav', 'hybrid-pacing'],
+    // V3 left on 2026-10-09 for its own copy, `atlas-brand-skin-v3`, below.
+    // Hybrid - Pacing Exploration joined on main, 2026-10-08 (see above).
+    versions: ['eric-atlas-v1', 'eric-atlas-v2', 'discoverability-atlas-compass-nav', 'hybrid-pacing'],
     group: 'Widgets',
     label: 'Brand',
     description:
-      'Which Colibri brand the Atlas/Compass pages are dressed as — the LOGO and the BRAND COLOURS only. ⚠ IT IS A SKIN, NOT A BRAND: `Brand` in AccountContext stays XCEL, so the courses, personas and fixtures are XCEL’s whichever skin is showing; neutrals, type scale, spacing and layout are platform and do not move. Global (the default since 2026-10-01) is no brand at all — the Compass Design System v5’s own colours, for an instance that is not any Colibri brand. ⚠ REQUIRES the Atlas palette (`atlas-xcel-palette`, on by default): with it off, tokens.css never re-points the ramps and this control changes nothing.',
+      'Which Colibri brand the Atlas/Compass pages are dressed as — the LOGO and the BRAND COLOURS only. ⚠ IT IS A SKIN, NOT A BRAND: `Brand` in AccountContext stays XCEL, so the courses, personas and fixtures are XCEL’s whichever skin is showing; neutrals, type scale, spacing and layout are platform and do not move. XCEL is the default (again since 2026-10-06; Global was from 2026-10-01). Global is no brand at all — the Compass Design System v5’s own colours, for an instance that is not any Colibri brand. ⚠ REQUIRES the Atlas palette (`atlas-xcel-palette`, on by default): with it off, tokens.css never re-points the ramps and this control changes nothing.',
     defaultEnabled: true,
-    defaultVariant: 'global',
+    // XCEL loads first (2026-10-06, Eric's request). Global leads the list
+    // since 2026-10-08 (Eric: "move the global brand to the first item"),
+    // with XCEL second — the order moved, the default did not.
+    /* ⚠ KEPT AT XCEL ON THE 2026-10-14 PROMOTION, knowingly. The baseline
+       (End-to-End Demo) reads `atlas-brand-skin-v3`, not this, so this default
+       decides how HYBRID looks when a stakeholder picks it from the menu —
+       XCEL now, Global before the merge. Jillienne chose to let it change
+       rather than give Hybrid its own copy; `?skin=global` restores the
+       old look on any link. */
+    defaultVariant: 'xcel',
     variants: [
-      { value: 'global', label: 'Global' },
+      { value: 'global', label: 'Atlas' },
       { value: 'xcel', label: 'XCEL (Insurance)' },
+      { value: 'xcel-blue-cta', label: 'XCEL Blue CTA' },
       { value: 'cre', label: 'Colibri Real Estate' },
       { value: 'mckissock', label: 'McKissock Learning' },
       { value: 'elite', label: 'Elite Learning' },
+      /* ⚠ PALETTES, NOT BRANDS — 2026-10-08, the direct ask. The five above are
+         Colibri companies and swap the LOGO as well as the colours; these four
+         are colour palettes with no company behind them, so the page keeps
+         whichever logo it had. `AtlasPaletteSkin` in `atlasBrandSkin.ts` marks
+         the split, and `Logo` asks `SKIN_LOGOS` whether a skin has artwork
+         rather than listing the ones that do not. */
+      { value: 'grasslands', label: 'Grasslands' },
+      { value: 'everglade', label: 'Everglade' },
+      { value: 'harbor', label: 'Harbor' },
+      { value: 'marigold', label: 'Marigold' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-brand-skin-v3',
+    /* ERIC/ATLAS V3'S OWN BRAND CONTROL — 2026-10-09, Eric: "make the Global
+       brand the default view on V3". A flag has ONE default for every version,
+       so V3 gets its own copy of `atlas-brand-skin` (same variants, same
+       order) defaulting to Global; the other versions keep XCEL. PlatformShell
+       reads this one when `?version=eric-atlas-v3`. Everything said on
+       `atlas-brand-skin` above — skin not brand, needs the Atlas palette,
+       `?skin=` wins — holds here too. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Brand',
+    description:
+      'Eric/Atlas V3’s Brand control — the same skins as `atlas-brand-skin`, but Global by default (2026-10-09). A SKIN, NOT A BRAND: the logo and brand colours only. ⚠ REQUIRES the Atlas palette (`atlas-xcel-palette`, on by default).',
+    defaultEnabled: true,
+    defaultVariant: 'global',
+    variants: [
+      { value: 'global', label: 'Atlas' },
+      { value: 'xcel', label: 'XCEL (Insurance)' },
+      { value: 'xcel-blue-cta', label: 'XCEL Blue CTA' },
+      { value: 'cre', label: 'Colibri Real Estate' },
+      { value: 'mckissock', label: 'McKissock Learning' },
+      { value: 'elite', label: 'Elite Learning' },
+      // The four palettes (main, 2026-10-08) — same list as `atlas-brand-skin`,
+      // kept on both controls so the two Brand dropdowns never differ.
       /* ⚠ PALETTES, NOT BRANDS — 2026-10-08, the direct ask. The five above are
          Colibri companies and swap the LOGO as well as the colours; these four
          are colour palettes with no company behind them, so the page keeps
@@ -1640,7 +1692,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Atlas font link shared before today keeps working. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v1', 'discoverability-atlas-compass-nav'],
+    // Off WIP's and White's bars (2026-10-14, Eric's request): they keep the
+    // default, Playfair 2.
+    versions: ['eric-atlas-v1', 'eric-atlas-v2', 'discoverability-atlas-compass-nav'],
     group: 'Widgets',
     label: 'Headings',
     description:
@@ -1648,14 +1702,215 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // Variant-only, the same shape as `dashboard-heading-font` below: the
     // enable toggle is on so the flag is live, and the CHOICE is the variant.
     defaultEnabled: true,
-    defaultVariant: 'dm-serif-display',
+    // Playfair 2 is the face a fresh demo loads (2026-10-07, Eric's request);
+    // Source Serif 4 was from 2026-10-06, DM Serif Display before that.
+    /* ⚠ REACHES PROTOTYPES SINCE 2026-10-14 — `promote-to-prototype`. End-to-End
+       Demo is the baseline and reads this default (its own bar hides the
+       control), so Playfair 2 is what a stakeholder's `?demo=1` renders. The
+       flag has ONE default, so Hybrid takes Playfair 2 too when picked — DM
+       Serif Display before the merge; decided, not drifted. */
+    defaultVariant: 'playfair-2',
+    // Playfair 2 heads the list and is the default (2026-10-07, Eric's
+    // request); every other face stays in the dropdown.
     variants: [
-      { value: 'dm-serif-display', label: 'DM Serif Display (current)' },
-      { value: 'playfair-2', label: 'Playfair 2' },
+      { value: 'playfair-2', label: 'Playfair 2 (default)' },
+      { value: 'dm-serif-display', label: 'DM Serif Display (style guide)' },
       { value: 'source-serif-4', label: 'Source Serif 4' },
       { value: 'figtree', label: 'Proxima Nova stand-in (Figtree)' },
       { value: 'outfit', label: 'Outfit' },
       { value: 'instrument-sans', label: 'Instrument Sans' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-home-long-title',
+    /* A REFERENCE TOGGLE beside Headings on the Design bar (2026-10-07, Eric's
+       request: "add another toggle … to show this long title for reference").
+       On, Eric/Atlas V2's Home shows a deliberately LONG course title — the
+       worst case a heading face has to wrap — in place of the fixture's. Off
+       (default), the real title. V2 only: the long title lives in
+       `AtlasHomeEricV2`, so on any other version this would change nothing. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-v2', 'eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Long title',
+    description:
+      'Shows a deliberately long course title on Eric/Atlas V2\u2019s Home (\u201cNew York Property and Casualty Conversion Course Pre-licensing and Live Review Class\u201d) so a heading face can be judged at its worst wrap. Off: the course\u2019s real title. Display only \u2014 the course behind it is unchanged.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-wip-quick-links-side',
+    /* WHICH SIDE ERIC/ATLAS WIP'S QUICK LINKS SITS, ON THE DESIGN BAR
+       (2026-10-13, Eric's request). Left (default) — beside the course card
+       on Home and before the cards on My Courses and Certificates, as it is
+       now. Right — after them on all three. One pick for the three pages. */
+    surface: 'design',
+    owner: 'eric',
+    // …and White, which shows WIP's Home (2026-10-14, Eric's request).
+    // Not on End-to-End Demo's bar (2026-10-14, Eric's request).
+    versions: ['eric-atlas-v3', 'eric-atlas-white'],
+    group: 'Navigation',
+    label: 'Quick Links',
+    description:
+      'Which side of the page Eric/Atlas WIP\u2019s Quick Links card sits on \u2014 Home, My Courses and Certificates together. Left (default) or Right.',
+    defaultEnabled: true,
+    defaultVariant: 'left',
+    variants: [
+      { value: 'left', label: 'Quick Links Left' },
+      { value: 'right', label: 'Quick Links Right' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-background',
+    /* WIP OR WHITE, ON THE DESIGN BAR (2026-10-14, Eric's request): the two
+       versions show the same Home, Toned on WIP's warm page and White on a
+       white one. Picking an option SWITCHES THE VERSION, and each version sets
+       it to match on arrival — `useAtlasBackgroundSwitch` (atlasBackground.ts),
+       called by PlatformShell. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-v3', 'eric-atlas-white'],
+    group: 'Navigation',
+    label: 'Background',
+    description:
+      'The page behind the Home: Toned (Eric/Atlas WIP) or White (Eric/Atlas White). Picking one opens that version.',
+    defaultEnabled: true,
+    defaultVariant: 'toned',
+    variants: [
+      { value: 'toned', label: 'Toned' },
+      { value: 'white', label: 'White' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-e2e-page',
+    /* THE END-TO-END DEMO'S PAGE, ON THE DESIGN BAR (2026-10-14, Eric's
+       request): its three pages in the order a learner meets them. Picking
+       one OPENS it, and arriving on one sets it to match —
+       `EndToEndPageSync` (pages/EndToEndPageSync.tsx), mounted by AppLayout, the
+       same version-is-the-truth shape as `atlas-background`. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Page',
+    description:
+      'Which End-to-End Demo page is open: Invited Product Detail, Checkout or the Home dashboard. Picking one opens it.',
+    defaultEnabled: true,
+    defaultVariant: 'product-detail',
+    variants: [
+      { value: 'product-detail', label: 'Invited Product Detail' },
+      { value: 'checkout', label: 'Checkout' },
+      { value: 'home', label: 'Home' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-header-v2',
+    /* THE ATLAS HEADER, ON THE DESIGN BAR (2026-10-13, Eric's request:
+       "replace the nav … with the new nav"). On (default), Eric's Atlas
+       versions draw `AtlasHeader` — Figma "Atlas UX Design" 333:594, the
+       two-row header with the eyebrow bar and the My Courses / profile
+       dropdowns — in place of the 60px slim header and its Top Nav. Off, the
+       slim header exactly as it was. Desktop only; Eric's versions only (the
+       list is `ATLAS_HEADER_V2_VERSIONS`, atlasHeaderV2.ts). */
+    surface: 'design',
+    owner: 'eric',
+    // Off WIP's and White's bars (2026-10-14, Eric's request): they keep the
+    // default, the two-row header.
+    versions: ['eric-atlas-v2'],
+    group: 'Navigation',
+    label: 'Header',
+    description:
+      'The two-row Atlas header (Figma 333:594): an eyebrow bar with English and Help, then the logo, Home, a My Courses dropdown, notifications and a profile dropdown. Off: the 60px slim header with its Top Nav, as before.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-white-top-nav',
+    /* ERIC/ATLAS WHITE's TOP NAV, ON THE DESIGN BAR (2026-10-12, Eric's
+       request). Static — the Top Nav as it is (Home, Course Overview).
+       Dropdown — Figma 323:2001: the second button reads "My Courses" and
+       opens a dropdown (All Courses, then each active course) that picks the
+       course White's Home shows instead of opening the course Overview. Home
+       has no dropdown. White only until 2026-10-13, when Eric/Atlas WIP took
+       the same control (Eric's request: "update this nav to the nav that is in
+       the White version"). One flag, so the pick is shared by both. */
+    /* OFF THE DESIGN BAR (2026-10-14, Eric's request: hide it on WIP and
+       White, its only versions). Not `surface: 'design'` any more — an empty
+       `versions` would follow Eric to every version — so it keeps its default,
+       Static, with no control. Restore the line below to bring it back. */
+    // surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Top Nav',
+    description:
+      'Eric/Atlas White\u2019s header buttons. Static (default): Home and Course Overview, as on the other versions. Dropdown (Figma 323:2001): the second button becomes \u201cMy Courses\u201d with a dropdown \u2014 All Courses opens My Courses; each course makes itself the one White\u2019s Home shows.',
+    defaultEnabled: true,
+    defaultVariant: 'static',
+    variants: [
+      { value: 'static', label: 'Static' },
+      { value: 'dropdown', label: 'Dropdown' },
+      // Home Only (2026-10-12, Eric's request): no second button at all.
+      { value: 'home-only', label: 'Home Only' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-v3-link-tiles',
+    /* ERIC/ATLAS V3'S LINK TILES, ON THE DESIGN BAR (2026-10-09, Eric:
+       "replace these with the attached version but save the current ones as
+       possible versions"). Stacked — Figma 269:8778, the default: a big thin
+       icon over "3 Certificates available" / "2 Active courses", the whole
+       tile the link. Inline — the 2026-10-08 tiles (icon beside the count and
+       a View link), kept as the alternative. V3 only. */
+    /* OFF THE DESIGN BAR (2026-10-14, Eric's request: hide it on WIP and
+       White, its only versions). Not `surface: 'design'` any more — an empty
+       `versions` would follow Eric to every version — so it keeps its default,
+       Stacked, with no control. Restore the line below to bring it back. */
+    // surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Link tiles',
+    description:
+      'The Certificates / Courses tiles at the top of Eric/Atlas V3’s left column. Stacked (default, Figma 269:8778): the icon over the words, the whole tile a link. Inline: the earlier tiles, icon beside the count with a View link.',
+    defaultEnabled: true,
+    defaultVariant: 'stacked',
+    variants: [
+      { value: 'stacked', label: 'Stacked' },
+      { value: 'inline', label: 'Inline' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-v3-progress',
+    /* ERIC/ATLAS V3'S PROGRESS, ON THE DESIGN BAR (2026-10-09, Eric's request:
+       "a Progress dropdown … that overrides the Demo Progress dropdown", just
+       for V3). It picks which of the Course progress module's five states V3's
+       Home opens on, and the figure the dial shows, overriding the Demo bar's
+       Progress for that module. Scoped to V3 by `versions`; the Demo bar's
+       Progress still drives everything else on the page. Clicking the module
+       still steps through the states from wherever this put it. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Progress',
+    description:
+      'Which Course progress state Eric/Atlas V3’s Home shows: Not Started (0%, the Study pace screen), On Track (14%), Milestone (75%, Great Work), Completed (100%) or Course Expired. Overrides the Demo bar’s Progress for that module only.',
+    defaultEnabled: true,
+    defaultVariant: 'not-started',
+    variants: [
+      { value: 'not-started', label: 'Not Started 0%' },
+      { value: 'on-track', label: 'On Track 14%' },
+      { value: 'milestone', label: 'Milestone 75%' },
+      { value: 'completed', label: 'Completed 100%' },
+      { value: 'expired', label: 'Course Expired' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -2415,7 +2670,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Home Page',
     label: 'Atlas home layout',
     description:
-      'Which layout the Atlas/Compass Home renders. V1: the course card, the Schedule State Exam banner and the Study Pace card in the left column, the Study Journey rail on the right. V2 (Figma 161:662): one course card with the completion / review / access figures, a progress dial and the study pace beside the Study Journey, with "Do you know your state exam date?" and "Other Information for Your Journey" cards on the right. Variant-only. Atlas/Compass version only.',
+      'Which layout the Atlas/Compass Home renders. V1: the course card, the Schedule State Exam banner and the Study Pace card in the left column, the Study Journey rail on the right. V2 (Figma 161:662): one course card with the completion / review / access figures, a progress dial and the study pace beside the Study Journey, with "Do you know your state exam date?" and "Quick Links" cards on the right. Variant-only. Atlas/Compass version only.',
     defaultEnabled: true,
     defaultVariant: 'v2',
     variants: [
@@ -2476,19 +2731,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'v1', label: 'V1 · Separate cards', description: 'Step 1 and Step 2 as their own cards, Steps 3 and 4 with left rules, the requirements button below.' },
       { value: 'v2', label: 'V2 · One frame', description: 'All four steps and the requirements button inside one frame styled like the Step 2 card.' },
     ],
-    page: 'dashboard-rebrand',
-  },
-  {
-    // "Eric/Atlas V1" as a Dashboard Version (2026-10-02, the designer's
-    // request). ON by default on this branch, so the branch build lists it;
-    // whether it ships is decided at merge (promote-to-prototype).
-    key: 'dashboard-version-eric-atlas-v1',
-    owner: 'eric',
-    group: 'Navigation',
-    label: 'Eric/Atlas V1 dashboard version',
-    description:
-      'Lists "Eric/Atlas V1" in the Dashboard Version picker \u2014 the Atlas/Compass pages under their own name (`?version=eric-atlas-v1`). Off, the entry is hidden from the picker; a link that names it still opens it.',
-    defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
 ]

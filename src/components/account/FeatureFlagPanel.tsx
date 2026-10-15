@@ -123,7 +123,16 @@ const REBRAND_FLAGS = [
      are not alternatives: the bar is the fast route while you are looking at
      the page, the panel is where every flag is findable. */
   'atlas-heading-font',
+  'atlas-home-long-title',
+  'atlas-v3-progress',
+  'atlas-v3-link-tiles',
+  'atlas-wip-quick-links-side',
+  'atlas-background',
+  'atlas-e2e-page',
+  'atlas-header-v2',
+  'atlas-white-top-nav',
   'atlas-brand-skin',
+  'atlas-brand-skin-v3',
   'hybrid-lesson-block',
   'hybrid-course-expiry',
   'compass-session-chrome',
@@ -275,7 +284,6 @@ const REBRAND_FLAGS = [
   // never showed them on /dashboard-rebrand — added 2026-09-30.
   'atlas-xcel-palette',
   'atlas-right-rail-layout',
-  'dashboard-version-eric-atlas-v1',
   'atlas-home-layout',
   'prototype-bar-branch-home',
 ]

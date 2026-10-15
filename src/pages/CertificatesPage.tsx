@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CircleExclamation, Plus } from '@/icons'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { FilterAccordion } from '@/components/catalog/FilterAccordion'
 import { PillTabs, type PillTabItem } from '@/components/ui/PillTabs'
 import { CertificateCard } from '@/components/certificates/CertificateCard'
+import { AtlasCertificateCard } from '@/components/certificates/AtlasCertificateCard'
 import { CertificateActionPanel } from '@/components/certificates/CertificateActionPanel'
 import { useAccount } from '@/context/AccountContext'
 import { certificatesFor, type CertificateStatus } from '@/data/certificateFixtures'
@@ -30,7 +31,46 @@ const TAB_LABELS: Record<Tab, string> = {
 export function CertificatesPage({
   embedded = false,
   hideSearch = false,
-}: { embedded?: boolean; hideSearch?: boolean } = {}) {
+  hideListControls = false,
+  aside,
+  asideWidth = 260,
+  contentWidth,
+  asideRight = false,
+  atlasCards = false,
+  inProgressIds,
+  atlasCardStyle,
+  atlasBarColor,
+  atlasInProgressPill,
+}: {
+  embedded?: boolean
+  hideSearch?: boolean
+  /** Hides the search, the result count and filter rail, and the status tabs
+   *  above the cards — kept in the code, not removed (Eric/Atlas WIP,
+   *  2026-10-13, as My Courses' own `hideListControls`). The page shows the
+   *  Completed certificates, the default tab, one column wide. */
+  hideListControls?: boolean
+  /** A column LEFT of the cards, in place of the filter column (Eric/Atlas
+   *  WIP's Quick Links, 2026-10-13 — on the right earlier that day). */
+  aside?: ReactNode
+  asideWidth?: number
+  /** Caps the page at this width and centres it (as My Courses). */
+  contentWidth?: number
+  /** The aside after the cards, on the right (as My Courses' own). */
+  asideRight?: boolean
+  /** The Atlas certificate cards (Figma 375:1250, Eric/Atlas WIP 2026-10-13)
+   *  in place of the shared `CertificateCard`. */
+  atlasCards?: boolean
+  /** Atlas cards to draw as not yet earned (`AtlasCertificateCard`'s
+   *  `inProgress`). */
+  inProgressIds?: readonly string[]
+  /** Merged over each Atlas card (Eric/Atlas White's outline). */
+  atlasCardStyle?: CSSProperties
+  /** Each Atlas card's status-bar fill (Eric/Atlas WIP's). */
+  atlasBarColor?: string
+  /** The in-progress cards' Certificate pill (`AtlasCertificateCard`'s
+   *  `inProgressPill`; Eric/Atlas White's). */
+  atlasInProgressPill?: CSSProperties
+} = {}) {
   const { brand } = useAccount()
   const all = useMemo(() => certificatesFor(brand), [brand])
   const [params, setParams] = useSearchParams()
@@ -46,7 +86,7 @@ export function CertificatesPage({
      plain section HERO carried the search — and the breadcrumb header replaces
      that hero, so honouring the prop here would take the search off the page
      entirely. It comes back on its own row under the title. */
-  const showSearch = breadcrumbHeader || !hideSearch
+  const showSearch = (breadcrumbHeader || !hideSearch) && !hideListControls
 
   const counts = useMemo(() => {
     const c: Record<Tab, number> = { 'action-required': 0, completed: 0, external: 0 }
@@ -107,7 +147,13 @@ export function CertificatesPage({
   const detailRecord = all.find((c) => c.id === detailId) ?? null
 
   return (
-    <div style={{ padding: embedded ? '0 0 64px' : '24px 64px 64px', width: '100%' }}>
+    <div
+      style={{
+        padding: embedded ? '0 0 64px' : '24px 64px 64px',
+        width: '100%',
+        ...(contentWidth != null ? { maxWidth: contentWidth, margin: '0 auto', boxSizing: 'border-box' } : null),
+      }}
+    >
       <PageHeader
         title="Certificates"
         hideTitle={embedded}
@@ -129,7 +175,23 @@ export function CertificatesPage({
         }
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '200px minmax(0, 1fr)', gap: 24, marginTop: 24 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: aside
+            ? asideRight
+              ? `minmax(0, 1fr) ${asideWidth}px`
+              : `${asideWidth}px minmax(0, 1fr)`
+            : hideListControls
+              ? 'minmax(0, 1fr)'
+              : '200px minmax(0, 1fr)',
+          alignItems: aside ? 'start' : undefined,
+          gap: 24,
+          marginTop: 24,
+        }}
+      >
+        {aside && !asideRight ? aside : null}
+        {hideListControls || aside ? null : (
         <aside aria-label="Certificate filters" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--color-text-secondary)' }}>
             {filtered.length} Result{filtered.length === 1 ? '' : 's'}
@@ -166,8 +228,10 @@ export function CertificatesPage({
             <FilterAccordion label="Reported" />
           </div>
         </aside>
+        )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {hideListControls ? null : (
           <div style={tabRowStyle}>
             <PillTabs
               label="Filter certificates by status"
@@ -182,6 +246,7 @@ export function CertificatesPage({
               </button>
             )}
           </div>
+          )}
 
           {tab === 'action-required' && (
             <div style={warningBannerStyle}>
@@ -218,12 +283,24 @@ export function CertificatesPage({
                 // equal-height grid cell (its single child defaults to
                 // stretch), so every card matches the tallest in its row.
                 <div key={cert.id} role="listitem" style={{ display: 'grid' }}>
-                  <CertificateCard data={cert} onOpen={setDetailId} />
+                  {atlasCards ? (
+                    <AtlasCertificateCard
+                      data={cert}
+                      onOpen={setDetailId}
+                      inProgress={inProgressIds?.includes(cert.id)}
+                      style={atlasCardStyle}
+                      barColor={atlasBarColor}
+                      inProgressPill={atlasInProgressPill}
+                    />
+                  ) : (
+                    <CertificateCard data={cert} onOpen={setDetailId} />
+                  )}
                 </div>
               ))}
             </div>
           )}
         </div>
+        {aside && asideRight ? aside : null}
       </div>
 
       <CertificateActionPanel open={detailId != null} onClose={() => setDetailId(null)} data={detailRecord} />

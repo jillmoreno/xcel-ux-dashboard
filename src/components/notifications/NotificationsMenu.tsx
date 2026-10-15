@@ -241,7 +241,15 @@ const badgeStyle: CSSProperties = {
   right: 4,
   minWidth: 18,
   height: 18,
-  padding: '0 5px',
+  // 1px under the digit: Open Sans' figures sit ~0.6px low in a centred
+  // line box, so this lifts them to the circle's true centre.
+  padding: '0 5px 1px',
+  boxSizing: 'border-box',
+  // The count centred in its circle by flex, not by line-height (2026-10-09,
+  // Eric: "center the count text in its circle on all headers").
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   borderRadius: 'var(--radius-pill)',
   // The CTA ramp, not the error ramp. An unread count is not an error, and
   // XCEL's `--color-cta-500` is the knight's Brick red — loud enough to find
@@ -251,7 +259,7 @@ const badgeStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 11,
   fontWeight: 700,
-  lineHeight: '18px',
+  lineHeight: 1,
   textAlign: 'center',
   // Separates the badge from the glyph behind it at any header background.
   boxShadow: '0 0 0 2px var(--color-surface-card)',

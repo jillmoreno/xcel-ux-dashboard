@@ -175,6 +175,14 @@ export function validateRecord(
   if (added && !/^\d{4}-\d{2}-\d{2}$/.test(added)) errors.push('addedDate must be yyyy-mm-dd.')
   out.addedDate = added || new Date().toISOString().slice(0, 10)
 
+  // When this record was last SAVED — 2026-10-14, Jillienne: "a last updated
+  // date/time field" on Refinement. Stamped HERE on every write and never
+  // taken from the client, so a create, an edit, and an edit that changed
+  // nothing all re-stamp it: "last updated" means last saved. A full ISO
+  // timestamp with a zone, unlike `addedDate`, because this one is shown as
+  // a clock in the viewer's own zone rather than as a calendar day.
+  out.updatedAt = new Date().toISOString()
+
   return errors.length ? { errors } : { record: out }
 }
 

@@ -8,7 +8,7 @@ import { ThemeProvider } from '@/context/ThemeContext'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { PROTOTYPE_FEATURES, componentPreviewUrl } from '@/data/prototypeFeatures'
+import { PROTOTYPE_FEATURES, PROTOTYPE_SCOPES, componentPreviewUrl } from '@/data/prototypeFeatures'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
 
 /**
@@ -125,13 +125,19 @@ describe('section routing (sectionOf)', () => {
    * Sandbox, which is that category's documented behaviour rather than a bug.
    */
   const EXPECTED_PLACEMENT: Record<string, string> = {
-    // The one in-app row, and the only feature row on the ungated front door.
+    // The in-app rows — the only feature rows on the ungated front door. One
+    // per `prototypeScope`; see "Prototypes holds exactly the rows" below.
+    'xcel-invite': 'prototypes',
+    'xcel-atlas-learning': 'prototypes',
     'xcel-dashboard': 'prototypes',
+    'xcel-compass': 'prototypes',
     'xcel-lms': 'exploration',
     'xcel-walkthrough': 'exploration',
     'xcel-wireframes': 'exploration',
     'xcel-admin': 'exploration',
     'xcel-admin-tool': 'exploration',
+    // The Admin placeholder (2026-10-14) — a coming-soon row that opens nothing.
+    'xcel-admin-coming-soon': 'prototypes',
     'xcel-exam-spec': 'exploration',
     // The first handoff row (2026-09-24) — `devStatus: 'in-development'`.
     'atlas-home-course-card': 'development',
@@ -202,7 +208,34 @@ describe('section routing (sectionOf)', () => {
     const rows = screen
       .getAllByRole('button', { name: /^Actions for / })
       .map((b) => b.getAttribute('aria-label')?.replace(/^Actions for /, ''))
-    expect(rows).toEqual(['XCEL Dashboard — Live Product Build'])
+    // ⚠ ONE ROW PER SCOPE since 2026-10-14 — it was exactly one row from
+    // 2026-09-28. The list is still written out, in section order, so adding
+    // a row is a deliberate edit here and not something a category typo does.
+    // The product FIRST (2026-10-14, Jillienne: "always have this be the
+    // first option"), then the doors around it.
+    expect(rows).toEqual([
+      'Invite & Purchase — Work in Progress',
+      'Atlas Learning — Work in Progress',
+      'Compass Learning — Work in Progress',
+    ])
+    // …plus two PLACEHOLDERS, which have no kebab because they go nowhere:
+    // drawn disabled, titled, tagged "Coming soon", and not a link. The Admin
+    // row has nothing built; the end-to-end row is HELD BACK with its route
+    // kept (2026-10-14, "don't remove the work, just hide users from clicking").
+    for (const [id, title] of [
+      ['xcel-admin-coming-soon', 'Admin Tool'],
+      ['xcel-dashboard', 'End-to-End User Experience (Invite, Atlas, Compass)'],
+    ]) {
+      const placeholder = document.querySelector(`[data-placeholder="${id}"]`)
+      expect(placeholder, `${id} should be drawn as a placeholder`).not.toBeNull()
+      expect(placeholder!.getAttribute('aria-disabled')).toBe('true')
+      expect(placeholder!.querySelector('a')).toBeNull()
+      // The generated mark, never a live frame — "a default icon image like
+      // the admin tool to show it's disabled".
+      expect(placeholder!.querySelector('iframe, img')).toBeNull()
+      expect(placeholder!.textContent).toContain(title)
+      expect(placeholder!.textContent).toContain('Coming soon')
+    }
 
     // …and a gated row is still not among them.
     expect(screen.queryByText('XCEL LMS — Desktop Platform')).not.toBeInTheDocument()
@@ -289,12 +322,19 @@ describe('prototype URLs — served from this repo', () => {
    * way, and `a guided row opens its own gateway` below is what now catches it.
    */
   const gatewayRows = PROTOTYPE_FEATURES.filter((f) => f.kind === 'guided')
-  const documentRows = PROTOTYPE_FEATURES.filter((f) => !f.to && f.kind !== 'guided')
+  // A coming-soon PLACEHOLDER (no `to`, no `externalUrl`) is neither — see the
+  // Prototypes block below, which pins its shape.
+  const documentRows = PROTOTYPE_FEATURES.filter(
+    (f) => !f.to && f.kind !== 'guided' && !(f.status === 'coming-soon' && !f.externalUrl),
+  )
   const routeRows = PROTOTYPE_FEATURES.filter((f) => f.to)
 
   it('every non-guided row is either a document or a route, never both and never neither', () => {
     for (const f of PROTOTYPE_FEATURES) {
       if (f.kind === 'guided') continue // → its own gateway; asserted below
+      // A coming-soon PLACEHOLDER has neither, on purpose: it is drawn disabled
+      // (2026-10-14, the Admin row). The Prototypes block below pins its shape.
+      if (f.status === 'coming-soon' && !f.to && !f.externalUrl) continue
       expect(
         Boolean(f.to) !== Boolean(f.externalUrl),
         `${f.id} needs exactly one of to / externalUrl`,
@@ -445,9 +485,191 @@ describe('the Prototypes row opens the committed configuration', () => {
     // The assertion stays the whole SET in both directions, which is what
     // catches an accidental conversion; loosening it to a count would give up
     // the guard entirely.
+    //
+    // ⚠ TWO SINCE 2026-10-14, both Prototypes rows. The guided-row trap above
+    // is unchanged; a `to` is still only ever a Prototypes row's.
     expect(PROTOTYPE_FEATURES.filter((f) => f.to).map((f) => f.id).sort()).toEqual([
+      'xcel-atlas-learning',
+      'xcel-compass',
       'xcel-dashboard',
+      'xcel-invite',
     ])
+  })
+})
+
+/* ── Prototypes — one row per scope, every row the same build ────────────────
+ *
+ * 2026-10-14. Prototypes held ONE row from 2026-09-28, because two rows
+ * pointing at two builds of the same thing make everyone ask which one is
+ * real. The section now holds one row PER SCOPE (`PROTOTYPE_SCOPES`), and this
+ * block is the stricter mechanical form of what the one-row rule guaranteed:
+ * every row is `main`'s build at the committed baseline, so there is nothing
+ * to ask "which one is real?" about. The thing to notice is what is NOT
+ * allowed — a branch URL, an `?ff=` pin, a pinned `version=`, a document the
+ * public build cannot serve — because each of those is a row that would stop
+ * tracking the product, or stop opening, the moment `main` moved under it.
+ *
+ * Two shapes since 2026-10-14: a row that OPENS enters the product app through
+ * one of its doors; a PLACEHOLDER (`coming-soon`, nothing to open) is drawn
+ * disabled and says the door exists before the room does. A document row is
+ * not admitted: the public build 404s `/prototypes/*`. */
+describe('Prototypes — one row per scope, every row the same build', () => {
+  const prototypeRows = PROTOTYPE_FEATURES.filter((f) => f.category === 'prototype')
+
+  it('every Prototypes row carries a scope, and no scope has two rows', () => {
+    const seen = new Map<string, string>()
+    for (const f of prototypeRows) {
+      expect(f.prototypeScope, `${f.id} is a Prototypes row and needs a prototypeScope`).toBeTruthy()
+      expect(
+        PROTOTYPE_SCOPES.some((s) => s.id === f.prototypeScope),
+        `${f.id} names a scope that is not in PROTOTYPE_SCOPES`,
+      ).toBe(true)
+      const prior = seen.get(f.prototypeScope!)
+      expect(
+        prior,
+        `${f.id} and ${prior} are both ${f.prototypeScope} — a second row for a scope is a Refinement job`,
+      ).toBeUndefined()
+      seen.set(f.prototypeScope!, f.id)
+    }
+  })
+
+  it('every scope names who decides what the surface should be', () => {
+    // 2026-10-14: design authority per scope — Anjani owns Compass and runs
+    // the promotion for it on her branch; the merge stays Jillienne's. See the
+    // note on PROTOTYPE_SCOPES. The skill reads this to know whose group is
+    // whose.
+    for (const s of PROTOTYPE_SCOPES) expect(s.owner, `${s.id} needs an owner`).toBeTruthy()
+    expect(PROTOTYPE_SCOPES.find((s) => s.id === 'compass')?.owner).toBe('Anjani')
+  })
+
+  it('no row outside Prototypes carries a scope', () => {
+    // The field means "which door of the product is this the source of truth
+    // for". On an Exploration or handoff row it would be a claim the section
+    // does not make.
+    for (const f of PROTOTYPE_FEATURES) {
+      if (f.category === 'prototype') continue
+      expect(f.prototypeScope, `${f.id} is not a Prototypes row and must not carry a scope`).toBeUndefined()
+    }
+  })
+
+  /** The product app's doors — the pathnames a row may enter at. */
+  const PRODUCT_DOORS = ['/dashboard-rebrand', '/end-to-end-demo']
+  const isPlaceholder = (f: (typeof prototypeRows)[number]) => f.status === 'coming-soon'
+
+  it('every Prototypes row with a route enters the product on main at the committed baseline', () => {
+    // Held-back rows keep their route on record, so it is checked too: when
+    // the word flips back to `ready`, the door it opens must already be right.
+    for (const f of prototypeRows.filter((f) => !isPlaceholder(f) || f.to)) {
+      expect(f.externalUrl, `${f.id}: a Prototypes row is a route, never a document`).toBeUndefined()
+      expect(f.to, `${f.id} needs a \`to\``).toBeTruthy()
+      const url = new URL(f.to!, 'https://same.origin')
+      expect(url.origin, `${f.id} must be same-origin — a branch URL is a second build`).toBe('https://same.origin')
+      expect(PRODUCT_DOORS, `${f.id} must enter the product app through one of its doors`).toContain(url.pathname)
+      expect(url.searchParams.get('demo'), `${f.id} must open the committed baseline`).toBe('1')
+      expect(url.searchParams.has('ff'), `${f.id} must not pin flags — it would stop tracking main`).toBe(false)
+      expect(url.searchParams.has('version'), `${f.id} must not pin a version — the baseline chooses it`).toBe(false)
+    }
+  })
+
+  it('a Prototypes row\u2019s kebab offers Copy link and nothing else', async () => {
+    // 2026-10-14, Jillienne on the preview. Mark in design, Mark done and the
+    // roll-up statuses are dev-cycle actions; a row that IS the product has
+    // no dev cycle to set. The Design/Development rows keep the full menu.
+    const user = userEvent.setup()
+    renderDashboard()
+    await user.click(screen.getByRole('button', { name: 'Actions for Compass Learning — Work in Progress' }))
+    const menu = await screen.findByRole('menu')
+    expect(within(menu).getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['Copy link'])
+    await user.keyboard('{Escape}')
+    // …and the kebab is drawn in the gateway's tertiary ink, not the amber accent.
+    const kebab = screen.getByRole('button', { name: 'Actions for Compass Learning — Work in Progress' })
+    expect(kebab.style.color).toBe('var(--ux-text-3)')
+  })
+
+  it('Prototypes is two cards: the source of truth alone, then the work in progress', () => {
+    // 2026-10-14, Jillienne on the preview: "this is the same as the main
+    // branch, so can we have it separated from the rest to better indicate
+    // that it's the Final Prototype, Source of Truth".
+    renderDashboard()
+    const groups = [...document.querySelectorAll('main [data-group]')]
+    expect(groups.map((g) => g.getAttribute('data-group'))).toEqual(['source-of-truth', 'in-progress'])
+    expect(groups[0].textContent).toContain('Final prototype — source of truth')
+    expect([...groups[0].querySelectorAll('[data-row]')].map((r) => r.getAttribute('data-row'))).toEqual(['xcel-dashboard'])
+    expect(groups[1].textContent).toContain('Work in progress')
+    expect([...groups[1].querySelectorAll('[data-row]')].map((r) => r.getAttribute('data-row'))).toEqual([
+      'xcel-invite',
+      'xcel-atlas-learning',
+      'xcel-compass',
+      'xcel-admin-coming-soon',
+    ])
+  })
+
+  it('every Prototypes row that opens carries a valid lastUpdated stamp', () => {
+    // 2026-10-14. The "Updated" tag reads it; `ship-to-main` maintains it. An
+    // ISO timestamp with a zone, so the viewer's clock can render it.
+    for (const f of prototypeRows.filter((f) => !isPlaceholder(f))) {
+      expect(f.lastUpdated, `${f.id} needs a lastUpdated`).toBeTruthy()
+      expect(Number.isNaN(Date.parse(f.lastUpdated!)), `${f.id}: lastUpdated must parse`).toBe(false)
+      expect(f.lastUpdated, `${f.id}: lastUpdated must carry a zone (Z or offset)`).toMatch(/(Z|[+-]\d{2}:\d{2})$/)
+    }
+    for (const f of prototypeRows.filter((f) => isPlaceholder(f) && !f.to)) {
+      expect(f.lastUpdated, `${f.id}: nothing built, nothing to have updated`).toBeUndefined()
+    }
+  })
+
+  it('a Prototypes row wears its scope, its owner and its Updated time as tags', () => {
+    renderDashboard()
+    const compass = document.querySelector('[data-row="xcel-compass"]')!
+    // The outlined tags are the spans that carry a border; the owner tag's
+    // textContent is its hidden "Owner: " label plus the name.
+    // Outlined tags are the 4px-radius bordered spans; the generated thumbnail
+    // is bordered too, at the radius token, so the radius is the tell.
+    const tagsOf = (row: Element) =>
+      [...row.querySelectorAll('span')]
+        .filter((s) => s.style.border && s.style.borderRadius === '4px')
+        .map((s) => s.textContent ?? '')
+    const tags = tagsOf(compass)
+    expect(tags[0]).toBe('Compass')
+    expect(tags[1]).toBe('Owner: Anjani')
+    expect(tags[2]).toMatch(/^Updated \w{3} \d{1,2}, \d{1,2}:\d{2}/)
+    // The product row stacks the same three, its scope reading "End-to-End",
+    // and — held back — a Coming soon tag under them.
+    const e2e = document.querySelector('[data-row="xcel-dashboard"]')!
+    const e2eTags = tagsOf(e2e)
+    expect(e2eTags[0]).toBe('End-to-End')
+    expect(e2eTags[1]).toBe('Owner: Jillienne')
+    expect(e2eTags[2]).toMatch(/^Updated /)
+    expect(e2eTags[3]).toBe('Coming soon')
+    // The placeholder names its owner and says Coming soon, with no Updated.
+    const ph = document.querySelector('[data-placeholder="xcel-admin-coming-soon"]')!
+    expect(ph.textContent).toContain('Owner: Cody')
+    expect(ph.textContent).toContain('Coming soon')
+    expect(ph.textContent).not.toContain('Updated ')
+  })
+
+  it('the placeholders are written out, and a row never becomes one by accident', () => {
+    // 2026-10-14. Written out so a new placeholder is a deliberate edit here.
+    // Two kinds: the Admin row has nothing built (no `to`); the end-to-end row
+    // is HELD BACK and keeps its route, so releasing it is one word.
+    expect(prototypeRows.filter(isPlaceholder).map((f) => f.id)).toEqual(['xcel-dashboard', 'xcel-admin-coming-soon'])
+    for (const f of prototypeRows.filter(isPlaceholder)) {
+      expect(f.kind, `${f.id}: a guided placeholder would try to open a gateway`).toBe('explore')
+    }
+    expect(PROTOTYPE_FEATURES.find((f) => f.id === 'xcel-dashboard')?.to, 'held back, not removed').toBe(
+      '/dashboard-rebrand?demo=1',
+    )
+    // A row with no `to` and no `externalUrl` that is NOT coming-soon would be
+    // a dead link; the shape test above refuses it, this names the rule.
+    for (const f of prototypeRows.filter((f) => !f.to && !f.externalUrl)) {
+      expect(f.status, `${f.id} opens nothing, so it must say Coming soon`).toBe('coming-soon')
+    }
+  })
+
+  it('the rows read in the order PROTOTYPE_SCOPES declares — the product first', () => {
+    expect(PROTOTYPE_SCOPES[0].id, 'the end-to-end row is always first').toBe('end-to-end')
+    const order = PROTOTYPE_SCOPES.map((s) => s.id)
+    const got = prototypeRows.map((f) => order.indexOf(f.prototypeScope!))
+    expect(got, 'reorder the rows in prototypeFeatures.ts to match PROTOTYPE_SCOPES').toEqual([...got].sort((a, b) => a - b))
   })
 })
 

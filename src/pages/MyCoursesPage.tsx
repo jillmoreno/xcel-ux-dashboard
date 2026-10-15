@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ArrowLeft } from '@/icons'
 import { CourseCard } from '@/components/courses/CourseCard'
@@ -54,12 +54,46 @@ const PROFESSION_OPTIONS = [
   { value: 'real-estate-post', label: 'Real Estate Post-Licensing' },
 ]
 
+/** The search / filter-bar row's height when an `aside` is shown — the filter
+ *  bar's own 36 (2026-10-06; it was the search box's 40), so the two columns'
+ *  rows stay level (see the aside branch). */
+const ASIDE_ROW_H = 36
+
 const STATE_OPTIONS = ['Alabama', 'Florida', 'Georgia', 'North Carolina', 'South Carolina', 'Tennessee', 'Virginia']
 
 export function MyCoursesPage({
   embedded = false,
   hideSearch = false,
-}: { embedded?: boolean; hideSearch?: boolean } = {}) {
+  aside,
+  titleStyle,
+  cards,
+  hideListControls = false,
+  contentWidth,
+  asideWidth = 280,
+  asideRight = false,
+}: {
+  embedded?: boolean
+  hideSearch?: boolean
+  /** Replaces the left filter column — result count, Sort By and the filter
+   *  accordions all go — with this (the Atlas journey-links card, 2026-10-05). */
+  aside?: ReactNode
+  /** Merged over the "My Courses" title (Atlas: the serif heading). */
+  titleStyle?: CSSProperties
+  /** Replaces the course list — grid, table and empty state — with these
+   *  (the Atlas course cards, 2026-10-06). The filter bar stays. */
+  cards?: ReactNode
+  /** Hides the search, the status filter bar and the View Archived link —
+   *  kept in the code, not removed (Atlas, 2026-10-06: "remove … but save them
+   *  for later"). To bring them back, stop passing this. */
+  hideListControls?: boolean
+  /** Caps the page at this width and centres it (Atlas, 2026-10-06). */
+  contentWidth?: number
+  /** The aside column's width (Atlas passes the Home side column's 260). */
+  asideWidth?: number
+  /** The aside as a RIGHT rail, after the cards (Eric/Atlas WIP, 2026-10-13 —
+   *  as its Home's right rail). Off: the left column, as before. */
+  asideRight?: boolean
+} = {}) {
   const [params, setParams] = useSearchParams()
   const { brand } = useAccount()
   const courses = useMemo(() => myCoursesFor(brand), [brand])
@@ -193,19 +227,26 @@ export function MyCoursesPage({
   ]
 
   return (
-    <div style={{ padding: embedded ? '0 0 64px' : '24px 64px 64px', width: '100%' }}>
+    <div
+      style={{
+        padding: embedded ? '0 0 64px' : '24px 64px 64px',
+        width: '100%',
+        ...(contentWidth != null ? { maxWidth: contentWidth, margin: '0 auto' } : null),
+      }}
+    >
       <PageHeader
         title="My Courses"
         hideTitle={breadcrumbHeader}
         stack={breadcrumbHeader}
+        titleStyle={titleStyle}
         right={
           // Search + view toggle share the header's right side (toggle sits to
           // the right of the search). In the rebrand shell the section hero
           // carries the search, so the embedded page drops its own — the toggle
           // still shows, top-right under the hero search.
-          !hideSearch || (!forceCardView && tableViewEnabled) ? (
+          (!hideSearch && !aside) || (!forceCardView && tableViewEnabled) ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {!hideSearch && (
+              {!hideSearch && !aside && (
                 <SearchInput
                   label="Search courses"
                   placeholder="Search Courses"
@@ -231,12 +272,43 @@ export function MyCoursesPage({
           // Narrower filter rail + tighter gap so the card grid keeps room in
           // the rebrand shell's constrained content column (was 240px / 32px,
           // which pushed cards off the right edge in the embedded/demo view).
-          gridTemplateColumns: hideFilters ? '1fr' : '200px minmax(0, 1fr)',
+          gridTemplateColumns: aside
+            ? asideRight
+              ? `minmax(0, 1fr) ${asideWidth}px`
+              : `${asideWidth}px minmax(0, 1fr)`
+            : hideFilters
+              ? '1fr'
+              : '200px minmax(0, 1fr)',
+          alignItems: aside ? 'start' : undefined,
           gap: 24,
           marginTop: 24,
         }}
       >
-          {!hideFilters && (
+          {aside ? (
+            /* WITH AN ASIDE (Atlas, 2026-10-06): search heads the left column
+               at the aside's width, on the filter bar's row, and the aside
+               starts level with the first row of cards. Both rows are held at
+               ASIDE_ROW_H (the pills' 36; the search box is sized to it) and both
+               columns use the same 24 gap, which is what keeps them level. */
+            // `order` carries a right rail past the cards without moving it in
+            // the markup.
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24, minWidth: 0, order: asideRight ? 1 : undefined }}>
+              {!hideSearch && !hideListControls && (
+                <div style={{ minHeight: ASIDE_ROW_H, display: 'flex', alignItems: 'center' }}>
+                  <SearchInput
+                    label="Search courses"
+                    placeholder="Search Courses"
+                    value={search}
+                    onChange={(e) => setParam('q', e.target.value)}
+                    // 12, the radius of the card under it and the course cards;
+                    // the filter bar's height (2026-10-06).
+                    style={{ width: '100%', height: ASIDE_ROW_H, borderRadius: 'var(--radius-lg)' }}
+                  />
+                </div>
+              )}
+              {aside}
+            </div>
+          ) : (!hideFilters && (
           <aside aria-label="My Courses filters" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--color-text-secondary)' }}>
               {inArchive
@@ -292,7 +364,7 @@ export function MyCoursesPage({
               <FilterAccordion label="Enrollment Date" />
             </div>
           </aside>
-          )}
+          ))}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             {/* Status tabs left, the collection link right. Two axes, two
@@ -300,13 +372,15 @@ export function MyCoursesPage({
                 collection. The page header has no room for it (a 360px search
                 plus the view toggle), so it lives here, pushed right the way
                 Gift Recipients pins its Download link. */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+            {hideListControls ? null : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', minHeight: aside ? ASIDE_ROW_H : undefined }}>
               <PillTabs
                 label="Filter by status"
                 items={statusTabs}
                 active={status}
                 onChange={(v) => setParam('status', v === 'current' ? null : v)}
                 size="compact"
+                extraPaddingX={aside ? 4 : 0}
               />
               {/* Hidden at zero — a link into an empty room is worse than no
                   link, and its absence is also why the archived collection
@@ -345,7 +419,10 @@ export function MyCoursesPage({
                 </button>
               )}
             </div>
-            {filtered.length === 0 ? (
+            )}
+            {cards ? (
+              cards
+            ) : filtered.length === 0 ? (
               <EmptyState
                 title="No courses match your filters"
                 description="Try clearing some filters, or browse the catalog to enroll in something new."

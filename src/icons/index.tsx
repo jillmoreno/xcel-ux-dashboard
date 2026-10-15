@@ -47,6 +47,7 @@ import CircleCheckSolidSvg from './circle-check-solid.svg?react'
 import CircleCheckRegularSvg from './circle-check-regular.svg?react'
 import ClockRegularSvg from './clock-regular.svg?react'
 import HouseRegularSvg from './house-regular.svg?react'
+import HouseBlankRegularSvg from './house-blank-regular.svg?react'
 // Atlas Top Nav (Figma 160:616), fetched 2026-09-30 at 7.3.1.
 import CircleLocationArrowRegularSvg from './circle-location-arrow-regular.svg?react'
 // The Atlas Top Nav's My Learning button, fetched 2026-10-01 at 7.3.1.
@@ -62,7 +63,17 @@ import CircleInfoRegularSvg from './circle-info-regular.svg?react'
 import PenFieldRegularSvg from './pen-field-regular.svg?react'
 import ClipboardListCheckRegularSvg from './clipboard-list-check-regular.svg?react'
 import AngleRightRegularSvg from './angle-right-regular.svg?react'
+import AngleRightSolidSvg from './angle-right-solid.svg?react'
+import CalendarThinSvg from './calendar-thin.svg?react'
+import FileCertificateThinSvg from './file-certificate-thin.svg?react'
+import FileCertificateLightSvg from './file-certificate-light.svg?react'
+import HourglassClockThinSvg from './hourglass-clock-thin.svg?react'
+import HourglassClockLightSvg from './hourglass-clock-light.svg?react'
+import PenToSquareSolidSvg from './pen-to-square-solid.svg?react'
+import AngleLeftRegularSvg from './angle-left-regular.svg?react'
 import GaugeThinSvg from './gauge-thin.svg?react'
+import GaugeLightSvg from './gauge-light.svg?react'
+import GaugeSolidSvg from './gauge-solid.svg?react'
 // The REAL Font Awesome Light `circle-user`, fetched 2026-10-01 at 7.3.1, for
 // the Atlas header. `circle-user.svg` (CircleUser) is a hand-drawn stand-in
 // from the original port — no FA licence header, simplified paths — and still
@@ -146,6 +157,7 @@ import PizzaSliceSvg from './pizza-slice.svg?react'
 import AwardThinSvg from './award-thin.svg?react'
 import BookOpenThinSvg from './book-open-thin.svg?react'
 import BooksThinSvg from './books-thin.svg?react'
+import BooksRegularSvg from './books-regular.svg?react'
 import GemThinSvg from './gem-thin.svg?react'
 import GraduationCapThinSvg from './graduation-cap-thin.svg?react'
 import BadgeCheckThinSvg from './badge-check-thin.svg?react'
@@ -153,6 +165,7 @@ import CrownThinSvg from './crown-thin.svg?react'
 import IdCardSvg from './id-card.svg?react'
 import LockSvg from './lock.svg?react'
 import LockSolidSvg from './lock-solid.svg?react'
+import LockRegularSvg from './lock-regular.svg?react'
 import MagnifyingGlassSvg from './magnifying-glass.svg?react'
 import MegaphoneSvg from './megaphone.svg?react'
 import MessageCircleSvg from './message-circle.svg?react'
@@ -264,6 +277,7 @@ export const CircleCheckSolid = makeIcon(CircleCheckSolidSvg) // FA: circle-chec
 export const CircleCheckRegular = makeIcon(CircleCheckRegularSvg) // FA: circle-check (regular)
 export const ClockRegular = makeIcon(ClockRegularSvg) // FA: clock (regular)
 export const HouseRegular = makeIcon(HouseRegularSvg) // FA: house (regular)
+export const HouseBlankRegular = makeIcon(HouseBlankRegularSvg) // FA: house-blank (regular)
 export const CircleLocationArrowRegular = makeIcon(CircleLocationArrowRegularSvg) // FA: circle-location-arrow (regular)
 export const BookOpenRegular = makeIcon(BookOpenRegularSvg) // FA: book-open (regular)
 export const SidebarRegular = makeIcon(SidebarRegularSvg) // FA: sidebar (regular)
@@ -275,7 +289,17 @@ export const CircleInfoRegular = makeIcon(CircleInfoRegularSvg) // FA: circle-in
 export const PenFieldRegular = makeIcon(PenFieldRegularSvg) // FA: pen-field (regular)
 export const ClipboardListCheckRegular = makeIcon(ClipboardListCheckRegularSvg) // FA: clipboard-list-check (regular)
 export const AngleRightRegular = makeIcon(AngleRightRegularSvg) // FA: angle-right (regular)
+export const AngleRightSolid = makeIcon(AngleRightSolidSvg) // FA: angle-right (solid)
+export const CalendarThin = makeIcon(CalendarThinSvg) // FA: calendar (thin)
+export const FileCertificateThin = makeIcon(FileCertificateThinSvg) // FA: file-certificate (thin)
+export const FileCertificateLight = makeIcon(FileCertificateLightSvg) // FA: file-certificate (light)
+export const HourglassClockThin = makeIcon(HourglassClockThinSvg) // FA: hourglass-clock (thin)
+export const HourglassClockLight = makeIcon(HourglassClockLightSvg) // FA: hourglass-clock (light)
+export const PenToSquareSolid = makeIcon(PenToSquareSolidSvg) // FA: pen-to-square (solid)
+export const AngleLeftRegular = makeIcon(AngleLeftRegularSvg) // FA: angle-left (regular)
 export const GaugeThin = makeIcon(GaugeThinSvg) // FA: gauge (thin)
+export const GaugeLight = makeIcon(GaugeLightSvg) // FA: gauge (light)
+export const GaugeSolid = makeIcon(GaugeSolidSvg) // FA: gauge (solid)
 export const CircleUserLight = makeIcon(CircleUserLightSvg) // FA: circle-user (light, genuine)
 export const SlashForwardSolid = makeIcon(SlashForwardSolidSvg) // FA: slash-forward (solid)
 export const ArrowRotateLeft = makeIcon(ArrowRotateLeftSvg) // FA: arrow-rotate-left
@@ -349,6 +373,7 @@ export const PizzaSlice = makeIcon(PizzaSliceSvg)
 export const AwardThin = makeIcon(AwardThinSvg)
 export const BookOpenThin = makeIcon(BookOpenThinSvg)
 export const LibraryThin = makeIcon(BooksThinSvg)
+export const BooksRegular = makeIcon(BooksRegularSvg) // FA: books (regular)
 export const GemThin = makeIcon(GemThinSvg)
 export const GraduationCapThin = makeIcon(GraduationCapThinSvg)
 export const BadgeCheckThin = makeIcon(BadgeCheckThinSvg)
@@ -359,6 +384,7 @@ export const Layout = makeIcon(TableCellsRowsSvg) // FA: table-cells-rows
 export const Table = makeIcon(TableListSvg) // FA: table-list
 export const Library = makeIcon(BooksSvg) // FA: books
 export const Lock = makeIcon(LockSvg)
+export const LockRegular = makeIcon(LockRegularSvg) // FA: lock (regular)
 export const LockSolid = makeIcon(LockSolidSvg)
 export const LogOut = makeIcon(ArrowRightFromBracketSvg) // FA: arrow-right-from-bracket
 export const MagnifyingGlass = makeIcon(MagnifyingGlassSvg) // FA: magnifying-glass

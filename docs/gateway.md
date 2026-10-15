@@ -154,13 +154,145 @@ site is. `PublicGateway.test.tsx`, "the two guides". The PDFs are asserted to
 exist and to be PDFs; nothing can assert they are CURRENT, so regenerate them
 whenever the HTML changes.
 
-**Prototypes holds the live product build** (`xcel-dashboard` →
-`/dashboard-rebrand?demo=1`), the one feature row on the ungated front door.
-What sits there is a decision about what a stakeholder may see unaccompanied —
-`UxDashboard.smoke.test.tsx` compares the whole section against an expected
-set, in both directions, so promoting or demoting a row fails a test first. It
-is also the one row in the file that is an in-app ROUTE rather than a
-standalone HTML document; see "The one in-app row" below. **It was called Demo
+**Prototypes holds the live product build, one row per product surface**
+(`xcel-dashboard` → `/dashboard-rebrand?demo=1` and, since 2026-10-14,
+`xcel-compass` → `/dashboard-rebrand?demo=1&section=compass`), the only
+feature rows on the ungated front door. What sits there is a decision about
+what a stakeholder may see unaccompanied — `UxDashboard.smoke.test.tsx`
+compares the whole section against an expected set, in both directions, so
+promoting or demoting a row fails a test first. They are also the only rows in
+the file that are in-app ROUTES rather than standalone HTML documents; see
+"The in-app rows" below.
+
+### One row per scope, every row the same build (2026-10-14)
+
+From 2026-09-28 the section held exactly one row, and the reason is still the
+reason: two rows pointing at two BUILDS of the same thing make everyone ask
+which one is real. What changed is that the product now has three doors on one
+learner journey — how they get in (invite and purchase), what they land in
+(the dashboard, end to end), where they study (Compass) — and each is its own
+source of truth for a different question. `PROTOTYPE_SCOPES` in
+`prototypeFeatures.ts` declares them in reading order — the product first, by
+Jillienne's rule, then the doors around it; every
+`category: 'prototype'` row carries a `prototypeScope`; the tile's kind tag
+shows the scope label instead of "Full platform", because three rows that all
+open the same build need the one word that tells them apart.
+
+The guarantee is kept in a stricter mechanical form, pinned by the new
+`describe` block in `UxDashboard.smoke.test.tsx`: every row's `to` is
+same-origin, enters `/dashboard-rebrand`, carries `demo=1`, and pins neither
+`ff=` nor `version=`. Each of those is a row that would stop tracking the
+product the moment `main` moved under it. No scope has two rows, and no row
+outside Prototypes carries a scope.
+
+**The Compass row is the same build entered at a different door.** A
+stakeholder who clicks into a course from the end-to-end row lands on exactly
+what the Compass row opens, which is what keeps the two from competing. It
+exists because the study experience has its own owner and its own stream of
+Refinement work (Anjani's, tagged `product: 'compass'` there), and "what is
+Compass right now?" deserved an answer that does not route through the
+dashboard.
+
+**The invite and admin rows arrived the same evening (2026-10-14).** When the
+morning's text was written the purchase flow did not exist as a React route; by
+the afternoon Eric's End-to-End Demo had merged with exactly that flow, and by
+the evening Jillienne had asked for its row and for an Admin row:
+
+- **`xcel-invite`** → `/end-to-end-demo?demo=1`, the Invited Product Detail
+  page → its checkout → the dashboard. The second product DOOR the smoke test
+  admits beside `/dashboard-rebrand`. ⚠ The page pins its own version
+  (`useEndToEndDemoParams` writes `version=eric-atlas-e2e`), so this is the one
+  row whose dashboard does not follow `defaultDiscoverabilityVersionFor` — the
+  page's rule, not the row's; the row itself carries no `version=`.
+- **`xcel-atlas-learning`** → `/dashboard-rebrand?demo=1&section=dashboard`
+  — "Atlas Learning — Work in Progress", Jillienne's ask on the preview. It
+  stems from the current end-to-end and excludes the invite flow and the
+  Compass work: the learner's Home and the learning pages around it, the SAME
+  build at the SAME baseline as the end-to-end row, entered at Home. A row of
+  its own because of scope and ownership (Eric's exploration, as Compass is
+  Anjani's), not because of a different build — which is exactly the case the
+  one-row-per-scope rule was written for. `section=dashboard` is written out
+  so the address says what the row is for rather than reading identical to
+  the end-to-end row's.
+- **`xcel-dashboard` is HELD BACK (2026-10-14, later that evening).** "Change
+  this whole option to Coming soon like the Admin tool, as I need to pick
+  things from all the others — don't remove the work, just hide users from
+  clicking on it for now." So `status: 'coming-soon'` with the `to` KEPT, which
+  widened the placeholder rule: a coming-soon row is drawn disabled whether or
+  not it has a route, and a kept route is still checked against the door rules
+  so that flipping the word back to `ready` is the whole release. It draws
+  the generated mark, not its live frame — a disabled row should not look
+  like an invitation.
+- **`xcel-admin-coming-soon`** — the Admin door as a PLACEHOLDER: a
+  `coming-soon` row with no `to` and no `externalUrl`, which `ProjectRow` draws
+  disabled — generated thumbnail, title, blurb, the "Admin" scope tag and a
+  "Coming soon" tag, no link, no chevron, no kebab. ⚠ For about an hour the
+  Admin row was the PartnerHub-fork document (`xcel-admin-tool`) instead, with
+  an exact-path allow rule punched through the public build's `/prototypes/*`
+  block so stakeholders could open it. Jillienne had not meant the fork to be
+  hooked up as the product's admin door, so it went back to Exploration, the
+  allow rule went with it, and the placeholder took the row. The lesson is in
+  the smoke test: a document row is not admitted, and a placeholder is the
+  only row that opens nothing. When the admin surface is built in React, this
+  row gains a `to` and `status: 'ready'`; the id and scope stay.
+
+**Prototypes is two cards (2026-10-14, later still).** "This is the same as
+the `main` branch, so can we have it separated from the rest to better
+indicate that it's the Final Prototype, Source of Truth." The end-to-end row
+stands alone under "Final prototype — source of truth"; the doors around it sit
+in a second card under "Work in progress". `groupRows` in `UxDashboardPage`
+is the split and every other section is still one list; the smoke test pins
+which rows land in which card.
+
+**The tag column on a Prototypes row (2026-10-14, Jillienne on the preview)**
+is outlined, square-cornered tags rather than filled pills, stacked: the scope
+(none on the product row), `Owner: <name>` from `PROTOTYPE_SCOPES`, and
+`Updated <date, time>` from the row's `lastUpdated` — an ISO stamp of the last
+commit on `main` that changed the surface, seeded from `git log` and kept true
+by `ship-to-main` (its step 2b). A placeholder shows its owner and "Coming
+soon" and no Updated. The row's kebab in this section offers Copy link only,
+and every project row's kebab is drawn in the tertiary ink rather than amber.
+
+Four live frames on the landing page now (end to end, invite, Atlas, Compass);
+the placeholder draws its generated thumbnail. Add captures to
+`public/prototype-thumbs/` if the page slows.
+
+What this did NOT change: how work gets in. A branch is still reviewed in
+Refinement and promoted by `promote-to-prototype` flipping flag defaults on
+`main`.
+
+### Phase 1 — the skills know about scopes and owners (2026-10-14)
+
+Same day, Jillienne's decisions: **Anjani owns the Compass baseline; anyone
+promotes to Refinement; only Jillienne promotes to `main`.** The last one was
+first read as "only Jillienne runs `promote-to-prototype`" and the skill was
+made owner-only in full; she corrected it the same afternoon — a promotion is
+a commit of defaults on the designer's branch, and what is hers is the MERGE.
+Three consequences, each in the file that carries it:
+
+- `PROTOTYPE_SCOPES` gained `owner` — a display name, not a `DesignerId`,
+  because Anjani has no flags or versions yet and a tab for her would be empty
+  in two panels. It is design authority (what the surface should be), not
+  merge authority. `UxDashboard.smoke.test.tsx` pins that Compass is hers.
+- **`promote-to-prototype` is per-group, and each group is its owner's.**
+  Candidates are grouped by the Prototypes row they reach; the scope owner
+  answers their group's questions and commits on the branch, a group the
+  caller does not own is listed and left alone, and `maturity` is the version
+  owner's (Eric's for his). The default dashboard version stays Jillienne's.
+  The shipper may apply an owner's already-made decision at merge time, asked
+  as a sign-off rather than a promotion, with both names in the commit body.
+  **`ship-to-main` gained the matching check**: a branch with a group its
+  owner has not decided is not ready, and the merge does not decide it.
+- **The Refinement hand-off carries `product`.** `LinkPrefill` gained the
+  field, the page reads `?product=` with the other four params and validates it
+  against `LINK_PRODUCTS`, and the form opens with that segment selected
+  (`Demo.test.tsx`). `promote-to-refinement` reads the tag off the branch:
+  Compass files only → `compass`, mixed → `both`, else `xcel`. That tag is what
+  the Compass Prototypes row later absorbs, so it stops being a filter and
+  starts being a destination.
+
+`retire-from-refinement` asks for one more word in the Archive row's `reason`:
+WHICH Prototypes row the work reached, since "promoted" no longer says. **It was called Demo
 until 2026-09-18**, and the product build was promoted into it on 2026-09-08;
 older notes that say "the Demo row" or "the Demo baseline" mean this section.
 
@@ -198,6 +330,20 @@ and `LinkBoardPanel` renders both with a `LinkBoardPresentation`. Two
 hand-copied panels is how a validation rule gets fixed in one and not the
 other. `LinksPanel` and `DemoPanel` are the two instances; `linkStore.ts` still
 exports the Links functions by name so nothing that imported them changed.
+
+**Every record carries `updatedAt` since 2026-10-14, and only Refinement shows
+it.** Jillienne's ask: "on the refinement links, we need to add a last updated
+date/time field." `validateRecord` stamps `new Date().toISOString()` on EVERY
+write — create, edit, an edit that changed nothing — and never reads the field
+off the client, so "last updated" means last saved and a form cannot claim
+otherwise. The client normalises an absent stamp to `''` (records from before
+the field) and shows no "Updated" for those rather than a guess. The row's tag
+is outlined and sentence-case, the shape the gateway's Prototypes rows wear for
+theirs, and both use `formatUpdated` so one moment never has two spellings.
+`showUpdated` is a presentation flag: on for Refinement, off for Resources,
+Research and PRDs — a brief does not move. `Demo.test.tsx` pins the render and
+reads the stamp out of the server source; `Links.test.tsx` pins that Resources
+stays as it was.
 
 **The one field Demo adds is `isPublic`, and it is the review gate.** Off by
 default. The FULL site shows every row with a Public / Team-only chip and the
@@ -439,7 +585,8 @@ runs ON THE PR BEFORE MERGE (merging publishes to two sites now), that a
 DECLINED flag must be set back to `main`'s value (the designer turned it on to
 see their work), and a final step to retire the branch's Demo row.
 
-**`FeatureCategory` gained `'prototype'`** for the one row, and `sectionOf`
+**`FeatureCategory` gained `'prototype'`** for the one row (two since
+2026-10-14), and `sectionOf`
 routes `demo` / `dashboard` there too so an LMS-ported row lands in the right
 place. `isPublicFeature` accepts all three. The `dashboard` legacy alias in
 `LEGACY_SECTIONS` points at `prototypes` now. **Prototypes is the landing
@@ -963,11 +1110,13 @@ files look the way they do rather than what they currently contain.
   them are `PlaceholderPage` stubs.
 
 
-### The one in-app row
+### The in-app rows
 
 Every row in `prototypeFeatures.ts` opens a standalone HTML document under
-`public/prototypes/` except **`xcel-dashboard`**, which is a react-router route
-(`to: '/dashboard-rebrand'`) into the product app that now lives in this repo.
+`public/prototypes/` except the Prototypes rows — **`xcel-dashboard`** and,
+since 2026-10-14, **`xcel-compass`** — which are react-router routes
+(`to: '/dashboard-rebrand…'`) into the product app that now lives in this repo.
+The notes below were written about the first and hold for both.
 
 **Do not confuse it with `xcel-lms`**, the Exploration row titled "XCEL LMS —
 Desktop Platform". That one is a hand-authored HTML mock-up of these same
@@ -1003,7 +1152,8 @@ Three consequences worth knowing:
   because Demo holds ONE row and a live frame cannot go stale — the same
   trade-off the thumbnails README describes, landing the other way than it does
   for `xcel-admin-tool`, which is one of several rows in a section. Add a
-  capture if Demo grows.
+  capture if Demo grows. (It grew to two on 2026-10-14; two frames was judged
+  fine, and the Compass row's note says to add captures past three.)
 - **No `devStatus`**, same trap as the Exploration rows: `sectionOf` checks it
   before `category`, so authoring one silently moves this row off the front
   door.

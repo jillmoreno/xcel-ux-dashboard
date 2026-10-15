@@ -13,21 +13,63 @@ one you are touching; do not read all five.
 
 ## Prototypes is the source of truth. Refinement is everything else.
 
-**Prototypes holds ONE row, deliberately, and that is not a limitation to route
-around (2026-09-28).** It answers one question — *what is the product right
-now?* — for developers and stakeholders. A second row destroys the answer,
-because from then on everyone has to ask which one is real.
+**Prototypes holds ONE row PER PRODUCT SURFACE, and every row is the same
+build (2026-09-28, restated 2026-10-14).** It answers *what is the product
+right now?* for developers and stakeholders. From 2026-09-28 it held exactly
+one row, because two rows pointing at two BUILDS of the same thing destroy the
+answer — from then on everyone has to ask which one is real.
 
-So when you want several things visible at once — two pacing treatments, a
-component's variants, a branch under discussion — **they go in Refinement**,
-which takes any number of rows, is authored in the browser (no code, no commit,
-no deploy), and is **visible to stakeholders too**: it carries no `gate`, so it
-renders on the public build as well as the full one.
+What changed on 2026-10-14 is the shape of the product, not the rule. A
+learner's journey has three doors — how they get **in** (invite and purchase),
+what they **land in** (the dashboard, end to end), and where they **study**
+(Compass) — and each is its own source of truth for a different question. The
+section holds one row per door, declared in `PROTOTYPE_SCOPES` in
+`prototypeFeatures.ts`, and the guarantee the one-row rule gave is kept in a
+stricter mechanical form that `UxDashboard.smoke.test.tsx` pins: **every row
+that opens is `main`'s build at `?demo=1`**, entered through one of the product
+app's doors (`/dashboard-rebrand`, `/end-to-end-demo`) — same origin, never a
+branch URL, never an `?ff=` pin, never a pinned `version=`, never an HTML
+document (the public build 404s `/prototypes/*`). A `coming-soon` row is a
+**placeholder**: drawn disabled with a "Coming soon" tag, nothing to click —
+either nothing is built yet (the Admin row) or the surface is **held back**
+with its route kept on record while its owner decides what it carries (the
+end-to-end row, 2026-10-14; releasing it is `status: 'ready'`). Five rows, one
+build, one committed baseline.
+
+So when you want several things visible at once FOR THE SAME SURFACE — two
+pacing treatments, a component's variants, a branch under discussion — **they
+go in Refinement**, which takes any number of rows, is authored in the browser
+(no code, no commit, no deploy), and is **visible to stakeholders too**: it
+carries no `gate`, so it renders on the public build as well as the full one.
 
 | Section | Means | Rows | Lives in |
 |---|---|---|---|
-| **Prototypes** | this IS the product | one, always | flag defaults on `main` |
+| **Prototypes** | this IS the product | one per surface, all on `main` | flag defaults on `main` |
 | **Refinement** | under discussion | as many as you like | Netlify Blobs, authored on the page |
+
+Five rows as of the evening of 2026-10-14, the product first and then the
+doors around it: **End-to-End User Experience (Invite, Atlas, Compass)** — always the
+first row — then **Invite & Purchase** (`/end-to-end-demo`, Eric's End-to-End
+Demo — the Invited Product Detail page, its checkout, then the dashboard),
+**Atlas Learning — Work in Progress** (the end-to-end's middle: Home and the
+learning pages, same build at Home, Eric's), **Compass Learning**, and **Admin
+Tool** — a placeholder
+until the admin surface is built in React; the PartnerHub-fork exploration
+stays in Exploration. A fifth is a `PROTOTYPE_SCOPES` decision first and a row
+second.
+
+**Who promotes, and who merges, are two different columns (2026-10-14).**
+Each scope names an `owner`, and the owner both decides what that surface
+should be and runs `promote-to-prototype` for it on their own branch: Anjani
+for Compass, Eric for Atlas Learning, Afsana and Eric for Invite & Purchase,
+Cody for Admin, Jillienne for end to end. `maturity` on a version is
+the version owner's. A promotion is a commit of defaults on a branch and
+reaches no stakeholder by itself. **Only Jillienne merges** — `ship-to-main`,
+which refuses a branch with a group its owner has not decided — **and only she
+sets the default dashboard version.** That is the lock, for every scope.
+**Anyone promotes to Refinement**, and that door is unchanged —
+`promote-to-refinement` now reads the branch and tags the row's product
+(Compass files → Compass), which is the tag the Compass row later absorbs.
 
 Two things that follow, and both have bitten:
 
@@ -42,7 +84,9 @@ Two things that follow, and both have bitten:
 The ways in are already built: `promote-to-refinement` (a branch),
 `promote-component` (one widget's variants), `promote-to-prototype` (moving
 something into the source of truth). There is deliberately no "create a second
-prototype" skill.
+prototype" skill: a new SCOPE is a decision Jillienne makes in
+`PROTOTYPE_SCOPES`, and a second row for an existing scope is a Refinement
+job.
 
 **The way OUT is `retire-from-refinement`** (2026-09-29), and it runs both when
 the work shipped and when it did not. It exists because of the second bullet

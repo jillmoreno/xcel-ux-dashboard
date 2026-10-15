@@ -73,9 +73,21 @@ describe('gatewayMode — parsing', () => {
     expect(parseGatewayMode('full')).toBe('full')
   })
 
-  it('treats exactly the Prototypes row as public — every other authored row is not', () => {
+  it('treats exactly the Prototypes rows as public — every other authored row is not', () => {
+    // ⚠ TWO SINCE 2026-10-14 — one row per `prototypeScope`, both the same
+    // build on `main`. Written out rather than derived, because what a
+    // passwordless viewer can reach is the concern and a derived list would
+    // pass whatever the data said.
     const pub = PROTOTYPE_FEATURES.filter(isPublicFeature).map((f) => f.id)
-    expect(pub).toEqual(['xcel-dashboard'])
+    // Four since the evening of 2026-10-14: the invite row and the Admin
+    // placeholder (a coming-soon row that opens nothing — see the smoke test).
+    expect(pub).toEqual([
+      'xcel-dashboard',
+      'xcel-invite',
+      'xcel-atlas-learning',
+      'xcel-compass',
+      'xcel-admin-coming-soon',
+    ])
   })
 })
 
@@ -396,7 +408,7 @@ describe('the demo site offers only the finished demo controls', () => {
     expect(within(designBar).getByRole('button', { name: /^Lo-fi (on|off)$/ })).toBeTruthy()
     expect(within(designBar).queryByRole('button', { name: /Feature flags/i })).toBeNull()
 
-    expect(screen.getByRole('button', { name: /Progress/i })).toBeTruthy()
+    expect(within(screen.getByRole('region', { name: 'Demo controls' })).getByRole('button', { name: /Progress/i })).toBeTruthy()
     expect(screen.getByRole('button', { name: /^Reset$/ })).toBeTruthy()
   })
 
@@ -418,7 +430,7 @@ describe('the demo site offers only the finished demo controls', () => {
     /* Anchored on the eyebrow. Not strictly required any more — the mark's
        hidden text used to contain "work in progress" and made this ambiguous —
        but naming the control exactly is the right assertion either way. */
-    expect(screen.getByRole('button', { name: /^Progress:/i }).textContent).not.toContain(
+    expect(within(screen.getByRole('region', { name: 'Demo controls' })).getByRole('button', { name: /^Progress:/i }).textContent).not.toContain(
       'not on the demo site',
     )
   })
@@ -451,7 +463,7 @@ describe('the demo site offers only the finished demo controls', () => {
     const lensMenu = screen.getByRole('menu', { name: /Admin tools/i })
     expect(within(lensMenu).queryByText(/Feature Flag/i)).toBeNull()
     expect(within(lensMenu).getByRole('menuitemcheckbox', { name: /Design controls/i })).toBeTruthy()
-    expect(screen.getByRole('button', { name: /Progress/i })).toBeTruthy()
+    expect(within(screen.getByRole('region', { name: 'Demo controls' })).getByRole('button', { name: /Progress/i })).toBeTruthy()
   })
 
   it('no longer offers a View as demo toggle anywhere', { timeout: 20_000 }, async () => {
