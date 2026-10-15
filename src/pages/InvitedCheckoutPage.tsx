@@ -352,14 +352,15 @@ function Field({
 
 const PAGE: CSSProperties = { minHeight: '100vh', background: 'var(--color-fixed-light)' }
 
-/* 88 tall: 20 above and below the 48 logo, 32 in each side, a 1px #E6E6E6
+/* 64 tall: 8 above and below the 48 logo (2026-10-15, Eric's request; the
+   design's 88 had 20), as the partner header; 32 in each side, a 1px #E6E6E6
    outline drawn inside (as Figma strokes). Three parts, 16 apart; the middle
    one takes the room and centres its words. */
 const HEADER: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: 16,
-  padding: '20px 32px',
+  padding: '8px 32px',
   background: 'var(--color-fixed-light)',
   boxShadow: 'inset 0 0 0 1px var(--color-e2e-partner-outline)',
 }
