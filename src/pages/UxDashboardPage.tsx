@@ -25,6 +25,7 @@ import { ArchiveTable } from '@/components/prototype/ArchiveTable'
 import { QaNotesPanel } from '@/components/prototype/QaNotesPanel'
 import { DemoPanel, LinksPanel, PrdsPanel, ResearchPanel } from '@/components/prototype/LinksPanel'
 import { LINK_PRODUCTS, useLinkCount, type LinkProduct } from '@/data/linkStore'
+import { formatUpdated } from '@/components/prototype/formatUpdated'
 import { useDemoCount } from '@/data/demoStore'
 import { useResearchCount } from '@/data/researchStore'
 import { usePrdCount } from '@/data/prdStore'
@@ -2647,13 +2648,6 @@ const prototypeTagStyle: CSSProperties = {
   fontWeight: 600,
 }
 
-/** "Oct 14, 8:47 PM" in the viewer's own zone — the stamp is UTC, and a
- *  reviewer reads a clock, not an offset. */
-function formatUpdated(iso: string): string {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(d)
-}
 
 /** The status as a TAG rather than a dot + coloured text, so it reads as the
  *  same object as the kind chip beside it. The fill is a low mix of the status

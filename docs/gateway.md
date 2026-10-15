@@ -331,6 +331,20 @@ hand-copied panels is how a validation rule gets fixed in one and not the
 other. `LinksPanel` and `DemoPanel` are the two instances; `linkStore.ts` still
 exports the Links functions by name so nothing that imported them changed.
 
+**Every record carries `updatedAt` since 2026-10-14, and only Refinement shows
+it.** Jillienne's ask: "on the refinement links, we need to add a last updated
+date/time field." `validateRecord` stamps `new Date().toISOString()` on EVERY
+write — create, edit, an edit that changed nothing — and never reads the field
+off the client, so "last updated" means last saved and a form cannot claim
+otherwise. The client normalises an absent stamp to `''` (records from before
+the field) and shows no "Updated" for those rather than a guess. The row's tag
+is outlined and sentence-case, the shape the gateway's Prototypes rows wear for
+theirs, and both use `formatUpdated` so one moment never has two spellings.
+`showUpdated` is a presentation flag: on for Refinement, off for Resources,
+Research and PRDs — a brief does not move. `Demo.test.tsx` pins the render and
+reads the stamp out of the server source; `Links.test.tsx` pins that Resources
+stays as it was.
+
 **The one field Demo adds is `isPublic`, and it is the review gate.** Off by
 default. The FULL site shows every row with a Public / Team-only chip and the
 toggle in the form; the PUBLIC build renders `DemoPanel` read-only and filtered

@@ -51,6 +51,7 @@ const link = (over: Partial<StoredLink> = {}): StoredLink => ({
   product: 'both',
   isPublic: false,
   addedDate: '2026-09-10',
+  updatedAt: '',
   ...over,
 })
 
@@ -679,5 +680,16 @@ describe('the Links section on the gateway', () => {
     renderDashboard('/?section=demo&add=1&url=https%3A%2F%2Ffeat-x--site.netlify.app%2F&title=X&note=&product=marketing')
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByRole('radio', { name: 'Both' })).toBeChecked()
+  })
+})
+
+describe('Resources — no Updated stamp on the row (2026-10-14)', () => {
+  it('keeps the meta line as it was even when the record carries updatedAt', async () => {
+    // The server stamps every board's records; only Refinement SHOWS it. A
+    // brief on Resources does not move, and `showUpdated` is off here.
+    mockEndpoint([link({ updatedAt: '2026-10-14T15:51:11Z' })])
+    render(<LinksPanel />)
+    await screen.findByText('FinServ Learner Brief')
+    expect(screen.queryByText(/^Updated /)).toBeNull()
   })
 })

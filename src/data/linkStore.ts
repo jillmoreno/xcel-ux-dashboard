@@ -137,10 +137,15 @@ export type StoredLink = {
   isPublic: boolean
   /** `yyyy-mm-dd`, stamped server-side on create and carried through edits. */
   addedDate: string
+  /** ISO timestamp of the last SAVE, stamped server-side on every write
+   *  (2026-10-14). '' on a record written before the field existed — those
+   *  rows show no "Updated" rather than a guess. Shown on Refinement only. */
+  updatedAt: string
 }
 
-/** The editable fields. `id` and `addedDate` are not among them — the server
- *  owns both, so a form cannot renumber a link or backdate it. `isPublic` is
+/** The editable fields. `id`, `addedDate` and `updatedAt` are not among them —
+ *  the server owns all three, so a form cannot renumber a link, backdate it,
+ *  or claim it was just saved. `isPublic` is
  *  optional on the way IN because only one board has the control for it. */
 export type LinkDraft = Pick<StoredLink, 'title' | 'url' | 'note' | 'addedBy' | 'type'> & {
   isPublic?: boolean
@@ -287,6 +292,7 @@ function normalise(v: StoredLink): StoredLink {
     // older record from one with it — reads as UX-only, never as public.
     isPublic: v.isPublic === true,
     addedDate: typeof v.addedDate === 'string' ? v.addedDate : '',
+    updatedAt: typeof v.updatedAt === 'string' ? v.updatedAt : '',
   }
 }
 

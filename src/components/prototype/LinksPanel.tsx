@@ -82,6 +82,7 @@ import {
   useBranches,
   type BranchDeploy,
 } from '@/data/branchStore'
+import { formatUpdated } from './formatUpdated'
 
 /**
  * What one board CALLS things and SHOWS. `LinksPanel` and `DemoPanel` below
@@ -123,6 +124,14 @@ export type LinkBoardPresentation = {
    * including the missing-author case.
    */
   showBadges: boolean
+  /**
+   * Whether a row shows "Updated <date, time>" from its `updatedAt` stamp
+   * (2026-10-14, Jillienne). Refinement only: a branch under review changes,
+   * and when it last did is the fact a reviewer wants; a brief on Resources
+   * does not move. The server stamps every board's records regardless, so
+   * turning this on elsewhere is one line.
+   */
+  showUpdated?: boolean
   /** Whether the form carries the "Show on public site" toggle and rows show a
    *  Public / Team chip. Demo only. */
   showPublicToggle: boolean
@@ -541,6 +550,19 @@ const publicBadgeStyle: CSSProperties = {
   ...badgeStyle,
   background: 'var(--ux-accent)',
   color: 'var(--ux-on-accent)',
+}
+
+/* "Updated Oct 14, 8:47 PM" — an outlined, sentence-case TAG rather than an
+   uppercase badge: it is a fact about time, not a category, and the Prototypes
+   rows on the gateway wear the same outlined shape for theirs. */
+const updatedBadgeStyle: CSSProperties = {
+  ...badgeStyle,
+  background: 'transparent',
+  border: '1px solid var(--ux-border)',
+  borderRadius: 4,
+  textTransform: 'none',
+  letterSpacing: 0,
+  fontWeight: 600,
 }
 
 /* ── the product tags ──
@@ -1508,6 +1530,9 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                           {linkProductLabel(link.product)}
                         </span>
                       )}
+                      {p.showUpdated && link.updatedAt && (
+                        <span style={updatedBadgeStyle}>Updated {formatUpdated(link.updatedAt)}</span>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -1662,6 +1687,7 @@ export function DemoPanel({
     showThumb: true,
     showProduct: true,
     showBadges: true,
+    showUpdated: true,
     showPublicToggle: true,
     publicOnly: pub,
     readOnly: pub,
