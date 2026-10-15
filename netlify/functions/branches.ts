@@ -81,7 +81,7 @@ export default async function handler(req: Request): Promise<Response> {
   if (req.method !== 'GET') return json({ errors: ['Method not allowed'] }, 405)
 
   // Control 2. See the file comment.
-  if ((process.env.VITE_GATEWAY_MODE || '').trim().toLowerCase() === 'public') {
+  if ((process.env.VITE_GATEWAY_MODE || '').trim().toLowerCase() === 'testing') {
     return json({ configured: false, branches: [], reason: 'not-available-here' }, 404)
   }
 

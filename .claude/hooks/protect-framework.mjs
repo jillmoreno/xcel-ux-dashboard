@@ -56,7 +56,6 @@ export const PROTECTED = [
   'src/components/prototype/DemoBar.tsx',
   'src/components/prototype/DesignControlsBar.tsx',
   'src/components/prototype/demoBarUtil.ts',
-  'src/data/demoControlMaturity.ts',
   'src/components/layout/AdminToolsMenu.tsx',
   '.claude/skills/',
   '.claude/hooks/',
@@ -81,8 +80,6 @@ const INSTEAD = {
     'These are Jillienne’s skills. Run them, don’t edit them.',
   'src/components/prototype/DemoControlsBar.tsx':
     'This is the shared demo controls bar — which controls every reviewer sees. It is one list that every designer edits, which is how two branches collide. Your own exploration belongs behind a FEATURE FLAG (it shows up in the Feature Flag panel, reachable from the flag icon on the bar) or behind a DASHBOARD VERSION of your own. If you genuinely need a control on the bar, ask Jillienne.',
-  'src/data/demoControlMaturity.ts':
-    'This says which demo-bar controls stakeholders are offered — a readiness statement about the product, not about your branch. Ask Jillienne.',
   'src/components/layout/AdminToolsMenu.tsx':
     'This is the robot — the UI/UX Demo Tools menu. Ask Jillienne.',
   'src/components/prototype/DesignControlsBar.tsx':

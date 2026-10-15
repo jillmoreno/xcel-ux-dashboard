@@ -6,7 +6,6 @@ import {
   readPrototypeWalkthrough,
 } from './prototypeWalkthrough'
 import { prototypeFeatureById } from '@/data/prototypeFeatures'
-import { isPublicGateway } from '@/data/gatewayMode'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { useDemoShareActions } from '@/components/prototype/demoShareActions'
 import { Share2, BrowserWindow, ArrowUpRightFromSquare } from '@/icons'
@@ -230,7 +229,7 @@ export function PrototypeBar({
                 opening a shared link actually has — which of the two builds am I
                 looking at. Beside the home icon because that is the control that
                 takes you back to the hub it names. */}
-            <span style={hubLabelStyle}>{isPublicGateway() ? 'Demo Hub' : 'Design Hub'}</span>
+            <span style={hubLabelStyle}>Design Hub</span>
           </span>
         )}
         {/* The "← Back" pill — from an explicit `back` prop (shows regardless of

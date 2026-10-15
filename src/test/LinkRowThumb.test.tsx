@@ -35,7 +35,6 @@ const row = (over: Partial<StoredLink> = {}): StoredLink => ({
   addedBy: 'JM',
   type: '',
   product: 'both',
-  isPublic: false,
   addedDate: '2026-09-22',
   updatedAt: '',
   ...over,
@@ -194,7 +193,7 @@ describe('product tagging', () => {
     render(<DemoPanel />)
     await screen.findByText('Only XCEL')
 
-    await user.click(screen.getByRole('button', { name: 'XCEL' }))
+    await user.click(screen.getByRole('button', { name: 'Atlas' }))
     expect(screen.getByText('Only XCEL')).toBeInTheDocument()
     expect(screen.getByText('Shared work')).toBeInTheDocument()
     expect(screen.queryByText('Only Compass')).not.toBeInTheDocument()
@@ -216,7 +215,7 @@ describe('product tagging', () => {
     await user.click(await screen.findByRole('button', { name: /Add the first|Add link/ }))
 
     expect(screen.getByRole('radio', { name: 'Both' })).toBeChecked()
-    await user.click(screen.getByRole('radio', { name: 'XCEL' }))
+    await user.click(screen.getByRole('radio', { name: 'Atlas' }))
     await user.type(screen.getByLabelText('Address'), 'https://feat-x--y.netlify.app/dashboard-rebrand')
     await user.type(screen.getByLabelText('Title'), 'A branch')
     await user.click(screen.getByRole('button', { name: 'Add link' }))
@@ -229,7 +228,7 @@ describe('product tagging', () => {
 /* ── the badges ───────────────────────────────────────────────────────────── */
 
 describe('badges sit under the title', () => {
-  it('renders visibility, product and author as badges', async () => {
+  it('renders product and author as tags', async () => {
     mockEndpoint([row({ title: 'A branch', addedBy: 'Anjani', product: 'compass' })])
     render(<DemoPanel />)
     const title = await screen.findByText('A branch')
@@ -237,24 +236,9 @@ describe('badges sit under the title', () => {
     // that the three strings exist somewhere on the page.
     const li = title.closest('li')!
     const text = li.textContent ?? ''
-    expect(text.indexOf('A branch')).toBeLessThan(text.indexOf('UX Only'))
+    expect(text.indexOf('A branch')).toBeLessThan(text.indexOf('Compass'))
     expect(text).toContain('Compass')
     expect(text).toContain('Anjani')
-  })
-
-  it('gives the visibility badge a different treatment from the product tag', async () => {
-    mockEndpoint([row({ title: 'A branch', product: 'compass' })])
-    render(<DemoPanel />)
-    const li = (await screen.findByText('A branch')).closest('li')!
-    const vis = within(li).getByText('UX Only')
-    const prod = within(li).getByText('Compass')
-    // The first attempt tinted both from the palette's hues and they collapsed
-    // to the same fill in the dark theme — `--ux-hue-blue` and `--ux-accent`
-    // are the same hex in one palette, and `--ux-chip` is accent-derived. This
-    // asserts the difference is fill-vs-no-fill, which no palette can undo.
-    expect(vis.style.background).not.toBe(prod.style.background)
-    expect(vis.style.background).toBe('transparent')
-    expect(prod.style.background).not.toBe('transparent')
   })
 
   it('gives XCEL, Compass and Both three different colours', async () => {
@@ -270,18 +254,20 @@ describe('badges sit under the title', () => {
     const badge = (title: string, label: string) =>
       within(screen.getByText(title).closest('li')!).getByText(label)
     const pairs: [string, string][] = [
-      ['One', 'XCEL'],
+      ['One', 'Atlas'],
       ['Two', 'Compass'],
       ['Three', 'Both'],
     ]
     const fills = pairs.map(([t, l]) => badge(t, l).style.background)
     const borders = pairs.map(([t, l]) => badge(t, l).style.border)
-    // Three distinct hues, not one chip three times. Both halves matter: the
-    // fill has to stay pale for the label to clear 4.5:1 in BOTH themes, so the
-    // border is where most of the hue difference lives (measured: fill ΔE 6–19,
-    // border ΔE 15–42).
-    expect(new Set(fills).size).toBe(3)
+    const inks = pairs.map(([t, l]) => badge(t, l).style.color)
+    // Three distinct hues, not one tag three times. Outlined since 2026-10-15,
+    // so the hue lives in the border and the text, and the fill is none — the
+    // old concern (a pale fill that still clears 4.5:1 in both themes) is gone
+    // with the fill; the text is each hue's own foreground token.
+    expect(new Set(fills)).toEqual(new Set(['transparent']))
     expect(new Set(borders).size).toBe(3)
+    expect(new Set(inks).size).toBe(3)
   })
 
   it('renders no author badge when nobody signed it', async () => {
@@ -300,32 +286,6 @@ describe('badges sit under the title', () => {
     render(<LinksPanel />)
     expect(await screen.findByText(/added 2026-09-10 · by Jill/)).toBeInTheDocument()
     expect(screen.queryByRole('radio', { name: 'Both' })).not.toBeInTheDocument()
-  })
-})
-
-/* ── the switch ───────────────────────────────────────────────────────────── */
-
-describe('the public toggle is a switch', () => {
-  it('exposes switch semantics, not a checkbox', async () => {
-    const user = userEvent.setup()
-    mockEndpoint([])
-    render(<DemoPanel />)
-    await user.click(await screen.findByRole('button', { name: /Add the first|Add link/ }))
-
-    const sw = screen.getByRole('switch', { name: 'Show on public site' })
-    expect(sw).not.toBeChecked()
-    // A styled `<div>` would pass a screenshot and fail here.
-    await user.click(sw)
-    expect(sw).toBeChecked()
-  })
-
-  it('is off for a new row', async () => {
-    const user = userEvent.setup()
-    mockEndpoint([])
-    render(<DemoPanel />)
-    await user.click(await screen.findByRole('button', { name: /Add the first|Add link/ }))
-    // A row is UX-only until someone decides otherwise, never the reverse.
-    expect(screen.getByRole('switch', { name: 'Show on public site' })).not.toBeChecked()
   })
 })
 
@@ -368,13 +328,23 @@ describe('the row menu', () => {
     expect(screen.getByRole('menuitem', { name: 'Edit' })).toBeInTheDocument()
   })
 
-  it('puts the author beside the menu, with no pill around the name', async () => {
-    mockEndpoint([row({ title: 'A branch', addedBy: 'Anjani' })])
+  it('puts the author at the top of the tag stack, as an outlined tag with the user icon', async () => {
+    // 2026-10-15: the gateway's Prototypes rows wear the author this way and
+    // the Refinement row now matches — a square-cornered outline, not the
+    // pill that read as a status the person was IN, and the icon so the name
+    // is read as "who" without the word.
+    mockEndpoint([row({ title: 'A branch', addedBy: 'Anjani', product: 'compass', updatedAt: '2026-10-14T15:51:11Z' })])
     render(<DemoPanel />)
     const li = (await screen.findByText('A branch')).closest('li')!
     const name = within(li).getByText('Anjani')
-    // A pill around a name reads as a status the person is IN.
-    expect(name.style.borderRadius).toBe('')
-    expect(name.style.background).toBe('')
+    expect(name.style.borderRadius).toBe('4px')
+    expect(name.style.background).toBe('transparent')
+    expect(name.querySelector('svg')).not.toBeNull()
+    // Order in the stack: who, when, what.
+    const stack = name.parentElement!
+    const texts = [...stack.children].map((c) => c.textContent)
+    expect(texts[0]).toContain('Anjani')
+    expect(texts[1]).toMatch(/^Updated /)
+    expect(texts[2]).toBe('Compass')
   })
 })

@@ -8,7 +8,7 @@
 <!--
   The DESIGNER guide — how a second designer gets work onto this dashboard.
   Served from the FULL site as the "Contributing" section (an iframe of this
-  page) and at /contributing/ directly. On the PUBLIC build the whole folder is
+  page) and at /contributing/ directly. (Until 2026-10-15 a public build 404'd the folder; one site now, so the folder is
   404'd at the edge (scripts/public-redirects.mjs): it describes the team's
   working process, which is not for stakeholders — they get /about/ instead.
 
@@ -61,7 +61,7 @@
 
 <section id="q-loop">
   <h2>The loop, in one picture</h2>
-  <div class="shot wide" role="img" aria-label="Diagram: your branch is built by Netlify at its own address; you add that address to Refinement on the full site, where the team sees it; a toggle makes it visible to stakeholders on the public site; a pull request and the promote step move it into Prototypes.">
+  <div class="shot wide" role="img" aria-label="Diagram: your branch is built by Netlify at its own address; you add that address to Refinement on the full site, where the team sees it; everyone with the Hub link sees it there; a pull request and the promote step move it into Prototypes.">
     <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
       <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#6b7280"/></marker></defs>
       <!-- you -->
@@ -73,9 +73,9 @@
       <line x1="142" y1="103" x2="186" y2="103" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar)"/>
       <rect x="188" y="60" width="150" height="86" rx="10" fill="#fff" stroke="#dfe3e8"/>
       <text x="263" y="86" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1.2">BRANCH BUILD</text>
-      <text x="263" y="106" text-anchor="middle" font-size="10.5" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">feat-…--ux-demo-</text>
+      <text x="263" y="106" text-anchor="middle" font-size="10.5" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">feat-…--ux-design-</text>
       <text x="263" y="120" text-anchor="middle" font-size="10.5" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">xceldashboard.netlify.app</text>
-      <text x="263" y="138" text-anchor="middle" font-size="10.5" fill="#454b55">built from the public site</text>
+      <text x="263" y="138" text-anchor="middle" font-size="10.5" fill="#454b55">built from the Hub</text>
       <!-- refinement -->
       <line x1="338" y1="103" x2="382" y2="103" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar)"/>
       <text x="360" y="92" text-anchor="middle" font-size="10" fill="#6b7280">paste</text>
@@ -88,7 +88,7 @@
       <rect x="400" y="128" width="138" height="30" rx="6" fill="#e9eef4" stroke="#dfe3e8"/>
       <text x="410" y="147" font-size="11" fill="#1b1d21">Your link</text>
       <rect x="492" y="134" width="38" height="18" rx="9" fill="#1f4e88"/><text x="511" y="147" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">Public</text>
-      <text x="469" y="172" text-anchor="middle" font-size="10" fill="#6b7280">↑ "Show on public site" on → stakeholders see it</text>
+      <text x="469" y="172" text-anchor="middle" font-size="10" fill="#6b7280">↑ everyone with the Hub link sees it</text>
       <!-- prototypes -->
       <line x1="554" y1="103" x2="598" y2="103" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar)"/>
       <text x="576" y="92" text-anchor="middle" font-size="10" fill="#6b7280">PR</text>
@@ -203,7 +203,7 @@
 
     <article class="qcard">
       <h3><span class="n">6</span>Add it to Refinement</h3>
-      <div class="shot" role="img" aria-label="The Refinement section on the full site with an Add link button, and the form: Address, Title, Note, Added by, and the Show on public site checkbox unticked">
+      <div class="shot" role="img" aria-label="The Refinement section on the full site with an Add link button, and the form: Address, Title, Note, Added by">
         <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
           <rect x="8" y="8" width="84" height="134" rx="6" fill="#f5f5f5"/>
           <text x="18" y="34" font-size="10" fill="#6b7280">Prototypes</text>
@@ -216,11 +216,11 @@
             <text x="114" y="60">Address</text><rect x="170" y="50" width="130" height="14" rx="3" fill="#f5f5f5"/><text x="175" y="60" font-size="8" fill="#1b1d21" font-family="ui-monospace, Menlo, monospace">https://feat-…?demo=1</text>
             <text x="114" y="80">Title</text><rect x="170" y="70" width="130" height="14" rx="3" fill="#f5f5f5"/><text x="175" y="80" font-size="8" fill="#1b1d21">Streak card — feat/…</text>
             <text x="114" y="100">Note</text><rect x="170" y="90" width="130" height="14" rx="3" fill="#f5f5f5"/><text x="175" y="100" font-size="8" fill="#1b1d21">Home, under Current Progress</text>
-            <rect x="114" y="116" width="11" height="11" rx="2" fill="#fff" stroke="#6b7280"/><text x="131" y="125">Show on public site <tspan fill="#6b7280">— leave off</tspan></text>
+            <rect x="114" y="116" width="11" height="11" rx="2" fill="#fff" stroke="#6b7280"/><text x="131" y="125"></text>
           </g>
         </svg>
       </div>
-      <p>On the <strong>full site</strong>: Refinement → <strong>Add link</strong>. Paste the address, title it with your branch name, say where to look. Leave <em>Show on public site</em> off.</p>
+      <p>On the <strong>full site</strong>: Refinement → <strong>Add link</strong>. Paste the address, title it with your branch name, say where to look. Everyone with the Hub link sees it the moment you click Add.</p>
       <p><strong>Faster:</strong> in your Claude chat, say <code>/promote-to-refinement</code>. It works out the branch address, checks the push, drafts the title and note, and gives you a link that opens this form already filled in — you check it and click Add.</p>
     </article>
 
@@ -262,7 +262,7 @@
           <text x="218" y="113" font-size="8.5" fill="#6b7280">read-only</text>
         </svg>
       </div>
-      <p>When it is ready for stakeholders, Jillienne (or you, once agreed) edits the row and ticks <strong>Show on public site</strong>. It appears on the public site's list, read-only. Untick to take it back — nothing is deleted.</p>
+      <p>There is no second step since 2026-10-15: the Hub is the one site, stakeholders are given its link, and a Refinement row is visible to them the moment it is added. Remove the row to take it back — nothing else is deleted.</p>
     </article>
 
     <article class="qcard">
@@ -299,7 +299,7 @@
 <section id="q-rules">
   <h2>Four rules that cover most mistakes</h2>
   <div class="qrules">
-    <div class="callout warn"><span class="lab">Never push to main</span><p>Every push to <code>main</code> rebuilds the public site. Branch, then PR.</p></div>
+    <div class="callout warn"><span class="lab">Never push to main</span><p>Every push to <code>main</code> rebuilds the Hub for everyone. Branch, then PR.</p></div>
     <div class="callout warn"><span class="lab">Promotion is a flag, not a tile</span><p>Prototypes holds one row per product surface — the dashboard, Compass — and a test guards the list. Your work reaches a row by a flag default flipping on <code>main</code>.</p></div>
     <div class="callout warn"><span class="lab">Review HTML goes in public/demos/</span><p>Both folders work on your branch build. <code>public/demos/</code> is for work in review and is meant to be short-lived; <code>public/prototypes/</code> is for a document that is becoming a permanent row. Only the second needs a row in the project list.</p></div>
     <div class="callout warn"><span class="lab">Every branch gets an address</span><p>Anyone with the link and the site password can open it — including work you are not ready to show. Nothing confidential on a branch.</p></div>
@@ -346,7 +346,7 @@
 
   <p>Two sections do the work of getting a design in front of people, and they are different acts:</p>
   <ul>
-    <li><strong>Refinement</strong> is the review inbox. It is a list of links you add <em>on the page</em> — no code, no commit. A row points at your branch's own build (or an HTML file on it). The team sees every row; stakeholders see a row only after its <em>Show on public site</em> toggle is on.</li>
+    <li><strong>Refinement</strong> is the review inbox. It is a list of links you add <em>on the page</em> — no code, no commit. A row points at your branch's own build (or an HTML file on it). Everyone with the Hub link sees every row.</li>
     <li><strong>Prototypes</strong> is the product as it stands — the live React build at the flag defaults committed on <code>main</code>. Only a merge to <code>main</code> changes it, and only Jillienne decides what merges into that baseline.</li>
   </ul>
 

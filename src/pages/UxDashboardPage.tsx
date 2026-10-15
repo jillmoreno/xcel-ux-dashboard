@@ -78,7 +78,6 @@ import {
 import { Toast } from '@/components/ui/Toast'
 import { PrototypePasswordModal } from '@/components/prototype/PrototypeLock'
 import { isPrototypeUnlocked, markPrototypeUnlocked } from '@/components/prototype/prototypeLockUtil'
-import { isPublicGateway } from '@/data/gatewayMode'
 
 /**
  * UX dashboard — the prototype's front door, at `/` (and still reachable at
@@ -361,9 +360,11 @@ const SECTIONS: SectionDef[] = [
  * `SECTIONS` above stays the authored full set; everything that renders or
  * resolves a section reads THIS list. A new gated section needs no change here.
  */
-const VISIBLE_SECTIONS: SectionDef[] = isPublicGateway()
-  ? SECTIONS.filter((s) => !s.gate)
-  : SECTIONS
+// Every section, on every build that renders the gateway (2026-10-15: the
+// public build that filtered out the gated ones is retired; the testing build
+// never renders this page). `gate` on a section is now a note about who it is
+// for, not a filter anything reads.
+const VISIBLE_SECTIONS: SectionDef[] = SECTIONS
 
 /** The section a bare `/` opens — the first in the nav, and the one a
  *  stakeholder should see first: the product itself. `?section=` is dropped
@@ -1368,7 +1369,7 @@ export function UxDashboardPage() {
   /** Live demo count. On the public build only the rows flipped public are
    *  shown, so the badge counts only those — a badge over a shorter list reads
    *  as a load failure. Same mechanism as `useLinkCount`; see `demoStore.ts`. */
-  const demoCount = useDemoCount(isPublicGateway() ? (l) => l.isPublic : undefined)
+  const demoCount = useDemoCount()
   /** Live research-link count. Same mechanism as `useLinkCount`; see
    *  `researchStore.ts`. */
   const researchCount = useResearchCount()
@@ -1460,19 +1461,15 @@ export function UxDashboardPage() {
           {/* The mark stays a single tile beside a two-line lockup, rather than
               sitting above a sub-line indented past it. */}
           <span style={brandTextStyle}>
-            UX Hub
-            <span style={{ ...brandSubStyle, color: nav.muted }}>XCEL LMS &amp; Compass Learning</span>
-            {/* WHICH DASHBOARD YOU ARE ON — 2026-09-24. The two builds are
-                otherwise told apart only by which sections are in the rail,
-                which you have to already know to read. `isPublicGateway()` is
-                the same switch that decides what is in it.
-
-                It takes the eyebrow accent rather than the muted grey, so the
-                lockup's third line reads as a LABEL for the rail beneath it
-                rather than as a quieter second sub-line. */}
-            <span style={{ ...brandSubStyle, color: nav.eyebrow, fontWeight: 700 }}>
-              {isPublicGateway() ? 'Demo Link' : 'Design Link'}
-            </span>
+            UX Design Hub
+            {/* "Atlas LMS", not "XCEL LMS" — 2026-10-15, Jillienne: the product
+                is XCEL, the dashboard being built is Atlas, and the lockup
+                names the two surfaces the Hub holds — Atlas and Compass. */}
+            <span style={{ ...brandSubStyle, color: nav.muted }}>Atlas LMS &amp; Compass Learning</span>
+            {/* The lockup's third line — "Design Link" / "Demo Link", which
+                build you were on — was REMOVED 2026-10-15 (Jillienne), the
+                first step of retiring the demo site: with one site there is
+                no second build to be told apart from. */}
           </span>
         </div>
         {/* Same rule as the one above the restricted group, so the rail reads as
@@ -1884,10 +1881,13 @@ function ProjectRow({
   /* The owner tag is a user ICON and the name, not the word "Owner" — Jillienne
      on the preview, 2026-10-14. The word stays for a screen reader, visually
      hidden, so the tag still reads "Owner: Anjani" where it is read aloud. */
+  // Owner, then Updated, then the scope LAST — 2026-10-15, Jillienne on the
+  // live site: "move these top ones to the bottom". Who and when lead; what
+  // door it is closes the stack.
   const prototypeTags: { key: string; text: string; icon?: ReactNode; srPrefix?: string }[] = [
-    { key: 'scope', text: prototypeScopeLabel(feature.prototypeScope) || '' },
     { key: 'owner', text: owner ?? '', icon: <User size={11} aria-hidden style={{ flex: 'none' }} />, srPrefix: 'Owner: ' },
     { key: 'updated', text: feature.lastUpdated ? `Updated ${formatUpdated(feature.lastUpdated)}` : '' },
+    { key: 'scope', text: prototypeScopeLabel(feature.prototypeScope) || '' },
   ].filter((t) => t.text)
   // Three labels, answering "how much of the product is this?":
   //   Standalone HTML — leaves the app entirely (the route column used to be
@@ -2020,22 +2020,29 @@ function ProjectRow({
            outlined, square-cornered TAGS rather than filled pills, stacked —
            the scope, who owns the surface, and when it last changed on main.
            A placeholder adds its "Coming soon" tag and has no Updated. */
-        <span style={tagColPrototypeStyle}>
-          {prototypeTags.map((t) => (
-            <span key={t.key} style={t.icon ? { ...prototypeTagStyle, display: 'inline-flex', alignItems: 'center', gap: 4 } : prototypeTagStyle}>
-              {t.icon}
-              {t.srPrefix && <span className="cre-visually-hidden">{t.srPrefix}</span>}
-              {t.text}
-            </span>
-          ))}
-          {placeholder && (
-            // The whole `border` shorthand, not `borderColor` over it: React
-            // writes the longhand after the shorthand and the browser drops
-            // the widths, so the tag drew with no border at all.
-            <span style={{ ...prototypeTagStyle, color: chip.color, border: `1px solid ${chip.color}` }}>
-              {chip.label}
-            </span>
-          )}
+        <span style={tagAreaPrototypeStyle}>
+          <span style={tagStackStyle}>
+            {prototypeTags.map((t) => (
+              <span key={t.key} style={t.icon ? { ...prototypeTagStyle, display: 'inline-flex', alignItems: 'center', gap: 4 } : prototypeTagStyle}>
+                {t.icon}
+                {t.srPrefix && <span className="cre-visually-hidden">{t.srPrefix}</span>}
+                {t.text}
+              </span>
+            ))}
+          </span>
+          {/* "Coming soon" sits to the RIGHT of the stack, not under it —
+              2026-10-15, Jillienne on the live site. The column is there on
+              every row, empty on the ones that open, so the stacks and the
+              chevrons stay aligned down the list. The whole `border`
+              shorthand, not `borderColor` over it: React writes the longhand
+              after the shorthand and the browser drops the widths. */}
+          <span style={{ display: 'flex', alignItems: 'center' }}>
+            {placeholder && (
+              <span style={{ ...prototypeTagStyle, color: chip.color, border: `1px solid ${chip.color}` }}>
+                {chip.label}
+              </span>
+            )}
+          </span>
         </span>
       ) : (
         <span style={showStatus ? tagColStyle : tagColSoloStyle}>
@@ -2108,7 +2115,7 @@ function ProjectRow({
             preview, "have these all vertically align". Conditional exactly
             as the kebab is, so the public build (no kebabs anywhere) stays
             aligned too. */}
-        {!isPublicGateway() && <span aria-hidden style={{ flex: 'none', width: 32 }} />}
+        <span aria-hidden style={{ flex: 'none', width: 32 }} />
       </div>
     )
   }
@@ -2139,7 +2146,7 @@ function ProjectRow({
         question "why can't I?", which is a conversation the demo is not for.
         Same call as the admin robot.
       */}
-      {!isPublicGateway() && (
+      {(
         <span style={{ flex: 'none' }}>
           {/* Gray, not the amber accent the shared kebab defaults to —
               2026-10-14, Jillienne on the preview ("make the ellipsis gray").
@@ -2632,9 +2639,18 @@ const tagColStyle: CSSProperties = {
  *  down the list. */
 const tagColSoloStyle: CSSProperties = { ...tagColStyle, gridTemplateColumns: '104px' }
 
-/** The Prototypes rows' column: one tag per line, wide enough for
- *  "Updated Oct 14, 8:47 PM" at the tag's own size. */
-const tagColPrototypeStyle: CSSProperties = { ...tagColStyle, gridTemplateColumns: '156px' }
+/** The Prototypes rows' tag area: the STACK (one tag per line, wide enough for
+ *  "Updated Oct 14, 8:47 PM" at the tag's own size) and, to its right, a column
+ *  for the status tag — "Coming soon" on a placeholder, empty otherwise, and
+ *  present on every row so nothing shifts between them. */
+const tagAreaPrototypeStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: '156px 84px',
+  alignItems: 'center',
+  gap: 6,
+  flex: 'none',
+}
+const tagStackStyle: CSSProperties = { display: 'grid', gridTemplateColumns: '156px', alignItems: 'center', gap: 6 }
 
 /** An outlined, square-cornered TAG — what the Prototypes rows wear instead
  *  of the filled pill (2026-10-14, Jillienne: "tags instead of badges,

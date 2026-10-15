@@ -33,6 +33,5 @@ export default linkBoardHandler({
   idPrefix: 'research',
   segment: 'research',
   types: ALLOWED_TYPES,
-  publicFlag: false,
   products: false,
 })

@@ -27,6 +27,43 @@ the oldest one.
 migration" below — including why the decision recorded four days earlier said
 the opposite.
 
+## One site — the demo site is retired (2026-10-15)
+
+Jillienne: "we will be using this Design hub as the source of truth for
+everything and no longer gating the public/private of the refinement links."
+Everything below this heading that says "the public build", "the demo site",
+"flipped public" or "`maturity`" is history from 2026-09-18 to 2026-10-15, kept
+as written. What is true now:
+
+- **One Netlify project, one password.** Stakeholders are given the Hub's link.
+  The Netlify side was Jillienne's own change; the repo's side is
+  `git show 88e5136` (the public mode and the Refinement toggle) and
+  `git show 3dd0706` (`maturity`), each with an `archivedItems.ts` row.
+- **`VITE_GATEWAY_MODE` is `full | testing`.** A leftover `public` parses as
+  full. `isPublicGateway()` keeps its name for its call sites and means "the
+  testing build" — every trim it drives is still right for a test participant.
+  `OneSite.test.tsx` (was `PublicGateway.test.tsx`) pins that a stale `public`
+  trims nothing.
+- **The edge rules:** the testing build keeps the whole block; the production
+  deploy of the one site 404s `/recaps/*` only (a recap names colleagues and
+  records what engineering has not been told), keyed on Netlify's `CONTEXT` so
+  a branch build still serves it to the team. The contributing guide is open —
+  hiding it from the one site would hide it from the designers it is for.
+- **Refinement has no public toggle.** A row is a row the moment it is added.
+  The server drops `isPublic` on save; older records keep the key until their
+  next save and nothing reads it.
+- **`maturity` is gone** from flags, variants, demo-bar controls and versions,
+  with `demoControlMaturity.ts`, the picker's "Design site only" badge, the
+  demo bar's `wip` dot and the `?as=demo` lens. Every control and every
+  version is offered to everyone. Promotion has two levers now: flag defaults
+  (the scope's owner) and the default dashboard version (Jillienne).
+
+⚠ **ONE THING TO CHECK ON THE NETLIFY SIDE.** The Blobs store behind Refinement,
+Links, Research, PRDs and QA Notes was OWNED by the demo project — the full site
+pointed at it through `BLOBS_SITE_ID` / `BLOBS_TOKEN` (README, "Netlify"). If
+that project was deleted rather than unpublished, the store went with it. If
+the boards still load, it was not.
+
 ## Gateway sync — read before touching `src/pages` or `src/components`
 
 The gateway code here is a **copy** of the LMS dashboard's
@@ -344,6 +381,18 @@ theirs, and both use `formatUpdated` so one moment never has two spellings.
 Research and PRDs — a brief does not move. `Demo.test.tsx` pins the render and
 reads the stamp out of the server source; `Links.test.tsx` pins that Resources
 stays as it was.
+
+**A Refinement row's tags match the gateway's Prototypes rows (2026-10-15).**
+Jillienne: "update the refinement tags to better match what we did on this
+page." The same shape and the same order: a 156px STACK of outlined,
+square-cornered, sentence-case tags — who (the author, with the user icon),
+when (the Updated stamp), what (the product, outlined in its fixed hue, no
+fill) — then an 84px column for the row's STATUS (UX Only outlined in the
+accent, Public solid in it — the one state with a consequence outside the team
+stays the loudest), then the kebab in the tertiary ink. Fixed widths so the
+stacks and kebabs line up down the list. The same evening the gateway's own
+stack went owner → Updated → scope, with Coming soon moved to the right of the
+stack, and this follows it. `LinkRowThumb.test.tsx` pins the shape.
 
 **The one field Demo adds is `isPublic`, and it is the review gate.** Off by
 default. The FULL site shows every row with a Public / Team-only chip and the

@@ -118,7 +118,6 @@ describe('the course-entry flags', () => {
 
   it('keeps the Details link off until someone turns it on', () => {
     expect(details?.defaultEnabled).toBe(false)
-    expect(details?.maturity).toBe('wip')
   })
 
   it('defaults to the shipped split layout', () => {
@@ -129,12 +128,5 @@ describe('the course-entry flags', () => {
        job: a new arm must not become the default by accident, only on purpose. */
     expect(flag?.defaultVariant).toBe('combined')
     expect(flag?.variants?.map((v) => v.value)).toEqual(['split', 'combined'])
-  })
-
-  it('is born work-in-progress, so stakeholders cannot meet it yet', () => {
-    /* The standing rule for a new flag — see `Maturity`. Absent would also mean
-       wip, but this one says so, because it is a layout A/B someone will want
-       to promote deliberately. */
-    expect(flag?.maturity).toBe('wip')
   })
 })

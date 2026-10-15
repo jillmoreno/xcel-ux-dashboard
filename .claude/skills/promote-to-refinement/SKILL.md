@@ -22,13 +22,10 @@ branch_host: "ux-design-xceldashboard.netlify.app"       # branch builds live un
 review_path: "/dashboard-rebrand?demo=1"                 # what a product branch is reviewed at
 ```
 
-**`branch_host` is the FULL site, changed 2026-09-21** — it was the public site
-(`ux-demo-xceldashboard`) until then. Branch builds are for designers reviewing
-each other's work, and a public-mode branch build shows them nothing at all for
-any change to a gated section. The consequence is that a branch URL is a full
-build; the prototype bar's home icon is dropped there so a stakeholder who gets
-the link through a public Refinement row is not one click from the project list.
-See CLAUDE.md, "Branch deploys build on the FULL site".
+**`branch_host` is the Hub** — the one site since 2026-10-15, when the public
+site (`ux-demo-xceldashboard`) was retired. Branch builds are full builds; the
+prototype bar's home icon is dropped on them so someone who gets the link
+through a Refinement row is not one click from the project list.
 
 ## Why the last step is a click, not a POST
 
@@ -126,7 +123,6 @@ anything it does not recognise, so a wrong guess costs one click, not a bad row.
 | **Note** | Where to look and what question is being asked. Ask the designer for one sentence if the commits do not make it obvious: *"Home, under Current Progress. Is the streak motivating or nagging?"* |
 | **Product** | From step 3b. Shown in the draft so the designer can disagree before the form opens. |
 | **Added by** | Not needed — the form prefills it from the browser's last author. |
-| **Show on public site** | Left OFF. Always. That toggle is Jillienne's decision, made on the page. |
 
 Show the draft (URL · Title · Note) and let the designer edit before opening.
 
@@ -160,15 +156,13 @@ The page reads `product` with the other four (`UxDashboardPage`, the
 app the sandbox cannot open their browser, so the link IS the hand-off. (In a
 terminal session `open "<address>"` / `xdg-open` is fine too.) Then say, in
 two lines: *click the link — the form opens on the full site with the fields
-filled; check the note and click **Add link**. The row is UX Only until
-someone flips "Show on public site".*
+filled; check the note and click **Add link**. Everyone with the Hub link sees
+the row the moment it is added — there is no public toggle since 2026-10-15.*
 
 ## Guardrails
 
 - **Never on `main`.** Refinement is for work in review; `main` is the product.
 - **Never push without a yes.** A push is a deploy.
-- **Never flip public.** The prefill has no `isPublic` and the form opens with
-  the toggle off. Making a row public is a decision made on the page.
 - **Never POST to `/api/demos` from the skill.** The click is the gate.
 - **One row per branch.** If the designer says a row already exists, do not
   open a second Add — they can **Edit** the existing row on the page.

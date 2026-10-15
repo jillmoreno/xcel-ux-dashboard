@@ -30,20 +30,19 @@ describe('the user-test gateway — VITE_GATEWAY_MODE=testing', () => {
     expect(parseGatewayMode('')).toBe('full')
   })
 
-  it('hides everything the public build hides, and then more', () => {
-    /* ⚠ THE SUBSET RELATION IS THE CLAIM. `isPublicGateway` is written as
-       `!== 'full'` precisely so a new mode inherits the trim; if it ever
-       becomes a list of modes and this one is forgotten, a participant sees
-       the Design section. */
+  it('is the one trimmed build — `isPublicGateway` answers true here alone', () => {
+    /* The public build is retired (2026-10-15); `isPublicGateway` keeps its
+       name for its twenty call sites and now means exactly "the testing
+       build". If a second trimmed mode ever returns, it goes in here too. */
     vi.stubEnv('VITE_GATEWAY_MODE', 'testing')
     expect(isPublicGateway()).toBe(true)
     expect(isTestingGateway()).toBe(true)
     vi.unstubAllEnvs()
   })
 
-  it('leaves the public and full builds exactly as they were', () => {
+  it('reads a leftover `public` as the full build — that site is retired (2026-10-15)', () => {
     vi.stubEnv('VITE_GATEWAY_MODE', 'public')
-    expect(isPublicGateway()).toBe(true)
+    expect(isPublicGateway()).toBe(false)
     expect(isTestingGateway()).toBe(false)
     vi.unstubAllEnvs()
 
@@ -53,7 +52,7 @@ describe('the user-test gateway — VITE_GATEWAY_MODE=testing', () => {
     vi.unstubAllEnvs()
   })
 
-  it('404s the standalone prototypes at the edge, like the public build', () => {
+  it('404s the standalone prototypes at the edge', () => {
     /* `public/prototypes/` are static files; no client-side gate can hide a
        file the CDN serves on request. The postbuild writes `_redirects` for
        both trimmed modes — asserted by reading the script, because running a

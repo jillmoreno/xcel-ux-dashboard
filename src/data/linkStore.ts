@@ -91,7 +91,11 @@ export function linkTypeLabel(type: LinkType): string {
  * which is true of it: it predates the distinction, so it claims neither.
  */
 export const LINK_PRODUCTS = [
-  { id: 'xcel', label: 'XCEL' },
+  // Labelled "Atlas" since 2026-10-15 (Jillienne, on the board): the product
+  // is XCEL, but the work on this side of the line is the Atlas dashboard, and
+  // that is the word the tag should say beside "Compass". The ID stays `xcel`
+  // — it is what every stored record carries.
+  { id: 'xcel', label: 'Atlas' },
   { id: 'compass', label: 'Compass' },
   { id: 'both', label: 'Both' },
 ] as const
@@ -131,10 +135,6 @@ export type StoredLink = {
   /** Which product this row is about. Only the Demo board's endpoint stores it
    *  (Links drops the field); everywhere else it normalises to `both`. */
   product: LinkProduct
-  /** Whether the PUBLIC build shows this row. Only the Demo board's endpoint
-   *  stores it (Links drops the field); everywhere else it normalises to
-   *  `false`, so a consumer never has to ask which board a record came from. */
-  isPublic: boolean
   /** `yyyy-mm-dd`, stamped server-side on create and carried through edits. */
   addedDate: string
   /** ISO timestamp of the last SAVE, stamped server-side on every write
@@ -148,9 +148,7 @@ export type StoredLink = {
  *  or claim it was just saved. `isPublic` is
  *  optional on the way IN because only one board has the control for it. */
 export type LinkDraft = Pick<StoredLink, 'title' | 'url' | 'note' | 'addedBy' | 'type'> & {
-  isPublic?: boolean
-  /** Optional on the way IN for the same reason as `isPublic`: only one board
-   *  has the control for it. */
+  /** Optional on the way IN because only one board has the control for it. */
   product?: LinkProduct
 }
 
@@ -288,9 +286,8 @@ function normalise(v: StoredLink): StoredLink {
     product: LINK_PRODUCTS.some((x) => x.id === v.product)
       ? (v.product as LinkProduct)
       : DEFAULT_PRODUCT,
-    // Strictly `true`, so a record from a board without the field — or an
-    // older record from one with it — reads as UX-only, never as public.
-    isPublic: v.isPublic === true,
+    // `isPublic` is no longer read (2026-10-15, the public site retired); a
+    // record that still carries it is simply a row, like every other.
     addedDate: typeof v.addedDate === 'string' ? v.addedDate : '',
     updatedAt: typeof v.updatedAt === 'string' ? v.updatedAt : '',
   }

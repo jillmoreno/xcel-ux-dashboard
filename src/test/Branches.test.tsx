@@ -46,7 +46,6 @@ const row = (over: Partial<StoredLink> = {}): StoredLink => ({
   type: '',
   // Required on main's StoredLink since the product control (merged 2026-10-02).
   product: 'both',
-  isPublic: false,
   addedDate: '2026-09-18',
   updatedAt: '',
   ...over,
@@ -85,7 +84,7 @@ function mockEndpoints({
 
 async function loadPublicDemoPanel() {
   vi.resetModules()
-  vi.stubEnv('VITE_GATEWAY_MODE', 'public')
+  vi.stubEnv('VITE_GATEWAY_MODE', 'testing')
   const mod = await import('@/components/prototype/LinksPanel')
   return mod.DemoPanel
 }
@@ -239,14 +238,13 @@ describe('the Refinement branch strip', () => {
      the one it must not: "where to look" is what only the person who did the
      work knows, and a plausible wrong note reads as reviewed when nobody
      wrote it. */
-  it('leaves the note empty and the public toggle off', async () => {
+  it('leaves the note empty', async () => {
     const user = userEvent.setup()
     mockEndpoints({ branches: ok })
     render(<DemoPanel />)
     await user.click(await screen.findByRole('button', { name: /^Add$/ }))
     expect(await screen.findByLabelText(/Note/)).toHaveValue('')
     // A role="switch" on main's form since the 2026-10-02 merge, not a checkbox.
-    expect(screen.getByRole('switch', { name: /public/i })).toHaveAttribute('aria-checked', 'false')
   })
 
   /* A branch already up for review must not be offered again — and the strip
@@ -292,7 +290,7 @@ describe('the Refinement branch strip', () => {
 
   /* Branch names are internal. Two independent controls stop them reaching
      stakeholders; this is the one a reader of the client can see. */
-  it('never renders on the public build', async () => {
+  it('never renders on the testing build — the one trimmed build left (2026-10-15)', async () => {
     mockEndpoints({ branches: ok })
     const PublicDemo = await loadPublicDemoPanel()
     render(<PublicDemo />)
@@ -334,15 +332,17 @@ describe('helpers', () => {
 
 /* ── the two controls that keep branch names off the public build ─────────── */
 
-describe('the public-build guard', () => {
+describe('the trimmed-build guard', () => {
   const fn = readFileSync(resolve(here, '../../netlify/functions/branches.ts'), 'utf8')
 
   /* Control 2. Control 1 is "the public project has no token", which would be
      switched off silently the day someone sets the Blobs vars there to share a
      store — a reasonable thing to do. This one does not care. */
-  it('the endpoint refuses outright when the build is public', () => {
+  it('the endpoint refuses outright on the testing build', () => {
+    // `public` until 2026-10-15; that site is retired and the guard moved to
+    // the one trimmed build that remains.
     expect(fn).toMatch(/VITE_GATEWAY_MODE/)
-    expect(fn).toMatch(/=== 'public'/)
+    expect(fn).toMatch(/=== 'testing'/)
     // Refused, not "returns an empty list" — an empty list is indistinguishable
     // from "no branches" and would hide the fact that this is not for here.
     expect(fn).toMatch(/404/)

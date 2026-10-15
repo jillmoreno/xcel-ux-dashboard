@@ -74,7 +74,6 @@ import { RESEARCH_BOARD } from '@/data/researchStore'
 import { PRD_BOARD } from '@/data/prdStore'
 import { GeneratedThumb } from './GeneratedThumb'
 import { accentsByHost, hostKey, linkThumbKind } from './linkRowThumb'
-import { isPublicGateway } from '@/data/gatewayMode'
 import {
   isBranchOnBoard,
   safeBranchHref,
@@ -132,14 +131,6 @@ export type LinkBoardPresentation = {
    * turning this on elsewhere is one line.
    */
   showUpdated?: boolean
-  /** Whether the form carries the "Show on public site" toggle and rows show a
-   *  Public / Team chip. Demo only. */
-  showPublicToggle: boolean
-  /** Show only rows with `isPublic` — the public build's Demo. */
-  publicOnly: boolean
-  /** No Add / Edit / Remove anywhere, whatever the endpoint says. The public
-   *  build's Demo: stakeholders read it, designers author it on the full site. */
-  readOnly: boolean
   /** The empty-state sentence when the endpoint IS reachable. */
   emptyHint: string
   /** The sentence under the form's fields. */
@@ -372,46 +363,12 @@ const filterPillActiveStyle: CSSProperties = {
 /* ── the switch ──
    40x22 with an 18px knob: the track has to read as a track at a glance, and
    below about 36px wide the two states differ by a few pixels of travel. */
-const switchStyle: CSSProperties = {
-  position: 'relative',
-  flex: 'none',
-  width: 40,
-  height: 22,
-  padding: 0,
-  borderRadius: 999,
-  border: '1px solid var(--ux-border)',
-  background: 'var(--ux-chip)',
-  cursor: 'pointer',
-  transition: 'background 120ms, border-color 120ms',
-}
 
-const switchOnStyle: CSSProperties = {
-  ...switchStyle,
-  background: 'var(--ux-accent)',
-  borderColor: 'var(--ux-accent)',
-}
 
 /* The knob is its own element so the travel can animate. `--ux-card` rather
    than white: on the dark themes white would be the brightest thing on the
    panel. */
-const switchKnobStyle: CSSProperties = {
-  position: 'absolute',
-  top: 1,
-  left: 1,
-  width: 18,
-  height: 18,
-  borderRadius: '50%',
-  background: 'var(--ux-card)',
-  border: '1px solid var(--ux-border)',
-  transition: 'transform 120ms',
-  transform: 'translateX(0)',
-}
 
-const switchKnobOnStyle: CSSProperties = {
-  ...switchKnobStyle,
-  borderColor: 'var(--ux-accent-strong)',
-  transform: 'translateX(18px)',
-}
 
 /* ── the segmented product control ── */
 const segmentRowStyle: CSSProperties = {
@@ -439,34 +396,6 @@ const segmentActiveStyle: CSSProperties = {
   color: 'var(--ux-on-accent)',
 }
 
-/* ── the badge row under a title ──
-   One shape for all three badges, so the row reads as one band of metadata
-   rather than three unrelated marks. What varies is the fill, and only where
-   the fill MEANS something: Public is the accent because it is the one state
-   with a consequence outside the team. */
-const badgeRowStyle: CSSProperties = {
-  display: 'flex',
-  flexWrap: 'wrap',
-  alignItems: 'center',
-  gap: 6,
-  margin: '5px 0 0',
-}
-
-const badgeStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 4,
-  padding: '2px 8px',
-  borderRadius: 999,
-  fontSize: 11,
-  fontWeight: 700,
-  letterSpacing: '0.03em',
-  textTransform: 'uppercase',
-  background: 'var(--ux-chip)',
-  color: 'var(--ux-text-2)',
-  whiteSpace: 'nowrap',
-}
-
 /* ── the row's icon box ──
    44px, not the 160x110 an Exploration row gets.
    
@@ -485,34 +414,35 @@ const ICON_BOX = 44
    Exploration's shape: the row's own facts on the left, everything ABOUT the
    row banked down the right edge, so the eye can run straight down one column
    for "whose is this" or "can I send it on" without re-reading titles. */
-const sideColStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'flex-end',
-  gap: 7,
-  flex: 'none',
-}
-
-const sideTopStyle: CSSProperties = {
-  display: 'flex',
+/* The row's right-hand area, the gateway's Prototypes rows' shape (2026-10-15):
+   a 156px stack of tags, an 84px status column, then the kebab. Fixed widths
+   on purpose — the stacks and the kebabs line up down the list whatever a
+   row carries. */
+const sideAreaStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: '156px 84px auto',
   alignItems: 'center',
   gap: 6,
-  /* The kebab is a 28px target and the name sits beside it; this keeps the two
-     on one baseline without the name's descenders pushing the row taller. */
-  minHeight: 26,
+  flex: 'none',
 }
+const tagStackStyle: CSSProperties = { display: 'grid', gridTemplateColumns: '156px', alignItems: 'center', gap: 6 }
+const statusColStyle: CSSProperties = { display: 'grid', gridTemplateColumns: '84px', alignItems: 'center', gap: 6 }
 
-/* The author is no longer a badge — it is a person with a face, next to their
-   own name. A pill around a name reads as a status the person is IN. */
-const authorNameStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 5,
-  fontSize: 12,
-  fontWeight: 600,
+/* The outlined, square-cornered, sentence-case TAG — `prototypeTagStyle` on the
+   gateway, copied here rather than imported so the two panels stay free of
+   each other's modules. Same size and weight as the uppercase badge it
+   replaces, so a row mixing the two (Public is still solid) sits at one scale. */
+const linkTagStyle: CSSProperties = {
+  padding: '1px 8px',
+  justifySelf: 'start',
+  borderRadius: 4,
+  background: 'transparent',
+  border: '1px solid var(--ux-border)',
   color: 'var(--ux-text-2)',
+  fontSize: 10.5,
+  fontWeight: 600,
   whiteSpace: 'nowrap',
-  maxWidth: 160,
+  maxWidth: 156,
   overflow: 'hidden',
   textOverflow: 'ellipsis',
 }
@@ -537,34 +467,6 @@ const authorNameStyle: CSSProperties = {
    Fill-vs-no-fill cannot collapse that way whatever the tokens resolve to, and
    it keeps Public as the loudest thing in the row — which it should be, being
    the one state with a consequence outside the team. */
-const uxOnlyBadgeStyle: CSSProperties = {
-  ...badgeStyle,
-  background: 'transparent',
-  border: '1px solid var(--ux-accent)',
-  color: 'var(--ux-accent)',
-}
-
-/* Public keeps the accent, solid: it is the one state with a consequence
-   outside the team, and it should be the loudest thing in the row. */
-const publicBadgeStyle: CSSProperties = {
-  ...badgeStyle,
-  background: 'var(--ux-accent)',
-  color: 'var(--ux-on-accent)',
-}
-
-/* "Updated Oct 14, 8:47 PM" — an outlined, sentence-case TAG rather than an
-   uppercase badge: it is a fact about time, not a category, and the Prototypes
-   rows on the gateway wear the same outlined shape for theirs. */
-const updatedBadgeStyle: CSSProperties = {
-  ...badgeStyle,
-  background: 'transparent',
-  border: '1px solid var(--ux-border)',
-  borderRadius: 4,
-  textTransform: 'none',
-  letterSpacing: 0,
-  fontWeight: 600,
-}
-
 /* ── the product tags ──
    One hue each, FIXED per product — which is what makes them readable beside
    the row's tile, since that is tinted from the same four hues. The tile's hue
@@ -586,20 +488,15 @@ const PRODUCT_BADGE: Record<LinkProduct, { hue: string; fg: string; tint: number
 }
 
 function productBadgeStyle(product: LinkProduct): CSSProperties {
-  const { hue, fg, tint } = PRODUCT_BADGE[product] ?? PRODUCT_BADGE.both
+  const { hue, fg } = PRODUCT_BADGE[product] ?? PRODUCT_BADGE.both
+  /* Outlined in its hue, no fill (2026-10-15): the tag shape the gateway's
+     rows wear, keeping the one thing the old badge was for — a FIXED hue per
+     product, readable beside the row's tile. The border takes the hue at
+     strength; the text is the hue's own foreground token, which the tokens
+     keep at AA on the card in every theme. */
   return {
-    ...badgeStyle,
-    background: `color-mix(in srgb, var(${hue}) ${tint}%, var(--ux-card))`,
-    // The border carries most of the hue, at 2.5x the fill.
-    //
-    // The fill cannot: `--ux-hue-*-fg` is DARK in the light themes and LIGHT in
-    // the dark ones, so the fill has to stay near the card in both directions or
-    // the label stops clearing 4.5:1. A 44% fill separated beautifully — and
-    // measured 3.67:1 on Compass in dark, which is a fail.
-    //
-    // A border has no text on it, so it can take as much hue as it likes, and it
-    // sits exactly where two pills touch and get compared.
-    border: `1px solid color-mix(in srgb, var(${hue}) ${Math.min(tint * 2.5, 85)}%, var(--ux-card))`,
+    ...linkTagStyle,
+    border: `1px solid color-mix(in srgb, var(${hue}) 60%, var(--ux-card))`,
     color: `var(${fg})`,
   }
 }
@@ -629,7 +526,6 @@ const EMPTY_DRAFT: LinkDraft = {
   note: '',
   addedBy: '',
   type: '',
-  isPublic: false,
   product: DEFAULT_PRODUCT,
 }
 
@@ -987,35 +883,6 @@ function LinkFormModal({
           </div>
         )}
 
-        {p.showPublicToggle && (
-          <div style={fieldWrapStyle}>
-            {/* A switch, not a checkbox: this is a live state someone flips back
-                and forth as a row moves through review, not a form value
-                submitted once. `role="switch"` on a real button keeps Space,
-                Enter and the accessible name that a styled `<input>` would have
-                had. Off by default — a row is UX-only until someone decides
-                otherwise, never the reverse. */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={draft.isPublic === true}
-                aria-label="Show on public site"
-                onClick={() => onChange({ isPublic: draft.isPublic !== true })}
-                style={draft.isPublic === true ? switchOnStyle : switchStyle}
-              >
-                <span
-                  aria-hidden
-                  style={draft.isPublic === true ? switchKnobOnStyle : switchKnobStyle}
-                />
-              </button>
-              <span style={{ ...labelStyle, marginBottom: 0 }}>Show on public site</span>
-            </div>
-            <p style={{ ...optionalStyle, margin: '5px 0 0', fontSize: 12 }}>
-              Off: only the team sees this row. On: stakeholders with the public link see it too.
-            </p>
-          </div>
-        )}
 
         <p style={modalHintStyle}>{p.saveHint}</p>
       </div>
@@ -1037,15 +904,10 @@ function LinkFormModal({
 export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
   const { index: rawIndex, refresh } = p.board.useLinks()
   const { createLink, saveLink, deleteLink, readLastAuthor, rememberLastAuthor } = p.board
-  // `publicOnly` filters at the INDEX, not at render, so the count, the search
-  // and the empty state all describe the same list a stakeholder can see.
-  const index = useMemo(
-    () => (p.publicOnly ? { ...rawIndex, links: rawIndex.links.filter((l) => l.isPublic) } : rawIndex),
-    [rawIndex, p.publicOnly],
-  )
-  // What "can author here" means: the endpoint answers AND this build is not
-  // read-only. Every Add / Edit / Remove affordance below reads this one flag.
-  const canAuthor = index.available && !p.readOnly
+  // Every row, every build (2026-10-15): the public build that filtered this
+  // index to the rows flipped public is retired, and the toggle went with it.
+  const index = rawIndex
+  const canAuthor = index.available
   const [editing, setEditing] = useState<Editing>(null)
   const [draft, setDraft] = useState<LinkDraft>(EMPTY_DRAFT)
   const [errors, setErrors] = useState<string[]>([])
@@ -1188,7 +1050,6 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
       note: link.note,
       addedBy: link.addedBy,
       type: link.type,
-      isPublic: link.isPublic,
       product: link.product,
     })
     setErrors([])
@@ -1502,38 +1363,44 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                   {link.note.trim() && <p style={noteTextStyle}>{link.note}</p>}
                 </div>
                 {p.showBadges ? (
-                  <div style={sideColStyle}>
-                    <div style={sideTopStyle}>
+                  /* THE REFINEMENT ROW'S TAGS MATCH THE PROTOTYPES ROWS' —
+                     2026-10-15, Jillienne: "update the refinement tags to
+                     better match what we did on this page". The same shape
+                     and the same order: a STACK of outlined, sentence-case
+                     tags — who (the author, with the user icon), when (the
+                     Updated stamp), what (the product, in its hue) — then a
+                     column to the right for the row's STATUS (Public / UX
+                     Only, where the gateway's rows put Coming soon), then the
+                     kebab. The column is present on every row, so the stacks
+                     line up down the list. */
+                  <div style={sideAreaStyle}>
+                    <div style={tagStackStyle}>
                       {link.addedBy.trim() && (
-                        <span style={authorNameStyle}>
-                          <User size={12} aria-hidden style={{ flex: 'none' }} />
+                        <span style={{ ...linkTagStyle, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          <User size={11} aria-hidden style={{ flex: 'none' }} />
+                          <span className="cre-visually-hidden">Added by </span>
                           {link.addedBy.trim()}
                         </span>
                       )}
-                      {shared === link.id && (
-                        <span style={{ ...badgeStyle, textTransform: 'none', letterSpacing: 0 }}>
-                          Link copied
-                        </span>
-                      )}
-                      {rowActions(link).length > 0 && (
-                        <ActionMenu label={`Actions for ${link.title}`} items={rowActions(link)} />
-                      )}
-                    </div>
-                    <div style={badgeRowStyle}>
-                      {p.showPublicToggle && !p.publicOnly && (
-                        <span style={link.isPublic ? publicBadgeStyle : uxOnlyBadgeStyle}>
-                          {link.isPublic ? 'Public' : 'UX Only'}
-                        </span>
+                      {p.showUpdated && link.updatedAt && (
+                        <span style={linkTagStyle}>Updated {formatUpdated(link.updatedAt)}</span>
                       )}
                       {p.showProduct && (
                         <span style={productBadgeStyle(link.product)}>
                           {linkProductLabel(link.product)}
                         </span>
                       )}
-                      {p.showUpdated && link.updatedAt && (
-                        <span style={updatedBadgeStyle}>Updated {formatUpdated(link.updatedAt)}</span>
-                      )}
                     </div>
+                    <div style={statusColStyle}>
+                      {shared === link.id && <span style={linkTagStyle}>Link copied</span>}
+                    </div>
+                    {rowActions(link).length > 0 && (
+                      <ActionMenu
+                        label={`Actions for ${link.title}`}
+                        items={rowActions(link)}
+                        triggerStyle={{ color: 'var(--ux-text-3)' }}
+                      />
+                    )}
                   </div>
                 ) : (
                   canAuthor && (
@@ -1591,9 +1458,6 @@ const LINKS_PRESENTATION: LinkBoardPresentation = {
   showThumb: false,
   showProduct: false,
   showBadges: false,
-  showPublicToggle: false,
-  publicOnly: false,
-  readOnly: false,
   emptyHint: 'Everything here is added on the page — nothing is authored in code.',
   saveHint:
     'Saved to the shared store — everyone who opens this site sees it, and it survives a cleared cache. The date is stamped for you.',
@@ -1621,9 +1485,6 @@ const RESEARCH_PRESENTATION: LinkBoardPresentation = {
   showThumb: false,
   showProduct: false,
   showBadges: false,
-  showPublicToggle: false,
-  publicOnly: false,
-  readOnly: false,
   emptyHint:
     'Nothing here yet. Attach the studies, findings and rationale behind the designs — everything is added on the page, not in code.',
   saveHint:
@@ -1649,9 +1510,6 @@ const PRD_PRESENTATION: LinkBoardPresentation = {
   showThumb: false,
   showProduct: false,
   showBadges: false,
-  showPublicToggle: false,
-  publicOnly: false,
-  readOnly: false,
   emptyHint:
     'Nothing here yet. Attach the PRDs and requirement docs the designs answer — everything is added on the page, not in code.',
   saveHint:
@@ -1675,7 +1533,6 @@ export function DemoPanel({
   prefill?: LinkPrefill | null
   onPrefillConsumed?: () => void
 } = {}) {
-  const pub = isPublicGateway()
   const p: LinkBoardPresentation = {
     board: DEMO_BOARD,
     // "link", not "demo" — what the designer is adding IS a link (to their
@@ -1688,12 +1545,8 @@ export function DemoPanel({
     showProduct: true,
     showBadges: true,
     showUpdated: true,
-    showPublicToggle: true,
-    publicOnly: pub,
-    readOnly: pub,
-    emptyHint: pub
-      ? 'Nothing is being shown for review right now.'
-      : 'Push a branch, paste its Netlify URL here, and the team can open it. Flip "Show on public site" when it is ready for stakeholders.',
+    emptyHint:
+      'Push a branch, paste its Netlify URL here, and everyone with the Hub link can open it.',
     saveHint:
       'Saved to the shared store — the team sees it on the full site right away. The date is stamped for you.',
     // From `/?section=demo&add=1&url=…&title=…&note=…` — what
@@ -1705,7 +1558,7 @@ export function DemoPanel({
     // the in-page twin of what `promote-to-refinement` does from Claude Code:
     // both derive the branch's address and open this form with it, and neither
     // saves anything.
-    showBranches: !pub,
+    showBranches: true,
   }
   return <LinkBoardPanel p={p} />
 }

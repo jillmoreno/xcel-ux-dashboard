@@ -58,8 +58,9 @@ Show the designer, before touching anything:
 
 Then wait for a yes.
 
-⚠ **NO `maturity` FIELD ON A NEW FLAG.** Absent means `wip`, so it cannot reach
-the demo site. A designer creating a flag must not be able to put half-built work
+⚠ **THERE IS NO `maturity` FIELD ANY MORE** (retired 2026-10-15 with the demo
+site). A new flag is visible to everyone on the Hub the moment it merges, behind
+its default; the default is what `promote-to-prototype` decides. A designer creating a flag must not be able to put half-built work
 in front of stakeholders by accident. Promoting it later is Jillienne's call.
 
 ### Where the flag goes — three cases, and the middle one is the useful one
@@ -174,7 +175,6 @@ their attention on nothing, and it reads as a bug in the work.
   `CourseContentV2` is the pattern. Fork the presentation, share the data.
 - **Say how the fork ends** when you make it: winner at `promote-to-prototype`,
   loser archived. Two copies forever is the failure mode.
-- **New flags are born `wip`.** No `maturity` field. Stakeholders cannot see it.
 - **Variants are chosen, not dumped.** Six frames nobody asked about is worse
   than two that are the question.
 - **The designer clicks Add.**

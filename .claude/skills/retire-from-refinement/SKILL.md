@@ -70,7 +70,7 @@ NETLIFY_SITE_ID=<demo-site-id> npx netlify blobs:list demos
 NETLIFY_SITE_ID=<demo-site-id> npx netlify blobs:get demos <demo-NNN>
 ```
 
-Take: `title`, `url`, `note`, `addedBy`, `addedDate`, `product`, `isPublic`.
+Take: `title`, `url`, `note`, `addedBy`, `addedDate`, `updatedAt`, `product`.
 
 ### 2. Establish which ending this is, and ASK if it is not obvious
 

@@ -1,4 +1,4 @@
-import type { DesignerId, Maturity } from '@/context/FeatureFlagContext'
+import type { DesignerId } from '@/context/FeatureFlagContext'
 import type { Brand } from '@/context/AccountContext'
 
 export type DashboardVersionId =
@@ -58,24 +58,9 @@ export type DashboardVersion = {
    * it.
    */
   owner?: DesignerId
-  /**
-   * How finished this version is — the same gate `FEATURE_FLAGS` uses, added
-   * 2026-10-05 when the picker moved onto the demo controls bar and became
-   * reachable by STAKEHOLDERS for the first time.
-   *
-   * ⚠ IT GATES THE PICKER ON THE DEMO SITE ONLY. The design site lists every
-   * version and marks the unfinished ones; `?version=` still resolves any id
-   * for anyone, exactly as `maturity` works for flags. Nothing here is a
-   * permission.
-   *
-   * ⚠ ABSENT MEANS `wip`, and it fails CLOSED on purpose: a version added
-   * tomorrow with no `maturity` is invisible to stakeholders rather than
-   * leaking a half-built dashboard to the people being asked to approve one.
-   * That is the whole reason this field exists — all three versions in the
-   * picker today are finished and marked `ready`, so the gate filters nothing
-   * yet. It is armed for the next one.
-   */
-  maturity?: Maturity
+  /* `maturity?: Maturity` STOOD HERE 2026-10-05 → 2026-10-15: the demo site's
+     picker listed `ready` versions only. The demo site is retired and the
+     field with it; every version is in the one picker. */
 }
 
 // ARCHIVED 2026-09-16 — `mvp` ("Dashboard MVP") was unwired here and in
@@ -141,7 +126,6 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED: DashboardVersion
   id: 'discoverability-learner-focused',
   /* READY — it has been a committed default and is complete. See `maturity`:
      all three in the picker are, so the gate is armed rather than filtering. */
-  maturity: 'ready',
   label: 'Learner Focused',
   createdAt: '2026-06-24',
   modifiedAt: '2026-06-24',
@@ -270,7 +254,6 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3: DashboardVersion = {
   id: 'discoverability-testing-3',
   /* READY — it has been a committed default and is complete. See `maturity`:
      all three in the picker are, so the gate is armed rather than filtering. */
-  maturity: 'ready',
   label: 'Testing 3',
   createdAt: '2026-10-01',
   modifiedAt: '2026-10-01',
@@ -305,7 +288,6 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_TESTING: DashboardVersion = {
   id: 'discoverability-testing',
   /* READY — it has been a committed default and is complete. See `maturity`:
      all three in the picker are, so the gate is armed rather than filtering. */
-  maturity: 'ready',
   label: 'Testing',
   createdAt: '2026-09-21',
   modifiedAt: '2026-09-21',
@@ -369,7 +351,6 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1: DashboardVersion =
      name and a date, so a stakeholder picking it knows whose work and as of
      when. The two render identically today; the day they stop, the parent is
      the one to reconsider. */
-  maturity: 'ready',
   label: 'Eric/Atlas V1',
   createdAt: '2026-10-02',
   modifiedAt: '2026-10-02',
@@ -436,7 +417,6 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E: DashboardVersion 
      whether a stakeholder can PICK it; that function decides what they land
      on. WIP, White and Right SB Quick Links stay unmarked: not decided
      against, not decided yet. */
-  maturity: 'ready',
   label: 'End-to-End Demo',
   createdAt: '2026-10-14',
   modifiedAt: '2026-10-14',
@@ -481,7 +461,6 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1: DashboardVersion = {
      this without the other would have left the demo site rendering Hybrid with
      Hybrid absent from its own picker — a stakeholder who switched away could
      not switch back. */
-  maturity: 'ready',
   label: 'Hybrid V1',
   createdAt: '2026-10-05',
   modifiedAt: '2026-10-06',
@@ -516,7 +495,6 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_PACING: DashboardVersion =
      `defaultDiscoverabilityVersionFor`), which are still two separate facts:
      this line says a stakeholder may select it, that one says they land on it
      without selecting anything. */
-  maturity: 'ready',
   label: 'Hybrid - Pacing Exploration',
   createdAt: '2026-10-07',
   modifiedAt: '2026-10-07',
@@ -672,21 +650,9 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
 ]
 
-/**
- * The versions a given audience's picker offers.
- *
- * ⚠ THE DEMO SITE GETS `ready` ONLY; the design site gets everything. Same
- * split `variantsForDemo` makes for a flag's variants, and deliberately the
- * same shape so there is one rule to learn rather than two.
- *
- * ⚠ IT FILTERS THE PICKER, NOT THE ROUTE. `?version=<id>` still resolves any
- * version on either site — a `wip` version is unlisted, never unreachable, so
- * a link to one in a Refinement row keeps working.
- */
-export function dashboardVersionsForAudience(demoSite: boolean): DashboardVersion[] {
-  if (!demoSite) return DISCOVERABILITY_DASHBOARD_VERSIONS
-  return DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => v.maturity === 'ready')
-}
+/* `dashboardVersionsForAudience(demoSite)` STOOD HERE: `ready` versions only on
+   the demo site, everything on the design site. Retired 2026-10-15 with the
+   demo site; the picker reads `DISCOVERABILITY_DASHBOARD_VERSIONS` directly. */
 
 /** A version's label from its id, for the places that have the id and need the
  *  words — the demo bar's trigger, mostly. Falls back to the id so an unknown

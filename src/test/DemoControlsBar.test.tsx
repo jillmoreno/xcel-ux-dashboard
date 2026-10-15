@@ -425,11 +425,6 @@ describe('DemoControlsBar — a state with no agreed design', () => {
  * demo site and leave the gap exactly where it was.
  */
 describe('DemoControlsBar — the Dashboard Version control', () => {
-  it('is READY, so the demo site offers it', async () => {
-    const { controlMaturity } = await import('@/data/demoControlMaturity')
-    expect(controlMaturity('version')).toBe('ready')
-  })
-
   it('carries the version in its ACCESSIBLE NAME, having no visible one', () => {
     /* ⚠ THIS ASSERTION CHANGED SHAPE ON 2026-10-05 and the reason is the point.
        The control was a labelled pill leading the bar; it is now an icon button
@@ -467,38 +462,14 @@ describe('DemoControlsBar — the Dashboard Version control', () => {
   })
 })
 
-describe('which versions each audience is offered', () => {
-  /* ⚠ THE PICKER IS GATED SEPARATELY FROM THE CONTROL. The control being
-     `ready` does not mean every version it lists is — this is what keeps a
-     half-built dashboard off the demo site once someone adds one. */
-  it('gives the design site every version', async () => {
-    const { dashboardVersionsForAudience, DISCOVERABILITY_DASHBOARD_VERSIONS } = await import(
-      '@/data/dashboardVersions'
-    )
-    expect(dashboardVersionsForAudience(false)).toHaveLength(
-      DISCOVERABILITY_DASHBOARD_VERSIONS.length,
-    )
-  })
-
-  it('gives the demo site the READY ones only', async () => {
-    const { dashboardVersionsForAudience } = await import('@/data/dashboardVersions')
-    const demo = dashboardVersionsForAudience(true)
-    expect(demo.every((v) => v.maturity === 'ready')).toBe(true)
-    /* ⚠ ALL THREE ARE READY TODAY, so this filters nothing yet and the test
-       would pass against a broken filter that returned everything. The
-       assertion below is what makes it real — it fails the moment the two
-       lists stop agreeing for the right reason. */
+describe('the version picker (one site, 2026-10-15)', () => {
+  it('offers every version to everyone — the audience filter went with the demo site', async () => {
     const { DISCOVERABILITY_DASHBOARD_VERSIONS } = await import('@/data/dashboardVersions')
-    expect(demo).toHaveLength(
-      DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => v.maturity === 'ready').length,
-    )
-  })
-
-  it('drops a version with no maturity, failing CLOSED', async () => {
-    /* The default that matters: a version added tomorrow with no `maturity` is
-       invisible to stakeholders rather than leaking an unfinished dashboard to
-       the people being asked to approve one. */
-    const { dashboardVersionsForAudience } = await import('@/data/dashboardVersions')
-    expect(dashboardVersionsForAudience(true).some((v) => v.maturity === undefined)).toBe(false)
+    // A PATH, not a `new URL(…)`: under jsdom the global `URL` is jsdom's and
+    // Node's `readFileSync` rejects it. Relative to the repo root vitest runs from.
+    const src = await import('node:fs').then((fs) => fs.readFileSync('src/components/layout/Header.tsx', 'utf8'))
+    expect(src).toContain('versions={DISCOVERABILITY_DASHBOARD_VERSIONS}')
+    expect(src).not.toContain('dashboardVersionsForAudience')
+    expect(DISCOVERABILITY_DASHBOARD_VERSIONS.length).toBeGreaterThan(5)
   })
 })

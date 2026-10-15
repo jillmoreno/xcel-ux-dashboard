@@ -67,10 +67,8 @@ export type BoardConfig = {
   /** The allowed `type` values, or null when the board has no type field
    *  (the field is then dropped from the stored record). */
   types: readonly string[] | null
-  /** Whether records carry `isPublic`. When false the field is dropped on the
-   *  way in, so a Links record cannot quietly acquire a public flag. */
-  publicFlag: boolean
-  /** Whether records carry `product`. Demo only, same rule as `publicFlag`. */
+  /** Whether records carry `product`. Demo only: dropped on the way in
+   *  elsewhere, so a Links record cannot quietly acquire one. */
   products: boolean
 }
 
@@ -163,9 +161,10 @@ export function validateRecord(
     out.product = ALLOWED_PRODUCTS.includes(product) ? product : DEFAULT_PRODUCT
   }
 
-  // Whether the PUBLIC build shows this row. Strictly boolean `true`, so a
-  // truthy string cannot publish a row by accident; anything else is false.
-  if (cfg.publicFlag) out.isPublic = b.isPublic === true
+  // `isPublic` is DROPPED on the way in since 2026-10-15: the public site it
+  // gated is retired, and a flag nothing reads is a flag that misleads. A
+  // record saved before then keeps the key in Blobs until its next save,
+  // when this rewrites it without one.
 
   // `yyyy-mm-dd`, stamped server-side when absent, and carried through an edit
   // so editing a record does not re-date it. A plain date string rather than a

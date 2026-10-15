@@ -8,11 +8,12 @@
 [build.environment]
   NODE_VERSION = "20"
 
-# Branch deploys and PR previews build on the FULL site (2026-09-21), so a
-# branch URL carries every gated section — right for the designers who review
-# each other's branches, wrong for a stakeholder who opens one through a
-# Refinement row flipped public. This var drops the prototype bar's home icon
-# on those builds so the full gateway is not one click from the review link.
+# Branch deploys and PR previews are full builds, so a branch URL carries every
+# section — right for the designers who review each other's branches, and more
+# than a stakeholder who opens one through a Refinement row came for. This var
+# drops the prototype bar's home icon on those builds so the gateway is not one
+# click from the review link. (One site since 2026-10-15; the public project
+# this once distinguished from is retired.)
 # It removes the signpost, not the page — see `src/data/deployContext.ts`,
 # which also explains why the parse fails the other way from GATEWAY_MODE.
 # `DeployContext.test.tsx` asserts both blocks are still here.

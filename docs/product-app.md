@@ -4,6 +4,12 @@ Everything under `/dashboard-rebrand` — the dashboard versions, Readiness,
 the Study Journey, notifications, the flag catalog, and the migration that
 brought it here. **This is the file most design work needs.**
 
+⚠ **`maturity` IS GONE (2026-10-15)**, with the demo site it fed. Every mention
+below of "ready", "pickable by stakeholders", "the demo site's picker" or
+"Design site only" is history from 2026-09-24 to that date; the one picker now
+lists every version for everyone, and promotion has two levers — flag defaults
+and the default version. See `docs/gateway.md`, "One site".
+
 > Moved out of `CLAUDE.md` on 2026-09-21, verbatim. The root file is the map;
 > this is one of the five surfaces it points at. Cross-references to "CLAUDE.md"
 > in older code comments mean this material.
