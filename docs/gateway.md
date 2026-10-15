@@ -190,8 +190,13 @@ what the Compass row opens, which is what keeps the two from competing. It
 exists because the study experience has its own owner and its own stream of
 Refinement work (Anjani's, tagged `product: 'compass'` there), and "what is
 Compass right now?" deserved an answer that does not route through the
-dashboard. The `invite` scope has no row: the purchase flow does not exist as
-a React route yet, and a Prototypes row is `ready` by definition.
+dashboard. The `invite` scope has no row yet. When this was written in the
+morning the purchase flow did not exist as a React route; by the afternoon
+Eric's End-to-End Demo had merged with exactly that flow — `/end-to-end-demo`
+(the Invited Product Detail page) → `/end-to-end-demo/checkout` → the dashboard
+on `eric-atlas-e2e`, now the baseline version. So the row is a decision for
+Jillienne as the scope's owner rather than a build, and the smoke test's
+`/dashboard-rebrand` pin grows a second route when she makes it.
 
 What this did NOT change: how work gets in. A branch is still reviewed in
 Refinement and promoted by `promote-to-prototype` flipping flag defaults on

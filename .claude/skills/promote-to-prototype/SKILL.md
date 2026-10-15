@@ -36,7 +36,7 @@ has to ask which one is real.
 
 Since 2026-10-14 it holds one row per product SURFACE, declared in
 `PROTOTYPE_SCOPES` in `prototypeFeatures.ts`: how a learner gets in (`invite`,
-no row until the flow exists), what they land in (`end-to-end`,
+no row yet — the flow is Eric's End-to-End Demo at `/end-to-end-demo`), what they land in (`end-to-end`,
 `xcel-dashboard`), where they study (`compass`, `xcel-compass`). Every row is
 `main`'s build at `?demo=1` — the smoke test pins that none is a branch URL, an
 `?ff=` pin, or a pinned `version=` — so there is still nothing to ask "which one
@@ -87,8 +87,10 @@ grep -rl "<flag-key>" src/components src/pages | head     # where is it read?
   version swap moves what the Compass row opens as well. List it under
   end-to-end (where the lever is) AND name its Compass effect in the Compass
   group, so Anjani's sign-off covers it.
-- `invite` has no row and no flags yet. When the flow exists its flags live
-  under its own route and this list grows a bullet.
+- Read under `src/pages/Invited*`, `src/pages/endToEndDemo.ts` or the
+  `/end-to-end-demo` routes → **`invite`**. The flow landed 2026-10-14 (Eric's
+  End-to-End Demo); the scope has no ROW yet, so until Jillienne adds one its
+  candidates are listed under `invite` and decided by her like end-to-end.
 
 **What the owner column means in step 3.** The owner runs this skill on the
 branch and answers their group's questions; a group the caller does NOT own

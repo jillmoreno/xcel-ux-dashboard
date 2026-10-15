@@ -161,8 +161,14 @@ export const PROTOTYPE_SCOPES: ReadonlyArray<{
   {
     id: 'invite',
     label: 'Invite & purchase',
-    // No row yet (2026-10-14). The React flow does not exist; the lo-fi
-    // argument for it is the walk-through and wireframes rows in Exploration.
+    // No row yet (2026-10-14). The flow LANDED on `main` the same day, in
+    // Eric's End-to-End Demo: `/end-to-end-demo` (the Invited Product Detail
+    // page) → its checkout → the dashboard on `eric-atlas-e2e`, which is also
+    // the baseline version now. Giving it a row is Jillienne's call as this
+    // scope's owner, and it is not a one-liner: the smoke test pins every row
+    // to `/dashboard-rebrand`, so the pin grows a second product route when
+    // the row arrives. The lo-fi argument is still the walk-through and
+    // wireframes rows in Exploration.
     question: 'How does a learner get into the product?',
     owner: 'Jillienne',
   },

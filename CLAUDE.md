@@ -42,9 +42,12 @@ carries no `gate`, so it renders on the public build as well as the full one.
 | **Prototypes** | this IS the product | one per surface, all on `main` | flag defaults on `main` |
 | **Refinement** | under discussion | as many as you like | Netlify Blobs, authored on the page |
 
-A scope with no row is a surface not built yet: `invite` is listed and empty
-until the purchase flow exists as a React route behind a flag and is promoted.
-A Prototypes row is `ready` by definition, so nothing is added before that.
+A scope with no row is a surface whose row has not been decided: `invite` is
+listed and empty. The flow itself landed on `main` on 2026-10-14 in Eric's
+End-to-End Demo — `/end-to-end-demo`, the Invited Product Detail page, its
+checkout, then the dashboard — so the row is now a decision (Jillienne's, as
+the scope's owner), not a build. When it arrives, the smoke test's route pin
+grows a second product route beside `/dashboard-rebrand`.
 
 **Who promotes, and who merges, are two different columns (2026-10-14).**
 Each scope names an `owner`, and the owner both decides what that surface
