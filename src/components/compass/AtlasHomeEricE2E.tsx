@@ -638,9 +638,9 @@ export function AtlasHomeEricE2E({
                  2026-10-14 and MOVED TO THE QUICK LINKS CARD the same day
                  (Jillienne's request: "add a divider line and then the 'Quick
                  Question' eyebrow, have you scheduled your NY state exam logic
-                 below it"). The `after` slot and the widget's `step` treatment
-                 stay for the day it comes back here. The note that follows is
-                 the original placement's. */
+                 below it"). The `after` slot stays for the day it comes back
+                 here; the widget's `step` treatment became `plain`. The note that
+                 follows is the original placement's. */
               /* THE EXAM-DATE QUESTION LIVES IN THIS STEP — 2026-10-14, Jillienne's
                  request, the day this version became the baseline: "the logic of
                  'Do you know your state exam date?' needs to be added in this Pass
@@ -730,7 +730,9 @@ export function AtlasHomeEricE2E({
                 stateName={state || undefined}
                 compact
                 countdown="flip"
-                treatment="pacing"
+                // `plain`: pacing's flow, the question in the links' own 13px
+                // body text (2026-10-14, Jillienne: "make this normal text").
+                treatment="plain"
               />
             </>
           }
