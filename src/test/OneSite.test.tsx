@@ -209,6 +209,13 @@ describe('the three guides', () => {
       expect(html).not.toMatch(/fonts\.googleapis\.com/)
     }
     expect(() => readFileSync(resolve(pub, 'guides/guide.css'))).not.toThrow()
+
+    // `designer-workflow` carries its own stylesheet, so nothing stops its
+    // colours drifting off the Hub's. This is what says they should not: it
+    // arrived from the Artifact in a deep green of its own, which read as a
+    // different product sitting beside the other two guides (2026-10-15).
+    const dw = readFileSync(resolve(pub, 'designer-workflow/index.html'), 'utf8')
+    expect(dw).toContain('--accent: #1f4e88')
   })
 
   it('the stakeholder guide says nothing about the team’s working process', () => {

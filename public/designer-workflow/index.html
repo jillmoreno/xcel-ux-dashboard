@@ -50,24 +50,35 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
   :root {
-    --ground: #f6f8f5;
+    /* THE HUB'S PALETTE — 2026-10-15. The layout came from the published
+       Artifact; the colours did not. The Artifact's deep green was its own
+       invention, and on a page served from the Hub beside /contributing/ and
+       /about/ it read as a different product. These are those guides' tokens
+       (`public/guides/guide.css`) mapped onto this page's richer set: one
+       accent, #1f4e88, and the same neutral scale.
+
+       The rail is that accent darkened rather than the accent itself — 260px
+       of #1f4e88 is a lot of saturated blue, and the Artifact's rail worked
+       because it was dark, not because it was green. */
+    --ground: #f5f5f5;
     --surface: #ffffff;
-    --surface-2: #eef3ef;
-    --ink: #1b2a24;
-    --ink-2: #4a5a53;
-    --muted: #7a8880;
-    --line: #d7dfda;
-    --line-strong: #b9c6bf;
-    --rail: #1f3d33;
-    --rail-ink: #e4ede8;
-    --rail-muted: #9fb5aa;
-    --accent: #2e7d5b;
+    --surface-2: #e9eef4;
+    --ink: #1b1d21;
+    --ink-2: #454b55;
+    --muted: #6b7280;
+    --line: #dfe3e8;
+    --line-strong: #c8ced6;
+    --rail: #1a3c69;
+    --rail-ink: #eef2f7;
+    --rail-muted: #9fb4cd;
+    --accent: #1f4e88;
     --accent-ink: #ffffff;
-    --accent-soft: #e3efe8;
-    --warn: #9a6a12;
-    --warn-soft: #fbf1dc;
-    --you: #1f3d33;
-    --you-soft: #e7eeea;
+    --accent-soft: #e9eef4;
+    --warn: #7a5a15;
+    --warn-soft: #fbf3e3;
+    --you: #1a3c69;
+    --you-ink: #ffffff;
+    --you-soft: #eef2f7;
     --font-display: 'Bricolage Grotesque', 'Avenir Next', 'Helvetica Neue', Arial, sans-serif;
     --font-body: 'Source Sans 3', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     --font-mono: 'JetBrains Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
@@ -75,17 +86,17 @@
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --ground: #111916; --surface: #182220; --surface-2: #1f2b27; --ink: #e6ece8; --ink-2: #b7c4bd; --muted: #8a9a92;
-      --line: #2a3733; --line-strong: #3b4a44; --rail: #0f1a16; --rail-ink: #e4ede8; --rail-muted: #8aa094;
-      --accent: #6fc2a0; --accent-ink: #0f1a16; --accent-soft: #1d322a; --warn: #e0b35a; --warn-soft: #2d2616;
-      --you: #cfe2d8; --you-soft: #1d2a25; color-scheme: dark;
+      --ground: #1b1d21; --surface: #24272d; --surface-2: #2d323a; --ink: #f1f3f7; --ink-2: #c5cad3; --muted: #9aa2ae;
+      --line: #363b44; --line-strong: #474d58; --rail: #14161a; --rail-ink: #e9edf4; --rail-muted: #9aa8bc;
+      --accent: #9cc2e5; --accent-ink: #14161a; --accent-soft: #263445; --warn: #e6c67a; --warn-soft: #3a3221;
+      --you: #9cc2e5; --you-ink: #14161a; --you-soft: #22303f; color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --ground: #111916; --surface: #182220; --surface-2: #1f2b27; --ink: #e6ece8; --ink-2: #b7c4bd; --muted: #8a9a92;
-    --line: #2a3733; --line-strong: #3b4a44; --rail: #0f1a16; --rail-ink: #e4ede8; --rail-muted: #8aa094;
-    --accent: #6fc2a0; --accent-ink: #0f1a16; --accent-soft: #1d322a; --warn: #e0b35a; --warn-soft: #2d2616;
-    --you: #cfe2d8; --you-soft: #1d2a25; color-scheme: dark;
+    --ground: #1b1d21; --surface: #24272d; --surface-2: #2d323a; --ink: #f1f3f7; --ink-2: #c5cad3; --muted: #9aa2ae;
+    --line: #363b44; --line-strong: #474d58; --rail: #14161a; --rail-ink: #e9edf4; --rail-muted: #9aa8bc;
+    --accent: #9cc2e5; --accent-ink: #14161a; --accent-soft: #263445; --warn: #e6c67a; --warn-soft: #3a3221;
+    --you: #9cc2e5; --you-ink: #14161a; --you-soft: #22303f; color-scheme: dark;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
@@ -129,7 +140,10 @@
   ol.steps > li b.t { display: block; font-weight: 600; margin-bottom: 2px; }
 
   .say { display: flex; gap: 10px; align-items: flex-start; margin: 8px 0 10px; max-width: 68ch; }
-  .say .me { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--you); color: var(--rail-ink); font-family: var(--font-display); font-size: 11px; font-weight: 700; display: grid; place-items: center; letter-spacing: 0.04em; }
+  /* `--you-ink`, not `--rail-ink`: the Artifact used the rail's text colour
+     here, which is light in BOTH modes — so in dark mode the badge was a light
+     chip with light text on it. Caught on the recolour, not by anyone reading. */
+  .say .me { flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--you); color: var(--you-ink); font-family: var(--font-display); font-size: 10.5px; font-weight: 700; text-align: center; line-height: 32px; letter-spacing: 0.02em; overflow: hidden; }
   .say q { display: block; quotes: none; background: var(--you-soft); border: 1px solid var(--line); border-radius: 14px 14px 14px 4px; padding: 9px 14px; font-size: 16px; color: var(--ink); }
   .say q::before, .say q::after { content: none; }
 
@@ -169,7 +183,7 @@
   @media print {
     /* Light, always: the dark palette above is keyed on the reader's system
        setting, and a printer has none. */
-    :root { --ground: #fff; --surface: #fff; --surface-2: #eef3ef; --ink: #1b2a24; --ink-2: #4a5a53; --muted: #7a8880; --line: #d7dfda; --line-strong: #b9c6bf; --accent: #2e7d5b; --accent-soft: #e3efe8; --warn: #9a6a12; --warn-soft: #fbf1dc; --you: #1f3d33; --you-soft: #e7eeea; color-scheme: light; }
+    :root { --ground: #fff; --surface: #fff; --surface-2: #e9eef4; --ink: #1b1d21; --ink-2: #454b55; --muted: #6b7280; --line: #dfe3e8; --line-strong: #c8ced6; --rail: #1a3c69; --rail-ink: #eef2f7; --rail-muted: #9fb4cd; --accent: #1f4e88; --accent-soft: #e9eef4; --warn: #7a5a15; --warn-soft: #fbf3e3; --you: #1a3c69; --you-ink: #fff; --you-soft: #eef2f7; color-scheme: light; }
     html { color-scheme: light; }
     body { background: #fff; font-size: 11.5pt; }
     .rail, .actions { display: none; }
@@ -183,9 +197,11 @@
     section { break-inside: auto; padding-top: 24px; margin-top: 20px; }
     h1, h2, h3 { break-after: avoid; }
     ol.steps > li, .note, .rule-box, .prompt, .tablewrap, .say, tr { break-inside: avoid; }
-    /* The body size drops to 11.5pt in print but the YOU badge stays 30px, so
-       its label outgrew the circle and printed as "ou". */
-    .say .me { font-size: 8.5pt; }
+    /* The body size drops to 11.5pt in print but the YOU badge keeps its
+       pixel size, so its label outgrew the circle and printed as "ou" with the
+       Y sheared off. The badge centres with line-height rather than
+       `place-items` now, which is what actually fixed it. */
+    .say .me { font-size: 7.5pt; letter-spacing: 0; }
     a { text-decoration: none; }
     .say q { border-color: #999; }
   }
