@@ -214,6 +214,14 @@ the evening Jillienne had asked for its row and for an Admin row:
   one-row-per-scope rule was written for. `section=dashboard` is written out
   so the address says what the row is for rather than reading identical to
   the end-to-end row's.
+- **`xcel-dashboard` is HELD BACK (2026-10-14, later that evening).** "Change
+  this whole option to Coming soon like the Admin tool, as I need to pick
+  things from all the others — don't remove the work, just hide users from
+  clicking on it for now." So `status: 'coming-soon'` with the `to` KEPT, which
+  widened the placeholder rule: a coming-soon row is drawn disabled whether or
+  not it has a route, and a kept route is still checked against the door rules
+  so that flipping the word back to `ready` is the whole release. Its live
+  preview still shows the dashboard behind it.
 - **`xcel-admin-coming-soon`** — the Admin door as a PLACEHOLDER: a
   `coming-soon` row with no `to` and no `externalUrl`, which `ProjectRow` draws
   disabled — generated thumbnail, title, blurb, the "Admin" scope tag and a

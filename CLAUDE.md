@@ -29,9 +29,11 @@ stricter mechanical form that `UxDashboard.smoke.test.tsx` pins: **every row
 that opens is `main`'s build at `?demo=1`**, entered through one of the product
 app's doors (`/dashboard-rebrand`, `/end-to-end-demo`) — same origin, never a
 branch URL, never an `?ff=` pin, never a pinned `version=`, never an HTML
-document (the public build 404s `/prototypes/*`). A scope whose surface is not
-built yet may hold a **placeholder**: a `coming-soon` row with nothing to open,
-drawn disabled with a "Coming soon" tag. The Admin row is one. Four rows, one
+document (the public build 404s `/prototypes/*`). A `coming-soon` row is a
+**placeholder**: drawn disabled with a "Coming soon" tag, nothing to click —
+either nothing is built yet (the Admin row) or the surface is **held back**
+with its route kept on record while its owner decides what it carries (the
+end-to-end row, 2026-10-14; releasing it is `status: 'ready'`). Five rows, one
 build, one committed baseline.
 
 So when you want several things visible at once FOR THE SAME SURFACE — two
@@ -59,7 +61,8 @@ second.
 **Who promotes, and who merges, are two different columns (2026-10-14).**
 Each scope names an `owner`, and the owner both decides what that surface
 should be and runs `promote-to-prototype` for it on their own branch: Anjani
-for Compass, Jillienne for end to end and invite. `maturity` on a version is
+for Compass, Eric for Atlas Learning, Afsana and Eric for Invite & Purchase,
+Cody for Admin, Jillienne for end to end. `maturity` on a version is
 the version owner's. A promotion is a commit of defaults on a branch and
 reaches no stakeholder by itself. **Only Jillienne merges** — `ship-to-main`,
 which refuses a branch with a group its owner has not decided — **and only she

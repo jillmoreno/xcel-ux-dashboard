@@ -72,6 +72,7 @@ import {
   Share2,
   Sliders,
   Sun,
+  User,
   X, HourglassClock} from '@/icons'
 import { Toast } from '@/components/ui/Toast'
 import { PrototypePasswordModal } from '@/components/prototype/PrototypeLock'
@@ -1839,23 +1840,28 @@ function ProjectRow({
   const hasPreview = Boolean(feature.thumbnail || preview)
   const href = feature.externalUrl ?? feature.to ?? `/prototype/${feature.id}`
   const external = Boolean(feature.externalUrl)
-  /* A PLACEHOLDER — 2026-10-14, the Admin row. `coming-soon` with nothing to
-     open: it is drawn, not linked. No `<a>` (an href to a gateway for a
-     surface that does not exist would open an empty page), no hover, no
-     chevron, no kebab (every action in it is about a row that goes somewhere),
-     and the status tag is shown even where the section hides status —
-     "Coming soon" is the one thing this row has to say. */
-  const placeholder = feature.status === 'coming-soon' && !feature.to && !feature.externalUrl
+  /* A PLACEHOLDER — 2026-10-14. A `coming-soon` row is drawn, not linked:
+     no `<a>`, no hover, no chevron, no kebab (every action in it is about a
+     row that goes somewhere), and the status tag is shown even where the
+     section hides status — "Coming soon" is the one thing the row has to say.
+     Two kinds: nothing built yet (the Admin row, no `to`), and a surface HELD
+     BACK with its `to` kept on record (the end-to-end row, the same evening:
+     "don't remove the work, just hide users from clicking on it"). The kept
+     route still feeds the preview frame, so the row shows what is waiting. */
+  const placeholder = feature.status === 'coming-soon'
   const isPrototypeRow = feature.category === 'prototype'
   /* The three facts a Prototypes row carries beside its title (2026-10-14):
      which door it is (an empty scope label means none — the product row),
      whose surface it is, and when that surface last changed on `main`. */
   const owner = prototypeScopeOwner(feature.prototypeScope)
-  const prototypeTags = [
-    prototypeScopeLabel(feature.prototypeScope) || null,
-    owner ? `Owner: ${owner}` : null,
-    feature.lastUpdated ? `Updated ${formatUpdated(feature.lastUpdated)}` : null,
-  ].filter((t): t is string => Boolean(t))
+  /* The owner tag is a user ICON and the name, not the word "Owner" — Jillienne
+     on the preview, 2026-10-14. The word stays for a screen reader, visually
+     hidden, so the tag still reads "Owner: Anjani" where it is read aloud. */
+  const prototypeTags: { key: string; text: string; icon?: ReactNode; srPrefix?: string }[] = [
+    { key: 'scope', text: prototypeScopeLabel(feature.prototypeScope) || '' },
+    { key: 'owner', text: owner ?? '', icon: <User size={11} aria-hidden style={{ flex: 'none' }} />, srPrefix: 'Owner: ' },
+    { key: 'updated', text: feature.lastUpdated ? `Updated ${formatUpdated(feature.lastUpdated)}` : '' },
+  ].filter((t) => t.text)
   // Three labels, answering "how much of the product is this?":
   //   Standalone HTML — leaves the app entirely (the route column used to be
   //     the only thing that said so; with it gone the kind tag carries it)
@@ -1989,12 +1995,19 @@ function ProjectRow({
            A placeholder adds its "Coming soon" tag and has no Updated. */
         <span style={tagColPrototypeStyle}>
           {prototypeTags.map((t) => (
-            <span key={t} style={prototypeTagStyle}>
-              {t}
+            <span key={t.key} style={t.icon ? { ...prototypeTagStyle, display: 'inline-flex', alignItems: 'center', gap: 4 } : prototypeTagStyle}>
+              {t.icon}
+              {t.srPrefix && <span className="cre-visually-hidden">{t.srPrefix}</span>}
+              {t.text}
             </span>
           ))}
           {placeholder && (
-            <span style={{ ...prototypeTagStyle, color: chip.color, borderColor: chip.color }}>{chip.label}</span>
+            // The whole `border` shorthand, not `borderColor` over it: React
+            // writes the longhand after the shorthand and the browser drops
+            // the widths, so the tag drew with no border at all.
+            <span style={{ ...prototypeTagStyle, color: chip.color, border: `1px solid ${chip.color}` }}>
+              {chip.label}
+            </span>
           )}
         </span>
       ) : (
@@ -2063,6 +2076,12 @@ function ProjectRow({
         data-placeholder={feature.id}
       >
         <span style={{ ...rowLinkStyle, flex: 1, opacity: 0.62, cursor: 'default' }}>{inner}</span>
+        {/* Where the kebab would be. Without it the row's grid is a kebab wider
+            and its tags sit 40px right of the rows above — Jillienne on the
+            preview, "have these all vertically align". Conditional exactly
+            as the kebab is, so the public build (no kebabs anywhere) stays
+            aligned too. */}
+        {!isPublicGateway() && <span aria-hidden style={{ flex: 'none', width: 32 }} />}
       </div>
     )
   }

@@ -659,7 +659,7 @@ describe('the Links section on the gateway', () => {
     // The kebabs are the rows that OPEN; a coming-soon placeholder (2026-10-14,
     // the Admin row) is drawn without one.
     expect(rows).toEqual(
-      PROTOTYPE_FEATURES.filter((f) => f.category === 'prototype' && (f.to || f.externalUrl)).map((f) => f.title),
+      PROTOTYPE_FEATURES.filter((f) => f.category === 'prototype' && f.status !== 'coming-soon').map((f) => f.title),
     )
   })
 

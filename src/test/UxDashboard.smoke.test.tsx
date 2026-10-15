@@ -214,19 +214,25 @@ describe('section routing (sectionOf)', () => {
     // The product FIRST (2026-10-14, Jillienne: "always have this be the
     // first option"), then the doors around it.
     expect(rows).toEqual([
-      'End-to-End User Experience (Invite, Atlas, Compass)',
       'Invite & Purchase — Work in Progress',
       'Atlas Learning — Work in Progress',
       'Compass Learning — Work in Progress',
     ])
-    // …plus the Admin PLACEHOLDER, which has no kebab because it goes nowhere:
-    // drawn disabled, titled, tagged "Coming soon", and not a link.
-    const placeholder = document.querySelector('[data-placeholder="xcel-admin-coming-soon"]')
-    expect(placeholder).not.toBeNull()
-    expect(placeholder!.getAttribute('aria-disabled')).toBe('true')
-    expect(placeholder!.querySelector('a')).toBeNull()
-    expect(placeholder!.textContent).toContain('Admin Tool')
-    expect(placeholder!.textContent).toContain('Coming soon')
+    // …plus two PLACEHOLDERS, which have no kebab because they go nowhere:
+    // drawn disabled, titled, tagged "Coming soon", and not a link. The Admin
+    // row has nothing built; the end-to-end row is HELD BACK with its route
+    // kept (2026-10-14, "don't remove the work, just hide users from clicking").
+    for (const [id, title] of [
+      ['xcel-admin-coming-soon', 'Admin Tool'],
+      ['xcel-dashboard', 'End-to-End User Experience (Invite, Atlas, Compass)'],
+    ]) {
+      const placeholder = document.querySelector(`[data-placeholder="${id}"]`)
+      expect(placeholder, `${id} should be drawn as a placeholder`).not.toBeNull()
+      expect(placeholder!.getAttribute('aria-disabled')).toBe('true')
+      expect(placeholder!.querySelector('a')).toBeNull()
+      expect(placeholder!.textContent).toContain(title)
+      expect(placeholder!.textContent).toContain('Coming soon')
+    }
 
     // …and a gated row is still not among them.
     expect(screen.queryByText('XCEL LMS — Desktop Platform')).not.toBeInTheDocument()
@@ -545,11 +551,12 @@ describe('Prototypes — one row per scope, every row the same build', () => {
 
   /** The product app's doors — the pathnames a row may enter at. */
   const PRODUCT_DOORS = ['/dashboard-rebrand', '/end-to-end-demo']
-  const isPlaceholder = (f: (typeof prototypeRows)[number]) =>
-    f.status === 'coming-soon' && !f.to && !f.externalUrl
+  const isPlaceholder = (f: (typeof prototypeRows)[number]) => f.status === 'coming-soon'
 
-  it('every Prototypes row that opens enters the product on main at the committed baseline', () => {
-    for (const f of prototypeRows.filter((f) => !isPlaceholder(f))) {
+  it('every Prototypes row with a route enters the product on main at the committed baseline', () => {
+    // Held-back rows keep their route on record, so it is checked too: when
+    // the word flips back to `ready`, the door it opens must already be right.
+    for (const f of prototypeRows.filter((f) => !isPlaceholder(f) || f.to)) {
       expect(f.externalUrl, `${f.id}: a Prototypes row is a route, never a document`).toBeUndefined()
       expect(f.to, `${f.id} needs a \`to\``).toBeTruthy()
       const url = new URL(f.to!, 'https://same.origin')
@@ -584,44 +591,52 @@ describe('Prototypes — one row per scope, every row the same build', () => {
       expect(Number.isNaN(Date.parse(f.lastUpdated!)), `${f.id}: lastUpdated must parse`).toBe(false)
       expect(f.lastUpdated, `${f.id}: lastUpdated must carry a zone (Z or offset)`).toMatch(/(Z|[+-]\d{2}:\d{2})$/)
     }
-    for (const f of prototypeRows.filter(isPlaceholder)) {
-      expect(f.lastUpdated, `${f.id}: a placeholder has nothing to have updated`).toBeUndefined()
+    for (const f of prototypeRows.filter((f) => isPlaceholder(f) && !f.to)) {
+      expect(f.lastUpdated, `${f.id}: nothing built, nothing to have updated`).toBeUndefined()
     }
   })
 
   it('a Prototypes row wears its scope, its owner and its Updated time as tags', () => {
     renderDashboard()
     const compass = document.querySelector('[data-row="xcel-compass"]')!
-    // Leaf spans only: the title wrapper's textContent also starts "Compass…".
-    const tags = [...compass.querySelectorAll('span')]
-      .filter((s) => s.children.length === 0)
-      .map((s) => s.textContent ?? '')
-      .filter((t) => /^(Compass$|Owner: |Updated )/.test(t))
+    // The outlined tags are the spans that carry a border; the owner tag's
+    // textContent is its hidden "Owner: " label plus the name.
+    const tagsOf = (row: Element) =>
+      [...row.querySelectorAll('span')].filter((s) => s.style.border).map((s) => s.textContent ?? '')
+    const tags = tagsOf(compass)
     expect(tags[0]).toBe('Compass')
     expect(tags[1]).toBe('Owner: Anjani')
     expect(tags[2]).toMatch(/^Updated \w{3} \d{1,2}, \d{1,2}:\d{2}/)
-    // The product row has no scope tag, so its first tag is the owner.
+    // The product row stacks the same three, its scope reading "End-to-End",
+    // and — held back — a Coming soon tag under them.
     const e2e = document.querySelector('[data-row="xcel-dashboard"]')!
-    const e2eTags = [...e2e.querySelectorAll('span')]
-      .filter((s) => s.children.length === 0)
-      .map((s) => s.textContent ?? '')
-      .filter((t) => /^(Owner: |Updated )/.test(t))
-    expect(e2eTags[0]).toBe('Owner: Jillienne')
+    const e2eTags = tagsOf(e2e)
+    expect(e2eTags[0]).toBe('End-to-End')
+    expect(e2eTags[1]).toBe('Owner: Jillienne')
+    expect(e2eTags[2]).toMatch(/^Updated /)
+    expect(e2eTags[3]).toBe('Coming soon')
     // The placeholder names its owner and says Coming soon, with no Updated.
     const ph = document.querySelector('[data-placeholder="xcel-admin-coming-soon"]')!
-    expect(ph.textContent).toContain('Owner: Jillienne')
+    expect(ph.textContent).toContain('Owner: Cody')
     expect(ph.textContent).toContain('Coming soon')
     expect(ph.textContent).not.toContain('Updated ')
   })
 
-  it('a placeholder is the only row that opens nothing, and it says so', () => {
-    // 2026-10-14, the Admin row. Written out so a second placeholder is a
-    // deliberate edit here, and so a row that LOSES its `to` by accident is
-    // caught as "not a placeholder" rather than quietly becoming one.
-    expect(prototypeRows.filter(isPlaceholder).map((f) => f.id)).toEqual(['xcel-admin-coming-soon'])
+  it('the placeholders are written out, and a row never becomes one by accident', () => {
+    // 2026-10-14. Written out so a new placeholder is a deliberate edit here.
+    // Two kinds: the Admin row has nothing built (no `to`); the end-to-end row
+    // is HELD BACK and keeps its route, so releasing it is one word.
+    expect(prototypeRows.filter(isPlaceholder).map((f) => f.id)).toEqual(['xcel-dashboard', 'xcel-admin-coming-soon'])
     for (const f of prototypeRows.filter(isPlaceholder)) {
-      expect(f.status).toBe('coming-soon')
       expect(f.kind, `${f.id}: a guided placeholder would try to open a gateway`).toBe('explore')
+    }
+    expect(PROTOTYPE_FEATURES.find((f) => f.id === 'xcel-dashboard')?.to, 'held back, not removed').toBe(
+      '/dashboard-rebrand?demo=1',
+    )
+    // A row with no `to` and no `externalUrl` that is NOT coming-soon would be
+    // a dead link; the shape test above refuses it, this names the rule.
+    for (const f of prototypeRows.filter((f) => !f.to && !f.externalUrl)) {
+      expect(f.status, `${f.id} opens nothing, so it must say Coming soon`).toBe('coming-soon')
     }
   })
 

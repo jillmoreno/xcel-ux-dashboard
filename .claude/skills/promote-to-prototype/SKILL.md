@@ -64,9 +64,9 @@ and the person whose design it is differs by row.
 |---|---|---|---|
 | `end-to-end` | `xcel-dashboard` | Jillienne | Jillienne |
 | `compass` | `xcel-compass` | **Anjani** | Jillienne |
-| `invite` | `xcel-invite` | Jillienne | Jillienne |
+| `invite` | `xcel-invite` | **Afsana & Eric** | Jillienne |
 | `atlas` | `xcel-atlas-learning` — Home and the learning pages, Eric's | **Eric** | Jillienne |
-| `admin` | `xcel-admin-coming-soon` — a placeholder until the surface is built | Jillienne | Jillienne |
+| `admin` | `xcel-admin-coming-soon` — a placeholder until the surface is built | **Cody** | Jillienne |
 
 The table is `PROTOTYPE_SCOPES` in `prototypeFeatures.ts` — read `owner` from
 there, not from here, if they ever disagree. The last column never varies: a
@@ -96,7 +96,8 @@ grep -rl "<flag-key>" src/components src/pages | head     # where is it read?
   end-to-end (where the lever is) AND name its Compass effect in the Compass
   group, so Anjani's sign-off covers it.
 - Read under `src/pages/Invited*`, `src/pages/endToEndDemo.ts` or the
-  `/end-to-end-demo` routes → **`invite`** (row `xcel-invite`, Jillienne's).
+  `/end-to-end-demo` routes → **`invite`** (row `xcel-invite`, Afsana & Eric's
+  — either of them answers for the group).
 - **`admin` has no candidates yet.** Its row is a `coming-soon` placeholder;
   the surface is not built. When it is — a React route behind a flag — its
   flags are read under that route and this bullet names the path.
@@ -175,6 +176,8 @@ does. The same is true of anyone else who commits through Claude on the web.
 | Jillienne | `jillmoreno` | `jilliennemoreno@gmail.com`, `jill.moreno@scorebuilders.com` | end-to-end and invite groups · `maturity` on her versions · **the default dashboard version** |
 | Eric | `EnormanColibri` | `eric.norman@simplenursing.com` | the `atlas` group · `maturity` on his versions (`owner: 'eric'`) |
 | Anjani | `Anjanisatya5` | none in the history — her commits are authored as Claude, see above | the Compass group |
+| Cody | not a collaborator on the repo yet (2026-10-14) — add his login and email here the day he is | the `admin` group, once the surface exists |
+| Afsana | not a collaborator on the repo yet (2026-10-14) — add her login and email here the day she is | the `invite` group, with Eric |
 
 No PR and a `Claude <noreply@anthropic.com>` git identity means the skill
 cannot tell who is asking: say so and ask, naming the three, rather than

@@ -116,11 +116,12 @@ export type FeatureCategory =
  *      `/end-to-end-demo`) — never a branch URL, never an `?ff=` pin, never
  *      an HTML document (the public build 404s `/prototypes/*`, so a document
  *      row would open to not-found for exactly its audience).
- *    • a scope whose surface is NOT BUILT YET may hold a PLACEHOLDER: a
- *      `status: 'coming-soon'` row with no `to` and no `externalUrl`, which
- *      the section draws disabled — a name, a blurb and a "Coming soon" tag,
- *      nothing to click. It says the door exists before the room does. The
- *      Admin row is one (2026-10-14, Jillienne: "not hooked up yet").
+ *    • a `status: 'coming-soon'` row is drawn DISABLED — a name, a blurb, its
+ *      tags and a "Coming soon" tag, nothing to click. Two reasons a row is
+ *      one: the surface is not built yet (the Admin row, no `to`), or the
+ *      surface exists but is HELD BACK while its owner decides what it will
+ *      carry (the end-to-end row, 2026-10-14 — it keeps its `to` on record,
+ *      so releasing it is `status: 'ready'` and nothing else).
  *    • no scope has two rows. "I want two of the same thing visible" is still
  *      a REFINEMENT job, exactly as before.
  *
@@ -168,13 +169,12 @@ export const PROTOTYPE_SCOPES: ReadonlyArray<{
 }> = [
   {
     id: 'end-to-end',
-    // NO TAG — 2026-10-14, Jillienne on the preview: "remove this tag". It
-    // read "End to end", then "Atlas & Compass"; once the title named all
-    // three doors the tag was repeating the title, and the product row reads
-    // cleaner without one. An EMPTY label means "draw no kind tag at all" in
-    // `ProjectRow` — not "fall back to Full platform" — because that fallback
-    // is the word the tag was removed to avoid.
-    label: '',
+    // "End to end" → "Atlas & Compass" → none → "End-to-End", all on
+    // 2026-10-14 on the preview. The last move came with the owner and Updated
+    // tags: once every row stacks three tags, the product row wants its scope
+    // on top like the others. (An EMPTY label still means "draw no scope tag"
+    // in `ProjectRow`, not "fall back to Full platform"; it is just not used.)
+    label: 'End-to-End',
     question: 'What is the XCEL product right now?',
     owner: 'Jillienne',
   },
@@ -185,7 +185,9 @@ export const PROTOTYPE_SCOPES: ReadonlyArray<{
     // `main` in Eric's End-to-End Demo). The lo-fi argument for it is still the
     // walk-through and wireframes rows in Exploration.
     question: 'How does a learner get into the product?',
-    owner: 'Jillienne',
+    // Afsana & Eric — 2026-10-14, Jillienne on the preview. Two names in one
+    // owner: the invite flow is theirs together, and the tag says so.
+    owner: 'Afsana & Eric',
   },
   {
     id: 'atlas',
@@ -215,7 +217,9 @@ export const PROTOTYPE_SCOPES: ReadonlyArray<{
     // PartnerHub-fork exploration (`xcel-admin-tool`) stays in Exploration;
     // it is the argument for the surface, not the surface.
     question: 'What does an agency admin see?',
-    owner: 'Jillienne',
+    // Cody's — 2026-10-14, Jillienne on the preview. The admin surface is his
+    // to shape when it is built; the row is a placeholder until then.
+    owner: 'Cody',
   },
 ]
 
@@ -1170,7 +1174,14 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     tileBlurb:
       'The actual React product on XCEL brand colour — shell, learning path, study plan, courses, certificates, catalog. One brand, no membership.',
     kind: 'explore',
-    status: 'ready',
+    /* HELD BACK — 2026-10-14, Jillienne on the preview: "change this whole
+       option to Coming soon like the Admin tool, as I need to pick things
+       from all the others — don't remove the work, just hide users from
+       clicking on it for now." So `coming-soon` with the `to` KEPT: the row
+       draws disabled with its tags and a Coming soon tag, nothing to click,
+       and its live preview still shows what is behind it. Releasing it is
+       `status: 'ready'`, one word. */
+    status: 'coming-soon',
     category: 'prototype',
     // The middle door of the three — see `PROTOTYPE_SCOPES`. This row is the
     // whole product; the Compass row below is one surface INSIDE it, reached
@@ -1341,10 +1352,11 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     title: 'Admin Tool',
     accent: 'neutral',
     icon: 'grid',
-    blurb:
-      'The agency admin’s door — roster, seats, compliance, who is stuck — once it is built in React. Not wired yet. The PartnerHub-fork exploration that argues for it is in Exploration as “XCEL Admin Tool — Forked Roster”.',
-    tileBlurb:
-      'The agency admin’s door — roster, seats, compliance. Not built yet; the PartnerHub-fork exploration is in Exploration.',
+    // Jillienne's words, on the preview (2026-10-14). The longer story — the
+    // agency admin's door, and the PartnerHub-fork exploration that argues
+    // for it — is in the comment above, not on the tile.
+    blurb: 'Working prototype to be added here soon.',
+    tileBlurb: 'Working prototype to be added here soon.',
     kind: 'explore',
     status: 'coming-soon',
     category: 'prototype',
