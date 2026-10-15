@@ -883,7 +883,7 @@ behind the robot's dropdown. The robot came back to the demo site to carry it,
 withholding the Feature Flag sheet — see `AdminToolsMenu`'s `stakeholder` prop
 and `PublicGateway.test.tsx`, which pins that the dropdown has exactly one row.
 
-**THE COMMITTED REBRAND DEMO DEFAULTS**, as of 2026-10-14 — what `?demo=1`
+**THE COMMITTED REBRAND DEMO DEFAULTS**, as of 2026-10-15 — what `?demo=1`
 renders with nothing stored. Kept here rather than in the catalog because the
 catalog says what each flag DOES; this says which way the baseline is set.
 
@@ -921,6 +921,7 @@ now carry the whole meaning rather than a caveat.
 | Flag | Baseline | What it puts on the page |
 |---|---|---|
 | `course-launcher-style` | `compass` | Start course / Resume opens the full Compass course player — the takeover with the contents tree, the eight-page rail and the Rubi aside — rather than the lo-fi placeholder |
+| `compass-surface` | `anjani` | **Promoted 2026-10-15 — Anjani's decision, applied by Jillienne.** Whose Compass renders at `?section=compass` (the Compass Prototypes row) and inside the course player: her six-row rail with the XCEL lockup, her Course landing, and her Study planner, on every dashboard version. `atlas` is the shared sidebar, its eight pages and the player's table of contents — reachable by `?ff=compass-surface:atlas`. The first row in this table whose scope owner is not the author; see "Compass is Anjani's on a flag" below. |
 | `study-pace-chooser` | `options` | Three selectable plans under "Select Your Preferred Study Pace" at 0%; past 0% the picker goes and the card REPORTS instead — "Your Study Pace", a finish date, and an activity band of one bar per day since enrolment. ⚠ It also disables the Study Plan link in BOTH states, so **Build my own is unreachable in the baseline** |
 | ~~`dashboard-navigation`~~ | — | **ARCHIVED 2026-10-05.** Option 1 won the Navigation A/B outright, so the flag had one arm left and the demo-bar control went with it. The Compass player is unchanged — this is the FLAG going, not the design. `CourseContentV2.tsx` (option 2) is unwired but intact; `archivedItems.ts` carries the re-wire |
 | `study-pace-readout` | `stats` | The card's lower half is three divided cells — Course Access, Course Completion, Days to Review — instead of three sentences |
