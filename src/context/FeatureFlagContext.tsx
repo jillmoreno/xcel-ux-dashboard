@@ -1760,7 +1760,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Long title',
     description:
-      'Shows a deliberately long course title on Eric/Atlas V2\u2019s Home (\u201cNew York Property and Casualty Conversion Course Pre-licensing and Live Review Class\u201d) so a heading face can be judged at its worst wrap. Off: the course\u2019s real title. Display only \u2014 the course behind it is unchanged.',
+      'Shows a deliberately long course title on Eric/Atlas V2\u2019s Home (\u201cNew York Property and Casualty Conversion Course Pre-licensing and Live Review Class\u201d) so a heading face can be judged at its worst wrap. Off: the course\u2019s real title. On End-to-End Demo it adds \u201cwith Comprehensive Exam Simulators\u201d to the course title on Home, Invited Product Detail and Checkout. Display only \u2014 the course behind it is unchanged.',
     defaultEnabled: false,
     page: 'dashboard-rebrand',
   },

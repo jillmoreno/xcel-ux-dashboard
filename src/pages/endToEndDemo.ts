@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 
 /** The End-to-End Demo's dashboard version (`dashboardVersions.ts`). */
 export const END_TO_END_VERSION = 'eric-atlas-e2e'
@@ -52,4 +53,19 @@ export function useEndToEndPageChrome(title: string): void {
       else root.dataset.atlasBrand = before.brand
     }
   }, [title])
+}
+
+/** The demo's course, short (2026-10-15, Eric's request: "Premier" dropped). */
+export const E2E_COURSE_TITLE_SHORT = 'Florida Life and Health Pre-licensing'
+/** …and long, which the Design bar's Long title control shows. */
+export const E2E_COURSE_TITLE_LONG = `${E2E_COURSE_TITLE_SHORT} with Comprehensive Exam Simulators`
+
+/**
+ * The End-to-End Demo's course title, as the `atlas-home-long-title` design
+ * control picks it (2026-10-15, Eric's request: "make the long title design
+ * control work"). One answer for every page the title appears on — Home,
+ * Invited Product Detail and Checkout — so they never disagree.
+ */
+export function useEndToEndCourseTitle(): string {
+  return useFeatureFlag('atlas-home-long-title').enabled ? E2E_COURSE_TITLE_LONG : E2E_COURSE_TITLE_SHORT
 }

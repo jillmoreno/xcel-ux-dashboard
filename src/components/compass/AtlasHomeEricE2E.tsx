@@ -8,6 +8,7 @@
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { isEricAtlasWhiteLike, resolveDashboardVersion } from '@/data/dashboardVersions'
+import { useEndToEndCourseTitle } from '@/pages/endToEndDemo'
 import { useAccount } from '@/context/AccountContext'
 import {
   AngleRightRegular,
@@ -153,6 +154,8 @@ export function AtlasHomeEricE2E({
      renders equal. */
   const { brand: e2eBrand } = useAccount()
   const onWhite = isEricAtlasWhiteLike(resolveDashboardVersion(searchParams.get('version'), e2eBrand))
+  // The demo's course title — short, or long when the Long title control is on.
+  const e2eTitle = useEndToEndCourseTitle()
   // White's course-head panel, measured so Quick Links can take its height
   // (2026-10-14, Eric's request).
   const [headEl, setHeadEl] = useState<HTMLDivElement | null>(null)
@@ -300,7 +303,9 @@ export function AtlasHomeEricE2E({
   const [whiteHead, setWhiteHead] = useState(false)
   const activeTabId = whiteCourseFor(searchParams.get(WHITE_COURSE_PARAM))
   const activeTab = tabs.find((t) => t.id === activeTabId) ?? tabs[0]
-  const shownTitle = activeTab?.title ?? currentTitle
+  // The demo's course: the one Invited Product Detail sells (2026-10-15,
+  // Eric's request), in place of the course data's title.
+  const shownTitle = e2eTitle
   const shownCover = activeTab?.coverUrl ?? coverUrl
   const selectCourse = (id: string) => {
     setParams((prev) => {

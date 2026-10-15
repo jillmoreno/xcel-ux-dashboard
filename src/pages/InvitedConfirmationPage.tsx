@@ -11,8 +11,12 @@ import { END_TO_END_VERSION, useEndToEndDemoParams, useEndToEndPageChrome } from
  * Confirm opens the demo's Home.
  *
  * Left, the order confirmation on the guide's Secondary 200; right, the
- * Create password form. The password field takes typing and the eye shows or
- * hides it — nothing is stored or sent.
+ * Create password form. Clicking the password field fills it with a TEST
+ * password that meets the rules (2026-10-15, Eric's request), the rules
+ * (Figma 425:3001) show under it, and Confirm turns on — XCEL's brick, as
+ * Checkout's Place your order — and opens the demo's Atlas Home. The field
+ * still takes typing, and the eye shows or hides it. Nothing is stored or
+ * sent.
  *
  * DEMO DATA, kept consistent with the rest of the demo rather than the
  * frame's placeholders: the learner is Checkout's Jordan Navarro (an
@@ -32,8 +36,8 @@ export function InvitedConfirmationPage() {
       <main style={BODY}>
         {/* THE ORDER CONFIRMATION */}
         <section aria-label="Order confirmation" style={CONFIRM_PANEL}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, width: '100%' }}>
-            <CircleCheckSolid size={52} aria-hidden style={{ color: 'var(--color-xcel-brick-600)' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: CHECK_GAP, width: '100%' }}>
+            <CircleCheckSolid size={CHECK_SIZE} aria-hidden style={{ color: 'var(--color-xcel-brick-600)', display: 'block' }} />
             <h1 style={TITLE}>Thank you for your order!</h1>
           </div>
           <dl style={FACTS}>
@@ -55,7 +59,7 @@ export function InvitedConfirmationPage() {
             style={FORM}
             onSubmit={(e) => {
               e.preventDefault()
-              navigate(`/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}`)
+              if (password) navigate(`/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}`)
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -73,6 +77,10 @@ export function InvitedConfirmationPage() {
                     type={shown ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    // Fills itself with the test password the first time.
+                    onClick={() => {
+                      if (!password) setPassword(TEST_PASSWORD)
+                    }}
                     placeholder="Enter password..."
                     autoComplete="new-password"
                     style={PASSWORD_INPUT}
@@ -89,8 +97,23 @@ export function InvitedConfirmationPage() {
                 </span>
               </label>
             </div>
+            {/* The rules, once the field has something in it (Figma 425:3001). */}
+            {password ? (
+              <div style={RULES}>
+                <p style={{ margin: 0 }}>
+                  Passwords must be between 9 and 30 characters long and include at least three of the four following
+                  types of characters.
+                </p>
+                <ul style={RULE_LIST}>
+                  <li>English uppercase letters (A through Z)</li>
+                  <li>English lowercase letters (a through z)</li>
+                  <li>Numbers (0 through 9)</li>
+                  <li>{'Special characters (!@#$ %^&* _+=`|(){}[]:">,.?)'}</li>
+                </ul>
+              </div>
+            ) : null}
             <div style={{ paddingTop: 8 }}>
-              <button type="submit" style={CONFIRM}>
+              <button type="submit" disabled={!password} style={password ? CONFIRM_ON : CONFIRM}>
                 Confirm
               </button>
             </div>
@@ -102,6 +125,10 @@ export function InvitedConfirmationPage() {
 }
 
 const DEMO_EMAIL = 'jordan.navarro@example.com'
+
+/* TEST DATA ONLY — a demo password that meets the rules below (upper, lower,
+   number, special; 12 characters). Not anyone's real password. */
+const TEST_PASSWORD = 'Navarro#2026'
 
 function Fact({ term, value, spaced = false }: { term: string; value: string; spaced?: boolean }) {
   return (
@@ -120,6 +147,13 @@ const PAGE: CSSProperties = { minHeight: '100vh', display: 'flex', flexDirection
    the password column. */
 const BODY: CSSProperties = { flex: '1 0 auto', display: 'flex', alignItems: 'stretch' }
 
+/* The left panel's top, the check and the gap under it — named, because the
+   password column's top is built from them: the two titles share a baseline
+   (2026-10-15, Eric's request; the design's 134 put Create password 2 low). */
+const PANEL_TOP = 64
+const CHECK_SIZE = 52
+const CHECK_GAP = 16
+
 /* Secondary 200, a Secondary 300 rule on its right; 64 down, 88 in. */
 const CONFIRM_PANEL: CSSProperties = {
   flex: 'none',
@@ -127,7 +161,7 @@ const CONFIRM_PANEL: CSSProperties = {
   flexDirection: 'column',
   alignItems: 'flex-start',
   gap: 32,
-  padding: '64px 88px',
+  padding: `${PANEL_TOP}px 88px`,
   background: 'var(--color-secondary-200)',
   borderRight: '1px solid var(--color-secondary-300)',
 }
@@ -165,7 +199,8 @@ const FACT_VALUE: CSSProperties = {
   color: 'var(--color-neutral-900)',
 }
 
-/* 88 in, 134 down; a 440 column, its title 24 above the form. */
+/* 88 in, and down to the left title's line; a 440 column, its title 24
+   above the form. */
 const PASSWORD_COLUMN: CSSProperties = {
   flex: '1 0 0',
   minWidth: 1,
@@ -175,7 +210,7 @@ const PASSWORD_COLUMN: CSSProperties = {
   width: 440,
   maxWidth: 440,
   boxSizing: 'content-box',
-  padding: '134px 0 64px 88px',
+  padding: `${PANEL_TOP + CHECK_SIZE + CHECK_GAP}px 0 64px 88px`,
 }
 
 /* White, a #E5E7EB outline, 16 corners, a soft shadow; 40 in. */
@@ -248,5 +283,18 @@ const CONFIRM: CSSProperties = {
   fontSize: 15,
   lineHeight: 'normal',
   color: 'var(--color-fixed-light)',
-  cursor: 'pointer',
+  cursor: 'not-allowed',
 }
+
+/* On once a password is in: XCEL's brick, as Checkout's Place your order. */
+const CONFIRM_ON: CSSProperties = { ...CONFIRM, background: 'var(--color-xcel-brick)', cursor: 'pointer' }
+
+/* The rules: Open Sans 13 / 18, the list indented 19.5. */
+const RULES: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  lineHeight: '18px',
+  color: 'var(--color-neutral-950)',
+}
+
+const RULE_LIST: CSSProperties = { margin: 0, paddingLeft: 19.5, listStyle: 'disc' }

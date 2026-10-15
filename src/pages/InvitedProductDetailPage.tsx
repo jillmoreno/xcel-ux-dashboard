@@ -1,6 +1,6 @@
 import { useEffect, type CSSProperties } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useEndToEndDemoParams } from './endToEndDemo'
+import { E2E_COURSE_TITLE_SHORT, useEndToEndCourseTitle, useEndToEndDemoParams } from './endToEndDemo'
 import { PartnerHeader } from '@/components/e2e/PartnerHeader'
 
 /**
@@ -35,6 +35,7 @@ export function InvitedProductDetailPage() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   useEndToEndDemoParams()
+  const courseTitle = useEndToEndCourseTitle()
   useEffect(() => {
     const root = document.documentElement
     const before = { palette: root.dataset.atlasPalette, brand: root.dataset.atlasBrand }
@@ -82,15 +83,24 @@ export function InvitedProductDetailPage() {
                 <li aria-hidden style={CRUMB_SLASH}>/</li>
                 <li>Get License</li>
                 <li aria-hidden style={CRUMB_SLASH}>/</li>
+                {/* Always the short title: the crumb is one line. */}
                 <li aria-current="page" style={{ fontWeight: 800 }}>
-                  Florida Life and Health Pre-licensing Premier
+                  {E2E_COURSE_TITLE_SHORT}
                 </li>
               </ol>
             </nav>
-            {/* "Pre-licensing" kept whole, so the line breaks before "Premier"
-                as the design's does, not at the hyphen. */}
+            {/* "Pre-licensing" kept whole, so a line never breaks at its hyphen. */}
             <h2 style={COURSE_TITLE}>
-              Florida Life and Health <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Premier
+              {courseTitle.split('Pre-licensing').map((part, i) =>
+                i === 0 ? (
+                  part
+                ) : (
+                  <span key={i}>
+                    <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span>
+                    {part}
+                  </span>
+                ),
+              )}
             </h2>
           </div>
           <div style={PRICE_CARD}>
@@ -179,7 +189,7 @@ export function InvitedProductDetailPage() {
               <p style={BODY}>
                 Course Provided By: XCEL Solutions LLC.
                 <br />
-                Course Name: Florida Life and Health Pre-licensing Premier
+                Course Name: {courseTitle}
                 <br />
                 Approved course ID:1191656
               </p>

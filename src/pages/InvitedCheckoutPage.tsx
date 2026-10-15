@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeftSolid, LockSolid } from '@/icons'
-import { END_TO_END_VERSION, useEndToEndDemoParams } from './endToEndDemo'
+import { END_TO_END_VERSION, useEndToEndCourseTitle, useEndToEndDemoParams } from './endToEndDemo'
 
 /**
  * CHECKOUT — `/end-to-end-demo/checkout` (2026-10-14, Eric's request), Figma
@@ -33,6 +33,7 @@ export function InvitedCheckoutPage() {
   const fill = (f: CardField) => setFilled((prev) => ({ ...prev, [f]: true }))
   const [stored, setStored] = useState(false)
   useEndToEndDemoParams()
+  const courseTitle = useEndToEndCourseTitle()
 
   useEffect(() => {
     const before = document.title
@@ -182,7 +183,7 @@ export function InvitedCheckoutPage() {
           <div style={SUMMARY_BODY}>
           <div style={SUMMARY_ITEMS}>
             <div style={SUMMARY_PRODUCT}>
-              <p style={{ ...TEXT_16, maxWidth: 260 }}>Florida Life and Health Pre-licensing Premier</p>
+              <p style={{ ...TEXT_16, maxWidth: 260 }}>{courseTitle}</p>
               <p style={TEXT_16}>$299.00</p>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
