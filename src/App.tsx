@@ -12,6 +12,7 @@ import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
 import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
 import { InvitedProductDetailPage } from '@/pages/InvitedProductDetailPage'
 import { InvitedCheckoutPage } from '@/pages/InvitedCheckoutPage'
+import { InvitedConfirmationPage } from '@/pages/InvitedConfirmationPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DashboardRebrandPage } from '@/pages/DashboardRebrandPage'
 import { RecommendedCardABComparePage } from '@/pages/RecommendedCardABComparePage'
@@ -197,6 +198,8 @@ export default function App() {
         <Route path="/end-to-end-demo" element={<TestingGate><InvitedProductDetailPage /></TestingGate>} />
         {/* …and its checkout, which Purchase Now opens. See `InvitedCheckoutPage`. */}
         <Route path="/end-to-end-demo/checkout" element={<TestingGate><InvitedCheckoutPage /></TestingGate>} />
+        {/* …then Confirmation & Password, which Place your order opens. */}
+        <Route path="/end-to-end-demo/confirmation" element={<TestingGate><InvitedConfirmationPage /></TestingGate>} />
       </Route>
       <Route
         path="/prototype/:featureId/handoff/:componentId"

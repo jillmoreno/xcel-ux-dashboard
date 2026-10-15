@@ -1822,12 +1822,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Navigation',
     label: 'Page',
     description:
-      'Which End-to-End Demo page is open: Invited Product Detail, Checkout or the Home dashboard. Picking one opens it.',
+      'Which End-to-End Demo page is open: Invited Product Detail, Checkout, Confirmation & Password or the Home dashboard. Picking one opens it.',
     defaultEnabled: true,
     defaultVariant: 'product-detail',
     variants: [
       { value: 'product-detail', label: 'Invited Product Detail' },
       { value: 'checkout', label: 'Checkout' },
+      // Joined 2026-10-15 — the step after Checkout.
+      { value: 'confirmation', label: 'Confirmation & Password' },
       { value: 'home', label: 'Home' },
     ],
     page: 'dashboard-rebrand',

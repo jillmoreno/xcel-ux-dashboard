@@ -12,7 +12,7 @@ import { END_TO_END_VERSION, useEndToEndDemoParams } from './endToEndDemo'
  * clicking a card field fills it with TEST data — the published Visa test card
  * 4242 4242 4242 4242, never a real one — ticking "Securely store…" turns Place
  * your order on (the design's 50% is its off state), and placing the order
- * opens the demo's Home. The Edit buttons, the Terms link and Apply are not
+ * opens Confirmation & Password (`InvitedConfirmationPage`). The Edit buttons, the Terms link and Apply are not
  * wired. The payment methods switch — Credit Card shows the card form, the
  * other two hide it.
  *
@@ -222,12 +222,13 @@ export function InvitedCheckoutPage() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 30, padding: '25px 20px 0' }}>
-            {/* On once "Securely store…" is ticked; it opens the demo's Home. */}
+            {/* On once "Securely store…" is ticked; it opens Confirmation &
+                Password (2026-10-15, Eric's request; the demo's Home before). */}
             <button
               type="button"
               disabled={!stored}
               style={stored ? PLACE_ORDER_ON : PLACE_ORDER}
-              onClick={() => navigate(`/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}`)}
+              onClick={() => navigate(`/end-to-end-demo/confirmation?demo=1&version=${END_TO_END_VERSION}`)}
             >
               Place your order
             </button>

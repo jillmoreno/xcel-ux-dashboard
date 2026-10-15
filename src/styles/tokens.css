@@ -7243,6 +7243,14 @@ a.cre-library-card-title::after {
   /* The checkout header's Return to Cart (Figma 423:2522, the design's
      cta/500 — the product's base blue, which the XCEL skin re-points). */
   --color-e2e-return: #02568f;
+  /* Confirmation & Password (Figma 425:2597): the check's deep brick (the
+     design's primary/600), and the password form's greys and shadow. */
+  --color-xcel-brick-600: #7b1618;
+  --color-e2e-form-outline: #e5e7eb;
+  --color-e2e-form-locked: #f3f4f6;
+  --color-e2e-form-text: #4a5568;
+  --color-e2e-form-placeholder: #4b5563;
+  --color-e2e-form-shadow: rgb(0 0 0 / 0.05);
 }
 
 /* ── Help & Support entry cards ─────────────────────────────────────────

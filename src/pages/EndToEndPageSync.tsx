@@ -8,6 +8,7 @@ import { END_TO_END_VERSION } from './endToEndDemo'
 const E2E_PAGES = {
   'product-detail': '/end-to-end-demo',
   checkout: '/end-to-end-demo/checkout',
+  confirmation: '/end-to-end-demo/confirmation',
   home: '/dashboard-rebrand',
 } as const
 type E2EPage = keyof typeof E2E_PAGES
