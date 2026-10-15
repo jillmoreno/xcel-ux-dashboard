@@ -4441,3 +4441,61 @@ pace flags, and Save plan writes nowhere — deliberately, see the component.
 through `promote-to-prototype`, where the Compass group is Anjani's and the
 merge is Jillienne's. Her Refinement row stays until that lands; the two HTML
 files it points at live on `main` once PR #3 merges.
+
+### Anjani's second master: the rail, Learn, the week, and the planner's three concepts (2026-10-15, later the same day)
+
+The direct ask: *"anjani has just pushed a new update to refinement. we need to
+add this"*, with the file `compass-prototype-PREVIEW-eric-type-scale_2.html` —
+byte-identical to the type-scale preview her PR #3 had already landed as
+`public/prototypes/xcel-compass-type-scale-preview.html`. **It is not a type
+comparison.** Against the OCT2 master it is a newer prototype wearing Eric's
+Playfair / Open Sans scale, and the decision ("everything, her defaults") was
+to port all of it to the Compass surface. The type scale itself needed no
+port: the React Compass already draws from the product's tokens.
+
+**What changed, by surface:**
+
+- **The rail** (`CompassRail`, `HYBRID_COMPASS_PAGES`): Overview · Learn ·
+  Study planner · Ask Rubi · Progress, with icons; an EXAM PREP rule over
+  three locked rows — Practice, Flashcards, Exam Simulator — where the first
+  tap shows why (a 4s tooltip) and the second opens the Exam prep dialog
+  (`CompassGateDialog`); Settings and the learner at the foot. The course
+  hours / exam footer of the 8th is gone from her file and from ours.
+- **Learn** (`CompassCourseLanding`, rebuilt): the five modules became a gated
+  two-part course — Part 1 Qualifying Education, nineteen chapters in order
+  with each chapter's lessons under it (Chapter 1 opens on load, Chapter 2 is
+  "you are here", 3–19 explain their lock inline on a click), and Part 2 Exam
+  Preparation, locked, whose head opens the same dialog. "Not proven" left
+  this page with the modules; it still lives on the Overview's table.
+- **The Overview's Tonight card** now READS THE PLAN — her "the Tonight card
+  and the strip share one source of truth". The date, the session and
+  "Session 1 of 4 this week" come from the same schedule the planner draws;
+  "Can't study tonight" takes tonight off in that plan, says what moved, and
+  undoes; "Show my week" reveals the seven-day strip (hidden by default) and
+  "View your plan" opens the planner. `COMPASS_TONIGHT` keeps two labels.
+- **The planner** (`CompassStudyPlanner`, rebuilt on `compassPlanStore` +
+  `CompassPlanContext`, one plan for both pages): the week is the default
+  view, drawn as a list of days; "Full plan" is this week to exam week as
+  compact cells. Taking a day off has two concepts; "Pick several days…" is
+  a loud selection mode; every change leaves a notice with Undo that does not
+  time out. After time away the plan says what moved, once. Rubi's panel
+  opens and closes, and her changes tag the pace "Changed by Rubi".
+
+**Five design controls carry her prototype box** (`surface: 'design'`,
+`owner: 'jill'`, no `versions`, so they ride Jill's versions' bar; on the
+default build they are `?ff=`): `compass-planner-rubi` (on),
+`compass-planner-day-off` (skip | menu), `compass-planner-return` (A | B),
+`compass-planner-under` (none | next | coming), and
+`compass-planner-absence` (none | missed-day | away-week) — the last one is
+ours, standing in for her "Study today / Miss today / Away a week" buttons by
+seeding the absence into the plan's starting state, so the return note can be
+seen without buttons in the page. `away-week` studies two sessions first so
+return note B has topics to recap. Her defaults are the defaults.
+
+**Dead in her file, not ported:** `plGlance` ("Your plan at a glance") has no
+element to draw into in her markup; the `.pl-selbtn` button likewise.
+
+Pinned in `CompassStudyPlanner.test.tsx` (the arithmetic by hand, every flow,
+and the Overview reading the same plan) and `AtlasTopNav.test.tsx` (the rail,
+the locked rows, the Learn page). The 2026-10-15 note above this one
+describes the OCT2 port that this replaced the same day.

@@ -1398,6 +1398,94 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-planner-return',
+    /* THE RETURN NOTE — 2026-10-15, her second master. After time away the
+       planner (and the Overview's week block) say what moved, once, sized to
+       the absence. A says the outcome; B adds a catch-up review of the last
+       two topics studied before the break. Her file switches these with a
+       "Return A / B" control in the prototype box; here it is a design
+       control. Shows only when `compass-planner-absence` seeds an absence. */
+    surface: 'design',
+    owner: 'jill',
+    group: 'Widgets',
+    label: 'Planner: return note',
+    description:
+      'The note after a missed session or time away. A: what moved and when you now finish. B: the same, plus a catch-up review of the last two topics before the break, offered first.',
+    defaultEnabled: true,
+    defaultVariant: 'A',
+    variants: [
+      { value: 'A', label: 'A — what moved' },
+      { value: 'B', label: 'B — with a catch-up review' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-planner-under',
+    /* BELOW THE WEEK — 2026-10-15. Three things to compare under the week
+       view: nothing, next week as a quieter row of the same grid, or the next
+       few sessions as a list with the next spaced review. Her "Below week"
+       control. */
+    surface: 'design',
+    owner: 'jill',
+    group: 'Widgets',
+    label: 'Planner: below the week',
+    description:
+      'What sits under the week view. None (default): the week stands alone. Next week: the following week as a quieter row. Coming up: the next four sessions as a list, and when the next spaced review falls.',
+    defaultEnabled: true,
+    defaultVariant: 'none',
+    variants: [
+      { value: 'none', label: 'Nothing' },
+      { value: 'next', label: 'Next week' },
+      { value: 'coming', label: 'Coming up' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-planner-day-off',
+    /* TAKING A DAY OFF — 2026-10-15. Skip: a Skip button appears on a planned
+       day (on hover, or always on touch) and takes it off in one click; the
+       day itself still opens the menu. Menu: no button, the click opens the
+       per-day menu, which says where the session would land before you
+       commit. Her "Day off" control. */
+    surface: 'design',
+    owner: 'jill',
+    group: 'Widgets',
+    label: 'Planner: day off',
+    description:
+      'How a day is taken off in the planner. Skip button (default): one click on the day\u2019s Skip. Menu: clicking the day opens a small menu that says where the session would move, with "Pick several days" for a range.',
+    defaultEnabled: true,
+    defaultVariant: 'skip',
+    variants: [
+      { value: 'skip', label: 'Skip button' },
+      { value: 'menu', label: 'Menu' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-planner-absence',
+    /* THE ABSENCE THE PLAN OPENS WITH — 2026-10-15. Her file has "Study today /
+       Miss today / Away a week" buttons that advance the clock so the missed-
+       day flow can be shown; the product has no buttons in the page, so the
+       same states are seeded here. `missed-day`: yesterday's session was
+       missed, today is Sep 23. `away-week`: two sessions studied, then seven
+       days away, today is Oct 1 — the two done topics are what return note B
+       recaps. */
+    surface: 'design',
+    owner: 'jill',
+    group: 'Widgets',
+    label: 'Planner: absence',
+    description:
+      'Seeds time away so the return note can be seen. None (default): the plan as onboarding left it, today Sep 22. Missed a day: one missed session, today Sep 23. Away a week: two sessions done, then seven days away, today Oct 1.',
+    defaultEnabled: true,
+    defaultVariant: 'none',
+    variants: [
+      { value: 'none', label: 'None' },
+      { value: 'missed-day', label: 'Missed a day' },
+      { value: 'away-week', label: 'Away a week' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'hybrid-course-expiry',
     /* HOW CLOSE THE ACCESS DEADLINE IS — 2026-10-07, the direct ask for a demo
        control showing the course expiring, nearly expired, and expired.

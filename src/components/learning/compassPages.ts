@@ -1,12 +1,5 @@
 import type { ComponentType } from 'react'
-import {
-  BookFull,
-  CalendarRegular,
-  ClipboardList,
-  Layout,
-  Notebook,
-  ShoePrints,
-} from '@/icons'
+import { BookOpenRegular, CalendarRegular, GaugeLight, HouseRegular } from '@/icons'
 import type { CompassPage } from './CompassCoursePlayer'
 
 /**
@@ -20,38 +13,32 @@ export type CompassPageRow = {
   id: CompassPage
   label: string
   icon: ComponentType<{ size?: number; 'aria-hidden'?: boolean }>
+  /** Drawn but not a control — her Progress row, "not open yet" without a
+   *  reason. */
+  disabled?: boolean
 }
 
 /**
- * ⚠ HYBRID'S RAIL IS ANJANI'S — 2026-10-08, the direct ask: "left rail needs to
- * match what is in anjanis prototype."
+ * ⚠ ANJANI'S RAIL ROWS — 2026-10-15, from her second master (the file
+ * published as the type-scale preview). On 2026-10-08 this was her six
+ * label-only rows: Dashboard, Course, Study planner, Flashcards, Exam
+ * simulator, Progress. Her rail now reads Overview, Learn, Study planner,
+ * Ask Rubi, Progress — with an icon on each — and Flashcards and Exam
+ * Simulator have moved under an EXAM PREP rule as LOCKED rows beside
+ * Practice. The locked three are not pages (`COMPASS_RAIL_LOCKED` in the
+ * fixtures); Ask Rubi is drawn by the rail itself, since it is not a page
+ * either.
  *
- * Her `screen-dashboard` draws six rows, not eight: Dashboard, Course, Study
- * planner, Flashcards, Exam simulator, Progress. So three of the product's go
- * (Resources, Readiness, Rubi Insights), one arrives (Study planner), and
- * Overview is called Dashboard.
+ * ⚠ A SECOND LIST RATHER THAN AN EDIT, still: `COMPASS_PAGES` above is
+ * Eric's and his versions draw all eight — the note at `CompassLearningPage`
+ * says it "carries exactly the eight rows the design draws".
  *
- * ⚠ A SECOND LIST RATHER THAN AN EDIT, because `COMPASS_PAGES` above is Eric's
- * and his versions draw all eight — the note at `CompassLearningPage` says it
- * "carries exactly the eight rows the design draws". Editing it in place would
- * take three rows off his rail to settle a question about hers.
- *
- * ⚠ `study-planner` RENDERS AN EMPTY GROUND, exactly as Resources, Readiness
- * and Rubi Insights already do — `CompassPageBody` gives every page but
- * Overview a blank region. That is the existing honest placeholder rather than
- * a new dead end, and it is what her Planner screen would fill.
- *
- * ⚠ HER CASING, NOT THE PRODUCT'S — "Exam simulator", sentence case, as her
- * file has it. The first pass kept "Exam Simulator" on the grounds that it
- * might be her prototype's own styling rather than a decision; measuring the
- * rail settled it — her rows are 13px/400 with no text-transform, so the
- * capital is authored. Eric's list above keeps Title Case.
+ * ⚠ HER CASING, NOT THE PRODUCT'S — "Study planner", sentence case, as her
+ * file has it; Eric's list keeps Title Case.
  */
 export const HYBRID_COMPASS_PAGES: CompassPageRow[] = [
-  { id: 'overview', label: 'Dashboard', icon: Layout },
-  { id: 'course', label: 'Course', icon: BookFull },
+  { id: 'overview', label: 'Overview', icon: HouseRegular },
+  { id: 'course', label: 'Learn', icon: BookOpenRegular },
   { id: 'study-planner', label: 'Study planner', icon: CalendarRegular },
-  { id: 'flashcards', label: 'Flashcards', icon: Notebook },
-  { id: 'exam-simulator', label: 'Exam simulator', icon: ClipboardList },
-  { id: 'progress', label: 'Progress', icon: ShoePrints },
+  { id: 'progress', label: 'Progress', icon: GaugeLight, disabled: true },
 ]

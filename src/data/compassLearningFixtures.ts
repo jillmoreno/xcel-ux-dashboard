@@ -19,19 +19,13 @@
  * ring reads a persona and the table does not, is the state worth avoiding.
  */
 
-/** The one session the page asks the learner to do tonight. */
+/** The Tonight card's two labels. ⚠ EVERYTHING ELSE IT SAID — the date, the
+ *  session, "Session 3 of 5", the week strip and its sentence — now comes from
+ *  the plan (`compassPlanStore`), 2026-10-15, so the card and the Study
+ *  planner cannot disagree. */
 export const COMPASS_TONIGHT = {
-  dayNumber: '22',
-  dayName: 'Wed',
-  title: 'Annuities · 45 minutes',
-  detail: 'Session 3 of 5 this week. Nothing else is due today.',
   skipLabel: "Can't study tonight",
-  startLabel: 'Start session',
-  /** The week strip: 2 behind, 1 current, 4 ahead. */
-  dots: ['done', 'done', 'now', 'ahead', 'ahead', 'ahead', 'ahead'] as const,
-  weekNote:
-    "Week 4 of 8 · 2 done · 2 planned · 2 rest days. Friday brings back Life policies so you don't lose them.",
-  planLabel: 'Change your plan',
+  planLabel: 'View your plan',
 }
 
 /** The readiness band — the ring, the sentence under it, and Rubi's nudge. */

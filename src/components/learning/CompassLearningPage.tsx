@@ -7,6 +7,7 @@ import { CompassCourseLanding } from './CompassCourseLanding'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { useNavPlacement } from '@/components/layout/navPlacement'
 import { CompassStudyPlanner } from './CompassStudyPlanner'
+import { CompassPlanProvider } from './CompassPlanContext'
 
 /**
  * COMPASS LEARNING — the top nav's second destination (Figma 765:3471).
@@ -70,6 +71,10 @@ export function CompassLearningPage({
      sidebar's trail would be the third. See the prop. */
   const hideCrumb = useNavPlacement() === 'hybrid'
   return (
+    /* ⚠ THE PLAN WRAPS THE WHOLE PAGE — 2026-10-15 — because the Overview's
+       Tonight card and the Study planner read one plan, and switching rows
+       must not reset it. See `CompassPlanContext`. */
+    <CompassPlanProvider>
     <div style={pageStyle}>
       {/* ⚠ HER RAIL IS A DIFFERENT OBJECT, not the shared one relabelled — see
           `CompassRail`. The first pass swapped only the row list inside
@@ -108,7 +113,7 @@ export function CompassLearningPage({
               </div>
               <ExamDateStrip />
             </header>
-            <CompassLearningOverview onStartSession={onStartSession} />
+            <CompassLearningOverview onStartSession={onStartSession} onViewPlan={() => setPage('study-planner')} />
           </>
         ) : hybrid && page === 'course' ? (
           <CompassCourseLanding />
@@ -120,6 +125,7 @@ export function CompassLearningPage({
       </div>
       )}
     </div>
+    </CompassPlanProvider>
   )
 }
 

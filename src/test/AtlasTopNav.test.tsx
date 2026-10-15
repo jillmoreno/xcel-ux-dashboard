@@ -204,7 +204,7 @@ describe('the Compass rail is Anjani’s on Hybrid', () => {
      three off it to settle a question about Hybrid's rail would reach into his
      design, which is the failure every scoped change today is avoiding. */
   const railOf = () =>
-    [...document.querySelectorAll('nav[aria-label="Course pages"] li')].map((li) =>
+    [...document.querySelectorAll('nav[aria-label="Course pages"] > ul:first-of-type > li')].map((li) =>
       (li.textContent ?? '').trim(),
     )
 
@@ -227,16 +227,31 @@ describe('the Compass rail is Anjani’s on Hybrid', () => {
     )
   }
 
-  it('draws her six rows, in her order', () => {
+  it('draws her five rows, in her order, with the three locked ones under Exam prep', () => {
+    /* ⚠ REBUILT 2026-10-15 from her second master. The six label-only rows of
+       the 8th (Dashboard · Course · Study planner · Flashcards · Exam
+       simulator · Progress) became five with icons — Overview · Learn · Study
+       planner · Ask Rubi · Progress — and Flashcards and Exam Simulator moved
+       under an EXAM PREP rule as locked rows beside Practice. */
     renderRail('hybrid-pacing')
-    expect(railOf()).toEqual([
-      'Dashboard',
-      'Course',
-      'Study planner',
-      'Flashcards',
-      'Exam simulator',
-      'Progress',
-    ])
+    expect(railOf()).toEqual(['Overview', 'Learn', 'Study planner', 'Ask Rubi', 'Progress'])
+    const locked = [...document.querySelectorAll('ul[aria-label="Exam prep"] li')].map(
+      (li) => li.querySelector('.cre-rail__locked-tx')?.textContent,
+    )
+    expect(locked).toEqual(['Practice', 'Flashcards', 'Exam Simulator'])
+  })
+
+  it('a locked row explains itself on the first tap and opens the Exam prep dialog on the second', () => {
+    renderRail('hybrid-pacing')
+    const row = screen.getByRole('button', { name: /Flashcards/ })
+    fireEvent.click(row)
+    const tip = screen.getByRole('tooltip', { name: /Finish every section of your course to open Flashcards/ })
+    expect(tip.className).toContain('cre-rail__tip--show')
+    expect(screen.queryByRole('dialog')).toBeNull()
+    fireEvent.click(row)
+    expect(screen.getByRole('dialog', { name: 'Exam prep is not open yet' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Back to my course' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
 
   it('⚠ and Eric’s keeps all eight', () => {
@@ -251,30 +266,26 @@ describe('the Compass rail is Anjani’s on Hybrid', () => {
     /* THE CORRECTION THIS PINS. The first pass swapped only the row LIST inside
        `CompassSidebar` and was rejected — "i still need anjanis rails that
        exist in her design. not these." Hers is a different object: the XCEL
-       lockup where the shared one has a crumb and a 62% bar, no row icons, and
-       a footer the shared one does not have at all. Asserting the rows alone
-       would pass against exactly the version that was wrong. */
+       lockup where the shared one has a crumb and a 62% bar, and a Settings
+       row and the learner where the shared one has nothing. Asserting the rows
+       alone would pass against exactly the version that was wrong. */
     renderRail('hybrid-pacing')
     const rail = document.querySelector('aside')!
     const text = (rail.textContent ?? '').replace(/\s+/g, ' ')
 
-    /* The footer — course hours, the exam and its state, the learner. */
-    expect(text).toContain('Course hours')
-    expect(text).toContain('28 of 40 · to take the exam')
-    expect(text).toContain('not booked')
+    /* The footer — Settings, then the learner. ⚠ The course-hours / exam
+       footer of the 8th is GONE from her second master; pinned as an absence
+       so it does not creep back from the old fixture. */
+    expect(text).toContain('Settings')
     expect(text).toContain('Jordan R.')
+    expect(text).not.toContain('Course hours')
+    expect(text).not.toContain('not booked')
 
     /* ⚠ AND WHAT IT MUST NOT CARRY. The shared sidebar names the course and
        draws its progress; hers does not, and the global header's Home pill is
        why dropping the crumb is safe here. */
     expect(text).not.toContain('New York Life and Health Pre-licensing')
     expect(text).not.toContain('to complete')
-
-    /* Rows are label-only — an icon in a row would be the shared sidebar's
-       treatment leaking back in. */
-    const rows = [...rail.querySelectorAll('nav[aria-label="Course pages"] button')]
-    expect(rows).toHaveLength(6)
-    for (const r of rows) expect(r.querySelector('svg')).toBeNull()
   })
 
   it('⚠ the shared sidebar still names its course', () => {
@@ -297,7 +308,7 @@ describe('Hybrid’s Course row opens Anjani’s course landing', () => {
      against a half-done change — a rail that stays over an empty page, or a
      page under the wrong rail. */
   const railOf = () =>
-    [...document.querySelectorAll('nav[aria-label="Course pages"] li')].map((li) =>
+    [...document.querySelectorAll('nav[aria-label="Course pages"] > ul:first-of-type > li')].map((li) =>
       (li.textContent ?? '').trim(),
     )
 
@@ -320,21 +331,30 @@ describe('Hybrid’s Course row opens Anjani’s course landing', () => {
     )
     const row = screen
       .getAllByRole('button')
-      .find((b) => (b.textContent ?? '').trim() === 'Course')!
+      .find((b) => ['Learn', 'Course'].includes((b.textContent ?? '').trim()))!
     fireEvent.click(row)
   }
 
-  it('keeps the six rows and renders her modules', () => {
+  it('keeps her rows and renders the gated course', () => {
+    /* ⚠ REBUILT 2026-10-15: her five modules became a two-part gated course —
+       see `compassCourseLandingFixtures` for what changed and why "Not proven"
+       left this page. */
     openCourse('hybrid-pacing')
-    expect(railOf()).toHaveLength(6)
-    expect(screen.getByRole('region', { name: 'Course page' })).toBeTruthy()
-    const modules = [...document.querySelectorAll('[aria-label="All modules"] li')]
-    expect(modules).toHaveLength(5)
-    /* ⚠ "Not proven" IS THE ONE WORTH PINNING. It is not "incomplete" — the
-       learner finished and the scored check disagreed — and it is the
-       distinction the whole readiness idea rests on. A tidy that collapsed the
-       four states into done/not-done would take it first. */
-    expect(modules[1].textContent).toContain('Not proven')
+    expect(railOf()).toHaveLength(5)
+    expect(screen.getByRole('region', { name: 'Learn page' })).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 2, name: 'Your course' })).toBeTruthy()
+    expect(screen.getByText('Chapter 2 · Nature of Insurance')).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 3, name: 'Qualifying Education' })).toBeTruthy()
+    /* Chapter 1 opens on load with its seven lessons; Chapter 2 is where you are. */
+    expect(screen.getByRole('list', { name: 'Chapter 1 lessons' }).querySelectorAll('li')).toHaveLength(7)
+    expect(screen.getByText('Chapter 2 · 7 lessons · you are here')).toBeTruthy()
+    /* A locked chapter explains itself on a click and never opens the dialog. */
+    fireEvent.click(screen.getByRole('button', { name: /Chapter 3, Legal Concepts of Insurance, locked/ }))
+    expect(screen.getByText('Pass the Chapter 2 exam to open this.')).toBeTruthy()
+    expect(screen.queryByRole('dialog')).toBeNull()
+    /* Part 2's head does. */
+    fireEvent.click(screen.getByRole('button', { name: /Exam Preparation/ }))
+    expect(screen.getByRole('dialog', { name: 'Exam prep is not open yet' })).toBeTruthy()
   })
 
   it('⚠ and Eric’s still swaps to the table of contents', () => {
@@ -348,6 +368,6 @@ describe('Hybrid’s Course row opens Anjani’s course landing', () => {
        labels its BLANK ground the same way, so that matches on both arms and
        asserts nothing. The landing's own content is what tells them apart. */
     expect(screen.queryByText('Your course')).toBeNull()
-    expect(document.querySelector('[aria-label="All modules"]')).toBeNull()
+    expect(screen.queryByRole('region', { name: 'Learn page' })).toBeNull()
   })
 })

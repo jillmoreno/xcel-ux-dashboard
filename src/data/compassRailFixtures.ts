@@ -1,42 +1,46 @@
 /**
- * The Compass RAIL's footer — Anjani's sidebar stats, ported 2026-10-08.
+ * Anjani's Compass rail — the words in it, and the rows that are not pages.
  *
- * ⚠ ITS OWN FILE BECAUSE THE RAIL IS SHARED CHROME IN HER DESIGN. Every one of
- * her screens draws the same sidebar, so this does not belong beside any single
- * screen's content — `compassCourseLandingFixtures` holds her Course page,
- * `compassLearningFixtures` her Dashboard, and this sits under both.
- *
- * ⚠ WHERE IT CAME FROM. Transcribed from her standalone prototype
- * (`public/prototypes/xcel-compass-nudge-journey.html` on
- * `claude/gallant-feynman-aj0m0i`), measured in the browser rather than read
- * off a screenshot. She is still working in that file, so IT is the source and
- * nothing tells this one when hers changes — the same caution the other two
- * Compass fixtures carry.
- *
- * ⚠ INVENTED FIGURES, AND THEY DISAGREE WITH THE PRODUCT'S ON PURPOSE. Her rail
- * says 28 of 40 hours and an exam on Aug 14; the shell says 42 lessons and a
- * December target. Neither is wired to the other, and reconciling them is a
- * decision nobody has made — see the same warning in
- * `compassCourseLandingFixtures`. When real data arrives this file is what gets
- * deleted, not extended.
+ * ⚠ REBUILT 2026-10-15 from her second master (published as the type-scale
+ * preview, `public/prototypes/xcel-compass-type-scale-preview.html`). The
+ * 2026-10-08 rail had six label-only rows and a course-hours / exam footer;
+ * hers now draws icons on every row, an "Ask Rubi" row, a disabled Progress,
+ * an EXAM PREP group of three locked rows, and a Settings row above the
+ * learner. The footer's figures are gone with it. Same caution as every
+ * Compass fixture: her file is the source and this is a second home.
  */
 
 export const COMPASS_RAIL_WORDMARK = 'Compass'
 
-export const COMPASS_RAIL_FOOTER = {
-  hoursLabel: 'Course hours',
-  /** "28 of 40 · to take the exam" — her wording, including the reason. The
-   *  number alone would read as progress; the tail says what it is FOR. */
-  hoursValue: '28 of 40 · to take the exam',
-  examLabel: 'Exam',
-  examDate: 'Aug 14',
-  /**
-   * ⚠ ITS OWN FIELD BECAUSE IT CARRIES ITS OWN INK. "not booked" is amber in
-   * her design — the one warm thing in a grey rail — because an unbooked exam
-   * is the single outstanding action. Folded into `examDate` it would lose
-   * that and read as part of the date.
-   */
-  examState: 'not booked',
-  learnerInitials: 'JR',
-  learnerName: 'Jordan R.',
+/** The locked group under the rule. Each is a button, not a page: the first
+ *  tap shows why it is locked, the second opens the Exam prep dialog. */
+export type CompassLockedRow = { id: 'practice' | 'flashcards' | 'exam-simulator'; label: string }
+export const COMPASS_RAIL_LOCKED_HEADING = 'Exam prep'
+export const COMPASS_RAIL_LOCKED: readonly CompassLockedRow[] = [
+  { id: 'practice', label: 'Practice' },
+  { id: 'flashcards', label: 'Flashcards' },
+  { id: 'exam-simulator', label: 'Exam Simulator' },
+]
+export const lockedTip = (label: string) => ({
+  head: 'Not open yet',
+  body: `Finish every section of your course to open ${label}.`,
+})
+
+export const COMPASS_RAIL_ASK_RUBI = 'Ask Rubi'
+export const COMPASS_RAIL_SETTINGS = 'Settings'
+export const COMPASS_RAIL_LEARNER = { initials: 'JR', name: 'Jordan R.' }
+
+/** The Exam prep dialog — the second tap on a locked row, and the locked Part
+ *  2 on the Learn page. */
+export const COMPASS_GATE_DIALOG = {
+  title: 'Exam prep is not open yet',
+  body: 'Your course has to be completed in order, so this opens on its own once the last chapter is passed.',
+  insideHeading: 'What is inside',
+  inside: [
+    'Practice — question sets pointed at what you have not yet shown you know',
+    'Flashcards — quick recall across every chapter',
+    'Exam Simulator — a full timed practice exam',
+  ],
+  back: 'Back to my course',
+  ask: 'Ask Rubi about this',
 }

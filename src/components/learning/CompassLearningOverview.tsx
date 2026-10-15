@@ -1,5 +1,5 @@
-import type { CSSProperties } from 'react'
-import { ArrowRight, Check, CircleInfo, Lock, RubiLogo } from '@/icons'
+import { useState, type CSSProperties } from 'react'
+import { ArrowRight, Check, ChevronRight, CircleInfo, Lock, RubiLogo } from '@/icons'
 import {
   COMPASS_ASSIGNMENTS,
   COMPASS_ASSIGNMENTS_SUMMARY,
@@ -9,6 +9,10 @@ import {
   COMPASS_TONIGHT,
   type AssignmentState,
 } from '@/data/compassLearningFixtures'
+import { DOW_SHORT, fmtHM } from './compassStudyPlannerModel'
+import { returnInfo, schedule, tonight, tonightOff, tonightUndo, weekItems, weekSummary } from './compassPlanStore'
+import { useCompassPlan } from './compassPlanHooks'
+import './compassStudyPlanner.css'
 
 /**
  * The Compass Learning overview body — Figma 765:3471.
@@ -34,10 +38,17 @@ import {
  * are `<button>`s only where the design draws a button.
  */
 
-export function CompassLearningOverview({ onStartSession }: { onStartSession?: () => void }) {
+export function CompassLearningOverview({
+  onStartSession,
+  onViewPlan,
+}: {
+  onStartSession?: () => void
+  /** "View your plan" — opens the Study planner page. */
+  onViewPlan?: () => void
+}) {
   return (
     <div style={columnStyle}>
-      <TonightCallout onStart={onStartSession} />
+      <TonightCallout onStart={onStartSession} onViewPlan={onViewPlan} />
       <ReadinessBand onStart={onStartSession} />
       <AssignmentsTable onStart={onStartSession} />
       <InsightsBand />
@@ -47,56 +58,131 @@ export function CompassLearningOverview({ onStartSession }: { onStartSession?: (
 
 /* ─── TONIGHT ──────────────────────────────────────────────────────────── */
 
-function TonightCallout({ onStart }: { onStart?: () => void }) {
+/**
+ * ⚠ READ FROM THE PLAN, NOT THE FIXTURE — 2026-10-15, her second master:
+ * "the Tonight card and the strip share one source of truth." The date, the
+ * session and "Session 1 of 4 this week" come from `compassPlanStore`'s
+ * schedule, so they agree with the Study planner to the day; "Can't study
+ * tonight" takes tonight off in that same plan, says what moved, and can be
+ * undone. The week strip is hidden by default ("Jeff didn't want it there
+ * all the time") behind a Show my week switch, and "View your plan" opens the
+ * planner. `COMPASS_TONIGHT` keeps only the two labels.
+ */
+function TonightCallout({ onStart, onViewPlan }: { onStart?: () => void; onViewPlan?: () => void }) {
+  const { plan, dispatch, controls } = useCompassPlan()
+  const [show, setShow] = useState(false)
+  const sched = schedule(plan)
+  const t = tonight(plan, sched)
+  const items = weekItems(plan, sched)
+  const R = plan.tonightUndo ? null : returnInfo(plan, controls.returnVer)
+  const go = R
+    ? R.catchup
+      ? `Quick review first: ${R.recap.join(' and ')}`
+      : R.next
+        ? `${R.isToday ? 'Tonight' : 'Next'}: ${R.next.topic}`
+        : ''
+    : ''
   return (
     <section>
       <p style={eyebrowStyle}>Tonight</p>
       <div style={calloutStyle}>
         <div style={calloutRowStyle}>
           <div>
-            <div style={dateNumberStyle}>{COMPASS_TONIGHT.dayNumber}</div>
-            <div style={dateDayStyle}>{COMPASS_TONIGHT.dayName}</div>
+            <div style={dateNumberStyle}>{t.dayNumber}</div>
+            <div style={dateDayStyle}>{t.dayName}</div>
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={calloutTitleStyle}>{COMPASS_TONIGHT.title}</div>
-            <div style={calloutDetailStyle}>{COMPASS_TONIGHT.detail}</div>
+            <div style={calloutTitleStyle}>{t.title}</div>
+            <div style={calloutDetailStyle}>{t.subline}</div>
           </div>
-          <button type="button" style={skipStyle}>
-            {COMPASS_TONIGHT.skipLabel}
-          </button>
-          {/* ⚠ NO PLAY GLYPH. The design draws a ▶ before the label and the
-              icon registry — self-hosted Font Awesome 7 Pro Light — has no
-              play mark. Substituting a chevron would put a DIFFERENT icon in a
-              named slot, so the button ships as its label until the real glyph
-              is added to `src/icons/`. */}
+          {t.canSkip ? (
+            <button type="button" style={skipStyle} onClick={() => dispatch(tonightOff)}>
+              {COMPASS_TONIGHT.skipLabel}
+            </button>
+          ) : (
+            <span />
+          )}
           <button type="button" style={filledButtonStyle} onClick={onStart}>
-            {COMPASS_TONIGHT.startLabel}
+            <ChevronRight size={12} aria-hidden />
+            {t.startLabel}
           </button>
         </div>
-        <div style={weekRowStyle}>
-          {/* The strip is a picture of the week, and the sentence beside it
-              says the same thing in words — so the dots are decorative and the
-              screen reader hears the sentence once, not fourteen times. */}
-          <div aria-hidden style={dotsStyle}>
-            {COMPASS_TONIGHT.dots.map((state, i) => (
-              <span key={i} style={{ ...dotStyle, background: dotFill(state) }} />
-            ))}
+        <div className="cre-dw">
+          <div className="cre-dw__head">
+            <span className="cre-dw__label">This week</span>
+            <span className="cre-dw__sum">{weekSummary(items)}</span>
+            <button type="button" className="cre-dw__switch" role="switch" aria-checked={show} onClick={() => setShow((v) => !v)}>
+              <span className="trk" aria-hidden>
+                <span className="thm" />
+              </span>
+              Show my week
+            </button>
+            <button type="button" style={quietLinkStyle} onClick={onViewPlan}>
+              {COMPASS_TONIGHT.planLabel}
+              <ArrowRight size={14} aria-hidden />
+            </button>
           </div>
-          <p style={weekNoteStyle}>{COMPASS_TONIGHT.weekNote}</p>
-          <button type="button" style={quietLinkStyle}>
-            {COMPASS_TONIGHT.planLabel}
-            <ArrowRight size={14} aria-hidden />
-          </button>
+          {show ? (
+            <ol className="cre-dw__strip" aria-label="Your study week">
+              {items.map((x) => (
+                <li
+                  key={x.key}
+                  className={`cre-dw__day${x.now ? ' cre-dw__day--now' : ''}${x.past ? ' cre-dw__day--past' : ''}${x.exam ? ' cre-dw__day--exam' : ''}`}
+                  aria-current={x.now ? 'date' : undefined}
+                >
+                  <span className="d">
+                    {DOW_SHORT[x.date.getDay()]} <b>{x.date.getDate()}</b>
+                  </span>
+                  {x.exam ? (
+                    <span className="t">Exam day</span>
+                  ) : x.done ? (
+                    <span className="t ok">
+                      <Check size={12} aria-hidden />
+                      Done
+                    </span>
+                  ) : x.plan ? (
+                    <>
+                      <span className="t">{x.plan.topic}</span>
+                      <span className="m">{fmtHM(x.plan.mins)}</span>
+                      {x.plan.review ? <span className="r">Spaced review</span> : null}
+                    </>
+                  ) : (
+                    <span className="t off">{x.past ? '' : 'Off'}</span>
+                  )}
+                </li>
+              ))}
+            </ol>
+          ) : null}
+          {plan.tonightNote === 'back' ? (
+            <p className="cre-dw__note" role="status">
+              Tonight is back on.
+            </p>
+          ) : plan.tonightNote ? (
+            <p className="cre-dw__note" role="status">
+              <span>
+                No problem. Tonight moved forward —{' '}
+                {plan.tonightNote.before === plan.tonightNote.after
+                  ? `you'll still finish ${plan.tonightNote.after}`
+                  : `you'll finish ${plan.tonightNote.after} instead of ${plan.tonightNote.before}`}
+                .
+              </span>
+              <button type="button" className="cre-dw__undo" onClick={() => dispatch(tonightUndo)}>
+                Undo
+              </button>
+            </p>
+          ) : R ? (
+            <p className="cre-dw__note" role="status">
+              <span className="cre-dw__ret">
+                <RubiLogo size={14} aria-hidden />
+                {R.line}
+              </span>
+              {go ? <span className="cre-dw__retgo">{go}</span> : null}
+            </p>
+          ) : null}
         </div>
       </div>
     </section>
   )
-}
-
-function dotFill(state: 'done' | 'now' | 'ahead'): string {
-  if (state === 'done') return 'var(--color-text-primary)'
-  if (state === 'now') return 'var(--color-primary-500)'
-  return 'var(--color-border-subtle)'
 }
 
 /* ─── WHERE YOU ARE ────────────────────────────────────────────────────── */
@@ -369,23 +455,6 @@ const outlineButtonStyle: CSSProperties = {
   cursor: 'pointer',
   fontFamily: 'inherit',
   whiteSpace: 'nowrap',
-}
-const weekRowStyle: CSSProperties = {
-  display: 'flex',
-  gap: 24,
-  alignItems: 'center',
-  marginTop: 16,
-  paddingTop: 16,
-  borderTop: '1px solid var(--color-border-subtle)',
-}
-const dotsStyle: CSSProperties = { display: 'flex', gap: 6, flex: 'none' }
-const dotStyle: CSSProperties = { width: 14, height: 14, borderRadius: 3 }
-const weekNoteStyle: CSSProperties = {
-  margin: 0,
-  color: 'var(--color-text-secondary)',
-  fontSize: 13,
-  flex: 1,
-  lineHeight: 1.5,
 }
 const quietLinkStyle: CSSProperties = {
   color: 'var(--color-primary-700)',

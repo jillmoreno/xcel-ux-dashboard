@@ -86,6 +86,10 @@ const REBRAND_FLAGS = [
   // Compass Learning — whose surface renders there, and the planner's concept.
   'compass-surface',
   'compass-planner-rubi',
+  'compass-planner-return',
+  'compass-planner-under',
+  'compass-planner-day-off',
+  'compass-planner-absence',
   // My Purchases — order ledger vs. the not-built-yet placeholder, and the
   // cards-vs-table layout A/B on top of it.
   'account-purchases-ledger',
