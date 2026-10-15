@@ -33,7 +33,7 @@ import {
 } from '@/data/courseFixtures'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import type { Brand } from '@/context/AccountContext'
-import type { CourseCardData } from '@/components/courses/CourseCard'
+import type { CourseCardData, CourseStatus } from '@/components/courses/CourseCard'
 import type { LearningPathSummary, LearningPathCategoryBreakdown, LearningPathCategory } from '@/data/learningFixtures'
 import type { HomeStatus } from '@/components/learning/learningPathsHomeUtil'
 import { educationTypesFor, type EducationType } from '@/data/onboarding/onboardingContent'
@@ -933,6 +933,33 @@ const STUDY_MINUTES_BY_VARIANT: Partial<Record<DashboardProgressVariant, number[
   'progress-expired': [0, 0, 0, 0, 0, 0, 0],
 }
 
+
+/**
+ * How far through the path the learner is, 0-100.
+ *
+ * ⚠ EXTRACTED 2026-10-15 so `personaFor` can ask the same question `buildPath`
+ * answers. It needs to, because the JUMP BACK IN card carries a percentage of
+ * its own and on a one-course path that is the SAME percentage — see the
+ * alignment in `personaFor`. Two expressions for one fact is how they came to
+ * disagree by eighteen points.
+ *
+ * When a category list is present it drives the totals (the gauge reads it);
+ * otherwise the Mandatory/Elective sum does.
+ */
+function pathProgressPct(
+  mandatory: LearningPathCategoryBreakdown,
+  elective: LearningPathCategoryBreakdown,
+  categories?: LearningPathCategory[],
+): number {
+  const totalRequired = categories?.length
+    ? categories.reduce((a, c) => a + c.required, 0)
+    : mandatory.required + elective.required
+  const totalCompleted = categories?.length
+    ? categories.reduce((a, c) => a + c.completed, 0)
+    : mandatory.completed + elective.completed
+  return totalRequired > 0 ? Math.round((totalCompleted / totalRequired) * 100) : 0
+}
+
 /**
  * EVERY DAY THE LEARNER HAS HAD THE COURSE, oldest first, the final entry being
  * TODAY — 2026-09-23, for the activity streak.
@@ -1032,15 +1059,12 @@ function buildPath(
   jumpBackIn?: CourseCardData,
   categories?: LearningPathCategory[],
 ): LearningPathSummary {
-  // When a category list is present it drives the totals (the gauge reads it);
-  // otherwise fall back to the Mandatory/Elective sum.
+  const progressPct = pathProgressPct(mandatory, elective, categories)
+  // The path's size, by the same rule the percentage uses: the category list
+  // when there is one, the Mandatory/Elective sum otherwise.
   const totalRequired = categories?.length
-    ? categories.reduce((s, c) => s + c.required, 0)
+    ? categories.reduce((a, c) => a + c.required, 0)
     : mandatory.required + elective.required
-  const totalCompleted = categories?.length
-    ? categories.reduce((s, c) => s + c.completed, 0)
-    : mandatory.completed + elective.completed
-  const progressPct = totalRequired > 0 ? Math.round((totalCompleted / totalRequired) * 100) : 0
   return {
     id: profile.pathId,
     title: profile.title,
@@ -1188,6 +1212,45 @@ function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVar
     jumpBackIn && ALIGNED_WINDOW_VARIANTS.has(variant)
       ? { ...jumpBackIn, ...accessWindowFor(DAYS_LEFT_BY_VARIANT[variant]) }
       : jumpBackIn
+  /*
+   * ─────────────────────────────────────────────────────────────────────
+   *  ONE COURSE, ONE PERCENTAGE — 2026-10-15
+   * ─────────────────────────────────────────────────────────────────────
+   *
+   * ⚠ THE CARD AND THE JOURNEY WERE DESCRIBING THE SAME COURSE AND
+   * DISAGREEING BY EIGHTEEN POINTS. On the qualifying journey the Jump Back
+   * In card IS the path: one course, "Pre-licensing Course", the same thing
+   * Step 1 counts lessons through. Its `progress` is authored on the profile
+   * (45 for `resumeMid`), while the path's comes from `PROGRESS_RATIOS` and
+   * the Progress dropdown (63). So Step 1 read "26 of 42 completed" above a
+   * Study Pace planning for 22 hours of work when 15 remained, and the pace
+   * it printed — 3 weeks — did not fit the 18 days of access stated two lines
+   * above it.
+   *
+   * ⚠ ONLY WHERE THE CARD IS THE WHOLE PATH, which is what the single
+   * category tests for. A CE path has no categories and its card is one
+   * course of several ("Long-Term Care Initial Training"); exam prep has
+   * three. In both, the card's own progress is a different fact from the
+   * path's and must stay authored — aligning those would be the error in the
+   * other direction.
+   *
+   * The STATUS follows the same number, or a 0% card would still claim to be
+   * in progress.
+   */
+  const pathPct = pathProgressPct(mandatory, elective, categories)
+  const cardIsWholePath = categories?.length === 1
+  const jumpBackInAligned =
+    jumpBackInWindowed && cardIsWholePath
+      ? {
+          ...jumpBackInWindowed,
+          progress: pathPct,
+          status: (pathPct >= 100
+            ? 'completed'
+            : pathPct > 0
+              ? 'in-progress'
+              : 'not-started') as CourseStatus,
+        }
+      : jumpBackInWindowed
   // Jump Back In slot mode — auto-derived from the variant. A not-started course
   // is "Up Next" (launch), a partial course is "Resume", and the discovery
   // states send the learner to the catalog.
@@ -1201,7 +1264,7 @@ function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVar
   return {
     setupComplete: true,
     status: STATUS_BY_VARIANT[variant],
-    jumpBackInId: jumpBackInWindowed?.id,
+    jumpBackInId: jumpBackInAligned?.id,
     jumpBackInMode,
     discoveryTone,
     renewal: RENEWAL_BY_VARIANT[variant],
@@ -1213,7 +1276,7 @@ function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVar
     // the same state-specific values (instead of the static LICENSE_TRACKER),
     // and agree with the dashboard band that opened the panel.
     path: {
-      ...buildPath(profile, mandatory, elective, jumpBackInWindowed, categories),
+      ...buildPath(profile, mandatory, elective, jumpBackInAligned, categories),
       weeksRemaining: RENEWAL_BY_VARIANT[variant].weeksLeft,
       licenseExpiresOn: RENEWAL_BY_VARIANT[variant].deadline,
       statusOverride: STATUS_BY_VARIANT[variant],

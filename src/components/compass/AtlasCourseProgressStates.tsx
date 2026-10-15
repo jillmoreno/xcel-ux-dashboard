@@ -43,6 +43,7 @@ export function AtlasCourseProgressStates({
   milestonePercent = 68,
   onAdvance,
   bare = false,
+  paceWeeks,
 }: {
   percent: number
   expected: ProgressFigure
@@ -52,6 +53,21 @@ export function AtlasCourseProgressStates({
   initialStage?: Stage
   /** The milestone state's figure (the design's 68 by default). */
   milestonePercent?: number
+  /**
+   * How many weeks the learner's own pace needs — the Study pace state's
+   * sentence, 2026-10-15.
+   *
+   * ⚠ IT WAS THE WORD "three", TYPED. The sentence read "…in 3 weeks time"
+   * as a literal transcribed from Figma 267:8266, directly under a card
+   * stating "18 days to complete" — a plan that does not fit the access
+   * window it is printed beside. The home already computes the real pace
+   * (`studyPace` → `defaultPreset`) for the "At current pace" figure two
+   * lines up, so the number was available all along and simply not asked for.
+   *
+   * ⚠ DEFAULTS TO THE DESIGN'S 3 so a caller that has no pace model renders
+   * exactly what it rendered before.
+   */
+  paceWeeks?: number
   /** When given, a click (or Enter / Space) calls this INSTEAD of stepping
    *  the module's own state — V3 uses it to step the Design bar's Progress,
    *  so the whole page follows (2026-10-09). */
@@ -125,7 +141,10 @@ export function AtlasCourseProgressStates({
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <p style={{ ...BODY, fontWeight: 700 }}>We’ve set up a moderate study plan for you.</p>
-              <p style={BODY}>This study pace will have you prepared to pass your course exam in 3 weeks time.</p>
+              <p style={BODY}>
+                This study pace will have you prepared to pass your course exam in{' '}
+                {paceWeeks ?? 3} {(paceWeeks ?? 3) === 1 ? 'week' : 'weeks'} time.
+              </p>
             </div>
           </div>
           {/* No rule above the link when bare (2026-10-14, Eric's request). */}

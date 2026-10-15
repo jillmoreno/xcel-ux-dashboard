@@ -8,6 +8,8 @@ import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelC
 import { PlatformShell } from '@/components/layout/PlatformShell'
 import { DASHBOARD_PROGRESS_PICKER, dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { displayedProgressPct } from '@/components/learning/learningPathsHomeUtil'
+import { defaultPreset, studyPace, daysUntil } from '@/lib/studyPace'
+import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 
 /**
  * Three surfaces, one number.
@@ -161,5 +163,75 @@ describe('the Recommended for You band toggle', () => {
     seedFlag('nav-show-recommended', false)
     renderShell(WITH_BAND)
     expect(screen.getByText('Recommended for you')).toBeInTheDocument()
+  })
+})
+
+describe('one course, one percentage — the Jump Back In card and the path', () => {
+  /*
+   * A FOURTH SURFACE, added 2026-10-15, and the same failure as the three
+   * above: on the QUALIFYING journey the Jump Back In card IS the path — one
+   * course, "Pre-licensing Course", the very thing Step 1 counts lessons
+   * through. Its `progress` was authored on the profile (45 for `resumeMid`)
+   * while the path's came from `PROGRESS_RATIOS` and the Progress dropdown
+   * (62). Eighteen points apart, describing one course, on one screen.
+   *
+   * ⚠ IT WAS INVISIBLE UNTIL A NUMBER WAS PRINTED. The landing page's Step 1
+   * was a Figma transcription reading "13 of 42 completed", so nothing on
+   * screen contradicted anything — the stale 45 only leaked out through the
+   * Study Pace, which planned for 22 hours of work when 15 remained and
+   * printed a 3-week plan under an 18-day access window.
+   */
+  it('gives the card the path’s own progress when the card is the whole path', () => {
+    for (const course of ['ny', 'fl', 'tx'] as const) {
+      const p = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe', course)!
+      expect(p.path.jumpBackIn?.progress, course).toBe(displayedProgressPct(p.path))
+    }
+  })
+
+  it('follows the Progress dropdown, not an authored figure', () => {
+    for (const variant of ['setup-complete-0', 'progress-at-risk', 'complete-100']) {
+      const p = dashboardProgressPersonaFor('xcel', variant, 'qe', 'ny')
+      if (!p?.path.jumpBackIn) continue
+      expect(p.path.jumpBackIn.progress, variant).toBe(displayedProgressPct(p.path))
+    }
+  })
+
+  /* ⚠ AND ONLY THERE. A CE path's card is ONE course of several
+     ("Long-Term Care Initial Training"); exam prep's is one of three. In both
+     the card's progress is a genuinely different fact from the path's, and
+     aligning them would be this same error in the other direction. */
+  it('leaves a multi-course path’s card on its own authored progress', () => {
+    const ce = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'ce')!
+    expect(ce.path.jumpBackIn?.progress).toBe(45)
+    expect(ce.path.jumpBackIn?.progress).not.toBe(displayedProgressPct(ce.path))
+  })
+})
+
+describe('the study pace fits inside the access window', () => {
+  /*
+   * "Course Access Ends: 05/29/2026, 18 days to complete" sat directly above
+   * "…prepared to pass your course exam in 3 weeks time" — a plan four days
+   * longer than the access it is printed beside. The sentence was a typed
+   * literal from Figma 267:8266; the home had computed the real pace all
+   * along for the "At current pace" date two lines up.
+   */
+  it('recommends a pace no longer than the access left', () => {
+    for (const course of ['ny', 'fl', 'tx'] as const) {
+      const p = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe', course)!
+      const card = p.path.jumpBackIn!
+      const hoursRemaining = card.hours * (1 - (card.progress ?? 0) / 100)
+      const model = studyPace({
+        today: FIXTURE_TODAY,
+        hoursRemaining,
+        accessExpiresAt: card.expiresAt,
+      })
+      const preset = defaultPreset(model)
+      const accessDays = daysUntil(card.expiresAt!, FIXTURE_TODAY)!
+      expect(preset.days, course).toBeLessThanOrEqual(accessDays)
+      // …and the sentence rounds those days to weeks, so it must fit too.
+      expect(Math.max(1, Math.round(preset.days / 7)) * 7, course).toBeLessThanOrEqual(
+        accessDays + 6,
+      )
+    }
   })
 })

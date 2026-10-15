@@ -494,6 +494,12 @@ export function AtlasHomeEricE2E({
               onAdvance={advanceProgress}
               percent={progress.percent ?? percent}
               milestonePercent={75}
+              /* THE PACE SENTENCE READS THE SAME MODEL as the figure below
+                 it. It was the design's typed "3 weeks" under a card saying
+                 "18 days to complete" — a plan that did not fit the window
+                 printed beside it. `preset.days` is what `expected` already
+                 renders as a finish DATE; this is the same thing in weeks. */
+              paceWeeks={preset.state === 'no' ? undefined : Math.max(1, Math.round(preset.days / 7))}
               expected={{
                 // "Nov. 5" where the pace model has no finish date — a DEMO date.
                 value: preset.state === 'no' ? 'Nov. 5' : formatPaceDate(preset.finishIso),
