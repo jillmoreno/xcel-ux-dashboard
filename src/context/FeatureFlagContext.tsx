@@ -1927,8 +1927,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     /* THE INVITE & PURCHASE FLOW ENDS AT THE PASSWORD (2026-10-15,
        Jillienne: "it should END after user puts in a password"). ON (the
        baseline): Confirmation & Password's Confirm closes the flow on the
-       page — the Create password column becomes "Password created", and
-       nothing navigates. OFF: Eric's hand-off, which the row carried from the
+       page — it becomes a loading page, a spinner over "Taking you to your
+       learning dashboard…", and nothing navigates (a "Password created" card
+       until later the same afternoon). OFF: Eric's hand-off, which the row carried from the
        morning of 2026-10-15 until this flag — Confirm opens the demo's Home
        with the Affidavit modal over it (`?affidavit=1`). The modal and the
        hand-off are intact on the off arm, not archived. One conditional at
@@ -1939,7 +1940,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Navigation',
     label: 'Invite flow ends at the password',
     description:
-      'On, Confirm on Confirmation & Password ends the Invite & Purchase flow there: the password column becomes \u201cPassword created\u201d and nothing navigates. Off, Confirm opens the End-to-End Demo\u2019s Home with the Affidavit modal over it.',
+      'On, Confirm on Confirmation & Password ends the Invite & Purchase flow there: the page becomes a loading page \u2014 a spinner over \u201cTaking you to your learning dashboard\u2026\u201d \u2014 and nothing navigates. Off, Confirm opens the End-to-End Demo\u2019s Home with the Affidavit modal over it.',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },

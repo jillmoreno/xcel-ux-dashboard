@@ -10,10 +10,14 @@ import { END_TO_END_VERSION, useEndToEndDemoParams, useEndToEndPageChrome } from
  * Eric's request), Figma "Atlas UX Design" 425:2597, under the partner header.
  * The End-to-End Demo's step after Checkout: Place your order opens it, and
  * Confirm ENDS THE FLOW HERE (2026-10-15, Jillienne: "it should END after
- * user puts in a password") — the password column becomes "Password
- * created" and nothing navigates. That is `e2e-ends-at-password`, on by
- * default; off, Confirm opens the demo's Home with the Affidavit modal over
- * it, Eric's hand-off from earlier the same day.
+ * user puts in a password") — the page becomes a LOADING PAGE, a spinner
+ * over "Taking you to your learning dashboard…", and nothing navigates: the
+ * dashboard is the Atlas Learning row's, not this one's. That is
+ * `e2e-ends-at-password`, on by default; off, Confirm opens the demo's Home
+ * with the Affidavit modal over it, Eric's hand-off from earlier the same
+ * day. (The loading page replaced a "Password created" card the same
+ * afternoon, Jillienne's call: the end of the flow reads as a hand-off, not
+ * a receipt.)
  *
  * Left, the order confirmation on the guide's Secondary 200; right, the
  * Create password form. Clicking the password field fills it with a TEST
@@ -38,6 +42,23 @@ export function InvitedConfirmationPage() {
   const [done, setDone] = useState(false)
   const endsHere = useFeatureFlag('e2e-ends-at-password').enabled
 
+  if (done) {
+    /* THE END OF THE FLOW: the loading page. The spinner is CSS, not a gif —
+       `cre-setup-spin` already honours reduced motion — on the brick the
+       order panel's check uses. It never resolves; see the file comment. */
+    return (
+      <div style={PAGE}>
+        <PartnerHeader />
+        <main style={LOADING_PAGE}>
+          <div role="status" aria-live="polite" style={LOADING_STACK}>
+            <span aria-hidden className="cre-setup-spin" style={SPINNER} />
+            <p style={LOADING_TEXT}>Taking you to your learning dashboard…</p>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div style={PAGE}>
       <PartnerHeader />
@@ -61,20 +82,8 @@ export function InvitedConfirmationPage() {
         {/* CREATE PASSWORD */}
         <section aria-labelledby="create-password" style={PASSWORD_COLUMN}>
           <h2 id="create-password" style={TITLE}>
-            {done ? 'Password created' : 'Create password'}
+            Create password
           </h2>
-          {done ? (
-            /* THE END OF THE FLOW. The same card as the form, with the check
-               the order panel uses; no link out — the dashboard is the Atlas
-               Learning row's, not this one's. */
-            <div role="status" style={{ ...FORM, alignItems: 'flex-start', gap: 16 }}>
-              <CircleCheckSolid size={32} aria-hidden style={{ color: 'var(--color-xcel-brick-600)', display: 'block' }} />
-              <p style={DONE_TEXT}>
-                You’re all set. Sign in to XCEL with <strong style={{ fontWeight: 700 }}>{DEMO_EMAIL}</strong> and your
-                new password to start your course.
-              </p>
-            </div>
-          ) : (
           <form
             style={FORM}
             onSubmit={(e) => {
@@ -141,7 +150,6 @@ export function InvitedConfirmationPage() {
               </button>
             </div>
           </form>
-          )}
         </section>
       </main>
     </div>
@@ -323,12 +331,37 @@ const RULES: CSSProperties = {
 
 const RULE_LIST: CSSProperties = { margin: 0, paddingLeft: 19.5, listStyle: 'disc' }
 
-/* The end state's one line: Open Sans 16 / 24, as the body copy on the
-   Invited Product Detail page. */
-const DONE_TEXT: CSSProperties = {
+/* THE LOADING PAGE. Centred in the body under the partner header; the
+   spinner is a 48 ring on the form outline with a brick arc, the line under
+   it Open Sans 16 / 24 as the body copy on the Invited Product Detail page. */
+const LOADING_PAGE: CSSProperties = {
+  ...BODY,
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 40,
+}
+
+const LOADING_STACK: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 24,
+}
+
+const SPINNER: CSSProperties = {
+  display: 'block',
+  width: 48,
+  height: 48,
+  borderRadius: '50%',
+  border: '4px solid var(--color-e2e-form-outline)',
+  borderTopColor: 'var(--color-xcel-brick-600)',
+}
+
+const LOADING_TEXT: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-body)',
   fontSize: 16,
   lineHeight: '24px',
   color: 'var(--color-neutral-950)',
+  textAlign: 'center',
 }
