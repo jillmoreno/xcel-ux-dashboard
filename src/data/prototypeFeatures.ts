@@ -155,7 +155,7 @@ export type FeatureCategory =
  *  or versions yet, so a designer tab for her would be an empty tab in two
  *  panels. When she does, add her to `FLAG_DESIGNERS` and make this the id.
  * ───────────────────────────────────────────────────────────────────────── */
-export type PrototypeScope = 'invite' | 'end-to-end' | 'compass' | 'admin'
+export type PrototypeScope = 'end-to-end' | 'invite' | 'atlas' | 'compass' | 'admin'
 
 export const PROTOTYPE_SCOPES: ReadonlyArray<{
   id: PrototypeScope
@@ -182,6 +182,20 @@ export const PROTOTYPE_SCOPES: ReadonlyArray<{
     // walk-through and wireframes rows in Exploration.
     question: 'How does a learner get into the product?',
     owner: 'Jillienne',
+  },
+  {
+    id: 'atlas',
+    label: 'Atlas Learning',
+    /* 2026-10-14, Jillienne: a row that "stems from the current end-to-end"
+       and excludes the invite flow and the Compass work. It is the END-TO-END
+       ROW'S MIDDLE: the learner's Home and the learning pages around it — My
+       Courses, Certificates, the Quick Links — as they stand, in progress. The
+       same build and the same baseline as the end-to-end row, entered at Home;
+       the door before it (invite) and the pages inside a course (Compass) are
+       the rows on either side of it. Eric's, because the Atlas home is his
+       exploration, exactly as Compass is Anjani's. */
+    question: 'What do the learner’s Home and learning pages look like right now?',
+    owner: 'Eric',
   },
   {
     id: 'compass',
@@ -1187,6 +1201,45 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     prototypeScope: 'invite',
     pinned: true,
     to: '/end-to-end-demo?demo=1',
+    brands: ['xcel'],
+  },
+  {
+    /*
+     * THE ATLAS LEARNING ROW — 2026-10-14, Jillienne's ask on the preview:
+     * "another section that is just Atlas Learning — Work in Progress, after
+     * the Invite & Purchase flow: the home screen and everything else from
+     * the end to end, but not the Course Details items", and then "it needs to
+     * stem from the current end-to-end, and exclude the invite flow and the
+     * Compass work."
+     *
+     * So it is the SAME build at the SAME baseline as the end-to-end row,
+     * entered at Home — `section=dashboard`, written out so the address says
+     * what the row is for rather than reading identical to the row above. What
+     * makes it a row of its own is scope and ownership, not a different
+     * build: this is the learner's Home and the learning pages around it, in
+     * progress, and that is Eric's exploration. The invite door before it and
+     * the Compass pages inside a course are the rows on either side.
+     *
+     * "Work in Progress" is in the title because that is what the row says
+     * about itself; its `status` is `ready` because it opens.
+     *
+     * No `thumbnail`; the fourth live frame on the landing page. Add captures
+     * to `public/prototype-thumbs/` if the page slows.
+     */
+    id: 'xcel-atlas-learning',
+    title: 'Atlas Learning — Work in Progress',
+    accent: 'blue',
+    icon: 'grid',
+    blurb:
+      'The learner’s Home and the learning pages around it — My Courses, Certificates, the Quick Links — as they stand today, in progress. The middle of the end-to-end row: the same build at the same baseline, entered at Home, without the invite flow before it or the Compass course pages inside it, which have rows of their own.',
+    tileBlurb:
+      'Home and the learning pages around it, in progress. The middle of the end-to-end: same build, entered at Home, without the invite flow or the Compass pages.',
+    kind: 'explore',
+    status: 'ready',
+    category: 'prototype',
+    prototypeScope: 'atlas',
+    pinned: true,
+    to: '/dashboard-rebrand?demo=1&section=dashboard',
     brands: ['xcel'],
   },
   {

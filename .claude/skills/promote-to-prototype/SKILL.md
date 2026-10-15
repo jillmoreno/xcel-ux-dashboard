@@ -65,6 +65,7 @@ and the person whose design it is differs by row.
 | `end-to-end` | `xcel-dashboard` | Jillienne | Jillienne |
 | `compass` | `xcel-compass` | **Anjani** | Jillienne |
 | `invite` | `xcel-invite` | Jillienne | Jillienne |
+| `atlas` | `xcel-atlas-learning` — Home and the learning pages, Eric's | **Eric** | Jillienne |
 | `admin` | `xcel-admin-coming-soon` — a placeholder until the surface is built | Jillienne | Jillienne |
 
 The table is `PROTOTYPE_SCOPES` in `prototypeFeatures.ts` — read `owner` from
@@ -81,6 +82,12 @@ grep -rl "<flag-key>" src/components src/pages | head     # where is it read?
 
 - Read under `src/components/compass/` or `src/components/learning/Compass*`,
   or a key beginning `compass-` → **`compass`**.
+- Read under `src/components/compass/AtlasHome*`, `src/components/compass/Hybrid*`
+  or the Atlas My Courses / Certificates / Quick Links surfaces → **`atlas`**
+  (row `xcel-atlas-learning`, Eric's): the learner's Home and the learning
+  pages around it. ⚠ These reach the end-to-end row too — it is the same
+  build — so list them under `atlas` (where the owner is) and cross-reference
+  from end-to-end.
 - Everything else, including every dashboard VERSION → **`end-to-end`**. The
   version decides which dashboard renders; that is the end-to-end row's
   question.
@@ -166,7 +173,7 @@ does. The same is true of anyone else who commits through Claude on the web.
 | Who | GitHub login | Git identity (fallback) | May decide |
 |---|---|---|---|
 | Jillienne | `jillmoreno` | `jilliennemoreno@gmail.com`, `jill.moreno@scorebuilders.com` | end-to-end and invite groups · `maturity` on her versions · **the default dashboard version** |
-| Eric | `EnormanColibri` | `eric.norman@simplenursing.com` | `maturity` on his versions (`owner: 'eric'`) |
+| Eric | `EnormanColibri` | `eric.norman@simplenursing.com` | the `atlas` group · `maturity` on his versions (`owner: 'eric'`) |
 | Anjani | `Anjanisatya5` | none in the history — her commits are authored as Claude, see above | the Compass group |
 
 No PR and a `Claude <noreply@anthropic.com>` git identity means the skill

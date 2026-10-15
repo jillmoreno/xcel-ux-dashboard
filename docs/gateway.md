@@ -204,6 +204,16 @@ the evening Jillienne had asked for its row and for an Admin row:
   (`useEndToEndDemoParams` writes `version=eric-atlas-e2e`), so this is the one
   row whose dashboard does not follow `defaultDiscoverabilityVersionFor` — the
   page's rule, not the row's; the row itself carries no `version=`.
+- **`xcel-atlas-learning`** → `/dashboard-rebrand?demo=1&section=dashboard`
+  — "Atlas Learning — Work in Progress", Jillienne's ask on the preview. It
+  stems from the current end-to-end and excludes the invite flow and the
+  Compass work: the learner's Home and the learning pages around it, the SAME
+  build at the SAME baseline as the end-to-end row, entered at Home. A row of
+  its own because of scope and ownership (Eric's exploration, as Compass is
+  Anjani's), not because of a different build — which is exactly the case the
+  one-row-per-scope rule was written for. `section=dashboard` is written out
+  so the address says what the row is for rather than reading identical to
+  the end-to-end row's.
 - **`xcel-admin-coming-soon`** — the Admin door as a PLACEHOLDER: a
   `coming-soon` row with no `to` and no `externalUrl`, which `ProjectRow` draws
   disabled — generated thumbnail, title, blurb, the "Admin" scope tag and a

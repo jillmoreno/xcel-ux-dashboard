@@ -81,7 +81,13 @@ describe('gatewayMode — parsing', () => {
     const pub = PROTOTYPE_FEATURES.filter(isPublicFeature).map((f) => f.id)
     // Four since the evening of 2026-10-14: the invite row and the Admin
     // placeholder (a coming-soon row that opens nothing — see the smoke test).
-    expect(pub).toEqual(['xcel-dashboard', 'xcel-invite', 'xcel-compass', 'xcel-admin-coming-soon'])
+    expect(pub).toEqual([
+      'xcel-dashboard',
+      'xcel-invite',
+      'xcel-atlas-learning',
+      'xcel-compass',
+      'xcel-admin-coming-soon',
+    ])
   })
 })
 

@@ -45,11 +45,13 @@ carries no `gate`, so it renders on the public build as well as the full one.
 | **Prototypes** | this IS the product | one per surface, all on `main` | flag defaults on `main` |
 | **Refinement** | under discussion | as many as you like | Netlify Blobs, authored on the page |
 
-Four doors as of the evening of 2026-10-14, the product first and then the
+Five rows as of the evening of 2026-10-14, the product first and then the
 doors around it: **End-to-End User Experience (Atlas & Compass)** — always the
 first row — then **Invite & Purchase** (`/end-to-end-demo`, Eric's End-to-End
 Demo — the Invited Product Detail page, its checkout, then the dashboard),
-**Compass Learning**, and **Admin Tool** — a placeholder
+**Atlas Learning — Work in Progress** (the end-to-end's middle: Home and the
+learning pages, same build at Home, Eric's), **Compass Learning**, and **Admin
+Tool** — a placeholder
 until the admin surface is built in React; the PartnerHub-fork exploration
 stays in Exploration. A fifth is a `PROTOTYPE_SCOPES` decision first and a row
 second.

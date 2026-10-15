@@ -128,6 +128,7 @@ describe('section routing (sectionOf)', () => {
     // The in-app rows — the only feature rows on the ungated front door. One
     // per `prototypeScope`; see "Prototypes holds exactly the rows" below.
     'xcel-invite': 'prototypes',
+    'xcel-atlas-learning': 'prototypes',
     'xcel-dashboard': 'prototypes',
     'xcel-compass': 'prototypes',
     'xcel-lms': 'exploration',
@@ -215,6 +216,7 @@ describe('section routing (sectionOf)', () => {
     expect(rows).toEqual([
       'End-to-End User Experience (Atlas & Compass)',
       'Invite & Purchase — Live Product Build',
+      'Atlas Learning — Work in Progress',
       'Compass Learning — Live Product Build',
     ])
     // …plus the Admin PLACEHOLDER, which has no kebab because it goes nowhere:
@@ -478,6 +480,7 @@ describe('the Prototypes row opens the committed configuration', () => {
     // ⚠ TWO SINCE 2026-10-14, both Prototypes rows. The guided-row trap above
     // is unchanged; a `to` is still only ever a Prototypes row's.
     expect(PROTOTYPE_FEATURES.filter((f) => f.to).map((f) => f.id).sort()).toEqual([
+      'xcel-atlas-learning',
       'xcel-compass',
       'xcel-dashboard',
       'xcel-invite',
