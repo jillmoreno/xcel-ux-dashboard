@@ -230,6 +230,9 @@ describe('section routing (sectionOf)', () => {
       expect(placeholder, `${id} should be drawn as a placeholder`).not.toBeNull()
       expect(placeholder!.getAttribute('aria-disabled')).toBe('true')
       expect(placeholder!.querySelector('a')).toBeNull()
+      // The generated mark, never a live frame — "a default icon image like
+      // the admin tool to show it's disabled".
+      expect(placeholder!.querySelector('iframe, img')).toBeNull()
       expect(placeholder!.textContent).toContain(title)
       expect(placeholder!.textContent).toContain('Coming soon')
     }

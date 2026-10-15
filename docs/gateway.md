@@ -220,8 +220,9 @@ the evening Jillienne had asked for its row and for an Admin row:
   clicking on it for now." So `status: 'coming-soon'` with the `to` KEPT, which
   widened the placeholder rule: a coming-soon row is drawn disabled whether or
   not it has a route, and a kept route is still checked against the door rules
-  so that flipping the word back to `ready` is the whole release. Its live
-  preview still shows the dashboard behind it.
+  so that flipping the word back to `ready` is the whole release. It draws
+  the generated mark, not its live frame — a disabled row should not look
+  like an invitation.
 - **`xcel-admin-coming-soon`** — the Admin door as a PLACEHOLDER: a
   `coming-soon` row with no `to` and no `externalUrl`, which `ProjectRow` draws
   disabled — generated thumbnail, title, blurb, the "Admin" scope tag and a

@@ -1179,8 +1179,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
        from all the others — don't remove the work, just hide users from
        clicking on it for now." So `coming-soon` with the `to` KEPT: the row
        draws disabled with its tags and a Coming soon tag, nothing to click,
-       and its live preview still shows what is behind it. Releasing it is
-       `status: 'ready'`, one word. */
+       and the generated mark in place of its live preview (her ask, the same
+       minute: "a default icon image like the admin tool to show it's
+       disabled"). Releasing it is `status: 'ready'`, one word. */
     status: 'coming-soon',
     category: 'prototype',
     // The middle door of the three — see `PROTOTYPE_SCOPES`. This row is the

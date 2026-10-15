@@ -1841,19 +1841,23 @@ function ProjectRow({
   // The same picture the feature's gateway header shows — an authored
   // `thumbnail` if there is one, else a live miniature of its preview. Rows
   // whose feature has neither keep the generated accent + icon mark.
-  const preview = primaryPreviewSrc(feature)
-  const hasPreview = Boolean(feature.thumbnail || preview)
-  const href = feature.externalUrl ?? feature.to ?? `/prototype/${feature.id}`
-  const external = Boolean(feature.externalUrl)
   /* A PLACEHOLDER — 2026-10-14. A `coming-soon` row is drawn, not linked:
      no `<a>`, no hover, no chevron, no kebab (every action in it is about a
      row that goes somewhere), and the status tag is shown even where the
      section hides status — "Coming soon" is the one thing the row has to say.
      Two kinds: nothing built yet (the Admin row, no `to`), and a surface HELD
      BACK with its `to` kept on record (the end-to-end row, the same evening:
-     "don't remove the work, just hide users from clicking on it"). The kept
-     route still feeds the preview frame, so the row shows what is waiting. */
+     "don't remove the work, just hide users from clicking on it"). Either
+     kind draws the generated mark, not a live frame — see `hasPreview`. */
   const placeholder = feature.status === 'coming-soon'
+  const preview = primaryPreviewSrc(feature)
+  // A placeholder shows the GENERATED mark whatever it has on record — Jillienne
+  // on the preview, 2026-10-14: "make that image a default icon image like the
+  // admin tool to show it's disabled". A live frame of the surface behind a
+  // held-back row read as an invitation; the abstract mark reads as closed.
+  const hasPreview = !placeholder && Boolean(feature.thumbnail || preview)
+  const href = feature.externalUrl ?? feature.to ?? `/prototype/${feature.id}`
+  const external = Boolean(feature.externalUrl)
   const isPrototypeRow = feature.category === 'prototype'
   /* The three facts a Prototypes row carries beside its title (2026-10-14):
      which door it is (an empty scope label means none — the product row),
@@ -2384,12 +2388,16 @@ const swatchDotStyle: CSSProperties = {
   border: '1px solid rgb(0 0 0 / 0.12)',
 }
 
-const mainStyle: CSSProperties = { padding: '40px 32px 72px', maxWidth: 1080 }
+// 24 on top, not 40 — 2026-10-14, Jillienne on the preview ("reduce top
+// padding"), once the eyebrow above the title had gone and the title sat alone
+// under a deep band of nothing.
+const mainStyle: CSSProperties = { padding: '24px 32px 72px', maxWidth: 1080 }
 const headerStyle: CSSProperties = { marginBottom: 22 }
 
 
 const h1Style: CSSProperties = {
-  margin: '10px 0 0',
+  // Was 10 on top, which spaced the title off the eyebrow; no eyebrow now.
+  margin: 0,
   fontFamily: 'var(--font-heading)',
   fontSize: 34,
   fontWeight: 500,
