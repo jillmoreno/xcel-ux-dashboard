@@ -1460,7 +1460,7 @@ export function UxDashboardPage() {
           {/* The mark stays a single tile beside a two-line lockup, rather than
               sitting above a sub-line indented past it. */}
           <span style={brandTextStyle}>
-            UX Hub
+            UX Design Hub
             {/* "Atlas LMS", not "XCEL LMS" — 2026-10-15, Jillienne: the product
                 is XCEL, the dashboard being built is Atlas, and the lockup
                 names the two surfaces the Hub holds — Atlas and Compass. */}

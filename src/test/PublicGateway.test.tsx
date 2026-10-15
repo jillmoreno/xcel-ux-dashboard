@@ -108,7 +108,7 @@ describe('public build — the nav', () => {
     // this is not the section eyebrow asserted just below.
     expect(screen.getByText('Demo Link')).toBeInTheDocument()
     expect(screen.queryByText('Design Link')).toBeNull()
-    expect(screen.getByText('UX Hub')).toBeInTheDocument()
+    expect(screen.getByText('UX Design Hub')).toBeInTheDocument()
     // The three eyebrows over the sections that ARE public still draw here —
     // only the gated group's own eyebrow is suppressed.
     expect(within(nav).getByText('Demo')).toBeInTheDocument()
