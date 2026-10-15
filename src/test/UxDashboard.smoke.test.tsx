@@ -131,25 +131,22 @@ describe('section routing (sectionOf)', () => {
     'xcel-dashboard': 'prototypes',
     'xcel-compass': 'prototypes',
     // The seven documents — Explorations, directly under PRDs since 2026-10-15.
-    'xcel-lms': 'exploration',
+    // `xcel-lms` and `xcel-admin-tool` stood here until 2026-10-15 — archived
+    // (`archivedFeatureRows.ts`; `desktop-platform-row`, `admin-tool-row`).
     'xcel-walkthrough': 'exploration',
     'xcel-wireframes': 'exploration',
     'xcel-admin': 'exploration',
-    'xcel-admin-tool': 'exploration',
     // The Admin placeholder (2026-10-14) — a coming-soon row that opens nothing.
     'xcel-admin-coming-soon': 'prototypes',
     'xcel-exam-spec': 'exploration',
-    // The first handoff row (2026-09-24) — `devStatus: 'in-development'`.
-    'atlas-home-course-card': 'development',
+    // `atlas-home-course-card` (the first handoff row, 2026-09-24) stood here
+    // until 2026-10-15 — archived, `home-course-card-handoff`.
     // Added 2026-09-22 — see the row's own note in `prototypeFeatures.ts` for
     // why this page stopped being masthead-only and took a tile.
     'xcel-pace-presets': 'exploration',
-    // Added 2026-09-24 — the repo's FIRST authored dev handoff. `devStatus:
-    // 'in-design'` is what places it, and `sectionOf` reads that BEFORE
-    // `category`, so changing the status moves the row between Design and
-    // Development. Update this map in the same commit if it moves. (It did,
-    // same day: it shipped `in-design` → Design, which was wrong for a handoff.)
-    'xcel-course-entry': 'development',
+    // `xcel-course-entry` (the repo's first authored dev handoff, 2026-09-24)
+    // stood here until 2026-10-15 — archived, `course-entry-handoff`. Both
+    // handoffs were removed as "not ready"; Development lists nothing now.
   }
 
   it('accounts for every authored feature', () => {
@@ -259,7 +256,7 @@ describe('the Designers group is gone (2026-10-15)', () => {
     await user.click(screen.getByRole('button', { name: /Explorations/ }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Explorations')
-    expect(screen.getByText('XCEL LMS — Desktop Platform')).toBeInTheDocument()
+    expect(screen.getByText('XCEL LMS — Learner Walk-through')).toBeInTheDocument()
     // Every document, and nothing else lists here.
     expect(document.querySelectorAll('[data-row]').length).toBe(
       PROTOTYPE_FEATURES.filter((f) => f.category === 'exploration').length,
@@ -355,10 +352,13 @@ describe('prototype URLs — served from this repo', () => {
         `${f.id} needs exactly one of to / externalUrl`,
       ).toBe(true)
     }
-    // All three kinds exist, so none of the filters above is vacuously empty.
+    // Documents and routes exist, so neither filter above is vacuously empty.
+    // ⚠ No GATEWAY row exists since 2026-10-15 — both handoffs were archived
+    // ("not ready") — so `gatewayRows` IS empty and the guided-row guard below
+    // is vacuous until the next `/dev-handoff-notes` row lands. It stays in
+    // place for that day rather than being deleted with the rows.
     expect(documentRows.length).toBeGreaterThan(0)
     expect(routeRows.length).toBeGreaterThan(0)
-    expect(gatewayRows.length).toBeGreaterThan(0)
   })
 
   it('a guided row opens its own gateway, not somewhere else', () => {

@@ -62,9 +62,9 @@ Demo — the Invited Product Detail page, its checkout, then the dashboard),
 **Atlas Learning — Work in Progress** (the end-to-end's middle: Home and the
 learning pages, same build at Home, Eric's), **Compass Learning**, and **Admin
 Tool** — a placeholder
-until the admin surface is built in React; the PartnerHub-fork exploration
-stays a document, in Explorations. A fifth is a `PROTOTYPE_SCOPES` decision
-first and a row second.
+until the admin surface is built in React; the PartnerHub-fork exploration's
+row is archived (`admin-tool-row`, 2026-10-15) and its document kept. A fifth
+is a `PROTOTYPE_SCOPES` decision first and a row second.
 
 **Who promotes, and who merges, are two different columns (2026-10-14).**
 Each scope names an `owner`, and the owner both decides what that surface
@@ -114,6 +114,14 @@ and moved up to sit directly under PRDs** — the briefs and the documents
 answering them, side by side in the nav — and **Archive and QA Notes sit
 under Dev Handoff**, ungated. Ten sections. The two `archivedItems.ts` rows
 `design-section` and `designers-gate` say how it was wired.
+
+**Four rows went the same day, after the preview** — `xcel-lms` and
+`xcel-admin-tool` from Explorations, and both Development handoffs
+(`xcel-course-entry`, `atlas-home-course-card`: "they were not ready"). They
+are kept verbatim in `src/data/archivedFeatureRows.ts`, a module nothing
+imports, with an `archivedItems.ts` row each; restoring one is a cut-and-paste
+back into `PROTOTYPE_FEATURES`. Development lists nothing until the next
+`/dev-handoff-notes` row lands.
 
 ## Scope — read before adding a route
 

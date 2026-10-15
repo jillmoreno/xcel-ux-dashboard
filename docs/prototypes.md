@@ -42,12 +42,15 @@ watch for, so the references below keep its name.
 ## The six prototype pages (`public/prototypes/`)
 
 The FinServ (Insurance / Mortgage / Banking) next-generation platform, answering
-the FinServ *Learner and Admin Wireframe Brief*. Six `PROTOTYPE_FEATURES` rows,
-all `category: 'exploration'`: **`xcel-lms`** (Desktop Platform, `pinned`) ·
-**`xcel-walkthrough`** (Learner Walk-through) · **`xcel-wireframes`**
-(Wireframes & Overlap) · **`xcel-admin`** (Admin Wireframes & Overlap) ·
-**`xcel-admin-tool`** (the forked roster — documented in its own section below) ·
-**`xcel-exam-spec`** (Exam Task-Type Spec).
+the FinServ *Learner and Admin Wireframe Brief*. Four `PROTOTYPE_FEATURES` rows
+since 2026-10-15, all `category: 'exploration'`: **`xcel-walkthrough`** (Learner
+Walk-through) · **`xcel-wireframes`** (Wireframes & Overlap) · **`xcel-admin`**
+(Admin Wireframes & Overlap) · **`xcel-exam-spec`** (Exam Task-Type Spec). Two
+more were rows until that day — **`xcel-lms`** (Desktop Platform, the pinned
+first row) and **`xcel-admin-tool`** (the forked roster, documented in its own
+section below); the rows are archived (`desktop-platform-row`, `admin-tool-row`,
+kept verbatim in `src/data/archivedFeatureRows.ts`) and both documents stay
+served.
 
 ### The brief-vs-existing extract — a page with no row
 
@@ -437,7 +440,8 @@ owns** — Relaxed is the day before access ends, Recommended is that minus
 date and the pace derives.
 
 **CORRECTED 2026-09-22 — it IS a `PROTOTYPE_FEATURES` row now** (`xcel-pace-presets`,
-Exploration), so the row count is **seven**. This paragraph used to read "not a
+Exploration), so the row count is **seven** (five since 2026-10-15, when the
+`xcel-lms` and `xcel-admin-tool` rows were archived). This paragraph used to read "not a
 `PROTOTYPE_FEATURES` row; masthead-linked from every sibling", on the rule that a
 second row into one body of work is what got `recommended-card-ab-demo` and the four
 testing tiles archived. What changed: the pacing work stopped being a companion to the
@@ -644,7 +648,8 @@ the project, so `category` alone places them), and it matches `externalUrl` in
 **both** quote styles — that repo wrote a plain single-quoted path, this one
 builds a backtick template against `PROTOTYPE_BASE`, and matching one style
 yields `undefined`, which `existsSync` reports as a missing FILE rather than as a
-broken regex. It also covers `xcel-admin-tool`, which has no upstream counterpart.
+broken regex. It covered `xcel-lms` and `xcel-admin-tool` (which has no upstream
+counterpart) until those rows were archived on 2026-10-15.
 
 **Order still matters if you run them individually:** `smoke-tiles.mjs` asserts
 every tile's `externalUrl` resolves to a real file in `public/prototypes/`, so

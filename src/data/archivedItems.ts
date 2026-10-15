@@ -498,4 +498,56 @@ export const ARCHIVED_ITEMS: ArchivedItem[] = [
     restoreNote:
       'All in `src/pages/UxDashboardPage.tsx`, from the pre-removal file: (1) `gate?: { id; title; password? }` back on `SectionDef`, and `gate: { id: DEV_GATE_ID, title }` on Archive and QA Notes (and on Design if it comes back; Explorations sits ungated under PRDs now, and gating it again is a separate decision); (2) `DEV_GATE_ID` and `ENFORCE_SECTION_GATE`; (3) `FIRST_RESTRICTED` and the divider + "Designers" eyebrow block in the nav map, which draws above the first section with a `gate`; (4) the `unlocked` / `asking` state, `isOpen`, the `locked` glyph and the `isOpen(s) ? setSection : setAsking` click, `urlLocked` seeding `section`, `isOpen(openDef)` on `openFeature`, and the `PrototypePasswordModal` block — with the `Lock` icon, `PrototypePasswordModal`, `isPrototypeUnlocked` and `markPrototypeUnlocked` imports. Then `NAV_EYEBROWS`’ Dev Handoff comment no longer covers Archive and QA Notes. ⚠ With `ENFORCE_SECTION_GATE` false (where it sat for a month) all of (4) is dead code that draws nothing — restoring (1)–(3) alone gives you the divider and eyebrow back, which is probably all anyone wants. Tests: `OneSite.test.tsx` and the "Designers group is gone" describe in `UxDashboard.smoke.test.tsx` both assert the eyebrow is ABSENT and flip.',
   },
+  {
+    id: 'desktop-platform-row',
+    name: 'XCEL LMS — Desktop Platform (Explorations row)',
+    what: 'The pinned first row of Explorations: the dashboard surfaces that already overlap FinServ, assembled as one desktop product on XCEL brand colour, with a provenance toggle naming every component. Opened `public/prototypes/xcel-lms-desktop.html` in a new tab.',
+    location:
+      'Kept VERBATIM in `src/data/archivedFeatureRows.ts` (`ARCHIVED_FEATURE_ROWS`), a module nothing imports; a comment in `src/data/prototypeFeatures.ts` marks where the row stood. THE DOCUMENT IS UNTOUCHED AND STILL SERVED at `public/prototypes/xcel-lms-desktop.html`, exercised by `smoke/smoke-desktop.mjs`, and the other explorations still link to it from their mastheads. What went besides the row: its id in `EXPECTED_PLACEMENT` (`src/test/UxDashboard.smoke.test.tsx`) and in `smoke/smoke-tiles.mjs`, with that suite’s "desktop row is pinned" check.',
+    flag: 'pinned: true (it was the only pinned Explorations row)',
+    dateRemoved: '2026-10-15',
+    reason:
+      'Jillienne, on the Explorations preview: "remove this too." The desktop assembly was the first XCEL exploration and its argument — that the overlapping surfaces make one product — has been made and acted on; the product app IS that product now.',
+    restoreNote:
+      'Cut the `xcel-lms` block out of `ARCHIVED_FEATURE_ROWS` and paste it into `PROTOTYPE_FEATURES` at the marked spot (it was first among the explorations, after the Admin placeholder); `pinned: true` is on it, so it leads the section again. Then `xcel-lms: exploration` back in `EXPECTED_PLACEMENT`, and the id back in `smoke/smoke-tiles.mjs`’s `ids` with the pinned check if wanted. No file under `public/prototypes/` changes.',
+  },
+  {
+    id: 'admin-tool-row',
+    name: 'XCEL Admin Tool — Forked Roster (Explorations row)',
+    what: 'The Explorations row for the PartnerHub fork answering the admin flows — PartnerHub’s single-file app with the wordmark replaced, a scope chip, three added roster columns (Paid by, Seat, a deadline-derived Risk), three view presets on their own URL hashes, and the learner panel rewritten as an admin brief. Its thumbnail was the ~910KB document booted in a scaled iframe.',
+    location:
+      'Kept VERBATIM in `src/data/archivedFeatureRows.ts` (`ARCHIVED_FEATURE_ROWS`), a module nothing imports; a comment in `src/data/prototypeFeatures.ts` marks where the row stood. THE DOCUMENT IS UNTOUCHED AND STILL SERVED at `public/prototypes/xcel-admin-tool.html`, documented in `docs/admin-tool.md`. What went besides the row: its id in `EXPECTED_PLACEMENT` and in `smoke/smoke-tiles.mjs`.',
+    flag: 'no flag — a data row',
+    dateRemoved: '2026-10-15',
+    reason:
+      'Jillienne, on the Explorations preview: "remove this." The fork was the argument for an admin surface, not the surface — the Admin door on Prototypes is Cody’s placeholder until the surface is built in React — and the argument had been made. It was also the one row that booted a 910KB app to draw its thumbnail ("Row thumbnails" in docs/gateway.md).',
+    restoreNote:
+      'Cut the `xcel-admin-tool` block out of `ARCHIVED_FEATURE_ROWS` and paste it into `PROTOTYPE_FEATURES` at the marked spot, after `xcel-admin`. Then `xcel-admin-tool: exploration` back in `EXPECTED_PLACEMENT` (the "accounts for every authored feature" test fails until you do) and the id back in `smoke/smoke-tiles.mjs`. ⚠ Do NOT give it a `devStatus` or a `to` — a status moves it onto the Development board, and a `to` makes the smoke test read it as a product door. The Admin placeholder on Prototypes is unrelated and stays.',
+  },
+  {
+    id: 'course-entry-handoff',
+    name: 'Course Header & Jump Back In — Testing Version (dev handoff)',
+    what: 'The repo’s first authored dev handoff (2026-09-24): the COURSE PROGRESS header and the Jump Back In card on the Testing home screen, three shapes each driven by `dashboard-progress-state`, with six live-preview links (one per state), two component specs (`COURSE_HEADER_HANDOFF`, `JUMP_BACK_IN_HANDOFF`) and a decisions log with two questions still open. `devStatus: not-ready`, so it sat on Development marked "don’t start".',
+    location:
+      'Kept VERBATIM in `src/data/archivedFeatureRows.ts` (`ARCHIVED_FEATURE_ROWS`), a module nothing imports; a comment in `src/data/prototypeFeatures.ts` marks where the row stood. The two component specs it referenced went with it into the same module — they were `const`s declared above the array for the TDZ reason their header comment gives — so the row still compiles there. THE COMPONENTS THEMSELVES ARE UNTOUCHED: the Course Progress header and `JumpBackInCard` still ship on the Testing version; only the handoff notes about them left the Hub. What went besides the row: its id in `EXPECTED_PLACEMENT`, and the "all three kinds exist" assertion in the smoke test now notes that no guided row exists.',
+    flag: 'devStatus: not-ready',
+    dateRemoved: '2026-10-15',
+    reason:
+      'Jillienne, on the Development preview: "remove these 2 items in development, they were not ready." Two of its decisions were open (Resume vs Review at 100%, and the loading state was never designed) and the row had carried the standing not-ready mark since it was written. A board that lists nothing says more to engineering than one whose rows say don’t start.',
+    restoreNote:
+      'Cut the `xcel-course-entry` block AND the two `const`s above the array (`COURSE_HEADER_HANDOFF`, `JUMP_BACK_IN_HANDOFF`, with their header comment) out of `archivedFeatureRows.ts`; paste the consts back ABOVE `PROTOTYPE_FEATURES` in `prototypeFeatures.ts` — below the array is a TDZ crash at import — and the row at the marked spot after `xcel-pace-presets`. Then `xcel-course-entry: development` back in `EXPECTED_PLACEMENT`, and put `expect(gatewayRows.length).toBeGreaterThan(0)` back beside its two siblings in the smoke test. ⚠ Keep it free of `to` and `externalUrl` — a guided row reaches its gateway only by carrying neither (the regression `a guided row opens its own gateway` exists for). Settle the two open decisions before calling it ready-for-dev; that is why it was removed.',
+  },
+  {
+    id: 'home-course-card-handoff',
+    name: 'Atlas/Compass — Home Course Card (dev handoff)',
+    what: 'Eric’s handoff (2026-09-24, via /dev-handoff-notes): the single course card on the Atlas/Compass home that replaces the Course Progress header and the Jump Back In card — title, exam date, time left, lessons done, next lesson, one Begin Course action — with one live-preview link, a full component spec (variants, UX logic, tokens, acceptance criteria, states matrix) and a decisions log. `devStatus: in-development`.',
+    location:
+      'Kept VERBATIM in `src/data/archivedFeatureRows.ts` (`ARCHIVED_FEATURE_ROWS`), a module nothing imports; a comment in `src/data/prototypeFeatures.ts` marks where the row stood. THE COMPONENT IS UNTOUCHED: `src/components/compass/CompassHomeCourseCard.tsx` still renders on the Atlas/Compass version; only the handoff notes about it left the Hub. What went besides the row: its id in `EXPECTED_PLACEMENT`.',
+    flag: 'devStatus: in-development',
+    dateRemoved: '2026-10-15',
+    reason:
+      'Jillienne, on the Development preview: "remove these 2 items in development, they were not ready." The card is built and demoable, but the handoff was written before the Atlas/Compass direction was settled with its owners (the scope and owner model landed 2026-10-14); a handoff on the board reads as an instruction to engineering, and this one was not yet that.',
+    restoreNote:
+      'Cut the `atlas-home-course-card` block out of `ARCHIVED_FEATURE_ROWS` and paste it into `PROTOTYPE_FEATURES` at the marked spot (last in the array). Then `atlas-home-course-card: development` back in `EXPECTED_PLACEMENT`, and — if `xcel-course-entry` is not also coming back — `expect(gatewayRows.length).toBeGreaterThan(0)` back in the smoke test, since this row alone makes a guided row exist again. ⚠ Keep it free of `to` and `externalUrl`, same rule as every guided row. Its `quickSummary` and `userStory` are deliberately unset — do not fill them in from the code.',
+  },
 ]

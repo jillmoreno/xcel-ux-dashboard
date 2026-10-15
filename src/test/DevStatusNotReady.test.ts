@@ -120,9 +120,14 @@ describe('Not Ready is the DEFAULT for a dev handoff', () => {
 
   it('applies to the handoffs actually in the catalog', () => {
     /* Not a hypothetical: every dev-handoff row must read Not Ready unless it
-       carries an explicit status saying otherwise. */
+       carries an explicit status saying otherwise.
+
+       ⚠ The catalog holds NO dev-handoff row since 2026-10-15 — both were
+       archived as "not ready" (`src/data/archivedFeatureRows.ts`), so this loop
+       is vacuous until the next `/dev-handoff-notes` row lands. The rule itself
+       is pinned by the unit cases above; this stays so the first new row is
+       checked the day it is written. */
     const rows = PROTOTYPE_FEATURES.filter((f) => f.category === 'dev-handoff')
-    expect(rows.length, 'no dev-handoff rows to check').toBeGreaterThan(0)
     for (const f of rows) {
       const key = featureStatusKeyOf(f, false, false, null)
       if (!f.devStatus) expect(key, f.id).toBe('not-ready')

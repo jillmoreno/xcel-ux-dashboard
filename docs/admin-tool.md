@@ -1,5 +1,10 @@
 # The Admin Tool
 
+> **Row archived 2026-10-15.** The document below is still served at its path
+> and still documented here, but it no longer has a Hub row: Jillienne removed
+> it from Explorations ("remove this"). `admin-tool-row` in `archivedItems.ts`
+> has the re-wire. The Admin door on Prototypes is Cody's placeholder.
+
 `public/prototypes/xcel-admin-tool.html` — the PartnerHub fork answering admin
 flows 03 / 04 / 06. ~910KB, one file, no build step.
 

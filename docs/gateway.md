@@ -1254,7 +1254,8 @@ so a section booted several copies of it just to draw its list.
 
 XCEL used not to have that problem — five rows, five documents, 9–111KB each, so
 the live scaled iframe was cheap and could not go stale. **`xcel-admin-tool`
-broke that condition.** It is a fork of the PartnerHub app and it is ~910KB, so
+broke that condition** (and restored it when its row was archived on
+2026-10-15 — `admin-tool-row`; the rest of this passage is as written). It is a fork of the PartnerHub app and it is ~910KB, so
 opening Exploration now boots it in a scaled iframe to draw one list row. That
 row wants a real capture; the other five are still fine unset.
 

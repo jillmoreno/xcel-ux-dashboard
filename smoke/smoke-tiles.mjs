@@ -7,7 +7,10 @@ const src=fs.readFileSync(new URL('../src/data/prototypeFeatures.ts',import.meta
 // This repo builds externalUrl from PROTOTYPE_BASE; read it so the template
 // literal below can be resolved to a real path.
 const BASE=(src.match(/const PROTOTYPE_BASE\s*=\s*'([^']+)'/)||[])[1]||'/prototypes';
-const ids=['xcel-lms','xcel-walkthrough','xcel-wireframes','xcel-admin','xcel-admin-tool','xcel-exam-spec'];
+// `xcel-lms` and `xcel-admin-tool` were in this list until their rows were
+// archived on 2026-10-15 (`src/data/archivedFeatureRows.ts`); both documents
+// are still served, they just have no Hub row.
+const ids=['xcel-walkthrough','xcel-wireframes','xcel-admin','xcel-exam-spec'];
 for(const id of ids){
   const i=src.indexOf(`id: '${id}'`);
   const block=src.slice(i, src.indexOf('\n  },', i));
@@ -27,7 +30,7 @@ for(const id of ids){
   const url=raw.replace('${PROTOTYPE_BASE}', BASE);
   ck(`${id} target exists`, fs.existsSync(new URL('../public'+url,import.meta.url)), url);
 }
-ck('desktop row is pinned', /id: 'xcel-lms'[\s\S]{0,1400}?pinned: true/.test(src));
+// 'desktop row is pinned' stood here — the pinned row was `xcel-lms`, archived 2026-10-15.
 
 // 2. spec viewer renders the real .md
 const md=fs.readFileSync(new URL('../public/prototypes/xcel-lms-exam-task-type-spec.md',import.meta.url),'utf8');
