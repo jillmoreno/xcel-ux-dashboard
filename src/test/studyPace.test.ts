@@ -26,6 +26,7 @@ import {
   scheduleAdvice,
   hoursPerDayWithin,
   evenWeek,
+  paceDurationPhrase,
 } from '@/lib/studyPace'
 
 /**
@@ -596,5 +597,42 @@ describe('weeksOnPace', () => {
     const s = weeksOnPace({ ...base, dailyMinutes: build([empty, empty, empty, empty]) })
     expect(s.streak).toBe(0)
     expect(s.best).toBe(0)
+  })
+})
+
+describe('paceDurationPhrase — weeks, then months', () => {
+  /*
+   * "After 8 weeks, change it to months" — 2026-10-15, the direct ask, and
+   * the 400-day row of the Expires control is what prompted it: the card read
+   * "56 weeks time", which is arithmetically right and impossible to picture.
+   *
+   * ⚠ THE CUTOFF IS A READABILITY RULE, NOT AN ARITHMETIC ONE. Every answer
+   * below is the same duration either way; what changes is how many units a
+   * reader has to hold at once.
+   */
+  it('counts weeks up to eight', () => {
+    expect(paceDurationPhrase(7)).toBe('1 week')
+    expect(paceDurationPhrase(14)).toBe('2 weeks')
+    expect(paceDurationPhrase(28)).toBe('4 weeks')
+  })
+
+  /* EIGHT WEEKS IS INCLUSIVE — "after 8 weeks" means nine and up. */
+  it('keeps eight weeks in weeks, and switches at nine', () => {
+    expect(paceDurationPhrase(56)).toBe('8 weeks')
+    expect(paceDurationPhrase(63)).toBe('2 months')
+  })
+
+  it('counts months past the cutoff', () => {
+    expect(paceDurationPhrase(84)).toBe('3 months')
+    expect(paceDurationPhrase(112)).toBe('4 months')
+    // ⚠ 13, not 13.3 — months are the mean Gregorian 30.44 days, not a flat
+    // 30. Over a year that is five days of drift against the date printed
+    // beside this phrase.
+    expect(paceDurationPhrase(392)).toBe('13 months')
+  })
+
+  it('never says zero', () => {
+    expect(paceDurationPhrase(0)).toBe('1 week')
+    expect(paceDurationPhrase(1)).toBe('1 week')
   })
 })

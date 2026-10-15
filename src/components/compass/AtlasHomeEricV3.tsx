@@ -488,9 +488,10 @@ export function AtlasHomeEricV3({
               /* THE PACE SENTENCE READS THE SAME MODEL as the figure below
                  it. It was the design's typed "3 weeks" under a card saying
                  "18 days to complete" — a plan that did not fit the window
-                 printed beside it. `preset.days` is what `expected` already
-                 renders as a finish DATE; this is the same thing in weeks. */
-              paceWeeks={paceFit ? Math.max(1, Math.round(paceFit.days / 7)) : 'none'}
+                 printed beside it. `paceFit.days` is what `expected` renders
+                 as a finish DATE; `paceDurationPhrase` says the same span in
+                 words, in weeks or months as its length warrants. */
+              paceDays={paceFit ? paceFit.days : 'none'}
               expected={{
                 // "Nov. 5" where the pace model has no finish date — a DEMO date.
                 /* THE SAME RESOLVED PACE the sentence below reads, so the

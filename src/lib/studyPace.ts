@@ -330,6 +330,31 @@ export function formatPaceDate(iso: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
+/**
+ * How long a pace takes, in the largest unit that reads naturally — 2026-10-15,
+ * the direct ask ("after 8 weeks, change it to months").
+ *
+ * ⚠ THE CUTOFF IS A READABILITY RULE, NOT AN ARITHMETIC ONE. Every answer here
+ * is the same duration; what changes is how many of them a reader has to hold.
+ * "56 weeks" is correct and nobody can picture it, which is what the 400-day
+ * row of the Expires control put on screen. Eight weeks is where a count of
+ * weeks stops being a number you feel.
+ *
+ * ⚠ MONTHS ARE 30.44 DAYS, the mean Gregorian month, not 30. Over a year the
+ * difference is five days — enough to round 400 days to 13 months rather than
+ * the 13.3 a flat 30 gives, and the phrase is the only place this length is
+ * ever stated, so it should not drift from the date beside it.
+ *
+ * Kept beside the model rather than in a component: two surfaces print this
+ * sentence and a second copy is how they come to disagree about the same plan.
+ */
+export function paceDurationPhrase(days: number): string {
+  const weeks = Math.max(1, Math.round(days / 7))
+  if (weeks <= 8) return `${weeks} ${weeks === 1 ? 'week' : 'weeks'}`
+  const months = Math.max(1, Math.round(days / 30.44))
+  return `${months} ${months === 1 ? 'month' : 'months'}`
+}
+
 /** Preset display names. Kept beside the model so two surfaces cannot name the
  *  same preset differently. */
 export const PRESET_LABELS: Record<PresetId, string> = {

@@ -1,6 +1,7 @@
 import { useState, type CSSProperties, type KeyboardEvent } from 'react'
 import { GaugeSolid, HourglassClockLight, PenToSquareSolid } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
+import { paceDurationPhrase } from '@/lib/studyPace'
 
 /**
  * THE COURSE PROGRESS MODULE, FIVE STATES — Figma "Atlas-UX-Design" component
@@ -43,7 +44,7 @@ export function AtlasCourseProgressStates({
   milestonePercent = 68,
   onAdvance,
   bare = false,
-  paceWeeks,
+  paceDays,
 }: {
   percent: number
   expected: ProgressFigure
@@ -64,16 +65,21 @@ export function AtlasCourseProgressStates({
    * (`studyPace` → `defaultPreset`) for the "At current pace" figure two
    * lines up, so the number was available all along and simply not asked for.
    *
-   * ⚠ `'none'` IS NOT ZERO WEEKS — it is "no honest pace fits", which the
-   * model reports as `state: 'no'` and the Expires control reaches on its
-   * 1-day row. Passing `undefined` there fell back to the design's 3 and the
+   * ⚠ `'none'` IS NOT ZERO DAYS — it is "no honest pace fits", which the model
+   * reports as `state: 'no'` and the Expires control reaches on its 1-day row.
+   * Passing `undefined` there fell back to the design's three weeks and the
    * card promised three weeks of study inside one day of access. The sentence
    * changes entirely rather than printing a number.
    *
-   * ⚠ DEFAULTS TO THE DESIGN'S 3 so a caller that has no pace model renders
-   * exactly what it rendered before.
+   * ⚠ IT IS DAYS, NOT WEEKS, since 2026-10-15 — `paceDurationPhrase` picks the
+   * unit, switching to months past eight weeks, and it needs the raw figure to
+   * do that. Rounding to weeks here first would have thrown away the precision
+   * the months branch rounds from.
+   *
+   * ⚠ DEFAULTS TO THE DESIGN'S THREE WEEKS so a caller with no pace model
+   * renders exactly what it rendered before.
    */
-  paceWeeks?: number | 'none'
+  paceDays?: number | 'none'
   /** When given, a click (or Enter / Space) calls this INSTEAD of stepping
    *  the module's own state — V3 uses it to step the Design bar's Progress,
    *  so the whole page follows (2026-10-09). */
@@ -146,7 +152,7 @@ export function AtlasCourseProgressStates({
               </span>
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {paceWeeks === 'none' ? (
+              {paceDays === 'none' ? (
                 <>
                   <p style={{ ...BODY, fontWeight: 700 }}>
                     There isn’t enough access left to finish this course.
@@ -160,7 +166,7 @@ export function AtlasCourseProgressStates({
                   <p style={{ ...BODY, fontWeight: 700 }}>We’ve set up a moderate study plan for you.</p>
                   <p style={BODY}>
                     This study pace will have you prepared to pass your course exam in{' '}
-                    {paceWeeks ?? 3} {(paceWeeks ?? 3) === 1 ? 'week' : 'weeks'} time.
+                    {paceDurationPhrase(paceDays ?? 21)} time.
                   </p>
                 </>
               )}
