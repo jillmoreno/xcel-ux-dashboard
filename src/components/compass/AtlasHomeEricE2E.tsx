@@ -374,6 +374,10 @@ export function AtlasHomeEricE2E({
   // The Design bar's Quick Links side (2026-10-13) — Left (default) or Right.
   const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
   const progress = V3_PROGRESS[progressPick] ?? V3_PROGRESS['not-started']
+  /* NOT STARTED — the 0% screen. The ring arm reads it as a real 0 and drops
+     what cannot be true yet; see the Readiness block below. */
+  const atZeroProgress = progressPick === 'not-started'
+  const ringAtZero = paceCard === 'ring' && atZeroProgress
   // COMPLETED (Design bar's Progress = Completed 100%, 2026-10-09, Eric): no
   // Course progress card, and Step 1 becomes the Congratulations block.
   const completedView = progressPick === 'completed'
@@ -568,7 +572,14 @@ export function AtlasHomeEricE2E({
                  different plans. `HybridHomeV1` pins its 3 deliberately and
                  records the derivation it dropped — this one keeps it. */
               <AtlasPaceRingCard
-                percent={progress.percent ?? percent}
+                /* ⚠ 0 AT NOT-STARTED, not `V3_PROGRESS`'s 14. That 14 belongs
+                   to the STATES card and its note says why: "Opens on Study
+                   pace (0% IS that screen); clicking on reaches the 14% ring"
+                   — two screens, and the figure is the second one's. The ring
+                   has no second screen, so Not Started 0% has to BE 0 or the
+                   control and the dial disagree on the one number the dial
+                   exists to show. */
+                percent={atZeroProgress ? 0 : progress.percent ?? percent}
                 weeks={paceFit ? Math.max(1, Math.round(paceFit.days / 7)) : 3}
                 onCustomize={onOpenStop ? () => onOpenStop('study-plan') : undefined}
               />
@@ -623,11 +634,25 @@ export function AtlasHomeEricE2E({
                 readiness module is not changing when the progress changes"). */}
             {/* Its own key prefix: the two cards are siblings, and a SHARED key
                 left orphaned copies of the progress card on screen. */}
+            {/* ⚠ AT 0% THE CARD STAYS BUT SAYS NOTHING YET (2026-10-16,
+                Jillienne: "replace readiness back in for 0%, just do not show
+                anything in the graph. change the text to Not Started. Will
+                update as you progress through course material."). The first
+                pass HID it — a readiness score before any coursework is a
+                number with nothing behind it — but hiding it also hid the
+                fact that readiness exists and is coming. An empty dial that
+                names itself says both: nothing measured yet, and this is
+                where it will appear.
+
+                ⚠ THE RING ARM ONLY. The states card steps THROUGH readiness
+                as one of its five screens, so an empty first screen there
+                would break its own sequence. */}
             {onWhite && !completedView ? <span aria-hidden style={WHITE_PROGRESS_RULE} /> : null}
             <AtlasReadinessCard
               bare={onWhite}
               key={`readiness-${progressPick}-${refreshKey}`}
               initialLevel={V3_READINESS_FOR[progressPick] ?? 0}
+              notStarted={ringAtZero}
               onPastLast={() => setVariant('atlas-v3-progress', 'not-started')}
             />
             </div>

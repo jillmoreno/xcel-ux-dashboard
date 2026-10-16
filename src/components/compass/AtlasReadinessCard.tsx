@@ -18,7 +18,25 @@ import { useState, type CSSProperties, type KeyboardEvent } from 'react'
  * ⚠ THE ARC FRACTIONS ARE READ OFF THE DESIGN'S DRAWN ARCS (their end points on
  * the ring), not given as numbers in the file — about 13 / 38 / 66 / 85 / 100%.
  */
-type Level = { name: string; lines: string[]; fill: number }
+type Level = { name: string; lines: string[]; fill: number; caption?: string }
+
+/* ⚠ THE SIXTH STATE, AND IT IS NOT A LEVEL (2026-10-16, Jillienne: "just do
+   not show anything in the graph. change the text to Not Started. Will update
+   as you progress through course material.").
+
+   It is deliberately OUTSIDE `LEVELS`: the five are a scale a learner moves
+   along, and "nothing measured yet" is not a point on it — putting it in the
+   array would make it level 1 of 6, which is exactly the claim the empty dial
+   exists to avoid. `fill: 0` draws the track and no arc.
+
+   An earlier pass HID the whole card at 0%. That removed the number and the
+   fact that readiness exists with it; naming the empty state says both. */
+const NOT_STARTED: Level = {
+  name: 'Not Started',
+  lines: ['Not Started'],
+  fill: 0,
+  caption: 'Will update as you progress through course material',
+}
 const LEVELS: Level[] = [
   { name: 'Novice', lines: ['Novice'], fill: 13 },
   { name: 'Advanced Beginner', lines: ['Advanced', 'Beginner'], fill: 38 },
@@ -31,10 +49,15 @@ const LEVELS: Level[] = [
  *  on Proficient (2026-10-09); remount with a `key` to apply a new one. */
 export function AtlasReadinessCard({
   initialLevel = 0,
+  notStarted = false,
   onPastLast,
   bare = false,
 }: {
   initialLevel?: number
+  /** Opens on the empty state: the dial drawn with no arc, named "Not
+   *  Started". Pressing the card still moves into the five levels, so the
+   *  demo's step-through is unchanged — this is only where it starts. */
+  notStarted?: boolean
   /** Called INSTEAD of wrapping to Novice when Exam Ready is clicked — V3
    *  resets the page to Not Started with it (2026-10-09). */
   onPastLast?: () => void
@@ -42,11 +65,14 @@ export function AtlasReadinessCard({
    *  Readiness panel (Figma 286:9455; Eric/Atlas White, 2026-10-14). */
   bare?: boolean
 }) {
-  const [i, setI] = useState(initialLevel)
-  const level = LEVELS[i]
+  /* `null` is the empty state, not an index — see `NOT_STARTED`. Pressing
+     from there enters the scale at its first level. */
+  const [i, setI] = useState<number | null>(notStarted ? null : initialLevel)
+  const level = i == null ? NOT_STARTED : LEVELS[i]
   const next = () => {
-    if (onPastLast && i === LEVELS.length - 1) onPastLast()
-    else setI((n) => (n + 1) % LEVELS.length)
+    if (i == null) setI(0)
+    else if (onPastLast && i === LEVELS.length - 1) onPastLast()
+    else setI((n) => ((n ?? 0) + 1) % LEVELS.length)
   }
   const onKey = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -56,7 +82,11 @@ export function AtlasReadinessCard({
   }
   return (
     <section
-      aria-label={`Readiness for state exam — ${level.name}, level ${i + 1} of ${LEVELS.length}. Press to show the next level.`}
+      aria-label={
+        i == null
+          ? `Readiness for state exam — ${NOT_STARTED.name}. ${NOT_STARTED.caption}. Press to show the first level.`
+          : `Readiness for state exam — ${level.name}, level ${i + 1} of ${LEVELS.length}. Press to show the next level.`
+      }
       role="button"
       tabIndex={0}
       onClick={next}
@@ -118,7 +148,10 @@ function HalfDial({ level }: { level: Level }) {
           </span>
         ))}
       </div>
-      <span aria-hidden style={CAPTION}>Overall readiness</span>
+      {/* The caption carries the empty state's sentence — it is the one slot
+          under the dial, and the sentence belongs with the figure it is
+          standing in for. */}
+      <span aria-hidden style={CAPTION}>{level.caption ?? 'Overall readiness'}</span>
     </div>
   )
 }
