@@ -1475,6 +1475,40 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-dashboard-state',
+    /* HER DEV TOGGLE — 2026-10-16. Her prototype carries two dashboards and a
+       fixed button bottom-right that swaps them: "Dev: showing empty
+       dashboard · click to toggle" (`setDashState`). This is that switch,
+       on the bar where the rest of her controls live.
+
+       ⚠ "DAY ONE", NOT "EMPTY". Her id is `dash-empty` and her button says
+       empty, but the screen is not an empty state — it is a learner's FIRST
+       day, with a first-check card, a 28% ring, five not-started assignments
+       and three learning tips. "Empty" describes the data; "Day one"
+       describes what a reviewer is looking at, and they are being asked to
+       judge the screen.
+
+       ⚠ IT IS A DIFFERENT SCENARIO, NOT THE SAME LEARNER EARLIER. Hers sits
+       an Arizona exam on Oct 15, 56 days out; the loaded one is Florida, Aug
+       14, 8 days out. Switching changes the course as well as the progress,
+       which is hers and deliberate — see the fixtures. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['compass:overview'],
+    group: 'Widgets',
+    label: 'Dashboard',
+    description:
+      'Which of Anjani\u2019s two Compass dashboards the overview draws. Loaded: the learner mid-course. Day one: their first visit \u2014 the first-check card, a 28% ring, nothing started, and three learning tips in place of session read-outs.',
+    variants: [
+      { value: 'loaded', label: 'Loaded', description: 'Mid-course' },
+      { value: 'day-one', label: 'Day one', description: 'First visit, nothing started' },
+    ],
+    defaultVariant: 'loaded',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-dashboard-nudge',
     /* HER "DASHBOARD NUDGES" MENU — 2026-10-16, the floating button in
        `public/prototypes/xcel-compass-nudge-journey.html` that fires one of

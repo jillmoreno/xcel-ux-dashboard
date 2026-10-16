@@ -3,6 +3,14 @@ import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ArrowRight, Check, ChevronRight, CircleInfo, Lock, RubiLogo } from '@/icons'
 import {
   COMPASS_ASSIGNMENTS,
+  COMPASS_DAY_ONE_ASSIGNMENTS,
+  COMPASS_DAY_ONE_ASSIGNMENTS_SUMMARY,
+  COMPASS_DAY_ONE_HEADER,
+  COMPASS_DAY_ONE_INSIGHTS,
+  COMPASS_DAY_ONE_INSIGHTS_CAPTION,
+  COMPASS_DAY_ONE_INSIGHTS_HEADING,
+  COMPASS_DAY_ONE_READINESS,
+  COMPASS_DAY_ONE_START,
   COMPASS_ASSIGNMENTS_SUMMARY,
   COMPASS_INSIGHTS,
   COMPASS_INSIGHTS_CAPTION,
@@ -45,6 +53,15 @@ import './compassOverview.css'
  * one is the lo-fi Overview the course launcher still shows.
  */
 
+/**
+ * WHICH OF HER TWO DASHBOARDS IS ON SCREEN — the design bar's Dashboard
+ * control (2026-10-16). Her prototype swaps them with a dev button; here
+ * every section asks this and takes its own fixture.
+ */
+function useDayOne(): boolean {
+  return useFeatureFlag('compass-dashboard-state').variant === 'day-one'
+}
+
 export function CompassLearningOverview({
   onStartSession,
   onViewPlan,
@@ -53,9 +70,15 @@ export function CompassLearningOverview({
   /** "View your plan" — opens the Study planner page. */
   onViewPlan?: () => void
 }) {
+  const dayOne = useDayOne()
   return (
     <div className="cre-ov">
-      <TonightCallout onStart={onStartSession} onViewPlan={onViewPlan} />
+      {/* ⚠ DAY ONE REPLACES THE TONIGHT CARD RATHER THAN EMPTYING IT. That
+          card is built from the PLAN (`tonight(plan, sched)`, the week strip,
+          the undo) and on day one there is no plan — which is her whole
+          point: "plan sets after your first check". An emptied Tonight would
+          be claiming a session exists and declining to name it. */}
+      {dayOne ? <DayOneStart onStart={onStartSession} /> : <TonightCallout onStart={onStartSession} onViewPlan={onViewPlan} />}
       <ReadinessBand onStart={onStartSession} />
       <AssignmentsTable />
       <InsightsBand />
@@ -66,7 +89,7 @@ export function CompassLearningOverview({
 /** Her page header — drawn by `CompassLearningPage` above this body on
  *  Anjani's surface. */
 export function OverviewHeader() {
-  const h = COMPASS_OVERVIEW_HEADER
+  const h = useDayOne() ? COMPASS_DAY_ONE_HEADER : COMPASS_OVERVIEW_HEADER
   return (
     <header className="cre-ov cre-ov__hdr">
       <p className="cre-ov__welcome">{h.welcome}</p>
@@ -202,8 +225,50 @@ function TonightCallout({ onStart, onViewPlan }: { onStart?: () => void; onViewP
 
 /* ─── WHERE YOU ARE ────────────────────────────────────────────────────── */
 
+/**
+ * DAY ONE'S CARD — her "Start here" callout, where the Tonight card sits on
+ * the loaded dashboard.
+ *
+ * It reuses the Tonight callout's own classes rather than growing a second
+ * set: same box, same row, same button, different content. The date block is
+ * dropped — there is no session to date — and the week strip under it is her
+ * one sentence instead of the plan's switch and day list.
+ */
+function DayOneStart({ onStart }: { onStart?: () => void }) {
+  const d = COMPASS_DAY_ONE_START
+  return (
+    <section>
+      <p className="cre-ov__eyebrow">{d.eyebrow}</p>
+      <div className="cre-ov__callout">
+        <div className="cre-ov__row">
+          <div style={{ minWidth: 0 }}>
+            <div className="cre-ov__title">{d.title}</div>
+            <div className="cre-ov__sub">{d.detail}</div>
+          </div>
+          <span />
+          <button type="button" className="cre-ov__btn" onClick={onStart}>
+            <ChevronRight size={12} aria-hidden />
+            {d.action}
+          </button>
+        </div>
+        <div className="cre-dw">
+          <div className="cre-dw__head">
+            <span className="cre-dw__sum">{d.week}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function ReadinessBand({ onStart }: { onStart?: () => void }) {
-  const { percent, ringLabel, lead, explainLabel, rubi, eyebrow, tag } = COMPASS_READINESS
+  const dayOne = useDayOne()
+  const band = dayOne ? { ...COMPASS_READINESS, ...COMPASS_DAY_ONE_READINESS } : COMPASS_READINESS
+  const { percent, ringLabel, lead, explainLabel, rubi, eyebrow, tag } = band
+  /* Her day-one band carries one line the loaded one does not: a principle
+     above the explainer ("Start off on the right foot"). It sits where the
+     loaded band goes straight to its lead. */
+  const principle = dayOne ? COMPASS_DAY_ONE_READINESS.principle : null
   /* HER DASHBOARD NUDGES — the design bar's Nudge control fires one into
      this slot (2026-10-16). `none` is her Clear, and leaves the band's own
      Rubi suggestion exactly as it shipped. */
@@ -233,6 +298,7 @@ function ReadinessBand({ onStart }: { onStart?: () => void }) {
           </b>
         </div>
         <div className="cre-ov__lead">
+          {principle ? <p style={{ fontWeight: 600 }}>{principle}</p> : null}
           <p>{lead}</p>
           {/* Her explainer: a hover / focus popover with the make-up of the
               figure. */}
@@ -307,11 +373,14 @@ function ReadinessBand({ onStart }: { onStart?: () => void }) {
 /* ─── YOUR ASSIGNMENTS ─────────────────────────────────────────────────── */
 
 function AssignmentsTable() {
+  const dayOne = useDayOne()
+  const rows = dayOne ? COMPASS_DAY_ONE_ASSIGNMENTS : COMPASS_ASSIGNMENTS
+  const summary = dayOne ? COMPASS_DAY_ONE_ASSIGNMENTS_SUMMARY : COMPASS_ASSIGNMENTS_SUMMARY
   return (
     <section>
       <p className="cre-ov__eyebrow" style={{ margin: '34px 0 4px', alignItems: 'baseline', gap: 14 }}>
         Your assignments
-        <span className="stat">{COMPASS_ASSIGNMENTS_SUMMARY}</span>
+        <span className="stat">{summary}</span>
       </p>
       <table className="cre-ov__table">
         <thead>
@@ -322,7 +391,7 @@ function AssignmentsTable() {
           </tr>
         </thead>
         <tbody>
-          {COMPASS_ASSIGNMENTS.map((a) => (
+          {rows.map((a) => (
             <tr key={a.name}>
               <td>
                 <div className="cre-ov__aname">
@@ -369,14 +438,18 @@ function Marker({ state }: { state: AssignmentState }) {
 /* ─── WHAT YOUR ANSWERS SHOW ───────────────────────────────────────────── */
 
 function InsightsBand() {
+  const dayOne = useDayOne()
+  const items = dayOne ? COMPASS_DAY_ONE_INSIGHTS : COMPASS_INSIGHTS
+  const caption = dayOne ? COMPASS_DAY_ONE_INSIGHTS_CAPTION : COMPASS_INSIGHTS_CAPTION
+  const heading = dayOne ? COMPASS_DAY_ONE_INSIGHTS_HEADING : 'What your answers show'
   return (
     <section className="cre-ov__insights">
       <div className="cre-ov__ins-head">
-        <span className="e">What your answers show</span>
-        <span className="c">{COMPASS_INSIGHTS_CAPTION}</span>
+        <span className="e">{heading}</span>
+        <span className="c">{caption}</span>
       </div>
       <div className="cre-ov__ins-grid">
-        {COMPASS_INSIGHTS.map((ins) => (
+        {items.map((ins) => (
           <div key={ins.tag} className="cre-ov__ins">
             <p className="tag2">{ins.tag}</p>
             <h4>{ins.headline}</h4>

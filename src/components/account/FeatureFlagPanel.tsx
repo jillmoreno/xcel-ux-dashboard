@@ -86,6 +86,7 @@ const REBRAND_FLAGS = [
   // Compass Learning — whose surface renders there, and the planner's concept.
   'compass-surface',
   'compass-dashboard-nudge',
+  'compass-dashboard-state',
   'compass-panel',
   'compass-planner-rubi',
   'compass-planner-return',

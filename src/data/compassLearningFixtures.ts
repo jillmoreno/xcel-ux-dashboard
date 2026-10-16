@@ -208,3 +208,109 @@ export const COMPASS_DASHBOARD_NUDGES: Record<string, CompassDashboardNudge> = {
     actions: [{ label: 'Reshape my plan', solid: true }, { label: 'Go to flashcards' }, { label: 'Not now' }],
   },
 }
+
+
+/* ═══ DAY ONE ═══════════════════════════════════════════════════════════
+ *
+ * HER `#dash-empty` — 2026-10-16. Her prototype carries TWO dashboards and a
+ * dev button that swaps them (`setDashState('empty'|'loaded')`); everything
+ * above is the loaded one. This is the other.
+ *
+ * ⚠ IT IS NOT A DIFFERENT SCREEN. That is what it looked like from the
+ * outside — 24KB of markup with its own artwork — and the reason this nearly
+ * got quoted as a port. It is the SAME five sections with day-one content:
+ * the header, the card above the week, the readiness band, the assignments
+ * and the insights. Nothing new had to be built; every one of these mirrors a
+ * fixture above it.
+ *
+ * ⚠ THE COPY IS HERS, INCLUDING ITS DISAGREEMENTS. Her day-one learner sits
+ * an ARIZONA exam on Oct 15 at 56 days out, where the loaded one is FLORIDA,
+ * Aug 14, 8 days out — two different scenarios, not one learner over time, so
+ * switching the control changes the course as well as the progress. Carried
+ * faithfully rather than reconciled, the same way the loaded header already
+ * carries her Aug 14 / Nov 20 disagreement with the planner.
+ */
+
+export const COMPASS_DAY_ONE_HEADER = {
+  welcome: 'Welcome, Jordan',
+  title: 'Your learning journey',
+  metaLead: 'Life & Health · Arizona · Exam Oct 15 · ',
+  metaStrong: '56 days out',
+}
+
+/** The card where Tonight sits on the loaded dashboard. */
+export const COMPASS_DAY_ONE_START = {
+  eyebrow: 'Start here',
+  title: 'Your first check · 10 minutes',
+  detail:
+    'Ten questions across the exam topics. Rubi uses them to build your first plan and see where you\u2019re starting from.',
+  action: 'Start check',
+  week: 'Week 1 of 8 \u00b7 your rhythm, plan, and readiness all fill in from here.',
+}
+
+/** The readiness band, before there is anything to measure. */
+export const COMPASS_DAY_ONE_READINESS = {
+  eyebrow: 'Where you are',
+  tag: 'Day one',
+  percent: 28,
+  ringLabel: 'Ready',
+  principle: 'Start off on the right foot \u2014 Rubi keeps up as you change.',
+  lead:
+    'Compass measures how ready you are the way an exam does \u2014 from what you can do, not how much you have read.',
+  rubi: {
+    eyebrow: 'Rubi suggests',
+    title: 'Meet Rubi, your learning guide',
+    detail:
+      'Rubi will pace your plan, resurface what\u2019s slipping, and adjust as you go. Take a quick tour.',
+    action: 'Learn more',
+  },
+}
+
+/** Nothing is started, so every row reads the same and the plan waits on the
+ *  check. The Exam Simulator is LOCKED rather than not-started — her
+ *  distinction: the others are waiting, that one is withheld. */
+export const COMPASS_DAY_ONE_ASSIGNMENTS: readonly CompassAssignment[] = [
+  { name: 'Provisions', weight: '22% of exam', state: 'not-started', readinessLabel: 'Not started', barPct: 0, due: 'After your check', tip: { head: 'Not started', body: 'Nothing attempted here yet \u2014 your first check will place it.' } },
+  { name: 'Health & disability', weight: '20% of exam', state: 'not-started', readinessLabel: 'Not started', barPct: 0, due: 'After your check', tip: { head: 'Not started', body: 'Nothing attempted here yet \u2014 your first check will place it.' } },
+  { name: 'Life policies', weight: '18% of exam', state: 'not-started', readinessLabel: 'Not started', barPct: 0, due: 'After your check', tip: { head: 'Not started', body: 'Nothing attempted here yet \u2014 your first check will place it.' } },
+  { name: 'Annuities', weight: '15% of exam', state: 'not-started', readinessLabel: 'Not started', barPct: 0, due: 'After your check', tip: { head: 'Not started', body: 'Nothing attempted here yet \u2014 your first check will place it.' } },
+  { name: 'Exam Simulator', weight: 'All topics', state: 'locked', readinessLabel: 'Unlocks after your check', barPct: 0, due: 'Locked', tip: { head: 'Locked', body: 'The simulator opens once your first check has set a baseline.' } },
+]
+
+export const COMPASS_DAY_ONE_ASSIGNMENTS_SUMMARY =
+  'Sorted by how much they count on the exam \u00b7 plan sets after your first check'
+
+/** ⚠ THE INSIGHTS CHANGE KIND, not just wording. On the loaded dashboard they
+ *  are read-outs from sessions ("3 of 8 scored right"); on day one there are
+ *  no sessions to read, so hers are LEARNING TIPS. Same slot, different
+ *  promise — which is why they carry her "Learning tip ·" tag. */
+export const COMPASS_DAY_ONE_INSIGHTS = [
+  {
+    tag: 'Learning tip \u00b7 spacing',
+    headline: 'Short and often beats one long sitting',
+    detail:
+      'Three 30-minute sessions across a week stick better than one 90-minute cram, even if the total time is the same.',
+    action: '',
+  },
+  {
+    tag: 'Learning tip \u00b7 testing yourself',
+    headline: 'Testing yourself works better than re-reading',
+    detail:
+      'Pulling an answer out of your head \u2014 even getting it wrong \u2014 makes it stick better than reading the page again.',
+    action: '',
+  },
+  {
+    tag: 'Learning tip \u00b7 knowing what you know',
+    headline: 'The topics you feel most sure about often hide the biggest gaps',
+    detail:
+      'When Rubi spots a gap between how you rate yourself and how you actually score, that\u2019s the place worth your next session.',
+    action: '',
+  },
+] as const
+
+export const COMPASS_DAY_ONE_INSIGHTS_CAPTION = 'Three things worth knowing before you start'
+
+/** ⚠ THE SECTION'S OWN HEADING CHANGES TOO. The loaded band is headed "What
+ *  your answers show", which on day one would be promising a read-out of
+ *  answers nobody has given yet. Hers reads "Rubi insights" there. */
+export const COMPASS_DAY_ONE_INSIGHTS_HEADING = 'Rubi insights'

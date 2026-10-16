@@ -839,7 +839,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // All four opening rows re-stamped at the 2026-10-15 ship that retired the
     // demo site: the shared chrome every row renders — the demo bar, the
     // version picker, the prototype bar — changed under all of them.
-    lastUpdated: '2026-10-16T14:26:39Z',
+    lastUpdated: '2026-10-16T14:38:53Z',
     pinned: true,
     // An in-app route, not a document. `to` is what makes the tile navigate
     // rather than open a new tab, and it is also what the row's live preview
@@ -977,7 +977,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'compass',
-    lastUpdated: '2026-10-16T14:26:39Z',
+    lastUpdated: '2026-10-16T14:38:53Z',
     pinned: true,
     // Same-origin product route at the committed baseline — the smoke test
     // asserts every Prototypes row has this shape. `section=compass` is the
