@@ -624,6 +624,15 @@ export function AtlasHomeEricE2E({
                    persona's and only stands in for a state with no figure. */
                 percent={progress.percent ?? percent}
                 weeks={paceFit ? Math.max(1, Math.round(paceFit.days / 7)) : 3}
+                /* ⚠ THE SAME `paceFit` THE WEEK COUNT READS, which is the
+                   whole reason both live on this card: the span and the date
+                   it lands on come from one model, so they cannot describe
+                   two different plans. The states card's `expected` prop is
+                   built from the same place for the same reason — see its
+                   note there. */
+                expected={
+                  paceFit ? { value: formatPaceDate(paceFit.finishIso), note: 'At current pace' } : undefined
+                }
                 onCustomize={onOpenStop ? () => onOpenStop('study-plan') : undefined}
               />
             ) : completedView ? null : (

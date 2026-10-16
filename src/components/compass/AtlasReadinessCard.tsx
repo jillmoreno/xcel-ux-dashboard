@@ -162,10 +162,19 @@ function HalfDial({ level }: { level: Level }) {
           </span>
         ))}
       </div>
-      {/* The caption carries the empty state's sentence — it is the one slot
-          under the dial, and the sentence belongs with the figure it is
-          standing in for. */}
-      <span aria-hidden style={CAPTION}>{level.caption ?? 'Overall readiness'}</span>
+      {/* ⚠ TWO DIFFERENT KINDS OF TEXT IN ONE SLOT (2026-10-16, Jillienne:
+          "update this readiness body text to match the other body text").
+          "Overall readiness" is a LABEL for the figure above it — uppercase,
+          tracked out, centred under the dial. The not-started line is a
+          SENTENCE, and wearing the label's dress it came out shouting in
+          3.4px tracking with `white-space: nowrap`, so it ran past the card
+          rather than wrapping. It takes the body treatment the pace card's
+          paragraph uses instead. */}
+      {level.caption ? (
+        <span style={CAPTION_BODY}>{level.caption}</span>
+      ) : (
+        <span aria-hidden style={CAPTION}>Overall readiness</span>
+      )}
     </div>
   )
 }
@@ -221,6 +230,19 @@ const LEVEL_NAME: CSSProperties = {
   letterSpacing: '-0.03em',
   textAlign: 'center',
   color: 'var(--color-primary-800)',
+}
+/* The sentence under an empty dial — the same body treatment as the pace
+   card's paragraph, and centred under the dial where the label would be.
+   Positioned, not absolute: it wraps, so it needs the height. */
+const CAPTION_BODY: CSSProperties = {
+  display: 'block',
+  marginTop: 6,
+  padding: '0 4px',
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  lineHeight: '15px',
+  textAlign: 'center',
+  color: 'var(--color-text-secondary)',
 }
 const CAPTION: CSSProperties = {
   position: 'absolute',

@@ -28,6 +28,19 @@ describe('the Readiness card, not started', () => {
     expect(arc().getAttribute('stroke-dasharray')).toMatch(/^0 /)
   })
 
+  /* ⚠ IT IS A SENTENCE WEARING A LABEL'S CLOTHES, which is what this guards.
+     The slot under the dial normally holds "Overall readiness" — a LABEL:
+     uppercase, tracked out, `white-space: nowrap`. The not-started line is a
+     sentence, and in that dress it shouted and ran past the card instead of
+     wrapping. If the two ever share a style again, this is what says so. */
+  it('reads as body text, not as the dial\u2019s label', () => {
+    render(<AtlasReadinessCard notStarted />)
+    const sentence = screen.getByText('Will update as you progress through course material')
+    expect(sentence.style.textTransform).not.toBe('uppercase')
+    expect(sentence.style.whiteSpace).not.toBe('nowrap')
+    expect(sentence.style.letterSpacing).toBe('')
+  })
+
   it('names itself and says when it will mean something', () => {
     render(<AtlasReadinessCard notStarted />)
     expect(screen.getByText('Not Started')).toBeInTheDocument()

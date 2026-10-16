@@ -25,9 +25,16 @@ import { AngleRightRegular, GaugeThin } from '@/icons'
 export function AtlasPaceRingCard({
   percent,
   weeks,
+  expected,
   onCustomize,
 }: {
   percent: number
+  /** The finish DATE the same pace model produces, and its note. Shown under
+   *  the week goal so the plan's span and the date it lands on are read
+   *  together — they come from one `paceFit`, so they cannot describe two
+   *  different plans, which is the failure the week count was derived to
+   *  avoid in the first place. */
+  expected?: { value: string; note: string }
   /** Whole weeks the current plan runs to — the same figure the sentence and
    *  the goal line both read, so they cannot describe two different plans. */
   weeks: number
@@ -50,6 +57,15 @@ export function AtlasPaceRingCard({
           Your default pace is set for you to complete your course in {weeks}{' '}
           {weeks === 1 ? 'week' : 'weeks'}. You can change your pace below.
         </p>
+        {expected ? (
+          <div style={EXPECTED}>
+            <p style={EXPECTED_LABEL}>Estimated completion</p>
+            <p style={EXPECTED_VALUE}>
+              {expected.value}
+              <span style={EXPECTED_NOTE}> · {expected.note}</span>
+            </p>
+          </div>
+        ) : null}
         {onCustomize ? (
           <button type="button" className="cre-compass-v2-link" onClick={onCustomize} style={LINK}>
             Customize Your Pace
@@ -148,6 +164,42 @@ const SMALL: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 11,
   lineHeight: '15px',
+  color: 'var(--color-text-secondary)',
+}
+/* Ruled off above and below, as the design draws it — the date is a
+   different kind of fact from the sentence over it, and the rules are what
+   say so without a second card. */
+const EXPECTED: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
+  padding: '11px 0',
+  borderTop: '1px solid var(--color-atlas-nav-rule)',
+  borderBottom: '1px solid var(--color-atlas-nav-rule)',
+}
+const EXPECTED_LABEL: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 10,
+  fontWeight: 600,
+  lineHeight: '15px',
+  letterSpacing: '0.16em',
+  textTransform: 'uppercase',
+  color: 'var(--color-compass-page-eyebrow)',
+}
+const EXPECTED_VALUE: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-heading-serif)',
+  fontSize: 19,
+  lineHeight: '24px',
+  color: 'var(--color-text-primary)',
+}
+/* The note rides on the date's line, in body type — it qualifies the figure
+   rather than standing beside it as a second one. */
+const EXPECTED_NOTE: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  fontWeight: 400,
   color: 'var(--color-text-secondary)',
 }
 const LINK: CSSProperties = {
