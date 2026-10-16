@@ -709,6 +709,12 @@ each cut is worth knowing because each took something away:
   work into columns meaning "somebody is already doing this" and "this is
   ready to hand off". Creating a card elsewhere is the sheet's Column picker —
   a decision rather than a shortcut.
+- **The owner on a card is a LABEL, not a control.** It was a borderless
+  `<select>` — the concept's idea — and a live control on every card means a
+  mis-click reassigns somebody's work with nothing in between and no undo.
+  Reassigning is the edit sheet's Owner field. `setCardOwner` in
+  `todoBoardStore.ts` is unwired but kept and exported, so a quick-reassign
+  control is a call site rather than a rewrite.
 - **The toolbar line is gone.** The count, Manage people (the icon alone) and
   **+ New** sit at the right-hand end of the filter row, so there is one row
   of chrome over the board instead of two.

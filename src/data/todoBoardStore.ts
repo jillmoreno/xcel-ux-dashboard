@@ -389,7 +389,16 @@ export function moveCard(card: TodoCard, column: TodoColumn, position: number): 
   })
 }
 
-/** Reassign, from the control on the card. The position does not move. */
+/**
+ * Reassign one card, leaving everything else as it stands.
+ *
+ * ⚠ UNWIRED SINCE 2026-10-15 and kept deliberately: the card's inline owner
+ * `<select>` was taken off (a live control on every card reassigns somebody's
+ * work on a mis-click), and reassigning is the edit sheet's Owner field now,
+ * which goes through `saveCard` with the whole record. This stays exported so
+ * putting a quick-reassign control back — on the card, in a bulk action, in a
+ * keyboard shortcut — is a call site rather than a rewrite.
+ */
 export function setCardOwner(card: TodoCard, owner: string): Promise<TodoCard> {
   return saveCard(card.id, {
     title: card.title,

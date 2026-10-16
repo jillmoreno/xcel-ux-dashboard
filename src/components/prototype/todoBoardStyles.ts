@@ -323,35 +323,27 @@ export const cardMetaStyle: CSSProperties = {
 }
 
 /**
- * The reassign control.
+ * The owner, as a LABEL.
  *
- * Looks like plain text until it is hovered or focused, so it does not read
- * as a form field parked inside a card — but it IS a native `<select>`, so it
- * is keyboard-reachable and announced without anything being re-implemented.
+ * A borderless `<select>` stood here until 2026-10-15 — the concept's idea,
+ * and it looked like plain text until you hovered it. It went because a live
+ * control on every card means a mis-click reassigns somebody's work with no
+ * step in between and no undo. Reassigning is Edit card on the kebab now; the
+ * avatar beside this says the same thing in colour.
+ *
+ * `--ux-text-2` rather than `-3`: it is content, not chrome — the one fact a
+ * card carries besides its name.
  */
-export const ownerSelectStyle: CSSProperties = {
-  flex: 1,
+export const ownerLabelStyle: CSSProperties = {
   minWidth: 0,
-  font: 'inherit',
   fontSize: 11.5,
   fontWeight: 600,
-  padding: '2px 4px',
-  borderRadius: 6,
-  border: '1px solid transparent',
-  background: 'transparent',
   color: 'var(--ux-text-2)',
-  cursor: 'pointer',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 }
 
-export const ownerSelectHoverStyle: CSSProperties = {
-  borderColor: 'var(--ux-border)',
-  background: 'var(--ux-bg)',
-  color: 'var(--ux-text)',
-}
-
-/** The "Add a card" affordance — drawn on the To Do column ONLY (see the
- *  call site). Dashed and quiet: it is the second way to do what the primary
- *  "+ New" above the board already does, not a second CTA. */
 export const addCardStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',

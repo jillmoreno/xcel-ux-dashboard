@@ -45,11 +45,9 @@ import {
   matchesOwner,
   moveCard,
   ownerLabel,
-  ownerOptions,
   positionForDrop,
   removePerson,
   saveCard,
-  setCardOwner,
   useTodoBoard,
   addPerson,
   type TodoCard,
@@ -85,8 +83,7 @@ import {
   kebabTriggerHover,
   kebabTriggerStyle,
   noticeStyle,
-  ownerSelectHoverStyle,
-  ownerSelectStyle,
+  ownerLabelStyle,
   primaryBtnStyle,
 } from './todoBoardStyles'
 
@@ -286,8 +283,7 @@ export function TodoBoardPanel() {
                         if (drag) setDropTarget({ column: col.id, beforeId: card.id })
                       }}
                       onEdit={() => setSheet({ kind: 'card', column: card.column, card })}
-                    onReassign={(owner) => void run(() => setCardOwner(card, owner))}
-                      onRemove={() => void run(() => deleteCard(card.id))}
+                    onRemove={() => void run(() => deleteCard(card.id))}
                     />
                   ))}
 
@@ -372,7 +368,6 @@ function BoardCard({
   onDragEnd,
   onDragOverCard,
   onEdit,
-  onReassign,
   onRemove,
 }: {
   card: TodoCard
@@ -384,11 +379,8 @@ function BoardCard({
   onDragEnd: () => void
   onDragOverCard: () => void
   onEdit: () => void
-  onReassign: (owner: string) => void
   onRemove: () => void
 }) {
-  const [hovered, setHovered] = useState(false)
-  const assigned = autoAssigns(card.column)
 
   /**
    * Two items (2026-10-15, Jillienne: "just have ellipsis have edit card, and
@@ -449,28 +441,15 @@ function BoardCard({
 
       <div style={cardMetaStyle}>
         <TodoBoardAvatar name={ownerLabel(card.owner)} hue={hueFor(card.owner, people)} />
-        {assigned ? (
-          /* No picker in the handoff column: the server would overwrite
-             whatever it chose, and a control that cannot change anything is
-             worse than a label. */
-          <span style={{ ...ownerSelectStyle, cursor: 'default', padding: '2px 4px' }}>{ownerLabel(card.owner)}</span>
-        ) : (
-          <select
-            value={card.owner}
-            disabled={!canAuthor}
-            onChange={(e) => onReassign(e.target.value)}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
-            aria-label={`Owner of “${card.title}”`}
-            style={{ ...ownerSelectStyle, ...(hovered ? ownerSelectHoverStyle : null) }}
-          >
-            {ownerOptions(people).map((o) => (
-              <option key={o.value || 'unassigned'} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        )}
+        {/* THE OWNER IS A LABEL, NOT A CONTROL (2026-10-15, Jillienne: "don't
+            allow user to change the owner directly on the card, make them
+            click edit"). It was a `<select>` dressed as text — the concept's
+            idea, and quick, but a board where every card carries a live
+            control is a board where a mis-click reassigns somebody's work
+            with no step in between and nothing to undo it. Reassigning is
+            Edit card now: deliberate, and the same place every other change
+            to a card is made. */}
+        <span style={ownerLabelStyle}>{ownerLabel(card.owner)}</span>
       </div>
     </article>
   )

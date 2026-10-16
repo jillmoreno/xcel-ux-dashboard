@@ -246,7 +246,7 @@ describe('TodoBoardPanel', () => {
     // The label is there; the control is not — a picker the server would
     // overwrite is worse than a label.
     expect(within(handoff).getAllByText('Jillienne').length).toBeGreaterThan(0)
-    expect(within(handoff).queryByLabelText(/^Owner of/)).toBeNull()
+    expect(within(handoff).queryByRole('combobox')).toBeNull()
   })
 
   it('filters the board to one person, and says so in a column that empties', async () => {
@@ -277,16 +277,32 @@ describe('TodoBoardPanel', () => {
     expect(eric.style.boxShadow).toContain('var(--ux-accent)')
   })
 
-  it('reassigns from the card, in place', async () => {
-    const { writes } = mockBoard([card({ id: 'card-001', owner: 'Anjani' })])
+  it('shows the owner on the card as text, with no control to change it', async () => {
+    /* It was a borderless `<select>` until 2026-10-15. A live control on every
+       card reassigns somebody's work on a mis-click, with nothing in between
+       and no undo — so the card states the owner and Edit card changes it. */
+    mockBoard([card({ id: 'card-001', owner: 'Anjani' })])
     render(<TodoBoardPanel />)
     await boardReady()
 
-    await userEvent.selectOptions(screen.getByLabelText(/^Owner of/), 'Eric')
+    const article = screen.getByText('Compass — review-recap empty state').closest('article')!
+    expect(within(article).getByText('Anjani')).toBeTruthy()
+    expect(within(article).queryByRole('combobox')).toBeNull()
+  })
+
+  it('reassigns through the edit sheet instead', async () => {
+    const { writes } = mockBoard([card({ id: 'card-001', owner: 'Anjani', position: 2 })])
+    render(<TodoBoardPanel />)
+    await boardReady()
+
+    await userEvent.click(screen.getByRole('button', { name: /Actions for/ }))
+    await userEvent.click(await screen.findByText('Edit card'))
+    await userEvent.selectOptions(await screen.findByLabelText('Owner'), 'Eric')
+    await userEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+
     await waitFor(() => expect(writes.length).toBe(1))
     expect(writes[0].method).toBe('PUT')
-    expect(writes[0].url).toContain('/api/todo-board/cards/card-001')
-    expect(writes[0].body).toMatchObject({ owner: 'Eric', column: 'todo', position: 1 })
+    expect(writes[0].body).toMatchObject({ owner: 'Eric', column: 'todo', position: 2 })
   })
 
   it('offers exactly two things on the kebab — edit and remove', async () => {
