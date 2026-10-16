@@ -44,7 +44,7 @@ export const HUB_DOCS: HubDoc[] = [
       'The day-to-day. Sitting down, keeping your branch current, building a change, sharing it on Refinement, promoting a surface — plus the ready-made routines, the morning auto-rebase, and what to say when something breaks. Assumes your machine is already set up.',
     href: '/designer-workflow/',
     pdf: '/designer-workflow/designer-workflow.pdf',
-    updated: '2026-10-15',
+    updated: '2026-10-16',
   },
   {
     id: 'contributing',
