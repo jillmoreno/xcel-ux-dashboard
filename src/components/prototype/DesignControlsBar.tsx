@@ -14,6 +14,7 @@ import {
 } from '@/data/dashboardVersions'
 import { useFeatureFlagPanel } from '@/components/account/FeatureFlagPanelContext'
 import { useLoFi } from '@/context/LoFiContext'
+import { useDesignSurface } from '@/context/designSurface'
 import { DemoBar, DemoDropdown } from './DemoBar'
 import {
   useDemoMenus,
@@ -93,7 +94,10 @@ export function DesignControlsBar({
      would be the drift this repo keeps paying for. */
   const versionId = params.get('version') ?? defaultDiscoverabilityVersionFor(brand)
   const version = DISCOVERABILITY_DASHBOARD_VERSIONS.find((v) => v.id === versionId)
-  const controls = designControlsFor(versionId, flagOwner(version ?? {}))
+  /* Which surface is on screen — Compass publishes its page, everywhere else
+     is null. A control that names `surfaces` shows only on those. */
+  const surface = useDesignSurface()
+  const controls = designControlsFor(versionId, flagOwner(version ?? {}), surface)
 
   /* ⚠ STILL NO NULL RETURN, on either site. It went on 2026-10-05 when Lo-fi
      moved here and made the bar impossible to empty, and Lo-fi crossing to the

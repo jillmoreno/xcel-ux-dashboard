@@ -138,6 +138,22 @@ export type FeatureFlagDefinition = {
    * the version's OWNER, not by this; only the Design bar reads it.
    */
   versions?: string[]
+  /**
+   * WHICH SURFACES THE CONTROL BELONGS ON — 2026-10-16. Ids from
+   * `DesignSurfaceContext` (`compass:course`, `compass:study-planner`, …).
+   *
+   * ⚠ A SECOND FILTER AFTER `versions`, not a replacement. `versions` says
+   * whose BAR carries a control; this says WHERE ON THAT BAR'S PRODUCT it is
+   * worth showing. Anjani has two prototypes with two control sets — the
+   * planner's four arms and the nudge journey's panel — and before this every
+   * one of them sat on every page, including Eric's Home, which renders no
+   * Compass at all.
+   *
+   * ⚠ OMIT IT AND NOTHING CHANGES. A flag with no `surfaces` shows wherever
+   * `versions` already put it, which is what every control did before this
+   * field existed.
+   */
+  surfaces?: string[]
   /** Additional page cards this flag should ALSO surface under (it counts +
    *  renders on each). Use when one flag drives filters on more than one page —
    *  e.g. `profession-count` / `state-count` gate the filter rows on BOTH the
@@ -228,9 +244,18 @@ export const FLAG_DESIGNERS: { id: DesignerId; label: string }[] = [
 export function designControlsFor(
   versionId: string,
   versionOwner: DesignerId,
+  /* The surface on screen (`DesignSurfaceContext`), or null off a declared
+     one — Home, the learning pages, anywhere that has not said what it is. */
+  surface?: string | null,
 ): FeatureFlagDefinition[] {
   return FEATURE_FLAGS.filter((def) => {
     if (def.surface !== 'design') return false
+    /* ⚠ `surfaces` IS CHECKED FIRST AND IT IS EXCLUSIVE — 2026-10-16. A
+       control that names its surfaces appears on those and nowhere else, so
+       the planner's four arms stop riding along on Home and on Learn. A
+       control that names none is unchanged: `versions` and owner decide, as
+       they always did. */
+    if (def.surfaces && def.surfaces.length > 0 && !def.surfaces.includes(surface ?? '')) return false
     if (def.versions && def.versions.length > 0) return def.versions.includes(versionId)
     return flagOwner(def) === versionOwner
   })
@@ -1423,6 +1448,44 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-panel',
+    /* HER NUDGE JOURNEY'S "PANEL" GROUP — 2026-10-16, ported from
+       `public/prototypes/xcel-compass-nudge-journey.html`, where it is three
+       buttons (`demoPanel('closed'|'idle'|'live')`) reading Closed, Idle and
+       Chatting.
+
+       ⚠ THE THIRD LABEL IS HERS, NOT THE CODE'S. Her handler calls it `live`
+       and the button reads "Chatting"; the learner-facing word wins, because
+       the bar is read by people who have not opened the file.
+
+       CLOSED: the Rubi rail is shut and the lesson has the full width. IDLE:
+       the rail is open on its greeting and three starters, untouched.
+       CHATTING: the same rail with the conversation already under way — the
+       state a screenshot of a real session would be in, and the only one that
+       shows the thread at all. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['compass:session'],
+    group: 'Widgets',
+    label: 'Panel',
+    description:
+      'Rubi\u2019s rail beside the lesson. Closed: shut, the lesson full-width. Idle: open on the greeting and its three starters. Chatting: the same rail with the conversation already under way.',
+    variants: [
+      { value: 'closed', label: 'Closed' },
+      { value: 'idle', label: 'Idle' },
+      { value: 'live', label: 'Chatting' },
+    ],
+    /* ⚠ `idle`, NOT her prototype's `closed`. The React session has opened
+       with Rubi's rail showing since it was built (`useState(true)`), and
+       `CompassSession` pins that. A control arriving on the bar is not a
+       decision to move the baseline underneath it — picking Closed is one
+       click, and it is the reviewer's to make. */
+    defaultVariant: 'idle',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-planner-rubi',
     /* THE PLANNER'S TWO CONCEPTS — Rubi on / Rubi off — 2026-10-15. Her OCT2
        file draws this as an in-page control marked "Prototype", dashed so it
@@ -1438,6 +1501,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        "Compass scope with its own versions" the line above used to ask for. */
     surface: 'design',
     owner: 'anjani',
+    /* Her PLANNER's control, and only the planner draws it (2026-10-16). */
+    surfaces: ['compass:study-planner'],
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Planner: Rubi',
@@ -1460,6 +1525,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        this to Eric's default, where the Compass row opens. */
     surface: 'design',
     owner: 'anjani',
+    /* Her PLANNER's control, and only the planner draws it (2026-10-16). */
+    surfaces: ['compass:study-planner'],
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Planner: return note',
@@ -1484,6 +1551,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `compass-planner-rubi` above. */
     surface: 'design',
     owner: 'anjani',
+    /* Her PLANNER's control, and only the planner draws it (2026-10-16). */
+    surfaces: ['compass:study-planner'],
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Planner: below the week',
@@ -1510,6 +1579,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `compass-planner-rubi` above. */
     surface: 'design',
     owner: 'anjani',
+    /* Her PLANNER's control, and only the planner draws it (2026-10-16). */
+    surfaces: ['compass:study-planner'],
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Planner: day off',
@@ -1537,6 +1608,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `compass-planner-rubi` above. */
     surface: 'design',
     owner: 'anjani',
+    /* Her PLANNER's control, and only the planner draws it (2026-10-16). */
+    surfaces: ['compass:study-planner'],
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Planner: absence',

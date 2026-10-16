@@ -17,6 +17,7 @@ import { FeatureFlagPanelProvider } from '@/components/account/FeatureFlagPanelC
 import { FeatureFlagPanel } from '@/components/account/FeatureFlagPanel'
 import { DeviceFrameProvider, DeviceFrame } from './DeviceFrameContext'
 import { PrototypeChrome } from './PrototypeChrome'
+import { DesignSurfaceProvider } from '@/context/DesignSurfaceProvider'
 import { MobileNavProvider } from './MobileNavContext'
 import { EndToEndPageSync } from '@/pages/EndToEndPageSync'
 
@@ -88,6 +89,12 @@ export function AppLayout({ bare = false }: { bare?: boolean } = {}) {
                     {/* The prototype chrome (PrototypeBar + Demo Controls) is
                         passed to DeviceFrame so it can render full-width ABOVE
                         the centered browser-window card in the Demo frame. */}
+                    {/* Which surface is on screen, so the Design bar can carry
+                        Compass's controls inside Compass and Home's on Home.
+                        OUTSIDE DeviceFrame on purpose: the chrome it feeds is
+                        passed in as a prop, so a provider inside the frame
+                        would not reach the bar. */}
+                    <DesignSurfaceProvider>
                     <DeviceFrame chrome={<PrototypeChrome />}>
                       {bare ? (
                         <Outlet />
@@ -134,6 +141,7 @@ export function AppLayout({ bare = false }: { bare?: boolean } = {}) {
                       </div>
                       )}
                     </DeviceFrame>
+                    </DesignSurfaceProvider>
                   </MobileNavProvider>
                   <FeatureFlagPanel />
                   <Toast

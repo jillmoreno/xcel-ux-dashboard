@@ -1,6 +1,7 @@
 import { useState, type CSSProperties } from 'react'
 import { CompassSidebar, CompassPageBody, type CompassPage } from './CompassCoursePlayer'
 import { HYBRID_COMPASS_PAGES } from './compassPages'
+import { useDeclareDesignSurface, type DesignSurfaceId } from '@/context/designSurface'
 import { CompassRail } from './CompassRail'
 import { CompassLearningOverview, OverviewHeader } from './CompassLearningOverview'
 import { CompassCourseLanding } from './CompassCourseLanding'
@@ -56,6 +57,11 @@ export function CompassLearningPage({
   onStartSession?: () => void
 }) {
   const [page, setPage] = useState<CompassPage>('overview')
+  /* Tell the Design bar which Compass page is open, so it can carry Anjani's
+     controls for THIS page rather than all seven on every one of them. The
+     page lives in state here and never reaches the URL, so publishing it is
+     the only way the bar can know. */
+  useDeclareDesignSurface(`compass:${page}` as DesignSurfaceId)
   /* ⚠ ANJANI'S COMPASS IS A FLAG, NOT A VERSION — 2026-10-15. From 2026-10-08
      her rail and course landing were gated on `isHybridVersion`, which was
      right while Hybrid was the default: the Compass Prototypes row opens the
