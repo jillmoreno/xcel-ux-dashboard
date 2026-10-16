@@ -1532,7 +1532,16 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surfaces: ['compass:study-planner'],
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
-    label: 'Planner: Rubi',
+    /* ⚠ NO "PLANNER:" PREFIX — 2026-10-16, Jillienne: "we have compass-study
+       planner, so we don't need 'planner' in all of these other titles." The
+       bar's scope tag reads "Compass · Study planner" above them now, so each
+       label was saying it a second time, in 8.5px, five times over.
+
+       It is also closer to Anjani's: her slim row reads RUBI [ON], not
+       "Planner: Rubi". The Feature Flag panel keeps its bearings without the
+       prefix — it groups these under Widgets and carries each flag's
+       `description`, which still names the Study planner in full. */
+    label: 'Rubi',
     description:
       'Whether the Study planner\u2019s Rubi panel is part of the learner\u2019s package. ON: the panel, its three starters and the undo stack; the norm note speaks as Rubi. OFF: the planner alone, wider, and the note reads "Good to know".',
     defaultEnabled: true,
@@ -1556,7 +1565,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surfaces: ['compass:study-planner'],
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
-    label: 'Planner: return note',
+    label: 'Return note',
     description:
       'The note after a missed session or time away. A: what moved and when you now finish. B: the same, plus a catch-up review of the last two topics before the break, offered first.',
     defaultEnabled: true,
@@ -1582,7 +1591,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surfaces: ['compass:study-planner'],
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
-    label: 'Planner: below the week',
+    label: 'Below the week',
     description:
       'What sits under the week view. None (default): the week stands alone. Next week: the following week as a quieter row. Coming up: the next four sessions as a list, and when the next spaced review falls.',
     defaultEnabled: true,
@@ -1610,7 +1619,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surfaces: ['compass:study-planner'],
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
-    label: 'Planner: day off',
+    label: 'Day off',
     description:
       'How a day is taken off in the planner. Skip button (default): one click on the day\u2019s Skip. Menu: clicking the day opens a small menu that says where the session would move, with "Pick several days" for a range.',
     defaultEnabled: true,
@@ -1639,7 +1648,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surfaces: ['compass:study-planner'],
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
-    label: 'Planner: absence',
+    label: 'Absence',
     description:
       'Seeds time away so the return note can be seen. None (default): the plan as onboarding left it, today Sep 22. Missed a day: one missed session, today Sep 23. Away a week: two sessions done, then seven days away, today Oct 1.',
     defaultEnabled: true,
