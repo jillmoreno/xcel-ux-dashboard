@@ -181,7 +181,7 @@ rebasing, the routines and the morning task existed only in it.
 
 | | `/contributing/` — once | `/designer-workflow/` — every day |
 |---|---|---|
-| Holds | Accounts, clone, dependencies, git identity · the three places · the six words · the loop in one picture · two homes · the flag rule · what you never do | Sitting down · keeping your branch current · building a change · `/share` · promoting a surface · reading the Hub · troubleshooting · the routines · the morning auto-rebase · the glossary |
+| Holds | Accounts, clone, dependencies, git identity · the three places · the six words · the loop in one picture · two homes · the flag rule · what you never do | Sitting down · keeping your branch current · building a change · `/share-branch` · promoting a surface · reading the Hub · troubleshooting · the routines · the morning auto-rebase · the glossary |
 | Lost | the long-form eight steps, the Refinement form field by field, its glossary, its troubleshooting table | one-time setup |
 | Ends | handing the reader to the day-to-day guide | — |
 
@@ -495,7 +495,7 @@ record written before today); `linkStore.ts` gained `featureKey`,
 list's row body came out of its `.map` into `renderRow` so the same row draws
 inside a group and on its own, and `FeatureGroupBlock` is the header plus the
 "N earlier chunks" door. `LinkPrefill` gained `feature`, which is how
-`share` (the renamed `promote-to-refinement`) lands the next branch in the same
+`share-branch` (the renamed `promote-to-refinement`) lands the next branch in the same
 group without anyone retyping it. `FeatureRefinement.test.tsx` pins every row of the table
 above.
 
@@ -916,7 +916,7 @@ state, and a `history.replaceState` from inside the panel would leave
 it straight back and the form would reopen. `Demo.test.tsx` pins the prefill
 opening once with the toggle off, and doing nothing on the public build.
 
-**`/share` files a card too, as of 2026-10-15.** Adding the Refinement row and
+**`/share-branch` files a card too, as of 2026-10-15.** Adding the Refinement row and
 saying on the To Do Board that somebody has to look at it are one intention,
 so they are one command: step 11 of the skill hands over a SECOND address,
 `/?section=todo-board&add=1&column=refine&title=…&note=…&owner=…`, and the

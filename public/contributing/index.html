@@ -21,7 +21,7 @@
 
   Regenerate it whenever this page changes — a test asserts the PDF exists and
   is newer than nothing, but cannot know it is current. Last updated 2026-10-15
-  (the public toggle removed throughout, Feature Refinement added, /share).
+  (the public toggle removed throughout, Feature Refinement added, /share-branch).
 -->
 <link rel="stylesheet" href="../guides/guide.css" />
 </head>
@@ -223,7 +223,7 @@
         </svg>
       </div>
       <p>Refinement → <strong>Add link</strong>. Paste the address, title it with your branch name, say where to look, and name the <strong>feature</strong> this is a chunk of. Everyone with the Hub link — the team and stakeholders alike — sees it the moment you click Add.</p>
-      <p><strong>Much faster — it covers steps 4 and 5 as well:</strong> in your Claude chat, say <code>/share</code>. It runs the checks, commits, pushes, waits for Netlify to build your branch, works out the address, drafts the title and note, asks what feature this is a chunk of, and gives you a link that opens this form already filled in — you check it and click Add. Then it offers to cut your next branch. (<code>/promote-to-refinement</code> is the old name and still works.)</p>
+      <p><strong>Much faster — it covers steps 4 and 5 as well:</strong> in your Claude chat, say <code>/share-branch</code>. It runs the checks, commits, pushes, waits for Netlify to build your branch, works out the address, drafts the title and note, asks what feature this is a chunk of, and gives you a link that opens this form already filled in — you check it and click Add. Then it offers to cut your next branch. (<code>/promote-to-refinement</code> is the old name and still works.)</p>
     </article>
 
     <article class="qcard">
@@ -330,7 +330,7 @@
 
   <p>So the loop is:</p>
   <div class="flow">
-    <span>branch</span><i>→</i><span><code>/share</code></span><i>→</i><span>everyone with the Hub link sees it</span><i>→</i><span>discuss &amp; iterate</span><i>→</i><span>PR</span><i>→</i><span>promote</span><i>→</i><span>merge</span><i>→</i><span>retire the row</span><i>→</i><span>next chunk</span>
+    <span>branch</span><i>→</i><span><code>/share-branch</code></span><i>→</i><span>everyone with the Hub link sees it</span><i>→</i><span>discuss &amp; iterate</span><i>→</i><span>PR</span><i>→</i><span>promote</span><i>→</i><span>merge</span><i>→</i><span>retire the row</span><i>→</i><span>next chunk</span>
   </div>
   <p class="small">The rest of this guide walks each of those, in order, with the exact commands and the exact fields.</p>
 </section>

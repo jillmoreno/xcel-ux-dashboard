@@ -86,7 +86,8 @@ reaches no stakeholder by itself. **Only Jillienne merges** — `ship-to-main`,
 which refuses a branch with a group its owner has not decided — **and only she
 sets the default dashboard version.** That is the lock, for every scope.
 **Anyone promotes to Refinement**, and that door is unchanged —
-`share` — `promote-to-refinement` until 2026-10-15, and that name still works —
+`share-branch` — `promote-to-refinement` until 2026-10-15, briefly `share`, and
+both older names still work —
 reads the branch and tags the row's product (Compass files → Compass), which is
 the tag the Compass row later absorbs.
 
@@ -111,7 +112,7 @@ anyone can do either. Remove still deletes. The nav count and the branch
 strip both treat an archived row as off the board. Refinement only — the
 other three boards keep free-text authors and no archive.
 
-The ways in are already built: `share` (a branch),
+The ways in are already built: `share-branch` (a branch),
 `promote-component` (one widget's variants), `promote-to-prototype` (moving
 something into the source of truth). There is deliberately no "create a second
 prototype" skill: a new SCOPE is a decision Jillienne makes in
@@ -188,7 +189,7 @@ scope — the product IS React here now, exactly as it is in the LMS.
    you cannot conflict with whoever else is editing it. **Fork the layout, import
    the data:** if both versions duplicate the content, the comparison is no longer
    about your change. Say `/promote-component` and it will do this with you.
-3. **Share it — say `/share`.** One command, and it was three until
+3. **Share it — say `/share-branch`.** One command, and it was three until
    2026-10-15: it runs the type check and the tests, commits, pushes (Netlify
    builds your branch at its own address), waits for that build, and hands you
    a link that opens Refinement's **Add link** form already filled in — the
@@ -198,8 +199,14 @@ scope — the product IS React here now, exactly as it is in the LMS.
    By hand, if you would rather: *"Run the type check, the tests and lint"*
    (add *"and the smoke suites"* if you touched `public/prototypes/`), then
    *"Commit everything and push it to `feat/your-thing`"*, then Refinement →
-   Add link on the Hub. `/promote-to-refinement` is the old name for `/share`
-   and still works.
+   Add link on the Hub. `/promote-to-refinement` is the old name for
+   `/share-branch` and still works.
+
+   ⚠ **NOT `/share` — that name is Claude Code's own.** It was the skill's
+   name for one day (2026-10-15 → 10-16) and never loaded: the bare command
+   reached Claude's feedback flow and the skill was not offered at all. It
+   failed SILENTLY, and the plain-English triggers ("share this branch") kept
+   working the whole time, which is what hid it.
 
 **You never run the site on your own computer.** There is no localhost step; the
 branch build IS the preview. Nothing here needs a terminal — every step above is
@@ -211,7 +218,7 @@ they used to be the same loop told twice:
 | Guide | When | Holds |
 |---|---|---|
 | **Contributing** — `/contributing/` | once, your first day | accounts, clone, dependencies, git identity, the vocabulary, the loop in one picture, where a new screen belongs, the flag rule |
-| **Designer Workflow** — `/designer-workflow/` | every day after | rebasing, building a change, `/share`, promoting a surface, the routines, the morning auto-rebase, reading the Hub, the glossary, the troubleshooting table |
+| **Designer Workflow** — `/designer-workflow/` | every day after | rebasing, building a change, `/share-branch`, promoting a surface, the routines, the morning auto-rebase, reading the Hub, the glossary, the troubleshooting table |
 
 Both are on the Hub under **Team → Hub Resources**, which is also where the
 stakeholder page `/about/` lives.
@@ -279,7 +286,7 @@ file, so the two cannot drift apart.
 | `src/components/prototype/DemoControlsBar.tsx`, `src/components/prototype/DemoBar.tsx`, `src/components/prototype/demoBarUtil.ts` | the demo controls bar — which controls every reviewer sees |
 | `src/components/prototype/DesignControlsBar.tsx` | the design controls bar — you do not edit it to get a control on it (see below) |
 | `src/components/layout/AdminToolsMenu.tsx` | the robot — the UI/UX Demo Tools menu |
-| `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `share` (was `promote-to-refinement`, kept as a pointer), `promote-component`, `promote-to-testing`, `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
+| `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `share-branch` (was `promote-to-refinement`, kept as a pointer; `share` for one day), `promote-component`, `promote-to-testing`, `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
 | `public/contributing/`, `public/designer-workflow/`, `public/about/` | the three guides (regenerate the PDFs if you do edit them) |
 
 ## Stack

@@ -1,7 +1,7 @@
 ---
-name: share
-description: One command for the whole of "put my work in front of the team" — check it, commit it, push it, wait for Netlify, open Refinement's Add form filled in, grouped under the feature it is a chunk of, and file the card in the To Do Board's Ready For Refinement column. Renamed from promote-to-refinement on 2026-10-15 (that name still works). Also notices when the branch has grown long and offers to close this chunk and cut the next one. Trigger on "share this", "share my branch", "share it with the team", "put this up for review", "add this to refinement", "promote to refinement", "/share", "/promote-to-refinement".
-version: 2.1.0
+name: share-branch
+description: One command for the whole of "put my work in front of the team" — check it, commit it, push it, wait for Netlify, open Refinement's Add form filled in, grouped under the feature it is a chunk of, and file the card in the To Do Board's Ready For Refinement column. Renamed promote-to-refinement → share on 2026-10-15, then share → share-branch on 2026-10-16 because the bare name `/share` is taken by Claude Code itself and the skill never loaded (both old names still work). Also notices when the branch has grown long and offers to close this chunk and cut the next one. Trigger on "share this", "share my branch", "share it with the team", "put this up for review", "add this to refinement", "promote to refinement", "/share-branch", "/promote-to-refinement".
+version: 2.2.0
 author: UX Design — Colibri
 last_updated: 2026-10-15
 status: active
@@ -9,7 +9,7 @@ status: active
 
 # Skill: Share
 
-**Say `/share`. That is the whole of step 4, 5 and 6 of the Contributing
+**Say `/share-branch`. That is the whole of step 4, 5 and 6 of the Contributing
 guide.** Checks, commit, push, wait for the build, and Refinement's Add form
 opens with every field filled in — then the To Do Board's card sheet, filled
 in, in **Ready For Refinement**. The designer looks and clicks **Add link**,
@@ -95,7 +95,7 @@ npx vitest run
 npm run smoke          # only if public/prototypes/ changed
 ```
 
-Guide step 4, folded in — this is most of why `/share` exists. **A failure
+Guide step 4, folded in — this is most of why `/share-branch` exists. **A failure
 stops the run** and is reported with the output; nothing is committed or
 pushed. The designer can say *skip the checks* and that is honoured, with one
 line saying what was skipped so it is on the record.

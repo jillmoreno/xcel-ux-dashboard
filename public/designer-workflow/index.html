@@ -51,7 +51,7 @@
                `surface: 'design'` as the only sanctioned way onto one, the
                `versions` / `surfaces` narrowing, the Design pill and Shift+D.
                The guide had never mentioned the design bar at all.
-      Part 4   `/share` files a To Do Board card as well as the Refinement
+      Part 4   `/share-branch` files a To Do Board card as well as the Refinement
                row (c7ac678), so there are TWO forms to click, not one; and
                the roster pill says "Jill", not "Jillienne" (f37c468).
       Part 5   the End-to-End row carries its address again — it is held back
@@ -444,7 +444,7 @@
         <li><p><b>Read the line before, and the summary after.</b> Claude says what it is about to do, then what it did. If either surprises you, ask before going on.</p></li>
         <li><p><b>Allow the permission card when it matches what you asked for.</b> If it describes something else, click Deny and ask what it was trying to do.</p></li>
         <li><p><b>A refusal naming a file is correct.</b> That file is the Hub's own machinery and only Jill changes it. Tell her what you needed.</p></li>
-        <li><p><b>Type <code>/</code> for the routines.</b> Yours are <code>/promote-component</code>, <code>/share</code> and <code>/promote-to-prototype</code> &mdash; <a href="#routines">Part 8</a> says what each one does.</p></li>
+        <li><p><b>Type <code>/</code> for the routines.</b> Yours are <code>/promote-component</code>, <code>/share-branch</code> and <code>/promote-to-prototype</code> &mdash; <a href="#routines">Part 8</a> says what each one does.</p></li>
       </ol>
 
       <h3>Then ask one question</h3>
@@ -509,9 +509,9 @@
           <div class="say"><span class="me">YOU</span><q>Give me the review link for this branch.</q></div>
           <p>The shape is <code>https://‹branch-with-dashes›--ux-design-xceldashboard.netlify.app</code> followed by the page: <code>/dashboard-rebrand?demo=1</code> for the dashboard, <code>/dashboard-rebrand?demo=1&amp;section=compass</code> for Compass, <code>/end-to-end-demo?demo=1</code> for the invite flow. <code>?demo=1</code> turns on the demo controls bar.</p></li>
         <li><b class="t">Look at it the way a reviewer would.</b><p>Click through from the page they would start on, not straight to your component. Three bugs in September were invisible on a direct link and obvious on the first click.</p></li>
-        <li><b class="t">Keep going.</b><p>Each further change is step 2, then <code>/share</code> again. Rebase every few days (<a href="#rebase">Part 2</a>) so the final merge is boring. When the next change is really a different piece of work, start a new branch for it rather than letting this one grow.</p></li>
+        <li><b class="t">Keep going.</b><p>Each further change is step 2, then <code>/share-branch</code> again. Rebase every few days (<a href="#rebase">Part 2</a>) so the final merge is boring. When the next change is really a different piece of work, start a new branch for it rather than letting this one grow.</p></li>
       </ol>
-      <div class="note"><p><b>Steps 5 to 9 are one command.</b> <code>/share</code> runs the checks, commits, pushes, waits for the build and hands you the link, then opens the Refinement form — <a href="#refinement">Part 4</a>. The long way above is what it is doing, which is worth knowing for the day it stops halfway.</p></div>
+      <div class="note"><p><b>Steps 5 to 9 are one command.</b> <code>/share-branch</code> runs the checks, commits, pushes, waits for the build and hands you the link, then opens the Refinement form — <a href="#refinement">Part 4</a>. The long way above is what it is doing, which is worth knowing for the day it stops halfway.</p></div>
       <h3>Putting a decision on the design bar</h3>
       <p>A prototype carries two control bars, and only one of them is yours.</p>
       <div class="tablewrap"><table>
@@ -543,7 +543,7 @@
       <div class="rule-box">Finish a chunk, share it, start a new branch for the next.<small>That is the habit the board is built around, and the reason small branches pay you back.</small></div>
       <h3>Adding your branch, the quick way</h3>
       <ol class="steps">
-        <li><p>On your branch in the Code tab:</p><div class="say"><span class="me">YOU</span><q>/share</q></div><p>It was called <code>/promote-to-refinement</code> until 15 October, and that name still works.</p></li>
+        <li><p>On your branch in the Code tab:</p><div class="say"><span class="me">YOU</span><q>/share-branch</q></div><p>It was called <code>/promote-to-refinement</code> until 15 October, and that name still works. It was briefly <code>/share</code> — but that name belongs to Claude Code itself, so the skill never loaded, which is why it is <code>/share-branch</code> now.</p></li>
         <li><p>Claude asks once — checks, commit, push, open the form? — then runs the type check and the tests, commits anything uncommitted, pushes, waits for Netlify to build your branch, works out its address and a title, and asks what feature this is a chunk of. Nothing reaches the board or the To Do Board until you click the button on each of the two forms it opens.</p></li>
         <li><p>In the form, <b>Added by</b> is a pick-list of the five of you. Pick your own name. The product (Atlas, Compass, Both) is already chosen from what your branch touched; change it if it is wrong.</p>
           <p><b>Feature</b> is what this chunk is part of — start typing and the features already on the board are offered, so take one if it fits. <b>Replaces</b> appears only when that feature already has chunks, and defaults to your own newest one; its first option, <i>Nothing — these sit side by side</i>, is the right answer when two treatments should both stay up.</p></li>
@@ -658,7 +658,7 @@
         <thead><tr><th>You are thinking</th><th>Reach for</th></tr></thead>
         <tbody>
           <tr><td>"I want eyes on this one card, not the whole branch."</td><td><code>/promote-component</code></td></tr>
-          <tr><td>"I want the team to look at my branch."</td><td><code>/share</code></td></tr>
+          <tr><td>"I want the team to look at my branch."</td><td><code>/share-branch</code></td></tr>
           <tr><td>"This is what my surface should be. Ship it."</td><td><code>/promote-to-prototype</code>, then tell Jill</td></tr>
           <tr><td>"I'm done discussing this row."</td><td>Archive, on the row's ⋮ (no routine)</td></tr>
           <tr><td>"We tried it and decided not to."</td><td>Tell Jill; she runs <code>/retire-from-refinement</code></td></tr>
@@ -670,7 +670,7 @@
         <thead><tr><th>Routine</th><th>Use it when</th><th>It asks you</th><th>It does</th><th>It never does</th></tr></thead>
         <tbody>
           <tr><td><code>/promote-component</code></td><td>One component on your branch wants feedback and the rest of the branch would distract from it.</td><td>Which component (name it, or select it in the browser pane first). Which of its flag's variants to show side by side. A note telling the reviewer what to look at.</td><td>Finds the feature flag that drives the component. If there is none, shows you the flag it would add (its name, label, the one line it changes in your component) and waits for your yes. Checks the branch is pushed and built. Builds one review page with every variant stacked, each pinned. Opens Refinement's Add link form with it filled in.</td><td>Save the row (you click Add). Add a flag without showing you first. Share the whole branch.</td></tr>
-          <tr><td><code>/share</code></td><td>A chunk of work is ready for the team to look at.</td><td>One yes, up front, covering the checks, the commit and the push. A title. A one-line note on what to look at. What feature this is a chunk of. Which product (it guesses from the files you touched: Compass files mean Compass).</td><td>Checks you are on a branch, not main. Says so if the branch has got long. Runs the type check and the tests. Commits anything uncommitted and pushes. Works out the Netlify address and waits for the build to finish. Opens Refinement's Add link form with everything filled in, your name included. Then opens the To Do Board's card sheet, filled in, in <b>Ready For Refinement</b>. Offers to cut your next branch.</td><td>Save the row or the card (you click <b>Add link</b>, then <b>Add card</b>). Run on main. Commit or push without the yes it asked you for.</td></tr>
+          <tr><td><code>/share-branch</code></td><td>A chunk of work is ready for the team to look at.</td><td>One yes, up front, covering the checks, the commit and the push. A title. A one-line note on what to look at. What feature this is a chunk of. Which product (it guesses from the files you touched: Compass files mean Compass).</td><td>Checks you are on a branch, not main. Says so if the branch has got long. Runs the type check and the tests. Commits anything uncommitted and pushes. Works out the Netlify address and waits for the build to finish. Opens Refinement's Add link form with everything filled in, your name included. Then opens the To Do Board's card sheet, filled in, in <b>Ready For Refinement</b>. Offers to cut your next branch.</td><td>Save the row or the card (you click <b>Add link</b>, then <b>Add card</b>). Run on main. Commit or push without the yes it asked you for.</td></tr>
           <tr><td><code>/promote-to-prototype</code></td><td>Your branch is what your surface should become, and you own that surface. Run it before you tell Jill it is ready.</td><td>For every flag whose default your branch changed: should this be the default, and which variant? Design-bar controls are listed separately, because those never ship as defaults.</td><td>Compares your branch with main and lists every candidate. Groups them by the Prototypes row they reach; a group that is not yours needs that owner's yes. Edits the flag defaults, runs the checks, commits on your branch. Reminds you to archive the Refinement row after the merge.</td><td>Merge anything. Add a Prototypes row. Change the default dashboard version. All three are Jill's.</td></tr>
         </tbody>
       </table></div>
