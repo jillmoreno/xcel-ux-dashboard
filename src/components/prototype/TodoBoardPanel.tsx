@@ -36,6 +36,7 @@ import {
   TODO_COLUMNS,
   TodoBoardWriteError,
   UNASSIGNED,
+  UNASSIGNED_HUE,
   UNASSIGNED_LABEL,
   autoAssigns,
   cardsInColumn,
@@ -159,9 +160,9 @@ export function TodoBoardPanel() {
    *  would show is the answer to "is anything unowned?". */
   const filters = useMemo(
     () => [
-      { key: null as string | null, name: 'All', hue: 'neutral' as const },
+      { key: null as string | null, name: 'All', hue: UNASSIGNED_HUE },
       ...index.people.map((p) => ({ key: p.name as string | null, name: p.name, hue: p.hue })),
-      { key: UNASSIGNED as string | null, name: UNASSIGNED_LABEL, hue: 'neutral' as const },
+      { key: UNASSIGNED as string | null, name: UNASSIGNED_LABEL, hue: UNASSIGNED_HUE },
     ],
     [index.people],
   )

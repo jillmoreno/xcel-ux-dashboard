@@ -84,13 +84,54 @@ export function autoAssigns(column: TodoColumn): boolean {
   return TODO_COLUMNS.some((c) => c.id === column && 'autoAssign' in c && c.autoAssign)
 }
 
-/** The avatar hues the gateway palette publishes — `--ux-hue-teal` and
- *  friends, re-themed by every scheme and appearance. A person stores the
- *  NAME of one rather than a colour, so the board follows the palette like
- *  everything else on the page. */
-export const TODO_HUES = ['teal', 'gold', 'blue', 'neutral'] as const
+/**
+ * The person colours — SIX, and deliberately NOT from the gateway palette.
+ *
+ * They were the palette's four `--ux-hue-*` tokens until 2026-10-15, and that
+ * failed twice over. Filled, the hue and its `-fg` partner were unreadable
+ * (1.00:1 in dim Moss, where both tokens are the same colour). Tinted into the
+ * card to fix that, the four discs became ΔE 1.7–4.9 apart — under ~10 reads
+ * as "the same colour", so the colour identified nobody. Four tokens cannot
+ * carry five-plus people in four palettes; that is not a tuning problem.
+ *
+ * So these are six families from the PROJECT'S OWN brand ramps (the `.cre-
+ * todo-avatar` rules in `todoBoard.css` name them), drawn solid with white
+ * initials. White ink is what makes it robust — it cannot be broken by a
+ * palette or an appearance, which is exactly how the first version broke.
+ * Measured: initials 5.68:1 at worst, and the two closest discs are ΔE 24
+ * apart.
+ *
+ * ⚠ THE TRADE, so nobody "fixes" it later: avatars no longer re-skin with
+ * Moss / Ember / Tide / Fern. Everything else on this board still does. That
+ * was Jillienne's call on 2026-10-15 — identity is the board's job, and a
+ * colour that changes with the viewer's theme is not identity.
+ *
+ * A seventh person reuses the first colour. The NAME is always drawn beside
+ * the avatar, at every call site, so a repeat is a weaker signal rather than
+ * an ambiguity.
+ */
+export const TODO_HUES = ['teal', 'navy', 'amber', 'green', 'cyan', 'red'] as const
 
-export type TodoHue = (typeof TODO_HUES)[number]
+/**
+ * What the four palette hues become.
+ *
+ * Every person record written before 2026-10-15 carries one of the old ids,
+ * and a record whose colour this build cannot read would otherwise fall back
+ * to one shared default — every avatar the same, which is the failure the six
+ * colours exist to end. Mirrored in `netlify/functions/todo-board.ts`;
+ * `TodoBoard.test.tsx` asserts the two agree.
+ */
+export const LEGACY_HUES: Readonly<Record<string, string>> = {
+  gold: 'amber',
+  blue: 'navy',
+  neutral: 'cyan',
+}
+
+export type TodoHue = (typeof TODO_HUES)[number] | 'none'
+
+/** Unassigned, and anyone off the roster: a grey disc on the palette's own
+ *  tokens, so "nobody" is visibly not one of the six people. */
+export const UNASSIGNED_HUE: TodoHue = 'none'
 
 export type TodoCard = {
   /** `card-007`, allocated server-side. */
@@ -149,6 +190,14 @@ const UNAVAILABLE: TodoBoardIndex = { available: false, loading: false, cards: [
  *  first two letters and a full name gives one letter from each of the first
  *  two words. Matches what the concept did, and it is the only thing the
  *  avatar has room for. */
+/** A stored colour as one this build can draw: its own id, the new id for a
+ *  retired one, or the first colour for anything unreadable. */
+export function resolveHue(stored: string): TodoHue {
+  if ((TODO_HUES as readonly string[]).includes(stored)) return stored as TodoHue
+  const moved = LEGACY_HUES[stored]
+  return (moved as TodoHue) ?? TODO_HUES[0]
+}
+
 export function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean)
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
@@ -164,8 +213,10 @@ export function initialsOf(name: string): string {
  * because "should not normally" is not a rendering strategy.
  */
 export function hueFor(owner: string, people: TodoPerson[]): TodoHue {
-  if (!owner) return 'neutral'
-  return people.find((p) => p.name === owner)?.hue ?? 'neutral'
+  // Unassigned has no person and therefore no colour — `UNASSIGNED_HUE` is the
+  // grey the stylesheet draws for it, not one of the six.
+  if (!owner) return UNASSIGNED_HUE
+  return people.find((p) => p.name === owner)?.hue ?? UNASSIGNED_HUE
 }
 
 /**
@@ -267,7 +318,7 @@ function normalisePerson(v: TodoPerson): TodoPerson {
   return {
     id: v.id,
     name: v.name,
-    hue: TODO_HUES.includes(v.hue) ? v.hue : 'neutral',
+    hue: resolveHue(v.hue),
     addedDate: typeof v.addedDate === 'string' ? v.addedDate : '',
   }
 }

@@ -1,31 +1,46 @@
 /*
  * The To Do Board's person avatar.
  *
- * ⚠ THIS EXISTS AS A STYLESHEET, NOT AN INLINE STYLE, AND THE REASON IS
- * MEASURED. The disc needs the hue mixed into the surface it sits on —
- * `color-mix(in srgb, var(--ux-hue-teal) 12%, var(--ux-card))` — and that
- * string as an INLINE style made `OneSite.test.tsx`'s whole-nav case time out
- * at 5s: jsdom's CSSOM parses every inline declaration, and a nested
- * `color-mix` with custom properties inside it is pathologically slow there.
- * Reverting the inline style made the test pass again, which is how this was
- * pinned down. A class costs jsdom nothing — it never resolves the rule — and
- * real browsers handle it the same either way.
+ * ── Why these colours are NOT the gateway palette's ─────────────────────────
+ * The disc took `--ux-hue-*` until 2026-10-15 and that failed twice. Filled,
+ * the hue and its `-fg` partner measured 1.00:1 to 4.75:1 across the four
+ * palettes — 1.00 literally, since in dim Moss both tokens are SAGE, so those
+ * initials were invisible. Tinted into the card to fix the contrast, the four
+ * discs landed ΔE 1.7–4.9 apart, and under ~10 reads as the same colour: the
+ * avatars were legible and identified nobody.
  *
- * WHY A TINT AT ALL, rather than filling the disc with the hue: the `-fg`
- * tokens are each hue's readable form against the PAGE, not ink to write on
- * the hue. Filled, the pairs measured between 1.00:1 and 4.75:1 across the
- * four palettes and three appearances — and 1.00 is literal: in dim Moss,
- * `--ux-hue-neutral` and `--ux-hue-neutral-fg` are both SAGE, so those
- * initials were invisible. Mixed 12% into the card, every pair is at least
- * 4.23:1, which is AA for 10px text. More tint lowers contrast again: at 20%,
- * five pairs fall back under 4.5:1.
+ * Four tokens cannot carry five-plus people across four palettes. So these are
+ * six families from the project's own brand ramps, drawn SOLID with WHITE
+ * initials — white because it cannot be broken by a palette or an appearance,
+ * which is exactly how the first version broke. Measured: initials 5.68:1 at
+ * worst (cta-600 reaches 10.14), the two closest discs ΔE 24 apart.
  *
- * The 1px ring is the full hue, for what identity it can carry. In some
- * palettes a hue sits within 1.05:1 of its own card (Fern's indigo), so the
- * ring is a bonus — the NAME beside the avatar is what actually tells people
- * apart, and every place this component is used draws one.
+ * ⚠ THE TRADE, so nobody "fixes" it back: avatars do not re-skin with Moss /
+ * Ember / Tide / Fern. Everything else on this board does. Jillienne's call on
+ * 2026-10-15 — identity is the board's job, and a colour that changes with the
+ * viewer's theme is not identity.
+ *
+ * ⚠ THE INK IS A LITERAL, and that is the one raw colour in this feature. The
+ * convention is tokens-not-hex, and every token for white routes through
+ * `--color-neutral-50`, which `UX_TOKEN_BRIDGE` re-points at `--ux-bg` for
+ * this page — so a "white" token resolves to the dark page background inside
+ * the panel. A literal is the honest way to say: this one does not follow the
+ * theme, on purpose.
+ *
+ * The ring is `--ux-border`, which DOES follow the palette: it is the disc's
+ * edge against the card, not part of its identity. On a dark card a solid
+ * mid-tone disc is only ~1.3:1 against the surface, so without it the shape
+ * dissolves.
+ *
+ * ── Why a stylesheet rather than an inline style ────────────────────────────
+ * Measured too: a `color-mix(...)` as an inline style made `OneSite.test.tsx`
+ * time out at 5s, because jsdom's CSSOM parses every inline declaration and a
+ * nested color-mix with custom properties inside it is pathologically slow
+ * there. A class costs jsdom nothing. The mix is gone now, but the reason to
+ * keep colour in here has not changed.
  */
 .cre-todo-avatar {
+  --cre-todo-ink: #ffffff; /* see the note above before replacing this */
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -33,30 +48,23 @@
   border-radius: 999px;
   font-weight: 700;
   letter-spacing: 0.02em;
-  background: var(--ux-card);
+  color: var(--cre-todo-ink);
+  box-shadow: 0 0 0 1px var(--ux-border);
+}
+
+.cre-todo-avatar[data-hue='teal'] { background: var(--color-primary-600); }
+.cre-todo-avatar[data-hue='navy'] { background: var(--color-cta-600); }
+.cre-todo-avatar[data-hue='amber'] { background: var(--color-secondary-700); }
+.cre-todo-avatar[data-hue='green'] { background: var(--color-success-600); }
+.cre-todo-avatar[data-hue='cyan'] { background: var(--color-tertiary-700); }
+.cre-todo-avatar[data-hue='red'] { background: var(--color-error-600); }
+
+/*
+ * Nobody — Unassigned, the All filter, and any name no longer on the roster.
+ * Grey on the PAGE's own tokens rather than one of the six, so "nobody" is
+ * visibly not a person. This one does re-skin, because it is chrome.
+ */
+.cre-todo-avatar[data-hue='none'] {
+  background: var(--ux-chip);
   color: var(--ux-text-2);
-}
-
-.cre-todo-avatar[data-hue='teal'] {
-  background: color-mix(in srgb, var(--ux-hue-teal) 12%, var(--ux-card));
-  color: var(--ux-hue-teal-fg);
-  box-shadow: inset 0 0 0 1px var(--ux-hue-teal);
-}
-
-.cre-todo-avatar[data-hue='gold'] {
-  background: color-mix(in srgb, var(--ux-hue-gold) 12%, var(--ux-card));
-  color: var(--ux-hue-gold-fg);
-  box-shadow: inset 0 0 0 1px var(--ux-hue-gold);
-}
-
-.cre-todo-avatar[data-hue='blue'] {
-  background: color-mix(in srgb, var(--ux-hue-blue) 12%, var(--ux-card));
-  color: var(--ux-hue-blue-fg);
-  box-shadow: inset 0 0 0 1px var(--ux-hue-blue);
-}
-
-.cre-todo-avatar[data-hue='neutral'] {
-  background: color-mix(in srgb, var(--ux-hue-neutral) 12%, var(--ux-card));
-  color: var(--ux-hue-neutral-fg);
-  box-shadow: inset 0 0 0 1px var(--ux-hue-neutral);
 }

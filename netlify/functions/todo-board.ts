@@ -66,14 +66,26 @@ export const AUTO_ASSIGN_COLUMN = 'handoff'
 export const AUTO_ASSIGN_OWNER = 'Jillienne'
 
 /**
- * The avatar hues. The gateway palette publishes exactly four
- * (`--ux-hue-teal` and friends, re-themed per scheme and appearance), so a
- * person's colour is a NAME from this list rather than a stored CSS value —
- * a record carrying `#34A59A` would be the one thing on the page that does
- * not follow the palette, and it would be stored in Blobs where nobody
- * re-themes it.
+ * The person colours — six, from the project's own brand ramps, mirrored from
+ * `TODO_HUES` in `src/data/todoBoardStore.ts` (a trust boundary, so it is
+ * re-declared rather than imported; `TodoBoard.test.tsx` asserts they agree).
+ *
+ * They were the gateway palette's four `--ux-hue-*` tokens until 2026-10-15,
+ * when that turned out to be unreadable filled (1.00:1 in one palette) and
+ * indistinguishable tinted (ΔE under 5). Six fixed colours with white ink
+ * measure 5.68:1 at worst and ΔE 24 apart. The stylesheet holds the values;
+ * what is stored is only the NAME of one.
  */
-export const HUES = ['teal', 'gold', 'blue', 'neutral'] as const
+export const HUES = ['teal', 'navy', 'amber', 'green', 'cyan', 'red'] as const
+
+/** What the four retired palette hues become on the way in. Mirrored from
+ *  `LEGACY_HUES` in the client store. A record keeps its colour across the
+ *  change rather than every avatar collapsing onto one default. */
+export const LEGACY_HUES: Readonly<Record<string, string>> = {
+  gold: 'amber',
+  blue: 'navy',
+  neutral: 'cyan',
+}
 
 /**
  * Who the roster starts as — the five names in `DESIGNERS`
@@ -181,7 +193,9 @@ function validatePerson(input: unknown, id: string, existing: Json[]): { record:
   // happened to ask for. A client may still name one — the Manage people
   // sheet does not — and an unreadable value rotates like an absent one.
   const asked = str(b.hue)?.trim() ?? ''
-  const hue = (HUES as readonly string[]).includes(asked) ? asked : HUES[existing.length % HUES.length]
+  const hue = (HUES as readonly string[]).includes(asked)
+    ? asked
+    : (LEGACY_HUES[asked] ?? HUES[existing.length % HUES.length])
   return {
     record: { id, name, hue, addedDate: new Date().toISOString().slice(0, 10) },
   }

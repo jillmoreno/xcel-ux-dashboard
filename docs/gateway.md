@@ -770,6 +770,21 @@ the card kebab's menu at the bottom edge of the board. Narrow windows squeeze
 the columns instead. Columns are 320px tall empty, so the board reads as a
 board and a menu on the last card has somewhere to open.
 
+**The person avatars are the one thing on this board that does NOT follow the
+palette (2026-10-15, Jillienne).** They started on the gateway's four
+`--ux-hue-*` tokens and failed twice: filled, a hue and its `-fg` partner
+measured 1.00:1 to 4.75:1 (1.00 literally — in dim Moss both tokens are
+SAGE, so the initials were invisible); tinted into the card to fix that, the
+four discs sat ΔE 1.7–4.9 apart, and under ~10 reads as the same colour, so
+they identified nobody. Four tokens cannot carry five-plus people across four
+palettes. They are six families from the project's own brand ramps now
+(`todoBoard.css`), solid, with WHITE initials — white because an ink that
+followed the theme is exactly how the first version broke. Measured: 5.68:1
+at worst, the two closest discs ΔE 24 apart. Unassigned stays grey on the
+page's own tokens, so "nobody" is visibly not one of the six. The ring is
+`--ux-border`, which does still follow the palette: it is the disc's edge, not
+its identity.
+
 ⚠ **Not the archived To Do section** (`todo-section`, 2026-09-29, id `todo`).
 That was a per-browser checklist in `localStorage`; `TodoPanel.tsx` and
 `todoStore.ts` are untouched by this and that archive row still describes a

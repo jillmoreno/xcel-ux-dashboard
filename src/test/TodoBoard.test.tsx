@@ -66,8 +66,8 @@ const person = (over: Partial<TodoPerson> = {}): TodoPerson => ({
 
 const ROSTER: TodoPerson[] = [
   person(),
-  person({ id: 'person-002', name: 'Anjani', hue: 'gold' }),
-  person({ id: 'person-003', name: 'Eric', hue: 'blue' }),
+  person({ id: 'person-002', name: 'Anjani', hue: 'amber' }),
+  person({ id: 'person-003', name: 'Eric', hue: 'navy' }),
 ]
 
 /** The endpoint, as the panel sees it: a GET of the whole board, and a
@@ -147,6 +147,25 @@ describe('the todo-board endpoint', () => {
       .map((x) => x.replaceAll("'", ''))
     const clientIds = [...store.matchAll(/id: '([a-z]+)'/g)].map((m) => m[1])
     expect(fnIds).toEqual(clientIds)
+  })
+
+  it('declares the same six person colours the client does, and the same retirements', () => {
+    /* Same trust boundary as the columns. A colour the server accepts and the
+       client cannot draw is an avatar with no fill; a retirement mapped on one
+       side only is every pre-2026-10-15 record collapsing onto one colour. */
+    const list = (src: string, name: string) =>
+      new RegExp(`export const ${name} = \\[([^\\]]+)\\]`)
+        .exec(src)![1]
+        .match(/'([^']+)'/g)!
+        .map((x) => x.replaceAll("'", ''))
+    expect(list(fn, 'HUES')).toEqual(list(store, 'TODO_HUES'))
+
+    const legacy = (src: string) =>
+      /LEGACY_HUES[^=]*= \{([^}]+)\}/
+        .exec(src)![1]
+        .match(/(\w+): '([^']+)'/g)!
+        .sort()
+    expect(legacy(fn)).toEqual(legacy(store))
   })
 
   it('agrees with the client on who the handoff column assigns to', () => {
@@ -519,29 +538,34 @@ describe('the person avatars', () => {
    * The contrast itself was measured outside the suite, across every palette
    * and appearance; this stops the two tokens being put back together.
    */
-  it('tints the card rather than filling with the hue', async () => {
+  it('draws a solid brand colour with white ink, not a palette hue', async () => {
     mockBoard([card({ id: 'card-001', owner: 'Anjani' })])
     render(<TodoBoardPanel />)
     await boardReady()
 
-    // The element only carries the hue NAME; the colour is the stylesheet's.
+    // The element carries the colour's NAME; the value is the stylesheet's.
     const disc = avatarIn(screen.getByText('Compass — review-recap empty state').closest('article')!)
-    expect(disc.dataset.hue).toBe('gold')
+    expect(disc.dataset.hue).toBe('amber')
 
-    /* ⚠ ASSERTED AT SOURCE, and it has to be. jsdom applies no stylesheet, so
-       there is no computed colour to read — and the inline version of this
-       was what made `OneSite.test.tsx` time out, so "it is not inline" is
-       itself part of what this pins. */
+    /* ⚠ ASSERTED AT SOURCE, and it has to be: jsdom applies no stylesheet, so
+       there is no computed colour to read. What is pinned is the decision —
+       six brand-ramp fills and an ink that does NOT come from the palette.
+       The palette's own `--ux-hue-*` tokens were what made these unreadable
+       (1.00:1 in dim Moss) and then indistinguishable (ΔE under 5). */
     const css = readFileSync(resolve(root, 'src/components/prototype/todoBoard.css'), 'utf8')
-    for (const hue of ['teal', 'gold', 'blue', 'neutral']) {
-      expect(css).toContain(`background: color-mix(in srgb, var(--ux-hue-${hue}) 12%, var(--ux-card));`)
-      expect(css).toContain(`color: var(--ux-hue-${hue}-fg);`)
+    for (const [hue, token] of [
+      ['teal', '--color-primary-600'],
+      ['navy', '--color-cta-600'],
+      ['amber', '--color-secondary-700'],
+      ['green', '--color-success-600'],
+      ['cyan', '--color-tertiary-700'],
+      ['red', '--color-error-600'],
+    ]) {
+      expect(css).toContain(`.cre-todo-avatar[data-hue='${hue}'] { background: var(${token}); }`)
     }
-    const component = readFileSync(resolve(root, 'src/components/prototype/TodoBoardAvatar.tsx'), 'utf8')
-      // Comments stripped: the note in that file explains the mix, and the
-      // point of this assertion is that no STYLE in it carries one.
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-    expect(component).not.toMatch(/color-mix/)
+    // Nobody is grey on the page's tokens; the six are not.
+    expect(css).toContain("[data-hue='none']")
+    expect(css).not.toMatch(/\[data-hue='(teal|navy|amber|green|cyan|red)'\][^}]*--ux-hue/)
   })
 
   it('is hidden from assistive tech, because the name is always beside it', async () => {
