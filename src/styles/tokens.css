@@ -2635,6 +2635,23 @@ html,
 [data-theme='dark'] .cre-demo-stage {
   background: #1b1d21;
 }
+/* THE DESIGN BAR'S ON STATE — 2026-10-16. Anjani's own brick, the #c4122e
+   her bar fills `#rubiSw.on` with (`xcel-compass-nudge-journey.html`).
+
+   ⚠ ITS OWN TOKEN BECAUSE BOTH CANDIDATES MOVE. `--color-xcel-brick-600` is
+   #7b1618, a darker brick entirely — it rendered muddy against the bar's
+   white-alpha squares — and `--color-compass-rubi-brand` is #c4122e in light
+   but flips to #f27a8b under the dark theme. These bars are theme-stable
+   chrome (the same reason `.cre-prototype-bar` re-pins its two neutrals), so
+   a switch that turned pink in dark mode would be the bug that exemption
+   exists to prevent. Pinned once, read in both themes.
+
+   White ink on it is the 5.9:1 measured for this red beside the Compass rail
+   note above. */
+.cre-demo-controls {
+  --color-design-bar-on: #c4122e;
+}
+
 /* The prototype/demo bars are direct children of the stage now (rendered by
    <PrototypeChrome />, outside the window) — full screen width. `fullBleed`
    drops their 1440 cap; this stretch guards against the flex cross-axis

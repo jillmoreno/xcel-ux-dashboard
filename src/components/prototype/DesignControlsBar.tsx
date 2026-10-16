@@ -279,7 +279,12 @@ function DesignControl({
            span — "Planner: Rubi" then "On" reads as two unrelated words to a
            screen reader walking the bar. */
         aria-label={`${def.label}: ${label}`}
-        style={{ ...DEMO_TRIGGER, ...(on ? { boxShadow: `inset 0 0 0 1px ${DESIGN_ACCENT}` } : null) }}
+        /* ⚠ BRICK WHEN ON, which IS hers: `#rubiSw.on{background:#C4122E}`.
+           It is the one place her bar shouts, and it shouts for the right
+           reason — ON means Rubi is present in the product, not that a
+           control is selected. The segmented buttons beside it invert to
+           near-white instead, so brick stays rare enough to mean something. */
+        style={{ ...DEMO_TRIGGER, ...SQUARE_TRIGGER, ...(on ? SWITCH_ON : null) }}
         onClick={() => onPick(null)}
         onMouseEnter={(e) => {
           e.currentTarget.style.background = DEMO_HOVER_FILL
@@ -373,6 +378,7 @@ function DesignControl({
       id={def.key}
       label={label}
       eyebrow={def.label}
+      triggerStyle={SQUARE_TRIGGER}
       openId={openId}
       onToggle={onToggle}
       panelRole="radiogroup"
@@ -400,54 +406,102 @@ function DesignControl({
   )
 }
 
-/* ── Segmented groups ────────────────────────────────────────────────────
-   Anjani's shape: a small uppercase label, then the options as one track.
-   Three is the ceiling — see the note in `DesignControl`. */
+/* ── Anjani's control shape ──────────────────────────────────────────────
+   Taken from `public/prototypes/xcel-compass-nudge-journey.html`'s own bar
+   (2026-10-16, the direct ask: "simple squares unless a dropdown is needed …
+   i want it to look more like hers"). Her rules, verbatim where they carry:
+
+     #demoBar button            border-radius:7px; border:1px solid #343027;
+                                background:#211E18; color:#D9D2C6;
+                                font-size:11.5px; font-weight:600; padding:6px 9px
+     #demoBar button[aria-pressed="true"]
+                                background:#EFEAE0; color:#17150F; border-color:#EFEAE0
+     #demoBar .lbl              font-size:9px; font-weight:700; letter-spacing:.1em;
+                                text-transform:uppercase; color:#7C7365
+     #demoBar .col              gap:6px
+
+   ⚠ SQUARES, AND EACH BUTTON CARRIES ITS OWN EDGE. The version before this
+   put the options inside one rounded track, which is the iOS segmented
+   control and not what she drew — hers are separate bordered buttons with 6
+   between them, at a 7px radius that reads as a square with the corners
+   taken off.
+
+   ⚠ SELECTED IS A LIGHT FILL, NOT THE BAR'S CYAN — and this is the thing
+   that changed my mind about matching her. The worry was that her brick
+   `#C4122E` would borrow the demo bar's register; her SEGMENTED buttons are
+   not brick at all, they invert to near-white with dark ink. That is neutral,
+   so it costs the bar nothing, and the cyan identity still sits where it
+   belongs: the dot and the DESIGN CONTROLS label. Brick is hers for the
+   on/off switch only, below.
+
+   ⚠ THE COLOURS ARE TOKENS, NOT HER HEX. Her bar is one fixed dark ground;
+   this one has to hold up in both themes and beside the demo bar, and a
+   literal #211E18 would be a warm brown square on a neutral bar. These are
+   the same relationships against the bar's own ground. */
 const SEGMENTED_MAX = 3
 
 const SEGMENT_GROUP: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
-  gap: 7,
+  gap: 6,
 }
 
-/* 11px rather than her 9: her bar is the whole page's chrome at one size,
-   this one sits beside the demo bar's 11px eyebrows and a smaller label here
-   would read as a different system rather than a quieter one. */
+/* Her 9px, letter-spacing and all — small enough that it reads as a caption
+   on the group rather than as another control beside it. */
 const SEGMENT_LABEL: CSSProperties = {
-  ...DEMO_TRIGGER_EYEBROW,
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  color: 'rgb(255 255 255 / 0.48)',
+  marginRight: 2,
+  whiteSpace: 'nowrap',
   flex: 'none',
 }
 
-/* One rounded track holding the buttons, so the group reads as a single
-   control rather than loose buttons that happen to sit together. */
+/* No track: the buttons sit directly in the row, 6 apart, as hers do. */
 const SEGMENT_TRACK: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
-  gap: 2,
-  padding: 2,
-  borderRadius: 999,
-  background: DEMO_FAINT_FILL,
+  gap: 6,
 }
 
 const SEGMENT_BTN: CSSProperties = {
-  border: 'none',
-  background: 'transparent',
-  color: 'rgb(255 255 255 / 0.62)',
-  padding: '5px 11px',
-  borderRadius: 999,
-  fontSize: 13,
+  border: '1px solid rgb(255 255 255 / 0.14)',
+  background: 'rgb(255 255 255 / 0.05)',
+  color: 'rgb(255 255 255 / 0.78)',
+  padding: '6px 9px',
+  borderRadius: 7,
+  fontSize: 11.5,
   fontWeight: 600,
   cursor: 'pointer',
   whiteSpace: 'nowrap',
-  transition: 'background .15s, color .15s',
+  transition: 'background .15s, color .15s, border-color .15s',
 }
 
+/* The near-white she presses to (#EFEAE0 on her ground). */
+const DEMO_WHITE_FILL = 'rgb(255 255 255 / 0.92)'
+
+/* Her inverted pressed state. */
 const SEGMENT_BTN_ON: CSSProperties = {
-  background: DESIGN_ACCENT,
-  /* Against the cyan the white the rest of the bar uses goes muddy; the
-     bar's own dark ground is what stays legible on it. */
+  background: DEMO_WHITE_FILL,
+  borderColor: DEMO_WHITE_FILL,
   color: 'var(--color-neutral-950)',
+}
+
+const SWITCH_ON: CSSProperties = {
+  background: 'var(--color-design-bar-on)',
+  borderColor: 'var(--color-design-bar-on)',
+  color: 'var(--color-fixed-light)',
+}
+
+/* THE SQUARE DROPDOWN — the pill is the demo bar's, and a bar that is half
+   pill and half square reads as a mistake rather than a distinction. Passed
+   to `DemoDropdown`, which keeps its own shape for every other caller. */
+const SQUARE_TRIGGER: CSSProperties = {
+  borderRadius: 7,
+  fontSize: 11.5,
+  padding: '6px 9px',
 }
 
 /* The version this bar is scoped to, stated rather than implied — a designer

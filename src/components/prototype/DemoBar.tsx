@@ -1,4 +1,4 @@
-import { type ReactNode, type RefObject } from 'react'
+import { type CSSProperties, type ReactNode, type RefObject } from 'react'
 import { ChevronDown, Check } from '@/icons'
 import {
   DEMO_BAR,
@@ -137,6 +137,7 @@ export function DemoDropdown({
   panelMinWidth = 220,
   disabledNote,
   hidden = false,
+  triggerStyle,
   children,
 }: {
   id: string
@@ -163,6 +164,13 @@ export function DemoDropdown({
    * task. `DemoControlsBar`'s `only` prop is the one caller.
    */
   hidden?: boolean
+  /**
+   * Overrides on the trigger's own box — the DESIGN bar passes squares
+   * (2026-10-16), because its controls follow Anjani's prototype and a bar
+   * that is half pill and half square reads as a mistake. Every other caller
+   * omits it and keeps the pill, which is the demo bar's shape.
+   */
+  triggerStyle?: CSSProperties
   children: ReactNode
 }) {
   if (hidden) return null
@@ -188,6 +196,7 @@ export function DemoDropdown({
         className="cre-demo-controls-btn"
         style={{
           ...DEMO_TRIGGER,
+          ...triggerStyle,
           ...(isDisabled ? { opacity: 0.4, cursor: 'not-allowed' } : null),
         }}
         disabled={isDisabled}
