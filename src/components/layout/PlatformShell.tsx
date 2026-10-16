@@ -971,6 +971,14 @@ function PlatformShellBody() {
               (prev) => {
                 const next = new URLSearchParams(prev)
                 next.delete('session')
+                /* LAND ON LEARN, NOT OVERVIEW (2026-10-16, Jillienne: the X
+                   "will take user back to the LEARN page in compass"). Leaving
+                   a lesson used to drop `session` and nothing else, so
+                   `CompassLearningPage` remounted on its default page and a
+                   reviewer was bounced to Overview as if they had just
+                   arrived. `compassPage` seeds that page once; see the note
+                   there for why it is a seed rather than a binding. */
+                next.set('compassPage', 'course')
                 return next
               },
               { replace: true },

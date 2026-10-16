@@ -130,6 +130,9 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
   const centred = useFeatureFlag('compass-session-centred').enabled
   /* Key terms: Anjani's rate-to-flip card, or the port's original grid. */
   const keyTermsV2 = useFeatureFlag('compass-key-terms-rating').enabled
+  /* The Contents column, open or a strip. Page state rather than the aside's
+     own, because the GRID has to change with it. */
+  const [contentsOpen, setContentsOpen] = useState(true)
   const inShell = pickedInShell || walkNeedsHome
   useEffect(() => {
     setCourseChrome(inShell ? 'course' : 'takeover')
@@ -144,9 +147,38 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
         chapter={SESSION_LESSON.chapter}
         onToggleRubi={() => setRailOpen((v) => !v)}
         railOpen={railOpen}
+        onExit={onExit}
       />
-      <div style={{ ...bodyGridStyle, gridTemplateColumns: railOpen ? '220px minmax(0,1fr) 360px' : '220px minmax(0,1fr)' }}>
-        <Contents beats={beats} active={beatIndex} onSelect={setBeatIndex} onExit={onExit} />
+      <div
+        style={{
+          ...bodyGridStyle,
+          gridTemplateColumns: `${contentsOpen ? '220px' : '48px'} minmax(0,1fr)${railOpen ? ' 360px' : ''}`,
+        }}
+      >
+        {/* COLLAPSED, the column is a strip with one control to bring it back
+            — her design's state, and the reason the collapse is worth having
+            at all: the lesson gets the width, and nothing is hidden behind a
+            gesture a reviewer has to guess at. */}
+        {contentsOpen ? (
+          <Contents
+            beats={beats}
+            active={beatIndex}
+            onSelect={setBeatIndex}
+            onCollapse={() => setContentsOpen(false)}
+          />
+        ) : (
+          <aside style={contentsRailStyle} aria-label="Contents">
+            <button
+              type="button"
+              style={iconButtonStyle}
+              onClick={() => setContentsOpen(true)}
+              aria-label="Show contents"
+              aria-expanded={false}
+            >
+              <Layout size={14} aria-hidden />
+            </button>
+          </aside>
+        )}
         <main style={mainStyle}>
           {/* THE LESSON IS A CENTRED COLUMN (2026-10-16, Jillienne, with the
               `<main>` selected: "the course content should be centered in the
@@ -191,11 +223,13 @@ function SessionBar({
   chapter,
   onToggleRubi,
   railOpen,
+  onExit,
 }: {
   index: number
   total: number
   chapter: string
   onToggleRubi: () => void
+  onExit: () => void
   railOpen: boolean
 }) {
   /* ⚠ POSITION, NOT ATTAINMENT. The figure is how far along the beats the
@@ -243,6 +277,19 @@ function SessionBar({
           <RubiLogo size={14} aria-hidden />
           Rubi
         </button>
+        {/* ⚠ THE PAGE'S EXIT, AND ITS ONLY ONE (2026-10-16, Jillienne: "add a
+            'X' icon to the right of these buttons. clciking on this will take
+            user back to the LEARN page in compass"). It arrived in the same
+            pass that turned the Contents arrow into a collapse — that arrow
+            WAS the exit, so these two changes are one change: move the way
+            out, then repurpose what used to be it. Doing either alone strands
+            a reviewer inside the lesson.
+
+            Square and last, after Notes and Rubi, so it reads as leaving
+            rather than as a third thing to open. */}
+        <button type="button" style={barExitStyle} onClick={onExit} aria-label="Leave the lesson">
+          <X size={14} aria-hidden />
+        </button>
       </div>
     </header>
   )
@@ -266,12 +313,12 @@ function Contents({
   beats,
   active,
   onSelect,
-  onExit,
+  onCollapse,
 }: {
   beats: SessionBeat[]
   active: number
   onSelect: (i: number) => void
-  onExit: () => void
+  onCollapse: () => void
 }) {
   const [expanded, setExpanded] = useState(false)
   /* Three chapters by default — the one behind, the live one, the one ahead.
@@ -281,11 +328,21 @@ function Contents({
     <aside style={contentsStyle} aria-label="Contents">
       <div style={contentsHeadStyle}>
         <span style={contentsTitleStyle}>Contents</span>
-        {/* The design's collapse control. It leaves the session rather than
-            narrowing the column — the one exit this page has, so it is labelled
-            for what it does. */}
-        <button type="button" style={iconButtonStyle} onClick={onExit} aria-label="Leave the session">
-          <ArrowLeft size={14} aria-hidden />
+        {/* ⚠ IT COLLAPSES THE COLUMN NOW, it does not leave the session
+            (2026-10-16, Jillienne: "this should collapse the table of
+            contents"). It was the page's ONLY exit, which is why it used to
+            be wired to `onExit` and labelled for that — so the exit moved to
+            the X beside Notes and Rubi in the bar above, in the same pass.
+            Changing one without the other would have stranded a reviewer in
+            the lesson. */}
+        <button
+          type="button"
+          style={iconButtonStyle}
+          onClick={onCollapse}
+          aria-label="Collapse contents"
+          aria-expanded
+        >
+          <Layout size={14} aria-hidden />
         </button>
       </div>
       <ol style={chapterListStyle}>
@@ -811,6 +868,27 @@ const barCountStyle: CSSProperties = {
   padding: '1px 6px',
 }
 const bodyGridStyle: CSSProperties = { display: 'grid', flex: 1, minHeight: 0 }
+/* The exit, square beside the two pill buttons — same height, no label, so
+   the pair still read as a pair and this reads as the way out. */
+const barExitStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 32,
+  height: 32,
+  borderRadius: 8,
+  border: '1px solid var(--color-border-subtle)',
+  background: 'var(--color-surface-card)',
+  color: 'var(--color-text-secondary)',
+  cursor: 'pointer',
+}
+const contentsRailStyle: CSSProperties = {
+  borderRight: '1px solid var(--color-border-subtle)',
+  padding: '18px 10px',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'flex-start',
+}
 const contentsStyle: CSSProperties = {
   borderRight: '1px solid var(--color-border-subtle)',
   padding: '18px 16px',

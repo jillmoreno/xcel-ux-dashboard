@@ -135,7 +135,28 @@ export function AppLayout({ bare = false }: { bare?: boolean } = {}) {
                         }}
                       >
                         <Header />
-                        <main className="flex-1">
+                        {/* ⚠ `flex flex-col` JOINED `flex-1` ON 2026-10-16, and it is
+                            what makes a page able to FILL this slot rather than
+                            only sit in it. `flex-1` gives this element the
+                            leftover height; without a flex formatting context
+                            inside it, a child's own `flex: 1` is inert and a
+                            short page stops where its content stops.
+
+                            THE SYMPTOM was a grey band — the Compass session in
+                            its full-screen arm ended 111px above the bottom and
+                            `--color-surface-page` showed under it across the
+                            whole width, reading as a footer somebody had added
+                            (Jillienne, "on key terms theres a weird gray
+                            footer"). A percentage height on the child cannot fix
+                            it: this element's height is flex-derived, so the
+                            percentage has nothing definite to resolve against.
+
+                            ⚠ IT IS SHARED: every routed page renders through
+                            this `<Outlet />`. A page that does not ask to grow
+                            is unaffected — `flex-col` only changes what happens
+                            when a child DOES set `flex: 1`, which before today
+                            silently did nothing. */}
+                        <main className="flex-1 flex flex-col">
                           <Outlet />
                         </main>
                       </div>

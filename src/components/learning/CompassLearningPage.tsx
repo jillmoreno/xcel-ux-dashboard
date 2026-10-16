@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { CompassSidebar, CompassPageBody, type CompassPage } from './CompassCoursePlayer'
 import { HYBRID_COMPASS_PAGES } from './compassPages'
 import { useDeclareDesignSurface, type DesignSurfaceId } from '@/context/designSurface'
@@ -56,11 +57,23 @@ export function CompassLearningPage({
   /** Open the session (the Tonight card's Start session). */
   onStartSession?: () => void
 }) {
-  const [page, setPage] = useState<CompassPage>('overview')
+  const [seedParams] = useSearchParams()
+  /* THE PAGE IS SEEDED FROM THE URL ONCE, then lives in state (2026-10-16).
+     It is a seed and not a binding on purpose: clicking the rail must not
+     push history, which is what the comment below is about — but LEAVING A
+     LESSON has to be able to say where to land, and before this it could not.
+     The X in the session bar sets `compassPage=course` so a reviewer comes
+     back to Learn, the page the lesson belongs to, instead of being bounced
+     to Overview as if they had just arrived. An unknown value falls through
+     to Overview rather than rendering nothing. */
+  const [page, setPage] = useState<CompassPage>(() => {
+    const asked = seedParams.get('compassPage')
+    return HYBRID_COMPASS_PAGES.some((p) => p.id === asked) ? (asked as CompassPage) : 'overview'
+  })
   /* Tell the Design bar which Compass page is open, so it can carry Anjani's
      controls for THIS page rather than all seven on every one of them. The
-     page lives in state here and never reaches the URL, so publishing it is
-     the only way the bar can know. */
+     page lives in state here and (apart from the seed above) never reaches the
+     URL, so publishing it is the only way the bar can know. */
   useDeclareDesignSurface(`compass:${page}` as DesignSurfaceId)
   /* ⚠ ANJANI'S COMPASS IS A FLAG, NOT A VERSION — 2026-10-15. From 2026-10-08
      her rail and course landing were gated on `isHybridVersion`, which was

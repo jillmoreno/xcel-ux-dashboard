@@ -98,6 +98,32 @@ describe('the Compass session', () => {
     window.history.replaceState({}, '', '/')
   })
 
+  it('the Contents arrow COLLAPSES the column — it no longer leaves', async () => {
+    /* ⚠ IT WAS THE PAGE'S ONLY EXIT until 2026-10-16, which is why it was
+       wired to `onExit`. The exit moved to the X in the bar in the same pass;
+       these two cases are one change and fail together if either half is
+       reverted alone, which is the point — doing one without the other
+       strands a reviewer inside the lesson. */
+    const user = userEvent.setup()
+    renderSession()
+    expect(screen.queryByRole('button', { name: 'Leave the session' })).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Collapse contents' }))
+    // The column is a strip with one way back.
+    expect(screen.queryByText('Insurance basics')).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Show contents' }))
+    expect(screen.getByText('Insurance basics')).toBeTruthy()
+  })
+
+  it('the bar carries the exit, after Notes and Rubi', async () => {
+    renderSession()
+    const exit = screen.getByRole('button', { name: 'Leave the lesson' })
+    expect(exit).toBeTruthy()
+    // Last of the three, so it reads as leaving rather than a third thing to
+    // open.
+    const group = exit.parentElement!
+    expect([...group.children].indexOf(exit)).toBe(group.children.length - 1)
+  })
+
   it('opens Rubi on the nudge, and lets it be closed', async () => {
     const user = userEvent.setup()
     renderSession()
