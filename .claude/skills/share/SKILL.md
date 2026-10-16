@@ -1,7 +1,7 @@
 ---
 name: share
-description: One command for the whole of "put my work in front of the team" — check it, commit it, push it, wait for Netlify, and open Refinement's Add form filled in, grouped under the feature it is a chunk of. Renamed from promote-to-refinement on 2026-10-15 (that name still works). Also notices when the branch has grown long and offers to close this chunk and cut the next one. Trigger on "share this", "share my branch", "share it with the team", "put this up for review", "add this to refinement", "promote to refinement", "/share", "/promote-to-refinement".
-version: 2.0.0
+description: One command for the whole of "put my work in front of the team" — check it, commit it, push it, wait for Netlify, open Refinement's Add form filled in, grouped under the feature it is a chunk of, and file the card in the To Do Board's Ready For Refinement column. Renamed from promote-to-refinement on 2026-10-15 (that name still works). Also notices when the branch has grown long and offers to close this chunk and cut the next one. Trigger on "share this", "share my branch", "share it with the team", "put this up for review", "add this to refinement", "promote to refinement", "/share", "/promote-to-refinement".
+version: 2.1.0
 author: UX Design — Colibri
 last_updated: 2026-10-15
 status: active
@@ -11,8 +11,10 @@ status: active
 
 **Say `/share`. That is the whole of step 4, 5 and 6 of the Contributing
 guide.** Checks, commit, push, wait for the build, and Refinement's Add form
-opens with every field filled in. The designer looks and clicks **Add link**.
-That click is the only thing this skill does not do, on purpose.
+opens with every field filled in — then the To Do Board's card sheet, filled
+in, in **Ready For Refinement**. The designer looks and clicks **Add link**,
+then **Add card**. Those two clicks are the only things this skill does not
+do, on purpose.
 
 Renamed from `promote-to-refinement` on 2026-10-15 — Jillienne: *"can we make
 promote to refinement an easier command, like share"*. The old name still
@@ -226,7 +228,43 @@ terminal session `open "<address>"` is fine too.) Then say, in two lines:
 note and click **Add link**. Everyone with the Hub link sees the row the moment
 it is added.*
 
-### 11. Offer the next chunk
+### 11. File the card on the To Do Board (2026-10-15)
+
+Sharing a branch and saying on the board that somebody has to look at it are
+one intention, so they are one command. **Ready For Refinement** is the
+column; the row above is the thing to look at and the card is who is waiting
+on it.
+
+```bash
+OWNER=$(git config user.name | awk '{print $1}')
+node -e '
+const [site,title,note,url,owner]=process.argv.slice(1);
+const q=new URLSearchParams({section:"todo-board",add:"1",column:"refine",title,note:`${note} ${url}`.trim(),owner});
+console.log(`${site}/?${q}`)' "$FULL_SITE" "$TITLE" "$NOTE" "$URL" "$OWNER"
+```
+
+Give this as a **second clickable link, after the first**, and say which is
+which in one line: *the first adds the Refinement row, the second files the
+card.* Both open the Hub; neither saves anything until its button is clicked.
+
+Three things this step gets right by not trying:
+
+- **The card has no URL field** — it is a card, not a link — so the review
+  address rides in the note. The Refinement row is where the link lives.
+- **`owner` is a request.** The board stores an owner's NAME and the roster is
+  the only authority on the spelling, so the page resolves it (`resolveOwner`
+  in `todoBoardStore.ts`): a name nobody on the roster answers to opens
+  **Unassigned**, with the picker right there on the sheet. `git config
+  user.name` is whatever that machine was set up with, which is exactly why
+  the skill does not get the last word on it.
+- **The skill cannot read the board**, the same password that stops it reading
+  Refinement. So it cannot tell whether this branch already has a card. If the
+  designer said in step 7 that a row already exists, ask the same question
+  about the card rather than opening a duplicate:
+
+  > Want a card on the board too, or is there one already?
+
+### 12. Offer the next chunk
 
 **Do not end on a full stop.** The habit this board is built around is *finish
 a chunk, start the next*, and the end of one is the only natural moment to
@@ -246,11 +284,12 @@ A no is a perfectly good answer. Ask once.
 
 - **Never on `main`.** Refinement is for work in review; `main` is the product.
 - **One yes covers checks, commit and push** — and it has to be an actual yes.
-- **Never POST to `/api/demos` from the skill.** The click is the gate: both
-  the form's validation and the endpoint's run on it, and the site password
-  sits in front of the endpoint anyway.
-- **One row per branch.** If the designer says a row already exists, do not
-  open a second Add — they can **Edit** the existing row on the page.
+- **Never POST to `/api/demos` or `/api/todo-board` from the skill.** The
+  click is the gate for both: the form's validation and the endpoint's run on
+  it, and the site password sits in front of the endpoints anyway.
+- **One row per branch, and one card.** If the designer says either already
+  exists, do not open a second Add — they can **Edit** the row, or the card
+  from its kebab, on the page.
 - **Nudge once, then drop it.** A long branch gets one sentence in step 1. A
   skill that argues is a skill people route around.
 

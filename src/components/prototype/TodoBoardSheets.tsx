@@ -24,14 +24,15 @@ import {
   AUTO_ASSIGN_OWNER,
   TODO_COLUMNS,
   TODO_HUES,
-  UNASSIGNED,
   UNASSIGNED_LABEL,
   autoAssigns,
   columnLabel,
   draftProblems,
   ownerOptions,
+  resolveOwner,
   type TodoCard,
   type TodoCardDraft,
+  type TodoCardPrefill,
   type TodoColumn,
   type TodoHue,
   type TodoPerson,
@@ -108,6 +109,7 @@ function SheetChrome({
 export function CardSheet({
   open,
   card,
+  seed,
   people,
   defaultColumn,
   onClose,
@@ -116,6 +118,10 @@ export function CardSheet({
   open: boolean
   /** The card being edited, or undefined when this is a new one. */
   card?: TodoCard
+  /** What a NEW card opens with, when the sheet was opened by the
+   *  `promote-to-refinement` prefill rather than by a button. Ignored when
+   *  editing — the card itself is the answer then. */
+  seed?: TodoCardPrefill
   people: TodoPerson[]
   /** Whichever button opened it — the page-level CTA defaults to To Do, and a
    *  column's own "Add a card" defaults to that column. Ignored when editing:
@@ -142,6 +148,7 @@ export function CardSheet({
         <CardBody
           key={card?.id ?? 'new'}
           card={card}
+          seed={card ? undefined : seed}
           people={people}
           defaultColumn={card?.column ?? defaultColumn}
           onClose={onClose}
@@ -154,21 +161,29 @@ export function CardSheet({
 
 function CardBody({
   card,
+  seed,
   people,
   defaultColumn,
   onClose,
   onSave,
 }: {
   card?: TodoCard
+  seed?: TodoCardPrefill
   people: TodoPerson[]
   defaultColumn: TodoColumn
   onClose: () => void
   onSave: (draft: TodoCardDraft) => Promise<void>
 }) {
-  const [title, setTitle] = useState(card?.title ?? '')
-  const [note, setNote] = useState(card?.note ?? '')
+  /* The seed is read at mount and never again: this is a FORM from here on,
+     and the designer's next keystroke is the truth. `CardSheet` mounts it
+     fresh every time the sheet opens, so there is no reset effect to get
+     wrong. */
+  const [title, setTitle] = useState(card?.title ?? seed?.title ?? '')
+  const [note, setNote] = useState(card?.note ?? seed?.note ?? '')
   const [column, setColumn] = useState<TodoColumn>(defaultColumn)
-  const [owner, setOwner] = useState<string>(card?.owner ?? UNASSIGNED)
+  // Resolved against the roster rather than taken at its word — see
+  // `resolveOwner`. A name nobody answers to opens Unassigned.
+  const [owner, setOwner] = useState<string>(card?.owner ?? resolveOwner(people, seed?.owner))
   const [errors, setErrors] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const titleRef = useRef<HTMLInputElement | null>(null)

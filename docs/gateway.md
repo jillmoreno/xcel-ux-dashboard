@@ -916,6 +916,24 @@ state, and a `history.replaceState` from inside the panel would leave
 it straight back and the form would reopen. `Demo.test.tsx` pins the prefill
 opening once with the toggle off, and doing nothing on the public build.
 
+**`/share` files a card too, as of 2026-10-15.** Adding the Refinement row and
+saying on the To Do Board that somebody has to look at it are one intention,
+so they are one command: step 11 of the skill hands over a SECOND address,
+`/?section=todo-board&add=1&column=refine&title=…&note=…&owner=…`, and the
+board's card sheet opens on **Ready For Refinement**. Same three decisions as
+the row's prefill, for the same reasons — no POST (the password fronts
+`/api/todo-board` as well), the page reads and strips the params rather than
+the panel, and nothing is stored until the designer clicks **Add card**. Two
+differences worth knowing: the review URL rides in the card's NOTE, because a
+card has no url field (the Refinement row is where the link lives); and
+`owner` is resolved against the roster by `resolveOwner`, so a `git config
+user.name` nobody on the board answers to opens **Unassigned** with the picker
+on the sheet rather than inventing a second spelling of somebody. The
+`demoPrefill` reader is gated on `section=demo` from the same day, since both
+hand-offs now use `add=1` and one address must not arm two prefills — the
+unconsumed one would keep its params on the address for a reload to reopen.
+`TodoBoard.test.tsx` pins the panel half and the page half.
+
 **The automatic branch list — the strip above the rows** (2026-09-21). Step 6
 still needs a designer to say "this one"; what it no longer needs is anyone to
 find and paste a URL. `/api/branches` (`netlify/functions/branches.ts`) lists

@@ -410,6 +410,54 @@ export function draftProblems(draft: TodoCardDraft): string[] {
   return draft.title.trim() ? [] : ['Give the card a name.']
 }
 
+/**
+ * What `promote-to-refinement` hands the board — the fields a NEW card opens
+ * with, read off the address by `UxDashboardPage` and passed down to the card
+ * sheet. The same hand-off `LinkPrefill` is for the Refinement row, and for
+ * the same reason: both Netlify sites sit behind the site password, which
+ * stands in front of `/api/todo-board` too, so the skill cannot POST the card
+ * itself. It fills the form and the designer clicks Add — the form's
+ * validation and the endpoint's both still run, and nothing is stored until
+ * that click.
+ *
+ * `owner` and `column` are REQUESTS, not facts: the skill knows what branch it
+ * is on and who is sitting at the keyboard, and it knows neither the roster
+ * nor the column ids. Both are resolved against the real thing before they
+ * reach the draft — see `resolveOwner` and `isTodoColumn`.
+ */
+export type TodoCardPrefill = {
+  title: string
+  note: string
+  /** A name as `git config user.name` spells it. Unassigned when the roster
+   *  has nobody by that name. */
+  owner?: string
+  column?: TodoColumn
+}
+
+/**
+ * The roster's spelling of a name, or Unassigned.
+ *
+ * A card stores its owner's NAME (see `TodoCard.owner`), so a prefill that
+ * passed "jillienne" straight through would make a second owner the avatars,
+ * the filters and the people sheet all disagree about. Matching
+ * case-insensitively and storing what the ROSTER says keeps one spelling of
+ * each person on the board, and a name nobody on it answers to lands as
+ * Unassigned rather than inventing an owner.
+ */
+export function resolveOwner(people: TodoPerson[], name: string | undefined): string {
+  const want = (name ?? '').trim().toLowerCase()
+  if (!want) return UNASSIGNED
+  return people.find((p) => p.name.trim().toLowerCase() === want)?.name ?? UNASSIGNED
+}
+
+/** Whether a string off the address is one of the four columns. The page
+ *  validates the param with this rather than casting it, the way the demo
+ *  prefill validates its product against the catalog: an unknown column would
+ *  otherwise reach the form as a `<select>` with no matching option. */
+export function isTodoColumn(value: string | null): value is TodoColumn {
+  return TODO_COLUMNS.some((c) => c.id === value)
+}
+
 async function write<T>(path: string, init: RequestInit, pick: (body: never) => T, fallback: string): Promise<T> {
   const res = await fetch(path, init)
   if (!res.ok) throw new TodoBoardWriteError(await problems(res, fallback))

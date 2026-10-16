@@ -32,7 +32,7 @@ import { formatUpdated } from '@/components/prototype/formatUpdated'
 import { useDemoCount } from '@/data/demoStore'
 import { useResearchCount } from '@/data/researchStore'
 import { usePrdCount } from '@/data/prdStore'
-import { useTodoBoardCount } from '@/data/todoBoardStore'
+import { isTodoColumn, useTodoBoardCount } from '@/data/todoBoardStore'
 import { useQaNoteCount } from '@/data/qaNoteStore'
 import { UX_TOKEN_BRIDGE, mirrorPaletteToRoot } from '@/components/prototype/uxPaletteBridge'
 import {
@@ -1238,7 +1238,13 @@ export function UxDashboardPage() {
    * Read once, into state, so the object identity is stable across renders.
    */
   const [demoPrefill] = useState(() => {
-    if (!params.has('add')) return null
+    // Gated on the SECTION as well as `add`, since 2026-10-15: the To Do Board
+    // takes the same `add=1` hand-off, and without this one address would arm
+    // both prefills — the board's would open its sheet and the demo's would
+    // sit un-consumed, keeping the params on the address for a reload to
+    // reopen. An `add` with no section never reached a form anyway: the page
+    // lands on Prototypes, which has no Add.
+    if (urlSection !== 'demo' || !params.has('add')) return null
     // Validated against the catalog, not trusted: an unknown tag falls back to
     // the form's own default rather than reaching the draft as a string.
     const product = params.get('product')
@@ -1258,6 +1264,42 @@ export function UxDashboardPage() {
       (prev) => {
         const p = new URLSearchParams(prev)
         for (const k of ['add', 'url', 'title', 'note', 'product', 'feature']) p.delete(k)
+        return p
+      },
+      { replace: true },
+    )
+  }, [setParams])
+
+  /**
+   * `?section=todo-board&add=1&column=refine&title=…&note=…&owner=…` — the
+   * second half of `promote-to-refinement` (2026-10-15). Sharing a branch now
+   * files the card that says somebody has to look at it, in Ready For
+   * Refinement, beside the row it just added to the board above.
+   *
+   * Read, validated and stripped here for the same three reasons the demo
+   * prefill is: the page owns the router state, a param is a request rather
+   * than a fact, and the object identity has to be stable across renders or
+   * the panel's effect re-fires.
+   */
+  const [todoPrefill] = useState(() => {
+    if (urlSection !== 'todo-board' || !params.has('add')) return null
+    // Validated against the four columns, not cast: an unknown id would reach
+    // the form as a `<select>` with no matching option. `owner` cannot be
+    // validated here — the roster is the board's, and `resolveOwner` answers
+    // for it once the endpoint has.
+    const column = params.get('column')
+    return {
+      title: params.get('title') ?? '',
+      note: params.get('note') ?? '',
+      owner: params.get('owner') ?? '',
+      column: isTodoColumn(column) ? column : undefined,
+    }
+  })
+  const consumeTodoPrefill = useCallback(() => {
+    setParams(
+      (prev) => {
+        const p = new URLSearchParams(prev)
+        for (const k of ['add', 'title', 'note', 'owner', 'column']) p.delete(k)
         return p
       },
       { replace: true },
@@ -1726,7 +1768,7 @@ export function UxDashboardPage() {
           // this page's own `--ux-*` palette rather than the brand tokens. Its
           // two SHEETS do need the bridge, because they portal out of this
           // shell — they carry it themselves, see `TodoBoardSheets.tsx`.
-          <TodoBoardPanel />
+          <TodoBoardPanel prefill={todoPrefill} onPrefillConsumed={consumeTodoPrefill} />
         ) : section === 'archive' ? (
           <div style={ARCHIVE_BRIDGE}>
             <ArchiveTable />

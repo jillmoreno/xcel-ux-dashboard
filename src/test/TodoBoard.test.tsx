@@ -5,7 +5,11 @@ import { fireEvent } from '@testing-library/dom'
 import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { MemoryRouter } from 'react-router-dom'
 import { TodoBoardPanel } from '@/components/prototype/TodoBoardPanel'
+import { UxDashboardPage } from '@/pages/UxDashboardPage'
+import { AccountProvider } from '@/context/AccountContext'
+import { ThemeProvider } from '@/context/ThemeContext'
 import {
   cardsInColumn,
   positionForDrop,
@@ -549,6 +553,134 @@ describe('TodoBoardPanel', () => {
     expect(await screen.findByText(/authoring endpoint is not reachable/)).toBeTruthy()
     expect(screen.getByRole('button', { name: /New card/ }).hasAttribute('disabled')).toBe(true)
     expect(screen.getByRole('button', { name: /Manage people/ }).hasAttribute('disabled')).toBe(true)
+  })
+})
+
+/**
+ * The hand-off `promote-to-refinement` opens the board with (2026-10-15).
+ *
+ * Sharing a branch files the card that says somebody has to look at it, in
+ * Ready For Refinement, beside the Refinement row the same skill just added.
+ * The skill cannot POST it — the Netlify site password stands in front of
+ * `/api/todo-board` the same way it does in front of `/api/demos` — so what
+ * is pinned here is the three things that make a prefill safe to hand to a
+ * form: it fires ONCE, it SAVES NOTHING on its own, and the two fields the
+ * skill cannot know for certain (the owner, the column) are resolved against
+ * the board rather than taken at their word.
+ */
+describe('the promote-to-refinement hand-off', () => {
+  it('opens the New card sheet in Ready For Refinement, once, and writes nothing until Add', async () => {
+    const { writes } = mockBoard([])
+    const consumed = vi.fn()
+    render(
+      <TodoBoardPanel
+        prefill={{
+          title: 'Study streak card — feat/streak',
+          note: 'Home, under Current Progress. https://feat-streak--ux-design-xceldashboard.netlify.app/dashboard-rebrand?demo=1',
+          owner: 'Eric',
+          column: 'refine',
+        }}
+        onPrefillConsumed={consumed}
+      />,
+    )
+
+    const dialog = await screen.findByRole('dialog')
+    expect((within(dialog).getByLabelText('Card name') as HTMLInputElement).value).toBe(
+      'Study streak card — feat/streak',
+    )
+    expect((within(dialog).getByLabelText('Quick note') as HTMLTextAreaElement).value).toContain(
+      'feat-streak--ux-design-xceldashboard.netlify.app',
+    )
+    expect((within(dialog).getByLabelText('Column') as HTMLSelectElement).value).toBe('refine')
+    expect((within(dialog).getByLabelText('Owner') as HTMLSelectElement).value).toBe('Eric')
+    expect(consumed).toHaveBeenCalledTimes(1)
+    // The click is the skill's one missing step, on purpose.
+    expect(writes).toHaveLength(0)
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Add card' }))
+    await waitFor(() => expect(writes).toHaveLength(1))
+    expect(writes[0].method).toBe('POST')
+    expect(writes[0].body).toMatchObject({
+      title: 'Study streak card — feat/streak',
+      owner: 'Eric',
+      column: 'refine',
+    })
+  })
+
+  it('opens Unassigned when the owner is not on the roster', async () => {
+    // The skill reads the name off `git config user.name`, which is whatever
+    // that machine was set up with. A card stores its owner's NAME, so taking
+    // an unknown one at its word would put a second spelling of somebody on
+    // the board — or a person nobody can filter by.
+    mockBoard([])
+    render(<TodoBoardPanel prefill={{ title: 'X', note: '', owner: 'jill.moreno', column: 'refine' }} />)
+    const dialog = await screen.findByRole('dialog')
+    expect((within(dialog).getByLabelText('Owner') as HTMLSelectElement).value).toBe('')
+  })
+
+  it('matches the roster’s spelling rather than the one it was handed', async () => {
+    mockBoard([])
+    render(<TodoBoardPanel prefill={{ title: 'X', note: '', owner: 'eric', column: 'refine' }} />)
+    const dialog = await screen.findByRole('dialog')
+    expect((within(dialog).getByLabelText('Owner') as HTMLSelectElement).value).toBe('Eric')
+  })
+
+  it('opens no sheet at all when the board cannot author', async () => {
+    // A prefill against an unreachable endpoint is a form that throws the
+    // designer's edits away on Add — the same reason `LinkBoardPanel` waits
+    // for `canAuthor`.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('<!doctype html>', { status: 200, headers: { 'content-type': 'text/html' } })),
+    )
+    const consumed = vi.fn()
+    render(<TodoBoardPanel prefill={{ title: 'X', note: '', column: 'refine' }} onPrefillConsumed={consumed} />)
+    expect(await screen.findByText(/authoring endpoint is not reachable/)).toBeTruthy()
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(consumed).not.toHaveBeenCalled()
+  })
+
+  it('opens nothing without a prefill — the board still starts closed', async () => {
+    mockBoard([])
+    render(<TodoBoardPanel />)
+    await boardReady()
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  /* The page half: the panel tests above are handed a prefill object, and
+     these two are the only proof that the PAGE builds one out of an address
+     and then takes the params back off it. The second is the one that bites —
+     params left on the address reopen the sheet on every reload. */
+  const renderDashboard = (initialPath: string) =>
+    render(
+      <MemoryRouter initialEntries={[initialPath]}>
+        <AccountProvider>
+          <ThemeProvider>
+            <UxDashboardPage />
+          </ThemeProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+
+  it('is built by the page out of the address', async () => {
+    mockBoard([])
+    renderDashboard(
+      '/?section=todo-board&add=1&column=refine&title=Study%20streak%20card&note=Home%2C%20under%20Current%20Progress.&owner=Eric',
+    )
+    const dialog = await screen.findByRole('dialog')
+    expect((within(dialog).getByLabelText('Card name') as HTMLInputElement).value).toBe('Study streak card')
+    expect((within(dialog).getByLabelText('Quick note') as HTMLTextAreaElement).value).toBe(
+      'Home, under Current Progress.',
+    )
+    expect((within(dialog).getByLabelText('Column') as HTMLSelectElement).value).toBe('refine')
+    expect((within(dialog).getByLabelText('Owner') as HTMLSelectElement).value).toBe('Eric')
+  })
+
+  it('falls back to To Do when the column is not one of the four', async () => {
+    mockBoard([])
+    renderDashboard('/?section=todo-board&add=1&column=backlog&title=X')
+    const dialog = await screen.findByRole('dialog')
+    expect((within(dialog).getByLabelText('Column') as HTMLSelectElement).value).toBe('todo')
   })
 })
 

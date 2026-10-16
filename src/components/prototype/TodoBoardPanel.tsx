@@ -28,7 +28,7 @@
  * land; the alternative is a second copy of the board that quietly disagrees
  * with the one everybody else is looking at.
  */
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Plus, Users } from '@/icons'
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu'
 import {
@@ -54,6 +54,7 @@ import {
   addPerson,
   type TodoCard,
   type TodoCardDraft,
+  type TodoCardPrefill,
   type TodoColumn,
   type TodoPerson,
 } from '@/data/todoBoardStore'
@@ -90,8 +91,12 @@ import {
 } from './todoBoardStyles'
 
 /** Which sheet is open, and what it was opened with. One piece of state
- *  rather than two booleans, so the two sheets cannot both be open. */
-type OpenSheet = { kind: 'card'; column: TodoColumn; card?: TodoCard } | { kind: 'people' } | null
+ *  rather than two booleans, so the two sheets cannot both be open. `seed` is
+ *  only ever set by the prefill — a button opens an empty form. */
+type OpenSheet =
+  | { kind: 'card'; column: TodoColumn; card?: TodoCard; seed?: TodoCardPrefill }
+  | { kind: 'people' }
+  | null
 
 /** A drag in flight: the card being moved, and where it would land. The
  *  target is kept separately from the card because it changes on every
@@ -99,7 +104,25 @@ type OpenSheet = { kind: 'card'; column: TodoColumn; card?: TodoCard } | { kind:
 type DragState = { id: string; column: TodoColumn } | null
 type DropTarget = { column: TodoColumn; beforeId: string | null } | null
 
-export function TodoBoardPanel() {
+export function TodoBoardPanel({
+  prefill,
+  onPrefillConsumed,
+}: {
+  /**
+   * A card to open the New card sheet WITH, once, as soon as the board can
+   * author. This is the second half of `promote-to-refinement`: the skill
+   * adds the Refinement row and then files the card that says somebody has to
+   * look at it. See `TodoCardPrefill` for why the skill cannot just POST it.
+   *
+   * Ignored while the endpoint has not answered — `canAuthor` is false for
+   * the wrong reason before that, and a prefill opened against a board that
+   * cannot save is a form that throws the designer's edits away.
+   */
+  prefill?: TodoCardPrefill | null
+  /** Called once the prefill has been consumed, so the page can take the
+   *  params off the address and a reload does not reopen the sheet. */
+  onPrefillConsumed?: () => void
+} = {}) {
   const { index, refresh } = useTodoBoard()
   const canAuthor = index.available
 
@@ -110,6 +133,25 @@ export function TodoBoardPanel() {
   const [drag, setDrag] = useState<DragState>(null)
   const [dropTarget, setDropTarget] = useState<DropTarget>(null)
   const [errors, setErrors] = useState<string[]>([])
+
+  /**
+   * The prefill, the way `LinkBoardPanel` takes its one: wait until the
+   * endpoint has answered, fire once, and tell the page so the params come
+   * off the address. Stripping them here would leave the router believing
+   * they were still there and the next section change would write them back —
+   * the page owns that state, which is why it owns the stripping too.
+   */
+  const [prefillConsumed, setPrefillConsumed] = useState(false)
+  useEffect(() => {
+    if (prefillConsumed || !prefill || !canAuthor) return
+    // Seeding a form from an external fact that only arrives after the first
+    // render — the `LinkBoardPanel` precedent, and the same exemption.
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setPrefillConsumed(true)
+    setSheet({ kind: 'card', column: prefill.column ?? 'todo', seed: prefill })
+    /* eslint-enable react-hooks/set-state-in-effect */
+    onPrefillConsumed?.()
+  }, [prefillConsumed, prefill, canAuthor, onPrefillConsumed])
 
   /** Every write goes through here: it reports what the server objected to
    *  rather than failing silently, and it re-reads the board afterwards
@@ -325,6 +367,7 @@ export function TodoBoardPanel() {
       <CardSheet
         open={sheet?.kind === 'card'}
         card={sheet?.kind === 'card' ? sheet.card : undefined}
+        seed={sheet?.kind === 'card' ? sheet.seed : undefined}
         people={index.people}
         defaultColumn={sheet?.kind === 'card' ? sheet.column : 'todo'}
         onClose={() => setSheet(null)}
