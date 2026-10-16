@@ -885,9 +885,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     accent: 'gold',
     icon: 'flag',
     blurb:
-      'How a learner gets into the product: the Invited Product Detail page under the partner header — the personal welcome, the course header with its price card — whose Purchase Now opens the checkout, which lands on the dashboard. Eric’s End-to-End Demo, in the same React build as the other rows, entered at its first page rather than its dashboard.',
+      'How a learner gets into the product: the Invited Product Detail page under the partner header — the personal welcome, the course header with its price card — whose Purchase Now opens the checkout, and the order confirmation where they create their password. Eric’s End-to-End Demo, in the same React build as the other rows, entered at its first page rather than its dashboard.',
     tileBlurb:
-      'The way in: invited product detail, Purchase Now, checkout, then the dashboard. The same build as the other rows, entered at its first page.',
+      'The way in: invited product detail, Purchase Now, checkout, then creating a password. The same build as the other rows, entered at its first page.',
     kind: 'explore',
     status: 'ready',
     category: 'prototype',
