@@ -4,7 +4,7 @@ import { CircleCheckSolid } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { PartnerHeader } from '@/components/e2e/PartnerHeader'
 import { TopoBackground } from '@/components/e2e/TopoBackground'
-import { END_TO_END_VERSION, useEndToEndDemoParams, useEndToEndPageChrome } from './endToEndDemo'
+import { E2E_PARTNER_PRICE, END_TO_END_VERSION, useEndToEndDemoParams, useEndToEndPageChrome } from './endToEndDemo'
 
 /**
  * CONFIRMATION & PASSWORD — `/end-to-end-demo/confirmation` (2026-10-15,
@@ -31,8 +31,8 @@ import { END_TO_END_VERSION, useEndToEndDemoParams, useEndToEndPageChrome } from
  *
  * DEMO DATA, kept consistent with the rest of the demo rather than the
  * frame's placeholders: the learner is Checkout's Jordan Navarro (an
- * example.com address, not the frame's jane.doe), and the total is the order's
- * $299.00 (the frame says $139.00). The confirmation number is the design's.
+ * example.com address, not the frame's jane.doe), and the total is
+ * Checkout's Grand Total, `E2E_PARTNER_PRICE` (the frame says $139.00). The confirmation number is the design's.
  */
 export function InvitedConfirmationPage() {
   useEndToEndDemoParams()
@@ -116,7 +116,7 @@ export function InvitedConfirmationPage() {
             <span aria-hidden style={RULE} />
             <Fact term="Email confirmation sent to" value={DEMO_EMAIL} />
             <span aria-hidden style={RULE} />
-            <Fact term="Order total" value="$299.00" />
+            <Fact term="Order total" value={E2E_PARTNER_PRICE} />
           </dl>
         </section>
 

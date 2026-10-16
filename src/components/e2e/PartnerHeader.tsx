@@ -23,7 +23,15 @@ export function PartnerHeader() {
    Figma draws its stroke inside the frame, so it adds no height. */
 /* Right-aligned, its logo ending 32 from the window's right edge (2026-10-14,
    Eric's requests: centred, then on the content's 240, then 56, 40, 32). */
+/* PINNED to the top as the page scrolls (2026-10-15, Eric's request), over
+   the page's content — the sticky price rail included. */
+export const PARTNER_HEADER_HEIGHT = 64
 const HEADER: CSSProperties = {
+  position: 'sticky',
+  top: 0,
+  zIndex: 10,
+  height: PARTNER_HEADER_HEIGHT,
+  boxSizing: 'border-box',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'flex-end',

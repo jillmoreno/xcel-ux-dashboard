@@ -6,6 +6,12 @@ import { jurisdictionName } from '@/data/nyProducerRequirements'
 /** The End-to-End Demo's dashboard version (`dashboardVersions.ts`). */
 export const END_TO_END_VERSION = 'eric-atlas-e2e'
 
+/* THE DEMO'S PRICES, in one place (2026-10-15, Eric's request): the PDP's
+   price card, Checkout's order summary and Confirmation's order total all
+   read these, so the total is always the checkout's. */
+export const E2E_ORIGINAL_PRICE = '$199.00'
+export const E2E_PARTNER_PRICE = '$65.00'
+
 /**
  * Keeps the End-to-End Demo's pages on its version (2026-10-14): the design
  * bar scopes its controls to `?version=`, and the demo bar reads `?demo=1`, so

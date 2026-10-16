@@ -7357,6 +7357,12 @@ a.cre-library-card-title::after {
   --color-e2e-form-shadow: rgb(0 0 0 / 0.05);
   /* The Affidavit modal's scrim — Home darkened behind it. */
   --color-e2e-scrim: rgb(0 0 0 / 0.5);
+  /* The price card's struck-through was-price (Invitation - Account Creation
+     2:448, the design's Gray/400). */
+  --color-e2e-was-price: #98a2b3;
+  /* xcelsolutions.com's Enter Partner Code box (.hero_partner_code), read
+     off the live page 2026-10-15 — the price card's shadow. */
+  --shadow-e2e-partner-code: 0 4px 16px 0 rgb(0 0 0 / 0.12);
 }
 
 /* ── Help & Support entry cards ─────────────────────────────────────────
