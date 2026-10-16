@@ -76,15 +76,14 @@ export const AUTO_ASSIGN_OWNER = 'Jillienne'
  * measure 5.68:1 at worst and ΔE 24 apart. The stylesheet holds the values;
  * what is stored is only the NAME of one.
  */
-export const HUES = ['teal', 'navy', 'amber', 'green', 'cyan', 'red'] as const
+export const HUES = ['slate', 'teal', 'green', 'gold', 'brick', 'taupe'] as const
 
 /** What the four retired palette hues become on the way in. Mirrored from
  *  `LEGACY_HUES` in the client store. A record keeps its colour across the
  *  change rather than every avatar collapsing onto one default. */
 export const LEGACY_HUES: Readonly<Record<string, string>> = {
-  gold: 'amber',
-  blue: 'navy',
-  neutral: 'cyan',
+  blue: 'slate',
+  neutral: 'taupe',
 }
 
 /**

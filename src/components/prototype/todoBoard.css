@@ -12,8 +12,8 @@
  * Four tokens cannot carry five-plus people across four palettes. So these are
  * six families from the project's own brand ramps, drawn SOLID with WHITE
  * initials — white because it cannot be broken by a palette or an appearance,
- * which is exactly how the first version broke. Measured: initials 5.68:1 at
- * worst (cta-600 reaches 10.14), the two closest discs ΔE 24 apart.
+ * which is exactly how the first version broke. Measured on the deployed
+ * build: initials 5.15:1 at worst, the two closest discs ΔE 20.9 apart.
  *
  * ⚠ THE TRADE, so nobody "fixes" it back: avatars do not re-skin with Moss /
  * Ember / Tide / Fern. Everything else on this board does. Jillienne's call on
@@ -52,12 +52,23 @@
   box-shadow: 0 0 0 1px var(--ux-border);
 }
 
-.cre-todo-avatar[data-hue='teal'] { background: var(--color-primary-600); }
-.cre-todo-avatar[data-hue='navy'] { background: var(--color-cta-600); }
-.cre-todo-avatar[data-hue='amber'] { background: var(--color-secondary-700); }
+/*
+ * ⚠ THE NAMES DESCRIBE WHAT XCEL'S RAMPS ACTUALLY PAINT, not what the family
+ * names imply. `cta` is BRICK RED here — the red of the knight in the lockup,
+ * not a blue; `primary` is slate blue; `tertiary` is taupe. The first version
+ * of this list was named from the generic house ramps and shipped a "navy"
+ * that rendered red on the live build. Resolve the token before renaming one.
+ *
+ * Measured on the deployed build, white ink: slate 9.54 · brick 8.24 · gold
+ * 7.64 · green 6.51 · teal 5.69 · taupe 5.15. The two closest discs are ΔE
+ * 20.9 apart (slate/teal); everything else is 22.8 or more.
+ */
+.cre-todo-avatar[data-hue='slate'] { background: var(--color-primary-600); }
+.cre-todo-avatar[data-hue='teal'] { background: var(--color-info-700); }
 .cre-todo-avatar[data-hue='green'] { background: var(--color-success-600); }
-.cre-todo-avatar[data-hue='cyan'] { background: var(--color-tertiary-700); }
-.cre-todo-avatar[data-hue='red'] { background: var(--color-error-600); }
+.cre-todo-avatar[data-hue='gold'] { background: var(--color-secondary-800); }
+.cre-todo-avatar[data-hue='brick'] { background: var(--color-cta-500); }
+.cre-todo-avatar[data-hue='taupe'] { background: var(--color-tertiary-600); }
 
 /*
  * Nobody — Unassigned, the All filter, and any name no longer on the roster.

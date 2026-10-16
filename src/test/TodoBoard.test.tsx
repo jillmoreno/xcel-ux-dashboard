@@ -66,8 +66,8 @@ const person = (over: Partial<TodoPerson> = {}): TodoPerson => ({
 
 const ROSTER: TodoPerson[] = [
   person(),
-  person({ id: 'person-002', name: 'Anjani', hue: 'amber' }),
-  person({ id: 'person-003', name: 'Eric', hue: 'navy' }),
+  person({ id: 'person-002', name: 'Anjani', hue: 'gold' }),
+  person({ id: 'person-003', name: 'Eric', hue: 'slate' }),
 ]
 
 /** The endpoint, as the panel sees it: a GET of the whole board, and a
@@ -545,7 +545,7 @@ describe('the person avatars', () => {
 
     // The element carries the colour's NAME; the value is the stylesheet's.
     const disc = avatarIn(screen.getByText('Compass — review-recap empty state').closest('article')!)
-    expect(disc.dataset.hue).toBe('amber')
+    expect(disc.dataset.hue).toBe('gold')
 
     /* ⚠ ASSERTED AT SOURCE, and it has to be: jsdom applies no stylesheet, so
        there is no computed colour to read. What is pinned is the decision —
@@ -553,19 +553,22 @@ describe('the person avatars', () => {
        The palette's own `--ux-hue-*` tokens were what made these unreadable
        (1.00:1 in dim Moss) and then indistinguishable (ΔE under 5). */
     const css = readFileSync(resolve(root, 'src/components/prototype/todoBoard.css'), 'utf8')
+    /* ⚠ The token behind each name was CHECKED on the deployed build, not
+       assumed: XCEL's `cta` ramp is brick red, not blue, and the first
+       version of this list shipped a "navy" that rendered red. */
     for (const [hue, token] of [
-      ['teal', '--color-primary-600'],
-      ['navy', '--color-cta-600'],
-      ['amber', '--color-secondary-700'],
+      ['slate', '--color-primary-600'],
+      ['teal', '--color-info-700'],
       ['green', '--color-success-600'],
-      ['cyan', '--color-tertiary-700'],
-      ['red', '--color-error-600'],
+      ['gold', '--color-secondary-800'],
+      ['brick', '--color-cta-500'],
+      ['taupe', '--color-tertiary-600'],
     ]) {
       expect(css).toContain(`.cre-todo-avatar[data-hue='${hue}'] { background: var(${token}); }`)
     }
     // Nobody is grey on the page's tokens; the six are not.
     expect(css).toContain("[data-hue='none']")
-    expect(css).not.toMatch(/\[data-hue='(teal|navy|amber|green|cyan|red)'\][^}]*--ux-hue/)
+    expect(css).not.toMatch(/\[data-hue='(slate|teal|green|gold|brick|taupe)'\][^}]*--ux-hue/)
   })
 
   it('is hidden from assistive tech, because the name is always beside it', async () => {

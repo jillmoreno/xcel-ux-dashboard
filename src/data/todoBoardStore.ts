@@ -96,7 +96,12 @@ export function autoAssigns(column: TodoColumn): boolean {
  *
  * So these are six families from the PROJECT'S OWN brand ramps (the `.cre-
  * todo-avatar` rules in `todoBoard.css` name them), drawn solid with white
- * initials. White ink is what makes it robust — it cannot be broken by a
+ * initials. ⚠ THE NAMES DESCRIBE WHAT XCEL'S RAMPS ACTUALLY PAINT, which is
+ * not what the family names suggest: `cta` is brick red here (the knight in
+ * the logo), `primary` is slate blue, `tertiary` is taupe. Read the resolved
+ * colour before renaming one of these — the first version of this list was
+ * named from the generic house ramps and shipped a "navy" that rendered
+ * red. White ink is what makes it robust — it cannot be broken by a
  * palette or an appearance, which is exactly how the first version broke.
  * Measured: initials 5.68:1 at worst, and the two closest discs are ΔE 24
  * apart.
@@ -110,7 +115,7 @@ export function autoAssigns(column: TodoColumn): boolean {
  * the avatar, at every call site, so a repeat is a weaker signal rather than
  * an ambiguity.
  */
-export const TODO_HUES = ['teal', 'navy', 'amber', 'green', 'cyan', 'red'] as const
+export const TODO_HUES = ['slate', 'teal', 'green', 'gold', 'brick', 'taupe'] as const
 
 /**
  * What the four palette hues become.
@@ -122,9 +127,11 @@ export const TODO_HUES = ['teal', 'navy', 'amber', 'green', 'cyan', 'red'] as co
  * `TodoBoard.test.tsx` asserts the two agree.
  */
 export const LEGACY_HUES: Readonly<Record<string, string>> = {
-  gold: 'amber',
-  blue: 'navy',
-  neutral: 'cyan',
+  // The four palette hues these replaced. `teal` and `gold` kept their names,
+  // so they need no entry — a stored value that is still an id resolves as
+  // itself.
+  blue: 'slate',
+  neutral: 'taupe',
 }
 
 export type TodoHue = (typeof TODO_HUES)[number] | 'none'

@@ -778,9 +778,16 @@ SAGE, so the initials were invisible); tinted into the card to fix that, the
 four discs sat ΔE 1.7–4.9 apart, and under ~10 reads as the same colour, so
 they identified nobody. Four tokens cannot carry five-plus people across four
 palettes. They are six families from the project's own brand ramps now
-(`todoBoard.css`), solid, with WHITE initials — white because an ink that
-followed the theme is exactly how the first version broke. Measured: 5.68:1
-at worst, the two closest discs ΔE 24 apart. Unassigned stays grey on the
+(`todoBoard.css`) — slate `primary-600`, teal `info-700`, green
+`success-600`, gold `secondary-800`, brick `cta-500`, taupe `tertiary-600` —
+solid, with WHITE initials, white because an ink that followed the theme is
+exactly how the first version broke. Measured on the deployed build: 5.15:1
+at worst, the two closest discs ΔE 20.9 apart. ⚠ The names describe what
+XCEL's ramps actually PAINT, which is not what the family names imply: `cta`
+is the brick red of the knight in the lockup, `primary` is slate blue,
+`tertiary` is taupe. A first version of this list was named from the generic
+house ramps and shipped a "navy" that rendered red — resolve the token before
+renaming one. Unassigned stays grey on the
 page's own tokens, so "nobody" is visibly not one of the six. The ring is
 `--ux-border`, which does still follow the palette: it is the disc's edge, not
 its identity.

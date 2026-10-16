@@ -69,7 +69,7 @@ describe('GET /api/todo-board', () => {
 
   it('gives every seeded person their own colour, cycling through the six', async () => {
     const { body } = await board()
-    expect((body.people as Json[]).map((p) => p.hue)).toEqual(['teal', 'navy', 'amber', 'green', 'cyan'])
+    expect((body.people as Json[]).map((p) => p.hue)).toEqual(['slate', 'teal', 'green', 'gold', 'brick'])
   })
 })
 
@@ -180,8 +180,8 @@ describe('people', () => {
        `--ux-hue-*` names. Without the map they would all normalise to one
        default colour, which is the failure the six colours exist to end. */
     await board()
-    const { body } = await call('POST', '/api/todo-board/people', { name: 'Joe', hue: 'gold' })
-    expect((body.person as Json).hue).toBe('amber')
+    const { body } = await call('POST', '/api/todo-board/people', { name: 'Joe', hue: 'blue' })
+    expect((body.person as Json).hue).toBe('slate')
   })
 
   it('adds somebody new with the next colour', async () => {
@@ -192,7 +192,7 @@ describe('people', () => {
     // Five seeded, so the sixth person takes the sixth colour. A seventh
     // would wrap to the first — the name beside the avatar is what keeps that
     // readable.
-    expect((body.person as Json).hue).toBe('red')
+    expect((body.person as Json).hue).toBe('taupe')
   })
 
   it('reassigns a removed person’s cards instead of deleting them', async () => {
