@@ -69,6 +69,14 @@ beforeEach(() => {
   seedElite()
 })
 
+/* ⚠ A VERSION THAT STILL HAS THE GENERIC PROGRESS PICKER (2026-10-16). Eric's
+   Atlas versions REPLACE it with their own five-state Progress — the ring and
+   the readiness bands together — and `eric-atlas-e2e` is the brand DEFAULT, so
+   a bare `/dashboard-rebrand` no longer draws the generic one at all. Cases
+   about the generic picker ask for this rather than quietly exercising the
+   other control. */
+const GENERIC_PROGRESS_VERSION = '/dashboard-rebrand?version=discoverability-qe-focused'
+
 describe('DemoControlsBar — scope gate', () => {
   it('renders on /dashboard-rebrand', () => {
     renderBar()
@@ -210,7 +218,10 @@ describe('DemoControlsBar — Progress / Education with a non-member account', (
     // non-members (personaEnabled = showExtras in MembershipOverview), so
     // picking a Progress state no longer force-promotes the account to a member
     // tier — it just writes ?prog=, leaving the non-member account intact.
-    renderBar()
+    /* The generic picker's version — see `GENERIC_PROGRESS_VERSION`. This
+       case is about `?prog=` and membership, which is the generic control's
+       behaviour; Eric's replacement writes a flag, not that param. */
+    renderBar(GENERIC_PROGRESS_VERSION)
     /* ⚠ NOT STARTED, not At Risk — 2026-09-23, when the picker was cut to two
        rows. The claim here was never about WHICH state: it is that picking one
        writes `?prog=` and leaves a non-member account alone.
@@ -277,13 +288,19 @@ describe('DemoControlsBar — persona dropdown', () => {
  */
 describe('DemoControlsBar — a picker with nothing in it', () => {
   const PICKERS = [
-    { pill: /Navigation/, panel: 'Navigation layout', least: 3 },
-    { pill: /Progress/, panel: 'Progress / compliance state', least: 2 },
+    { pill: /Navigation/, panel: 'Navigation layout', least: 3, path: undefined as string | undefined },
+    /* ⚠ PROGRESS ASKS FOR A NON-ATLAS VERSION (2026-10-16). Eric's Atlas
+       versions swap this picker for their own five-state one, and
+       `eric-atlas-e2e` is the brand default — so on a bare route the generic
+       picker is correctly absent. Navigation has no such swap and keeps the
+       default route, which is also what makes this a per-picker path rather
+       than a change to the whole loop. */
+    { pill: /Progress/, panel: 'Progress / compliance state', least: 2, path: GENERIC_PROGRESS_VERSION },
   ]
 
-  for (const { pill, panel, least } of PICKERS) {
+  for (const { pill, panel, least, path } of PICKERS) {
     it(`${panel} offers its arms rather than an empty radiogroup`, () => {
-      renderBar()
+      renderBar(path)
       fireEvent.click(screen.getByRole('button', { name: pill }))
       const group = screen.getByRole('radiogroup', { name: panel })
       /* `within(...).getAllByRole` throws on none, which is the assertion —
@@ -366,7 +383,7 @@ describe('DemoControlsBar — a state with no agreed design', () => {
      * unreachable from the demo controls, by both doors. The test below pins
      * the persona one, and it did not need editing.
      */
-    renderBar()
+    renderBar(GENERIC_PROGRESS_VERSION)
     expect(within(openProgress()).queryByRole('radio', { name: /Expired/ })).toBeNull()
     expect(url()).not.toContain('progress-expired')
   })
@@ -376,7 +393,7 @@ describe('DemoControlsBar — a state with no agreed design', () => {
        Derived from the list rather than hard-coded, so re-adding a row updates
        both together — but a row appearing by accident still shows up here as a
        changed count in a test named for it. */
-    renderBar()
+    renderBar(GENERIC_PROGRESS_VERSION)
     const rows = within(openProgress()).getAllByRole('radio')
     expect(rows.map((r) => r.textContent?.trim())).toEqual(
       DASHBOARD_PROGRESS_PICKER.map((o) => o.label),

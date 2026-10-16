@@ -136,8 +136,12 @@ describe('the owner axis', () => {
       'atlas-white-top-nav',
       // Joined 2026-10-09 — V3's Stacked / Inline link tiles.
       'atlas-v3-link-tiles',
-      // Joined 2026-10-09 — V3's own Progress control.
-      'atlas-v3-progress',
+      /* `atlas-v3-progress` LEFT THIS LIST on 2026-10-16. It joined
+         2026-10-09 as V3's own Progress control; it moved to the DEMO bar
+         when it started driving the readiness bands as well as the ring —
+         which makes it a statement about the product rather than one
+         designer's axis, and so not Eric's design flag any more. The flag
+         itself is unchanged in every other way; only `surface` went. */
       'atlas-home-layout',
       'atlas-xcel-palette',
       'atlas-right-rail-layout',

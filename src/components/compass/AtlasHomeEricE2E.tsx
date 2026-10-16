@@ -210,6 +210,12 @@ export function AtlasHomeEricE2E({
   /* Which Study Pace card — the dial or the stepped states. A design-bar
      radiogroup; see `atlas-pace-card`. */
   const paceCard = useFeatureFlag('atlas-pace-card').variant ?? 'ring'
+  /* ⚠ READ UP HERE, not beside the other bar controls below, because the
+     access window and the ring both need it before they are computed. It is
+     the DEMO bar's Progress since 2026-10-16 (Eric's design control until
+     then) — which state the module opens on, its figure, and the readiness
+     band with it. */
+  const progressPick = useFeatureFlag('atlas-v3-progress').variant ?? 'not-started'
   // White's course-head panel, measured so Quick Links can take its height
   // (2026-10-14, Eric's request).
   const [headEl, setHeadEl] = useState<HTMLDivElement | null>(null)
@@ -259,7 +265,24 @@ export function AtlasHomeEricE2E({
    * means none does, and THAT is when the card says so.
    */
   const paceFit = preset.state === 'no' ? model.presets.find((x) => x.state !== 'no') : preset
-  const accessDays = accessExpiresAt ? Math.max(0, daysUntil(accessExpiresAt, today) ?? 0) : null
+  /* NOT STARTED — the 0% state. Several things read it: the access window
+     below, the ring's figure, and the Readiness card's empty band. */
+  const atZeroProgress = progressPick === 'not-started'
+  const ringAtZero = paceCard === 'ring' && atZeroProgress
+  const rawAccessDays = accessExpiresAt ? Math.max(0, daysUntil(accessExpiresAt, today) ?? 0) : null
+  /* ⚠ 30 DAYS AT 0% (2026-10-16, Jillienne: "at 0% should default to 30 days
+     for course access"). The persona's expiry is a fixed date, so a learner
+     who has not started reads whatever is left of a window that began without
+     them — 18 days on the demo date, which tells a story about a course they
+     are late for rather than one they are about to begin. Not Started means
+     the clock has not started either.
+
+     ⚠ THE DATE BESIDE IT IS STILL THE PERSONA'S. `expiresOn` is a real date
+     from the fixture and this is a count — so at 0% the two no longer agree
+     by arithmetic. Making them agree means moving the expiry itself, which is
+     the persona's and reaches further than this card. Worth doing properly if
+     the pair ever has to be read together. */
+  const accessDays = atZeroProgress ? 30 : rawAccessDays
   /* EXPIRES · DAYS TO COMPLETE, under the course title (Figma 368:519,
      2026-10-13, Eric's request). The course's own access end and the days
      left to it — the figures the Access tile reads — not the frame's sample
@@ -367,17 +390,11 @@ export function AtlasHomeEricE2E({
       : searchParams.get('affidavit') === '1'
         ? 'pre'
         : null
-  // The Design bar's Progress (V3 only, 2026-10-09) — which module state and figure.
-  const progressPick = useFeatureFlag('atlas-v3-progress').variant ?? 'not-started'
   // The Design bar's Link tiles (V3 only, 2026-10-09) — Stacked (default) or Inline.
   const stackedTiles = (useFeatureFlag('atlas-v3-link-tiles').variant ?? 'stacked') !== 'inline'
   // The Design bar's Quick Links side (2026-10-13) — Left (default) or Right.
   const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
   const progress = V3_PROGRESS[progressPick] ?? V3_PROGRESS['not-started']
-  /* NOT STARTED — the 0% screen. The ring arm reads it as a real 0 and drops
-     what cannot be true yet; see the Readiness block below. */
-  const atZeroProgress = progressPick === 'not-started'
-  const ringAtZero = paceCard === 'ring' && atZeroProgress
   // COMPLETED (Design bar's Progress = Completed 100%, 2026-10-09, Eric): no
   // Course progress card, and Step 1 becomes the Congratulations block.
   const completedView = progressPick === 'completed'
@@ -572,14 +589,10 @@ export function AtlasHomeEricE2E({
                  different plans. `HybridHomeV1` pins its 3 deliberately and
                  records the derivation it dropped — this one keeps it. */
               <AtlasPaceRingCard
-                /* ⚠ 0 AT NOT-STARTED, not `V3_PROGRESS`'s 14. That 14 belongs
-                   to the STATES card and its note says why: "Opens on Study
-                   pace (0% IS that screen); clicking on reaches the 14% ring"
-                   — two screens, and the figure is the second one's. The ring
-                   has no second screen, so Not Started 0% has to BE 0 or the
-                   control and the dial disagree on the one number the dial
-                   exists to show. */
-                percent={atZeroProgress ? 0 : progress.percent ?? percent}
+                /* `V3_PROGRESS` carries the figure for every state now,
+                   including 0 — see the note there. The `percent` prop is the
+                   persona's and only stands in for a state with no figure. */
+                percent={progress.percent ?? percent}
                 weeks={paceFit ? Math.max(1, Math.round(paceFit.days / 7)) : 3}
                 onCustomize={onOpenStop ? () => onOpenStop('study-plan') : undefined}
               />
@@ -1477,23 +1490,40 @@ const REQUIREMENTS: CSSProperties = {
   fontSize: 14,
 }
 
-/* The Design bar's Progress control → the module's opening state and figure. */
-/* The Readiness level each Progress stage opens on (0 Novice … 4 Exam Ready).
-   Expired has no obvious level, so it starts over at Novice. */
+/* The DEMO bar's Progress control → the module's state, its figure, and the
+   readiness band beside it (2026-10-16; it was the Design bar's until then).
+
+   ⚠ ONE TABLE, THREE CARDS. The whole point of moving it was that a single
+   pick has to leave the ring, the progress module and the Readiness card
+   telling the same story — so the percentage and the band live here together
+   rather than being derived twice.
+
+   ⚠ READINESS IS NOT COMPLETION. "Ready" at 100% is the demo's shorthand and
+   Jillienne flagged it the same day: somebody can finish a course and not be
+   ready. When real scoring lands, THIS is the map that has to stop being a
+   straight line from progress. */
+/* The Readiness band each Progress state opens on — 0 Beginner … 3 Ready. */
 const V3_READINESS_FOR: Record<string, number> = {
   'not-started': 0,
-  'on-track': 1,
+  'on-track': 0,
+  developing: 1,
   milestone: 2,
   completed: 3,
-  expired: 0,
 }
-const V3_PROGRESS_ORDER = ['not-started', 'on-track', 'milestone', 'completed', 'expired']
+const V3_PROGRESS_ORDER = ['not-started', 'on-track', 'developing', 'milestone', 'completed']
 const V3_PROGRESS: Record<string, { stage: ProgressStage; percent?: number }> = {
-  // Opens on Study pace (0% IS that screen); clicking on reaches the 14% ring.
-  'not-started': { stage: 'zero', percent: 14 },
+  /* ⚠ 0, NOT 14, SINCE 2026-10-16. It was 14 because the STATES card opens on
+     Study pace and clicking reaches the 14% ring — the figure was the second
+     screen's. The ring has no second screen and the control now says "Not
+     Started 0%", so the figure has to be 0. */
+  'not-started': { stage: 'zero', percent: 0 },
   'on-track': { stage: 'current', percent: 14 },
-  milestone: { stage: 'milestone' },
-  completed: { stage: 'complete' },
+  developing: { stage: 'current', percent: 36 },
+  milestone: { stage: 'milestone', percent: 75 },
+  completed: { stage: 'complete', percent: 100 },
+  /* Off the picker since 2026-10-16 — the five states are a readiness ladder
+     and "expired" is not a point on it. Kept here so an `?ff=` pin or a
+     stored value still resolves to something rather than falling through. */
   expired: { stage: 'expired' },
 }
 

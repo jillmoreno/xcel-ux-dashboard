@@ -548,6 +548,18 @@ export function DemoControlsBar({
      bar cannot disagree with `EndToEndPageSync` about what the five are. */
   const startOptions = FEATURE_FLAGS.find((f) => f.key === 'demo-start-point')?.variants ?? []
   const startState = useFeatureFlag('demo-start-point')
+  /* ERIC'S ATLAS PROGRESS — moved onto this bar 2026-10-16 because it now
+     drives the READINESS bands as well as the ring, which makes it a
+     statement about the product rather than one designer's axis.
+
+     ⚠ IT REPLACES the generic Progress on the versions it names rather than
+     sitting beside it (Jillienne's call): two "Progress" dropdowns on one bar,
+     driving different cards, is the thing this avoids. The version list is the
+     flag's own, so the bar and the catalog cannot disagree about where it
+     applies. */
+  const atlasProgressFlag = FEATURE_FLAGS.find((f) => f.key === 'atlas-v3-progress')
+  const atlasProgressState = useFeatureFlag('atlas-v3-progress')
+  const onAtlasProgressVersion = (atlasProgressFlag?.versions ?? []).includes(activeVersionId)
 
   const readinessReachable = !railHidesSection(
     searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand),
@@ -1214,11 +1226,55 @@ export function DemoControlsBar({
             })}
           </DemoDropdown>
         )}
-        {/* Progress / compliance state — single-select radiogroup */}
+        {/* ERIC'S ATLAS PROGRESS, in the generic one's place on his versions
+            (2026-10-16). Five states that step the ring AND the readiness
+            bands together: Not Started 0% · Beginner 14% · Developing 36% ·
+            Proficient 75% · Ready 100%. */}
+        {onAtlasProgressVersion && (
+          <DemoDropdown
+            id="atlas-progress"
+            square
+            hidden={!show('progress')}
+            label={
+              (atlasProgressFlag?.variants ?? []).find((o) => o.value === atlasProgressState.variant)
+                ?.label ?? 'Not Started 0%'
+            }
+            eyebrow="Progress"
+            openId={openId}
+            onToggle={toggle}
+            panelRole="radiogroup"
+            panelLabel="Course progress and readiness"
+            panelMinWidth={240}
+          >
+            {(atlasProgressFlag?.variants ?? []).map((opt) => {
+              const active = opt.value === atlasProgressState.variant
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  tabIndex={active ? 0 : -1}
+                  className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                  onClick={() => {
+                    setVariant('atlas-v3-progress', opt.value)
+                    close()
+                  }}
+                >
+                  <span style={{ flex: 1 }}>{opt.label}</span>
+                  {active && <Check size={15} aria-hidden />}
+                </button>
+              )
+            })}
+          </DemoDropdown>
+        )}
+        {/* Progress / compliance state — single-select radiogroup.
+            ⚠ NOT DRAWN on the versions above: theirs replaces it, so the bar
+            never shows two Progress dropdowns. */}
         <DemoDropdown
           id="progress"
           square
-          hidden={!show('progress')}
+          hidden={!show('progress') || onAtlasProgressVersion}
           label={progressLabel}
           eyebrow="Progress"
           openId={openId}

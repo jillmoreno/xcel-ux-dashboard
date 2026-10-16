@@ -2700,28 +2700,52 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   },
   {
     key: 'atlas-v3-progress',
-    /* ERIC/ATLAS V3'S PROGRESS, ON THE DESIGN BAR (2026-10-09, Eric's request:
-       "a Progress dropdown … that overrides the Demo Progress dropdown", just
-       for V3). It picks which of the Course progress module's five states V3's
-       Home opens on, and the figure the dial shows, overriding the Demo bar's
-       Progress for that module. Scoped to V3 by `versions`; the Demo bar's
-       Progress still drives everything else on the page. Clicking the module
-       still steps through the states from wherever this put it. */
-    surface: 'design',
-    owner: 'eric',
+    /* ERIC/ATLAS'S PROGRESS — ON THE DEMO BAR SINCE 2026-10-16 (Jillienne:
+       "the progress from the Design Controls needs to move up into the Demo
+       Controls"). It was `surface: 'design'`, Eric's, from 2026-10-09: "a
+       Progress dropdown … that overrides the Demo Progress dropdown", just
+       for V3.
+
+       WHY IT MOVED: it now drives the READINESS bands as well as the ring, so
+       it decides what a stakeholder sees on two cards rather than what one
+       designer is exploring — which is the line between the two bars.
+
+       ⚠ IT REPLACES THE GENERIC PROGRESS ON THESE VERSIONS rather than
+       joining it. `dashboard-progress-state` is still the demo bar's Progress
+       everywhere else; on the versions below, `DemoControlsBar` draws THIS
+       one instead, so there is one "Progress" on the bar at a time and it
+       always drives what is on screen. Jillienne's call, asked and answered —
+       two progress dropdowns side by side was the alternative.
+
+       ⚠ THE FIVE STATES ARE A READINESS LADDER NOW: 0% Not Started, 14%
+       Beginner, 36% Developing, 75% Proficient, 100% Ready. Milestone and
+       Course Expired are gone from the list — the states exist to show the
+       readiness bands stepping, and those two were not points on that scale.
+
+       ⚠ AND READINESS IS NOT COMPLETION. 100% progress showing Ready is the
+       demo's shorthand: somebody can finish a course and not be ready.
+       Jillienne flagged it the same day as its own pass — when real scoring
+       lands, this straight map from progress is the thing that has to go. */
+    /* ⚠ NO `surface`. That field means "draw me on the DESIGN bar" and is
+       the only bar a flag can reach declaratively — the demo bar is
+       hand-built JSX (see the two-bars table in CLAUDE.md), so a control gets
+       there by being rendered in `DemoControlsBar`, which is where this one
+       now is. Dropping `surface` is what takes it OFF the design bar.
+       `versions` is kept as the record of where it applies; the bar gates on
+       the same list. */
     versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Progress',
     description:
-      'Which Course progress state Eric/Atlas V3’s Home shows: Not Started (0%, the Study pace screen), On Track (14%), Milestone (75%, Great Work), Completed (100%) or Course Expired. Overrides the Demo bar’s Progress for that module only.',
+      'Which Course progress state Eric’s Atlas Home shows, and the readiness band with it: Not Started (0%), Beginner (14%), Developing (36%), Proficient (75%) or Ready (100%). Replaces the demo bar’s generic Progress on these versions. ⚠ Readiness tracks progress here for demonstration only — finishing a course does not make a learner ready.',
     defaultEnabled: true,
     defaultVariant: 'not-started',
     variants: [
       { value: 'not-started', label: 'Not Started 0%' },
-      { value: 'on-track', label: 'On Track 14%' },
-      { value: 'milestone', label: 'Milestone 75%' },
-      { value: 'completed', label: 'Completed 100%' },
-      { value: 'expired', label: 'Course Expired' },
+      { value: 'on-track', label: 'Beginner 14%' },
+      { value: 'developing', label: 'Developing 36%' },
+      { value: 'milestone', label: 'Proficient 75%' },
+      { value: 'completed', label: 'Ready 100%' },
     ],
     page: 'dashboard-rebrand',
   },

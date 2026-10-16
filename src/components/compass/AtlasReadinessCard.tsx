@@ -37,12 +37,26 @@ const NOT_STARTED: Level = {
   fill: 0,
   caption: 'Will update as you progress through course material',
 }
+/* THE FOUR BANDS (2026-10-16, Jillienne's bands image): Beginner <40,
+   Developing 40–64, Proficient 65–84, Ready 85+. They replace the five that
+   were here — Novice, Advanced Beginner, Competent, Proficient, Exam Ready —
+   so the card, the demo bar and that image use one set of words.
+
+   ⚠ `fill` IS THE DEMO'S PROGRESS FIGURE, NOT THE BAND'S FLOOR, and the two
+   do not agree: 36% is Developing here while the bands put it in Beginner.
+   That is Jillienne's mapping and it is deliberate — "this is just to help
+   show these states in the demo" — chosen so five demo states step visibly
+   apart. It is a demo ladder, not the scoring rule.
+
+   ⚠ AND READINESS IS NOT COMPLETION. 100% progress showing Ready is the
+   demo's shorthand; somebody can finish a course and not be ready. Flagged
+   for its own pass (2026-10-16) — when real scoring lands, this table is the
+   thing that has to stop being a straight map from progress. */
 const LEVELS: Level[] = [
-  { name: 'Novice', lines: ['Novice'], fill: 13 },
-  { name: 'Advanced Beginner', lines: ['Advanced', 'Beginner'], fill: 38 },
-  { name: 'Competent', lines: ['Competent'], fill: 66 },
-  { name: 'Proficient', lines: ['Proficient'], fill: 85 },
-  { name: 'Exam Ready', lines: ['Exam', 'Ready'], fill: 100 },
+  { name: 'Beginner', lines: ['Beginner'], fill: 14 },
+  { name: 'Developing', lines: ['Developing'], fill: 36 },
+  { name: 'Proficient', lines: ['Proficient'], fill: 75 },
+  { name: 'Ready', lines: ['Ready'], fill: 100 },
 ]
 
 /** `initialLevel` (0–4) picks the level it opens on — V3's Completed view opens
