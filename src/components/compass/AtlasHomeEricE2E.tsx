@@ -27,6 +27,7 @@ import { COMPASS_BUTTON } from './compassButton'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
 import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
+import { CircleCheckSolid } from '@/icons'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
 import { AtlasPaceRingCard } from './AtlasPaceRingCard'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
@@ -268,6 +269,9 @@ export function AtlasHomeEricE2E({
   /* NOT STARTED — the 0% state. Several things read it: the access window
      below, the ring's figure, and the Readiness card's empty band. */
   const atZeroProgress = progressPick === 'not-started'
+  /* The top of the ladder. It no longer hides the progress card — see the
+     note at the ring — but it still decides the journey's completed shape. */
+  const completedView = progressPick === 'completed'
   const ringAtZero = paceCard === 'ring' && atZeroProgress
   const rawAccessDays = accessExpiresAt ? Math.max(0, daysUntil(accessExpiresAt, today) ?? 0) : null
   /* ⚠ 30 DAYS AT 0% (2026-10-16, Jillienne: "at 0% should default to 30 days
@@ -371,6 +375,22 @@ export function AtlasHomeEricE2E({
     regulated,
   )
   const shownCurrentIdx = onWhite ? 0 : currentIdx
+  /* ⚠ AT 100% THE COUNT HAS TO AGREE WITH THE CHECK BESIDE IT (2026-10-16).
+     The lesson row's title carries the path's own figures — "Pre-Licensing
+     Lessons (23 of 36 completed)" — and those do not move when the demo's
+     Progress does, so a completed journey rendered a green check against a
+     row saying 23 of 36. One contradicts the other on the same line.
+
+     A DISPLAY TRANSFORM, not a change to the path: the figures are the
+     fixture's and other surfaces read them. This rewrites `x of y` to `y of
+     y` for the completed view only, and only where the title already has
+     that shape — a title without it is left exactly as it is. */
+  const journeyStops: readonly JourneyStop[] = completedView
+    ? shownStops.map((stop) => {
+        const m = stop.title.match(/^(.*\()(\d+) of (\d+)( completed\).*)$/)
+        return m ? { ...stop, title: `${m[1]}${m[3]} of ${m[3]}${m[4]}` } : stop
+      })
+    : shownStops
   /* THE JURISDICTION COMES FROM THE PATH, heading and steps alike.
      Florida is no longer written here: `MembershipOverview` resolves this
      demo's COURSE to Florida (2026-10-15), so `path.state` already is 'FL'
@@ -397,7 +417,6 @@ export function AtlasHomeEricE2E({
   const progress = V3_PROGRESS[progressPick] ?? V3_PROGRESS['not-started']
   // COMPLETED (Design bar's Progress = Completed 100%, 2026-10-09, Eric): no
   // Course progress card, and Step 1 becomes the Congratulations block.
-  const completedView = progressPick === 'completed'
   // Clicking the Course progress card steps the Design bar's Progress itself
   // (2026-10-09, Eric: "trigger the same corresponding screens that the
   // progress dropdown tool does"), so Step 1, Readiness and the Completed view
@@ -581,7 +600,18 @@ export function AtlasHomeEricE2E({
                 them; each keeps its states and clicks (`bare`). On WIP the
                 wrapper is `display: contents` and they stay two cards. */}
             <div style={onWhite ? WHITE_PROGRESS_PANEL : { display: 'contents' }}>
-            {completedView ? null : paceCard === 'ring' ? (
+            {/* ⚠ THE RING SURVIVES 100% (2026-10-16, Jillienne: "100% still
+                needs to show the course progress section because they might
+                not always be 100% complete, but still ready"). Completion and
+                readiness are two axes, and hiding the progress card at the top
+                of the readiness scale collapses them into one — the card has
+                to stay visible for a learner who is ready at less than 100%,
+                which is the case that argument is really about.
+
+                The STATES arm keeps Eric's behaviour: it swaps the whole
+                column for his Congratulations panel at completion, and that
+                panel is his design. */}
+            {paceCard === 'ring' ? (
               /* THE RING (2026-10-16, the default). The week goal is DERIVED
                  from the same `paceFit` the Expected-completion date reads,
                  not typed: the card beside it prints a finish date, and a
@@ -596,7 +626,7 @@ export function AtlasHomeEricE2E({
                 weeks={paceFit ? Math.max(1, Math.round(paceFit.days / 7)) : 3}
                 onCustomize={onOpenStop ? () => onOpenStop('study-plan') : undefined}
               />
-            ) : (
+            ) : completedView ? null : (
             <AtlasCourseProgressStates
               bare={onWhite}
               // The pace pill's gauge in Light, Primary 400 (2026-10-15, Eric).
@@ -726,7 +756,16 @@ export function AtlasHomeEricE2E({
                 steps' 335. Yes and Not Yet are not wired yet. */}
             {/* On the walk this has moved INTO Step 2 — see there. */}
             {walkSteps ? null : <ExamDatePrompt />}
-            {completedView ? (
+            {/* ⚠ AT 100% THE RING ARM SHOWS THE STOPS, ALL DONE (2026-10-16,
+                Jillienne: "we need to show the items in step 1 as compelted").
+                The work is what was completed, so the list is the thing worth
+                showing — a message in its place tells you it happened without
+                showing what did.
+
+                Eric's Congratulations panel is NOT deleted: it is what the
+                STATES arm still draws at completion, which is the card it was
+                designed beside (Figma 297:247, 2026-10-09). */}
+            {completedView && paceCard !== 'ring' ? (
               /* STEP 1 ON THE COMPLETED VIEW — Figma 297:247 (2026-10-09,
                  Eric's request): the eyebrow, "Congratulations!" and a line in
                  place of the journey's stops. */
@@ -756,12 +795,16 @@ export function AtlasHomeEricE2E({
                 <p style={STEP_TITLE}>Complete Coursework</p>
               </div>
               <ol style={{ listStyle: 'none', margin: 0, padding: '3px 0', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {shownStops.map((stop, i) => (
+                {journeyStops.map((stop, i) => (
                   <JourneyRow
                     key={stop.id}
                     stop={stop}
-                    current={i === shownCurrentIdx}
-                    last={i === shownStops.length - 1}
+                    /* ⚠ NOTHING IS "CURRENT" WHEN EVERYTHING IS DONE. A
+                       filled current-dot among green checks would say the
+                       learner is still on that row. */
+                    current={!completedView && i === shownCurrentIdx}
+                    done={completedView}
+                    last={i === journeyStops.length - 1}
                     onOpen={onOpenStop && !LINKS_OFF ? () => onOpenStop(stop.id) : undefined}
                     // On Track 14% only (2026-10-09, Eric): the current stop
                     // shows how far through it is and what is next (Figma
@@ -908,12 +951,17 @@ export function AtlasHomeEricE2E({
 function JourneyRow({
   stop,
   current,
+  done = false,
   last,
   onOpen,
   progressDetail,
 }: {
   stop: JourneyStop
   current: boolean
+  /** Every stop behind a completed course. Draws the solid check in place of
+   *  the outline ring — and outranks `locked`, because a course you finished
+   *  has nothing still shut. */
+  done?: boolean
   last: boolean
   onOpen?: () => void
   progressDetail?: { done?: number; total?: number; nextLabel: string; nextName: string }
@@ -963,7 +1011,11 @@ function JourneyRow({
             and a different claim. The ring says "not reached yet", the
             padlock says "not yours to open", and they occupy one slot
             because a row is in exactly one of those states. */}
-        {current ? (
+        {/* ⚠ DONE OUTRANKS LOCKED. A finished course has nothing still shut,
+            and a padlock beside a completed stop reads as a bug. */}
+        {done ? (
+          <CircleCheckSolid size={14} aria-hidden style={DONE_MARK} />
+        ) : current ? (
           <span style={MARK_CURRENT} />
         ) : stop.locked ? (
           <LockRegular size={12} aria-hidden style={LOCK_MARK} />
@@ -981,6 +1033,9 @@ function JourneyRow({
           lineHeight: '18px',
           paddingTop: current ? 5 : 0,
           fontWeight: current ? 600 : 400,
+          /* Completed rows keep the secondary ink: the CHECK carries the
+             state, and darkening the text as well would make a finished list
+             shout louder than the live one. */
           color: current ? 'var(--color-atlas-home-current-stop, var(--color-compass-page-button))' : 'var(--color-text-secondary)',
         }}
       >
@@ -1443,6 +1498,10 @@ const LOCK_MARK: CSSProperties = {
   color: 'var(--color-border-subtle)',
 }
 
+/* The completed stop's mark — the solid check, in the success green. Sized to
+   the ring it replaces (12 + the icon's own 2 of inset) so the spine below it
+   stays on the same centre line. */
+const DONE_MARK: CSSProperties = { color: 'var(--color-success-500)', flex: 'none', marginTop: -1 }
 const MARK: CSSProperties = {
   width: 12,
   height: 12,
