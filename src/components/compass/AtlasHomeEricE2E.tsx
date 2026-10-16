@@ -132,10 +132,19 @@ export type AtlasHomeEricE2EProps = {
 }
 
 
-/* NO LINKS on the End-to-End Demo's Home (2026-10-15, Eric's request): every
-   control stays drawn and does nothing — Course Overview, Begin Course, the
-   journey stops, the tiles, State Requirements and Quick Links. Set false to
-   wire them again. */
+/* NO LINKS on the End-to-End Demo's Home (2026-10-15, Eric's request): the
+   controls stay drawn and do nothing — Course Overview, Begin Course, the
+   journey stops, the tiles, My Courses and My Certificates. Set false to wire
+   them again.
+
+   ⚠ THE THREE INFORMATION SHEETS ARE EXEMPT (2026-10-15, Jillienne: Exam
+   Information, Applying for a License and State Requirements "should trigger
+   the updated sheets from Jills Hybrid version"). They are the same handlers
+   Hybrid is given — `onOpenStep` and `onOpenRequirements`, both from
+   `MembershipOverview`, which owns the sheets for every version — so the demo
+   shows the current ones rather than a copy that can go stale. A sheet opens
+   OVER Home and closes back to it, so none of them leaves the demo, which is
+   what `LINKS_OFF` is there to prevent. */
 const LINKS_OFF = true
 const NO_LINK = () => {}
 
@@ -307,25 +316,16 @@ export function AtlasHomeEricE2E({
     regulated,
   )
   const shownCurrentIdx = onWhite ? 0 : currentIdx
-  /* THE DEMO'S COURSE IS FLORIDA (2026-10-15, Eric's request) — the invite
-     flow sells "Florida Life and Health Pre-licensing", so the Home it lands
-     on says Florida rather than the path's New York. This component is the
-     End-to-End Demo's alone (`LearnerFocusedBand` renders it for
-     `eric-atlas-e2e` only), so the constant reaches no other home.
-
-     ⚠ THE STEPS FOLLOW IT, and that is the whole point of the constant.
-     Earlier the same day the steps were `GET_LICENSED_STEPS` — NEW YORK's —
-     while the heading read `jurisdictionName(path.state)`. On a New York path
-     the two agreed and nobody noticed; the moment the heading said Florida
-     the card read "Get Licensed in Florida" above PSI's New York registration
-     link, a $40 New York exam fee and the NY Department of Financial
-     Services. Setting the heading alone puts that back, so heading and steps
-     are both derived from this one value and cannot drift apart. */
-  const E2E_STATE = 'FL'
-  const licensedSteps = getLicensedStepsFor(E2E_STATE)
+  /* THE JURISDICTION COMES FROM THE PATH, heading and steps alike.
+     Florida is no longer written here: `MembershipOverview` resolves this
+     demo's COURSE to Florida (2026-10-15), so `path.state` already is 'FL'
+     and every other surface that reads the path — the three information
+     sheets, Readiness, the study plan — says Florida too. Hard-coding the
+     word here instead is what let the Home and its own sheets disagree. */
+  const licensedSteps = getLicensedStepsFor(path.state)
   const pass = licensedSteps[licensedSteps.length - 2]
   const apply = licensedSteps[licensedSteps.length - 1]
-  const state = jurisdictionName(E2E_STATE)
+  const state = jurisdictionName(path.state)
   const longTitle = useFeatureFlag('atlas-home-long-title').enabled
   // The Design bar's Progress (V3 only, 2026-10-09) — which module state and figure.
   const progressPick = useFeatureFlag('atlas-v3-progress').variant ?? 'not-started'
@@ -726,7 +726,11 @@ export function AtlasHomeEricE2E({
                 type="button"
                 data-cta-id="home.state-requirements"
                 className="cre-compass-secondary"
-                onClick={LINKS_OFF ? NO_LINK : onOpenRequirements}
+                /* THE SHEET OPENS HERE TOO (2026-10-15, Jillienne). It is the
+                   same sheet the Quick Links row opens, so silencing the big
+                   button while the sidebar link worked would have been the
+                   one inconsistency on the page. */
+                onClick={onOpenRequirements}
                 style={REQUIREMENTS}
               >
                 {state ? `${state} State Requirements` : 'State Requirements'}
