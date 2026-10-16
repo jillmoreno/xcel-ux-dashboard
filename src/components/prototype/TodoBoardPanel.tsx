@@ -61,6 +61,7 @@ import {
 import { TodoBoardAvatar } from './TodoBoardAvatar'
 import { UX_TOKEN_BRIDGE } from './uxPaletteBridge'
 import { CardSheet, ManagePeopleSheet } from './TodoBoardSheets'
+import { linkifyNote } from './linkifyNote'
 import {
   addCardStyle,
   boardStyle,
@@ -490,7 +491,11 @@ function BoardCard({
         )}
       </div>
 
-      {card.note && <p style={cardNoteStyle}>{card.note}</p>}
+      {/* URLs in the note are links (2026-10-16) — `/share-branch` puts the
+          branch build's address here, and it was select-and-paste before.
+          `linkifyNote` builds nodes and allowlists http/https; a note is
+          text somebody typed, never markup. */}
+      {card.note && <p style={cardNoteStyle}>{linkifyNote(card.note)}</p>}
 
       <div style={cardMetaStyle}>
         <TodoBoardAvatar name={ownerLabel(card.owner)} hue={hueFor(card.owner, people)} />
