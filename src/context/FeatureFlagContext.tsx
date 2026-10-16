@@ -1548,6 +1548,47 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-planner-absence',
+    /* THE ABSENCE THE PLAN OPENS WITH — 2026-10-15. Her file has "Study today /
+       Miss today / Away a week" buttons that advance the clock so the missed-
+       day flow can be shown; the product has no buttons in the page, so the
+       same states are seeded here. `missed-day`: yesterday's session was
+       missed, today is Sep 23. `away-week`: two sessions studied, then seven
+       days away, today is Oct 1 — the two done topics are what return note B
+       recaps.
+
+       `versions: ['eric-atlas-e2e']` — 2026-10-15, the same reach fix as
+       `compass-planner-rubi` above. */
+    surface: 'design',
+    owner: 'anjani',
+    /* Her PLANNER's control, and only the planner draws it (2026-10-16). */
+    surfaces: ['compass:study-planner'],
+    versions: ['eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Absence',
+    description:
+      'Seeds time away so the return note can be seen. None (default): the plan as onboarding left it, today Sep 22. Missed a day: one missed session, today Sep 23. Away a week: two sessions done, then seven days away, today Oct 1.',
+    defaultEnabled: true,
+    defaultVariant: 'none',
+    variants: [
+      /* ⚠ THE LABELS ARE THE LEARNER'S DAY, THE VALUES ARE THE STATE —
+         2026-10-16, Jillienne, renaming the first two arms from the bar.
+         "None" and "Missed a day" described the ABSENCE; "Study Today" and
+         "Miss Today" describe what the planner is showing, which is what a
+         reviewer is actually choosing between.
+
+         ⚠ THE VALUES DO NOT MOVE. `none` / `missed-day` / `away-week` are
+         `AbsenceKind` in `compassPlanStore`, the `?ff=` strings in review
+         links, and what `CompassStudyPlanner.test` arms. Renaming a label is
+         copy; renaming a value would silently retire every link anyone has
+         already shared. */
+      { value: 'none', label: 'Study Today' },
+      { value: 'missed-day', label: 'Miss Today' },
+      { value: 'away-week', label: 'Away a week' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-planner-return',
     /* THE RETURN NOTE — 2026-10-15, her second master. After time away the
        planner (and the Overview's week block) say what moved, once, sized to
@@ -1627,36 +1668,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     variants: [
       { value: 'skip', label: 'Skip button' },
       { value: 'menu', label: 'Menu' },
-    ],
-    page: 'dashboard-rebrand',
-  },
-  {
-    key: 'compass-planner-absence',
-    /* THE ABSENCE THE PLAN OPENS WITH — 2026-10-15. Her file has "Study today /
-       Miss today / Away a week" buttons that advance the clock so the missed-
-       day flow can be shown; the product has no buttons in the page, so the
-       same states are seeded here. `missed-day`: yesterday's session was
-       missed, today is Sep 23. `away-week`: two sessions studied, then seven
-       days away, today is Oct 1 — the two done topics are what return note B
-       recaps.
-
-       `versions: ['eric-atlas-e2e']` — 2026-10-15, the same reach fix as
-       `compass-planner-rubi` above. */
-    surface: 'design',
-    owner: 'anjani',
-    /* Her PLANNER's control, and only the planner draws it (2026-10-16). */
-    surfaces: ['compass:study-planner'],
-    versions: ['eric-atlas-e2e'],
-    group: 'Widgets',
-    label: 'Absence',
-    description:
-      'Seeds time away so the return note can be seen. None (default): the plan as onboarding left it, today Sep 22. Missed a day: one missed session, today Sep 23. Away a week: two sessions done, then seven days away, today Oct 1.',
-    defaultEnabled: true,
-    defaultVariant: 'none',
-    variants: [
-      { value: 'none', label: 'None' },
-      { value: 'missed-day', label: 'Missed a day' },
-      { value: 'away-week', label: 'Away a week' },
     ],
     page: 'dashboard-rebrand',
   },
