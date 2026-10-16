@@ -151,6 +151,7 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
         chapter={SESSION_LESSON.chapter}
         onToggleRubi={() => setRailOpen((v) => !v)}
         railOpen={railOpen}
+        contentsOpen={contentsOpen}
         onExit={onExit}
       />
       <div
@@ -229,6 +230,7 @@ function SessionBar({
   chapter,
   onToggleRubi,
   railOpen,
+  contentsOpen,
   onExit,
 }: {
   index: number
@@ -237,6 +239,7 @@ function SessionBar({
   onToggleRubi: () => void
   onExit: () => void
   railOpen: boolean
+  contentsOpen: boolean
 }) {
   /* ⚠ POSITION, NOT ATTAINMENT. The figure is how far along the beats the
      learner is, and it reads 0% on the first one because they have not
@@ -244,7 +247,33 @@ function SessionBar({
      score and must never be dressed as one. */
   const pct = Math.round((index / total) * 100)
   return (
-    <header style={barStyle}>
+    /* ⚠ THE BAR MIRRORS THE BODY'S GRID (2026-10-16, Jillienne: "i want the
+       course progress to be the same width as the content container below
+       it"). Matching `maxWidth` alone was not enough and is the trap here:
+       the bar centred across the WHOLE width while the content column is
+       centred inside `main`, between the Contents rail and Rubi. Same width,
+       two different centres — measured at 44→878 against 276→757.
+
+       So the bar takes the same three columns as the body and puts the lesson
+       line in the MIDDLE one, where it lands over the content it describes
+       and keeps doing so when either rail opens or closes. The buttons sit in
+       the last column, which is Rubi's when Rubi is open — where her design
+       puts them. */
+    <header
+      style={{
+        ...barStyle,
+        /* ⚠ THE BODY'S TEMPLATE, CHARACTER FOR CHARACTER — not an
+           approximation of it. A third column sized `auto` to the buttons was
+           the first try and left the centre 12px off, because the body's
+           third column is Rubi's 360 and `auto` was ~160. The buttons are
+           positioned instead (see `barActionsStyle`), so this grid can be
+           exactly the one below and the middle column cannot drift from the
+           content column it describes. */
+        gridTemplateColumns: `${contentsOpen ? '220px' : '48px'} minmax(0,1fr)${railOpen ? ' 360px' : ''}`,
+      }}
+    >
+      {/* The Contents column's share, empty — the grid is what aligns this. */}
+      <span aria-hidden />
       <div style={barCentreStyle}>
         <div style={barLineStyle}>
           <span style={barEyebrowStyle}>
@@ -1025,14 +1054,44 @@ const pageStyle: CSSProperties = {
   background: 'var(--color-surface-card)',
 }
 const barStyle: CSSProperties = {
-  display: 'flex',
+  display: 'grid',
   alignItems: 'center',
-  gap: 24,
-  padding: '10px 20px',
+  /* ⚠ NO GAP, because the body's grid has none. 24 here cost the middle
+     column 48px and put the bar 8px narrower than the content on every
+     measurement — the last of three ways this grid can silently stop matching
+     the one below it (the others: padding, and a differently-sized third
+     column). The actions are positioned, so nothing needs the gap. */
+  gap: 0,
+  /* ⚠ NO HORIZONTAL PADDING, so this grid starts where the body's grid
+     starts. Padding here would inset the columns and the middle one would
+     stop matching the content column — which is the whole point of the
+     template above. The inset the bar still needs lives on the centre cell
+     instead, where `main`'s own padding lives below. */
+  padding: '10px 0',
   borderBottom: '1px solid var(--color-border-subtle)',
   flex: 'none',
+  position: 'relative',
 }
-const barCentreStyle: CSSProperties = { flex: 1, minWidth: 0, maxWidth: 900, margin: '0 auto' }
+/* 680 is the LESSON'S MEASURE — the same number `columnStyle` uses below, and
+   the point of this pair: the progress bar describes the column under it, so
+   it is as wide as that column and no wider. It was 900, which made the bar
+   read as the page's and the column as an inset within it. */
+/* 680 is the LESSON'S MEASURE — the same number `columnStyle` uses below, and
+   the point of this pair: the progress bar describes the column under it, so
+   it is as wide as that column and no wider. It was 900, which made the bar
+   read as the page's and the column as an inset within it.
+   ⚠ `maxWidth` IS 680 + the 64 of padding, with `border-box`, so the CONTENT
+   box resolves to exactly `min(680, column - 64)` — the same arithmetic
+   `main`'s 32px padding does to `columnStyle` below. Matching 680 alone left
+   the two the same width only while the column was wide enough for both. */
+const barCentreStyle: CSSProperties = {
+  minWidth: 0,
+  maxWidth: 680 + 64,
+  padding: '0 32px',
+  boxSizing: 'border-box',
+  margin: '0 auto',
+  width: '100%',
+}
 const barLineStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'baseline',
@@ -1070,7 +1129,20 @@ const trackKnobStyle: CSSProperties = {
   border: '2px solid var(--color-primary-700)',
   boxSizing: 'border-box',
 }
-const barActionsStyle: CSSProperties = { display: 'flex', gap: 8, flex: 'none' }
+/* Notes · Rubi · exit — PINNED to the bar's right since 2026-10-16 rather
+   than taking a grid column. A column for them would change the middle
+   column's width, and the middle column matching the content below it is the
+   whole thing being fixed; see the note at the `<header>`. They land over the
+   Rubi rail when it is open, which is where her design puts them. */
+const barActionsStyle: CSSProperties = {
+  position: 'absolute',
+  right: 20,
+  top: '50%',
+  transform: 'translateY(-50%)',
+  display: 'flex',
+  gap: 8,
+  alignItems: 'center',
+}
 const barButtonStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',

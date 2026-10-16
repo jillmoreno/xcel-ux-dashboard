@@ -67,3 +67,46 @@ describe('the Compass session’s lesson column', () => {
     window.history.replaceState({}, '', '/')
   })
 })
+
+/**
+ * THE PROGRESS BAR IS THE CONTENT'S WIDTH (2026-10-16, Jillienne: "i want the
+ * course progress to be the same width as the content container below it").
+ *
+ * ⚠ THREE THINGS HAD TO MATCH, not one, and each failed separately on the way
+ * — measured in the browser at every step:
+ *   1. the MEASURE (900 → 680),
+ *   2. the GRID — the bar centred across the whole width while the content is
+ *      centred between the rails, so the bar takes the body's template,
+ *   3. the INSETS — the bar's own padding and its 24px grid gap each shifted
+ *      the middle column, so the padding moved onto the centre cell (where
+ *      `main`'s lives) and the gap went to 0.
+ * Any one of them reverted puts the two out of step again, which is why the
+ * structure is pinned here rather than only the number.
+ *
+ * jsdom has no layout, so the alignment itself was verified in the browser:
+ * 680/680 with Rubi closed, 481/481 with it open, zero offset on both edges.
+ */
+describe('the session bar and the lesson column', () => {
+  it('share the measure', () => {
+    renderSession()
+    const col = column()
+    const bar = document.querySelector('[role="progressbar"]')?.parentElement as HTMLElement
+    expect(bar.style.maxWidth, 'the centre carries 680 plus its own 64 of padding').toBe('744px')
+    expect(bar.style.padding).toBe('0px 32px')
+    expect(bar.style.boxSizing).toBe('border-box')
+    // …which resolves to the same content box as the column below.
+    expect(col!.style.maxWidth).toBe('680px')
+  })
+
+  it('the bar grid mirrors the body grid rather than approximating it', () => {
+    renderSession()
+    const header = document.querySelector('header') as HTMLElement
+    // No padding and no gap: both would inset the middle column away from the
+    // content column under it.
+    expect(header.style.padding).toBe('10px 0px')
+    expect(header.style.gap).toBe('0px')
+    // The Contents column's width is the first track, so the centre starts
+    // where the content does.
+    expect(header.style.gridTemplateColumns).toMatch(/^220px minmax\(0,\s*1fr\)/)
+  })
+})
