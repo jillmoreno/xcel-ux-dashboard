@@ -122,14 +122,35 @@ describe('the Compass session', () => {
     expect(screen.getByText('Insurance basics')).toBeTruthy()
   })
 
-  it('the bar carries the exit, after Notes and Rubi', async () => {
+  /* ⚠ THE EXIT MOVED OFF THE BAR on 2026-10-16, hours after it arrived there
+     as an X. A square icon said "close" without saying what you would be back
+     in; above the contents it reads as the step out of a list you are inside,
+     and a 220px column can afford the words. */
+  it('the way out sits above the contents and names where it goes', () => {
     renderSession()
-    const exit = screen.getByRole('button', { name: 'Leave the lesson' })
-    expect(exit).toBeTruthy()
-    // Last of the three, so it reads as leaving rather than a third thing to
-    // open.
-    const group = exit.parentElement!
-    expect([...group.children].indexOf(exit)).toBe(group.children.length - 1)
+    expect(screen.queryByRole('button', { name: 'Leave the lesson' }), 'the X is gone').toBeNull()
+    const back = screen.getByRole('button', { name: /^Back to / })
+    const contents = screen.getByRole('complementary', { name: 'Contents' })
+    expect(contents.contains(back), 'it belongs to the contents column').toBe(true)
+    // First in that column — above the list, not after it.
+    expect(contents.firstElementChild).toBe(back)
+  })
+
+  it('defaults to Back to Lesson when the session was opened with no origin', () => {
+    /* Begin Course from Atlas Home opens the session directly and never
+       passes through a Compass page, so there is no origin to read. Learn is
+       the nearest thing to where that walk was. */
+    renderSession()
+    expect(screen.getByRole('button', { name: /^Back to / })).toHaveTextContent('Back to Lesson')
+  })
+
+  it('the exit survives the collapse, because it is the only one', async () => {
+    // A control that disappears when a column is narrowed is how someone ends
+    // up using the browser's Back button on a prototype.
+    const user = userEvent.setup()
+    renderSession()
+    await user.click(screen.getByRole('button', { name: 'Collapse contents' }))
+    expect(screen.getByRole('button', { name: 'Back to Lesson' })).toBeInTheDocument()
   })
 
   it('opens Rubi on the nudge, and lets it be closed', async () => {

@@ -971,14 +971,23 @@ function PlatformShellBody() {
               (prev) => {
                 const next = new URLSearchParams(prev)
                 next.delete('session')
-                /* LAND ON LEARN, NOT OVERVIEW (2026-10-16, Jillienne: the X
-                   "will take user back to the LEARN page in compass"). Leaving
-                   a lesson used to drop `session` and nothing else, so
-                   `CompassLearningPage` remounted on its default page and a
-                   reviewer was bounced to Overview as if they had just
-                   arrived. `compassPage` seeds that page once; see the note
-                   there for why it is a seed rather than a binding. */
-                next.set('compassPage', 'course')
+                /* LAND WHERE THEY CAME FROM (2026-10-16, Jillienne: "Back to
+                   Lesson, or Back to Overview (based on where the user came
+                   from)"). Leaving a lesson used to drop `session` and
+                   nothing else, so `CompassLearningPage` remounted on its
+                   default page and a reviewer was bounced to Overview as if
+                   they had just arrived; then it always went to Learn, which
+                   was wrong for anyone who started from the Tonight card.
+                   `sessionFrom` is written when the session opens.
+
+                   ⚠ THE DEFAULT IS `course`, not Overview, because the entry
+                   with NO origin is Begin Course from Atlas Home — it opens
+                   the session directly and never passes through a Compass
+                   page. Learn is the nearest thing to where that walk was.
+                   `compassPage` seeds the page once; see the note there for
+                   why it is a seed rather than a binding. */
+                next.set('compassPage', prev.get('sessionFrom') === 'overview' ? 'overview' : 'course')
+                next.delete('sessionFrom')
                 return next
               },
               { replace: true },
@@ -989,11 +998,15 @@ function PlatformShellBody() {
     }
     return (
       <CompassLearningPage
-        onStartSession={() =>
+        onStartSession={(from) =>
           setParams(
             (prev) => {
               const next = new URLSearchParams(prev)
               next.set('session', '1')
+              /* Where the learner was when they started, so the way out can
+                 say so and go there. */
+              if (from) next.set('sessionFrom', from)
+              else next.delete('sessionFrom')
               return next
             },
             { replace: true },

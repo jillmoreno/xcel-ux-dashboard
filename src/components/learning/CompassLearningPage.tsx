@@ -55,7 +55,7 @@ export function CompassLearningPage({
   /** Home — the one crumb that leaves. */
   onLeave: () => void
   /** Open the session (the Tonight card's Start session). */
-  onStartSession?: () => void
+  onStartSession?: (from?: 'overview' | 'course') => void
 }) {
   const [seedParams] = useSearchParams()
   /* THE PAGE IS SEEDED FROM THE URL ONCE, then lives in state (2026-10-16).
@@ -89,7 +89,7 @@ export function CompassLearningPage({
      go back to being inert, which is what it was until 2026-10-16 and what
      the landing page's own note explains. */
   const resumeOpensSession = useFeatureFlag('compass-resume-opens-session').enabled
-  const resumeToVideo = resumeOpensSession ? onStartSession : undefined
+  const resumeToVideo = resumeOpensSession && onStartSession ? () => onStartSession('course') : undefined
   const hybrid = anjani
   /* Option 3 only — the header and the rail both carry a Home there, so the
      sidebar's trail would be the third. See the prop. */
@@ -145,7 +145,10 @@ export function CompassLearningPage({
                 <ExamDateStrip />
               </header>
             )}
-            <CompassLearningOverview onStartSession={onStartSession} onViewPlan={() => setPage('study-planner')} />
+            <CompassLearningOverview
+              onStartSession={onStartSession ? () => onStartSession('overview') : undefined}
+              onViewPlan={() => setPage('study-planner')}
+            />
           </>
         ) : hybrid && page === 'course' ? (
           /* Resume lesson opens the session at its first beat, the video

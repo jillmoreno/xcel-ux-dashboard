@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   ArrowLeft,
   ArrowsRotate,
@@ -137,6 +138,13 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
   /* The Contents column, open or a strip. Page state rather than the aside's
      own, because the GRID has to change with it. */
   const [contentsOpen, setContentsOpen] = useState(true)
+  /* WHERE THEY CAME FROM, named. `sessionFrom` is written when the session
+     opens (`PlatformShell`); absent means Begin Course from Atlas Home, which
+     never passes through a Compass page — Learn is the nearest thing to where
+     that walk was, and the exit agrees with it. */
+  const [sessionParams] = useSearchParams()
+  const backLabel =
+    sessionParams.get('sessionFrom') === 'overview' ? 'Back to Overview' : 'Back to Lesson'
   const inShell = pickedInShell || walkNeedsHome
   useEffect(() => {
     setCourseChrome(inShell ? 'course' : 'takeover')
@@ -152,7 +160,6 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
         onToggleRubi={() => setRailOpen((v) => !v)}
         railOpen={railOpen}
         contentsOpen={contentsOpen}
-        onExit={onExit}
       />
       <div
         style={{
@@ -170,9 +177,18 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
             active={beatIndex}
             onSelect={setBeatIndex}
             onCollapse={() => setContentsOpen(false)}
+            onExit={onExit}
+            backLabel={backLabel}
           />
         ) : (
           <aside style={contentsRailStyle} aria-label="Contents">
+            {/* ⚠ THE EXIT SURVIVES THE COLLAPSE, icon-only. It is the page's
+                only way out, and a control that disappears when a column is
+                narrowed is how someone ends up using the browser's Back
+                button on a prototype. The label moves to `aria-label`. */}
+            <button type="button" style={iconButtonStyle} onClick={onExit} aria-label={backLabel}>
+              <ArrowLeft size={14} aria-hidden />
+            </button>
             <button
               type="button"
               style={iconButtonStyle}
@@ -231,13 +247,11 @@ function SessionBar({
   onToggleRubi,
   railOpen,
   contentsOpen,
-  onExit,
 }: {
   index: number
   total: number
   chapter: string
   onToggleRubi: () => void
-  onExit: () => void
   railOpen: boolean
   contentsOpen: boolean
 }) {
@@ -312,19 +326,6 @@ function SessionBar({
           <RubiLogo size={14} aria-hidden />
           Rubi
         </button>
-        {/* ⚠ THE PAGE'S EXIT, AND ITS ONLY ONE (2026-10-16, Jillienne: "add a
-            'X' icon to the right of these buttons. clciking on this will take
-            user back to the LEARN page in compass"). It arrived in the same
-            pass that turned the Contents arrow into a collapse — that arrow
-            WAS the exit, so these two changes are one change: move the way
-            out, then repurpose what used to be it. Doing either alone strands
-            a reviewer inside the lesson.
-
-            Square and last, after Notes and Rubi, so it reads as leaving
-            rather than as a third thing to open. */}
-        <button type="button" style={barExitStyle} onClick={onExit} aria-label="Leave the lesson">
-          <X size={14} aria-hidden />
-        </button>
       </div>
     </header>
   )
@@ -349,11 +350,18 @@ function Contents({
   active,
   onSelect,
   onCollapse,
+  onExit,
+  backLabel,
 }: {
   beats: SessionBeat[]
   active: number
   onSelect: (i: number) => void
   onCollapse: () => void
+  onExit: () => void
+  /** "Back to Overview" or "Back to Lesson" — named for where the learner
+   *  actually came from, so the control says where it goes rather than that
+   *  it closes something. */
+  backLabel: string
 }) {
   const [expanded, setExpanded] = useState(false)
   /* Three chapters by default — the one behind, the live one, the one ahead.
@@ -361,6 +369,17 @@ function Contents({
   const chapters = expanded ? SESSION_COURSE.chapters : SESSION_COURSE.chapters.slice(0, 3)
   return (
     <aside style={contentsStyle} aria-label="Contents">
+      {/* ⚠ THE WAY OUT LIVES HERE NOW (2026-10-16, Jillienne: "change this to
+          a Back to Lesson, or Back to Overview (based on where the user came
+          from), and move this to be right about the table of contents, left
+          aligned"). It was an X at the right of the bar for a few hours — a
+          square icon that said "close" without saying what you would be back
+          in. Above the contents it reads as the step out of a list you are
+          inside, and it can afford a label because the column is 220 wide. */}
+      <button type="button" style={backStyle} onClick={onExit}>
+        <ArrowLeft size={13} aria-hidden />
+        {backLabel}
+      </button>
       <div style={contentsHeadStyle}>
         <span style={contentsTitleStyle}>Contents</span>
         {/* ⚠ IT COLLAPSES THE COLUMN NOW, it does not leave the session
@@ -1170,26 +1189,31 @@ const barCountStyle: CSSProperties = {
   padding: '1px 6px',
 }
 const bodyGridStyle: CSSProperties = { display: 'grid', flex: 1, minHeight: 0 }
-/* The exit, square beside the two pill buttons — same height, no label, so
-   the pair still read as a pair and this reads as the way out. */
-const barExitStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 32,
-  height: 32,
-  borderRadius: 8,
-  border: '1px solid var(--color-border-subtle)',
-  background: 'var(--color-surface-card)',
-  color: 'var(--color-text-secondary)',
-  cursor: 'pointer',
-}
 const contentsRailStyle: CSSProperties = {
   borderRight: '1px solid var(--color-border-subtle)',
   padding: '18px 10px',
   display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'flex-start',
+  flexDirection: 'column',
+  gap: 10,
+  justifyContent: 'flex-start',
+  alignItems: 'center',
+}
+/* Left-aligned above the list, as asked — a text control, not an icon, so it
+   can name its destination. */
+const backStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 7,
+  alignSelf: 'flex-start',
+  marginBottom: 14,
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  fontFamily: 'var(--font-body)',
+  fontSize: 12.5,
+  fontWeight: 600,
+  color: 'var(--color-text-secondary)',
+  cursor: 'pointer',
 }
 const contentsStyle: CSSProperties = {
   borderRight: '1px solid var(--color-border-subtle)',
