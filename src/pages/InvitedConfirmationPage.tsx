@@ -50,11 +50,18 @@ export function InvitedConfirmationPage() {
        sweeping over a faint ring with a slower arc running the other way and
        a breathing dot at the centre, and the line's ellipsis typing itself.
        The motion classes live in tokens.css beside `cre-setup-spin` and stop
-       under reduced motion. No partner header (2026-10-15, Jillienne: "remove
-       this part when loading gif is going") — the page is the map and the
-       spinner alone, edge to edge. It never resolves; see the file comment. */
+       under reduced motion. It never resolves; see the file comment.
+
+       THE HEADER STAYS, EMPTY (2026-10-15, Jillienne: "the light gray
+       background and white header will still exist, but the logo in the
+       header will disappear"). It had been dropped entirely earlier the same
+       day — "remove this part when loading gif is going" — which took 64
+       with it and jumped the whole page upward on the press. `bare` keeps
+       the bar and drops the lockup inside it, so only the branding leaves
+       and the map below starts where it already was. */
     return (
       <div style={PAGE}>
+        <PartnerHeader bare />
         <main style={LOADING_PAGE}>
           <TopoBackground />
           <div role="status" aria-live="polite" style={LOADING_STACK}>

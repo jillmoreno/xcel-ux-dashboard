@@ -6,8 +6,19 @@ import type { CSSProperties } from 'react'
  * moved out of `InvitedProductDetailPage` so both pages draw the same one).
  *
  * DEMO DATA: the partner name is the design's own.
+ *
+ * `bare` draws the BAR AND NOTHING IN IT (2026-10-15, Jillienne: "the light
+ * gray background and white header will still exist, but the logo in the
+ * header will disappear"). It is the flow's loading end state: the chrome
+ * holds its shape while the branding goes, so the page does not jump by 64
+ * at the moment Confirm is pressed. The whole lockup goes, not the logo
+ * alone — "Official Partner of" with nothing after it reads as a failed
+ * image, which is the one thing a loading page must not look like. Hidden
+ * from the accessibility tree there: an empty banner landmark is an
+ * announcement with no content behind it.
  */
-export function PartnerHeader() {
+export function PartnerHeader({ bare = false }: { bare?: boolean } = {}) {
+  if (bare) return <header aria-hidden style={HEADER} />
   return (
     <header style={HEADER}>
       <p style={TEXT}>Pristine Solutions Financial Services Group LLC</p>

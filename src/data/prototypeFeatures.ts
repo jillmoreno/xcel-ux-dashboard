@@ -892,7 +892,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'invite',
-    lastUpdated: '2026-10-16T01:44:03Z',
+    lastUpdated: '2026-10-16T02:16:00Z',
     pinned: true,
     to: '/end-to-end-demo?demo=1',
     brands: ['xcel'],
