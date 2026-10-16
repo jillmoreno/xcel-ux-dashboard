@@ -33,12 +33,20 @@ import {
 
 /** The banner shell — navy bar + centered inner row + status dot + label. Attach
  *  `barRef` (from `useDemoMenus`) so outside-click dismiss ignores in-bar clicks. */
+/* The height of ONE row of controls — a 10.5px/13px pill at 5–7px padding
+   lands at 24 either way. The bar's name, its dot and its tools centre
+   against this rather than against the full height of a wrapped box. */
+const TOOLS_ROW = 24
+/* `DEMO_DOT`'s own width, so the dot centres on the same line. */
+const DOT_SIZE = 8
+
 export function DemoBar({
   barRef,
   className,
   label = 'Demo Controls',
   ariaLabel,
   children,
+  trailing,
   align = 'center',
   fullBleed = false,
   design = false,
@@ -48,6 +56,18 @@ export function DemoBar({
   label?: string
   ariaLabel: string
   children: ReactNode
+  /**
+   * The block pinned at the bar's TOP-RIGHT — tools, not controls.
+   *
+   * ⚠ IT HAS TO BE A SLOT, NOT ANOTHER CHILD. Passed as a child with
+   * `margin-left: auto` it is just another item in a WRAPPING row, so it goes
+   * wherever the wrap puts it: on a two-row bar the tools sit at the end of
+   * row two, and on a three-row bar, row three. The icons are the bar's own
+   * furniture and belong in one place regardless of how many rows the
+   * controls need (2026-10-16). Given here, the controls wrap inside their
+   * own box and this sits beside them, aligned to the first row.
+   */
+  trailing?: ReactNode
   /**
    * Horizontal anchoring of the 1440-capped inner row. `'center'` (default)
    * centers it (`mx-auto` — the Onboarding flow's full-width route). `'left'`
@@ -114,9 +134,49 @@ export function DemoBar({
             bar drew the DEMO bar's amber dot above its own cyan rule, because
             `DEMO_DOT` is a shared constant that knew nothing about `design`.
             Two accents on one bar reads as a mistake, and it was. */}
-        <span aria-hidden style={design ? { ...DEMO_DOT, background: DESIGN_ACCENT } : DEMO_DOT} />
-        <span style={DEMO_TAG_LABEL}>{label}</span>
-        {children}
+        {/* ⚠ WITH A TRAILING BLOCK THE DOT AND NAME PIN TO THE FIRST ROW TOO.
+            The outer row centres its items, which is right while everything
+            is one row — but the controls box is now as tall as the wrap makes
+            it, so centring left the bar's own name floating between rows one
+            and two while its tools sat at the top. The bar's furniture
+            belongs together. `TOOLS_ROW` is the control row's height, so the
+            name sits level with the first row of controls rather than with
+            the top of the box. */}
+        <span
+          aria-hidden
+          style={
+            trailing
+              ? { ...(design ? { ...DEMO_DOT, background: DESIGN_ACCENT } : DEMO_DOT), alignSelf: 'flex-start', marginTop: (TOOLS_ROW - DOT_SIZE) / 2 }
+              : design
+                ? { ...DEMO_DOT, background: DESIGN_ACCENT }
+                : DEMO_DOT
+          }
+        />
+        <span
+          style={
+            trailing
+              ? { ...DEMO_TAG_LABEL, alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', height: TOOLS_ROW }
+              : DEMO_TAG_LABEL
+          }
+        >
+          {label}
+        </span>
+        {trailing ? (
+          <>
+            {/* The controls wrap inside their own box so the trailing block
+                is not part of what wraps. `minWidth: 0` or a long row of
+                controls refuses to shrink and pushes the tools off the bar. */}
+            <span style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
+              {children}
+            </span>
+            {/* Top of the first row, whatever the controls do below it. */}
+            <span style={{ flex: 'none', alignSelf: 'flex-start', display: 'flex', alignItems: 'center', height: TOOLS_ROW, gap: 8 }}>
+              {trailing}
+            </span>
+          </>
+        ) : (
+          children
+        )}
       </div>
     </div>
   )

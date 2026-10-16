@@ -117,6 +117,99 @@ export function DesignControlsBar({
       align="left"
       fullBleed={fullBleed}
       design
+      /* THE TOOLS. ⚠ THE SPLIT IS INSIDE THIS BLOCK, NOT AROUND IT
+         (2026-10-06): Lo-fi crosses to the Demo Hub, the flag sheet does
+         not. The header note carries the reason for each. One wrapper is
+         what holds them together at the bar's right edge.
+
+         ⚠ `trailing`, NOT A CHILD, SINCE 2026-10-16 — and `margin-left:
+         auto` went with the move. As a child of the wrapping row these
+         landed on whichever row wrapped last; the slot pins them to the
+         top. */
+      trailing={
+        <div style={{ display: 'flex', gap: 8 }}>
+        {/* LO-FI — moved here from the demo bar, 2026-10-05, the direct ask.
+        Its own note on that bar always said lo-fi is "a tool for the people
+        DESIGNING the thing"; this is where that sentence finally points.
+
+        ⚠ THE SLIDERS, swapped with the version picker's grid on
+        2026-10-05. It drew a grid first, on the reading that a grid IS what
+        lo-fi looks like — but the grid describes a dashboard LAYOUT better,
+        and that is what the other button chooses between.
+
+        ⚠ SOLID WHEN ON IS NOW THE FILL ALONE. The grid had a `GridSolid`
+        twin, so the glyph filled with the button; `Sliders` has no solid
+        variant, so the state rests on the cyan background and
+        `aria-pressed`. That is one cue fewer than it had — worth knowing if
+        the on-state ever reads as weak, because the fix is a solid sliders
+        glyph in the registry, not a different colour. */}
+        <button
+        type="button"
+        className="cre-demo-controls-btn"
+        aria-pressed={loFi}
+        aria-label={loFi ? 'Lo-fi on' : 'Lo-fi off'}
+        title={loFi ? 'Lo-fi on' : 'Lo-fi off'}
+        style={{
+        ...iconBtnStyle,
+        ...(loFi
+        ? {
+        background: DESIGN_ACCENT,
+        borderColor: DESIGN_ACCENT,
+        /* Dark ink on the solid cyan — the inverse token is white and
+        would measure ~1.9:1 on this fill. */
+        color: 'var(--color-primary-900)',
+        }
+        : null),
+        }}
+        onClick={() => setLoFi(!loFi)}
+        onMouseEnter={(e) => {
+        if (loFi) return
+        e.currentTarget.style.background = DEMO_HOVER_FILL
+        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
+        }}
+        onMouseLeave={(e) => {
+        if (loFi) return
+        e.currentTarget.style.background = 'transparent'
+        e.currentTarget.style.borderColor = 'transparent'
+        }}
+        >
+        <Sliders size={16} aria-hidden />
+        </button>
+        {/* The sheet moved here from the demo bar on 2026-10-05: it shows
+        this same version's flags, so it belongs beside the controls it is
+        the long form of, not beside the stakeholder ones.
+        ⚠ IT STOPS AT THE DESIGN SITE. It opens the FULL catalog, `wip`
+        rows included — the single reason the robot was withheld from the
+        demo site at all. `AdminToolsMenu` guards the same door on its
+        side; this is the other half.
+        ⚠ AND THIS COMMENT STAYS OUTSIDE THE `(`. A JSX comment in
+        root-return position is a second root node — a parse error that
+        reads like an unclosed tag, and this file has paid for it once. */}
+        {stakeholder ? null : (
+        <button
+        type="button"
+        className="cre-demo-controls-btn"
+        aria-label="Feature flags"
+        title="Feature flags"
+        style={iconBtnStyle}
+        onClick={() => {
+        openFeatureFlagPanel()
+        close()
+        }}
+        onMouseEnter={(e) => {
+        e.currentTarget.style.background = DEMO_HOVER_FILL
+        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
+        }}
+        onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'transparent'
+        e.currentTarget.style.borderColor = 'transparent'
+        }}
+        >
+        <Flag size={16} aria-hidden />
+        </button>
+        )}
+        </div>
+      }
     >
       {/* The scope, named — the SURFACE when there is one, since that is what
           chose these controls, and the dashboard version otherwise. */}
@@ -145,92 +238,6 @@ export function DesignControlsBar({
         />
         </Fragment>
       ))}
-      {/* THE TOOLS. ⚠ THE SPLIT IS INSIDE THIS BLOCK, NOT AROUND IT
-          (2026-10-06): Lo-fi crosses to the Demo Hub, the flag sheet does
-          not. The header note carries the reason for each. One wrapper is
-          what holds them together at the bar's right edge. */}
-      <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-        {/* LO-FI — moved here from the demo bar, 2026-10-05, the direct ask.
-            Its own note on that bar always said lo-fi is "a tool for the people
-            DESIGNING the thing"; this is where that sentence finally points.
-
-            ⚠ THE SLIDERS, swapped with the version picker's grid on
-            2026-10-05. It drew a grid first, on the reading that a grid IS what
-            lo-fi looks like — but the grid describes a dashboard LAYOUT better,
-            and that is what the other button chooses between.
-
-            ⚠ SOLID WHEN ON IS NOW THE FILL ALONE. The grid had a `GridSolid`
-            twin, so the glyph filled with the button; `Sliders` has no solid
-            variant, so the state rests on the cyan background and
-            `aria-pressed`. That is one cue fewer than it had — worth knowing if
-            the on-state ever reads as weak, because the fix is a solid sliders
-            glyph in the registry, not a different colour. */}
-        <button
-          type="button"
-          className="cre-demo-controls-btn"
-          aria-pressed={loFi}
-          aria-label={loFi ? 'Lo-fi on' : 'Lo-fi off'}
-          title={loFi ? 'Lo-fi on' : 'Lo-fi off'}
-          style={{
-            ...iconBtnStyle,
-            ...(loFi
-              ? {
-                  background: DESIGN_ACCENT,
-                  borderColor: DESIGN_ACCENT,
-                  /* Dark ink on the solid cyan — the inverse token is white and
-                     would measure ~1.9:1 on this fill. */
-                  color: 'var(--color-primary-900)',
-                }
-              : null),
-          }}
-          onClick={() => setLoFi(!loFi)}
-          onMouseEnter={(e) => {
-            if (loFi) return
-            e.currentTarget.style.background = DEMO_HOVER_FILL
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
-          }}
-          onMouseLeave={(e) => {
-            if (loFi) return
-            e.currentTarget.style.background = 'transparent'
-            e.currentTarget.style.borderColor = 'transparent'
-          }}
-        >
-          <Sliders size={16} aria-hidden />
-        </button>
-        {/* The sheet moved here from the demo bar on 2026-10-05: it shows
-          this same version's flags, so it belongs beside the controls it is
-          the long form of, not beside the stakeholder ones.
-          ⚠ IT STOPS AT THE DESIGN SITE. It opens the FULL catalog, `wip`
-          rows included — the single reason the robot was withheld from the
-          demo site at all. `AdminToolsMenu` guards the same door on its
-          side; this is the other half.
-          ⚠ AND THIS COMMENT STAYS OUTSIDE THE `(`. A JSX comment in
-          root-return position is a second root node — a parse error that
-          reads like an unclosed tag, and this file has paid for it once. */}
-      {stakeholder ? null : (
-        <button
-            type="button"
-            className="cre-demo-controls-btn"
-            aria-label="Feature flags"
-            title="Feature flags"
-            style={iconBtnStyle}
-            onClick={() => {
-              openFeatureFlagPanel()
-              close()
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = DEMO_HOVER_FILL
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent'
-              e.currentTarget.style.borderColor = 'transparent'
-            }}
-          >
-            <Flag size={16} aria-hidden />
-          </button>
-      )}
-      </div>
     </DemoBar>
   )
 }
@@ -556,7 +563,10 @@ const GROUP_SEP: CSSProperties = {
 /* The version this bar is scoped to, stated rather than implied — a designer
    who switches versions needs to see the controls change AND know why. */
 const versionTagStyle = {
-  fontSize: 11,
+  /* Matches the bar's own title beside it (2026-10-16) — left at 11 it would
+     have been the LARGER of the two, which reads as the scope shouting over
+     the bar it belongs to. */
+  fontSize: 9.5,
   fontWeight: 600,
   letterSpacing: '0.04em',
   color: 'rgba(255,255,255,0.55)',

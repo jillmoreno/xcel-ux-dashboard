@@ -94,8 +94,13 @@ export const DEMO_DOT: CSSProperties = {
   flexShrink: 0,
 }
 
+/* 9.5, down from 11 (2026-10-16, "reduce font sizes" with both bars' titles
+   selected). It names the bar; it is not a control on it, and at 11 it was
+   competing with the controls for the eye on a bar that had grown to three
+   rows. Shared, so both bars shrink together — they are a pair and one of
+   them left larger would read as the louder bar. */
 export const DEMO_TAG_LABEL: CSSProperties = {
-  fontSize: 11,
+  fontSize: 9.5,
   fontWeight: 700,
   letterSpacing: '0.06em',
   textTransform: 'uppercase',
