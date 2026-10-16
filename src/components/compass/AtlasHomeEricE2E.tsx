@@ -211,6 +211,9 @@ export function AtlasHomeEricE2E({
   /* Which Study Pace card — the dial or the stepped states. A design-bar
      radiogroup; see `atlas-pace-card`. */
   const paceCard = useFeatureFlag('atlas-pace-card').variant ?? 'ring'
+  /* Whether the column carries Exam readiness at all — a design-bar on/off,
+     see `atlas-readiness-section`. */
+  const showReadiness = useFeatureFlag('atlas-readiness-section').enabled
   /* ⚠ READ UP HERE, not beside the other bar controls below, because the
      access window and the ring both need it before they are computed. It is
      the DEMO bar's Progress since 2026-10-16 (Eric's design control until
@@ -630,8 +633,20 @@ export function AtlasHomeEricE2E({
                    two different plans. The states card's `expected` prop is
                    built from the same place for the same reason — see its
                    note there. */
+                /* ⚠ NO "AT CURRENT PACE" AT 0% (2026-10-16, Jillienne: "at 0%
+                   remove this bit"). There is no current pace to be at — the
+                   learner has not started, so the date is what the
+                   RECOMMENDED plan would reach, not a projection from
+                   anything they have done. The note would be claiming a
+                   measurement that does not exist yet. The DATE stays: it is
+                   the plan's, and the plan is real. */
                 expected={
-                  paceFit ? { value: formatPaceDate(paceFit.finishIso), note: 'At current pace' } : undefined
+                  paceFit
+                    ? {
+                        value: formatPaceDate(paceFit.finishIso),
+                        note: atZeroProgress ? undefined : 'At current pace',
+                      }
+                    : undefined
                 }
                 /* THE MODEL'S OWN `minsPerWeek`, not `hoursRemaining / weeks`.
                    The model spreads the work over the nights a learner
@@ -722,7 +737,13 @@ export function AtlasHomeEricE2E({
                 ⚠ THE RING ARM ONLY. The states card steps THROUGH readiness
                 as one of its five screens, so an empty first screen there
                 would break its own sequence. */}
-            {onWhite && !completedView ? <span aria-hidden style={WHITE_PROGRESS_RULE} /> : null}
+            {/* The rule goes with the section: it DIVIDES readiness from the
+                pace card, so on its own it is a line under the last thing on
+                screen. */}
+            {showReadiness && onWhite && !completedView ? (
+              <span aria-hidden style={WHITE_PROGRESS_RULE} />
+            ) : null}
+            {!showReadiness ? null : (
             <AtlasReadinessCard
               bare={onWhite}
               key={`readiness-${progressPick}-${refreshKey}`}
@@ -733,6 +754,7 @@ export function AtlasHomeEricE2E({
               matchPaceEyebrow={paceCard === 'ring'}
               onPastLast={() => setVariant('atlas-v3-progress', 'not-started')}
             />
+            )}
             </div>
             {/* The link tiles at the BOTTOM of the column (2026-10-09, Eric's
                 request; they led it). */}

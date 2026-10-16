@@ -2620,6 +2620,34 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-readiness-section',
+    /* THE READINESS SECTION, ON OR OFF (2026-10-16, Jillienne: "add a toggle
+       in design control to hide the readiness section").
+
+       ⚠ A DESIGN CONTROL, NOT A DEMO ONE, and the distinction is why it is
+       here rather than beside Progress: whether the column CARRIES a
+       readiness section is a question about the layout being explored, not
+       about the learner being demonstrated. Progress moved the other way the
+       same day for the mirror of that reason — it drives what a stakeholder
+       sees, so it belongs on the amber bar.
+
+       ⚠ NO `variants`, so the design bar draws it as an ON/OFF rather than a
+       radiogroup — the sanctioned way onto that bar, and why this flag edits
+       no bar file.
+
+       On (default) the section is drawn, INCLUDING THE RULE ABOVE IT: that
+       rule divides readiness from the pace card, so without the section it is
+       a line under the last thing on screen. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Readiness section',
+    description:
+      'Whether the Atlas Home\u2019s left column carries the Exam readiness section. Off hides the card and the rule above it \u2014 that rule divides readiness from the pace card, so it has nothing to divide once the section is gone.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-header-v2',
     /* THE ATLAS HEADER, ON THE DESIGN BAR (2026-10-13, Eric's request:
        "replace the nav … with the new nav"). On (default), Eric's Atlas

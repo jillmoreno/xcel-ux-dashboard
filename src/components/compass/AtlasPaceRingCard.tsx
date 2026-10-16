@@ -42,7 +42,7 @@ export function AtlasPaceRingCard({
    *  would quietly answer a different question and disagree with the plan it
    *  sits under. */
   hoursPerWeek?: number
-  expected?: { value: string; note: string }
+  expected?: { value: string; note?: string }
   /** Whole weeks the current plan runs to — the same figure the sentence and
    *  the goal line both read, so they cannot describe two different plans. */
   weeks: number
@@ -60,6 +60,15 @@ export function AtlasPaceRingCard({
        learner has got to against it. Splitting them is what lets each be
        named. */
     <div style={PANEL}>
+      {/* ⚠ COURSE PROGRESS LEADS THE COLUMN (2026-10-16, Jillienne: "move
+          course progress to the top - shift everything else down"). Where the
+          learner HAS GOT TO is the first thing they want; the plan for the
+          rest follows from it. It sat under Study pace only because the dial
+          used to live inside that card. */}
+      <section style={{ ...SECTION, alignItems: 'center' }} aria-label="Course progress">
+        <p style={EYEBROW}>Course progress</p>
+        <ProgressDial percent={percent} />
+      </section>
       <section style={SECTION} aria-label="Study pace">
         <p style={EYEBROW}>Study pace</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -102,14 +111,10 @@ export function AtlasPaceRingCard({
             <p style={EXPECTED_LABEL}>Estimated completion</p>
             <p style={EXPECTED_VALUE}>
               {expected.value}
-              <span style={EXPECTED_NOTE}> · {expected.note}</span>
+              {expected.note ? <span style={EXPECTED_NOTE}> · {expected.note}</span> : null}
             </p>
           </div>
         ) : null}
-      </section>
-      <section style={{ ...SECTION, alignItems: 'center' }} aria-label="Course progress">
-        <p style={EYEBROW}>Course progress</p>
-        <ProgressDial percent={percent} />
       </section>
     </div>
   )
@@ -142,12 +147,13 @@ function ProgressDial({ percent }: { percent: number }) {
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </svg>
+      {/* ⚠ NO "COURSE PROGRESS" INSIDE THE RING (2026-10-16, Jillienne:
+          "remove the Course progress words from within the chart"). The
+          section's eyebrow says it now, and the dial repeating it was the
+          cost of promoting that label out of the card — two of the same words
+          a centimetre apart. "Complete" stays: it qualifies the FIGURE, which
+          the eyebrow does not. */}
       <div aria-hidden style={DIAL_TEXT}>
-        <span style={DIAL_CAPTION}>
-          Course
-          <br />
-          Progress
-        </span>
         <span style={DIAL_FIGURE}>{pct}%</span>
         <span style={DIAL_CAPTION}>Complete</span>
       </div>
