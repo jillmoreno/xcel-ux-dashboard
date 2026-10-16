@@ -250,18 +250,22 @@ export const cardsStyle: CSSProperties = {
   minHeight: 8,
 }
 
-/** A card. `dragging` dims the original while it is in flight; `dropBefore`
- *  draws the insertion line above it — the same inset-shadow trick
- *  `TodoPanel` uses for its own drag-to-rank, so the two feel alike. */
+/**
+ * A card's STATE — the parts that change while you are dragging. Its border,
+ * radius and surface are in `todoBoard.css` under `.cre-todo-card`, because
+ * the top stroke is the owner's colour and an inline `border` shorthand would
+ * override the class that sets it.
+ *
+ * `dropBefore` draws the insertion line ABOVE the card rather than inside it
+ * (it was `inset 0 3px 0 0` until the owner stroke arrived, where it became a
+ * second 3px line immediately under the first and read as a rendering bug).
+ */
 export function cardStyle(dragging: boolean, dropBefore: boolean): CSSProperties {
   return {
     position: 'relative',
     padding: '10px 10px 8px',
-    borderRadius: 10,
-    border: '1px solid var(--ux-border)',
-    background: 'var(--ux-card)',
     opacity: dragging ? 0.4 : 1,
-    boxShadow: dropBefore ? 'inset 0 3px 0 0 var(--ux-accent)' : 'none',
+    boxShadow: dropBefore ? '0 -3px 0 0 var(--ux-accent)' : 'none',
   }
 }
 

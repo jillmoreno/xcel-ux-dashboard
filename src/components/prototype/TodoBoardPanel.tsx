@@ -402,6 +402,10 @@ function BoardCard({
 
   return (
     <article
+      className="cre-todo-card"
+      /* The owner's colour, as a 3px top stroke — same source as the avatar
+         beside it, so the two cannot disagree. */
+      data-hue={hueFor(card.owner, people)}
       onDragOver={(e) => {
         // Stops at the card, so the column's own handler does not immediately
         // overwrite "before this card" with "at the end".

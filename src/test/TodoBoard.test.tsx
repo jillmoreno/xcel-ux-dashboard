@@ -571,6 +571,35 @@ describe('the person avatars', () => {
     expect(css).not.toMatch(/\[data-hue='(slate|teal|green|gold|brick|taupe)'\][^}]*--ux-hue/)
   })
 
+  it('strokes the card in its owner’s colour, from the same source as the avatar', async () => {
+    mockBoard([
+      card({ id: 'card-001', owner: 'Anjani' }),
+      card({ id: 'card-002', owner: '', title: 'Nobody’s card', column: 'working' }),
+    ])
+    render(<TodoBoardPanel />)
+    await boardReady()
+
+    const hers = screen.getByText('Compass — review-recap empty state').closest('article')!
+    // One source for both, so a card and its avatar cannot disagree.
+    expect(hers.getAttribute('data-hue')).toBe('gold')
+    expect(avatarIn(hers).dataset.hue).toBe('gold')
+
+    const nobodys = screen.getByText('Nobody’s card').closest('article')!
+    expect(nobodys.getAttribute('data-hue')).toBe('none')
+
+    /* ⚠ Asserted at source: the whole border is in the stylesheet, because an
+       inline `border` shorthand beats a class's `border-top-color` and the
+       card would keep the grey while looking styled. */
+    const css = readFileSync(resolve(root, 'src/components/prototype/todoBoard.css'), 'utf8')
+    expect(css).toMatch(/\.cre-todo-card \{[^}]*border-top: 3px solid/)
+    for (const hue of ['slate', 'teal', 'green', 'gold', 'brick', 'taupe']) {
+      expect(css).toContain(`.cre-todo-card[data-hue='${hue}'] { border-top-color:`)
+    }
+    const styles = readFileSync(resolve(root, 'src/components/prototype/todoBoardStyles.ts'), 'utf8')
+    const cardFn = /export function cardStyle[\s\S]*?\n}/.exec(styles)![0]
+    expect(cardFn).not.toMatch(/border/)
+  })
+
   it('is hidden from assistive tech, because the name is always beside it', async () => {
     mockBoard([card({ id: 'card-001', owner: 'Anjani' })])
     render(<TodoBoardPanel />)

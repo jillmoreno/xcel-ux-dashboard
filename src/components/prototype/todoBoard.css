@@ -79,3 +79,34 @@
   background: var(--ux-chip);
   color: var(--ux-text-2);
 }
+
+/*
+ * THE CARD'S TOP STROKE — 3px in its owner's colour (2026-10-15, Jillienne).
+ *
+ * The avatar says who owns a card; this says it from across the room, before
+ * you read anything. It is the same six colours and the same `data-hue`
+ * values, so a card and its avatar cannot disagree — both read `hueFor()`.
+ *
+ * ⚠ THE WHOLE BORDER LIVES HERE, not in `cardStyle`. An inline `border`
+ * shorthand beats a stylesheet's `border-top-color`, so a card styled inline
+ * and stroked by a class would silently keep the grey. The dynamic bits
+ * (dragging, the drop indicator) stay inline, because they are state rather
+ * than identity.
+ *
+ * Unassigned keeps the palette's own border colour: no owner, no stroke to
+ * speak of — the card simply has a slightly heavier top edge than its sides,
+ * which is the shape the stroke occupies when somebody takes it.
+ */
+.cre-todo-card {
+  border: 1px solid var(--ux-border);
+  border-top: 3px solid var(--ux-border);
+  border-radius: 10px;
+  background: var(--ux-card);
+}
+
+.cre-todo-card[data-hue='slate'] { border-top-color: var(--color-primary-600); }
+.cre-todo-card[data-hue='teal'] { border-top-color: var(--color-info-700); }
+.cre-todo-card[data-hue='green'] { border-top-color: var(--color-success-600); }
+.cre-todo-card[data-hue='gold'] { border-top-color: var(--color-secondary-800); }
+.cre-todo-card[data-hue='brick'] { border-top-color: var(--color-cta-500); }
+.cre-todo-card[data-hue='taupe'] { border-top-color: var(--color-tertiary-600); }

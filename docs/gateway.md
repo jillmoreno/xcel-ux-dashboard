@@ -788,7 +788,12 @@ is the brick red of the knight in the lockup, `primary` is slate blue,
 `tertiary` is taupe. A first version of this list was named from the generic
 house ramps and shipped a "navy" that rendered red — resolve the token before
 renaming one. Unassigned stays grey on the
-page's own tokens, so "nobody" is visibly not one of the six. The ring is
+page's own tokens, so "nobody" is visibly not one of the six. **The card
+carries the same colour as a 3px top stroke** (2026-10-15), so who owns what
+reads from across the room rather than from the avatar alone — both read
+`hueFor()`, so the two cannot disagree. ⚠ The card's whole border lives in
+`todoBoard.css` for that reason: an inline `border` shorthand beats a class's
+`border-top-color`, and a card styled inline would silently keep the grey. The ring is
 `--ux-border`, which does still follow the palette: it is the disc's edge, not
 its identity.
 
