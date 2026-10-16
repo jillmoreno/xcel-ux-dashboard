@@ -250,12 +250,30 @@ export function designControlsFor(
 ): FeatureFlagDefinition[] {
   return FEATURE_FLAGS.filter((def) => {
     if (def.surface !== 'design') return false
-    /* ⚠ `surfaces` IS CHECKED FIRST AND IT IS EXCLUSIVE — 2026-10-16. A
-       control that names its surfaces appears on those and nowhere else, so
-       the planner's four arms stop riding along on Home and on Learn. A
-       control that names none is unchanged: `versions` and owner decide, as
-       they always did. */
-    if (def.surfaces && def.surfaces.length > 0 && !def.surfaces.includes(surface ?? '')) return false
+    /* ⚠ A DECLARED SURFACE IS EXCLUSIVE IN BOTH DIRECTIONS — 2026-10-16,
+       second pass, and the first one only did half of it.
+
+       It used to be: a control that NAMES surfaces appears on those alone.
+       That stopped the planner's arms riding along on Home, but it left the
+       other half untouched — every control naming NO surface still appeared
+       on Compass, so Anjani's pages carried Eric's Brand, Long title, Page
+       and Progress. Compass renders inside HIS version (the Compass row opens
+       `?section=compass` with no `?version=`, so it resolves to the default,
+       which is the End-to-End Demo), and the bar was faithfully reporting
+       that — which is exactly the thing that is not useful on her pages.
+       Jillienne, 2026-10-16: "this is assuming erics feature flag, and its
+       not, it should be on Anjanis, and the extra ones that are just for eric
+       should not be showing."
+       
+       So now: ON a declared surface, only controls that name it. OFF one,
+       only controls that name none. A surface is a room, not a tag — what is
+       in it is what belongs to it. */
+    const named = def.surfaces != null && def.surfaces.length > 0
+    if (surface ? !(named && def.surfaces!.includes(surface)) : named) return false
+    /* ⚠ THE VERSION STILL HAS TO AGREE, on a surface as much as off one. A
+       surface narrows WHERE a control shows; it does not hand it a pass into
+       a version it was never written for — Compass draws differently on the
+       Atlas arm, and her controls say so in their own `versions`. */
     if (def.versions && def.versions.length > 0) return def.versions.includes(versionId)
     return flagOwner(def) === versionOwner
   })
@@ -1380,6 +1398,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        opens that version with no `version=` pin. Without this the control was
        reachable by `?ff=` only. `hybrid-pacing` stays so nothing that already
        worked here moves. */
+    /* The session's own chrome, so it belongs where the session is. */
+    surfaces: ['compass:session'],
     versions: ['hybrid-pacing', 'eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Course content',
@@ -1434,6 +1454,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `?ff=compass-surface:atlas`. This is the Compass scope's own version
        list the note above already asked for; widen it if a second
        Compass-hosting version is ever added. */
+    /* ⚠ NO `surfaces`, AND NO `surface: 'design'` EITHER — this one is not
+       a bar control. It lives in the Feature Flag panel, which scopes by
+       PAGE rather than by the surface on screen, so a `surfaces` list on
+       it would be read by nothing. It was briefly given one on
+       2026-10-16, on the assumption that every `compass-*` flag is a
+       design control; it is not, and the empty Compass Overview bar is
+       what showed that up. */
     versions: ['eric-atlas-e2e'],
     group: 'Navigation',
     label: 'Compass surface',

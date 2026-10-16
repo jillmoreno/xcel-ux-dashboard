@@ -68,3 +68,22 @@ export function useDeclareDesignSurface(id: DesignSurfaceId | null) {
     return () => setSurface(null)
   }, [id, setSurface])
 }
+
+/**
+ * What the Design bar calls the surface, in place of the dashboard version.
+ *
+ * ⚠ THE VERSION TAG WAS LYING BY OMISSION ON COMPASS — 2026-10-16. The bar
+ * states what it is scoped to so a designer knows why the controls changed,
+ * and on Compass it read "End-to-End Demo", because the Compass row opens
+ * `?section=compass` with no `?version=` and that resolves to the default,
+ * which is Eric's. True, and useless: the controls on Compass are scoped by
+ * SURFACE, not by that version, and naming his made Anjani's pages look like
+ * his. Name the thing actually doing the scoping.
+ */
+export const DESIGN_SURFACE_LABELS: Record<DesignSurfaceId, string> = {
+  'compass:session': 'Compass · Session',
+  'compass:overview': 'Compass · Overview',
+  'compass:course': 'Compass · Learn',
+  'compass:study-planner': 'Compass · Study planner',
+  'compass:progress': 'Compass · Progress',
+}

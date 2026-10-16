@@ -15,7 +15,7 @@ import {
 } from '@/data/dashboardVersions'
 import { useFeatureFlagPanel } from '@/components/account/FeatureFlagPanelContext'
 import { useLoFi } from '@/context/LoFiContext'
-import { useDesignSurface } from '@/context/designSurface'
+import { DESIGN_SURFACE_LABELS, useDesignSurface } from '@/context/designSurface'
 import { DemoBar, DemoDropdown } from './DemoBar'
 import {
   useDemoMenus,
@@ -117,7 +117,11 @@ export function DesignControlsBar({
       fullBleed={fullBleed}
       design
     >
-      <span style={versionTagStyle}>{dashboardVersionLabel(versionId)}</span>
+      {/* The scope, named — the SURFACE when there is one, since that is what
+          chose these controls, and the dashboard version otherwise. */}
+      <span style={versionTagStyle}>
+        {surface ? DESIGN_SURFACE_LABELS[surface] : dashboardVersionLabel(versionId)}
+      </span>
       {/* ⚠ A RULE BETWEEN GROUPS, NOT AROUND THEM — her `.sep`, a 1px by 22
           hairline (`#demoBar .sep`). It is what stops four labelled groups
           reading as one long row of buttons once the labels shrink. Between
