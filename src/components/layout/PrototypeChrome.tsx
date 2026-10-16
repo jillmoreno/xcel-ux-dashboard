@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { isPublicGateway, isTestSession } from '@/data/gatewayMode'
 import { PrototypeBar } from './PrototypeBar'
@@ -50,6 +51,45 @@ export function PrototypeChrome() {
   // In the Demo frame the bars run edge-to-edge (full screen width) instead of
   // the rebrand's 1440-capped, left-anchored strip.
   const framed = useDeviceFrame().device === 'desktop-framed'
+
+  /*
+   * SHIFT+D — HIDE (AND BRING BACK) BOTH BARS AT ONCE — 2026-10-15, Jillienne's
+   * ask, porting the single-key hide Anjani's standalone prototypes
+   * (`xcel-compass-*.html`) already carry. One key, both existing stores: if
+   * either bar is open, this hides whichever one(s) are; with both already
+   * hidden, it brings both back. Each bar KEEPS ITS OWN persisted visibility
+   * (`demoControlsVisibility.ts`'s two separate keys) — this does not merge
+   * them into one store, it just drives both toggles from one keystroke for
+   * whoever wants a single "clear the screen" gesture instead of the two
+   * pills / the robot menu.
+   *
+   * ⚠ GUARDED THE SAME WAY HER PROTOTYPES GUARD IT — skipped while the target
+   * is a text field, so typing a capital D into a form (the QA Notes composer,
+   * a flag search, anything on the page) never fires it.
+   *
+   * ⚠ RUNS WHEREVER `PrototypeChrome` MOUNTS, which per `AppLayout` is the
+   * product app shell (`/dashboard-rebrand`, `/end-to-end-demo`, the
+   * onboarding flow) — not the gateway at `/`. Harmless on a route where
+   * neither bar is shown: the effect just flips a store nothing is reading.
+   */
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!e.shiftKey || (e.key !== 'D' && e.key !== 'd')) return
+      const target = e.target as HTMLElement | null
+      if (target?.isContentEditable) return
+      if (target && /input|textarea|select/i.test(target.tagName)) return
+      const anyOpen = demoOpen || designOpen
+      if (anyOpen) {
+        if (demoOpen) toggleDemo()
+        if (designOpen) toggleDesign()
+      } else {
+        toggleDemo()
+        toggleDesign()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [demoOpen, designOpen, toggleDemo, toggleDesign])
   // A share link can hide ALL prototype chrome — the dark `PrototypeBar` AND the
   // navy stakeholder `DemoControlsBar` — with `?chrome=off`, so a URL pasted to a
   // stakeholder (e.g. the Recommended Card A/B links) reads as a real web session:
