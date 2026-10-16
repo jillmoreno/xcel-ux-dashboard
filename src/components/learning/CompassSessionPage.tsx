@@ -130,6 +130,8 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
   const centred = useFeatureFlag('compass-session-centred').enabled
   /* Key terms: Anjani's rate-to-flip card, or the port's original grid. */
   const keyTermsV2 = useFeatureFlag('compass-key-terms-rating').enabled
+  /* Knowledge check: hers (rate before the reveal) or the port's radios. */
+  const checkV2 = useFeatureFlag('compass-check-confidence').enabled
   /* The Contents column, open or a strip. Page state rather than the aside's
      own, because the GRID has to change with it. */
   const [contentsOpen, setContentsOpen] = useState(true)
@@ -196,6 +198,7 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
             <BeatBody
               beat={beat}
               keyTermsV2={keyTermsV2}
+              checkV2={checkV2}
               /* Practice opens Rubi beside the lesson — the rail this page
                  already owns. Hers seeds the composer with the term; the port
                  opens the rail, which is as far as this build's Rubi goes. */
@@ -413,10 +416,12 @@ function ChapterMark({ state }: { state: 'done' | 'here' | 'upcoming' | 'locked'
 function BeatBody({
   beat,
   keyTermsV2,
+  checkV2,
   onPractice,
 }: {
   beat: SessionBeat
   keyTermsV2: boolean
+  checkV2: boolean
   onPractice: (term: string) => void
 }) {
   if (beat.type === 'video') return <VideoBeat beat={beat} />
@@ -428,7 +433,7 @@ function BeatBody({
      treatment and never the content. */
   if (beat.type === 'keyterm')
     return keyTermsV2 ? <KeyTermsBeatV2 beat={beat} onPractice={onPractice} /> : <KeyTermsBeat beat={beat} />
-  if (beat.type === 'check') return <CheckBeat beat={beat} />
+  if (beat.type === 'check') return checkV2 ? <CheckBeatV2 beat={beat} /> : <CheckBeat beat={beat} />
   if (beat.type === 'recap') return <RecapBeat beat={beat} />
   return <InfographicBeat beat={beat} />
 }
@@ -667,6 +672,138 @@ function CheckBeat({ beat }: { beat: SessionBeat }) {
         )
       })}
     </article>
+  )
+}
+
+/* ── KNOWLEDGE CHECK, ANJANI'S WAY ──────────────────────────────────────────
+   Ported from `compCheck`, `pick()`, `conf()`, `answer()` and `showReadout()`
+   in `public/prototypes/xcel-compass-type-scale-preview.html`. Her copy is
+   verbatim; the behaviour is hers step for step. */
+
+/** Her two confidence answers, asked BEFORE the result is shown. */
+const CHECK_CONFIDENCE = [
+  { value: 'high', label: 'Confident' },
+  { value: 'low', label: 'Not sure' },
+] as const
+type CheckConfidence = (typeof CHECK_CONFIDENCE)[number]['value']
+
+/* ⚠ RUBI SPEAKS ON EXACTLY TWO OF THE FOUR OUTCOMES, which is the whole idea
+   and the thing a port would quietly lose by showing feedback every time:
+   right-and-sure needs nothing said, wrong-and-unsure already knows. It is the
+   MISMATCHES that are worth a word — a right answer the learner did not trust,
+   and a wrong one they did. Her text, verbatim. */
+const CHECK_NUDGE: Record<string, string> = {
+  'right-low':
+    'That was right — and here is why it holds. You hesitated, so it is worth locking in: the reasoning you used is the one the exam rewards. I will bring this back in a light review so you see it again and trust it.',
+  'wrong-high':
+    'This one is worth a closer look — the reasoning trips a lot of people up, and being sure about it is what makes it costly. Read the explanation above, then I will give you one more like it to confirm the fix.',
+}
+
+function CheckBeatV2({ beat }: { beat: SessionBeat }) {
+  /* Three states per question and they are not one state: `picked` is a choice
+     the learner can still change, `locked` is the answer they committed by
+     rating their confidence. Collapsing them would make the confidence step
+     unanswerable — you cannot ask "before you see the answer" about an answer
+     already on screen. */
+  const [picked, setPicked] = useState<Record<string, number>>({})
+  const [locked, setLocked] = useState<Record<string, { choice: number; conf: CheckConfidence }>>({})
+  const items = beat.block.items ?? []
+  const answered = items.filter((q) => locked[q.id]).length
+  const right = items.filter((q) => locked[q.id]?.choice === q.correct).length
+  const complete = items.length > 0 && answered === items.length
+
+  return (
+    <>
+      <p style={checkIntroStyle}>
+        Five quick questions. Answer to see where you stand on this topic — nothing here counts
+        against you.
+      </p>
+      {items.map((q, qi) => {
+        const lock = locked[q.id]
+        const choice = lock ? lock.choice : picked[q.id]
+        const nudge = lock ? CHECK_NUDGE[`${lock.choice === q.correct ? 'right' : 'wrong'}-${lock.conf}`] : undefined
+        return (
+          <article key={q.id} style={checkCardStyle}>
+            <p style={checkNumStyle}>
+              Question {qi + 1} of {items.length}
+            </p>
+            <p style={checkStemStyle}>{q.stem}</p>
+            <div role="group" aria-label={q.stem} style={checkOptionsStyle}>
+              {q.options.map((opt, oi) => {
+                const isChoice = choice === oi
+                const isRight = oi === q.correct
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    /* Locked questions stay READABLE, not removed from the tab
+                       order — the same call the demo bar's unpickable row
+                       documents. The click is refused in the handler. */
+                    aria-disabled={lock ? true : undefined}
+                    aria-pressed={isChoice}
+                    onClick={() => {
+                      if (lock) return
+                      setPicked((pr) => ({ ...pr, [q.id]: oi }))
+                    }}
+                    style={{
+                      ...checkOptStyle,
+                      ...(!lock && isChoice ? checkOptSelStyle : null),
+                      ...(lock && isRight ? checkOptRightStyle : null),
+                      ...(lock && isChoice && !isRight ? checkOptWrongStyle : null),
+                    }}
+                  >
+                    <span style={checkMarkStyle}>{String.fromCharCode(65 + oi)}</span>
+                    <span>{opt}</span>
+                  </button>
+                )
+              })}
+            </div>
+            {/* HER ORDER, AND IT IS THE POINT: the confidence row appears once
+                an option is picked and BEFORE anything is revealed. Ask after
+                the result and you are asking how sure they were about
+                something they can already see. */}
+            {!lock && choice != null && (
+              <div style={checkConfStyle}>
+                <span style={checkConfLabelStyle}>Before you see the answer — how sure are you?</span>
+                {CHECK_CONFIDENCE.map((c) => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    style={checkConfBtnStyle}
+                    onClick={() => setLocked((l) => ({ ...l, [q.id]: { choice, conf: c.value } }))}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+            )}
+            {/* The rationale teaches whichever way they answered — the port's
+                existing note, and hers agrees: `answer()` shows it every time. */}
+            {lock && <p style={checkRationaleStyle}>{q.rationale}</p>}
+            {nudge && (
+              <div style={checkNudgeStyle}>
+                <span style={checkNudgeWhoStyle}>
+                  <RubiLogo size={13} aria-hidden /> Rubi
+                </span>
+                <span>{nudge}</span>
+              </div>
+            )}
+          </article>
+        )
+      })}
+      {complete && (
+        <div style={{ ...checkReadoutStyle, ...(right === items.length ? checkReadoutGoodStyle : checkReadoutTightStyle) }}>
+          <p style={checkReadoutLabelStyle}>
+            {right === items.length ? 'On pace · term vs. permanent' : 'A bit tight · term vs. permanent'}
+          </p>
+          <p style={checkReadoutTextStyle}>
+            {right === items.length
+              ? `You got all ${items.length}. On this topic you're tracking well — the term/permanent split has landed.`
+              : `You caught ${right} of ${items.length}. This topic's still a little tight — one quick pass over the flashcards will firm it up.`}
+          </p>
+        </div>
+      )}
+    </>
   )
 }
 
@@ -992,6 +1129,174 @@ const mainStyle: CSSProperties = { minWidth: 0, minHeight: 0, overflowY: 'auto',
    than a cap on two of the three children, which is what left the label
    stretching full width while the card beneath it stopped short. */
 const columnStyle: CSSProperties = { width: '100%', maxWidth: 680, marginInline: 'auto' }
+
+/* ── KNOWLEDGE CHECK, ANJANI'S CARD ──────────────────────────────────────────
+   Her values, on this repo's tokens. Note each question is its OWN card, as
+   with Key terms — the port had all five inside one. */
+const checkIntroStyle: CSSProperties = {
+  margin: '0 0 14px',
+  fontSize: 14,
+  lineHeight: 1.5,
+  color: 'var(--color-text-secondary)',
+}
+const checkCardStyle: CSSProperties = {
+  border: '1px solid var(--color-border-subtle)',
+  borderRadius: 12,
+  background: 'var(--color-surface-card)',
+  padding: 20,
+  marginBottom: 14,
+}
+const checkNumStyle: CSSProperties = {
+  margin: '0 0 8px',
+  fontSize: 11.5,
+  fontWeight: 700,
+  letterSpacing: '.05em',
+  textTransform: 'uppercase',
+  color: 'var(--color-text-tertiary)',
+}
+const checkStemStyle: CSSProperties = {
+  margin: '0 0 14px',
+  fontSize: 18,
+  lineHeight: 1.5,
+  color: 'var(--color-text-primary)',
+}
+const checkOptionsStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8 }
+const checkOptStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  width: '100%',
+  textAlign: 'left',
+  background: 'var(--color-surface-card)',
+  border: '1.5px solid var(--color-border-subtle)',
+  /* Her pill — a full radius, which is what stops four stacked options
+     reading as a table of rows. */
+  borderRadius: 999,
+  padding: '10px 18px',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  lineHeight: '17px',
+  fontWeight: 600,
+  color: 'var(--color-text-primary)',
+  cursor: 'pointer',
+  transition: 'background-color .15s, border-color .15s, color .15s',
+}
+const checkMarkStyle: CSSProperties = {
+  flex: '0 0 auto',
+  width: 22,
+  height: 22,
+  borderRadius: 99,
+  border: '1.5px solid var(--color-border-subtle)',
+  display: 'grid',
+  placeItems: 'center',
+  fontSize: 12,
+  fontWeight: 700,
+  color: 'var(--color-text-tertiary)',
+}
+/* Picked but NOT yet committed — her violet. The palette has no violet, and
+   inventing one for a transient state is not worth a token, so this is the
+   primary at its tint: what matters is that "chosen" reads differently from
+   "right" and "wrong", which it does. */
+const checkOptSelStyle: CSSProperties = {
+  borderColor: 'var(--color-primary-500)',
+  background: 'var(--color-primary-100)',
+  color: 'var(--color-primary-700)',
+}
+const checkOptRightStyle: CSSProperties = {
+  background: 'var(--color-success-100)',
+  borderColor: 'var(--color-success-100)',
+}
+const checkOptWrongStyle: CSSProperties = {
+  background: 'var(--color-warning-100)',
+  borderColor: 'var(--color-warning-500)',
+}
+const checkConfStyle: CSSProperties = {
+  marginTop: 10,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 9,
+  flexWrap: 'wrap',
+  padding: '11px 13px',
+  background: 'var(--color-surface-page)',
+  border: '1px solid var(--color-border-subtle)',
+  borderRadius: 10,
+}
+const checkConfLabelStyle: CSSProperties = {
+  fontSize: 12.5,
+  fontWeight: 600,
+  color: 'var(--color-text-secondary)',
+}
+const checkConfBtnStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 12.5,
+  fontWeight: 600,
+  borderRadius: 8,
+  padding: '7px 13px',
+  border: '1px solid var(--color-border-subtle)',
+  background: 'var(--color-surface-card)',
+  color: 'var(--color-text-secondary)',
+  cursor: 'pointer',
+}
+const checkRationaleStyle: CSSProperties = {
+  margin: '10px 0 0',
+  padding: '10px 12px',
+  background: 'var(--color-surface-page)',
+  borderRadius: 9,
+  fontSize: 15.5,
+  lineHeight: 1.5,
+  color: 'var(--color-text-secondary)',
+}
+const checkNudgeStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 6,
+  marginTop: 10,
+  padding: '12px 14px',
+  borderRadius: 10,
+  border: '1px solid var(--color-primary-200)',
+  background: 'var(--color-primary-100)',
+  fontSize: 13.5,
+  lineHeight: 1.5,
+  color: 'var(--color-text-primary)',
+}
+const checkNudgeWhoStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  fontSize: 11.5,
+  fontWeight: 700,
+  letterSpacing: '.06em',
+  textTransform: 'uppercase',
+  color: 'var(--color-primary-700)',
+}
+const checkReadoutStyle: CSSProperties = {
+  borderRadius: 12,
+  padding: '18px 20px',
+  marginTop: 6,
+  border: '1px solid transparent',
+}
+const checkReadoutGoodStyle: CSSProperties = {
+  background: 'var(--color-success-100)',
+  borderColor: 'var(--color-success-100)',
+}
+const checkReadoutTightStyle: CSSProperties = {
+  background: 'var(--color-warning-100)',
+  borderColor: 'var(--color-warning-500)',
+}
+const checkReadoutLabelStyle: CSSProperties = {
+  margin: '0 0 6px',
+  fontSize: 11.5,
+  fontWeight: 700,
+  letterSpacing: '.06em',
+  textTransform: 'uppercase',
+  color: 'var(--color-text-secondary)',
+}
+const checkReadoutTextStyle: CSSProperties = {
+  margin: 0,
+  fontSize: 14.5,
+  lineHeight: 1.5,
+  color: 'var(--color-text-primary)',
+}
 
 /* ── KEY TERMS, ANJANI'S CARD ────────────────────────────────────────────────
    Her values from `xcel-compass-type-scale-preview.html`, mapped onto this

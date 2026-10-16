@@ -66,9 +66,16 @@ describe('the Compass session', () => {
     expect(bar().getAttribute('aria-valuenow')).toBe('86')
   })
 
-  it('explains the answer either way round', async () => {
+  it('OFF `compass-check-confidence`: explains the answer either way round', async () => {
     /* The rationale is the half that teaches, so a correct answer earns it too
-       — showing it only on a miss turns the check into a scoreboard. */
+       — showing it only on a miss turns the check into a scoreboard.
+       ⚠ THIS IS THE OFF ARM NOW (2026-10-16). The default became Anjani's
+       check, which asks how sure you are BEFORE revealing anything — so the
+       rationale no longer appears on pick. The rule this case names still
+       holds there (`CompassKnowledgeCheck.test.tsx` pins it either way); what
+       changed is when. The original radio list is kept beside hers and this is
+       what still pins it. */
+    window.history.replaceState({}, '', '/dashboard-rebrand?ff=compass-check-confidence:off')
     const user = userEvent.setup()
     renderSession()
     await user.click(within(contents()).getByRole('button', { name: /Knowledge check/ }))
@@ -76,6 +83,7 @@ describe('the Compass session', () => {
     expect(within(q1).queryByText(/Only permanent policies build cash value/)).toBeNull()
     await user.click(within(q1).getByRole('radio', { name: 'Permanent' }))
     expect(within(q1).getByText(/Only permanent policies build cash value/)).toBeTruthy()
+    window.history.replaceState({}, '', '/')
   })
 
   it('OFF `compass-key-terms-rating`: keeps the key terms hidden until they are flipped', async () => {

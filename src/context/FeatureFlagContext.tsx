@@ -2489,6 +2489,38 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-check-confidence',
+    /* KNOWLEDGE CHECK, ANJANI'S WAY (2026-10-16, Jillienne: "Fix Knowledge
+       Check Next to match anjanis").
+
+       Same shape of mismatch as Key terms, and the same lesson: what the port
+       had wrong was the ORDER, not the styling. It drew radios and revealed
+       the rationale the moment one was chosen. Hers asks a question in
+       between — pick an option, then "Before you see the answer — how sure are
+       you?" — and only then locks the answer, marks right and wrong and
+       explains. Ask after the reveal and you are asking how sure someone was
+       about something already on screen.
+
+       ⚠ RUBI SPEAKS ON TWO OF THE FOUR OUTCOMES, not all of them: a right
+       answer the learner did not trust, and a wrong one they did. Right-and-
+       sure needs nothing said; wrong-and-unsure already knows. Showing
+       feedback every time is the easy way to lose the whole idea.
+
+       Ends on her readout — "On pace" or "A bit tight" — once every question
+       is answered. Ported from `compCheck`, `pick`, `conf`, `answer` and
+       `showReadout` in her `xcel-compass-type-scale-preview.html`; the copy is
+       verbatim. `CheckBeat` is untouched beside it as the off arm.
+
+       ⚠ ANJANI'S SURFACE. On by default so it shows as a Compass-scope
+       candidate at promotion rather than riding in with a merge. */
+    group: 'Widgets',
+    label: 'Knowledge check: rate before the reveal',
+    description:
+      'On, the Compass session\u2019s Knowledge check is Anjani\u2019s \u2014 lettered option buttons, \u201cQuestion N of M\u201d, a confidence question before the answer is shown, then right/wrong marking, the rationale, a word from Rubi when confidence and outcome disagree, and a readout at the end. Off, the original radio list that revealed the rationale on pick.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-header-v2',
     /* THE ATLAS HEADER, ON THE DESIGN BAR (2026-10-13, Eric's request:
        "replace the nav … with the new nav"). On (default), Eric's Atlas
