@@ -451,7 +451,7 @@ export function AtlasHomeEricE2E({
               // 12 corners on Eric/Atlas White, 8 under the card’s 20 (2026-10-14)
               // — and the 260 column's width less the panel's padding there, so
               // its right edge lines up with that column below.
-              style={{ ...COVER_FRAME, ...COVER_TOGGLE, ...(onWhite ? { borderRadius: 12, width: V3_LEFT_W - WHITE_HEAD_PAD } : null) }}
+              style={{ ...COVER_FRAME, ...COVER_TOGGLE, ...(onWhite ? { borderRadius: COMPASS_BUTTON.borderRadius, width: V3_LEFT_W - WHITE_HEAD_PAD } : null) }}
             >
               <img src={shownCover} alt="" style={COVER} />
             </button>
@@ -559,7 +559,7 @@ export function AtlasHomeEricE2E({
             {/* Not on Eric/Atlas White (2026-10-14, Eric's request: "remove");
                 WIP keeps it. */}
             {onWhite ? null : (
-              <AtlasExamDateCard key={refreshKey} stateName={state} style={{ ...RAIL_CARD_BORDER, borderRadius: 20 }} hideIntroCopy />
+              <AtlasExamDateCard key={refreshKey} stateName={state} style={{ ...RAIL_CARD_BORDER, borderRadius: 14 }} hideIntroCopy />
             )}
             {/* The READINESS card, under the module (Figma 254:8012, 2026-10-08). */}
             {/* On the Completed view it opens on Proficient (2026-10-09, Eric). */}
@@ -775,8 +775,8 @@ export function AtlasHomeEricE2E({
             ...RAIL_CARD_BORDER,
             border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)',
             ...(onWhite && headH ? { height: headH } : null),
-            // …and its 20 corners (same day).
-            ...(onWhite ? { borderRadius: 20 } : null),
+            // …and the cards' corners: 20, then 14 (2026-10-16, Eric's request).
+            ...(onWhite ? { borderRadius: 14 } : null),
           }}
         />
 
@@ -947,7 +947,7 @@ const EXAM_DATE_PROMPT: CSSProperties = {
   alignItems: 'center',
   gap: 8,
   padding: '4px 16px',
-  borderRadius: 16,
+  borderRadius: COMPASS_BUTTON.borderRadius, // the Yes button's 9 (2026-10-16, Eric's request; 16, then 14)
   background: 'var(--color-primary-100)',
 }
 
@@ -1047,7 +1047,7 @@ const CARD: CSSProperties = {
   paddingBottom: 40,
   paddingLeft: 40,
   boxSizing: 'border-box',
-  borderRadius: 20, // the inner cards' 20 (2026-10-13, Eric's request); it was 14
+  borderRadius: 14, // every card 14, as Compass's Overview (2026-10-16, Eric's request; 20 from 2026-10-13)
   background: 'var(--color-compass-course-card)',
   // No outer stroke (2026-10-02, the designer's request); the Compass MEDIUM
   // shadow lifts it instead (the small one was tried the same day).
@@ -1193,7 +1193,7 @@ const WHITE_PROGRESS_PANEL: CSSProperties = {
   // cards inside keep their own 24.
   padding: '8px 32px',
   boxSizing: 'border-box',
-  borderRadius: 20,
+  borderRadius: 14, // 14 (2026-10-16, Eric's request; was 20)
   // No stroke, a Secondary 100 fill (2026-10-15, Eric's request; it had
   // Quick Links' border).
   background: 'var(--color-atlas-tan-100)',
@@ -1221,7 +1221,7 @@ const WHITE_COURSE_HEAD: CSSProperties = {
   // 8 more below it, before the Progress row (2026-10-14, Eric's requests:
   // 8, then 8 more; 8 less on 2026-10-15).
   marginBottom: 8,
-  borderRadius: 20,
+  borderRadius: 14, // 14 (2026-10-16, Eric's request; was 20)
   background: 'var(--color-primary-100)',
 }
 
@@ -1489,7 +1489,7 @@ const V3_STACKED_TILE: CSSProperties = {
   // — 2026-10-09, Eric's request.
   padding: '12px 16px 12px',
   boxSizing: 'border-box',
-  borderRadius: 20,
+  borderRadius: 14, // 14 (2026-10-16, Eric's request; was 20)
   border: 'none',
   background: 'var(--color-primary-100)', // Primary 100 (2026-10-09, Eric; was Tertiary 200)
   // The design's drop shadow shows on HOVER only (tokens.css, Eric 2026-10-09).
