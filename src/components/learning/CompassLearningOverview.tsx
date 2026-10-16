@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ArrowRight, Check, ChevronRight, CircleInfo, Lock, RubiLogo } from '@/icons'
 import {
   COMPASS_ASSIGNMENTS,
@@ -6,6 +7,7 @@ import {
   COMPASS_INSIGHTS,
   COMPASS_INSIGHTS_CAPTION,
   COMPASS_OVERVIEW_HEADER,
+  COMPASS_DASHBOARD_NUDGES,
   COMPASS_READINESS,
   COMPASS_READINESS_EXPLAINER,
   COMPASS_TONIGHT,
@@ -202,6 +204,10 @@ function TonightCallout({ onStart, onViewPlan }: { onStart?: () => void; onViewP
 
 function ReadinessBand({ onStart }: { onStart?: () => void }) {
   const { percent, ringLabel, lead, explainLabel, rubi, eyebrow, tag } = COMPASS_READINESS
+  /* HER DASHBOARD NUDGES — the design bar's Nudge control fires one into
+     this slot (2026-10-16). `none` is her Clear, and leaves the band's own
+     Rubi suggestion exactly as it shipped. */
+  const firedNudge = COMPASS_DASHBOARD_NUDGES[useFeatureFlag('compass-dashboard-nudge').variant ?? 'none']
   const x = COMPASS_READINESS_EXPLAINER
   return (
     <section>
@@ -252,15 +258,46 @@ function ReadinessBand({ onStart }: { onStart?: () => void }) {
           </div>
         </div>
         <div className="cre-ov__rubi">
-          <p className="k">
-            <RubiLogo size={13} aria-hidden />
-            {rubi.eyebrow}
-          </p>
-          <h3>{rubi.title}</h3>
-          <p>{rubi.detail}</p>
-          <button type="button" className="cre-ov__btn cre-ov__btn--out" onClick={onStart}>
-            {rubi.action}
-          </button>
+          {firedNudge ? (
+            /* ⚠ THE NUDGE'S OWN SHAPE, not the suggestion's. Hers leads with
+               WHEN it fired, then the line, then the reason underneath —
+               the reason is the part her spec insists on, so it is text on
+               the card rather than a tooltip. Its actions are hers too, and
+               none of them is wired: the prototype does not resolve them
+               either, and a button that silently does nothing is better than
+               one that pretends to reshape a plan. */
+            <>
+              <p className="k">
+                <RubiLogo size={13} aria-hidden />
+                {firedNudge.when}
+              </p>
+              <h3>{firedNudge.line}</h3>
+              <p>{firedNudge.why}</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {firedNudge.actions.map((a) => (
+                  <button
+                    key={a.label}
+                    type="button"
+                    className={`cre-ov__btn${a.solid ? '' : ' cre-ov__btn--out'}`}
+                  >
+                    {a.label}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="k">
+                <RubiLogo size={13} aria-hidden />
+                {rubi.eyebrow}
+              </p>
+              <h3>{rubi.title}</h3>
+              <p>{rubi.detail}</p>
+              <button type="button" className="cre-ov__btn cre-ov__btn--out" onClick={onStart}>
+                {rubi.action}
+              </button>
+            </>
+          )}
         </div>
       </div>
     </section>

@@ -159,3 +159,52 @@ export const COMPASS_INSIGHTS = [
 ] as const
 
 export const COMPASS_INSIGHTS_CAPTION = 'From your last 4 sessions'
+
+
+/**
+ * HER THREE BATCH DASHBOARD NUDGES — 2026-10-16, ported verbatim from the
+ * `DN` object in `public/prototypes/xcel-compass-nudge-journey.html`, which
+ * her "Dashboard nudges" menu fires (`dnFire('d05'|'d08'|'d09')`).
+ *
+ * ⚠ BATCH, AND THE NOTE IN HER MENU SAYS WHY: "These three are batch nudges
+ * in Sole's spec — produced between sessions. They never fire inside a
+ * lesson." That is a statement about where they may appear, not a styling
+ * note, which is why the control that fires them is scoped to the OVERVIEW
+ * and not to the session.
+ *
+ * ⚠ THE COPY IS HERS, UNCHANGED. `when` / `line` / `why` and the actions are
+ * the strings from her file. `d09` carries a `fake: true` in the prototype —
+ * her marker that its figures are illustrative — and the 61% / 80% in its
+ * `why` are exactly that, so they must not be read as measured.
+ */
+export type CompassDashboardNudge = {
+  n: string
+  when: string
+  line: string
+  why: string
+  actions: { label: string; solid?: boolean }[]
+}
+
+export const COMPASS_DASHBOARD_NUDGES: Record<string, CompassDashboardNudge> = {
+  d05: {
+    n: '05',
+    when: 'Noticed since your last session',
+    line: "You're close on one topic. Fifteen minutes today gets you back on pace.",
+    why: 'You opened Compass twice this week without finishing a section. This is the smallest thing that moves your date.',
+    actions: [{ label: 'Start the 15 minutes', solid: true }, { label: 'Not today' }],
+  },
+  d08: {
+    n: '08',
+    when: 'Welcome back \u2014 5 days away',
+    line: 'Welcome back. Two quick refreshers, then we pick up where you left off.',
+    why: 'Memory fades with a break, so a short warm-up on what you already covered protects it before new material.',
+    actions: [{ label: 'Do the two refreshers', solid: true }, { label: 'Skip, take me to the course' }],
+  },
+  d09: {
+    n: '09',
+    when: '8 days to your exam',
+    line: "To be ready by the 14th, let's put your next few sessions on your two weakest domains.",
+    why: 'Readiness is 61% and the Ready band is 80%. Provisions and Riders are the two that move it most.',
+    actions: [{ label: 'Reshape my plan', solid: true }, { label: 'Go to flashcards' }, { label: 'Not now' }],
+  },
+}

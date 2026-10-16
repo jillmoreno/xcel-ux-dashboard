@@ -24,7 +24,10 @@ import {
   DEMO_HOVER_FILL,
   DEMO_TRIGGER,
   DESIGN_ACCENT,
+  SQUARE_GROUP,
   SQUARE_GROUP_CLASS,
+  SQUARE_LABEL,
+  SQUARE_TRIGGER,
 } from './demoBarUtil'
 
 /**
@@ -287,8 +290,8 @@ function DesignControl({
   if (!variants.length) {
     const on = Boolean(state?.enabled)
     return (
-      <span className={SQUARE_GROUP_CLASS} style={SEGMENT_GROUP}>
-        <span style={SEGMENT_LABEL}>{def.label}</span>
+      <span className={SQUARE_GROUP_CLASS} style={SQUARE_GROUP}>
+        <span style={SQUARE_LABEL}>{def.label}</span>
       <button
         type="button"
         role="switch"
@@ -345,8 +348,8 @@ function DesignControl({
    */
   if (variants.length <= SEGMENTED_MAX) {
     return (
-      <span className={SQUARE_GROUP_CLASS} style={SEGMENT_GROUP}>
-        <span style={SEGMENT_LABEL}>{def.label}</span>
+      <span className={SQUARE_GROUP_CLASS} style={SQUARE_GROUP}>
+        <span style={SQUARE_LABEL}>{def.label}</span>
         {/* ⚠ ROVING TABINDEX NEEDS ARROW KEYS, or it is a trap. Only the
             CHECKED radio is tabbable — that is the ARIA pattern and it is what
             keeps a three-option group from eating three tab stops on a bar
@@ -415,13 +418,18 @@ function DesignControl({
      every group the same way: a small uppercase label, then the control. So
      the label is rendered here and the eyebrow is not passed at all; the
      trigger carries the VALUE alone. */
+  /* ⚠ `square` + `eyebrow`, NOT A HAND-ROLLED WRAPPER. This branch used to
+     draw its own label span beside a plain trigger, which looked identical
+     and was not: `DemoDropdown`'s square mode also restates the pair in the
+     trigger's `aria-label`, and doing it here by hand skipped that. The
+     Nudge control announced itself as "None" — its value with nothing
+     saying which axis — until this went through the shared path. */
   return (
-    <span className={SQUARE_GROUP_CLASS} style={SEGMENT_GROUP}>
-      <span style={SEGMENT_LABEL}>{def.label}</span>
     <DemoDropdown
       id={def.key}
+      square
+      eyebrow={def.label}
       label={label}
-      triggerStyle={SQUARE_TRIGGER}
       openId={openId}
       onToggle={onToggle}
       panelRole="radiogroup"
@@ -446,7 +454,6 @@ function DesignControl({
         )
       })}
     </DemoDropdown>
-    </span>
   )
 }
 
@@ -484,24 +491,7 @@ function DesignControl({
    the same relationships against the bar's own ground. */
 const SEGMENTED_MAX = 3
 
-const SEGMENT_GROUP: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 6,
-}
 
-/* Her 9px, letter-spacing and all — small enough that it reads as a caption
-   on the group rather than as another control beside it. */
-const SEGMENT_LABEL: CSSProperties = {
-  fontSize: 8.5,
-  fontWeight: 700,
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase',
-  color: 'rgb(255 255 255 / 0.48)',
-  marginRight: 2,
-  whiteSpace: 'nowrap',
-  flex: 'none',
-}
 
 /* No track: the buttons sit directly in the row, 6 apart, as hers do. */
 const SEGMENT_TRACK: CSSProperties = {
@@ -539,15 +529,6 @@ const SWITCH_ON: CSSProperties = {
   color: 'var(--color-fixed-light)',
 }
 
-/* THE SQUARE DROPDOWN — the pill is the demo bar's, and a bar that is half
-   pill and half square reads as a mistake rather than a distinction. Passed
-   to `DemoDropdown`, which keeps its own shape for every other caller. */
-const SQUARE_TRIGGER: CSSProperties = {
-  borderRadius: 7,
-  fontSize: 10.5,
-  padding: '5px 8px',
-  gap: 5,
-}
 
 /* The version this bar is scoped to, stated rather than implied — a designer
    who switches versions needs to see the controls change AND know why. */

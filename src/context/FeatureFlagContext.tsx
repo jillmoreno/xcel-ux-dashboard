@@ -1475,6 +1475,40 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-dashboard-nudge',
+    /* HER "DASHBOARD NUDGES" MENU — 2026-10-16, the floating button in
+       `public/prototypes/xcel-compass-nudge-journey.html` that fires one of
+       three batch nudges onto the dashboard (`dnFire`), with a Clear beside
+       them.
+
+       ⚠ SCOPED TO THE OVERVIEW BECAUSE HER OWN NOTE SCOPES IT: "These three
+       are batch nudges in Sole's spec — produced between sessions. They
+       never fire inside a lesson." Offering them on the session would be the
+       bar contradicting the spec the nudges come from.
+
+       The copy is hers, in `COMPASS_DASHBOARD_NUDGES`. `none` is her Clear,
+       and it is the default: the Rubi suggestion the readiness band already
+       carried is what the overview shows until someone fires one, so this
+       control adds a state rather than replacing the shipped one. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['compass:overview'],
+    group: 'Widgets',
+    label: 'Nudge',
+    description:
+      'Fire one of Anjani\u2019s three batch dashboard nudges into the readiness band. Batch nudges are produced between sessions and never inside a lesson, so this is the overview only. Clear restores the band\u2019s own Rubi suggestion.',
+    variants: [
+      { value: 'none', label: 'None' },
+      { value: 'd05', label: '05', description: 'Gone quiet, progress stalled' },
+      { value: 'd08', label: '08', description: 'Back after time away' },
+      { value: 'd09', label: '09', description: 'Exam close, readiness not there' },
+    ],
+    defaultVariant: 'none',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-panel',
     /* HER NUDGE JOURNEY'S "PANEL" GROUP — 2026-10-16, ported from
        `public/prototypes/xcel-compass-nudge-journey.html`, where it is three
