@@ -90,54 +90,81 @@ function SheetChrome({
   )
 }
 
-/* ── New card ─────────────────────────────────────────────────────────────── */
+/* ── New card · Edit card ─────────────────────────────────────────────────── */
 
-export function NewCardSheet({
+/**
+ * One sheet, two jobs (2026-10-15, Jillienne: "we need to add the ability to
+ * edit").
+ *
+ * A second component for editing would be the same four fields with a
+ * different verb, and the two would drift the first time a field was added —
+ * so `card` is what distinguishes them: absent is a new card, present is that
+ * card. Only the title, the footer's verb and where the save goes differ.
+ */
+export function CardSheet({
   open,
+  card,
   people,
   defaultColumn,
   onClose,
-  onCreate,
+  onSave,
 }: {
   open: boolean
+  /** The card being edited, or undefined when this is a new one. */
+  card?: TodoCard
   people: TodoPerson[]
   /** Whichever button opened it — the page-level CTA defaults to To Do, and a
-   *  column's own "Add a card" defaults to that column. */
+   *  column's own "Add a card" defaults to that column. Ignored when editing:
+   *  the card's own column is the answer then. */
   defaultColumn: TodoColumn
   onClose: () => void
-  onCreate: (draft: TodoCardDraft) => Promise<void>
+  onSave: (draft: TodoCardDraft) => Promise<void>
 }) {
+  const editing = Boolean(card)
   return (
-    <Sheet open={open} onClose={onClose} title="New card" width={480}>
+    <Sheet open={open} onClose={onClose} title={editing ? 'Edit card' : 'New card'} width={480}>
       <SheetChrome
-        title="New card"
-        description="Name it and add a quick note on what it’s about."
+        title={editing ? 'Edit card' : 'New card'}
+        description={
+          editing
+            ? 'Change what it says, who owns it, or which column it sits in.'
+            : 'Name it and add a quick note on what it’s about.'
+        }
         onClose={onClose}
       >
         {/* Mounted only while open — `Sheet` returns null when closed — so the
-            form starts empty every time without a reset effect, and
-            `defaultColumn` is simply its initial state. */}
-        <NewCardBody people={people} defaultColumn={defaultColumn} onClose={onClose} onCreate={onCreate} />
+            form starts from the card (or empty) every time without a reset
+            effect, and `key` makes that true when one edit follows another. */}
+        <CardBody
+          key={card?.id ?? 'new'}
+          card={card}
+          people={people}
+          defaultColumn={card?.column ?? defaultColumn}
+          onClose={onClose}
+          onSave={onSave}
+        />
       </SheetChrome>
     </Sheet>
   )
 }
 
-function NewCardBody({
+function CardBody({
+  card,
   people,
   defaultColumn,
   onClose,
-  onCreate,
+  onSave,
 }: {
+  card?: TodoCard
   people: TodoPerson[]
   defaultColumn: TodoColumn
   onClose: () => void
-  onCreate: (draft: TodoCardDraft) => Promise<void>
+  onSave: (draft: TodoCardDraft) => Promise<void>
 }) {
-  const [title, setTitle] = useState('')
-  const [note, setNote] = useState('')
+  const [title, setTitle] = useState(card?.title ?? '')
+  const [note, setNote] = useState(card?.note ?? '')
   const [column, setColumn] = useState<TodoColumn>(defaultColumn)
-  const [owner, setOwner] = useState<string>(UNASSIGNED)
+  const [owner, setOwner] = useState<string>(card?.owner ?? UNASSIGNED)
   const [errors, setErrors] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const titleRef = useRef<HTMLInputElement | null>(null)
@@ -152,7 +179,16 @@ function NewCardBody({
   const assigned = autoAssigns(column)
 
   const submit = async () => {
-    const draft: TodoCardDraft = { title, note, owner: assigned ? AUTO_ASSIGN_OWNER : owner, column }
+    const draft: TodoCardDraft = {
+      title,
+      note,
+      owner: assigned ? AUTO_ASSIGN_OWNER : owner,
+      column,
+      // An edit keeps its place in the column; the server puts a new card at
+      // the end. Moving a card is the board's job, not this form's — which is
+      // why there is no position control here.
+      ...(card ? { position: card.position } : {}),
+    }
     const problems = draftProblems(draft)
     if (problems.length) {
       setErrors(problems)
@@ -162,9 +198,13 @@ function NewCardBody({
     setBusy(true)
     setErrors([])
     try {
-      await onCreate(draft)
+      await onSave(draft)
     } catch (err) {
-      setErrors(err instanceof Error && 'errors' in err ? (err as { errors: string[] }).errors : ['Could not add the card.'])
+      setErrors(
+        err instanceof Error && 'errors' in err
+          ? (err as { errors: string[] }).errors
+          : ['Could not save the card.'],
+      )
       setBusy(false)
     }
   }
@@ -250,8 +290,8 @@ function NewCardBody({
 
       <footer style={sheetFooterStyle}>
         <button type="button" onClick={submit} disabled={busy} style={primaryBtnStyle}>
-          <Plus size={12} aria-hidden />
-          {busy ? 'Adding…' : 'Add card'}
+          {card ? null : <Plus size={12} aria-hidden />}
+          {busy ? 'Saving…' : card ? 'Save changes' : 'Add card'}
         </button>
         <button type="button" onClick={onClose} disabled={busy} style={btnStyle}>
           Cancel

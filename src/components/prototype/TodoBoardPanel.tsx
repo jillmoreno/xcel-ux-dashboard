@@ -48,6 +48,7 @@ import {
   ownerOptions,
   positionForDrop,
   removePerson,
+  saveCard,
   setCardOwner,
   toMarkdown,
   useTodoBoard,
@@ -58,7 +59,8 @@ import {
   type TodoPerson,
 } from '@/data/todoBoardStore'
 import { TodoBoardAvatar } from './TodoBoardAvatar'
-import { ManagePeopleSheet, NewCardSheet } from './TodoBoardSheets'
+import { UX_TOKEN_BRIDGE } from './uxPaletteBridge'
+import { CardSheet, ManagePeopleSheet } from './TodoBoardSheets'
 import {
   addCardStyle,
   boardStyle,
@@ -79,6 +81,8 @@ import {
   filterAvatarStyle,
   filterRowStyle,
   gripStyle,
+  kebabTriggerHover,
+  kebabTriggerStyle,
   noticeStyle,
   ownerSelectHoverStyle,
   ownerSelectStyle,
@@ -88,7 +92,7 @@ import {
 
 /** Which sheet is open, and what it was opened with. One piece of state
  *  rather than two booleans, so the two sheets cannot both be open. */
-type OpenSheet = { kind: 'card'; column: TodoColumn } | { kind: 'people' } | null
+type OpenSheet = { kind: 'card'; column: TodoColumn; card?: TodoCard } | { kind: 'people' } | null
 
 /** A drag in flight: the card being moved, and where it would land. The
  *  target is kept separately from the card because it changes on every
@@ -172,7 +176,12 @@ export function TodoBoardPanel() {
   const visible = useMemo(() => index.cards.filter((c) => matchesOwner(c, ownerFilter)), [index.cards, ownerFilter])
 
   return (
-    <div>
+    /* The bridge, on the panel root: everything the board draws itself is on
+       `--ux-*` already, but `ActionMenu` is a shared product component styled
+       on the BRAND tokens, and its menu rendered as a white card with navy
+       text inside whichever palette the page is wearing. Six mappings fix it
+       without forking the component. */
+    <div style={UX_TOKEN_BRIDGE}>
       <div style={toolbarStyle}>
         <button type="button" onClick={() => setSheet({ kind: 'people' })} disabled={!canAuthor} style={btnStyle}>
           <Users size={13} aria-hidden />
@@ -228,109 +237,112 @@ export function TodoBoardPanel() {
       </div>
 
       <div style={boardStyle}>
-        {TODO_COLUMNS.map((col) => {
-          const all = cardsInColumn(index.cards, col.id)
-          const shown = cardsInColumn(visible, col.id)
-          const isTarget = dropTarget?.column === col.id
-          return (
-            <section
-              key={col.id}
-              aria-label={col.label}
-              onDragOver={(e) => {
-                if (!drag) return
-                e.preventDefault()
-                setDropTarget({ column: col.id, beforeId: null })
-              }}
-              onDrop={(e) => {
-                e.preventDefault()
-                void drop(col.id)
-              }}
-              style={columnStyle(Boolean(drag) && isTarget)}
-            >
-              <header style={columnHeaderStyle}>
-                <h3 style={columnTitleStyle}>{col.label}</h3>
-                {/* The count is of the COLUMN, not of what the owner filter
-                    leaves showing — the same rule the project sections'
-                    status pills follow: it says how many are there, not how
-                    many survived the pick you already made. */}
-                <span style={columnCountStyle}>{all.length}</span>
-              </header>
-
-              {autoAssigns(col.id) && <p style={columnNoteStyle}>Auto-assigns to {AUTO_ASSIGN_OWNER}</p>}
-
-              <div style={cardsStyle}>
-                {shown.map((card) => (
-                  <BoardCard
-                    key={card.id}
-                    card={card}
-                    people={index.people}
-                    canAuthor={canAuthor}
-                    dragging={drag?.id === card.id}
-                    dropBefore={Boolean(drag) && isTarget && dropTarget?.beforeId === card.id}
-                    onDragStart={() => setDrag({ id: card.id, column: card.column })}
-                    onDragEnd={endDrag}
-                    onDragOverCard={() => {
-                      if (drag) setDropTarget({ column: col.id, beforeId: card.id })
-                    }}
-                    onReassign={(owner) => void run(() => setCardOwner(card, owner))}
-                    onMoveToColumn={(column) =>
-                      void run(() => moveCard(card, column, positionForDrop(index.cards, column, null, card.id)))
-                    }
-                    onNudge={(direction) => {
-                      const list = cardsInColumn(index.cards, card.column)
-                      const at = list.findIndex((c) => c.id === card.id)
-                      // Up: land before the card above. Down: land before the
-                      // card two below — "before the one below" is where it
-                      // already is.
-                      const beforeId =
-                        direction === 'up'
-                          ? (list[at - 1]?.id ?? null)
-                          : (list[at + 2]?.id ?? null)
-                      if (direction === 'up' && at <= 0) return
-                      if (direction === 'down' && at >= list.length - 1) return
-                      void run(() =>
-                        moveCard(card, card.column, positionForDrop(index.cards, card.column, beforeId, card.id)),
-                      )
-                    }}
-                    canMoveUp={cardsInColumn(index.cards, card.column).findIndex((c) => c.id === card.id) > 0}
-                    canMoveDown={
-                      cardsInColumn(index.cards, card.column).findIndex((c) => c.id === card.id) <
-                      cardsInColumn(index.cards, card.column).length - 1
-                    }
-                    onRemove={() => void run(() => deleteCard(card.id))}
-                  />
-                ))}
-
-                {shown.length === 0 && (
-                  <p style={emptyColumnStyle}>
-                    {all.length === 0
-                      ? 'Nothing here yet.'
-                      : `Nothing here for ${ownerFilter === UNASSIGNED ? UNASSIGNED_LABEL : ownerFilter}.`}
-                  </p>
-                )}
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setSheet({ kind: 'card', column: col.id })}
-                disabled={!canAuthor}
-                style={addCardStyle}
+          {TODO_COLUMNS.map((col) => {
+            const all = cardsInColumn(index.cards, col.id)
+            const shown = cardsInColumn(visible, col.id)
+            const isTarget = dropTarget?.column === col.id
+            return (
+              <section
+                key={col.id}
+                aria-label={col.label}
+                onDragOver={(e) => {
+                  if (!drag) return
+                  e.preventDefault()
+                  setDropTarget({ column: col.id, beforeId: null })
+                }}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  void drop(col.id)
+                }}
+                style={columnStyle(Boolean(drag) && isTarget)}
               >
-                <Plus size={11} aria-hidden />
-                Add a card
-              </button>
-            </section>
-          )
-        })}
+                <header style={columnHeaderStyle}>
+                  <h3 style={columnTitleStyle}>{col.label}</h3>
+                  {/* The count is of the COLUMN, not of what the owner filter
+                      leaves showing — the same rule the project sections'
+                      status pills follow: it says how many are there, not how
+                      many survived the pick you already made. */}
+                  <span style={columnCountStyle}>{all.length}</span>
+                </header>
+
+                {autoAssigns(col.id) && <p style={columnNoteStyle}>Auto-assigns to {AUTO_ASSIGN_OWNER}</p>}
+
+                <div style={cardsStyle}>
+                  {shown.map((card) => (
+                    <BoardCard
+                      key={card.id}
+                      card={card}
+                      people={index.people}
+                      canAuthor={canAuthor}
+                      dragging={drag?.id === card.id}
+                      dropBefore={Boolean(drag) && isTarget && dropTarget?.beforeId === card.id}
+                      onDragStart={() => setDrag({ id: card.id, column: card.column })}
+                      onDragEnd={endDrag}
+                      onDragOverCard={() => {
+                        if (drag) setDropTarget({ column: col.id, beforeId: card.id })
+                      }}
+                      onEdit={() => setSheet({ kind: 'card', column: card.column, card })}
+                    onReassign={(owner) => void run(() => setCardOwner(card, owner))}
+                      onMoveToColumn={(column) =>
+                        void run(() => moveCard(card, column, positionForDrop(index.cards, column, null, card.id)))
+                      }
+                      onNudge={(direction) => {
+                        const list = cardsInColumn(index.cards, card.column)
+                        const at = list.findIndex((c) => c.id === card.id)
+                        // Up: land before the card above. Down: land before the
+                        // card two below — "before the one below" is where it
+                        // already is.
+                        const beforeId =
+                          direction === 'up'
+                            ? (list[at - 1]?.id ?? null)
+                            : (list[at + 2]?.id ?? null)
+                        if (direction === 'up' && at <= 0) return
+                        if (direction === 'down' && at >= list.length - 1) return
+                        void run(() =>
+                          moveCard(card, card.column, positionForDrop(index.cards, card.column, beforeId, card.id)),
+                        )
+                      }}
+                      canMoveUp={cardsInColumn(index.cards, card.column).findIndex((c) => c.id === card.id) > 0}
+                      canMoveDown={
+                        cardsInColumn(index.cards, card.column).findIndex((c) => c.id === card.id) <
+                        cardsInColumn(index.cards, card.column).length - 1
+                      }
+                      onRemove={() => void run(() => deleteCard(card.id))}
+                    />
+                  ))}
+
+                  {shown.length === 0 && (
+                    <p style={emptyColumnStyle}>
+                      {all.length === 0
+                        ? 'Nothing here yet.'
+                        : `Nothing here for ${ownerFilter === UNASSIGNED ? UNASSIGNED_LABEL : ownerFilter}.`}
+                    </p>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSheet({ kind: 'card', column: col.id })}
+                  disabled={!canAuthor}
+                  style={addCardStyle}
+                >
+                  <Plus size={11} aria-hidden />
+                  Add a card
+                </button>
+              </section>
+            )
+          })}
       </div>
 
-      <NewCardSheet
+      <CardSheet
         open={sheet?.kind === 'card'}
+        card={sheet?.kind === 'card' ? sheet.card : undefined}
         people={index.people}
         defaultColumn={sheet?.kind === 'card' ? sheet.column : 'todo'}
         onClose={() => setSheet(null)}
-        onCreate={async (draft: TodoCardDraft) => {
-          await createCard(draft)
+        onSave={async (draft: TodoCardDraft) => {
+          const editing = sheet?.kind === 'card' ? sheet.card : undefined
+          await (editing ? saveCard(editing.id, draft) : createCard(draft))
           setSheet(null)
           await refresh()
         }}
@@ -369,6 +381,7 @@ function BoardCard({
   onDragStart,
   onDragEnd,
   onDragOverCard,
+  onEdit,
   onReassign,
   onMoveToColumn,
   onNudge,
@@ -384,6 +397,7 @@ function BoardCard({
   onDragStart: () => void
   onDragEnd: () => void
   onDragOverCard: () => void
+  onEdit: () => void
   onReassign: (owner: string) => void
   onMoveToColumn: (column: TodoColumn) => void
   onNudge: (direction: 'up' | 'down') => void
@@ -394,9 +408,11 @@ function BoardCard({
   const [hovered, setHovered] = useState(false)
   const assigned = autoAssigns(card.column)
 
-  /** The kebab is the keyboard's half of the drag: every move a pointer can
-   *  make is here as a menu item. */
+  /** The kebab is the keyboard's half of the drag — every move a pointer can
+   *  make is here as a menu item — plus the two things a pointer cannot do at
+   *  all: edit the card, and remove it. */
   const items: ActionMenuItem[] = [
+    { id: 'edit', label: 'Edit card', onSelect: onEdit },
     ...TODO_COLUMNS.filter((c) => c.id !== card.column).map((c) => ({
       id: `move-${c.id}`,
       label: `Move to ${c.label}`,
@@ -435,7 +451,14 @@ function BoardCard({
           ⠿
         </span>
         <h4 style={cardTitleStyle}>{card.title}</h4>
-        {canAuthor && <ActionMenu label={`Actions for “${card.title}”`} items={items} />}
+        {canAuthor && (
+          <ActionMenu
+            label={`Actions for “${card.title}”`}
+            items={items}
+            triggerStyle={kebabTriggerStyle}
+            triggerHover={kebabTriggerHover}
+          />
+        )}
       </div>
 
       {card.note && <p style={cardNoteStyle}>{card.note}</p>}

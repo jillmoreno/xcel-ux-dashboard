@@ -600,11 +600,25 @@ and the drag are built from the gateway's own `--ux-*` tokens in
 `todoBoardStyles.ts`. Everything around them is existing furniture: `Sheet` for
 both slide-overs (480px, right-anchored, Close top-left, primary action left in
 the footer — the `AddCustomEventPanel` shape), `ActionMenu` for the card kebab,
-and `UX_TOKEN_BRIDGE` inside each sheet because `Sheet` portals out of the
+and `UX_TOKEN_BRIDGE` on the panel root and inside each sheet, because
+`ActionMenu` is styled on the brand tokens and `Sheet` portals out of the
 shell that carries the palette. **Every move the drag makes, the kebab makes
 too** — "Move to …", "Move up", "Move down" — so the board is not
 pointer-only; the grip is what is draggable rather than the whole card, or
-every reach for the owner `<select>` would start a drag instead.
+every reach for the owner `<select>` would start a drag instead. The kebab
+also carries **Edit card** (the same sheet as New card, told apart by whether
+it was given one) and **Remove card**.
+
+**The columns SHARE the width; nothing scrolls sideways.** Four fixed 258px
+columns are 1080 with their gaps — exactly the page's reading measure before
+its padding — so the fourth sat behind a scrollbar. The board is a grid of
+`minmax(0, 1fr)` tracks and its `<main>` drops the 1080 cap
+(`mainWideStyle`). ⚠ There is deliberately **no `overflow-x` wrapper**: CSS
+cannot scroll one axis and overflow the other (`overflow-x: auto` computes
+`overflow-y: auto`), so the wrapper that stood there for one commit clipped
+the card kebab's menu at the bottom edge of the board. Narrow windows squeeze
+the columns instead. Columns are 320px tall empty, so the board reads as a
+board and a menu on the last card has somewhere to open.
 
 ⚠ **Not the archived To Do section** (`todo-section`, 2026-09-29, id `todo`).
 That was a per-browser checklist in `localStorage`; `TodoPanel.tsx` and

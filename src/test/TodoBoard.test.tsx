@@ -363,6 +363,31 @@ describe('TodoBoardPanel', () => {
     })
   })
 
+  it('edits a card in place from the kebab, keeping its id and its position', async () => {
+    const { writes } = mockBoard([card({ id: 'card-004', title: 'Old name', note: 'Old note', position: 3 })])
+    render(<TodoBoardPanel />)
+    await boardReady()
+
+    await userEvent.click(screen.getByRole('button', { name: /Actions for/ }))
+    await userEvent.click(await screen.findByText('Edit card'))
+
+    // The form opens on the card, not empty — the thing an edit sheet gets
+    // wrong is arriving blank and quietly replacing what was there.
+    const title = await screen.findByLabelText('Card name')
+    expect((title as HTMLInputElement).value).toBe('Old name')
+    expect((screen.getByLabelText('Quick note') as HTMLTextAreaElement).value).toBe('Old note')
+
+    await userEvent.clear(title)
+    await userEvent.type(title, 'New name')
+    await userEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    await waitFor(() => expect(writes.length).toBe(1))
+    expect(writes[0].method).toBe('PUT')
+    expect(writes[0].url).toContain('/api/todo-board/cards/card-004')
+    // Its place in the column is not the form's business.
+    expect(writes[0].body).toMatchObject({ title: 'New name', note: 'Old note', position: 3 })
+  })
+
   it('swaps the Owner picker for an explanation when the sheet’s column assigns itself', async () => {
     mockBoard([])
     render(<TodoBoardPanel />)

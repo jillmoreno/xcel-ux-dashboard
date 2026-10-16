@@ -1630,7 +1630,7 @@ export function UxDashboardPage() {
       </aside>
 
       {/* ── Projects ── */}
-      <main style={mainStyle}>
+      <main style={section === 'todo-board' ? mainWideStyle : mainStyle}>
         {openFeature ? (
           <>
             <button type="button" onClick={() => setOpen(null)} style={backLinkStyle}>
@@ -2369,6 +2369,22 @@ const swatchDotStyle: CSSProperties = {
 // padding"), once the eyebrow above the title had gone and the title sat alone
 // under a deep band of nothing.
 const mainStyle: CSSProperties = { padding: '24px 32px 72px', maxWidth: 1080 }
+
+/**
+ * The To Do Board's main is WIDER than every other section's.
+ *
+ * 1080 is a reading measure — right for a list of rows with a title and a
+ * note, which is what every other section is. The board is four columns side
+ * by side, and at 1080 (826 of it after the padding) the fourth sat off the
+ * edge behind a horizontal scrollbar. Scrolling sideways to see a column is
+ * the one thing a board must not make you do: "what is in Ready for Handoff?"
+ * is the question it exists to answer at a glance.
+ *
+ * `none` rather than a bigger number, because the columns share whatever
+ * width there is (see `boardStyle`) — so the board grows with the window
+ * instead of being capped at somebody's guess about a monitor.
+ */
+const mainWideStyle: CSSProperties = { ...mainStyle, maxWidth: 'none' }
 const headerStyle: CSSProperties = { marginBottom: 22 }
 
 

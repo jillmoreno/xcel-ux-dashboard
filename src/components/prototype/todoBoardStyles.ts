@@ -18,7 +18,9 @@
  *    still is. These are built from the same semantic tokens as everything
  *    else on the page rather than borrowed from a component that does not
  *    exist. The card geometry follows the concept mock
- *    (`todo-board-concept.html`): a 258px column, 8px between cards.
+ *    (`todo-board-concept.html`) — 8px between cards, 16px between columns —
+ *    except for the column WIDTH, which the concept fixed at 258px and this
+ *    shares out instead. See `boardStyle`.
  *
  * A non-component module, so fast refresh keeps working.
  */
@@ -112,11 +114,33 @@ export function filterAvatarStyle(active: boolean): CSSProperties {
 
 /* ── the board ────────────────────────────────────────────────────────────── */
 
+/**
+ * The board is a GRID of four equal columns, not a row of fixed-width ones.
+ *
+ * It was `flex` with `flex: 0 0 258px` per column, copied from the concept —
+ * and 4 × 258 + gaps is 1080, which is exactly the page's own reading width
+ * BEFORE its 32px padding, so the fourth column always sat behind a
+ * horizontal scrollbar. Scrolling sideways to see a column is the one thing a
+ * board must not ask for: "what is in Ready for Handoff?" is the question it
+ * exists to answer at a glance. The columns share whatever width there is
+ * (`minmax(0, 1fr)` — the `0` matters, `1fr` alone refuses to shrink below
+ * its content and the scrollbar comes back), and the section's `<main>` drops
+ * its 1080 cap (`mainWideStyle` in `UxDashboardPage.tsx`) so there is more of
+ * it to share.
+ *
+ * ⚠ AND THERE IS NO `overflow-x` HERE, WHICH IS LOAD-BEARING. A scrolling
+ * wrapper stood here for one commit. CSS has no way to scroll one axis and
+ * overflow the other — `overflow-x: auto` computes `overflow-y: auto` too —
+ * so it became a clipping box, and the card kebab's menu was cut off at the
+ * bottom edge of the board by the scrollbar it had created. Narrow windows
+ * squeeze the columns instead; that is the cheaper failure, and this board is
+ * not a phone surface.
+ */
 export const boardStyle: CSSProperties = {
-  display: 'flex',
+  display: 'grid',
+  gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
   gap: 16,
-  alignItems: 'flex-start',
-  overflowX: 'auto',
+  alignItems: 'start',
   paddingBottom: 12,
 }
 
@@ -125,8 +149,8 @@ export const boardStyle: CSSProperties = {
  *  under the cursor mid-drag. */
 export function columnStyle(dragOver: boolean): CSSProperties {
   return {
-    flex: '0 0 258px',
-    width: 258,
+    // No width of its own: the grid track is the width. See `boardStyle`.
+    minWidth: 0,
     background: dragOver ? 'var(--ux-accent-soft)' : 'var(--ux-bg)',
     border: '1px solid',
     borderColor: dragOver ? 'var(--ux-accent)' : 'var(--ux-border)',
@@ -135,7 +159,11 @@ export function columnStyle(dragOver: boolean): CSSProperties {
     display: 'flex',
     flexDirection: 'column',
     gap: 10,
-    minHeight: 140,
+    /* Tall by default (2026-10-15, Jillienne): an empty column was 140px of
+       nothing, the board read as a strip rather than as a board, and a card
+       near the bottom opened its menu into the page below it. The height is a
+       floor, not a cap — a column with more cards is as tall as it needs. */
+    minHeight: 320,
   }
 }
 
@@ -202,6 +230,20 @@ export function cardStyle(dragging: boolean, dropBefore: boolean): CSSProperties
     boxShadow: dropBefore ? 'inset 0 3px 0 0 var(--ux-accent)' : 'none',
   }
 }
+
+/**
+ * The card kebab.
+ *
+ * `ActionMenu`'s own trigger is `--color-secondary-500` — the product's
+ * amber, which on this page is a brand colour that belongs to nothing and
+ * read as a warning sitting on every card. A muted grey is what a control
+ * that is always present and rarely used should look like; it takes the
+ * palette's tertiary text, so it stays muted in all four appearances rather
+ * than being a grey that only works on white.
+ */
+export const kebabTriggerStyle: CSSProperties = { color: 'var(--ux-text-3)' }
+
+export const kebabTriggerHover = { background: 'var(--ux-chip)' }
 
 export const cardTopStyle: CSSProperties = {
   display: 'flex',
