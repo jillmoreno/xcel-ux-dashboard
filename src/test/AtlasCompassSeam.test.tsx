@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { afterEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
@@ -6,6 +6,7 @@ import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { DashboardRebrandPage } from '@/pages/DashboardRebrandPage'
+import { AtlasTopNav } from '@/components/layout/AtlasTopNav'
 import { END_TO_END_VERSION } from '@/pages/endToEndDemo'
 
 /**
@@ -39,9 +40,17 @@ function renderDashboard(search: string) {
           <LearningPathsPanelProvider>
             <JumpBackInPanelProvider>
               <Probe />
-              <Routes>
-                <Route path={DASH} element={<DashboardRebrandPage />} />
-              </Routes>
+              {/* The header's nav is mounted BESIDE the page, as the shell
+                  mounts it — the round trip needs both halves: Course
+                  Overview lives on the page, Home lives up here. */}
+              <div data-testid="header">
+                <AtlasTopNav />
+              </div>
+              <div data-testid="page">
+                <Routes>
+                  <Route path={DASH} element={<DashboardRebrandPage />} />
+                </Routes>
+              </div>
             </JumpBackInPanelProvider>
           </LearningPathsPanelProvider>
         </FeatureFlagProvider>
@@ -50,12 +59,23 @@ function renderDashboard(search: string) {
   )
 }
 
-/** The card's Course Overview, which both arms draw — the question is what a
- *  click does, never whether the button is there. */
+/* ⚠ TWO BUTTONS SAY "COURSE OVERVIEW" once the header is mounted — the Atlas
+   course CARD's, which is this suite's subject, and the Top Nav's pill, which
+   is Eric's and goes to his page by design. They are told apart by WHICH HALF
+   of the shell they are in, not by order: a `getAllByRole(...)[0]` picked the
+   nav's and turned the first case green against the wrong button. */
 async function clickCourseOverview() {
-  const button = screen.getAllByRole('button', { name: 'Course Overview' })[0]
+  const button = within(screen.getByTestId('page')).getAllByRole('button', { name: 'Course Overview' })[0]
   await act(async () => {
     fireEvent.click(button)
+  })
+}
+
+/** Home lives in the header half. */
+async function clickHome() {
+  const home = within(screen.getByTestId('header')).getByRole('button', { name: 'Home' })
+  await act(async () => {
+    fireEvent.click(home)
   })
 }
 
@@ -87,6 +107,42 @@ describe('Course Overview on the End-to-End row’s walk', () => {
     const before = screen.getByTestId('search').textContent
     await clickCourseOverview()
     expect(screen.getByTestId('search').textContent, 'Eric’s tile is untouched').toBe(before)
+  })
+
+  /* ── THE WAY BACK ─────────────────────────────────────────────────
+   * Home in Compass returns to Atlas Home. This ALREADY WORKED when the seam
+   * went in — `AtlasTopNav`'s Home copies the address and deletes `section`,
+   * so the marker rides home with it — and that is exactly why it is pinned
+   * here: it works by a property of code that has nothing to do with this
+   * seam, and would break silently if that nav ever rebuilt its params
+   * instead of copying them. The round trip is the feature; one half of it
+   * being incidental is not a reason to leave it unheld.
+   *
+   * `?journey=full` SURVIVING is the half that matters most. Lose it and the
+   * reviewer is returned to a dashboard that behaves like Eric's tile, and
+   * Course Overview goes dead again — the walk quietly stops being the walk,
+   * with nothing on screen to say so.
+   */
+  it('Home in Compass returns to Atlas Home, carrying the walk with it', async () => {
+    renderDashboard(`?demo=1&version=${END_TO_END_VERSION}&journey=full&section=compass`)
+    await clickHome()
+    const params = new URLSearchParams(screen.getByTestId('search').textContent ?? '')
+    expect(params.get('section'), 'back out of Compass').toBeNull()
+    expect(params.get('journey'), 'and still on the walk — Course Overview must still reach Compass').toBe('full')
+  })
+
+  it('the round trip is closed: Course Overview out, Home back, Course Overview out again', async () => {
+    // Walking it twice is the point — a one-way marker would pass the two
+    // cases above and still strand a reviewer on the second lap.
+    renderDashboard(`?demo=1&version=${END_TO_END_VERSION}&journey=full`)
+    await clickCourseOverview()
+    expect(sectionNow()).toBe('compass')
+
+    await clickHome()
+    expect(sectionNow()).toBeNull()
+
+    await clickCourseOverview()
+    expect(sectionNow(), 'the second lap must work exactly like the first').toBe('compass')
   })
 
   it('off: the walk’s button is inert again, as it was before the seam', async () => {
