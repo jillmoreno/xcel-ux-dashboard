@@ -180,7 +180,8 @@ existed only for someone who already knew the URL.
 
 | Question | Call |
 |---|---|
-| A new GROUP, or a section under an existing one? | A new one, **Team**, fourth after Demo, Design & Research and Dev Handoff. The guides are not research, not handoff and not the product; filing them under any of those three would have made that eyebrow mean less. Groups are `NAV_EYEBROWS` entries keyed on the first section of the group, so this is one line. |
+| A new GROUP, or a section under an existing one? | A new one, **Team**, fourth after Demo, Design & Research and Dev Handoff. The guides are not research, not handoff and not the product; filing them under any of those three would have made that eyebrow mean less. |
+| Who else is in Team? | **The To Do Board**, which arrived on `main` the same day and invented the same group independently — the two were written in parallel and met at the merge. The board sits FIRST (live work), the shelf second (reference). ⚠ `NAV_EYEBROWS` is keyed on a section id and the eyebrow draws directly above that row, so the group has ONE entry, on `todo-board`. A second entry for `hub-resources` prints "Team" twice, once over each row; reorder the pair and the key moves with them. |
 | Is it a board? | **No.** The rows are files in this repository, so the list changes with a commit — hence no Add button, no kebab, and a static `count` on the `SectionDef`, unlike Refinement's and Research's live ones. `HUB_DOCS` in `src/data/hubDocs.ts` is the list. |
 | Does this restore the Contributing section? | **No, and that matters.** That section was an iframe of one guide; this is a shelf holding all three. `GuideFrame.tsx` stays unreferenced, the `contributing-section` archive row stays, and the two tests pinning the old doors shut stay passing. |
 | Where do the links open? | **A new tab.** Each document is a full page with its own rail and its own stylesheet; opening one in this tab replaces the dashboard with something whose only way back is the browser's Back button. |
@@ -627,8 +628,9 @@ same seven files; nothing shared should need to change.
 ### The To Do Board (2026-10-15)
 
 **The fifth thing authored on this page, and the one that is NOT a link
-board.** Section id `todo-board`, last in the rail under its own "Team"
-eyebrow; the `todo-board` Blobs store, `/api/todo-board`
+board.** Section id `todo-board`, FIRST of the two sections under the "Team"
+eyebrow (Hub Resources is the other, and came the same day — see that row);
+the `todo-board` Blobs store, `/api/todo-board`
 (`netlify/functions/todo-board.ts`), `src/data/todoBoardStore.ts`,
 `TodoBoardPanel.tsx` with `TodoBoardSheets.tsx` / `TodoBoardAvatar.tsx` /
 `todoBoardStyles.ts` beside it, and `TodoBoard.test.tsx`.
