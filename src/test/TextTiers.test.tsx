@@ -39,7 +39,7 @@ const MUTED = '#5b5560'
 const FAINT = '#706b63'
 /** The two fills this product actually paints text on. */
 const WHITE = '#ffffff'
-const GROUND = '#f5f5f5'
+const GROUND = '#fbfbfb' // --color-surface-page, 2026-10-16
 
 describe('dashboard-text-tiers', () => {
   it('is a variant-only flag in the rebrand panel, defaulting to the tiers', () => {

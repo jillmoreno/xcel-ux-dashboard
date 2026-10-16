@@ -9,7 +9,8 @@ import { describe, expect, it } from 'vitest'
  * and both halves of that were wrong:
  *
  *   1. `cta-500` is not a legible text colour on the page background. It failed
- *      AA on McKissock in the DEFAULT LIGHT THEME (2.13:1) — no flag, no dark
+ *      AA on McKissock in the DEFAULT LIGHT THEME (2.13:1 on the #f5f5f5
+ *      ground of the day; 2.24:1 on today's, still a failure) — no flag, no dark
  *      mode, no membership state needed — and failed on five of six brands in
  *      dark. The old `cta-700` hover then made dark WORSE (CRE 1.29:1), so the
  *      control LOST contrast at the moment it was focused.
@@ -51,7 +52,7 @@ const AA = 4.5
 
 /* ── the two backdrops these links sit on ───────────────────────────────── */
 
-const PAGE_LIGHT = '#f5f5f5' // --color-surface-page  → neutral-extra-light
+const PAGE_LIGHT = '#fbfbfb' // --color-surface-page (its own literal since 2026-10-16)
 const PAGE_DARK = '#1b1d21' // --color-surface-page  → [data-theme='dark']
 
 /**
@@ -79,12 +80,17 @@ describe('link-style CTAs clear AA on every brand, in both themes', () => {
     expect(contrast(BRANDS[brand].dark, PAGE_DARK)).toBeGreaterThanOrEqual(AA)
   })
 
-  it('has McKissock light as the worst case, at 5.32:1', () => {
+  it('has McKissock light as the worst case, at 5.6:1', () => {
     // Pinned because it is the tightest of the twelve and the one that was
     // actually broken. If a ramp edit moves this, the number should move
     // deliberately.
+    //
+    // 5.32 → 5.6 on 2026-10-16, when the page ground went #f5f5f5 → #fbfbfb.
+    // It moved the RIGHT WAY: a lighter canvas is more contrast for dark ink,
+    // so the tightest case got slacker, not tighter. Had it gone the other
+    // way this test is what would have said so.
     const ratios = names.map((b) => contrast(BRANDS[b].light, PAGE_LIGHT))
-    expect(Math.min(...ratios)).toBe(5.32)
+    expect(Math.min(...ratios)).toBe(5.6)
   })
 })
 
@@ -93,7 +99,10 @@ describe('the old values stay failures — tripwires, not history', () => {
     // The whole reason this was rated Critical: no flag, no theme switch, no
     // membership state. Just open My Courses on McKissock.
     expect(contrast(BRANDS.mckissock.old, PAGE_LIGHT)).toBeLessThan(AA)
-    expect(contrast(BRANDS.mckissock.old, PAGE_LIGHT)).toBeCloseTo(2.13, 2)
+    // 2.13 → 2.24 with the lighter ground (2026-10-16). STILL a failure, which
+    // is the whole point of the tripwire — the old value did not become
+    // acceptable because the canvas moved.
+    expect(contrast(BRANDS.mckissock.old, PAGE_LIGHT)).toBeCloseTo(2.24, 2)
   })
 
   it('the old cta-700 hover made dark WORSE than resting — the inverted affordance', () => {

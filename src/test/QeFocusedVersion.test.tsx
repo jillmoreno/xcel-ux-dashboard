@@ -1678,7 +1678,7 @@ describe('the Current Learning Progress block sits on the page, not a navy card'
 
   it('asks whether the GROUND is dark, not whether the surface is the navy card', () => {
     // The navy card is dark in both themes; the page is not — the shell's
-    // `--color-surface-page` is #f5f5f5 light and #1b1d21 dark. `onDark` is a
+    // `--color-surface-page` is #fbfbfb light (2026-10-16) and #1b1d21 dark. `onDark` is a
     // boolean computed in JS, so keying it to the SURFACE would hand the light
     // category palette to a dark ground and reintroduce the 1.11:1 slot-0
     // failure the on-dark palette exists to fix, just in the other theme.
@@ -1719,7 +1719,7 @@ describe('the Current Learning Progress block sits on the page, not a navy card'
     // the block's own header treatment, which the new `band` default hides.
 
     seedClassic()
-    // `--color-neutral-100` measures 1.08:1 against #f5f5f5 and
+    // `--color-neutral-100` measures ~1.08:1 against the page ground and
     // `--color-neutral-200` 1.29:1 — an empty track would not be visible at
     // all, so 0% reads as a missing gauge rather than an empty one.
     // `--color-neutral-300` is 1.55:1: a groove. The value is also stated in

@@ -208,7 +208,24 @@
 
   /* Semantic aliases (project-level) */
   --color-brand: var(--color-primary-500);
-  --color-surface-page: var(--color-neutral-extra-light);
+  /* THE PAGE CANVAS — #fbfbfb since 2026-10-16 (Jillienne: "change the
+     background color for ALL pages to be #fbfbfb, keep the header as full
+     white"). It was `--color-neutral-extra-light` (#f5f5f5).
+
+     ⚠ THE LITERAL, NOT THE ALIAS, and deliberately: that alias is also a card
+     BORDER on `JumpBackInCard`, a background on `PackageSheet` and two rules
+     in this file. Moving it would have dragged four unrelated surfaces to the
+     new value to change one. The alias keeps #f5f5f5; the page gets its own.
+
+     ⚠ THE HEADER IS UNTOUCHED AND STAYS #ffffff — it draws on
+     `--color-surface-card` (`--color-neutral-50`), which is already pure
+     white, so "keep the header full white" needed no change. The point of the
+     pair is the SEPARATION: with the page at #f5f5f5 the gap was wider, and
+     at #fbfbfb the header still reads as lifted off the canvas. If the card
+     token ever moves, check this pair still reads.
+
+     Dark mode overrides `--color-surface-page` further down and is unchanged. */
+  --color-surface-page: #fbfbfb;
   --color-surface-card: var(--color-neutral-50);
 
   /* ── Non-inverting surfaces ──────────────────────────────────────────────
