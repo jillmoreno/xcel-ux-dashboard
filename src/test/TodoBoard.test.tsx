@@ -30,7 +30,7 @@ import {
  *   the roster seeds with somebody who is not on the team;
  *
  *   the HANDOFF RULE, in both directions — the column hides its owner picker,
- *   and a card moved into it is sent as Jillienne's;
+ *   and a card moved into it is sent as hers;
  *
  *   the ORDERING maths, which is the one piece of real logic on the client
  *   (`positionForDrop`), tested on data built in the test rather than on a
@@ -62,7 +62,7 @@ const card = (over: Partial<TodoCard> = {}): TodoCard => ({
 
 const person = (over: Partial<TodoPerson> = {}): TodoPerson => ({
   id: 'person-001',
-  name: 'Jillienne',
+  name: 'Jill',
   hue: 'teal',
   addedDate: '2026-10-15',
   ...over,
@@ -263,15 +263,15 @@ describe('TodoBoardPanel', () => {
   })
 
   it('says the handoff column assigns itself, and gives its cards no owner picker', async () => {
-    mockBoard([card({ id: 'card-007', column: 'handoff', owner: 'Jillienne', title: 'Study Pace tile — V2' })])
+    mockBoard([card({ id: 'card-007', column: 'handoff', owner: 'Jill', title: 'Study Pace tile — V2' })])
     render(<TodoBoardPanel />)
     await boardReady()
 
     const handoff = screen.getByLabelText('Ready for Prototype and Handoff')
-    expect(within(handoff).getByText(/Auto-assigns to Jillienne/)).toBeTruthy()
+    expect(within(handoff).getByText(/Auto-assigns to Jill/)).toBeTruthy()
     // The label is there; the control is not — a picker the server would
     // overwrite is worse than a label.
-    expect(within(handoff).getAllByText('Jillienne').length).toBeGreaterThan(0)
+    expect(within(handoff).getAllByText('Jill').length).toBeGreaterThan(0)
     expect(within(handoff).queryByRole('combobox')).toBeNull()
   })
 
@@ -392,7 +392,7 @@ describe('TodoBoardPanel', () => {
     fireEvent.drop(handoff, { dataTransfer })
 
     await waitFor(() => expect(writes.length).toBe(1))
-    /* The owner is sent AS IT STANDS rather than pre-corrected to Jillienne.
+    /* The owner is sent AS IT STANDS rather than pre-corrected to the owner.
        That is the point: one place decides the rule, and it is the endpoint —
        a client that corrected it here could drift from the server without
        anything failing. */
@@ -466,7 +466,7 @@ describe('TodoBoardPanel', () => {
     expect(await screen.findByLabelText('Owner')).toBeTruthy()
     await userEvent.selectOptions(screen.getByLabelText('Column'), 'handoff')
     expect(screen.queryByLabelText('Owner')).toBeNull()
-    expect(screen.getByText(/assigned to Jillienne/)).toBeTruthy()
+    expect(screen.getByText(/assigned to Jill/)).toBeTruthy()
   })
 
   it('refuses a card with no name, without asking the network', async () => {
@@ -539,7 +539,7 @@ describe('TodoBoardPanel', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /Manage people/ }))
     const rows = await screen.findAllByRole('listitem')
-    const hers = rows.find((r) => r.textContent?.includes('Jillienne'))!
+    const hers = rows.find((r) => r.textContent?.includes('Jill'))!
     expect(within(hers).queryByRole('button', { name: 'Remove' })).toBeNull()
     expect(within(hers).getByText('Owns handoff')).toBeTruthy()
   })

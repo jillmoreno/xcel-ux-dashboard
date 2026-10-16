@@ -63,7 +63,7 @@ export const COLUMNS = ['todo', 'working', 'refine', 'handoff'] as const
 
 /** The column that assigns itself. See "THE HANDOFF RULE" above. */
 export const AUTO_ASSIGN_COLUMN = 'handoff'
-export const AUTO_ASSIGN_OWNER = 'Jillienne'
+export const AUTO_ASSIGN_OWNER = 'Jill'
 
 /**
  * The person colours — six, from the project's own brand ramps, mirrored from
@@ -95,7 +95,7 @@ export const LEGACY_HUES: Readonly<Record<string, string>> = {
  *
  * `TodoBoard.test.tsx` asserts this list still matches `DESIGNERS`.
  */
-export const SEED_PEOPLE = ['Jillienne', 'Anjani', 'Eric', 'Afsana', 'Cody']
+export const SEED_PEOPLE = ['Jill', 'Anjani', 'Eric', 'Afsana', 'Cody']
 
 /** Set once the roster has been seeded, so a board somebody deliberately
  *  emptied stays empty instead of refilling itself on the next page load. */

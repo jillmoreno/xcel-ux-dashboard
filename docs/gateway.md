@@ -516,7 +516,7 @@ Archive." Mocked up first, then eight calls, all hers:
 
 | Question | Call |
 |---|---|
-| Where do the pill names come from? | The fixed **roster** — `DESIGNERS` in `linkStore.ts`: Jillienne · Anjani · Eric · Afsana · Cody — and the Added by field offers the same five, so what is typed is what the pills filter on. `matchesDesigner` reads the free-text names on older rows loosely ("eric w", "Afsana & Eric" → Eric; a shared row lands under both). |
+| Where do the pill names come from? | The fixed **roster** — `DESIGNERS` in `linkStore.ts`: Jill · Anjani · Eric · Afsana · Cody ("Jill" since 2026-10-16 — her rows were already signed that way, and the To Do Board seeds its people from this list) — and the Added by field offers the same five, so what is typed is what the pills filter on. `matchesDesigner` reads the free-text names on older rows loosely ("eric w", "Afsana & Eric" → Eric; a shared row lands under both). |
 | The Atlas / Compass pills? | Gone from Refinement; the **product stays as the tag** on the row. |
 | Other boards? | **Refinement only.** Research, Resources and PRDs keep the free-text author and have no archive. |
 | Archive or Remove? | **Both.** Archive hides and is reversible; Remove deletes and is confirmed. |

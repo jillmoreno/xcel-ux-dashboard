@@ -286,7 +286,7 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     mockEndpoint([demo()])
     render(<DemoPanel />)
     await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
-    expect(pills()).toEqual(['All', 'Jillienne', 'Anjani', 'Eric', 'Afsana', 'Cody'])
+    expect(pills()).toEqual(['All', 'Jill', 'Anjani', 'Eric', 'Afsana', 'Cody'])
     expect(screen.queryByRole('group', { name: 'Filter by product' })).toBeNull()
   })
 
@@ -334,7 +334,7 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     const field = await screen.findByLabelText(/Added by/)
     expect(field.tagName).toBe('SELECT')
     const options = [...(field as HTMLSelectElement).options].map((o) => o.value)
-    expect(options).toEqual(['', 'Jillienne', 'Anjani', 'Eric', 'Afsana', 'Cody'])
+    expect(options).toEqual(['', 'Jill', 'Anjani', 'Eric', 'Afsana', 'Cody'])
     await user.keyboard('{Escape}')
 
     // Editing Sam's row does not silently reassign it: Sam is an option there.
@@ -356,7 +356,7 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
 
   it('Archive hides the row, Show archive lists it with who and when, Unarchive puts it back', async () => {
     const user = userEvent.setup()
-    localStorage.setItem('cgp.links.lastAuthor', 'Jillienne')
+    localStorage.setItem('cgp.links.lastAuthor', 'Jill')
     const { writes } = liveEndpoint([
       demo({ id: 'demo-001', title: 'Keep me' }),
       demo({ id: 'demo-002', title: 'Hide me' }),
@@ -378,7 +378,7 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     expect(writes[0].method).toBe('PUT')
     expect(writes[0].url).toBe('/api/demos/demo-002')
     expect(writes[0].body.archived).toBe(true)
-    expect(writes[0].body.archivedBy).toBe('Jillienne')
+    expect(writes[0].body.archivedBy).toBe('Jill')
     expect(writes[0].body).not.toHaveProperty('archivedAt', expect.stringMatching(/\d/))
 
     // Hidden from the board, counted in the door.
@@ -391,7 +391,7 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     await user.click(door)
     expect(screen.getByText('Hide me')).toBeInTheDocument()
     expect(screen.queryByText('Keep me')).not.toBeInTheDocument()
-    expect(screen.getByText(/^Archived .*· Jillienne$/)).toBeInTheDocument()
+    expect(screen.getByText(/^Archived .*· Jill$/)).toBeInTheDocument()
     expect(screen.getByText('1 link hidden from the board. Unarchive one to put it back.')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Add link' })).toBeNull()
     expect(screen.getByRole('button', { name: 'Back to board' })).toBeInTheDocument()

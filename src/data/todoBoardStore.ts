@@ -67,7 +67,7 @@ export type TodoColumn = (typeof TODO_COLUMNS)[number]['id']
  * card that reaches the server owned by somebody else comes back owned by
  * her, so the mirror cannot quietly disagree with the store.
  */
-export const AUTO_ASSIGN_OWNER = 'Jillienne'
+export const AUTO_ASSIGN_OWNER = 'Jill'
 
 /** '' is Unassigned, everywhere. The same ''-not-absent rule `note` and
  *  `addedBy` follow on the link boards: "never had an owner" and "had one and

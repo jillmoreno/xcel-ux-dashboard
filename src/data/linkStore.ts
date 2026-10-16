@@ -126,8 +126,17 @@ export function matchesProduct(row: LinkProduct, filter: LinkProduct | ''): bool
  * on the board, so the pills never drift with a typo and a designer with no
  * row yet still has a pill. The same five people `PROTOTYPE_SCOPES` names as
  * owners, in the order the scopes list them.
+ *
+ * ⚠ "Jill", not "Jillienne", since 2026-10-16 — her own rows on the board were
+ * already signed that way, `git config user.name` on her machine is "Jill
+ * Moreno", and the To Do Board's roster seeds from this list, so the one
+ * spelling has to be the one she actually uses. `matchesDesigner` CONTAINS,
+ * so rows signed either way still land under the pill; it was the other
+ * direction that was broken, a "Jillienne" pill catching none of her "Jill"
+ * rows. `PROTOTYPE_SCOPES` still says "Jillienne" — that is design authority
+ * on a surface, a different list for a different job.
  */
-export const DESIGNERS = ['Jillienne', 'Anjani', 'Eric', 'Afsana', 'Cody'] as const
+export const DESIGNERS = ['Jill', 'Anjani', 'Eric', 'Afsana', 'Cody'] as const
 
 export type Designer = (typeof DESIGNERS)[number]
 
