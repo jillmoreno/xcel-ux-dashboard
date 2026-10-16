@@ -205,8 +205,16 @@ scope — the product IS React here now, exactly as it is in the LMS.
 branch build IS the preview. Nothing here needs a terminal — every step above is
 a sentence you say to Claude with the project folder connected.
 
-The full version, with pictures and the failure modes, is the **Contributing
-guide**: `/contributing/` on the Hub, or `public/contributing/index.html`.
+Two guides, and since 2026-10-15 they divide by WHEN rather than by length —
+they used to be the same loop told twice:
+
+| Guide | When | Holds |
+|---|---|---|
+| **Contributing** — `/contributing/` | once, your first day | accounts, clone, dependencies, git identity, the vocabulary, the loop in one picture, where a new screen belongs, the flag rule |
+| **Designer Workflow** — `/designer-workflow/` | every day after | rebasing, building a change, `/share`, promoting a surface, the routines, the morning auto-rebase, reading the Hub, the glossary, the troubleshooting table |
+
+Both are on the Hub under **Team → Hub Resources**, which is also where the
+stakeholder page `/about/` lives.
 
 ## What you do not need to touch
 
@@ -272,7 +280,7 @@ file, so the two cannot drift apart.
 | `src/components/prototype/DesignControlsBar.tsx` | the design controls bar — you do not edit it to get a control on it (see below) |
 | `src/components/layout/AdminToolsMenu.tsx` | the robot — the UI/UX Demo Tools menu |
 | `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `share` (was `promote-to-refinement`, kept as a pointer), `promote-component`, `promote-to-testing`, `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
-| `public/contributing/`, `public/about/` | the two guides (regenerate the PDFs if you do edit them) |
+| `public/contributing/`, `public/designer-workflow/`, `public/about/` | the three guides (regenerate the PDFs if you do edit them) |
 
 ## Stack
 
@@ -324,9 +332,9 @@ npm run smoke           # the jsdom suites over public/prototypes/ — 674 asser
 ```
 
 **`npm test` does NOT run the smoke suites.** Run both. If you touched a guide,
-regenerate its PDF (`weasyprint public/contributing/index.html
-public/contributing/contributing.pdf`) — the tests assert a PDF exists, and
-nothing can assert it is current.
+regenerate its PDF — `weasyprint public/<guide>/index.html
+public/<guide>/<guide>.pdf`, and `weasyprint` is installed since 2026-10-15.
+The tests assert a PDF exists; nothing can assert it is current.
 
 ## Where the detail lives
 

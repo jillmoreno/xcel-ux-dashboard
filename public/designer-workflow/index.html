@@ -29,11 +29,21 @@
   Reached from a Resources row rather than from the nav, so adding it took no
   change to UxDashboardPage.
 
-  HOW IT DIFFERS FROM /contributing/: that guide is the whole process with
-  pictures, written for a newcomer. This one is the working guide for the five
-  people on the team right now — it names them, it carries the two rebases that
-  were live on 15 October, and it is the one that gets updated when a routine
-  changes.
+  HOW IT DIFFERS FROM /contributing/ — settled 2026-10-15, Jillienne: "I want
+  that to be the regular day-to-day workflow, and the Contributing one more for
+  starting out for the first time." Before that both described the whole loop
+  and the two were largely the same document at two lengths.
+
+      /contributing/        once, on your first day: accounts, clone,
+                            dependencies, git identity, the vocabulary, and
+                            the shape of the loop in one picture
+      /designer-workflow/   every day after that: rebasing, building, sharing,
+                            promoting, the routines, what to say when something
+                            breaks
+
+  ⚠ KEEP THE SEAM. One-time setup belongs THERE, not here; rebasing, the
+  routines and the morning task belong HERE, not there. The glossary and the
+  troubleshooting table live here only — they were in both until today.
 
   The fonts come from Google. They are an external request, which is fine
   behind the site password, and every stack names a real fallback so the page
@@ -219,21 +229,19 @@
     <nav aria-label="Contents">
       <p class="eyebrow">Start here</p>
       <a href="#before"><small>0</small>Before you start</a>
-      <a href="#setup"><small>1</small>One-time setup</a>
-      <a href="#daily"><small>2</small>Every time you sit down</a>
+      <a href="#daily"><small>1</small>Every time you sit down</a>
       <p class="eyebrow">Your branch</p>
-      <a href="#eric"><small>3</small>Eric: rebase</a>
-      <a href="#anjani"><small>4</small>Anjani: start fresh</a>
-      <a href="#build"><small>5</small>Building a change</a>
+      <a href="#rebase"><small>2</small>Keeping your branch current</a>
+      <a href="#build"><small>3</small>Building a change</a>
       <p class="eyebrow">The Hub</p>
-      <a href="#refinement"><small>6</small>Sharing on Refinement</a>
-      <a href="#promote"><small>7</small>Prototype and shipping</a>
-      <a href="#map"><small>8</small>Reading the Hub</a>
+      <a href="#refinement"><small>4</small>Sharing on Refinement</a>
+      <a href="#promote"><small>5</small>Prototype and shipping</a>
+      <a href="#map"><small>6</small>Reading the Hub</a>
       <p class="eyebrow">Help</p>
-      <a href="#trouble"><small>9</small>When something goes wrong</a>
-      <a href="#routines"><small>10</small>The routines</a>
-      <a href="#morning"><small>11</small>The morning auto-rebase</a>
-      <a href="#glossary"><small>12</small>Glossary</a>
+      <a href="#trouble"><small>7</small>When something goes wrong</a>
+      <a href="#routines"><small>8</small>The routines</a>
+      <a href="#morning"><small>9</small>The morning auto-rebase</a>
+      <a href="#glossary"><small>10</small>Glossary</a>
     </nav>
   </aside>
 
@@ -241,8 +249,8 @@
     <header class="head">
       <p class="asof">As of 15 October 2026 · written by Jillienne Moreno</p>
       <h1>Designer Workflow on the Hub</h1>
-      <p class="lede">From a laptop with nothing on it to a branch under review, using Claude Code for every step. You never open a terminal. Every step is a sentence you type.</p>
-      <div class="who"><span>For Eric</span><span>For Anjani</span><span>Useful to Afsana and Cody too</span></div>
+      <p class="lede">The day-to-day: sit down, build something, get it in front of the team. Every step is a sentence you type to Claude — you never open a terminal. Setting the machine up in the first place is the <a href="/contributing/">Contributing guide</a>.</p>
+      <div class="who"><span>The day-to-day</span><span>For all five of us</span><span>Keep it open</span></div>
       <div class="actions">
         <a href="designer-workflow.pdf" download><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 12v1.5h10V12"/></svg>Download as PDF</a>
         <a href="/">← Back to the dashboard</a>
@@ -251,58 +259,14 @@
 
     <section id="before">
       <h2><span class="part">Part 0</span>Before you start</h2>
-      <p class="lead">When a step shows a sentence in a speech bubble, that is exactly what you type to Claude. You do not need to know a single git command; Claude knows them.</p>
-      <p>There are three places, and it helps to know which one you are looking at:</p>
-      <div class="tablewrap"><table>
-        <thead><tr><th>Place</th><th>What it is</th><th>Where</th></tr></thead>
-        <tbody>
-          <tr><td class="k">GitHub</td><td>The one shared copy of the code. Every branch lives here.</td><td><code>github.com/jillmoreno/xcel-ux-dashboard</code></td></tr>
-          <tr><td class="k">Netlify</td><td>Builds every branch into a website at its own address, a few minutes after each push.</td><td><code>feat-your-branch--ux-design-xceldashboard.netlify.app</code></td></tr>
-          <tr><td class="k">The Hub</td><td>The UX Design Hub: Prototypes, Refinement, Explorations and the rest. One site, one password.</td><td><code>ux-design-xceldashboard.netlify.app</code></td></tr>
-        </tbody>
-      </table></div>
-      <p>Six words you will see over and over:</p>
-      <div class="tablewrap"><table>
-        <thead><tr><th>Word</th><th>Plain meaning</th></tr></thead>
-        <tbody>
-          <tr><td class="k">main</td><td>The one branch that IS the product. Only Jillienne changes it.</td></tr>
-          <tr><td class="k">branch</td><td>Your own copy of the code, named like <code>feat/compass-week-view</code>. Everything you do happens on a branch.</td></tr>
-          <tr><td class="k">commit</td><td>A saved snapshot of your branch with a short note saying what changed.</td></tr>
-          <tr><td class="k">push</td><td>Sending your commits to GitHub. Netlify then builds them and the team can see them.</td></tr>
-          <tr><td class="k">rebase</td><td>Moving your branch so it starts from today's main instead of the day you created it.</td></tr>
-          <tr><td class="k">merge</td><td>Jillienne putting your branch into main. She calls this "ship to main".</td></tr>
-        </tbody>
-      </table></div>
+      <p class="lead">This guide is the day-to-day: sit down, build something, get it in front of the team. It assumes your machine is already set up.</p>
+      <div class="note"><p><b>First time on this project?</b> Go to <a href="/contributing/">Contributing to the dashboard</a> first — it covers the accounts, the clone, the dependencies and putting your name on your commits, and it has the shape of the whole loop in one picture. Come back here once <i>"Which branch am I on?"</i> gets a sensible answer. The vocabulary — <code>main</code>, branch, commit, push, rebase, merge — is in that guide too, and in Part 10 below.</p></div>
+      <p>When a step shows a sentence in a speech bubble, that is exactly what you type to Claude. You do not need to know a single git command; Claude knows them.</p>
       <div class="rule-box">You work on your branch. Jillienne works on main.<small>If you ever find yourself on main, stop and tell her.</small></div>
     </section>
 
-    <section id="setup">
-      <h2><span class="part">Part 1</span>One-time setup</h2>
-      <p class="lead">Do this once per computer. It takes about twenty minutes, most of it waiting.</p>
-      <ol class="steps">
-        <li><b class="t">Install the Claude desktop app.</b><p>Download it from claude.ai and sign in with the account Jillienne invited. Claude Code is the <b>Code</b> tab inside that app. It is a chat window that can also read and change files on your computer.</p></li>
-        <li><b class="t">Make an empty folder</b><p>on your computer called <code>xcel</code>. Documents is fine.</p></li>
-        <li><b class="t">Open the Code tab.</b><p>It asks which folder to work in. Pick the <code>xcel</code> folder you just made.</p></li>
-        <li><b class="t">Get the code.</b><p>In the chat box, type:</p>
-          <div class="say"><span class="me">YOU</span><q>Clone https://github.com/jillmoreno/xcel-ux-dashboard into this folder.</q></div>
-          <p>Claude shows you the command it wants to run and asks for permission. Click <b>Allow</b>. If a browser window opens asking you to sign in to GitHub, sign in as yourself (Anjani is <code>Anjanisatya5</code>, Eric is <code>EnormanColibri</code>). You are both already collaborators on the repository.</p></li>
-        <li><b class="t">Point Claude at the project.</b><p>The clone made a folder inside <code>xcel</code> called <code>xcel-ux-dashboard</code>. Use the Code tab's folder picker to open that inner folder. From now on, every session starts by opening this folder.</p></li>
-        <li><b class="t">Install what the project needs.</b>
-          <div class="say"><span class="me">YOU</span><q>Install the project's dependencies.</q></div>
-          <p>Allow it. This downloads about a minute's worth of packages. If Claude says Node or npm is not installed:</p>
-          <div class="say"><span class="me">YOU</span><q>Install Node LTS for me, then install the dependencies.</q></div></li>
-        <li><b class="t">Put your name on your work.</b><p>With your own details:</p>
-          <div class="say"><span class="me">YOU</span><q>For this project, set my git name to Anjani Satya and my git email to the address on my GitHub account.</q></div>
-          <p>Eric: "Eric Norman" and <code>eric.norman@simplenursing.com</code>. This matters more than it looks. The Hub decides who owns a change by who authored it, and Anjani's earlier commits were recorded as written by Claude because this was never set.</p></li>
-        <li><b class="t">Check it.</b>
-          <div class="say"><span class="me">YOU</span><q>Which branch am I on, and what are my git name and email?</q></div>
-          <p>You should hear <code>main</code> and your own name. That is the only time being on main is fine, because you have not changed anything yet.</p></li>
-      </ol>
-      <div class="note"><p>You do not install Netlify, Vite, or anything else by hand. You do not run the site on your own computer. The branch build on Netlify is your preview.</p></div>
-    </section>
-
     <section id="daily">
-      <h2><span class="part">Part 2</span>Every time you sit down</h2>
+      <h2><span class="part">Part 1</span>Every time you sit down</h2>
       <p><b>Opening up.</b> Open the Claude app, go to the Code tab, and make sure the folder shown is <code>xcel-ux-dashboard</code>. Start a new conversation for each piece of work. Old conversations are fine to leave.</p>
       <h3>How to talk to it</h3>
       <ol class="steps">
@@ -310,7 +274,7 @@
         <li><p>Claude tells you what it is about to do before it does it. Read that line.</p></li>
         <li><p>Before it runs a command or changes a file, a permission card appears with <b>Allow</b> and <b>Deny</b>. Click Allow when the card describes the thing you asked for. If it describes something you did not ask for, click Deny and ask what it was trying to do.</p></li>
         <li><p>If Claude refuses to edit a file and names it, that refusal is correct. Those files are the Hub's own machinery and only Jillienne changes them. Tell her what you needed.</p></li>
-        <li><p>Typing <code>/</code> in the chat box shows the project's ready-made routines. The ones you will use are <code>/promote-component</code>, <code>/share</code> and <code>/promote-to-prototype</code>. Each one asks you questions and does the steps. <a href="#routines">Part 10</a> says what each one asks, what it does, and when to reach for it.</p></li>
+        <li><p>Typing <code>/</code> in the chat box shows the project's ready-made routines. The ones you will use are <code>/promote-component</code>, <code>/share</code> and <code>/promote-to-prototype</code>. Each one asks you questions and does the steps. <a href="#routines">Part 8</a> says what each one asks, what it does, and when to reach for it.</p></li>
         <li><p>When Claude finishes, it summarises what it did. If anything in that summary surprises you, ask before going on.</p></li>
       </ol>
       <h3>The three questions to ask before touching anything</h3>
@@ -318,40 +282,39 @@
         <thead><tr><th>Ask</th><th>A good answer sounds like</th><th>If not</th></tr></thead>
         <tbody>
           <tr><td>"Which branch am I on, and do I have uncommitted changes?"</td><td>Your <code>feat/…</code> branch, and either "no changes" or a list you recognise.</td><td>On main: stop, tell Jillienne. Changes you don't recognise: ask Claude what they are first.</td></tr>
-          <tr><td>"Fetch origin. How far behind main is my branch?"</td><td>A number of commits. Under ten is fine for now.</td><td>Ten or more: rebase before building anything new (Part 3 shows how).</td></tr>
+          <tr><td>"Fetch origin. How far behind main is my branch?"</td><td>A number of commits. Under ten is fine for now.</td><td>Ten or more: rebase before building anything new (<a href="#rebase">Part 2</a> shows how).</td></tr>
           <tr><td>"Has anything on main changed the files I'm working on?"</td><td>"No", or a short list.</td><td>A list: read it, because that is where a conflict would come from later.</td></tr>
         </tbody>
       </table></div>
       <p>Rebasing every few days is painless. Rebasing once at the end of a month is not.</p>
     </section>
 
-    <section id="eric">
-      <h2><span class="part">Part 3</span>Eric: rebase <code>feat/atlas-compass-global-nav</code></h2>
-      <div class="note warn"><p><b>A snapshot, not a standing instruction.</b> The numbers below were true on the evening of 15 October 2026. The ten steps are the recipe and stay right; the counts will not. Ask Claude "how far behind main is my branch?" rather than trusting them.</p></div>
-      <p class="lead">As of the evening of 15 October your branch has 10 commits that are not on main, and main has moved 74 commits past where you started. Your branch needs to be moved on top of all that before anything else happens to it.</p>
-      <p>Those 10 are the checkout payment rework, the product-detail rail, the Home styling and the password walk-through. Four of them already reached main this afternoon in another form, through Jillienne's invite promotion; git will recognise those and drop them during the rebase, which is normal. The 74 include the one-site change, the new Hub nav, Anjani's second Compass master, and the invite flow's new ending.</p>
-      <p>A rebase does not change your work. It replays your 9 commits, one at a time, on top of today's main, as if you had started this morning. Do it one sentence at a time and wait for each answer.</p>
+    <section id="rebase">
+      <h2><span class="part">Part 2</span>Keeping your branch current</h2>
+      <p class="lead">Main moves under you — several times a week at the moment. A rebase replays your commits on top of today's main, as if you had started this morning. It does not change your work.</p>
+      <p>Do it every few days. Rebasing a branch that is three days behind is a minute's work; rebasing one that is a month behind is an afternoon, and it is the same ten steps either way.</p>
+      <p>Do them one sentence at a time and wait for each answer.</p>
       <ol class="steps">
         <li><b class="t">Confirm where you are.</b>
           <div class="say"><span class="me">YOU</span><q>Which branch am I on, and do I have uncommitted changes?</q></div>
-          <p>You want to hear <code>feat/atlas-compass-global-nav</code>. If you are somewhere else:</p>
-          <div class="say"><span class="me">YOU</span><q>Switch to feat/atlas-compass-global-nav.</q></div></li>
+          <p>You want your own <code>feat/…</code> branch. If you are somewhere else, switch to it before anything else.</p></li>
         <li><b class="t">Save anything loose.</b><p>If step 1 listed changes:</p>
           <div class="say"><span class="me">YOU</span><q>Commit everything on this branch with a message that says what it is.</q></div>
           <p>A rebase moves commits; it cannot move work you have not committed.</p></li>
         <li><b class="t">Make a safety copy.</b>
-          <div class="say"><span class="me">YOU</span><q>Create a backup branch called backup/atlas-compass-global-nav-oct-15 pointing at where I am now, and push it.</q></div>
+          <div class="say"><span class="me">YOU</span><q>Create a backup branch called backup/‹my-branch›-‹today's date› pointing at where I am now, and push it.</q></div>
           <p>Now nothing you do next can lose work. You can delete it next week.</p></li>
         <li><b class="t">Do the rebase.</b>
           <div class="say"><span class="me">YOU</span><q>Fetch origin and rebase this branch onto origin/main. If anything conflicts, stop and show me both sides before changing anything.</q></div>
-          <p>Allow it. Expect it to stop at least once this time: main took your morning's Confirmation page and added a flag to it (the flow now ends at a loading page), and your afternoon commits edit the same three files, <code>InvitedCheckoutPage</code>, <code>InvitedConfirmationPage</code> and <code>InvitedProductDetailPage</code>. That is exactly the case step 5 is for.</p></li>
+          <p>Allow it. Expect it to stop if main has edited the same files you have — which is the normal case when two people are working on one surface, and exactly what step 5 is for.</p>
+          <p class="small">Commits of yours that already reached main in another form — through someone else's promotion, say — are recognised and dropped during the rebase. Your branch coming out with fewer commits than it went in with is normal, not lost work.</p></li>
         <li><b class="t">If it stops on a conflict.</b><p>Claude says a file name and shows two versions of the same lines: what main has, and what your commit has. Read both. Then say one of:</p>
           <div class="say"><span class="me">YOU</span><q>Keep my version. &nbsp;/&nbsp; Keep main's version. &nbsp;/&nbsp; Keep both — main's block first, then mine.</q></div>
           <div class="say"><span class="me">YOU</span><q>Continue the rebase.</q></div>
           <p>It may stop again on the next commit; do the same thing. If you cannot tell which to keep, say <b>"Abort the rebase"</b>. Your branch goes back exactly as it was. Then ask Jillienne.</p></li>
         <li><b class="t">Confirm it worked.</b>
           <div class="say"><span class="me">YOU</span><q>How far behind main is my branch now, and how many commits ahead?</q></div>
-          <p>You want: 0 behind, and about 5 or 6 ahead. The four commits main already had will have dropped out.</p></li>
+          <p>You want <b>0 behind</b>. The number ahead is your own work, minus anything that had already reached main.</p></li>
         <li><b class="t">Check the build.</b>
           <div class="say"><span class="me">YOU</span><q>Run the build, the tests, and lint on the files I changed.</q></div>
           <p>The build is the gate Netlify uses; if it fails here, your branch will not deploy. If something fails, read Claude's summary and say "Fix that and run it again." If it is in a file you never touched, stop and ask Jillienne.</p></li>
@@ -359,40 +322,15 @@
           <div class="say"><span class="me">YOU</span><q>Push my rebased branch. It will need a force push with lease.</q></div>
           <p>A rebase rewrites your branch's history, so a normal push is refused with a message about the branch being behind. Force-with-lease is the safe form: it refuses if someone else pushed to your branch in the meantime. This is normal on your own branch and is never done on main.</p></li>
         <li><b class="t">Get the link.</b>
-          <div class="say"><span class="me">YOU</span><q>Give me the Netlify review link for this branch at the invite flow.</q></div>
-          <p>It is <code>https://feat-atlas-compass-global-nav--ux-design-xceldashboard.netlify.app/end-to-end-demo?demo=1</code>. Netlify starts building the moment you push and takes two to four minutes. The page asks for the same password as the Hub.</p></li>
-        <li><b class="t">Look at it.</b><p>Click through the invite flow from the start, the way a reviewer would. If it looks like it did before the rebase, you are done. If something that used to work is broken, that is where main and your branch disagree; tell Jillienne which page.</p></li>
+          <div class="say"><span class="me">YOU</span><q>Give me the Netlify review link for this branch.</q></div>
+          <p>Netlify starts building the moment you push and takes two to four minutes. The page asks for the same password as the Hub.</p></li>
+        <li><b class="t">Look at it.</b><p>Click through from the page a reviewer would start on. If it looks like it did before the rebase, you are done. If something that used to work is broken, that is where main and your branch disagree; tell Jillienne which page.</p></li>
       </ol>
-      <div class="note"><p>From here your branch is current. Rebase again every few days with steps 4, 7 and 8; it will be quicker each time. Or let Claude do it for you every morning (<a href="#morning">Part 11</a>).</p></div>
-    </section>
-
-    <section id="anjani">
-      <h2><span class="part">Part 4</span>Anjani: your master is on main; start fresh</h2>
-      <div class="note warn"><p><b>A snapshot, not a standing instruction.</b> True as of 15 October 2026. The seven steps are the recipe; the state described in the first two paragraphs is not.</p></div>
-      <p class="lead">You have nothing to rebase. Your second Compass master was ported into the React app and shipped to main this afternoon.</p>
-      <p>Open the Hub, go to Prototypes, and the Compass Learning row is your work at main's current build: the rail, Learn, the week on the Overview, the planner's three concepts. Your old branch from the first pull request (<code>claude/gallant-feynman-aj0m0i</code>) is finished; it is 355 commits behind and should not be reused.</p>
-      <p>Two things changed about how your work gets in:</p>
-      <ul>
-        <li><b>Your Compass surface is React now, not HTML.</b> It lives in files like <code>CompassRail.tsx</code>, <code>CompassLearningOverview.tsx</code>, <code>CompassStudyPlanner.tsx</code> and the stylesheet <code>compassAnjani.css</code>, all under <code>src/components/learning/</code>. When you want to change how Compass looks or behaves, the change goes there, on a branch, behind a flag. Claude knows these files; describe the change and it will find them.</li>
-        <li><b>A new HTML prototype is an exploration, not the product.</b> If you build a standalone HTML page, it goes under Explorations on the Hub, and adding it there means editing one of Jillienne's files. Send her the file and she adds the row. Do not try to add it to Prototypes; that section is main's build only.</li>
-      </ul>
-      <h3>Starting your next piece of work</h3>
-      <ol class="steps">
-        <li><p>Open the Code tab on <code>xcel-ux-dashboard</code>.</p></li>
-        <li><div class="say"><span class="me">YOU</span><q>Which branch am I on, and do I have uncommitted changes?</q></div><p>You want <code>main</code> with no changes, or an old branch with nothing loose on it.</p></li>
-        <li><div class="say"><span class="me">YOU</span><q>Fetch origin and make sure my main matches origin/main.</q></div><p>This pulls down today's shipped work, including your own master.</p></li>
-        <li><div class="say"><span class="me">YOU</span><q>Make a new branch called feat/compass-week-view-spacing from main and switch to it.</q></div><p>Lowercase, dashes, short, and named for what you are doing.</p></li>
-        <li><div class="say"><span class="me">YOU</span><q>Which branch am I on?</q></div><p>It should say the new name.</p></li>
-        <li><p>Describe the change in plain words. For example:</p>
-          <div class="say"><span class="me">YOU</span><q>On the Compass Overview, the week strip should sit above the planner, not below it. Put this behind a feature flag that is on by default on this branch.</q></div>
-          <p>Claude builds it, behind a flag, and tells you the flag's name.</p></li>
-        <li><p>Carry on with Part 5 from step 5: check, commit, push, link.</p></li>
-      </ol>
-      <p>Your review link will be <code>https://feat-compass-‹name›--ux-design-xceldashboard.netlify.app/dashboard-rebrand?demo=1&amp;section=compass</code>. That is the same address the Compass Prototypes row uses, on your branch instead of main.</p>
+      <div class="note"><p>After the first one, rebasing is usually just steps 4, 7 and 8. Or let Claude do it for you every weekday morning — <a href="#morning">Part 9</a>.</p></div>
     </section>
 
     <section id="build">
-      <h2><span class="part">Part 5</span>Building a change, start to finish</h2>
+      <h2><span class="part">Part 3</span>Building a change, start to finish</h2>
       <p class="lead">This is the loop you will repeat for every piece of work. Each step is one sentence to Claude.</p>
       <ol class="steps">
         <li><b class="t">Start from main.</b>
@@ -418,14 +356,14 @@
           <div class="say"><span class="me">YOU</span><q>Give me the review link for this branch.</q></div>
           <p>The shape is <code>https://‹branch-with-dashes›--ux-design-xceldashboard.netlify.app</code> followed by the page: <code>/dashboard-rebrand?demo=1</code> for the dashboard, <code>/dashboard-rebrand?demo=1&amp;section=compass</code> for Compass, <code>/end-to-end-demo?demo=1</code> for the invite flow. <code>?demo=1</code> turns on the demo controls bar.</p></li>
         <li><b class="t">Look at it the way a reviewer would.</b><p>Click through from the page they would start on, not straight to your component. Three bugs in September were invisible on a direct link and obvious on the first click.</p></li>
-        <li><b class="t">Keep going.</b><p>Each further change is step 2, then <code>/share</code> again. Rebase every few days (Part 3, steps 4 to 8) so the final merge is boring. When the next change is really a different piece of work, start a new branch for it rather than letting this one grow.</p></li>
+        <li><b class="t">Keep going.</b><p>Each further change is step 2, then <code>/share</code> again. Rebase every few days (<a href="#rebase">Part 2</a>) so the final merge is boring. When the next change is really a different piece of work, start a new branch for it rather than letting this one grow.</p></li>
       </ol>
-      <div class="note"><p><b>Steps 5 to 9 are one command.</b> <code>/share</code> runs the checks, commits, pushes, waits for the build and hands you the link, then opens the Refinement form — <a href="#refinement">Part 6</a>. The long way above is what it is doing, which is worth knowing for the day it stops halfway.</p></div>
+      <div class="note"><p><b>Steps 5 to 9 are one command.</b> <code>/share</code> runs the checks, commits, pushes, waits for the build and hands you the link, then opens the Refinement form — <a href="#refinement">Part 4</a>. The long way above is what it is doing, which is worth knowing for the day it stops halfway.</p></div>
       <div class="note warn"><p>What you never do: run the site on your own computer, edit <code>main</code>, or edit the Hub's own files. Claude will refuse and name them; ask Jillienne.</p></div>
     </section>
 
     <section id="refinement">
-      <h2><span class="part">Part 6</span>Sharing on Refinement</h2>
+      <h2><span class="part">Part 4</span>Sharing on Refinement</h2>
       <p class="lead">Refinement is the board where work under discussion lives. Anyone adds to it, nothing on it is the source of truth, it filters by your name, and it has an archive.</p>
       <p><b>A row is one chunk of work, not a branch you live on.</b> Since 15 October rows group under the <b>feature</b> they are chunks of, newest first. When a new chunk carries on from an older one, the older one folds under "1 earlier chunk" — still there, still clickable — so a feature keeps a history you can open in a review. One long-running branch gives you a single link and no history at all.</p>
       <div class="rule-box">Finish a chunk, share it, start a new branch for the next.<small>That is the habit the board is built around, and the reason small branches pay you back.</small></div>
@@ -437,7 +375,7 @@
           <p><b>Feature</b> is what this chunk is part of — start typing and the features already on the board are offered, so take one if it fits. <b>Replaces</b> appears only when that feature already has chunks, and defaults to your own newest one; its first option, <i>Nothing — these sit side by side</i>, is the right answer when two treatments should both stay up.</p></li>
         <li><p>Click Save. Your row appears at the top of its feature group, showing your name, when it was last saved, and the product. Claude then offers to cut your next branch.</p></li>
       </ol>
-      <p><b>Adding it by hand.</b> Open the Hub, click Refinement, click Add link, paste the review link from Part 5, type a title and a one-line note on what to look at, pick your name, pick the product, name the feature, Save.</p>
+      <p><b>Adding it by hand.</b> Open the Hub, click Refinement, click Add link, paste the review link from <a href="#build">Part 3</a>, type a title and a one-line note on what to look at, pick your name, pick the product, name the feature, Save.</p>
       <p><b>Finding things.</b> The pills above the list are the five names: All, Jillienne, Anjani, Eric, Afsana, Cody. Click a name to see only that person's rows; click it again to clear. There is no product pill any more; the product is the tag on the row. Rows sit under their feature heading, so looking for a piece of work means looking for its name rather than its branch.</p>
       <h3>When a row's discussion is over</h3>
       <div class="tablewrap"><table>
@@ -454,7 +392,7 @@
     </section>
 
     <section id="promote">
-      <h2><span class="part">Part 7</span>Making your surface the prototype, and who ships it</h2>
+      <h2><span class="part">Part 5</span>Making your surface the prototype, and who ships it</h2>
       <p class="lead">Prototypes is the one section that means "this is the product". It holds one row per surface, every row is main's build, and each surface has an owner who decides what it should be.</p>
       <div class="tablewrap"><table>
         <thead><tr><th>Surface on Prototypes</th><th>Owner</th><th>Review address</th></tr></thead>
@@ -473,7 +411,7 @@
       </ul>
       <h3>When your branch is what your surface should become</h3>
       <ol class="steps">
-        <li><p>Make sure the branch is current (Part 3, steps 4 to 8) and the review link looks right.</p></li>
+        <li><p>Make sure the branch is current (<a href="#rebase">Part 2</a>) and the review link looks right.</p></li>
         <li><p>On your branch, name your scope: "for Compass" (Anjani), "for Atlas Learning" or "for Invite &amp; Purchase" (Eric).</p>
           <div class="say"><span class="me">YOU</span><q>/promote-to-prototype for Compass</q></div></li>
         <li><p>Claude lists the flags your branch introduced and asks, for each, whether it should be the default. Say yes to the ones that are your design and no to anything experimental you are not ready to stand behind.</p></li>
@@ -482,14 +420,14 @@
         <li><p>Tell Jillienne, in words: "My Compass branch feat/… is ready to ship." Include the review link.</p></li>
         <li><p>Jillienne runs ship-to-main. It refuses a branch whose owner has not run step 2, so the order matters.</p></li>
         <li><p>A few minutes after she ships, your surface's row on Prototypes is your work. Its Updated tag changes to that moment.</p></li>
-        <li><p>Archive your Refinement row (Part 6), since the board is for things under discussion and this one is decided.</p></li>
-        <li><p>Start the next piece from a fresh branch off main (Part 5, step 1). Do not keep working on the shipped branch.</p></li>
+        <li><p>Archive your Refinement row (<a href="#refinement">Part 4</a>), since the board is for things under discussion and this one is decided.</p></li>
+        <li><p>Start the next piece from a fresh branch off main (<a href="#build">Part 3</a>, step 1). Do not keep working on the shipped branch.</p></li>
       </ol>
       <p>If you own the surface, you can also decide something should NOT go in. Say so, archive the Refinement row, and tell Jillienne; she has a routine that records why a branch was tried and declined.</p>
     </section>
 
     <section id="map">
-      <h2><span class="part">Part 8</span>Reading the Hub</h2>
+      <h2><span class="part">Part 6</span>Reading the Hub</h2>
       <p class="lead">The Hub is at <code>ux-design-xceldashboard.netlify.app</code>, behind one password that Jillienne gives out. Everyone, stakeholders included, sees the same thing. Nothing inside is locked.</p>
       <div class="tablewrap"><table>
         <thead><tr><th>Group</th><th>Section</th><th>What it is for</th><th>Who adds to it</th></tr></thead>
@@ -510,7 +448,7 @@
     </section>
 
     <section id="trouble">
-      <h2><span class="part">Part 9</span>When something goes wrong</h2>
+      <h2><span class="part">Part 7</span>When something goes wrong</h2>
       <p class="lead">None of these lose work. Find the message, read what it means, say the sentence.</p>
       <div class="tablewrap"><table>
         <thead><tr><th>You see</th><th>It means</th><th>Say to Claude</th></tr></thead>
@@ -526,7 +464,7 @@
           <tr><td>"You are in 'detached HEAD' state"</td><td>Your work has no branch under it. Nothing is lost yet.</td><td>"Create a branch from here called feat/‹name› and switch to it."</td></tr>
           <tr><td>Claude says it cannot run a command or lacks permission</td><td>The permission card was denied, or needs approving.</td><td>Click Allow on the card, or "Try again."</td></tr>
           <tr><td>Your Refinement row shows an old Updated time</td><td>The stamp changes when the row is saved, not when the branch changes.</td><td>Open the row on the Hub, click Save.</td></tr>
-          <tr><td>Your commits show the author as "Claude"</td><td>Your git name was never set on this computer.</td><td>Part 1, step 7. Then: "Re-author my commits on this branch to me."</td></tr>
+          <tr><td>Your commits show the author as "Claude"</td><td>Your git name was never set on this computer.</td><td>Set it, per the <a href="/contributing/">Contributing guide</a>. Then: "Re-author my commits on this branch to me."</td></tr>
           <tr><td>You are not sure what Claude just did</td><td>Anything.</td><td>"Summarise what you changed in the last step, file by file." Then decide.</td></tr>
         </tbody>
       </table></div>
@@ -534,7 +472,7 @@
     </section>
 
     <section id="routines">
-      <h2><span class="part">Part 10</span>The routines, and when to use each</h2>
+      <h2><span class="part">Part 8</span>The routines, and when to use each</h2>
       <p class="lead">A routine is a checklist Claude runs with you. Type <code>/</code> and its name in the chat box. It asks you a few questions, does the steps in order, and stops short of anything it should not decide for you.</p>
       <p>Three of them are yours. Five belong to Jillienne; know their names so you recognise them when she mentions one.</p>
       <h3>Which one do I want?</h3>
@@ -572,8 +510,8 @@
     </section>
 
     <section id="morning">
-      <h2><span class="part">Part 11</span>The morning auto-rebase</h2>
-      <p class="lead">You can have Claude rebase your branch for you every weekday morning, so Part 3 becomes something that happens while you get coffee.</p>
+      <h2><span class="part">Part 9</span>The morning auto-rebase</h2>
+      <p class="lead">You can have Claude rebase your branch for you every weekday morning, so <a href="#rebase">Part 2</a> becomes something that happens while you get coffee.</p>
       <p>Claude Code has scheduled tasks: you describe the job once, and it runs it in your project folder on a schedule, in a fresh session, and sends you a note when it is done. Two things to know first:</p>
       <ul>
         <li><b>It runs while the Claude app is open.</b> If your laptop was closed at 8:30, it runs the next time you open the app. In practice that means "when I start my day".</li>
@@ -598,7 +536,7 @@
       </div>
       <p>Claude confirms the schedule and the task name. Say yes.</p>
       <h3>What you see each morning</h3>
-      <p>A short note in the Claude app: rebased and pushed, or stopped and why. If it says it stopped on a conflict, do Part 3 step 5 by hand. If it says checks failed, open the Code tab and say:</p>
+      <p>A short note in the Claude app: rebased and pushed, or stopped and why. If it says it stopped on a conflict, do <a href="#rebase">Part 2</a> step 5 by hand. If it says checks failed, open the Code tab and say:</p>
       <div class="say"><span class="me">YOU</span><q>Show me what failed in the morning rebase.</q></div>
       <h3>Useful sentences</h3>
       <div class="tablewrap"><table>
@@ -615,7 +553,7 @@
     </section>
 
     <section id="glossary">
-      <h2><span class="part">Part 12</span>Glossary</h2>
+      <h2><span class="part">Part 10</span>Glossary</h2>
       <div class="tablewrap"><table>
         <thead><tr><th>Term</th><th>Meaning here</th></tr></thead>
         <tbody>

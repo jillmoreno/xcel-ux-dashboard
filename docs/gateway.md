@@ -166,6 +166,42 @@ Sandbox, Archive, QA Notes, To Do and Contributing keep the gate, unchanged.
 Prototypes is first and is the landing section (`DEFAULT_SECTION`); a bare `/`
 opens it and selecting it drops `?section=` from the URL.
 
+### The two designer guides divide by WHEN, not by length (2026-10-15)
+
+Jillienne, auditing Hub Resources the day it shipped: "I think Designer
+Workflow on Hub is good base, but i want that to be the regular day-to-day
+workflow, and the Contributing one more for starting out for the first time."
+
+**They were the same document at two lengths.** Contributing's eight steps and
+Designer Workflow's Parts 1, 2, 5, 6 and 7 covered identical ground, and each
+carried its own glossary, its own troubleshooting table and its own account of
+the Refinement form — three duplicated reference blocks. Worse for the split
+Jillienne wanted: one-time setup was eight steps of the DAY-TO-DAY guide, and
+rebasing, the routines and the morning task existed only in it.
+
+| | `/contributing/` — once | `/designer-workflow/` — every day |
+|---|---|---|
+| Holds | Accounts, clone, dependencies, git identity · the three places · the six words · the loop in one picture · two homes · the flag rule · what you never do | Sitting down · keeping your branch current · building a change · `/share` · promoting a surface · reading the Hub · troubleshooting · the routines · the morning auto-rebase · the glossary |
+| Lost | the long-form eight steps, the Refinement form field by field, its glossary, its troubleshooting table | one-time setup |
+| Ends | handing the reader to the day-to-day guide | — |
+
+Two calls inside that:
+
+- **Parts 3 and 4 were named snapshots** — "Eric: rebase `feat/atlas-compass-global-nav`", "Anjani: start fresh" — carrying live counts (10 commits, 74 behind, 355 behind) that were a day stale when they were written. They are one generic **Keeping your branch current** now: the ten steps were never personal, only the numbers were. Anjani's standing fact (her surface is React, not HTML) survives; the counts do not.
+- **Contributing keeps its pictures and loses its long form.** The eight illustrated cards are the one-page orientation — this is the shape of the work — and the same eight at length right underneath them was the duplication.
+
+⚠ **KEEP THE SEAM.** Setup belongs in Contributing; rebasing, the routines and
+the morning task belong in Designer Workflow; the glossary and the
+troubleshooting table live in Designer Workflow ONLY. Each file's head comment
+says so, because this is the kind of thing that grows back.
+
+**`/about/` was audited in the same pass** and was wrong in two ways nobody had
+noticed: its section 02 was headed "The four sections", listed three, and
+described Prototypes as "one entry" — it has had five rows since 2026-10-14. It
+now lists the five a stakeholder uses and says, in one line, that the Dev
+Handoff and Team groups are the team's own surfaces rather than pretending they
+are not there.
+
 ### Team → Hub Resources, and the guides get a way in again (2026-10-15)
 
 Jillienne: "lets add a Hub Resources in the new team section where this new

@@ -298,13 +298,10 @@
   <ol>
     <li><a href="#big-picture">The big picture</a></li>
     <li><a href="#need">What you need before you start</a></li>
-    <li><a href="#steps">The eight steps</a></li>
     <li><a href="#two-kinds">Two kinds of work, two homes</a></li>
     <li><a href="#flags">Feature flags — the one rule</a></li>
-    <li><a href="#refinement-form">The Refinement form, field by field</a></li>
     <li><a href="#dont">Things not to do</a></li>
-    <li><a href="#trouble">When something looks wrong</a></li>
-    <li><a href="#glossary">Glossary</a></li>
+    <li><a href="#next">Then: the day-to-day guide</a></li>
   </ol>
 </nav>
 
@@ -353,130 +350,29 @@
   </div>
 </section>
 
+
+
 <!-- ───────────────────────────────────────────────────────────────────── -->
-<section id="steps">
-  <h2><span class="num">03</span>The eight steps</h2>
-
-  <div class="step">
-    <h3><span class="n">1</span>Get the project onto your computer</h3>
-    <p class="who">You · once · in the Claude desktop app</p>
-    <p><strong>What this is.</strong> The project lives on GitHub. To work on it, you need a copy in a folder on your own computer that Claude can see and edit. Getting that copy is called <em>cloning</em>, and Claude does it for you.</p>
-    <ol>
-      <li><strong>Make an empty folder</strong> somewhere you will find it again — <em>Documents › xcel-ux-dashboard</em> is a good choice.</li>
-      <li><strong>Open the Claude desktop app</strong> and start a new chat. When it asks which folder to work in, choose the folder you just made. (If it does not ask, look for <em>Connect a folder</em> or the folder icon near the message box.)</li>
-      <li><strong>Type this and send it:</strong><br /><em>"Clone the GitHub repository jillmoreno/xcel-ux-dashboard into this folder."</em></li>
-      <li><strong>Wait.</strong> Claude uses the GitHub connection to bring everything down. It takes a minute or two. Claude will tell you when it is done.</li>
-    </ol>
-    <div class="callout good">
-      <span class="lab">You are done when</span>
-      <p>The folder on your computer is no longer empty — you can see <code>src</code>, <code>public</code>, <code>CLAUDE.md</code> and a few dozen other things in it — and Claude has said the clone finished.</p>
-    </div>
-    <p><strong>You do not run the site on your own computer.</strong> Older instructions talked about starting a local server at <em>localhost:5200</em>; that needs a terminal, so skip it. Your preview is the branch build Netlify makes in step 5 — a real web address you can open and send to people.</p>
-    <p class="small"><strong>If Claude says it cannot reach GitHub</strong>, the connector is not connected — see <em>What you need</em>. <strong>If Claude says the folder is not empty</strong>, make a new empty one and connect that instead.</p>
+<section id="words">
+  <h2><span class="num">03</span>The words you will see</h2>
+  <p>Six of them, over and over. You never type a git command — Claude does that — but you will read these in what it tells you.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Word</th><th>Plain meaning</th></tr></thead>
+    <tbody>
+      <tr><td><code>main</code></td><td>The one branch that IS the product. Only Jillienne changes it.</td></tr>
+      <tr><td>branch</td><td>Your own copy of the code, named like <code>feat/compass-week-view</code>. Everything you do happens on a branch.</td></tr>
+      <tr><td>commit</td><td>A saved snapshot of your branch with a short note saying what changed.</td></tr>
+      <tr><td>push</td><td>Sending your commits to GitHub. Netlify then builds them and the team can see them.</td></tr>
+      <tr><td>rebase</td><td>Moving your branch so it starts from today's <code>main</code> instead of the day you created it. You will do this every few days; the day-to-day guide has the steps.</td></tr>
+      <tr><td>merge</td><td>Jillienne putting your branch into <code>main</code>. She calls this "ship to main".</td></tr>
+    </tbody>
+  </table>
   </div>
 
-  <div class="step">
-    <h3><span class="n">2</span>Make a branch</h3>
-    <p class="who">You · every time you start a piece of work · one line to Claude</p>
-    <p><strong>What a branch is, in plain words.</strong> The project has one official copy, called <code>main</code>. That is what both websites are built from. A <em>branch</em> is your own private copy of the project, with a name on it. You make your changes there. Nothing you do on your branch changes <code>main</code> — or either website — until Jillienne merges it in step 8. So you cannot break anything by working on a branch. That is the whole point of having one.</p>
-    <ol>
-      <li><strong>Choose a name.</strong> The pattern is <code>feat/</code> plus two or three words joined with dashes — for example <code>feat/study-streak-card</code>. All lowercase, no spaces. (Use <code>explore/</code> for an exploration or <code>fix/</code> for a fix; <code>feat/</code> is right for most things.)</li>
-      <li><strong>Tell Claude.</strong> In the Claude desktop app, in your project chat, send:<br /><em>"Make a new branch called feat/study-streak-card from main and switch to it."</em><br />Claude makes the branch on your computer and moves your folder onto it, so everything you do from here lands there. If the name breaks the rule, Claude will say so — accept its suggestion.</li>
-      <li><strong>Nothing to do on GitHub.</strong> The branch exists only on your computer until step 5. The first push creates it on GitHub, and from then on it has its own web address.</li>
-    </ol>
-    <div class="callout good">
-      <span class="lab">You are done when</span>
-      <p>Claude has confirmed it is on your branch. Ask <em>"Which branch am I on?"</em> any time you are unsure — the answer should never be <code>main</code> while you are working.</p>
-    </div>
-    <p><strong>Why the name matters.</strong> In step 5 it becomes part of a web address, and the slash turns into a dash: <code>feat/study-streak-card</code> is reviewed at <code>feat-study-streak-card--ux-design-xceldashboard.netlify.app</code>. Spaces and capital letters would break that, which is why the rule is lowercase and dashes.</p>
-    <h3 style="font-size:14px;margin-top:14px">If something looks wrong</h3>
-    <ul class="small">
-      <li><strong>Claude says the name is not valid.</strong> There is probably a space or a capital letter in it. Lowercase, dashes only — take the corrected name Claude offers.</li>
-      <li><strong>Claude says a branch with that name already exists.</strong> Someone (maybe you, earlier) already made it. Either say <em>"Switch to it and bring it up to date"</em> to carry on there, or choose a slightly different name.</li>
-      <li><strong>You realise you have been working on <code>main</code>.</strong> Do not panic and do not push. Tell Claude: <em>"I made changes on main by mistake — make a branch called feat/… , move my changes onto it, and leave main untouched."</em> Claude moves your work across.</li>
-      <li><strong>You want to pick up a branch you started on another computer.</strong> Say <em>"Switch to the branch feat/… from GitHub and bring it up to date."</em> Claude fetches it.</li>
-    </ul>
-  </div>
-
-  <div class="step">
-    <h3><span class="n">3</span>Do the work with Claude</h3>
-    <p class="who">You · with Claude · in the desktop app</p>
-    <p>In your project chat, describe what you are building the way you would to a colleague. Claude edits the files in your folder. Three things make this go smoothly:</p>
-    <ul>
-      <li><strong>Tell Claude which kind of work it is</strong> — a React surface of the product, or a standalone HTML exploration. Section 04 explains the difference; it decides where the files go.</li>
-      <li><strong>Ask Claude to put new product work behind a feature flag</strong>, and to set that flag's default <em>on</em> for your branch. Section 05 explains why. Claude knows the flag catalog (<code>src/context/FeatureFlagContext.tsx</code>).</li>
-      <li><strong>Claude reads <code>CLAUDE.md</code> on its own</strong> — it is in the folder, and the app picks it up. It is the project's memory: every decision, every trap, every "we tried that and here is why not". A change that contradicts it will be questioned in review.</li>
-    </ul>
-    <p><strong>Save your progress as you go.</strong> Every so often, say: <em>"Commit what we have done so far with the message 'study streak card on Home, behind a flag'."</em> A commit is a labelled save point. Small ones with plain-English labels are easier for everyone to follow than one big one at the end. Nothing leaves your computer until step 5.</p>
-  </div>
-
-  <div class="step">
-    <h3><span class="n">4</span>Ask Claude to run the checks</h3>
-    <p class="who">You · before every publish</p>
-    <p>The project has three automatic checks — types, tests and code style. They are the same ones review runs, so green here means no surprises later. Say:</p>
-    <p><em>"Run the type check, the tests and lint, and tell me what fails."</em></p>
-    <p>Claude runs them in its own workspace (it takes a minute or two — there are about 800 tests) and reports back. If you edited anything under <code>public/prototypes/</code>, add <em>"and the smoke suites"</em> — those pages have their own checks.</p>
-    <p class="small">A failing test is usually the project telling you a decision is recorded somewhere — for example, the nav order, or which rows sit on the public front door. Ask Claude what the failing test is protecting; it will read the test's comment and explain. If your change is meant to re-decide that, ask Claude to update the test in the same commit and say so in the message.</p>
-  </div>
-
-  <div class="step">
-    <h3><span class="n">5</span>Publish — that is the deploy</h3>
-    <p class="who">You ask · Claude sends · Netlify builds</p>
-    <p><strong>What this is.</strong> So far your work is only on your computer. <em>Pushing</em> sends it up to your branch on GitHub. Claude does it through the GitHub connection. Say:</p>
-    <p><em>"Commit everything with the message 'study streak card on Home' and push it to feat/study-streak-card."</em></p>
-    <p>Claude confirms. Within a few seconds, Netlify notices the push and starts building your branch as its own website at:</p>
-    <pre><code>https://feat-study-streak-card--ux-design-xceldashboard.netlify.app</code></pre>
-    <p>That is <code>your-branch-with-dashes</code> followed by <code>--ux-design-xceldashboard.netlify.app</code>. The build takes two to three minutes. Every later push to the same branch updates the same address.</p>
-    <p><strong>The link to share is the product, in demo mode:</strong></p>
-    <pre><code>https://feat-study-streak-card--ux-design-xceldashboard.netlify.app/dashboard-rebrand?demo=1</code></pre>
-    <p class="small"><code>?demo=1</code> makes the page show your branch's <em>committed</em> flag defaults — what you set in step 3 — rather than whatever toggles the person opening it last left in their own browser. Without it, a reviewer may see their own leftover settings and think that is your design.</p>
-    <div class="callout good">
-      <span class="lab">You are done when</span>
-      <p>Claude confirms the push went through, and two or three minutes later the address above opens and shows your work. (If you are curious, the branch is now visible at <code>github.com/jillmoreno/xcel-ux-dashboard/branches</code> — but you never need to look.)</p>
-    </div>
-    <div class="callout warn">
-      <span class="lab">Know this</span>
-      <p><strong>Every pushed branch gets an address</strong>, and anyone with the link and the site password can open it — including work you are not ready to show yet. That is what makes review possible, and it is why nothing confidential goes on a branch.</p>
-      <p>A branch address is a copy of the <em>whole</em> dashboard, so it carries the team-only sections as well as your work. The house icon in the dark bar is hidden on branch builds for that reason — someone you send a review link to lands on your work, not on the project list.</p>
-    </div>
-    <p class="small"><strong>If Claude says it cannot push</strong>, the GitHub connection is missing or has expired — <em>Settings → Connectors → GitHub</em>. <strong>If the address 404s after five minutes</strong>, ask Claude <em>"What is the exact name of the branch I pushed?"</em> and check the address uses it, dashes for slashes; then ask Jillienne to confirm branch deploys are on.</p>
-  </div>
-
-  <div class="step">
-    <h3><span class="n">6</span>Add it to Refinement</h3>
-    <p class="who">You · on the Hub</p>
-    <p>Open the Hub, click <strong>Refinement</strong> in the left nav, then <strong>Add link</strong> (or <strong>Add the first link</strong> if the list is empty). Paste the address from step 5, give it a title, write a one-line note saying where to look, and name the <strong>feature</strong> this is a chunk of. Section 06 has every field.</p>
-    <p>The row appears immediately for everyone with the Hub link — the team and stakeholders alike. It is saved to a shared store, not to your browser, so it is there the moment you save.</p>
-    <p><strong>A row is one chunk of work, not one branch you live on.</strong> Rows group under their feature, newest chunk first, and when a new chunk carries on from an older one the older one folds under <em>“1 earlier chunk”</em> — still there, still clickable. That is the payoff for working small: the feature keeps a history you can open in a review, which one long-running branch cannot give you. If two chunks are two treatments meant to be seen side by side, say so in the form — <em>Replaces: nothing</em> — and both stay up.</p>
-    <div class="callout tip">
-      <span class="lab">The short way</span>
-      <p>In your project chat in the Claude desktop app, say <code>/share</code>. It asks you once — checks, commit, push, open the form? — and then does the lot: runs the type check and the tests, commits what is uncommitted, pushes, works out the branch address (dashes and all), waits for Netlify to finish building, drafts the title from your commits, asks you for the one-line note and for the <strong>feature</strong> this is a chunk of, and gives you a link that opens the Hub with the Add form already filled in. You click the link, look, and click <strong>Add link</strong> — nothing is saved without that click. Then it offers to cut your next branch, which is the habit worth having: small chunks, one per branch. (<code>/promote-to-refinement</code> is what this was called until 2026-10-15; the old name still reaches it.) Its twin, <code>promote-to-prototype</code>, is what Jillienne runs at the other end of the loop (step 8).</p>
-    </div>
-  </div>
-
-  <div class="step">
-    <h3><span class="n">7</span>Discuss, iterate, publish again</h3>
-    <p class="who">You and the team</p>
-    <p>The team opens your row, looks, and talks — wherever the team talks. You make changes with Claude (step 3), ask for the checks (step 4), and ask Claude to commit and push again (step 5). The address does not change, so the Refinement row is still right. If what the row <em>is</em> changes, use <strong>Edit</strong> on the row to update its title or note.</p>
-    <p class="small">There is deliberately no comment thread on the row. Refinement is a list of things to look at, not a place to record the discussion; that stays where the team already talks.</p>
-    <p><strong>When the work turns into a different piece of work, start a new branch</strong> rather than letting this one grow. Say <code>/share</code> again from the new branch and name the same feature: the new chunk goes to the top of the group and this one folds underneath it. <code>/share</code> will say something if a branch has got long — more than about ten commits, or older than a week — and that is the moment to split, not later.</p>
-  </div>
-
-  <div class="step">
-    <h3><span class="n">8</span>Open a pull request → promote → merge → retire the row</h3>
-    <p class="who">You open the PR · Jillienne promotes and merges</p>
-    <p><strong>What a pull request is.</strong> It is the formal "please bring my branch into <code>main</code>" — a page on GitHub that shows every change, where Jillienne reviews and merges. You open it; she does the rest.</p>
-    <ol>
-      <li><strong>Tell Claude.</strong> <em>"Open a pull request from feat/study-streak-card to main, titled 'Study streak card', and add Jillienne as reviewer. In the description, put my Refinement note and the branch build address."</em> Claude opens it through the GitHub connection and gives you the link.</li>
-      <li><strong>Open the link once</strong> to check the title and description read the way you want. That is the one page on github.com you will see in this whole loop, and you do not have to change anything on it.</li>
-    </ol>
-    <p class="small"><strong>If Claude says it cannot open a pull request</strong>, the GitHub connection may not have that permission — send Jillienne the branch name and the build address instead, and she will open it.</p>
-    <p>Jillienne then runs the <code>promote-to-prototype</code> skill <em>on your branch, before merging</em>. It lists every feature flag your branch changed and asks her, flag by flag, whether that default ships in Prototypes. Approved flags keep your "on"; declined ones are set back to <code>main</code>'s value, so the work lands in the sandbox sections of the full site without reaching the public product.</p>
-    <p>She merges and the Hub rebuilds. The last step is retiring your Refinement row, and the way to do it is <code>/retire-from-refinement</code> rather than <strong>Remove</strong>: a row's build lives on a Netlify branch deploy, so deleting the branch deletes the only viewable copy of the work, and “we tried this and decided not to” otherwise leaves no trace anywhere. The skill makes the keep-or-delete-the-branch call explicit and writes the Archive row before the Refinement row goes.</p>
-    <div class="callout good">
-      <span class="lab">Done looks like</span>
-      <p>Your flag's default is on in <code>main</code>, the Prototypes section shows your work at <code>/dashboard-rebrand?demo=1</code>, and Refinement no longer lists this chunk — though the feature's earlier chunks are still there to scroll back through, if any are.</p>
-    </div>
+  <div class="callout warn">
+    <span class="lab">The one rule under everything</span>
+    <p><strong>You work on your branch, Jillienne works on <code>main</code>.</strong> If you ever find yourself on <code>main</code>, stop and tell her.</p>
   </div>
 </section>
 
@@ -511,27 +407,11 @@
   </ul>
 </section>
 
-<!-- ───────────────────────────────────────────────────────────────────── -->
-<section id="refinement-form">
-  <h2><span class="num">06</span>The Refinement form, field by field</h2>
-  <p>This is what <strong>Add link</strong> opens on the Hub.</p>
-  <div class="ui" role="img" aria-label="The Add link form: Address, Title, Note, Added by, Product, Feature, and Replaces">
-    <div class="uihead">Refinement · Add link</div>
-    <div class="field"><b>Address</b><span>The full <code>https://…</code> link. Required. Only <code>http</code> and <code>https</code> addresses are accepted — anything else is refused, on purpose, because every address here is rendered as a real link for everyone.</span></div>
-    <div class="field"><b>Title</b><span>What it is, in a few words. Required. Include the branch name so the row can be matched to a PR later: <em>“Study streak card — feat/study-streak-card”</em>.</span></div>
-    <div class="field"><b>Note</b><span>Optional, but use it. Say where to look and what question you want answered: <em>“Home, under Current Progress. Is the streak motivating or nagging?”</em></span></div>
-    <div class="field"><b>Added by</b><span>Your name, from the roster. Optional; remembered in your browser so you choose it once. It is a label, not a login — nothing checks it — and it is what the filter pills along the top of the list filter on.</span></div>
-    <div class="field"><b>Product</b><span>Atlas · Compass · Both. Which product this work is about, which is also which Prototypes row it is heading for. <code>/share</code> reads it off your branch, so it is usually already right.</span></div>
-    <div class="field"><b>Feature</b><span>What this chunk is <em>part of</em>. Optional, free text, and the field the list groups on. Start typing and the features already on the board are offered — take one if it fits, because <em>“Streak card”</em> and <em>“streak card”</em> are the same group but <em>“Streaks”</em> is a different one. There is no fixed list to pick from on purpose: a new feature should never wait on someone else adding a value.</span></div>
-    <div class="field"><b>Replaces</b><span>Only appears once the feature you typed already has chunks on the board. It defaults to <strong>your own newest chunk</strong> of that feature, because that is usually what this is — the next piece of the same work. The first option is <em>“Nothing — these sit side by side”</em>, and that is a real answer: two treatments of one surface, both up at once, is exactly what Refinement is for.</span></div>
-  </div>
-  <p>On the list, rows sit under their feature, newest chunk first; a chunk something else replaced folds under <strong>“N earlier chunks”</strong>, one click from being open again. A row with no feature has no heading and sits where its date puts it, exactly as every row did before this existed — there was no backfill, so the board is mixed for a while.</p>
-  <p class="small">There is no <em>Type</em> field here, unlike Resources: every Refinement row is the same kind of thing — one chunk of work in review. There is no <em>public</em> toggle either. There was one until 2026-10-15, when the separate stakeholder site was retired; a row is now visible to everyone with the Hub link the moment it is added.</p>
-</section>
+
 
 <!-- ───────────────────────────────────────────────────────────────────── -->
 <section id="dont">
-  <h2><span class="num">07</span>Things not to do</h2>
+  <h2><span class="num">06</span>Things not to do</h2>
   <ul>
     <li><strong>Don't push to <code>main</code>.</strong> Every push to <code>main</code> rebuilds the Hub, which stakeholders are looking at. Always be on a branch before asking Claude to push — step 2 — and get to <code>main</code> only through a pull request.</li>
     <li><strong>Don't add a row to Prototypes</strong> or change a row's <code>category</code> to <code>'prototype'</code>. Promotion is a flag default, never a tile move.</li>
@@ -544,53 +424,16 @@
 </section>
 
 <!-- ───────────────────────────────────────────────────────────────────── -->
-<section id="trouble">
-  <h2><span class="num">08</span>When something looks wrong</h2>
-  <div class="tablewrap">
-  <table>
-    <thead><tr><th>Symptom</th><th>Likely cause</th><th>Try</th></tr></thead>
-    <tbody>
-      <tr><td>Branch address 404s</td><td>Netlify hasn't finished the build, or branch deploys were switched off.</td><td>Wait three minutes and reload. If it still fails, check the branch name has slashes turned to dashes; then ask Jillienne to confirm branch deploys are on.</td></tr>
-      <tr><td>Branch shows old main, not your work</td><td>Your flag default is off on the branch, or you opened the page without <code>?demo=1</code>.</td><td>Add <code>?demo=1</code>. Then ask Claude: <em>"Is my flag's default on for this branch?"</em></td></tr>
-      <tr><td>The demo looks different on one laptop only</td><td>That browser holds a saved "Set as default" flag snapshot, which wins over the committed default per key.</td><td>In that browser's DevTools → Application → Local Storage, delete <code>cgp.featureFlags.customDefaults</code>.</td></tr>
-      <tr><td>Claude says it cannot reach GitHub, clone, or push</td><td>The GitHub connector is not connected, or its sign-in expired.</td><td>Claude desktop → <em>Settings → Connectors → GitHub</em> → Connect (or Reconnect), sign in, allow. Then ask again.</td></tr>
-      <tr><td>Row shows "not a linkable address"</td><td>The address wasn't <code>http(s)</code>, or was saved by an older version.</td><td>Edit the row and paste the full <code>https://</code> address.</td></tr>
-      <tr><td>Stakeholder can't see your row</td><td>They don't have the Hub link or the site password — there has been no per-row visibility switch since 2026-10-15.</td><td>Send them the Hub link. Every row is visible to everyone who can open the site.</td></tr>
-      <tr><td>Your chunk isn't under the feature you expected</td><td>The feature was typed slightly differently — grouping ignores case and spacing, but not different words.</td><td>Edit the row and pick the feature from the suggestions rather than retyping it. The group takes its spelling from its newest chunk.</td></tr>
-      <tr><td>An older chunk vanished from the board</td><td>It didn't — a newer chunk replaced it, so it folded under <strong>“N earlier chunks”</strong> at the top of the group.</td><td>Click that. If it should not have been replaced, edit the newer row and set <em>Replaces</em> to <em>Nothing</em>.</td></tr>
-      <tr><td>Tests fail on something you didn't touch</td><td>A decision is pinned — nav order, section contents, a colour that must keep failing.</td><td>Ask Claude what the failing test protects — it reads the test's comment. Either your change re-decides it (Claude updates the test and says so in the commit) or it found a real regression.</td></tr>
-      <tr><td>Claude cannot find your project files</td><td>The chat is not connected to the project folder, or it is connected to the wrong one.</td><td>Start a new chat and choose the <em>xcel-ux-dashboard</em> folder when it asks. Claude should be able to list <code>CLAUDE.md</code> and <code>src</code>.</td></tr>
-      <tr><td>Claude says something is locked or "another process is running"</td><td>An earlier action did not finish cleanly.</td><td>Say: <em>"Clear the git lock and try again."</em> Claude knows what to do.</td></tr>
-    </tbody>
-  </table>
-  </div>
+<section id="next">
+  <h2><span class="num">07</span>Then: the day-to-day guide</h2>
+  <p>That is the setup done. Everything after your first day — rebasing, building a change, sharing it on Refinement, promoting a surface, the ready-made routines, and what to say when something breaks — is the other guide:</p>
+  <p><a class="btn" href="/designer-workflow/">Designer Workflow on the Hub →</a></p>
+  <p class="small">The two used to describe the same loop at two lengths, which is why they felt repetitive. Since 15 October this one is <strong>once, on your first day</strong>, and that one is <strong>every day after it</strong>. The glossary and the troubleshooting table live there now, not here.</p>
 </section>
 
-<!-- ───────────────────────────────────────────────────────────────────── -->
-<section id="glossary">
-  <h2><span class="num">09</span>Glossary</h2>
-  <div class="tablewrap">
-  <table>
-    <tbody>
-      <tr><td>Repo</td><td>The project's code, in git. <code>jillmoreno/xcel-ux-dashboard</code> on GitHub.</td></tr>
-      <tr><td>Clone</td><td>Bring the project down into a folder on your computer, once. Claude does it when you ask.</td></tr>
-      <tr><td>Commit</td><td>A labelled save point. "Commit with the message …" — Claude does it; nothing leaves your computer yet.</td></tr>
-      <tr><td>Branch</td><td>Your own line of work inside the repo. Nothing on it is public until merged — but its <em>build</em> has a public address.</td></tr>
-      <tr><td>Push</td><td>Send your commits up to your branch on GitHub. Claude does it through the GitHub connector. Netlify builds every pushed branch.</td></tr>
-      <tr><td>GitHub connector</td><td>The link between the Claude desktop app and your GitHub account (<em>Settings → Connectors</em>). It is what lets Claude clone, push and open pull requests for you.</td></tr>
-      <tr><td>Pull request (PR)</td><td>The GitHub page that asks for your branch to be merged into <code>main</code>. You ask Claude to open it; Jillienne reviews, promotes and merges.</td></tr>
-      <tr><td>Branch deploy</td><td>The website Netlify builds for one branch: <code>&lt;branch&gt;--ux-design-xceldashboard.netlify.app</code>.</td></tr>
-      <tr><td><code>?demo=1</code></td><td>Demo mode: render the committed flag defaults, ignore the viewer's own saved toggles, don't persist flips.</td></tr>
-      <tr><td>Feature flag</td><td>A named switch in <code>FEATURE_FLAGS</code>. Off on <code>main</code> until promoted; on on your branch so your build shows it.</td></tr>
-      <tr><td>Prototypes</td><td>The section holding the live product build at <code>main</code>'s flag defaults. One row per product surface, all the same build. Changed only by merging.</td></tr>
-      <tr><td>Refinement</td><td>The review inbox: links added on the page, each one a chunk of work, grouped under the feature it belongs to. Its internal id is <code>demo</code> — you will see that in URLs (<code>?section=demo</code>) and code.</td></tr>
-      <tr><td>Resources</td><td>Everything else that lives elsewhere: briefs, boards, Figma files. Also added on the page.</td></tr>
-      <tr><td>Promote</td><td>Two skills bracket the loop. <code>/share</code> (yours, on the branch — called <code>promote-to-refinement</code> until 2026-10-15) checks, commits, pushes and opens the Refinement form prefilled with your branch address. <code>promote-to-prototype</code> (Jillienne's, on the PR) decides per flag whether its "on" default ships in Prototypes.</td></tr>
-      <tr><td>The Hub</td><td>The one site, behind one password, that designers, developers and stakeholders are all given. Until 2026-10-15 there was a second, trimmed site for stakeholders; you may still see “full site” in older notes, and it means this one. A separate user-test build still exists and is not it.</td></tr>
-    </tbody>
-  </table>
-  </div>
-</section>
+
+
+
 
 </div><!-- /view-full -->
 
@@ -621,8 +464,11 @@
     var fromHash = (location.hash || '').replace('#', '');
     var saved = null;
     try { saved = localStorage.getItem('xcel.contributing.view'); } catch (e) {}
-    // A hash naming a SECTION of the full guide (#steps, #glossary…) should
-    // open the full guide and let the browser scroll to it.
+    // A hash naming a SECTION of the full guide (#need, #flags…) should open
+    // the full guide and let the browser scroll to it. ⚠ #steps, #glossary,
+    // #trouble and #refinement-form were sections here until 2026-10-15 and
+    // are now in /designer-workflow/; an old link carrying one falls through
+    // to the quick view, which is the right failure.
     if (fromHash && !views[fromHash] && document.getElementById(fromHash)) {
       show(views.quick.querySelector('#' + fromHash) ? 'quick' : 'full', false);
       setTimeout(function () { var el = document.getElementById(fromHash); if (el) el.scrollIntoView(); }, 0);
@@ -633,7 +479,7 @@
 </script>
 
 <footer>
-  <p>Part of the XCEL UX Dashboard. The reasoning behind every decision described here is in the repo's <code>CLAUDE.md</code>; the one-time site setup is in <code>README.md</code>. Stakeholders get a shorter companion page, <a href="/about/">How to read this dashboard</a>.</p>
+  <p>Part of the XCEL UX Dashboard. The reasoning behind every decision described here is in the repo's <code>CLAUDE.md</code>; the one-time site setup is in <code>README.md</code>. The day-to-day guide is <a href="/designer-workflow/">Designer Workflow on the Hub</a>; stakeholders get a shorter companion page, <a href="/about/">How to read this dashboard</a>. All three sit on the Hub under <strong>Team → Hub Resources</strong>.</p>
 </footer>
 
 </div>

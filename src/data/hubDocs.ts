@@ -39,9 +39,9 @@ export const HUB_DOCS: HubDoc[] = [
   {
     id: 'designer-workflow',
     title: 'Designer Workflow on the Hub',
-    audience: 'Eric and Anjani — useful to Afsana and Cody',
+    audience: 'Every day · designers',
     blurb:
-      'From a laptop with nothing on it to a branch under review. Thirteen parts: setup, the daily loop, rebasing, building a change, sharing on Refinement, promoting a surface, and what to say when something goes wrong.',
+      'The day-to-day. Sitting down, keeping your branch current, building a change, sharing it on Refinement, promoting a surface — plus the ready-made routines, the morning auto-rebase, and what to say when something breaks. Assumes your machine is already set up.',
     href: '/designer-workflow/',
     pdf: '/designer-workflow/designer-workflow.pdf',
     updated: '2026-10-15',
@@ -49,9 +49,9 @@ export const HUB_DOCS: HubDoc[] = [
   {
     id: 'contributing',
     title: 'Contributing to the dashboard',
-    audience: 'A designer arriving for the first time',
+    audience: 'Once · your first day',
     blurb:
-      'The same loop at more length, with pictures and the failure modes — eight illustrated steps, then the long version, the feature-flag rule, the Refinement form field by field, and a troubleshooting table.',
+      'Getting set up: the accounts, the clone, the dependencies, putting your name on your commits — then the words you will see, the shape of the whole loop in one picture, where a new screen belongs, and the one feature-flag rule. Ends by handing you to the day-to-day guide.',
     href: '/contributing/',
     pdf: '/contributing/contributing.pdf',
     updated: '2026-10-15',
@@ -59,11 +59,11 @@ export const HUB_DOCS: HubDoc[] = [
   {
     id: 'about',
     title: 'How to read this dashboard',
-    audience: 'Stakeholders',
+    audience: 'Stakeholders · read once',
     blurb:
       'The orientation page a reviewer is sent to: what Prototypes means, what Refinement means, how to read a row, and why nothing they change in a prototype is saved.',
     href: '/about/',
     pdf: '/about/about.pdf',
-    updated: '2026-09-18',
+    updated: '2026-10-15',
   },
 ]
