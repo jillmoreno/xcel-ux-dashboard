@@ -1100,6 +1100,15 @@ one — a site tracking an active branch rebuilds mid-session — set
 under Access & security. The site gets its own empty Blobs store, so QA Notes
 and Links hold nothing there; both sections are gone on this build anyway.
 
+**Every page view starts from the baseline, not from the browser (2026-10-08).**
+`TESTING_BASELINE` in `FeatureFlagContext` opens a session at 0%, and for two
+weeks that was only a default: `loadInitial` merged `cgp.featureFlags` over
+it, so the Progress a moderator last picked from the `?test=0` bar became the
+starting state of every later session in that browser — a participant link
+opened at ~63%. On this build `loadInitial` and `loadCustomDefaults` now ignore
+what the browser saved. The bar still works mid-session; `?ff=` is still how a
+session opens on anything but the baseline. `TestingGateway.test.tsx` pins it.
+
 `isPublicGateway()` is `!== 'full'`, so `testing` inherits every trim `public`
 has and then adds its own. A fourth mode would inherit the trim by default,
 which is the safe direction. `scripts/public-redirects.mjs` lists the trimmed

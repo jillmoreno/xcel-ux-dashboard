@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
  * THE USER-TEST BUILD HAS NO GATEWAY — `VITE_GATEWAY_MODE=testing`,
@@ -197,5 +197,50 @@ describe('VITE_GATEWAY_MODE=testing — the baseline a session opens on', () => 
     )!
     expect(def.variants?.some((v) => v.value === 'progress-on-track')).toBe(true)
     expect(d('dashboard-progress-state').enabled).toBe(true)
+  })
+})
+
+describe('VITE_GATEWAY_MODE=testing — what the browser saved does not reach a fresh page view', () => {
+  /*
+   * 2026-10-08: a session opened at ~63% with the baseline above in place.
+   * `loadInitial` merged `cgp.featureFlags` over the catalog default, and that
+   * key held the Progress the moderator had picked from the `?test=0` bar in
+   * the same browser a session earlier. Demo mode is `?demo=1` only, so on the
+   * test site every ordinary page view reads AND writes that key — one check
+   * of the On Track state became the starting point for every session after.
+   *
+   * Both keys are seeded with a state that is neither site's default, so the
+   * assertion can tell "ignored" from "happened to match".
+   */
+  const SAVED = { 'dashboard-progress-state': { enabled: true, variant: 'progress-at-risk' } }
+
+  beforeEach(() => {
+    window.localStorage.clear()
+    window.localStorage.setItem('cgp.featureFlags', JSON.stringify(SAVED))
+    window.localStorage.setItem('cgp.featureFlags.customDefaults', JSON.stringify(SAVED))
+  })
+  afterEach(() => window.localStorage.clear())
+
+  async function openingProgress(mode: string) {
+    vi.resetModules()
+    vi.stubEnv('VITE_GATEWAY_MODE', mode)
+    const { FeatureFlagProvider, useFeatureFlag } = await import('@/context/FeatureFlagContext')
+    function Probe() {
+      return <span data-testid="prog">{useFeatureFlag('dashboard-progress-state').variant}</span>
+    }
+    render(
+      <FeatureFlagProvider>
+        <Probe />
+      </FeatureFlagProvider>,
+    )
+    return screen.getByTestId('prog').textContent
+  }
+
+  it('opens at 0% even when the browser saved another state', async () => {
+    expect(await openingProgress('testing')).toBe('not-started')
+  })
+
+  it('still reads the saved state on the full build — the sandbox is the point there', async () => {
+    expect(await openingProgress('full')).toBe('progress-at-risk')
   })
 })
