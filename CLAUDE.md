@@ -348,5 +348,6 @@ follow the link.
 | [`src/data/prototypeFeatures.ts`](src/data/prototypeFeatures.ts) | The five XCEL rows + `PROTOTYPE_BASE`. The type block is verbatim from the LMS (so the ported components compile unchanged) plus one added field, `previewUrl`. Rows are ported verbatim from the LMS dashboard, which still has its own copies. |
 | [`src/data/archivedItems.ts`](src/data/archivedItems.ts) | The Archive table — two rows as of 2026-09-16 (the Profile page's Motivational Statement card, and the Dashboard MVP version retired by the flag audit). |
 | [`src/data/qaNotes.ts`](src/data/qaNotes.ts) | The committed QA seed — empty; findings are authored on the page. |
+| [`src/data/hubDocs.ts`](src/data/hubDocs.ts) | The **Hub Resources** section's rows (2026-10-15) — the three guides under `public/`, each with its page, its PDF and who it is for. Code rather than a board, because the list changes when a file is added. |
 | [`src/data/nyProducerRequirements.ts`](src/data/nyProducerRequirements.ts) | The New York Insurance Producer licence — the QE Focused version's demo. Sole owner of its INVENTED hour/exam figures, plus `examFactsFor` (the per-state exam facts the Readiness page reads). |
 

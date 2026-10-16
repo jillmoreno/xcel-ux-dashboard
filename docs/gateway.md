@@ -166,6 +166,32 @@ Sandbox, Archive, QA Notes, To Do and Contributing keep the gate, unchanged.
 Prototypes is first and is the landing section (`DEFAULT_SECTION`); a bare `/`
 opens it and selecting it drops `?section=` from the URL.
 
+### Team → Hub Resources, and the guides get a way in again (2026-10-15)
+
+Jillienne: "lets add a Hub Resources in the new team section where this new
+document will live."
+
+**The problem it fixes is that none of the three guides was reachable from the
+rail.** The Contributing section was archived on 2026-09-29 and the "How to
+read this dashboard" link came off the rail foot the same day — both
+deliberate, both still pinned gone by tests. What nobody noticed at the time is
+that between them they were the only two doors, so from that date the guides
+existed only for someone who already knew the URL.
+
+| Question | Call |
+|---|---|
+| A new GROUP, or a section under an existing one? | A new one, **Team**, fourth after Demo, Design & Research and Dev Handoff. The guides are not research, not handoff and not the product; filing them under any of those three would have made that eyebrow mean less. Groups are `NAV_EYEBROWS` entries keyed on the first section of the group, so this is one line. |
+| Is it a board? | **No.** The rows are files in this repository, so the list changes with a commit — hence no Add button, no kebab, and a static `count` on the `SectionDef`, unlike Refinement's and Research's live ones. `HUB_DOCS` in `src/data/hubDocs.ts` is the list. |
+| Does this restore the Contributing section? | **No, and that matters.** That section was an iframe of one guide; this is a shelf holding all three. `GuideFrame.tsx` stays unreferenced, the `contributing-section` archive row stays, and the two tests pinning the old doors shut stay passing. |
+| Where do the links open? | **A new tab.** Each document is a full page with its own rail and its own stylesheet; opening one in this tab replaces the dashboard with something whose only way back is the browser's Back button. |
+| Absolute or relative addresses? | **Site-relative**, and the type says so. A branch build then shows ITS OWN copy of the guides, which is the one thing an absolute URL would break — a reviewer on a branch build would be sent back to `main`'s guide without noticing. |
+
+`UxDashboard.smoke.test.tsx` gains `Hub Resources` to `EXPECTED_SECTIONS` and
+two cases: every row renders as a `target="_blank"` link at its own `href`, and
+every `href` and `pdf` resolves to a file that actually exists under `public/`
+— the one failure this list can have that nothing else would catch is a path
+typed by hand, which renders as a perfectly ordinary row and 404s on click.
+
 ### The two guides (2026-09-18)
 
 Two static pages, each with a PDF rendered FROM it (weasyprint; the command is
@@ -176,6 +202,20 @@ in each file's header comment and in the README), sharing one stylesheet at
 |---|---|---|---|
 | `public/contributing/index.html` | designers | the gated **Contributing** section — an iframe of the page (`GuideFrame`) — and `/contributing/` directly | 404'd at the edge: `/contributing/*` is in `BLOCKED` |
 | `public/about/index.html` | stakeholders | the **"How to read this dashboard"** link at the foot of the rail, OUTSIDE the `<nav>`, on every build | reachable — it is the orientation a reviewer gets |
+| `public/designer-workflow/index.html` | the five people on the team now | the **Hub Resources** section (2026-10-15) and `/designer-workflow/` directly | reachable; it is not in `BLOCKED` |
+
+⚠ **Three guides since 2026-10-15, and the third is not on `guide.css`.** It
+was authored as a published Artifact with its own design — the rail, the
+speech bubbles, Bricolage Grotesque — and came over whole rather than being
+restyled, so it is the only guide making an external request (Google Fonts,
+every stack with a real fallback). Its palette WAS recoloured onto the Hub's
+`#1f4e88`, because a deep green beside the other two read as a different
+product. `OneSite.test.tsx` splits accordingly: all three are checked for
+being self-contained with a PDF, the stylesheet check is scoped to the two
+that use it, and the third's accent is pinned.
+
+⚠ **The rail entries above are history for the first two.** Both came off on
+2026-09-29; see the row above.
 
 ### Review recaps (2026-09-22)
 

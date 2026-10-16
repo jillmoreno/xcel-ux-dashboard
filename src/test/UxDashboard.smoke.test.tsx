@@ -10,6 +10,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PROTOTYPE_FEATURES, PROTOTYPE_SCOPES, componentPreviewUrl } from '@/data/prototypeFeatures'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
+import { HUB_DOCS } from '@/data/hubDocs'
 
 /**
  * Smoke test for the XCEL dashboard.
@@ -53,10 +54,14 @@ const EXPECTED_SECTIONS = [
   'Done',
   'Archive',
   'QA Notes',
-  // The team's board (2026-10-15), last and under its own "Team" eyebrow —
-  // see the `SectionDef` in `UxDashboardPage.tsx`. Not the archived To Do
-  // section, which had id `todo` and is still archived.
+  // The two Team sections (2026-10-15), last, under one "Team" eyebrow — see
+  // the `SectionDef`s in `UxDashboardPage.tsx`. The board is NOT the archived
+  // To Do section, which had id `todo` and is still archived. Hub Resources is
+  // the first way back to the guides since the Contributing section was
+  // archived and the rail-foot link to /about/ came off (both 2026-09-29, both
+  // still pinned gone below).
   'To Do Board',
+  'Hub Resources',
 ]
 
 beforeEach(() => {
@@ -89,6 +94,32 @@ describe('XCEL dashboard — mount and nav', () => {
     }
     const positions = EXPECTED_SECTIONS.map((s) => labels.findIndex((l) => l.includes(s)))
     expect(positions).toEqual([...positions].sort((a, b) => a - b))
+  })
+
+  it('Hub Resources lists every guide, opening each in a new tab', async () => {
+    // The rows come from `HUB_DOCS`, which is code rather than a board, so the
+    // list is assertable in a way Refinement's never can be. New tab because
+    // each document is a full page with its own rail: opening one in this tab
+    // replaces the dashboard with something that has no way back to it.
+    const user = userEvent.setup()
+    renderDashboard()
+    await user.click(screen.getByRole('button', { name: /Hub Resources/ }))
+    for (const doc of HUB_DOCS) {
+      const link = screen.getByRole('link', { name: new RegExp(doc.title) })
+      expect(link).toHaveAttribute('href', doc.href)
+      expect(link).toHaveAttribute('target', '_blank')
+    }
+  })
+
+  it('every Hub Resources row points at a document this repo actually ships', () => {
+    // The one failure this list can have that nothing else would catch: a
+    // path typed by hand that no longer exists, which renders as a perfectly
+    // ordinary row and 404s on click.
+    for (const doc of HUB_DOCS) {
+      const pub = resolve(dirname(fileURLToPath(import.meta.url)), '../../public')
+      expect(existsSync(resolve(pub, doc.href.replace(/^\//, ''), 'index.html'))).toBe(true)
+      if (doc.pdf) expect(existsSync(resolve(pub, doc.pdf.replace(/^\//, '')))).toBe(true)
+    }
   })
 
   it('the archived Contributing section no longer resolves, and its guide is untouched', () => {

@@ -17,6 +17,8 @@ import {
   type PrototypeFeature,
 } from '@/data/prototypeFeatures'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
+import { HUB_DOCS } from '@/data/hubDocs'
+import { HubResourcesPanel } from '@/components/prototype/HubResourcesPanel'
 import { PrototypeFeaturePage } from './PrototypeFeaturePage'
 import { FeaturePreviewThumb } from '@/components/prototype/FeaturePreviewThumb'
 import { GeneratedThumb, THUMB_W, THUMB_H } from '@/components/prototype/GeneratedThumb'
@@ -127,6 +129,7 @@ type UxSection =
   | 'archive'
   | 'qa-notes'
   | 'todo-board'
+  | 'hub-resources'
 
 /*
  * THERE IS NO SECTION GATE (2026-10-15). Until then Design, Exploration,
@@ -325,10 +328,11 @@ const SECTIONS: SectionDef[] = [
     // `bySection['todo-board']` is empty by design and the count is live from
     // `useTodoBoardCount`.
     //
-    // LAST, under its own eyebrow, because it is the one section that is not
-    // about a prototype: the others answer "what is the product / what is
-    // under review / what shipped", and this one answers "who is on what this
-    // week". The order here IS the nav order, so moving it is one line.
+    // FIRST of the two Team sections, because it is the one people come back
+    // to in a week: the board is live work, the shelf below it is reference.
+    // The order here IS the nav order, so moving it is one line — but the
+    // "Team" eyebrow is keyed on THIS id (`NAV_EYEBROWS`), so swapping the two
+    // means moving the eyebrow with them.
     //
     // ⚠ NOT the archived To Do section (`todo-section` in `archivedItems.ts`,
     // 2026-09-29, id `todo`). That was a per-browser checklist in
@@ -341,6 +345,29 @@ const SECTIONS: SectionDef[] = [
     label: 'To Do Board',
     blurb:
       'Who is working on what — move a card as its status changes so nobody doubles up. Added on the page, not in code.',
+  },
+  {
+    // HUB RESOURCES — 2026-10-15, Jillienne: "add a Hub Resources in the new
+    // team section where this new document will live."
+    //
+    // The Hub's own documents, read-only, over `HUB_DOCS` in
+    // `src/data/hubDocs.ts`. LAST in the nav, second of the two Team sections.
+    //
+    // ⚠ NOT a board and not a feature list. The rows are files in this
+    // repository, so the list changes with a commit — which is why the panel
+    // has no Add button and why `count` can be a static number here, unlike
+    // the To Do Board's live one or Refinement's.
+    //
+    // It is also the first way back to the guides since 2026-09-29, when the
+    // Contributing section was archived and the "How to read this dashboard"
+    // link came off the rail foot. Both of those are still gone and still
+    // pinned gone; this replaces neither — it is a shelf holding all three,
+    // not either of them restored.
+    id: 'hub-resources',
+    label: 'Hub Resources',
+    blurb:
+      'How this dashboard is worked on, and how to read it — the guides that ship with the site. Each opens in a new tab, with a PDF beside it.',
+    count: HUB_DOCS.length,
   },
   // ARCHIVED 2026-09-29 — the To Do and Contributing sections stood here, last
   // in the restricted group. Both are unwired, not deleted: see the `todo-section`
@@ -387,8 +414,16 @@ const NAV_EYEBROWS: Partial<Record<UxSection, string>> = {
   prototypes: 'Demo',
   demo: 'Design & Research',
   development: 'Dev Handoff',
-  // The board is not dev handoff and it is not a prototype, so it gets its own
-  // row rather than joining a group whose label would then be wrong for it.
+  // TEAM — 2026-10-15. The fourth group, and the first that is about how the
+  // team works rather than about the product: the board (who is on what) and
+  // the shelf of the Hub's own guides. Neither is dev handoff and neither is a
+  // prototype, and filing either under an existing group would have made that
+  // eyebrow wrong for it.
+  //
+  // ⚠ ONE ENTRY FOR THE WHOLE GROUP, on its FIRST section. An eyebrow is drawn
+  // directly above the row it is keyed to, so a second entry for
+  // `hub-resources` would print "Team" twice, once over each row. Reorder the
+  // two in `SECTIONS` and this key moves with them.
   'todo-board': 'Team',
 }
 
@@ -1379,6 +1414,9 @@ export function UxDashboardPage() {
       development: [],
       done: [],
       archive: [],
+      // Not a list of features either — the panel reads `HUB_DOCS`, and the
+      // nav count is the static `count` on the SectionDef.
+      'hub-resources': [],
       // Not a list of features — the QA panel owns its own data, so this stays
       // empty by design and the nav count comes from the `count` field.
       'qa-notes': [],
@@ -1693,6 +1731,10 @@ export function UxDashboardPage() {
           <div style={ARCHIVE_BRIDGE}>
             <ArchiveTable />
           </div>
+        ) : section === 'hub-resources' ? (
+          // No `ARCHIVE_BRIDGE`: styled on this page's own `--ux-*` palette,
+          // the same call `LinksPanel` makes.
+          <HubResourcesPanel />
         ) : (
           <>
             <div style={toolbarStyle}>
