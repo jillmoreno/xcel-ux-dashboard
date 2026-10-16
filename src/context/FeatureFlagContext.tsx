@@ -2635,16 +2635,22 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        radiogroup — the sanctioned way onto that bar, and why this flag edits
        no bar file.
 
-       On (default) the section is drawn, INCLUDING THE RULE ABOVE IT: that
-       rule divides readiness from the pace card, so without the section it is
-       a line under the last thing on screen. */
+       ⚠ OFF BY DEFAULT since the same day (Jillienne: "when readiness is
+       off, (on default)"). The toggle was added to hide the section, and
+       hidden is the state she wants the column to open in — the control is
+       for putting it BACK while a decision is open, not for taking it away.
+
+       On, the section is drawn INCLUDING THE RULE ABOVE IT; off, two rules go
+       with it — that one, and the BOTTOM rule of Estimated completion, which
+       separates this card from what follows. With nothing following, it is a
+       line under the last thing on screen. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Readiness section',
     description:
-      'Whether the Atlas Home\u2019s left column carries the Exam readiness section. Off hides the card and the rule above it \u2014 that rule divides readiness from the pace card, so it has nothing to divide once the section is gone.',
-    defaultEnabled: true,
+      'Whether the Atlas Home\u2019s left column carries the Exam readiness section. Off by default. On, it is drawn with the rule above it; off, that rule and Estimated completion\u2019s bottom rule both go, because neither has anything left to divide.',
+    defaultEnabled: false,
     page: 'dashboard-rebrand',
   },
   {

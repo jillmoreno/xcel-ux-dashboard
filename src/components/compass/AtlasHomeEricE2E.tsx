@@ -602,7 +602,22 @@ export function AtlasHomeEricE2E({
                 (Figma 286:9455; 2026-10-14, Eric's request), a hairline between
                 them; each keeps its states and clicks (`bare`). On WIP the
                 wrapper is `display: contents` and they stay two cards. */}
-            <div style={onWhite ? WHITE_PROGRESS_PANEL : { display: 'contents' }}>
+            {/* ⚠ NO COLUMN GAP ON THE RING ARM (2026-10-16, Jillienne:
+                "spacing between the components and the divider lines should
+                be the same"). The ring card ends ON its rule and the
+                readiness card brings its own 24 below it, so Eric's 16 here
+                was a third helping of air that made THIS rule stand further
+                off than the one inside the card. The STATES arm keeps it:
+                its two cards have no rule between them to measure from. */}
+            <div
+              style={
+                onWhite
+                  ? paceCard === 'ring'
+                    ? { ...WHITE_PROGRESS_PANEL, gap: 0 }
+                    : WHITE_PROGRESS_PANEL
+                  : { display: 'contents' }
+              }
+            >
             {/* ⚠ THE RING SURVIVES 100% (2026-10-16, Jillienne: "100% still
                 needs to show the course progress section because they might
                 not always be 100% complete, but still ready"). Completion and
@@ -654,6 +669,9 @@ export function AtlasHomeEricE2E({
                    different question and disagree with the plan it sits
                    under. Rounded to the hour — the sentence says "about". */
                 hoursPerWeek={paceFit ? Math.max(1, Math.round(paceFit.minsPerWeek / 60)) : undefined}
+                /* So the card knows whether its last rule has anything below
+                   it to divide — see `readinessBelow`. */
+                readinessBelow={showReadiness}
                 /* ⚠ "HERE" GOES TO COMPASS'S STUDY PLANNER (2026-10-16,
                    Jillienne: "have the 'here' be a link to the study planner
                    of the compass application"). It was `onOpenStop(
@@ -739,8 +757,17 @@ export function AtlasHomeEricE2E({
                 would break its own sequence. */}
             {/* The rule goes with the section: it DIVIDES readiness from the
                 pace card, so on its own it is a line under the last thing on
-                screen. */}
-            {showReadiness && onWhite && !completedView ? (
+                screen.
+
+                ⚠ THE RING ARM DRAWS ITS OWN (2026-10-16). `readinessBelow`
+                gives the ring card a bottom rule under Estimated completion
+                when readiness follows, and this one on top of it put TWO
+                hairlines 40px apart. The ring card's is the one Jillienne
+                named ("remove the bottom divider from the estimated
+                completion" — so it is hers when readiness is on), which
+                makes this the duplicate. The STATES card has no such prop,
+                so it still needs this. */}
+            {showReadiness && onWhite && !completedView && paceCard !== 'ring' ? (
               <span aria-hidden style={WHITE_PROGRESS_RULE} />
             ) : null}
             {!showReadiness ? null : (

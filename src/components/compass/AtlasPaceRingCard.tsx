@@ -1,6 +1,8 @@
 import type { CSSProperties } from 'react'
 import { GaugeThin } from '@/icons'
 import { ATLAS_SECTION_EYEBROW } from './atlasSectionEyebrow'
+import { paceName } from '@/components/learning/compassStudyPlannerModel'
+import { PLANNER_PLAN } from '@/data/compassStudyPlannerFixtures'
 
 /**
  * THE STUDY PACE CARD AS A RING — a module of its own since 2026-10-16
@@ -28,6 +30,7 @@ export function AtlasPaceRingCard({
   weeks,
   hoursPerWeek,
   expected,
+  readinessBelow = false,
   onCustomize,
 }: {
   percent: number
@@ -43,6 +46,11 @@ export function AtlasPaceRingCard({
    *  sits under. */
   hoursPerWeek?: number
   expected?: { value: string; note?: string }
+  /** Whether the Exam readiness section follows this card in the column.
+   *  Only the BOTTOM rule of Estimated completion depends on it: that rule
+   *  separates this card from what comes next, so with nothing next it is a
+   *  line under the last thing on screen. */
+  readinessBelow?: boolean
   /** Whole weeks the current plan runs to — the same figure the sentence and
    *  the goal line both read, so they cannot describe two different plans. */
   weeks: number
@@ -59,7 +67,11 @@ export function AtlasPaceRingCard({
        answer different questions: the pace is the plan, the dial is where the
        learner has got to against it. Splitting them is what lets each be
        named. */
-    <div style={PANEL}>
+    /* With readiness following, the card ENDS on its rule — the air below it
+       belongs to what the rule divides, not to this card, and keeping the
+       panel's own 24 as well would have pushed readiness a pad further off
+       than the rule above it. */
+    <div style={readinessBelow ? { ...PANEL, paddingBottom: 0 } : PANEL}>
       {/* ⚠ COURSE PROGRESS LEADS THE COLUMN (2026-10-16, Jillienne: "move
           course progress to the top - shift everything else down"). Where the
           learner HAS GOT TO is the first thing they want; the plan for the
@@ -69,6 +81,12 @@ export function AtlasPaceRingCard({
         <p style={EYEBROW}>Course progress</p>
         <ProgressDial percent={percent} />
       </section>
+      {/* ⚠ A RULE UNDER COURSE PROGRESS (2026-10-16). The two sections sat on
+          a 24px gap alone, which reads as spacing rather than a boundary —
+          and the figure above it is a different kind of thing from the plan
+          below. Unlike the one under Estimated completion, this one always
+          has something on both sides of it. */}
+      <span aria-hidden style={DIVIDER} />
       <section style={SECTION} aria-label="Study pace">
         <p style={EYEBROW}>Study pace</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -76,10 +94,24 @@ export function AtlasPaceRingCard({
             <GaugeThin size={33} aria-hidden />
           </span>
           <span style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
-            {/* "Recommended" over the goal, not beside it — it qualifies the
-                figure, and on one line the two would read as a single title
-                ("Recommended 2 Week Goal") rather than a label and a goal. */}
-            <span style={GOAL_TAG}>Recommended</span>
+            {/* ⚠ THE PACE'S NAME, READ OFF COMPASS (2026-10-16, Jillienne:
+                "change to Average to match the header in compass side of
+                things"). It said "Recommended", which named the figure's
+                STATUS; Compass's planner heads the same plan "Your pace ·
+                Average" — one of its three named paces — so the two surfaces
+                were calling one thing two names, and "here" below goes
+                straight to that planner.
+                ⚠ DERIVED, NOT TYPED: `paceName` over the plan Compass opens
+                on, so renaming a pace or moving the default there moves this
+                too. It is the plan Compass OPENS with, not a live reading —
+                Atlas Home sits outside `CompassPlanProvider`, so a pace the
+                learner changes in the planner will not show here until the
+                two models are joined. The WEEKS and HOURS beside it still
+                come from Atlas's own `paceFit`.
+                The name sits OVER the goal, not beside it — on one line the
+                two would read as a single title ("Average 2 Week Goal")
+                rather than a label and a goal. */}
+            <span style={GOAL_TAG}>{COMPASS_PACE_NAME}</span>
             <span style={GOAL}>{weeks} Week Goal</span>
             {hoursPerWeek != null ? (
               <span style={GOAL_NOTE}>
@@ -107,7 +139,10 @@ export function AtlasPaceRingCard({
           .
         </p>
         {expected ? (
-          <div style={EXPECTED}>
+          /* With nothing below, the bottom pad goes with the bottom rule — the
+             panel's own 24 is already there, and keeping both would put 48
+             under the last line on screen. */
+          <div style={readinessBelow ? EXPECTED : { ...EXPECTED, borderBottom: 'none', paddingBottom: 0 }}>
             <p style={EXPECTED_LABEL}>Estimated completion</p>
             <p style={EXPECTED_VALUE}>
               {expected.value}
@@ -161,6 +196,18 @@ function ProgressDial({ percent }: { percent: number }) {
   )
 }
 
+/* ⚠ ONE GAP AROUND EVERY RULE (2026-10-16, Jillienne: "spacing between the
+   components and the divider lines should be the same"). The column's own gap
+   is what sat either side of the divider under Course progress; Estimated
+   completion's rules were on the SECTION gap above and an 11px pad below. Same
+   hairline, two different airs — so the card looked tighter at the bottom than
+   in the middle. Both now read this. */
+const RULE_GAP = 24
+/* …and this is the separate, tighter one INSIDE a section — eyebrow to
+   content. It is deliberately not `RULE_GAP`: that one is about rules, this
+   one is about a label and the thing it names. */
+const SECTION_GAP = 11
+
 const PANEL: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
@@ -168,7 +215,7 @@ const PANEL: CSSProperties = {
      reads left, the dial sits centred — and a centring parent would shrink
      the left-aligned one to its content. */
   alignItems: 'stretch',
-  gap: 24,
+  gap: RULE_GAP,
   /* ⚠ NO HORIZONTAL PADDING (2026-10-16, Jillienne: "remove left/right
      padding"). It was `24px 22px`, and the 22 was itself a squeeze — the note
      here read "22 across, not 24, so 'Customize Your Pace ›' fits one line".
@@ -192,10 +239,15 @@ const PANEL: CSSProperties = {
 }
 const EYEBROW = ATLAS_SECTION_EYEBROW
 /* One section of the column — an eyebrow and what it names. */
-const SECTION: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 11 }
+const SECTION: CSSProperties = { display: 'flex', flexDirection: 'column', gap: SECTION_GAP }
+/* The column's own hairline, the same one Estimated completion is ruled with
+   so the card has one kind of divider rather than two. */
+const DIVIDER: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-nav-rule)' }
+/* Compass's name for the plan this card describes — see the tag's note. */
+const COMPASS_PACE_NAME = paceName(PLANNER_PLAN.dayMins)
 /* The qualifier over the goal — smaller and quieter than the figure it
-   labels, so "Recommended" reads as a note about the plan rather than part of
-   its name. */
+   labels, so the pace's name reads as a note about the plan rather than part
+   of its name. */
 const GOAL_TAG: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 10,
@@ -248,7 +300,12 @@ const EXPECTED: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 2,
-  padding: '11px 0',
+  padding: `${RULE_GAP}px 0`,
+  /* The section's gap already puts `SECTION_GAP` above this box, so the rule
+     needs the remainder to stand off by the same `RULE_GAP` as the one under
+     Course progress. Written as the subtraction rather than 13, so moving
+     either constant keeps the two rules matched. */
+  marginTop: RULE_GAP - SECTION_GAP,
   borderTop: '1px solid var(--color-atlas-nav-rule)',
   borderBottom: '1px solid var(--color-atlas-nav-rule)',
 }
