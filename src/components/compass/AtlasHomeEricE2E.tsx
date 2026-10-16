@@ -28,6 +28,7 @@ import { AtlasExamDateCard } from './AtlasExamDateCard'
 import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
+import { AtlasPaceRingCard } from './AtlasPaceRingCard'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag, useFeatureFlags, useCourseDemo } from '@/context/FeatureFlagContext'
 import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
@@ -206,6 +207,9 @@ export function AtlasHomeEricE2E({
   const beginOpensCompass = useBeginOpensCompassSession()
   /* The walk's tidied Study Journey steps — see `useWalkStudyJourneySteps`. */
   const walkSteps = useWalkStudyJourneySteps()
+  /* Which Study Pace card — the dial or the stepped states. A design-bar
+     radiogroup; see `atlas-pace-card`. */
+  const paceCard = useFeatureFlag('atlas-pace-card').variant ?? 'ring'
   // White's course-head panel, measured so Quick Links can take its height
   // (2026-10-14, Eric's request).
   const [headEl, setHeadEl] = useState<HTMLDivElement | null>(null)
@@ -556,7 +560,19 @@ export function AtlasHomeEricE2E({
                 them; each keeps its states and clicks (`bare`). On WIP the
                 wrapper is `display: contents` and they stay two cards. */}
             <div style={onWhite ? WHITE_PROGRESS_PANEL : { display: 'contents' }}>
-            {completedView ? null : (
+            {completedView ? null : paceCard === 'ring' ? (
+              /* THE RING (2026-10-16, the default). The week goal is DERIVED
+                 from the same `paceFit` the Expected-completion date reads,
+                 not typed: the card beside it prints a finish date, and a
+                 hardcoded week count is how those two start describing
+                 different plans. `HybridHomeV1` pins its 3 deliberately and
+                 records the derivation it dropped — this one keeps it. */
+              <AtlasPaceRingCard
+                percent={progress.percent ?? percent}
+                weeks={paceFit ? Math.max(1, Math.round(paceFit.days / 7)) : 3}
+                onCustomize={onOpenStop ? () => onOpenStop('study-plan') : undefined}
+              />
+            ) : (
             <AtlasCourseProgressStates
               bare={onWhite}
               // The pace pill's gauge in Light, Primary 400 (2026-10-15, Eric).

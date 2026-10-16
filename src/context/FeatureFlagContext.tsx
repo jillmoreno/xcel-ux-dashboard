@@ -2551,6 +2551,43 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-pace-card',
+    /* THE STUDY PACE CARD, TWO WAYS (2026-10-16, Jillienne: "lets add a
+       component variant for this section. update to this new UI, keep the
+       other one accessible from the dropdown").
+
+       `ring` (default) is the dial card — Your study pace, one percentage, the
+       week goal and Customize Your Pace. `states` is what was there: the tan
+       `AtlasCourseProgressStates`, pressable through five states of the
+       journey. Both read the same `studyPace` model, so they cannot disagree
+       about the plan — only about how much of it to show at once.
+
+       ⚠ ON THE DESIGN BAR, which is what "accessible from the dropdown"
+       means: `surface: 'design'` plus `variants` draws a radiogroup there,
+       scoped by `versions` to the bar of the version it belongs to.
+
+       ⚠ AND THEREFORE NOT A PROMOTION CANDIDATE. `promote-to-prototype` lists
+       design controls separately BECAUSE THEY NEVER REACH PROTOTYPES — the
+       DEFAULT still renders for everyone, so the ring does ship, but it will
+       not come up as a decision at merge the way the other changes today do.
+       If this should be a baseline decision rather than a designer's toggle,
+       it wants `surface` dropped and a plain variant flag instead. Worth
+       being deliberate about, which is why it is written down. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Study pace card',
+    description:
+      'Which Study Pace card the Atlas Home draws. Ring (default): the progress dial, the week goal and Customize Your Pace. States: the tan card that steps through Study pace, Readiness and the State exam. Both read the same pace model.',
+    defaultEnabled: true,
+    defaultVariant: 'ring',
+    variants: [
+      { value: 'ring', label: 'Ring' },
+      { value: 'states', label: 'States (as it was)' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-header-v2',
     /* THE ATLAS HEADER, ON THE DESIGN BAR (2026-10-13, Eric's request:
        "replace the nav … with the new nav"). On (default), Eric's Atlas
