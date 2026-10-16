@@ -258,3 +258,36 @@ describe('the walk’s lesson keeps a way home', () => {
     expect(params.get('journey'), 'still on the walk').toBe('full')
   })
 })
+
+/**
+ * THE WALK'S STUDY JOURNEY STEPS (2026-10-16, Jillienne, selecting them one at
+ * a time). Step 2 asks about the exam date instead of reciting figures, Step 3
+ * loses its detail, and the State Requirements button goes.
+ *
+ * ⚠ THE PROMPT IS MOVED, NOT COPIED, and the count below is what holds that.
+ * It used to stand above the steps; if a later change puts it back there
+ * without taking it out of Step 2, the same question is on screen twice and
+ * nothing else would complain.
+ */
+describe('the walk’s Study Journey steps', () => {
+  it('is on in the committed baseline', () => {
+    expect(FEATURE_FLAGS.find((f) => f.key === 'e2e-walk-journey-steps')?.defaultEnabled).toBe(true)
+  })
+
+  it('asks about the exam date in place of the figures, exactly once', () => {
+    renderDashboard(`?demo=1&version=${END_TO_END_VERSION}&journey=full`)
+    const page = within(screen.getByTestId('page'))
+    expect(page.queryByText(/150 scored questions/)).toBeNull()
+    expect(page.queryByText(/Apply online, then submit/)).toBeNull()
+    expect(page.getAllByText('Do you know your state exam date?')).toHaveLength(1)
+    expect(document.querySelector('[data-cta-id="home.state-requirements"]')).toBeNull()
+  })
+
+  it('leaves Eric’s Atlas Learning tile exactly as he promoted it', async () => {
+    renderDashboard('?demo=1&section=dashboard')
+    const page = within(screen.getByTestId('page'))
+    expect(page.getByText(/150 scored questions/)).toBeInTheDocument()
+    expect(page.getByText(/Apply online, then submit/)).toBeInTheDocument()
+    expect(document.querySelector('[data-cta-id="home.state-requirements"]')).not.toBeNull()
+  })
+})

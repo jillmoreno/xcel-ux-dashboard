@@ -12,6 +12,7 @@ import {
   useBeginOpensCompassSession,
   useCourseOverviewOpensCompass,
   useDashboardCourseTitle,
+  useWalkStudyJourneySteps,
 } from '@/pages/endToEndDemo'
 import { AffidavitModal, type AffidavitKind } from '@/components/e2e/AffidavitModal'
 import { useAccount } from '@/context/AccountContext'
@@ -203,6 +204,8 @@ export function AtlasHomeEricE2E({
   const overviewOpensCompass = useCourseOverviewOpensCompass()
   /* …and Begin Course, which opens the Compass SESSION on the same walk. */
   const beginOpensCompass = useBeginOpensCompassSession()
+  /* The walk's tidied Study Journey steps — see `useWalkStudyJourneySteps`. */
+  const walkSteps = useWalkStudyJourneySteps()
   // White's course-head panel, measured so Quick Links can take its height
   // (2026-10-14, Eric's request).
   const [headEl, setHeadEl] = useState<HTMLDivElement | null>(null)
@@ -667,18 +670,8 @@ export function AtlasHomeEricE2E({
             {/* THE STATE EXAM DATE PROMPT, above the steps — Figma 428:3134
                 (2026-10-15, Eric's request). Its own width, wider than the
                 steps' 335. Yes and Not Yet are not wired yet. */}
-            <div style={EXAM_DATE_PROMPT}>
-              <div style={EXAM_DATE_PILL}>
-                <p style={EXAM_DATE_QUESTION}>Do you know your state exam date?</p>
-                <button type="button" style={EXAM_DATE_YES}>
-                  Yes
-                </button>
-              </div>
-              <button type="button" style={EXAM_DATE_NOT_YET}>
-                Not Yet
-                <AngleRightSolid size={11} aria-hidden style={{ width: 6 }} />
-              </button>
-            </div>
+            {/* On the walk this has moved INTO Step 2 — see there. */}
+            {walkSteps ? null : <ExamDatePrompt />}
             {completedView ? (
               /* STEP 1 ON THE COMPLETED VIEW — Figma 297:247 (2026-10-09,
                  Eric's request): the eyebrow, "Congratulations!" and a line in
@@ -744,7 +737,14 @@ export function AtlasHomeEricE2E({
             <Step
               number={2}
               title={pass.title}
-              detail={pass.detail}
+              /* ⚠ ON THE WALK THE PROMPT *IS* STEP 2'S DETAIL (2026-10-16,
+                 Jillienne: "remove the 150 line and replace with the Do you
+                 know your state exam"). It is MOVED, not copied — it used to
+                 stand above the steps, and leaving it there as well would put
+                 the same question on screen twice. Replacing the sentence is
+                 also what makes the step ask something instead of reciting
+                 figures the learner cannot act on yet. */
+              detail={walkSteps ? <ExamDatePrompt /> : pass.detail}
               link={pass.detailLabel ?? 'What to expect'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(pass.id) : undefined}
             />
@@ -752,11 +752,12 @@ export function AtlasHomeEricE2E({
             <Step
               number={3}
               title={state ? `Get Licensed in ${state}` : 'Get Licensed'}
-              detail={apply.detail}
+              /* Dropped on the walk — Jillienne, the same pass. */
+              detail={walkSteps ? undefined : apply.detail}
               link={apply.detailLabel ?? 'How to apply'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(apply.id) : undefined}
             />
-            {onOpenRequirements ? (
+            {onOpenRequirements && !walkSteps ? (
               <button
                 type="button"
                 data-cta-id="home.state-requirements"
@@ -946,6 +947,26 @@ function JourneyRow({
   )
 }
 
+/** The state-exam-date prompt — Figma 428:3134 (2026-10-15, Eric's request).
+ *  Yes and Not Yet are not wired. Extracted 2026-10-16 so it can stand above
+ *  the steps (as it did) or inside Step 2 (the walk), without two copies. */
+function ExamDatePrompt() {
+  return (
+    <div style={EXAM_DATE_PROMPT}>
+      <div style={EXAM_DATE_PILL}>
+        <p style={EXAM_DATE_QUESTION}>Do you know your state exam date?</p>
+        <button type="button" style={EXAM_DATE_YES}>
+          Yes
+        </button>
+      </div>
+      <button type="button" style={EXAM_DATE_NOT_YET}>
+        Not Yet
+        <AngleRightSolid size={11} aria-hidden style={{ width: 6 }} />
+      </button>
+    </div>
+  )
+}
+
 function Step({
   number,
   title,
@@ -955,7 +976,9 @@ function Step({
 }: {
   number: number
   title: string
-  detail?: string
+  /** A node, not just a string, since 2026-10-16: Step 2's detail is the
+   *  state-exam-date prompt on the walk, not a sentence. */
+  detail?: ReactNode
   link: string
   onLink?: () => void
 }) {

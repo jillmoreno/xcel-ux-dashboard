@@ -121,6 +121,27 @@ export function useCompassSessionInShell(): boolean {
   return on && isFullJourney(params)
 }
 
+/**
+ * THE STUDY JOURNEY'S STEPS, TIDIED FOR THE WALK (2026-10-16, Jillienne,
+ * selecting them one at a time): Step 2's detail becomes the state-exam-date
+ * prompt instead of "150 scored questions in 165 minutes. 70% to pass.",
+ * Step 3 loses its detail line, and the "<State> State Requirements" button
+ * goes.
+ *
+ * ⚠ THE PROMPT IS MOVED, NOT COPIED. It stood above the steps; on this arm it
+ * is Step 2's detail and nowhere else, or the same question is on screen
+ * twice.
+ *
+ * Scoped to `?journey=full` like every other change to this shared Home, so
+ * Eric's Atlas Learning tile keeps the steps he promoted — figures, link and
+ * requirements button intact.
+ */
+export function useWalkStudyJourneySteps(): boolean {
+  const [params] = useSearchParams()
+  const on = useFeatureFlag('e2e-walk-journey-steps').enabled
+  return on && isFullJourney(params)
+}
+
 /* THE DEMO'S PRICES, in one place (2026-10-15, Eric's request): the PDP's
    price card, Checkout's order summary and Confirmation's order total all
    read these, so the total is always the checkout's. */

@@ -2468,6 +2468,27 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'e2e-walk-journey-steps',
+    /* THE STUDY JOURNEY'S STEPS, TIDIED FOR THE WALK (2026-10-16, Jillienne,
+       selecting them one at a time). Step 2's detail becomes the
+       state-exam-date prompt in place of "150 scored questions in 165
+       minutes. 70% to pass."; Step 3 drops "Apply online, then submit your
+       fingerprints."; the "<State> State Requirements" button goes.
+
+       ⚠ THE PROMPT IS MOVED, NOT COPIED — it stood above the steps and is now
+       Step 2's detail, or the same question appears twice.
+
+       ⚠ THE WALK ONLY. Eric's Atlas Learning tile keeps the steps he
+       promoted, figures and button intact; `useWalkStudyJourneySteps` ANDs
+       this with `?journey=full`. Off, this walk looks like his again. */
+    group: 'Widgets',
+    label: 'Walk: tidy the Study Journey steps',
+    description:
+      'On the End-to-End row\u2019s walk (?journey=full), Step 2 asks \u201cDo you know your state exam date?\u201d instead of reciting the exam figures, Step 3 drops its detail line, and the State Requirements button is not drawn. Off, the steps are as Eric promoted them. Eric\u2019s Atlas Learning tile is unaffected either way.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-header-v2',
     /* THE ATLAS HEADER, ON THE DESIGN BAR (2026-10-13, Eric's request:
        "replace the nav … with the new nav"). On (default), Eric's Atlas
