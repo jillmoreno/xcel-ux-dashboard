@@ -693,9 +693,29 @@ and `UX_TOKEN_BRIDGE` on the panel root and inside each sheet, because
 shell that carries the palette. **Every move the drag makes, the kebab makes
 too** — "Move to …", "Move up", "Move down" — so the board is not
 pointer-only; the grip is what is draggable rather than the whole card, or
-every reach for the owner `<select>` would start a drag instead. The kebab
-also carries **Edit card** (the same sheet as New card, told apart by whether
-it was given one) and **Remove card**.
+every reach for the owner `<select>` would start a drag instead.
+
+**The chrome was cut back on 2026-10-15, after the first look at it**, and
+each cut is worth knowing because each took something away:
+
+- **The kebab is two items** — **Edit card** (the same sheet as New card, told
+  apart by whether it was given one) and **Remove card**. It carried a "Move
+  to …" row per column plus Move up / Move down. ⚠ Moving between columns by
+  keyboard still works, through the edit sheet's Column picker; what is no
+  longer reachable without a pointer is **reordering inside a column**, since
+  `position` has no control of its own. The place to put that back is the edit
+  sheet, not the menu.
+- **"Add a card" is on To Do only.** Four identical dashed buttons invited new
+  work into columns meaning "somebody is already doing this" and "this is
+  ready to hand off". Creating a card elsewhere is the sheet's Column picker —
+  a decision rather than a shortcut.
+- **The toolbar line is gone.** The count, Manage people (the icon alone) and
+  **+ New** sit at the right-hand end of the filter row, so there is one row
+  of chrome over the board instead of two.
+- **"Copy as markdown" went with it.** `toMarkdown` is still exported and
+  still tested, so restoring the button is a button rather than a feature —
+  but until somebody does, the board has no way out of a store nothing backs
+  up. That is a real trade, not an oversight.
 
 **The columns SHARE the width; nothing scrolls sideways.** Four fixed 258px
 columns are 1080 with their gaps — exactly the page's reading measure before

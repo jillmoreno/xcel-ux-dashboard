@@ -28,12 +28,19 @@ import type { CSSProperties } from 'react'
 
 /* ── page-level chrome ────────────────────────────────────────────────────── */
 
-export const toolbarStyle: CSSProperties = {
+/**
+ * The actions sit on the FILTER ROW, pushed right (2026-10-15, Jillienne) —
+ * there is no toolbar line of its own any more. One row of chrome over the
+ * board instead of two: who you are looking at on the left, what you can add
+ * on the right. `marginLeft: auto` is the whole of it; the row already wraps,
+ * so a long roster drops the actions to a second line rather than squashing
+ * them.
+ */
+export const filterActionsStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: 10,
-  flexWrap: 'wrap',
-  marginBottom: 14,
+  gap: 8,
+  marginLeft: 'auto',
 }
 
 export const btnStyle: CSSProperties = {
@@ -58,8 +65,26 @@ export const primaryBtnStyle: CSSProperties = {
   color: 'var(--ux-on-accent)',
 }
 
+/** Manage people is the ICON ALONE (2026-10-15) — the roster is edited
+ *  rarely, and a worded button beside the primary one gave two equal-looking
+ *  CTAs to a surface whose primary act is adding a card. Square, so it reads
+ *  as a tool rather than as a second CTA with a missing word; the accessible
+ *  name stays "Manage people", and so does the tooltip. */
+export const iconBtnStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 32,
+  height: 32,
+  padding: 0,
+  borderRadius: 8,
+  border: '1px solid var(--ux-border)',
+  background: 'var(--ux-card)',
+  color: 'var(--ux-text-2)',
+  cursor: 'pointer',
+}
+
 export const countStyle: CSSProperties = {
-  marginLeft: 'auto',
   fontSize: 13,
   color: 'var(--ux-text-3)',
 }
@@ -76,6 +101,15 @@ export const noticeStyle: CSSProperties = {
 }
 
 /* ── the owner filter row ─────────────────────────────────────────────────── */
+
+/** The avatars themselves, inside the row — their own group so the actions
+ *  pushed to the right are not announced as part of "Filter by owner". */
+export const filterGroupStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  flexWrap: 'wrap',
+}
 
 export const filterRowStyle: CSSProperties = {
   display: 'flex',
@@ -315,6 +349,9 @@ export const ownerSelectHoverStyle: CSSProperties = {
   color: 'var(--ux-text)',
 }
 
+/** The "Add a card" affordance — drawn on the To Do column ONLY (see the
+ *  call site). Dashed and quiet: it is the second way to do what the primary
+ *  "+ New" above the board already does, not a second CTA. */
 export const addCardStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',

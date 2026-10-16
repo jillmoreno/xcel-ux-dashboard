@@ -289,15 +289,31 @@ describe('TodoBoardPanel', () => {
     expect(writes[0].body).toMatchObject({ owner: 'Eric', column: 'todo', position: 1 })
   })
 
-  it('moves a card to another column from the kebab — the keyboard’s half of the drag', async () => {
-    const { writes } = mockBoard([card({ id: 'card-001', column: 'todo' })])
+  it('offers exactly two things on the kebab — edit and remove', async () => {
+    /* It carried a "Move to …" row per column plus Move up / Move down until
+       2026-10-15. Pinned at two so the menu does not quietly regrow: moving
+       between columns is the Edit sheet's Column picker now, and the drag. */
+    mockBoard([card({ id: 'card-001', column: 'todo' })])
     render(<TodoBoardPanel />)
     await boardReady()
 
     await userEvent.click(screen.getByRole('button', { name: /Actions for/ }))
-    await userEvent.click(await screen.findByText('Move to Ready For Refinement'))
+    const items = await screen.findAllByRole('menuitem')
+    expect(items.map((i) => i.textContent?.trim())).toEqual(['Edit card', 'Remove card'])
+  })
+
+  it('moves a card between columns without a pointer, through the edit sheet', async () => {
+    const { writes } = mockBoard([card({ id: 'card-001', column: 'todo', position: 1 })])
+    render(<TodoBoardPanel />)
+    await boardReady()
+
+    await userEvent.click(screen.getByRole('button', { name: /Actions for/ }))
+    await userEvent.click(await screen.findByText('Edit card'))
+    await userEvent.selectOptions(await screen.findByLabelText('Column'), 'refine')
+    await userEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+
     await waitFor(() => expect(writes.length).toBe(1))
-    expect(writes[0].body).toMatchObject({ column: 'refine' })
+    expect(writes[0].body).toMatchObject({ column: 'refine', position: 1 })
   })
 
   it('sends a dragged card to the column it was dropped on', async () => {
@@ -341,15 +357,26 @@ describe('TodoBoardPanel', () => {
     expect(writes[0].body).toMatchObject({ column: 'handoff', owner: 'Anjani' })
   })
 
-  it('creates a card into the column whose own Add opened the sheet', async () => {
+  it('offers “Add a card” on To Do only, and the sheet opens on that column', async () => {
+    /* All four columns had one, from the concept. Three of them invited you
+       to start new work in a column that means somebody is already doing it,
+       it is ready for the team, or it is ready to hand off. */
     const { writes } = mockBoard([])
     render(<TodoBoardPanel />)
     await boardReady()
 
-    const working = screen.getByLabelText('Working On It')
-    await userEvent.click(within(working).getByRole('button', { name: /Add a card/ }))
-    await userEvent.type(await screen.findByLabelText('Card name'), 'Home polish pass')
+    expect(within(screen.getByLabelText('To Do')).getByRole('button', { name: /Add a card/ })).toBeTruthy()
+    for (const column of ['Working On It', 'Ready For Refinement', 'Ready for Prototype and Handoff']) {
+      expect(within(screen.getByLabelText(column)).queryByRole('button', { name: /Add a card/ })).toBeNull()
+    }
+
+    await userEvent.click(within(screen.getByLabelText('To Do')).getByRole('button', { name: /Add a card/ }))
+    expect((await screen.findByLabelText('Column') as HTMLSelectElement).value).toBe('todo')
+
+    await userEvent.type(screen.getByLabelText('Card name'), 'Home polish pass')
     await userEvent.type(screen.getByLabelText('Quick note'), 'Spacing and hierarchy.')
+    // Anywhere but To Do is a decision made here, in the picker.
+    await userEvent.selectOptions(screen.getByLabelText('Column'), 'working')
     await userEvent.selectOptions(screen.getByLabelText('Owner'), 'Eric')
     await userEvent.click(screen.getByRole('button', { name: 'Add card' }))
 

@@ -50,7 +50,6 @@ import {
   removePerson,
   saveCard,
   setCardOwner,
-  toMarkdown,
   useTodoBoard,
   addPerson,
   type TodoCard,
@@ -64,7 +63,6 @@ import { CardSheet, ManagePeopleSheet } from './TodoBoardSheets'
 import {
   addCardStyle,
   boardStyle,
-  btnStyle,
   cardMetaStyle,
   cardNoteStyle,
   cardStyle,
@@ -78,16 +76,18 @@ import {
   columnTitleStyle,
   countStyle,
   emptyColumnStyle,
+  filterActionsStyle,
   filterAvatarStyle,
+  filterGroupStyle,
   filterRowStyle,
   gripStyle,
+  iconBtnStyle,
   kebabTriggerHover,
   kebabTriggerStyle,
   noticeStyle,
   ownerSelectHoverStyle,
   ownerSelectStyle,
   primaryBtnStyle,
-  toolbarStyle,
 } from './todoBoardStyles'
 
 /** Which sheet is open, and what it was opened with. One piece of state
@@ -111,7 +111,6 @@ export function TodoBoardPanel() {
   const [drag, setDrag] = useState<DragState>(null)
   const [dropTarget, setDropTarget] = useState<DropTarget>(null)
   const [errors, setErrors] = useState<string[]>([])
-  const [copied, setCopied] = useState(false)
 
   /** Every write goes through here: it reports what the server objected to
    *  rather than failing silently, and it re-reads the board afterwards
@@ -150,15 +149,12 @@ export function TodoBoardPanel() {
     await run(() => moveCard(card, column, position))
   }
 
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(toMarkdown(index.cards))
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 1500)
-    } catch {
-      /* clipboard blocked — the board is unchanged, nothing to recover */
-    }
-  }
+  /* "Copy as markdown" stood on a toolbar above this row until 2026-10-15,
+     when Jillienne took the toolbar off. `toMarkdown` in `todoBoardStore.ts`
+     is UNWIRED, NOT GONE — it is still exported and still tested, so putting
+     the control back is a button, not a feature. It was the board's way out
+     of a store nothing backs up; nothing replaces it, and that is a real
+     trade rather than an oversight. */
 
   /** The filter row: All, then the roster, then Unassigned. Unassigned goes
    *  last because it is the absence of the thing the row is about, and it is
@@ -182,30 +178,6 @@ export function TodoBoardPanel() {
        text inside whichever palette the page is wearing. Six mappings fix it
        without forking the component. */
     <div style={UX_TOKEN_BRIDGE}>
-      <div style={toolbarStyle}>
-        <button type="button" onClick={() => setSheet({ kind: 'people' })} disabled={!canAuthor} style={btnStyle}>
-          <Users size={13} aria-hidden />
-          Manage people
-        </button>
-        <button
-          type="button"
-          onClick={() => setSheet({ kind: 'card', column: 'todo' })}
-          disabled={!canAuthor}
-          style={primaryBtnStyle}
-        >
-          <Plus size={12} aria-hidden />
-          New card
-        </button>
-        {/* The same mitigation every board here carries: Netlify Blobs is not
-            backed up, so one click gets the list somewhere durable. */}
-        <button type="button" onClick={() => void copy()} style={btnStyle}>
-          {copied ? 'Copied' : 'Copy as markdown'}
-        </button>
-        <span style={countStyle}>
-          {index.cards.length} {index.cards.length === 1 ? 'card' : 'cards'}
-        </span>
-      </div>
-
       {!index.loading && !canAuthor && (
         <p style={noticeStyle}>
           The authoring endpoint is not reachable from here — run `netlify dev`, or open the deployed site.
@@ -218,22 +190,54 @@ export function TodoBoardPanel() {
         </p>
       )}
 
-      <div style={filterRowStyle} role="group" aria-label="Filter by owner">
-        {filters.map((f) => {
-          const active = ownerFilter === f.key
-          return (
-            <button
-              key={f.key ?? 'all'}
-              type="button"
-              aria-pressed={active}
-              onClick={() => setOwnerFilter(active && f.key !== null ? null : f.key)}
-              style={filterAvatarStyle(active)}
-            >
-              <TodoBoardAvatar name={f.name} hue={f.hue} size={22} />
-              {f.name}
-            </button>
-          )
-        })}
+      {/* One row: who you are looking at, then what you can add. The group
+          label covers the avatars only — the actions are not filters, so they
+          sit outside the `role="group"` rather than inside it announcing
+          themselves as one. */}
+      <div style={filterRowStyle}>
+        <div style={filterGroupStyle} role="group" aria-label="Filter by owner">
+          {filters.map((f) => {
+            const active = ownerFilter === f.key
+            return (
+              <button
+                key={f.key ?? 'all'}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setOwnerFilter(active && f.key !== null ? null : f.key)}
+                style={filterAvatarStyle(active)}
+              >
+                <TodoBoardAvatar name={f.name} hue={f.hue} size={22} />
+                {f.name}
+              </button>
+            )
+          })}
+        </div>
+
+        <div style={filterActionsStyle}>
+          <span style={countStyle}>
+            {index.cards.length} {index.cards.length === 1 ? 'card' : 'cards'}
+          </span>
+          <button
+            type="button"
+            onClick={() => setSheet({ kind: 'people' })}
+            disabled={!canAuthor}
+            aria-label="Manage people"
+            title="Manage people"
+            style={iconBtnStyle}
+          >
+            <Users size={14} aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={() => setSheet({ kind: 'card', column: 'todo' })}
+            disabled={!canAuthor}
+            aria-label="New card"
+            style={primaryBtnStyle}
+          >
+            <Plus size={12} aria-hidden />
+            New
+          </button>
+        </div>
       </div>
 
       <div style={boardStyle}>
@@ -283,30 +287,6 @@ export function TodoBoardPanel() {
                       }}
                       onEdit={() => setSheet({ kind: 'card', column: card.column, card })}
                     onReassign={(owner) => void run(() => setCardOwner(card, owner))}
-                      onMoveToColumn={(column) =>
-                        void run(() => moveCard(card, column, positionForDrop(index.cards, column, null, card.id)))
-                      }
-                      onNudge={(direction) => {
-                        const list = cardsInColumn(index.cards, card.column)
-                        const at = list.findIndex((c) => c.id === card.id)
-                        // Up: land before the card above. Down: land before the
-                        // card two below — "before the one below" is where it
-                        // already is.
-                        const beforeId =
-                          direction === 'up'
-                            ? (list[at - 1]?.id ?? null)
-                            : (list[at + 2]?.id ?? null)
-                        if (direction === 'up' && at <= 0) return
-                        if (direction === 'down' && at >= list.length - 1) return
-                        void run(() =>
-                          moveCard(card, card.column, positionForDrop(index.cards, card.column, beforeId, card.id)),
-                        )
-                      }}
-                      canMoveUp={cardsInColumn(index.cards, card.column).findIndex((c) => c.id === card.id) > 0}
-                      canMoveDown={
-                        cardsInColumn(index.cards, card.column).findIndex((c) => c.id === card.id) <
-                        cardsInColumn(index.cards, card.column).length - 1
-                      }
                       onRemove={() => void run(() => deleteCard(card.id))}
                     />
                   ))}
@@ -320,15 +300,25 @@ export function TodoBoardPanel() {
                   )}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setSheet({ kind: 'card', column: col.id })}
-                  disabled={!canAuthor}
-                  style={addCardStyle}
-                >
-                  <Plus size={11} aria-hidden />
-                  Add a card
-                </button>
+                {/* ADD IS ON "TO DO" ONLY (2026-10-15, Jillienne). It stood at
+                    the foot of all four columns, from the concept — four
+                    identical dashed buttons, three of them offering to start
+                    work in a column that means "somebody is already doing
+                    this", "this is ready for the team" or "this is ready to
+                    hand off". New work starts in To Do; the sheet's Column
+                    picker is still how a card is created anywhere else, which
+                    is a decision rather than a shortcut. */}
+                {col.id === 'todo' && (
+                  <button
+                    type="button"
+                    onClick={() => setSheet({ kind: 'card', column: col.id })}
+                    disabled={!canAuthor}
+                    style={addCardStyle}
+                  >
+                    <Plus size={11} aria-hidden />
+                    Add a card
+                  </button>
+                )}
               </section>
             )
           })}
@@ -383,10 +373,6 @@ function BoardCard({
   onDragOverCard,
   onEdit,
   onReassign,
-  onMoveToColumn,
-  onNudge,
-  canMoveUp,
-  canMoveDown,
   onRemove,
 }: {
   card: TodoCard
@@ -399,27 +385,25 @@ function BoardCard({
   onDragOverCard: () => void
   onEdit: () => void
   onReassign: (owner: string) => void
-  onMoveToColumn: (column: TodoColumn) => void
-  onNudge: (direction: 'up' | 'down') => void
-  canMoveUp: boolean
-  canMoveDown: boolean
   onRemove: () => void
 }) {
   const [hovered, setHovered] = useState(false)
   const assigned = autoAssigns(card.column)
 
-  /** The kebab is the keyboard's half of the drag — every move a pointer can
-   *  make is here as a menu item — plus the two things a pointer cannot do at
-   *  all: edit the card, and remove it. */
+  /**
+   * Two items (2026-10-15, Jillienne: "just have ellipsis have edit card, and
+   * remove card"). It carried "Move to …" for each other column plus Move up
+   * / Move down, as the keyboard's half of the drag — four extra rows on a
+   * menu that is opened to do one of two things.
+   *
+   * ⚠ MOVING BY KEYBOARD STILL WORKS, through Edit card's Column picker,
+   * which is why this is a tidy-up rather than a loss. What is NOT reachable
+   * without a pointer any more is REORDERING INSIDE a column — `position` has
+   * no control of its own, so the drag is the only way to set it. If that
+   * matters, the place to put it back is the edit sheet, not this menu.
+   */
   const items: ActionMenuItem[] = [
     { id: 'edit', label: 'Edit card', onSelect: onEdit },
-    ...TODO_COLUMNS.filter((c) => c.id !== card.column).map((c) => ({
-      id: `move-${c.id}`,
-      label: `Move to ${c.label}`,
-      onSelect: () => onMoveToColumn(c.id),
-    })),
-    ...(canMoveUp ? [{ id: 'up', label: 'Move up', onSelect: () => onNudge('up') }] : []),
-    ...(canMoveDown ? [{ id: 'down', label: 'Move down', onSelect: () => onNudge('down') }] : []),
     { id: 'remove', label: 'Remove card', danger: true, onSelect: onRemove },
   ]
 
