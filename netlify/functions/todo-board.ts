@@ -105,6 +105,10 @@ const MAX_TITLE = 200
 const MAX_NOTE = 500
 const MAX_NAME = 100
 
+/** An ISO timestamp the client is echoing back, for `archivedAt`. Same shape
+ *  the link boards accept — see the archive block in `validateCard`. */
+const ISO_STAMP = /^\d{4}-\d{2}-\d{2}T[\d:.]+Z$/
+
 type Json = Record<string, unknown>
 
 function json(body: unknown, status = 200): Response {
@@ -273,6 +277,32 @@ function validateCard(
   // hand on the client to avoid the UTC off-by-one `new Date('2026-10-15')`
   // produces — the same call the link boards and the QA store make.
   out.addedDate = defaults.addedDate || new Date().toISOString().slice(0, 10)
+
+  /* ARCHIVE (2026-10-16, Jillienne: "what do we do with the items that are
+     done and shipped to main"). The same contract the link boards gave
+     Refinement rows on 2026-10-15, deliberately — a card and a row leaving
+     the board are the same act, and two spellings of it would be two sets of
+     edge cases. `archived` is the CLIENT'S INTENT; the stamp is the
+     SERVER'S: set the first time a card is archived, carried through later
+     saves while it stays archived (the client echoes `archivedAt` back), and
+     cleared the moment it is unarchived.
+
+     ⚠ ARCHIVING DOES NOT TOUCH `column` OR `owner`. A card comes back to the
+     column it left, owned by whoever had it — which is the whole reason this
+     is archive rather than a fifth column: the board's columns say what is in
+     flight THIS WEEK, and shipped work should leave that conversation without
+     losing where it was when it did. */
+  const archived = b.archived === true
+  out.archived = archived
+  const priorStamp = str(b.archivedAt) ?? ''
+  out.archivedAt = archived
+    ? ISO_STAMP.test(priorStamp)
+      ? priorStamp
+      : new Date().toISOString()
+    : ''
+  const archivedBy = str(b.archivedBy)?.trim() ?? ''
+  if (archivedBy.length > MAX_NAME) errors.push(`archivedBy is longer than ${MAX_NAME} characters.`)
+  else out.archivedBy = archived ? archivedBy.slice(0, MAX_NAME) : ''
 
   // Always the server's, never the client's: a create, an edit, and an edit
   // that changed nothing all re-stamp it.

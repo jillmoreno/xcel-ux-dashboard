@@ -172,6 +172,17 @@ export type TodoCard = {
   addedDate: string
   /** ISO timestamp of the last save, stamped server-side on every write. */
   updatedAt: string
+  /** ARCHIVED — hidden from the board, not deleted (2026-10-16). The same
+   *  shape Refinement rows got on 2026-10-15; see the archive block in
+   *  `validateCard` (netlify/functions/todo-board.ts) for the contract.
+   *  `column` and `owner` are untouched by archiving, so a card comes back
+   *  where it left from. */
+  archived: boolean
+  /** ISO timestamp, set by the SERVER the first time the card is archived and
+   *  carried through later saves; '' when live. */
+  archivedAt: string
+  /** Who archived it — a typed label, like `owner`; '' when live. */
+  archivedBy: string
 }
 
 export type TodoPerson = {
@@ -331,6 +342,12 @@ function normaliseCard(v: TodoCard): TodoCard {
     position: typeof v.position === 'number' && Number.isFinite(v.position) ? v.position : 0,
     addedDate: typeof v.addedDate === 'string' ? v.addedDate : '',
     updatedAt: typeof v.updatedAt === 'string' ? v.updatedAt : '',
+    /* ⚠ DEFAULTS TO LIVE. Every card written before 2026-10-16 has no
+       `archived` key at all, and a card that read as archived because its
+       field was missing would vanish from the board on deploy. */
+    archived: v.archived === true,
+    archivedAt: typeof v.archivedAt === 'string' ? v.archivedAt : '',
+    archivedBy: typeof v.archivedBy === 'string' ? v.archivedBy : '',
   }
 }
 
@@ -404,6 +421,17 @@ export type TodoCardDraft = {
   /** Omitted on create, when the server puts the card at the end of its
    *  column; supplied by a drag, which has computed a midpoint. */
   position?: number
+  /* ⚠ THE ARCHIVE FIELDS ARE ON THE DRAFT BECAUSE EVERY WRITE IS A WHOLE-RECORD
+     PUT. `saveCard` sends the draft and the server stores what it is sent, so
+     a move or an edit that omitted these would UNARCHIVE the card silently —
+     the most likely way this feature breaks, and invisible until someone drags
+     an archived card and it reappears. Every caller echoes them; `moveCard`
+     and `setCardOwner` below are the worked examples. */
+  archived?: boolean
+  /** Echoed back so the server can keep the ORIGINAL stamp rather than
+   *  re-dating the archive on every later save. */
+  archivedAt?: string
+  archivedBy?: string
 }
 
 export function draftProblems(draft: TodoCardDraft): string[] {
@@ -523,6 +551,10 @@ export function moveCard(card: TodoCard, column: TodoColumn, position: number): 
     owner: card.owner,
     column,
     position,
+    // Echoed, not recomputed — see the note on `TodoCardDraft`.
+    archived: card.archived,
+    archivedAt: card.archivedAt,
+    archivedBy: card.archivedBy,
   })
 }
 
@@ -543,6 +575,51 @@ export function setCardOwner(card: TodoCard, owner: string): Promise<TodoCard> {
     owner,
     column: card.column,
     position: card.position,
+    archived: card.archived,
+    archivedAt: card.archivedAt,
+    archivedBy: card.archivedBy,
+  })
+}
+
+/**
+ * ARCHIVE A CARD — hide it from the board without losing it (2026-10-16,
+ * Jillienne's question about work that has shipped to main).
+ *
+ * ⚠ ARCHIVE, NOT A FIFTH COLUMN, and that was the decision. The columns say
+ * what is in flight THIS WEEK; a "Shipped" column would grow for ever and
+ * still need clearing. Archiving leaves `column` and `owner` alone, so
+ * unarchiving puts the card back exactly where it was rather than at the end
+ * of To Do.
+ *
+ * `by` is a typed label like `owner`, not a person id — the roster can change
+ * and a card should still say who archived it.
+ */
+export function archiveCard(card: TodoCard, by: string): Promise<TodoCard> {
+  return saveCard(card.id, {
+    title: card.title,
+    note: card.note,
+    owner: card.owner,
+    column: card.column,
+    position: card.position,
+    archived: true,
+    // Carried so re-archiving an already-archived card keeps the first stamp;
+    // the server only mints one when there is none.
+    archivedAt: card.archivedAt,
+    archivedBy: by,
+  })
+}
+
+/** Put an archived card back on the board, in the column it left from. */
+export function unarchiveCard(card: TodoCard): Promise<TodoCard> {
+  return saveCard(card.id, {
+    title: card.title,
+    note: card.note,
+    owner: card.owner,
+    column: card.column,
+    position: card.position,
+    // The server clears the stamp and the name when `archived` is false, so
+    // they are not sent back.
+    archived: false,
   })
 }
 
@@ -626,7 +703,11 @@ export function useTodoBoardCount(): number {
     let live = true
     const read = () => {
       void readBoard().then((index) => {
-        if (live) setCount(index.cards.length)
+        /* ⚠ ARCHIVED CARDS ARE OFF THE BOARD, so they are off the count too
+           (2026-10-16) — the rail's number says how much is in flight, and a
+           count that kept climbing as work SHIPPED would say the opposite of
+           what the board is for. Refinement's count makes the same call. */
+        if (live) setCount(index.cards.filter((c) => !c.archived).length)
       })
     }
     read()
@@ -651,13 +732,35 @@ export function useTodoBoardCount(): number {
  */
 export function toMarkdown(cards: TodoCard[]): string {
   if (!cards.length) return '# To Do Board\n\n_Nothing on the board._\n'
+  /* ⚠ ARCHIVED CARDS ARE IN THE EXPORT, under their own heading (2026-10-16).
+     Everywhere else archived means hidden — but this is the ONLY copy of a
+     store nothing backs up, and an export that quietly dropped shipped work
+     would turn "archive, don't delete" into "delete, slowly". They are
+     separated rather than mixed in so the columns still read as what is in
+     flight. */
+  const live = cards.filter((c) => !c.archived)
+  const archived = cards.filter((c) => c.archived)
   const lines = [`# To Do Board`, '', `_${cards.length} cards · exported ${new Date().toISOString().slice(0, 10)}_`]
+  const describe = (card: TodoCard) =>
+    [card.note.trim(), `owner: ${ownerLabel(card.owner)}`].filter(Boolean).join(' · ')
   for (const col of TODO_COLUMNS) {
-    const inColumn = cardsInColumn(cards, col.id)
+    const inColumn = cardsInColumn(live, col.id)
     if (!inColumn.length) continue
     lines.push('', `## ${col.label}`, '')
     for (const card of inColumn) {
-      const tail = [card.note.trim(), `owner: ${ownerLabel(card.owner)}`].filter(Boolean).join(' · ')
+      lines.push(`- **${card.title}** — ${describe(card)}`)
+    }
+  }
+  if (archived.length) {
+    lines.push('', `## Archived`, '')
+    for (const card of archived) {
+      // The column it left from is worth keeping: it says how far the work
+      // got, which is most of why an archived card is worth reading at all.
+      const stamp = card.archivedAt ? card.archivedAt.slice(0, 10) : ''
+      const by = card.archivedBy ? ` by ${card.archivedBy}` : ''
+      const tail = [describe(card), `${columnLabel(card.column)}${stamp ? ` · archived ${stamp}${by}` : ''}`]
+        .filter(Boolean)
+        .join(' · ')
       lines.push(`- **${card.title}** — ${tail}`)
     }
   }

@@ -56,6 +56,10 @@ const card = (over: Partial<TodoCard> = {}): TodoCard => ({
   column: 'todo',
   position: 1,
   addedDate: '2026-10-15',
+  // Live by default — the archive fields joined the card 2026-10-16.
+  archived: false,
+  archivedAt: '',
+  archivedBy: '',
   updatedAt: '2026-10-15T09:00:00.000Z',
   ...over,
 })
@@ -331,17 +335,24 @@ describe('TodoBoardPanel', () => {
     expect(writes[0].body).toMatchObject({ owner: 'Eric', column: 'todo', position: 2 })
   })
 
-  it('offers exactly two things on the kebab — edit and remove', async () => {
+  it('offers exactly three things on the kebab — edit, archive, remove', async () => {
     /* It carried a "Move to …" row per column plus Move up / Move down until
-       2026-10-15. Pinned at two so the menu does not quietly regrow: moving
-       between columns is the Edit sheet's Column picker now, and the drag. */
+       2026-10-15, and was pinned at TWO so the menu could not quietly regrow:
+       moving between columns is the Edit sheet's Column picker now, and the
+       drag. Archive joined 2026-10-16 — the third is a deliberate addition,
+       not a regrowth, and it sits ABOVE Remove so the reversible act is the
+       one nearest the thumb. */
     mockBoard([card({ id: 'card-001', column: 'todo' })])
     render(<TodoBoardPanel />)
     await boardReady()
 
     await userEvent.click(screen.getByRole('button', { name: /Actions for/ }))
     const items = await screen.findAllByRole('menuitem')
-    expect(items.map((i) => i.textContent?.trim())).toEqual(['Edit card', 'Remove card'])
+    expect(items.map((i) => i.textContent?.trim())).toEqual([
+      'Edit card',
+      'Archive card',
+      'Remove card',
+    ])
   })
 
   it('moves a card between columns without a pointer, through the edit sheet', async () => {
@@ -790,5 +801,108 @@ describe('toMarkdown', () => {
 
   it('says the board is empty rather than printing an empty document', () => {
     expect(toMarkdown([])).toContain('Nothing on the board.')
+  })
+})
+
+/**
+ * ARCHIVING A CARD — 2026-10-16, Jillienne's question about work that has
+ * shipped to main. Archive, not a fifth column and not Remove: the columns
+ * say what is in flight THIS WEEK, and shipped work should leave that
+ * conversation without being deleted.
+ *
+ * ⚠ THE WHOLE-RECORD PUT IS THE TRAP, and the third case is the one that
+ * matters. Every write here sends the WHOLE card and the server stores what
+ * it is sent, so a move or an edit that forgot to echo `archived` would
+ * silently UNARCHIVE the card — invisible until somebody drags an archived
+ * card and watches it reappear on the board.
+ */
+describe('archiving a card', () => {
+  it('hides it from the board, and the archive view shows it', async () => {
+    mockBoard([
+      card({ id: 'card-001', title: 'Still going', column: 'todo' }),
+      card({ id: 'card-002', title: 'Shipped to main', column: 'handoff', archived: true, archivedAt: '2026-10-16T09:00:00.000Z', archivedBy: 'Jill' }),
+    ])
+    render(<TodoBoardPanel />)
+    await boardReady()
+
+    expect(screen.getByText('Still going')).toBeInTheDocument()
+    expect(screen.queryByText('Shipped to main')).toBeNull()
+
+    await userEvent.click(screen.getByRole('button', { name: /Show archive/ }))
+    expect(screen.getByText('Shipped to main')).toBeInTheDocument()
+    // One view or the other — a board mixing shipped work into the columns is
+    // the thing archiving is for.
+    expect(screen.queryByText('Still going')).toBeNull()
+  })
+
+  it('sends archived:true and leaves the column and owner alone', async () => {
+    // Archiving is not a move. The card comes back where it left from, which
+    // is the reason this is archive rather than a fifth column.
+    const { writes } = mockBoard([card({ id: 'card-001', column: 'refine', owner: 'Anjani' })])
+    render(<TodoBoardPanel />)
+    await boardReady()
+
+    await userEvent.click(screen.getByRole('button', { name: /Actions for/ }))
+    await userEvent.click(await screen.findByText('Archive card'))
+
+    const body = writes.at(-1)?.body as Record<string, unknown>
+    expect(body.archived).toBe(true)
+    expect(body.column).toBe('refine')
+    expect(body.owner).toBe('Anjani')
+  })
+
+  it('a MOVE echoes the archive state instead of clearing it', async () => {
+    /* The silent-break case. `moveCard` sends the whole record; if it omitted
+       these three fields the server would store `archived: false` and the
+       card would quietly return to the board. */
+    const { writes } = mockBoard([
+      card({
+        id: 'card-001',
+        column: 'todo',
+        archived: true,
+        archivedAt: '2026-10-16T09:00:00.000Z',
+        archivedBy: 'Jill',
+      }),
+    ])
+    render(<TodoBoardPanel />)
+    await boardReady()
+
+    await userEvent.click(screen.getByRole('button', { name: /Show archive/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Actions for/ }))
+    await userEvent.click(await screen.findByText('Edit card'))
+    await userEvent.selectOptions(await screen.findByLabelText('Column'), 'working')
+    await userEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    const body = writes.at(-1)?.body as Record<string, unknown>
+    expect(body.archived, 'an edit must not unarchive the card').toBe(true)
+    expect(body.archivedAt, 'and must not re-date the archive').toBe('2026-10-16T09:00:00.000Z')
+  })
+
+  it('putting a card back clears the stamp', async () => {
+    const { writes } = mockBoard([
+      card({ id: 'card-001', column: 'todo', archived: true, archivedAt: '2026-10-16T09:00:00.000Z', archivedBy: 'Jill' }),
+    ])
+    render(<TodoBoardPanel />)
+    await boardReady()
+
+    await userEvent.click(screen.getByRole('button', { name: /Show archive/ }))
+    await userEvent.click(screen.getByRole('button', { name: /Actions for/ }))
+    await userEvent.click(await screen.findByText('Put back on the board'))
+
+    expect((writes.at(-1)?.body as Record<string, unknown>).archived).toBe(false)
+  })
+
+  it('the markdown export keeps archived cards — it is the only backup', async () => {
+    // Everywhere else archived means hidden. Here it must not, or
+    // "archive, don't delete" becomes "delete, slowly".
+    const md = toMarkdown([
+      card({ id: 'card-001', title: 'Still going', column: 'todo' }),
+      card({ id: 'card-002', title: 'Shipped to main', column: 'handoff', archived: true, archivedAt: '2026-10-16T09:00:00.000Z', archivedBy: 'Jill' }),
+    ])
+    expect(md).toContain('Still going')
+    expect(md).toContain('## Archived')
+    expect(md).toContain('Shipped to main')
+    // The column it left from says how far the work got.
+    expect(md).toContain('Ready for Prototype and Handoff')
   })
 })

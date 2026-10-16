@@ -41,7 +41,9 @@ import {
   autoAssigns,
   cardsInColumn,
   createCard,
+  archiveCard,
   deleteCard,
+  unarchiveCard,
   hueFor,
   matchesOwner,
   moveCard,
@@ -62,6 +64,12 @@ import { TodoBoardAvatar } from './TodoBoardAvatar'
 import { UX_TOKEN_BRIDGE } from './uxPaletteBridge'
 import { CardSheet, ManagePeopleSheet } from './TodoBoardSheets'
 import { linkifyNote } from './linkifyNote'
+
+/* WHO ARCHIVED IT. The board has no sign-in — `addedBy` and `owner` are typed
+   labels throughout — so this is the same kind of claim they are, and it is
+   the default rather than the truth. If the board ever learns who is looking,
+   this is the one place to change. */
+const ARCHIVER = 'Jill'
 import {
   addCardStyle,
   boardStyle,
@@ -211,7 +219,15 @@ export function TodoBoardPanel({
     [index.people],
   )
 
-  const visible = useMemo(() => index.cards.filter((c) => matchesOwner(c, ownerFilter)), [index.cards, ownerFilter])
+  /* SHOW ARCHIVE (2026-10-16) — the board lists LIVE cards; the toggle swaps
+     it for the archived ones, exactly as Refinement's does. One view or the
+     other, never both: a board mixing shipped work into the columns is the
+     thing archiving is for. */
+  const [showArchive, setShowArchive] = useState(false)
+  const live = useMemo(() => index.cards.filter((c) => !c.archived), [index.cards])
+  const archived = useMemo(() => index.cards.filter((c) => c.archived), [index.cards])
+  const source = showArchive ? archived : live
+  const visible = useMemo(() => source.filter((c) => matchesOwner(c, ownerFilter)), [source, ownerFilter])
 
   return (
     /* The bridge, on the panel root: everything the board draws itself is on
@@ -257,8 +273,28 @@ export function TodoBoardPanel({
 
         <div style={filterActionsStyle}>
           <span style={countStyle}>
-            {index.cards.length} {index.cards.length === 1 ? 'card' : 'cards'}
+            {source.length} {source.length === 1 ? 'card' : 'cards'}
+            {showArchive ? ' archived' : ''}
           </span>
+          {/* Only offered when there is something to see — a toggle that
+              reveals an empty board reads as broken. Always offered while the
+              archive view is OPEN, or there would be no way back from the
+              last unarchive. */}
+          {(archived.length > 0 || showArchive) && (
+            <button
+              type="button"
+              onClick={() => setShowArchive((v) => !v)}
+              aria-pressed={showArchive}
+              style={iconBtnStyle}
+              /* The visible text is short enough to fit beside the count
+                 ("Archive 3"); the LABEL says what pressing it does, which is
+                 not the same sentence and is the one assistive tech reads. */
+              aria-label={showArchive ? 'Back to the board' : `Show archive (${archived.length})`}
+              title={showArchive ? 'Back to the board' : `Show archive (${archived.length})`}
+            >
+              {showArchive ? 'Board' : `Archive ${archived.length}`}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setSheet({ kind: 'people' })}
@@ -329,6 +365,12 @@ export function TodoBoardPanel({
                       }}
                       onEdit={() => setSheet({ kind: 'card', column: card.column, card })}
                     onRemove={() => void run(() => deleteCard(card.id))}
+                    /* ARCHIVE / UNARCHIVE (2026-10-16). `archivedBy` is the
+                       same roster label the board uses elsewhere — whoever is
+                       filtering is not necessarily who is acting, so it takes
+                       the git identity rather than the owner pill. */
+                    onArchive={() => void run(() => archiveCard(card, ARCHIVER))}
+                    onUnarchive={() => void run(() => unarchiveCard(card))}
                     />
                   ))}
 
@@ -374,7 +416,20 @@ export function TodoBoardPanel({
         onClose={() => setSheet(null)}
         onSave={async (draft: TodoCardDraft) => {
           const editing = sheet?.kind === 'card' ? sheet.card : undefined
-          await (editing ? saveCard(editing.id, draft) : createCard(draft))
+          /* ⚠ THE ARCHIVE STATE IS ECHOED BACK ON AN EDIT. The sheet knows
+             nothing about archiving — it edits title, note, owner, column —
+             but every write is a WHOLE-RECORD PUT, so saving without these
+             three would store `archived: false` and quietly put a shipped
+             card back on the board. The sheet's draft plus the record's
+             archive state is the whole card; neither half knows that alone. */
+          await (editing
+            ? saveCard(editing.id, {
+                ...draft,
+                archived: editing.archived,
+                archivedAt: editing.archivedAt,
+                archivedBy: editing.archivedBy,
+              })
+            : createCard(draft))
           setSheet(null)
           await refresh()
         }}
@@ -419,6 +474,8 @@ function BoardCard({
   onDragOverCard,
   onEdit,
   onRemove,
+  onArchive,
+  onUnarchive,
 }: {
   card: TodoCard
   people: TodoPerson[]
@@ -430,6 +487,8 @@ function BoardCard({
   onDragOverCard: () => void
   onEdit: () => void
   onRemove: () => void
+  onArchive: () => void
+  onUnarchive: () => void
 }) {
 
   /**
@@ -446,6 +505,14 @@ function BoardCard({
    */
   const items: ActionMenuItem[] = [
     { id: 'edit', label: 'Edit card', onSelect: onEdit },
+    /* ARCHIVE SITS ABOVE REMOVE, and Remove keeps the `danger` styling it had
+       — the two are different acts and the menu should say so. Archive is for
+       work that SHIPPED; Remove is for a card filed by mistake. Putting the
+       reversible one first is what makes the destructive one a deliberate
+       reach. */
+    card.archived
+      ? { id: 'unarchive', label: 'Put back on the board', onSelect: onUnarchive }
+      : { id: 'archive', label: 'Archive card', onSelect: onArchive },
     { id: 'remove', label: 'Remove card', danger: true, onSelect: onRemove },
   ]
 
