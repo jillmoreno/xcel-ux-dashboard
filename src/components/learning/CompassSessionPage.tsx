@@ -16,10 +16,12 @@ import {
 } from '@/icons'
 import { setCourseChrome } from './courseTakeover'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useDeclareDesignSurface } from '@/context/designSurface'
 import {
   SESSION_COURSE,
   SESSION_LESSON,
   SESSION_NUDGE,
+  SESSION_THREAD,
   type ReadingPara,
   type SessionBeat,
 } from '@/data/compassSessionFixtures'
@@ -66,7 +68,31 @@ import {
  */
 export function CompassSessionPage({ onExit }: { onExit: () => void }) {
   const [beatIndex, setBeatIndex] = useState(0)
-  const [railOpen, setRailOpen] = useState(true)
+  /* THE DESIGN BAR'S "PANEL" — her nudge journey's three states, 2026-10-16
+     (`demoPanel('closed'|'idle'|'live')` in
+     `public/prototypes/xcel-compass-nudge-journey.html`).
+
+     ⚠ THE FLAG SEEDS THE RAIL, IT DOES NOT PIN IT. Closing Rubi from inside
+     the lesson has to keep working — it is the affordance the session is
+     demonstrating — so the control sets the state the page OPENS in and the
+     close button still shuts it.
+
+     ⚠ SO PICKING THE STATE ALREADY SELECTED DOES NOTHING, which is what a
+     radiogroup should do and is not a dead end: the session bar's own Rubi
+     button reopens the rail. Re-seeding on every pick would have meant
+     treating a no-op selection as an event, and the one place that matters —
+     reopening what you just closed — already has a control of its own. */
+  useDeclareDesignSurface('compass:session')
+  const panel = useFeatureFlag('compass-panel').variant ?? 'closed'
+  const [railOpen, setRailOpen] = useState(panel !== 'closed')
+  /* Re-seed when the control moves — React's adjust-state-during-render, not
+     an effect. An effect would set state in its body, which lints (and costs
+     a second render); this runs before the first paint of the new value. */
+  const [seededFor, setSeededFor] = useState(panel)
+  if (panel !== seededFor) {
+    setSeededFor(panel)
+    setRailOpen(panel !== 'closed')
+  }
   const beats = SESSION_LESSON.beats
   const beat = beats[beatIndex]
   const total = beats.length
@@ -104,7 +130,7 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
             onNext={() => setBeatIndex((i) => Math.min(total - 1, i + 1))}
           />
         </main>
-        {railOpen ? <RubiRail onClose={() => setRailOpen(false)} /> : null}
+        {railOpen ? <RubiRail chatting={panel === 'live'} onClose={() => setRailOpen(false)} /> : null}
       </div>
     </div>
   )
@@ -489,7 +515,7 @@ function BeatFooter({
 
 /* ─── Rubi ─────────────────────────────────────────────────────────────── */
 
-function RubiRail({ onClose }: { onClose: () => void }) {
+function RubiRail({ chatting = false, onClose }: { chatting?: boolean; onClose: () => void }) {
   return (
     <aside style={railStyle} aria-label="Rubi">
       <div style={railHeadStyle}>
@@ -510,6 +536,18 @@ function RubiRail({ onClose }: { onClose: () => void }) {
             which is exactly why it must not be wired to look measured. */}
         <p style={railEyebrowStyle}>Rubi</p>
         <p style={railLineStyle}>{SESSION_NUDGE.line}</p>
+        {/* CHATTING — the nudge stays above the exchange it started, which is
+            the point of the state: the thread is what the nudge turned into,
+            not a separate conversation that replaced it. */}
+        {chatting ? (
+          <ol style={threadStyle}>
+            {SESSION_THREAD.map((m, i) => (
+              <li key={i} style={m.from === 'learner' ? threadLearnerStyle : threadRubiStyle}>
+                {m.text}
+              </li>
+            ))}
+          </ol>
+        ) : null}
       </div>
       <div style={railFootStyle}>
         {SESSION_NUDGE.acts.map((a) => (
@@ -1003,6 +1041,41 @@ const railLineStyle: CSSProperties = {
   lineHeight: 1.55,
   color: 'var(--color-text-primary)',
 }
+ /* THE THREAD — the learner's turns ranged right on a tinted ground, Rubi's
+    left on the rail's own, both at the rail's reading size. A list rather
+    than divs so a screen reader announces how many turns there are. */
+const threadStyle: CSSProperties = {
+  listStyle: 'none',
+  margin: '12px 0 0',
+  padding: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 8,
+}
+
+const threadBubbleStyle: CSSProperties = {
+  maxWidth: '88%',
+  padding: '8px 10px',
+  borderRadius: 10,
+  fontSize: 13,
+  lineHeight: 1.45,
+}
+
+const threadLearnerStyle: CSSProperties = {
+  ...threadBubbleStyle,
+  alignSelf: 'flex-end',
+  background: 'var(--color-compass-rubi-soft, var(--color-neutral-100))',
+  color: 'var(--color-text-primary)',
+}
+
+const threadRubiStyle: CSSProperties = {
+  ...threadBubbleStyle,
+  alignSelf: 'flex-start',
+  background: 'transparent',
+  boxShadow: 'inset 0 0 0 1px var(--color-border-subtle, rgb(0 0 0 / 0.1))',
+  color: 'var(--color-text-secondary)',
+}
+
 const railFootStyle: CSSProperties = {
   borderTop: '1px solid var(--color-border-subtle)',
   padding: 14,

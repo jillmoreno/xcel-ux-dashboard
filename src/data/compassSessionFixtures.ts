@@ -220,6 +220,28 @@ export const SESSION_LESSON: { chapter: string; beats: SessionBeat[] } = {
  * the fired state so the rail can be designed against. Nothing measures dwell,
  * so nothing should claim to — see the note at its render site.
  */
+/**
+ * THE "CHATTING" STATE'S THREAD — 2026-10-16, the third arm of her Panel
+ * control (`demoPanel('live')` in the nudge-journey prototype).
+ *
+ * ⚠ DEMO CONTENT, and it is written to be obviously a demo. The learner's
+ * line picks the first of `SESSION_NUDGE.acts` so the exchange reads as the
+ * consequence of the nudge above it rather than an unrelated conversation,
+ * and Rubi's reply restates the section in plainer words WITHOUT adding a
+ * fact the lesson does not teach. Nothing here is a model output; the point
+ * of the state is the TREATMENT — how a thread sits in the rail — not the
+ * answer.
+ */
+export const SESSION_THREAD: { from: 'learner' | 'rubi'; text: string }[] = [
+  { from: 'learner', text: 'Give me the short version' },
+  {
+    from: 'rubi',
+    text: 'A rider changes one term of the policy it attaches to \u2014 nothing more. Read the base policy first, then the rider as the edit on top of it.',
+  },
+  { from: 'learner', text: 'So the rider can\u2019t stand on its own?' },
+  { from: 'rubi', text: 'Right. No base policy, no rider.' },
+]
+
 export const SESSION_NUDGE = {
   line: 'This section runs long, and this is the part most people slow down on.',
   why: 'You have been on this page about three times longer than most learners spend here.',

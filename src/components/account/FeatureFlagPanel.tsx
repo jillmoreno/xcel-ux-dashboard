@@ -85,6 +85,7 @@ function flagPageIdForPath(pathname: string): FeatureFlagPageId | null {
 const REBRAND_FLAGS = [
   // Compass Learning — whose surface renders there, and the planner's concept.
   'compass-surface',
+  'compass-panel',
   'compass-planner-rubi',
   'compass-planner-return',
   'compass-planner-under',
