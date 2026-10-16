@@ -2349,6 +2349,33 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'e2e-session-keeps-atlas-header',
+    /* THE WALK'S LESSON KEEPS A WAY HOME (2026-10-16, Jillienne: "this course
+       needs to have a header that matches Atlas header so user can get back
+       to HOME"). Begin Course now lands a reviewer inside a Compass lesson,
+       and the session's shipped arm is FULL SCREEN with no Home in its own
+       bar — so the walk ended somewhere with no way back to the product.
+
+       On, `?journey=full` forces `compass-session-chrome`'s `in-shell` arm:
+       the Atlas header sits above the session and Home works.
+
+       ⚠ IT OVERRIDES ANJANI'S CONTROL RATHER THAN CHANGING ITS DEFAULT.
+       `full-screen` is still what ships and still what her Compass tile
+       opens — the arm is her decision, her surface. This is the End-to-End
+       row borrowing the other arm for its own walk.
+
+       ⚠ THE TWO BARS STACK on that arm (global header + the session's 53px
+       bar, ~150px before lesson content). `compass-session-chrome`'s own note
+       calls it the agreed state while the fix is decided; the walk takes it
+       knowingly. If that fix lands, this flag is where to re-check. */
+    group: 'Navigation',
+    label: 'Compass session keeps the Atlas header',
+    description:
+      'On the End-to-End row\u2019s walk (?journey=full), the Compass session renders under the Atlas header so Home is reachable, instead of taking the whole screen. Off, the walk gets the shipped full-screen session. Anjani\u2019s Compass tile is unaffected either way, and the Course content control still works everywhere.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-header-v2',
     /* THE ATLAS HEADER, ON THE DESIGN BAR (2026-10-13, Eric's request:
        "replace the nav … with the new nav"). On (default), Eric's Atlas

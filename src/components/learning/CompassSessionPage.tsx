@@ -17,6 +17,7 @@ import {
 import { setCourseChrome } from './courseTakeover'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { useDeclareDesignSurface } from '@/context/designSurface'
+import { useCompassSessionInShell } from '@/pages/endToEndDemo'
 import {
   SESSION_COURSE,
   SESSION_LESSON,
@@ -100,7 +101,30 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
   /* ⚠ READ AS A VARIANT, NOT A BOOLEAN. An unset or unknown value falls to the
      shipped arm, so a stale stored flag cannot leave a reviewer in a shape
      nobody chose. */
-  const inShell = useFeatureFlag('compass-session-chrome').variant === 'in-shell'
+  const pickedInShell = useFeatureFlag('compass-session-chrome').variant === 'in-shell'
+  /* …AND THE END-TO-END WALK TAKES THE IN-SHELL ARM WHATEVER THE CONTROL SAYS
+     (2026-10-16, Jillienne: "this course needs to have a header that matches
+     Atlas header so user can get back to HOME").
+
+     The walk arrives here from Begin Course on Atlas Home, and full-screen is
+     a dead end on that journey: the session's own bar carries no Home, so a
+     reviewer walking invite → Atlas → Compass had no way back to the product
+     without the browser. In shell, the Atlas header is above the session and
+     Home works.
+
+     ⚠ IT DOES NOT CHANGE THE CONTROL'S DEFAULT, and that is the point.
+     `full-screen` is still what ships and still what Anjani's Compass tile
+     opens — this is her surface and the arm is her decision (`owner:
+     'anjani'`, `surfaces: ['compass:session']`). `?journey=full` is the
+     End-to-End row's walk, so the override lives exactly where Jillienne is
+     assembling the three surfaces and nowhere else.
+
+     ⚠ THE TWO BARS STACK on this arm — the global header plus the session's
+     own 53px bar, ~150px before any lesson content. The flag's own note calls
+     that the agreed state while the fix is decided, so the walk ships it
+     knowingly rather than discovering it. */
+  const walkNeedsHome = useCompassSessionInShell()
+  const inShell = pickedInShell || walkNeedsHome
   useEffect(() => {
     setCourseChrome(inShell ? 'course' : 'takeover')
     return () => setCourseChrome('none')

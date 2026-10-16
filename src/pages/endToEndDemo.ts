@@ -99,6 +99,28 @@ export function useBeginOpensCompassSession(): boolean {
   return on && isFullJourney(params)
 }
 
+/**
+ * THE COMPASS SESSION KEEPS THE ATLAS HEADER ON THE WALK (2026-10-16,
+ * Jillienne: "this course needs to have a header that matches Atlas header so
+ * user can get back to HOME").
+ *
+ * The third piece of the seam, and the one that closes the loop: Begin Course
+ * puts a reviewer inside a lesson, and the session's full-screen arm carries
+ * no Home — so without this the walk ends somewhere with no way back to the
+ * product.
+ *
+ * ⚠ IT OVERRIDES `compass-session-chrome`, it does not re-point it. That
+ * control is Anjani's (`owner: 'anjani'`), its `full-screen` arm is what
+ * ships, and her Compass tile still opens full-screen. This only forces the
+ * in-shell arm on `?journey=full`, which is Jillienne's row. Picking
+ * `in-shell` on the control still works everywhere, as it always did.
+ */
+export function useCompassSessionInShell(): boolean {
+  const [params] = useSearchParams()
+  const on = useFeatureFlag('e2e-session-keeps-atlas-header').enabled
+  return on && isFullJourney(params)
+}
+
 /* THE DEMO'S PRICES, in one place (2026-10-15, Eric's request): the PDP's
    price card, Checkout's order summary and Confirmation's order total all
    read these, so the total is always the checkout's. */

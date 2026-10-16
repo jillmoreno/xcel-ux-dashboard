@@ -53,6 +53,14 @@ export function AtlasHeaderConnected({
     const next = new URLSearchParams(params)
     next.delete('section')
     next.delete('coursePage')
+    /* ⚠ `session` GOES TOO (2026-10-16). It is the Compass LESSON's param, and
+       leaving it on the address made Home look right while arming the next
+       move: picking Compass — from the Start control or this header — RE-
+       ENTERED the lesson instead of opening Anjani's dashboard, because a
+       stale `session=1` was still there. Only reachable since Begin Course
+       started putting reviewers in sessions, which is why it had not bitten;
+       found by walking Begin Course → Home → Start: Compass. */
+    next.delete('session')
     mutate(next)
     const qs = next.toString()
     return `/dashboard-rebrand${qs ? `?${qs}` : ''}`

@@ -221,3 +221,40 @@ describe('Begin Course on the End-to-End row’s walk', () => {
     ).toBeNull()
   })
 })
+
+/**
+ * THE WAY HOME FROM A LESSON (2026-10-16, Jillienne: "this course needs to
+ * have a header that matches Atlas header so user can get back to HOME").
+ *
+ * Begin Course puts a reviewer INSIDE a Compass lesson, and the session's
+ * shipped arm takes the whole screen with no Home in its own bar — so the
+ * walk ended somewhere with no way back. On the walk the session takes the
+ * in-shell arm instead, which is Anjani's own control borrowed, not
+ * re-pointed: `full-screen` is still what ships and still what her tile opens.
+ */
+describe('the walk’s lesson keeps a way home', () => {
+  it('the flag is on in the committed baseline, and does NOT move Anjani’s default', () => {
+    const ours = FEATURE_FLAGS.find((f) => f.key === 'e2e-session-keeps-atlas-header')
+    expect(ours?.defaultEnabled).toBe(true)
+    // Hers is untouched — the arm is her decision, on her surface.
+    const hers = FEATURE_FLAGS.find((f) => f.key === 'compass-session-chrome')
+    expect(hers?.defaultVariant, 'full-screen is still what ships').toBe('full-screen')
+    expect(hers?.owner).toBe('anjani')
+  })
+
+  /* ⚠ A STALE `session` IS THE BUG THIS FOUND, and it is the kind that reads
+   * as someone else's fault. Home dropped `section` and `coursePage` but not
+   * `session`, so going Home LOOKED right and then the next pick of Compass
+   * re-entered the lesson — from the Start control or the header — because
+   * the lesson's param was still on the address. Unreachable until Begin
+   * Course started putting reviewers in sessions, which is why it had never
+   * bitten. Found by walking it, not by reading it. */
+  it('Home drops the lesson’s session param, so Compass opens the dashboard next', async () => {
+    renderDashboard(`?demo=1&version=${END_TO_END_VERSION}&journey=full&section=compass&session=1`)
+    await clickHome()
+    const params = new URLSearchParams(screen.getByTestId('search').textContent ?? '')
+    expect(params.get('section'), 'out of Compass').toBeNull()
+    expect(params.get('session'), 'and out of the lesson — not just out of the section').toBeNull()
+    expect(params.get('journey'), 'still on the walk').toBe('full')
+  })
+})

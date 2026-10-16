@@ -102,6 +102,14 @@ export function AtlasTopNav({
     const next = new URLSearchParams(params)
     next.delete('section')
     next.delete('coursePage')
+    /* ⚠ `session` GOES TOO (2026-10-16). It is the Compass LESSON's param, and
+       leaving it on the address meant Home looked right while quietly arming
+       the next move: picking Compass — from the Start control or the nav —
+       re-entered the lesson instead of opening Anjani's dashboard, because a
+       stale `session=1` was still there from the last visit. It only became
+       reachable when Begin Course started putting people in sessions, which
+       is why it has not bitten before. */
+    next.delete('session')
     if (section) next.set('section', section)
     if (coursePage) next.set('coursePage', coursePage)
     setParams(next)

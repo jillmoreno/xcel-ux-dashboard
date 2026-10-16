@@ -143,6 +143,7 @@ const REBRAND_FLAGS = [
   'e2e-loading-opens-home',
   'e2e-course-overview-opens-compass',
   'e2e-begin-opens-compass-session',
+  'e2e-session-keeps-atlas-header',
   'atlas-header-v2',
   'atlas-white-top-nav',
   'atlas-brand-skin',
