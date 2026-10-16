@@ -88,6 +88,20 @@
   to = "/.netlify/functions/prds"
   status = 200
 
+# The To Do Board — cards and the people roster, on one function. Two
+# redirects like the boards above, and the `/*` one carries the sub-collection
+# as well as the id (`/api/todo-board/cards/card-007`), which is why the
+# function routes on the tail rather than on a single `:id`.
+[[redirects]]
+  from = "/api/todo-board/*"
+  to = "/.netlify/functions/todo-board/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/todo-board"
+  to = "/.netlify/functions/todo-board"
+  status = 200
+
 # The automatic branch list behind the Refinement strip. Read-only, and it
 # refuses outright on the public build (see netlify/functions/branches.ts).
 [[redirects]]

@@ -538,6 +538,80 @@ So the Design & Research group is now Refinement · Research · Resources ·
 PRDs, all four boards over one handler and one panel. Adding a fifth is the
 same seven files; nothing shared should need to change.
 
+### The To Do Board (2026-10-15)
+
+**The fifth thing authored on this page, and the one that is NOT a link
+board.** Section id `todo-board`, last in the rail under its own "Team"
+eyebrow; the `todo-board` Blobs store, `/api/todo-board`
+(`netlify/functions/todo-board.ts`), `src/data/todoBoardStore.ts`,
+`TodoBoardPanel.tsx` with `TodoBoardSheets.tsx` / `TodoBoardAvatar.tsx` /
+`todoBoardStyles.ts` beside it, and `TodoBoard.test.tsx`.
+
+It answers a different question from every section above it. Prototypes says
+what the product is, Refinement what is under discussion, Development and Done
+what shipped — this one says **who is on what this week**, which is why it is
+not grouped with any of them and why it has no `PROTOTYPE_FEATURES` rows at
+all (`bySection['todo-board']` is empty by design; the nav count is live from
+`useTodoBoardCount`).
+
+**It is not `createLinkBoard` with a different label, and that was considered.**
+The factory requires a `url` on every record — it is the field the handler
+validates hardest, because every stored one becomes an `<a href>` — and a card
+has none. Making the centre of a shared handler optional for one caller is how
+a shared handler stops being shared, so this is its own function. It keeps the
+decisions that still apply: server-allocated ids, `addedDate` stamped once and
+`updatedAt` on every write, `''`-not-absent for optional strings, unknown keys
+dropped, and `owner` a typed LABEL rather than an identity nothing
+authenticates.
+
+Two rules live on the SERVER because the UI is not the thing that has to stay
+true:
+
+- **The handoff rule.** A card in "Ready for Prototype and Handoff" is
+  Jillienne's — dragged there, created straight into it, or PUT by hand.
+  `validateCard` is the only place that is decided; the panel mirrors it to
+  explain itself (the column note, and the sheet swapping its Owner picker for
+  a sentence) and sends the owner uncorrected so the two cannot drift. She
+  cannot be removed from the roster for the same reason — the endpoint refuses
+  it with a 409, and the sheet shows "Owns handoff" where her Remove would be.
+- **The cascade.** Removing a person reassigns their cards to Unassigned
+  (`owner: ''`) in the same request that deletes them. A client doing it as
+  "delete, then patch N cards" leaves the board half-migrated if the tab
+  closes on card three. The sheet asks first, and the question names the
+  count.
+
+**The roster seeds from `DESIGNERS`** — the same five names Refinement's
+filter pills use — once, behind a `people-seeded` marker, with fixed keys so
+two first loads racing each other write five records rather than ten. After
+that it is the board's own list: Manage people edits this copy and Refinement
+is unaffected either way. The test compares the function's `SEED_PEOPLE`
+against `DESIGNERS`, since the function re-declares it at the trust boundary.
+
+**Order inside a column is a float, not an index.** A drop between two cards
+stores the midpoint of its new neighbours, so one move writes one record — an
+index would renumber the column on every drag, and two people dragging at once
+would each renumber the other's list. Ties break on id, so the order is total
+even when two midpoints collide. `positionForDrop` is the whole of it.
+
+**The board is a NEW pattern.** There is no kanban anywhere in this codebase —
+no column, no draggable card, no drop target; the house-style skill's
+`reference/gaps.md` still names drag-and-drop as a gap. The column, the card
+and the drag are built from the gateway's own `--ux-*` tokens in
+`todoBoardStyles.ts`. Everything around them is existing furniture: `Sheet` for
+both slide-overs (480px, right-anchored, Close top-left, primary action left in
+the footer — the `AddCustomEventPanel` shape), `ActionMenu` for the card kebab,
+and `UX_TOKEN_BRIDGE` inside each sheet because `Sheet` portals out of the
+shell that carries the palette. **Every move the drag makes, the kebab makes
+too** — "Move to …", "Move up", "Move down" — so the board is not
+pointer-only; the grip is what is draggable rather than the whole card, or
+every reach for the owner `<select>` would start a drag instead.
+
+⚠ **Not the archived To Do section** (`todo-section`, 2026-09-29, id `todo`).
+That was a per-browser checklist in `localStorage`; `TodoPanel.tsx` and
+`todoStore.ts` are untouched by this and that archive row still describes a
+real restore. The ids differ precisely so an old `?section=todo` link does not
+land on a different thing than the one it was written for.
+
 **Why a branch is reviewable at all: branch deploys.** A designer sets their
 flag's default ON on their branch, pushes, and
 `<branch>--<host>/dashboard-rebrand?demo=1` renders their work at that branch's

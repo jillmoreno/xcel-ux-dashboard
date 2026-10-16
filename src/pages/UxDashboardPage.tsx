@@ -24,11 +24,13 @@ import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { ArchiveTable } from '@/components/prototype/ArchiveTable'
 import { QaNotesPanel } from '@/components/prototype/QaNotesPanel'
 import { DemoPanel, LinksPanel, PrdsPanel, ResearchPanel } from '@/components/prototype/LinksPanel'
+import { TodoBoardPanel } from '@/components/prototype/TodoBoardPanel'
 import { LINK_PRODUCTS, useLinkCount, type LinkProduct } from '@/data/linkStore'
 import { formatUpdated } from '@/components/prototype/formatUpdated'
 import { useDemoCount } from '@/data/demoStore'
 import { useResearchCount } from '@/data/researchStore'
 import { usePrdCount } from '@/data/prdStore'
+import { useTodoBoardCount } from '@/data/todoBoardStore'
 import { useQaNoteCount } from '@/data/qaNoteStore'
 import { UX_TOKEN_BRIDGE, mirrorPaletteToRoot } from '@/components/prototype/uxPaletteBridge'
 import {
@@ -124,6 +126,7 @@ type UxSection =
   | 'done'
   | 'archive'
   | 'qa-notes'
+  | 'todo-board'
 
 /*
  * THERE IS NO SECTION GATE (2026-10-15). Until then Design, Exploration,
@@ -314,6 +317,31 @@ const SECTIONS: SectionDef[] = [
     // No `count` here: findings can be authored on the page, so a static number
     // is wrong as soon as one is added. Supplied live below, like To Do's.
   },
+  {
+    // THE TEAM'S OWN BOARD (2026-10-15) — who is working on what, as four
+    // columns a card moves across. Authored on the page like the four link
+    // boards, on its own Netlify Blobs store (`netlify/functions/
+    // todo-board.ts`); nothing in `PROTOTYPE_FEATURES` routes here, so
+    // `bySection['todo-board']` is empty by design and the count is live from
+    // `useTodoBoardCount`.
+    //
+    // LAST, under its own eyebrow, because it is the one section that is not
+    // about a prototype: the others answer "what is the product / what is
+    // under review / what shipped", and this one answers "who is on what this
+    // week". The order here IS the nav order, so moving it is one line.
+    //
+    // ⚠ NOT the archived To Do section (`todo-section` in `archivedItems.ts`,
+    // 2026-09-29, id `todo`). That was a per-browser checklist in
+    // `localStorage`; `TodoPanel.tsx` and `todoStore.ts` are untouched by this
+    // and its restore note still describes a real, separate restore. The id
+    // here is `todo-board` precisely so the two cannot be confused — and so
+    // an old `?section=todo` link does not silently land on a different thing
+    // than the one it was written for.
+    id: 'todo-board',
+    label: 'To Do Board',
+    blurb:
+      'Who is working on what — move a card as its status changes so nobody doubles up. Added on the page, not in code.',
+  },
   // ARCHIVED 2026-09-29 — the To Do and Contributing sections stood here, last
   // in the restricted group. Both are unwired, not deleted: see the `todo-section`
   // and `contributing-section` rows in `src/data/archivedItems.ts` for the
@@ -359,6 +387,9 @@ const NAV_EYEBROWS: Partial<Record<UxSection, string>> = {
   prototypes: 'Demo',
   demo: 'Design & Research',
   development: 'Dev Handoff',
+  // The board is not dev handoff and it is not a prototype, so it gets its own
+  // row rather than joining a group whose label would then be wrong for it.
+  'todo-board': 'Team',
 }
 
 /** `?section=` values the OLD tile landing wrote, mapped onto the new sections.
@@ -1321,6 +1352,11 @@ export function UxDashboardPage() {
   const researchCount = useResearchCount()
   /** Live PRD-link count. Same mechanism again; see `prdStore.ts`. */
   const prdCount = usePrdCount()
+  /** Live card count for the To Do Board badge. Same mechanism again; see
+   *  `todoBoardStore.ts`. ⚠ The trap the archived To Do section's restore note
+   *  names applies here too: everything compiles and the row still draws
+   *  without this, showing a permanent 0. */
+  const todoBoardCount = useTodoBoardCount()
 
   const bySection = useMemo(() => {
     const out: Record<UxSection, PrototypeFeature[]> = {
@@ -1341,6 +1377,9 @@ export function UxDashboardPage() {
       // Not a list of features — the QA panel owns its own data, so this stays
       // empty by design and the nav count comes from the `count` field.
       'qa-notes': [],
+      // Same again: the board owns its own store, counted by
+      // `useTodoBoardCount`.
+      'todo-board': [],
     }
     for (const f of PROTOTYPE_FEATURES) {
       out[sectionOf(f, rollupOf(f), done[f.id] ?? !!f.done)].push(f)
@@ -1472,7 +1511,9 @@ export function UxDashboardPage() {
                       ? researchCount
                       : s.id === 'prds'
                         ? prdCount
-                        : (s.count ?? bySection[s.id].length)
+                        : s.id === 'todo-board'
+                          ? todoBoardCount
+                          : (s.count ?? bySection[s.id].length)
             return (
               <div key={s.id}>
                 {/* NAV_EYEBROWS rows first — authored, by id, above specific
@@ -1637,6 +1678,12 @@ export function UxDashboardPage() {
           // `LinkBoardPanel`. Read-only and filtered to public rows on the
           // public build; that asymmetry is the review gate.
           <DemoPanel prefill={demoPrefill} onPrefillConsumed={consumeDemoPrefill} />
+        ) : section === 'todo-board' ? (
+          // No `ARCHIVE_BRIDGE` wrapper, same as Links: the panel is styled on
+          // this page's own `--ux-*` palette rather than the brand tokens. Its
+          // two SHEETS do need the bridge, because they portal out of this
+          // shell — they carry it themselves, see `TodoBoardSheets.tsx`.
+          <TodoBoardPanel />
         ) : section === 'archive' ? (
           <div style={ARCHIVE_BRIDGE}>
             <ArchiveTable />

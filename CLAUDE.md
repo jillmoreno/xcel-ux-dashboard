@@ -47,6 +47,17 @@ there is one site since 2026-10-15, and they are given its link.
 | **Prototypes** | this IS the product | one per surface, all on `main` | flag defaults on `main` |
 | **Refinement** | under discussion | as many as you like | Netlify Blobs, authored on the page |
 
+**THE TO DO BOARD (2026-10-15)** is the rail's last section and the one
+thing on it that is not about a prototype: four columns — To Do, Working On
+It, Ready For Refinement, Ready for Prototype and Handoff — that say who is
+on what this week. Authored on the page like Refinement, on its own Blobs
+store, with its own people roster seeded from the same five names. Two rules
+are the SERVER's: a card in the handoff column is Jillienne's however it got
+there, and removing someone moves their cards to Unassigned rather than
+deleting them. It is NOT the archived To Do section (`todo-section`, id
+`todo`), which was a private per-browser checklist and is still archived.
+`docs/gateway.md` has the rest.
+
 **ONE SITE since 2026-10-15.** The demo site — a second Netlify project that
 trimmed the gateway for stakeholders — is retired, with the Refinement
 public toggle and the `maturity` gate that only existed to feed it. The Hub
@@ -141,7 +152,7 @@ It is now three things, and where a new screen belongs depends on which:
 
 | Surface | Lives in | Reached at |
 |---|---|---|
-| The UX Dashboard gateway | `src/pages/UxDashboardPage.tsx` + friends | `/`, `/prototype/:id`, `/research-rationale`, `/qa-notes`, `/links`, `/prds` (ten sections — Prototypes · Refinement · Research · Resources · PRDs · Explorations · Development · Done · Archive · QA Notes) |
+| The UX Dashboard gateway | `src/pages/UxDashboardPage.tsx` + friends | `/`, `/prototype/:id`, `/research-rationale`, `/qa-notes`, `/links`, `/prds` (eleven sections — Prototypes · Refinement · Research · Resources · PRDs · Explorations · Development · Done · Archive · QA Notes · To Do Board) |
 | The XCEL product app | `src/pages/*`, `src/components/*` | `/dashboard-rebrand` + ~28 product routes |
 | The standalone prototypes | `public/prototypes/*.html` | `/prototypes/…`, opened in a tab or iframed |
 

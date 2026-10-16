@@ -53,6 +53,10 @@ const EXPECTED_SECTIONS = [
   'Done',
   'Archive',
   'QA Notes',
+  // The team's board (2026-10-15), last and under its own "Team" eyebrow —
+  // see the `SectionDef` in `UxDashboardPage.tsx`. Not the archived To Do
+  // section, which had id `todo` and is still archived.
+  'To Do Board',
 ]
 
 beforeEach(() => {
