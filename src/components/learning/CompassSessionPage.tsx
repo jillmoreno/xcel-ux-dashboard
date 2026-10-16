@@ -124,6 +124,12 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
      that the agreed state while the fix is decided, so the walk ships it
      knowingly rather than discovering it. */
   const walkNeedsHome = useCompassSessionInShell()
+  /* The lesson's measure, centred — see `compass-session-centred`. Off, the
+     column style is simply not applied and the children keep their own caps,
+     which is exactly the layout before this. */
+  const centred = useFeatureFlag('compass-session-centred').enabled
+  /* Key terms: Anjani's rate-to-flip card, or the port's original grid. */
+  const keyTermsV2 = useFeatureFlag('compass-key-terms-rating').enabled
   const inShell = pickedInShell || walkNeedsHome
   useEffect(() => {
     setCourseChrome(inShell ? 'course' : 'takeover')
@@ -142,17 +148,34 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
       <div style={{ ...bodyGridStyle, gridTemplateColumns: railOpen ? '220px minmax(0,1fr) 360px' : '220px minmax(0,1fr)' }}>
         <Contents beats={beats} active={beatIndex} onSelect={setBeatIndex} onExit={onExit} />
         <main style={mainStyle}>
-          <p style={segLabelStyle}>
-            <span aria-hidden style={segDotStyle} />
-            {beat.kind} · you set the pace
-          </p>
-          <BeatBody beat={beat} />
-          <BeatFooter
-            index={beatIndex}
-            total={total}
-            onPrev={() => setBeatIndex((i) => Math.max(0, i - 1))}
-            onNext={() => setBeatIndex((i) => Math.min(total - 1, i + 1))}
-          />
+          {/* THE LESSON IS A CENTRED COLUMN (2026-10-16, Jillienne, with the
+              `<main>` selected: "the course content should be centered in the
+              screen"). The card and the footer were already capped at 680 and
+              the label was not, so on a wide screen all three sat against the
+              left edge of a column that could be twice that — readable, but
+              reading as a layout bug rather than a measure. One wrapper
+              centres the three together, so the label still lines up with the
+              card it names. */}
+          <div style={centred ? columnStyle : undefined}>
+            <p style={segLabelStyle}>
+              <span aria-hidden style={segDotStyle} />
+              {beat.kind} · you set the pace
+            </p>
+            <BeatBody
+              beat={beat}
+              keyTermsV2={keyTermsV2}
+              /* Practice opens Rubi beside the lesson — the rail this page
+                 already owns. Hers seeds the composer with the term; the port
+                 opens the rail, which is as far as this build's Rubi goes. */
+              onPractice={() => setRailOpen(true)}
+            />
+            <BeatFooter
+              index={beatIndex}
+              total={total}
+              onPrev={() => setBeatIndex((i) => Math.max(0, i - 1))}
+              onNext={() => setBeatIndex((i) => Math.min(total - 1, i + 1))}
+            />
+          </div>
         </main>
         {railOpen ? <RubiRail chatting={panel === 'live'} onClose={() => setRailOpen(false)} /> : null}
       </div>
@@ -330,10 +353,24 @@ function ChapterMark({ state }: { state: 'done' | 'here' | 'upcoming' | 'locked'
 
 /* ─── the beat bodies ──────────────────────────────────────────────────── */
 
-function BeatBody({ beat }: { beat: SessionBeat }) {
+function BeatBody({
+  beat,
+  keyTermsV2,
+  onPractice,
+}: {
+  beat: SessionBeat
+  keyTermsV2: boolean
+  onPractice: (term: string) => void
+}) {
   if (beat.type === 'video') return <VideoBeat beat={beat} />
   if (beat.type === 'reading') return <ReadingBeat beat={beat} />
-  if (beat.type === 'keyterm') return <KeyTermsBeat beat={beat} />
+  /* ⚠ A SIBLING, NOT A CONDITIONAL INSIDE THE OLD ONE (CLAUDE.md's rule for
+     changing something that exists). `KeyTermsBeat` is untouched and is what
+     the flag's off arm renders; `KeyTermsBeatV2` is the port of Anjani's
+     design. Both read the same `beat.block.cards`, so the comparison is the
+     treatment and never the content. */
+  if (beat.type === 'keyterm')
+    return keyTermsV2 ? <KeyTermsBeatV2 beat={beat} onPractice={onPractice} /> : <KeyTermsBeat beat={beat} />
   if (beat.type === 'check') return <CheckBeat beat={beat} />
   if (beat.type === 'recap') return <RecapBeat beat={beat} />
   return <InfographicBeat beat={beat} />
@@ -427,6 +464,107 @@ function KeyTermsBeat({ beat }: { beat: SessionBeat }) {
         })}
       </div>
     </article>
+  )
+}
+
+/* HER CONFIDENCE LEVELS, in her order and her words. `compKeyterm` in
+   `public/prototypes/xcel-compass-type-scale-preview.html` is the source —
+   the tag lines below are `rate()`'s, verbatim. */
+const CONF_LEVELS = [
+  { value: 'know', label: 'I know this', tag: 'You felt sure — check it holds.' },
+  { value: 'unsure', label: 'Not sure', tag: 'You weren’t sure — good one to revisit.' },
+  { value: 'new', label: 'New to me', tag: 'New to you — worth a closer look.' },
+] as const
+type ConfLevel = (typeof CONF_LEVELS)[number]['value']
+
+/**
+ * KEY TERMS, ANJANI'S WAY — ported from her prototype 2026-10-16 (Jillienne,
+ * with the beat selected: "This is not matching Anjanis").
+ *
+ * WHAT THE PORT HAD WRONG was not styling, it was the INTERACTION. The port
+ * drew a two-column grid of small cards that said "Flip to check", so the
+ * flip was the whole gesture. In hers the RATING IS THE FLIP: each term is a
+ * full-width card, you say how sure you are before you look, and answering is
+ * what reveals the definition, the example and a way to practise it. The
+ * question she asks — "How sure are you before you flip?" — only means
+ * anything if answering it is the thing that flips.
+ *
+ * Taken from `compKeyterm` and `rate()` in
+ * `public/prototypes/xcel-compass-type-scale-preview.html` (her `LESSON_DOC`),
+ * not from a screenshot: the copy, the three levels, their order and the tag
+ * lines are hers verbatim.
+ *
+ * ⚠ TWO DELIBERATE DIFFERENCES FROM HER FILE:
+ *   • SAVE IS INERT, like the Notes button in the bar above it and for the
+ *     same reason — this port has no notes store, and a Save that silently
+ *     did nothing would be worse than one that is visibly a placeholder.
+ *     Hers calls `toggleNote` and flips to "Saved".
+ *   • THE TERM IS NOT SET IN PLAYFAIR. Hers is; this repo has no serif token
+ *     and `tokens.css` says plainly that adding a webfont for one variant
+ *     makes the default view pay for it. `--font-heading` is the nearest
+ *     thing already loaded. Worth a decision of its own, not a silent import.
+ */
+function KeyTermsBeatV2({
+  beat,
+  onPractice,
+}: {
+  beat: SessionBeat
+  onPractice: (term: string) => void
+}) {
+  const [conf, setConf] = useState<Record<string, ConfLevel>>({})
+  return (
+    <>
+      {/* Her intro sits ABOVE the cards as plain text — each term is its own
+          card, so there is no outer card for it to live inside. */}
+      <p style={termsIntroStyle}>{beat.block.intro}</p>
+      {beat.block.cards?.map((c) => {
+        const level = conf[c.id]
+        const rated = CONF_LEVELS.find((l) => l.value === level)
+        return (
+          <article key={c.id} style={termCardV2Style}>
+            <div style={termHeadStyle}>
+              <h3 style={termWordV2Style}>{c.term}</h3>
+              {/* Drawn and inert — see the note above. */}
+              <button type="button" style={termSaveStyle} aria-label={`Save ${c.term} to notes`}>
+                Save
+              </button>
+            </div>
+            <p style={termQStyle}>How sure are you before you flip?</p>
+            <div role="group" aria-label={`Confidence for ${c.term}`} style={termConfRowStyle}>
+              {CONF_LEVELS.map((l) => {
+                const on = level === l.value
+                return (
+                  <button
+                    key={l.value}
+                    type="button"
+                    /* `aria-pressed`, as hers — three toggles in a group, not a
+                       radiogroup: re-pressing one keeps the card open rather
+                       than clearing the answer. */
+                    aria-pressed={on}
+                    onClick={() => setConf((f) => ({ ...f, [c.id]: l.value }))}
+                    style={on ? termConfOnStyle : termConfStyle}
+                  >
+                    {l.label}
+                  </button>
+                )
+              })}
+            </div>
+            {rated && (
+              <div style={termBackStyle}>
+                <p style={termDefV2Style}>{c.def}</p>
+                <p style={termExV2Style}>{c.ex}</p>
+                <div style={termBackFootStyle}>
+                  <button type="button" style={termPracticeStyle} onClick={() => onPractice(c.term)}>
+                    Practice this with Rubi
+                  </button>
+                  <span style={termTagStyle}>{rated.tag}</span>
+                </div>
+              </div>
+            )}
+          </article>
+        )
+      })}
+    </>
   )
 }
 
@@ -770,6 +908,131 @@ const showAllStyle: CSSProperties = {
   cursor: 'pointer',
 }
 const mainStyle: CSSProperties = { minWidth: 0, minHeight: 0, overflowY: 'auto', padding: '20px 32px 64px' }
+/* The lesson's measure, centred in whatever width is left after the Contents
+   rail and (when open) Rubi. 680 is not a new number — it is what `cardStyle`
+   and `footerStyle` already used; this is where it becomes the COLUMN rather
+   than a cap on two of the three children, which is what left the label
+   stretching full width while the card beneath it stopped short. */
+const columnStyle: CSSProperties = { width: '100%', maxWidth: 680, marginInline: 'auto' }
+
+/* ── KEY TERMS, ANJANI'S CARD ────────────────────────────────────────────────
+   Her values from `xcel-compass-type-scale-preview.html`, mapped onto this
+   repo's tokens — never her raw hex, which is the house rule and also what
+   keeps the card correct in dark mode. */
+const termsIntroStyle: CSSProperties = {
+  margin: '0 0 14px',
+  fontSize: 14,
+  lineHeight: 1.55,
+  color: 'var(--color-text-secondary)',
+}
+const termCardV2Style: CSSProperties = {
+  background: 'var(--color-surface-card)',
+  border: '1px solid var(--color-border-subtle)',
+  borderRadius: 12,
+  padding: 20,
+  marginBottom: 14,
+}
+const termHeadStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 10,
+}
+const termWordV2Style: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-heading)',
+  fontSize: 23,
+  fontWeight: 600,
+  color: 'var(--color-text-primary)',
+}
+const termSaveStyle: CSSProperties = {
+  flex: '0 0 auto',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  border: '1px solid var(--color-border-subtle)',
+  background: 'var(--color-surface-card)',
+  borderRadius: 8,
+  padding: '5px 9px',
+  fontFamily: 'var(--font-body)',
+  fontSize: 11.5,
+  fontWeight: 600,
+  color: 'var(--color-text-secondary)',
+  whiteSpace: 'nowrap',
+  cursor: 'pointer',
+}
+const termQStyle: CSSProperties = {
+  margin: '14px 0 8px',
+  fontSize: 12.5,
+  fontWeight: 600,
+  color: 'var(--color-text-tertiary)',
+}
+const termConfRowStyle: CSSProperties = { display: 'flex', gap: 7 }
+const termConfStyle: CSSProperties = {
+  flex: 1,
+  background: 'var(--color-surface-card)',
+  border: '1.5px solid var(--color-border-subtle)',
+  borderRadius: 8,
+  padding: '7px 3px',
+  textAlign: 'center',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  color: 'var(--color-text-primary)',
+  cursor: 'pointer',
+  transition: 'background-color .15s, border-color .15s, color .15s',
+}
+/* Her pressed state is the Rubi blue filled, which is this palette's primary. */
+const termConfOnStyle: CSSProperties = {
+  ...termConfStyle,
+  background: 'var(--color-primary-700)',
+  borderColor: 'var(--color-primary-700)',
+  color: 'var(--color-text-inverse)',
+}
+const termBackStyle: CSSProperties = {
+  marginTop: 16,
+  borderTop: '1px solid var(--color-border-subtle)',
+  paddingTop: 14,
+}
+const termDefV2Style: CSSProperties = {
+  margin: 0,
+  fontSize: 17,
+  lineHeight: 1.55,
+  color: 'var(--color-text-primary)',
+}
+const termExV2Style: CSSProperties = {
+  margin: '8px 0 0',
+  paddingLeft: 12,
+  borderLeft: '2px solid var(--color-border-subtle)',
+  fontSize: 15.5,
+  lineHeight: 1.5,
+  color: 'var(--color-text-secondary)',
+}
+const termBackFootStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  flexWrap: 'wrap',
+  marginTop: 14,
+}
+const termPracticeStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 8,
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  fontWeight: 600,
+  color: 'var(--color-primary-700)',
+  background: 'var(--color-primary-100)',
+  border: '1px solid var(--color-primary-200)',
+  borderRadius: 10,
+  padding: '9px 14px',
+  cursor: 'pointer',
+}
+const termTagStyle: CSSProperties = {
+  fontSize: 11.5,
+  fontWeight: 600,
+  color: 'var(--color-text-tertiary)',
+}
 const segLabelStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',

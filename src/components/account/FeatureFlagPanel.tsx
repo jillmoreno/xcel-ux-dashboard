@@ -152,6 +152,8 @@ const REBRAND_FLAGS = [
   'hybrid-lesson-block',
   'hybrid-course-expiry',
   'compass-session-chrome',
+  'compass-session-centred',
+  'compass-key-terms-rating',
   'hybrid-pace-standing',
   'hybrid-title-lesson',
   'hybrid-quick-links-style',

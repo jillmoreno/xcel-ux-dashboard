@@ -2414,6 +2414,60 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-session-centred',
+    /* THE LESSON IS A CENTRED COLUMN (2026-10-16, Jillienne, with the session's
+       `<main>` selected: "the course content should be centered in the
+       screen"). `cardStyle` and `footerStyle` were already capped at 680 and
+       the segment label was not, so on a wide screen the three sat against the
+       left edge of a column up to 1187px — the label stretching full width
+       while the card beneath it stopped short, which reads as a layout bug
+       rather than a measure.
+
+       ⚠ A PLAIN FLAG, NOT `surface: 'design'`, and that is deliberate:
+       `promote-to-prototype` lists design controls separately BECAUSE THEY
+       NEVER REACH PROTOTYPES, and this is meant to ship, not to be a toggle on
+       a bar.
+
+       ⚠ IT IS ANJANI'S SURFACE (`compass:session`), which is why it is flagged
+       at all rather than merged as a three-line layout fix: on by default so
+       it shows as a Compass-scope candidate at promotion, and off restores the
+       left-aligned column exactly, so disagreeing costs one word. */
+    group: 'Widgets',
+    label: 'Compass session content is centred',
+    description:
+      'On, the Compass session\u2019s lesson column (label, card and footer) is centred in the space left by the Contents rail and Rubi, at the 680px measure the card already used. Off, it sits against the left edge as before.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-key-terms-rating',
+    /* KEY TERMS, ANJANI'S WAY (2026-10-16, Jillienne with the beat selected:
+       "This is not matching Anjanis").
+
+       What the React port had wrong was the INTERACTION, not the styling. It
+       drew a two-column grid of small cards saying "Flip to check", so the
+       flip was the whole gesture. In hers THE RATING IS THE FLIP: a full-width
+       card per term, "How sure are you before you flip?", and answering —
+       I know this / Not sure / New to me — is what reveals the definition, the
+       example and "Practice this with Rubi". Her question only means anything
+       if answering it is the thing that flips.
+
+       Ported from `compKeyterm` and `rate()` in her
+       `xcel-compass-type-scale-preview.html`, not from a screenshot: the copy,
+       the levels, their order and the tag lines are hers verbatim.
+       `KeyTermsBeat` is untouched beside `KeyTermsBeatV2` — the sibling rule —
+       so off is exactly the old grid.
+
+       ⚠ ANJANI'S SURFACE. On by default so it shows as a Compass-scope
+       candidate at promotion rather than riding in with a merge. */
+    group: 'Widgets',
+    label: 'Key terms: rate before you flip',
+    description:
+      'On, the Compass session\u2019s Key terms beat is Anjani\u2019s card \u2014 one per term, with Save, \u201cHow sure are you before you flip?\u201d and three confidence buttons that reveal the definition, the example and Practice this with Rubi. Off, the original two-column \u201cFlip to check\u201d grid.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-header-v2',
     /* THE ATLAS HEADER, ON THE DESIGN BAR (2026-10-13, Eric's request:
        "replace the nav … with the new nav"). On (default), Eric's Atlas

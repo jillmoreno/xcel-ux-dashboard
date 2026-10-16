@@ -78,7 +78,15 @@ describe('the Compass session', () => {
     expect(within(q1).getByText(/Only permanent policies build cash value/)).toBeTruthy()
   })
 
-  it('keeps the key terms hidden until they are flipped', async () => {
+  it('OFF `compass-key-terms-rating`: keeps the key terms hidden until they are flipped', async () => {
+    /* ⚠ THIS IS THE OFF ARM NOW (2026-10-16). The default became Anjani's
+       card, where the CONFIDENCE RATING is what flips — see
+       `CompassKeyTerms.test.tsx`. The original grid is kept beside it
+       (`KeyTermsBeat`, untouched), and this case is what still pins it, so
+       the sibling cannot rot unnoticed while nobody is looking at the off
+       arm. The `?ff=` is read off `window.location` by the provider, not the
+       router, which is why it is set here rather than passed to MemoryRouter. */
+    window.history.replaceState({}, '', '/dashboard-rebrand?ff=compass-key-terms-rating:off')
     const user = userEvent.setup()
     renderSession()
     await user.click(within(contents()).getByRole('button', { name: /Key terms/ }))
@@ -87,6 +95,7 @@ describe('the Compass session', () => {
     await user.click(card)
     expect(card.getAttribute('aria-expanded')).toBe('true')
     expect(screen.getByText(/The savings balance that builds inside a permanent policy/)).toBeTruthy()
+    window.history.replaceState({}, '', '/')
   })
 
   it('opens Rubi on the nudge, and lets it be closed', async () => {
