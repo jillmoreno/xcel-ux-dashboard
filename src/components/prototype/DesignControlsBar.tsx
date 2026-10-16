@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Check, Flag, Sliders } from '@/icons'
 import { useAccount } from '@/context/AccountContext'
@@ -293,6 +294,80 @@ function DesignControl({
     )
   }
 
+  /*
+   * ⚠ A FEW OPTIONS ARE A SEGMENTED GROUP, MANY ARE A DROPDOWN — 2026-10-16,
+   * Jillienne, on the design bar matching Anjani's own prototype.
+   *
+   * Her bar (`xcel-compass-nudge-journey.html`) draws every axis as its
+   * options, side by side, under a 9px uppercase label to the left: Panel is
+   * `[Closed][Idle][Chatting]`, not "Panel: Closed ⌄". You see the states and
+   * you pick one; the React bar hid them behind a popover and charged two
+   * clicks for the same move.
+   *
+   * ⚠ THE THRESHOLD IS A COUNT, NOT A LIST OF FLAGS. Every one of her
+   * Compass controls has two or three options, so all of them become groups;
+   * Eric's `atlas-brand-skin` has TEN and `atlas-heading-font` six, and ten
+   * inline buttons is not a control, it is a wall. A rule on the count means
+   * nobody has to register a flag anywhere to get the right shape — the same
+   * reason the shape already comes from `variants` rather than a per-control
+   * entry.
+   *
+   * ⚠ THE ACCENT STAYS CYAN, which is the one place this deliberately does
+   * NOT match her. Hers fills the chosen button with XCEL brick (#C4122E);
+   * here the two bars are colour-coded on purpose — amber is the demo bar,
+   * cyan is this one — and that coding is how a reviewer knows which bar they
+   * are touching. Borrowing brick would borrow the other bar's register.
+   */
+  if (variants.length <= SEGMENTED_MAX) {
+    return (
+      <span style={SEGMENT_GROUP}>
+        <span style={SEGMENT_LABEL}>{def.label}</span>
+        {/* ⚠ ROVING TABINDEX NEEDS ARROW KEYS, or it is a trap. Only the
+            CHECKED radio is tabbable — that is the ARIA pattern and it is what
+            keeps a three-option group from eating three tab stops on a bar
+            that has a dozen of them — but without this handler a keyboard
+            user reaches the selected option and can never move off it. The
+            dropdown this replaced had the same roving tabindex inside its
+            popover; inline, it is the only way to the control at all. */}
+        <span
+          role="radiogroup"
+          aria-label={def.label}
+          style={SEGMENT_TRACK}
+          onKeyDown={(e) => {
+            const step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0
+            if (!step) return
+            e.preventDefault()
+            const at = variants.findIndex((v) => v.value === current)
+            // Wraps, as a radiogroup does.
+            const next = variants[(at + step + variants.length) % variants.length]
+            onPick(next.value)
+            // Focus follows selection, or the eye and the caret disagree.
+            const buttons = e.currentTarget.querySelectorAll('button')
+            buttons[(at + step + variants.length) % variants.length]?.focus()
+          }}
+        >
+          {variants.map((v) => {
+            const active = v.value === current
+            return (
+              <button
+                key={v.value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                tabIndex={active ? 0 : -1}
+                className="cre-demo-controls-btn"
+                style={{ ...SEGMENT_BTN, ...(active ? SEGMENT_BTN_ON : null) }}
+                onClick={() => onPick(v.value)}
+              >
+                {v.label}
+              </button>
+            )
+          })}
+        </span>
+      </span>
+    )
+  }
+
   return (
     <DemoDropdown
       id={def.key}
@@ -323,6 +398,56 @@ function DesignControl({
       })}
     </DemoDropdown>
   )
+}
+
+/* ── Segmented groups ────────────────────────────────────────────────────
+   Anjani's shape: a small uppercase label, then the options as one track.
+   Three is the ceiling — see the note in `DesignControl`. */
+const SEGMENTED_MAX = 3
+
+const SEGMENT_GROUP: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 7,
+}
+
+/* 11px rather than her 9: her bar is the whole page's chrome at one size,
+   this one sits beside the demo bar's 11px eyebrows and a smaller label here
+   would read as a different system rather than a quieter one. */
+const SEGMENT_LABEL: CSSProperties = {
+  ...DEMO_TRIGGER_EYEBROW,
+  flex: 'none',
+}
+
+/* One rounded track holding the buttons, so the group reads as a single
+   control rather than loose buttons that happen to sit together. */
+const SEGMENT_TRACK: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 2,
+  padding: 2,
+  borderRadius: 999,
+  background: DEMO_FAINT_FILL,
+}
+
+const SEGMENT_BTN: CSSProperties = {
+  border: 'none',
+  background: 'transparent',
+  color: 'rgb(255 255 255 / 0.62)',
+  padding: '5px 11px',
+  borderRadius: 999,
+  fontSize: 13,
+  fontWeight: 600,
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  transition: 'background .15s, color .15s',
+}
+
+const SEGMENT_BTN_ON: CSSProperties = {
+  background: DESIGN_ACCENT,
+  /* Against the cyan the white the rest of the bar uses goes muddy; the
+     bar's own dark ground is what stays legible on it. */
+  color: 'var(--color-neutral-950)',
 }
 
 /* The version this bar is scoped to, stated rather than implied — a designer
