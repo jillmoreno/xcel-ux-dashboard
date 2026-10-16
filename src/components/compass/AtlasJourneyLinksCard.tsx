@@ -42,9 +42,11 @@ export type AtlasJourneyLinksCardProps = {
   /** A 1px rule under the title, 16 either side as the Readiness card's
    *  (Eric/Atlas WIP's Home, 2026-10-13). */
   titleRule?: boolean
+  /** Every row drawn and inert — the End-to-End Demo's Home (2026-10-15). */
+  linksOff?: boolean
 }
 
-export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, withoutCoursePages = false, titleRule = false }: AtlasJourneyLinksCardProps) {
+export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, withoutCoursePages = false, titleRule = false, linksOff = false }: AtlasJourneyLinksCardProps) {
   const [params, setParams] = useSearchParams()
   /* Which link is the page you are on — the four that are pages; the three
      sheet links never are. */
@@ -52,7 +54,7 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
   const coursePage = params.get('coursePage')
   const here = (s: string, page?: string) => section === s && (page ? coursePage === page : true)
   const go = (section: string | null, extra?: Record<string, string>) =>
-    setParams((prev) => {
+    linksOff ? undefined : setParams((prev) => {
       const next = new URLSearchParams(prev)
       if (section) next.set('section', section)
       else next.delete('section')
@@ -93,17 +95,17 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
         <SideLink
           icon={<CircleInfoRegular size={13} aria-hidden />}
           label="Exam Information"
-          onClick={onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : homeAndOpen('exam-details')}
+          onClick={onOpenStep && !linksOff ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : homeAndOpen('exam-details')}
         />
         <SideLink
           icon={<PenFieldRegular size={13} aria-hidden />}
           label="Applying for a License"
-          onClick={onOpenStep ? () => onOpenStep(apply.id) : homeAndOpen(`step:${apply.id}`)}
+          onClick={onOpenStep && !linksOff ? () => onOpenStep(apply.id) : homeAndOpen(`step:${apply.id}`)}
         />
         <SideLink
           icon={<ClipboardListCheckRegular size={13} aria-hidden />}
           label="State Requirements"
-          onClick={onOpenRequirements ?? homeAndOpen('requirements')}
+          onClick={(!linksOff && onOpenRequirements) || homeAndOpen('requirements')}
         />
       </ul>
     </nav>

@@ -132,6 +132,13 @@ export type AtlasHomeEricE2EProps = {
 }
 
 
+/* NO LINKS on the End-to-End Demo's Home (2026-10-15, Eric's request): every
+   control stays drawn and does nothing — Course Overview, Begin Course, the
+   journey stops, the tiles, State Requirements and Quick Links. Set false to
+   wire them again. */
+const LINKS_OFF = true
+const NO_LINK = () => {}
+
 export function AtlasHomeEricE2E({
   path,
   courseTitle,
@@ -178,7 +185,7 @@ export function AtlasHomeEricE2E({
     return () => ro.disconnect()
   }, [headEl])
   const go = (section: string, coursePage?: string) =>
-    setParams((prev) => {
+    LINKS_OFF ? undefined : setParams((prev) => {
       const next = new URLSearchParams(prev)
       next.set('section', section)
       if (coursePage) next.set('coursePage', coursePage)
@@ -286,7 +293,7 @@ export function AtlasHomeEricE2E({
      Sequence what is DRAWN, which is the array below. */
   const shownStops: readonly JourneyStop[] = applyJourneySequencing(
     onWhite && stops.length
-      ? whiteJourneyTitles(stops[0]).map((title, i) => ({
+      ? whiteJourneyTitles(stops[0], { stateExamSimulators: true }).map((title, i) => ({
           ...stops[0],
           id: `white-${i}`,
           title,
@@ -300,18 +307,25 @@ export function AtlasHomeEricE2E({
     regulated,
   )
   const shownCurrentIdx = onWhite ? 0 : currentIdx
-  /* ⚠ THE STEPS FOLLOW THE PATH'S JURISDICTION — 2026-10-15. They were
-     `GET_LICENSED_STEPS`, which is NEW YORK's, while the heading two lines
-     down has always read `jurisdictionName(path.state)`. On a New York path
-     the two agreed and nobody noticed; on any other path the card would have
-     said "Get Licensed in Florida" above PSI's New York registration link,
-     a $40 New York exam fee and the NY Department of Financial Services.
-     `getLicensedStepsFor` falls back to Florida and resolves 'NY' to the very
-     same array, so the New York demo is byte-identical. */
-  const licensedSteps = getLicensedStepsFor(path.state)
+  /* THE DEMO'S COURSE IS FLORIDA (2026-10-15, Eric's request) — the invite
+     flow sells "Florida Life and Health Pre-licensing", so the Home it lands
+     on says Florida rather than the path's New York. This component is the
+     End-to-End Demo's alone (`LearnerFocusedBand` renders it for
+     `eric-atlas-e2e` only), so the constant reaches no other home.
+
+     ⚠ THE STEPS FOLLOW IT, and that is the whole point of the constant.
+     Earlier the same day the steps were `GET_LICENSED_STEPS` — NEW YORK's —
+     while the heading read `jurisdictionName(path.state)`. On a New York path
+     the two agreed and nobody noticed; the moment the heading said Florida
+     the card read "Get Licensed in Florida" above PSI's New York registration
+     link, a $40 New York exam fee and the NY Department of Financial
+     Services. Setting the heading alone puts that back, so heading and steps
+     are both derived from this one value and cannot drift apart. */
+  const E2E_STATE = 'FL'
+  const licensedSteps = getLicensedStepsFor(E2E_STATE)
   const pass = licensedSteps[licensedSteps.length - 2]
   const apply = licensedSteps[licensedSteps.length - 1]
-  const state = jurisdictionName(path.state)
+  const state = jurisdictionName(E2E_STATE)
   const longTitle = useFeatureFlag('atlas-home-long-title').enabled
   // The Design bar's Progress (V3 only, 2026-10-09) — which module state and figure.
   const progressPick = useFeatureFlag('atlas-v3-progress').variant ?? 'not-started'
@@ -422,8 +436,8 @@ export function AtlasHomeEricE2E({
             cover={shownCover ?? undefined}
             title={shownTitle}
             onCover={() => setWhiteHead(false)}
-            onOverview={onOverview}
-            onBegin={onBegin}
+            onOverview={LINKS_OFF ? NO_LINK : onOverview}
+            onBegin={LINKS_OFF ? NO_LINK : onBegin}
             beginLabel={progressPick === 'not-started' ? 'Begin Course' : 'Resume Course'}
             meta={courseMeta}
           />
@@ -455,13 +469,14 @@ export function AtlasHomeEricE2E({
                 as the outline button, and Begin Course, MOVED here from the
                 Study Journey's current stop. */}
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              {onOverview ? (
+              {LINKS_OFF || onOverview ? (
                 <button
                   type="button"
                   className="cre-compass-secondary cre-atlas-home-secondary"
-                  onClick={onOverview}
-                  // Two weights under the buttons' Bold, Medium 500 (2026-10-06).
-                  style={{ ...HEADER_BUTTON, fontWeight: 500 }}
+                  onClick={LINKS_OFF ? NO_LINK : onOverview}
+                  // Bold 700, the exam-date prompt's Yes (2026-10-15, Eric's
+                  // request; Medium 500 from 2026-10-06).
+                  style={{ ...HEADER_BUTTON, fontWeight: 700 }}
                 >
                   Course Overview
                 </button>
@@ -469,9 +484,9 @@ export function AtlasHomeEricE2E({
               <button
                 type="button"
                 className="cre-compass-primary cre-compass-btn-primary"
-                onClick={onBegin}
-                disabled={!onBegin}
-                style={HEADER_BUTTON}
+                onClick={LINKS_OFF ? NO_LINK : onBegin}
+                disabled={!LINKS_OFF && !onBegin}
+                style={HEADER_PRIMARY}
               >
                 {/* "Resume Course" once the Design bar's Progress is past 0% (2026-10-12,
                     Eric's request). */}
@@ -487,7 +502,8 @@ export function AtlasHomeEricE2E({
 
         {/* 32 either side of the rule, White's (2026-10-13, Eric's request);
             it was 40. */}
-        <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
+        {/* 48 between the two columns (2026-10-15, Eric's request; 32 either side of a divider before). */}
+        <div style={{ display: 'flex', gap: 48, alignItems: 'stretch' }}>
           {/* Left: V3's COLUMN, 235 wide — Figma 254:7973 (2026-10-08, Eric's
               request; it was the 200-wide Course progress panel alone). Two
               link tiles (certificates, courses), the Course progress panel
@@ -505,6 +521,8 @@ export function AtlasHomeEricE2E({
             {completedView ? null : (
             <AtlasCourseProgressStates
               bare={onWhite}
+              // The pace pill's gauge in Light, Primary 400 (2026-10-15, Eric).
+              lightGauge
               key={`progress-${progressPick}-${refreshKey}`}
               initialStage={progress.stage}
               onAdvance={advanceProgress}
@@ -605,12 +623,27 @@ export function AtlasHomeEricE2E({
             )}
           </div>
 
-          {/* 8 more on each side of it on White (2026-10-14, Eric's request). */}
-          <span aria-hidden style={{ width: 1, flex: 'none', background: 'var(--color-primary-100)', ...(onWhite ? { marginLeft: 8, marginRight: 8 } : null) }} />
+          {/* No divider here (2026-10-15, Eric's request) — the row's 48 is the
+              whole gap. */}
 
           {/* Right: the journey — at most 335, White's (2026-10-13, Eric's
               request). */}
           <div style={{ flex: '1 1 0', minWidth: 0, maxWidth: 335, display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* THE STATE EXAM DATE PROMPT, above the steps — Figma 428:3134
+                (2026-10-15, Eric's request). Its own width, wider than the
+                steps' 335. Yes and Not Yet are not wired yet. */}
+            <div style={EXAM_DATE_PROMPT}>
+              <div style={EXAM_DATE_PILL}>
+                <p style={EXAM_DATE_QUESTION}>Do you know your state exam date?</p>
+                <button type="button" style={EXAM_DATE_YES}>
+                  Yes
+                </button>
+              </div>
+              <button type="button" style={EXAM_DATE_NOT_YET}>
+                Not Yet
+                <AngleRightSolid size={11} aria-hidden style={{ width: 6 }} />
+              </button>
+            </div>
             {completedView ? (
               /* STEP 1 ON THE COMPLETED VIEW — Figma 297:247 (2026-10-09,
                  Eric's request): the eyebrow, "Congratulations!" and a line in
@@ -647,7 +680,7 @@ export function AtlasHomeEricE2E({
                     stop={stop}
                     current={i === shownCurrentIdx}
                     last={i === shownStops.length - 1}
-                    onOpen={onOpenStop ? () => onOpenStop(stop.id) : undefined}
+                    onOpen={onOpenStop && !LINKS_OFF ? () => onOpenStop(stop.id) : undefined}
                     // On Track 14% only (2026-10-09, Eric): the current stop
                     // shows how far through it is and what is next (Figma
                     // 265:8145). DEMO figures and chapter, the design's own.
@@ -693,7 +726,7 @@ export function AtlasHomeEricE2E({
                 type="button"
                 data-cta-id="home.state-requirements"
                 className="cre-compass-secondary"
-                onClick={onOpenRequirements}
+                onClick={LINKS_OFF ? NO_LINK : onOpenRequirements}
                 style={REQUIREMENTS}
               >
                 {state ? `${state} State Requirements` : 'State Requirements'}
@@ -727,6 +760,7 @@ export function AtlasHomeEricE2E({
             own Flashcards and Exam Simulator. The sheets open here, in place. */}
         <AtlasJourneyLinksCard
           withoutCoursePages
+          linksOff={LINKS_OFF}
           onOpenStep={onOpenStep}
           onOpenRequirements={onOpenRequirements}
           // Outlined in Secondary 100 darkened 5% (2026-10-13, Eric's request;
@@ -891,6 +925,81 @@ function Step({
   )
 }
 
+
+/* The exam-date prompt: a Primary 100 pill (24 in, 16 corners, 33 tall)
+   with Yes in Primary 500, then Not Yet › 8 to its right. */
+const EXAM_DATE_PROMPT: CSSProperties = {
+  // Fits its content (2026-10-15, Eric's request; the design's fixed 460).
+  width: 'max-content',
+  // 20 to Step 1, 4 under the column's 24 (2026-10-15, Eric's requests: 16,
+  // then 4 more).
+  marginBottom: -4,
+  // The ground takes in Yes and Not Yet too, 16 in at each end (2026-10-15,
+  // Eric's request); the course card's Primary 100 (the design's Secondary
+  // 200, on the question and Yes only).
+  // 4 above and below Yes (2026-10-15, Eric's request) — 41 tall.
+  boxSizing: 'border-box',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  padding: '4px 16px',
+  borderRadius: 16,
+  background: 'var(--color-primary-100)',
+}
+
+/* The question and Yes, 10 apart. */
+const EXAM_DATE_PILL: CSSProperties = {
+  flex: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+}
+
+const EXAM_DATE_QUESTION: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 13,
+  lineHeight: '14px',
+  letterSpacing: -0.2,
+  color: 'var(--color-text-primary)',
+  whiteSpace: 'nowrap',
+}
+
+const EXAM_DATE_YES: CSSProperties = {
+  height: 33,
+  boxSizing: 'border-box',
+  padding: '0 24px',
+  // White, its text in Primary 500 and its 1px border two levels lighter,
+  // Primary 300 (2026-10-15, Eric's requests; the design's filled 500).
+  border: '1px solid var(--color-primary-300)',
+  // The standard button's corners, `COMPASS_BUTTON`'s (2026-10-15, Eric's
+  // request; it was 16).
+  borderRadius: COMPASS_BUTTON.borderRadius,
+  background: 'var(--color-fixed-light)',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 13.5,
+  lineHeight: '20.25px',
+  color: 'var(--color-primary-500)',
+  cursor: 'pointer',
+}
+
+const EXAM_DATE_NOT_YET: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 11,
+  lineHeight: '11px',
+  color: 'var(--color-primary-500)',
+  whiteSpace: 'nowrap',
+  cursor: 'pointer',
+}
 
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
@@ -1081,8 +1190,9 @@ const WHITE_PROGRESS_PANEL: CSSProperties = {
   padding: '8px 32px',
   boxSizing: 'border-box',
   borderRadius: 20,
-  // Quick Links' border (2026-10-14, Eric's request; Primary 200 before).
-  border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)',
+  // No stroke, a Secondary 100 fill (2026-10-15, Eric's request; it had
+  // Quick Links' border).
+  background: 'var(--color-atlas-tan-100)',
 }
 const WHITE_PROGRESS_RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-tan-300)' }
 
@@ -1104,9 +1214,9 @@ const WHITE_COURSE_HEAD: CSSProperties = {
   // 40 all round (2026-10-14, Eric's requests: 32, then 24, then 32 with the
   // top trimmed to 24, then 16, back to 32 once the tabs were hidden, 48, 40).
   padding: WHITE_HEAD_PAD,
-  // 16 more below it, before the Progress row (2026-10-14, Eric's requests:
-  // 8, then 8 more).
-  marginBottom: 16,
+  // 8 more below it, before the Progress row (2026-10-14, Eric's requests:
+  // 8, then 8 more; 8 less on 2026-10-15).
+  marginBottom: 8,
   borderRadius: 20,
   background: 'var(--color-primary-100)',
 }
@@ -1226,6 +1336,10 @@ const HEADER_BUTTON: CSSProperties = {
   fontSize: 13.5,
   lineHeight: '20.25px',
 }
+
+/* The primary (Begin / Resume Course): 8 more each side, 16 (2026-10-15,
+   Eric's request). */
+const HEADER_PRIMARY: CSSProperties = { ...HEADER_BUTTON, padding: '5px 16px' }
 const CHEVRON: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',

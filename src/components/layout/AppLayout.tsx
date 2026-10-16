@@ -115,7 +115,11 @@ export function AppLayout({ bare = false }: { bare?: boolean } = {}) {
                             path === '/dashboard-rebrand' ||
                             path === '/' ||
                             path.startsWith('/prototype') ||
-                            path === '/account/profile'
+                            path === '/account/profile' ||
+                            // The End-to-End Demo's own pages — its Home's
+                            // logo goes back to Invited Product Detail
+                            // (2026-10-15).
+                            path.startsWith('/end-to-end-demo')
                           )
                             return
                           e.preventDefault()

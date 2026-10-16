@@ -2625,7 +2625,8 @@ function MyCoursesSection() {
               <AtlasCourseCard
                 key={c.id}
                 data={c}
-                onAction={i === 0 ? openCourse : undefined}
+                // Unwired on the End-to-End Demo (2026-10-15, Eric's request).
+                onAction={i === 0 && sectionVersion !== 'eric-atlas-e2e' ? openCourse : undefined}
                 // White's active cards in Primary 100 on its white page
                 // (2026-10-14, Eric's request); completed cards keep no fill.
                 activeFill={white ? 'var(--color-primary-100)' : undefined}

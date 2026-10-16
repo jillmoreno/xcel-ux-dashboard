@@ -4,6 +4,7 @@ import { useNotifications } from '@/context/NotificationsContext'
 import { useProfileAvatar } from '@/context/ProfileAvatarContext'
 import { WHITE_COURSES, WHITE_COURSE_PARAM, WHITE_FIRST_COURSE_ID } from '@/data/atlasWhiteCourses'
 import { AtlasHeader } from './AtlasHeader'
+import { END_TO_END_VERSION } from '@/pages/endToEndDemo'
 import { ATLAS_HOME_REFRESH } from './atlasHomeRefresh'
 
 /**
@@ -58,6 +59,16 @@ export function AtlasHeaderConnected({
   }
 
   const home = shell(() => {})
+  /* THE END-TO-END DEMO'S LOGO goes back to its first page, Invited Product
+     Detail, keeping the demo's params (2026-10-15, Eric's request). */
+  const logo =
+    params.get('version') === END_TO_END_VERSION
+      ? (() => {
+          const next = new URLSearchParams(params)
+          for (const k of ['section', 'coursePage', 'affidavit']) next.delete(k)
+          return `/end-to-end-demo?${next.toString()}`
+        })()
+      : undefined
   return (
     <AtlasHeader
       current={current}
@@ -81,6 +92,7 @@ export function AtlasHeaderConnected({
       }))}
       links={{
         home,
+        logo,
         help: shell((n) => n.set('section', 'support')),
         allCourses: shell((n) => n.set('section', 'courses')),
         profile: shell((n) => n.set('section', 'profile')),

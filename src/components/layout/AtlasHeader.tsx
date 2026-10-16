@@ -34,7 +34,7 @@ export type AtlasHeaderCourse = { id: string; title: string; href?: string; onSe
 
 /** Destinations. Each defaults to `#` — none is decided yet. */
 export type AtlasHeaderLinks = Partial<
-  Record<'home' | 'help' | 'allCourses' | 'profile' | 'notifications' | 'transcripts' | 'purchases' | 'logout', string>
+  Record<'home' | 'logo' | 'help' | 'allCourses' | 'profile' | 'notifications' | 'transcripts' | 'purchases' | 'logout', string>
 >
 
 export function AtlasHeader({
@@ -104,7 +104,9 @@ export function AtlasHeader({
 
       {/* MAIN ROW */}
       <header style={MAIN}>
-        <a {...go('home')} className="cre-atlas-hdr-logo" aria-label="XCEL Insurance Training by Colibri — home" style={{ display: 'flex', flex: 'none' }}>
+        {/* `links.logo` when given, else Home — the End-to-End Demo's goes back to
+            Invited Product Detail (2026-10-15). */}
+        <a {...go(links.logo ? 'logo' : 'home')} className="cre-atlas-hdr-logo" aria-label="XCEL Insurance Training by Colibri — home" style={{ display: 'flex', flex: 'none' }}>
           <img src="/brand/xcel-logo.webp" alt="" width={110} height={40} style={{ display: 'block' }} />
         </a>
 

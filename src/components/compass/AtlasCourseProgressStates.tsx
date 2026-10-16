@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type KeyboardEvent } from 'react'
-import { GaugeSolid, HourglassClockLight, PenToSquareSolid } from '@/icons'
+import { GaugeLight, GaugeSolid, HourglassClockLight, PenToSquareSolid } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { paceDurationPhrase } from '@/lib/studyPace'
 
@@ -45,6 +45,7 @@ export function AtlasCourseProgressStates({
   onAdvance,
   bare = false,
   paceDays,
+  lightGauge = false,
 }: {
   percent: number
   expected: ProgressFigure
@@ -89,6 +90,9 @@ export function AtlasCourseProgressStates({
    *  panel (Figma 286:9455; Eric/Atlas White, 2026-10-14). Same states, same
    *  clicks. */
   bare?: boolean
+  /** The Study pace pill's gauge in Light, Primary 400 (End-to-End Demo,
+   *  2026-10-15: 500, then a level lighter); off, the Solid one in Primary 100. */
+  lightGauge?: boolean
 }) {
   // Opens on the FIRST state, so clicks walk the design's order 1 → 5 → 1.
   const [picked, setStage] = useState<Stage>(initialStage)
@@ -145,7 +149,11 @@ export function AtlasCourseProgressStates({
               then the link, left-aligned. */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12, paddingBottom: 2, alignSelf: 'stretch' }}>
             <span style={PACE_CARD}>
-              <GaugeSolid size={38} aria-hidden style={{ color: 'var(--color-primary-100)' }} />
+              {lightGauge ? (
+                <GaugeLight size={38} aria-hidden style={{ color: 'var(--color-primary-400)' }} />
+              ) : (
+                <GaugeSolid size={38} aria-hidden style={{ color: 'var(--color-primary-100)' }} />
+              )}
               <span style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={PACE_LEVEL}>Moderate</span>
                 <span style={PACE_NOUN}>Study Pace</span>

@@ -1039,8 +1039,9 @@ const WHITE_PROGRESS_PANEL: CSSProperties = {
   padding: '8px 32px',
   boxSizing: 'border-box',
   borderRadius: 20,
-  // Quick Links' border (2026-10-14, Eric's request; Primary 200 before).
-  border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)',
+  // No border, a Secondary 100 fill (2026-10-14, Eric's request; it had
+  // Quick Links' border, and Primary 200 before that).
+  background: 'var(--color-atlas-tan-100)',
 }
 const WHITE_PROGRESS_RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-tan-300)' }
 

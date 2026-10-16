@@ -772,14 +772,26 @@ export function applyJourneySequencing(
  * exists to catch one surface over. Put `13` back as a literal if the frame's
  * number matters more than the agreement.
  */
-export function whiteJourneyTitles(lessonStop: JourneyStop | undefined): string[] {
+export function whiteJourneyTitles(
+  lessonStop: JourneyStop | undefined,
+  /* THE END-TO-END DEMO RENAMES ONE STOP (2026-10-15, Eric's request):
+     "Simulated Exams" becomes "State Exam Simulators" there, and nowhere
+     else. Opt-in rather than a straight rename because this helper feeds
+     Eric's V3 and White homes as well — on his own branch each home still
+     carried its own copy of the list, so the rename reached only the E2E
+     one, and `QeFocusedVersion` and `CourseControl` both assert the design's
+     wording on the others. */
+  opts: { stateExamSimulators?: boolean } = {},
+): string[] {
   const total = lessonStop?.hours ?? NY_LH_PRELICENSING_LESSONS
   const done = lessonStop?.completed ?? 0
   return [
     'Pre-course Affidavit',
     `Pre-Licensing Lessons (${done} of ${total} completed)`,
     `Prep Review (${NY_LH_PREP_REVIEW_LESSONS})`,
-    `Simulated Exams (${NY_LH_EXAM_SIMULATORS})`,
+    opts.stateExamSimulators
+      ? `State Exam Simulators (${NY_LH_EXAM_SIMULATORS})`
+      : `Simulated Exams (${NY_LH_EXAM_SIMULATORS})`,
     'Study-manual Notice Affidavit',
     'Final Course Exam',
     'Survey & Certificate',
