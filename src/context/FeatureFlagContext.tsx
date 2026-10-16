@@ -184,13 +184,23 @@ export type FeatureFlagDefinition = {
  * ⚠ IT IS A FILTER, NOT A PERMISSION. Both designers see both tabs and can flip
  * anything in either. Nothing here gates who may change what.
  */
-export type DesignerId = 'jill' | 'eric'
+export type DesignerId = 'jill' | 'eric' | 'anjani'
 
 /** The tab strip's order and labels. The FIRST entry is the default selection,
- *  so reordering this changes which tab the panel opens on. */
+ *  so reordering this changes which tab the panel opens on.
+ *
+ * ⚠ `anjani` ADDED 2026-10-15 — labeling only. She owns the Compass scope
+ * (`PROTOTYPE_SCOPES`) and now owns her seven Compass flags below, but she
+ * owns no dashboard VERSION, so her tab in the Dashboard Versions sheet is
+ * expected to render empty — that's accurate, not broken; see
+ * `DashboardVersionsPanel`'s owner filter. It does not change what the
+ * Feature Flag panel shows: that filters by the ACTIVE VERSION's owner, which
+ * for her flags is still reached through their own `versions` arrays
+ * (`designControlsFor`), not through this id. */
 export const FLAG_DESIGNERS: { id: DesignerId; label: string }[] = [
   { id: 'jill', label: 'Jill' },
   { id: 'eric', label: 'Eric' },
+  { id: 'anjani', label: 'Anjani' },
 ]
 
 /** A flag's (or a version's) owner, resolving the absent case in ONE place so
@@ -1328,9 +1338,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
 
        ⚠ `full-screen` IS THE DEFAULT because it is what ships, so the flag
        changes nothing until someone picks. The arm is the question; the
-       baseline is not. */
+       baseline is not.
+
+       ⚠ `owner: 'anjani'` SINCE 2026-10-15 — moved off `'jill'` (the author,
+       not the scope owner) now that `DesignerId` carries her. Labeling only;
+       `versions` below is still what makes the bar reach it. */
     surface: 'design',
-    owner: 'jill',
+    owner: 'anjani',
     /* Scoped to the version the ask came from. ⚠ The EFFECT is not scoped — any
        version that opens the session reads this flag — which is the same split
        `atlas-brand-skin` has: `versions` decides whose BAR carries the control,
@@ -1375,13 +1389,17 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        surface has one owner however you reached it; `atlas` is the arm that
        keeps his sidebar and its eight pages for anyone who needs the old page.
 
-       ⚠ `owner: 'jill'` IS THE AUTHOR, NOT THE SCOPE OWNER. `DesignerId` has no
-       `anjani` yet (the 2026-10-14 note: a tab for her would be empty in two
-       panels), and the flag panel lists a flag only on versions its owner
-       owns — she owns none — so an `anjani` owner would make this reachable by
-       `?ff=` alone. The scope's design authority is recorded where it lives,
-       in `PROTOTYPE_SCOPES`. */
-    owner: 'jill',
+       ⚠ `owner: 'anjani'` SINCE 2026-10-15 — until then this read `'jill'`
+       (the author, not the scope owner), because `DesignerId` had no `anjani`
+       yet and the flag panel lists a flag only on versions its owner owns —
+       she owned none, so an `anjani` owner made this reachable by `?ff=`
+       alone. `DesignerId` carries her now (`FLAG_DESIGNERS`), but that is
+       LABELING ONLY: she still owns no dashboard version, so the Feature Flag
+       panel (which filters by the ACTIVE VERSION's owner, not a flag's own
+       `owner`) does not surface this any differently than before — `versions`
+       below is what the Design Controls bar actually reads. The scope's
+       design authority is recorded where it lives, in `PROTOTYPE_SCOPES`. */
+    owner: 'anjani',
     /* ⚠ `versions: ['eric-atlas-e2e']` ADDED 2026-10-15. Without it this flag
        only shows on the Design Controls bar (and the Feature Flag panel, same
        owner filter) when `flagOwner(version) === 'jill'` — true for every
@@ -1419,7 +1437,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Reachable only by `?ff=compass-planner-rubi:off` until now. This is the
        "Compass scope with its own versions" the line above used to ask for. */
     surface: 'design',
-    owner: 'jill',
+    owner: 'anjani',
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Planner: Rubi',
@@ -1441,7 +1459,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `compass-planner-rubi` above: the owner-match fallback never carried
        this to Eric's default, where the Compass row opens. */
     surface: 'design',
-    owner: 'jill',
+    owner: 'anjani',
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Planner: return note',
@@ -1465,7 +1483,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `versions: ['eric-atlas-e2e']` — 2026-10-15, the same reach fix as
        `compass-planner-rubi` above. */
     surface: 'design',
-    owner: 'jill',
+    owner: 'anjani',
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Planner: below the week',
@@ -1491,7 +1509,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `versions: ['eric-atlas-e2e']` — 2026-10-15, the same reach fix as
        `compass-planner-rubi` above. */
     surface: 'design',
-    owner: 'jill',
+    owner: 'anjani',
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Planner: day off',
@@ -1518,7 +1536,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `versions: ['eric-atlas-e2e']` — 2026-10-15, the same reach fix as
        `compass-planner-rubi` above. */
     surface: 'design',
-    owner: 'jill',
+    owner: 'anjani',
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Planner: absence',

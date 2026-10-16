@@ -153,7 +153,11 @@ describe('the owner axis', () => {
   })
 
   it('puts Jill first, which is what makes her the default tab', () => {
-    expect(FLAG_DESIGNERS.map((d) => d.id)).toEqual(['jill', 'eric'])
+    /* ⚠ `anjani` JOINED 2026-10-15 — the Compass scope owner (`PROTOTYPE_SCOPES`),
+       labeling only: she owns no dashboard version, so her tab in the
+       Dashboard Versions sheet renders empty. Last in the list, so she does
+       not become the default tab by an ordering accident. */
+    expect(FLAG_DESIGNERS.map((d) => d.id)).toEqual(['jill', 'eric', 'anjani'])
   })
 })
 
