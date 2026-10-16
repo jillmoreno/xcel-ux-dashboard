@@ -2652,6 +2652,25 @@ html,
   --color-design-bar-on: #c4122e;
 }
 
+/* THE RULE BETWEEN CONTROL GROUPS — 2026-10-16, Anjani's `.sep` (1px by 22).
+
+   ⚠ CSS, NOT A RENDERED SIBLING, and that is the whole point. The demo bar's
+   controls are conditionally rendered and several return null (`hidden`), so
+   a separator element placed between them in JSX draws beside controls that
+   are not on the bar. An adjacent-sibling rule only ever sees what reached
+   the DOM, so a hidden control takes its rule with it.
+
+   The colour is the bar's own hairline rather than her #2E2A22, a brown that
+   only reads on her ground. */
+.cre-demo-controls .cre-bar-group + .cre-bar-group::before {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 22px;
+  margin-right: 4px;
+  background: rgb(255 255 255 / 0.12);
+}
+
 /* The prototype/demo bars are direct children of the stage now (rendered by
    <PrototypeChrome />, outside the window) — full screen width. `fullBleed`
    drops their 1440 cap; this stretch guards against the flex cross-axis

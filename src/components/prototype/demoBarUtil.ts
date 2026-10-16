@@ -193,3 +193,46 @@ export const SR_ONLY: CSSProperties = {
   whiteSpace: 'nowrap',
   border: 0,
 }
+
+/* ── ANJANI'S CONTROL SHAPE, shared by both bars ─────────────────────────
+   The design bar took these from `xcel-compass-nudge-journey.html` on
+   2026-10-16; the demo bar joined it the same day ("update these tools to
+   match the UI updates we made for Design tools"). Kept here rather than in
+   either bar so the two cannot drift. */
+
+/** A square trigger — her 7px radius at her type size, not the 999px pill. */
+export const SQUARE_TRIGGER: CSSProperties = {
+  borderRadius: 7,
+  fontSize: 10.5,
+  padding: '5px 8px',
+  gap: 5,
+}
+
+/** The control's NAME, outside the control — her `.lbl`. */
+export const SQUARE_LABEL: CSSProperties = {
+  fontSize: 8.5,
+  fontWeight: 700,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  color: 'rgb(255 255 255 / 0.48)',
+  marginRight: 2,
+  whiteSpace: 'nowrap',
+  flex: 'none',
+}
+
+/** Label + control, as one item in the bar's row. */
+export const SQUARE_GROUP: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+}
+
+/**
+ * ⚠ THE RULE BETWEEN GROUPS IS CSS, NOT A RENDERED SIBLING — and it has to
+ * be. The demo bar's controls are conditionally rendered and several return
+ * null (`hidden`), so a separator element placed between them in JSX would
+ * draw beside controls that are not there. An adjacent-sibling rule only
+ * sees what actually reached the DOM. `tokens.css` carries it; this is the
+ * hook it keys on.
+ */
+export const SQUARE_GROUP_CLASS = 'cre-bar-group'

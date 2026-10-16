@@ -1,4 +1,4 @@
-import { Fragment, type CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Check, Flag, Sliders } from '@/icons'
 import { useAccount } from '@/context/AccountContext'
@@ -24,6 +24,7 @@ import {
   DEMO_HOVER_FILL,
   DEMO_TRIGGER,
   DESIGN_ACCENT,
+  SQUARE_GROUP_CLASS,
 } from './demoBarUtil'
 
 /**
@@ -216,14 +217,12 @@ export function DesignControlsBar({
       <span style={versionTagStyle}>
         {surface ? DESIGN_SURFACE_LABELS[surface] : dashboardVersionLabel(versionId)}
       </span>
-      {/* ⚠ A RULE BETWEEN GROUPS, NOT AROUND THEM — her `.sep`, a 1px by 22
-          hairline (`#demoBar .sep`). It is what stops four labelled groups
-          reading as one long row of buttons once the labels shrink. Between
-          only: a leading or trailing rule would be an edge the bar does not
-          have. */}
-      {controls.map((def, i) => (
-        <Fragment key={def.key}>
-          {i > 0 ? <span aria-hidden style={GROUP_SEP} /> : null}
+      {/* The rule between groups is CSS — `.cre-bar-group + .cre-bar-group`
+          in `tokens.css`, shared with the demo bar. It was rendered here as a
+          sibling until 2026-10-16; adjacency does the same job, never draws a
+          leading one, and cannot strand a rule beside a control that chose
+          not to render. */}
+      {controls.map((def) => (
         <DesignControl
           key={def.key}
           def={def}
@@ -236,7 +235,6 @@ export function DesignControlsBar({
             close()
           }}
         />
-        </Fragment>
       ))}
     </DemoBar>
   )
@@ -289,7 +287,7 @@ function DesignControl({
   if (!variants.length) {
     const on = Boolean(state?.enabled)
     return (
-      <span style={SEGMENT_GROUP}>
+      <span className={SQUARE_GROUP_CLASS} style={SEGMENT_GROUP}>
         <span style={SEGMENT_LABEL}>{def.label}</span>
       <button
         type="button"
@@ -347,7 +345,7 @@ function DesignControl({
    */
   if (variants.length <= SEGMENTED_MAX) {
     return (
-      <span style={SEGMENT_GROUP}>
+      <span className={SQUARE_GROUP_CLASS} style={SEGMENT_GROUP}>
         <span style={SEGMENT_LABEL}>{def.label}</span>
         {/* ⚠ ROVING TABINDEX NEEDS ARROW KEYS, or it is a trap. Only the
             CHECKED radio is tabbable — that is the ARIA pattern and it is what
@@ -418,7 +416,7 @@ function DesignControl({
      the label is rendered here and the eyebrow is not passed at all; the
      trigger carries the VALUE alone. */
   return (
-    <span style={SEGMENT_GROUP}>
+    <span className={SQUARE_GROUP_CLASS} style={SEGMENT_GROUP}>
       <span style={SEGMENT_LABEL}>{def.label}</span>
     <DemoDropdown
       id={def.key}
@@ -549,15 +547,6 @@ const SQUARE_TRIGGER: CSSProperties = {
   fontSize: 10.5,
   padding: '5px 8px',
   gap: 5,
-}
-
-/* Her `.sep` — `width:1px; height:22px`. The colour is the bar's own hairline
-   rather than her #2E2A22, which is a brown that only works on her ground. */
-const GROUP_SEP: CSSProperties = {
-  width: 1,
-  height: 22,
-  flex: 'none',
-  background: 'rgb(255 255 255 / 0.12)',
 }
 
 /* The version this bar is scoped to, stated rather than implied — a designer

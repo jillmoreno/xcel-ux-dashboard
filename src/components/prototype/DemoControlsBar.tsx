@@ -759,12 +759,186 @@ export function DemoControlsBar({
 
   return (
     <>
-      <DemoBar barRef={barRef} ariaLabel="Demo controls" align="left" fullBleed={fullBleed}>
+      <DemoBar
+        barRef={barRef}
+        ariaLabel="Demo controls"
+        align="left"
+        fullBleed={fullBleed}
+        /* ⚠ `trailing`, NOT A CHILD, SINCE 2026-10-16 — as a child of a
+           WRAPPING row with `margin-left: auto` these landed on whichever
+           row wrapped last. The slot pins them to the top, as on the
+           design bar. */
+        trailing={
+          show('actions') ? (
+          <div style={ACTIONS}>
+          {/* ⚠ LO-FI MOVED TO THE DESIGN BAR — 2026-10-05, the direct ask. It was
+          a dropdown here, then a switch here, and it was never a
+          stakeholder control: its own note always said lo-fi is "a tool for
+          the people DESIGNING the thing". The design bar is where that
+          sentence finally has somewhere to point.
+
+          ⚠ IT TOOK THIS BAR'S LAST `wip` CONTROL WITH IT. Everything left
+          on the demo bar is `ready`, which means the maturity gate is no
+          longer EXERCISED by anything that renders — see the note in
+          `PublicGateway.test.tsx`, which had been using Lo-fi as its one
+          remaining subject and now says the gate is untested rather than
+          pretending otherwise. */}
+          {/* RESET — an icon since 2026-10-05, the direct ask ("circle arrow
+          style"), matching the two icon buttons beside it.
+
+          ⚠ ITS ACCESSIBLE NAME IS STILL EXACTLY "Reset". The word was
+          visible text and is now an `aria-label`, so nothing about what a
+          screen reader hears changed — and `PublicGateway.test.tsx` matches
+          it on `/^Reset$/`, because Reset is the control that gets a
+          stakeholder out of a state they wandered into and the suite checks
+          the demo site keeps it.
+
+          ⚠ IT IS THE ONLY DESTRUCTIVE CONTROL ON THIS BAR, and it just lost
+          its word. An icon-only control that re-baselines the whole demo is
+          a worse mis-click than an icon-only one that opens a sheet — worth
+          watching, and the reason the tooltip says what it does rather than
+          just naming it. */}
+          <button
+          type="button"
+          className="cre-demo-controls-btn"
+          aria-label="Reset"
+          title="Reset the demo to its defaults"
+          style={resetIconStyle}
+          onClick={() => {
+          // Full reset in ONE URL write (avoids a second setSearchParams
+          // clobbering the first from stale state): tier → the brand's default
+          // member tier (the Demo's baseline — Elite · Passport Lite; NOT
+          // non-member, which would strand the member-only Progress /
+          // Education / persona controls in a silent no-op state — a non-member can
+          // still be reached via the "New non-member" Quick view), clear
+          // professions/memberships + prog/edu, restore the flag defaults.
+          const resetTier = defaultMemberTier(brand)
+          setTier(resetTier)
+          setProfs([])
+          setMems([])
+          setEnabled('profession-count', true)
+          setVariant('profession-count', 'single')
+          setVariant('dashboard-progress-state', DEFAULT_PROGRESS)
+          setVariant('dashboard-education-type', DEFAULT_EDUCATION)
+          /* The Course axis back to Florida / Unregulated — the committed
+          defaults. Both halves, because Reset means "what a plain load
+          of this build shows" and a bar that restored the course while
+          leaving the lessons locked would be the worse half of each. */
+          setVariant(COURSE_FLAG_KEY, DEFAULT_SELECTION)
+          setSecondaryVariant(COURSE_FLAG_KEY, DEFAULT_SEQUENCING)
+          // …and the access window back to each state's own.
+          setVariant(EXPIRY_FLAG_KEY, String(DEFAULT_EXPIRY))
+          // (dashboard-clp-layout removed 2026-08-17 — V1 is baked in.)
+          // What's New back to Off (the combined band restored).
+          setEnabled('dashboard-clp-fullwidth', true)
+          setVariant('dashboard-clp-fullwidth', 'variant-d')
+          setSecondaryVariant('dashboard-clp-fullwidth', 'always')
+          const next = new URLSearchParams(searchParams)
+          next.set('tier', resetTier)
+          next.delete('prof')
+          next.delete('mem')
+          next.delete('prog')
+          next.delete('edu')
+          next.delete('wn')
+          next.delete('version')
+          next.delete(ATLAS_SKIN_PARAM)
+          next.delete(ATLAS_FONT_PARAM)
+          next.delete(ATLAS_NAV_PARAM)
+          // Clear the read-only `?ff=` flag override too — otherwise a shared
+          // link's pinned flags (e.g. membership-count:five) keep winning over
+          // the flags Reset just restored, so Reset would appear to do nothing.
+          // Both halves are needed: remove it from the URL AND drop the
+          // already-seeded override in the flag store (it was read once at page
+          // load, so a URL edit alone wouldn't take effect until a reload).
+          next.delete('ff')
+          clearUrlOverrides()
+          setSearchParams(next, { replace: true })
+          close()
+          }}
+          onMouseEnter={(e) => {
+          e.currentTarget.style.background = DEMO_HOVER_FILL
+          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
+          }}
+          onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'transparent'
+          e.currentTarget.style.borderColor = 'transparent'
+          }}
+          >
+          <ArrowsRotate size={16} aria-hidden />
+          </button>
+          {/* DASHBOARD VERSION — an icon button, right of Reset, opening the
+          versions sheet (2026-10-05, the direct ask).
+
+          ⚠ IT SITS WITH RESET AND THE KEBAB because those are the bar's
+          TOOLS — things you do to the demo — rather than its scenario
+          controls. The version is the one of the three that changes what is
+          on screen, which is why it was a labelled pill leading the row
+          first; this places it by shape instead.
+
+          ⚠ ICON-ONLY COSTS THE READOUT, and that is the trade to know. The
+          pill said which version you were on without being pressed; this
+          does not, so the only way to read the current version from the bar
+          is to hover or open the sheet. `title` + `aria-label` carry it for
+          a pointer and for a screen reader — the one audience left with
+          nothing is a sighted stakeholder glancing at the bar, and they are
+          who the control was added for.
+
+          ⚠ BORDERED LIKE RESET, not bare like the kebab. It opens a sheet
+          that changes the product; the kebab opens a menu. Matching Reset
+          groups it with the control that also does something.
+
+          ⚠ THE GRID, swapped with Lo-fi's sliders on 2026-10-05. A grid of
+          panes is what a dashboard LAYOUT looks like, which is what this
+          picker chooses between — the sliders it had read as "settings",
+          which is every control on this bar. */}
+          {showControl.version && show('version') && (
+          <button
+          type="button"
+          className="cre-demo-controls-btn"
+          aria-label={`Dashboard version: ${dashboardVersionLabel(activeVersionId)}`}
+          title={`Dashboard version: ${dashboardVersionLabel(activeVersionId)}`}
+          style={versionTriggerStyle}
+          onClick={() => {
+          openVersionsPanel()
+          close()
+          }}
+          onMouseEnter={(e) => {
+          e.currentTarget.style.background = DEMO_HOVER_FILL
+          e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
+          }}
+          onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'transparent'
+          e.currentTarget.style.borderColor = 'transparent'
+          }}
+          >
+          <Grid size={16} aria-hidden />
+          </button>
+          )}
+          {/* ⚠ THE FLAG ICON MOVED TO THE DESIGN BAR, hours after landing here
+          (2026-10-05, the direct choice). It opens the Feature Flag sheet,
+          which is a DESIGNER's tool scoped to the current version — so it
+          belongs beside the design controls it is the long form of, not
+          beside the stakeholder ones. See `DesignControlsBar`. */}
+          {/* ⚠ THE KEBAB WAS HERE AND MOVED UP — 2026-10-05, the direct ask:
+          it now sits in the PrototypeBar to the right of the device
+          toggle. Its three actions are about the PROTOTYPE (copy a link to
+          this view, copy a presentation link, open the Demo Hub), not about
+          the learner's scenario, which is what every other control on this
+          bar sets.
+
+          ⚠ THE HANDLERS DID NOT MOVE WITH IT. `copyLink` / `copyDemoLink`
+          bake this bar's whole captured state into the URL, so they stay
+          here and are published through `demoShareActions.tsx`. */}
+          </div>
+          ) : null
+        }
+      >
         {/* Brand — switch the whole prototype brand live. Hidden while this repo
             ships a single brand; see BRAND_PICKER. */}
         {BRAND_PICKER && (
         <DemoDropdown
           id="brand"
+          square
           hidden={!show('brand')}
           label={brandLabel}
           eyebrow="Brand"
@@ -813,6 +987,7 @@ export function DemoControlsBar({
         {showTierSwitch && (
         <DemoDropdown
           id="quick"
+          square
           hidden={!show('quick')}
           label={activeQuickView ? activeQuickView.label : 'Quick views'}
           eyebrow={activeQuickView ? 'Quick view' : undefined}
@@ -854,6 +1029,7 @@ export function DemoControlsBar({
         {showControl.persona && (
         <DemoDropdown
           id="persona"
+          square
           hidden={!show('persona')}
           label="Persona"
           eyebrow="Persona"
@@ -983,6 +1159,7 @@ export function DemoControlsBar({
         {/* Progress / compliance state — single-select radiogroup */}
         <DemoDropdown
           id="progress"
+          square
           hidden={!show('progress')}
           label={progressLabel}
           eyebrow="Progress"
@@ -1077,6 +1254,7 @@ export function DemoControlsBar({
         {showControl.course && (
           <DemoDropdown
             id="course"
+            square
             hidden={!show('course')}
             label={COURSE_PICKER.find((c) => c.course === activeCourse)?.label ?? 'Course'}
             eyebrow="Course"
@@ -1168,6 +1346,7 @@ export function DemoControlsBar({
         {showControl.expiry && (
           <DemoDropdown
             id="expiry"
+            square
             hidden={!show('expiry')}
             label={expiryLabelFor(activeExpiry)}
             eyebrow="Expires"
@@ -1235,6 +1414,7 @@ export function DemoControlsBar({
         {showControl.navLayout && (
           <DemoDropdown
             id="nav-layout"
+            square
             hidden={!show('nav-layout')}
             label={
               navLayoutOptions.find((o) => o.value === (navLayoutState.variant ?? 'top'))?.label ??
@@ -1272,6 +1452,7 @@ export function DemoControlsBar({
         {showControl.readiness && readinessReachable && !onAtlasVersion && (
         <DemoDropdown
           id="readiness"
+          square
           hidden={!show('readiness')}
           /* NOT the resolved state when there is no section: a greyed pill
              still reading "On Track" is the same false claim, just dimmer. */
@@ -1360,6 +1541,7 @@ export function DemoControlsBar({
         {showControl.education && showEducation && (
           <DemoDropdown
             id="education"
+            square
             hidden={!show('education')}
             label={educationLabel}
             eyebrow="Education"
@@ -1411,168 +1593,7 @@ export function DemoControlsBar({
           still reads it; only the button went, so this is URL-only now. See the
           `demo-lens-button` row in `archivedItems.ts`.
         */}
-        {show('actions') && (
-        <div style={ACTIONS}>
-          {/* ⚠ LO-FI MOVED TO THE DESIGN BAR — 2026-10-05, the direct ask. It was
-              a dropdown here, then a switch here, and it was never a
-              stakeholder control: its own note always said lo-fi is "a tool for
-              the people DESIGNING the thing". The design bar is where that
-              sentence finally has somewhere to point.
 
-              ⚠ IT TOOK THIS BAR'S LAST `wip` CONTROL WITH IT. Everything left
-              on the demo bar is `ready`, which means the maturity gate is no
-              longer EXERCISED by anything that renders — see the note in
-              `PublicGateway.test.tsx`, which had been using Lo-fi as its one
-              remaining subject and now says the gate is untested rather than
-              pretending otherwise. */}
-          {/* RESET — an icon since 2026-10-05, the direct ask ("circle arrow
-              style"), matching the two icon buttons beside it.
-
-              ⚠ ITS ACCESSIBLE NAME IS STILL EXACTLY "Reset". The word was
-              visible text and is now an `aria-label`, so nothing about what a
-              screen reader hears changed — and `PublicGateway.test.tsx` matches
-              it on `/^Reset$/`, because Reset is the control that gets a
-              stakeholder out of a state they wandered into and the suite checks
-              the demo site keeps it.
-
-              ⚠ IT IS THE ONLY DESTRUCTIVE CONTROL ON THIS BAR, and it just lost
-              its word. An icon-only control that re-baselines the whole demo is
-              a worse mis-click than an icon-only one that opens a sheet — worth
-              watching, and the reason the tooltip says what it does rather than
-              just naming it. */}
-          <button
-            type="button"
-            className="cre-demo-controls-btn"
-            aria-label="Reset"
-            title="Reset the demo to its defaults"
-            style={resetIconStyle}
-            onClick={() => {
-              // Full reset in ONE URL write (avoids a second setSearchParams
-              // clobbering the first from stale state): tier → the brand's default
-              // member tier (the Demo's baseline — Elite · Passport Lite; NOT
-              // non-member, which would strand the member-only Progress /
-              // Education / persona controls in a silent no-op state — a non-member can
-              // still be reached via the "New non-member" Quick view), clear
-              // professions/memberships + prog/edu, restore the flag defaults.
-              const resetTier = defaultMemberTier(brand)
-              setTier(resetTier)
-              setProfs([])
-              setMems([])
-              setEnabled('profession-count', true)
-              setVariant('profession-count', 'single')
-              setVariant('dashboard-progress-state', DEFAULT_PROGRESS)
-              setVariant('dashboard-education-type', DEFAULT_EDUCATION)
-              /* The Course axis back to Florida / Unregulated — the committed
-                 defaults. Both halves, because Reset means "what a plain load
-                 of this build shows" and a bar that restored the course while
-                 leaving the lessons locked would be the worse half of each. */
-              setVariant(COURSE_FLAG_KEY, DEFAULT_SELECTION)
-              setSecondaryVariant(COURSE_FLAG_KEY, DEFAULT_SEQUENCING)
-              // …and the access window back to each state's own.
-              setVariant(EXPIRY_FLAG_KEY, String(DEFAULT_EXPIRY))
-              // (dashboard-clp-layout removed 2026-08-17 — V1 is baked in.)
-              // What's New back to Off (the combined band restored).
-              setEnabled('dashboard-clp-fullwidth', true)
-              setVariant('dashboard-clp-fullwidth', 'variant-d')
-              setSecondaryVariant('dashboard-clp-fullwidth', 'always')
-              const next = new URLSearchParams(searchParams)
-              next.set('tier', resetTier)
-              next.delete('prof')
-              next.delete('mem')
-              next.delete('prog')
-              next.delete('edu')
-              next.delete('wn')
-              next.delete('version')
-              next.delete(ATLAS_SKIN_PARAM)
-              next.delete(ATLAS_FONT_PARAM)
-              next.delete(ATLAS_NAV_PARAM)
-              // Clear the read-only `?ff=` flag override too — otherwise a shared
-              // link's pinned flags (e.g. membership-count:five) keep winning over
-              // the flags Reset just restored, so Reset would appear to do nothing.
-              // Both halves are needed: remove it from the URL AND drop the
-              // already-seeded override in the flag store (it was read once at page
-              // load, so a URL edit alone wouldn't take effect until a reload).
-              next.delete('ff')
-              clearUrlOverrides()
-              setSearchParams(next, { replace: true })
-              close()
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = DEMO_HOVER_FILL
-              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent'
-              e.currentTarget.style.borderColor = 'transparent'
-            }}
-          >
-            <ArrowsRotate size={16} aria-hidden />
-          </button>
-          {/* DASHBOARD VERSION — an icon button, right of Reset, opening the
-              versions sheet (2026-10-05, the direct ask).
-
-              ⚠ IT SITS WITH RESET AND THE KEBAB because those are the bar's
-              TOOLS — things you do to the demo — rather than its scenario
-              controls. The version is the one of the three that changes what is
-              on screen, which is why it was a labelled pill leading the row
-              first; this places it by shape instead.
-
-              ⚠ ICON-ONLY COSTS THE READOUT, and that is the trade to know. The
-              pill said which version you were on without being pressed; this
-              does not, so the only way to read the current version from the bar
-              is to hover or open the sheet. `title` + `aria-label` carry it for
-              a pointer and for a screen reader — the one audience left with
-              nothing is a sighted stakeholder glancing at the bar, and they are
-              who the control was added for.
-
-              ⚠ BORDERED LIKE RESET, not bare like the kebab. It opens a sheet
-              that changes the product; the kebab opens a menu. Matching Reset
-              groups it with the control that also does something.
-
-              ⚠ THE GRID, swapped with Lo-fi's sliders on 2026-10-05. A grid of
-              panes is what a dashboard LAYOUT looks like, which is what this
-              picker chooses between — the sliders it had read as "settings",
-              which is every control on this bar. */}
-          {showControl.version && show('version') && (
-            <button
-              type="button"
-              className="cre-demo-controls-btn"
-              aria-label={`Dashboard version: ${dashboardVersionLabel(activeVersionId)}`}
-              title={`Dashboard version: ${dashboardVersionLabel(activeVersionId)}`}
-              style={versionTriggerStyle}
-              onClick={() => {
-                openVersionsPanel()
-                close()
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = DEMO_HOVER_FILL
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'transparent'
-                e.currentTarget.style.borderColor = 'transparent'
-              }}
-            >
-              <Grid size={16} aria-hidden />
-            </button>
-          )}
-          {/* ⚠ THE FLAG ICON MOVED TO THE DESIGN BAR, hours after landing here
-              (2026-10-05, the direct choice). It opens the Feature Flag sheet,
-              which is a DESIGNER's tool scoped to the current version — so it
-              belongs beside the design controls it is the long form of, not
-              beside the stakeholder ones. See `DesignControlsBar`. */}
-          {/* ⚠ THE KEBAB WAS HERE AND MOVED UP — 2026-10-05, the direct ask:
-              it now sits in the PrototypeBar to the right of the device
-              toggle. Its three actions are about the PROTOTYPE (copy a link to
-              this view, copy a presentation link, open the Demo Hub), not about
-              the learner's scenario, which is what every other control on this
-              bar sets.
-
-              ⚠ THE HANDLERS DID NOT MOVE WITH IT. `copyLink` / `copyDemoLink`
-              bake this bar's whole captured state into the URL, so they stay
-              here and are published through `demoShareActions.tsx`. */}
-        </div>
-        )}
       </DemoBar>
 
       {/* ⚠ THE "Link copied" TOAST MOVED to `DemoShareProvider` — 2026-10-05,
@@ -1782,8 +1803,10 @@ const versionTriggerStyle: CSSProperties = {
   transition: 'background .15s, border-color .15s',
 }
 
+/* No `margin-left: auto` since 2026-10-16 — `DemoBar`'s `trailing` slot puts
+   this block at the bar's top-right, and an auto margin inside the slot
+   would do nothing but confuse the next reader. */
 const ACTIONS: CSSProperties = {
-  marginLeft: 'auto',
   display: 'flex',
   gap: 8,
 }

@@ -13,6 +13,10 @@ import {
   DEMO_TAG_LABEL,
   DEMO_TRIGGER,
   DEMO_TRIGGER_EYEBROW,
+  SQUARE_GROUP,
+  SQUARE_GROUP_CLASS,
+  SQUARE_LABEL,
+  SQUARE_TRIGGER,
 } from './demoBarUtil'
 
 /**
@@ -198,6 +202,7 @@ export function DemoDropdown({
   disabledNote,
   hidden = false,
   triggerStyle,
+  square = false,
   children,
 }: {
   id: string
@@ -231,6 +236,13 @@ export function DemoDropdown({
    * omits it and keeps the pill, which is the demo bar's shape.
    */
   triggerStyle?: CSSProperties
+  /**
+   * ANJANI'S SHAPE — a square trigger carrying the VALUE alone, with the
+   * control's name beside it rather than baked in as an eyebrow
+   * (2026-10-16). Both product bars pass it; `OnboardingDemoBar` does not,
+   * and keeps the pill it has always had.
+   */
+  square?: boolean
   children: ReactNode
 }) {
   if (hidden) return null
@@ -249,17 +261,26 @@ export function DemoDropdown({
      rides on `title`, which is the one thing a disabled button still surfaces. */
   const isDisabled = disabledNote != null
   const isOpen = openId === id && !isDisabled
-  return (
+  const control = (
     <div style={{ position: 'relative' }}>
       <button
         type="button"
         className="cre-demo-controls-btn"
         style={{
           ...DEMO_TRIGGER,
+          ...(square ? SQUARE_TRIGGER : null),
           ...triggerStyle,
           ...(isDisabled ? { opacity: 0.4, cursor: 'not-allowed' } : null),
         }}
         disabled={isDisabled}
+        /* ⚠ THE NAME KEEPS THE EYEBROW WHEN THE EYEBROW MOVES OUT. In square
+           mode the control's name sits beside it as a sibling, so the button
+           itself would announce only its VALUE — "On Track · ~63%", with
+           nothing saying which axis that is. Restated here, so what a screen
+           reader hears is what the pill used to read. (`DemoControlsBar`'s
+           suite queries these by name and caught it the moment the label
+           moved — 14 of them at once.) */
+        aria-label={square && eyebrow ? `${eyebrow}: ${label}` : undefined}
         title={disabledNote}
         aria-haspopup={isDisabled || panelRole === 'radiogroup' ? undefined : 'menu'}
         aria-expanded={isDisabled ? undefined : isOpen}
@@ -271,7 +292,7 @@ export function DemoDropdown({
           if (!isDisabled) e.currentTarget.style.background = DEMO_FAINT_FILL
         }}
       >
-        {eyebrow && <span style={DEMO_TRIGGER_EYEBROW}>{eyebrow}:</span>}
+        {eyebrow && !square && <span style={DEMO_TRIGGER_EYEBROW}>{eyebrow}:</span>}
         {label}
         {count ? <span style={DEMO_COUNT_BADGE}>{count}</span> : null}
         {/* ⚠ A DOT PLUS WORDS, never the dot alone: "not on the demo site" is
@@ -296,6 +317,17 @@ export function DemoDropdown({
         </div>
       )}
     </div>
+  )
+  /* The name outside the control, as a group — and the group is what the
+     separator rule in `tokens.css` keys on. A square control with no
+     `eyebrow` still gets the wrapper, so the rules fall between every pair
+     of controls rather than only the named ones. */
+  if (!square) return control
+  return (
+    <span className={SQUARE_GROUP_CLASS} style={SQUARE_GROUP}>
+      {eyebrow && <span style={SQUARE_LABEL}>{eyebrow}</span>}
+      {control}
+    </span>
   )
 }
 
