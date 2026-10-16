@@ -68,6 +68,22 @@ export type FeatureFlagVariant = {
   /** Optional short description shown under the variant label when the
    *  variant is selected. Helps reviewers understand what changes. */
   description?: string
+  /**
+   * A SECOND, QUIETER LINE under `description` in a dropdown row —
+   * 2026-10-16, for Anjani's nudge menu, where each row is a title over a
+   * sub-line ("Gone quiet, progress stalled" / "batch · one per pacing
+   * window"). The sub-line is a RULE about when the nudge may fire, not a
+   * restatement of the title, which is why it needs its own line rather
+   * than being folded into one.
+   */
+  detail?: string
+  /**
+   * What the row's badge shows, when that is not the `label` — 2026-10-16.
+   * Her Clear row is marked "×" while the control's own pill has to keep
+   * reading "None", because a pill reading "NUDGE ×" says nothing. Only set
+   * it where the two genuinely differ.
+   */
+  badge?: string
 }
 
 export type FeatureFlagDefinition = {
@@ -154,6 +170,13 @@ export type FeatureFlagDefinition = {
    * field existed.
    */
   surfaces?: string[]
+  /**
+   * A note under a dropdown's options, in the panel — 2026-10-16. Anjani's
+   * nudge menu ends with one, and it is load-bearing: it says these three
+   * are batch nudges that never fire inside a lesson, which is the rule a
+   * reviewer needs in order to read the three options correctly.
+   */
+  panelNote?: string
   /** Additional page cards this flag should ALSO surface under (it counts +
    *  renders on each). Use when one flag drives filters on more than one page —
    *  e.g. `profession-count` / `state-count` gate the filter rows on BOTH the
@@ -1532,12 +1555,16 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Nudge',
     description:
       'Fire one of Anjani\u2019s three batch dashboard nudges into the readiness band. Batch nudges are produced between sessions and never inside a lesson, so this is the overview only. Clear restores the band\u2019s own Rubi suggestion.',
+    /* Her menu's own rows: the number, her title, and under it the rule
+       about when that nudge may fire. The sub-lines are hers verbatim. */
     variants: [
-      { value: 'none', label: 'None' },
-      { value: 'd05', label: '05', description: 'Gone quiet, progress stalled' },
-      { value: 'd08', label: '08', description: 'Back after time away' },
-      { value: 'd09', label: '09', description: 'Exam close, readiness not there' },
+      { value: 'none', label: 'None', description: 'Clear', badge: '\u00d7' },
+      { value: 'd05', label: '05', description: 'Gone quiet, progress stalled', detail: 'batch \u00b7 one per pacing window' },
+      { value: 'd08', label: '08', description: 'Back after time away', detail: 'batch \u00b7 once per return' },
+      { value: 'd09', label: '09', description: 'Exam close, readiness not there', detail: 'batch \u00b7 planning cadence only' },
     ],
+    panelNote:
+      'These three are batch nudges in Sole\u2019s spec \u2014 produced between sessions. They never fire inside a lesson.',
     defaultVariant: 'none',
     defaultEnabled: true,
     page: 'dashboard-rebrand',

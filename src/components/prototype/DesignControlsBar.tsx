@@ -434,27 +434,87 @@ function DesignControl({
       onToggle={onToggle}
       panelRole="radiogroup"
       panelLabel={def.label}
-      panelMinWidth={240}
+      /* Wider when the rows carry a second line — at 240 her nudge titles
+         wrap onto three lines and the menu stops scanning. */
+      panelMinWidth={variants.some((v) => v.detail) ? 310 : 240}
     >
-      {variants.map((v) => ({ value: v.value as string | null, label: v.label })).map((opt) => {
-        const active = opt.value != null && opt.value === current
+      {/* ⚠ A ROW IS UP TO THREE THINGS, and which ones it has is the
+          variant's business: the short `label` — her numbered badge — then
+          `description` as the row's title and `detail` beneath it. A variant
+          carrying only a label renders exactly what it always did, so every
+          other dropdown on this bar is untouched. */}
+      {variants.map((v) => {
+        const active = v.value === current
+        const twoLine = Boolean(v.description)
         return (
           <button
-            key={opt.label}
+            key={v.value}
             type="button"
             role="radio"
             aria-checked={active}
             tabIndex={active ? 0 : -1}
             className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
-            onClick={() => onPick(opt.value)}
+            /* The row reads as three fragments to a screen reader otherwise —
+               "05", "Gone quiet, progress stalled", "batch · one per pacing
+               window" — with nothing joining them. */
+            aria-label={twoLine ? [v.label, v.description, v.detail].filter(Boolean).join(' — ') : undefined}
+            style={twoLine ? { alignItems: 'flex-start', gap: 9 } : undefined}
+            onClick={() => onPick(v.value)}
           >
-            <span style={{ flex: 1 }}>{opt.label}</span>
+            {twoLine ? (
+              <>
+                <span aria-hidden style={ROW_BADGE}>{v.badge ?? v.label}</span>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span aria-hidden style={{ display: 'block' }}>{v.description}</span>
+                  {v.detail ? <span aria-hidden style={ROW_DETAIL}>{v.detail}</span> : null}
+                </span>
+              </>
+            ) : (
+              <span style={{ flex: 1 }}>{v.label}</span>
+            )}
             {active && <Check size={15} aria-hidden />}
           </button>
         )
       })}
+      {/* Her menu's closing note — a rule about the options above it, not a
+          caption on any one of them, so it sits under all of them. */}
+      {def.panelNote ? <p style={PANEL_NOTE}>{def.panelNote}</p> : null}
     </DemoDropdown>
   )
+}
+
+/* Her numbered badge on a menu row — `#dashDemo .menu button .n`: a small
+   rounded square holding the nudge's number. */
+const ROW_BADGE: CSSProperties = {
+  flex: '0 0 19px',
+  height: 19,
+  marginTop: 1,
+  borderRadius: 5,
+  display: 'grid',
+  placeItems: 'center',
+  fontSize: 10,
+  fontWeight: 700,
+  background: 'var(--color-neutral-100)',
+  color: 'var(--color-text-secondary)',
+}
+
+/* The sub-line under a row's title — her `.sub`. */
+const ROW_DETAIL: CSSProperties = {
+  display: 'block',
+  marginTop: 1,
+  fontSize: 10.5,
+  fontWeight: 500,
+  color: 'var(--color-text-secondary)',
+}
+
+/* Her `.note`, closing the menu. */
+const PANEL_NOTE: CSSProperties = {
+  margin: '6px 2px 2px',
+  padding: '6px 8px 2px',
+  fontSize: 10.5,
+  lineHeight: 1.45,
+  color: 'var(--color-text-secondary)',
+  borderTop: '1px solid var(--color-border-subtle, rgb(0 0 0 / 0.08))',
 }
 
 /* ── Anjani's control shape ──────────────────────────────────────────────
