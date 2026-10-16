@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import { Fragment, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Check, Flag, Sliders } from '@/icons'
 import { useAccount } from '@/context/AccountContext'
@@ -22,7 +22,6 @@ import {
   DEMO_FAINT_FILL,
   DEMO_HOVER_FILL,
   DEMO_TRIGGER,
-  DEMO_TRIGGER_EYEBROW,
   DESIGN_ACCENT,
 } from './demoBarUtil'
 
@@ -119,7 +118,14 @@ export function DesignControlsBar({
       design
     >
       <span style={versionTagStyle}>{dashboardVersionLabel(versionId)}</span>
-      {controls.map((def) => (
+      {/* ⚠ A RULE BETWEEN GROUPS, NOT AROUND THEM — her `.sep`, a 1px by 22
+          hairline (`#demoBar .sep`). It is what stops four labelled groups
+          reading as one long row of buttons once the labels shrink. Between
+          only: a leading or trailing rule would be an edge the bar does not
+          have. */}
+      {controls.map((def, i) => (
+        <Fragment key={def.key}>
+          {i > 0 ? <span aria-hidden style={GROUP_SEP} /> : null}
         <DesignControl
           key={def.key}
           def={def}
@@ -132,6 +138,7 @@ export function DesignControlsBar({
             close()
           }}
         />
+        </Fragment>
       ))}
       {/* THE TOOLS. ⚠ THE SPLIT IS INSIDE THIS BLOCK, NOT AROUND IT
           (2026-10-06): Lo-fi crosses to the Demo Hub, the flag sheet does
@@ -270,14 +277,17 @@ function DesignControl({
   if (!variants.length) {
     const on = Boolean(state?.enabled)
     return (
+      <span style={SEGMENT_GROUP}>
+        <span style={SEGMENT_LABEL}>{def.label}</span>
       <button
         type="button"
         role="switch"
         aria-checked={on}
         className="cre-demo-controls-btn"
-        /* The accessible name has to survive the eyebrow being a separate
-           span — "Planner: Rubi" then "On" reads as two unrelated words to a
-           screen reader walking the bar. */
+        /* The label beside it is `aria-hidden`-adjacent decoration as far as
+           this button is concerned, so the name is restated here — "Planner:
+           Rubi" and "On" read as two unrelated words to a screen reader
+           walking the bar otherwise. */
         aria-label={`${def.label}: ${label}`}
         /* ⚠ BRICK WHEN ON, which IS hers: `#rubiSw.on{background:#C4122E}`.
            It is the one place her bar shouts, and it shouts for the right
@@ -293,9 +303,9 @@ function DesignControl({
           e.currentTarget.style.background = DEMO_FAINT_FILL
         }}
       >
-        <span aria-hidden style={DEMO_TRIGGER_EYEBROW}>{def.label}:</span>
         <span aria-hidden>{label}</span>
       </button>
+      </span>
     )
   }
 
@@ -373,11 +383,19 @@ function DesignControl({
     )
   }
 
+  /* ⚠ THE NAME SITS OUTSIDE THE CONTROL, as it does on hers (2026-10-16).
+     `DemoDropdown` draws an `eyebrow` INSIDE the trigger — "BRAND: Atlas ⌄" —
+     which is the demo bar's shape and the reason a dropdown and a segmented
+     group looked like two unrelated systems sitting on one bar. Hers names
+     every group the same way: a small uppercase label, then the control. So
+     the label is rendered here and the eyebrow is not passed at all; the
+     trigger carries the VALUE alone. */
   return (
+    <span style={SEGMENT_GROUP}>
+      <span style={SEGMENT_LABEL}>{def.label}</span>
     <DemoDropdown
       id={def.key}
       label={label}
-      eyebrow={def.label}
       triggerStyle={SQUARE_TRIGGER}
       openId={openId}
       onToggle={onToggle}
@@ -403,6 +421,7 @@ function DesignControl({
         )
       })}
     </DemoDropdown>
+    </span>
   )
 }
 
@@ -449,7 +468,7 @@ const SEGMENT_GROUP: CSSProperties = {
 /* Her 9px, letter-spacing and all — small enough that it reads as a caption
    on the group rather than as another control beside it. */
 const SEGMENT_LABEL: CSSProperties = {
-  fontSize: 9,
+  fontSize: 8.5,
   fontWeight: 700,
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
@@ -470,9 +489,9 @@ const SEGMENT_BTN: CSSProperties = {
   border: '1px solid rgb(255 255 255 / 0.14)',
   background: 'rgb(255 255 255 / 0.05)',
   color: 'rgb(255 255 255 / 0.78)',
-  padding: '6px 9px',
+  padding: '5px 8px',
   borderRadius: 7,
-  fontSize: 11.5,
+  fontSize: 10.5,
   fontWeight: 600,
   cursor: 'pointer',
   whiteSpace: 'nowrap',
@@ -500,8 +519,18 @@ const SWITCH_ON: CSSProperties = {
    to `DemoDropdown`, which keeps its own shape for every other caller. */
 const SQUARE_TRIGGER: CSSProperties = {
   borderRadius: 7,
-  fontSize: 11.5,
-  padding: '6px 9px',
+  fontSize: 10.5,
+  padding: '5px 8px',
+  gap: 5,
+}
+
+/* Her `.sep` — `width:1px; height:22px`. The colour is the bar's own hairline
+   rather than her #2E2A22, which is a brown that only works on her ground. */
+const GROUP_SEP: CSSProperties = {
+  width: 1,
+  height: 22,
+  flex: 'none',
+  background: 'rgb(255 255 255 / 0.12)',
 }
 
 /* The version this bar is scoped to, stated rather than implied — a designer
