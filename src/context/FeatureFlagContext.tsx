@@ -1320,8 +1320,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     /* Scoped to the version the ask came from. ⚠ The EFFECT is not scoped — any
        version that opens the session reads this flag — which is the same split
        `atlas-brand-skin` has: `versions` decides whose BAR carries the control,
-       not where the arm applies. */
-    versions: ['hybrid-pacing'],
+       not where the arm applies.
+
+       ⚠ `eric-atlas-e2e` ADDED 2026-10-15 — the default moved to Eric's
+       End-to-End Demo on 2026-10-14, and the Compass row (`xcel-compass`)
+       opens that version with no `version=` pin. Without this the control was
+       reachable by `?ff=` only. `hybrid-pacing` stays so nothing that already
+       worked here moves. */
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Course content',
     description:
@@ -1362,6 +1368,16 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `?ff=` alone. The scope's design authority is recorded where it lives,
        in `PROTOTYPE_SCOPES`. */
     owner: 'jill',
+    /* ⚠ `versions: ['eric-atlas-e2e']` ADDED 2026-10-15. Without it this flag
+       only shows on the Design Controls bar (and the Feature Flag panel, same
+       owner filter) when `flagOwner(version) === 'jill'` — true for every
+       version EXCEPT the one the Compass row (`xcel-compass`) actually opens,
+       Eric's End-to-End Demo, the default since 2026-10-14. That left the arm
+       deciding whose Compass renders reachable only by
+       `?ff=compass-surface:atlas`. This is the Compass scope's own version
+       list the note above already asked for; widen it if a second
+       Compass-hosting version is ever added. */
+    versions: ['eric-atlas-e2e'],
     group: 'Navigation',
     label: 'Compass surface',
     description:
@@ -1383,13 +1399,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        starters, and the norm note in her voice. OFF: no panel, the calendar
        widens, and the norm note reads "Good to know".
 
-       ⚠ NO `versions`, so the bar carries it on the versions its OWNER owns —
-       Jill's — and not on Eric's default, where the Compass row opens. That is
-       the design bar's rule (`designControlsFor`), not a choice; on the
-       default, `?ff=compass-planner-rubi:off` is the way to the second
-       concept. A Compass scope with its own versions would fix it properly. */
+       ⚠ `versions: ['eric-atlas-e2e']` ADDED 2026-10-15 — this used to have
+       none, so the bar carried it on the versions its OWNER owns (Jill's)
+       only, never on Eric's default, where the Compass row actually opens.
+       Reachable only by `?ff=compass-planner-rubi:off` until now. This is the
+       "Compass scope with its own versions" the line above used to ask for. */
     surface: 'design',
     owner: 'jill',
+    versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Planner: Rubi',
     description:
@@ -1404,9 +1421,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        the absence. A says the outcome; B adds a catch-up review of the last
        two topics studied before the break. Her file switches these with a
        "Return A / B" control in the prototype box; here it is a design
-       control. Shows only when `compass-planner-absence` seeds an absence. */
+       control. Shows only when `compass-planner-absence` seeds an absence.
+
+       `versions: ['eric-atlas-e2e']` — 2026-10-15, the same reach fix as
+       `compass-planner-rubi` above: the owner-match fallback never carried
+       this to Eric's default, where the Compass row opens. */
     surface: 'design',
     owner: 'jill',
+    versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Planner: return note',
     description:
@@ -1424,9 +1446,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     /* BELOW THE WEEK — 2026-10-15. Three things to compare under the week
        view: nothing, next week as a quieter row of the same grid, or the next
        few sessions as a list with the next spaced review. Her "Below week"
-       control. */
+       control.
+
+       `versions: ['eric-atlas-e2e']` — 2026-10-15, the same reach fix as
+       `compass-planner-rubi` above. */
     surface: 'design',
     owner: 'jill',
+    versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Planner: below the week',
     description:
@@ -1446,9 +1472,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        day (on hover, or always on touch) and takes it off in one click; the
        day itself still opens the menu. Menu: no button, the click opens the
        per-day menu, which says where the session would land before you
-       commit. Her "Day off" control. */
+       commit. Her "Day off" control.
+
+       `versions: ['eric-atlas-e2e']` — 2026-10-15, the same reach fix as
+       `compass-planner-rubi` above. */
     surface: 'design',
     owner: 'jill',
+    versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Planner: day off',
     description:
@@ -1469,9 +1499,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        same states are seeded here. `missed-day`: yesterday's session was
        missed, today is Sep 23. `away-week`: two sessions studied, then seven
        days away, today is Oct 1 — the two done topics are what return note B
-       recaps. */
+       recaps.
+
+       `versions: ['eric-atlas-e2e']` — 2026-10-15, the same reach fix as
+       `compass-planner-rubi` above. */
     surface: 'design',
     owner: 'jill',
+    versions: ['eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Planner: absence',
     description:
@@ -2885,6 +2919,16 @@ type PersistedState = Record<string, PersistedFlagState>
  * `/promote-to-prototype` put in the catalog; this is a third-site concern and
  * lives behind the same env var the third site already sets.
  *
+ * ⚠ A DEFAULT IS NOT ENOUGH ON ITS OWN — 2026-10-08. For two weeks this was
+ * the whole mechanism, and a session still opened at ~63%: `loadInitial`
+ * merged `cgp.featureFlags` over it, and that key holds whatever Progress the
+ * moderator last picked from the `?test=0` bar in the same browser. Demo mode
+ * is `?demo=1` only, so on the test site every ordinary page view both READS
+ * and WRITES that key, and one check of the On Track state became the
+ * participant's starting point for every session after it. `loadInitial` and
+ * `loadCustomDefaults` now return the baseline untouched on this build; see
+ * the note on each.
+ *
  * `dashboard-navigation` WAS LISTED HERE — pinning the A/B's control arm so a
  * later catalog change could not silently start participants on the variant.
  * It went with the flag on 2026-10-01; there is no variant left to be started
@@ -2920,6 +2964,10 @@ function catalogDefault(def: FeatureFlagDefinition): FeatureFlagState {
  *  "use the catalog default". */
 function loadCustomDefaults(): Record<string, FeatureFlagState> {
   if (typeof window === 'undefined') return {}
+  // The testing build starts every page view from the catalog + the
+  // `TESTING_BASELINE` — a saved custom default is the one other thing
+  // `baselineFrom` and `reset` would put in front of it. See the baseline note.
+  if (isTestingGateway()) return {}
   try {
     const raw = window.localStorage.getItem(CUSTOM_DEFAULTS_KEY)
     if (!raw) return {}
@@ -2960,6 +3008,12 @@ function loadInitial(): Record<string, FeatureFlagState> {
     defaults[def.key] = catalogDefault(def)
   }
   if (typeof window === 'undefined') return defaults
+  /* ⚠ NOTHING THE BROWSER SAVED REACHES A FRESH PAGE VIEW ON THE TESTING BUILD
+     — 2026-10-08. Persistence still runs (the bar keeps working mid-session
+     and a write is harmless), but it is never read back, so the moderator's
+     last Progress pick cannot become the next participant's starting state.
+     `?ff=` is still the way to open a session on anything but the baseline. */
+  if (isTestingGateway()) return defaults
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY)
     if (!raw) return defaults
