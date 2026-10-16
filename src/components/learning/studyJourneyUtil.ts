@@ -781,11 +781,16 @@ export function whiteJourneyTitles(
      carried its own copy of the list, so the rename reached only the E2E
      one, and `QeFocusedVersion` and `CourseControl` both assert the design's
      wording on the others. */
-  opts: { stateExamSimulators?: boolean } = {},
+  opts: { stateExamSimulators?: boolean; preCourseAffidavit?: boolean } = {},
 ): string[] {
   const total = lessonStop?.hours ?? NY_LH_PRELICENSING_LESSONS
   const done = lessonStop?.completed ?? 0
-  return [
+  /* ⚠ THE PRE-COURSE AFFIDAVIT IS A ROW THE DEMO CAN NOT HAVE — 2026-10-16,
+     Jillienne, with the Affidavit control off: "remove this as the first
+     option". A journey that opens on a step the demo never shows is
+     promising something it will not do. Opt-OUT, not opt-in: every other
+     caller keeps the row, which is what they have always drawn. */
+  const rows = [
     'Pre-course Affidavit',
     `Pre-Licensing Lessons (${done} of ${total} completed)`,
     `Prep Review (${NY_LH_PREP_REVIEW_LESSONS})`,
@@ -796,4 +801,9 @@ export function whiteJourneyTitles(
     'Final Course Exam',
     'Survey & Certificate',
   ]
+  /* ⚠ ONLY THE PRE-COURSE ONE. "Study-manual Notice Affidavit" stays:
+     the control that drops this row is about what greets the learner on
+     ARRIVAL, and the post-course affidavit is a step they reach later
+     whether or not the demo opens one over Home. */
+  return opts.preCourseAffidavit === false ? rows.slice(1) : rows
 }

@@ -305,6 +305,10 @@ export function AtlasHomeEricE2E({
   // V3 drops the Attestation & Affidavit stop on every progress stage
   // (2026-10-09, Eric's request). The stop still exists in the shared journey.
   const { regulated } = useCourseDemo()
+  /* The design bar's Affidavit control — read here because the journey below
+     drops its first row when it is off, not only because the modal reads it. */
+  const affidavitFlag = useFeatureFlag('atlas-affidavit')
+  const affidavitPick = affidavitFlag.variant ?? 'off'
   const stops = journeyStopsFor(path).filter((s) => s.id !== 'attestation-and-affidavit')
   const currentIdx = Math.max(
     0,
@@ -323,7 +327,7 @@ export function AtlasHomeEricE2E({
      Sequence what is DRAWN, which is the array below. */
   const shownStops: readonly JourneyStop[] = applyJourneySequencing(
     onWhite && stops.length
-      ? whiteJourneyTitles(stops[0], { stateExamSimulators: true }).map((title, i) => ({
+      ? whiteJourneyTitles(stops[0], { stateExamSimulators: true, preCourseAffidavit: affidavitPick !== 'off' }).map((title, i) => ({
           ...stops[0],
           id: `white-${i}`,
           title,
@@ -350,8 +354,6 @@ export function AtlasHomeEricE2E({
   const longTitle = useFeatureFlag('atlas-home-long-title').enabled
   /* The design bar's Affidavit control, and the invite flow's `?affidavit=1`
      as the pre-course one. `null` when neither asks for it. */
-  const affidavitFlag = useFeatureFlag('atlas-affidavit')
-  const affidavitPick = affidavitFlag.variant ?? 'off'
   const affidavitKind: AffidavitKind | null =
     affidavitPick === 'pre' || affidavitPick === 'post'
       ? affidavitPick
