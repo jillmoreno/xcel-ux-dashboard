@@ -106,10 +106,25 @@ const PANEL: CSSProperties = {
   flexDirection: 'column',
   alignItems: 'center',
   gap: 16,
-  // 22 across, not 24, so "Customize Your Pace ›" fits one line.
-  padding: '24px 22px',
+  /* ⚠ NO HORIZONTAL PADDING (2026-10-16, Jillienne: "remove left/right
+     padding"). It was `24px 22px`, and the 22 was itself a squeeze — the note
+     here read "22 across, not 24, so 'Customize Your Pace ›' fits one line".
+     With the fill gone there is nothing for side padding to inset FROM: the
+     card sits directly on the Atlas Home's tan container, which has padding of
+     its own, so this was inset inside an inset. Dropping it also retires the
+     one-line squeeze, since the text now has the full column. */
+  padding: '24px 0',
   borderRadius: 8,
-  background: 'var(--color-atlas-outlined-card, var(--color-compass-page-card))',
+  /* ⚠ NO FILL (2026-10-16, Jillienne: "remove the blue background here"). The
+     panel was tinted in `HybridHomeV1`, where it sits on white and the tint is
+     what separates it — that file's own note says "the tint carries the
+     panel", which is why it has no shadow either. HERE it sits inside the
+     Atlas Home's tan container, so the tint was a second surface on top of a
+     surface. Without it the padding and the rule below do the separating.
+     ⚠ SO IT NOW HAS NEITHER FILL NOR SHADOW: if this card is ever reused on a
+     white ground it will have nothing to sit on, and that is the moment to
+     give it back one of the two rather than both. */
+  background: 'transparent',
   boxSizing: 'border-box',
 }
 const EYEBROW: CSSProperties = {

@@ -122,18 +122,20 @@ describe('the Compass session', () => {
     expect(screen.getByText('Insurance basics')).toBeTruthy()
   })
 
-  /* ⚠ THE EXIT MOVED OFF THE BAR on 2026-10-16, hours after it arrived there
-     as an X. A square icon said "close" without saying what you would be back
-     in; above the contents it reads as the step out of a list you are inside,
-     and a 220px column can afford the words. */
-  it('the way out sits above the contents and names where it goes', () => {
+  /* ⚠ THE EXIT HAS MOVED TWICE IN ONE DAY: an X at the right of the bar, then
+     above the contents, then — finally — into the BAR'S FIRST COLUMN, which
+     is the contents column's width. So it still sits over the list it steps
+     out of, but on the bar's own baseline with Notes and Rubi, wearing their
+     style. What stayed constant through all three is what this pins: it names
+     where it goes, and there is exactly one of it. */
+  it('the way out is in the bar, above the contents, and names where it goes', () => {
     renderSession()
     expect(screen.queryByRole('button', { name: 'Leave the lesson' }), 'the X is gone').toBeNull()
     const back = screen.getByRole('button', { name: /^Back to / })
     const contents = screen.getByRole('complementary', { name: 'Contents' })
-    expect(contents.contains(back), 'it belongs to the contents column').toBe(true)
-    // First in that column — above the list, not after it.
-    expect(contents.firstElementChild).toBe(back)
+    expect(contents.contains(back), 'it is no longer inside the contents list').toBe(false)
+    // One exit, not two — the collapse pass briefly had a second.
+    expect(screen.getAllByRole('button', { name: /^Back to / })).toHaveLength(1)
   })
 
   it('defaults to Back to Lesson when the session was opened with no origin', () => {

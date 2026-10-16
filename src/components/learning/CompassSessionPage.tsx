@@ -160,6 +160,8 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
         onToggleRubi={() => setRailOpen((v) => !v)}
         railOpen={railOpen}
         contentsOpen={contentsOpen}
+        onExit={onExit}
+        backLabel={backLabel}
       />
       <div
         style={{
@@ -177,18 +179,9 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
             active={beatIndex}
             onSelect={setBeatIndex}
             onCollapse={() => setContentsOpen(false)}
-            onExit={onExit}
-            backLabel={backLabel}
           />
         ) : (
           <aside style={contentsRailStyle} aria-label="Contents">
-            {/* ⚠ THE EXIT SURVIVES THE COLLAPSE, icon-only. It is the page's
-                only way out, and a control that disappears when a column is
-                narrowed is how someone ends up using the browser's Back
-                button on a prototype. The label moves to `aria-label`. */}
-            <button type="button" style={iconButtonStyle} onClick={onExit} aria-label={backLabel}>
-              <ArrowLeft size={14} aria-hidden />
-            </button>
             <button
               type="button"
               style={iconButtonStyle}
@@ -247,6 +240,8 @@ function SessionBar({
   onToggleRubi,
   railOpen,
   contentsOpen,
+  onExit,
+  backLabel,
 }: {
   index: number
   total: number
@@ -254,6 +249,8 @@ function SessionBar({
   onToggleRubi: () => void
   railOpen: boolean
   contentsOpen: boolean
+  onExit: () => void
+  backLabel: string
 }) {
   /* ⚠ POSITION, NOT ATTAINMENT. The figure is how far along the beats the
      learner is, and it reads 0% on the first one because they have not
@@ -286,8 +283,29 @@ function SessionBar({
         gridTemplateColumns: `${contentsOpen ? '220px' : '48px'} minmax(0,1fr)${railOpen ? ' 360px' : ''}`,
       }}
     >
-      {/* The Contents column's share, empty — the grid is what aligns this. */}
-      <span aria-hidden />
+      {/* ⚠ THE WAY OUT RIDES IN THE BAR'S FIRST COLUMN (2026-10-16,
+          Jillienne: "move it up in the next section and make the button style
+          match the notes button style"). That column is already the Contents
+          column's width, so the control lands exactly above the list it steps
+          out of — which is where it was a moment ago, one row lower — and now
+          sits on the bar's own baseline with Notes and Rubi.
+
+          It wears `barButtonStyle`, the Notes pill, so the bar's three
+          controls read as one set. COLLAPSED it drops to the icon alone, with
+          the words moving to `aria-label`: the column is 48px and a label
+          would not fit, but the exit still has to be there — it is the page's
+          only one. */}
+      <div style={barBackCellStyle}>
+        <button
+          type="button"
+          style={contentsOpen ? barButtonStyle : barBackIconStyle}
+          onClick={onExit}
+          aria-label={backLabel}
+        >
+          <ArrowLeft size={14} aria-hidden />
+          {contentsOpen ? backLabel : null}
+        </button>
+      </div>
       <div style={barCentreStyle}>
         <div style={barLineStyle}>
           <span style={barEyebrowStyle}>
@@ -350,18 +368,11 @@ function Contents({
   active,
   onSelect,
   onCollapse,
-  onExit,
-  backLabel,
 }: {
   beats: SessionBeat[]
   active: number
   onSelect: (i: number) => void
   onCollapse: () => void
-  onExit: () => void
-  /** "Back to Overview" or "Back to Lesson" — named for where the learner
-   *  actually came from, so the control says where it goes rather than that
-   *  it closes something. */
-  backLabel: string
 }) {
   const [expanded, setExpanded] = useState(false)
   /* Three chapters by default — the one behind, the live one, the one ahead.
@@ -369,17 +380,6 @@ function Contents({
   const chapters = expanded ? SESSION_COURSE.chapters : SESSION_COURSE.chapters.slice(0, 3)
   return (
     <aside style={contentsStyle} aria-label="Contents">
-      {/* ⚠ THE WAY OUT LIVES HERE NOW (2026-10-16, Jillienne: "change this to
-          a Back to Lesson, or Back to Overview (based on where the user came
-          from), and move this to be right about the table of contents, left
-          aligned"). It was an X at the right of the bar for a few hours — a
-          square icon that said "close" without saying what you would be back
-          in. Above the contents it reads as the step out of a list you are
-          inside, and it can afford a label because the column is 220 wide. */}
-      <button type="button" style={backStyle} onClick={onExit}>
-        <ArrowLeft size={13} aria-hidden />
-        {backLabel}
-      </button>
       <div style={contentsHeadStyle}>
         <span style={contentsTitleStyle}>Contents</span>
         {/* ⚠ IT COLLAPSES THE COLUMN NOW, it does not leave the session
@@ -1198,21 +1198,25 @@ const contentsRailStyle: CSSProperties = {
   justifyContent: 'flex-start',
   alignItems: 'center',
 }
-/* Left-aligned above the list, as asked — a text control, not an icon, so it
-   can name its destination. */
-const backStyle: CSSProperties = {
+/* The exit's cell in the bar's first column, left-aligned.
+   ⚠ 16, NOT THE CENTRE CELL'S 32. This column is the CONTENTS column, and
+   `contentsStyle`'s padding is 16 — so 16 is what puts the button's left edge
+   on the same line as the word "Contents" under it. Measured at 32: the
+   button started 16px right of the label and read as indented from a list it
+   is meant to head. */
+const barBackCellStyle: CSSProperties = { display: 'flex', justifyContent: 'flex-start', paddingLeft: 16 }
+/* Collapsed: the Notes pill with no room for words. Square, so it keeps the
+   same height and border as the rest of the bar's controls. */
+const barBackIconStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
-  gap: 7,
-  alignSelf: 'flex-start',
-  marginBottom: 14,
-  padding: 0,
-  border: 'none',
-  background: 'none',
-  fontFamily: 'var(--font-body)',
-  fontSize: 12.5,
-  fontWeight: 600,
-  color: 'var(--color-text-secondary)',
+  justifyContent: 'center',
+  width: 32,
+  height: 32,
+  borderRadius: 8,
+  border: '1px solid var(--color-border-subtle)',
+  background: 'var(--color-surface-card)',
+  color: 'var(--color-text-primary)',
   cursor: 'pointer',
 }
 const contentsStyle: CSSProperties = {
