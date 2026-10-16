@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { isEricAtlasWhiteLike, resolveDashboardVersion } from '@/data/dashboardVersions'
-import { useDashboardCourseTitle } from '@/pages/endToEndDemo'
+import { useCourseOverviewOpensCompass, useDashboardCourseTitle } from '@/pages/endToEndDemo'
 import { AffidavitModal } from '@/components/e2e/AffidavitModal'
 import { useAccount } from '@/context/AccountContext'
 import {
@@ -137,6 +137,15 @@ export type AtlasHomeEricE2EProps = {
    journey stops, the tiles, My Courses and My Certificates. Set false to wire
    them again.
 
+   ⚠ COURSE OVERVIEW IS EXEMPT ON THE END-TO-END WALK (2026-10-16,
+   Jillienne: "clicking Course Overview … will now link up with Anjani's
+   Prototype"). `useCourseOverviewOpensCompass` is `?journey=full` AND the
+   flag, so this exemption is live on HER row's walk and nowhere else — the
+   Atlas Learning tile, which renders this same component, keeps the inert
+   button. This one DOES leave Home, which is the one thing `LINKS_OFF`
+   exists to prevent; it is allowed to because joining Atlas to Compass is
+   exactly what the End-to-End row is for.
+
    ⚠ THE THREE INFORMATION SHEETS ARE EXEMPT (2026-10-15, Jillienne: Exam
    Information, Applying for a License and State Requirements "should trigger
    the updated sheets from Jills Hybrid version"). They are the same handlers
@@ -182,6 +191,9 @@ export function AtlasHomeEricE2E({
      dashboard, so it shows the course the reviewer picked; the invite door at
      `/end-to-end-demo` keeps `useEndToEndCourseTitle` and stays Florida. */
   const e2eTitle = useDashboardCourseTitle()
+  /* Course Overview is exempt from `LINKS_OFF` on the End-to-End row's walk,
+     where it opens Anjani's Compass — see the note on `LINKS_OFF`. */
+  const overviewOpensCompass = useCourseOverviewOpensCompass()
   // White's course-head panel, measured so Quick Links can take its height
   // (2026-10-14, Eric's request).
   const [headEl, setHeadEl] = useState<HTMLDivElement | null>(null)
@@ -436,7 +448,7 @@ export function AtlasHomeEricE2E({
             cover={shownCover ?? undefined}
             title={shownTitle}
             onCover={() => setWhiteHead(false)}
-            onOverview={LINKS_OFF ? NO_LINK : onOverview}
+            onOverview={LINKS_OFF && !overviewOpensCompass ? NO_LINK : onOverview}
             onBegin={LINKS_OFF ? NO_LINK : onBegin}
             beginLabel={progressPick === 'not-started' ? 'Begin Course' : 'Resume Course'}
             meta={courseMeta}
@@ -473,7 +485,7 @@ export function AtlasHomeEricE2E({
                 <button
                   type="button"
                   className="cre-compass-secondary cre-atlas-home-secondary"
-                  onClick={LINKS_OFF ? NO_LINK : onOverview}
+                  onClick={LINKS_OFF && !overviewOpensCompass ? NO_LINK : onOverview}
                   // Bold 700, the exam-date prompt's Yes (2026-10-15, Eric's
                   // request; Medium 500 from 2026-10-06).
                   style={{ ...HEADER_BUTTON, fontWeight: 700 }}

@@ -5,6 +5,8 @@ import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { PartnerHeader } from '@/components/e2e/PartnerHeader'
 import { TopoBackground } from '@/components/e2e/TopoBackground'
 import {
+  E2E_JOURNEY_FULL,
+  E2E_JOURNEY_PARAM,
   E2E_PARTNER_PRICE,
   END_TO_END_VERSION,
   isFullJourney,
@@ -110,7 +112,16 @@ export function InvitedConfirmationPage() {
   useEffect(() => {
     if (!done || !endsHere || !opensHome || !fullJourney) return
     const timer = window.setTimeout(() => {
-      navigate(`/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}`, { replace: true })
+      /* ⚠ `journey=full` RIDES ALONG INTO THE DASHBOARD (2026-10-16). It was
+         dropped here when the hand-off landed, because nothing past the
+         spinner read it yet. The dashboard does now: it is what lets Course
+         Overview reach Anjani's Compass on THIS walk while Eric's Atlas
+         Learning tile keeps his own pages. Drop it again and the walk ends
+         in a dashboard that behaves like Eric's tile. */
+      navigate(
+        `/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}&${E2E_JOURNEY_PARAM}=${E2E_JOURNEY_FULL}`,
+        { replace: true },
+      )
     }, LOADING_HANDOFF_MS)
     return () => window.clearTimeout(timer)
   }, [done, endsHere, opensHome, fullJourney, navigate])

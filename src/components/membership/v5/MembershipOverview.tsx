@@ -33,7 +33,7 @@ import { CompassHomeCourseCard } from '@/components/compass/CompassHomeCourseCar
 import { examDateRenewal, useExamDate } from '@/data/examDateStore'
 import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
 import { Link, useSearchParams } from 'react-router-dom'
-import { END_TO_END_VERSION } from '@/pages/endToEndDemo'
+import { END_TO_END_VERSION, useCourseOverviewOpensCompass } from '@/pages/endToEndDemo'
 import { ATLAS_OPEN_PARAM } from '@/components/compass/AtlasJourneyLinksCard'
 import { useWidgetColor } from './widgetColorUtil'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
@@ -469,6 +469,9 @@ export function MembershipOverview({
   // section in place, preserving the shell's other params (per the "stay in the
   // rebrand shell" nav convention). Mirrors PlatformShell's handleSelect.
   const [shellParams, setShellParams] = useSearchParams()
+  /* Whether the Atlas course card's Course Overview opens Anjani's Compass —
+     the End-to-End row's walk only. See `useCourseOverviewOpensCompass`. */
+  const courseOverviewOpensCompass = useCourseOverviewOpensCompass()
   // `?open=` — a sheet requested from another page (the Atlas My Courses
   // page's journey-links card, 2026-10-05): `exam-details`, `step:<id>` or
   // `requirements`. Opened once, then stripped so a reload does not reopen it.
@@ -1475,15 +1478,33 @@ export function MembershipOverview({
       // Atlas/Compass only: Resume → the Compass Course page. Undefined
       // elsewhere, so every other version keeps the in-shell launcher.
       onResume={resumeToCompass}
-      // Atlas Home V2's "Course Overview" chip — the course's Compass Overview.
+      /* Atlas Home V2's "Course Overview" chip — the course's Atlas Overview.
+       *
+       * ⚠ ON THE END-TO-END WALK IT GOES TO COMPASS INSTEAD (2026-10-16,
+       * Jillienne: "that action will now link up with Anjani's Prototype").
+       * `useCourseOverviewOpensCompass` is `?journey=full` AND the flag, so
+       * this is HER row's walk only — Eric's Atlas Learning tile still opens
+       * his overview, and none of his pages are unwired. `journey` is kept on
+       * the address so the rest of the walk stays the walk; `coursePage` is
+       * cleared so a stale one cannot ride along, as the Learner Focused
+       * band's own Compass hand-off above already does.
+       *
+       * The 2026-10-08 note on that band says both Course Overview controls
+       * land on Anjani's dashboard; this is the Atlas course card joining
+       * them, scoped to the one row that is allowed to join the two surfaces. */
       onOverview={
         atlasCourseCard
           ? () =>
               setShellParams(
                 (prev) => {
                   const next = new URLSearchParams(prev)
-                  next.set('section', 'course')
-                  next.set('coursePage', 'overview')
+                  if (courseOverviewOpensCompass) {
+                    next.set('section', 'compass')
+                    next.delete('coursePage')
+                  } else {
+                    next.set('section', 'course')
+                    next.set('coursePage', 'overview')
+                  }
                   return next
                 },
                 { replace: true },

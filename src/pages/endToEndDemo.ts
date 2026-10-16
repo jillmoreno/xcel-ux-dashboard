@@ -42,6 +42,36 @@ export function isFullJourney(params: URLSearchParams): boolean {
   return params.get(E2E_JOURNEY_PARAM) === E2E_JOURNEY_FULL
 }
 
+/**
+ * COURSE OVERVIEW REACHES COMPASS — on the End-to-End walk only (2026-10-16,
+ * Jillienne: "On Atlas Learning, clicking Course Overview, anything that was
+ * in Eric's original promotion needs to be removed, as that action will now
+ * link up with Anjani's Prototype").
+ *
+ * This is the Atlas↔Compass seam, and it is the End-to-End row's whole job:
+ * the three designers do not wire their surfaces into each other's, Jillienne
+ * assembles them. So the link exists on HER walk and nowhere else — Eric's
+ * Atlas Learning tile keeps the behaviour he promoted, and his overview, study
+ * plan and Rubi Insights pages are untouched in the repo and still reachable
+ * from the Atlas Top Nav, so he can keep working on them on his branch
+ * (2026-10-16, her condition: "still allow eric to play with those pages on
+ * his branch, but not promote it to the prototype"). NOTHING OF HIS IS
+ * UNWIRED OR ARCHIVED — if this ever becomes a removal, that is
+ * `/archive-a-feature` and Eric's call, not this.
+ *
+ * It follows the 2026-10-08 decision for the other Course Overview controls
+ * ("both land on Anjani's dashboard", see `MembershipOverview`); what is new
+ * is that the Atlas course card now does it too, and only here.
+ *
+ * The flag is the promotion gate: default ON so `promote-to-prototype`
+ * surfaces it, OFF restores the inert button this walk had before.
+ */
+export function useCourseOverviewOpensCompass(): boolean {
+  const [params] = useSearchParams()
+  const on = useFeatureFlag('e2e-course-overview-opens-compass').enabled
+  return on && isFullJourney(params)
+}
+
 /* THE DEMO'S PRICES, in one place (2026-10-15, Eric's request): the PDP's
    price card, Checkout's order summary and Confirmation's order total all
    read these, so the total is always the checkout's. */

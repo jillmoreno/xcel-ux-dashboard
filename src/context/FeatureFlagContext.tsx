@@ -2272,6 +2272,31 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'e2e-course-overview-opens-compass',
+    /* THE ATLAS↔COMPASS SEAM (2026-10-16, Jillienne: "clicking Course
+       Overview … will now link up with Anjani's Prototype"). On the
+       End-to-End row's walk, the Atlas course card's Course Overview opens
+       Compass Learning instead of doing nothing. Off, the button is inert
+       again, which is what that walk had before.
+
+       ⚠ THE WALK ONLY — `useCourseOverviewOpensCompass` ANDs this with
+       `?journey=full`, so Eric's Atlas Learning tile is untouched. A flag
+       alone would change both tiles, for the same reason `journey` exists
+       at all: one value per build, two rows on that build.
+
+       ⚠ NOTHING OF ERIC'S IS UNWIRED. His overview, Study Plan, Flashcards,
+       Progress, Resources and Rubi Insights pages stay exactly where they
+       are and stay reachable from the Atlas Top Nav, so he can keep working
+       on them on his branch — Jillienne's condition when she asked for this.
+       This flag changes ONE button's destination on ONE row's walk. */
+    group: 'Navigation',
+    label: 'Course Overview opens Compass',
+    description:
+      'On the End-to-End row\u2019s walk (?journey=full), the Atlas course card\u2019s Course Overview opens Anjani\u2019s Compass Learning. Off, it does nothing, as before. Eric\u2019s Atlas Learning tile is unaffected either way, and none of his course pages are removed.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-header-v2',
     /* THE ATLAS HEADER, ON THE DESIGN BAR (2026-10-13, Eric's request:
        "replace the nav … with the new nav"). On (default), Eric's Atlas
