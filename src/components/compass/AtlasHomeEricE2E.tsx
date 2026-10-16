@@ -646,7 +646,7 @@ export function AtlasHomeEricE2E({
               // 12 corners on Eric/Atlas White, 8 under the card’s 20 (2026-10-14)
               // — and the 260 column's width less the panel's padding there, so
               // its right edge lines up with that column below.
-              style={{ ...COVER_FRAME, ...COVER_TOGGLE, ...(onWhite ? { borderRadius: COMPASS_BUTTON.borderRadius, width: V3_LEFT_W - WHITE_HEAD_PAD } : null) }}
+              style={{ ...COVER_FRAME, ...COVER_TOGGLE, ...(onWhite ? { borderRadius: 7, width: V3_LEFT_W - WHITE_HEAD_PAD } : null) }}
             >
               <img src={shownCover} alt="" style={COVER} />
             </button>
