@@ -1606,14 +1606,21 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surfaces: ['compass:study-planner'],
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
-    label: 'Return note',
+    label: 'Return',
     description:
       'The note after a missed session or time away. A: what moved and when you now finish. B: the same, plus a catch-up review of the last two topics before the break, offered first.',
     defaultEnabled: true,
     defaultVariant: 'A',
     variants: [
-      { value: 'A', label: 'A — what moved' },
-      { value: 'B', label: 'B — with a catch-up review' },
+      /* ⚠ THE ARM IS THE LETTER, THE SENTENCE IS THE TOOLTIP — 2026-10-16,
+         Jillienne: "Buttons should be just A, B. On hover, show a tooltip
+         with the 'what moved' etc." The two sentences were the widest pair
+         on the bar and they only say which of two concepts a reviewer is
+         looking at; the letter is enough to pick, and the sentence is there
+         the moment anyone wonders. `description` already existed for exactly
+         this and is what the Feature Flag panel prints under the arm. */
+      { value: 'A', label: 'A', description: 'What moved' },
+      { value: 'B', label: 'B', description: 'With a catch-up review' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -1632,13 +1639,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surfaces: ['compass:study-planner'],
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
-    label: 'Below the week',
+    label: 'Below Week',
     description:
       'What sits under the week view. None (default): the week stands alone. Next week: the following week as a quieter row. Coming up: the next four sessions as a list, and when the next spaced review falls.',
     defaultEnabled: true,
     defaultVariant: 'none',
     variants: [
-      { value: 'none', label: 'Nothing' },
+      { value: 'none', label: 'None' },
       { value: 'next', label: 'Next week' },
       { value: 'coming', label: 'Coming up' },
     ],

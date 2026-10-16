@@ -15,6 +15,7 @@ import {
 } from '@/data/dashboardVersions'
 import { useFeatureFlagPanel } from '@/components/account/FeatureFlagPanelContext'
 import { useLoFi } from '@/context/LoFiContext'
+import { Tooltip } from '@/components/ui/Tooltip'
 import { DESIGN_SURFACE_LABELS, useDesignSurface } from '@/context/designSurface'
 import { DemoBar, DemoDropdown } from './DemoBar'
 import {
@@ -367,7 +368,7 @@ function DesignControl({
         >
           {variants.map((v) => {
             const active = v.value === current
-            return (
+            const button = (
               <button
                 key={v.value}
                 type="button"
@@ -375,11 +376,26 @@ function DesignControl({
                 aria-checked={active}
                 tabIndex={active ? 0 : -1}
                 className="cre-demo-controls-btn"
+                /* ⚠ THE NAME CARRIES THE DESCRIPTION, NOT JUST THE LABEL. An
+                   arm may be a single letter — Return is "A" and "B" — and a
+                   bar announcing "A" and "B" tells a screen reader nothing
+                   about what either does. The tooltip is for the eye; this is
+                   the same sentence for everyone else. */
+                aria-label={v.description ? `${v.label} — ${v.description}` : undefined}
                 style={{ ...SEGMENT_BTN, ...(active ? SEGMENT_BTN_ON : null) }}
                 onClick={() => onPick(v.value)}
               >
                 {v.label}
               </button>
+            )
+            /* Only where there is something to say — a tooltip repeating the
+               label it is attached to is a flicker with no content. */
+            return v.description ? (
+              <Tooltip key={v.value} content={v.description} placement="bottom">
+                {button}
+              </Tooltip>
+            ) : (
+              button
             )
           })}
         </span>
