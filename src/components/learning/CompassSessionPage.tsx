@@ -132,6 +132,8 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
   const keyTermsV2 = useFeatureFlag('compass-key-terms-rating').enabled
   /* Knowledge check: hers (rate before the reveal) or the port's radios. */
   const checkV2 = useFeatureFlag('compass-check-confidence').enabled
+  /* Infographic: her chart, or the port's "chart to come" placeholder. */
+  const infographicV2 = useFeatureFlag('compass-infographic-chart').enabled
   /* The Contents column, open or a strip. Page state rather than the aside's
      own, because the GRID has to change with it. */
   const [contentsOpen, setContentsOpen] = useState(true)
@@ -199,6 +201,7 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
               beat={beat}
               keyTermsV2={keyTermsV2}
               checkV2={checkV2}
+              infographicV2={infographicV2}
               /* Practice opens Rubi beside the lesson — the rail this page
                  already owns. Hers seeds the composer with the term; the port
                  opens the rail, which is as far as this build's Rubi goes. */
@@ -417,11 +420,13 @@ function BeatBody({
   beat,
   keyTermsV2,
   checkV2,
+  infographicV2,
   onPractice,
 }: {
   beat: SessionBeat
   keyTermsV2: boolean
   checkV2: boolean
+  infographicV2: boolean
   onPractice: (term: string) => void
 }) {
   if (beat.type === 'video') return <VideoBeat beat={beat} />
@@ -435,7 +440,7 @@ function BeatBody({
     return keyTermsV2 ? <KeyTermsBeatV2 beat={beat} onPractice={onPractice} /> : <KeyTermsBeat beat={beat} />
   if (beat.type === 'check') return checkV2 ? <CheckBeatV2 beat={beat} /> : <CheckBeat beat={beat} />
   if (beat.type === 'recap') return <RecapBeat beat={beat} />
-  return <InfographicBeat beat={beat} />
+  return infographicV2 ? <InfographicBeatV2 beat={beat} /> : <InfographicBeat beat={beat} />
 }
 
 function VideoBeat({ beat }: { beat: SessionBeat }) {
@@ -839,6 +844,94 @@ function InfographicBeat({ beat }: { beat: SessionBeat }) {
   )
 }
 
+/**
+ * THE INFOGRAPHIC, ANJANI'S — ported 2026-10-16 (Jillienne: "This section is
+ * also needing to be updated to Anjanis").
+ *
+ * ⚠ THE PLACEHOLDER IT REPLACES RESTED ON A WRONG PREMISE. Its note said the
+ * source "authors this beat as a title and a subtitle with no chart data
+ * behind it, so there is nothing to plot" — and inventing a curve would
+ * indeed have been inventing the teaching. But her `compInfographic` DOES
+ * draw the chart: it is a HAND-AUTHORED SVG, not a series plotted from data.
+ * There was nothing to invent because the drawing already existed; it just
+ * was not where a search for data would look.
+ *
+ * So the geometry below is hers, point for point — the axis at x=60, four
+ * grid lines 57 apart, the dotted Term line flat at y≈207 and the Permanent
+ * curve `C 200 205, 300 150, 530 40`. Her hex is mapped onto this repo's
+ * tokens, which is the house rule and also what keeps it right in dark mode.
+ */
+function InfographicBeatV2({ beat }: { beat: SessionBeat }) {
+  return (
+    <article style={cardStyle}>
+      <h2 style={beatTitleStyle}>{beat.block.title}</h2>
+      <p style={introStyle}>{beat.block.sub}</p>
+      <div style={{ padding: '0 18px 4px' }}>
+        <svg
+          viewBox="0 0 560 260"
+          role="img"
+          aria-label="Line chart: permanent cash value rises over policy age while term stays at zero"
+          style={{ width: '100%', height: 'auto' }}
+        >
+          <g fontSize="11" style={{ fill: 'var(--color-text-tertiary)', fontFamily: 'var(--font-body)' }}>
+            <line x1="60" y1="20" x2="60" y2="210" style={{ stroke: 'var(--color-border-subtle)' }} />
+            <line x1="60" y1="210" x2="530" y2="210" style={{ stroke: 'var(--color-border-subtle)' }} />
+            {[0, 1, 2, 3].map((i) => (
+              <line
+                key={i}
+                x1="60"
+                y1={210 - i * 57}
+                x2="530"
+                y2={210 - i * 57}
+                style={{ stroke: 'var(--color-neutral-100)' }}
+              />
+            ))}
+            <text x="52" y="214" textAnchor="end">$0</text>
+            <text x="52" y="157" textAnchor="end">$10k</text>
+            <text x="52" y="100" textAnchor="end">$20k</text>
+            <text x="52" y="43" textAnchor="end">$30k</text>
+            <text x="60" y="228">Yr 1</text>
+            <text x="290" y="228" textAnchor="middle">Yr 15</text>
+            <text x="530" y="228" textAnchor="end">Yr 30</text>
+          </g>
+          {/* Term: flat and dotted — the point of the picture is that nothing
+              accrues, so the line has to read as "still zero" rather than as a
+              series that happens to be low. */}
+          <path
+            d="M60 208 L530 206"
+            strokeWidth="2.5"
+            fill="none"
+            strokeDasharray="2 5"
+            style={{ stroke: 'var(--color-warning-700)' }}
+          />
+          <path
+            d="M60 208 C 200 205, 300 150, 530 40"
+            strokeWidth="3"
+            fill="none"
+            style={{ stroke: 'var(--color-primary-700)' }}
+          />
+          <circle cx="530" cy="40" r="4" style={{ fill: 'var(--color-primary-700)' }} />
+          <circle cx="530" cy="206" r="4" style={{ fill: 'var(--color-warning-700)' }} />
+          {/* Labelled on the lines, not in a legend — one less lookup. */}
+          <g fontSize="12" fontWeight="600" style={{ fontFamily: 'var(--font-body)' }}>
+            <text x="470" y="34" textAnchor="end" style={{ fill: 'var(--color-primary-700)' }}>
+              Permanent
+            </text>
+            <text x="470" y="198" textAnchor="end" style={{ fill: 'var(--color-warning-700)' }}>
+              Term ($0)
+            </text>
+          </g>
+        </svg>
+      </div>
+      <div style={takeawayStyle}>
+        <b style={takeawayLabelStyle}>The takeaway</b>
+        Term stays cheap and flat — nothing accrues. Permanent costs more, but the cash value climbs
+        into something you can borrow against.
+      </div>
+    </article>
+  )
+}
+
 function BeatFooter({
   index,
   total,
@@ -1129,6 +1222,27 @@ const mainStyle: CSSProperties = { minWidth: 0, minHeight: 0, overflowY: 'auto',
    than a cap on two of the three children, which is what left the label
    stretching full width while the card beneath it stopped short. */
 const columnStyle: CSSProperties = { width: '100%', maxWidth: 680, marginInline: 'auto' }
+
+/* Her takeaway box — the one piece of the beat that is not the picture. */
+const takeawayStyle: CSSProperties = {
+  margin: '14px 18px 18px',
+  padding: '13px 15px',
+  background: 'var(--color-surface-page)',
+  border: '1px solid var(--color-border-subtle)',
+  borderRadius: 11,
+  fontSize: 16,
+  lineHeight: 1.5,
+  color: 'var(--color-text-primary)',
+}
+const takeawayLabelStyle: CSSProperties = {
+  display: 'block',
+  marginBottom: 5,
+  fontSize: 12,
+  fontWeight: 700,
+  letterSpacing: '.05em',
+  textTransform: 'uppercase',
+  color: 'var(--color-text-tertiary)',
+}
 
 /* ── KNOWLEDGE CHECK, ANJANI'S CARD ──────────────────────────────────────────
    Her values, on this repo's tokens. Note each question is its OWN card, as

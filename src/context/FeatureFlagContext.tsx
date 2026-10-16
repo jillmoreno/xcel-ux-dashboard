@@ -2521,6 +2521,36 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-infographic-chart',
+    /* THE INFOGRAPHIC DRAWS HER CHART (2026-10-16, Jillienne: "This section is
+       also needing to be updated to Anjanis").
+
+       ⚠ THE PLACEHOLDER IT REPLACES RESTED ON A WRONG PREMISE, and that is
+       the thing worth recording. Its note said the source authors this beat
+       with "no chart data behind it, so there is nothing to plot" — and
+       inventing a curve would indeed have been inventing the teaching. But
+       her `compInfographic` DOES draw it: a HAND-AUTHORED SVG, not a series
+       plotted from data. There was nothing to invent because the drawing
+       already existed; it just was not where a search for data would look.
+
+       On: her geometry point for point — the axis, four grid lines, a dotted
+       flat Term line and the Permanent curve rising to $30k at Yr 30 — plus
+       her "The takeaway" box. Off: the "Chart to come" placeholder.
+
+       Her hex is mapped onto this repo's tokens (Permanent → primary-700,
+       Term → warning-700), which is the house rule and also what keeps the
+       chart right in dark mode.
+
+       ⚠ ANJANI'S SURFACE. On by default so it shows as a Compass-scope
+       candidate at promotion rather than riding in with a merge. */
+    group: 'Widgets',
+    label: 'Infographic: draw the chart',
+    description:
+      'On, the Compass session\u2019s Infographic beat draws Anjani\u2019s cash-value chart \u2014 term flat at zero against permanent rising over thirty years \u2014 with her \u201cThe takeaway\u201d box under it. Off, the \u201cChart to come\u201d placeholder.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-header-v2',
     /* THE ATLAS HEADER, ON THE DESIGN BAR (2026-10-13, Eric's request:
        "replace the nav … with the new nav"). On (default), Eric's Atlas
