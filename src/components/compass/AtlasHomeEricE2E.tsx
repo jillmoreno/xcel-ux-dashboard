@@ -705,6 +705,9 @@ export function AtlasHomeEricE2E({
               key={`readiness-${progressPick}-${refreshKey}`}
               initialLevel={V3_READINESS_FOR[progressPick] ?? 0}
               notStarted={ringAtZero}
+              /* One eyebrow for the column — see `ATLAS_PACE_EYEBROW`. Only
+                 the ring arm asks for it; the states card brings its own. */
+              matchPaceEyebrow={paceCard === 'ring'}
               onPastLast={() => setVariant('atlas-v3-progress', 'not-started')}
             />
             </div>

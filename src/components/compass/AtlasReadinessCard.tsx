@@ -1,4 +1,5 @@
 import { useState, type CSSProperties, type KeyboardEvent } from 'react'
+import { ATLAS_SECTION_EYEBROW } from './atlasSectionEyebrow'
 
 /**
  * THE READINESS CARD, FIVE LEVELS — Figma "Atlas-UX-Design" component 295:10698
@@ -64,6 +65,7 @@ const LEVELS: Level[] = [
 export function AtlasReadinessCard({
   initialLevel = 0,
   notStarted = false,
+  matchPaceEyebrow = false,
   onPastLast,
   bare = false,
 }: {
@@ -72,6 +74,13 @@ export function AtlasReadinessCard({
    *  Started". Pressing the card still moves into the five levels, so the
    *  demo's step-through is unchanged — this is only where it starts. */
   notStarted?: boolean
+  /** Wear the pace card's eyebrow instead of this card's own (2026-10-16,
+   *  Jillienne: "have the other eyebrows match this style in this section").
+   *
+   *  ⚠ A PROP, NOT A REWRITE OF `EYEBROW`. This card is also V3's and
+   *  White's, where the eyebrow is the primary blue at 600 — Eric's, and his
+   *  to keep. The ask was about ONE column, so only that column opts in. */
+  matchPaceEyebrow?: boolean
   /** Called INSTEAD of wrapping to Novice when Exam Ready is clicked — V3
    *  resets the page to Not Started with it (2026-10-09). */
   onPastLast?: () => void
@@ -108,7 +117,17 @@ export function AtlasReadinessCard({
       className="cre-atlas-readiness-states"
       style={bare ? BARE_CARD : CARD}
     >
-      <p style={bare ? BARE_EYEBROW : EYEBROW}>Readiness for state exam</p>
+      {/* ⚠ `matchPaceEyebrow` OUTRANKS `bare`, and it has to: the E2E version
+          is white-LIKE, so it takes the bare branch — which is the branch
+          that was still drawing the old eyebrow when the first attempt
+          "worked" everywhere else. */}
+      <p style={matchPaceEyebrow ? ATLAS_SECTION_EYEBROW : bare ? BARE_EYEBROW : EYEBROW}>
+        {/* "Exam readiness" on the arm that shares the column's eyebrows
+            (2026-10-16, Jillienne: the three are "Study Pace, Course
+            Progress, Exam Readiness"). The longer "Readiness for state exam"
+            stays on V3 and White, where the card is still its own thing. */}
+        {matchPaceEyebrow ? 'Exam readiness' : 'Readiness for state exam'}
+      </p>
       {/* Bare drops the question and the link: Figma 286:9455 shows
           neither (2026-10-14, Eric). */}
       {bare ? null : (

@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import { AngleRightRegular, GaugeThin } from '@/icons'
+import { ATLAS_SECTION_EYEBROW } from './atlasSectionEyebrow'
 
 /**
  * THE STUDY PACE CARD AS A RING — a module of its own since 2026-10-16
@@ -41,12 +42,19 @@ export function AtlasPaceRingCard({
   onCustomize?: () => void
 }) {
   return (
+    /* ⚠ TWO SECTIONS, NOT ONE CARD (2026-10-16, Jillienne: "should be 3
+       sections: Study Pace, Course Progress, Exam Readiness as the
+       eyebrows"). The third is the Readiness card below, which takes the same
+       eyebrow.
+
+       It was ONE panel headed "Your study pace" with the dial inside it —
+       which made the progress figure look like part of the pace, when they
+       answer different questions: the pace is the plan, the dial is where the
+       learner has got to against it. Splitting them is what lets each be
+       named. */
     <div style={PANEL}>
-      {/* The eyebrow heads the whole panel, above the dial — the designer's
-          call on 2026-10-02; the design sets it under. Kept as hers. */}
-      <p style={EYEBROW}>Your study pace</p>
-      <ProgressDial percent={percent} />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 11, alignSelf: 'stretch' }}>
+      <section style={SECTION} aria-label="Study pace">
+        <p style={EYEBROW}>Study pace</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-compass-page-button)' }}>
             <GaugeThin size={33} aria-hidden />
@@ -72,7 +80,11 @@ export function AtlasPaceRingCard({
             <AngleRightRegular size={13} aria-hidden />
           </button>
         ) : null}
-      </div>
+      </section>
+      <section style={{ ...SECTION, alignItems: 'center' }} aria-label="Course progress">
+        <p style={EYEBROW}>Course progress</p>
+        <ProgressDial percent={percent} />
+      </section>
     </div>
   )
 }
@@ -120,8 +132,11 @@ function ProgressDial({ percent }: { percent: number }) {
 const PANEL: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'center',
-  gap: 16,
+  /* Stretch, not centre: each section owns its own alignment now — the pace
+     reads left, the dial sits centred — and a centring parent would shrink
+     the left-aligned one to its content. */
+  alignItems: 'stretch',
+  gap: 24,
   /* ⚠ NO HORIZONTAL PADDING (2026-10-16, Jillienne: "remove left/right
      padding"). It was `24px 22px`, and the 22 was itself a squeeze — the note
      here read "22 across, not 24, so 'Customize Your Pace ›' fits one line".
@@ -143,16 +158,9 @@ const PANEL: CSSProperties = {
   background: 'transparent',
   boxSizing: 'border-box',
 }
-const EYEBROW: CSSProperties = {
-  margin: 0,
-  alignSelf: 'stretch',
-  fontFamily: 'var(--font-body)',
-  fontSize: 11,
-  lineHeight: '16.5px',
-  letterSpacing: '0.16em',
-  textTransform: 'uppercase',
-  color: 'var(--color-compass-page-eyebrow)',
-}
+const EYEBROW = ATLAS_SECTION_EYEBROW
+/* One section of the column — an eyebrow and what it names. */
+const SECTION: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 11 }
 const GOAL: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 13,
@@ -177,16 +185,9 @@ const EXPECTED: CSSProperties = {
   borderTop: '1px solid var(--color-atlas-nav-rule)',
   borderBottom: '1px solid var(--color-atlas-nav-rule)',
 }
-const EXPECTED_LABEL: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-body)',
-  fontSize: 10,
-  fontWeight: 600,
-  lineHeight: '15px',
-  letterSpacing: '0.16em',
-  textTransform: 'uppercase',
-  color: 'var(--color-compass-page-eyebrow)',
-}
+/* The same eyebrow as the card's own — it labels a figure in the same column
+   and had no reason to be a smaller, bolder one. */
+const EXPECTED_LABEL: CSSProperties = { ...ATLAS_SECTION_EYEBROW, alignSelf: 'auto' }
 const EXPECTED_VALUE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading-serif)',
