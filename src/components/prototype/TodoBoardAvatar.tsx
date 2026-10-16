@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import { initialsOf, type TodoHue } from '@/data/todoBoardStore'
+import './todoBoard.css'
 
 /**
  * A person, as a coloured disc of initials.
@@ -31,25 +32,22 @@ export function TodoBoardAvatar({
   /** 24 on a card and in the roster, 22 in the filter row. */
   size?: number
 }) {
+  /* Colour lives in `todoBoard.css`, keyed on `data-hue` — read the note at
+     the top of that file before moving any of it back in here. The short
+     version: the disc tints its card with the hue rather than being filled by
+     it (the `-fg` tokens are ink for the PAGE, not for the hue — filled, two
+     of them were literally the same colour), and the mix has to be in a
+     stylesheet because an inline `color-mix` is pathologically slow in
+     jsdom's CSSOM and times a suite out. Geometry stays here, since it is the
+     one thing that varies per call. */
   const style: CSSProperties = {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 'none',
     width: size,
     height: size,
-    borderRadius: 999,
-    background: `var(--ux-hue-${hue})`,
-    color: `var(--ux-hue-${hue}-fg)`,
-    // The hue tokens are soft surfaces and their `-fg` pairs are the readable
-    // ink on them — the same pairing `TodoPanel`'s stage pills use, so the
-    // board's discs and the rail's pills are one system.
     fontSize: Math.round(size * 0.42),
-    fontWeight: 700,
-    letterSpacing: '0.02em',
   }
+
   return (
-    <span aria-hidden style={style}>
+    <span aria-hidden className="cre-todo-avatar" data-hue={hue} style={style}>
       {initialsOf(name)}
     </span>
   )

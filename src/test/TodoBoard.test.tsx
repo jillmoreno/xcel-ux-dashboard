@@ -502,6 +502,59 @@ describe('TodoBoardPanel', () => {
   })
 })
 
+/** The avatar disc, not the drag grip — both are `aria-hidden` spans. */
+function avatarIn(scope: Element): HTMLElement {
+  return scope.querySelector('.cre-todo-avatar') as HTMLElement
+}
+
+describe('the person avatars', () => {
+  /*
+   * A unit test on a style string, which is unusual here and deliberate:
+   * jsdom does not resolve `color-mix` or custom properties, so the only
+   * thing assertable in this suite is the PAIRING — and the pairing is
+   * exactly what was wrong. The disc filled itself with `--ux-hue-X` and
+   * wrote on it with `--ux-hue-X-fg`, which is the hue's readable form
+   * against the page, not ink for the hue: between 1.00:1 and 4.75:1 across
+   * the four palettes, invisible in dim Moss where both tokens are SAGE.
+   * The contrast itself was measured outside the suite, across every palette
+   * and appearance; this stops the two tokens being put back together.
+   */
+  it('tints the card rather than filling with the hue', async () => {
+    mockBoard([card({ id: 'card-001', owner: 'Anjani' })])
+    render(<TodoBoardPanel />)
+    await boardReady()
+
+    // The element only carries the hue NAME; the colour is the stylesheet's.
+    const disc = avatarIn(screen.getByText('Compass — review-recap empty state').closest('article')!)
+    expect(disc.dataset.hue).toBe('gold')
+
+    /* ⚠ ASSERTED AT SOURCE, and it has to be. jsdom applies no stylesheet, so
+       there is no computed colour to read — and the inline version of this
+       was what made `OneSite.test.tsx` time out, so "it is not inline" is
+       itself part of what this pins. */
+    const css = readFileSync(resolve(root, 'src/components/prototype/todoBoard.css'), 'utf8')
+    for (const hue of ['teal', 'gold', 'blue', 'neutral']) {
+      expect(css).toContain(`background: color-mix(in srgb, var(--ux-hue-${hue}) 12%, var(--ux-card));`)
+      expect(css).toContain(`color: var(--ux-hue-${hue}-fg);`)
+    }
+    const component = readFileSync(resolve(root, 'src/components/prototype/TodoBoardAvatar.tsx'), 'utf8')
+      // Comments stripped: the note in that file explains the mix, and the
+      // point of this assertion is that no STYLE in it carries one.
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+    expect(component).not.toMatch(/color-mix/)
+  })
+
+  it('is hidden from assistive tech, because the name is always beside it', async () => {
+    mockBoard([card({ id: 'card-001', owner: 'Anjani' })])
+    render(<TodoBoardPanel />)
+    await boardReady()
+
+    const article = screen.getByText('Compass — review-recap empty state').closest('article')!
+    expect(avatarIn(article).textContent).toBe('AN')
+    expect(within(article as HTMLElement).getByText('Anjani')).toBeTruthy()
+  })
+})
+
 /* ── the way out ──────────────────────────────────────────────────────────── */
 
 describe('toMarkdown', () => {
