@@ -72,6 +72,29 @@ was repointed at XCEL. Where a brand was the SUBJECT — `expect(tierLabelFor(
 rewritten, because repointing it invents an assertion about a tier ladder XCEL
 does not have.
 
+**The other fragile pattern is a case that pays a COLD TRANSFORM inside its
+own timeout (2026-10-15).** `TestingGateway.test.tsx` failed roughly one full
+run in three, always the first case, always passing on a re-run alone — which
+reads like flakiness in the assertion and is not. Measured: the first case took
+13.5–14.6s against its 20s budget and every other case in the file took ~120ms.
+The cost is not `vi.resetModules()`; a reset and re-import is cheap once Vite
+has transformed the graph. It is the one-off transform of everything `@/App`
+pulls in, and it was being paid inside the first case's budget, so a loaded
+machine pushed it past 20s.
+
+The fix is a `beforeAll` that imports the graph once and throws it away, with a
+budget of its own. First case: **14.5s → 0.4s**; the file's total wall-clock is
+unchanged, because the same work happens either way — it just stops being
+timed. `OneSite.test.tsx` had the identical defect against the **5s default**,
+and was found by it timing out on a loaded run while the first fix was being
+verified.
+
+⚠ Both hooks import something they discard and reset the registry straight
+after, so they read like dead code. Deleting either leaves the suite passing on
+an idle machine and flaky on a busy one. If you add a suite that calls
+`vi.resetModules()` and then dynamically imports a page or `App`, warm it the
+same way.
+
 **A test that pins itself to a named fixture row is the fragile pattern here,
 and `ProgressFillTones` is the worked example.** It picked a McKissock course
 for "completed" and a CRE one for "expiring soon" — coupling a test about colour

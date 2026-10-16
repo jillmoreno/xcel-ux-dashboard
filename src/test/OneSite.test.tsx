@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { readFileSync, readdirSync } from 'node:fs'
@@ -28,6 +28,31 @@ import { parseGatewayMode } from '@/data/gatewayMode'
  */
 
 const here = dirname(fileURLToPath(import.meta.url))
+
+/**
+ * WARM THE TRANSFORM CACHE BEFORE ANY CASE IS TIMED — 2026-10-15.
+ *
+ * The same defect `TestingGateway.test.tsx` had, found while fixing that one:
+ * `loadPage` resets the module registry and dynamically imports
+ * `UxDashboardPage`, which pulls in most of the gateway. The FIRST case to
+ * call it pays Vite's cold transform of that whole graph inside its own
+ * budget — and here the budget is the 5s default, not the 20s that suite had,
+ * so this one is the more fragile of the two. It timed out on a loaded run
+ * while the TestingGateway fix was being verified.
+ *
+ * Transforming the graph here, in a hook with a budget of its own, costs the
+ * file nothing overall and takes every case well clear of its timeout.
+ *
+ * ⚠ DO NOT "TIDY" THIS AWAY — it imports something it discards and resets the
+ * registry straight after, so it reads like dead code. Delete it and the suite
+ * still passes, on an idle machine.
+ */
+beforeAll(async () => {
+  vi.stubEnv('VITE_GATEWAY_MODE', 'full')
+  await import('@/pages/UxDashboardPage')
+  vi.unstubAllEnvs()
+  vi.resetModules()
+}, 120_000)
 
 async function loadPage(mode: string) {
   vi.resetModules()

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 /**
  * THE USER-TEST BUILD HAS NO GATEWAY — `VITE_GATEWAY_MODE=testing`,
@@ -43,6 +43,39 @@ async function loadMode(mode: string) {
   return import('@/data/gatewayMode')
 }
 
+/**
+ * WARM THE TRANSFORM CACHE BEFORE ANY CASE IS TIMED — 2026-10-15.
+ *
+ * This suite used to fail roughly one full run in three, always the same way:
+ * the FIRST case timed out and a re-run alone passed, which reads like
+ * flakiness in the assertion and is not.
+ *
+ * Measured, the shape is unmistakable. The first case took 9,735ms and every
+ * other case took about 120ms. The cost is not `vi.resetModules()` — a reset
+ * and re-import is cheap once Vite has transformed the graph — it is the COLD
+ * TRANSFORM of everything `@/App` pulls in, which is the whole product app.
+ * That one-off was being paid inside the first case's own budget, so on a run
+ * where the machine is busy (the full suite, several workers, a build in
+ * another terminal) it stretched past the 20s the case allowed and the case
+ * failed. Nothing was ever wrong with the code under test.
+ *
+ * So the graph is transformed HERE, in a hook with a budget of its own, and
+ * every case below starts warm. The hook's 120s is not an estimate of how long
+ * this takes — it is 10s cold on this machine — it is deliberately far past
+ * any plausible slow run, because a hook that times out tells you nothing and
+ * a hook that takes 30s on a loaded CI box is fine.
+ *
+ * ⚠ DO NOT "TIDY" THIS AWAY. It does no asserting, imports something it
+ * discards, and resets the registry straight afterwards, so it reads like dead
+ * code. Delete it and the suite still passes — on an idle machine.
+ */
+beforeAll(async () => {
+  vi.stubEnv('VITE_GATEWAY_MODE', 'testing')
+  await import('@/App')
+  vi.unstubAllEnvs()
+  vi.resetModules()
+}, 120_000)
+
 afterEach(() => {
   vi.unstubAllEnvs()
   vi.resetModules()
@@ -54,21 +87,21 @@ describe('VITE_GATEWAY_MODE=testing — every gateway route lands in the product
      public build serves, which still says "this is a prototype gallery
      belonging to a design team" and reframes everything they then say. */
   for (const path of ['/', '/ux-dashboard', '/research-rationale', '/links', '/prds']) {
-    /* ⚠ A LONG TIMEOUT, and it is the module registry rather than the
-       assertion. `vi.resetModules()` per case means each one re-imports `App`
-       and, after the redirect, the whole dashboard behind it — the first case
-       pays for the graph and blew the 5s default. */
+    /* 10s, down from 20s. Each case re-imports `App` through a reset registry,
+       which is ~120ms once the transform cache is warm — and `beforeAll` above
+       is what makes sure it is. The budget is headroom for a loaded machine,
+       not an estimate. */
     it(
       `${path} redirects into the product`,
       async () => {
         await renderAppAt(path, 'testing')
         expect(screen.getByTestId('at').textContent).toBe('/dashboard-rebrand')
       },
-      20_000,
+      10_000,
     )
   }
 
-  it('leaves the gateway exactly where it was on the full build', { timeout: 20_000 }, async () => {
+  it('leaves the gateway exactly where it was on the full build', { timeout: 10_000 }, async () => {
     /* ⚠ THE DIRECTION THAT MATTERS MORE. This mode must be invisible to the
        site the maintainers use — a redirect leaking into the full build would
        take the whole project list away from everyone. */
@@ -76,7 +109,7 @@ describe('VITE_GATEWAY_MODE=testing — every gateway route lands in the product
     expect(screen.getByTestId('at').textContent).toBe('/')
   })
 
-  it('reads a leftover `public` as the full build, gateway and all', { timeout: 20_000 }, async () => {
+  it('reads a leftover `public` as the full build, gateway and all', { timeout: 10_000 }, async () => {
     /* The public site is retired (2026-10-15). A stale env value on some
        deploy must not strip anything: it parses as full. */
     await renderAppAt('/', 'public')
