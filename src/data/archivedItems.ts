@@ -56,6 +56,20 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'atlas-e2e-page-control',
+    name: 'Page — the End-to-End Demo\u2019s design control',
+    what:
+      'Eric\u2019s design-bar control for the End-to-End Demo\u2019s pages \u2014 Invited Product Detail, Checkout, Confirmation & Password, Home. Picking one opened it; arriving on one set the control to match. Superseded 2026-10-16 by the Start DEMO control (`demo-start-point`), which is the same idea for every version and every reviewer: Jillienne\u2019s ask, "add a demo control for Start \u2026 this will replace the Page design control on Eric\u2019s version and make it available for all".',
+    location:
+      'The flag entry is GONE from `src/context/FeatureFlagContext.tsx` \u2014 replaced in place by `demo-start-point`, same position in the catalog, so a diff of that file is the clearest record of what it was. Its machinery was not deleted but REWRITTEN: `src/pages/EndToEndPageSync.tsx` is the same component with the new key, five destinations instead of four, and no version gate. The old key is also named in the `eric-atlas-v3-refinement` row below, in its list of his design controls.',
+    flag: 'atlas-e2e-page (surface: design, owner: eric, versions: [eric-atlas-e2e])',
+    dateRemoved: '2026-10-16',
+    reason:
+      'It answered the right question on the wrong bar. Where a stakeholder ENTERS the product is what the product demos, not what one exploration is exploring \u2014 but as a `surface: \'design\'` flag owned by Eric and scoped to `eric-atlas-e2e`, the only control that could move someone between the invite flow and the dashboard sat on the light-cyan bar, behind the robot\u2019s dropdown, on one version. Nobody outside that version could reach the invite flow from a dashboard at all.',
+    restoreNote:
+      'Add the flag back to `FEATURE_FLAGS` in `src/context/FeatureFlagContext.tsx` with `surface: \'design\'`, `owner: \'eric\'`, `versions: [\'eric-atlas-e2e\']`, group Navigation, label Page, `defaultVariant: \'product-detail\'` and the four variants product-detail / checkout / confirmation / home. Put `\'atlas-e2e-page\'` back in `REBRAND_FLAGS` (`src/components/account/FeatureFlagPanel.tsx`) and back in Eric\u2019s list in `src/test/FlagPanelOwners.test.tsx`. `EndToEndPageSync` would need its key, its `E2E_PAGES` map (product-detail \u2192 /end-to-end-demo, home \u2192 /dashboard-rebrand) and its `onDemo` version gate restored \u2014 git history for this file is the fastest route.\n\nDELIBERATELY NOT RESTORED, and restoring the flag does NOT undo these: (1) the Start control on the demo bar, which would then duplicate it \u2014 remove `start` from `ControlKey` / `SHOW_CONTROL` and its `DemoDropdown` in `DemoControlsBar.tsx` as well; (2) the Compass option, which Page never had; (3) `isDemoControlsEnabled` in `src/components/prototype/demoControlsUtil.ts`, widened the same day to `/end-to-end-demo` so the amber bar renders on the invite pages. That last one is independent and carries its own consequence \u2014 those pages were bar-free for reviewers before it \u2014 so decide it separately rather than reverting it as part of this.',
+  },
+  {
     id: 'research-rationale-iframe',
     name: 'Research & Rationale — the iframed decisions log',
     what:

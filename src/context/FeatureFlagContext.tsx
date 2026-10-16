@@ -2186,27 +2186,54 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
-    key: 'atlas-e2e-page',
-    /* THE END-TO-END DEMO'S PAGE, ON THE DESIGN BAR (2026-10-14, Eric's
-       request): its three pages in the order a learner meets them. Picking
-       one OPENS it, and arriving on one sets it to match —
-       `EndToEndPageSync` (pages/EndToEndPageSync.tsx), mounted by AppLayout, the
-       same version-is-the-truth shape as `atlas-background`. */
-    surface: 'design',
-    owner: 'eric',
-    versions: ['eric-atlas-e2e'],
+    key: 'demo-start-point',
+    /* START — WHERE THE DEMO OPENS (2026-10-16, Jillienne: "add a demo control
+       for Start … this will replace the Page design control on Eric's version
+       and make it available for all").
+
+       It REPLACES `atlas-e2e-page`, which was the same idea scoped to one
+       person and one version: `surface: 'design'`, `owner: 'eric'`,
+       `versions: ['eric-atlas-e2e']`, so the only control that could move a
+       stakeholder between the invite flow and the dashboard lived on the
+       light-cyan bar, behind the robot's dropdown, on one version. See the
+       `atlas-e2e-page` row in `archivedItems.ts` for the re-wire.
+
+       ⚠ IT IS A DEMO CONTROL NOW, which is the whole point and also the
+       reason it is Jillienne's: where a stakeholder ENTERS the product is
+       what the product demos, not what one exploration is exploring. No
+       `surface`, no `owner`, no `versions` — it draws on the amber bar for
+       every version.
+
+       ⚠ COMPASS IS A `?section=`, NOT A PAGE, which is why the destinations
+       live in `EndToEndPageSync` rather than being derivable from the value:
+       three of these are routes under `/end-to-end-demo` and two are the same
+       `/dashboard-rebrand` pathname told apart by a param.
+
+       ⚠ INVITE AND CHECKOUT PIN ERIC'S VERSION. `useEndToEndDemoParams` writes
+       `version=eric-atlas-e2e` onto those pages because the page IS that
+       version's way in — so picking one of the first three FROM another
+       version moves you onto his. That is the invite flow only existing in one
+       version, not this control choosing for you; Atlas and Compass keep
+       whatever version you were on.
+
+       Default `atlas`: a bare `/dashboard-rebrand` is the dashboard, and a
+       control whose default disagreed with the route it loads on would make
+       every plain load look like a pick the reviewer did not make. */
     group: 'Navigation',
-    label: 'Page',
+    label: 'Start',
     description:
-      'Which End-to-End Demo page is open: Invited Product Detail, Checkout, Confirmation & Password or the Home dashboard. Picking one opens it.',
+      'Where the demo opens: the Invite page, its Checkout, Confirmation & Password, the Atlas dashboard, or Compass. Picking one opens it; arriving on one sets the control to match. Invite, Checkout and Confirmation are the End-to-End Demo\u2019s own pages and open on its version.',
     defaultEnabled: true,
-    defaultVariant: 'product-detail',
+    defaultVariant: 'atlas',
     variants: [
-      { value: 'product-detail', label: 'Invited Product Detail' },
+      { value: 'invite', label: 'Invite' },
       { value: 'checkout', label: 'Checkout' },
-      // Joined 2026-10-15 — the step after Checkout.
-      { value: 'confirmation', label: 'Confirmation & Password' },
-      { value: 'home', label: 'Home' },
+      /* Kept from `atlas-e2e-page` (2026-10-16, Jillienne). It is the one
+         thing the four asked for could not do: jump straight to the password
+         step and watch the three-second hand-off into Atlas again. */
+      { value: 'confirmation', label: 'Confirmation' },
+      { value: 'atlas', label: 'Atlas' },
+      { value: 'compass', label: 'Compass' },
     ],
     page: 'dashboard-rebrand',
   },

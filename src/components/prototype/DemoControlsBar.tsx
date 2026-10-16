@@ -153,6 +153,13 @@ import {
    timeline comparison quietly stops happening, this is the change that did
    it. */
 type ControlKey =
+  /* START — 2026-10-16, Jillienne. Where the demo OPENS, and the first
+     control on the bar because it is the first decision: the invite flow, its
+     checkout, the password step, the Atlas dashboard or Compass. It replaces
+     Eric's `Page` design control (`atlas-e2e-page`, archived) and is on this
+     bar rather than that one because where a stakeholder enters the product
+     is what the PRODUCT demos, not what one exploration explores. */
+  | 'start'
   | 'persona'
   | 'progress'
   | 'readiness'
@@ -178,6 +185,10 @@ type ControlKey =
   | 'expiry'
 
 const SHOW_CONTROL: Record<ControlKey, boolean> = {
+  /* ON. The control exists to be the way into the invite flow, which has no
+     other door on the bar — off, there is no way to reach it from a dashboard
+     except by typing the route. */
+  start: true,
   persona: false,
   progress: true,
   readiness: false,
@@ -533,6 +544,10 @@ export function DemoControlsBar({
      drops any arm marked `wip` on the demo site, the same gate every other
      variant picker on this bar goes through. */
   const navLayoutOptions = FEATURE_FLAGS.find((f) => f.key === 'nav-placement')?.variants ?? []
+  /* START — the options come from the catalog, not a second list here, so the
+     bar cannot disagree with `EndToEndPageSync` about what the five are. */
+  const startOptions = FEATURE_FLAGS.find((f) => f.key === 'demo-start-point')?.variants ?? []
+  const startState = useFeatureFlag('demo-start-point')
 
   const readinessReachable = !railHidesSection(
     searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand),
@@ -1156,6 +1171,49 @@ export function DemoControlsBar({
             overrides), so the multi-license demo no longer needs the per-item
             multi-selects. */}
 
+        {/* START — where the demo opens (2026-10-16). FIRST on the bar: it is
+            the only control that changes which SCREEN you are on rather than
+            who the learner is, and the one a stakeholder reaches for before
+            any of the others. `EndToEndPageSync` does the navigating and the
+            route-is-the-truth sync; this is only the picker. */}
+        {showControl.start && (
+          <DemoDropdown
+            id="start"
+            square
+            hidden={!show('start')}
+            label={startOptions.find((o) => o.value === startState.variant)?.label ?? 'Atlas'}
+            eyebrow="Start"
+            openId={openId}
+            onToggle={toggle}
+            panelRole="radiogroup"
+            panelLabel="Where the demo opens"
+            panelMinWidth={220}
+          >
+            {startOptions.map((opt) => {
+              const active = opt.value === startState.variant
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  tabIndex={active ? 0 : -1}
+                  className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                  onClick={() => {
+                    /* Setting the flag is the whole action — `EndToEndPageSync`
+                       watches it and navigates. Doing the navigation here too
+                       would be two sources of truth for one jump. */
+                    setVariant('demo-start-point', opt.value)
+                    close()
+                  }}
+                >
+                  <span style={{ flex: 1 }}>{opt.label}</span>
+                  {active && <Check size={15} aria-hidden />}
+                </button>
+              )
+            })}
+          </DemoDropdown>
+        )}
         {/* Progress / compliance state — single-select radiogroup */}
         <DemoDropdown
           id="progress"

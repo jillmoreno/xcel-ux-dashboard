@@ -16,13 +16,27 @@ import { supportsMembership, type Brand, type MembershipTier } from '@/context/A
  * build): returns false → `DemoControlsBar` returns null and no demo controls
  * render anywhere.
  *
- * Today it's always on within the `/dashboard-rebrand` prototype (stakeholders
- * demo from the deployed prototype build, so no `?demo=1` is required). To lock
- * it out of a real production build later, this is the single line to change —
- * e.g. `return import.meta.env.DEV && pathname === '/dashboard-rebrand'`.
+ * Today it's always on within the product app (stakeholders demo from the
+ * deployed prototype build, so no `?demo=1` is required). To lock it out of a
+ * real production build later, this is the single place to change — e.g. wrap
+ * the return in `import.meta.env.DEV &&`.
+ *
+ * ⚠ IT WAS `/dashboard-rebrand` ALONE UNTIL 2026-10-16, and the Start control
+ * is why it is not. Start moves a stakeholder between the invite flow and the
+ * dashboard, and three of its five options are pages under `/end-to-end-demo`
+ * — so on the old scope the control vanished the moment it was used, because
+ * the bar carrying it did not render where it had just sent you. A one-way
+ * control is worse than no control.
+ *
+ * ⚠ WHAT THIS CHANGES BESIDES START: the invite pages now carry the WHOLE
+ * amber bar — Progress, Persona, Education, Reset. That is the intended
+ * trade (Jillienne, the same day) and it is a real change to how those pages
+ * read: they were bar-free for reviewers, and the design bar was the only
+ * chrome on them. `?chrome=off` and `?present=1` still strip everything, so
+ * the clean view is still one param away.
  */
 export function isDemoControlsEnabled(pathname: string): boolean {
-  return pathname === '/dashboard-rebrand'
+  return pathname === '/dashboard-rebrand' || pathname.startsWith('/end-to-end-demo')
 }
 
 /**

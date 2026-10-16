@@ -138,7 +138,7 @@ const REBRAND_FLAGS = [
   'atlas-v3-link-tiles',
   'atlas-wip-quick-links-side',
   'atlas-background',
-  'atlas-e2e-page',
+  'demo-start-point',
   'e2e-ends-at-password',
   'e2e-loading-opens-home',
   'e2e-course-overview-opens-compass',
