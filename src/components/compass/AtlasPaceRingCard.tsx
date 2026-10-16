@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { AngleRightRegular, GaugeThin } from '@/icons'
+import { GaugeThin } from '@/icons'
 import { ATLAS_SECTION_EYEBROW } from './atlasSectionEyebrow'
 
 /**
@@ -26,6 +26,7 @@ import { ATLAS_SECTION_EYEBROW } from './atlasSectionEyebrow'
 export function AtlasPaceRingCard({
   percent,
   weeks,
+  hoursPerWeek,
   expected,
   onCustomize,
 }: {
@@ -35,6 +36,12 @@ export function AtlasPaceRingCard({
    *  together — they come from one `paceFit`, so they cannot describe two
    *  different plans, which is the failure the week count was derived to
    *  avoid in the first place. */
+  /** Hours a week the recommended plan asks for — the pace model's own
+   *  `minsPerWeek`, not `hoursRemaining / weeks`. The model splits the work
+   *  over the nights a learner actually studies, so dividing the total myself
+   *  would quietly answer a different question and disagree with the plan it
+   *  sits under. */
+  hoursPerWeek?: number
   expected?: { value: string; note: string }
   /** Whole weeks the current plan runs to — the same figure the sentence and
    *  the goal line both read, so they cannot describe two different plans. */
@@ -59,11 +66,36 @@ export function AtlasPaceRingCard({
           <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-compass-page-button)' }}>
             <GaugeThin size={33} aria-hidden />
           </span>
-          <span style={GOAL}>{weeks} Week Goal</span>
+          <span style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
+            {/* "Recommended" over the goal, not beside it — it qualifies the
+                figure, and on one line the two would read as a single title
+                ("Recommended 2 Week Goal") rather than a label and a goal. */}
+            <span style={GOAL_TAG}>Recommended</span>
+            <span style={GOAL}>{weeks} Week Goal</span>
+            {hoursPerWeek != null ? (
+              <span style={GOAL_NOTE}>
+                about {hoursPerWeek} hour{hoursPerWeek === 1 ? '' : 's'} / week
+              </span>
+            ) : null}
+          </span>
         </div>
+        {/* ⚠ "HERE" IS THE CONTROL NOW, not a button below (2026-10-16,
+            Jillienne's copy). The sentence it replaces ended "you can change
+            your pace below" and pointed at a "Customize Your Pace" button;
+            this one points at itself, so that button went with the old
+            wording — leaving both would have been two ways to the same page,
+            one of which the copy no longer mentions. */}
         <p style={SMALL}>
-          Your default pace is set for you to complete your course in {weeks}{' '}
-          {weeks === 1 ? 'week' : 'weeks'}. You can change your pace below.
+          Your default recommended study pace is just a starting point, you can further customize
+          your pace{' '}
+          {onCustomize ? (
+            <button type="button" onClick={onCustomize} style={INLINE_LINK}>
+              here
+            </button>
+          ) : (
+            'here'
+          )}
+          .
         </p>
         {expected ? (
           <div style={EXPECTED}>
@@ -73,12 +105,6 @@ export function AtlasPaceRingCard({
               <span style={EXPECTED_NOTE}> · {expected.note}</span>
             </p>
           </div>
-        ) : null}
-        {onCustomize ? (
-          <button type="button" className="cre-compass-v2-link" onClick={onCustomize} style={LINK}>
-            Customize Your Pace
-            <AngleRightRegular size={13} aria-hidden />
-          </button>
         ) : null}
       </section>
       <section style={{ ...SECTION, alignItems: 'center' }} aria-label="Course progress">
@@ -161,6 +187,41 @@ const PANEL: CSSProperties = {
 const EYEBROW = ATLAS_SECTION_EYEBROW
 /* One section of the column — an eyebrow and what it names. */
 const SECTION: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 11 }
+/* The qualifier over the goal — smaller and quieter than the figure it
+   labels, so "Recommended" reads as a note about the plan rather than part of
+   its name. */
+const GOAL_TAG: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 10,
+  fontWeight: 600,
+  lineHeight: '14px',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: 'var(--color-compass-page-eyebrow)',
+}
+/* …and the workload under it, in the body treatment the paragraph below
+   uses, because it is a fact about the plan rather than another heading. */
+const GOAL_NOTE: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  lineHeight: '15px',
+  color: 'var(--color-text-secondary)',
+}
+/* A BUTTON STYLED AS A LINK, inside a sentence: it navigates within the app
+   rather than to an address, so an <a href> would be a lie about what it is.
+   `display: inline` and the inherited type keep it on the line. */
+const INLINE_LINK: CSSProperties = {
+  display: 'inline',
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  font: 'inherit',
+  color: 'var(--color-compass-page-button)',
+  fontWeight: 700,
+  textDecoration: 'underline',
+  textUnderlineOffset: 2,
+  cursor: 'pointer',
+}
 const GOAL: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 13,
@@ -202,20 +263,6 @@ const EXPECTED_NOTE: CSSProperties = {
   fontSize: 11,
   fontWeight: 400,
   color: 'var(--color-text-secondary)',
-}
-const LINK: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 6,
-  alignSelf: 'flex-start',
-  padding: 0,
-  border: 'none',
-  background: 'none',
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  fontWeight: 700,
-  color: 'var(--color-compass-page-button)',
-  cursor: 'pointer',
 }
 const DIAL_TEXT: CSSProperties = {
   position: 'absolute',

@@ -633,7 +633,30 @@ export function AtlasHomeEricE2E({
                 expected={
                   paceFit ? { value: formatPaceDate(paceFit.finishIso), note: 'At current pace' } : undefined
                 }
-                onCustomize={onOpenStop ? () => onOpenStop('study-plan') : undefined}
+                /* THE MODEL'S OWN `minsPerWeek`, not `hoursRemaining / weeks`.
+                   The model spreads the work over the nights a learner
+                   actually studies; dividing the total myself would answer a
+                   different question and disagree with the plan it sits
+                   under. Rounded to the hour — the sentence says "about". */
+                hoursPerWeek={paceFit ? Math.max(1, Math.round(paceFit.minsPerWeek / 60)) : undefined}
+                /* ⚠ "HERE" GOES TO COMPASS'S STUDY PLANNER (2026-10-16,
+                   Jillienne: "have the 'here' be a link to the study planner
+                   of the compass application"). It was `onOpenStop(
+                   'study-plan')` — the Atlas journey's own stop, a different
+                   page with a similar name. `compassPage` seeds Compass's
+                   page on arrival, the same param the lesson's exit uses. */
+                onCustomize={() =>
+                  setParams(
+                    (prev) => {
+                      const next = new URLSearchParams(prev)
+                      next.set('section', 'compass')
+                      next.set('compassPage', 'study-planner')
+                      next.delete('coursePage')
+                      return next
+                    },
+                    { replace: true },
+                  )
+                }
               />
             ) : completedView ? null : (
             <AtlasCourseProgressStates
