@@ -2123,6 +2123,44 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-affidavit',
+    /* THE AFFIDAVIT OVER ATLAS HOME — 2026-10-16, Jillienne: "Affidavit: On -
+       Off, Pre-course or Post Course (if selected on)".
+
+       ⚠ THREE ARMS, NOT A SWITCH PLUS A SECOND CONTROL. The ask describes two
+       levels, and the states it describes are three: off, on-and-pre,
+       on-and-post. The design bar has no nested control — `secondaryVariants`
+       is read by the Feature Flag PANEL and nothing else — so a two-level
+       version would be a switch beside a second group that is meaningless
+       half the time. One segmented group says the same thing in one click,
+       and it is the shape every other control on this bar already uses.
+
+       ⚠ THE NAMES ARE THE JOURNEY'S. "Pre-course Affidavit" and
+       "Study-manual Notice Affidavit" are what the Study Journey calls these
+       two rows (`whiteJourneyTitles`); the arms are short so the bar stays
+       readable, and each carries the full name as its tooltip.
+
+       ⚠ `?affidavit=1` STILL WORKS. Arriving from Confirmation & Password
+       opens the pre-course one, as it has since 2026-10-15 — this control is
+       a second way in, not a replacement, and closing the modal clears both
+       so it does not spring back. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit',
+    description:
+      'The affidavit modal over the End-to-End Demo\u2019s Home. Off: Home as it lands. Pre-course: the affidavit signed before the coursework. Post-course: the Study-manual Notice Affidavit, signed after it.',
+    variants: [
+      { value: 'off', label: 'Off' },
+      { value: 'pre', label: 'Pre-course', description: 'Pre-course Affidavit' },
+      { value: 'post', label: 'Post-course', description: 'Study-manual Notice Affidavit' },
+    ],
+    defaultVariant: 'off',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-home-long-title',
     /* A REFERENCE TOGGLE beside Headings on the Design bar (2026-10-07, Eric's
        request: "add another toggle … to show this long title for reference").

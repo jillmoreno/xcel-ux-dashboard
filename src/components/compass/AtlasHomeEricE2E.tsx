@@ -13,7 +13,7 @@ import {
   useCourseOverviewOpensCompass,
   useDashboardCourseTitle,
 } from '@/pages/endToEndDemo'
-import { AffidavitModal } from '@/components/e2e/AffidavitModal'
+import { AffidavitModal, type AffidavitKind } from '@/components/e2e/AffidavitModal'
 import { useAccount } from '@/context/AccountContext'
 import {
   AngleRightRegular,
@@ -348,6 +348,16 @@ export function AtlasHomeEricE2E({
   const apply = licensedSteps[licensedSteps.length - 1]
   const state = jurisdictionName(path.state)
   const longTitle = useFeatureFlag('atlas-home-long-title').enabled
+  /* The design bar's Affidavit control, and the invite flow's `?affidavit=1`
+     as the pre-course one. `null` when neither asks for it. */
+  const affidavitFlag = useFeatureFlag('atlas-affidavit')
+  const affidavitPick = affidavitFlag.variant ?? 'off'
+  const affidavitKind: AffidavitKind | null =
+    affidavitPick === 'pre' || affidavitPick === 'post'
+      ? affidavitPick
+      : searchParams.get('affidavit') === '1'
+        ? 'pre'
+        : null
   // The Design bar's Progress (V3 only, 2026-10-09) — which module state and figure.
   const progressPick = useFeatureFlag('atlas-v3-progress').variant ?? 'not-started'
   // The Design bar's Link tiles (V3 only, 2026-10-09) — Stacked (default) or Inline.
@@ -363,6 +373,8 @@ export function AtlasHomeEricE2E({
   // progress dropdown tool does"), so Step 1, Readiness and the Completed view
   // all follow. NB the card is hidden on Completed — the dropdown leaves it.
   const { setVariant } = useFeatureFlags()
+  /* Closing the modal turns the control off, so it does not re-open. */
+  const setAffidavit = (v: string) => setVariant('atlas-affidavit', v)
   // The Top Nav's Home button starts the demo cards over (2026-10-12): Progress
   // back to Not Started (Readiness follows), and every card remounts.
   const [refreshKey, setRefreshKey] = useState(0)
@@ -803,11 +815,22 @@ export function AtlasHomeEricE2E({
 
       </div>
       {/* THE AFFIDAVIT, over Home on arrival from Confirmation & Password
-          (`?affidavit=1`, 2026-10-15, Eric's request). Closing it drops the
-          param, so a refresh does not bring it back. */}
-      {searchParams.get('affidavit') === '1' ? (
+          (`?affidavit=1`, 2026-10-15, Eric's request), or fired from the
+          design bar's Affidavit control (2026-10-16).
+
+          ⚠ TWO WAYS IN, ONE WAY OUT. The param is how the invite flow hands
+          over and the control is how a reviewer opens it on demand; whichever
+          opened it, closing clears BOTH, or the modal springs straight back
+          from whichever one is still set.
+
+          The param alone means the pre-course one — that is the affidavit a
+          learner signs on arriving, and it is what the flow has always
+          opened. */}
+      {affidavitKind ? (
         <AffidavitModal
-          onClose={() =>
+          kind={affidavitKind}
+          onClose={() => {
+            setAffidavit('off')
             setParams(
               (prev) => {
                 const next = new URLSearchParams(prev)
@@ -816,7 +839,7 @@ export function AtlasHomeEricE2E({
               },
               { replace: true },
             )
-          }
+          }}
         />
       ) : null}
     </div>

@@ -117,6 +117,9 @@ describe('the owner axis', () => {
       // Joined 2026-10-09 — V3's own Brand control, Global by default.
       'atlas-brand-skin-v3',
       'atlas-heading-font',
+      /* Joined 2026-10-16 — the affidavit over the E2E Home, off / pre-course
+         / post-course. His because the Home it covers is his. */
+      'atlas-affidavit',
       // Joined 2026-10-07 — V2's long-title reference toggle, beside Headings.
       'atlas-home-long-title',
       // Joined 2026-10-13 — WIP's Quick Links, left or right.

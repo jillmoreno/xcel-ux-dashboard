@@ -133,6 +133,7 @@ const REBRAND_FLAGS = [
      are not alternatives: the bar is the fast route while you are looking at
      the page, the panel is where every flag is findable. */
   'atlas-heading-font',
+  'atlas-affidavit',
   'atlas-home-long-title',
   'atlas-v3-progress',
   'atlas-v3-link-tiles',

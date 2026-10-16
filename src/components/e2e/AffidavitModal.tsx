@@ -13,8 +13,25 @@ import { CircleXmarkThin, Square, SquareCheck } from '@/icons'
  * is the design's placeholder for the affidavit text.
  *
  * Portalled to <body>, fixed over the whole window, focus moved into it.
+ *
+ * ⚠ TWO AFFIDAVITS, AND THEY ARE NOT THE SAME DOCUMENT (2026-10-16). The
+ * learner signs one before the coursework and one after it, and the Study
+ * Journey has always listed both — "Pre-course Affidavit" and
+ * "Study-manual Notice Affidavit" (`whiteJourneyTitles`). The modal
+ * previously knew about neither and was headed "Affidavit"; `kind` names
+ * which one is open, using the journey's own wording so the modal and the
+ * row that leads to it cannot say different things.
  */
-export function AffidavitModal({ onClose }: { onClose: () => void }) {
+export type AffidavitKind = 'pre' | 'post'
+
+/** The journey's own names, so the modal matches the row it belongs to. */
+const AFFIDAVIT: Record<AffidavitKind, { title: string; when: string }> = {
+  pre: { title: 'Pre-course Affidavit', when: 'Before you begin the coursework' },
+  post: { title: 'Study-manual Notice Affidavit', when: 'After the coursework, before your final exam' },
+}
+
+export function AffidavitModal({ kind = 'pre', onClose }: { kind?: AffidavitKind; onClose: () => void }) {
+  const doc = AFFIDAVIT[kind]
   const [agreed, setAgreed] = useState(false)
 
   useEffect(() => {
@@ -34,9 +51,12 @@ export function AffidavitModal({ onClose }: { onClose: () => void }) {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <h2 id="affidavit-title" style={TITLE}>
-            Affidavit
+            {doc.title}
           </h2>
+          {/* The course it belongs to, then WHEN in the course it is signed —
+              the one thing that tells the two apart at a glance. */}
           <p style={TEXT}>Florida Life &amp; Health Pre-licensing</p>
+          <p style={{ ...TEXT, opacity: 0.72 }}>{doc.when}</p>
         </div>
 
         {/* The affidavit's text goes here — the design's placeholder panel. */}
