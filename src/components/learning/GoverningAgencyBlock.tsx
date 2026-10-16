@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { NY_GOVERNING_AGENCY } from '@/data/nyProducerRequirements'
+import { governingAgencyFor } from '@/data/nyProducerRequirements'
 
 /**
  * THE GOVERNING AGENCY CONTACT BLOCK — extracted from `GetLicensedStepPanel`
@@ -23,7 +23,13 @@ import { NY_GOVERNING_AGENCY } from '@/data/nyProducerRequirements'
  * well — it is a component now, so that is one line in each, not a third copy
  * of the markup.
  */
-export function GoverningAgencyBlock() {
+export function GoverningAgencyBlock({ state }: { state?: string } = {}) {
+  /* THE AGENCY FOLLOWS THE JURISDICTION (2026-10-15). It was pinned to
+     `agency`, so a Florida learner reading Exam Details was
+     given the New York State Department of Financial Services — under a
+     heading that said Florida. `governingAgencyFor` falls back to Florida
+     and resolves 'NY' to the same record, so New York is unchanged. */
+  const agency = governingAgencyFor(state)
   return (
     <>
       {/* The hairline every other seam on this version uses. It is doing real
@@ -34,20 +40,20 @@ export function GoverningAgencyBlock() {
       <section>
         <h3 style={headingStyle}>Governing Agency</h3>
         <dl style={dlStyle}>
-          <Field label="Name" value={NY_GOVERNING_AGENCY.name} />
+          <Field label="Name" value={agency.name} />
           {/* `tel:` and `mailto:` rather than plain text — on a phone the
               number is the action, and retyping an email from a screen is the
               thing a link exists to prevent. Both are published values, so
               neither is a guessed destination. */}
           <Field
             label="Phone"
-            value={NY_GOVERNING_AGENCY.phone}
-            href={`tel:${NY_GOVERNING_AGENCY.phone.replace(/[^\d+]/g, '')}`}
+            value={agency.phone}
+            href={`tel:${agency.phone.replace(/[^\d+]/g, '')}`}
           />
           <Field
             label="Website"
-            value={NY_GOVERNING_AGENCY.website}
-            href={NY_GOVERNING_AGENCY.website}
+            value={agency.website}
+            href={agency.website}
             external
           />
           {/* ⚠ ONLY WHEN THERE IS ONE — 2026-10-15. New York publishes a
@@ -56,14 +62,14 @@ export function GoverningAgencyBlock() {
               there is nothing to link. An omitted row is the honest render;
               the alternative was a plausible invented `licensing@`, which is
               the move that put a wrong exam provider on the Florida block. */}
-          {NY_GOVERNING_AGENCY.email ? (
+          {agency.email ? (
             <Field
               label="Email"
-              value={NY_GOVERNING_AGENCY.email}
-              href={`mailto:${NY_GOVERNING_AGENCY.email}`}
+              value={agency.email}
+              href={`mailto:${agency.email}`}
             />
           ) : null}
-          <Field label="Address" value={NY_GOVERNING_AGENCY.address} />
+          <Field label="Address" value={agency.address} />
         </dl>
       </section>
     </>

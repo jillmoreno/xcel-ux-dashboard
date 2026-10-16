@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { ChevronRight, X } from '@/icons'
-import { jurisdictionName } from '@/data/nyProducerRequirements'
+import { examFactsFor, jurisdictionName } from '@/data/nyProducerRequirements'
 import { useExamDate } from '@/data/examDateStore'
 import { EXAM_FAQ, examDetailRows } from '@/data/examDetails'
 import { GoverningAgencyBlock } from './GoverningAgencyBlock'
@@ -46,6 +46,10 @@ export function ExamDetailsPanel({
   onClose: () => void
 }) {
   const where = jurisdictionName(state)
+  /* THE VENDOR FOLLOWS THE JURISDICTION (2026-10-15). "PSI" was written into
+     the sub-line, so a Florida sitting — Pearson VUE, in person only — was
+     announced as PSI's. */
+  const vendor = examFactsFor(state).vendor
   /* Read here rather than threaded from `MembershipOverview`: the store is the
      one source for "is there a date", every other surface reads it the same
      way, and a prop would be a second copy that can disagree. */
@@ -62,12 +66,12 @@ export function ExamDetailsPanel({
         </button>
         <p style={eyebrowStyle}>Your state exam</p>
         <h2 style={titleStyle}>Exam Details</h2>
-        <p style={subStyle}>{where ? `${where} licence · PSI` : 'PSI'}</p>
+        <p style={subStyle}>{where ? `${where} licence · ${vendor}` : vendor}</p>
       </div>
 
       <div style={bodyStyle}>
         <ul style={rowListStyle}>
-          {examDetailRows(hasExamDate).map((row) => (
+          {examDetailRows(hasExamDate, state).map((row) => (
             <li key={row.id}>
               <button type="button" style={rowStyle} onClick={() => onSelect(row.id)}>
                 <span style={{ minWidth: 0 }}>
@@ -82,7 +86,7 @@ export function ExamDetailsPanel({
         {/* THE CONTACT BLOCK, once, at the bottom — below the three rows
             because it is not a fourth one. The rows lead somewhere; this is
             reference material you read in place. */}
-        <GoverningAgencyBlock />
+        <GoverningAgencyBlock state={state} />
       </div>
     </>
   )

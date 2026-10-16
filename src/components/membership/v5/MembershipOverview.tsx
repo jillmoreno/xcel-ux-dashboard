@@ -23,7 +23,7 @@ import { GetLicensedStepPanel } from '@/components/learning/GetLicensedStepPanel
 import { ExamDetailsPanel, ExamFaqPanel } from '@/components/learning/ExamDetailsPanel'
 import { EXAM_DETAILS_STEP_ID, EXAM_FAQ_STEP_ID } from '@/data/examDetails'
 import {
-  GET_LICENSED_STEPS,
+  getLicensedStepsFor,
   NY_LH_CURRENT_CHAPTER,
   NY_LH_CURRENT_LESSON_PART,
   NY_LH_LESSON_MINUTES_INVENTED,
@@ -33,6 +33,7 @@ import { CompassHomeCourseCard } from '@/components/compass/CompassHomeCourseCar
 import { examDateRenewal, useExamDate } from '@/data/examDateStore'
 import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
 import { Link, useSearchParams } from 'react-router-dom'
+import { END_TO_END_VERSION } from '@/pages/endToEndDemo'
 import { ATLAS_OPEN_PARAM } from '@/components/compass/AtlasJourneyLinksCard'
 import { useWidgetColor } from './widgetColorUtil'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
@@ -235,7 +236,8 @@ export function MembershipOverview({
    * bending one component around both is how it stops being either.
    */
   const [openStepId, setOpenStepId] = useState<string | null>(null)
-  const openStep = GET_LICENSED_STEPS.find((st) => st.id === openStepId) ?? null
+  /* `openStep` is resolved further down, once the active path is known — it
+     has to follow that path's jurisdiction (2026-10-15). See `openStep`. */
   /*
    * EXAM DETAILS — the menu `ask-first`'s footer opens, 2026-09-29.
    *
@@ -381,10 +383,29 @@ export function MembershipOverview({
      stays on the default, which is what it resolved to before this axis
      existed. */
   const { course: demoCourse, expiryDays } = useCourseDemo()
+  /* THE END-TO-END DEMO IS A FLORIDA COURSE (2026-10-15, Jillienne). Its
+     invite flow sells "Florida Life and Health Pre-licensing", so the Home it
+     lands on, the licensing steps, the three information sheets, Readiness and
+     the study plan all have to answer Florida.
+
+     ⚠ THIS IS THE ONE PLACE TO SET IT. The E2E Home used to hard-code the word
+     "Florida" into its own heading while the PATH underneath stayed New York —
+     which held together only while nothing else was reachable. The moment the
+     Quick Links sheets were wired up (2026-10-15), clicking Exam Information
+     on a Florida course produced a New York licence, PSI, 150 minutes and the
+     New York State Department of Financial Services. Resolving the COURSE here
+     fixes every one of those at once, because they all read the path.
+
+     Only under `auto`. An explicit pick on the Course control still wins, so
+     the control keeps working on this version like any other. */
+  const [e2eVersionParams] = useSearchParams()
+  const isEndToEndDemo =
+    resolveDashboardVersion(e2eVersionParams.get('version'), brand) === END_TO_END_VERSION
+  const resolvedDemoCourse = demoCourse ?? (isEndToEndDemo ? 'fl' : undefined)
   const basePersona = personaEnabled
     ? justOnboarded
       ? dashboardProgressPersonaFor(brand, 'setup-complete-0')
-      : dashboardProgressPersonaFor(brand, progressVariant, educationType, demoCourse, expiryDays)
+      : dashboardProgressPersonaFor(brand, progressVariant, educationType, resolvedDemoCourse, expiryDays)
     : null
   // When reached by finishing onboarding, enrich the setup-complete-0 persona
   // with the entered license + course/modality picks so the Current Learning
@@ -399,6 +420,13 @@ export function MembershipOverview({
   // path's real values).
   const personaDrivesPath = Boolean(persona) && personaSetupComplete && !selectedPathId
   const activeProgressPath = personaDrivesPath ? persona!.path : progressPath
+  /* THE STEP SHEET SHOWS THE PATH'S OWN STEP (2026-10-15). It read
+     `GET_LICENSED_STEPS` — NEW YORK's — while the sheet's own JURISDICTION
+     line read the path, so "Apply for your License" on a Florida path said
+     "Jurisdiction Florida" and "Handled by NY Dept. of Financial Services" in
+     the same panel. `getLicensedStepsFor` resolves 'NY' to the same array, so
+     New York is byte-identical. */
+  const openStep = getLicensedStepsFor(activeProgressPath?.state).find((st) => st.id === openStepId) ?? null
   // Jump Back In slot mode (`resume` / `up-next` / `discovery`) — persona-driven.
   // In `discovery` the slot has no course, so DON'T fall back to the brand's
   // in-progress course (that would defeat the empty state).

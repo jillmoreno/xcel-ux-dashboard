@@ -1,4 +1,4 @@
-import { GET_LICENSED_STEPS } from './nyProducerRequirements'
+import { examFactsFor, getLicensedStepsFor } from './nyProducerRequirements'
 
 /**
  * EXAM DETAILS — the menu's rows, and the demo FAQ behind the third one.
@@ -24,11 +24,17 @@ type Row = {
   detail: string
 }
 
-function stepDetail(id: string, fallback: string): string {
-  return GET_LICENSED_STEPS.find((s) => s.id === id)?.detail ?? fallback
+/* THE STEP'S OWN WORDING, for the jurisdiction being shown (2026-10-15).
+   It read `GET_LICENSED_STEPS` — NEW YORK's — so a Florida learner opening
+   Exam Details was told "150 questions in 150 minutes" over a Florida
+   heading; Florida sits 150 scored questions in 165 minutes at Pearson VUE.
+   `getLicensedStepsFor` resolves 'NY' to the very same array, so New York is
+   byte-identical. */
+function stepDetail(id: string, fallback: string, state?: string): string {
+  return getLicensedStepsFor(state).find((s) => s.id === id)?.detail ?? fallback
 }
 
-export function examDetailRows(hasExamDate: boolean): Row[] {
+export function examDetailRows(hasExamDate: boolean, state?: string): Row[] {
   return [
     /*
      * ⚠ ROW 1 IS TWO ROWS, chosen by whether a date is stored.
@@ -46,17 +52,17 @@ export function examDetailRows(hasExamDate: boolean): Row[] {
       ? {
           id: 'schedule-exam',
           label: 'How to reschedule your exam',
-          detail: 'Change a date you have already booked, through PSI.',
+          detail: `Change a date you have already booked, through ${examFactsFor(state).vendor}.`,
         }
       : {
           id: 'schedule-exam',
           label: 'How to schedule your exam',
-          detail: stepDetail('schedule-exam', 'Schedule your exam when you’re ready.'),
+          detail: stepDetail('schedule-exam', 'Schedule your exam when you’re ready.', state),
         },
     {
       id: 'pass-exam',
       label: 'What to expect on your exam',
-      detail: stepDetail('pass-exam', '150 questions in 150 minutes. 70% to pass.'),
+      detail: stepDetail('pass-exam', '150 questions in 150 minutes. 70% to pass.', state),
     },
     {
       id: EXAM_FAQ_STEP_ID,

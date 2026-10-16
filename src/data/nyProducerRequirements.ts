@@ -538,6 +538,9 @@ export type ExamFacts = {
   passMark: number
   where: string
   whereNote?: string
+  /** The body that administers the sitting, short enough for a sub-line.
+   *  Not an invented figure — it is the name already inside `where`. */
+  vendor: string
   /** True when every figure above still needs confirming against the board. */
   invented: boolean
 }
@@ -583,6 +586,7 @@ const EXAM_FACTS_BY_STATE: Record<string, ExamFacts> = {
     passMark: 70,
     where: 'A Pearson VUE test centre',
     whereNote: 'in person only — online remote proctoring is not available',
+    vendor: 'Pearson VUE',
     invented: false,
   },
   /**
@@ -616,6 +620,7 @@ const EXAM_FACTS_BY_STATE: Record<string, ExamFacts> = {
     passMark: 70,
     where: 'A Pearson VUE test centre',
     whereNote: 'Pearson Professional Assessments',
+    vendor: 'Pearson VUE',
     invented: false,
   },
   // CONFIRMED 2026-09-16 against XCEL's own published requirements page (see
@@ -641,6 +646,7 @@ const EXAM_FACTS_BY_STATE: Record<string, ExamFacts> = {
     passMark: 70,
     where: 'PSI — test centre or online proctored',
     whereNote: 'registration at test-takers.psiexams.com/nyins',
+    vendor: 'PSI',
     invented: false,
   },
 }
