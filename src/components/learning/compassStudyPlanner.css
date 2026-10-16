@@ -594,33 +594,61 @@
 .cre-planner__paces .pf { display: block; font-size: 11px; line-height: 15px; color: var(--color-success-700); font-weight: 600; margin-top: 4px; }
 .cre-planner__paces .pf.miss { color: var(--color-error-600); }
 
-/* ---- the week as a list; the full plan as compact cells ---- */
+/* ---- HER PHONE LAYOUT, AND ONLY ON A PHONE ---- 2026-10-16.
+
+   ⚠ THIS WHOLE BLOCK WAS UNCONDITIONAL AND SHOULD NEVER HAVE BEEN. In her
+   file it lives inside `@media(max-width:900px)` under two comments that say
+   so outright — "Week on a phone: one day per row, with the weekday written
+   out" and "Month on a phone: a 45px column cannot hold a topic name". The
+   port lifted the rules and left the query behind, so every width got the
+   phone week: one column, the weekday spelled out, and the Sun–Sat header
+   hidden because a seven-column header over a one-column list is noise.
+
+   On a desktop hers is a SEVEN-COLUMN week with that header visible —
+   measured on her own prototype, 7 × 123px, `.pl-dow.is-week` showing. The
+   base rules above already draw that; they were simply never reached.
+
+   ⚠ READ HER RENDERED PAGE, NOT HER STYLESHEET. Three times running I found
+   `.pl-grid.week{grid-template-columns:1fr}` by grep and concluded ours
+   matched. It is the first of two layouts in one file and the wrong one.
+   Her prototypes are long, and a selector found by search says nothing
+   about which query encloses it. */
+/* ⚠ BASE, NOT PHONE — hers too (`.pl-day .wd{display:none}` sits outside the
+   query and is switched back on inside it). The weekday is written INTO each
+   day only on a phone, where the column header is gone; on a desktop the
+   header names the columns and a weekday in the cell is the same word twice.
+   I swept this into the query with the rest and the desktop week immediately
+   read "Sun / 20" under a "Sun" heading. */
 .cre-planner__day .wd { display: none; }
-.cre-planner__grid--week { grid-template-columns: 1fr; gap: 6px; }
-.cre-planner__grid--week .cre-planner__day {
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 44px 30px 1fr;
-  grid-auto-rows: min-content;
-  align-items: baseline;
-  column-gap: 8px;
-  row-gap: 4px;
-  padding: 11px 12px;
+
+@media (max-width: 900px) {
+  /* ---- the week as a list; the full plan as compact cells ---- */
+  .cre-planner__grid--week { grid-template-columns: 1fr; gap: 6px; }
+  .cre-planner__grid--week .cre-planner__day {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 44px 30px 1fr;
+    grid-auto-rows: min-content;
+    align-items: baseline;
+    column-gap: 8px;
+    row-gap: 4px;
+    padding: 11px 12px;
+  }
+  .cre-planner__grid--week .cre-planner__day .wd { display: block; grid-column: 1; font-size: 11px; line-height: 15px; color: var(--color-compass-page-body); font-weight: 500; }
+  .cre-planner__grid--week .cre-planner__day .num { grid-column: 2; }
+  .cre-planner__grid--week .cre-planner__day > :not(.wd):not(.num) { grid-column: 3; }
+  .cre-planner__grid--week .cre-planner__chip { font-size: 11px; line-height: 15px; padding: 6px 8px; }
+  .cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__day { min-height: 54px; padding: 6px 4px; gap: 4px; border-radius: 8px; position: relative; }
+  .cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__day--today { padding: 5px 3px; }
+  .cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__chip,
+  .cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__mins,
+  .cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__offmark,
+  .cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__done,
+  .cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__skip { display: none; }
+  .cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__day--sess::after { content: ''; display: block; height: 3px; width: 70%; border-radius: 2px; background: var(--color-primary-500); }
+  .cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__day--rev::before { content: ''; position: absolute; left: 4px; bottom: 8px; height: 3px; width: 40%; border-radius: 2px; background: var(--color-warning-500); }
+  .cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__day--exam::after { display: none; }
 }
-.cre-planner__grid--week .cre-planner__day .wd { display: block; grid-column: 1; font-size: 11px; line-height: 15px; color: var(--color-compass-page-body); font-weight: 500; }
-.cre-planner__grid--week .cre-planner__day .num { grid-column: 2; }
-.cre-planner__grid--week .cre-planner__day > :not(.wd):not(.num) { grid-column: 3; }
-.cre-planner__grid--week .cre-planner__chip { font-size: 11px; line-height: 15px; padding: 6px 8px; }
-.cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__day { min-height: 54px; padding: 6px 4px; gap: 4px; border-radius: 8px; position: relative; }
-.cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__day--today { padding: 5px 3px; }
-.cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__chip,
-.cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__mins,
-.cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__offmark,
-.cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__done,
-.cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__skip { display: none; }
-.cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__day--sess::after { content: ''; display: block; height: 3px; width: 70%; border-radius: 2px; background: var(--color-primary-500); }
-.cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__day--rev::before { content: ''; position: absolute; left: 4px; bottom: 8px; height: 3px; width: 40%; border-radius: 2px; background: var(--color-warning-500); }
-.cre-planner__grid:not(.cre-planner__grid--week) .cre-planner__day--exam::after { display: none; }
 .cre-planner__todaytag {
   display: inline-block;
   margin-left: 6px;
@@ -901,5 +929,9 @@
 .cre-dw__retgo { font-size: 11px; line-height: 15px; font-weight: 600; color: var(--color-primary-500); white-space: nowrap; }
 .cre-dw__undo { font-family: inherit; font-size: 11px; line-height: 15px; font-weight: 600; color: var(--color-primary-500); background: var(--color-surface-card); border: 1px solid var(--color-primary-400); border-radius: 7px; padding: 3px 11px; cursor: pointer; }
 
-/* the weekday row is redundant over the week list, which names each day */
-.cre-planner__dow--week { display: none; }
+/* Redundant only over the PHONE's week list, which names each day in its
+   own row. On a desktop the week is seven columns and this row heads them —
+   hers shows it (`.pl-dow.is-week`, measured). */
+@media (max-width: 900px) {
+  .cre-planner__dow--week { display: none; }
+}
