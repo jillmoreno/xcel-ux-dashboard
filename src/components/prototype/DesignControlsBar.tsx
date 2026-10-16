@@ -15,7 +15,14 @@ import {
 import { useFeatureFlagPanel } from '@/components/account/FeatureFlagPanelContext'
 import { useLoFi } from '@/context/LoFiContext'
 import { DemoBar, DemoDropdown } from './DemoBar'
-import { useDemoMenus, DEMO_HOVER_FILL, DESIGN_ACCENT } from './demoBarUtil'
+import {
+  useDemoMenus,
+  DEMO_FAINT_FILL,
+  DEMO_HOVER_FILL,
+  DEMO_TRIGGER,
+  DEMO_TRIGGER_EYEBROW,
+  DESIGN_ACCENT,
+} from './demoBarUtil'
 
 /**
  * THE DESIGN CONTROLS BAR — 2026-10-05, the direct ask.
@@ -238,6 +245,50 @@ function DesignControl({
     : state?.enabled
       ? 'On'
       : 'Off'
+
+  /*
+   * ⚠ NO VARIANTS = A SWITCH YOU PRESS, NOT A MENU OF ONE — 2026-10-15,
+   * Jillienne: "rubi toggle should be on/off".
+   *
+   * The note above has always said a flag without `variants` is an on/off, and
+   * only the LABEL ever was: the pill still opened a dropdown whose whole
+   * contents were a single row reading "Turn on". Two clicks and a popover to
+   * flip one boolean, wearing a chevron that promises a choice of states it
+   * does not have — and `role="radiogroup"` around one radio, which is not a
+   * group.
+   *
+   * Anjani's own prototypes set the bar: `xcel-compass-nudge-journey.html`
+   * draws Rubi as one button reading ON or OFF that you press. This is that,
+   * on the shared bar — `role="switch"`, so the pressed state is announced
+   * rather than inferred from the word.
+   */
+  if (!variants.length) {
+    const on = Boolean(state?.enabled)
+    return (
+      <button
+        type="button"
+        role="switch"
+        aria-checked={on}
+        className="cre-demo-controls-btn"
+        /* The accessible name has to survive the eyebrow being a separate
+           span — "Planner: Rubi" then "On" reads as two unrelated words to a
+           screen reader walking the bar. */
+        aria-label={`${def.label}: ${label}`}
+        style={{ ...DEMO_TRIGGER, ...(on ? { boxShadow: `inset 0 0 0 1px ${DESIGN_ACCENT}` } : null) }}
+        onClick={() => onPick(null)}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = DEMO_HOVER_FILL
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = DEMO_FAINT_FILL
+        }}
+      >
+        <span aria-hidden style={DEMO_TRIGGER_EYEBROW}>{def.label}:</span>
+        <span aria-hidden>{label}</span>
+      </button>
+    )
+  }
+
   return (
     <DemoDropdown
       id={def.key}
@@ -249,12 +300,7 @@ function DesignControl({
       panelLabel={def.label}
       panelMinWidth={240}
     >
-      {(variants.length
-        ? variants.map((v) => ({ value: v.value as string | null, label: v.label }))
-        : [
-            { value: null, label: state?.enabled ? 'Turn off' : 'Turn on' },
-          ]
-      ).map((opt) => {
+      {variants.map((v) => ({ value: v.value as string | null, label: v.label })).map((opt) => {
         const active = opt.value != null && opt.value === current
         return (
           <button
