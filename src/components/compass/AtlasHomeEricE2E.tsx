@@ -8,7 +8,11 @@
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { isEricAtlasWhiteLike, resolveDashboardVersion } from '@/data/dashboardVersions'
-import { useCourseOverviewOpensCompass, useDashboardCourseTitle } from '@/pages/endToEndDemo'
+import {
+  useBeginOpensCompassSession,
+  useCourseOverviewOpensCompass,
+  useDashboardCourseTitle,
+} from '@/pages/endToEndDemo'
 import { AffidavitModal } from '@/components/e2e/AffidavitModal'
 import { useAccount } from '@/context/AccountContext'
 import {
@@ -137,7 +141,10 @@ export type AtlasHomeEricE2EProps = {
    journey stops, the tiles, My Courses and My Certificates. Set false to wire
    them again.
 
-   ⚠ COURSE OVERVIEW IS EXEMPT ON THE END-TO-END WALK (2026-10-16,
+   ⚠ COURSE OVERVIEW *AND BEGIN COURSE* ARE EXEMPT ON THE END-TO-END WALK
+   — Begin joined 2026-10-16 ("make this button go into the compass course"),
+   under its own flag and landing in a lesson rather than on the dashboard.
+   The rest of the sentence applies to both (2026-10-16,
    Jillienne: "clicking Course Overview … will now link up with Anjani's
    Prototype"). `useCourseOverviewOpensCompass` is `?journey=full` AND the
    flag, so this exemption is live on HER row's walk and nowhere else — the
@@ -194,6 +201,8 @@ export function AtlasHomeEricE2E({
   /* Course Overview is exempt from `LINKS_OFF` on the End-to-End row's walk,
      where it opens Anjani's Compass — see the note on `LINKS_OFF`. */
   const overviewOpensCompass = useCourseOverviewOpensCompass()
+  /* …and Begin Course, which opens the Compass SESSION on the same walk. */
+  const beginOpensCompass = useBeginOpensCompassSession()
   // White's course-head panel, measured so Quick Links can take its height
   // (2026-10-14, Eric's request).
   const [headEl, setHeadEl] = useState<HTMLDivElement | null>(null)
@@ -496,7 +505,7 @@ export function AtlasHomeEricE2E({
               <button
                 type="button"
                 className="cre-compass-primary cre-compass-btn-primary"
-                onClick={LINKS_OFF ? NO_LINK : onBegin}
+                onClick={LINKS_OFF && !beginOpensCompass ? NO_LINK : onBegin}
                 disabled={!LINKS_OFF && !onBegin}
                 style={HEADER_PRIMARY}
               >

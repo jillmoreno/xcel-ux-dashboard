@@ -33,7 +33,12 @@ import { CompassHomeCourseCard } from '@/components/compass/CompassHomeCourseCar
 import { examDateRenewal, useExamDate } from '@/data/examDateStore'
 import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
 import { Link, useSearchParams } from 'react-router-dom'
-import { END_TO_END_VERSION, useCourseOverviewOpensCompass } from '@/pages/endToEndDemo'
+import {
+  COMPASS_SESSION_PARAM,
+  END_TO_END_VERSION,
+  useBeginOpensCompassSession,
+  useCourseOverviewOpensCompass,
+} from '@/pages/endToEndDemo'
 import { ATLAS_OPEN_PARAM } from '@/components/compass/AtlasJourneyLinksCard'
 import { useWidgetColor } from './widgetColorUtil'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
@@ -472,6 +477,9 @@ export function MembershipOverview({
   /* Whether the Atlas course card's Course Overview opens Anjani's Compass —
      the End-to-End row's walk only. See `useCourseOverviewOpensCompass`. */
   const courseOverviewOpensCompass = useCourseOverviewOpensCompass()
+  /* …and whether Begin Course opens the Compass SESSION. Its sibling — see
+     `useBeginOpensCompassSession`. */
+  const beginOpensCompassSession = useBeginOpensCompassSession()
   // `?open=` — a sheet requested from another page (the Atlas My Courses
   // page's journey-links card, 2026-10-05): `exam-details`, `step:<id>` or
   // `requirements`. Opened once, then stripped so a reload does not reopen it.
@@ -511,8 +519,23 @@ export function MembershipOverview({
         setShellParams(
           (prev) => {
             const next = new URLSearchParams(prev)
-            next.set('section', 'course')
-            next.set('coursePage', 'course')
+            /* ⚠ ON THE END-TO-END WALK THIS OPENS ANJANI'S SESSION INSTEAD
+               (2026-10-16, Jillienne with the button selected: "make this
+               button go into the compass course"). Two different screens, and
+               the distinction is the point: `section=course&coursePage=course`
+               is Eric's Atlas Course page, `section=compass&session=1` is the
+               Compass LESSON — Contents rail, the video, Rubi beside it.
+               `useBeginOpensCompassSession` is `?journey=full` AND the flag,
+               so Eric's tile keeps his page. `coursePage` is cleared on the
+               way so a stale one cannot ride along into Compass. */
+            if (beginOpensCompassSession) {
+              next.set('section', 'compass')
+              next.set(COMPASS_SESSION_PARAM, '1')
+              next.delete('coursePage')
+            } else {
+              next.set('section', 'course')
+              next.set('coursePage', 'course')
+            }
             return next
           },
           { replace: true },

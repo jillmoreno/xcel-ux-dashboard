@@ -2324,6 +2324,31 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'e2e-begin-opens-compass-session',
+    /* BEGIN COURSE OPENS THE COMPASS SESSION (2026-10-16, Jillienne, with the
+       button selected: "make this button go into the compass course"). The
+       second half of the Atlas↔Compass seam — Course Overview reaches
+       Anjani's DASHBOARD, this reaches a LESSON (`?section=compass&session=1`:
+       the Contents rail, the video, Rubi beside it).
+
+       ⚠ A SEPARATE KEY FROM `e2e-course-overview-opens-compass`, though the
+       two are flipped together in practice. They are different destinations
+       from two buttons sitting side by side, and a reviewer notices them
+       separately — so they are promoted separately rather than as one
+       "wire Atlas to Compass" switch that cannot be half-taken.
+
+       ⚠ THE WALK ONLY, like its sibling: `useBeginOpensCompassSession` ANDs
+       this with `?journey=full`, so Eric's Atlas Learning tile keeps the
+       inert Begin Course he promoted. Off, this walk's button is inert too,
+       which is what it was before. */
+    group: 'Navigation',
+    label: 'Begin Course opens the Compass session',
+    description:
+      'On the End-to-End row\u2019s walk (?journey=full), Begin Course on the Atlas course card opens Anjani\u2019s Compass session \u2014 the lesson view, not the dashboard. Off, it does nothing, as before. Eric\u2019s Atlas Learning tile is unaffected either way.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-header-v2',
     /* THE ATLAS HEADER, ON THE DESIGN BAR (2026-10-13, Eric's request:
        "replace the nav … with the new nav"). On (default), Eric's Atlas

@@ -72,6 +72,33 @@ export function useCourseOverviewOpensCompass(): boolean {
   return on && isFullJourney(params)
 }
 
+/** The Compass session player's param — `?section=compass&session=1`, the
+ *  lesson view (Contents rail, the video, Rubi beside it). */
+export const COMPASS_SESSION_PARAM = 'session'
+
+/**
+ * BEGIN COURSE OPENS THE COMPASS SESSION — the walk only (2026-10-16,
+ * Jillienne, selecting the button: "make this button go into the compass
+ * course").
+ *
+ * The second half of the Atlas↔Compass seam, and a SEPARATE flag from
+ * `e2e-course-overview-opens-compass` on purpose: the two buttons sit side by
+ * side but land in different places — Course Overview on Anjani's dashboard
+ * (`?section=compass`), Begin Course INSIDE a lesson
+ * (`?section=compass&session=1`). They are one decision in practice and two
+ * in principle, and a reviewer notices them separately, so they are promoted
+ * separately.
+ *
+ * Scoped the same way, for the same reason: `?journey=full` is the End-to-End
+ * row's walk, so Eric's Atlas Learning tile keeps the inert button he
+ * promoted. Nothing of his is unwired.
+ */
+export function useBeginOpensCompassSession(): boolean {
+  const [params] = useSearchParams()
+  const on = useFeatureFlag('e2e-begin-opens-compass-session').enabled
+  return on && isFullJourney(params)
+}
+
 /* THE DEMO'S PRICES, in one place (2026-10-15, Eric's request): the PDP's
    price card, Checkout's order summary and Confirmation's order total all
    read these, so the total is always the checkout's. */

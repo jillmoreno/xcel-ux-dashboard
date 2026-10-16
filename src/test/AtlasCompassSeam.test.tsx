@@ -71,6 +71,17 @@ async function clickCourseOverview() {
   })
 }
 
+/** Begin Course sits beside Course Overview on the card. */
+async function clickBeginCourse() {
+  const page = within(screen.getByTestId('page'))
+  const button =
+    page.queryAllByRole('button', { name: 'Begin Course' })[0] ??
+    page.getAllByRole('button', { name: 'Resume Course' })[0]
+  await act(async () => {
+    fireEvent.click(button)
+  })
+}
+
 /** Home lives in the header half. */
 async function clickHome() {
   const home = within(screen.getByTestId('header')).getByRole('button', { name: 'Home' })
@@ -149,5 +160,64 @@ describe('Course Overview on the End-to-End row’s walk', () => {
     renderDashboard(`?demo=1&version=${END_TO_END_VERSION}&journey=full&ff=e2e-course-overview-opens-compass:off`)
     await clickCourseOverview()
     expect(sectionNow()).not.toBe('compass')
+  })
+})
+
+/**
+ * BEGIN COURSE — the second half of the seam (2026-10-16, Jillienne with the
+ * button selected: "make this button go into the compass course").
+ *
+ * ⚠ IT LANDS SOMEWHERE DIFFERENT FROM COURSE OVERVIEW, and that is the whole
+ * reason it is its own flag rather than a widening of the first: Course
+ * Overview opens Anjani's DASHBOARD, Begin Course opens a LESSON. Two buttons
+ * side by side, two destinations, two promotion decisions.
+ */
+describe('Begin Course on the End-to-End row’s walk', () => {
+  it('the flag is on in the committed baseline, and is its own key', () => {
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'e2e-begin-opens-compass-session')
+    expect(flag).toBeDefined()
+    expect(flag?.defaultEnabled).toBe(true)
+    // Not folded into the Course Overview flag — see the describe note.
+    expect(FEATURE_FLAGS.find((f) => f.key === 'e2e-course-overview-opens-compass')).toBeDefined()
+  })
+
+  it('opens the Compass SESSION, not Anjani’s dashboard and not Eric’s course page', async () => {
+    renderDashboard(`?demo=1&version=${END_TO_END_VERSION}&journey=full`)
+    await clickBeginCourse()
+    const params = new URLSearchParams(screen.getByTestId('search').textContent ?? '')
+    expect(params.get('section')).toBe('compass')
+    // The lesson view — this param is what separates it from Course Overview,
+    // which lands on the same section with no session.
+    expect(params.get('session'), 'the lesson, not the dashboard').toBe('1')
+    // …and not Eric's Atlas Course page, which is where it went before.
+    expect(params.get('coursePage'), 'a stale course page must not ride along').toBeNull()
+    expect(params.get('journey'), 'still on the walk').toBe('full')
+  })
+
+  it('the two buttons land in DIFFERENT places', async () => {
+    // If these ever agree, one of the two flags has quietly absorbed the other
+    // and a reviewer has lost a destination with no error to say so.
+    renderDashboard(`?demo=1&version=${END_TO_END_VERSION}&journey=full`)
+    await clickCourseOverview()
+    const overview = new URLSearchParams(screen.getByTestId('search').textContent ?? '')
+    expect(overview.get('section')).toBe('compass')
+    expect(overview.get('session'), 'Course Overview is the dashboard, not a lesson').toBeNull()
+  })
+
+  it('does NOT change Eric’s Atlas Learning tile', async () => {
+    renderDashboard('?demo=1&section=dashboard')
+    const before = screen.getByTestId('search').textContent
+    await clickBeginCourse()
+    expect(screen.getByTestId('search').textContent, 'Eric’s tile is untouched').toBe(before)
+  })
+
+  it('off: the walk’s Begin Course is inert again', async () => {
+    renderDashboard(
+      `?demo=1&version=${END_TO_END_VERSION}&journey=full&ff=e2e-begin-opens-compass-session:off`,
+    )
+    await clickBeginCourse()
+    expect(
+      new URLSearchParams(screen.getByTestId('search').textContent ?? '').get('session'),
+    ).toBeNull()
   })
 })
