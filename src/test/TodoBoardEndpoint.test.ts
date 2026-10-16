@@ -210,6 +210,41 @@ describe('people', () => {
     expect(after.filter((c) => c.owner === 'Anjani')).toHaveLength(1)
   })
 
+  it('gives a new person the first colour NOBODY is using', async () => {
+    /* The old rotation was `existing.length % HUES.length`, and that is how
+       Cody ended up the same colour as Jillienne: somebody was removed, the
+       roster got shorter, and the next person was handed a colour still on
+       the board. */
+    await board()
+    await call('DELETE', '/api/todo-board/people/person-002') // frees `teal`
+    const { body } = await call('POST', '/api/todo-board/people', { name: 'Joe' })
+    expect((body.person as Json).hue).toBe('teal')
+
+    const after = (await board()).body.people as Json[]
+    expect(new Set(after.map((p) => p.hue)).size).toBe(after.length)
+  })
+
+  it('changes one person’s colour, and nothing else about them', async () => {
+    await board()
+    const { status, body } = await call('PUT', '/api/todo-board/people/person-005', { hue: 'plum' })
+    expect(status).toBe(200)
+    expect(body.person).toMatchObject({ id: 'person-005', name: SEED_PEOPLE[4], hue: 'plum' })
+  })
+
+  it('refuses a colour it cannot draw', async () => {
+    await board()
+    const { status } = await call('PUT', '/api/todo-board/people/person-001', { hue: 'chartreuse' })
+    expect(status).toBe(422)
+  })
+
+  it('will not rename a person — a card stores the NAME it is owned by', async () => {
+    /* The guard is that `name` is simply not read: a rename without the same
+       cascade `DELETE` runs would orphan every card that person owns. */
+    await board()
+    const { body } = await call('PUT', '/api/todo-board/people/person-001', { hue: 'plum', name: 'Someone else' })
+    expect((body.person as Json).name).toBe(SEED_PEOPLE[0])
+  })
+
   it('refuses to remove the person the handoff column assigns to', async () => {
     await board()
     const { status, body } = await call('DELETE', '/api/todo-board/people/person-001')

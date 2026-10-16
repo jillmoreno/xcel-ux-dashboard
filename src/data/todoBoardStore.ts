@@ -115,7 +115,20 @@ export function autoAssigns(column: TodoColumn): boolean {
  * the avatar, at every call site, so a repeat is a weaker signal rather than
  * an ambiguity.
  */
-export const TODO_HUES = ['slate', 'teal', 'green', 'gold', 'brick', 'taupe'] as const
+export const TODO_HUES = [
+  'slate',
+  'teal',
+  'green',
+  'gold',
+  'brick',
+  'taupe',
+  // EIGHT since 2026-10-15, when Cody and Jillienne came out the same colour.
+  // XCEL's ramps have no seventh distinct HUE — what is left are darker steps
+  // of families already here — so these two are literals in `todoBoard.css`,
+  // like the white ink and for the same reason: identity, not theme.
+  'violet',
+  'plum',
+] as const
 
 /**
  * What the four palette hues become.
@@ -403,6 +416,24 @@ async function write<T>(path: string, init: RequestInit, pick: (body: never) => 
   const body = (await res.json()) as never
   announce()
   return pick(body)
+}
+
+/**
+ * Change somebody's colour. The only part of a person record that can be
+ * edited: a card stores its owner's NAME, so a rename here would orphan every
+ * card they own (see the endpoint).
+ */
+export function setPersonHue(id: string, hue: TodoHue): Promise<TodoPerson> {
+  return write<TodoPerson>(
+    `${BASE}/people/${encodeURIComponent(id)}`,
+    {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ hue }),
+    },
+    (b: { person: TodoPerson }) => b.person,
+    'Could not change that colour.',
+  )
 }
 
 export function createCard(draft: TodoCardDraft): Promise<TodoCard> {

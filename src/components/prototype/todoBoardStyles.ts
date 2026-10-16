@@ -534,6 +534,29 @@ export const linkBtnStyle: CSSProperties = {
   cursor: 'pointer',
 }
 
+/** The colour chooser on a Manage people row. Eight small discs; the one in
+ *  use is ringed rather than merely tinted, the same rule the owner filter
+ *  follows — these are eight colours, so "the selected one is coloured" says
+ *  nothing. */
+export const swatchRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  flexWrap: 'wrap',
+}
+
+export function swatchStyle(active: boolean): CSSProperties {
+  return {
+    width: 18,
+    height: 18,
+    padding: 0,
+    borderRadius: 999,
+    border: '1px solid var(--ux-border)',
+    boxShadow: active ? '0 0 0 2px var(--ux-accent)' : 'none',
+    cursor: 'pointer',
+  }
+}
+
 export const addPersonRowStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'flex-end',

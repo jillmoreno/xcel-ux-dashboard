@@ -71,6 +71,19 @@
 .cre-todo-avatar[data-hue='taupe'] { background: var(--color-tertiary-600); }
 
 /*
+ * The two that are NOT brand tokens (2026-10-15). XCEL's ramps carry eight
+ * families but only six distinct hues — `error` is brick red like `cta`,
+ * `warning` is gold like `secondary` — and everything left is a darker step
+ * of a colour already here, which at 24px reads as the same disc. Violet and
+ * plum fill the gap. Measured against the six: violet 8.36:1 on white, ΔE
+ * 42.4 from its nearest (slate); plum 7.77:1, ΔE 47.6 (brick); and ΔE 29.1
+ * from each other. Literals, for the same reason the ink is: identity, not
+ * theme.
+ */
+.cre-todo-avatar[data-hue='violet'] { background: #5b3e8c; }
+.cre-todo-avatar[data-hue='plum'] { background: #8c2d6b; }
+
+/*
  * Nobody — Unassigned, the All filter, and any name no longer on the roster.
  * Grey on the PAGE's own tokens rather than one of the six, so "nobody" is
  * visibly not a person. This one does re-skin, because it is chrome.
@@ -110,3 +123,5 @@
 .cre-todo-card[data-hue='gold'] { border-top-color: var(--color-secondary-800); }
 .cre-todo-card[data-hue='brick'] { border-top-color: var(--color-cta-500); }
 .cre-todo-card[data-hue='taupe'] { border-top-color: var(--color-tertiary-600); }
+.cre-todo-card[data-hue='violet'] { border-top-color: #5b3e8c; }
+.cre-todo-card[data-hue='plum'] { border-top-color: #8c2d6b; }

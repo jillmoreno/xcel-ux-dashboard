@@ -149,13 +149,16 @@ describe('the todo-board endpoint', () => {
     expect(fnIds).toEqual(clientIds)
   })
 
-  it('declares the same six person colours the client does, and the same retirements', () => {
+  it('declares the same person colours the client does, and the same retirements', () => {
     /* Same trust boundary as the columns. A colour the server accepts and the
        client cannot draw is an avatar with no fill; a retirement mapped on one
        side only is every pre-2026-10-15 record collapsing onto one colour. */
+    /* Comments stripped first: both lists carry prose, and an apostrophe in
+       "XCEL's ramps" reads as a quoted value to a naive match. */
     const list = (src: string, name: string) =>
-      new RegExp(`export const ${name} = \\[([^\\]]+)\\]`)
+      new RegExp(`export const ${name} = \\[([\\s\\S]*?)\\] as const`)
         .exec(src)![1]
+        .replace(/\/\/[^\n]*/g, '')
         .match(/'([^']+)'/g)!
         .map((x) => x.replaceAll("'", ''))
     expect(list(fn, 'HUES')).toEqual(list(store, 'TODO_HUES'))
@@ -495,6 +498,34 @@ describe('TodoBoardPanel', () => {
     await waitFor(() => expect(writes.length).toBe(1))
     expect(writes[0].method).toBe('DELETE')
     expect(writes[0].url).toContain('/api/todo-board/people/person-003')
+  })
+
+  it('changes a person’s colour from Manage people', async () => {
+    const { writes } = mockBoard([card({ id: 'card-001', owner: 'Eric' })])
+    render(<TodoBoardPanel />)
+    await boardReady()
+
+    await userEvent.click(screen.getByRole('button', { name: /Manage people/ }))
+    // Eric is `slate` in this roster; plum is one of the two added when two
+    // people turned up the same colour.
+    await userEvent.click(await screen.findByRole('button', { name: 'plum for Eric' }))
+
+    await waitFor(() => expect(writes.length).toBe(1))
+    expect(writes[0].method).toBe('PUT')
+    expect(writes[0].url).toContain('/api/todo-board/people/person-003')
+    expect(writes[0].body).toEqual({ hue: 'plum' })
+  })
+
+  it('shows which colour each person has, by ring rather than by tint alone', async () => {
+    mockBoard([])
+    render(<TodoBoardPanel />)
+    await boardReady()
+
+    await userEvent.click(screen.getByRole('button', { name: /Manage people/ }))
+    const chosen = await screen.findByRole('button', { name: 'slate for Eric' })
+    expect(chosen.getAttribute('aria-pressed')).toBe('true')
+    expect(chosen.style.boxShadow).toContain('var(--ux-accent)')
+    expect(screen.getByRole('button', { name: 'plum for Eric' }).getAttribute('aria-pressed')).toBe('false')
   })
 
   it('offers no Remove for the person the handoff column assigns to', async () => {

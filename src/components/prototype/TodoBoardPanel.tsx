@@ -49,6 +49,7 @@ import {
   positionForDrop,
   removePerson,
   saveCard,
+  setPersonHue,
   useTodoBoard,
   addPerson,
   type TodoCard,
@@ -342,6 +343,10 @@ export function TodoBoardPanel() {
         onClose={() => setSheet(null)}
         onAdd={async (name: string) => {
           await addPerson(name)
+          await refresh()
+        }}
+        onRecolour={async (person: TodoPerson, hue) => {
+          await setPersonHue(person.id, hue)
           await refresh()
         }}
         onRemove={async (person: TodoPerson) => {

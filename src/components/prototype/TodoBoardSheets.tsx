@@ -23,6 +23,7 @@ import { Sheet } from '@/components/ui/Sheet'
 import {
   AUTO_ASSIGN_OWNER,
   TODO_COLUMNS,
+  TODO_HUES,
   UNASSIGNED,
   UNASSIGNED_LABEL,
   autoAssigns,
@@ -32,6 +33,7 @@ import {
   type TodoCard,
   type TodoCardDraft,
   type TodoColumn,
+  type TodoHue,
   type TodoPerson,
 } from '@/data/todoBoardStore'
 import { TodoBoardAvatar } from './TodoBoardAvatar'
@@ -56,6 +58,8 @@ import {
   sheetFooterStyle,
   sheetHeaderStyle,
   sheetTitleStyle,
+  swatchRowStyle,
+  swatchStyle,
   textareaStyle,
 } from './todoBoardStyles'
 
@@ -310,6 +314,7 @@ export function ManagePeopleSheet({
   onClose,
   onAdd,
   onRemove,
+  onRecolour,
 }: {
   open: boolean
   people: TodoPerson[]
@@ -319,6 +324,7 @@ export function ManagePeopleSheet({
   onClose: () => void
   onAdd: (name: string) => Promise<void>
   onRemove: (person: TodoPerson) => Promise<void>
+  onRecolour: (person: TodoPerson, hue: TodoHue) => Promise<void>
 }) {
   return (
     <Sheet open={open} onClose={onClose} title="Manage people" width={480}>
@@ -327,7 +333,14 @@ export function ManagePeopleSheet({
         description={`Add or remove who can be assigned a card. Removing someone moves their cards to ${UNASSIGNED_LABEL}.`}
         onClose={onClose}
       >
-        <ManagePeopleBody people={people} cards={cards} onClose={onClose} onAdd={onAdd} onRemove={onRemove} />
+        <ManagePeopleBody
+          people={people}
+          cards={cards}
+          onClose={onClose}
+          onAdd={onAdd}
+          onRemove={onRemove}
+          onRecolour={onRecolour}
+        />
       </SheetChrome>
     </Sheet>
   )
@@ -339,12 +352,14 @@ function ManagePeopleBody({
   onClose,
   onAdd,
   onRemove,
+  onRecolour,
 }: {
   people: TodoPerson[]
   cards: TodoCard[]
   onClose: () => void
   onAdd: (name: string) => Promise<void>
   onRemove: (person: TodoPerson) => Promise<void>
+  onRecolour: (person: TodoPerson, hue: TodoHue) => Promise<void>
 }) {
   const [name, setName] = useState('')
   const [errors, setErrors] = useState<string[]>([])
@@ -371,6 +386,18 @@ function ManagePeopleBody({
       setName('')
     } catch (err) {
       problem(err, 'Could not add that person.')
+    }
+    setBusy(false)
+  }
+
+  const recolour = async (person: TodoPerson, hue: TodoHue) => {
+    if (person.hue === hue) return
+    setBusy(true)
+    setErrors([])
+    try {
+      await onRecolour(person, hue)
+    } catch (err) {
+      problem(err, 'Could not change that colour.')
     }
     setBusy(false)
   }
@@ -425,14 +452,40 @@ function ManagePeopleBody({
           </div>
         )}
 
+        <p style={{ ...peopleMetaStyle, margin: '0 0 10px' }}>
+          Click a colour to change it. It appears on their avatar and along the top of their cards.
+        </p>
         <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
           {people.map((person) => {
             const count = cards.filter((c) => c.owner === person.name).length
             const locked = person.name === AUTO_ASSIGN_OWNER
             return (
-              <li key={person.id} style={peopleRowStyle}>
+              <li key={person.id} style={{ ...peopleRowStyle, alignItems: 'flex-start' }}>
                 <TodoBoardAvatar name={person.name} hue={person.hue} />
-                <span style={peopleNameStyle}>{person.name}</span>
+                <span style={peopleNameStyle}>
+                  {person.name}
+                  {/* The colour chooser (2026-10-15). It exists because the
+                      colours already in the store could not be fixed any
+                      other way — two people were handed the same one by the
+                      old rotation, and the only remedy was removing somebody,
+                      which would have sent their cards to Unassigned to fix a
+                      palette problem. */}
+                  <span style={{ ...swatchRowStyle, marginTop: 6 }}>
+                    {TODO_HUES.map((hue) => (
+                      <button
+                        key={hue}
+                        type="button"
+                        className="cre-todo-avatar"
+                        data-hue={hue}
+                        aria-pressed={person.hue === hue}
+                        aria-label={`${hue} for ${person.name}`}
+                        disabled={busy}
+                        onClick={() => void recolour(person, hue)}
+                        style={swatchStyle(person.hue === hue)}
+                      />
+                    ))}
+                  </span>
+                </span>
                 <span style={peopleMetaStyle}>
                   {count} {count === 1 ? 'card' : 'cards'}
                 </span>

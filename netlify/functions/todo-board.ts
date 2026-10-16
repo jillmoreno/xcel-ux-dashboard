@@ -76,7 +76,7 @@ export const AUTO_ASSIGN_OWNER = 'Jillienne'
  * measure 5.68:1 at worst and ΔE 24 apart. The stylesheet holds the values;
  * what is stored is only the NAME of one.
  */
-export const HUES = ['slate', 'teal', 'green', 'gold', 'brick', 'taupe'] as const
+export const HUES = ['slate', 'teal', 'green', 'gold', 'brick', 'taupe', 'violet', 'plum'] as const
 
 /** What the four retired palette hues become on the way in. Mirrored from
  *  `LEGACY_HUES` in the client store. A record keeps its colour across the
@@ -191,10 +191,18 @@ function validatePerson(input: unknown, id: string, existing: Json[]): { record:
   // of five reads as five people rather than as whatever colour the client
   // happened to ask for. A client may still name one — the Manage people
   // sheet does not — and an unreadable value rotates like an absent one.
+  // THE FIRST COLOUR NOBODY IS USING, not the next one in the list — which is
+  // what the old `existing.length % HUES.length` did, and it is how Cody
+  // ended up the same colour as Jillienne: a removal shortened the roster and
+  // the rotation handed out a colour that was still on the board. Only when
+  // all eight are taken does it wrap, and then the NAME beside the avatar is
+  // what keeps the two apart.
+  const taken = new Set(existing.map((p) => str(p.hue)?.trim() ?? ''))
+  const free = HUES.find((h) => !taken.has(h))
   const asked = str(b.hue)?.trim() ?? ''
   const hue = (HUES as readonly string[]).includes(asked)
     ? asked
-    : (LEGACY_HUES[asked] ?? HUES[existing.length % HUES.length])
+    : (LEGACY_HUES[asked] ?? free ?? HUES[existing.length % HUES.length])
   return {
     record: { id, name, hue, addedDate: new Date().toISOString().slice(0, 10) },
   }
@@ -325,8 +333,39 @@ export default async function handler(req: Request): Promise<Response> {
       return json({ person: result.record }, 201)
     }
 
-    if (req.method !== 'DELETE') return json({ errors: ['Method not allowed'] }, 405)
     if (!PERSON_KEY.test(id)) return json({ errors: [`Not a person id: ${id}`] }, 400)
+
+    /**
+     * Change somebody's COLOUR, and nothing else (2026-10-15).
+     *
+     * Added because the colours already in the store cannot be fixed any
+     * other way: Cody and Jillienne were both `teal` from the old rotation,
+     * and the only remedy without this was removing Cody — which would have
+     * sent his cards to Unassigned to fix a palette problem.
+     *
+     * ⚠ COLOUR ONLY, deliberately. A card stores its owner's NAME, so
+     * renaming a person here would silently orphan every card they own; that
+     * would need the same cascade `DELETE` does, and nobody has asked to
+     * rename anyone. Keep it that way or write the cascade.
+     */
+    if (req.method === 'PUT') {
+      let body: unknown
+      try {
+        body = await req.json()
+      } catch {
+        return json({ errors: ['Body must be JSON.'] }, 400)
+      }
+      const existing = (await store.get(id, { type: 'json' })) as Json | null
+      if (!existing) return json({ errors: ['Not found'] }, 404)
+      const asked = str((body as Json).hue)?.trim() ?? ''
+      const hue = (HUES as readonly string[]).includes(asked) ? asked : LEGACY_HUES[asked]
+      if (!hue) return json({ errors: [`hue must be one of: ${HUES.join(', ')}.`] }, 422)
+      const record = { ...existing, hue }
+      await store.setJSON(id, record)
+      return json({ person: record })
+    }
+
+    if (req.method !== 'DELETE') return json({ errors: ['Method not allowed'] }, 405)
     const person = (await store.get(id, { type: 'json' })) as Json | null
     if (!person) return json({ errors: ['Not found'] }, 404)
     const name = str(person.name)?.trim() ?? ''
