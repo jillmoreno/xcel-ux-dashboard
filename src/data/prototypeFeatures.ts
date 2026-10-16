@@ -822,15 +822,15 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     tileBlurb:
       'The actual React product on XCEL brand colour — shell, learning path, study plan, courses, certificates, catalog. One brand, no membership.',
     kind: 'explore',
-    /* HELD BACK — 2026-10-14, Jillienne on the preview: "change this whole
-       option to Coming soon like the Admin tool, as I need to pick things
-       from all the others — don't remove the work, just hide users from
-       clicking on it for now." So `coming-soon` with the `to` KEPT: the row
-       draws disabled with its tags and a Coming soon tag, nothing to click,
-       and the generated mark in place of its live preview (her ask, the same
-       minute: "a default icon image like the admin tool to show it's
-       disabled"). Releasing it is `status: 'ready'`, one word. */
-    status: 'coming-soon',
+    /* RELEASED — 2026-10-16, Jillienne: "I want to turn on the end-to-end
+       flow and work through it." Held back since 2026-10-14 ("change this
+       whole option to Coming soon like the Admin tool, as I need to pick
+       things from all the others — don't remove the work, just hide users
+       from clicking on it for now"), which kept the `to` on record precisely
+       so that releasing it would be one word. This is that word; the row
+       draws live again, with its own live preview frame in place of the
+       disabled mark. */
+    status: 'ready',
     category: 'prototype',
     // The middle door of the three — see `PROTOTYPE_SCOPES`. This row is the
     // whole product; the Compass row below is one surface INSIDE it, reached
@@ -839,7 +839,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // All four opening rows re-stamped at the 2026-10-15 ship that retired the
     // demo site: the shared chrome every row renders — the demo bar, the
     // version picker, the prototype bar — changed under all of them.
-    lastUpdated: '2026-10-16T14:38:53Z',
+    lastUpdated: '2026-10-16T14:40:00Z',
     pinned: true,
     // An in-app route, not a document. `to` is what makes the tile navigate
     // rather than open a new tab, and it is also what the row's live preview
@@ -854,7 +854,31 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // It does NOT hide the Demo Controls bar (that gate is pathname-only), so
     // a stakeholder can still switch persona / progress / readiness — those
     // edits are just ephemeral, which is the point of a demo.
-    to: '/dashboard-rebrand?demo=1',
+    //
+    // ⚠ IT OPENS AT THE INVITE DOOR NOW, not the dashboard (2026-10-16,
+    // Jillienne, releasing the row: "should include the invite flow"). The
+    // row's claim is the WHOLE journey, and until today it entered at the
+    // middle of it — a stakeholder clicking "End-to-End User Experience"
+    // landed on the dashboard and never saw the two doors named in its own
+    // title. `/end-to-end-demo` is the first page of the flow, and with
+    // `e2e-loading-opens-home` on, the loading page at the end of the
+    // password step hands off to Atlas Learning Home on its own. So the row
+    // now walks what it says: invite, purchase, password, dashboard.
+    //
+    // ⚠ THE INVITE ROW OPENS THE SAME DOOR, and `?journey=full` is what makes
+    // the two rows different walks of it (2026-10-16, Jillienne: "the 3
+    // designers do not merge those 2 together, I do, that is the purpose of
+    // the separate tile"). Invite & Purchase asks the narrower question — how
+    // a learner gets in — and ENDS at the spinner, which is Afsana and Eric's
+    // surface and is unchanged. THIS row is the assembled product, so its
+    // spinner hands off to Atlas Learning after three seconds and the walk
+    // continues. Same build, same door, two questions — exactly as the Atlas
+    // and Compass rows are one build entered at two `?section=`s.
+    //
+    // The param pins no flag and no version, so the smoke test's "every row
+    // is main's build at ?demo=1" guarantee is untouched; `InvitedConfirmationPage`
+    // reads it and `endToEndDemo.ts` says why it is a param rather than a flag.
+    to: '/end-to-end-demo?demo=1&journey=full',
     brands: ['xcel'],
   },
   {

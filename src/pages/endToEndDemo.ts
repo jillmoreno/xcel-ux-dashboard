@@ -6,6 +6,42 @@ import { jurisdictionName } from '@/data/nyProducerRequirements'
 /** The End-to-End Demo's dashboard version (`dashboardVersions.ts`). */
 export const END_TO_END_VERSION = 'eric-atlas-e2e'
 
+/* ───────────────────────────────────────────────────────────────────────────
+ *  WHICH JOURNEY IS THIS? — `?journey=full` (2026-10-16)
+ *
+ *  THE PAGES ARE SHARED; THE JOURNEY IS NOT. `/end-to-end-demo` is opened by
+ *  TWO Prototypes rows, and they are asking different questions of the same
+ *  three pages:
+ *
+ *    • Invite & Purchase (Afsana & Eric) — "how does a learner get IN?" The
+ *      answer ends when the account exists, which is the spinner. Their row
+ *      carries NO journey param and is unchanged by any of this.
+ *    • End-to-End User Experience (Jillienne) — "what is the whole product?"
+ *      That is invite + Atlas + Compass synced together, and it is the row
+ *      Jillienne assembles; the three designers do not merge their surfaces
+ *      into each other's. Her row carries `?journey=full`, and that is the
+ *      ONLY thing that lets the spinner hand off to the dashboard.
+ *
+ *  ⚠ A URL PARAM RATHER THAN A FLAG, because the difference is per-ROW and a
+ *  flag is per-BUILD. A flag has one value for everyone looking at the site,
+ *  so pointing both rows at the same build and asking a flag to tell them
+ *  apart cannot work — whichever way it is set, both rows get it. `?section=`
+ *  on the Atlas and Compass rows is the same shape and the precedent:
+ *  one build, entered differently, the row's address saying how.
+ *
+ *  The smoke test admits it: it bans `ff` and `version` on a row (those make
+ *  a row stop tracking `main`) and nothing else. `journey` pins no flag and
+ *  no build — it says which question is being asked of the one build.
+ * ─────────────────────────────────────────────────────────────────────────── */
+export const E2E_JOURNEY_PARAM = 'journey'
+export const E2E_JOURNEY_FULL = 'full'
+
+/** True when the address says this is the WHOLE journey — the End-to-End row's
+ *  walk — rather than the invite door on its own. */
+export function isFullJourney(params: URLSearchParams): boolean {
+  return params.get(E2E_JOURNEY_PARAM) === E2E_JOURNEY_FULL
+}
+
 /* THE DEMO'S PRICES, in one place (2026-10-15, Eric's request): the PDP's
    price card, Checkout's order summary and Confirmation's order total all
    read these, so the total is always the checkout's. */
@@ -17,6 +53,11 @@ export const E2E_PARTNER_PRICE = '$65.00'
  * bar scopes its controls to `?version=`, and the demo bar reads `?demo=1`, so
  * a page opened without them is given them — replaced, not pushed, so Back
  * still leaves the page.
+ *
+ * ⚠ IT COPIES `prev` AND ADDS TO IT, which is what carries `?journey=full`
+ * across each page's own normalisation. Rebuilding the params from scratch
+ * here would silently turn the End-to-End row's walk back into the invite
+ * row's, and the only symptom would be the spinner never resolving.
  */
 export function useEndToEndDemoParams(): void {
   const [params, setParams] = useSearchParams()

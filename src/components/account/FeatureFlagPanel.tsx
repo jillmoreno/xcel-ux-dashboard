@@ -140,6 +140,7 @@ const REBRAND_FLAGS = [
   'atlas-background',
   'atlas-e2e-page',
   'e2e-ends-at-password',
+  'e2e-loading-opens-home',
   'atlas-header-v2',
   'atlas-white-top-nav',
   'atlas-brand-skin',

@@ -2231,7 +2231,43 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Navigation',
     label: 'Invite flow ends at the password',
     description:
-      'On, Confirm on Confirmation & Password ends the Invite & Purchase flow there: the page becomes a loading page \u2014 a spinner over \u201cTaking you to your learning dashboard\u2026\u201d \u2014 and nothing navigates. Off, Confirm opens the End-to-End Demo\u2019s Home with the Affidavit modal over it.',
+      'On, Confirm on Confirmation & Password ends the Invite & Purchase flow there: the page becomes a loading page \u2014 a spinner over \u201cTaking you to your learning dashboard\u2026\u201d. Whether that page then hands off to Home is `e2e-loading-opens-home`. Off, Confirm opens the End-to-End Demo\u2019s Home with the Affidavit modal over it, immediately.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'e2e-loading-opens-home',
+    /* THE LOADING PAGE HANDS OFF TO HOME (2026-10-16, Jillienne: "after the
+       loading gif page, after 3 seconds, should transition to the Atlas
+       Learning Home page"). The seam the released End-to-End row is built
+       on: the invite door runs to the password, the loading page resolves,
+       and the learner lands in Atlas Learning without a click.
+
+       ⚠ THE FLAG IS NOT WHAT TELLS THE TWO ROWS APART — `?journey=full` on
+       the End-to-End row's address is, and `endToEndDemo.ts` says why. A
+       flag has ONE value per build and both rows open the same build, so a
+       flag alone would hand off on BOTH or neither. The Invite & Purchase
+       row (Afsana & Eric) carries no journey param and still ends at the
+       spinner, which is their surface and their promoted baseline.
+
+       What this flag is FOR is the promotion decision: default ON on the
+       branch, so `promote-to-prototype` surfaces it and the hand-off becomes
+       the baseline only when Jillienne says so. OFF restores exactly what
+       `main` shipped on 2026-10-15 for both rows, without editing either
+       row's address.
+
+       ⚠ IT ALSO SITS ON TOP OF `e2e-ends-at-password`, which decides whether
+       Confirm ends on a loading page at all. That one is the Invite scope's,
+       and with it off there is no loading page and this flag never reads.
+
+       The hand-off goes to the demo's Home WITHOUT `?affidavit=1`: the
+       Affidavit modal is that flag's off-arm hand-off, a different one with a
+       different purpose, and stacking a modal over the landing you just
+       waited three seconds for buries it. */
+    group: 'Navigation',
+    label: 'Loading page opens Home',
+    description:
+      'On, the loading page waits three seconds and then opens the End-to-End Demo\u2019s Atlas Learning Home \u2014 but ONLY on the End-to-End row\u2019s walk, which carries ?journey=full. The Invite & Purchase row opens the same pages and still ends at the loading page. Off, neither row hands off. Only reads when \u201cInvite flow ends at the password\u201d is on.',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },

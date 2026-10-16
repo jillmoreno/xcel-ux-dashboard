@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ChevronDown, ChevronUp, CreditCard, LockSolid, Plus, Trash } from '@/icons'
-import { E2E_ORIGINAL_PRICE, E2E_PARTNER_PRICE, END_TO_END_VERSION, useEndToEndCourseTitle, useEndToEndDemoParams } from './endToEndDemo'
+import { E2E_ORIGINAL_PRICE, E2E_PARTNER_PRICE, useEndToEndCourseTitle, useEndToEndDemoParams } from './endToEndDemo'
 
 /**
  * CHECKOUT — `/end-to-end-demo/checkout` (2026-10-14, Eric's request), Figma
@@ -35,6 +35,12 @@ import { E2E_ORIGINAL_PRICE, E2E_PARTNER_PRICE, END_TO_END_VERSION, useEndToEndC
  */
 export function InvitedCheckoutPage() {
   const navigate = useNavigate()
+  /* THE ADDRESS IS CARRIED FORWARD, not rebuilt (2026-10-16). Invited Product
+     Detail already hands its whole query string to this page; this hop used to
+     write `demo` and `version` from scratch and drop everything else, which
+     is where `?journey=full` died — the End-to-End row walked all the way to
+     the spinner and then behaved like the invite row, with nothing to see. */
+  const [params] = useSearchParams()
   // THE STUDENT'S ADDRESS, editable in Edit Student Information (2026-10-15,
   // Eric's request), and whether it is also the billing address — "Use as
   // default billing address" there. While it is, the Payment column's billing
@@ -415,7 +421,7 @@ export function InvitedCheckoutPage() {
               type="button"
               disabled={!canOrder}
               style={canOrder ? PLACE_ORDER_ON : PLACE_ORDER}
-              onClick={() => navigate(`/end-to-end-demo/confirmation?demo=1&version=${END_TO_END_VERSION}`)}
+              onClick={() => navigate(`/end-to-end-demo/confirmation?${params.toString()}`)}
             >
               Place your order
             </button>

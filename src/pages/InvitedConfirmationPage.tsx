@@ -1,10 +1,16 @@
-import { useState, type CSSProperties } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState, type CSSProperties } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { CircleCheckSolid } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { PartnerHeader } from '@/components/e2e/PartnerHeader'
 import { TopoBackground } from '@/components/e2e/TopoBackground'
-import { E2E_PARTNER_PRICE, END_TO_END_VERSION, useEndToEndDemoParams, useEndToEndPageChrome } from './endToEndDemo'
+import {
+  E2E_PARTNER_PRICE,
+  END_TO_END_VERSION,
+  isFullJourney,
+  useEndToEndDemoParams,
+  useEndToEndPageChrome,
+} from './endToEndDemo'
 
 /**
  * CONFIRMATION & PASSWORD — `/end-to-end-demo/confirmation` (2026-10-15,
@@ -13,13 +19,32 @@ import { E2E_PARTNER_PRICE, END_TO_END_VERSION, useEndToEndDemoParams, useEndToE
  * Confirm ENDS THE FLOW HERE (2026-10-15, Jillienne: "it should END after
  * user puts in a password") — the page becomes a LOADING PAGE, a compass of
  * arcs over a topo map, "Taking you to your learning dashboard…" typing its
- * dots, and nothing navigates: the
- * dashboard is the Atlas Learning row's, not this one's. That is
- * `e2e-ends-at-password`, on by default; off, Confirm opens the demo's Home
- * with the Affidavit modal over it, Eric's hand-off from earlier the same
- * day. (The loading page replaced a "Password created" card the same
+ * dots. That is `e2e-ends-at-password`, on by default; off, Confirm opens the
+ * demo's Home with the Affidavit modal over it, Eric's hand-off from earlier
+ * the same day. (The loading page replaced a "Password created" card the same
  * afternoon, Jillienne's call: the end of the flow reads as a hand-off, not
  * a receipt.)
+ *
+ * ⚠ THE LOADING PAGE RESOLVES ON ONE ROW'S WALK (2026-10-16, Jillienne:
+ * "after the loading gif page, after 3 seconds, should transition to the
+ * Atlas Learning Home page"). These three pages are opened by TWO Prototypes
+ * rows asking different questions, and the spinner is where the two answers
+ * part:
+ *
+ *   • Invite & Purchase (Afsana & Eric) — the flow ENDS here, terminal
+ *     spinner, exactly as `main` shipped on 2026-10-15. Nothing below
+ *     changes it.
+ *   • End-to-End User Experience (Jillienne) — the spinner hands off to the
+ *     demo's Home after three seconds, because that row is the whole product
+ *     with invite, Atlas and Compass synced together, and assembling it is
+ *     the row's purpose: "the 3 designers do not merge those 2 together, I
+ *     do."
+ *
+ * The row says which it is with `?journey=full` on its address — see
+ * `isFullJourney` in `endToEndDemo.ts` for why that is a URL param and not a
+ * flag (a flag has ONE value per build, and both rows open the same build).
+ * `e2e-loading-opens-home` is a branch flag over the top, so the behaviour can
+ * be switched off at promotion without editing the row.
  *
  * Left, the order confirmation on the guide's Secondary 200; right, the
  * Create password form. Clicking the password field fills it with a TEST
@@ -43,6 +68,52 @@ export function InvitedConfirmationPage() {
   // Confirmed: the flow's end state, when `e2e-ends-at-password` is on.
   const [done, setDone] = useState(false)
   const endsHere = useFeatureFlag('e2e-ends-at-password').enabled
+  // …and whether that end state RESOLVES — see `e2e-loading-opens-home`.
+  const opensHome = useFeatureFlag('e2e-loading-opens-home').enabled
+  /* WHOSE WALK IS THIS? `?journey=full` is on the End-to-End row's address and
+     not on the Invite & Purchase row's — see `isFullJourney`. */
+  const [params] = useSearchParams()
+  const fullJourney = isFullJourney(params)
+
+  /* THE HAND-OFF (2026-10-16, Jillienne: "after the loading gif page, after 3
+     seconds, should transition to the Atlas Learning Home page"). The loading
+     page waits `LOADING_HANDOFF_MS` and then opens the demo's Home, which is
+     what makes the End-to-End row ONE journey rather than two rows a reviewer
+     has to join up by hand.
+
+     ⚠ ONLY ON THE END-TO-END ROW'S WALK, and this is the whole point of that
+     row (2026-10-16, Jillienne: "the 3 designers do not merge those 2
+     together, I do, that is the purpose of the separate tile"). The Invite &
+     Purchase row opens these same three pages to answer a NARROWER question —
+     how a learner gets in — and its answer still ends at the spinner, exactly
+     as `main` shipped it on 2026-10-15. Afsana and Eric's surface is
+     untouched by this; it is Jillienne's row that walks through to Atlas.
+
+     So THREE conditions, and they are three different kinds of thing:
+       • `done`      — the reviewer pressed Confirm.
+       • `endsHere`  — `e2e-ends-at-password`, the Invite scope's promoted
+                       baseline, which decides there is a spinner at all.
+       • `fullJourney` — the ROW, via `?journey=full`.
+     plus `opensHome`, the branch flag that lets this whole behaviour be
+     switched off at promotion time without unpicking the row.
+
+     ⚠ ABOVE THE `if (done)` RETURN, because that return is an early exit and
+     a hook after it would not run on the branch that needs it. The effect
+     guards on `done` instead.
+
+     `replace`, not push: the password page is behind us and Back should leave
+     the flow, not drop the reviewer onto a form whose state is gone — the
+     same reasoning as `useEndToEndDemoParams`. No `?affidavit=1`; that modal
+     is the OFF arm's hand-off. The timer is cleared on unmount, so leaving
+     early (the Design bar's Page control, the rail) cannot navigate on top of
+     wherever the reviewer went. */
+  useEffect(() => {
+    if (!done || !endsHere || !opensHome || !fullJourney) return
+    const timer = window.setTimeout(() => {
+      navigate(`/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}`, { replace: true })
+    }, LOADING_HANDOFF_MS)
+    return () => window.clearTimeout(timer)
+  }, [done, endsHere, opensHome, fullJourney, navigate])
 
   if (done) {
     /* THE END OF THE FLOW: the loading page. SVG and CSS, not a gif, so every
@@ -205,6 +276,12 @@ export function InvitedConfirmationPage() {
 }
 
 const DEMO_EMAIL = 'jordan.navarro@example.com'
+
+/* HOW LONG THE LOADING PAGE HOLDS before it opens Home (2026-10-16,
+   Jillienne's three seconds). Long enough that the hand-off reads as a step
+   the product is taking rather than a flicker, short enough that a
+   stakeholder walking the flow does not think it has hung. */
+const LOADING_HANDOFF_MS = 3000
 
 /* TEST DATA ONLY — a demo password that meets the rules below (upper, lower,
    number, special; 12 characters). Not anyone's real password. */

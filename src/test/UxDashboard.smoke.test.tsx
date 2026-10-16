@@ -246,19 +246,21 @@ describe('section routing (sectionOf)', () => {
     // a row is a deliberate edit here and not something a category typo does.
     // The product FIRST (2026-10-14, Jillienne: "always have this be the
     // first option"), then the doors around it.
+    //
+    // 2026-10-16: the end-to-end row RELEASED and so joined this list, at the
+    // top — it is the product row, and the order rule above is what puts it
+    // there rather than anything about its status.
     expect(rows).toEqual([
+      'End-to-End User Experience (Invite, Atlas, Compass)',
       'Invite & Purchase — Work in Progress',
       'Atlas Learning — Work in Progress',
       'Compass Learning — Work in Progress',
     ])
-    // …plus two PLACEHOLDERS, which have no kebab because they go nowhere:
-    // drawn disabled, titled, tagged "Coming soon", and not a link. The Admin
-    // row has nothing built; the end-to-end row is HELD BACK with its route
-    // kept (2026-10-14, "don't remove the work, just hide users from clicking").
-    for (const [id, title] of [
-      ['xcel-admin-coming-soon', 'Admin Tool'],
-      ['xcel-dashboard', 'End-to-End User Experience (Invite, Atlas, Compass)'],
-    ]) {
+    // …plus the ONE remaining PLACEHOLDER, which has no kebab because it goes
+    // nowhere: drawn disabled, titled, tagged "Coming soon", and not a link.
+    // The Admin row has nothing built behind it. (The end-to-end row was the
+    // other kind — built, held back, route kept — until it was released.)
+    for (const [id, title] of [['xcel-admin-coming-soon', 'Admin Tool']]) {
       const placeholder = document.querySelector(`[data-placeholder="${id}"]`)
       expect(placeholder, `${id} should be drawn as a placeholder`).not.toBeNull()
       expect(placeholder!.getAttribute('aria-disabled')).toBe('true')
@@ -521,8 +523,14 @@ describe('the Prototypes row opens the committed configuration', () => {
     //
     // Asserted on the row rather than by rendering, because the failure is a
     // missing query param on a link that still works perfectly.
+    //
+    // 2026-10-16: the end-to-end row moved to the OTHER product door when it
+    // was released — it opens at the invite flow's first page, not the
+    // dashboard, because the row's claim is the whole journey. What this
+    // case is actually guarding is `?demo=1`, so it asserts the param on
+    // whichever door the row carries rather than re-pinning the pathname.
     const row = PROTOTYPE_FEATURES.find((f) => f.id === 'xcel-dashboard')!
-    expect(row.to).toBe('/dashboard-rebrand?demo=1')
+    expect(row.to).toBe('/end-to-end-demo?demo=1&journey=full')
   })
 
   it('holds the route rows and nothing else', () => {
@@ -684,15 +692,18 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     expect(tags[0]).toBe('Owner: Anjani')
     expect(tags[1]).toMatch(/^Updated \w{3} \d{1,2}, \d{1,2}:\d{2}/)
     expect(tags[2]).toBe('Compass')
-    // The product row stacks the same three, its scope reading "End-to-End",
-    // and — held back — a Coming soon tag under them.
+    // The product row stacks the same three, its scope reading "End-to-End".
+    // 2026-10-16: and NOTHING under them — it carried a fourth, "Coming soon",
+    // while it was held back, and releasing it is what takes that tag off. The
+    // absence is asserted, not just dropped: a row that silently went back to
+    // Coming soon would otherwise pass this case.
     const e2e = document.querySelector('[data-row="xcel-dashboard"]')!
     const e2eTags = tagsOf(e2e)
-    // …and "Coming soon" to the right of the stack, so it reads last in DOM order.
     expect(e2eTags[0]).toBe('Owner: Jillienne')
     expect(e2eTags[1]).toMatch(/^Updated /)
     expect(e2eTags[2]).toBe('End-to-End')
-    expect(e2eTags[3]).toBe('Coming soon')
+    expect(e2eTags).toHaveLength(3)
+    expect(e2e.textContent).not.toContain('Coming soon')
     // The placeholder names its owner and says Coming soon, with no Updated.
     const ph = document.querySelector('[data-placeholder="xcel-admin-coming-soon"]')!
     expect(ph.textContent).toContain('Owner: Cody')
@@ -702,15 +713,21 @@ describe('Prototypes — one row per scope, every row the same build', () => {
 
   it('the placeholders are written out, and a row never becomes one by accident', () => {
     // 2026-10-14. Written out so a new placeholder is a deliberate edit here.
-    // Two kinds: the Admin row has nothing built (no `to`); the end-to-end row
-    // is HELD BACK and keeps its route, so releasing it is one word.
-    expect(prototypeRows.filter(isPlaceholder).map((f) => f.id)).toEqual(['xcel-dashboard', 'xcel-admin-coming-soon'])
+    //
+    // 2026-10-16: the end-to-end row was RELEASED (Jillienne, "I want to turn
+    // on the end-to-end flow and work through it"), so only the Admin row is
+    // left — the one kind of placeholder with nothing built behind it. The
+    // held-back kind now has no instance, which is why the rule it stood for
+    // is restated below rather than deleted with it.
+    expect(prototypeRows.filter(isPlaceholder).map((f) => f.id)).toEqual(['xcel-admin-coming-soon'])
     for (const f of prototypeRows.filter(isPlaceholder)) {
       expect(f.kind, `${f.id}: a guided placeholder would try to open a gateway`).toBe('explore')
     }
-    expect(PROTOTYPE_FEATURES.find((f) => f.id === 'xcel-dashboard')?.to, 'held back, not removed').toBe(
-      '/dashboard-rebrand?demo=1',
-    )
+    // The released row opens, and opens at a product door — the thing being
+    // held back was ever only its `status`.
+    const e2e = PROTOTYPE_FEATURES.find((f) => f.id === 'xcel-dashboard')!
+    expect(e2e.status, 'released 2026-10-16').toBe('ready')
+    expect(PRODUCT_DOORS.some((d) => e2e.to!.startsWith(d))).toBe(true)
     // A row with no `to` and no `externalUrl` that is NOT coming-soon would be
     // a dead link; the shape test above refuses it, this names the rule.
     for (const f of prototypeRows.filter((f) => !f.to && !f.externalUrl)) {
