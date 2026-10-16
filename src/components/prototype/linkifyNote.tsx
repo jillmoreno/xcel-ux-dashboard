@@ -107,12 +107,45 @@ export function shortenForDisplay(url: string): string {
   return `${shown.slice(0, head)}\u2026${shown.slice(-tail)}`
 }
 
+/**
+ * A DEPLOY LINK GETS A NAME, NOT AN ADDRESS — 2026-10-16, Jillienne: "change
+ * the link to be 'View Deploy Link' to avoid the long name".
+ *
+ * Even shortened, a branch build's address is three lines of machine noise in
+ * a 187px card, and it is noise that says nothing a reader wants: the card's
+ * TITLE already says which piece of work this is, so the address only has to
+ * be followable, not readable.
+ *
+ * ⚠ SCOPED TO DEPLOY HOSTS, and deliberately not applied to every URL. A note
+ * can hold a Figma file, a PRD, a Slack permalink — labelling those "View
+ * Deploy Link" would be a plain lie, and labelling them all "View link" would
+ * hide which of three links in a note is which. Everything that is not a
+ * deploy keeps its shortened address.
+ *
+ * The full address is still in `title` and in the browser's status bar on
+ * hover, which is what keeps a named link honest.
+ */
+function deployLabel(href: string): string | null {
+  try {
+    const { hostname } = new URL(href)
+    /* Every build of this project — the Hub, a branch build, the test site —
+       is a `*.netlify.app` host. Matching the suffix rather than a specific
+       site means a renamed or added Netlify project is still recognised;
+       matching `.netlify.app` and not `netlify.app` means `netlify.app`
+       itself, or a lookalike like `notnetlify.app`, is not. */
+    return hostname.endsWith('.netlify.app') ? 'View Deploy Link' : null
+  } catch {
+    return null
+  }
+}
+
 export const noteLinkStyle: CSSProperties = {
   color: 'var(--ux-text-2)',
   textDecoration: 'underline',
   textUnderlineOffset: 3,
-  /* A branch-build address is longer than a card is wide, and a card that a
-     URL has stretched breaks the column. Break anywhere rather than scroll. */
+  /* A named deploy link fits on one line, but a non-deploy URL keeps its
+     (shortened) address and can still be longer than a card is wide — and a
+     card a URL has stretched breaks the column. Break anywhere, never scroll. */
   overflowWrap: 'anywhere',
 }
 
@@ -149,7 +182,7 @@ export function linkifyNote(text: string): ReactNode[] {
            actually goes before clicking it. */
         title={href}
       >
-        {shortenForDisplay(href)}
+        {deployLabel(href) ?? shortenForDisplay(href)}
       </a>,
     )
     if (tail) out.push(tail)

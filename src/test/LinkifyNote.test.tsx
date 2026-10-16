@@ -115,9 +115,36 @@ describe('shortening what a card SHOWS, never where it goes', () => {
     render(<p>{linkifyNote(`see ${BRANCH} now`)}</p>)
     const a = screen.getByRole('link')
     expect(a).toHaveAttribute('href', BRANCH)
-    // Hover and assistive tech can always reach the real target.
+    // Hover and assistive tech can always reach the real target — this is
+    // what keeps a NAMED link honest.
     expect(a).toHaveAttribute('title', BRANCH)
     expect(a.textContent!.length).toBeLessThan(BRANCH.length)
+  })
+
+  it('names a deploy link instead of printing its address', () => {
+    render(<p>{linkifyNote(`see ${BRANCH} now`)}</p>)
+    const a = screen.getByRole('link')
+    expect(a).toHaveTextContent('View Deploy Link')
+    expect(a).toHaveAttribute('href', BRANCH)
+  })
+
+  it('does NOT name a link that is not a deploy — that would be a lie', () => {
+    // A note can hold a Figma file, a PRD, a Slack permalink. Those keep
+    // their (shortened) address, so three links in one note stay telling
+    // apart.
+    render(<p>{linkifyNote('spec https://www.figma.com/file/abc/Atlas-UX-Design here')}</p>)
+    const a = screen.getByRole('link')
+    expect(a.textContent).not.toContain('Deploy')
+    expect(a.textContent).toContain('figma.com')
+  })
+
+  it('matches the deploy host by suffix, so a lookalike is not named', () => {
+    render(<p>{linkifyNote('https://notnetlify.app/x and https://evil-netlify.app.attacker.test/y')}</p>)
+    for (const a of screen.getAllByRole('link')) {
+      expect(a.textContent, `${a.getAttribute('href')} must not be called a deploy`).not.toContain(
+        'Deploy',
+      )
+    }
   })
 
   it('never elides the START of the host — the part that says where you are going', () => {
