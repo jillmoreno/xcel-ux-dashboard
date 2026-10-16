@@ -158,6 +158,7 @@ const REBRAND_FLAGS = [
   'compass-check-confidence',
   'compass-infographic-chart',
   'atlas-pace-card',
+  'compass-resume-opens-session',
   'hybrid-pace-standing',
   'hybrid-title-lesson',
   'hybrid-quick-links-style',

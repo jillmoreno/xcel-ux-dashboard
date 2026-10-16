@@ -24,13 +24,24 @@ import './compassAnjani.css'
  * 3.5 seconds, and never opens the Exam prep dialog. The locked PART 2's head
  * does open that dialog, the same one the rail's locked rows open.
  *
- * ⚠ THIS IS NOT THE LESSON PLAYER AND MUST NOT BECOME IT. Resume lesson is
- * drawn as the design draws it and goes nowhere — the player is still
- * `?section=course&coursePage=course`, and wiring one to the other would
- * assert a mapping nobody has made between her nineteen chapters and the
- * player's table of contents.
+ * ⚠ THIS IS STILL NOT THE LESSON PLAYER. It lists her nineteen chapters; the
+ * player is one lesson with seven beats, and no mapping between them exists.
+ *
+ * ⚠ RESUME LESSON IS WIRED NOW (2026-10-16, Jillienne: "Learn > Resume lesson
+ * should take user to the video screen"), and the caution above is why it is
+ * wired the way it is. It opens the SESSION at its first beat — the video —
+ * and claims nothing about WHICH lesson that is. The alternative, mapping the
+ * row to a chapter in the player's contents, is the assertion the original
+ * note refused to make, and refusing it is still right: there are nineteen
+ * chapters and one lesson. What changed is that a button drawn as an action
+ * and doing nothing reads as broken to a reviewer walking the product, which
+ * is a worse problem than a demo that always opens the same lesson.
+ *
+ * ⚠ SO THE ROW'S PROGRESS BAR AND THE LESSON DO NOT AGREE, and cannot until
+ * that mapping exists. The bar is the chapter's; the lesson is the fixture's.
+ * Worth knowing before anyone reads the pairing as data.
  */
-export function CompassCourseLanding() {
+export function CompassCourseLanding({ onResume }: { onResume?: () => void } = {}) {
   const [open, setOpen] = useState<Set<number>>(() => new Set([1]))
   const [why, setWhy] = useState<number | null>(null)
   const [gate, setGate] = useState(false)
@@ -73,7 +84,9 @@ export function CompassCourseLanding() {
               <span style={{ width: `${r.progressPct}%` }} />
             </div>
           </div>
-          <button type="button" className="cre-learn__resume-btn">
+          {/* Drawn the same either way; only the handler differs, so the
+              design is unchanged when nothing is passed. */}
+          <button type="button" className="cre-learn__resume-btn" onClick={onResume}>
             {r.action}
             <ArrowRight size={14} aria-hidden />
           </button>

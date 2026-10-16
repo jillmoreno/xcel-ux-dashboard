@@ -2588,6 +2588,38 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-resume-opens-session',
+    /* RESUME LESSON OPENS THE SESSION (2026-10-16, Jillienne: "Learn > Resume
+       lesson should take user to the video screen"). It opens the session at
+       its FIRST BEAT, the video.
+
+       ⚠ IT WAS INERT ON PURPOSE, and the reason still stands — which is why
+       it is wired this way and not the other. `CompassCourseLanding`'s own
+       note refused to wire it because doing so "would assert a mapping nobody
+       has made between her nineteen chapters and the player's table of
+       contents". That mapping still does not exist: nineteen chapters, one
+       lesson. Opening the session at the video claims nothing about WHICH
+       lesson it is; mapping the row to a chapter would have been the
+       assertion that note refused.
+
+       What changed is the balance. A button drawn as an action and doing
+       nothing reads as broken to a reviewer walking the product, and that is
+       a worse problem than a demo that always opens the same lesson.
+
+       ⚠ SO THE ROW'S PROGRESS BAR AND THE LESSON DO NOT AGREE, and cannot
+       until the mapping exists — the bar is the chapter's, the lesson is the
+       fixture's. Off restores the inert button.
+
+       ⚠ ANJANI'S SURFACE. On by default so it shows as a Compass-scope
+       candidate at promotion. */
+    group: 'Navigation',
+    label: 'Learn: Resume lesson opens the session',
+    description:
+      'On, Resume lesson on the Compass Learn page opens the lesson session at its first beat \u2014 the video. Off, the button is drawn and inert, as it was. \u26a0 It always opens the SAME lesson: the landing lists nineteen chapters and the player holds one, and no mapping between them exists, so the row\u2019s progress bar and the lesson it opens do not agree.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-header-v2',
     /* THE ATLAS HEADER, ON THE DESIGN BAR (2026-10-13, Eric's request:
        "replace the nav … with the new nav"). On (default), Eric's Atlas

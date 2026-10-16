@@ -85,6 +85,11 @@ export function CompassLearningPage({
      it — and its `anjani` arm is what this branch's default says. The `atlas`
      arm keeps the shared sidebar for anyone who needs the old page. */
   const anjani = useFeatureFlag('compass-surface').variant === 'anjani'
+  /* Resume lesson → the session's first beat. Behind a flag so the button can
+     go back to being inert, which is what it was until 2026-10-16 and what
+     the landing page's own note explains. */
+  const resumeOpensSession = useFeatureFlag('compass-resume-opens-session').enabled
+  const resumeToVideo = resumeOpensSession ? onStartSession : undefined
   const hybrid = anjani
   /* Option 3 only — the header and the rail both carry a Home there, so the
      sidebar's trail would be the third. See the prop. */
@@ -143,7 +148,12 @@ export function CompassLearningPage({
             <CompassLearningOverview onStartSession={onStartSession} onViewPlan={() => setPage('study-planner')} />
           </>
         ) : hybrid && page === 'course' ? (
-          <CompassCourseLanding />
+          /* Resume lesson opens the session at its first beat, the video
+             (2026-10-16). `onStartSession` is the same handler the Tonight
+             card uses, so there is one way into the player rather than two
+             that could drift. Undefined when the page has no session to open,
+             and the button then draws exactly as before. */
+          <CompassCourseLanding onResume={resumeToVideo} />
         ) : (
           /* Every other page is the player's own, so it stays the player's —
              including the deliberate blank grounds. */
