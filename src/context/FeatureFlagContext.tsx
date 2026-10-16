@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from 'react'
 import { isTestingGateway } from '@/data/gatewayMode'
+import { ATLAS_PROGRESS_LADDER } from '@/components/compass/atlasProgressLadder'
 import {
   COURSE_FLAG_KEY,
   EXPIRY_FLAG_KEY,
@@ -2771,16 +2772,15 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Progress',
     description:
-      'Which Course progress state Eric’s Atlas Home shows, and the readiness band with it: Not Started (0%), Beginner (14%), Developing (36%), Proficient (75%) or Ready (100%). Replaces the demo bar’s generic Progress on these versions. ⚠ Readiness tracks progress here for demonstration only — finishing a course does not make a learner ready.',
+      'Which Course progress state Eric’s Atlas Home shows — the ring, the readiness band, how many Pre-Licensing Lessons are done, and how far down Step 1 the green checks reach. The first four rungs are the readiness ladder (Not Started 0%, Beginner 14%, Developing 36%, Proficient 75%); the five after them walk Step 1’s own rows, finishing at Ready 100%. Replaces the demo bar’s generic Progress on these versions. ⚠ Readiness tracks progress here for demonstration only — finishing a course does not make a learner ready. ⚠ The five Step 1 rungs’ percentages are INVENTED demo figures.',
     defaultEnabled: true,
     defaultVariant: 'not-started',
-    variants: [
-      { value: 'not-started', label: 'Not Started 0%' },
-      { value: 'on-track', label: 'Beginner 14%' },
-      { value: 'developing', label: 'Developing 36%' },
-      { value: 'milestone', label: 'Proficient 75%' },
-      { value: 'completed', label: 'Ready 100%' },
-    ],
+    /* ⚠ BUILT FROM THE LADDER, NOT TYPED (2026-10-16). The five states were
+       listed here AND in `V3_PROGRESS` AND in `V3_READINESS_FOR` — three
+       copies of one list, so a rung could reach the dropdown and not the
+       Home, which is exactly how a control comes to look broken. Adding a
+       rung is now an edit to `atlasProgressLadder.ts` alone. */
+    variants: ATLAS_PROGRESS_LADDER.map((r) => ({ value: r.key, label: r.label })),
     page: 'dashboard-rebrand',
   },
   {

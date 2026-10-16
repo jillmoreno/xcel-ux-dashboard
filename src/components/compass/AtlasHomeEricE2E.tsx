@@ -29,6 +29,7 @@ import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
 import { CircleCheckSolid } from '@/icons'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
+import { ATLAS_PROGRESS_ORDER, atlasRungFor, isLessonRowTitle, journeyTitleFor } from './atlasProgressLadder'
 import { AtlasPaceRingCard } from './AtlasPaceRingCard'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag, useFeatureFlags, useCourseDemo } from '@/context/FeatureFlagContext'
@@ -347,10 +348,11 @@ export function AtlasHomeEricE2E({
   const affidavitFlag = useFeatureFlag('atlas-affidavit')
   const affidavitPick = affidavitFlag.variant ?? 'off'
   const stops = journeyStopsFor(path).filter((s) => s.id !== 'attestation-and-affidavit')
-  const currentIdx = Math.max(
-    0,
-    stops.findIndex((s) => s.status === 'in-progress'),
-  )
+  /* ⚠ THE PATH'S OWN "in-progress" STOP NO LONGER DECIDES THIS (2026-10-16).
+     The demo's Progress does — `currentRowIdx` below is the first row the
+     ladder has not checked off. The fixture's status said one thing while
+     the control said another, and with the control now ticking rows the two
+     would have drawn a current dot and a green check on the same row. */
   // White's journey reads as Figma 265:8144 (2026-10-14, Eric's request: the
   // text only, the rows keep their styling) — seven stops, the first current.
   /* REGULATED SEQUENCING (2026-10-15) — Step 1's stops lock behind the one
@@ -377,23 +379,55 @@ export function AtlasHomeEricE2E({
       : stops,
     regulated,
   )
-  const shownCurrentIdx = onWhite ? 0 : currentIdx
-  /* ⚠ AT 100% THE COUNT HAS TO AGREE WITH THE CHECK BESIDE IT (2026-10-16).
+  /* One rung answers all three: the ring's figure, the Readiness band, and
+     how far down Step 1 the checks reach. `expired` is off the picker and
+     resolves to its own stage. */
+  const rung = atlasRungFor(progressPick)
+  const progress: { stage: ProgressStage; percent?: number } =
+    progressPick === 'expired' ? V3_EXPIRED : { stage: rung.stage, percent: rung.percent }
+  /* ⚠ THE LESSON COUNT FOLLOWS THE DEMO'S PROGRESS (2026-10-16, Jillienne:
+     "as user progresses through the course progress options, the 23 of 36
+     completed should update accordingly").
+
      The lesson row's title carries the path's own figures — "Pre-Licensing
-     Lessons (23 of 36 completed)" — and those do not move when the demo's
-     Progress does, so a completed journey rendered a green check against a
-     row saying 23 of 36. One contradicts the other on the same line.
+     Lessons (23 of 36 completed)" — and they did not move when Progress did.
+     That was wrong at both ends of the ladder: at 100% a green check sat
+     against a row saying 23 of 36, and at 0% a learner who had not started
+     already had 23 lessons behind them. It was patched at the top end only,
+     for the completed view; this does the whole scale.
 
      A DISPLAY TRANSFORM, not a change to the path: the figures are the
-     fixture's and other surfaces read them. This rewrites `x of y` to `y of
-     y` for the completed view only, and only where the title already has
-     that shape — a title without it is left exactly as it is. */
-  const journeyStops: readonly JourneyStop[] = completedView
-    ? shownStops.map((stop) => {
-        const m = stop.title.match(/^(.*\()(\d+) of (\d+)( completed\).*)$/)
-        return m ? { ...stop, title: `${m[1]}${m[3]} of ${m[3]}${m[4]}` } : stop
-      })
-    : shownStops
+     fixture's and other surfaces read them. Only the COUNT moves — the
+     total stays the path's — and only where the title already has that
+     shape, so a title without it is left exactly as it is. */
+  const journeyStops: readonly JourneyStop[] = shownStops.map((stop) => {
+    const title = journeyTitleFor(stop.title, rung.percent)
+    return title === stop.title ? stop : { ...stop, title }
+  })
+  /* ⚠ WHICH ROWS CARRY THE GREEN CHECK (2026-10-16, Jillienne: "add to the
+     progress dropdown for Prep Review Completed, Exam Simulators completed
+     etc to show the circles turning into checkmarks throughout the flow").
+     It was `done={completedView}` — all six at once at 100%, nothing before
+     it — so the five new rungs would have changed the ring and left Step 1
+     looking identical.
+
+     The ladder counts from the LESSON row rather than from the top, because
+     the Pre-course Affidavit above it is a row the Affidavit design control
+     can remove, and an index that shifted with a design control would check
+     off the wrong thing. Finding that row by its `x of y` shape rather than
+     by its wording keeps this working on the arm that rebuilds its titles.
+
+     The affidavit row itself is done as soon as there is any progress at
+     all: it is the gate the learner came through, so a learner at 14% with
+     an unticked arrival affidavit would be a contradiction. */
+  const lessonRowIdx = Math.max(
+    0,
+    journeyStops.findIndex((s) => isLessonRowTitle(s.title)),
+  )
+  const doneRows = rung.percent > 0 ? lessonRowIdx + rung.stepsDone : 0
+  /* ⚠ NOTHING IS "CURRENT" WHEN EVERYTHING IS DONE. A filled current-dot
+     among green checks would say the learner is still on that row. */
+  const currentRowIdx = doneRows < journeyStops.length ? doneRows : -1
   /* THE JURISDICTION COMES FROM THE PATH, heading and steps alike.
      Florida is no longer written here: `MembershipOverview` resolves this
      demo's COURSE to Florida (2026-10-15), so `path.state` already is 'FL'
@@ -417,7 +451,6 @@ export function AtlasHomeEricE2E({
   const stackedTiles = (useFeatureFlag('atlas-v3-link-tiles').variant ?? 'stacked') !== 'inline'
   // The Design bar's Quick Links side (2026-10-13) — Left (default) or Right.
   const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
-  const progress = V3_PROGRESS[progressPick] ?? V3_PROGRESS['not-started']
   // COMPLETED (Design bar's Progress = Completed 100%, 2026-10-09, Eric): no
   // Course progress card, and Step 1 becomes the Congratulations block.
   // Clicking the Course progress card steps the Design bar's Progress itself
@@ -439,7 +472,10 @@ export function AtlasHomeEricE2E({
     return () => window.removeEventListener(ATLAS_HOME_REFRESH, onRefresh)
   }, [setVariant])
   const advanceProgress = () =>
-    setVariant('atlas-v3-progress', V3_PROGRESS_ORDER[(V3_PROGRESS_ORDER.indexOf(progressPick) + 1) % V3_PROGRESS_ORDER.length])
+    setVariant(
+      'atlas-v3-progress',
+      ATLAS_PROGRESS_ORDER[(ATLAS_PROGRESS_ORDER.indexOf(progressPick) + 1) % ATLAS_PROGRESS_ORDER.length],
+    )
   const currentTitle = longTitle ? V2_LONG_TITLE : courseTitle
   /* THE COURSE TABS ARE WHITE'S THREE COURSES (2026-10-13, Eric's request:
      "Update the course tabs to the 3 used elsewhere") — the list the Top
@@ -637,7 +673,7 @@ export function AtlasHomeEricE2E({
                  different plans. `HybridHomeV1` pins its 3 deliberately and
                  records the derivation it dropped — this one keeps it. */
               <AtlasPaceRingCard
-                /* `V3_PROGRESS` carries the figure for every state now,
+                /* The ladder carries the figure for every state now,
                    including 0 — see the note there. The `percent` prop is the
                    persona's and only stands in for a state with no figure. */
                 percent={progress.percent ?? percent}
@@ -774,7 +810,7 @@ export function AtlasHomeEricE2E({
             <AtlasReadinessCard
               bare={onWhite}
               key={`readiness-${progressPick}-${refreshKey}`}
-              initialLevel={V3_READINESS_FOR[progressPick] ?? 0}
+              initialLevel={rung.readiness}
               notStarted={ringAtZero}
               /* One eyebrow for the column — see `ATLAS_PACE_EYEBROW`. Only
                  the ring arm asks for it; the states card brings its own. */
@@ -883,11 +919,8 @@ export function AtlasHomeEricE2E({
                   <JourneyRow
                     key={stop.id}
                     stop={stop}
-                    /* ⚠ NOTHING IS "CURRENT" WHEN EVERYTHING IS DONE. A
-                       filled current-dot among green checks would say the
-                       learner is still on that row. */
-                    current={!completedView && i === shownCurrentIdx}
-                    done={completedView}
+                    current={i === currentRowIdx}
+                    done={i < doneRows}
                     last={i === journeyStops.length - 1}
                     onOpen={onOpenStop && !LINKS_OFF ? () => onOpenStop(stop.id) : undefined}
                     // On Track 14% only (2026-10-09, Eric): the current stop
@@ -896,7 +929,7 @@ export function AtlasHomeEricE2E({
                     // Not Started and Milestone get the Next line alone (same
                     // day); the chapters are Eric's, per stage.
                     progressDetail={
-                      onWhite || i !== currentIdx
+                      onWhite || i !== currentRowIdx
                         ? undefined
                         : progressPick === 'on-track'
                           ? { done: 4, total: 13, nextLabel: 'Chapter 4', nextName: 'Legal Concepts of Insurance' }
@@ -1645,30 +1678,21 @@ const REQUIREMENTS: CSSProperties = {
    Jillienne flagged it the same day: somebody can finish a course and not be
    ready. When real scoring lands, THIS is the map that has to stop being a
    straight line from progress. */
-/* The Readiness band each Progress state opens on — 0 Beginner … 3 Ready. */
-const V3_READINESS_FOR: Record<string, number> = {
-  'not-started': 0,
-  'on-track': 0,
-  developing: 1,
-  milestone: 2,
-  completed: 3,
-}
-const V3_PROGRESS_ORDER = ['not-started', 'on-track', 'developing', 'milestone', 'completed']
-const V3_PROGRESS: Record<string, { stage: ProgressStage; percent?: number }> = {
-  /* ⚠ 0, NOT 14, SINCE 2026-10-16. It was 14 because the STATES card opens on
-     Study pace and clicking reaches the 14% ring — the figure was the second
-     screen's. The ring has no second screen and the control now says "Not
-     Started 0%", so the figure has to be 0. */
-  'not-started': { stage: 'zero', percent: 0 },
-  'on-track': { stage: 'current', percent: 14 },
-  developing: { stage: 'current', percent: 36 },
-  milestone: { stage: 'milestone', percent: 75 },
-  completed: { stage: 'complete', percent: 100 },
-  /* Off the picker since 2026-10-16 — the five states are a readiness ladder
-     and "expired" is not a point on it. Kept here so an `?ff=` pin or a
-     stored value still resolves to something rather than falling through. */
-  expired: { stage: 'expired' },
-}
+/* ⚠ THE THREE TABLES ARE ONE LIST NOW — `atlasProgressLadder.ts`, 2026-10-16.
+   The percentages, the readiness bands and the dropdown's labels each had
+   their own copy of the same five states, so a rung could exist in one and
+   not the others. `V3_READINESS_FOR` and `V3_PROGRESS_ORDER` were the other
+   two; the ladder answers all three questions and the flag's variants are
+   built from it.
+
+   ⚠ READINESS IS NOT COMPLETION. "Ready" at the top is the demo's shorthand
+   and Jillienne flagged it the same day: somebody can finish a course and not
+   be ready. When real scoring lands, the ladder's `readiness` is the column
+   that has to stop being a straight line from `percent`. */
+/* Off the picker since 2026-10-16 — the ladder is a scale and "expired" is
+   not a point on it. Kept so an `?ff=` pin or a stored value still resolves
+   to something rather than falling through. */
+const V3_EXPIRED: { stage: ProgressStage; percent?: number } = { stage: 'expired' }
 
 /* ── V3's left column (Figma 254:7973) ──────────────────────────────────── */
 
