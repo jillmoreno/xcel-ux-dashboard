@@ -103,17 +103,20 @@ const V2_LONG_TITLE = 'New York Property and Casualty Conversion Course Pre-lice
 
 /** The cover and the column under it share this width (2026-10-08). 260 —
  *  White's left column — since 2026-10-13 (Eric's request); it was 235. */
-/* ⚠ 276, NOT 260 — 2026-10-19, Jillienne: "give this container more
-   horizontal spacing, push the steps over as needed". The panel's side
-   padding went 32 → 40, and the column grew by the same 16 so the CONTENT
-   inside it keeps its 196 — widening the padding alone would have squeezed
-   the ring, the pace lines and the rules instead of giving them air. The 16
-   is what pushes the Steps column over; the two columns' own 48 gap is
-   untouched.
+/* ⚠ 320, AND THE PADDING CAME BACK DOWN — 2026-10-19, Jillienne: "make
+   larger horizontally, reduce right and left padding on inside of
+   container". Both levers pull the same way, so the content gains twice: the
+   column goes 276 → 320 and the panel's sides 40 → 24, which takes the
+   content from 196 to 272.
+
+   It went the other way an hour earlier ("give this container more
+   horizontal spacing") — that ask was answered with padding, and this one
+   says the air should be in the COLUMN rather than inside its edges.
+
    ⚠ `COVER_FRAME` READS THIS TOO, on purpose: the course cover's right edge
    lines up with this column below it (2026-10-14). It grows with it, which
    is what keeps that alignment true. */
-const V3_LEFT_W = 276
+const V3_LEFT_W = 320
 
 /** V3's course tabs — off on 2026-10-08, back on the same day (Eric's
  *  request: "add the course tabs back to the top"). */
@@ -1920,9 +1923,10 @@ const WHITE_PROGRESS_PANEL: CSSProperties = {
   gap: 16,
   // 8 top and bottom (2026-10-14, Eric's request: 24, then 16 less) — the
   // cards inside keep their own 24.
-  // 40 a side since 2026-10-19 (it was 32) — see `V3_LEFT_W`, which grew by
-  // the same 16 so the content inside did not lose any.
-  padding: '8px 40px',
+  // 24 a side (2026-10-19). It was 32, briefly 40, and came back below both
+  // when the column itself grew — see `V3_LEFT_W`. Tight sides on a wide
+  // column is where the content ends up widest.
+  padding: '8px 24px',
   boxSizing: 'border-box',
   borderRadius: 20,
   // No stroke, a Secondary 100 fill (2026-10-15, Eric's request; it had
