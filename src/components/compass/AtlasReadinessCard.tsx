@@ -242,10 +242,17 @@ function HalfDial({ level }: { level: Level }) {
 }
 
 /* Tertiary 200 fill, no stroke, 20 radius, 24 / 24 / 32 (Figma 295:10697). */
+/* The two gaps this card stacks on — named because the caption below has to
+   subtract one of them from the other. */
+/* The gap the column's prose sits on — the Study pace section's own, which
+   is where the pace sentence gets its 11. */
+const CAPTION_GAP = 11
+const CARD_GAP = 16
+const BARE_CARD_GAP = 24
 const CARD: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 16,
+  gap: CARD_GAP,
   // 24 at the bottom (2026-10-09, Eric; the design's 32 before the link joined).
   padding: '24px 24px 24px',
   boxSizing: 'border-box',
@@ -269,7 +276,13 @@ const EYEBROW: CSSProperties = {
 }
 /* `bare` (Figma 286:9455): no fill, 24 above and below, nothing at the sides;
    the eyebrow left-aligned in Neutral 800 (2026-10-14, Eric). */
-const BARE_CARD: CSSProperties = { ...CARD, background: 'transparent', padding: '24px 0', borderRadius: 16, gap: 24 }
+const BARE_CARD: CSSProperties = {
+  ...CARD,
+  background: 'transparent',
+  padding: '24px 0',
+  borderRadius: 16,
+  gap: BARE_CARD_GAP,
+}
 const BARE_EYEBROW: CSSProperties = { ...EYEBROW, textAlign: 'left', color: 'var(--color-neutral-800)' }
 // The design's Tertiary 300 hairline (it was Primary 200 on the single card).
 const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-tan-300)' }
@@ -300,7 +313,7 @@ const LEVEL_NAME: CSSProperties = {
 /* The sentence under an empty dial — the same body treatment as the pace
    card's paragraph, and centred under the dial where the label would be.
    Positioned, not absolute: it wraps, so it needs the height. */
-/* ⚠ NO `marginTop`, NO SIDE PADDING (2026-10-19). Both were compensating for
+/* ⚠ NO SIDE PADDING (2026-10-19). Both were compensating for
    living inside the 149-wide dial: the margin bought a few pixels off the
    svg, the padding kept a sentence off the edges of a box too narrow for
    it. Out at the card's width the card's own 16 gap does the spacing, and
@@ -308,10 +321,26 @@ const LEVEL_NAME: CSSProperties = {
    pace card's paragraph. Matching that paragraph is the whole point. */
 const CAPTION_BODY: CSSProperties = {
   display: 'block',
-  /* The same measure the pace sentence runs to — see
-     `ATLAS_COLUMN_PROSE_W`. The two are the column's only prose and sit far
-     enough apart that different widths read as two columns. */
-  margin: '0 auto',
+  /* ⚠ 11 ABOVE, THE PACE SENTENCE'S GAP (2026-10-19, Jillienne: "yes make
+     them both 11px"). These two paragraphs are the column's only prose and
+     were already identical in every computed style — but this one sat 24
+     under its dial while the pace sentence sat 11 under its goal row, so the
+     same line breathed differently depending on which card it was in. 11 is
+     the tighter relationship and the right one: the line is a note about the
+     thing directly above it.
+
+     ⚠ WRITTEN AS THE SUBTRACTION, not as -13. The card's own gap is what
+     this is correcting for, so moving that gap has to move this with it —
+     the same idiom `EXPECTED`'s `marginTop` uses in the pace card. */
+  /* ⚠ ONE `margin`, NOT `marginTop` PLUS A SHORTHAND. The first attempt set
+     `marginTop` above a later `margin: '0 auto'`, and the shorthand won —
+     the pull did nothing and the gap stayed at 24. Written as one
+     declaration there is nothing left to override it.
+     The `auto` sides keep the narrower measure centred; the same measure the
+     pace sentence runs to (`ATLAS_COLUMN_PROSE_W`), because the two are the
+     column's only prose and sit far enough apart that different widths read
+     as two columns. */
+  margin: `${CAPTION_GAP - BARE_CARD_GAP}px auto 0`,
   maxWidth: ATLAS_COLUMN_PROSE_W,
   fontFamily: 'var(--font-body)',
   fontSize: 11,
