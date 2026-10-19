@@ -1,9 +1,11 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
-import { AdminStoreContext, type AdminInvite, type AdminStore } from './adminStore'
+import { ADMIN_LEARNERS, type Learner } from '@/data/xcelAdmin/learners'
+import { AdminStoreContext, type AdminInvite, type AdminStore, type AdminTouch } from './adminStore'
 import { XcelAdminComingSoon, XcelAdminLayout } from './XcelAdminLayout'
 import { XcelAdminStudentsPage } from './XcelAdminStudentsPage'
+import { XcelAdminRecruitPage } from './XcelAdminRecruitPage'
 
 /**
  * XCEL ADMIN — the app (2026-10-19, feat/XCEL-admin). The admin surface
@@ -15,6 +17,8 @@ import { XcelAdminStudentsPage } from './XcelAdminStudentsPage'
  */
 export function XcelAdminApp() {
   const enabled = useFeatureFlag('xcel-admin').enabled
+  const [learners, setLearners] = useState<Learner[]>(() => [...ADMIN_LEARNERS])
+  const [touches, setTouches] = useState<AdminTouch[]>([])
   const [invites, setInvites] = useState<AdminInvite[]>([])
   const [toast, setToast] = useState<string | null>(null)
   const timer = useRef<number | undefined>(undefined)
@@ -28,7 +32,17 @@ export function XcelAdminApp() {
     const now = new Date().toISOString()
     setInvites((prev) => [...list.map((inv, i) => ({ ...inv, id: `${now}-${i}-${inv.email}`, sentAt: now })), ...prev])
   }, [])
-  const store = useMemo<AdminStore>(() => ({ invites, addInvites, toast, showToast }), [invites, addInvites, toast, showToast])
+  const updateLearner = useCallback<AdminStore['updateLearner']>((id, patch) => {
+    setLearners((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)))
+  }, [])
+  const addTouch = useCallback<AdminStore['addTouch']>((t) => {
+    const at = new Date().toISOString()
+    setTouches((prev) => [{ ...t, id: `${at}-${prev.length}`, at }, ...prev])
+  }, [])
+  const store = useMemo<AdminStore>(
+    () => ({ learners, updateLearner, touches, addTouch, invites, addInvites, toast, showToast }),
+    [learners, updateLearner, touches, addTouch, invites, addInvites, toast, showToast],
+  )
 
   if (!enabled) {
     return (
@@ -44,7 +58,7 @@ export function XcelAdminApp() {
         <Route element={<XcelAdminLayout />}>
           <Route index element={<Navigate to={`students${window.location.search}`} replace />} />
           <Route path="students" element={<XcelAdminStudentsPage />} />
-          <Route path="students/recruit/:recruitId" element={<XcelAdminComingSoon>The learner’s record is next in the rebuild.</XcelAdminComingSoon>} />
+          <Route path="students/recruit/:recruitId" element={<XcelAdminRecruitPage />} />
           <Route path="invites" element={<XcelAdminComingSoon />} />
           <Route path="reports" element={<XcelAdminComingSoon />} />
           <Route path="notifications" element={<XcelAdminComingSoon />} />

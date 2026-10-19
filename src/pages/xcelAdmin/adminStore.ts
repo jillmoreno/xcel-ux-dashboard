@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react'
+import type { Learner } from '@/data/xcelAdmin/learners'
 
 /**
  * XCEL ADMIN — the session's shared state (2026-10-19). What one page does
@@ -22,7 +23,16 @@ export type AdminInvite = {
   via: 'email' | 'link' | 'qr'
 }
 
+/** Something done to a learner this session — a nudge, a call, an email. */
+export type AdminTouch = { id: string; learnerId: string; kind: 'nudge' | 'call' | 'email' | 'exam-date'; note: string | null; at: string }
+
 export type AdminStore = {
+  /** The roster, with this session's edits (an exam date set, a report
+   *  toggle) applied over the fixture. */
+  learners: Learner[]
+  updateLearner: (id: string, patch: Partial<Learner>) => void
+  touches: AdminTouch[]
+  addTouch: (touch: Omit<AdminTouch, 'id' | 'at'>) => void
   invites: AdminInvite[]
   addInvites: (invites: Omit<AdminInvite, 'id' | 'sentAt'>[]) => void
   toast: string | null

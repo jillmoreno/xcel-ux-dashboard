@@ -4,7 +4,6 @@ import { MagnifyingGlass, Plus, XmarkRegular } from '@/icons'
 import {
   ADMIN_DEMO_LEARNERS,
   ADMIN_DEPARTMENTS,
-  ADMIN_LEARNERS,
   STAGE_LABEL,
   bucketOf,
   byNeed,
@@ -62,7 +61,7 @@ const PAGE = 25
 
 export function XcelAdminStudentsPage() {
   const navigate = useNavigate()
-  const { showToast } = useAdminStore()
+  const { showToast, learners: ADMIN_LEARNERS } = useAdminStore()
   const [bucket, setBucket] = useState<PipelineBucket>('all')
   const [search, setSearch] = useState('')
   const [quick, setQuick] = useState<Quick[]>([])
@@ -94,7 +93,7 @@ export function XcelAdminStudentsPage() {
       scheduled: prepared.filter((l) => l.examDate).length,
       licensed: by('licensed').length,
     }
-  }, [])
+  }, [ADMIN_LEARNERS])
 
   const tiles: Tile[] = [
     { id: 'all', label: 'All', color: 'var(--admin-ink)', bar: 'var(--admin-ink)', note: 'Active pipeline' },
@@ -149,7 +148,7 @@ export function XcelAdminStudentsPage() {
     if (bucket === 'not-started') return list.sort((a, b) => b.enrolledDaysAgo - a.enrolledDaysAgo)
     if (bucket === 'prepared') return list.sort((a, b) => Number(!!a.examDate) - Number(!!b.examDate) || byNeed(a, b))
     return list.sort(byNeed)
-  }, [bucket, department, search, quick])
+  }, [ADMIN_LEARNERS, bucket, department, search, quick])
 
   const sortLabel =
     bucket === 'not-started' ? 'days since enrollment' : bucket === 'prepared' ? 'missing exam date' : 'who needs you first'

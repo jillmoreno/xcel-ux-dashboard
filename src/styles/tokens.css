@@ -7474,6 +7474,14 @@ a.cre-library-card-title::after {
   --admin-font-heading: 'Aktiv Grotesk', 'Hanken Grotesk', 'Helvetica Neue', Arial, sans-serif;
   --admin-shadow-menu: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --admin-scrim: rgb(15 23 42 / 0.45);
+  /* The learner record's extras. */
+  --admin-brand-soft-edge: #f2cdd0; /* outlined brand buttons */
+  --admin-brand-hover-bg: #fdf6f6;
+  --admin-success-tint: #ecfdf5;
+  --admin-success-edge: #b7e4d0;
+  --admin-amber: #b45309;
+  --admin-amber-tint: #fff7e6;
+  --admin-amber-edge: #f5d9a8;
   /* The price card's struck-through was-price (Invitation - Account Creation
      2:448, the design's Gray/400). */
   --color-e2e-was-price: #98a2b3;
@@ -7550,3 +7558,4 @@ a.cre-library-card-title::after {
 .cre-admin-menu-item:hover { background: var(--admin-fill-soft) !important; }
 .cre-admin-outline:hover { border-color: var(--admin-hover-edge) !important; background: var(--admin-fill-soft) !important; }
 .cre-admin-brand:hover { background: var(--admin-brand-ink) !important; }
+.cre-admin-soft:hover { background: var(--admin-brand-hover-bg) !important; }
