@@ -7436,6 +7436,44 @@ a.cre-library-card-title::after {
   --color-e2e-form-shadow: rgb(0 0 0 / 0.05);
   /* The Affidavit modal's scrim — Home darkened behind it. */
   --color-e2e-scrim: rgb(0 0 0 / 0.5);
+  /* ── XCEL ADMIN (2026-10-19, feat/XCEL-admin) ─────────────────────────
+     The admin app rebuilt from colibri-b2b.vercel.app, its values read off
+     the reference's own classes (Tailwind's slate ramp, its brand red and the
+     status colours). One block, so the admin pages never reach for a raw
+     hex. Theme-stable: the reference has no dark mode. */
+  --admin-page: #fafafa;
+  --admin-surface: #ffffff;
+  --admin-ink: #0f172a; /* slate-900 — headings, names */
+  --admin-text: #475569; /* slate-600 — body */
+  --admin-muted: #64748b; /* slate-500 — labels, emails */
+  --admin-faint: #94a3b8; /* slate-400 — placeholders */
+  --admin-rule: #e2e8f0; /* slate-200 — every edge */
+  --admin-rule-strong: #cbd5e1; /* slate-300 — dashed chips, outlined buttons */
+  --admin-hover-edge: #94a3b8;
+  --admin-fill: #f1f5f9; /* slate-100 — search, track */
+  --admin-fill-soft: #f8fafc; /* slate-50 — table head, row hover */
+  --admin-slate-700: #334155;
+  --admin-slate-800: #1e293b;
+  --admin-brand: #a22328;
+  --admin-brand-ink: #7f1a1f;
+  --admin-brand-tint: #fef2f2;
+  --admin-brand-edge: #fecaca;
+  /* The shell — sidebar and header (neutral, not slate, in the reference). */
+  --admin-chrome-rule: #e8e8e8;
+  --admin-chrome-text: #525252;
+  --admin-chrome-title: #0a0a0a;
+  --admin-chrome-header: rgb(255 255 255 / 0.88);
+  --admin-nav-active-bg: #f7e9ea; /* also the avatar */
+  --admin-nav-active-ink: #7a0d19;
+  --admin-logo-pill: #9a1b1e;
+  --admin-success: #10b981;
+  --admin-success-ink: #047857;
+  --admin-warn-tint: #fffbeb;
+  --admin-warn-edge: #fde68a;
+  --admin-warn-ink: #451a03;
+  --admin-font-heading: 'Aktiv Grotesk', 'Hanken Grotesk', 'Helvetica Neue', Arial, sans-serif;
+  --admin-shadow-menu: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --admin-scrim: rgb(15 23 42 / 0.45);
   /* The price card's struck-through was-price (Invitation - Account Creation
      2:448, the design's Gray/400). */
   --color-e2e-was-price: #98a2b3;
@@ -7501,3 +7539,14 @@ a.cre-library-card-title::after {
 .cre-support-card--compact:active {
   box-shadow: none;
 }
+
+/* ── XCEL ADMIN hover states (2026-10-19) — the reference's, by class, since
+   inline styles cannot carry :hover. */
+.cre-admin-tile:hover { border-color: var(--admin-hover-edge) !important; }
+.cre-admin-tile:focus-visible { box-shadow: 0 0 0 2px var(--admin-brand) !important; }
+.cre-admin-chip:hover { border-color: var(--admin-hover-edge) !important; color: var(--admin-ink) !important; }
+.cre-admin-row:hover { background: var(--admin-fill-soft); }
+.cre-admin-name:hover { color: var(--admin-brand) !important; text-decoration: underline; }
+.cre-admin-menu-item:hover { background: var(--admin-fill-soft) !important; }
+.cre-admin-outline:hover { border-color: var(--admin-hover-edge) !important; background: var(--admin-fill-soft) !important; }
+.cre-admin-brand:hover { background: var(--admin-brand-ink) !important; }

@@ -2367,6 +2367,23 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'xcel-admin',
+    /* XCEL ADMIN (2026-10-19, feat/XCEL-admin, Eric's request: "Create XCEL
+       Admin home page based on … colibri-b2b.vercel.app/students", then "pull
+       in all pages and functionality from the site"). On, `/xcel-admin/*`
+       draws the admin app — its sidebar, header and pages, rebuilt in React
+       on the admin fixture. Off, the route says the flag is off. Default ON on
+       Eric's branch so its build shows the work; the Admin row on Prototypes
+       is Cody's scope, so whether this becomes it is his decision. */
+    group: 'Navigation',
+    label: 'XCEL Admin',
+    description:
+      'The XCEL Admin app at /xcel-admin \u2014 Students, Invites, Reports, Notifications, Resources and Settings, rebuilt from the colibri-b2b reference on demo data. Off: the route says the flag is off.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+    owner: 'eric',
+  },
+  {
     key: 'e2e-begin-opens-compass-session',
     /* BEGIN COURSE OPENS THE COMPASS SESSION (2026-10-16, Jillienne, with the
        button selected: "make this button go into the compass course"). The
