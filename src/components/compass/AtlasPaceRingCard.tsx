@@ -68,6 +68,7 @@ export function AtlasPaceRingCard({
   onCustomize?: () => void
 }) {
   const eyebrow = atlasSectionEyebrow(align)
+  const left = align === 'left'
   return (
     /* ⚠ TWO SECTIONS, NOT ONE CARD (2026-10-16, Jillienne: "should be 3
        sections: Study Pace, Course Progress, Exam Readiness as the
@@ -116,7 +117,12 @@ export function AtlasPaceRingCard({
             one section still running left, so the column had two alignments
             in it. The EYEBROWS stay left — all four of them do, and that is
             the pattern: the label left, the thing it names centred. */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+        {/* ⚠ THE GOAL ROW FOLLOWS THE LABELS ON THE LEFT ARM (2026-10-19,
+            Jillienne: "left align this", with that variant on). The dials,
+            the sentence and the completion date stay centred — the arm has
+            been narrowed and widened one element at a time, so each thing
+            it moves is asked for rather than assumed. */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: left ? 'flex-start' : 'center', gap: 8 }}>
           <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-compass-page-button)' }}>
             <GaugeThin size={33} aria-hidden />
           </span>
@@ -147,11 +153,17 @@ export function AtlasPaceRingCard({
                 learner changes in the planner will not show here until the
                 two models are joined. The WEEKS and HOURS beside it still
                 come from Atlas's own `paceFit`.
-                The name sits OVER the goal, not beside it — on one line the
-                two would read as a single title ("Average 2 Week Goal")
-                rather than a label and a goal. */}
-            <span style={GOAL_TAG}>{COMPASS_PACE_NAME}</span>
-            <span style={GOAL}>{weeks} Week Goal</span>
+                ⚠ THE NAME SAT OVER THE GOAL UNTIL 2026-10-19 (Jillienne:
+                "Change this to Average (divider) 2 Week Goal all in one
+                line"). The reason it was stacked still stands — on one line
+                "Average 2 Week Goal" reads as a single title rather than a
+                pace name and a goal — and the RULE is what answers it now,
+                doing the line break's work in a third of the height. */}
+            <span style={GOAL_LINE}>
+              <span style={GOAL_TAG}>{COMPASS_PACE_NAME}</span>
+              <span aria-hidden style={GOAL_RULE} />
+              <span style={GOAL}>{weeks} Week Goal</span>
+            </span>
             {hoursPerWeek != null ? (
               <span style={GOAL_NOTE}>
                 about {hoursPerWeek} hour{hoursPerWeek === 1 ? '' : 's'} / week
@@ -310,7 +322,21 @@ const SECTION: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 
 const DIVIDER: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-nav-rule)' }
 /* Compass's name for the plan this card describes — see the tag's note. */
 const COMPASS_PACE_NAME = paceName(PLANNER_PLAN.dayMins)
-/* The qualifier over the goal — smaller and quieter than the figure it
+/* The pace name and the goal, side by side. `baseline` so a 10px tracked
+   label and a 13px bold figure sit on the same line of text rather than on
+   the middle of two boxes of different heights. */
+const GOAL_LINE: CSSProperties = { display: 'flex', alignItems: 'baseline', gap: 8, minWidth: 0 }
+/* ⚠ THE RULE CARRIES WHAT THE LINE BREAK USED TO — see the note at the tag.
+   A fixed 12 rather than `alignSelf: stretch`: on a baseline row, stretch
+   gives it the height of the tallest box and it hangs below the letters. */
+const GOAL_RULE: CSSProperties = {
+  width: 1,
+  height: 12,
+  flex: 'none',
+  alignSelf: 'center',
+  background: 'var(--color-atlas-nav-rule)',
+}
+/* The qualifier beside the goal — smaller and quieter than the figure it
    labels, so the pace's name reads as a note about the plan rather than part
    of its name. */
 const GOAL_TAG: CSSProperties = {

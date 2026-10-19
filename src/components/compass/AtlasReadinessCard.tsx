@@ -53,11 +53,36 @@ const NOT_STARTED: Level = {
    demo's shorthand; somebody can finish a course and not be ready. Flagged
    for its own pass (2026-10-16) — when real scoring lands, this table is the
    thing that has to stop being a straight map from progress. */
+/* ⚠ EACH BAND SAYS WHAT IT MEANS (2026-10-19, Jillienne: "we have text for
+   not started, add in text for the other readiness states", with the bands
+   image). The copy is hers, verbatim — the same image the four names and
+   their <40 / 40–64 / 65–84 / 85+ cuts came from on 2026-10-16. Until now
+   only `NOT_STARTED` carried a caption, so the one state that could not be
+   measured was the only one that explained itself.
+
+   ⚠ THE SLOT ALREADY EXISTED and is drawn by the CARD, at the card's width
+   (see the caption below `HalfDial`). Nothing about the layout changes —
+   four states simply stop leaving it empty. */
 const LEVELS: Level[] = [
-  { name: 'Beginner', lines: ['Beginner'], fill: 14 },
-  { name: 'Developing', lines: ['Developing'], fill: 36 },
-  { name: 'Proficient', lines: ['Proficient'], fill: 75 },
-  { name: 'Ready', lines: ['Ready'], fill: 100 },
+  {
+    name: 'Beginner',
+    lines: ['Beginner'],
+    fill: 14,
+    caption: 'Early in development, with substantial knowledge gaps remaining.',
+  },
+  {
+    name: 'Developing',
+    lines: ['Developing'],
+    fill: 36,
+    caption: 'Building competency, but still has meaningful gaps.',
+  },
+  {
+    name: 'Proficient',
+    lines: ['Proficient'],
+    fill: 75,
+    caption: 'Strong understanding; has not yet reached the ready threshold.',
+  },
+  { name: 'Ready', lines: ['Ready'], fill: 100, caption: 'Considered ready for the target outcome or exam.' },
 ]
 
 /** `initialLevel` (0–4) picks the level it opens on — V3's Completed view opens

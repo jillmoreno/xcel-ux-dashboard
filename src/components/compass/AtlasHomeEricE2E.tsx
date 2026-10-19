@@ -103,20 +103,23 @@ const V2_LONG_TITLE = 'New York Property and Casualty Conversion Course Pre-lice
 
 /** The cover and the column under it share this width (2026-10-08). 260 —
  *  White's left column — since 2026-10-13 (Eric's request); it was 235. */
-/* ⚠ 320, AND THE PADDING CAME BACK DOWN — 2026-10-19, Jillienne: "make
-   larger horizontally, reduce right and left padding on inside of
-   container". Both levers pull the same way, so the content gains twice: the
-   column goes 276 → 320 and the panel's sides 40 → 24, which takes the
-   content from 196 to 272.
+/* ⚠ 296 — 2026-10-19, and the third number today. It was 260, went to 276
+   for "give this container more horizontal spacing" (answered with
+   padding), to 320 with the padding cut to 24 for "make larger
+   horizontally, reduce right and left padding", and back a step here for
+   "too wide. make it a bit smaller". The padding stays at 24: that ask was
+   about the column, not the inset.
 
-   It went the other way an hour earlier ("give this container more
-   horizontal spacing") — that ask was answered with padding, and this one
-   says the air should be in the COLUMN rather than inside its edges.
+   ⚠ 248 OF CONTENT IS THE FLOOR FOR THE ESTIMATED COMPLETION ROW. That row
+   is one line — a 166-wide tracked label, a 10 gap and the date — so about
+   231 is the narrowest it can be before the date drops under the label
+   again. There is 17 of slack here; anything tighter wants the row
+   revisited rather than just the width.
 
    ⚠ `COVER_FRAME` READS THIS TOO, on purpose: the course cover's right edge
    lines up with this column below it (2026-10-14). It grows with it, which
    is what keeps that alignment true. */
-const V3_LEFT_W = 320
+const V3_LEFT_W = 296
 
 /** V3's course tabs — off on 2026-10-08, back on the same day (Eric's
  *  request: "add the course tabs back to the top"). */
