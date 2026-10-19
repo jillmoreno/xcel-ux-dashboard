@@ -87,3 +87,28 @@ describe('the lesson count follows the ring', () => {
     expect(lessonsDoneFor(50, 0)).toBe(0)
   })
 })
+
+/**
+ * THE MAIN CTA AT THE TOP OF THE LADDER (2026-10-19, Jillienne: "when at 100%
+ * this main CTA should change to View Certificate").
+ *
+ * ⚠ PINNED AS THE LADDER'S SHAPE, not by rendering the Home. What makes the
+ * label correct is that `completed` is the only rung at the top — if a rung
+ * were ever added above it, or `completed` stopped meaning 100%, the button
+ * would say "Resume Course" on a finished course and nothing else would
+ * complain. The label and its destination are chosen together in
+ * `AtlasHomeEricE2E` and verified in the browser; this is the assumption
+ * underneath them.
+ */
+describe('the top of the ladder is where the CTA changes', () => {
+  it('has exactly one rung at 100%, and it is `completed`', () => {
+    const top = ATLAS_PROGRESS_LADDER.filter((r) => r.percent === 100)
+    expect(top.map((r) => r.key)).toEqual(['completed'])
+  })
+
+  it('leaves every other rung short of it, so Begin/Resume still stand', () => {
+    for (const rung of ATLAS_PROGRESS_LADDER.filter((r) => r.key !== 'completed')) {
+      expect(rung.percent, rung.key).toBeLessThan(100)
+    }
+  })
+})

@@ -44,6 +44,7 @@ import {
 } from '@/components/learning/studyJourneyUtil'
 import { getLicensedStepsFor, jurisdictionName } from '@/data/nyProducerRequirements'
 import { defaultPreset, formatPaceDate, studyPace, daysUntil, dateFromIso, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
+import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import type { LearningPathSummary } from '@/data/learningFixtures'
 
 /**
@@ -472,6 +473,32 @@ export function AtlasHomeEricE2E({
     window.addEventListener(ATLAS_HOME_REFRESH, onRefresh)
     return () => window.removeEventListener(ATLAS_HOME_REFRESH, onRefresh)
   }, [setVariant])
+  /* ⚠ THE MAIN CTA AT 100% IS "VIEW CERTIFICATE" (2026-10-19, Jillienne:
+     "when at 100% this main CTA should change to View Certificate"). Begin /
+     Resume are both invitations back INTO the course, and there is no course
+     left to go back into — the thing the learner wants at the end is the
+     thing they finished it for.
+
+     ⚠ THE LABEL AND THE DESTINATION MOVE TOGETHER, in one place, because a
+     button saying "View Certificate" that opened the Compass session would
+     be a worse bug than the label it fixed. `go('certificates')` is where
+     the Certificates tiles in this same column already point, so the page
+     has one answer to "where are my certificates" rather than two. It
+     no-ops under `LINKS_OFF` exactly as those tiles do. */
+  /* Exam Information opens the same sheet Quick Links' own link opens, by
+     the same id — `onOpenStep` is exempt from `LINKS_OFF`, so this one
+     genuinely works. */
+  const examInfo = onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : undefined
+  const beginLabel = completedView
+    ? 'View Certificate'
+    : progressPick === 'not-started'
+      ? 'Begin Course'
+      : 'Resume Course'
+  const onBeginCta = completedView
+    ? () => go('certificates')
+    : LINKS_OFF && !beginOpensCompass
+      ? NO_LINK
+      : onBegin
   const advanceProgress = () =>
     setVariant(
       'atlas-v3-progress',
@@ -559,8 +586,8 @@ export function AtlasHomeEricE2E({
             title={shownTitle}
             onCover={() => setWhiteHead(false)}
             onOverview={LINKS_OFF && !overviewOpensCompass ? NO_LINK : onOverview}
-            onBegin={LINKS_OFF ? NO_LINK : onBegin}
-            beginLabel={progressPick === 'not-started' ? 'Begin Course' : 'Resume Course'}
+            onBegin={completedView ? onBeginCta : LINKS_OFF ? NO_LINK : onBegin}
+            beginLabel={beginLabel}
             meta={courseMeta}
           />
         ) : (
@@ -606,13 +633,16 @@ export function AtlasHomeEricE2E({
               <button
                 type="button"
                 className="cre-compass-primary cre-compass-btn-primary"
-                onClick={LINKS_OFF && !beginOpensCompass ? NO_LINK : onBegin}
-                disabled={!LINKS_OFF && !onBegin}
+                onClick={onBeginCta}
+                /* Never disabled at completion: its handler is this page's
+                   own `go`, not the caller's `onBegin`. */
+                disabled={!completedView && !LINKS_OFF && !onBegin}
                 style={HEADER_PRIMARY}
               >
-                {/* "Resume Course" once the Design bar's Progress is past 0% (2026-10-12,
-                    Eric's request). */}
-                {progressPick === 'not-started' ? 'Begin Course' : 'Resume Course'}
+                {/* "Resume Course" once the Design bar's Progress is past 0%
+                    (2026-10-12, Eric's request), and "View Certificate" at
+                    100% (2026-10-19) — see `beginLabel`. */}
+                {beginLabel}
               </button>
             </div>
           </div>
@@ -876,7 +906,7 @@ export function AtlasHomeEricE2E({
                 (2026-10-15, Eric's request). Its own width, wider than the
                 steps' 335. Yes and Not Yet are not wired yet. */}
             {/* On the walk this has moved INTO Step 2 — see there. */}
-            {walkSteps ? null : <ExamDatePrompt />}
+            {walkSteps ? null : <ExamDatePrompt onExamInfo={examInfo} />}
             {/* ⚠ AT 100% THE RING ARM SHOWS THE STOPS, ALL DONE (2026-10-16,
                 Jillienne: "we need to show the items in step 1 as compelted").
                 The work is what was completed, so the list is the thing worth
@@ -959,7 +989,7 @@ export function AtlasHomeEricE2E({
                  the same question on screen twice. Replacing the sentence is
                  also what makes the step ask something instead of reciting
                  figures the learner cannot act on yet. */
-              detail={walkSteps ? <ExamDatePrompt /> : pass.detail}
+              detail={walkSteps ? <ExamDatePrompt onExamInfo={examInfo} /> : pass.detail}
               link={pass.detailLabel ?? 'What to expect'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(pass.id) : undefined}
             />
@@ -1198,35 +1228,65 @@ function JourneyRow({
  * The other homes keep the question — `AtlasHomeEricV2`, `AtlasHomeV2` and
  * `HybridHomeV1` each draw their own and are other people's surfaces.
  */
-function ExamDatePrompt() {
+function ExamDatePrompt({ onExamInfo }: { onExamInfo?: () => void }) {
   return (
-    <div style={EXAM_DATE_PROMPT}>
+    /* ⚠ SPANS, NOT DIVS. `Step` renders its detail inside a `<p>`, and the
+       pill this replaces was a `<div>` in there — invalid nesting that
+       happened to render. Flex spans say the same thing legally. */
+    <span style={EXAM_ROWS}>
       {/* ⚠ IT WEARS STEP 1's ROW (2026-10-19, Jillienne: "have that text
           style better match what is happening in step 1, include a Calendar
-          icon instead of a circle icon"). Step 2's prompt was its own thing
-          — 13/14 bold in `text-primary` — beside a list of 13/18 regular
-          rows in `text-secondary`, so two lines of the same journey were set
-          two different ways. The marker column is the journey's own 14-wide
-          one, and the calendar stands where a stop's circle would: this IS a
-          stop, it is just one you answer rather than one you finish. */}
-      <span aria-hidden style={EXAM_DATE_MARK_COL}>
-        <CalendarRegular size={13} aria-hidden style={EXAM_DATE_MARK} />
+          icon instead of a circle icon", then "this icon should line up
+          vertically with the other icons in step 1"). Step 2's prompt was
+          its own thing — 13/14 bold in `text-primary` on a Primary 100 pill
+          — beside a list of 13/18 regular rows, so two parts of one journey
+          were set two different ways.
+
+          ⚠ THE PILL HAD TO GO FOR THE ICONS TO LINE UP. Its 16 of side
+          padding inset everything inside it, which is exactly the offset
+          that put the calendar off Step 1's centre line. A ground that
+          cannot be aligned with the list above it was the thing in the way,
+          not a decoration to keep. */}
+      <span style={EXAM_ROW}>
+        <span aria-hidden style={EXAM_MARK_COL}>
+          <CalendarRegular size={13} aria-hidden style={EXAM_MARK_LIVE} />
+        </span>
+        <span style={EXAM_PROMPT_LINE}>
+          <span style={EXAM_DATE_QUESTION}>Add your state exam date to help plan your study pace.</span>
+          {/* ⚠ "ADD DATE", FILLED — 2026-10-19, Jillienne: "change to Add
+              Date. Make it a solid primary color." It was "Yes", the outline
+              half of a question's two answers, and with the line beside it
+              now a statement a "Yes" answered nothing. The label says what
+              the control does and the fill says it is the thing to do.
+              `cre-compass-btn-primary` is the page's own filled primary —
+              the Begin Course button's class — rather than a colour typed
+              here, so it follows the brand skin like every other primary. */}
+          <button type="button" className="cre-compass-primary cre-compass-btn-primary" style={EXAM_DATE_ADD}>
+            Add Date
+          </button>
+        </span>
       </span>
-      <div style={EXAM_DATE_PILL}>
-        <p style={EXAM_DATE_QUESTION}>Add your state exam date to help plan your study pace.</p>
-        {/* ⚠ "ADD DATE", FILLED — 2026-10-19, Jillienne: "change to Add
-            Date. Make it a solid primary color." It was "Yes", the outline
-            half of a question's two answers, and with the line above it now
-            a statement a "Yes" answered nothing. The label says what the
-            control does, and the fill says it is the thing to do.
-            `cre-compass-btn-primary` is the page's own filled primary — the
-            Begin Course button's class — rather than a colour typed here,
-            so it follows the brand skin the way every other primary does. */}
-        <button type="button" className="cre-compass-primary cre-compass-btn-primary" style={EXAM_DATE_ADD}>
-          Add Date
+      {/* ⚠ A SECOND STOP UNDER IT (2026-10-19, Jillienne: "a 2nd option
+          should be shown below that calendar icon that is a active circle
+          link with 'Exam Information'"). Step 2 is two things a learner can
+          do before the exam, not one — and the second is the sheet that says
+          what the exam IS. It takes the journey's ACTIVE mark and the
+          current stop's label colour, so it reads as live rather than as a
+          stop still waiting its turn.
+
+          ⚠ IT ACTUALLY OPENS, unlike most of this page. `onOpenStep` is one
+          of the three sheet handlers exempt from `LINKS_OFF` (see the note
+          there) — the same handler Quick Links' own Exam Information uses,
+          with the same id, so the two cannot open different sheets. */}
+      <span style={EXAM_ROW}>
+        <span aria-hidden style={EXAM_MARK_COL}>
+          <span style={MARK_CURRENT} />
+        </span>
+        <button type="button" onClick={onExamInfo} disabled={!onExamInfo} style={EXAM_INFO_LINK}>
+          Exam Information
         </button>
-      </div>
-    </div>
+      </span>
+    </span>
   )
 }
 
@@ -1264,44 +1324,27 @@ function Step({
 
 /* The exam-date prompt: a Primary 100 pill (24 in, 16 corners, 33 tall)
    with Yes in Primary 500, then Not Yet › 8 to its right. */
-const EXAM_DATE_PROMPT: CSSProperties = {
-  // Fits its content (2026-10-15, Eric's request; the design's fixed 460)
-  // — but no wider than the column. `max-content` alone overflowed once the
-  // line became a sentence (2026-10-19); the cap is what lets it wrap
-  // instead, and costs nothing while the line still fits.
-  width: 'max-content',
-  maxWidth: '100%',
+/* The two stops, stacked — the journey's own 2px row gap. */
+const EXAM_ROWS: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
   // 20 to Step 1, 4 under the column's 24 (2026-10-15, Eric's requests: 16,
   // then 4 more).
   marginBottom: -4,
-  // The ground takes Yes in too, 16 in at each end (2026-10-15, Eric's
-  // request; it took Not Yet as well until that control went on 2026-10-19);
-  // the course card's Primary 100 (the design's Secondary 200, on the
-  // question and Yes only).
-  // 4 above and below Yes (2026-10-15, Eric's request) — 41 tall.
-  boxSizing: 'border-box',
+}
+/* One stop: the mark, then what it says. The journey's own 8 between them. */
+const EXAM_ROW: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: 8,
-  padding: '4px 16px',
-  borderRadius: 16,
-  background: 'var(--color-primary-100)',
+  minHeight: 36,
 }
-
-/* The question and Yes, 10 apart. */
-const EXAM_DATE_PILL: CSSProperties = {
-  flex: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  gap: 10,
-}
-
-/* The journey's marker column, at its 14 — so the calendar reads as a stop's
-   mark rather than an icon in a sentence. No spine: this row leads nowhere.
-   ⚠ IT IS NOT ON STEP 1's CENTRE LINE, and cannot be while the pill is here:
-   the Primary 100 ground insets everything by its own 16. The pill is the
-   one thing still separating this row from the list above it. */
-const EXAM_DATE_MARK_COL: CSSProperties = {
+/* ⚠ THE JOURNEY'S MARKER COLUMN, at its 14 — this is what puts the calendar
+   and the circle on the same vertical line as Step 1's circles above them.
+   Nothing may sit to the left of it, which is why the Primary 100 pill that
+   used to wrap this went. No spine: these rows lead nowhere. */
+const EXAM_MARK_COL: CSSProperties = {
   width: 14,
   flex: 'none',
   display: 'flex',
@@ -1309,38 +1352,56 @@ const EXAM_DATE_MARK_COL: CSSProperties = {
   justifyContent: 'center',
 }
 /* ⚠ NOT THE LOCK'S GREY. `LOCK_MARK` is muted because a locked row is one
-   you cannot act on; this one is the opposite — it is the row's whole point
-   — so it takes the current stop's colour, the same the Add Date button
-   wears. */
-const EXAM_DATE_MARK: CSSProperties = {
+   you cannot act on; these are the opposite — they are the step's whole
+   point — so the calendar takes the current stop's colour, the same the Add
+   Date button and the Exam Information label wear. */
+const EXAM_MARK_LIVE: CSSProperties = {
   flex: 'none',
   color: 'var(--color-compass-page-button)',
 }
+/* The prompt and its button, on one line while there is room for one. */
+const EXAM_PROMPT_LINE: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  minWidth: 0,
+  flex: '1 1 0',
+}
 /* ⚠ STEP 1's ROW TYPE (2026-10-19) — 13/18 regular in `text-secondary`, the
    same as a journey stop's title. It was 13/14 bold in `text-primary`, which
-   made the one line a learner has to ACT on look like a heading for the
-   lines above it. It also wraps now: `nowrap` was safe while this was a
-   short question and the pill sized to it, but a sentence on one line pushes
-   the pill past the column instead of using the second line it has room
-   for. */
+   made the one line a learner has to ACT on look like a heading for the list
+   above it. It wraps, too: `nowrap` was safe while this was a short question
+   sized to its own pill, but a sentence pushes a `max-content` row past the
+   column instead of using the second line it has room for. */
 const EXAM_DATE_QUESTION: CSSProperties = {
-  margin: 0,
   fontFamily: 'var(--font-body)',
   fontWeight: 400,
   fontSize: 13,
   lineHeight: '18px',
   color: 'var(--color-text-secondary)',
-  lineBreak: 'auto',
+  minWidth: 0,
 }
-
-/* ⚠ FILLED SINCE 2026-10-19, and the fill is the CLASS's not this object's.
-   It was white with Primary 500 text and a Primary 300 hairline (2026-10-15,
-   Eric's requests, against the design's filled 500) — the outline treatment
-   that suited one of two answers. Now that it is the only control and names
-   an action, it wears the page's primary: `cre-compass-btn-primary`, the
-   same class Begin Course carries, which is per-brand in tokens.css. Nothing
-   here sets a colour, so nothing here can disagree with the skin. */
+/* The second stop's label — the CURRENT stop's treatment from Step 1 (600 in
+   the current-stop colour), because its mark is the current stop's too. */
+const EXAM_INFO_LINK: CSSProperties = {
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  textAlign: 'left',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 600,
+  fontSize: 13,
+  lineHeight: '18px',
+  color: 'var(--color-atlas-home-current-stop, var(--color-compass-page-button))',
+  cursor: 'pointer',
+}
 const EXAM_DATE_ADD: CSSProperties = {
+  /* ⚠ THE BUTTON DOES NOT SHRINK; THE SENTENCE WRAPS. Without the pill's
+     `max-content` around them the row is the column's full width, and a
+     flexible button broke "Add Date" over two lines rather than letting the
+     line beside it use the second one it already had. */
+  flex: 'none',
+  whiteSpace: 'nowrap',
   height: 33,
   boxSizing: 'border-box',
   padding: '0 24px',
