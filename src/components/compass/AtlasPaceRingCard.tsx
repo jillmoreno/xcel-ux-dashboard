@@ -74,11 +74,19 @@ export function AtlasPaceRingCard({
        answer different questions: the pace is the plan, the dial is where the
        learner has got to against it. Splitting them is what lets each be
        named. */
-    /* With readiness following, the card ENDS on its rule — the air below it
-       belongs to what the rule divides, not to this card, and keeping the
-       panel's own 24 as well would have pushed readiness a pad further off
-       than the rule above it. */
-    <div style={readinessBelow ? { ...PANEL, paddingBottom: 0 } : PANEL}>
+    /* ⚠ THE PANEL'S BOTTOM AIR BELONGS TO WHATEVER IS LAST.
+       — With readiness following, the card ENDS on its rule: the air below
+         belongs to what the rule divides, and the panel's own 24 as well
+         would push readiness a pad further off than the rule above it.
+       — With Estimated completion last, THE BOX CARRIES ITS OWN 24 now
+         (2026-10-19, Jillienne: "there should be padding below the date to
+         match the padding above the date"), so the panel adds none. The air
+         under the date is the same 24 it always was — it just sits inside
+         the box, where it is symmetric with the 24 over the eyebrow,
+         instead of outside it where the box looked lopsided.
+       — With no pace at all there is no box, and the panel's own padding is
+         the only thing holding that edge. */
+    <div style={readinessBelow || expected ? { ...PANEL, paddingBottom: 0 } : PANEL}>
       {/* ⚠ COURSE PROGRESS LEADS THE COLUMN (2026-10-16, Jillienne: "move
           course progress to the top - shift everything else down"). Where the
           learner HAS GOT TO is the first thing they want; the plan for the
@@ -175,10 +183,16 @@ export function AtlasPaceRingCard({
         </p>
         )}
         {expected ? (
-          /* With nothing below, the bottom pad goes with the bottom rule — the
-             panel's own 24 is already there, and keeping both would put 48
-             under the last line on screen. */
-          <div style={readinessBelow ? EXPECTED : { ...EXPECTED, borderBottom: 'none', paddingBottom: 0 }}>
+          /* ⚠ THE RULE GOES, THE PADDING STAYS (2026-10-19, Jillienne: "there
+             should be padding below the date to match the padding above the
+             date"). With nothing below it there is nothing to divide, so the
+             bottom hairline is dropped — but the 24 under the date is KEPT,
+             because the box is a box either way and 24 over the eyebrow with
+             0 under the date reads as a mistake. The panel gives up its own
+             bottom pad in exchange (see `PANEL`), so the air below the date
+             is the same 24 it has always been — it just sits inside the box
+             now, where it is symmetric, instead of outside it. */
+          <div style={readinessBelow ? EXPECTED : { ...EXPECTED, borderBottom: 'none' }}>
             <p style={EXPECTED_LABEL}>Estimated completion</p>
             <p style={EXPECTED_VALUE}>
               {expected.value}

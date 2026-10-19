@@ -98,15 +98,20 @@ describe('the ring card spaces every rule alike', () => {
     expect(parseInt(box.style.paddingBottom, 10)).toBe(columnGap)
   })
 
-  /* With nothing below, the bottom rule goes — and its padding goes with it,
-     or the card would end on a pad with no line to justify it. The panel's
-     own bottom padding is what holds that edge instead. */
-  it('drops the bottom rule AND its pad when readiness does not follow', () => {
+  /* ⚠ THE RULE GOES, THE PADDING STAYS (2026-10-19, Jillienne: "there should
+     be padding below the date to match the padding above the date"). It
+     dropped BOTH for a few hours, on the reasoning that a pad with no line
+     to justify it is dead space — but the box is a box either way, and 24
+     over the eyebrow against 0 under the date reads as a mistake. The panel
+     gives up its own bottom pad in exchange, so the air below the date is
+     unchanged; it just sits inside the box now. */
+  it('drops the bottom rule but keeps the box symmetric when readiness does not follow', () => {
     renderRing(false)
     const box = expectedBox()
     expect(box.style.borderBottomStyle).toBe('none')
-    expect(box.style.paddingBottom).toBe('0px')
-    expect(panelOf().style.paddingBottom).not.toBe('0px')
+    expect(box.style.paddingBottom).toBe(box.style.paddingTop)
+    // …and the panel stands down, so the total air below the date is the same.
+    expect(panelOf().style.paddingBottom).toBe('0px')
   })
 
   it('…and ends ON the rule when readiness does, so the air below is readiness’s own', () => {
