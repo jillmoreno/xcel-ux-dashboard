@@ -25,6 +25,7 @@ import {
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
+import { AtlasExamDateStep } from './AtlasExamDateStep'
 import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
 import { CircleCheckSolid } from '@/icons'
@@ -531,6 +532,14 @@ export function AtlasHomeEricE2E({
      genuinely works. */
   /* The design bar's Exam date prompt — Row (default) or Card. */
   const examPromptCard = useFeatureFlag('atlas-exam-prompt').variant === 'card'
+  /* SET EXAM DATE IN STEP 2 (2026-10-19, Eric's request) — off the walk only;
+     the walk's Step 2 is Jillienne's prompt. */
+  const examDateStepFlag = useFeatureFlag('atlas-exam-date-step').enabled
+  const examDateStep = examDateStepFlag && !walkSteps
+  /* Bumped by a click on Step 2's title — the panel remounts at Default
+     (2026-10-19, Eric's request: a reset for demoing, with no look of its
+     own). */
+  const [examDateResetKey, setExamDateResetKey] = useState(0)
   const examInfo = onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : undefined
   /* …and Step 3's, the same sheet Quick Links' "Applying for a License"
      opens, by the step's own id rather than a second copy of it. */
@@ -963,7 +972,9 @@ export function AtlasHomeEricE2E({
                 `ExamDatePrompt`; this position is Eric's Atlas Learning tile
                 and carries the pill he promoted — see `ExamDateQuestionPill`
                 for why they are two components. */}
-            {walkSteps ? null : <ExamDateQuestionPill />}
+            {/* Gone when Step 2 carries Set Exam Date (`atlas-exam-date-step`,
+                2026-10-19) — the question is asked there instead. */}
+            {walkSteps || examDateStep ? null : <ExamDateQuestionPill />}
             {/* ⚠ AT 100% THE RING ARM SHOWS THE STOPS, ALL DONE (2026-10-16,
                 Jillienne: "we need to show the items in step 1 as compelted").
                 The work is what was completed, so the list is the thing worth
@@ -1046,7 +1057,18 @@ export function AtlasHomeEricE2E({
                  the same question on screen twice. Replacing the sentence is
                  also what makes the step ask something instead of reciting
                  figures the learner cannot act on yet. */
-              detail={walkSteps ? <ExamDatePrompt onExamInfo={examInfo} card={examPromptCard} /> : pass.detail}
+              detail={
+                walkSteps ? (
+                  <ExamDatePrompt onExamInfo={examInfo} card={examPromptCard} />
+                ) : examDateStep ? undefined : (
+                  pass.detail
+                )
+              }
+              /* SET EXAM DATE (Figma 466:856, 2026-10-19, Eric's request), in
+                 place of the "150 scored questions…" line and the pill above
+                 the steps. Off the walk only. */
+              panel={examDateStep ? <AtlasExamDateStep key={examDateResetKey} stateName={state ?? 'your'} /> : undefined}
+              onTitle={examDateStep ? () => setExamDateResetKey((k) => k + 1) : undefined}
               link={pass.detailLabel ?? 'What to expect'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(pass.id) : undefined}
             />
@@ -1468,12 +1490,20 @@ function Step({
   detail,
   link,
   onLink,
+  panel,
+  onTitle,
 }: {
   number: number
   title: string
   /** A node, not just a string, since 2026-10-16: Step 2's detail is the
    *  state-exam-date prompt on the walk, not a sentence. */
   detail?: ReactNode
+  /** A block under the title, outside the detail's paragraph — Set Exam
+   *  Date (2026-10-19). */
+  panel?: ReactNode
+  /** A click on the title — a hidden demo control, drawn exactly as the
+   *  title: no cursor, hover or pressed look (2026-10-19). */
+  onTitle?: () => void
   link: string
   onLink?: () => void
 }) {
@@ -1481,9 +1511,14 @@ function Step({
     <section aria-label={title} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
         <p style={{ ...STEP_EYEBROW, fontWeight: 700 }}>Step {number}</p>
-        <p style={STEP_TITLE}>{title}</p>
+        {/* With `onTitle`, the title resets Set Exam Date to its first state —
+            for demoing, so it keeps the title's look exactly. */}
+        <p style={STEP_TITLE} onClick={onTitle}>
+          {title}
+        </p>
       </div>
       {detail ? <p style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }}>{detail}</p> : null}
+      {panel}
       {onLink ? (
         <button type="button" className="cre-compass-v2-link" onClick={onLink} style={LINK}>
           {link} →

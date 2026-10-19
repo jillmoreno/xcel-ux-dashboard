@@ -7416,6 +7416,11 @@ a.cre-library-card-title::after {
   /* xcelsolutions.com's Enter Partner Code box (.hero_partner_code), read
      off the live page 2026-10-15 — the price card's shadow. */
   --shadow-e2e-partner-code: 0 4px 16px 0 rgb(0 0 0 / 0.12);
+  /* Set Exam Date (Figma 466:856, 2026-10-19): the calendar's dates and its
+     picked day, between Primary 400 and 500 — the design's own #58738a —
+     and the Date Set tiles' 2px shadow. */
+  --color-atlas-exam-calendar-ink: #58738a;
+  --shadow-atlas-exam-tile: 0 2px 1px rgb(0 0 0 / 0.1);
 }
 
 /* ── Help & Support entry cards ─────────────────────────────────────────

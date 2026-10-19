@@ -319,7 +319,10 @@ describe('the walk’s Study Journey steps', () => {
   })
 
   it('leaves Eric’s Atlas Learning tile exactly as he promoted it', async () => {
-    renderDashboard('?demo=1&section=dashboard')
+    /* With `atlas-exam-date-step` OFF — the tile as promoted. ON (the
+       branch default since 2026-10-19), Step 2 carries Set Exam Date instead;
+       the next case pins that. */
+    renderDashboard('?demo=1&section=dashboard&ff=atlas-exam-date-step:off')
     const page = within(screen.getByTestId('page'))
     expect(page.getByText(/150 scored questions/)).toBeInTheDocument()
     expect(page.getByText(/Apply online, then submit/)).toBeInTheDocument()
@@ -342,6 +345,31 @@ describe('the walk’s Study Journey steps', () => {
     expect(page.getByRole('button', { name: /Not Yet/ })).toBeInTheDocument()
     expect(page.queryByText('When is your exam?')).toBeNull()
     expect(page.queryByRole('button', { name: 'Add Date' })).toBeNull()
+  })
+
+  it('puts Set Exam Date in his Step 2 with `atlas-exam-date-step` on, and sets a date with it', async () => {
+    /* Figma 466:856, 2026-10-19 (Eric's request): the pill above the steps
+       and the "150 scored" line go; the four-state panel takes Step 2. */
+    renderDashboard('?demo=1&section=dashboard&ff=atlas-exam-date-step:on')
+    const page = within(screen.getByTestId('page'))
+    expect(page.queryByText(/150 scored questions/)).toBeNull()
+    const step = within(page.getByRole('region', { name: 'Pass State Exam' }))
+    expect(step.getByText('Do you know your state exam date?')).toBeInTheDocument()
+    // Not Yet → No → I have my exam date → the calendar.
+    fireEvent.click(step.getByRole('button', { name: /Not Yet/ }))
+    expect(step.getByText('No state exam date yet? That’s okay.')).toBeInTheDocument()
+    fireEvent.click(step.getByRole('button', { name: /I have my exam date/ }))
+    const setButton = step.getByRole('button', { name: 'Set Exam Date' })
+    expect(setButton).toBeDisabled()
+    const open = step.getAllByRole('gridcell').filter((c) => !(c as HTMLButtonElement).disabled)
+    fireEvent.click(open[open.length - 1])
+    expect(setButton).not.toBeDisabled()
+    fireEvent.click(setButton)
+    expect(step.getByText('Your state exam date:')).toBeInTheDocument()
+    expect(step.getByText(/until your/)).toBeInTheDocument()
+    // Edit reopens the calendar on the date that was set.
+    fireEvent.click(step.getByRole('button', { name: /Edit/ }))
+    expect(step.getByRole('gridcell', { selected: true })).toBeInTheDocument()
   })
 })
 

@@ -2180,6 +2180,26 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-exam-date-step',
+    /* SET EXAM DATE IN STEP 2 (2026-10-19, Eric's request; Figma 466:856).
+       On, the End-to-End Demo's Home drops the "Do you know your state exam
+       date?" pill above the steps and Step 2's "150 scored questions…" line,
+       and Step 2 carries the four-state Set Exam Date panel instead —
+       Default, No, a working calendar, Date Set. Off, both are as they were.
+       Not the full walk's Step 2 (`?journey=full`), which is Jillienne's and
+       keeps its own prompt. Default ON on Eric's branch so its build shows the
+       work; whether it ships is decided at merge. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Exam date step',
+    description:
+      'Step 2 on the End-to-End Demo\u2019s Home carries the Set Exam Date panel \u2014 Do you know your state exam date?, a No state, a working calendar and the date set with the days until it \u2014 in place of the pill above the steps and the \u201c150 scored questions\u201d line. Off: the pill and the line, as before.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-player-trays',
     /* NOTES AND NUDGES, AS TRAYS (2026-10-19, Eric's request). On, the course
        player's bar carries Rubi, Notes and Nudges together at its right end,
