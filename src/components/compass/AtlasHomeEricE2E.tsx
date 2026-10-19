@@ -1139,7 +1139,14 @@ function JourneyRow({
         ) : (
           <span style={MARK} />
         )}
-        {last ? null : <span style={SPINE} />}
+        {/* ⚠ THE LINE GOES GREEN WITH THE CHECK ABOVE IT (2026-10-19,
+            Jillienne: "when the selection turns green checkmark, should show
+            the line as green too"). The spine is the track between two
+            stops, so a grey one hanging off a finished row read as though
+            the path stopped being walked there. Green runs from the first
+            check down to the current stop and no further — the segment
+            BELOW a done row is the one that has been travelled. */}
+        {last ? null : <span style={done ? SPINE_DONE : SPINE} />}
       </span>
       <span
         style={{
@@ -1588,6 +1595,15 @@ const STEP_TITLE: CSSProperties = {
   letterSpacing: '-0.01em',
   color: 'var(--color-text-primary)',
 }
+/* ⚠ THE GREY LOOK IS THINNER THAN THE LIVE ONE (2026-10-19, Jillienne: "when
+   these are in the light gray look - have the stroke be slightly thinner").
+   The untravelled track — the open rings and the line between them — was the
+   same 2 as the green checks' line and the current stop's dot, so the part of
+   the journey that has not happened carried the same weight as the part that
+   has. Half a pixel is enough: it reads as quieter without turning into a
+   hairline that disappears on a low-contrast screen. */
+const GREY_STROKE = 1.5
+const LIVE_STROKE = 2
 const MARK_CURRENT: CSSProperties = {
   width: 14,
   height: 14,
@@ -1595,7 +1611,7 @@ const MARK_CURRENT: CSSProperties = {
   borderRadius: '50%',
   // The current stop's title colour (XCEL: Secondary 600 brown).
   background: 'var(--color-atlas-home-current-stop, var(--color-compass-page-button))',
-  border: '2px solid var(--color-atlas-home-current-stop, var(--color-compass-page-button))',
+  border: `${LIVE_STROKE}px solid var(--color-atlas-home-current-stop, var(--color-compass-page-button))`,
   flex: 'none',
 }
 /**
@@ -1626,10 +1642,25 @@ const MARK: CSSProperties = {
   borderRadius: '50%',
   // Solid, not the design's dashed (2026-10-02, the designer's request) —
   // the rings and the spine both.
-  border: '2px solid var(--color-border-subtle)',
+  border: `${GREY_STROKE}px solid var(--color-border-subtle)`,
   flex: 'none',
 }
-const SPINE: CSSProperties = { flex: '1 1 0', minHeight: 1, width: 0, borderLeft: '2px solid var(--color-border-subtle)' }
+const SPINE: CSSProperties = {
+  flex: '1 1 0',
+  minHeight: 1,
+  width: 0,
+  borderLeft: `${GREY_STROKE}px solid var(--color-border-subtle)`,
+}
+/* The travelled half of the track — the same green as the check it hangs
+   from (`DONE_MARK`), so the mark and its line read as one object rather
+   than two things that happen to sit near each other. It keeps the FULL
+   weight: thinning is what marks a stop as not yet reached, so a thin green
+   line would be saying two things at once. */
+const SPINE_DONE: CSSProperties = {
+  ...SPINE,
+  borderLeftWidth: LIVE_STROKE,
+  borderLeftColor: 'var(--color-success-500)',
+}
 /* The course card's actions — the page's main button size (the Begin Course
    button's, 13.5 / 20.25 with 5×8 padding), side by side. */
 const HEADER_BUTTON: CSSProperties = {
