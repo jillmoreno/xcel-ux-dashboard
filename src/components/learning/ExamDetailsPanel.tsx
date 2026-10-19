@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { ChevronRight, X } from '@/icons'
+import { ArrowLeft, ChevronRight, X } from '@/icons'
 import { examFactsFor, jurisdictionName } from '@/data/nyProducerRequirements'
 import { useExamDate } from '@/data/examDateStore'
 import { EXAM_FAQ, examDetailRows } from '@/data/examDetails'
@@ -92,14 +92,29 @@ export function ExamDetailsPanel({
   )
 }
 
-export function ExamFaqPanel({ onClose }: { onClose: () => void }) {
+export function ExamFaqPanel({ onClose, onBack }: { onClose: () => void; onBack?: () => void }) {
   return (
     <>
       <div style={{ flexShrink: 0, padding: '18px 22px 0' }}>
-        <button type="button" onClick={onClose} className="cre-link-action" style={closeStyle}>
-          <X size={14} aria-hidden />
-          Close
-        </button>
+      {/* ⚠ BACK, NOT CLOSE, WHEN THIS OPENED FROM A MENU (2026-10-19,
+          Jillienne: "lets make it seamless so it seems like a journey …
+          clicking the option, and new sheet auto shows instantly and then a
+          back link is available at the top left to return to the first
+          sheet"). Opened on its own — from Quick Links, or a Step's link —
+          there is nothing behind it, so Close is still the only honest
+          control. One slot, one affordance: a Back AND a Close in the same
+          corner asks the reader which one dismisses the sheet. */}
+        {onBack ? (
+          <button type="button" onClick={onBack} className="cre-link-action" style={closeStyle}>
+            <ArrowLeft size={14} aria-hidden />
+            Back
+          </button>
+        ) : (
+          <button type="button" onClick={onClose} className="cre-link-action" style={closeStyle}>
+            <X size={14} aria-hidden />
+            Close
+          </button>
+        )}
         <p style={eyebrowStyle}>Your state exam</p>
         <h2 style={titleStyle}>Common questions</h2>
         <p style={subStyle}>Demo content — answers pending confirmation from PSI</p>

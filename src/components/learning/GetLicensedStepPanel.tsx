@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { X } from '@/icons'
+import { ArrowLeft, X } from '@/icons'
 import { ProseFacts, ProseItem, ProseText } from './sheetProse'
 import { proseSectionStyle, proseSectionTitleStyle, proseListStyle } from './sheetProseStyles'
 import {
@@ -42,11 +42,15 @@ export function GetLicensedStepPanel({
   step,
   state,
   onClose,
+  onBack,
 }: {
   step: LicensingStep
   /** Two-letter code, for the sub-line. */
   state?: string
   onClose: () => void
+  /** Given when this panel was opened FROM a menu sheet and replaces it in
+   *  place — the header then offers Back to that menu instead of Close. */
+  onBack?: () => void
 }) {
   const where = jurisdictionName(state)
   return (
@@ -55,10 +59,25 @@ export function GetLicensedStepPanel({
           the same column and a different close affordance in each would read as
           two unrelated surfaces. */}
       <div style={{ flexShrink: 0, padding: '18px 22px 0' }}>
-        <button type="button" onClick={onClose} className="cre-link-action" style={closeStyle}>
-          <X size={14} aria-hidden />
-          Close
-        </button>
+      {/* ⚠ BACK, NOT CLOSE, WHEN THIS OPENED FROM A MENU (2026-10-19,
+          Jillienne: "lets make it seamless so it seems like a journey …
+          clicking the option, and new sheet auto shows instantly and then a
+          back link is available at the top left to return to the first
+          sheet"). Opened on its own — from Quick Links, or a Step's link —
+          there is nothing behind it, so Close is still the only honest
+          control. One slot, one affordance: a Back AND a Close in the same
+          corner asks the reader which one dismisses the sheet. */}
+        {onBack ? (
+          <button type="button" onClick={onBack} className="cre-link-action" style={closeStyle}>
+            <ArrowLeft size={14} aria-hidden />
+            Back
+          </button>
+        ) : (
+          <button type="button" onClick={onClose} className="cre-link-action" style={closeStyle}>
+            <X size={14} aria-hidden />
+            Close
+          </button>
+        )}
         <p style={eyebrowStyle}>Post-course process</p>
         <h2 style={titleStyle}>{step.title}</h2>
       </div>

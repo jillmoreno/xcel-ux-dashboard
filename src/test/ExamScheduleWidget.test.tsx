@@ -480,18 +480,31 @@ describe('Exam Details — the menu the footer opens', () => {
     expect(screen.getByText(/Demo content/)).toBeTruthy()
   })
 
-  it('leaves the menu open UNDERNEATH the sheet it opens', async () => {
-    /* A SECOND sheet, not a replacement — so closing a detail returns you to
-       the list you chose from rather than dumping you back on the page. */
+  /* ⚠ ONE SHEET SINCE 2026-10-19 — this case used to be called "leaves the
+     menu open UNDERNEATH the sheet it opens", and it was right about the
+     INTENT (a detail must return you to the list you chose from, not dump
+     you on the page) while pinning the wrong mechanism. Two mounted sheets
+     meant two overlays, so the page behind went a shade darker with every
+     step inward (Jillienne: "another sheet comes over this one and the
+     background gets darker, lets make it seamless so it seems like a
+     journey"). The detail replaces the menu in place now, and BACK is what
+     returns you — which is what these assertions check instead. */
+  it('replaces the menu in place, and Back returns to it', async () => {
     const user = userEvent.setup()
     await openMenu(user)
     await user.click(within(sheet()).getByRole('button', { name: /Common questions/ }))
-    expect(screen.getAllByRole('dialog').length).toBe(2)
+    // ONE dialog, and therefore one overlay — the whole point of the change.
+    expect(screen.getAllByRole('dialog').length).toBe(1)
+    expect(within(sheet()).getByRole('heading', { name: 'Common questions' })).toBeTruthy()
 
-    const faq = screen.getAllByRole('dialog')[1]
-    await user.click(within(faq).getByRole('button', { name: /Close/ }))
-    const back = screen.getByRole('dialog')
-    expect(within(back).getByRole('heading', { name: 'Exam Details' })).toBeTruthy()
+    /* The top-left control is BACK here, not Close: there is something
+       behind this screen, and offering both in one corner asks the reader
+       which of them dismisses the sheet. */
+    expect(within(sheet()).queryByRole('button', { name: /Close/ })).toBeNull()
+    await user.click(within(sheet()).getByRole('button', { name: /Back/ }))
+    expect(within(sheet()).getByRole('heading', { name: 'Exam Details' })).toBeTruthy()
+    // …and the menu's own control is Close again, because now there is not.
+    expect(within(sheet()).getByRole('button', { name: /Close/ })).toBeTruthy()
   })
 })
 

@@ -286,8 +286,12 @@ const QUESTION: CSSProperties = {
 const LEVEL_NAME: CSSProperties = {
   fontFamily: 'var(--font-heading-serif)',
   fontWeight: 700,
-  fontSize: 26,
-  lineHeight: '21px',
+  /* ⚠ 22, NOT 26 (2026-10-19, Jillienne: "reduce font size"). The line
+     height comes down with it, in the same ratio the 26 was set at (21/26),
+     because the name is BOTTOM-ALIGNED to the dial's baseline — change the
+     size alone and the word lifts off the line it was drawn to sit on. */
+  fontSize: 22,
+  lineHeight: '18px',
   // -3% (2026-10-09, Eric's request; it was 0).
   letterSpacing: '-0.03em',
   textAlign: 'center',

@@ -432,6 +432,18 @@ export function MembershipOverview({
      the same panel. `getLicensedStepsFor` resolves 'NY' to the same array, so
      New York is byte-identical. */
   const openStep = getLicensedStepsFor(activeProgressPath?.state).find((st) => st.id === openStepId) ?? null
+  /* ⚠ THE EXAM-DETAILS JOURNEY'S SECOND SCREEN — a step chosen FROM that
+     menu, which replaces it inside the same sheet rather than opening a
+     second one over it. Both flags have to be true: `examDetailsOpen` alone
+     is the menu, and `openStepId` alone is a step opened from somewhere else
+     entirely (Quick Links, a Step's link), which keeps its own sheet. */
+  const examJourneyStep = examDetailsOpen && (Boolean(openStep) || openStepId === EXAM_FAQ_STEP_ID)
+  /* Closing from inside the journey closes the WHOLE thing — the menu it
+     came from included. Backing out to the menu is what `onBack` is for. */
+  const closeExamJourney = () => {
+    setExamDetailsOpen(false)
+    setOpenStepId(null)
+  }
   // Jump Back In slot mode (`resume` / `up-next` / `discovery`) — persona-driven.
   // In `discovery` the slot has no course, so DON'T fall back to the brand's
   // in-progress course (that would defeat the empty state).
@@ -1720,27 +1732,66 @@ export function MembershipOverview({
           purpose. `Sheet` pins every instance to `zIndex: 100`, so DOM order is
           what decides which of two open sheets is on top — the detail must come
           after this one or it opens behind the menu that asked for it. */}
+      {/* ⚠ ONE SHEET, NOT TWO, WHEN THIS IS A JOURNEY — 2026-10-19,
+          Jillienne: "when clicking on one of these another sheet comes over
+          this one and the background gets darker, lets make it seamless so
+          it seems like a journey … clicking the option, and new sheet auto
+          shows instantly and then a back link is available at the top left
+          to return to the first sheet".
+
+          Both sheets used to be open at once: the menu stayed mounted behind
+          the detail, and since each `Sheet` draws its OWN overlay the two
+          scrims multiplied and the page behind went a shade darker on every
+          step inward. The detail now replaces the menu inside the same
+          sheet, so nothing slides, nothing dims, and Back returns you to the
+          list you chose from.
+
+          ⚠ THE SECOND SHEET STAYS, for steps opened from anywhere else —
+          Quick Links, a Step's own link, the Atlas homes. Those have no menu
+          behind them, so they get a sheet of their own and a Close. The
+          `!examDetailsOpen` gate is what keeps exactly one of the two paths
+          live; without it a step opened from the menu would render in both. */}
       <Sheet
         open={examDetailsOpen}
-        onClose={() => setExamDetailsOpen(false)}
-        title="Exam Details"
+        onClose={() => {
+          setExamDetailsOpen(false)
+          setOpenStepId(null)
+        }}
+        title={
+          examJourneyStep
+            ? openStepId === EXAM_FAQ_STEP_ID
+              ? 'Common questions'
+              : (openStep?.title ?? 'Exam Details')
+            : 'Exam Details'
+        }
         width={480}
       >
-        {examDetailsOpen ? (
+        {!examDetailsOpen ? null : examJourneyStep ? (
+          openStepId === EXAM_FAQ_STEP_ID ? (
+            <ExamFaqPanel onClose={closeExamJourney} onBack={() => setOpenStepId(null)} />
+          ) : openStep ? (
+            <GetLicensedStepPanel
+              step={openStep}
+              state={activeProgressPath?.state}
+              onClose={closeExamJourney}
+              onBack={() => setOpenStepId(null)}
+            />
+          ) : null
+        ) : (
           <ExamDetailsPanel
             state={activeProgressPath?.state}
             onSelect={setOpenStepId}
             onClose={() => setExamDetailsOpen(false)}
           />
-        ) : null}
+        )}
       </Sheet>
       <Sheet
-        open={Boolean(openStep) || openStepId === EXAM_FAQ_STEP_ID}
+        open={!examDetailsOpen && (Boolean(openStep) || openStepId === EXAM_FAQ_STEP_ID)}
         onClose={() => setOpenStepId(null)}
         title={openStepId === EXAM_FAQ_STEP_ID ? 'Common questions' : (openStep?.title ?? '')}
         width={480}
       >
-        {openStepId === EXAM_FAQ_STEP_ID ? (
+        {examDetailsOpen ? null : openStepId === EXAM_FAQ_STEP_ID ? (
           <ExamFaqPanel onClose={() => setOpenStepId(null)} />
         ) : openStep ? (
           <GetLicensedStepPanel
