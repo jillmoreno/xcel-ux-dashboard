@@ -221,6 +221,27 @@ export const E2E_LEARNER_NAME = 'Jordan Navarro'
 export const E2E_LEARNER_EMAIL = 'jordan.navarro@gmail.com'
 export const E2E_PARTNER_NAME = 'Pristine Solutions Financial Services Group LLC'
 
+/**
+ * THE INVITATION EMAIL'S OWN SCENARIO — 2026-10-19, from Jillienne's email
+ * design: a recruit at Sunrise Bank's Tampa Office, invited by the admin who
+ * runs it.
+ *
+ * ⚠ IT IS A DIFFERENT PARTNER FROM THE REST OF THE FLOW, and that is a
+ * discrepancy rather than a decision. The Product Detail page, its checkout
+ * and the partner header all still say `E2E_PARTNER_NAME` — "Pristine
+ * Solutions Financial Services Group LLC", which is the Figma's own — so the
+ * walk currently opens on a Sunrise Bank invitation and lands on a Pristine
+ * Solutions page. Both names are invented; which one the flow keeps is a
+ * call for whoever owns the invite surface, and these constants are here so
+ * that making it is a one-line change rather than a search.
+ *
+ * ⚠ THE SAVING IS DERIVED, never typed: $199 − $65. A third number written
+ * by hand is a third number to get wrong.
+ */
+export const E2E_EMAIL_PARTNER = 'Sunrise Bank'
+export const E2E_EMAIL_OFFICE = 'Tampa Office'
+export const E2E_EMAIL_ADMIN = 'Cody McClintock'
+
 export const E2E_COURSE_TITLE_SHORT = 'Florida Life and Health Pre-licensing'
 /** …and long, which the Design bar's Long title control shows. */
 export const E2E_COURSE_TITLE_LONG = `${E2E_COURSE_TITLE_SHORT} with Comprehensive Exam Simulators`

@@ -140,6 +140,28 @@
   border-radius: 2px;
 }
 
+/* ── the invitation's own CTA ───────────────────────────────────────────── */
+
+/* ⚠ NOT `.cre-e2e-cta`. That one is the flow's brick, and the letter draws a
+   navy pill (2026-10-19, the design) — an email that arrived before the
+   learner has any brand should look the way it was sent, not the way the
+   product is skinned. Fixed, like the rest of `--color-email-*`. */
+.cre-email-cta {
+  background: var(--color-email-cta);
+  color: var(--color-fixed-light);
+  transition: background-color 0.15s ease;
+}
+.cre-email-cta:hover {
+  background: color-mix(in srgb, var(--color-email-cta) 84%, black);
+}
+.cre-email-cta:active {
+  transform: translateY(1px);
+}
+.cre-email-cta:focus-visible {
+  outline: 2px solid var(--color-email-cta);
+  outline-offset: 3px;
+}
+
 /* ── the mail client, one page earlier ──────────────────────────────────── */
 
 /*

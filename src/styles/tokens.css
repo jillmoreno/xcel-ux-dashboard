@@ -7386,6 +7386,19 @@ a.cre-library-card-title::after {
   --color-mail-rule: #e3e3e6;
   --color-mail-field: #f1f1f3;
   --color-mail-ground: #fafafa;
+  /* The INVITATION itself — the one XCEL surface inside that mock client
+     (2026-10-19, Jillienne's email design). Fixed for the same reason the
+     client's own palette is: an email is a thing that already left, and it
+     does not re-skin itself in the reader's brand. The band is the warm
+     stripe behind the partner lockup; the mark is the partner's tile; the
+     accent is the INVITATION eyebrow and the subject's; the saving pill is
+     the only other colour in the letter. */
+  --color-email-partner-band: #faf6f0;
+  --color-email-partner-mark: #1f3a5f;
+  --color-email-accent: #1f4e79;
+  --color-email-saving-bg: #e7f3ec;
+  --color-email-saving-ink: #1f5c3d;
+  --color-email-cta: #2d5872;
   --color-e2e-partner-outline: #e6e6e6;
   --color-e2e-partner-divider: #d1d1d1;
   /* The course header's band and its price card's outline (Figma 420:2080). */
