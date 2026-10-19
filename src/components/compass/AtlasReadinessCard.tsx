@@ -137,6 +137,18 @@ export function AtlasReadinessCard({
         </div>
       )}
       <HalfDial level={level} />
+      {/* ⚠ OUTSIDE THE DIAL, so it is the CARD's width (2026-10-19,
+          Jillienne: "width of the text below not started should be the same
+          width as the other text here"). It was inside `HalfDial`'s box,
+          which is 149 wide — the dial's own width — so a sentence meant to
+          read like the pace card's paragraph wrapped in a column less than
+          half as wide. Out here it takes the same width that paragraph does.
+
+          ⚠ AND THE CARD'S OWN 16 GAP IS THE SPACING ("also, add some spacing
+          between the Not started and the text"). Inside the dial it flowed
+          straight after the 80-tall svg on a 6px margin, which left about 4
+          between it and the band name sitting on the dial's baseline. */}
+      {level.caption ? <span style={CAPTION_BODY}>{level.caption}</span> : null}
       {/* A link on every level, styled as the Study pace tile's (2026-10-09,
           Eric's request). A span, not a button: the card is
           itself the button for now, and buttons cannot nest. Not wired. */}
@@ -159,8 +171,14 @@ function HalfDial({ level }: { level: Level }) {
   const half = Math.PI * r
   const d = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`
   return (
-    // 8px closer to the question above (-8 off the card's 16 gap; 2026-10-09, Eric).
-    <div style={{ position: 'relative', alignSelf: 'center', width: w, height: 109, marginTop: -8 }}>
+    /* 8px closer to the question above (-8 off the card's 16 gap;
+       2026-10-09, Eric).
+       ⚠ 82, NOT 109 (2026-10-19). The box was sized to hold "Overall
+       readiness" at 102.5; that label went earlier today and the caption
+       went out to the card with it, so 27 of those pixels were holding
+       nothing — on every arm, not just this one. 82 is the band name's
+       baseline, which is now the last thing in here. */
+    <div style={{ position: 'relative', alignSelf: 'center', width: w, height: 82, marginTop: -8 }}>
       <svg width={w} height={80} viewBox={`0 0 ${w} 80`} aria-hidden style={{ display: 'block' }}>
         <path d={d} fill="none" style={{ stroke: 'var(--color-atlas-tan-500)' }} strokeWidth={3} />
         <path
@@ -185,15 +203,9 @@ function HalfDial({ level }: { level: Level }) {
           this"). It was a LABEL for the figure above it — uppercase, tracked
           out, centred under the dial — and the section's eyebrow says Exam
           readiness a few lines up, so it was the same words twice with a
-          band name between them.
-
-          ⚠ THE NOT-STARTED LINE STAYS, and it is a different thing in the
-          same slot: a SENTENCE ("Will update as you progress through course
-          material"), in the body treatment the pace card's paragraph uses.
-          It was briefly wearing the label's dress — 3.4px tracking and
-          `white-space: nowrap` — and ran past the card rather than wrapping
-          (2026-10-16). Removing the label does not remove it. */}
-      {level.caption ? <span style={CAPTION_BODY}>{level.caption}</span> : null}
+          band name between them. The NOT-STARTED SENTENCE that shared this
+          slot is a different thing and still drawn — by the card now, at the
+          card's width. */}
     </div>
   )
 }
@@ -253,10 +265,14 @@ const LEVEL_NAME: CSSProperties = {
 /* The sentence under an empty dial — the same body treatment as the pace
    card's paragraph, and centred under the dial where the label would be.
    Positioned, not absolute: it wraps, so it needs the height. */
+/* ⚠ NO `marginTop`, NO SIDE PADDING (2026-10-19). Both were compensating for
+   living inside the 149-wide dial: the margin bought a few pixels off the
+   svg, the padding kept a sentence off the edges of a box too narrow for
+   it. Out at the card's width the card's own 16 gap does the spacing, and
+   the card's padding does the insetting — the same two things that place the
+   pace card's paragraph. Matching that paragraph is the whole point. */
 const CAPTION_BODY: CSSProperties = {
   display: 'block',
-  marginTop: 6,
-  padding: '0 4px',
   fontFamily: 'var(--font-body)',
   fontSize: 11,
   lineHeight: '15px',
