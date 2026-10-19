@@ -1,5 +1,5 @@
 import type { MouseEvent } from 'react'
-import { Bell, ChevronDown, CircleUserLight, FileText, LogOut, Receipt, User } from '@/icons'
+import { Bell, ChevronDown, CircleUser, FileText, LogOut, Receipt, User } from '@/icons'
 import { AtlasHeaderMenu, AtlasHeaderMenuDivider, AtlasHeaderMenuItem } from './AtlasHeaderMenu'
 import './atlasHeader.css'
 
@@ -149,7 +149,38 @@ export function AtlasHeader({
             triggerLabel={`Account menu for ${user.name}`}
             trigger={
               <>
-                <CircleUserLight size={22} aria-hidden />
+                {/* ⚠ A STOPGAP, AND THE WRONG DIRECTION ON PURPOSE —
+                    2026-10-19, Jillienne: "do the regular stopgap for now",
+                    after "the weight of these do not seem to match the
+                    weight of the home button".
+
+                    THE AUDIT: Home, the bell and this pill share one class,
+                    one type weight (500/14), one colour and one 30px height,
+                    and both glyphs fill their box at 22px tall — so neither
+                    the type nor the sizing was ever the mismatch. It is the
+                    icons' FA WEIGHT, and the two disagreed with each other:
+                    `Bell` is REGULAR, `CircleUserLight` was LIGHT (the
+                    registry marks it "light, genuine", so the header's
+                    intent was Light and the bell simply never got a light
+                    version).
+
+                    ⚠ THE RIGHT FIX IS A LIGHT BELL, not a regular account
+                    icon. This matches the two to each other while moving
+                    BOTH further from the Home text they are supposed to sit
+                    with. It is here because the repo holds exactly one bell
+                    path — FA Pro 7.2.0 Regular — `@fortawesome` is not
+                    installed and CLAUDE.md rules out installing it, and a
+                    hand-drawn "light" bell beside a genuine light glyph
+                    would be an approximation pretending to be the real one.
+
+                    TO UNDO: drop the FA Pro Light bell at
+                    `src/icons/bell-light.svg`, export it from the registry,
+                    and swap BOTH — `BellLight` above and `CircleUserLight`
+                    here. Two lines and this comment goes.
+                    ⚠ `AccountMenu` KEEPS THE LIGHT ONE: it is a different
+                    surface, not in this row, and nothing about it was
+                    asked. */}
+                <CircleUser size={22} aria-hidden />
                 {user.name}
               </>
             }
