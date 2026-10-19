@@ -963,7 +963,10 @@ export function AtlasHomeEricE2E({
 
           {/* Right: the journey — at most 335, White's (2026-10-13, Eric's
               request). */}
-          <div style={{ flex: '1 1 0', minWidth: 0, maxWidth: 335, display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* 360 with Set Exam Date on, so its "Do you know your state exam
+              date?" sits on one line: its 226 plus the panel's 24 + 24 in, 12
+              gap and the 73 Yes column (2026-10-19, Eric's request). */}
+          <div style={{ flex: '1 1 0', minWidth: 0, maxWidth: examDateStep ? 360 : 335, display: 'flex', flexDirection: 'column', gap: 24 }}>
             {/* THE STATE EXAM DATE PROMPT, above the steps — Figma 428:3134
                 (2026-10-15, Eric's request). Its own width, wider than the
                 steps' 335. Yes and Not Yet are not wired yet. */}
