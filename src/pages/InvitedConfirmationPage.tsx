@@ -1,9 +1,15 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { CircleCheckSolid } from '@/icons'
+import { Check, CircleCheckSolid, Eye, EyeSlash, Plus } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { PartnerHeader } from '@/components/e2e/PartnerHeader'
 import { TopoBackground } from '@/components/e2e/TopoBackground'
+import {
+  CHARACTER_TYPES,
+  INVITE_PASSWORD_REQUIREMENTS,
+  MAX_LENGTH,
+  isPasswordValid,
+} from '@/components/e2e/invitePasswordRequirements'
 import {
   E2E_JOURNEY_FULL,
   E2E_JOURNEY_PARAM,
@@ -51,7 +57,9 @@ import {
  * Left, the order confirmation on the guide's Secondary 200; right, the
  * Create password form. Clicking the password field fills it with a TEST
  * password that meets the rules (2026-10-15, Eric's request), the rules
- * (Figma 425:3001) show under it, and Confirm turns on — XCEL's brick, as
+ * (Figma 425:3001) show under it — LIVE since 2026-10-19, each row ticking
+ * itself off as the learner types, from `invitePasswordRequirements.ts` —
+ * and Confirm turns on once the password actually passes them — XCEL's brick, as
  * Checkout's Place your order. The field
  * still takes typing, and the eye shows or hides it. Nothing is stored or
  * sent.
@@ -67,6 +75,9 @@ export function InvitedConfirmationPage() {
   const navigate = useNavigate()
   const [password, setPassword] = useState('')
   const [shown, setShown] = useState(false)
+  /* The Confirm gate, and the checklist's verdict — ONE derivation, so the
+     button and the ticks beside the rules cannot disagree. */
+  const valid = isPasswordValid(password)
   // Confirmed: the flow's end state, when `e2e-ends-at-password` is on.
   const [done, setDone] = useState(false)
   const endsHere = useFeatureFlag('e2e-ends-at-password').enabled
@@ -218,7 +229,7 @@ export function InvitedConfirmationPage() {
             style={FORM}
             onSubmit={(e) => {
               e.preventDefault()
-              if (!password) return
+              if (!valid) return
               if (endsHere) setDone(true)
               // Off: `affidavit=1`, and Home opens the Affidavit modal over itself.
               else navigate(`/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}&affidavit=1`)
@@ -244,6 +255,7 @@ export function InvitedConfirmationPage() {
                       if (!password) setPassword(TEST_PASSWORD)
                     }}
                     placeholder="Enter password..."
+                    maxLength={MAX_LENGTH}
                     autoComplete="new-password"
                     style={PASSWORD_INPUT}
                   />
@@ -254,28 +266,60 @@ export function InvitedConfirmationPage() {
                     aria-pressed={shown}
                     style={EYE}
                   >
-                    <img src="/brand/confirmation/eye.svg" alt="" width={18} height={18} style={{ display: 'block' }} />
+                    {/* THE ICON HAS TO CHANGE TOO. Until 2026-10-19 both
+                       states rendered the same static eye.svg, so the only
+                       sign the button had done anything was the password text
+                       itself — a toggle with no toggle on it. From the icon
+                       registry per CLAUDE.md, which is also what makes a
+                       never-changing icon something the types can catch;
+                       `/brand/confirmation/eye.svg` goes unreferenced and
+                       stays in the repo. (`lock.svg` above is the locked Email
+                       field and is unrelated.) */}
+                    {shown ? <EyeSlash size={18} aria-hidden /> : <Eye size={18} aria-hidden />}
                   </button>
                 </span>
               </label>
             </div>
-            {/* The rules, once the field has something in it (Figma 425:3001). */}
+            {/* The rules (Figma 425:3001), LIVE from 2026-10-19: every row
+                says whether it is met yet, by glyph and by colour and in
+                words — never by colour alone.
+
+                THE FIELD IS NOT REDDENED while this is on screen. The
+                checklist IS the error state here, and a red ring arriving on
+                the first keystroke reads as the form punishing normal typing
+                toward a password that is not finished. (The Profile panel does
+                redden its input, but it has a single pass/fail summary line to
+                attach that to; this form has eight live rows instead.)
+
+                EMPTY STAYS EMPTY — the block still waits for the first
+                keystroke rather than opening on a wall of unmet rules. Confirm
+                is disabled either way. */}
             {password ? (
               <div style={RULES}>
-                <p style={{ margin: 0 }}>
-                  Passwords must be between 9 and 30 characters long and include at least three of the four following
-                  types of characters.
-                </p>
+                <p style={{ margin: 0 }}>Passwords must be:</p>
                 <ul style={RULE_LIST}>
-                  <li>English uppercase letters (A through Z)</li>
-                  <li>English lowercase letters (a through z)</li>
-                  <li>Numbers (0 through 9)</li>
-                  <li>{'Special characters (!@#$ %^&* _+=`|(){}[]:">,.?)'}</li>
+                  {INVITE_PASSWORD_REQUIREMENTS.map((rule) => (
+                    <RuleRow key={rule.id} label={rule.label} met={rule.test(password)}>
+                      {/* The four types hang under the rule that COUNTS them.
+                          Each lights independently as that type appears; we do
+                          not light exactly three and leave one dark once the
+                          rule is satisfied, because there is no correct answer
+                          to which one would stay dark. The verdict is the
+                          parent row — these only say what is in there. */}
+                      {rule.id === 'types' ? (
+                        <ul style={TYPE_LIST}>
+                          {CHARACTER_TYPES.map((type) => (
+                            <RuleRow key={type.id} label={type.label} met={type.test(password)} />
+                          ))}
+                        </ul>
+                      ) : null}
+                    </RuleRow>
+                  ))}
                 </ul>
               </div>
             ) : null}
             <div style={{ paddingTop: 8 }}>
-              <button type="submit" disabled={!password} style={password ? CONFIRM_ON : CONFIRM}>
+              <button type="submit" disabled={!valid} style={valid ? CONFIRM_ON : CONFIRM}>
                 Confirm
               </button>
             </div>
@@ -283,6 +327,28 @@ export function InvitedConfirmationPage() {
         </section>
       </main>
     </div>
+  )
+}
+
+/**
+ * One checklist row. THREE signals and none of them load-bearing alone: the
+ * glyph swaps, the colour changes, and the state is spelled out for a screen
+ * reader. The same treatment as the Profile panel's Password Requirements.
+ */
+function RuleRow({ label, met, children }: { label: string; met: boolean; children?: ReactNode }) {
+  return (
+    <li style={met ? { ...RULE_ROW, color: 'var(--color-success-700)' } : RULE_ROW}>
+      <span style={RULE_ROW_LINE}>
+        <span aria-hidden style={RULE_GLYPH}>
+          {met ? <Check size={14} /> : <Plus size={14} />}
+        </span>
+        <span>
+          {label}
+          <span className="cre-sr-only">{met ? ' \u2014 met' : ' \u2014 not yet met'}</span>
+        </span>
+      </span>
+      {children}
+    </li>
   )
 }
 
@@ -465,7 +531,27 @@ const RULES: CSSProperties = {
   color: 'var(--color-neutral-950)',
 }
 
-const RULE_LIST: CSSProperties = { margin: 0, paddingLeft: 19.5, listStyle: 'disc' }
+/* No discs any more: every row carries a glyph of its own, and a bullet
+   beside a tick reads as two markers for one thing. The design's 19.5 indent
+   is kept by the glyph column instead, so the labels sit where they did. */
+const RULE_LIST: CSSProperties = { margin: 0, padding: 0, listStyle: 'none' }
+
+/* The four character types, indented under the rule that counts them. */
+const TYPE_LIST: CSSProperties = { ...RULE_LIST, paddingLeft: 19.5 }
+
+const RULE_ROW: CSSProperties = { display: 'flex', flexDirection: 'column', paddingTop: 6 }
+
+const RULE_ROW_LINE: CSSProperties = { display: 'flex', alignItems: 'flex-start', gap: 6 }
+
+/* Holds the glyph on the label's FIRST line however the label wraps — the
+   specials row is long enough to wrap in a 440 column. */
+const RULE_GLYPH: CSSProperties = {
+  flex: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  height: 18,
+  width: 13.5,
+}
 
 /* THE LOADING PAGE. Centred in the body, no header above it, the topo map
    absolutely behind it (hence `position: relative`); the line under the
