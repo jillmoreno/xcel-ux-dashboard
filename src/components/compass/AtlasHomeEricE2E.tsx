@@ -19,7 +19,6 @@ import { useAccount } from '@/context/AccountContext'
 import {
   AngleRightRegular,
   AngleRightSolid,
-  CalendarRegular,
   BookOpen,
   FileCertificateLight,
   LockRegular,
@@ -319,9 +318,21 @@ export function AtlasHomeEricE2E({
             {onWhite ? <span style={META_LABEL}>,</span> : null}
           </span>
         </span>
-        {/* White reads as one line — "…05/29/2026, 18 days to complete" — with
-            no divider (2026-10-14, Eric's request). */}
-        {onWhite ? (
+        {/* ⚠ AT 100% IT CONGRATULATES INSTEAD OF COUNTING (2026-10-19,
+            Jillienne: "when at 100%, this messaging should change to Congrats!
+            You have completed this course."). "18 days to complete" is time
+            the learner still needs; at the end it is time they no longer have
+            any use for, and a countdown beside a finished course reads as
+            something still owed. The ACCESS DATE stays either way — access
+            really does end then, certificate or no certificate. */}
+        {completedView ? (
+          <span style={{ ...META_PAIR, marginLeft: onWhite ? -4 : undefined }}>
+            {onWhite ? null : <span aria-hidden style={META_DIVIDER} />}
+            <span style={META_VALUE}>Congrats! You have completed this course.</span>
+          </span>
+        ) : onWhite ? (
+          /* White reads as one line — "…05/29/2026, 18 days to complete" —
+             with no divider (2026-10-14, Eric's request). */
           <span style={{ ...META_PAIR, marginLeft: -4 }}>
             <span style={META_VALUE}>
               {accessDays} {accessDays === 1 ? 'day' : 'days'}
@@ -489,6 +500,9 @@ export function AtlasHomeEricE2E({
      the same id — `onOpenStep` is exempt from `LINKS_OFF`, so this one
      genuinely works. */
   const examInfo = onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : undefined
+  /* …and Step 3's, the same sheet Quick Links' "Applying for a License"
+     opens, by the step's own id rather than a second copy of it. */
+  const applyInfo = onOpenStep ? () => onOpenStep(apply.id) : undefined
   const beginLabel = completedView
     ? 'View Certificate'
     : progressPick === 'not-started'
@@ -997,8 +1011,13 @@ export function AtlasHomeEricE2E({
             <Step
               number={3}
               title={state ? `Get Licensed in ${state}` : 'Get Licensed'}
-              /* Dropped on the walk — Jillienne, the same pass. */
-              detail={walkSteps ? undefined : apply.detail}
+              /* ⚠ THE DETAIL LINE WENT, THEN A STOP CAME BACK IN ITS PLACE.
+                 The sentence was dropped on the walk (2026-10-16); on
+                 2026-10-19 Step 3 gained what Step 2 has — "add a circle
+                 link option, blue style, under this that is: Applying for a
+                 License". A step that names nothing a learner can do is a
+                 heading, not a step. */
+              detail={walkSteps ? <StopLink label="Applying for a License" onOpen={applyInfo} /> : apply.detail}
               link={apply.detailLabel ?? 'How to apply'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(apply.id) : undefined}
             />
@@ -1248,20 +1267,35 @@ function ExamDatePrompt({ onExamInfo }: { onExamInfo?: () => void }) {
           cannot be aligned with the list above it was the thing in the way,
           not a decoration to keep. */}
       <span style={EXAM_ROW}>
+        {/* ⚠ A CIRCLE, NOT A CALENDAR, AND A LINE UNDER IT (2026-10-19,
+            Jillienne: "change the calendar icon to a circle icon, that is
+            also blue outline bc user can do it"). The calendar said what the
+            row was ABOUT; the open ring says what the learner can DO with
+            it, which is the only thing Step 1's marks ever say. Both stops
+            here are open, so both wear the live outline — and the spine
+            between them is the journey's own, so Step 2 reads as a list
+            rather than two loose lines. */}
         <span aria-hidden style={EXAM_MARK_COL}>
-          <CalendarRegular size={13} aria-hidden style={EXAM_MARK_LIVE} />
+          <span style={MARK_CURRENT} />
+          <span style={EXAM_SPINE} />
         </span>
         <span style={EXAM_PROMPT_LINE}>
-          <span style={EXAM_DATE_QUESTION}>Add your state exam date to help plan your study pace.</span>
-          {/* ⚠ "ADD DATE", FILLED — 2026-10-19, Jillienne: "change to Add
-              Date. Make it a solid primary color." It was "Yes", the outline
-              half of a question's two answers, and with the line beside it
-              now a statement a "Yes" answered nothing. The label says what
-              the control does and the fill says it is the thing to do.
-              `cre-compass-btn-primary` is the page's own filled primary —
-              the Begin Course button's class — rather than a colour typed
-              here, so it follows the brand skin like every other primary. */}
-          <button type="button" className="cre-compass-primary cre-compass-btn-primary" style={EXAM_DATE_ADD}>
+          <span style={EXAM_DATE_QUESTION}>When is your exam?</span>
+          {/* ⚠ "ADD DATE" — 2026-10-19, Jillienne: "change to Add Date. Make
+              it a solid primary color", then, once the row had become a stop
+              on the journey rather than a pill of its own: "make this a
+              secondary style, no background color, reduce left and right
+              padding on the button". It was "Yes", the outline half of a
+              question's two answers, and with the line beside it now a
+              question of its own a "Yes" answered nothing.
+
+              ⚠ IT WENT FILLED AND CAME BACK, and the second call is the one
+              that fits where it ended up: a filled button inside a list of
+              stops shouted over Step 1's rows next to it. Secondary is the
+              Course Overview button's own class pair on this page, so the
+              two outline controls on Home match and the colour follows the
+              brand skin rather than being typed here. */}
+          <button type="button" className="cre-compass-secondary cre-atlas-home-secondary" style={EXAM_DATE_ADD}>
             Add Date
           </button>
         </span>
@@ -1278,14 +1312,35 @@ function ExamDatePrompt({ onExamInfo }: { onExamInfo?: () => void }) {
           of the three sheet handlers exempt from `LINKS_OFF` (see the note
           there) — the same handler Quick Links' own Exam Information uses,
           with the same id, so the two cannot open different sheets. */}
-      <span style={EXAM_ROW}>
-        <span aria-hidden style={EXAM_MARK_COL}>
-          <span style={MARK_CURRENT} />
-        </span>
-        <button type="button" onClick={onExamInfo} disabled={!onExamInfo} style={EXAM_INFO_LINK}>
-          Exam Information
-        </button>
+      <StopLink label="Exam Information" onOpen={onExamInfo} />
+    </span>
+  )
+}
+
+/**
+ * ONE STOP THAT IS A LINK — the journey's open mark and a label in the
+ * current stop's colour (2026-10-19, Jillienne: "a 2nd option should be
+ * shown below that calendar icon that is a active circle link with 'Exam
+ * Information'", then the same under Step 3 for "Applying for a License").
+ *
+ * ⚠ ONE COMPONENT BECAUSE THEY ARE ONE THING. The second ask was the first
+ * one again under a different heading, and two copies of a row this small is
+ * how the two sheets' entrances start looking different from each other.
+ *
+ * ⚠ THESE OPEN, unlike most of this page. `onOpenStep` is one of the three
+ * sheet handlers exempt from `LINKS_OFF` (see the note there) — and both
+ * callers pass the same ids Quick Links' own links use, so a sheet cannot be
+ * reached two ways and show two things.
+ */
+function StopLink({ label, onOpen }: { label: string; onOpen?: () => void }) {
+  return (
+    <span style={EXAM_ROW}>
+      <span aria-hidden style={EXAM_MARK_COL}>
+        <span style={MARK_CURRENT} />
       </span>
+      <button type="button" onClick={onOpen} disabled={!onOpen} style={EXAM_INFO_LINK}>
+        {label}
+      </button>
     </span>
   )
 }
@@ -1324,19 +1379,25 @@ function Step({
 
 /* The exam-date prompt: a Primary 100 pill (24 in, 16 corners, 33 tall)
    with Yes in Primary 500, then Not Yet › 8 to its right. */
-/* The two stops, stacked — the journey's own 2px row gap. */
+/* The journey's own 2px row gap, and how far down each row its mark sits —
+   both read by `EXAM_SPINE`, which has to span them. */
+const EXAM_ROWS_GAP = 2
+const EXAM_MARK_PAD = 11
+/* The two stops, stacked. */
 const EXAM_ROWS: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 2,
+  gap: EXAM_ROWS_GAP,
   // 20 to Step 1, 4 under the column's 24 (2026-10-15, Eric's requests: 16,
   // then 4 more).
   marginBottom: -4,
 }
-/* One stop: the mark, then what it says. The journey's own 8 between them. */
+/* One stop: the mark, then what it says. The journey's own 8 between them.
+   `stretch`, so the first row's marker column can run a spine down to the
+   second — the same shape `JourneyRow` uses. */
 const EXAM_ROW: CSSProperties = {
   display: 'flex',
-  alignItems: 'center',
+  alignItems: 'stretch',
   gap: 8,
   minHeight: 36,
 }
@@ -1347,23 +1408,24 @@ const EXAM_ROW: CSSProperties = {
 const EXAM_MARK_COL: CSSProperties = {
   width: 14,
   flex: 'none',
+  alignSelf: 'stretch',
   display: 'flex',
+  flexDirection: 'column',
   alignItems: 'center',
-  justifyContent: 'center',
+  gap: 3,
+  /* Centres the 14 mark in the 36 row, so it sits on the Add Date button's
+     line rather than above it. `JourneyRow` uses 3 because its rows are a
+     single line of text; this one carries a 33-tall button. */
+  paddingTop: EXAM_MARK_PAD,
 }
-/* ⚠ NOT THE LOCK'S GREY. `LOCK_MARK` is muted because a locked row is one
-   you cannot act on; these are the opposite — they are the step's whole
-   point — so the calendar takes the current stop's colour, the same the Add
-   Date button and the Exam Information label wear. */
-const EXAM_MARK_LIVE: CSSProperties = {
-  flex: 'none',
-  color: 'var(--color-compass-page-button)',
-}
-/* The prompt and its button, on one line while there is room for one. */
+/* The prompt and its button, on one line while there is room for one.
+   16 between them, not 10 (2026-10-19) — the gap was set when the button was
+   filled and read as its own object; an outline one needs the air to stop
+   looking like the end of the sentence. */
 const EXAM_PROMPT_LINE: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: 10,
+  gap: 16,
   minWidth: 0,
   flex: '1 1 0',
 }
@@ -1404,7 +1466,12 @@ const EXAM_DATE_ADD: CSSProperties = {
   whiteSpace: 'nowrap',
   height: 33,
   boxSizing: 'border-box',
-  padding: '0 24px',
+  /* 12 a side, not 24 (2026-10-19). The wide padding was a filled button's,
+     hugging its label on a pill of its own; in a row beside a sentence it
+     was pushing the line it sits with onto a second one for no reason. */
+  padding: '0 12px',
+  /* The border is the secondary class's — declared here only so the box is
+     the same size whichever skin paints it. */
   border: '1px solid transparent',
   // The standard button's corners, `COMPASS_BUTTON`'s (2026-10-15, Eric's
   // request; it was 16).
@@ -1714,13 +1781,20 @@ const STEP_TITLE: CSSProperties = {
    hairline that disappears on a low-contrast screen. */
 const GREY_STROKE = 1.5
 const LIVE_STROKE = 2
+/* ⚠ AN OUTLINE, NOT A DISC — 2026-10-19, Jillienne: "these should be circle
+   strokes, not filled because they are currently being worked on". A filled
+   mark is a finished one: it is what the green check is, and a solid dot a
+   row above an unfinished stop said the same thing in a different colour.
+   The current stop keeps the COLOUR, which is what makes it live, and gives
+   up the fill, which is what made it look done. It stays at `LIVE_STROKE`
+   while the stops below it are thinner — the ring is open, not faint. */
 const MARK_CURRENT: CSSProperties = {
   width: 14,
   height: 14,
   boxSizing: 'border-box',
   borderRadius: '50%',
   // The current stop's title colour (XCEL: Secondary 600 brown).
-  background: 'var(--color-atlas-home-current-stop, var(--color-compass-page-button))',
+  background: 'transparent',
   border: `${LIVE_STROKE}px solid var(--color-atlas-home-current-stop, var(--color-compass-page-button))`,
   flex: 'none',
 }
@@ -1770,6 +1844,14 @@ const SPINE_DONE: CSSProperties = {
   ...SPINE,
   borderLeftWidth: LIVE_STROKE,
   borderLeftColor: 'var(--color-success-500)',
+}
+/* ⚠ THE SPINE HAS TO REACH THE NEXT MARK, and the mark it is reaching is
+   inset by this row's own `paddingTop` plus the gap between the rows. Left
+   to end at its row's edge it stopped 13 short — a line pointing at nothing.
+   Pulled past by exactly that, it closes on the journey's own 3. */
+const EXAM_SPINE: CSSProperties = {
+  ...SPINE,
+  marginBottom: -(EXAM_ROWS_GAP + EXAM_MARK_PAD - 3),
 }
 /* The course card's actions — the page's main button size (the Begin Course
    button's, 13.5 / 20.25 with 5×8 padding), side by side. */
