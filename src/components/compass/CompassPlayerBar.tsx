@@ -118,9 +118,10 @@ export function CompassPlayerBar({
       role="toolbar"
       aria-label="Course player controls"
       className="cre-compass-player-bar"
-      // With the trays on, 16 after the last button, the same as the divider's
-      // 16 before Rubi (2026-10-19, Eric's request); 20 otherwise.
-      style={{ ...BAR, top: stickyTop, ...(sideTrays ? { paddingRight: 16 } : null) }}
+      // With the trays on, 11 on every side — the left and right as the top
+      // and bottom (2026-10-19, Eric's requests: 16 on the right first);
+      // 11 / 20 otherwise.
+      style={{ ...BAR, top: stickyTop, ...(sideTrays ? { padding: 11 } : null) }}
     >
       {/* ── Left: search, notes, settings, then where you stand ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: '1 1 0', minWidth: 0 }}>
@@ -190,7 +191,9 @@ export function CompassPlayerBar({
       {showRubi ? (
         <button
           type="button"
-          className="cre-compass-player-btn cre-compass-player-rubi"
+          // White like Notes and Nudges with the trays on (2026-10-19, Eric's
+          // request) — the plain player button; the Rubi tint otherwise.
+          className={sideTrays ? 'cre-compass-player-btn' : 'cre-compass-player-btn cre-compass-player-rubi'}
           onClick={onRubi}
           disabled={!onRubi}
           aria-label="Open Rubi"
