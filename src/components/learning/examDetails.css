@@ -1,0 +1,46 @@
+/*
+ * THE EXAM DETAILS MENU'S ROWS — 2026-10-19, Jillienne: "add a hover effect
+ * to these options and round the corners a bit more".
+ *
+ * These three rows are the only things on that sheet to click, and they
+ * looked identical whether the cursor was over them or not — on a screen
+ * whose whole job is "pick one of these", that is the one place hover earns
+ * its keep.
+ *
+ * ⚠ THE FILL AND THE BORDER HAD TO LEAVE THE INLINE STYLE. Inline beats a
+ * stylesheet, so a `:hover` against a row whose `background` sits on the
+ * element is written, shipped, and silently does nothing — the same trap
+ * `LinkCtaContrast.test.ts` records for `.cre-gift-cta`, and the one the
+ * invite flow's buttons hit earlier today. The class owns the two properties
+ * its hover moves; the component keeps the rest inline.
+ *
+ * ⚠ THE SHIFT IS DERIVED, not a new colour. `color-mix` against the card and
+ * the page means the wash follows every brand skin rather than pinning one.
+ */
+.cre-exam-row {
+  background: var(--color-surface-card);
+  border-color: var(--color-border-subtle);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.cre-exam-row:hover {
+  background: color-mix(in srgb, var(--color-text-secondary) 6%, var(--color-surface-card));
+  border-color: color-mix(in srgb, var(--color-text-secondary) 40%, var(--color-border-subtle));
+}
+
+/* The chevron leans toward the direction it is about to take you. It is the
+   only moving part: the row itself does not lift, because three of these
+   stacked would all nudge as the cursor crossed them. */
+.cre-exam-row svg {
+  transition: transform 0.15s ease;
+}
+.cre-exam-row:hover svg {
+  transform: translateX(2px);
+}
+
+.cre-exam-row:focus-visible {
+  outline: 2px solid var(--color-compass-page-button, var(--color-primary-500));
+  outline-offset: 2px;
+}

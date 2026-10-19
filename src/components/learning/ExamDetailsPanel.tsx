@@ -4,6 +4,7 @@ import { examFactsFor, jurisdictionName } from '@/data/nyProducerRequirements'
 import { useExamDate } from '@/data/examDateStore'
 import { EXAM_FAQ, examDetailRows } from '@/data/examDetails'
 import { GoverningAgencyBlock } from './GoverningAgencyBlock'
+import './examDetails.css'
 
 /**
  * EXAM DETAILS — the menu the exam-date card's footer opens, 2026-09-29.
@@ -73,7 +74,7 @@ export function ExamDetailsPanel({
         <ul style={rowListStyle}>
           {examDetailRows(hasExamDate, state).map((row) => (
             <li key={row.id}>
-              <button type="button" style={rowStyle} onClick={() => onSelect(row.id)}>
+              <button type="button" className="cre-exam-row" style={rowStyle} onClick={() => onSelect(row.id)}>
                 <span style={{ minWidth: 0 }}>
                   <span style={rowLabelStyle}>{row.label}</span>
                   <span style={rowDetailStyle}>{row.detail}</span>
@@ -208,9 +209,14 @@ const rowStyle: CSSProperties = {
   gap: 12,
   textAlign: 'left',
   padding: '14px 16px',
-  border: '1px solid var(--color-border-subtle)',
-  borderRadius: 'var(--radius-sm)',
-  background: 'var(--color-surface-card)',
+  /* ⚠ NO `background` OR `border-color` HERE — `.cre-exam-row` owns both, or
+     its hover could never outrank the element. The WIDTH and STYLE stay, so
+     the box is the same size whichever rule paints it. */
+  borderWidth: 1,
+  borderStyle: 'solid',
+  /* 12, not 4 (2026-10-19) — `--radius-lg`, the roundest of the three stops,
+     which is also what the sheet's own corners use. */
+  borderRadius: 'var(--radius-lg)',
   cursor: 'pointer',
 }
 
