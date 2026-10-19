@@ -559,6 +559,32 @@ const XCEL_EXAM_PREP_NY: BrandProgressProfile = {
  * other and from 42 — a reviewer flipping the control should see the
  * denominator move, and nobody should mistake these for published counts.
  */
+/**
+ * EACH QUALIFYING COURSE'S OWN ART — 2026-10-19, Jillienne, of the Florida
+ * course on the end-to-end Home: "update this image to this".
+ *
+ * ⚠ WHAT THIS REPLACES IS NOT A CHOICE, IT IS A HASH. These cards carried
+ * `imageUrl: undefined`, so `getCourseImage` hashed the id into the ten-image
+ * stock pool — and `jbi-xcel-qe-fl` happens to land on `/courses/3.webp`, a
+ * kitchen. The pool is REAL-ESTATE stock (see `courseImage.ts`); on an
+ * insurance pre-licensing course every slot in it is wrong, and slot 3 was
+ * only the particular wrong one Florida drew.
+ *
+ * ⚠ ITS OWN FILE, NOT AN OVERWRITE OF SLOT 3. Replacing `3.webp` would have
+ * worked on this screen and quietly put a Miami beach under every other card
+ * that hashes there. This sits beside `ny-life-health.webp` and
+ * `ny-property-casualty.webp`, which are per-course art for the same reason.
+ *
+ * ⚠ TEXAS STAYS UNDRAWN. There is no Texas art, and `undefined` is the
+ * honest answer — it falls back to the pool exactly as before. The note the
+ * old comment made ("no card claims a jurisdiction it does not have") is
+ * still the rule; what changed is that Florida now HAS art to claim.
+ */
+const COURSE_ART: Record<'fl' | 'tx', string | undefined> = {
+  fl: '/courses/fl-life-health.webp',
+  tx: undefined,
+}
+
 function xcelQualifyingFor(
   course: 'fl' | 'tx',
   title: string,
@@ -576,11 +602,11 @@ function xcelQualifyingFor(
       { key: 'pre-license', label: 'Pre-licensing Course', required: lessons, segment: 'mandatory' },
     ],
     // The resume card is the PART the learner is on, and its image is New
-    // York's course art — dropped rather than re-pointed, so no card claims
-    // a jurisdiction it does not have.
-    upNext: { ...ny.upNext, id: `jbi-xcel-qe-${course}`, imageUrl: undefined, hours: lessons, state: courseStateFor(course) },
-    resumeMid: { ...ny.resumeMid, id: `jbi-xcel-qe-${course}`, imageUrl: undefined, hours: lessons, state: courseStateFor(course) },
-    resumeEarly: { ...ny.resumeEarly, id: `jbi-xcel-qe-${course}`, imageUrl: undefined, hours: lessons, state: courseStateFor(course) },
+    // York's course art — re-pointed at this course's own art where there is
+    // some, so no card claims a jurisdiction it does not have.
+    upNext: { ...ny.upNext, id: `jbi-xcel-qe-${course}`, imageUrl: COURSE_ART[course], hours: lessons, state: courseStateFor(course) },
+    resumeMid: { ...ny.resumeMid, id: `jbi-xcel-qe-${course}`, imageUrl: COURSE_ART[course], hours: lessons, state: courseStateFor(course) },
+    resumeEarly: { ...ny.resumeEarly, id: `jbi-xcel-qe-${course}`, imageUrl: COURSE_ART[course], hours: lessons, state: courseStateFor(course) },
   }
 }
 
