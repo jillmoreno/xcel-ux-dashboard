@@ -63,6 +63,20 @@
   background-color: var(--atlas-hdr-tint);
 }
 
+/* ⚠ SEMI-BOLD WHEN IT IS THE PAGE YOU ARE ON — 2026-10-19, Jillienne: "if
+   this is selected, the text should be semi-bold". The tint above was the
+   only thing marking the current nav item, and a tint is also what HOVER
+   draws, so the two states looked the same under the cursor.
+
+   ⚠ THE SELECTED SELECTORS ONLY, not the four above. `:hover` would bold on
+   mouse-over and shift the pills under the cursor, and `[aria-expanded]` is
+   an OPEN MENU rather than a place you are — neither is selection. This is
+   why the rule is separate instead of a line added to that block. */
+.cre-atlas-hdr .cre-atlas-hdr-pill[aria-current='page'],
+.cre-atlas-hdr .cre-atlas-hdr-pill.is-selected {
+  font-weight: 600;
+}
+
 .cre-atlas-hdr .cre-atlas-hdr-eyebrow-link {
   display: inline-flex;
   align-items: center;
