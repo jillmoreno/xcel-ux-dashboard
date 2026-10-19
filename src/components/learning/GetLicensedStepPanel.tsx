@@ -68,12 +68,12 @@ export function GetLicensedStepPanel({
           control. One slot, one affordance: a Back AND a Close in the same
           corner asks the reader which one dismisses the sheet. */}
         {onBack ? (
-          <button type="button" onClick={onBack} className="cre-link-action" style={closeStyle}>
+          <button type="button" onClick={onBack} className="cre-link-action cre-cta-ink" style={closeStyle}>
             <ArrowLeft size={14} aria-hidden />
             Back
           </button>
         ) : (
-          <button type="button" onClick={onClose} className="cre-link-action" style={closeStyle}>
+          <button type="button" onClick={onClose} className="cre-link-action cre-cta-ink" style={closeStyle}>
             <X size={14} aria-hidden />
             Close
           </button>
@@ -211,6 +211,17 @@ function hostLabel(href: string): string {
 
 /* ─── styles ──────────────────────────────────────────────────────────── */
 
+/* ⚠ `cre-cta-ink` OWNS THE COLOUR (2026-10-19, Jillienne: "these should be
+   the blue link cta color"). It was `--color-text-secondary`, a grey, while
+   the links INSIDE the same sheet — dice.fldfs.com, myfloridacfo.com — are
+   that class's navy. Two link treatments on one panel, and the one at the
+   top was the quieter of the two despite being the only control that does
+   anything structural.
+
+   ⚠ AND THE INLINE `color` HAD TO GO, not be changed to the same value.
+   Inline beats the stylesheet, so a second declaration here would have
+   pinned the colour and stopped following the theme — `cre-cta-ink` has a
+   `[data-theme='dark']` arm, which an inline hex silently defeats. */
 const closeStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
@@ -222,7 +233,6 @@ const closeStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 13,
   fontWeight: 700,
-  color: 'var(--color-text-secondary)',
 }
 
 const eyebrowStyle: CSSProperties = {
