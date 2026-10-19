@@ -610,7 +610,44 @@
   --compass-rule: #e0dbcd; /* hairlines: footer top, Rubi header/footer */
   --compass-edge: #c3bba5; /* the stronger border — Rubi's left edge, buttons */
   --compass-thread: #e2d9cd; /* the vertical line down the TOC's child items */
-  --compass-current: #eceef0; /* the fill behind the TOC's current child */
+  --compass-current: var(--color-emphasis-fill); /* the fill behind the TOC's current child */
+}
+
+/*
+ * THE EMPHASIS FILL — one token, 2026-10-19 (Jillienne, of the Atlas card
+ * band and the Compass panels: "make them one token").
+ *
+ * It was TWO values a single step apart — `#eceff1` on the primary/CTA ramp's
+ * 100 step and `#eceef0` on every named fill — which is below the threshold
+ * anyone can see and above zero for anyone maintaining it. Atlas's course-card
+ * band drew one, Compass's panels the other, and nothing on either screen
+ * said which was meant.
+ *
+ * ⚠ `#eceef0` IS THE HALF THAT SURVIVES, and not by coin-toss: the design
+ * guide names it ("the hairline, emphasis-hairline and emphasis-fill values"
+ * — #E0DBCD, #D8DEE4, #ECEEF0, see the Atlas palette block), it is the half
+ * that pairs with the #D8DEE4 emphasis hairline, and it is what all but two
+ * of the live declarations already carried.
+ *
+ * ⚠ `:root`, NOT THE RAMP, AND THE DIFFERENCE MATTERS. `--color-primary-100`
+ * is a ramp step with a different value on each of the fourteen Atlas
+ * palettes; this is one fixed colour. The six palettes that share the Global
+ * values (global, cre, mckissock, elite, xcel, xcel-blue-cta) now point their
+ * 100 step HERE, so on those skins the ramp step and the fill are one token
+ * and one value — which is the whole of the ask. The custom palettes
+ * (grasslands, everglade, harbor, …) keep their own 100, and their Compass
+ * card already followed it through `--color-compass-page-card:
+ * var(--color-primary-100)` — "the Global card treatment on every skin, in
+ * each brand's own colours". Defining this AS the ramp would have dragged
+ * that fixed colour around with whichever palette was selected.
+ *
+ * ⚠ WHAT ACTUALLY MOVED: #ECEFF1 → #ECEEF0 on those six skins' 100 step, and
+ * on the Atlas top-nav button's unset fallback. One step on two channels.
+ * Every other site in this file changed from a literal to this token and
+ * computes exactly what it computed before.
+ */
+:root {
+  --color-emphasis-fill: #eceef0;
 }
 
 /* ============================================================================
@@ -952,7 +989,7 @@
      it reads as a tint rather than an edge — the words carry it. */
   --color-compass-rail-pill: #f8f6f3;
   --color-compass-rail-spine: #cec0ac;
-  --color-compass-rail-current-fill: #eceef0;
+  --color-compass-rail-current-fill: var(--color-emphasis-fill);
   --color-compass-rail-hover: var(--color-neutral-100);
   /* Not-started text, sections and lessons alike: #818181 (Figma 13:22 /
      13:38), 3.95:1 on white — under AA for text this size. Kept because the
@@ -987,7 +1024,7 @@
   /* The active section dot's 5px ring (Figma 13:23) — #eceef0, the current
      lesson's fill. Its own token, not a reference to that fill: in dark the
      fill is translucent, and a translucent halo would let the line through. */
-  --color-compass-rail-active-halo: #eceef0;
+  --color-compass-rail-active-halo: var(--color-emphasis-fill);
   --color-compass-rail-upcoming-lesson-mark: #baa78b;
   /* LOCKED entries — the Course control's Regulated sequencing, 2026-10-15.
      GREY rather than the beige every other not-reached mark takes, and that
@@ -1035,7 +1072,7 @@
   --color-compass-page-body: #5b5560;
   --color-compass-page-muted: #706b63;
   --color-compass-page-heading: #1f1d18;
-  --color-compass-page-card: #eceef0;
+  --color-compass-page-card: var(--color-emphasis-fill);
   /* The course card (Home + Overview) — the page card, split out on
      2026-09-28 so the Atlas palette can tint it without the Day-one pill. */
   --color-compass-course-card: var(--color-compass-page-card);
@@ -1099,7 +1136,7 @@
   --color-compass-player-track: var(--color-neutral-300);
   --color-compass-player-ink: #3d5a73;
   --color-compass-player-on-ink: var(--color-neutral-50);
-  --color-compass-player-rubi: #eceef0;
+  --color-compass-player-rubi: var(--color-emphasis-fill);
   --color-compass-player-rubi-border: #d8dee4;
   --color-compass-player-hover: var(--color-neutral-100);
 }
@@ -1145,7 +1182,7 @@
   --color-compass-rubi-muted: #706b63;
   --color-compass-rubi-chip-ink: #5b5560;
   --color-compass-rubi-placeholder: #757575;
-  --color-compass-rubi-bubble: #eceef0;
+  --color-compass-rubi-bubble: var(--color-emphasis-fill);
   --color-compass-rubi-send: #3d5a73;
   --color-compass-rubi-on-send: var(--color-neutral-50);
   --color-compass-rubi-hover: var(--color-neutral-100);
@@ -1429,7 +1466,7 @@
 /* Atlas Top Nav buttons (AtlasTopNav). Fallbacks are Figma's values, for the
    Atlas version with its palette flag off. */
 .cre-atlas-topnav-btn {
-  background: var(--color-atlas-topnav-idle, #eceff1);
+  background: var(--color-atlas-topnav-idle, var(--color-emphasis-fill));
   color: var(--color-atlas-topnav-idle-ink, #31485c);
   /* An INSIDE stroke (an inset shadow, so the button keeps its size); only
      the Global skin sets one. */
@@ -1457,7 +1494,7 @@
   transition: background-color 420ms cubic-bezier(0.65, 0, 0.35, 1);
 }
 .cre-atlas-topnav-tray.is-open {
-  background: var(--color-atlas-topnav-tray, #eceef0);
+  background: var(--color-atlas-topnav-tray, var(--color-emphasis-fill));
 }
 .cre-atlas-topnav-slide {
   transition: grid-template-columns 420ms cubic-bezier(0.65, 0, 0.35, 1);
@@ -6308,7 +6345,10 @@ a.cre-library-card-title::after {
      hairline, emphasis-hairline and emphasis-fill values already named below.
      The role tokens further down keep their literal hex, which are the same
      colours. */
-  --color-cta-100: #eceff1;
+  /* ⚠ THE RAMP'S 100 STEP IS THE EMPHASIS FILL ON THIS SKIN (2026-10-19).
+     It was #ECEFF1 — one step off the fill every named token beside it uses.
+     Other palettes keep their own 100; see `--color-emphasis-fill`. */
+  --color-cta-100: var(--color-emphasis-fill);
   --color-cta-200: #cfd6dc;
   --color-cta-300: #9eadb9;
   --color-cta-400: #8194a4;
@@ -6317,7 +6357,7 @@ a.cre-library-card-title::after {
   --color-cta-700: #253645;
   --color-cta-800: #18242e;
   --color-cta-900: #0c1217;
-  --color-primary-100: #eceff1;
+  --color-primary-100: var(--color-emphasis-fill);
   --color-primary-200: #cfd6dc;
   --color-primary-300: #9eadb9;
   --color-primary-400: #8194a4;
@@ -6353,15 +6393,15 @@ a.cre-library-card-title::after {
   --color-atlas-cta: #3d5a73;
   --color-atlas-cta-ink: #3d5a73;
   --color-atlas-active: #3d5a73;
-  --color-atlas-active-fill: #eceef0;
+  --color-atlas-active-fill: var(--color-emphasis-fill);
   --color-atlas-eyebrow: #5b5560;
   --color-atlas-step-rule: #e0dbcd;
 
   /* Left navigation — steel on the emphasis fill; hover text slate. */
   --color-atlas-nav-active-ink: #3d5a73;
-  --color-atlas-nav-active-fill: #eceef0;
+  --color-atlas-nav-active-fill: var(--color-emphasis-fill);
   --color-atlas-nav-active-bar: #3d5a73;
-  --color-atlas-nav-hover: #eceef0;
+  --color-atlas-nav-hover: var(--color-emphasis-fill);
   --color-atlas-nav-hover-ink: #263d50;
   --color-atlas-nav-rule: #e0dbcd;
 
@@ -6369,8 +6409,8 @@ a.cre-library-card-title::after {
   --color-compass-rail-section-ink: #3d5a73;
   --color-compass-rail-ink: #3d5a73;
   --color-compass-rail-current-ink: #263d50;
-  --color-compass-rail-current-fill: #eceef0;
-  --color-compass-rail-active-halo: #eceef0;
+  --color-compass-rail-current-fill: var(--color-emphasis-fill);
+  --color-compass-rail-active-halo: var(--color-emphasis-fill);
   --color-compass-rail-link: #3d5a73;
   --color-compass-rail-spine: #e0dbcd;
   --color-compass-rail-upcoming-section-mark: #c3bba5;
@@ -6379,7 +6419,7 @@ a.cre-library-card-title::after {
   --color-compass-rail-section-current-text: #1f1d18;
   --color-compass-rail-upcoming-section-text: #706b63;
   --color-compass-rail-upcoming-text: #706b63;
-  --color-compass-rail-pill: #eceef0;
+  --color-compass-rail-pill: var(--color-emphasis-fill);
   --color-compass-rail-rule: #e0dbcd;
 
   /* Pages. */
@@ -6406,16 +6446,16 @@ a.cre-library-card-title::after {
      designer's request; it was Figma's #31485C). */
   --color-atlas-topnav-idle-ink: var(--color-primary-500);
   /* Expanding Top Nav in Figma's own colours (168:916). */
-  --color-atlas-topnav-tray: #eceef0;
+  --color-atlas-topnav-tray: var(--color-emphasis-fill);
   --color-atlas-topnav-link: #31485c;
   --color-atlas-topnav-rule: #8194a4;
   --color-compass-course-card: #fcfcfb;
   --color-compass-course-card-stroke: var(--color-atlas-nav-rule);
-  --color-atlas-outlined-card: #eceef0;
+  --color-atlas-outlined-card: var(--color-emphasis-fill);
   --color-atlas-outlined-card-border: var(--color-primary-200);
   /* Step 1 (Schedule State Exam) matches it, #FCFCFB (2026-09-30). */
   --color-atlas-step-card: #fcfcfb;
-  --color-compass-page-card: #eceef0;
+  --color-compass-page-card: var(--color-emphasis-fill);
   --color-compass-page-card-border: #d8dee4;
   --color-compass-page-card-rule: #d8dee4;
   --color-compass-page-rule: #e0dbcd;
@@ -6423,7 +6463,7 @@ a.cre-library-card-title::after {
   --color-compass-page-body: #5b5560;
   --color-compass-page-muted: #706b63;
   --color-compass-page-pill-ink: #263d50;
-  --color-compass-day-pill: #eceef0;
+  --color-compass-day-pill: var(--color-emphasis-fill);
   --color-compass-day-pill-border: #d8dee4;
   --color-compass-day-pill-ink: #263d50;
   --color-compass-page-rubi: #b4552f;
@@ -7209,7 +7249,7 @@ a.cre-library-card-title::after {
    column's own `--color-rail-row-active` alias resolves here, so it follows). */
 /* ⚠ UNWIRED 2026-10-09 with the block above — see its note. */
 [data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel-own'] [data-atlas-rail] {
-  --color-cta-100: #eceef0;
+  --color-cta-100: var(--color-emphasis-fill);
   --color-cta-200: #d8dee4;
   --color-cta-300: #c0cdd5;
   --color-cta-400: #67727d;
@@ -7218,7 +7258,7 @@ a.cre-library-card-title::after {
   --color-cta-700: #263d50;
   --color-cta-800: #1b2c3a;
   --color-cta-900: #111c25;
-  --color-primary-100: #eceef0;
+  --color-primary-100: var(--color-emphasis-fill);
   --color-primary-200: #d8dee4;
   --color-primary-300: #c0cdd5;
   --color-primary-400: #67727d;
@@ -7239,19 +7279,19 @@ a.cre-library-card-title::after {
   --color-atlas-cta: #3d5a73;
   --color-atlas-cta-ink: #3d5a73;
   --color-atlas-active: #3d5a73;
-  --color-atlas-active-fill: #eceef0;
+  --color-atlas-active-fill: var(--color-emphasis-fill);
   --color-atlas-eyebrow: #5b5560;
   --color-atlas-nav-active-ink: #3d5a73;
-  --color-atlas-nav-active-fill: #eceef0;
+  --color-atlas-nav-active-fill: var(--color-emphasis-fill);
   --color-atlas-nav-active-bar: #3d5a73;
-  --color-atlas-nav-hover: #eceef0;
+  --color-atlas-nav-hover: var(--color-emphasis-fill);
   --color-atlas-nav-hover-ink: #263d50;
   --color-atlas-nav-rule: #e0dbcd;
   --color-compass-rail-section-ink: #3d5a73;
   --color-compass-rail-ink: #3d5a73;
   --color-compass-rail-current-ink: #263d50;
-  --color-compass-rail-current-fill: #eceef0;
-  --color-compass-rail-active-halo: #eceef0;
+  --color-compass-rail-current-fill: var(--color-emphasis-fill);
+  --color-compass-rail-active-halo: var(--color-emphasis-fill);
   --color-compass-rail-link: #3d5a73;
   --color-compass-rail-spine: #e0dbcd;
   --color-compass-rail-upcoming-section-mark: #c3bba5;
@@ -7260,7 +7300,7 @@ a.cre-library-card-title::after {
   --color-compass-rail-section-current-text: #1f1d18;
   --color-compass-rail-upcoming-section-text: #706b63;
   --color-compass-rail-upcoming-text: #706b63;
-  --color-compass-rail-pill: #eceef0;
+  --color-compass-rail-pill: var(--color-emphasis-fill);
   --color-compass-rail-rule: #e0dbcd;
   --color-compass-page-button: #3d5a73;
   /* The rail's progress track reads the player's ink. */
