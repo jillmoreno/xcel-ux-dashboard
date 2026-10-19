@@ -529,8 +529,16 @@ describe('the Prototypes row opens the committed configuration', () => {
     // dashboard, because the row's claim is the whole journey. What this
     // case is actually guarding is `?demo=1`, so it asserts the param on
     // whichever door the row carries rather than re-pinning the pathname.
+    //
+    // 2026-10-19: and it moved again, one page EARLIER — the invitation email
+    // ("clicking on end to end should start with the email first"). Same
+    // door, same two params; the pathname is checked by the door case below,
+    // which is why this one asserts the params rather than the address.
     const row = PROTOTYPE_FEATURES.find((f) => f.id === 'xcel-dashboard')!
-    expect(row.to).toBe('/end-to-end-demo?demo=1&journey=full')
+    const e2e = new URL(row.to!, 'https://same.origin')
+    expect(e2e.pathname).toBe('/end-to-end-demo/email')
+    expect(e2e.searchParams.get('demo')).toBe('1')
+    expect(e2e.searchParams.get('journey')).toBe('full')
   })
 
   it('holds the route rows and nothing else', () => {
@@ -610,8 +618,17 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     }
   })
 
-  /** The product app's doors — the pathnames a row may enter at. */
+  /** The product app's doors — the pathnames a row may enter at.
+   *
+   *  ⚠ A DOOR, NOT AN EXACT PATHNAME (2026-10-19). The end-to-end row opens
+   *  at `/end-to-end-demo/email`, a page UNDER the invite door rather than a
+   *  third entrance — the guarantee this case exists for is "same origin,
+   *  main's build, no pins", and which page of a flow a row starts on is the
+   *  owner's call. An unrelated route still fails: `/my-learning` matches no
+   *  door, and `/end-to-end-demos` is not under one either. */
   const PRODUCT_DOORS = ['/dashboard-rebrand', '/end-to-end-demo']
+  const entersThroughADoor = (pathname: string) =>
+    PRODUCT_DOORS.some((d) => pathname === d || pathname.startsWith(`${d}/`))
   const isPlaceholder = (f: (typeof prototypeRows)[number]) => f.status === 'coming-soon'
 
   it('every Prototypes row with a route enters the product on main at the committed baseline', () => {
@@ -622,7 +639,10 @@ describe('Prototypes — one row per scope, every row the same build', () => {
       expect(f.to, `${f.id} needs a \`to\``).toBeTruthy()
       const url = new URL(f.to!, 'https://same.origin')
       expect(url.origin, `${f.id} must be same-origin — a branch URL is a second build`).toBe('https://same.origin')
-      expect(PRODUCT_DOORS, `${f.id} must enter the product app through one of its doors`).toContain(url.pathname)
+      expect(
+        entersThroughADoor(url.pathname),
+        `${f.id} must enter the product app through one of its doors (got ${url.pathname})`,
+      ).toBe(true)
       expect(url.searchParams.get('demo'), `${f.id} must open the committed baseline`).toBe('1')
       expect(url.searchParams.has('ff'), `${f.id} must not pin flags — it would stop tracking main`).toBe(false)
       expect(url.searchParams.has('version'), `${f.id} must not pin a version — the baseline chooses it`).toBe(false)

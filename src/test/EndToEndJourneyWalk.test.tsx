@@ -3,6 +3,7 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import { InviteEmailPage } from '@/pages/InviteEmailPage'
 import { InvitedProductDetailPage } from '@/pages/InvitedProductDetailPage'
 import { InvitedCheckoutPage } from '@/pages/InvitedCheckoutPage'
 import { InvitedConfirmationPage } from '@/pages/InvitedConfirmationPage'
@@ -41,6 +42,10 @@ function renderWalk(at: string) {
         <FeatureFlagProvider>
           <Probe />
           <Routes>
+            {/* The row's own first page since 2026-10-19 — the walk starts in
+                the mail client, so the route table has to hold it or the
+                suite silently renders nothing and fails on the first click. */}
+            <Route path="/end-to-end-demo/email" element={<InviteEmailPage />} />
             <Route path="/end-to-end-demo" element={<InvitedProductDetailPage />} />
             <Route path="/end-to-end-demo/checkout" element={<InvitedCheckoutPage />} />
             <Route path="/end-to-end-demo/confirmation" element={<InvitedConfirmationPage />} />
@@ -78,12 +83,27 @@ describe('the End-to-End row’s walk carries ?journey=full to the hand-off', ()
       expect(journeyOf(address), 'the row must carry the param for this walk to mean anything').toBe('full')
       renderWalk(address)
 
+      /* 0. THE INBOX → Invited Product Detail (2026-10-19). The row starts at
+         the invitation email now ("clicking on end to end should start with
+         the email first"), so the walk gained a hop at the FRONT — and this
+         is the hop most likely to drop the param, because the mail client is
+         the one page in the flow that is not part of the product's own
+         navigation. `InviteEmailPage` carries the whole search string
+         forward rather than rebuilding it; this is what proves it. */
+      fireEvent.click(screen.getByRole('button', { name: 'View invitation' }))
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0)
+      })
+      let location = screen.getByTestId('location').textContent ?? ''
+      expect(location.startsWith('/end-to-end-demo')).toBe(true)
+      expect(journeyOf(location), 'lost on the View invitation hop').toBe('full')
+
       // 1. Invited Product Detail → Checkout.
       fireEvent.click(screen.getByRole('button', { name: 'Purchase' }))
       await act(async () => {
         await vi.advanceTimersByTimeAsync(0)
       })
-      let location = screen.getByTestId('location').textContent ?? ''
+      location = screen.getByTestId('location').textContent ?? ''
       expect(location.startsWith('/end-to-end-demo/checkout')).toBe(true)
       expect(journeyOf(location), 'lost on the Purchase Now hop').toBe('full')
 

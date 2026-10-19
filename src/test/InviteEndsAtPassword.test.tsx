@@ -134,8 +134,15 @@ describe('e2e-loading-opens-home — the End-to-End row\u2019s hand-off', () => 
     const q = (to: string) => new URL(to, 'https://x').searchParams
     expect(q(e2e.to!).get('journey'), 'the End-to-End row walks the whole product').toBe('full')
     expect(q(invite.to!).get('journey'), 'Invite & Purchase ends at the password — Afsana and Eric\u2019s surface').toBeNull()
-    // Same door, so the difference really is the question and not the build.
-    expect(new URL(e2e.to!, 'https://x').pathname).toBe(new URL(invite.to!, 'https://x').pathname)
+    /* Same DOOR, so the difference really is the question and not the build.
+       ⚠ NO LONGER THE SAME PATHNAME (2026-10-19): the End-to-End row starts
+       one page earlier, at the invitation email, while Invite & Purchase
+       still opens the Product Detail page — Afsana and Eric's call, not this
+       change's. What the case is actually guarding is that neither row has
+       wandered off to a different BUILD, so it asserts the door. */
+    const door = (to: string) => new URL(to, 'https://x').pathname.split('/')[1]
+    expect(door(e2e.to!)).toBe('end-to-end-demo')
+    expect(door(invite.to!)).toBe('end-to-end-demo')
   })
 
   it('on the End-to-End row\u2019s walk: three seconds, then the demo\u2019s Home', async () => {

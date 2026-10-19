@@ -860,7 +860,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // row's claim is the WHOLE journey, and until today it entered at the
     // middle of it — a stakeholder clicking "End-to-End User Experience"
     // landed on the dashboard and never saw the two doors named in its own
-    // title. `/end-to-end-demo` is the first page of the flow, and with
+    // title. The flow's first page is the first page of the flow, and with
     // `e2e-loading-opens-home` on, the loading page at the end of the
     // password step hands off to Atlas Learning Home on its own. So the row
     // now walks what it says: invite, purchase, password, dashboard.
@@ -878,7 +878,23 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // The param pins no flag and no version, so the smoke test's "every row
     // is main's build at ?demo=1" guarantee is untouched; `InvitedConfirmationPage`
     // reads it and `endToEndDemo.ts` says why it is a param rather than a flag.
-    to: '/end-to-end-demo?demo=1&journey=full',
+    //
+    // ⚠ AND IT STARTS AT THE EMAIL (2026-10-19, Jillienne: "clicking on end
+    // to end should start with the email first, on default"). The invitation
+    // email is where a learner's journey actually begins — the Product Detail
+    // page is already the second step, reached by clicking a link in a mail
+    // client. A row whose title is the WHOLE experience should not open one
+    // page into it.
+    //
+    // ⚠ THE INVITE ROW IS DELIBERATELY NOT MOVED. It asks the narrower
+    // question — how a learner gets in — and Afsana and Eric own that scope
+    // (`PROTOTYPE_SCOPES`); whether their walk starts at the mail client is
+    // theirs to decide, not something this change should carry along with it.
+    //
+    // ⚠ STILL ONE OF THE PRODUCT APP'S DOORS. `/end-to-end-demo/email` is a
+    // page UNDER `/end-to-end-demo`, not a third entrance — the smoke test
+    // checks the door, not an exact pathname, for exactly this reason.
+    to: '/end-to-end-demo/email?demo=1&journey=full',
     brands: ['xcel'],
   },
   {

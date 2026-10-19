@@ -5,6 +5,7 @@ import { PrototypeBar } from './PrototypeBar'
 import { AdminToolsMenu } from './AdminToolsMenu'
 import { DeviceFrameToggle, useDeviceFrame } from './DeviceFrameContext'
 import { DemoControlsBar } from '@/components/prototype/DemoControlsBar'
+import { isDemoControlsEnabled } from '@/components/prototype/demoControlsUtil'
 import { DesignControlsBar } from '@/components/prototype/DesignControlsBar'
 import { DESIGN_ACCENT } from '@/components/prototype/demoBarUtil'
 import { DemoShareProvider } from '@/components/prototype/demoShareActions'
@@ -172,8 +173,27 @@ export function PrototypeChrome() {
     if (params.get('controls') === 'off') return <DemoControlsBar open={false} />
     return <DemoControlsBar open fullBleed={framed} only={TEST_VIEW_CONTROLS} />
   }
-  // Routes that carry a hide-able stakeholder demo banner (→ show the toggle).
-  const showDemoToggle = pathname === '/dashboard-rebrand' || pathname === '/onboarding-flow'
+  /*
+   * WHERE THE "Demo" PILL IS OFFERED — 2026-10-19, Jillienne: "demo controls
+   * should always be available".
+   *
+   * ⚠ IT WAS A SECOND, STALER COPY OF THE SAME ROUTE LIST. `isDemoControlsEnabled`
+   * is "the one place that decides whether the Demo Controls bar renders", and
+   * it grew `/end-to-end-demo` on 2026-10-16 when the Start control started
+   * moving reviewers into the invite flow. This line did not. The result was a
+   * bar that RENDERS on the invite pages but, once hidden, has no pill to bring
+   * it back — the toggle persists per browser, so switching Demo off anywhere
+   * stranded it off for the whole flow. Deriving from the gate rather than
+   * restating it is what stops the two drifting again.
+   *
+   * ⚠ `/onboarding-flow` LOSES THE PILL, and that is the same bug seen from
+   * the other side: the gate returns false there, so `DemoControlsBar` renders
+   * null and the pill was toggling nothing at all. A control that reveals an
+   * empty strip is the thing `PrototypeBar`'s `designToggle` note warns about.
+   * If that page should carry the bar, the fix is to add it to the GATE — and
+   * then the pill follows on its own.
+   */
+  const showDemoToggle = isDemoControlsEnabled(pathname)
   return (
     /* ⚠ WRAPS BOTH BARS, and it has to: the kebab renders in the PrototypeBar
        while its handlers are owned by the DemoControlsBar below — see
