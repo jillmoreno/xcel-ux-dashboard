@@ -419,9 +419,23 @@ function PlatformShellBody() {
   // …and Eric/Atlas White's, which shows WIP's Certificates page (2026-10-14).
   const wipCertificates =
     active === 'certificates' && (shellVersion === 'eric-atlas-v3' || isEricAtlasWhiteLike(shellVersion))
+  /* ⚠ THE ACCOUNT PAGES HAVE THEIR OWN NAV, AND IT IS NOT THIS ONE
+     (2026-10-19, Jillienne: "clicking on profile should not show this random
+     left nav. remove it"). Profile, Notifications, Transcripts, My Purchases
+     and Purchased for Others each draw `AccountSubNav` down their left side;
+     the learning rail beside it is a SECOND vertical nav that cannot reach
+     the page you are on — its rows are Home, Study Plan, Course,
+     Certificates, Resources, Get Help, and none of them is where you are.
+
+     ⚠ `isAccountSection`, NOT A LIST OF IDS. That predicate already exists
+     and already means "does this section get the sub-nav" — which is exactly
+     the question being asked here. A second list would be the same set
+     written twice, and `gift-recipients` is behind a flag, so the two would
+     part company the day it moves. */
   const atlasNoRail =
     atlasNav &&
-    (hybridNoSectionRail ||
+    (isAccountSection(active) ||
+      hybridNoSectionRail ||
       navPlacement === 'expanding-top' ||
       (navPlacement === 'top' && (active === 'dashboard' || active === 'courses' || wipCertificates)))
   // Wherever an Atlas rail is drawn it can collapse; collapsed, its column is
