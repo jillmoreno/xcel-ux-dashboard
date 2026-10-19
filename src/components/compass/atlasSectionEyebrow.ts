@@ -48,6 +48,22 @@ import type { CSSProperties } from 'react'
  */
 export type AtlasColumnAlign = 'center' | 'left'
 
+/**
+ * HOW WIDE THE COLUMN'S PROSE RUNS — 2026-10-19, Jillienne: "reduce the
+ * width of these text sections", of the pace standing sentence and the
+ * readiness caption together.
+ *
+ * ⚠ ONE MEASURE FOR BOTH, which is why it is here rather than in either
+ * card. They are the only two paragraphs in the column and they sit four
+ * inches apart; at different widths the column looks like two columns. The
+ * figure is a measure, not a box — the 248 of content is the card's, and
+ * these two sit inside it.
+ *
+ * ⚠ NOT APPLIED TO THE EYEBROWS OR THE FIGURES. A label and a date are set
+ * on one line and want the full width; only running text wants a measure.
+ */
+export const ATLAS_COLUMN_PROSE_W = 200
+
 export function atlasSectionEyebrow(align: AtlasColumnAlign): CSSProperties {
   return align === 'left' ? { ...ATLAS_SECTION_EYEBROW, textAlign: 'left' } : ATLAS_SECTION_EYEBROW
 }

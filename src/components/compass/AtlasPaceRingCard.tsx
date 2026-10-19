@@ -1,6 +1,11 @@
 import type { CSSProperties } from 'react'
 import { GaugeThin } from '@/icons'
-import { ATLAS_SECTION_EYEBROW, atlasSectionEyebrow, type AtlasColumnAlign } from './atlasSectionEyebrow'
+import {
+  ATLAS_COLUMN_PROSE_W,
+  ATLAS_SECTION_EYEBROW,
+  atlasSectionEyebrow,
+  type AtlasColumnAlign,
+} from './atlasSectionEyebrow'
 import { paceName } from '@/components/learning/compassStudyPlannerModel'
 import { PLANNER_PLAN } from '@/data/compassStudyPlannerFixtures'
 
@@ -165,7 +170,16 @@ export function AtlasPaceRingCard({
                 pace name and a goal — and the RULE is what answers it now,
                 doing the line break's work in a third of the height. */}
             <span style={GOAL_LINE}>
-              <span style={GOAL_TAG}>{COMPASS_PACE_NAME}</span>
+              {/* ⚠ THE SAME STYLE AS THE GOAL (2026-10-19, Jillienne: "this
+                  should be matching the styleing as the 2 week goal"). It
+                  was 10px/600 uppercase in the eyebrow colour — a label
+                  treatment, from when it sat ABOVE the goal and needed to
+                  read as a note about it. Side by side with a rule between
+                  them they are two halves of one line, and two treatments on
+                  one line is what made it look like a label that had slipped
+                  sideways. `COMPASS_PACE_NAME` is already title case; the
+                  uppercase was only ever CSS. */}
+              <span style={GOAL}>{COMPASS_PACE_NAME}</span>
               <span aria-hidden style={GOAL_RULE} />
               <span style={GOAL}>{weeks} Week Goal</span>
             </span>
@@ -353,18 +367,6 @@ const GOAL_RULE: CSSProperties = {
   alignSelf: 'center',
   background: 'var(--color-atlas-nav-rule)',
 }
-/* The qualifier beside the goal — smaller and quieter than the figure it
-   labels, so the pace's name reads as a note about the plan rather than part
-   of its name. */
-const GOAL_TAG: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 10,
-  fontWeight: 600,
-  lineHeight: '14px',
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: 'var(--color-compass-page-eyebrow)',
-}
 /* …and the workload under it, in the body treatment the paragraph below
    uses, because it is a fact about the plan rather than another heading. */
 const GOAL_NOTE: CSSProperties = {
@@ -395,7 +397,11 @@ const GOAL: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 const SMALL: CSSProperties = {
-  margin: 0,
+  /* A MEASURE, not the card's width — see `ATLAS_COLUMN_PROSE_W`. `auto`
+     sides keep the narrower block centred under the full-width rules above
+     it rather than hanging off one edge. */
+  margin: '0 auto',
+  maxWidth: ATLAS_COLUMN_PROSE_W,
   fontFamily: 'var(--font-body)',
   fontSize: 11,
   lineHeight: '15px',

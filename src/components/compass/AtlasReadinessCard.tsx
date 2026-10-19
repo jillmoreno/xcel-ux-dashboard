@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type KeyboardEvent } from 'react'
-import { atlasSectionEyebrow, type AtlasColumnAlign } from './atlasSectionEyebrow'
+import { ATLAS_COLUMN_PROSE_W, atlasSectionEyebrow, type AtlasColumnAlign } from './atlasSectionEyebrow'
 
 /**
  * THE READINESS CARD, FIVE LEVELS — Figma "Atlas-UX-Design" component 295:10698
@@ -304,6 +304,11 @@ const LEVEL_NAME: CSSProperties = {
    pace card's paragraph. Matching that paragraph is the whole point. */
 const CAPTION_BODY: CSSProperties = {
   display: 'block',
+  /* The same measure the pace sentence runs to — see
+     `ATLAS_COLUMN_PROSE_W`. The two are the column's only prose and sit far
+     enough apart that different widths read as two columns. */
+  margin: '0 auto',
+  maxWidth: ATLAS_COLUMN_PROSE_W,
   fontFamily: 'var(--font-body)',
   fontSize: 11,
   lineHeight: '15px',
