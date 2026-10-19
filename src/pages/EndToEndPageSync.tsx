@@ -19,6 +19,11 @@ import { END_TO_END_VERSION } from './endToEndDemo'
  *  are the SAME route told apart by `?section=`, which is why this is a table
  *  of {pathname, section} and not a string map. */
 const START_POINTS = {
+  /* ⚠ FIRST, AND ITS PATH IS A CHILD OF `invite`'s. `startAt` matches on the
+     WHOLE pathname, not a prefix, so `/end-to-end-demo/email` resolves to
+     this and `/end-to-end-demo` still resolves to `invite` — the nesting is
+     in the URL only. */
+  email: { pathname: '/end-to-end-demo/email', section: null },
   invite: { pathname: '/end-to-end-demo', section: null },
   checkout: { pathname: '/end-to-end-demo/checkout', section: null },
   confirmation: { pathname: '/end-to-end-demo/confirmation', section: null },

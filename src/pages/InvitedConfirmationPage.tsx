@@ -7,6 +7,7 @@ import { TopoBackground } from '@/components/e2e/TopoBackground'
 import {
   E2E_JOURNEY_FULL,
   E2E_JOURNEY_PARAM,
+  E2E_LEARNER_EMAIL,
   E2E_PARTNER_PRICE,
   END_TO_END_VERSION,
   isFullJourney,
@@ -286,12 +287,13 @@ export function InvitedConfirmationPage() {
   )
 }
 
-/* ⚠ THE SAME ADDRESS THE HEADER SHOWS (2026-10-19, Jillienne: "make this
-   update within the Invite flow as well where applicable"). It was
-   `@example.com` here and `alicia.navarro@gmail.com` in the header — so the
-   walk confirmed a purchase to one address and then signed the learner in as
-   somebody else. One person, one address, across the whole journey. */
-const DEMO_EMAIL = 'jordan.navarro@gmail.com'
+/* ⚠ THE SAME ADDRESS THE HEADER AND THE EMAIL PAGE SHOW (2026-10-19,
+   Jillienne: "make this update within the Invite flow as well where
+   applicable"). It was `@example.com` here and `alicia.navarro@gmail.com` in
+   the header — so the walk confirmed a purchase to one address and then
+   signed the learner in as somebody else. It reads the shared constant now,
+   so the three cannot drift apart again. */
+const DEMO_EMAIL = E2E_LEARNER_EMAIL
 
 /* HOW LONG THE LOADING PAGE HOLDS before it opens Home (2026-10-16,
    Jillienne's three seconds). Long enough that the hand-off reads as a step

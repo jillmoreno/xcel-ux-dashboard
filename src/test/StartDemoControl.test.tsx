@@ -26,8 +26,14 @@ describe('the Start demo control', () => {
     expect(flag?.versions, 'a version list is what "available for all" rules out').toBeUndefined()
   })
 
-  it('offers the five start points, in journey order', () => {
+  it('offers the six start points, in journey order', () => {
+    /* ⚠ THE EMAIL JOINED AT THE FRONT (2026-10-19, Jillienne: "we need to
+       add a page to the first part of the Invite flow that shows the email
+       the user is starting from"). The ORDER is what this case is really
+       for: it is the order of the journey, which is the only thing that
+       makes a six-option dropdown readable at a glance. */
     expect(flag?.variants?.map((v) => v.value)).toEqual([
+      'email',
       'invite',
       'checkout',
       'confirmation',
@@ -35,6 +41,7 @@ describe('the Start demo control', () => {
       'compass',
     ])
     expect(flag?.variants?.map((v) => v.label)).toEqual([
+      'Email',
       'Invite',
       'Checkout',
       'Confirmation',
@@ -52,6 +59,11 @@ describe('the Start demo control', () => {
 
   it('the demo bar renders on the pages Start can send you to', () => {
     expect(isDemoControlsEnabled('/dashboard-rebrand')).toBe(true)
+    /* ⚠ THE EMAIL PAGE TOO (2026-10-19) — and this is the case the note at
+       the top of this file is about. A new Start option whose page did not
+       carry the bar would make the control one-way: it would send you there
+       and then vanish, with nothing else failing. */
+    expect(isDemoControlsEnabled('/end-to-end-demo/email')).toBe(true)
     expect(isDemoControlsEnabled('/end-to-end-demo')).toBe(true)
     expect(isDemoControlsEnabled('/end-to-end-demo/checkout')).toBe(true)
     expect(isDemoControlsEnabled('/end-to-end-demo/confirmation')).toBe(true)

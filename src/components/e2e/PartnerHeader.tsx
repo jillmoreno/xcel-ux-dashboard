@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { E2E_PARTNER_NAME } from '@/pages/endToEndDemo'
 
 /**
  * THE END-TO-END DEMO'S PARTNER HEADER — Figma "Atlas UX Design" 420:2023,
@@ -21,7 +22,7 @@ export function PartnerHeader({ bare = false }: { bare?: boolean } = {}) {
   if (bare) return <header aria-hidden style={HEADER} />
   return (
     <header style={HEADER}>
-      <p style={TEXT}>Pristine Solutions Financial Services Group LLC</p>
+      <p style={TEXT}>{E2E_PARTNER_NAME}</p>
       <span aria-hidden style={DIVIDER} />
       <p style={TEXT}>Official Partner of</p>
       <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={LOGO} />

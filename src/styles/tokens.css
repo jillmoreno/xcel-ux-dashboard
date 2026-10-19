@@ -7373,6 +7373,19 @@ a.cre-library-card-title::after {
      nearest slab the viewer has, then Georgia. */
   --font-e2e-serif: Rockwell, 'Rockwell Std', 'Roboto Slab', 'Courier New', Georgia, serif;
   --font-e2e-avenir: 'Avenir', 'Avenir Next', 'Nunito Sans', system-ui, sans-serif;
+  /* ⚠ THE INVITE EMAIL'S MAIL CLIENT — 2026-10-19. A MOCK OF SOMEBODY
+     ELSE'S PRODUCT, so these are fixed rather than brand tokens: the one
+     thing that page has to say is "you are not in XCEL yet", and a webmail
+     client that re-skins itself per XCEL brand says the opposite. The first
+     pass used `--color-info-*`, which is the status ramp and resolves TEAL
+     (#1897a8) — a blue the brands happen not to have. These are the e2e
+     block's own reasoning applied one screen earlier. */
+  --color-mail-accent: #1a56db;
+  --color-mail-accent-ink: #1e429f;
+  --color-mail-accent-wash: #eef4ff;
+  --color-mail-rule: #e3e3e6;
+  --color-mail-field: #f1f1f3;
+  --color-mail-ground: #fafafa;
   --color-e2e-partner-outline: #e6e6e6;
   --color-e2e-partner-divider: #d1d1d1;
   /* The course header's band and its price card's outline (Figma 420:2080). */

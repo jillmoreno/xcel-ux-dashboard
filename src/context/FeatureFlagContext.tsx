@@ -2261,10 +2261,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Navigation',
     label: 'Start',
     description:
-      'Where the demo opens: the Invite page, its Checkout, Confirmation & Password, the Atlas dashboard, or Compass. Picking one opens it; arriving on one sets the control to match. Invite, Checkout and Confirmation are the End-to-End Demo\u2019s own pages and open on its version.',
+      'Where the demo opens: the invitation Email, the Invite page, its Checkout, Confirmation & Password, the Atlas dashboard, or Compass. Picking one opens it; arriving on one sets the control to match. Email, Invite, Checkout and Confirmation are the End-to-End Demo\u2019s own pages and open on its version.',
     defaultEnabled: true,
     defaultVariant: 'atlas',
     variants: [
+      /* ⚠ THE EMAIL IS THE FLOW'S FIRST SCREEN (2026-10-19) and so is first
+         here — the order of this list is the order of the journey, which is
+         the only thing that makes the control readable at a glance. */
+      { value: 'email', label: 'Email' },
       { value: 'invite', label: 'Invite' },
       { value: 'checkout', label: 'Checkout' },
       /* Kept from `atlas-e2e-page` (2026-10-16, Jillienne). It is the one

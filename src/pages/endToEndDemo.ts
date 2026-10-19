@@ -204,6 +204,23 @@ export function useEndToEndPageChrome(title: string): void {
 }
 
 /** The demo's course, short (2026-10-15, Eric's request: "Premier" dropped). */
+/**
+ * THE DEMO LEARNER AND THE PARTNER, in one place (2026-10-19).
+ *
+ * ⚠ THEY WERE SCATTERED AS LITERALS and drifted: the invite flow confirmed a
+ * purchase to `jordan.navarro@example.com` while the dashboard's header
+ * showed `alicia.navarro@gmail.com`, so the walk mailed one person and
+ * signed in another. Named constants are what keep the email page, the
+ * confirmation page and the header saying the same thing.
+ *
+ * ⚠ THE PARTNER NAME IS THE DESIGN'S OWN, as `PartnerHeader` records — an
+ * invented firm, not a real one.
+ */
+export const E2E_LEARNER_FIRST = 'Jordan'
+export const E2E_LEARNER_NAME = 'Jordan Navarro'
+export const E2E_LEARNER_EMAIL = 'jordan.navarro@gmail.com'
+export const E2E_PARTNER_NAME = 'Pristine Solutions Financial Services Group LLC'
+
 export const E2E_COURSE_TITLE_SHORT = 'Florida Life and Health Pre-licensing'
 /** …and long, which the Design bar's Long title control shows. */
 export const E2E_COURSE_TITLE_LONG = `${E2E_COURSE_TITLE_SHORT} with Comprehensive Exam Simulators`

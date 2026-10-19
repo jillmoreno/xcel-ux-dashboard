@@ -10,6 +10,7 @@ import { LinksPage } from '@/pages/LinksPage'
 import { PrdsPage } from '@/pages/PrdsPage'
 import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
 import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
+import { InviteEmailPage } from '@/pages/InviteEmailPage'
 import { InvitedProductDetailPage } from '@/pages/InvitedProductDetailPage'
 import { InvitedCheckoutPage } from '@/pages/InvitedCheckoutPage'
 import { InvitedConfirmationPage } from '@/pages/InvitedConfirmationPage'
@@ -195,6 +196,14 @@ export default function App() {
       {/* Under the app's providers and prototype chrome — the demo and design
           bars — but not its Header: the pages draw their own (`bare`). */}
       <Route element={<AppLayout bare />}>
+        {/* ⚠ THE FLOW STARTS ONE STEP EARLIER NOW (2026-10-19, Jillienne:
+            "we need to add a page to the first part of the Invite flow that
+            shows the email the user is starting from"). `/end-to-end-demo`
+            itself is UNCHANGED and still the Product Detail page — the email
+            is a page before it, not a new front door, so every link, every
+            `?ff=` pin and the Prototypes row all still land where they did.
+            See `InviteEmailPage`. */}
+        <Route path="/end-to-end-demo/email" element={<TestingGate><InviteEmailPage /></TestingGate>} />
         <Route path="/end-to-end-demo" element={<TestingGate><InvitedProductDetailPage /></TestingGate>} />
         {/* …and its checkout, which Purchase Now opens. See `InvitedCheckoutPage`. */}
         <Route path="/end-to-end-demo/checkout" element={<TestingGate><InvitedCheckoutPage /></TestingGate>} />

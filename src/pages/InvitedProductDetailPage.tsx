@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, type CSSProperties } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { E2E_COURSE_TITLE_SHORT, E2E_ORIGINAL_PRICE, E2E_PARTNER_PRICE, useEndToEndCourseTitle, useEndToEndDemoParams } from './endToEndDemo'
+import { E2E_COURSE_TITLE_SHORT, E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndCourseTitle, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
 
 /**
@@ -120,7 +120,7 @@ export function InvitedProductDetailPage() {
           <span aria-hidden style={WELCOME_RULE} />
           <h1 style={WELCOME_TITLE}>You’ve been invited</h1>
           <p ref={welcomeRef} style={WELCOME_BODY}>
-            <strong style={{ fontWeight: 800 }}>Pristine Solutions Financial Services Group LLC</strong> has invited
+            <strong style={{ fontWeight: 800 }}>{E2E_PARTNER_NAME}</strong> has invited
             you to enroll in{' '}
             <strong style={{ fontWeight: 800 }}>Florida Life and Health Pre-licensing</strong>. Review
             the details below and start learning today!
