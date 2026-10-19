@@ -677,7 +677,7 @@ export function AtlasHomeEricE2E({
           ) : null}
           <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 15, justifyContent: 'center' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <p style={EYEBROW}>Current course:</p>
+              <p style={EYEBROW}>Current course</p>
               <h2 className="cre-compass-course-title cre-atlas-home-course-title cre-atlas-home-v2-course-title" style={TITLE}>
                 {shownTitle}
               </h2>
@@ -1876,7 +1876,7 @@ function WhiteStyleHead({
           </button>
         ) : null}
         <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'flex-end' }}>
-          <p style={EYEBROW}>Current course:</p>
+          <p style={EYEBROW}>Current course</p>
           <h2 className="cre-compass-course-title cre-atlas-home-course-title cre-atlas-home-v2-course-title" style={TITLE}>
             {title}
           </h2>
