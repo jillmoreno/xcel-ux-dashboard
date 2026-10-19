@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { XmarkRegular } from '@/icons'
-import { ADMIN_COMPANY, ADMIN_DEPARTMENTS, ADMIN_USER } from '@/data/xcelAdmin/learners'
+import { ADMIN_COMPANY, ADMIN_DEPARTMENTS, ADMIN_USER } from '@/data/atlasAdmin/learners'
 import { useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, FIELD_LABEL, HEADING, INPUT } from './adminStyles'
 
 /**
- * XCEL ADMIN · INVITE LEARNERS — the reference's invite dialog (2026-10-19).
+ * ATLAS ADMIN · INVITE LEARNERS — the reference's invite dialog (2026-10-19).
  * Three ways in: EMAIL (addresses one per line, an optional name, lines of
  * authority, tier and a note — Send invite unlocks once there is an
  * address), a LINK to copy, and a QR CODE to print for a hiring event. A

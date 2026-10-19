@@ -1,5 +1,5 @@
 /**
- * XCEL ADMIN — THE LEARNER FIXTURE (2026-10-19, feat/XCEL-admin).
+ * ATLAS ADMIN — THE LEARNER FIXTURE (2026-10-19, feat/atlas-admin).
  *
  * The admin app rebuilt from colibri-b2b.vercel.app reads ONE roster, so every
  * page that counts learners agrees with every other. The shape and the counts

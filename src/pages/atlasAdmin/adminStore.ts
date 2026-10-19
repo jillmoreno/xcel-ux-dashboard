@@ -1,16 +1,16 @@
 import { createContext, useContext } from 'react'
-import type { Learner } from '@/data/xcelAdmin/learners'
-import type { Invite } from '@/data/xcelAdmin/invites'
+import type { Learner } from '@/data/atlasAdmin/learners'
+import type { Invite } from '@/data/atlasAdmin/invites'
 
 /**
- * XCEL ADMIN — the session's shared state (2026-10-19). What one page does
+ * ATLAS ADMIN — the session's shared state (2026-10-19). What one page does
  * that another page shows: an invite sent from Students lists on Invites;
  * a toast raised anywhere shows over the shell. In memory only — a reload
  * starts from the fixtures, which is what a demo wants.
  */
 
 /** Where the admin app is mounted. */
-export const ADMIN_BASE = '/xcel-admin'
+export const ADMIN_BASE = '/atlas-admin'
 
 /** The signed-in admin's address — the Progress report's "you". */
 export const ADMIN_EMAIL = 'eric@summitins.com'
@@ -61,6 +61,6 @@ export const AdminStoreContext = createContext<AdminStore | null>(null)
 
 export function useAdminStore(): AdminStore {
   const store = useContext(AdminStoreContext)
-  if (!store) throw new Error('useAdminStore must be used inside XcelAdminApp')
+  if (!store) throw new Error('useAdminStore must be used inside AtlasAdminApp')
   return store
 }

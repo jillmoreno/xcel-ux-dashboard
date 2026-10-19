@@ -1,12 +1,12 @@
 import { useState, type CSSProperties, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { ADMIN_DEPARTMENTS, ADMIN_USER } from '@/data/xcelAdmin/learners'
+import { ADMIN_DEPARTMENTS, ADMIN_USER } from '@/data/atlasAdmin/learners'
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, ADMIN_EMAIL, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, FIELD_LABEL, INPUT, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
 
 /**
- * XCEL ADMIN · SETTINGS — rebuilt from colibri-b2b.vercel.app/settings
+ * ATLAS ADMIN · SETTINGS — rebuilt from colibri-b2b.vercel.app/settings
  * (2026-10-19). Five tabs, in the address as `?tab=` like the reference:
  *
  *   Company          name, logo (with its preview), the office, the rate.
@@ -27,7 +27,7 @@ const TABS: [Tab, string][] = [
   ['product-configs', 'Product Configs'],
 ]
 
-export function XcelAdminSettingsPage() {
+export function AtlasAdminSettingsPage() {
   const [params, setParams] = useSearchParams()
   const tab = (TABS.find(([t]) => t === params.get('tab'))?.[0] ?? 'company') as Tab
   const pick = (t: Tab) =>
@@ -289,7 +289,7 @@ function AiTab() {
           Use my voice
         </button>
       </Panel>
-      <Panel title="AI access" sub="Use XCEL Admin from the assistant you already have. Same permissions as your login; scoped to what you can see.">
+      <Panel title="AI access" sub="Use Atlas Admin from the assistant you already have. Same permissions as your login; scoped to what you can see.">
         <Connection name="Claude" status={claude ? 'Connected · Jordan Reyes · last used today' : 'Not connected'} on={claude} onToggle={() => setClaude((v) => !v)} />
         <Connection name="ChatGPT" status={chatgpt ? 'Connected · just now' : 'Not connected'} on={chatgpt} onToggle={() => setChatgpt((v) => !v)} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, padding: '10px 0', borderTop: '1px solid var(--admin-fill)' }}>
@@ -365,7 +365,7 @@ function ProductTab() {
         <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--admin-text)' }}>Proof of concept context for this Enterprise Dashboard exploration.</p>
       </div>
       <Panel title="Admin Experience Mode" sub="Theme and retargets Students chips, Smart Search, Training Health, and nav for the sales channel.">
-        <p style={{ ...FIELD_LABEL, marginBottom: 8 }}>Current: {mode} · XCEL Admin</p>
+        <p style={{ ...FIELD_LABEL, marginBottom: 8 }}>Current: {mode} · Atlas Admin</p>
         <div style={{ display: 'grid', gap: 8, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
           {(
             [

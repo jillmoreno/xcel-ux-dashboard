@@ -1,14 +1,14 @@
 import { useMemo, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { XmarkRegular } from '@/icons'
-import { ADMIN_NOTIFICATIONS, type NotificationAction, type NotificationDef, type NotificationPreview } from '@/data/xcelAdmin/notifications'
+import { ADMIN_NOTIFICATIONS, type NotificationAction, type NotificationDef, type NotificationPreview } from '@/data/atlasAdmin/notifications'
 import { AdminDialog } from './AdminDialog'
 import { CadenceDialog, PeopleDialog } from './adminDialogs'
 import { ADMIN_BASE, ADMIN_EMAIL, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, FIELD_LABEL, INPUT, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
 
 /**
- * XCEL ADMIN · NOTIFICATIONS — rebuilt from colibri-b2b.vercel.app/
+ * ATLAS ADMIN · NOTIFICATIONS — rebuilt from colibri-b2b.vercel.app/
  * notifications (2026-10-19). Everything the portal sends, in two lists —
  * what the admin receives, what recruits receive from the admin — each row a
  * switch, its status line and its actions; and beside them the selected row's
@@ -29,7 +29,7 @@ const ACTION_LABEL: Record<NotificationAction, string> = {
 
 type Dialog = null | 'cadence' | 'recipients' | 'rules' | 'note' | 'day' | 'timing' | 'history'
 
-export function XcelAdminNotificationsPage() {
+export function AtlasAdminNotificationsPage() {
   const { learners, progressReport, setProgressReport, showToast, touches } = useAdminStore()
   const [on, setOn] = useState<Record<string, boolean>>(() => Object.fromEntries(ADMIN_NOTIFICATIONS.map((n) => [n.id, n.defaultOn])))
   const [selected, setSelected] = useState('progress-report')

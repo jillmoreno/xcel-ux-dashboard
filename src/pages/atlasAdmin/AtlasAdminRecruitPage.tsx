@@ -1,6 +1,6 @@
 import { useState, type CSSProperties, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { formatExamDate, relativeDays, type Learner } from '@/data/xcelAdmin/learners'
+import { formatExamDate, relativeDays, type Learner } from '@/data/atlasAdmin/learners'
 import {
   EXAM_VENDOR,
   STATE_EXAM,
@@ -15,14 +15,14 @@ import {
   readinessPill,
   timeInCourse,
   type Tone,
-} from '@/data/xcelAdmin/record'
+} from '@/data/atlasAdmin/record'
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, FIELD_LABEL, HEADING, INPUT, PILL } from './adminStyles'
 import { AdminTabs, StagePill } from './adminUi'
 
 /**
- * XCEL ADMIN · A LEARNER'S RECORD — rebuilt from the reference's
+ * ATLAS ADMIN · A LEARNER'S RECORD — rebuilt from the reference's
  * /students/recruit/:id (2026-10-19). One learner, and what to do about
  * them: the header (contacts, stage and readiness pills, the actions), a
  * one-sentence banner, then two columns — Alerts, Pre-licensing and the
@@ -49,7 +49,7 @@ const BANNER_EDGE: Record<Tone, [string, string, string]> = {
 
 const LICENSE_STATUSES = ['Unknown', 'Passed exam', 'Not passed', 'Not taken', 'Licensed', 'Denied (background)', 'Appeal filed'] as const
 
-export function XcelAdminRecruitPage() {
+export function AtlasAdminRecruitPage() {
   const { recruitId = '' } = useParams()
   const { learners } = useAdminStore()
   const learner = learners.find((l) => l.id === decodeURIComponent(recruitId))

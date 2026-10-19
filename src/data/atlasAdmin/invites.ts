@@ -1,7 +1,7 @@
 import { ADMIN_LEARNERS, type Learner } from './learners'
 
 /**
- * XCEL ADMIN — THE INVITE FIXTURE (2026-10-19). Built FROM the roster, so
+ * ATLAS ADMIN — THE INVITE FIXTURE (2026-10-19). Built FROM the roster, so
  * Invites and Students agree: every learner was an invite once. The 189
  * who are in the pipeline are Enrolled; the 9 still on an open invite split
  * as the reference's do — 3 Purchased (paid, not yet in the course), 2

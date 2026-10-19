@@ -2,7 +2,7 @@ import type { Learner } from './learners'
 import { STAGE_LABEL } from './learners'
 
 /**
- * XCEL ADMIN — THE REPORTS LIBRARY (2026-10-19). The reference's fifteen
+ * ATLAS ADMIN — THE REPORTS LIBRARY (2026-10-19). The reference's fifteen
  * reports, verbatim in name, description, category and last run, and what a
  * run returns: rows built from the admin roster, so a report's numbers are
  * the roster's numbers rather than a second, unrelated dataset (the

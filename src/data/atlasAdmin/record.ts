@@ -1,7 +1,7 @@
 import type { Learner } from './learners'
 
 /**
- * XCEL ADMIN — WHAT A LEARNER'S RECORD SAYS (2026-10-19). The reference's
+ * ATLAS ADMIN — WHAT A LEARNER'S RECORD SAYS (2026-10-19). The reference's
  * record page reads one learner and tells the admin what to do; this derives
  * the same parts from a fixture learner, so every one of the 198 records reads
  * true to its stage rather than one hand-written example:

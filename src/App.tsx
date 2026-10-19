@@ -12,7 +12,7 @@ import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
 import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
 import { InviteEmailPage } from '@/pages/InviteEmailPage'
 import { InvitedProductDetailPage } from '@/pages/InvitedProductDetailPage'
-import { XcelAdminApp } from '@/pages/xcelAdmin/XcelAdminApp'
+import { AtlasAdminApp } from '@/pages/atlasAdmin/AtlasAdminApp'
 import { InvitedCheckoutPage } from '@/pages/InvitedCheckoutPage'
 import { InvitedConfirmationPage } from '@/pages/InvitedConfirmationPage'
 import { DashboardPage } from '@/pages/DashboardPage'
@@ -210,10 +210,10 @@ export default function App() {
         <Route path="/end-to-end-demo/checkout" element={<TestingGate><InvitedCheckoutPage /></TestingGate>} />
         {/* …then Confirmation & Password, which Place your order opens. */}
         <Route path="/end-to-end-demo/confirmation" element={<TestingGate><InvitedConfirmationPage /></TestingGate>} />
-        {/* XCEL ADMIN (2026-10-19, feat/XCEL-admin) — the admin app rebuilt
+        {/* ATLAS ADMIN (2026-10-19, feat/atlas-admin) — the admin app rebuilt
             from colibri-b2b.vercel.app, its own sidebar and header inside the
-            demo chrome, behind the `xcel-admin` flag. See `XcelAdminApp`. */}
-        <Route path="/xcel-admin/*" element={<TestingGate><XcelAdminApp /></TestingGate>} />
+            demo chrome, behind the `atlas-admin` flag. See `AtlasAdminApp`. */}
+        <Route path="/atlas-admin/*" element={<TestingGate><AtlasAdminApp /></TestingGate>} />
       </Route>
       <Route
         path="/prototype/:featureId/handoff/:componentId"

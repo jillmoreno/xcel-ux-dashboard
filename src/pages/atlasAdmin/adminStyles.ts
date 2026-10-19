@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react'
 
 /**
- * XCEL ADMIN — the shared styles (2026-10-19). Values from the reference's own
+ * ATLAS ADMIN — the shared styles (2026-10-19). Values from the reference's own
  * classes (colibri-b2b.vercel.app), through the `--admin-*` tokens in
  * tokens.css. Kept apart from the components so a page can take a style
  * without taking a component.

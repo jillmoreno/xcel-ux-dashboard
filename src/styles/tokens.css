@@ -7436,7 +7436,7 @@ a.cre-library-card-title::after {
   --color-e2e-form-shadow: rgb(0 0 0 / 0.05);
   /* The Affidavit modal's scrim — Home darkened behind it. */
   --color-e2e-scrim: rgb(0 0 0 / 0.5);
-  /* ── XCEL ADMIN (2026-10-19, feat/XCEL-admin) ─────────────────────────
+  /* ── ATLAS ADMIN (2026-10-19, feat/atlas-admin) ─────────────────────────
      The admin app rebuilt from colibri-b2b.vercel.app, its values read off
      the reference's own classes (Tailwind's slate ramp, its brand red and the
      status colours). One block, so the admin pages never reach for a raw
@@ -7548,7 +7548,7 @@ a.cre-library-card-title::after {
   box-shadow: none;
 }
 
-/* ── XCEL ADMIN hover states (2026-10-19) — the reference's, by class, since
+/* ── ATLAS ADMIN hover states (2026-10-19) — the reference's, by class, since
    inline styles cannot carry :hover. */
 .cre-admin-tile:hover { border-color: var(--admin-hover-edge) !important; }
 .cre-admin-tile:focus-visible { box-shadow: 0 0 0 2px var(--admin-brand) !important; }

@@ -4,7 +4,7 @@ import { XmarkRegular } from '@/icons'
 import { HEADING } from './adminStyles'
 
 /**
- * XCEL ADMIN — the small dialog frame (2026-10-19): a title, a line under
+ * ATLAS ADMIN — the small dialog frame (2026-10-19): a title, a line under
  * it, a body and a footer of buttons, over a scrim. Escape and a scrim
  * click close it. The reference's Set exam date and Log a call use this
  * size; Invite learners has its own, wider frame.

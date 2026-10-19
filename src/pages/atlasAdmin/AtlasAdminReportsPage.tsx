@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Clone, Download, Envelope, MagnifyingGlass, Play, Plus, ShareNodes, Star, StarSolid, XmarkRegular, CalendarRegular } from '@/icons'
-import { ADMIN_REPORTS, REPORT_COLUMNS, reportRows, type ReportCategory, type ReportDef } from '@/data/xcelAdmin/reports'
+import { ADMIN_REPORTS, REPORT_COLUMNS, reportRows, type ReportCategory, type ReportDef } from '@/data/atlasAdmin/reports'
 import { AdminDialog } from './AdminDialog'
 import { CadenceDialog, PeopleDialog } from './adminDialogs'
 import { ADMIN_BASE, ADMIN_EMAIL, DAYS, TIMES, useAdminStore } from './adminStore'
@@ -9,7 +9,7 @@ import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, FIELD_LABEL, HEADING, INPU
 import { ChipMenu, MenuItem } from './adminUi'
 
 /**
- * XCEL ADMIN · REPORTS — rebuilt from colibri-b2b.vercel.app/reports
+ * ATLAS ADMIN · REPORTS — rebuilt from colibri-b2b.vercel.app/reports
  * (2026-10-19). Three parts, as the reference:
  *
  *   - the PROGRESS REPORT set up in onboarding: on or off, its four counts
@@ -24,7 +24,7 @@ import { ChipMenu, MenuItem } from './adminUi'
 
 const CATEGORIES: ReportCategory[] = ['Progress', 'Completion', 'Compliance', 'Insurance', 'Audit']
 
-export function XcelAdminReportsPage() {
+export function AtlasAdminReportsPage() {
   const { learners, showToast } = useAdminStore()
   const [reports, setReports] = useState<ReportDef[]>(() => ADMIN_REPORTS.map((r) => ({ ...r })))
   const [running, setRunning] = useState<ReportDef | null>(null)

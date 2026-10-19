@@ -1,12 +1,12 @@
 import { useEffect, type ComponentType, type CSSProperties, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { BookOpen, Bell, ChartSimple, Envelope, Gear, Users } from '@/icons'
-import { ADMIN_USER } from '@/data/xcelAdmin/learners'
+import { ADMIN_USER } from '@/data/atlasAdmin/learners'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { BODY, HEADING } from './adminStyles'
 
 /**
- * XCEL ADMIN — THE SHELL (2026-10-19). The reference's sidebar and header:
+ * ATLAS ADMIN — THE SHELL (2026-10-19). The reference's sidebar and header:
  * a 264 white sidebar (the XCEL lockup with its ADMIN pill, five sections and
  * Settings under a rule), and a translucent header carrying the page title
  * and the signed-in admin. Every admin page renders inside it.
@@ -32,15 +32,15 @@ const TITLES: Record<string, string> = {
   settings: 'Settings · Company',
 }
 
-export function XcelAdminLayout() {
+export function AtlasAdminLayout() {
   const { pathname } = useLocation()
   const section = pathname.slice(ADMIN_BASE.length + 1).split('/')[0] || 'students'
-  const title = TITLES[section] ?? 'XCEL Admin'
+  const title = TITLES[section] ?? 'Atlas Admin'
   const { toast } = useAdminStore()
 
   useEffect(() => {
     const prev = document.title
-    document.title = `${title} · XCEL Admin`
+    document.title = `${title} · Atlas Admin`
     return () => {
       document.title = prev
     }
@@ -103,7 +103,7 @@ function SideLink({ item }: { item: NavItem }) {
 }
 
 /** A section with nothing built yet — still a page in the shell. */
-export function XcelAdminComingSoon({ children }: { children?: ReactNode }) {
+export function AtlasAdminComingSoon({ children }: { children?: ReactNode }) {
   return (
     <div style={{ padding: '48px 0', textAlign: 'center', color: 'var(--admin-muted)', fontSize: 14 }}>
       {children ?? 'This page is next in the rebuild.'}

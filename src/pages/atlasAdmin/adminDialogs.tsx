@@ -4,7 +4,7 @@ import { AdminDialog } from './AdminDialog'
 import { ADMIN_EMAIL, DAYS, TIMES } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, FIELD_LABEL, INPUT, PILL } from './adminStyles'
 
-/** XCEL ADMIN — dialogs more than one page opens (2026-10-19): the Progress
+/** ATLAS ADMIN — dialogs more than one page opens (2026-10-19): the Progress
  *  report's cadence and recipients, from Reports and from Notifications. */
 
 export function CadenceDialog({ value, onClose, onSave }: { value: { day: string; time: string }; onClose: () => void; onSave: (v: { day: string; time: string }) => void }) {

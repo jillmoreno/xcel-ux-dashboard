@@ -1,6 +1,6 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { acceptedThisWeek, hoursAgoDate, isFresh, isReady, type Invite, type InviteStatus } from '@/data/xcelAdmin/invites'
+import { acceptedThisWeek, hoursAgoDate, isFresh, isReady, type Invite, type InviteStatus } from '@/data/atlasAdmin/invites'
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
@@ -8,7 +8,7 @@ import { AdminTabs } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
 
 /**
- * XCEL ADMIN · INVITES — rebuilt from colibri-b2b.vercel.app/invites
+ * ATLAS ADMIN · INVITES — rebuilt from colibri-b2b.vercel.app/invites
  * (2026-10-19). Every invite and where it got to: four tiles (Ready to
  * resend, Opened not accepted, Sent under 24h, Accepted this week) that
  * filter, the status pills and search, and the table with Resend. Built from
@@ -46,7 +46,7 @@ function dateTime(hours: number) {
   return `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
 }
 
-export function XcelAdminInvitesPage() {
+export function AtlasAdminInvitesPage() {
   const navigate = useNavigate()
   const { invites, resendInvite, showToast } = useAdminStore()
   const [filter, setFilter] = useState<Filter>('all')

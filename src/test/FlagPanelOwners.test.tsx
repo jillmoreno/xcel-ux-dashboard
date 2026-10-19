@@ -130,8 +130,8 @@ describe('the owner axis', () => {
          the `demo-start-point` DEMO control — Eric owns no equivalent now,
          because where the demo opens stopped being one version's design
          decision. See the `atlas-e2e-page-control` row in archivedItems.ts. */
-      // Joined 2026-10-19 — the XCEL Admin app at /xcel-admin, on or off.
-      'xcel-admin',
+      // Joined 2026-10-19 — the Atlas Admin app at /atlas-admin, on or off.
+      'atlas-admin',
       // Joined 2026-10-13 — the two-row Atlas header, on or off.
       'atlas-header-v2',
       // Joined 2026-10-12 — Eric/Atlas White's Static / Dropdown Top Nav.

@@ -1,28 +1,28 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
-import { ADMIN_LEARNERS, type Learner } from '@/data/xcelAdmin/learners'
-import { ADMIN_INVITES, type Invite } from '@/data/xcelAdmin/invites'
+import { ADMIN_LEARNERS, type Learner } from '@/data/atlasAdmin/learners'
+import { ADMIN_INVITES, type Invite } from '@/data/atlasAdmin/invites'
 import { AdminStoreContext, type AdminStore, type AdminTouch, type ProgressReportSettings } from './adminStore'
-import { XcelAdminComingSoon, XcelAdminLayout } from './XcelAdminLayout'
-import { XcelAdminStudentsPage } from './XcelAdminStudentsPage'
-import { XcelAdminRecruitPage } from './XcelAdminRecruitPage'
-import { XcelAdminInvitesPage } from './XcelAdminInvitesPage'
-import { XcelAdminReportsPage } from './XcelAdminReportsPage'
-import { XcelAdminNotificationsPage } from './XcelAdminNotificationsPage'
-import { XcelAdminResourcesPage } from './XcelAdminResourcesPage'
-import { XcelAdminSettingsPage } from './XcelAdminSettingsPage'
+import { AtlasAdminComingSoon, AtlasAdminLayout } from './AtlasAdminLayout'
+import { AtlasAdminStudentsPage } from './AtlasAdminStudentsPage'
+import { AtlasAdminRecruitPage } from './AtlasAdminRecruitPage'
+import { AtlasAdminInvitesPage } from './AtlasAdminInvitesPage'
+import { AtlasAdminReportsPage } from './AtlasAdminReportsPage'
+import { AtlasAdminNotificationsPage } from './AtlasAdminNotificationsPage'
+import { AtlasAdminResourcesPage } from './AtlasAdminResourcesPage'
+import { AtlasAdminSettingsPage } from './AtlasAdminSettingsPage'
 
 /**
- * XCEL ADMIN — the app (2026-10-19, feat/XCEL-admin). The admin surface
- * rebuilt in React from colibri-b2b.vercel.app, mounted at `/xcel-admin/*`
- * behind the `xcel-admin` flag (on by default on Eric's branch; the Admin
+ * ATLAS ADMIN — the app (2026-10-19, feat/atlas-admin). The admin surface
+ * rebuilt in React from colibri-b2b.vercel.app, mounted at `/atlas-admin/*`
+ * behind the `atlas-admin` flag (on by default on Eric's branch; the Admin
  * row on Prototypes is Cody's scope, so whether it becomes that row is his
  * call). One store for the session, one shell, and the pages under it —
  * built in the reference's sidebar order, Students first.
  */
-export function XcelAdminApp() {
-  const enabled = useFeatureFlag('xcel-admin').enabled
+export function AtlasAdminApp() {
+  const enabled = useFeatureFlag('atlas-admin').enabled
   const [learners, setLearners] = useState<Learner[]>(() => [...ADMIN_LEARNERS])
   const [touches, setTouches] = useState<AdminTouch[]>([])
   const [invites, setInvites] = useState<Invite[]>(() => [...ADMIN_INVITES])
@@ -81,7 +81,7 @@ export function XcelAdminApp() {
   if (!enabled) {
     return (
       <div style={{ padding: 48, fontFamily: 'var(--font-body)', color: 'var(--color-text-secondary)' }}>
-        XCEL Admin is off. Turn on the “XCEL Admin” flag to see it.
+        Atlas Admin is off. Turn on the “Atlas Admin” flag to see it.
       </div>
     )
   }
@@ -89,16 +89,16 @@ export function XcelAdminApp() {
   return (
     <AdminStoreContext.Provider value={store}>
       <Routes>
-        <Route element={<XcelAdminLayout />}>
+        <Route element={<AtlasAdminLayout />}>
           <Route index element={<Navigate to={`students${window.location.search}`} replace />} />
-          <Route path="students" element={<XcelAdminStudentsPage />} />
-          <Route path="students/recruit/:recruitId" element={<XcelAdminRecruitPage />} />
-          <Route path="invites" element={<XcelAdminInvitesPage />} />
-          <Route path="reports" element={<XcelAdminReportsPage />} />
-          <Route path="notifications/*" element={<XcelAdminNotificationsPage />} />
-          <Route path="resources" element={<XcelAdminResourcesPage />} />
-          <Route path="settings" element={<XcelAdminSettingsPage />} />
-          <Route path="*" element={<XcelAdminComingSoon>Not built yet.</XcelAdminComingSoon>} />
+          <Route path="students" element={<AtlasAdminStudentsPage />} />
+          <Route path="students/recruit/:recruitId" element={<AtlasAdminRecruitPage />} />
+          <Route path="invites" element={<AtlasAdminInvitesPage />} />
+          <Route path="reports" element={<AtlasAdminReportsPage />} />
+          <Route path="notifications/*" element={<AtlasAdminNotificationsPage />} />
+          <Route path="resources" element={<AtlasAdminResourcesPage />} />
+          <Route path="settings" element={<AtlasAdminSettingsPage />} />
+          <Route path="*" element={<AtlasAdminComingSoon>Not built yet.</AtlasAdminComingSoon>} />
         </Route>
       </Routes>
     </AdminStoreContext.Provider>

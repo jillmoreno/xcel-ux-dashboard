@@ -1,5 +1,5 @@
 /**
- * XCEL ADMIN — EVERYTHING THE PORTAL SENDS (2026-10-19). The reference's
+ * ATLAS ADMIN — EVERYTHING THE PORTAL SENDS (2026-10-19). The reference's
  * Notifications page, verbatim in name, description, status and preview: four
  * that reach the admin (and anyone they add), six that reach recruits from the
  * admin. The Progress report's preview is drawn from the live roster on the

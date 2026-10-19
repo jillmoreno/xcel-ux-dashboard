@@ -11,14 +11,14 @@ import {
   relativeDays,
   type Learner,
   type PipelineBucket,
-} from '@/data/xcelAdmin/learners'
+} from '@/data/atlasAdmin/learners'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, CHIP, CHIP_ON, EYEBROW, PAGE_H1, PAGE_SUB } from './adminStyles'
 import { AdminTabs, ChipMenu, MenuItem, PreparedPill, ProgressRing, ReadinessCell, StagePill } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
 
 /**
- * XCEL ADMIN · STUDENTS — rebuilt from colibri-b2b.vercel.app/students
+ * ATLAS ADMIN · STUDENTS — rebuilt from colibri-b2b.vercel.app/students
  * (2026-10-19). The admin's home: six pipeline tiles that filter the roster,
  * search and filter chips, and the roster itself, sorted by who needs the
  * admin first. Everything here works on the fixture (`learners.ts`):
@@ -65,7 +65,7 @@ type Tile = { id: PipelineBucket; label: string; color: string; bar: string; not
 
 const PAGE = 25
 
-export function XcelAdminStudentsPage() {
+export function AtlasAdminStudentsPage() {
   const navigate = useNavigate()
   const { showToast, learners: ADMIN_LEARNERS } = useAdminStore()
   const [bucket, setBucket] = useState<PipelineBucket>('all')

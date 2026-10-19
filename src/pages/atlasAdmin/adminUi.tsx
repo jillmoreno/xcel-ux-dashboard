@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import type { LearnerStage, PreparedToPass, Readiness } from '@/data/xcelAdmin/learners'
-import { STAGE_LABEL } from '@/data/xcelAdmin/learners'
+import type { LearnerStage, PreparedToPass, Readiness } from '@/data/atlasAdmin/learners'
+import { STAGE_LABEL } from '@/data/atlasAdmin/learners'
 import { CHIP, MENU, MENU_ITEM, PILL } from './adminStyles'
 
-/** XCEL ADMIN — the small shared pieces (2026-10-19). */
+/** ATLAS ADMIN — the small shared pieces (2026-10-19). */
 
 /** The 36px progress ring: a slate-200 track, the value in `color`. */
 export function ProgressRing({ pct, color, label }: { pct: number | null; color: string; label: string }) {

@@ -1,11 +1,11 @@
 import { useRef, useState, type CSSProperties } from 'react'
-import { ADMIN_DEPARTMENTS } from '@/data/xcelAdmin/learners'
+import { ADMIN_DEPARTMENTS } from '@/data/atlasAdmin/learners'
 import { AdminDialog } from './AdminDialog'
 import { useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, FIELD_LABEL, INPUT, PAGE_H1, PAGE_SUB } from './adminStyles'
 
 /**
- * XCEL ADMIN · RESOURCES — rebuilt from colibri-b2b.vercel.app/resources
+ * ATLAS ADMIN · RESOURCES — rebuilt from colibri-b2b.vercel.app/resources
  * (2026-10-19). Everything an admin hands a recruit: XCEL's own guides (kept
  * current, with every state's checklist behind All states), the agency's
  * files with an upload area that takes a file or a link, and, on the right,
@@ -34,7 +34,7 @@ const AGENCY_FILES: Resource[] = [
   { id: 'script', kind: 'DOC', title: 'Manager call script', sub: 'Uploaded by Tina on Jul 30 · leads only', mine: true },
 ]
 
-export function XcelAdminResourcesPage() {
+export function AtlasAdminResourcesPage() {
   const { showToast } = useAdminStore()
   const [allStates, setAllStates] = useState(false)
   const [agency, setAgency] = useState<Resource[]>(AGENCY_FILES)
