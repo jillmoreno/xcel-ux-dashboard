@@ -24,11 +24,22 @@ export function AtlasCompassPlayerBar({
   rubiOpen,
   onRubi,
   onClose,
+  sideTrays = false,
+  notesOpen = false,
+  onNotes,
+  nudgesOpen = false,
+  onNudges,
 }: {
   stickyTop: number
   rubiOpen: boolean
   onRubi: () => void
   onClose: () => void
+  /** Notes and Nudges as trays beside Rubi (`compass-player-trays`). */
+  sideTrays?: boolean
+  notesOpen?: boolean
+  onNotes?: () => void
+  nudgesOpen?: boolean
+  onNudges?: () => void
 }) {
   /* Shared with the course rail's "% Complete" pill, so the two always match
      — including which COURSE they are counting (2026-10-15).
@@ -52,6 +63,11 @@ export function AtlasCompassPlayerBar({
       onRubi={onRubi}
       rubiOpen={rubiOpen}
       onClose={onClose}
+      sideTrays={sideTrays}
+      notesOpen={notesOpen}
+      onNotes={sideTrays ? onNotes : undefined}
+      nudgesOpen={nudgesOpen}
+      onNudges={sideTrays ? onNudges : undefined}
     />
   )
 }

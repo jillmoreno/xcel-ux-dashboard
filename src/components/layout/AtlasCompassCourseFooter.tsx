@@ -15,7 +15,7 @@ import { useCourseDemo } from '@/context/FeatureFlagContext'
  * NO handlers: no lesson has a page yet, so both steps render disabled rather
  * than as buttons that go nowhere. Pass `onSelect` once lessons exist.
  */
-export function AtlasCompassCourseFooter() {
+export function AtlasCompassCourseFooter({ bleedLeft = 0 }: { bleedLeft?: number } = {}) {
   /* THE SEQUENCED TREE (2026-10-15) — this footer's whole job is naming what
      comes next, and under Regulated sequencing "next" may be locked. Reading
      the raw tree would offer Next on a lesson the rail draws with a padlock,
@@ -36,6 +36,7 @@ export function AtlasCompassCourseFooter() {
     <CompassCourseFooter
       previous={previous ? { label: previous.label } : undefined}
       next={next ? { label: next.label } : undefined}
+      bleedLeft={bleedLeft}
     />
   )
 }

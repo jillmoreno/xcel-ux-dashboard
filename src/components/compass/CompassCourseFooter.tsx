@@ -29,14 +29,26 @@ export function CompassCourseFooter({
   previous,
   next,
   stickyBottom = 0,
+  bleedLeft = 0,
 }: {
   previous?: CompassCourseStep
   next?: CompassCourseStep
   /** Pinned this far above the window's bottom edge. */
   stickyBottom?: number
+  /** Reaches this far left past its column — under a collapsed rail beside
+   *  it — with the buttons kept where they were (2026-10-19). */
+  bleedLeft?: number
 }) {
   return (
-    <nav aria-label="Course navigation" className="cre-compass-course-footer" style={{ ...FOOTER, bottom: stickyBottom }}>
+    <nav
+      aria-label="Course navigation"
+      className="cre-compass-course-footer"
+      style={{
+        ...FOOTER,
+        bottom: stickyBottom,
+        ...(bleedLeft ? { marginLeft: -bleedLeft, paddingLeft: FOOTER_INSET + bleedLeft } : null),
+      }}
+    >
       <button
         type="button"
         className="cre-compass-step cre-compass-step--previous"
@@ -65,6 +77,8 @@ export function CompassCourseFooter({
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 /* Colours, and the disabled treatment, are `.cre-compass-step` in tokens.css. */
 
+const FOOTER_INSET = 80
+
 const FOOTER: CSSProperties = {
   position: 'sticky',
   zIndex: 4,
@@ -74,7 +88,7 @@ const FOOTER: CSSProperties = {
   gap: 16,
   minHeight: 72,
   boxSizing: 'border-box',
-  padding: '14px 80px',
+  padding: `14px ${FOOTER_INSET}px`,
   background: 'var(--color-compass-footer-surface)',
   borderTop: '1px solid var(--color-compass-footer-rule)',
 }

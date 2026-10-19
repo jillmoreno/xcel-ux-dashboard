@@ -12,7 +12,7 @@ import {
   type DashboardLayout,
 } from '@/data/dashboardVersions'
 import { SectionContent } from '@/components/membership/v7/MembershipV7'
-import { ArrowLeft } from '@/icons'
+import { ArrowLeft, HandBackPointRightRegular, FileLinesRegular } from '@/icons'
 import { ResourceDetailPage } from '@/pages/ResourceDetailPage'
 import { CourseLauncherProvider, useCourseLauncher } from './CourseLauncherContext'
 import { ResourceLauncherProvider, useResourceLauncher } from './ResourceLauncherContext'
@@ -94,6 +94,7 @@ import { AtlasCompassPlayerBar } from './AtlasCompassPlayerBar'
 import { AtlasCompassRubiRail } from './AtlasCompassRubiRail'
 import { CompassCourseContent } from '@/components/compass/CompassCourseContent'
 import { AtlasCompassCourseFooter } from './AtlasCompassCourseFooter'
+import { CompassSideTray, CompassTrayPlaceholder } from '@/components/compass/CompassSideTray'
 
 import { useAtlasCourse } from './useAtlasCourse'
 import { AtlasRailToggle } from './AtlasRailToggle'
@@ -340,7 +341,13 @@ function PlatformShellBody() {
   // The Compass Rubi right rail (Figma 49:3053) — open by default on the
   // Compass Course page, closed by its own × and toggled by the player bar's
   // Rubi button. Session-local, like the rail collapse below.
-  const [rubiOpen, setRubiOpen] = useState(true)
+  /* ONE RIGHT TRAY AT A TIME (2026-10-19): Rubi, and with
+     `compass-player-trays` on, Notes and Nudges beside it. Opening one closes
+     whichever was open; Rubi still opens by default. */
+  const [playerTray, setPlayerTray] = useState<'rubi' | 'notes' | 'nudges' | null>('rubi')
+  const playerTrays = useFeatureFlag('compass-player-trays').enabled
+  const rubiOpen = playerTray === 'rubi'
+  const setRubiOpen = (open: boolean) => setPlayerTray(open ? 'rubi' : null)
   // The Atlas left rail's COLLAPSE (2026-10-01, Figma 174:1562): the button
   // at the rail's top right slides the rail closed to just its own frame.
   const [atlasRailClosed, setAtlasRailClosed] = useState(false)
@@ -1489,6 +1496,11 @@ function PlatformShellBody() {
                 rubiOpen={rubiOpen}
                 onRubi={() => setRubiOpen(true)}
                 onClose={() => selectCoursePage('overview')}
+                sideTrays={playerTrays}
+                notesOpen={playerTray === 'notes'}
+                onNotes={() => setPlayerTray('notes')}
+                nudgesOpen={playerTray === 'nudges'}
+                onNudges={() => setPlayerTray('nudges')}
               />
               {/* COMPASS COURSE CONTENT (Figma 49:3338, 2026-09-24) — replaces the
                   page's "Course" heading: a box that fills the column between
@@ -1496,8 +1508,11 @@ function PlatformShellBody() {
               {/* The page keeps its <h1>, hidden — the visible heading went. */}
               <h1 className="cre-visually-hidden">Course</h1>
               <CompassCourseContent />
-              {/* COMPASS COURSE NAVIGATION FOOTER (Figma 31:1221). */}
-              <AtlasCompassCourseFooter />
+              {/* COMPASS COURSE NAVIGATION FOOTER (Figma 31:1221). With the
+                  course nav collapsed it runs under the toggle's column to the
+                  page's left edge too, the buttons where they were
+                  (2026-10-19, Eric's request). */}
+              <AtlasCompassCourseFooter bleedLeft={atlasRailClosedNow ? ATLAS_RAIL_TOGGLE_W : 0} />
             </div>
             {/* Always mounted here, so it can slide OUT as well as in; `open`
                 drives the motion. Pinned at the header's bottom edge, beside
@@ -1508,6 +1523,33 @@ function PlatformShellBody() {
               bottomInset={stageBottom}
               onClose={() => setRubiOpen(false)}
             />
+            {/* NOTES AND NUDGES (2026-10-19, Eric's request) — trays like
+                Rubi's, mounted with the flag so they slide both ways; their
+                content is still to come. */}
+            {playerTrays ? (
+              <>
+                <CompassSideTray
+                  open={playerTray === 'notes'}
+                  title="Notes"
+                  icon={FileLinesRegular}
+                  stickyTop={headerBottom}
+                  bottomInset={stageBottom}
+                  onClose={() => setPlayerTray(null)}
+                >
+                  <CompassTrayPlaceholder>Your notes for this course will collect here — content to come.</CompassTrayPlaceholder>
+                </CompassSideTray>
+                <CompassSideTray
+                  open={playerTray === 'nudges'}
+                  title="Nudges"
+                  icon={HandBackPointRightRegular}
+                  stickyTop={headerBottom}
+                  bottomInset={stageBottom}
+                  onClose={() => setPlayerTray(null)}
+                >
+                  <CompassTrayPlaceholder>Nudges to keep you moving will appear here — content to come.</CompassTrayPlaceholder>
+                </CompassSideTray>
+              </>
+            ) : null}
           </div>
         ) : (
           <SectionPanel

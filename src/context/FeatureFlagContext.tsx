@@ -2180,6 +2180,25 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-player-trays',
+    /* NOTES AND NUDGES, AS TRAYS (2026-10-19, Eric's request). On, the course
+       player's bar carries Rubi, Notes and Nudges together at its right end,
+       each opening a tray that slides in like Rubi's — one tray at a time —
+       with content to come. Notes leaves the bar's left group to join them.
+       Off, the bar is as it was: Notes on the left, disabled, and Rubi alone.
+       Default ON on Eric's branch so its build shows the work; whether it
+       ships is decided at merge. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-v2', 'eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Player trays',
+    description:
+      'The course player\u2019s Notes and Nudges buttons sit beside Rubi at the bar\u2019s right end, each opening a tray that slides in like Rubi\u2019s, one at a time. The trays\u2019 content is still to come. Off: Notes stays on the left, disabled, and there is no Nudges.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-wip-quick-links-side',
     /* WHICH SIDE ERIC/ATLAS WIP'S QUICK LINKS SITS, ON THE DESIGN BAR
        (2026-10-13, Eric's request). Left (default) — beside the course card

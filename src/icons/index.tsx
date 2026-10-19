@@ -96,6 +96,7 @@ import PlusRegularSvg from './plus-regular.svg?react'
 import MagnifyingGlassRegularSvg from './magnifying-glass-regular.svg?react'
 import GearRegularSvg from './gear-regular.svg?react'
 import XmarkRegularSvg from './xmark-regular.svg?react'
+import HandBackPointRightRegularSvg from './hand-back-point-right-regular.svg?react'
 import DotSolidSvg from './dot-solid.svg?react'
 // Compass Rubi rail (Figma 49:3053), fetched 2026-09-23 at 7.3.1.
 import PaperPlaneTopSolidSvg from './paper-plane-top-solid.svg?react'
@@ -319,6 +320,7 @@ export const PlusRegular = makeIcon(PlusRegularSvg) // FA: plus (regular)
 export const MagnifyingGlassRegular = makeIcon(MagnifyingGlassRegularSvg) // FA: magnifying-glass (regular)
 export const GearRegular = makeIcon(GearRegularSvg) // FA: gear (regular)
 export const XmarkRegular = makeIcon(XmarkRegularSvg) // FA: xmark (regular)
+export const HandBackPointRightRegular = makeIcon(HandBackPointRightRegularSvg) // FA: hand-back-point-right (regular) — the course player's Nudges button
 export const DotSolid = makeIcon(DotSolidSvg) // FA: dot (solid)
 export const PaperPlaneTopSolid = makeIcon(PaperPlaneTopSolidSvg) // FA: paper-plane-top (solid)
 export const CircleUser = makeIcon(CircleUserSvg) // FA: circle-user

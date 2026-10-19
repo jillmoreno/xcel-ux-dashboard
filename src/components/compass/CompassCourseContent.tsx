@@ -4,7 +4,8 @@ import type { CSSProperties, ReactNode } from 'react'
  * COMPASS COURSE CONTENT — Figma "Atlas-Compass-Global-Navigation", node
  * 49:3338, 2026-09-24.
  *
- * The lesson's stage in the Compass course player: a bordered, rounded box that
+ * The lesson's stage in the Compass course player: a rounded box (unbordered
+ * since 2026-10-19) that
  * FILLS the space between the player controls bar and the navigation footer,
  * 56px in from every side (the designer's ask; the Overview's gutter). With no
  * lesson content yet it shows the design's "Course Content" placeholder label.
@@ -43,7 +44,7 @@ const BOX: CSSProperties = {
   boxSizing: 'border-box',
   overflow: 'clip',
   borderRadius: 12,
-  border: '1px solid var(--color-compass-content-border)',
+  // No border (2026-10-19, Eric's request); it was 1px --color-compass-content-border.
   background: 'var(--color-compass-page)',
 }
 const PLACEHOLDER: CSSProperties = {

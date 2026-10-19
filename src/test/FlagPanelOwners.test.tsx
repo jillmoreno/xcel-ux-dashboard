@@ -122,6 +122,8 @@ describe('the owner axis', () => {
       'atlas-affidavit',
       // Joined 2026-10-07 — V2's long-title reference toggle, beside Headings.
       'atlas-home-long-title',
+      // Joined 2026-10-19 — the course player's Notes and Nudges trays.
+      'compass-player-trays',
       // Joined 2026-10-13 — WIP's Quick Links, left or right.
       'atlas-wip-quick-links-side',
       // Joined 2026-10-14 — Background: Toned (WIP) or White (White).

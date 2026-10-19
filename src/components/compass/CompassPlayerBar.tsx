@@ -1,5 +1,6 @@
 import type { ComponentType, CSSProperties, ReactNode } from 'react'
 import {
+  HandBackPointRightRegular,
   FileLinesRegular,
   GearRegular,
   MagnifyingGlassRegular,
@@ -53,6 +54,14 @@ export type CompassPlayerBarProps = {
   onSearch?: () => void
   onSettings?: () => void
   onClose?: () => void
+  /** THE SIDE TRAYS (2026-10-19, Eric's request). On, Notes leaves the left
+   *  group for the right end beside Rubi, and Nudges joins them — each a
+   *  tray like Rubi's, its button shown only while its tray is closed. Off
+   *  (the default), the bar is as it was. */
+  sideTrays?: boolean
+  notesOpen?: boolean
+  onNudges?: () => void
+  nudgesOpen?: boolean
 }
 
 export function CompassPlayerBar({
@@ -66,28 +75,58 @@ export function CompassPlayerBar({
   onSearch,
   onSettings,
   onClose,
+  sideTrays = false,
+  notesOpen = false,
+  onNudges,
+  nudgesOpen = false,
 }: CompassPlayerBarProps) {
   const pct = Math.max(0, Math.min(100, Math.round(section.pct)))
+  const notesButton = (
+    <ToolButton label="Notes" ariaLabel={`Notes (${notesCount})`} onClick={onNotes} icon={FileLinesRegular}>
+      <span aria-hidden style={BADGE}>
+        {notesCount}
+      </span>
+    </ToolButton>
+  )
+  /* Each tray's button hides only while ITS OWN tray is open; the other two
+     stay, with the divider before them (2026-10-19, Eric's request — for a
+     while all three hid together). The open tray's close is its way out, as
+     Rubi's always was. Notes here carries no count. */
+  const showRubi = !rubiOpen
+  const showNotesRight = sideTrays && !notesOpen
+  const showNudges = sideTrays && !nudgesOpen
+  const closeCourse = (
+    <div style={GROUP}>
+      <button
+        type="button"
+        className="cre-compass-player-btn"
+        onClick={onClose}
+        disabled={!onClose}
+        style={{ ...BUTTON, gap: 6, flex: 'none' }}
+      >
+        {/* The ✕ 1px lower, on the label's optical centre (2026-10-01,
+            the designer's request). */}
+        <span style={{ display: 'inline-flex', position: 'relative', top: 1 }}>
+          <Glyph icon={XmarkRegular} />
+        </span>
+        <span style={{ ...TEXT, fontWeight: 600 }}>Close Course</span>
+      </button>
+    </div>
+  )
   return (
     <div
       role="toolbar"
       aria-label="Course player controls"
       className="cre-compass-player-bar"
-      style={{ ...BAR, top: stickyTop }}
+      // With the trays on, 16 after the last button, the same as the divider's
+      // 16 before Rubi (2026-10-19, Eric's request); 20 otherwise.
+      style={{ ...BAR, top: stickyTop, ...(sideTrays ? { paddingRight: 16 } : null) }}
     >
       {/* ── Left: search, notes, settings, then where you stand ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: '1 1 0', minWidth: 0 }}>
         <IconButton label="Search this course" icon={MagnifyingGlassRegular} onClick={onSearch} />
-        <ToolButton
-          label="Notes"
-          ariaLabel={`Notes (${notesCount})`}
-          onClick={onNotes}
-          icon={FileLinesRegular}
-        >
-          <span aria-hidden style={BADGE}>
-            {notesCount}
-          </span>
-        </ToolButton>
+        {/* On the right with the trays on (`sideTrays`). */}
+        {sideTrays ? null : notesButton}
         <IconButton label="Player settings" icon={GearRegular} onClick={onSettings} />
         {/* CENTRED in the space between the tools and Close Course
             (2026-10-01, the designer's request): this box takes that space and
@@ -135,25 +174,20 @@ export function CompassPlayerBar({
 
       {/* ── Right: Close Course (swapped with the tools, 2026-10-01, the
           designer's request) ── */}
-      <div style={GROUP}>
-        <button
-          type="button"
-          className="cre-compass-player-btn"
-          onClick={onClose}
-          disabled={!onClose}
-          style={{ ...BUTTON, gap: 6, flex: 'none' }}
-        >
-          {/* The ✕ 1px lower, on the label's optical centre (2026-10-01,
-              the designer's request). */}
-          <span style={{ display: 'inline-flex', position: 'relative', top: 1 }}>
-            <Glyph icon={XmarkRegular} />
-          </span>
-          <span style={{ ...TEXT, fontWeight: 600 }}>Close Course</span>
-        </button>
-      </div>
+      {closeCourse}
 
-      {/* ── Rubi, only while its rail is closed ── */}
-      {rubiOpen ? null : (
+      {/* ── Rubi, then Notes and Nudges with the trays on — each only while
+          its own tray is closed. One group, 8 apart, so the bar's 32 sits
+          once before it and not after an empty slot. ── */}
+      {/* A vertical rule between Close Course and the tray buttons, with the
+          trays on (2026-10-19, Eric's request) — centred in the bar's 32, so
+          the buttons do not move apart. */}
+      {sideTrays && (showRubi || showNotesRight || showNudges) ? <span aria-hidden style={TRAY_RULE} /> : null}
+      {showRubi || showNotesRight || showNudges ? (
+      <div style={GROUP}>
+      {/* Notes first, then Rubi (2026-10-19, Eric's request). */}
+      {showNotesRight ? <ToolButton label="Notes" onClick={onNotes} icon={FileLinesRegular} /> : null}
+      {showRubi ? (
         <button
           type="button"
           className="cre-compass-player-btn cre-compass-player-rubi"
@@ -167,7 +201,12 @@ export function CompassPlayerBar({
           </span>
           <span style={{ ...TEXT, fontWeight: 600 }}>Rubi</span>
         </button>
-      )}
+      ) : null}
+      {showNudges ? (
+        <ToolButton label="Nudges" onClick={onNudges} icon={HandBackPointRightRegular} />
+      ) : null}
+      </div>
+      ) : null}
     </div>
   )
 }
@@ -242,6 +281,17 @@ const BAR: CSSProperties = {
   borderBottom: '1px solid var(--color-compass-player-rule)',
 }
 const GROUP: CSSProperties = { display: 'flex', alignItems: 'center', gap: 8, flex: 'none' }
+/* 1 wide, in the bar's own rule colour, the FULL HEIGHT of the bar — top
+   edge to its bottom rule, through the 11 of padding (2026-10-19, Eric's
+   request; it was 24 tall). The −16 sides take it out of the 32 gaps either
+   side, so it sits midway without adding width. */
+const TRAY_RULE: CSSProperties = {
+  flex: 'none',
+  width: 1,
+  alignSelf: 'stretch',
+  margin: '-11px -16px',
+  background: 'var(--color-compass-player-rule)',
+}
 const TEXT: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 13,
