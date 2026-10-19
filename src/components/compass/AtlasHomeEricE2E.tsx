@@ -103,7 +103,17 @@ const V2_LONG_TITLE = 'New York Property and Casualty Conversion Course Pre-lice
 
 /** The cover and the column under it share this width (2026-10-08). 260 —
  *  White's left column — since 2026-10-13 (Eric's request); it was 235. */
-const V3_LEFT_W = 260
+/* ⚠ 276, NOT 260 — 2026-10-19, Jillienne: "give this container more
+   horizontal spacing, push the steps over as needed". The panel's side
+   padding went 32 → 40, and the column grew by the same 16 so the CONTENT
+   inside it keeps its 196 — widening the padding alone would have squeezed
+   the ring, the pace lines and the rules instead of giving them air. The 16
+   is what pushes the Steps column over; the two columns' own 48 gap is
+   untouched.
+   ⚠ `COVER_FRAME` READS THIS TOO, on purpose: the course cover's right edge
+   lines up with this column below it (2026-10-14). It grows with it, which
+   is what keeps that alignment true. */
+const V3_LEFT_W = 276
 
 /** V3's course tabs — off on 2026-10-08, back on the same day (Eric's
  *  request: "add the course tabs back to the top"). */
@@ -1910,7 +1920,9 @@ const WHITE_PROGRESS_PANEL: CSSProperties = {
   gap: 16,
   // 8 top and bottom (2026-10-14, Eric's request: 24, then 16 less) — the
   // cards inside keep their own 24.
-  padding: '8px 32px',
+  // 40 a side since 2026-10-19 (it was 32) — see `V3_LEFT_W`, which grew by
+  // the same 16 so the content inside did not lose any.
+  padding: '8px 40px',
   boxSizing: 'border-box',
   borderRadius: 20,
   // No stroke, a Secondary 100 fill (2026-10-15, Eric's request; it had

@@ -286,7 +286,12 @@ export function InvitedConfirmationPage() {
   )
 }
 
-const DEMO_EMAIL = 'jordan.navarro@example.com'
+/* ⚠ THE SAME ADDRESS THE HEADER SHOWS (2026-10-19, Jillienne: "make this
+   update within the Invite flow as well where applicable"). It was
+   `@example.com` here and `alicia.navarro@gmail.com` in the header — so the
+   walk confirmed a purchase to one address and then signed the learner in as
+   somebody else. One person, one address, across the whole journey. */
+const DEMO_EMAIL = 'jordan.navarro@gmail.com'
 
 /* HOW LONG THE LOADING PAGE HOLDS before it opens Home (2026-10-16,
    Jillienne's three seconds). Long enough that the hand-off reads as a step

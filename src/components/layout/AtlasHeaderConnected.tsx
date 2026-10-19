@@ -83,7 +83,13 @@ export function AtlasHeaderConnected({
       onHelp={onHelp}
       user={{
         name: `${user.firstName} ${user.lastName}`,
-        email: 'alicia.navarro@gmail.com',
+        /* ⚠ JORDAN'S, TO MATCH THE NAME ON THE SAME LINE (2026-10-19,
+           Jillienne: "update email to jordan.navarro@gmail.com"). The name
+           above is read from the account (`Jordan Navarro`) while this was a
+           hardcoded `alicia.navarro@gmail.com` — one person's name over
+           another's address, in the menu that identifies who is signed in.
+           Still hardcoded: the account model has no email. */
+        email: 'jordan.navarro@gmail.com',
         photoUrl: avatarOverride ?? user.avatarUrl,
       }}
       notificationCount={unread}
