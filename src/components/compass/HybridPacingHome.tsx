@@ -22,6 +22,7 @@ import {
 import { COMPASS_BUTTON } from './compassButton'
 import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
 import { widgetEyebrowStyle } from '@/components/learning/widgetStyles'
+import { paceStandingMessage, type PaceStanding } from './paceStanding'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import {
   getLicensedStepsFor,
@@ -36,7 +37,6 @@ import {
   dateFromIso,
   daysUntil,
   defaultPreset,
-  formatHours,
   formatPaceDate,
   isoPlusDays,
   studyPace,
@@ -463,43 +463,17 @@ export function HybridPacingHome({
      visible side by side. See `hybrid-pace-standing`. */
   const standing = useFeatureFlag('hybrid-pace-standing').variant ?? 'on-track'
 
-  /* The GOAL in hours a week — the model's own figure for the chosen pace, so
-     the sentence and the "{weeks} Weeks" row above it cannot disagree. */
-  const goalHoursPerWeek = Number.isFinite(preset.minsPerWeek) ? preset.minsPerWeek / 60 : 0
-  /* ⚠ SCENARIO DATA, NOT A MEASUREMENT. The average is the goal scaled by the
-     arm, so the two numbers in the sentence always agree with each other and
-     with the pace above — but it is not a reading of what anyone did. The
-     moment `weekMinutes` reaches this component, this whole block is replaced
-     by `observedPace` and the arm becomes a preview of a real state. */
-  const OBSERVED_FACTOR: Record<string, number> = {
-    ahead: 1.3,
-    'on-track': 1.0,
-    behind: 0.7,
-    'off-track': 0.4,
-  }
-  const observedHours = goalHoursPerWeek * (OBSERVED_FACTOR[standing] ?? 1)
-  const averaging = `You’re averaging ${formatHours(observedHours)} a week.`
-  /* ⚠ ADJECTIVAL, NOT PLURAL — every use below is "your … goal", where the
-     plural form reads "your 2 weeks goal". Hyphenated and singular is what that
-     slot takes; the plural noun is not needed anywhere here. */
-  const goalWeeks = `${weeks}-week`
-
-  /* ⚠ FIVE MESSAGES, NOT THREE, and the split that matters is BEHIND vs OFF
-     TRACK. Behind is a gap the learner can still close inside the goal they
-     chose, so the message is a nudge. Off track says the goal no longer fits —
-     the only state with an action attached, and the ask was explicit that it
-     sends them to the Study Plan. Collapsing the two lost that action, which is
-     the whole reason the state is worth reporting at all. */
-  const standingMessage =
-    standing === 'no-data'
-      ? `No study time logged yet this week. Your ${goalWeeks} goal asks for about ${formatHours(goalHoursPerWeek)} a week.`
-      : standing === 'ahead'
-        ? `${averaging} That is ahead of your ${goalWeeks} goal — keep this up and you will finish early.`
-        : standing === 'behind'
-          ? `${averaging} That is a little under your ${goalWeeks} goal. A short extra session this week closes the gap.`
-          : standing === 'off-track'
-            ? `${averaging} At this rate you will not finish by ${formatPaceDate(preset.finishIso)}. Open your Study Plan to adjust your goal.`
-            : `${averaging} Based on your study goal, you are right on track.`
+  /* ⚠ THE SENTENCE IS SHARED NOW — `paceStanding.ts`, 2026-10-19 — because
+     the Atlas Home's pace card says the same thing. It was all written here;
+     the whole block moved rather than being copied, so the two cards cannot
+     report one standing two ways. The scenario-data warning and the
+     five-message reasoning went with it. */
+  const standingMessage = paceStandingMessage({
+    standing: standing as PaceStanding,
+    goalHoursPerWeek: Number.isFinite(preset.minsPerWeek) ? preset.minsPerWeek / 60 : 0,
+    weeks,
+    finishIso: preset.finishIso,
+  })
 
   /* ⚠ THE DAILY LOAD EACH OPTION ASKS FOR — 2026-10-07, the direct ask for "a
      sub line that gives an appx — about 3 hrs / day". It is what makes the

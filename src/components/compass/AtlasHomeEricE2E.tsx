@@ -30,6 +30,7 @@ import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
 import { CircleCheckSolid } from '@/icons'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
 import { ATLAS_PROGRESS_ORDER, atlasRungFor, isLessonRowTitle, journeyTitleFor } from './atlasProgressLadder'
+import { paceStandingMessage, type PaceStanding } from './paceStanding'
 import { AtlasPaceRingCard } from './AtlasPaceRingCard'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag, useFeatureFlags, useCourseDemo } from '@/context/FeatureFlagContext'
@@ -545,6 +546,11 @@ export function AtlasHomeEricE2E({
   /* Exam Information opens the same sheet Quick Links' own link opens, by
      the same id — `onOpenStep` is exempt from `LINKS_OFF`, so this one
      genuinely works. */
+  /* ⚠ THE PACE SENTENCE PAST 0% (2026-10-19). At Not Started the card keeps
+     its starting-point copy — there is no standing before you start — so
+     this is only built once the learner has one, and `paceFit` has to exist
+     for the figures in it to mean anything. */
+  const paceStanding = (useFeatureFlag('atlas-pace-standing').variant ?? 'on-track') as PaceStanding
   /* The design bar's Home column — Centred (default) or Left aligned. */
   const columnAlign = useFeatureFlag('atlas-home-align').variant === 'left' ? 'left' : 'center'
   /* The design bar's Exam date prompt — Row (default) or Card. */
@@ -822,6 +828,19 @@ export function AtlasHomeEricE2E({
                 hoursPerWeek={paceFit ? Math.max(1, Math.round(paceFit.minsPerWeek / 60)) : undefined}
                 /* So the card knows whether its last rule has anything below
                    it to divide — see `readinessBelow`. */
+                standingMessage={
+                  atZeroProgress || !paceFit
+                    ? undefined
+                    : paceStandingMessage({
+                        standing: paceStanding,
+                        /* The model's own figure for this pace, so the
+                           sentence and the week goal above it cannot
+                           disagree about the plan. */
+                        goalHoursPerWeek: Number.isFinite(paceFit.minsPerWeek) ? paceFit.minsPerWeek / 60 : 0,
+                        weeks: Math.max(1, Math.round(paceFit.days / 7)),
+                        finishIso: paceFit.finishIso,
+                      })
+                }
                 readinessBelow={showReadiness}
                 align={columnAlign}
                 /* ⚠ "HERE" GOES TO COMPASS'S STUDY PLANNER (2026-10-16,

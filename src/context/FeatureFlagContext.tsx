@@ -2556,6 +2556,49 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-pace-standing',
+    /* HOW THE LEARNER IS DOING, ON THE ATLAS PACE CARD (2026-10-19,
+       Jillienne: "we need this type of messaging to be considered for the
+       study pace section for when a user is no longer at 0%").
+
+       Past 0% the card's sentence was still "Your default recommended study
+       pace is just a starting point" — true on day one and stale every day
+       after, because by then the learner HAS a pace and the interesting
+       thing is how it is going. This picks which of those five states the
+       demo shows.
+
+       ⚠ AT 0% IT IS IGNORED, and that is the point of the ask. Nobody has a
+       standing before they start, so the starting-point copy stays there —
+       which is also why `no-data` is a separate arm from Not Started: it is
+       "this WEEK is empty", not "the course is".
+
+       ⚠ THE SAME FIVE ARMS AS `hybrid-pace-standing`, and the same sentences
+       — `paceStanding.ts` is shared so the two cards cannot report one
+       standing two ways. A separate flag because that one is scoped to
+       Anjani's `hybrid-pacing` version and this is Eric's surface; one flag
+       across both would put her control on his bar.
+
+       ⚠ SCENARIO DATA. The average in the sentence is the GOAL scaled by the
+       arm, not a reading of anything. When real week minutes land, the arm
+       becomes a preview of a real state — see `observedHoursFor`. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Pace standing',
+    description:
+      'What the Atlas Home\u2019s Study pace section says once the learner is past 0%: on track, ahead, behind, off track, or no data logged this week. At 0% it is ignored \u2014 there is no standing before you start, so the card keeps its starting-point copy. \u26a0 The average quoted is the goal scaled by the arm, not a measurement.',
+    defaultEnabled: true,
+    defaultVariant: 'on-track',
+    variants: [
+      { value: 'on-track', label: 'On track' },
+      { value: 'ahead', label: 'Ahead of goal' },
+      { value: 'behind', label: 'Behind — recoverable' },
+      { value: 'off-track', label: 'Off track — adjust the goal' },
+      { value: 'no-data', label: 'No data yet' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-home-align',
     /* THE HOME COLUMN, TWO WAYS (2026-10-19, Jillienne: "add a variant where
        all of these are left aligned").

@@ -30,6 +30,7 @@ export function AtlasPaceRingCard({
   weeks,
   hoursPerWeek,
   expected,
+  standingMessage,
   readinessBelow = false,
   align = 'center',
   onCustomize,
@@ -49,6 +50,10 @@ export function AtlasPaceRingCard({
    *  would quietly answer a different question and disagree with the plan it
    *  sits under. */
   hoursPerWeek?: number
+  /** The sentence under the goal once the learner is past 0% — how they are
+   *  doing against it, built by `paceStandingMessage`. Undefined at 0%,
+   *  where the starting-point copy stands instead. */
+  standingMessage?: string
   expected?: { value: string; note?: string }
   /** Whether the Exam readiness section follows this card in the column.
    *  Only the BOTTOM rule of Estimated completion depends on it: that rule
@@ -185,6 +190,18 @@ export function AtlasPaceRingCard({
              card says and what this now says too. The link goes, because
              there is nowhere useful for it to go. */
           <p style={SMALL}>Extend your access to get a plan.</p>
+        ) : standingMessage ? (
+          /* ⚠ ONCE THERE IS A PACE, THE CARD REPORTS IT (2026-10-19,
+             Jillienne: "we need this type of messaging to be considered for
+             the study pace section for when a user is no longer at 0%").
+             "Your default recommended study pace is just a starting point"
+             is true on day one and stale every day after — by then the
+             learner HAS a pace, and how it is going is the thing worth the
+             line. The sentence is `paceStanding.ts`'s, shared with
+             `HybridPacingHome` so the two cards cannot report one standing
+             two ways. The customise link goes with the starting-point copy:
+             it belonged to the sentence that offered it. */
+          <p style={SMALL}>{standingMessage}</p>
         ) : (
         <p style={SMALL}>
           Your default recommended study pace is just a starting point, you can further customize
