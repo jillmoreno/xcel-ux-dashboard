@@ -52,8 +52,15 @@ export function AtlasPaceRingCard({
    *  line under the last thing on screen. */
   readinessBelow?: boolean
   /** Whole weeks the current plan runs to — the same figure the sentence and
-   *  the goal line both read, so they cannot describe two different plans. */
-  weeks: number
+   *  the goal line both read, so they cannot describe two different plans.
+   *
+   *  ⚠ UNDEFINED MEANS NO PACE FITS, and the card says so rather than
+   *  printing a number (2026-10-19). It took a `number` with the caller
+   *  falling back to a hardcoded 3 when `paceFit` came back empty — so with
+   *  one day of access left, the hours line and the completion date both
+   *  correctly vanished while a made-up "3 Week Goal" stayed, leaving the
+   *  one figure on the card that nothing had computed. */
+  weeks?: number
   onCustomize?: () => void
 }) {
   return (
@@ -93,6 +100,18 @@ export function AtlasPaceRingCard({
           <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-compass-page-button)' }}>
             <GaugeThin size={33} aria-hidden />
           </span>
+          {weeks == null ? (
+            /* ⚠ NO PLAN, AND IT SAYS SO (2026-10-19). The wording is
+               `AtlasCourseProgressStates`' own `paceDays === 'none'` arm —
+               the tan card this one forked from already had this state, and
+               the fork dropped it. Two cards answering the same question
+               should not disagree about whether the question is answerable,
+               so the sentence is copied rather than rewritten. */
+            <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+              <span style={GOAL}>Not enough access left</span>
+              <span style={GOAL_NOTE}>No study pace fits in the time remaining.</span>
+            </span>
+          ) : (
           <span style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
             {/* ⚠ THE PACE'S NAME, READ OFF COMPASS (2026-10-16, Jillienne:
                 "change to Average to match the header in compass side of
@@ -119,6 +138,7 @@ export function AtlasPaceRingCard({
               </span>
             ) : null}
           </span>
+          )}
         </div>
         {/* ⚠ "HERE" IS THE CONTROL NOW, not a button below (2026-10-16,
             Jillienne's copy). The sentence it replaces ended "you can change
@@ -126,6 +146,14 @@ export function AtlasPaceRingCard({
             this one points at itself, so that button went with the old
             wording — leaving both would have been two ways to the same page,
             one of which the copy no longer mentions. */}
+        {weeks == null ? (
+          /* ⚠ A DIFFERENT SENTENCE, NOT THE SAME ONE (2026-10-19). "Customize
+             your pace here" points at a planner that has nothing to plan —
+             the fix for this state is more access, which is what the tan
+             card says and what this now says too. The link goes, because
+             there is nowhere useful for it to go. */
+          <p style={SMALL}>Extend your access to get a plan.</p>
+        ) : (
         <p style={SMALL}>
           Your default recommended study pace is just a starting point, you can further customize
           your pace{' '}
@@ -138,6 +166,7 @@ export function AtlasPaceRingCard({
           )}
           .
         </p>
+        )}
         {expected ? (
           /* With nothing below, the bottom pad goes with the bottom rule — the
              panel's own 24 is already there, and keeping both would put 48

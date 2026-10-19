@@ -148,3 +148,60 @@ describe('the pace tag speaks Compass\u2019s language', () => {
     expect(screen.getByText(/default recommended study pace/)).toBeTruthy()
   })
 })
+
+/**
+ * WHEN NO PACE FITS (2026-10-19, Jillienne: "why on default did the pace
+ * change to 3 weeks and estimated completion disappeared").
+ *
+ * ⚠ IT WAS NOT A REGRESSION — it was the Expires control on 1 day, the state
+ * the flag catalog already describes as "no study pace fits". What the
+ * question exposed is that the card handled it in two voices at once: the
+ * hours line and the completion date correctly vanished, while the week
+ * count fell back to a hardcoded 3 and printed the one figure on the card
+ * that nothing had computed.
+ *
+ * ⚠ THE WORDING IS `AtlasCourseProgressStates`' OWN. The tan card this one
+ * forked from already had this state; the fork dropped it. Two cards
+ * answering the same question must not disagree about whether the question
+ * is answerable, which is why it is copied rather than rewritten — and why
+ * the last case below reads it back out of that file.
+ */
+describe('the ring card when no pace fits', () => {
+  const renderNoPace = () => render(<AtlasPaceRingCard percent={0} />)
+
+  it('says so, instead of inventing a week count', () => {
+    renderNoPace()
+    expect(screen.getByText('Not enough access left')).toBeTruthy()
+    expect(screen.queryByText(/Week Goal/)).toBeNull()
+    // The specific number that used to appear from nowhere.
+    expect(screen.queryByText(/3 Week Goal/)).toBeNull()
+  })
+
+  it('names no pace either — "Average" would contradict the line above it', () => {
+    renderNoPace()
+    expect(screen.queryByText(paceName(PLANNER_PLAN.dayMins))).toBeNull()
+  })
+
+  it('points at access, not at the planner', () => {
+    renderNoPace()
+    expect(screen.getByText(/Extend your access to get a plan/)).toBeTruthy()
+    // "Customize your pace here" aims at a planner with nothing to plan.
+    expect(screen.queryByText(/further customize/)).toBeNull()
+    expect(screen.queryByRole('button', { name: 'here' })).toBeNull()
+  })
+
+  it('still draws the ring — progress is a fact whether or not a plan fits', () => {
+    renderNoPace()
+    expect(screen.getByLabelText('Course progress 0% complete')).toBeTruthy()
+  })
+
+  it('leaves the normal arm alone', () => {
+    render(
+      <AtlasPaceRingCard percent={14} weeks={2} hoursPerWeek={7} expected={{ value: 'May 24' }} />,
+    )
+    expect(screen.getByText('2 Week Goal')).toBeTruthy()
+    expect(screen.getByText('about 7 hours / week')).toBeTruthy()
+    expect(screen.getByText('Estimated completion')).toBeTruthy()
+    expect(screen.queryByText('Not enough access left')).toBeNull()
+  })
+})

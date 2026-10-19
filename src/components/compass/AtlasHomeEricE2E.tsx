@@ -730,7 +730,14 @@ export function AtlasHomeEricE2E({
                    including 0 — see the note there. The `percent` prop is the
                    persona's and only stands in for a state with no figure. */
                 percent={progress.percent ?? percent}
-                weeks={paceFit ? Math.max(1, Math.round(paceFit.days / 7)) : 3}
+                /* ⚠ NO FALLBACK (2026-10-19). It was `: 3` — a week count
+                   nothing had computed, printed at the one moment the model
+                   has no plan to offer. `undefined` is what the card reads as
+                   "no pace fits", and it is the same condition that already
+                   empties the hours line and the completion date, so all
+                   three now say the same thing instead of two vanishing while
+                   the third made a number up. */
+                weeks={paceFit ? Math.max(1, Math.round(paceFit.days / 7)) : undefined}
                 /* ⚠ THE SAME `paceFit` THE WEEK COUNT READS, which is the
                    whole reason both live on this card: the span and the date
                    it lands on come from one model, so they cannot describe
