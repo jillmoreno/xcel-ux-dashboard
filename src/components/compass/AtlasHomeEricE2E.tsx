@@ -1031,9 +1031,9 @@ export function AtlasHomeEricE2E({
                  place of the journey's stops. */
               <section aria-label="Study journey" style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
                 <p style={STEP_EYEBROW}>
-                  <span style={{ fontWeight: 700 }}>Step 1</span>
+                  Step 1
                   {/* Not on White (2026-10-14, Eric's request). */}
-                  {onWhite ? null : <span style={{ fontWeight: 600 }}> · Study Journey</span>}
+                  {onWhite ? null : ' · Study Journey'}
                 </p>
                 <p style={STEP_TITLE}>Congratulations!</p>
                 <p style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }}>
@@ -1048,9 +1048,9 @@ export function AtlasHomeEricE2E({
             <section aria-label="Study journey" style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: -16 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                 <p style={STEP_EYEBROW}>
-                  <span style={{ fontWeight: 700 }}>Step 1</span>
+                  Step 1
                   {/* Not on White (2026-10-14, Eric's request). */}
-                  {onWhite ? null : <span style={{ fontWeight: 600 }}> · Study Journey</span>}
+                  {onWhite ? null : ' · Study Journey'}
                 </p>
                 <p style={STEP_TITLE}>Complete Coursework</p>
               </div>
@@ -1532,7 +1532,7 @@ function Step({
   return (
     <section aria-label={title} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-        <p style={{ ...STEP_EYEBROW, fontWeight: 700 }}>Step {number}</p>
+        <p style={STEP_EYEBROW}>Step {number}</p>
         <p style={STEP_TITLE}>{title}</p>
       </div>
       {detail ? <p style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }}>{detail}</p> : null}
@@ -2045,15 +2045,26 @@ const LINK: CSSProperties = {
   lineHeight: '13px',
   color: 'var(--color-compass-page-button)',
 }
-const STEP_EYEBROW: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-body)',
-  fontSize: 10,
-  lineHeight: '15px',
-  letterSpacing: '0.18em',
-  textTransform: 'uppercase',
-  color: 'var(--color-compass-page-eyebrow)',
-}
+/*
+ * THE STEP EYEBROWS ARE THE PAGE'S EYEBROW (2026-10-19, Jillienne: "the Step
+ * 1 eyebrow should match the styling of the other eyebrows").
+ *
+ * It had drifted on all four axes at once — 10/15 at 0.18em against the
+ * column's 11/16.5 at 0.16em, and bold where nothing else on the page is.
+ * None of that was a decision; it is what two constants describing one thing
+ * do when they are edited on different days.
+ *
+ * ⚠ AN ALIAS, NOT A COPY. Spelling the values out again is exactly how the
+ * drift happened; pointing the name at `EYEBROW` makes a second divergence
+ * impossible. The name stays because "STEP_EYEBROW" says where it is used.
+ *
+ * ⚠ THE BOLD IS GONE, including the 600 on "· Study Journey". "Step 1" was
+ * set apart from the section name by weight; the separator already does that
+ * work, and an eyebrow that is heavier than the eyebrows beside it is the
+ * mismatch being removed, not a hierarchy being kept. One `fontWeight` on
+ * this constant brings it back if the step number should lead again.
+ */
+const STEP_EYEBROW: CSSProperties = EYEBROW
 /* Serif H8 (20 / 24). */
 const STEP_TITLE: CSSProperties = {
   margin: 0,
