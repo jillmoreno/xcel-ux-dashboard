@@ -38,6 +38,10 @@ import { useAccount, professionFor, supportsMembership } from '@/context/Account
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { activePathIdFor, learningPathsFor } from '@/data/learningFixtures'
 import { useDeviceFrame } from './DeviceFrameContext'
+/* ⚠ THE STRIP MOVED OUT on 2026-10-19 so the invite flow — which renders
+   outside this shell — can draw the same one. Its height is still what this
+   header offsets itself by. */
+import { BROWSER_CHROME_H, BrowserChromeBar } from './BrowserChromeBar'
 import { useMobileNav } from './MobileNavContext'
 import { AtlasTopNav } from './AtlasTopNav'
 import { AtlasHeaderConnected } from './AtlasHeaderConnected'
@@ -46,7 +50,6 @@ import { useAtlasSkin } from './atlasBrandSkin'
 
 /** Height of the Demo-frame browser-chrome strip (traffic lights). Shared by
  *  the strip itself + the header's sticky offset so they stay in sync. */
-const BROWSER_CHROME_H = 38
 
 /**
  * Mobile logo height. **35, not 34** — XCEL's lockup is 2.725:1 and sizes by
@@ -788,35 +791,3 @@ export function CartButton() {
   )
 }
 
-/** Decorative browser-window title bar for the "Demo frame" device mode. Three
- *  macOS-style traffic-light dots on the left + a centered read-only URL pill.
- *  Purely presentational (aria-hidden) — it frames the app as a window on the
- *  dark demo stage; it does not affect navigation. */
-function BrowserChromeBar({ top }: { top: number }) {
-  return (
-    <div
-      aria-hidden
-      className="cre-browser-chrome"
-      style={{
-        // Pins directly below the prototype bar so the browser-window chrome
-        // stays fixed together with the app header on scroll.
-        position: 'sticky',
-        top,
-        zIndex: 51,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        height: BROWSER_CHROME_H,
-        padding: '0 16px',
-        background: 'var(--color-neutral-300)',
-        borderBottom: '1px solid var(--color-border-subtle)',
-      }}
-    >
-      <span style={{ display: 'inline-flex', gap: 8, flexShrink: 0 }}>
-        <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#ff5f57' }} />
-        <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#febc2e' }} />
-        <span style={{ width: 12, height: 12, borderRadius: '50%', background: '#28c840' }} />
-      </span>
-    </div>
-  )
-}

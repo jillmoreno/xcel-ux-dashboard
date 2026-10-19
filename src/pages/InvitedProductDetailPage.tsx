@@ -2,6 +2,8 @@ import { useEffect, useLayoutEffect, useRef, type CSSProperties } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_COURSE_TITLE_SHORT, E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndCourseTitle, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
+import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
+import './inviteFlow.css'
 
 /**
  * INVITED PRODUCT DETAIL — `/end-to-end-demo` (2026-10-14, Eric's request;
@@ -112,6 +114,14 @@ export function InvitedProductDetailPage() {
 
   return (
     <div style={PAGE}>
+      {/* ⚠ THE BROWSER WINDOW CONTINUES HERE (2026-10-19, Jillienne: "can
+          we also add this browser header to the email/invite flows so it
+          feels like a seamless experience"). These pages render OUTSIDE the
+          app shell, so the shell's own strip never reached them — the walk
+          opened in a browser window, lost it for the invite flow, and got it
+          back at the dashboard. Draws only in the Demo frame, as it does
+          there. */}
+      <StandaloneBrowserChrome />
       <PartnerHeader />
       <section aria-label="Personal welcome" style={WELCOME}>
         <div style={WELCOME_CONTENT}>
@@ -188,7 +198,7 @@ export function InvitedProductDetailPage() {
                   {/* Straight to the checkout (2026-10-14, Eric's request). */}
                   <button
                     type="button"
-                    className="cre-e2e-add-to-cart"
+                    className="cre-e2e-add-to-cart cre-e2e-cta"
                     style={ADD_TO_CART}
                     onClick={() => navigate(`/end-to-end-demo/checkout?${params.toString()}`)}
                   >
@@ -205,7 +215,7 @@ export function InvitedProductDetailPage() {
                     <div style={FEE_CARD}>
                       <p style={FEE_TITLE}>State reporting fee required</p>
                       <p style={FEE_TEXT}>WI fee due at checkout: $20</p>
-                      <button type="button" style={FEE_LINK}>
+                      <button type="button" className="cre-e2e-textlink" style={FEE_LINK}>
                         100% transparent pricing
                       </button>
                     </div>
@@ -242,7 +252,7 @@ export function InvitedProductDetailPage() {
                         </div>
                       ))}
                       {/* On its own line, 16 below the copy: 8, then 8 more (2026-10-15, Eric). */}
-                      <button type="button" style={{ ...LINK, display: 'block', marginTop: -2 }}>
+                      <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block', marginTop: -2 }}>
                         Recommended study plan.
                       </button>
                     </div>
@@ -269,7 +279,7 @@ export function InvitedProductDetailPage() {
                       </dl>
                       {/* The link last (2026-10-15, Eric's request). */}
                       <p style={SIDE_BODY}>
-                        <button type="button" style={LINK}>
+                        <button type="button" className="cre-e2e-textlink" style={LINK}>
                           {noWidow('Florida Insurance Licensing Requirements')}
                         </button>
                       </p>
@@ -740,7 +750,7 @@ const FEE_LINK: CSSProperties = {
   fontWeight: 500,
   fontSize: 18,
   lineHeight: '27px',
-  color: 'var(--color-e2e-link)',
+
   textDecoration: 'underline',
   cursor: 'pointer',
 }
@@ -748,13 +758,14 @@ const FEE_LINK: CSSProperties = {
 const ADD_TO_CART: CSSProperties = {
   height: 55,
   borderRadius: 5,
-  border: '1px solid var(--color-xcel-brick)',
-  background: 'var(--color-xcel-brick)',
+  /* ⚠ THE CLASS OWNS THIS — an inline fill would outrank the stylesheet
+     and the hover would never fire. See `inviteFlow.css`. */
+  borderWidth: 1,
+  borderStyle: 'solid',
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 500,
   fontSize: 18,
   lineHeight: '24.59px',
-  color: 'var(--color-fixed-light)',
   cursor: 'pointer',
 }
 
@@ -853,7 +864,7 @@ const LINK: CSSProperties = {
   background: 'none',
   font: 'inherit',
   fontWeight: 500,
-  color: 'var(--color-e2e-link)',
+
   textDecoration: 'underline',
   textDecorationThickness: 1,
   cursor: 'pointer',

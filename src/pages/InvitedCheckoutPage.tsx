@@ -2,6 +2,8 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ChevronDown, ChevronUp, CreditCard, LockSolid, Plus, Trash } from '@/icons'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_PRICE, useEndToEndCourseTitle, useEndToEndDemoParams } from './endToEndDemo'
+import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
+import './inviteFlow.css'
 
 /**
  * CHECKOUT — `/end-to-end-demo/checkout` (2026-10-14, Eric's request), Figma
@@ -89,6 +91,14 @@ export function InvitedCheckoutPage() {
 
   return (
     <div style={PAGE}>
+      {/* ⚠ THE BROWSER WINDOW CONTINUES HERE (2026-10-19, Jillienne: "can
+          we also add this browser header to the email/invite flows so it
+          feels like a seamless experience"). These pages render OUTSIDE the
+          app shell, so the shell's own strip never reached them — the walk
+          opened in a browser window, lost it for the invite flow, and got it
+          back at the dashboard. Draws only in the Demo frame, as it does
+          there. */}
+      <StandaloneBrowserChrome />
       {/* The header, Figma 423:2522 (2026-10-15, Eric's request; 420:2392's
           logo-left header before): Secure Checkout centred, the logo on the
           right — the partner header's frame. Return to Cart was removed
@@ -336,6 +346,7 @@ export function InvitedCheckoutPage() {
                       {/* Confirming turns Place your order on. */}
                       <button
                         type="button"
+                        className="cre-e2e-dark"
                         style={DARK_BUTTON}
                         onClick={() => {
                           setCardConfirmed(true)
@@ -391,7 +402,7 @@ export function InvitedCheckoutPage() {
             </label>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <input id="checkout-promo" type="text" style={PROMO_INPUT} />
-              <button type="button" style={APPLY}>
+              <button type="button" className="cre-e2e-muted" style={APPLY}>
                 Apply
               </button>
             </div>
@@ -420,6 +431,10 @@ export function InvitedCheckoutPage() {
             <button
               type="button"
               disabled={!canOrder}
+              /* ⚠ THE CLASS ONLY ON THE LIVE ARM. The grey arm is the
+                 DISABLED look; giving it a hover would promise a press the
+                 page will not accept. */
+              className={canOrder ? 'cre-e2e-cta' : undefined}
               style={canOrder ? PLACE_ORDER_ON : PLACE_ORDER}
               onClick={() => navigate(`/end-to-end-demo/confirmation?${params.toString()}`)}
             >
@@ -427,7 +442,7 @@ export function InvitedCheckoutPage() {
             </button>
             <p style={TERMS}>
               By completing your purchase, you agree to our{' '}
-              <button type="button" style={TERMS_LINK}>
+              <button type="button" className="cre-e2e-textlink" style={TERMS_LINK}>
                 Terms of Service
               </button>
               .
@@ -568,11 +583,11 @@ function AddressForm({
         </label>
       ) : null}
       <div style={BUTTON_ROW}>
-        <button type="button" style={DELETE_BUTTON}>
+        <button type="button" className="cre-e2e-outline" style={DELETE_BUTTON}>
           <Trash size={14} aria-hidden />
           Delete
         </button>
-        <button type="button" style={{ ...DARK_BUTTON, flex: '1 0 0' }} onClick={onConfirm}>
+        <button type="button" className="cre-e2e-dark" style={{ ...DARK_BUTTON, flex: '1 0 0' }} onClick={onConfirm}>
           {confirmLabel}
         </button>
       </div>
@@ -1020,12 +1035,13 @@ const DARK_BUTTON: CSSProperties = {
   padding: '8px 16px',
   border: 'none',
   borderRadius: 5,
-  background: 'var(--color-text-primary)',
+  /* ⚠ THE CLASS OWNS THIS — an inline fill would outrank the stylesheet
+     and the hover would never fire. See `inviteFlow.css`. */
+
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 500,
   fontSize: 14,
   lineHeight: '19px',
-  color: 'var(--color-fixed-light)',
   cursor: 'pointer',
 }
 
@@ -1035,9 +1051,8 @@ const DELETE_BUTTON: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   gap: 6,
-  border: '1px solid var(--color-xcel-brick)',
-  background: 'var(--color-fixed-light)',
-  color: 'var(--color-xcel-brick)',
+  borderWidth: 1,
+  borderStyle: 'solid',
 }
 
 /* The Save card switch: a 36 × 20 track, the brick when on. */
@@ -1150,12 +1165,13 @@ const APPLY: CSSProperties = {
   height: 38,
   border: 'none',
   borderRadius: '0 5px 5px 0',
-  background: 'var(--color-text-secondary)',
+  /* ⚠ THE CLASS OWNS THIS — an inline fill would outrank the stylesheet
+     and the hover would never fire. See `inviteFlow.css`. */
+
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 500,
   fontSize: 14,
   lineHeight: '18px',
-  color: 'var(--color-fixed-light)',
   cursor: 'pointer',
 }
 
@@ -1185,7 +1201,6 @@ const PLACE_ORDER: CSSProperties = {
 /* On: XCEL's red, the brick (2026-10-15, Eric's request). */
 const PLACE_ORDER_ON: CSSProperties = {
   ...PLACE_ORDER,
-  background: 'var(--color-xcel-brick)',
   opacity: 1,
   cursor: 'pointer',
 }
@@ -1204,7 +1219,6 @@ const TERMS_LINK: CSSProperties = {
   border: 'none',
   background: 'none',
   font: 'inherit',
-  color: 'var(--color-e2e-link)',
   textDecoration: 'underline',
   textDecorationThickness: 1,
   cursor: 'pointer',

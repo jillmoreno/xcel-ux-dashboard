@@ -1,0 +1,197 @@
+/*
+ * THE INVITE FLOW'S BUTTON STATES — 2026-10-19, Jillienne: "in the invite
+ * flow, can we add some button hover interactions".
+ *
+ * The four pages had NONE. Every control was an inline-styled <button> that
+ * looked identical whether the cursor was over it or not, which on a flow
+ * this click-driven reads as a picture of a page rather than a page.
+ *
+ * ⚠ THE COLOURS HAD TO LEAVE THE INLINE STYLES. Inline beats a stylesheet on
+ * specificity, so a `:hover` rule against a button whose `background` is set
+ * on the element is written, shipped and silently does nothing — the same
+ * trap `LinkCtaContrast.test.ts` records for `.cre-gift-cta` and the one
+ * `.cre-atlas-journey-link` hit a few hours ago. Each class below owns the
+ * properties its hover changes, and the page keeps the rest inline.
+ *
+ * ⚠ EVERY SHIFT IS DERIVED WITH `color-mix`, never a second hex. The flow
+ * runs on `--color-xcel-brick` and the e2e tokens; a hand-picked hover
+ * colour would be a seventh brand value nobody maintains, and would go wrong
+ * the moment a token moves.
+ *
+ * ⚠ FOCUS-VISIBLE IS HERE TOO, and it is not scope creep: most of these
+ * controls are deliberately inert, so a keyboard user tabbing the flow had
+ * no way at all to tell where they were. Hover without focus would have
+ * given the mouse the whole improvement.
+ */
+
+/* ── the brick CTA: Purchase, Place Order, Confirm, View Invitation ────── */
+
+.cre-e2e-cta {
+  background: var(--color-xcel-brick);
+  border-color: var(--color-xcel-brick);
+  color: var(--color-fixed-light);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.cre-e2e-cta:hover {
+  background: color-mix(in srgb, var(--color-xcel-brick) 86%, black);
+  border-color: color-mix(in srgb, var(--color-xcel-brick) 86%, black);
+}
+/* Pressed reads as pressed — a touch darker again and the lift taken away.
+   `translateY` rather than a shadow change: the flow's buttons have no
+   resting shadow to deepen. */
+.cre-e2e-cta:active {
+  background: color-mix(in srgb, var(--color-xcel-brick) 76%, black);
+  transform: translateY(1px);
+}
+.cre-e2e-cta:focus-visible {
+  outline: 2px solid var(--color-xcel-brick);
+  outline-offset: 2px;
+}
+/* ⚠ A DISABLED CTA MUST NOT ANSWER. The checkout's Place Order and the
+   password step's Confirm both draw grey until their field is filled, and
+   those arms do not carry this class — but `:disabled` is belt and braces
+   for the next control that does. */
+.cre-e2e-cta:disabled {
+  background: var(--color-text-secondary);
+  border-color: var(--color-text-secondary);
+  transform: none;
+  cursor: default;
+}
+
+/* ── the ink button: checkout's Continue / Confirm Order ────────────────── */
+
+.cre-e2e-dark {
+  background: var(--color-text-primary);
+  color: var(--color-fixed-light);
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.cre-e2e-dark:hover {
+  background: color-mix(in srgb, var(--color-text-primary) 82%, white);
+}
+.cre-e2e-dark:active {
+  background: color-mix(in srgb, var(--color-text-primary) 70%, white);
+  transform: translateY(1px);
+}
+.cre-e2e-dark:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 2px;
+}
+
+/* ── the quiet one: checkout's promo-code Apply ─────────────────────────── */
+
+/* ⚠ IT IS NOT `.cre-e2e-dark`. Apply resting is `--color-text-secondary`,
+   deliberately a step quieter than Continue beside it; handing it the dark
+   button's class would have made the two the same weight and lost that. */
+.cre-e2e-muted {
+  background: var(--color-text-secondary);
+  color: var(--color-fixed-light);
+  transition: background-color 0.15s ease;
+}
+.cre-e2e-muted:hover {
+  background: color-mix(in srgb, var(--color-text-secondary) 80%, black);
+}
+.cre-e2e-muted:focus-visible {
+  outline: 2px solid var(--color-text-primary);
+  outline-offset: 2px;
+}
+
+/* ── the outlined one: checkout's Delete ────────────────────────────────── */
+
+.cre-e2e-outline {
+  background: var(--color-fixed-light);
+  border-color: var(--color-xcel-brick);
+  color: var(--color-xcel-brick);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+/* It FILLS on hover rather than just tinting: this is the destructive
+   control on the page, and the one button that should feel different from
+   the others under the cursor. */
+.cre-e2e-outline:hover {
+  background: var(--color-xcel-brick);
+  color: var(--color-fixed-light);
+}
+.cre-e2e-outline:focus-visible {
+  outline: 2px solid var(--color-xcel-brick);
+  outline-offset: 2px;
+}
+
+/* ── text links: the fee note, the course links, the terms ──────────────── */
+
+.cre-e2e-textlink {
+  color: var(--color-e2e-link);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.cre-e2e-textlink:hover {
+  color: color-mix(in srgb, var(--color-e2e-link) 75%, black);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.cre-e2e-textlink:focus-visible {
+  outline: 2px solid var(--color-e2e-link);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ── the mail client, one page earlier ──────────────────────────────────── */
+
+/*
+ * ⚠ THE INBOX NEEDS THIS MOST, and it is the page with the least to gain
+ * from it: almost nothing in the mail client is wired, so hover is the only
+ * thing telling a reviewer the chrome is a chrome rather than a flat image.
+ * It uses `--color-mail-*`, fixed across brand skins, for the same reason
+ * the page does — see tokens.css.
+ */
+.cre-mail-btn {
+  background: transparent;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+.cre-mail-btn:hover {
+  background: var(--color-mail-field);
+}
+.cre-mail-btn:focus-visible {
+  outline: 2px solid var(--color-mail-accent);
+  outline-offset: -2px;
+}
+
+/* A message row: a wash, and its left edge picking up the accent as a hint
+   that selecting it is what the row is for. The OPEN row keeps its own fill
+   and is not re-tinted — it is already the darkest thing in the list. */
+.cre-mail-msg {
+  background: transparent;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease;
+}
+.cre-mail-msg:hover {
+  background: var(--color-mail-field);
+  border-left-color: color-mix(in srgb, var(--color-mail-accent) 35%, transparent);
+}
+.cre-mail-msg:focus-visible {
+  outline: 2px solid var(--color-mail-accent);
+  outline-offset: -2px;
+}
+
+.cre-mail-compose {
+  background: var(--color-mail-accent);
+  transition: background-color 0.15s ease;
+}
+.cre-mail-compose:hover {
+  background: color-mix(in srgb, var(--color-mail-accent) 86%, black);
+}
+.cre-mail-compose:active {
+  transform: translateY(1px);
+}
+.cre-mail-compose:focus-visible {
+  outline: 2px solid var(--color-mail-accent);
+  outline-offset: 2px;
+}

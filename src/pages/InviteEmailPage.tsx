@@ -27,6 +27,8 @@ import {
   useEndToEndDemoParams,
   useEndToEndPageChrome,
 } from './endToEndDemo'
+import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
+import './inviteFlow.css'
 
 /**
  * THE INVITE EMAIL — `/end-to-end-demo/email` (2026-10-19, Jillienne: "we
@@ -70,6 +72,14 @@ export function InviteEmailPage() {
   const openInvitation = () => navigate(`/end-to-end-demo?${params.toString()}`)
   return (
     <div style={SHELL}>
+      {/* ⚠ THE BROWSER WINDOW CONTINUES HERE (2026-10-19, Jillienne: "can
+          we also add this browser header to the email/invite flows so it
+          feels like a seamless experience"). These pages render OUTSIDE the
+          app shell, so the shell's own strip never reached them — the walk
+          opened in a browser window, lost it for the invite flow, and got it
+          back at the dashboard. Draws only in the Demo frame, as it does
+          there. */}
+      <StandaloneBrowserChrome />
       <MailTopBar />
       <div style={PAGE}>
         <MailRail />
@@ -106,7 +116,7 @@ export function InviteEmailPage() {
                 <strong style={{ fontWeight: 700 }}>{E2E_COURSE_TITLE_SHORT} package</strong> with their exclusive
                 discount. Click below to redeem the discount and start learning today!
               </p>
-              <button type="button" onClick={openInvitation} style={EMAIL_CTA}>
+              <button type="button" onClick={openInvitation} className="cre-e2e-cta" style={EMAIL_CTA}>
                 View Invitation
                 <ArrowUpRightFromSquare size={16} aria-hidden />
               </button>
@@ -128,13 +138,13 @@ function MailTopBar() {
         <MagnifyingGlassRegular size={16} aria-hidden style={{ color: 'var(--color-text-secondary)', flex: 'none' }} />
         <span style={SEARCH_TEXT}>Search emails, senders, and files…</span>
       </div>
-      <button type="button" aria-label="Notifications" style={TOPBAR_BTN}>
+      <button type="button" aria-label="Notifications" className="cre-mail-btn" style={TOPBAR_BTN}>
         <Bell size={19} aria-hidden />
       </button>
-      <button type="button" aria-label="Settings" style={TOPBAR_BTN}>
+      <button type="button" aria-label="Settings" className="cre-mail-btn" style={TOPBAR_BTN}>
         <GearRegular size={19} aria-hidden />
       </button>
-      <button type="button" aria-label={`Account for ${E2E_LEARNER_NAME}`} style={TOPBAR_BTN}>
+      <button type="button" aria-label={`Account for ${E2E_LEARNER_NAME}`} className="cre-mail-btn" style={TOPBAR_BTN}>
         <CircleUser size={26} aria-hidden />
       </button>
     </div>
@@ -152,7 +162,7 @@ function MailTopBar() {
 function MailRail() {
   return (
     <nav aria-label="Mailboxes" style={RAIL}>
-      <button type="button" style={COMPOSE}>
+      <button type="button" className="cre-mail-compose" style={COMPOSE}>
         <Plus size={16} aria-hidden />
         New Mail
       </button>
@@ -181,7 +191,12 @@ function RailRow({
 }) {
   return (
     <li>
-      <button type="button" aria-current={current ? 'page' : undefined} style={current ? RAIL_ROW_ON : RAIL_ROW}>
+      <button
+        type="button"
+        className={current ? undefined : 'cre-mail-btn'}
+        aria-current={current ? 'page' : undefined}
+        style={current ? RAIL_ROW_ON : RAIL_ROW}
+      >
         <span aria-hidden style={{ display: 'inline-flex', flex: 'none' }}>
           {icon}
         </span>
@@ -202,10 +217,10 @@ function MailList() {
             CLAUDE.md's rule is the registry or nothing — these two read as
             "filter" and "sort" in the slot without anyone drawing a new
             path. Swap them the day those icons are added. */}
-        <button type="button" aria-label="Filter" style={LIST_ICON_BTN}>
+        <button type="button" aria-label="Filter" className="cre-mail-btn" style={LIST_ICON_BTN}>
           <Sliders size={17} aria-hidden />
         </button>
-        <button type="button" aria-label="Sort" style={LIST_ICON_BTN}>
+        <button type="button" aria-label="Sort" className="cre-mail-btn" style={LIST_ICON_BTN}>
           <ChevronDown size={17} aria-hidden />
         </button>
       </div>
@@ -245,7 +260,15 @@ function MessageRow({
 }) {
   return (
     <li>
-      <button type="button" aria-current={open ? 'true' : undefined} style={open ? ROW_ON : ROW}>
+      {/* The OPEN row keeps its own fill and no hover class — it is already
+          the darkest thing in the list, and re-tinting it under the cursor
+          would read as a second selected state. */}
+      <button
+        type="button"
+        className={open ? undefined : 'cre-mail-msg'}
+        aria-current={open ? 'true' : undefined}
+        style={open ? ROW_ON : ROW}
+      >
         <span style={ROW_TOP}>
           <span aria-hidden style={UNREAD_DOT} />
           <span style={ROW_FROM}>{from}</span>
@@ -264,21 +287,21 @@ function ReaderToolbar() {
       {/* ⚠ NO FOLDER BUTTON. The design has one between Delete and Star and
           the registry has no folder glyph — an approximate icon on an inert
           control buys nothing, so the slot is simply not drawn. */}
-      <button type="button" aria-label="Back" style={TOOLBAR_BTN}>
+      <button type="button" aria-label="Back" className="cre-mail-btn" style={TOOLBAR_BTN}>
         <ArrowLeft size={18} aria-hidden />
       </button>
-      <button type="button" aria-label="Delete" style={TOOLBAR_BTN}>
+      <button type="button" aria-label="Delete" className="cre-mail-btn" style={TOOLBAR_BTN}>
         <Trash size={18} aria-hidden />
       </button>
-      <button type="button" aria-label="Star" style={TOOLBAR_BTN}>
+      <button type="button" aria-label="Star" className="cre-mail-btn" style={TOOLBAR_BTN}>
         <Star size={18} aria-hidden />
       </button>
       <span style={{ flex: '1 1 0' }} />
       <p style={TOOLBAR_COUNT}>1 of 2</p>
-      <button type="button" aria-label="Previous message" style={TOOLBAR_BTN}>
+      <button type="button" aria-label="Previous message" className="cre-mail-btn" style={TOOLBAR_BTN}>
         <ChevronLeft size={16} aria-hidden />
       </button>
-      <button type="button" aria-label="Next message" style={TOOLBAR_BTN}>
+      <button type="button" aria-label="Next message" className="cre-mail-btn" style={TOOLBAR_BTN}>
         <ChevronRight size={16} aria-hidden />
       </button>
     </div>
@@ -334,7 +357,6 @@ const TOPBAR_BTN: CSSProperties = {
   padding: 0,
   border: 'none',
   borderRadius: 8,
-  background: 'none',
   color: 'var(--color-text-secondary)',
   cursor: 'pointer',
 }
@@ -357,7 +379,8 @@ const COMPOSE: CSSProperties = {
   height: 44,
   border: 'none',
   borderRadius: 8,
-  background: 'var(--color-mail-accent)',
+  /* ⚠ NO `background` HERE — `.cre-mail-compose` owns it, or its hover
+     could never win against an inline one. */
   color: 'var(--color-fixed-light)',
   fontFamily: 'inherit',
   fontSize: 15,
@@ -375,7 +398,7 @@ const RAIL_ROW: CSSProperties = {
   padding: '0 12px',
   border: 'none',
   borderRadius: 8,
-  background: 'none',
+  /* `.cre-mail-btn` owns the background — see the note on COMPOSE. */
   color: 'var(--color-text-secondary)',
   fontFamily: 'inherit',
   fontSize: 14,
@@ -417,7 +440,6 @@ const LIST_ICON_BTN: CSSProperties = {
   padding: 0,
   border: 'none',
   borderRadius: 6,
-  background: 'none',
   color: 'var(--color-text-secondary)',
   cursor: 'pointer',
 }
@@ -432,7 +454,7 @@ const ROW: CSSProperties = {
   border: 'none',
   borderLeft: '3px solid transparent',
   borderBottom: '1px solid var(--color-mail-rule)',
-  background: 'none',
+  /* `.cre-mail-msg` owns the background and the left edge's colour. */
   fontFamily: 'inherit',
   textAlign: 'left',
   cursor: 'pointer',
@@ -513,10 +535,9 @@ const EMAIL_CTA: CSSProperties = {
   alignItems: 'center',
   gap: 10,
   padding: '16px 28px',
-  border: 'none',
+  border: '1px solid transparent',
   borderRadius: 6,
-  background: 'var(--color-xcel-brick)',
-  color: 'var(--color-fixed-light)',
+  /* `.cre-e2e-cta` owns the fill, the border colour and the ink. */
   fontFamily: 'inherit',
   fontSize: 16,
   fontWeight: 700,

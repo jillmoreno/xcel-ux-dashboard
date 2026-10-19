@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { CircleCheckSolid } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { PartnerHeader } from '@/components/e2e/PartnerHeader'
+import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
+import './inviteFlow.css'
 import { TopoBackground } from '@/components/e2e/TopoBackground'
 import {
   E2E_JOURNEY_FULL,
@@ -144,6 +146,9 @@ export function InvitedConfirmationPage() {
        and the map below starts where it already was. */
     return (
       <div style={PAGE}>
+        {/* The window stays through the loading end state too — the branding
+            is what leaves there, not the browser around it. */}
+        <StandaloneBrowserChrome />
         <PartnerHeader bare />
         <main style={LOADING_PAGE}>
           <TopoBackground />
@@ -192,6 +197,14 @@ export function InvitedConfirmationPage() {
 
   return (
     <div style={PAGE}>
+      {/* ⚠ THE BROWSER WINDOW CONTINUES HERE (2026-10-19, Jillienne: "can
+          we also add this browser header to the email/invite flows so it
+          feels like a seamless experience"). These pages render OUTSIDE the
+          app shell, so the shell's own strip never reached them — the walk
+          opened in a browser window, lost it for the invite flow, and got it
+          back at the dashboard. Draws only in the Demo frame, as it does
+          there. */}
+      <StandaloneBrowserChrome />
       <PartnerHeader />
       <main style={BODY}>
         {/* THE ORDER CONFIRMATION */}
@@ -276,7 +289,14 @@ export function InvitedConfirmationPage() {
               </div>
             ) : null}
             <div style={{ paddingTop: 8 }}>
-              <button type="submit" disabled={!password} style={password ? CONFIRM_ON : CONFIRM}>
+              <button
+                type="submit"
+                disabled={!password}
+                /* The grey arm is the disabled look — no hover on a control
+                   that will not accept the press. */
+                className={password ? 'cre-e2e-cta' : undefined}
+                style={password ? CONFIRM_ON : CONFIRM}
+              >
                 Confirm
               </button>
             </div>
@@ -462,7 +482,9 @@ const CONFIRM: CSSProperties = {
 }
 
 /* On once a password is in: XCEL's brick, as Checkout's Place your order. */
-const CONFIRM_ON: CSSProperties = { ...CONFIRM, background: 'var(--color-xcel-brick)', cursor: 'pointer' }
+/* ⚠ NO `background`: `.cre-e2e-cta` paints the live arm, so its hover can
+   outrank the element. The grey resting arm keeps its inline fill. */
+const CONFIRM_ON: CSSProperties = { ...CONFIRM, background: undefined, cursor: 'pointer' }
 
 /* The rules: Open Sans 13 / 18, the list indented 19.5. */
 const RULES: CSSProperties = {
