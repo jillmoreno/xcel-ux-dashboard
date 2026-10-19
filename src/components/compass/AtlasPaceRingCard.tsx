@@ -197,10 +197,19 @@ export function AtlasPaceRingCard({
              bottom pad in exchange (see `PANEL`), so the air below the date
              is the same 24 it has always been — it just sits inside the box
              now, where it is symmetric, instead of outside it. */
-          <div style={readinessBelow ? EXPECTED : { ...EXPECTED, borderBottom: 'none' }}>
-            {/* It is an EYEBROW, so it moves with the other three — the date
-                under it is a figure and stays centred with the dials. */}
-            <p style={{ ...EXPECTED_LABEL, textAlign: eyebrow.textAlign }}>Estimated completion</p>
+          <div
+            style={{
+              ...(readinessBelow ? EXPECTED : { ...EXPECTED, borderBottom: 'none' }),
+              /* The pair sits where the column's labels do: centred as a
+                 group on the centre arm, against the edge on the left one. */
+              justifyContent: eyebrow.textAlign === 'left' ? 'flex-start' : 'center',
+            }}
+          >
+            {/* It is an EYEBROW, so it moves with the other three — but in a
+                ROW its own `textAlign` has nothing to act on, so the arm
+                decides where the PAIR sits instead (see the box's
+                `justifyContent`). */}
+            <p style={EXPECTED_LABEL}>Estimated completion</p>
             <p style={EXPECTED_VALUE}>
               {expected.value}
               {expected.note ? <span style={EXPECTED_NOTE}> · {expected.note}</span> : null}
@@ -353,10 +362,18 @@ const SMALL: CSSProperties = {
 /* Ruled off above and below, as the design draws it — the date is a
    different kind of fact from the sentence over it, and the rules are what
    say so without a second card. */
+/* ⚠ ONE LINE, NOT TWO (2026-10-19, Jillienne: "move this to the right of the
+   eyebrow - no need for 2 lines"). The label and the date were stacked on a
+   2px gap, which gave two short lines a 93-tall band to sit in. Side by side
+   they are a label and its value, which is what they are. */
 const EXPECTED: CSSProperties = {
   display: 'flex',
-  flexDirection: 'column',
-  gap: 2,
+  flexDirection: 'row',
+  /* BASELINE, not centre: an 11px tracked label beside a 19px serif figure
+     lines up on the letters sitting on the same line, not on the middle of
+     two boxes of different heights. */
+  alignItems: 'baseline',
+  gap: 10,
   padding: `${RULE_GAP}px 0`,
   /* The section's gap already puts `SECTION_GAP` above this box, so the rule
      needs the remainder to stand off by the same `RULE_GAP` as the one under
@@ -368,7 +385,10 @@ const EXPECTED: CSSProperties = {
 }
 /* The same eyebrow as the card's own — it labels a figure in the same column
    and had no reason to be a smaller, bolder one. */
-const EXPECTED_LABEL: CSSProperties = { ...ATLAS_SECTION_EYEBROW, alignSelf: 'auto' }
+/* `flex: 'none'` so the label keeps its own width in the row rather than
+   being squeezed by a long date; `alignSelf: auto` so the box's baseline
+   alignment applies to it. */
+const EXPECTED_LABEL: CSSProperties = { ...ATLAS_SECTION_EYEBROW, alignSelf: 'auto', flex: 'none' }
 /* ⚠ THE VALUE CENTRES, THE BOX DOES NOT. Centring the box itself would
    shrink it to its content and take the two rules in with it — they have to
    span the column, which is the whole reason they read as rules rather than

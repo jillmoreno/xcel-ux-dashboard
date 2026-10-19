@@ -790,6 +790,17 @@ export function AtlasHomeEricE2E({
                    anything they have done. The note would be claiming a
                    measurement that does not exist yet. The DATE stays: it is
                    the plan's, and the plan is real. */
+                /* ⚠ NO NOTE ON THE RING CARD SINCE 2026-10-19, and it is the
+                   one-line row that decides it (Jillienne: "move this to the
+                   right of the eyebrow - no need for 2 lines"). The label
+                   takes 166 of the column's 272, which leaves room for a
+                   date and not for a date plus a qualifier — with the note
+                   the value wrapped to "May 24 · At / current pace", which
+                   is two lines and an ugly break rather than the one line
+                   that was asked for. "At current pace" was already
+                   suppressed at 0% (there is no current pace before you
+                   start); this drops it at every state, on the ring arm
+                   only. The STATES card below still passes it. */
                 expected={
                   paceFit
                     ? {
@@ -797,7 +808,6 @@ export function AtlasHomeEricE2E({
                            at 19px, where the short form is for dates inside
                            sentences. See `formatPaceDateLong`. */
                         value: formatPaceDateLong(paceFit.finishIso),
-                        note: atZeroProgress ? undefined : 'At current pace',
                       }
                     : undefined
                 }
