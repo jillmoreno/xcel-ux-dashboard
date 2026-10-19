@@ -1093,6 +1093,91 @@ const _PATH_REQUIREMENTS_BY_ID: Record<string, PathRequirements> = {
     note:
       'Certificates of completion are valid for a lifetime — but the course must be finished before you sit, since the Department wants the certificate with your application.',
   },
+  /*
+   * FLORIDA LIFE & HEALTH PRE-LICENSING — 2-15 (2026-10-19, Jillienne: "add
+   * FL requirements. Layout similar to NY example").
+   *
+   * ⚠ NOTHING HERE IS INVENTED, and that is worth saying because the NY block
+   * above it needed the opposite warning. Every figure is lifted from data
+   * already in this repo and already confirmed against XCEL's own Florida
+   * requirements page on 2026-10-15 — `EXAM_FACTS_BY_STATE.FL` (which carries
+   * `invented: false`), `FL_GOVERNING_AGENCY` and `FL_GET_LICENSED_STEPS` in
+   * `nyProducerRequirements.ts`. If a fee or a rule changes, change it THERE;
+   * this block is a second reading of the same facts and the two must not
+   * drift.
+   *
+   * ⚠ FLORIDA FINGERPRINTS AFTER THE APPLICATION — step 5 on the page, where
+   * Texas takes them before the exam. `FL_GET_LICENSED_STEPS` carries a note
+   * telling the next person not to "tidy" the two into the same order; the
+   * same applies to the bullet below.
+   *
+   * ⚠ 40 IS THE STATE'S, NOT THE PATH'S, exactly as New York's 40 is. The path
+   * fixture also says 40 here, so the two happen to agree today — the list
+   * still says which is which, because the moment XCEL's own prep is counted
+   * into the path the numbers separate and a reader has no way to tell.
+   */
+  'xcel-fl-lh-prelicensing': {
+    totalHours: 40,
+    // No renewal cycle: this is the route TO a licence.
+    renewalCycleYears: 0,
+    heading:
+      'Florida Department of Financial Services — what the state requires before you can be licensed:',
+    items: [
+      'Pre-licensing education — 40 hours for the 2-15 Health & Life (including Annuities & Variable Contracts) line',
+      'Course completion — every lesson reviewed and every chapter quiz passed, then the final exam',
+      'State exam — 150 scored questions in 165 minutes, 70% to pass, at Pearson VUE',
+      'Licence application — filed through DICE, with fingerprints submitted afterwards',
+      'XCEL’s Prep Review and Exam Simulators sit on top of the state’s 40. Those are ours, not Florida’s.',
+    ],
+    sections: [
+      {
+        title: 'Hours by line of authority',
+        intro: 'Florida sets the requirement per line. This path covers 2-15:',
+        items: [
+          '2-15 Health & Life (including Annuities & Variable Contracts) — 40 hours',
+          '2-14 Life (including Annuities & Variable Contracts) — 40 hours',
+          '2-40 Health — 40 hours',
+          '2-20 General Lines (Property & Casualty) — 200 hours',
+          '4-40 Customer Representative — 40 hours',
+        ],
+      },
+      {
+        title: 'Sitting the exam',
+        intro: 'Registration is with Pearson Professional Assessments:',
+        items: [
+          'Register online at pearsonvue.com/fl/insurance — exam fee $44',
+          'The paper is 150 scored questions across life, health and Florida law, 50 of them Florida statutes and rules',
+          '165 minutes, 70% to pass',
+          /* ⚠ A FLAT NEGATIVE, AND IT IS THE ONE LINE HERE A LEARNER CAN ACT
+             ON WRONGLY. An earlier Florida fixture claimed the opposite and
+             would have sent someone looking for a remote sitting that does
+             not exist — see the note in `FL_GET_LICENSED_STEPS`. */
+          'OnVUE online remote proctoring is NOT available — the Florida sitting is in person, at a test centre',
+        ],
+      },
+      {
+        title: 'Applying for the licence',
+        intro: 'Florida takes the application first and the fingerprints after it:',
+        items: [
+          'Submit the application online through DICE once you have passed',
+          'Application fee — $50.00, plus a $5.00 State I.D. fee',
+          'Fingerprints are submitted AFTER the application, and Florida accepts them from its own vendor only — results from other vendors or states are not accepted',
+          'Fingerprint fee — $50.75 plus tax',
+          'Your licence status and next steps are tracked in MyProfile',
+        ],
+      },
+      {
+        title: 'Who to ask',
+        items: [
+          'Florida Department of Financial Services — Bureau of Licensing',
+          '850-413-3137 · myfloridacfo.com/Division/Agents/',
+          '200 East Gaines Street, Tallahassee, FL 32399-0319',
+        ],
+      },
+    ],
+    note:
+      'Fingerprints come after the application in Florida, not before the exam — the opposite of Texas. Budget for the $50.75 separately from the $55 you pay at application.',
+  },
   'elite-fl-nursing-ce': {
     totalHours: 24,
     mandatoryHours: 9,
