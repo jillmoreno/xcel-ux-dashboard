@@ -1,0 +1,39 @@
+/*
+ * THE JOURNEY'S LINK TEXT — 2026-10-19, Jillienne: "these should be blue text
+ * on default, when hovering over them should have an underline and should be
+ * slightly darker blue text".
+ *
+ * ⚠ THE COLOUR HAD TO LEAVE THE INLINE STYLE for any of this to work. Both
+ * of these carried `color` inline, and inline beats a stylesheet on
+ * specificity — so a `:hover` rule here would have been written, shipped and
+ * silently done nothing. It is the same trap `LinkCtaContrast.test.ts`
+ * records for `.cre-gift-cta`: the bug there was unfixable in CSS while the
+ * colour lived on the element. The base colour lives here now and the inline
+ * styles set everything except it.
+ *
+ * ⚠ THE DARKER BLUE IS DERIVED, not a second token. `color-mix` against the
+ * same custom property means the hover follows every brand skin — the home's
+ * own `--color-atlas-home-current-stop` where it is set, the Compass page
+ * button everywhere else — rather than pinning one brand's hex and going
+ * wrong on the other five.
+ */
+.cre-atlas-journey-link {
+  color: var(--color-atlas-home-current-stop, var(--color-compass-page-button));
+  text-decoration: none;
+}
+
+.cre-atlas-journey-link:hover {
+  color: color-mix(
+    in srgb,
+    var(--color-atlas-home-current-stop, var(--color-compass-page-button)) 75%,
+    black
+  );
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.cre-atlas-journey-link:focus-visible {
+  outline: 2px solid var(--color-atlas-home-current-stop, var(--color-compass-page-button));
+  outline-offset: 2px;
+  border-radius: 2px;
+}

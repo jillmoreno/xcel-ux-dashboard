@@ -2552,6 +2552,48 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-exam-prompt',
+    /* STEP 2's EXAM-DATE PROMPT, TWO WAYS (2026-10-19, Jillienne: "add a
+       variant of this where the information is in a container, light blue to
+       match the top widget, When is your exam is Bold, and there is a subtext
+       of line explaining that entering your exam date will help us structure
+       your study pace accordingly").
+
+       `row` (default) is what Step 2 became earlier the same day: a stop on
+       the journey — open ring, the question in the list's own type, a
+       secondary Add Date beside it, the spine running down to Exam
+       Information. `card` lifts the same question out of the list into a
+       Primary 100 container with the question BOLD and a sentence under it
+       saying what the date buys. The two argue about whether this belongs in
+       the list or above it.
+
+       ⚠ THE CARD IS THE DEFAULT, asked for within the hour of the variant
+       itself (2026-10-19, Jillienne: "default this page to 0%, and readiness
+       off, affidavit off, Exam Prompt as Card, study pace card as Ring").
+       It was `row` for the length of one commit, on the reading that "add a
+       variant" leaves the original in place; the follow-up settled it the
+       other way, and the row is what is now kept beside it.
+
+       ⚠ ON THE DESIGN BAR, and therefore NOT a promotion candidate —
+       `promote-to-prototype` lists design controls separately because they
+       never reach Prototypes. The DEFAULT still renders for everyone, so
+       whichever arm is default here is what ships. Same trade-off as
+       `atlas-pace-card`, written down for the same reason. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Exam date prompt',
+    description:
+      'How Step 2 asks for the state exam date on the End-to-End walk. Row: a stop on the journey — open ring, the question in the list\u2019s type, a secondary Add Date beside it. Card (default): the question in a Primary 100 container, bold, with a line under it saying that the date is what the study pace is built from. Exam Information stays below either way.',
+    defaultEnabled: true,
+    defaultVariant: 'card',
+    variants: [
+      { value: 'card', label: 'Card' },
+      { value: 'row', label: 'Row (as a stop)' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-pace-card',
     /* THE STUDY PACE CARD, TWO WAYS (2026-10-16, Jillienne: "lets add a
        component variant for this section. update to this new UI, keep the

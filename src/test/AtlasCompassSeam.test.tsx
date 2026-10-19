@@ -298,6 +298,13 @@ describe('the walk’s Study Journey steps', () => {
        it opens the rail's sheet, hence two of these as well. */
     expect(page.getAllByRole('button', { name: 'Applying for a License' })).toHaveLength(2)
     expect(document.querySelector('[data-cta-id="home.state-requirements"]')).toBeNull()
+    /* ⚠ "Affidavit", NOT "Study-manual Notice Affidavit" (2026-10-19,
+       Jillienne: "change to to be Affidavit") — and only here. The two cases
+       in this describe are one seam: the tile below renders the SAME
+       component at the same Home, so an ungated rename passes this one and
+       silently changes Eric's row too. */
+    expect(page.getByText('Affidavit')).toBeInTheDocument()
+    expect(page.queryByText('Study-manual Notice Affidavit')).toBeNull()
   })
 
   it('leaves Eric’s Atlas Learning tile exactly as he promoted it', async () => {
@@ -306,5 +313,8 @@ describe('the walk’s Study Journey steps', () => {
     expect(page.getByText(/150 scored questions/)).toBeInTheDocument()
     expect(page.getByText(/Apply online, then submit/)).toBeInTheDocument()
     expect(document.querySelector('[data-cta-id="home.state-requirements"]')).not.toBeNull()
+    // The Study Journey's own wording, which is what his surface has always
+    // drawn — see the walk's case above.
+    expect(page.getByText('Study-manual Notice Affidavit')).toBeInTheDocument()
   })
 })

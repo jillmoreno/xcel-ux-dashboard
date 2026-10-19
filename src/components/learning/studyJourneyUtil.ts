@@ -781,7 +781,7 @@ export function whiteJourneyTitles(
      carried its own copy of the list, so the rename reached only the E2E
      one, and `QeFocusedVersion` and `CourseControl` both assert the design's
      wording on the others. */
-  opts: { stateExamSimulators?: boolean; preCourseAffidavit?: boolean } = {},
+  opts: { stateExamSimulators?: boolean; preCourseAffidavit?: boolean; shortAffidavit?: boolean } = {},
 ): string[] {
   const total = lessonStop?.hours ?? NY_LH_PRELICENSING_LESSONS
   const done = lessonStop?.completed ?? 0
@@ -797,7 +797,13 @@ export function whiteJourneyTitles(
     opts.stateExamSimulators
       ? `State Exam Simulators (${NY_LH_EXAM_SIMULATORS})`
       : `Simulated Exams (${NY_LH_EXAM_SIMULATORS})`,
-    'Study-manual Notice Affidavit',
+    /* ⚠ "AFFIDAVIT" ON THE END-TO-END WALK ONLY (2026-10-19, Jillienne:
+       "change to to be Affidavit"). Opt-in for the same reason the simulator
+       rename above is: this helper feeds Eric's V3 and White homes too, and
+       the full name is the Study Journey's own wording there. The MODAL
+       keeps it in full either way — that sheet names the document being
+       signed, where this names a stop on a list. */
+    opts.shortAffidavit ? 'Affidavit' : 'Study-manual Notice Affidavit',
     'Final Course Exam',
     'Survey & Certificate',
   ]

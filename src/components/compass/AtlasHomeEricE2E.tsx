@@ -44,6 +44,7 @@ import {
 import { getLicensedStepsFor, jurisdictionName } from '@/data/nyProducerRequirements'
 import { defaultPreset, formatPaceDate, studyPace, daysUntil, dateFromIso, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
+import './atlasJourneyLink.css'
 import type { LearningPathSummary } from '@/data/learningFixtures'
 
 /**
@@ -377,9 +378,14 @@ export function AtlasHomeEricE2E({
      `whiteJourneyTitles`, spreading `stops[0]` into each — so a `locked`
      derived upstream is overwritten by the spread before anything renders.
      Sequence what is DRAWN, which is the array below. */
+  /* ⚠ `shortAffidavit` IS THE WALK'S, like every other copy change in these
+     three steps (2026-10-19). Eric's Atlas Learning tile renders this same
+     component at the same Home — only `?journey=full` tells them apart — so
+     an ungated rename would have reached his row as well. `stateExamSimulators`
+     above is ungated because it is HIS rename, asked for on his surface. */
   const shownStops: readonly JourneyStop[] = applyJourneySequencing(
     onWhite && stops.length
-      ? whiteJourneyTitles(stops[0], { stateExamSimulators: true, preCourseAffidavit: affidavitPick !== 'off' }).map((title, i) => ({
+      ? whiteJourneyTitles(stops[0], { stateExamSimulators: true, preCourseAffidavit: affidavitPick !== 'off', shortAffidavit: walkSteps }).map((title, i) => ({
           ...stops[0],
           id: `white-${i}`,
           title,
@@ -499,6 +505,8 @@ export function AtlasHomeEricE2E({
   /* Exam Information opens the same sheet Quick Links' own link opens, by
      the same id — `onOpenStep` is exempt from `LINKS_OFF`, so this one
      genuinely works. */
+  /* The design bar's Exam date prompt — Row (default) or Card. */
+  const examPromptCard = useFeatureFlag('atlas-exam-prompt').variant === 'card'
   const examInfo = onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : undefined
   /* …and Step 3's, the same sheet Quick Links' "Applying for a License"
      opens, by the step's own id rather than a second copy of it. */
@@ -920,7 +928,7 @@ export function AtlasHomeEricE2E({
                 (2026-10-15, Eric's request). Its own width, wider than the
                 steps' 335. Yes and Not Yet are not wired yet. */}
             {/* On the walk this has moved INTO Step 2 — see there. */}
-            {walkSteps ? null : <ExamDatePrompt onExamInfo={examInfo} />}
+            {walkSteps ? null : <ExamDatePrompt onExamInfo={examInfo} card={examPromptCard} />}
             {/* ⚠ AT 100% THE RING ARM SHOWS THE STOPS, ALL DONE (2026-10-16,
                 Jillienne: "we need to show the items in step 1 as compelted").
                 The work is what was completed, so the list is the thing worth
@@ -1003,7 +1011,7 @@ export function AtlasHomeEricE2E({
                  the same question on screen twice. Replacing the sentence is
                  also what makes the step ask something instead of reciting
                  figures the learner cannot act on yet. */
-              detail={walkSteps ? <ExamDatePrompt onExamInfo={examInfo} /> : pass.detail}
+              detail={walkSteps ? <ExamDatePrompt onExamInfo={examInfo} card={examPromptCard} /> : pass.detail}
               link={pass.detailLabel ?? 'What to expect'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(pass.id) : undefined}
             />
@@ -1199,6 +1207,14 @@ function JourneyRow({
         {last ? null : <span style={done ? SPINE_DONE : SPINE} />}
       </span>
       <span
+        /* ⚠ THE CURRENT ROW'S TITLE IS LINK TEXT (2026-10-19) — blue, and
+           darker with an underline on hover. The class carries the COLOUR as
+           well as the hover, because an inline `color` would outrank the
+           hover rule and leave it doing nothing. Completed and upcoming rows
+           stay inline: the check carries a finished row's state, and
+           darkening its text too would make a finished list shout louder
+           than the live one. */
+        className={current ? 'cre-atlas-journey-link' : undefined}
         style={{
           ...BODY_TEXT,
           flex: '1 1 0',
@@ -1207,10 +1223,7 @@ function JourneyRow({
           lineHeight: '18px',
           paddingTop: current ? 5 : 0,
           fontWeight: current ? 600 : 400,
-          /* Completed rows keep the secondary ink: the CHECK carries the
-             state, and darkening the text as well would make a finished list
-             shout louder than the live one. */
-          color: current ? 'var(--color-atlas-home-current-stop, var(--color-compass-page-button))' : 'var(--color-text-secondary)',
+          ...(current ? null : { color: 'var(--color-text-secondary)' }),
         }}
       >
         {stop.title}
@@ -1247,7 +1260,7 @@ function JourneyRow({
  * The other homes keep the question — `AtlasHomeEricV2`, `AtlasHomeV2` and
  * `HybridHomeV1` each draw their own and are other people's surfaces.
  */
-function ExamDatePrompt({ onExamInfo }: { onExamInfo?: () => void }) {
+function ExamDatePrompt({ onExamInfo, card = false }: { onExamInfo?: () => void; card?: boolean }) {
   return (
     /* ⚠ SPANS, NOT DIVS. `Step` renders its detail inside a `<p>`, and the
        pill this replaces was a `<div>` in there — invalid nesting that
@@ -1266,6 +1279,30 @@ function ExamDatePrompt({ onExamInfo }: { onExamInfo?: () => void }) {
           that put the calendar off Step 1's centre line. A ground that
           cannot be aligned with the list above it was the thing in the way,
           not a decoration to keep. */}
+      {card ? (
+        /* ⚠ THE CARD ARM (2026-10-19, Jillienne: "add a variant of this
+           where the information is in a container, light blue to match the
+           top widget, When is your exam is Bold, and there is a subtext of
+           line explaining that entering your exam date will help us
+           structure your study pace accordingly").
+
+           It lifts the question OUT of the list — no ring, no spine, because
+           a marker column inside a container would be aligning with a list
+           the container has already stepped out of. The Primary 100 ground
+           is the course card's own, which is what "match the top widget"
+           names. Exam Information stays a stop below it either way. */
+        <span style={EXAM_CARD}>
+          <span style={EXAM_CARD_TEXT}>
+            <span style={EXAM_CARD_TITLE}>When is your exam?</span>
+            <span style={EXAM_CARD_SUB}>
+              Entering your exam date will help us structure your study pace accordingly.
+            </span>
+          </span>
+          <button type="button" className="cre-compass-secondary cre-atlas-home-secondary" style={EXAM_DATE_ADD}>
+            Add Date
+          </button>
+        </span>
+      ) : (
       <span style={EXAM_ROW}>
         {/* ⚠ A CIRCLE, NOT A CALENDAR, AND A LINE UNDER IT (2026-10-19,
             Jillienne: "change the calendar icon to a circle icon, that is
@@ -1300,6 +1337,7 @@ function ExamDatePrompt({ onExamInfo }: { onExamInfo?: () => void }) {
           </button>
         </span>
       </span>
+      )}
       {/* ⚠ A SECOND STOP UNDER IT (2026-10-19, Jillienne: "a 2nd option
           should be shown below that calendar icon that is a active circle
           link with 'Exam Information'"). Step 2 is two things a learner can
@@ -1338,7 +1376,13 @@ function StopLink({ label, onOpen }: { label: string; onOpen?: () => void }) {
       <span aria-hidden style={EXAM_MARK_COL}>
         <span style={MARK_CURRENT} />
       </span>
-      <button type="button" onClick={onOpen} disabled={!onOpen} style={EXAM_INFO_LINK}>
+      <button
+        type="button"
+        className="cre-atlas-journey-link"
+        onClick={onOpen}
+        disabled={!onOpen}
+        style={EXAM_INFO_LINK}
+      >
         {label}
       </button>
     </span>
@@ -1418,6 +1462,47 @@ const EXAM_MARK_COL: CSSProperties = {
      single line of text; this one carries a 33-tall button. */
   paddingTop: EXAM_MARK_PAD,
 }
+/* ⚠ THE CARD ARM'S CONTAINER. Primary 100 is the course card's ground at the
+   top of this page — "light blue to match the top widget" — and the same one
+   the pill here used to wear before Step 2 joined the list. It sits a little
+   proud of the stop below it, which is the point of the variant: the
+   question is being lifted out of the journey rather than placed in it. */
+const EXAM_CARD: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 16,
+  boxSizing: 'border-box',
+  padding: '12px 16px',
+  borderRadius: 12,
+  background: 'var(--color-primary-100)',
+  marginBottom: 6,
+}
+const EXAM_CARD_TEXT: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
+  minWidth: 0,
+  flex: '1 1 0',
+}
+/* BOLD, as asked — it is a heading inside its own container here, where in
+   the row arm it is one line of a list and takes the list's weight. */
+const EXAM_CARD_TITLE: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 13,
+  lineHeight: '18px',
+  color: 'var(--color-text-primary)',
+}
+/* …and the line that says what the date buys. 11/15, the card's secondary
+   ink — the same treatment the pace card's own explanation wears, so the two
+   sentences on this page that explain a control read alike. */
+const EXAM_CARD_SUB: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 400,
+  fontSize: 11,
+  lineHeight: '15px',
+  color: 'var(--color-text-secondary)',
+}
 /* The prompt and its button, on one line while there is room for one.
    16 between them, not 10 (2026-10-19) — the gap was set when the button was
    filled and read as its own object; an outline one needs the air to stop
@@ -1444,7 +1529,9 @@ const EXAM_DATE_QUESTION: CSSProperties = {
   minWidth: 0,
 }
 /* The second stop's label — the CURRENT stop's treatment from Step 1 (600 in
-   the current-stop colour), because its mark is the current stop's too. */
+   the current-stop colour), because its mark is the current stop's too.
+   ⚠ NO `color` HERE. It is `.cre-atlas-journey-link`'s, so the hover rule can
+   win — see that file. */
 const EXAM_INFO_LINK: CSSProperties = {
   padding: 0,
   border: 'none',
@@ -1454,7 +1541,6 @@ const EXAM_INFO_LINK: CSSProperties = {
   fontWeight: 600,
   fontSize: 13,
   lineHeight: '18px',
-  color: 'var(--color-atlas-home-current-stop, var(--color-compass-page-button))',
   cursor: 'pointer',
 }
 const EXAM_DATE_ADD: CSSProperties = {
