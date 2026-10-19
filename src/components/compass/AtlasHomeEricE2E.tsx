@@ -42,7 +42,7 @@ import {
   type JourneyStop,
 } from '@/components/learning/studyJourneyUtil'
 import { getLicensedStepsFor, jurisdictionName } from '@/data/nyProducerRequirements'
-import { defaultPreset, formatPaceDate, studyPace, daysUntil, dateFromIso, isoPlusDays, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
+import { defaultPreset, formatPaceDate, formatPaceDateLong, studyPace, daysUntil, dateFromIso, isoPlusDays, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
 import { EXPIRY_FLAG_KEY } from '@/data/courseFixtures'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import './atlasJourneyLink.css'
@@ -778,7 +778,10 @@ export function AtlasHomeEricE2E({
                 expected={
                   paceFit
                     ? {
-                        value: formatPaceDate(paceFit.finishIso),
+                        /* The month written out — this figure stands alone
+                           at 19px, where the short form is for dates inside
+                           sentences. See `formatPaceDateLong`. */
+                        value: formatPaceDateLong(paceFit.finishIso),
                         note: atZeroProgress ? undefined : 'At current pace',
                       }
                     : undefined

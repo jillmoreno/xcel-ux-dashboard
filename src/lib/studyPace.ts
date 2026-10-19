@@ -331,6 +331,23 @@ export function formatPaceDate(iso: string): string {
 }
 
 /**
+ * The same date with the month written out — "June 5", not "Jun 5"
+ * (2026-10-19, Jillienne: "include June 5 (full calendar month name)").
+ *
+ * ⚠ A SIBLING, NOT A CHANGE TO `formatPaceDate`. That one is read by
+ * `StudyPaceTile` and `StudyPaceSheet` in a dozen places, mostly INSIDE
+ * sentences ("you will finish around Nov 5") and once in a tight table cell,
+ * where the short month is doing real work. The ask was about one figure on
+ * one card — the Atlas pace ring's Estimated completion, where the date
+ * stands alone at 19px and has the room.
+ */
+export function formatPaceDateLong(iso: string): string {
+  const d = dateFromIso(iso)
+  if (!d) return iso
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
+}
+
+/**
  * How long a pace takes, in the largest unit that reads naturally — 2026-10-15,
  * the direct ask ("after 8 weeks, change it to months").
  *

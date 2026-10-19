@@ -12,6 +12,16 @@ import type { CSSProperties } from 'react'
  * which reads as carelessness rather than hierarchy. This is the one they
  * share.
  *
+ * ⚠ CENTRED SINCE 2026-10-19 (Jillienne: "center all of the eyebrows too",
+ * after the content under them was centred). The column had been eyebrows
+ * left over centred content — a deliberate pattern for about ten minutes,
+ * and the wrong one: with four of them down one narrow column the labels
+ * read as a ragged left edge against everything else.
+ *
+ * ⚠ `alignSelf: 'stretch'` IS WHAT MAKES THIS WORK. The <p> has to span the
+ * column for `textAlign` to have anything to centre within; drop it and each
+ * eyebrow shrinks to its own text and the centring becomes a no-op.
+ *
  * ⚠ A PLAIN `.ts` MODULE, like `compassPages.ts` and `atlasHomeRefresh.ts`
  * beside it, for react-refresh's "only export components" rule: exporting a
  * constant from a component file breaks fast refresh for that file, and lint
@@ -25,6 +35,7 @@ export const ATLAS_SECTION_EYEBROW: CSSProperties = {
   fontSize: 11,
   lineHeight: '16.5px',
   letterSpacing: '0.16em',
+  textAlign: 'center',
   textTransform: 'uppercase',
   color: 'var(--color-compass-page-eyebrow)',
 }

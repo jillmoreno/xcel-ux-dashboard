@@ -96,7 +96,14 @@ export function AtlasPaceRingCard({
       <span aria-hidden style={DIVIDER} />
       <section style={SECTION} aria-label="Study pace">
         <p style={EYEBROW}>Study pace</p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* ⚠ CENTRED, LIKE THE REST OF THE COLUMN'S CONTENT (2026-10-19,
+            Jillienne: "have these be centered aligned to match the whole
+            container of content"). Course progress centres its dial and
+            Exam readiness centres its dial and caption; Study pace was the
+            one section still running left, so the column had two alignments
+            in it. The EYEBROWS stay left — all four of them do, and that is
+            the pattern: the label left, the thing it names centred. */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
           <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-compass-page-button)' }}>
             <GaugeThin size={33} aria-hidden />
           </span>
@@ -320,6 +327,7 @@ const SMALL: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 11,
   lineHeight: '15px',
+  textAlign: 'center',
   color: 'var(--color-text-secondary)',
 }
 /* Ruled off above and below, as the design draws it — the date is a
@@ -341,8 +349,13 @@ const EXPECTED: CSSProperties = {
 /* The same eyebrow as the card's own — it labels a figure in the same column
    and had no reason to be a smaller, bolder one. */
 const EXPECTED_LABEL: CSSProperties = { ...ATLAS_SECTION_EYEBROW, alignSelf: 'auto' }
+/* ⚠ THE VALUE CENTRES, THE BOX DOES NOT. Centring the box itself would
+   shrink it to its content and take the two rules in with it — they have to
+   span the column, which is the whole reason they read as rules rather than
+   underlines. So the alignment lives on the text. */
 const EXPECTED_VALUE: CSSProperties = {
   margin: 0,
+  textAlign: 'center',
   fontFamily: 'var(--font-heading-serif)',
   fontSize: 19,
   lineHeight: '24px',
