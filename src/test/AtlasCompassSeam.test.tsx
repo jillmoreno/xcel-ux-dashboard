@@ -298,13 +298,22 @@ describe('the walk’s Study Journey steps', () => {
        it opens the rail's sheet, hence two of these as well. */
     expect(page.getAllByRole('button', { name: 'Applying for a License' })).toHaveLength(2)
     expect(document.querySelector('[data-cta-id="home.state-requirements"]')).toBeNull()
-    /* ⚠ "Affidavit", NOT "Study-manual Notice Affidavit" (2026-10-19,
-       Jillienne: "change to to be Affidavit") — and only here. The two cases
-       in this describe are one seam: the tile below renders the SAME
-       component at the same Home, so an ungated rename passes this one and
-       silently changes Eric's row too. */
+    /* ⚠ THE JOURNEY'S ORDER AND NAMES ARE SHARED, AND DELIBERATELY SO
+       (2026-10-19, Jillienne: "Order should be: Pre-Licensing Education >
+       Certification Exam > Prep Review > State Exam Simulators > Affidavit >
+       Survey & Certificate"). The sequence of the coursework is a fact about
+       the COURSE, not something one Prototypes row believes and another does
+       not — and the Progress ladder's rungs NAME these rows, so a tile with
+       the old order would have a dropdown promising to tick rows that are
+       not there. Both surfaces of this component draw it; the tile case
+       below asserts the same list.
+
+       It absorbed the "Affidavit" rename, which was gated to the walk for
+       the hour between the two asks. */
     expect(page.getByText('Affidavit')).toBeInTheDocument()
     expect(page.queryByText('Study-manual Notice Affidavit')).toBeNull()
+    expect(page.getByText(/Pre-Licensing Education/)).toBeInTheDocument()
+    expect(page.getByText('Certification Exam')).toBeInTheDocument()
     // Eric's pill is HIS position's, not this one's — the case below.
     expect(page.queryByText('Do you know your state exam date?')).toBeNull()
   })
@@ -315,9 +324,13 @@ describe('the walk’s Study Journey steps', () => {
     expect(page.getByText(/150 scored questions/)).toBeInTheDocument()
     expect(page.getByText(/Apply online, then submit/)).toBeInTheDocument()
     expect(document.querySelector('[data-cta-id="home.state-requirements"]')).not.toBeNull()
-    // The Study Journey's own wording, which is what his surface has always
-    // drawn — see the walk's case above.
-    expect(page.getByText('Study-manual Notice Affidavit')).toBeInTheDocument()
+    /* ⚠ THE JOURNEY IS NOT PART OF THIS SEAM ANY MORE — 2026-10-19. His
+       tile draws the SAME six rows in the same order as the walk, because
+       the order is the course's and the Progress ladder names those rows on
+       both. What this case guards is everything AROUND the journey: the step
+       details, the State Requirements button, and his exam-date pill. */
+    expect(page.getByText('Certification Exam')).toBeInTheDocument()
+    expect(page.queryByText('Study-manual Notice Affidavit')).toBeNull()
     /* ⚠ AND HIS EXAM-DATE PILL, WHICH THIS ONCE LOST (2026-10-19). The walk's
        rewrites of the prompt — "When is your exam?", the card, Add Date, the
        Exam Information stop — reached this position too, because one

@@ -181,19 +181,19 @@ function HalfDial({ level }: { level: Level }) {
           </span>
         ))}
       </div>
-      {/* ⚠ TWO DIFFERENT KINDS OF TEXT IN ONE SLOT (2026-10-16, Jillienne:
-          "update this readiness body text to match the other body text").
-          "Overall readiness" is a LABEL for the figure above it — uppercase,
-          tracked out, centred under the dial. The not-started line is a
-          SENTENCE, and wearing the label's dress it came out shouting in
-          3.4px tracking with `white-space: nowrap`, so it ran past the card
-          rather than wrapping. It takes the body treatment the pace card's
-          paragraph uses instead. */}
-      {level.caption ? (
-        <span style={CAPTION_BODY}>{level.caption}</span>
-      ) : (
-        <span aria-hidden style={CAPTION}>Overall readiness</span>
-      )}
+      {/* ⚠ "OVERALL READINESS" IS GONE (2026-10-19, Jillienne: "remove
+          this"). It was a LABEL for the figure above it — uppercase, tracked
+          out, centred under the dial — and the section's eyebrow says Exam
+          readiness a few lines up, so it was the same words twice with a
+          band name between them.
+
+          ⚠ THE NOT-STARTED LINE STAYS, and it is a different thing in the
+          same slot: a SENTENCE ("Will update as you progress through course
+          material"), in the body treatment the pace card's paragraph uses.
+          It was briefly wearing the label's dress — 3.4px tracking and
+          `white-space: nowrap` — and ran past the card rather than wrapping
+          (2026-10-16). Removing the label does not remove it. */}
+      {level.caption ? <span style={CAPTION_BODY}>{level.caption}</span> : null}
     </div>
   )
 }
@@ -262,21 +262,6 @@ const CAPTION_BODY: CSSProperties = {
   lineHeight: '15px',
   textAlign: 'center',
   color: 'var(--color-text-secondary)',
-}
-const CAPTION: CSSProperties = {
-  position: 'absolute',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  top: 95,
-  fontFamily: 'var(--font-body)',
-  fontWeight: 600,
-  fontSize: 11,
-  lineHeight: '15px',
-  letterSpacing: '3.4px',
-  textTransform: 'uppercase',
-  textAlign: 'center',
-  whiteSpace: 'nowrap',
-  color: 'var(--color-primary-500)',
 }
 // The Study pace tile's link ("Edit My Study Pace") — Bold 11 / 13 in the
 // button colour (2026-10-09, Eric: "make it match the link in the study pace

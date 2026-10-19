@@ -29,7 +29,7 @@ describe('the Readiness card, not started', () => {
   })
 
   /* ⚠ IT IS A SENTENCE WEARING A LABEL'S CLOTHES, which is what this guards.
-     The slot under the dial normally holds "Overall readiness" — a LABEL:
+     The slot under the dial used to hold "Overall readiness" — a LABEL:
      uppercase, tracked out, `white-space: nowrap`. The not-started line is a
      sentence, and in that dress it shouted and ran past the card instead of
      wrapping. If the two ever share a style again, this is what says so. */
@@ -59,11 +59,23 @@ describe('the Readiness card, not started', () => {
   })
 
   it('pressing it enters the scale at the first band — the step-through is unchanged', () => {
+    /* ⚠ IT USED TO CHECK FOR "Overall readiness" HERE, the label that sat
+       under the dial on every band. That label went on 2026-10-19
+       (Jillienne: "remove this") — the section's eyebrow already says Exam
+       readiness a few lines up. What this case is actually about is that
+       pressing LEAVES the empty state, so it reads the two things that
+       prove it: the band's name, and an arc that is no longer zero. */
     render(<AtlasReadinessCard notStarted />)
     fireEvent.click(screen.getByRole('button'))
     expect(screen.getByText('Beginner')).toBeInTheDocument()
-    expect(screen.getByText('Overall readiness')).toBeInTheDocument()
+    expect(screen.queryByText('Will update as you progress through course material')).toBeNull()
     expect(arc().getAttribute('stroke-dasharray')).not.toMatch(/^0 /)
+  })
+
+  it('and the label under the dial is gone on every band', () => {
+    // The sentence in that slot is NOT the label — see the case above it.
+    render(<AtlasReadinessCard />)
+    expect(screen.queryByText('Overall readiness')).toBeNull()
   })
 
   it('without the prop it opens on the first band, as before', () => {

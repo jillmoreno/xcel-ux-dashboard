@@ -397,14 +397,19 @@ export function AtlasHomeEricE2E({
      `whiteJourneyTitles`, spreading `stops[0]` into each — so a `locked`
      derived upstream is overwritten by the spread before anything renders.
      Sequence what is DRAWN, which is the array below. */
-  /* ⚠ `shortAffidavit` IS THE WALK'S, like every other copy change in these
-     three steps (2026-10-19). Eric's Atlas Learning tile renders this same
-     component at the same Home — only `?journey=full` tells them apart — so
-     an ungated rename would have reached his row as well. `stateExamSimulators`
-     above is ungated because it is HIS rename, asked for on his surface. */
+  /* ⚠ `xcelFlow` IS UNGATED, unlike the step-level copy around it. The ORDER
+     of the coursework is a fact about the course, not a thing one row of the
+     Prototypes section believes and another does not — so both surfaces of
+     this component draw it, and the Progress ladder's rungs (which NAME
+     these rows) stay true on both. `AtlasHomeEricV3` and the White home keep
+     the original list; they do not pass it.
+     ⚠ IT ABSORBS THE AFFIDAVIT RENAME, which WAS gated to the walk for the
+     hour between the two asks. One flag for one word, alongside a list that
+     already says "Affidavit", was a seam with nothing on the other side of
+     it worth keeping. */
   const shownStops: readonly JourneyStop[] = applyJourneySequencing(
     onWhite && stops.length
-      ? whiteJourneyTitles(stops[0], { stateExamSimulators: true, preCourseAffidavit: affidavitPick !== 'off', shortAffidavit: walkSteps }).map((title, i) => ({
+      ? whiteJourneyTitles(stops[0], { stateExamSimulators: true, preCourseAffidavit: affidavitPick !== 'off', xcelFlow: true }).map((title, i) => ({
           ...stops[0],
           id: `white-${i}`,
           title,

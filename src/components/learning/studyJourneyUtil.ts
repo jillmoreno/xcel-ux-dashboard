@@ -781,7 +781,7 @@ export function whiteJourneyTitles(
      carried its own copy of the list, so the rename reached only the E2E
      one, and `QeFocusedVersion` and `CourseControl` both assert the design's
      wording on the others. */
-  opts: { stateExamSimulators?: boolean; preCourseAffidavit?: boolean; shortAffidavit?: boolean } = {},
+  opts: { stateExamSimulators?: boolean; preCourseAffidavit?: boolean; xcelFlow?: boolean } = {},
 ): string[] {
   const total = lessonStop?.hours ?? NY_LH_PRELICENSING_LESSONS
   const done = lessonStop?.completed ?? 0
@@ -790,20 +790,43 @@ export function whiteJourneyTitles(
      option". A journey that opens on a step the demo never shows is
      promising something it will not do. Opt-OUT, not opt-in: every other
      caller keeps the row, which is what they have always drawn. */
-  const rows = [
+  /* ⚠ TWO ORDERS (2026-10-19, Jillienne: "Order should be: Pre-Licensing
+     Education > Certification Exam > Prep Review > State Exam Simulators >
+     Affidavit > Survey & Certificate").
+
+     `xcelFlow` is the course's actual sequence: the education certifies with
+     the COURSE exam, and prep review and the simulators come after it,
+     preparing for the STATE exam rather than for the course one. The old
+     order put the course exam fifth, after the state-exam practice it
+     qualifies you to start.
+
+     ⚠ A SECOND ARRAY, NOT CONDITIONALS THREADED THROUGH THE FIRST. Two of
+     the six rows are renamed and one moves three places; expressed as
+     ternaries that is unreadable, and `AtlasHomeEricV3` and the White home
+     still draw the original. Fork the list, share the figures — the counts
+     below are the same constants in both. */
+  const rows = opts.xcelFlow
+    ? [
+        'Pre-course Affidavit',
+        `Pre-Licensing Education (${done} of ${total} completed)`,
+        'Certification Exam',
+        `Prep Review (${NY_LH_PREP_REVIEW_LESSONS})`,
+        `State Exam Simulators (${NY_LH_EXAM_SIMULATORS})`,
+        /* ⚠ "Affidavit", not "Study-manual Notice Affidavit" (2026-10-19) —
+           the short name arrived on its own an hour before this order did,
+           and the new list absorbs it rather than keeping a separate flag
+           for one word. */
+        'Affidavit',
+        'Survey & Certificate',
+      ]
+    : [
     'Pre-course Affidavit',
     `Pre-Licensing Lessons (${done} of ${total} completed)`,
     `Prep Review (${NY_LH_PREP_REVIEW_LESSONS})`,
     opts.stateExamSimulators
       ? `State Exam Simulators (${NY_LH_EXAM_SIMULATORS})`
       : `Simulated Exams (${NY_LH_EXAM_SIMULATORS})`,
-    /* ⚠ "AFFIDAVIT" ON THE END-TO-END WALK ONLY (2026-10-19, Jillienne:
-       "change to to be Affidavit"). Opt-in for the same reason the simulator
-       rename above is: this helper feeds Eric's V3 and White homes too, and
-       the full name is the Study Journey's own wording there. The MODAL
-       keeps it in full either way — that sheet names the document being
-       signed, where this names a stop on a list. */
-    opts.shortAffidavit ? 'Affidavit' : 'Study-manual Notice Affidavit',
+    'Study-manual Notice Affidavit',
     'Final Course Exam',
     'Survey & Certificate',
   ]

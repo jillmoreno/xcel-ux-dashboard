@@ -41,7 +41,7 @@ export type AtlasProgressRung = {
   stage: ProgressStage
   /**
    * How many of Step 1's rows are COMPLETE — counted from the Pre-Licensing
-   * Lessons row down, because the Pre-course Affidavit above it is a row the
+   * Education row down, because the Pre-course Affidavit above it is a row the
    * demo can switch off (`atlas-affidavit`) and a count that included it
    * would mean something different depending on a design control.
    */
@@ -64,21 +64,28 @@ export const ATLAS_PROGRESS_LADDER: readonly AtlasProgressRung[] = [
   { key: 'on-track', label: 'Beginner 14%', percent: 14, readiness: 0, stage: 'current', stepsDone: 0 },
   { key: 'developing', label: 'Developing 36%', percent: 36, readiness: 1, stage: 'current', stepsDone: 0 },
   { key: 'milestone', label: 'Proficient 75%', percent: 75, readiness: 2, stage: 'milestone', stepsDone: 0 },
-  /* ⚠ 80 IS THE LESSON ROW'S FINISH LINE, and `lessonsDoneFor` reads it off
-     this rung rather than holding a second copy — so moving this number
+  /* ⚠ 80 IS THE EDUCATION ROW'S FINISH LINE, and `lessonsDoneFor` reads it
+     off this rung rather than holding a second copy — so moving this number
      moves where "36 of 36" is reached, and the four rungs below keep their
      order as long as they stay above it. */
-  { key: 'lessons-done', label: 'Lessons Completed 80%', percent: 80, readiness: 2, stage: 'milestone', stepsDone: 1 },
-  { key: 'prep-review-done', label: 'Prep Review Completed 86%', percent: 86, readiness: 3, stage: 'milestone', stepsDone: 2 },
-  { key: 'simulators-done', label: 'Exam Simulators Completed 92%', percent: 92, readiness: 3, stage: 'milestone', stepsDone: 3 },
-  { key: 'affidavit-done', label: 'Affidavit Signed 94%', percent: 94, readiness: 3, stage: 'milestone', stepsDone: 4 },
-  { key: 'final-exam-done', label: 'Final Exam Passed 98%', percent: 98, readiness: 3, stage: 'milestone', stepsDone: 5 },
+  { key: 'education-done', label: 'Education Completed 80%', percent: 80, readiness: 2, stage: 'milestone', stepsDone: 1 },
+  /* ⚠ THE RUNGS FOLLOW STEP 1's ROWS, AND THE ROWS MOVED (2026-10-19,
+     Jillienne: "Order should be: Pre-Licensing Education > Certification
+     Exam > Prep Review > State Exam Simulators > Affidavit > Survey &
+     Certificate"). `stepsDone` counts rows from the top of that list, so a
+     rung whose label names a different row than the one it checks is a
+     dropdown that lies about what it is about to tick. The Certification
+     Exam moved from fifth to second and these moved with it. */
+  { key: 'cert-exam-done', label: 'Certification Exam Passed 86%', percent: 86, readiness: 3, stage: 'milestone', stepsDone: 2 },
+  { key: 'prep-review-done', label: 'Prep Review Completed 92%', percent: 92, readiness: 3, stage: 'milestone', stepsDone: 3 },
+  { key: 'simulators-done', label: 'Exam Simulators Completed 95%', percent: 95, readiness: 3, stage: 'milestone', stepsDone: 4 },
+  { key: 'affidavit-done', label: 'Affidavit Signed 98%', percent: 98, readiness: 3, stage: 'milestone', stepsDone: 5 },
   /* Survey & Certificate is the sixth row, and finishing it IS the completed
      view — so it is this rung rather than a seventh. */
   { key: 'completed', label: 'Ready 100%', percent: 100, readiness: 3, stage: 'complete', stepsDone: 6 },
 ]
 
-/** How many of Step 1's rows there are, from the Lessons row down. */
+/** How many of Step 1's rows there are, from the Education row down. */
 export const ATLAS_STEP1_ROWS = 6
 
 export const ATLAS_PROGRESS_ORDER: readonly string[] = ATLAS_PROGRESS_LADDER.map((r) => r.key)
@@ -88,8 +95,10 @@ export function atlasRungFor(key: string | undefined): AtlasProgressRung {
   return ATLAS_PROGRESS_LADDER.find((r) => r.key === key) ?? ATLAS_PROGRESS_LADDER[0]
 }
 
-/** The percent at which the Pre-Licensing Lessons row finishes. */
-const LESSONS_END = ATLAS_PROGRESS_LADDER.find((r) => r.key === 'lessons-done')?.percent ?? 100
+/** The percent at which the Pre-Licensing Education row finishes.
+ *  ⚠ The rung was `lessons-done` until 2026-10-19, when the row it names
+ *  became "Pre-Licensing Education". One name, read in one place. */
+const LESSONS_END = ATLAS_PROGRESS_LADDER.find((r) => r.key === 'education-done')?.percent ?? 100
 
 /**
  * How many of the course's lessons are done at this percent.

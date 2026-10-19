@@ -20,6 +20,34 @@ import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
  * same five states, which is how a rung reaches a control and not the screen.
  * The cases below are the ones that would have caught that.
  */
+/**
+ * ⚠ THE RUNGS NAME STEP 1's ROWS, so they moved when the rows did
+ * (2026-10-19, Jillienne's order: Pre-Licensing Education > Certification
+ * Exam > Prep Review > State Exam Simulators > Affidavit > Survey &
+ * Certificate). `stepsDone` counts rows from the top of that list, so a rung
+ * labelled for one row while checking another is a dropdown that lies about
+ * what it is about to tick — which is the case below.
+ */
+describe('each rung ticks the row its label names', () => {
+  const ROWS = [
+    'Education',
+    'Certification Exam',
+    'Prep Review',
+    'Exam Simulators',
+    'Affidavit',
+    // The sixth is Survey & Certificate, and finishing it is "Ready 100%".
+    'Ready',
+  ]
+
+  it('walks the rows in order, one per rung', () => {
+    const ticking = ATLAS_PROGRESS_LADDER.filter((r) => r.stepsDone > 0)
+    expect(ticking.map((r) => r.stepsDone)).toEqual([1, 2, 3, 4, 5, 6])
+    ticking.forEach((rung, i) => {
+      expect(rung.label, `${rung.key} ticks row ${rung.stepsDone}`).toContain(ROWS[i])
+    })
+  })
+})
+
 describe('the ladder is one list, and everything reads it', () => {
   it('builds the demo dropdown — the flag types no states of its own', () => {
     const flag = FEATURE_FLAGS.find((f) => f.key === 'atlas-v3-progress')
