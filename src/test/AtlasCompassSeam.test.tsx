@@ -331,3 +331,77 @@ describe('the walk’s Study Journey steps', () => {
     expect(page.queryByRole('button', { name: 'Add Date' })).toBeNull()
   })
 })
+
+/**
+ * THE ACCESS WINDOW IS ONE WINDOW (2026-10-19, Jillienne: "there is 30 days
+ * on default, why is it now showing not enough time left in pacing").
+ *
+ * ⚠ WHAT BROKE, AND WHY NOTHING CAUGHT IT. The 30 days at 0% was added on
+ * 2026-10-16 as a DISPLAY override on the count alone — the note beside it
+ * said the date would no longer agree "by arithmetic" and that it was worth
+ * doing properly "if the pair ever has to be read together". Three figures
+ * were then reading two different windows: the meta's date and the pace card
+ * took the persona's, the meta's count took 30. On the default screen that
+ * printed "Ends 05/29/2026, 30 days" (18 days apart), and with Expires on 1
+ * day it printed "30 days to complete" directly above "Not enough access
+ * left".
+ *
+ * ⚠ THIS PINS THE INVARIANT, NOT THE NUMBERS. Asserting "30" would pass
+ * again the moment someone re-overrides the count; asserting that the COUNT
+ * equals the distance to the DATE is the thing that cannot be true of two
+ * windows. It is also independent of the fixture's clock, which is what
+ * makes it survive the demo date moving.
+ */
+describe('the course meta states one access window', () => {
+  const readMeta = () => {
+    const line = screen.getByText(/Course Access Ends:/).closest('div')!.textContent ?? ''
+    const date = line.match(/(\d{2})\/(\d{2})\/(\d{4})/)
+    // The spans concatenate with no space — "30 daysto complete".
+    const days = line.match(/(\d+)\s*days?\s*to complete/i)
+    expect(date, line).toBeTruthy()
+    expect(days, line).toBeTruthy()
+    const [, mm, dd, yyyy] = date!
+    const ends = new Date(Number(yyyy), Number(mm) - 1, Number(dd))
+    const count = Number(days![1])
+    /* ⚠ THE DEMO RUNS ON A FIXTURE CLOCK, not the real one, so the count
+       cannot be checked against `new Date()`. What it CAN be checked
+       against is itself: ends − count is the day the window started from,
+       and every state has to agree about what day that is. Two windows is
+       exactly what makes them disagree. */
+    const impliedToday = new Date(ends)
+    impliedToday.setDate(impliedToday.getDate() - count)
+    return { count, line, impliedToday: impliedToday.toDateString() }
+  }
+
+  const CASES: [string, string][] = [
+    ['the default — 0% with Expires on Automatic', `?demo=1&version=${END_TO_END_VERSION}&journey=full`],
+    ['0% with Expires pinned to 1 day', `?demo=1&version=${END_TO_END_VERSION}&journey=full&ff=dashboard-course-expiry:1`],
+    ['past 0%, where the persona\u2019s own window applies', `?demo=1&version=${END_TO_END_VERSION}&journey=full&ff=atlas-v3-progress:on-track`],
+  ]
+
+  it('every state counts from the same day — one clock, one window', () => {
+    const seen: Record<string, string> = {}
+    for (const [name, search] of CASES) {
+      renderDashboard(search)
+      const { impliedToday, line } = readMeta()
+      seen[name] = `${impliedToday} (${line})`
+      cleanup()
+    }
+    const days = Object.values(seen).map((v) => v.split(' (')[0])
+    expect(new Set(days).size, JSON.stringify(seen, null, 2)).toBe(1)
+  })
+
+  it('opens on thirty days — the stated default at Not Started', () => {
+    renderDashboard(`?demo=1&version=${END_TO_END_VERSION}&journey=full`)
+    expect(readMeta().count).toBe(30)
+  })
+
+  it('an explicit Expires pick still wins at 0% \u2014 or the control does nothing where the demo opens', () => {
+    /* The 30 is a DEFAULT. If it outranked the control, "1 day" would be
+       unreachable at Not Started, which is the state the End-to-End row
+       opens on — the control would look broken at exactly the moment
+       somebody first tries it. */
+    renderDashboard(`?demo=1&version=${END_TO_END_VERSION}&journey=full&ff=dashboard-course-expiry:1`)
+    expect(readMeta().count).toBe(1)
+  })
+})

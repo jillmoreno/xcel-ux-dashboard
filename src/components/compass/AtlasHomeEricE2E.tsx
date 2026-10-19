@@ -42,7 +42,8 @@ import {
   type JourneyStop,
 } from '@/components/learning/studyJourneyUtil'
 import { getLicensedStepsFor, jurisdictionName } from '@/data/nyProducerRequirements'
-import { defaultPreset, formatPaceDate, studyPace, daysUntil, dateFromIso, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
+import { defaultPreset, formatPaceDate, studyPace, daysUntil, dateFromIso, isoPlusDays, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
+import { EXPIRY_FLAG_KEY } from '@/data/courseFixtures'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import './atlasJourneyLink.css'
 import type { LearningPathSummary } from '@/data/learningFixtures'
@@ -167,6 +168,9 @@ export type AtlasHomeEricE2EProps = {
    shows the current ones rather than a copy that can go stale. A sheet opens
    OVER Home and closes back to it, so none of them leaves the demo, which is
    what `LINKS_OFF` is there to prevent. */
+/* The window a learner who has not started gets, when Expires is on
+   Automatic — see `accessIso`. */
+const ZERO_ACCESS_DAYS = 30
 const LINKS_OFF = true
 const NO_LINK = () => {}
 
@@ -243,17 +247,40 @@ export function AtlasHomeEricE2E({
       return next
     })
 
+  /* ⚠ AT 0% THE WINDOW MOVES, NOT JUST THE COUNT — 2026-10-19, Jillienne:
+     "there is 30 days on default, why is it now showing not enough time left
+     in pacing".
+
+     The 30 arrived on 2026-10-16 ("at 0% should default to 30 days for course
+     access") as a DISPLAY override on the count alone, and the note here said
+     so: the date beside it stayed the persona's, "so at 0% the two no longer
+     agree by arithmetic… worth doing properly if the pair ever has to be read
+     together". They are read together — the pace card reads the real window
+     while the meta printed 30 — so on the default screen the card could say
+     "Not enough access left" under a line promising 30 days, and even at
+     Automatic the 30 contradicted the 05/29 date printed beside it.
+
+     One window now, derived once and read by all three: the meta's date, its
+     count, and the pace model. Not Started means the clock has not started,
+     so the window IS today plus thirty.
+
+     ⚠ AN EXPLICIT EXPIRES PICK STILL WINS. The ask was for a DEFAULT; a demo
+     control set to "1 day" that silently became thirty would be a control
+     that does nothing at the one progress state the demo opens on. */
+  const expiryPick = useFeatureFlag(EXPIRY_FLAG_KEY).variant ?? 'auto'
+  const zeroWindow = progressPick === 'not-started' && expiryPick === 'auto'
+  const accessIso = zeroWindow && accessExpiresAt ? isoPlusDays(today, ZERO_ACCESS_DAYS) : accessExpiresAt
   /* THE FIGURES — the pace model, as the Study Pace card computes it. */
   const model = useMemo(
     () =>
       studyPace({
         today,
         hoursRemaining,
-        accessExpiresAt,
+        accessExpiresAt: accessIso,
         examDate,
         nights: notStarted ? NOT_STARTED_NIGHTS : undefined,
       }),
-    [today, hoursRemaining, accessExpiresAt, examDate, notStarted],
+    [today, hoursRemaining, accessIso, examDate, notStarted],
   )
   const preset = defaultPreset(model)
   /*
@@ -279,26 +306,18 @@ export function AtlasHomeEricE2E({
      note at the ring — but it still decides the journey's completed shape. */
   const completedView = progressPick === 'completed'
   const ringAtZero = paceCard === 'ring' && atZeroProgress
-  const rawAccessDays = accessExpiresAt ? Math.max(0, daysUntil(accessExpiresAt, today) ?? 0) : null
-  /* ⚠ 30 DAYS AT 0% (2026-10-16, Jillienne: "at 0% should default to 30 days
-     for course access"). The persona's expiry is a fixed date, so a learner
-     who has not started reads whatever is left of a window that began without
-     them — 18 days on the demo date, which tells a story about a course they
-     are late for rather than one they are about to begin. Not Started means
-     the clock has not started either.
-
-     ⚠ THE DATE BESIDE IT IS STILL THE PERSONA'S. `expiresOn` is a real date
-     from the fixture and this is a count — so at 0% the two no longer agree
-     by arithmetic. Making them agree means moving the expiry itself, which is
-     the persona's and reaches further than this card. Worth doing properly if
-     the pair ever has to be read together. */
-  const accessDays = atZeroProgress ? 30 : rawAccessDays
+  const rawAccessDays = accessIso ? Math.max(0, daysUntil(accessIso, today) ?? 0) : null
+  /* ⚠ DERIVED, NOT OVERRIDDEN (2026-10-19). It was `atZeroProgress ? 30 :
+     rawAccessDays` — a count that ignored the date printed beside it and the
+     window the pace card read. The 30 lives in `accessIso` now, so this is
+     arithmetic on one window again and the three figures cannot disagree. */
+  const accessDays = rawAccessDays
   /* EXPIRES · DAYS TO COMPLETE, under the course title (Figma 368:519,
      2026-10-13, Eric's request). The course's own access end and the days
      left to it — the figures the Access tile reads — not the frame's sample
      11/04/2026 and 27 days. Like the rest of the card, it is the first
      course's whichever tab is picked. */
-  const expiresOn = dateFromIso(accessExpiresAt)
+  const expiresOn = dateFromIso(accessIso)
   const courseMeta =
     expiresOn && accessDays != null ? (
       <div
@@ -814,8 +833,8 @@ export function AtlasHomeEricE2E({
                 note: 'At current pace',
               }}
               access={
-                accessDays != null && accessExpiresAt
-                  ? { value: `${accessDays} ${accessDays === 1 ? 'Day' : 'Days'}`, note: `Ends ${formatPaceDate(accessExpiresAt)}` }
+                accessDays != null && accessIso
+                  ? { value: `${accessDays} ${accessDays === 1 ? 'Day' : 'Days'}`, note: `Ends ${formatPaceDate(accessIso)}` }
                   : null
               }
             />
