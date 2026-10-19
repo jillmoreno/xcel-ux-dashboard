@@ -8,10 +8,10 @@ import { InviteEmailPage } from '@/pages/InviteEmailPage'
 import {
   E2E_EMAIL_ADMIN,
   E2E_EMAIL_OFFICE,
-  E2E_EMAIL_PARTNER,
   E2E_LEARNER_EMAIL,
   E2E_LEARNER_FIRST,
   E2E_LEARNER_NAME,
+  E2E_PARTNER_NAME,
 } from '@/pages/endToEndDemo'
 
 /**
@@ -84,12 +84,12 @@ describe('the invite email page', () => {
   })
 
   it('tells the partner’s story from constants, not literals', () => {
-    /* ⚠ THE EMAIL'S PARTNER IS NOT THE FLOW'S — Sunrise Bank here, Pristine
-       Solutions on the page this opens. That is a known discrepancy (see
-       `E2E_EMAIL_PARTNER`), and these constants are what make settling it a
-       one-line change rather than a search through copy. */
+    /* ⚠ THE EMAIL'S PARTNER IS THE FLOW'S — one `E2E_PARTNER_NAME` feeds
+       this letter, the Product Detail page and the partner header. It was
+       two names for one commit (Sunrise Bank here, Pristine Solutions on the
+       page this opens), which is the state this case now rules out. */
     renderEmail()
-    for (const text of [E2E_EMAIL_PARTNER, E2E_EMAIL_OFFICE, E2E_EMAIL_ADMIN]) {
+    for (const text of [E2E_PARTNER_NAME, E2E_EMAIL_OFFICE, E2E_EMAIL_ADMIN]) {
       expect(screen.getAllByText(new RegExp(text)).length, text).toBeGreaterThan(0)
     }
   })

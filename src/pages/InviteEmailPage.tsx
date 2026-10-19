@@ -22,10 +22,10 @@ import {
   E2E_COURSE_TITLE_SHORT,
   E2E_EMAIL_ADMIN,
   E2E_EMAIL_OFFICE,
-  E2E_EMAIL_PARTNER,
   E2E_LEARNER_FIRST,
   E2E_LEARNER_NAME,
   E2E_ORIGINAL_PRICE,
+  E2E_PARTNER_NAME,
   E2E_PARTNER_PRICE,
   useEndToEndDemoParams,
   useEndToEndPageChrome,
@@ -121,9 +121,9 @@ export function InviteEmailPage() {
               XCEL surface on this page, and the one thing here that is not a
               mock of somebody else's product.
 
-              ⚠ ITS PARTNER IS SUNRISE BANK, where the rest of the flow says
-              Pristine Solutions — see `E2E_EMAIL_PARTNER` for why that is a
-              discrepancy rather than a decision. */}
+              ⚠ ITS PARTNER IS THE FLOW'S, from `E2E_PARTNER_NAME`. For one
+              commit the email said Sunrise Bank while the page it opens
+              said Pristine Solutions; the whole flow is Sunrise Bank now. */}
           <article style={EMAIL}>
             <header style={EMAIL_HEAD}>
               <span aria-hidden style={PARTNER_MARK}>
@@ -137,7 +137,7 @@ export function InviteEmailPage() {
                   <rect x="3" y="16" width="18" height="2" rx="1" fill="currentColor" />
                 </svg>
               </span>
-              <p style={EMAIL_PARTNER}>{E2E_EMAIL_PARTNER}</p>
+              <p style={EMAIL_PARTNER}>{E2E_PARTNER_NAME}</p>
               <span aria-hidden style={EMAIL_HEAD_RULE} />
               <p style={EMAIL_OFFICIAL}>Official partner of</p>
               <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={EMAIL_LOGO} />
@@ -146,7 +146,7 @@ export function InviteEmailPage() {
               <p style={EMAIL_EYEBROW}>Invitation</p>
               <p style={EMAIL_GREETING}>Hi {E2E_LEARNER_FIRST},</p>
               <p style={EMAIL_COPY}>
-                <strong style={{ fontWeight: 700 }}>{E2E_EMAIL_PARTNER}</strong> invited you to enroll in the{' '}
+                <strong style={{ fontWeight: 700 }}>{E2E_PARTNER_NAME}</strong> invited you to enroll in the{' '}
                 <strong style={{ fontWeight: 700 }}>{E2E_COURSE_TITLE_SHORT}</strong> package for {E2E_EMAIL_OFFICE}.
                 You pay your own way, at the office price. No partner code.
               </p>
@@ -157,7 +157,7 @@ export function InviteEmailPage() {
                 <span style={EMAIL_PRICE}>{shortPrice(E2E_PARTNER_PRICE)}</span>
                 <span style={EMAIL_PRICE_WAS}>{shortPrice(E2E_ORIGINAL_PRICE)}</span>
                 <span style={EMAIL_SAVING}>
-                  {E2E_EMAIL_PARTNER} saves you {emailSaving}
+                  {E2E_PARTNER_NAME} saves you {emailSaving}
                 </span>
               </p>
               <button type="button" onClick={openInvitation} className="cre-email-cta" style={EMAIL_CTA}>
@@ -174,7 +174,7 @@ export function InviteEmailPage() {
             <footer style={EMAIL_FOOT}>
               <p style={EMAIL_FOOT_NAME}>XCEL Solutions</p>
               <p style={EMAIL_FOOT_LINE}>
-                Sent for {E2E_EMAIL_ADMIN} · {E2E_EMAIL_OFFICE} · {E2E_EMAIL_PARTNER}
+                Sent for {E2E_EMAIL_ADMIN} · {E2E_EMAIL_OFFICE} · {E2E_PARTNER_NAME}
               </p>
               <p style={EMAIL_FOOT_FINE}>
                 Reply to this email to reach {E2E_EMAIL_ADMIN} at {E2E_EMAIL_OFFICE}. This is an example of what a
@@ -289,7 +289,7 @@ function MailList() {
           from="XCEL Solutions"
           when="Today"
           subject={`You’re invited: ${E2E_COURSE_TITLE_SHORT}…`}
-          preview={`${E2E_EMAIL_PARTNER} invited ${E2E_LEARNER_FIRST} to enroll at th…`}
+          preview={`${E2E_PARTNER_NAME} invited ${E2E_LEARNER_FIRST} to enroll at th…`}
           open
         />
         {/* A second message, so the inbox reads as an inbox. Nothing about it

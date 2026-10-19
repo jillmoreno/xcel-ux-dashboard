@@ -213,32 +213,33 @@ export function useEndToEndPageChrome(title: string): void {
  * signed in another. Named constants are what keep the email page, the
  * confirmation page and the header saying the same thing.
  *
- * ⚠ THE PARTNER NAME IS THE DESIGN'S OWN, as `PartnerHeader` records — an
- * invented firm, not a real one.
+ * ⚠ KEEP JORDAN NAVARRO — 2026-10-19, asked for explicitly alongside the
+ * partner rename. The email's design shows a work address at the partner's
+ * domain, which suits its story better; adopting it would have recreated
+ * exactly the mismatch the constants above exist to prevent, since the
+ * dashboard signs the learner in as Navarro.
  */
 export const E2E_LEARNER_FIRST = 'Jordan'
 export const E2E_LEARNER_NAME = 'Jordan Navarro'
 export const E2E_LEARNER_EMAIL = 'jordan.navarro@gmail.com'
-export const E2E_PARTNER_NAME = 'Pristine Solutions Financial Services Group LLC'
 
 /**
- * THE INVITATION EMAIL'S OWN SCENARIO — 2026-10-19, from Jillienne's email
- * design: a recruit at Sunrise Bank's Tampa Office, invited by the admin who
- * runs it.
- *
- * ⚠ IT IS A DIFFERENT PARTNER FROM THE REST OF THE FLOW, and that is a
- * discrepancy rather than a decision. The Product Detail page, its checkout
- * and the partner header all still say `E2E_PARTNER_NAME` — "Pristine
- * Solutions Financial Services Group LLC", which is the Figma's own — so the
- * walk currently opens on a Sunrise Bank invitation and lands on a Pristine
- * Solutions page. Both names are invented; which one the flow keeps is a
- * call for whoever owns the invite surface, and these constants are here so
- * that making it is a one-line change rather than a search.
- *
- * ⚠ THE SAVING IS DERIVED, never typed: $199 − $65. A third number written
- * by hand is a third number to get wrong.
+ * ⚠ THE PARTNER IS SUNRISE BANK, EVERYWHERE — 2026-10-19 ("use Sunrise Bank
+ * everywhere, keep Jordan Navarro"). It was "Pristine Solutions Financial
+ * Services Group LLC", the Figma's own name, and the invitation email's
+ * design introduced Sunrise Bank alongside it — so for one commit the walk
+ * opened on a Sunrise Bank letter and landed on a Pristine Solutions page.
+ * Both were invented; this settles it on the shorter one, and ONE constant
+ * now feeds the email, the Product Detail page and the partner header so the
+ * three cannot part company again.
  */
-export const E2E_EMAIL_PARTNER = 'Sunrise Bank'
+export const E2E_PARTNER_NAME = 'Sunrise Bank'
+
+/**
+ * The rest of the invitation's scenario — the office the recruit is joining
+ * and the admin who sent for them. Email-only: no other page in the flow
+ * mentions either.
+ */
 export const E2E_EMAIL_OFFICE = 'Tampa Office'
 export const E2E_EMAIL_ADMIN = 'Cody McClintock'
 
