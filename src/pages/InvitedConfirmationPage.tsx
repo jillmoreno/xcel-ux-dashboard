@@ -264,11 +264,37 @@ export function InvitedConfirmationPage() {
                   <button
                     type="button"
                     onClick={() => setShown((v) => !v)}
+                    /* ⚠ THE LABEL NAMES THE ACTION, NOT THE STATE — "Show
+                       password" while it is hidden. A control labelled for
+                       what it currently IS leaves a screen-reader user to
+                       work out what pressing it would do. `aria-pressed`
+                       carries the state, which is the pair's whole job. */
                     aria-label={shown ? 'Hide password' : 'Show password'}
                     aria-pressed={shown}
                     style={EYE}
                   >
-                    <img src="/brand/confirmation/eye.svg" alt="" width={18} height={18} style={{ display: 'block' }} />
+                    {/* ⚠ TWO ICONS, NOT ONE (2026-10-19, Jillienne: "this
+                        icon should change when clicked to show the password,
+                        there should be 2 different states"). The eye never
+                        changed, so the only feedback was the field itself —
+                        and `aria-pressed` was already telling assistive tech
+                        a state the screen did not show.
+
+                        ⚠ THE SLASH MEANS HIDDEN, which is the convention
+                        worth getting the right way round: the icon shows
+                        what pressing it DOES. Plain eye = "reveal" while the
+                        password is dots; struck eye = "hide" while it is
+                        legible. `eye-off.svg` is the design's own eye with a
+                        diagonal added in the identical stroke — the standard
+                        construction on its own geometry, not a second mark
+                        from somewhere else. */}
+                    <img
+                      src={shown ? '/brand/confirmation/eye-off.svg' : '/brand/confirmation/eye.svg'}
+                      alt=""
+                      width={18}
+                      height={18}
+                      style={{ display: 'block' }}
+                    />
                   </button>
                 </span>
               </label>
