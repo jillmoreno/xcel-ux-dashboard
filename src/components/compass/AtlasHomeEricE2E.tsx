@@ -542,6 +542,8 @@ export function AtlasHomeEricE2E({
   /* Exam Information opens the same sheet Quick Links' own link opens, by
      the same id — `onOpenStep` is exempt from `LINKS_OFF`, so this one
      genuinely works. */
+  /* The design bar's Home column — Centred (default) or Left aligned. */
+  const columnAlign = useFeatureFlag('atlas-home-align').variant === 'left' ? 'left' : 'center'
   /* The design bar's Exam date prompt — Row (default) or Card. */
   const examPromptCard = useFeatureFlag('atlas-exam-prompt').variant === 'card'
   const examInfo = onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : undefined
@@ -808,6 +810,7 @@ export function AtlasHomeEricE2E({
                 /* So the card knows whether its last rule has anything below
                    it to divide — see `readinessBelow`. */
                 readinessBelow={showReadiness}
+                align={columnAlign}
                 /* ⚠ "HERE" GOES TO COMPASS'S STUDY PLANNER (2026-10-16,
                    Jillienne: "have the 'here' be a link to the study planner
                    of the compass application"). It was `onOpenStop(
@@ -915,6 +918,7 @@ export function AtlasHomeEricE2E({
               /* One eyebrow for the column — see `ATLAS_PACE_EYEBROW`. Only
                  the ring arm asks for it; the states card brings its own. */
               matchPaceEyebrow={paceCard === 'ring'}
+              align={columnAlign}
               onPastLast={() => setVariant('atlas-v3-progress', 'not-started')}
             />
             )}

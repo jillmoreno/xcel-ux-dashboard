@@ -28,6 +28,30 @@ import type { CSSProperties } from 'react'
  * says so. It lived in `AtlasPaceRingCard.tsx` for about a minute before
  * that rule caught it.
  */
+/**
+ * Where this column's section LABELS sit — 2026-10-19, Jillienne: "add a
+ * variant where all of these are left aligned", narrowed within the hour to
+ * "just for the eyebrow text".
+ *
+ * ⚠ THE EYEBROWS ONLY. The first pass moved the whole stack — the dials, the
+ * pace lines and the completion date — and that was more than the ask. The
+ * things a label names stay on the centre axis on both arms; only the label
+ * moves.
+ *
+ * ⚠ A PROP, NOT A SIBLING, AND THAT IS A JUDGEMENT CALL. CLAUDE.md's rule is
+ * to copy a component rather than thread conditionals through it, and it is
+ * the right rule when two designs diverge. This is one `textAlign` on one
+ * shared style; forking the pace card, the readiness card and this module
+ * over it would duplicate everything built today and leave two copies to
+ * keep in step. If the arms ever differ by more than their eyebrows, that is
+ * the moment to fork them.
+ */
+export type AtlasColumnAlign = 'center' | 'left'
+
+export function atlasSectionEyebrow(align: AtlasColumnAlign): CSSProperties {
+  return align === 'left' ? { ...ATLAS_SECTION_EYEBROW, textAlign: 'left' } : ATLAS_SECTION_EYEBROW
+}
+
 export const ATLAS_SECTION_EYEBROW: CSSProperties = {
   margin: 0,
   alignSelf: 'stretch',

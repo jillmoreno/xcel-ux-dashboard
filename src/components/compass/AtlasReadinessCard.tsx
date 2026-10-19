@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type KeyboardEvent } from 'react'
-import { ATLAS_SECTION_EYEBROW } from './atlasSectionEyebrow'
+import { atlasSectionEyebrow, type AtlasColumnAlign } from './atlasSectionEyebrow'
 
 /**
  * THE READINESS CARD, FIVE LEVELS — Figma "Atlas-UX-Design" component 295:10698
@@ -66,6 +66,7 @@ export function AtlasReadinessCard({
   initialLevel = 0,
   notStarted = false,
   matchPaceEyebrow = false,
+  align = 'center',
   onPastLast,
   bare = false,
 }: {
@@ -81,6 +82,11 @@ export function AtlasReadinessCard({
    *  White's, where the eyebrow is the primary blue at 600 — Eric's, and his
    *  to keep. The ask was about ONE column, so only that column opts in. */
   matchPaceEyebrow?: boolean
+  /** Which way this column's EYEBROWS read (2026-10-19) — the dials, the
+   *  figures and the captions stay centred on both arms. Only meaningful
+   *  alongside `matchPaceEyebrow`: it is that column's decision, and V3 and
+   *  White keep their own eyebrow. */
+  align?: AtlasColumnAlign
   /** Called INSTEAD of wrapping to Novice when Exam Ready is clicked — V3
    *  resets the page to Not Started with it (2026-10-09). */
   onPastLast?: () => void
@@ -121,7 +127,7 @@ export function AtlasReadinessCard({
           is white-LIKE, so it takes the bare branch — which is the branch
           that was still drawing the old eyebrow when the first attempt
           "worked" everywhere else. */}
-      <p style={matchPaceEyebrow ? ATLAS_SECTION_EYEBROW : bare ? BARE_EYEBROW : EYEBROW}>
+      <p style={matchPaceEyebrow ? atlasSectionEyebrow(align) : bare ? BARE_EYEBROW : EYEBROW}>
         {/* "Exam readiness" on the arm that shares the column's eyebrows
             (2026-10-16, Jillienne: the three are "Study Pace, Course
             Progress, Exam Readiness"). The longer "Readiness for state exam"

@@ -2556,6 +2556,43 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-home-align',
+    /* THE HOME COLUMN, TWO WAYS (2026-10-19, Jillienne: "add a variant where
+       all of these are left aligned").
+
+       ⚠ IT IS THE EYEBROWS ONLY (2026-10-19, narrowed within the hour: "for
+       the left aligned variant, make that just for the eyebrow text"). The
+       first pass left-aligned the whole stack — the dials, the pace lines
+       and the completion date with them — and that was more than the ask.
+       `left` moves the four LABELS to the column's edge; everything they
+       label stays on the centre axis.
+
+       ⚠ ONE AXIS, THREADED AS A VALUE rather than forked into siblings.
+       CLAUDE.md says copy the component instead of threading a conditional,
+       and that is right when two designs diverge; this is one `textAlign`
+       on one shared style, and forking the pace card, the readiness card
+       and the eyebrow module over it would leave two copies of everything
+       built today to keep in step. If the arms ever differ by more than
+       their eyebrows, fork them then.
+
+       ⚠ ON THE DESIGN BAR, so not a promotion candidate — the DEFAULT still
+       renders for everyone. Same trade-off as `atlas-pace-card` and
+       `atlas-exam-prompt`, written down for the same reason. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Section labels',
+    description:
+      'Where the Atlas Home column\u2019s four section labels sit \u2014 Course progress, Study pace, Estimated completion, Exam readiness. Centred (default): on the same axis as the dials and figures under them. Left: against the column\u2019s left edge. Only the LABELS move; the dials, the pace lines and the completion date stay centred on both arms.',
+    defaultEnabled: true,
+    defaultVariant: 'center',
+    variants: [
+      { value: 'center', label: 'Centred' },
+      { value: 'left', label: 'Left aligned' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-exam-prompt',
     /* STEP 2's EXAM-DATE PROMPT, TWO WAYS (2026-10-19, Jillienne: "add a
        variant of this where the information is in a container, light blue to

@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { GaugeThin } from '@/icons'
-import { ATLAS_SECTION_EYEBROW } from './atlasSectionEyebrow'
+import { ATLAS_SECTION_EYEBROW, atlasSectionEyebrow, type AtlasColumnAlign } from './atlasSectionEyebrow'
 import { paceName } from '@/components/learning/compassStudyPlannerModel'
 import { PLANNER_PLAN } from '@/data/compassStudyPlannerFixtures'
 
@@ -31,9 +31,13 @@ export function AtlasPaceRingCard({
   hoursPerWeek,
   expected,
   readinessBelow = false,
+  align = 'center',
   onCustomize,
 }: {
   percent: number
+  /** Which way the column reads — see `AtlasColumnAlign`. Centre is the
+   *  committed default; `left` is the design bar's other arm. */
+  align?: AtlasColumnAlign
   /** The finish DATE the same pace model produces, and its note. Shown under
    *  the week goal so the plan's span and the date it lands on are read
    *  together — they come from one `paceFit`, so they cannot describe two
@@ -63,6 +67,7 @@ export function AtlasPaceRingCard({
   weeks?: number
   onCustomize?: () => void
 }) {
+  const eyebrow = atlasSectionEyebrow(align)
   return (
     /* ⚠ TWO SECTIONS, NOT ONE CARD (2026-10-16, Jillienne: "should be 3
        sections: Study Pace, Course Progress, Exam Readiness as the
@@ -93,7 +98,7 @@ export function AtlasPaceRingCard({
           rest follows from it. It sat under Study pace only because the dial
           used to live inside that card. */}
       <section style={{ ...SECTION, alignItems: 'center' }} aria-label="Course progress">
-        <p style={EYEBROW}>Course progress</p>
+        <p style={eyebrow}>Course progress</p>
         <ProgressDial percent={percent} />
       </section>
       {/* ⚠ A RULE UNDER COURSE PROGRESS (2026-10-16). The two sections sat on
@@ -103,7 +108,7 @@ export function AtlasPaceRingCard({
           has something on both sides of it. */}
       <span aria-hidden style={DIVIDER} />
       <section style={SECTION} aria-label="Study pace">
-        <p style={EYEBROW}>Study pace</p>
+        <p style={eyebrow}>Study pace</p>
         {/* ⚠ CENTRED, LIKE THE REST OF THE COLUMN'S CONTENT (2026-10-19,
             Jillienne: "have these be centered aligned to match the whole
             container of content"). Course progress centres its dial and
@@ -193,7 +198,9 @@ export function AtlasPaceRingCard({
              is the same 24 it has always been — it just sits inside the box
              now, where it is symmetric, instead of outside it. */
           <div style={readinessBelow ? EXPECTED : { ...EXPECTED, borderBottom: 'none' }}>
-            <p style={EXPECTED_LABEL}>Estimated completion</p>
+            {/* It is an EYEBROW, so it moves with the other three — the date
+                under it is a figure and stays centred with the dials. */}
+            <p style={{ ...EXPECTED_LABEL, textAlign: eyebrow.textAlign }}>Estimated completion</p>
             <p style={EXPECTED_VALUE}>
               {expected.value}
               {expected.note ? <span style={EXPECTED_NOTE}> · {expected.note}</span> : null}
@@ -287,7 +294,6 @@ const PANEL: CSSProperties = {
   background: 'transparent',
   boxSizing: 'border-box',
 }
-const EYEBROW = ATLAS_SECTION_EYEBROW
 /* One section of the column — an eyebrow and what it names. */
 const SECTION: CSSProperties = { display: 'flex', flexDirection: 'column', gap: SECTION_GAP }
 /* The column's own hairline, the same one Estimated completion is ruled with
