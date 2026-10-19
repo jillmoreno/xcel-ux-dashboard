@@ -2,10 +2,12 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ADMIN_LEARNERS, type Learner } from '@/data/xcelAdmin/learners'
-import { AdminStoreContext, type AdminInvite, type AdminStore, type AdminTouch } from './adminStore'
+import { ADMIN_INVITES, type Invite } from '@/data/xcelAdmin/invites'
+import { AdminStoreContext, type AdminStore, type AdminTouch } from './adminStore'
 import { XcelAdminComingSoon, XcelAdminLayout } from './XcelAdminLayout'
 import { XcelAdminStudentsPage } from './XcelAdminStudentsPage'
 import { XcelAdminRecruitPage } from './XcelAdminRecruitPage'
+import { XcelAdminInvitesPage } from './XcelAdminInvitesPage'
 
 /**
  * XCEL ADMIN — the app (2026-10-19, feat/XCEL-admin). The admin surface
@@ -19,7 +21,7 @@ export function XcelAdminApp() {
   const enabled = useFeatureFlag('xcel-admin').enabled
   const [learners, setLearners] = useState<Learner[]>(() => [...ADMIN_LEARNERS])
   const [touches, setTouches] = useState<AdminTouch[]>([])
-  const [invites, setInvites] = useState<AdminInvite[]>([])
+  const [invites, setInvites] = useState<Invite[]>(() => [...ADMIN_INVITES])
   const [toast, setToast] = useState<string | null>(null)
   const timer = useRef<number | undefined>(undefined)
 
@@ -29,8 +31,28 @@ export function XcelAdminApp() {
     timer.current = window.setTimeout(() => setToast(null), 2600)
   }, [])
   const addInvites = useCallback<AdminStore['addInvites']>((list) => {
-    const now = new Date().toISOString()
-    setInvites((prev) => [...list.map((inv, i) => ({ ...inv, id: `${now}-${i}-${inv.email}`, sentAt: now })), ...prev])
+    const now = Date.now()
+    setInvites((prev) => [
+      ...list.map<Invite>((inv, i) => ({
+        id: `inv-new-${now}-${i}`,
+        name: inv.name,
+        email: inv.email,
+        status: 'sent',
+        sentHoursAgo: 0,
+        lastStepHoursAgo: 0,
+        method: inv.via === 'qr' ? 'QR code' : inv.via === 'link' ? 'Link' : 'Email',
+        department: inv.department,
+        learnerId: null,
+      })),
+      ...prev,
+    ])
+  }, [])
+  const resendInvite = useCallback((id: string) => {
+    setInvites((prev) => {
+      const hit = prev.find((i) => i.id === id)
+      if (!hit) return prev
+      return [{ ...hit, sentHoursAgo: 0, lastStepHoursAgo: 0, status: 'sent' }, ...prev.filter((i) => i.id !== id)]
+    })
   }, [])
   const updateLearner = useCallback<AdminStore['updateLearner']>((id, patch) => {
     setLearners((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)))
@@ -40,8 +62,8 @@ export function XcelAdminApp() {
     setTouches((prev) => [{ ...t, id: `${at}-${prev.length}`, at }, ...prev])
   }, [])
   const store = useMemo<AdminStore>(
-    () => ({ learners, updateLearner, touches, addTouch, invites, addInvites, toast, showToast }),
-    [learners, updateLearner, touches, addTouch, invites, addInvites, toast, showToast],
+    () => ({ learners, updateLearner, touches, addTouch, invites, addInvites, resendInvite, toast, showToast }),
+    [learners, updateLearner, touches, addTouch, invites, addInvites, resendInvite, toast, showToast],
   )
 
   if (!enabled) {
@@ -59,7 +81,7 @@ export function XcelAdminApp() {
           <Route index element={<Navigate to={`students${window.location.search}`} replace />} />
           <Route path="students" element={<XcelAdminStudentsPage />} />
           <Route path="students/recruit/:recruitId" element={<XcelAdminRecruitPage />} />
-          <Route path="invites" element={<XcelAdminComingSoon />} />
+          <Route path="invites" element={<XcelAdminInvitesPage />} />
           <Route path="reports" element={<XcelAdminComingSoon />} />
           <Route path="notifications" element={<XcelAdminComingSoon />} />
           <Route path="resources" element={<XcelAdminComingSoon />} />
