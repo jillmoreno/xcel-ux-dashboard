@@ -75,7 +75,8 @@ export function XcelAdminStudentsPage() {
     const f = params.get(STUDENT_FILTER_PARAM)
     return f && f in QUICK_LABEL ? [f as Quick] : []
   })
-  const [department, setDepartment] = useState<string | null>(null)
+  // Settings → Departments → Open filter arrives as `?department=`.
+  const [department, setDepartment] = useState<string | null>(() => new URLSearchParams(window.location.search).get('department'))
   const [shown, setShown] = useState(PAGE)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [licensedWindow, setLicensedWindow] = useState('90d')

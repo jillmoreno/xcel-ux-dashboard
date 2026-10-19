@@ -29,7 +29,7 @@ const TITLES: Record<string, string> = {
   reports: 'Reports',
   notifications: 'Notifications & Reports',
   resources: 'Resources',
-  settings: 'Settings',
+  settings: 'Settings · Company',
 }
 
 export function XcelAdminLayout() {

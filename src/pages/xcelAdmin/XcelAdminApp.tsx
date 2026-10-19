@@ -10,6 +10,8 @@ import { XcelAdminRecruitPage } from './XcelAdminRecruitPage'
 import { XcelAdminInvitesPage } from './XcelAdminInvitesPage'
 import { XcelAdminReportsPage } from './XcelAdminReportsPage'
 import { XcelAdminNotificationsPage } from './XcelAdminNotificationsPage'
+import { XcelAdminResourcesPage } from './XcelAdminResourcesPage'
+import { XcelAdminSettingsPage } from './XcelAdminSettingsPage'
 
 /**
  * XCEL ADMIN — the app (2026-10-19, feat/XCEL-admin). The admin surface
@@ -31,6 +33,7 @@ export function XcelAdminApp() {
     people: ['coleen.acker@example.com', 'adam.neal@example.com'],
   })
   const setProgressReport = useCallback((patch: Partial<ProgressReportSettings>) => setPR((p) => ({ ...p, ...patch })), [])
+  const [sampleRoster, setSampleRoster] = useState(true)
   const [toast, setToast] = useState<string | null>(null)
   const timer = useRef<number | undefined>(undefined)
 
@@ -71,8 +74,8 @@ export function XcelAdminApp() {
     setTouches((prev) => [{ ...t, id: `${at}-${prev.length}`, at }, ...prev])
   }, [])
   const store = useMemo<AdminStore>(
-    () => ({ learners, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, toast, showToast }),
-    [learners, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, toast, showToast],
+    () => ({ learners: sampleRoster ? learners : [], sampleRoster, setSampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, toast, showToast }),
+    [learners, sampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, toast, showToast],
   )
 
   if (!enabled) {
@@ -93,8 +96,8 @@ export function XcelAdminApp() {
           <Route path="invites" element={<XcelAdminInvitesPage />} />
           <Route path="reports" element={<XcelAdminReportsPage />} />
           <Route path="notifications/*" element={<XcelAdminNotificationsPage />} />
-          <Route path="resources" element={<XcelAdminComingSoon />} />
-          <Route path="settings" element={<XcelAdminComingSoon />} />
+          <Route path="resources" element={<XcelAdminResourcesPage />} />
+          <Route path="settings" element={<XcelAdminSettingsPage />} />
           <Route path="*" element={<XcelAdminComingSoon>Not built yet.</XcelAdminComingSoon>} />
         </Route>
       </Routes>

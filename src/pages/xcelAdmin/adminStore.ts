@@ -49,6 +49,10 @@ export type AdminStore = {
   /** The onboarding Progress report — shared by Reports and Notifications. */
   progressReport: ProgressReportSettings
   setProgressReport: (patch: Partial<ProgressReportSettings>) => void
+  /** Settings → Product Configs → Sample roster. Off, the roster is the
+   *  empty first-run office. */
+  sampleRoster: boolean
+  setSampleRoster: (on: boolean) => void
   toast: string | null
   showToast: (message: string) => void
 }
