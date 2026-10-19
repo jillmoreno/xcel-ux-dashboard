@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { Clone, Download, Envelope, MagnifyingGlass, Play, Plus, ShareNodes, Star, StarSolid, XmarkRegular, CalendarRegular } from '@/icons'
 import { ADMIN_REPORTS, REPORT_COLUMNS, reportRows, type ReportCategory, type ReportDef } from '@/data/xcelAdmin/reports'
 import { AdminDialog } from './AdminDialog'
-import { ADMIN_BASE, useAdminStore } from './adminStore'
+import { CadenceDialog, PeopleDialog } from './adminDialogs'
+import { ADMIN_BASE, ADMIN_EMAIL, DAYS, TIMES, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, FIELD_LABEL, HEADING, INPUT, PAGE_SUB, PILL } from './adminStyles'
 import { ChipMenu, MenuItem } from './adminUi'
 
@@ -21,17 +22,18 @@ import { ChipMenu, MenuItem } from './adminUi'
  * built from the admin roster — with filters, Export (CSV) and the actions.
  */
 
-const DAYS = ['Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays'] as const
-const TIMES = ['7am', '8am', '9am', '12pm', '5pm'] as const
 const CATEGORIES: ReportCategory[] = ['Progress', 'Completion', 'Compliance', 'Insurance', 'Audit']
 
 export function XcelAdminReportsPage() {
   const { learners, showToast } = useAdminStore()
   const [reports, setReports] = useState<ReportDef[]>(() => ADMIN_REPORTS.map((r) => ({ ...r })))
   const [running, setRunning] = useState<ReportDef | null>(null)
-  const [active, setActive] = useState(true)
-  const [cadence, setCadence] = useState({ day: 'Mondays', time: '7am' })
-  const [people, setPeople] = useState(['coleen.acker@example.com', 'adam.neal@example.com'])
+  const { progressReport, setProgressReport } = useAdminStore()
+  const { active, day, time, people } = progressReport
+  const cadence = { day, time }
+  const setActive = (f: (a: boolean) => boolean) => setProgressReport({ active: f(active) })
+  const setCadence = (v: { day: string; time: string }) => setProgressReport(v)
+  const setPeople = (v: string[]) => setProgressReport({ people: v })
   const [dialog, setDialog] = useState<null | 'cadence' | 'people' | 'create' | { schedule: ReportDef }>(null)
   const [tab, setTab] = useState<'library' | 'scheduled'>('library')
   const [category, setCategory] = useState<ReportCategory | 'all'>('all')
@@ -172,7 +174,7 @@ export function XcelAdminReportsPage() {
             </div>
             <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               <span style={{ ...PILL, background: 'var(--admin-brand)', color: 'var(--admin-surface)' }}>
-                eric@summitins.com <span style={{ marginLeft: 6, fontSize: 9, letterSpacing: '0.06em', opacity: 0.85 }}>YOU</span>
+                {ADMIN_EMAIL} <span style={{ marginLeft: 6, fontSize: 9, letterSpacing: '0.06em', opacity: 0.85 }}>YOU</span>
               </span>
               {people.map((p) => (
                 <span key={p} style={{ ...PILL, background: 'var(--admin-fill)', color: 'var(--admin-ink)' }}>
@@ -494,97 +496,6 @@ function ReportRun({
 }
 
 /* ── Dialogs ────────────────────────────────────────────────────────────── */
-
-function CadenceDialog({ value, onClose, onSave }: { value: { day: string; time: string }; onClose: () => void; onSave: (v: { day: string; time: string }) => void }) {
-  const [day, setDay] = useState(value.day)
-  const [time, setTime] = useState(value.time)
-  return (
-    <AdminDialog
-      title="Change cadence"
-      subtitle="When the progress report lands in inboxes."
-      onClose={onClose}
-      footer={
-        <>
-          <button type="button" onClick={onClose} style={BUTTON_OUTLINE}>
-            Cancel
-          </button>
-          <button type="button" onClick={() => onSave({ day, time })} style={BUTTON_BRAND}>
-            Save
-          </button>
-        </>
-      }
-    >
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-        <div>
-          <label style={FIELD_LABEL} htmlFor="cad-day">
-            Day
-          </label>
-          <select id="cad-day" value={day} onChange={(e) => setDay(e.target.value)} style={INPUT}>
-            {DAYS.map((d) => (
-              <option key={d}>{d}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label style={FIELD_LABEL} htmlFor="cad-time">
-            Time
-          </label>
-          <select id="cad-time" value={time} onChange={(e) => setTime(e.target.value)} style={INPUT}>
-            {TIMES.map((t) => (
-              <option key={t}>{t}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-    </AdminDialog>
-  )
-}
-
-function PeopleDialog({ value, onClose, onSave }: { value: string[]; onClose: () => void; onSave: (v: string[]) => void }) {
-  const [list, setList] = useState(value)
-  const [draft, setDraft] = useState('')
-  const valid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(draft.trim())
-  return (
-    <AdminDialog
-      title="Who gets it"
-      subtitle="Recipients see only recruits in your scope. No portal account needed."
-      onClose={onClose}
-      footer={
-        <>
-          <button type="button" onClick={onClose} style={BUTTON_OUTLINE}>
-            Cancel
-          </button>
-          <button type="button" onClick={() => onSave(list)} style={BUTTON_BRAND}>
-            Save
-          </button>
-        </>
-      }
-    >
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-        <span style={{ ...PILL, background: 'var(--admin-brand)', color: 'var(--admin-surface)' }}>eric@summitins.com · you</span>
-        {list.map((p) => (
-          <button key={p} type="button" onClick={() => setList((l) => l.filter((x) => x !== p))} aria-label={`Remove ${p}`} style={{ ...PILL, border: 'none', cursor: 'pointer', gap: 6, background: 'var(--admin-fill)', color: 'var(--admin-ink)' }}>
-            {p} <XmarkRegular size={9} aria-hidden />
-          </button>
-        ))}
-      </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <input aria-label="Add a recipient" placeholder="name@company.com" value={draft} onChange={(e) => setDraft(e.target.value)} style={{ ...INPUT, flex: 1 }} />
-        <button
-          type="button"
-          disabled={!valid}
-          onClick={() => {
-            setList((l) => [...l, draft.trim()])
-            setDraft('')
-          }}
-          style={{ ...BUTTON_OUTLINE, opacity: valid ? 1 : 0.5 }}
-        >
-          Add
-        </button>
-      </div>
-    </AdminDialog>
-  )
-}
 
 function CreateDialog({ onClose, onCreate }: { onClose: () => void; onCreate: (name: string, category: ReportCategory) => void }) {
   const [name, setName] = useState('')

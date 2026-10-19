@@ -12,6 +12,14 @@ import type { Invite } from '@/data/xcelAdmin/invites'
 /** Where the admin app is mounted. */
 export const ADMIN_BASE = '/xcel-admin'
 
+/** The signed-in admin's address — the Progress report's "you". */
+export const ADMIN_EMAIL = 'eric@summitins.com'
+
+export const DAYS = ['Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays'] as const
+export const TIMES = ['7am', '8am', '9am', '12pm', '5pm'] as const
+
+export type ProgressReportSettings = { active: boolean; day: string; time: string; people: string[] }
+
 export type AdminInvite = {
   id: string
   email: string
@@ -38,6 +46,9 @@ export type AdminStore = {
   invites: Invite[]
   addInvites: (invites: Omit<AdminInvite, 'id' | 'sentAt'>[]) => void
   resendInvite: (id: string) => void
+  /** The onboarding Progress report — shared by Reports and Notifications. */
+  progressReport: ProgressReportSettings
+  setProgressReport: (patch: Partial<ProgressReportSettings>) => void
   toast: string | null
   showToast: (message: string) => void
 }
