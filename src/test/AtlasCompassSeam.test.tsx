@@ -305,6 +305,8 @@ describe('the walk’s Study Journey steps', () => {
        silently changes Eric's row too. */
     expect(page.getByText('Affidavit')).toBeInTheDocument()
     expect(page.queryByText('Study-manual Notice Affidavit')).toBeNull()
+    // Eric's pill is HIS position's, not this one's — the case below.
+    expect(page.queryByText('Do you know your state exam date?')).toBeNull()
   })
 
   it('leaves Eric’s Atlas Learning tile exactly as he promoted it', async () => {
@@ -316,5 +318,16 @@ describe('the walk’s Study Journey steps', () => {
     // The Study Journey's own wording, which is what his surface has always
     // drawn — see the walk's case above.
     expect(page.getByText('Study-manual Notice Affidavit')).toBeInTheDocument()
+    /* ⚠ AND HIS EXAM-DATE PILL, WHICH THIS ONCE LOST (2026-10-19). The walk's
+       rewrites of the prompt — "When is your exam?", the card, Add Date, the
+       Exam Information stop — reached this position too, because one
+       component served both. `ExamDateQuestionPill` is the split that fixed
+       it, and these four lines are what would have caught it: everything
+       else about his tile passed while the prompt inside it changed. */
+    expect(page.getByText('Do you know your state exam date?')).toBeInTheDocument()
+    expect(page.getByRole('button', { name: 'Yes' })).toBeInTheDocument()
+    expect(page.getByRole('button', { name: /Not Yet/ })).toBeInTheDocument()
+    expect(page.queryByText('When is your exam?')).toBeNull()
+    expect(page.queryByRole('button', { name: 'Add Date' })).toBeNull()
   })
 })

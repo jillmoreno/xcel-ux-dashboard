@@ -928,7 +928,11 @@ export function AtlasHomeEricE2E({
                 (2026-10-15, Eric's request). Its own width, wider than the
                 steps' 335. Yes and Not Yet are not wired yet. */}
             {/* On the walk this has moved INTO Step 2 — see there. */}
-            {walkSteps ? null : <ExamDatePrompt onExamInfo={examInfo} card={examPromptCard} />}
+            {/* ⚠ HIS, NOT HERS (2026-10-19). The walk's Step 2 carries
+                `ExamDatePrompt`; this position is Eric's Atlas Learning tile
+                and carries the pill he promoted — see `ExamDateQuestionPill`
+                for why they are two components. */}
+            {walkSteps ? null : <ExamDateQuestionPill />}
             {/* ⚠ AT 100% THE RING ARM SHOWS THE STOPS, ALL DONE (2026-10-16,
                 Jillienne: "we need to show the items in step 1 as compelted").
                 The work is what was completed, so the list is the thing worth
@@ -1260,6 +1264,44 @@ function JourneyRow({
  * The other homes keep the question — `AtlasHomeEricV2`, `AtlasHomeV2` and
  * `HybridHomeV1` each draw their own and are other people's surfaces.
  */
+/**
+ * ⚠ ERIC'S PROMPT, RESTORED VERBATIM — 2026-10-19 ("do option 1").
+ *
+ * This is `ExamDatePrompt` as it stood on `ae859be`: Figma 428:3134, the
+ * Primary 100 pill with "Do you know your state exam date?", Yes, and Not
+ * Yet. It is the ABOVE-THE-STEPS position, which is Eric's Atlas Learning
+ * tile and nowhere else.
+ *
+ * ⚠ WHY IT IS A SIBLING AND NOT A FLAG. Jillienne's rewrites of that
+ * component on 2026-10-19 — "When is your exam?", the card, Add Date, the
+ * Exam Information stop — were all meant for the WALK's Step 2, and all
+ * silently reached this position too, because one component served both. The
+ * step-level changes beside them were gated on `walkSteps` and so stayed off
+ * his surface; these were not. Splitting the two positions into two
+ * components is what makes "only the end-to-end walk" true of the inside of
+ * the prompt as well as of where it sits. CLAUDE.md's rule, applied to a
+ * component that had quietly become shared chrome.
+ *
+ * ⚠ IT IS NOT WIRED, and never was: Yes and Not Yet do nothing. Restoring
+ * behaviour it did not have would not be restoring it.
+ */
+function ExamDateQuestionPill() {
+  return (
+    <div style={EXAM_DATE_PROMPT}>
+      <div style={EXAM_DATE_PILL}>
+        <p style={EXAM_DATE_QUESTION_PILL}>Do you know your state exam date?</p>
+        <button type="button" style={EXAM_DATE_YES}>
+          Yes
+        </button>
+      </div>
+      <button type="button" style={EXAM_DATE_NOT_YET}>
+        Not Yet
+        <AngleRightSolid size={11} aria-hidden style={{ width: 6 }} />
+      </button>
+    </div>
+  )
+}
+
 function ExamDatePrompt({ onExamInfo, card = false }: { onExamInfo?: () => void; card?: boolean }) {
   return (
     /* ⚠ SPANS, NOT DIVS. `Step` renders its detail inside a `<p>`, and the
@@ -1462,6 +1504,84 @@ const EXAM_MARK_COL: CSSProperties = {
      single line of text; this one carries a 33-tall button. */
   paddingTop: EXAM_MARK_PAD,
 }
+/* ── Eric's exam-date pill (the above-the-steps position) ───────────────── */
+const EXAM_DATE_PROMPT: CSSProperties = {
+  // Fits its content (2026-10-15, Eric's request; the design's fixed 460).
+  width: 'max-content',
+  // 20 to Step 1, 4 under the column's 24 (2026-10-15, Eric's requests: 16,
+  // then 4 more).
+  marginBottom: -4,
+  // The ground takes in Yes and Not Yet too, 16 in at each end (2026-10-15,
+  // Eric's request); the course card's Primary 100 (the design's Secondary
+  // 200, on the question and Yes only).
+  // 4 above and below Yes (2026-10-15, Eric's request) — 41 tall.
+  boxSizing: 'border-box',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  padding: '4px 16px',
+  borderRadius: 16,
+  background: 'var(--color-primary-100)',
+}
+
+/* The question and Yes, 10 apart. */
+const EXAM_DATE_PILL: CSSProperties = {
+  flex: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+}
+
+/* ⚠ `_PILL` ONLY TO KEEP ITS NAME OFF THE WALK'S. The walk's line is
+   `EXAM_DATE_QUESTION`, 13/18 regular in secondary ink; this is the 13/14
+   bold it was before that, and the two must not be confused for each other
+   again. */
+const EXAM_DATE_QUESTION_PILL: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 13,
+  lineHeight: '14px',
+  letterSpacing: -0.2,
+  color: 'var(--color-text-primary)',
+  whiteSpace: 'nowrap',
+}
+
+const EXAM_DATE_YES: CSSProperties = {
+  height: 33,
+  boxSizing: 'border-box',
+  padding: '0 24px',
+  // White, its text in Primary 500 and its 1px border two levels lighter,
+  // Primary 300 (2026-10-15, Eric's requests; the design's filled 500).
+  border: '1px solid var(--color-primary-300)',
+  // The standard button's corners, `COMPASS_BUTTON`'s (2026-10-15, Eric's
+  // request; it was 16).
+  borderRadius: COMPASS_BUTTON.borderRadius,
+  background: 'var(--color-fixed-light)',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 13.5,
+  lineHeight: '20.25px',
+  color: 'var(--color-primary-500)',
+  cursor: 'pointer',
+}
+
+const EXAM_DATE_NOT_YET: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 11,
+  lineHeight: '11px',
+  color: 'var(--color-primary-500)',
+  whiteSpace: 'nowrap',
+  cursor: 'pointer',
+}
+
 /* ⚠ THE CARD ARM'S CONTAINER. Primary 100 is the course card's ground at the
    top of this page — "light blue to match the top widget" — and the same one
    the pill here used to wear before Step 2 joined the list. It sits a little
