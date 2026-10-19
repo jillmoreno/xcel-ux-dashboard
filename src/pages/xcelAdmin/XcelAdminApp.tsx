@@ -8,6 +8,7 @@ import { XcelAdminComingSoon, XcelAdminLayout } from './XcelAdminLayout'
 import { XcelAdminStudentsPage } from './XcelAdminStudentsPage'
 import { XcelAdminRecruitPage } from './XcelAdminRecruitPage'
 import { XcelAdminInvitesPage } from './XcelAdminInvitesPage'
+import { XcelAdminReportsPage } from './XcelAdminReportsPage'
 
 /**
  * XCEL ADMIN — the app (2026-10-19, feat/XCEL-admin). The admin surface
@@ -82,7 +83,7 @@ export function XcelAdminApp() {
           <Route path="students" element={<XcelAdminStudentsPage />} />
           <Route path="students/recruit/:recruitId" element={<XcelAdminRecruitPage />} />
           <Route path="invites" element={<XcelAdminInvitesPage />} />
-          <Route path="reports" element={<XcelAdminComingSoon />} />
+          <Route path="reports" element={<XcelAdminReportsPage />} />
           <Route path="notifications" element={<XcelAdminComingSoon />} />
           <Route path="resources" element={<XcelAdminComingSoon />} />
           <Route path="settings" element={<XcelAdminComingSoon />} />

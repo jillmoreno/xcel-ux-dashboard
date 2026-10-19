@@ -1,5 +1,5 @@
 import { useMemo, useState, type CSSProperties } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { MagnifyingGlass, Plus, XmarkRegular } from '@/icons'
 import {
   ADMIN_DEMO_LEARNERS,
@@ -35,7 +35,7 @@ import { InviteLearnersDialog } from './InviteLearnersDialog'
  *     in view as CSV; SHOW MORE adds 25.
  */
 
-type Quick = 'quiet7' | 'noManager' | 'hidden' | 'new30' | 'quiet2' | 'readyNoDate'
+type Quick = 'quiet7' | 'noManager' | 'hidden' | 'new30' | 'quiet2' | 'readyNoDate' | 'low'
 
 const QUICK_LABEL: Record<Quick, string> = {
   quiet7: 'Quiet 7 days',
@@ -44,6 +44,7 @@ const QUICK_LABEL: Record<Quick, string> = {
   new30: 'New in last 30 days',
   quiet2: 'Quiet 2 days',
   readyNoDate: 'Ready, no exam date',
+  low: 'Trending low',
 }
 
 const QUICK_TEST: Record<Quick, (l: Learner) => boolean> = {
@@ -53,7 +54,12 @@ const QUICK_TEST: Record<Quick, (l: Learner) => boolean> = {
   new30: (l) => l.enrolledDaysAgo <= 30,
   quiet2: (l) => l.lastActiveDays >= 2 && l.stage !== 'licensed',
   readyNoDate: (l) => l.stage === 'ready-to-test' && !l.examDate,
+  low: (l) => l.readiness === 'low' && l.stage !== 'licensed',
 }
+
+/** A filter can arrive in the address — `?filter=quiet7` — which is how the
+ *  Progress report's View links open a filtered roster (2026-10-19). */
+export const STUDENT_FILTER_PARAM = 'filter'
 
 type Tile = { id: PipelineBucket; label: string; color: string; bar: string; note: string; title?: string }
 
@@ -64,7 +70,11 @@ export function XcelAdminStudentsPage() {
   const { showToast, learners: ADMIN_LEARNERS } = useAdminStore()
   const [bucket, setBucket] = useState<PipelineBucket>('all')
   const [search, setSearch] = useState('')
-  const [quick, setQuick] = useState<Quick[]>([])
+  const [params] = useSearchParams()
+  const [quick, setQuick] = useState<Quick[]>(() => {
+    const f = params.get(STUDENT_FILTER_PARAM)
+    return f && f in QUICK_LABEL ? [f as Quick] : []
+  })
   const [department, setDepartment] = useState<string | null>(null)
   const [shown, setShown] = useState(PAGE)
   const [selected, setSelected] = useState<Set<string>>(new Set())

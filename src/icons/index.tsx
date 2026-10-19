@@ -98,6 +98,9 @@ import GearRegularSvg from './gear-regular.svg?react'
 import XmarkRegularSvg from './xmark-regular.svg?react'
 import ChartSimpleSvg from './chart-simple.svg?react'
 import GearSvg from './gear.svg?react'
+import CloneSvg from './clone.svg?react'
+import PlaySvg from './play.svg?react'
+import ShareNodesSvg from './share-nodes.svg?react'
 import DotSolidSvg from './dot-solid.svg?react'
 // Compass Rubi rail (Figma 49:3053), fetched 2026-09-23 at 7.3.1.
 import PaperPlaneTopSolidSvg from './paper-plane-top-solid.svg?react'
@@ -323,6 +326,9 @@ export const GearRegular = makeIcon(GearRegularSvg) // FA: gear (regular)
 export const XmarkRegular = makeIcon(XmarkRegularSvg) // FA: xmark (regular)
 export const ChartSimple = makeIcon(ChartSimpleSvg) // FA: chart-simple (light) — XCEL Admin's Reports
 export const Gear = makeIcon(GearSvg) // FA: gear (light) — XCEL Admin's Settings
+export const Clone = makeIcon(CloneSvg) // FA: clone (light) — XCEL Admin's Reports
+export const Play = makeIcon(PlaySvg) // FA: play (light) — XCEL Admin's Reports
+export const ShareNodes = makeIcon(ShareNodesSvg) // FA: share-nodes (light) — XCEL Admin's Reports
 export const DotSolid = makeIcon(DotSolidSvg) // FA: dot (solid)
 export const PaperPlaneTopSolid = makeIcon(PaperPlaneTopSolidSvg) // FA: paper-plane-top (solid)
 export const CircleUser = makeIcon(CircleUserSvg) // FA: circle-user
