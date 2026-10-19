@@ -62,10 +62,14 @@ export function AtlasExamDateStep({ stateName }: { stateName: string }) {
 
   if (stage === 'default') {
     return (
-      <div style={{ ...PANEL_DEFAULT, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxWidth: 181 }}>
-          <p style={HEADLINE}>Do you know your state exam date?</p>
-          <p style={SMALL}>With your state exam date we’ll help you plan and pass easier.</p>
+      /* The buttons 8 further right: 16 to the panel's edge, not 24, and 8
+         more beside the copy — 20, not 12 (2026-10-19, Eric's request). */
+      <div style={{ ...PANEL_DEFAULT, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 20, paddingRight: 16 }}>
+        {/* No 181 cap (the design's): the question on ONE line, the step
+            column widened to hold it (2026-10-19, Eric's request). */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
+          <p style={{ ...HEADLINE, whiteSpace: 'nowrap' }}>Do you know your state exam date?</p>
+          <p style={SMALL}>Using your state exam date, can help you plan and pass your course easier.</p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flex: 'none' }}>
           <button type="button" onClick={() => openCalendar('default')} style={{ ...PRIMARY, padding: '5px 24px' }}>
