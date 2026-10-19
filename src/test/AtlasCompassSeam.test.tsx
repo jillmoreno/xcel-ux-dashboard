@@ -274,12 +274,21 @@ describe('the walk’s Study Journey steps', () => {
     expect(FEATURE_FLAGS.find((f) => f.key === 'e2e-walk-journey-steps')?.defaultEnabled).toBe(true)
   })
 
-  it('asks about the exam date in place of the figures, exactly once', () => {
+  it('prompts for the exam date in place of the figures, exactly once', () => {
+    /* ⚠ IT ASKS NOTHING SINCE 2026-10-19. The line was "Do you know your
+       state exam date?" with Yes / Not Yet; it is a statement now — "Add
+       your state exam date to help plan your study pace." — with one filled
+       Add Date beside it. The COUNT is what this case is really for and is
+       unchanged: the prompt is moved into Step 2, not copied there. */
     renderDashboard(`?demo=1&version=${END_TO_END_VERSION}&journey=full`)
     const page = within(screen.getByTestId('page'))
     expect(page.queryByText(/150 scored questions/)).toBeNull()
     expect(page.queryByText(/Apply online, then submit/)).toBeNull()
-    expect(page.getAllByText('Do you know your state exam date?')).toHaveLength(1)
+    expect(page.getAllByText('Add your state exam date to help plan your study pace.')).toHaveLength(1)
+    expect(page.getAllByRole('button', { name: 'Add Date' })).toHaveLength(1)
+    // The question's two answers went with the question.
+    expect(page.queryByText('Do you know your state exam date?')).toBeNull()
+    expect(page.queryByRole('button', { name: /Not Yet/ })).toBeNull()
     expect(document.querySelector('[data-cta-id="home.state-requirements"]')).toBeNull()
   })
 

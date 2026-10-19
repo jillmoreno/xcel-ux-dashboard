@@ -19,6 +19,7 @@ import { useAccount } from '@/context/AccountContext'
 import {
   AngleRightRegular,
   AngleRightSolid,
+  CalendarRegular,
   BookOpen,
   FileCertificateLight,
   LockRegular,
@@ -1183,19 +1184,48 @@ function JourneyRow({
 /** The state-exam-date prompt — Figma 428:3134 (2026-10-15, Eric's request).
  *  Yes and Not Yet are not wired. Extracted 2026-10-16 so it can stand above
  *  the steps (as it did) or inside Step 2 (the walk), without two copies. */
+/**
+ * ⚠ IT ASKS NOTHING NOW — 2026-10-19, Jillienne's copy: "Add your state exam
+ * date to help plan your study pace." It was "Do you know your state exam
+ * date?" with Yes and Not Yet beside it, and the new line is a REASON rather
+ * than a question: it says what the date is for, which is the thing a learner
+ * has to believe before entering one.
+ *
+ * ⚠ AND "NOT YET" IS GONE (the same pass). A question's two answers made
+ * sense; a statement's did not, and "Not Yet" was the half that only ever
+ * dismissed the prompt. The remaining control is the way IN.
+ *
+ * The other homes keep the question — `AtlasHomeEricV2`, `AtlasHomeV2` and
+ * `HybridHomeV1` each draw their own and are other people's surfaces.
+ */
 function ExamDatePrompt() {
   return (
     <div style={EXAM_DATE_PROMPT}>
+      {/* ⚠ IT WEARS STEP 1's ROW (2026-10-19, Jillienne: "have that text
+          style better match what is happening in step 1, include a Calendar
+          icon instead of a circle icon"). Step 2's prompt was its own thing
+          — 13/14 bold in `text-primary` — beside a list of 13/18 regular
+          rows in `text-secondary`, so two lines of the same journey were set
+          two different ways. The marker column is the journey's own 14-wide
+          one, and the calendar stands where a stop's circle would: this IS a
+          stop, it is just one you answer rather than one you finish. */}
+      <span aria-hidden style={EXAM_DATE_MARK_COL}>
+        <CalendarRegular size={13} aria-hidden style={EXAM_DATE_MARK} />
+      </span>
       <div style={EXAM_DATE_PILL}>
-        <p style={EXAM_DATE_QUESTION}>Do you know your state exam date?</p>
-        <button type="button" style={EXAM_DATE_YES}>
-          Yes
+        <p style={EXAM_DATE_QUESTION}>Add your state exam date to help plan your study pace.</p>
+        {/* ⚠ "ADD DATE", FILLED — 2026-10-19, Jillienne: "change to Add
+            Date. Make it a solid primary color." It was "Yes", the outline
+            half of a question's two answers, and with the line above it now
+            a statement a "Yes" answered nothing. The label says what the
+            control does, and the fill says it is the thing to do.
+            `cre-compass-btn-primary` is the page's own filled primary — the
+            Begin Course button's class — rather than a colour typed here,
+            so it follows the brand skin the way every other primary does. */}
+        <button type="button" className="cre-compass-primary cre-compass-btn-primary" style={EXAM_DATE_ADD}>
+          Add Date
         </button>
       </div>
-      <button type="button" style={EXAM_DATE_NOT_YET}>
-        Not Yet
-        <AngleRightSolid size={11} aria-hidden style={{ width: 6 }} />
-      </button>
     </div>
   )
 }
@@ -1235,14 +1265,19 @@ function Step({
 /* The exam-date prompt: a Primary 100 pill (24 in, 16 corners, 33 tall)
    with Yes in Primary 500, then Not Yet › 8 to its right. */
 const EXAM_DATE_PROMPT: CSSProperties = {
-  // Fits its content (2026-10-15, Eric's request; the design's fixed 460).
+  // Fits its content (2026-10-15, Eric's request; the design's fixed 460)
+  // — but no wider than the column. `max-content` alone overflowed once the
+  // line became a sentence (2026-10-19); the cap is what lets it wrap
+  // instead, and costs nothing while the line still fits.
   width: 'max-content',
+  maxWidth: '100%',
   // 20 to Step 1, 4 under the column's 24 (2026-10-15, Eric's requests: 16,
   // then 4 more).
   marginBottom: -4,
-  // The ground takes in Yes and Not Yet too, 16 in at each end (2026-10-15,
-  // Eric's request); the course card's Primary 100 (the design's Secondary
-  // 200, on the question and Yes only).
+  // The ground takes Yes in too, 16 in at each end (2026-10-15, Eric's
+  // request; it took Not Yet as well until that control went on 2026-10-19);
+  // the course card's Primary 100 (the design's Secondary 200, on the
+  // question and Yes only).
   // 4 above and below Yes (2026-10-15, Eric's request) — 41 tall.
   boxSizing: 'border-box',
   display: 'flex',
@@ -1261,51 +1296,65 @@ const EXAM_DATE_PILL: CSSProperties = {
   gap: 10,
 }
 
+/* The journey's marker column, at its 14 — so the calendar reads as a stop's
+   mark rather than an icon in a sentence. No spine: this row leads nowhere.
+   ⚠ IT IS NOT ON STEP 1's CENTRE LINE, and cannot be while the pill is here:
+   the Primary 100 ground insets everything by its own 16. The pill is the
+   one thing still separating this row from the list above it. */
+const EXAM_DATE_MARK_COL: CSSProperties = {
+  width: 14,
+  flex: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}
+/* ⚠ NOT THE LOCK'S GREY. `LOCK_MARK` is muted because a locked row is one
+   you cannot act on; this one is the opposite — it is the row's whole point
+   — so it takes the current stop's colour, the same the Add Date button
+   wears. */
+const EXAM_DATE_MARK: CSSProperties = {
+  flex: 'none',
+  color: 'var(--color-compass-page-button)',
+}
+/* ⚠ STEP 1's ROW TYPE (2026-10-19) — 13/18 regular in `text-secondary`, the
+   same as a journey stop's title. It was 13/14 bold in `text-primary`, which
+   made the one line a learner has to ACT on look like a heading for the
+   lines above it. It also wraps now: `nowrap` was safe while this was a
+   short question and the pill sized to it, but a sentence on one line pushes
+   the pill past the column instead of using the second line it has room
+   for. */
 const EXAM_DATE_QUESTION: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-body)',
-  fontWeight: 700,
+  fontWeight: 400,
   fontSize: 13,
-  lineHeight: '14px',
-  letterSpacing: -0.2,
-  color: 'var(--color-text-primary)',
-  whiteSpace: 'nowrap',
+  lineHeight: '18px',
+  color: 'var(--color-text-secondary)',
+  lineBreak: 'auto',
 }
 
-const EXAM_DATE_YES: CSSProperties = {
+/* ⚠ FILLED SINCE 2026-10-19, and the fill is the CLASS's not this object's.
+   It was white with Primary 500 text and a Primary 300 hairline (2026-10-15,
+   Eric's requests, against the design's filled 500) — the outline treatment
+   that suited one of two answers. Now that it is the only control and names
+   an action, it wears the page's primary: `cre-compass-btn-primary`, the
+   same class Begin Course carries, which is per-brand in tokens.css. Nothing
+   here sets a colour, so nothing here can disagree with the skin. */
+const EXAM_DATE_ADD: CSSProperties = {
   height: 33,
   boxSizing: 'border-box',
   padding: '0 24px',
-  // White, its text in Primary 500 and its 1px border two levels lighter,
-  // Primary 300 (2026-10-15, Eric's requests; the design's filled 500).
-  border: '1px solid var(--color-primary-300)',
+  border: '1px solid transparent',
   // The standard button's corners, `COMPASS_BUTTON`'s (2026-10-15, Eric's
   // request; it was 16).
   borderRadius: COMPASS_BUTTON.borderRadius,
-  background: 'var(--color-fixed-light)',
   fontFamily: 'var(--font-body)',
   fontWeight: 700,
   fontSize: 13.5,
   lineHeight: '20.25px',
-  color: 'var(--color-primary-500)',
   cursor: 'pointer',
 }
 
-const EXAM_DATE_NOT_YET: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 4,
-  padding: 0,
-  border: 'none',
-  background: 'none',
-  fontFamily: 'var(--font-body)',
-  fontWeight: 700,
-  fontSize: 11,
-  lineHeight: '11px',
-  color: 'var(--color-primary-500)',
-  whiteSpace: 'nowrap',
-  cursor: 'pointer',
-}
 
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
