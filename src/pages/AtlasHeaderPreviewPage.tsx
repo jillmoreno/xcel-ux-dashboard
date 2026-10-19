@@ -13,7 +13,7 @@ export function AtlasHeaderPreviewPage() {
     <div style={{ minHeight: '100vh', background: 'var(--color-neutral-75)' }}>
       <AtlasHeader
         current="home"
-        user={{ name: 'Alicia Navarro', email: 'alicia.navarro@gmail.com' }}
+        user={{ name: 'Jordan Navarro', email: 'jordan.navarro@gmail.com' }}
         notificationCount={3}
         courses={WHITE_COURSES.map((c) => ({ id: c.id, title: c.title }))}
       />

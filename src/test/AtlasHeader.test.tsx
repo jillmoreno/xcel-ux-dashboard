@@ -13,7 +13,7 @@ afterEach(cleanup)
 const renderHeader = (photoUrl?: string) =>
   render(
     <AtlasHeader
-      user={{ name: 'Alicia Navarro', email: 'alicia.navarro@gmail.com', photoUrl }}
+      user={{ name: 'Jordan Navarro', email: 'jordan.navarro@gmail.com', photoUrl }}
       notificationCount={3}
       courses={[
         { id: 'a', title: 'Course A' },
@@ -48,7 +48,7 @@ describe('AtlasHeader', () => {
 
   it('Escape closes the menu and returns focus to the trigger', () => {
     renderHeader()
-    const trigger = screen.getByRole('button', { name: 'Account menu for Alicia Navarro' })
+    const trigger = screen.getByRole('button', { name: 'Account menu for Jordan Navarro' })
     fireEvent.click(trigger, { detail: 0 }) // keyboard activation
     const first = screen.getByRole('menuitem', { name: 'Profile' })
     expect(document.activeElement).toBe(first)
@@ -62,13 +62,17 @@ describe('AtlasHeader', () => {
   })
 
   it('shows initials without a photo and the photo when there is one', () => {
+    /* ⚠ "JN" SINCE 2026-10-19, and that is the whole point of the case: the
+       initials are DERIVED from the name in the fixture, so renaming the
+       learner has to move them. It read "AN" while the fixture said Alicia
+       Navarro. */
     renderHeader()
-    fireEvent.click(screen.getByRole('button', { name: 'Account menu for Alicia Navarro' }), { detail: 1 })
-    expect(screen.getByText('AN')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Account menu for Jordan Navarro' }), { detail: 1 })
+    expect(screen.getByText('JN')).toBeTruthy()
     cleanup()
     const { container } = renderHeader('/photo.jpg')
-    fireEvent.click(screen.getByRole('button', { name: 'Account menu for Alicia Navarro' }), { detail: 1 })
-    expect(screen.queryByText('AN')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Account menu for Jordan Navarro' }), { detail: 1 })
+    expect(screen.queryByText('JN')).toBeNull()
     expect(container.querySelector('img[src="/photo.jpg"]')).toBeTruthy()
   })
 })

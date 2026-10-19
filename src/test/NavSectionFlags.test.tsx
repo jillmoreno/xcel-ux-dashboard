@@ -95,7 +95,11 @@ describe('the Navigation flag group', () => {
       screen
         .getAllByRole('button')
         .map((b) => b.textContent?.trim())
-        .filter((t): t is string => !!t && t !== 'Welcome back, Alicia Navarro'),
+        /* ⚠ THE GREETING, EXCLUDED BY NAME — and the name has to be the
+           CURRENT one or this filter quietly stops filtering. It said
+           "Alicia Navarro" long after the demo learner became Jordan
+           (2026-09-29), so it had been matching nothing. */
+        .filter((t): t is string => !!t && t !== 'Welcome back, Jordan Navarro'),
     ).toEqual([
       'Home',
       'Study Plan',

@@ -61,7 +61,7 @@ export const SOLD_BY_INVENTED = {
 } satisfies { name: string } & PostalAddress
 
 /**
- * Alicia's orders, newest first.
+ * Jordan's orders, newest first.
  *
  * FOUR ORDERS ACROSS THREE MONTHS, and the spread is the point rather than the
  * volume: the section groups by month and collapses every group but the newest,

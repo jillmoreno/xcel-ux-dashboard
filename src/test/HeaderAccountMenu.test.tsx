@@ -68,7 +68,7 @@ describe('the account trigger resolves the live learner', () => {
     expect(pill).toBeTruthy()
     // Against the CONTEXT rather than a literal: the point is that the trigger
     // and the account fixture cannot disagree, not that the demo learner is
-    // called Alicia.
+    // called Jordan.
     expect(pill.textContent).toContain(live().name)
     expect(pill.getAttribute('aria-label')).toContain(live().name)
   })
