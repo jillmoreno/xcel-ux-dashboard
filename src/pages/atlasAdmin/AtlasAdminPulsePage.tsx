@@ -129,10 +129,11 @@ export function AtlasAdminPulsePage() {
             <Box label="What changed">
               {pulse.offTrack.length} learners need intervention first; {pulse.prepared.length} are exam ready.
             </Box>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-              <Figure label="Need intervention" value={pulse.offTrack.length} bg={FIGURE_TINT} ink="var(--admin-amber)" />
-              <Figure label="Exam ready" value={pulse.prepared.length} bg={FIGURE_TINT} ink="var(--admin-success-ink)" />
-              <Figure label="Forecasted licensed" value={pulse.forecast} bg={FIGURE_TINT} ink="var(--admin-chart-blue)" />
+            {/* Hugging their content, titles on two lines. */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 8 }}>
+              <Figure hug label={<>Need<br />intervention</>} value={pulse.offTrack.length} bg={FIGURE_TINT} ink="var(--admin-amber)" />
+              <Figure hug label={<>Exam<br />ready</>} value={pulse.prepared.length} bg={FIGURE_TINT} ink="var(--admin-success-ink)" />
+              <Figure hug label={<>Forecasted<br />licensed</>} value={pulse.forecast} bg={FIGURE_TINT} ink="var(--admin-chart-blue)" />
             </div>
             <Action>Start with intervention, then move exam-ready learners into scheduling.</Action>
             <button type="button" onClick={() => navigate(students())} style={{ ...BUTTON_BRAND, alignSelf: 'flex-start' }}>
@@ -326,9 +327,9 @@ function Box({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
-function Figure({ label, value, bg, ink, note }: { label: string; value: number; bg: string; ink: string; note?: string }) {
+function Figure({ label, value, bg, ink, note, hug }: { label: ReactNode; value: number; bg: string; ink: string; note?: string; hug?: boolean }) {
   return (
-    <div style={{ padding: 12, borderRadius: 10, background: bg }}>
+    <div style={{ padding: hug ? 24 : 12, borderRadius: 10, background: bg, flex: hug ? 'none' : undefined }}>
       <p style={{ ...LABEL, color: ink }}>{label}</p>
       <strong style={{ display: 'block', marginTop: 4, fontFamily: HEADING, fontSize: 22, color: 'var(--admin-ink)' }}>{value}</strong>
       {note ? <span style={{ fontSize: 11, color: 'var(--admin-text)' }}>{note}</span> : null}
