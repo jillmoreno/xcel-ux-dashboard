@@ -161,7 +161,7 @@ export function AtlasAdminPulsePage() {
 
           <Card {...card(2)} icon={<CalendarRegular size={13} />} title="Exam scheduling" sub="Who has a date on file vs. who is ready to book.">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              <Figure label="Exam date on file" value={pulse.dated.length} bg="var(--admin-fill-soft)" ink="var(--admin-ink)" note="We can track them through exam day." />
+              <Figure label="Exam date on file" value={pulse.dated.length} bg={FIGURE_TINT} ink="var(--admin-ink)" note="We can track them through exam day." />
               <Figure label="Ready to schedule" value={pulse.undated.length} bg="var(--admin-success-tint)" ink="var(--admin-success-ink)" note="Prepared, no date yet. The bulk email targets this group." />
             </div>
             <Action>Draft a personal bulk email congratulating {pulse.undated.length} learners and asking them to book, or add their date if they already have one.</Action>
@@ -238,7 +238,7 @@ export function AtlasAdminPulsePage() {
 
           <Card {...card(8)} icon={<Envelope size={13} />} title="Feedback & ask" sub="A direct line to your customer success rep.">
             <p style={{ margin: 0, fontSize: 13, color: 'var(--admin-text)' }}>Ask a question about this briefing — your customer success rep will follow up within one business day.</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 16, borderRadius: 10, background: 'var(--admin-fill-soft)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 16, borderRadius: 10, background: FIGURE_TINT }}>
               <span aria-hidden style={{ display: 'grid', placeItems: 'center', width: 32, height: 32, borderRadius: 9999, background: 'var(--admin-nav-active-bg)', fontSize: 11, fontWeight: 700, color: 'var(--admin-nav-active-ink)' }}>
                 NA
               </span>
@@ -312,7 +312,7 @@ function Card({ index, icon, title, sub, children, onFocus }: { index: number; i
   )
 }
 
-/* The Briefing figures' and What changed's fill: Atlas primary 100 at half strength. */
+/* Pulse's tinted boxes (figures, What changed, learner rows): Atlas primary 100 at half strength. */
 const FIGURE_TINT = 'color-mix(in srgb, var(--admin-atlas-primary-100) 50%, var(--admin-surface))'
 
 /* The small box labels (Need intervention, Action now…): 11 / bold. */
@@ -351,7 +351,7 @@ function Action({ children }: { children: ReactNode }) {
 function Person({ learner, pill, tone, line }: { learner: Learner; pill: string; tone: 'amber' | 'green' | 'blue'; line: string }) {
   const colors = { amber: ['var(--admin-amber-tint)', 'var(--admin-amber)'], green: ['var(--admin-success-tint)', 'var(--admin-success-ink)'], blue: ['var(--admin-fill)', 'var(--admin-chart-blue)'] }[tone]
   return (
-    <Link to={`${ADMIN_BASE}/students/recruit/${encodeURIComponent(learner.id)}`} className="cre-admin-tile" style={{ display: 'block', padding: 16, borderRadius: 10, background: 'var(--admin-fill-soft)', textDecoration: 'none' }}>
+    <Link to={`${ADMIN_BASE}/students/recruit/${encodeURIComponent(learner.id)}`} className="cre-admin-tile" style={{ display: 'block', padding: 16, borderRadius: 10, background: FIGURE_TINT, textDecoration: 'none' }}>
       <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <strong style={{ fontSize: 13, fontWeight: 600, color: 'var(--admin-ink)' }}>{learner.name}</strong>
         <span style={{ ...PILL, fontSize: 10, background: colors[0], color: colors[1] }}>● {pill}</span>
