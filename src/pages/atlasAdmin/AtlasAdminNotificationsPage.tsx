@@ -90,7 +90,7 @@ export function AtlasAdminNotificationsPage() {
             return (
               <div key={g.id} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <section style={{ ...CARD, borderRadius: 12, overflow: 'hidden' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: 24, borderBottom: '1px solid var(--admin-rule)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '24px 24px 14px', borderBottom: '1px solid var(--admin-rule)' }}>
                     <div>
                       <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--admin-ink)' }}>{g.title}</h3>
                       <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--admin-muted)' }}>{g.sub}</p>
@@ -111,7 +111,7 @@ export function AtlasAdminNotificationsPage() {
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') setSelected(n.id)
                         }}
-                        style={{ ...ROW, background: active ? 'var(--admin-brand-tint)' : undefined, borderTop: i ? '1px solid var(--admin-rule)' : undefined }}
+                        style={{ ...ROW, paddingBottom: i === list.length - 1 ? 24 : 14, background: active ? 'var(--admin-brand-tint)' : undefined, borderTop: i ? '1px solid var(--admin-rule)' : undefined }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
                           <div style={{ minWidth: 0 }}>
@@ -279,13 +279,13 @@ export function AtlasAdminNotificationsPage() {
 function EmailPreview({ p }: { p: NotificationPreview }) {
   return (
     <section style={{ ...CARD, borderRadius: 12, overflow: 'hidden', borderTop: '3px solid var(--admin-brand)' }}>
-      <div style={{ padding: 24, background: 'var(--admin-fill-soft)', borderBottom: '1px solid var(--admin-rule)', fontSize: 11, color: 'var(--admin-text)', lineHeight: 1.6 }}>
+      <div style={{ padding: '24px 24px 10px', background: 'var(--admin-fill-soft)', borderBottom: '1px solid var(--admin-rule)', fontSize: 11, color: 'var(--admin-text)', lineHeight: 1.6 }}>
         <div>From {p.from}</div>
         <div>To {p.to}</div>
         {p.replyTo ? <div>Reply-To {p.replyTo}</div> : null}
         <div style={{ fontWeight: 600, color: 'var(--admin-ink)' }}>{p.subject}</div>
       </div>
-      <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <h3 style={{ margin: 0, fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 700, color: 'var(--admin-ink)' }}>{p.subject}</h3>
         {p.body.map((b, i) => (
           <p key={i} style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55, color: b.startsWith('“') ? 'var(--admin-ink)' : 'var(--admin-text)', fontStyle: b.startsWith('“') ? 'italic' : undefined }}>
@@ -322,12 +322,12 @@ function ProgressPreview({ learners }: { learners: ReturnType<typeof useAdminSto
   const search = window.location.search
   return (
     <section style={{ ...CARD, borderRadius: 12, overflow: 'hidden', borderTop: '3px solid var(--admin-brand)' }}>
-      <div style={{ padding: 24, background: 'var(--admin-fill-soft)', borderBottom: '1px solid var(--admin-rule)', fontSize: 11, color: 'var(--admin-text)', lineHeight: 1.6 }}>
+      <div style={{ padding: '24px 24px 10px', background: 'var(--admin-fill-soft)', borderBottom: '1px solid var(--admin-rule)', fontSize: 11, color: 'var(--admin-text)', lineHeight: 1.6 }}>
         <div>From XCEL Solutions</div>
         <div>To Cody McClintock</div>
         <div style={{ fontWeight: 600, color: 'var(--admin-ink)' }}>{total} recruits need a nudge</div>
       </div>
-      <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <span aria-hidden style={{ height: 3, background: 'var(--admin-brand)', borderRadius: 2 }} />
         <h3 style={{ margin: 0, fontFamily: 'Georgia, serif', fontSize: 22, fontWeight: 700, color: 'var(--admin-ink)' }}>
           <span style={{ color: 'var(--admin-brand)' }}>{total} recruits</span> need a nudge
@@ -425,7 +425,8 @@ function NumberField({ label, value, onChange, min, max }: { label: string; valu
 
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
-const ROW: CSSProperties = { padding: 24, cursor: 'pointer', outline: 'none' }
+/* 24 to the card's edges, 14 between rows — the last row takes 24 below (in the map). */
+const ROW: CSSProperties = { paddingTop: 14, paddingLeft: 24, paddingRight: 24, cursor: 'pointer', outline: 'none' }
 const SELECTED: CSSProperties = { ...PILL, marginLeft: 8, padding: '1px 8px', fontSize: 10, background: 'var(--admin-surface)', color: 'var(--admin-brand)', boxShadow: 'inset 0 0 0 1px var(--admin-brand-edge)' }
 const ACTION: CSSProperties = { padding: 0, border: 'none', background: 'none', fontSize: 12, fontWeight: 600, color: 'var(--admin-brand)', cursor: 'pointer' }
 const SWITCH: CSSProperties = { position: 'relative', flex: 'none', width: 36, height: 20, border: 'none', borderRadius: 9999, padding: 0, cursor: 'pointer' }
