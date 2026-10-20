@@ -56,6 +56,32 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'atlas-pace-standing-control',
+    name: 'Pace standing \u2014 the Design Controls bar\u2019s five-state dropdown',
+    what: 'A five-arm control on the cyan bar \u2014 On track, Ahead of goal, Behind (recoverable), Off track (adjust the goal), No data yet \u2014 choosing what the Atlas Home\u2019s Study pace section SAYS once the learner is past 0%. Added 2026-10-19 because the card\u2019s sentence was still "your default recommended study pace is just a starting point", true on day one and stale every day after.',
+    location:
+      'THE FLAG AND ALL FIVE ARMS ARE INTACT. `atlas-pace-standing` is unchanged with `defaultVariant: \u2018on-track\u2019`; both Homes still read it into `paceStanding` and `paceStandingMessage` (`src/components/compass/paceStanding.ts`) still composes all five sentences. What went is `surface: \u2018design\u2019` and `versions: [\u2018eric-atlas-e2e\u2019]`. It was ALREADY in `REBRAND_FLAGS`, so it keeps its Feature Flag panel row and needed no addition there.',
+    flag: 'atlas-pace-standing (unchanged, default `on-track`) \u2014 Feature Flag panel, or `?ff=atlas-pace-standing:behind`',
+    dateRemoved: '2026-10-20',
+    reason:
+      'Jillienne\u2019s call \u2014 "remove pace standing. we looped that into the Pacing for the demo controls."',
+    restoreNote:
+      '⚠ READ THE REASON ABOVE AGAINST THE CODE BEFORE ACTING ON IT. The two controls are DIFFERENT AXES and nothing was folded: `dashboard-pace-style` ("Pacing", amber bar, added the same day) is Crammer / Average / Thorough \u2014 how hard the learner studies, a multiplier on the hours. This flag is how the learner is DOING against that goal. If the four non-default standings are wanted on a bar again, restoring is re-adding `surface: \u2018design\u2019` and `versions` to `atlas-pace-standing` in `src/context/FeatureFlagContext.tsx` (a comment marks the spot) and taking it back out of `REBRAND_FLAGS` so the axis is not in two places. ⚠ THE `versions` LIST NAMES ERIC\u2019S VERSION ONLY and predates Jill/Atlas-Main; `versionInScope` makes the e2e family answer for it, so restoring puts the control on both. ⚠ ITS SIBLING WAS NOT TOUCHED: `hybrid-pace-standing` is a separate flag on Anjani\u2019s `hybrid-pacing` version with the same five arms, sharing `paceStanding.ts` so the two cards cannot report one standing two ways \u2014 do not "tidy" them together without reading that note. NOT restored deliberately: no component, no sentence and no test was changed.',
+  },
+  {
+    id: 'dashboard-text-tiers-control',
+    name: 'Text tiers \u2014 the Design Controls bar\u2019s Neutral / Tiers radiogroup',
+    what: 'A two-arm control on the cyan bar choosing the Dashboard Rebrand\u2019s three text tokens: NEUTRAL (the ramp as it stands \u2014 the XCEL guide\u2019s Charcoal #3a3a3a and Gray #666666 plus #737373 for the third tier) or TIERS (the sign-in prototype\u2019s warm ink / muted / faint ramp, #1f1d18 / #5b5560 / #706b63). Both ramps pass contrast; the difference is HUE, not value.',
+    location:
+      'THE FLAG AND BOTH ARMS ARE INTACT. `dashboard-text-tiers` is unchanged with `defaultVariant: \u2018neutral\u2019`; `tokens.css` still carries the `tiers` block and `DashboardRebrandPage` still applies it, scoped to the rebrand routes exactly as dark mode is. What went is `surface: \u2018design\u2019` \u2014 and nothing else, because this flag was ALREADY listed in `REBRAND_FLAGS`, so it kept the Feature Flag panel row it has always had.',
+    flag: 'dashboard-text-tiers (unchanged, default `neutral`) \u2014 Feature Flag panel, or `?ff=dashboard-text-tiers:tiers`',
+    dateRemoved: '2026-10-20',
+    reason:
+      'Jillienne\u2019s call \u2014 "remove this. its set on neutral for good." Fifth and last of the afternoon\u2019s control retirements, and the only one whose losing arm had already been REVIEWED AND REJECTED rather than merely not chosen: the flag\u2019s description records the 2026-09-23 verdict and why \u2014 side by side the ramps are hard to tell apart, because the warm ink is a third of the prototype\u2019s system and lands here on a neutral ground with nothing to be warm against.',
+    restoreNote:
+      'Re-add `surface: \u2018design\u2019` to `dashboard-text-tiers` in `src/context/FeatureFlagContext.tsx`; a comment marks the spot. That is the whole restore \u2014 one field \u2014 and it needs no `REBRAND_FLAGS` change, because unlike the four controls retired alongside it this flag was already in that list and keeps its panel row. ⚠ RESTORING THE CONTROL IS NOT THE SAME AS REOPENING THE QUESTION, and this is the row most likely to be misread that way: the arm was rejected on evidence, not shelved. The note the flag carries says what to test instead \u2014 the SURFACES with the ink rather than the ink alone \u2014 and warns that doing so collides with the navy CTA, the dark rail and the `[data-theme=\u2018dark\u2019]` block, which is a larger piece of work than a radiogroup. NOT restored deliberately: no token, no component and no test was touched.',
+  },
+  {
     id: 'atlas-home-align-control',
     name: 'Section labels \u2014 the Design Controls bar\u2019s Centred / Left aligned radiogroup',
     what: 'A two-arm control on the cyan bar choosing how the Atlas Home\u2019s figures column reads: CENTRED (the eyebrows and the dial group centred as a block) or LEFT ALIGNED (the eyebrows against the edge, the dials, the sentence and the completion date staying centred \u2014 the pace card\u2019s own note records that what actually moves is the goal row, in both arms of the no-pace state).',

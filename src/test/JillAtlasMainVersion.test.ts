@@ -77,12 +77,17 @@ describe('Jill/Atlas-Main, the End-to-End Demo’s duplicate', () => {
     const copy = designControlsFor(ID, 'jill').map((f) => f.key)
     /* Home declares no surface, so this is the bar as it opens on it.
 
-       ⚠ A FLOOR, NOT A COUNT, and it moved on 2026-10-20 when "Exam date
-       prompt" came off the design bar (Card was decided) and the set went 8 →
-       7. It exists only to stop the containment below passing on two empty
-       lists, so it is set well under the real number — a decided axis leaving
-       the bar is normal and should not fail this. */
-    expect(demo.length).toBeGreaterThanOrEqual(5)
+       ⚠ NOT-EMPTY, NOT A FLOOR — and the history is why. This read `>= 8`,
+       then `>= 5`, and failed twice on 2026-10-20 as Jillienne retired five
+       decided controls in an afternoon (Exam date prompt, Section labels,
+       Study pace card, Text tiers, Pace standing). Each failure was the
+       assertion reporting normal work as a regression, which is the
+       definition of a brittle pin.
+
+       Its only job is to stop the containment below passing vacuously on two
+       empty lists. A bar that empties entirely is worth knowing about; a bar
+       that loses a control to a decision is not. */
+    expect(demo.length, 'the design bar should not be empty').toBeGreaterThan(0)
     expect(copy).toEqual(expect.arrayContaining(demo))
   })
 

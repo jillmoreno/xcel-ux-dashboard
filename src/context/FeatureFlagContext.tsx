@@ -1356,7 +1356,21 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        The text ink ramp — the second thing the ask named. Reviewed and declined as
        a baseline on 2026-09-23 and kept one URL away; the design bar is where
        that comparison actually gets run. */
-    surface: 'design',
+    /* ⚠ OFF THE DESIGN BAR — 2026-10-20, Jillienne: "remove this. its set on
+       neutral for good." The fifth and last control retired that afternoon,
+       and the only one whose losing arm was REVIEWED AND REJECTED rather than
+       simply not chosen — the flag's own description carries that verdict
+       from 2026-09-23 and the reasoning behind it (the warm ink has nothing
+       to be warm against on a neutral ground; the thing worth testing is the
+       SURFACES, not the ink alone).
+
+       ⚠ NO ESCAPE-HATCH ENTRY NEEDED, unlike the other four: this flag was
+       ALREADY in `REBRAND_FLAGS`, so it has been on the cyan bar and in the
+       Feature Flag panel at once. Dropping `surface` leaves the panel row it
+       already had, which is where a rejected arm belongs — reachable to
+       re-check the verdict, not offered to a stakeholder.
+
+       See `dashboard-text-tiers-control` in archivedItems.ts. */
     group: 'Widgets',
     label: 'Text tiers',
     description:
@@ -2675,8 +2689,29 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        ⚠ SCENARIO DATA. The average in the sentence is the GOAL scaled by the
        arm, not a reading of anything. When real week minutes land, the arm
        becomes a preview of a real state — see `observedHoursFor`. */
-    surface: 'design',
-    versions: ['eric-atlas-e2e'],
+    /* ⚠ OFF THE DESIGN BAR — 2026-10-20, Jillienne: "remove pace standing. we
+       looped that into the Pacing for the demo controls."
+
+       ⚠ THE TWO ARE NOT THE SAME AXIS, and it is worth being exact because
+       the reason given for removing this one describes the other.
+       `dashboard-pace-style` ("Pacing", amber bar) is Crammer / Average /
+       Thorough — how HARD the learner studies, a multiplier on the hours that
+       moves the week goal, the completion date and the pace icon. This flag
+       is on-track / ahead / behind / off-track / no-data — how the learner is
+       DOING against that goal, which is the sentence the card prints past 0%.
+       Pacing does not carry those five and nothing was folded into it.
+
+       ⚠ SO FOUR STANDINGS LEAVE THE BAR, not the product. `on-track` is the
+       default and what the card says; Behind, Off track, Ahead and No data
+       are reachable from the Feature Flag panel (this flag was already listed
+       there) and by `?ff=`. At 0% it is ignored entirely — the card keeps its
+       starting-point copy — so the landing screen is unaffected either way.
+
+       ⚠ AND THE SIBLING IS STILL ON ANJANI'S BAR. `hybrid-pace-standing` is a
+       separate flag scoped to `hybrid-pacing` with the same five arms and the
+       same shared `paceStanding.ts` sentences; it is untouched.
+
+       See `atlas-pace-standing-control` in archivedItems.ts. */
     group: 'Widgets',
     label: 'Pace standing',
     description:
