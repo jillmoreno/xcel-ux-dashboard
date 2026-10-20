@@ -6,6 +6,7 @@ import {
   COMPLIANCE_DOCUMENTS,
   MOMENT_LABEL,
   REGULATED_JURISDICTIONS,
+  UNREGULATED_JURISDICTIONS,
   STEPS_BY_SHAPE,
   stepsFor,
   type ComplianceDocumentConfig,
@@ -882,7 +883,12 @@ describe('the preview harness toolbar', () => {
     OH: 'Ohio', OR: 'Oregon', WV: 'West Virginia', WI: 'Wisconsin',
   }
   const stateNameOf = (code: string) => STATE_NAMES[code] ?? code
-  const sections = () => screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
+  /* ⚠ A DOM QUERY, NOT `getAllByRole`. The role scan clones every node to
+     compute accessible names, and jsdom's CSS shorthand parser throws on an
+     inline `background: var(...)` while doing it — which this page has on
+     every pill and card. `h2` IS the level-2 heading; nothing is lost. */
+  const sections = () =>
+    [...document.querySelectorAll('h2')].map((h) => h.textContent ?? '')
 
   it('groups by shape, state or moment over the same documents', () => {
     board()
@@ -926,7 +932,7 @@ describe('the preview harness toolbar', () => {
     fireEvent.change(screen.getByLabelText(/search documents/i), { target: { value: 'zzzz' } })
     expect(screen.getByText('0 of 24')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent(/nothing matches/i)
-    expect(screen.queryAllByRole('heading', { level: 2 })).toHaveLength(0)
+    expect(sections()).toHaveLength(0)
   })
 
   /* ⚠ A BOARD BUILT FROM THE DOCUMENTS CAN ONLY SHOW WHAT EXISTS, which is
@@ -986,6 +992,58 @@ describe('the preview harness toolbar', () => {
     fireEvent.change(screen.getByLabelText(/filter by state/i), { target: { value: 'AR' } })
     expect(sections()).toEqual(['Arkansas'])
     expect(screen.getByRole('note')).toHaveTextContent(/no document required/i)
+  })
+
+  /* ⚠ THE 33 ARE NOT GAPS. They set no pre-licensing requirement at all, so
+     there is no document to be missing — the XCEL baseline is their whole
+     rule set. Folded into the board they would be 33 rows of "not
+     applicable" with the four real gaps buried inside, which is why they sit
+     behind a disclosure and start closed. */
+  it('lists the other 33 jurisdictions, collapsed and apart', () => {
+    expect(UNREGULATED_JURISDICTIONS).toHaveLength(33)
+    // 50 states + DC + Guam, split with no jurisdiction in both halves.
+    expect(REGULATED_JURISDICTIONS.length + UNREGULATED_JURISDICTIONS.length).toBe(52)
+    const regulated = new Set(REGULATED_JURISDICTIONS.map((j) => j.state))
+    expect(UNREGULATED_JURISDICTIONS.some((j) => regulated.has(j.code))).toBe(false)
+
+    board()
+    // Not on the shape board — it is a question about states.
+    expect(screen.queryByText(/no pre-licensing requirement/i)).toBeNull()
+
+    fireEvent.click(screen.getByRole('tab', { name: 'By state' }))
+    const group = screen.getByText(/33 jurisdictions with no pre-licensing requirement/i)
+    expect(group.closest('details')).not.toHaveAttribute('open')
+    // They are listed, not counted against the 24.
+    expect(screen.getByText('24 of 24')).toBeInTheDocument()
+  })
+
+  /* ⚠ A SEARCH REACHES INTO IT, and the empty message must not fire when it
+     does: "nothing matches" printed above a panel listing the match is the
+     page contradicting itself. */
+  it('finds an unregulated jurisdiction by search, without claiming nothing matched', () => {
+    board()
+    fireEvent.click(screen.getByRole('tab', { name: 'By state' }))
+    fireEvent.change(screen.getByLabelText(/search documents/i), { target: { value: 'texas' } })
+
+    expect(sections()).toHaveLength(0)
+    /* By text, not `queryByRole('status')`: that scan clones every node, and
+       jsdom's CSS shorthand parser throws on a `background: var(...)` inline
+       style while doing it. The assertion is the same either way. */
+    expect(screen.queryByText(/nothing matches/i)).toBeNull()
+    const summary = screen.getByText(/1 jurisdiction with no pre-licensing requirement/i)
+    expect(summary.closest('details')).toHaveAttribute('open')
+    expect(screen.getByText('Texas')).toBeInTheDocument()
+  })
+
+  /* Pennsylvania is in both halves on purpose: it dropped pre-licensing in
+     2025 and XCEL still holds its affidavit. */
+  it('keeps Pennsylvania visible in both places, with the reason', () => {
+    board()
+    fireEvent.click(screen.getByRole('tab', { name: 'By state' }))
+    expect(sections()).toContain('Pennsylvania')
+    expect(
+      screen.getByText(/Pre-licensing eliminated 29 Apr 2025/i),
+    ).toBeInTheDocument()
   })
 
   /* The pill would otherwise repeat its own section heading on every card. */

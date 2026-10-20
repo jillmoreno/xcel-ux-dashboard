@@ -7,6 +7,7 @@ import {
   COMPLIANCE_DOCUMENTS,
   REGULATED_JURISDICTIONS,
   STEPS_BY_SHAPE,
+  UNREGULATED_JURISDICTIONS,
   MOMENT_LABEL,
   acknowledgementFor,
   stepsFor,
@@ -165,6 +166,24 @@ export function ComplianceDocumentPreviewPage() {
     })
   }, [query, stateFilter])
 
+  /* ⚠ THE 33 ARE NOT GAPS, so they are not groups. They set no pre-licensing
+     requirement at all — there is no document to be missing — and folding
+     them into the board would be 33 rows of "not applicable" with the four
+     real gaps buried inside. They sit behind a disclosure, and a search
+     reaches into it so looking up Texas still finds Texas. */
+  const unregulatedMatches = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return UNREGULATED_JURISDICTIONS
+    return UNREGULATED_JURISDICTIONS.filter((j) =>
+      `${j.code} ${j.name} ${j.note ?? ''}`.toLowerCase().includes(q),
+    )
+  }, [query])
+
+  /* The disclosure only belongs on the state board, and only while nothing
+     has narrowed to a single regulated state. */
+  const showUnregulated =
+    groupBy === 'state' && stateFilter === 'all' && unregulatedMatches.length > 0
+
   /** One grouping function, three axes — the board's shape is a view, not a
    *  second copy of the data. */
   const grouped = useMemo(() => {
@@ -300,11 +319,38 @@ export function ComplianceDocumentPreviewPage() {
           </div>
         </div>
 
-        {grouped.length === 0 && (
+        {/* ⚠ NOT WHEN THE DISCLOSURE MATCHED. Searching "texas" found nothing
+            among the 24 documents and one jurisdiction in the 33 — printing
+            "nothing matches" above a panel listing the match is the page
+            contradicting itself. */}
+        {grouped.length === 0 && !showUnregulated && (
           <p style={EMPTY} role="status">
             Nothing matches {query.trim() ? `“${query.trim()}”` : 'that filter'}
             {stateFilter !== 'all' ? ` in ${stateName(stateFilter)}` : ''}.
           </p>
+        )}
+
+        {showUnregulated && (
+          <details style={UNREG} open={query.trim() !== ''}>
+            <summary style={UNREG_SUMMARY}>
+              {unregulatedMatches.length}{' '}
+              {unregulatedMatches.length === 1 ? 'jurisdiction' : 'jurisdictions'} with no
+              pre-licensing requirement
+              <span style={UNREG_HINT}>
+                {query.trim()
+                  ? ' · matching your search'
+                  : ' · nothing to collect, so nothing to be missing'}
+              </span>
+            </summary>
+            <ul style={UNREG_LIST}>
+              {unregulatedMatches.map((j) => (
+                <li key={j.code} style={UNREG_ITEM}>
+                  <span style={UNREG_NAME}>{j.name}</span>
+                  {j.note && <span style={UNREG_NOTE}>{j.note}</span>}
+                </li>
+              ))}
+            </ul>
+          </details>
         )}
 
         {grouped.map((group) => (
@@ -575,6 +621,58 @@ const GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
   gap: 12,
+}
+
+/* Last on the board and closed by default — present, countable, and not
+   competing with the nineteen that can actually carry a gap. */
+const UNREG: CSSProperties = {
+  order: 99,
+  padding: '14px 16px',
+  borderRadius: 'var(--radius-lg)',
+  border: '1px solid var(--color-border-subtle)',
+  background: 'var(--color-surface-card)',
+}
+
+const UNREG_SUMMARY: CSSProperties = {
+  cursor: 'pointer',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 600,
+  fontSize: 13,
+  color: 'var(--color-text-primary)',
+}
+
+const UNREG_HINT: CSSProperties = {
+  fontWeight: 400,
+  color: 'var(--color-text-tertiary)',
+}
+
+const UNREG_LIST: CSSProperties = {
+  margin: '14px 0 0',
+  padding: 0,
+  listStyle: 'none',
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
+  gap: '10px 16px',
+}
+
+const UNREG_ITEM: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
+}
+
+const UNREG_NAME: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  fontWeight: 600,
+  color: 'var(--color-text-secondary)',
+}
+
+const UNREG_NOTE: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  lineHeight: '16px',
+  color: 'var(--color-text-tertiary)',
 }
 
 /* Dashed, because the shape of a card with nothing in it should read as a

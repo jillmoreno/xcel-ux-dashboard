@@ -369,6 +369,66 @@ export const REGULATED_JURISDICTIONS: JurisdictionCoverage[] = [
   { state: 'WI', status: 'documented', note: 'Student and proctor both sign; the proctor completes it before the exam.' },
 ]
 
+/**
+ * THE OTHER 33 — every jurisdiction that sets no pre-licensing requirement.
+ *
+ * ⚠ THEY ARE NOT GAPS, and that is the whole reason they are listed apart
+ * rather than mixed in. There is no document to be missing: the XCEL baseline
+ * is their complete rule set, and a learner there can sit the state exam with
+ * no training at all. Folded into the main board they would be 33 rows of
+ * "not applicable" with the four real gaps buried inside them — which is why
+ * they sit behind a disclosure instead.
+ *
+ * ⚠ SEVERAL ARE FORMER REGULATORS, and the date matters: a completion from
+ * before the rule was dropped is still a record XCEL has to hold and produce,
+ * so "not regulated" is a statement about today, not about the archive.
+ *
+ * 31 states + the District of Columbia + Guam. Guam is absent from the
+ * workbook's own licensing tabs, which is why its row carries no detail.
+ */
+export interface UnregulatedJurisdiction {
+  code: string
+  name: string
+  /** When the requirement went, where it once existed. */
+  note?: string
+}
+
+export const UNREGULATED_JURISDICTIONS: UnregulatedJurisdiction[] = [
+  { code: 'AL', name: 'Alabama', note: 'Pre-licensing eliminated 1 Jan 2024' },
+  { code: 'AK', name: 'Alaska' },
+  { code: 'AZ', name: 'Arizona' },
+  { code: 'DE', name: 'Delaware' },
+  { code: 'DC', name: 'District of Columbia' },
+  { code: 'GU', name: 'Guam', note: 'Not in the workbook’s licensing tabs' },
+  { code: 'HI', name: 'Hawaii' },
+  { code: 'ID', name: 'Idaho' },
+  { code: 'IA', name: 'Iowa' },
+  { code: 'KS', name: 'Kansas' },
+  { code: 'LA', name: 'Louisiana', note: 'Pre-licensing eliminated June 2022' },
+  { code: 'ME', name: 'Maine' },
+  { code: 'MD', name: 'Maryland', note: 'Pre-licensing eliminated 1 Oct 2024; XCEL keeps records 4 years because producers must' },
+  { code: 'MA', name: 'Massachusetts' },
+  { code: 'MO', name: 'Missouri', note: 'Confirmed with the state' },
+  { code: 'MT', name: 'Montana' },
+  { code: 'NE', name: 'Nebraska' },
+  { code: 'NH', name: 'New Hampshire', note: 'Pre-licensing eliminated 2008' },
+  { code: 'NM', name: 'New Mexico' },
+  { code: 'NC', name: 'North Carolina', note: 'Pre-licensing eliminated 1 Oct 2025 (SL 2025-45); the 3-year rule still covers records from before then' },
+  { code: 'ND', name: 'North Dakota' },
+  { code: 'OK', name: 'Oklahoma', note: 'Applicants with a criminal background file the 1033 waiver' },
+  { code: 'PA', name: 'Pennsylvania', note: 'Pre-licensing eliminated 29 Apr 2025 — XCEL still holds its affidavit, and the licensing tab still names one' },
+  { code: 'RI', name: 'Rhode Island' },
+  { code: 'SC', name: 'South Carolina' },
+  { code: 'SD', name: 'South Dakota' },
+  { code: 'TN', name: 'Tennessee', note: 'Pre-licensing eliminated 21 Mar 2023' },
+  { code: 'TX', name: 'Texas' },
+  { code: 'UT', name: 'Utah' },
+  { code: 'VT', name: 'Vermont' },
+  { code: 'VA', name: 'Virginia' },
+  { code: 'WA', name: 'Washington', note: 'Pre-licensing eliminated July 2023' },
+  { code: 'WY', name: 'Wyoming', note: 'Pre-licensing eliminated 24 Jul 2023' },
+]
+
 export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
   /* ── notice (2) ────────────────────────────────────────────────────────
        No signer at all: body text and an "I Agree". Both are bilingual. */
