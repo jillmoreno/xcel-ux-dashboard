@@ -15,8 +15,9 @@ import { BODY } from './adminStyles'
  * ⚠ UNDER THE PRODUCT'S GLOBAL NAVIGATION SINCE 2026-10-20 (Eric: "push the
  * left sidebar and the entire right side down enough to add the global
  * navigation above it … add an Admin button to the right of Home"). The
- * same `AtlasHeader` the learner pages draw sits across the top, with Admin
- * filled; Home goes to the learner dashboard. The sidebar's XCEL ADMIN lockup
+ * same `AtlasHeader` the learner pages draw sits across the top; Home goes
+ * to the learner dashboard. Its Admin pill went the same day — the account
+ * pill says "(Admin Mode)" and its menu switches modes. The sidebar's XCEL ADMIN lockup
  * went with it — the logo is in the global nav now.
  */
 
@@ -85,7 +86,6 @@ export function AtlasAdminLayout() {
         showCourses={false}
         links={{ home: learnerHome, logo: learnerHome, help: `${ADMIN_BASE}/resources${search}` }}
         onNavigate={(href) => navigate(href)}
-        extraNav={[{ label: 'Admin', href: `${ADMIN_BASE}/students${search}`, current: true }]}
         modeMenu={{
           mode: 'admin',
           adminLinks: USER_MENU.map(({ to, label, icon: Icon }) => ({ label, href: to + search, icon: <Icon size={18} aria-hidden /> })),
