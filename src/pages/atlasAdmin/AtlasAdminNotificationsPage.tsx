@@ -314,8 +314,8 @@ function ProgressPreview({ learners }: { learners: ReturnType<typeof useAdminSto
   const live = learners.filter((l) => l.stage !== 'licensed' && !l.hiddenFromReport)
   const counts = [
     { key: 'quiet7', label: 'No activity in the last 7 days', n: live.filter((l) => l.lastActiveDays >= 7).length, tone: 'var(--admin-brand-tint)' },
-    { key: 'low', label: 'Trending low', n: live.filter((l) => l.readiness === 'low').length, tone: 'var(--admin-amber-tint)' },
-    { key: 'quiet2', label: 'Quiet 2 days', n: live.filter((l) => l.lastActiveDays >= 2).length, tone: 'var(--admin-amber-tint)' },
+    { key: 'low', label: 'Trending low', n: live.filter((l) => l.readiness === 'low').length, tone: 'var(--admin-atlas-secondary-100)' },
+    { key: 'quiet2', label: 'Quiet 2 days', n: live.filter((l) => l.lastActiveDays >= 2).length, tone: 'var(--admin-atlas-secondary-100)' },
   ]
   const total = live.filter((l) => l.lastActiveDays >= 2 || l.readiness === 'low').length
   const expiring = live.filter((l) => l.stage === 'stalled').slice(0, 3)
