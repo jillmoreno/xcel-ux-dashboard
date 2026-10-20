@@ -452,7 +452,7 @@ export function AtlasAdminStudentsPage() {
                       aria-label={`Select ${l.name}`}
                       checked={selected.has(l.id)}
                       onChange={() => toggleRow(l.id)}
-                      style={{ ...CHECKBOX, marginTop: 4 }}
+                      style={{ ...CHECKBOX, display: 'block' }}
                     />
                   </td>
                   <td style={TD}>
@@ -589,7 +589,7 @@ const TH: CSSProperties = {
   color: 'var(--admin-muted)',
   whiteSpace: 'nowrap',
 }
-const TD: CSSProperties = { padding: '12px', verticalAlign: 'top' }
+const TD: CSSProperties = { padding: '12px', verticalAlign: 'middle' }
 const CHECKBOX: CSSProperties = { width: 16, height: 16, accentColor: 'var(--admin-brand)', cursor: 'pointer' }
 const NAME: CSSProperties = {
   padding: 0,
