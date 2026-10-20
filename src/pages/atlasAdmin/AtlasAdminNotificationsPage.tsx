@@ -456,7 +456,7 @@ function NumberField({ label, value, onChange, min, max }: { label: string; valu
 const ROW: CSSProperties = { position: 'relative', isolation: 'isolate', paddingTop: 14, paddingLeft: 24, paddingRight: 24, cursor: 'pointer', outline: 'none' }
 /* A selected row stands proud of its card (Atlas UX Design, Figma 495:34):
    its fill reaches 4px past the card's edge on both sides, outlined 1px in
-   primary 200 over the rules above and below, with 3px corners. Painted
+   primary 200 over the rules above and below, with 6px corners. Painted
    behind the row's content — the row isolates, the frame sits at z -1. */
 const ACTIVE_FRAME: CSSProperties = {
   position: 'absolute',
@@ -467,7 +467,7 @@ const ACTIVE_FRAME: CSSProperties = {
   right: -5,
   boxSizing: 'border-box',
   border: '1px solid var(--admin-atlas-primary-200)',
-  borderRadius: 3,
+  borderRadius: 6,
   background: 'var(--admin-brand-tint)',
   pointerEvents: 'none',
 }
