@@ -516,7 +516,7 @@ export function AtlasAdminStudentsPage() {
 const UNDERLAP = 24
 const TILE: CSSProperties = {
   borderRadius: 11,
-  border: '1px solid var(--admin-rule)',
+  border: '1px solid var(--admin-fill)', // slate-100, a step lighter than the rule
   background: 'var(--admin-fill-soft)', // the roster's header row; the selected tile is white
   padding: 16,
   textAlign: 'left',
