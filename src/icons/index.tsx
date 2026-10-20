@@ -96,6 +96,7 @@ import PlusRegularSvg from './plus-regular.svg?react'
 import MagnifyingGlassRegularSvg from './magnifying-glass-regular.svg?react'
 import GearRegularSvg from './gear-regular.svg?react'
 import XmarkRegularSvg from './xmark-regular.svg?react'
+import EnvelopeRegularSvg from './envelope-regular.svg?react'
 import ChartSimpleSvg from './chart-simple.svg?react'
 import SparklesSvg from './sparkles.svg?react'
 import QrcodeSvg from './qrcode.svg?react'
@@ -332,6 +333,7 @@ export const PlusRegular = makeIcon(PlusRegularSvg) // FA: plus (regular)
 export const MagnifyingGlassRegular = makeIcon(MagnifyingGlassRegularSvg) // FA: magnifying-glass (regular)
 export const GearRegular = makeIcon(GearRegularSvg) // FA: gear (regular)
 export const XmarkRegular = makeIcon(XmarkRegularSvg) // FA: xmark (regular)
+export const EnvelopeRegular = makeIcon(EnvelopeRegularSvg) // FA: envelope (regular) — Atlas Admin's Send me a sample
 export const ChartSimple = makeIcon(ChartSimpleSvg) // FA: chart-simple (light) — Atlas Admin's Reports
 export const Sparkles = makeIcon(SparklesSvg) // FA: sparkles (light) — Atlas Admin's Quick assign
 export const Qrcode = makeIcon(QrcodeSvg) // FA: qrcode (light) — Atlas Admin's empty Students
