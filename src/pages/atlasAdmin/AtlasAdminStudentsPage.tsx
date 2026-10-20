@@ -247,7 +247,9 @@ export function AtlasAdminStudentsPage() {
         </div>
       </header>
 
-      <section aria-label="Pipeline outcomes" style={{ ...CARD, border: 'none', padding: 16, background: 'var(--admin-atlas-primary-100)' }}>
+      {/* The blue runs on under the roster card: no gap between them, and the
+          roster overlaps the blue's last 24px, so it shows at its top corners. */}
+      <section aria-label="Pipeline outcomes" style={{ ...CARD, border: 'none', padding: `16px 16px ${16 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
         <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
           {tiles.map((t) => {
             const n = tileCount[t.id]
@@ -294,7 +296,7 @@ export function AtlasAdminStudentsPage() {
         </div>
       </section>
 
-      <section style={{ ...CARD, overflow: 'hidden' }}>
+      <section style={{ ...CARD, position: 'relative', overflow: 'hidden' }}>
         <div style={TOOLBAR}>
           <label style={{ position: 'relative', display: 'block', width: 256 }}>
             <span style={{ position: 'absolute', left: 12, top: 10, color: 'var(--admin-faint)', display: 'flex' }}>
@@ -510,6 +512,8 @@ export function AtlasAdminStudentsPage() {
 
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
+/* How far the outcome container's blue runs on beneath the roster card. */
+const UNDERLAP = 24
 const TILE: CSSProperties = {
   borderRadius: 11,
   border: '1px solid var(--admin-rule)',
