@@ -150,13 +150,13 @@ export function AtlasAdminNotificationsPage() {
                                 setSelected(n.id)
                                 runAction(a)
                               }}
-                              style={ACTION}
+                              className="cre-admin-text-link" style={ACTION}
                             >
                               {ACTION_LABEL[a]}
                             </button>
                           ))}
                           {n.id !== 'progress-report' ? (
-                            <button type="button" onClick={() => setSelected(n.id)} style={ACTION}>
+                            <button type="button" onClick={() => setSelected(n.id)} className="cre-admin-text-link" style={ACTION}>
                               Preview
                             </button>
                           ) : null}
@@ -170,7 +170,7 @@ export function AtlasAdminNotificationsPage() {
                     <p style={{ margin: 0, fontSize: 12, color: 'var(--admin-text)' }}>
                       No recruit gets more than one email or text from XCEL in 7 days, whatever is switched on here.
                     </p>
-                    <button type="button" onClick={() => setDialog('history')} style={{ ...ACTION, display: 'block', marginTop: 6, marginLeft: 'auto' }}>
+                    <button type="button" onClick={() => setDialog('history')} className="cre-admin-text-link" style={{ ...ACTION, display: 'block', marginTop: 6, marginLeft: 'auto' }}>
                       Sending history
                     </button>
                   </div>
@@ -183,7 +183,7 @@ export function AtlasAdminNotificationsPage() {
         <div style={{ position: 'sticky', top: 104, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--admin-muted)' }}>Preview · {sel.title}</p>
-            <button type="button" onClick={() => showToast(`Sample sent to ${ADMIN_EMAIL}`)} style={ACTION}>
+            <button type="button" onClick={() => showToast(`Sample sent to ${ADMIN_EMAIL}`)} className="cre-admin-text-link" style={ACTION}>
               Send me a sample
             </button>
           </div>

@@ -7498,6 +7498,7 @@ a.cre-library-card-title::after {
   --admin-atlas-primary-100: #eaeef1;
   --admin-atlas-primary-200: #cbd5dc;
   --admin-atlas-primary-400: #6b8ca3;
+  --admin-atlas-primary-700: #1b3544;
   /* Atlas Secondary 100 — the Style Guide's tan ramp (tertiary-100 in the
      Atlas palette block). Pulse's Action now boxes. */
   --admin-atlas-secondary-100: #f5f2ef;
@@ -7591,6 +7592,9 @@ a.cre-library-card-title::after {
    inline styles cannot carry :hover. */
 .cre-admin-tile:hover { border-color: var(--admin-hover-edge) !important; }
 .cre-admin-tile:focus-visible { box-shadow: 0 0 0 2px var(--admin-brand) !important; }
+/* An admin text link's hover — Atlas primary 700. `!important` because the
+   link's resting colour is set inline. */
+.cre-admin-text-link:hover { color: var(--admin-atlas-primary-700) !important; }
 
 /* ATLAS ADMIN'S ROOT (2026-10-20). `display: contents` so it adds no box —
    every admin page, inside the shell or not, lays out as before. It exists
