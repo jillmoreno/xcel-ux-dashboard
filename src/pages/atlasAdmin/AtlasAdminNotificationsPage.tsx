@@ -5,7 +5,7 @@ import { ADMIN_NOTIFICATIONS, type NotificationAction, type NotificationDef, typ
 import { AdminDialog } from './AdminDialog'
 import { CadenceDialog, PeopleDialog } from './adminDialogs'
 import { ADMIN_BASE, ADMIN_EMAIL, useAdminStore } from './adminStore'
-import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, FIELD_LABEL, INPUT, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
+import { ATLAS_BUTTON_PRIMARY, BUTTON_BRAND, BUTTON_OUTLINE, CARD, FIELD_LABEL, INPUT, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
 
 /**
  * ATLAS ADMIN · NOTIFICATIONS — rebuilt from colibri-b2b.vercel.app/
@@ -341,7 +341,7 @@ function ProgressPreview({ learners }: { learners: ReturnType<typeof useAdminSto
             </Link>
           </div>
         ))}
-        <Link to={`${ADMIN_BASE}/my-team${search}`} style={{ ...BUTTON_BRAND, alignSelf: 'flex-start', padding: '7px 14px', fontSize: 13, textDecoration: 'none' }}>
+        <Link to={`${ADMIN_BASE}/my-team${search}`} style={{ ...ATLAS_BUTTON_PRIMARY, alignSelf: 'flex-start', textDecoration: 'none' }}>
           Open My Team
         </Link>
         {expiring.map((l, i) => (
