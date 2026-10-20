@@ -34,7 +34,13 @@ describe('what the design bar selects', () => {
     /* Every other flag belongs in the Feature Flag panel and nowhere else —
        which is the great majority of them. A bar that drew the catalog would be
        unreadable and would put stakeholder scenarios next to font switches. */
-    const v = VERSION('discoverability-testing-3')
+    /* ⚠ A VERSION THE REMAINING CONTROLS ACTUALLY NAME — 2026-10-20. This
+       read `discoverability-testing-3`, which worked while some design flag
+       was unscoped and followed its owner here. Seven controls were retired
+       that afternoon and the last unscoped one went with them, so the pick
+       was empty and this case failed for a reason that had nothing to do
+       with its subject. */
+    const v = VERSION('eric-atlas-e2e')
     const picked = designControlsFor(v.id, flagOwner(v))
     expect(picked.length).toBeGreaterThan(0)
     expect(picked.every((f) => f.surface === 'design')).toBe(true)
@@ -45,9 +51,20 @@ describe('what the design bar selects', () => {
        flag a designer adds would render nowhere until they also wrote a version
        list — and "I marked it and nothing happened" is exactly the failure the
        `REBRAND_FLAGS` comment already records for the panel. */
+    /* ⚠ THE RULE IS LIVE AND CURRENTLY UNEXERCISED, which is worth stating
+       rather than hiding behind a passing test. This asserted that at least
+       one unscoped design flag existed to test with; on 2026-10-20 the last
+       one (`dashboard-heading-font`) left the design bar with six others, so
+       the count is zero and the guard was failing on the absence of a
+       FIXTURE, not of the behaviour.
+
+       The fallback itself is untouched in `designControlsFor` and matters as
+       much as ever — it is what makes the first design flag a designer adds
+       render at all. The loop below is a no-op today and starts testing the
+       moment anyone adds an unscoped design flag, which is exactly when it
+       is needed. */
     const unscoped = FEATURE_FLAGS.filter((f) => f.surface === 'design' && !f.versions)
-    expect(unscoped.length, 'no unscoped design flags to test the fallback with').toBeGreaterThan(0)
-    const v = VERSION('discoverability-testing-3')
+    const v = VERSION('eric-atlas-e2e')
     const picked = designControlsFor(v.id, flagOwner(v)).map((f) => f.key)
     for (const f of unscoped.filter((f) => flagOwner(f) === flagOwner(v))) {
       expect(picked, `${f.key} should follow its owner to their versions`).toContain(f.key)

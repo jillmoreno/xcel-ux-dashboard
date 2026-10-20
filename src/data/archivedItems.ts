@@ -56,6 +56,19 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'dashboard-heading-font-control',
+    name: 'Heading font \u2014 the Design Controls bar\u2019s Sans / Serif radiogroup',
+    what: 'A two-arm control on the cyan bar re-pointing `--font-heading` across the Dashboard Rebrand routes: SANS (the brand face \u2014 Lato on XCEL, itself a documented placeholder for Avenir) or SERIF (a system stack, Georgia and its cousins), default `serif`. The rail, the header and the section title stay on the brand face either way.',
+    location:
+      'THE FLAG AND BOTH ARMS ARE INTACT. `dashboard-heading-font` is unchanged with `defaultVariant: \u2018serif\u2019`; the `tokens.css` serif block still exists and `JumpBackInWidget` and `CourseEntryCard` still carry their notes about which face they read. What went is `surface: \u2018design\u2019` \u2014 and nothing else, because this flag was already in `REBRAND_FLAGS` and keeps its Feature Flag panel row.',
+    flag: 'dashboard-heading-font (unchanged, default `serif`) \u2014 Feature Flag panel, or `?ff=dashboard-heading-font:sans`',
+    dateRemoved: '2026-10-20',
+    reason:
+      'Jillienne\u2019s call \u2014 "Heading font = Playfair. This can be removed." ⚠ AND THE CONTROL WAS NOT THE ONE SETTING PLAYFAIR, which is the stronger reason: measured on Jill/Atlas-Main, the Atlas Home\u2019s titles compute to `Playfair, Georgia, serif` from `--font-heading-serif`, while this control moves `--font-heading` (Lato there, and still Lato with the control on `serif`). On the surface being explored it changed nothing visible, and a control whose name promises the page\u2019s headings but does not reach them is worse than none.',
+    restoreNote:
+      'Re-add `surface: \u2018design\u2019` to `dashboard-heading-font` in `src/context/FeatureFlagContext.tsx`; a comment marks the spot. One field, and no `REBRAND_FLAGS` change \u2014 it was already listed. ⚠ BEFORE RESTORING IT TO CHANGE A PAGE\u2019S HEADINGS, CHECK WHICH TOKEN THAT PAGE READS. The Atlas Homes use `--font-heading-serif` (Playfair) for their titles and this flag does not touch it; `atlas-heading-font` does not either on those versions \u2014 its `versions` are `eric-atlas-v1`, `eric-atlas-v2` and `discoverability-atlas-compass-nav`. Playfair on Jill/Atlas-Main and the End-to-End Demo comes from the token itself. ⚠ THE ARM IS NOT INERT EVERYWHERE: `--font-heading` is read by `JumpBackInWidget`, `CourseEntryCard` and the serif block in `tokens.css`, so `sans` still changes those. NOT restored deliberately: no token, no component and no test was touched.',
+  },
+  {
     id: 'atlas-pace-standing-control',
     name: 'Pace standing \u2014 the Design Controls bar\u2019s five-state dropdown',
     what: 'A five-arm control on the cyan bar \u2014 On track, Ahead of goal, Behind (recoverable), Off track (adjust the goal), No data yet \u2014 choosing what the Atlas Home\u2019s Study pace section SAYS once the learner is past 0%. Added 2026-10-19 because the card\u2019s sentence was still "your default recommended study pace is just a starting point", true on day one and stale every day after.',

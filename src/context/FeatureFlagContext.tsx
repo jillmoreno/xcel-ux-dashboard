@@ -3073,7 +3073,32 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        The heading typeface — a TYPOGRAPHY decision, which is the first thing the
        ask named ("fonts, the brand colors"). Nothing about it tells a
        stakeholder how the product behaves for a learner. */
-    surface: 'design',
+    /* ⚠ OFF THE DESIGN BAR — 2026-10-20, Jillienne: "Heading font = Playfair.
+       This can be removed." Seventh and last of the afternoon's retirements.
+
+       ⚠ SHE IS RIGHT ABOUT PLAYFAIR AND IT IS NOT THIS FLAG, which is the
+       better reason to remove it. Measured on Jill/Atlas-Main: the Atlas
+       Home's titles compute to `Playfair, Georgia, serif` because they read
+       `--font-heading-serif`, while this control re-points `--font-heading`
+       (Lato there, and still Lato with the control on `serif`). So on the
+       surface being explored it changes nothing you can see — a control whose
+       name promises the page's headings and does not reach them is worse than
+       no control.
+
+       ⚠ PLAYFAIR COMES FROM SOMEWHERE ELSE AGAIN, and the something else is
+       not `atlas-heading-font` either: that flag's `versions` are
+       `eric-atlas-v1`, `eric-atlas-v2` and `discoverability-atlas-compass-nav`,
+       none of which is this version or the End-to-End Demo. It is the token
+       itself. Worth knowing before anyone goes looking for a control to
+       change it with.
+
+       ⚠ IT IS NOT INERT EVERYWHERE. `--font-heading` is read by
+       `JumpBackInWidget`, `CourseEntryCard` and the `tokens.css` serif block
+       on the Dashboard Rebrand routes, so the arm still does something on
+       surfaces that use it — which is why the flag and both arms stay, with
+       the Feature Flag panel row it already had.
+
+       See `dashboard-heading-font-control` in archivedItems.ts. */
     group: 'Widgets',
     label: 'Heading font',
     description:
