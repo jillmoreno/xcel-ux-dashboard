@@ -338,7 +338,7 @@ function Box({ label, children }: { label: string; children: ReactNode }) {
 function TabFigure({ label, value, ink }: { label: string; value: number; ink: string }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 'none' }}>
-      <p style={{ margin: 0, padding: '8px 16px', textAlign: 'center', whiteSpace: 'nowrap', fontSize: 12, fontWeight: 500, color: ink, borderStyle: 'solid', borderColor: 'var(--admin-atlas-tertiary-100)', borderWidth: '1px 1px 0', borderRadius: '8px 8px 0 0' }}>{label}</p>
+      <p style={{ margin: 0, padding: '8px 16px', textAlign: 'center', whiteSpace: 'nowrap', fontSize: 12, fontWeight: 600, color: ink, borderStyle: 'solid', borderColor: 'var(--admin-atlas-tertiary-100)', borderWidth: '1px 1px 0', borderRadius: '8px 8px 0 0' }}>{label}</p>
       <strong style={{ display: 'block', padding: 8, textAlign: 'center', fontFamily: HEADING, fontSize: 22, lineHeight: '26px', fontWeight: 700, color: 'var(--admin-atlas-neutral-800)', background: 'var(--admin-atlas-tertiary-100)', borderStyle: 'solid', borderColor: 'var(--admin-atlas-tertiary-100)', borderWidth: '0 1px 1px', borderRadius: '0 0 8px 8px' }}>{value}</strong>
     </div>
   )
