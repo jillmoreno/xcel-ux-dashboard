@@ -254,7 +254,7 @@ const QL_ROW_ACTIVE: CSSProperties = {
   margin: '-4px -8px',
   padding: '4px 8px',
   boxSizing: 'border-box',
-  borderRadius: 999,
+  borderRadius: 8,
   background: 'var(--admin-atlas-primary-100)',
   fontWeight: 600,
 }
