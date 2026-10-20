@@ -296,7 +296,8 @@ export function AtlasAdminStudentsPage() {
         </div>
       </section>
 
-      <section style={{ ...CARD, position: 'relative', overflow: 'hidden' }}>
+      {/* `clip`, not `hidden`: it rounds the corners the same way without making the card a scroll box, so the selection bar can pin to the window. */}
+      <section style={{ ...CARD, position: 'relative', overflow: 'clip' }}>
         <div style={TOOLBAR}>
           <label style={{ position: 'relative', display: 'block', width: 256 }}>
             <span style={{ position: 'absolute', left: 12, top: 10, color: 'var(--admin-faint)', display: 'flex' }}>
@@ -390,7 +391,7 @@ export function AtlasAdminStudentsPage() {
         ) : null}
 
         {selected.size ? (
-          <div style={{ ...TOOLBAR, paddingTop: 20, paddingBottom: 20, background: 'var(--admin-atlas-secondary-100)', color: 'var(--admin-atlas-neutral-800)' }}>
+          <div style={{ ...TOOLBAR, position: 'sticky', top: 'var(--admin-header-h, 0px)', zIndex: 5, paddingTop: 20, paddingBottom: 20, background: 'var(--admin-atlas-secondary-100)', color: 'var(--admin-atlas-neutral-800)' }}>
             <span style={{ fontSize: 14, fontWeight: 600 }}>{selected.size} selected</span>
             <button
               type="button"
