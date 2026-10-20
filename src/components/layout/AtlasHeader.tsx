@@ -257,28 +257,33 @@ export function AtlasHeader({
               ) : null}
             </div>
             <AtlasHeaderMenuDivider />
-            {modeMenu?.mode === 'admin' ? (
-              modeMenu.adminLinks.map((l) => (
-                <AtlasHeaderMenuItem key={l.href} href={l.href} onSelect={onNavigate ? () => onNavigate(l.href) : undefined} icon={l.icon}>
-                  {l.label}
-                </AtlasHeaderMenuItem>
-              ))
-            ) : (
-              <>
-                <AtlasHeaderMenuItem href={to('profile')} onSelect={pick('profile')} icon={<User size={18} />}>
-                  Profile
-                </AtlasHeaderMenuItem>
-                <AtlasHeaderMenuItem href={to('notifications')} onSelect={pick('notifications')} icon={<Bell size={18} />}>
-                  Notifications
-                </AtlasHeaderMenuItem>
-                <AtlasHeaderMenuItem href={to('transcripts')} onSelect={pick('transcripts')} icon={<FileText size={18} />}>
-                  Transcripts
-                </AtlasHeaderMenuItem>
-                <AtlasHeaderMenuItem href={to('purchases')} onSelect={pick('purchases')} icon={<Receipt size={18} />}>
-                  My Purchases
-                </AtlasHeaderMenuItem>
-              </>
-            )}
+            {/* 8px under the first rule and 12px over the second —
+                2026-10-20, Eric's request — so the links do not sit on
+                either rule. */}
+            <div style={{ padding: '8px 0 12px' }}>
+              {modeMenu?.mode === 'admin' ? (
+                modeMenu.adminLinks.map((l) => (
+                  <AtlasHeaderMenuItem key={l.href} href={l.href} onSelect={onNavigate ? () => onNavigate(l.href) : undefined} icon={l.icon}>
+                    {l.label}
+                  </AtlasHeaderMenuItem>
+                ))
+              ) : (
+                <>
+                  <AtlasHeaderMenuItem href={to('profile')} onSelect={pick('profile')} icon={<User size={18} />}>
+                    Profile
+                  </AtlasHeaderMenuItem>
+                  <AtlasHeaderMenuItem href={to('notifications')} onSelect={pick('notifications')} icon={<Bell size={18} />}>
+                    Notifications
+                  </AtlasHeaderMenuItem>
+                  <AtlasHeaderMenuItem href={to('transcripts')} onSelect={pick('transcripts')} icon={<FileText size={18} />}>
+                    Transcripts
+                  </AtlasHeaderMenuItem>
+                  <AtlasHeaderMenuItem href={to('purchases')} onSelect={pick('purchases')} icon={<Receipt size={18} />}>
+                    My Purchases
+                  </AtlasHeaderMenuItem>
+                </>
+              )}
+            </div>
             <AtlasHeaderMenuDivider />
             <AtlasHeaderMenuItem href={to('logout')} onSelect={onLogout} icon={<LogOut size={18} />}>
               Logout
