@@ -53,6 +53,9 @@ function flagPageIdForPath(pathname: string): FeatureFlagPageId | null {
   if (pathname.startsWith('/my-learning/courses')) return 'my-courses'
   if (pathname.startsWith('/my-learning/podcasts')) return 'my-podcasts'
   if (pathname.startsWith('/my-learning/certificates')) return 'certificates'
+  /* The compliance-document modal's preview harness — its own page card, so
+     opening the panel there lands on the one flag that gates it. */
+  if (pathname.startsWith('/compliance-documents')) return 'compliance-documents'
   /* ⚠ `/my-learning/path` AND `/catalog` RETURN null SINCE 2026-10-05 — their
      flag PAGES were retired, not their routes. Both routes still render, and
      their surviving flags were re-filed to `dashboard-rebrand`, which is where

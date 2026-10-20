@@ -10,6 +10,7 @@ import { LinksPage } from '@/pages/LinksPage'
 import { PrdsPage } from '@/pages/PrdsPage'
 import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
 import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
+import { ComplianceDocumentPreviewPage } from '@/pages/ComplianceDocumentPreviewPage'
 import { InviteEmailPage } from '@/pages/InviteEmailPage'
 import { InvitedProductDetailPage } from '@/pages/InvitedProductDetailPage'
 import { InvitedCheckoutPage } from '@/pages/InvitedCheckoutPage'
@@ -191,6 +192,23 @@ export default function App() {
       <Route path="/review" element={<TestingGate><ComponentReviewPage /></TestingGate>} />
       {/* The Atlas header on its own, not wired into the shell. See `AtlasHeader`. */}
       <Route path="/atlas-header-preview" element={<TestingGate><AtlasHeaderPreviewPage /></TestingGate>} />
+      {/* The compliance-document modal on its own — a picker over all 24 real
+          documents, behind `compliance-document-modal-preview`. Same idea as
+          `/atlas-header-preview`: a component reviewable without being wired
+          into a flow. INSIDE `AppLayout bare` (unlike that one) so it has the
+          flag store and the robot's Feature Flag panel — without a provider
+          the gate could only be read from the catalog default and `?ff=`
+          would not reach it. See `ComplianceDocumentPreviewPage`. */}
+      <Route element={<AppLayout bare />}>
+        <Route
+          path="/compliance-documents"
+          element={
+            <TestingGate>
+              <ComplianceDocumentPreviewPage />
+            </TestingGate>
+          }
+        />
+      </Route>
       {/* The End-to-End Demo's first page, before its dashboard: blank under the
           partner header. "Invited Product Detail" — see `InvitedProductDetailPage`. */}
       {/* Under the app's providers and prototype chrome — the demo and design

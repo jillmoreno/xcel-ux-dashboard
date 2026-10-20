@@ -316,6 +316,7 @@ export type FeatureFlagPageId =
   | 'learning-resources'
   | 'my-podcasts'
   | 'certificates'
+  | 'compliance-documents'
 
 export type FeatureFlagPage = {
   id: FeatureFlagPageId
@@ -364,6 +365,16 @@ export const FEATURE_FLAG_PAGES: FeatureFlagPage[] = [
     id: 'certificates',
     label: 'Certificates',
     description: 'Year / state filters, certificate viewer.',
+  },
+  /* ⚠ A PREVIEW SURFACE, NOT A PRODUCT PAGE (2026-10-19). `/compliance-documents`
+     renders no part of the learner's product — it is the harness for
+     `ComplianceDocumentModal`. It gets a page card anyway because its flag has
+     to be reachable SOMEWHERE in the panel, and filing it under Dashboard
+     Rebrand would claim it draws on a page it has nothing to do with. */
+  {
+    id: 'compliance-documents',
+    label: 'Compliance Documents',
+    description: 'Preview harness — the compliance-document modal over all 24 documents.',
   },
 ]
 
@@ -2279,6 +2290,28 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'compass', label: 'Compass' },
     ],
     page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compliance-document-modal-preview',
+    /* THE COMPLIANCE DOCUMENT MODAL'S PREVIEW (2026-10-19). Gates
+       `/compliance-documents` — the picker over all 24 real affidavits,
+       attestations, notices and enrollment agreements, which is the only
+       place `ComplianceDocumentModal` renders.
+
+       ⚠ IT GATES A PREVIEW, NOT A PRODUCT SURFACE. The modal is deliberately
+       not wired into Compass, Membership or the end-to-end demo's own
+       `AffidavitModal` — where it gets triggered from is a separate decision.
+       So turning this flag ON changes nothing a learner can reach; it only
+       decides whether the harness page draws itself or says it is switched
+       off. Default ON on the branch, so the branch build shows the work and
+       `promote-to-prototype` surfaces it when the shape of the flow is
+       actually settled. */
+    group: 'Widgets',
+    label: 'Compliance Document Modal preview',
+    description:
+      'On, `/compliance-documents` lists all 24 compliance documents and opens `ComplianceDocumentModal` for the one you pick. Off, that page says the flag is off. Nothing a learner can reach either way \u2014 the modal is not wired into a flow.',
+    defaultEnabled: true,
+    page: 'compliance-documents',
   },
   {
     key: 'e2e-ends-at-password',
