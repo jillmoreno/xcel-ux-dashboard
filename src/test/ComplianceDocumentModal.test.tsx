@@ -3,6 +3,7 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import { ComplianceDocumentModal } from '@/components/courses/ComplianceDocumentModal'
 import {
   COMPLIANCE_DOCUMENTS,
+  MOMENT_LABEL,
   STEPS_BY_SHAPE,
   type ComplianceDocumentConfig,
   type DocumentShape,
@@ -155,6 +156,33 @@ describe('the document set', () => {
     ] as const) {
       expect(used, name).toContain(name)
     }
+  })
+
+  /* ⚠ THE FIELD EXISTS BECAUSE FLORIDA BROKE THE LAST ONE. `timing` was
+     'pre-course' | 'post-final'; Florida's affidavit is signed BEFORE the
+     course exam and the state has no post-exam requirement at all, so neither
+     value was true of it. Six documents sit at that moment. */
+  it('places every document at one of the PRD’s moments', () => {
+    for (const d of COMPLIANCE_DOCUMENTS) {
+      expect(MOMENT_LABEL[d.moment], d.id).toBeTruthy()
+    }
+    // Florida's is before the exam, not after the course.
+    expect(docById('fl-post').moment).toBe('before-exam')
+    expect(COMPLIANCE_DOCUMENTS.filter((d) => d.moment === 'before-exam')).toHaveLength(5)
+
+    /* The old split cannot express the set: these four moments all existed
+       inside what used to be one value. */
+    const moments = new Set(COMPLIANCE_DOCUMENTS.map((d) => d.moment))
+    expect(moments).toContain('checkout')
+    expect(moments).toContain('before-course')
+    expect(moments).toContain('before-first-lesson')
+    expect(moments).toContain('at-completion')
+
+    /* ⚠ `during-exam` IS A MOMENT WITH NO DOCUMENT — a proctor is present and
+       checks identity, but nothing is signed. Kept so the list is the PRD's
+       rather than a subset fitted to today's files. */
+    expect(moments).not.toContain('during-exam')
+    expect(MOMENT_LABEL['during-exam']).toBeTruthy()
   })
 
   it('leaves `version` unset everywhere — there is no source of truth for it yet', () => {

@@ -3,6 +3,7 @@ import { ComplianceDocumentModal } from '@/components/courses/ComplianceDocument
 import {
   COMPLIANCE_DOCUMENTS,
   STEPS_BY_SHAPE,
+  MOMENT_LABEL,
   acknowledgementFor,
   type ComplianceDocumentConfig,
   type DocumentShape,
@@ -177,7 +178,7 @@ function DocumentButton({
     <button type="button" onClick={onOpen} style={CARD}>
       <span style={CARD_TOP}>
         <span style={STATE_PILL}>{doc.state}</span>
-        <span style={TIMING}>{doc.timing === 'pre-course' ? 'Pre-course' : 'Post-final'}</span>
+        <span style={TIMING}>{MOMENT_LABEL[doc.moment]}</span>
       </span>
       <span style={CARD_TYPE}>{doc.complianceType}</span>
       <span style={CARD_TITLE}>{doc.title}</span>

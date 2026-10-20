@@ -130,7 +130,7 @@ td.fn{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3)}
 <h2>All 24, by shape</h2>
 
 <div class="tw"><table>
-<thead><tr><th>Document</th><th>Type</th><th>Shape</th><th>When</th><th>Source file</th></tr></thead>
+<thead><tr><th>Document</th><th>Type</th><th>Shape</th><th>Moment</th><th>Source file</th></tr></thead>
 <tbody>
 <tr><td><strong>Florida — Life &amp; Health</strong></td><td>Pre-Course Notice</td><td><code>notice</code></td><td>Pre-course</td><td class="fn">FL PE-Pre Course Notice-LifeHealth.docx</td></tr>
 <tr><td><strong>Florida — Property &amp; Casualty</strong></td><td>Pre-Course Notice</td><td><code>notice</code></td><td>Pre-course</td><td class="fn">FL PE-Pre Course Notice-PropertyCasualty.docx</td></tr>
@@ -181,7 +181,12 @@ td.fn{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3)}
 <h3>5. Minnesota’s Post Final Affidavit still cannot be read</h3>
 <p>It is the only PDF among 23 Word files, built with Adobe Fill &amp; Sign, and its fonts are subset with <strong>no ToUnicode map and no /Differences array</strong> — nothing in the file says which character each glyph stands for. Text extraction, raw stream decoding and a character-map search all fail for the same reason. Enough partially decodes to suggest a two-party form (“Student’s Full Legal Name / License Number”, then a proctor block), but that is inference from recovered glyphs, not a read, and it is recorded as such. It needs opening in a viewer and copying out by hand.</p>
 
-<h3>6. Three smaller things, for whoever owns the files</h3>
+<h3>6. Florida has no post-exam affidavit, and that broke the data model</h3>
+<p>Florida requires a <strong>pre-exam</strong> unassisted acknowledgment. Its profile is explicit about the other end: <em>“After the final exam: proctor or attestation: No regulation.”</em> The catalog had a two-value field — before the course, or after the final — and neither was true of Florida. It had been filed as post-final, which said the opposite of what the state asks for.</p>
+<p>So the field is now the PRD’s own list of <strong>moments</strong>, and the spread shows why two values were never going to hold: five documents at checkout, three before the course opens, two before the first lesson, five before the exam, seven after it, two at completion. Four of those moments sat inside one value before.</p>
+<p>One moment carries no document on purpose — <em>during</em> the exam, where a proctor is present and checks identity but nothing is signed. It is in the list so the set is the regulation’s rather than a shape fitted to the files we happen to hold.</p>
+
+<h3>7. Three smaller things, for whoever owns the files</h3>
 <ul>
 <li><code>MN PE-Terms and Conditions…- Copy.docx</code> carries Windows’ duplicate suffix with no original beside it — but its text is <em>not</em> a duplicate of any other row, so this looks like a lost original rather than a stray.</li>
 <li>Ohio’s combined affidavit explains itself: <em>“OH rule says both can’t be on one form and OCD does not have the functionality to attach 2 post final affidavits.”</em> That is why a sixth type name exists.</li>
@@ -195,6 +200,9 @@ td.fn{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3)}
 <tbody>
 <tr><td><strong>Edition / version numbers</strong></td><td>Wanted on every document; nothing tracks them today. The field exists and is deliberately unset on all 24 — an empty field is a question, a guessed one is an answer.</td></tr>
 <tr><td><strong>English vs. Spanish attachment</strong></td><td>The course’s own language should pick the document. That logic does not exist. The modal takes the language from its caller and offers the learner no toggle, so nobody can sign a document in a language the course did not attach.</td></tr>
+<tr><td><strong>Minnesota and Mississippi’s proctor affidavits</strong></td><td>Table A5 requires a proctor affidavit in both. Minnesota’s is the unreadable PDF; <strong>Mississippi has no such file in the set at all</strong> — its only document is a student pre-exam acknowledgment.</td></tr>
+<tr><td><strong>Connecticut’s form is the state’s</strong></td><td>Its profile specifies an “Affidavit of Personal Responsibility (form provided by the state)”. The wording rendered here is ours, not Connecticut’s.</td></tr>
+<tr><td><strong>Illinois changes in 2027</strong></td><td>Learner affirmation through 2027; from the 2027 renewal a monitor affidavit signed after the exam. Illinois becomes two-party on a known date.</td></tr>
 <tr><td><strong>Lines of authority</strong></td><td>Two affidavits name one line in their heading — “Illinois <strong>Life</strong>”, “Ohio <strong>Property</strong>” — against un-lined file names. There may be a per-line set behind both.</td></tr>
 <tr><td><strong>Ohio’s ethnicity and address fields</strong></td><td>Ohio’s registration form is the only pre-course document collecting SSN, date of birth, address and phone. Rendered, because the form asks for them; worth a second look before it is wired to anything real.</td></tr>
 </tbody>

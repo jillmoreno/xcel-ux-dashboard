@@ -17,7 +17,41 @@
  * source resisted extraction — see `needs-review`.
  */
 
-export type DocumentTiming = 'pre-course' | 'post-final'
+/**
+ * WHEN THE DOCUMENT IS PUT IN FRONT OF THE LEARNER — the PRD's own moments
+ * (§4.2), not a two-way split.
+ *
+ * ⚠ IT WAS `'pre-course' | 'post-final'` AND FLORIDA BROKE IT. Florida's
+ * affidavit is signed BEFORE the course exam and the state has no post-exam
+ * requirement at all ("After the final exam: proctor or attestation: No
+ * regulation"), so neither value was true of it. Six of the 24 sit at that
+ * moment. A field that cannot say when a compliance document is signed is
+ * worse than no field, because every row still carries a confident answer.
+ *
+ * ⚠ `during-exam` HAS NO DOCUMENT, deliberately. The PRD lists it as a moment
+ * — a proctor is present and checks identity — but nothing is signed there,
+ * so no row uses it. Kept so the set of moments is the PRD's rather than a
+ * subset that happens to match today's files.
+ */
+export type DocumentMoment =
+  | 'checkout'
+  | 'before-course'
+  | 'before-first-lesson'
+  | 'before-exam'
+  | 'during-exam'
+  | 'after-exam'
+  | 'at-completion'
+
+/** How each moment reads on screen. */
+export const MOMENT_LABEL: Record<DocumentMoment, string> = {
+  'checkout': 'At checkout',
+  'before-course': 'Before the course opens',
+  'before-first-lesson': 'Before the first lesson',
+  'before-exam': 'Before the course exam',
+  'during-exam': 'During the course exam',
+  'after-exam': 'After the course exam',
+  'at-completion': 'At course completion',
+}
 
 export type DocumentShape =
   | 'notice'
@@ -71,7 +105,7 @@ export interface ComplianceDocumentConfig {
   id: string
   /** Two-letter state, or 'Generic' for the brand-level fallbacks. */
   state: string
-  timing: DocumentTiming
+  moment: DocumentMoment
   shape: DocumentShape
   /** The document's kind — drawn as the modal's heading. See `ComplianceType`. */
   complianceType: ComplianceType
@@ -219,7 +253,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
        signed document drift apart. */
     id: 'fl-notice-lh',
     state: 'FL',
-    timing: 'pre-course',
+    moment: 'before-first-lesson',
     shape: 'notice',
     title: 'Florida — Life & Health Pre-Course Notice',
     complianceType: 'Pre-Course Notice',
@@ -246,7 +280,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
        Bonnie/Patrick to confirm before it replaces the live file. */
     id: 'fl-notice-pc',
     state: 'FL',
-    timing: 'pre-course',
+    moment: 'before-first-lesson',
     shape: 'notice',
     title: 'Florida — Property & Casualty Pre-Course Notice',
     complianceType: 'Pre-Course Notice',
@@ -264,7 +298,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
   {
     id: 'xcel-generic-tc',
     state: 'Generic',
-    timing: 'pre-course',
+    moment: 'before-course',
     shape: 'signed-tc',
     title: 'XCEL Generic — Terms & Conditions',
     complianceType: 'Terms and Conditions',
@@ -279,7 +313,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
   {
     id: 'ca-tc',
     state: 'CA',
-    timing: 'pre-course',
+    moment: 'before-course',
     shape: 'signed-tc',
     title: 'California — Pre-Course Terms & Conditions',
     complianceType: 'Terms and Conditions',
@@ -291,7 +325,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
   {
     id: 'il-tc',
     state: 'IL',
-    timing: 'pre-course',
+    moment: 'checkout',
     shape: 'signed-tc',
     title: 'Illinois — Terms & Conditions / Pre-Course Affidavit',
     complianceType: 'Terms and Conditions',
@@ -311,7 +345,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
        TODO(content): confirm which file is authoritative. */
     id: 'mn-tc',
     state: 'MN',
-    timing: 'pre-course',
+    moment: 'checkout',
     shape: 'signed-tc',
     title: 'Minnesota — Terms & Conditions / Pre-Course Affidavit',
     complianceType: 'Terms and Conditions',
@@ -334,7 +368,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
   {
     id: 'ky-ea',
     state: 'KY',
-    timing: 'pre-course',
+    moment: 'checkout',
     shape: 'enrollment-agreement',
     title: 'Kentucky — Pre-Course Enrollment Agreement',
     complianceType: 'Enrollment Agreement',
@@ -388,7 +422,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
   {
     id: 'nv-ea',
     state: 'NV',
-    timing: 'pre-course',
+    moment: 'checkout',
     shape: 'enrollment-agreement',
     title: 'Nevada — Pre-Course Enrollment Agreement',
     complianceType: 'Enrollment Agreement',
@@ -438,7 +472,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
        whether it belongs in the modal or in the account record. */
     id: 'or-ea',
     state: 'OR',
-    timing: 'pre-course',
+    moment: 'checkout',
     shape: 'enrollment-agreement',
     title: 'Oregon — Pre-Course Enrollment Agreement',
     complianceType: 'Enrollment Agreement',
@@ -486,7 +520,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
        carries `extraFields` where no other enrollment agreement does. */
     id: 'oh-reg',
     state: 'OH',
-    timing: 'pre-course',
+    moment: 'before-course',
     shape: 'enrollment-agreement',
     title: 'Ohio — Prelicensing Education Student Registration Form',
     complianceType: 'Enrollment Agreement',
@@ -537,7 +571,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
   {
     id: 'ny-post',
     state: 'NY',
-    timing: 'post-final',
+    moment: 'after-exam',
     shape: 'affidavit-single',
     title: 'New York — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
@@ -550,7 +584,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
   {
     id: 'ms-post',
     state: 'MS',
-    timing: 'post-final',
+    moment: 'before-exam',
     shape: 'affidavit-single',
     title: 'Mississippi — Pre-Final Affidavit',
     complianceType: 'Pre-Final Affidavit',
@@ -563,7 +597,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
   {
     id: 'pa-post',
     state: 'PA',
-    timing: 'post-final',
+    moment: 'before-exam',
     shape: 'affidavit-single',
     title: 'Pennsylvania — Pre-Final Affidavit',
     complianceType: 'Pre-Final Affidavit',
@@ -576,12 +610,17 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
   {
     id: 'fl-post',
     state: 'FL',
-    timing: 'post-final',
+    moment: 'before-exam',
     shape: 'affidavit-single',
     title: 'Florida — Pre-Final Affidavit',
     complianceType: 'Pre-Final Affidavit',
     sourceFile: 'FL PE-Pre Final Affidavit.docx',
     subject: 'Florida',
+    /* ⚠ THE ROW THAT BROKE THE OLD `timing` FIELD. Florida requires a
+       pre-exam unassisted acknowledgment and has NO post-exam requirement —
+       its profile reads "After the final exam: proctor or attestation: No
+       regulation". Under the old two-value field this was filed `post-final`,
+       which said the opposite of what the state asks for. */
     body:
       'By submitting this form, the undersigned student acknowledges that the online course examination must be completed unassisted by any person, the course material or other materials. The student also acknowledges that a violation of these standards shall result in loss of course credit and administrative sanction by the Florida Department of Financial Services.\n\nThe student further declares that he/she has been actively engaged in one-hundred percent of the online pre-licensing course, and has completed one hundred percent of the review questions for each particular section/chapter before proceeding to the next section/chapter.\n\nThe date on this affidavit is the course completion date.',
     extraFields: [],
@@ -595,7 +634,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
        brief's invention. */
     id: 'ca-post',
     state: 'CA',
-    timing: 'post-final',
+    moment: 'at-completion',
     shape: 'affidavit-single',
     title: 'California — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
@@ -614,7 +653,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
        an un-lined file name, so a per-line set may still exist. */
     id: 'il-post',
     state: 'IL',
-    timing: 'post-final',
+    moment: 'at-completion',
     shape: 'affidavit-single',
     title: 'Illinois — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
@@ -634,7 +673,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
        Affidavit”, so this file may be one line of authority's. */
     id: 'oh-post',
     state: 'OH',
-    timing: 'post-final',
+    moment: 'after-exam',
     shape: 'affidavit-single',
     title: 'Ohio — Pre & Post Final Affidavit',
     complianceType: 'Final Affidavit',
@@ -652,7 +691,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
        reading. */
     id: 'mn-pre-final',
     state: 'MN',
-    timing: 'post-final',
+    moment: 'before-exam',
     shape: 'affidavit-single',
     title: 'Minnesota — Pre-Final Affidavit',
     complianceType: 'Pre-Final Affidavit',
@@ -665,7 +704,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
   {
     id: 'xcel-generic-attestation',
     state: 'Generic',
-    timing: 'post-final',
+    moment: 'before-exam',
     shape: 'affidavit-single',
     title: 'XCEL — General Pre-Final Attestation',
     complianceType: 'Pre-Final Affidavit',
@@ -689,7 +728,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
        all; these four, all filed as single, do. The shape was inverted. */
     id: 'co-post',
     state: 'CO',
-    timing: 'post-final',
+    moment: 'after-exam',
     shape: 'affidavit-two-party',
     title: 'Colorado — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
@@ -706,7 +745,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
   {
     id: 'ct-post',
     state: 'CT',
-    timing: 'post-final',
+    moment: 'after-exam',
     shape: 'affidavit-two-party',
     title: 'Connecticut — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
@@ -727,7 +766,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
        rather than shared. */
     id: 'wi-post',
     state: 'WI',
-    timing: 'post-final',
+    moment: 'after-exam',
     shape: 'affidavit-two-party',
     title: 'Wisconsin — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
@@ -744,7 +783,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
   {
     id: 'wv-post',
     state: 'WV',
-    timing: 'post-final',
+    moment: 'after-exam',
     shape: 'affidavit-two-party',
     title: 'West Virginia — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
@@ -770,7 +809,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
        by guessing at a cipher is worse than an empty one. */
     id: 'mn-post-pdf',
     state: 'MN',
-    timing: 'post-final',
+    moment: 'after-exam',
     shape: 'needs-review',
     title: 'Minnesota — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
