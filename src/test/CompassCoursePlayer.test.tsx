@@ -1,3 +1,4 @@
+import { pinNewYorkCourse } from './pinNavPlacement'
 import { render, screen, act, fireEvent, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -76,6 +77,13 @@ function seed(extra: Record<string, unknown> = {}) {
 }
 
 function renderShell(url: string) {
+  /* ⚠ NEW YORK IS A PREMISE, NOT AN INHERITANCE — 2026-10-20, when Automatic
+     was removed from the Course control and the default became Florida. This
+     suite's subject is the PLAYER — its lesson list, its titles, its Overview
+     view — and the 42 lessons it counts are New York's only because that is
+     what the old default resolved to. Pinning says what it means; see
+     `pinNewYorkCourse`. */
+  pinNewYorkCourse()
   return render(
     <MemoryRouter initialEntries={[url]}>
       <AccountProvider>

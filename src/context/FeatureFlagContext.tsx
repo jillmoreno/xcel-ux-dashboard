@@ -3417,11 +3417,17 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        this went through. The dashboard demos New York on the qualifying
        journey and Florida on CE and exam prep, and that split is a decision
        with a test on it. `auto` means "whatever this journey already did". */
-    defaultVariant: 'auto',
+    defaultVariant: 'fl',
     variants: [
-      { value: 'auto', label: 'Automatic', description: 'Each journey keeps the licence it already demoed — New York for qualifying education, Florida for CE and exam prep. The committed default, and the only row that names no jurisdiction.' },
-      { value: 'ny', label: 'New York Life & Health Pre-Licensing', description: 'The licence the qualifying journey has demoed since 2026-09-16, and the only one whose exam facts are confirmed against XCEL’s published page. Picking it explicitly puts CE and exam prep on New York too.' },
+      /* ⚠ "Automatic" STOOD HERE until 2026-10-20 and was the committed
+         default. It read "each journey keeps the licence it already demoed",
+         which was true and hid that the licence DEPENDED ON THE VERSION:
+         Florida on the End-to-End family, New York on every other. One
+         setting, two answers, nothing on screen saying which you had. Florida
+         is the default now — `DEFAULT_SELECTION` in `courseFixtures.ts`, where
+         the rest of the reasoning is, and where a stored `auto` is resolved. */
       { value: 'fl', label: 'Florida Life & Health Pre-Licensing', description: 'The course the CE and exam-prep fixtures were authored against. Published exam facts; ⚠ invented qualifying lesson count.' },
+      { value: 'ny', label: 'New York Life & Health Pre-Licensing', description: 'The licence the qualifying journey has demoed since 2026-09-16, and the only one whose exam facts are confirmed against XCEL’s published page. Picking it explicitly puts CE and exam prep on New York too.' },
       { value: 'tx', label: 'Texas Life & Health Pre-Licensing', description: 'Its own curriculum (general knowledge, then the Texas Insurance Code), study plan and content tree. ⚠ Every figure invented.' },
     ],
     secondaryVariants: [

@@ -29,3 +29,34 @@ export function pinLeftRail() {
   url.searchParams.set('ff', ff ? `${ff},nav-placement:off` : 'nav-placement:off')
   window.history.replaceState({}, '', `${url.pathname}${url.search}`)
 }
+
+/**
+ * PIN THE DEMOED LICENCE TO NEW YORK — 2026-10-20.
+ *
+ * ⚠ THESE SUITES ARE ABOUT LAYOUT AND WERE INHERITING A JURISDICTION. QE
+ * Focused, Testing, Testing 2 and Testing 3 assert lesson counts, headings
+ * and exam facts that happen to be New York's, because New York is what the
+ * `auto` default resolved to on every version outside the End-to-End family.
+ * Automatic was removed that day and the default became Florida, so ~50
+ * assertions across four files went red at once.
+ *
+ * ⚠ THE FIX IS TO SAY WHAT THEY MEAN, NOT TO FOLLOW THE DEFAULT. Rewriting
+ * them to Florida would make them pass and leave them inheriting the next
+ * default too — and these files' subject is the LAYOUT each version
+ * introduced, not which licence it draws. Pinning makes the jurisdiction a
+ * stated premise, so the next person to move the default moves nothing here.
+ *
+ * ⚠ IT DOES NOT PIN A CASE THAT ALREADY NAMES A COURSE. Same shape as
+ * `pinLeftRail` above: a suite or case that sets `dashboard-course-state`
+ * itself keeps its own value, which is what leaves the course-axis cases in
+ * `QeFocusedVersion` ("does NOT move the Continuing Ed persona off Florida")
+ * saying exactly what they always said.
+ */
+export function pinNewYorkCourse() {
+  const url = new URL(window.location.href)
+  const ff = url.searchParams.get('ff')
+  const alreadySet = ff?.split(',').some((tok) => tok.split(':')[0] === 'dashboard-course-state')
+  if (alreadySet) return
+  url.searchParams.set('ff', ff ? `${ff},dashboard-course-state:ny` : 'dashboard-course-state:ny')
+  window.history.replaceState({}, '', `${url.pathname}${url.search}`)
+}

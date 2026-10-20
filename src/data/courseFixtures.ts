@@ -114,10 +114,41 @@ export const COURSE_FLAG_KEY = 'dashboard-course-state'
  * different one is the contradiction this whole axis exists to remove; under
  * `auto` the control names no jurisdiction, because it is not choosing one.
  */
+/* ⚠ `auto` IS NO LONGER OFFERED — 2026-10-20. Everything above is the record
+   of why it existed and is kept because it is also the record of what it
+   cost: one control setting that resolved to a different licence depending on
+   the version, which is the thing its removal fixes. It stays in the TYPE
+   because a stored `auto` still arrives from reviewers' browsers and
+   `resolveSelection` maps it to the new default.
+
+   ⚠ AND IT NOTES THAT `fl` AS A DEFAULT WAS TRIED AND REJECTED on 2026-10-15
+   — "`fl` as the default changed the page every stakeholder lands on, and
+   `ny` changed Learner Focused's renewal cycle". Both objections are weaker
+   now and that is why the call went the other way: the page every stakeholder
+   lands on is the End-to-End family, which was ALREADY Florida, and Learner
+   Focused is archived off the picker. What is left is Eric's versions moving
+   NY → FL, which is the deliberate part. */
 export type CourseSelection = CourseId | 'auto'
 
-/** The control's committed default — see `CourseSelection`. */
-export const DEFAULT_SELECTION: CourseSelection = 'auto'
+/**
+ * ⚠ FLORIDA SINCE 2026-10-20, `auto` before it — Jillienne: "Course - i want
+ * to remove automatic, and just set it to Florida as the default".
+ *
+ * ⚠ WHAT `auto` ACTUALLY DID WAS ANSWER DIFFERENTLY PER VERSION, which is the
+ * case for removing it rather than a side effect of doing so. It meant "do
+ * what you always did", and what each surface always did was not the same
+ * thing: the End-to-End family forced Florida in `MembershipOverview` because
+ * its invite flow sells a Florida course, while every other version fell
+ * through to the journey's own profile and rendered NEW YORK. So one control
+ * setting showed two different licences depending on which version you were
+ * on, with nothing on screen saying so.
+ *
+ * ⚠ SO THIS FLIPS ERIC'S VERSIONS NY → FL — WIP, White, V2 and Atlas/Compass
+ * Global Navigation. That is the point (one default course for the demo) and
+ * it is a change to his surfaces, taken by Jillienne as the bar's owner.
+ * Picking New York explicitly is one click and unchanged.
+ */
+export const DEFAULT_SELECTION: CourseSelection = 'fl'
 
 /**
  * The course the DATA layer falls back to when nothing has chosen one.
@@ -187,14 +218,21 @@ const COURSE_CE_PATH_IDS: Record<CourseId, string> = {
  * `dashboardProgressFixtures` makes for the New York title.
  */
 export const COURSE_PICKER: { course: CourseSelection; label: string }[] = [
-  /* AUTOMATIC FIRST, because it is the default and because it is the only row
-     that is not a claim about a jurisdiction — see `CourseSelection`. */
-  { course: 'auto', label: 'Automatic' },
-  /* Then New York: the incumbent, the licence the qualifying journey has
-     demoed since 2026-09-16, and the only one here whose figures are
+  /* ⚠ "Automatic" LED THIS LIST UNTIL 2026-10-20 and is gone — Jillienne:
+     "Course - i want to remove automatic, and just set it to Florida as the
+     default". THIS array is what the dropdown renders; the flag's `variants`
+     are the catalog's copy of the same list, and both had to lose the row.
+     Removing it from only one leaves the control offering a value its own
+     catalog does not know, which is how a picker ends up with a row that
+     ticks nothing. See `DEFAULT_SELECTION` for what Automatic actually did.
+
+     ⚠ FLORIDA FIRST NOW, because it is the default and a picker whose first
+     row is not its default reads as though something else has been chosen. */
+  { course: 'fl', label: 'Florida Life & Health Pre-Licensing' },
+  /* Then New York: the incumbent, the licence the qualifying journey demoed
+     from 2026-09-16 until today, and the only one here whose figures are
      confirmed against XCEL's published page. */
   { course: 'ny', label: 'New York Life & Health Pre-Licensing' },
-  { course: 'fl', label: 'Florida Life & Health Pre-Licensing' },
   { course: 'tx', label: 'Texas Life & Health Pre-Licensing' },
 ]
 
@@ -209,6 +247,11 @@ export const SEQUENCING_PICKER: { mode: CourseSequencing; label: string }[] = [
 
 /** Normalise a flag variant to a selection. Anything unrecognised is `auto`. */
 export function resolveSelection(variant: string | undefined): CourseSelection {
+  /* ⚠ `auto` FALLS HERE DELIBERATELY. It was the committed default until
+     2026-10-20 and is sitting in `cgp.featureFlags` in every browser that has
+     opened the demo; it is no longer offered, so it resolves to the new
+     default like any unknown value. Without that those machines would tick no
+     row in the Course picker. */
   return variant === 'tx' || variant === 'fl' || variant === 'ny' ? variant : DEFAULT_SELECTION
 }
 

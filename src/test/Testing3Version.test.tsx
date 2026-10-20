@@ -1,3 +1,4 @@
+import { pinNewYorkCourse } from './pinNavPlacement'
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
@@ -55,6 +56,18 @@ function renderShell(url: string) {
     '',
     ff ? `/dashboard-rebrand?ff=${encodeURIComponent(ff)}` : '/dashboard-rebrand',
   )
+  /* ⚠ NEW YORK IS A PREMISE HERE, NOT AN INHERITANCE — 2026-10-20, when
+     Automatic was removed from the Course control and the default became
+     Florida. This suite's subject is Testing 3's combined course block; its
+     lesson counts and headings are New York's only because that is what the
+     old default resolved to. See `pinNewYorkCourse`.
+
+     ⚠ AFTER THE `replaceState` ABOVE, NOT BEFORE — that line REBUILDS the
+     location from the entry's `ff` alone, so a pin set earlier is wiped. It
+     cost fifteen cases still reading Florida's 36 lessons with the pin
+     apparently in place, which is the same trap the note above describes
+     from the other direction. */
+  pinNewYorkCourse()
   return render(
     <MemoryRouter initialEntries={[url]}>
       <AccountProvider>

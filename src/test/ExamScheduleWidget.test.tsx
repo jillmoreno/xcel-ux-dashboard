@@ -57,7 +57,12 @@ beforeEach(() => {
  * question itself — is unchanged by the arm and is asserted here.
  */
 function renderShell(ff?: string) {
-  const PIN = 'exam-card-placement:journey-column'
+    /* ⚠ NEW YORK IS A PREMISE, NOT AN INHERITANCE — 2026-10-20, when Automatic
+     was removed from the Course control and the default became Florida. This
+     suite's subject is the exam card's phases, not which state it names, and its New York
+     strings and counts are only what the old default happened to resolve to.
+     Pinning says what it means and survives the next default move. */
+  const PIN = 'exam-card-placement:journey-column,dashboard-course-state:ny'
   const all = ff ? `${PIN},${ff}` : PIN
   window.history.replaceState({}, '', `/dashboard-rebrand?ff=${encodeURIComponent(all)}`)
   return render(

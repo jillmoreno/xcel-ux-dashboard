@@ -112,18 +112,26 @@ describe('the committed defaults — a plain load of main is unchanged', () => {
 
   it('is in the catalog, with both axes', () => {
     expect(def).toBeDefined()
-    expect(def.variants?.map((v) => v.value)).toEqual(['auto', 'ny', 'fl', 'tx'])
+    /* ⚠ FLORIDA FIRST, AND NO `auto` — 2026-10-20. The catalog's list and
+       `COURSE_PICKER` are the same list in two places (the dropdown renders
+       the second), so both lose the row together or the control offers a
+       value its own catalog does not know. */
+    expect(def.variants?.map((v) => v.value)).toEqual(['fl', 'ny', 'tx'])
     expect(def.secondaryVariants?.map((v) => v.value)).toEqual(['unregulated', 'regulated'])
   })
 
-  /* ⚠ THE LOAD-BEARING ASSERTION IN THIS FILE. `auto` + `unregulated` is what
-     makes the branch additive. Changing them is a `promote-to-prototype`
-     decision, not an edit — if this fails, that is the conversation. */
-  it('opens on Automatic, unregulated', () => {
-    expect(def.defaultVariant).toBe('auto')
+  /* ⚠ THE LOAD-BEARING ASSERTION IN THIS FILE, AND IT FIRED. `auto` +
+     `unregulated` was what made the Course branch additive, and the note here
+     said changing it "is a `promote-to-prototype` decision, not an edit — if
+     this fails, that is the conversation." It failed on 2026-10-20 and the
+     conversation happened: Jillienne asked for Automatic gone and Florida as
+     the default, was shown that it flips Eric's four versions and Anjani's
+     player from New York, and said to finish it. */
+  it('opens on Florida, unregulated', () => {
+    expect(def.defaultVariant).toBe('fl')
     expect(def.defaultSecondaryVariant).toBe('unregulated')
-    expect(resolveSelection(def.defaultVariant)).toBe('auto')
-    expect(chosenCourse('auto')).toBeUndefined()
+    expect(resolveSelection(def.defaultVariant)).toBe('fl')
+    expect(chosenCourse('fl')).toBe('fl')
     expect(isRegulatedCourse(def.defaultSecondaryVariant)).toBe(false)
   })
 
@@ -138,7 +146,13 @@ describe('the committed defaults — a plain load of main is unchanged', () => {
    * `QeFocusedVersion.test.tsx` has a test about by name. `auto` changes
    * neither, because it passes no course at all.
    */
-  it('on Automatic, every journey resolves what it resolved before the axis', () => {
+  /* ⚠ RENAMED, NOT RETIRED — 2026-10-20. "Automatic" is no longer a state the
+     control can be in, but `chosenCourse(undefined)` is still the DATA
+     layer's fallback and still resolves per journey, and that is what this
+     case has always actually tested. It is kept because it is the record of
+     why one default could not preserve `main` — and because anything else
+     passing no course still lands here. */
+  it('with no course chosen, every journey resolves what it always did', () => {
     const auto = chosenCourse('auto')
     expect(dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe', auto)!.path.state).toBe('NY')
     expect(dashboardProgressPersonaFor('xcel', 'progress-on-track', 'ce', auto)!.path.state).toBe('FL')
@@ -147,19 +161,26 @@ describe('the committed defaults — a plain load of main is unchanged', () => {
     ).toBe('FL')
   })
 
-  it('degrades an unrecognised variant to Automatic rather than throwing', () => {
+  it('degrades an unrecognised variant to the default rather than throwing', () => {
     // A stale `?ff=dashboard-course-state:ca` from a shared link, or a
     // localStorage entry written by a future build.
-    expect(resolveSelection('ca')).toBe('auto')
-    expect(resolveSelection(undefined)).toBe('auto')
+    expect(resolveSelection('ca')).toBe('fl')
+    expect(resolveSelection(undefined)).toBe('fl')
     expect(isRegulatedCourse('whatever')).toBe(false)
+  })
+
+  /* ⚠ AND `auto` IS NOW ONE OF THOSE STALE VALUES. It was the committed
+     default for five days, so it is in `cgp.featureFlags` on every machine
+     that has opened the demo; unresolved it would tick no row in the picker. */
+  it('still understands a stored `auto`', () => {
+    expect(resolveSelection('auto')).toBe('fl')
   })
 })
 
 describe('the Course dropdown on the Demo Controls bar', () => {
-  it('shows the active selection on the pill, Automatic by default', () => {
+  it('shows the active selection on the pill, Florida by default', () => {
     renderBar()
-    expect(screen.getByRole('button', { name: /Course:.*Automatic/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Course:.*Florida/i })).toBeTruthy()
   })
 
   /* TWO GROUPS, TWO ROLES. The panel is a `menu` holding two radiogroups
@@ -172,16 +193,17 @@ describe('the Course dropdown on the Demo Controls bar', () => {
     expect(within(sequencingGroup()).getAllByRole('radio')).toHaveLength(2)
   })
 
-  it('offers every course plus Automatic, with Automatic checked', () => {
+  it('offers the three courses, with Florida checked', () => {
     renderBar()
     openCourse()
-    const [auto, ny, fl, tx] = within(courseGroup()).getAllByRole('radio')
-    expect(auto.textContent).toMatch(/Automatic/)
-    expect(ny.textContent).toMatch(/New York Life & Health Pre-Licensing/)
+    const [fl, ny, tx] = within(courseGroup()).getAllByRole('radio')
     expect(fl.textContent).toMatch(/Florida Life & Health Pre-Licensing/)
+    expect(ny.textContent).toMatch(/New York Life & Health Pre-Licensing/)
     expect(tx.textContent).toMatch(/Texas Life & Health Pre-Licensing/)
-    expect(auto.getAttribute('aria-checked')).toBe('true')
-    expect(fl.getAttribute('aria-checked')).toBe('false')
+    expect(fl.getAttribute('aria-checked')).toBe('true')
+    expect(ny.getAttribute('aria-checked')).toBe('false')
+    /* No Automatic row at all — the removal, not just an unchecked one. */
+    expect(within(courseGroup()).queryByText(/Automatic/)).toBeNull()
   })
 
   it('picks Texas, and the pill follows', () => {
