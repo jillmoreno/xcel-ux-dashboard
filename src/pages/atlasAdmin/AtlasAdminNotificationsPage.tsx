@@ -120,10 +120,6 @@ export function AtlasAdminNotificationsPage() {
                               {active ? <span style={SELECTED}>Selected</span> : null}
                             </p>
                             <p style={{ margin: '4px 0 0', fontSize: 12.5, lineHeight: 1.45, color: 'var(--admin-text)' }}>{n.description}</p>
-                            <p style={{ margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, lineHeight: '11.5px', color: 'var(--admin-muted)' }}>
-                              <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: isOn(n) ? 'var(--admin-success-ink)' : 'var(--admin-faint)' }} />
-                              {statusLine(n)}
-                            </p>
                           </div>
                           <button
                             type="button"
@@ -139,7 +135,11 @@ export function AtlasAdminNotificationsPage() {
                             <span style={{ ...KNOB, left: isOn(n) ? 18 : 2 }} />
                           </button>
                         </div>
-                        {/* The row's links, across the full row — right edge on the toggle's, a 1px rule 4px above. */}
+                        {/* The status line, then the links — each across the full row under a 1px rule. */}
+                        <p style={{ margin: '10px 0 0', paddingTop: 4, borderTop: '1px solid var(--admin-rule)', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, lineHeight: '11.5px', color: 'var(--admin-muted)' }}>
+                          <span aria-hidden style={{ flex: 'none', width: 6, height: 6, borderRadius: '50%', background: isOn(n) ? 'var(--admin-success-ink)' : 'var(--admin-faint)' }} />
+                          {statusLine(n)}
+                        </p>
                         <div style={{ marginTop: 10, paddingTop: 4, borderTop: '1px solid var(--admin-rule)', display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 12 }}>
                           {n.actions.map((a) => (
                             <button
