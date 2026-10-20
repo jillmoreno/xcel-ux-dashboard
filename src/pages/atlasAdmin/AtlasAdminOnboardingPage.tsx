@@ -43,7 +43,7 @@ const SETUP = ['Saving what you told us', 'Creating your email, link, and QR', '
 
 export function AtlasAdminOnboardingPage() {
   const navigate = useNavigate()
-  const { companyLabel, partnerRequest, onboardingDraft, setOnboardingDraft, setOnboarded, setCompanyLabel, setProgressReport, showToast } = useAdminStore()
+  const { companyLabel, partnerRequest, onboardingDraft, setOnboardingDraft, setOnboarded, setSampleRoster, setCompanyLabel, setProgressReport, showToast } = useAdminStore()
   // What Partner with us captured comes first, as the CSM's notes would.
   const fresh = () => {
     const f = freshAnswers(partnerRequest?.company ?? companyLabel)
@@ -89,6 +89,8 @@ export function AtlasAdminOnboardingPage() {
     setCompanyLabel(a.company.trim())
     setProgressReport({ active: a.cadence !== 'alert-only', people: a.recipients, day: a.cadence === 'daily' ? 'Every weekday' : 'Mondays' })
     setOnboarded(true)
+    // A new office starts with nobody on the roster.
+    setSampleRoster(false)
     setOnboardingDraft(null)
     setSettingUp(0)
   }

@@ -6,7 +6,7 @@ import { ADMIN_DEPARTMENTS, ADMIN_LEARNERS, type Learner } from '@/data/atlasAdm
 import { ADMIN_INVITES, type Invite } from '@/data/atlasAdmin/invites'
 import { ADMIN_RULES, type AssignmentRule } from '@/data/atlasAdmin/assignments'
 import { SEATS_PURCHASED } from '@/data/atlasAdmin/organization'
-import { ADMIN_BASE, AdminStoreContext, type AddedDepartment, type AdminEvent, type PartnerRequest, type AdminStore, type AdminTouch, type ProgressReportSettings } from './adminStore'
+import { ADMIN_BASE, AdminStoreContext, useAdminStore, type AddedDepartment, type AdminEvent, type PartnerRequest, type AdminStore, type AdminTouch, type ProgressReportSettings } from './adminStore'
 import type { OnboardingAnswers } from './onboarding'
 import { AtlasAdminComingSoon, AtlasAdminLayout } from './AtlasAdminLayout'
 import { AtlasAdminStudentsPage } from './AtlasAdminStudentsPage'
@@ -169,6 +169,7 @@ export function AtlasAdminApp() {
         <Route element={<AtlasAdminLayout />}>
           <Route index element={<Navigate to={`students${window.location.search}`} replace />} />
           <Route path="students" element={<AtlasAdminStudentsPage />} />
+          <Route path="students/empty" element={<EmptyRosterEntry />} />
           <Route path="students/recruit/:recruitId" element={<AtlasAdminRecruitPage />} />
           <Route path="invites" element={<AtlasAdminInvitesPage />} />
           <Route path="reports" element={<AtlasAdminReportsPage />} />
@@ -222,6 +223,14 @@ export function AtlasAdminApp() {
       </Routes>
     </AdminStoreContext.Provider>
   )
+}
+
+/** /students/empty — the Flow menu's way into the first-run office: the
+ *  sample roster off (Settings turns it back on), then Students. */
+function EmptyRosterEntry() {
+  const { setSampleRoster } = useAdminStore()
+  useEffect(() => setSampleRoster(false), [setSampleRoster])
+  return <Navigate to={`${ADMIN_BASE}/students${window.location.search}`} replace />
 }
 
 /** /departments/:id — the reference sends a department's own page on to

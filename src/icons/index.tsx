@@ -98,6 +98,7 @@ import GearRegularSvg from './gear-regular.svg?react'
 import XmarkRegularSvg from './xmark-regular.svg?react'
 import ChartSimpleSvg from './chart-simple.svg?react'
 import SparklesSvg from './sparkles.svg?react'
+import QrcodeSvg from './qrcode.svg?react'
 import GlobeSvg from './globe.svg?react'
 import BuildingSvg from './building.svg?react'
 import ShieldCheckSvg from './shield-check.svg?react'
@@ -333,6 +334,7 @@ export const GearRegular = makeIcon(GearRegularSvg) // FA: gear (regular)
 export const XmarkRegular = makeIcon(XmarkRegularSvg) // FA: xmark (regular)
 export const ChartSimple = makeIcon(ChartSimpleSvg) // FA: chart-simple (light) — Atlas Admin's Reports
 export const Sparkles = makeIcon(SparklesSvg) // FA: sparkles (light) — Atlas Admin's Quick assign
+export const Qrcode = makeIcon(QrcodeSvg) // FA: qrcode (light) — Atlas Admin's empty Students
 export const Globe = makeIcon(GlobeSvg) // FA: globe (light) — Atlas Admin's Learning Center
 export const Building = makeIcon(BuildingSvg) // FA: building (light) — Atlas Admin's Teams tree
 export const ShieldCheck = makeIcon(ShieldCheckSvg) // FA: shield-check (light) — Atlas Admin's regulatory groups

@@ -17,6 +17,7 @@ import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, CHIP, CHIP_ON, EYEBROW, PAGE_H1, PAGE_SUB } from './adminStyles'
 import { ChipMenu, MenuItem, PreparedPill, ProgressRing, ReadinessCell, StagePill } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
+import { StudentsEmptyState } from './StudentsEmptyState'
 
 /**
  * ATLAS ADMIN · STUDENTS — rebuilt from colibri-b2b.vercel.app/students
@@ -225,6 +226,9 @@ export function AtlasAdminStudentsPage() {
     ...(location ? [{ key: 'location', label: location.name, clear: () => setLocation(null) }] : []),
     ...(role ? [{ key: 'role', label: role, clear: () => setRole(null) }] : []),
   ]
+
+  // Nobody on the roster yet — the first-run office.
+  if (ADMIN_LEARNERS.length === 0) return <StudentsEmptyState />
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>

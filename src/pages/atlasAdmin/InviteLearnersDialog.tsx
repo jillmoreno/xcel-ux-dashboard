@@ -18,9 +18,9 @@ const DEPARTMENTS = [ADMIN_USER.department, ...ADMIN_DEPARTMENTS.map((d) => `${A
 
 type Tab = 'email' | 'link' | 'qr'
 
-export function InviteLearnersDialog({ onClose, department: initial }: { onClose: () => void; department?: string }) {
+export function InviteLearnersDialog({ onClose, department: initial, tab: initialTab = 'email' }: { onClose: () => void; department?: string; tab?: Tab }) {
   const { addInvites, showToast } = useAdminStore()
-  const [tab, setTab] = useState<Tab>('email')
+  const [tab, setTab] = useState<Tab>(initialTab)
   const [department, setDepartment] = useState(initial ?? DEPARTMENTS[0])
   const [emails, setEmails] = useState('')
   const [name, setName] = useState('')

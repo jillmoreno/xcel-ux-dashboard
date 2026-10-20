@@ -171,7 +171,7 @@ export function AtlasAdminDepartmentsPage() {
   )
 }
 
-function CreateDepartmentDialog({ taken, onClose, onCreate }: { taken: string[]; onClose: () => void; onCreate: (d: { name: string; lead: string }) => void }) {
+export function CreateDepartmentDialog({ taken, onClose, onCreate }: { taken: string[]; onClose: () => void; onCreate: (d: { name: string; lead: string }) => void }) {
   const [name, setName] = useState('')
   const [lead, setLead] = useState('')
   const clash = taken.includes(name.trim().toLowerCase())
