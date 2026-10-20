@@ -53,7 +53,7 @@ const cancelButton = () => screen.getByRole('button', { name: /^cancel$/i })
 /** Fill the three boxes a legal name is collected in, anywhere one is asked. */
 function typeName(first = 'Jordan', middle = 'Riley', last = 'Navarro') {
   typeInto(/^first name$/i, first)
-  typeInto(/^middle name$/i, middle)
+  typeInto(/^middle name/i, middle)
   typeInto(/^last name$/i, last)
 }
 
@@ -296,31 +296,31 @@ describe('the step sequence comes from the shape', () => {
 })
 
 describe('Next stays off until the step is answered', () => {
-  /* ⚠ ALL THREE PARTS ARE REQUIRED, middle name included — the instruction,
-     and the thing most likely to be softened later without anyone noticing
-     the gate moved. */
-  it('needs all three name parts AND the legal-name confirmation', () => {
+  /* ⚠ THE MIDDLE NAME IS ASKED FOR BUT NOT DEMANDED. Required, it locks out
+     everyone who has none — and the escape they reach for, typing "N/A",
+     writes a false value onto a signed compliance record. */
+  it('needs first and last, not the middle name, plus the confirmation', () => {
     open(docById('ca-tc')) // signed-tc → [name, document]
     expect(nextButton()).toBeDisabled()
 
     typeInto(/^first name$/i, 'Jordan')
     typeInto(/^last name$/i, 'Navarro')
-    expect(nextButton(), 'middle name still empty').toBeDisabled()
+    // Middle name deliberately left empty — this must not block.
+    expect(nextButton(), 'confirmation still unticked').toBeDisabled()
 
-    typeInto(/^middle name$/i, 'Riley')
-    // All three in, confirmation still unticked — the case a looser gate
-    // would let through.
-    expect(nextButton()).toBeDisabled()
     fireEvent.click(screen.getByLabelText(/legal name/i))
-    expect(nextButton()).toBeEnabled()
+    expect(nextButton(), 'no middle name should still advance').toBeEnabled()
   })
 
-  it('needs all three names on an `identity` step, and nothing else', () => {
+  it('labels the middle name as optional, and still offers it', () => {
+    open(docById('ca-tc'))
+    expect(screen.getByLabelText(/^middle name \(optional\)$/i)).toBeInTheDocument()
+  })
+
+  it('needs first and last on an `identity` step, and nothing else', () => {
     open(docById('ny-post')) // affidavit-single → [identity, document]
     expect(nextButton()).toBeDisabled()
     typeInto(/^first name$/i, 'Jordan')
-    expect(nextButton()).toBeDisabled()
-    typeInto(/^middle name$/i, 'Riley')
     expect(nextButton()).toBeDisabled()
     typeInto(/^last name$/i, 'Navarro')
     expect(nextButton()).toBeEnabled()
@@ -383,7 +383,6 @@ describe('Next stays off until the step is answered', () => {
   it("gates the proctor step on the proctor's own identity fields", () => {
     open(docById('wi-post'))
     typeName()
-    typeInto(/^middle name$/i, 'Riley')
     fireEvent.click(screen.getByLabelText(/student declaration/i))
     fireEvent.click(nextButton())
 
@@ -594,14 +593,17 @@ describe('the signature', () => {
     // Nothing to sign yet.
     expect(screen.queryByText(/^Signature$/)).toBeNull()
 
-    /* It appears only once ALL THREE parts are in — two thirds of a legal
-       name is not a signature. */
+    /* It appears once the REQUIRED parts are in, and signs without a middle
+       name rather than waiting for one that may not exist. */
     typeInto(/^first name$/i, 'Jordan')
-    typeInto(/^last name$/i, 'Navarro')
     expect(screen.queryByText(/^Signature$/)).toBeNull()
 
-    typeInto(/^middle name$/i, 'Riley')
+    typeInto(/^last name$/i, 'Navarro')
     expect(screen.getByText(/^Signature$/)).toBeInTheDocument()
+    expect(screen.getByLabelText('Signature: Jordan Navarro')).toBeInTheDocument()
+
+    // A middle name, once given, joins it.
+    typeInto(/^middle name/i, 'Riley')
     expect(screen.getByLabelText('Signature: Jordan Riley Navarro')).toBeInTheDocument()
 
     // It follows the name rather than holding its own value.

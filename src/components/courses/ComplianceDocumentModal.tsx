@@ -803,19 +803,30 @@ function Declaration({ label, body }: { label: string; body?: string }) {
 /**
  * A LEGAL NAME IS THREE FIELDS, NOT ONE — 2026-10-20, asked for directly.
  *
- * ⚠ ALL THREE ARE REQUIRED, middle name included. That is the instruction and
- * it is not an oversight here, but it is worth knowing what it costs: people
- * with no middle name cannot finish any document in the set, and on a
- * compliance form the usual escape (typing "N/A") puts a false value on a
- * signed record. An optional middle name, or a "no middle name" tick, is the
- * conventional fix if that turns out to bite.
+ * ⚠ MIDDLE NAME IS OPTIONAL, and that is a correctness decision rather than a
+ * kindness. Required, it blocks everyone who has no middle name from
+ * finishing any document in the set — and the escape they would reach for,
+ * typing "N/A", writes a false value onto a signed compliance record. Asking
+ * is right; insisting is not.
+ *
+ * `REQUIRED_NAME_PARTS` is what the gate reads, so the two cannot drift: a
+ * part added to `NAME_PARTS` is drawn but not demanded until it is named
+ * here too.
  */
 const NAME_PARTS = ['first', 'middle', 'last'] as const
 type NamePart = (typeof NAME_PARTS)[number]
 
+const REQUIRED_NAME_PARTS: readonly NamePart[] = ['first', 'last']
+
+const NAME_PART_PLACEHOLDER: Record<NamePart, string> = {
+  first: 'First name',
+  middle: 'Middle name',
+  last: 'Last name',
+}
+
 const NAME_PART_LABEL: Record<NamePart, string> = {
   first: 'First Name',
-  middle: 'Middle Name',
+  middle: 'Middle Name (optional)',
   last: 'Last Name',
 }
 
@@ -835,16 +846,18 @@ function NameFields({
           label={NAME_PART_LABEL[part]}
           value={values[part] ?? ''}
           onChange={(v) => onChange(part, v)}
-          placeholder={NAME_PART_LABEL[part]}
+          /* The label carries "(optional)"; the placeholder is the plain
+             noun, or the box reads it twice. */
+          placeholder={NAME_PART_PLACEHOLDER[part]}
         />
       ))}
     </>
   )
 }
 
-/** True once all three parts are filled. */
+/** True once every REQUIRED part is filled — the middle name is not one. */
 function nameComplete(values: Record<string, string>): boolean {
-  return NAME_PARTS.every((part) => (values[part] ?? '').trim() !== '')
+  return REQUIRED_NAME_PARTS.every((part) => (values[part] ?? '').trim() !== '')
 }
 
 /** The three parts as one line, for the signature and for display. */
