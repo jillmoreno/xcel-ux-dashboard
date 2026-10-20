@@ -50,10 +50,16 @@ const confirmButton = () => screen.getByRole('button', { name: /^confirm$/i })
 const backButton = () => screen.getByRole('button', { name: /^back$/i })
 const cancelButton = () => screen.getByRole('button', { name: /^cancel$/i })
 
+/** Fill the three boxes a legal name is collected in, anywhere one is asked. */
+function typeName(first = 'Jordan', middle = 'Riley', last = 'Navarro') {
+  typeInto(/^first name$/i, first)
+  typeInto(/^middle name$/i, middle)
+  typeInto(/^last name$/i, last)
+}
+
 /** Clear the `name` step a two-step document opens on. */
 function toDocumentStep() {
-  typeInto(/first name/i, 'Jordan')
-  typeInto(/last name/i, 'Navarro')
+  typeName()
   fireEvent.click(screen.getByLabelText(/legal name/i))
   fireEvent.click(nextButton())
 }
@@ -290,31 +296,39 @@ describe('the step sequence comes from the shape', () => {
 })
 
 describe('Next stays off until the step is answered', () => {
-  it('needs both names AND the legal-name confirmation on a `name` step', () => {
+  /* ⚠ ALL THREE PARTS ARE REQUIRED, middle name included — the instruction,
+     and the thing most likely to be softened later without anyone noticing
+     the gate moved. */
+  it('needs all three name parts AND the legal-name confirmation', () => {
     open(docById('ca-tc')) // signed-tc → [name, document]
     expect(nextButton()).toBeDisabled()
-    typeInto(/first name/i, 'Jordan')
-    typeInto(/last name/i, 'Navarro')
-    // Both names in, confirmation still unticked — this is the case a looser
-    // gate would let through.
+
+    typeInto(/^first name$/i, 'Jordan')
+    typeInto(/^last name$/i, 'Navarro')
+    expect(nextButton(), 'middle name still empty').toBeDisabled()
+
+    typeInto(/^middle name$/i, 'Riley')
+    // All three in, confirmation still unticked — the case a looser gate
+    // would let through.
     expect(nextButton()).toBeDisabled()
     fireEvent.click(screen.getByLabelText(/legal name/i))
     expect(nextButton()).toBeEnabled()
   })
 
-  it('needs only the two names on an `identity` step', () => {
+  it('needs all three names on an `identity` step, and nothing else', () => {
     open(docById('ny-post')) // affidavit-single → [identity, document]
     expect(nextButton()).toBeDisabled()
-    typeInto(/first name/i, 'Jordan')
+    typeInto(/^first name$/i, 'Jordan')
     expect(nextButton()).toBeDisabled()
-    typeInto(/last name/i, 'Navarro')
+    typeInto(/^middle name$/i, 'Riley')
+    expect(nextButton()).toBeDisabled()
+    typeInto(/^last name$/i, 'Navarro')
     expect(nextButton()).toBeEnabled()
   })
 
   it('needs the attest tick on the affidavit itself, and then completes', () => {
     const { onComplete } = open(docById('ny-post'))
-    typeInto(/first name/i, 'Jordan')
-    typeInto(/last name/i, 'Navarro')
+    typeName()
     fireEvent.click(nextButton())
 
     expect(screen.getByText(/administrative sanction by the New York/i)).toBeInTheDocument()
@@ -328,8 +342,7 @@ describe('Next stays off until the step is answered', () => {
 
   it('needs a licence number on the `license` step of an enrollment agreement', () => {
     open(docById('ky-ea')) // enrollment-agreement → [name, license, document]
-    typeInto(/first name/i, 'Jordan')
-    typeInto(/last name/i, 'Navarro')
+    typeName()
     fireEvent.click(screen.getByLabelText(/legal name/i))
     fireEvent.click(nextButton())
 
@@ -341,8 +354,7 @@ describe('Next stays off until the step is answered', () => {
 
   it("takes a typed signature instead of a tick on Ohio's Registration Form", () => {
     open(docById('oh-reg'))
-    typeInto(/first name/i, 'Jordan')
-    typeInto(/last name/i, 'Navarro')
+    typeName()
     fireEvent.click(screen.getByLabelText(/legal name/i))
     fireEvent.click(nextButton())
     typeInto(/license/i, 'W123456')
@@ -357,8 +369,7 @@ describe('Next stays off until the step is answered', () => {
 
   it('asks the two-party student step for every extra field the state wants', () => {
     open(docById('co-post')) // student side wants the exam date
-    typeInto(/first name/i, 'Jordan')
-    typeInto(/last name/i, 'Navarro')
+    typeName()
     fireEvent.click(screen.getByLabelText(/student declaration/i))
     // Names and the attestation are in; Colorado's exam date is not.
     expect(nextButton()).toBeDisabled()
@@ -371,16 +382,15 @@ describe('Next stays off until the step is answered', () => {
      one shared list could not say that. */
   it("gates the proctor step on the proctor's own identity fields", () => {
     open(docById('wi-post'))
-    typeInto(/first name/i, 'Jordan')
-    typeInto(/last name/i, 'Navarro')
-    expect(screen.queryByLabelText(/^full name$/i)).toBeNull() // the student is asked for none
+    typeName()
+    typeInto(/^middle name$/i, 'Riley')
     fireEvent.click(screen.getByLabelText(/student declaration/i))
     fireEvent.click(nextButton())
 
     fireEvent.click(screen.getByRole('button', { name: 'Neighbor' }))
     fireEvent.click(screen.getByLabelText(/proctor declaration/i))
     expect(confirmButton()).toBeDisabled()
-    typeInto(/full name/i, 'Sam Okafor')
+    typeName('Sam', 'Lee', 'Okafor') // the proctor's own legal name
     typeInto(/address/i, '1 Main St, Madison, WI')
     expect(confirmButton()).toBeDisabled()
     typeInto(/phone number/i, '5551234567')
@@ -389,8 +399,7 @@ describe('Next stays off until the step is answered', () => {
 
   it("needs a relationship from the state's own option set on the proctor step", () => {
     const { onComplete } = open(docById('wv-post'))
-    typeInto(/first name/i, 'Jordan')
-    typeInto(/last name/i, 'Navarro')
+    typeName()
     fireEvent.click(screen.getByLabelText(/student declaration/i))
     fireEvent.click(nextButton())
 
@@ -399,7 +408,7 @@ describe('Next stays off until the step is answered', () => {
     expect(screen.getByRole('button', { name: 'Licensed Agent' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Neighbor' })).toBeNull()
 
-    typeInto(/full name/i, 'Sam Okafor')
+    typeName('Sam', 'Lee', 'Okafor')
     fireEvent.click(screen.getByLabelText(/proctor declaration/i))
     expect(confirmButton()).toBeDisabled()
     fireEvent.click(screen.getByRole('button', { name: 'Licensed Agent' }))
@@ -533,8 +542,7 @@ describe('the progress strip', () => {
     expect(screen.queryByRole('button', { name: /^back$/i })).toBeNull()
     expect(screen.queryByRole('button', { name: /^confirm$/i })).toBeNull()
 
-    typeInto(/first name/i, 'Jordan')
-    typeInto(/last name/i, 'Navarro')
+    typeName()
     fireEvent.click(screen.getByLabelText(/legal name/i))
     fireEvent.click(nextButton())
 
@@ -586,14 +594,20 @@ describe('the signature', () => {
     // Nothing to sign yet.
     expect(screen.queryByText(/^Signature$/)).toBeNull()
 
-    typeInto(/student name/i, 'Jordan Navarro')
+    /* It appears only once ALL THREE parts are in — two thirds of a legal
+       name is not a signature. */
+    typeInto(/^first name$/i, 'Jordan')
+    typeInto(/^last name$/i, 'Navarro')
+    expect(screen.queryByText(/^Signature$/)).toBeNull()
+
+    typeInto(/^middle name$/i, 'Riley')
     expect(screen.getByText(/^Signature$/)).toBeInTheDocument()
-    expect(screen.getByLabelText('Signature: Jordan Navarro')).toBeInTheDocument()
+    expect(screen.getByLabelText('Signature: Jordan Riley Navarro')).toBeInTheDocument()
 
     // It follows the name rather than holding its own value.
-    typeInto(/student name/i, 'Sam Okafor')
-    expect(screen.getByLabelText('Signature: Sam Okafor')).toBeInTheDocument()
-    expect(screen.queryByLabelText('Signature: Jordan Navarro')).toBeNull()
+    typeInto(/^first name$/i, 'Sam')
+    expect(screen.getByLabelText('Signature: Sam Riley Navarro')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Signature: Jordan Riley Navarro')).toBeNull()
   })
 
   /* jsdom does not resolve the token, but it does keep the declaration — and
@@ -602,18 +616,18 @@ describe('the signature', () => {
   it('is drawn in the signing hand, not the body font', () => {
     open(docById('ca-tc'))
     toDocumentStep()
-    typeInto(/student name/i, 'Jordan Navarro')
-    const line = screen.getByLabelText('Signature: Jordan Navarro')
+    typeName()
+    const line = screen.getByLabelText('Signature: Jordan Riley Navarro')
     expect(line.style.fontFamily).toBe('var(--font-signature)')
   })
 
   it('is not a second thing to type', () => {
     open(docById('ca-tc'))
     toDocumentStep()
-    typeInto(/student name/i, 'Jordan Navarro')
-    // One text input on this step — the name. The signature is drawn, not entered.
-    const inputs = screen.getAllByRole('textbox')
-    expect(inputs).toHaveLength(1)
+    typeName()
+    /* Three boxes — the name. The signature is drawn, not entered, so there is
+       no fourth. */
+    expect(screen.getAllByRole('textbox')).toHaveLength(3)
   })
 
   /* Ohio's Registration Form is the exception and stays one: it needs a

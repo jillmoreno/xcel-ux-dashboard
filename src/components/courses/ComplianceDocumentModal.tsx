@@ -98,6 +98,8 @@ const EXTRA_FIELD_PLACEHOLDER: Record<ExtraField, string> = {
   'ssn-full': '000-00-0000',
   'phone': '(000) 000-0000',
   'exam-date': 'MM / DD / YYYY',
+  /* Unused for rendering — `full-name` draws `NameFields`, three boxes. Kept
+     so the record stays total over `ExtraField`. */
   'full-name': 'Full legal name',
   'address': 'Street address, city, state, zip',
 }
@@ -113,19 +115,20 @@ export function ComplianceDocumentModal({
   const steps = STEPS_BY_SHAPE[config.shape]
   const [stepIndex, setStepIndex] = useState(0)
 
-  /* One declarant's answers. `first`/`last` are shared by `name`, `identity`
-     and `student` — they are the same person being asked the same thing, and a
-     shape never carries two of those steps. */
-  const [first, setFirst] = useState('')
-  const [last, setLast] = useState('')
+  /* `name` is shared by the `name`, `identity` and `student` steps — the same
+     person asked the same thing, and a shape never carries two of them. */
+  /* One record per NAME rather than a field per part: the learner's own, the
+     name they re-enter on a signed-tc document, and the proctor's. */
+  const [name, setName] = useState<Record<string, string>>({})
+  const [studentName, setStudentName] = useState<Record<string, string>>({})
   const [legalNameConfirmed, setLegalNameConfirmed] = useState(false)
   const [license, setLicense] = useState('')
-  const [studentName, setStudentName] = useState('')
   const [agreed, setAgreed] = useState(false)
   const [wetSignatureName, setWetSignatureName] = useState('')
   const [extras, setExtras] = useState<Record<string, string>>({})
   const [relationship, setRelationship] = useState('')
   const [proctorValues, setProctorValues] = useState<Record<string, string>>({})
+  const [proctorName, setProctorName] = useState<Record<string, string>>({})
   const [proctorAttested, setProctorAttested] = useState(false)
 
   const step = steps[Math.min(stepIndex, steps.length - 1)]
@@ -140,11 +143,11 @@ export function ComplianceDocumentModal({
     if (needsReview) return false
     switch (step) {
       case 'name':
-        return first.trim() !== '' && last.trim() !== '' && legalNameConfirmed
+        return nameComplete(name) && legalNameConfirmed
       case 'license':
         return license.trim() !== ''
       case 'identity':
-        return first.trim() !== '' && last.trim() !== ''
+        return nameComplete(name)
       case 'document':
         /* The Ohio Registration Form wants a signature rather than a tick, so
            on that one variant the typed name IS the gate. Everywhere else the
@@ -153,15 +156,17 @@ export function ComplianceDocumentModal({
         return config.wetSignature ? wetSignatureName.trim() !== '' : agreed
       case 'student':
         return (
-          first.trim() !== '' &&
-          last.trim() !== '' &&
+          nameComplete(name) &&
           extraFields.every((f) => (extras[f] ?? '').trim() !== '') &&
           agreed
         )
       case 'proctor':
         return (
           relationship !== '' &&
-          (config.proctorFields ?? []).every((f) => (proctorValues[f] ?? '').trim() !== '') &&
+          /* `full-name` is the three-part name; everything else is one box. */
+          (config.proctorFields ?? []).every((f) =>
+            f === 'full-name' ? nameComplete(proctorName) : (proctorValues[f] ?? '').trim() !== '',
+          ) &&
           proctorAttested
         )
       default:
@@ -170,8 +175,7 @@ export function ComplianceDocumentModal({
   }, [
     needsReview,
     step,
-    first,
-    last,
+    name,
     legalNameConfirmed,
     license,
     config.wetSignature,
@@ -182,6 +186,7 @@ export function ComplianceDocumentModal({
     relationship,
     config.proctorFields,
     proctorValues,
+    proctorName,
     proctorAttested,
   ])
 
@@ -252,17 +257,18 @@ export function ComplianceDocumentModal({
         <div style={{ width: '100%' }}>
           {step === 'name' && (
             <StepName
-              first={first}
-              last={last}
-              onFirst={setFirst}
-              onLast={setLast}
+              name={name}
+              onName={(part, value) => setName((n) => ({ ...n, [part]: value }))}
               confirmed={legalNameConfirmed}
               onConfirmed={setLegalNameConfirmed}
             />
           )}
 
           {step === 'identity' && (
-            <StepIdentity first={first} last={last} onFirst={setFirst} onLast={setLast} />
+            <StepIdentity
+              name={name}
+              onName={(part, value) => setName((n) => ({ ...n, [part]: value }))}
+            />
           )}
 
           {step === 'license' && (
@@ -274,7 +280,9 @@ export function ComplianceDocumentModal({
               config={config}
               language={language}
               studentName={studentName}
-              onStudentName={setStudentName}
+              onStudentName={(part, value) =>
+                setStudentName((n) => ({ ...n, [part]: value }))
+              }
               agreed={agreed}
               onAgreed={setAgreed}
               wetSignatureName={wetSignatureName}
@@ -285,10 +293,8 @@ export function ComplianceDocumentModal({
           {step === 'student' && (
             <StepStudent
               config={config}
-              first={first}
-              last={last}
-              onFirst={setFirst}
-              onLast={setLast}
+              name={name}
+              onName={(part, value) => setName((n) => ({ ...n, [part]: value }))}
               extras={extras}
               onExtra={(key, value) => setExtras((e) => ({ ...e, [key]: value }))}
               agreed={agreed}
@@ -303,6 +309,8 @@ export function ComplianceDocumentModal({
               onRelationship={setRelationship}
               fields={proctorValues}
               onField={(key, value) => setProctorValues((v) => ({ ...v, [key]: value }))}
+              name={proctorName}
+              onName={(part, value) => setProctorName((n) => ({ ...n, [part]: value }))}
               attested={proctorAttested}
               onAttested={setProctorAttested}
             />
@@ -358,17 +366,13 @@ export function ComplianceDocumentModal({
 /* ── steps ────────────────────────────────────────────────────────────── */
 
 function StepName({
-  first,
-  last,
-  onFirst,
-  onLast,
+  name,
+  onName,
   confirmed,
   onConfirmed,
 }: {
-  first: string
-  last: string
-  onFirst: (v: string) => void
-  onLast: (v: string) => void
+  name: Record<string, string>
+  onName: (part: NamePart, value: string) => void
   confirmed: boolean
   onConfirmed: (v: boolean) => void
 }) {
@@ -378,8 +382,7 @@ function StepName({
         Your name has to match the name on the government-issued ID you will present at the
         examination centre.
       </p>
-      <Field label="First Name" value={first} onChange={onFirst} placeholder="First name" />
-      <Field label="Last Name" value={last} onChange={onLast} placeholder="Last name" />
+      <NameFields values={name} onChange={onName} />
       <Checkbox
         checked={confirmed}
         onChange={(e) => onConfirmed(e.target.checked)}
@@ -390,23 +393,18 @@ function StepName({
 }
 
 function StepIdentity({
-  first,
-  last,
-  onFirst,
-  onLast,
+  name,
+  onName,
 }: {
-  first: string
-  last: string
-  onFirst: (v: string) => void
-  onLast: (v: string) => void
+  name: Record<string, string>
+  onName: (part: NamePart, value: string) => void
 }) {
   return (
     <div style={STACK}>
       <p style={LEAD}>
         Confirm who is making this declaration. This is the name that goes on the affidavit.
       </p>
-      <Field label="First Name" value={first} onChange={onFirst} placeholder="First name" />
-      <Field label="Last Name" value={last} onChange={onLast} placeholder="Last name" />
+      <NameFields values={name} onChange={onName} />
     </div>
   )
 }
@@ -447,8 +445,8 @@ function StepDocument({
 }: {
   config: ComplianceDocumentConfig
   language: 'en' | 'es'
-  studentName: string
-  onStudentName: (v: string) => void
+  studentName: Record<string, string>
+  onStudentName: (part: NamePart, value: string) => void
   agreed: boolean
   onAgreed: (v: boolean) => void
   wetSignatureName: string
@@ -518,15 +516,20 @@ function StepDocument({
         </ul>
         {config.wetSignature ? (
           <>
+            {/* ⚠ THE ONE WHOLE-NAME BOX LEFT, and deliberately: this is a
+                SIGNATURE standing in for a pen stroke, not a name being
+                collected. Ohio's `name` step already took the three parts a
+                page earlier; splitting a signature into three would make it
+                a second identity question rather than a signing gesture. */}
             <p style={LEAD}>
-              This Registration Form is signed, not confirmed. Type your full legal name below in
+              This Registration Form is signed, not confirmed. Sign below by typing your name, in
               place of your physical signature.
             </p>
             <Field
               label="Student Signature"
               value={wetSignatureName}
               onChange={onWetSignatureName}
-              placeholder="Type your full legal name"
+              placeholder="Sign by typing your name"
               signatureStyle
             />
           </>
@@ -557,20 +560,16 @@ function StepDocument({
           <DocumentBody body={tcBody} />
         </div>
         {/* The source documents ask for the name again on the document
-            itself — "Student Full Name" on its own signature line. */}
-        <Field
-          label="Student Name"
-          value={studentName}
-          onChange={onStudentName}
-          placeholder="Your full name"
-        />
+            itself — "Student Full Name" on its own signature line, which is
+            three boxes here like every other legal name. */}
+        <NameFields values={studentName} onChange={onStudentName} />
         {/* ⚠ THE SIGNATURE IS THE NAME, SIGNED — not a second thing to type.
             It mirrors Student Name in the signing hand and appears only once
             there is a name to show, so it reads as the consequence of typing
             rather than as another empty box. Typing two different strings
             into "name" and "signature" is a contradiction a compliance
             document should not be able to record. */}
-        {studentName.trim() !== '' && <SignatureLine value={studentName.trim()} />}
+        {nameComplete(studentName) && <SignatureLine value={joinName(studentName)} />}
         <Checkbox
           checked={agreed}
           onChange={(e) => onAgreed(e.target.checked)}
@@ -597,20 +596,16 @@ function StepDocument({
 
 function StepStudent({
   config,
-  first,
-  last,
-  onFirst,
-  onLast,
+  name,
+  onName,
   extras,
   onExtra,
   agreed,
   onAgreed,
 }: {
   config: ComplianceDocumentConfig
-  first: string
-  last: string
-  onFirst: (v: string) => void
-  onLast: (v: string) => void
+  name: Record<string, string>
+  onName: (part: NamePart, value: string) => void
   extras: Record<string, string>
   onExtra: (key: string, value: string) => void
   agreed: boolean
@@ -619,8 +614,7 @@ function StepStudent({
   return (
     <div style={STACK}>
       <Declaration label="Student Declaration" body={config.studentBody} />
-      <Field label="First Name" value={first} onChange={onFirst} placeholder="First name" />
-      <Field label="Last Name" value={last} onChange={onLast} placeholder="Last name" />
+      <NameFields values={name} onChange={onName} />
       {(config.extraFields ?? []).map((f) => (
         <Field
           key={f}
@@ -645,6 +639,8 @@ function StepProctor({
   onRelationship,
   fields,
   onField,
+  name,
+  onName,
   attested,
   onAttested,
 }: {
@@ -653,6 +649,8 @@ function StepProctor({
   onRelationship: (v: string) => void
   fields: Record<string, string>
   onField: (key: string, value: string) => void
+  name: Record<string, string>
+  onName: (part: NamePart, value: string) => void
   attested: boolean
   onAttested: (v: boolean) => void
 }) {
@@ -663,15 +661,21 @@ function StepProctor({
           name, address and phone from the monitor while asking the student
           for nothing extra — so these come from `proctorFields`, never from
           `extraFields`. */}
-      {(config.proctorFields ?? []).map((f) => (
-        <Field
-          key={f}
-          label={EXTRA_FIELD_LABEL[f]}
-          value={fields[f] ?? ''}
-          onChange={(v) => onField(f, v)}
-          placeholder={EXTRA_FIELD_PLACEHOLDER[f]}
-        />
-      ))}
+      {(config.proctorFields ?? []).map((f) =>
+        /* The proctor's name is the same three boxes the student gets — a
+           monitor's legal name is no less a legal name. */
+        f === 'full-name' ? (
+          <NameFields key={f} values={name} onChange={onName} />
+        ) : (
+          <Field
+            key={f}
+            label={EXTRA_FIELD_LABEL[f]}
+            value={fields[f] ?? ''}
+            onChange={(v) => onField(f, v)}
+            placeholder={EXTRA_FIELD_PLACEHOLDER[f]}
+          />
+        ),
+      )}
       <div>
         <p style={FIELD_LABEL}>Relationship to Examinee</p>
         {/* The option set varies by state — Ohio carries six, California and
@@ -794,6 +798,60 @@ function Declaration({ label, body }: { label: string; body?: string }) {
       <DocumentBody body={body} />
     </div>
   )
+}
+
+/**
+ * A LEGAL NAME IS THREE FIELDS, NOT ONE — 2026-10-20, asked for directly.
+ *
+ * ⚠ ALL THREE ARE REQUIRED, middle name included. That is the instruction and
+ * it is not an oversight here, but it is worth knowing what it costs: people
+ * with no middle name cannot finish any document in the set, and on a
+ * compliance form the usual escape (typing "N/A") puts a false value on a
+ * signed record. An optional middle name, or a "no middle name" tick, is the
+ * conventional fix if that turns out to bite.
+ */
+const NAME_PARTS = ['first', 'middle', 'last'] as const
+type NamePart = (typeof NAME_PARTS)[number]
+
+const NAME_PART_LABEL: Record<NamePart, string> = {
+  first: 'First Name',
+  middle: 'Middle Name',
+  last: 'Last Name',
+}
+
+/** The three boxes, in order. `values`/`onChange` are keyed by part. */
+function NameFields({
+  values,
+  onChange,
+}: {
+  values: Record<string, string>
+  onChange: (part: NamePart, value: string) => void
+}) {
+  return (
+    <>
+      {NAME_PARTS.map((part) => (
+        <Field
+          key={part}
+          label={NAME_PART_LABEL[part]}
+          value={values[part] ?? ''}
+          onChange={(v) => onChange(part, v)}
+          placeholder={NAME_PART_LABEL[part]}
+        />
+      ))}
+    </>
+  )
+}
+
+/** True once all three parts are filled. */
+function nameComplete(values: Record<string, string>): boolean {
+  return NAME_PARTS.every((part) => (values[part] ?? '').trim() !== '')
+}
+
+/** The three parts as one line, for the signature and for display. */
+function joinName(values: Record<string, string>): string {
+  return NAME_PARTS.map((part) => (values[part] ?? '').trim())
+    .filter(Boolean)
+    .join(' ')
 }
 
 /** The repo has no shared text-input primitive, so this is the local one —
