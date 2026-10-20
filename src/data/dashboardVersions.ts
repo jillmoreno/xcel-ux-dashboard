@@ -20,6 +20,7 @@ export type DashboardVersionId =
   | 'eric-atlas-v3'
   | 'eric-atlas-white'
   | 'eric-atlas-e2e'
+  | 'jill-atlas-main'
   | 'hybrid-v1'
   | 'hybrid-pacing'
   | 'discoverability-testing-3'
@@ -427,12 +428,61 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E: DashboardVersion 
     'Eric\u2019s Atlas dashboard, end to end: the two-row Atlas header with its My Courses dropdown, a Home with the course card, the combined Progress / Readiness panel, the exam-date card and Quick Links, and the Atlas My Courses and Certificates pages. The Invited Product Detail page at /end-to-end-demo is the way in.',
 }
 
-/** Eric/Atlas White — and End-to-End Demo, its duplicate. Every place White
- *  differs from WIP asks this, so the duplicate follows without a second edit. */
+// "Jill/Atlas-Main" — 2026-10-20, Jillienne's: "an exact copy of what the atlas
+// home is looking like on Main so I can implement these changes to that version
+// to explore first". A duplicate of End-to-End Demo taken at `8f5f294`, with
+// its own copy of the Home page (`AtlasHomeJillMain`) so the exam-date work can
+// move without moving the demo.
+//
+// ⚠ IT EXISTS SO THE END-TO-END DEMO CANNOT MOVE — the same reason
+// `hybrid-pacing` exists one generation earlier. The demo is the Prototypes
+// baseline and the default a stakeholder lands on, so exam-date ideas needed
+// somewhere that is not the product.
+export const DISCOVERABILITY_DASHBOARD_VERSION_JILL_ATLAS_MAIN: DashboardVersion = {
+  id: 'jill-atlas-main',
+  owner: 'jill',
+  /* NO `status: 'ready'`. It is an exploration, not a candidate, and the
+     picker's own entry says what it is rather than what it may become.
+     `promote-to-prototype` is where that would change. */
+  label: 'Jill/Atlas-Main',
+  createdAt: '2026-10-20',
+  modifiedAt: '2026-10-20',
+  /* What the page SHOWS, not what it is going to show — the rule Hybrid V1's
+     entry had to learn. Today it shows exactly what the End-to-End Demo shows,
+     because that is the whole point of taking it. */
+  description:
+    'A copy of the End-to-End Demo\u2019s Home as it stands on main, taken 2026-10-20, with its own Home file so it can be explored without moving the demo. Identical to End-to-End Demo today; the subject is the exam-date logic \u2014 what Add Date should do, and what the pace card does once a date is owned by this page.',
+}
+
+/** Eric/Atlas White — and End-to-End Demo, its duplicate, and Jill/Atlas-Main,
+ *  the demo's own duplicate. Every place White differs from WIP asks this, so
+ *  the duplicates follow without a second edit. */
 export function isEricAtlasWhiteLike(versionId: string | null | undefined): boolean {
   return (
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE.id ||
-    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E.id
+    isE2ELikeVersion(versionId)
+  )
+}
+
+/**
+ * END-TO-END DEMO, AND THE COPIES OF IT — 2026-10-20.
+ *
+ * ⚠ THIS IS WHAT MAKES "AN EXACT COPY" STAY TRUE. The e2e id is compared
+ * against in thirty-odd places: twenty-six design-control `versions` arrays,
+ * `ATLAS_HEADER_V2_VERSIONS`, the shell's My Courses row, and the two family
+ * helpers here. A duplicate that listed its own id in each of them would be an
+ * exact copy for exactly one day — the next control Eric scopes to the demo
+ * would reach the demo and not the copy, and the two would drift with nothing
+ * on screen to say so.
+ *
+ * So the copy does not enumerate; it joins the FAMILY, and every one of those
+ * comparisons asks the family instead. What a copy keeps for itself is its
+ * HOME FILE and nothing else, which is the one difference it was made to have.
+ */
+export function isE2ELikeVersion(versionId: string | null | undefined): boolean {
+  return (
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_JILL_ATLAS_MAIN.id
   )
 }
 
@@ -538,7 +588,7 @@ export function isAtlasCompassNavVersion(versionId: string | null | undefined): 
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V2.id ||
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3.id ||
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE.id ||
-    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E.id ||
+    isE2ELikeVersion(versionId) ||
     /* Both Hybrids take the Atlas CHROME (rail, slim header, palette) and fork
        only the home content — see their entries above. */
     isHybridVersion(versionId)
@@ -636,6 +686,9 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE,
   // End-to-End Demo (2026-10-14) — White's duplicate, right after it.
   DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E,
+  // Jill/Atlas-Main (2026-10-20) — the demo's duplicate, right after it, under
+  // its own owner. Jillienne's, so it sits with Hybrid rather than with Eric's.
+  DISCOVERABILITY_DASHBOARD_VERSION_JILL_ATLAS_MAIN,
   DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV,
   /* ⚠ ERIC/ATLAS V1 TAKEN OFF THE PICKER 2026-10-12 (Eric: "delete Eric/Atlas
      V1"). The definition above is kept and `?version=eric-atlas-v1` still

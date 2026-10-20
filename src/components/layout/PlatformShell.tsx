@@ -7,6 +7,7 @@ import {
   defaultDiscoverabilityVersionFor,
   resolveDashboardVersion,
   isAtlasCompassNavVersion,
+  isE2ELikeVersion,
   isEricAtlasWhiteLike,
   isHybridVersion,
   type DashboardLayout,
@@ -2661,7 +2662,7 @@ function MyCoursesSection() {
                 key={c.id}
                 data={c}
                 // Unwired on the End-to-End Demo (2026-10-15, Eric's request).
-                onAction={i === 0 && sectionVersion !== 'eric-atlas-e2e' ? openCourse : undefined}
+                onAction={i === 0 && !isE2ELikeVersion(sectionVersion) ? openCourse : undefined}
                 // White's active cards in Primary 100 on its white page
                 // (2026-10-14, Eric's request); completed cards keep no fill.
                 activeFill={white ? 'var(--color-primary-100)' : undefined}

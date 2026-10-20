@@ -24,6 +24,7 @@ import { AtlasHomeEricV2 } from '@/components/compass/AtlasHomeEricV2'
 import { AtlasHomeEricV3 } from '@/components/compass/AtlasHomeEricV3'
 import { AtlasHomeEricWhite } from '@/components/compass/AtlasHomeEricWhite'
 import { AtlasHomeEricE2E } from '@/components/compass/AtlasHomeEricE2E'
+import { AtlasHomeJillMain } from '@/components/compass/AtlasHomeJillMain'
 import { HybridHomeV1 } from '@/components/compass/HybridHomeV1'
 import { HybridPacingHome } from '@/components/compass/HybridPacingHome'
 import {
@@ -736,6 +737,14 @@ export function LearnerFocusedBand({
   const ericAtlasV3 = hybridVersionId === 'eric-atlas-v3'
   const ericAtlasWhite = hybridVersionId === 'eric-atlas-white'
   const ericAtlasE2E = hybridVersionId === 'eric-atlas-e2e'
+  /* ⚠ JILL/ATLAS-MAIN IS THE DEMO EVERYWHERE BUT HERE (2026-10-20). It joins
+     the e2e family for chrome, header and design controls — `isE2ELikeVersion`
+     — so this call site is the ONE place the two part company, and the one
+     difference the copy was taken to have. An `isE2ELikeVersion` test here
+     instead would hand both versions the same Home and quietly make the fork
+     unreachable: the file would compile, render nowhere, and look like it
+     worked. */
+  const jillAtlasMain = hybridVersionId === 'jill-atlas-main'
   /* NOT ON THE ATLAS HOME (merged 2026-10-02): its Study Pace card is part of
      the Atlas design (the brand's hover fill, the Primary 200 stroke), so the
      baseline's hiding flag does not reach it. */
@@ -1334,7 +1343,9 @@ export function LearnerFocusedBand({
        `AtlasHomeEricWhite`, is unchanged and kept: set WHITE_SHOWS_WIP_HOME
        false to bring it back. */
     const Home =
-      ericAtlasE2E
+      jillAtlasMain
+        ? AtlasHomeJillMain
+      : ericAtlasE2E
         ? AtlasHomeEricE2E
         : ericAtlasWhite && !WHITE_SHOWS_WIP_HOME
         ? AtlasHomeEricWhite

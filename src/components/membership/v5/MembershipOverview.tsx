@@ -1,5 +1,6 @@
 import {
   isAtlasCompassNavVersion,
+  isE2ELikeVersion,
   resolveDashboardVersion,
   type DashboardLayout,
 } from '@/data/dashboardVersions'
@@ -35,7 +36,6 @@ import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   COMPASS_SESSION_PARAM,
-  END_TO_END_VERSION,
   useBeginOpensCompassSession,
   useCourseOverviewOpensCompass,
 } from '@/pages/endToEndDemo'
@@ -404,8 +404,16 @@ export function MembershipOverview({
      Only under `auto`. An explicit pick on the Course control still wins, so
      the control keeps working on this version like any other. */
   const [e2eVersionParams] = useSearchParams()
-  const isEndToEndDemo =
-    resolveDashboardVersion(e2eVersionParams.get('version'), brand) === END_TO_END_VERSION
+  /* ⚠ THE FAMILY, NOT THE ID (2026-10-20, with Jill/Atlas-Main). A duplicate of
+     the demo taken to explore its Home resolves the SAME course — without this
+     the copy opened on New York under a Home built for Florida: 42 lessons
+     instead of 36, PSI instead of Florida's exam facts, and a "Get Licensed in
+     New York" step, all of it silent because every one of those reads the path
+     rather than a literal. That is the defect the note above records, reached
+     from the other direction. */
+  const isEndToEndDemo = isE2ELikeVersion(
+    resolveDashboardVersion(e2eVersionParams.get('version'), brand),
+  )
   const resolvedDemoCourse = demoCourse ?? (isEndToEndDemo ? 'fl' : undefined)
   const basePersona = personaEnabled
     ? justOnboarded

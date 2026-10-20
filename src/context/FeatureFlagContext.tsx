@@ -12,6 +12,11 @@ import {
   type ReactNode,
 } from 'react'
 import { isTestingGateway } from '@/data/gatewayMode'
+/* ⚠ A VALUE IMPORT, AND IT DOES NOT CYCLE. `dashboardVersions` imports from
+   this file too, but `import type { DesignerId }` only — erased at compile, so
+   there is no runtime edge back. Keep that import type-only or this becomes a
+   real cycle. */
+import { isE2ELikeVersion } from '@/data/dashboardVersions'
 import { ATLAS_PROGRESS_LADDER } from '@/components/compass/atlasProgressLadder'
 import {
   COURSE_FLAG_KEY,
@@ -298,7 +303,20 @@ export function designControlsFor(
        surface narrows WHERE a control shows; it does not hand it a pass into
        a version it was never written for — Compass draws differently on the
        Atlas arm, and her controls say so in their own `versions`. */
-    if (def.versions && def.versions.length > 0) return def.versions.includes(versionId)
+    /* ⚠ A COPY OF A VERSION CARRIES ITS CONTROLS — 2026-10-20, with
+       Jill/Atlas-Main. Twenty-six controls name `eric-atlas-e2e` in their own
+       `versions`, and a duplicate of that version that did not answer to them
+       would open with an EMPTY design bar — every control the Home was built
+       against missing, silently, with the flags still at their defaults so the
+       page LOOKED right and could not be adjusted. Asking the family rather
+       than the literal id also means a control Eric scopes to the demo
+       tomorrow reaches the copy without a second edit. The copy still wins its
+       own name: a control written for `jill-atlas-main` alone matches on the
+       first test and never reaches the demo. */
+    if (def.versions && def.versions.length > 0) {
+      if (def.versions.includes(versionId)) return true
+      return isE2ELikeVersion(versionId) && def.versions.some((v) => isE2ELikeVersion(v))
+    }
     return flagOwner(def) === versionOwner
   })
 }
