@@ -106,7 +106,7 @@ export function AtlasAdminInvitesPage() {
               style={{
                 ...TILE,
                 border: `1px solid ${t.urgent && t.n ? 'var(--admin-brand)' : 'var(--admin-rule)'}`,
-                boxShadow: active ? '0 0 0 2px var(--admin-ink)' : undefined,
+                ...(active ? TILE_ACTIVE : null),
               }}
             >
               <p style={EYEBROW}>{t.label}</p>
@@ -282,6 +282,8 @@ export function AtlasAdminInvitesPage() {
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
 const TILE: CSSProperties = { borderRadius: 14, background: 'var(--admin-surface)', padding: 16, textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-body)' }
+/* Students' selected tile: primary 400 drawn inside the edge, lifted 4/4 at 15%. */
+const TILE_ACTIVE: CSSProperties = { outline: '2px solid var(--admin-atlas-primary-400)', outlineOffset: -2, boxShadow: 'var(--admin-shadow-tile-active)' }
 const SEG: CSSProperties = {
   whiteSpace: 'nowrap',
   borderRadius: 9999,
