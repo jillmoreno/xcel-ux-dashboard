@@ -124,7 +124,7 @@ export function AtlasAdminNotificationsPage() {
                               <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: isOn(n) ? 'var(--admin-success-ink)' : 'var(--admin-faint)' }} />
                               {statusLine(n)}
                             </p>
-                            <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                            <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 12 }}>
                               {n.actions.map((a) => (
                                 <button
                                   key={a}
@@ -169,7 +169,7 @@ export function AtlasAdminNotificationsPage() {
                     <p style={{ margin: 0, fontSize: 12, color: 'var(--admin-text)' }}>
                       No recruit gets more than one email or text from XCEL in 7 days, whatever is switched on here.
                     </p>
-                    <button type="button" onClick={() => setDialog('history')} style={{ ...ACTION, marginTop: 6 }}>
+                    <button type="button" onClick={() => setDialog('history')} style={{ ...ACTION, display: 'block', marginTop: 6, marginLeft: 'auto' }}>
                       Sending history
                     </button>
                   </div>
