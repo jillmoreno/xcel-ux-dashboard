@@ -235,6 +235,9 @@ const QL_CARD: CSSProperties = {
   boxSizing: 'border-box',
   borderRadius: 20,
   border: '1px solid var(--admin-quicklinks-rule)',
+  /* 8 right and 16 down (2026-10-20, Eric's request) — the negative right
+     margin keeps the card's width, so it moves rather than shrinks. */
+  margin: '16px -8px 0 8px',
 }
 const QL_ROW: CSSProperties = {
   width: '100%',
