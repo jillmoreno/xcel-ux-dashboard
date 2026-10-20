@@ -894,7 +894,35 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // ⚠ STILL ONE OF THE PRODUCT APP'S DOORS. `/end-to-end-demo/email` is a
     // page UNDER `/end-to-end-demo`, not a third entrance — the smoke test
     // checks the door, not an exact pathname, for exactly this reason.
-    to: '/end-to-end-demo/email?demo=1&journey=full',
+    // ⚠ BACK TO THE DASHBOARD — 2026-10-20, Jillienne: "lets set the Atlas to
+    // be the default view the user comes in on", taken WITH the Start control
+    // collapsing Email / Invite / Checkout / Confirmation into one
+    // "Invite & Checkout" entry the same day. The two go together: the flow
+    // stopped being four doors on the bar, so it no longer has to be the
+    // front door of the row to be findable — it is one pick away, and a
+    // stakeholder lands on the product rather than on an inbox.
+    //
+    // ⚠ THIS REVERSES THE 2026-10-16 CALL ABOVE, which is why that note is
+    // kept verbatim rather than edited: "a stakeholder clicking 'End-to-End
+    // User Experience' landed on the dashboard and never saw the two doors
+    // named in its own title." That objection is still true and is the cost
+    // being paid — what changed is that the doors are now named on the Start
+    // control instead of only in the row's title.
+    //
+    // ⚠ `journey=full` STAYS, and dropping it would have been the quiet
+    // mistake here. It is what makes this row the FULL walk rather than the
+    // Invite & Purchase row's narrower one — the spinner at the end of the
+    // password step hands off to Atlas Learning instead of stopping. The
+    // Start control carries the address forward when it jumps, so keeping the
+    // param on the landing URL is what makes picking "Invite & Checkout" give
+    // the full walk; without it the one-click-away flow would quietly be the
+    // other row's.
+    //
+    // ⚠ THE TITLE STILL NAMES THE JOURNEY — "End-to-End User Experience
+    // (Invite, Atlas, Compass)" — and the row no longer opens at Invite.
+    // Flagged at the time and deliberately not renamed here; renaming the
+    // first row of Prototypes is its own decision.
+    to: '/dashboard-rebrand?demo=1&journey=full',
     brands: ['xcel'],
   },
   {

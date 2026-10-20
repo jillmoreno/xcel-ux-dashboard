@@ -26,6 +26,7 @@ import { DemoBar, DemoDropdown } from './DemoBar'
 import { licensedProfessionsFor } from '@/data/licensedStatesFixtures'
 import { readDemoDayOffset, setDemoDayOffset } from '@/data/demoDay'
 import { resolveStartPoint } from '@/pages/endToEndDemo'
+import { versionInScope } from '@/data/dashboardVersions'
 import {
   PACE_STYLE_FLAG_KEY,
   PACE_STYLE_LABELS,
@@ -590,7 +591,14 @@ export function DemoControlsBar({
      applies. */
   const atlasProgressFlag = FEATURE_FLAGS.find((f) => f.key === 'atlas-v3-progress')
   const atlasProgressState = useFeatureFlag('atlas-v3-progress')
-  const onAtlasProgressVersion = (atlasProgressFlag?.versions ?? []).includes(activeVersionId)
+  /* ⚠ `versionInScope`, NOT `.includes` — 2026-10-20. This decides whether the
+     bar draws the ATLAS seven-state Progress ladder or falls back to the
+     generic progress picker, and a literal match meant Jill/Atlas-Main — a
+     duplicate of the End-to-End Demo — got the generic one. The symptom was a
+     bar reading "On Track ~63%" on a Home whose whole progress story is the
+     ladder, with nothing erroring. One rule for both readers of `versions`;
+     see the helper. */
+  const onAtlasProgressVersion = versionInScope(atlasProgressFlag?.versions, activeVersionId)
 
   const readinessReachable = !railHidesSection(
     searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand),

@@ -547,9 +547,18 @@ describe('the Prototypes row opens the committed configuration', () => {
     // ("clicking on end to end should start with the email first"). Same
     // door, same two params; the pathname is checked by the door case below,
     // which is why this one asserts the params rather than the address.
+    //
+    // 2026-10-20: and BACK to the dashboard — "lets set the Atlas to be the
+    // default view the user comes in on", taken with the Start control
+    // collapsing the flow's four screens into one entry, so the invite is a
+    // pick away rather than the front door. The pathname has now moved three
+    // times in five days and the params have not moved once, which is the
+    // case for this assertion being about `?demo=1` and `?journey=full`
+    // rather than the address — `journey=full` is what keeps this the FULL
+    // walk when the Start control jumps into it.
     const row = PROTOTYPE_FEATURES.find((f) => f.id === 'xcel-dashboard')!
     const e2e = new URL(row.to!, 'https://same.origin')
-    expect(e2e.pathname).toBe('/end-to-end-demo/email')
+    expect(e2e.pathname).toBe('/dashboard-rebrand')
     expect(e2e.searchParams.get('demo')).toBe('1')
     expect(e2e.searchParams.get('journey')).toBe('full')
   })

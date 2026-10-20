@@ -16,7 +16,7 @@ import { isTestingGateway } from '@/data/gatewayMode'
    this file too, but `import type { DesignerId }` only — erased at compile, so
    there is no runtime edge back. Keep that import type-only or this becomes a
    real cycle. */
-import { isE2ELikeVersion } from '@/data/dashboardVersions'
+import { versionInScope } from '@/data/dashboardVersions'
 import { ATLAS_PROGRESS_LADDER } from '@/components/compass/atlasProgressLadder'
 import {
   COURSE_FLAG_KEY,
@@ -313,10 +313,7 @@ export function designControlsFor(
        tomorrow reaches the copy without a second edit. The copy still wins its
        own name: a control written for `jill-atlas-main` alone matches on the
        first test and never reaches the demo. */
-    if (def.versions && def.versions.length > 0) {
-      if (def.versions.includes(versionId)) return true
-      return isE2ELikeVersion(versionId) && def.versions.some((v) => isE2ELikeVersion(v))
-    }
+    if (def.versions && def.versions.length > 0) return versionInScope(def.versions, versionId)
     return flagOwner(def) === versionOwner
   })
 }

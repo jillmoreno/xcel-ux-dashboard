@@ -134,15 +134,26 @@ describe('e2e-loading-opens-home — the End-to-End row\u2019s hand-off', () => 
     const q = (to: string) => new URL(to, 'https://x').searchParams
     expect(q(e2e.to!).get('journey'), 'the End-to-End row walks the whole product').toBe('full')
     expect(q(invite.to!).get('journey'), 'Invite & Purchase ends at the password — Afsana and Eric\u2019s surface').toBeNull()
-    /* Same DOOR, so the difference really is the question and not the build.
-       ⚠ NO LONGER THE SAME PATHNAME (2026-10-19): the End-to-End row starts
-       one page earlier, at the invitation email, while Invite & Purchase
-       still opens the Product Detail page — Afsana and Eric's call, not this
-       change's. What the case is actually guarding is that neither row has
-       wandered off to a different BUILD, so it asserts the door. */
-    const door = (to: string) => new URL(to, 'https://x').pathname.split('/')[1]
-    expect(door(e2e.to!)).toBe('end-to-end-demo')
-    expect(door(invite.to!)).toBe('end-to-end-demo')
+    /* ⚠ AND NO LONGER THE SAME DOOR EITHER (2026-10-20). The End-to-End row
+       lands on the DASHBOARD now — "lets set the Atlas to be the default view
+       the user comes in on" — with the flow one pick away on the Start
+       control; Invite & Purchase still opens the Product Detail page. The
+       door assertion was itself a weakening of an earlier pathname one
+       (2026-10-19), and weakening it again to "both are product-app routes"
+       would leave it asserting almost nothing.
+
+       So what it guards is stated directly instead: both rows are in-app
+       routes of the SAME BUILD at `?demo=1` — the Prototypes guarantee — and
+       the thing that makes them different walks is the journey param above,
+       which is the case's actual subject. */
+    for (const row of [e2e, invite]) {
+      const u = new URL(row.to!, 'https://x')
+      expect(u.searchParams.get('demo'), row.id).toBe('1')
+      expect(u.searchParams.get('version'), `${row.id} must not pin a version`).toBeNull()
+      expect(['/dashboard-rebrand', '/end-to-end-demo'], row.id).toContain(
+        `/${u.pathname.split('/')[1]}`,
+      )
+    }
   })
 
   it('on the End-to-End row\u2019s walk: three seconds, then the demo\u2019s Home', async () => {

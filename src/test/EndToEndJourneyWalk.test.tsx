@@ -34,6 +34,28 @@ function endToEndRowAddress(): string {
   return PROTOTYPE_FEATURES.find((f) => f.id === 'xcel-dashboard')!.to!
 }
 
+/**
+ * The walk's FIRST PAGE, carrying whatever params the row carries.
+ *
+ * ⚠ THE ROW STOPPED BEING THE FLOW'S FRONT DOOR — 2026-10-20 ("lets set the
+ * Atlas to be the default view the user comes in on"), taken with the Start
+ * control collapsing the flow's four screens into one entry. The row lands on
+ * the dashboard now and the flow is one pick away.
+ *
+ * ⚠ SO THE SUBJECT OF THIS SUITE HAD TO BE SEPARATED FROM THE ROW'S LANDING
+ * PAGE, and it is worth saying which is which. What this suite tests is that
+ * `?journey=full` SURVIVES the four hops to the hand-off — that is unchanged
+ * and still matters, because the Start control carries the address forward
+ * when it jumps into the flow, so a reviewer who picks "Invite & Checkout"
+ * from the dashboard walks exactly this path with exactly these params. What
+ * moved is only where the row drops you first. The params still come FROM the
+ * row, so a row that stopped carrying `journey=full` still fails here.
+ */
+function walkStartAddress(): string {
+  const params = new URL(endToEndRowAddress(), 'https://x').search
+  return `/end-to-end-demo/email${params}`
+}
+
 function renderWalk(at: string) {
   window.history.replaceState({}, '', at)
   return render(
@@ -79,7 +101,7 @@ describe('the End-to-End row’s walk carries ?journey=full to the hand-off', ()
   it('survives Product Detail → Checkout → Confirmation, and then opens Home', async () => {
     vi.useFakeTimers()
     try {
-      const address = endToEndRowAddress()
+      const address = walkStartAddress()
       expect(journeyOf(address), 'the row must carry the param for this walk to mean anything').toBe('full')
       renderWalk(address)
 

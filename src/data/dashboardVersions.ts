@@ -778,6 +778,29 @@ export const ALL_DASHBOARD_VERSIONS: readonly DashboardVersion[] = [
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
 ]
 
+/**
+ * IS A FLAG'S `versions` LIST IN SCOPE FOR THIS VERSION? — the one rule,
+ * 2026-10-20.
+ *
+ * ⚠ IT IS A FUNCTION BECAUSE A LITERAL `.includes()` MISSES A COPY. Two places
+ * compare a flag's `versions` to the version on screen — `designControlsFor`
+ * (which controls the cyan bar carries) and the demo bar's Atlas Progress
+ * check — and both had their own `includes`. When Jill/Atlas-Main was taken as
+ * a duplicate of the End-to-End Demo the first was fixed and the second was
+ * not, so the copy carried every design control and then quietly fell back to
+ * the GENERIC progress picker: "On Track ~63%" where the Atlas ladder's seven
+ * states should be. Nothing errored; the bar just offered a different control.
+ *
+ * So the rule lives here and both ask it. A flag scoped to the End-to-End Demo
+ * reaches its duplicates, and a flag naming a copy alone still reaches only
+ * that copy — which is what lets an exploration scope a control to itself.
+ */
+export function versionInScope(versions: readonly string[] | undefined, versionId: string): boolean {
+  if (!versions || versions.length === 0) return false
+  if (versions.includes(versionId)) return true
+  return isE2ELikeVersion(versionId) && versions.some((v) => isE2ELikeVersion(v))
+}
+
 export function dashboardVersionLabel(id: string): string {
   return ALL_DASHBOARD_VERSIONS.find((v) => v.id === id)?.label ?? id
 }
