@@ -106,7 +106,9 @@ export function AtlasAdminLayout() {
         }}
       />
     <div style={APP}>
-      <aside style={SIDEBAR}>
+      {/* With the Quick Links card the sidebar is the page's own colour, no
+          rule beside it (2026-10-20, Eric's request) — the card is the edge. */}
+      <aside style={quickLinksNav ? { ...SIDEBAR, background: 'var(--admin-page)', borderRight: 'none' } : SIDEBAR}>
         {quickLinksNav ? (
           <QuickLinksNav />
         ) : (
