@@ -107,7 +107,7 @@ export function AtlasAdminLayout() {
     <div style={APP}>
       {/* With the Quick Links card the sidebar is the page's own colour, no
           rule beside it (2026-10-20, Eric's request) — the card is the edge. */}
-      <aside style={quickLinksNav ? { ...SIDEBAR, width: 256, background: 'var(--admin-page)', borderRight: 'none' } : SIDEBAR}>
+      <aside style={quickLinksNav ? { ...SIDEBAR, width: 248, background: 'var(--admin-page)', borderRight: 'none' } : SIDEBAR}>
         {quickLinksNav ? (
           <QuickLinksNav />
         ) : (
@@ -236,7 +236,7 @@ const QL_CARD: CSSProperties = {
   border: '1px solid var(--admin-quicklinks-rule)',
   /* 8 right and 16 down (2026-10-20, Eric's request) — the negative right
      margin keeps the card's width, so it moves rather than shrinks. */
-  margin: '16px -16px 0 8px',
+  margin: '16px -24px 0 8px',
 }
 const QL_ROW: CSSProperties = {
   width: '100%',
