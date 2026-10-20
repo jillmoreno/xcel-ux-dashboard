@@ -130,9 +130,9 @@ export function AtlasAdminPulsePage() {
               {pulse.offTrack.length} learners need intervention first; {pulse.prepared.length} are exam ready.
             </Box>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-              <Figure label="Need intervention" value={pulse.offTrack.length} bg="var(--admin-atlas-primary-100)" ink="var(--admin-amber)" />
-              <Figure label="Exam ready" value={pulse.prepared.length} bg="var(--admin-atlas-primary-100)" ink="var(--admin-success-ink)" />
-              <Figure label="Forecasted licensed" value={pulse.forecast} bg="var(--admin-atlas-primary-100)" ink="var(--admin-chart-blue)" />
+              <Figure label="Need intervention" value={pulse.offTrack.length} bg={FIGURE_TINT} ink="var(--admin-amber)" />
+              <Figure label="Exam ready" value={pulse.prepared.length} bg={FIGURE_TINT} ink="var(--admin-success-ink)" />
+              <Figure label="Forecasted licensed" value={pulse.forecast} bg={FIGURE_TINT} ink="var(--admin-chart-blue)" />
             </div>
             <Action>Start with intervention, then move exam-ready learners into scheduling.</Action>
             <button type="button" onClick={() => navigate(students())} style={{ ...BUTTON_BRAND, alignSelf: 'flex-start' }}>
@@ -310,6 +310,9 @@ function Card({ index, icon, title, sub, children, onFocus }: { index: number; i
     </section>
   )
 }
+
+/* The Briefing figures' fill: Atlas primary 100 at half strength. */
+const FIGURE_TINT = 'color-mix(in srgb, var(--admin-atlas-primary-100) 50%, var(--admin-surface))'
 
 /* The small box labels (Need intervention, Action now…): 11 / bold. */
 const LABEL: CSSProperties = { ...EYEBROW, fontSize: 11 }
