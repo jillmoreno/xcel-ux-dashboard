@@ -169,7 +169,8 @@ export function AtlasAdminApp() {
         <Route element={<AtlasAdminLayout />}>
           <Route index element={<Navigate to={`students${window.location.search}`} replace />} />
           <Route path="students" element={<AtlasAdminStudentsPage />} />
-          <Route path="students/empty" element={<EmptyRosterEntry />} />
+          <Route path="students/empty" element={<RosterEntry sample={false} />} />
+          <Route path="students/sample" element={<RosterEntry sample />} />
           <Route path="students/recruit/:recruitId" element={<AtlasAdminRecruitPage />} />
           <Route path="invites" element={<AtlasAdminInvitesPage />} />
           <Route path="reports" element={<AtlasAdminReportsPage />} />
@@ -225,11 +226,12 @@ export function AtlasAdminApp() {
   )
 }
 
-/** /students/empty — the Flow menu's way into the first-run office: the
- *  sample roster off (Settings turns it back on), then Students. */
-function EmptyRosterEntry() {
+/** /students/empty and /students/sample — the Flow menu's two ways into
+ *  Students: the first-run office (sample roster off) or the demo roster
+ *  (on — the same switch as Settings → Sample roster), then Students. */
+function RosterEntry({ sample }: { sample: boolean }) {
   const { setSampleRoster } = useAdminStore()
-  useEffect(() => setSampleRoster(false), [setSampleRoster])
+  useEffect(() => setSampleRoster(sample), [setSampleRoster, sample])
   return <Navigate to={`${ADMIN_BASE}/students${window.location.search}`} replace />
 }
 

@@ -2435,6 +2435,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'partner-with-us', label: 'Partner with us' },
       { value: 'welcome', label: 'Welcome inbox' },
       { value: 'onboarding', label: 'Onboarding wizard' },
+      { value: 'students/sample', label: 'Students (with students)' },
       { value: 'students/empty', label: 'Students (empty roster)' },
       { value: 'invite/summit-insurance-group/coleen-acker', label: 'Recruit invite' },
       { value: 'join/event/coleen-acker', label: 'Career event join' },
