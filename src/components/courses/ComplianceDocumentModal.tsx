@@ -1102,37 +1102,42 @@ const CHIP_ON: CSSProperties = {
   color: 'var(--color-text-inverse)',
 }
 
-/* A column now: the step strip, then the buttons. It was a row because the
-   arrows sat either side of the progress; named buttons need the width. */
+/* One row: the step pips on the left, the buttons on the right. The pips are
+   a small fixed-width marker rather than a full-width bar — they say WHERE
+   YOU ARE, which needs no width, and a bar spanning the modal reads as a
+   loading indicator for the document rather than a position in a sequence. */
 const FOOTER: CSSProperties = {
   width: '100%',
   display: 'flex',
-  flexDirection: 'column',
-  gap: 14,
-  paddingTop: 4,
+  alignItems: 'center',
+  gap: 16,
+  paddingTop: 8,
 }
 
 /* Right-aligned, the primary last — the order every other confirm/dismiss
    pair in this app uses, so the primary sits where people expect it. */
+/* `marginLeft: auto` rather than `justifyContent: space-between` on the row:
+   a one-step document draws no pips, and space-between would slide the
+   buttons to the left edge exactly where there is nothing beside them. */
 const ACTIONS: CSSProperties = {
-  width: '100%',
+  marginLeft: 'auto',
   display: 'flex',
-  justifyContent: 'flex-end',
   gap: 10,
 }
 
 const PROGRESS: CSSProperties = {
-  width: '100%',
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'center',
-  gap: 6,
+  alignItems: 'flex-start',
+  gap: 5,
 }
 
-const SEGMENTS: CSSProperties = { display: 'flex', gap: 4, width: '100%' }
+const SEGMENTS: CSSProperties = { display: 'flex', gap: 4 }
 
+/* Fixed, not `flex: 1` — see `FOOTER`. Short enough that three of them sit
+   inside the space the label needs anyway. */
 const SEGMENT: CSSProperties = {
-  flex: 1,
+  width: 18,
   height: 4,
   borderRadius: 'var(--radius-pill)',
 }
