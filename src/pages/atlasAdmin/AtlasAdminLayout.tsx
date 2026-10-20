@@ -1,6 +1,6 @@
-import { useEffect, type ComponentType, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { BookOpen, Bell, ChartSimple, Envelope, Gear, Users } from '@/icons'
+import { BookOpen, Bell, Building, ChartSimple, CircleDollar, Envelope, Gear, IdCard, LocationDot, UserGroup, Users } from '@/icons'
 import { AtlasHeader } from '@/components/layout/AtlasHeader'
 import { ADMIN_USER } from '@/data/atlasAdmin/learners'
 import { ADMIN_BASE, ADMIN_EMAIL, useAdminStore } from './adminStore'
@@ -101,15 +101,7 @@ export function AtlasAdminLayout() {
       <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <header style={HEADER}>
           <h1 style={HEADER_TITLE}>{title}</h1>
-          <div style={USER}>
-            <div style={{ textAlign: 'right', fontSize: 14, lineHeight: 1.25 }}>
-              <p style={{ margin: 0, fontWeight: 600, color: 'var(--admin-chrome-title)' }}>{ADMIN_USER.name}</p>
-              <p style={{ margin: 0, fontSize: 12, color: 'var(--admin-chrome-text)' }}>{ADMIN_USER.role}</p>
-            </div>
-            <span aria-hidden style={AVATAR}>
-              {ADMIN_USER.initials}
-            </span>
-          </div>
+          <UserMenu learnerHome={learnerHome} />
         </header>
         <main style={MAIN}>
           <Outlet />
@@ -121,6 +113,78 @@ export function AtlasAdminLayout() {
         </div>
       ) : null}
     </div>
+    </div>
+  )
+}
+
+/** The admin's menu — the reference's: who is signed in and which mode, six
+ *  pages (four of them have no sidebar link), and the switch to the learner
+ *  side. "Switch to Learner Mode" goes to the learner Home, as the global
+ *  nav's Home does; the reference sends it to its /learner preview. */
+const USER_MENU: NavItem[] = [
+  { to: `${ADMIN_BASE}/organization`, label: 'Organization', icon: LocationDot },
+  { to: `${ADMIN_BASE}/teams`, label: 'Teams', icon: Building },
+  { to: `${ADMIN_BASE}/my-team`, label: 'My Team', icon: UserGroup },
+  { to: `${ADMIN_BASE}/licenses`, label: 'Licenses & Seats', icon: IdCard },
+  { to: `${ADMIN_BASE}/pricing`, label: 'Pricing', icon: CircleDollar },
+  { to: `${ADMIN_BASE}/settings`, label: 'Settings', icon: Gear },
+]
+
+function UserMenu({ learnerHome }: { learnerHome: string }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const navigate = useNavigate()
+  const go = (to: string) => {
+    setOpen(false)
+    navigate(to)
+  }
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button type="button" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="cre-admin-outline" style={USER}>
+        <span style={{ textAlign: 'right', fontSize: 14, lineHeight: 1.25 }}>
+          <span style={{ display: 'block', fontWeight: 600, color: 'var(--admin-chrome-title)' }}>{ADMIN_USER.name}</span>
+          <span style={{ display: 'block', fontSize: 12, color: 'var(--admin-chrome-text)' }}>{ADMIN_USER.role}</span>
+        </span>
+        <span aria-hidden style={AVATAR}>
+          {ADMIN_USER.initials}
+        </span>
+      </button>
+      {open ? (
+        <div role="menu" aria-label="Account" style={USER_PANEL}>
+          <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--admin-chrome-rule)' }}>
+            <strong style={{ display: 'block', fontSize: 13, color: 'var(--admin-chrome-title)' }}>{ADMIN_USER.name}</strong>
+            <span style={{ fontSize: 11, color: 'var(--admin-muted)' }}>Admin mode</span>
+          </div>
+          <div style={{ padding: 4 }}>
+            {USER_MENU.map(({ to, label, icon: Icon }) => (
+              <button key={to} type="button" role="menuitem" className="cre-admin-menu" onClick={() => go(to + window.location.search)} style={USER_ITEM}>
+                <Icon size={14} aria-hidden />
+                {label}
+              </button>
+            ))}
+          </div>
+          <div style={{ padding: 4, borderTop: '1px solid var(--admin-chrome-rule)' }}>
+            <button type="button" role="menuitem" className="cre-admin-menu" onClick={() => go(learnerHome)} style={{ ...USER_ITEM, fontWeight: 600 }}>
+              Switch to Learner Mode
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -214,6 +278,34 @@ const USER: CSSProperties = {
   borderRadius: 9999,
   border: '1px solid var(--admin-chrome-rule)',
   background: 'var(--admin-surface)',
+  fontFamily: 'inherit',
+  cursor: 'pointer',
+}
+const USER_PANEL: CSSProperties = {
+  position: 'absolute',
+  right: 0,
+  top: 'calc(100% + 6px)',
+  zIndex: 30,
+  width: 240,
+  borderRadius: 12,
+  border: '1px solid var(--admin-chrome-rule)',
+  background: 'var(--admin-surface)',
+  boxShadow: 'var(--admin-shadow-menu)',
+}
+const USER_ITEM: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  width: '100%',
+  padding: '8px 10px',
+  border: 'none',
+  borderRadius: 8,
+  background: 'none',
+  fontFamily: 'inherit',
+  fontSize: 13,
+  color: 'var(--admin-chrome-title)',
+  textAlign: 'left',
+  cursor: 'pointer',
 }
 const AVATAR: CSSProperties = {
   width: 36,
