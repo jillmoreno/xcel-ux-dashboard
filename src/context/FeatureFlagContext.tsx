@@ -2594,6 +2594,53 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'dashboard-pace-style',
+    /* HOW HARD THIS LEARNER STUDIES — 2026-10-20, Jillienne: "pacing can be
+       Crammer, Average, or Thorough. We need to incorporate a different icon
+       based on the Pacing."
+
+       ⚠ A DEMO CONTROL, NOT A DESIGN ONE, and that was the call. The two bars
+       split on WHO the question is about: the amber bar says how the product
+       behaves for different LEARNERS (progress, tier, course, access window),
+       the cyan one says what is open inside an exploration (fonts, colour,
+       layout axes). How fast somebody studies is a property of the learner,
+       so it belongs beside Progress and Expires — and a stakeholder can then
+       see all three pacings without being told to open the robot menu.
+
+       ⚠ IT DRIVES THE ARITHMETIC, NOT A LABEL. The value is a `StudyStyle`,
+       already a `studyPace` input (`STYLE_FACTORS`), so it multiplies the
+       hours and the week goal, the hours a week, the completion date, the
+       pace's NAME and its icon all move together off one choice. A control
+       that changed only the name would put "Crammer" over an Average plan's
+       figures, which is the mismatch this surface has been bitten by twice.
+
+       ⚠ THE VALUES ARE `PLANNER_PACES`' IDS. The labels and hints below are
+       that list's own, restated here because the catalog cannot import
+       fixtures — if they drift, the planner and the Home disagree about what
+       "Crammer" means. `STYLE_FACTORS` was renamed to match on the same day;
+       see its note.
+
+       ⚠ NO `surface` FIELD, AND THAT IS HOW A DEMO CONTROL IS DECLARED. The
+       type only admits `surface: 'design'`; omitting it is what keeps a flag
+       off the cyan bar. Being off that bar does not put it on the amber one
+       either — `DemoControlsBar`'s own `SHOW_CONTROL` list decides what the
+       amber bar carries, because that list says what the PRODUCT demos rather
+       than what any one exploration is exploring. Both edits are needed; this
+       is only the first. */
+    group: 'Learner',
+    label: 'Pacing',
+    description:
+      'How hard the learner studies, as a multiplier on the hours the course claims \u2014 Crammer (x0.75, head down, done fast), Average (x1, what most learners pick) or Thorough (x1.3, slower, more spacing). It moves the week goal, the hours a week, the completion date, the pace name and the pace icon together.',
+    defaultEnabled: true,
+    defaultVariant: 'average',
+    variants: [
+      { value: 'crammer', label: 'Crammer — head down, done fast' },
+      { value: 'average', label: 'Average — what most learners pick' },
+      { value: 'thorough', label: 'Thorough — slower, more spacing' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-pace-standing',
     /* HOW THE LEARNER IS DOING, ON THE ATLAS PACE CARD (2026-10-19,
        Jillienne: "we need this type of messaging to be considered for the

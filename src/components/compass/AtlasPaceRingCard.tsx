@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { GaugeThin } from '@/icons'
 import {
   ATLAS_COLUMN_PROSE_W,
@@ -37,6 +37,8 @@ export function AtlasPaceRingCard({
   hoursPerWeek,
   expected,
   exam,
+  paceStyleName,
+  paceIcon,
   standingMessage,
   noPace,
   readinessBelow = false,
@@ -63,6 +65,20 @@ export function AtlasPaceRingCard({
    * cannot drift apart in type or in treatment.
    */
   exam?: { label: string; value: string; note?: string }
+  /**
+   * The pace's name — "Crammer", "Average", "Thorough" (2026-10-20).
+   *
+   * ⚠ OPTIONAL, FALLING BACK TO THE MODULE CONSTANT. Until now this card
+   * printed `paceName(PLANNER_PLAN.dayMins)`, which is a FROZEN fixture and so
+   * has always read "Average" on every surface that draws the card. The
+   * End-to-End Demo still gets that; the Atlas Home passes the name its own
+   * pacing control resolved. Absent means "unchanged", which is what keeps the
+   * demo's card the card it was.
+   */
+  paceStyleName?: string
+  /** The glyph beside the goal. Defaults to the gauge this card has always
+   *  drawn — see `paceIconFor` for the three-step mapping. */
+  paceIcon?: ReactNode
   /** The finish DATE the same pace model produces, and its note. Shown under
    *  the week goal so the plan's span and the date it lands on are read
    *  together — they come from one `paceFit`, so they cannot describe two
@@ -158,7 +174,7 @@ export function AtlasPaceRingCard({
             it moves is asked for rather than assumed. */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: left ? 'flex-start' : 'center', gap: 8 }}>
           <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-compass-page-button)' }}>
-            <GaugeThin size={33} aria-hidden />
+            {paceIcon ?? <GaugeThin size={33} aria-hidden />}
           </span>
           {weeks == null ? (
             /* ⚠ NO PLAN, AND IT SAYS WHY (2026-10-19). The wording is shared
@@ -208,7 +224,7 @@ export function AtlasPaceRingCard({
                   one line is what made it look like a label that had slipped
                   sideways. `COMPASS_PACE_NAME` is already title case; the
                   uppercase was only ever CSS. */}
-              <span style={GOAL}>{COMPASS_PACE_NAME}</span>
+              <span style={GOAL}>{paceStyleName ?? COMPASS_PACE_NAME}</span>
               <span aria-hidden style={GOAL_RULE} />
               <span style={GOAL}>{weeks} Week Goal</span>
             </span>

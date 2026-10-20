@@ -26,6 +26,12 @@ import { DemoBar, DemoDropdown } from './DemoBar'
 import { licensedProfessionsFor } from '@/data/licensedStatesFixtures'
 import { readDemoDayOffset, setDemoDayOffset } from '@/data/demoDay'
 import {
+  PACE_STYLE_FLAG_KEY,
+  PACE_STYLE_LABELS,
+  PACE_STYLE_ORDER,
+  resolvePaceStyle,
+} from '@/lib/studyPace'
+import {
   useDemoMenus,
   DEMO_HOVER_FILL,
 } from './demoBarUtil'
@@ -163,6 +169,14 @@ type ControlKey =
   | 'persona'
   | 'progress'
   | 'readiness'
+  /* PACING — 2026-10-20, Jillienne: "pacing can be Crammer, Average, or
+     Thorough … we need to figure out how to show the different pacings within
+     the Design Controls". It landed HERE rather than on the design bar, on
+     her call, by this bar's own rule: how hard a learner studies is a property
+     of the LEARNER, like progress and the access window, not a decision open
+     inside one exploration. It also means a stakeholder meets all three
+     pacings without being told the robot menu exists. */
+  | 'pace'
   | 'education'
   | 'version'
   /* ⚠ `navLayout` IS BACK, 2026-10-05 — it was removed earlier the same day
@@ -200,6 +214,11 @@ const SHOW_CONTROL: Record<ControlKey, boolean> = {
      states the bar could not otherwise show — the expiring-soon badge, and the
      pace card's "no honest pace fits". */
   expiry: true,
+  /* ON. It is the axis the Study pace card is ABOUT, and it moves four figures
+     at once (the week goal, the hours a week, the completion date and the
+     pace's own name) — the kind of change a stakeholder has to see move rather
+     than be told about. */
+  pace: true,
   /* DASHBOARD VERSION — 2026-10-05, the direct ask. It is the one control here
      that chooses WHICH DASHBOARD renders rather than who the learner is, and it
      is on the bar for a reason the rest of that line does not cover: the robot
@@ -345,6 +364,12 @@ export function DemoControlsBar({
      course is: this control WRITES the flag, so it needs the selection to tick
      a row, not the resolved day count a consuming surface wants. */
   const activeExpiry = resolveExpiry(useFeatureFlag(EXPIRY_FLAG_KEY).variant)
+  /* THE PACING AXIS — 2026-10-20. Read raw for the same reason Course and
+     Expires are: the picker needs to know which row to tick, not what the
+     value resolves to. `resolvePaceStyle` guards the stored value, because a
+     browser holding `quick` from before the 2026-10-20 rename would otherwise
+     tick nothing and silently run at Average. */
+  const activePaceStyle = resolvePaceStyle(useFeatureFlag(PACE_STYLE_FLAG_KEY).variant)
   const navLayoutState = useFeatureFlag('nav-placement')
   // The What's New / Featured toggle was removed 2026-09-16 with its flag (see
   // the note in the Persona dropdown below). `whatsNewOn` is pinned off so the
@@ -1486,6 +1511,45 @@ export function DemoControlsBar({
                   }}
                 >
                   <span style={{ flex: 1 }}>{opt.label}</span>
+                  {active && <Check size={15} aria-hidden />}
+                </button>
+              )
+            })}
+          </DemoDropdown>
+        )}
+
+        {/* PACING — Crammer / Average / Thorough, single-select. Beside Expires
+            because the two are the pace card's two inputs: how long the
+            learner has, and how hard they work in it. */}
+        {showControl.pace && (
+          <DemoDropdown
+            id="pace"
+            square
+            hidden={!show('pace')}
+            label={PACE_STYLE_LABELS[activePaceStyle]}
+            eyebrow="Pacing"
+            openId={openId}
+            onToggle={toggle}
+            panelRole="radiogroup"
+            panelLabel="How hard the learner studies"
+            panelMinWidth={240}
+          >
+            {PACE_STYLE_ORDER.map((id) => {
+              const active = id === activePaceStyle
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  tabIndex={active ? 0 : -1}
+                  className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                  onClick={() => {
+                    setVariant(PACE_STYLE_FLAG_KEY, id)
+                    close()
+                  }}
+                >
+                  <span style={{ flex: 1 }}>{PACE_STYLE_LABELS[id]}</span>
                   {active && <Check size={15} aria-hidden />}
                 </button>
               )

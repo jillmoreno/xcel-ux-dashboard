@@ -147,7 +147,7 @@ describe('studyPace — nights', () => {
 
 describe('studyPace — study style', () => {
   it('makes Thorough cost more of a week than Quick', () => {
-    const quick = studyPace({ ...base, style: 'quick', nights: 4 }).presets[1]
+    const quick = studyPace({ ...base, style: 'crammer', nights: 4 }).presets[1]
     const thorough = studyPace({ ...base, style: 'thorough', nights: 4 }).presets[1]
     expect(quick.minsPerWeek).toBeLessThan(thorough.minsPerWeek)
   })

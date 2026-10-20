@@ -119,6 +119,13 @@ const REBRAND_FLAGS = [
   // Current Course Progress block treatment — light / big-number / navy card.
   // Variant-only; a treatment rather than a different set of facts.
   'dashboard-course-header',
+  // HOW HARD THE LEARNER STUDIES — Crammer / Average / Thorough (2026-10-20).
+  // A demo axis like Course and Expires, not a treatment: it is a `studyPace`
+  // input, so it moves the week goal, the hours a week, the completion date,
+  // the pace's name and its icon together. On the amber bar as "Pacing"; here
+  // because `FlagPanelScope.test.ts` is right that a flag claiming this page
+  // and absent from the panel is reachable only by hand-editing `?ff=`.
+  'dashboard-pace-style',
   'course-launcher-style',
   'dashboard-clp-style',
   // Pacing tile treatment on the Testing version — lo-fi / rate / runway /

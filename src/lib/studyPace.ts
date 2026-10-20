@@ -62,11 +62,66 @@ export const CEILING_MINS = 210
  *  date costs 34 min on a short course and 1.5 hours on a long one. */
 export const EASY_MINS = 45
 
-/** Thorough / Average / Quick, as multipliers on the hours a course claims.
- *  Notes and normal-speed video genuinely cost more; essentials-only at 2x
- *  costs less. */
-export const STYLE_FACTORS = { thorough: 1.3, average: 1, quick: 0.75 } as const
+/**
+ * Thorough / Average / Crammer, as multipliers on the hours a course claims.
+ * Notes and normal-speed video genuinely cost more; essentials-only at 2x
+ * costs less.
+ *
+ * ⚠ `quick` WAS RENAMED `crammer` ON 2026-10-20, and the rename is the point
+ * rather than a tidy-up. The product carried TWO vocabularies for one axis:
+ * this one, and `PLANNER_PACES` in `compassStudyPlannerFixtures` — `crammer` /
+ * `average` / `thorough`, each with the minutes a night and the hint the
+ * planner shows. Same three steps, same order, one of them named twice. They
+ * were never wired to each other, so nothing broke; the moment a control drove
+ * both (the Atlas Home's pacing picker) the two names would have had to be
+ * mapped, and a mapping between two spellings of one word is how a surface
+ * ends up showing "Crammer" over a Quick plan's figures.
+ *
+ * ⚠ THE KEYS ARE NOW `PLANNER_PACES`' IDS, EXACTLY. Keep them that way: the
+ * Home reads the label and hint from that list BY THIS KEY, so renaming one
+ * side silently falls back to no label rather than failing to compile.
+ */
+export const STYLE_FACTORS = { thorough: 1.3, average: 1, crammer: 0.75 } as const
 export type StudyStyle = keyof typeof STYLE_FACTORS
+
+/**
+ * The order a picker offers them in — fastest first, which is how the planner's
+ * own list reads and the order the minutes descend (150 / 90 / 60).
+ */
+export const PACE_STYLE_ORDER: readonly StudyStyle[] = ['crammer', 'average', 'thorough']
+
+/** The demo-bar axis that chooses one. A string constant, not a flag import —
+ *  this module stays free of React and the catalog. */
+export const PACE_STYLE_FLAG_KEY = 'dashboard-pace-style'
+
+/**
+ * The three names, as the picker and the pace card print them.
+ *
+ * ⚠ THE SAME WORDS AS `PLANNER_PACES`, restated rather than imported: that
+ * list lives in the Compass planner's fixtures and pulling it in here would
+ * tie the pace MODEL to one surface's demo data. They must not drift — the
+ * whole reason `quick` became `crammer` is that two spellings of one axis is
+ * a bug waiting for a control to drive both.
+ */
+export const PACE_STYLE_LABELS: Record<StudyStyle, string> = {
+  crammer: 'Crammer',
+  average: 'Average',
+  thorough: 'Thorough',
+}
+
+/**
+ * A stored flag value -> a style, falling back to Average.
+ *
+ * ⚠ IT EXISTS FOR THE RENAME. `quick` was this axis's third name until
+ * 2026-10-20 and is sitting in `cgp.featureFlags` in every browser that has
+ * opened the demo since. Without this guard those browsers tick no row in the
+ * picker and run at Average anyway — the control would look broken on exactly
+ * the machines that have used it most.
+ */
+export function resolvePaceStyle(value: string | undefined): StudyStyle {
+  if (value === 'quick') return 'crammer'
+  return value && value in STYLE_FACTORS ? (value as StudyStyle) : 'average'
+}
 
 /** The nights-a-week options offered, in the order the picker shows them. */
 export const NIGHT_OPTIONS = [3, 4, 5, 6] as const

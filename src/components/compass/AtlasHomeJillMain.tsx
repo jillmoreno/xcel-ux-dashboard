@@ -77,7 +77,8 @@ import {
   type JourneyStop,
 } from '@/components/learning/studyJourneyUtil'
 import { getLicensedStepsFor, jurisdictionName } from '@/data/nyProducerRequirements'
-import { defaultPreset, formatPaceDate, formatPaceDateLong, studyPace, daysUntil, dateFromIso, isoFromDate, isoPlusDays, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
+import { defaultPreset, formatPaceDate, formatPaceDateLong, studyPace, daysUntil, dateFromIso, isoFromDate, isoPlusDays, NOT_STARTED_NIGHTS, PACE_STYLE_FLAG_KEY, PACE_STYLE_LABELS, resolvePaceStyle } from '@/lib/studyPace'
+import { paceIconFor } from './paceStyleIcon'
 import { clearExamDate, writeExamDate } from '@/data/examDateStore'
 import { AtlasExamCalendar } from './AtlasExamCalendar'
 import { EXPIRY_FLAG_KEY } from '@/data/courseFixtures'
@@ -358,6 +359,13 @@ export function AtlasHomeJillMain({
   const expiryPick = useFeatureFlag(EXPIRY_FLAG_KEY).variant ?? 'auto'
   const zeroWindow = progressPick === 'not-started' && expiryPick === 'auto'
   const accessIso = zeroWindow && accessExpiresAt ? isoPlusDays(today, ZERO_ACCESS_DAYS) : accessExpiresAt
+  /* HOW HARD THIS LEARNER STUDIES — the Demo Controls' Pacing axis
+     (2026-10-20). `STYLE_FACTORS` has been a `studyPace` input since the
+     module was ported and had never been wired to a control on any surface;
+     this is the wire. One value moves the week goal, the hours a week, the
+     completion date, the name beside the dial and the dial's own glyph,
+     because all five derive from the model rather than being typed. */
+  const paceStyle = resolvePaceStyle(useFeatureFlag(PACE_STYLE_FLAG_KEY).variant)
   /*
    * THE EXAM DATE BINDS AGAIN HERE — 2026-10-20, the other half of wiring Add
    * Date.
@@ -391,9 +399,10 @@ export function AtlasHomeJillMain({
         hoursRemaining,
         accessExpiresAt: accessIso,
         examDate,
+        style: paceStyle,
         nights: notStarted ? NOT_STARTED_NIGHTS : undefined,
       }),
-    [today, hoursRemaining, accessIso, examDate, notStarted],
+    [today, hoursRemaining, accessIso, examDate, paceStyle, notStarted],
   )
   const preset = defaultPreset(model)
   /*
@@ -938,6 +947,11 @@ export function AtlasHomeJillMain({
                    three now say the same thing instead of two vanishing while
                    the third made a number up. */
                 weeks={paceFit ? Math.max(1, Math.round(paceFit.days / 7)) : undefined}
+                /* The name and the glyph are the SAME choice as the figures
+                   above — see `paceStyle`. The demo's card passes neither and
+                   keeps the frozen "Average" it has always printed. */
+                paceStyleName={PACE_STYLE_LABELS[paceStyle]}
+                paceIcon={paceIconFor(paceStyle)}
                 /* ⚠ THE BOOKED EXAM, from the same store the prompt writes and
                    counted off the same `today` — 2026-10-20, the third screen's
                    "FLORIDA STATE EXAM / November 16 · 18 days".
