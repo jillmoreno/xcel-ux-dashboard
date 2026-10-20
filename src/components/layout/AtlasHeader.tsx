@@ -1,5 +1,5 @@
-import type { MouseEvent } from 'react'
-import { Bell, ChevronDown, CircleUser, FileText, LogOut, Receipt, User } from '@/icons'
+import type { MouseEvent, ReactNode } from 'react'
+import { ArrowRightArrowLeft, Bell, ChevronDown, CircleUser, FileText, LogOut, Receipt, User } from '@/icons'
 import { AtlasHeaderMenu, AtlasHeaderMenuDivider, AtlasHeaderMenuItem } from './AtlasHeaderMenu'
 import './atlasHeader.css'
 
@@ -37,6 +37,20 @@ export type AtlasHeaderLinks = Partial<
   Record<'home' | 'logo' | 'help' | 'allCourses' | 'profile' | 'notifications' | 'transcripts' | 'purchases' | 'logout', string>
 >
 
+/**
+ * LEARNER / ADMIN MODE in the profile menu — 2026-10-20, Eric: the Atlas
+ * Admin pill's switching and links, moved into this menu in its styling.
+ * The menu says which mode is on under the email; in `admin` its links are
+ * `adminLinks`, in `learner` they are the learner's own (Profile …
+ * My Purchases); the switch sits above Logout either way. Absent, the menu
+ * is exactly what it was.
+ */
+export type AtlasHeaderMode = {
+  mode: 'learner' | 'admin'
+  adminLinks: readonly { label: string; href: string; icon: ReactNode }[]
+  onSwitch: () => void
+}
+
 export function AtlasHeader({
   current = 'home',
   user,
@@ -48,6 +62,7 @@ export function AtlasHeader({
   showCourses = true,
   onHelp,
   extraNav = [],
+  modeMenu,
 }: {
   /** Which nav pill is filled. */
   current?: 'home' | 'courses' | null
@@ -71,6 +86,8 @@ export function AtlasHeader({
    *  request). `current` fills one; give it and leave `current` above null so
    *  Home is not filled too. Absent, the nav is exactly what it was. */
   extraNav?: readonly { label: string; href: string; current?: boolean }[]
+  /** Learner / Admin mode — see `AtlasHeaderMode`. */
+  modeMenu?: AtlasHeaderMode
 }) {
   const to = (k: keyof AtlasHeaderLinks) => links[k] ?? '#'
   // A link's href, routed through `onNavigate` when there is one.
@@ -213,21 +230,39 @@ export function AtlasHeader({
               <AtlasHeaderAvatar user={user} />
               <span style={{ fontSize: 16, lineHeight: '28px', fontWeight: 700, color: 'var(--atlas-hdr-name)', whiteSpace: 'nowrap' }}>{user.name}</span>
               <span style={{ fontSize: 12, lineHeight: '16px', fontWeight: 400, color: 'var(--atlas-hdr-email)', whiteSpace: 'nowrap' }}>{user.email}</span>
+              {modeMenu ? (
+                <span style={{ marginTop: 4, fontSize: 12, lineHeight: '16px', fontWeight: 600, color: 'var(--atlas-hdr-email)', whiteSpace: 'nowrap' }}>{modeMenu.mode === 'admin' ? 'Admin mode' : 'Learner mode'}</span>
+              ) : null}
             </div>
             <AtlasHeaderMenuDivider />
-            <AtlasHeaderMenuItem href={to('profile')} onSelect={pick('profile')} icon={<User size={18} />}>
-              Profile
-            </AtlasHeaderMenuItem>
-            <AtlasHeaderMenuItem href={to('notifications')} onSelect={pick('notifications')} icon={<Bell size={18} />}>
-              Notifications
-            </AtlasHeaderMenuItem>
-            <AtlasHeaderMenuItem href={to('transcripts')} onSelect={pick('transcripts')} icon={<FileText size={18} />}>
-              Transcripts
-            </AtlasHeaderMenuItem>
-            <AtlasHeaderMenuItem href={to('purchases')} onSelect={pick('purchases')} icon={<Receipt size={18} />}>
-              My Purchases
-            </AtlasHeaderMenuItem>
+            {modeMenu?.mode === 'admin' ? (
+              modeMenu.adminLinks.map((l) => (
+                <AtlasHeaderMenuItem key={l.href} href={l.href} onSelect={onNavigate ? () => onNavigate(l.href) : undefined} icon={l.icon}>
+                  {l.label}
+                </AtlasHeaderMenuItem>
+              ))
+            ) : (
+              <>
+                <AtlasHeaderMenuItem href={to('profile')} onSelect={pick('profile')} icon={<User size={18} />}>
+                  Profile
+                </AtlasHeaderMenuItem>
+                <AtlasHeaderMenuItem href={to('notifications')} onSelect={pick('notifications')} icon={<Bell size={18} />}>
+                  Notifications
+                </AtlasHeaderMenuItem>
+                <AtlasHeaderMenuItem href={to('transcripts')} onSelect={pick('transcripts')} icon={<FileText size={18} />}>
+                  Transcripts
+                </AtlasHeaderMenuItem>
+                <AtlasHeaderMenuItem href={to('purchases')} onSelect={pick('purchases')} icon={<Receipt size={18} />}>
+                  My Purchases
+                </AtlasHeaderMenuItem>
+              </>
+            )}
             <AtlasHeaderMenuDivider />
+            {modeMenu ? (
+              <AtlasHeaderMenuItem onSelect={modeMenu.onSwitch} icon={<ArrowRightArrowLeft size={18} />}>
+                {modeMenu.mode === 'admin' ? 'Switch to Learner Mode' : 'Switch to Admin Mode'}
+              </AtlasHeaderMenuItem>
+            ) : null}
             <AtlasHeaderMenuItem href={to('logout')} onSelect={onLogout} icon={<LogOut size={18} />}>
               Logout
             </AtlasHeaderMenuItem>

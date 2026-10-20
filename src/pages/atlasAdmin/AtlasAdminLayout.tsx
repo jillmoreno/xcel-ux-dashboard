@@ -86,6 +86,11 @@ export function AtlasAdminLayout() {
         links={{ home: learnerHome, logo: learnerHome, help: `${ADMIN_BASE}/resources${search}` }}
         onNavigate={(href) => navigate(href)}
         extraNav={[{ label: 'Admin', href: `${ADMIN_BASE}/students${search}`, current: true }]}
+        modeMenu={{
+          mode: 'admin',
+          adminLinks: USER_MENU.map(({ to, label, icon: Icon }) => ({ label, href: to + search, icon: <Icon size={18} aria-hidden /> })),
+          onSwitch: () => navigate(learnerHome),
+        }}
       />
     <div style={APP}>
       <aside style={SIDEBAR}>

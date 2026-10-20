@@ -1,6 +1,7 @@
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAccount } from '@/context/AccountContext'
 import { useNotifications } from '@/context/NotificationsContext'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { useProfileAvatar } from '@/context/ProfileAvatarContext'
 import { WHITE_COURSES, WHITE_COURSE_PARAM, WHITE_FIRST_COURSE_ID } from '@/data/atlasWhiteCourses'
 import { AtlasHeader } from './AtlasHeader'
@@ -39,6 +40,9 @@ export function AtlasHeaderConnected({
   const { unread } = useNotifications()
   const [params] = useSearchParams()
   const navigate = useNavigate()
+  /* LEARNER / ADMIN MODE (2026-10-20): with Atlas Admin built, the profile
+     menu says the learner side is on and offers the switch to it. */
+  const atlasAdmin = useFeatureFlag('atlas-admin').enabled
 
   const section = params.get('section')
   const current =
@@ -81,6 +85,7 @@ export function AtlasHeaderConnected({
     <AtlasHeader
       current={current}
       onHelp={onHelp}
+      modeMenu={atlasAdmin ? { mode: 'learner', adminLinks: [], onSwitch: () => navigate(`/atlas-admin/students${window.location.search}`) } : undefined}
       user={{
         name: `${user.firstName} ${user.lastName}`,
         /* ⚠ JORDAN'S, TO MATCH THE NAME ON THE SAME LINE (2026-10-19,

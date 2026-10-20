@@ -104,6 +104,7 @@ import ShieldCheckSvg from './shield-check.svg?react'
 import LocationDotSvg from './location-dot.svg?react'
 import UserGroupSvg from './user-group.svg?react'
 import CircleDollarSvg from './circle-dollar.svg?react'
+import ArrowRightArrowLeftSvg from './arrow-right-arrow-left.svg?react'
 import GearSvg from './gear.svg?react'
 import CloneSvg from './clone.svg?react'
 import PlaySvg from './play.svg?react'
@@ -339,6 +340,7 @@ export const ShieldCheck = makeIcon(ShieldCheckSvg) // FA: shield-check (light) 
 export const LocationDot = makeIcon(LocationDotSvg) // FA: location-dot (light) — Atlas Admin's user menu
 export const UserGroup = makeIcon(UserGroupSvg) // FA: user-group (light) — Atlas Admin's user menu
 export const CircleDollar = makeIcon(CircleDollarSvg) // FA: circle-dollar (light) — Atlas Admin's user menu
+export const ArrowRightArrowLeft = makeIcon(ArrowRightArrowLeftSvg) // FA: arrow-right-arrow-left (light) — the header's Learner / Admin mode switch
 export const Gear = makeIcon(GearSvg) // FA: gear (light) — Atlas Admin's Settings
 export const Clone = makeIcon(CloneSvg) // FA: clone (light) — Atlas Admin's Reports
 export const Play = makeIcon(PlaySvg) // FA: play (light) — Atlas Admin's Reports
