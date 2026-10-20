@@ -7500,6 +7500,8 @@ a.cre-library-card-title::after {
   /* Atlas Secondary 100 — the Style Guide's tan ramp (tertiary-100 in the
      Atlas palette block). Pulse's Action now boxes. */
   --admin-atlas-secondary-100: #f5f2ef;
+  /* Atlas neutral 800 — Pulse's card icons. */
+  --admin-atlas-neutral-800: #404040;
   /* Home's Quick Links card hairline as it computes on the Atlas pages
      (slate-100 darkened 5%) — the Students sidebar's temporary card. */
   --admin-quicklinks-rule: #dde0e2;

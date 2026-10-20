@@ -141,7 +141,7 @@ export function AtlasAdminPulsePage() {
             </button>
           </Card>
 
-          <Card {...card(1)} icon={<TriangleExclamation size={13} />} title="Need intervention" sub={`${pulse.offTrack.length} candidates need manager attention now.`}>
+          <Card {...card(1)} alert icon={<TriangleExclamation size={13} />} title="Need intervention" sub={`${pulse.offTrack.length} candidates need manager attention now.`}>
             <p style={{ margin: 0 }}>
               <strong style={{ fontFamily: HEADING, fontSize: 28, color: 'var(--admin-ink)' }}>{pulse.offTrack.length}</strong> <span style={{ fontSize: 13, color: 'var(--admin-text)' }}>off track — done with no prep, or gone quiet</span>
             </p>
@@ -295,11 +295,12 @@ export function AtlasAdminPulsePage() {
   )
 }
 
-function Card({ index, icon, title, sub, children, onFocus }: { index: number; icon: ReactNode; title: string; sub: string; children: ReactNode; onFocus: () => void }) {
+/** `alert` keeps the icon in brand red — Need intervention's warning. */
+function Card({ index, icon, title, sub, children, onFocus, alert }: { index: number; icon: ReactNode; title: string; sub: string; children: ReactNode; onFocus: () => void; alert?: boolean }) {
   return (
     <section data-pulse-card={index} tabIndex={-1} onFocus={onFocus} aria-label={`Card ${index + 1}: ${title}`} style={CARD_STYLE}>
       <div style={{ display: 'flex', gap: 10 }}>
-        <span aria-hidden style={{ display: 'grid', placeItems: 'center', width: 30, height: 30, flex: 'none', borderRadius: 8, background: 'var(--admin-brand-tint)', color: 'var(--admin-brand)' }}>
+        <span aria-hidden style={{ display: 'grid', placeItems: 'center', width: 30, height: 30, flex: 'none', borderRadius: 8, background: FIGURE_TINT, color: alert ? 'var(--admin-brand)' : 'var(--admin-atlas-neutral-800)' }}>
           {icon}
         </span>
         <div>
