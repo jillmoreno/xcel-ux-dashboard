@@ -484,11 +484,7 @@ function StepDocument({
           {/* These documents are multi-paragraph — the Florida notices close
               with a separate sentence about what clicking the button means.
               One `<p>` would run that into the body as a wall of text. */}
-          {paragraphs(body).map((para, i) => (
-            <p key={i} style={{ ...DOCUMENT_BODY, marginTop: i === 0 ? 0 : 10 }}>
-              {para}
-            </p>
-          ))}
+          <DocumentBody body={body} />
         </div>
         {/* ⚠ THE LABEL IS THE ONE THE DOCUMENT NAMES. Florida's notice ends
             "By clicking the 'I Agree' button below" in English and "Al
@@ -559,11 +555,6 @@ function StepDocument({
     /* Bilingual where the source document is — the XCEL Generic one prints
        its English acknowledgement and then its Spanish — single-language
        otherwise. */
-    const tcHeading = config.bilingual
-      ? language === 'es'
-        ? config.headingEs
-        : config.headingEn
-      : undefined
     const tcBody = config.bilingual
       ? language === 'es'
         ? config.bodyEs
@@ -572,12 +563,7 @@ function StepDocument({
     return (
       <div style={STACK}>
         <div style={DOCUMENT_PANEL}>
-          {tcHeading && <p style={SECTION_HEADING}>{tcHeading}</p>}
-          {paragraphs(tcBody).map((para, i) => (
-            <p key={i} style={{ ...DOCUMENT_BODY, marginTop: i === 0 && !tcHeading ? 0 : 10 }}>
-              {para}
-            </p>
-          ))}
+          <DocumentBody body={tcBody} />
         </div>
         {/* The source documents ask for the name again on the document
             itself — "Student Full Name" on its own signature line. */}
@@ -607,11 +593,7 @@ function StepDocument({
   return (
     <div style={STACK}>
       <div style={DOCUMENT_PANEL}>
-        {paragraphs(config.body).map((para, i) => (
-          <p key={i} style={{ ...DOCUMENT_BODY, marginTop: i === 0 ? 0 : 10 }}>
-            {para}
-          </p>
-        ))}
+        <DocumentBody body={config.body} />
       </div>
       <Checkbox
         checked={agreed}
@@ -723,11 +705,76 @@ function SignatureLine({ value }: { value: string }) {
   )
 }
 
-/** Source documents are authored as paragraphs; the data keeps them as one
- *  string with blank lines between, which is what survives a copy out of a
- *  .docx intact. */
-function paragraphs(body?: string): string[] {
-  return (body ?? '').split('\n\n').map((p) => p.trim()).filter(Boolean)
+/**
+ * THE DOCUMENT BODY, as the source documents are actually shaped.
+ *
+ * Blocks are separated by a blank line. A block is one of three things, and
+ * the markers are the smallest set that renders every document in the set:
+ *
+ *   `## Student Notice:`   a run-in heading the document prints in bold
+ *   `- ` lines             a bullet list; `  - ` nests one level under it
+ *   anything else          a paragraph
+ *
+ * ⚠ IT IS NOT MARKDOWN AND MUST NOT GROW INTO IT. These are legal documents
+ * rendered verbatim; the only reason any markup exists is that Illinois'
+ * Terms & Conditions prints a heading, a numbered-steps list and a nested
+ * clause, and flattening those into paragraphs changes what the document
+ * says. Anything needing more structure than this is an
+ * `enrollment-agreement`, which has real `sections`.
+ */
+function DocumentBody({ body }: { body?: string }) {
+  const blocks = (body ?? '')
+    .split('\n\n')
+    .map((b) => b.trim())
+    .filter(Boolean)
+
+  return (
+    <>
+      {blocks.map((block, i) => {
+        if (block.startsWith('## ')) {
+          return (
+            <p key={i} style={{ ...SECTION_HEADING, marginTop: i === 0 ? 0 : 14 }}>
+              {block.slice(3)}
+            </p>
+          )
+        }
+        if (block.startsWith('- ')) {
+          return <BulletList key={i} block={block} first={i === 0} />
+        }
+        return (
+          <p key={i} style={{ ...DOCUMENT_BODY, marginTop: i === 0 ? 0 : 10 }}>
+            {block}
+          </p>
+        )
+      })}
+    </>
+  )
+}
+
+/** A bullet block, with at most one level of nesting (`  - `). */
+function BulletList({ block, first }: { block: string; first: boolean }) {
+  const items: { text: string; nested: boolean }[] = []
+  for (const line of block.split('\n')) {
+    const nested = line.startsWith('  - ')
+    const text = line.replace(/^\s*- /, '').trim()
+    if (text) items.push({ text, nested })
+  }
+  return (
+    <ul style={{ ...BULLETS, marginTop: first ? 0 : 10 }}>
+      {items.map((item, i) => (
+        <li
+          key={i}
+          style={{
+            ...BULLET,
+            marginLeft: item.nested ? 16 : 0,
+            listStyleType: item.nested ? 'circle' : 'disc',
+          }}
+        >
+          {item.text}
+        </li>
+      ))}
+    </ul>
+  )
 }
 
 /** A bordered sub-section with a left accent stroke — the two-party shape's
@@ -736,7 +783,7 @@ function Declaration({ label, body }: { label: string; body?: string }) {
   return (
     <div style={DECLARATION}>
       <p style={DECLARATION_LABEL}>{label}</p>
-      <p style={DOCUMENT_BODY}>{body}</p>
+      <DocumentBody body={body} />
     </div>
   )
 }
@@ -910,6 +957,25 @@ const SECTION_HEADING: CSSProperties = {
   fontWeight: 700,
   fontSize: 12,
   lineHeight: '18px',
+  color: 'var(--color-text-primary)',
+}
+
+/* ⚠ NOT A FLEX COLUMN. `display: flex` on a <ul> suppresses the markers, so
+   the steps render as unbulleted lines — which is exactly what the markup
+   exists to avoid. Block flow with real list-item markers, spaced by margin
+   rather than by gap. */
+const BULLETS: CSSProperties = {
+  margin: 0,
+  paddingLeft: 20,
+  listStyle: 'disc',
+}
+
+const BULLET: CSSProperties = {
+  display: 'list-item',
+  marginBottom: 5,
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  lineHeight: '20px',
   color: 'var(--color-text-primary)',
 }
 

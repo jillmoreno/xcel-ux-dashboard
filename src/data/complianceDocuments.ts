@@ -92,13 +92,19 @@ export interface ComplianceDocumentConfig {
   bilingual?: boolean
   bodyEn?: string
   bodyEs?: string
-  /** The document's OWN internal heading, where it has one distinct from its
-   *  title — "Acknowledgement of Terms and Conditions of Pre-licensing Course
-   *  Completion". Per language, because the document prints it twice. */
-  headingEn?: string
-  headingEs?: string
 
   /* ── single-language signed-tc / affidavit-single body ── */
+  /**
+   * Blocks separated by a blank line. `## ` opens a run-in heading the
+   * document prints in bold, `- ` a bullet (`  - ` nests one level),
+   * anything else is a paragraph — see `DocumentBody`.
+   *
+   * ⚠ A HEADING IS A BLOCK, NOT A FIELD. It was `headingEn`/`headingEs` for
+   * one commit; Illinois' Terms & Conditions then turned up with a heading, a
+   * bullet list, a nested clause AND a second heading, which a field pair
+   * cannot express. One body string carries all of it, in order, in both
+   * languages, with no new fields per structure the next document invents.
+   */
   body?: string
 
   /* ── enrollment-agreement only ── */
@@ -237,13 +243,10 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
        brief's, not the document's.
        TODO(content): confirm whether the signature line should go. */
     bilingual: true,
-    headingEn: 'Acknowledgement of Terms and Conditions of Pre-licensing Course Completion',
     bodyEn:
-      'I understand and acknowledge that the pre-licensing insurance course final exam must be a proctored, closed-book exam with no assistance provided. A disinterested third party must proctor the exam. The disinterested third-party proctor or monitor is an individual who has none of the following: family relationship with the student; is a direct supervisor of the student; or a person directly supervised by the student.\n\nA certificate of course completion is to be presented to the student who successfully passes the exam with a score of 70% or better within 2 days of the completion date. The pre-licensing course completion date is the date the proctor signs and dates the exam.',
-    headingEs:
-      'Reconocimiento de los Términos y Condiciones de la Finalización del Curso de Pre-licencia',
+      '## Acknowledgement of Terms and Conditions of Pre-licensing Course Completion\n\nI understand and acknowledge that the pre-licensing insurance course final exam must be a proctored, closed-book exam with no assistance provided. A disinterested third party must proctor the exam. The disinterested third-party proctor or monitor is an individual who has none of the following: family relationship with the student; is a direct supervisor of the student; or a person directly supervised by the student.\n\nA certificate of course completion is to be presented to the student who successfully passes the exam with a score of 70% or better within 2 days of the completion date. The pre-licensing course completion date is the date the proctor signs and dates the exam.',
     bodyEs:
-      'Yo entiendo y reconozco que el examen final del curso de seguro pre-licencia debe ser un examen supervisado y cerrado sin ayuda. Un tercero desinteresado debe supervisar el examen. El supervisor o monitor de terceros desinteresados es un individuo que no tiene ninguno de los siguientes: relación familiar con el estudiante; es un supervisor directo del estudiante; o una persona directamente supervisada por el estudiante.\n\nUn certificado de finalización del curso debe ser presentado al estudiante que pase el examen con una puntuación de 70% o mejor dentro de los 2 días de la fecha de finalización. La fecha de finalización del curso de pre-licencia es la fecha en que el supervisor firma y fecha el examen.',
+      '## Reconocimiento de los Términos y Condiciones de la Finalización del Curso de Pre-licencia\n\nYo entiendo y reconozco que el examen final del curso de seguro pre-licencia debe ser un examen supervisado y cerrado sin ayuda. Un tercero desinteresado debe supervisar el examen. El supervisor o monitor de terceros desinteresados es un individuo que no tiene ninguno de los siguientes: relación familiar con el estudiante; es un supervisor directo del estudiante; o una persona directamente supervisada por el estudiante.\n\nUn certificado de finalización del curso debe ser presentado al estudiante que pase el examen con una puntuación de 70% o mejor dentro de los 2 días de la fecha de finalización. La fecha de finalización del curso de pre-licencia es la fecha en que el supervisor firma y fecha el examen.',
   },
   {
     id: 'ca-tc',
@@ -265,7 +268,17 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Terms and Conditions',
     sourceFile: 'IL PE-Terms and Conditions-Pre-Course Affidavit.docx',
     subject: 'Illinois',
-    body: 'I affirm the enrollment information I have submitted is true and correct, and I understand that submitting false information may be grounds for denial of licensure by the Illinois Department of Insurance.',
+    /* ⚠ VERBATIM (2026-10-19), replacing a placeholder that was one invented
+       sentence about enrollment information being true. The document is the
+       state's COURSE-HOURS rule — 20 hours per major line of authority, 7.5
+       of them in a classroom (webinar) setting, a 70% final — plus the three
+       steps to a certificate and a student-information notice.
+
+       ⚠ IT IS THE DOCUMENT THAT FORCED `## ` AND `- `: a heading, a bullet
+       list, a nested clause under one bullet, and a second heading. Flattened
+       into paragraphs it stops being a list of steps. */
+    body:
+      '## Acknowledgment of Terms and Conditions of Pre-licensing Course Completion\n\nThe state of Illinois requires applicants to complete 20 hours of pre-licensing education for each major line of authority. 7.5 of those hours must be completed in a classroom (webinar) setting. Additionally, students must complete a comprehensive final exam with a score of at least 70% and affirm that they, and only they, completed the course.\n\nTo be eligible for a Certificate of completion, you must follow several steps:\n\n- Complete the self-study portion of the course including passing the final exam with a score of at least 70%\n- Attend the entire 7.5-hour webinar\n- Affirm that you, and only you, completed the course by submitting your electronic affidavit.\n  - The course completion affidavit is available within two days of fulfilling the course completion requirements (online course, online comprehensive final exam, and webinar).\n\n## Student Notice:\n\nStudent information will not be sold or distributed to any third party without prior written consent of the student. By selecting \u201CI Agree\u201D below, you agree that your course information can be shared with state testing centers, state insurance departments, and with any third-party insurance agency or company.',
   },
   {
     id: 'mn-tc',
@@ -557,10 +570,31 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Post Final Affidavit',
     sourceFile: 'IL PE-Post Final Affidavit.docx',
     subject: 'Illinois',
+    /* ⚠⚠ THE SOURCE DOCUMENT DOES NOT MATCH THIS SHAPE, and the mismatch is
+       bigger than wording. The page reviewed on 2026-10-19 — headed "Illinois
+       Life Prelicensing Affidavit" — carries ONE declaration and four fields:
+       Student First Name, Student Last Name, Student Signature, Today's Date.
+       There is no proctor block, no relationship-to-examinee question and no
+       SSN anywhere on it. This row says `affidavit-two-party` with
+       `relationshipOptions` and `ssn-full` because the brief said so.
+
+       The STUDENT text below is now verbatim. `proctorBody` is NOT — there is
+       no proctor section in the source to take it from, so what is there is
+       still the placeholder, and the `proctor` step this shape renders is a
+       step the document does not have.
+
+       ⚠ ALSO: the document is headed "Illinois LIFE Prelicensing Affidavit"
+       while the file is the un-lined `IL PE-Post Final Affidavit.docx`, so
+       there may be a per-line-of-authority set here rather than one document.
+
+       TODO(content): confirm whether the source is one page. If it is, this
+       is `affidavit-single` with an exam-date field and the two-party
+       treatment comes off — a decision, not a cleanup, so it is not being
+       taken here. */
     relationshipOptions: ['Instructor', 'Proctor', 'School Official', 'Notary'],
     extraFields: ['ssn-full'],
     studentBody:
-      'I affirm I completed this pre-licensing course personally and that the record of completion submitted to the Illinois Department of Insurance is accurate.',
+      'I affirm that I personally completed the entire study material of the course including one hundred percent of the online pre-licensing course and the mandatory 7.5-hour webinar course. I also affirm that I completed the comprehensive final exam unassisted by any person(s), course materials or other materials.\n\nI further acknowledge that a violation of these standards shall result in loss of course credit and administrative sanction by the Illinois Department of Insurance.\n\nThe date on this affidavit is the course completion date.',
     proctorBody:
       'I affirm I verified the identity of the examinee named in this affidavit prior to course completion sign-off.',
   },

@@ -81,9 +81,12 @@ describe('the document set', () => {
         expect(d.bodyEn, d.id).toBeTruthy()
         if (d.bilingual) expect(d.bodyEs, d.id).toBeTruthy()
       }
-      // A heading is per-language or not at all — one half would print the
-      // wrong language above the right body.
-      expect(Boolean(d.headingEn), d.id).toBe(Boolean(d.headingEs))
+      /* A `## ` heading is a block inside the body, so a bilingual document
+         either heads both languages or neither — one alone would print the
+         wrong language's heading over the right body. */
+      if (d.bilingual) {
+        expect(d.bodyEn?.startsWith('## '), d.id).toBe(d.bodyEs?.startsWith('## '))
+      }
       /* A bilingual document carries the pair; a single-language one carries
          `body`. Either is complete; neither is optional. */
       if (d.shape === 'signed-tc' || d.shape === 'affidavit-single') {
@@ -181,7 +184,7 @@ describe('the XCEL Generic Terms & Conditions', () => {
        step — the document does not render on open. */
     open(tc, 'en')
     toDocumentStep()
-    expect(screen.getByText(/Acknowledgement of Terms and Conditions/)).toBeInTheDocument()
+    expect(screen.getByText('Acknowledgement of Terms and Conditions of Pre-licensing Course Completion')).toBeInTheDocument()
     expect(screen.getByText(/proctored, closed-book exam/)).toBeInTheDocument()
     expect(screen.getByText(/70% or better within 2 days/)).toBeInTheDocument()
     expect(screen.queryByText(/academic integrity/)).toBeNull()
@@ -191,6 +194,47 @@ describe('the XCEL Generic Terms & Conditions', () => {
     toDocumentStep()
     expect(screen.getByText(/Reconocimiento de los Términos y Condiciones/)).toBeInTheDocument()
     expect(screen.getByText(/examen supervisado y cerrado sin ayuda/)).toBeInTheDocument()
+  })
+})
+
+describe('the Illinois documents', () => {
+  /* The document that forced structure into the body: a heading, a steps
+     list, a nested clause under one of them, and a second heading. */
+  it('renders the Terms & Conditions as headings and bullets, not one blob', () => {
+    open(docById('il-tc'))
+    toDocumentStep()
+
+    expect(
+      screen.getByText('Acknowledgment of Terms and Conditions of Pre-licensing Course Completion'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Student Notice:')).toBeInTheDocument()
+    expect(screen.getByText(/20 hours of pre-licensing education/)).toBeInTheDocument()
+
+    const bullets = screen.getAllByRole('listitem')
+    expect(bullets.map((b) => b.textContent)).toEqual([
+      'Complete the self-study portion of the course including passing the final exam with a score of at least 70%',
+      'Attend the entire 7.5-hour webinar',
+      'Affirm that you, and only you, completed the course by submitting your electronic affidavit.',
+      'The course completion affidavit is available within two days of fulfilling the course completion requirements (online course, online comprehensive final exam, and webinar).',
+    ])
+    // The last one is the nested clause, and it is indented rather than flat.
+    expect(bullets[3].style.marginLeft).toBe('16px')
+    expect(bullets[0].style.marginLeft).toBe('0px')
+  })
+
+  /* ⚠ THE SOURCE HAS ONE SIGNER AND THIS SHAPE RENDERS TWO. Pinned as it
+     stands, with the contradiction named, so the row cannot be quietly
+     reshaped OR quietly left wrong — see the comment on `il-post`. */
+  it('carries the real student declaration, on a shape the source contradicts', () => {
+    const il = docById('il-post')
+    expect(il.studentBody).toContain('mandatory 7.5-hour webinar course')
+    expect(il.studentBody).toContain('unassisted by any person(s)')
+    expect(il.studentBody).toContain('The date on this affidavit is the course completion date.')
+
+    // Still two-party, still asking for an SSN the document never shows.
+    expect(il.shape).toBe('affidavit-two-party')
+    expect(il.extraFields).toContain('ssn-full')
+    expect(STEPS_BY_SHAPE[il.shape]).toEqual(['student', 'proctor'])
   })
 })
 
