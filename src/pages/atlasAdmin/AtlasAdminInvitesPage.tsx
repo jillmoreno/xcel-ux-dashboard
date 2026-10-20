@@ -74,8 +74,8 @@ export function AtlasAdminInvitesPage() {
     else setOpen(inv)
   }
 
-  const tiles: { id: Filter; label: string; note: string; color: string; urgent?: boolean; n: number }[] = [
-    { id: 'ready', label: 'Ready to resend', note: '48h+ unopened or stuck', color: 'var(--admin-brand)', urgent: true, n: count('ready') },
+  const tiles: { id: Filter; label: string; note: string; color: string; n: number }[] = [
+    { id: 'ready', label: 'Ready to resend', note: '48h+ unopened or stuck', color: 'var(--admin-brand)', n: count('ready') },
     { id: 'opened', label: 'Opened, not accepted', note: 'setup help usually closes it', color: 'var(--admin-ink)', n: count('opened') },
     { id: 'fresh', label: 'Sent under 24h', note: 'wait until tomorrow', color: 'var(--admin-ink)', n: count('fresh') },
     { id: 'all', label: 'Accepted this week', note: 'purchased · now in the pipeline', color: 'var(--admin-success-ink)', n: invites.filter(acceptedThisWeek).length },
@@ -106,7 +106,7 @@ export function AtlasAdminInvitesPage() {
                 className="cre-admin-tile"
                 style={{
                   ...TILE,
-                  border: `1px solid ${t.urgent && t.n ? 'var(--admin-brand)' : 'var(--admin-rule)'}`,
+                  border: '1px solid var(--admin-rule)',
                   ...(active ? TILE_ACTIVE : null),
                 }}
               >
