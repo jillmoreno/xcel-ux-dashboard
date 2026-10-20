@@ -311,10 +311,13 @@ function Card({ index, icon, title, sub, children, onFocus }: { index: number; i
   )
 }
 
+/* The small box labels (Need intervention, Action now…): 11 / bold. */
+const LABEL: CSSProperties = { ...EYEBROW, fontSize: 11 }
+
 function Box({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div style={{ padding: 12, borderRadius: 10, background: 'var(--admin-fill-soft)' }}>
-      <p style={{ ...EYEBROW, fontSize: 9 }}>{label}</p>
+      <p style={LABEL}>{label}</p>
       <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--admin-ink)' }}>{children}</p>
     </div>
   )
@@ -323,7 +326,7 @@ function Box({ label, children }: { label: string; children: ReactNode }) {
 function Figure({ label, value, bg, ink, note }: { label: string; value: number; bg: string; ink: string; note?: string }) {
   return (
     <div style={{ padding: 12, borderRadius: 10, background: bg }}>
-      <p style={{ ...EYEBROW, fontSize: 9, color: ink }}>{label}</p>
+      <p style={{ ...LABEL, color: ink }}>{label}</p>
       <strong style={{ display: 'block', marginTop: 4, fontFamily: HEADING, fontSize: 22, color: 'var(--admin-ink)' }}>{value}</strong>
       {note ? <span style={{ fontSize: 11, color: 'var(--admin-text)' }}>{note}</span> : null}
     </div>
@@ -333,7 +336,7 @@ function Figure({ label, value, bg, ink, note }: { label: string; value: number;
 function Action({ children }: { children: ReactNode }) {
   return (
     <div style={{ padding: 12, borderRadius: 10, background: 'var(--admin-atlas-secondary-100)' }}>
-      <p style={{ ...EYEBROW, fontSize: 9, color: 'var(--admin-brand)' }}>Action now</p>
+      <p style={{ ...LABEL, color: 'var(--admin-brand)' }}>Action now</p>
       <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--admin-ink)' }}>{children}</p>
     </div>
   )
