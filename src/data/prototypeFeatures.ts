@@ -839,7 +839,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // All four opening rows re-stamped at the 2026-10-15 ship that retired the
     // demo site: the shared chrome every row renders — the demo bar, the
     // version picker, the prototype bar — changed under all of them.
-    lastUpdated: '2026-10-20T02:30:09Z',
+    lastUpdated: '2026-10-20T14:17:48Z',
     pinned: true,
     // An in-app route, not a document. `to` is what makes the tile navigate
     // rather than open a new tab, and it is also what the row's live preview
@@ -972,7 +972,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'atlas',
-    lastUpdated: '2026-10-20T02:30:09Z',
+    lastUpdated: '2026-10-20T14:17:48Z',
     pinned: true,
     to: '/dashboard-rebrand?demo=1&section=dashboard',
     brands: ['xcel'],
@@ -1565,7 +1565,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           variants: [
             { name: 'Course progress', when: 'Always', detail: 'Eyebrow + `ProgressDial` at `percent`. ⚠ It survives 100% (2026-10-16) — completion and readiness are two axes, and a learner can be ready at less than 100%.' },
             { name: 'Study pace — a plan fits', when: '`weeks != null`', detail: 'The pace’s NAME (derived via `paceName` over `PLANNER_PLAN`, not typed — renaming a pace in Compass renames it here), the weekly goal row, and the Estimated completion date.' },
-            { name: 'Study pace — no plan fits', when: '`weeks == null`', detail: 'TWO ARMS, and the card names whichever deadline actually bound (`noPaceMessage`, reading the pace model’s own `binding`). ACCESS-bound: "Not enough access left" / "No study pace fits in the time remaining." / "Extend your access to get a plan." EXAM-bound: "Not enough time before your exam" / "No study pace fits: coursework has to finish by <date>, 7 days before your exam, to leave time to review." — and NO advice line, because a booked exam is not something a learner can extend. ⚠ The wording is shared with `AtlasCourseProgressStates` rather than copied, so the two cards cannot disagree about whether the question is answerable OR about which deadline made it unanswerable. Reached two ways: a short access window (the Demo Controls’ Expires setting) or a stored exam date near the demo clock (the Add Date prompt, kept per browser in `cgp.examDate`). The default Automatic window leaves room, so the plan arm is what opens.' },
+            { name: 'Study pace — no plan fits', when: '`weeks == null`', detail: 'TWO ARMS, and the card names whichever deadline actually bound (`noPaceMessage`, reading the pace model’s own `binding`). ACCESS-bound: "Not enough access left" / "No study pace fits in the time remaining." / "Extend your access to get a plan." EXAM-bound: "Not enough time before your exam" / "No study pace fits: coursework has to finish by <date>, 7 days before your exam, to leave time to review." — and NO advice line, because a booked exam is not something a learner can extend. ⚠ The wording is shared with `AtlasCourseProgressStates` rather than copied, so the two cards cannot disagree about whether the question is answerable OR about which deadline made it unanswerable. Reached ONE way on this Home: a short access window (the Demo Controls’ Expires setting). The default Automatic window leaves room, so the plan arm is what opens — always, on any browser. ⚠ A STORED EXAM DATE NO LONGER REACHES IT (2026-10-20). `cgp.examDate` is per-browser and authored by the COMPASS surfaces; this Home has no control over it — both of its exam prompts are decoration — so a date typed in Compass used to dead-end the card permanently on that machine with nothing on screen to explain it. The Home passes no exam date to `studyPace`; the EXAM arm is still live wherever a surface owns the date, and wiring Add Date is what brings it back here. `AtlasHomeExamDate.test.tsx` pins it.' },
             { name: 'Readiness below', when: '`readinessBelow` — i.e. `atlas-readiness-section` is on', detail: 'Bottom padding drops to 0 so the Readiness card can sit flush inside the same panel and take the same eyebrow (`matchPaceEyebrow`).' },
             { name: 'Left-aligned column', when: 'The column-alignment design control', detail: 'The eyebrows are left in BOTH arms; what moves is the goal row. The dials, the sentence and the completion date stay centred.' },
           ],
@@ -1580,7 +1580,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             why:
               'The tan card steps through five states of a journey; this one shows ONE number and a way to change the plan behind it. Both read the same `studyPace` model, so they answer the same question differently rather than disagreeing about it.',
             edgeCases: [
-              'The committed default opens at 0% with no exam date set, and the Automatic access window still fits a plan — so the section opens on the PLAN arm (“Average · 4 Week Goal”), with Estimated completion below it. The no-plan arms need either a shorter Expires setting or a stored exam date; all three are documented above because a developer will meet all three. ⚠ A stored exam date survives reloads and appears on NEITHER control bar (`cgp.examDate`, per browser) — it is the one way this page can look wrong with every visible setting correct.',
+              'The committed default opens at 0% and the Automatic access window — thirty days — still fits a plan, so the section opens on the PLAN arm (“Average · 4 Week Goal”), with Estimated completion below it. ⚠ THAT IS NOW TRUE ON ANY BROWSER (2026-10-20). It used to depend on `cgp.examDate` being unset: a date entered on a Compass surface survived reloads, appeared on NEITHER control bar, and turned this section into “Not enough time before your exam” for good — the one way this page could look wrong with every visible setting correct. The Home no longer reads it. The remaining no-plan arm needs a shorter Expires setting, which is a visible control.',
               '⚠ FORKED FROM `HybridHomeV1`’s pace panel (its `PACE_PANEL` + `ProgressDial`), copied rather than imported so a change here is not a change in another designer’s working Home. The LAYOUT is duplicated; the DATA is not.',
             ],
             toasterLogic: ['None — the only action is Customize Your Pace, which routes to Compass’s study planner.'],

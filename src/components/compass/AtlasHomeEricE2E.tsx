@@ -143,6 +143,11 @@ export type AtlasHomeEricE2EProps = {
   today: Date
   hoursRemaining: number
   accessExpiresAt?: string
+  /** ⚠ ACCEPTED AND DELIBERATELY UNUSED since 2026-10-20 — see the note above
+   *  `studyPace` in the body. The band hands every Home the same props, and
+   *  this one has no control over the stored exam date, so it does not let
+   *  that date govern its pace. Kept on the type so wiring Add Date is a
+   *  one-line change rather than a prop re-plumb. */
   examDate?: string
   notStarted?: boolean
   onBegin?: () => void
@@ -200,7 +205,6 @@ export function AtlasHomeEricE2E({
   today,
   hoursRemaining,
   accessExpiresAt,
-  examDate,
   notStarted = false,
   onBegin,
   onOverview,
@@ -288,6 +292,44 @@ export function AtlasHomeEricE2E({
   const expiryPick = useFeatureFlag(EXPIRY_FLAG_KEY).variant ?? 'auto'
   const zeroWindow = progressPick === 'not-started' && expiryPick === 'auto'
   const accessIso = zeroWindow && accessExpiresAt ? isoPlusDays(today, ZERO_ACCESS_DAYS) : accessExpiresAt
+  /*
+   * ⚠ THIS HOME DOES NOT READ THE STORED EXAM DATE — 2026-10-20, Jillienne,
+   * after Home opened on "Not enough time before your exam" with a month of
+   * access left and nothing on the page that had ever asked her for an exam.
+   *
+   * `examDate` arrives from `MembershipOverview` as `cgp.examDate`, the
+   * per-browser value the COMPASS surfaces author — the Study Journey widget,
+   * the Exam Schedule widget, the Exam Date card. Each of those shows the date
+   * it holds and offers a way to clear it. This Home shows neither: BOTH of
+   * its exam prompts are decoration, and say so — `ExamDateQuestionPill`'s
+   * "⚠ IT IS NOT WIRED, and never was: Yes and Not Yet do nothing", and
+   * `ExamDatePrompt`'s Add Date, which has no handler either.
+   *
+   * So the page asked "When is your exam?" while already acting on an answer
+   * it could not show, change or undo. A date typed in Compass weeks earlier
+   * made the pace card dead-end permanently, per browser, with nothing on
+   * screen and nothing in the repo to explain it — and no reviewer would
+   * think to look for it, because the question beside the message is still
+   * being asked.
+   *
+   * ⚠ THE ACCESS CEILING IS NOT A FALLBACK HERE, IT IS THE ONLY ONE. A plan
+   * always fits the thirty days `ZERO_ACCESS_DAYS` gives, which is the whole
+   * of what was asked for: Home opens on a pace, every time, on any browser.
+   *
+   * ⚠ THE NO-PACE STATE ITSELF IS KEPT, and so is `noPaceMessage`'s exam arm.
+   * Yesterday's work is not undone — the Demo Controls' Expires setting still
+   * reaches the access arm at a short window, which is the control that is
+   * SUPPOSED to reach it, and `AtlasCourseProgressStates` still reads a real
+   * exam date through its own surface. What changed is that an input this
+   * page cannot see no longer governs it.
+   *
+   * ⚠ WIRING EITHER PROMPT IS WHAT UNDOES THIS. The moment Add Date writes to
+   * `examDateStore`, the date becomes this page's own input and should bind
+   * again: pass `examDate` back through here, and give the card the same
+   * clear-it affordance the Compass surfaces have. The prop stays on
+   * `AtlasHomeEricE2EProps` for that reason — it is accepted, deliberately
+   * unused, not removed.
+   */
   /* THE FIGURES — the pace model, as the Study Pace card computes it. */
   const model = useMemo(
     () =>
@@ -295,10 +337,10 @@ export function AtlasHomeEricE2E({
         today,
         hoursRemaining,
         accessExpiresAt: accessIso,
-        examDate,
+        examDate: undefined,
         nights: notStarted ? NOT_STARTED_NIGHTS : undefined,
       }),
-    [today, hoursRemaining, accessIso, examDate, notStarted],
+    [today, hoursRemaining, accessIso, notStarted],
   )
   const preset = defaultPreset(model)
   /*
