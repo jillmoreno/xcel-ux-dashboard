@@ -140,7 +140,7 @@ export function AtlasAdminNotificationsPage() {
                           <span aria-hidden style={{ flex: 'none', width: 6, height: 6, borderRadius: '50%', background: isOn(n) ? 'var(--admin-success-ink)' : 'var(--admin-faint)' }} />
                           {statusLine(n)}
                         </p>
-                        <div style={{ marginTop: 10, paddingTop: 8, borderTop: `1px solid ${active ? 'var(--admin-atlas-primary-200)' : 'var(--admin-atlas-primary-100)'}`, display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 12 }}>
+                        <div style={{ marginTop: 10, paddingTop: 8, borderTop: `1px solid ${active ? 'var(--admin-atlas-primary-200)' : 'var(--admin-atlas-primary-100)'}`, display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 20 }}>
                           {n.actions.map((a) => (
                             <button
                               key={a}
