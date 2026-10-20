@@ -43,6 +43,8 @@ function open(config: ComplianceDocumentConfig) {
 }
 
 const nextButton = () => screen.getByRole('button', { name: /next|finish/i })
+/* A one-step document has no arrows — it gets named CTAs instead. */
+const confirmButton = () => screen.getByRole('button', { name: /^confirm$/i })
 const typeInto = (label: RegExp, value: string) =>
   fireEvent.change(screen.getByLabelText(label), { target: { value } })
 
@@ -288,9 +290,9 @@ describe('the two shapes with no signer', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Español' }))
     expect(screen.getByText(/Departamento de Servicios Financieros/)).toBeInTheDocument()
 
-    expect(nextButton()).toBeDisabled()
+    expect(confirmButton()).toBeDisabled()
     fireEvent.click(screen.getByLabelText('I Agree'))
-    fireEvent.click(nextButton())
+    fireEvent.click(confirmButton())
     expect(onComplete).toHaveBeenCalledOnce()
   })
 
@@ -298,19 +300,33 @@ describe('the two shapes with no signer', () => {
     const { onComplete } = open(docById('mn-post-pdf'))
     expect(screen.getByText(/content pending manual review/i)).toBeInTheDocument()
     expect(screen.getByText(/custom\/embedded font encoding/i)).toBeInTheDocument()
-    expect(nextButton()).toBeDisabled()
-    fireEvent.click(nextButton())
+    expect(confirmButton()).toBeDisabled()
+    fireEvent.click(confirmButton())
     expect(onComplete).not.toHaveBeenCalled()
   })
 })
 
 describe('the progress strip', () => {
-  it('is absent on a one-step document', () => {
-    open(docById('fl-notice-lh')) // notice → ['document']
+  it('is absent on a one-step document, and so are the arrows', () => {
+    const { onClose } = open(docById('fl-notice-lh')) // notice → ['document']
     expect(screen.queryByText(/^Step \d+ of \d+$/)).toBeNull()
-    // Back and Next are still there — only the progress goes.
-    expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
+    /* Arrows promise a sequence. On one step there is nowhere back to go and
+       nothing after, so they are replaced by what the two actions actually
+       do. */
+    expect(screen.queryByRole('button', { name: /^back$/i })).toBeNull()
+    expect(screen.queryByRole('button', { name: /next|finish/i })).toBeNull()
+    expect(confirmButton()).toBeInTheDocument()
+
+    const cancel = screen.getByRole('button', { name: /^cancel$/i })
+    fireEvent.click(cancel)
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it('keeps the arrows wherever there IS a sequence', () => {
+    open(docById('ky-ea')) // enrollment-agreement → three steps
+    expect(screen.getByRole('button', { name: /^back$/i })).toBeInTheDocument()
     expect(nextButton()).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^confirm$/i })).toBeNull()
   })
 
   it('is absent on the needs-review placeholder too', () => {

@@ -1,5 +1,6 @@
 import { useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { Modal } from '@/components/ui/Modal'
+import { Button } from '@/components/ui/Button'
 import { Checkbox } from '@/components/ui/Checkbox'
 import {
   Check,
@@ -302,47 +303,63 @@ export function ComplianceDocumentModal({
 
         {/* ── progress + the two circular buttons ─────────────────────── */}
         <div style={FOOTER}>
-          <button type="button" onClick={goBack} aria-label="Back" style={BACK_BUTTON}>
-            <ChevronLeft size={18} aria-hidden />
-          </button>
-
-          {/* ⚠ NO PROGRESS ON A ONE-STEP DOCUMENT. A single filled segment over
-              "Step 1 of 1" is a progress bar that was never going to move —
-              it answers a question nobody asked and implies there is more to
-              come. The two notices and the needs-review placeholder are the
-              one-step shapes; the spacer keeps Back and Next on the same
-              edges they sit on everywhere else. */}
-          {steps.length > 1 ? (
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-              <div style={SEGMENTS} role="presentation">
-                {steps.map((s, i) => (
-                  <span
-                    key={s}
-                    style={{
-                      ...SEGMENT,
-                      background:
-                        i <= stepIndex ? 'var(--color-action)' : 'var(--color-neutral-200)',
-                    }}
-                  />
-                ))}
-              </div>
-              <span style={STEP_LABEL}>
-                Step {stepIndex + 1} of {steps.length}
-              </span>
+          {/* ⚠ A ONE-STEP DOCUMENT GETS NAMED BUTTONS, NOT ARROWS. Arrows
+              promise a sequence — they say "there is a previous and a next"
+              — and on a single-step document both halves of that are a lie:
+              there is nowhere back to go and nothing after. Cancel and
+              Confirm say what the two actions actually do. The arrows stay
+              wherever there IS a sequence to move through. */}
+          {steps.length === 1 ? (
+            <div style={SINGLE_ACTIONS}>
+              <Button variant="secondary" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={goNext} disabled={!canAdvance}>
+                Confirm
+              </Button>
             </div>
           ) : (
-            <div style={{ flex: 1 }} />
-          )}
+            /* Two or more steps: the arrows, with the progress strip between
+               them. Everything here is reachable only when there IS a
+               sequence, so none of it needs its own length check. */
+            <>
+              <button type="button" onClick={goBack} aria-label="Back" style={BACK_BUTTON}>
+                <ChevronLeft size={18} aria-hidden />
+              </button>
 
-          <button
-            type="button"
-            onClick={goNext}
-            disabled={!canAdvance}
-            aria-label={isLast ? 'Finish' : 'Next'}
-            style={canAdvance ? NEXT_BUTTON_ON : NEXT_BUTTON_OFF}
-          >
-            {isLast ? <Check size={18} strokeWidth={3} aria-hidden /> : <ChevronRight size={18} aria-hidden />}
-          </button>
+              <div style={PROGRESS}>
+                <div style={SEGMENTS} role="presentation">
+                  {steps.map((s, i) => (
+                    <span
+                      key={s}
+                      style={{
+                        ...SEGMENT,
+                        background:
+                          i <= stepIndex ? 'var(--color-action)' : 'var(--color-neutral-200)',
+                      }}
+                    />
+                  ))}
+                </div>
+                <span style={STEP_LABEL}>
+                  Step {stepIndex + 1} of {steps.length}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={goNext}
+                disabled={!canAdvance}
+                aria-label={isLast ? 'Finish' : 'Next'}
+                style={canAdvance ? NEXT_BUTTON_ON : NEXT_BUTTON_OFF}
+              >
+                {isLast ? (
+                  <Check size={18} strokeWidth={3} aria-hidden />
+                ) : (
+                  <ChevronRight size={18} aria-hidden />
+                )}
+              </button>
+            </>
+          )}
         </div>
       </div>
     </Modal>
@@ -1024,6 +1041,24 @@ const FOOTER: CSSProperties = {
   alignItems: 'center',
   gap: 12,
   paddingTop: 4,
+}
+
+/* Right-aligned, Confirm last — the order every other confirm/dismiss pair
+   in this app uses, so the primary sits under the thumb on the side people
+   expect it. */
+const SINGLE_ACTIONS: CSSProperties = {
+  width: '100%',
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: 10,
+}
+
+const PROGRESS: CSSProperties = {
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 6,
 }
 
 const SEGMENTS: CSSProperties = { display: 'flex', gap: 4, width: '100%' }
