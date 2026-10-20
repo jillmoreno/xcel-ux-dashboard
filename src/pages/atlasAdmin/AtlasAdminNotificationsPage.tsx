@@ -196,7 +196,7 @@ export function AtlasAdminNotificationsPage() {
                     type="button"
                     aria-label={`Remove ${p}`}
                     onClick={() => setProgressReport({ people: progressReport.people.filter((x) => x !== p) })}
-                    style={{ ...PILL, gap: 6, border: 'none', cursor: 'pointer', background: 'var(--admin-fill)', color: 'var(--admin-ink)' }}
+                    style={{ ...PILL, gap: 6, border: 'none', boxShadow: 'inset 0 0 0 1px var(--admin-atlas-primary-200)', cursor: 'pointer', background: 'var(--admin-fill)', color: 'var(--admin-ink)' }}
                   >
                     {p} <XmarkRegular size={8} aria-hidden />
                   </button>
