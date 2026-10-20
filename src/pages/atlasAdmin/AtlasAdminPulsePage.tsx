@@ -312,7 +312,7 @@ function Card({ index, icon, title, sub, children, onFocus }: { index: number; i
   )
 }
 
-/* The Briefing figures' fill: Atlas primary 100 at half strength. */
+/* The Briefing figures' and What changed's fill: Atlas primary 100 at half strength. */
 const FIGURE_TINT = 'color-mix(in srgb, var(--admin-atlas-primary-100) 50%, var(--admin-surface))'
 
 /* The small box labels (Need intervention, Action now…): 11 / bold. */
@@ -320,7 +320,7 @@ const LABEL: CSSProperties = { ...EYEBROW, fontSize: 11 }
 
 function Box({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div style={{ padding: 12, borderRadius: 10, background: 'var(--admin-fill-soft)' }}>
+    <div style={{ padding: 12, borderRadius: 10, background: FIGURE_TINT }}>
       <p style={LABEL}>{label}</p>
       <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--admin-ink)' }}>{children}</p>
     </div>
