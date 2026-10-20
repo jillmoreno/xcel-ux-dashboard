@@ -4,7 +4,6 @@ import { acceptedThisWeek, hoursAgoDate, isFresh, isReady, type Invite, type Inv
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
-import { AdminTabs } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
 
 /**
@@ -84,12 +83,6 @@ export function AtlasAdminInvitesPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      <AdminTabs
-        tabs={[
-          { to: `${ADMIN_BASE}/students`, label: 'Students' },
-          { to: `${ADMIN_BASE}/invites`, label: 'Invites' },
-        ]}
-      />
       <header style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
         <div>
           <h2 style={PAGE_H1}>Invites</h2>

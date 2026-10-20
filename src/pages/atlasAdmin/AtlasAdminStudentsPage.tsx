@@ -15,7 +15,7 @@ import {
 import { LOCATIONS, jobRoleOf, membersOfLocation } from '@/data/atlasAdmin/organization'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, CHIP, CHIP_ON, EYEBROW, PAGE_H1, PAGE_SUB } from './adminStyles'
-import { AdminTabs, ChipMenu, MenuItem, PreparedPill, ProgressRing, ReadinessCell, StagePill } from './adminUi'
+import { ChipMenu, MenuItem, PreparedPill, ProgressRing, ReadinessCell, StagePill } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
 
 /**
@@ -228,12 +228,6 @@ export function AtlasAdminStudentsPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      <AdminTabs
-        tabs={[
-          { to: `${ADMIN_BASE}/students`, label: 'Students' },
-          { to: `${ADMIN_BASE}/invites`, label: 'Invites' },
-        ]}
-      />
       <header style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
         <div style={{ minWidth: 0 }}>
           <h2 style={PAGE_H1}>Students</h2>

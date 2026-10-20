@@ -5,7 +5,7 @@ import { ADMIN_REPORTS, REPORT_COLUMNS, reportRows, type ReportCategory, type Re
 import { AdminDialog } from './AdminDialog'
 import { CadenceDialog, PeopleDialog } from './adminDialogs'
 import { ADMIN_BASE, ADMIN_EMAIL, DAYS, TIMES, useAdminStore } from './adminStore'
-import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, FIELD_LABEL, HEADING, INPUT, PAGE_SUB, PILL } from './adminStyles'
+import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, FIELD_LABEL, HEADING, INPUT, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
 import { ChipMenu, MenuItem } from './adminUi'
 
 /**
@@ -101,7 +101,7 @@ export function AtlasAdminReportsPage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <header style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
         <div>
-          <h2 style={{ margin: 0, fontFamily: HEADING, fontSize: 22, fontWeight: 700, color: 'var(--admin-ink)' }}>Reports Library</h2>
+          <h1 style={PAGE_H1}>Reports Library</h1>
           <p style={PAGE_SUB}>Run, schedule, share, and favorite reports for your organization.</p>
         </div>
         <button type="button" onClick={() => setDialog('create')} style={DARK}>
