@@ -839,7 +839,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // All four opening rows re-stamped at the 2026-10-15 ship that retired the
     // demo site: the shared chrome every row renders — the demo bar, the
     // version picker, the prototype bar — changed under all of them.
-    lastUpdated: '2026-10-20T20:50:10Z',
+    lastUpdated: '2026-10-20T23:20:48Z',
     pinned: true,
     // An in-app route, not a document. `to` is what makes the tile navigate
     // rather than open a new tab, and it is also what the row's live preview
@@ -1000,7 +1000,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'atlas',
-    lastUpdated: '2026-10-20T20:50:10Z',
+    lastUpdated: '2026-10-20T23:20:48Z',
     pinned: true,
     to: '/dashboard-rebrand?demo=1&section=dashboard',
     brands: ['xcel'],
@@ -1594,8 +1594,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             { name: 'Course progress', when: 'Always', detail: 'Eyebrow + `ProgressDial` at `percent`. ⚠ It survives 100% (2026-10-16) — completion and readiness are two axes, and a learner can be ready at less than 100%.' },
             { name: 'Study pace — a plan fits', when: '`weeks != null`', detail: 'The pace’s NAME (derived via `paceName` over `PLANNER_PLAN`, not typed — renaming a pace in Compass renames it here), the weekly goal row, and the Estimated completion date.' },
             { name: 'Study pace — no plan fits', when: '`weeks == null`', detail: 'TWO ARMS, and the card names whichever deadline actually bound (`noPaceMessage`, reading the pace model’s own `binding`). ACCESS-bound: "Not enough access left" / "No study pace fits in the time remaining." / "Extend your access to get a plan." EXAM-bound: "Not enough time before your exam" / "No study pace fits: coursework has to finish by <date>, 7 days before your exam, to leave time to review." — and NO advice line, because a booked exam is not something a learner can extend. ⚠ The wording is shared with `AtlasCourseProgressStates` rather than copied, so the two cards cannot disagree about whether the question is answerable OR about which deadline made it unanswerable. Reached ONE way on this Home: a short access window (the Demo Controls’ Expires setting). The default Automatic window leaves room, so the plan arm is what opens — always, on any browser. ⚠ A STORED EXAM DATE NO LONGER REACHES IT (2026-10-20). `cgp.examDate` is per-browser and authored by the COMPASS surfaces; this Home has no control over it — both of its exam prompts are decoration — so a date typed in Compass used to dead-end the card permanently on that machine with nothing on screen to explain it. The Home passes no exam date to `studyPace`; the EXAM arm is still live wherever a surface owns the date, and wiring Add Date is what brings it back here. `AtlasHomeExamDate.test.tsx` pins it.' },
-            { name: 'Readiness below', when: '`readinessBelow` — i.e. `atlas-readiness-section` is on', detail: 'Bottom padding drops to 0 so the Readiness card can sit flush inside the same panel and take the same eyebrow (`matchPaceEyebrow`).' },
-            { name: 'Left-aligned column', when: 'The column-alignment design control', detail: 'The eyebrows are left in BOTH arms; what moves is the goal row. The dials, the sentence and the completion date stay centred.' },
+            { name: 'Figure rows (Estimated completion, state exam)', when: '`expected` / `exam`', detail: 'A small two-column table under the pace sentence, each row ruled above: the EYEBROW hard left, the FIGURE hard right at 19px serif, and the figure\u2019s count on its own line beneath it, right aligned \u2014 "(in 25 days)", or "(today)" / "(date has passed)" at the edges. \u26a0 THE LABEL IS WHAT WRAPS, not the figure: the column is 248 and a long month ("September 29", 103) would otherwise break across two lines of serif, so the figure is `nowrap` and the label takes the remainder. \u26a0 AND THE ROW THAT IS NOT LAST GIVES UP ITS BOTTOM PAD \u2014 every row carries 24 over its rule and 24 under its figure, which stacked would put 48 above the second rule against 24 below it. Only the LAST row keeps the pad and the closing hairline.' },
+          { name: 'Readiness below', when: '`readinessBelow` — i.e. `atlas-readiness-section` is on', detail: 'Bottom padding drops to 0 so the Readiness card can sit flush inside the same panel and take the same eyebrow (`matchPaceEyebrow`).' },
+            { name: 'Left-aligned column', when: 'The column-alignment design control', detail: 'The eyebrows are left in BOTH arms; what moves is the goal row. The dials and the sentence stay centred. \u26a0 THE FIGURE ROWS NO LONGER FOLLOW THIS CONTROL AT ALL (2026-10-20): Estimated completion and the state exam are pinned label-left / figure-right on both arms, so neither arm moves them.' },
           ],
           uxLogic: [
             '⚠ Course progress LEADS the column (2026-10-16) — it sat under Study pace only because the dial used to live inside that card.',
