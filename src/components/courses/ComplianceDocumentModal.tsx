@@ -12,8 +12,8 @@ import {
   Users,
 } from '@/icons'
 import {
-  STEPS_BY_SHAPE,
   acknowledgementFor,
+  stepsFor,
   type AcknowledgementLevel,
   type ComplianceDocumentConfig,
   type ExtraField,
@@ -110,7 +110,10 @@ export function ComplianceDocumentModal({
   config,
   language = 'en',
 }: Props) {
-  const steps = STEPS_BY_SHAPE[config.shape]
+  /* Memoised because `stepsFor` builds a fresh array for a `proctorFirst`
+     document, and `step` is derived from it — an unstable reference there
+     defeats the memoisation of every gate below it. */
+  const steps = useMemo(() => stepsFor(config), [config])
   const [stepIndex, setStepIndex] = useState(0)
 
   /* `name` is shared by the `name`, `identity` and `student` steps — the same
@@ -163,8 +166,16 @@ export function ComplianceDocumentModal({
   const proctorIsLearner = useMemo(() => {
     const flat = (v: string) => v.trim().toLowerCase().replace(/\s+/g, ' ')
     const learner = flat(joinName(name))
-    if (!learner) return false
-    return flat(joinName(proctorName)) === learner || flat(proctorSignature) === learner
+    const proctor = flat(joinName(proctorName))
+    /* ⚠ IT HAS TO HOLD IN BOTH ORDERS. With `proctorFirst` the monitor is
+       entered before the learner, so a check that only reads the proctor's
+       side would be comparing against an empty name and pass every time —
+       and then the learner could type the proctor's name with nothing to
+       catch it. Either side being empty means there is nothing to compare
+       yet; once both exist, the clash is the same clash whichever arrived
+       first. */
+    if (!learner || !proctor) return false
+    return proctor === learner || flat(proctorSignature) === learner
   }, [name, proctorName, proctorSignature])
 
   /* ── what each step needs before Next turns on ───────────────────────── */
@@ -195,7 +206,8 @@ export function ComplianceDocumentModal({
           nameComplete(name) &&
           extraFields.every((f) => (extras[f] ?? '').trim() !== '') &&
           agreed &&
-          signature.trim() !== ''
+          signature.trim() !== '' &&
+          !proctorIsLearner
         )
       case 'proctor':
         return (
@@ -340,6 +352,7 @@ export function ComplianceDocumentModal({
               onAgreed={setAgreed}
               signature={signature}
               onSignature={setSignature}
+              isProctor={proctorIsLearner}
             />
           )}
 
@@ -629,6 +642,7 @@ function StepStudent({
   onAgreed,
   signature,
   onSignature,
+  isProctor,
 }: {
   config: ComplianceDocumentConfig
   name: Record<string, string>
@@ -639,6 +653,8 @@ function StepStudent({
   onAgreed: (v: boolean) => void
   signature: string
   onSignature: (v: string) => void
+  /** True when the learner's details match the proctor's. */
+  isProctor: boolean
 }) {
   return (
     <div style={STACK}>
@@ -660,6 +676,11 @@ function StepStudent({
         onAgreed={onAgreed}
         signature={signature}
         onSignature={onSignature}
+        error={
+          isProctor
+            ? 'An examinee cannot be their own proctor. This name matches the monitor’s.'
+            : undefined
+        }
       />
     </div>
   )

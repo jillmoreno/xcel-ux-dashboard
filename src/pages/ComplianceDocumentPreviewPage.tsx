@@ -5,6 +5,7 @@ import {
   STEPS_BY_SHAPE,
   MOMENT_LABEL,
   acknowledgementFor,
+  stepsFor,
   type ComplianceDocumentConfig,
   type DocumentShape,
 } from '@/data/complianceDocuments'
@@ -173,7 +174,7 @@ function DocumentButton({
   doc: ComplianceDocumentConfig
   onOpen: () => void
 }) {
-  const steps = STEPS_BY_SHAPE[doc.shape]
+  const steps = stepsFor(doc)
   return (
     <button type="button" onClick={onOpen} style={CARD}>
       <span style={CARD_TOP}>
@@ -187,6 +188,7 @@ function DocumentButton({
         {doc.bilingual ? ' · bilingual' : ''}
         {acknowledgementFor(doc) === 'signature' ? ' · signed' : ''}
         {acknowledgementFor(doc) === 'none' ? ' · shown only' : ''}
+        {doc.proctorFirst ? ' · proctor first' : ''}
         {doc.shape === 'needs-review' ? ' · not completable' : ''}
       </span>
     </button>

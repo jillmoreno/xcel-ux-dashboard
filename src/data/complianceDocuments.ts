@@ -174,6 +174,21 @@ export interface ComplianceDocumentConfig {
   acknowledgement?: AcknowledgementLevel
 
   /* ── affidavit-two-party only ── */
+  /**
+   * The PROCTOR signs first.
+   *
+   * ⚠ THE PAPER ORDER IS NOT THE FILLING ORDER. All four two-party forms
+   * print the student's block above the monitor's, which is why the shape
+   * defaults to student-then-proctor. Wisconsin's profile describes the
+   * opposite sequence in practice: the proctor verifies identity and
+   * completes the Affidavit of Personal Responsibility BEFORE the exam, and
+   * both parties sign after it. Following the paper would ask a learner to
+   * attest before the person who is meant to have verified them has.
+   *
+   * Set per document rather than per shape, because the other three states
+   * are not known to differ.
+   */
+  proctorFirst?: boolean
   studentBody?: string
   proctorBody?: string
   relationshipOptions?: string[]
@@ -242,6 +257,22 @@ const DEFAULT_ACKNOWLEDGEMENT: Record<DocumentShape, AcknowledgementLevel> = {
 
 export function acknowledgementFor(config: ComplianceDocumentConfig): AcknowledgementLevel {
   return config.acknowledgement ?? DEFAULT_ACKNOWLEDGEMENT[config.shape]
+}
+
+/**
+ * The steps this document runs, in the order it is actually filled in.
+ *
+ * ⚠ READ THIS, NEVER `STEPS_BY_SHAPE` DIRECTLY, anywhere a learner walks
+ * through a document. The shape gives the default; `proctorFirst` is the one
+ * documented departure from it, and a caller that indexes the map itself
+ * silently ignores it.
+ */
+export function stepsFor(config: ComplianceDocumentConfig): string[] {
+  const steps = STEPS_BY_SHAPE[config.shape]
+  if (config.shape === 'affidavit-two-party' && config.proctorFirst) {
+    return ['proctor', 'student']
+  }
+  return steps
 }
 
 export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
@@ -815,8 +846,9 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
        Also the state's own form (the same name Connecticut uses), and the
        certificate needs "specific wording required (provider packet,
        Appendix 5)".
-       TODO(design): whether the two-party flow should open on the proctor is
-       a question for the real trigger, not for this preview. */
+       Resolved 2026-10-20: `proctorFirst` puts the monitor first here and
+       leaves the other three alone. */
+    proctorFirst: true,
     studentBody:
       'I affirm that I personally completed the entire study material of the course. I also affirm that I completed the exam without assistance from any course material, other than source material, or from any person(s).\n\n## Student Certification Statement:\n\nBy clicking the button below, I certify that, under the penalty of perjury, I am the person listed above and that my completion of each assignment in this course was the result of my own personal efforts, unassisted by any unauthorized individual or resource, and my work has not been altered or tampered with in any way. I understand that receiving unauthorized assistance or tampering with course results will invalidate my course credit and may be a cause of action under applicable laws and regulations of my state.',
     proctorBody:

@@ -5,6 +5,7 @@ import {
   COMPLIANCE_DOCUMENTS,
   MOMENT_LABEL,
   STEPS_BY_SHAPE,
+  stepsFor,
   type ComplianceDocumentConfig,
   type DocumentShape,
 } from '@/data/complianceDocuments'
@@ -464,22 +465,18 @@ describe('Next stays off until the step is answered', () => {
      for nothing extra and the monitor for a name, an address and a phone —
      one shared list could not say that. */
   it("gates the proctor step on the proctor's own identity fields", () => {
-    open(docById('wi-post'))
-    typeName()
-    fireEvent.click(screen.getByLabelText(/student declaration/i))
-    sign()
-    fireEvent.click(nextButton())
-
+    open(docById('wi-post')) // proctor first — see the Wisconsin block below
     fireEvent.click(screen.getByRole('button', { name: 'Neighbor' }))
     fireEvent.click(screen.getByLabelText(/proctor declaration/i))
-    expect(confirmButton()).toBeDisabled()
+    expect(nextButton()).toBeDisabled()
     typeName('Sam', 'Lee', 'Okafor') // the proctor's own legal name
     typeInto(/address/i, '1 Main St, Madison, WI')
-    expect(confirmButton()).toBeDisabled()
+    // Proctor is the FIRST step here, so its primary is Next.
+    expect(nextButton()).toBeDisabled()
     typeInto(/phone number/i, '5551234567')
-    expect(confirmButton(), 'proctor has not signed').toBeDisabled()
+    expect(nextButton(), 'proctor has not signed').toBeDisabled()
     sign('Sam Lee Okafor')
-    expect(confirmButton()).toBeEnabled()
+    expect(nextButton()).toBeEnabled()
   })
 
   it("needs a relationship from the state's own option set on the proctor step", () => {
@@ -711,6 +708,61 @@ describe('the signature', () => {
     typeInto(/^first name$/i, 'Sam')
     expect(screen.getByLabelText(/^first name$/i)).toHaveValue('Sam')
     expect(screen.getByLabelText(/^last name$/i)).toHaveValue('Navarro')
+  })
+})
+
+describe('Wisconsin signs in the order it is filled', () => {
+  /* ⚠ THE PAPER ORDER IS NOT THE FILLING ORDER. All four two-party forms
+     print the student's block above the monitor's, which is why the shape
+     defaults to student-then-proctor. Wisconsin's profile has the proctor
+     verify identity and complete the affidavit BEFORE the exam. Following
+     the paper would ask a learner to attest before the person meant to have
+     verified them has. */
+  it('opens on the proctor, and only for Wisconsin', () => {
+    expect(stepsFor(docById('wi-post'))).toEqual(['proctor', 'student'])
+    for (const id of ['co-post', 'ct-post', 'wv-post']) {
+      expect(stepsFor(docById(id)), id).toEqual(['student', 'proctor'])
+    }
+    // The shape's own default is untouched.
+    expect(STEPS_BY_SHAPE['affidavit-two-party']).toEqual(['student', 'proctor'])
+
+    open(docById('wi-post'))
+    /* The sub-section label, not the checkbox beneath it — both say
+       "proctor declaration". */
+    expect(screen.getByText('Proctor Declaration')).toBeInTheDocument()
+    expect(screen.queryByText('Student Declaration')).toBeNull()
+  })
+
+  /* ⚠ THE IDENTITY CHECK HAS TO HOLD IN BOTH ORDERS. Proctor-first means the
+     monitor is entered before the learner, so a check reading only the
+     proctor's side would compare against an empty name and pass every time —
+     and the learner could then type the proctor's name with nothing to catch
+     it. */
+  it('still blocks a learner who types the proctor’s name, in that order', () => {
+    open(docById('wi-post'))
+
+    // Proctor first.
+    typeName('Sam', 'Lee', 'Okafor')
+    typeInto(/address/i, '1 Main St, Madison, WI')
+    typeInto(/phone number/i, '5551234567')
+    fireEvent.click(screen.getByRole('button', { name: 'Neighbor' }))
+    fireEvent.click(screen.getByLabelText(/proctor declaration/i))
+    sign('Sam Lee Okafor')
+    expect(nextButton()).toBeEnabled()
+    fireEvent.click(nextButton())
+
+    // Now the learner claims to be the same person.
+    typeName('Sam', 'Lee', 'Okafor')
+    fireEvent.click(screen.getByLabelText(/student declaration/i))
+    sign('Sam Lee Okafor')
+    expect(confirmButton()).toBeDisabled()
+    expect(screen.getByRole('alert')).toHaveTextContent(/cannot be their own proctor/i)
+
+    // A different learner completes it.
+    typeName('Jordan', 'Riley', 'Navarro')
+    sign('Jordan Riley Navarro')
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(confirmButton()).toBeEnabled()
   })
 })
 
