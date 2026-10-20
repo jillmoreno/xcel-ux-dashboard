@@ -181,14 +181,13 @@ type ControlKey =
   | 'pace'
   | 'education'
   | 'version'
-  /* ⚠ `navLayout` IS BACK, 2026-10-05 — it was removed earlier the same day
-     with four other flag-backed design variants. It returns for the opposite
-     reason to the one that took it: it is no longer a design variant among
-     several, it is the ONE axis that every navigation treatment now resolves
-     through (`navPlacement.ts`), including Eric's three Atlas spellings. "Show
-     all of the top navs in one control" is the ask it answers, and it cannot be
-     answered from the Feature Flag panel, which is design-site-only. */
-  | 'navLayout'
+  /* ⚠ `navLayout` WENT AGAIN ON 2026-10-20 — "Top nav has been decided." It
+     had come BACK on 2026-10-05, hours after being trimmed, because the nav
+     axis was open and the bar was the only place a stakeholder could see the
+     treatments side by side. A decided axis needs no control. The key is
+     removed rather than left `false`, because `SHOW_CONTROL` is the list of
+     what the PRODUCT demos and a permanently-off entry is a question nobody
+     is asking. See `demo-nav-layout-control` in archivedItems.ts. */
   /* COURSE — 2026-10-15, Jillienne's brief. It belongs on THIS bar rather
      than the design one by the two-bar table's own rule: which course a
      learner is taking is a fact about the PRODUCT a stakeholder is being
@@ -231,7 +230,6 @@ const SHOW_CONTROL: Record<ControlKey, boolean> = {
   education: false,
   /* ON — this bar's branch is the navigation exploration, and the axis is the
      thing being explored. */
-  navLayout: true,
 }
 
 /**
@@ -372,7 +370,6 @@ export function DemoControlsBar({
      browser holding `quick` from before the 2026-10-20 rename would otherwise
      tick nothing and silently run at Average. */
   const activePaceStyle = resolvePaceStyle(useFeatureFlag(PACE_STYLE_FLAG_KEY).variant)
-  const navLayoutState = useFeatureFlag('nav-placement')
   // The What's New / Featured toggle was removed 2026-09-16 with its flag (see
   // the note in the Persona dropdown below). `whatsNewOn` is pinned off so the
   // persona resolver and the `?wn=` codec keep working unchanged.
@@ -570,7 +567,6 @@ export function DemoControlsBar({
      have been added in the catalog and forgotten here. `variantsForDemo` then
      drops any arm marked `wip` on the demo site, the same gate every other
      variant picker on this bar goes through. */
-  const navLayoutOptions = FEATURE_FLAGS.find((f) => f.key === 'nav-placement')?.variants ?? []
   /* START — the options come from the catalog, not a second list here, so the
      bar cannot disagree with `EndToEndPageSync` about what the five are. */
   const startOptions = FEATURE_FLAGS.find((f) => f.key === 'demo-start-point')?.variants ?? []
@@ -1588,59 +1584,26 @@ export function DemoControlsBar({
             position is a text node, not a comment. Nothing failed: it type-checks,
             and every test here queries by role, so a paragraph of prose in the bar
             was invisible to all of them. Caught by looking at the page. */}
-        {/* NAVIGATION — the one axis every nav treatment resolves through, and
-            the reason this control came back to the bar on 2026-10-05 ("how do
-            we show all of the top navs, merge them all in the demo controls").
+        {/* ⚠ NAVIGATION CAME OFF THE BAR — 2026-10-20, Jillienne: "Top nav has
+            been decided. we can remove that option from the Demo controls
+            completely". The control offered Left nav / Top nav / Expanding
+            top nav (Atlas); the decision is Top, which is `nav-placement`'s
+            committed default, so the product is unchanged and what went is
+            the question.
 
-            ⚠ THREE ARMS SPANNING TWO IMPLEMENTATIONS. `left` and `top` draw
-            the Atlas components on Eric's versions and the Platform ones
-            everywhere else; `expanding-top` is Eric's, and off the Atlas
-            versions it resolves like `top` rather than doing nothing. The
-            VERSION decides which component; this decides where the nav is.
+            ⚠ SECOND TIME THIS CONTROL HAS LEFT THE BAR, and the first removal
+            is why the note it replaces was so emphatic. It was trimmed on
+            2026-10-05 with four other flag-backed variants, then put straight
+            back the same day — "it is no longer a design variant among
+            several, it is the ONE axis that every navigation treatment
+            resolves through … and it cannot be answered from the Feature Flag
+            panel, which is design-site-only." That argument held while the
+            axis was open. It is closed now, which is the difference.
 
-            ⚠ ON THE BAR, NOT IN THE FLAG PANEL, deliberately — and that is a
-            reversal of the 2026-10-05 trim that removed it hours earlier. The
-            panel is design-site-only, so a control that lives there cannot
-            show a stakeholder anything, and showing stakeholders every nav
-            treatment side by side is the whole ask. */}
-        {showControl.navLayout && (
-          <DemoDropdown
-            id="nav-layout"
-            square
-            hidden={!show('nav-layout')}
-            label={
-              navLayoutOptions.find((o) => o.value === (navLayoutState.variant ?? 'top'))?.label ??
-              'Top nav'
-            }
-            eyebrow="Navigation"
-            openId={openId}
-            onToggle={toggle}
-            panelRole="radiogroup"
-            panelLabel="Navigation layout"
-            panelMinWidth={260}
-          >
-            {navLayoutOptions.map((opt) => {
-              const active = opt.value === (navLayoutState.variant ?? 'top')
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  tabIndex={active ? 0 : -1}
-                  className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
-                  onClick={() => {
-                    setVariant('nav-placement', opt.value)
-                    close()
-                  }}
-                >
-                  <span style={{ flex: 1 }}>{opt.label}</span>
-                  {active && <Check size={15} aria-hidden />}
-                </button>
-              )
-            })}
-          </DemoDropdown>
-        )}
+            The flag, its three variants and `navPlacement.ts` are all intact;
+            `?ff=nav-placement:expanding-top` and the Feature Flag panel still
+            reach the other two. See `demo-nav-layout-control` in
+            archivedItems.ts. */}
         {showControl.readiness && readinessReachable && !onAtlasVersion && (
         <DemoDropdown
           id="readiness"

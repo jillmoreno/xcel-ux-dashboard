@@ -56,6 +56,32 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'atlas-exam-prompt-control',
+    name: 'Exam date prompt \u2014 the Design Controls bar\u2019s Card / Row radiogroup',
+    what: 'A two-arm control on the cyan bar choosing how Step 2 asks for the exam date: CARD (a Primary 100 container with "When is your exam?", a sub-line and Add Date \u2014 lifted out of the journey list) or ROW AS A STOP (the question on the journey\u2019s own spine, wearing Step 1\u2019s row treatment with an open circle mark). Both were authored on 2026-10-19 across a run of asks about how that question should sit against the list beside it.',
+    location:
+      'THE FLAG AND BOTH ARMS ARE INTACT. `atlas-exam-prompt` is unchanged in the catalog with `defaultVariant: \u2018card\u2019` and both variants; `AtlasHomeJillMain` and `AtlasHomeEricE2E` both still read it (`examPromptCard`), and `ExamDatePrompt`\u2019s `card` prop still switches between the two pieces of markup \u2014 neither arm was deleted. What went is `surface: \u2018design\u2019` and `versions: [\u2018eric-atlas-e2e\u2019]`, the two fields that put a flag ON the cyan bar. It is listed in `REBRAND_FLAGS` (`src/components/account/FeatureFlagPanel.tsx`) in the same change, so the Feature Flag panel is now the way to reach Row.',
+    flag: 'atlas-exam-prompt (unchanged, default `card`) \u2014 reachable from the Feature Flag panel and by `?ff=atlas-exam-prompt:row`',
+    dateRemoved: '2026-10-20',
+    reason:
+      'Jillienne\u2019s call \u2014 "Card has been decided, we can remove this from the Design COntorls". The design bar carries "the decisions open inside YOUR exploration"; this one is closed. Removed the same afternoon as the Navigation control left the amber bar, for the same reason in the other bar\u2019s words.',
+    restoreNote:
+      'Re-add `surface: \u2018design\u2019` and `versions: [\u2018eric-atlas-e2e\u2019]` to `atlas-exam-prompt` in `src/context/FeatureFlagContext.tsx` \u2014 a comment marks the spot and says why both fields go together. ⚠ ADD `jill-atlas-main` TO THAT `versions` LIST IF IT IS THE SURFACE BEING EXPLORED: the list reads `eric-atlas-e2e` because it predates the copy, and `versionInScope` makes the family answer for it, so the control would appear on BOTH \u2014 which is right for a shared question and wrong for one version\u2019s. ⚠ AND TAKE IT BACK OUT OF `REBRAND_FLAGS` if you do, or the same axis sits on the cyan bar and in the Feature Flag panel at once, which is the duplication the panel\u2019s own scope test exists to surface. NOT restored deliberately: no component, no markup and no test of the two ARMS was touched \u2014 `AtlasHomeAddDate.test.tsx` still exercises the card arm and the row arm is one `?ff=` away.',
+  },
+  {
+    id: 'demo-nav-layout-control',
+    name: 'Navigation \u2014 the Demo Controls bar\u2019s nav-layout dropdown',
+    what: 'A three-row radiogroup on the amber bar \u2014 Left nav, Top nav, Expanding top nav (Atlas) \u2014 writing `nav-placement`. It was the one control that showed a stakeholder every navigation treatment side by side, which is the ask it was built for ("show all of the top navs in one control").',
+    location:
+      'THE AXIS IS FULLY INTACT. `nav-placement` is unchanged in the catalog with all three variants and `defaultVariant: \u2018top\u2019`; `navPlacement.ts` still resolves it; `PlatformShell` and `Header` still read it (`expanding-top` drops the rail on every page, `top` on Home only); `AtlasTopNav` still takes its `expanding` prop from it. What went is the DROPDOWN in `src/components/prototype/DemoControlsBar.tsx` \u2014 the `navLayout` member of `ControlKey`, its `SHOW_CONTROL` entry, its two `useFeatureFlag` / `FEATURE_FLAGS` reads and the `DemoDropdown` block, each marked with a comment at the removal site.',
+    flag: 'nav-placement (unchanged, default `top`) \u2014 reachable by `?ff=nav-placement:expanding-top` and from the Feature Flag panel',
+    dateRemoved: '2026-10-20',
+    reason:
+      'Jillienne\u2019s call \u2014 "Top nav has been decided. we can remove that option from the Demo controls completely". The decision is Top, which is already the flag\u2019s committed default, so the product does not change; what went is the question. The bar\u2019s rule is that its control list says what the PRODUCT demos, and a decided axis is not something the product is demoing.',
+    restoreNote:
+      '⚠ THIS CONTROL HAS BEEN REMOVED AND RESTORED ONCE BEFORE, which is the thing to read before doing either again. It was trimmed on 2026-10-05 with four other flag-backed design variants and put BACK the same day, with the reasoning recorded at its `ControlKey` entry: it was "no longer a design variant among several, it is the ONE axis that every navigation treatment now resolves through … and it cannot be answered from the Feature Flag panel, which is design-site-only." That argument is sound and is why it came back; what changed on 2026-10-20 is that the axis is decided, not that the argument was wrong. If the nav question REOPENS, restore it \u2014 do not conclude from this row that the control was a mistake. To restore: re-add `navLayout` to `ControlKey`, `navLayout: true` to `SHOW_CONTROL`, the `navLayoutState` / `navLayoutOptions` reads near the other control reads, and the `DemoDropdown` block where the comment marks it (between Version and Readiness). NOT restored deliberately: nothing else was touched \u2014 no flag, no component, no test, and `pinLeftRail()` in the test helpers still pins the rail by `?ff=` exactly as before.',
+  },
+  {
     id: 'discoverability-testing-version',
     name: 'Testing (dashboard version)',
     what: 'QE Focused with the home screen\u2019s second row given over to pacing \u2014 the Readiness tile dropped, and Study Pace taking the full width as the presets card: a finish date, the room it leaves before access ends, and an Adjust sheet. It was an EXPLORATION of five pacing treatments behind `dashboard-pacing-style` until 2026-09-22, when presets won and the rest were unwired. Everything else matched QE Focused, so the difference was the one tile.',

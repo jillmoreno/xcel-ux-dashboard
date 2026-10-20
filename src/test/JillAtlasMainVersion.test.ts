@@ -75,10 +75,14 @@ describe('Jill/Atlas-Main, the End-to-End Demo’s duplicate', () => {
   it('carries the demo’s design controls, every one of them', () => {
     const demo = designControlsFor('eric-atlas-e2e', 'eric').map((f) => f.key)
     const copy = designControlsFor(ID, 'jill').map((f) => f.key)
-    /* Home declares no surface, so this is the bar as it opens on it. The
-       count is asserted only to keep the comparison from passing on two empty
-       lists — the containment below is the real subject. */
-    expect(demo.length).toBeGreaterThanOrEqual(8)
+    /* Home declares no surface, so this is the bar as it opens on it.
+
+       ⚠ A FLOOR, NOT A COUNT, and it moved on 2026-10-20 when "Exam date
+       prompt" came off the design bar (Card was decided) and the set went 8 →
+       7. It exists only to stop the containment below passing on two empty
+       lists, so it is set well under the real number — a decided axis leaving
+       the bar is normal and should not fail this. */
+    expect(demo.length).toBeGreaterThanOrEqual(5)
     expect(copy).toEqual(expect.arrayContaining(demo))
   })
 

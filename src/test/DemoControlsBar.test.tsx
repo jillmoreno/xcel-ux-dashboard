@@ -7,7 +7,7 @@ import { DASHBOARD_PROGRESS_PICKER } from '@/data/dashboardProgressFixtures'
 import { AccountProvider } from '@/context/AccountContext'
 import { DashboardVersionsPanelProvider } from '@/components/dashboard/DashboardVersionsPanelContext'
 import { FeatureFlagPanelProvider } from '@/components/account/FeatureFlagPanelContext'
-import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
 
 // The bar is Elite-scoped (the rebrand's seeded brand) — seed the account so
 // the profession fixture (Nursing / OT / PT) is populated and Brand starts on
@@ -289,7 +289,11 @@ describe('DemoControlsBar — persona dropdown', () => {
  */
 describe('DemoControlsBar — a picker with nothing in it', () => {
   const PICKERS = [
-    { pill: /Navigation/, panel: 'Navigation layout', least: 3, path: undefined as string | undefined },
+    /* ⚠ NAVIGATION STOOD HERE until 2026-10-20 ("Top nav has been decided"),
+       and it was the entry that made this a LOOP rather than one case — see
+       `demo-nav-layout-control` in archivedItems.ts. Progress is the only
+       picker left that this guards. Kept as a loop deliberately: the next
+       control added is one line here, and the shape is the point. */
     /* ⚠ PROGRESS ASKS FOR A NON-ATLAS VERSION (2026-10-16). Eric's Atlas
        versions swap this picker for their own five-state one, and
        the brand default is one of them (`jill-atlas-main` since 2026-10-20,
@@ -311,14 +315,23 @@ describe('DemoControlsBar — a picker with nothing in it', () => {
     })
   }
 
-  it('lists all three navigation arms, Eric’s included', () => {
-    /* ⚠ THE ONE PLACE THE UNIFICATION IS VISIBLE TO A STAKEHOLDER. Three arms
-       spanning two implementations; if `expanding-top` ever stops appearing
-       here, the merge of the two axes has come apart. */
+  /* ⚠ INVERTED 2026-10-20 — "Top nav has been decided. we can remove that
+     option from the Demo controls completely."
+
+     The old case read "lists all three navigation arms, Eric's included" and
+     its note called the dropdown "THE ONE PLACE THE UNIFICATION IS VISIBLE TO
+     A STAKEHOLDER … if `expanding-top` ever stops appearing here, the merge
+     of the two axes has come apart." The merge has NOT come apart — the axis
+     is decided and the control is gone, which is a different thing and the
+     distinction this case now has to carry. So it pins what the old one was
+     really protecting: all three arms still exist on the flag, and the one
+     that was folded in from Eric's `?nav=` is still among them. */
+  it('the nav control is gone, and all three arms survive on the flag', () => {
     renderBar()
-    fireEvent.click(screen.getByRole('button', { name: /Navigation/ }))
-    const group = screen.getByRole('radiogroup', { name: 'Navigation layout' })
-    expect(within(group).getAllByRole('radio').map((r) => r.textContent)).toEqual([
+    expect(screen.queryByRole('button', { name: /Navigation/ })).toBeNull()
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'nav-placement')
+    expect(flag?.defaultVariant, 'Top is the decision').toBe('top')
+    expect(flag?.variants?.map((v) => v.label)).toEqual([
       'Left nav',
       'Top nav',
       'Expanding top nav (Atlas)',

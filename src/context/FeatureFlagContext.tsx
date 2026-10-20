@@ -2757,8 +2757,21 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        never reach Prototypes. The DEFAULT still renders for everyone, so
        whichever arm is default here is what ships. Same trade-off as
        `atlas-pace-card`, written down for the same reason. */
-    surface: 'design',
-    versions: ['eric-atlas-e2e'],
+    /* ⚠ OFF THE DESIGN BAR — 2026-10-20, Jillienne: "Card has been decided,
+       we can remove this from the Design COntorls". It was `surface: 'design'`
+       + `versions: ['eric-atlas-e2e']`, which is the sanctioned way ONTO the
+       cyan bar; dropping both is the way off it. Same shape as the Navigation
+       control leaving the amber bar the same day — a decided axis needs no
+       control.
+
+       ⚠ THE FLAG AND BOTH ARMS SURVIVE, and that is the whole of the archive
+       convention here: `card` is the default and what both Homes draw, `row`
+       still renders, and the flag is in `REBRAND_FLAGS` so the Feature Flag
+       panel can still reach it. Without that last part it would be
+       `?ff=`-only, which `FlagPanelScope.test.ts` correctly calls a flag you
+       can only get at by hand-editing a URL.
+
+       See `atlas-exam-prompt-control` in archivedItems.ts. */
     group: 'Widgets',
     label: 'Exam date prompt',
     description:

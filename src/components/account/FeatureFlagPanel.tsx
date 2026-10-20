@@ -126,6 +126,11 @@ const REBRAND_FLAGS = [
   // because `FlagPanelScope.test.ts` is right that a flag claiming this page
   // and absent from the panel is reachable only by hand-editing `?ff=`.
   'dashboard-pace-style',
+  // THE EXAM DATE PROMPT's two shapes — Card / Row (as a stop), 2026-10-20.
+  // It was a design-bar control until Card was decided; the arms are kept and
+  // this is now the only place to reach Row, which is why it is listed rather
+  // than left `?ff=`-only.
+  'atlas-exam-prompt',
   'course-launcher-style',
   'dashboard-clp-style',
   // Pacing tile treatment on the Testing version — lo-fi / rate / runway /
