@@ -4,6 +4,7 @@ import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ADMIN_DEPARTMENTS, ADMIN_LEARNERS, type Learner } from '@/data/atlasAdmin/learners'
 import { ADMIN_INVITES, type Invite } from '@/data/atlasAdmin/invites'
 import { ADMIN_RULES, type AssignmentRule } from '@/data/atlasAdmin/assignments'
+import { SEATS_PURCHASED } from '@/data/atlasAdmin/organization'
 import { ADMIN_BASE, AdminStoreContext, type AddedDepartment, type AdminStore, type AdminTouch, type ProgressReportSettings } from './adminStore'
 import { AtlasAdminComingSoon, AtlasAdminLayout } from './AtlasAdminLayout'
 import { AtlasAdminStudentsPage } from './AtlasAdminStudentsPage'
@@ -22,6 +23,10 @@ import { AtlasAdminQuickAssignPage } from './AtlasAdminQuickAssignPage'
 import { AtlasAdminEngagementPage } from './AtlasAdminEngagementPage'
 import { AtlasAdminVideoEngagementPage } from './AtlasAdminVideoEngagementPage'
 import { AtlasAdminLearningCenterPage } from './AtlasAdminLearningCenterPage'
+import { AtlasAdminLicensesPage } from './AtlasAdminLicensesPage'
+import { AtlasAdminOrganizationPage } from './AtlasAdminOrganizationPage'
+import { AtlasAdminTeamsPage } from './AtlasAdminTeamsPage'
+import { AtlasAdminPulsePage } from './AtlasAdminPulsePage'
 
 /**
  * ATLAS ADMIN — the app (2026-10-19, feat/atlas-admin). The admin surface
@@ -47,6 +52,8 @@ export function AtlasAdminApp() {
   const [addedDepartments, setAddedDepartments] = useState<AddedDepartment[]>([])
   const addDepartment = useCallback((d: AddedDepartment) => setAddedDepartments((prev) => [...prev, d]), [])
   const [rules, setRules] = useState<AssignmentRule[]>(() => [...ADMIN_RULES])
+  const [seatsPurchased, setSeats] = useState(SEATS_PURCHASED)
+  const addSeats = useCallback((n: number) => setSeats((s) => s + n), [])
   const saveRule = useCallback((rule: AssignmentRule) => setRules((prev) => (prev.some((r) => r.id === rule.id) ? prev.map((r) => (r.id === rule.id ? rule : r)) : [rule, ...prev])), [])
   const [toast, setToast] = useState<string | null>(null)
   const timer = useRef<number | undefined>(undefined)
@@ -88,8 +95,8 @@ export function AtlasAdminApp() {
     setTouches((prev) => [{ ...t, id: `${at}-${prev.length}`, at }, ...prev])
   }, [])
   const store = useMemo<AdminStore>(
-    () => ({ learners: sampleRoster ? learners : [], sampleRoster, setSampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, rules, saveRule, toast, showToast }),
-    [learners, sampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, rules, saveRule, toast, showToast],
+    () => ({ learners: sampleRoster ? learners : [], sampleRoster, setSampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, rules, saveRule, seatsPurchased, addSeats, toast, showToast }),
+    [learners, sampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, rules, saveRule, seatsPurchased, addSeats, toast, showToast],
   )
 
   if (!enabled) {
@@ -103,6 +110,10 @@ export function AtlasAdminApp() {
   return (
     <AdminStoreContext.Provider value={store}>
       <Routes>
+        {/* Pulse is a page of its own, outside the shell, as the reference's is. */}
+        <Route path="pulse" element={<AtlasAdminPulsePage />} />
+        <Route path="pulse/:date" element={<AtlasAdminPulsePage />} />
+        <Route path="admin-insight" element={<Navigate to={`../pulse${window.location.search}`} replace />} />
         <Route element={<AtlasAdminLayout />}>
           <Route index element={<Navigate to={`students${window.location.search}`} replace />} />
           <Route path="students" element={<AtlasAdminStudentsPage />} />
@@ -128,6 +139,9 @@ export function AtlasAdminApp() {
           <Route path="engagement" element={<AtlasAdminEngagementPage />} />
           <Route path="video-engagement" element={<AtlasAdminVideoEngagementPage />} />
           <Route path="learning-center" element={<AtlasAdminLearningCenterPage />} />
+          <Route path="licenses" element={<AtlasAdminLicensesPage />} />
+          <Route path="organization" element={<AtlasAdminOrganizationPage />} />
+          <Route path="teams" element={<AtlasAdminTeamsPage />} />
           <Route path="notifications/*" element={<AtlasAdminNotificationsPage />} />
           <Route path="resources" element={<AtlasAdminResourcesPage />} />
           <Route path="settings" element={<AtlasAdminSettingsPage />} />

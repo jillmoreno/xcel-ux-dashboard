@@ -447,12 +447,12 @@ function ToggleChips({ options, value, onToggle }: { options: (readonly [string,
 
 const H2: CSSProperties = { margin: '4px 0 0', fontFamily: HEADING, fontSize: 16, fontWeight: 700, color: 'var(--admin-ink)' }
 const HELP: CSSProperties = { margin: '4px 0 0', fontSize: 12, lineHeight: 1.5, color: 'var(--admin-text)' }
-const TILE: CSSProperties = { display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, border: '1px solid', cursor: 'pointer' }
-const OPTION: CSSProperties = { textAlign: 'left', padding: '10px 12px', borderRadius: 10, border: '1px solid', fontFamily: 'inherit', cursor: 'pointer' }
+const TILE: CSSProperties = { display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 12px', borderRadius: 10, borderWidth: 1, borderStyle: 'solid', cursor: 'pointer' }
+const OPTION: CSSProperties = { textAlign: 'left', padding: '10px 12px', borderRadius: 10, borderWidth: 1, borderStyle: 'solid', fontFamily: 'inherit', cursor: 'pointer' }
 const CHECK: CSSProperties = { width: 15, height: 15, marginTop: 1, accentColor: 'var(--admin-brand)', cursor: 'pointer', flex: 'none' }
 const SUB_CARD: CSSProperties = { padding: 12, borderRadius: 10, border: '1px solid var(--admin-rule)', background: 'var(--admin-fill-soft)' }
 const SELECTED_CHIP: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '2px 4px 2px 10px', borderRadius: 9999, border: '1px solid var(--admin-rule)', background: 'var(--admin-surface)', fontSize: 12, color: 'var(--admin-ink)' }
 const CHIP_X: CSSProperties = { display: 'grid', placeItems: 'center', width: 18, height: 18, padding: 0, border: 'none', borderRadius: 9999, background: 'none', color: 'var(--admin-muted)', cursor: 'pointer' }
-const SMALL_PILL: CSSProperties = { borderRadius: 9999, border: '1px solid var(--admin-rule-strong)', background: 'var(--admin-surface)', padding: '4px 10px', fontFamily: 'inherit', fontSize: 12, fontWeight: 600, color: 'var(--admin-text)', cursor: 'pointer', whiteSpace: 'nowrap' }
+const SMALL_PILL: CSSProperties = { borderRadius: 9999, borderWidth: 1, borderStyle: 'solid', borderColor: 'var(--admin-rule-strong)', background: 'var(--admin-surface)', padding: '4px 10px', fontFamily: 'inherit', fontSize: 12, fontWeight: 600, color: 'var(--admin-text)', cursor: 'pointer', whiteSpace: 'nowrap' }
 const SEG: CSSProperties = { border: 'none', borderRadius: 7, background: 'none', padding: '5px 12px', fontFamily: 'inherit', fontSize: 13, fontWeight: 600, color: 'var(--admin-text)', cursor: 'pointer' }
 const SEG_ON: CSSProperties = { ...SEG, background: 'var(--admin-fill)', color: 'var(--admin-ink)' }

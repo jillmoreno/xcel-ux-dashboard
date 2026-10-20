@@ -12,6 +12,7 @@ import {
   type Learner,
   type PipelineBucket,
 } from '@/data/atlasAdmin/learners'
+import { LOCATIONS, jobRoleOf, membersOfLocation } from '@/data/atlasAdmin/organization'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, CHIP, CHIP_ON, EYEBROW, PAGE_H1, PAGE_SUB } from './adminStyles'
 import { AdminTabs, ChipMenu, MenuItem, PreparedPill, ProgressRing, ReadinessCell, StagePill } from './adminUi'
@@ -77,6 +78,10 @@ export function AtlasAdminStudentsPage() {
   })
   // Settings → Departments → Open filter arrives as `?department=`.
   const [department, setDepartment] = useState<string | null>(() => new URLSearchParams(window.location.search).get('department'))
+  // Organization → View in Students arrives as `?location=` (a location id)
+  // or `?role=` (a job role).
+  const [location, setLocation] = useState(() => LOCATIONS.find((x) => x.id === new URLSearchParams(window.location.search).get('location')) ?? null)
+  const [role, setRole] = useState<string | null>(() => new URLSearchParams(window.location.search).get('role'))
   const [shown, setShown] = useState(PAGE)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [licensedWindow, setLicensedWindow] = useState('90d')
@@ -148,18 +153,22 @@ export function AtlasAdminStudentsPage() {
     licensed: counts.licensed,
   }
 
+  const inLocation = useMemo(() => new Set(location ? membersOfLocation(location, ADMIN_LEARNERS).map((l) => l.id) : []), [location, ADMIN_LEARNERS])
+
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase()
     const list = ADMIN_LEARNERS.filter((l) => {
       if (bucket === 'all' ? bucketOf(l) === 'licensed' : bucketOf(l) !== bucket) return false
       if (department && l.team !== department) return false
+      if (location && !inLocation.has(l.id)) return false
+      if (role && jobRoleOf(l) !== role) return false
       if (q && !`${l.name} ${l.email} ${l.team}`.toLowerCase().includes(q)) return false
       return quick.every((k) => QUICK_TEST[k](l))
     })
     if (bucket === 'not-started') return list.sort((a, b) => b.enrolledDaysAgo - a.enrolledDaysAgo)
     if (bucket === 'prepared') return list.sort((a, b) => Number(!!a.examDate) - Number(!!b.examDate) || byNeed(a, b))
     return list.sort(byNeed)
-  }, [ADMIN_LEARNERS, bucket, department, search, quick])
+  }, [ADMIN_LEARNERS, bucket, department, location, inLocation, role, search, quick])
 
   const sortLabel =
     bucket === 'not-started' ? 'days since enrollment' : bucket === 'prepared' ? 'missing exam date' : 'who needs you first'
@@ -213,6 +222,8 @@ export function AtlasAdminStudentsPage() {
   const applied = [
     ...quick.map((k) => ({ key: k, label: QUICK_LABEL[k], clear: () => toggleQuick(k) })),
     ...(department ? [{ key: 'dept', label: department, clear: () => setDepartment(null) }] : []),
+    ...(location ? [{ key: 'location', label: location.name, clear: () => setLocation(null) }] : []),
+    ...(role ? [{ key: 'role', label: role, clear: () => setRole(null) }] : []),
   ]
 
   return (

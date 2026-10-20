@@ -63,6 +63,9 @@ export type AdminStore = {
   /** Assignment rules — the fixture's, with this session's creates and edits. */
   rules: AssignmentRule[]
   saveRule: (rule: AssignmentRule) => void
+  /** Seats bought — Licenses → Add seats raises it. */
+  seatsPurchased: number
+  addSeats: (n: number) => void
   toast: string | null
   showToast: (message: string) => void
 }
