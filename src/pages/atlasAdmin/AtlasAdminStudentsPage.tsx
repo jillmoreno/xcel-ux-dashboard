@@ -249,7 +249,7 @@ export function AtlasAdminStudentsPage() {
 
       {/* The blue runs on under the roster card: no gap between them, and the
           roster overlaps the blue's last 24px, so it shows at its top corners. */}
-      <section aria-label="Pipeline outcomes" style={{ ...CARD, border: 'none', padding: `16px 16px ${20 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
+      <section aria-label="Pipeline outcomes" style={{ ...CARD, border: 'none', padding: `24px 24px ${24 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
         <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
           {tiles.map((t) => {
             const n = tileCount[t.id]
