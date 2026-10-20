@@ -135,12 +135,6 @@ export function AtlasAdminPulsePage() {
               <Figure hug label="Exam ready" value={pulse.prepared.length} bg={FIGURE_TINT} ink="var(--admin-success-ink)" />
               <Figure hug label="Forecasted licensed" value={pulse.forecast} bg={FIGURE_TINT} ink="var(--admin-chart-blue)" />
             </div>
-            {/* For comparison: the Atlas UX Design file's version of the same three. */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-              <TabFigure label="Need intervention" value={pulse.offTrack.length} ink="var(--admin-amber)" />
-              <TabFigure label="Exam ready" value={pulse.prepared.length} ink="var(--admin-success-ink)" />
-              <TabFigure label="Forecasted licensed" value={pulse.forecast} ink="var(--admin-chart-blue)" />
-            </div>
             <Action>Start with intervention, then move exam-ready learners into scheduling.</Action>
             <button type="button" onClick={() => navigate(students())} style={{ ...BUTTON_BRAND, alignSelf: 'flex-start' }}>
               Open workspace
@@ -329,17 +323,6 @@ function Box({ label, children }: { label: string; children: ReactNode }) {
     <div style={{ padding: 12, borderRadius: 10, background: 'var(--admin-fill-soft)' }}>
       <p style={LABEL}>{label}</p>
       <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--admin-ink)' }}>{children}</p>
-    </div>
-  )
-}
-
-/** The Atlas UX Design file's figure (Figma 492:2188): an outlined title tab
- *  over a tinted number panel. */
-function TabFigure({ label, value, ink }: { label: string; value: number; ink: string }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', flex: 'none' }}>
-      <p style={{ margin: 0, padding: '8px 16px', textAlign: 'center', whiteSpace: 'nowrap', fontSize: 12, fontWeight: 600, color: ink, borderStyle: 'solid', borderColor: 'var(--admin-atlas-tertiary-100)', borderWidth: '1px 1px 0', borderRadius: '8px 8px 0 0' }}>{label}</p>
-      <strong style={{ display: 'block', padding: 8, textAlign: 'center', fontFamily: HEADING, fontSize: 22, lineHeight: '26px', fontWeight: 700, color: 'var(--admin-atlas-neutral-800)', background: 'var(--admin-atlas-tertiary-100)', borderStyle: 'solid', borderColor: 'var(--admin-atlas-tertiary-100)', borderWidth: '0 1px 1px', borderRadius: '0 0 8px 8px' }}>{value}</strong>
     </div>
   )
 }
