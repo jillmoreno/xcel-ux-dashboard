@@ -527,7 +527,7 @@ const TILE_ACTIVE: CSSProperties = { outline: '2px solid var(--admin-atlas-prima
 const TILE_NUMBER: CSSProperties = {
   margin: '4px 0 0',
   fontFamily: 'var(--admin-font-heading)',
-  fontSize: 28,
+  fontSize: 26,
   fontWeight: 700,
   lineHeight: 1,
   fontVariantNumeric: 'tabular-nums',
