@@ -2074,10 +2074,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
          whichever logo it had. `AtlasPaletteSkin` in `atlasBrandSkin.ts` marks
          the split, and `Logo` asks `SKIN_LOGOS` whether a skin has artwork
          rather than listing the ones that do not. */
-      { value: 'grasslands', label: 'Grasslands' },
-      { value: 'everglade', label: 'Everglade' },
-      { value: 'harbor', label: 'Harbor' },
-      { value: 'marigold', label: 'Marigold' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -2106,18 +2102,24 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'cre', label: 'Colibri Real Estate' },
       { value: 'mckissock', label: 'McKissock Learning' },
       { value: 'elite', label: 'Elite Learning' },
-      // The four palettes (main, 2026-10-08) — same list as `atlas-brand-skin`,
-      // kept on both controls so the two Brand dropdowns never differ.
-      /* ⚠ PALETTES, NOT BRANDS — 2026-10-08, the direct ask. The five above are
-         Colibri companies and swap the LOGO as well as the colours; these four
-         are colour palettes with no company behind them, so the page keeps
-         whichever logo it had. `AtlasPaletteSkin` in `atlasBrandSkin.ts` marks
-         the split, and `Logo` asks `SKIN_LOGOS` whether a skin has artwork
-         rather than listing the ones that do not. */
-      { value: 'grasslands', label: 'Grasslands' },
-      { value: 'everglade', label: 'Everglade' },
-      { value: 'harbor', label: 'Harbor' },
-      { value: 'marigold', label: 'Marigold' },
+      /* ⚠ THE FOUR PALETTE THEMES CAME OFF BOTH BRAND DROPDOWNS — 2026-10-20,
+         Jillienne: "remove these 4 color styles". Grasslands, Everglade,
+         Harbor and Marigold were added 2026-10-08 ("add 4 additional brand
+         themes using the colors from these screenshots") and were PALETTES,
+         not brands: no company behind them, so the page kept whichever logo
+         it had, which `AtlasPaletteSkin` in `atlasBrandSkin.ts` still marks.
+
+         ⚠ BOTH CONTROLS, OR THE TWO BRAND DROPDOWNS DIFFER. The line this
+         replaces said they are "kept on both controls so the two Brand
+         dropdowns never differ" — `atlas-brand-skin` (V1/V2) and
+         `atlas-brand-skin-v3` carry the same list by design, and editing one
+         is how they drift.
+
+         ⚠ THE PALETTES THEMSELVES ARE KEPT AND STILL REACHABLE. They remain
+         in `ATLAS_SKINS`, in the `AtlasSkin` type and in tokens.css ("FOUR
+         PALETTE THEMES"), so `?skin=grasslands` still resolves and renders —
+         only the dropdown rows are gone. See `atlas-palette-skins` in
+         archivedItems.ts. */
     ],
     page: 'dashboard-rebrand',
   },

@@ -56,6 +56,19 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'atlas-palette-skins',
+    name: 'Grasslands, Everglade, Harbor and Marigold \u2014 the four palette themes on the Brand control',
+    what: 'Four colour-only skins on the Atlas Brand dropdowns, added 2026-10-08 ("add 4 additional brand themes using the colors from these screenshots"). ⚠ PALETTES, NOT BRANDS: the five above them are Colibri companies and swap the LOGO as well as the colours; these four have no company behind them, so the page kept whichever logo it had. The source named Grasslands and Everglade; Harbor and Marigold are ours.',
+    location:
+      'THE SKINS ARE FULLY INTACT AND STILL RENDER. `AtlasPaletteSkin` and all four members of `AtlasSkin` are unchanged in `src/components/layout/atlasBrandSkin.ts`; so are their four entries in `ATLAS_SKINS`, which is what `atlasSkinFor` validates `?skin=` against \u2014 so `?skin=grasslands` still resolves and paints. The colour blocks are untouched in `src/styles/tokens.css` ("FOUR PALETTE THEMES"), and `Logo` still asks `SKIN_LOGOS` whether a skin has artwork rather than listing the ones that do not. What went is the four ROWS from the `variants` of BOTH brand flags \u2014 `atlas-brand-skin` (V1/V2) and `atlas-brand-skin-v3` \u2014 in `src/context/FeatureFlagContext.tsx`.',
+    flag: 'atlas-brand-skin / atlas-brand-skin-v3 (both unchanged otherwise) \u2014 the palettes reachable by `?skin=grasslands` | `everglade` | `harbor` | `marigold`',
+    dateRemoved: '2026-10-20',
+    reason:
+      'Jillienne\u2019s call \u2014 "remove these 4 color styles". Ten rows is a long dropdown for a question that is really "which Colibri brand", and four of them were not brands at all.',
+    restoreNote:
+      'Re-add the four `{ value, label }` rows to the `variants` of BOTH flags in `src/context/FeatureFlagContext.tsx` \u2014 a comment marks the spot in each, and the one on `atlas-brand-skin-v3` carries the reasoning. ⚠ BOTH, OR THE TWO DROPDOWNS DIFFER: the line removed with them said they are "kept on both controls so the two Brand dropdowns never differ", which is the trap in restoring one and not the other \u2014 the same trap as removing one and not the other. ⚠ NOTHING ELSE IS NEEDED, and that is the point of how this was unwired: the skins never left `ATLAS_SKINS`, the type or the stylesheet, so a restore is four lines twice and no CSS. NOT restored deliberately: `AtlasBrandSkin.test.ts` was left asserting all four in `ATLAS_SKINS` and resolving by `?skin=`, because both are still true \u2014 only its expectations about the DROPDOWN changed.',
+  },
+  {
     id: 'dashboard-heading-font-control',
     name: 'Heading font \u2014 the Design Controls bar\u2019s Sans / Serif radiogroup',
     what: 'A two-arm control on the cyan bar re-pointing `--font-heading` across the Dashboard Rebrand routes: SANS (the brand face \u2014 Lato on XCEL, itself a documented placeholder for Avenir) or SERIF (a system stack, Georgia and its cousins), default `serif`. The rail, the header and the section title stay on the brand face either way.',
