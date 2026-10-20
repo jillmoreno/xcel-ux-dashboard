@@ -48,6 +48,8 @@ function open(config: ComplianceDocumentConfig, language?: 'en' | 'es') {
 const nextButton = () => screen.getByRole('button', { name: /^next$/i })
 const confirmButton = () => screen.getByRole('button', { name: /^confirm$/i })
 const backButton = () => screen.getByRole('button', { name: /^back$/i })
+/** The one field never prefilled — the learner has to produce it. */
+const sign = (value = 'Jordan Riley Navarro') => typeInto(/^digitally sign$/i, value)
 const cancelButton = () => screen.getByRole('button', { name: /^cancel$/i })
 
 /** Fill the three boxes a legal name is collected in, anywhere one is asked. */
@@ -335,35 +337,49 @@ describe('Next stays off until the step is answered', () => {
     // Last step, so the primary is Confirm.
     expect(confirmButton()).toBeDisabled()
     fireEvent.click(screen.getByLabelText(/i attest/i))
+    /* An affidavit is a sworn statement signed with a typed name — the tick
+       alone is an attestation, which is a different thing. */
+    expect(confirmButton(), 'ticked but unsigned').toBeDisabled()
+    sign()
     expect(confirmButton()).toBeEnabled()
     fireEvent.click(confirmButton())
     expect(onComplete).toHaveBeenCalledOnce()
   })
 
-  it('needs a licence number on the `license` step of an enrollment agreement', () => {
-    open(docById('ky-ea')) // enrollment-agreement → [name, license, document]
-    typeName()
-    fireEvent.click(screen.getByLabelText(/legal name/i))
-    fireEvent.click(nextButton())
-
-    expect(screen.getByText('Step 2 of 3')).toBeInTheDocument()
-    expect(nextButton()).toBeDisabled()
-    typeInto(/license/i, 'W123456')
-    expect(nextButton()).toBeEnabled()
+  /* ⚠ THERE IS NO LICENCE STEP, and this is what stops one coming back. The
+     brief had enrollment agreements asking for a licence or NAPB number; no
+     regulation in the PRD does. Nothing asks a learner for a licence number
+     before the course — that is what the course leads to. */
+  it('never asks for a licence number', () => {
+    expect(STEPS_BY_SHAPE['enrollment-agreement']).toEqual(['name', 'document'])
+    for (const steps of Object.values(STEPS_BY_SHAPE)) {
+      expect(steps).not.toContain('license')
+    }
+    open(docById('ky-ea'))
+    expect(screen.getByText('Step 1 of 2')).toBeInTheDocument()
+    expect(screen.queryByLabelText(/licen[cs]e/i)).toBeNull()
   })
 
-  it("takes a typed signature instead of a tick on Ohio's Registration Form", () => {
-    open(docById('oh-reg'))
-    typeName()
-    fireEvent.click(screen.getByLabelText(/legal name/i))
-    fireEvent.click(nextButton())
-    typeInto(/license/i, 'W123456')
-    fireEvent.click(nextButton())
+  it("needs a tick AND a signature on Ohio's Registration Form", () => {
+    open(docById('oh-reg')) // §4.2 row 3: attestation WITH signature
+    toDocumentStep()
 
-    // The wet-signature variant has no agree checkbox to tick at all.
-    expect(screen.queryByLabelText(/i have read and agree/i)).toBeNull()
     expect(confirmButton()).toBeDisabled()
-    typeInto(/student signature/i, 'Jordan Navarro')
+    fireEvent.click(screen.getByLabelText(/i have read and agree/i))
+    expect(confirmButton(), 'ticked but unsigned').toBeDisabled()
+    sign()
+    expect(confirmButton()).toBeEnabled()
+  })
+
+  /* ⚠ A NOTICE THAT ONLY HAS TO BE SHOWN ASKS FOR NOTHING. Minnesota's is the
+     only one: its source carries no signature line and no checkbox, and the
+     PRD lists it as shown with no response required. Inventing a tick for it
+     is friction that meets no rule. */
+  it('asks nothing of a show-only document', () => {
+    open(docById('mn-tc'))
+    toDocumentStep()
+    expect(screen.queryByRole('checkbox')).toBeNull()
+    expect(screen.queryByLabelText(/^digitally sign$/i)).toBeNull()
     expect(confirmButton()).toBeEnabled()
   })
 
@@ -371,7 +387,8 @@ describe('Next stays off until the step is answered', () => {
     open(docById('co-post')) // student side wants the exam date
     typeName()
     fireEvent.click(screen.getByLabelText(/student declaration/i))
-    // Names and the attestation are in; Colorado's exam date is not.
+    sign()
+    // Names, signature and attestation are in; Colorado's exam date is not.
     expect(nextButton()).toBeDisabled()
     typeInto(/exam date/i, '11/02/2026')
     expect(nextButton()).toBeEnabled()
@@ -384,6 +401,7 @@ describe('Next stays off until the step is answered', () => {
     open(docById('wi-post'))
     typeName()
     fireEvent.click(screen.getByLabelText(/student declaration/i))
+    sign()
     fireEvent.click(nextButton())
 
     fireEvent.click(screen.getByRole('button', { name: 'Neighbor' }))
@@ -393,6 +411,8 @@ describe('Next stays off until the step is answered', () => {
     typeInto(/address/i, '1 Main St, Madison, WI')
     expect(confirmButton()).toBeDisabled()
     typeInto(/phone number/i, '5551234567')
+    expect(confirmButton(), 'proctor has not signed').toBeDisabled()
+    sign('Sam Lee Okafor')
     expect(confirmButton()).toBeEnabled()
   })
 
@@ -400,6 +420,7 @@ describe('Next stays off until the step is answered', () => {
     const { onComplete } = open(docById('wv-post'))
     typeName()
     fireEvent.click(screen.getByLabelText(/student declaration/i))
+    sign()
     fireEvent.click(nextButton())
 
     /* West Virginia offers Licensed Agent; Wisconsin offers Neighbor in the
@@ -409,6 +430,7 @@ describe('Next stays off until the step is answered', () => {
 
     typeName('Sam', 'Lee', 'Okafor')
     fireEvent.click(screen.getByLabelText(/proctor declaration/i))
+    sign('Sam Lee Okafor')
     expect(confirmButton()).toBeDisabled()
     fireEvent.click(screen.getByRole('button', { name: 'Licensed Agent' }))
     expect(confirmButton()).toBeEnabled()
@@ -530,12 +552,17 @@ describe('the progress strip', () => {
     expect(onClose).toHaveBeenCalledOnce()
   })
 
-  /* ⚠ THE PAIR IS NAMED FOR WHERE YOU ARE, and the three-step document is the
-     only one that shows all four names. An arrow could not say any of it. */
-  it('names the buttons for the step: Cancel/Next, Back/Next, Back/Confirm', () => {
-    open(docById('ky-ea')) // enrollment-agreement → name → license → document
+  /* ⚠ THE PAIR IS NAMED FOR WHERE YOU ARE. With the licence step gone no
+     shape has a middle, so Cancel/Next and Back/Confirm are the only two
+     pairs the set can produce — the assertion below says that explicitly, so
+     a third step arriving later is a deliberate change rather than a silent
+     one. */
+  it('names the buttons for the step: Cancel/Next then Back/Confirm', () => {
+    expect(Math.max(...Object.values(STEPS_BY_SHAPE).map((s) => s.length))).toBe(2)
 
-    // First of three: leaving is Cancel, because there is no step behind it.
+    open(docById('ky-ea')) // enrollment-agreement → name → document
+
+    // First of two: leaving is Cancel, because there is no step behind it.
     expect(cancelButton()).toBeInTheDocument()
     expect(nextButton()).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^back$/i })).toBeNull()
@@ -545,18 +572,8 @@ describe('the progress strip', () => {
     fireEvent.click(screen.getByLabelText(/legal name/i))
     fireEvent.click(nextButton())
 
-    // Middle: Back and Next — still neither Cancel nor Confirm.
-    expect(screen.getByText('Step 2 of 3')).toBeInTheDocument()
-    expect(backButton()).toBeInTheDocument()
-    expect(nextButton()).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /^cancel$/i })).toBeNull()
-    expect(screen.queryByRole('button', { name: /^confirm$/i })).toBeNull()
-
-    typeInto(/license/i, 'W123456')
-    fireEvent.click(nextButton())
-
     // Last: Back and Confirm. Confirm is the only button that signs anything.
-    expect(screen.getByText('Step 3 of 3')).toBeInTheDocument()
+    expect(screen.getByText('Step 2 of 2')).toBeInTheDocument()
     expect(backButton()).toBeInTheDocument()
     expect(confirmButton()).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^next$/i })).toBeNull()
@@ -583,64 +600,95 @@ describe('the progress strip', () => {
 })
 
 describe('the signature', () => {
-  /* ⚠ IT IS THE NAME, SIGNED — not a second field. Two editable boxes let a
-     learner type one name and sign another, which is a contradiction a
-     compliance record should not be able to hold. */
-  it('appears only once there is a name, and mirrors it', () => {
-    open(docById('ca-tc')) // signed-tc → ['name', 'document']
-    toDocumentStep()
+  /* ⚠ PREFILL EVERYTHING BUT THE SIGNATURE. The PRD's model (T-22) is
+     pre-fill what we know, have the learner confirm it, then type their name
+     — so the name boxes arrive filled from the step before and the signature
+     arrives empty. A pre-filled signature is not a signature. */
+  it('prefills the name from the earlier step, and never the signature', () => {
+    open(docById('ca-tc'))
+    typeName('Jordan', 'Riley', 'Navarro')
+    fireEvent.click(screen.getByLabelText(/legal name/i))
+    fireEvent.click(nextButton())
 
-    // Nothing to sign yet.
-    expect(screen.queryByText(/^Signature$/)).toBeNull()
-
-    /* It appears once the REQUIRED parts are in, and signs without a middle
-       name rather than waiting for one that may not exist. */
-    typeInto(/^first name$/i, 'Jordan')
-    expect(screen.queryByText(/^Signature$/)).toBeNull()
-
-    typeInto(/^last name$/i, 'Navarro')
-    expect(screen.getByText(/^Signature$/)).toBeInTheDocument()
-    expect(screen.getByLabelText('Signature: Jordan Navarro')).toBeInTheDocument()
-
-    // A middle name, once given, joins it.
-    typeInto(/^middle name/i, 'Riley')
-    expect(screen.getByLabelText('Signature: Jordan Riley Navarro')).toBeInTheDocument()
-
-    // It follows the name rather than holding its own value.
-    typeInto(/^first name$/i, 'Sam')
-    expect(screen.getByLabelText('Signature: Sam Riley Navarro')).toBeInTheDocument()
-    expect(screen.queryByLabelText('Signature: Jordan Riley Navarro')).toBeNull()
+    expect(screen.getByLabelText(/^first name$/i)).toHaveValue('Jordan')
+    expect(screen.getByLabelText(/^middle name/i)).toHaveValue('Riley')
+    expect(screen.getByLabelText(/^last name$/i)).toHaveValue('Navarro')
+    expect(screen.getByLabelText(/^digitally sign$/i)).toHaveValue('')
   })
 
-  /* jsdom does not resolve the token, but it does keep the declaration — and
-     the failure worth catching is the signature quietly rendering in the body
-     sans, which is when it stops reading as a signature at all. */
+  it('will not complete until it is signed, however much else is filled', () => {
+    const { onComplete } = open(docById('ca-tc'))
+    toDocumentStep()
+    fireEvent.click(screen.getByLabelText(/i agree/i))
+    expect(confirmButton(), 'everything but the signature').toBeDisabled()
+    fireEvent.click(confirmButton())
+    expect(onComplete).not.toHaveBeenCalled()
+
+    sign()
+    expect(confirmButton()).toBeEnabled()
+  })
+
   it('is drawn in the signing hand, not the body font', () => {
     open(docById('ca-tc'))
     toDocumentStep()
-    typeName()
-    const line = screen.getByLabelText('Signature: Jordan Riley Navarro')
-    expect(line.style.fontFamily).toBe('var(--font-signature)')
+    expect(screen.getByLabelText(/^digitally sign$/i).style.fontFamily).toBe(
+      'var(--font-signature)',
+    )
   })
 
-  it('is not a second thing to type', () => {
+  /* An edit on the document overrides the prefill rather than being locked to
+     it — the source documents ask for the name again, which only means
+     anything if it can differ. */
+  it('lets the prefilled name be corrected on the document', () => {
     open(docById('ca-tc'))
     toDocumentStep()
+    typeInto(/^first name$/i, 'Sam')
+    expect(screen.getByLabelText(/^first name$/i)).toHaveValue('Sam')
+    expect(screen.getByLabelText(/^last name$/i)).toHaveValue('Navarro')
+  })
+})
+
+describe('the proctor cannot be the examinee', () => {
+  /* ⚠ "The proctor's name can't match the learner's" (PRD §4.2 row 7). A
+     monitor who IS the examinee is the one thing the proctor requirement
+     exists to prevent, and it is what an honest mistake produces: the learner
+     reaches a step full of name boxes and fills in their own. */
+  function toProctorStep() {
+    open(docById('wv-post'))
     typeName()
-    /* Three boxes — the name. The signature is drawn, not entered, so there is
-       no fourth. */
-    expect(screen.getAllByRole('textbox')).toHaveLength(3)
+    fireEvent.click(screen.getByLabelText(/student declaration/i))
+    sign()
+    fireEvent.click(nextButton())
+  }
+
+  it('blocks a proctor whose name is the learner’s, and says why', () => {
+    toProctorStep()
+    typeName('Jordan', 'Riley', 'Navarro') // the learner's own name
+    fireEvent.click(screen.getByRole('button', { name: 'Librarian' }))
+    fireEvent.click(screen.getByLabelText(/proctor declaration/i))
+    sign('Jordan Riley Navarro')
+
+    expect(confirmButton()).toBeDisabled()
+    expect(screen.getByRole('alert')).toHaveTextContent(/proctor cannot be the examinee/i)
   })
 
-  /* Ohio's Registration Form is the exception and stays one: it needs a
-     signature standing in for a PHYSICAL one, on a step that never collected
-     a name of its own. */
-  it("leaves Ohio's wet-signature field as a real input", () => {
-    open(docById('oh-reg'))
-    toDocumentStep()
-    typeInto(/license/i, 'W123456')
-    fireEvent.click(nextButton())
-    expect(screen.getByLabelText(/student signature/i)).toBeInTheDocument()
+  it('ignores case and spacing when comparing', () => {
+    toProctorStep()
+    typeName('jordan', 'riley', 'navarro')
+    fireEvent.click(screen.getByRole('button', { name: 'Librarian' }))
+    fireEvent.click(screen.getByLabelText(/proctor declaration/i))
+    sign('  JORDAN   Riley navarro ')
+    expect(confirmButton(), 'same person, different typing').toBeDisabled()
+  })
+
+  it('allows a different person', () => {
+    toProctorStep()
+    typeName('Sam', 'Lee', 'Okafor')
+    fireEvent.click(screen.getByRole('button', { name: 'Librarian' }))
+    fireEvent.click(screen.getByLabelText(/proctor declaration/i))
+    sign('Sam Lee Okafor')
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(confirmButton()).toBeEnabled()
   })
 })
 

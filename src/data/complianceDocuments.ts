@@ -27,6 +27,9 @@ export type DocumentShape =
   | 'affidavit-two-party'
   | 'needs-review'
 
+/** See `ComplianceDocumentConfig.acknowledgement`. */
+export type AcknowledgementLevel = 'none' | 'checkbox' | 'signature'
+
 export type ExtraField =
   | 'dob'
   | 'ssn-last4'
@@ -121,8 +124,20 @@ export interface ComplianceDocumentConfig {
   agency?: string
   sections?: EnrollmentAgreementSection[]
   acknowledgments?: string[]
-  /** OH — the Registration Form needs a typed/physical signature, not a tick. */
-  wetSignature?: boolean
+  /**
+   * WHAT THE DOCUMENT ASKS OF THE LEARNER, in the PRD's own three levels
+   * (§4.2). Defaults per shape where omitted — see `acknowledgementFor`.
+   *
+   *   'none'      show it; no response required. The PRD's rule is "least
+   *               friction that meets the rule: where a rule only requires us
+   *               to state something, we show it rather than demand a
+   *               checkbox". Demanding a tick nobody's regulator asked for
+   *               trains learners to click past the ones that matter.
+   *   'checkbox'  an attestation — a non-legal acknowledgment.
+   *   'signature' an affidavit, or an attestation with signature: the tick
+   *               AND a typed name.
+   */
+  acknowledgement?: AcknowledgementLevel
 
   /* ── affidavit-two-party only ── */
   studentBody?: string
@@ -165,10 +180,34 @@ export interface ComplianceDocumentConfig {
 export const STEPS_BY_SHAPE: Record<DocumentShape, string[]> = {
   'notice': ['document'],
   'signed-tc': ['name', 'document'],
-  'enrollment-agreement': ['name', 'license', 'document'],
+  /* ⚠ NO `license` STEP. It was in the brief and is in no regulation: the
+     PRD collects name, contact and hiring manager at enrolment, and SSN or
+     date of birth only at completion where a state's roster needs them.
+     Nothing asks a learner for a licence number before the course. */
+  'enrollment-agreement': ['name', 'document'],
   'affidavit-single': ['identity', 'document'],
   'affidavit-two-party': ['student', 'proctor'],
   'needs-review': ['document'],
+}
+
+/**
+ * What a shape asks for unless its row says otherwise.
+ *
+ * ⚠ AFFIDAVITS SIGN, ATTESTATIONS TICK. The PRD defines an affidavit as a
+ * sworn statement signed with a typed name and an attestation as a checkbox,
+ * so the default follows the document's kind rather than being set 24 times.
+ */
+const DEFAULT_ACKNOWLEDGEMENT: Record<DocumentShape, AcknowledgementLevel> = {
+  'notice': 'checkbox',
+  'signed-tc': 'signature',
+  'enrollment-agreement': 'checkbox',
+  'affidavit-single': 'signature',
+  'affidavit-two-party': 'signature',
+  'needs-review': 'none',
+}
+
+export function acknowledgementFor(config: ComplianceDocumentConfig): AcknowledgementLevel {
+  return config.acknowledgement ?? DEFAULT_ACKNOWLEDGEMENT[config.shape]
 }
 
 export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
@@ -278,6 +317,12 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Terms and Conditions',
     sourceFile: 'MN PE-Terms and Conditions-Pre-Course Affidavit - Copy.docx',
     subject: 'Minnesota',
+    /* ⚠ SHOWN, NOT SIGNED. Its source carries no signature line and no
+       checkbox — it ends at the system requirements — and the PRD (A6, §4.2
+       row 1) lists Minnesota's required notice as a privacy statement that is
+       shown with no response required. The only document in the set that
+       asks the learner for nothing. */
+    acknowledgement: 'none',
     body:
       '## Acknowledgement of Terms and Conditions of Pre-licensing Course Completion\n\nThe state of Minnesota requires applicants to complete 20 hours of pre-licensing education for each major line of authority.\n\nApplicants seeking to become licensed as a Life producer, Health producer, Casualty Producer, Property Producer or Personal Lines Producer must complete 20 hours of pre-licensing education. XCEL Solutions will be tracking your time in the course.\n\nPlease note per insurance code regulating pre-licensing education, you will be signed out of your course after 10 minutes of inactivity, and any time accumulated between the last time you saved your progress and the time you were logged out will be removed from your study history.\n\nAny student caught attempting to manipulate or falsify his time will have his account suspended pending further investigation. The student’s study history may be shared with the state’s Department of Insurance for further investigation if it is determined that his course was submitted as “completed,” as he might have willfully violated an insurance regulation by attempting to manipulate or falsify his time.\n\nThe final exam for this course must be a proctored, closed-book exam with no assistance provided. A disinterested third party must proctor the exam. The disinterested third-party proctor or monitor is an individual who has none of the following: family relationship with the student; is a direct supervisor of the student; or a person directly supervised by the student.\n\nA certificate of course completion will be presented within 2 business days of the date the student meets the minimum hour requirements, in addition to passing the course’s final, proctored, exam with a score of 70% or better. The pre-licensing course completion date is the date a member of the compliance department verifies and determines all course and hour requirements have been met.\n\nLicense education credit will not be awarded for taking the course after it loses its status as an approved course.',
   },
@@ -350,6 +395,11 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     sourceFile: 'NV PE-Pre-Course Enrollment Agreement.docx',
     subject: 'Nevada',
     agency: 'Nevada Commission on Postsecondary Education',
+    /* ⚠ NEVADA SIGNS, KENTUCKY AND OREGON TICK. Table A6 lists Nevada's
+       requirement as a SIGNED enrollment agreement where the other two are
+       agreements without that word, and §4.2 row 2 groups all three as a
+       checkbox. Where the two disagree the stricter reading wins. */
+    acknowledgement: 'signature',
     sections: [
       {
         heading: 'Course Program',
@@ -443,7 +493,9 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     sourceFile: 'OH PE-Registration Form-Pre Course Enrollment Agreement.docx',
     subject: 'Ohio — Student Registration Form',
     agency: 'Ohio Department of Insurance',
-    wetSignature: true,
+    /* §4.2 row 3: "Attestation with signature" — pre-filled details, a
+       checkbox confirming them, and a typed name. */
+    acknowledgement: 'signature',
     sections: [
       {
         heading: 'Provider',

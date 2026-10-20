@@ -13,6 +13,8 @@ import {
 } from '@/icons'
 import {
   STEPS_BY_SHAPE,
+  acknowledgementFor,
+  type AcknowledgementLevel,
   type ComplianceDocumentConfig,
   type ExtraField,
 } from '@/data/complianceDocuments'
@@ -66,8 +68,6 @@ type Props = {
    * and the preview harness is what stands in for the course.
    */
   language?: 'en' | 'es'
-  /** Where "Look up my license number" points. Omitted → the hint is not drawn. */
-  licenseLookupUrl?: string
 }
 
 /* ── per-step glyph ──────────────────────────────────────────────────────
@@ -75,7 +75,6 @@ type Props = {
    header below for why — so this carries nothing but the glyph. */
 const STEP_ICON: Record<string, ReactNode> = {
   name: <User size={24} aria-hidden />,
-  license: <IdCard size={24} aria-hidden />,
   identity: <IdCard size={24} aria-hidden />,
   document: <FileLinesRegular size={24} aria-hidden />,
   student: <User size={24} aria-hidden />,
@@ -110,7 +109,6 @@ export function ComplianceDocumentModal({
   onComplete,
   config,
   language = 'en',
-  licenseLookupUrl,
 }: Props) {
   const steps = STEPS_BY_SHAPE[config.shape]
   const [stepIndex, setStepIndex] = useState(0)
@@ -122,9 +120,14 @@ export function ComplianceDocumentModal({
   const [name, setName] = useState<Record<string, string>>({})
   const [studentName, setStudentName] = useState<Record<string, string>>({})
   const [legalNameConfirmed, setLegalNameConfirmed] = useState(false)
-  const [license, setLicense] = useState('')
   const [agreed, setAgreed] = useState(false)
-  const [wetSignatureName, setWetSignatureName] = useState('')
+  /* ⚠ SIGNATURES ARE NEVER PREFILLED. Everything else on a document is
+     pre-filled from what we already know (the PRD's signature model, T-22:
+     "pre-fill what we know, have the learner confirm it, then type their
+     name"). The signature is the one field the learner has to produce
+     themselves — a pre-filled signature is not a signature. */
+  const [signature, setSignature] = useState('')
+  const [proctorSignature, setProctorSignature] = useState('')
   const [extras, setExtras] = useState<Record<string, string>>({})
   const [relationship, setRelationship] = useState('')
   const [proctorValues, setProctorValues] = useState<Record<string, string>>({})
@@ -136,6 +139,33 @@ export function ComplianceDocumentModal({
   const needsReview = config.shape === 'needs-review'
 
   const extraFields = useMemo(() => config.extraFields ?? [], [config.extraFields])
+  const ack = acknowledgementFor(config)
+
+  /* ⚠ PREFILL, THEN CONFIRM — the PRD's signature model (T-22). The name the
+     learner gave a step earlier shows through on the document; typing there
+     overrides it. Merged rather than copied into state, so there is no effect
+     to keep in step and no moment where the two disagree. */
+  const documentName = useMemo(
+    () => ({ ...name, ...studentName }),
+    [name, studentName],
+  )
+
+  /**
+   * ⚠ THE PROCTOR CANNOT BE THE LEARNER — "the proctor's name can't match the
+   * learner's" (PRD §4.2 row 7). A monitor who is the examinee is the single
+   * thing the proctor requirement exists to prevent, and it is the one that
+   * an honest mistake produces: the learner reaches the proctor step, sees
+   * name boxes, and fills in their own.
+   *
+   * Compared on the whole name, case- and space-insensitively, because
+   * "jordan navarro" and "Jordan  Navarro" are the same person.
+   */
+  const proctorIsLearner = useMemo(() => {
+    const flat = (v: string) => v.trim().toLowerCase().replace(/\s+/g, ' ')
+    const learner = flat(joinName(name))
+    if (!learner) return false
+    return flat(joinName(proctorName)) === learner || flat(proctorSignature) === learner
+  }, [name, proctorName, proctorSignature])
 
   /* ── what each step needs before Next turns on ───────────────────────── */
   const canAdvance = useMemo(() => {
@@ -144,21 +174,23 @@ export function ComplianceDocumentModal({
     switch (step) {
       case 'name':
         return nameComplete(name) && legalNameConfirmed
-      case 'license':
-        return license.trim() !== ''
       case 'identity':
         return nameComplete(name)
       case 'document':
-        /* The Ohio Registration Form wants a signature rather than a tick, so
-           on that one variant the typed name IS the gate. Everywhere else the
-           attest checkbox is. The acknowledgment list above it is a reading
-           list, not a set of gates — the attestation covers it. */
-        return config.wetSignature ? wetSignatureName.trim() !== '' : agreed
+        /* What the document asks for, at the PRD's three levels. 'none' is
+           not an oversight: a notice the regulator only requires us to SHOW
+           has nothing to gate on, and inventing a tick for it trains learners
+           to click past the ones that matter. */
+        if (ack === 'none') return true
+        if (!agreed) return false
+        if (ack === 'signature' && signature.trim() === '') return false
+        return config.shape !== 'signed-tc' || nameComplete(documentName)
       case 'student':
         return (
           nameComplete(name) &&
           extraFields.every((f) => (extras[f] ?? '').trim() !== '') &&
-          agreed
+          agreed &&
+          signature.trim() !== ''
         )
       case 'proctor':
         return (
@@ -167,7 +199,9 @@ export function ComplianceDocumentModal({
           (config.proctorFields ?? []).every((f) =>
             f === 'full-name' ? nameComplete(proctorName) : (proctorValues[f] ?? '').trim() !== '',
           ) &&
-          proctorAttested
+          proctorAttested &&
+          proctorSignature.trim() !== '' &&
+          !proctorIsLearner
         )
       default:
         return false
@@ -177,9 +211,12 @@ export function ComplianceDocumentModal({
     step,
     name,
     legalNameConfirmed,
-    license,
-    config.wetSignature,
-    wetSignatureName,
+    ack,
+    config.shape,
+    documentName,
+    signature,
+    proctorSignature,
+    proctorIsLearner,
     agreed,
     extraFields,
     extras,
@@ -195,7 +232,7 @@ export function ComplianceDocumentModal({
      everything else. */
   const avatarIcon = needsReview ? (
     <TriangleExclamation size={24} aria-hidden />
-  ) : step === 'document' && config.wetSignature ? (
+  ) : step === 'document' && ack === 'signature' ? (
     <PenFieldRegular size={24} aria-hidden />
   ) : (
     STEP_ICON[step] ?? <FileLinesRegular size={24} aria-hidden />
@@ -271,22 +308,16 @@ export function ComplianceDocumentModal({
             />
           )}
 
-          {step === 'license' && (
-            <StepLicense value={license} onChange={setLicense} lookupUrl={licenseLookupUrl} />
-          )}
-
           {step === 'document' && (
             <StepDocument
               config={config}
               language={language}
-              studentName={studentName}
-              onStudentName={(part, value) =>
-                setStudentName((n) => ({ ...n, [part]: value }))
-              }
+              name={documentName}
+              onName={(part, value) => setStudentName((n) => ({ ...n, [part]: value }))}
+              signature={signature}
+              onSignature={setSignature}
               agreed={agreed}
               onAgreed={setAgreed}
-              wetSignatureName={wetSignatureName}
-              onWetSignatureName={setWetSignatureName}
             />
           )}
 
@@ -299,6 +330,8 @@ export function ComplianceDocumentModal({
               onExtra={(key, value) => setExtras((e) => ({ ...e, [key]: value }))}
               agreed={agreed}
               onAgreed={setAgreed}
+              signature={signature}
+              onSignature={setSignature}
             />
           )}
 
@@ -313,6 +346,9 @@ export function ComplianceDocumentModal({
               onName={(part, value) => setProctorName((n) => ({ ...n, [part]: value }))}
               attested={proctorAttested}
               onAttested={setProctorAttested}
+              signature={proctorSignature}
+              onSignature={setProctorSignature}
+              isLearner={proctorIsLearner}
             />
           )}
         </div>
@@ -409,49 +445,26 @@ function StepIdentity({
   )
 }
 
-function StepLicense({
-  value,
-  onChange,
-  lookupUrl,
-}: {
-  value: string
-  onChange: (v: string) => void
-  lookupUrl?: string
-}) {
-  return (
-    <div style={STACK}>
-      <p style={LEAD}>
-        Enter the license or NAPB number your state has on file for you.
-      </p>
-      <Field label="License / NAPB Number" value={value} onChange={onChange} placeholder="e.g. W123456" />
-      {lookupUrl && (
-        <a href={lookupUrl} target="_blank" rel="noreferrer" style={LOOKUP_LINK}>
-          Look up my license number
-        </a>
-      )}
-    </div>
-  )
-}
-
 function StepDocument({
   config,
   language,
-  studentName,
-  onStudentName,
+  name,
+  onName,
+  signature,
+  onSignature,
   agreed,
   onAgreed,
-  wetSignatureName,
-  onWetSignatureName,
 }: {
   config: ComplianceDocumentConfig
   language: 'en' | 'es'
-  studentName: Record<string, string>
-  onStudentName: (part: NamePart, value: string) => void
+  name: Record<string, string>
+  onName: (part: NamePart, value: string) => void
+  signature: string
+  onSignature: (v: string) => void
   agreed: boolean
   onAgreed: (v: boolean) => void
-  wetSignatureName: string
-  onWetSignatureName: (v: string) => void
 }) {
+  const ack = acknowledgementFor(config)
   /* ── needs-review: a placeholder, never a completable step ───────────── */
   if (config.shape === 'needs-review') {
     return (
@@ -514,32 +527,14 @@ function StepDocument({
             </li>
           ))}
         </ul>
-        {config.wetSignature ? (
-          <>
-            {/* ⚠ THE ONE WHOLE-NAME BOX LEFT, and deliberately: this is a
-                SIGNATURE standing in for a pen stroke, not a name being
-                collected. Ohio's `name` step already took the three parts a
-                page earlier; splitting a signature into three would make it
-                a second identity question rather than a signing gesture. */}
-            <p style={LEAD}>
-              This Registration Form is signed, not confirmed. Sign below by typing your name, in
-              place of your physical signature.
-            </p>
-            <Field
-              label="Student Signature"
-              value={wetSignatureName}
-              onChange={onWetSignatureName}
-              placeholder="Sign by typing your name"
-              signatureStyle
-            />
-          </>
-        ) : (
-          <Checkbox
-            checked={agreed}
-            onChange={(e) => onAgreed(e.target.checked)}
-            label="I have read and agree to this Enrollment Agreement"
-          />
-        )}
+        <SignOff
+          ack={ack}
+          label="I have read and agree to this Enrollment Agreement"
+          agreed={agreed}
+          onAgreed={onAgreed}
+          signature={signature}
+          onSignature={onSignature}
+        />
       </div>
     )
   }
@@ -562,18 +557,16 @@ function StepDocument({
         {/* The source documents ask for the name again on the document
             itself — "Student Full Name" on its own signature line, which is
             three boxes here like every other legal name. */}
-        <NameFields values={studentName} onChange={onStudentName} />
-        {/* ⚠ THE SIGNATURE IS THE NAME, SIGNED — not a second thing to type.
-            It mirrors Student Name in the signing hand and appears only once
-            there is a name to show, so it reads as the consequence of typing
-            rather than as another empty box. Typing two different strings
-            into "name" and "signature" is a contradiction a compliance
-            document should not be able to record. */}
-        {nameComplete(studentName) && <SignatureLine value={joinName(studentName)} />}
-        <Checkbox
-          checked={agreed}
-          onChange={(e) => onAgreed(e.target.checked)}
+        {/* Prefilled from the name step and still editable — the source
+            documents ask for the name again on the document itself. */}
+        <NameFields values={name} onChange={onName} />
+        <SignOff
+          ack={ack}
           label="I Agree / I Attest"
+          agreed={agreed}
+          onAgreed={onAgreed}
+          signature={signature}
+          onSignature={onSignature}
         />
       </div>
     )
@@ -585,10 +578,13 @@ function StepDocument({
       <div style={DOCUMENT_PANEL}>
         <DocumentBody body={config.body} />
       </div>
-      <Checkbox
-        checked={agreed}
-        onChange={(e) => onAgreed(e.target.checked)}
+      <SignOff
+        ack={ack}
         label="I attest that the statement above is true"
+        agreed={agreed}
+        onAgreed={onAgreed}
+        signature={signature}
+        onSignature={onSignature}
       />
     </div>
   )
@@ -602,6 +598,8 @@ function StepStudent({
   onExtra,
   agreed,
   onAgreed,
+  signature,
+  onSignature,
 }: {
   config: ComplianceDocumentConfig
   name: Record<string, string>
@@ -610,6 +608,8 @@ function StepStudent({
   onExtra: (key: string, value: string) => void
   agreed: boolean
   onAgreed: (v: boolean) => void
+  signature: string
+  onSignature: (v: string) => void
 }) {
   return (
     <div style={STACK}>
@@ -624,10 +624,13 @@ function StepStudent({
           placeholder={EXTRA_FIELD_PLACEHOLDER[f]}
         />
       ))}
-      <Checkbox
-        checked={agreed}
-        onChange={(e) => onAgreed(e.target.checked)}
+      <SignOff
+        ack="signature"
         label="I attest to the student declaration above"
+        agreed={agreed}
+        onAgreed={onAgreed}
+        signature={signature}
+        onSignature={onSignature}
       />
     </div>
   )
@@ -643,6 +646,9 @@ function StepProctor({
   onName,
   attested,
   onAttested,
+  signature,
+  onSignature,
+  isLearner,
 }: {
   config: ComplianceDocumentConfig
   relationship: string
@@ -653,6 +659,10 @@ function StepProctor({
   onName: (part: NamePart, value: string) => void
   attested: boolean
   onAttested: (v: boolean) => void
+  signature: string
+  onSignature: (v: string) => void
+  /** True when the proctor's details match the learner's. */
+  isLearner: boolean
 }) {
   return (
     <div style={STACK}>
@@ -694,26 +704,78 @@ function StepProctor({
           ))}
         </div>
       </div>
-      <Checkbox
-        checked={attested}
-        onChange={(e) => onAttested(e.target.checked)}
+      <SignOff
+        ack="signature"
         label="I attest to the proctor declaration above"
+        agreed={attested}
+        onAgreed={onAttested}
+        signature={signature}
+        onSignature={onSignature}
+        error={
+          isLearner
+            ? 'A proctor cannot be the examinee. This name matches the student’s.'
+            : undefined
+        }
       />
     </div>
   )
 }
 
-/** The typed name rendered back as a signature: the same box as the field
- *  above it, in the signing hand, and not editable — editing it would let the
- *  name and the signature disagree. */
-function SignatureLine({ value }: { value: string }) {
+/**
+ * THE TICK AND THE SIGNATURE, at whatever level the document asks for.
+ *
+ * ⚠ `none` RENDERS NOTHING, and that is the point. A notice the regulator
+ * only requires us to SHOW has nothing to agree to; inventing a checkbox for
+ * it is friction that meets no rule and teaches learners to click past the
+ * ones that do.
+ */
+function SignOff({
+  ack,
+  label,
+  agreed,
+  onAgreed,
+  signature,
+  onSignature,
+  error,
+}: {
+  ack: AcknowledgementLevel
+  label: string
+  agreed: boolean
+  onAgreed: (v: boolean) => void
+  signature: string
+  onSignature: (v: string) => void
+  error?: string
+}) {
+  if (ack === 'none') return null
   return (
-    <div>
-      <span style={FIELD_LABEL}>Signature</span>
-      <div style={SIGNATURE_LINE} aria-label={`Signature: ${value}`}>
-        {value}
-      </div>
-    </div>
+    <>
+      <Checkbox checked={agreed} onChange={(e) => onAgreed(e.target.checked)} label={label} />
+      {ack === 'signature' && (
+        <div>
+          <label style={{ display: 'block' }}>
+            <span style={FIELD_LABEL}>Digitally Sign</span>
+            <input
+              type="text"
+              value={signature}
+              placeholder="Type your full name to sign"
+              onChange={(e) => onSignature(e.target.value)}
+              aria-invalid={error ? true : undefined}
+              style={{
+                ...INPUT,
+                fontFamily: 'var(--font-signature)',
+                fontSize: 24,
+                borderColor: error ? 'var(--color-warning-600)' : 'var(--color-border-subtle)',
+              }}
+            />
+          </label>
+          {error && (
+            <p role="alert" style={SIGN_ERROR}>
+              {error}
+            </p>
+          )}
+        </div>
+      )}
+    </>
   )
 }
 
@@ -874,14 +936,11 @@ function Field({
   value,
   onChange,
   placeholder,
-  signatureStyle,
 }: {
   label: string
   value: string
   onChange: (v: string) => void
   placeholder?: string
-  /** Draws the value in the signing hand, so a typed signature reads as one. */
-  signatureStyle?: boolean
 }) {
   return (
     <label style={{ display: 'block' }}>
@@ -891,12 +950,7 @@ function Field({
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        style={{
-          ...INPUT,
-          ...(signatureStyle
-            ? { fontFamily: 'var(--font-signature)', fontSize: 22 }
-            : null),
-        }}
+        style={INPUT}
       />
     </label>
   )
@@ -1167,25 +1221,12 @@ const INPUT: CSSProperties = {
   outline: 'none',
 }
 
-/* The same box as `INPUT`, in the signing hand — it is the field above it,
-   signed, so it must not read as a different kind of control. */
-const SIGNATURE_LINE: CSSProperties = {
-  ...INPUT,
-  display: 'flex',
-  alignItems: 'center',
-  /* The signing hand, and larger than the field above it — script faces carry
-     a smaller x-height at the same size, so 18px here read smaller than the
-     14px name it mirrors. */
-  fontFamily: 'var(--font-signature)',
-  fontSize: 24,
-  background: 'var(--color-neutral-75)',
-}
-
-const LOOKUP_LINK: CSSProperties = {
+const SIGN_ERROR: CSSProperties = {
+  margin: '6px 0 0',
   fontFamily: 'var(--font-body)',
   fontSize: 12,
-  fontWeight: 600,
-  color: 'var(--color-action)',
+  lineHeight: '17px',
+  color: 'var(--color-warning-800)',
 }
 
 const CHIP_ROW: CSSProperties = { display: 'flex', flexWrap: 'wrap', gap: 8 }

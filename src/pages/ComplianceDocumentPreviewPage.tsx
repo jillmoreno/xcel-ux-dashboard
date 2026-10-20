@@ -3,6 +3,7 @@ import { ComplianceDocumentModal } from '@/components/courses/ComplianceDocument
 import {
   COMPLIANCE_DOCUMENTS,
   STEPS_BY_SHAPE,
+  acknowledgementFor,
   type ComplianceDocumentConfig,
   type DocumentShape,
 } from '@/data/complianceDocuments'
@@ -158,7 +159,6 @@ export function ComplianceDocumentPreviewPage() {
             setCompleted(open.title)
             setOpenId(null)
           }}
-          licenseLookupUrl="https://nipr.com/help/look-up-your-npn"
         />
       )}
     </main>
@@ -184,7 +184,8 @@ function DocumentButton({
       <span style={CARD_META}>
         {steps.length} {steps.length === 1 ? 'step' : 'steps'}
         {doc.bilingual ? ' · bilingual' : ''}
-        {doc.wetSignature ? ' · wet signature' : ''}
+        {acknowledgementFor(doc) === 'signature' ? ' · signed' : ''}
+        {acknowledgementFor(doc) === 'none' ? ' · shown only' : ''}
         {doc.shape === 'needs-review' ? ' · not completable' : ''}
       </span>
     </button>
