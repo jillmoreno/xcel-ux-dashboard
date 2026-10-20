@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { InviteEmailPage } from '@/pages/InviteEmailPage'
+import { END_TO_END_VERSION } from '@/pages/endToEndDemo'
 import {
   E2E_EMAIL_ADMIN,
   E2E_EMAIL_OFFICE,
@@ -32,7 +33,7 @@ function Probe() {
   return <output data-testid="where">{pathname + search}</output>
 }
 
-function renderEmail(search = '?demo=1&journey=full&version=eric-atlas-e2e') {
+function renderEmail(search = `?demo=1&journey=full&version=${END_TO_END_VERSION}`) {
   return render(
     <MemoryRouter initialEntries={[`/end-to-end-demo/email${search}`]}>
       <AccountProvider>
@@ -61,7 +62,12 @@ describe('the invite email page', () => {
     await user.click(screen.getByRole('button', { name: /View invitation/ }))
     const where = screen.getByTestId('where').textContent ?? ''
     expect(where, where).toContain('journey=full')
-    expect(where, where).toContain('version=eric-atlas-e2e')
+    /* ⚠ THE CONSTANT, NOT THE LITERAL — 2026-10-20. This read
+       `version=eric-atlas-e2e`, which is what the walk pinned until the brand
+       default moved to Jill/Atlas-Main and `END_TO_END_VERSION` followed it.
+       The subject is that the walk CARRIES its version across the step, not
+       which version that is; naming it twice is how the two drift. */
+    expect(where, where).toContain(`version=${END_TO_END_VERSION}`)
   })
 
   it('carries whatever else is pinned, rather than a fixed address', async () => {

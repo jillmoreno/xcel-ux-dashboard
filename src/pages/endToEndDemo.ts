@@ -3,8 +3,30 @@ import { useSearchParams } from 'react-router-dom'
 import { useCourseDemo, useFeatureFlag } from '@/context/FeatureFlagContext'
 import { jurisdictionName } from '@/data/nyProducerRequirements'
 
-/** The End-to-End Demo's dashboard version (`dashboardVersions.ts`). */
-export const END_TO_END_VERSION = 'eric-atlas-e2e'
+/**
+ * THE VERSION THE WALK PINS — and it must be the BRAND DEFAULT.
+ *
+ * ⚠ IT WAS `eric-atlas-e2e` UNTIL 2026-10-20, four hours after the default
+ * moved to `jill-atlas-main`, and the gap is the thing this note exists to
+ * stop happening again. The Prototypes section's FIRST row — "End-to-End User
+ * Experience", under "Final prototype — source of truth" — opens
+ * `/end-to-end-demo/email?demo=1&journey=full`, and `EndToEndPageSync` then
+ * APPENDS this version to the URL. So the one row that claims to be what the
+ * product is right now was pinned to a version the default had already left
+ * behind, and every other Prototypes row (which carries no `?version=` and
+ * falls through to the default) showed something else. Two answers to "what
+ * is the product", from the section whose whole job is to have one.
+ *
+ * ⚠ IT FAILS SILENTLY, which is why it is pinned by a test rather than by
+ * this comment. Both versions render; both are Atlas Homes; the difference on
+ * the day of the swap was Step 2 and the pace card. Nobody reading the row
+ * would know it was stale — Jillienne asked "make sure its going to be
+ * reflected on the final prototype", and it was not.
+ *
+ * `DefaultVersionReach.test.ts` asserts this equals
+ * `defaultDiscoverabilityVersionFor('xcel')`. Move one, move both.
+ */
+export const END_TO_END_VERSION = 'jill-atlas-main'
 
 /* ───────────────────────────────────────────────────────────────────────────
  *  WHICH JOURNEY IS THIS? — `?journey=full` (2026-10-16)
