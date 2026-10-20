@@ -111,7 +111,7 @@ export function AtlasAdminNotificationsPage() {
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') setSelected(n.id)
                         }}
-                        style={{ ...ROW, ...(active ? { paddingTop: 22 } : null), paddingBottom: (i === list.length - 1 ? 20 : 10) + (active ? 8 : 0), background: active ? 'var(--admin-brand-tint)' : undefined, borderTop: i ? '1px solid var(--admin-rule)' : undefined }}
+                        style={{ ...ROW, ...(active ? { paddingTop: 22, boxShadow: 'inset 3px 0 0 var(--admin-rule), inset -3px 0 0 var(--admin-rule)' } : null), paddingBottom: (i === list.length - 1 ? 20 : 10) + (active ? 8 : 0), background: active ? 'var(--admin-brand-tint)' : undefined, borderTop: i ? '1px solid var(--admin-rule)' : undefined }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
                           <div style={{ minWidth: 0 }}>
