@@ -7471,7 +7471,7 @@ a.cre-library-card-title::after {
   --admin-warn-tint: #fffbeb;
   --admin-warn-edge: #fde68a;
   --admin-warn-ink: #451a03;
-  --admin-font-heading: 'Aktiv Grotesk', 'Hanken Grotesk', 'Helvetica Neue', Arial, sans-serif;
+  --admin-font-heading: var(--font-body);
   --admin-shadow-menu: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --admin-scrim: rgb(15 23 42 / 0.45);
   /* The learner record's extras. */

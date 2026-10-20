@@ -42,8 +42,12 @@ export function AtlasAdminLearningCenterPage() {
     win.document.title = c.title
     win.document.documentElement.lang = c.lang
     win.document.body.innerHTML = ''
+    const font = win.document.createElement('link')
+    font.rel = 'stylesheet'
+    font.href = 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap'
+    win.document.head.appendChild(font)
     const style = win.document.createElement('style')
-    style.textContent = 'body{margin:0;font-family:system-ui,sans-serif;background:#0f172a;color:#f8fafc;display:grid;place-items:center;min-height:100vh}main{max-width:640px;padding:32px}h1{font-size:24px}p{line-height:1.6;color:#cbd5e1}'
+    style.textContent = "body{margin:0;font-family:'Open Sans',sans-serif;background:#0f172a;color:#f8fafc;display:grid;place-items:center;min-height:100vh}main{max-width:640px;padding:32px}h1{font-size:24px}p{line-height:1.6;color:#cbd5e1}"
     win.document.head.appendChild(style)
     const main = win.document.createElement('main')
     const h1 = win.document.createElement('h1')
