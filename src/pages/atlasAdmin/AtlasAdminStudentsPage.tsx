@@ -517,13 +517,13 @@ const UNDERLAP = 24
 const TILE: CSSProperties = {
   borderRadius: 11,
   border: '1px solid var(--admin-rule)',
-  background: 'var(--admin-surface)',
+  background: 'var(--admin-fill-soft)', // the roster's header row; the selected tile is white
   padding: 16,
   textAlign: 'left',
   cursor: 'pointer',
   outline: 'none',
 }
-const TILE_ACTIVE: CSSProperties = { outline: '1px solid var(--admin-atlas-primary-400)', outlineOffset: -1, boxShadow: 'var(--admin-shadow-tile-active)' }
+const TILE_ACTIVE: CSSProperties = { background: 'var(--admin-surface)', outline: '1px solid var(--admin-atlas-primary-400)', outlineOffset: -1, boxShadow: 'var(--admin-shadow-tile-active)' }
 const TILE_NUMBER: CSSProperties = {
   margin: '4px 0 0',
   fontFamily: 'var(--admin-font-heading)',
