@@ -137,6 +137,145 @@ describe('the ring card spaces every rule alike', () => {
 })
 
 /**
+ * TWO FIGURE ROWS DO NOT DOUBLE THEIR AIR (2026-10-20, Jillienne: "remove
+ * that additional padding above the divider line that is making this look
+ * uneven").
+ *
+ * ⚠ THE DEFECT WAS ARITHMETIC, NOT A STRAY VALUE, which is why it survived
+ * the suite above: every figure carried 24 over its rule and 24 under its
+ * figure, and each row was correct on its own. Stacked, the first row's 24
+ * under the figure landed on the second's 24 over the rule — 48 above that
+ * line against 24 below it. So what is pinned is the SUM on either side of
+ * the second rule, not any one declaration.
+ *
+ * ⚠ jsdom HAS NO LAYOUT; these are the inline styles, which is enough
+ * because nothing here collapses or overlaps. The browser is where it was
+ * looked at.
+ */
+describe('a second figure row keeps the column\u2019s rhythm', () => {
+  const renderStack = () =>
+    render(
+      <AtlasPaceRingCard
+        percent={14}
+        weeks={2}
+        hoursPerWeek={7}
+        expected={{ value: 'May 18' }}
+        exam={{ label: 'FLORIDA STATE EXAM', value: 'May 29', note: '18 days' }}
+      />,
+    )
+
+  it('gives the exam rule the same air above it as below', () => {
+    renderStack()
+    const first = screen.getByText('Estimated completion').parentElement!
+    const second = screen.getByText('FLORIDA STATE EXAM').parentElement!
+    const section = second.parentElement!
+    const above =
+      parseInt(first.style.paddingBottom || '0', 10) +
+      parseInt(section.style.gap, 10) +
+      parseInt(second.style.marginTop, 10)
+    expect(above).toBe(parseInt(second.style.paddingTop, 10))
+  })
+
+  it('takes the bottom pad off the row that is NOT last', () => {
+    /* The direct half: the first row gives its pad up, the last one keeps
+       it — there is nothing below the last row to supply that air. */
+    renderStack()
+    expect(screen.getByText('Estimated completion').parentElement!.style.paddingBottom).toBe('0px')
+    expect(screen.getByText('FLORIDA STATE EXAM').parentElement!.style.paddingBottom).toBe('24px')
+  })
+
+  it('draws ONE hairline between them, not two', () => {
+    /* ⚠ `ruled` USED TO BE READ OFF `readinessBelow` BY BOTH ROWS, so with
+       readiness on, Estimated completion closed with a bottom rule 24 above
+       the exam row's own top rule — two hairlines with nothing between
+       them. The bottom rule belongs to whichever row is last. */
+    render(
+      <AtlasPaceRingCard
+        percent={14}
+        weeks={2}
+        hoursPerWeek={7}
+        readinessBelow
+        expected={{ value: 'May 18' }}
+        exam={{ label: 'FLORIDA STATE EXAM', value: 'May 29', note: '18 days' }}
+      />,
+    )
+    expect(screen.getByText('Estimated completion').parentElement!.style.borderBottomStyle).toBe('none')
+    expect(screen.getByText('FLORIDA STATE EXAM').parentElement!.style.borderBottomStyle).not.toBe('none')
+  })
+
+  it('still closes the stack when Estimated completion IS the last row', () => {
+    // The single-row case the suite above pins, restated here so the new
+    // branch cannot take the pad away from a row that needs it.
+    render(<AtlasPaceRingCard percent={14} weeks={2} hoursPerWeek={7} expected={{ value: 'May 18' }} />)
+    const row = screen.getByText('Estimated completion').parentElement!
+    expect(row.style.paddingBottom).toBe(row.style.paddingTop)
+  })
+})
+
+/**
+ * THE FIGURE ROWS READ AS A TABLE (2026-10-20, Jillienne: "have the eyebrow
+ * header be left aligned, the date be right aligned, and the (days
+ * remaining) small text underneath the date right aligned").
+ *
+ * ⚠ THREE FACTS THAT LOOK LIKE ONE. Label left, figure right, note UNDER the
+ * figure — and the third is the one that can regress without the row looking
+ * wrong, because a note that goes back to being a ` · ` suffix still renders
+ * every word. It just stops being a second line. So the case asserts the
+ * note is a SIBLING of the value rather than inside it.
+ *
+ * ⚠ jsdom HAS NO LAYOUT, so these read the inline styles the component sets.
+ * That is enough here: the alignment IS those three declarations, and the
+ * browser is where the result was looked at.
+ */
+describe('the label and the figure sit on opposite edges', () => {
+  const renderRows = () =>
+    render(
+      <AtlasPaceRingCard
+        percent={14}
+        weeks={2}
+        hoursPerWeek={7}
+        expected={{ value: 'May 24' }}
+        exam={{ label: 'FLORIDA STATE EXAM', value: 'November 16', note: '18 days' }}
+      />,
+    )
+
+  it('pushes the pair to the two edges rather than grouping it', () => {
+    renderRows()
+    const row = screen.getByText('Estimated completion').parentElement!
+    expect(row.style.justifyContent).toBe('space-between')
+  })
+
+  it('sets the label left and the figure right', () => {
+    renderRows()
+    expect((screen.getByText('Estimated completion') as HTMLElement).style.textAlign).toBe('left')
+    expect((screen.getByText('May 24') as HTMLElement).style.textAlign).toBe('right')
+  })
+
+  it('puts the note on its OWN line under the figure, right aligned', () => {
+    renderRows()
+    const value = screen.getByText('November 16') as HTMLElement
+    const note = screen.getByText('18 days') as HTMLElement
+    // A sibling, not a child: the ` · ` suffix this replaces was inside it.
+    expect(note.parentElement).toBe(value.parentElement)
+    expect(value.contains(note)).toBe(false)
+    expect(note.style.textAlign).toBe('right')
+    expect(note.textContent).toBe('18 days')
+  })
+
+  it('renders `expected`’s note the same way, the moment one is passed', () => {
+    /* ⚠ NOTHING PASSES ONE TODAY. It was dropped on 2026-10-19 because the
+       label and a one-line value left no room for it; under the figure that
+       constraint is gone, so this pins that the capability came back rather
+       than that it is in use — which is what someone re-adding it will
+       check. */
+    render(<AtlasPaceRingCard percent={14} weeks={2} hoursPerWeek={7} expected={{ value: 'May 24', note: '25 days' }} />)
+    const note = screen.getByText('25 days') as HTMLElement
+    expect(note.parentElement).toBe((screen.getByText('May 24') as HTMLElement).parentElement)
+    expect(note.style.textAlign).toBe('right')
+  })
+})
+
+/**
  * THE TAG OVER THE GOAL NAMES COMPASS'S PACE (2026-10-16, Jillienne: "change
  * to Average to match the header in compass side of things").
  *

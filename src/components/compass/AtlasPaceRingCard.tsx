@@ -288,44 +288,94 @@ export function AtlasPaceRingCard({
              bottom pad in exchange (see `PANEL`), so the air below the date
              is the same 24 it has always been — it just sits inside the box
              now, where it is symmetric, instead of outside it. */
-          <div
-            style={{
-              ...(readinessBelow ? EXPECTED : { ...EXPECTED, borderBottom: 'none' }),
-              /* The pair sits where the column's labels do: centred as a
-                 group on the centre arm, against the edge on the left one. */
-              justifyContent: eyebrow.textAlign === 'left' ? 'flex-start' : 'center',
-            }}
-          >
-            {/* It is an EYEBROW, so it moves with the other three — but in a
-                ROW its own `textAlign` has nothing to act on, so the arm
-                decides where the PAIR sits instead (see the box's
-                `justifyContent`). */}
-            <p style={EXPECTED_LABEL}>Estimated completion</p>
-            <p style={EXPECTED_VALUE}>
-              {expected.value}
-              {expected.note ? <span style={EXPECTED_NOTE}> · {expected.note}</span> : null}
-            </p>
-          </div>
+          <FigureRow
+            label="Estimated completion"
+            value={expected.value}
+            note={expected.note}
+            /* ⚠ THE RULE AND THE PAD BELONG TO WHICHEVER ROW IS LAST. With
+               the exam row following, this one neither closes the stack nor
+               supplies the air under it — the exam row's own top rule is the
+               next line down, and a bottom rule here would put two hairlines
+               24 apart with nothing between them. */
+            ruled={!exam && readinessBelow}
+            tight={exam != null}
+          />
         ) : null}
         {/* ⚠ RULED ABOVE, LIKE THE BLOCK IT FOLLOWS, so the column keeps one
             rhythm — the hairline belongs to the block BELOW it here, which is
             the rule `Estimated completion` already follows. */}
         {exam ? (
-          <div
-            style={{
-              ...EXPECTED,
-              borderBottom: 'none',
-              justifyContent: eyebrow.textAlign === 'left' ? 'flex-start' : 'center',
-            }}
-          >
-            <p style={EXPECTED_LABEL}>{exam.label}</p>
-            <p style={EXPECTED_VALUE}>
-              {exam.value}
-              {exam.note ? <span style={EXPECTED_NOTE}> · {exam.note}</span> : null}
-            </p>
-          </div>
+          <FigureRow label={exam.label} value={exam.value} note={exam.note} ruled={readinessBelow} />
         ) : null}
       </section>
+    </div>
+  )
+}
+
+/**
+ * ONE FIGURE ROW — the label hard left, the figure hard right, and the
+ * figure's note on its own line under it (2026-10-20, Jillienne: "have the
+ * eyebrow header be left aligned, the date be right aligned, and the (days
+ * remaining) small text underneath the date right aligned").
+ *
+ * ⚠ IT REPLACES A CENTRED PAIR, AND TAKES A DECISION OFF THE ARM. The row
+ * used to sit label and figure together as a GROUP — centred in the column,
+ * or against its left edge on the `align: 'left'` arm — so the arm decided
+ * where the pair went. Pinned to the two edges there is nothing left for it
+ * to decide, and the two rows read as a small table rather than two clumps.
+ *
+ * ⚠ THE NOTE IS A LINE NOW, NOT A ` · ` SUFFIX — which quietly reopens
+ * something that was closed. Estimated completion's note was dropped on
+ * 2026-10-19 because the label takes 166 of the column's 272 and
+ * "May 24 · At current pace" wrapped mid-phrase. Under the figure it has the
+ * figure's own width, so that constraint is gone: `expected.note` renders
+ * again the moment a caller passes one. None does today — the EXAM row is
+ * the only note on the card, and its days figure is what this was asked for.
+ *
+ * ⚠ BASELINE STILL WORKS, which is the one thing that looks at risk. The
+ * right side is a COLUMN now, and a flex column's first baseline is its
+ * first line's — the figure's — so the label still sits on the figure's
+ * letters rather than on the middle of a two-line box.
+ *
+ * `ruled` is the BOTTOM hairline only; the top one is always drawn. See
+ * `readinessBelow` for why the bottom one comes and goes.
+ *
+ * ⚠ `tight` IS WHAT KEEPS TWO ROWS FROM DOUBLING THEIR AIR — 2026-10-20,
+ * Jillienne: "remove that additional padding above the divider line that is
+ * making this look uneven". Every row carries 24 above its rule (its own
+ * offset plus the section's gap) and 24 below the figure, which is right for
+ * ONE row. Stacked, the first row's 24 under the figure lands on top of the
+ * second's 24 over the rule — 48 above that line against 24 below it, which
+ * is the lopsided gap she saw. The row that has another row after it gives
+ * its bottom pad up; the LAST row keeps it, because there is nothing below
+ * to supply the air.
+ */
+function FigureRow({
+  label,
+  value,
+  note,
+  ruled = false,
+  tight = false,
+}: {
+  label: string
+  value: string
+  note?: string
+  ruled?: boolean
+  tight?: boolean
+}) {
+  return (
+    <div
+      style={{
+        ...EXPECTED,
+        ...(ruled ? null : { borderBottom: 'none' }),
+        ...(tight ? { paddingBottom: 0 } : null),
+      }}
+    >
+      <p style={EXPECTED_LABEL}>{label}</p>
+      <div style={FIGURE}>
+        <p style={EXPECTED_VALUE}>{value}</p>
+        {note ? <p style={EXPECTED_NOTE}>{note}</p> : null}
+      </div>
     </div>
   )
 }
@@ -412,11 +462,29 @@ const PANEL: CSSProperties = {
   background: 'transparent',
   boxSizing: 'border-box',
 }
+/**
+ * WHAT EVERY RULE ON THIS CARD IS DRAWN IN — 2026-10-20, Jillienne: "lets
+ * have the divider lines be the same color as the background of the page".
+ *
+ * ⚠ THE PAGE'S GREY, NOT THE CARD'S OWN GROUND. Taken literally that would
+ * make them invisible: the column sits on #f9f8f6 and a rule in its own
+ * background is not a rule. This is `#eceef0` — the grey the Atlas page
+ * draws its outlined cards and its course band in, which IS the background
+ * behind the white of the page, and reads as a soft cool line against the
+ * column rather than the tan one it replaces.
+ *
+ * ⚠ NOT THE TOKEN ITSELF. `--color-atlas-nav-rule` is still the tan, and
+ * fourteen other files draw nav rules, card edges and the progress ring's
+ * own track with it — repointing the token would move all of them. This is
+ * one constant for THIS card, which is also what keeps its three rules the
+ * same line as each other.
+ */
+const RULE_LINE = 'var(--color-atlas-outlined-card, var(--color-compass-page-card))'
 /* One section of the column — an eyebrow and what it names. */
 const SECTION: CSSProperties = { display: 'flex', flexDirection: 'column', gap: SECTION_GAP }
 /* The column's own hairline, the same one Estimated completion is ruled with
    so the card has one kind of divider rather than two. */
-const DIVIDER: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-nav-rule)' }
+const DIVIDER: CSSProperties = { display: 'block', height: 1, background: RULE_LINE }
 /* Compass's name for the plan this card describes — see the tag's note. */
 const COMPASS_PACE_NAME = paceName(PLANNER_PLAN.dayMins)
 /* The pace name and the goal, side by side. `baseline` so a 10px tracked
@@ -431,6 +499,13 @@ const GOAL_RULE: CSSProperties = {
   height: 12,
   flex: 'none',
   alignSelf: 'center',
+  /* ⚠ THE ONE RULE THAT KEEPS THE TAN, and deliberately — 2026-10-20. It
+     took `RULE_LINE` with the other three for one build and vanished: a
+     248px hairline carries #eceef0 against the column's #f9f8f6 easily, a
+     1×12px pipe does not, and this one is doing the LINE BREAK's work
+     between the pace name and the goal (see the tag's note). A separator
+     nobody can see puts "Average 4 Week Goal" back to reading as one title,
+     which is the thing the rule was introduced to fix. */
   background: 'var(--color-atlas-nav-rule)',
 }
 /* …and the workload under it, in the body treatment the paragraph below
@@ -488,6 +563,10 @@ const EXPECTED: CSSProperties = {
      lines up on the letters sitting on the same line, not on the middle of
      two boxes of different heights. */
   alignItems: 'baseline',
+  /* ⚠ THE LABEL AND THE FIGURE ARE PUSHED APART, not spaced (2026-10-20) —
+     the two edges are the alignment, so the gap is only the floor under a
+     long label meeting a long figure. */
+  justifyContent: 'space-between',
   gap: 10,
   padding: `${RULE_GAP}px 0`,
   /* The section's gap already puts `SECTION_GAP` above this box, so the rule
@@ -495,22 +574,44 @@ const EXPECTED: CSSProperties = {
      Course progress. Written as the subtraction rather than 13, so moving
      either constant keeps the two rules matched. */
   marginTop: RULE_GAP - SECTION_GAP,
-  borderTop: '1px solid var(--color-atlas-nav-rule)',
-  borderBottom: '1px solid var(--color-atlas-nav-rule)',
+  borderTop: `1px solid ${RULE_LINE}`,
+  borderBottom: `1px solid ${RULE_LINE}`,
 }
 /* The same eyebrow as the card's own — it labels a figure in the same column
    and had no reason to be a smaller, bolder one. */
 /* `flex: 'none'` so the label keeps its own width in the row rather than
    being squeezed by a long date; `alignSelf: auto` so the box's baseline
    alignment applies to it. */
-const EXPECTED_LABEL: CSSProperties = { ...ATLAS_SECTION_EYEBROW, alignSelf: 'auto', flex: 'none' }
-/* ⚠ THE VALUE CENTRES, THE BOX DOES NOT. Centring the box itself would
-   shrink it to its content and take the two rules in with it — they have to
-   span the column, which is the whole reason they read as rules rather than
-   underlines. So the alignment lives on the text. */
+/* ⚠ `textAlign: 'left'` IS BELT AND BRACES, and worth keeping. `flex: 'none'`
+   already shrinks the <p> to its own text, so there is nothing for the
+   alignment to act on — but the shared eyebrow it spreads sets `center`, and
+   the day someone gives this label a width that reads as the row centring
+   itself again. */
+/* ⚠ THE LABEL IS WHAT GIVES WAY, not the figure (2026-10-20). It was
+   `flex: 'none'`, which put the whole squeeze on the right-hand side: at 248
+   of column, "FLORIDA STATE EXAM" takes 143 and leaves 95 for a date needing
+   about 105, so "November 16" broke after the month and the row ran to three
+   lines. A LABEL wrapping to two lines of 11px is ordinary; a DATE broken
+   across two lines of 19px serif is not — and the figure is the thing the row
+   exists to show. `minWidth: 0` is what actually lets it wrap. */
+const EXPECTED_LABEL: CSSProperties = { ...ATLAS_SECTION_EYEBROW, alignSelf: 'auto', minWidth: 0, textAlign: 'left' }
+/* The figure and its note, stacked against the right edge, at their own
+   width — see the label's note for which side yields. */
+const FIGURE: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-end',
+  flex: 'none',
+}
+/* ⚠ THE FIGURE ALIGNS, THE BOX DOES NOT. Shrinking the box to its content
+   would take the two rules in with it — they have to span the column, which
+   is the whole reason they read as rules rather than underlines. So the
+   alignment lives on the text and on `FIGURE`'s cross axis. */
 const EXPECTED_VALUE: CSSProperties = {
   margin: 0,
-  textAlign: 'center',
+  textAlign: 'right',
+  /* One line, always — see `EXPECTED_LABEL`. */
+  whiteSpace: 'nowrap',
   fontFamily: 'var(--font-heading-serif)',
   fontSize: 19,
   lineHeight: '24px',
@@ -518,9 +619,16 @@ const EXPECTED_VALUE: CSSProperties = {
 }
 /* The note rides on the date's line, in body type — it qualifies the figure
    rather than standing beside it as a second one. */
+/* ⚠ A <p> UNDER THE FIGURE SINCE 2026-10-20, not a span inside it — so it
+   needs its own `margin: 0` and line height, which it inherited before. It
+   is the same 11px secondary treatment as `GOAL_NOTE`; the two are the only
+   sub-lines on the card and they should read alike. */
 const EXPECTED_NOTE: CSSProperties = {
+  margin: 0,
+  textAlign: 'right',
   fontFamily: 'var(--font-body)',
   fontSize: 11,
+  lineHeight: '15px',
   fontWeight: 400,
   color: 'var(--color-text-secondary)',
 }

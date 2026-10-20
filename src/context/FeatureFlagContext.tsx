@@ -2761,7 +2761,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Section labels',
     description:
-      'Where the Atlas Home column\u2019s four section labels sit \u2014 Course progress, Study pace, Estimated completion, Exam readiness. Centred (default): on the same axis as the dials and figures under them. Left: against the column\u2019s left edge. Only the LABELS move; the dials, the pace lines and the completion date stay centred on both arms.',
+      'Where the Atlas Home column\u2019s four section labels sit \u2014 Course progress, Study pace, Estimated completion, Exam readiness. Centred (default): on the same axis as the dials and figures under them. Left: against the column\u2019s left edge. Only the LABELS move; the dials and the pace lines stay centred on both arms. \u26a0 The ESTIMATED COMPLETION and state-exam labels stopped following this on 2026-10-20, when those rows were pinned label-left / figure-right \u2014 neither arm moves them now.',
     defaultEnabled: true,
     defaultVariant: 'center',
     variants: [

@@ -119,15 +119,55 @@ describe('the Add Date prompt on Jill/Atlas-Main', () => {
     renderHome()
     expect(screen.getByText(/\|\s+18 Days/)).toBeTruthy()
     expect(screen.getByText(/FLORIDA STATE EXAM/)).toBeTruthy()
-    /* ⚠ A FUNCTION MATCHER: the pace row draws the date and its note as two
-       spans (`expected`'s own shape), so the string exists only once they are
-       joined — a plain regex looks for it inside one element and misses. */
-    const row = screen.getByText(
-      (_t, el) =>
-        el?.textContent?.trim() ===
-        `${formatPaceDateLong(isoPlusDays(FIXTURE_TODAY, 18))} · 18 days`,
-    )
-    expect(row).toBeTruthy()
+    /* ⚠ TWO LINES NOW, NOT A ` · ` PAIR — 2026-10-20, when the figure rows
+       were split to the two edges and the note moved under the figure
+       ("the (days remaining) small text underneath the date"). This read the
+       joined string, which the separator is what made readable; the SUBJECT
+       is unchanged — one subtraction reaching both places — so it matches
+       the figure block that holds the pair instead. */
+    const date = formatPaceDateLong(isoPlusDays(FIXTURE_TODAY, 18))
+    const figure = screen.getByText(date).parentElement!
+    /* ⚠ "(in 18 days)" SINCE 2026-10-20 ("change them both to (in ## days)"),
+       which is also when Estimated completion gained a count of its own. The
+       parentheses are the point: the line is a gloss on the date above it,
+       not a second figure. The SUBJECT is still one subtraction reaching
+       both places — Step 2's stop and this row. */
+    expect(figure.textContent).toBe(`${date}(in 18 days)`)
+  })
+
+  /**
+   * BOTH FIGURES COUNT, AND IN ONE VOICE (2026-10-20, Jillienne: "add the
+   * days underneath this section too. change them both to (in ## days)").
+   *
+   * ⚠ THE PHRASING IS THE SUBJECT, not the arithmetic — the case above
+   * already pins that the exam's count is the page's one subtraction. What
+   * can drift here is the two rows falling back into two voices, which is
+   * the state this replaces: a bare "18 days" under the exam and nothing at
+   * all under the completion date.
+   */
+  it('counts under the completion date too, in the same parenthesised form', () => {
+    renderHome()
+    const completion = screen.getByText('Estimated completion').parentElement!
+    expect(completion.textContent).toMatch(/\(in \d+ days?\)$/)
+  })
+
+  it('says "(today)" rather than "(in 0 days)" on the day itself', () => {
+    /* Reachable only on the exam row — a reviewer can type today's date, and
+       `paceFit.days` never lands on zero. */
+    /* ⚠ `isoPlusDays(FIXTURE_TODAY, 0)`, NOT `FIXTURE_TODAY` — the fixture
+       is a Date and the store takes `YYYY-MM-DD`, so writing it directly
+       fails the regex, stores nothing, and the case passes or fails on a
+       page with no exam date at all. */
+    writeExamDate(isoPlusDays(FIXTURE_TODAY, 0))
+    renderHome()
+    expect(screen.getByText('(today)')).toBeTruthy()
+    expect(screen.queryByText('(in 0 days)')).toBeNull()
+  })
+
+  it('keeps the singular at one day out', () => {
+    writeExamDate(isoPlusDays(FIXTURE_TODAY, 1))
+    renderHome()
+    expect(screen.getByText('(in 1 day)')).toBeTruthy()
   })
 
   /* ⚠ THE CASE THAT ENTITLES THE PAGE TO READ THE DATE AT ALL. Without Remove

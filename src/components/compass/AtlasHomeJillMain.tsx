@@ -237,6 +237,30 @@ export const ZERO_ACCESS_DAYS = 30
 const LINKS_OFF = true
 const NO_LINK = () => {}
 
+/**
+ * HOW LONG FROM NOW, UNDER A DATE — 2026-10-20, Jillienne: "add the days
+ * underneath this section too. change them both to (in ## days)".
+ *
+ * ⚠ ONE PHRASE FOR BOTH ROWS. The pace card's two figures — the estimated
+ * completion date and the booked exam — are the same kind of fact, a day in
+ * the future, and they sat in two different voices: one had no count at all
+ * and the other read a bare "18 days". A reader comparing them should not
+ * have to notice that they are counted the same way; the parentheses are
+ * what make the line read as a gloss on the date above it rather than as a
+ * second figure.
+ *
+ * ⚠ THE EDGES ARE NOT "in 0 days". A count only makes sense while the date
+ * is ahead, so today says so and a date behind us says that instead — both
+ * reachable on the exam row, which takes whatever date a reviewer typed.
+ * `paceFit.days` cannot be negative, so the completion date only ever uses
+ * the first arm.
+ */
+function inDaysNote(days: number): string {
+  if (days < 0) return '(date has passed)'
+  if (days === 0) return '(today)'
+  return `(in ${days} ${days === 1 ? 'day' : 'days'})`
+}
+
 export function AtlasHomeJillMain({
   path,
   courseTitle,
@@ -983,12 +1007,10 @@ export function AtlasHomeJillMain({
                     ? {
                         label: state ? `${state} state exam`.toUpperCase() : 'STATE EXAM',
                         value: formatPaceDateLong(examDate),
-                        note:
-                          examDays < 0
-                            ? 'date has passed'
-                            : examDays === 0
-                              ? 'today'
-                              : `${examDays} ${examDays === 1 ? 'day' : 'days'}`,
+                        /* The three arms moved into `inDaysNote` on
+                           2026-10-20 so this row and Estimated completion
+                           count in one voice — see the note there. */
+                        note: inDaysNote(examDays),
                       }
                     : undefined
                 }
@@ -1024,6 +1046,18 @@ export function AtlasHomeJillMain({
                            at 19px, where the short form is for dates inside
                            sentences. See `formatPaceDateLong`. */
                         value: formatPaceDateLong(paceFit.finishIso),
+                        /* ⚠ A NOTE HERE AGAIN, AND IT IS A DIFFERENT ONE
+                           (2026-10-20, Jillienne: "add the days underneath
+                           this section too"). The note dropped on 10-19 was
+                           "At current pace" — a qualifier on the date, which
+                           had nowhere to go on a one-line row and was wrong
+                           at 0% anyway, where there is no current pace to be
+                           at. This is a COUNT, it is true at every state,
+                           and the row has a second line for it now.
+                           ⚠ `paceFit.days` — the model's own span, the same
+                           one the week goal is rounded from, so the date and
+                           the count cannot describe two different plans. */
+                        note: inDaysNote(paceFit.days),
                       }
                     : undefined
                 }
