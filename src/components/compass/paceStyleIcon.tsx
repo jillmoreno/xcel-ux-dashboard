@@ -1,4 +1,4 @@
-import { GaugeLight, GaugeSolid, GaugeThin } from '@/icons'
+import { Gauge, GaugeLight, GaugeThin } from '@/icons'
 import type { StudyStyle } from '@/lib/studyPace'
 
 /**
@@ -15,11 +15,19 @@ import type { StudyStyle } from '@/lib/studyPace'
  * Reconstructing them from the `gauge-thin` path would be inventing licensed
  * artwork, so it is not done here.
  *
- * WHAT IT DOES INSTEAD, and it is a real scale rather than a placeholder: the
- * three gauge WEIGHTS already vendored — Thin, Light, Solid — read as light to
- * heavy, which is the same axis the needle would carry. The silhouette does
- * not change between states, so the card does not jump, and swapping to needle
- * positions is this one map.
+ * WHAT IT DOES INSTEAD: the gauge files already vendored — Thin, Light and
+ * Regular (2026-10-20, Jillienne: "use the regular style, not solid"; Solid
+ * was Crammer's until then and read as a filled disc beside two outlines).
+ *
+ * ⚠ REGULAR IS NOT A HEAVIER LIGHT, and this is worth seeing before judging
+ * the set. `gauge.svg` is FA 7.3.1's `gauge`, whose NEEDLE POINTS UP-RIGHT; 
+ * `gauge-thin` and `gauge-light` both point STRAIGHT UP. So the three no
+ * longer read as one weight ramp — Crammer's needle is angled and the other
+ * two are not, which is accidentally closer to the needle-position set this is
+ * standing in for, and accidentally inconsistent between Average and Thorough,
+ * which now differ by stroke weight alone. (`gauge` also has a 640 viewBox
+ * against the others' 512; `makeIcon` sizes by width/height so both render at
+ * the same box.) Vendoring `gauge-low` / `gauge-high` resolves it properly.
  *
  * TO FINISH IT:
  *   fa icons --json --version 7.3.1 --name gauge-low  --svg-format html --svg-family-style classic,light
@@ -36,7 +44,7 @@ import type { StudyStyle } from '@/lib/studyPace'
 export function paceIconFor(style: StudyStyle, size = 33) {
   switch (style) {
     case 'crammer':
-      return <GaugeSolid size={size} aria-hidden />
+      return <Gauge size={size} aria-hidden />
     case 'thorough':
       return <GaugeThin size={size} aria-hidden />
     default:
