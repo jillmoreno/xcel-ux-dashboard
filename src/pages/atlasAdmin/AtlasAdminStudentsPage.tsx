@@ -523,7 +523,7 @@ const TILE: CSSProperties = {
   cursor: 'pointer',
   outline: 'none',
 }
-const TILE_ACTIVE: CSSProperties = { outline: '2px solid var(--admin-atlas-primary-400)', outlineOffset: -2, boxShadow: 'var(--admin-shadow-tile-active)' }
+const TILE_ACTIVE: CSSProperties = { outline: '1px solid var(--admin-atlas-primary-400)', outlineOffset: -1, boxShadow: 'var(--admin-shadow-tile-active)' }
 const TILE_NUMBER: CSSProperties = {
   margin: '4px 0 0',
   fontFamily: 'var(--admin-font-heading)',
