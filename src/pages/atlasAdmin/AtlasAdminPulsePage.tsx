@@ -98,6 +98,12 @@ export function AtlasAdminPulsePage() {
     setReminded(true)
     showToast(`Auto reminders sent to ${behind.length} candidates quiet for a week or more`)
   }
+  // Need intervention shows it twice: in its Action now box and after Full list.
+  const remindButton = (
+    <button type="button" disabled={reminded} onClick={sendReminders} style={{ ...ATLAS_BUTTON_PRIMARY, opacity: reminded ? 0.6 : 1 }}>
+      {reminded ? 'Reminders sent' : 'Send auto reminders'}
+    </button>
+  )
 
   return (
     <div style={PAGE}>
@@ -150,17 +156,15 @@ export function AtlasAdminPulsePage() {
             <p style={{ margin: 0 }}>
               <strong style={{ fontFamily: HEADING, fontSize: 28, color: 'var(--admin-ink)' }}>{pulse.offTrack.length}</strong> <span style={{ fontSize: 13, color: 'var(--admin-text)' }}>off track — done with no prep, or gone quiet</span>
             </p>
-            <Action>Send auto reminders to the candidates quiet for a week or more first, then review the full list.</Action>
+            <Action button={remindButton}>Send auto reminders to the candidates quiet for a week or more first, then review the full list.</Action>
             {pulse.offTrack.slice(0, 4).map((l) => (
               <Person key={l.id} learner={l} pill="Off track" tone="amber" line={l.prepPct === null ? 'Course done, prep not started' : `${l.prepPct}% toward exam prep`} />
             ))}
             <div style={{ display: 'flex', gap: 8 }}>
-              <button type="button" disabled={reminded} onClick={sendReminders} style={{ ...ATLAS_BUTTON_PRIMARY, flex: 1, opacity: reminded ? 0.6 : 1 }}>
-                {reminded ? 'Reminders sent' : 'Send auto reminders'}
-              </button>
               <Link to={students('quiet7')} style={{ ...ATLAS_BUTTON_SECONDARY, textDecoration: 'none' }}>
                 Full list
               </Link>
+              {remindButton}
             </div>
           </Card>
 
