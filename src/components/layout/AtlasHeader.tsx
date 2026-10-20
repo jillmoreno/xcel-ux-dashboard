@@ -221,7 +221,17 @@ export function AtlasHeader({
                     surface, not in this row, and nothing about it was
                     asked. */}
                 <CircleUser size={22} aria-hidden />
-                {user.name}
+                {/* THE NAME SEMI-BOLD, THE MODE REGULAR after it — 2026-10-20,
+                    Eric: "add space after user name and add (Admin)". Only
+                    with a mode menu; without one the trigger is the name
+                    alone, at the pill's own weight, as it was. */}
+                {modeMenu ? (
+                  <span>
+                    <span style={{ fontWeight: 600 }}>{user.name}</span> <span style={{ fontWeight: 400 }}>({modeMenu.mode === 'admin' ? 'Admin' : 'Learner'})</span>
+                  </span>
+                ) : (
+                  user.name
+                )}
               </>
             }
             panelStyle={PROFILE_PANEL}
