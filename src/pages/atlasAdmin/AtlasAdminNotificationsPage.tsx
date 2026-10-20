@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { EnvelopeRegular, XmarkRegular } from '@/icons'
 import { ADMIN_NOTIFICATIONS, type NotificationAction, type NotificationDef, type NotificationPreview } from '@/data/atlasAdmin/notifications'
@@ -76,6 +76,15 @@ export function AtlasAdminNotificationsPage() {
   }
 
   const sendSample = () => showToast(`Sample sent to ${ADMIN_EMAIL}`)
+  const previewRef = useRef<HTMLDivElement>(null)
+  const [previewH, setPreviewH] = useState(0)
+  useEffect(() => {
+    const el = previewRef.current
+    if (!el) return
+    const ro = new ResizeObserver(() => setPreviewH(el.offsetHeight))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   return (
     /* On the Atlas Global Navigation palette, CTAs on XCEL red (2026-10-20,
@@ -181,7 +190,10 @@ export function AtlasAdminNotificationsPage() {
           })}
         </div>
 
-        <div style={{ position: 'sticky', top: 104, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {/* Pinned 40px under the global nav; a column taller than the window
+            scrolls with the page until its bottom is 40px from the window's,
+            then pins there instead. */}
+        <div ref={previewRef} style={{ position: 'sticky', top: `min(calc(var(--admin-header-h, 0px) + 40px), calc(100vh - ${previewH}px - 40px))`, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {sel.preview ? <EmailPreview title={sel.title} onSample={sendSample} joined={sel.group === 'admin'} p={sel.id === 'invite' ? { ...sel.preview, body: sel.preview.body.map((b) => (b.startsWith('“') ? `“${note}” Cody McClintock` : b)) } : sel.preview} /> : <ProgressPreview title={sel.title} onSample={sendSample} joined={sel.group === 'admin'} learners={learners} />}
           {/* Recipients joins the preview above: no gap, square where they meet, the preview's bottom rule the only line between. */}
           {sel.group === 'admin' ? (

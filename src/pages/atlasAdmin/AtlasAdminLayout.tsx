@@ -1,4 +1,4 @@
-import { useEffect, type ComponentType, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { AngleRightRegular, BookOpen, Bell, Building, ChartSimple, CircleDollar, Envelope, Gear, IdCard, LocationDot, UserGroup, Users } from '@/icons'
 import { AtlasHeader } from '@/components/layout/AtlasHeader'
@@ -80,6 +80,19 @@ export function AtlasAdminLayout() {
     logEvent('page_view', pathname)
   }, [pathname, logEvent])
 
+  /* THE GLOBAL NAV PINS (2026-10-20, Eric). Its height is measured and
+     published as `--admin-header-h`, so the sidebar and any sticky column
+     on a page sit below it rather than under it. */
+  const headerRef = useRef<HTMLDivElement>(null)
+  const [headerH, setHeaderH] = useState(0)
+  useEffect(() => {
+    const el = headerRef.current
+    if (!el) return
+    const ro = new ResizeObserver(() => setHeaderH(el.offsetHeight))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
   useEffect(() => {
     const prev = document.title
     document.title = `${title} · Atlas Admin`
@@ -89,7 +102,8 @@ export function AtlasAdminLayout() {
   }, [title])
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--admin-page)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--admin-page)', ['--admin-header-h' as string]: `${headerH}px` }}>
+      <div ref={headerRef} style={{ position: 'sticky', top: 0, zIndex: 40 }}>
       <AtlasHeader
         current={null}
         user={{ name: `${account.firstName} ${account.lastName}`, email: 'jordan.navarro@gmail.com', photoUrl: avatarOverride ?? account.avatarUrl }}
@@ -104,6 +118,7 @@ export function AtlasAdminLayout() {
           onSwitch: () => navigate(learnerHome),
         }}
       />
+      </div>
     <div style={APP}>
       {/* With the Quick Links card the sidebar is the page's own colour, no
           rule beside it (2026-10-20, Eric's request) — the card is the edge. */}
@@ -211,9 +226,9 @@ const APP: CSSProperties = {
 }
 const SIDEBAR: CSSProperties = {
   position: 'sticky',
-  top: 0,
+  top: 'var(--admin-header-h, 0px)',
   alignSelf: 'flex-start',
-  height: '100vh',
+  height: 'calc(100vh - var(--admin-header-h, 0px))',
   boxSizing: 'border-box',
   width: 264,
   flex: 'none',
