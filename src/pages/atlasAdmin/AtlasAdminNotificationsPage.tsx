@@ -89,7 +89,7 @@ export function AtlasAdminNotificationsPage() {
             const list = ADMIN_NOTIFICATIONS.filter((n) => n.group === g.id)
             return (
               <div key={g.id} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <section style={{ ...CARD, borderRadius: 12, overflow: 'hidden' }}>
+                <section style={{ ...CARD, borderRadius: 14, overflow: 'hidden' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '24px 24px 14px', borderBottom: '1px solid var(--admin-rule)' }}>
                     <div>
                       <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--admin-ink)' }}>{g.title}</h3>
@@ -165,7 +165,7 @@ export function AtlasAdminNotificationsPage() {
                   })}
                 </section>
                 {g.id === 'admin' ? (
-                  <div style={{ ...CARD, borderRadius: 12, padding: 24, background: 'var(--admin-fill-soft)' }}>
+                  <div style={{ ...CARD, borderRadius: 14, padding: 24, background: 'var(--admin-fill-soft)' }}>
                     <p style={{ margin: 0, fontSize: 12, color: 'var(--admin-text)' }}>
                       No recruit gets more than one email or text from XCEL in 7 days, whatever is switched on here.
                     </p>
@@ -188,7 +188,7 @@ export function AtlasAdminNotificationsPage() {
           </div>
           {sel.preview ? <EmailPreview p={sel.id === 'invite' ? { ...sel.preview, body: sel.preview.body.map((b) => (b.startsWith('“') ? `“${note}” Cody McClintock` : b)) } : sel.preview} /> : <ProgressPreview learners={learners} />}
           {sel.group === 'admin' ? (
-            <section style={{ ...CARD, borderRadius: 12, padding: 24 }}>
+            <section style={{ ...CARD, borderRadius: 14, padding: 24 }}>
               <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 700, color: 'var(--admin-ink)' }}>Recipients</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
                 <span style={{ ...PILL, background: 'var(--admin-brand)', color: 'var(--admin-surface)' }}>{ADMIN_EMAIL}</span>
@@ -278,7 +278,7 @@ export function AtlasAdminNotificationsPage() {
 
 function EmailPreview({ p }: { p: NotificationPreview }) {
   return (
-    <section style={{ ...CARD, borderRadius: 12, overflow: 'hidden', borderTop: '3px solid var(--admin-brand)' }}>
+    <section style={{ ...CARD, borderRadius: 14, overflow: 'hidden', borderTop: '3px solid var(--admin-brand)' }}>
       <div style={{ padding: '24px 24px 10px', background: 'var(--admin-fill-soft)', borderBottom: '1px solid var(--admin-rule)', fontSize: 11, color: 'var(--admin-text)', lineHeight: 1.6 }}>
         <div>From {p.from}</div>
         <div>To {p.to}</div>
@@ -321,7 +321,7 @@ function ProgressPreview({ learners }: { learners: ReturnType<typeof useAdminSto
   const expiring = live.filter((l) => l.stage === 'stalled').slice(0, 3)
   const search = window.location.search
   return (
-    <section style={{ ...CARD, borderRadius: 12, overflow: 'hidden', borderTop: '3px solid var(--admin-brand)' }}>
+    <section style={{ ...CARD, borderRadius: 14, overflow: 'hidden', borderTop: '3px solid var(--admin-brand)' }}>
       <div style={{ padding: '24px 24px 10px', background: 'var(--admin-fill-soft)', borderBottom: '1px solid var(--admin-rule)', fontSize: 11, color: 'var(--admin-text)', lineHeight: 1.6 }}>
         <div>From XCEL Solutions</div>
         <div>To Cody McClintock</div>
