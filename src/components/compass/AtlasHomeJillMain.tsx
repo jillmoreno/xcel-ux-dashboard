@@ -1608,12 +1608,10 @@ function ExamDateScheduled({
   examDate,
   today,
   onAdd,
-  onRemove,
 }: {
   examDate: string
   today: Date
   onAdd: () => void
-  onRemove: () => void
 }) {
   const days = daysUntil(examDate, today)
   const d = dateFromIso(examDate)
@@ -1633,17 +1631,19 @@ function ExamDateScheduled({
       <span style={EXAM_SCHEDULED_BODY}>
         <span style={EXAM_SCHEDULED_HEAD}>
           <span style={EXAM_SCHEDULED_LABEL}>Scheduled</span>
+          {/* ⚠ EDIT ALONE, as the mock has it — Remove moved into the
+              calendar's footer on 2026-10-20 ("move 'remove' to the left side
+              of this line, make it a red link cta").
+
+              ⚠ IT IS STILL REACHABLE, AND THAT MATTERS more than where it
+              sits: the pace model reads this date, so the page must be able to
+              give it up or it is acting on an input it cannot undo — the whole
+              of the bug `main`'s copy was fixed for. Edit → Remove is one
+              click deeper than it was, not gone. If Edit ever stops opening
+              the calendar, the way out goes with it. */}
           <span style={EXAM_SCHEDULED_ACTIONS}>
             <button type="button" className="cre-compass-v2-link" style={EXAM_EDIT} onClick={onAdd}>
               Edit
-            </button>
-            {/* ⚠ REMOVE IS WHAT ENTITLES THE PACE MODEL TO READ THIS DATE —
-                see the note at `studyPace`. The mock shows only Edit, and Edit
-                alone would leave a learner able to MOVE the date but never to
-                say they no longer have one, which is the baseline's bug in a
-                politer costume. It is the quiet half of the pair. */}
-            <button type="button" style={EXAM_REMOVE} onClick={onRemove}>
-              Remove
             </button>
           </span>
         </span>
@@ -1679,7 +1679,7 @@ function ExamDateScheduled({
  * The heading and the sub-line stay above the grid: the card is still asking
  * the question while the learner answers it.
  */
-function ExamDatePickerPanel({ today, onCancel, onSave, examDate }: ExamPromptWiring) {
+function ExamDatePickerPanel({ today, onCancel, onSave, onRemove, examDate }: ExamPromptWiring) {
   return (
     <span style={{ ...EXAM_CARD, flexDirection: 'column', alignItems: 'stretch', gap: 10 }}>
       <span style={EXAM_CARD_TEXT}>
@@ -1695,6 +1695,11 @@ function ExamDatePickerPanel({ today, onCancel, onSave, examDate }: ExamPromptWi
           today={today}
           onCancel={onCancel}
           onSave={(date) => onSave(isoFromDate(date))}
+          /* ⚠ ONLY WHEN THERE IS A DATE TO REMOVE. Reached by Edit, never by
+             Add Date, so the first-time flow is Cancel / Set Exam Date exactly
+             as it was — a red Remove under a question nobody has answered is a
+             destructive control with nothing to destroy. */
+          onRemove={examDate ? onRemove : undefined}
         />
       </span>
     </span>
@@ -1728,7 +1733,6 @@ export function ExamDateQuestionPill(wiring: ExamPromptWiring) {
           examDate={wiring.examDate}
           today={wiring.today}
           onAdd={wiring.onAdd}
-          onRemove={wiring.onRemove}
         />
       </div>
     )
@@ -1772,7 +1776,6 @@ function ExamDatePrompt({
           examDate={wiring.examDate}
           today={wiring.today}
           onAdd={wiring.onAdd}
-          onRemove={wiring.onRemove}
         />
         {onExamInfo ? <StopLink label="Exam Information" onOpen={onExamInfo} /> : null}
       </span>
@@ -2837,16 +2840,6 @@ const EXAM_EDIT: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 13,
   lineHeight: '18px',
-}
-const EXAM_REMOVE: CSSProperties = {
-  padding: 0,
-  border: 0,
-  background: 'none',
-  cursor: 'pointer',
-  fontFamily: 'var(--font-body)',
-  fontSize: 11,
-  lineHeight: '18px',
-  color: 'var(--color-text-secondary)',
 }
 /* The calendar's white ground inside the Primary 100 card. 12 to the card's
    own 12, so the inner corner reads as concentric rather than coincidental. */

@@ -41,6 +41,7 @@ export function AtlasExamCalendar({
   saveLabel = 'Set Exam Date',
   onCancel,
   onSave,
+  onRemove,
 }: {
   /** The date to open on and show selected. Null opens on `today`'s month. */
   initialDate?: Date | null
@@ -50,6 +51,18 @@ export function AtlasExamCalendar({
   saveLabel?: string
   onCancel: () => void
   onSave: (date: Date) => void
+  /**
+   * Clear the date entirely — drawn as a red link at the FAR LEFT of the
+   * footer, opposite Cancel and Set Exam Date (2026-10-20, Jillienne: "move
+   * 'remove' to the left side of this line, make it a red link cta").
+   *
+   * ⚠ OPTIONAL, AND ABSENT IS THE DEFAULT, which is what keeps this component
+   * shared. `AtlasExamDateCard` passes nothing, so Eric's card's footer is the
+   * pair it has always been. The Atlas Home passes it only when a date already
+   * exists — there is nothing to remove while one is being set for the first
+   * time, and a destructive control that does nothing is worse than no control.
+   */
+  onRemove?: () => void
 }) {
   const today = useMemo(() => startOfDay(todayProp ?? new Date()), [todayProp])
   const anchor = initialDate ?? today
@@ -118,7 +131,25 @@ export function AtlasExamCalendar({
           )
         })}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 16 }}>
+      {/* ⚠ `space-between` ONLY WHEN THERE IS SOMETHING ON THE LEFT. With no
+          Remove the row must stay `flex-end`, or Cancel drifts to the far side
+          on Eric's card and the pair stops reading as a pair. */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: onRemove ? 'space-between' : 'flex-end',
+          gap: 16,
+        }}
+      >
+        {onRemove ? (
+          <button type="button" style={REMOVE_LINK} onClick={onRemove}>
+            Remove
+          </button>
+        ) : null}
+        {/* The pair keeps its own 16 against each other when Remove pushes
+            them right — the row's gap only separates the two groups. */}
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 16 }}>
         <button type="button" className="cre-compass-v2-link" style={TEXT_LINK} onClick={onCancel}>
           Cancel
         </button>
@@ -131,6 +162,7 @@ export function AtlasExamCalendar({
         >
           {saveLabel}
         </button>
+        </span>
       </div>
     </div>
   )
@@ -222,4 +254,27 @@ const DAY_PICKED: CSSProperties = {
   background: 'var(--color-atlas-cal-ink, var(--color-compass-page-button))',
   color: '#ffffff',
   fontWeight: 700,
+}
+
+/* ⚠ A LINK, NOT A BUTTON, AND NOT `cre-compass-v2-link` — 2026-10-20. It wears
+   Cancel's shape (11/700, no ground, no border) so the footer reads as one
+   row, but it cannot take that class: the class carries the brand's button
+   colour, which is the whole point of the class and the opposite of what a
+   destructive control should say. `--color-error-600` is the token the status
+   text uses, dark enough to pass against the card's white ground where
+   `error-500` does not. */
+const REMOVE_LINK: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 4,
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  cursor: 'pointer',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 11,
+  lineHeight: '19.5px',
+  color: 'var(--color-error-600)',
+  whiteSpace: 'nowrap',
 }

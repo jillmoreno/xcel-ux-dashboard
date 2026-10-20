@@ -109,7 +109,6 @@ describe('the Add Date prompt on Jill/Atlas-Main', () => {
       ),
     ).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Edit' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Remove' })).toBeTruthy()
   })
 
   /* ⚠ ONE SUBTRACTION, PRINTED TWICE — the defect visible inside the mock,
@@ -134,23 +133,46 @@ describe('the Add Date prompt on Jill/Atlas-Main', () => {
   /* ⚠ THE CASE THAT ENTITLES THE PAGE TO READ THE DATE AT ALL. Without Remove
      this Home would be acting on an input it cannot undo, which is the whole of
      the bug `main`'s copy was fixed for — so this is not a convenience test. */
-  it('removes it again, and the prompt comes back', () => {
+  /* ⚠ REMOVE LIVES IN THE CALENDAR'S FOOTER since 2026-10-20 ("move 'remove'
+     to the left side of this line, make it a red link cta"), so the way out is
+     Edit → Remove. One click deeper than it was, and still the thing that
+     entitles this page to let an exam date drive the pace model. */
+  it('removes it again, via Edit, and the prompt comes back', () => {
     writeExamDate(isoPlusDays(FIXTURE_TODAY, 40))
     renderHome()
+    expect(screen.queryByRole('button', { name: 'Remove' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }))
     expect(readExamDate()).toBeNull()
     expect(screen.getByRole('button', { name: 'Add Date' })).toBeTruthy()
+  })
+
+  it('…and Remove is not offered while a first date is being set', () => {
+    renderHome()
+    fireEvent.click(screen.getByRole('button', { name: 'Add Date' }))
+    expect(screen.getByRole('button', { name: 'Set Exam Date' })).toBeTruthy()
+    /* Nothing to destroy yet — a red control that does nothing is worse than
+       no control. */
+    expect(screen.queryByRole('button', { name: 'Remove' })).toBeNull()
   })
 
   /* ⚠ AND THE CONSEQUENCE, WHICH IS CORRECT HERE AND WRONG ON MAIN. An exam
      inside the review buffer means no pace fits, and this page may say so
      because Remove is sitting beside the date that caused it. The same input on
      `eric-atlas-e2e` is refused — see `AtlasHomeExamDate.test.tsx`. */
-  it('lets a too-close exam bind the pace card — with a way out beside it', () => {
+  it('lets a too-close exam bind the pace card — with a way out two clicks off', () => {
     writeExamDate(isoPlusDays(FIXTURE_TODAY, 8))
     renderHome()
     expect(screen.getByText(/Not enough time before your exam/)).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Remove' })).toBeTruthy()
+    /* ⚠ THE WAY OUT IS WALKED, NOT ASSERTED PRESENT. Since Remove moved into
+       the calendar's footer, "a dead end" and "a way out" differ only by
+       whether Edit opens the calendar — so the case clicks it. If Edit ever
+       stops opening the calendar, the pace card becomes the dead end `main`'s
+       copy was fixed for and this is what says so. */
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Remove' }))
+    expect(readExamDate()).toBeNull()
+    expect(screen.queryByText(/Not enough time before your exam/)).toBeNull()
   })
 
   it('…while the End-to-End Demo still refuses the same date', () => {
