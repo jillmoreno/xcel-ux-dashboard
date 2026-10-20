@@ -3,7 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ADMIN_LEARNERS, type Learner } from '@/data/atlasAdmin/learners'
 import { ADMIN_INVITES, type Invite } from '@/data/atlasAdmin/invites'
-import { AdminStoreContext, type AdminStore, type AdminTouch, type ProgressReportSettings } from './adminStore'
+import { AdminStoreContext, type AddedDepartment, type AdminStore, type AdminTouch, type ProgressReportSettings } from './adminStore'
 import { AtlasAdminComingSoon, AtlasAdminLayout } from './AtlasAdminLayout'
 import { AtlasAdminStudentsPage } from './AtlasAdminStudentsPage'
 import { AtlasAdminRecruitPage } from './AtlasAdminRecruitPage'
@@ -12,6 +12,8 @@ import { AtlasAdminReportsPage } from './AtlasAdminReportsPage'
 import { AtlasAdminNotificationsPage } from './AtlasAdminNotificationsPage'
 import { AtlasAdminResourcesPage } from './AtlasAdminResourcesPage'
 import { AtlasAdminSettingsPage } from './AtlasAdminSettingsPage'
+import { AtlasAdminDepartmentsPage } from './AtlasAdminDepartmentsPage'
+import { AtlasAdminMyTeamPage } from './AtlasAdminMyTeamPage'
 
 /**
  * ATLAS ADMIN — the app (2026-10-19, feat/atlas-admin). The admin surface
@@ -34,6 +36,8 @@ export function AtlasAdminApp() {
   })
   const setProgressReport = useCallback((patch: Partial<ProgressReportSettings>) => setPR((p) => ({ ...p, ...patch })), [])
   const [sampleRoster, setSampleRoster] = useState(true)
+  const [addedDepartments, setAddedDepartments] = useState<AddedDepartment[]>([])
+  const addDepartment = useCallback((d: AddedDepartment) => setAddedDepartments((prev) => [...prev, d]), [])
   const [toast, setToast] = useState<string | null>(null)
   const timer = useRef<number | undefined>(undefined)
 
@@ -74,8 +78,8 @@ export function AtlasAdminApp() {
     setTouches((prev) => [{ ...t, id: `${at}-${prev.length}`, at }, ...prev])
   }, [])
   const store = useMemo<AdminStore>(
-    () => ({ learners: sampleRoster ? learners : [], sampleRoster, setSampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, toast, showToast }),
-    [learners, sampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, toast, showToast],
+    () => ({ learners: sampleRoster ? learners : [], sampleRoster, setSampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, toast, showToast }),
+    [learners, sampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, toast, showToast],
   )
 
   if (!enabled) {
@@ -95,6 +99,12 @@ export function AtlasAdminApp() {
           <Route path="students/recruit/:recruitId" element={<AtlasAdminRecruitPage />} />
           <Route path="invites" element={<AtlasAdminInvitesPage />} />
           <Route path="reports" element={<AtlasAdminReportsPage />} />
+          <Route path="reports/team-comparison" element={<AtlasAdminDepartmentsPage />} />
+          {/* The reference sends these three on to the pages that answer them. */}
+          <Route path="departments" element={<Navigate to={`../reports/team-comparison${window.location.search}`} replace />} />
+          <Route path="pipeline" element={<Navigate to={`../students${window.location.search}`} replace />} />
+          <Route path="my-department" element={<Navigate to={`../students${window.location.search}`} replace />} />
+          <Route path="my-team" element={<AtlasAdminMyTeamPage />} />
           <Route path="notifications/*" element={<AtlasAdminNotificationsPage />} />
           <Route path="resources" element={<AtlasAdminResourcesPage />} />
           <Route path="settings" element={<AtlasAdminSettingsPage />} />

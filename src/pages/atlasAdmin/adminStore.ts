@@ -35,6 +35,8 @@ export type AdminInvite = {
 /** Something done to a learner this session — a nudge, a call, an email. */
 export type AdminTouch = { id: string; learnerId: string; kind: 'nudge' | 'call' | 'email' | 'exam-date'; note: string | null; at: string }
 
+export type AddedDepartment = { name: string; lead: string }
+
 export type AdminStore = {
   /** The roster, with this session's edits (an exam date set, a report
    *  toggle) applied over the fixture. */
@@ -53,6 +55,10 @@ export type AdminStore = {
    *  empty first-run office. */
   sampleRoster: boolean
   setSampleRoster: (on: boolean) => void
+  /** Departments created this session (Department comparison → Create a
+   *  department) — on top of the fixture's, with no learners yet. */
+  addedDepartments: AddedDepartment[]
+  addDepartment: (dept: AddedDepartment) => void
   toast: string | null
   showToast: (message: string) => void
 }
