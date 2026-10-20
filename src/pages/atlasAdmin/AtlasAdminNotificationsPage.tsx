@@ -158,11 +158,9 @@ export function AtlasAdminNotificationsPage() {
                               {ACTION_LABEL[a]}
                             </button>
                           ))}
-                          {n.id !== 'progress-report' ? (
-                            <button type="button" onClick={() => setSelected(n.id)} className="cre-admin-text-link" style={ACTION}>
-                              Preview
-                            </button>
-                          ) : null}
+                          <button type="button" onClick={() => setSelected(n.id)} className="cre-admin-text-link" style={ACTION}>
+                            Preview
+                          </button>
                         </div>
                       </div>
                     )
