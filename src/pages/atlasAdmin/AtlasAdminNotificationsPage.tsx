@@ -328,7 +328,6 @@ function ProgressPreview({ learners }: { learners: ReturnType<typeof useAdminSto
         <div style={{ fontWeight: 600, color: 'var(--admin-ink)' }}>{total} recruits need a nudge</div>
       </div>
       <div style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <span aria-hidden style={{ height: 3, background: 'var(--admin-brand)', borderRadius: 2 }} />
         <h3 style={{ margin: 0, fontFamily: 'Georgia, serif', fontSize: 22, fontWeight: 700, color: 'var(--admin-ink)' }}>
           <span style={{ color: 'var(--admin-brand)' }}>{total} recruits</span> need a nudge
         </h3>
