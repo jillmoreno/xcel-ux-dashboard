@@ -250,6 +250,14 @@ export function ComplianceDocumentPreviewPage() {
             <code style={CODE}>_XCEL-PE Affidavits and EAs</code> set, in the six content shapes
             they fall into. One modal shell reconfigures from each row — pick one to open it.
           </p>
+          {/* ⚠ THE TWO SURFACES ARE ONE PIECE OF DOCUMENTATION, so each links
+              to the other and either address hands over the whole of it. A
+              reviewer sent only the picker would otherwise never meet the
+              argument it was built to make. */}
+          <a href="/prototypes/xcel-compliance-documents.html" style={DOC_LINK}>
+            Read the write-up — the six shapes, every state’s coverage, and what reading the
+            files turned up →
+          </a>
           {completed && (
             <p style={DONE} role="status">
               Completed “{completed}” — the modal called <code style={CODE}>onComplete</code>.
@@ -508,6 +516,14 @@ const LEAD: CSSProperties = {
   fontSize: 14,
   lineHeight: '22px',
   color: 'var(--color-text-secondary)',
+}
+
+const DOC_LINK: CSSProperties = {
+  alignSelf: 'flex-start',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  fontWeight: 600,
+  color: 'var(--color-action)',
 }
 
 const DONE: CSSProperties = {
