@@ -313,9 +313,9 @@ function EmailPreview({ p }: { p: NotificationPreview }) {
 function ProgressPreview({ learners }: { learners: ReturnType<typeof useAdminStore>['learners'] }) {
   const live = learners.filter((l) => l.stage !== 'licensed' && !l.hiddenFromReport)
   const counts = [
-    { key: 'quiet7', label: 'No activity in the last 7 days', n: live.filter((l) => l.lastActiveDays >= 7).length, tone: 'var(--admin-brand-tint)', edge: 'var(--admin-brand-edge)' },
-    { key: 'low', label: 'Trending low', n: live.filter((l) => l.readiness === 'low').length, tone: 'var(--admin-amber-tint)', edge: 'var(--admin-amber-edge)' },
-    { key: 'quiet2', label: 'Quiet 2 days', n: live.filter((l) => l.lastActiveDays >= 2).length, tone: 'var(--admin-amber-tint)', edge: 'var(--admin-amber-edge)' },
+    { key: 'quiet7', label: 'No activity in the last 7 days', n: live.filter((l) => l.lastActiveDays >= 7).length, tone: 'var(--admin-brand-tint)' },
+    { key: 'low', label: 'Trending low', n: live.filter((l) => l.readiness === 'low').length, tone: 'var(--admin-amber-tint)' },
+    { key: 'quiet2', label: 'Quiet 2 days', n: live.filter((l) => l.lastActiveDays >= 2).length, tone: 'var(--admin-amber-tint)' },
   ]
   const total = live.filter((l) => l.lastActiveDays >= 2 || l.readiness === 'low').length
   const expiring = live.filter((l) => l.stage === 'stalled').slice(0, 3)
@@ -334,7 +334,7 @@ function ProgressPreview({ learners }: { learners: ReturnType<typeof useAdminSto
         </h3>
         <p style={{ margin: 0, fontSize: 13.5, color: 'var(--admin-text)' }}>Nothing broke overnight. These are the people whose next step is waiting on you.</p>
         {counts.map((c) => (
-          <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 16, borderRadius: 10, border: `1px solid ${c.edge}`, background: c.tone, padding: '4px 16px' }}>
+          <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 16, borderRadius: 10, background: c.tone, padding: '4px 16px' }}>
             <span style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: 'var(--admin-ink)', minWidth: 36 }}>{c.n}</span>
             <span style={{ flex: 1, fontSize: 13, color: 'var(--admin-ink)' }}>{c.label}</span>
             <Link to={`${ADMIN_BASE}/students${search}${search ? '&' : '?'}filter=${c.key}`} style={{ fontSize: 13, fontWeight: 600, color: 'var(--admin-brand)', textDecoration: 'none' }}>
