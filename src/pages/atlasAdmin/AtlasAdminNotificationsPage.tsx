@@ -140,7 +140,7 @@ export function AtlasAdminNotificationsPage() {
                           </button>
                         </div>
                         {/* The row's links, across the full row — right edge on the toggle's, a 1px rule 4px above. */}
-                        <div style={{ marginTop: 6, paddingTop: 4, borderTop: '1px solid var(--admin-rule)', display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 12 }}>
+                        <div style={{ marginTop: 10, paddingTop: 4, borderTop: '1px solid var(--admin-rule)', display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 12 }}>
                           {n.actions.map((a) => (
                             <button
                               key={a}
