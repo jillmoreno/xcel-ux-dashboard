@@ -36,6 +36,11 @@ export type DesignSurfaceId =
   | 'compass:course'
   | 'compass:study-planner'
   | 'compass:progress'
+  /* Atlas Admin (`/atlas-admin/*`, feat/atlas-admin) — the whole app is one
+     surface, so the bar carries its own controls there and none of the
+     dashboard's (Brand, Affidavit, Pace standing …), which draw nothing on
+     an admin page. */
+  | 'atlas-admin'
 
 export type DesignSurfaceCtx = {
   surface: DesignSurfaceId | null
@@ -86,4 +91,5 @@ export const DESIGN_SURFACE_LABELS: Record<DesignSurfaceId, string> = {
   'compass:course': 'Compass · Learn',
   'compass:study-planner': 'Compass · Study planner',
   'compass:progress': 'Compass · Progress',
+  'atlas-admin': 'Atlas Admin',
 }

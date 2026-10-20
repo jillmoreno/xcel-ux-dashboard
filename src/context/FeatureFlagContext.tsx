@@ -2384,6 +2384,53 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     owner: 'eric',
   },
   {
+    key: 'atlas-admin-flow',
+    /* ATLAS ADMIN — JUMP TO A FLOW (2026-10-20, Eric: "add a design control
+       dropdown for the flows … that do not have a left sidebar link"). The
+       reference reaches these by address or from inside another page, so a
+       reviewer would otherwise need the URLs. Picking one goes there and the
+       control returns to "Jump to…" — it is a jump menu, not a state, which
+       is why `atlas-admin` reads it and resets it rather than anything
+       drawing from it.
+
+       `surfaces: ['atlas-admin']` puts it on the admin app alone, and the app
+       declaring that surface is also what takes the dashboard's controls off
+       the bar there. `versions` is the default the admin route resolves to. */
+    surface: 'design',
+    owner: 'eric',
+    surfaces: ['atlas-admin'],
+    versions: ['eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Flow',
+    description:
+      'Atlas Admin: jump to a page with no sidebar link \u2014 Pulse, the public pages (Partner with us, welcome inbox, onboarding, a recruit\u2019s invite and event join) and the admin pages reached from inside others.',
+    defaultEnabled: true,
+    variants: [
+      { value: 'jump', label: 'Jump to\u2026' },
+      { value: 'pulse', label: 'Pulse briefing' },
+      { value: 'partner-with-us', label: 'Partner with us' },
+      { value: 'welcome', label: 'Welcome inbox' },
+      { value: 'onboarding', label: 'Onboarding wizard' },
+      { value: 'invite/summit-insurance-group/coleen-acker', label: 'Recruit invite' },
+      { value: 'join/event/coleen-acker', label: 'Career event join' },
+      { value: 'reports/team-comparison', label: 'Department comparison' },
+      { value: 'my-team', label: 'My team' },
+      { value: 'assignments', label: 'Assignment rules' },
+      { value: 'engagement', label: 'Engagement' },
+      { value: 'video-engagement', label: 'Video engagement' },
+      { value: 'learning-center', label: 'Learning center' },
+      { value: 'licenses', label: 'Licenses & seats' },
+      { value: 'organization', label: 'Organization' },
+      { value: 'teams', label: 'Teams' },
+      { value: 'enterprise', label: 'Enterprise insights' },
+      { value: 'pricing', label: 'Pricing' },
+      { value: 'product-offering', label: 'Product offering' },
+      { value: 'internal/portal-analytics', label: 'Portal analytics' },
+    ],
+    defaultVariant: 'jump',
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'e2e-begin-opens-compass-session',
     /* BEGIN COURSE OPENS THE COMPASS SESSION (2026-10-16, Jillienne, with the
        button selected: "make this button go into the compass course"). The

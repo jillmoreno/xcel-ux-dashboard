@@ -1,6 +1,7 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
-import { Navigate, Route, Routes, useParams } from 'react-router-dom'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
+import { useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
+import { useDeclareDesignSurface } from '@/context/designSurface'
 import { ADMIN_DEPARTMENTS, ADMIN_LEARNERS, type Learner } from '@/data/atlasAdmin/learners'
 import { ADMIN_INVITES, type Invite } from '@/data/atlasAdmin/invites'
 import { ADMIN_RULES, type AssignmentRule } from '@/data/atlasAdmin/assignments'
@@ -51,6 +52,18 @@ import { AtlasAdminInvitePage, AtlasAdminJoinEventPage } from './AtlasAdminInvit
  */
 export function AtlasAdminApp() {
   const enabled = useFeatureFlag('atlas-admin').enabled
+  // One design surface for the whole app: the bar shows Atlas Admin's own
+  // controls here, not the dashboard's.
+  useDeclareDesignSurface('atlas-admin')
+  // The Design bar's Flow menu: go to the pick, then read "Jump to…" again.
+  const flow = useFeatureFlag('atlas-admin-flow').variant
+  const { setVariant } = useFeatureFlags()
+  const navigate = useNavigate()
+  useEffect(() => {
+    if (!flow || flow === 'jump') return
+    navigate(`${ADMIN_BASE}/${flow}${window.location.search}`)
+    setVariant('atlas-admin-flow', 'jump')
+  }, [flow, navigate, setVariant])
   const [learners, setLearners] = useState<Learner[]>(() => [...ADMIN_LEARNERS])
   const [touches, setTouches] = useState<AdminTouch[]>([])
   const [invites, setInvites] = useState<Invite[]>(() => [...ADMIN_INVITES])

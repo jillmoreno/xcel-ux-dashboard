@@ -136,6 +136,7 @@ const REBRAND_FLAGS = [
   'atlas-affidavit',
   'atlas-home-long-title',
   'atlas-admin',
+  'atlas-admin-flow',
   'atlas-v3-progress',
   'atlas-v3-link-tiles',
   'atlas-wip-quick-links-side',
