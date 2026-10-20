@@ -276,16 +276,18 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
       // Eric/Atlas V1 came off the picker 2026-10-12 (still renders by link).
       // Eric/Atlas V2 (2026-10-07) — V1 with its own copy of the Home page.
       'eric-atlas-v2',
-      /* ⚠ HYBRID V1 JOINED 2026-10-05 — Jill's, and it sits after the two Atlas
-         entries because it is built FROM them: it takes the Atlas chrome and
-         forks only the home. Reading the picker top to bottom is the lineage. */
-      'hybrid-v1',
-      /* ⚠ AND ITS COPY, 2026-10-07 — "Hybrid - Pacing Exploration", directly
-         behind the version it was forked from, for the same lineage reason
-         Testing 3 sits behind Testing. It is identical to `hybrid-v1` today
-         apart from which home component it draws; the fork exists so pacing
-         ideas cannot reach the baseline. */
-      'hybrid-pacing',
+      /* ⚠ HYBRID V1 AND HYBRID - PACING EXPLORATION STOOD HERE, in that order,
+         from 2026-10-05 and 2026-10-07. Both came off the picker 2026-10-20
+         ("lets archive the rest of Jills"), the same day Jill/Atlas-Main became
+         the default — the picker entry only, as with Testing 2 and Eric/Atlas
+         V1 above, so `?version=hybrid-v1` and `?version=hybrid-pacing` both
+         still resolve and still draw their own Homes. The lineage note they
+         carried is worth keeping: they sat after the Atlas entries because they
+         were built FROM them, taking the Atlas chrome and forking only the
+         home, which is the shape Jill/Atlas-Main uses too.
+         See `hybrid-v1-version` and `hybrid-pacing-version` in
+         archivedItems.ts; restoring either is one line in
+         `DISCOVERABILITY_DASHBOARD_VERSIONS`. */
       'discoverability-learner-focused',
     ])
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).not.toContain(

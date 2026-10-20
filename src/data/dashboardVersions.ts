@@ -698,8 +698,22 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
      It was the Atlas row the DEMO site offered (`maturity: 'ready'`). End-to-End
      Demo took that place on 2026-10-14 — `ready`, and the default. */
   DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V2,
-  DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1,
-  DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_PACING,
+  /* ⚠ HYBRID V1 AND HYBRID - PACING EXPLORATION CAME OFF 2026-10-20, on
+     Jillienne's ask ("lets archive the rest of Jills"), the same way QE
+     Focused, Marketing Focused, Testing 2 and Eric/Atlas V1 did: THIS LIST
+     ONLY. Both consts, both `DashboardVersionId` members, every `?version=`
+     resolution branch, `isHybridVersion` / `isHybridV1Version` /
+     `isHybridPacingVersion`, and both Home components (`HybridHomeV1.tsx`,
+     `HybridPacingHome.tsx`) are KEPT and still render on a deep link —
+     restoring either is re-adding one line here.
+
+     ⚠ BOTH WERE THE DEFAULT ONCE — V1 from 2026-10-06, Pacing from 2026-10-08
+     — so they are the Prototypes baseline's own lineage, not dead ends. They
+     were displaced by the End-to-End Demo on 2026-10-14 and have carried
+     `ready` ever since without being what anyone lands on. Archiving the
+     PICKER ENTRY is what that state had been waiting for.
+
+     See `hybrid-v1-version` and `hybrid-pacing-version` in archivedItems.ts. */
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
 ]
 
@@ -820,8 +834,29 @@ export function defaultDiscoverabilityVersionFor(brand: Brand): string {
      ⚠ AND THE QUESTIONS ARE SEPARATE. This is the swap; `maturity` on each
      entry is "may a stakeholder pick it". Conflating them is how a version gets
      promoted by accident — see the skill. */
+  /* ⚠ JILL/ATLAS-MAIN SINCE 2026-10-20 — Jillienne's call, and hers alone to
+     make ("only she sets the default dashboard version").
+
+     ⚠ READ THIS BEFORE CHANGING IT BACK, OR FORWARD. This is the SECOND and
+     larger of the two acts the notes above keep separating: `status: 'ready'`
+     says a stakeholder MAY pick a version, this says what they LAND on with no
+     `?version=` at all — which is every Prototypes row, since they all open
+     `/dashboard-rebrand?demo=1`. So the default is what "the product is right
+     now" resolves to for anyone who never touches the picker.
+
+     ⚠ AND WHAT IT MEANS HERE IS THAT AN EXPLORATION IS THE LANDING PAGE. Every
+     previous default was the thing being offered as the product; this one is a
+     copy taken to explore the exam-date logic, and its own entry says so. That
+     is a deliberate choice by the one person entitled to make it, not an
+     oversight — but it is the reason to check this line first if a stakeholder
+     reports the demo "looking half-built".
+
+     ⚠ THE END-TO-END DEMO IS NOT RETIRED. `eric-atlas-e2e` keeps its entry,
+     its `ready`, and its place in the picker, exactly as Hybrid V1 and Hybrid -
+     Pacing Exploration kept theirs when they were displaced — so the swap back
+     is this line, not a deploy. */
   return brand === 'xcel'
-    ? DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E.id
+    ? DISCOVERABILITY_DASHBOARD_VERSION_JILL_ATLAS_MAIN.id
     : DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED.id
 }
 

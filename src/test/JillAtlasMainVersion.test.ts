@@ -2,13 +2,19 @@ import { describe, expect, it } from 'vitest'
 import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
   DISCOVERABILITY_DASHBOARD_VERSION_JILL_ATLAS_MAIN,
+  defaultDiscoverabilityVersionFor,
   isAtlasCompassNavVersion,
   isE2ELikeVersion,
   isEricAtlasWhiteLike,
+  isHybridPacingVersion,
+  isHybridV1Version,
+  isHybridVersion,
   isQualifyingEducationVersion,
+  resolveDashboardVersion,
 } from '@/data/dashboardVersions'
 import { designControlsFor } from '@/context/FeatureFlagContext'
 import { ATLAS_HEADER_V2_VERSIONS } from '@/components/layout/atlasHeaderV2'
+import { ARCHIVED_ITEMS } from '@/data/archivedItems'
 
 /**
  * JILL/ATLAS-MAIN IS THE END-TO-END DEMO EVERYWHERE BUT ITS HOME — 2026-10-20,
@@ -30,6 +36,18 @@ import { ATLAS_HEADER_V2_VERSIONS } from '@/components/layout/atlasHeaderV2'
  */
 describe('Jill/Atlas-Main, the End-to-End Demo’s duplicate', () => {
   const ID = DISCOVERABILITY_DASHBOARD_VERSION_JILL_ATLAS_MAIN.id
+
+  /* ⚠ THE DEFAULT SINCE 2026-10-20 — Jillienne's, and hers alone to set. This
+     is the SECOND and larger of the two acts `dashboardVersions` keeps
+     separating: being pickable vs being what a reviewer LANDS on with no
+     `?version=` at all, which is every Prototypes row. Pinned because it is one
+     line and because changing it silently changes what "the product" means. */
+  it('is what a bare ?demo=1 lands on, for XCEL', () => {
+    expect(defaultDiscoverabilityVersionFor('xcel')).toBe(ID)
+    /* ⚠ AND THE DEMO IT COPIES IS NOT RETIRED — it keeps its entry and its
+       place, so the swap back is one line rather than a deploy. */
+    expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).toContain('eric-atlas-e2e')
+  })
 
   it('is Jillienne’s, and is on the picker', () => {
     expect(DISCOVERABILITY_DASHBOARD_VERSION_JILL_ATLAS_MAIN.owner).toBe('jill')
@@ -81,5 +99,48 @@ describe('Jill/Atlas-Main, the End-to-End Demo’s duplicate', () => {
     expect(isE2ELikeVersion('eric-atlas-e2e')).toBe(true)
     const onlyCopy = { versions: [ID] }
     expect(onlyCopy.versions.includes('eric-atlas-e2e')).toBe(false)
+  })
+})
+
+/**
+ * THE REST OF JILLIENNE'S VERSIONS, ARCHIVED — 2026-10-20 ("lets archive the
+ * rest of Jills"), the same day Jill/Atlas-Main became the default.
+ *
+ * ⚠ ARCHIVED MEANS THE PICKER ENTRY AND NOTHING ELSE, which is the convention
+ * QE Focused, Marketing Focused, Testing 2 and Eric/Atlas V1 all went through.
+ * The cases below are the two halves of that: gone from the list, and still
+ * fully resolvable by URL. A later cleanup that deleted the consts would pass
+ * the first and fail the second, which is exactly the mistake worth catching —
+ * `HybridHomeV1` is the only surface rendering the split-flap countdown, and
+ * the only other Home with a wired exam prompt.
+ */
+describe('Hybrid V1 and Hybrid - Pacing Exploration', () => {
+  const GONE = ['hybrid-v1', 'hybrid-pacing']
+
+  it('are off the picker', () => {
+    const ids = DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)
+    for (const id of GONE) expect(ids, id).not.toContain(id)
+  })
+
+  it('…and still resolve, Homes and families intact', () => {
+    for (const id of GONE) {
+      expect(resolveDashboardVersion(id, 'xcel'), id).toBe(id)
+      expect(isHybridVersion(id), id).toBe(true)
+      expect(isAtlasCompassNavVersion(id), id).toBe(true)
+    }
+    /* The one place that asks WHICH hybrid — it picks between two forked Homes,
+       so if this stopped distinguishing them both links would draw one page. */
+    expect(isHybridV1Version('hybrid-v1')).toBe(true)
+    expect(isHybridPacingVersion('hybrid-pacing')).toBe(true)
+    expect(isHybridV1Version('hybrid-pacing')).toBe(false)
+  })
+
+  it('each have an Archive row that says how to re-wire them', () => {
+    for (const id of ['hybrid-v1-version', 'hybrid-pacing-version']) {
+      const row = ARCHIVED_ITEMS.find((r) => r.id === id)
+      expect(row, id).toBeDefined()
+      expect(row?.restoreNote).toMatch(/DISCOVERABILITY_DASHBOARD_VERSIONS/)
+      expect(row?.location).toMatch(/dashboardVersions\.ts/)
+    }
   })
 })

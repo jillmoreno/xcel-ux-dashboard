@@ -71,7 +71,8 @@ beforeEach(() => {
 
 /* ⚠ A VERSION THAT STILL HAS THE GENERIC PROGRESS PICKER (2026-10-16). Eric's
    Atlas versions REPLACE it with their own five-state Progress — the ring and
-   the readiness bands together — and `eric-atlas-e2e` is the brand DEFAULT, so
+   the readiness bands together — and the brand DEFAULT is one of them
+   (`eric-atlas-e2e` until 2026-10-20, `jill-atlas-main` since), so
    a bare `/dashboard-rebrand` no longer draws the generic one at all. Cases
    about the generic picker ask for this rather than quietly exercising the
    other control. */
@@ -291,7 +292,8 @@ describe('DemoControlsBar — a picker with nothing in it', () => {
     { pill: /Navigation/, panel: 'Navigation layout', least: 3, path: undefined as string | undefined },
     /* ⚠ PROGRESS ASKS FOR A NON-ATLAS VERSION (2026-10-16). Eric's Atlas
        versions swap this picker for their own five-state one, and
-       `eric-atlas-e2e` is the brand default — so on a bare route the generic
+       the brand default is one of them (`jill-atlas-main` since 2026-10-20,
+       `eric-atlas-e2e` before) — so on a bare route the generic
        picker is correctly absent. Navigation has no such swap and keeps the
        default route, which is also what makes this a per-picker path rather
        than a change to the whole loop. */
@@ -463,8 +465,8 @@ describe('DemoControlsBar — the Dashboard Version control', () => {
        worse, name a version other than the one rendering. */
     /* ⚠ THE NAME TRACKS `defaultDiscoverabilityVersionFor` AND HAS MOVED WITH
        IT — Testing 3 until 2026-10-06, Hybrid V1 until 2026-10-08, the pacing
-       fork until 2026-10-14, Eric's End-to-End Demo since (`promote-to-prototype`,
-       each time). Spelled out rather than
+       fork until 2026-10-14, Eric's End-to-End Demo until 2026-10-20, and
+       Jill/Atlas-Main — that demo's own duplicate — since. Spelled out rather than
        read from that function: a test that recomputes the answer from the thing
        it is checking passes whatever that thing returns, including a blank
        label, which is the exact failure this pins.
@@ -474,7 +476,7 @@ describe('DemoControlsBar — the Dashboard Version control', () => {
        against either. */
     renderBar('/dashboard-rebrand')
     expect(
-      screen.getByRole('button', { name: /Dashboard version:\s*End-to-End Demo/i }),
+      screen.getByRole('button', { name: /Dashboard version:\s*Jill\/Atlas-Main/i }),
     ).toBeTruthy()
   })
 })

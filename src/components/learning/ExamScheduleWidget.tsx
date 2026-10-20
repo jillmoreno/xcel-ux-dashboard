@@ -339,7 +339,7 @@ export function ExamScheduleWidget({
       )}
 
       {activePhase === 'picking' && (
-        <PickerState
+        <ExamDatePicker
           initialDate={stored}
           stateName={stateName}
           today={today}
@@ -588,7 +588,23 @@ function buildMonthCells(year: number, monthIdx: number): DayCell[] {
   return cells
 }
 
-function PickerState({
+/**
+ * ⚠ EXPORTED 2026-10-20, so Jill/Atlas-Main's Add Date can open THIS picker
+ * rather than a second one.
+ *
+ * Renamed from `PickerState` in the same pass: it is no longer one card's
+ * internal state but the product's one exam-date picker, and "PickerState"
+ * named its place in a four-phase machine that the new caller is not in.
+ *
+ * ⚠ EXPORTING IS NOT FORKING — nothing about this component changed and no
+ * call site moved, so the widget draws exactly what it drew. But it is SHARED
+ * now: a change here reaches Eric's versions and Hybrid V1 as well as the
+ * Atlas Home. That is the right trade for a date picker (two surfaces that
+ * disagree about how a date is picked is the defect this repo keeps paying
+ * for) and the wrong one for anything about the CARD around it — which is why
+ * what moved is the picker alone.
+ */
+export function ExamDatePicker({
   initialDate,
   stateName,
   today,

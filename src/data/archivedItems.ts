@@ -56,6 +56,32 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'hybrid-v1-version',
+    name: 'Hybrid V1 (dashboard version)',
+    what: 'Jillienne\u2019s first Hybrid \u2014 Eric\u2019s Atlas home carrying Testing 3\u2019s coursework treatment. The figures column leads with Course Access and drops Days to Review; Begin Course sits in the title area; Steps 2 and 3 are collapsed by default to keep the first screen to one task; Complete Coursework expands the lessons stop with a completion count and the lesson in progress. It took the Atlas CHROME and forked only the home content, which is the shape every Atlas copy since has used.',
+    location:
+      'FULLY INTACT, exactly as Testing 2 and Eric/Atlas V1 below \u2014 `DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1` in `src/data/dashboardVersions.ts`, its `hybrid-v1` member of `DashboardVersionId`, `isHybridVersion` / `isHybridV1Version`, the `hybridV1` branch in `src/components/membership/v5/LearnerFocusedBand.tsx`, and the Home itself at `src/components/compass/HybridHomeV1.tsx`. Only the entry in `DISCOVERABILITY_DASHBOARD_VERSIONS` was removed, so `?version=hybrid-v1` STILL RESOLVES and still renders its own Home.',
+    flag: '?version=hybrid-v1 (still resolves)',
+    dateRemoved: '2026-10-20',
+    reason:
+      'Jillienne\u2019s call \u2014 "lets archive the rest of Jills", with Jill/Atlas-Main made the default the same day. It was the Prototypes baseline from 2026-10-06 and was displaced by Hybrid - Pacing Exploration two days later, then by the End-to-End Demo on 2026-10-14; it has carried `ready` without being what anyone lands on ever since. The questions it asked \u2014 where Begin Course sits, whether Steps 2 and 3 open, how the lessons stop expands \u2014 were answered and absorbed into the Atlas Homes that followed it.',
+    restoreNote:
+      'Re-add `DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1` to `DISCOVERABILITY_DASHBOARD_VERSIONS` in `src/data/dashboardVersions.ts`, between Eric/Atlas V2 and Learner Focused where it read \u2014 a comment marks the spot. That is the whole restore: one line. \u26a0 WHAT IS AT STAKE IF SOMEONE DELETES MORE THAN THE PICKER LINE: `HybridHomeV1.tsx` is the only surface that renders `ExamScheduleWidget` with `countdown="flip"` (the split-flap board) and with `compact` in a side column, so unwiring the version makes that whole treatment unreachable dead code rather than one line from returning. It is also the ONLY Home with a WIRED exam prompt besides Jill/Atlas-Main \u2014 the worked precedent both the fix of 2026-10-20 and that version\u2019s Add Date wiring cite by name. NOT restored deliberately: nothing else was touched, so no test, fixture or component work is needed, and `HybridPacingOptions.test.tsx` still passes untouched because it addresses the version by `?version=` rather than through the picker.',
+  },
+  {
+    id: 'hybrid-pacing-version',
+    name: 'Hybrid - Pacing Exploration (dashboard version)',
+    what: 'A copy of Hybrid V1 whose subject was the STUDY PACE widget \u2014 what that logic should look like in the layout Hybrid introduced. Everything else about the version was V1\u2019s, deliberately, so a comparison between the two was about pacing and nothing else. Four design controls rode with it: `hybrid-lesson-block`, `hybrid-title-lesson`, `hybrid-pace-standing` and `hybrid-course-expiry`.',
+    location:
+      'FULLY INTACT \u2014 `DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_PACING` in `src/data/dashboardVersions.ts`, its `hybrid-pacing` member of `DashboardVersionId`, `isHybridVersion` / `isHybridPacingVersion`, the `hybridPacing` branch in `src/components/membership/v5/LearnerFocusedBand.tsx`, the Home at `src/components/compass/HybridPacingHome.tsx`, and all four `hybrid-*` design flags in `src/context/FeatureFlagContext.tsx` (one of which, `hybrid-course-expiry`, also names `eric-atlas-e2e` and so still renders on the Atlas bar). Only the entry in `DISCOVERABILITY_DASHBOARD_VERSIONS` was removed, so `?version=hybrid-pacing` STILL RESOLVES.',
+    flag: '?version=hybrid-pacing (still resolves)',
+    dateRemoved: '2026-10-20',
+    reason:
+      'Jillienne\u2019s call, with Hybrid V1 above and Jill/Atlas-Main made the default the same day. It existed so Hybrid V1 could not move while pacing was explored; V1 is archived now and the pacing work it was protecting has shipped \u2014 the two-ceiling model (`src/lib/studyPace.ts`), the preset dates and the no-pace-fits arms are all on `main`, read by the Atlas Home\u2019s own pace card. The exploration outlived its reason to be separate.',
+    restoreNote:
+      'Re-add `DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_PACING` to `DISCOVERABILITY_DASHBOARD_VERSIONS`, directly after Hybrid V1 \u2014 the lineage order the picker is sorted by, and a comment marks the spot. \u26a0 RESTORE IT WITH V1 OR THE PICKER LIES: this version is described, in its own entry and in the Archive row above, as "a copy of Hybrid V1", and reading the two in order is the only place that lineage is visible. \u26a0 ITS FOUR DESIGN CONTROLS DO NOT COME BACK BY THEMSELVES in any useful sense \u2014 three of them name `hybrid-pacing` alone in their `versions`, so while the version is off the picker they are reachable only on a deep link. NOT restored deliberately: `HybridPacingOptions.test.tsx` and `StudyPaceTile.test.tsx` were left untouched, because both address the version by `?version=` rather than through the picker.',
+  },
+  {
     id: 'atlas-e2e-page-control',
     name: 'Page — the End-to-End Demo\u2019s design control',
     what:

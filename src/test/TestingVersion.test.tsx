@@ -22,6 +22,7 @@ import {
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
   DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E,
+  DISCOVERABILITY_DASHBOARD_VERSION_JILL_ATLAS_MAIN,
   defaultDiscoverabilityVersionFor,
   isQualifyingEducationVersion,
 } from '@/data/dashboardVersions'
@@ -233,12 +234,37 @@ describe('the Testing version is registered without displacing anything', () => 
        is not Jillienne's — via `promote-to-prototype` on his merge. The pacing
        fork and Hybrid V1 are DISPLACED, not retired: both keep `maturity:
        'ready'`, so four versions sit in the demo site's picker. */
+    /* ⚠ SEVENTH OWNER, 2026-10-20: JILL/ATLAS-MAIN — the End-to-End Demo's own
+       duplicate, taken that day to explore the exam-date logic, and made the
+       default by Jillienne in the same breath ("set this one as default").
+
+       ⚠ THIS IS THE FIRST TIME THE LINE HAS GONE TO A VERSION WHOSE OWN ENTRY
+       CALLS IT AN EXPLORATION, which is exactly what the inverted test at the
+       top of this block was once written to prevent: "a fourth picker entry
+       that silently became the landing page would put an exploration in front
+       of every stakeholder arriving on the public link." It is not silent — it
+       is the owner's stated decision, and this pin is what makes it stated. But
+       a stakeholder reporting the demo "looking half-built" is this line.
+
+       ⚠ AND HYBRID V1 AND THE PACING FORK ARE NOW ARCHIVED, the same day, which
+       is the first time a displaced default has gone further than displaced:
+       both are off the picker (`hybrid-v1-version` and `hybrid-pacing-version`
+       in archivedItems.ts) though both still resolve by URL. The End-to-End
+       Demo is only DISPLACED, as every previous holder was. */
     expect(defaultDiscoverabilityVersionFor('xcel')).toBe(
-      DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E.id,
+      DISCOVERABILITY_DASHBOARD_VERSION_JILL_ATLAS_MAIN.id,
     )
     expect(defaultDiscoverabilityVersionFor('xcel')).not.toBe(
       DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id,
     )
+    /* ⚠ AND THE DEMO IT WAS COPIED FROM IS STILL PICKABLE — displaced, not
+       retired, which is what every note above claims of its predecessors and
+       what makes the swap back one line. Asserted rather than described,
+       because this is the first handover where two OTHER versions did get
+       archived and the distinction stopped being obvious. */
+    expect(
+      DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id),
+    ).toContain(DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E.id)
   })
 
   it('now LEADS the picker, which QE Focused used to', () => {

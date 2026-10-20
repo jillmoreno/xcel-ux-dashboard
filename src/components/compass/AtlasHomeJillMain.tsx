@@ -79,6 +79,8 @@ import {
 } from '@/components/learning/studyJourneyUtil'
 import { getLicensedStepsFor, jurisdictionName } from '@/data/nyProducerRequirements'
 import { defaultPreset, formatPaceDate, formatPaceDateLong, studyPace, daysUntil, dateFromIso, isoPlusDays, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
+import { clearExamDate, writeExamDate } from '@/data/examDateStore'
+import { ExamDatePicker } from '@/components/learning/ExamScheduleWidget'
 import { EXPIRY_FLAG_KEY } from '@/data/courseFixtures'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import './atlasJourneyLink.css'
@@ -177,11 +179,16 @@ export type AtlasHomeJillMainProps = {
   today: Date
   hoursRemaining: number
   accessExpiresAt?: string
-  /** ⚠ ACCEPTED AND DELIBERATELY UNUSED since 2026-10-20 — see the note above
-   *  `studyPace` in the body. The band hands every Home the same props, and
-   *  this one has no control over the stored exam date, so it does not let
-   *  that date govern its pace. Kept on the type so wiring Add Date is a
-   *  one-line change rather than a prop re-plumb. */
+  /** ISO yyyy-mm-dd — the learner's booked exam date, `cgp.examDate` by way of
+   *  `MembershipOverview`.
+   *
+   *  ⚠ USED AGAIN SINCE 2026-10-20, and the round trip is the point. `main`'s
+   *  Home accepts this prop and refuses to act on it, because it owned neither
+   *  exam prompt and a date it could not show or clear dead-ended the pace
+   *  card. This version WIRED Add Date, so the page owns the date now — it can
+   *  be entered here, changed here and removed here — and the pace model is
+   *  entitled to read it again. The two facts are one decision; see the note
+   *  at `studyPace` below. */
   examDate?: string
   notStarted?: boolean
   onBegin?: () => void
@@ -239,6 +246,7 @@ export function AtlasHomeJillMain({
   today,
   hoursRemaining,
   accessExpiresAt,
+  examDate,
   notStarted = false,
   onBegin,
   onOverview,
@@ -327,54 +335,41 @@ export function AtlasHomeJillMain({
   const zeroWindow = progressPick === 'not-started' && expiryPick === 'auto'
   const accessIso = zeroWindow && accessExpiresAt ? isoPlusDays(today, ZERO_ACCESS_DAYS) : accessExpiresAt
   /*
-   * ⚠ THIS HOME DOES NOT READ THE STORED EXAM DATE — 2026-10-20, Jillienne,
-   * after Home opened on "Not enough time before your exam" with a month of
-   * access left and nothing on the page that had ever asked her for an exam.
+   * THE EXAM DATE BINDS AGAIN HERE — 2026-10-20, the other half of wiring Add
+   * Date.
    *
-   * `examDate` arrives from `MembershipOverview` as `cgp.examDate`, the
-   * per-browser value the COMPASS surfaces author — the Study Journey widget,
-   * the Exam Schedule widget, the Exam Date card. Each of those shows the date
-   * it holds and offers a way to clear it. This Home shows neither: BOTH of
-   * its exam prompts are decoration, and say so — `ExamDateQuestionPill`'s
-   * "⚠ IT IS NOT WIRED, and never was: Yes and Not Yet do nothing", and
-   * `ExamDatePrompt`'s Add Date, which has no handler either.
+   * ⚠ `main`'s COPY OF THIS FILE PASSES `undefined`, DELIBERATELY, and the
+   * difference between the two is not a disagreement — it is the same rule
+   * answered by two pages with different powers. A page may act on a date only
+   * if it can SHOW it, CHANGE it and REMOVE it. The End-to-End Demo's Home can
+   * do none of those (both of its exam prompts are decoration, and say so), so
+   * a date typed in Compass weeks earlier dead-ended its pace card for good,
+   * per browser, with the page still asking "When is your exam?" underneath
+   * the message about the answer. Refusing the date was the honest fix there.
    *
-   * So the page asked "When is your exam?" while already acting on an answer
-   * it could not show, change or undo. A date typed in Compass weeks earlier
-   * made the pace card dead-end permanently, per browser, with nothing on
-   * screen and nothing in the repo to explain it — and no reviewer would
-   * think to look for it, because the question beside the message is still
-   * being asked.
+   * THIS VERSION EARNED IT BACK. `ExamDatePrompt` and `ExamDateQuestionPill`
+   * both write to `examDateStore` now, both print the stored date, and both
+   * offer Remove — so every figure the date moves has a control on this page
+   * that moved it.
    *
-   * ⚠ THE ACCESS CEILING IS NOT A FALLBACK HERE, IT IS THE ONLY ONE. A plan
-   * always fits the thirty days `ZERO_ACCESS_DAYS` gives, which is the whole
-   * of what was asked for: Home opens on a pace, every time, on any browser.
-   *
-   * ⚠ THE NO-PACE STATE ITSELF IS KEPT, and so is `noPaceMessage`'s exam arm.
-   * Yesterday's work is not undone — the Demo Controls' Expires setting still
-   * reaches the access arm at a short window, which is the control that is
-   * SUPPOSED to reach it, and `AtlasCourseProgressStates` still reads a real
-   * exam date through its own surface. What changed is that an input this
-   * page cannot see no longer governs it.
-   *
-   * ⚠ WIRING EITHER PROMPT IS WHAT UNDOES THIS. The moment Add Date writes to
-   * `examDateStore`, the date becomes this page's own input and should bind
-   * again: pass `examDate` back through here, and give the card the same
-   * clear-it affordance the Compass surfaces have. The prop stays on
-   * `AtlasHomeJillMainProps` for that reason — it is accepted, deliberately
-   * unused, not removed.
+   * ⚠ WHICH MEANS "NO PACE FITS" IS REACHABLE HERE, AND THAT IS CORRECT. Enter
+   * an exam inside `EXAM_BUFFER_DAYS` of today and the card says so, naming the
+   * exam rather than access (`noPaceMessage`'s exam arm). It is no longer a
+   * dead end: Remove is sitting next to the date that caused it. Do not "fix"
+   * that by passing `undefined` again — that would restore the baseline's
+   * behaviour on a page that no longer needs it, and silently make Add Date a
+   * control that changes nothing.
    */
-  /* THE FIGURES — the pace model, as the Study Pace card computes it. */
   const model = useMemo(
     () =>
       studyPace({
         today,
         hoursRemaining,
         accessExpiresAt: accessIso,
-        examDate: undefined,
+        examDate,
         nights: notStarted ? NOT_STARTED_NIGHTS : undefined,
       }),
-    [today, hoursRemaining, accessIso, notStarted],
+    [today, hoursRemaining, accessIso, examDate, notStarted],
   )
   const preset = defaultPreset(model)
   /*
@@ -403,6 +398,50 @@ export function AtlasHomeJillMain({
     binding: model.binding,
     days: model.daysToCeiling,
     dateIso: model.hardEndIso,
+  }
+  /*
+   * ADD DATE, WIRED — 2026-10-20. Three pieces of state and nothing else: the
+   * DATE itself is not held here, it is `examDateStore`'s, arriving as the
+   * `examDate` prop. Keeping a local copy beside it is how the two come to
+   * disagree — the Study Calendar carried its own `calendar.examDate` for
+   * exactly that reason and `exam-date-single-store` has just finished
+   * unpicking it.
+   *
+   * `picking` is which phase the prompt is in; `notYet` is Not Yet's dismissal,
+   * which was always presentational and still is.
+   */
+  const [picking, setPicking] = useState(false)
+  const [notYet, setNotYet] = useState(false)
+  /* ⚠ `writeExamDate`, NOT `writeExamDateTime`. The picker collects a DAY; the
+     Study Calendar's own editors collect a day and a slot. Passing an empty
+     time here would write `cgp.examTime` as a blank string and the calendar
+     would show a booked exam at no time — so a surface that does not ask for
+     the time does not write one, and the time already stored survives a date
+     change. */
+  const saveExamDate = (iso: string) => {
+    writeExamDate(iso)
+    setPicking(false)
+    setNotYet(false)
+  }
+  /* ⚠ REMOVE IS WHAT MAKES READING THE DATE LEGITIMATE — see the note at
+     `studyPace`. Without it this page would be acting on an input it could not
+     undo, which is the whole of the bug the baseline was fixed for. */
+  const removeExamDate = () => {
+    clearExamDate()
+    setPicking(false)
+    setNotYet(false)
+  }
+  const examPromptProps = {
+    examDate,
+    picking,
+    today,
+    /* ⚠ NO `stateName` HERE. `state` is derived from `path` further down the
+       body, and a const read above its declaration is a TDZ throw at render,
+       not a compile warning you would notice. The two call sites pass it. */
+    onAdd: () => setPicking(true),
+    onCancel: () => setPicking(false),
+    onSave: saveExamDate,
+    onRemove: removeExamDate,
   }
   /* NOT STARTED — the 0% state. Several things read it: the access window
      below, the ring's figure, and the Readiness card's empty band. */
@@ -1105,7 +1144,14 @@ export function AtlasHomeJillMain({
                 `ExamDatePrompt`; this position is Eric's Atlas Learning tile
                 and carries the pill he promoted — see `ExamDateQuestionPill`
                 for why they are two components. */}
-            {walkSteps ? null : <ExamDateQuestionPill />}
+            {walkSteps ? null : (
+              <ExamDateQuestionPill
+                {...examPromptProps}
+                stateName={state}
+                notYet={notYet}
+                onNotYet={() => setNotYet(true)}
+              />
+            )}
             {/* ⚠ AT 100% THE RING ARM SHOWS THE STOPS, ALL DONE (2026-10-16,
                 Jillienne: "we need to show the items in step 1 as compelted").
                 The work is what was completed, so the list is the thing worth
@@ -1188,7 +1234,7 @@ export function AtlasHomeJillMain({
                  the same question on screen twice. Replacing the sentence is
                  also what makes the step ask something instead of reciting
                  figures the learner cannot act on yet. */
-              detail={walkSteps ? <ExamDatePrompt onExamInfo={examInfo} card={examPromptCard} /> : pass.detail}
+              detail={walkSteps ? <ExamDatePrompt {...examPromptProps} stateName={state} onExamInfo={examInfo} card={examPromptCard} /> : pass.detail}
               link={pass.detailLabel ?? 'What to expect'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(pass.id) : undefined}
             />
@@ -1458,16 +1504,152 @@ function JourneyRow({
  * ⚠ IT IS NOT WIRED, and never was: Yes and Not Yet do nothing. Restoring
  * behaviour it did not have would not be restoring it.
  */
-function ExamDateQuestionPill() {
+/**
+ * WIRED — 2026-10-20. What both prompts need to be able to answer the question
+ * they ask, and why it is one shape rather than two sets of props: the pill and
+ * the card are two DRAWINGS of one question, and the thing the baseline got
+ * wrong was having a surface ask it without being able to take the answer. Two
+ * divergent prop lists is how one of them quietly goes back to that.
+ */
+type ExamPromptWiring = {
+  /** The stored date, or undefined. Owned by `examDateStore`, never copied. */
+  examDate?: string
+  picking: boolean
+  today: Date
+  stateName: string
+  onAdd: () => void
+  onCancel: () => void
+  onSave: (iso: string) => void
+  onRemove: () => void
+}
+
+/**
+ * THE SAVED READOUT, one copy for both prompts.
+ *
+ * ⚠ IT PRINTS THE DATE AND WHAT IT COSTS, not a countdown in days alone. A
+ * learner who has entered an exam wants to know the plan moved, and "May 19"
+ * beside "8 days away" is the pair that says so. `daysUntil` is the page's own
+ * clock (`today`), not the wall clock — the whole demo is anchored.
+ *
+ * ⚠ AND IT CARRIES REMOVE. That is not a convenience: the pace model reads this
+ * date, so without a way to take it back this page would be acting on an input
+ * it cannot undo — the exact defect `main`'s copy was fixed for. Change and
+ * Remove are what entitle `studyPace` to see it at all.
+ */
+function ExamDateSaved({
+  examDate,
+  today,
+  onAdd,
+  onRemove,
+}: {
+  examDate: string
+  today: Date
+  onAdd: () => void
+  onRemove: () => void
+}) {
+  const days = daysUntil(examDate, today)
+  /* Past dates are not pickable, so a negative here means a date entered before
+     the demo clock moved — say it plainly rather than printing "-3 days away". */
+  const away =
+    days == null ? null : days < 0 ? 'date has passed' : days === 0 ? 'today' : days === 1 ? '1 day away' : `${days} days away`
+  return (
+    <span style={EXAM_CARD}>
+      <span style={EXAM_CARD_TEXT}>
+        <span style={EXAM_CARD_TITLE}>
+          {formatPaceDateLong(examDate)}
+          {away ? <span style={{ fontWeight: 400, color: 'var(--color-text-secondary)' }}>{` \u00b7 ${away}`}</span> : null}
+        </span>
+        <span style={EXAM_CARD_SUB}>Your study pace is planned around this date.</span>
+      </span>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 'none' }}>
+        <button
+          type="button"
+          className="cre-compass-secondary cre-atlas-home-secondary"
+          style={EXAM_DATE_ADD}
+          onClick={onAdd}
+        >
+          Change
+        </button>
+        <button type="button" style={EXAM_DATE_NOT_YET} onClick={onRemove}>
+          Remove
+        </button>
+      </span>
+    </span>
+  )
+}
+
+/**
+ * THE PICKER, in whichever prompt opened it.
+ *
+ * ⚠ IT IS `ExamScheduleWidget`'s OWN PICKER, exported for this (2026-10-20),
+ * not a second calendar. Two surfaces that disagree about how a date is picked
+ * is the defect this repo keeps paying for, and the Atlas Home already had one
+ * of those: `AtlasExamDateCard` carries a third month grid whose note says
+ * "LOCAL STATE ONLY … nothing downstream reads it yet" — and which opens on the
+ * WALL CLOCK while every other dated surface is anchored to the fixture. This
+ * one takes `today` as a prop, which is why it is the one to reuse.
+ */
+function ExamDatePickerPanel({ examDate, today, stateName, onCancel, onSave }: ExamPromptWiring) {
+  return (
+    <div style={{ ...EXAM_CARD, flexDirection: 'column', alignItems: 'stretch', gap: 4 }}>
+      <ExamDatePicker
+        initialDate={examDate ?? null}
+        stateName={stateName}
+        today={today}
+        /* `editing` only changes the lead line and a margin. A date already
+           stored means Change was pressed, which is editing. */
+        editing={Boolean(examDate)}
+        onCancel={onCancel}
+        onSave={onSave}
+      />
+    </div>
+  )
+}
+
+/**
+ * ⚠ WIRED 2026-10-20, and its own note above ("IT IS NOT WIRED, and never was:
+ * Yes and Not Yet do nothing") is what this replaces. The pill is the prompt on
+ * the DEFAULT screen — the card arm needs `?journey=full` — so leaving this one
+ * dead would have meant Add Date worked only on a URL you had to know about,
+ * and the pace card still could not be fed from the page you actually open.
+ *
+ * Yes opens the picker. Not Yet still only dismisses, which is all it ever did
+ * and all a "no" can honestly do here.
+ */
+function ExamDateQuestionPill({ notYet, onNotYet, ...wiring }: ExamPromptWiring & { notYet: boolean; onNotYet: () => void }) {
+  if (wiring.picking) {
+    return (
+      <div style={EXAM_DATE_PROMPT}>
+        <ExamDatePickerPanel {...wiring} />
+      </div>
+    )
+  }
+  if (wiring.examDate) {
+    return (
+      <div style={EXAM_DATE_PROMPT}>
+        <ExamDateSaved
+          examDate={wiring.examDate}
+          today={wiring.today}
+          onAdd={wiring.onAdd}
+          onRemove={wiring.onRemove}
+        />
+      </div>
+    )
+  }
+  /* Dismissed — and NOT remembered past this render tree, deliberately. "Not
+     yet" is a statement about today, not a preference, and persisting it would
+     be a reviewer's browser quietly hiding a prompt with nothing to explain it
+     (the `cgp.examDate` trap, in miniature). */
+  if (notYet) return null
   return (
     <div style={EXAM_DATE_PROMPT}>
       <div style={EXAM_DATE_PILL}>
         <p style={EXAM_DATE_QUESTION_PILL}>Do you know your state exam date?</p>
-        <button type="button" style={EXAM_DATE_YES}>
+        <button type="button" style={EXAM_DATE_YES} onClick={wiring.onAdd}>
           Yes
         </button>
       </div>
-      <button type="button" style={EXAM_DATE_NOT_YET}>
+      <button type="button" style={EXAM_DATE_NOT_YET} onClick={onNotYet}>
         Not Yet
         <AngleRightSolid size={11} aria-hidden style={{ width: 6 }} />
       </button>
@@ -1475,7 +1657,30 @@ function ExamDateQuestionPill() {
   )
 }
 
-function ExamDatePrompt({ onExamInfo, card = false }: { onExamInfo?: () => void; card?: boolean }) {
+function ExamDatePrompt({
+  onExamInfo,
+  card = false,
+  ...wiring
+}: ExamPromptWiring & { onExamInfo?: () => void; card?: boolean }) {
+  /* ⚠ THE PICKER REPLACES THE WHOLE PROMPT, both arms, rather than opening
+     under it. In the card arm it is the card's own subject; in the row arm the
+     row is a STOP on Step 2's journey, and a month grid hanging off a stop
+     would read as a third step. Exam Information below is untouched either way
+     — it is the other thing Step 2 offers and does not depend on this one. */
+  if (wiring.picking) return <ExamDatePickerPanel {...wiring} />
+  if (wiring.examDate) {
+    return (
+      <span style={EXAM_ROWS}>
+        <ExamDateSaved
+          examDate={wiring.examDate}
+          today={wiring.today}
+          onAdd={wiring.onAdd}
+          onRemove={wiring.onRemove}
+        />
+        {onExamInfo ? <StopLink label="Exam Information" onOpen={onExamInfo} /> : null}
+      </span>
+    )
+  }
   return (
     /* ⚠ SPANS, NOT DIVS. `Step` renders its detail inside a `<p>`, and the
        pill this replaces was a `<div>` in there — invalid nesting that
@@ -1513,7 +1718,12 @@ function ExamDatePrompt({ onExamInfo, card = false }: { onExamInfo?: () => void;
               Entering your exam date will help us structure your study pace accordingly.
             </span>
           </span>
-          <button type="button" className="cre-compass-secondary cre-atlas-home-secondary" style={EXAM_DATE_ADD}>
+          <button
+            type="button"
+            className="cre-compass-secondary cre-atlas-home-secondary"
+            style={EXAM_DATE_ADD}
+            onClick={wiring.onAdd}
+          >
             Add Date
           </button>
         </span>
@@ -1547,7 +1757,12 @@ function ExamDatePrompt({ onExamInfo, card = false }: { onExamInfo?: () => void;
               Course Overview button's own class pair on this page, so the
               two outline controls on Home match and the colour follows the
               brand skin rather than being typed here. */}
-          <button type="button" className="cre-compass-secondary cre-atlas-home-secondary" style={EXAM_DATE_ADD}>
+          <button
+            type="button"
+            className="cre-compass-secondary cre-atlas-home-secondary"
+            style={EXAM_DATE_ADD}
+            onClick={wiring.onAdd}
+          >
             Add Date
           </button>
         </span>
@@ -1625,7 +1840,17 @@ function Step({
         <p style={STEP_EYEBROW}>Step {number}</p>
         <p style={STEP_TITLE}>{title}</p>
       </div>
-      {detail ? <p style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }}>{detail}</p> : null}
+      {/* ⚠ A `div`, NOT A `p` — 2026-10-20, when Add Date was wired.
+          `ExamDatePicker` is a month grid: `p`s and `div`s. Inside a `<p>` the
+          browser CLOSES the paragraph at the first block child and reparents
+          the rest, so the calendar rendered — detached from the card, with the
+          styles that depend on the nesting silently gone. That is the same
+          invalid nesting `ExamDatePrompt`'s own note records ("SPANS, NOT
+          DIVS … invalid nesting that happened to render"), and it is why that
+          component is built out of spans at all.
+          Same styles, same box: a `div` changes nothing on screen and takes
+          block content legally, so Step 2 can hold the picker. */}
+      {detail ? <div style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }}>{detail}</div> : null}
       {onLink ? (
         <button type="button" className="cre-compass-v2-link" onClick={onLink} style={LINK}>
           {link} →
