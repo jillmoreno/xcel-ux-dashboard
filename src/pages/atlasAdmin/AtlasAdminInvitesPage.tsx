@@ -93,7 +93,8 @@ export function AtlasAdminInvitesPage() {
         </button>
       </header>
 
-      <section aria-label="Invite outcomes" style={{ ...CARD, border: 'none', padding: 16, background: 'var(--admin-atlas-primary-100)' }}>
+      {/* As on Students: the blue runs on under the table card, no gap between. */}
+      <section aria-label="Invite outcomes" style={{ ...CARD, border: 'none', padding: `16px 16px ${20 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
         <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
           {tiles.map((t) => {
             const active = t.id !== 'all' && filter === t.id
@@ -119,7 +120,7 @@ export function AtlasAdminInvitesPage() {
         </div>
       </section>
 
-      <section style={{ ...CARD, overflow: 'hidden' }}>
+      <section style={{ ...CARD, position: 'relative', overflow: 'hidden' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 20px', borderBottom: '1px solid var(--admin-rule)' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {(
@@ -283,6 +284,8 @@ export function AtlasAdminInvitesPage() {
 
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
+/* How far the outcome container's blue runs on beneath the table card. */
+const UNDERLAP = 24
 const TILE: CSSProperties = { borderRadius: 11, background: 'var(--admin-surface)', padding: 16, textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-body)' }
 /* Students' selected tile: primary 400 drawn inside the edge, lifted 4/4 at 15%. */
 const TILE_ACTIVE: CSSProperties = { outline: '2px solid var(--admin-atlas-primary-400)', outlineOffset: -2, boxShadow: 'var(--admin-shadow-tile-active)' }
