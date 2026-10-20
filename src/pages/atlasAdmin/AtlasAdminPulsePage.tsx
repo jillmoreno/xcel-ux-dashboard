@@ -330,7 +330,7 @@ function Card({ index, icon, title, sub, children, onFocus, alert }: { index: nu
   )
 }
 
-/* Pulse's tinted boxes (figures, What changed, learner rows): Atlas primary 100 at half strength. */
+/* Pulse's tinted boxes (figures, learner rows, card icons): Atlas primary 100 at half strength. */
 const FIGURE_TINT = 'color-mix(in srgb, var(--admin-atlas-primary-100) 50%, var(--admin-surface))'
 
 /* The small box labels (Need intervention, Action now…): 11 / bold. */
@@ -338,7 +338,7 @@ const LABEL: CSSProperties = { ...EYEBROW, fontSize: 11 }
 
 function Box({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div style={{ padding: 16, borderRadius: 10, background: FIGURE_TINT }}>
+    <div style={{ padding: 16, borderRadius: 10, border: '1px solid var(--admin-rule)' }}>
       <p style={{ ...LABEL, color: 'var(--admin-atlas-neutral-800)' }}>{label}</p>
       <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--admin-ink)' }}>{children}</p>
     </div>
