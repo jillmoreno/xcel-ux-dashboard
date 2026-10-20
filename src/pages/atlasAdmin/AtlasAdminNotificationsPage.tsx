@@ -459,8 +459,9 @@ function NumberField({ label, value, onChange, min, max }: { label: string; valu
 
 /* 24 to the card's edges, 14 between rows — the last row takes 24 below (in the map). */
 const ROW: CSSProperties = { position: 'relative', paddingTop: 14, paddingLeft: 24, paddingRight: 24, cursor: 'pointer', outline: 'none' }
-/* A selected row's side bars: 3px, outside the card's 1px edge, 3px corners. */
-const ACTIVE_BAR: CSSProperties = { position: 'absolute', top: 0, bottom: 0, width: 3, borderRadius: 3, background: 'var(--admin-atlas-primary-200)' }
+/* A selected row's side bars: 3px, outside the card's 1px edge, 3px corners,
+   reaching 1px up and down onto the rules above and below the row. */
+const ACTIVE_BAR: CSSProperties = { position: 'absolute', top: -1, bottom: -1, width: 3, borderRadius: 3, background: 'var(--admin-atlas-primary-200)' }
 const SELECTED: CSSProperties = { ...PILL, marginLeft: 8, padding: '1px 8px', fontSize: 10, background: 'var(--admin-surface)', color: 'var(--admin-brand)', boxShadow: 'inset 0 0 0 1px var(--admin-brand-edge)' }
 const ACTION: CSSProperties = { padding: 0, border: 'none', background: 'none', fontSize: 12, fontWeight: 600, color: 'var(--admin-atlas-primary-500)', cursor: 'pointer' }
 const SWITCH: CSSProperties = { position: 'relative', flex: 'none', width: 36, height: 20, border: 'none', borderRadius: 9999, padding: 0, cursor: 'pointer' }
