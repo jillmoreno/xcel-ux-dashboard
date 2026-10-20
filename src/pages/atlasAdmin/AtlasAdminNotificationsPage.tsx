@@ -334,7 +334,7 @@ function ProgressPreview({ learners }: { learners: ReturnType<typeof useAdminSto
         </h3>
         <p style={{ margin: 0, fontSize: 13.5, color: 'var(--admin-text)' }}>Nothing broke overnight. These are the people whose next step is waiting on you.</p>
         {counts.map((c) => (
-          <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 16, borderRadius: 10, border: `1px solid ${c.edge}`, background: c.tone, padding: '12px 16px' }}>
+          <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: 16, borderRadius: 10, border: `1px solid ${c.edge}`, background: c.tone, padding: '4px 16px' }}>
             <span style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: 'var(--admin-ink)', minWidth: 36 }}>{c.n}</span>
             <span style={{ flex: 1, fontSize: 13, color: 'var(--admin-ink)' }}>{c.label}</span>
             <Link to={`${ADMIN_BASE}/students${search}${search ? '&' : '?'}filter=${c.key}`} style={{ fontSize: 13, fontWeight: 600, color: 'var(--admin-brand)', textDecoration: 'none' }}>
