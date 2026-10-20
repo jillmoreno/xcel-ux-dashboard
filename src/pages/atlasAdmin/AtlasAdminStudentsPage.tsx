@@ -511,7 +511,7 @@ export function AtlasAdminStudentsPage() {
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
 const TILE: CSSProperties = {
-  borderRadius: 14,
+  borderRadius: 11,
   border: '1px solid var(--admin-rule)',
   background: 'var(--admin-surface)',
   padding: 16,
