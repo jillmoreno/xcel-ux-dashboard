@@ -46,7 +46,6 @@ import {
   useBeginOpensCompassSession,
   useCourseOverviewOpensCompass,
   useDashboardCourseTitle,
-  useWalkStudyJourneySteps,
 } from '@/pages/endToEndDemo'
 import { AffidavitModal, type AffidavitKind } from '@/components/e2e/AffidavitModal'
 import { useAccount } from '@/context/AccountContext'
@@ -278,7 +277,32 @@ export function AtlasHomeJillMain({
   /* …and Begin Course, which opens the Compass SESSION on the same walk. */
   const beginOpensCompass = useBeginOpensCompassSession()
   /* The walk's tidied Study Journey steps — see `useWalkStudyJourneySteps`. */
-  const walkSteps = useWalkStudyJourneySteps()
+  /*
+   * ⚠ THE WALK'S JOURNEY IS THIS VERSION'S DEFAULT — 2026-10-20, after
+   * Jillienne: "this section should match what is on main, why is it
+   * different?", pointing at Step 3.
+   *
+   * It was `useWalkStudyJourneySteps()`, which is `?journey=full`. Making Step
+   * 2 unconditionally draw the exam card left the rest of the journey on the
+   * flag, so a bare visit got the WALK'S STEP 2 beside the NON-WALK STEP 3 — a
+   * shape neither the demo nor the mock has ever had:
+   *
+   *   Step 2  the exam card            ← the walk's
+   *   Step 3  "Apply online, then submit your fingerprints."   ← not
+   *           [ Florida State Requirements ]                   ← not
+   *
+   * Both of her mocks show the walk's Step 3 — "Applying for a License" as a
+   * stop, no detail sentence, no State Requirements button — because the three
+   * changes are ONE treatment: the journey as a list of things to do rather
+   * than a recitation of facts. Splitting them is what produced the hybrid.
+   *
+   * ⚠ IT DOES NOT MAKE THE FLAG POINTLESS, it makes it Eric's. `e2e-walk-journey-steps`
+   * still decides the shape on `eric-atlas-e2e`, where the walk is a route into
+   * the demo; here the walk's shape IS the version, so there is nothing left to
+   * gate. The flag's own description says the tile is unaffected either way —
+   * that stays true, because this is the other Home.
+   */
+  const walkSteps = true
   /* Which Study Pace card — the dial or the stepped states. A design-bar
      radiogroup; see `atlas-pace-card`. */
   const paceCard = useFeatureFlag('atlas-pace-card').variant ?? 'ring'

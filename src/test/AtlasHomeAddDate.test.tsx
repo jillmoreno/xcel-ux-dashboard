@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
@@ -166,5 +166,33 @@ describe('the Add Date prompt on Jill/Atlas-Main', () => {
   it('does not also ask in the pill above the steps', () => {
     renderHome()
     expect(screen.queryByRole('button', { name: /Not Yet/ })).toBeNull()
+  })
+
+  /* ⚠ THE JOURNEY IS ONE TREATMENT, NOT THREE CHANGES — 2026-10-20, after
+     Jillienne caught Step 3. Making Step 2 draw the exam card unconditionally
+     left Step 3 and the State Requirements button on `?journey=full`, so a bare
+     visit got the walk's Step 2 beside the non-walk Step 3 — a shape neither
+     the demo nor either mock has ever had. These two cases are the halves that
+     have to move together. */
+  it('draws the walk’s Step 3 — a stop, not a recitation', () => {
+    renderHome()
+    /* ⚠ SCOPED TO THE STEP. "Applying for a License" is also a Quick Links
+       row, so an unscoped query matches two and tells you nothing about which
+       shape Step 3 is in. */
+    const step3 = within(screen.getByRole('region', { name: 'Get Licensed in Florida' }))
+    expect(step3.getByText('Applying for a License')).toBeTruthy()
+    expect(step3.queryByText(/Apply online, then submit/)).toBeNull()
+    /* ⚠ THE JOURNEY'S BUTTON IS STATE-PREFIXED ("Florida State
+       Requirements"); Quick Links carries a plain "State Requirements" row
+       that stays either way. A loose matcher catches the wrong one and the
+       case can never pass. */
+    expect(screen.queryByRole('button', { name: 'Florida State Requirements' })).toBeNull()
+  })
+
+  it('…while the End-to-End Demo keeps the recitation on a bare route', () => {
+    renderHome('eric-atlas-e2e')
+    const step3 = within(screen.getByRole('region', { name: 'Get Licensed in Florida' }))
+    expect(step3.getByText(/Apply online, then submit/)).toBeTruthy()
+    expect(screen.getByText(/150 scored questions/)).toBeTruthy()
   })
 })
