@@ -183,9 +183,10 @@ export function AtlasAdminNotificationsPage() {
         </div>
 
         <div style={{ position: 'sticky', top: 104, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {sel.preview ? <EmailPreview title={sel.title} onSample={sendSample} p={sel.id === 'invite' ? { ...sel.preview, body: sel.preview.body.map((b) => (b.startsWith('“') ? `“${note}” Cody McClintock` : b)) } : sel.preview} /> : <ProgressPreview title={sel.title} onSample={sendSample} learners={learners} />}
+          {sel.preview ? <EmailPreview title={sel.title} onSample={sendSample} joined={sel.group === 'admin'} p={sel.id === 'invite' ? { ...sel.preview, body: sel.preview.body.map((b) => (b.startsWith('“') ? `“${note}” Cody McClintock` : b)) } : sel.preview} /> : <ProgressPreview title={sel.title} onSample={sendSample} joined={sel.group === 'admin'} learners={learners} />}
+          {/* Recipients joins the preview above: no gap, square where they meet, the preview's bottom rule the only line between. */}
           {sel.group === 'admin' ? (
-            <section style={{ ...CARD, borderRadius: 14, padding: 24 }}>
+            <section style={{ ...CARD, borderTop: 'none', borderRadius: '0 0 14px 14px', marginTop: -12, padding: 24 }}>
               <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 700, color: 'var(--admin-ink)' }}>Recipients</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
                 <span style={{ ...PILL, background: 'var(--admin-brand)', color: 'var(--admin-surface)' }}>{ADMIN_EMAIL}</span>
@@ -288,9 +289,9 @@ function PreviewBanner({ title, onSample }: { title: string; onSample: () => voi
   )
 }
 
-function EmailPreview({ title, onSample, p }: { title: string; onSample: () => void; p: NotificationPreview }) {
+function EmailPreview({ title, onSample, joined, p }: { title: string; onSample: () => void; joined: boolean; p: NotificationPreview }) {
   return (
-    <section style={{ ...CARD, borderRadius: 14 }}>
+    <section style={{ ...CARD, borderRadius: joined ? '14px 14px 0 0' : 14 }}>
       <PreviewBanner title={title} onSample={onSample} />
       <div style={{ padding: '24px 24px 10px', background: 'var(--admin-fill-soft)', borderBottom: '1px solid var(--admin-rule)', fontSize: 11, color: 'var(--admin-text)', lineHeight: 1.6 }}>
         <div>From {p.from}</div>
@@ -323,7 +324,7 @@ function EmailPreview({ title, onSample, p }: { title: string; onSample: () => v
   )
 }
 
-function ProgressPreview({ title, onSample, learners }: { title: string; onSample: () => void; learners: ReturnType<typeof useAdminStore>['learners'] }) {
+function ProgressPreview({ title, onSample, joined, learners }: { title: string; onSample: () => void; joined: boolean; learners: ReturnType<typeof useAdminStore>['learners'] }) {
   const live = learners.filter((l) => l.stage !== 'licensed' && !l.hiddenFromReport)
   const counts = [
     { key: 'quiet7', label: 'No activity in the last 7 days', n: live.filter((l) => l.lastActiveDays >= 7).length, tone: 'var(--admin-brand-tint)' },
@@ -334,7 +335,7 @@ function ProgressPreview({ title, onSample, learners }: { title: string; onSampl
   const expiring = live.filter((l) => l.stage === 'stalled').slice(0, 3)
   const search = window.location.search
   return (
-    <section style={{ ...CARD, borderRadius: 14 }}>
+    <section style={{ ...CARD, borderRadius: joined ? '14px 14px 0 0' : 14 }}>
       <PreviewBanner title={title} onSample={onSample} />
       <div style={{ padding: '24px 24px 10px', background: 'var(--admin-fill-soft)', borderBottom: '1px solid var(--admin-rule)', fontSize: 11, color: 'var(--admin-text)', lineHeight: 1.6 }}>
         <div>From XCEL Solutions</div>
