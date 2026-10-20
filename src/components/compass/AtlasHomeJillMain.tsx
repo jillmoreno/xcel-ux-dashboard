@@ -77,11 +77,10 @@ import {
   type JourneyStop,
 } from '@/components/learning/studyJourneyUtil'
 import { getLicensedStepsFor, jurisdictionName } from '@/data/nyProducerRequirements'
-import { defaultPreset, formatPaceDate, formatPaceDateLong, studyPace, daysUntil, dateFromIso, isoFromDate, isoPlusDays, NOT_STARTED_NIGHTS, PACE_STYLE_FLAG_KEY, PACE_STYLE_LABELS, resolvePaceStyle } from '@/lib/studyPace'
+import { defaultPreset, formatPaceDate, formatPaceDateLong, studyPace, daysUntil, dateFromIso, isoFromDate, NOT_STARTED_NIGHTS, PACE_STYLE_FLAG_KEY, PACE_STYLE_LABELS, resolvePaceStyle } from '@/lib/studyPace'
 import { paceIconFor } from './paceStyleIcon'
 import { clearExamDate, writeExamDate } from '@/data/examDateStore'
 import { AtlasExamCalendar } from './AtlasExamCalendar'
-import { EXPIRY_FLAG_KEY } from '@/data/courseFixtures'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import './atlasJourneyLink.css'
 import type { LearningPathSummary } from '@/data/learningFixtures'
@@ -234,7 +233,7 @@ export type AtlasHomeJillMainProps = {
    what `LINKS_OFF` is there to prevent. */
 /* The window a learner who has not started gets, when Expires is on
    Automatic — see `accessIso`. */
-const ZERO_ACCESS_DAYS = 30
+export const ZERO_ACCESS_DAYS = 30
 const LINKS_OFF = true
 const NO_LINK = () => {}
 
@@ -356,9 +355,23 @@ export function AtlasHomeJillMain({
      ⚠ AN EXPLICIT EXPIRES PICK STILL WINS. The ask was for a DEFAULT; a demo
      control set to "1 day" that silently became thirty would be a control
      that does nothing at the one progress state the demo opens on. */
-  const expiryPick = useFeatureFlag(EXPIRY_FLAG_KEY).variant ?? 'auto'
-  const zeroWindow = progressPick === 'not-started' && expiryPick === 'auto'
-  const accessIso = zeroWindow && accessExpiresAt ? isoPlusDays(today, ZERO_ACCESS_DAYS) : accessExpiresAt
+  /* ⚠ THE 0% OVERRIDE IS GONE — 2026-10-20, when Automatic left the Expires
+     control and its default became 30 days.
+
+     It was `progressPick === 'not-started' && expiryPick === 'auto'`, giving
+     `today + ZERO_ACCESS_DAYS` so the meta's date, its count and the pace
+     model read one thirty-day window instead of the persona's. With no
+     `auto` the condition can never be true, so the branch was dead the
+     moment the control changed — and the control now hands every surface the
+     same thirty days directly, which is what the override existed to fake.
+     Measured both ways before removing it: "06/10/2026, 30 days to complete"
+     either way.
+
+     ⚠ `ZERO_ACCESS_DAYS` IS KEPT, unreferenced, with its own note — it is the
+     record of where the number came from ("at 0% should default to 30 days
+     for course access", 2026-10-16) and the thing to restore if Expires ever
+     regains a per-state arm. */
+  const accessIso = accessExpiresAt
   /* HOW HARD THIS LEARNER STUDIES — the Demo Controls' Pacing axis
      (2026-10-20). `STYLE_FACTORS` has been a `studyPace` input since the
      module was ported and had never been wired to a control on any surface;

@@ -3463,9 +3463,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       'How many days of course access are left. Moves every expiry-shaped surface at once: the "Course Access Ends" date and countdown on the course header, the ceiling the Study Pace plans against, and the Jump Back In card’s expiring-soon badge. The spread crosses every threshold on purpose — 1, 7 and 15 days fall inside the warning window and badge; 30 and up do not; 1 day is short enough that no honest study pace fits, which is the "no pace works" state the card otherwise reaches on one persona only; 400 days is past a year, where the countdown has to read as a date rather than a sprint. Automatic (the default) leaves each Progress state on the window it already authored. XCEL only.',
     defaultEnabled: true,
-    defaultVariant: 'auto',
+    defaultVariant: '30',
     variants: [
-      { value: 'auto', label: 'Automatic', description: 'Each Progress state keeps its own window — On Track 29 days, At Risk 3, Off Track 11. The committed default.' },
+      /* ⚠ "Automatic" STOOD HERE until 2026-10-20 and was the committed
+         default: "each Progress state keeps its own window — On Track 29
+         days, At Risk 3, Off Track 11". Removing it overwrites those three
+         authored windows with one number, which is the cost — see
+         `DEFAULT_EXPIRY` in `courseFixtures.ts`, where the reasoning and the
+         At Risk consequence are written down. */
       { value: '1', label: '1 day', description: 'Expiring tomorrow. Badges, and no study pace fits.' },
       { value: '7', label: '7 days', description: 'Inside the warning window — the card badges.' },
       { value: '15', label: '15 days', description: 'The badge’s edge: half the 30-day enrolment window.' },

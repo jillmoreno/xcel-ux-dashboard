@@ -357,17 +357,39 @@ export type ExpirySelection = 'auto' | number
 export const EXPIRY_FLAG_KEY = 'dashboard-course-expiry'
 
 /**
- * ⚠ `auto`, FOR THE REASON THE COURSE AXIS LEARNED THE HARD WAY. Each Progress
- * state already authors its own window — On Track gets 29 days, At Risk 3,
- * Off Track its deliberately unreachable 11 — and those are stories somebody
- * wrote. A day count as the default would overwrite all of them; `auto` means
- * "whatever this Progress state already said".
+ * ⚠ THIRTY DAYS SINCE 2026-10-20, `auto` before it — Jillienne: "lets have it
+ * default to 30 Days. remove the 'automatic' concept", the same pass that
+ * took Automatic off the Course axis.
+ *
+ * ⚠ BUT `auto` MEANT SOMETHING DIFFERENT HERE, and the difference is the cost
+ * of this change rather than the case for it. On Course, Automatic resolved
+ * to a different licence per VERSION and was an inconsistency. Here it was
+ * doing real work: each generic Progress state authors its own window — On
+ * Track 29 days, At Risk 3, Off Track its deliberately unreachable 11 — and
+ * those are stories somebody wrote. A day count as the default overwrites all
+ * three, which is what the note this replaces warned about.
+ *
+ * ⚠ SO AT RISK IS NO LONGER AT RISK unless Expires is set by hand, and 3 is
+ * not one of the rows offered (1 · 7 · 15 · 30 · 90 · 120 · 400) — 7 is the
+ * nearest. Accepted deliberately: the generic Progress states only draw on
+ * versions outside the Atlas ladder, which is two of the six on the picker
+ * (Atlas/Compass Global Navigation and Eric/Atlas V2), and the demo everyone
+ * lands on was already a thirty-day window.
+ *
+ * ⚠ THIRTY IS ALSO WHAT THE ATLAS HOME ALREADY DERIVED at 0% — its
+ * `ZERO_ACCESS_DAYS`, added 2026-10-19 so the meta, the count and the pace
+ * model read one window. Measured both ways before the change: `auto` and an
+ * explicit 30 both render "06/10/2026, 30 days to complete".
  */
-export const DEFAULT_EXPIRY: ExpirySelection = 'auto'
+export const DEFAULT_EXPIRY: ExpirySelection = 30
 
 /** The rows the bar offers, in display order. */
 export const EXPIRY_PICKER: { value: ExpirySelection; label: string }[] = [
-  { value: 'auto', label: 'Automatic' },
+  /* ⚠ "Automatic" LED THIS LIST UNTIL 2026-10-20 — see `DEFAULT_EXPIRY` for
+     what it did and what removing it costs. As with the Course axis, the row
+     lives in TWO places: here (what the dropdown renders) and the flag's
+     `variants` (the catalog's copy). Both lose it, or the control offers a
+     value its own catalog does not know. */
   { value: 1, label: '1 day' },
   { value: 7, label: '7 days' },
   { value: 15, label: '15 days' },
@@ -379,6 +401,11 @@ export const EXPIRY_PICKER: { value: ExpirySelection; label: string }[] = [
 
 /** Normalise a flag variant to a selection. Anything unrecognised is `auto`. */
 export function resolveExpiry(variant: string | undefined): ExpirySelection {
+  /* ⚠ `auto` LANDS HERE NOW, with every other unrecognised value. It was the
+     committed default until 2026-10-20 and is in `cgp.featureFlags` on every
+     machine that has opened the demo — `Number('auto')` is NaN, which no row
+     matches, so it resolves to the new default and the picker ticks 30 days
+     rather than nothing. */
   const n = Number(variant)
   return EXPIRY_PICKER.some((o) => o.value === n) ? n : DEFAULT_EXPIRY
 }

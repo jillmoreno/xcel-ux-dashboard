@@ -803,18 +803,29 @@ describe('the access-window control — "Expires"', () => {
   const def = FEATURE_FLAGS.find((f) => f.key === EXPIRY_FLAG_KEY)!
   const DAYS = [1, 7, 15, 30, 90, 120, 400]
 
-  it('offers Automatic plus the seven day counts', () => {
-    expect(def.variants?.map((v) => v.value)).toEqual(['auto', ...DAYS.map(String)])
-    expect(EXPIRY_PICKER.map((o) => o.value)).toEqual(['auto', ...DAYS])
+  it('offers the seven day counts, and no Automatic', () => {
+    expect(def.variants?.map((v) => v.value)).toEqual(DAYS.map(String))
+    expect(EXPIRY_PICKER.map((o) => o.value)).toEqual(DAYS)
   })
 
-  /* ⚠ THE DEFAULT IS `auto`, and it has to be: each Progress state already
-     authors its own window — On Track 29 days, At Risk 3, Off Track a
-     deliberately unreachable 11 — and a day count as the default would
-     overwrite every one of those stories. */
-  it('opens on Automatic, leaving each Progress state’s own window', () => {
-    expect(def.defaultVariant).toBe('auto')
-    expect(chosenExpiryDays(resolveExpiry(def.defaultVariant))).toBeUndefined()
+  /* ⚠ THE DEFAULT WAS `auto` AND THE NOTE HERE SAID IT "has to be": each
+     generic Progress state authors its own window — On Track 29 days, At
+     Risk 3, Off Track a deliberately unreachable 11 — "and a day count as
+     the default would overwrite every one of those stories."
+
+     It does, and that is now the accepted cost (2026-10-20, Jillienne: "lets
+     have it default to 30 Days. remove the 'automatic' concept"). AT RISK IS
+     NO LONGER AT RISK unless Expires is set by hand, and 3 is not one of the
+     rows — 7 is the nearest. What made it acceptable: those states only draw
+     on versions outside the Atlas ladder, which is two of the six on the
+     picker, and the demo everyone lands on was a thirty-day window already.
+
+     The per-state windows themselves are UNTOUCHED in the fixtures, which is
+     what the second half of this case still pins — passing no day count
+     still resolves each state's own. Only the control's default changed. */
+  it('opens on 30 days, and the per-state windows still exist underneath', () => {
+    expect(def.defaultVariant).toBe('30')
+    expect(chosenExpiryDays(resolveExpiry(def.defaultVariant))).toBe(30)
     for (const variant of ['progress-on-track', 'progress-at-risk', 'progress-off-track']) {
       const auto = dashboardProgressPersonaFor('xcel', variant, 'qe')!
       const explicit = dashboardProgressPersonaFor('xcel', variant, 'qe', undefined, undefined)!
@@ -822,10 +833,18 @@ describe('the access-window control — "Expires"', () => {
     }
   })
 
-  it('degrades an unrecognised variant to Automatic', () => {
-    expect(resolveExpiry('99')).toBe('auto')
-    expect(resolveExpiry(undefined)).toBe('auto')
-    expect(resolveExpiry('nonsense')).toBe('auto')
+  it('degrades an unrecognised variant to the default', () => {
+    expect(resolveExpiry('99')).toBe(30)
+    expect(resolveExpiry(undefined)).toBe(30)
+    expect(resolveExpiry('nonsense')).toBe(30)
+  })
+
+  /* ⚠ AND `auto` IS NOW ONE OF THOSE. It was the committed default until
+     2026-10-20 and is in `cgp.featureFlags` on every machine that has opened
+     the demo; `Number('auto')` is NaN, which matches no row, so it lands on
+     30 and the picker ticks a value instead of nothing. */
+  it('still understands a stored `auto`', () => {
+    expect(resolveExpiry('auto')).toBe(30)
   })
 
   /*
