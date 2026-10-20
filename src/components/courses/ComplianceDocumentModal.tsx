@@ -16,6 +16,7 @@ import {
   stepsFor,
   type AcknowledgementLevel,
   type ComplianceDocumentConfig,
+  type CounterSignature,
   type ExtraField,
 } from '@/data/complianceDocuments'
 
@@ -576,6 +577,7 @@ function StepDocument({
           onAgreed={onAgreed}
           signature={signature}
           onSignature={onSignature}
+          counterSignature={config.counterSignature}
         />
       </div>
     )
@@ -787,6 +789,7 @@ function SignOff({
   signature,
   onSignature,
   error,
+  counterSignature,
 }: {
   ack: AcknowledgementLevel
   label: string
@@ -795,6 +798,7 @@ function SignOff({
   signature: string
   onSignature: (v: string) => void
   error?: string
+  counterSignature?: CounterSignature
 }) {
   if (ack === 'none') return null
   return (
@@ -823,6 +827,23 @@ function SignOff({
               {error}
             </p>
           )}
+        </div>
+      )}
+      {/* ⚠ THE SCHOOL'S SIGNATURE, ALREADY APPLIED — not a field. Nevada's
+          agreement is only the document the state asks for when it carries
+          both signatures, but the learner cannot produce XCEL's half and must
+          not be asked to. Drawn as signed so the page reads as a contract
+          rather than a form. */}
+      {counterSignature && (
+        <div>
+          <span style={FIELD_LABEL}>Countersigned</span>
+          <div
+            style={COUNTERSIGNED}
+            aria-label={`Countersigned by ${counterSignature.signatory}, ${counterSignature.role}`}
+          >
+            <span style={COUNTERSIGNED_NAME}>{counterSignature.signatory}</span>
+            <span style={COUNTERSIGNED_ROLE}>{counterSignature.role}</span>
+          </div>
         </div>
       )}
     </>
@@ -1269,6 +1290,31 @@ const INPUT: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 14,
   outline: 'none',
+}
+
+/* Flat, filled and unfocusable — it must not read as a box awaiting input.
+   The signing hand is the same as the learner's, because it IS the same
+   gesture, made by the other party. */
+const COUNTERSIGNED: CSSProperties = {
+  ...INPUT,
+  height: 'auto',
+  padding: '8px 12px',
+  display: 'flex',
+  flexDirection: 'column',
+  background: 'var(--color-neutral-75)',
+}
+
+const COUNTERSIGNED_NAME: CSSProperties = {
+  fontFamily: 'var(--font-signature)',
+  fontSize: 22,
+  lineHeight: '30px',
+  color: 'var(--color-text-primary)',
+}
+
+const COUNTERSIGNED_ROLE: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  color: 'var(--color-text-tertiary)',
 }
 
 const SIGN_ERROR: CSSProperties = {

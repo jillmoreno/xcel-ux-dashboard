@@ -711,6 +711,44 @@ describe('the signature', () => {
   })
 })
 
+describe('Nevada is countersigned', () => {
+  /* ⚠ A CONTRACT WITH ONE SIGNATURE IS NOT THE DOCUMENT NEVADA ASKS FOR. Its
+     profile requires each student receive a copy "signed by the student AND
+     an institution representative". The learner cannot produce the school's
+     half and must not be asked to, so it is drawn as already applied. */
+  it('shows the school’s signature as applied, not as a field', () => {
+    open(docById('nv-ea'))
+    toDocumentStep()
+
+    expect(
+      screen.getByLabelText(/countersigned by XCEL Solutions, LLC, Institution Representative/i),
+    ).toBeInTheDocument()
+
+    // One text input on this step — the learner's. The school's is drawn.
+    expect(screen.getAllByRole('textbox')).toHaveLength(1)
+    expect(screen.getByLabelText(/^digitally sign$/i)).toHaveValue('')
+  })
+
+  it('does not gate on it, and still gates on the learner’s own signature', () => {
+    open(docById('nv-ea'))
+    toDocumentStep()
+    fireEvent.click(screen.getByLabelText(/i have read and agree/i))
+    expect(confirmButton(), 'countersigned but unsigned').toBeDisabled()
+    sign()
+    expect(confirmButton()).toBeEnabled()
+  })
+
+  /* Kentucky and Oregon are agreements too, and neither state asks for one. */
+  it('is Nevada’s alone', () => {
+    const countersigned = COMPLIANCE_DOCUMENTS.filter((d) => d.counterSignature)
+    expect(countersigned.map((d) => d.id)).toEqual(['nv-ea'])
+
+    open(docById('ky-ea'))
+    toDocumentStep()
+    expect(screen.queryByText(/^Countersigned$/)).toBeNull()
+  })
+})
+
 describe('Wisconsin signs in the order it is filled', () => {
   /* ⚠ THE PAPER ORDER IS NOT THE FILLING ORDER. All four two-party forms
      print the student's block above the monitor's, which is why the shape

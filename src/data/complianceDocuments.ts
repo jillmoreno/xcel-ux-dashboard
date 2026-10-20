@@ -64,6 +64,24 @@ export type DocumentShape =
 /** See `ComplianceDocumentConfig.acknowledgement`. */
 export type AcknowledgementLevel = 'none' | 'checkbox' | 'signature'
 
+/**
+ * THE OTHER PARTY'S SIGNATURE — the school's, not the learner's.
+ *
+ * ⚠ IT IS NOT A FIELD. Nevada's profile requires that each student receives a
+ * copy of the agreement "signed by the student AND an institution
+ * representative": a contract with one signature on it is not the document
+ * the state asks for. But the learner cannot produce the school's half, and
+ * must not be asked to — it is applied on XCEL's side and shown as already
+ * applied, which is also what makes the agreement feel like a contract rather
+ * than a form.
+ */
+export interface CounterSignature {
+  /** Who signs for the school. */
+  signatory: string
+  /** The capacity they sign in, as the regulation names it. */
+  role: string
+}
+
 export type ExtraField =
   | 'dob'
   | 'ssn-last4'
@@ -172,6 +190,11 @@ export interface ComplianceDocumentConfig {
    *               AND a typed name.
    */
   acknowledgement?: AcknowledgementLevel
+  /**
+   * Shown as already signed beneath the learner's signature. Nevada is the
+   * only document in the set that requires one.
+   */
+  counterSignature?: CounterSignature
 
   /* ── affidavit-two-party only ── */
   /**
@@ -467,11 +490,21 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
 
        ⚠ AND IT IS COUNTER-SIGNED. The state profile is explicit: each student
        receives a copy of the agreement "signed by the student AND an
-       institution representative". Nothing in this modal represents XCEL's
-       half of that — the learner signs into a void.
-       TODO(product): a counter-signature is a record Atlas has to hold, not
-       a field the learner fills. */
+       institution representative", so a copy carrying only the learner's
+       signature is not the document Nevada asks for.
+
+       ⚠ THE SIGNATORY IS THE SCHOOL, NOT A NAMED PERSON — here. The
+       regulation implies an individual, and the other state profiles do name
+       a provider director; Nevada's does not, and inventing one would put a
+       person's name on a contract.
+       TODO(content): get the Nevada signatory's name and capacity from the
+       compliance team, and decide whether it is stamped per agreement or
+       held once on the provider record. */
     acknowledgement: 'signature',
+    counterSignature: {
+      signatory: 'XCEL Solutions, LLC',
+      role: 'Institution Representative',
+    },
     sections: [
       {
         heading: 'Course Program',
