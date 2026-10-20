@@ -432,7 +432,14 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     /* ⚠ NEVADA SIGNS, KENTUCKY AND OREGON TICK. Table A6 lists Nevada's
        requirement as a SIGNED enrollment agreement where the other two are
        agreements without that word, and §4.2 row 2 groups all three as a
-       checkbox. Where the two disagree the stricter reading wins. */
+       checkbox. Where the two disagree the stricter reading wins.
+
+       ⚠ AND IT IS COUNTER-SIGNED. The state profile is explicit: each student
+       receives a copy of the agreement "signed by the student AND an
+       institution representative". Nothing in this modal represents XCEL's
+       half of that — the learner signs into a void.
+       TODO(product): a counter-signature is a record Atlas has to hold, not
+       a field the learner fills. */
     acknowledgement: 'signature',
     sections: [
       {
@@ -577,9 +584,16 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Post Final Affidavit',
     sourceFile: 'NY PE-Post Final Affidavit.docx',
     subject: 'New York',
+    /* ⚠ THE EXAM DATE IS NOT THE SIGNING DATE, and New York asks for the
+       former: its profile requires "name, date the exam was taken,
+       signature, and a statement that it was taken without assistance". The
+       source document's field is headed "Today's Date", which is the day the
+       affidavit is signed — the same day in the happy path and a different
+       one the moment an affidavit is completed late.
+       TODO(content): the form's own label should probably change too. */
     body:
       'By submitting this form, the undersigned student acknowledges that the online course examination must be completed unassisted by any person, the course material or other materials. The student also acknowledges that a violation of these standards shall result in loss of course credit and administrative sanction by the New York Department of Financial Services Insurance Department.\n\nThe student further declares that he/she has been actively engaged in one-hundred percent of the online pre-licensing course, and has completed one hundred percent of the review questions for each particular section/chapter before proceeding to the next section/chapter.',
-    extraFields: [],
+    extraFields: ['exam-date'],
   },
   {
     id: 'ms-post',
@@ -590,6 +604,15 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Pre-Final Affidavit',
     sourceFile: 'MS PE-Pre Final Affidavit.docx',
     subject: 'Mississippi',
+    /* ⚠ MISSISSIPPI'S REAL REQUIREMENT IS NOT THIS DOCUMENT. Its profile
+       requires, after the exam, that "the proctor signs an affidavit or
+       certification that the student completed it without help ... and gives
+       their name, address and phone number to the provider. It may be
+       administered and signed electronically (state template)." That form is
+       NOT in the set — this one is a student pre-exam acknowledgment, which
+       Mississippi does not ask for.
+       TODO(content): obtain the Mississippi proctor affidavit (state
+       template). Until then the state's actual rule is unrepresented. */
     body:
       'By submitting this form, the undersigned student acknowledges that the online course examination must be completed unassisted by any person, the course material or other materials. The student also acknowledges that a violation of these standards shall result in loss of course credit and administrative sanction by the Mississippi Insurance Department.\n\nThe student further declares that he/she has been actively engaged in one-hundred percent of the online pre-licensing course, and has completed one hundred percent of the review questions for each particular section/chapter before proceeding to the next section/chapter.',
     extraFields: [],
@@ -688,7 +711,13 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
        defines who may proctor, and the form the student signs is theirs
        alone — the proctor signs the POST FINAL affidavit instead, which is
        the unreadable PDF below. Single-signer, with the proctor rules as
-       reading. */
+       reading.
+
+       ⚠ AND MINNESOTA DOES NOT REQUIRE IT. The state profile lists Minnesota
+       as "silent on ... pre-exam attestation" — so this document is XCEL's
+       own practice rather than a Minnesota rule. It is the state's PROCTOR
+       affidavit, after the exam, that Minnesota actually requires, and that
+       is the file that cannot be read. */
     id: 'mn-pre-final',
     state: 'MN',
     moment: 'before-exam',
@@ -751,6 +780,12 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Post Final Affidavit',
     sourceFile: 'CT PE-Post Final Affidavit.docx',
     subject: 'Connecticut',
+    /* ⚠ THE FORM IS THE STATE'S, NOT OURS. Connecticut's profile specifies an
+       "Affidavit of Personal Responsibility (form provided by the state)" —
+       the same form name Wisconsin uses. The wording rendered here is the
+       .docx XCEL holds; the state's own form is what a regulator expects.
+       TODO(content): confirm the .docx IS the state form before this is
+       treated as the real text. */
     studentBody:
       'I affirm that I personally completed the entire study material of the course. I also affirm that I completed the exam without assistance from any course material, other than source material, or from any person(s).\n\n## Student Certification Statement:\n\nBy submitting this form, I certify that, under the penalty of perjury, I am the person listed above and that my completion of each assignment in this course was the result of my own personal efforts, unassisted by any unauthorized individual or resource, and my work has not been altered or tampered with in any way. I understand that receiving unauthorized assistance or tampering with course results will invalidate my course credit and may be a cause of action under applicable laws and regulations sanctioned by the Connecticut Department of Insurance.',
     proctorBody:
@@ -772,6 +807,16 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Post Final Affidavit',
     sourceFile: 'WI PE-Post Final Affidavit.docx',
     subject: 'Wisconsin',
+    /* ⚠ THE REAL SEQUENCE IS THE OTHER WAY ROUND. Wisconsin's profile has the
+       proctor verify identity and complete the Affidavit of Personal
+       Responsibility BEFORE the exam, and "both proctor and student sign it"
+       after. This shape renders student first, then proctor — the order the
+       paper form reads in, not the order it is filled in.
+       Also the state's own form (the same name Connecticut uses), and the
+       certificate needs "specific wording required (provider packet,
+       Appendix 5)".
+       TODO(design): whether the two-party flow should open on the proctor is
+       a question for the real trigger, not for this preview. */
     studentBody:
       'I affirm that I personally completed the entire study material of the course. I also affirm that I completed the exam without assistance from any course material, other than source material, or from any person(s).\n\n## Student Certification Statement:\n\nBy clicking the button below, I certify that, under the penalty of perjury, I am the person listed above and that my completion of each assignment in this course was the result of my own personal efforts, unassisted by any unauthorized individual or resource, and my work has not been altered or tampered with in any way. I understand that receiving unauthorized assistance or tampering with course results will invalidate my course credit and may be a cause of action under applicable laws and regulations of my state.',
     proctorBody:

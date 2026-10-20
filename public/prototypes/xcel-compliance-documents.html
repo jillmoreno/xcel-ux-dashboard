@@ -95,7 +95,7 @@ td.fn{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3)}
 
 <p class="lead">Every compliance document XCEL attaches to a pre-licensing course — affidavits, attestations, notices and enrollment agreements — read from the source files and sorted into the <strong>six content shapes</strong> they actually fall into. The claim this document makes is that they do not fit one fixed flow, and that the right unit of reuse is the shape, not the document.</p>
 
-<div class="ok"><strong>23 of 24 are now verbatim from the source files.</strong> The exception is Minnesota’s Post Final Affidavit, whose PDF cannot be read — see below. One further passage, the Spanish half of Florida’s Property &amp; Casualty notice, is a correction rather than a transcription, and is flagged where it appears.</div>
+<div class="ok"><strong>23 of 24 are now verbatim from the source files, and every shape is confirmed against its state profile.</strong> The exception is Minnesota’s Post Final Affidavit, whose PDF cannot be read — see below. One further passage, the Spanish half of Florida’s Property &amp; Casualty notice, is a correction rather than a transcription, and is flagged where it appears.</div>
 
 <h2>The problem</h2>
 
@@ -186,7 +186,18 @@ td.fn{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3)}
 <p>So the field is now the PRD’s own list of <strong>moments</strong>, and the spread shows why two values were never going to hold: five documents at checkout, three before the course opens, two before the first lesson, five before the exam, seven after it, two at completion. Four of those moments sat inside one value before.</p>
 <p>One moment carries no document on purpose — <em>during</em> the exam, where a proctor is present and checks identity but nothing is signed. It is in the list so the set is the regulation’s rather than a shape fitted to the files we happen to hold.</p>
 
-<h3>7. Three smaller things, for whoever owns the files</h3>
+<h3>7. Two documents the set does not contain</h3>
+<p>Reading all nineteen state profiles turned up two requirements with no file behind them, both proctor affidavits:</p>
+<ul>
+<li><strong>Mississippi.</strong> After the exam <em>“the proctor signs an affidavit … and gives their name, address and phone number to the provider. It may be administered and signed electronically (state template).”</em> The only Mississippi file in the set is a <em>student</em> pre-exam acknowledgment — which the state does not ask for. The form that matters is a state template nobody has pulled.</li>
+<li><strong>Minnesota.</strong> Its proctor affidavit is the PDF that cannot be read. Minnesota is also explicitly <em>silent on pre-exam attestation</em>, so the Minnesota pre-final document we <em>do</em> hold is XCEL’s own practice, not a state rule.</li>
+</ul>
+
+<h3>8. Identity fields were being collected nowhere</h3>
+<p>Four affidavits name identity fields the state’s roster needs — California’s date of birth and last four of SSN, Illinois’ full SSN, Ohio’s exam date, phone and SSN, New York’s exam date. The component rendered them only on the two-party student step, so on every single-signer affidavit they were <strong>silently dropped</strong>: the flow completed, the learner signed, and nothing was asked. Fixed; they now gate the identity step, because a roster the state rejects is not a completion.</p>
+<p>New York’s is the one that was also wrong in the data. Its profile asks for <em>“name, date the exam was taken, signature”</em>; the source document’s field is headed “Today’s Date”, which is the day the affidavit is signed. The same day in the happy path, and a different one the moment an affidavit is completed late.</p>
+
+<h3>9. Three smaller things, for whoever owns the files</h3>
 <ul>
 <li><code>MN PE-Terms and Conditions…- Copy.docx</code> carries Windows’ duplicate suffix with no original beside it — but its text is <em>not</em> a duplicate of any other row, so this looks like a lost original rather than a stray.</li>
 <li>Ohio’s combined affidavit explains itself: <em>“OH rule says both can’t be on one form and OCD does not have the functionality to attach 2 post final affidavits.”</em> That is why a sixth type name exists.</li>
@@ -203,6 +214,10 @@ td.fn{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3)}
 <tr><td><strong>Minnesota and Mississippi’s proctor affidavits</strong></td><td>Table A5 requires a proctor affidavit in both. Minnesota’s is the unreadable PDF; <strong>Mississippi has no such file in the set at all</strong> — its only document is a student pre-exam acknowledgment.</td></tr>
 <tr><td><strong>Connecticut’s form is the state’s</strong></td><td>Its profile specifies an “Affidavit of Personal Responsibility (form provided by the state)”. The wording rendered here is ours, not Connecticut’s.</td></tr>
 <tr><td><strong>Illinois changes in 2027</strong></td><td>Learner affirmation through 2027; from the 2027 renewal a monitor affidavit signed after the exam. Illinois becomes two-party on a known date.</td></tr>
+<tr><td><strong>Connecticut and Wisconsin use the state’s form</strong></td><td>Both require an “Affidavit of Personal Responsibility” — the same name, both state-provided. The wording rendered here is from the .docx XCEL holds, which may or may not be the state’s own text.</td></tr>
+<tr><td><strong>Wisconsin’s real sequence is inverted</strong></td><td>The proctor verifies identity and completes the affidavit <em>before</em> the exam; both parties sign after. The two-party shape renders student then proctor — the order the paper reads in, not the order it is filled in.</td></tr>
+<tr><td><strong>Nevada expects a counter-signature</strong></td><td>Each student receives a copy “signed by the student <em>and an institution representative</em>”. Nothing in the modal represents XCEL’s half — the learner signs into a void.</td></tr>
+<tr><td><strong>Oregon’s contract is filed at approval</strong></td><td>Its profile requires the enrollment contract <em>at provider approval</em>, not necessarily in front of each learner — which sits oddly against §4.2 listing Oregon as a checkout agreement.</td></tr>
 <tr><td><strong>Lines of authority</strong></td><td>Two affidavits name one line in their heading — “Illinois <strong>Life</strong>”, “Ohio <strong>Property</strong>” — against un-lined file names. There may be a per-line set behind both.</td></tr>
 <tr><td><strong>Ohio’s ethnicity and address fields</strong></td><td>Ohio’s registration form is the only pre-course document collecting SSN, date of birth, address and phone. Rendered, because the form asks for them; worth a second look before it is wired to anything real.</td></tr>
 </tbody>

@@ -302,6 +302,39 @@ describe('the Illinois documents', () => {
   })
 })
 
+describe('what the state profiles settled', () => {
+  /* ⚠ THE EXAM DATE IS NOT THE SIGNING DATE. New York's profile asks for
+     "name, date the exam was taken, signature"; the source document's field
+     is headed "Today's Date", which is the day the affidavit is signed. The
+     same day in the happy path, a different one the moment an affidavit is
+     completed late. */
+  it('asks New York for the date the exam was taken', () => {
+    const ny = docById('ny-post')
+    expect(ny.extraFields).toContain('exam-date')
+
+    open(ny)
+    typeName()
+    fireEvent.click(nextButton())
+    expect(screen.getByLabelText(/exam date/i)).toBeInTheDocument()
+  })
+
+  /* The four states whose profiles require a proctor affidavit are the four
+     this shape serves — and Minnesota and Mississippi, which also require
+     one, are the two whose documents are missing from the set. */
+  it('holds a proctor document for every two-party state it claims', () => {
+    for (const d of COMPLIANCE_DOCUMENTS.filter((x) => x.shape === 'affidavit-two-party')) {
+      expect(d.proctorBody, d.id).toBeTruthy()
+      expect(d.proctorFields?.length, d.id).toBeGreaterThan(0)
+    }
+    /* ⚠ MISSISSIPPI'S FILE IS NOT ITS REQUIREMENT. The state wants a proctor
+       affidavit; the only MS document is a student pre-exam acknowledgment,
+       so it is single-signer here and the real form is still missing. */
+    const ms = docById('ms-post')
+    expect(ms.shape).toBe('affidavit-single')
+    expect(ms.proctorBody).toBeUndefined()
+  })
+})
+
 describe('the step sequence comes from the shape', () => {
   it('names a step list for every shape the data uses', () => {
     for (const d of COMPLIANCE_DOCUMENTS) {
@@ -348,7 +381,9 @@ describe('Next stays off until the step is answered', () => {
   })
 
   it('needs first and last on an `identity` step, and nothing else', () => {
-    open(docById('ny-post')) // affidavit-single → [identity, document]
+    /* Pennsylvania's affidavit asks for no identity fields — New York's and
+       Ohio's do, and those are gated separately below. */
+    open(docById('pa-post')) // affidavit-single → [identity, document]
     expect(nextButton()).toBeDisabled()
     typeInto(/^first name$/i, 'Jordan')
     expect(nextButton()).toBeDisabled()
@@ -359,6 +394,9 @@ describe('Next stays off until the step is answered', () => {
   it('needs the attest tick on the affidavit itself, and then completes', () => {
     const { onComplete } = open(docById('ny-post'))
     typeName()
+    // New York asks for the exam date before it will let you past identity.
+    expect(nextButton(), 'exam date still empty').toBeDisabled()
+    typeInto(/exam date/i, '11/02/2026')
     fireEvent.click(nextButton())
 
     expect(screen.getByText(/administrative sanction by the New York/i)).toBeInTheDocument()

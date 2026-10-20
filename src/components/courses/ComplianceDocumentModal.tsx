@@ -175,7 +175,12 @@ export function ComplianceDocumentModal({
       case 'name':
         return nameComplete(name) && legalNameConfirmed
       case 'identity':
-        return nameComplete(name)
+        /* The identity fields gate here for the same reason they do on the
+           two-party student step: a roster the state rejects is not a
+           completion. */
+        return (
+          nameComplete(name) && extraFields.every((f) => (extras[f] ?? '').trim() !== '')
+        )
       case 'document':
         /* What the document asks for, at the PRD's three levels. 'none' is
            not an oversight: a notice the regulator only requires us to SHOW
@@ -303,8 +308,11 @@ export function ComplianceDocumentModal({
 
           {step === 'identity' && (
             <StepIdentity
+              config={config}
               name={name}
               onName={(part, value) => setName((n) => ({ ...n, [part]: value }))}
+              extras={extras}
+              onExtra={(key, value) => setExtras((e) => ({ ...e, [key]: value }))}
             />
           )}
 
@@ -429,11 +437,17 @@ function StepName({
 }
 
 function StepIdentity({
+  config,
   name,
   onName,
+  extras,
+  onExtra,
 }: {
+  config: ComplianceDocumentConfig
   name: Record<string, string>
   onName: (part: NamePart, value: string) => void
+  extras: Record<string, string>
+  onExtra: (key: string, value: string) => void
 }) {
   return (
     <div style={STACK}>
@@ -441,6 +455,21 @@ function StepIdentity({
         Confirm who is making this declaration. This is the name that goes on the affidavit.
       </p>
       <NameFields values={name} onChange={onName} />
+      {/* ⚠ THESE WERE SILENTLY DROPPED. `extraFields` rendered only on the
+          two-party student step, so every single-signer affidavit that asks
+          for one — California's date of birth and SSN last four, Illinois'
+          full SSN, Ohio's exam date, phone and SSN, New York's exam date —
+          collected nothing at all. The flow completed and the fields the
+          state's roster needs were simply never asked for. */}
+      {(config.extraFields ?? []).map((f) => (
+        <Field
+          key={f}
+          label={EXTRA_FIELD_LABEL[f]}
+          value={extras[f] ?? ''}
+          onChange={(v) => onExtra(f, v)}
+          placeholder={EXTRA_FIELD_PLACEHOLDER[f]}
+        />
+      ))}
     </div>
   )
 }
