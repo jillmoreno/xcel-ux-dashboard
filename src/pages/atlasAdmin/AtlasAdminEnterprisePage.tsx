@@ -5,7 +5,7 @@ import { cohortOf, riskOf } from '@/data/atlasAdmin/enterprise'
 import { ChartSimple, CircleCheck, FileLinesRegular, TriangleExclamation } from '@/icons'
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
-import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, FIELD_LABEL, HEADING, INPUT } from './adminStyles'
+import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, FIELD_LABEL, HEADING, INPUT, PAGE_H1, PAGE_SUB } from './adminStyles'
 import { downloadCsv } from './csv'
 
 /**
@@ -61,7 +61,10 @@ export function AtlasAdminEnterprisePage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <p style={{ margin: 0, fontSize: 12, color: 'var(--admin-muted)' }}>Insurance agency view · pre-licensing pipeline</p>
+      <div>
+        <h1 style={PAGE_H1}>Enterprise Insights</h1>
+        <p style={PAGE_SUB}>Insurance agency view · pre-licensing pipeline</p>
+      </div>
       <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))' }}>
         <Panel icon={<CircleCheck size={13} />} tint="var(--admin-success-tint)" ink="var(--admin-success-ink)" title="Registration & compliance now" quote="Show me who is registered and on track right now" info="On track: prepared to pass, or in progress without low practice scores. At risk: off track — done with no prep, or quiet.">
           <Pair a={['Exam ready', s.onTrack.length, 'var(--admin-success-ink)']} b={['At risk', s.atRisk.length, 'var(--admin-brand)']} />

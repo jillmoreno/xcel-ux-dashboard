@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { formatDay, addDays, type AssignmentRule } from '@/data/atlasAdmin/assignments'
 import { Download, MagnifyingGlass, Plus, Sparkles } from '@/icons'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
-import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, HEADING, INPUT, PAGE_SUB, PILL } from './adminStyles'
+import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, HEADING, INPUT, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
 import { parseRuleSentence } from './ruleDraft'
 
 /**
@@ -49,7 +49,10 @@ export function AtlasAdminAssignmentsPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-        <p style={{ ...PAGE_SUB, margin: 0 }}>All assignment rules, schedules, enrollment counts, and completion in one workspace.</p>
+        <div>
+          <h1 style={PAGE_H1}>Assignment Rules</h1>
+          <p style={PAGE_SUB}>All assignment rules, schedules, enrollment counts, and completion in one workspace.</p>
+        </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button type="button" onClick={exportCsv} style={BUTTON_OUTLINE}>
             <Download size={13} aria-hidden /> Export report

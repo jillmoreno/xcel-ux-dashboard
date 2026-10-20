@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState, type ComponentType, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, type ComponentType, type CSSProperties, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { BookOpen, Bell, Building, ChartSimple, CircleDollar, Envelope, Gear, IdCard, LocationDot, UserGroup, Users } from '@/icons'
 import { AtlasHeader } from '@/components/layout/AtlasHeader'
 import { ADMIN_USER } from '@/data/atlasAdmin/learners'
 import { ADMIN_BASE, ADMIN_EMAIL, useAdminStore } from './adminStore'
-import { BODY, HEADING } from './adminStyles'
+import { BODY } from './adminStyles'
 
 /**
  * ATLAS ADMIN — THE SHELL (2026-10-19). The reference's sidebar and header:
@@ -104,10 +104,6 @@ export function AtlasAdminLayout() {
         </div>
       </aside>
       <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        <header style={HEADER}>
-          <h1 style={HEADER_TITLE}>{title}</h1>
-          <UserMenu learnerHome={learnerHome} />
-        </header>
         <main style={MAIN}>
           <Outlet />
         </main>
@@ -122,10 +118,11 @@ export function AtlasAdminLayout() {
   )
 }
 
-/** The admin's menu — the reference's: who is signed in and which mode, six
- *  pages (four of them have no sidebar link), and the switch to the learner
- *  side. "Switch to Learner Mode" goes to the learner Home, as the global
- *  nav's Home does; the reference sends it to its /learner preview. */
+/** The admin's menu, from the reference's user pill: six pages (four of them
+ *  have no sidebar link). It lives in the global nav's profile menu now —
+ *  `modeMenu` above, with Switch to Learner Mode — and the pill and the
+ *  title banner it sat in are gone (2026-10-20, Eric: "drop the banner and
+ *  pill completely"). Each page carries its own heading. */
 const USER_MENU: NavItem[] = [
   { to: `${ADMIN_BASE}/organization`, label: 'Organization', icon: LocationDot },
   { to: `${ADMIN_BASE}/teams`, label: 'Teams', icon: Building },
@@ -134,65 +131,6 @@ const USER_MENU: NavItem[] = [
   { to: `${ADMIN_BASE}/pricing`, label: 'Pricing', icon: CircleDollar },
   { to: `${ADMIN_BASE}/settings`, label: 'Settings', icon: Gear },
 ]
-
-function UserMenu({ learnerHome }: { learnerHome: string }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
-  const go = (to: string) => {
-    setOpen(false)
-    navigate(to)
-  }
-  useEffect(() => {
-    if (!open) return
-    const onDown = (e: MouseEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false)
-    }
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('mousedown', onDown)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('mousedown', onDown)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [open])
-  return (
-    <div ref={ref} style={{ position: 'relative' }}>
-      <button type="button" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="cre-admin-outline" style={USER}>
-        <span style={{ textAlign: 'right', fontSize: 14, lineHeight: 1.25 }}>
-          <span style={{ display: 'block', fontWeight: 600, color: 'var(--admin-chrome-title)' }}>{ADMIN_USER.name}</span>
-          <span style={{ display: 'block', fontSize: 12, color: 'var(--admin-chrome-text)' }}>{ADMIN_USER.role}</span>
-        </span>
-        <span aria-hidden style={AVATAR}>
-          {ADMIN_USER.initials}
-        </span>
-      </button>
-      {open ? (
-        <div role="menu" aria-label="Account" style={USER_PANEL}>
-          <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--admin-chrome-rule)' }}>
-            <strong style={{ display: 'block', fontSize: 13, color: 'var(--admin-chrome-title)' }}>{ADMIN_USER.name}</strong>
-            <span style={{ fontSize: 11, color: 'var(--admin-muted)' }}>Admin mode</span>
-          </div>
-          <div style={{ padding: 4 }}>
-            {USER_MENU.map(({ to, label, icon: Icon }) => (
-              <button key={to} type="button" role="menuitem" className="cre-admin-menu" onClick={() => go(to + window.location.search)} style={USER_ITEM}>
-                <Icon size={14} aria-hidden />
-                {label}
-              </button>
-            ))}
-          </div>
-          <div style={{ padding: 4, borderTop: '1px solid var(--admin-chrome-rule)' }}>
-            <button type="button" role="menuitem" className="cre-admin-menu" onClick={() => go(learnerHome)} style={{ ...USER_ITEM, fontWeight: 600 }}>
-              Switch to Learner Mode
-            </button>
-          </div>
-        </div>
-      ) : null}
-    </div>
-  )
-}
 
 function SideLink({ item }: { item: NavItem }) {
   const Icon = item.icon
@@ -251,78 +189,6 @@ const NAV_ACTIVE: CSSProperties = {
   ...NAV_ITEM,
   background: 'var(--admin-nav-active-bg)',
   color: 'var(--admin-nav-active-ink)',
-}
-const HEADER: CSSProperties = {
-  position: 'sticky',
-  top: 0,
-  zIndex: 10,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 24,
-  padding: '20px 40px',
-  background: 'var(--admin-chrome-header)',
-  backdropFilter: 'blur(8px)',
-  borderBottom: '1px solid var(--admin-chrome-rule)',
-}
-const HEADER_TITLE: CSSProperties = {
-  margin: 0,
-  fontFamily: HEADING,
-  fontSize: 22,
-  fontWeight: 600,
-  lineHeight: '28px',
-  color: 'var(--admin-chrome-title)',
-}
-const USER: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 12,
-  minHeight: 44,
-  boxSizing: 'border-box',
-  padding: '6px 12px',
-  borderRadius: 9999,
-  border: '1px solid var(--admin-chrome-rule)',
-  background: 'var(--admin-surface)',
-  fontFamily: 'inherit',
-  cursor: 'pointer',
-}
-const USER_PANEL: CSSProperties = {
-  position: 'absolute',
-  right: 0,
-  top: 'calc(100% + 6px)',
-  zIndex: 30,
-  width: 240,
-  borderRadius: 12,
-  border: '1px solid var(--admin-chrome-rule)',
-  background: 'var(--admin-surface)',
-  boxShadow: 'var(--admin-shadow-menu)',
-}
-const USER_ITEM: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 10,
-  width: '100%',
-  padding: '8px 10px',
-  border: 'none',
-  borderRadius: 8,
-  background: 'none',
-  fontFamily: 'inherit',
-  fontSize: 13,
-  color: 'var(--admin-chrome-title)',
-  textAlign: 'left',
-  cursor: 'pointer',
-}
-const AVATAR: CSSProperties = {
-  width: 36,
-  height: 36,
-  borderRadius: '50%',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: 'var(--admin-nav-active-bg)',
-  color: 'var(--admin-nav-active-ink)',
-  fontSize: 13,
-  fontWeight: 700,
 }
 const MAIN: CSSProperties = { flex: '1 1 auto', padding: '32px 40px 140px' }
 const TOAST: CSSProperties = {
