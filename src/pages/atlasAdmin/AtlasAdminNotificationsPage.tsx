@@ -120,7 +120,7 @@ export function AtlasAdminNotificationsPage() {
                               {active ? <span style={SELECTED}>Selected</span> : null}
                             </p>
                             <p style={{ margin: '4px 0 0', fontSize: 12.5, lineHeight: 1.45, color: 'var(--admin-text)' }}>{n.description}</p>
-                            <p style={{ margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--admin-muted)' }}>
+                            <p style={{ margin: '6px 0 0', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, lineHeight: '13.5px', color: 'var(--admin-muted)' }}>
                               <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: isOn(n) ? 'var(--admin-success-ink)' : 'var(--admin-faint)' }} />
                               {statusLine(n)}
                             </p>
