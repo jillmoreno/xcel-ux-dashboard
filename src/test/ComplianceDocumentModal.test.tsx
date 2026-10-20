@@ -149,15 +149,17 @@ describe('the step sequence comes from the shape', () => {
     }
   })
 
-  it('renders "Step 1 of N" for N = the shape\'s step count', () => {
+  it('renders "Step 1 of N" for N = the shape\'s step count, once there are two', () => {
     for (const shape of Object.keys(STEPS_BY_SHAPE) as DocumentShape[]) {
       const doc = COMPLIANCE_DOCUMENTS.find((d) => d.shape === shape)
       if (!doc) continue
+      const steps = STEPS_BY_SHAPE[shape]
       open(doc)
-      expect(
-        screen.getByText(`Step 1 of ${STEPS_BY_SHAPE[shape].length}`),
-        shape,
-      ).toBeInTheDocument()
+      if (steps.length > 1) {
+        expect(screen.getByText(`Step 1 of ${steps.length}`), shape).toBeInTheDocument()
+      } else {
+        expect(screen.queryByText(/^Step \d+ of \d+$/), shape).toBeNull()
+      }
       cleanup()
     }
   })
@@ -299,6 +301,44 @@ describe('the two shapes with no signer', () => {
     expect(nextButton()).toBeDisabled()
     fireEvent.click(nextButton())
     expect(onComplete).not.toHaveBeenCalled()
+  })
+})
+
+describe('the progress strip', () => {
+  it('is absent on a one-step document', () => {
+    open(docById('fl-notice-lh')) // notice → ['document']
+    expect(screen.queryByText(/^Step \d+ of \d+$/)).toBeNull()
+    // Back and Next are still there — only the progress goes.
+    expect(screen.getByRole('button', { name: /back/i })).toBeInTheDocument()
+    expect(nextButton()).toBeInTheDocument()
+  })
+
+  it('is absent on the needs-review placeholder too', () => {
+    open(docById('mn-post-pdf'))
+    expect(screen.queryByText(/^Step \d+ of \d+$/)).toBeNull()
+  })
+
+  it('is present as soon as there are two', () => {
+    open(docById('ca-tc')) // signed-tc → ['name', 'document']
+    expect(screen.getByText('Step 1 of 2')).toBeInTheDocument()
+  })
+})
+
+describe('getting out of it', () => {
+  /* With `hideChrome` there is no ✕, so the backdrop and Esc are the only two
+     ways out — and the backdrop is the one people reach for first. */
+  it('closes when the backdrop is clicked', () => {
+    const { onClose } = open(docById('fl-notice-lh'))
+    const backdrop = document.querySelector('.cre-modal-backdrop')
+    expect(backdrop).not.toBeNull()
+    fireEvent.click(backdrop!)
+    expect(onClose).toHaveBeenCalledOnce()
+  })
+
+  it('does not close when the click lands inside the dialog', () => {
+    const { onClose } = open(docById('fl-notice-lh'))
+    fireEvent.click(screen.getByRole('dialog'))
+    expect(onClose).not.toHaveBeenCalled()
   })
 })
 

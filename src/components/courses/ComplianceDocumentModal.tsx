@@ -207,7 +207,15 @@ export function ComplianceDocumentModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={config.title} hideChrome width={460} disableBackdropClose>
+    /* ⚠ THE BACKDROP CLOSES IT (2026-10-19, asked for on the preview), which
+       is a deliberate reversal of the shape this was specced with.
+       `disableBackdropClose` exists for config flows where tossing someone's
+       input would feel hostile — and with `hideChrome` there is no ✕, so Esc
+       was the only way out for anyone who did not think to look for one. A
+       review modal nobody can dismiss by clicking away is the worse of the
+       two failures. Closing still discards the answers; see the remount note
+       above. */
+    <Modal open={open} onClose={onClose} title={config.title} hideChrome width={460}>
       {/* ── the navy header ───────────────────────────────────────────── */}
       <div style={HEADER}>
         <div aria-hidden style={HEADER_AVATAR}>
@@ -298,23 +306,33 @@ export function ComplianceDocumentModal({
             <ChevronLeft size={18} aria-hidden />
           </button>
 
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-            <div style={SEGMENTS} role="presentation">
-              {steps.map((s, i) => (
-                <span
-                  key={s}
-                  style={{
-                    ...SEGMENT,
-                    background:
-                      i <= stepIndex ? 'var(--color-action)' : 'var(--color-neutral-200)',
-                  }}
-                />
-              ))}
+          {/* ⚠ NO PROGRESS ON A ONE-STEP DOCUMENT. A single filled segment over
+              "Step 1 of 1" is a progress bar that was never going to move —
+              it answers a question nobody asked and implies there is more to
+              come. The two notices and the needs-review placeholder are the
+              one-step shapes; the spacer keeps Back and Next on the same
+              edges they sit on everywhere else. */}
+          {steps.length > 1 ? (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <div style={SEGMENTS} role="presentation">
+                {steps.map((s, i) => (
+                  <span
+                    key={s}
+                    style={{
+                      ...SEGMENT,
+                      background:
+                        i <= stepIndex ? 'var(--color-action)' : 'var(--color-neutral-200)',
+                    }}
+                  />
+                ))}
+              </div>
+              <span style={STEP_LABEL}>
+                Step {stepIndex + 1} of {steps.length}
+              </span>
             </div>
-            <span style={STEP_LABEL}>
-              Step {stepIndex + 1} of {steps.length}
-            </span>
-          </div>
+          ) : (
+            <div style={{ flex: 1 }} />
+          )}
 
           <button
             type="button"
