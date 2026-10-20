@@ -4,6 +4,8 @@ import { ProgressCard } from './ProgressCard'
 import { CalendarSettingsSheet } from './CalendarSettingsSheet'
 import { Toast } from '@/components/ui/Toast'
 import { studyCalendarFor, type StudyCalendar } from '@/data/studyCalendarFixtures'
+import { useExamCalendarOverlay, writeExamDateTime } from '@/data/examDateStore'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 
 /**
  * STC Progress Tracker tab — overall study-plan snapshot for the active
@@ -21,6 +23,14 @@ export function StudyProgressPanel({ pathId }: { pathId?: string } = {}) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [toastOpen, setToastOpen] = useState(false)
 
+  /* ONE EXAM DATE — `exam-date-single-store`, 2026-10-20. Overlay the stored
+     date for DISPLAY and send this sheet's saves back to the store, so the
+     Exam Date card here and the Schedule State Exam widget cannot disagree.
+     `calendar` keeps every other pacing field; only the exam date and time
+     come from the store. */
+  const unified = useFeatureFlag('exam-date-single-store').enabled
+  const shownCalendar = useExamCalendarOverlay(calendar, unified)
+
   return (
     <section style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div
@@ -31,17 +41,21 @@ export function StudyProgressPanel({ pathId }: { pathId?: string } = {}) {
           alignItems: 'stretch',
         }}
       >
-        <ProgressCard calendar={calendar} onEdit={() => setSettingsOpen(true)} />
-        <ExamDateCard calendar={calendar} onEdit={() => setSettingsOpen(true)} />
+        <ProgressCard calendar={shownCalendar} onEdit={() => setSettingsOpen(true)} />
+        <ExamDateCard calendar={shownCalendar} onEdit={() => setSettingsOpen(true)} />
       </div>
 
       <CalendarSettingsSheet
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
-        calendar={calendar}
+        calendar={shownCalendar}
         pathId={pathId}
         onSave={(next) => {
           console.info('calendar:edit:save', next)
+          /* The store is the truth for the exam date when the flag is on; the
+             local copy still carries it so flipping the flag OFF falls back to
+             a sensible value rather than an empty card. */
+          if (unified && next.examDate) writeExamDateTime(next.examDate, next.examTime)
           setCalendar((c) => ({
             ...c,
             examDate: next.examDate,

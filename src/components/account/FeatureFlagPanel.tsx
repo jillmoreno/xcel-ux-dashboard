@@ -83,6 +83,8 @@ function flagPageIdForPath(pathname: string): FeatureFlagPageId | null {
 // color/style, learning-path width/breakdown, learning-vibrant) + the dead
 // Featured Products flag were removed in the flag audit.
 const REBRAND_FLAGS = [
+  // Exam date — one store for the calendar and the Schedule State Exam widget.
+  'exam-date-single-store',
   // Compass Learning — whose surface renders there, and the planner's concept.
   'compass-surface',
   'compass-dashboard-nudge',

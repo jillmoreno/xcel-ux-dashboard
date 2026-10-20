@@ -44,6 +44,7 @@ import { CalendarSettingsSheet } from './CalendarSettingsSheet'
 import { StudyCalendarStatBand } from './StudyCalendarStatBand'
 import { CalendarActionsPanel } from './CalendarActionsPanel'
 import { EditExamDatePanel } from './EditExamDatePanel'
+import { useExamCalendarOverlay, writeExamDateTime } from '@/data/examDateStore'
 import { AddCustomEventPanel } from './AddCustomEventPanel'
 
 /**
@@ -407,6 +408,14 @@ function InlineStudyCalendarBody({
   const [todayY, todayM] = today.split('-').map((p) => parseInt(p, 10))
   const [bodySearchParams] = useSearchParams()
   const [calendar, setCalendar] = useState<StudyCalendar>(initialCalendar)
+
+  /* ONE EXAM DATE — `exam-date-single-store`, 2026-10-20. `calendar` still
+     owns every other pacing field and every task; only the exam date and time
+     are taken from the store, so the grid's [startDate, examDate] window, the
+     Edit Exam Date panel's pre-fill and the countdown all move together with
+     the Schedule State Exam widget. */
+  const unifiedExamDate = useFeatureFlag('exam-date-single-store').enabled
+  const calendarWithExamDate = useExamCalendarOverlay(calendar, unifiedExamDate)
   const [year, setYear] = useState(todayY)
   const [monthIdx, setMonthIdx] = useState(todayM - 1)
   const [scope, setScope] = useState<Scope>({ kind: 'date', iso: initialIso })
@@ -534,8 +543,13 @@ function InlineStudyCalendarBody({
   // Bounded by the calendar's [startDate, examDate] window — anything
   // outside the calendar is dropped at render time.
   const customByDate = useMemo(
-    () => customOccurrencesByDate(customEvents, calendar.startDate, calendar.examDate),
-    [customEvents, calendar.startDate, calendar.examDate],
+    () =>
+      customOccurrencesByDate(
+        customEvents,
+        calendar.startDate,
+        calendarWithExamDate.examDate,
+      ),
+    [customEvents, calendar.startDate, calendarWithExamDate.examDate],
   )
 
   const cells = useMemo(
@@ -718,7 +732,7 @@ function InlineStudyCalendarBody({
           the real actions menu ships; the legacy `onOpenActions`
           handler stays threaded for that future wiring. */}
       <StudyCalendarStatBand
-        calendar={calendar}
+        calendar={calendarWithExamDate}
         coursePct={coursePct}
         onOpenActions={() => setEditPanelOpen(true)}
       />
@@ -1000,12 +1014,18 @@ function InlineStudyCalendarBody({
       <EditExamDatePanel
         open={examDatePanelOpen}
         onClose={() => setExamDatePanelOpen(false)}
-        calendar={calendar}
+        calendar={calendarWithExamDate}
         onSave={(examDate, examTime) => {
           // Stub: PATCH /api/v1/learners/{learnerId}/schedule-config.
           // Demo swaps the exam date/time in local state so the calendar
           // rerenders; other pacing fields are left untouched.
           console.info('calendar:edit-exam-date:save', { examDate, examTime })
+          /* With the flag on this write is what every other surface reads —
+             the countdown, the Pacing tile's required rate and the course
+             header band — rather than dying in this component's state. The
+             local copy is still updated so flipping the flag OFF leaves the
+             calendar showing the last date entered here. */
+          if (unifiedExamDate) writeExamDateTime(examDate, examTime)
           setCalendar((prev) => ({
             ...prev,
             examDate,
@@ -1018,7 +1038,7 @@ function InlineStudyCalendarBody({
       <AddCustomEventPanel
         open={customEventPanel !== null}
         mode={customEventPanel?.mode ?? 'add'}
-        calendar={calendar}
+        calendar={calendarWithExamDate}
         existingEvent={editingEvent}
         defaultDate={
           customEventPanel?.mode === 'add' ? customEventPanel.defaultDate : undefined
@@ -1033,7 +1053,7 @@ function InlineStudyCalendarBody({
       <CalendarSettingsSheet
         open={editPanelOpen}
         onClose={() => setEditPanelOpen(false)}
-        calendar={calendar}
+        calendar={calendarWithExamDate}
         pathId={pathId}
         onSave={(next) => {
           // Stub: PATCH /api/v1/learners/{learnerId}/schedule-config.
@@ -1041,6 +1061,10 @@ function InlineStudyCalendarBody({
           // swap the local state in-place so the calendar UI rerenders
           // with the new exam date / dates without a second round-trip.
           console.info('calendar:edit:save', next)
+          /* The fourth editor of the same date. Like the Edit Exam Date panel,
+             it writes to the store when the flag is on so the figure it moves
+             is the one every other surface reads. */
+          if (unifiedExamDate && next.examDate) writeExamDateTime(next.examDate, next.examTime)
           setCalendar((prev) => ({
             ...prev,
             examDate: next.examDate,

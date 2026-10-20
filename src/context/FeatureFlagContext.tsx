@@ -655,6 +655,26 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'exam-date-single-store',
+    /* ONE EXAM DATE INSTEAD OF TWO — 2026-10-20.
+       OFF restores the behaviour this branch found: the Study Calendar keeps
+       its own `calendar.examDate` in component state (seeded from fixtures,
+       reset on unmount) while the Schedule State Exam widget writes
+       `cgp.examDate`, and neither reaches the other. ON makes the store the
+       single truth for both, and lets the calendar's exam TIME persist for the
+       first time (`cgp.examTime`).
+       Default ON on this branch so the branch build shows the unified
+       behaviour; whether it becomes the Prototypes baseline is Jillienne's
+       call at merge, via `promote-to-prototype`.
+       ⚠ Unifies the DATE, not the countdown — the two surfaces still measure
+       from different todays. See `useExamCalendarOverlay`. */
+    label: 'One exam date',
+    description:
+      'Makes the stored exam date (`cgp.examDate`) the single source for BOTH the Study Calendar and the Schedule State Exam widget, so editing in either moves the countdown, the Pacing tile\u2019s required rate and the course header band together. The calendar\u2019s exam time persists too. Off: each surface keeps its own date, as before \u2014 editing in the calendar moves nothing outside it.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'study-calendar-state',
     label: 'Study Plan State',
     description:

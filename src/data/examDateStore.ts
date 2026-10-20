@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react'
+import { useMemo, useSyncExternalStore } from 'react'
 import { FIXTURE_TODAY } from './myCoursesFixtures'
 
 /**
@@ -25,6 +25,24 @@ import { FIXTURE_TODAY } from './myCoursesFixtures'
  * repo to explain it. `clearExamDate()` is the way back, and the card offers it.
  */
 const KEY = 'cgp.examDate'
+
+/**
+ * THE TIME OF DAY THE EXAM IS BOOKED FOR — 2026-10-20, a SEPARATE key on
+ * purpose.
+ *
+ * The Study Calendar's Edit Exam Date panel has always collected a time
+ * alongside the date; the store never had anywhere to put it. Folding both
+ * into `cgp.examDate` as JSON was the obvious move and is the wrong one: that
+ * key already holds a bare `YYYY-MM-DD` in every reviewer's browser, and
+ * `readExamDate` validates it by regex, so a reshaped value would read back as
+ * null and silently wipe a date somebody had entered. A second key leaves
+ * every existing value working untouched.
+ *
+ * Time is OPTIONAL in a way the date is not — a learner can know the day and
+ * not the slot — so a stored time without a date is meaningless and
+ * `clearExamDate()` removes both.
+ */
+const TIME_KEY = 'cgp.examTime'
 const listeners = new Set<() => void>()
 
 /** `YYYY-MM-DD` as typed into `<input type="date">`, or null when unset. */
@@ -46,9 +64,43 @@ export function writeExamDate(value: string) {
   listeners.forEach((l) => l())
 }
 
+/** `HH:MM`, 24-hour, as `<input type="time">` produces it, or null. */
+export function readExamTime(): string | null {
+  try {
+    const raw = localStorage.getItem(TIME_KEY)
+    return raw && /^\d{2}:\d{2}$/.test(raw) ? raw : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Write a date and (optionally) its time as ONE notification.
+ *
+ * Writing them through `writeExamDate` and a separate time write would fire
+ * subscribers twice, and the first of those renders carries the new date
+ * beside the OLD time — briefly showing a 9:00am slot against a date the
+ * learner just moved. One write, one notify.
+ *
+ * An empty or absent `time` CLEARS the stored time rather than leaving the
+ * previous one attached to the new date.
+ */
+export function writeExamDateTime(value: string, time?: string) {
+  try {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return
+    localStorage.setItem(KEY, value)
+    if (time && /^\d{2}:\d{2}$/.test(time)) localStorage.setItem(TIME_KEY, time)
+    else localStorage.removeItem(TIME_KEY)
+  } catch {
+    /* storage unavailable — session-only */
+  }
+  listeners.forEach((l) => l())
+}
+
 export function clearExamDate() {
   try {
     localStorage.removeItem(KEY)
+    localStorage.removeItem(TIME_KEY)
   } catch {
     /* storage unavailable */
   }
@@ -65,6 +117,52 @@ function subscribe(cb: () => void) {
 /** The stored date, re-read whenever it is written. */
 export function useExamDate(): string | null {
   return useSyncExternalStore(subscribe, readExamDate, () => null)
+}
+
+/** The stored time, re-read whenever it is written. */
+export function useExamTime(): string | null {
+  return useSyncExternalStore(subscribe, readExamTime, () => null)
+}
+
+/**
+ * LAY THE STORED EXAM DATE OVER A STUDY CALENDAR — 2026-10-20, the one seam
+ * behind the `exam-date-single-store` flag.
+ *
+ * Until now the product carried TWO exam dates that never spoke. The store
+ * (`cgp.examDate`) is what the Schedule State Exam widget writes and what the
+ * countdown, the Pacing tile's required rate and the course header band all
+ * read. The Study Calendar carried its OWN `calendar.examDate`, seeded from
+ * fixtures and edited into component state, read by nothing else — so moving
+ * your exam date in the calendar moved no figure anywhere, and booking one in
+ * the widget never reached the calendar.
+ *
+ * This overlays the store onto a calendar so both surfaces read one value. It
+ * is deliberately a CALL-SITE swap: `EditExamDatePanel` and the study-calendar
+ * `ExamDateCard` are already presentational — they take a `calendar` and
+ * render it — so neither needs a V2 sibling, and the flag chooses what they
+ * are handed rather than threading a conditional through either.
+ *
+ * `enabled` is passed in rather than read here: this module is imported by
+ * `FeatureFlagContext`'s own consumers and must not depend on the flag layer.
+ *
+ * ⚠ THIS UNIFIES THE DATE, NOT THE COUNTDOWN. The two surfaces measure from
+ * different todays — `examDateRenewal` from `FIXTURE_TODAY` (2026-05-11),
+ * `weeksUntilExam` from `STUDY_CALENDAR_TODAY` (2026-05-19) — and round
+ * differently (a float of days/7 against `Math.ceil`). One stored date can
+ * still read as six weeks on one surface and five on the other. Closing that
+ * gap means moving an anchor every pacing figure in the app hangs off, which
+ * is a decision of its own and deliberately not taken here.
+ */
+export function useExamCalendarOverlay<T extends { examDate: string; examTime?: string }>(
+  calendar: T,
+  enabled: boolean,
+): T {
+  const date = useExamDate()
+  const time = useExamTime()
+  return useMemo(() => {
+    if (!enabled || !date) return calendar
+    return { ...calendar, examDate: date, examTime: time ?? undefined }
+  }, [calendar, enabled, date, time])
 }
 
 /**
