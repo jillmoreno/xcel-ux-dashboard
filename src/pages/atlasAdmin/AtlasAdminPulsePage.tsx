@@ -160,7 +160,7 @@ export function AtlasAdminPulsePage() {
             {pulse.offTrack.slice(0, 4).map((l) => (
               <Person key={l.id} learner={l} pill="Off track" tone="amber" line={l.prepPct === null ? 'Course done, prep not started' : `${l.prepPct}% toward exam prep`} />
             ))}
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <Link to={students('quiet7')} style={{ ...ATLAS_BUTTON_SECONDARY, textDecoration: 'none' }}>
                 Full list
               </Link>
