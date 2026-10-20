@@ -148,6 +148,7 @@ function DocumentButton({
         <span style={STATE_PILL}>{doc.state}</span>
         <span style={TIMING}>{doc.timing === 'pre-course' ? 'Pre-course' : 'Post-final'}</span>
       </span>
+      <span style={CARD_TYPE}>{doc.complianceType}</span>
       <span style={CARD_TITLE}>{doc.title}</span>
       <span style={CARD_META}>
         {steps.length} {steps.length === 1 ? 'step' : 'steps'}
@@ -284,6 +285,17 @@ const TIMING: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 11,
   color: 'var(--color-text-tertiary)',
+}
+
+/* The document's KIND, which the modal now leads with — on the card too, so
+   the mapping can be checked at a glance without opening all 24. */
+const CARD_TYPE: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 10,
+  letterSpacing: '0.07em',
+  textTransform: 'uppercase',
+  color: 'var(--color-primary-500)',
 }
 
 const CARD_TITLE: CSSProperties = {

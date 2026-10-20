@@ -82,6 +82,21 @@ describe('the document set', () => {
     }
   })
 
+  /* The heading is the TYPE now, so an unstamped document would head a modal
+     with `undefined`. The type is also a different axis from the shape, which
+     is the thing most likely to get "tidied" into one field later. */
+  it('gives all 24 a compliance type, and keeps it independent of the shape', () => {
+    for (const d of COMPLIANCE_DOCUMENTS) {
+      expect(d.complianceType, d.id).toBeTruthy()
+    }
+    // One type spanning two shapes, and one shape spanning two types — either
+    // direction collapsing would break both of these.
+    const postFinal = COMPLIANCE_DOCUMENTS.filter((d) => d.complianceType === 'Post Final Affidavit')
+    expect(new Set(postFinal.map((d) => d.shape)).size).toBeGreaterThan(1)
+    const single = COMPLIANCE_DOCUMENTS.filter((d) => d.shape === 'affidavit-single')
+    expect(new Set(single.map((d) => d.complianceType)).size).toBeGreaterThan(1)
+  })
+
   it('leaves `version` unset everywhere — there is no source of truth for it yet', () => {
     expect(COMPLIANCE_DOCUMENTS.every((d) => d.version === undefined)).toBe(true)
   })
@@ -230,6 +245,16 @@ describe('Next stays off until the step is answered', () => {
 })
 
 describe('the two shapes with no signer', () => {
+  it('heads the modal with the document kind, with the specific document under it', () => {
+    open(docById('oh-post'))
+    expect(screen.getByRole('heading', { name: 'Post Final Affidavit' })).toBeInTheDocument()
+    /* `Modal` also renders the title into a visually-hidden span to keep
+       `aria-labelledby` valid under `hideChrome`, so the document name matches
+       twice. The drawn one is the paragraph. */
+    const named = screen.getAllByText('Ohio — Pre & Post Final Affidavit')
+    expect(named.some((el) => el.tagName === 'P')).toBe(true)
+  })
+
   it('asks a notice for nothing but "I Agree", and toggles its languages', () => {
     const { onComplete } = open(docById('fl-notice-lh'))
     expect(screen.queryByLabelText(/first name/i)).toBeNull()

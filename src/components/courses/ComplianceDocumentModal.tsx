@@ -63,12 +63,12 @@ type Props = {
    step's title depends on the SHAPE (an affidavit and a notice are not the
    same word), so it is resolved separately below. */
 const STEP_CHROME: Record<string, { title: string; icon: ReactNode }> = {
-  name: { title: 'Confirm Your Name', icon: <User size={34} aria-hidden /> },
-  license: { title: 'Confirm Your License', icon: <IdCard size={34} aria-hidden /> },
-  identity: { title: 'Confirm Your Identity', icon: <IdCard size={34} aria-hidden /> },
-  document: { title: 'Review & Agree', icon: <FileLinesRegular size={34} aria-hidden /> },
-  student: { title: 'Student Declaration', icon: <User size={34} aria-hidden /> },
-  proctor: { title: 'Proctor Declaration', icon: <Users size={34} aria-hidden /> },
+  name: { title: 'Confirm Your Name', icon: <User size={24} aria-hidden /> },
+  license: { title: 'Confirm Your License', icon: <IdCard size={24} aria-hidden /> },
+  identity: { title: 'Confirm Your Identity', icon: <IdCard size={24} aria-hidden /> },
+  document: { title: 'Review & Agree', icon: <FileLinesRegular size={24} aria-hidden /> },
+  student: { title: 'Student Declaration', icon: <User size={24} aria-hidden /> },
+  proctor: { title: 'Proctor Declaration', icon: <Users size={24} aria-hidden /> },
 }
 
 /** The `document` step's eyebrow, which is the document's own kind. */
@@ -182,11 +182,11 @@ export function ComplianceDocumentModal({
      one that is signed rather than ticked, and the step's own glyph for
      everything else. */
   const avatarIcon = needsReview ? (
-    <TriangleExclamation size={34} aria-hidden />
+    <TriangleExclamation size={24} aria-hidden />
   ) : step === 'document' && config.wetSignature ? (
-    <PenFieldRegular size={34} aria-hidden />
+    <PenFieldRegular size={24} aria-hidden />
   ) : (
-    STEP_CHROME[step]?.icon ?? <FileLinesRegular size={34} aria-hidden />
+    STEP_CHROME[step]?.icon ?? <FileLinesRegular size={24} aria-hidden />
   )
 
   function goBack() {
@@ -210,19 +210,25 @@ export function ComplianceDocumentModal({
     <Modal open={open} onClose={onClose} title={config.title} hideChrome width={460} disableBackdropClose>
       {/* ── the navy header ───────────────────────────────────────────── */}
       <div style={HEADER}>
-        <p style={HEADER_EYEBROW}>{eyebrow}</p>
-        <h2 style={HEADER_TITLE}>{config.title}</h2>
-        <p style={HEADER_META}>
-          {config.state} · {config.timing === 'pre-course' ? 'Before the course' : 'After the final'}
-        </p>
+        <div aria-hidden style={HEADER_AVATAR}>
+          {avatarIcon}
+        </div>
+        <div style={HEADER_TEXT}>
+          <p style={HEADER_EYEBROW}>{eyebrow}</p>
+        {/* THE HEADING IS THE DOCUMENT'S KIND, not its per-state title — the
+            six names the SharePoint set uses. What a learner needs from a
+            heading is "what am I being asked to sign", and "Post Final
+            Affidavit" answers that where "Ohio — Pre & Post Final Affidavit"
+            makes them read a line of administrative naming first. The
+            specific document is the line under it, and it still carries the
+            state, so two Florida notices remain tellable apart. */}
+          <h2 style={HEADER_TITLE}>{config.complianceType}</h2>
+          <p style={HEADER_META}>{config.title}</p>
+        </div>
       </div>
 
       {/* ── the white card ────────────────────────────────────────────── */}
       <div style={CARD}>
-        <div aria-hidden style={AVATAR}>
-          {avatarIcon}
-        </div>
-
         <div style={{ width: '100%' }}>
           {step === 'name' && (
             <StepName
@@ -713,10 +719,38 @@ function Field({
 
 const HEADER: CSSProperties = {
   background: 'var(--color-nav-shared-navy)',
-  padding: '22px 28px 30px',
+  padding: '22px 28px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 16,
+}
+
+/* The step's glyph, in the header beside the type and the document it names.
+   ⚠ IT IS NOT THE `--color-primary-500` ON `--color-primary-100` of
+   `EnrollmentConfirmationModal`'s avatar, and it cannot be: that pairing is
+   built to sit on a white card, and the teal falls to roughly 2:1 against this
+   navy. It takes the header's OWN accent instead — the same
+   `--color-info-300` as the eyebrow above it — so the badge belongs to the
+   header rather than looking like a white-card component dropped onto it. */
+const HEADER_AVATAR: CSSProperties = {
+  width: 48,
+  height: 48,
+  flexShrink: 0,
+  borderRadius: 'var(--radius-pill)',
+  background: 'color-mix(in srgb, var(--color-info-300) 18%, transparent)',
+  color: 'var(--color-info-300)',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}
+
+/* `minWidth: 0` so a long document name wraps inside the column instead of
+   pushing the badge off the header. */
+const HEADER_TEXT: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 4,
+  gap: 3,
+  minWidth: 0,
 }
 
 const HEADER_EYEBROW: CSSProperties = {
@@ -751,29 +785,17 @@ const HEADER_META: CSSProperties = {
    two blocks read as one panel split by colour rather than as a card tucked
    under a header. The modal's own outer corners still round; `Modal` clips
    them (`overflow: hidden`), which is what lets these be 0 without the card
-   poking out at the bottom. The -16 overlap stays: it is what puts the
-   avatar on the seam. */
+   poking out at the bottom.
+   ⚠ THE -16 OVERLAP WENT WITH THE AVATAR. It existed only to pull the circle
+   up onto the seam; with the glyph in the header there is nothing to straddle
+   it, and the offset was just cropping 16px of navy. */
 const CARD: CSSProperties = {
   position: 'relative',
-  marginTop: -16,
-  padding: '28px 28px 22px',
+  padding: '24px 28px 22px',
   background: 'var(--color-surface-card)',
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'center',
   gap: 20,
-}
-
-const AVATAR: CSSProperties = {
-  width: 72,
-  height: 72,
-  borderRadius: 'var(--radius-pill)',
-  background: 'color-mix(in srgb, var(--color-primary-100) 50%, transparent)',
-  color: 'var(--color-primary-500)',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  flexShrink: 0,
 }
 
 const STACK: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 14, width: '100%' }
