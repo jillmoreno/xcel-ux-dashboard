@@ -839,7 +839,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // All four opening rows re-stamped at the 2026-10-15 ship that retired the
     // demo site: the shared chrome every row renders — the demo bar, the
     // version picker, the prototype bar — changed under all of them.
-    lastUpdated: '2026-10-20T14:17:48Z',
+    lastUpdated: '2026-10-20T17:44:29Z',
     pinned: true,
     // An in-app route, not a document. `to` is what makes the tile navigate
     // rather than open a new tab, and it is also what the row's live preview
@@ -972,7 +972,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'atlas',
-    lastUpdated: '2026-10-20T14:17:48Z',
+    lastUpdated: '2026-10-20T17:44:29Z',
     pinned: true,
     to: '/dashboard-rebrand?demo=1&section=dashboard',
     brands: ['xcel'],
@@ -1017,7 +1017,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'compass',
-    lastUpdated: '2026-10-19T20:51:14Z',
+    lastUpdated: '2026-10-20T17:44:29Z',
     pinned: true,
     // Same-origin product route at the committed baseline — the smoke test
     // asserts every Prototypes row has this shape. `section=compass` is the
