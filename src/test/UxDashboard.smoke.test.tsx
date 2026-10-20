@@ -182,6 +182,19 @@ describe('section routing (sectionOf)', () => {
     // `xcel-course-entry` (the repo's first authored dev handoff, 2026-09-24)
     // stood here until 2026-10-15 — archived, `course-entry-handoff`. Both
     // handoffs were removed as "not ready"; Development lists nothing now.
+    // The Atlas Home dev-handoff split (2026-10-19) — `devStatus: 'in-design'`
+    // on all eight; a page-level Overview plus one row per component. They land
+    // on DEVELOPMENT, not Design: Design was archived 2026-10-15 (`design-
+    // section`) and `sectionOf` now returns 'development' for any authored
+    // status. `category: 'dev-handoff'` routes there too, so both paths agree.
+    'xcel-atlas-home-overview': 'development',
+    'xcel-atlas-home-course-head': 'development',
+    'xcel-atlas-home-progress-panel': 'development',
+    'xcel-atlas-home-readiness-panel': 'development',
+    'xcel-atlas-home-exam-date-card': 'development',
+    'xcel-atlas-home-study-journey': 'development',
+    'xcel-atlas-home-quick-links': 'development',
+    'xcel-atlas-home-affidavit-modal': 'development',
   }
 
   it('accounts for every authored feature', () => {
