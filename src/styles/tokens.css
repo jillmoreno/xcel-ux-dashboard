@@ -7590,6 +7590,45 @@ a.cre-library-card-title::after {
 .cre-admin-outline:hover { border-color: var(--admin-hover-edge) !important; background: var(--admin-fill-soft) !important; }
 .cre-admin-brand:hover { background: var(--admin-cta-hover) !important; }
 
+/* ── Atlas Admin's Standard sidebar rows — the Atlas course rail's ────────
+   2026-10-20, Eric: "make the Standard left nav items text, hover, spacing
+   and active styles match" the course rail (`.cre-atlas-nav-row` on the
+   Atlas/Compass Global Navigation version), keeping the admin's icons.
+   The values are the rail's as they resolve under the Atlas palette —
+   spelled out because the admin pages sit outside that palette's scope:
+   13/17 Open Sans, 34 tall, 4/8/4/16 padding, 8 corners; #616161 at rest;
+   hover #eceef0 with #263d50 ink; current #eceef0, #3d5a73, SemiBold. */
+.cre-admin-side-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  box-sizing: border-box;
+  padding: 4px 8px 4px 16px;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 17px;
+  font-weight: 400;
+  color: #616161;
+  text-decoration: none;
+  transition: background-color 120ms ease;
+}
+.cre-admin-side-row:hover {
+  background: #eceef0;
+  color: #263d50;
+}
+.cre-admin-side-row[aria-current='page'],
+.cre-admin-side-row[aria-current='page']:hover {
+  background: #eceef0;
+  color: #3d5a73;
+  font-weight: 600;
+}
+.cre-admin-side-row:focus-visible {
+  outline: 2px solid #3d5a73;
+  outline-offset: -2px;
+}
+
 /* ── Atlas Admin on the Atlas Global Navigation palette ─────────────────
    2026-10-20, Eric: "on this page only, rework the colors using the Atlas
    Global navigation colors for everything except the CTAs, leaving them

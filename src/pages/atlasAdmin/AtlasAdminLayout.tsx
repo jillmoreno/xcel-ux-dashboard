@@ -185,7 +185,7 @@ function QuickLinksNav() {
 function SideLink({ item }: { item: NavItem }) {
   const Icon = item.icon
   return (
-    <NavLink to={item.to + window.location.search} style={({ isActive }) => (isActive ? NAV_ACTIVE : NAV_ITEM)}>
+    <NavLink to={item.to + window.location.search} className="cre-admin-side-row">
       <Icon size={16} aria-hidden />
       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
     </NavLink>
@@ -259,25 +259,8 @@ const QL_ROW_ACTIVE: CSSProperties = {
   fontWeight: 600,
 }
 const QL_ICON: CSSProperties = { width: 18, flex: 'none', display: 'inline-flex', justifyContent: 'center', color: 'var(--color-compass-page-button)' }
-const NAV_ITEM: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 12,
-  height: 44,
-  padding: '0 12px',
-  borderRadius: 10,
-  fontSize: 14,
-  fontWeight: 600,
-  color: 'var(--admin-chrome-text)',
-  textDecoration: 'none',
-}
-const NAV_ACTIVE: CSSProperties = {
-  ...NAV_ITEM,
-  /* Atlas Primary 100 (2026-10-20, Eric's request) in place of the
-     reference's rose; the ink is unchanged. */
-  background: 'var(--admin-atlas-primary-100)',
-  color: 'var(--admin-nav-active-ink)',
-}
+/* The Standard rows' look is `.cre-admin-side-row` (tokens.css) — the
+   Atlas course rail's, so hover can be CSS. */
 const MAIN: CSSProperties = { flex: '1 1 auto', padding: '32px 40px 140px' }
 const TOAST: CSSProperties = {
   position: 'fixed',
