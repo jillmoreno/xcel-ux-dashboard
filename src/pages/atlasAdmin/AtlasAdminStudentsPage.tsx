@@ -420,7 +420,7 @@ export function AtlasAdminStudentsPage() {
           <table style={{ minWidth: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
             <thead style={{ background: 'var(--admin-fill-soft)' }}>
               <tr>
-                <th style={{ ...TH, width: 40, padding: '12px 16px' }}>
+                <th className="cre-admin-sticky-col" style={{ ...TH, width: 40, padding: '12px 16px' }}>
                   <input
                     type="checkbox"
                     aria-label="Select all visible"
@@ -447,7 +447,7 @@ export function AtlasAdminStudentsPage() {
             <tbody>
               {visible.map((l) => (
                 <tr key={l.id} className="cre-admin-row" style={{ borderTop: '1px solid var(--admin-rule)' }}>
-                  <td style={{ ...TD, padding: '12px 16px' }}>
+                  <td className="cre-admin-sticky-col" style={{ ...TD, padding: '12px 16px' }}>
                     <input
                       type="checkbox"
                       aria-label={`Select ${l.name}`}

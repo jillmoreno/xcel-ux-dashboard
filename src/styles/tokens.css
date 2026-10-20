@@ -7635,6 +7635,12 @@ a.cre-library-card-title::after {
 }
 .cre-admin-chip:hover { border-color: var(--admin-hover-edge) !important; color: var(--admin-ink) !important; }
 .cre-admin-row:hover { background: var(--admin-fill-soft); }
+/* A table's pinned first column (the Students roster's checkboxes): it stays
+   at the left edge while the table scrolls sideways, on the row's own fill so
+   the columns slide under it. */
+.cre-admin-sticky-col { position: sticky; left: 0; z-index: 1; background: var(--admin-surface); }
+thead .cre-admin-sticky-col { background: var(--admin-fill-soft); }
+.cre-admin-row:hover > .cre-admin-sticky-col { background: var(--admin-fill-soft); }
 .cre-admin-name:hover { color: var(--admin-brand) !important; text-decoration: underline; }
 .cre-admin-menu-item:hover { background: var(--admin-fill-soft) !important; }
 .cre-admin-outline:hover { border-color: var(--admin-hover-edge) !important; background: var(--admin-fill-soft) !important; }
