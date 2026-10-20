@@ -7495,6 +7495,7 @@ a.cre-library-card-title::after {
      var(--color-primary-100) would give plain XCEL's step. The sidebar's
      selected item (2026-10-20, Eric's request). */
   --admin-atlas-primary-100: #eaeef1;
+  --admin-atlas-primary-500: #2d5872;
   /* Home's Quick Links card hairline as it computes on the Atlas pages
      (slate-100 darkened 5%) — the Students sidebar's temporary card. */
   --admin-quicklinks-rule: #dde0e2;
