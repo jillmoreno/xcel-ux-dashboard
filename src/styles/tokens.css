@@ -7591,6 +7591,20 @@ a.cre-library-card-title::after {
 .cre-admin-tile:hover { border-color: var(--admin-hover-edge) !important; }
 .cre-admin-tile:focus-visible { box-shadow: 0 0 0 2px var(--admin-brand) !important; }
 
+/* ATLAS ADMIN'S ROOT (2026-10-20). `display: contents` so it adds no box —
+   every admin page, inside the shell or not, lays out as before. It exists
+   to carry admin-wide rules by inheritance:
+
+   NO WIDOWS. Text that wraps never leaves one word alone on its last line —
+   the browser brings the last two down together (`text-wrap: pretty`,
+   Eric's rule). It inherits, so it reaches every paragraph, heading, cell
+   and label; anything set `white-space: nowrap` is unaffected, as it never
+   wraps. */
+.cre-atlas-admin {
+  display: contents;
+  text-wrap: pretty;
+}
+
 /* A demo HOTSPOT (2026-10-20): a pulsing dot that jumps the demo to another
    state — the empty Students page's way back to the sample roster. */
 .cre-admin-hotspot {

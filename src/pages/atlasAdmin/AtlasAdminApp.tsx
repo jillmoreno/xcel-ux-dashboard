@@ -152,6 +152,9 @@ export function AtlasAdminApp() {
 
   return (
     <AdminStoreContext.Provider value={store}>
+      {/* One root for every admin page, shell or not — it carries the
+          admin-wide type rules (no widowed last word, tokens.css). */}
+      <div className="cre-atlas-admin">
       <Routes>
         {/* Pulse is a page of its own, outside the shell, as the reference's is. */}
         <Route path="pulse" element={<AtlasAdminPulsePage />} />
@@ -222,6 +225,7 @@ export function AtlasAdminApp() {
           <Route path="*" element={<AtlasAdminComingSoon>Not built yet.</AtlasAdminComingSoon>} />
         </Route>
       </Routes>
+      </div>
     </AdminStoreContext.Provider>
   )
 }
