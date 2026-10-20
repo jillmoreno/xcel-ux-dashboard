@@ -139,8 +139,8 @@ export function AtlasAdminNotificationsPage() {
                             <span style={{ ...KNOB, left: isOn(n) ? 18 : 2 }} />
                           </button>
                         </div>
-                        {/* The row's links, across the full row — right edge on the toggle's. */}
-                        <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 12 }}>
+                        {/* The row's links, across the full row — right edge on the toggle's, a 1px rule 4px above. */}
+                        <div style={{ marginTop: 6, paddingTop: 4, borderTop: '1px solid var(--admin-rule)', display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 12 }}>
                           {n.actions.map((a) => (
                             <button
                               key={a}
