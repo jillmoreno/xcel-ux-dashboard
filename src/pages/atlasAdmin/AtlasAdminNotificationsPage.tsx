@@ -85,7 +85,7 @@ export function AtlasAdminNotificationsPage() {
         <h2 style={PAGE_H1}>Notifications</h2>
         <p style={PAGE_SUB}>Everything the portal sends, in one list. Click any row to read the message before you trust it.</p>
       </div>
-      <div style={{ display: 'grid', gap: 32, gridTemplateColumns: '500px minmax(0, 1fr)', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gap: 32, gridTemplateColumns: '450px minmax(0, 1fr)', alignItems: 'start' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {groups.map((g) => {
             const list = ADMIN_NOTIFICATIONS.filter((n) => n.group === g.id)
