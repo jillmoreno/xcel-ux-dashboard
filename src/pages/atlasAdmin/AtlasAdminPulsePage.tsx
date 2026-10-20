@@ -162,7 +162,7 @@ export function AtlasAdminPulsePage() {
           <Card {...card(2)} icon={<CalendarRegular size={13} />} title="Exam scheduling" sub="Who has a date on file vs. who is ready to book.">
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               <Figure label="Exam date on file" value={pulse.dated.length} bg={FIGURE_TINT} ink="var(--admin-ink)" note="We can track them through exam day." />
-              <Figure label="Ready to schedule" value={pulse.undated.length} bg="var(--admin-success-tint)" ink="var(--admin-success-ink)" note="Prepared, no date yet. The bulk email targets this group." />
+              <Figure label="Ready to schedule" value={pulse.undated.length} bg={FIGURE_TINT} ink="var(--admin-success-ink)" note="Prepared, no date yet. The bulk email targets this group." />
             </div>
             <Action>Draft a personal bulk email congratulating {pulse.undated.length} learners and asking them to book, or add their date if they already have one.</Action>
             {pulse.dated.slice(0, 2).map((l) => (
