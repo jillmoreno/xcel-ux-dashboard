@@ -14,7 +14,7 @@ import {
 } from '@/data/atlasAdmin/learners'
 import { LOCATIONS, jobRoleOf, membersOfLocation } from '@/data/atlasAdmin/organization'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
-import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, BUTTON_BRAND, BUTTON_OUTLINE, CARD, CHIP, CHIP_ON, EYEBROW, PAGE_H1, PAGE_SUB } from './adminStyles'
+import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, CARD, CHIP, CHIP_ON, EYEBROW, PAGE_H1, PAGE_SUB } from './adminStyles'
 import { ChipMenu, MenuItem, PreparedPill, ProgressRing, ReadinessCell, StagePill } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
 import { StudentsEmptyState } from './StudentsEmptyState'
@@ -390,7 +390,7 @@ export function AtlasAdminStudentsPage() {
         ) : null}
 
         {selected.size ? (
-          <div style={{ ...TOOLBAR, background: 'var(--admin-ink)', color: 'var(--admin-surface)' }}>
+          <div style={{ ...TOOLBAR, background: 'var(--admin-atlas-secondary-100)', color: 'var(--admin-atlas-neutral-800)' }}>
             <span style={{ fontSize: 14, fontWeight: 600 }}>{selected.size} selected</span>
             <button
               type="button"
@@ -398,18 +398,18 @@ export function AtlasAdminStudentsPage() {
                 showToast(`Nudge sent to ${selected.size} ${selected.size === 1 ? 'learner' : 'learners'}`)
                 setSelected(new Set())
               }}
-              style={{ ...BUTTON_BRAND, padding: '4px 14px', fontSize: 13 }}
+              style={ATLAS_BUTTON_PRIMARY}
             >
               Send nudge
             </button>
             <button
               type="button"
               onClick={() => exportCsv(ADMIN_LEARNERS.filter((l) => selected.has(l.id)))}
-              style={{ ...BUTTON_OUTLINE, padding: '4px 14px', fontSize: 13 }}
+              style={ATLAS_BUTTON_SECONDARY}
             >
               Export selected
             </button>
-            <button type="button" onClick={() => setSelected(new Set())} style={{ ...TEXT_BUTTON, color: 'var(--admin-surface)', marginLeft: 'auto' }}>
+            <button type="button" className="cre-admin-text-link" onClick={() => setSelected(new Set())} style={{ ...TEXT_BUTTON, color: 'var(--admin-atlas-primary-500)', marginLeft: 'auto' }}>
               Clear selection
             </button>
           </div>
