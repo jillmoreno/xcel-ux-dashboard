@@ -98,6 +98,7 @@ import GearRegularSvg from './gear-regular.svg?react'
 import XmarkRegularSvg from './xmark-regular.svg?react'
 import ChartSimpleSvg from './chart-simple.svg?react'
 import SparklesSvg from './sparkles.svg?react'
+import GlobeSvg from './globe.svg?react'
 import GearSvg from './gear.svg?react'
 import CloneSvg from './clone.svg?react'
 import PlaySvg from './play.svg?react'
@@ -327,6 +328,7 @@ export const GearRegular = makeIcon(GearRegularSvg) // FA: gear (regular)
 export const XmarkRegular = makeIcon(XmarkRegularSvg) // FA: xmark (regular)
 export const ChartSimple = makeIcon(ChartSimpleSvg) // FA: chart-simple (light) — Atlas Admin's Reports
 export const Sparkles = makeIcon(SparklesSvg) // FA: sparkles (light) — Atlas Admin's Quick assign
+export const Globe = makeIcon(GlobeSvg) // FA: globe (light) — Atlas Admin's Learning Center
 export const Gear = makeIcon(GearSvg) // FA: gear (light) — Atlas Admin's Settings
 export const Clone = makeIcon(CloneSvg) // FA: clone (light) — Atlas Admin's Reports
 export const Play = makeIcon(PlaySvg) // FA: play (light) — Atlas Admin's Reports

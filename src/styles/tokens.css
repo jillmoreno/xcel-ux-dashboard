@@ -7482,6 +7482,10 @@ a.cre-library-card-title::after {
   --admin-amber: #b45309;
   --admin-amber-tint: #fff7e6;
   --admin-amber-edge: #f5d9a8;
+  /* Engagement's KPI and pipeline accents (the reference's blue-600 and
+     violet-600). */
+  --admin-chart-blue: #2563eb;
+  --admin-chart-violet: #7c3aed;
   /* The price card's struck-through was-price (Invitation - Account Creation
      2:448, the design's Gray/400). */
   --color-e2e-was-price: #98a2b3;

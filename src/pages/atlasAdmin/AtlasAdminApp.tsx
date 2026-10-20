@@ -19,6 +19,9 @@ import { AtlasAdminAssignmentsPage } from './AtlasAdminAssignmentsPage'
 import { AtlasAdminRuleWizard } from './AtlasAdminRuleWizard'
 import { AtlasAdminRulePage } from './AtlasAdminRulePage'
 import { AtlasAdminQuickAssignPage } from './AtlasAdminQuickAssignPage'
+import { AtlasAdminEngagementPage } from './AtlasAdminEngagementPage'
+import { AtlasAdminVideoEngagementPage } from './AtlasAdminVideoEngagementPage'
+import { AtlasAdminLearningCenterPage } from './AtlasAdminLearningCenterPage'
 
 /**
  * ATLAS ADMIN — the app (2026-10-19, feat/atlas-admin). The admin surface
@@ -120,6 +123,11 @@ export function AtlasAdminApp() {
           <Route path="assignments/rules" element={<Navigate to={`../assignments${window.location.search}`} replace />} />
           <Route path="assignments/rules/:ruleId" element={<AtlasAdminRulePage />} />
           <Route path="assignments/rules/:ruleId/edit" element={<AtlasAdminRuleWizard />} />
+          <Route path="training-programs" element={<Navigate to={`../students${window.location.search}`} replace />} />
+          <Route path="assignment-tracking" element={<Navigate to={`../assignments${window.location.search}`} replace />} />
+          <Route path="engagement" element={<AtlasAdminEngagementPage />} />
+          <Route path="video-engagement" element={<AtlasAdminVideoEngagementPage />} />
+          <Route path="learning-center" element={<AtlasAdminLearningCenterPage />} />
           <Route path="notifications/*" element={<AtlasAdminNotificationsPage />} />
           <Route path="resources" element={<AtlasAdminResourcesPage />} />
           <Route path="settings" element={<AtlasAdminSettingsPage />} />
