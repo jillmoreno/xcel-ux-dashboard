@@ -160,7 +160,7 @@ export function AtlasAdminInvitesPage() {
           />
         </div>
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ minWidth: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 15 }}>
+          <table style={{ minWidth: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
             <thead style={{ background: 'var(--admin-fill-soft)' }}>
               <tr>
                 <th style={{ ...TH, paddingLeft: 20 }}>Name</th>
@@ -316,5 +316,5 @@ const SEARCH: CSSProperties = {
 }
 const TH: CSSProperties = { padding: 12, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-muted)', whiteSpace: 'nowrap' }
 const TD: CSSProperties = { padding: 12 }
-const NAME: CSSProperties = { padding: 0, border: 'none', background: 'none', textAlign: 'left', fontSize: 15, fontWeight: 600, color: 'var(--admin-ink)', cursor: 'pointer' }
+const NAME: CSSProperties = { padding: 0, border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: 'var(--admin-ink)', cursor: 'pointer' }
 const RESEND: CSSProperties = { borderRadius: 9999, border: 'none', background: 'none', padding: '6px 12px', fontSize: 13, fontWeight: 600 }
