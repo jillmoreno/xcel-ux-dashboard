@@ -231,7 +231,27 @@ export function AtlasHeader({
               <span style={{ fontSize: 16, lineHeight: '28px', fontWeight: 700, color: 'var(--atlas-hdr-name)', whiteSpace: 'nowrap' }}>{user.name}</span>
               <span style={{ fontSize: 12, lineHeight: '16px', fontWeight: 400, color: 'var(--atlas-hdr-email)', whiteSpace: 'nowrap' }}>{user.email}</span>
               {modeMenu ? (
-                <span style={{ marginTop: 4, fontSize: 12, lineHeight: '16px', fontWeight: 600, color: 'var(--atlas-hdr-email)', whiteSpace: 'nowrap' }}>{modeMenu.mode === 'admin' ? 'Admin mode' : 'Learner mode'}</span>
+                /* MODE: ADMIN LEARNER — 2026-10-20, Eric's request. The two
+                   modes as the header's own pills at 85%; the one you are in
+                   reads selected, the other switches. */
+                <span role="group" aria-label="Mode" style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8, fontSize: 12, lineHeight: '16px', color: 'var(--atlas-hdr-email)', whiteSpace: 'nowrap' }}>
+                  <span style={{ marginRight: 2 }}>Mode:</span>
+                  {(['admin', 'learner'] as const).map((m) => {
+                    const on = modeMenu.mode === m
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        aria-pressed={on}
+                        className={`cre-atlas-hdr-pill cre-atlas-hdr-pill--sm${on ? ' is-selected' : ''}`}
+                        onClick={on ? undefined : modeMenu.onSwitch}
+                        style={{ cursor: on ? 'default' : 'pointer' }}
+                      >
+                        {m === 'admin' ? 'Admin' : 'Learner'}
+                      </button>
+                    )
+                  })}
+                </span>
               ) : null}
             </div>
             <AtlasHeaderMenuDivider />

@@ -56,6 +56,18 @@
 .cre-atlas-hdr .cre-atlas-hdr-pill--icon {
   padding: 0 8px;
 }
+/* 85% of the pill — 2026-10-20, Eric: the profile menu's Mode: Admin /
+   Learner switch, "the basic style used in the header buttons but 15%
+   smaller". Every size scales; the colours, weight and states stay the
+   pill's own. */
+.cre-atlas-hdr .cre-atlas-hdr-pill--sm {
+  gap: 6.8px;
+  height: 25.5px;
+  padding: 0 10.2px;
+  border-radius: 6.8px;
+  font-size: 11.9px;
+  line-height: 17px;
+}
 .cre-atlas-hdr .cre-atlas-hdr-pill:hover,
 .cre-atlas-hdr .cre-atlas-hdr-pill[aria-current='page'],
 .cre-atlas-hdr .cre-atlas-hdr-pill.is-selected,
