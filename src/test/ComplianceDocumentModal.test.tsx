@@ -5,6 +5,7 @@ import { ComplianceDocumentPreviewPage } from '@/pages/ComplianceDocumentPreview
 import {
   COMPLIANCE_DOCUMENTS,
   MOMENT_LABEL,
+  REGULATED_JURISDICTIONS,
   STEPS_BY_SHAPE,
   stepsFor,
   type ComplianceDocumentConfig,
@@ -874,6 +875,13 @@ describe('the preview harness toolbar', () => {
      rather than inherit a bar that says nothing about a compliance
      document. */
   const board = () => render(<ComplianceDocumentPreviewPage />)
+  const STATE_NAMES: Record<string, string> = {
+    AR: 'Arkansas', CA: 'California', CO: 'Colorado', CT: 'Connecticut', FL: 'Florida',
+    GA: 'Georgia', IL: 'Illinois', IN: 'Indiana', KY: 'Kentucky', MI: 'Michigan',
+    MN: 'Minnesota', MS: 'Mississippi', NV: 'Nevada', NJ: 'New Jersey', NY: 'New York',
+    OH: 'Ohio', OR: 'Oregon', WV: 'West Virginia', WI: 'Wisconsin',
+  }
+  const stateNameOf = (code: string) => STATE_NAMES[code] ?? code
   const sections = () => screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
 
   it('groups by shape, state or moment over the same documents', () => {
@@ -919,6 +927,65 @@ describe('the preview harness toolbar', () => {
     expect(screen.getByText('0 of 24')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent(/nothing matches/i)
     expect(screen.queryAllByRole('heading', { level: 2 })).toHaveLength(0)
+  })
+
+  /* ⚠ A BOARD BUILT FROM THE DOCUMENTS CAN ONLY SHOW WHAT EXISTS, which is
+     the one thing a coverage question is not asking. Every regulated
+     jurisdiction gets a place whether or not a file sits in it. */
+  it('gives every regulated jurisdiction a place when grouped by state', () => {
+    board()
+    fireEvent.click(screen.getByRole('tab', { name: 'By state' }))
+    for (const j of REGULATED_JURISDICTIONS) {
+      expect(sections(), j.state).toContain(stateNameOf(j.state))
+    }
+    // Plus Pennsylvania and Generic, which hold documents but are not among
+    // the nineteen — PA dropped pre-licensing in 2025.
+    expect(sections()).toContain('Pennsylvania')
+    expect(sections()).toContain('Generic (non-state)')
+  })
+
+  /* ⚠ "NEEDED" AND "NONE REQUIRED" ARE NOT THE SAME BLANK. Four states ask
+     the learner for nothing; printing "needed" on those would invent four
+     documents and bury the four that really are missing. */
+  it('tells a gap apart from a state that requires nothing', () => {
+    board()
+    fireEvent.click(screen.getByRole('tab', { name: 'By state' }))
+    const notes = screen.getAllByRole('note').map((n) => n.textContent ?? '')
+
+    const needed = notes.filter((t) => t.startsWith('Needed'))
+    const none = notes.filter((t) => t.startsWith('No document required'))
+    expect(needed).toHaveLength(4)
+    expect(none).toHaveLength(4)
+
+    expect(none.join(' ')).toMatch(/self-study is exempt/i) // Arkansas
+    expect(needed.join(' ')).toMatch(/state template/i) // Mississippi
+  })
+
+  /* ⚠ A PARTIAL GAP IS STILL A GAP, and these three are the hardest cases:
+     each holds documents AND is missing one the state requires. Showing the
+     note only on an EMPTY state hid all three behind the files that exist. */
+  it('shows the gap beside the documents a state does have', () => {
+    board()
+    fireEvent.change(screen.getByLabelText(/filter by state/i), { target: { value: 'MS' } })
+    fireEvent.click(screen.getByRole('tab', { name: 'By state' }))
+
+    expect(screen.getByText('Mississippi — Pre-Final Affidavit')).toBeInTheDocument()
+    expect(screen.getByRole('note')).toHaveTextContent(/post-exam proctor affidavit/i)
+  })
+
+  /* Nineteen empty headings around one hit is noise; a state filter is not. */
+  it('collapses the empty states under a search, but not under a state filter', () => {
+    board()
+    fireEvent.click(screen.getByRole('tab', { name: 'By state' }))
+    fireEvent.change(screen.getByLabelText(/search documents/i), { target: { value: 'notice' } })
+    /* `sections()`, not a text query — "Arkansas" is also an <option> in the
+       state filter, which is present either way. */
+    expect(sections()).not.toContain('Arkansas')
+
+    fireEvent.change(screen.getByLabelText(/search documents/i), { target: { value: '' } })
+    fireEvent.change(screen.getByLabelText(/filter by state/i), { target: { value: 'AR' } })
+    expect(sections()).toEqual(['Arkansas'])
+    expect(screen.getByRole('note')).toHaveTextContent(/no document required/i)
   })
 
   /* The pill would otherwise repeat its own section heading on every card. */

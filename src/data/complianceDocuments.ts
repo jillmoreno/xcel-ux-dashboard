@@ -298,6 +298,77 @@ export function stepsFor(config: ComplianceDocumentConfig): string[] {
   return steps
 }
 
+/**
+ * EVERY JURISDICTION THAT REGULATES COURSE DELIVERY — all nineteen, whether
+ * or not a document exists for it.
+ *
+ * ⚠ A STATE WITH NO DOCUMENT IS NOT AUTOMATICALLY A GAP, and conflating the
+ * two is the mistake this list exists to prevent. Arkansas, Indiana, Michigan
+ * and New Jersey require nothing of the learner — their profiles are silent
+ * on proctoring and attestations, and Arkansas's DOI confirmed in writing
+ * that self-study is exempt. Labelling those "needed" would invent four
+ * documents nobody has to produce, and bury the four that really are missing.
+ *
+ * ⚠ THE OTHER 33 JURISDICTIONS ARE NOT HERE. They set no pre-licensing
+ * requirement at all, so there is nothing for them to be missing; the XCEL
+ * baseline is their whole rule set. Listing them would be a page of "not
+ * applicable" with the real coverage question hidden inside it.
+ */
+export type CoverageStatus = 'documented' | 'needed' | 'none-required'
+
+export interface JurisdictionCoverage {
+  state: string
+  status: CoverageStatus
+  /** Why — the state's own requirement, or what is missing. */
+  note: string
+}
+
+export const REGULATED_JURISDICTIONS: JurisdictionCoverage[] = [
+  {
+    state: 'AR',
+    status: 'none-required',
+    note: 'The rule names a proctored exam, but a DOI email of 9 Nov 2020 confirms self-study is exempt. Nothing is asked of the learner.',
+  },
+  { state: 'CA', status: 'documented', note: 'Pre-course terms, and a completion declaration after the course.' },
+  { state: 'CO', status: 'documented', note: 'Proctor affidavit, due the same day as the exam.' },
+  { state: 'CT', status: 'documented', note: 'Proctor affidavit on the state’s own Affidavit of Personal Responsibility.' },
+  { state: 'FL', status: 'documented', note: 'Study-manual notice before the course, and a pre-exam unassisted acknowledgment. No post-exam requirement.' },
+  {
+    state: 'GA',
+    status: 'needed',
+    note: 'Georgia is silent on proctoring and attestations, but its profile requires a notice listing exam sites and times. No such document is in the set.',
+  },
+  { state: 'IL', status: 'documented', note: 'Privacy statement and course-hours terms, plus a completion affirmation. A monitor affidavit replaces it at the 2027 renewal.' },
+  { state: 'IN', status: 'none-required', note: 'Silent on enrollment agreement, proctoring and attestations.' },
+  { state: 'KY', status: 'documented', note: 'Postsecondary enrollment agreement.' },
+  { state: 'MI', status: 'none-required', note: 'Silent on enrollment agreement, proctoring and attestations.' },
+  {
+    state: 'MN',
+    status: 'needed',
+    note: 'The privacy statement is held. The proctor affidavit Minnesota requires is the one PDF in the set whose text cannot be extracted — the row exists, the content does not.',
+  },
+  {
+    state: 'MS',
+    status: 'needed',
+    note: 'Mississippi requires a post-exam proctor affidavit carrying the proctor’s name, address and phone, from a state template. The only MS file is a student pre-exam acknowledgment the state does not ask for.',
+  },
+  { state: 'NV', status: 'documented', note: 'Signed enrollment agreement under postsecondary rules, countersigned by the school.' },
+  {
+    state: 'NJ',
+    status: 'none-required',
+    note: 'Its application and contract are filed at provider approval, not shown to the learner. Nothing is asked at course time.',
+  },
+  {
+    state: 'NY',
+    status: 'needed',
+    note: 'The post-exam affidavit is held. New York also requires notices covering system requirements and a final-exam statement; neither is in the set.',
+  },
+  { state: 'OH', status: 'documented', note: 'Registration form with pre-course information, and a post-exam learner affidavit.' },
+  { state: 'OR', status: 'documented', note: 'Enrollment contract under postsecondary rules.' },
+  { state: 'WV', status: 'documented', note: 'Student declaration and proctor affidavit, both on one form.' },
+  { state: 'WI', status: 'documented', note: 'Student and proctor both sign; the proctor completes it before the exam.' },
+]
+
 export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
   /* ── notice (2) ────────────────────────────────────────────────────────
        No signer at all: body text and an "I Agree". Both are bilingual. */

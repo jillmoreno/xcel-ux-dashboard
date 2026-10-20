@@ -5,11 +5,13 @@ import { SearchInput } from '@/components/ui/SearchInput'
 import { Select } from '@/components/ui/Select'
 import {
   COMPLIANCE_DOCUMENTS,
+  REGULATED_JURISDICTIONS,
   STEPS_BY_SHAPE,
   MOMENT_LABEL,
   acknowledgementFor,
   stepsFor,
   type ComplianceDocumentConfig,
+  type CoverageStatus,
   type DocumentMoment,
   type DocumentShape,
 } from '@/data/complianceDocuments'
@@ -65,15 +67,20 @@ const MOMENT_ORDER: DocumentMoment[] = [
 
 /** Full names, so a filter does not read as a column of postcodes. */
 const STATE_NAME: Record<string, string> = {
+  AR: 'Arkansas',
   CA: 'California',
   CO: 'Colorado',
   CT: 'Connecticut',
   FL: 'Florida',
+  GA: 'Georgia',
   IL: 'Illinois',
+  IN: 'Indiana',
   KY: 'Kentucky',
+  MI: 'Michigan',
   MN: 'Minnesota',
   MS: 'Mississippi',
   NV: 'Nevada',
+  NJ: 'New Jersey',
   NY: 'New York',
   OH: 'Ohio',
   OR: 'Oregon',
@@ -84,6 +91,15 @@ const STATE_NAME: Record<string, string> = {
 }
 
 const stateName = (code: string) => STATE_NAME[code] ?? code
+
+const COVERAGE = new Map(REGULATED_JURISDICTIONS.map((j) => [j.state, j]))
+
+/** What a state with no document on the board is told to say. */
+const COVERAGE_LABEL: Record<CoverageStatus, string> = {
+  'documented': 'Documented',
+  'needed': 'Needed',
+  'none-required': 'No document required',
+}
 
 const SHAPE_LABEL: Record<DocumentShape, string> = {
   'notice': 'Notice',
@@ -119,9 +135,15 @@ export function ComplianceDocumentPreviewPage() {
 
   /** Every state in the set, in filter order: states alphabetically, Generic
    *  last because it is not one. */
+  /** ⚠ EVERY REGULATED JURISDICTION, not every state we happen to hold a file
+   *  for. A board built from the documents can only ever show what exists,
+   *  which is the one thing a coverage question is not asking. */
   const states = useMemo(() => {
-    const seen = [...new Set(COMPLIANCE_DOCUMENTS.map((d) => d.state))]
-    return seen.sort((a, b) => {
+    const seen = new Set([
+      ...REGULATED_JURISDICTIONS.map((j) => j.state),
+      ...COMPLIANCE_DOCUMENTS.map((d) => d.state),
+    ])
+    return [...seen].sort((a, b) => {
       if (a === 'Generic') return 1
       if (b === 'Generic') return -1
       return stateName(a).localeCompare(stateName(b))
@@ -160,8 +182,25 @@ export function ComplianceDocumentPreviewPage() {
       const key = groupBy === 'shape' ? d.shape : groupBy === 'moment' ? d.moment : d.state
       index.get(key)?.docs.push(d)
     }
-    return groups.filter((g) => g.docs.length > 0)
-  }, [groupBy, matches, states])
+    /* ⚠ EMPTY GROUPS SURVIVE WHEN GROUPED BY STATE, and only then. A state
+       with nothing on it is the answer to "what is missing" — dropping it
+       makes the board show coverage it does not have. But under a SEARCH the
+       same rule turns nineteen empty headings into noise around the one hit,
+       so a query collapses it back. A state filter does not: narrowing to
+       Mississippi and seeing its gap is the point. */
+    const keepEmpty = groupBy === 'state' && query.trim() === ''
+    return groups.filter(
+      (g) =>
+        g.docs.length > 0 ||
+        (keepEmpty &&
+          COVERAGE.has(g.key) &&
+          /* ⚠ THE STATE FILTER NARROWS THE EMPTY ONES TOO. Without this,
+             picking Colorado kept eighteen other states on the board purely
+             because they have no documents — the filter would have widened
+             the page instead of narrowing it. */
+          (stateFilter === 'all' || g.key === stateFilter)),
+    )
+  }, [groupBy, matches, states, query, stateFilter])
 
   const open = COMPLIANCE_DOCUMENTS.find((d) => d.id === openId) ?? null
 
@@ -273,10 +312,16 @@ export function ComplianceDocumentPreviewPage() {
             <div style={SECTION_HEAD}>
               <h2 style={SECTION_TITLE}>{group.label}</h2>
               <span style={SECTION_META}>
-                {group.docs.length} {group.docs.length === 1 ? 'document' : 'documents'}
-                {groupBy === 'shape' && group.key in STEPS_BY_SHAPE
-                  ? ` · ${STEPS_BY_SHAPE[group.key as DocumentShape].join(' → ')}`
-                  : ''}
+                {group.docs.length > 0 ? (
+                  <>
+                    {group.docs.length} {group.docs.length === 1 ? 'document' : 'documents'}
+                    {groupBy === 'shape' && group.key in STEPS_BY_SHAPE
+                      ? ` · ${STEPS_BY_SHAPE[group.key as DocumentShape].join(' → ')}`
+                      : ''}
+                  </>
+                ) : (
+                  COVERAGE_LABEL[COVERAGE.get(group.key)?.status ?? 'needed']
+                )}
               </span>
             </div>
             <div style={GRID}>
@@ -288,6 +333,15 @@ export function ComplianceDocumentPreviewPage() {
                   onOpen={() => setOpenId(doc.id)}
                 />
               ))}
+              {/* ⚠ A PARTIAL GAP IS STILL A GAP. Minnesota, Mississippi and New
+                  York all hold documents AND are missing one the state
+                  requires — rendering the note only on an EMPTY state hid
+                  exactly the three hardest cases behind the files that do
+                  exist. It sits beside them instead. */}
+              {groupBy === 'state' &&
+                (group.docs.length === 0 || COVERAGE.get(group.key)?.status === 'needed') && (
+                  <CoverageGap state={group.key} />
+                )}
             </div>
           </section>
         ))}
@@ -309,6 +363,28 @@ export function ComplianceDocumentPreviewPage() {
         />
       )}
     </main>
+  )
+}
+
+/**
+ * THE BLANK SPACE, AND WHAT IT SAYS.
+ *
+ * ⚠ "NEEDED" AND "NONE REQUIRED" ARE NOT THE SAME BLANK. Four states ask the
+ * learner for nothing — Arkansas, Indiana, Michigan and New Jersey — and
+ * printing "needed" on those would invent four documents and bury the four
+ * that really are missing. The status comes from the state's own profile, and
+ * the note says which it is and why, because a gap with no reason attached is
+ * one somebody closes by guessing.
+ */
+function CoverageGap({ state }: { state: string }) {
+  const coverage = COVERAGE.get(state)
+  if (!coverage) return null
+  const needed = coverage.status === 'needed'
+  return (
+    <div style={needed ? GAP_NEEDED : GAP_NONE} role="note">
+      <span style={needed ? GAP_TAG_NEEDED : GAP_TAG_NONE}>{COVERAGE_LABEL[coverage.status]}</span>
+      <span style={GAP_NOTE}>{coverage.note}</span>
+    </div>
   )
 }
 
@@ -499,6 +575,48 @@ const GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
   gap: 12,
+}
+
+/* Dashed, because the shape of a card with nothing in it should read as a
+   space left open rather than as a card that failed to load. */
+const GAP_BASE: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 8,
+  padding: '14px 16px',
+  borderRadius: 'var(--radius-lg)',
+  borderWidth: 1,
+  borderStyle: 'dashed',
+}
+
+const GAP_NEEDED: CSSProperties = {
+  ...GAP_BASE,
+  borderColor: 'var(--color-warning-300)',
+  background: 'var(--color-warning-100)',
+}
+
+const GAP_NONE: CSSProperties = {
+  ...GAP_BASE,
+  borderColor: 'var(--color-border-subtle)',
+  background: 'transparent',
+}
+
+const GAP_TAG: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 10,
+  letterSpacing: '0.07em',
+  textTransform: 'uppercase',
+}
+
+const GAP_TAG_NEEDED: CSSProperties = { ...GAP_TAG, color: 'var(--color-warning-800)' }
+const GAP_TAG_NONE: CSSProperties = { ...GAP_TAG, color: 'var(--color-text-tertiary)' }
+
+const GAP_NOTE: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  lineHeight: '17px',
+  color: 'var(--color-text-secondary)',
 }
 
 const CARD: CSSProperties = {
