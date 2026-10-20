@@ -62,7 +62,8 @@
    pill's own. */
 .cre-atlas-hdr .cre-atlas-hdr-pill--sm {
   gap: 6.8px;
-  height: 25.5px;
+  /* 26, not 25.5 — Eric, the same day: a whole pixel. */
+  height: 26px;
   padding: 0 10.2px;
   border-radius: 6.8px;
   font-size: 11.9px;

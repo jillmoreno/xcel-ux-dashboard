@@ -1,5 +1,5 @@
 import type { MouseEvent, ReactNode } from 'react'
-import { ArrowRightArrowLeft, Bell, ChevronDown, CircleUser, FileText, LogOut, Receipt, User } from '@/icons'
+import { Bell, ChevronDown, CircleUser, FileText, LogOut, Receipt, User } from '@/icons'
 import { AtlasHeaderMenu, AtlasHeaderMenuDivider, AtlasHeaderMenuItem } from './AtlasHeaderMenu'
 import './atlasHeader.css'
 
@@ -40,8 +40,8 @@ export type AtlasHeaderLinks = Partial<
 /**
  * LEARNER / ADMIN MODE in the profile menu — 2026-10-20, Eric: the Atlas
  * Admin pill's switching and links, moved into this menu in its styling.
- * The menu says which mode is on under the email, with the switch right
- * under it; in `admin` its links are `adminLinks`, in `learner` they are the
+ * The menu says which mode is on under the email — Mode: Admin / Learner,
+ * the other one switching; in `admin` its links are `adminLinks`, in `learner` they are the
  * learner's own (Profile … My Purchases). Absent, the menu
  * is exactly what it was.
  */
@@ -233,9 +233,11 @@ export function AtlasHeader({
               {modeMenu ? (
                 /* MODE: ADMIN LEARNER — 2026-10-20, Eric's request. The two
                    modes as the header's own pills at 85%; the one you are in
-                   reads selected, the other switches. */
-                <span role="group" aria-label="Mode" style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8, fontSize: 12, lineHeight: '16px', color: 'var(--atlas-hdr-email)', whiteSpace: 'nowrap' }}>
-                  <span style={{ marginRight: 2 }}>Mode:</span>
+                   reads selected, the other switches. It is the menu's only
+                   switch — the "Switch to … Mode" row went the same day. */
+                <span role="group" aria-label="Mode" style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 8, fontSize: 12, lineHeight: '16px', color: 'var(--atlas-hdr-email)', whiteSpace: 'nowrap' }}>
+                  {/* `baseline` above puts this on the pills' text line. */}
+                  <span style={{ marginRight: 2, fontWeight: 600 }}>Mode:</span>
                   {(['admin', 'learner'] as const).map((m) => {
                     const on = modeMenu.mode === m
                     return (
@@ -255,16 +257,6 @@ export function AtlasHeader({
               ) : null}
             </div>
             <AtlasHeaderMenuDivider />
-            {/* The switch sits right under the mode it changes (2026-10-20,
-                Eric's request), with its own rule below. */}
-            {modeMenu ? (
-              <>
-                <AtlasHeaderMenuItem onSelect={modeMenu.onSwitch} icon={<ArrowRightArrowLeft size={18} />}>
-                  {modeMenu.mode === 'admin' ? 'Switch to Learner Mode' : 'Switch to Admin Mode'}
-                </AtlasHeaderMenuItem>
-                <AtlasHeaderMenuDivider />
-              </>
-            ) : null}
             {modeMenu?.mode === 'admin' ? (
               modeMenu.adminLinks.map((l) => (
                 <AtlasHeaderMenuItem key={l.href} href={l.href} onSelect={onNavigate ? () => onNavigate(l.href) : undefined} icon={l.icon}>
