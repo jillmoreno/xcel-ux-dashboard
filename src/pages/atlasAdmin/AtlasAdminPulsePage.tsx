@@ -329,7 +329,7 @@ function Box({ label, children }: { label: string; children: ReactNode }) {
 
 function Figure({ label, value, bg, ink, note, hug }: { label: string; value: number; bg: string; ink: string; note?: string; hug?: boolean }) {
   return (
-    <div style={{ padding: hug ? 24 : 12, borderRadius: 10, background: bg, flex: hug ? 'none' : undefined }}>
+    <div style={{ padding: hug ? 16 : 12, borderRadius: 10, background: bg, flex: hug ? 'none' : undefined }}>
       <p style={{ ...LABEL, color: ink }}>{label}</p>
       {/* A 1px rule between title and count, across the content width. */}
       {hug ? <hr style={{ margin: '12px 0 8px', border: 'none', borderTop: '1px solid var(--admin-rule)' }} /> : null}
