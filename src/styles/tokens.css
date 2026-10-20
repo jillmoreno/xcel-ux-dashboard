@@ -7496,6 +7496,7 @@ a.cre-library-card-title::after {
      var(--color-primary-100) would give plain XCEL's step. The sidebar's
      selected item (2026-10-20, Eric's request). */
   --admin-atlas-primary-100: #eaeef1;
+  --admin-atlas-primary-200: #cbd5dc;
   --admin-atlas-primary-400: #6b8ca3;
   /* Atlas Secondary 100 — the Style Guide's tan ramp (tertiary-100 in the
      Atlas palette block). Pulse's Action now boxes. */
