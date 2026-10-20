@@ -7486,6 +7486,19 @@ a.cre-library-card-title::after {
      violet-600). */
   --admin-chart-blue: #2563eb;
   --admin-chart-violet: #7c3aed;
+  /* The public pages (Partner with us, invites, the welcome email, the
+     onboarding wizard): the reference's warm paper, its ink (#3a2a28 at
+     full strength and the alphas it uses) and its Merriweather headings. */
+  --admin-public-bg: #fbf5f0;
+  --admin-public-tint: #f6ebe3;
+  --admin-public-ink: #3a2a28;
+  --admin-public-text: rgb(58 42 40 / 0.72);
+  --admin-public-muted: rgb(58 42 40 / 0.55);
+  --admin-public-rule: rgb(58 42 40 / 0.12);
+  --admin-public-dark: #3a2a28;
+  --admin-public-on-dark: rgb(255 255 255 / 0.78);
+  --admin-public-mail: #f3f1ef;
+  --admin-font-serif: 'Merriweather', Georgia, serif;
   /* The price card's struck-through was-price (Invitation - Account Creation
      2:448, the design's Gray/400). */
   --color-e2e-was-price: #98a2b3;

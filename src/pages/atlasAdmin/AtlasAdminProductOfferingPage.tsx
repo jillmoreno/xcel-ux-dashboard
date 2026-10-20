@@ -1,6 +1,7 @@
 import { useState, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from '@/icons'
+import { AGENCY_DISCOUNT as DISCOUNT, LINES, SALES_REP as REP, US_STATES as STATES, listPrice } from '@/data/atlasAdmin/pricing'
 import { ADMIN_BASE, companySlug, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, CARD, FIELD_LABEL, HEADING, INPUT, PILL } from './adminStyles'
 
@@ -16,33 +17,6 @@ import { BUTTON_BRAND, CARD, FIELD_LABEL, HEADING, INPUT, PILL } from './adminSt
  * per-line base and a per-state step, at the 20% Settings shows as "Your
  * rate". Jordan Lee is invented, as the reference's is.
  */
-
-const STATES: [string, string][] = [
-  ['AL', 'Alabama'], ['AK', 'Alaska'], ['AZ', 'Arizona'], ['AR', 'Arkansas'], ['CA', 'California'], ['CO', 'Colorado'], ['CT', 'Connecticut'], ['DE', 'Delaware'],
-  ['DC', 'District of Columbia'], ['FL', 'Florida'], ['GA', 'Georgia'], ['HI', 'Hawaii'], ['ID', 'Idaho'], ['IL', 'Illinois'], ['IN', 'Indiana'], ['IA', 'Iowa'],
-  ['KS', 'Kansas'], ['KY', 'Kentucky'], ['LA', 'Louisiana'], ['ME', 'Maine'], ['MD', 'Maryland'], ['MA', 'Massachusetts'], ['MI', 'Michigan'], ['MN', 'Minnesota'],
-  ['MS', 'Mississippi'], ['MO', 'Missouri'], ['MT', 'Montana'], ['NE', 'Nebraska'], ['NV', 'Nevada'], ['NH', 'New Hampshire'], ['NJ', 'New Jersey'], ['NM', 'New Mexico'],
-  ['NY', 'New York'], ['NC', 'North Carolina'], ['ND', 'North Dakota'], ['OH', 'Ohio'], ['OK', 'Oklahoma'], ['OR', 'Oregon'], ['PA', 'Pennsylvania'], ['RI', 'Rhode Island'],
-  ['SC', 'South Carolina'], ['SD', 'South Dakota'], ['TN', 'Tennessee'], ['TX', 'Texas'], ['UT', 'Utah'], ['VT', 'Vermont'], ['VA', 'Virginia'], ['WA', 'Washington'],
-  ['WV', 'West Virginia'], ['WI', 'Wisconsin'], ['WY', 'Wyoming'],
-]
-
-const LINES: [string, string, number][] = [
-  ['life', 'Life', 249],
-  ['health', 'Health', 249],
-  ['lh', 'Life & Health', 399],
-  ['pc', 'Property & Casualty', 359],
-  ['personal', 'Personal Lines', 299],
-]
-
-const DISCOUNT = 20
-const REP = { name: 'Jordan Lee', email: 'jordan.lee@xcelsolutions.example.com', phone: '555-0142' }
-
-function listPrice(state: string, line: string) {
-  const base = LINES.find(([k]) => k === line)![2]
-  const i = STATES.findIndex(([c]) => c === state)
-  return base + ((i * 7) % 6) * 10
-}
 
 export function AtlasAdminProductOfferingPage() {
   const { companyLabel, setCompanyLabel, showToast } = useAdminStore()

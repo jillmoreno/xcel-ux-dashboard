@@ -2,6 +2,7 @@ import { createContext, useContext } from 'react'
 import type { Learner } from '@/data/atlasAdmin/learners'
 import type { Invite } from '@/data/atlasAdmin/invites'
 import type { AssignmentRule } from '@/data/atlasAdmin/assignments'
+import type { OnboardingAnswers } from './onboarding'
 
 /**
  * ATLAS ADMIN — the session's shared state (2026-10-19). What one page does
@@ -36,6 +37,8 @@ export type AdminInvite = {
 /** Something done to a learner this session — a nudge, a call, an email. */
 export type AdminTouch = { id: string; learnerId: string; kind: 'nudge' | 'call' | 'email' | 'exam-date'; note: string | null; at: string }
 
+export type PartnerRequest = { name: string; email: string; company: string; volume: string; lines: string[]; notes: string }
+
 export type AdminEvent = { id: number; at: string; event: string; path: string }
 
 export type AddedDepartment = { name: string; lead: string }
@@ -65,6 +68,15 @@ export type AdminStore = {
   /** Assignment rules — the fixture's, with this session's creates and edits. */
   rules: AssignmentRule[]
   saveRule: (rule: AssignmentRule) => void
+  /** Partner with us → Request a call. The welcome email reads it back. */
+  partnerRequest: PartnerRequest | null
+  setPartnerRequest: (r: PartnerRequest) => void
+  /** Onboarding wizard → finished. The welcome email then offers the portal. */
+  onboarded: boolean
+  setOnboarded: (done: boolean) => void
+  /** The wizard's answers so far — Save & exit keeps them. */
+  onboardingDraft: OnboardingAnswers | null
+  setOnboardingDraft: (a: OnboardingAnswers | null) => void
   /** The public company label on invite URLs — Product offering edits it. */
   companyLabel: string
   setCompanyLabel: (label: string) => void

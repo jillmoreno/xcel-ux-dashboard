@@ -5,7 +5,8 @@ import { ADMIN_DEPARTMENTS, ADMIN_LEARNERS, type Learner } from '@/data/atlasAdm
 import { ADMIN_INVITES, type Invite } from '@/data/atlasAdmin/invites'
 import { ADMIN_RULES, type AssignmentRule } from '@/data/atlasAdmin/assignments'
 import { SEATS_PURCHASED } from '@/data/atlasAdmin/organization'
-import { ADMIN_BASE, AdminStoreContext, type AddedDepartment, type AdminEvent, type AdminStore, type AdminTouch, type ProgressReportSettings } from './adminStore'
+import { ADMIN_BASE, AdminStoreContext, type AddedDepartment, type AdminEvent, type PartnerRequest, type AdminStore, type AdminTouch, type ProgressReportSettings } from './adminStore'
+import type { OnboardingAnswers } from './onboarding'
 import { AtlasAdminComingSoon, AtlasAdminLayout } from './AtlasAdminLayout'
 import { AtlasAdminStudentsPage } from './AtlasAdminStudentsPage'
 import { AtlasAdminRecruitPage } from './AtlasAdminRecruitPage'
@@ -35,6 +36,10 @@ import { AtlasAdminAuditPage } from './AtlasAdminAuditPage'
 import { AtlasAdminPricingPage } from './AtlasAdminPricingPage'
 import { AtlasAdminProductOfferingPage } from './AtlasAdminProductOfferingPage'
 import { AtlasAdminInternalGate, AtlasAdminPortalAnalyticsPage } from './AtlasAdminInternalPages'
+import { AtlasAdminPartnerPage } from './AtlasAdminPartnerPage'
+import { AtlasAdminWelcomePage } from './AtlasAdminWelcomePage'
+import { AtlasAdminOnboardingPage } from './AtlasAdminOnboardingPage'
+import { AtlasAdminInvitePage, AtlasAdminJoinEventPage } from './AtlasAdminInvitePage'
 
 /**
  * ATLAS ADMIN — the app (2026-10-19, feat/atlas-admin). The admin surface
@@ -57,6 +62,9 @@ export function AtlasAdminApp() {
   })
   const setProgressReport = useCallback((patch: Partial<ProgressReportSettings>) => setPR((p) => ({ ...p, ...patch })), [])
   const [companyLabel, setCompanyLabel] = useState('Summit Insurance Group')
+  const [partnerRequest, setPartnerRequest] = useState<PartnerRequest | null>(null)
+  const [onboarded, setOnboarded] = useState(false)
+  const [onboardingDraft, setOnboardingDraft] = useState<OnboardingAnswers | null>(null)
   const [events, setEvents] = useState<AdminEvent[]>([])
   const logEvent = useCallback(
     (event: string, path: string) =>
@@ -117,8 +125,8 @@ export function AtlasAdminApp() {
     logEvent(`${t.kind === 'exam-date' ? 'exam_date_set' : `${t.kind}_sent`}`, `${ADMIN_BASE}/students/recruit/${t.learnerId}`)
   }, [logEvent])
   const store = useMemo<AdminStore>(
-    () => ({ learners: sampleRoster ? learners : [], sampleRoster, setSampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, rules, saveRule, seatsPurchased, addSeats, companyLabel, setCompanyLabel, events, logEvent, toast, showToast }),
-    [learners, sampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, rules, saveRule, seatsPurchased, addSeats, companyLabel, events, logEvent, toast, showToast],
+    () => ({ learners: sampleRoster ? learners : [], sampleRoster, setSampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, rules, saveRule, seatsPurchased, addSeats, companyLabel, setCompanyLabel, partnerRequest, setPartnerRequest, onboarded, setOnboarded, onboardingDraft, setOnboardingDraft, events, logEvent, toast, showToast }),
+    [learners, sampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, rules, saveRule, seatsPurchased, addSeats, companyLabel, partnerRequest, onboarded, onboardingDraft, events, logEvent, toast, showToast],
   )
 
   if (!enabled) {
@@ -136,6 +144,15 @@ export function AtlasAdminApp() {
         <Route path="pulse" element={<AtlasAdminPulsePage />} />
         <Route path="pulse/:date" element={<AtlasAdminPulsePage />} />
         <Route path="admin-insight" element={<Navigate to={`../pulse${window.location.search}`} replace />} />
+        {/* The public side, also outside the shell: the agency pitch, the
+            welcome inbox and the setup wizard, and what a recruit sees. */}
+        <Route path="partner-with-us" element={<AtlasAdminPartnerPage />} />
+        <Route path="welcome" element={<AtlasAdminWelcomePage />} />
+        <Route path="onboarding" element={<AtlasAdminOnboardingPage />} />
+        <Route path="invite/:company" element={<AtlasAdminInvitePage />} />
+        <Route path="invite/:company/:department" element={<AtlasAdminInvitePage />} />
+        <Route path="invite/:company/:department/:offer" element={<AtlasAdminInvitePage />} />
+        <Route path="join/event/:departmentId" element={<AtlasAdminJoinEventPage />} />
         <Route element={<AtlasAdminLayout />}>
           <Route index element={<Navigate to={`students${window.location.search}`} replace />} />
           <Route path="students" element={<AtlasAdminStudentsPage />} />
@@ -150,6 +167,11 @@ export function AtlasAdminApp() {
           <Route path="my-team" element={<AtlasAdminMyTeamPage />} />
           <Route path="lead" element={<Navigate to={`../students${window.location.search}`} replace />} />
           <Route path="departments/:departmentId" element={<DepartmentRedirect />} />
+          <Route path="department/:departmentId" element={<DepartmentRedirect />} />
+          <Route path="lead/:departmentId" element={<Navigate to={`${ADMIN_BASE}/reports/team-comparison${window.location.search}`} replace />} />
+          <Route path="library" element={<Navigate to={`${ADMIN_BASE}/students${window.location.search}`} replace />} />
+          <Route path="training-programs/*" element={<Navigate to={`${ADMIN_BASE}/students${window.location.search}`} replace />} />
+          <Route path="assignment-tracking/*" element={<Navigate to={`${ADMIN_BASE}/assignments${window.location.search}`} replace />} />
           <Route path="assignments" element={<AtlasAdminAssignmentsPage />} />
           <Route path="assignments/new" element={<AtlasAdminRuleWizard />} />
           <Route path="assignments/quick" element={<AtlasAdminQuickAssignPage />} />

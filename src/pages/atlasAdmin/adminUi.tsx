@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import { NavLink } from 'react-router-dom'
 import type { LearnerStage, PreparedToPass, Readiness } from '@/data/atlasAdmin/learners'
 import { STAGE_LABEL } from '@/data/atlasAdmin/learners'
+import { useAdminStore } from './adminStore'
 import { CHIP, MENU, MENU_ITEM, PILL } from './adminStyles'
 
 /** ATLAS ADMIN — the small shared pieces (2026-10-19). */
@@ -164,4 +165,15 @@ export function AdminTabs({ tabs }: { tabs: { to: string; label: string }[] }) {
       ))}
     </nav>
   )
+}
+
+/** The store's toast, for the pages outside the shell (the shell draws its
+ *  own). */
+export function AdminToast() {
+  const { toast } = useAdminStore()
+  return toast ? (
+    <div role="status" style={{ position: 'fixed', left: '50%', bottom: 24, transform: 'translateX(-50%)', zIndex: 60, padding: '10px 16px', borderRadius: 9999, background: 'var(--admin-ink)', color: 'var(--admin-surface)', fontSize: 13, fontFamily: 'var(--font-body)' }}>
+      {toast}
+    </div>
+  ) : null
 }
