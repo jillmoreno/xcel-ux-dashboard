@@ -190,10 +190,10 @@ export function AtlasAdminNotificationsPage() {
           })}
         </div>
 
-        {/* Pinned 40px under the global nav; a column taller than the window
+        {/* Pinned 24px under the global nav; a column taller than the window
             scrolls with the page until its bottom is 40px from the window's,
             then pins there instead. */}
-        <div ref={previewRef} style={{ position: 'sticky', top: `min(calc(var(--admin-header-h, 0px) + 40px), calc(100vh - ${previewH}px - 40px))`, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div ref={previewRef} style={{ position: 'sticky', top: `min(calc(var(--admin-header-h, 0px) + 24px), calc(100vh - ${previewH}px - 40px))`, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {sel.preview ? <EmailPreview title={sel.title} onSample={sendSample} joined={sel.group === 'admin'} p={sel.id === 'invite' ? { ...sel.preview, body: sel.preview.body.map((b) => (b.startsWith('“') ? `“${note}” Cody McClintock` : b)) } : sel.preview} /> : <ProgressPreview title={sel.title} onSample={sendSample} joined={sel.group === 'admin'} learners={learners} />}
           {/* Recipients joins the preview above: no gap, square where they meet, the preview's bottom rule the only line between. */}
           {sel.group === 'admin' ? (

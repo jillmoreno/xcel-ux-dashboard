@@ -251,11 +251,11 @@ const QL_CARD: CSSProperties = {
   border: '1px solid var(--admin-quicklinks-rule)',
   /* 8 right and 16 down (2026-10-20, Eric's request) — the negative right
      margin keeps the card's width, so it moves rather than shrinks. */
-  margin: '20px -24px 0 8px',
-  /* The card, not the rail, pins: 40px under the global nav, as Notifications'
-     preview column does. */
+  margin: '4px -24px 0 8px',
+  /* The card, not the rail, pins: 24px under the global nav (with the rail's
+     20px padding at rest), as Notifications' preview column does. */
   position: 'sticky',
-  top: 'calc(var(--admin-header-h, 0px) + 40px)',
+  top: 'calc(var(--admin-header-h, 0px) + 24px)',
 }
 const QL_ROW: CSSProperties = {
   width: '100%',
