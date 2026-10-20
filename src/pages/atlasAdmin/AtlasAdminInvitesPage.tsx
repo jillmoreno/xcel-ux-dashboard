@@ -93,7 +93,7 @@ export function AtlasAdminInvitesPage() {
         </button>
       </header>
 
-      <section aria-label="Invite outcomes" style={{ ...CARD, padding: 16, background: 'var(--admin-atlas-primary-100)' }}>
+      <section aria-label="Invite outcomes" style={{ ...CARD, border: 'none', padding: 16, background: 'var(--admin-atlas-primary-100)' }}>
         <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
           {tiles.map((t) => {
             const active = t.id !== 'all' && filter === t.id
