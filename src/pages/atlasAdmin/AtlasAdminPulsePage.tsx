@@ -332,7 +332,7 @@ function Figure({ label, value, bg, ink, note }: { label: string; value: number;
 
 function Action({ children }: { children: ReactNode }) {
   return (
-    <div style={{ padding: 12, borderRadius: 10, background: 'var(--admin-brand-tint)' }}>
+    <div style={{ padding: 12, borderRadius: 10, background: 'var(--admin-atlas-secondary-100)' }}>
       <p style={{ ...EYEBROW, fontSize: 9, color: 'var(--admin-brand)' }}>Action now</p>
       <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--admin-ink)' }}>{children}</p>
     </div>
