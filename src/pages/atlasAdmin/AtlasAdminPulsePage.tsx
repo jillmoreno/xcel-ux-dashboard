@@ -354,7 +354,7 @@ function Action({ children, button }: { children: ReactNode; button?: ReactNode 
         <p style={{ ...LABEL, color: 'var(--admin-brand)' }}>Action now</p>
         <p style={{ margin: '4px 0 0', fontSize: 13, lineHeight: '18px', color: 'var(--admin-ink)' }}>{children}</p>
       </div>
-      {button ? <div style={{ flex: 'none' }}>{button}</div> : null}
+      {button ? <div style={{ flex: 'none', marginRight: 8 }}>{button}</div> : null}
     </div>
   )
 }
