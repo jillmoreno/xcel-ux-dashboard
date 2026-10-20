@@ -9,6 +9,7 @@ import { PlatformShell } from '@/components/layout/PlatformShell'
 import { writeExamDate } from '@/data/examDateStore'
 import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
+  resolveDashboardVersion,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3,
   isQualifyingEducationVersion,
 } from '@/data/dashboardVersions'
@@ -84,11 +85,19 @@ afterEach(() => {
 })
 
 describe('Testing 3 — the version itself', () => {
-  it('is in the picker, directly after its parent', () => {
-    /* The picker is the only place the lineage is visible, and reading them in
-       order is what makes the one difference legible. */
+  /* ⚠ INVERTED 2026-10-20 — archived from the picker with its parent ("archive
+     these views from Jill"). The lineage note it carried is worth keeping, and
+     is now a restore instruction rather than an assertion: the picker was the
+     only place the parentage was visible, so the two have to come back
+     together or neither. Both are still fully resolvable, which is what this
+     now pins. */
+  it('is ARCHIVED from the picker, with its parent, and still resolves', () => {
     const ids = DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)
-    expect(ids[ids.indexOf('discoverability-testing') + 1]).toBe('discoverability-testing-3')
+    expect(ids).not.toContain('discoverability-testing-3')
+    expect(ids).not.toContain('discoverability-testing')
+    expect(resolveDashboardVersion('discoverability-testing-3', 'xcel')).toBe(
+      'discoverability-testing-3',
+    )
   })
 
   it('did NOT take the archived Testing 2 id', () => {

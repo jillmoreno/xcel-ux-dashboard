@@ -6,6 +6,8 @@ import { LearnerFocusedBand } from '@/components/membership/v5/LearnerFocusedBan
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
+  DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
+  resolveDashboardVersion,
 } from '@/data/dashboardVersions'
 import { CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
 
@@ -101,10 +103,22 @@ describe('LearnerFocusedBand', () => {
 })
 
 describe('Learner Focused dashboard version', () => {
-  it('is registered in the Discoverability version list', () => {
-    const v = DISCOVERABILITY_DASHBOARD_VERSIONS.find(
-      (x) => x.id === 'discoverability-learner-focused',
+  /* ⚠ ARCHIVED FROM THE PICKER 2026-10-20 ("archive these views from Jill"),
+     with Testing and Testing 3. Inverted rather than deleted: the version is
+     still reachable and this file still renders it, which is the half of the
+     archive convention a later cleanup gets wrong.
+
+     ⚠ AND THE FILE THIS SUITE IS NAMED FOR IS NOT THIS VERSION'S.
+     `LearnerFocusedBand.tsx` is shared chrome every Home renders through,
+     Atlas included — the name is historical. Archiving the version touched
+     one line in the picker and nothing in that component. */
+  it('is ARCHIVED from the picker, and still resolves', () => {
+    expect(
+      DISCOVERABILITY_DASHBOARD_VERSIONS.find((x) => x.id === 'discoverability-learner-focused'),
+    ).toBeUndefined()
+    expect(DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED.label).toBe('Learner Focused')
+    expect(resolveDashboardVersion('discoverability-learner-focused', 'xcel')).toBe(
+      'discoverability-learner-focused',
     )
-    expect(v?.label).toBe('Learner Focused')
   })
 })

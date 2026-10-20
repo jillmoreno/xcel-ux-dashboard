@@ -11,10 +11,10 @@ import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelC
 import { PlatformShell } from '@/components/layout/PlatformShell'
 import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
+  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3,
   DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV,
-  DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
   defaultDiscoverabilityVersionFor,
   isQualifyingEducationVersion,
 } from '@/data/dashboardVersions'
@@ -229,10 +229,15 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
     expect(container.querySelector('.cre-learner-focused-band')).not.toBeNull()
   })
 
-  it('leaves Testing leading the picker, with Learner Focused behind it', () => {
+  it('leaves Eric/Atlas WIP leading the picker', () => {
     // Order is what a reviewer reads as "the one we are on".
+    /* ⚠ RENAMED AND RE-POINTED 2026-10-20. It read "leaves Testing leading the
+       picker, with Learner Focused behind it" — both of those are archived
+       now, so the case would have described a list that no longer exists. The
+       SUBJECT is unchanged: QE Focused's archiving left the list in a
+       particular order, and this is what that order is today. */
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS[0]).toBe(
-      DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
+      DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3,
     )
     /* Testing 2 sat between these two until 2026-09-28, when it was archived
        the same way QE Focused and Marketing Focused were — the picker entry
@@ -249,12 +254,15 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
        list and still resolves on its own; the numbering carried on past it
        rather than reusing it. */
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).toEqual([
-      'discoverability-testing',
-      /* ⚠ TESTING 3 KEEPS THE SLOT DIRECTLY AFTER ITS PARENT through the
-         2026-10-05 merge. The lineage rule above is why the picker is ordered
-         at all, so the two Atlas versions queue BEHIND it rather than being
-         appended next to Testing where the branch had them. */
-      'discoverability-testing-3',
+      /* ⚠ TESTING AND TESTING 3 LED THIS LIST until 2026-10-20, in that order
+         — the lineage rule the picker exists to show. Both archived that day
+         ("archive these views from Jill"), picker entry only; both still
+         resolve. Restore them together, at the head, or the parentage is
+         unreadable. See `discoverability-testing-version` and
+         `discoverability-testing-3-version` in archivedItems.ts.
+
+         ⚠ SO THE HEAD OF THE LIST IS NO LONGER A `discoverability-*` VERSION
+         for the first time — Eric/Atlas WIP leads. */
       // Eric/Atlas WIP (eric-atlas-v3) leads Eric's versions since 2026-10-12.
       'eric-atlas-v3',
       // Eric/Atlas White (2026-10-12) — WIP's duplicate, right after it.
@@ -276,7 +284,11 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
       // Eric/Atlas V1 came off the picker 2026-10-12 (still renders by link).
       // Eric/Atlas V2 (2026-10-07) — V1 with its own copy of the Home page.
       'eric-atlas-v2',
-      /* ⚠ HYBRID V1 AND HYBRID - PACING EXPLORATION STOOD HERE, in that order,
+      /* ⚠ LEARNER FOCUSED CLOSED THIS LIST from June until 2026-10-20,
+         archived with Testing and Testing 3 the same day. Restore it LAST —
+         the order is lineage. See `discoverability-learner-focused-version`.
+
+         ⚠ HYBRID V1 AND HYBRID - PACING EXPLORATION STOOD HERE, in that order,
          from 2026-10-05 and 2026-10-07. Both came off the picker 2026-10-20
          ("lets archive the rest of Jills"), the same day Jill/Atlas-Main became
          the default — the picker entry only, as with Testing 2 and Eric/Atlas
@@ -288,7 +300,6 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
          See `hybrid-v1-version` and `hybrid-pacing-version` in
          archivedItems.ts; restoring either is one line in
          `DISCOVERABILITY_DASHBOARD_VERSIONS`. */
-      'discoverability-learner-focused',
     ])
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).not.toContain(
       'discoverability-testing-2',

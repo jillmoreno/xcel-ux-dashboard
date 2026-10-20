@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
+  ALL_DASHBOARD_VERSIONS,
   DISCOVERABILITY_DASHBOARD_VERSIONS,
+  dashboardVersionLabel,
   DISCOVERABILITY_DASHBOARD_VERSION_JILL_ATLAS_MAIN,
   defaultDiscoverabilityVersionFor,
   isAtlasCompassNavVersion,
@@ -142,5 +144,54 @@ describe('Hybrid V1 and Hybrid - Pacing Exploration', () => {
       expect(row?.restoreNote).toMatch(/DISCOVERABILITY_DASHBOARD_VERSIONS/)
       expect(row?.location).toMatch(/dashboardVersions\.ts/)
     }
+  })
+})
+
+/**
+ * ARCHIVED VERSIONS STILL HAVE NAMES — 2026-10-20.
+ *
+ * ⚠ THE BUG THIS PINS WAS LATENT FROM THE FIRST ARCHIVE. The convention here
+ * removes a version's PICKER ENTRY and keeps everything else, so it still
+ * resolves and still renders — but `dashboardVersionLabel` searched the picker
+ * list alone, so the demo bar showed the raw id ("discoverability-testing")
+ * where it had shown "Testing". Every version archived since QE Focused had
+ * it; nobody had looked at an archived version on the bar. Archiving three at
+ * once surfaced it.
+ *
+ * Naming a version and OFFERING one are different questions, and the two lists
+ * are deliberately separate — merging them would put every archived version
+ * back in the picker, which is the one thing archiving does.
+ */
+describe('every version the app can render', () => {
+  const ARCHIVED = [
+    'discoverability-qe-focused',
+    'discoverability-testing-2',
+    'discoverability-testing',
+    'discoverability-testing-3',
+    'discoverability-learner-focused',
+    'eric-atlas-v1',
+    'hybrid-v1',
+    'hybrid-pacing',
+  ]
+
+  it('is named, picker or not', () => {
+    for (const id of ARCHIVED) {
+      /* The failure mode is the label falling back to the id, so that is
+         exactly what is asserted against. */
+      expect(dashboardVersionLabel(id), id).not.toBe(id)
+      expect(dashboardVersionLabel(id), id).toBeTruthy()
+    }
+  })
+
+  it('…and the picker is still the shorter list', () => {
+    const picker = DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)
+    for (const id of ARCHIVED) expect(picker, id).not.toContain(id)
+    expect(ALL_DASHBOARD_VERSIONS.length).toBeGreaterThan(picker.length)
+  })
+
+  it('every picker entry is in it, so nothing is named twice or missed', () => {
+    const all = ALL_DASHBOARD_VERSIONS.map((v) => v.id)
+    expect(new Set(all).size, 'no duplicates').toBe(all.length)
+    for (const v of DISCOVERABILITY_DASHBOARD_VERSIONS) expect(all, v.id).toContain(v.id)
   })
 })

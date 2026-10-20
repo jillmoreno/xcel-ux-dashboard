@@ -56,6 +56,45 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'discoverability-testing-version',
+    name: 'Testing (dashboard version)',
+    what: 'QE Focused with the home screen\u2019s second row given over to pacing \u2014 the Readiness tile dropped, and Study Pace taking the full width as the presets card: a finish date, the room it leaves before access ends, and an Adjust sheet. It was an EXPLORATION of five pacing treatments behind `dashboard-pacing-style` until 2026-09-22, when presets won and the rest were unwired. Everything else matched QE Focused, so the difference was the one tile.',
+    location:
+      'FULLY INTACT \u2014 `DISCOVERABILITY_DASHBOARD_VERSION_TESTING` in `src/data/dashboardVersions.ts`, its `discoverability-testing` member of `DashboardVersionId`, its arm of `isQualifyingEducationVersion`, and every `dashboardLayout === \u2018testing\u2019` branch in `MembershipOverview`. Only the entry in `DISCOVERABILITY_DASHBOARD_VERSIONS` was removed, so `?version=discoverability-testing` STILL RESOLVES \u2014 `TestingVersion.test.tsx` renders it on every run.',
+    flag: '?version=discoverability-testing (still resolves)',
+    dateRemoved: '2026-10-20',
+    reason:
+      'Jillienne\u2019s call \u2014 "archive these views from Jill", the same day Jill/Atlas-Main became the default and Hybrid V1 and the pacing fork were archived. It led the picker from 2026-09-22 and was XCEL\u2019s default until Testing 3 took it on 10-02; the pacing question it answered (presets, a finish date, the room before access ends) is now in `src/lib/studyPace.ts` and drawn by the Atlas Home\u2019s own pace card. The exploration outlived the question.',
+    restoreNote:
+      'Re-add `DISCOVERABILITY_DASHBOARD_VERSION_TESTING` to `DISCOVERABILITY_DASHBOARD_VERSIONS` in `src/data/dashboardVersions.ts`, FIRST in the array \u2014 it led the list, and Testing 3 lists directly after it, so restoring one without the other leaves the lineage unreadable. A comment marks the spot. \u26a0 WHAT IS AT STAKE BEYOND THE PICKER LINE: this version is the parent of Testing 3 AND the layout Atlas/Compass Global Navigation renders \u2014 `isAtlasCompassNavVersion` resolves to Testing\u2019s home, so deleting the const or its `MembershipOverview` branch takes a version that IS still on the picker down with it. NOT restored deliberately: no test, fixture or component was touched, because `TestingVersion.test.tsx` addresses the version by `?version=` rather than through the picker \u2014 only its two picker-ORDER cases moved, and those name what changed.',
+  },
+  {
+    id: 'discoverability-testing-3-version',
+    name: 'Testing 3 (dashboard version)',
+    what: 'Testing, with the Current course card and the Complete coursework card combined into ONE block \u2014 course identity, the progress figure and Resume, a hairline, then the coursework stops. The argument: the two cards were the same subject in two columns, so a learner met the same progress twice in two shapes and had to work out that they agreed. My Courses and Certificates moved below the combined block. Everything else was Testing\u2019s, so the difference was the one block.',
+    location:
+      'FULLY INTACT \u2014 `DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3` in `src/data/dashboardVersions.ts`, its `discoverability-testing-3` member of `DashboardVersionId`, its arm of `isQualifyingEducationVersion`, and the `testing3` branches in `MembershipOverview` and `LearnerFocusedBand`. Only the entry in `DISCOVERABILITY_DASHBOARD_VERSIONS` was removed, so `?version=discoverability-testing-3` STILL RESOLVES \u2014 `Testing3Version.test.tsx` renders it on every run.',
+    flag: '?version=discoverability-testing-3 (still resolves)',
+    dateRemoved: '2026-10-20',
+    reason:
+      'Jillienne\u2019s call, with Testing above and Learner Focused below. It was XCEL\u2019s default from 2026-10-02 to 10-06 and the last non-Atlas version to hold that line. Its combined block is the shape the Atlas Homes have used ever since \u2014 the course card over the coursework stops, one subject in one column \u2014 so the argument it was built to make has been won and absorbed.',
+    restoreNote:
+      'Re-add `DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3` to `DISCOVERABILITY_DASHBOARD_VERSIONS`, directly after Testing \u2014 restore the two together or the lineage the picker exists to show is gone. A comment marks the spot. \u26a0 HYBRID V1 WAS BUILT FROM THIS ONE: "Eric\u2019s Atlas home combined with Testing 3\u2019s coursework treatment". Hybrid V1 is itself archived (`hybrid-v1-version`) and its Home still renders, so deleting Testing 3\u2019s branches would strand a treatment two versions still draw. NOT restored deliberately: `Testing3Version.test.tsx` and `ExamCardPlacement.test.tsx` were left untouched \u2014 both address versions by `?version=`.',
+  },
+  {
+    id: 'discoverability-learner-focused-version',
+    name: 'Learner Focused (dashboard version)',
+    what: 'The oldest version in the picker \u2014 June 2026, and the last still describing the pre-Atlas dashboard. The top section was one joined card: Current Learning Path (a two-segment completion gauge, Mandatory/Elective bars, KPIs and status on a deep-navy half) beside a white Jump Back In half with a poster cover, progress and a magenta Resume CTA. Recommended for you and What\u2019s New followed below.',
+    location:
+      'FULLY INTACT \u2014 `DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED` in `src/data/dashboardVersions.ts`, its `discoverability-learner-focused` member of `DashboardVersionId`, and the layout it resolves in `MembershipOverview`. Only the entry in `DISCOVERABILITY_DASHBOARD_VERSIONS` was removed, so `?version=discoverability-learner-focused` STILL RESOLVES.',
+    flag: '?version=discoverability-learner-focused (still resolves)',
+    dateRemoved: '2026-10-20',
+    reason:
+      'Jillienne\u2019s call, with Testing and Testing 3 above. Four months old and two design directions behind: it predates the brand work, the Atlas chrome and the study-pace model, and nothing on it has been asked about since the Atlas versions arrived. It closed the picker, which is where a version goes before it goes.',
+    restoreNote:
+      'Re-add `DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED` to `DISCOVERABILITY_DASHBOARD_VERSIONS`, LAST in the array \u2014 it closed the list, and the order is lineage, so appending it anywhere else misstates where it came from. A comment marks the spot. \u26a0 THE FILE IT NAMES IS NOT ITS OWN: `LearnerFocusedBand.tsx` is shared chrome that EVERY version\u2019s home renders through, including the Atlas ones \u2014 the name is historical. Do not read this row as permission to delete it; archiving this version touched nothing but one line. NOT restored deliberately: no test or fixture was changed.',
+  },
+  {
     id: 'hybrid-v1-version',
     name: 'Hybrid V1 (dashboard version)',
     what: 'Jillienne\u2019s first Hybrid \u2014 Eric\u2019s Atlas home carrying Testing 3\u2019s coursework treatment. The figures column leads with Course Access and drops Days to Review; Begin Course sits in the title area; Steps 2 and 3 are collapsed by default to keep the first screen to one task; Complete Coursework expands the lessons stop with a completion count and the lesson in progress. It took the Atlas CHROME and forked only the home content, which is the shape every Atlas copy since has used.',

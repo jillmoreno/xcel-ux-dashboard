@@ -665,12 +665,24 @@ export function isQualifyingEducationVersion(versionId: string): boolean {
  * DISCOVERABILITY_DASHBOARD_VERSION_BADGED here to restore it to the picker.)
  */
 export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
-  DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
-  /* Testing 3 — Testing with the course and its coursework as one block. Listed
-     directly after its parent, because the picker is the only place the lineage
-     is visible and reading them in order is what makes the one difference
-     legible. */
-  DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3,
+  /* ⚠ TESTING AND TESTING 3 LED THIS LIST UNTIL 2026-10-20, when Jillienne
+     archived them with Learner Focused below ("archive these views from
+     Jill") — the picker entry only, the same way Badged, QE Focused,
+     Marketing Focused, Testing 2, Eric/Atlas V1, Hybrid V1 and Hybrid -
+     Pacing Exploration went. Both consts, both id members, every `?version=`
+     branch, `isQualifyingEducationVersion` and the layouts they resolve are
+     KEPT, so `?version=discoverability-testing` and `-testing-3` still
+     render; `TestingVersion.test.tsx` and `Testing3Version.test.tsx` still
+     exercise them on every run, which is the whole point of archiving a
+     version this way.
+
+     ⚠ TESTING 3 WAS XCEL'S DEFAULT from 2026-10-02 to 10-06 and Testing
+     before it — this list has now outlived three of its own landing pages.
+     Lineage, for whoever restores them: Testing 3 lists directly after
+     Testing, because the picker is the only place that parentage is visible.
+
+     See `discoverability-testing-version` and
+     `discoverability-testing-3-version` in archivedItems.ts. */
   /* Testing 2 was archived 2026-09-28 — re-add
      DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2 here to restore it to the
      picker. Same one-line shape as Badged, QE Focused and Marketing Focused
@@ -714,7 +726,13 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
      PICKER ENTRY is what that state had been waiting for.
 
      See `hybrid-v1-version` and `hybrid-pacing-version` in archivedItems.ts. */
-  DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
+  /* ⚠ LEARNER FOCUSED CLOSED THIS LIST until 2026-10-20, archived with
+     Testing and Testing 3 above. The oldest version in the picker — June —
+     and the last one still describing the pre-Atlas dashboard: a joined
+     Current Learning Path / Jump Back In card, Recommended for you, What's
+     New. Const, id member and every branch kept; `?version=discoverability-learner-focused`
+     still renders. See `discoverability-learner-focused-version` in
+     archivedItems.ts. */
 ]
 
 /* `dashboardVersionsForAudience(demoSite)` STOOD HERE: `ready` versions only on
@@ -724,8 +742,44 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
 /** A version's label from its id, for the places that have the id and need the
  *  words — the demo bar's trigger, mostly. Falls back to the id so an unknown
  *  value is visible rather than blank. */
+/**
+ * EVERY VERSION THE APP CAN RENDER, picker or not — 2026-10-20.
+ *
+ * ⚠ IT EXISTS BECAUSE ARCHIVING A VERSION WAS BREAKING ITS NAME. The archive
+ * convention here removes the PICKER ENTRY and keeps everything else, so
+ * `?version=discoverability-testing` still resolves and still renders — but
+ * `dashboardVersionLabel` searched the picker list alone, so the demo bar
+ * showed the raw id ("discoverability-testing") where it used to show
+ * "Testing". That had been true since the first version was archived and
+ * nobody had looked at an archived version on the bar since; three more going
+ * at once is what surfaced it.
+ *
+ * ⚠ THE PICKER LIST IS STILL THE PICKER LIST. This is additive and is read by
+ * the places that need to NAME a version rather than offer it. Keep the two
+ * separate: merging them would put every archived version back in the picker,
+ * which is the one thing archiving does.
+ *
+ * ⚠ ADD NEW VERSIONS HERE TOO. A version absent from this array still renders
+ * and is still named by its id — the same quiet half-failure this fixes.
+ */
+export const ALL_DASHBOARD_VERSIONS: readonly DashboardVersion[] = [
+  ...DISCOVERABILITY_DASHBOARD_VERSIONS,
+  /* Archived from the picker, in the order they went. Each still resolves by
+     `?version=`; each has an `archivedItems.ts` row saying how to restore it. */
+  DISCOVERABILITY_DASHBOARD_VERSION_BADGED,
+  DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
+  DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED,
+  DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2,
+  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1,
+  DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1,
+  DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_PACING,
+  DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
+  DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3,
+  DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
+]
+
 export function dashboardVersionLabel(id: string): string {
-  return DISCOVERABILITY_DASHBOARD_VERSIONS.find((v) => v.id === id)?.label ?? id
+  return ALL_DASHBOARD_VERSIONS.find((v) => v.id === id)?.label ?? id
 }
 
 /**

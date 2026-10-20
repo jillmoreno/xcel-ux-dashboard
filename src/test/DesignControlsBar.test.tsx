@@ -4,7 +4,7 @@ import {
   designControlsFor,
   flagOwner,
 } from '@/context/FeatureFlagContext'
-import { DISCOVERABILITY_DASHBOARD_VERSIONS } from '@/data/dashboardVersions'
+import { ALL_DASHBOARD_VERSIONS } from '@/data/dashboardVersions'
 import { isProtected } from '../../.claude/hooks/protect-framework.mjs'
 
 /**
@@ -21,7 +21,13 @@ import { isProtected } from '../../.claude/hooks/protect-framework.mjs'
  * off a designer's hands. A render test would pass while all three were wrong.
  */
 
-const VERSION = (id: string) => DISCOVERABILITY_DASHBOARD_VERSIONS.find((v) => v.id === id)!
+/* ⚠ `ALL_DASHBOARD_VERSIONS`, NOT THE PICKER LIST — 2026-10-20. These cases use
+   versions as FIXTURES for the bar's selection rules, not as their subject, so
+   archiving one from the picker should not reach them. It did: Testing 3 went
+   that day and this helper returned undefined, failing two cases that are
+   about `surface: 'design'` and owner fallback. Naming a version and offering
+   one are different questions; this is the first. */
+const VERSION = (id: string) => ALL_DASHBOARD_VERSIONS.find((v) => v.id === id)!
 
 describe('what the design bar selects', () => {
   it('takes only flags marked `surface: design`', () => {

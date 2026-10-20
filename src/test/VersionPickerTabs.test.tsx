@@ -93,13 +93,20 @@ describe('the designer tabs over the LIVE catalog', () => {
     expect(screen.getByText(/5 versions/)).toBeTruthy()
   })
 
+  /* ⚠ JILL'S TAB IS ONE ROW NOW — 2026-10-20. It held Testing, Testing 3,
+     Learner Focused and Jill/Atlas-Main; the first three were archived that
+     day ("archive these views from Jill") and only the last remains, which is
+     also the brand default. The case's SUBJECT is unchanged and is the reason
+     it is updated rather than deleted: a tab that filters to nothing looks
+     identical to a filter that is broken, so what is pinned is that hers is
+     populated and Eric's rows are not in it. */
   it('still shows Jill hers, so the filter is filtering and not emptying', () => {
     render(
       <DashboardVersionsPanel
         open
         onClose={() => {}}
-        activeVersionId="discoverability-testing-3"
-        defaultVersionId="discoverability-testing-3"
+        activeVersionId="jill-atlas-main"
+        defaultVersionId="jill-atlas-main"
         onSelectVersion={() => {}}
         onSetDefault={() => {}}
         versions={DISCOVERABILITY_DASHBOARD_VERSIONS}
@@ -107,8 +114,9 @@ describe('the designer tabs over the LIVE catalog', () => {
         hideSetDefault
       />,
     )
-    expect(screen.getByText('Testing 3')).toBeTruthy()
+    expect(screen.getByText('Jill/Atlas-Main')).toBeTruthy()
     expect(screen.queryByText('Eric/Atlas V1')).toBeNull()
+    expect(screen.queryByText('Eric/Atlas White')).toBeNull()
   })
 })
 

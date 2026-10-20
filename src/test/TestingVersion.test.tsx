@@ -17,8 +17,9 @@ import { journeyStopsFor } from '@/components/learning/studyJourneyUtil'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { XCEL_NY_PRODUCER_PATH_ID } from '@/data/studyCalendarFixtures'
 import {
-
   DISCOVERABILITY_DASHBOARD_VERSIONS,
+  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3,
+  resolveDashboardVersion,
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
   DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E,
@@ -183,10 +184,24 @@ beforeEach(() => {
   )})
 
 describe('the Testing version is registered without displacing anything', () => {
-  it('is selectable in the Discoverability picker', () => {
-    expect(DISCOVERABILITY_DASHBOARD_VERSIONS).toContain(
+  /* ⚠ INVERTED 2026-10-20 — archived from the picker ("archive these views
+     from Jill"), the same day Jill/Atlas-Main became the default. The case
+     survives rather than being deleted because its SUBJECT is unchanged: this
+     version is still reachable and still rendered on every run below. What it
+     pins now is the archive convention itself — off the list, intact
+     everywhere else — which is the half a later cleanup gets wrong. */
+  it('is ARCHIVED from the picker, and still fully registered', () => {
+    expect(DISCOVERABILITY_DASHBOARD_VERSIONS).not.toContain(
       DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
     )
+    expect(DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id).toBe('discoverability-testing')
+    expect(resolveDashboardVersion('discoverability-testing', 'xcel')).toBe(
+      'discoverability-testing',
+    )
+    /* It is also the layout Atlas/Compass Global Navigation renders, and THAT
+       is still on the picker — so deleting this const takes a live version
+       down with it. */
+    expect(isQualifyingEducationVersion('discoverability-testing')).toBe(true)
   })
 
   it('was XCEL’s default, until Testing 3 took it on 2026-10-02', () => {
@@ -279,12 +294,20 @@ describe('the Testing version is registered without displacing anything', () => 
        of it. QE Focused is ARCHIVED, not deleted: it still resolves by
        `?version=`, which is what keeps `QeFocusedVersion.test.tsx` describing
        the layout this version inherits. */
+    /* ⚠ IT LED THE PICKER FROM 2026-09-22 TO 2026-10-20, and the inversion is
+       the record. Archived from the list on Jillienne's ask, so Eric/Atlas WIP
+       leads now — the first time the head of this list has not been a
+       `discoverability-*` version. QE Focused stays absent, as it has since
+       09-22; the two are archived the same way and neither is retired. */
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS[0]).toBe(
+      DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3,
+    )
+    for (const gone of [
       DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
-    )
-    expect(DISCOVERABILITY_DASHBOARD_VERSIONS).not.toContain(
       DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
-    )
+    ]) {
+      expect(DISCOVERABILITY_DASHBOARD_VERSIONS, gone.id).not.toContain(gone)
+    }
   })
 })
 
