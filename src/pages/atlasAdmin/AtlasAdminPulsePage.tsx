@@ -130,9 +130,9 @@ export function AtlasAdminPulsePage() {
               {pulse.offTrack.length} learners need intervention first; {pulse.prepared.length} are exam ready.
             </Box>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-              <Figure label="Need intervention" value={pulse.offTrack.length} bg="var(--admin-amber-tint)" ink="var(--admin-amber)" />
-              <Figure label="Exam ready" value={pulse.prepared.length} bg="var(--admin-success-tint)" ink="var(--admin-success-ink)" />
-              <Figure label="Forecasted licensed" value={pulse.forecast} bg="var(--admin-fill)" ink="var(--admin-chart-blue)" />
+              <Figure label="Need intervention" value={pulse.offTrack.length} bg="var(--admin-atlas-accent-3)" ink="var(--admin-amber)" />
+              <Figure label="Exam ready" value={pulse.prepared.length} bg="var(--admin-atlas-accent-3)" ink="var(--admin-success-ink)" />
+              <Figure label="Forecasted licensed" value={pulse.forecast} bg="var(--admin-atlas-accent-3)" ink="var(--admin-chart-blue)" />
             </div>
             <Action>Start with intervention, then move exam-ready learners into scheduling.</Action>
             <button type="button" onClick={() => navigate(students())} style={{ ...BUTTON_BRAND, alignSelf: 'flex-start' }}>
