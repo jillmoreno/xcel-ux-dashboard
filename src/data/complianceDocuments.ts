@@ -62,6 +62,13 @@ export interface ComplianceDocumentConfig {
   shape: DocumentShape
   /** The document's kind — drawn as the modal's heading. See `ComplianceType`. */
   complianceType: ComplianceType
+  /**
+   * The file this row was read from, verbatim, in `_XCEL-PE Affidavits and
+   * EAs`. It is the only way to audit a row against its source — every
+   * `complianceType` here was derived from this string, so anyone checking
+   * the mapping can go straight to the document rather than re-deriving it.
+   */
+  sourceFile: string
   /** The specific document, e.g. 'Florida — Life & Health Pre-Course Notice'.
    *  Drawn under the heading and used as the dialog's accessible name. */
   title: string
@@ -130,6 +137,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'notice',
     title: 'Florida — Life & Health Pre-Course Notice',
     complianceType: 'Pre-Course Notice',
+    sourceFile: 'FL PE-Pre Course Notice-LifeHealth.docx',
     bilingual: true,
     bodyEn:
       'This notice confirms you are enrolling in a Florida Department of Financial Services–approved Life, Health, or Life & Health pre-licensing course. Completion of this course satisfies the pre-licensing education requirement under Florida law prior to taking the state licensing examination.',
@@ -143,6 +151,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'notice',
     title: 'Florida — Property & Casualty Pre-Course Notice',
     complianceType: 'Pre-Course Notice',
+    sourceFile: 'FL PE-Pre Course Notice-PropertyCasualty.docx',
     bilingual: true,
     bodyEn:
       'This notice confirms you are enrolling in a Florida Department of Financial Services–approved Property & Casualty (General Lines) pre-licensing course, administered under FAIA program guidelines. Completion of this course satisfies the pre-licensing education requirement under Florida law prior to taking the state licensing examination.',
@@ -166,6 +175,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'signed-tc',
     title: 'XCEL Generic — Terms & Conditions',
     complianceType: 'Terms and Conditions',
+    sourceFile: 'XCEL Generic Terms and Conditions-Pre-Course Affidavit.docx',
     body: "By typing your name below and selecting Attest, you acknowledge that you have read and agree to XCEL Solutions' course terms and conditions, including attendance requirements, academic integrity standards, and the refund policy described in your enrollment materials.",
   },
   {
@@ -175,6 +185,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'signed-tc',
     title: 'California — Pre-Course Terms & Conditions',
     complianceType: 'Terms and Conditions',
+    sourceFile: 'CA PE-Pre-Course Terms and Conditions.docx',
     body: 'You acknowledge this course meets the California Department of Insurance pre-licensing education requirement. By signing below you attest the information you provide for enrollment is accurate and you agree to the attendance-monitoring requirements of your course delivery method.',
   },
   {
@@ -184,6 +195,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'signed-tc',
     title: 'Illinois — Terms & Conditions / Pre-Course Affidavit',
     complianceType: 'Terms and Conditions',
+    sourceFile: 'IL PE-Terms and Conditions-Pre-Course Affidavit.docx',
     body: 'I affirm the enrollment information I have submitted is true and correct, and I understand that submitting false information may be grounds for denial of licensure by the Illinois Department of Insurance.',
   },
   {
@@ -193,6 +205,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'signed-tc',
     title: 'Minnesota — Terms & Conditions / Pre-Course Affidavit',
     complianceType: 'Terms and Conditions',
+    sourceFile: 'MN PE-Terms and Conditions-Pre-Course Affidavit - Copy.docx',
     body: 'I understand this course satisfies the Minnesota Department of Commerce pre-licensing education requirement and agree to complete all required coursework prior to scheduling my licensing examination.',
   },
 
@@ -206,6 +219,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'enrollment-agreement',
     title: 'Kentucky — Pre-Course Enrollment Agreement',
     complianceType: 'Enrollment Agreement',
+    sourceFile: 'KY PE-Pre-Course Enrollment Agreement.docx',
     agency: 'Kentucky Department of Insurance',
     sections: [
       {
@@ -234,6 +248,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'enrollment-agreement',
     title: 'Nevada — Pre-Course Enrollment Agreement',
     complianceType: 'Enrollment Agreement',
+    sourceFile: 'NV PE-Pre-Course Enrollment Agreement.docx',
     agency: 'Nevada Commission on Postsecondary Education',
     sections: [
       {
@@ -261,6 +276,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'enrollment-agreement',
     title: 'Oregon — Pre-Course Enrollment Agreement',
     complianceType: 'Enrollment Agreement',
+    sourceFile: 'OR PE-Pre-Course Enrollment Agreement.docx',
     agency: 'Oregon Higher Education Coordinating Commission',
     sections: [
       {
@@ -288,6 +304,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'enrollment-agreement',
     title: 'Ohio — Prelicensing Education Student Registration Form',
     complianceType: 'Enrollment Agreement',
+    sourceFile: 'OH PE-Registration Form-Pre Course Enrollment Agreement.docx',
     agency: 'Ohio Department of Insurance',
     /* The one variant that cannot be click-to-agree: the Registration Form
        wants a signature, so the document step ends in a typed-name field
@@ -323,6 +340,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'affidavit-single',
     title: 'New York — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
+    sourceFile: 'NY PE-Post Final Affidavit.docx',
     body: 'I declare under penalty of perjury that I personally completed all required pre-licensing coursework and that no other person completed any portion of this course on my behalf.',
     extraFields: [],
   },
@@ -333,6 +351,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'affidavit-single',
     title: 'Mississippi — Pre-Final Affidavit',
     complianceType: 'Pre-Final Affidavit',
+    sourceFile: 'MS PE-Pre Final Affidavit.docx',
     body: 'I attest that the coursework reflected in my completion record was completed by me, without assistance, and in accordance with Mississippi Insurance Department requirements.',
     extraFields: [],
   },
@@ -343,6 +362,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'affidavit-single',
     title: 'Pennsylvania — Pre-Final Affidavit',
     complianceType: 'Pre-Final Affidavit',
+    sourceFile: 'PA PE-Pre Final Affidavit.docx',
     body: 'I certify that I am the individual who completed this pre-licensing course and that the information on my completion record is accurate.',
     extraFields: [],
   },
@@ -353,6 +373,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'affidavit-single',
     title: 'Florida — Pre-Final Affidavit',
     complianceType: 'Pre-Final Affidavit',
+    sourceFile: 'FL PE-Pre Final Affidavit.docx',
     body: 'I attest under penalty of perjury under the laws of the State of Florida that I am the person who completed this course.',
     extraFields: [],
   },
@@ -363,6 +384,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'affidavit-single',
     title: 'Colorado — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
+    sourceFile: 'CO PE-Post Final Affidavit.docx',
     body: 'I certify that I personally completed this pre-licensing course in accordance with Colorado Division of Insurance requirements.',
     extraFields: [],
   },
@@ -373,6 +395,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'affidavit-single',
     title: 'Connecticut — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
+    sourceFile: 'CT PE-Post Final Affidavit.docx',
     body: 'I attest, under penalty of law, that I am the individual who completed this pre-licensing course without unauthorized assistance.',
     extraFields: [],
   },
@@ -383,6 +406,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'affidavit-single',
     title: 'Wisconsin — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
+    sourceFile: 'WI PE-Post Final Affidavit.docx',
     body: 'I certify that I personally completed the coursework required for licensure under Wisconsin Office of the Commissioner of Insurance regulations.',
     extraFields: [],
   },
@@ -393,6 +417,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'affidavit-single',
     title: 'West Virginia — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
+    sourceFile: 'WV PE-Post Final Affidavit.docx',
     body: 'I attest that I am the person who completed this pre-licensing course and that no other individual completed any portion on my behalf.',
     extraFields: [],
   },
@@ -403,6 +428,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'affidavit-single',
     title: 'Minnesota — Pre-Final Affidavit',
     complianceType: 'Pre-Final Affidavit',
+    sourceFile: 'MN PE-Pre Final Affidavit.docx',
     body: 'I declare that I personally completed this course and am prepared to sit for the Minnesota licensing examination.',
     extraFields: [],
   },
@@ -413,6 +439,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'affidavit-single',
     title: 'XCEL — General Pre-Final Attestation',
     complianceType: 'Pre-Final Affidavit',
+    sourceFile: 'XCEL PE General Pre-Final Attestation.docx',
     body: 'I attest that I personally completed all coursework required for this program and that the information in my completion record is accurate.',
     extraFields: [],
   },
@@ -428,6 +455,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'affidavit-two-party',
     title: 'California — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
+    sourceFile: 'CA PE-Post Final Affidavit.docx',
     relationshipOptions: ['Instructor', 'Proctor', 'School Official', 'Notary'],
     extraFields: ['dob', 'ssn-last4'],
     studentBody:
@@ -442,6 +470,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'affidavit-two-party',
     title: 'Illinois — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
+    sourceFile: 'IL PE-Post Final Affidavit.docx',
     relationshipOptions: ['Instructor', 'Proctor', 'School Official', 'Notary'],
     extraFields: ['ssn-full'],
     studentBody:
@@ -455,7 +484,14 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     timing: 'post-final',
     shape: 'affidavit-two-party',
     title: 'Ohio — Pre & Post Final Affidavit',
-    complianceType: 'Post Final Affidavit',
+    /* ⚠ THE ONE 'Final Affidavit', and the source file is why: it is
+       "Pre & Post Final Affidavit" — ONE document serving both sittings,
+       where every other state ships a separate Pre and a separate Post.
+       'Final Affidavit' is the only one of the six names that covers both
+       without claiming it is only one of them. Filed as a Post Final
+       Affidavit until the file list settled it. */
+    complianceType: 'Final Affidavit',
+    sourceFile: 'OH PE-Pre & Post Final Affidavit.docx',
     relationshipOptions: ['Instructor', 'Proctor', 'School Official', 'Employer', 'Notary', 'Other'],
     extraFields: ['ssn-last4', 'phone', 'exam-date'],
     studentBody:
@@ -475,6 +511,7 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     shape: 'needs-review',
     title: 'Minnesota — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
+    sourceFile: 'MN PE-Post Final Affidavit.pdf',
     needsReviewNote:
       'Source content could not be extracted. The original PDF uses a custom/embedded font encoding that defeats text extraction. Visible field labels suggest a single-party affidavit (Business Address, City, State, Zip, Phone, Date, Student Signature) but that is inference, not a confirmed read — open the source file directly in a PDF viewer before building real content for this one.',
   },

@@ -97,6 +97,28 @@ describe('the document set', () => {
     expect(new Set(single.map((d) => d.complianceType)).size).toBeGreaterThan(1)
   })
 
+  /* Every row names the file it was read from, and every one of the six
+     names is used by at least one document — the check that caught Ohio,
+     which had been filed as a Post Final Affidavit until the file list showed
+     it is "Pre & Post" and so the only 'Final Affidavit' in the set. */
+  it('ties every document to its source file, and uses all six type names', () => {
+    const files = COMPLIANCE_DOCUMENTS.map((d) => d.sourceFile)
+    expect(files.every((f) => /\.(docx|pdf)$/.test(f))).toBe(true)
+    expect(new Set(files).size).toBe(24)
+
+    const used = new Set(COMPLIANCE_DOCUMENTS.map((d) => d.complianceType))
+    for (const name of [
+      'Final Affidavit',
+      'Terms and Conditions',
+      'Pre-Course Notice',
+      'Pre-Final Affidavit',
+      'Post Final Affidavit',
+      'Enrollment Agreement',
+    ] as const) {
+      expect(used, name).toContain(name)
+    }
+  })
+
   it('leaves `version` unset everywhere — there is no source of truth for it yet', () => {
     expect(COMPLIANCE_DOCUMENTS.every((d) => d.version === undefined)).toBe(true)
   })
@@ -247,7 +269,7 @@ describe('Next stays off until the step is answered', () => {
 describe('the two shapes with no signer', () => {
   it('heads the modal with the document kind, with the specific document under it', () => {
     open(docById('oh-post'))
-    expect(screen.getByRole('heading', { name: 'Post Final Affidavit' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Final Affidavit' })).toBeInTheDocument()
     /* `Modal` also renders the title into a visually-hidden span to keep
        `aria-labelledby` valid under `hideChrome`, so the document name matches
        twice. The drawn one is the paragraph. */
