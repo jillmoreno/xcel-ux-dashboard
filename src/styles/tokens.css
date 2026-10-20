@@ -517,6 +517,19 @@
      make a serif-variant page silently not a serif page. */
   --font-heading-serif: 'DM Serif Display', Georgia, 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Times New Roman', serif;
 
+  /* THE SIGNING HAND — the typed name a learner signs a compliance document
+     with (`ComplianceDocumentModal`). A signature has to read as written
+     rather than as set, which is why this is a script face and not the
+     heading serif it started as.
+
+     ⚠ THE OS FALLBACKS ARE DELIBERATE AND ORDERED, because each platform
+     spells its own cursive differently: Snell Roundhand is macOS, Segoe
+     Script is Windows, Brush Script MT is both-ish, and the generic `cursive`
+     catches the rest. Without them a failed webfont drops the signature into
+     the body sans, where it stops reading as a signature at all — the one
+     fallback that must not happen here. */
+  --font-signature: 'Dancing Script', 'Snell Roundhand', 'Segoe Script', 'Brush Script MT', cursive;
+
   /* Radius — project defaults; replace once Nectar DS exposes them */
   --radius-sm: 4px;
   --radius-md: 8px;

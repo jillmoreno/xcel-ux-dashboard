@@ -754,7 +754,7 @@ function Field({
   value: string
   onChange: (v: string) => void
   placeholder?: string
-  /** Draws the value in the heading serif, so a typed signature reads as one. */
+  /** Draws the value in the signing hand, so a typed signature reads as one. */
   signatureStyle?: boolean
 }) {
   return (
@@ -768,7 +768,7 @@ function Field({
         style={{
           ...INPUT,
           ...(signatureStyle
-            ? { fontFamily: 'var(--font-heading-serif)', fontSize: 18 }
+            ? { fontFamily: 'var(--font-signature)', fontSize: 22 }
             : null),
         }}
       />
@@ -1022,8 +1022,11 @@ const SIGNATURE_LINE: CSSProperties = {
   ...INPUT,
   display: 'flex',
   alignItems: 'center',
-  fontFamily: 'var(--font-heading-serif)',
-  fontSize: 18,
+  /* The signing hand, and larger than the field above it — script faces carry
+     a smaller x-height at the same size, so 18px here read smaller than the
+     14px name it mirrors. */
+  fontFamily: 'var(--font-signature)',
+  fontSize: 24,
   background: 'var(--color-neutral-75)',
 }
 

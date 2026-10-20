@@ -473,6 +473,17 @@ describe('the signature', () => {
     expect(screen.queryByLabelText('Signature: Jordan Navarro')).toBeNull()
   })
 
+  /* jsdom does not resolve the token, but it does keep the declaration — and
+     the failure worth catching is the signature quietly rendering in the body
+     sans, which is when it stops reading as a signature at all. */
+  it('is drawn in the signing hand, not the body font', () => {
+    open(docById('ca-tc'))
+    toDocumentStep()
+    typeInto(/student name/i, 'Jordan Navarro')
+    const line = screen.getByLabelText('Signature: Jordan Navarro')
+    expect(line.style.fontFamily).toBe('var(--font-signature)')
+  })
+
   it('is not a second thing to type', () => {
     open(docById('ca-tc'))
     toDocumentStep()
