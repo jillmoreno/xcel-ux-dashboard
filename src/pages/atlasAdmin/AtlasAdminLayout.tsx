@@ -2,8 +2,9 @@ import { useEffect, type ComponentType, type CSSProperties, type ReactNode } fro
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { BookOpen, Bell, Building, ChartSimple, CircleDollar, Envelope, Gear, IdCard, LocationDot, UserGroup, Users } from '@/icons'
 import { AtlasHeader } from '@/components/layout/AtlasHeader'
-import { ADMIN_USER } from '@/data/atlasAdmin/learners'
-import { ADMIN_BASE, ADMIN_EMAIL, useAdminStore } from './adminStore'
+import { useAccount } from '@/context/AccountContext'
+import { useProfileAvatar } from '@/context/ProfileAvatarContext'
+import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { BODY } from './adminStyles'
 
 /**
@@ -62,6 +63,13 @@ export function AtlasAdminLayout() {
   const search = window.location.search
   // The learner Home keeps the demo flags; Admin is where the reviewer is.
   const learnerHome = `/dashboard-rebrand${search}`
+  /* ONE PERSON IN BOTH MODES — 2026-10-20, Eric: "change the admin mode user
+     name to the same name as the learner user name". The global nav reads
+     the learner's account here exactly as `AtlasHeaderConnected` does (name,
+     its email, the avatar), so switching modes changes the mode, not who is
+     signed in. */
+  const { user: account } = useAccount()
+  const { avatarOverride } = useProfileAvatar()
 
   // Every page the admin opens is a product event (Portal analytics).
   useEffect(() => {
@@ -80,7 +88,7 @@ export function AtlasAdminLayout() {
     <div style={{ minHeight: '100vh', background: 'var(--admin-page)' }}>
       <AtlasHeader
         current={null}
-        user={{ name: ADMIN_USER.name, email: ADMIN_EMAIL }}
+        user={{ name: `${account.firstName} ${account.lastName}`, email: 'jordan.navarro@gmail.com', photoUrl: avatarOverride ?? account.avatarUrl }}
         notificationCount={3}
         courses={[]}
         showCourses={false}
