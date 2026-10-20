@@ -416,7 +416,7 @@ export function AtlasAdminStudentsPage() {
         ) : null}
 
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ minWidth: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 15 }}>
+          <table style={{ minWidth: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
             <thead style={{ background: 'var(--admin-fill-soft)' }}>
               <tr>
                 <th style={{ ...TH, width: 40, padding: '12px 16px' }}>
@@ -596,7 +596,7 @@ const NAME: CSSProperties = {
   border: 'none',
   background: 'none',
   textAlign: 'left',
-  fontSize: 15,
+  fontSize: 13,
   fontWeight: 600,
   color: 'var(--admin-ink)',
   cursor: 'pointer',
