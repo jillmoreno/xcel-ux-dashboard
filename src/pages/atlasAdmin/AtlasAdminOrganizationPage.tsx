@@ -4,7 +4,7 @@ import { ADMIN_COMPANY, ADMIN_DEPARTMENTS } from '@/data/atlasAdmin/learners'
 import { JOB_ROLES, LOCATIONS, jobRoleOf, membersOfLocation, type OrgStatus } from '@/data/atlasAdmin/organization'
 import { MagnifyingGlass, Plus } from '@/icons'
 import { AdminDialog } from './AdminDialog'
-import { ADMIN_BASE, useAdminStore } from './adminStore'
+import { ADMIN_BASE, companySlug, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, FIELD_LABEL, HEADING, INPUT } from './adminStyles'
 
 /**
@@ -31,7 +31,7 @@ const TABS: { id: Tab; label: string; add: string }[] = [
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 
 export function AtlasAdminOrganizationPage() {
-  const { learners, addedDepartments, addDepartment, showToast } = useAdminStore()
+  const { learners, addedDepartments, addDepartment, companyLabel, showToast } = useAdminStore()
   const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('locations')
   const [query, setQuery] = useState('')
@@ -78,7 +78,7 @@ export function AtlasAdminOrganizationPage() {
     navigate(`${ADMIN_BASE}/students?${q}`)
   }
   const shareInvite = (r: Row) => {
-    const link = `${window.location.origin}/invite/${slug(ADMIN_COMPANY)}/${slug(deptName(r))}`
+    const link = `${window.location.origin}/invite/${companySlug(companyLabel)}/${slug(deptName(r))}`
     navigator.clipboard?.writeText(link).catch(() => undefined)
     showToast(`Invite link for ${deptName(r)} copied`)
   }

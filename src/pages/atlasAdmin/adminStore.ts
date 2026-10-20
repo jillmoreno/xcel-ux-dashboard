@@ -36,6 +36,8 @@ export type AdminInvite = {
 /** Something done to a learner this session — a nudge, a call, an email. */
 export type AdminTouch = { id: string; learnerId: string; kind: 'nudge' | 'call' | 'email' | 'exam-date'; note: string | null; at: string }
 
+export type AdminEvent = { id: number; at: string; event: string; path: string }
+
 export type AddedDepartment = { name: string; lead: string }
 
 export type AdminStore = {
@@ -63,6 +65,12 @@ export type AdminStore = {
   /** Assignment rules — the fixture's, with this session's creates and edits. */
   rules: AssignmentRule[]
   saveRule: (rule: AssignmentRule) => void
+  /** The public company label on invite URLs — Product offering edits it. */
+  companyLabel: string
+  setCompanyLabel: (label: string) => void
+  /** This session's product events — Portal analytics lists them. */
+  events: AdminEvent[]
+  logEvent: (event: string, path: string) => void
   /** Seats bought — Licenses → Add seats raises it. */
   seatsPurchased: number
   addSeats: (n: number) => void
@@ -76,4 +84,9 @@ export function useAdminStore(): AdminStore {
   const store = useContext(AdminStoreContext)
   if (!store) throw new Error('useAdminStore must be used inside AtlasAdminApp')
   return store
+}
+
+/** A company label as it appears in an invite URL. */
+export function companySlug(label: string) {
+  return label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }

@@ -5,7 +5,7 @@ import { ADMIN_DEPARTMENTS, ADMIN_LEARNERS, type Learner } from '@/data/atlasAdm
 import { ADMIN_INVITES, type Invite } from '@/data/atlasAdmin/invites'
 import { ADMIN_RULES, type AssignmentRule } from '@/data/atlasAdmin/assignments'
 import { SEATS_PURCHASED } from '@/data/atlasAdmin/organization'
-import { ADMIN_BASE, AdminStoreContext, type AddedDepartment, type AdminStore, type AdminTouch, type ProgressReportSettings } from './adminStore'
+import { ADMIN_BASE, AdminStoreContext, type AddedDepartment, type AdminEvent, type AdminStore, type AdminTouch, type ProgressReportSettings } from './adminStore'
 import { AtlasAdminComingSoon, AtlasAdminLayout } from './AtlasAdminLayout'
 import { AtlasAdminStudentsPage } from './AtlasAdminStudentsPage'
 import { AtlasAdminRecruitPage } from './AtlasAdminRecruitPage'
@@ -32,6 +32,9 @@ import { AtlasAdminCompliancePage } from './AtlasAdminCompliancePage'
 import { AtlasAdminPassRatePage } from './AtlasAdminPassRatePage'
 import { AtlasAdminRiskExplorerPage } from './AtlasAdminRiskExplorerPage'
 import { AtlasAdminAuditPage } from './AtlasAdminAuditPage'
+import { AtlasAdminPricingPage } from './AtlasAdminPricingPage'
+import { AtlasAdminProductOfferingPage } from './AtlasAdminProductOfferingPage'
+import { AtlasAdminInternalGate, AtlasAdminPortalAnalyticsPage } from './AtlasAdminInternalPages'
 
 /**
  * ATLAS ADMIN — the app (2026-10-19, feat/atlas-admin). The admin surface
@@ -53,6 +56,19 @@ export function AtlasAdminApp() {
     people: ['coleen.acker@example.com', 'adam.neal@example.com'],
   })
   const setProgressReport = useCallback((patch: Partial<ProgressReportSettings>) => setPR((p) => ({ ...p, ...patch })), [])
+  const [companyLabel, setCompanyLabel] = useState('Summit Insurance Group')
+  const [events, setEvents] = useState<AdminEvent[]>([])
+  const logEvent = useCallback(
+    (event: string, path: string) =>
+      setEvents((prev) => {
+        const at = new Date()
+        // The same event on the same path inside a second is one event (a
+        // re-render, or React's development double-run), not two.
+        if (prev[0] && prev[0].event === event && prev[0].path === path && at.getTime() - Date.parse(prev[0].at) < 1000) return prev
+        return [{ id: prev.length + 1, at: at.toISOString(), event, path }, ...prev].slice(0, 500)
+      }),
+    [],
+  )
   const [sampleRoster, setSampleRoster] = useState(true)
   const [addedDepartments, setAddedDepartments] = useState<AddedDepartment[]>([])
   const addDepartment = useCallback((d: AddedDepartment) => setAddedDepartments((prev) => [...prev, d]), [])
@@ -98,10 +114,11 @@ export function AtlasAdminApp() {
   const addTouch = useCallback<AdminStore['addTouch']>((t) => {
     const at = new Date().toISOString()
     setTouches((prev) => [{ ...t, id: `${at}-${prev.length}`, at }, ...prev])
-  }, [])
+    logEvent(`${t.kind === 'exam-date' ? 'exam_date_set' : `${t.kind}_sent`}`, `${ADMIN_BASE}/students/recruit/${t.learnerId}`)
+  }, [logEvent])
   const store = useMemo<AdminStore>(
-    () => ({ learners: sampleRoster ? learners : [], sampleRoster, setSampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, rules, saveRule, seatsPurchased, addSeats, toast, showToast }),
-    [learners, sampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, rules, saveRule, seatsPurchased, addSeats, toast, showToast],
+    () => ({ learners: sampleRoster ? learners : [], sampleRoster, setSampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, rules, saveRule, seatsPurchased, addSeats, companyLabel, setCompanyLabel, events, logEvent, toast, showToast }),
+    [learners, sampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, rules, saveRule, seatsPurchased, addSeats, companyLabel, events, logEvent, toast, showToast],
   )
 
   if (!enabled) {
@@ -152,6 +169,16 @@ export function AtlasAdminApp() {
           <Route path="enterprise/pass-rate" element={<AtlasAdminPassRatePage />} />
           <Route path="enterprise/risk-explorer" element={<AtlasAdminRiskExplorerPage />} />
           <Route path="enterprise/audit" element={<AtlasAdminAuditPage />} />
+          {/* The reference's Financial Services page renders nothing; its
+              enterprise views are labelled "Financial Services View". */}
+          <Route path="financial-services" element={<Navigate to={`../enterprise${window.location.search}`} replace />} />
+          <Route path="exam-readiness" element={<Navigate to={`../students${window.location.search}`} replace />} />
+          <Route path="pricing" element={<AtlasAdminPricingPage />} />
+          <Route path="product-offering" element={<AtlasAdminProductOfferingPage />} />
+          <Route path="internal" element={<Navigate to={`../students${window.location.search}`} replace />} />
+          <Route path="internal/portal-analytics" element={<AtlasAdminPortalAnalyticsPage />} />
+          <Route path="internal/catalog" element={<AtlasAdminInternalGate name="Internal catalog" flag="internal.catalogConsole" />} />
+          <Route path="internal/ledger" element={<AtlasAdminInternalGate name="Ledger" flag="internal.ledger" />} />
           <Route path="notifications/*" element={<AtlasAdminNotificationsPage />} />
           <Route path="resources" element={<AtlasAdminResourcesPage />} />
           <Route path="settings" element={<AtlasAdminSettingsPage />} />

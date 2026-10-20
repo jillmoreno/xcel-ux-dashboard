@@ -36,6 +36,9 @@ const TITLES: Record<string, string> = {
   organization: 'Organization',
   teams: 'Teams & Organization',
   enterprise: 'Enterprise Insights',
+  pricing: 'Pricing',
+  'product-offering': 'Product offering',
+  internal: 'Internal',
   notifications: 'Notifications & Reports',
   resources: 'Resources',
   settings: 'Settings · Company',
@@ -45,7 +48,12 @@ export function AtlasAdminLayout() {
   const { pathname } = useLocation()
   const section = pathname.slice(ADMIN_BASE.length + 1).split('/')[0] || 'students'
   const title = TITLES[section] ?? 'Atlas Admin'
-  const { toast } = useAdminStore()
+  const { toast, logEvent } = useAdminStore()
+
+  // Every page the admin opens is a product event (Portal analytics).
+  useEffect(() => {
+    logEvent('page_view', pathname)
+  }, [pathname, logEvent])
 
   useEffect(() => {
     const prev = document.title
