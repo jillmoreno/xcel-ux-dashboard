@@ -569,10 +569,28 @@ function StepDocument({
 
   /* ── signed-tc: body, name, typed signature, attest ──────────────────── */
   if (config.shape === 'signed-tc') {
+    /* Bilingual where the source document is — the XCEL Generic one prints
+       its English acknowledgement and then its Spanish — single-language
+       otherwise. */
+    const tcHeading = config.bilingual
+      ? language === 'es'
+        ? config.headingEs
+        : config.headingEn
+      : undefined
+    const tcBody = config.bilingual
+      ? language === 'es'
+        ? config.bodyEs
+        : config.bodyEn
+      : config.body
     return (
       <div style={STACK}>
         <div style={DOCUMENT_PANEL}>
-          <p style={DOCUMENT_BODY}>{config.body}</p>
+          {tcHeading && <p style={SECTION_HEADING}>{tcHeading}</p>}
+          {paragraphs(tcBody).map((para, i) => (
+            <p key={i} style={{ ...DOCUMENT_BODY, marginTop: i === 0 && !tcHeading ? 0 : 10 }}>
+              {para}
+            </p>
+          ))}
         </div>
         {/* Prefilled from the `name` step the shape already ran, and still
             editable — the source documents ask for the name again on the

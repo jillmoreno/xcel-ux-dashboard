@@ -83,12 +83,22 @@ export interface ComplianceDocumentConfig {
    */
   subject: string
 
-  /* ── notice only ── */
+  /* ── bilingual documents (notice, and the generic signed-tc) ──
+     ⚠ NOT NOTICE-ONLY since 2026-10-19. The XCEL Generic Terms & Conditions
+     carries its English and Spanish one under the other in the same file,
+     exactly as the Florida notices do, so the pair lives on the interface
+     rather than on one shape. A document with `bilingual` reads
+     `bodyEn`/`bodyEs`; one without reads `body`. */
   bilingual?: boolean
   bodyEn?: string
   bodyEs?: string
+  /** The document's OWN internal heading, where it has one distinct from its
+   *  title — "Acknowledgement of Terms and Conditions of Pre-licensing Course
+   *  Completion". Per language, because the document prints it twice. */
+  headingEn?: string
+  headingEs?: string
 
-  /* ── signed-tc / affidavit-single body ── */
+  /* ── single-language signed-tc / affidavit-single body ── */
   body?: string
 
   /* ── enrollment-agreement only ── */
@@ -211,7 +221,29 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Terms and Conditions',
     sourceFile: 'XCEL Generic Terms and Conditions-Pre-Course Affidavit.docx',
     subject: 'XCEL — Generic',
-    body: "By typing your name below and selecting Attest, you acknowledge that you have read and agree to XCEL Solutions' course terms and conditions, including attendance requirements, academic integrity standards, and the refund policy described in your enrollment materials.",
+    /* ⚠ VERBATIM FROM THE SOURCE (2026-10-19), replacing the placeholder,
+       which described the wrong subject: it talked about attendance
+       requirements, academic integrity and the refund policy. The document is
+       about PROCTORING — that the final must be proctored and closed-book,
+       who is disqualified from proctoring it, the 70% pass mark, and that the
+       completion date is the date the proctor signs.
+
+       ⚠ AND IT IS BILINGUAL, which `signed-tc` did not previously allow. The
+       file prints the English acknowledgement and then the Spanish one, the
+       same way the Florida notices do.
+
+       ⚠ THE SOURCE ASKS FOR ONE FIELD, "Student Full Name", where this shape
+       renders Student Name AND a typed signature. The extra field is the
+       brief's, not the document's.
+       TODO(content): confirm whether the signature line should go. */
+    bilingual: true,
+    headingEn: 'Acknowledgement of Terms and Conditions of Pre-licensing Course Completion',
+    bodyEn:
+      'I understand and acknowledge that the pre-licensing insurance course final exam must be a proctored, closed-book exam with no assistance provided. A disinterested third party must proctor the exam. The disinterested third-party proctor or monitor is an individual who has none of the following: family relationship with the student; is a direct supervisor of the student; or a person directly supervised by the student.\n\nA certificate of course completion is to be presented to the student who successfully passes the exam with a score of 70% or better within 2 days of the completion date. The pre-licensing course completion date is the date the proctor signs and dates the exam.',
+    headingEs:
+      'Reconocimiento de los Términos y Condiciones de la Finalización del Curso de Pre-licencia',
+    bodyEs:
+      'Yo entiendo y reconozco que el examen final del curso de seguro pre-licencia debe ser un examen supervisado y cerrado sin ayuda. Un tercero desinteresado debe supervisar el examen. El supervisor o monitor de terceros desinteresados es un individuo que no tiene ninguno de los siguientes: relación familiar con el estudiante; es un supervisor directo del estudiante; o una persona directamente supervisada por el estudiante.\n\nUn certificado de finalización del curso debe ser presentado al estudiante que pase el examen con una puntuación de 70% o mejor dentro de los 2 días de la fecha de finalización. La fecha de finalización del curso de pre-licencia es la fecha en que el supervisor firma y fecha el examen.',
   },
   {
     id: 'ca-tc',

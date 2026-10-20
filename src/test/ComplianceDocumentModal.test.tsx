@@ -46,6 +46,14 @@ function open(config: ComplianceDocumentConfig, language?: 'en' | 'es') {
 const nextButton = () => screen.getByRole('button', { name: /next|finish/i })
 /* A one-step document has no arrows — it gets named CTAs instead. */
 const confirmButton = () => screen.getByRole('button', { name: /^confirm$/i })
+
+/** Clear the `name` step a two-step document opens on. */
+function toDocumentStep() {
+  typeInto(/first name/i, 'Jordan')
+  typeInto(/last name/i, 'Navarro')
+  fireEvent.click(screen.getByLabelText(/legal name/i))
+  fireEvent.click(nextButton())
+}
 const typeInto = (label: RegExp, value: string) =>
   fireEvent.change(screen.getByLabelText(label), { target: { value } })
 
@@ -73,8 +81,18 @@ describe('the document set', () => {
         expect(d.bodyEn, d.id).toBeTruthy()
         if (d.bilingual) expect(d.bodyEs, d.id).toBeTruthy()
       }
+      // A heading is per-language or not at all — one half would print the
+      // wrong language above the right body.
+      expect(Boolean(d.headingEn), d.id).toBe(Boolean(d.headingEs))
+      /* A bilingual document carries the pair; a single-language one carries
+         `body`. Either is complete; neither is optional. */
       if (d.shape === 'signed-tc' || d.shape === 'affidavit-single') {
-        expect(d.body, d.id).toBeTruthy()
+        if (d.bilingual) {
+          expect(d.bodyEn, d.id).toBeTruthy()
+          expect(d.bodyEs, d.id).toBeTruthy()
+        } else {
+          expect(d.body, d.id).toBeTruthy()
+        }
       }
       if (d.shape === 'enrollment-agreement') {
         expect(d.sections?.length, d.id).toBeGreaterThan(0)
@@ -145,6 +163,34 @@ describe('the document set', () => {
     expect(mn.shape).toBe('needs-review')
     expect(mn.needsReviewNote).toBeTruthy()
     expect(mn.body).toBeUndefined()
+  })
+})
+
+describe('the XCEL Generic Terms & Conditions', () => {
+  /* ⚠ A BILINGUAL `signed-tc`, which the shape did not allow until the real
+     document turned up printing both languages in one file. The placeholder
+     it replaced described the wrong subject entirely — attendance, academic
+     integrity, refunds — where the document is about PROCTORING. */
+  it('is bilingual, and both arms are the real proctoring text', () => {
+    const tc = docById('xcel-generic-tc')
+    expect(tc.shape).toBe('signed-tc')
+    expect(tc.bilingual).toBe(true)
+    expect(tc.body).toBeUndefined()
+
+    /* `signed-tc` is ['name', 'document'], so the body is behind the name
+       step — the document does not render on open. */
+    open(tc, 'en')
+    toDocumentStep()
+    expect(screen.getByText(/Acknowledgement of Terms and Conditions/)).toBeInTheDocument()
+    expect(screen.getByText(/proctored, closed-book exam/)).toBeInTheDocument()
+    expect(screen.getByText(/70% or better within 2 days/)).toBeInTheDocument()
+    expect(screen.queryByText(/academic integrity/)).toBeNull()
+    cleanup()
+
+    open(tc, 'es')
+    toDocumentStep()
+    expect(screen.getByText(/Reconocimiento de los Términos y Condiciones/)).toBeInTheDocument()
+    expect(screen.getByText(/examen supervisado y cerrado sin ayuda/)).toBeInTheDocument()
   })
 })
 
