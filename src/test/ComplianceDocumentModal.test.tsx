@@ -452,6 +452,48 @@ describe('the progress strip', () => {
   })
 })
 
+describe('the signature', () => {
+  /* ⚠ IT IS THE NAME, SIGNED — not a second field. Two editable boxes let a
+     learner type one name and sign another, which is a contradiction a
+     compliance record should not be able to hold. */
+  it('appears only once there is a name, and mirrors it', () => {
+    open(docById('ca-tc')) // signed-tc → ['name', 'document']
+    toDocumentStep()
+
+    // Nothing to sign yet.
+    expect(screen.queryByText(/^Signature$/)).toBeNull()
+
+    typeInto(/student name/i, 'Jordan Navarro')
+    expect(screen.getByText(/^Signature$/)).toBeInTheDocument()
+    expect(screen.getByLabelText('Signature: Jordan Navarro')).toBeInTheDocument()
+
+    // It follows the name rather than holding its own value.
+    typeInto(/student name/i, 'Sam Okafor')
+    expect(screen.getByLabelText('Signature: Sam Okafor')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Signature: Jordan Navarro')).toBeNull()
+  })
+
+  it('is not a second thing to type', () => {
+    open(docById('ca-tc'))
+    toDocumentStep()
+    typeInto(/student name/i, 'Jordan Navarro')
+    // One text input on this step — the name. The signature is drawn, not entered.
+    const inputs = screen.getAllByRole('textbox')
+    expect(inputs).toHaveLength(1)
+  })
+
+  /* Ohio's Registration Form is the exception and stays one: it needs a
+     signature standing in for a PHYSICAL one, on a step that never collected
+     a name of its own. */
+  it("leaves Ohio's wet-signature field as a real input", () => {
+    open(docById('oh-reg'))
+    toDocumentStep()
+    typeInto(/license/i, 'W123456')
+    fireEvent.click(nextButton())
+    expect(screen.getByLabelText(/student signature/i)).toBeInTheDocument()
+  })
+})
+
 describe('getting out of it', () => {
   /* With `hideChrome` there is no ✕, so the backdrop and Esc are the only two
      ways out — and the backdrop is the one people reach for first. */

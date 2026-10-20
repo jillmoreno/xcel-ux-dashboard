@@ -119,7 +119,6 @@ export function ComplianceDocumentModal({
   const [legalNameConfirmed, setLegalNameConfirmed] = useState(false)
   const [license, setLicense] = useState('')
   const [studentName, setStudentName] = useState('')
-  const [signature, setSignature] = useState('')
   const [agreed, setAgreed] = useState(false)
   const [wetSignatureName, setWetSignatureName] = useState('')
   const [extras, setExtras] = useState<Record<string, string>>({})
@@ -265,12 +264,8 @@ export function ComplianceDocumentModal({
             <StepDocument
               config={config}
               language={language}
-              first={first}
-              last={last}
               studentName={studentName}
               onStudentName={setStudentName}
-              signature={signature}
-              onSignature={setSignature}
               agreed={agreed}
               onAgreed={setAgreed}
               wetSignatureName={wetSignatureName}
@@ -452,12 +447,8 @@ function StepLicense({
 function StepDocument({
   config,
   language,
-  first,
-  last,
   studentName,
   onStudentName,
-  signature,
-  onSignature,
   agreed,
   onAgreed,
   wetSignatureName,
@@ -465,12 +456,8 @@ function StepDocument({
 }: {
   config: ComplianceDocumentConfig
   language: 'en' | 'es'
-  first: string
-  last: string
   studentName: string
   onStudentName: (v: string) => void
-  signature: string
-  onSignature: (v: string) => void
   agreed: boolean
   onAgreed: (v: boolean) => void
   wetSignatureName: string
@@ -592,22 +579,21 @@ function StepDocument({
             </p>
           ))}
         </div>
-        {/* Prefilled from the `name` step the shape already ran, and still
-            editable — the source documents ask for the name again on the
-            document itself. */}
+        {/* The source documents ask for the name again on the document
+            itself — "Student Full Name" on its own signature line. */}
         <Field
           label="Student Name"
-          value={studentName === '' ? `${first} ${last}`.trim() : studentName}
+          value={studentName}
           onChange={onStudentName}
           placeholder="Your full name"
         />
-        <Field
-          label="Signature"
-          value={signature}
-          onChange={onSignature}
-          placeholder="Type your full name to sign"
-          signatureStyle
-        />
+        {/* ⚠ THE SIGNATURE IS THE NAME, SIGNED — not a second thing to type.
+            It mirrors Student Name in the signing hand and appears only once
+            there is a name to show, so it reads as the consequence of typing
+            rather than as another empty box. Typing two different strings
+            into "name" and "signature" is a contradiction a compliance
+            document should not be able to record. */}
+        {studentName.trim() !== '' && <SignatureLine value={studentName.trim()} />}
         <Checkbox
           checked={agreed}
           onChange={(e) => onAgreed(e.target.checked)}
@@ -719,6 +705,20 @@ function StepProctor({
         onChange={(e) => onAttested(e.target.checked)}
         label="I attest to the proctor declaration above"
       />
+    </div>
+  )
+}
+
+/** The typed name rendered back as a signature: the same box as the field
+ *  above it, in the signing hand, and not editable — editing it would let the
+ *  name and the signature disagree. */
+function SignatureLine({ value }: { value: string }) {
+  return (
+    <div>
+      <span style={FIELD_LABEL}>Signature</span>
+      <div style={SIGNATURE_LINE} aria-label={`Signature: ${value}`}>
+        {value}
+      </div>
     </div>
   )
 }
@@ -1014,6 +1014,17 @@ const INPUT: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 14,
   outline: 'none',
+}
+
+/* The same box as `INPUT`, in the signing hand — it is the field above it,
+   signed, so it must not read as a different kind of control. */
+const SIGNATURE_LINE: CSSProperties = {
+  ...INPUT,
+  display: 'flex',
+  alignItems: 'center',
+  fontFamily: 'var(--font-heading-serif)',
+  fontSize: 18,
+  background: 'var(--color-neutral-75)',
 }
 
 const LOOKUP_LINK: CSSProperties = {
