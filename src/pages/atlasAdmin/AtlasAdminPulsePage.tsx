@@ -135,10 +135,15 @@ export function AtlasAdminPulsePage() {
               <Figure hug label="Exam ready" value={pulse.prepared.length} bg={FIGURE_TINT} ink="var(--admin-success-ink)" />
               <Figure hug label="Forecasted licensed" value={pulse.forecast} bg={FIGURE_TINT} ink="var(--admin-chart-blue)" />
             </div>
-            <Action>Start with intervention, then move exam-ready learners into scheduling.</Action>
-            <button type="button" onClick={() => navigate(students())} style={{ ...ATLAS_BUTTON_PRIMARY, alignSelf: 'flex-start' }}>
-              Open workspace
-            </button>
+            <Action
+              button={
+                <button type="button" onClick={() => navigate(students())} style={ATLAS_BUTTON_PRIMARY}>
+                  Open workspace
+                </button>
+              }
+            >
+              Start with intervention, then move exam-ready learners into scheduling.
+            </Action>
           </Card>
 
           <Card {...card(1)} alert icon={<TriangleExclamation size={13} />} title="Need intervention" sub={`${pulse.offTrack.length} candidates need manager attention now.`}>
@@ -340,11 +345,16 @@ function Figure({ label, value, bg, ink, note, hug }: { label: string; value: nu
   )
 }
 
-function Action({ children }: { children: ReactNode }) {
+/** `button` sits at the box's right, 40px from the text, centred
+ *  vertically. */
+function Action({ children, button }: { children: ReactNode; button?: ReactNode }) {
   return (
-    <div style={{ padding: 16, borderRadius: 10, background: 'var(--admin-atlas-secondary-100)' }}>
-      <p style={{ ...LABEL, color: 'var(--admin-brand)' }}>Action now</p>
-      <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--admin-ink)' }}>{children}</p>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 40, padding: 16, borderRadius: 10, background: 'var(--admin-atlas-secondary-100)' }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ ...LABEL, color: 'var(--admin-brand)' }}>Action now</p>
+        <p style={{ margin: '4px 0 0', fontSize: 13, lineHeight: '18px', color: 'var(--admin-ink)' }}>{children}</p>
+      </div>
+      {button ? <div style={{ flex: 'none' }}>{button}</div> : null}
     </div>
   )
 }
