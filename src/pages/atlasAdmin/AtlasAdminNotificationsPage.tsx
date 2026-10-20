@@ -186,7 +186,7 @@ export function AtlasAdminNotificationsPage() {
           {sel.preview ? <EmailPreview title={sel.title} onSample={sendSample} joined={sel.group === 'admin'} p={sel.id === 'invite' ? { ...sel.preview, body: sel.preview.body.map((b) => (b.startsWith('“') ? `“${note}” Cody McClintock` : b)) } : sel.preview} /> : <ProgressPreview title={sel.title} onSample={sendSample} joined={sel.group === 'admin'} learners={learners} />}
           {/* Recipients joins the preview above: no gap, square where they meet, the preview's bottom rule the only line between. */}
           {sel.group === 'admin' ? (
-            <section style={{ ...CARD, borderTop: 'none', borderRadius: '0 0 14px 14px', marginTop: -12, padding: 24 }}>
+            <section style={{ ...CARD, borderTop: 'none', borderRadius: '0 0 14px 14px', marginTop: -12, padding: 24, background: 'var(--admin-atlas-secondary-100)' }}>
               <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 700, color: 'var(--admin-ink)' }}>Recipients</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
                 <span style={{ ...PILL, background: 'var(--admin-brand)', color: 'var(--admin-surface)' }}>{ADMIN_EMAIL}</span>
