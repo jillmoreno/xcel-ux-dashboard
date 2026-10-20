@@ -428,7 +428,7 @@ function NumberField({ label, value, onChange, min, max }: { label: string; valu
 /* 24 to the card's edges, 14 between rows — the last row takes 24 below (in the map). */
 const ROW: CSSProperties = { paddingTop: 14, paddingLeft: 24, paddingRight: 24, cursor: 'pointer', outline: 'none' }
 const SELECTED: CSSProperties = { ...PILL, marginLeft: 8, padding: '1px 8px', fontSize: 10, background: 'var(--admin-surface)', color: 'var(--admin-brand)', boxShadow: 'inset 0 0 0 1px var(--admin-brand-edge)' }
-const ACTION: CSSProperties = { padding: 0, border: 'none', background: 'none', fontSize: 12, fontWeight: 600, color: 'var(--admin-brand)', cursor: 'pointer' }
+const ACTION: CSSProperties = { padding: 0, border: 'none', background: 'none', fontSize: 12, fontWeight: 600, color: 'var(--admin-atlas-primary-500)', cursor: 'pointer' }
 const SWITCH: CSSProperties = { position: 'relative', flex: 'none', width: 36, height: 20, border: 'none', borderRadius: 9999, padding: 0, cursor: 'pointer' }
 const KNOB: CSSProperties = { position: 'absolute', top: 2, width: 16, height: 16, borderRadius: '50%', background: 'var(--admin-surface)', boxShadow: '0 1px 2px rgb(0 0 0 / 0.2)', transition: 'left 120ms ease' }
 const ADD: CSSProperties = { width: 120, border: '1px dashed var(--admin-rule-strong)', borderRadius: 9999, padding: '3px 10px', fontSize: 12, outline: 'none', fontFamily: 'var(--font-body)' }
