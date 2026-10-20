@@ -322,7 +322,7 @@ const LABEL: CSSProperties = { ...EYEBROW, fontSize: 11 }
 function Box({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div style={{ padding: 16, borderRadius: 10, background: FIGURE_TINT }}>
-      <p style={LABEL}>{label}</p>
+      <p style={{ ...LABEL, color: 'var(--admin-atlas-neutral-800)' }}>{label}</p>
       <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--admin-ink)' }}>{children}</p>
     </div>
   )
