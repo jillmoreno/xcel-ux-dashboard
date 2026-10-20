@@ -1,6 +1,6 @@
 import { useMemo, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { XmarkRegular } from '@/icons'
+import { Envelope, XmarkRegular } from '@/icons'
 import { ADMIN_NOTIFICATIONS, type NotificationAction, type NotificationDef, type NotificationPreview } from '@/data/atlasAdmin/notifications'
 import { AdminDialog } from './AdminDialog'
 import { CadenceDialog, PeopleDialog } from './adminDialogs'
@@ -74,6 +74,8 @@ export function AtlasAdminNotificationsPage() {
     setProgressReport({ people: [...progressReport.people, v] })
     setDraft('')
   }
+
+  const sendSample = () => showToast(`Sample sent to ${ADMIN_EMAIL}`)
 
   return (
     /* On the Atlas Global Navigation palette, CTAs on XCEL red (2026-10-20,
@@ -181,12 +183,7 @@ export function AtlasAdminNotificationsPage() {
         </div>
 
         <div style={{ position: 'sticky', top: 104, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-            <button type="button" onClick={() => showToast(`Sample sent to ${ADMIN_EMAIL}`)} className="cre-admin-text-link" style={ACTION}>
-              Send me a sample
-            </button>
-          </div>
-          {sel.preview ? <EmailPreview title={sel.title} p={sel.id === 'invite' ? { ...sel.preview, body: sel.preview.body.map((b) => (b.startsWith('“') ? `“${note}” Cody McClintock` : b)) } : sel.preview} /> : <ProgressPreview title={sel.title} learners={learners} />}
+          {sel.preview ? <EmailPreview title={sel.title} onSample={sendSample} p={sel.id === 'invite' ? { ...sel.preview, body: sel.preview.body.map((b) => (b.startsWith('“') ? `“${note}” Cody McClintock` : b)) } : sel.preview} /> : <ProgressPreview title={sel.title} onSample={sendSample} learners={learners} />}
           {sel.group === 'admin' ? (
             <section style={{ ...CARD, borderRadius: 14, padding: 24 }}>
               <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 700, color: 'var(--admin-ink)' }}>Recipients</p>
@@ -277,16 +274,24 @@ export function AtlasAdminNotificationsPage() {
 }
 
 /** The preview card's title — white on Atlas primary 500, across the card's
- *  top. It reaches 1px past the card's padding box so its fill covers the
- *  card's top and side rules there, and takes the card's top corners. */
-function PreviewBanner({ title }: { title: string }) {
-  return <p style={{ margin: '-1px -1px 0', padding: '9px 25px 8px', borderRadius: '14px 14px 0 0', background: 'var(--admin-atlas-primary-500)', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--admin-surface)' }}>Preview · {title}</p>
+ *  top, with Send me a sample at its far right. It reaches 1px past the
+ *  card's padding box so its fill covers the card's top and side rules there,
+ *  and takes the card's top corners. */
+function PreviewBanner({ title, onSample }: { title: string; onSample: () => void }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, margin: '-1px -1px 0', padding: '9px 25px 8px', borderRadius: '14px 14px 0 0', background: 'var(--admin-atlas-primary-500)', color: 'var(--admin-surface)' }}>
+      <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Preview · {title}</p>
+      <button type="button" onClick={onSample} style={{ ...ACTION, display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--admin-surface)' }}>
+        <Envelope size={12} aria-hidden /> Send me a sample
+      </button>
+    </div>
+  )
 }
 
-function EmailPreview({ title, p }: { title: string; p: NotificationPreview }) {
+function EmailPreview({ title, onSample, p }: { title: string; onSample: () => void; p: NotificationPreview }) {
   return (
     <section style={{ ...CARD, borderRadius: 14 }}>
-      <PreviewBanner title={title} />
+      <PreviewBanner title={title} onSample={onSample} />
       <div style={{ padding: '24px 24px 10px', background: 'var(--admin-fill-soft)', borderBottom: '1px solid var(--admin-rule)', fontSize: 11, color: 'var(--admin-text)', lineHeight: 1.6 }}>
         <div>From {p.from}</div>
         <div>To {p.to}</div>
@@ -318,7 +323,7 @@ function EmailPreview({ title, p }: { title: string; p: NotificationPreview }) {
   )
 }
 
-function ProgressPreview({ title, learners }: { title: string; learners: ReturnType<typeof useAdminStore>['learners'] }) {
+function ProgressPreview({ title, onSample, learners }: { title: string; onSample: () => void; learners: ReturnType<typeof useAdminStore>['learners'] }) {
   const live = learners.filter((l) => l.stage !== 'licensed' && !l.hiddenFromReport)
   const counts = [
     { key: 'quiet7', label: 'No activity in the last 7 days', n: live.filter((l) => l.lastActiveDays >= 7).length, tone: 'var(--admin-brand-tint)' },
@@ -330,7 +335,7 @@ function ProgressPreview({ title, learners }: { title: string; learners: ReturnT
   const search = window.location.search
   return (
     <section style={{ ...CARD, borderRadius: 14 }}>
-      <PreviewBanner title={title} />
+      <PreviewBanner title={title} onSample={onSample} />
       <div style={{ padding: '24px 24px 10px', background: 'var(--admin-fill-soft)', borderBottom: '1px solid var(--admin-rule)', fontSize: 11, color: 'var(--admin-text)', lineHeight: 1.6 }}>
         <div>From XCEL Solutions</div>
         <div>To Cody McClintock</div>
