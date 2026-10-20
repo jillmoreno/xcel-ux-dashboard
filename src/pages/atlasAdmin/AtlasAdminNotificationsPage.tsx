@@ -123,7 +123,7 @@ export function AtlasAdminNotificationsPage() {
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') setSelected(n.id)
                         }}
-                        style={{ ...ROW, ...(active ? { paddingTop: 22 } : null), paddingBottom: (i === list.length - 1 ? 20 : 10) + (active ? 8 : 0), borderRadius: i === list.length - 1 ? '0 0 13px 13px' : undefined, background: active ? 'var(--admin-brand-tint)' : undefined, borderTop: i ? '1px solid var(--admin-rule)' : undefined }}
+                        style={{ ...ROW, ...(active ? { paddingTop: 22 } : null), paddingBottom: (i === list.length - 1 ? 20 : 10) + (active ? 8 : 0), borderRadius: i === list.length - 1 ? '0 0 13px 13px' : undefined, background: active ? 'var(--admin-atlas-secondary-100)' : undefined, borderTop: i ? '1px solid var(--admin-rule)' : undefined }}
                       >
                         {active ? <span aria-hidden style={ACTIVE_FRAME} /> : null}
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
@@ -468,7 +468,7 @@ const ACTIVE_FRAME: CSSProperties = {
   boxSizing: 'border-box',
   border: '1px solid var(--admin-atlas-primary-200)',
   borderRadius: 6,
-  background: 'var(--admin-brand-tint)',
+  background: 'var(--admin-atlas-secondary-100)',
   pointerEvents: 'none',
 }
 const SELECTED: CSSProperties = { ...PILL, marginLeft: 8, padding: '1px 8px', fontSize: 10, background: 'var(--admin-surface)', color: 'var(--admin-brand)', boxShadow: 'inset 0 0 0 1px var(--admin-brand-edge)' }
