@@ -454,19 +454,19 @@ function NumberField({ label, value, onChange, min, max }: { label: string; valu
 
 /* 24 to the card's edges, 14 between rows — the last row takes 24 below (in the map). */
 const ROW: CSSProperties = { position: 'relative', paddingTop: 14, paddingLeft: 24, paddingRight: 24, cursor: 'pointer', outline: 'none' }
-/* A selected row's frame (Atlas UX Design, Figma 495:34): 3px sides standing
+/* A selected row's frame (Atlas UX Design, Figma 495:34): 4px sides standing
    outside the card's 1px edge, 1px top and bottom laid over the rules above
    and below, one 3px radius where they meet. Drawn over the row, not in it. */
 const ACTIVE_FRAME: CSSProperties = {
   position: 'absolute',
   top: -1,
   bottom: -1,
-  left: -4,
-  right: -4,
+  left: -5,
+  right: -5,
   boxSizing: 'border-box',
   borderStyle: 'solid',
   borderColor: 'var(--admin-atlas-primary-200)',
-  borderWidth: '1px 3px',
+  borderWidth: '1px 4px',
   borderRadius: 3,
   pointerEvents: 'none',
 }
