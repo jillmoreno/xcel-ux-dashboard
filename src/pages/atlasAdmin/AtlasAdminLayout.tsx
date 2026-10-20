@@ -1,6 +1,6 @@
 import { useEffect, type ComponentType, type CSSProperties, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { BookOpen, Bell, Building, ChartSimple, CircleDollar, Envelope, Gear, IdCard, LocationDot, UserGroup, Users } from '@/icons'
+import { AngleRightRegular, BookOpen, Bell, Building, ChartSimple, CircleDollar, Envelope, Gear, IdCard, LocationDot, UserGroup, Users } from '@/icons'
 import { AtlasHeader } from '@/components/layout/AtlasHeader'
 import { useAccount } from '@/context/AccountContext'
 import { useProfileAvatar } from '@/context/ProfileAvatarContext'
@@ -58,6 +58,11 @@ export function AtlasAdminLayout() {
   const { pathname } = useLocation()
   const section = pathname.slice(ADMIN_BASE.length + 1).split('/')[0] || 'students'
   const title = TITLES[section] ?? 'Atlas Admin'
+  /* ⚠ TEMPORARY, STUDENTS ONLY — 2026-10-20, Eric: "temporarily and only on
+     the students page replace the left nav style with the quick links menu
+     style from the home page". To undo: delete this line, `QuickLinksNav` and
+     its styles below; the standing sidebar is untouched in the else branch. */
+  const quickLinksNav = section === 'students'
   const { toast, logEvent } = useAdminStore()
   const navigate = useNavigate()
   const search = window.location.search
@@ -102,14 +107,20 @@ export function AtlasAdminLayout() {
       />
     <div style={APP}>
       <aside style={SIDEBAR}>
-        <nav aria-label="Primary" style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
-          {NAV.map((item) => (
-            <SideLink key={item.to} item={item} />
-          ))}
-        </nav>
-        <div style={{ marginTop: 12, flex: 'none', borderTop: '1px solid var(--admin-chrome-rule)', paddingTop: 12 }}>
-          <SideLink item={{ to: `${ADMIN_BASE}/settings`, label: 'Settings', icon: Gear }} />
-        </div>
+        {quickLinksNav ? (
+          <QuickLinksNav />
+        ) : (
+          <>
+            <nav aria-label="Primary" style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
+              {NAV.map((item) => (
+                <SideLink key={item.to} item={item} />
+              ))}
+            </nav>
+            <div style={{ marginTop: 12, flex: 'none', borderTop: '1px solid var(--admin-chrome-rule)', paddingTop: 12 }}>
+              <SideLink item={{ to: `${ADMIN_BASE}/settings`, label: 'Settings', icon: Gear }} />
+            </div>
+          </>
+        )}
       </aside>
       <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <main style={MAIN}>
@@ -139,6 +150,36 @@ const USER_MENU: NavItem[] = [
   { to: `${ADMIN_BASE}/pricing`, label: 'Pricing', icon: CircleDollar },
   { to: `${ADMIN_BASE}/settings`, label: 'Settings', icon: Gear },
 ]
+
+/** The sidebar in Home's Quick Links style (`AtlasJourneyLinksCard`): an
+ *  outlined card, 16px between rows, 13px rows with the icon in an 18px slot,
+ *  hover one weight up in the page-button colour with the angle-right
+ *  showing, the current page semi-bold in a capsule. The capsule is Atlas
+ *  Primary 100, not Home's white — the sidebar is white, so white would not
+ *  show. TEMPORARY, Students only — see `quickLinksNav`. */
+function QuickLinksNav() {
+  return (
+    <nav aria-label="Primary" style={QL_CARD}>
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {[...NAV, { to: `${ADMIN_BASE}/settings`, label: 'Settings', icon: Gear }].map(({ to, label, icon: Icon }) => (
+          <li key={to}>
+            <NavLink to={to + window.location.search} className="cre-compass-v2-row" style={({ isActive }) => (isActive ? { ...QL_ROW, ...QL_ROW_ACTIVE } : QL_ROW)}>
+              <span aria-hidden style={QL_ICON}>
+                <Icon size={13} aria-hidden />
+              </span>
+              <span className="cre-quick-link-label" data-label={label} style={{ flex: '1 1 0', minWidth: 0, textAlign: 'left' }}>
+                {label}
+              </span>
+              <span aria-hidden className="cre-quick-link-chevron" style={{ display: 'inline-flex', color: 'var(--color-compass-page-button)' }}>
+                <AngleRightRegular size={13} aria-hidden />
+              </span>
+            </NavLink>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
 
 function SideLink({ item }: { item: NavItem }) {
   const Icon = item.icon
@@ -181,6 +222,39 @@ const SIDEBAR: CSSProperties = {
   background: 'var(--admin-surface)',
   borderRight: '1px solid var(--admin-chrome-rule)',
 }
+/* Quick Links (Home's card, as the E2E Home draws it): radius 20, padding
+   24, the slate hairline it computes to (--admin-quicklinks-rule — spelled
+   out because the admin pages sit outside the Atlas palette's scope). */
+const QL_CARD: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 16,
+  padding: 24,
+  boxSizing: 'border-box',
+  borderRadius: 20,
+  border: '1px solid var(--admin-quicklinks-rule)',
+}
+const QL_ROW: CSSProperties = {
+  width: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  padding: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  lineHeight: '18px',
+  textDecoration: 'none',
+}
+const QL_ROW_ACTIVE: CSSProperties = {
+  width: 'calc(100% + 16px)',
+  margin: '-4px -8px',
+  padding: '4px 8px',
+  boxSizing: 'border-box',
+  borderRadius: 999,
+  background: 'var(--admin-atlas-primary-100)',
+  fontWeight: 600,
+}
+const QL_ICON: CSSProperties = { width: 18, flex: 'none', display: 'inline-flex', justifyContent: 'center', color: 'var(--color-compass-page-button)' }
 const NAV_ITEM: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
