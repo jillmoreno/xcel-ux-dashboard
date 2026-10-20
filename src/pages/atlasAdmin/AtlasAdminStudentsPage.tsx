@@ -14,7 +14,7 @@ import {
 } from '@/data/atlasAdmin/learners'
 import { LOCATIONS, jobRoleOf, membersOfLocation } from '@/data/atlasAdmin/organization'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
-import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, CHIP, CHIP_ON, EYEBROW, PAGE_H1, PAGE_SUB } from './adminStyles'
+import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, BUTTON_BRAND, BUTTON_OUTLINE, CARD, CHIP, CHIP_ON, EYEBROW, PAGE_H1, PAGE_SUB } from './adminStyles'
 import { ChipMenu, MenuItem, PreparedPill, ProgressRing, ReadinessCell, StagePill } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
 import { StudentsEmptyState } from './StudentsEmptyState'
@@ -238,10 +238,10 @@ export function AtlasAdminStudentsPage() {
           <p style={PAGE_SUB}>{counts.total} students · Active pipeline plus licensed in the last 90 days</p>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
-          <button type="button" className="cre-admin-outline" onClick={() => exportCsv(rows)} style={BUTTON_OUTLINE}>
+          <button type="button" onClick={() => exportCsv(rows)} style={ATLAS_BUTTON_SECONDARY}>
             Export
           </button>
-          <button type="button" className="cre-admin-brand" onClick={() => setInviting(true)} style={BUTTON_BRAND}>
+          <button type="button" onClick={() => setInviting(true)} style={ATLAS_BUTTON_PRIMARY}>
             Invite learners
           </button>
         </div>
