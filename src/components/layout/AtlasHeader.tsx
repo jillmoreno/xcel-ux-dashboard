@@ -40,9 +40,9 @@ export type AtlasHeaderLinks = Partial<
 /**
  * LEARNER / ADMIN MODE in the profile menu — 2026-10-20, Eric: the Atlas
  * Admin pill's switching and links, moved into this menu in its styling.
- * The menu says which mode is on under the email; in `admin` its links are
- * `adminLinks`, in `learner` they are the learner's own (Profile …
- * My Purchases); the switch sits above Logout either way. Absent, the menu
+ * The menu says which mode is on under the email, with the switch right
+ * under it; in `admin` its links are `adminLinks`, in `learner` they are the
+ * learner's own (Profile … My Purchases). Absent, the menu
  * is exactly what it was.
  */
 export type AtlasHeaderMode = {
@@ -235,6 +235,16 @@ export function AtlasHeader({
               ) : null}
             </div>
             <AtlasHeaderMenuDivider />
+            {/* The switch sits right under the mode it changes (2026-10-20,
+                Eric's request), with its own rule below. */}
+            {modeMenu ? (
+              <>
+                <AtlasHeaderMenuItem onSelect={modeMenu.onSwitch} icon={<ArrowRightArrowLeft size={18} />}>
+                  {modeMenu.mode === 'admin' ? 'Switch to Learner Mode' : 'Switch to Admin Mode'}
+                </AtlasHeaderMenuItem>
+                <AtlasHeaderMenuDivider />
+              </>
+            ) : null}
             {modeMenu?.mode === 'admin' ? (
               modeMenu.adminLinks.map((l) => (
                 <AtlasHeaderMenuItem key={l.href} href={l.href} onSelect={onNavigate ? () => onNavigate(l.href) : undefined} icon={l.icon}>
@@ -258,11 +268,6 @@ export function AtlasHeader({
               </>
             )}
             <AtlasHeaderMenuDivider />
-            {modeMenu ? (
-              <AtlasHeaderMenuItem onSelect={modeMenu.onSwitch} icon={<ArrowRightArrowLeft size={18} />}>
-                {modeMenu.mode === 'admin' ? 'Switch to Learner Mode' : 'Switch to Admin Mode'}
-              </AtlasHeaderMenuItem>
-            ) : null}
             <AtlasHeaderMenuItem href={to('logout')} onSelect={onLogout} icon={<LogOut size={18} />}>
               Logout
             </AtlasHeaderMenuItem>
