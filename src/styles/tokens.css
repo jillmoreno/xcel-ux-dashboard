@@ -7489,6 +7489,12 @@ a.cre-library-card-title::after {
   /* THE CTA FILL, apart from the brand accent — 2026-10-20. Everywhere it
      is the brand red, as before; `.cre-admin-atlas` below re-points the
      accent to the Atlas navy and leaves CTAs on XCEL red. */
+  /* Atlas Primary 100 — the Atlas Style Guide's primary ramp, as
+     `[data-brand='xcel'][data-atlas-palette]` sets it. Named here because
+     the admin pages are not inside that palette scope, so
+     var(--color-primary-100) would give plain XCEL's step. The sidebar's
+     selected item (2026-10-20, Eric's request). */
+  --admin-atlas-primary-100: #eaeef1;
   --admin-cta: var(--admin-brand);
   --admin-cta-hover: var(--admin-brand-ink);
   /* The public pages (Partner with us, invites, the welcome email, the
