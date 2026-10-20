@@ -390,7 +390,7 @@ export function AtlasAdminStudentsPage() {
         ) : null}
 
         {selected.size ? (
-          <div style={{ ...TOOLBAR, background: 'var(--admin-atlas-secondary-100)', color: 'var(--admin-atlas-neutral-800)' }}>
+          <div style={{ ...TOOLBAR, paddingTop: 20, paddingBottom: 20, background: 'var(--admin-atlas-secondary-100)', color: 'var(--admin-atlas-neutral-800)' }}>
             <span style={{ fontSize: 14, fontWeight: 600 }}>{selected.size} selected</span>
             <button
               type="button"
