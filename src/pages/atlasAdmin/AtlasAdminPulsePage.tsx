@@ -238,7 +238,7 @@ export function AtlasAdminPulsePage() {
 
           <Card {...card(8)} icon={<Envelope size={13} />} title="Feedback & ask" sub="A direct line to your customer success rep.">
             <p style={{ margin: 0, fontSize: 13, color: 'var(--admin-text)' }}>Ask a question about this briefing — your customer success rep will follow up within one business day.</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderRadius: 10, background: 'var(--admin-fill-soft)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 16, borderRadius: 10, background: 'var(--admin-fill-soft)' }}>
               <span aria-hidden style={{ display: 'grid', placeItems: 'center', width: 32, height: 32, borderRadius: 9999, background: 'var(--admin-nav-active-bg)', fontSize: 11, fontWeight: 700, color: 'var(--admin-nav-active-ink)' }}>
                 NA
               </span>
@@ -320,7 +320,7 @@ const LABEL: CSSProperties = { ...EYEBROW, fontSize: 11 }
 
 function Box({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div style={{ padding: 12, borderRadius: 10, background: FIGURE_TINT }}>
+    <div style={{ padding: 16, borderRadius: 10, background: FIGURE_TINT }}>
       <p style={LABEL}>{label}</p>
       <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--admin-ink)' }}>{children}</p>
     </div>
@@ -329,7 +329,7 @@ function Box({ label, children }: { label: string; children: ReactNode }) {
 
 function Figure({ label, value, bg, ink, note, hug }: { label: string; value: number; bg: string; ink: string; note?: string; hug?: boolean }) {
   return (
-    <div style={{ padding: hug ? 16 : 12, borderRadius: 10, background: bg, flex: hug ? 'none' : undefined }}>
+    <div style={{ padding: 16, borderRadius: 10, background: bg, flex: hug ? 'none' : undefined }}>
       <p style={{ ...LABEL, color: ink }}>{label}</p>
       {/* A 1px rule between title and count, across the content width. */}
       {hug ? <hr style={{ margin: '12px 0 8px', border: 'none', borderTop: '1px solid var(--admin-rule)' }} /> : null}
@@ -341,7 +341,7 @@ function Figure({ label, value, bg, ink, note, hug }: { label: string; value: nu
 
 function Action({ children }: { children: ReactNode }) {
   return (
-    <div style={{ padding: 12, borderRadius: 10, background: 'var(--admin-atlas-secondary-100)' }}>
+    <div style={{ padding: 16, borderRadius: 10, background: 'var(--admin-atlas-secondary-100)' }}>
       <p style={{ ...LABEL, color: 'var(--admin-brand)' }}>Action now</p>
       <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--admin-ink)' }}>{children}</p>
     </div>
@@ -351,7 +351,7 @@ function Action({ children }: { children: ReactNode }) {
 function Person({ learner, pill, tone, line }: { learner: Learner; pill: string; tone: 'amber' | 'green' | 'blue'; line: string }) {
   const colors = { amber: ['var(--admin-amber-tint)', 'var(--admin-amber)'], green: ['var(--admin-success-tint)', 'var(--admin-success-ink)'], blue: ['var(--admin-fill)', 'var(--admin-chart-blue)'] }[tone]
   return (
-    <Link to={`${ADMIN_BASE}/students/recruit/${encodeURIComponent(learner.id)}`} className="cre-admin-tile" style={{ display: 'block', padding: '10px 12px', borderRadius: 10, background: 'var(--admin-fill-soft)', textDecoration: 'none' }}>
+    <Link to={`${ADMIN_BASE}/students/recruit/${encodeURIComponent(learner.id)}`} className="cre-admin-tile" style={{ display: 'block', padding: 16, borderRadius: 10, background: 'var(--admin-fill-soft)', textDecoration: 'none' }}>
       <span style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <strong style={{ fontSize: 13, fontWeight: 600, color: 'var(--admin-ink)' }}>{learner.name}</strong>
         <span style={{ ...PILL, fontSize: 10, background: colors[0], color: colors[1] }}>● {pill}</span>
