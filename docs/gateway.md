@@ -1526,6 +1526,64 @@ to full-page compositions. Every preview here is the same 860px iframe, so there
 is nothing left to switch on. They're kept as named constants so the two-column
 pairing is one edit away if a narrow preview ever lands.
 
+**That row has been built — ONE row of it, the first, 2026-10-20.** The Atlas
+Home dev-handoff family (`xcel-atlas-home-*`, 8 features) is exactly the case
+the paragraph above was waiting for: the components behind it
+(`AtlasReadinessCard`, `AtlasCourseProgressStates`, `AtlasPaceRingCard`,
+`AtlasExamDateCard`, `AtlasJourneyLinksCard`, `AffidavitModal`,
+`WhiteStyleHead`) are real, reusable React — not a standalone HTML prototype —
+so a live registry can render them, the way the LMS original did (every
+variant renders the actual exported component, not a redrawn picture of it;
+e.g. the reference being chased was the LMS's membership renewal-states trio).
+
+So `ComponentLivePreview` now checks a **second, small registry FIRST** —
+[`atlasHandoffPreviewsRegistry.ts`](src/components/prototype/atlasHandoffPreviewsRegistry.ts)
+(the non-component switch, split out from
+[`AtlasHandoffPreviews.tsx`](src/components/prototype/AtlasHandoffPreviews.tsx)
+only because `react-refresh/only-export-components` won't let one `.tsx` file
+export both components and a plain function — the same split this repo already
+uses for `v4/shared.tsx` / `v4/sharedUtil.ts`) — and falls through to the
+`previewUrl` iframe above, unchanged, for every id this registry doesn't know.
+**This is additive and scoped to Atlas Home only; the rest of PartnerHub-derived
+XCEL stays on the iframe path described above, and the paragraph above is still
+the right read for any row that is genuinely a standalone HTML document.**
+
+Coverage is 6 of 8 full, 1 partial, 2 left on the iframe (by component choice,
+not oversight): **Readiness Panel**, **Course Progress**, **Pace Ring**,
+**Exam Date Card**, **Quick Links**, and **Affidavit Modal** (a `createPortal`
+full-viewport overlay, so its gallery is click-to-open launcher buttons
+rather than static side-by-side cells) render every named variant live.
+**Course Head** is partial — only `WhiteStyleHead` is a clean, separable
+component (exported for exactly this on 2026-10-20); the WIP layout, the
+course-tab strip and the long-title variant are inlined in
+`AtlasHomeEricE2E.tsx`'s main render alongside page-local closures
+(`shownCover`, `onBeginCta`, `completedView`…), and extracting those safely
+was judged a bigger job than this pass — the gallery shows the one clean
+variant and says so. **Page Layout** and **Study Journey** are left on the
+iframe entirely: the first is a whole-page WIP-vs-White chrome swap, not a
+component prop, and the second's list (`JourneyRow`) is a private, unexported
+function fed by page-local state — the real page is the more honest preview
+for both anyway.
+
+**This is a local-only addition, not yet carried to the sibling dashboards.**
+Per the "Gateway sync" section above, `ComponentLivePreview` in
+`PrototypeHandoffDetailPage.tsx` is normally one of the files a sync from
+`jill-dashboard-ux-designs` would touch — but that repo's version of this
+function is the ~35-branch, full-LMS registry, and pulling it wholesale would
+either overwrite this Atlas Home addition or merge two different registries
+into one file. **Before the next gateway sync touches
+`PrototypeHandoffDetailPage.tsx`, check whether this block survived the
+merge** — the Atlas Home registry is two files
+(`AtlasHandoffPreviews.tsx` + `atlasHandoffPreviewsRegistry.ts`), neither of
+which exists in the LMS, so a sync script that copies the LMS version of
+`PrototypeHandoffDetailPage.tsx` whole (rather than merging) will silently
+drop the `atlasHandoffPreview(component.id)` check and the "box in a box"
+conditional around it, and XCEL's Atlas Home handoffs will quietly fall back
+to the iframe with no error. `src/components/prototype/AtlasHandoffPreviews.tsx`
+and `atlasHandoffPreviewsRegistry.ts` are new files, not in the LMS or
+PartnerHub, so they are safe from being overwritten — only the wiring in
+`PrototypeHandoffDetailPage.tsx` is at risk.
+
 ## Trimmed on the way over — SUPERSEDED 2026-09-08
 
 **This section described the 2026-09-02 gateway port and every line of it is now

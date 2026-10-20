@@ -1900,7 +1900,10 @@ const COVER_FRAME: CSSProperties = {
  * at its width and Begin Course at the right. The title has the card's width
  * less the cover, so a long one wraps less. Clicking the cover flips back.
  */
-function WhiteStyleHead({
+/** Exported 2026-10-20 (additive, no behavior change) so the Course Head
+ *  dev-handoff preview can render the real White-style layout directly,
+ *  rather than a hand-copied approximation that would drift from this one. */
+export function WhiteStyleHead({
   cover,
   title,
   onCover,

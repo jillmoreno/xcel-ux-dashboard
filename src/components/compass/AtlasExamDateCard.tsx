@@ -56,17 +56,28 @@ export function AtlasExamDateCard({
   stateName = 'New York',
   style,
   hideIntroCopy = false,
+  initialStage = 'default',
+  initialDate = null,
 }: {
   stateName?: string
   style?: CSSProperties
   /** The first screen without its sub-line ("Adding your state exam date …")
    *  — Eric/Atlas WIP, 2026-10-13. The other screens keep theirs. */
   hideIntroCopy?: boolean
+  /** Which of the four screens this opens on — additive, 2026-10-20, so a
+   *  dev-handoff preview can pin each stage for a live side-by-side gallery
+   *  without threading clicks through the calendar. Defaults to `'default'`,
+   *  so every existing caller is unchanged. */
+  initialStage?: Stage
+  /** Seeds `examDate` so `initialStage: 'set'` (or `'yes'`, to open the
+   *  calendar already on a picked day) has a date to show. Ignored on
+   *  `'default'` / `'no'`. */
+  initialDate?: Date | null
 }) {
   const today = useMemo(() => startOfDay(new Date()), [])
-  const [stage, setStage] = useState<Stage>('default')
+  const [stage, setStage] = useState<Stage>(initialStage)
   const [cameFrom, setCameFrom] = useState<Stage>('default')
-  const [examDate, setExamDate] = useState<Date | null>(null)
+  const [examDate, setExamDate] = useState<Date | null>(initialDate)
 
   /* ⚠ THE MONTH IN VIEW AND THE IN-FLIGHT PICK MOVED WITH THE GRID (2026-10-20)
      — `AtlasExamCalendar` holds both, seeded from `initialDate`, which is the

@@ -15,6 +15,7 @@ import {
   type DevHandoffUiUxLogic,
 } from '@/data/prototypeFeatures'
 import { RelatedJiraTickets } from '@/components/prototype/RelatedJiraTickets'
+import { atlasHandoffPreview } from '@/components/prototype/atlasHandoffPreviewsRegistry'
 
 
 /**
@@ -135,9 +136,16 @@ export function PrototypeHandoffDetailPage() {
             Rendered from the real component code — interact with it directly. This stays
             in sync with the implementation, so it won&rsquo;t drift the way a screenshot would.
           </p>
-          <div style={previewFrameStyle}>
+          {/* A registered multi-variant gallery already frames each variant of
+              its own — framing the whole gallery again puts a box in a box.
+              The iframe fallback still gets the shared spec-box frame. */}
+          {atlasHandoffPreview(component.id) ? (
             <ComponentLivePreview componentId={component.id} />
-          </div>
+          ) : (
+            <div style={previewFrameStyle}>
+              <ComponentLivePreview componentId={component.id} />
+            </div>
+          )}
         </section>
       )}
 
@@ -292,6 +300,14 @@ export function ComponentLivePreview({
   componentId: string
   fallback?: ReactNode
 }) {
+  // Checked FIRST, before the iframe fallback below: a registered id renders
+  // the real component(s) across every named variant, live, in this React
+  // tree — the Atlas Home family's live-registry restoration (2026-10-20).
+  // Everything NOT in that registry (every PartnerHub-derived standalone HTML
+  // prototype) falls through unchanged to the iframe behavior that follows.
+  const live = atlasHandoffPreview(componentId)
+  if (live) return <>{live}</>
+
   const url = componentPreviewUrl(componentId)
   if (!url) {
     return (
