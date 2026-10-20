@@ -100,7 +100,8 @@ export function AtlasAdminNotificationsPage() {
             const list = ADMIN_NOTIFICATIONS.filter((n) => n.group === g.id)
             return (
               <div key={g.id} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <section style={{ ...CARD, borderRadius: 14, overflow: 'hidden' }}>
+                {/* Not clipped: a selected row's side bars stand outside the card's edge. The last row rounds its own bottom corners instead. */}
+                <section style={{ ...CARD, borderRadius: 14 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', padding: '24px 24px 14px', borderBottom: '1px solid var(--admin-rule)' }}>
                     <div>
                       <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--admin-ink)' }}>{g.title}</h3>
@@ -122,8 +123,14 @@ export function AtlasAdminNotificationsPage() {
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') setSelected(n.id)
                         }}
-                        style={{ ...ROW, ...(active ? { paddingTop: 22, boxShadow: 'inset 3px 0 0 var(--admin-atlas-primary-200), inset -3px 0 0 var(--admin-atlas-primary-200)' } : null), paddingBottom: (i === list.length - 1 ? 20 : 10) + (active ? 8 : 0), background: active ? 'var(--admin-brand-tint)' : undefined, borderTop: i ? '1px solid var(--admin-rule)' : undefined }}
+                        style={{ ...ROW, ...(active ? { paddingTop: 22 } : null), paddingBottom: (i === list.length - 1 ? 20 : 10) + (active ? 8 : 0), borderRadius: i === list.length - 1 ? '0 0 13px 13px' : undefined, background: active ? 'var(--admin-brand-tint)' : undefined, borderTop: i ? '1px solid var(--admin-rule)' : undefined }}
                       >
+                        {active ? (
+                          <>
+                            <span aria-hidden style={{ ...ACTIVE_BAR, left: -4 }} />
+                            <span aria-hidden style={{ ...ACTIVE_BAR, right: -4 }} />
+                          </>
+                        ) : null}
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
                           <div style={{ minWidth: 0 }}>
                             <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--admin-ink)' }}>
@@ -451,7 +458,9 @@ function NumberField({ label, value, onChange, min, max }: { label: string; valu
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
 /* 24 to the card's edges, 14 between rows — the last row takes 24 below (in the map). */
-const ROW: CSSProperties = { paddingTop: 14, paddingLeft: 24, paddingRight: 24, cursor: 'pointer', outline: 'none' }
+const ROW: CSSProperties = { position: 'relative', paddingTop: 14, paddingLeft: 24, paddingRight: 24, cursor: 'pointer', outline: 'none' }
+/* A selected row's side bars: 3px, outside the card's 1px edge, 3px corners. */
+const ACTIVE_BAR: CSSProperties = { position: 'absolute', top: 0, bottom: 0, width: 3, borderRadius: 3, background: 'var(--admin-atlas-primary-200)' }
 const SELECTED: CSSProperties = { ...PILL, marginLeft: 8, padding: '1px 8px', fontSize: 10, background: 'var(--admin-surface)', color: 'var(--admin-brand)', boxShadow: 'inset 0 0 0 1px var(--admin-brand-edge)' }
 const ACTION: CSSProperties = { padding: 0, border: 'none', background: 'none', fontSize: 12, fontWeight: 600, color: 'var(--admin-atlas-primary-500)', cursor: 'pointer' }
 const SWITCH: CSSProperties = { position: 'relative', flex: 'none', width: 36, height: 20, border: 'none', borderRadius: 9999, padding: 0, cursor: 'pointer' }
