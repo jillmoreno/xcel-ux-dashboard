@@ -7473,6 +7473,7 @@ a.cre-library-card-title::after {
   --admin-warn-ink: #451a03;
   --admin-font-heading: var(--font-body);
   --admin-shadow-menu: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --admin-shadow-tile-active: 0 4px 4px rgb(0 0 0 / 0.15);
   --admin-scrim: rgb(15 23 42 / 0.45);
   /* The learner record's extras. */
   --admin-brand-soft-edge: #f2cdd0; /* outlined brand buttons */
