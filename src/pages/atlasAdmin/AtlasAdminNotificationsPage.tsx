@@ -453,21 +453,22 @@ function NumberField({ label, value, onChange, min, max }: { label: string; valu
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
 /* 24 to the card's edges, 14 between rows — the last row takes 24 below (in the map). */
-const ROW: CSSProperties = { position: 'relative', paddingTop: 14, paddingLeft: 24, paddingRight: 24, cursor: 'pointer', outline: 'none' }
-/* A selected row's frame (Atlas UX Design, Figma 495:34): 4px sides standing
-   outside the card's 1px edge, 1px top and bottom laid over the rules above
-   and below, one 3px radius where they meet. Drawn over the row, not in it. */
+const ROW: CSSProperties = { position: 'relative', isolation: 'isolate', paddingTop: 14, paddingLeft: 24, paddingRight: 24, cursor: 'pointer', outline: 'none' }
+/* A selected row stands proud of its card (Atlas UX Design, Figma 495:34):
+   its fill reaches 4px past the card's edge on both sides, outlined 1px in
+   primary 200 over the rules above and below, with 3px corners. Painted
+   behind the row's content — the row isolates, the frame sits at z -1. */
 const ACTIVE_FRAME: CSSProperties = {
   position: 'absolute',
+  zIndex: -1,
   top: -1,
   bottom: -1,
   left: -5,
   right: -5,
   boxSizing: 'border-box',
-  borderStyle: 'solid',
-  borderColor: 'var(--admin-atlas-primary-200)',
-  borderWidth: '1px 4px',
+  border: '1px solid var(--admin-atlas-primary-200)',
   borderRadius: 3,
+  background: 'var(--admin-brand-tint)',
   pointerEvents: 'none',
 }
 const SELECTED: CSSProperties = { ...PILL, marginLeft: 8, padding: '1px 8px', fontSize: 10, background: 'var(--admin-surface)', color: 'var(--admin-brand)', boxShadow: 'inset 0 0 0 1px var(--admin-brand-edge)' }
