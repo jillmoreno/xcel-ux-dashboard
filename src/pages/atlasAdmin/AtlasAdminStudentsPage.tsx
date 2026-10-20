@@ -247,7 +247,7 @@ export function AtlasAdminStudentsPage() {
         </div>
       </header>
 
-      <section aria-label="Pipeline outcomes" style={{ ...CARD, padding: 16, background: 'var(--admin-atlas-primary-100)' }}>
+      <section aria-label="Pipeline outcomes" style={{ ...CARD, border: 'none', padding: 16, background: 'var(--admin-atlas-primary-100)' }}>
         <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
           {tiles.map((t) => {
             const n = tileCount[t.id]
