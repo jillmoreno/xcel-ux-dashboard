@@ -1271,6 +1271,8 @@ export function AtlasHomeJillMain({
                  replaces. The figures are not lost: Exam Information, the stop
                  directly below, is the sheet that carries them. */
               detail={<ExamDatePrompt {...examPromptProps} stateName={state} onExamInfo={examInfo} card={examPromptCard} />}
+              /* The calendar this can open is block content — see `Step`. */
+              detailBlock
               link={pass.detailLabel ?? 'What to expect'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(pass.id) : undefined}
             />
@@ -1894,6 +1896,7 @@ function Step({
   number,
   title,
   detail,
+  detailBlock = false,
   link,
   onLink,
 }: {
@@ -1902,6 +1905,9 @@ function Step({
   /** A node, not just a string, since 2026-10-16: Step 2's detail is the
    *  state-exam-date prompt on the walk, not a sentence. */
   detail?: ReactNode
+  /** Render `detail` in a `div` rather than a `p`, for a detail that contains
+   *  block content. See the note at the render. */
+  detailBlock?: boolean
   link: string
   onLink?: () => void
 }) {
@@ -1911,17 +1917,31 @@ function Step({
         <p style={STEP_EYEBROW}>Step {number}</p>
         <p style={STEP_TITLE}>{title}</p>
       </div>
-      {/* ⚠ A `div`, NOT A `p` — 2026-10-20, when Add Date was wired.
-          `ExamDatePicker` is a month grid: `p`s and `div`s. Inside a `<p>` the
-          browser CLOSES the paragraph at the first block child and reparents
-          the rest, so the calendar rendered — detached from the card, with the
-          styles that depend on the nesting silently gone. That is the same
-          invalid nesting `ExamDatePrompt`'s own note records ("SPANS, NOT
-          DIVS … invalid nesting that happened to render"), and it is why that
-          component is built out of spans at all.
-          Same styles, same box: a `div` changes nothing on screen and takes
-          block content legally, so Step 2 can hold the picker. */}
-      {detail ? <div style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }}>{detail}</div> : null}
+      {/* ⚠ A `div` ONLY WHERE BLOCK CONTENT CAN LAND — 2026-10-20, narrowed the
+          same day it was widened.
+
+          `AtlasExamCalendar` is a month grid of `p`s and `div`s, and inside a
+          `<p>` the browser CLOSES the paragraph at the first block child and
+          reparents the rest: it renders, detached from the card, with the
+          styles that depend on the nesting silently gone. Same invalid nesting
+          `ExamDatePrompt`'s own note records ("SPANS, NOT DIVS … invalid
+          nesting that happened to render").
+
+          ⚠ BUT IT WAS EVERY STEP AT FIRST, AND THAT WAS WRONG — caught by
+          Jillienne comparing Step 3 against `main`. The two render identically
+          (same 13/18, margin 0, same 335×18 box), so nothing was visibly
+          broken; what was broken is that a file whose whole claim is "a
+          verbatim copy of main's Home apart from the exam work" had a
+          difference in it that the exam work did not need. Steps 1 and 3 are
+          `<p>` again, exactly as main has them, and only Step 2 — the one
+          holding the calendar — opts in. */}
+      {detail ? (
+        detailBlock ? (
+          <div style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }}>{detail}</div>
+        ) : (
+          <p style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }}>{detail}</p>
+        )
+      ) : null}
       {onLink ? (
         <button type="button" className="cre-compass-v2-link" onClick={onLink} style={LINK}>
           {link} →
