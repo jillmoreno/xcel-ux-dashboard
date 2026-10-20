@@ -2,6 +2,7 @@ import { useEffect, type ComponentType, type CSSProperties, type ReactNode } fro
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { AngleRightRegular, BookOpen, Bell, Building, ChartSimple, CircleDollar, Envelope, Gear, IdCard, LocationDot, UserGroup, Users } from '@/icons'
 import { AtlasHeader } from '@/components/layout/AtlasHeader'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { useAccount } from '@/context/AccountContext'
 import { useProfileAvatar } from '@/context/ProfileAvatarContext'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
@@ -58,11 +59,9 @@ export function AtlasAdminLayout() {
   const { pathname } = useLocation()
   const section = pathname.slice(ADMIN_BASE.length + 1).split('/')[0] || 'students'
   const title = TITLES[section] ?? 'Atlas Admin'
-  /* ⚠ TEMPORARY, STUDENTS ONLY — 2026-10-20, Eric: "temporarily and only on
-     the students page replace the left nav style with the quick links menu
-     style from the home page". To undo: delete this line, `QuickLinksNav` and
-     its styles below; the standing sidebar is untouched in the else branch. */
-  const quickLinksNav = section === 'students'
+  /* Left Nav, a Design control (`atlas-admin-left-nav`): Standard is the
+     sidebar below, Lite is Home's Quick Links card (`QuickLinksNav`). */
+  const quickLinksNav = useFeatureFlag('atlas-admin-left-nav').variant === 'lite'
   const { toast, logEvent } = useAdminStore()
   const navigate = useNavigate()
   const search = window.location.search
@@ -158,7 +157,7 @@ const USER_MENU: NavItem[] = [
  *  hover one weight up in the page-button colour with the angle-right
  *  showing, the current page semi-bold in a capsule. The capsule is Atlas
  *  Primary 100, not Home's white — the sidebar is white, so white would not
- *  show. TEMPORARY, Students only — see `quickLinksNav`. */
+ *  show. The Left Nav control's Lite — see `quickLinksNav`. */
 function QuickLinksNav() {
   return (
     <nav aria-label="Primary" style={QL_CARD}>

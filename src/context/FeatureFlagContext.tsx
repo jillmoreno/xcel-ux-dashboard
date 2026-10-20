@@ -2384,6 +2384,30 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     owner: 'eric',
   },
   {
+    key: 'atlas-admin-left-nav',
+    /* ATLAS ADMIN — LEFT NAV (2026-10-20, Eric: "make a Design Control
+       dropdown for Left Nav: with the one that is still on the other pages as
+       Standard and this outlined version called Lite"). Standard is the
+       reference's sidebar. Lite is Home's Quick Links card — outlined, 13px
+       rows, the current page semi-bold in an Atlas Primary 100 capsule — on
+       the page's own colour with no rule beside it. Every admin page. */
+    surface: 'design',
+    owner: 'eric',
+    surfaces: ['atlas-admin'],
+    versions: ['eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Left Nav',
+    description:
+      'Atlas Admin\u2019s sidebar. Standard: the reference\u2019s white sidebar with its rule. Lite: Home\u2019s Quick Links card, outlined, on the page colour.',
+    defaultEnabled: true,
+    variants: [
+      { value: 'standard', label: 'Standard' },
+      { value: 'lite', label: 'Lite' },
+    ],
+    defaultVariant: 'standard',
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-admin-flow',
     /* ATLAS ADMIN — JUMP TO A FLOW (2026-10-20, Eric: "add a design control
        dropdown for the flows … that do not have a left sidebar link"). The

@@ -132,6 +132,7 @@ describe('the owner axis', () => {
          decision. See the `atlas-e2e-page-control` row in archivedItems.ts. */
       // Joined 2026-10-19 — the Atlas Admin app at /atlas-admin, on or off.
       'atlas-admin',
+      'atlas-admin-left-nav',
       'atlas-admin-flow',
       // Joined 2026-10-13 — the two-row Atlas header, on or off.
       'atlas-header-v2',
