@@ -747,15 +747,17 @@ const HEADER_META: CSSProperties = {
   opacity: 0.68,
 }
 
-/* The white card overlaps the navy above it — the approved style's one bit of
-   depth, and what makes the avatar read as sitting ON the seam. */
+/* The white card meets the navy on a SQUARE seam — no top rounding, so the
+   two blocks read as one panel split by colour rather than as a card tucked
+   under a header. The modal's own outer corners still round; `Modal` clips
+   them (`overflow: hidden`), which is what lets these be 0 without the card
+   poking out at the bottom. The -16 overlap stays: it is what puts the
+   avatar on the seam. */
 const CARD: CSSProperties = {
   position: 'relative',
   marginTop: -16,
   padding: '28px 28px 22px',
   background: 'var(--color-surface-card)',
-  borderTopLeftRadius: 'var(--radius-xl)',
-  borderTopRightRadius: 'var(--radius-xl)',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
