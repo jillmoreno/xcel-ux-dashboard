@@ -114,7 +114,15 @@ describe('Course Overview on the End-to-End row’s walk', () => {
   it('does NOT change Eric’s Atlas Learning tile — no journey marker, no seam', async () => {
     // The tile that is not Jillienne's renders the same component. This is the
     // case that fails if the seam is ever widened into a build-wide flag.
-    renderDashboard('?demo=1&section=dashboard')
+    /* ⚠ ERIC'S TILE IS NAMED, NOT INHERITED — 2026-10-20. These three cases said
+   `?demo=1&section=dashboard` and relied on the bare route resolving to HIS
+   version, which it did while `eric-atlas-e2e` was the brand default. It is
+   not: Jill/Atlas-Main took the default that day, so a bare route now draws
+   HER Home and this file was quietly asserting against the wrong page — the
+   pill case failed, and the other two passed on a page they were not written
+   for, which is worse. The version is spelled out now, which is what a file
+   about Eric's tile should have done from the start. */
+    renderDashboard(`?demo=1&section=dashboard&version=${END_TO_END_VERSION}`)
     const before = screen.getByTestId('search').textContent
     await clickCourseOverview()
     expect(screen.getByTestId('search').textContent, 'Eric’s tile is untouched').toBe(before)
@@ -205,7 +213,7 @@ describe('Begin Course on the End-to-End row’s walk', () => {
   })
 
   it('does NOT change Eric’s Atlas Learning tile', async () => {
-    renderDashboard('?demo=1&section=dashboard')
+    renderDashboard(`?demo=1&section=dashboard&version=${END_TO_END_VERSION}`)
     const before = screen.getByTestId('search').textContent
     await clickBeginCourse()
     expect(screen.getByTestId('search').textContent, 'Eric’s tile is untouched').toBe(before)
@@ -319,7 +327,7 @@ describe('the walk’s Study Journey steps', () => {
   })
 
   it('leaves Eric’s Atlas Learning tile exactly as he promoted it', async () => {
-    renderDashboard('?demo=1&section=dashboard')
+    renderDashboard(`?demo=1&section=dashboard&version=${END_TO_END_VERSION}`)
     const page = within(screen.getByTestId('page'))
     expect(page.getByText(/150 scored questions/)).toBeInTheDocument()
     expect(page.getByText(/Apply online, then submit/)).toBeInTheDocument()

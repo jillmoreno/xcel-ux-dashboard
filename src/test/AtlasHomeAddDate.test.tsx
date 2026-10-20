@@ -45,14 +45,27 @@ function renderHome(version = 'jill-atlas-main') {
 }
 
 describe('the Add Date prompt on Jill/Atlas-Main', () => {
-  it('opens the picker — the one the Schedule State Exam widget uses', () => {
+  /* ⚠ THE CARD IS THE DEFAULT PROMPT HERE (2026-10-20) — no `?journey=full`,
+     and no pill above the steps. Both were true a few hours earlier; the mock
+     put the whole exam question inside Step 2. */
+  it('asks inside Step 2, on a bare route', () => {
     renderHome()
-    fireEvent.click(screen.getByRole('button', { name: 'Yes' }))
-    /* `ExamDatePicker`'s own footer. Asserting on it rather than on a grid cell
-       is what makes this a test that the SHARED picker opened, not that some
-       calendar did. */
-    expect(screen.getByRole('button', { name: 'Save exam date' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Cancel' })).toBeTruthy()
+    expect(screen.getByText('When is your exam?')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Add Date' })).toBeTruthy()
+    expect(screen.queryByText('Do you know your state exam date?')).toBeNull()
+  })
+
+  it('opens the Figma calendar — on the DEMO clock, not the wall clock', () => {
+    renderHome()
+    fireEvent.click(screen.getByRole('button', { name: 'Add Date' }))
+    /* `AtlasExamCalendar`'s footer, which is how we know it is that grid and
+       not `ExamScheduleWidget`'s ("Save exam date"). */
+    expect(screen.getByRole('button', { name: 'Set Exam Date' })).toBeTruthy()
+    /* ⚠ THE CASE THE MOCK COULD NOT SHOW, and the reason the clock is a prop.
+       The calendar defaults to `new Date()` — Eric's card still does — and on
+       this page that opened October 2026 over a pace model anchored to May. */
+    const month = FIXTURE_TODAY.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    expect(screen.getByRole('grid', { name: month })).toBeTruthy()
   })
 
   it('writes the picked day to the store, and prints it back', () => {
@@ -62,7 +75,7 @@ describe('the Add Date prompt on Jill/Atlas-Main', () => {
        round trip to the store. */
     const iso = isoPlusDays(FIXTURE_TODAY, 14)
     renderHome()
-    fireEvent.click(screen.getByRole('button', { name: 'Yes' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Add Date' }))
     /* ⚠ THE LABEL IS BUILT FROM PARTS HERE, and importing a `longDate` is the
        trap this comment exists to mark. The picker labels a day "Monday, May
        25, 2026" using its OWN local `longDate` (`ExamScheduleWidget`, built
@@ -79,12 +92,43 @@ describe('the Add Date prompt on Jill/Atlas-Main', () => {
       day: 'numeric',
       year: 'numeric',
     })
-    const day = screen.getByRole('button', { name: label })
+    /* ⚠ `gridcell`, NOT `button`. `AtlasExamCalendar` gives each day
+       `role="gridcell"` inside a `role="grid"` — the Figma card's own
+       accessibility shape, which `ExamScheduleWidget`'s picker does not use. */
+    const day = screen.getByRole('gridcell', { name: label })
     fireEvent.click(day)
-    fireEvent.click(screen.getByRole('button', { name: 'Save exam date' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Set Exam Date' }))
     expect(readExamDate()).toBe(iso)
-    expect(screen.getByText(new RegExp(formatPaceDateLong(iso)))).toBeTruthy()
+    /* The third screen: the prompt becomes a finished STOP on Step 2. */
+    expect(screen.getByText('Scheduled')).toBeTruthy()
+    /* Split across two spans like the pace row — the date, then the count. */
+    expect(
+      screen.getByText(
+        (_t, el) => /\|\s+\d+ Days$/.test(el?.textContent?.trim() ?? '') &&
+          (el?.textContent ?? '').startsWith(label),
+      ),
+    ).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Remove' })).toBeTruthy()
+  })
+
+  /* ⚠ ONE SUBTRACTION, PRINTED TWICE — the defect visible inside the mock,
+     where one date read "29 Days" in Step 2 and "18 days" on the pace card
+     because the two were counted off different clocks. */
+  it('counts the days once, for both places that print them', () => {
+    writeExamDate(isoPlusDays(FIXTURE_TODAY, 18))
+    renderHome()
+    expect(screen.getByText(/\|\s+18 Days/)).toBeTruthy()
+    expect(screen.getByText(/FLORIDA STATE EXAM/)).toBeTruthy()
+    /* ⚠ A FUNCTION MATCHER: the pace row draws the date and its note as two
+       spans (`expected`'s own shape), so the string exists only once they are
+       joined — a plain regex looks for it inside one element and misses. */
+    const row = screen.getByText(
+      (_t, el) =>
+        el?.textContent?.trim() ===
+        `${formatPaceDateLong(isoPlusDays(FIXTURE_TODAY, 18))} · 18 days`,
+    )
+    expect(row).toBeTruthy()
   })
 
   /* ⚠ THE CASE THAT ENTITLES THE PAGE TO READ THE DATE AT ALL. Without Remove
@@ -95,7 +139,7 @@ describe('the Add Date prompt on Jill/Atlas-Main', () => {
     renderHome()
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }))
     expect(readExamDate()).toBeNull()
-    expect(screen.getByRole('button', { name: 'Yes' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Add Date' })).toBeTruthy()
   })
 
   /* ⚠ AND THE CONSEQUENCE, WHICH IS CORRECT HERE AND WRONG ON MAIN. An exam
@@ -116,10 +160,11 @@ describe('the Add Date prompt on Jill/Atlas-Main', () => {
     expect(screen.getByText(/Week Goal/)).toBeTruthy()
   })
 
-  it('Not Yet dismisses the prompt without storing anything', () => {
+  /* ⚠ THE PILL IS NOT ON THIS VERSION ANY MORE, and is not deleted either — it
+     is Eric's position, exported and unreferenced, one line from returning.
+     `AtlasCompassSeam.test.tsx` is what guards it where it still draws. */
+  it('does not also ask in the pill above the steps', () => {
     renderHome()
-    fireEvent.click(screen.getByRole('button', { name: /Not Yet/ }))
-    expect(readExamDate()).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Yes' })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Not Yet/ })).toBeNull()
   })
 })

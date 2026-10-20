@@ -36,6 +36,7 @@ export function AtlasPaceRingCard({
   weeks,
   hoursPerWeek,
   expected,
+  exam,
   standingMessage,
   noPace,
   readinessBelow = false,
@@ -46,6 +47,22 @@ export function AtlasPaceRingCard({
   /** Which way the column reads — see `AtlasColumnAlign`. Centre is the
    *  committed default; `left` is the design bar's other arm. */
   align?: AtlasColumnAlign
+  /**
+   * THE BOOKED EXAM, under Estimated completion — 2026-10-20, from Jillienne's
+   * third screen ("FLORIDA STATE EXAM / November 16 · 18 days").
+   *
+   * ⚠ OPTIONAL, AND ABSENT IS THE DEFAULT. This card is drawn by two Homes —
+   * the End-to-End Demo's and Jill/Atlas-Main's. Only the second owns an exam
+   * date (the first refuses to read one, deliberately; see its `studyPace`
+   * note), so only the second passes this and the demo's card is unchanged by
+   * construction rather than by a flag.
+   *
+   * ⚠ THE LABEL IS THE CALLER'S because it names the JURISDICTION — "Florida
+   * state exam" — which this card cannot know. `expected` sets the precedent:
+   * value plus an optional note, rendered the same way, so the two blocks
+   * cannot drift apart in type or in treatment.
+   */
+  exam?: { label: string; value: string; note?: string }
   /** The finish DATE the same pace model produces, and its note. Shown under
    *  the week goal so the plan's span and the date it lands on are read
    *  together — they come from one `paceFit`, so they cannot describe two
@@ -271,6 +288,24 @@ export function AtlasPaceRingCard({
             <p style={EXPECTED_VALUE}>
               {expected.value}
               {expected.note ? <span style={EXPECTED_NOTE}> · {expected.note}</span> : null}
+            </p>
+          </div>
+        ) : null}
+        {/* ⚠ RULED ABOVE, LIKE THE BLOCK IT FOLLOWS, so the column keeps one
+            rhythm — the hairline belongs to the block BELOW it here, which is
+            the rule `Estimated completion` already follows. */}
+        {exam ? (
+          <div
+            style={{
+              ...EXPECTED,
+              borderBottom: 'none',
+              justifyContent: eyebrow.textAlign === 'left' ? 'flex-start' : 'center',
+            }}
+          >
+            <p style={EXPECTED_LABEL}>{exam.label}</p>
+            <p style={EXPECTED_VALUE}>
+              {exam.value}
+              {exam.note ? <span style={EXPECTED_NOTE}> · {exam.note}</span> : null}
             </p>
           </div>
         ) : null}

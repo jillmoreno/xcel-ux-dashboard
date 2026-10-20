@@ -78,9 +78,9 @@ import {
   type JourneyStop,
 } from '@/components/learning/studyJourneyUtil'
 import { getLicensedStepsFor, jurisdictionName } from '@/data/nyProducerRequirements'
-import { defaultPreset, formatPaceDate, formatPaceDateLong, studyPace, daysUntil, dateFromIso, isoPlusDays, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
+import { defaultPreset, formatPaceDate, formatPaceDateLong, studyPace, daysUntil, dateFromIso, isoFromDate, isoPlusDays, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
 import { clearExamDate, writeExamDate } from '@/data/examDateStore'
-import { ExamDatePicker } from '@/components/learning/ExamScheduleWidget'
+import { AtlasExamCalendar } from './AtlasExamCalendar'
 import { EXPIRY_FLAG_KEY } from '@/data/courseFixtures'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import './atlasJourneyLink.css'
@@ -411,7 +411,6 @@ export function AtlasHomeJillMain({
    * which was always presentational and still is.
    */
   const [picking, setPicking] = useState(false)
-  const [notYet, setNotYet] = useState(false)
   /* ⚠ `writeExamDate`, NOT `writeExamDateTime`. The picker collects a DAY; the
      Study Calendar's own editors collect a day and a slot. Passing an empty
      time here would write `cgp.examTime` as a blank string and the calendar
@@ -421,7 +420,6 @@ export function AtlasHomeJillMain({
   const saveExamDate = (iso: string) => {
     writeExamDate(iso)
     setPicking(false)
-    setNotYet(false)
   }
   /* ⚠ REMOVE IS WHAT MAKES READING THE DATE LEGITIMATE — see the note at
      `studyPace`. Without it this page would be acting on an input it could not
@@ -429,8 +427,11 @@ export function AtlasHomeJillMain({
   const removeExamDate = () => {
     clearExamDate()
     setPicking(false)
-    setNotYet(false)
   }
+  /* ⚠ ONE SUBTRACTION FOR BOTH PLACES THAT PRINT IT — the Scheduled stop and
+     the pace column. Two call sites each doing their own is how the mock ended
+     up showing 29 and 18 for the same date. */
+  const examDays = examDate ? daysUntil(examDate, today) : null
   const examPromptProps = {
     examDate,
     picking,
@@ -913,6 +914,33 @@ export function AtlasHomeJillMain({
                    three now say the same thing instead of two vanishing while
                    the third made a number up. */
                 weeks={paceFit ? Math.max(1, Math.round(paceFit.days / 7)) : undefined}
+                /* ⚠ THE BOOKED EXAM, from the same store the prompt writes and
+                   counted off the same `today` — 2026-10-20, the third screen's
+                   "FLORIDA STATE EXAM / November 16 · 18 days".
+
+                   This is the pair the mock could not make agree: the count
+                   there read 18 beside a "29 Days" in Step 2 for one date,
+                   because the calendar was on the wall clock and this column on
+                   the fixture. Both are `daysUntil(examDate, today)` now, so
+                   they are the same subtraction or neither renders.
+
+                   The LABEL names the state, which is why the card takes it
+                   rather than typing it — `state` is `jurisdictionName(path.state)`,
+                   so it follows the Course control like every other fact here. */
+                exam={
+                  examDate && examDays != null
+                    ? {
+                        label: state ? `${state} state exam`.toUpperCase() : 'STATE EXAM',
+                        value: formatPaceDateLong(examDate),
+                        note:
+                          examDays < 0
+                            ? 'date has passed'
+                            : examDays === 0
+                              ? 'today'
+                              : `${examDays} ${examDays === 1 ? 'day' : 'days'}`,
+                      }
+                    : undefined
+                }
                 noPace={noPace}
                 /* ⚠ THE SAME `paceFit` THE WEEK COUNT READS, which is the
                    whole reason both live on this card: the span and the date
@@ -1144,14 +1172,16 @@ export function AtlasHomeJillMain({
                 `ExamDatePrompt`; this position is Eric's Atlas Learning tile
                 and carries the pill he promoted — see `ExamDateQuestionPill`
                 for why they are two components. */}
-            {walkSteps ? null : (
-              <ExamDateQuestionPill
-                {...examPromptProps}
-                stateName={state}
-                notYet={notYet}
-                onNotYet={() => setNotYet(true)}
-              />
-            )}
+            {/* ⚠ THE PILL ABOVE THE STEPS IS GONE ON THIS VERSION (2026-10-20)
+                — Jillienne's mock has no prompt here; Step 2 carries the whole
+                exam question. Keeping both would ask it twice on one screen,
+                which is the duplicate `ExamCardPlacement.test.tsx` exists to
+                catch on the version it guards.
+
+                `ExamDateQuestionPill` is KEPT and still wired, unreferenced
+                here — it is Eric's position and the shape his Atlas Learning
+                tile draws, so it is one line from returning if this version
+                wants the pill back. */}
             {/* ⚠ AT 100% THE RING ARM SHOWS THE STOPS, ALL DONE (2026-10-16,
                 Jillienne: "we need to show the items in step 1 as compelted").
                 The work is what was completed, so the list is the thing worth
@@ -1234,7 +1264,13 @@ export function AtlasHomeJillMain({
                  the same question on screen twice. Replacing the sentence is
                  also what makes the step ask something instead of reciting
                  figures the learner cannot act on yet. */
-              detail={walkSteps ? <ExamDatePrompt {...examPromptProps} stateName={state} onExamInfo={examInfo} card={examPromptCard} /> : pass.detail}
+              /* ⚠ ALWAYS THE PROMPT ON THIS VERSION, not only on the walk
+                 (2026-10-20). It was `walkSteps ? prompt : pass.detail`, so the
+                 card needed `?journey=full` and a bare visit recited the exam
+                 figures instead — which is the screen Jillienne's first mock
+                 replaces. The figures are not lost: Exam Information, the stop
+                 directly below, is the sheet that carries them. */
+              detail={<ExamDatePrompt {...examPromptProps} stateName={state} onExamInfo={examInfo} card={examPromptCard} />}
               link={pass.detailLabel ?? 'What to expect'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(pass.id) : undefined}
             />
@@ -1524,19 +1560,25 @@ type ExamPromptWiring = {
 }
 
 /**
- * THE SAVED READOUT, one copy for both prompts.
+ * SCHEDULED — the third screen of the mock (2026-10-20).
  *
- * ⚠ IT PRINTS THE DATE AND WHAT IT COSTS, not a countdown in days alone. A
- * learner who has entered an exam wants to know the plan moved, and "May 19"
- * beside "8 days away" is the pair that says so. `daysUntil` is the page's own
- * clock (`today`), not the wall clock — the whole demo is anchored.
+ * ⚠ IT IS A JOURNEY STOP, NOT A CARD, which is the whole point of the drawing:
+ * once a date exists, the question stops being a question and becomes a thing
+ * Step 2 has DONE. So the tinted card goes, the green filled check takes the
+ * mark column — `DONE_MARK`, the same glyph every completed row on this page
+ * uses — and the row reads "Scheduled" over the date with an Edit beside it.
  *
- * ⚠ AND IT CARRIES REMOVE. That is not a convenience: the pace model reads this
- * date, so without a way to take it back this page would be acting on an input
- * it cannot undo — the exact defect `main`'s copy was fixed for. Change and
- * Remove are what entitle `studyPace` to see it at all.
+ * ⚠ FILLED, AND THAT IS DELIBERATE HERE. `MARK_CURRENT`'s note says a filled
+ * mark is a finished one ("it is what the green check is") and that open rings
+ * are for stops being worked on. Booking the exam finishes this stop, so it
+ * takes the check rather than the ring — the one place on Step 2 where that is
+ * true.
+ *
+ * ⚠ THE DAY COUNT IS THE PAGE'S, from `today`. The mock showed "29 Days" here
+ * beside "18 days" on the pace card for one date, because the calendar was on
+ * the wall clock and the pace card on the fixture. One clock, counted once.
  */
-function ExamDateSaved({
+function ExamDateScheduled({
   examDate,
   today,
   onAdd,
@@ -1548,61 +1590,88 @@ function ExamDateSaved({
   onRemove: () => void
 }) {
   const days = daysUntil(examDate, today)
-  /* Past dates are not pickable, so a negative here means a date entered before
-     the demo clock moved — say it plainly rather than printing "-3 days away". */
-  const away =
-    days == null ? null : days < 0 ? 'date has passed' : days === 0 ? 'today' : days === 1 ? '1 day away' : `${days} days away`
+  const d = dateFromIso(examDate)
+  const full = d
+    ? d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+    : examDate
+  /* Past dates are not pickable, so a negative can only come from a date
+     entered before the clock moved — say it rather than printing "-3 Days". */
+  const count =
+    days == null ? null : days < 0 ? 'Date has passed' : days === 0 ? 'Today' : `${days} ${days === 1 ? 'Day' : 'Days'}`
   return (
-    <span style={EXAM_CARD}>
-      <span style={EXAM_CARD_TEXT}>
-        <span style={EXAM_CARD_TITLE}>
-          {formatPaceDateLong(examDate)}
-          {away ? <span style={{ fontWeight: 400, color: 'var(--color-text-secondary)' }}>{` \u00b7 ${away}`}</span> : null}
-        </span>
-        <span style={EXAM_CARD_SUB}>Your study pace is planned around this date.</span>
+    <span style={EXAM_ROW}>
+      <span aria-hidden style={EXAM_MARK_COL}>
+        <CircleCheckSolid size={14} aria-hidden style={DONE_MARK} />
+        <span style={EXAM_SPINE} />
       </span>
-      <span style={{ display: 'flex', alignItems: 'center', gap: 4, flex: 'none' }}>
-        <button
-          type="button"
-          className="cre-compass-secondary cre-atlas-home-secondary"
-          style={EXAM_DATE_ADD}
-          onClick={onAdd}
-        >
-          Change
-        </button>
-        <button type="button" style={EXAM_DATE_NOT_YET} onClick={onRemove}>
-          Remove
-        </button>
+      <span style={EXAM_SCHEDULED_BODY}>
+        <span style={EXAM_SCHEDULED_HEAD}>
+          <span style={EXAM_SCHEDULED_LABEL}>Scheduled</span>
+          <span style={EXAM_SCHEDULED_ACTIONS}>
+            <button type="button" className="cre-compass-v2-link" style={EXAM_EDIT} onClick={onAdd}>
+              Edit
+            </button>
+            {/* ⚠ REMOVE IS WHAT ENTITLES THE PACE MODEL TO READ THIS DATE —
+                see the note at `studyPace`. The mock shows only Edit, and Edit
+                alone would leave a learner able to MOVE the date but never to
+                say they no longer have one, which is the baseline's bug in a
+                politer costume. It is the quiet half of the pair. */}
+            <button type="button" style={EXAM_REMOVE} onClick={onRemove}>
+              Remove
+            </button>
+          </span>
+        </span>
+        <span style={EXAM_SCHEDULED_DATE}>
+          {full}
+          {count ? <span style={EXAM_SCHEDULED_COUNT}>{`  |  ${count}`}</span> : null}
+        </span>
       </span>
     </span>
   )
 }
 
 /**
- * THE PICKER, in whichever prompt opened it.
+ * THE CALENDAR, INSIDE THE CARD — 2026-10-20, Jillienne: "jill atlass version
+ * should be this version of the exam date set on default", with the mock
+ * showing the month grid opening inside the Primary 100 card under its own
+ * heading, Cancel and Set Exam Date beneath it.
  *
- * ⚠ IT IS `ExamScheduleWidget`'s OWN PICKER, exported for this (2026-10-20),
- * not a second calendar. Two surfaces that disagree about how a date is picked
- * is the defect this repo keeps paying for, and the Atlas Home already had one
- * of those: `AtlasExamDateCard` carries a third month grid whose note says
- * "LOCAL STATE ONLY … nothing downstream reads it yet" — and which opens on the
- * WALL CLOCK while every other dated surface is anchored to the fixture. This
- * one takes `today` as a prop, which is why it is the one to reuse.
+ * ⚠ IT IS `AtlasExamDateCard`'s GRID, extracted rather than retyped — see
+ * `AtlasExamCalendar`. That card is the Figma component (224:4118) the mock was
+ * drawn from, and it is NOT rendered on this version (`onWhite` is true here),
+ * so the calendar had to come to the prompt. Extracting it is what kept the
+ * product at two month grids instead of three.
+ *
+ * ⚠ AND IT RUNS ON THE PAGE'S CLOCK, which is the one thing the mock could not
+ * show. `AtlasExamCalendar` defaults `today` to the wall clock — the behaviour
+ * Eric's card keeps — and this passes the demo clock, so the month it opens on,
+ * the day it rings as today, the count beside the scheduled date and the pace
+ * it re-plans all read one "today". The mock had an exam in November against a
+ * pace model anchored to May, which is why the same date showed "29 Days" in
+ * one place and "18 days" in another.
+ *
+ * The heading and the sub-line stay above the grid: the card is still asking
+ * the question while the learner answers it.
  */
-function ExamDatePickerPanel({ examDate, today, stateName, onCancel, onSave }: ExamPromptWiring) {
+function ExamDatePickerPanel({ today, onCancel, onSave, examDate }: ExamPromptWiring) {
   return (
-    <div style={{ ...EXAM_CARD, flexDirection: 'column', alignItems: 'stretch', gap: 4 }}>
-      <ExamDatePicker
-        initialDate={examDate ?? null}
-        stateName={stateName}
-        today={today}
-        /* `editing` only changes the lead line and a margin. A date already
-           stored means Change was pressed, which is editing. */
-        editing={Boolean(examDate)}
-        onCancel={onCancel}
-        onSave={onSave}
-      />
-    </div>
+    <span style={{ ...EXAM_CARD, flexDirection: 'column', alignItems: 'stretch', gap: 10 }}>
+      <span style={EXAM_CARD_TEXT}>
+        <span style={EXAM_CARD_TITLE}>When is your exam?</span>
+        <span style={EXAM_CARD_SUB}>
+          Entering your exam date will help us structure your study plan.
+        </span>
+      </span>
+      {/* The grid on its own white ground inside the tinted card, as drawn. */}
+      <span style={EXAM_CAL_PANEL}>
+        <AtlasExamCalendar
+          initialDate={examDate ? dateFromIso(examDate) : null}
+          today={today}
+          onCancel={onCancel}
+          onSave={(date) => onSave(isoFromDate(date))}
+        />
+      </span>
+    </span>
   )
 }
 
@@ -1616,7 +1685,9 @@ function ExamDatePickerPanel({ examDate, today, stateName, onCancel, onSave }: E
  * Yes opens the picker. Not Yet still only dismisses, which is all it ever did
  * and all a "no" can honestly do here.
  */
-function ExamDateQuestionPill({ notYet, onNotYet, ...wiring }: ExamPromptWiring & { notYet: boolean; onNotYet: () => void }) {
+export function ExamDateQuestionPill(wiring: ExamPromptWiring) {
+  const [notYet, setNotYet] = useState(false)
+  const onNotYet = () => setNotYet(true)
   if (wiring.picking) {
     return (
       <div style={EXAM_DATE_PROMPT}>
@@ -1627,7 +1698,7 @@ function ExamDateQuestionPill({ notYet, onNotYet, ...wiring }: ExamPromptWiring 
   if (wiring.examDate) {
     return (
       <div style={EXAM_DATE_PROMPT}>
-        <ExamDateSaved
+        <ExamDateScheduled
           examDate={wiring.examDate}
           today={wiring.today}
           onAdd={wiring.onAdd}
@@ -1671,7 +1742,7 @@ function ExamDatePrompt({
   if (wiring.examDate) {
     return (
       <span style={EXAM_ROWS}>
-        <ExamDateSaved
+        <ExamDateScheduled
           examDate={wiring.examDate}
           today={wiring.today}
           onAdd={wiring.onAdd}
@@ -1715,7 +1786,7 @@ function ExamDatePrompt({
           <span style={EXAM_CARD_TEXT}>
             <span style={EXAM_CARD_TITLE}>When is your exam?</span>
             <span style={EXAM_CARD_SUB}>
-              Entering your exam date will help us structure your study pace accordingly.
+              Entering your exam date will help us structure your study plan.
             </span>
           </span>
           <button
@@ -2668,4 +2739,76 @@ const V3_VIEW: CSSProperties = {
   fontSize: 11,
   lineHeight: '12px',
   color: 'var(--color-compass-page-button)',
+}
+
+/* ─── the Scheduled stop (2026-10-20) ─────────────────────────────────────
+   Set on Step 1's row type, not on a card's: the whole move of the third
+   screen is that a booked exam stops being a prompt and joins the list. */
+const EXAM_SCHEDULED_BODY: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
+  minWidth: 0,
+  flex: '1 1 auto',
+}
+const EXAM_SCHEDULED_HEAD: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 12,
+}
+/* ⚠ GREEN, MATCHING ITS MARK. Every other stop label takes the journey's ink;
+   this one is the only FINISHED stop on Step 2, and a green check over a
+   neutral label read as a check that had come loose from its row. */
+const EXAM_SCHEDULED_LABEL: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 600,
+  fontSize: 13,
+  lineHeight: '18px',
+  color: 'var(--color-success-500)',
+}
+const EXAM_SCHEDULED_ACTIONS: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  flex: 'none',
+}
+const EXAM_SCHEDULED_DATE: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  lineHeight: '18px',
+  color: 'var(--color-text-primary)',
+}
+/* The count is a second fact on one line, so it steps back rather than wrapping
+   — the separator is drawn with spaces in the string, as the mock has it. */
+const EXAM_SCHEDULED_COUNT: CSSProperties = {
+  color: 'var(--color-text-secondary)',
+  whiteSpace: 'pre',
+}
+const EXAM_EDIT: CSSProperties = {
+  padding: 0,
+  border: 0,
+  background: 'none',
+  cursor: 'pointer',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  lineHeight: '18px',
+}
+const EXAM_REMOVE: CSSProperties = {
+  padding: 0,
+  border: 0,
+  background: 'none',
+  cursor: 'pointer',
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  lineHeight: '18px',
+  color: 'var(--color-text-secondary)',
+}
+/* The calendar's white ground inside the Primary 100 card. 12 to the card's
+   own 12, so the inner corner reads as concentric rather than coincidental. */
+const EXAM_CAL_PANEL: CSSProperties = {
+  display: 'block',
+  padding: 12,
+  borderRadius: 12,
+  background: 'var(--color-surface-card)',
 }

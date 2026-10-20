@@ -1,13 +1,13 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import {
-  AngleLeftRegular,
-  AngleRightRegular,
   AngleRightSolid,
   CalendarThin,
   HourglassClockThin,
   PenToSquareSolid,
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
+import { AtlasExamCalendar } from './AtlasExamCalendar'
+import { startOfDay } from './examCalendarUtil'
 
 /**
  * THE EXAM-DATE CARD — Figma "Atlas-UX-Design" component 224:4118, "Set Exam
@@ -41,7 +41,6 @@ import { COMPASS_BUTTON } from './compassButton'
 type Stage = 'default' | 'no' | 'yes' | 'set'
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 const DAY_MS = 24 * 60 * 60 * 1000
 
 /** The date tile is 70 wide: "June 5" as designed, but a long month shortened
@@ -51,25 +50,7 @@ function shortMonth(m: number): string {
   return name.length <= 5 ? name : `${name.slice(0, m === 8 ? 4 : 3)}.`
 }
 
-function startOfDay(d: Date): Date {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
-}
-function sameDay(a: Date, b: Date): boolean {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
-}
 
-/** The month's grid: whole weeks, Sunday first, padded with the neighbouring
- *  months' days — 5 or 6 rows as the month needs. */
-function monthGrid(year: number, month: number): { date: Date; inMonth: boolean }[] {
-  const first = new Date(year, month, 1)
-  const start = new Date(year, month, 1 - first.getDay())
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const cells = Math.ceil((first.getDay() + daysInMonth) / 7) * 7
-  return Array.from({ length: cells }, (_, i) => {
-    const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i)
-    return { date, inMonth: date.getMonth() === month }
-  })
-}
 
 export function AtlasExamDateCard({
   stateName = 'New York',
@@ -85,25 +66,17 @@ export function AtlasExamDateCard({
   const today = useMemo(() => startOfDay(new Date()), [])
   const [stage, setStage] = useState<Stage>('default')
   const [cameFrom, setCameFrom] = useState<Stage>('default')
-  const [view, setView] = useState({ year: today.getFullYear(), month: today.getMonth() })
-  const [picked, setPicked] = useState<Date | null>(null)
   const [examDate, setExamDate] = useState<Date | null>(null)
 
+  /* ⚠ THE MONTH IN VIEW AND THE IN-FLIGHT PICK MOVED WITH THE GRID (2026-10-20)
+     — `AtlasExamCalendar` holds both, seeded from `initialDate`, which is the
+     saved date when editing and null when not. That is what the three lines
+     deleted from here did; the calendar is mounted fresh each time the stage
+     becomes 'yes', so the seeding still happens on every open. */
   const openCalendar = (from: Stage) => {
     setCameFrom(from)
-    // Open on the saved date's month when editing, else on today's.
-    const anchor = examDate ?? today
-    setView({ year: anchor.getFullYear(), month: anchor.getMonth() })
-    setPicked(examDate)
     setStage('yes')
   }
-  const stepMonth = (dir: -1 | 1) =>
-    setView((v) => {
-      const d = new Date(v.year, v.month + dir, 1)
-      return { year: d.getFullYear(), month: d.getMonth() }
-    })
-  // No stepping back past today's month — every day there would be past.
-  const atTodaysMonth = view.year === today.getFullYear() && view.month === today.getMonth()
   const daysLeft = examDate ? Math.round((examDate.getTime() - today.getTime()) / DAY_MS) : 0
 
   return (
@@ -158,79 +131,22 @@ export function AtlasExamDateCard({
       {stage === 'yes' ? (
         <>
           <p style={TITLE}>When is your {stateName} state exam?</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {/* Month picker */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, height: 26 }}>
-              <button
-                type="button"
-                aria-label="Previous month"
-                className="cre-atlas-cal-step"
-                onClick={() => stepMonth(-1)}
-                disabled={atTodaysMonth}
-                style={STEP}
-              >
-                <AngleLeftRegular size={12} aria-hidden />
-              </button>
-              <p aria-live="polite" style={MONTH}>
-                {MONTHS[view.month]} {view.year}
-              </p>
-              <button type="button" aria-label="Next month" className="cre-atlas-cal-step" onClick={() => stepMonth(1)} style={STEP}>
-                <AngleRightRegular size={12} aria-hidden />
-              </button>
-            </div>
-            {/* Weekday letters, then the days */}
-            <div role="grid" aria-label={`${MONTHS[view.month]} ${view.year}`} style={GRID}>
-              {WEEKDAYS.map((d, i) => (
-                <span key={`w${i}`} role="columnheader" style={WEEKDAY}>
-                  {d}
-                </span>
-              ))}
-              {monthGrid(view.year, view.month).map(({ date, inMonth }) => {
-                const past = date < today
-                const selectable = inMonth && !past
-                const isPicked = picked != null && sameDay(date, picked)
-                const isToday = sameDay(date, today)
-                return (
-                  <button
-                    key={date.toISOString()}
-                    type="button"
-                    role="gridcell"
-                    aria-selected={isPicked}
-                    aria-label={date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
-                    disabled={!selectable}
-                    className={selectable ? 'cre-atlas-cal-day' : undefined}
-                    onClick={() => setPicked(date)}
-                    style={{
-                      ...DAY,
-                      ...(selectable ? null : DAY_OFF),
-                      ...(isToday && !isPicked ? DAY_TODAY : null),
-                      ...(isPicked ? DAY_PICKED : null),
-                    }}
-                  >
-                    {date.getDate()}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 16 }}>
-            <button type="button" className="cre-compass-v2-link" style={TEXT_LINK} onClick={() => setStage(examDate ? 'set' : cameFrom)}>
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="cre-compass-primary cre-compass-btn-primary"
-              style={{ ...BUTTON, padding: '5px 16px', ...(picked ? null : BUTTON_OFF) }}
-              disabled={!picked}
-              onClick={() => {
-                if (!picked) return
-                setExamDate(picked)
-                setStage('set')
-              }}
-            >
-              Set Exam Date
-            </button>
-          </div>
+          {/* ⚠ THE GRID MOVED OUT 2026-10-20 — `AtlasExamCalendar`, so the Atlas
+              Home's exam prompt could show THIS calendar rather than a third
+              one typed into the Home. Nothing here changed: no `today` is
+              passed, so it still opens on the WALL CLOCK exactly as this card
+              always has, and the Cancel / Set Exam Date pair, the disabled
+              past days, the ringed today and the month arrows are the same
+              markup under the same styles. The Home passes the demo clock;
+              this card deliberately does not. */}
+          <AtlasExamCalendar
+            initialDate={examDate}
+            onCancel={() => setStage(examDate ? 'set' : cameFrom)}
+            onSave={(date) => {
+              setExamDate(date)
+              setStage('set')
+            }}
+          />
         </>
       ) : null}
 
@@ -321,71 +237,7 @@ const BUTTON: CSSProperties = {
   fontSize: 13.5,
   lineHeight: '20.25px',
 }
-const BUTTON_OFF: CSSProperties = { opacity: 0.45, cursor: 'not-allowed' }
-const STEP: CSSProperties = {
-  flex: 'none',
-  width: 23,
-  height: 26,
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: 0,
-  border: 'none',
-  borderRadius: 8,
-  background: 'var(--color-atlas-outlined-card, var(--color-compass-page-card))',
-  color: 'var(--color-text-secondary)',
-  cursor: 'pointer',
-}
-const MONTH: CSSProperties = {
-  flex: '1 1 0',
-  margin: 0,
-  textAlign: 'center',
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  lineHeight: '14px',
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase',
-  color: 'var(--color-text-secondary)',
-}
-const GRID: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(7, 1fr)',
-  gap: '6px 4px',
-  justifyItems: 'center',
-}
-const WEEKDAY: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 10,
-  lineHeight: '20px',
-  color: 'var(--color-atlas-cal-ink, var(--color-compass-page-button))',
-}
-const DAY: CSSProperties = {
-  width: 24,
-  height: 24,
-  padding: 0,
-  border: 'none',
-  borderRadius: 8,
-  background: 'transparent',
-  fontFamily: 'var(--font-body)',
-  fontWeight: 600,
-  fontSize: 10,
-  lineHeight: '24px',
-  color: 'var(--color-atlas-cal-ink, var(--color-compass-page-button))',
-  cursor: 'pointer',
-}
 /* Past days and the neighbouring months' — the design's faint #C3BBA5. */
-const DAY_OFF: CSSProperties = {
-  color: 'var(--color-neutral-500)',
-  cursor: 'default',
-}
-const DAY_TODAY: CSSProperties = {
-  boxShadow: 'inset 0 0 0 1px var(--color-atlas-cal-ink, var(--color-compass-page-button))',
-}
-const DAY_PICKED: CSSProperties = {
-  background: 'var(--color-atlas-cal-ink, var(--color-compass-page-button))',
-  color: '#ffffff',
-  fontWeight: 700,
-}
 const TILE: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
