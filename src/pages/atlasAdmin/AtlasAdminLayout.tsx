@@ -1,15 +1,23 @@
 import { useEffect, type ComponentType, type CSSProperties, type ReactNode } from 'react'
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { BookOpen, Bell, ChartSimple, Envelope, Gear, Users } from '@/icons'
+import { AtlasHeader } from '@/components/layout/AtlasHeader'
 import { ADMIN_USER } from '@/data/atlasAdmin/learners'
-import { ADMIN_BASE, useAdminStore } from './adminStore'
+import { ADMIN_BASE, ADMIN_EMAIL, useAdminStore } from './adminStore'
 import { BODY, HEADING } from './adminStyles'
 
 /**
  * ATLAS ADMIN — THE SHELL (2026-10-19). The reference's sidebar and header:
- * a 264 white sidebar (the XCEL lockup with its ADMIN pill, five sections and
- * Settings under a rule), and a translucent header carrying the page title
- * and the signed-in admin. Every admin page renders inside it.
+ * a 264 white sidebar (five sections and Settings under a rule), and a
+ * translucent header carrying the page title and the signed-in admin. Every
+ * admin page renders inside it.
+ *
+ * ⚠ UNDER THE PRODUCT'S GLOBAL NAVIGATION SINCE 2026-10-20 (Eric: "push the
+ * left sidebar and the entire right side down enough to add the global
+ * navigation above it … add an Admin button to the right of Home"). The
+ * same `AtlasHeader` the learner pages draw sits across the top, with Admin
+ * filled; Home goes to the learner dashboard. The sidebar's XCEL ADMIN lockup
+ * went with it — the logo is in the global nav now.
  */
 
 type NavItem = { to: string; label: string; icon: ComponentType<{ size?: number; 'aria-hidden'?: boolean }> }
@@ -49,6 +57,10 @@ export function AtlasAdminLayout() {
   const section = pathname.slice(ADMIN_BASE.length + 1).split('/')[0] || 'students'
   const title = TITLES[section] ?? 'Atlas Admin'
   const { toast, logEvent } = useAdminStore()
+  const navigate = useNavigate()
+  const search = window.location.search
+  // The learner Home keeps the demo flags; Admin is where the reviewer is.
+  const learnerHome = `/dashboard-rebrand${search}`
 
   // Every page the admin opens is a product event (Portal analytics).
   useEffect(() => {
@@ -64,16 +76,19 @@ export function AtlasAdminLayout() {
   }, [title])
 
   return (
+    <div style={{ minHeight: '100vh', background: 'var(--admin-page)' }}>
+      <AtlasHeader
+        current={null}
+        user={{ name: ADMIN_USER.name, email: ADMIN_EMAIL }}
+        notificationCount={3}
+        courses={[]}
+        showCourses={false}
+        links={{ home: learnerHome, logo: learnerHome, help: `${ADMIN_BASE}/resources${search}` }}
+        onNavigate={(href) => navigate(href)}
+        extraNav={[{ label: 'Admin', href: `${ADMIN_BASE}/students${search}`, current: true }]}
+      />
     <div style={APP}>
       <aside style={SIDEBAR}>
-        <div style={{ marginBottom: 20, padding: '0 4px' }}>
-          <span role="img" aria-label="XCEL Admin" style={LOCKUP}>
-            <img alt="" src="/brand/xcel-logo.webp" style={{ height: '1em', width: 'auto', display: 'block' }} />
-            <span aria-hidden style={LOCKUP_PILL}>
-              Admin
-            </span>
-          </span>
-        </div>
         <nav aria-label="Primary" style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: 2, overflowY: 'auto' }}>
           {NAV.map((item) => (
             <SideLink key={item.to} item={item} />
@@ -106,6 +121,7 @@ export function AtlasAdminLayout() {
         </div>
       ) : null}
     </div>
+    </div>
   )
 }
 
@@ -132,7 +148,6 @@ export function AtlasAdminComingSoon({ children }: { children?: ReactNode }) {
 
 const APP: CSSProperties = {
   display: 'flex',
-  minHeight: '100vh',
   background: 'var(--admin-page)',
   color: 'var(--admin-chrome-text)',
   fontFamily: BODY,
@@ -147,25 +162,9 @@ const SIDEBAR: CSSProperties = {
   flex: 'none',
   display: 'flex',
   flexDirection: 'column',
-  padding: '24px 16px',
+  padding: '20px 16px 24px',
   background: 'var(--admin-surface)',
   borderRight: '1px solid var(--admin-chrome-rule)',
-}
-const LOCKUP: CSSProperties = { display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap', fontSize: 32 }
-const LOCKUP_PILL: CSSProperties = {
-  marginLeft: '0.4em',
-  display: 'inline-flex',
-  alignItems: 'center',
-  borderRadius: 9999,
-  background: 'var(--admin-logo-pill)',
-  color: 'var(--admin-surface)',
-  fontFamily: 'Arial, system-ui, sans-serif',
-  fontWeight: 700,
-  fontSize: '0.26em',
-  lineHeight: 1,
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase',
-  padding: '0.28em 0.68em',
 }
 const NAV_ITEM: CSSProperties = {
   display: 'flex',

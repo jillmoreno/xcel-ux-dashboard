@@ -47,6 +47,7 @@ export function AtlasHeader({
   onNavigate,
   showCourses = true,
   onHelp,
+  extraNav = [],
 }: {
   /** Which nav pill is filled. */
   current?: 'home' | 'courses' | null
@@ -66,6 +67,10 @@ export function AtlasHeader({
    *  `links.help`, as the standalone preview still has it. The sheet itself is
    *  the shared `Header`'s (`HelpSheet`), the same one Hybrid's Help opens. */
   onHelp?: () => void
+  /** More pills after Home — 2026-10-20, Atlas Admin's "Admin" (Eric's
+   *  request). `current` fills one; give it and leave `current` above null so
+   *  Home is not filled too. Absent, the nav is exactly what it was. */
+  extraNav?: readonly { label: string; href: string; current?: boolean }[]
 }) {
   const to = (k: keyof AtlasHeaderLinks) => links[k] ?? '#'
   // A link's href, routed through `onNavigate` when there is one.
@@ -114,6 +119,24 @@ export function AtlasHeader({
           <a {...go('home')} className="cre-atlas-hdr-pill" aria-current={current === 'home' ? 'page' : undefined}>
             Home
           </a>
+          {extraNav.map((item) => (
+            <a
+              key={item.label}
+              href={item.href}
+              onClick={
+                onNavigate
+                  ? (e: MouseEvent) => {
+                      e.preventDefault()
+                      onNavigate(item.href)
+                    }
+                  : undefined
+              }
+              className="cre-atlas-hdr-pill"
+              aria-current={item.current ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          ))}
           {showCourses ? (
           <AtlasHeaderMenu align="left" trigger="My Courses" selected={current === 'courses'} panelStyle={COURSES_PANEL}>
             {courses.map((c) => (
