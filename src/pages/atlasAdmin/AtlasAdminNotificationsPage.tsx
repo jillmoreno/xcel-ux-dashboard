@@ -125,12 +125,7 @@ export function AtlasAdminNotificationsPage() {
                         }}
                         style={{ ...ROW, ...(active ? { paddingTop: 22 } : null), paddingBottom: (i === list.length - 1 ? 20 : 10) + (active ? 8 : 0), borderRadius: i === list.length - 1 ? '0 0 13px 13px' : undefined, background: active ? 'var(--admin-brand-tint)' : undefined, borderTop: i ? '1px solid var(--admin-rule)' : undefined }}
                       >
-                        {active ? (
-                          <>
-                            <span aria-hidden style={{ ...ACTIVE_BAR, left: -4 }} />
-                            <span aria-hidden style={{ ...ACTIVE_BAR, right: -4 }} />
-                          </>
-                        ) : null}
+                        {active ? <span aria-hidden style={ACTIVE_FRAME} /> : null}
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
                           <div style={{ minWidth: 0 }}>
                             <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--admin-ink)' }}>
@@ -459,9 +454,22 @@ function NumberField({ label, value, onChange, min, max }: { label: string; valu
 
 /* 24 to the card's edges, 14 between rows — the last row takes 24 below (in the map). */
 const ROW: CSSProperties = { position: 'relative', paddingTop: 14, paddingLeft: 24, paddingRight: 24, cursor: 'pointer', outline: 'none' }
-/* A selected row's side bars: 3px, outside the card's 1px edge, 4px corners,
-   reaching 1px up and down onto the rules above and below the row. */
-const ACTIVE_BAR: CSSProperties = { position: 'absolute', top: -1, bottom: -1, width: 3, borderRadius: 4, background: 'var(--admin-atlas-primary-200)' }
+/* A selected row's frame (Atlas UX Design, Figma 495:34): 3px sides standing
+   outside the card's 1px edge, 1px top and bottom laid over the rules above
+   and below, one 3px radius where they meet. Drawn over the row, not in it. */
+const ACTIVE_FRAME: CSSProperties = {
+  position: 'absolute',
+  top: -1,
+  bottom: -1,
+  left: -4,
+  right: -4,
+  boxSizing: 'border-box',
+  borderStyle: 'solid',
+  borderColor: 'var(--admin-atlas-primary-200)',
+  borderWidth: '1px 3px',
+  borderRadius: 3,
+  pointerEvents: 'none',
+}
 const SELECTED: CSSProperties = { ...PILL, marginLeft: 8, padding: '1px 8px', fontSize: 10, background: 'var(--admin-surface)', color: 'var(--admin-brand)', boxShadow: 'inset 0 0 0 1px var(--admin-brand-edge)' }
 const ACTION: CSSProperties = { padding: 0, border: 'none', background: 'none', fontSize: 12, fontWeight: 600, color: 'var(--admin-atlas-primary-500)', cursor: 'pointer' }
 const SWITCH: CSSProperties = { position: 'relative', flex: 'none', width: 36, height: 20, border: 'none', borderRadius: 9999, padding: 0, cursor: 'pointer' }
