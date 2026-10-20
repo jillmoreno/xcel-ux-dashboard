@@ -72,26 +72,16 @@ type Props = {
   licenseLookupUrl?: string
 }
 
-/* ── per-step chrome ──────────────────────────────────────────────────────
-   The eyebrow over the title and the glyph in the avatar. The `document`
-   step's title depends on the SHAPE (an affidavit and a notice are not the
-   same word), so it is resolved separately below. */
-const STEP_CHROME: Record<string, { title: string; icon: ReactNode }> = {
-  name: { title: 'Confirm Your Name', icon: <User size={24} aria-hidden /> },
-  license: { title: 'Confirm Your License', icon: <IdCard size={24} aria-hidden /> },
-  identity: { title: 'Confirm Your Identity', icon: <IdCard size={24} aria-hidden /> },
-  document: { title: 'Review & Agree', icon: <FileLinesRegular size={24} aria-hidden /> },
-  student: { title: 'Student Declaration', icon: <User size={24} aria-hidden /> },
-  proctor: { title: 'Proctor Declaration', icon: <Users size={24} aria-hidden /> },
-}
-
-/** The `document` step's eyebrow, which is the document's own kind. */
-const DOCUMENT_STEP_TITLE: Record<string, string> = {
-  'notice': 'Review the Notice',
-  'signed-tc': 'Terms & Conditions',
-  'enrollment-agreement': 'Enrollment Agreement',
-  'affidavit-single': 'Review the Affidavit',
-  'needs-review': 'Content Pending Review',
+/* ── per-step glyph ──────────────────────────────────────────────────────
+   The icon in the header badge. There is no step EYEBROW any more — see the
+   header below for why — so this carries nothing but the glyph. */
+const STEP_ICON: Record<string, ReactNode> = {
+  name: <User size={24} aria-hidden />,
+  license: <IdCard size={24} aria-hidden />,
+  identity: <IdCard size={24} aria-hidden />,
+  document: <FileLinesRegular size={24} aria-hidden />,
+  student: <User size={24} aria-hidden />,
+  proctor: <Users size={24} aria-hidden />,
 }
 
 const EXTRA_FIELD_LABEL: Record<ExtraField, string> = {
@@ -187,11 +177,6 @@ export function ComplianceDocumentModal({
     proctorAttested,
   ])
 
-  const eyebrow =
-    step === 'document'
-      ? DOCUMENT_STEP_TITLE[config.shape] ?? STEP_CHROME.document.title
-      : STEP_CHROME[step]?.title ?? config.title
-
   /* The warning triangle for the one document with no content, a pen for the
      one that is signed rather than ticked, and the step's own glyph for
      everything else. */
@@ -200,7 +185,7 @@ export function ComplianceDocumentModal({
   ) : step === 'document' && config.wetSignature ? (
     <PenFieldRegular size={24} aria-hidden />
   ) : (
-    STEP_CHROME[step]?.icon ?? <FileLinesRegular size={24} aria-hidden />
+    STEP_ICON[step] ?? <FileLinesRegular size={24} aria-hidden />
   )
 
   function goBack() {
@@ -230,22 +215,27 @@ export function ComplianceDocumentModal({
        two failures. Closing still discards the answers; see the remount note
        above. */
     <Modal open={open} onClose={onClose} title={config.title} hideChrome width={460}>
+      <div style={SHELL}>
       {/* ── the navy header ───────────────────────────────────────────── */}
       <div style={HEADER}>
         <div aria-hidden style={HEADER_AVATAR}>
           {avatarIcon}
         </div>
         <div style={HEADER_TEXT}>
-          <p style={HEADER_EYEBROW}>{eyebrow}</p>
-        {/* THE HEADING IS THE DOCUMENT'S KIND, not its per-state title — the
-            six names the SharePoint set uses. What a learner needs from a
-            heading is "what am I being asked to sign", and "Post Final
-            Affidavit" answers that where "Ohio — Pre & Post Final Affidavit"
-            makes them read a line of administrative naming first. The
-            specific document is the line under it, and it still carries the
-            state, so two Florida notices remain tellable apart. */}
+            {/* THE HEADING IS THE DOCUMENT'S KIND — the six names the
+              SharePoint set uses — and the line under it is that document
+              MINUS its kind, so the two never say the same words twice.
+              "Pre-Course Notice" over "Florida — Property & Casualty",
+              not over "Florida — Property & Casualty Pre-Course Notice".
+
+              ⚠ THERE IS NO EYEBROW. It named the step ("REVIEW THE NOTICE"),
+              which on a one-step document is a third line saying what the
+              heading already says. Where a step genuinely needs naming the
+              body does it — the two-party shape labels its Student and
+              Proctor declarations inside their own panels — and the progress
+              strip still counts the steps. */}
           <h2 style={HEADER_TITLE}>{config.complianceType}</h2>
-          <p style={HEADER_META}>{config.title}</p>
+          <p style={HEADER_META}>{config.subject}</p>
         </div>
       </div>
 
@@ -373,6 +363,7 @@ export function ComplianceDocumentModal({
             </>
           )}
         </div>
+      </div>
       </div>
     </Modal>
   )
@@ -503,9 +494,25 @@ function StepDocument({
     return (
       <div style={STACK}>
         <div style={DOCUMENT_PANEL}>
-          <p style={DOCUMENT_BODY}>{body}</p>
+          {/* These documents are multi-paragraph — the Florida notices close
+              with a separate sentence about what clicking the button means.
+              One `<p>` would run that into the body as a wall of text. */}
+          {paragraphs(body).map((para, i) => (
+            <p key={i} style={{ ...DOCUMENT_BODY, marginTop: i === 0 ? 0 : 10 }}>
+              {para}
+            </p>
+          ))}
         </div>
-        <Checkbox checked={agreed} onChange={(e) => onAgreed(e.target.checked)} label="I Agree" />
+        {/* ⚠ THE LABEL IS THE ONE THE DOCUMENT NAMES. Florida's notice ends
+            "By clicking the 'I Agree' button below" in English and "Al
+            seleccionar el botón 'Acepto'" in Spanish — so on the Spanish arm
+            a button reading "I Agree" is a document referring to a control
+            that is not on screen. */}
+        <Checkbox
+          checked={agreed}
+          onChange={(e) => onAgreed(e.target.checked)}
+          label={language === 'es' ? 'Acepto' : 'I Agree'}
+        />
       </div>
     )
   }
@@ -596,7 +603,11 @@ function StepDocument({
   return (
     <div style={STACK}>
       <div style={DOCUMENT_PANEL}>
-        <p style={DOCUMENT_BODY}>{config.body}</p>
+        {paragraphs(config.body).map((para, i) => (
+          <p key={i} style={{ ...DOCUMENT_BODY, marginTop: i === 0 ? 0 : 10 }}>
+            {para}
+          </p>
+        ))}
       </div>
       <Checkbox
         checked={agreed}
@@ -694,6 +705,13 @@ function StepProctor({
   )
 }
 
+/** Source documents are authored as paragraphs; the data keeps them as one
+ *  string with blank lines between, which is what survives a copy out of a
+ *  .docx intact. */
+function paragraphs(body?: string): string[] {
+  return (body ?? '').split('\n\n').map((p) => p.trim()).filter(Boolean)
+}
+
 /** A bordered sub-section with a left accent stroke — the two-party shape's
  *  way of showing that one signer's words are not the other's. */
 function Declaration({ label, body }: { label: string; body?: string }) {
@@ -742,6 +760,26 @@ function Field({
 
 /* ── styles ───────────────────────────────────────────────────────────── */
 
+/**
+ * THE CTA COLOUR IS THE ATLAS HOME'S BLUE, and it is set ONCE here rather
+ * than threaded through every button.
+ *
+ * `--color-compass-page-button` (#3d5a73) is the token Atlas Home's own
+ * buttons use, so this tracks that surface instead of pinning a hex that
+ * would drift the first time Atlas is retinted.
+ *
+ * ⚠ IT RE-POINTS `--color-action` FOR THE SUBTREE, which is the whole point:
+ * the shared `ui/Button`, the `Checkbox` tick, the Next arrow and the filled
+ * progress segments all read that token, so they move together and the modal
+ * has ONE action colour. Overriding them one at a time is how three of the
+ * five end up brick and nobody notices.
+ */
+const SHELL: CSSProperties = {
+  ['--color-action' as string]: 'var(--color-compass-page-button)',
+  ['--color-action-hover' as string]:
+    'color-mix(in srgb, var(--color-compass-page-button) 86%, black)',
+}
+
 const HEADER: CSSProperties = {
   background: 'var(--color-nav-shared-navy)',
   padding: '22px 28px',
@@ -776,16 +814,6 @@ const HEADER_TEXT: CSSProperties = {
   flexDirection: 'column',
   gap: 3,
   minWidth: 0,
-}
-
-const HEADER_EYEBROW: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-body)',
-  fontWeight: 700,
-  fontSize: 12,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: 'var(--color-info-300)',
 }
 
 const HEADER_TITLE: CSSProperties = {

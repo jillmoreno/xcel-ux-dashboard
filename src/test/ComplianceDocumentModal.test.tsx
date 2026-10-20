@@ -66,6 +66,9 @@ describe('the document set', () => {
 
   it('gives every document the content its own shape renders', () => {
     for (const d of COMPLIANCE_DOCUMENTS) {
+      expect(d.subject, d.id).toBeTruthy()
+      // The subject must not repeat the kind the heading already shows.
+      expect(d.subject.includes(d.complianceType), d.id).toBe(false)
       if (d.shape === 'notice') {
         expect(d.bodyEn, d.id).toBeTruthy()
         if (d.bilingual) expect(d.bodyEs, d.id).toBeTruthy()
@@ -272,17 +275,27 @@ describe('Next stays off until the step is answered', () => {
 })
 
 describe('the two shapes with no signer', () => {
-  it('heads the modal with the document kind, with the specific document under it', () => {
+  it('heads the modal with the document kind, with the subject under it', () => {
     open(docById('oh-post'))
     expect(screen.getByRole('heading', { name: 'Final Affidavit' })).toBeInTheDocument()
     /* `Modal` also renders the title into a visually-hidden span to keep
        `aria-labelledby` valid under `hideChrome`, so the document name matches
        twice. The drawn one is the paragraph. */
-    const named = screen.getAllByText('Ohio — Pre & Post Final Affidavit')
-    expect(named.some((el) => el.tagName === 'P')).toBe(true)
+    /* The line under it is the document MINUS its kind, so the header never
+       says "Final Affidavit" twice. */
+    expect(screen.getByText('Ohio')).toBeInTheDocument()
+    /* ⚠ THE FULL NAME IS NOT LOST, it just stops being drawn: `Modal` keeps
+       it as the dialog's accessible name, which is what a screen-reader user
+       hears on open. Shortening the visible line must not shorten that. */
+    expect(
+      screen.getByRole('dialog', { name: 'Ohio — Pre & Post Final Affidavit' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getAllByText(/Pre & Post Final Affidavit/).every((el) => el.tagName === 'SPAN'),
+    ).toBe(true)
   })
 
-  it('asks a notice for nothing but "I Agree"', () => {
+  it('asks a notice for nothing but the tick', () => {
     const { onComplete } = open(docById('fl-notice-lh'))
     expect(screen.queryByLabelText(/first name/i)).toBeNull()
     expect(screen.queryByLabelText(/signature/i)).toBeNull()
@@ -311,6 +324,34 @@ describe('the two shapes with no signer', () => {
     // Unspecified falls back to English rather than rendering nothing.
     open(docById('fl-notice-lh'))
     expect(screen.getByText(/Department of Financial Services/)).toBeInTheDocument()
+  })
+
+  /* ⚠ WHAT THE FLORIDA NOTICE IS ACTUALLY ABOUT. It shipped with placeholder
+     text saying it satisfied the pre-licensing education requirement; the
+     real document is about the NAIFA study manual — that the exam is based on
+     it, that the course does not include it, and where to buy it. A wrong
+     subject reads as finished, which is what makes it worth pinning. */
+  it('carries the real Florida Life & Health notice, not the placeholder', () => {
+    const fl = docById('fl-notice-lh')
+    expect(fl.bodyEn).toContain('NAIFA')
+    expect(fl.bodyEn).toContain('Study Manual is not included with this course')
+    expect(fl.bodyEn).not.toContain('satisfies the pre-licensing education requirement')
+    // Authored as paragraphs, and drawn as paragraphs.
+    expect(fl.bodyEn?.split('\n\n')).toHaveLength(2)
+    open(fl, 'en')
+    expect(screen.getByText(/By clicking the .I Agree. button below/)).toBeInTheDocument()
+  })
+
+  /* The document names its own button, in each language. On the Spanish arm a
+     checkbox reading "I Agree" is a document pointing at a control that is
+     not on screen. */
+  it('labels the tick the way the document names it', () => {
+    open(docById('fl-notice-lh'), 'en')
+    expect(screen.getByLabelText('I Agree')).toBeInTheDocument()
+    cleanup()
+    open(docById('fl-notice-lh'), 'es')
+    expect(screen.getByLabelText('Acepto')).toBeInTheDocument()
+    expect(screen.queryByLabelText('I Agree')).toBeNull()
   })
 
   /* The corrected Spanish is only visible through the modal on the `es` arm,
