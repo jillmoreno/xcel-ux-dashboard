@@ -7585,6 +7585,29 @@ a.cre-library-card-title::after {
    inline styles cannot carry :hover. */
 .cre-admin-tile:hover { border-color: var(--admin-hover-edge) !important; }
 .cre-admin-tile:focus-visible { box-shadow: 0 0 0 2px var(--admin-brand) !important; }
+
+/* A demo HOTSPOT (2026-10-20): a pulsing dot that jumps the demo to another
+   state — the empty Students page's way back to the sample roster. */
+.cre-admin-hotspot {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 3px solid var(--admin-surface);
+  border-radius: 9999px;
+  background: var(--admin-cta);
+  box-shadow: 0 0 0 0 var(--admin-cta);
+  cursor: pointer;
+  animation: cre-admin-hotspot-pulse 1.8s ease-out infinite;
+}
+.cre-admin-hotspot:focus-visible { outline: 2px solid var(--admin-cta); outline-offset: 3px; }
+@keyframes cre-admin-hotspot-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--admin-cta) 55%, transparent); }
+  100% { box-shadow: 0 0 0 14px color-mix(in srgb, var(--admin-cta) 0%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cre-admin-hotspot { animation: none; }
+}
 .cre-admin-chip:hover { border-color: var(--admin-hover-edge) !important; color: var(--admin-ink) !important; }
 .cre-admin-row:hover { background: var(--admin-fill-soft); }
 .cre-admin-name:hover { color: var(--admin-brand) !important; text-decoration: underline; }

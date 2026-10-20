@@ -13,7 +13,8 @@ import { CreateDepartmentDialog } from './AtlasAdminDepartmentsPage'
  * where finishing onboarding lands, Settings → Sample roster off, and the
  * Flow menu's "Students (empty roster)". The first-step card invites (or
  * copies the link, emails, opens the QR); the two below say what happens
- * after a send and what the roster will hold.
+ * after a send and what the roster will hold — and a pulsing HOTSPOT on the
+ * roster turns the sample roster back on, so a demo can show the page full.
  */
 
 type InviteTab = 'email' | 'link' | 'qr'
@@ -26,7 +27,7 @@ const STEPS = [
 
 export function StudentsEmptyState() {
   const navigate = useNavigate()
-  const { addedDepartments, addDepartment, showToast } = useAdminStore()
+  const { addedDepartments, addDepartment, setSampleRoster, showToast } = useAdminStore()
   const [inviting, setInviting] = useState<InviteTab | null>(null)
   const [creating, setCreating] = useState(false)
 
@@ -100,7 +101,16 @@ export function StudentsEmptyState() {
             </button>
           </section>
 
-          <section style={{ ...CARD, padding: '24px 18px' }}>
+          <section style={{ ...CARD, position: 'relative', padding: '24px 18px' }}>
+            {/* Demo hotspot: what this page looks like once recruits arrive. */}
+            <button
+              type="button"
+              className="cre-admin-hotspot"
+              aria-label="Show the page with students"
+              title="Show the page with students"
+              onClick={() => setSampleRoster(true)}
+              style={{ top: 58, right: 24 }}
+            />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 12 }}>
               <h3 style={CARD_TITLE}>Your roster</h3>
               <span style={{ fontSize: 11, color: 'var(--admin-muted)' }}>nobody yet</span>
