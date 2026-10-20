@@ -1,9 +1,10 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
-import { ADMIN_LEARNERS, type Learner } from '@/data/atlasAdmin/learners'
+import { ADMIN_DEPARTMENTS, ADMIN_LEARNERS, type Learner } from '@/data/atlasAdmin/learners'
 import { ADMIN_INVITES, type Invite } from '@/data/atlasAdmin/invites'
-import { AdminStoreContext, type AddedDepartment, type AdminStore, type AdminTouch, type ProgressReportSettings } from './adminStore'
+import { ADMIN_RULES, type AssignmentRule } from '@/data/atlasAdmin/assignments'
+import { ADMIN_BASE, AdminStoreContext, type AddedDepartment, type AdminStore, type AdminTouch, type ProgressReportSettings } from './adminStore'
 import { AtlasAdminComingSoon, AtlasAdminLayout } from './AtlasAdminLayout'
 import { AtlasAdminStudentsPage } from './AtlasAdminStudentsPage'
 import { AtlasAdminRecruitPage } from './AtlasAdminRecruitPage'
@@ -14,6 +15,10 @@ import { AtlasAdminResourcesPage } from './AtlasAdminResourcesPage'
 import { AtlasAdminSettingsPage } from './AtlasAdminSettingsPage'
 import { AtlasAdminDepartmentsPage } from './AtlasAdminDepartmentsPage'
 import { AtlasAdminMyTeamPage } from './AtlasAdminMyTeamPage'
+import { AtlasAdminAssignmentsPage } from './AtlasAdminAssignmentsPage'
+import { AtlasAdminRuleWizard } from './AtlasAdminRuleWizard'
+import { AtlasAdminRulePage } from './AtlasAdminRulePage'
+import { AtlasAdminQuickAssignPage } from './AtlasAdminQuickAssignPage'
 
 /**
  * ATLAS ADMIN — the app (2026-10-19, feat/atlas-admin). The admin surface
@@ -38,6 +43,8 @@ export function AtlasAdminApp() {
   const [sampleRoster, setSampleRoster] = useState(true)
   const [addedDepartments, setAddedDepartments] = useState<AddedDepartment[]>([])
   const addDepartment = useCallback((d: AddedDepartment) => setAddedDepartments((prev) => [...prev, d]), [])
+  const [rules, setRules] = useState<AssignmentRule[]>(() => [...ADMIN_RULES])
+  const saveRule = useCallback((rule: AssignmentRule) => setRules((prev) => (prev.some((r) => r.id === rule.id) ? prev.map((r) => (r.id === rule.id ? rule : r)) : [rule, ...prev])), [])
   const [toast, setToast] = useState<string | null>(null)
   const timer = useRef<number | undefined>(undefined)
 
@@ -78,8 +85,8 @@ export function AtlasAdminApp() {
     setTouches((prev) => [{ ...t, id: `${at}-${prev.length}`, at }, ...prev])
   }, [])
   const store = useMemo<AdminStore>(
-    () => ({ learners: sampleRoster ? learners : [], sampleRoster, setSampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, toast, showToast }),
-    [learners, sampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, toast, showToast],
+    () => ({ learners: sampleRoster ? learners : [], sampleRoster, setSampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, rules, saveRule, toast, showToast }),
+    [learners, sampleRoster, updateLearner, touches, addTouch, invites, addInvites, resendInvite, progressReport, setProgressReport, addedDepartments, addDepartment, rules, saveRule, toast, showToast],
   )
 
   if (!enabled) {
@@ -105,6 +112,14 @@ export function AtlasAdminApp() {
           <Route path="pipeline" element={<Navigate to={`../students${window.location.search}`} replace />} />
           <Route path="my-department" element={<Navigate to={`../students${window.location.search}`} replace />} />
           <Route path="my-team" element={<AtlasAdminMyTeamPage />} />
+          <Route path="lead" element={<Navigate to={`../students${window.location.search}`} replace />} />
+          <Route path="departments/:departmentId" element={<DepartmentRedirect />} />
+          <Route path="assignments" element={<AtlasAdminAssignmentsPage />} />
+          <Route path="assignments/new" element={<AtlasAdminRuleWizard />} />
+          <Route path="assignments/quick" element={<AtlasAdminQuickAssignPage />} />
+          <Route path="assignments/rules" element={<Navigate to={`../assignments${window.location.search}`} replace />} />
+          <Route path="assignments/rules/:ruleId" element={<AtlasAdminRulePage />} />
+          <Route path="assignments/rules/:ruleId/edit" element={<AtlasAdminRuleWizard />} />
           <Route path="notifications/*" element={<AtlasAdminNotificationsPage />} />
           <Route path="resources" element={<AtlasAdminResourcesPage />} />
           <Route path="settings" element={<AtlasAdminSettingsPage />} />
@@ -113,4 +128,14 @@ export function AtlasAdminApp() {
       </Routes>
     </AdminStoreContext.Provider>
   )
+}
+
+/** /departments/:id — the reference sends a department's own page on to
+ *  Students, filtered to it. The id is the department's name, slugged. */
+function DepartmentRedirect() {
+  const { departmentId = '' } = useParams()
+  const name = ADMIN_DEPARTMENTS.find((d) => d.toLowerCase().replace(/[^a-z0-9]+/g, '-') === departmentId)
+  const q = new URLSearchParams(window.location.search)
+  if (name) q.set('department', name)
+  return <Navigate to={`${ADMIN_BASE}/students?${q}`} replace />
 }

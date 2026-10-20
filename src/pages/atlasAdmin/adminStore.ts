@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react'
 import type { Learner } from '@/data/atlasAdmin/learners'
 import type { Invite } from '@/data/atlasAdmin/invites'
+import type { AssignmentRule } from '@/data/atlasAdmin/assignments'
 
 /**
  * ATLAS ADMIN — the session's shared state (2026-10-19). What one page does
@@ -59,6 +60,9 @@ export type AdminStore = {
    *  department) — on top of the fixture's, with no learners yet. */
   addedDepartments: AddedDepartment[]
   addDepartment: (dept: AddedDepartment) => void
+  /** Assignment rules — the fixture's, with this session's creates and edits. */
+  rules: AssignmentRule[]
+  saveRule: (rule: AssignmentRule) => void
   toast: string | null
   showToast: (message: string) => void
 }

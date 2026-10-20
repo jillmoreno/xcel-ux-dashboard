@@ -28,6 +28,7 @@ const TITLES: Record<string, string> = {
   invites: 'Invites',
   reports: 'Reports',
   'my-team': 'My team',
+  assignments: 'Assignment Rules',
   notifications: 'Notifications & Reports',
   resources: 'Resources',
   settings: 'Settings · Company',
