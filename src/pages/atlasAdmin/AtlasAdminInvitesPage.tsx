@@ -107,7 +107,7 @@ export function AtlasAdminInvitesPage() {
                 className="cre-admin-tile"
                 style={{
                   ...TILE,
-                  border: '1px solid var(--admin-rule)',
+                  border: '1px solid var(--admin-fill-soft)',
                   ...(active ? TILE_ACTIVE : null),
                 }}
               >
@@ -286,9 +286,9 @@ export function AtlasAdminInvitesPage() {
 
 /* How far the outcome container's blue runs on beneath the table card. */
 const UNDERLAP = 24
-const TILE: CSSProperties = { borderRadius: 11, background: 'var(--admin-surface)', padding: 16, textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-body)' }
+const TILE: CSSProperties = { borderRadius: 11, background: 'var(--admin-fill-soft)', padding: 16, textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-body)' }
 /* Students' selected tile: primary 400 drawn inside the edge, lifted 4/4 at 15%. */
-const TILE_ACTIVE: CSSProperties = { outline: '2px solid var(--admin-atlas-primary-400)', outlineOffset: -2, boxShadow: 'var(--admin-shadow-tile-active)' }
+const TILE_ACTIVE: CSSProperties = { background: 'var(--admin-surface)', outline: '1px solid var(--admin-atlas-primary-200)', outlineOffset: -1, boxShadow: 'var(--admin-shadow-tile-active)' }
 const SEG: CSSProperties = {
   whiteSpace: 'nowrap',
   borderRadius: 9999,
