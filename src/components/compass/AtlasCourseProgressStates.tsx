@@ -1,5 +1,6 @@
 import { useState, type CSSProperties, type KeyboardEvent } from 'react'
 import { GaugeLight, GaugeSolid, HourglassClockLight, PenToSquareSolid } from '@/icons'
+import { noPaceMessage, type NoPaceReason } from './noPaceMessage'
 import { COMPASS_BUTTON } from './compassButton'
 import { paceDurationPhrase } from '@/lib/studyPace'
 
@@ -45,6 +46,7 @@ export function AtlasCourseProgressStates({
   onAdvance,
   bare = false,
   paceDays,
+  noPace,
   lightGauge = false,
 }: {
   percent: number
@@ -81,6 +83,10 @@ export function AtlasCourseProgressStates({
    * renders exactly what it rendered before.
    */
   paceDays?: number | 'none'
+  /** With `paceDays: 'none'`, WHY none fits — see `noPaceMessage`. Undefined
+   *  keeps the access wording, which is what this card said before the
+   *  binding was carried and is still right for an access-bound model. */
+  noPace?: NoPaceReason
   /** When given, a click (or Enter / Space) calls this INSTEAD of stepping
    *  the module's own state — V3 uses it to step the Design bar's Progress,
    *  so the whole page follows (2026-10-09). */
@@ -94,6 +100,7 @@ export function AtlasCourseProgressStates({
    *  2026-10-15: 500, then a level lighter); off, the Solid one in Primary 100. */
   lightGauge?: boolean
 }) {
+  const noPaceCopy = noPaceMessage(noPace)
   // Opens on the FIRST state, so clicks walk the design's order 1 → 5 → 1.
   const [picked, setStage] = useState<Stage>(initialStage)
   const stage: Stage = picked === 'current' && percent <= 0 ? 'zero' : picked
@@ -161,12 +168,17 @@ export function AtlasCourseProgressStates({
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {paceDays === 'none' ? (
+                /* ⚠ IT NAMES THE DEADLINE THAT ACTUALLY BOUND (2026-10-19).
+                   This said "There isn't enough access left" whichever
+                   ceiling the model had picked, so a learner whose EXAM was
+                   three days out was told to extend access that had a month
+                   left on it. Shared with the ring card so the two cannot
+                   diverge again — see `noPaceMessage`. */
                 <>
-                  <p style={{ ...BODY, fontWeight: 700 }}>
-                    There isn’t enough access left to finish this course.
-                  </p>
+                  <p style={{ ...BODY, fontWeight: 700 }}>{noPaceCopy.title}</p>
                   <p style={BODY}>
-                    No study pace fits in the time remaining. Extend your access to get a plan.
+                    {noPaceCopy.note}
+                    {noPaceCopy.advice ? ` ${noPaceCopy.advice}` : ''}
                   </p>
                 </>
               ) : (

@@ -29,6 +29,7 @@ import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
 import { CircleCheckSolid } from '@/icons'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
+import type { NoPaceReason } from './noPaceMessage'
 import { ATLAS_PROGRESS_ORDER, atlasRungFor, isLessonRowTitle, journeyTitleFor } from './atlasProgressLadder'
 import { paceStandingMessage, type PaceStanding } from './paceStanding'
 import { AtlasPaceRingCard } from './AtlasPaceRingCard'
@@ -316,6 +317,17 @@ export function AtlasHomeEricE2E({
    * means none does, and THAT is when the card says so.
    */
   const paceFit = preset.state === 'no' ? model.presets.find((x) => x.state !== 'no') : preset
+  /* ⚠ WHY NOTHING FITS, WHEN NOTHING DOES — 2026-10-19, Jillienne, after the
+     card told her to extend access while her EXAM was the binding deadline.
+     `resolveCeiling` already records which of the two ceilings won, for
+     exactly this ("so the UI can explain itself instead of silently
+     switching"); both cards ignored it and blamed access either way. This
+     hands the model's own answer to whichever card is on screen. */
+  const noPace: NoPaceReason = {
+    binding: model.binding,
+    days: model.daysToCeiling,
+    dateIso: model.hardEndIso,
+  }
   /* NOT STARTED — the 0% state. Several things read it: the access window
      below, the ring's figure, and the Readiness card's empty band. */
   const atZeroProgress = progressPick === 'not-started'
@@ -786,6 +798,7 @@ export function AtlasHomeEricE2E({
                    three now say the same thing instead of two vanishing while
                    the third made a number up. */
                 weeks={paceFit ? Math.max(1, Math.round(paceFit.days / 7)) : undefined}
+                noPace={noPace}
                 /* ⚠ THE SAME `paceFit` THE WEEK COUNT READS, which is the
                    whole reason both live on this card: the span and the date
                    it lands on come from one model, so they cannot describe
@@ -879,6 +892,7 @@ export function AtlasHomeEricE2E({
                  as a finish DATE; `paceDurationPhrase` says the same span in
                  words, in weeks or months as its length warrants. */
               paceDays={paceFit ? paceFit.days : 'none'}
+              noPace={noPace}
               expected={{
                 // "Nov. 5" where the pace model has no finish date — a DEMO date.
                 /* THE SAME RESOLVED PACE the sentence below reads, so the

@@ -195,6 +195,55 @@ describe('the ring card when no pace fits', () => {
     expect(screen.queryByRole('button', { name: 'here' })).toBeNull()
   })
 
+  /* ── WHICH DEADLINE BOUND ─────────────────────────────────────────────
+   * 2026-10-19, Jillienne: the card told her to extend access while her EXAM
+   * was the binding ceiling — a month of access left, an exam three days
+   * out, and the one instruction on screen would have changed nothing.
+   * `resolveCeiling` has always recorded which ceiling won, for exactly this
+   * reason; the cards ignored it. */
+  it('names the EXAM when the exam is what bound, not access', () => {
+    render(
+      <AtlasPaceRingCard
+        percent={0}
+        noPace={{ binding: 'exam', days: -4, dateIso: '2026-05-07' }}
+      />,
+    )
+    expect(screen.getByText('Not enough time before your exam')).toBeTruthy()
+    expect(screen.queryByText('Not enough access left')).toBeNull()
+  })
+
+  it('offers no fix on the exam arm — a booked exam is not something to extend', () => {
+    render(
+      <AtlasPaceRingCard
+        percent={0}
+        noPace={{ binding: 'exam', days: -4, dateIso: '2026-05-07' }}
+      />,
+    )
+    expect(screen.queryByText(/Extend your access/)).toBeNull()
+  })
+
+  /* ⚠ THE DATE IS THE COURSEWORK DEADLINE, NOT THE EXAM — `hardEndIso` is
+     `EXAM_BUFFER_DAYS` earlier. The first draft printed it as the exam and
+     told a learner sitting on May 14 that their exam was "today — May 7". */
+  it('calls the date what it is — the coursework deadline, not the exam', () => {
+    render(
+      <AtlasPaceRingCard
+        percent={0}
+        noPace={{ binding: 'exam', days: -4, dateIso: '2026-05-07' }}
+      />,
+    )
+    expect(screen.getByText(/coursework has to finish by May 7/)).toBeTruthy()
+    expect(screen.queryByText(/exam is today/)).toBeNull()
+  })
+
+  /* Both ceilings landing together still buys nothing by extending access. */
+  it('withholds the access fix when both ceilings bound', () => {
+    render(
+      <AtlasPaceRingCard percent={0} noPace={{ binding: 'both', days: 2, dateIso: '2026-05-13' }} />,
+    )
+    expect(screen.queryByText(/Extend your access/)).toBeNull()
+  })
+
   it('still draws the ring — progress is a fact whether or not a plan fits', () => {
     renderNoPace()
     expect(screen.getByLabelText('Course progress 0% complete')).toBeTruthy()

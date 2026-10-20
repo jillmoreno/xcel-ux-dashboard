@@ -6,6 +6,7 @@ import {
   atlasSectionEyebrow,
   type AtlasColumnAlign,
 } from './atlasSectionEyebrow'
+import { noPaceMessage, type NoPaceReason } from './noPaceMessage'
 import { paceName } from '@/components/learning/compassStudyPlannerModel'
 import { PLANNER_PLAN } from '@/data/compassStudyPlannerFixtures'
 
@@ -36,6 +37,7 @@ export function AtlasPaceRingCard({
   hoursPerWeek,
   expected,
   standingMessage,
+  noPace,
   readinessBelow = false,
   align = 'center',
   onCustomize,
@@ -75,10 +77,15 @@ export function AtlasPaceRingCard({
    *  correctly vanished while a made-up "3 Week Goal" stayed, leaving the
    *  one figure on the card that nothing had computed. */
   weeks?: number
+  /** WHY no pace fits, when none does — the pace model's own `binding`,
+   *  `daysToCeiling` and `hardEndIso`. Undefined keeps the access wording
+   *  this card has always shown; see `noPaceMessage`. */
+  noPace?: NoPaceReason
   onCustomize?: () => void
 }) {
   const eyebrow = atlasSectionEyebrow(align)
   const left = align === 'left'
+  const noPaceCopy = noPaceMessage(noPace)
   return (
     /* ⚠ TWO SECTIONS, NOT ONE CARD (2026-10-16, Jillienne: "should be 3
        sections: Study Pace, Course Progress, Exam Readiness as the
@@ -137,15 +144,20 @@ export function AtlasPaceRingCard({
             <GaugeThin size={33} aria-hidden />
           </span>
           {weeks == null ? (
-            /* ⚠ NO PLAN, AND IT SAYS SO (2026-10-19). The wording is
-               `AtlasCourseProgressStates`' own `paceDays === 'none'` arm —
-               the tan card this one forked from already had this state, and
-               the fork dropped it. Two cards answering the same question
-               should not disagree about whether the question is answerable,
-               so the sentence is copied rather than rewritten. */
+            /* ⚠ NO PLAN, AND IT SAYS WHY (2026-10-19). The wording is shared
+               with `AtlasCourseProgressStates`, the tan card this one forked
+               from: two cards answering the same question should not
+               disagree about whether the question is answerable, nor about
+               which deadline made it unanswerable — so it lives in
+               `noPaceMessage` rather than being copied between them.
+
+               ⚠ IT NAMES THE CEILING THAT ACTUALLY BOUND. Both cards used to
+               blame access however the model had decided, which put "Extend
+               your access" under a card whose real problem was an exam three
+               days out. */
             <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-              <span style={GOAL}>Not enough access left</span>
-              <span style={GOAL_NOTE}>No study pace fits in the time remaining.</span>
+              <span style={GOAL}>{noPaceCopy.title}</span>
+              <span style={GOAL_NOTE}>{noPaceCopy.note}</span>
             </span>
           ) : (
           <span style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
@@ -199,11 +211,14 @@ export function AtlasPaceRingCard({
             one of which the copy no longer mentions. */}
         {weeks == null ? (
           /* ⚠ A DIFFERENT SENTENCE, NOT THE SAME ONE (2026-10-19). "Customize
-             your pace here" points at a planner that has nothing to plan —
-             the fix for this state is more access, which is what the tan
-             card says and what this now says too. The link goes, because
-             there is nowhere useful for it to go. */
-          <p style={SMALL}>Extend your access to get a plan.</p>
+             your pace here" points at a planner that has nothing to plan.
+             The link goes, because there is nowhere useful for it to go.
+
+             ⚠ AND SOMETIMES THERE IS NO SENTENCE AT ALL. Access is something
+             a learner can buy more of; a booked exam is not, so the exam arm
+             of `noPaceMessage` offers no fix and this line is simply absent
+             rather than filled with advice that cannot work. */
+          noPaceCopy.advice ? <p style={SMALL}>{noPaceCopy.advice}</p> : null
         ) : standingMessage ? (
           /* ⚠ ONCE THERE IS A PACE, THE CARD REPORTS IT (2026-10-19,
              Jillienne: "we need this type of messaging to be considered for
