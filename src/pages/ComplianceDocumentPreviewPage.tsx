@@ -50,6 +50,12 @@ const SHAPE_ORDER: DocumentShape[] = [
 export function ComplianceDocumentPreviewPage() {
   const enabled = useFeatureFlag('compliance-document-modal-preview').enabled
   const [openId, setOpenId] = useState<string | null>(null)
+  /* ⚠ THE HARNESS STANDS IN FOR THE COURSE. The modal has no language
+     control — in the real system the course's own language picks which
+     document is attached, and that logic is not built yet. This is the
+     stand-in for it, so a reviewer can still see both halves of a bilingual
+     notice without the signing flow growing a control it should not have. */
+  const [language, setLanguage] = useState<'en' | 'es'>('en')
   const [completed, setCompleted] = useState<string | null>(null)
 
   const grouped = useMemo(
@@ -101,10 +107,34 @@ export function ComplianceDocumentPreviewPage() {
           <section key={shape} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={SECTION_HEAD}>
               <h2 style={SECTION_TITLE}>{SHAPE_LABEL[shape]}</h2>
-              <span style={SECTION_META}>
-                {docs.length} {docs.length === 1 ? 'document' : 'documents'} ·{' '}
-                {STEPS_BY_SHAPE[shape].join(' → ')}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <span style={SECTION_META}>
+                  {docs.length} {docs.length === 1 ? 'document' : 'documents'} ·{' '}
+                  {STEPS_BY_SHAPE[shape].join(' → ')}
+                </span>
+                {/* Only the notices are bilingual, so the control belongs to
+                    their section rather than the top of the page. */}
+                {docs.some((d) => d.bilingual) && (
+                  <div style={LANG_TOGGLE} role="group" aria-label="Document language">
+                    <button
+                      type="button"
+                      onClick={() => setLanguage('en')}
+                      aria-pressed={language === 'en'}
+                      style={language === 'en' ? LANG_ON : LANG_OFF}
+                    >
+                      English
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setLanguage('es')}
+                      aria-pressed={language === 'es'}
+                      style={language === 'es' ? LANG_ON : LANG_OFF}
+                    >
+                      Español
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
             <div style={GRID}>
               {docs.map((doc) => (
@@ -122,6 +152,7 @@ export function ComplianceDocumentPreviewPage() {
           key={open.id}
           open
           config={open}
+          language={language}
           onClose={() => setOpenId(null)}
           onComplete={() => {
             setCompleted(open.title)
@@ -243,6 +274,33 @@ const SECTION_META: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 12,
   color: 'var(--color-text-tertiary)',
+}
+
+/* Lifted out of the modal — see the note on `language` above. */
+const LANG_TOGGLE: CSSProperties = {
+  display: 'inline-flex',
+  padding: 3,
+  gap: 3,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-neutral-100)',
+}
+
+const LANG_OFF: CSSProperties = {
+  padding: '4px 12px',
+  border: 'none',
+  borderRadius: 'var(--radius-pill)',
+  background: 'transparent',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 600,
+  fontSize: 11,
+  color: 'var(--color-text-secondary)',
+  cursor: 'pointer',
+}
+
+const LANG_ON: CSSProperties = {
+  ...LANG_OFF,
+  background: 'var(--color-surface-card)',
+  color: 'var(--color-text-primary)',
 }
 
 const GRID: CSSProperties = {

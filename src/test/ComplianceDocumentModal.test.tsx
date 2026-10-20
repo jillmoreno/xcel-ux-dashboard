@@ -28,13 +28,14 @@ function docById(id: string): ComplianceDocumentConfig {
   return d
 }
 
-function open(config: ComplianceDocumentConfig) {
+function open(config: ComplianceDocumentConfig, language?: 'en' | 'es') {
   const onComplete = vi.fn()
   const onClose = vi.fn()
   render(
     <ComplianceDocumentModal
       open
       config={config}
+      language={language}
       onClose={onClose}
       onComplete={onComplete}
     />,
@@ -281,19 +282,43 @@ describe('the two shapes with no signer', () => {
     expect(named.some((el) => el.tagName === 'P')).toBe(true)
   })
 
-  it('asks a notice for nothing but "I Agree", and toggles its languages', () => {
+  it('asks a notice for nothing but "I Agree"', () => {
     const { onComplete } = open(docById('fl-notice-lh'))
     expect(screen.queryByLabelText(/first name/i)).toBeNull()
     expect(screen.queryByLabelText(/signature/i)).toBeNull()
-
-    expect(screen.getByText(/Department of Financial Services/)).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Español' }))
-    expect(screen.getByText(/Departamento de Servicios Financieros/)).toBeInTheDocument()
 
     expect(confirmButton()).toBeDisabled()
     fireEvent.click(screen.getByLabelText('I Agree'))
     fireEvent.click(confirmButton())
     expect(onComplete).toHaveBeenCalledOnce()
+  })
+
+  /* ⚠ THE LANGUAGE IS THE CALLER'S, NOT THE LEARNER'S. A control inside the
+     signing flow would let someone sign a document in a language the course
+     never attached, so the modal renders what it is given and offers no way
+     to change it. */
+  it('renders the language it is given, and offers no way to change it', () => {
+    open(docById('fl-notice-lh'), 'en')
+    expect(screen.getByText(/Department of Financial Services/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Español' })).toBeNull()
+    expect(screen.queryByRole('group', { name: /language/i })).toBeNull()
+    cleanup()
+
+    open(docById('fl-notice-lh'), 'es')
+    expect(screen.getByText(/Departamento de Servicios Financieros/)).toBeInTheDocument()
+    cleanup()
+
+    // Unspecified falls back to English rather than rendering nothing.
+    open(docById('fl-notice-lh'))
+    expect(screen.getByText(/Department of Financial Services/)).toBeInTheDocument()
+  })
+
+  /* The corrected Spanish is only visible through the modal on the `es` arm,
+     and it is the half most likely to be silently reverted. */
+  it('draws the corrected Spanish for the FL Property & Casualty notice', () => {
+    open(docById('fl-notice-pc'), 'es')
+    expect(screen.getByText(/FAIA/)).toBeInTheDocument()
+    expect(screen.queryByText(/NAIFA/)).toBeNull()
   })
 
   it('never lets a `needs-review` document be completed', () => {

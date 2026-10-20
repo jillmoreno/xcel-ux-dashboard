@@ -55,6 +55,19 @@ type Props = {
   onClose: () => void
   onComplete: () => void
   config: ComplianceDocumentConfig
+  /**
+   * Which language a bilingual document is presented in. Only `notice` reads
+   * it, and only when `bilingual`.
+   *
+   * ⚠ THE CALLER DECIDES, NOT THE LEARNER, and the modal has no toggle for
+   * it. In the real system the course's own language picks the document — the
+   * English notice goes with an English course — so a control inside the
+   * signing flow would let a learner sign a document in a language the course
+   * never attached. That attachment logic is not built yet (see
+   * `ComplianceDocumentConfig.language`); until it is, the caller passes this,
+   * and the preview harness is what stands in for the course.
+   */
+  language?: 'en' | 'es'
   /** Where "Look up my license number" points. Omitted → the hint is not drawn. */
   licenseLookupUrl?: string
 }
@@ -102,6 +115,7 @@ export function ComplianceDocumentModal({
   onClose,
   onComplete,
   config,
+  language = 'en',
   licenseLookupUrl,
 }: Props) {
   const steps = STEPS_BY_SHAPE[config.shape]
@@ -118,7 +132,6 @@ export function ComplianceDocumentModal({
   const [signature, setSignature] = useState('')
   const [agreed, setAgreed] = useState(false)
   const [wetSignatureName, setWetSignatureName] = useState('')
-  const [language, setLanguage] = useState<'en' | 'es'>('en')
   const [extras, setExtras] = useState<Record<string, string>>({})
   const [relationship, setRelationship] = useState('')
   const [proctorAttested, setProctorAttested] = useState(false)
@@ -262,7 +275,6 @@ export function ComplianceDocumentModal({
             <StepDocument
               config={config}
               language={language}
-              onLanguage={setLanguage}
               first={first}
               last={last}
               studentName={studentName}
@@ -449,7 +461,6 @@ function StepLicense({
 function StepDocument({
   config,
   language,
-  onLanguage,
   first,
   last,
   studentName,
@@ -463,7 +474,6 @@ function StepDocument({
 }: {
   config: ComplianceDocumentConfig
   language: 'en' | 'es'
-  onLanguage: (v: 'en' | 'es') => void
   first: string
   last: string
   studentName: string
@@ -492,26 +502,6 @@ function StepDocument({
     const body = language === 'es' ? config.bodyEs : config.bodyEn
     return (
       <div style={STACK}>
-        {config.bilingual && (
-          <div style={LANG_TOGGLE} role="group" aria-label="Notice language">
-            <button
-              type="button"
-              onClick={() => onLanguage('en')}
-              aria-pressed={language === 'en'}
-              style={language === 'en' ? LANG_ON : LANG_OFF}
-            >
-              English
-            </button>
-            <button
-              type="button"
-              onClick={() => onLanguage('es')}
-              aria-pressed={language === 'es'}
-              style={language === 'es' ? LANG_ON : LANG_OFF}
-            >
-              Español
-            </button>
-          </div>
-        )}
         <div style={DOCUMENT_PANEL}>
           <p style={DOCUMENT_BODY}>{body}</p>
         </div>
@@ -985,33 +975,6 @@ const LOOKUP_LINK: CSSProperties = {
   fontSize: 12,
   fontWeight: 600,
   color: 'var(--color-action)',
-}
-
-const LANG_TOGGLE: CSSProperties = {
-  display: 'inline-flex',
-  alignSelf: 'flex-start',
-  padding: 3,
-  gap: 3,
-  borderRadius: 'var(--radius-pill)',
-  background: 'var(--color-neutral-100)',
-}
-
-const LANG_OFF: CSSProperties = {
-  padding: '5px 14px',
-  border: 'none',
-  borderRadius: 'var(--radius-pill)',
-  background: 'transparent',
-  fontFamily: 'var(--font-body)',
-  fontWeight: 600,
-  fontSize: 12,
-  color: 'var(--color-text-secondary)',
-  cursor: 'pointer',
-}
-
-const LANG_ON: CSSProperties = {
-  ...LANG_OFF,
-  background: 'var(--color-surface-card)',
-  color: 'var(--color-text-primary)',
 }
 
 const CHIP_ROW: CSSProperties = { display: 'flex', flexWrap: 'wrap', gap: 8 }
