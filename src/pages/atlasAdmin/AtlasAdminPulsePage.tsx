@@ -137,9 +137,9 @@ export function AtlasAdminPulsePage() {
             </div>
             {/* For comparison: the Atlas UX Design file's version of the same three. */}
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-              <TabFigure label="Need intervention" value={pulse.offTrack.length} ink="var(--admin-atlas-error-500)" />
-              <TabFigure label="Exam ready" value={pulse.prepared.length} ink="var(--admin-atlas-success-500)" />
-              <TabFigure label="Forecasted licensed" value={pulse.forecast} ink="var(--admin-atlas-info-700)" />
+              <TabFigure label="Need intervention" value={pulse.offTrack.length} ink="var(--admin-amber)" />
+              <TabFigure label="Exam ready" value={pulse.prepared.length} ink="var(--admin-success-ink)" />
+              <TabFigure label="Forecasted licensed" value={pulse.forecast} ink="var(--admin-chart-blue)" />
             </div>
             <Action>Start with intervention, then move exam-ready learners into scheduling.</Action>
             <button type="button" onClick={() => navigate(students())} style={{ ...BUTTON_BRAND, alignSelf: 'flex-start' }}>
