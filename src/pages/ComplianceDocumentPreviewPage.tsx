@@ -1,5 +1,8 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { ComplianceDocumentModal } from '@/components/courses/ComplianceDocumentModal'
+import { PillTabs } from '@/components/ui/PillTabs'
+import { SearchInput } from '@/components/ui/SearchInput'
+import { Select } from '@/components/ui/Select'
 import {
   COMPLIANCE_DOCUMENTS,
   STEPS_BY_SHAPE,
@@ -7,6 +10,7 @@ import {
   acknowledgementFor,
   stepsFor,
   type ComplianceDocumentConfig,
+  type DocumentMoment,
   type DocumentShape,
 } from '@/data/complianceDocuments'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
@@ -27,10 +31,59 @@ import { useFeatureFlag } from '@/context/FeatureFlagContext'
  * question is "does each shape render" — one at a time, chosen from a list, is
  * how you answer that.
  *
+ * ⚠ IT CARRIES ITS OWN TOOLBAR, and that is why the route left `AppLayout`
+ * on 2026-10-20. Inside the shell it inherited the prototype chrome — the
+ * demo bar and the DESIGN bar, whose controls are Atlas's fonts, pacing and
+ * readiness axes. None of them say anything about a compliance document, and
+ * the ones that would (which state, which shape, which language) could not go
+ * there: the design bar is shared chrome a designer must not edit. So the
+ * page grew the controls it actually needs and left the ones it never did.
+ *
  * Behind `compliance-document-modal-preview`. The flag defaults ON on this
  * branch, which is what makes the branch build show the work;
  * `promote-to-prototype` is where it would be decided whether it ships.
  */
+
+/** How the board is grouped. The filters are independent of this. */
+type GroupBy = 'shape' | 'state' | 'moment'
+
+const GROUP_TABS: { id: GroupBy; label: string }[] = [
+  { id: 'shape', label: 'By shape' },
+  { id: 'state', label: 'By state' },
+  { id: 'moment', label: 'By moment' },
+]
+
+const MOMENT_ORDER: DocumentMoment[] = [
+  'checkout',
+  'before-course',
+  'before-first-lesson',
+  'before-exam',
+  'during-exam',
+  'after-exam',
+  'at-completion',
+]
+
+/** Full names, so a filter does not read as a column of postcodes. */
+const STATE_NAME: Record<string, string> = {
+  CA: 'California',
+  CO: 'Colorado',
+  CT: 'Connecticut',
+  FL: 'Florida',
+  IL: 'Illinois',
+  KY: 'Kentucky',
+  MN: 'Minnesota',
+  MS: 'Mississippi',
+  NV: 'Nevada',
+  NY: 'New York',
+  OH: 'Ohio',
+  OR: 'Oregon',
+  PA: 'Pennsylvania',
+  WI: 'Wisconsin',
+  WV: 'West Virginia',
+  Generic: 'Generic (non-state)',
+}
+
+const stateName = (code: string) => STATE_NAME[code] ?? code
 
 const SHAPE_LABEL: Record<DocumentShape, string> = {
   'notice': 'Notice',
@@ -60,15 +113,55 @@ export function ComplianceDocumentPreviewPage() {
      notice without the signing flow growing a control it should not have. */
   const [language, setLanguage] = useState<'en' | 'es'>('en')
   const [completed, setCompleted] = useState<string | null>(null)
+  const [groupBy, setGroupBy] = useState<GroupBy>('shape')
+  const [stateFilter, setStateFilter] = useState('all')
+  const [query, setQuery] = useState('')
 
-  const grouped = useMemo(
-    () =>
-      SHAPE_ORDER.map((shape) => ({
-        shape,
-        docs: COMPLIANCE_DOCUMENTS.filter((d) => d.shape === shape),
-      })).filter((g) => g.docs.length > 0),
-    [],
-  )
+  /** Every state in the set, in filter order: states alphabetically, Generic
+   *  last because it is not one. */
+  const states = useMemo(() => {
+    const seen = [...new Set(COMPLIANCE_DOCUMENTS.map((d) => d.state))]
+    return seen.sort((a, b) => {
+      if (a === 'Generic') return 1
+      if (b === 'Generic') return -1
+      return stateName(a).localeCompare(stateName(b))
+    })
+  }, [])
+
+  /* The search reads everything a reviewer might half-remember — the title,
+     the subject, the state's full name, the kind, and the FILE NAME, which is
+     often the only thing someone has in front of them. */
+  const matches = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    return COMPLIANCE_DOCUMENTS.filter((d) => {
+      if (stateFilter !== 'all' && d.state !== stateFilter) return false
+      if (!q) return true
+      return [d.title, d.subject, stateName(d.state), d.complianceType, d.sourceFile]
+        .join(' ')
+        .toLowerCase()
+        .includes(q)
+    })
+  }, [query, stateFilter])
+
+  /** One grouping function, three axes — the board's shape is a view, not a
+   *  second copy of the data. */
+  const grouped = useMemo(() => {
+    const by = (key: string, label: string) => ({ key, label, docs: [] as ComplianceDocumentConfig[] })
+    const groups: ReturnType<typeof by>[] = []
+    const order =
+      groupBy === 'shape'
+        ? SHAPE_ORDER.map((sh) => by(sh, SHAPE_LABEL[sh]))
+        : groupBy === 'moment'
+          ? MOMENT_ORDER.map((m) => by(m, MOMENT_LABEL[m]))
+          : states.map((st) => by(st, stateName(st)))
+    for (const g of order) groups.push(g)
+    const index = new Map(groups.map((g) => [g.key, g]))
+    for (const d of matches) {
+      const key = groupBy === 'shape' ? d.shape : groupBy === 'moment' ? d.moment : d.state
+      index.get(key)?.docs.push(d)
+    }
+    return groups.filter((g) => g.docs.length > 0)
+  }, [groupBy, matches, states])
 
   const open = COMPLIANCE_DOCUMENTS.find((d) => d.id === openId) ?? null
 
@@ -106,42 +199,94 @@ export function ComplianceDocumentPreviewPage() {
           )}
         </header>
 
-        {grouped.map(({ shape, docs }) => (
-          <section key={shape} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {/* ── the compliance toolbar ─────────────────────────────────────
+            ⚠ NOT THE DESIGN BAR. The controls that matter here are which
+            state, which shape and which language — none of which could live
+            on shared chrome a designer must not edit. Grouping and filtering
+            are independent on purpose: "every Florida document" and "grouped
+            by moment" are different questions and a reviewer asks both. */}
+        <div style={TOOLBAR}>
+          <PillTabs
+            items={GROUP_TABS}
+            active={groupBy}
+            onChange={setGroupBy}
+            label="Group the documents by"
+            size="compact"
+          />
+          {/* The total beside the strip, never per-pill counts — the house
+              rule for every segmented filter in this app. */}
+          <span style={TOOLBAR_COUNT}>
+            {matches.length} of {COMPLIANCE_DOCUMENTS.length}
+          </span>
+          <div style={TOOLBAR_RIGHT}>
+            <SearchInput
+              label="Search documents"
+              placeholder="Search title, state or file name"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              style={{ width: 260 }}
+            />
+            <Select
+              label="Filter by state"
+              value={stateFilter}
+              onChange={(e) => setStateFilter(e.target.value)}
+              options={[
+                { value: 'all', label: 'All states' },
+                ...states.map((st) => ({ value: st, label: stateName(st) })),
+              ]}
+              style={{ minWidth: 190 }}
+            />
+            {/* ⚠ THE LANGUAGE IS THE COURSE'S, NOT THE LEARNER'S — see the
+                note on `language` above. It sits here now rather than over
+                the Notice section, because two shapes are bilingual and a
+                control attached to one of them was lying about its scope. */}
+            <div style={LANG_TOGGLE} role="group" aria-label="Document language">
+              <button
+                type="button"
+                onClick={() => setLanguage('en')}
+                aria-pressed={language === 'en'}
+                style={language === 'en' ? LANG_ON : LANG_OFF}
+              >
+                English
+              </button>
+              <button
+                type="button"
+                onClick={() => setLanguage('es')}
+                aria-pressed={language === 'es'}
+                style={language === 'es' ? LANG_ON : LANG_OFF}
+              >
+                Español
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {grouped.length === 0 && (
+          <p style={EMPTY} role="status">
+            Nothing matches {query.trim() ? `“${query.trim()}”` : 'that filter'}
+            {stateFilter !== 'all' ? ` in ${stateName(stateFilter)}` : ''}.
+          </p>
+        )}
+
+        {grouped.map((group) => (
+          <section key={group.key} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={SECTION_HEAD}>
-              <h2 style={SECTION_TITLE}>{SHAPE_LABEL[shape]}</h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <span style={SECTION_META}>
-                  {docs.length} {docs.length === 1 ? 'document' : 'documents'} ·{' '}
-                  {STEPS_BY_SHAPE[shape].join(' → ')}
-                </span>
-                {/* Only the notices are bilingual, so the control belongs to
-                    their section rather than the top of the page. */}
-                {docs.some((d) => d.bilingual) && (
-                  <div style={LANG_TOGGLE} role="group" aria-label="Document language">
-                    <button
-                      type="button"
-                      onClick={() => setLanguage('en')}
-                      aria-pressed={language === 'en'}
-                      style={language === 'en' ? LANG_ON : LANG_OFF}
-                    >
-                      English
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setLanguage('es')}
-                      aria-pressed={language === 'es'}
-                      style={language === 'es' ? LANG_ON : LANG_OFF}
-                    >
-                      Español
-                    </button>
-                  </div>
-                )}
-              </div>
+              <h2 style={SECTION_TITLE}>{group.label}</h2>
+              <span style={SECTION_META}>
+                {group.docs.length} {group.docs.length === 1 ? 'document' : 'documents'}
+                {groupBy === 'shape' && group.key in STEPS_BY_SHAPE
+                  ? ` · ${STEPS_BY_SHAPE[group.key as DocumentShape].join(' → ')}`
+                  : ''}
+              </span>
             </div>
             <div style={GRID}>
-              {docs.map((doc) => (
-                <DocumentButton key={doc.id} doc={doc} onOpen={() => setOpenId(doc.id)} />
+              {group.docs.map((doc) => (
+                <DocumentButton
+                  key={doc.id}
+                  doc={doc}
+                  showState={groupBy !== 'state'}
+                  onOpen={() => setOpenId(doc.id)}
+                />
               ))}
             </div>
           </section>
@@ -170,15 +315,19 @@ export function ComplianceDocumentPreviewPage() {
 function DocumentButton({
   doc,
   onOpen,
+  showState,
 }: {
   doc: ComplianceDocumentConfig
   onOpen: () => void
+  /** False when the board is already grouped by state — the pill would then
+   *  repeat its own section heading on every card in it. */
+  showState: boolean
 }) {
   const steps = stepsFor(doc)
   return (
     <button type="button" onClick={onOpen} style={CARD}>
       <span style={CARD_TOP}>
-        <span style={STATE_PILL}>{doc.state}</span>
+        {showState && <span style={STATE_PILL}>{doc.state}</span>}
         <span style={TIMING}>{MOMENT_LABEL[doc.moment]}</span>
       </span>
       <span style={CARD_TYPE}>{doc.complianceType}</span>
@@ -254,6 +403,45 @@ const CODE: CSSProperties = {
   fontFamily: 'var(--font-stamp)',
   fontSize: 12,
   color: 'var(--color-text-primary)',
+}
+
+/* Sticky, because the board is long enough that a filter you cannot see is a
+   filter you forget you set. */
+const TOOLBAR: CSSProperties = {
+  position: 'sticky',
+  top: 0,
+  zIndex: 2,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 14,
+  flexWrap: 'wrap',
+  padding: '12px 0',
+  background: 'var(--color-surface-page)',
+  borderBottom: '1px solid var(--color-border-subtle)',
+}
+
+const TOOLBAR_COUNT: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  fontWeight: 600,
+  color: 'var(--color-text-tertiary)',
+  whiteSpace: 'nowrap',
+}
+
+const TOOLBAR_RIGHT: CSSProperties = {
+  marginLeft: 'auto',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  flexWrap: 'wrap',
+}
+
+const EMPTY: CSSProperties = {
+  margin: 0,
+  padding: '28px 0',
+  fontFamily: 'var(--font-body)',
+  fontSize: 14,
+  color: 'var(--color-text-secondary)',
 }
 
 const SECTION_HEAD: CSSProperties = {

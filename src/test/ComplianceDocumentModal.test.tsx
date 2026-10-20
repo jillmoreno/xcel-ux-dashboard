@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import { ComplianceDocumentModal } from '@/components/courses/ComplianceDocumentModal'
+import { ComplianceDocumentPreviewPage } from '@/pages/ComplianceDocumentPreviewPage'
 import {
   COMPLIANCE_DOCUMENTS,
   MOMENT_LABEL,
@@ -863,6 +864,72 @@ describe('getting out of it', () => {
     const { onClose } = open(docById('fl-notice-lh'))
     fireEvent.click(screen.getByRole('dialog'))
     expect(onClose).not.toHaveBeenCalled()
+  })
+})
+
+describe('the preview harness toolbar', () => {
+  /* ⚠ THE CONTROLS THAT MATTER HERE COULD NOT LIVE ON THE DESIGN BAR — it is
+     shared chrome a designer must not edit, and its axes are Atlas's fonts
+     and pacing. So the page carries its own, and the route left `AppLayout`
+     rather than inherit a bar that says nothing about a compliance
+     document. */
+  const board = () => render(<ComplianceDocumentPreviewPage />)
+  const sections = () => screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)
+
+  it('groups by shape, state or moment over the same documents', () => {
+    board()
+    expect(sections()).toContain('Notice')
+    expect(sections()).not.toContain('California')
+
+    fireEvent.click(screen.getByRole('tab', { name: 'By state' }))
+    expect(sections()).toContain('California')
+    // Generic is not a state, so it sorts last rather than under G.
+    expect(sections().at(-1)).toBe('Generic (non-state)')
+
+    fireEvent.click(screen.getByRole('tab', { name: 'By moment' }))
+    expect(sections()).toContain('After the course exam')
+  })
+
+  /* Grouping and filtering are independent: "every Florida document" and
+     "grouped by moment" are different questions and a reviewer asks both. */
+  it('filters by state without changing the grouping', () => {
+    board()
+    fireEvent.click(screen.getByRole('tab', { name: 'By moment' }))
+    fireEvent.change(screen.getByLabelText(/filter by state/i), { target: { value: 'FL' } })
+
+    expect(screen.getByText('3 of 24')).toBeInTheDocument()
+    // Still grouped by moment, now showing only Florida's three.
+    expect(sections()).toContain('Before the first lesson')
+    expect(sections()).not.toContain('Florida')
+  })
+
+  /* The file name is often the only thing a reviewer has in front of them. */
+  it('searches the source file name, not just the title', () => {
+    board()
+    fireEvent.change(screen.getByLabelText(/search documents/i), {
+      target: { value: 'PropertyCasualty' },
+    })
+    expect(screen.getByText('1 of 24')).toBeInTheDocument()
+    expect(screen.getByText('Florida — Property & Casualty Pre-Course Notice')).toBeInTheDocument()
+  })
+
+  it('says so when nothing matches, rather than showing an empty board', () => {
+    board()
+    fireEvent.change(screen.getByLabelText(/search documents/i), { target: { value: 'zzzz' } })
+    expect(screen.getByText('0 of 24')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(/nothing matches/i)
+    expect(screen.queryAllByRole('heading', { level: 2 })).toHaveLength(0)
+  })
+
+  /* The pill would otherwise repeat its own section heading on every card. */
+  it('drops the state pill when the board is already grouped by state', () => {
+    board()
+    fireEvent.change(screen.getByLabelText(/filter by state/i), { target: { value: 'CO' } })
+    expect(screen.getByText('CO')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('tab', { name: 'By state' }))
+    expect(screen.queryByText('CO')).toBeNull()
+    expect(sections()).toEqual(['Colorado'])
   })
 })
 
