@@ -276,14 +276,16 @@ export function AtlasAdminNotificationsPage() {
   )
 }
 
-/** The preview card's title — white on Atlas primary 500, across the card's top. */
+/** The preview card's title — white on Atlas primary 500, across the card's
+ *  top. It reaches 1px past the card's padding box so its fill covers the
+ *  card's top and side rules there, and takes the card's top corners. */
 function PreviewBanner({ title }: { title: string }) {
-  return <p style={{ margin: 0, padding: '8px 24px', background: 'var(--admin-atlas-primary-500)', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--admin-surface)' }}>Preview · {title}</p>
+  return <p style={{ margin: '-1px -1px 0', padding: '9px 25px 8px', borderRadius: '14px 14px 0 0', background: 'var(--admin-atlas-primary-500)', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--admin-surface)' }}>Preview · {title}</p>
 }
 
 function EmailPreview({ title, p }: { title: string; p: NotificationPreview }) {
   return (
-    <section style={{ ...CARD, borderRadius: 14, overflow: 'hidden' }}>
+    <section style={{ ...CARD, borderRadius: 14 }}>
       <PreviewBanner title={title} />
       <div style={{ padding: '24px 24px 10px', background: 'var(--admin-fill-soft)', borderBottom: '1px solid var(--admin-rule)', fontSize: 11, color: 'var(--admin-text)', lineHeight: 1.6 }}>
         <div>From {p.from}</div>
@@ -327,7 +329,7 @@ function ProgressPreview({ title, learners }: { title: string; learners: ReturnT
   const expiring = live.filter((l) => l.stage === 'stalled').slice(0, 3)
   const search = window.location.search
   return (
-    <section style={{ ...CARD, borderRadius: 14, overflow: 'hidden' }}>
+    <section style={{ ...CARD, borderRadius: 14 }}>
       <PreviewBanner title={title} />
       <div style={{ padding: '24px 24px 10px', background: 'var(--admin-fill-soft)', borderBottom: '1px solid var(--admin-rule)', fontSize: 11, color: 'var(--admin-text)', lineHeight: 1.6 }}>
         <div>From XCEL Solutions</div>
