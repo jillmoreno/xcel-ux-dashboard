@@ -93,29 +93,31 @@ export function AtlasAdminInvitesPage() {
         </button>
       </header>
 
-      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-        {tiles.map((t) => {
-          const active = t.id !== 'all' && filter === t.id
-          return (
-            <button
-              key={t.label}
-              type="button"
-              aria-pressed={t.id === 'all' ? undefined : active}
-              onClick={() => (t.id === 'all' ? pick('enrolled') : pick(t.id))}
-              className="cre-admin-tile"
-              style={{
-                ...TILE,
-                border: `1px solid ${t.urgent && t.n ? 'var(--admin-brand)' : 'var(--admin-rule)'}`,
-                ...(active ? TILE_ACTIVE : null),
-              }}
-            >
-              <p style={EYEBROW}>{t.label}</p>
-              <p style={{ margin: '4px 0 0', fontFamily: 'var(--admin-font-heading)', fontSize: 28, fontWeight: 700, lineHeight: 1, fontVariantNumeric: 'tabular-nums', color: t.color }}>{t.n}</p>
-              <p style={{ margin: '6px 0 0', fontSize: 13, color: 'var(--admin-muted)' }}>{t.note}</p>
-            </button>
-          )
-        })}
-      </div>
+      <section aria-label="Invite outcomes" style={{ ...CARD, padding: 16, background: 'var(--admin-atlas-primary-100)' }}>
+        <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+          {tiles.map((t) => {
+            const active = t.id !== 'all' && filter === t.id
+            return (
+              <button
+                key={t.label}
+                type="button"
+                aria-pressed={t.id === 'all' ? undefined : active}
+                onClick={() => (t.id === 'all' ? pick('enrolled') : pick(t.id))}
+                className="cre-admin-tile"
+                style={{
+                  ...TILE,
+                  border: `1px solid ${t.urgent && t.n ? 'var(--admin-brand)' : 'var(--admin-rule)'}`,
+                  ...(active ? TILE_ACTIVE : null),
+                }}
+              >
+                <p style={EYEBROW}>{t.label}</p>
+                <p style={{ margin: '4px 0 0', fontFamily: 'var(--admin-font-heading)', fontSize: 28, fontWeight: 700, lineHeight: 1, fontVariantNumeric: 'tabular-nums', color: t.color }}>{t.n}</p>
+                <p style={{ margin: '6px 0 0', fontSize: 13, color: 'var(--admin-muted)' }}>{t.note}</p>
+              </button>
+            )
+          })}
+        </div>
+      </section>
 
       <section style={{ ...CARD, overflow: 'hidden' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 20px', borderBottom: '1px solid var(--admin-rule)' }}>
