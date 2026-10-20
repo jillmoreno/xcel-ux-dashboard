@@ -348,8 +348,8 @@ function Figure({ label, value, bg, ink, note, hug }: { label: string; value: nu
   return (
     <div style={{ padding: hug ? 24 : 12, borderRadius: 10, background: bg, flex: hug ? 'none' : undefined }}>
       <p style={{ ...LABEL, color: ink }}>{label}</p>
-      {/* A 1px rule between title and count, edge to edge. */}
-      {hug ? <hr style={{ margin: '12px -24px 8px', border: 'none', borderTop: '1px solid var(--admin-atlas-secondary-100)' }} /> : null}
+      {/* A 1px rule between title and count, across the content width. */}
+      {hug ? <hr style={{ margin: '12px 0 8px', border: 'none', borderTop: '1px solid var(--admin-rule)' }} /> : null}
       <strong style={{ display: 'block', marginTop: 4, fontFamily: HEADING, fontSize: 22, color: 'var(--admin-ink)' }}>{value}</strong>
       {note ? <span style={{ fontSize: 11, color: 'var(--admin-text)' }}>{note}</span> : null}
     </div>
