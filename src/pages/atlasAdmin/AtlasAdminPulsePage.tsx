@@ -173,14 +173,22 @@ export function AtlasAdminPulsePage() {
               <Figure label="Exam date on file" value={pulse.dated.length} bg={FIGURE_TINT} ink="var(--admin-ink)" note="We can track them through exam day." />
               <Figure label="Ready to schedule" value={pulse.undated.length} bg={FIGURE_TINT} ink="var(--admin-success-ink)" note="Prepared, no date yet. The bulk email targets this group." />
             </div>
-            <Action>Draft a personal bulk email congratulating {pulse.undated.length} learners and asking them to book, or add their date if they already have one.</Action>
+            <Action
+              button={
+                <button type="button" disabled={!pulse.undated.length} onClick={() => setDialog('email')} style={ATLAS_BUTTON_PRIMARY}>
+                  Draft bulk email
+                </button>
+              }
+            >
+              Draft a personal bulk email congratulating {pulse.undated.length} learners and asking them to book, or add their date if they already have one.
+            </Action>
             {pulse.dated.slice(0, 2).map((l) => (
               <Person key={l.id} learner={l} pill="Date on file" tone="green" line={`Exam ${formatExamDate(l.examDate)}`} />
             ))}
             {pulse.undated.slice(0, 3).map((l) => (
               <Person key={l.id} learner={l} pill="Ready to schedule" tone="blue" line={`${l.prepPct ?? 0}% exam prep · no exam date yet`} />
             ))}
-            <button type="button" disabled={!pulse.undated.length} onClick={() => setDialog('email')} style={ATLAS_BUTTON_PRIMARY}>
+            <button type="button" disabled={!pulse.undated.length} onClick={() => setDialog('email')} style={{ ...ATLAS_BUTTON_PRIMARY, alignSelf: 'flex-end' }}>
               Draft bulk email to {pulse.undated.length} ready learners
             </button>
           </Card>
