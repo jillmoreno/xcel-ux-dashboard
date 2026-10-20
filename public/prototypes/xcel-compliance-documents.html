@@ -91,17 +91,17 @@ td.fn{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3)}
 </div>
 <div class="wrap"><article class="doc">
 <h1>Compliance documents: six shapes, 24 files</h1>
-<p class="meta">XCEL Solutions · the <code>_XCEL-PE Affidavits and EAs</code> set · reviewed 2026-10-19</p>
+<p class="meta">XCEL Solutions · the <code>_XCEL-PE Affidavits and EAs</code> set · all 24 read 2026-10-20</p>
 
-<p class="lead">All 24 compliance documents XCEL attaches to a pre-licensing course — affidavits, attestations, notices and enrollment agreements — read end to end and sorted into the <strong>six content shapes</strong> they actually fall into. The claim this document makes is that they do not fit one fixed flow, and that the right unit of reuse is the shape, not the document.</p>
+<p class="lead">Every compliance document XCEL attaches to a pre-licensing course — affidavits, attestations, notices and enrollment agreements — read from the source files and sorted into the <strong>six content shapes</strong> they actually fall into. The claim this document makes is that they do not fit one fixed flow, and that the right unit of reuse is the shape, not the document.</p>
 
-<blockquote><p><strong>What this argues, and what it does not.</strong> The taxonomy below is the reviewable thing. The per-document wording lives in <code>src/data/complianceDocuments.ts</code>, which is the source of truth and will keep moving as the real files are read; this page is the argument for the structure, not a copy of the content.</p></blockquote>
+<div class="ok"><strong>23 of 24 are now verbatim from the source files.</strong> The exception is Minnesota’s Post Final Affidavit, whose PDF cannot be read — see below. One further passage, the Spanish half of Florida’s Property &amp; Casualty notice, is a correction rather than a transcription, and is flagged where it appears.</div>
 
 <h2>The problem</h2>
 
 <p>The approved visual style was built once as <code>PreCourseRequirementsWizard</code> — a <strong>fixed three-step flow</strong>: Confirm Name → Confirm License → Affidavit. It is a good flow for the document it was drawn against. It is the wrong flow for most of the set.</p>
 
-<p>Across the 24 files the step counts run from one to three, the fields differ per state, and <strong>two documents have a second signer entirely</strong> — a proctor with their own declaration and their own relationship-to-examinee question. Building each as its own modal gives six components that drift apart; building one modal with conditionals threaded through it gives a component nobody can safely change. The third option is the one taken here: <strong>one shell, and the shape decides what it renders.</strong></p>
+<p>Across the 24 files the step counts run from one to three, the fields differ per state, and <strong>four documents have a second signer entirely</strong> — an exam monitor with their own declaration, their own identity fields, and a relationship-to-examinee question whose options are not the same in any two states. Building each as its own modal gives six components that drift apart; threading conditionals through one gives a component nobody can safely change. The third option is the one taken here: <strong>one shell, and the shape decides what it renders.</strong></p>
 
 <h2>The six shapes</h2>
 
@@ -110,12 +110,12 @@ td.fn{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3)}
 <div class="tw"><table>
 <thead><tr><th>Shape</th><th>Steps</th><th>Files</th><th>What makes it its own shape</th></tr></thead>
 <tbody>
-<tr><td><code>notice</code></td><td>document</td><td>2</td><td><strong>No signer at all.</strong> Body text and “I Agree” — no name, no signature. Both are bilingual.</td></tr>
-<tr><td><code>signed-tc</code></td><td>name → document</td><td>4</td><td>Student name and a signature, then agree/attest.</td></tr>
-<tr><td><code>enrollment-agreement</code></td><td>name → license → document</td><td>4</td><td>Pricing, cancellation and refund policy, grievance process, and a list of acknowledgments. Ohio needs a wet signature rather than a tick.</td></tr>
-<tr><td><code>affidavit-single</code></td><td>identity → document</td><td>10</td><td>One declarant, after the course, before the exam. The largest group, and the plainest.</td></tr>
-<tr><td><code>affidavit-two-party</code></td><td>student → proctor</td><td>3</td><td><strong>A second signer.</strong> A proctor declaration with a relationship selector whose options vary by state, plus extra identity fields.</td></tr>
-<tr><td><code>needs-review</code></td><td>—</td><td>1</td><td>Not a UI state. One source file defeated text extraction; the modal draws a note and cannot be completed.</td></tr>
+<tr><td><code>notice</code></td><td>document</td><td>2</td><td><strong>No signer at all.</strong> Body text and “I Agree” — no name, no signature. Both are bilingual, and both are about which study manual the state exam is based on.</td></tr>
+<tr><td><code>signed-tc</code></td><td>name → document</td><td>4</td><td>A name and a signature, then agree/attest. Two of the four print English and Spanish in the same file.</td></tr>
+<tr><td><code>enrollment-agreement</code></td><td>name → license → document</td><td>4</td><td>The programme and its fee, the state agency, cancellation and refund by modality, grievance, and acknowledgments the student ticks. Ohio needs a signature rather than a tick.</td></tr>
+<tr><td><code>affidavit-single</code></td><td>identity → document</td><td>9</td><td>One declarant, after the course. The largest group.</td></tr>
+<tr><td><code>affidavit-two-party</code></td><td>student → proctor</td><td>4</td><td><strong>A second signer.</strong> An exam-monitor block with its own declaration, identity fields and a per-state relationship list.</td></tr>
+<tr><td><code>needs-review</code></td><td>—</td><td>1</td><td>Not a UI state. One source file cannot be read; the modal draws a note and cannot be completed.</td></tr>
 </tbody>
 </table></div>
 
@@ -124,11 +124,9 @@ td.fn{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3)}
 <p>Each document also has a <strong>compliance type</strong> — the name the business uses for it. The two cut across each other in both directions, which is why they are two fields rather than one:</p>
 
 <ul>
-<li><strong>Post Final Affidavit</strong> spans two shapes — most are single-signer, two are two-party.</li>
-<li><strong><code>affidavit-single</code></strong> spans two types — Pre-Final and Post Final affidavits are structurally identical and administratively different.</li>
+<li><strong>Post Final Affidavit</strong> spans two shapes — four are two-party, three are single-signer.</li>
+<li><strong><code>affidavit-single</code></strong> spans three types — Pre-Final, Post Final and Ohio’s combined Final Affidavit are structurally identical and administratively different.</li>
 </ul>
-
-<p>Collapsing them into one field is the tempting simplification, and it loses one of those two answers whichever way it goes.</p>
 <h2>All 24, by shape</h2>
 
 <div class="tw"><table>
@@ -137,58 +135,57 @@ td.fn{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3)}
 <tr><td><strong>Florida — Life &amp; Health</strong></td><td>Pre-Course Notice</td><td><code>notice</code></td><td>Pre-course</td><td class="fn">FL PE-Pre Course Notice-LifeHealth.docx</td></tr>
 <tr><td><strong>Florida — Property &amp; Casualty</strong></td><td>Pre-Course Notice</td><td><code>notice</code></td><td>Pre-course</td><td class="fn">FL PE-Pre Course Notice-PropertyCasualty.docx</td></tr>
 <tr><td><strong>California</strong></td><td>Terms and Conditions</td><td><code>signed-tc</code></td><td>Pre-course</td><td class="fn">CA PE-Pre-Course Terms and Conditions.docx</td></tr>
-<tr><td><strong>XCEL — Generic</strong></td><td>Terms and Conditions</td><td><code>signed-tc</code></td><td>Pre-course</td><td class="fn">XCEL Generic Terms and Conditions-Pre-Course Affidavit.docx</td></tr>
 <tr><td><strong>Illinois</strong></td><td>Terms and Conditions</td><td><code>signed-tc</code></td><td>Pre-course</td><td class="fn">IL PE-Terms and Conditions-Pre-Course Affidavit.docx</td></tr>
 <tr><td><strong>Minnesota</strong></td><td>Terms and Conditions</td><td><code>signed-tc</code></td><td>Pre-course</td><td class="fn">MN PE-Terms and Conditions-Pre-Course Affidavit - Copy.docx</td></tr>
+<tr><td><strong>XCEL — Generic</strong></td><td>Terms and Conditions</td><td><code>signed-tc</code></td><td>Pre-course</td><td class="fn">XCEL Generic Terms and Conditions-Pre-Course Affidavit.docx</td></tr>
 <tr><td><strong>Kentucky</strong></td><td>Enrollment Agreement</td><td><code>enrollment-agreement</code></td><td>Pre-course</td><td class="fn">KY PE-Pre-Course Enrollment Agreement.docx</td></tr>
 <tr><td><strong>Nevada</strong></td><td>Enrollment Agreement</td><td><code>enrollment-agreement</code></td><td>Pre-course</td><td class="fn">NV PE-Pre-Course Enrollment Agreement.docx</td></tr>
 <tr><td><strong>Ohio — Student Registration Form</strong></td><td>Enrollment Agreement</td><td><code>enrollment-agreement</code></td><td>Pre-course</td><td class="fn">OH PE-Registration Form-Pre Course Enrollment Agreement.docx</td></tr>
 <tr><td><strong>Oregon</strong></td><td>Enrollment Agreement</td><td><code>enrollment-agreement</code></td><td>Pre-course</td><td class="fn">OR PE-Pre-Course Enrollment Agreement.docx</td></tr>
-<tr><td><strong>Colorado</strong></td><td>Post Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">CO PE-Post Final Affidavit.docx</td></tr>
-<tr><td><strong>Connecticut</strong></td><td>Post Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">CT PE-Post Final Affidavit.docx</td></tr>
+<tr><td><strong>California</strong></td><td>Post Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">CA PE-Post Final Affidavit.docx</td></tr>
 <tr><td><strong>Florida</strong></td><td>Pre-Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">FL PE-Pre Final Affidavit.docx</td></tr>
-<tr><td><strong>XCEL — General</strong></td><td>Pre-Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">XCEL PE General Pre-Final Attestation.docx</td></tr>
+<tr><td><strong>Illinois</strong></td><td>Post Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">IL PE-Post Final Affidavit.docx</td></tr>
 <tr><td><strong>Minnesota</strong></td><td>Pre-Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">MN PE-Pre Final Affidavit.docx</td></tr>
 <tr><td><strong>Mississippi</strong></td><td>Pre-Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">MS PE-Pre Final Affidavit.docx</td></tr>
 <tr><td><strong>New York</strong></td><td>Post Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">NY PE-Post Final Affidavit.docx</td></tr>
+<tr><td><strong>Ohio</strong></td><td>Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">OH PE-Pre &amp; Post Final Affidavit.docx</td></tr>
 <tr><td><strong>Pennsylvania</strong></td><td>Pre-Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">PA PE-Pre Final Affidavit.docx</td></tr>
-<tr><td><strong>Wisconsin</strong></td><td>Post Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">WI PE-Post Final Affidavit.docx</td></tr>
-<tr><td><strong>West Virginia</strong></td><td>Post Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">WV PE-Post Final Affidavit.docx</td></tr>
-<tr><td><strong>California</strong></td><td>Post Final Affidavit</td><td><code>affidavit-two-party</code></td><td>Post-final</td><td class="fn">CA PE-Post Final Affidavit.docx</td></tr>
-<tr><td><strong>Illinois</strong></td><td>Post Final Affidavit</td><td><code>affidavit-two-party</code></td><td>Post-final</td><td class="fn">IL PE-Post Final Affidavit.docx</td></tr>
-<tr><td><strong>Ohio</strong></td><td>Final Affidavit</td><td><code>affidavit-two-party</code></td><td>Post-final</td><td class="fn">OH PE-Pre &amp; Post Final Affidavit.docx</td></tr>
+<tr><td><strong>XCEL — General</strong></td><td>Pre-Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">XCEL PE General Pre-Final Attestation.docx</td></tr>
+<tr><td><strong>Colorado</strong></td><td>Post Final Affidavit</td><td><code>affidavit-two-party</code></td><td>Post-final</td><td class="fn">CO PE-Post Final Affidavit.docx</td></tr>
+<tr><td><strong>Connecticut</strong></td><td>Post Final Affidavit</td><td><code>affidavit-two-party</code></td><td>Post-final</td><td class="fn">CT PE-Post Final Affidavit.docx</td></tr>
+<tr><td><strong>West Virginia</strong></td><td>Post Final Affidavit</td><td><code>affidavit-two-party</code></td><td>Post-final</td><td class="fn">WV PE-Post Final Affidavit.docx</td></tr>
+<tr><td><strong>Wisconsin</strong></td><td>Post Final Affidavit</td><td><code>affidavit-two-party</code></td><td>Post-final</td><td class="fn">WI PE-Post Final Affidavit.docx</td></tr>
 <tr><td><strong>Minnesota</strong></td><td>Post Final Affidavit</td><td><code>needs-review</code></td><td>Post-final</td><td class="fn">MN PE-Post Final Affidavit.pdf</td></tr></tbody>
 </table></div>
 
 <h2>What reading them actually turned up</h2>
 
-<p>Six findings, in rough order of how much they matter. None of these were visible from the file names — each came out of opening the document.</p>
+<p>Six findings. None were visible from the file names — each came out of opening the document, and the first one inverted a core assumption.</p>
 
-<h3>1. Illinois’ Post Final Affidavit has one signer, not two</h3>
-<p>It is configured <code>affidavit-two-party</code>, with a relationship selector and a full SSN field, because the original brief described it that way. The page carries <strong>one declaration and four fields</strong>: Student First Name, Student Last Name, Student Signature, Today’s Date. No proctor block, no relationship question, no SSN. If that page is the whole document, the row is <code>affidavit-single</code> and one of the three two-party documents disappears — which is a question about the taxonomy, not a typo. <strong>Unresolved.</strong></p>
+<h3>1. The two-party shape was assigned to exactly the wrong documents</h3>
+<p>The brief named <strong>California, Illinois and Ohio</strong> as the three affidavits with a proctor. None of them has one. All three are a single declaration, a signature and a date; what the brief read as a proctor is a <em>roster-upload block</em> — the identity details the education provider must report after completion.</p>
+<p>Meanwhile <strong>Colorado, Connecticut, Wisconsin and West Virginia</strong> — all four filed as single-signer — each carry a full “To be completed and signed by Exam Monitor” section: a relationship question, proctor identity fields, a proctor declaration and a proctor signature.</p>
+<blockquote><p><strong>Every document was in the wrong half.</strong> Three built for a signer they do not have; four missing the signer they do. This is the finding that most changes the component, and it would have shipped invisibly — the flow runs perfectly either way, it just collects the wrong things from the wrong people.</p></blockquote>
 
-<h3>2. Ohio is the only “Final Affidavit”, and that is why the sixth name exists</h3>
-<p><code>OH PE-Pre &amp; Post Final Affidavit.docx</code> is one document serving both sittings, where every other state ships a separate Pre and a separate Post. Filing it as a Post Final Affidavit dropped half of what it is. With it named correctly, all six business names are used by at least one document — which is the check that caught it.</p>
+<h3>2. The relationship lists are not shared, and never were</h3>
+<p>Colorado, Connecticut and West Virginia offer Co-Worker, Librarian and <strong>Licensed Agent</strong>. Wisconsin offers Co-Worker, Librarian and <strong>Neighbor</strong>. One hardcoded list would be wrong in one state out of four, silently. The proctor’s own fields vary too: Wisconsin wants a name, address and phone; West Virginia wants only a name.</p>
 
-<h3>3. The placeholders had the wrong subject, not just the wrong words</h3>
-<p>Three documents have now been read in full, and in each case the stand-in text described the wrong thing entirely:</p>
+<h3>3. Florida’s Property &amp; Casualty notice really is broken</h3>
+<p>The brief reported its Spanish as copy-pasted from the Life &amp; Health notice. <strong>It is.</strong> The English correctly names FAIA and the <em>Florida General Lines, Adjuster and Industrial Fire Study Manual</em>; the Spanish directly beneath it names NAIFA and the <em>Life, Health and Variable Annuity</em> manual. A Spanish-speaking Property &amp; Casualty student is told to buy the wrong book from the wrong association.</p>
+<p>This is the one passage in the set that is <strong>not</strong> a transcription: the Spanish here is a translation of the document’s own English, so the two halves finally agree. It should be confirmed before it replaces the live file.</p>
+
+<h3>4. The placeholders had the wrong subject, not just the wrong words</h3>
+<p>Every stand-in text checked described the wrong thing entirely. Florida’s Life &amp; Health notice is about the <strong>NAIFA study manual</strong>, not the education requirement. The XCEL Generic T&amp;C is about <strong>proctoring</strong>, not attendance and refunds. Illinois’ T&amp;C is the state’s <strong>course-hours rule</strong>. California’s is a <strong>12-hour ethics and anti-fraud</strong> requirement with study-time tracking and a 20-minute inactivity timeout — none of which any summary would guess.</p>
+<p>The lesson generalises: <strong>placeholder text reads as finished.</strong> A document with the wrong subject is more dangerous than an empty one, because nothing about it looks unresolved.</p>
+
+<h3>5. Minnesota’s Post Final Affidavit still cannot be read</h3>
+<p>It is the only PDF among 23 Word files, built with Adobe Fill &amp; Sign, and its fonts are subset with <strong>no ToUnicode map and no /Differences array</strong> — nothing in the file says which character each glyph stands for. Text extraction, raw stream decoding and a character-map search all fail for the same reason. Enough partially decodes to suggest a two-party form (“Student’s Full Legal Name / License Number”, then a proctor block), but that is inference from recovered glyphs, not a read, and it is recorded as such. It needs opening in a viewer and copying out by hand.</p>
+
+<h3>6. Three smaller things, for whoever owns the files</h3>
 <ul>
-<li><strong>Florida Life &amp; Health</strong> — the placeholder said the notice satisfied the pre-licensing education requirement. The document is about the <strong>NAIFA study manual</strong>: that the exam is based on it, that the course does not include it, and where to buy it.</li>
-<li><strong>XCEL Generic T&amp;C</strong> — the placeholder described attendance, academic integrity and refunds. The document is about <strong>proctoring</strong>: who is disqualified from proctoring, the 70% pass mark, and that the completion date is the date the proctor signs.</li>
-<li><strong>Illinois T&amp;C</strong> — the placeholder was one invented sentence. The document is the state’s <strong>course-hours rule</strong>: 20 hours per major line of authority, 7.5 of them in a classroom setting.</li>
-</ul>
-<p>The pattern is worth stating plainly: <strong>placeholder text reads as finished.</strong> A document with the wrong subject is more dangerous than an empty one, because nothing about it looks unresolved. The remaining 21 rows should be assumed wrong until read.</p>
-
-<h3>4. Florida’s Property &amp; Casualty defect is still unverified</h3>
-<p>The brief reported that notice’s Spanish as copy-pasted from Life &amp; Health, naming NAIFA where it should name FAIA. Reading the real Life &amp; Health text shows <strong>NAIFA is correct there</strong> — it is the life and health study-manual publisher — so the claim rests on the P&amp;C document alone, which has not been read. The corrected wording is in place but should not be treated as confirmed.</p>
-
-<h3>5. Minnesota’s Post Final Affidavit cannot be read</h3>
-<p>It is the only PDF in a set of twenty-three <code>.docx</code> files, and it uses a font encoding that defeats text extraction. Visible field labels suggest a single-party affidavit, but that is inference. Rather than guess, it carries the <code>needs-review</code> shape: a warning panel saying so, and a Confirm button that can never be enabled.</p>
-
-<h3>6. Two smaller things, for whoever owns the files</h3>
-<ul>
-<li><code>MN PE-Terms and Conditions-Pre-Course Affidavit - Copy.docx</code> carries Windows’ duplicate suffix, and there is no original beside it. Either the original was deleted and the copy is now live, or this set has a stray.</li>
-<li>Illinois’ affidavit is headed “Illinois <strong>Life</strong> Prelicensing Affidavit” against an un-lined file name, so there may be a per-line-of-authority set rather than one document.</li>
+<li><code>MN PE-Terms and Conditions…- Copy.docx</code> carries Windows’ duplicate suffix with no original beside it — but its text is <em>not</em> a duplicate of any other row, so this looks like a lost original rather than a stray.</li>
+<li>Ohio’s combined affidavit explains itself: <em>“OH rule says both can’t be on one form and OCD does not have the functionality to attach 2 post final affidavits.”</em> That is why a sixth type name exists.</li>
+<li>Oregon’s enrollment agreement ends by asking the student to <strong>type their ethnicity</strong> as free text. Not rendered here — a demographic question collected that way is a data-protection decision, not a layout one.</li>
 </ul>
 
 <h2>Open, and deliberately not solved here</h2>
@@ -196,17 +193,18 @@ td.fn{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3)}
 <div class="tw"><table>
 <thead><tr><th>Item</th><th>Where it stands</th></tr></thead>
 <tbody>
-<tr><td><strong>Edition / version numbers</strong></td><td>Wanted on every document; nothing tracks them today. The field exists on the config and is deliberately unset on all 24 — an empty field is a question, a guessed one is an answer.</td></tr>
-<tr><td><strong>English vs. Spanish attachment</strong></td><td>The course’s own language should pick the document. That logic does not exist. The modal takes the language from its caller and offers the learner no toggle, so a learner can never sign a document in a language the course did not attach.</td></tr>
-<tr><td><strong>The signature field</strong></td><td>Two of the read documents ask for one name field where the build renders a name and a signature. The signature is now derived from the typed name rather than entered separately, so the two cannot disagree — but whether the field belongs at all is still open.</td></tr>
+<tr><td><strong>Edition / version numbers</strong></td><td>Wanted on every document; nothing tracks them today. The field exists and is deliberately unset on all 24 — an empty field is a question, a guessed one is an answer.</td></tr>
+<tr><td><strong>English vs. Spanish attachment</strong></td><td>The course’s own language should pick the document. That logic does not exist. The modal takes the language from its caller and offers the learner no toggle, so nobody can sign a document in a language the course did not attach.</td></tr>
+<tr><td><strong>Lines of authority</strong></td><td>Two affidavits name one line in their heading — “Illinois <strong>Life</strong>”, “Ohio <strong>Property</strong>” — against un-lined file names. There may be a per-line set behind both.</td></tr>
+<tr><td><strong>Ohio’s ethnicity and address fields</strong></td><td>Ohio’s registration form is the only pre-course document collecting SSN, date of birth, address and phone. Rendered, because the form asks for them; worth a second look before it is wired to anything real.</td></tr>
 </tbody>
 </table></div>
 
 <h2>Seeing it work</h2>
 
-<p>The live component renders every one of the 24 from this data — one shell, reconfigured per shape. <a href="/compliance-documents">Open the picker</a> and choose any document; the shapes worth looking at first are a Florida notice (bilingual, no signer), Ohio’s Registration Form (wet signature), Ohio’s Pre &amp; Post affidavit (two signers), and Minnesota’s Post Final (the unreadable one, which cannot be completed).</p>
+<p>The live component renders every one of the 24 from this data — one shell, reconfigured per shape. <a href="/compliance-documents">Open the picker</a> and choose any document. The shapes worth looking at first are a Florida notice (bilingual, no signer), Ohio’s Registration Form (signature, four identity fields), Wisconsin’s Post Final (two signers, and the only Neighbor option), and Minnesota’s Post Final (the unreadable one, which cannot be completed).</p>
 
-<div class="ok"><strong>Source of truth:</strong> <code>src/data/complianceDocuments.ts</code> holds all 24 rows with their real wording and the file each was read from. This page argues the structure; that file is the content.</div>
+<div class="ok"><strong>Source of truth:</strong> <code>src/data/complianceDocuments.ts</code> holds all 24 rows with their wording and the file each was read from. This page argues the structure; that file is the content.</div>
 
 </article></div>
 

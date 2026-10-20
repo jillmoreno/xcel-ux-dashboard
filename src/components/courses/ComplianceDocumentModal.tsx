@@ -88,6 +88,8 @@ const EXTRA_FIELD_LABEL: Record<ExtraField, string> = {
   'ssn-full': 'Social Security Number',
   'phone': 'Phone Number',
   'exam-date': 'Exam Date',
+  'full-name': 'Full Name',
+  'address': 'Address',
 }
 
 const EXTRA_FIELD_PLACEHOLDER: Record<ExtraField, string> = {
@@ -96,6 +98,8 @@ const EXTRA_FIELD_PLACEHOLDER: Record<ExtraField, string> = {
   'ssn-full': '000-00-0000',
   'phone': '(000) 000-0000',
   'exam-date': 'MM / DD / YYYY',
+  'full-name': 'Full legal name',
+  'address': 'Street address, city, state, zip',
 }
 
 export function ComplianceDocumentModal({
@@ -121,6 +125,7 @@ export function ComplianceDocumentModal({
   const [wetSignatureName, setWetSignatureName] = useState('')
   const [extras, setExtras] = useState<Record<string, string>>({})
   const [relationship, setRelationship] = useState('')
+  const [proctorValues, setProctorValues] = useState<Record<string, string>>({})
   const [proctorAttested, setProctorAttested] = useState(false)
 
   const step = steps[Math.min(stepIndex, steps.length - 1)]
@@ -154,7 +159,11 @@ export function ComplianceDocumentModal({
           agreed
         )
       case 'proctor':
-        return relationship !== '' && proctorAttested
+        return (
+          relationship !== '' &&
+          (config.proctorFields ?? []).every((f) => (proctorValues[f] ?? '').trim() !== '') &&
+          proctorAttested
+        )
       default:
         return false
     }
@@ -171,6 +180,8 @@ export function ComplianceDocumentModal({
     extraFields,
     extras,
     relationship,
+    config.proctorFields,
+    proctorValues,
     proctorAttested,
   ])
 
@@ -290,6 +301,8 @@ export function ComplianceDocumentModal({
               config={config}
               relationship={relationship}
               onRelationship={setRelationship}
+              fields={proctorValues}
+              onField={(key, value) => setProctorValues((v) => ({ ...v, [key]: value }))}
               attested={proctorAttested}
               onAttested={setProctorAttested}
             />
@@ -630,18 +643,35 @@ function StepProctor({
   config,
   relationship,
   onRelationship,
+  fields,
+  onField,
   attested,
   onAttested,
 }: {
   config: ComplianceDocumentConfig
   relationship: string
   onRelationship: (v: string) => void
+  fields: Record<string, string>
+  onField: (key: string, value: string) => void
   attested: boolean
   onAttested: (v: boolean) => void
 }) {
   return (
     <div style={STACK}>
       <Declaration label="Proctor Declaration" body={config.proctorBody} />
+      {/* ⚠ THE PROCTOR'S OWN DETAILS, not the student's. Wisconsin wants a
+          name, address and phone from the monitor while asking the student
+          for nothing extra — so these come from `proctorFields`, never from
+          `extraFields`. */}
+      {(config.proctorFields ?? []).map((f) => (
+        <Field
+          key={f}
+          label={EXTRA_FIELD_LABEL[f]}
+          value={fields[f] ?? ''}
+          onChange={(v) => onField(f, v)}
+          placeholder={EXTRA_FIELD_PLACEHOLDER[f]}
+        />
+      ))}
       <div>
         <p style={FIELD_LABEL}>Relationship to Examinee</p>
         {/* The option set varies by state — Ohio carries six, California and
@@ -825,7 +855,9 @@ const SHELL: CSSProperties = {
 
 const HEADER: CSSProperties = {
   background: 'var(--color-nav-shared-navy)',
-  padding: '22px 28px',
+  /* Tight top and bottom: the badge is 48px and sets the band's height on its
+     own, so vertical padding only pushes the navy taller than its content. */
+  padding: '14px 28px',
   display: 'flex',
   alignItems: 'center',
   gap: 16,
@@ -834,17 +866,21 @@ const HEADER: CSSProperties = {
 /* The step's glyph, in the header beside the type and the document it names.
    ⚠ IT IS NOT THE `--color-primary-500` ON `--color-primary-100` of
    `EnrollmentConfirmationModal`'s avatar, and it cannot be: that pairing is
-   built to sit on a white card, and the teal falls to roughly 2:1 against this
-   navy. It takes the header's OWN accent instead — the same
-   `--color-info-300` as the eyebrow above it — so the badge belongs to the
-   header rather than looking like a white-card component dropped onto it. */
+   built to sit on a white card, and the teal falls to roughly 2:1 against
+   this navy. Both tones are white off `--color-fixed-light` instead — the
+   badge belongs to the navy header rather than looking like a white-card
+   component dropped onto it.
+   ⚠ THE DISC IS THE FAINTER OF THE TWO (10%), the glyph the brighter (50%).
+   The other way round — a near-solid white disc under a half-white glyph —
+   leaves the icon almost invisible against its own badge; tried on the
+   preview 2026-10-20 and reversed. */
 const HEADER_AVATAR: CSSProperties = {
   width: 48,
   height: 48,
   flexShrink: 0,
   borderRadius: 'var(--radius-pill)',
-  background: 'color-mix(in srgb, var(--color-info-300) 18%, transparent)',
-  color: 'var(--color-info-300)',
+  background: 'color-mix(in srgb, var(--color-fixed-light) 10%, transparent)',
+  color: 'color-mix(in srgb, var(--color-fixed-light) 50%, transparent)',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',

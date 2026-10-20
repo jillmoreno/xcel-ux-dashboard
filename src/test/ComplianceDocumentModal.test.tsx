@@ -70,8 +70,8 @@ describe('the document set', () => {
     expect(count('notice')).toBe(2)
     expect(count('signed-tc')).toBe(4)
     expect(count('enrollment-agreement')).toBe(4)
-    expect(count('affidavit-single')).toBe(10)
-    expect(count('affidavit-two-party')).toBe(3)
+    expect(count('affidavit-single')).toBe(9)
+    expect(count('affidavit-two-party')).toBe(4)
     expect(count('needs-review')).toBe(1)
   })
 
@@ -153,15 +153,22 @@ describe('the document set', () => {
     expect(COMPLIANCE_DOCUMENTS.every((d) => d.version === undefined)).toBe(true)
   })
 
-  /* The source document's Spanish paragraph is the Life & Health one, naming
-     NAIFA and the wrong license line. The corrected text is what ships here,
-     and this is what stops it being "corrected" back to the source. */
-  it('carries the corrected Spanish for the FL Property & Casualty notice', () => {
+  /* ⚠ THE DEFECT IS CONFIRMED, not reported. Reading the file showed its
+     Spanish paragraph IS the Life & Health one word for word — NAIFA and the
+     Life, Health and Variable Annuity manual, on a Property & Casualty
+     notice. The English here is verbatim; the Spanish is a translation of
+     that English, and this is what stops it being "corrected" back. */
+  it('carries corrected Spanish for the FL Property & Casualty notice', () => {
     const pc = docById('fl-notice-pc')
+    // The English is the document's own, and names the right association.
+    expect(pc.bodyEn).toContain('FAIA')
+    expect(pc.bodyEn).toContain('General Lines')
+    expect(pc.bodyEn).not.toContain('NAIFA')
+    // The Spanish must match it rather than the Life & Health notice.
     expect(pc.bodyEs).toContain('FAIA')
-    expect(pc.bodyEs).toContain('Propiedad y Accidentes')
+    expect(pc.bodyEs).toContain('Líneas Generales')
     expect(pc.bodyEs).not.toContain('NAIFA')
-    expect(pc.bodyEs).not.toContain('Vida y Salud')
+    expect(pc.bodyEs).not.toContain('Salud y Vida')
   })
 
   it("keeps MN's unreadable PDF as a note, not invented content", () => {
@@ -225,19 +232,37 @@ describe('the Illinois documents', () => {
     expect(bullets[0].style.marginLeft).toBe('0px')
   })
 
-  /* ⚠ THE SOURCE HAS ONE SIGNER AND THIS SHAPE RENDERS TWO. Pinned as it
-     stands, with the contradiction named, so the row cannot be quietly
-     reshaped OR quietly left wrong — see the comment on `il-post`. */
-  it('carries the real student declaration, on a shape the source contradicts', () => {
+  /* ⚠ THE CONTRADICTION IS RESOLVED, in the direction the file settled.
+     Flagged on 2026-10-19 from a single page; reading the .docx confirmed it
+     — one declaration, no monitor section anywhere. The full SSN is real, but
+     it belongs to the roster-upload block, not to a proctor. */
+  it('is single-signer, as the source document is', () => {
     const il = docById('il-post')
-    expect(il.studentBody).toContain('mandatory 7.5-hour webinar course')
-    expect(il.studentBody).toContain('unassisted by any person(s)')
-    expect(il.studentBody).toContain('The date on this affidavit is the course completion date.')
+    expect(il.body).toContain('mandatory 7.5-hour webinar course')
+    expect(il.body).toContain('unassisted by any person(s)')
+    expect(il.body).toContain('The date on this affidavit is the course completion date.')
 
-    // Still two-party, still asking for an SSN the document never shows.
-    expect(il.shape).toBe('affidavit-two-party')
+    expect(il.shape).toBe('affidavit-single')
     expect(il.extraFields).toContain('ssn-full')
-    expect(STEPS_BY_SHAPE[il.shape]).toEqual(['student', 'proctor'])
+    expect(il.proctorBody).toBeUndefined()
+    expect(STEPS_BY_SHAPE[il.shape]).toEqual(['identity', 'document'])
+  })
+
+  /* ⚠ THE SHAPE WAS INVERTED, and this is the assertion that says so. Every
+     document the brief called two-party has no proctor; all four that do were
+     filed as single-signer. */
+  it('puts the proctor documents in the two-party shape, and only those', () => {
+    const twoParty = COMPLIANCE_DOCUMENTS.filter((d) => d.shape === 'affidavit-two-party')
+    expect(twoParty.map((d) => d.state).sort()).toEqual(['CO', 'CT', 'WI', 'WV'])
+    for (const d of twoParty) {
+      expect(d.proctorBody, d.id).toBeTruthy()
+      expect(d.relationshipOptions?.length, d.id).toBeGreaterThan(0)
+    }
+    // The three the brief named carry no proctor at all.
+    for (const id of ['ca-post', 'il-post', 'oh-post']) {
+      expect(docById(id).shape, id).toBe('affidavit-single')
+      expect(docById(id).proctorBody, id).toBeUndefined()
+    }
   })
 })
 
@@ -292,7 +317,7 @@ describe('Next stays off until the step is answered', () => {
     typeInto(/last name/i, 'Navarro')
     fireEvent.click(nextButton())
 
-    expect(screen.getByText(/penalty of perjury/i)).toBeInTheDocument()
+    expect(screen.getByText(/administrative sanction by the New York/i)).toBeInTheDocument()
     // Last step, so the primary is Confirm.
     expect(confirmButton()).toBeDisabled()
     fireEvent.click(screen.getByLabelText(/i attest/i))
@@ -331,37 +356,53 @@ describe('Next stays off until the step is answered', () => {
   })
 
   it('asks the two-party student step for every extra field the state wants', () => {
-    const oh = docById('oh-post') // ssn-last4, phone, exam-date
-    open(oh)
+    open(docById('co-post')) // student side wants the exam date
     typeInto(/first name/i, 'Jordan')
     typeInto(/last name/i, 'Navarro')
     fireEvent.click(screen.getByLabelText(/student declaration/i))
-    // Names and the attestation are in; the three Ohio fields are not.
-    expect(nextButton()).toBeDisabled()
-    typeInto(/last 4 of ssn/i, '1234')
-    typeInto(/phone number/i, '5551234567')
+    // Names and the attestation are in; Colorado's exam date is not.
     expect(nextButton()).toBeDisabled()
     typeInto(/exam date/i, '11/02/2026')
     expect(nextButton()).toBeEnabled()
   })
 
-  it("needs a relationship from the state's own option set on the proctor step", () => {
-    const { onComplete } = open(docById('oh-post'))
+  /* ⚠ THE PROCTOR'S FIELDS ARE NOT THE STUDENT'S. Wisconsin asks the student
+     for nothing extra and the monitor for a name, an address and a phone —
+     one shared list could not say that. */
+  it("gates the proctor step on the proctor's own identity fields", () => {
+    open(docById('wi-post'))
     typeInto(/first name/i, 'Jordan')
     typeInto(/last name/i, 'Navarro')
-    typeInto(/last 4 of ssn/i, '1234')
-    typeInto(/phone number/i, '5551234567')
-    typeInto(/exam date/i, '11/02/2026')
+    expect(screen.queryByLabelText(/^full name$/i)).toBeNull() // the student is asked for none
     fireEvent.click(screen.getByLabelText(/student declaration/i))
     fireEvent.click(nextButton())
 
-    // Ohio's six, not a hardcoded four — Employer and Other are Ohio's alone.
-    expect(screen.getByRole('button', { name: 'Employer' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Other' })).toBeInTheDocument()
-
+    fireEvent.click(screen.getByRole('button', { name: 'Neighbor' }))
     fireEvent.click(screen.getByLabelText(/proctor declaration/i))
     expect(confirmButton()).toBeDisabled()
-    fireEvent.click(screen.getByRole('button', { name: 'Proctor' }))
+    typeInto(/full name/i, 'Sam Okafor')
+    typeInto(/address/i, '1 Main St, Madison, WI')
+    expect(confirmButton()).toBeDisabled()
+    typeInto(/phone number/i, '5551234567')
+    expect(confirmButton()).toBeEnabled()
+  })
+
+  it("needs a relationship from the state's own option set on the proctor step", () => {
+    const { onComplete } = open(docById('wv-post'))
+    typeInto(/first name/i, 'Jordan')
+    typeInto(/last name/i, 'Navarro')
+    fireEvent.click(screen.getByLabelText(/student declaration/i))
+    fireEvent.click(nextButton())
+
+    /* West Virginia offers Licensed Agent; Wisconsin offers Neighbor in the
+       same slot. Read from the config, never shared. */
+    expect(screen.getByRole('button', { name: 'Licensed Agent' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Neighbor' })).toBeNull()
+
+    typeInto(/full name/i, 'Sam Okafor')
+    fireEvent.click(screen.getByLabelText(/proctor declaration/i))
+    expect(confirmButton()).toBeDisabled()
+    fireEvent.click(screen.getByRole('button', { name: 'Licensed Agent' }))
     expect(confirmButton()).toBeEnabled()
     fireEvent.click(confirmButton())
     expect(onComplete).toHaveBeenCalledOnce()
@@ -459,7 +500,7 @@ describe('the two shapes with no signer', () => {
   it('never lets a `needs-review` document be completed', () => {
     const { onComplete } = open(docById('mn-post-pdf'))
     expect(screen.getByText(/content pending manual review/i)).toBeInTheDocument()
-    expect(screen.getByText(/custom\/embedded font encoding/i)).toBeInTheDocument()
+    expect(screen.getByText(/Adobe Fill & Sign/i)).toBeInTheDocument()
     expect(confirmButton()).toBeDisabled()
     fireEvent.click(confirmButton())
     expect(onComplete).not.toHaveBeenCalled()

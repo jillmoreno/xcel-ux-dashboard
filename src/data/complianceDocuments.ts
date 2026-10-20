@@ -27,7 +27,17 @@ export type DocumentShape =
   | 'affidavit-two-party'
   | 'needs-review'
 
-export type ExtraField = 'dob' | 'ssn-last4' | 'ssn-full' | 'phone' | 'exam-date'
+export type ExtraField =
+  | 'dob'
+  | 'ssn-last4'
+  | 'ssn-full'
+  | 'phone'
+  | 'exam-date'
+  /** A printed full name — the proctor's, on the four two-party affidavits. */
+  | 'full-name'
+  /** A street address. Ohio asks the student for one; Colorado, Connecticut
+   *  and Wisconsin ask the proctor. */
+  | 'address'
 
 /**
  * THE DOCUMENT'S KIND, as the SharePoint set names it — and the modal's
@@ -119,8 +129,17 @@ export interface ComplianceDocumentConfig {
   proctorBody?: string
   relationshipOptions?: string[]
 
-  /* ── post-final shapes ── */
+  /* ── identity fields ── */
+  /** Asked of the STUDENT, on whichever step collects their details. */
   extraFields?: ExtraField[]
+  /**
+   * Asked of the PROCTOR, on the proctor step. Separate from `extraFields`
+   * because the two are different people: Wisconsin wants the proctor's name,
+   * address and phone while asking the student for nothing extra, and Ohio's
+   * registration form asks the student for four fields and has no proctor at
+   * all. One list could not express either.
+   */
+  proctorFields?: ExtraField[]
 
   /* ── placeholders, deliberately unpopulated ── */
   /**
@@ -153,10 +172,12 @@ export const STEPS_BY_SHAPE: Record<DocumentShape, string[]> = {
 }
 
 export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
-  /* ── notice (2) ─────────────────────────────────────────────────────────
-     No name and no signature anywhere — body text and "I Agree". Both are
-     bilingual, which is why the shape carries a language toggle at all. */
+  /* ── notice (2) ────────────────────────────────────────────────────────
+       No signer at all: body text and an "I Agree". Both are bilingual. */
   {
+    /* Verbatim. “I acknowledged” is the source's own past tense; kept, because
+       silently correcting a legal document's grammar is how a prototype and a
+       signed document drift apart. */
     id: 'fl-notice-lh',
     state: 'FL',
     timing: 'pre-course',
@@ -166,26 +187,24 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     sourceFile: 'FL PE-Pre Course Notice-LifeHealth.docx',
     subject: 'Florida — Life & Health',
     bilingual: true,
-    /* ⚠ VERBATIM FROM THE SOURCE DOCUMENT (2026-10-19), replacing the
-       placeholder this shipped with. The placeholder said the notice was
-       about satisfying the pre-licensing education requirement; it is not.
-       It is about the NAIFA STUDY MANUAL — that the exam is based on it,
-       that the course does not include it, and where to buy it. A document
-       whose actual subject is wrong is worse than one with no text at all,
-       because it reads as finished.
-
-       ⚠ "I acknowledged" IS THE SOURCE'S OWN WORDING, past tense where the
-       sentence wants the present. Kept as-is: this is a legal document
-       rendered verbatim, and silently correcting its grammar is how a
-       prototype and a signed document drift apart.
-       TODO(content): worth raising with Bonnie/Patrick alongside the P&C
-       Spanish defect. */
     bodyEn:
-      'The Florida Department of Financial Services requires a study manual for life and/or health courses, NAIFA Health & Life (including Annuities & Variable Contracts). The related state licensing examination will be based upon the latest edition of the Florida Life, Health and Variable Annuity Study Manual. The Study Manual is not included with this course but it can be obtained from the National Association of Insurance and Financial Advisors-Florida (NAIFA-Florida), PO Box 14365, Tallahassee, FL 32317. (850) 422-1701, or may be ordered online at http://naifa-florida.org. The Study Manual is also available in Spanish.\n\nBy clicking the \u201CI Agree\u201D button below, I acknowledged the above information.',
+      'The Florida Department of Financial Services requires a study manual for life and/or health courses, NAIFA Health & Life (including Annuities & Variable Contracts). The related state licensing examination will be based upon the latest edition of the Florida Life, Health and Variable Annuity Study Manual. The Study Manual is not included with this course but it can be obtained from the National Association of Insurance and Financial Advisors-Florida (NAIFA-Florida), PO Box 14365, Tallahassee, FL 32317. (850) 422-1701, or may be ordered online at http://naifa-florida.org. The Study Manual is also available in Spanish.\n\nBy clicking the “I Agree” button below, I acknowledged the above information.',
     bodyEs:
-      'El Departamento de Servicios Financieros de Florida exige un manual de estudio para los cursos de vida y/o salud, NAIFA Salud y Vida (incluyendo Anualidades y Contratos Variables). El examen de licencia estatal relacionado se basará en la última edición del Manual de estudio de vida, salud y anualidades variables de Florida. El Manual de estudio no está incluido en este curso, pero se puede obtener en la Asociación Nacional de Asesores Financieros y de Seguros de Florida (NAIFA-Florida), PO Box 14365, Tallahassee, FL 32317. (850) 422-1701, o se puede solicitar en línea en http://naifa-florida.org. El Manual de estudio también está disponible en español.\n\nAl seleccionar el botón \u201CAcepto\u201D a continuación, reconozco la información anterior.',
+      'El Departamento de Servicios Financieros de Florida exige un manual de estudio para los cursos de vida y/o salud, NAIFA Salud y Vida (incluyendo Anualidades y Contratos Variables). El examen de licencia estatal relacionado se basará en la última edición del Manual de estudio de vida, salud y anualidades variables de Florida. El Manual de estudio no está incluido en este curso, pero se puede obtener en la Asociación Nacional de Asesores Financieros y de Seguros de Florida (NAIFA-Florida), PO Box 14365, Tallahassee, FL 32317. (850) 422-1701, o se puede solicitar en línea en http://naifa-florida.org. El Manual de estudio también está disponible en español.\n\nAl seleccionar el botón “Acepto” a continuación, reconozco la información anterior.',
   },
   {
+    /* ⚠⚠ THE SPANISH HERE IS A CORRECTION, NOT THE SOURCE — and the defect the
+       brief reported is now CONFIRMED by reading the file. The source
+       document's Spanish paragraph is the LIFE & HEALTH one, word for word:
+       it names NAIFA and the Life, Health and Variable Annuity manual on a
+       Property & Casualty notice. A learner reading the Spanish is told to
+       buy the wrong book from the wrong association.
+
+       The English above is verbatim. The Spanish is a translation OF THAT
+       ENGLISH, written here so the two halves of the document finally say the
+       same thing.
+       TODO(content): this is the one row whose Spanish is not the document's.
+       Bonnie/Patrick to confirm before it replaces the live file. */
     id: 'fl-notice-pc',
     state: 'FL',
     timing: 'pre-course',
@@ -196,28 +215,13 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     subject: 'Florida — Property & Casualty',
     bilingual: true,
     bodyEn:
-      'This notice confirms you are enrolling in a Florida Department of Financial Services–approved Property & Casualty (General Lines) pre-licensing course, administered under FAIA program guidelines. Completion of this course satisfies the pre-licensing education requirement under Florida law prior to taking the state licensing examination.',
-    /* ⚠ STILL PLACEHOLDER TEXT, both halves — and the only row left that is.
-       The Life & Health notice above was replaced with its real wording on
-       2026-10-19; this one has not been read yet, so what is below describes
-       the right SUBJECT in the wrong words.
-
-       ⚠ AND THE DEFECT THIS CARRIES IS NOW LESS CERTAIN THAN IT LOOKED. The
-       brief reported the source's Spanish as copy-pasted from Life & Health —
-       naming NAIFA where it should name FAIA — and this row was written to
-       carry the correction. Seeing the real Life & Health text shows NAIFA is
-       correct THERE (it is the life/health study-manual publisher), so the
-       claim is about this document alone and has not been verified against
-       it. Do not treat the FAIA wording below as a confirmed fix.
-       TODO(content): read `FL PE-Pre Course Notice-PropertyCasualty.docx` and
-       replace BOTH bodies verbatim, then settle the NAIFA/FAIA question with
-       Bonnie/Patrick. */
+      'The Florida Department of Financial Services requires a study manual for the General Lines courses, FAIA’s Florida General Lines, Adjuster and Industrial Fire Study Manual. The related state licensing examination will be based upon the latest edition of the Florida General Lines, Adjuster and Industrial Fire Study Manual. The Study Manual is not included with this course and can be obtained from the Florida Association of Insurance Agents (FAIA), 3159 Shamrock South, Tallahassee, Florida 32309 (850) 893-4155, or may be ordered online at www.faia.com\n\nBy clicking the “I Agree” button below, I acknowledged the above information.',
     bodyEs:
-      'Este aviso confirma que usted se está inscribiendo en un curso de pre-licencia de Propiedad y Accidentes (Líneas Generales) aprobado por el Departamento de Servicios Financieros de la Florida, administrado bajo las pautas del programa FAIA. La finalización de este curso satisface el requisito de educación de pre-licencia bajo la ley de la Florida antes de tomar el examen estatal de licencia.',
+      'El Departamento de Servicios Financieros de Florida exige un manual de estudio para los cursos de Líneas Generales, el Manual de estudio de Líneas Generales, Ajustadores e Incendios Industriales de Florida de FAIA. El examen de licencia estatal relacionado se basará en la última edición del Manual de estudio de Líneas Generales, Ajustadores e Incendios Industriales de Florida. El Manual de estudio no está incluido en este curso y se puede obtener en la Asociación de Agentes de Seguros de Florida (FAIA), 3159 Shamrock South, Tallahassee, Florida 32309, (850) 893-4155, o se puede solicitar en línea en www.faia.com\n\nAl seleccionar el botón “Acepto” a continuación, reconozco la información anterior.',
   },
-
-  /* ── signed-tc (4) ──────────────────────────────────────────────────────
-     Student Name + Signature, then Agree/Attest. */
+  /* ── signed-tc (4) ─────────────────────────────────────────────────────
+       A name and a signature, then agree/attest. Two of the four print both
+       languages in the one file. */
   {
     id: 'xcel-generic-tc',
     state: 'Generic',
@@ -227,21 +231,6 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Terms and Conditions',
     sourceFile: 'XCEL Generic Terms and Conditions-Pre-Course Affidavit.docx',
     subject: 'XCEL — Generic',
-    /* ⚠ VERBATIM FROM THE SOURCE (2026-10-19), replacing the placeholder,
-       which described the wrong subject: it talked about attendance
-       requirements, academic integrity and the refund policy. The document is
-       about PROCTORING — that the final must be proctored and closed-book,
-       who is disqualified from proctoring it, the 70% pass mark, and that the
-       completion date is the date the proctor signs.
-
-       ⚠ AND IT IS BILINGUAL, which `signed-tc` did not previously allow. The
-       file prints the English acknowledgement and then the Spanish one, the
-       same way the Florida notices do.
-
-       ⚠ THE SOURCE ASKS FOR ONE FIELD, "Student Full Name", where this shape
-       renders Student Name AND a typed signature. The extra field is the
-       brief's, not the document's.
-       TODO(content): confirm whether the signature line should go. */
     bilingual: true,
     bodyEn:
       '## Acknowledgement of Terms and Conditions of Pre-licensing Course Completion\n\nI understand and acknowledge that the pre-licensing insurance course final exam must be a proctored, closed-book exam with no assistance provided. A disinterested third party must proctor the exam. The disinterested third-party proctor or monitor is an individual who has none of the following: family relationship with the student; is a direct supervisor of the student; or a person directly supervised by the student.\n\nA certificate of course completion is to be presented to the student who successfully passes the exam with a score of 70% or better within 2 days of the completion date. The pre-licensing course completion date is the date the proctor signs and dates the exam.',
@@ -257,7 +246,8 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Terms and Conditions',
     sourceFile: 'CA PE-Pre-Course Terms and Conditions.docx',
     subject: 'California',
-    body: 'You acknowledge this course meets the California Department of Insurance pre-licensing education requirement. By signing below you attest the information you provide for enrollment is accurate and you agree to the attendance-monitoring requirements of your course delivery method.',
+    body:
+      '## Acknowledgment of Terms and Conditions of Pre-licensing Course Completion\n\nThis course is designed to fulfill the mandatory one time 12-hour Ethics and California Insurance Code education requirement. XCEL Solutions will be tracking your time spent studying in the course. STUDYING MATERIALS OFFLINE DOES NOT COUNT TOWARDS THE TIME REQUIREMENT. You will not be issued a Certificate of Completion until you certify that you have met the minimum time requirements.\n\nPlease note that according to the insurance code regulating pre-licensing education, you will be signed out of your course after 20 minutes of inactivity. Any time accumulated during the period of inactivity will be removed from your study history. Additionally, you must save your progress periodically to ensure your time is counted towards your study history. If you are timed out of a study session without having saved your progress, any time accumulated between the last time you saved your progress, and the time-out will not be included in your study history.\n\nAny student caught attempting to manipulate or falsify study time will be subject to account suspension pending further investigation. We reserve the right to share student study history with the state’s Department of Insurance in the event of a suspected regulatory violation or upon the request of the Department.\n\n## NEW INSURANCE FRAUD TRAINING REGULATION\n\nThe California Department of Insurance (CDI) recently approved the Commissioner-appointed Curriculum Board’s proposed revisions to the 12-Hour Ethics and California Insurance Code Educational Objectives (EO) to incorporate one hour of study on insurance fraud. This one-hour insurance fraud training is a part of, and not in addition to, the 12-hour prelicensing ethics and three-hour ethics training requirement. The DOI’s Enforcement Branch-Fraud Division recently launched a one-hour insurance fraud course called “Agents and Brokers Anti-Fraud Training” to meet this new ethics requirement.\n\nIMPORTANT: This course includes the new CA DOI requirement.',
   },
   {
     id: 'il-tc',
@@ -268,19 +258,18 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Terms and Conditions',
     sourceFile: 'IL PE-Terms and Conditions-Pre-Course Affidavit.docx',
     subject: 'Illinois',
-    /* ⚠ VERBATIM (2026-10-19), replacing a placeholder that was one invented
-       sentence about enrollment information being true. The document is the
-       state's COURSE-HOURS rule — 20 hours per major line of authority, 7.5
-       of them in a classroom (webinar) setting, a 70% final — plus the three
-       steps to a certificate and a student-information notice.
-
-       ⚠ IT IS THE DOCUMENT THAT FORCED `## ` AND `- `: a heading, a bullet
-       list, a nested clause under one bullet, and a second heading. Flattened
-       into paragraphs it stops being a list of steps. */
     body:
-      '## Acknowledgment of Terms and Conditions of Pre-licensing Course Completion\n\nThe state of Illinois requires applicants to complete 20 hours of pre-licensing education for each major line of authority. 7.5 of those hours must be completed in a classroom (webinar) setting. Additionally, students must complete a comprehensive final exam with a score of at least 70% and affirm that they, and only they, completed the course.\n\nTo be eligible for a Certificate of completion, you must follow several steps:\n\n- Complete the self-study portion of the course including passing the final exam with a score of at least 70%\n- Attend the entire 7.5-hour webinar\n- Affirm that you, and only you, completed the course by submitting your electronic affidavit.\n  - The course completion affidavit is available within two days of fulfilling the course completion requirements (online course, online comprehensive final exam, and webinar).\n\n## Student Notice:\n\nStudent information will not be sold or distributed to any third party without prior written consent of the student. By selecting \u201CI Agree\u201D below, you agree that your course information can be shared with state testing centers, state insurance departments, and with any third-party insurance agency or company.',
+      '## Acknowledgment of Terms and Conditions of Pre-licensing Course Completion\n\nThe state of Illinois requires applicants to complete 20 hours of pre-licensing education for each major line of authority. 7.5 of those hours must be completed in a classroom (webinar) setting. Additionally, students must complete a comprehensive final exam with a score of at least 70% and affirm that they, and only they, completed the course.\n\nTo be eligible for a Certificate of completion, you must follow several steps:\n\n- Complete the self-study portion of the course including passing the final exam with a score of at least 70%\n- Attend the entire 7.5-hour webinar\n- Affirm that you, and only you, completed the course by submitting your electronic affidavit.\n  - The course completion affidavit is available within two days of fulfilling the course completion requirements (online course, online comprehensive final exam, and webinar).\n\n## Student Notice:\n\nStudent information will not be sold or distributed to any third party without prior written consent of the student. By selecting "I Agree" below, you agree that your course information can be shared with state testing centers, state insurance departments, and with any third-party insurance agency or company.',
   },
   {
+    /* ⚠ THE FILE IS NAMED “- Copy” and there is no original beside it in the
+       set. Its text is NOT a duplicate of another row — the 10-minute timeout
+       and the Minnesota hour rule are its own — so the suffix looks like a
+       lost original rather than a stray duplicate.
+       The source also carries a Personally Identifiable Information section
+       and a Minimum System Requirements list; both are site-wide policy
+       rather than course terms, and neither is rendered here.
+       TODO(content): confirm which file is authoritative. */
     id: 'mn-tc',
     state: 'MN',
     timing: 'pre-course',
@@ -289,12 +278,14 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Terms and Conditions',
     sourceFile: 'MN PE-Terms and Conditions-Pre-Course Affidavit - Copy.docx',
     subject: 'Minnesota',
-    body: 'I understand this course satisfies the Minnesota Department of Commerce pre-licensing education requirement and agree to complete all required coursework prior to scheduling my licensing examination.',
+    body:
+      '## Acknowledgement of Terms and Conditions of Pre-licensing Course Completion\n\nThe state of Minnesota requires applicants to complete 20 hours of pre-licensing education for each major line of authority.\n\nApplicants seeking to become licensed as a Life producer, Health producer, Casualty Producer, Property Producer or Personal Lines Producer must complete 20 hours of pre-licensing education. XCEL Solutions will be tracking your time in the course.\n\nPlease note per insurance code regulating pre-licensing education, you will be signed out of your course after 10 minutes of inactivity, and any time accumulated between the last time you saved your progress and the time you were logged out will be removed from your study history.\n\nAny student caught attempting to manipulate or falsify his time will have his account suspended pending further investigation. The student’s study history may be shared with the state’s Department of Insurance for further investigation if it is determined that his course was submitted as “completed,” as he might have willfully violated an insurance regulation by attempting to manipulate or falsify his time.\n\nThe final exam for this course must be a proctored, closed-book exam with no assistance provided. A disinterested third party must proctor the exam. The disinterested third-party proctor or monitor is an individual who has none of the following: family relationship with the student; is a direct supervisor of the student; or a person directly supervised by the student.\n\nA certificate of course completion will be presented within 2 business days of the date the student meets the minimum hour requirements, in addition to passing the course’s final, proctored, exam with a score of 70% or better. The pre-licensing course completion date is the date a member of the compliance department verifies and determines all course and hour requirements have been met.\n\nLicense education credit will not be awarded for taking the course after it loses its status as an approved course.',
   },
-
-  /* ── enrollment-agreement (4) ───────────────────────────────────────────
-     The long ones: pricing, cancellation/refund, grievance, and a list of
-     acknowledgments. Ohio is the outlier — a wet signature, not a tick. */
+  /* ── enrollment-agreement (4) ──────────────────────────────────────────
+       The long ones: the programme and its fee, the state agency, cancellation
+       and refund by modality, grievance, and the acknowledgments the student
+       ticks. Ohio is the outlier twice over — a signature rather than a tick,
+       and the only pre-course document that collects identity. */
   {
     id: 'ky-ea',
     state: 'KY',
@@ -304,26 +295,50 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Enrollment Agreement',
     sourceFile: 'KY PE-Pre-Course Enrollment Agreement.docx',
     subject: 'Kentucky',
-    agency: 'Kentucky Department of Insurance',
+    agency: 'Kentucky Commission on Proprietary Education',
     sections: [
       {
+        heading: 'Course Program',
+        body:
+          'Course Program Name: Kentucky Health Prelicensing (20hrs)\nOnline Self-study: 20-hour PE program\nCourse Fee: $199.00\nProgram Length: 30 days from purchase date.\n\nThere are no other fees or expenses associated with the cost of the course unless extensions are purchased as outlined below. Items subject to cost change.\n\nXCEL Solutions does not charge a tuition; the student will pay for each course they would like to take. All students are required to pay for the course in full before they start the course. XCEL Solutions does not offer financial aid or any other type of financing. Course fee may be paid via credit cards: Visa, MasterCard, or American Express.',
+      },
+      {
         heading: 'Terms of Agreement',
-        body: 'This Enrollment Agreement is between the student and XCEL Solutions for pre-licensing education approved by the Kentucky Department of Insurance. Tuition, course materials, and delivery method are as selected at enrollment.',
+        body:
+          '1. XCEL Solutions is open to all persons who meet the entrance requirements regardless of age, race, color, religion, national origin, disability, sex, sexual orientation or gender identity or expression.\n2. XCEL Solutions does not recognize credit from previous education and training programs. The transfer of course credit is determined by the receiving institution.\n3. XCEL Solutions does not offer outside funding\n4. Placement in a job is not guaranteed nor promised to graduates.\n5. It is advisable to contact your state regulator for information specific to becoming an Insurance Producer in your state.',
       },
       {
-        heading: 'Cancellation & Refund Policy',
-        body: 'A student may cancel enrollment by written notice prior to course start for a full refund less a processing fee. Cancellations after course access has been granted are refunded on a pro-rated basis per the schedule provided at enrollment.',
+        heading: 'Cancellation and Refund Policies: Online Instructor-led and Online Self-Paced/Video Courses',
+        body:
+          '- Starting from the date of purchase, students have 30 days to request a refund.',
       },
       {
-        heading: 'Student Grievance Process',
-        body: "A student with a complaint should first contact XCEL Solutions' student services department. Unresolved grievances may be submitted in writing to the Kentucky Department of Insurance.",
+        heading: 'Webinar and In-Person Live Courses — (Not applicable to Kentucky residents)',
+        body:
+          '- Students have until 3 days prior to class start to request a refund.\n- Livestream and Classroom students who do not attend their scheduled class will not qualify for a refund.\n- Students can swap to a self-paced online course (when applicable) if they no longer qualify for a refund.',
+      },
+      {
+        heading: 'All Modalities',
+        body:
+          '- If any course (sold individually or in a package) is accessed, the course/package is non-refundable.\n- Textbooks and shipping are non-refundable\n- Any refunds for packages that included a physical textbook will be refunded less a $24.95 refund fee.\n\nTo request a refund, please contact us at 866-559-9235.',
+      },
+      {
+        heading: 'Student Grievance:',
+        body:
+          'Students aggrieved by action of XCEL or personnel of the school should attempt to resolve these issues with proper XCEL personnel. The student shall submit a written internal grievance to the following email: compliance@xcelsolutions.com. The email subject line shall be labeled, "Student Grievance". Students may also submit a letter via certified US mail to: XCEL Solutions, LLC. Attn: School Director, 218 Liberty Street, Warren, PA 16365. Students will receive a response and an offer or resolution within 10 business days. The student’s sponsor/employer may be consulted in determining the resolution.',
+      },
+      {
+        heading: 'Filing a complaint with the Kentucky Commission on Proprietary Education:',
+        body:
+          'To file a complaint with Kentucky Commission on Proprietary Education, a complaint shall be in writing and shall be filed on a Form PE-24, Form to File a Complaint, accompanied, if applicable, by Form PE-25, Authorization for Release of Student Records.\n\nThe form must be mailed to: Kentucky Commission on Proprietary Education, 500 Mero Street, 4th Floor, Frankfort, Kentucky, 40601. The form can be found on CPE website - www.kcpe.ky.gov',
+      },
+      {
+        heading: 'Existence of the Student Protection Fund',
+        body:
+          'Pursuant to KRS 165A.450 All licensed schools, resident, and nonresident, shall be required to contribute to a student protection fund. The fund shall be used to reimburse eligible Kentucky students, to pay off debts, including refunds to students enrolled or on leave of absence by not being enrolled for one (1) academic year or less from the school at the time of the closing, incurred due to the closing of a school, discontinuance of a program, loss of license, or loss of accreditation by a school or program.',
       },
     ],
-    acknowledgments: [
-      'I understand the tuition, fees, and refund schedule described above.',
-      'I understand I am responsible for scheduling my own licensing examination after course completion.',
-      'I understand how to file a grievance if I am dissatisfied with my course.',
-    ],
+    acknowledgments: ['I received a copy of the catalog (Kentucky School Catalog) and understand that is part of the enrollment agreement.', 'I understand this enrollment agreement constitutes a binding contract.', 'My signature below signifies that I have read and understand all aspects of this agreement, I am at least 18 years of age, and I do recognize my legal responsibilities in regard to this contract.'],
   },
   {
     id: 'nv-ea',
@@ -337,24 +352,40 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     agency: 'Nevada Commission on Postsecondary Education',
     sections: [
       {
+        heading: 'Course Program',
+        body:
+          'Course Program Name: Nevada Health Prelicensing (20hrs)\nOnline Self-study: 20-hour PE program\nCourse Fee: $199.00\nReporting Fee: $9.00\nProgram Length: 30 days from purchase date.\n\nThere are no other fees or expenses associated with the cost of the course unless extensions are purchased as outlined below. Items subject to cost change.\n\nXCEL Solutions does not charge a tuition; the student will pay for each course they would like to take. All students are required to pay for the course in full before they start the course. XCEL Solutions does not offer financial aid or any other type of financing. Course fee may be paid via credit cards: Visa, MasterCard, or American Express.',
+      },
+      {
         heading: 'Terms of Agreement',
-        body: 'This Enrollment Agreement sets out the terms under which XCEL Solutions will provide pre-licensing instruction regulated by the Nevada Commission on Postsecondary Education.',
+        body:
+          '1. XCEL Solutions is open to all persons who meet the entrance requirements regardless of age, race, color, religion, national origin, disability, sex, sexual orientation or gender identity or expression.\n2. XCEL Solutions does not recognize credit from previous education and training programs. The transfer of course credit is determined by the receiving institution.\n3. XCEL Solutions does not offer outside funding\n4. Placement in a job is not guaranteed nor promised to graduates.\n5. It is advisable to contact your state regulator for information specific to becoming an Insurance Producer in your state.',
       },
       {
-        heading: 'Cancellation Policies',
-        body: 'A student may cancel enrollment by emailing XCEL Solutions at the address provided in course materials. Refunds are issued according to the schedule set out by the Commission.',
+        heading: 'Cancellation Policies:',
+        body:
+          'A student may cancel enrollment by emailing XCEL Solutions at support@xcelsolutions.com\n\nIf cancellation occurs within 72 hours of the date of enrollment all monies shall be refunded to the student.',
       },
       {
-        heading: 'Student Grievance',
-        body: 'Students with unresolved complaints may submit a letter via certified U.S. mail to the Nevada Commission on Postsecondary Education.',
+        heading: 'Student Grievance:',
+        body:
+          'Students aggrieved by action of XCEL or personnel of the school should attempt to resolve these issues with proper XCEL personnel. The student shall submit a written internal grievance to the following email: compliance@xcelsolutions.com. The email subject line shall be labeled, "Student Grievance". Students may also submit a letter via certified US mail to: XCEL Solutions, LLC. Attn: School Director, 218 Liberty Street, Warren, PA 16365. Students will receive a response and an offer or resolution within 10 business days. The student’s sponsor/employer may be consulted in determining the resolution.',
+      },
+      {
+        heading: 'Filing a complaint with the Nevada Commission on Postsecondary:',
+        body:
+          'To file a complaint against a postsecondary institution subject to the laws of Nevada Commission on Postsecondary NRS and NAC Chapters 394, please fill out and submit this form to the address listed below.\n\nCommission on Postsecondary Education, 2800 E. St. Louis Avenue, Las Vegas, NV 89104. The form can be found on CPE website - www.cpe.nv.gov',
       },
     ],
-    acknowledgments: [
-      'I understand the Commission-regulated cancellation policy described above.',
-      'I understand how to escalate a grievance to the Nevada Commission on Postsecondary Education.',
-    ],
+    acknowledgments: ['I received a copy of the catalog (Nevada School Catalog) and understand that is part of the enrollment agreement.', 'I understand this enrollment agreement constitutes a binding contract.', 'My signature below signifies that I have read and understand all aspects of this agreement, I am at least 18 years of age, and I also had the opportunity to ask questions.'],
   },
   {
+    /* ⚠ THE SOURCE ALSO ASKS FOR ETHNICITY — “Please type your Ethnicity from
+       the following options”, a free-text line, last on the form. Not
+       rendered: a demographic question typed as free text is a data-protection
+       decision, not a layout one, and it is not this branch's to take.
+       TODO(content): confirm whether Oregon still requires it and, if so,
+       whether it belongs in the modal or in the account record. */
     id: 'or-ea',
     state: 'OR',
     timing: 'pre-course',
@@ -366,24 +397,43 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     agency: 'Oregon Higher Education Coordinating Commission',
     sections: [
       {
+        heading: 'Course Program',
+        body:
+          'Course Program Name: Oregon Health Prelicensing (20hrs)\nOnline Self-study: 20-hour PE program\nFee: $199.00\nProgram Length: 30 days from purchase date.\n\nThere are no other fees or expenses associated with the cost of the course unless extensions are purchased as outlined below. Items subject to cost change.\n\nXCEL Solutions does not charge a tuition; the student will pay for each course they would like to take. All students are required to pay for the course in full before they start the course. XCEL Solutions does not offer financial aid or any other type of financing. Course fee may be paid via credit cards: Visa, MasterCard, or American Express.',
+      },
+      {
         heading: 'Terms of Agreement',
-        body: 'This Enrollment Agreement governs pre-licensing instruction provided by XCEL Solutions under the oversight of the Oregon Higher Education Coordinating Commission.',
+        body:
+          '1. XCEL Solutions is open to all persons who meet the entrance requirements regardless of age, race, color, religion, national origin, disability, sex, sexual orientation or gender identity or expression.\n2. XCEL Solutions does not recognize credit from previous education and training programs. The transfer of course credit is determined by the receiving institution.\n3. XCEL Solutions does not offer outside funding\n4. Placement in a job is not guaranteed nor promised to graduates.\n5. We do offer course extensions for missed time when a student hardship has occurred.\n6. Students must successfully complete all required reading, course assignments, quizzes, and the final exam in order for course credit and a completion certificate to be issued. If the final examination is not passed on the first attempt, additional attempts will be permitted.\n7. Students must take and pass the final examination with a minimum score of at least 70% based on the information presented throughout the course. The final exam will not become available until all required assignments have been completed.\n8. Completion certificates/transcripts will be distributed through the student’s profile upon course completion.\n9. It is advisable to contact your state regulator for information specific to becoming an Insurance Producer in your state.',
       },
       {
-        heading: 'Cancellation & Refund Policies — Online Instructor-Led & Self-Paced/Video',
-        body: 'Refunds for online instructor-led and self-paced/video courses follow a declining schedule based on the percentage of the course accessed at the time of cancellation.',
+        heading: 'Cancellation and Refund Policies: Online Instructor-led and Online Self-Paced/Video Courses',
+        body:
+          '- Starting from the date of purchase, students have 30 days to request a refund.',
       },
       {
-        heading: 'Cancellation & Refund Policies — All Modalities',
-        body: 'No refund is issued once a course completion certificate has been issued or the licensing examination has been scheduled through XCEL Solutions.',
+        heading: 'Webinar and In-Person Live Courses — (Not applicable to Oregon residents)',
+        body:
+          '- Students have until 3 days prior to class start to request a refund.\n- Livestream and Classroom students who do not attend their scheduled class will not qualify for a refund.\n- Students can swap to a self-paced online course (when applicable) if they no longer qualify for a refund.',
+      },
+      {
+        heading: 'All Modalities',
+        body:
+          '- If any course (sold individually or in a package) is accessed, the course/package is non-refundable.\n- Textbooks and shipping are non-refundable\n- Any refunds for packages that included a physical textbook will be refunded less a $24.95 refund fee.\n\nTo request a refund, please contact us at 866-559-9235.',
+      },
+      {
+        heading: 'Inquiries',
+        body:
+          'Any inquiry a student may have regarding this contract may be made in writing to XCEL Solutions LLC, Compliance Department, 218 Liberty Street, Warren, PA 16365 or via email compliance@xcelsolutions.com and or to the Higher Education Coordinating Commission, Private Career Schools Licensing Unit, 3225 25th Street SE, Salem, OR, or by calling (503) 947-5751.',
       },
     ],
-    acknowledgments: [
-      'I understand the modality-specific refund schedule described above.',
-      'I understand no refund is available after a completion certificate is issued.',
-    ],
+    acknowledgments: ['I received a copy of the catalog (Oregon school catalog) and understand that is part of the enrollment agreement.', 'I understand this enrollment agreement constitutes a binding contract.', 'My signature below signifies that I have read and understand all aspects of this agreement, I am at least 18 years of age, and do recognize my legal responsibilities in regard to this contract.'],
   },
   {
+    /* ⚠ THE ONLY PRE-COURSE DOCUMENT THAT COLLECTS IDENTITY. “TO BE COMPLETED
+       BY STUDENT” asks for last 4 of SSN, date of birth, full residence
+       address and phone alongside the signature — which is why this row
+       carries `extraFields` where no other enrollment agreement does. */
     id: 'oh-reg',
     state: 'OH',
     timing: 'pre-course',
@@ -393,33 +443,45 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     sourceFile: 'OH PE-Registration Form-Pre Course Enrollment Agreement.docx',
     subject: 'Ohio — Student Registration Form',
     agency: 'Ohio Department of Insurance',
-    /* The one variant that cannot be click-to-agree: the Registration Form
-       wants a signature, so the document step ends in a typed-name field
-       standing in for the physical one. */
     wetSignature: true,
     sections: [
       {
-        heading: 'Cancellation & Refund Policies — Online & Self-Paced',
-        body: 'Refunds for online instructor-led and self-paced/video courses follow a declining schedule based on the percentage of the course accessed at the time of cancellation.',
+        heading: 'Provider',
+        body:
+          'Provider Name: XCEL Solutions, LLC.\nProvider ID#: 3640\nCourse Type/Program Name: Ohio Health Prelicensing\nExam Method: Electronic\nExam Location: www.xcelsolutions.com',
       },
       {
-        heading: 'Cancellation & Refund Policies — Webinar & In-Person Live',
-        body: 'Refunds for webinar and in-person live courses follow a declining schedule based on days of notice given before the scheduled session.',
+        heading: 'Study Materials',
+        body:
+          '(A) Textbook Title and Author/Edition: N/A\n(B) Ohio Bulletin and Course Outline: Below\n(C) Other (explain): N/A\n(D) The Text and other materials will be the property of the Provider',
       },
       {
-        heading: 'Cancellation & Refund Policies — All Modalities',
-        body: 'No refund is issued once a course completion certificate has been issued to the Ohio Department of Insurance.',
+        heading: 'Fees',
+        body:
+          'Course Fee: $199.00\nSchool Fees: N/A\nOnline Self-study: 20-hour PE program\nProgram Length: 30 days from purchase date.\n\nThere are no other fees or expenses associated with the cost of the course unless extensions are purchased as outlined below. Items subject to cost change.\n\nXCEL Solutions does not charge a tuition; the student will pay for each course they would like to take. All students are required to pay for the course in full before they start the course. XCEL Solutions does not offer financial aid or any other type of financing. Course fee may be paid via credit cards: Visa, MasterCard, or American Express.',
+      },
+      {
+        heading: 'Cancellation and Refund Policies: Online Instructor-led and Online Self-Paced/Video Courses',
+        body:
+          '- Starting from the date of purchase, students have 30 days to request a refund.',
+      },
+      {
+        heading: 'Webinar and In-Person Live Courses',
+        body:
+          '- Students have until 3 days prior to class start to request a refund.\n- Livestream and Classroom students who do not attend their scheduled class will not qualify for a refund.\n- Students can swap to a self-paced online course (when applicable) if they no longer qualify for a refund.',
+      },
+      {
+        heading: 'All Modalities',
+        body:
+          '- If any course (sold individually or in a package) is accessed, the course/package is non-refundable.\n- Textbooks and shipping are non-refundable\n- Any refunds for packages that included a physical textbook will be refunded less a $24.95 refund fee.\n\nTo request a refund, please contact us at 866-559-9235.',
       },
     ],
-    acknowledgments: [
-      'I understand this Registration Form requires a physical student signature rather than an in-app confirmation.',
-      'I understand the modality-specific refund schedule described above.',
-    ],
+    acknowledgments: ['I understand this Registration Form requires a student signature rather than an in-app confirmation.', 'I understand the modality-specific refund schedule described above.'],
+    extraFields: ['ssn-last4', 'dob', 'address', 'phone'],
   },
-
-  /* ── affidavit-single (10) ──────────────────────────────────────────────
-     One declarant, after course completion, before/during the exam. None of
-     the ten real documents asks for a field beyond the name. */
+  /* ── affidavit-single (9) ──────────────────────────────────────────────
+       One declarant. Three of these were filed two-party by the brief and have
+       no proctor section at all; see CA, IL and OH. */
   {
     id: 'ny-post',
     state: 'NY',
@@ -429,7 +491,8 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Post Final Affidavit',
     sourceFile: 'NY PE-Post Final Affidavit.docx',
     subject: 'New York',
-    body: 'I declare under penalty of perjury that I personally completed all required pre-licensing coursework and that no other person completed any portion of this course on my behalf.',
+    body:
+      'By submitting this form, the undersigned student acknowledges that the online course examination must be completed unassisted by any person, the course material or other materials. The student also acknowledges that a violation of these standards shall result in loss of course credit and administrative sanction by the New York Department of Financial Services Insurance Department.\n\nThe student further declares that he/she has been actively engaged in one-hundred percent of the online pre-licensing course, and has completed one hundred percent of the review questions for each particular section/chapter before proceeding to the next section/chapter.',
     extraFields: [],
   },
   {
@@ -441,7 +504,8 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Pre-Final Affidavit',
     sourceFile: 'MS PE-Pre Final Affidavit.docx',
     subject: 'Mississippi',
-    body: 'I attest that the coursework reflected in my completion record was completed by me, without assistance, and in accordance with Mississippi Insurance Department requirements.',
+    body:
+      'By submitting this form, the undersigned student acknowledges that the online course examination must be completed unassisted by any person, the course material or other materials. The student also acknowledges that a violation of these standards shall result in loss of course credit and administrative sanction by the Mississippi Insurance Department.\n\nThe student further declares that he/she has been actively engaged in one-hundred percent of the online pre-licensing course, and has completed one hundred percent of the review questions for each particular section/chapter before proceeding to the next section/chapter.',
     extraFields: [],
   },
   {
@@ -453,7 +517,8 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Pre-Final Affidavit',
     sourceFile: 'PA PE-Pre Final Affidavit.docx',
     subject: 'Pennsylvania',
-    body: 'I certify that I am the individual who completed this pre-licensing course and that the information on my completion record is accurate.',
+    body:
+      'By submitting this form, the undersigned student acknowledges that the online course examination must be completed unassisted by any person, the course material or other materials. The student also acknowledges that a violation of these standards shall result in loss of course credit and administrative sanction by the Pennsylvania Department of Insurance.\n\nThe student further declares that he/she has been actively engaged in one-hundred percent of the online pre-licensing course, and has completed one hundred percent of the review questions for each particular section/chapter before proceeding to the next section/chapter.',
     extraFields: [],
   },
   {
@@ -465,58 +530,74 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Pre-Final Affidavit',
     sourceFile: 'FL PE-Pre Final Affidavit.docx',
     subject: 'Florida',
-    body: 'I attest under penalty of perjury under the laws of the State of Florida that I am the person who completed this course.',
+    body:
+      'By submitting this form, the undersigned student acknowledges that the online course examination must be completed unassisted by any person, the course material or other materials. The student also acknowledges that a violation of these standards shall result in loss of course credit and administrative sanction by the Florida Department of Financial Services.\n\nThe student further declares that he/she has been actively engaged in one-hundred percent of the online pre-licensing course, and has completed one hundred percent of the review questions for each particular section/chapter before proceeding to the next section/chapter.\n\nThe date on this affidavit is the course completion date.',
     extraFields: [],
   },
   {
-    id: 'co-post',
-    state: 'CO',
+    /* ⚠ SINGLE-SIGNER, NOT TWO-PARTY — this row was built for a proctor it
+       does not have. There is no monitor section anywhere in the file: one
+       declaration, a legal name, a signature, a date, and a roster-upload
+       block asking for date of birth and the last four of the SSN. The
+       proctor, the relationship question and the two-step flow were all the
+       brief's invention. */
+    id: 'ca-post',
+    state: 'CA',
     timing: 'post-final',
     shape: 'affidavit-single',
-    title: 'Colorado — Post Final Affidavit',
+    title: 'California — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
-    sourceFile: 'CO PE-Post Final Affidavit.docx',
-    subject: 'Colorado',
-    body: 'I certify that I personally completed this pre-licensing course in accordance with Colorado Division of Insurance requirements.',
-    extraFields: [],
+    sourceFile: 'CA PE-Post Final Affidavit.docx',
+    subject: 'California',
+    body:
+      'By submitting this form, the undersigned student declares, under penalty of perjury, that he/she has completed the online pre-licensing study course for California in preparation for the licensing examination in that state, including completion of at least 52 hours for the Life and Health Insurance including Ethics and Anti-Fraud course.\n\nThe student further declares that he/she has been actively engaged in one hundred percent of the online pre-licensing course, has completed the total number of required training hours identified above, and has completed one hundred percent of the review questions for each particular section/chapter before proceeding to the next section/chapter.\n\nThe date on this affidavit is the course completion date.\n\n## Course Completion Roster upload form\n\nEducation providers are required to collect and report the following information below upon course completion.',
+    extraFields: ['dob', 'ssn-last4'],
   },
   {
-    id: 'ct-post',
-    state: 'CT',
+    /* ⚠ SINGLE-SIGNER. Flagged as a contradiction on 2026-10-19 from one page;
+       the file confirms it. The full SSN is real — it is the roster-upload
+       block, not an identity question on the declaration — and the proctor
+       step this row used to render does not exist in the document.
+       The document is headed “Illinois LIFE Prelicensing Affidavit” against
+       an un-lined file name, so a per-line set may still exist. */
+    id: 'il-post',
+    state: 'IL',
     timing: 'post-final',
     shape: 'affidavit-single',
-    title: 'Connecticut — Post Final Affidavit',
+    title: 'Illinois — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
-    sourceFile: 'CT PE-Post Final Affidavit.docx',
-    subject: 'Connecticut',
-    body: 'I attest, under penalty of law, that I am the individual who completed this pre-licensing course without unauthorized assistance.',
-    extraFields: [],
+    sourceFile: 'IL PE-Post Final Affidavit.docx',
+    subject: 'Illinois',
+    body:
+      'I affirm that I personally completed the entire study material of the course including one hundred percent of the online pre-licensing course and the mandatory 7.5-hour webinar course. I also affirm that I completed the comprehensive final exam unassisted by any person(s), course materials or other materials.\n\nI further acknowledge that a violation of these standards shall result in loss of course credit and administrative sanction by the Illinois Department of Insurance.\n\nThe date on this affidavit is the course completion date.\n\n## Course Completion Roster upload form\n\nEducation providers are required to collect and report the following information below upon course completion.',
+    extraFields: ['ssn-full'],
   },
   {
-    id: 'wi-post',
-    state: 'WI',
+    /* ⚠ SINGLE-SIGNER, and the only 'Final Affidavit'. The file carries its own
+       note on why it is both: “This is for both Pre-and Post because of the
+       different lines of authority, OH rule says both can’t be on one form
+       and OCD does not have the functionality to attach 2 post final
+       affidavits.” That is the sixth type name, explained by the document
+       itself. Its body is headed “Ohio PROPERTY Pre-Licensing Insurance
+       Affidavit”, so this file may be one line of authority's. */
+    id: 'oh-post',
+    state: 'OH',
     timing: 'post-final',
     shape: 'affidavit-single',
-    title: 'Wisconsin — Post Final Affidavit',
-    complianceType: 'Post Final Affidavit',
-    sourceFile: 'WI PE-Post Final Affidavit.docx',
-    subject: 'Wisconsin',
-    body: 'I certify that I personally completed the coursework required for licensure under Wisconsin Office of the Commissioner of Insurance regulations.',
-    extraFields: [],
+    title: 'Ohio — Pre & Post Final Affidavit',
+    complianceType: 'Final Affidavit',
+    sourceFile: 'OH PE-Pre & Post Final Affidavit.docx',
+    subject: 'Ohio',
+    body:
+      'I declare that I personally completed the entire study material of the course including one hundred percent of the online pre-licensing course. I also declare that I completed the comprehensive final exam unassisted by any person(s), course material or other materials.\n\nI further acknowledge that a violation of these standards shall result in loss of course credit and administrative sanction by the Ohio Department of Insurance.\n\nThe date on this affidavit is the course completion date.',
+    extraFields: ['exam-date', 'ssn-last4', 'phone'],
   },
   {
-    id: 'wv-post',
-    state: 'WV',
-    timing: 'post-final',
-    shape: 'affidavit-single',
-    title: 'West Virginia — Post Final Affidavit',
-    complianceType: 'Post Final Affidavit',
-    sourceFile: 'WV PE-Post Final Affidavit.docx',
-    subject: 'West Virginia',
-    body: 'I attest that I am the person who completed this pre-licensing course and that no other individual completed any portion on my behalf.',
-    extraFields: [],
-  },
-  {
+    /* ⚠ IT DESCRIBES A PROCTOR BUT DOES NOT COLLECT ONE. The whole first half
+       defines who may proctor, and the form the student signs is theirs
+       alone — the proctor signs the POST FINAL affidavit instead, which is
+       the unreadable PDF below. Single-signer, with the proctor rules as
+       reading. */
     id: 'mn-pre-final',
     state: 'MN',
     timing: 'post-final',
@@ -525,7 +606,8 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Pre-Final Affidavit',
     sourceFile: 'MN PE-Pre Final Affidavit.docx',
     subject: 'Minnesota',
-    body: 'I declare that I personally completed this course and am prepared to sit for the Minnesota licensing examination.',
+    body:
+      '## THIS EXAM MUST BE MONITORED BY A DISINTERESTED THIRD PARTY PROCTOR\n\n## Definition of a Proctor — 45.25 DEFINITIONS, Subd. 12\n\n"Proctor" means a person who (1) verifies a student’s identity, and (2) processes an affidavit testifying that the student received no outside assistance with the course or the examination. A proctor must not be:\n\n- a relative of the student;\n- the student’s supervisor at work;\n- a person the student supervises at work; or\n- a student who is completing the same course.\n\nAn acceptable proctor would not be: friends, family members, or individuals with any personal or financial interest in the student’s success on the exam. The exam will reset if you exit the exam without completing it.\n\n## Student Attestation:\n\nI declare that I will personally complete this exam with no assistance from any person(s), course material, or any additional source of information. This exam will be monitored by a proctor who is an impartial, disinterested third party or currently licensed agent with no family or financial relationship to me. Membership in a professional association/organization does not constitute a financial relationship.\n\nI also understand that the proctor and myself will be required to complete the POST FINAL affidavit.',
     extraFields: [],
   },
   {
@@ -537,95 +619,103 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     complianceType: 'Pre-Final Affidavit',
     sourceFile: 'XCEL PE General Pre-Final Attestation.docx',
     subject: 'XCEL — General',
-    body: 'I attest that I personally completed all coursework required for this program and that the information in my completion record is accurate.',
+    body:
+      '## THIS EXAM MUST BE MONITORED BY A DISINTERESTED THIRD PARTY PROCTOR\n\n## Definition of a Proctor:\n\nThe proctor must be a disinterested third party, with a minimum age of 18 years, who can be any person except for family members or individuals who have a financial interest in the success of the student taking the examination. Co-worker proctors must not be above or below in the student’s line of supervision.\n\n## Proctor Information and responsibilities:\n\nA proctor is a disinterested third party with no conflict of interest that must verify the identity of the student listed above (i.e., valid photo ID). The proctor must personally observe the completion of the self-study course exam to ensure it is completed without outside assistance of any kind (i.e., human, study material, notes, computer, cell phone, etc.) and physically monitor the student throughout the entire exam process and complete the POST FINAL affidavit.\n\n## Student Attestation:\n\nI declare that I will personally complete this exam with no assistance from any person(s), course material, or any additional source of information. This exam will be monitored by a proctor who is an impartial, disinterested third party or currently licensed agent with no family or financial relationship to me. Membership in a professional association/organization does not constitute a financial relationship.\n\nI also understand that the proctor and I will be required to complete the POST FINAL affidavit.',
     extraFields: [],
   },
-
-  /* ── affidavit-two-party (3) ────────────────────────────────────────────
-     A student declaration AND a separate proctor declaration. The proctor's
-     relationship-to-examinee option set varies by state, and the student side
-     asks for extra identity fields that also vary. */
+  /* ── affidavit-two-party (4) ───────────────────────────────────────────
+       ⚠ NOT THE THREE THE BRIEF NAMED. Every one of these was filed as
+       single-signer and every one carries an exam-monitor block: a
+       relationship question, proctor identity fields and a proctor
+       declaration. The option lists differ by state, which is why they are
+       read from the config. */
   {
-    id: 'ca-post',
-    state: 'CA',
+    /* ⚠ TWO-PARTY, and it was filed as single. The file carries a full
+       “To be completed and Signed by Exam Monitor” block: a relationship
+       question, a proctor address, a printed name and a signature. The three
+       documents the brief named as two-party (CA, IL, OH) have no proctor at
+       all; these four, all filed as single, do. The shape was inverted. */
+    id: 'co-post',
+    state: 'CO',
     timing: 'post-final',
     shape: 'affidavit-two-party',
-    title: 'California — Post Final Affidavit',
+    title: 'Colorado — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
-    sourceFile: 'CA PE-Post Final Affidavit.docx',
-    subject: 'California',
-    relationshipOptions: ['Instructor', 'Proctor', 'School Official', 'Notary'],
-    extraFields: ['dob', 'ssn-last4'],
+    sourceFile: 'CO PE-Post Final Affidavit.docx',
+    subject: 'Colorado',
     studentBody:
-      'I declare under penalty of perjury that I personally completed this pre-licensing course without unauthorized assistance, in accordance with California Department of Insurance requirements.',
+      'I affirm that I personally completed the entire study material of the course. I also affirm that I completed the exam without assistance from any course material, other than source material, or from any person(s).\n\n## Student Certification Statement:\n\nBy submitting this form, I certify that, under the penalty of perjury, I am the person listed above and that my completion of each assignment in this course was the result of my own personal efforts, unassisted by any unauthorized individual or resource, and my work has not been altered or tampered with in any way. I understand that receiving unauthorized assistance or tampering with course results will invalidate my course credit and may be a cause of action under applicable laws and regulations sanctioned by the Colorado Division of Insurance.',
     proctorBody:
-      'I declare that I personally observed the examinee identified in this affidavit and verified their identity using government-issued photo identification.',
+      '## To be completed and Signed by Exam Monitor\n\nI certify that I verified the identification of the student. In addition, I administered the final examination and certify that it was sealed until administration and completed without assistance or outside assistance of any kind.',
+    relationshipOptions: ['Co-Worker (neither above or below the line of supervision)', 'Librarian', 'Licensed Agent'],
+    extraFields: ['exam-date'],
+    proctorFields: ['full-name', 'address'],
   },
   {
-    id: 'il-post',
-    state: 'IL',
+    id: 'ct-post',
+    state: 'CT',
     timing: 'post-final',
     shape: 'affidavit-two-party',
-    title: 'Illinois — Post Final Affidavit',
+    title: 'Connecticut — Post Final Affidavit',
     complianceType: 'Post Final Affidavit',
-    sourceFile: 'IL PE-Post Final Affidavit.docx',
-    subject: 'Illinois',
-    /* ⚠⚠ THE SOURCE DOCUMENT DOES NOT MATCH THIS SHAPE, and the mismatch is
-       bigger than wording. The page reviewed on 2026-10-19 — headed "Illinois
-       Life Prelicensing Affidavit" — carries ONE declaration and four fields:
-       Student First Name, Student Last Name, Student Signature, Today's Date.
-       There is no proctor block, no relationship-to-examinee question and no
-       SSN anywhere on it. This row says `affidavit-two-party` with
-       `relationshipOptions` and `ssn-full` because the brief said so.
-
-       The STUDENT text below is now verbatim. `proctorBody` is NOT — there is
-       no proctor section in the source to take it from, so what is there is
-       still the placeholder, and the `proctor` step this shape renders is a
-       step the document does not have.
-
-       ⚠ ALSO: the document is headed "Illinois LIFE Prelicensing Affidavit"
-       while the file is the un-lined `IL PE-Post Final Affidavit.docx`, so
-       there may be a per-line-of-authority set here rather than one document.
-
-       TODO(content): confirm whether the source is one page. If it is, this
-       is `affidavit-single` with an exam-date field and the two-party
-       treatment comes off — a decision, not a cleanup, so it is not being
-       taken here. */
-    relationshipOptions: ['Instructor', 'Proctor', 'School Official', 'Notary'],
-    extraFields: ['ssn-full'],
+    sourceFile: 'CT PE-Post Final Affidavit.docx',
+    subject: 'Connecticut',
     studentBody:
-      'I affirm that I personally completed the entire study material of the course including one hundred percent of the online pre-licensing course and the mandatory 7.5-hour webinar course. I also affirm that I completed the comprehensive final exam unassisted by any person(s), course materials or other materials.\n\nI further acknowledge that a violation of these standards shall result in loss of course credit and administrative sanction by the Illinois Department of Insurance.\n\nThe date on this affidavit is the course completion date.',
+      'I affirm that I personally completed the entire study material of the course. I also affirm that I completed the exam without assistance from any course material, other than source material, or from any person(s).\n\n## Student Certification Statement:\n\nBy submitting this form, I certify that, under the penalty of perjury, I am the person listed above and that my completion of each assignment in this course was the result of my own personal efforts, unassisted by any unauthorized individual or resource, and my work has not been altered or tampered with in any way. I understand that receiving unauthorized assistance or tampering with course results will invalidate my course credit and may be a cause of action under applicable laws and regulations sanctioned by the Connecticut Department of Insurance.',
     proctorBody:
-      'I affirm I verified the identity of the examinee named in this affidavit prior to course completion sign-off.',
+      '## To be completed and Signed by Exam Monitor\n\nI certify that I verified the identification of the student. In addition, I administered the final examination and certify that it was sealed until administration and completed without assistance or outside assistance of any kind.',
+    relationshipOptions: ['Co-Worker (neither above or below the line of supervision)', 'Librarian', 'Licensed Agent'],
+    extraFields: ['exam-date'],
+    proctorFields: ['full-name', 'address'],
   },
   {
-    id: 'oh-post',
-    state: 'OH',
+    /* ⚠ ITS RELATIONSHIP LIST IS NOT THE OTHERS'. Wisconsin offers Neighbour
+       where Colorado, Connecticut and West Virginia offer Licensed Agent —
+       which is exactly why the options are read from the config per state
+       rather than shared. */
+    id: 'wi-post',
+    state: 'WI',
     timing: 'post-final',
     shape: 'affidavit-two-party',
-    title: 'Ohio — Pre & Post Final Affidavit',
-    /* ⚠ THE ONE 'Final Affidavit', and the source file is why: it is
-       "Pre & Post Final Affidavit" — ONE document serving both sittings,
-       where every other state ships a separate Pre and a separate Post.
-       'Final Affidavit' is the only one of the six names that covers both
-       without claiming it is only one of them. Filed as a Post Final
-       Affidavit until the file list settled it. */
-    complianceType: 'Final Affidavit',
-    sourceFile: 'OH PE-Pre & Post Final Affidavit.docx',
-    subject: 'Ohio',
-    relationshipOptions: ['Instructor', 'Proctor', 'School Official', 'Employer', 'Notary', 'Other'],
-    extraFields: ['ssn-last4', 'phone', 'exam-date'],
+    title: 'Wisconsin — Post Final Affidavit',
+    complianceType: 'Post Final Affidavit',
+    sourceFile: 'WI PE-Post Final Affidavit.docx',
+    subject: 'Wisconsin',
     studentBody:
-      'I certify that I completed this pre-licensing course in compliance with Ohio Department of Insurance requirements and that I intend to sit for the licensing examination on the date provided.',
+      'I affirm that I personally completed the entire study material of the course. I also affirm that I completed the exam without assistance from any course material, other than source material, or from any person(s).\n\n## Student Certification Statement:\n\nBy clicking the button below, I certify that, under the penalty of perjury, I am the person listed above and that my completion of each assignment in this course was the result of my own personal efforts, unassisted by any unauthorized individual or resource, and my work has not been altered or tampered with in any way. I understand that receiving unauthorized assistance or tampering with course results will invalidate my course credit and may be a cause of action under applicable laws and regulations of my state.',
     proctorBody:
-      'I certify that I verified the identity of the examinee and witnessed completion of the affidavit requirements described above.',
+      '## To be completed and signed by Exam Monitor\n\nI declare that I personally observed the above-named individual during the completion of this examination and also observed that the candidate received no outside assistance in completing the examination. I attest that as an approved proctor I am an impartial disinterested third party or currently licensed agent with no family or financial relationship to the student per section Ins. 26.09 (3), Wis. Adm. Code.',
+    relationshipOptions: ['Co-Worker (neither above or below the line of supervision)', 'Librarian', 'Neighbor'],
+    extraFields: [],
+    proctorFields: ['full-name', 'address', 'phone'],
   },
-
-  /* ── needs-review (1) ───────────────────────────────────────────────────
-     NOT A UI STATE anyone should reach. The source PDF resisted text
-     extraction, so there is no content to render and nothing to invent. The
-     modal draws the note and keeps Next permanently off. */
   {
+    id: 'wv-post',
+    state: 'WV',
+    timing: 'post-final',
+    shape: 'affidavit-two-party',
+    title: 'West Virginia — Post Final Affidavit',
+    complianceType: 'Post Final Affidavit',
+    sourceFile: 'WV PE-Post Final Affidavit.docx',
+    subject: 'West Virginia',
+    studentBody:
+      '## TO BE COMPLETED BY THE STUDENT\n\nI declare that I completed the exam with no assistance from any person(s), course material, or any additional source of information. This exam will be proctored by an approved proctor who is an impartial, disinterested third party with no financial relationship to the student.\n\n## Student Certification Statement:\n\nBy submitting this form, I certify that, under the penalty of perjury, I am the person listed above and that my completion of each assignment in this course was the result of my own personal efforts, unassisted by any unauthorized individual or resource, and my work has not been altered or tampered with in any way. I understand that receiving unauthorized assistance or tampering with course results will invalidate my course credit and may be a cause of action under applicable laws and regulations sanctioned by the West Virginia Offices of the Insurance Commissioner.',
+    proctorBody:
+      '## TO BE COMPLETED BY THE PROCTOR\n\nI certify that I am at least 18 years of age and a disinterested third party with no conflict of interest. A disinterest 3rd party is an individual with no family relationship or financial interest in the examinee’s success on the exam. Co-work proctors must not be above or below in the student’s line of supervision. I verified the identity of the student listed above on this form (i.e. valid photo id), and ensured that the exam was completed without outside assistance of any kind (i.e. human, study material, notes, computer, cell phone, etc.) and that I physically monitored the student throughout the entire exam process.',
+    relationshipOptions: ['Co-Worker (neither above or below the line of supervision)', 'Librarian', 'Licensed Agent'],
+    extraFields: [],
+    proctorFields: ['full-name'],
+  },
+  /* ── needs-review (1) ──────────────────────────────────────────────────
+       Not a UI state. Re-checked against the real file on 2026-10-20 and still
+       unreadable; the modal draws the note and Confirm never enables. */
+  {
+    /* ⚠ RE-CHECKED 2026-10-20 against the real file, not inferred from the
+       name. pdftotext, a raw stream decode and a ToUnicode/Differences search
+       all failed for the same reason: subset fonts with no character map.
+       The structure above is as far as partial decoding goes, and it is
+       recorded as inference on purpose — a compliance document reconstructed
+       by guessing at a cipher is worse than an empty one. */
     id: 'mn-post-pdf',
     state: 'MN',
     timing: 'post-final',
@@ -635,6 +725,6 @@ export const COMPLIANCE_DOCUMENTS: ComplianceDocumentConfig[] = [
     sourceFile: 'MN PE-Post Final Affidavit.pdf',
     subject: 'Minnesota',
     needsReviewNote:
-      'Source content could not be extracted. The original PDF uses a custom/embedded font encoding that defeats text extraction. Visible field labels suggest a single-party affidavit (Business Address, City, State, Zip, Phone, Date, Student Signature) but that is inference, not a confirmed read — open the source file directly in a PDF viewer before building real content for this one.',
+      'Still the only document in the set whose text cannot be read. It is the only PDF among 23 .docx files, built with Adobe Fill & Sign, and its fonts are subset with NO ToUnicode map and no /Differences array — so there is nothing in the file that says which character each glyph stands for, and extraction returns mojibake rather than words. Enough decodes to see the SHAPE: it is two-party, with "Student’s Full Legal Name / License Number", a student certification, then "Proctor’s Full Legal Name" and a proctor block. That is inference from partially recovered glyphs, not a read. Open the PDF in a viewer and copy its text out by hand before building real content for this one.',
   },
 ]

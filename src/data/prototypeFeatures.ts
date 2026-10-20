@@ -1088,9 +1088,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     accent: 'blue',
     icon: 'flag',
     blurb:
-      'All 24 compliance documents in the `_XCEL-PE Affidavits and EAs` set \u2014 affidavits, attestations, notices and enrollment agreements \u2014 read end to end and sorted into the six content shapes they fall into, against the fixed three-step flow they were meant to share. Carries the six findings that only came out of opening the files: Illinois\u2019 affidavit has one signer where it is built for two, Ohio is the only document serving both sittings, and every placeholder read so far had the wrong SUBJECT rather than the wrong words.',
+      'All 24 compliance documents in the `_XCEL-PE Affidavits and EAs` set \u2014 affidavits, attestations, notices and enrollment agreements \u2014 read from the source files and sorted into the six content shapes they fall into, against the fixed three-step flow they were meant to share. Carries what only came out of opening them: the proctor shape was assigned to exactly the wrong four documents, the per-state relationship lists are not interchangeable, Florida\u2019s Spanish notice really does name the wrong study manual, and every placeholder had the wrong SUBJECT rather than the wrong words.',
     tileBlurb:
-      'Six shapes, 24 files, and the fixed three-step flow none of them fit. Plus what reading them turned up \u2014 including a document built for two signers that has one.',
+      'Six shapes, 24 files, and the fixed three-step flow none of them fit. Three documents were built for a signer they do not have; four were missing the one they do.',
     kind: 'explore',
     kindLabel: 'Standalone HTML',
     status: 'ready',
