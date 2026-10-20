@@ -76,7 +76,9 @@ export function AtlasAdminNotificationsPage() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+    /* On the Atlas Global Navigation palette, CTAs on XCEL red (2026-10-20,
+       Eric's request) — `.cre-admin-atlas` in tokens.css. */
+    <div className="cre-admin-atlas" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div>
         <h2 style={PAGE_H1}>Notifications</h2>
         <p style={PAGE_SUB}>Everything the portal sends, in one list. Click any row to read the message before you trust it.</p>

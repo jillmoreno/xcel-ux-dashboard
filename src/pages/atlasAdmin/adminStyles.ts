@@ -53,7 +53,7 @@ export const BUTTON_OUTLINE: CSSProperties = {
 export const BUTTON_BRAND: CSSProperties = {
   ...PILL_BUTTON,
   border: '1px solid transparent',
-  background: 'var(--admin-brand)',
+  background: 'var(--admin-cta)',
   color: 'var(--admin-surface)',
 }
 

@@ -7486,6 +7486,11 @@ a.cre-library-card-title::after {
      violet-600). */
   --admin-chart-blue: #2563eb;
   --admin-chart-violet: #7c3aed;
+  /* THE CTA FILL, apart from the brand accent — 2026-10-20. Everywhere it
+     is the brand red, as before; `.cre-admin-atlas` below re-points the
+     accent to the Atlas navy and leaves CTAs on XCEL red. */
+  --admin-cta: var(--admin-brand);
+  --admin-cta-hover: var(--admin-brand-ink);
   /* The public pages (Partner with us, invites, the welcome email, the
      onboarding wizard): the reference's warm paper, its ink (#3a2a28 at
      full strength and the alphas it uses) and its Merriweather headings. */
@@ -7574,5 +7579,40 @@ a.cre-library-card-title::after {
 .cre-admin-name:hover { color: var(--admin-brand) !important; text-decoration: underline; }
 .cre-admin-menu-item:hover { background: var(--admin-fill-soft) !important; }
 .cre-admin-outline:hover { border-color: var(--admin-hover-edge) !important; background: var(--admin-fill-soft) !important; }
-.cre-admin-brand:hover { background: var(--admin-brand-ink) !important; }
+.cre-admin-brand:hover { background: var(--admin-cta-hover) !important; }
+
+/* ── Atlas Admin on the Atlas Global Navigation palette ─────────────────
+   2026-10-20, Eric: "on this page only, rework the colors using the Atlas
+   Global navigation colors for everything except the CTAs, leaving them
+   the XCEL red". A class on the PAGE (Notifications), so the shell and every
+   other page are untouched: it re-points the --admin-* tokens to the
+   global nav's own (atlasHeader.css — navy #31485c, tint #eceff1, its
+   greys and rules, its link blue), and the CTA fill to XCEL's CTA red.
+   Success and amber stay: they mean something, and the nav has no
+   equivalent. Dialogs portal to <body>, outside the class, so they keep
+   the standing palette. */
+.cre-admin-atlas {
+  --admin-ink: #191919;
+  --admin-text: #282828;
+  --admin-muted: #505050;
+  --admin-faint: #8c8c8c;
+  --admin-rule: #dcdcdc;
+  --admin-rule-strong: #c8c8c8;
+  --admin-hover-edge: #8c8c8c;
+  --admin-fill: #ebebeb;
+  --admin-fill-soft: #eceff1;
+  --admin-slate-700: #31485c;
+  --admin-slate-800: #31485c;
+  --admin-brand: #31485c;
+  --admin-brand-ink: #31485c;
+  --admin-brand-tint: #eceff1;
+  --admin-brand-edge: #c8c8c8;
+  --admin-brand-soft-edge: #c8c8c8;
+  --admin-brand-hover-bg: #eceff1;
+  --admin-nav-active-bg: #eceff1;
+  --admin-nav-active-ink: #31485c;
+  --admin-chart-blue: #2980b9;
+  --admin-cta: var(--color-cta-500);
+  --admin-cta-hover: var(--color-cta-600, var(--color-cta-500));
+}
 .cre-admin-soft:hover { background: var(--admin-brand-hover-bg) !important; }
