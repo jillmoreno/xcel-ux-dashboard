@@ -281,7 +281,7 @@ function PreviewBanner({ title, onSample }: { title: string; onSample: () => voi
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, margin: '-1px -1px 0', padding: '9px 25px 8px', borderRadius: '14px 14px 0 0', background: 'var(--admin-atlas-primary-500)', color: 'var(--admin-surface)' }}>
       <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Preview · {title}</p>
-      <button type="button" onClick={onSample} style={{ ...ACTION, display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--admin-surface)' }}>
+      <button type="button" onClick={onSample} style={{ ...ACTION, display: 'inline-flex', alignItems: 'center', gap: 8, color: 'var(--admin-surface)' }}>
         <EnvelopeRegular size={12} aria-hidden /> Send me a sample
       </button>
     </div>
