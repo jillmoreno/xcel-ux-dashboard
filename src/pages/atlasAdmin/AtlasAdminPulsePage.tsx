@@ -417,5 +417,5 @@ function AskDialog({ onClose, onSend }: { onClose: () => void; onSend: () => voi
 
 const PAGE: CSSProperties = { minHeight: '100vh', background: 'var(--admin-page)', fontFamily: 'var(--font-body)' }
 const TOP: CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 24px', borderBottom: '1px solid var(--admin-rule)', background: 'var(--admin-surface)' }
-const CARD_STYLE: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 12, padding: 16, borderRadius: 14, border: '1px solid var(--admin-rule)', background: 'var(--admin-surface)', scrollMarginTop: 40, outline: 'none' }
+const CARD_STYLE: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 12, padding: 32, borderRadius: 14, border: '1px solid var(--admin-rule)', background: 'var(--admin-surface)', scrollMarginTop: 40, outline: 'none' }
 const TOAST: CSSProperties = { position: 'fixed', left: '50%', bottom: 24, transform: 'translateX(-50%)', zIndex: 60, padding: '10px 16px', borderRadius: 9999, background: 'var(--admin-ink)', color: 'var(--admin-surface)', fontSize: 13 }
