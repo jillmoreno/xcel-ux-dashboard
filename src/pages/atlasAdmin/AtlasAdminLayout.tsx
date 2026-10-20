@@ -35,6 +35,7 @@ const TITLES: Record<string, string> = {
   licenses: 'Licenses & Seats',
   organization: 'Organization',
   teams: 'Teams & Organization',
+  enterprise: 'Enterprise Insights',
   notifications: 'Notifications & Reports',
   resources: 'Resources',
   settings: 'Settings · Company',

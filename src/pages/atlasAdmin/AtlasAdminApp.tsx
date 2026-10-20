@@ -27,6 +27,11 @@ import { AtlasAdminLicensesPage } from './AtlasAdminLicensesPage'
 import { AtlasAdminOrganizationPage } from './AtlasAdminOrganizationPage'
 import { AtlasAdminTeamsPage } from './AtlasAdminTeamsPage'
 import { AtlasAdminPulsePage } from './AtlasAdminPulsePage'
+import { AtlasAdminEnterprisePage } from './AtlasAdminEnterprisePage'
+import { AtlasAdminCompliancePage } from './AtlasAdminCompliancePage'
+import { AtlasAdminPassRatePage } from './AtlasAdminPassRatePage'
+import { AtlasAdminRiskExplorerPage } from './AtlasAdminRiskExplorerPage'
+import { AtlasAdminAuditPage } from './AtlasAdminAuditPage'
 
 /**
  * ATLAS ADMIN — the app (2026-10-19, feat/atlas-admin). The admin surface
@@ -142,6 +147,11 @@ export function AtlasAdminApp() {
           <Route path="licenses" element={<AtlasAdminLicensesPage />} />
           <Route path="organization" element={<AtlasAdminOrganizationPage />} />
           <Route path="teams" element={<AtlasAdminTeamsPage />} />
+          <Route path="enterprise" element={<AtlasAdminEnterprisePage />} />
+          <Route path="enterprise/compliance" element={<AtlasAdminCompliancePage />} />
+          <Route path="enterprise/pass-rate" element={<AtlasAdminPassRatePage />} />
+          <Route path="enterprise/risk-explorer" element={<AtlasAdminRiskExplorerPage />} />
+          <Route path="enterprise/audit" element={<AtlasAdminAuditPage />} />
           <Route path="notifications/*" element={<AtlasAdminNotificationsPage />} />
           <Route path="resources" element={<AtlasAdminResourcesPage />} />
           <Route path="settings" element={<AtlasAdminSettingsPage />} />
