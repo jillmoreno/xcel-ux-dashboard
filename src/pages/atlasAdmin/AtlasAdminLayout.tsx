@@ -195,9 +195,7 @@ const NAV_ITEM: CSSProperties = {
 }
 const NAV_ACTIVE: CSSProperties = {
   ...NAV_ITEM,
-  /* XCEL Secondary 100 — 2026-10-20, Eric's request, in place of the
-     reference's rose. The brand's own step, so it follows the brand. */
-  background: 'var(--color-secondary-100)',
+  background: 'var(--admin-nav-active-bg)',
   color: 'var(--admin-nav-active-ink)',
 }
 const MAIN: CSSProperties = { flex: '1 1 auto', padding: '32px 40px 140px' }
