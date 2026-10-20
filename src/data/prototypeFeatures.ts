@@ -1565,7 +1565,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           variants: [
             { name: 'Course progress', when: 'Always', detail: 'Eyebrow + `ProgressDial` at `percent`. ⚠ It survives 100% (2026-10-16) — completion and readiness are two axes, and a learner can be ready at less than 100%.' },
             { name: 'Study pace — a plan fits', when: '`weeks != null`', detail: 'The pace’s NAME (derived via `paceName` over `PLANNER_PLAN`, not typed — renaming a pace in Compass renames it here), the weekly goal row, and the Estimated completion date.' },
-            { name: 'Study pace — no plan fits', when: '`weeks == null`', detail: '"Not enough access left" / "No study pace fits in the time remaining." ⚠ Copied verbatim from `AtlasCourseProgressStates`’ own `paceDays === \'none\'` arm, so the two cards cannot disagree about whether the question is answerable. This is the state the committed 0% default opens on.' },
+            { name: 'Study pace — no plan fits', when: '`weeks == null`', detail: '"Not enough access left" / "No study pace fits in the time remaining." ⚠ Copied verbatim from `AtlasCourseProgressStates`’ own `paceDays === \'none\'` arm, so the two cards cannot disagree about whether the question is answerable. Reached when the remaining access is too short for any pace — the Demo Controls’ Expires setting is what moves it; the default Automatic window leaves room, so the plan arm is what opens.' },
             { name: 'Readiness below', when: '`readinessBelow` — i.e. `atlas-readiness-section` is on', detail: 'Bottom padding drops to 0 so the Readiness card can sit flush inside the same panel and take the same eyebrow (`matchPaceEyebrow`).' },
             { name: 'Left-aligned column', when: 'The column-alignment design control', detail: 'The eyebrows are left in BOTH arms; what moves is the goal row. The dials, the sentence and the completion date stay centred.' },
           ],
@@ -1580,7 +1580,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             why:
               'The tan card steps through five states of a journey; this one shows ONE number and a way to change the plan behind it. Both read the same `studyPace` model, so they answer the same question differently rather than disagreeing about it.',
             edgeCases: [
-              'The committed default opens at 0% with no exam date set, so the Study pace section shows its "Not enough access left" arm — not the plan. A developer reading this handoff against a running page should expect that, not a populated pace.',
+              'The committed default opens at 0% with no exam date set, and the Automatic access window still fits a plan — so the section opens on the PLAN arm (“Average · 4 Week Goal”), with Estimated completion below it. The “Not enough access left” arm needs a shorter Expires setting; both are documented above because a developer will meet both.',
               '⚠ FORKED FROM `HybridHomeV1`’s pace panel (its `PACE_PANEL` + `ProgressDial`), copied rather than imported so a change here is not a change in another designer’s working Home. The LAYOUT is duplicated; the DATA is not.',
             ],
             toasterLogic: ['None — the only action is Customize Your Pace, which routes to Compass’s study planner.'],
