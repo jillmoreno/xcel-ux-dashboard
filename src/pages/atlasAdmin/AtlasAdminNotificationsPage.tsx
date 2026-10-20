@@ -124,27 +124,6 @@ export function AtlasAdminNotificationsPage() {
                               <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: isOn(n) ? 'var(--admin-success-ink)' : 'var(--admin-faint)' }} />
                               {statusLine(n)}
                             </p>
-                            <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 12 }}>
-                              {n.actions.map((a) => (
-                                <button
-                                  key={a}
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    setSelected(n.id)
-                                    runAction(a)
-                                  }}
-                                  style={ACTION}
-                                >
-                                  {ACTION_LABEL[a]}
-                                </button>
-                              ))}
-                              {n.id !== 'progress-report' ? (
-                                <button type="button" onClick={() => setSelected(n.id)} style={ACTION}>
-                                  Preview
-                                </button>
-                              ) : null}
-                            </div>
                           </div>
                           <button
                             type="button"
@@ -159,6 +138,28 @@ export function AtlasAdminNotificationsPage() {
                           >
                             <span style={{ ...KNOB, left: isOn(n) ? 18 : 2 }} />
                           </button>
+                        </div>
+                        {/* The row's links, across the full row — right edge on the toggle's. */}
+                        <div style={{ marginTop: 6, display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 12 }}>
+                          {n.actions.map((a) => (
+                            <button
+                              key={a}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setSelected(n.id)
+                                runAction(a)
+                              }}
+                              style={ACTION}
+                            >
+                              {ACTION_LABEL[a]}
+                            </button>
+                          ))}
+                          {n.id !== 'progress-report' ? (
+                            <button type="button" onClick={() => setSelected(n.id)} style={ACTION}>
+                              Preview
+                            </button>
+                          ) : null}
                         </div>
                       </div>
                     )
