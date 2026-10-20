@@ -25,6 +25,7 @@ import { useDemoShareRegistry } from './demoShareActions'
 import { DemoBar, DemoDropdown } from './DemoBar'
 import { licensedProfessionsFor } from '@/data/licensedStatesFixtures'
 import { readDemoDayOffset, setDemoDayOffset } from '@/data/demoDay'
+import { resolveStartPoint } from '@/pages/endToEndDemo'
 import {
   PACE_STYLE_FLAG_KEY,
   PACE_STYLE_LABELS,
@@ -573,6 +574,11 @@ export function DemoControlsBar({
      bar cannot disagree with `EndToEndPageSync` about what the five are. */
   const startOptions = FEATURE_FLAGS.find((f) => f.key === 'demo-start-point')?.variants ?? []
   const startState = useFeatureFlag('demo-start-point')
+  /* ⚠ RESOLVED FOR THE PICKER TOO — 2026-10-20. Four options became one, and
+     the raw stored value is read in two places here: which row is ticked, and
+     the trigger's label. A browser holding `checkout` would tick nothing and
+     read "Atlas" while sitting on the checkout page. */
+  const activeStart = resolveStartPoint(startState.variant)
   /* ERIC'S ATLAS PROGRESS — moved onto this bar 2026-10-16 because it now
      drives the READINESS bands as well as the ring, which makes it a
      statement about the product rather than one designer's axis.
@@ -1218,7 +1224,7 @@ export function DemoControlsBar({
             id="start"
             square
             hidden={!show('start')}
-            label={startOptions.find((o) => o.value === startState.variant)?.label ?? 'Atlas'}
+            label={startOptions.find((o) => o.value === activeStart)?.label ?? 'Atlas'}
             eyebrow="Start"
             openId={openId}
             onToggle={toggle}
@@ -1227,7 +1233,7 @@ export function DemoControlsBar({
             panelMinWidth={220}
           >
             {startOptions.map((opt) => {
-              const active = opt.value === startState.variant
+              const active = opt.value === activeStart
               return (
                 <button
                   key={opt.value}

@@ -324,3 +324,73 @@ export function useDashboardCourseTitle(): string {
   const short = state ? `${jurisdictionName(state)} Life and Health Pre-licensing` : E2E_COURSE_TITLE_SHORT
   return long ? `${short} with Comprehensive Exam Simulators` : short
 }
+
+/**
+ * WHERE THE START CONTROL CAN OPEN THE DEMO — three options since 2026-10-20,
+ * six before it (Jillienne: "Lets COmbine Email, invite, Checkout, and
+ * Confirmation into 1 Invite & Checkout flow").
+ *
+ * ⚠ THE FOUR WERE ONE JOURNEY LISTED AS FOUR DOORS. Email → Invite →
+ * Checkout → Confirmation is a single path a learner walks end to end; the
+ * control offered each screen of it beside Atlas and Compass, which are whole
+ * surfaces. So two thirds of the menu was one flow, and a stakeholder reading
+ * it had to already know that to see the three real choices.
+ *
+ * ⚠ `also` IS THE REVERSE LOOKUP, and it is why this is a table rather than a
+ * string map. The control is route-is-the-truth both ways: picking an option
+ * navigates to `pathname`, and ARRIVING anywhere the option owns ticks it. The
+ * combined option goes to the Email — the flow's first screen — but answers to
+ * all four, so walking Email → Checkout no longer makes the control jump
+ * between entries mid-journey. It reads "Invite & Checkout" for the whole
+ * walk, which is what the flow is.
+ */
+export const START_POINTS = {
+  'invite-checkout': {
+    pathname: '/end-to-end-demo/email',
+    section: null,
+    /* ⚠ WHOLE PATHNAMES, NOT PREFIXES — `startAt` matches exactly, which is
+       what lets `/end-to-end-demo/email` and `/end-to-end-demo` be different
+       entries in a list where one path is the other's child. */
+    also: ['/end-to-end-demo', '/end-to-end-demo/checkout', '/end-to-end-demo/confirmation'],
+  },
+  atlas: { pathname: '/dashboard-rebrand', section: null },
+  compass: { pathname: '/dashboard-rebrand', section: 'compass' },
+} as const
+export type StartPoint = keyof typeof START_POINTS
+
+/**
+ * A stored Start value -> an option that still exists.
+ *
+ * ⚠ IT EXISTS FOR THE FOUR IDS THAT WENT. `demo-start-point` is in
+ * `cgp.featureFlags` in every browser that has opened the demo, and most of
+ * them hold `email`, `invite`, `checkout` or `confirmation`. Without this the
+ * dropdown ticks NOTHING, its label falls back to "Atlas" while the page is on
+ * the invite, and `START_POINTS[picked]` is undefined so the control navigates
+ * nowhere — a dead control on exactly the machines that have used it.
+ */
+export function resolveStartPoint(value: string | undefined): StartPoint {
+  if (value === 'atlas' || value === 'compass' || value === 'invite-checkout') return value
+  if (value === 'email' || value === 'invite' || value === 'checkout' || value === 'confirmation') {
+    return 'invite-checkout'
+  }
+  return 'atlas'
+}
+
+/** The Start option this address IS, or null for a page the control does not
+ *  name (a course page, Certificates — it goes quiet rather than claiming one
+ *  of its three). */
+export function startPointAt(pathname: string, section: string | null): StartPoint | null {
+  const hits = (Object.keys(START_POINTS) as StartPoint[]).filter((k) => {
+    const p = START_POINTS[k]
+    const also: readonly string[] = 'also' in p ? p.also : []
+    return p.pathname === pathname || also.includes(pathname)
+  })
+  if (hits.length === 0) return null
+  /* ⚠ SECTION DECIDES BETWEEN THE TWO DASHBOARD OPTIONS, and the match has to
+     be exact in BOTH directions: `compass` only when `?section=compass`, and
+     `atlas` only when there is no section at all. Falling back to `atlas` for
+     any unmatched section would light the control up on Certificates and the
+     course pages, which is a claim the page does not support. */
+  const exact = hits.find((k) => (START_POINTS[k].section ?? null) === section)
+  return exact ?? null
+}

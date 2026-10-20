@@ -2299,20 +2299,32 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Navigation',
     label: 'Start',
     description:
-      'Where the demo opens: the invitation Email, the Invite page, its Checkout, Confirmation & Password, the Atlas dashboard, or Compass. Picking one opens it; arriving on one sets the control to match. Email, Invite, Checkout and Confirmation are the End-to-End Demo\u2019s own pages and open on its version.',
+      'Where the demo opens: the Invite & Checkout flow (the invitation email, the invite page, its checkout and the password step \u2014 one journey, opening at the email), the Atlas dashboard, or Compass. Picking one opens it; arriving anywhere in the flow sets the control to match. Invite & Checkout is the End-to-End Demo\u2019s own journey and opens on its version.',
     defaultEnabled: true,
     defaultVariant: 'atlas',
     variants: [
-      /* ⚠ THE EMAIL IS THE FLOW'S FIRST SCREEN (2026-10-19) and so is first
-         here — the order of this list is the order of the journey, which is
-         the only thing that makes the control readable at a glance. */
-      { value: 'email', label: 'Email' },
-      { value: 'invite', label: 'Invite' },
-      { value: 'checkout', label: 'Checkout' },
-      /* Kept from `atlas-e2e-page` (2026-10-16, Jillienne). It is the one
-         thing the four asked for could not do: jump straight to the password
-         step and watch the three-second hand-off into Atlas again. */
-      { value: 'confirmation', label: 'Confirmation' },
+      /* ⚠ ONE OPTION WHERE THERE WERE FOUR — 2026-10-20, Jillienne: "Lets
+         COmbine Email, invite, Checkout, and Confirmation into 1 Invite &
+         Checkout flow."
+
+         Email → Invite → Checkout → Confirmation is ONE journey a learner
+         walks end to end, and the control was listing each of its screens
+         beside Atlas and Compass, which are whole surfaces. Two thirds of the
+         menu was one flow, and reading it required already knowing that.
+
+         It opens on the Email — the flow's first screen — and it ANSWERS TO
+         all four pathnames, so walking the journey no longer makes the
+         control jump between entries mid-walk. See `START_POINTS` in
+         `endToEndDemo.ts`; `resolveStartPoint` keeps a browser holding one of
+         the four old ids working.
+
+         ⚠ WHAT IS LOST, so it is a decision rather than a discovery: you can
+         no longer JUMP straight to Checkout or to the password step from this
+         control — the thing `atlas-e2e-page` was kept for on 2026-10-16. The
+         routes are unchanged and still reachable by URL
+         (`/end-to-end-demo/checkout`, `/end-to-end-demo/confirmation`), and
+         arriving on either still ticks this option. */
+      { value: 'invite-checkout', label: 'Invite & Checkout' },
       { value: 'atlas', label: 'Atlas' },
       { value: 'compass', label: 'Compass' },
     ],

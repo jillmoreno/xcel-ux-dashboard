@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { START_POINTS, resolveStartPoint, startPointAt } from '@/pages/endToEndDemo'
 import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
 import { isDemoControlsEnabled } from '@/components/prototype/demoControlsUtil'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
@@ -26,28 +27,65 @@ describe('the Start demo control', () => {
     expect(flag?.versions, 'a version list is what "available for all" rules out').toBeUndefined()
   })
 
-  it('offers the six start points, in journey order', () => {
-    /* ⚠ THE EMAIL JOINED AT THE FRONT (2026-10-19, Jillienne: "we need to
-       add a page to the first part of the Invite flow that shows the email
-       the user is starting from"). The ORDER is what this case is really
-       for: it is the order of the journey, which is the only thing that
-       makes a six-option dropdown readable at a glance. */
+  /* ⚠ SIX BECAME THREE — 2026-10-20, Jillienne: "Lets COmbine Email, invite,
+     Checkout, and Confirmation into 1 Invite & Checkout flow."
+
+     The old case pinned the ORDER, because it was the order of the journey
+     and the only thing making a six-option dropdown readable at a glance.
+     That is the argument for the merge: four of the six WERE one journey,
+     listed screen by screen beside two whole surfaces. One option for the
+     flow, and the order is three real choices. */
+  it('offers the three start points — the flow, then the two surfaces', () => {
     expect(flag?.variants?.map((v) => v.value)).toEqual([
-      'email',
-      'invite',
-      'checkout',
-      'confirmation',
+      'invite-checkout',
       'atlas',
       'compass',
     ])
     expect(flag?.variants?.map((v) => v.label)).toEqual([
-      'Email',
-      'Invite',
-      'Checkout',
-      'Confirmation',
+      'Invite & Checkout',
       'Atlas',
       'Compass',
     ])
+  })
+
+  /* ⚠ THE FOUR OLD IDS ARE IN EVERY REVIEWER'S BROWSER. `demo-start-point` is
+     stored per browser, and most machines that have opened the demo hold one
+     of them. Unresolved, the dropdown ticks nothing, its label falls back to
+     "Atlas" while the page sits on the invite, and `START_POINTS[picked]` is
+     undefined so the control navigates nowhere — dead on exactly the machines
+     that have used it most. */
+  it('still understands the four ids it replaced', () => {
+    for (const old of ['email', 'invite', 'checkout', 'confirmation']) {
+      expect(resolveStartPoint(old), old).toBe('invite-checkout')
+    }
+    expect(resolveStartPoint('atlas')).toBe('atlas')
+    expect(resolveStartPoint('compass')).toBe('compass')
+    expect(resolveStartPoint(undefined)).toBe('atlas')
+    expect(resolveStartPoint('nonsense')).toBe('atlas')
+  })
+
+  /* ⚠ AND IT ANSWERS TO ALL FOUR ROUTES, which is the half that makes the
+     control readable during the walk. Arriving on Checkout used to tick
+     "Checkout"; now the whole journey reads "Invite & Checkout" instead of
+     the control jumping between entries as the learner moves. The routes
+     themselves are unchanged and still reachable by URL. */
+  it('ticks the flow from anywhere inside it', () => {
+    for (const path of [
+      '/end-to-end-demo/email',
+      '/end-to-end-demo',
+      '/end-to-end-demo/checkout',
+      '/end-to-end-demo/confirmation',
+    ]) {
+      expect(startPointAt(path, null), path).toBe('invite-checkout')
+    }
+    expect(startPointAt('/dashboard-rebrand', null)).toBe('atlas')
+    expect(startPointAt('/dashboard-rebrand', 'compass')).toBe('compass')
+    /* Still quiet on a page it does not name. */
+    expect(startPointAt('/dashboard-rebrand', 'certificates')).toBeNull()
+  })
+
+  it('opens the flow at its first screen, the email', () => {
+    expect(START_POINTS['invite-checkout'].pathname).toBe('/end-to-end-demo/email')
   })
 
   it('defaults to Atlas — the route a bare /dashboard-rebrand already is', () => {
