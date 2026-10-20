@@ -1211,7 +1211,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     accent: 'blue',
     icon: 'grid',
     blurb:
-      'The page-level layout of the current XCEL Atlas Home (End-to-End Demo): how the course card, the progress/readiness panel, the exam-date card, the study journey and Quick Links are arranged, and the decisions that apply to the whole page rather than one card.',
+      'The page-level layout of the current XCEL Atlas Home (End-to-End Demo): how the course card, the course-progress / study-pace panel, the exam-date prompt, the study journey and Quick Links are arranged, and the decisions that apply to the whole page rather than one card.',
     tileBlurb:
       'How the Atlas Home page is laid out — column widths, ordering, the White-vs-WIP chrome differences — with each card’s own detail living in its own handoff.',
     kind: 'guided',
@@ -1231,10 +1231,12 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
       { id: 'atlas-wip-quick-links-side', label: 'Quick Links side', note: 'Left (default) or right. On the Design bar for WIP/White only — see the decision below on why E2E still reads it.' },
       { id: 'atlas-v3-progress', label: 'Progress', note: 'Which of the five Course Progress states the page opens on; Readiness and the journey’s current stop follow it.' },
       { id: 'atlas-v3-link-tiles', label: 'Link tiles', note: 'Stacked vs inline — currently has no visible effect on this page; see the decision below.' },
+      { id: 'atlas-pace-card', label: 'Study pace card', note: '⚠ DECIDES WHAT THE LEFT COLUMN IS. `ring` (the committed default) renders `AtlasPaceRingCard` — Course progress over Study pace in one panel. `states` renders the tan five-state `AtlasCourseProgressStates` instead. Design bar, but the DEFAULT ships to everyone.' },
+      { id: 'atlas-readiness-section', label: 'Readiness section', note: '⚠ OFF BY DEFAULT (`defaultEnabled: false`, 2026-10-19). The Readiness panel does not render on a bare `?demo=1`; reach it with `?ff=atlas-readiness-section`.' },
     ],
     devHandoff: {
       intro:
-        'The page composing six cards into one Home: a course card/head leading the page, a left column (Progress + Readiness, stacked on White into one outlined panel), the Exam Date card, the Study Journey + two Get Licensed steps, and a Quick Links rail. Each card is documented in its own handoff; this one is the shell around them.',
+        'The page composing six cards into one Home: a course card/head leading the page, a left column (one outlined panel: the Course progress ring over Study pace — Readiness joins it only when its flag is on), the Exam Date card, the Study Journey + two Get Licensed steps, and a Quick Links rail. Each card is documented in its own handoff; this one is the shell around them.',
       components: [],
       uiComponents: [
         {
@@ -1243,19 +1245,19 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           tabLabel: 'Page Layout',
           location: 'src/components/compass/AtlasHomeEricE2E.tsx',
           summary:
-            'The composition of the Home page: the course card/head on top, a left column (course progress + readiness) and a right column (study journey + Get Licensed steps) inside it, and a Quick Links rail beside the whole card. Everything on the page reads from one shared state (the Demo Controls’ Progress) so the cards cannot disagree with each other.',
+            'The composition of the Home page: the course card/head on top, a left column (one outlined panel — the Course progress ring over Study pace) and a right column (study journey + Get Licensed steps) inside it, and a Quick Links rail beside the whole card. Everything on the page reads from one shared state (the Demo Controls’ Progress) so the cards cannot disagree with each other.',
           quickSummary:
             'This is the current Home for Atlas Learning. It’s meant to give dev a map of the whole page before they open the individual component handoffs, plus the open questions nobody’s decided yet (Quick Links side, link tiles, long title).',
           variants: [
             {
               name: 'WIP chrome',
               when: 'Dashboard version renders WIP-like (not White/E2E)',
-              detail: 'Course card and Quick Links each keep their own shadowed, padded surface; Progress and Readiness render as two separate cards.',
+              detail: 'Course card and Quick Links each keep their own shadowed, padded surface; the left column’s sections lose the shared outlined panel and stand as separate cards.',
             },
             {
               name: 'White / End-to-End Demo chrome',
               when: '`isEricAtlasWhiteLike(version)` is true — includes End-to-End Demo, the committed default',
-              detail: 'The course card loses its shadow and goes full-width/flush (no card padding of its own); Progress and Readiness share one outlined panel with a hairline between them; the course-head sits on its own Primary 100 panel; no course tabs.',
+              detail: 'The course card loses its shadow and goes full-width/flush (no card padding of its own); the Course progress ring and Study pace share one outlined panel with a hairline between them (Readiness joins the same panel when its flag is on); the course-head sits on its own Primary 100 panel; no course tabs.',
             },
             {
               name: 'Quick Links side',
@@ -1266,7 +1268,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           uxLogic: [
             'Page is a flex row: the course card (`flex: 0 1 830px`/800px on White) and the Quick Links rail (`width: 234`), 32px apart.',
             '`onWhite` is computed from the RESOLVED dashboard version (`resolveDashboardVersion`), not the raw `?version=` param — a bare `?demo=1` must resolve to its own default chrome, not fall through to WIP’s.',
-            'Inside the course card: a course head (tabs + title + buttons), then a rule, then a row of [left column: Progress + Readiness] / [vertical divider] / [right column: Study Journey + Get Licensed steps].',
+            'Inside the course card: a course head (tabs + title + buttons), then a rule, then a row of [left column: the Course progress + Study pace panel, with Readiness under it when enabled] / [vertical divider] / [right column: Study Journey + Get Licensed steps].',
             'The Top Nav’s Home button fires `ATLAS_HOME_REFRESH`, a window event every demo card listens for: Progress resets to Not Started and every card remounts (fresh `key`), so a reviewer can restart the whole story from one button.',
             'Clicking the Course Progress card advances the Demo Controls’ Progress to the next of its five stages — the dropdown and the card are the same control, not two.',
           ],
@@ -1527,9 +1529,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     accent: 'blue',
     icon: 'grid',
     blurb:
-      'The five-state Course Progress module on the Atlas Home: Study Pace at 0%, the real completion dial, a Milestone celebration, Complete, and Expired — stepped by clicking the card itself or by the Demo Controls’ Progress dropdown.',
+      'The left column of the Atlas Home, in its two arms. `ring` (the committed default) is `AtlasPaceRingCard` — a Course progress dial over a Study pace plan, in one panel. `states` is the tan five-state card it forked from: Study Pace at 0%, the real completion dial, a Milestone celebration, Complete, and Expired, stepped by clicking it.',
     tileBlurb:
-      'Study Pace → Course Progress (the dial) → Milestone → Complete → Expired — one card, five states, stepped by clicking it.',
+      'The Course progress ring over Study pace (the default), and the tan five-state card behind the other arm of `atlas-pace-card`.',
     kind: 'guided',
     status: 'ready',
     category: 'dev-handoff',
@@ -1538,12 +1540,13 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     pages: [
       {
         label: 'Atlas Home (End-to-End Demo)',
-        note: 'Leads the left column. Click the card to step through its five states, or use UI/UX Demo Tools → Progress to jump straight to one.',
+        note: 'Leads the left column — the ring arm, which is what a bare `?demo=1` renders. Use UI/UX Demo Tools → Progress to move the figures; the Design bar’s Study pace card control switches to the `states` arm.',
         to: '/dashboard-rebrand?demo=1&section=dashboard',
       },
     ],
     featureFlags: [
       { id: 'atlas-v3-progress', label: 'Progress', note: 'Which of the five states the module opens on (`not-started`, `on-track`, `milestone`, `completed`, `expired`). Readiness and the Study Journey’s current stop follow the same pick.' },
+      { id: 'atlas-pace-card', label: 'Study pace card', note: '⚠ WHICH OF THE TWO ARMS BELOW RENDERS. `ring` is the committed default (`defaultVariant: \'ring\'`); `states` is the tan card. Both read the same `studyPace` model, so they cannot disagree about the plan — only about how much of it to show.' },
     ],
     devHandoff: {
       intro:
@@ -1551,21 +1554,79 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
       components: [],
       uiComponents: [
         {
+          id: 'atlas-home-pace-ring',
+          name: 'Atlas Home — Course Progress + Study Pace (ring)',
+          tabLabel: 'Pace Ring',
+          location: 'src/components/compass/AtlasPaceRingCard.tsx',
+          summary:
+            '⚠ THE DEFAULT ARM — what a bare `?demo=1` renders, and therefore what every reviewer sees unless they change it. One panel holding two labelled sections: Course progress (an eyebrow over a `ProgressDial`) and, under a hairline, Study pace (the pace’s name read off Compass’s planner, the weekly goal, and an Estimated completion date). Readiness, when its flag is on, renders beneath as a third section sharing the same eyebrow.',
+          quickSummary:
+            'This is the left column of the Home as it stands. It replaced the tan five-state card as the default on 2026-10-16 — the tan one is still there behind the Design bar. Course progress sits on top because where the learner has got to is the first thing they want; the plan follows from it.',
+          variants: [
+            { name: 'Course progress', when: 'Always', detail: 'Eyebrow + `ProgressDial` at `percent`. ⚠ It survives 100% (2026-10-16) — completion and readiness are two axes, and a learner can be ready at less than 100%.' },
+            { name: 'Study pace — a plan fits', when: '`weeks != null`', detail: 'The pace’s NAME (derived via `paceName` over `PLANNER_PLAN`, not typed — renaming a pace in Compass renames it here), the weekly goal row, and the Estimated completion date.' },
+            { name: 'Study pace — no plan fits', when: '`weeks == null`', detail: '"Not enough access left" / "No study pace fits in the time remaining." ⚠ Copied verbatim from `AtlasCourseProgressStates`’ own `paceDays === \'none\'` arm, so the two cards cannot disagree about whether the question is answerable. This is the state the committed 0% default opens on.' },
+            { name: 'Readiness below', when: '`readinessBelow` — i.e. `atlas-readiness-section` is on', detail: 'Bottom padding drops to 0 so the Readiness card can sit flush inside the same panel and take the same eyebrow (`matchPaceEyebrow`).' },
+            { name: 'Left-aligned column', when: 'The column-alignment design control', detail: 'The eyebrows are left in BOTH arms; what moves is the goal row. The dials, the sentence and the completion date stay centred.' },
+          ],
+          uxLogic: [
+            '⚠ Course progress LEADS the column (2026-10-16) — it sat under Study pace only because the dial used to live inside that card.',
+            'A hairline under Course progress, not just a gap: the figure above it is a different KIND of thing from the plan below, and 24px of air reads as spacing rather than a boundary.',
+            'The week goal is DERIVED from the same `paceFit` the Estimated-completion date reads — a hardcoded week count is how those two start describing different plans.',
+            '⚠ NO WEEK-COUNT FALLBACK (2026-10-19). It was `: 3`, a figure nothing had computed, printed at the one moment the model has no plan to offer. `undefined` is what the card reads as "no pace fits", so the goal line, the hours line and the completion date all fall silent together.',
+            'Unlike the tan arm, this card is NOT a click-to-advance review device — it has no `onAdvance`. The Demo Controls’ Progress dropdown is the only thing that moves its figures.',
+          ],
+          uiUxLogic: {
+            why:
+              'The tan card steps through five states of a journey; this one shows ONE number and a way to change the plan behind it. Both read the same `studyPace` model, so they answer the same question differently rather than disagreeing about it.',
+            edgeCases: [
+              'The committed default opens at 0% with no exam date set, so the Study pace section shows its "Not enough access left" arm — not the plan. A developer reading this handoff against a running page should expect that, not a populated pace.',
+              '⚠ FORKED FROM `HybridHomeV1`’s pace panel (its `PACE_PANEL` + `ProgressDial`), copied rather than imported so a change here is not a change in another designer’s working Home. The LAYOUT is duplicated; the DATA is not.',
+            ],
+            toasterLogic: ['None — the only action is Customize Your Pace, which routes to Compass’s study planner.'],
+          },
+          designSpec: {
+            tokens: [
+              { role: 'Panel', token: 'transparent — the outlined panel comes from the Home (`WHITE_PROGRESS_PANEL`), not from this card' },
+              { role: 'Eyebrow', token: '--color-neutral-800 (shared via `atlasSectionEyebrow`)' },
+              { role: 'Divider under Course progress', token: '--color-atlas-nav-rule' },
+              { role: 'Dial figure', token: '--font-heading-serif' },
+              { role: 'Goal note', token: '--font-body' },
+            ],
+            sources: [
+              'src/components/compass/AtlasPaceRingCard.tsx',
+              'Forked from the pace panel in `HybridHomeV1.tsx` — reference the live prototype, not a Figma node.',
+            ],
+          },
+          acceptanceCriteria: [
+            'A bare `?demo=1` renders THIS card in the left column — not the tan five-state one. If course-progress and study-pace are separate tan cards, the page is on the `states` arm.',
+            'Course progress stays visible at 100% rather than being swapped out.',
+            'When no study pace fits the remaining access, the goal row, the hours line and the completion date are all absent together — never one figure left standing on its own.',
+          ],
+          data: [
+            'The learner’s completion percentage — today the Demo Controls’ Progress flag via the shared ladder, not a progress record.',
+            'The study plan — today `PLANNER_PLAN`, the same fixture Compass’s planner opens on, read through `paceName`/`studyPace`.',
+          ],
+          stubs: [
+            'Customize Your Pace routes to the Compass study planner; nothing persists a chosen pace back to this card.',
+          ],
+        },
+        {
           id: 'atlas-home-progress-states',
           name: 'Atlas Home — Course Progress States',
           tabLabel: 'Progress States',
           location: 'src/components/compass/AtlasCourseProgressStates.tsx',
           summary:
-            'A single card cycling through five states of the current course’s progress: Study Pace (nothing started yet), Course Progress (the real completion dial), Milestone, Complete, and Expired. On Home, clicking it steps the PAGE’s shared Progress control rather than its own local state, so Readiness and the Study Journey move with it.',
+            '⚠ THE NON-DEFAULT ARM — reachable at `?ff=atlas-pace-card:states`, or from the Design bar. A single card cycling through five states of the current course’s progress: Study Pace (nothing started yet), Course Progress (the real completion dial), Milestone, Complete, and Expired. On Home, clicking it steps the PAGE’s shared Progress control rather than its own local state, so Readiness and the Study Journey move with it.',
           quickSummary:
-            'The five-state progress module (Study Pace, Course Progress, Milestone, Complete, Expired). Right now clicking the card itself is just a review trick to flip states — only the Current state shows real numbers, the rest are placeholder copy.',
+            'The tan five-state progress module (Study Pace, Course Progress, Milestone, Complete, Expired) — the arm the page shipped with before the ring became the default on 2026-10-16. Right now clicking the card itself is just a review trick to flip states — only the Current state shows real numbers, the rest are placeholder copy.',
           variants: [
             { name: 'Zero / Study Pace', when: 'percent ≤ 0', detail: '"We’ve set up a moderate study plan for you" + a pace pill (Moderate) + "Edit My Study Pace". No dial — a 0% course never shows a 0% ring.' },
             { name: 'Current / Course Progress', when: '0 < percent < 100, not Milestone', detail: 'The real dial (the page’s own `percent`) + "Expected completion" + "Course access" figures, both real.' },
             { name: 'Milestone', when: 'Selected via the Design/Demo Progress control', detail: 'Dial pinned to 68% (design figure, not derived from `percent`) + "Great Work!!" + fixed "June 3" / "28 Days, Ends June 10" figures.' },
             { name: 'Complete', when: 'Selected via the Progress control', detail: 'Dial at 100% + "Amazing Job!!" + fixed "June 1" / "9 Days, Ends June 10" figures.' },
             { name: 'Expired', when: 'Selected via the Progress control', detail: '"We’re sorry but your course has expired" + a drawn (unwired) "Extend Course Now" button — clicking it is a click on the card, not the button.' },
-            { name: 'bare (combined panel)', when: 'On White/End-to-End Demo chrome, sharing one outlined panel with Readiness', detail: 'No card fill/border of its own; eyebrow swaps to "Pre-Licensing Progress"; drops the Course access figure, the post-copy rule, and the "Edit My Study Pace" link entirely.' },
+            { name: 'bare (combined panel)', when: 'On White/End-to-End Demo chrome, sharing one outlined panel with Readiness when that flag is on', detail: 'No card fill/border of its own; eyebrow swaps to "Pre-Licensing Progress"; drops the Course access figure, the post-copy rule, and the "Edit My Study Pace" link entirely.' },
           ],
           uxLogic: [
             'The WHOLE card is `role="button"`/`tabIndex={0}`; a click OR Enter/Space anywhere on it advances to the next state — not just "Edit My Study Pace" or "Extend Course Now", which are drawn but inert.',
@@ -1680,9 +1741,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     accent: 'blue',
     icon: 'grid',
     blurb:
-      'The five-level "Readiness for state exam" half-dial on the Atlas Home, whose opening level follows the Course Progress card and which — on its own — steps forward by clicking it, the same review-device pattern as Progress.',
+      '⚠ OFF ON MAIN — `atlas-readiness-section` is `defaultEnabled: false` (2026-10-19, Jillienne: "readiness off"), so this panel does NOT render on a bare `?demo=1`; open it with `?ff=atlas-readiness-section`. The five-level "Readiness for state exam" half-dial on the Atlas Home, whose opening level follows the Course Progress card and which — on its own — steps forward by clicking it, the same review-device pattern as Progress.',
     tileBlurb:
-      'Novice → Advanced Beginner → Competent → Proficient → Exam Ready — a half-dial under Course Progress, synced to its stage.',
+      'Off by default — a half-dial under Course Progress, Novice → Advanced Beginner → Competent → Proficient → Exam Ready, synced to its stage.',
     kind: 'guided',
     status: 'ready',
     category: 'dev-handoff',
@@ -1691,11 +1752,17 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     pages: [
       {
         label: 'Atlas Home (End-to-End Demo)',
-        note: 'Sits directly below Course Progress (or shares its outlined panel). Click the card to step through its five levels, or change UI/UX Demo Tools → Progress to re-sync it.',
+        note: '⚠ THE FLAG IS OFF ON MAIN, so this link shows the page WITHOUT the panel — it is here because it is the page the panel belongs to. Use the link below to actually see it.',
         to: '/dashboard-rebrand?demo=1&section=dashboard',
+      },
+      {
+        label: 'Readiness panel switched on — what this handoff describes',
+        note: 'The same page with `?ff=atlas-readiness-section`, which turns the panel on for this visit only. It renders below Course progress, sharing the ring panel and its eyebrow (`matchPaceEyebrow`). Click the card to step through its five levels, or change UI/UX Demo Tools → Progress to re-sync it.',
+        to: '/dashboard-rebrand?demo=1&section=dashboard&ff=atlas-readiness-section',
       },
     ],
     featureFlags: [
+      { id: 'atlas-readiness-section', label: 'Readiness section', note: '⚠ THE GATE ON THIS WHOLE PANEL, and it is OFF on main (`defaultEnabled: false`). `src/components/compass/AtlasHomeEricE2E.tsx` renders the card under `{!showReadiness ? null : …}`. A design-bar control, but the default is what ships.' },
       { id: 'atlas-v3-progress', label: 'Progress', note: 'Picks which of the five Readiness levels the card opens on (via a fixed map) — the two cards never open out of sync, though this one can still be clicked independently afterward.' },
     ],
     devHandoff: {
@@ -1718,7 +1785,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             { name: 'Competent (level 3, 66% fill)', when: 'Progress opens at Milestone', detail: '—' },
             { name: 'Proficient (level 4, 85% fill)', when: 'Progress opens at Completed', detail: 'The HIGHEST level the Progress sync ever opens on — Exam Ready is reachable only by clicking the card manually past Proficient.' },
             { name: 'Exam Ready (level 5, 100% fill)', when: 'Clicked manually one level past Proficient', detail: 'Clicking (or Enter/Space) AGAIN from here does not wrap to Novice like every other level does — see uxLogic.' },
-            { name: 'bare (combined panel)', when: 'On White/End-to-End Demo chrome, sharing the outlined panel with Course Progress', detail: 'No card fill of its own; drops the "How Ready are you…" question AND the "Help me get ready" link entirely — only the eyebrow + dial remain.' },
+            { name: 'bare (combined panel)', when: 'On White/End-to-End Demo chrome, sharing the outlined panel with the Course progress + Study pace ring', detail: 'No card fill of its own; drops the "How Ready are you…" question AND the "Help me get ready" link entirely — only the eyebrow + dial remain.' },
           ],
           uxLogic: [
             'The WHOLE card is `role="button"`/`tabIndex={0}` — a click or Enter/Space anywhere on it (not just the "Help me get ready" link, which is drawn text and not a real link) advances to the next level.',
