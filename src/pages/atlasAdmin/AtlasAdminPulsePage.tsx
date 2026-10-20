@@ -5,7 +5,7 @@ import { toIso } from '@/data/atlasAdmin/assignments'
 import { BookOpen, CalendarRegular, ChartSimple, Envelope, Sparkles, TriangleExclamation, Users } from '@/icons'
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
-import { BUTTON_BRAND, BUTTON_OUTLINE, EYEBROW, FIELD_LABEL, HEADING, INPUT, PILL } from './adminStyles'
+import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, BUTTON_BRAND, BUTTON_OUTLINE, EYEBROW, FIELD_LABEL, HEADING, INPUT, PILL } from './adminStyles'
 import { STUDENT_FILTER_PARAM } from './AtlasAdminStudentsPage'
 
 /**
@@ -136,7 +136,7 @@ export function AtlasAdminPulsePage() {
               <Figure hug label="Forecasted licensed" value={pulse.forecast} bg={FIGURE_TINT} ink="var(--admin-chart-blue)" />
             </div>
             <Action>Start with intervention, then move exam-ready learners into scheduling.</Action>
-            <button type="button" onClick={() => navigate(students())} style={{ ...BUTTON_BRAND, alignSelf: 'flex-start' }}>
+            <button type="button" onClick={() => navigate(students())} style={{ ...ATLAS_BUTTON_PRIMARY, alignSelf: 'flex-start' }}>
               Open workspace
             </button>
           </Card>
@@ -150,10 +150,10 @@ export function AtlasAdminPulsePage() {
               <Person key={l.id} learner={l} pill="Off track" tone="amber" line={l.prepPct === null ? 'Course done, prep not started' : `${l.prepPct}% toward exam prep`} />
             ))}
             <div style={{ display: 'flex', gap: 8 }}>
-              <button type="button" disabled={reminded} onClick={sendReminders} style={{ ...BUTTON_BRAND, flex: 1, opacity: reminded ? 0.6 : 1 }}>
+              <button type="button" disabled={reminded} onClick={sendReminders} style={{ ...ATLAS_BUTTON_PRIMARY, flex: 1, opacity: reminded ? 0.6 : 1 }}>
                 {reminded ? 'Reminders sent' : 'Send auto reminders'}
               </button>
-              <Link to={students('quiet7')} style={{ ...BUTTON_OUTLINE, textDecoration: 'none' }}>
+              <Link to={students('quiet7')} style={{ ...ATLAS_BUTTON_SECONDARY, textDecoration: 'none' }}>
                 Full list
               </Link>
             </div>
@@ -171,7 +171,7 @@ export function AtlasAdminPulsePage() {
             {pulse.undated.slice(0, 3).map((l) => (
               <Person key={l.id} learner={l} pill="Ready to schedule" tone="blue" line={`${l.prepPct ?? 0}% exam prep · no exam date yet`} />
             ))}
-            <button type="button" disabled={!pulse.undated.length} onClick={() => setDialog('email')} style={BUTTON_BRAND}>
+            <button type="button" disabled={!pulse.undated.length} onClick={() => setDialog('email')} style={ATLAS_BUTTON_PRIMARY}>
               Draft bulk email to {pulse.undated.length} ready learners
             </button>
           </Card>
@@ -183,7 +183,7 @@ export function AtlasAdminPulsePage() {
             <span style={{ fontSize: 12, color: 'var(--admin-muted)' }}>{pulse.rate}% projected rate · Moderate confidence</span>
             <Action>Use the forecast to decide where leadership attention or manager coaching is needed.</Action>
             <p style={{ margin: 0, fontSize: 12, color: 'var(--admin-text)' }}>Based on everyone licensed, 85% of the prepared and 35% of those in progress.</p>
-            <Link to={`${ADMIN_BASE}/reports/team-comparison`} style={{ ...BUTTON_OUTLINE, alignSelf: 'flex-start', textDecoration: 'none' }}>
+            <Link to={`${ADMIN_BASE}/reports/team-comparison`} style={{ ...ATLAS_BUTTON_SECONDARY, alignSelf: 'flex-start', textDecoration: 'none' }}>
               Open forecast by department
             </Link>
           </Card>
@@ -196,7 +196,7 @@ export function AtlasAdminPulsePage() {
               {pulse.close} are close (70–89%) · {pulse.support} still need support
             </span>
             <Action>Review who is close and decide where one more push could improve exam readiness.</Action>
-            <Link to={students('readyNoDate')} style={{ ...BUTTON_OUTLINE, alignSelf: 'flex-start', textDecoration: 'none' }}>
+            <Link to={students('readyNoDate')} style={{ ...ATLAS_BUTTON_SECONDARY, alignSelf: 'flex-start', textDecoration: 'none' }}>
               Review readiness
             </Link>
           </Card>
@@ -206,11 +206,11 @@ export function AtlasAdminPulsePage() {
               {pulse.newThisWeek.length ? 'Check they are on an assignment rule, so the right course and due date reach them.' : 'Your recent enrolments are assigned. Check back next week.'}
             </p>
             <div style={{ display: 'flex', gap: 8 }}>
-              <Link to={students('new30')} style={{ ...BUTTON_OUTLINE, textDecoration: 'none' }}>
+              <Link to={students('new30')} style={{ ...ATLAS_BUTTON_SECONDARY, textDecoration: 'none' }}>
                 View new hires
               </Link>
               {pulse.newThisWeek.length ? (
-                <Link to={`${ADMIN_BASE}/assignments/new`} style={{ ...BUTTON_BRAND, textDecoration: 'none' }}>
+                <Link to={`${ADMIN_BASE}/assignments/new`} style={{ ...ATLAS_BUTTON_PRIMARY, textDecoration: 'none' }}>
                   Assign training
                 </Link>
               ) : null}
@@ -222,7 +222,7 @@ export function AtlasAdminPulsePage() {
             <strong style={{ fontSize: 15, color: 'var(--admin-ink)' }}>Florida updates its 2-15 Life, Health &amp; Annuities exam outline</strong>
             <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: 'var(--admin-text)' }}>More weight on annuity suitability and Florida law from January. Learners above 80% prep should book before the switch.</p>
             <span style={{ fontSize: 11, color: 'var(--admin-muted)' }}>Effective Jan 1, 2027 · XCEL editorial brief</span>
-            <button type="button" onClick={() => setDialog('brief')} style={{ ...BUTTON_OUTLINE, alignSelf: 'flex-start' }}>
+            <button type="button" onClick={() => setDialog('brief')} style={{ ...ATLAS_BUTTON_SECONDARY, alignSelf: 'flex-start' }}>
               View brief
             </button>
           </Card>
@@ -231,7 +231,7 @@ export function AtlasAdminPulsePage() {
             <strong style={{ fontSize: 15, color: 'var(--admin-ink)' }}>Life &amp; Health Pre-Licensing — practice bank refresh</strong>
             <p style={{ margin: 0, fontSize: 13, lineHeight: 1.5, color: 'var(--admin-text)' }}>New scenario questions for policy provisions, riders and state law.</p>
             <span style={{ fontSize: 11, color: 'var(--admin-muted)' }}>Published Oct 13, 2026 · Assigned to every active pre-licensing track.</span>
-            <Link to={`${ADMIN_BASE}/resources`} style={{ ...BUTTON_OUTLINE, alignSelf: 'flex-start', textDecoration: 'none' }}>
+            <Link to={`${ADMIN_BASE}/resources`} style={{ ...ATLAS_BUTTON_SECONDARY, alignSelf: 'flex-start', textDecoration: 'none' }}>
               Review update
             </Link>
           </Card>
@@ -248,7 +248,7 @@ export function AtlasAdminPulsePage() {
               </span>
             </div>
             <Action>Your question helps us improve Pulse and opens the door for more when you need it.</Action>
-            <button type="button" onClick={() => setDialog('ask')} style={{ ...BUTTON_BRAND, alignSelf: 'flex-start' }}>
+            <button type="button" onClick={() => setDialog('ask')} style={{ ...ATLAS_BUTTON_PRIMARY, alignSelf: 'flex-start' }}>
               Request a follow-up
             </button>
           </Card>

@@ -57,6 +57,37 @@ export const BUTTON_BRAND: CSSProperties = {
   color: 'var(--admin-surface)',
 }
 
+/* The Atlas learner buttons (Home's Begin Course / Course Overview):
+   13.5 on 5 × 8, 9px corners; primary bold on the CTA, secondary a 1px
+   CTA outline at medium weight. */
+const ATLAS_BUTTON: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+  whiteSpace: 'nowrap',
+  borderRadius: 9,
+  padding: '5px 8px',
+  fontFamily: BODY,
+  fontSize: 13.5,
+  lineHeight: '20.25px',
+  cursor: 'pointer',
+}
+export const ATLAS_BUTTON_PRIMARY: CSSProperties = {
+  ...ATLAS_BUTTON,
+  border: '1px solid transparent',
+  background: 'var(--admin-cta)',
+  color: 'var(--admin-surface)',
+  fontWeight: 700,
+}
+export const ATLAS_BUTTON_SECONDARY: CSSProperties = {
+  ...ATLAS_BUTTON,
+  border: '1px solid var(--admin-cta)',
+  background: 'transparent',
+  color: 'var(--admin-cta)',
+  fontWeight: 500,
+}
+
 /* Eyebrow / table head: 12 / bold / uppercase / 0.08em. */
 export const EYEBROW: CSSProperties = {
   margin: 0,
