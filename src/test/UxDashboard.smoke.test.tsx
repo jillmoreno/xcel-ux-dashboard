@@ -168,6 +168,7 @@ describe('section routing (sectionOf)', () => {
     // The seven documents — Explorations, directly under PRDs since 2026-10-15.
     // `xcel-lms` and `xcel-admin-tool` stood here until 2026-10-15 — archived
     // (`archivedFeatureRows.ts`; `desktop-platform-row`, `admin-tool-row`).
+    'xcel-compliance-documents': 'exploration',
     'xcel-walkthrough': 'exploration',
     'xcel-wireframes': 'exploration',
     'xcel-admin': 'exploration',

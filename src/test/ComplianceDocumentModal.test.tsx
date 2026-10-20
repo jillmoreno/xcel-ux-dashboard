@@ -43,9 +43,12 @@ function open(config: ComplianceDocumentConfig, language?: 'en' | 'es') {
   return { onComplete, onClose }
 }
 
-const nextButton = () => screen.getByRole('button', { name: /next|finish/i })
-/* A one-step document has no arrows — it gets named CTAs instead. */
+/* Every step ends in a named pair: Cancel/Back on the left, Next/Confirm on
+   the right. There are no arrows anywhere. */
+const nextButton = () => screen.getByRole('button', { name: /^next$/i })
 const confirmButton = () => screen.getByRole('button', { name: /^confirm$/i })
+const backButton = () => screen.getByRole('button', { name: /^back$/i })
+const cancelButton = () => screen.getByRole('button', { name: /^cancel$/i })
 
 /** Clear the `name` step a two-step document opens on. */
 function toDocumentStep() {
@@ -290,10 +293,11 @@ describe('Next stays off until the step is answered', () => {
     fireEvent.click(nextButton())
 
     expect(screen.getByText(/penalty of perjury/i)).toBeInTheDocument()
-    expect(nextButton()).toBeDisabled()
+    // Last step, so the primary is Confirm.
+    expect(confirmButton()).toBeDisabled()
     fireEvent.click(screen.getByLabelText(/i attest/i))
-    expect(nextButton()).toBeEnabled()
-    fireEvent.click(nextButton())
+    expect(confirmButton()).toBeEnabled()
+    fireEvent.click(confirmButton())
     expect(onComplete).toHaveBeenCalledOnce()
   })
 
@@ -321,9 +325,9 @@ describe('Next stays off until the step is answered', () => {
 
     // The wet-signature variant has no agree checkbox to tick at all.
     expect(screen.queryByLabelText(/i have read and agree/i)).toBeNull()
-    expect(nextButton()).toBeDisabled()
+    expect(confirmButton()).toBeDisabled()
     typeInto(/student signature/i, 'Jordan Navarro')
-    expect(nextButton()).toBeEnabled()
+    expect(confirmButton()).toBeEnabled()
   })
 
   it('asks the two-party student step for every extra field the state wants', () => {
@@ -356,10 +360,10 @@ describe('Next stays off until the step is answered', () => {
     expect(screen.getByRole('button', { name: 'Other' })).toBeInTheDocument()
 
     fireEvent.click(screen.getByLabelText(/proctor declaration/i))
-    expect(nextButton()).toBeDisabled()
+    expect(confirmButton()).toBeDisabled()
     fireEvent.click(screen.getByRole('button', { name: 'Proctor' }))
-    expect(nextButton()).toBeEnabled()
-    fireEvent.click(nextButton())
+    expect(confirmButton()).toBeEnabled()
+    fireEvent.click(confirmButton())
     expect(onComplete).toHaveBeenCalledOnce()
   })
 })
@@ -463,26 +467,60 @@ describe('the two shapes with no signer', () => {
 })
 
 describe('the progress strip', () => {
-  it('is absent on a one-step document, and so are the arrows', () => {
+  it('is absent on a one-step document, which ends in Cancel and Confirm', () => {
     const { onClose } = open(docById('fl-notice-lh')) // notice → ['document']
     expect(screen.queryByText(/^Step \d+ of \d+$/)).toBeNull()
-    /* Arrows promise a sequence. On one step there is nowhere back to go and
-       nothing after, so they are replaced by what the two actions actually
-       do. */
-    expect(screen.queryByRole('button', { name: /^back$/i })).toBeNull()
-    expect(screen.queryByRole('button', { name: /next|finish/i })).toBeNull()
+    /* One step is first AND last, so it is Cancel on the left and Confirm on
+       the right — never Back, and never Next. */
+    expect(cancelButton()).toBeInTheDocument()
     expect(confirmButton()).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^back$/i })).toBeNull()
+    expect(screen.queryByRole('button', { name: /^next$/i })).toBeNull()
 
-    const cancel = screen.getByRole('button', { name: /^cancel$/i })
-    fireEvent.click(cancel)
+    fireEvent.click(cancelButton())
     expect(onClose).toHaveBeenCalledOnce()
   })
 
-  it('keeps the arrows wherever there IS a sequence', () => {
-    open(docById('ky-ea')) // enrollment-agreement → three steps
-    expect(screen.getByRole('button', { name: /^back$/i })).toBeInTheDocument()
+  /* ⚠ THE PAIR IS NAMED FOR WHERE YOU ARE, and the three-step document is the
+     only one that shows all four names. An arrow could not say any of it. */
+  it('names the buttons for the step: Cancel/Next, Back/Next, Back/Confirm', () => {
+    open(docById('ky-ea')) // enrollment-agreement → name → license → document
+
+    // First of three: leaving is Cancel, because there is no step behind it.
+    expect(cancelButton()).toBeInTheDocument()
     expect(nextButton()).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^back$/i })).toBeNull()
     expect(screen.queryByRole('button', { name: /^confirm$/i })).toBeNull()
+
+    typeInto(/first name/i, 'Jordan')
+    typeInto(/last name/i, 'Navarro')
+    fireEvent.click(screen.getByLabelText(/legal name/i))
+    fireEvent.click(nextButton())
+
+    // Middle: Back and Next — still neither Cancel nor Confirm.
+    expect(screen.getByText('Step 2 of 3')).toBeInTheDocument()
+    expect(backButton()).toBeInTheDocument()
+    expect(nextButton()).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^cancel$/i })).toBeNull()
+    expect(screen.queryByRole('button', { name: /^confirm$/i })).toBeNull()
+
+    typeInto(/license/i, 'W123456')
+    fireEvent.click(nextButton())
+
+    // Last: Back and Confirm. Confirm is the only button that signs anything.
+    expect(screen.getByText('Step 3 of 3')).toBeInTheDocument()
+    expect(backButton()).toBeInTheDocument()
+    expect(confirmButton()).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^next$/i })).toBeNull()
+  })
+
+  it('steps back rather than closing when Back is pressed', () => {
+    const { onClose } = open(docById('ca-tc'))
+    toDocumentStep()
+    expect(screen.getByText('Step 2 of 2')).toBeInTheDocument()
+    fireEvent.click(backButton())
+    expect(screen.getByText('Step 1 of 2')).toBeInTheDocument()
+    expect(onClose).not.toHaveBeenCalled()
   })
 
   it('is absent on the needs-review placeholder too', () => {

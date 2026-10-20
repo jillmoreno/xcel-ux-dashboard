@@ -4,8 +4,6 @@ import { Button } from '@/components/ui/Button'
 import { Checkbox } from '@/components/ui/Checkbox'
 import {
   Check,
-  ChevronLeft,
-  ChevronRight,
   FileLinesRegular,
   IdCard,
   PenFieldRegular,
@@ -300,63 +298,43 @@ export function ComplianceDocumentModal({
 
         {/* ── progress + the two circular buttons ─────────────────────── */}
         <div style={FOOTER}>
-          {/* ⚠ A ONE-STEP DOCUMENT GETS NAMED BUTTONS, NOT ARROWS. Arrows
-              promise a sequence — they say "there is a previous and a next"
-              — and on a single-step document both halves of that are a lie:
-              there is nowhere back to go and nothing after. Cancel and
-              Confirm say what the two actions actually do. The arrows stay
-              wherever there IS a sequence to move through. */}
-          {steps.length === 1 ? (
-            <div style={SINGLE_ACTIONS}>
-              <Button variant="secondary" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={goNext} disabled={!canAdvance}>
-                Confirm
-              </Button>
-            </div>
-          ) : (
-            /* Two or more steps: the arrows, with the progress strip between
-               them. Everything here is reachable only when there IS a
-               sequence, so none of it needs its own length check. */
-            <>
-              <button type="button" onClick={goBack} aria-label="Back" style={BACK_BUTTON}>
-                <ChevronLeft size={18} aria-hidden />
-              </button>
-
-              <div style={PROGRESS}>
-                <div style={SEGMENTS} role="presentation">
-                  {steps.map((s, i) => (
-                    <span
-                      key={s}
-                      style={{
-                        ...SEGMENT,
-                        background:
-                          i <= stepIndex ? 'var(--color-action)' : 'var(--color-neutral-200)',
-                      }}
-                    />
-                  ))}
-                </div>
-                <span style={STEP_LABEL}>
-                  Step {stepIndex + 1} of {steps.length}
-                </span>
+          {/* ⚠ THE STEP STRIP ONLY EXISTS WHERE THERE ARE STEPS. On a
+              one-step document a single filled segment over "Step 1 of 1" is
+              a bar that was never going to move. */}
+          {steps.length > 1 && (
+            <div style={PROGRESS}>
+              <div style={SEGMENTS} role="presentation">
+                {steps.map((s, i) => (
+                  <span
+                    key={s}
+                    style={{
+                      ...SEGMENT,
+                      background:
+                        i <= stepIndex ? 'var(--color-action)' : 'var(--color-neutral-200)',
+                    }}
+                  />
+                ))}
               </div>
-
-              <button
-                type="button"
-                onClick={goNext}
-                disabled={!canAdvance}
-                aria-label={isLast ? 'Finish' : 'Next'}
-                style={canAdvance ? NEXT_BUTTON_ON : NEXT_BUTTON_OFF}
-              >
-                {isLast ? (
-                  <Check size={18} strokeWidth={3} aria-hidden />
-                ) : (
-                  <ChevronRight size={18} aria-hidden />
-                )}
-              </button>
-            </>
+              <span style={STEP_LABEL}>
+                Step {stepIndex + 1} of {steps.length}
+              </span>
+            </div>
           )}
+
+          {/* ⚠ NAMED BUTTONS EVERYWHERE, NO ARROWS. A chevron says "there is
+              more this way" and nothing else; it cannot say whether pressing
+              it signs a compliance document or just turns a page. The pair is
+              always secondary-then-primary, and each half says what it does:
+              leaving is Cancel on the first step and Back after it, and
+              committing is Next until the last step, where it is Confirm. */}
+          <div style={ACTIONS}>
+            <Button variant="secondary" onClick={goBack}>
+              {stepIndex === 0 ? 'Cancel' : 'Back'}
+            </Button>
+            <Button variant="primary" onClick={goNext} disabled={!canAdvance}>
+              {isLast ? 'Confirm' : 'Next'}
+            </Button>
+          </div>
         </div>
       </div>
       </div>
@@ -1124,18 +1102,19 @@ const CHIP_ON: CSSProperties = {
   color: 'var(--color-text-inverse)',
 }
 
+/* A column now: the step strip, then the buttons. It was a row because the
+   arrows sat either side of the progress; named buttons need the width. */
 const FOOTER: CSSProperties = {
   width: '100%',
   display: 'flex',
-  alignItems: 'center',
-  gap: 12,
+  flexDirection: 'column',
+  gap: 14,
   paddingTop: 4,
 }
 
-/* Right-aligned, Confirm last — the order every other confirm/dismiss pair
-   in this app uses, so the primary sits under the thumb on the side people
-   expect it. */
-const SINGLE_ACTIONS: CSSProperties = {
+/* Right-aligned, the primary last — the order every other confirm/dismiss
+   pair in this app uses, so the primary sits where people expect it. */
+const ACTIONS: CSSProperties = {
   width: '100%',
   display: 'flex',
   justifyContent: 'flex-end',
@@ -1143,7 +1122,7 @@ const SINGLE_ACTIONS: CSSProperties = {
 }
 
 const PROGRESS: CSSProperties = {
-  flex: 1,
+  width: '100%',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
@@ -1163,35 +1142,4 @@ const STEP_LABEL: CSSProperties = {
   fontSize: 11,
   fontWeight: 600,
   color: 'var(--color-text-tertiary)',
-}
-
-const ROUND_BUTTON: CSSProperties = {
-  width: 44,
-  height: 44,
-  flexShrink: 0,
-  borderRadius: 'var(--radius-pill)',
-  border: 'none',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  cursor: 'pointer',
-}
-
-const BACK_BUTTON: CSSProperties = {
-  ...ROUND_BUTTON,
-  background: 'var(--color-neutral-100)',
-  color: 'var(--color-text-secondary)',
-}
-
-const NEXT_BUTTON_ON: CSSProperties = {
-  ...ROUND_BUTTON,
-  background: 'var(--color-action)',
-  color: 'var(--color-text-inverse)',
-}
-
-const NEXT_BUTTON_OFF: CSSProperties = {
-  ...ROUND_BUTTON,
-  background: 'var(--color-neutral-200)',
-  color: 'var(--color-text-tertiary)',
-  cursor: 'not-allowed',
 }

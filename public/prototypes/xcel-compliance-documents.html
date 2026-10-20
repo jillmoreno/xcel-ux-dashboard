@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XCEL — Compliance Documents: six shapes, 24 files</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#f4f4f6; --card:#fff; --line:#e4e4e8; --line-2:#d4d4da;
+  --ink:#1f1f23; --ink-2:#4d4d55; --ink-3:#6d6d76;
+  --primary:#a81c24; --primary-100:#f8dee0; --primary-700:#6f1218;
+  --code-bg:#f5f5f6;
+  --warn:#8a5f00; --warn-bg:#fdf6e7; --warn-line:#e8d5a8;
+  --ok:#1d6b4f; --ok-bg:#eaf5f0; --ok-line:#bcdccd;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --page:#141417; --card:#1d1d21; --line:#2e2e35; --line-2:#3d3d45;
+  --ink:#f2f2f4; --ink-2:#b6b6be; --ink-3:#8d8d96;
+  --primary:#e8737a; --primary-100:#3a1416; --primary-700:#f6c2c6;
+  --code-bg:#232329; --warn:#e0b155; --warn-bg:#2a2318; --warn-line:#4a3d22;
+  --ok:#7fc8a6; --ok-bg:#16241d; --ok-line:#2c4c3c;
+}}
+:root[data-theme="dark"]{
+  --page:#141417; --card:#1d1d21; --line:#2e2e35; --line-2:#3d3d45;
+  --ink:#f2f2f4; --ink-2:#b6b6be; --ink-3:#8d8d96;
+  --primary:#e8737a; --primary-100:#3a1416; --primary-700:#f6c2c6;
+  --code-bg:#232329; --warn:#e0b155; --warn-bg:#2a2318; --warn-line:#4a3d22;
+  --ok:#7fc8a6; --ok-bg:#16241d; --ok-line:#2c4c3c;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);
+  font:15px/1.62 'Open Sans',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+.pbar{background:#1a1a1d;color:rgba(255,255,255,.9);display:flex;align-items:center;gap:13px;
+  padding:0 18px;height:40px;font-size:12px;position:sticky;top:0;z-index:9;flex-wrap:wrap}
+.pbar .tag{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.plink{color:rgba(255,255,255,.72);font-size:12px;font-weight:600;text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:1px}
+.plink:hover{color:#fff;border-bottom-color:#fff}
+.plink:focus-visible{outline:2px solid #c75159;outline-offset:3px}
+.pbtn{appearance:none;border:1px solid rgba(255,255,255,.2);background:transparent;margin-left:auto;
+  color:rgba(255,255,255,.85);font:600 11.5px 'Open Sans',sans-serif;padding:6px 10px;border-radius:6px;cursor:pointer}
+.pbtn:hover{background:rgba(255,255,255,.09)}
+.wrap{max-width:980px;margin:0 auto;padding:30px 26px 90px}
+.doc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:38px 44px 44px;
+  box-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.04)}
+.doc>*{max-width:76ch}
+.doc table,.doc .tw{max-width:100%}
+h1,h2,h3{font-family:'Lato',system-ui,sans-serif;font-weight:900;letter-spacing:-.015em;
+  line-height:1.22;margin:0}
+h1{font-size:31px;margin-bottom:6px}
+h2{font-size:22px;margin:36px 0 12px;padding-top:20px;border-top:1px solid var(--line)}
+h2:first-of-type{border-top:0;padding-top:0}
+h3{font-size:16.5px;font-weight:700;margin:24px 0 9px}
+p{margin:0 0 13px;color:var(--ink-2)}
+strong{color:var(--ink);font-weight:700}
+a{color:var(--primary)}
+ul,ol{margin:0 0 14px;padding-left:22px;color:var(--ink-2)}
+li{margin-bottom:6px}
+code{font:13px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--code-bg);
+  border:1px solid var(--line);border-radius:4px;padding:1px 5px;color:var(--ink)}
+blockquote{margin:0 0 16px;padding:13px 16px;border-left:3px solid var(--warn-line);
+  background:var(--warn-bg);border-radius:0 8px 8px 0;color:var(--ink-2)}
+blockquote p:last-child{margin-bottom:0}
+blockquote strong{color:var(--warn)}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:9px;margin:0 0 18px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
+th{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);
+  background:var(--code-bg);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td strong{color:var(--ink)}
+td.fn{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3)}
+.meta{color:var(--ink-3);font-size:13px;margin-bottom:22px}
+.lead{font-size:16.5px;line-height:1.6;color:var(--ink-2)}
+.ok{border:1px solid var(--ok-line);background:var(--ok-bg);color:var(--ok);
+  border-radius:9px;padding:14px 16px;font-size:13.5px;margin:0 0 16px}
+.ok strong{color:var(--ok)}
+</style>
+</head>
+<body>
+<div class="pbar">
+  <span class="tag">XCEL</span>
+  <span>Compliance documents — the catalog</span>
+  <span style="opacity:.4">·</span>
+  <a class="plink" href="/compliance-documents">Open the live modal</a>
+  <a class="plink" href="/prototypes/xcel-lms-wireframes.html">Wireframes &amp; overlap</a>
+  <button class="pbtn" id="themeBtn" aria-pressed="false">Dark</button>
+</div>
+<div class="wrap"><article class="doc">
+<h1>Compliance documents: six shapes, 24 files</h1>
+<p class="meta">XCEL Solutions · the <code>_XCEL-PE Affidavits and EAs</code> set · reviewed 2026-10-19</p>
+
+<p class="lead">All 24 compliance documents XCEL attaches to a pre-licensing course — affidavits, attestations, notices and enrollment agreements — read end to end and sorted into the <strong>six content shapes</strong> they actually fall into. The claim this document makes is that they do not fit one fixed flow, and that the right unit of reuse is the shape, not the document.</p>
+
+<blockquote><p><strong>What this argues, and what it does not.</strong> The taxonomy below is the reviewable thing. The per-document wording lives in <code>src/data/complianceDocuments.ts</code>, which is the source of truth and will keep moving as the real files are read; this page is the argument for the structure, not a copy of the content.</p></blockquote>
+
+<h2>The problem</h2>
+
+<p>The approved visual style was built once as <code>PreCourseRequirementsWizard</code> — a <strong>fixed three-step flow</strong>: Confirm Name → Confirm License → Affidavit. It is a good flow for the document it was drawn against. It is the wrong flow for most of the set.</p>
+
+<p>Across the 24 files the step counts run from one to three, the fields differ per state, and <strong>two documents have a second signer entirely</strong> — a proctor with their own declaration and their own relationship-to-examinee question. Building each as its own modal gives six components that drift apart; building one modal with conditionals threaded through it gives a component nobody can safely change. The third option is the one taken here: <strong>one shell, and the shape decides what it renders.</strong></p>
+
+<h2>The six shapes</h2>
+
+<p>Steps are derived from the shape, never stored per document — so a 25th document of a known shape is a row of data and no code at all.</p>
+
+<div class="tw"><table>
+<thead><tr><th>Shape</th><th>Steps</th><th>Files</th><th>What makes it its own shape</th></tr></thead>
+<tbody>
+<tr><td><code>notice</code></td><td>document</td><td>2</td><td><strong>No signer at all.</strong> Body text and “I Agree” — no name, no signature. Both are bilingual.</td></tr>
+<tr><td><code>signed-tc</code></td><td>name → document</td><td>4</td><td>Student name and a signature, then agree/attest.</td></tr>
+<tr><td><code>enrollment-agreement</code></td><td>name → license → document</td><td>4</td><td>Pricing, cancellation and refund policy, grievance process, and a list of acknowledgments. Ohio needs a wet signature rather than a tick.</td></tr>
+<tr><td><code>affidavit-single</code></td><td>identity → document</td><td>10</td><td>One declarant, after the course, before the exam. The largest group, and the plainest.</td></tr>
+<tr><td><code>affidavit-two-party</code></td><td>student → proctor</td><td>3</td><td><strong>A second signer.</strong> A proctor declaration with a relationship selector whose options vary by state, plus extra identity fields.</td></tr>
+<tr><td><code>needs-review</code></td><td>—</td><td>1</td><td>Not a UI state. One source file defeated text extraction; the modal draws a note and cannot be completed.</td></tr>
+</tbody>
+</table></div>
+
+<h3>Shape is not the same question as kind</h3>
+
+<p>Each document also has a <strong>compliance type</strong> — the name the business uses for it. The two cut across each other in both directions, which is why they are two fields rather than one:</p>
+
+<ul>
+<li><strong>Post Final Affidavit</strong> spans two shapes — most are single-signer, two are two-party.</li>
+<li><strong><code>affidavit-single</code></strong> spans two types — Pre-Final and Post Final affidavits are structurally identical and administratively different.</li>
+</ul>
+
+<p>Collapsing them into one field is the tempting simplification, and it loses one of those two answers whichever way it goes.</p>
+<h2>All 24, by shape</h2>
+
+<div class="tw"><table>
+<thead><tr><th>Document</th><th>Type</th><th>Shape</th><th>When</th><th>Source file</th></tr></thead>
+<tbody>
+<tr><td><strong>Florida — Life &amp; Health</strong></td><td>Pre-Course Notice</td><td><code>notice</code></td><td>Pre-course</td><td class="fn">FL PE-Pre Course Notice-LifeHealth.docx</td></tr>
+<tr><td><strong>Florida — Property &amp; Casualty</strong></td><td>Pre-Course Notice</td><td><code>notice</code></td><td>Pre-course</td><td class="fn">FL PE-Pre Course Notice-PropertyCasualty.docx</td></tr>
+<tr><td><strong>California</strong></td><td>Terms and Conditions</td><td><code>signed-tc</code></td><td>Pre-course</td><td class="fn">CA PE-Pre-Course Terms and Conditions.docx</td></tr>
+<tr><td><strong>XCEL — Generic</strong></td><td>Terms and Conditions</td><td><code>signed-tc</code></td><td>Pre-course</td><td class="fn">XCEL Generic Terms and Conditions-Pre-Course Affidavit.docx</td></tr>
+<tr><td><strong>Illinois</strong></td><td>Terms and Conditions</td><td><code>signed-tc</code></td><td>Pre-course</td><td class="fn">IL PE-Terms and Conditions-Pre-Course Affidavit.docx</td></tr>
+<tr><td><strong>Minnesota</strong></td><td>Terms and Conditions</td><td><code>signed-tc</code></td><td>Pre-course</td><td class="fn">MN PE-Terms and Conditions-Pre-Course Affidavit - Copy.docx</td></tr>
+<tr><td><strong>Kentucky</strong></td><td>Enrollment Agreement</td><td><code>enrollment-agreement</code></td><td>Pre-course</td><td class="fn">KY PE-Pre-Course Enrollment Agreement.docx</td></tr>
+<tr><td><strong>Nevada</strong></td><td>Enrollment Agreement</td><td><code>enrollment-agreement</code></td><td>Pre-course</td><td class="fn">NV PE-Pre-Course Enrollment Agreement.docx</td></tr>
+<tr><td><strong>Ohio — Student Registration Form</strong></td><td>Enrollment Agreement</td><td><code>enrollment-agreement</code></td><td>Pre-course</td><td class="fn">OH PE-Registration Form-Pre Course Enrollment Agreement.docx</td></tr>
+<tr><td><strong>Oregon</strong></td><td>Enrollment Agreement</td><td><code>enrollment-agreement</code></td><td>Pre-course</td><td class="fn">OR PE-Pre-Course Enrollment Agreement.docx</td></tr>
+<tr><td><strong>Colorado</strong></td><td>Post Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">CO PE-Post Final Affidavit.docx</td></tr>
+<tr><td><strong>Connecticut</strong></td><td>Post Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">CT PE-Post Final Affidavit.docx</td></tr>
+<tr><td><strong>Florida</strong></td><td>Pre-Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">FL PE-Pre Final Affidavit.docx</td></tr>
+<tr><td><strong>XCEL — General</strong></td><td>Pre-Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">XCEL PE General Pre-Final Attestation.docx</td></tr>
+<tr><td><strong>Minnesota</strong></td><td>Pre-Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">MN PE-Pre Final Affidavit.docx</td></tr>
+<tr><td><strong>Mississippi</strong></td><td>Pre-Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">MS PE-Pre Final Affidavit.docx</td></tr>
+<tr><td><strong>New York</strong></td><td>Post Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">NY PE-Post Final Affidavit.docx</td></tr>
+<tr><td><strong>Pennsylvania</strong></td><td>Pre-Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">PA PE-Pre Final Affidavit.docx</td></tr>
+<tr><td><strong>Wisconsin</strong></td><td>Post Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">WI PE-Post Final Affidavit.docx</td></tr>
+<tr><td><strong>West Virginia</strong></td><td>Post Final Affidavit</td><td><code>affidavit-single</code></td><td>Post-final</td><td class="fn">WV PE-Post Final Affidavit.docx</td></tr>
+<tr><td><strong>California</strong></td><td>Post Final Affidavit</td><td><code>affidavit-two-party</code></td><td>Post-final</td><td class="fn">CA PE-Post Final Affidavit.docx</td></tr>
+<tr><td><strong>Illinois</strong></td><td>Post Final Affidavit</td><td><code>affidavit-two-party</code></td><td>Post-final</td><td class="fn">IL PE-Post Final Affidavit.docx</td></tr>
+<tr><td><strong>Ohio</strong></td><td>Final Affidavit</td><td><code>affidavit-two-party</code></td><td>Post-final</td><td class="fn">OH PE-Pre &amp; Post Final Affidavit.docx</td></tr>
+<tr><td><strong>Minnesota</strong></td><td>Post Final Affidavit</td><td><code>needs-review</code></td><td>Post-final</td><td class="fn">MN PE-Post Final Affidavit.pdf</td></tr></tbody>
+</table></div>
+
+<h2>What reading them actually turned up</h2>
+
+<p>Six findings, in rough order of how much they matter. None of these were visible from the file names — each came out of opening the document.</p>
+
+<h3>1. Illinois’ Post Final Affidavit has one signer, not two</h3>
+<p>It is configured <code>affidavit-two-party</code>, with a relationship selector and a full SSN field, because the original brief described it that way. The page carries <strong>one declaration and four fields</strong>: Student First Name, Student Last Name, Student Signature, Today’s Date. No proctor block, no relationship question, no SSN. If that page is the whole document, the row is <code>affidavit-single</code> and one of the three two-party documents disappears — which is a question about the taxonomy, not a typo. <strong>Unresolved.</strong></p>
+
+<h3>2. Ohio is the only “Final Affidavit”, and that is why the sixth name exists</h3>
+<p><code>OH PE-Pre &amp; Post Final Affidavit.docx</code> is one document serving both sittings, where every other state ships a separate Pre and a separate Post. Filing it as a Post Final Affidavit dropped half of what it is. With it named correctly, all six business names are used by at least one document — which is the check that caught it.</p>
+
+<h3>3. The placeholders had the wrong subject, not just the wrong words</h3>
+<p>Three documents have now been read in full, and in each case the stand-in text described the wrong thing entirely:</p>
+<ul>
+<li><strong>Florida Life &amp; Health</strong> — the placeholder said the notice satisfied the pre-licensing education requirement. The document is about the <strong>NAIFA study manual</strong>: that the exam is based on it, that the course does not include it, and where to buy it.</li>
+<li><strong>XCEL Generic T&amp;C</strong> — the placeholder described attendance, academic integrity and refunds. The document is about <strong>proctoring</strong>: who is disqualified from proctoring, the 70% pass mark, and that the completion date is the date the proctor signs.</li>
+<li><strong>Illinois T&amp;C</strong> — the placeholder was one invented sentence. The document is the state’s <strong>course-hours rule</strong>: 20 hours per major line of authority, 7.5 of them in a classroom setting.</li>
+</ul>
+<p>The pattern is worth stating plainly: <strong>placeholder text reads as finished.</strong> A document with the wrong subject is more dangerous than an empty one, because nothing about it looks unresolved. The remaining 21 rows should be assumed wrong until read.</p>
+
+<h3>4. Florida’s Property &amp; Casualty defect is still unverified</h3>
+<p>The brief reported that notice’s Spanish as copy-pasted from Life &amp; Health, naming NAIFA where it should name FAIA. Reading the real Life &amp; Health text shows <strong>NAIFA is correct there</strong> — it is the life and health study-manual publisher — so the claim rests on the P&amp;C document alone, which has not been read. The corrected wording is in place but should not be treated as confirmed.</p>
+
+<h3>5. Minnesota’s Post Final Affidavit cannot be read</h3>
+<p>It is the only PDF in a set of twenty-three <code>.docx</code> files, and it uses a font encoding that defeats text extraction. Visible field labels suggest a single-party affidavit, but that is inference. Rather than guess, it carries the <code>needs-review</code> shape: a warning panel saying so, and a Confirm button that can never be enabled.</p>
+
+<h3>6. Two smaller things, for whoever owns the files</h3>
+<ul>
+<li><code>MN PE-Terms and Conditions-Pre-Course Affidavit - Copy.docx</code> carries Windows’ duplicate suffix, and there is no original beside it. Either the original was deleted and the copy is now live, or this set has a stray.</li>
+<li>Illinois’ affidavit is headed “Illinois <strong>Life</strong> Prelicensing Affidavit” against an un-lined file name, so there may be a per-line-of-authority set rather than one document.</li>
+</ul>
+
+<h2>Open, and deliberately not solved here</h2>
+
+<div class="tw"><table>
+<thead><tr><th>Item</th><th>Where it stands</th></tr></thead>
+<tbody>
+<tr><td><strong>Edition / version numbers</strong></td><td>Wanted on every document; nothing tracks them today. The field exists on the config and is deliberately unset on all 24 — an empty field is a question, a guessed one is an answer.</td></tr>
+<tr><td><strong>English vs. Spanish attachment</strong></td><td>The course’s own language should pick the document. That logic does not exist. The modal takes the language from its caller and offers the learner no toggle, so a learner can never sign a document in a language the course did not attach.</td></tr>
+<tr><td><strong>The signature field</strong></td><td>Two of the read documents ask for one name field where the build renders a name and a signature. The signature is now derived from the typed name rather than entered separately, so the two cannot disagree — but whether the field belongs at all is still open.</td></tr>
+</tbody>
+</table></div>
+
+<h2>Seeing it work</h2>
+
+<p>The live component renders every one of the 24 from this data — one shell, reconfigured per shape. <a href="/compliance-documents">Open the picker</a> and choose any document; the shapes worth looking at first are a Florida notice (bilingual, no signer), Ohio’s Registration Form (wet signature), Ohio’s Pre &amp; Post affidavit (two signers), and Minnesota’s Post Final (the unreadable one, which cannot be completed).</p>
+
+<div class="ok"><strong>Source of truth:</strong> <code>src/data/complianceDocuments.ts</code> holds all 24 rows with their real wording and the file each was read from. This page argues the structure; that file is the content.</div>
+
+</article></div>
+
+<script>
+(function(){
+'use strict';
+function setTheme(d){
+  document.documentElement.setAttribute('data-theme',d?'dark':'light');
+  var b=document.getElementById('themeBtn');
+  b.setAttribute('aria-pressed',String(d)); b.textContent=d?'Light':'Dark';
+  try{localStorage.setItem('xcel.compliance.theme',d?'dark':'light');}catch(e){}
+}
+document.getElementById('themeBtn').onclick=function(){
+  setTheme(document.documentElement.getAttribute('data-theme')!=='dark');
+};
+var t='light'; try{t=localStorage.getItem('xcel.compliance.theme')||'light';}catch(e){}
+setTheme(t==='dark');
+})();
+</script>
+</body>
+</html>
