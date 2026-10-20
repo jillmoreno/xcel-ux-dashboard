@@ -131,6 +131,13 @@ const REBRAND_FLAGS = [
   // this is now the only place to reach Row, which is why it is listed rather
   // than left `?ff=`-only.
   'atlas-exam-prompt',
+  // THE HOME COLUMN's alignment — Centred / Left aligned, 2026-10-20. Design-bar
+  // control until Centred was decided; listed here so Left stays reachable.
+  'atlas-home-align',
+  // THE STUDY PACE CARD's two shapes — Ring / States (as it was), 2026-10-20.
+  // Same story. ⚠ Losing `surface: 'design'` also makes this a
+  // promote-to-prototype candidate, which it was deliberately not before.
+  'atlas-pace-card',
   'course-launcher-style',
   'dashboard-clp-style',
   // Pacing tile treatment on the Testing version — lo-fi / rate / runway /

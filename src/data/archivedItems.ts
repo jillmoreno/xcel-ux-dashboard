@@ -56,6 +56,32 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'atlas-home-align-control',
+    name: 'Section labels \u2014 the Design Controls bar\u2019s Centred / Left aligned radiogroup',
+    what: 'A two-arm control on the cyan bar choosing how the Atlas Home\u2019s figures column reads: CENTRED (the eyebrows and the dial group centred as a block) or LEFT ALIGNED (the eyebrows against the edge, the dials, the sentence and the completion date staying centred \u2014 the pace card\u2019s own note records that what actually moves is the goal row, in both arms of the no-pace state).',
+    location:
+      'THE FLAG AND BOTH ARMS ARE INTACT. `atlas-home-align` is unchanged in the catalog with `defaultVariant: \u2018center\u2019` and both variants; `AtlasHomeJillMain` and `AtlasHomeEricE2E` both still read it into `columnAlign`, and `AtlasPaceRingCard`\u2019s `align` prop still switches the treatment. What went is `surface: \u2018design\u2019` and `versions: [\u2018eric-atlas-e2e\u2019]`. Listed in `REBRAND_FLAGS` in the same change, so Left aligned is reachable from the Feature Flag panel.',
+    flag: 'atlas-home-align (unchanged, default `center`) \u2014 Feature Flag panel, or `?ff=atlas-home-align:left`',
+    dateRemoved: '2026-10-20',
+    reason:
+      'Jillienne\u2019s call \u2014 "Centred has been decided, we can remove this option from Design Controls". Third of four controls retired that afternoon on one rule: the bars carry OPEN questions, and the default is the answer.',
+    restoreNote:
+      'Re-add `surface: \u2018design\u2019` and `versions: [\u2018eric-atlas-e2e\u2019]` to `atlas-home-align` in `src/context/FeatureFlagContext.tsx` \u2014 a comment marks the spot \u2014 and take it back out of `REBRAND_FLAGS`, or the same axis sits on the cyan bar and in the panel at once. ⚠ THE `versions` LIST NAMES ERIC\u2019S VERSION ONLY and predates Jill/Atlas-Main; `versionInScope` makes the e2e family answer for it, so restoring puts the control on BOTH. Add `jill-atlas-main` explicitly if that is what is meant, or narrow it to the one surface being explored. NOT restored deliberately: no component, no markup, no test of the two arms.',
+  },
+  {
+    id: 'atlas-pace-card-control',
+    name: 'Study pace card \u2014 the Design Controls bar\u2019s Ring / States radiogroup',
+    what: 'A two-arm control choosing which Study Pace card the Atlas Home draws: RING (`AtlasPaceRingCard` \u2014 the dial, the week goal, the hours a week, Estimated completion, and from 2026-10-20 the pacing icon and the booked-exam row) or STATES AS IT WAS (`AtlasCourseProgressStates`, the tan card stepping through five states of the journey). Both read the same `studyPace` model, so they answer the same question differently rather than disagreeing about it.',
+    location:
+      'THE FLAG AND BOTH ARMS ARE INTACT. `atlas-pace-card` is unchanged with `defaultVariant: \u2018ring\u2019` and both variants; both Homes still read it into `paceCard` and both components still render. What went is `surface: \u2018design\u2019` and `versions: [\u2018eric-atlas-e2e\u2019]`. Listed in `REBRAND_FLAGS` in the same change.',
+    flag: 'atlas-pace-card (unchanged, default `ring`) \u2014 Feature Flag panel, or `?ff=atlas-pace-card:states`',
+    dateRemoved: '2026-10-20',
+    reason:
+      'Jillienne\u2019s call \u2014 "ring has been decided". Fourth and last of the afternoon\u2019s retirements.',
+    restoreNote:
+      '⚠ READ THIS ONE BEFORE RESTORING, because putting the field back changes something beyond the bar. The flag\u2019s own note recorded the trade of being a design control: it "never reaches Prototypes \u2014 `promote-to-prototype` lists them separately for exactly that reason \u2014 so the ring SHIPS (it is the default and defaults render) but will not come up as a decision at merge the way the rest of today\u2019s work does." Removing `surface: \u2018design\u2019` made the ring a PROMOTION CANDIDATE for the first time; restoring it takes that back, silently, and a decided default stops appearing at merge again. A test asserts the current state so the revert cannot be quiet. Otherwise the steps are the other three rows\u2019: re-add both fields (a comment marks the spot), remove it from `REBRAND_FLAGS`, and decide whether `versions` should name Jill/Atlas-Main as well as Eric\u2019s \u2014 `versionInScope` makes the family answer either way. NOT restored deliberately: `AtlasPaceCard.test.tsx` still exercises both arms and neither component was touched.',
+  },
+  {
     id: 'atlas-exam-prompt-control',
     name: 'Exam date prompt \u2014 the Design Controls bar\u2019s Card / Row radiogroup',
     what: 'A two-arm control on the cyan bar choosing how Step 2 asks for the exam date: CARD (a Primary 100 container with "When is your exam?", a sub-line and Add Date \u2014 lifted out of the journey list) or ROW AS A STOP (the question on the journey\u2019s own spine, wearing Step 1\u2019s row treatment with an open circle mark). Both were authored on 2026-10-19 across a run of asks about how that question should sit against the list beside it.',

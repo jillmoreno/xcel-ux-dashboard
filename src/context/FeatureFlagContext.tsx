@@ -2715,8 +2715,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        ⚠ ON THE DESIGN BAR, so not a promotion candidate — the DEFAULT still
        renders for everyone. Same trade-off as `atlas-pace-card` and
        `atlas-exam-prompt`, written down for the same reason. */
-    surface: 'design',
-    versions: ['eric-atlas-e2e'],
+    /* ⚠ OFF THE DESIGN BAR — 2026-10-20, Jillienne: "Centred has been decided,
+       we can remove this option from Design Controls". Third control retired
+       that afternoon on the same rule, after Navigation and Exam date prompt:
+       the bars carry OPEN questions, and `center` is both the default and the
+       answer. `left` still renders and is in `REBRAND_FLAGS`.
+       See `atlas-home-align-control` in archivedItems.ts. */
     group: 'Widgets',
     label: 'Section labels',
     description:
@@ -2807,8 +2811,20 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        If this should be a baseline decision rather than a designer's toggle,
        it wants `surface` dropped and a plain variant flag instead. Worth
        being deliberate about, which is why it is written down. */
-    surface: 'design',
-    versions: ['eric-atlas-e2e'],
+    /* ⚠ OFF THE DESIGN BAR — 2026-10-20, Jillienne: "ring has been decided".
+       Fourth and last of the afternoon's retirements.
+
+       ⚠ THIS ONE CHANGES WHAT HAPPENS AT MERGE, and the flag's own note above
+       is where that was written down: a design control "never reaches
+       Prototypes — `promote-to-prototype` lists them separately for exactly
+       that reason — so the ring SHIPS (it is the default and defaults render)
+       but will not come up as a decision at merge the way the rest of today's
+       work does. That is a consequence of asking for a dropdown, not an
+       oversight." Without `surface: 'design'` it IS a promotion candidate
+       now, which is the honest place for a decided default to sit.
+
+       `states` still renders and is in `REBRAND_FLAGS`.
+       See `atlas-pace-card-control` in archivedItems.ts. */
     group: 'Widgets',
     label: 'Study pace card',
     description:

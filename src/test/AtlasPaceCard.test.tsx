@@ -1,6 +1,7 @@
 import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
+import { flagScopeForPath } from '@/components/account/FeatureFlagPanel'
 import { AtlasPaceRingCard } from '@/components/compass/AtlasPaceRingCard'
 import { paceName } from '@/components/learning/compassStudyPlannerModel'
 import { PLANNER_PLAN } from '@/data/compassStudyPlannerFixtures'
@@ -20,11 +21,14 @@ afterEach(cleanup)
 describe('the Study pace card variant', () => {
   const flag = FEATURE_FLAGS.find((f) => f.key === 'atlas-pace-card')
 
-  it('is a design-bar control, which is what "in the dropdown" means', () => {
+  /* ⚠ INVERTED 2026-10-20 — "ring has been decided. we can remove this from
+     the demo controls." It WAS a design-bar control; `surface: 'design'` +
+     `variants` is the sanctioned way onto that bar, and dropping both is the
+     way off. The ARMS are untouched, which is what this case now pins. */
+  it('is no longer a bar control, and still has both arms', () => {
     expect(flag).toBeDefined()
-    // `surface: 'design'` + `variants` is the sanctioned way onto that bar —
-    // the bar itself is never edited to add a control.
-    expect(flag?.surface).toBe('design')
+    expect(flag?.surface).toBeUndefined()
+    expect(flag?.versions).toBeUndefined()
     expect(flag?.variants?.length).toBe(2)
   })
 
@@ -35,18 +39,29 @@ describe('the Study pace card variant', () => {
     expect(flag?.variants?.find((v) => v.value === 'states')?.label).toMatch(/as it was/i)
   })
 
-  it('is scoped to the version whose bar should carry it', () => {
-    expect(flag?.versions).toEqual(['eric-atlas-e2e'])
+  /* ⚠ THE SCOPE WENT WITH THE SURFACE, and the pair is the point: `versions`
+     only ever decided which bar CARRIED it, so a flag on no bar has nothing
+     to scope. It read `['eric-atlas-e2e']` — which predates Jill/Atlas-Main,
+     and `versionInScope` would have made the family answer for it. Both
+     facts are in the Archive row, because restoring one without the other
+     puts the control on a version nobody meant. */
+  it('is reachable from the Feature Flag panel instead', () => {
+    expect(flagScopeForPath('/dashboard-rebrand')).toContain('atlas-pace-card')
   })
 
-  /* ⚠ THE TRADE-OFF, WRITTEN DOWN. A design control never reaches Prototypes
-     — `promote-to-prototype` lists them separately for exactly that reason —
-     so the ring SHIPS (it is the default and defaults render) but will not
-     come up as a decision at merge the way the rest of today's work does.
-     That is a consequence of asking for a dropdown, not an oversight; this
-     case exists so the next person meets it deliberately. */
-  it('…and therefore is not a promotion candidate — by construction', () => {
-    expect(flag?.surface).toBe('design')
+  /* ⚠ AND THE TRADE-OFF IT RECORDED HAS RESOLVED ITSELF. This case used to
+     read "…and therefore is not a promotion candidate — by construction",
+     noting that a design control never reaches Prototypes, so "the ring SHIPS
+     (it is the default and defaults render) but will not come up as a
+     decision at merge the way the rest of today's work does. That is a
+     consequence of asking for a dropdown, not an oversight."
+
+     The dropdown is gone, so the consequence is gone with it: the ring is a
+     promotion candidate now, which is the honest place for a decided default.
+     Asserted rather than described, because it is the kind of thing that
+     silently reverts if `surface: 'design'` is ever put back. */
+  it('…and IS a promotion candidate now the dropdown has gone', () => {
+    expect(flag?.surface).toBeUndefined()
     expect(flag?.description).toMatch(/Ring \(default\)/)
   })
 })
