@@ -221,13 +221,42 @@ Optional, and worth filling — each renders as its own framed section:
 | `thumbnail` | static PNG for the row, preferred over the live miniature — see *Row thumbnails* above |
 | `quickSummary` | **ASK the designer for these words — never write them yourself.** Plain text, the designer's own voice, leads the detail. See below |
 | `userStory` | `{ asA, iWant, soThat, value?, notes? }` — the PO's framing. See below |
-| `uiUxLogic` | `{ why, variants \| actions, edgeCases, toasterLogic }` — the reasoning worked through while designing it |
+| `variants` | **The one list of states**, `{ name, when, detail?, why?, action? }`. `name` is also the key the live-render registry matches on — see *Variants* below |
+| `uiUxLogic` | `{ why, transitions \| actions, edgeCases, toasterLogic }` — the reasoning worked through while designing it. ⚠ `transitions` was `variants` until 2026-10-20; per-state rationale now goes on the variant itself |
 | `designSpec` | `{ tokens, states, responsive, sources }` |
 | `acceptanceCriteria` | testable Definition of Done |
 | `statesMatrix` | `{ state, behavior }` for the non-happy paths |
 | `stubs` | what's still a `console.info` and what it needs |
 | `a11y` | roles, labels, focus and keyboard behavior worth preserving |
 | `jiraTickets` | component-scoped ticket URLs |
+
+### Variants — ONE list, and the live render is keyed to its names
+
+A component's variants are described in exactly one place: `variants`. Each
+entry carries `when` (the condition that produces it), and optionally `detail`,
+`why` (the problem that state solves) and `action` (the CTA it exposes).
+
+⚠ **THIS WAS THREE LISTS UNTIL 2026-10-20**, and they had drifted:
+
+- `uiUxLogic.variants` held the same states again with `why` + `action` — and
+  `DevHandoffNotesBody` SUPPRESSED `variants` whenever it existed, so Course
+  Progress's "bare (combined panel)" entry and every `when` trigger it carried
+  rendered nowhere on the page.
+- The preview galleries carried a third set of hand-written captions. The
+  Readiness gallery was showing the four current bands while the notes still
+  described the five levels those bands replaced four days earlier. Nothing
+  failed.
+
+So: per-state rationale goes on the variant. `uiUxLogic.transitions` is only
+for components that are a state MACHINE — the Exam Date card's
+`Default → No → Yes → Set` — where the MOVE between states needs its own why.
+
+**The live render is keyed by `name`.** `atlasHandoffPreviewsRegistry.ts` maps
+`componentId → { [variantName]: () => ReactNode }`, and the Variants section
+renders each one beside its prose. Rename a variant without renaming the key
+and `DevHandoffVariants.test.ts` fails, naming both. A variant with no
+registered render shows an honest "no isolated render" note rather than a gap —
+not every state is reachable through a component's own props.
 
 ### The Quick Summary — ASK for it, never write it
 

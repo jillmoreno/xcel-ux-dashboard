@@ -56,12 +56,16 @@ const COURSE_HEADER_HANDOFF: DevHandoffComponent = {
       when: '`dashboard-progress-state: not-started` — `headerPct` resolves 0.',
       detail:
         'NO percentage figure and no left rule: `showHeaderPercent` is `headerPct > 0`, and the rule plus its 15px inset belong to the figure, so with nothing on its left the stat pairs start at the row’s edge. The text column also gains `HEADER_BAR_RESERVE` (10px) of top padding to hold the space the absent progress bar would occupy, so the title does not jump when progress begins.',
+      why: 'A percentage figure at 0% occupies the most prominent slot on the band to say nothing. Dropping it lets the course NAME lead, which is the useful fact before any work has been done.',
+      action: 'Details → (opens the course overview). No progress-specific control.',
     },
     {
       name: 'On Track · ~63%',
       when: '`dashboard-progress-state: progress-on-track`.',
       detail:
         'The figure leads the stat row, separated from the pairs by a 1px `--color-neutral-300` rule. In the narrow column the pairs stack, so the rule spans both lines and reads as grouping them against the figure.',
+      why: 'The figure earns its slot the moment it is non-zero, and the rule beside it is what stops it reading as a fourth stat pair rather than the row’s headline.',
+      action: 'Details →',
     },
     {
       name: 'At Risk · ~15%',
@@ -74,6 +78,8 @@ const COURSE_HEADER_HANDOFF: DevHandoffComponent = {
       when: '`dashboard-progress-state: complete-100`.',
       detail:
         'Figure reads 100%, the lessons pair reads `42 of 42`. A completion band renders BELOW the header (target date / time remaining / completed count, plus a Completed chip) — that band is part of the band component, not this header.',
+      why: 'The same layout holding a finished number is the point — a learner should be able to see the shape they have been watching for weeks resolve, rather than be moved to a different component.',
+      action: 'Details →',
     },
     {
       name: 'Completed · nothing queued ⚠',
@@ -99,26 +105,6 @@ const COURSE_HEADER_HANDOFF: DevHandoffComponent = {
   uiUxLogic: {
     why:
       'A learner arriving at the home screen needs one sentence’s worth of orientation before anything asks them to act: which course, how far in, how long left. The header is that sentence. Everything below it — the card, the pace tile, the journey — assumes the learner has already read it, which is why it carries the only unconditional statement of progress on the page.',
-    variants: [
-      {
-        name: 'Zero state',
-        when: 'No progress recorded.',
-        why: 'A percentage figure at 0% occupies the most prominent slot on the band to say nothing. Dropping it lets the course NAME lead, which is the useful fact before any work has been done.',
-        action: 'Details → (opens the course overview). No progress-specific control.',
-      },
-      {
-        name: 'In progress',
-        when: 'Any progress above 0 and below 100.',
-        why: 'The figure earns its slot the moment it is non-zero, and the rule beside it is what stops it reading as a fourth stat pair rather than the row’s headline.',
-        action: 'Details →',
-      },
-      {
-        name: 'Complete',
-        when: '100%.',
-        why: 'The same layout holding a finished number is the point — a learner should be able to see the shape they have been watching for weeks resolve, rather than be moved to a different component.',
-        action: 'Details →',
-      },
-    ],
     edgeCases: [
       'Long course titles wrap to two lines and push the stat row down; the row does not reflow and the figure stays with its pairs.',
       'Missing cover art: `onError` swaps to the path’s default image once, then stops. A fixture with no cover at all (`completed-empty`) renders the text column with no art — undesigned.',
@@ -223,18 +209,24 @@ const JUMP_BACK_IN_HANDOFF: DevHandoffComponent = {
       when: '`course.progress` is 0 or absent, and `complete` is false.',
       detail:
         'Eyebrow "Let’s get started", CTA "Start course". The lesson line, chapter title and estimate all still render — the learner is being pointed at Lesson 1, Part 1 of 3. ⚠ The eyebrow, the CTA and the landmark name ALL change together: a card reading "Let’s get started" must not announce itself to a screen reader as "Jump back in".',
+      why: '"Jump Back In", "Resume" and a hidden lesson line all assume there is a place to jump back TO. At 0% there is not — naming it as a return trip is the product describing a history the learner does not have.',
+      action: '"Start course" → opens Lesson 1, Part 1.',
     },
     {
       name: 'In progress · "Learning With Compass - Jump Back In"',
       when: '`course.progress > 0` and `complete` is false.',
       detail:
         'CTA "Resume". Lesson number, part number, chapter title and the estimate all render. This is the shape At Risk uses too — the card carries no risk treatment.',
+      why: 'The learner’s actual position is the single most useful thing the home screen knows. Naming the lesson and chapter is what makes the button a continuation rather than a gamble.',
+      action: '"Resume" → opens the current chapter.',
     },
     {
       name: 'Complete · "Review Course Material"',
       when: '`complete` is true (fed by the persona’s `renewalReady`).',
       detail:
         'CTA "Review course". The lesson line, chapter title and estimate are ALL dropped and replaced by a single line, "All coursework complete" — none of the three answers anything at 100%: there is no lesson you are on, and an estimate to finish something finished is a figure with nothing behind it.',
+      why: 'The card stops being a way forward and becomes a door back into material already covered — which is a real need before an exam, and a different one from resuming.',
+      action: '"Review course" → reopens the course material.',
     },
     {
       name: 'No course',
@@ -261,26 +253,6 @@ const JUMP_BACK_IN_HANDOFF: DevHandoffComponent = {
   uiUxLogic: {
     why:
       'The home screen’s job is to get a learner back into the material in one click, without making them navigate a course list to find where they were. The card is that click. Its three shapes exist because the same button means three different things across a course’s life, and a single label for all of them would be wrong twice.',
-    variants: [
-      {
-        name: 'Not started',
-        when: 'No progress yet.',
-        why: '"Jump Back In", "Resume" and a hidden lesson line all assume there is a place to jump back TO. At 0% there is not — naming it as a return trip is the product describing a history the learner does not have.',
-        action: '"Start course" → opens Lesson 1, Part 1.',
-      },
-      {
-        name: 'In progress',
-        when: 'Some progress, not finished.',
-        why: 'The learner’s actual position is the single most useful thing the home screen knows. Naming the lesson and chapter is what makes the button a continuation rather than a gamble.',
-        action: '"Resume" → opens the current chapter.',
-      },
-      {
-        name: 'Complete',
-        when: 'Coursework finished.',
-        why: 'The card stops being a way forward and becomes a door back into material already covered — which is a real need before an exam, and a different one from resuming.',
-        action: '"Review course" → reopens the course material.',
-      },
-    ],
     edgeCases: [
       'No course at all → the component renders nothing rather than an empty card.',
       'Long chapter titles wrap to two lines; the CTA tracks the title because the row is centre-aligned rather than pinned.',

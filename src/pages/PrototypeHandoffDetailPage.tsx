@@ -7,6 +7,7 @@ import {
   DevHandoffNotesBody,
   DevHandoffStatesMatrixBody,
   DevHandoffUiUxLogicBody,
+  DevHandoffVariantsBody,
 } from '@/components/prototype/DevHandoffNotesBody'
 import { useAccount } from '@/context/AccountContext'
 import {
@@ -15,7 +16,7 @@ import {
   type DevHandoffUiUxLogic,
 } from '@/data/prototypeFeatures'
 import { RelatedJiraTickets } from '@/components/prototype/RelatedJiraTickets'
-import { atlasHandoffPreview } from '@/components/prototype/atlasHandoffPreviewsRegistry'
+import { atlasHandoffThumbRender } from '@/components/prototype/atlasHandoffPreviewsRegistry'
 
 
 /**
@@ -136,11 +137,12 @@ export function PrototypeHandoffDetailPage() {
             Rendered from the real component code — interact with it directly. This stays
             in sync with the implementation, so it won&rsquo;t drift the way a screenshot would.
           </p>
-          {/* A registered multi-variant gallery already frames each variant of
-              its own — framing the whole gallery again puts a box in a box.
-              The iframe fallback still gets the shared spec-box frame. */}
-          {atlasHandoffPreview(component.id) ? (
-            <ComponentLivePreview componentId={component.id} />
+          {/* The same Variants section the gateway detail renders, so the two
+              pages cannot describe a component's states differently. Each row
+              frames its own render, so the shared spec-box frame would be a box
+              around a column of boxes — only the iframe fallback takes it. */}
+          {atlasHandoffThumbRender(component.id) ? (
+            <DevHandoffVariantsBody componentId={component.id} variants={component.variants} />
           ) : (
             <div style={previewFrameStyle}>
               <ComponentLivePreview componentId={component.id} />
@@ -301,11 +303,17 @@ export function ComponentLivePreview({
   fallback?: ReactNode
 }) {
   // Checked FIRST, before the iframe fallback below: a registered id renders
-  // the real component(s) across every named variant, live, in this React
-  // tree — the Atlas Home family's live-registry restoration (2026-10-20).
-  // Everything NOT in that registry (every PartnerHub-derived standalone HTML
-  // prototype) falls through unchanged to the iframe behavior that follows.
-  const live = atlasHandoffPreview(componentId)
+  // the real component live in this React tree — the Atlas Home family's
+  // live-registry restoration (2026-10-20). Everything NOT in that registry
+  // (every PartnerHub-derived standalone HTML prototype) falls through
+  // unchanged to the iframe behavior that follows.
+  //
+  // ⚠ ONE VARIANT, not the set. This is what `ComponentThumb` scales into a
+  // 104x68 plate, and `ecc6deb` had it rendering the whole gallery — a 1280px
+  // grid of captioned cards at 8%, which is grey mush with find-in-page-able
+  // text in it. The full set lives in the Variants section now, which has the
+  // room for it.
+  const live = atlasHandoffThumbRender(componentId)
   if (live) return <>{live}</>
 
   const url = componentPreviewUrl(componentId)

@@ -1,16 +1,18 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import type {
   DevHandoffComponent,
   DevHandoffDesignSpec,
   DevHandoffState,
   DevHandoffUiUxLogic,
   DevHandoffUserStory,
+  DevHandoffVariant,
 } from '@/data/prototypeFeatures'
 import {
   detailItemStyle,
   detailListStyle,
   pointerLocationStyle,
 } from './devHandoffStyles'
+import { atlasHandoffVariantRender } from './atlasHandoffPreviewsRegistry'
 
 /**
  * The full written notes for one handoff component — location, summary,
@@ -27,26 +29,8 @@ export function DevHandoffNotesBody({ component }: { component: DevHandoffCompon
         {component.summary}
       </p>
 
-      {/* Variants are listed in the UI/UX-logic "Card variants" block (with
-          why + action) when that data exists; only fall back to this plain
-          enumeration when it doesn't, so the two never duplicate. */}
-      {!(component.uiUxLogic?.variants && component.uiUxLogic.variants.length > 0) && (
-        <HandoffBlock label="Variants">
-          <ul style={detailListStyle}>
-            {component.variants.map((v) => (
-              <li key={v.name} style={detailItemStyle}>
-                <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{v.name}</span>
-                <span style={{ color: 'var(--color-text-tertiary)' }}> — {v.when}</span>
-                {v.detail && (
-                  <span style={{ display: 'block', marginTop: 2, color: 'var(--color-text-secondary)' }}>
-                    {v.detail}
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </HandoffBlock>
-      )}
+      {/* Variants are NOT repeated here — they have their own section, which
+          pairs each one with its live render. See `DevHandoffVariantsBody`. */}
 
       <HandoffBlock label="UX logic">
         <BulletList items={component.uxLogic} />
@@ -72,6 +56,156 @@ export function DevHandoffNotesBody({ component }: { component: DevHandoffCompon
 }
 
 /**
+ * THE VARIANTS SECTION — every state the component can render, each one
+ * pairing the authored prose with the LIVE component in that state.
+ *
+ * ⚠ ONE LIST, AS OF 2026-10-20. Variants used to be described in three places
+ * that could disagree and did: `component.variants`, `uiUxLogic.variants`
+ * (which SUPPRESSED the first whenever it existed, so "bare (combined panel)"
+ * and every `when` trigger on Course Progress rendered nowhere), and a third
+ * set of hand-written captions inside the preview galleries. The galleries are
+ * now keyed by variant `name`, the second list has become
+ * `uiUxLogic.transitions` (the moves between states, which is what it actually
+ * held), and this renders the one remaining list.
+ *
+ * The render sits BESIDE its prose rather than in a gallery above it: the
+ * question a reader has at a variant row is "what does this one look like",
+ * and a separate grid makes them match names up by hand — which is how the
+ * captions drifted in the first place. Columns wrap to one on narrow widths.
+ */
+export function DevHandoffVariantsBody({
+  componentId,
+  variants,
+}: {
+  componentId: string
+  variants: DevHandoffVariant[]
+}) {
+  const anyRender = variants.some((v) => atlasHandoffVariantRender(componentId, v.name))
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {variants.map((v, i) => (
+        <VariantRow
+          key={v.name}
+          componentId={componentId}
+          variant={v}
+          first={i === 0}
+          anyRender={anyRender}
+        />
+      ))}
+    </div>
+  )
+}
+
+function VariantRow({
+  componentId,
+  variant,
+  first,
+  anyRender,
+}: {
+  componentId: string
+  variant: DevHandoffVariant
+  first: boolean
+  /** Whether this COMPONENT has any live render at all. Drives which absence
+   *  note a render-less variant gets — "nothing is wired for this component"
+   *  reads very differently from "this one state can't be isolated". */
+  anyRender: boolean
+}) {
+  const render = atlasHandoffVariantRender(componentId, variant.name)
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 20,
+        alignItems: 'flex-start',
+        ...(first
+          ? null
+          : { borderTop: '1px solid var(--color-border-subtle)', paddingTop: 20 }),
+      }}
+    >
+      <div style={{ flex: '1 1 300px', minWidth: 0 }}>
+        <p style={variantNameStyle}>{variant.name}</p>
+        <p style={variantWhenStyle}>{variant.when}</p>
+        {variant.detail && variant.detail !== '—' && (
+          <p style={variantProseStyle}>{variant.detail}</p>
+        )}
+        {variant.why && (
+          <p style={variantProseStyle}>
+            <b style={{ color: 'var(--color-text-primary)' }}>Why it exists. </b>
+            {variant.why}
+          </p>
+        )}
+        {variant.action && (
+          <p style={variantProseStyle}>
+            <b style={{ color: 'var(--color-text-primary)' }}>Action. </b>
+            {variant.action}
+          </p>
+        )}
+      </div>
+      <div style={{ flex: '1 1 320px', minWidth: 0 }}>
+        {render ? (
+          <div style={variantRenderStyle}>{render}</div>
+        ) : (
+          <p style={variantAbsentStyle}>
+            {anyRender
+              ? 'No isolated render — this state is not reachable through the component’s own props. Open the Live Preview tab to see it on the real page.'
+              : 'No live render for this component — its variants are page-level chrome or page-local state rather than props. The Live Preview tab shows them on the real page.'}
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+const variantNameStyle: CSSProperties = {
+  margin: 0,
+  fontSize: 14,
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+}
+
+/* The trigger reads as a condition, so it is set in the mono face the rest of
+   the handoff uses for code — several of these ARE prop expressions
+   (`initialLevel={0}`, `percent ≤ 0`), and setting them as prose invited the
+   reader to skim past the one line that says when they will see this. */
+const variantWhenStyle: CSSProperties = {
+  margin: '4px 0 0',
+  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+  fontSize: 12,
+  lineHeight: '18px',
+  color: 'var(--color-text-tertiary)',
+}
+
+const variantProseStyle: CSSProperties = {
+  margin: '8px 0 0',
+  fontSize: 13,
+  lineHeight: '20px',
+  color: 'var(--color-text-secondary)',
+}
+
+const variantRenderStyle: CSSProperties = {
+  padding: 20,
+  display: 'flex',
+  justifyContent: 'center',
+  background: 'var(--color-surface-card)',
+  border: '1px solid var(--color-border-subtle)',
+  borderRadius: 'var(--radius-lg)',
+}
+
+/* Dashed, like the Quick Summary placeholder: a solid frame at this size reads
+   as a render that failed, and the whole point of this box is that there is
+   nothing to render and a reason why. */
+const variantAbsentStyle: CSSProperties = {
+  margin: 0,
+  padding: 20,
+  border: '1px dashed var(--color-border-subtle)',
+  borderRadius: 'var(--radius-lg)',
+  fontSize: 12,
+  lineHeight: '18px',
+  color: 'var(--color-text-secondary)',
+}
+
+/**
  * The "UI/UX logic" write-up for one component — the four-part rationale
  * captured while designing it: why it exists, every action, edge cases,
  * and toaster messaging / additional logic.
@@ -85,12 +219,15 @@ export function DevHandoffUiUxLogicBody({ logic }: { logic: DevHandoffUiUxLogic 
         </p>
       </HandoffBlock>
 
-      {logic.variants && logic.variants.length > 0 ? (
-        <HandoffBlock label="Card variants">
+      {logic.transitions && logic.transitions.length > 0 ? (
+        // TRANSITIONS, not variants (2026-10-20). The states themselves live in
+        // the Variants section with their own `why` / `action`; what is left
+        // here is the movement between them, which only a state machine has.
+        <HandoffBlock label="Transitions">
           <ul style={detailListStyle}>
-            {logic.variants.map((v, i) => (
+            {logic.transitions.map((t, i) => (
               <li
-                key={v.name}
+                key={t.name}
                 style={{
                   ...detailItemStyle,
                   ...(i > 0 && {
@@ -99,17 +236,17 @@ export function DevHandoffUiUxLogicBody({ logic }: { logic: DevHandoffUiUxLogic 
                   }),
                 }}
               >
-                <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{v.name}</span>
-                {v.when && (
-                  <span style={{ color: 'var(--color-text-tertiary)' }}> — {v.when}</span>
+                <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{t.name}</span>
+                {t.when && (
+                  <span style={{ color: 'var(--color-text-tertiary)' }}> — {t.when}</span>
                 )}
                 <span style={{ display: 'block', marginTop: 4, color: 'var(--color-text-secondary)' }}>
                   <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>Why it exists: </span>
-                  {v.why}
+                  {t.why}
                 </span>
                 <span style={{ display: 'block', marginTop: 2, color: 'var(--color-text-secondary)' }}>
                   <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>Action: </span>
-                  {v.action}
+                  {t.action}
                 </span>
               </li>
             ))}

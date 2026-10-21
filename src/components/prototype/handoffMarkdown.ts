@@ -60,11 +60,14 @@ function uxLogicLines(logic: DevHandoffUiUxLogic): string[] {
     for (const a of logic.actions) out.push(`- **${a.name}** — ${a.detail}`)
     out.push('')
   }
-  if (logic.variants?.length) {
-    out.push('**Variants**', '')
-    for (const v of logic.variants) {
-      const when = v.when ? ` _(${v.when})_` : ''
-      out.push(`- **${v.name}**${when} — ${v.why} → ${v.action}`)
+  // TRANSITIONS, not variants — the states themselves are emitted once, by
+  // `componentLines` below, with their own why/action. See
+  // `DevHandoffTransition`.
+  if (logic.transitions?.length) {
+    out.push('**Transitions**', '')
+    for (const t of logic.transitions) {
+      const when = t.when ? ` _(${t.when})_` : ''
+      out.push(`- **${t.name}**${when} — ${t.why} → ${t.action}`)
     }
     out.push('')
   }
@@ -112,13 +115,21 @@ function componentLines(c: DevHandoffComponent): string[] {
   if (c.variants.length) {
     out.push('#### Variants', '')
     for (const v of c.variants) {
-      out.push(`- **${v.name}** — ${v.when}${v.detail ? ` ${v.detail}` : ''}`)
+      const parts = [`- **${v.name}** — ${v.when}`]
+      if (v.detail && v.detail !== '—') parts.push(v.detail)
+      if (v.why) parts.push(`_Why it exists._ ${v.why}`)
+      if (v.action) parts.push(`_Action._ ${v.action}`)
+      out.push(parts.join(' '))
     }
     out.push('')
   }
 
+  // ⚠ BOTH, not one or the other (2026-10-20). `uiUxLogic` was an `else` over
+  // `uxLogic`, so a component carrying both — which every Atlas Home component
+  // does — exported the write-up and silently dropped the rules. The page has
+  // always rendered both, so the pasted ticket was the lossy copy of the two.
   if (c.uiUxLogic) out.push(...uxLogicLines(c.uiUxLogic))
-  else out.push(...listSection('UX Logic', c.uxLogic))
+  if (c.uxLogic.length) out.push(...listSection('UX Logic rules', c.uxLogic))
 
   if (c.designSpec) out.push(...designSpecLines(c.designSpec))
 

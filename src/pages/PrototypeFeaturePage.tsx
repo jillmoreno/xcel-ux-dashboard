@@ -35,6 +35,7 @@ import {
   DevHandoffAcceptanceBody,
   DevHandoffStatesMatrixBody,
   DevHandoffUserStoryBody,
+  DevHandoffVariantsBody,
 } from '@/components/prototype/DevHandoffNotesBody'
 import { getUserJiraTickets } from '@/components/prototype/jiraTicketsUtil'
 import { FeaturePreviewThumb } from '@/components/prototype/FeaturePreviewThumb'
@@ -876,6 +877,14 @@ const COMPONENT_SECTIONS = [
   // and saying whose it is does the job the removed explainer line was doing.
   { id: 'quick-summary', label: 'Quick Summary from Jill' },
   { id: 'story', label: 'User Story' },
+  // VARIANTS (2026-10-20) — the one section that had no home on this page.
+  // The live, all-variants renders existed but were reachable only from
+  // `/prototype/:featureId/handoff/:componentId`, whose only link is the tile
+  // grid over `devHandoff.components` — and every feature here keeps its
+  // components in `uiComponents`, so that grid is empty and the route could
+  // only be reached by typing it. The renders now sit with their prose, on the
+  // page the rows actually open.
+  { id: 'variants', label: 'Variants' },
   { id: 'logic', label: 'UX Logic' },
   { id: 'spec', label: 'Design Spec' },
   { id: 'acceptance', label: 'Acceptance' },
@@ -1614,6 +1623,19 @@ function UiComponentDetail({
         'The Product Owner’s framing — who this is for, what they want, and why it earns a place on the roadmap.',
         component.userStory ? <DevHandoffUserStoryBody story={component.userStory} /> : null,
         'userStory',
+      )}
+
+      {section(
+        'variants',
+        'Variants',
+        'Every state this component can render, each beside the real component in that state — not a screenshot, so a row cannot drift from the build.',
+        component.variants.length > 0 ? (
+          <DevHandoffVariantsBody componentId={component.id} variants={component.variants} />
+        ) : null,
+        'variants',
+        // Unframed: each row carries its own render surface and its own rule,
+        // so the shared frame would be a box around a column of boxes.
+        true,
       )}
 
       {section(
