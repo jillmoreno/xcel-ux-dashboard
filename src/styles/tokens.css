@@ -1841,6 +1841,62 @@
   outline-offset: 2px;
 }
 
+/* ── The dev-handoff section nav (PrototypeFeaturePage's jump chips) ───────
+   A CLASS rather than inline styles for the one reason this file keeps
+   re-learning: `:hover` cannot be expressed in `CSSProperties`, and an inline
+   `background` would BEAT this rule — match, compute, and do nothing. So the
+   chip's fill and ink live here and only its layout stays inline.
+
+   HOVER IS MORE OF THE SAME NAVY, not a new colour. The bar behind these chips
+   is that navy at 20%; hover is the same navy at 36% over the same surface, so
+   the affordance reads as the strip deepening under the cursor rather than as
+   a second accent appearing on it.
+
+   ⚠ THE MIX IS HANDED IN AS `--handoff-jump-hover`, set inline on the nav, and
+   it CANNOT be written here. Two separate traps meet in this one declaration:
+
+   1. LIGHTNING CSS CONSTANT-FOLDS `color-mix()` AT BUILD TIME. Written here as
+      `color-mix(in srgb, var(--color-tab-active) 36%, …)` it does not reach the
+      browser as a mix at all — it ships as `rgb(1, 114, 103)`, CRE's teal,
+      folded against `:root` before any element exists. Measured in the CSSOM,
+      not guessed. Anything whose inputs differ per brand or per scope has to be
+      mixed where the bundler cannot see it.
+   2. These chips render inside `.cre-prototype-stc-accent`, which re-points the
+      whole primary ramp to STC teal, so a `--color-primary-*` tint would come
+      out teal against a navy bar even if it survived the fold. The nav's own
+      comment in PrototypeFeaturePage.tsx has the rest.
+
+   `var(--color-tab-active)` on its own is safe — a plain substitution resolves
+   per element, which is why `.is-active` below reads navy. It is only the mix
+   that gets folded.
+
+   The ink darkens with the fill: `neutral-dark` on the 36% composite is under
+   the 4.5:1 this 13px text needs, so hover steps to `--color-text-primary`. The
+   hover state has to clear AA too — it is where the cursor actually is. */
+.cre-handoff-jump {
+  background: transparent;
+  color: var(--color-neutral-dark);
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+.cre-handoff-jump:hover {
+  background: var(--handoff-jump-hover);
+  color: var(--color-text-primary);
+}
+.cre-handoff-jump:focus-visible {
+  outline: 2px solid var(--color-tab-active);
+  outline-offset: 2px;
+}
+/* The active chip is already the full navy — it must not move under the
+   cursor, or the one chip that says "you are here" becomes the one that looks
+   clickable. */
+.cre-handoff-jump.is-active,
+.cre-handoff-jump.is-active:hover {
+  background: var(--color-tab-active);
+  color: var(--color-text-inverse);
+}
+
 /* Brand logo dark-mode swap. Brands that ship a white lockup (Elite) render
    BOTH <img>s via the Logo component; show the white one only when the dark
    theme is actually applied (`[data-theme='dark']` on <html>, set solely by

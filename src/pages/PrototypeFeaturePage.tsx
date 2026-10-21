@@ -1240,6 +1240,15 @@ function UiComponentDetail({
           margin: '16px -16px 0',
           padding: '10px 16px',
           background: 'color-mix(in srgb, var(--color-tab-active) 20%, var(--color-surface-card))',
+          /* The chips' hover fill, handed to `.cre-handoff-jump:hover` — the
+             same navy at 36%. It is set HERE rather than in tokens.css because
+             Lightning CSS constant-folds `color-mix()` at build time: written
+             in the stylesheet it ships as CRE teal, folded against `:root`
+             before any element exists. An inline style never reaches the CSS
+             bundler, so the mix survives to the browser and resolves against
+             the navy this scope actually inherits. */
+          ['--handoff-jump-hover' as string]:
+            'color-mix(in srgb, var(--color-tab-active) 36%, var(--color-surface-card))',
           borderBottom: '1px solid var(--color-border-subtle)',
           /* ⚠ SQUARE (2026-10-21, the direct ask). It carried the card's own
              `radius-md` on its top two corners, from when it was white and read
@@ -1257,12 +1266,19 @@ function UiComponentDetail({
               type="button"
               aria-current={on ? 'true' : undefined}
               onClick={() => jump(sec.id)}
+              /* ⚠ FILL AND INK COME FROM THE CLASS, not from here (2026-10-21,
+                 "add a hover effect for the other views"). `:hover` has no
+                 `CSSProperties` form, and an inline `background` would beat the
+                 stylesheet rule — match, compute, and do nothing, which is the
+                 `.cre-uxlinks-title` failure tokens.css documents. So the two
+                 properties that change on hover moved out and only layout and
+                 type stay inline. `is-active` carries the selected fill for the
+                 same reason: one place decides what a chip looks like. */
+              className={`cre-handoff-jump${on ? ' is-active' : ''}`}
               style={{
                 padding: '6px 12px',
                 borderRadius: 'var(--radius-xl)',
                 border: 'none',
-                background: on ? 'var(--color-tab-active)' : 'transparent',
-                color: on ? 'var(--color-text-inverse)' : 'var(--color-neutral-dark)',
                 fontFamily: 'var(--font-body)',
                 fontSize: 13,
                 fontWeight: on ? 600 : 400,
