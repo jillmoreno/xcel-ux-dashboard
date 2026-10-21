@@ -18,7 +18,6 @@
 import type {
   DevHandoffComponent,
   DevHandoffDesignSpec,
-  DevHandoffUserStory,
   PrototypeFeature,
 } from '@/data/prototypeFeatures'
 
@@ -36,20 +35,6 @@ function bullets(items: readonly string[] | undefined): string[] {
 /** A titled bullet list, or nothing at all when the field is unauthored. */
 function listSection(title: string, items: readonly string[] | undefined): string[] {
   return items?.length ? [`#### ${title}`, '', ...bullets(items), ''] : []
-}
-
-function userStoryLines(story: DevHandoffUserStory): string[] {
-  const out = [
-    '#### User Story',
-    '',
-    `**As a** ${story.asA}`,
-    `**I want** ${story.iWant}`,
-    `**So that** ${story.soThat}`,
-    '',
-  ]
-  if (story.value) out.push(`**Why it matters.** ${story.value}`, '')
-  if (story.notes?.length) out.push(...bullets(story.notes), '')
-  return out
 }
 
 function designSpecLines(spec: DevHandoffDesignSpec): string[] {
@@ -85,8 +70,6 @@ function componentLines(c: DevHandoffComponent): string[] {
   // Paragraphs are already blank-line separated in the field, so it passes
   // through as-is.
   if (c.quickSummary) out.push('#### Quick Summary from Jill', '', c.quickSummary.trim(), '')
-
-  if (c.userStory) out.push(...userStoryLines(c.userStory))
 
   if (c.variants.length) {
     out.push('#### Variants', '')

@@ -18,6 +18,7 @@ import {
   CalendarExclamation,
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
+import { ATLAS_EXPIRES_SOON_DAYS, accessCountLabel } from './atlasCourseAccess'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
 import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
@@ -188,15 +189,6 @@ export type AtlasHomeEricE2EProps = {
 /* The window a learner who has not started gets, when Expires is on
    Automatic — see `accessIso`. */
 const ZERO_ACCESS_DAYS = 30
-/* ⚠ WHEN "SOON" STARTS, and it is one number on purpose (2026-10-21). The
-   shared `courseExpiryState` clamps its 60-day warning to half the ENROLMENT
-   window, which assumes a learner who enrolled in the past; this Home only
-   knows how many days are LEFT, so that clamp has nothing to divide. 15 is the
-   Expires control's own documented edge — "1 / 7 / 15 land in the badge and
-   30 / 90 / 120 / 400 do not" — so the head badges exactly where the rest of
-   the demo says it should, and the default 30-day window stays neutral.
-   ⚠ The real threshold is a product decision; see the course-head handoff. */
-const ATLAS_EXPIRES_SOON_DAYS = 15
 const LINKS_OFF = true
 const NO_LINK = () => {}
 
@@ -415,9 +407,11 @@ export function AtlasHomeEricE2E({
               ? 'expired'
               : completedView
                 ? 'complete'
-                : accessDays <= ATLAS_EXPIRES_SOON_DAYS
-                  ? 'expiring-soon'
-                  : 'counting'
+                : accessDays <= 1
+                  ? 'last-day'
+                  : accessDays <= ATLAS_EXPIRES_SOON_DAYS
+                    ? 'expiring-soon'
+                    : 'counting'
           }
         />
       ) : (
@@ -748,6 +742,13 @@ export function AtlasHomeEricE2E({
              buy it back, so Course Overview comes off rather than sitting
              beside a purchase CTA. */
           showOverview={!expiredView && (LINKS_OFF || Boolean(onOverview))}
+          /* ⚠ ON THE LAST DAY IT JOINS THE OTHER TWO, it does not replace them.
+             The learner can still work today, so Begin/Resume stays; what they
+             also need is the way to buy more time. Once access has GONE the
+             head drops to the purchase CTA alone — see `beginLabel`. */
+          onPurchaseExtension={
+            !expiredView && accessDays != null && accessDays <= 1 ? NO_LINK : undefined
+          }
           onOverview={LINKS_OFF && !overviewOpensCompass ? NO_LINK : onOverview}
           onBegin={onBeginCta}
           beginDisabled={!completedView && !LINKS_OFF && !onBegin}
@@ -1913,6 +1914,7 @@ export function AtlasCourseHeadRow({
   onOverview,
   onBegin,
   beginDisabled = false,
+  onPurchaseExtension,
 }: {
   onWhite: boolean
   cover?: string
@@ -1930,6 +1932,11 @@ export function AtlasCourseHeadRow({
   onOverview?: () => void
   onBegin?: () => void
   beginDisabled?: boolean
+  /** Shows "Purchase Extension" FIRST in the action row, outlined in the error
+   *  ramp. Supplied on the last day of access, where the learner can still work
+   *  AND needs the offer — so it joins the normal actions rather than replacing
+   *  them, which is what separates it from the Expired head. */
+  onPurchaseExtension?: () => void
 }) {
   return (
       <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
@@ -1959,6 +1966,16 @@ export function AtlasCourseHeadRow({
               as the outline button, and Begin Course, MOVED here from the
               Study Journey's current stop. */}
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {onPurchaseExtension ? (
+              <button
+                type="button"
+                className="cre-compass-secondary cre-atlas-home-secondary"
+                onClick={onPurchaseExtension}
+                style={HEADER_BUTTON_DANGER}
+              >
+                Purchase Extension
+              </button>
+            ) : null}
             {showOverview ? (
               <button
                 type="button"
@@ -2024,10 +2041,11 @@ export function WhiteCourseMeta({
 }: {
   endsOn: Date
   days: number
-  state?: 'counting' | 'expiring-soon' | 'complete' | 'expired'
+  state?: 'counting' | 'expiring-soon' | 'last-day' | 'complete' | 'expired'
 }) {
   const expired = state === 'expired'
   const soon = state === 'expiring-soon'
+  const lastDay = state === 'last-day'
   /* ⚠ AMBER, THEN RED (2026-10-21, Jillienne: "an additional example needs to
      be shown for when Course Expires soon and the Access changes from Amber to
      Red"). The repo's own ramps, not new colours: Warning 800 is what the
@@ -2035,7 +2053,7 @@ export function WhiteCourseMeta({
      Failed uses. ⚠ THE ATLAS HEAD DIVERGES FROM THE CARD BADGE ON EXPIRED —
      that badge draws grey; this draws red, because a grey countdown on a
      header reads as disabled rather than as something to act on. */
-  const tone = expired
+  const tone = expired || lastDay
     ? 'var(--color-error-700)'
     : soon
       ? 'var(--color-warning-800)'
@@ -2051,7 +2069,7 @@ export function WhiteCourseMeta({
       }}
     >
       <span style={META_PAIR}>
-        {(expired || soon) && (
+        {(expired || soon || lastDay) && (
           <CalendarExclamation size={13} aria-hidden style={{ color: tone, flex: 'none' }} />
         )}
         <span style={{ ...META_LABEL, ...(tone ? { color: tone } : null) }}>
@@ -2061,18 +2079,26 @@ export function WhiteCourseMeta({
           {endsOn.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
           {/* Inside the value, so no gap before it; in the label's weight. The
               comma only earns its place when something follows it. */}
-          {state === 'counting' || soon ? (
+          {state === 'counting' || soon || lastDay ? (
             <span style={{ ...META_LABEL, ...(tone ? { color: tone } : null) }}>,</span>
           ) : null}
         </span>
       </span>
+      {lastDay ? (
+        /* ⚠ NO COUNT ON THE LAST DAY. "1 day to complete" is technically true
+           and reads as a quantity the learner can plan against; today is not a
+           quantity, it is a deadline. */
+        <span style={{ ...META_PAIR, marginLeft: -4 }}>
+          <span style={{ ...META_VALUE, color: tone, fontWeight: 700 }}>Today is the last day</span>
+        </span>
+      ) : null}
       {(state === 'counting' || soon) && (
         /* One line — "…05/29/2026, 18 days to complete" — no divider
            (2026-10-14, Eric's request). The count is the part that goes amber:
            it is the figure the learner is being asked to act on. */
         <span style={{ ...META_PAIR, marginLeft: -4 }}>
           <span style={{ ...META_VALUE, ...(tone ? { color: tone, fontWeight: 700 } : null) }}>
-            {days} {days === 1 ? 'day' : 'days'}
+            {accessCountLabel(days)}
           </span>
           <span style={{ ...META_LABEL, ...(tone ? { color: tone } : null) }}>
             {soon ? 'left to complete' : 'to complete'}
@@ -2416,6 +2442,15 @@ const HEADER_BUTTON: CSSProperties = {
 /* The primary (Begin / Resume Course): 8 more each side, 16 (2026-10-15,
    Eric's request). */
 const HEADER_PRIMARY: CSSProperties = { ...HEADER_BUTTON, padding: '5px 16px' }
+/* The last day's extra action. The secondary button's shape, re-pointed to the
+   error ramp — the same red the meta row goes, so the row and the offer read as
+   one statement rather than two unrelated warnings. */
+const HEADER_BUTTON_DANGER: CSSProperties = {
+  ...HEADER_BUTTON,
+  fontWeight: 700,
+  color: 'var(--color-error-700)',
+  borderColor: 'var(--color-error-700)',
+}
 const CHEVRON: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',

@@ -33,7 +33,6 @@ import {
   DevHandoffDesignSpecBody,
   DevHandoffAcceptanceBody,
   DevHandoffStatesMatrixBody,
-  DevHandoffUserStoryBody,
   DevHandoffVariantsBody,
   DevHandoffOptionsBody,
   DevHandoffFlowsBody,
@@ -859,10 +858,15 @@ const liveFrameStyle: React.CSSProperties = {
  * scroll, which is why this is `id` + `label` rather than a tab-item type.
  */
 const COMPONENT_SECTIONS = [
-  // Quick Summary leads (2026-09-09, Jillienne): the designer says what this
-  // thing IS, in their own plain words, before the developer meets a single
-  // token or acceptance criterion. The User Story follows — the PO's framing,
-  // read against the designer's.
+  // The Summary leads: what this thing IS, before the developer meets a single
+  // token or acceptance criterion.
+  //
+  // ⚠ THE USER STORY IS GONE (2026-10-21, Jillienne: "remove user story from
+  // all of the dev handoff notes. Anything that needs to be said is in the
+  // summary or the attached jira ticket"). It was never authored on a single
+  // component — ten of them, ten "Not authored yet" boxes — because the thing
+  // it asked for was already being said twice over: who it is for and why it
+  // matters is the Summary's job, and the roadmap case belongs to the ticket.
   //
   // It REPLACED the live component render, which used to lead. That render is
   // still what the row thumbnails draw (`ComponentThumb`), so `ComponentLivePreview`
@@ -880,7 +884,6 @@ const COMPONENT_SECTIONS = [
   // the heading stops naming an author. The ID is unchanged: `#<component>--
   // quick-summary` deep links are in circulation and a label is not a route.
   { id: 'quick-summary', label: 'Summary' },
-  { id: 'story', label: 'User Story' },
   // VARIANTS (2026-10-20) — the one section that had no home on this page.
   // The live, all-variants renders existed but were reachable only from
   // `/prototype/:featureId/handoff/:componentId`, whose only link is the tile
@@ -913,7 +916,6 @@ type ComponentSectionId = (typeof COMPONENT_SECTIONS)[number]['id']
 function authoredSections(c: DevHandoffComponent): string[] {
   const out: string[] = []
   if (c.quickSummary) out.push('Summary')
-  if (c.userStory) out.push('User Story')
   if (c.variants.length) out.push(`${c.variants.length} variant${c.variants.length === 1 ? '' : 's'}`)
   if (c.uxLogic.length) out.push('Rules')
   if (c.designSpec) out.push('Design Spec')
@@ -1642,14 +1644,6 @@ function UiComponentDetail({
         // grids. Plain prose in a box reads as one more spec artefact, which is
         // the opposite of what this section is.
         true,
-      )}
-
-      {section(
-        'story',
-        'User Story',
-        'The Product Owner’s framing — who this is for, what they want, and why it earns a place on the roadmap.',
-        component.userStory ? <DevHandoffUserStoryBody story={component.userStory} /> : null,
-        'userStory',
       )}
 
       {section(

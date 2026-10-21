@@ -379,7 +379,7 @@ describe('the course meta states one access window', () => {
     const line = screen.getByText(/Course Access End/).closest('div')!.textContent ?? ''
     const date = line.match(/(\d{2})\/(\d{2})\/(\d{4})/)
     // The spans concatenate with no space — "29 daysto complete".
-    const days = line.match(/(\d+)\s*days?\s*to complete/i)
+    const days = line.match(/(\d+)\s*days?\s*(?:left )?to complete/i)
     expect(date, line).toBeTruthy()
     /* ⚠ THE COUNT CAN BE A SENTENCE NOW (2026-10-20). On the last usable day
        the row reads "Today is the last day" rather than "0 days to

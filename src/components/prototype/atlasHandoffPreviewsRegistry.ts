@@ -190,6 +190,14 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
     'No end date': () => createElement(CourseHeadVariant, { meta: 'none' }),
     'Expires soon': () =>
       createElement(CourseHeadVariant, { beginLabel: 'Resume Course', meta: 'expiring-soon' }),
+    'Last day': () =>
+      createElement(CourseHeadVariant, { beginLabel: 'Begin Course', meta: 'last-day' }),
+    'Long access window': () =>
+      createElement(CourseHeadVariant, {
+        title: 'New York Life and Health Pre-licensing',
+        beginLabel: 'Resume Course',
+        meta: 'long-window',
+      }),
     'Course complete': () =>
       createElement(CourseHeadVariant, {
         beginLabel: 'View Certificate',

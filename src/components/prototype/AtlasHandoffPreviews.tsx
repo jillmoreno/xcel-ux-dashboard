@@ -154,7 +154,7 @@ export function CourseHeadVariant({
   beginLabel?: string
   /** Which meta row to draw: the countdown, the completed row, the expired
    *  row, or none at all when the course has no access-expiry date. */
-  meta?: 'default' | 'expiring-soon' | 'complete' | 'expired' | 'none'
+  meta?: 'default' | 'expiring-soon' | 'last-day' | 'long-window' | 'complete' | 'expired' | 'none'
   /** The status line above the title — see `AtlasCourseHeadRow`. */
   eyebrow?: string
   /** Hidden once access has gone: nothing to review, only to buy back. */
@@ -172,6 +172,10 @@ export function CourseHeadVariant({
         showOverview={meta !== 'expired'}
         onOverview={() => {}}
         onBegin={() => {}}
+        // The last day adds the purchase CTA BESIDE the normal actions; expired
+        // replaces them. That difference is the whole distinction between the
+        // two states, so the preview has to carry it.
+        onPurchaseExtension={meta === 'last-day' ? () => {} : undefined}
         // The page's OWN meta row, not a rebuild of it.
         meta={
           meta === 'none' ? undefined : (
@@ -179,7 +183,15 @@ export function CourseHeadVariant({
               endsOn={COURSE_ACCESS_ENDS}
               // 7 days for the amber arm, so the figure reads as the thing
               // being warned about rather than a comfortable number in orange.
-              days={meta === 'expiring-soon' ? 7 : 29}
+              days={
+                meta === 'expiring-soon'
+                  ? 7
+                  : meta === 'last-day'
+                    ? 1
+                    : meta === 'long-window'
+                      ? 399
+                      : 29
+              }
               state={
                 meta === 'complete'
                   ? 'complete'
@@ -187,7 +199,9 @@ export function CourseHeadVariant({
                     ? 'expired'
                     : meta === 'expiring-soon'
                       ? 'expiring-soon'
-                      : 'counting'
+                      : meta === 'last-day'
+                        ? 'last-day'
+                        : 'counting'
               }
             />
           )
