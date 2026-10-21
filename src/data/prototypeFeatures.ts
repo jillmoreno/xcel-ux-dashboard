@@ -1466,22 +1466,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             { name: 'No end date', when: 'The course has no access-expiry date.', detail: 'The Expires / days-to-complete row is omitted entirely — never a blank row and never a zero.', why: 'A row reading "Expires: —" tells the learner less than no row at all.', action: 'Unchanged; only the meta row goes.' },
             { name: 'Long title', when: 'The course name is too long for one line.', detail: 'The title wraps rather than truncating, and the meta row and buttons move down with it. ⚠ Worth building against the longest real course name, not the demo one.', why: 'Course names are supplied data, so the layout has to survive the long ones.', action: 'Unchanged.', howToSee: 'Demo bar → Long title' },
           ],
-          flows: [
-            {
-              title: 'What the primary button says',
-              decides: [
-                { when: 'No progress yet', show: 'Not started', note: 'The button reads "Begin Course".' },
-                { when: 'Some progress', show: 'In progress', note: 'The button reads "Resume Course".' },
-              ],
-            },
-            {
-              title: 'Whether the meta row appears',
-              decides: [
-                { when: 'No access-expiry date resolves', show: 'No end date', note: 'The whole row goes — never a blank or a zero.' },
-                { when: 'Otherwise', show: 'Expires and days-to-complete' },
-              ],
-            },
-          ],
           designSpec: {
             tokens: [
               { role: 'Eyebrow ("Current course:")', token: '--color-compass-page-eyebrow' },
@@ -1517,7 +1501,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             { name: 'Course Overview', does: 'Opens the Course Overview page of the Compass application for the active course. Omitted entirely when no handler is supplied, rather than rendering disabled.' },
             { name: 'Begin Course', does: 'Opens the first lesson of the course, in Compass. Shown while the learner has no progress.' },
             { name: 'Resume Course', does: 'Reopens the course in Compass at the chapter the learner stopped on. The same button as Begin Course, relabelled once there is progress.' },
-            { name: 'View Certificate', does: 'Opens My Certificates — the same destination the Certificates links in this column already point at, so the page has one answer to "where is my certificate". Appears beside Course Overview once the course is complete; it does not replace Review Course, because the two offer different things.' },
+            { name: 'View Certificate', does: 'Opens the actual certificate in a NEW TAB — most likely through a PDF viewer plugin, not an in-app page. Appears beside Course Overview once the course is complete; it does not replace Review Course, because the two offer different things. ⚠ Today it routes to the My Certificates list instead, which is a placeholder for the real document.' },
             { name: 'Review Course', does: 'Reopens the coursework in Compass — the same destination as Resume Course. Shown once the course is complete and access is still available, because reviewing the material is what a learner does between finishing the coursework and sitting the state exam.' },
             { name: 'Purchase Extension', does: '⚠ DRAWN, NOT WIRED — it does nothing today. Intended to sell more access time; the flow behind it is specified on its own Development row. Appears beside the other two on the last day, and alone once access has gone.' },
           ],

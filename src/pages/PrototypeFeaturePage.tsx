@@ -757,7 +757,6 @@ function UiComponentsSection({
           fontSize: 14,
           lineHeight: '22px',
           color: 'var(--color-text-secondary)',
-          maxWidth: GATEWAY_PROSE_MEASURE,
         }}
       >
         Each surface from the Live Preview, broken down into its own handoff. Open one for the
@@ -1039,7 +1038,6 @@ function UiComponentRow({
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
             marginTop: 4,
-            maxWidth: GATEWAY_PROSE_MEASURE,
             fontSize: 13,
             lineHeight: '19px',
             color: 'var(--color-text-secondary)',
@@ -1210,7 +1208,6 @@ function UiComponentDetail({
         <p
           style={{
             margin: '6px 0 0',
-            maxWidth: GATEWAY_PROSE_MEASURE,
             fontSize: 13,
             lineHeight: '19px',
             color: 'var(--color-text-secondary)',
@@ -1444,7 +1441,6 @@ function DecisionsBody({ decisions }: { decisions: DevHandoffDecisions }) {
             <p
               style={{
                 margin: '8px 0 0',
-                maxWidth: GATEWAY_PROSE_MEASURE,
                 fontSize: 13,
                 lineHeight: '19px',
                 color: 'var(--color-text-secondary)',
@@ -1474,7 +1470,6 @@ function DecisionsBody({ decisions }: { decisions: DevHandoffDecisions }) {
                   style={{
                     display: 'block',
                     marginTop: 4,
-                    maxWidth: GATEWAY_PROSE_MEASURE,
                     fontSize: 13,
                     lineHeight: '19px',
                     color: 'var(--color-text-secondary)',
@@ -1506,7 +1501,6 @@ function DecisionsBody({ decisions }: { decisions: DevHandoffDecisions }) {
                   <li
                     key={item}
                     style={{
-                      maxWidth: GATEWAY_PROSE_MEASURE,
                       fontSize: 13,
                       lineHeight: '19px',
                       color: 'var(--color-text-secondary)',
@@ -1579,6 +1573,16 @@ function DecisionStatusPill({ status }: { status: 'Decided' | 'Needs weigh-in' |
  *
  * Applies to PROSE only. Tables, card grids and the decision rows keep the full
  * column: they are scanned, not read line by line.
+ */
+/**
+ * ⚠ NO LONGER USED ON THE HANDOFF (2026-10-21, Jillienne: "why is text capped
+ * at this width. Use the space. Spread it out.").
+ *
+ * A 76ch measure is the right default for a page of prose, and this is not one:
+ * it is a reference document read in a 1230px column beside pictures of the
+ * thing it describes. Capping the text at two-thirds of that left a ragged
+ * right edge against full-width renders and made every section look like it had
+ * been squeezed. Kept exported because other surfaces still import it.
  */
 export const GATEWAY_PROSE_MEASURE = '76ch'
 
