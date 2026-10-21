@@ -265,6 +265,37 @@ and `DevHandoffVariants.test.ts` fails, naming both. A variant with no
 registered render shows an honest "no isolated render" note rather than a gap —
 not every state is reachable through a component's own props.
 
+### "Why it exists" is a REASON, never a citation
+
+⚠ **RULE (2026-10-21, Jillienne: "explanations should never be as stupid as b/c
+jill made a decisions on this day").** A variant's `why` answers *what problem
+this state solves for the learner*. It is not the changelog.
+
+```
+✗ why: 'Jillienne, 2026-10-19: "when at 100%, this messaging should change
+        to Congrats!", then 2026-10-21: "change the Eyebrow to this message."'
+
+✓ why: 'The eyebrow is the card’s status line, and a finished course still
+        labelled "Current course" is the status being wrong.'
+```
+
+Both sentences are true. Only one of them tells a developer anything they can
+build against, or lets a reader disagree with the design on its merits. "Because
+someone asked on a Tuesday" is unfalsifiable — it ends the conversation instead
+of explaining it.
+
+**Where provenance DOES belong:**
+
+- **Code comments.** `AtlasHomeEricE2E.tsx` is full of "(2026-10-14, Eric's
+  request; 32 first, then 24)" and that is correct — a maintainer staring at an
+  odd number needs to know it was chosen, not computed.
+- **The decisions log**, which exists to record decisions: its `owner` field is
+  literally "who to go and ask". Even there the `decision` text has to say WHAT
+  was decided and why it holds — naming the person is sourcing, not reasoning.
+
+`WhyIsAReason.test.ts` fails on a `why` that names a person or carries a date,
+so this cannot come back quietly.
+
 ### The Summary — one or two sentences on what this is for
 
 `quickSummary` is the **first** section of every component detail: what this
