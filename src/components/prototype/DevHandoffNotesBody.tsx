@@ -12,6 +12,10 @@ import type {
 import {
   detailItemStyle,
   detailListStyle,
+  handoffEyebrowStyle,
+  handoffMetaStyle,
+  handoffProseStyle,
+  handoffRowNameStyle,
   pointerLocationStyle,
 } from './devHandoffStyles'
 import {
@@ -30,9 +34,7 @@ export function DevHandoffNotesBody({ component }: { component: DevHandoffCompon
   return (
     <div>
       <code style={pointerLocationStyle}>{component.location}</code>
-      <p style={{ margin: '12px 0 0', fontSize: 15, lineHeight: '23px', color: 'var(--color-text-secondary)' }}>
-        {component.summary}
-      </p>
+      <p style={{ ...handoffProseStyle, margin: '12px 0 0' }}>{component.summary}</p>
 
       {/* Variants are NOT repeated here — they have their own section, which
           pairs each one with its live render. See `DevHandoffVariantsBody`. */}
@@ -146,19 +148,19 @@ function VariantRow({
         )}
       </div>
       <div style={stacked ? { flex: '1 1 100%', minWidth: 0 } : notesColStyle}>
-        <p style={variantNameStyle}>{variant.name}</p>
-        <p style={variantWhenStyle}>{variant.when}</p>
+        <p style={handoffRowNameStyle}>{variant.name}</p>
+        <p style={handoffMetaStyle}>{variant.when}</p>
         {variant.detail && variant.detail !== '—' && (
-          <p style={variantProseStyle}>{variant.detail}</p>
+          <p style={handoffProseStyle}>{variant.detail}</p>
         )}
         {variant.why && (
-          <p style={variantProseStyle}>
+          <p style={handoffProseStyle}>
             <b style={{ color: 'var(--color-text-primary)' }}>Why it exists. </b>
             {variant.why}
           </p>
         )}
         {variant.action && (
-          <p style={variantProseStyle}>
+          <p style={handoffProseStyle}>
             <b style={{ color: 'var(--color-text-primary)' }}>Action. </b>
             {variant.action}
           </p>
@@ -181,23 +183,19 @@ function VariantRow({
 function HowToSee({ children }: { children: ReactNode }) {
   return (
     <p style={howToSeeStyle}>
-      <span style={{ fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', fontSize: 10 }}>
-        How to see it
-      </span>
+      <span style={handoffEyebrowStyle}>How to see it</span>
       <span>{children}</span>
     </p>
   )
 }
 
 const howToSeeStyle: CSSProperties = {
+  ...handoffMetaStyle,
   display: 'flex',
   flexWrap: 'wrap',
   alignItems: 'baseline',
   gap: 8,
   margin: '10px 0 0',
-  fontSize: 12,
-  lineHeight: '18px',
-  color: 'var(--color-text-tertiary)',
 }
 
 /** The display toggles — what changes, and who turns it on. */
@@ -212,10 +210,8 @@ export function DevHandoffOptionsBody({ options }: { options: DevHandoffOption[]
             ...(i > 0 && { borderTop: '1px solid var(--color-border-subtle)', paddingTop: 12 }),
           }}
         >
-          <span style={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>{o.name}</span>
-          <span style={{ display: 'block', marginTop: 4, color: 'var(--color-text-secondary)' }}>
-            {o.what}
-          </span>
+          <span style={{ ...handoffRowNameStyle, display: 'block' }}>{o.name}</span>
+          <span style={{ ...handoffProseStyle, display: 'block' }}>{o.what}</span>
           {o.howToSee && <HowToSee>{o.howToSee}</HowToSee>}
         </li>
       ))}
@@ -240,7 +236,13 @@ export function DevHandoffOptionsBody({ options }: { options: DevHandoffOption[]
  */
 export function DevHandoffFlowsBody({ flows }: { flows: DevHandoffFlow[] }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+    // ⚠ THE PROSE METRIC IS SET ONCE, HERE, and inherited. A flow is built from
+    // nested boxes — a list, a row, a column per step — and none of them is
+    // text, so none of them set a size. Every one of them was therefore
+    // inheriting the page's 16px, and anything that landed in a gap between the
+    // chips rendered a third too large. Setting it on the root means a new
+    // wrapper cannot reintroduce that.
+    <div style={{ ...handoffProseStyle, margin: 0, display: 'flex', flexDirection: 'column', gap: 28 }}>
       {flows.map((flow) => (
         <div key={flow.title}>
           <p style={flowTitleStyle}>{flow.title}</p>
@@ -298,28 +300,11 @@ export function DevHandoffFlowsBody({ flows }: { flows: DevHandoffFlow[] }) {
   )
 }
 
-const flowTitleStyle: CSSProperties = {
-  margin: 0,
-  fontSize: 14,
-  fontWeight: 700,
-  color: 'var(--color-text-primary)',
-}
+const flowTitleStyle: CSSProperties = handoffRowNameStyle
 
-const flowIntroStyle: CSSProperties = {
-  margin: '6px 0 0',
-  fontSize: 13,
-  lineHeight: '20px',
-  color: 'var(--color-text-secondary)',
-}
+const flowIntroStyle: CSSProperties = { ...handoffProseStyle, margin: '6px 0 0' }
 
-const flowRuleNoteStyle: CSSProperties = {
-  margin: '10px 0 0',
-  fontSize: 11,
-  fontWeight: 600,
-  letterSpacing: '0.04em',
-  textTransform: 'uppercase',
-  color: 'var(--color-text-tertiary)',
-}
+const flowRuleNoteStyle: CSSProperties = { ...handoffEyebrowStyle, margin: '10px 0 0' }
 
 /* The rail itself is the left border; each rule hangs off it. */
 const railStyle: CSSProperties = {
@@ -362,11 +347,7 @@ const railRowStyle: CSSProperties = {
   gap: 8,
 }
 
-const conditionChipStyle: CSSProperties = {
-  fontSize: 13,
-  lineHeight: '20px',
-  color: 'var(--color-text-secondary)',
-}
+const conditionChipStyle: CSSProperties = { ...handoffProseStyle, margin: 0 }
 
 /* The state a rule lands on is the thing a reader scans the column for, so it
    is the one element in the flow with a fill behind it. */
@@ -381,14 +362,21 @@ const stateChipStyle: CSSProperties = {
   whiteSpace: 'nowrap',
 }
 
-const arrowStyle: CSSProperties = { color: 'var(--color-text-tertiary)' }
+/* ⚠ THE ARROW HAS TO CARRY ITS OWN SIZE. Nothing between the chips sets a
+   font-size, so these inherited the page's 16px and rendered a third larger
+   than the text they sit between. */
+const arrowStyle: CSSProperties = {
+  fontSize: 13,
+  lineHeight: '20px',
+  color: 'var(--color-text-tertiary)',
+}
 
 const moveLabelStyle: CSSProperties = {
+  ...handoffProseStyle,
+  margin: 0,
   display: 'inline-flex',
   alignItems: 'center',
   gap: 6,
-  fontSize: 12,
-  color: 'var(--color-text-secondary)',
 }
 
 const movesListStyle: CSSProperties = {
@@ -402,13 +390,7 @@ const movesListStyle: CSSProperties = {
 
 const moveItemStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4 }
 
-const flowNoteStyle: CSSProperties = {
-  display: 'block',
-  marginTop: 4,
-  fontSize: 12,
-  lineHeight: '18px',
-  color: 'var(--color-text-tertiary)',
-}
+const flowNoteStyle: CSSProperties = { ...handoffMetaStyle, display: 'block' }
 
 /* ⚠ THE RENDER LEADS (2026-10-21, Jillienne: "switch so the image of the
    component is on the left and the notes are on the right"). It also takes the
@@ -417,32 +399,6 @@ const flowNoteStyle: CSSProperties = {
 const renderColStyle: CSSProperties = { flex: '2 1 420px', minWidth: 0 }
 
 const notesColStyle: CSSProperties = { flex: '1 1 280px', minWidth: 0 }
-
-const variantNameStyle: CSSProperties = {
-  margin: 0,
-  fontSize: 14,
-  fontWeight: 700,
-  color: 'var(--color-text-primary)',
-}
-
-/* The trigger reads as a condition, so it is set in the mono face the rest of
-   the handoff uses for code — several of these ARE prop expressions
-   (`initialLevel={0}`, `percent ≤ 0`), and setting them as prose invited the
-   reader to skim past the one line that says when they will see this. */
-const variantWhenStyle: CSSProperties = {
-  margin: '4px 0 0',
-  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-  fontSize: 12,
-  lineHeight: '18px',
-  color: 'var(--color-text-tertiary)',
-}
-
-const variantProseStyle: CSSProperties = {
-  margin: '8px 0 0',
-  fontSize: 13,
-  lineHeight: '20px',
-  color: 'var(--color-text-secondary)',
-}
 
 /* The ground a render stands on, and it is the PAGE's white rather than the
    gateway's card colour (2026-10-21). Every Atlas card is drawn to be read
@@ -463,13 +419,11 @@ const variantRenderStyle: CSSProperties = {
    as a render that failed, and the whole point of this box is that there is
    nothing to render and a reason why. */
 const variantAbsentStyle: CSSProperties = {
+  ...handoffProseStyle,
   margin: 0,
   padding: 20,
   border: '1px dashed var(--color-border-subtle)',
   borderRadius: 'var(--radius-lg)',
-  fontSize: 12,
-  lineHeight: '18px',
-  color: 'var(--color-text-secondary)',
 }
 
 /**
@@ -481,9 +435,7 @@ export function DevHandoffUiUxLogicBody({ logic }: { logic: DevHandoffUiUxLogic 
   return (
     <div>
       <HandoffBlock label="Why this feature exists">
-        <p style={{ margin: 0, fontSize: 14, lineHeight: '21px', color: 'var(--color-text-secondary)' }}>
-          {logic.why}
-        </p>
+        <p style={{ ...handoffProseStyle, margin: 0 }}>{logic.why}</p>
       </HandoffBlock>
 
       {logic.transitions && logic.transitions.length > 0 ? (
@@ -627,16 +579,7 @@ export function DevHandoffUserStoryBody({ story }: { story: DevHandoffUserStory 
   const clause = (label: string, text: string) => (
     <div style={{ display: 'flex', gap: 12 }}>
       <span
-        style={{
-          flex: 'none',
-          width: 56,
-          paddingTop: 1,
-          fontSize: 10,
-          fontWeight: 700,
-          letterSpacing: '0.06em',
-          textTransform: 'uppercase',
-          color: 'var(--color-text-tertiary)',
-        }}
+        style={{ ...handoffEyebrowStyle, flex: 'none', width: 62, paddingTop: 2 }}
       >
         {label}
       </span>
@@ -734,18 +677,7 @@ export function DevHandoffStatesMatrixBody({ rows }: { rows: DevHandoffState[] }
 export function HandoffBlock({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div style={{ marginTop: 20 }}>
-      <h4
-        style={{
-          margin: 0,
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-          color: 'var(--color-text-tertiary)',
-        }}
-      >
-        {label}
-      </h4>
+      <h4 style={handoffEyebrowStyle}>{label}</h4>
       <div style={{ marginTop: 8 }}>{children}</div>
     </div>
   )
