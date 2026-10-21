@@ -1498,13 +1498,47 @@ export function UxDashboardPage() {
         (!q || f.title.toLowerCase().includes(q) || (f.tileBlurb ?? f.blurb).toLowerCase().includes(q)) &&
         (status === 'all' || statusKeyOf(f, done, inDesign) === status),
     )
+    /* READY FOR DEV LEADS (2026-10-21, Jillienne: "this is marked ready for
+       Dev, lets make the Ready for Dev always be the first shown at the top").
+       It is the one status that is a HANDOFF — the row is waiting on someone
+       else, and a developer opening Development should not have to scan nine
+       rows to find which ones are theirs. Everything else keeps its authored
+       order behind it.
+
+       A PARTITION, NOT A SORT BY `STATUS_ORDER`. Ordering the whole list by
+       the dev cycle would also reshuffle the eight rows nobody asked about,
+       and that order is authored — it is the sequence the sections were
+       written in, which is itself information. Two buckets, each internally
+       untouched.
+
+       ⚠ NOT IN PROTOTYPES, which is why this is gated on `showStatus` rather
+       than on the section name: that section's order is a decision
+       (`PROTOTYPE_SCOPES`, end-to-end always first, pinned by
+       `UxDashboard.smoke.test.tsx`) and it is the one section that draws no
+       status chip at all — so there is nothing visible for a reader to tie the
+       reordering to. The two facts travel together, so one flag covers both.
+
+       Keys are computed ONCE into a map rather than inside the comparator:
+       `statusKeyOf` reads the roll-up out of localStorage, and a comparator
+       runs O(n log n) times. */
+    const ordered = showStatus
+      ? (() => {
+          const keys = new Map(out.map((f) => [f.id, statusKeyOf(f, done, inDesign)]))
+          const ready = out.filter((f) => keys.get(f.id) === 'ready-for-dev')
+          return ready.length && ready.length < out.length
+            ? [...ready, ...out.filter((f) => keys.get(f.id) !== 'ready-for-dev')]
+            : out
+        })()
+      : out
     // Authored order, with pinned rows leading. Applied AFTER the filters, so
     // a pin cannot smuggle a row past a search or a status filter — it only
-    // decides where a row that already matched sits.
-    const pinned = out.filter((f) => f.pinned)
-    return pinned.length ? [...pinned, ...out.filter((f) => !f.pinned)] : out
+    // decides where a row that already matched sits. It is also applied after
+    // the Ready-for-Dev partition, so an explicit pin still wins: a pin is
+    // someone's deliberate choice about one row, and a status is not.
+    const pinned = ordered.filter((f) => f.pinned)
+    return pinned.length ? [...pinned, ...ordered.filter((f) => !f.pinned)] : ordered
     // eslint-disable-next-line react-hooks/exhaustive-deps -- statusTick invalidates an impure localStorage read
-  }, [inSection, q, status, done, inDesign, statusTick])
+  }, [inSection, q, status, done, inDesign, statusTick, showStatus])
 
   // The palette, resolved once so the shell and the root mirror below cannot
   // disagree about which scheme is active.
