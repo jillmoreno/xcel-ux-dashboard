@@ -1518,6 +1518,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           variants: [
             { name: 'Not started', when: 'The learner has not opened the course.', detail: 'The button reads "Begin Course".', why: 'The first click into a course is a different promise from returning to one.', action: '"Begin Course" opens the first lesson.', howToSee: 'Demo bar → Progress → Not Started' },
             { name: 'In progress', when: 'The learner has started but not finished.', detail: 'The button reads "Resume Course".', why: '"Resume" only makes sense once there is somewhere to resume to.', action: '"Resume Course" returns them where they stopped.', howToSee: 'Demo bar → Progress → On Track' },
+            { name: 'Course complete', when: 'The learner has finished the course.', detail: 'The meta row stops counting and congratulates: "Course Access Ends: <date>, Congrats! You have completed this course." ⚠ The days figure is time the learner still NEEDS; at the end it is time they no longer have, so continuing to count it down reads as a deadline against work that is already done.', why: 'Jillienne, 2026-10-19: "when at 100%, this messaging should change to Congrats! You have completed this course."', action: 'The primary button becomes View Certificate.', howToSee: 'Demo bar → Progress → Ready 100%' },
             { name: 'No end date', when: 'The course has no access-expiry date.', detail: 'The Expires / days-to-complete meta row is omitted entirely — never a blank row and never a zero.', why: 'A row reading "Expires: —" tells the learner less than no row at all.', action: 'Unchanged; only the meta row goes.' },
             { name: 'Long title', when: 'The course name is too long for one line.', detail: 'The title wraps rather than truncating, and the meta row and buttons move down with it. ⚠ Worth building against the longest real course name, not the demo one.', why: 'Course names are supplied data, so the layout has to survive the long ones.', action: 'Unchanged.', howToSee: 'Demo bar → Long title' },
           ],
@@ -2247,35 +2248,43 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           tabLabel: 'Study Journey',
           location: 'src/components/compass/AtlasHomeEricE2E.tsx (JourneyRow, Step) + src/components/learning/studyJourneyUtil.ts (journeyStopsFor) + src/data/nyProducerRequirements.ts (GET_LICENSED_STEPS, jurisdictionName)',
           summary:
-            'Step 1 is headed "Study Journey" and lists the stops of the licensing coursework; Step 2 is "Pass State Exam" and Step 3 is "Get Licensed in {state}", retitled from the published licensing data with the learner’s own state. ⚠ STEP 1’s LIST IS FIXED COPY — seven titles, with only the first row ever marked current. It does not read the real, per-learner sequence that drives the equivalent rail elsewhere in the app (the Learning Path page’s detail panel, the Study Journey widget), which is the decision flagged in the log below.',
+            'Step 1 is headed "Complete Coursework" and lists the course sequence; Step 2 is "Pass State Exam" and Step 3 is "Get Licensed in {state}", retitled from the published licensing data with the learner’s own state. ⚠ ONLY ONE ROW IS LIVE — Pre-Licensing Education carries a real "N of 36 completed" count; every other row is fixed copy, and no row is ever marked done. The per-stop statuses are rebuilt as "not started" rather than read from the learner’s actual progress, which is the decision flagged in the log below.',
           quickSummary:
             'Step 1/2/3 on the right side of Home. Important: Step 1’s list is a fixed, hardcoded set of lines today — it does not move with the Progress control the way Progress and Readiness do. That’s worth a decision before dev builds against it.',
           variants: [
-            { name: 'Default', when: 'The learner has not finished the coursework.', detail: 'Step 1 is a fixed 7-line list: Pre-course Affidavit, Pre-Licensing Lessons, Study-manual Notice Affidavit, Final Exam, and the rest. Steps 2 and 3 sit beneath it.', why: 'The journey is three steps long and only the first one moves — showing all three keeps the exam and the licence in view from day one.', action: 'The rows are a checklist, not links, on this screen.' },
-            { name: 'Coursework complete', when: 'The learner has finished the coursework.', detail: 'Step 1’s whole list is replaced by an eyebrow, "Congratulations!" and a line confirming the coursework is done. Steps 2 and 3 are unchanged.', why: 'Once every row is ticked the list has nothing left to tell them; the acknowledgement is the useful thing.', action: 'None.', howToSee: 'Demo bar → Progress → Completed' },
+            { name: 'Default', when: 'The learner is working through the coursework.', detail: 'Step 1 is headed "Complete Coursework" and lists the course sequence: Pre-Licensing Education (N of 36 completed) · Certification Exam · Prep Review (23) · State Exam Simulators (3) · Affidavit · Survey & Certificate. ⚠ A "Pre-course Affidavit" row sits ABOVE those six and is dropped whenever the pre-course affidavit is off, which is the default — so six rows is what a reviewer normally sees, and seven is the affidavit arm.', why: 'The journey is three steps long and only the first one moves — showing all three keeps the state exam and the licence in view from day one.', action: 'The rows are a checklist. Nothing in Step 1 is clickable here.' },
+            { name: 'All coursework done', when: 'The learner has finished every lesson.', detail: 'The SAME list, with the education row reading "36 of 36 completed". ⚠ STEP 1 DOES NOT BECOME A CONGRATULATIONS BLOCK. One exists in the component, but it is drawn only by the other progress-card arm — on this page the list stays and the congratulation appears in the COURSE HEAD instead, where the days-remaining line is replaced by "Congrats! You have completed this course."', why: 'The learner still has two steps to go; replacing the list with a celebration would hide the sequence at the moment they need to see what is next.', action: 'None.', howToSee: 'Demo bar → Progress → Ready 100%' },
           ],
           flows: [
             {
-              title: 'What Step 1 shows',
+              title: 'What Step 1 lists',
+              intro: 'The row titles are built from the course’s own sequence — education, then the certification exam, then the state-exam preparation that exam qualifies the learner to start.',
               decides: [
-                { when: 'The learner has finished the coursework', show: 'Congratulations' },
-                { when: 'Otherwise', show: 'The 7-line checklist' },
+                { when: 'The pre-course affidavit is off (the default)', show: 'Six rows', note: 'The "Pre-course Affidavit" row is dropped — a journey that opens on a step the page never shows is promising something it will not do.' },
+                { when: 'The pre-course affidavit is on', show: 'Seven rows', note: 'The affidavit row returns at the top.' },
+              ],
+            },
+            {
+              title: 'What moves, and what does not',
+              intro: '⚠ THE SINGLE MOST IMPORTANT THING ON THIS PAGE FOR A DEVELOPER. Only ONE row is live.',
+              decides: [
+                { when: 'Pre-Licensing Education', show: 'A real count', note: 'Reads "N of 36 completed" and follows the learner’s actual progress.' },
+                { when: 'Every other row', show: 'Fixed copy', note: 'The counts in Prep Review (23) and State Exam Simulators (3) are constants, and no row is ever marked done — the ticks and the current-row highlight are rebuilt as "not started" regardless of progress.' },
               ],
             },
             {
               title: 'Steps 2 and 3, which never change',
-              intro: 'Both are always drawn, in every state. They are listed here because "it does not change" is a decision a developer would otherwise have to infer from its absence.',
               decides: [
-                { when: 'Always', show: 'Step 2 — Pass State Exam', note: '"150 questions in 150 minutes. 70% to pass." Its "What to expect" link is drawn text, not a control.' },
-                { when: 'Always', show: 'Step 3 — Get Licensed', note: 'Titled with the learner’s own state name rather than the published "Apply for your License".' },
-                { when: 'The host supplies a handler', show: 'State Requirements button', note: '⚠ The only live click target in the whole section on this screen.' },
+                { when: 'Always', show: 'Step 2 — Pass State Exam', note: 'Its detail is the exam-date prompt: "When is your exam? Entering your exam date will help us structure your study plan", with Add Date and Exam Information beneath.' },
+                { when: 'Always', show: 'Step 3 — Get Licensed', note: 'Titled with the learner’s own state, over an "Applying for a License" line.' },
               ],
             },
           ],
           uxLogic: [
-            '⚠ STEP 1’s LIST IS FIXED COPY, NOT THE LEARNER’S PROGRESS. The app can compute a real sequence of the learner’s actual coursework — and does elsewhere — but Home shows a hardcoded 7-title list instead. Only the first row is ever marked current, and the per-stop "done X of Y chapters, Next: Chapter N" detail never appears.',
-            'So moving the Progress control visibly moves the Course Progress dial and the Readiness half-dial, while Step 1’s list stays frozen. The one exception is Completed, which swaps the whole list for the Congratulations block.',
-            'Steps 2 and 3 show a title and one line of detail. Their "What to expect" and "How to apply" links exist in the component but are switched off here, so neither step opens anything.',
+            '⚠ STEP 1’s ROW STATUSES ARE NOT THE LEARNER’S PROGRESS. The app can compute a real sequence — and does elsewhere — but Home rebuilds the rows from a title list, stamping every one of them "not started". So no row ever shows a tick, and the per-stop "done X of Y chapters, Next: Chapter N" detail never appears.',
+            'The one thing that IS live is the education row’s own count, "N of 36 completed", which follows real progress. Everything else in the list is constant — so moving the Progress control visibly moves the dial, the Readiness band and that one number, and nothing else in Step 1.',
+            '⚠ AT 100% STEP 1 DOES NOT CELEBRATE. A "Congratulations!" panel for Step 1 exists in the component but is drawn only by the other progress-card arm, so this page never reaches it. The congratulation lands in the COURSE HEAD instead, where the days-remaining line becomes "Congrats! You have completed this course."',
+            'Steps 2 and 3 show a title and one line of detail. Their "What to expect" and "How to apply" links exist in the component but are switched off here, so neither step opens anything. Step 2’s detail is the exam-date prompt, not a sentence about the exam.',
             'The published licensing path has THREE steps after the coursework — Schedule State Exam, Pass State Exam, Apply for your License — but Home shows only the last two. "Schedule State Exam" never appears.',
             'No journey row ever gets a chevron. A row earns one only when it is not current and not "not-started", and in a fixed list every non-current row is "not-started" by construction.',
           ],

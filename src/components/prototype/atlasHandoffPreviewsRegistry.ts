@@ -5,7 +5,12 @@ import { AtlasCourseProgressStates } from '@/components/compass/AtlasCourseProgr
 import { AtlasPaceRingCard } from '@/components/compass/AtlasPaceRingCard'
 import { AtlasExamDateCard } from '@/components/compass/AtlasExamDateCard'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
-import { AffidavitLauncher, CourseHeadWhiteVariant } from './AtlasHandoffPreviews'
+import {
+  AffidavitLauncher,
+  CourseHeadVariant,
+  PageFrame,
+  QuickLinksHoverDemo,
+} from './AtlasHandoffPreviews'
 
 /**
  * LIVE RENDERS FOR THE ATLAS HOME DEV-HANDOFF VARIANTS, keyed by handoff
@@ -151,13 +156,47 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
   'atlas-home-quick-links': {
     Default: quickLinks({}),
     'Active row': quickLinks({}, ['/?section=courses']),
+    'Hover / focus': () => createElement(QuickLinksHoverDemo),
   },
 
+  // ⚠ ALL FOUR ARE REAL PROPS (2026-10-21). Three of these states carried a
+  // "not reachable through the component's own props" note until Jillienne
+  // asked what they looked like — and `WhiteStyleHead` takes `beginLabel`,
+  // `meta` and `title`, so every one of them always was reachable. The note
+  // was wrong, not the component.
   'atlas-home-course-head': {
-    // Main draws the course head one way, so this is simply what it looks
-    // like — it stopped being one of two chrome arms when the handoff was
-    // narrowed to main's walkthrough (2026-10-20).
-    'Not started': () => createElement(CourseHeadWhiteVariant),
+    'Not started': () => createElement(CourseHeadVariant, { beginLabel: 'Begin Course' }),
+    'In progress': () => createElement(CourseHeadVariant, { beginLabel: 'Resume Course' }),
+    'No end date': () => createElement(CourseHeadVariant, { withMeta: false }),
+    'Course complete': () =>
+      createElement(CourseHeadVariant, {
+        beginLabel: 'View Certificate',
+        metaText: 'Course Access Ends: Dec 1, 2026, Congrats! You have completed this course.',
+      }),
+    'Long title': () =>
+      createElement(CourseHeadVariant, {
+        title: 'Florida Life and Health Pre-licensing with Comprehensive Exam Simulators',
+      }),
+  },
+
+  // The page IS the component, so the only honest render is the page.
+  'atlas-home-layout': {
+    Default: () => createElement(PageFrame, { title: 'Atlas Home — page layout' }),
+  },
+
+  // Step 1 reads the page's shared progress, not its own props, so these load
+  // the real route pinned to each stage rather than rebuilding the list.
+  'atlas-home-study-journey': {
+    Default: () =>
+      createElement(PageFrame, {
+        title: 'Study Journey — in progress',
+        ff: 'atlas-v3-progress:on-track',
+      }),
+    'All coursework done': () =>
+      createElement(PageFrame, {
+        title: 'Study Journey — all coursework done',
+        ff: 'atlas-v3-progress:completed',
+      }),
   },
 
   'atlas-home-affidavit-modal': {
@@ -165,7 +204,38 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
       createElement(AffidavitLauncher, { kind: 'pre', label: 'Pre-course Affidavit' }),
     'Study-manual Notice Affidavit': () =>
       createElement(AffidavitLauncher, { kind: 'post', label: 'Study-manual Notice Affidavit' }),
+    // The checkbox axis. Both open the real modal; `agreed` is the only way to
+    // land straight on the enabled Continue button without asking the reader
+    // to go and tick a box to see what it looks like.
+    'Not yet agreed': () =>
+      createElement(AffidavitLauncher, { kind: 'pre', label: 'the modal, not yet agreed' }),
+    Agreed: () =>
+      createElement(AffidavitLauncher, { kind: 'pre', label: 'the modal, agreed', agreed: true }),
   },
+}
+
+/**
+ * Components whose renders are the whole PAGE in an iframe rather than a card.
+ *
+ * They need the full row width: at half a row the real page reflows to a
+ * single narrow column and the reader sees the demo bar instead of the thing
+ * the row is about. Listed explicitly rather than sniffed from the rendered
+ * output, because "is this element wide" is not a question the DOM can be
+ * asked before it is laid out.
+ *
+ * `DevHandoffVariants.test.ts` checks every id here is a real component, so
+ * this cannot quietly point at nothing.
+ */
+const PAGE_FRAMED = new Set(['atlas-home-layout', 'atlas-home-study-journey'])
+
+/** Whether this component's renders are full-page frames — see `PAGE_FRAMED`. */
+export function atlasHandoffIsPageFramed(componentId: string): boolean {
+  return PAGE_FRAMED.has(componentId)
+}
+
+/** Test seam for `PAGE_FRAMED`. */
+export function atlasPageFramedIds(): string[] {
+  return [...PAGE_FRAMED]
 }
 
 /** Every variant render registered for a handoff component, or `undefined`

@@ -14,7 +14,10 @@ import {
   detailListStyle,
   pointerLocationStyle,
 } from './devHandoffStyles'
-import { atlasHandoffVariantRender } from './atlasHandoffPreviewsRegistry'
+import {
+  atlasHandoffVariantRender,
+  atlasHandoffIsPageFramed,
+} from './atlasHandoffPreviewsRegistry'
 
 /**
  * The full written notes for one handoff component — location, summary,
@@ -83,6 +86,7 @@ export function DevHandoffVariantsBody({
   variants: DevHandoffVariant[]
 }) {
   const anyRender = variants.some((v) => atlasHandoffVariantRender(componentId, v.name))
+  const stacked = atlasHandoffIsPageFramed(componentId)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {variants.map((v, i) => (
@@ -92,6 +96,7 @@ export function DevHandoffVariantsBody({
           variant={v}
           first={i === 0}
           anyRender={anyRender}
+          stacked={stacked}
         />
       ))}
     </div>
@@ -103,10 +108,14 @@ function VariantRow({
   variant,
   first,
   anyRender,
+  stacked = false,
 }: {
   componentId: string
   variant: DevHandoffVariant
   first: boolean
+  /** Put the render on its own full-width line under the prose, for the
+   *  components whose render is the whole page. */
+  stacked?: boolean
   /** Whether this COMPONENT has any live render at all. Drives which absence
    *  note a render-less variant gets — "nothing is wired for this component"
    *  reads very differently from "this one state can't be isolated". */
@@ -125,7 +134,7 @@ function VariantRow({
           : { borderTop: '1px solid var(--color-border-subtle)', paddingTop: 20 }),
       }}
     >
-      <div style={{ flex: '1 1 300px', minWidth: 0 }}>
+      <div style={stacked ? { flex: '1 1 100%', minWidth: 0 } : { flex: '1 1 300px', minWidth: 0 }}>
         <p style={variantNameStyle}>{variant.name}</p>
         <p style={variantWhenStyle}>{variant.when}</p>
         {variant.detail && variant.detail !== '—' && (
@@ -145,7 +154,7 @@ function VariantRow({
         )}
         {variant.howToSee && <HowToSee>{variant.howToSee}</HowToSee>}
       </div>
-      <div style={{ flex: '1 1 320px', minWidth: 0 }}>
+      <div style={stacked ? { flex: '1 1 100%', minWidth: 0 } : { flex: '1 1 320px', minWidth: 0 }}>
         {render ? (
           <div style={variantRenderStyle}>{render}</div>
         ) : (

@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { PROTOTYPE_FEATURES, type DevHandoffComponent } from '@/data/prototypeFeatures'
-import { atlasRegisteredVariantKeys } from '@/components/prototype/atlasHandoffPreviewsRegistry'
+import {
+  atlasRegisteredVariantKeys,
+  atlasPageFramedIds,
+} from '@/components/prototype/atlasHandoffPreviewsRegistry'
 
 /**
  * THE VARIANT LISTS CANNOT DRIFT APART.
@@ -93,6 +96,14 @@ describe('dev-handoff variants', () => {
       }
     }
     expect(dupes, dupes.join('\n')).toEqual([])
+  })
+
+  it('every page-framed id is a component that exists', () => {
+    // `PAGE_FRAMED` widens a component's rows to the full width. A stale id
+    // there changes nothing visible, so it would sit wrong indefinitely.
+    const known = new Set(allHandoffComponents().map(({ component }) => component.id))
+    const unknown = atlasPageFramedIds().filter((id) => !known.has(id))
+    expect(unknown, unknown.join('\n')).toEqual([])
   })
 
   it('a flow only ever points at a state the component actually has', () => {

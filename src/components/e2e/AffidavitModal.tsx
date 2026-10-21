@@ -30,9 +30,25 @@ const AFFIDAVIT: Record<AffidavitKind, { title: string; when: string }> = {
   post: { title: 'Study-manual Notice Affidavit', when: 'After the coursework, before your final exam' },
 }
 
-export function AffidavitModal({ kind = 'pre', onClose }: { kind?: AffidavitKind; onClose: () => void }) {
+export function AffidavitModal({
+  kind = 'pre',
+  onClose,
+  initialAgreed = false,
+}: {
+  kind?: AffidavitKind
+  onClose: () => void
+  /** Opens with the attestation already ticked.
+   *
+   *  ⚠ FOR THE DEV HANDOFF'S STATE GALLERY ONLY (2026-10-21) — the same role
+   *  `initialStage` plays on `AtlasExamDateCard` and `initialLevel` on
+   *  `AtlasReadinessCard`. A learner never reaches this modal pre-agreed, and
+   *  no product surface passes it; it exists so the handoff can show the
+   *  enabled Continue button without asking the reader to go and tick a box
+   *  to find out what it looks like. */
+  initialAgreed?: boolean
+}) {
   const doc = AFFIDAVIT[kind]
-  const [agreed, setAgreed] = useState(false)
+  const [agreed, setAgreed] = useState(initialAgreed)
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
