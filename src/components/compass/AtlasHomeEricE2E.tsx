@@ -16,9 +16,12 @@ import {
   FileCertificateLight,
   LockRegular,
   CalendarExclamation,
+  TriangleExclamation,
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
-import { ATLAS_EXPIRES_SOON_DAYS, accessCountLabel } from './atlasCourseAccess'
+import { accessCountLabel } from './atlasCourseAccess'
+import { courseExpiryTier, usableDaysLeft } from '@/data/courseExpiry'
+import type { CourseExpiryTier } from '@/data/courseExpiry'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
 import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
@@ -39,7 +42,7 @@ import {
   type JourneyStop,
 } from '@/components/learning/studyJourneyUtil'
 import { getLicensedStepsFor, jurisdictionName } from '@/data/nyProducerRequirements'
-import { defaultPreset, formatPaceDate, formatPaceDateLong, studyPace, daysUntil, dateFromIso, isoPlusDays, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
+import { defaultPreset, formatPaceDate, formatPaceDateLong, studyPace, dateFromIso, isoPlusDays, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
 import { EXPIRY_FLAG_KEY } from '@/data/courseFixtures'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import './atlasJourneyLink.css'
@@ -378,7 +381,14 @@ export function AtlasHomeEricE2E({
      call to action together. */
   const expiredView = progressPick === 'expired'
   const ringAtZero = paceCard === 'ring' && atZeroProgress
-  const rawAccessDays = accessIso ? Math.max(0, daysUntil(accessIso, today) ?? 0) : null
+  /* ⚠ USABLE DAYS, NOT DAYS-UNTIL (2026-10-21, reconciling with `main`). The
+     Home `main` renders fixed this first: `resolveCeiling` has always planned
+     against the last day a learner can actually study in — "finishing on the
+     day access dies is not finishing" — so a header counting to the access
+     date printed one more day than the plan beside it was built on. Leaving
+     this surface on the old count while the two share one meta component would
+     put the same card a day apart on two pages. */
+  const rawAccessDays = accessIso ? Math.max(0, usableDaysLeft(accessIso, today) ?? 0) : null
   /* ⚠ DERIVED, NOT OVERRIDDEN (2026-10-19). It was `atZeroProgress ? 30 :
      rawAccessDays` — a count that ignored the date printed beside it and the
      window the pace card read. The 30 lives in `accessIso` now, so this is
@@ -389,6 +399,13 @@ export function AtlasHomeEricE2E({
      left to it — the figures the Access tile reads — not the frame's sample
      11/04/2026 and 27 days. Like the rest of the card, it is the first
      course's whichever tab is picked. */
+  /* The urgency tier — `courseExpiryTier`, the one definition of how close the
+     end is (7 usable days amber, 2 red). The ladder's own `expired` rung still
+     overrides it, because that rung is a demo control rather than a date. */
+  const expiryTier = courseExpiryTier(
+    { status: completedView ? 'completed' : 'in-progress', expiresAt: accessIso },
+    today,
+  )
   const expiresOn = dateFromIso(accessIso)
   const courseMeta =
     expiresOn && accessDays != null ? (
@@ -402,17 +419,8 @@ export function AtlasHomeEricE2E({
         <WhiteCourseMeta
           endsOn={expiresOn}
           days={accessDays}
-          state={
-            expiredView
-              ? 'expired'
-              : completedView
-                ? 'complete'
-                : accessDays <= 1
-                  ? 'last-day'
-                  : accessDays <= ATLAS_EXPIRES_SOON_DAYS
-                    ? 'expiring-soon'
-                    : 'counting'
-          }
+          tier={expiredView ? 'expired' : expiryTier}
+          complete={completedView}
         />
       ) : (
       <div
@@ -1929,6 +1937,7 @@ export function AtlasCourseHeadRow({
   beginDisabled = false,
   onPurchaseExtension,
   onViewCertificate,
+  tier = 'normal',
 }: {
   onWhite: boolean
   cover?: string
@@ -1946,17 +1955,48 @@ export function AtlasCourseHeadRow({
   onOverview?: () => void
   onBegin?: () => void
   beginDisabled?: boolean
-  /** Shows "Purchase Extension" FIRST in the action row, outlined in the error
-   *  ramp. Supplied on the last day of access, where the learner can still work
-   *  AND needs the offer — so it joins the normal actions rather than replacing
-   *  them, which is what separates it from the Expired head. */
+  /**
+   * Shows "Purchase Extension" FIRST in the action row, wearing the tier's own
+   * colour.
+   *
+   * ⚠ IT APPEARS WITH THE WARNING, NOT ON THE LAST DAY (2026-10-21, reconciling
+   * with `main`: "for 7 days or less, (including expired), we need to add a
+   * secondary button to the left of course overview"). This branch first showed
+   * it only at ≤1 day; seven days out is where the learner can still act on it,
+   * which is the point of warning them at all. It is the action the row above
+   * it is ARGUING for, so it leads.
+   */
   onPurchaseExtension?: () => void
   /** Shows "View Certificate" beside Course Overview. Supplied once the course
    *  is complete: Review Course takes the learner back into the material and
    *  this takes them to the thing they finished it for, so the two sit
    *  together rather than one replacing the other. */
   onViewCertificate?: () => void
+  /**
+   * The access-urgency tier — what colour the purchase CTA wears, and whether
+   * the card still has anything to open.
+   *
+   * ⚠ `expired` TAKES BOTH OTHER ACTIONS AWAY, and the parts are one decision
+   * (2026-10-20): Course Overview goes because it opens Compass, which IS the
+   * course; Begin/Resume goes because there is nothing to resume. That is
+   * exactly why Purchase Extension steps up to the PRIMARY treatment there —
+   * the card would otherwise carry no primary action at all.
+   */
+  tier?: CourseExpiryTier
 }) {
+  const expired = tier === 'expired'
+  /* ⚠ NOT `.cre-compass-secondary` FOR THE WARNING TIERS. That class pins
+     `border-color: var(--color-compass-page-button)` with `!important`, so an
+     amber warning comes out brand-crimson — the same trap the red Purchase
+     Extension hit on 2026-10-21. The outline is built from the tone instead,
+     so the button, the icon and the line above them are one colour by
+     construction rather than by coincidence. */
+  const purchaseTone =
+    tier === 'soon'
+      ? 'var(--color-warning-700)'
+      : tier === 'urgent'
+        ? 'var(--color-error-600)'
+        : undefined
   return (
       <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
         {cover ? (
@@ -1986,14 +2026,42 @@ export function AtlasCourseHeadRow({
               Study Journey's current stop. */}
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             {onPurchaseExtension ? (
-              <button
-                type="button"
-                className="cre-compass-secondary cre-atlas-home-secondary"
-                onClick={onPurchaseExtension}
-                style={HEADER_BUTTON_DANGER}
-              >
-                Purchase Extension
-              </button>
+              expired ? (
+                /* PRIMARY once access has gone — nothing else is left on the
+                   card, so the one remaining action takes the one remaining
+                   primary treatment. */
+                <button
+                  type="button"
+                  className="cre-compass-primary cre-compass-btn-primary"
+                  onClick={onPurchaseExtension}
+                  style={HEADER_PRIMARY}
+                >
+                  Purchase Extension
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  /* ⚠ NO `cre-compass-secondary` WHILE A TONE IS SET. That class
+                     pins `border-color: var(--color-compass-page-button)` with
+                     `!important`, so an amber warning comes out in XCEL's
+                     crimson and a red one in a crimson close enough to read as
+                     a rendering fault. The outline is built from the tone
+                     instead, so the button, the icon and the line above them
+                     are one colour by construction rather than by coincidence.
+                     `AtlasCourseExpiry.test.tsx` pins this. */
+                  className={purchaseTone ? undefined : 'cre-compass-secondary cre-atlas-home-secondary'}
+                  onClick={onPurchaseExtension}
+                  style={{
+                    ...HEADER_BUTTON,
+                    fontWeight: 700,
+                    ...(purchaseTone
+                      ? { color: purchaseTone, borderColor: purchaseTone, background: 'transparent' }
+                      : null),
+                  }}
+                >
+                  Purchase Extension
+                </button>
+              )
             ) : null}
             {onViewCertificate ? (
               <button
@@ -2005,7 +2073,7 @@ export function AtlasCourseHeadRow({
                 View Certificate
               </button>
             ) : null}
-            {showOverview ? (
+            {showOverview && !expired ? (
               <button
                 type="button"
                 className="cre-compass-secondary cre-atlas-home-secondary"
@@ -2017,6 +2085,7 @@ export function AtlasCourseHeadRow({
                 Course Overview
               </button>
             ) : null}
+            {expired ? null : (
             <button
               type="button"
               className="cre-compass-primary cre-compass-btn-primary"
@@ -2026,11 +2095,12 @@ export function AtlasCourseHeadRow({
               disabled={beginDisabled}
               style={HEADER_PRIMARY}
             >
-              {/* "Resume Course" once Progress is past 0%, "Review Course" at
-                  100% while access lasts, and "Purchase Extension" once it has
-                  gone — see `beginLabel`. */}
+              {/* "Resume Course" once Progress is past 0%, and "Review Course"
+                  at 100% while access lasts. There is no expired label: the
+                  button is gone in that state. */}
               {beginLabel}
             </button>
+            )}
           </div>
         </div>
       </div>
@@ -2066,27 +2136,51 @@ export function AtlasCourseHeadRow({
 export function WhiteCourseMeta({
   endsOn,
   days,
-  state = 'counting',
+  tier,
+  complete = false,
 }: {
   endsOn: Date
+  /** USABLE days left — expiry minus one, clamped at 0. See `usableDaysLeft`. */
   days: number
-  state?: 'counting' | 'expiring-soon' | 'last-day' | 'complete' | 'expired'
+  /** The urgency tier, from `courseExpiryTier`. */
+  tier: CourseExpiryTier
+  /** 100%: the count goes and the congratulation moves to the EYEBROW. */
+  complete?: boolean
 }) {
-  const expired = state === 'expired'
-  const soon = state === 'expiring-soon'
-  const lastDay = state === 'last-day'
-  /* ⚠ AMBER, THEN RED (2026-10-21, Jillienne: "an additional example needs to
-     be shown for when Course Expires soon and the Access changes from Amber to
-     Red"). The repo's own ramps, not new colours: Warning 800 is what the
-     course cards' expiring-soon badge already uses, and Error 700 is what
-     Failed uses. ⚠ THE ATLAS HEAD DIVERGES FROM THE CARD BADGE ON EXPIRED —
-     that badge draws grey; this draws red, because a grey countdown on a
-     header reads as disabled rather than as something to act on. */
-  const tone = expired || lastDay
-    ? 'var(--color-error-700)'
-    : soon
-      ? 'var(--color-warning-800)'
-      : undefined
+  const expired = tier === 'expired'
+  const urgent = tier === 'urgent'
+  const soon = tier === 'soon'
+  /* ⚠ THE TIER IS NOT THIS COMPONENT'S TO DECIDE (2026-10-21, reconciling two
+     branches). It used to take a five-arm `state` of its own and derive amber
+     from a 15-day constant that lived next door; `courseExpiryTier` had
+     already settled the question — 7 usable days amber, 2 red, counted in
+     days a learner can actually study in — and it is what the Home, the pace
+     model and `resolveCeiling` all read. Two spans for one deadline is the
+     drift this component exists to prevent, so the caller passes the tier and
+     this draws it.
+
+     ⚠ AND THE TONES ARE THE HOME'S, not a second palette: Warning 700, Error
+     600, Neutral 800. Picking "near enough" stops here would put the handoff
+     preview a shade off the page it documents. */
+  const tone = soon
+    ? 'var(--color-warning-700)'
+    : urgent
+      ? 'var(--color-error-600)'
+      : expired
+        ? 'var(--color-neutral-800)'
+        : undefined
+  /* ⚠ THE ICON IS PART OF THE STATE, NOT DECORATION. It is the cue that
+     survives a greyscale screen, where the tone alone says nothing. */
+  const icon = soon ? (
+    <TriangleExclamation size={13} aria-hidden style={{ color: tone, flex: 'none' }} />
+  ) : urgent || expired ? (
+    <CalendarExclamation size={13} aria-hidden style={{ color: tone, flex: 'none' }} />
+  ) : null
+  /* ⚠ ZERO IS "TODAY IS THE LAST DAY", NOT "0 DAYS". On the last usable day
+     there are no further days to study in, and a literal "0 days to complete"
+     reads as a bug rather than as urgency. */
+  const lastDay = urgent && days === 0
+  const counts = !complete && !expired
   return (
     <div
       /* Primary 200 rules on the panel's Primary 100 (2026-10-14), where the
@@ -2095,45 +2189,36 @@ export function WhiteCourseMeta({
         ...META_ROW,
         borderTop: '1px solid var(--color-primary-200)',
         borderBottom: '1px solid var(--color-primary-200)',
+        ...(tone ? { color: tone } : null),
       }}
     >
       <span style={META_PAIR}>
-        {(expired || soon || lastDay) && (
-          <CalendarExclamation size={13} aria-hidden style={{ color: tone, flex: 'none' }} />
-        )}
-        <span style={{ ...META_LABEL, ...(tone ? { color: tone } : null) }}>
+        {icon}
+        <span style={{ ...META_LABEL, ...(tone ? { color: 'inherit' } : null) }}>
           {expired ? 'Course Access Ended:' : 'Course Access Ends:'}
         </span>
-        <span style={{ ...META_VALUE, ...(tone ? { color: tone } : null) }}>
+        <span style={{ ...META_VALUE, ...(tone ? { color: 'inherit' } : null) }}>
           {endsOn.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
           {/* Inside the value, so no gap before it; in the label's weight. The
               comma only earns its place when something follows it. */}
-          {state === 'counting' || soon || lastDay ? (
-            <span style={{ ...META_LABEL, ...(tone ? { color: tone } : null) }}>,</span>
-          ) : null}
+          {counts ? <span style={{ ...META_LABEL, ...(tone ? { color: 'inherit' } : null) }}>,</span> : null}
         </span>
       </span>
-      {lastDay ? (
-        /* ⚠ NO COUNT ON THE LAST DAY. "1 day to complete" is technically true
-           and reads as a quantity the learner can plan against; today is not a
-           quantity, it is a deadline. */
+      {counts ? (
+        /* One line — "…05/29/2026, 18 days to complete" — no divider
+           (2026-10-14, Eric's request). The COUNT is the part that carries the
+           tone: it is the figure the learner is being asked to act on. */
         <span style={{ ...META_PAIR, marginLeft: -4 }}>
-          <span style={{ ...META_VALUE, color: tone, fontWeight: 700 }}>Today is the last day!</span>
+          <span style={{ ...META_VALUE, ...(tone ? { color: 'inherit', fontWeight: 700 } : null) }}>
+            {lastDay ? 'Today is the last day!' : accessCountLabel(days)}
+          </span>
+          {lastDay ? null : (
+            <span style={{ ...META_LABEL, ...(tone ? { color: 'inherit' } : null) }}>
+              {soon || urgent ? 'left to complete' : 'to complete'}
+            </span>
+          )}
         </span>
       ) : null}
-      {(state === 'counting' || soon) && (
-        /* One line — "…05/29/2026, 18 days to complete" — no divider
-           (2026-10-14, Eric's request). The count is the part that goes amber:
-           it is the figure the learner is being asked to act on. */
-        <span style={{ ...META_PAIR, marginLeft: -4 }}>
-          <span style={{ ...META_VALUE, ...(tone ? { color: tone, fontWeight: 700 } : null) }}>
-            {accessCountLabel(days)}
-          </span>
-          <span style={{ ...META_LABEL, ...(tone ? { color: tone } : null) }}>
-            {soon ? 'left to complete' : 'to complete'}
-          </span>
-        </span>
-      )}
     </div>
   )
 }
@@ -2471,22 +2556,6 @@ const HEADER_BUTTON: CSSProperties = {
 /* The primary (Begin / Resume Course): 8 more each side, 16 (2026-10-15,
    Eric's request). */
 const HEADER_PRIMARY: CSSProperties = { ...HEADER_BUTTON, padding: '5px 16px' }
-/* The last day's extra action. The secondary button's shape, re-pointed to the
-   error ramp — the same red the meta row goes, so the row and the offer read as
-   one statement rather than two unrelated warnings.
-
-   ⚠ IT RE-POINTS THE TOKEN, NOT THE PROPERTY. `.cre-compass-secondary` sets
-   `border-color: var(--color-compass-page-button) !important`, which beats an
-   inline `borderColor` — so the button drew red text inside a blue outline.
-   Overriding the VARIABLE the class reads is what gets through: the important
-   rule still wins, it just resolves to red. The class's hover wash and focus
-   ring follow the same token, so they come along rather than staying blue. */
-const HEADER_BUTTON_DANGER: CSSProperties = {
-  ...HEADER_BUTTON,
-  fontWeight: 700,
-  ['--color-compass-page-button' as string]: 'var(--color-error-700)',
-  color: 'var(--color-error-700)',
-}
 const CHEVRON: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',

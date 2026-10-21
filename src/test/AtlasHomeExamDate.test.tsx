@@ -68,12 +68,20 @@ describe('the Atlas Learning Home and the stored exam date', () => {
     expect(screen.getByText(/Week Goal/)).toBeTruthy()
   })
 
-  /* The thirty days are the window the pace is computed against, and the
-     course head prints the same one — the figures agreed before this change
-     and the point is that they still do. */
-  it('…against the same thirty-day window the course head names', () => {
+  /* The window the pace is computed against, printed by the course head — the
+     figures agreed before the exam-date change and the point is that they
+     still do.
+
+     ⚠ TWENTY-NINE, NOT THIRTY (2026-10-21). `resolveCeiling` moved onto
+     `usableDaysLeft` when the course card gained its expiry tiers — the last
+     day a learner can actually study in, because "finishing on the day access
+     dies is not finishing" — but THIS Home's header was still counting to the
+     access date, so it printed 30 over a plan built on 29. That is the very
+     disagreement this case exists to catch, and it was asserting the wrong
+     side of it: the header is the figure that moved, not the window. */
+  it('…against the same twenty-nine-day window the course head names', () => {
     writeExamDate(isoPlusDays(FIXTURE_TODAY, 8))
     renderHome()
-    expect(screen.getByText(/30 days/)).toBeTruthy()
+    expect(screen.getByText(/29 days/)).toBeTruthy()
   })
 })

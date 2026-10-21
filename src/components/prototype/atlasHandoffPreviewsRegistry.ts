@@ -190,8 +190,8 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
     'No end date': () => createElement(CourseHeadVariant, { meta: 'none' }),
     'Expires soon': () =>
       createElement(CourseHeadVariant, { beginLabel: 'Resume Course', meta: 'expiring-soon' }),
-    'Last day': () =>
-      createElement(CourseHeadVariant, { beginLabel: 'Begin Course', meta: 'last-day' }),
+    'Down to the last days': () =>
+      createElement(CourseHeadVariant, { beginLabel: 'Resume Course', meta: 'last-day' }),
     'Long access window': () =>
       createElement(CourseHeadVariant, {
         title: 'New York Life and Health Pre-licensing',
@@ -205,9 +205,12 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
         eyebrow: 'Congrats! You have completed this course.',
         withCertificate: true,
       }),
+    /* ⚠ `beginLabel` IS INERT HERE — the expired arm removes Begin/Resume
+       entirely, so nothing draws it. It is passed because the prop is required,
+       and it says what the button WOULD have read. */
     Expired: () =>
       createElement(CourseHeadVariant, {
-        beginLabel: 'Purchase Extension',
+        beginLabel: 'Resume Course',
         meta: 'expired',
         eyebrow: 'Expired',
       }),

@@ -138,7 +138,12 @@ describe('what the Atlas Home course card prints', () => {
   it('warns inside the week, and the icon comes with it', () => {
     renderHome('?demo=1&ff=dashboard-course-expiry:7')
     const row = screen.getByText(/Course Access End/).closest('div')!
-    expect(metaRow()).toMatch(/6 days to complete/)
+    /* ⚠ "LEFT to complete" ON THE WARNING TIERS (2026-10-21, the direct ask).
+       The unwarned row says "29 days to complete" — a quantity to plan
+       against; once it is being warned about, the sentence is about what
+       REMAINS, and the word carries that without a second colour. The
+       unwarned wording is asserted in the case above, so both survive. */
+    expect(metaRow()).toMatch(/6 days left to complete/)
     /* ⚠ THE ICON IS PART OF THE STATE, not decoration — it is the cue that
        survives a greyscale screen, where the tone alone says nothing. */
     expect(row.querySelectorAll('svg').length).toBe(1)

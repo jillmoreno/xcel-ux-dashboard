@@ -1,6 +1,32 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { AtlasCourseHeadRow, WhiteCourseMeta } from '@/components/compass/AtlasHomeEricE2E'
+import type { CourseExpiryTier } from '@/data/courseExpiry'
+
+/** The course-head arms the handoff draws, and the access tier each one is. */
+type PreviewMeta =
+  | 'default'
+  | 'expiring-soon'
+  | 'last-day'
+  | 'long-window'
+  | 'complete'
+  | 'expired'
+  | 'none'
+
+/* ⚠ ONE MAP, SO THE ARM AND ITS COLOUR CANNOT DRIFT (2026-10-21). The row and
+   the meta line both need the tier, and deriving it twice from the same `meta`
+   string is how one of them ends up a state behind the other. `complete` and
+   `none` are 'normal': a finished course never warns (ruling 5), and a course
+   with no clock has nothing to warn about. */
+const PREVIEW_TIER: Record<PreviewMeta, CourseExpiryTier> = {
+  default: 'normal',
+  'expiring-soon': 'soon',
+  'last-day': 'urgent',
+  'long-window': 'normal',
+  complete: 'normal',
+  expired: 'expired',
+  none: 'normal',
+}
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
 import { ATLAS_FONT_DEFAULT, atlasFontHref } from '@/components/layout/atlasFontSets'
 import { atlasSurfaceAttrs, ATLAS_SURFACE_VARS } from './atlasSurfaceAttrs'
@@ -128,7 +154,7 @@ export function CourseHeadVariant({
   beginLabel?: string
   /** Which meta row to draw: the countdown, the completed row, the expired
    *  row, or none at all when the course has no access-expiry date. */
-  meta?: 'default' | 'expiring-soon' | 'last-day' | 'long-window' | 'complete' | 'expired' | 'none'
+  meta?: PreviewMeta
   /** The status line above the title — see `AtlasCourseHeadRow`. */
   eyebrow?: string
   /** Hidden once access has gone: nothing to review, only to buy back. */
@@ -151,7 +177,13 @@ export function CourseHeadVariant({
         // The last day adds the purchase CTA BESIDE the normal actions; expired
         // replaces them. That difference is the whole distinction between the
         // two states, so the preview has to carry it.
-        onPurchaseExtension={meta === 'last-day' ? () => {} : undefined}
+        // ⚠ FROM THE WARNING ON, not the last day only (2026-10-21) — amber,
+        // red and expired all carry it. Expired is where it goes PRIMARY,
+        // because Course Overview and Begin are both gone by then.
+        onPurchaseExtension={
+          meta === 'expiring-soon' || meta === 'last-day' || meta === 'expired' ? () => {} : undefined
+        }
+        tier={PREVIEW_TIER[meta]}
         onViewCertificate={withCertificate ? () => {} : undefined}
         // The page's OWN meta row, not a rebuild of it.
         meta={
@@ -160,26 +192,20 @@ export function CourseHeadVariant({
               endsOn={COURSE_ACCESS_ENDS}
               // 7 days for the amber arm, so the figure reads as the thing
               // being warned about rather than a comfortable number in orange.
+              // ⚠ USABLE DAYS, matching the page: 7 is the amber edge, and the
+              // last day is ZERO — there are no further days to study in, which
+              // is why that arm prints a sentence instead of a figure.
               days={
                 meta === 'expiring-soon'
                   ? 7
                   : meta === 'last-day'
-                    ? 1
+                    ? 0
                     : meta === 'long-window'
                       ? 399
                       : 29
               }
-              state={
-                meta === 'complete'
-                  ? 'complete'
-                  : meta === 'expired'
-                    ? 'expired'
-                    : meta === 'expiring-soon'
-                      ? 'expiring-soon'
-                      : meta === 'last-day'
-                        ? 'last-day'
-                        : 'counting'
-              }
+              tier={PREVIEW_TIER[meta]}
+              complete={meta === 'complete'}
             />
           )
         }

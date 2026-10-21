@@ -9,8 +9,14 @@
 /** Where the count switches from days to weeks. Inclusive: 60 still reads in days. */
 export const ATLAS_WEEKS_FROM_DAYS = 60
 
-/** Where the amber "expires soon" treatment starts, in days remaining. */
-export const ATLAS_EXPIRES_SOON_DAYS = 15
+/* ⚠ THERE IS NO AMBER THRESHOLD HERE ANY MORE (2026-10-21). This module
+   briefly carried `ATLAS_EXPIRES_SOON_DAYS = 15`, which was never a decision —
+   it was borrowed from the Expires demo control's own arms (1 / 7 / 15) because
+   nothing else had been settled. `courseExpiryTier` in `src/data/courseExpiry.ts`
+   had already settled it: 7 usable days amber, 2 red, counted in days a learner
+   can actually study in. Two spans for one deadline is how a card ends up amber
+   on one surface and grey on another, so the question is answered in ONE place
+   and this module stays about the UNIT the count is printed in. */
 
 /**
  * "399 days" → "57 weeks". Anything past sixty days counts in weeks.
