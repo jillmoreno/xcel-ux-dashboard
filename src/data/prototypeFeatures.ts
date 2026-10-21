@@ -1378,11 +1378,11 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           quickSummary:
             'This is the current Home for Atlas Learning. It’s meant to give dev a map of the whole page before they open the individual component handoffs, plus the open questions nobody’s decided yet (Quick Links side, link tiles, long title).',
           variants: [
-            { name: 'Default', when: 'Every learner, on arrival.', detail: 'The course card across the top. Beneath it, a left column holding one outlined panel — Course progress over Study pace, with Readiness under them when it is on — and a right column holding the Quick Links rail, the Exam Date card and the Study Journey. ⚠ The page has no states of its own: everything that changes here is a composition option below, or a state of one of the components inside it.', why: 'A map of the whole page, so a developer meets the shape before they open the individual component handoffs.', action: 'None — the page is a container.' },
+            { name: 'Default', when: 'Every learner, on arrival.', detail: 'The course card across the top. Beneath it, a left column holding one outlined panel — Course progress over Study pace, with Readiness under them when it is on — and a right column holding the Quick Links rail, the Exam Date card and the Study Journey. ⚠ The page has no states of its own — everything that changes here is a state of one of the components inside it, each of which has its own handoff.', why: 'A map of the whole page, so a developer meets the shape before they open the individual component handoffs.', action: 'None — the page is a container.' },
           ],
           uxLogic: [
-            'Page is a flex row: the course card (`flex: 0 1 830px`/800px on White) and the Quick Links rail (`width: 234`), 32px apart.',
-            '`onWhite` is computed from the RESOLVED dashboard version (`resolveDashboardVersion`), not the raw `?version=` param — a bare `?demo=1` must resolve to its own default chrome, not fall through to WIP’s.',
+            'Page is a flex row: the course card (`flex: 0 1 800px`) and the Quick Links rail (a fixed `width: 234`), 32px apart.',
+            'The page resolves its own layout rather than reading the URL directly, so a bare `?demo=1` always lands on this composition instead of inheriting whatever was last viewed.',
             'Inside the course card: a course head (tabs + title + buttons), then a rule, then a row of [left column: the Course progress + Study pace panel, with Readiness under it when enabled] / [vertical divider] / [right column: Study Journey + Get Licensed steps].',
             'The Top Nav’s Home button fires `ATLAS_HOME_REFRESH`, a window event every demo card listens for: Progress resets to Not Started and every card remounts (fresh `key`), so a reviewer can restart the whole story from one button.',
             'Clicking the Course Progress card advances the Demo Controls’ Progress to the next of its five stages — the dropdown and the card are the same control, not two.',
@@ -1392,24 +1392,24 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
               'One page, one state model: Progress drives the course-progress card, the readiness level, the current journey stop and (via the resolved stage) whether the page shows the Completed view. A developer wiring this to real data needs one source of truth, not five.',
             edgeCases: [
               'Completed view (Progress = Completed, 100%): the Course Progress card is hidden entirely (the dropdown still reaches it) and the right column’s Step 1 swaps the journey list for a "Congratulations!" block.',
-              'The vestigial `longTitle`/`V2_LONG_TITLE` path (copied in from the V2/V3 Home it was forked from) only ever reaches the hidden course-tabs array on this chrome — White/E2E never render tabs, so it has no visible effect here. The title actually shown comes from `useEndToEndCourseTitle()`, a separate mechanism. Don’t "fix" one assuming it drives the other.',
+              '⚠ TWO TITLE MECHANISMS, ONE OF THEM DEAD. An older long-title path survives in the component but only ever feeds the course-tab strip, which never renders here — so it has no visible effect at all. The title on screen comes from a separate shared hook. Don’t "fix" one assuming it drives the other.',
             ],
             toasterLogic: ['None at the page level — see each card’s own handoff.'],
           },
           designSpec: {
             tokens: [
-              { role: 'Page gap (card ↔ Quick Links rail)', token: '32px, 40px on White' },
-              { role: 'Card surface (WIP)', token: '--color-compass-course-card · --shadow-compass-md' },
-              { role: 'Card surface (White/E2E)', token: '--color-fixed-light · no shadow' },
+              { role: 'Page gap (card ↔ Quick Links rail)', token: '32px' },
+              { role: 'Course card', token: '--color-fixed-light · no shadow · no padding of its own · `flex: 0 1 800px`' },
+              { role: 'Quick Links rail', token: 'fixed 234px wide, 24px between its cards' },
               { role: 'Column rule', token: '--color-primary-100' },
             ],
             sources: [
-              'No tracked Figma frame for this exact composition — it was assembled through a sequence of live code requests on top of earlier forks (V2/V3/WIP/White). Reference the live prototype (the Live Preview tab on this gateway) as the source of truth, not a Figma node.',
+            'No tracked Figma frame for this composition — it was assembled through a sequence of live code requests rather than drawn. The live prototype (the Live Preview tab on this gateway) is the source of truth, not a Figma node.',
               'src/components/compass/AtlasHomeEricE2E.tsx',
             ],
           },
           acceptanceCriteria: [
-            'A bare `?demo=1` (no `?version=`) resolves to End-to-End Demo’s own chrome — never WIP’s toned layout with course tabs showing.',
+            'A bare `?demo=1` renders this composition: a full-width, shadowless course card over a left column holding one outlined panel, with the Quick Links rail 32px to its side. No course tabs.',
             'Pressing the Top Nav Home button resets Progress to Not Started and every demo card (Progress, Readiness, Exam Date) remounts to its zero state.',
             'The Quick Links rail moves side without re-flowing its own contents, driven by one flag read in one place.',
           ],
@@ -1538,41 +1538,41 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             },
           ],
           uxLogic: [
-            'Title shown is `useEndToEndCourseTitle()` — short or long per the flag — NOT the vestigial `currentTitle`/`longTitle` local variables, which only feed the hidden tab strip on this chrome.',
+            'The visible title comes from one shared hook, so Home, the Invited Product Detail page and Checkout always agree about the course’s name. ⚠ The component also carries two older title variables that reach nothing on this page — build against the hook, not them.',
             'Cover is whichever course’s tab is active via `?whiteCourse=`; absent → the first of `WHITE_COURSES`.',
-            'Expires meta: "Expires:" (WIP) or "Course Access Ends:" (White/E2E) + the date, then either a divider + "Days to complete: N days" (WIP) or an inline ", N days to complete" with no divider (White/E2E). \u26a0 THE COUNT IS USABLE DAYS \u2014 expiry minus one (`usableDaysLeft`), the rule `resolveCeiling` has always planned against. A 30-day window reads "29 days to complete"; it read 30 until 2026-10-20 and sat above a plan built on 29.',
+            'The meta row reads "Course Access Ends:" then the date, then an inline ", N days to complete" — one sentence, with no divider between the two halves.',
             '\u26a0 FOUR EXPIRY TIERS, derived from that count by `courseExpiryTier` \u2014 no second control. Over 7 usable days: grey, as before. 7 or fewer: the whole row turns Warning 700 with a triangle. 2 or fewer: Error 600 with a calendar-exclamation, and zero reads "Today is the last day" rather than "0 days". Past the date: "Course Access Ended:", charcoal, no count. Reachable from the Expires demo control, whose rows are -3 (Expired) \u00b7 1 \u00b7 7 \u00b7 15 \u00b7 30 \u00b7 90 \u00b7 120 \u00b7 400.',
             '\u26a0 EXPIRED RESHAPES THE WHOLE CARD (Jill/Atlas-Main only): the eyebrow reads "Expired", the panel drops Primary 100 for the Course Progress card\u2019s own `--color-atlas-tan-100`, Course Overview and Begin Course BOTH go, and a single primary "Purchase Extension" stands in their place. Step 1\u2019s stops take the calendar-exclamation in place of their rings and the live row loses its link styling and its emphasis.',
             'Course Overview button only renders when `onOverview` is supplied; Begin/Resume only when `onBegin` is — an action with no handler never renders as a live-looking disabled control on this component (unlike the sibling Home Course Card, which disables rather than omits).',
             'Clicking the cover is a pure local-state toggle (`whiteHead`) between the two layouts — see the Overview handoff’s decision: this is a design-review A/B, not a shipping interaction.',
           ],
           uiUxLogic: {
-            why: 'One header has to answer three questions at a glance: which course, how far along, and what to do next — across two layouts the team is still comparing.',
+            why: 'The header has to answer three questions at a glance: which course, how far along, and what to do next.',
             actions: [
               { name: 'Course Overview', detail: 'Opens the Compass Overview page for the active course (`coursePage=overview`). Omitted when no handler is given.' },
               { name: 'Begin Course / Resume Course', detail: 'Opens the Compass Course page (`coursePage=course`). Label follows the Progress stage.' },
-              { name: 'Click cover', detail: 'Toggles the header between its two layouts. See decision in the Overview handoff — not meant to ship.' },
+              { name: 'Click cover', detail: '⚠ A REVIEW AFFORDANCE, NOT A FEATURE. Clicking the cover swaps the header to an alternative layout the team was comparing. It is not meant to ship — do not build it.' },
             ],
             edgeCases: [
               'Long course title: wraps within the title column; the cover keeps its fixed width/aspect regardless.',
               'No cover image: the button/image slot is simply omitted (`shownCover ? ... : null`), title and meta take the row alone.',
             ],
-            toasterLogic: ['None — both real actions navigate; the layout toggle has no feedback beyond the visual swap.'],
+            toasterLogic: ['None — both real actions navigate; the review-only cover click has no feedback beyond the visual swap.'],
           },
           designSpec: {
             tokens: [
               { role: 'Eyebrow ("Current course:")', token: '--color-compass-page-eyebrow' },
               { role: 'Title', token: '--color-compass-page-heading · --font-heading-serif · --type-atlas-h4-base-size/line' },
               { role: 'Meta label / value', token: '--color-neutral-700 (label) · --color-text-primary (value)' },
-              { role: 'Meta row rules (WIP)', token: '--color-primary-100 top/bottom · --color-primary-200 divider' },
+              { role: 'Meta row rules', token: '--color-primary-200 top and bottom — the card’s own Primary 100 would not show against the panel behind it' },
               { role: 'Buttons', token: '.cre-compass-primary / .cre-compass-secondary · --font-body' },
             ],
             responsive: [
-              'WIP cover is 260px (matches the left column below it); White/E2E’s stacked cover is a fixed 130px × min 105px.',
-              'On White, the course-head sits in its own Primary 100 panel, 40px inset, 20px corners, 16px margin below before the Progress row.',
+              'The cover is a fixed 130px wide × 105px minimum, beside a bottom-aligned title and meta row.',
+              'The course head sits in its own Primary 100 panel — 40px inset, 20px corners, 16px of margin below it before the progress row.',
             ],
             sources: [
-              'No tracked Figma frame for E2E’s current header specifically — reference the live prototype (Live Preview tab) over any Figma node; the file’s own comments cite several node ids from earlier forks (V2/V3/WIP/White) that have since diverged.',
+              'No tracked Figma frame for the current header — reference the live prototype (Live Preview tab) over any Figma node. The component file cites several node ids that have since diverged from what it draws.',
               'src/components/compass/AtlasHomeEricE2E.tsx',
             ],
           },
@@ -1580,7 +1580,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             'The visible title reflects `atlas-home-long-title` and matches Invited Product Detail / Checkout when the flag is on.',
             'With no resolvable access-expiry date, the Expires row does not render at all (not blank, not zeroed).',
             'Course Overview and Begin/Resume each render only when given a handler; neither ships as a dead-looking enabled control.',
-            'Course tabs never render on White/E2E chrome, regardless of how many courses are passed.',
+            'Course tabs never render, regardless of how many courses the learner holds.',
           ],
           statesMatrix: [
             { state: 'No cover image', behavior: 'Image slot omitted; title/meta take the full row.' },
@@ -1703,7 +1703,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
               'The tan card steps through five states of a journey; this one shows ONE number and a way to change the plan behind it. Both read the same `studyPace` model, so they answer the same question differently rather than disagreeing about it.',
             edgeCases: [
               'The committed default opens at 0% and the Automatic access window — thirty days — still fits a plan, so the section opens on the PLAN arm (“Average · 4 Week Goal”), with Estimated completion below it. ⚠ THAT IS NOW TRUE ON ANY BROWSER (2026-10-20). It used to depend on `cgp.examDate` being unset: a date entered on a Compass surface survived reloads, appeared on NEITHER control bar, and turned this section into “Not enough time before your exam” for good — the one way this page could look wrong with every visible setting correct. The Home no longer reads it. The remaining no-plan arm needs a shorter Expires setting, which is a visible control.',
-              '⚠ FORKED FROM `HybridHomeV1`’s pace panel (its `PACE_PANEL` + `ProgressDial`), copied rather than imported so a change here is not a change in another designer’s working Home. The LAYOUT is duplicated; the DATA is not.',
+            '⚠ THE LAYOUT IS A COPY, THE DATA IS NOT. This card’s panel markup was duplicated rather than shared, so editing it is safe. The pace model underneath it IS shared — change that and every surface reading it moves, which is the point: the figures must not disagree between screens.',
             ],
             toasterLogic: ['None — the only action is Customize Your Pace, which routes to Compass’s study planner.'],
           },
@@ -1717,7 +1717,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             ],
             sources: [
               'src/components/compass/AtlasPaceRingCard.tsx',
-              'Forked from the pace panel in `HybridHomeV1.tsx` — reference the live prototype, not a Figma node.',
+              'No Figma node — the layout was built in code. Reference the live prototype (Live Preview tab).',
             ],
           },
           acceptanceCriteria: [
@@ -1739,7 +1739,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           tabLabel: 'Progress States',
           location: 'src/components/compass/AtlasCourseProgressStates.tsx',
           summary:
-            '⚠ THE NON-DEFAULT ARM — reachable at `?ff=atlas-pace-card:states`, or from the Design bar. A single card cycling through five states of the current course’s progress: Study Pace (nothing started yet), Course Progress (the real completion dial), Milestone, Complete, and Expired. On Home, clicking it steps the PAGE’s shared Progress control rather than its own local state, so Readiness and the Study Journey move with it.',
+            'A single card cycling through five states of the current course’s progress: Not started (the study plan, no dial), In progress (the real completion dial), Milestone, Complete and Expired. Clicking it steps the PAGE’s shared progress rather than its own local state, so Readiness and the Study Journey move with it. ⚠ IT IS NOT WHAT HOME DRAWS BY DEFAULT — the ring card has that slot; this is the other arm of the same control, kept because it is the one that carries the Milestone and Expired treatments.',
           quickSummary:
             'The tan five-state progress module (Study Pace, Course Progress, Milestone, Complete, Expired) — the arm the page shipped with before the ring became the default on 2026-10-16. Right now clicking the card itself is just a review trick to flip states — only the Current state shows real numbers, the rest are placeholder copy.',
           variants: [
@@ -1784,14 +1784,14 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
               'One card needs to stand in for progress at every point in a course’s life, including two states (Milestone, Expired) a prototype has no way to reach from real data yet — so it is built as a steppable review device first, a real progress display second.',
             edgeCases: [
               'Milestone/Complete/Expired are reachable ONLY via the Demo Controls’ Progress dropdown on Home (clicking the card alone cycles 1→5→1 through all five using its OWN state, which only matches the page when nothing else is driving it via `onAdvance`).',
-              'The 100%-at-Complete figure (via the shared `V3_PROGRESS` map in `AtlasHomeEricE2E`) does not always match `percent`, because Milestone/Complete deliberately override the dial to fixed values (68 / 100) rather than reading the page’s own figure.',
+              '⚠ The dial in Milestone and Complete does not read the learner’s real figure — both override it to fixed design values (68% and 100%). A reviewer comparing this card against the rest of the page will find them disagreeing, and that is why.',
             ],
             toasterLogic: ['None — the whole card is one stepping control; neither drawn action fires anything.'],
           },
           designSpec: {
             tokens: [
-              { role: 'Card surface', token: '--color-primary-100 (card chrome only — omitted in `bare`)' },
-              { role: 'Eyebrow', token: '--color-primary-500 (card) · --color-neutral-800 (bare)' },
+              { role: 'Card surface', token: '--color-primary-100 — dropped entirely under the Combined panel option' },
+              { role: 'Eyebrow', token: '--color-primary-500 · --color-neutral-800 under the Combined panel option' },
               { role: 'Dial track', token: '--color-atlas-tan-300' },
               { role: 'Dial fill', token: '--color-atlas-dial-fill, falls back to --color-primary-500' },
               { role: 'Dial figure + "Amazing/Great" cheer', token: '--font-heading-serif' },
@@ -1800,7 +1800,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             states: ['No hover styling — `cursor: pointer` is the only affordance beyond the aria-label.'],
             sources: [
               'Reference the live prototype (Live Preview tab) as the primary source — figure placement and copy were iterated live against it.',
-              'Figma "Atlas-UX-Design" component 267:8267 (the five states) and node 286:9455 (the `bare` combined-panel treatment), per the file’s own comments — not re-verified against current Figma, so treat the prototype as authoritative if the two disagree.',
+              'Figma "Atlas-UX-Design" component 267:8267 (the five states) and node 286:9455 (the combined panel), per the component’s own comments — not re-verified against current Figma, so treat the prototype as authoritative if the two disagree.',
               'src/components/compass/AtlasCourseProgressStates.tsx',
             ],
           },
@@ -1945,7 +1945,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           ],
           uxLogic: [
             'The WHOLE card is `role="button"`/`tabIndex={0}` — a click or Enter/Space anywhere on it (not just the "Help me get ready" link, which is drawn text and not a real link) advances to the next level.',
-            'The card’s OPENING band is set from the Course Progress card’s stage via a fixed lookup (`V3_READINESS_FOR`: Not Started/Expired → Beginner, On Track → Developing, Milestone → Proficient, Completed → Ready) — so the two cards never open disagreeing with each other, even though nothing keeps them in sync AFTER that: clicking Readiness on its own does not move Progress, and vice versa.',
+            'The card’s opening band is derived from the course progress stage, so the two cards never open contradicting each other — the mapping is laid out in Flows above. ⚠ Nothing keeps them in step AFTER that: clicking Readiness does not move Progress, and vice versa.',
             'Clicking past Ready (the last band) does NOT wrap back to Beginner the way every other band steps to the next — on Home it instead resets the WHOLE PAGE’s shared Progress control back to Not Started (`onPastLast`), which also resets Course Progress and the Study Journey. A learner reading only the Readiness card has no way to predict that from what’s on screen.',
             'The aria-label states the level number, its name, and that pressing shows the next one — it updates on every level, so a screen-reader user always knows where the cycle is and what activating it does.',
           ],
@@ -1960,7 +1960,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           },
           designSpec: {
             tokens: [
-              { role: 'Card surface', token: '--color-atlas-tan-200 (card chrome only — omitted in `bare`)' },
+              { role: 'Card surface', token: '--color-atlas-tan-200 — dropped entirely under the Combined panel option' },
               { role: 'Eyebrow + caption ("Overall readiness")', token: '--color-primary-500' },
               { role: 'Dial track', token: '--color-atlas-tan-500' },
               { role: 'Dial fill', token: '--color-atlas-dial-fill, falls back to --color-primary-500 — same fallback Course Progress’s dial uses' },
@@ -1971,7 +1971,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             states: ['No hover styling — `cursor: pointer` is the only affordance beyond the aria-label, same as Course Progress.'],
             sources: [
               'Reference the live prototype (Live Preview tab) as the primary source.',
-              'Figma "Atlas-UX-Design" component 295:10698 (the card, drawn against the five levels that the four bands replaced on 2026-10-16 — treat the component as authoritative on the names; it replaced an earlier single 35% card at 254:8012) and node 286:9455 (the `bare` combined-panel treatment), per the file’s own comments — not re-verified against current Figma.',
+              'Figma "Atlas-UX-Design" component 295:10698 (drawn against the five levels that the four bands replaced on 2026-10-16 — treat the component as authoritative on the names) and node 286:9455 (the combined panel), per the component’s own comments — not re-verified against current Figma.',
               'src/components/compass/AtlasReadinessCard.tsx',
             ],
           },
@@ -2083,7 +2083,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           tabLabel: 'Exam Date Card',
           location: 'src/components/compass/AtlasExamDateCard.tsx',
           summary:
-            'A single card cycling through four stages to collect and show a learner’s state exam date: Default ("Do you know your state exam date?"), No ("No state exam date yet? That’s okay."), Yes (a working month calendar), and Set (the chosen date + days remaining, with an Edit link back to the calendar). On the Home layout it is wired in BETWEEN Course Progress and Readiness — but is hidden there today by an `onWhite` check that returns null for both White and End-to-End Demo chrome.',
+            'A single card that collects and then shows the learner’s state exam date, in four stages: Default ("Do you know your state exam date?"), No date yet ("No state exam date yet? That’s okay."), Picking a date (a working month calendar), and Date set (the chosen date and days remaining, with Edit back to the calendar). ⚠ IT DOES NOT RENDER ON HOME TODAY. The slot it was designed for is between Course progress and Readiness; the card is built and complete, and nothing currently mounts it.',
           quickSummary:
             'A working exam-date picker, but it’s currently hidden — it doesn’t appear anywhere on Home today even though it’s fully built. Need to decide if it comes back.',
           variants: [
@@ -2135,7 +2135,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             ],
             states: ['Disabled "Set Exam Date" at 0.45 opacity + `cursor: not-allowed` until a day is picked.', 'Disabled "Previous month" step button when the calendar is already on today’s month.'],
             sources: [
-              'Reference the live prototype would normally be the primary source, but this card does NOT render on the End-to-End Demo route today — see the devStatus note above. Its behavior was read directly from the component source instead.',
+              '⚠ The live prototype is NOT a source for this one — the card does not render on Home today (see the devStatus note above), so its behavior was read directly from the component instead.',
               'Figma "Atlas-UX-Design" component 224:4118, "Set Exam Date" (per the file’s own comment) — not re-verified against current Figma.',
               'src/components/compass/AtlasExamDateCard.tsx',
             ],
@@ -2144,11 +2144,11 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             'The card cycles Default → No/Yes → Set (with Edit returning to Yes) exactly as described, and Cancel’s destination depends on whether a date is already saved.',
             'Past days and neighboring-month days are never selectable; "Set Exam Date" stays disabled with no day picked.',
             'The calendar cannot be stepped back before the current month.',
-            'On this baseline (White/End-to-End Demo), the card does not render at all — confirm that is still the intended behavior before building against it.',
+            '⚠ The card does not render on Home at all today. Confirm that is still intended before building against it.',
           ],
           statesMatrix: [
-            { state: 'onWhite (White or End-to-End Demo chrome)', behavior: 'Card is not rendered at all — `null`.' },
-            { state: 'WIP chrome (out of this handoff’s scope)', behavior: 'Card renders, positioned between Course Progress and Readiness.' },
+            { state: 'On Home today', behavior: '⚠ The card is not rendered at all. It is built and complete; nothing on the current Home mounts it. Everything else in this handoff describes what it does once it is placed.' },
+            { state: 'Where it is meant to sit', behavior: 'Between Course progress and Readiness in the left column — that is the slot it was designed against.' },
           ],
           data: [
             'stateName — the state name shown in the Yes stage’s question ("your {stateName} state exam?"); Home passes the learner’s real state.',
@@ -2218,7 +2218,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     accent: 'blue',
     icon: 'grid',
     blurb:
-      'The right column’s three steps — Study Journey (Step 1), Pass State Exam (Step 2), Get Licensed in {state} (Step 3) — where Step 1’s list on this baseline is a fixed 7-line display rather than the real, per-learner computed journey.',
+      'The right column’s three steps — Study Journey (Step 1), Pass State Exam (Step 2), Get Licensed in {state} (Step 3) — where Step 1’s list is fixed 7-line copy rather than the real, per-learner computed journey.',
     tileBlurb:
       'Step 1 Study Journey (a fixed list on this baseline) → Step 2 Pass State Exam → Step 3 Get Licensed — plus a State Requirements button.',
     kind: 'guided',
@@ -2247,7 +2247,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           tabLabel: 'Study Journey',
           location: 'src/components/compass/AtlasHomeEricE2E.tsx (JourneyRow, Step) + src/components/learning/studyJourneyUtil.ts (journeyStopsFor) + src/data/nyProducerRequirements.ts (GET_LICENSED_STEPS, jurisdictionName)',
           summary:
-            'Step 1 is headed "Study Journey" and lists the stops of the licensing coursework; Step 2 is "Pass State Exam" and Step 3 is "Get Licensed in {state}" (from the published GET_LICENSED_STEPS data, retitled with the learner’s state). On THIS baseline, Step 1’s displayed list is a fixed array of 7 titles (`WHITE_JOURNEY_TITLES`, sourced from a separate Figma frame) with only the first row ever marked current — it does not read the real, computed `journeyStopsFor(path)` sequence that drives the equivalent rail elsewhere in the app (the Learning Path page’s detail panel, the Study Journey widget).',
+            'Step 1 is headed "Study Journey" and lists the stops of the licensing coursework; Step 2 is "Pass State Exam" and Step 3 is "Get Licensed in {state}", retitled from the published licensing data with the learner’s own state. ⚠ STEP 1’s LIST IS FIXED COPY — seven titles, with only the first row ever marked current. It does not read the real, per-learner sequence that drives the equivalent rail elsewhere in the app (the Learning Path page’s detail panel, the Study Journey widget), which is the decision flagged in the log below.',
           quickSummary:
             'Step 1/2/3 on the right side of Home. Important: Step 1’s list is a fixed, hardcoded set of lines today — it does not move with the Progress control the way Progress and Readiness do. That’s worth a decision before dev builds against it.',
           variants: [
@@ -2273,17 +2273,17 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             },
           ],
           uxLogic: [
-            'Step 1’s list is `journeyStopsFor(path)` everywhere else in the app (a real, computed sequence of the learner’s actual coursework progress), but on White/End-to-End Demo chrome it is DISCARDED in favor of a hardcoded 7-title array — only the FIRST row is ever shown as current/in-progress, and the per-stop "done X of Y chapters, Next: Chapter N — Name" detail line (visible on WIP) never renders here at all.',
-            'That means stepping the Progress control through Not Started → On Track → Milestone → Completed visibly moves the Course Progress dial and the Readiness half-dial on this baseline, but Step 1’s list stays frozen — the ONE exception is Completed, which swaps the whole list for a Congratulations block.',
-            'Steps 2 and 3 always show their title + one line of detail; their own "What to expect" / "How to apply" links exist in the component but are unconditionally hidden on this chrome (`!onWhite` gate) — so neither step opens anything on its own.',
-            'The published licensing path actually has THREE steps after the coursework (Schedule State Exam → Pass State Exam → Apply for your License), but Home shows only the last two as "Step 2" and "Step 3" — "Schedule State Exam" never appears here.',
-            'Journey rows that ARE shown with a chevron (on WIP, where the real list is used) only get one when the stop is not current and its status is not "not-started" — on this baseline every non-current row is always "not-started" by construction, so no row ever gets a chevron here either.',
+            '⚠ STEP 1’s LIST IS FIXED COPY, NOT THE LEARNER’S PROGRESS. The app can compute a real sequence of the learner’s actual coursework — and does elsewhere — but Home shows a hardcoded 7-title list instead. Only the first row is ever marked current, and the per-stop "done X of Y chapters, Next: Chapter N" detail never appears.',
+            'So moving the Progress control visibly moves the Course Progress dial and the Readiness half-dial, while Step 1’s list stays frozen. The one exception is Completed, which swaps the whole list for the Congratulations block.',
+            'Steps 2 and 3 show a title and one line of detail. Their "What to expect" and "How to apply" links exist in the component but are switched off here, so neither step opens anything.',
+            'The published licensing path has THREE steps after the coursework — Schedule State Exam, Pass State Exam, Apply for your License — but Home shows only the last two. "Schedule State Exam" never appears.',
+            'No journey row ever gets a chevron. A row earns one only when it is not current and not "not-started", and in a fixed list every non-current row is "not-started" by construction.',
           ],
           uiUxLogic: {
             why:
               'Steps 2 and 3 exist to keep the licensing path visible past the point the LMS stops tracking it (scheduling and sitting a state exam, then applying, both happen outside the product) — Step 1 exists to show what is still being tracked inside it.',
             edgeCases: [
-              'A `V3 drops the Attestation & Affidavit stop` filter still runs on the real `journeyStopsFor` output inside this component, but since White/End-to-End Demo never displays that real output (it shows the fixed array instead), the filter has no visible effect on this baseline — it only matters on WIP, where the real list is shown.',
+              '⚠ Dead code worth knowing about: a filter that drops the Attestation & Affidavit stop still runs inside this component, on the computed list Home never displays. It has no visible effect — but it will the moment anyone switches Step 1 over to the real sequence, which is the obvious next change here.',
               'The Completed-stage Congratulations copy ("passed your course exams") is stated unconditionally, with no dependency on whether the Step 1 list (fixed or real) actually shows every stop as complete.',
             ],
             toasterLogic: ['None — this section fires no toasts; its only interaction is the State Requirements button, which opens a sheet.'],
@@ -2294,19 +2294,18 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
               { role: 'Step / stop title', token: '--font-heading-serif via STEP_TITLE for step titles; --font-body for journey row text' },
               { role: 'Current journey row', token: '--color-atlas-home-current-stop, falls back to --color-compass-page-button' },
               { role: 'Muted journey rows + step detail copy', token: '--color-text-secondary' },
-              { role: '"Next" pill (WIP only — never shown on this baseline)', token: 'NEXT_PILL style' },
-              { role: 'Chevron (WIP only — never shown on this baseline)', token: '--color-atlas-home-icon, falls back to --color-compass-page-button' },
+              { role: 'Chevron (built, never shown — see UX Logic)', token: '--color-atlas-home-icon, falls back to --color-compass-page-button' },
             ],
-            states: ['No hover styling on journey rows themselves — only the (hidden-here) chevron and (hidden-here) step links are interactive elements, both plain link-style buttons.'],
+            states: ['No hover styling on the journey rows — nothing in Step 1 is interactive here. The chevron and the step links are built but switched off.'],
             sources: [
-              'Reference the live prototype (Live Preview tab) as the primary source — what it shows is the fixed 7-line list, not the computed journey.',
-              'Figma frame 265:8144 for the fixed White journey list, per the file’s own comment — not re-verified against current Figma.',
+              'Reference the live prototype (Live Preview tab) as the primary source — what it shows is the fixed 7-line list, not a computed journey.',
+              'Figma frame 265:8144 for the journey list, per the component’s own comment — not re-verified against current Figma.',
               'src/components/compass/AtlasHomeEricE2E.tsx, src/components/learning/studyJourneyUtil.ts, src/data/nyProducerRequirements.ts',
             ],
           },
           acceptanceCriteria: [
             'Step 1 shows the fixed 7-line list on every Progress value except Completed, where it shows the Congratulations block instead.',
-            'Steps 2 and 3 render title + one line of detail only, with no links, on this chrome.',
+            'Steps 2 and 3 render a title and one line of detail only, with no links.',
             'The "{state} State Requirements" button is the only click target in this section.',
             'Confirm whether Step 1 should instead read the real, computed `journeyStopsFor(path)` sequence before this ships — see the decisions log.',
           ],
@@ -2449,7 +2448,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             states: ['Active: white capsule + SemiBold.', 'Hover/focus: chevron fades in, label steps to Medium (space reserved so nothing shifts).', 'No handler supplied: row renders `disabled`.'],
             sources: [
               'Reference the live prototype (Live Preview tab) as the primary source.',
-              'Figma "Atlas-UX-Design", Home V2’s right column, node 161:662 (per the file’s own comment, originally "More Information for Your Journey") — not re-verified against current Figma.',
+              'Figma "Atlas-UX-Design" node 161:662 — the right-hand column, originally titled "More Information for Your Journey", per the component’s own comment. Not re-verified against current Figma.',
               'src/components/compass/AtlasJourneyLinksCard.tsx',
             ],
           },

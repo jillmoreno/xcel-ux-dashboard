@@ -152,7 +152,7 @@ function VariantRow({
           <p style={variantAbsentStyle}>
             {anyRender
               ? 'No isolated render — this state is not reachable through the component’s own props. Open the Live Preview tab to see it on the real page.'
-              : 'No live render for this component — its variants are page-level chrome or page-local state rather than props. The Live Preview tab shows them on the real page.'}
+              : 'No live render for this component — it is a whole page, or its states come from the page around it rather than from its own props. The Live Preview tab shows it for real.'}
           </p>
         )}
       </div>
