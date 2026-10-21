@@ -1,6 +1,7 @@
 import { createElement, type ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { AtlasReadinessCard } from '@/components/compass/AtlasReadinessCard'
+import { paceStandingMessage, type PaceStanding } from '@/components/compass/paceStanding'
 import { AtlasPaceRingCard } from '@/components/compass/AtlasPaceRingCard'
 import { AtlasExamDateCard } from '@/components/compass/AtlasExamDateCard'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
@@ -77,7 +78,16 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
           weeks: 3,
           hoursPerWeek: 4,
           expected: { value: 'November 2', note: 'At current pace' },
-          standingMessage: 'You’re ahead of pace — keep it up.',
+          /* ⚠ THE REAL BUILDER, not a typed line (2026-10-21). This said "You’re
+             ahead of pace — keep it up." on the ON-TRACK state — the wrong
+             standing's words, in copy that exists nowhere in the product, sat
+             beside prose quoting the real sentence. */
+          standingMessage: paceStandingMessage({
+            standing: 'on-track',
+            goalHoursPerWeek: 4,
+            weeks: 3,
+            finishIso: '2026-11-02',
+          }),
         }),
       ),
     'With Exam readiness': () =>
@@ -88,7 +98,16 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
           weeks: 3,
           hoursPerWeek: 4,
           expected: { value: 'November 2', note: 'At current pace' },
-          standingMessage: 'You’re ahead of pace — keep it up.',
+          /* ⚠ THE REAL BUILDER, not a typed line (2026-10-21). This said "You’re
+             ahead of pace — keep it up." on the ON-TRACK state — the wrong
+             standing's words, in copy that exists nowhere in the product, sat
+             beside prose quoting the real sentence. */
+          standingMessage: paceStandingMessage({
+            standing: 'on-track',
+            goalHoursPerWeek: 4,
+            weeks: 3,
+            finishIso: '2026-11-02',
+          }),
           readinessBelow: true,
         }),
         createElement(AtlasReadinessCard, {
@@ -135,8 +154,50 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
         weeks: 3,
         hoursPerWeek: 4,
         expected: { value: 'November 2', note: 'At current pace' },
-        standingMessage: 'You’re ahead of pace — keep it up.',
+        /* ⚠ THE REAL BUILDER, not a typed line (2026-10-21). This said "You’re
+             ahead of pace — keep it up." on the ON-TRACK state — the wrong
+             standing's words, in copy that exists nowhere in the product, sat
+             beside prose quoting the real sentence. */
+          standingMessage: paceStandingMessage({
+            standing: 'on-track',
+            goalHoursPerWeek: 4,
+            weeks: 3,
+            finishIso: '2026-11-02',
+          }),
       })),
+    /* ⚠ THE FIVE STANDINGS, drawn with the REAL sentence builder (2026-10-21,
+       "all of the pacing possibilities"). `paceStandingMessage` is what the
+       Home calls, so a copy change there moves these previews with it; a typed
+       string here would be a fifth place for the wording to drift. They are
+       sub-arms of the plan-fits state, not separate shapes — everything above
+       the sentence is identical, which is the point of showing them together. */
+    ...Object.fromEntries(
+      (
+        [
+          ['ahead', 'Plan fits — ahead of goal'],
+          ['behind', 'Plan fits — behind, recoverable'],
+          ['off-track', 'Plan fits — off track'],
+          ['no-data', 'Plan fits — no data yet'],
+        ] as [PaceStanding, string][]
+      ).map(([standing, name]) => [
+        name,
+        () =>
+          inPanel(
+            createElement(AtlasPaceRingCard, {
+              percent: 42,
+              weeks: 3,
+              hoursPerWeek: 4,
+              expected: { value: 'November 2', note: 'At current pace' },
+              standingMessage: paceStandingMessage({
+                standing,
+                goalHoursPerWeek: 4,
+                weeks: 3,
+                finishIso: '2026-11-02',
+              }),
+            }),
+          ),
+      ]),
+    ),
     'Exam booked': () =>
       inPanel(createElement(AtlasPaceRingCard, {
         percent: 60,
