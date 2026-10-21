@@ -76,11 +76,7 @@ const NOOP = () => {}
 const inPanel = (node: ReactNode) => createElement(AtlasProgressPanel, null, node)
 
 const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
-  /* THE PANEL ITSELF — its two compositions, which is the one thing neither
-     card can show on its own: what the column looks like with Exam readiness
-     ON, and what it looks like without it. The default `?demo=1` is the
-     WITHOUT, because `atlas-readiness-section` is `defaultEnabled: false`. */
-  'atlas-home-progress-panel': {
+  'atlas-home-panel': {
     'Progress and pace': () =>
       inPanel(
         createElement(AtlasPaceRingCard, {
@@ -129,38 +125,11 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
           initialLevel: 1,
         }),
       ]),
-    Expired: () =>
+    'Access expired — the whole panel': () =>
       inPanel(
         createElement(AtlasPaceRingCard, {
           onCustomize: NOOP, percent: 34, weeks: 3, hoursPerWeek: 4, expired: true }),
       ),
-  },
-
-  // ⚠ MAIN'S PROPS, NOT THE CARD'S DEFAULTS (2026-10-21, Jillienne: "I keep
-  // seeing things from different versions... everything should be what is
-  // shown in the Final Prototype view"). The Home passes `bare` and
-  // `matchPaceEyebrow` — the card drops its own tan fill and shares the
-  // column's eyebrow, because it sits INSIDE the progress panel. Rendered with
-  // the component's own defaults instead, it drew as a standalone tan card:
-  // the treatment the other arm uses, and a version the final prototype does
-  // not show.
-  'atlas-home-readiness-panel': {
-    'Not Started': () =>
-      inPanel(
-        createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, notStarted: true }),
-      ),
-    Beginner: () =>
-      inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 0 })),
-    Developing: () =>
-      inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 1 })),
-    Proficient: () =>
-      inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 2 })),
-    Ready: () =>
-      inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 3 })),
-  },
-
-
-  'atlas-home-pace-ring': {
     Default: () =>
       inPanel(createElement(AtlasPaceRingCard, {
           onCustomize: NOOP,
@@ -243,15 +212,34 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
         hoursPerWeek: 4,
         expired: true,
       })),
+    'Not Started': () =>
+      inPanel(
+        createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, notStarted: true }),
+      ),
+    Beginner: () =>
+      inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 0 })),
+    Developing: () =>
+      inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 1 })),
+    Proficient: () =>
+      inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 2 })),
+    Ready: () =>
+      inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 3 })),
   },
 
-  /* ⚠ EACH SCREEN SHOWS BOTH COMPONENTS (2026-10-21, Jillienne: "these screens
-     will need to show not only the date logic, but also what happens in the
-     Course Progress component when dates are set"). The dates below are chosen
-     against the demo clock (2026-05-11) and the committed access window
-     (2026-06-10) so each one lands in a genuinely different arm — and every
-     figure on the right is computed by `studyPace`, never typed. */
-  'atlas-home-exam-prompt': {
+  'atlas-home-steps': {
+    Default: () =>
+      createElement(PageFrame, {
+        title: 'Study Journey — in progress',
+        ff: 'atlas-v3-progress:on-track',
+      }),
+    'All coursework done': () =>
+      createElement(PageFrame, {
+        title: 'Study Journey — all coursework done',
+        ff: 'atlas-v3-progress:completed',
+      }),
+  },
+
+  'atlas-home-exam-date': {
     Asking: () => createElement(ExamDateScenario, {}),
     'Picking a date': () => createElement(ExamDateScenario, { picking: true }),
     Scheduled: () => createElement(ExamDateScenario, { examDate: '2026-05-28' }),
@@ -264,19 +252,34 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
     /* Editing is the Scheduled date reopened — same stored date, the calendar
        showing, which is exactly what Edit does. */
     Editing: () => createElement(ExamDateScenario, { examDate: '2026-05-28', picking: true }),
-  },
-
-  'atlas-home-exam-date-card': {
-    Default: () => createElement(AtlasExamDateCard, { initialStage: 'default' }),
-    'No date yet': () => createElement(AtlasExamDateCard, { initialStage: 'no' }),
-    'Picking a date': () => createElement(AtlasExamDateCard, { initialStage: 'yes' }),
-    'Date set': () =>
+    'WIP card — Default': () => createElement(AtlasExamDateCard, { initialStage: 'default' }),
+    'WIP card — No date yet': () => createElement(AtlasExamDateCard, { initialStage: 'no' }),
+    'WIP card — Picking a date': () => createElement(AtlasExamDateCard, { initialStage: 'yes' }),
+    'WIP card — Date set': () =>
       createElement(AtlasExamDateCard, {
         initialStage: 'set',
         initialDate: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000),
       }),
   },
+  /* THE PANEL ITSELF — its two compositions, which is the one thing neither
+     card can show on its own: what the column looks like with Exam readiness
+     ON, and what it looks like without it. The default `?demo=1` is the
+     WITHOUT, because `atlas-readiness-section` is `defaultEnabled: false`. */
+  // ⚠ MAIN'S PROPS, NOT THE CARD'S DEFAULTS (2026-10-21, Jillienne: "I keep
+  // seeing things from different versions... everything should be what is
+  // shown in the Final Prototype view"). The Home passes `bare` and
+  // `matchPaceEyebrow` — the card drops its own tan fill and shares the
+  // column's eyebrow, because it sits INSIDE the progress panel. Rendered with
+  // the component's own defaults instead, it drew as a standalone tan card:
+  // the treatment the other arm uses, and a version the final prototype does
+  // not show.
 
+  /* ⚠ EACH SCREEN SHOWS BOTH COMPONENTS (2026-10-21, Jillienne: "these screens
+     will need to show not only the date logic, but also what happens in the
+     Course Progress component when dates are set"). The dates below are chosen
+     against the demo clock (2026-05-11) and the committed access window
+     (2026-06-10) so each one lands in a genuinely different arm — and every
+     figure on the right is computed by `studyPace`, never typed. */
   'atlas-home-quick-links': {
     Default: quickLinks({}),
     'Active row': quickLinks({}, ['/?section=courses']),
@@ -331,19 +334,6 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
 
   // Step 1 reads the page's shared progress, not its own props, so these load
   // the real route pinned to each stage rather than rebuilding the list.
-  'atlas-home-study-journey': {
-    Default: () =>
-      createElement(PageFrame, {
-        title: 'Study Journey — in progress',
-        ff: 'atlas-v3-progress:on-track',
-      }),
-    'All coursework done': () =>
-      createElement(PageFrame, {
-        title: 'Study Journey — all coursework done',
-        ff: 'atlas-v3-progress:completed',
-      }),
-  },
-
   'atlas-home-affidavit-modal': {
     'Pre-course Affidavit': () =>
       createElement(AffidavitLauncher, { kind: 'pre', label: 'Pre-course Affidavit' }),
@@ -385,8 +375,8 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
    deliberately, with the state's name leading its own picture. */
 const FULL_WIDTH = new Set([
   'atlas-home-layout',
-  'atlas-home-study-journey',
-  'atlas-home-exam-prompt',
+  'atlas-home-steps',
+  'atlas-home-exam-date',
 ])
 
 /** Whether this component's renders take the full row — see `FULL_WIDTH`. */
