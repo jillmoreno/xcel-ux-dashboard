@@ -1,10 +1,3 @@
-/*
- * END-TO-END DEMO'S HOME — 2026-10-14, Eric's request ("Duplicate the white
- * version and create a new version called End-to-End Demo"). A copy of
- * `AtlasHomeEricV3.tsx` that day, which WIP and White both render, so this
- * demo's Home can change without changing either. Its WIP branches (the
- * `onWhite` false sides) are carried over unchanged and never taken here.
- */
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { isEricAtlasWhiteLike, resolveDashboardVersion } from '@/data/dashboardVersions'
@@ -22,6 +15,7 @@ import {
   BookOpen,
   FileCertificateLight,
   LockRegular,
+  CalendarExclamation,
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
@@ -194,6 +188,15 @@ export type AtlasHomeEricE2EProps = {
 /* The window a learner who has not started gets, when Expires is on
    Automatic — see `accessIso`. */
 const ZERO_ACCESS_DAYS = 30
+/* ⚠ WHEN "SOON" STARTS, and it is one number on purpose (2026-10-21). The
+   shared `courseExpiryState` clamps its 60-day warning to half the ENROLMENT
+   window, which assumes a learner who enrolled in the past; this Home only
+   knows how many days are LEFT, so that clamp has nothing to divide. 15 is the
+   Expires control's own documented edge — "1 / 7 / 15 land in the badge and
+   30 / 90 / 120 / 400 do not" — so the head badges exactly where the rest of
+   the demo says it should, and the default 30-day window stays neutral.
+   ⚠ The real threshold is a product decision; see the course-head handoff. */
+const ATLAS_EXPIRES_SOON_DAYS = 15
 const LINKS_OFF = true
 const NO_LINK = () => {}
 
@@ -376,6 +379,12 @@ export function AtlasHomeEricE2E({
   /* The top of the ladder. It no longer hides the progress card — see the
      note at the ring — but it still decides the journey's completed shape. */
   const completedView = progressPick === 'completed'
+  /* ⚠ EXPIRED IS ITS OWN HEAD, not a progress value (2026-10-21, Jillienne:
+     "we need to add the Expired logic here"). Access ending is not a point on
+     the progress scale — the course stops being something to resume and
+     becomes something to buy back — so the head changes eyebrow, tense and
+     call to action together. */
+  const expiredView = progressPick === 'expired'
   const ringAtZero = paceCard === 'ring' && atZeroProgress
   const rawAccessDays = accessIso ? Math.max(0, daysUntil(accessIso, today) ?? 0) : null
   /* ⚠ DERIVED, NOT OVERRIDDEN (2026-10-19). It was `atZeroProgress ? 30 :
@@ -398,7 +407,19 @@ export function AtlasHomeEricE2E({
            without the rules, with a different date format, and read "wrong"
            beside the real page. Extracted so the two cannot differ; the WIP
            arm below is untouched. */
-        <WhiteCourseMeta endsOn={expiresOn} days={accessDays} complete={completedView} />
+        <WhiteCourseMeta
+          endsOn={expiresOn}
+          days={accessDays}
+          state={
+            expiredView
+              ? 'expired'
+              : completedView
+                ? 'complete'
+                : accessDays <= ATLAS_EXPIRES_SOON_DAYS
+                  ? 'expiring-soon'
+                  : 'counting'
+          }
+        />
       ) : (
       <div
         style={META_ROW}
@@ -605,11 +626,13 @@ export function AtlasHomeEricE2E({
   /* …and Step 3's, the same sheet Quick Links' "Applying for a License"
      opens, by the step's own id rather than a second copy of it. */
   const applyInfo = onOpenStep ? () => onOpenStep(apply.id) : undefined
-  const beginLabel = completedView
-    ? 'View Certificate'
-    : progressPick === 'not-started'
-      ? 'Begin Course'
-      : 'Resume Course'
+  const beginLabel = expiredView
+    ? 'Purchase Extension'
+    : completedView
+      ? 'View Certificate'
+      : progressPick === 'not-started'
+        ? 'Begin Course'
+        : 'Resume Course'
   const onBeginCta = completedView
     ? () => go('certificates')
     : LINKS_OFF && !beginOpensCompass
@@ -712,9 +735,19 @@ export function AtlasHomeEricE2E({
           cover={shownCover ?? undefined}
           title={shownTitle}
           meta={courseMeta}
+          eyebrow={
+            expiredView
+              ? 'Expired'
+              : completedView
+                ? 'Congrats! You have completed this course.'
+                : 'Current course'
+          }
           beginLabel={beginLabel}
           onCover={() => setWhiteHead(true)}
-          showOverview={LINKS_OFF || Boolean(onOverview)}
+          /* Nothing to review once access has gone — the only move left is to
+             buy it back, so Course Overview comes off rather than sitting
+             beside a purchase CTA. */
+          showOverview={!expiredView && (LINKS_OFF || Boolean(onOverview))}
           onOverview={LINKS_OFF && !overviewOpensCompass ? NO_LINK : onOverview}
           onBegin={onBeginCta}
           beginDisabled={!completedView && !LINKS_OFF && !onBegin}
@@ -1873,6 +1906,7 @@ export function AtlasCourseHeadRow({
   cover,
   title,
   meta,
+  eyebrow = 'Current course',
   beginLabel,
   onCover,
   showOverview,
@@ -1885,6 +1919,10 @@ export function AtlasCourseHeadRow({
   title: string
   /** The Expires · days-to-complete row — see `WhiteCourseMeta`. */
   meta?: ReactNode
+  /** The line above the title. It carries the course's STATUS, not a fixed
+   *  label: "Current course" normally, "Expired" when access has gone, and the
+   *  congratulation at 100% (2026-10-21). */
+  eyebrow?: string
   beginLabel: string
   /** Flips to the other header layout. A review affordance, not a feature. */
   onCover: () => void
@@ -1910,7 +1948,7 @@ export function AtlasCourseHeadRow({
         ) : null}
         <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 15, justifyContent: 'center' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <p style={EYEBROW}>Current course</p>
+            <p style={EYEBROW}>{eyebrow}</p>
             <h2 className="cre-compass-course-title cre-atlas-home-course-title cre-atlas-home-v2-course-title" style={TITLE}>
               {title}
             </h2>
@@ -1959,27 +1997,49 @@ export function AtlasCourseHeadRow({
  *
  * Its own component since 2026-10-21, for the same reason `WhiteStyleHead` is:
  * the dev handoff renders the course head live, and anything the page builds
- * inline has to be rebuilt there by hand. The hand-built copy had no rules, a
- * different date format and a flat label weight — close enough to pass review
- * and wrong enough to read as a different design. One implementation, drawn by
- * the page and by its own handoff.
+ * inline has to be rebuilt there by hand. One implementation, drawn by the page
+ * and by its own handoff.
  *
- * ⚠ AT 100% IT CONGRATULATES INSTEAD OF COUNTING (2026-10-19, Jillienne: "when
- * at 100%, this messaging should change to Congrats! You have completed this
- * course."). "18 days to complete" is time the learner still needs; at the end
- * it is time they no longer have any use for, and a countdown beside a
- * finished course reads as something still owed. THE ACCESS DATE STAYS either
- * way — access really does end then, certificate or no certificate.
+ * THREE ARMS, not a `complete` boolean (2026-10-21):
+ *
+ *  - `counting` — the normal row. The date, then the days still needed.
+ *  - `complete` — the date alone. "18 days to complete" is time the learner
+ *    still needs; at the end it is time they no longer have any use for, and a
+ *    countdown beside a finished course reads as something still owed. ⚠ THE
+ *    CONGRATULATION MOVED TO THE EYEBROW (2026-10-21, Jillienne: "when
+ *    completed, change the Eyebrow to this Congrats message") — it sat here
+ *    from 2026-10-19, which put a celebration in the row that answers "how
+ *    long have I got" and left the eyebrow saying "Current course" about a
+ *    course that is finished.
+ *  - `expired` — past tense, with a calendar mark: "Course Access Ended:
+ *    05/08/2026". No count at all; there is nothing left to count.
+ *
+ * THE ACCESS DATE STAYS IN ALL THREE — access really does end then,
+ * certificate or no certificate.
  */
 export function WhiteCourseMeta({
   endsOn,
   days,
-  complete = false,
+  state = 'counting',
 }: {
   endsOn: Date
   days: number
-  complete?: boolean
+  state?: 'counting' | 'expiring-soon' | 'complete' | 'expired'
 }) {
+  const expired = state === 'expired'
+  const soon = state === 'expiring-soon'
+  /* ⚠ AMBER, THEN RED (2026-10-21, Jillienne: "an additional example needs to
+     be shown for when Course Expires soon and the Access changes from Amber to
+     Red"). The repo's own ramps, not new colours: Warning 800 is what the
+     course cards' expiring-soon badge already uses, and Error 700 is what
+     Failed uses. ⚠ THE ATLAS HEAD DIVERGES FROM THE CARD BADGE ON EXPIRED —
+     that badge draws grey; this draws red, because a grey countdown on a
+     header reads as disabled rather than as something to act on. */
+  const tone = expired
+    ? 'var(--color-error-700)'
+    : soon
+      ? 'var(--color-warning-800)'
+      : undefined
   return (
     <div
       /* Primary 200 rules on the panel's Primary 100 (2026-10-14), where the
@@ -1991,30 +2051,45 @@ export function WhiteCourseMeta({
       }}
     >
       <span style={META_PAIR}>
-        <span style={META_LABEL}>Course Access Ends:</span>
-        <span style={META_VALUE}>
+        {(expired || soon) && (
+          <CalendarExclamation size={13} aria-hidden style={{ color: tone, flex: 'none' }} />
+        )}
+        <span style={{ ...META_LABEL, ...(tone ? { color: tone } : null) }}>
+          {expired ? 'Course Access Ended:' : 'Course Access Ends:'}
+        </span>
+        <span style={{ ...META_VALUE, ...(tone ? { color: tone } : null) }}>
           {endsOn.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
-          {/* Inside the value, so no gap before it; in the label's weight. */}
-          <span style={META_LABEL}>,</span>
+          {/* Inside the value, so no gap before it; in the label's weight. The
+              comma only earns its place when something follows it. */}
+          {state === 'counting' || soon ? (
+            <span style={{ ...META_LABEL, ...(tone ? { color: tone } : null) }}>,</span>
+          ) : null}
         </span>
       </span>
-      {complete ? (
-        <span style={{ ...META_PAIR, marginLeft: -4 }}>
-          <span style={META_VALUE}>Congrats! You have completed this course.</span>
-        </span>
-      ) : (
+      {(state === 'counting' || soon) && (
         /* One line — "…05/29/2026, 18 days to complete" — no divider
-           (2026-10-14, Eric's request). */
+           (2026-10-14, Eric's request). The count is the part that goes amber:
+           it is the figure the learner is being asked to act on. */
         <span style={{ ...META_PAIR, marginLeft: -4 }}>
-          <span style={META_VALUE}>
+          <span style={{ ...META_VALUE, ...(tone ? { color: tone, fontWeight: 700 } : null) }}>
             {days} {days === 1 ? 'day' : 'days'}
           </span>
-          <span style={META_LABEL}>to complete</span>
+          <span style={{ ...META_LABEL, ...(tone ? { color: tone } : null) }}>
+            {soon ? 'left to complete' : 'to complete'}
+          </span>
         </span>
       )}
     </div>
   )
 }
+
+/*
+ * END-TO-END DEMO'S HOME — 2026-10-14, Eric's request ("Duplicate the white
+ * version and create a new version called End-to-End Demo"). A copy of
+ * `AtlasHomeEricV3.tsx` that day, which WIP and White both render, so this
+ * demo's Home can change without changing either. Its WIP branches (the
+ * `onWhite` false sides) are carried over unchanged and never taken here.
+ */
 
 export function WhiteStyleHead({
   cover,

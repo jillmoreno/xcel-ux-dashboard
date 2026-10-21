@@ -148,12 +148,17 @@ export function CourseHeadVariant({
   title = 'Florida Life and Health Pre-licensing',
   beginLabel = 'Begin Course',
   meta = 'default',
+  eyebrow,
 }: {
   title?: string
   beginLabel?: string
-  /** Which meta row to draw: the countdown, the 100% congratulation, or none
-   *  at all when the course has no access-expiry date. */
-  meta?: 'default' | 'complete' | 'none'
+  /** Which meta row to draw: the countdown, the completed row, the expired
+   *  row, or none at all when the course has no access-expiry date. */
+  meta?: 'default' | 'expiring-soon' | 'complete' | 'expired' | 'none'
+  /** The status line above the title — see `AtlasCourseHeadRow`. */
+  eyebrow?: string
+  /** Hidden once access has gone: nothing to review, only to buy back. */
+  showOverview?: boolean
 }) {
   return (
     <div style={courseHeadPanelStyle}>
@@ -161,15 +166,30 @@ export function CourseHeadVariant({
         onWhite
         cover={`${import.meta.env.BASE_URL}courses/fl-life-health.webp`}
         title={title}
+        eyebrow={eyebrow}
         beginLabel={beginLabel}
         onCover={() => {}}
-        showOverview
+        showOverview={meta !== 'expired'}
         onOverview={() => {}}
         onBegin={() => {}}
         // The page's OWN meta row, not a rebuild of it.
         meta={
           meta === 'none' ? undefined : (
-            <WhiteCourseMeta endsOn={COURSE_ACCESS_ENDS} days={29} complete={meta === 'complete'} />
+            <WhiteCourseMeta
+              endsOn={COURSE_ACCESS_ENDS}
+              // 7 days for the amber arm, so the figure reads as the thing
+              // being warned about rather than a comfortable number in orange.
+              days={meta === 'expiring-soon' ? 7 : 29}
+              state={
+                meta === 'complete'
+                  ? 'complete'
+                  : meta === 'expired'
+                    ? 'expired'
+                    : meta === 'expiring-soon'
+                      ? 'expiring-soon'
+                      : 'counting'
+              }
+            />
           )
         }
       />

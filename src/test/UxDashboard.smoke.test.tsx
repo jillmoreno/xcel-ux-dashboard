@@ -195,6 +195,9 @@ describe('section routing (sectionOf)', () => {
     'xcel-atlas-home-study-journey': 'development',
     'xcel-atlas-home-quick-links': 'development',
     'xcel-atlas-home-affidavit-modal': 'development',
+    // Not built, and on the board deliberately: `not-ready` keeps a row in
+    // Development while saying do not start it (2026-10-21).
+    'xcel-purchase-extension': 'development',
   }
 
   it('accounts for every authored feature', () => {

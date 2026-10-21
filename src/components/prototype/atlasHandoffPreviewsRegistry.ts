@@ -69,13 +69,27 @@ const quickLinks = (props: Record<string, unknown>, entries?: string[]) => () =>
 const inPanel = (node: ReactNode) => createElement(AtlasProgressPanel, null, node)
 
 const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
+  // ⚠ MAIN'S PROPS, NOT THE CARD'S DEFAULTS (2026-10-21, Jillienne: "I keep
+  // seeing things from different versions... everything should be what is
+  // shown in the Final Prototype view"). The Home passes `bare` and
+  // `matchPaceEyebrow` — the card drops its own tan fill and shares the
+  // column's eyebrow, because it sits INSIDE the progress panel. Rendered with
+  // the component's own defaults instead, it drew as a standalone tan card:
+  // the treatment the other arm uses, and a version the final prototype does
+  // not show.
   'atlas-home-readiness-panel': {
-    'Not Started': () => inPanel(createElement(AtlasReadinessCard, { notStarted: true })),
-    Beginner: () => inPanel(createElement(AtlasReadinessCard, { initialLevel: 0 })),
-    Developing: () => inPanel(createElement(AtlasReadinessCard, { initialLevel: 1 })),
-    Proficient: () => inPanel(createElement(AtlasReadinessCard, { initialLevel: 2 })),
-    Ready: () => inPanel(createElement(AtlasReadinessCard, { initialLevel: 3 })),
-    'Combined panel': () => inPanel(createElement(AtlasReadinessCard, { bare: true, initialLevel: 3 })),
+    'Not Started': () =>
+      inPanel(
+        createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, notStarted: true }),
+      ),
+    Beginner: () =>
+      inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 0 })),
+    Developing: () =>
+      inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 1 })),
+    Proficient: () =>
+      inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 2 })),
+    Ready: () =>
+      inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 3 })),
   },
 
   'atlas-home-progress-states': {
@@ -174,8 +188,20 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
     'Not started': () => createElement(CourseHeadVariant, { beginLabel: 'Begin Course' }),
     'In progress': () => createElement(CourseHeadVariant, { beginLabel: 'Resume Course' }),
     'No end date': () => createElement(CourseHeadVariant, { meta: 'none' }),
+    'Expires soon': () =>
+      createElement(CourseHeadVariant, { beginLabel: 'Resume Course', meta: 'expiring-soon' }),
     'Course complete': () =>
-      createElement(CourseHeadVariant, { beginLabel: 'View Certificate', meta: 'complete' }),
+      createElement(CourseHeadVariant, {
+        beginLabel: 'View Certificate',
+        meta: 'complete',
+        eyebrow: 'Congrats! You have completed this course.',
+      }),
+    Expired: () =>
+      createElement(CourseHeadVariant, {
+        beginLabel: 'Purchase Extension',
+        meta: 'expired',
+        eyebrow: 'Expired',
+      }),
     'Long title': () =>
       createElement(CourseHeadVariant, {
         title: 'Florida Life and Health Pre-licensing with Comprehensive Exam Simulators',

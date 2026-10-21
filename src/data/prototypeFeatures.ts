@@ -1512,7 +1512,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           variants: [
             { name: 'Not started', when: 'The learner has not opened the course.', detail: 'The button reads "Begin Course".', why: 'The first click into a course is a different promise from returning to one.', action: '"Begin Course" opens the first lesson.', howToSee: 'Demo bar → Progress → Not Started' },
             { name: 'In progress', when: 'The learner has started but not finished.', detail: 'The button reads "Resume Course".', why: '"Resume" only makes sense once there is somewhere to resume to.', action: '"Resume Course" returns them where they stopped.', howToSee: 'Demo bar → Progress → On Track' },
-            { name: 'Course complete', when: 'The learner has finished the course.', detail: 'The meta row stops counting and congratulates: "Course Access Ends: <date>, Congrats! You have completed this course." ⚠ The days figure is time the learner still NEEDS; at the end it is time they no longer have, so continuing to count it down reads as a deadline against work that is already done.', why: 'Jillienne, 2026-10-19: "when at 100%, this messaging should change to Congrats! You have completed this course."', action: 'The primary button becomes View Certificate.', howToSee: 'Demo bar → Progress → Ready 100%' },
+            { name: 'Expires soon', when: 'Fifteen days or fewer of access are left.', detail: 'The meta row turns AMBER — the calendar mark, the label, the date and the count all step to Warning 800, the count to bold, and "to complete" becomes "left to complete". ⚠ The COUNT is the part that carries the weight: it is the figure the learner is being asked to act on. Nothing else about the head changes; the buttons and the title are untouched.', why: 'A countdown the learner is meant to notice has to read differently from one they are meant to ignore. Amber first, red only once the window has actually closed — a warning that looks like a failure stops being a warning.', action: 'Unchanged — Course Overview and Resume Course both stay.', howToSee: 'Demo bar → Expires → 1, 7 or 15 days' },
+            { name: 'Course complete', when: 'The learner has finished the course.', detail: 'The EYEBROW becomes "Congrats! You have completed this course." in place of "Current course", and the meta row drops its countdown and shows the access date alone. ⚠ The days figure is time the learner still NEEDS; at the end it is time they no longer have, so counting it down reads as a deadline against work already done. The access date stays — access really does end then, certificate or no certificate.', why: 'Jillienne, 2026-10-19: "when at 100%, this messaging should change to Congrats!", then 2026-10-21: "when completed, change the Eyebrow to this Congrats message." The eyebrow is the card’s status line; a celebration in the row that answers "how long have I got" left the status still reading "Current course" about a finished course.', action: 'The primary button becomes View Certificate.', howToSee: 'Demo bar → Progress → Ready 100%' },
+            { name: 'Expired', when: 'The learner’s access ended before they finished.', detail: 'The eyebrow reads "Expired". The meta row goes past tense — a calendar mark, then "Course Access Ended: 05/08/2026" — with no count at all, because there is nothing left to count. ⚠ COURSE OVERVIEW COMES OFF: the only move left is to buy the access back, and an outline button beside a purchase CTA offers a review of something the learner can no longer open.', why: 'Access ending is not a point on the progress scale — the course stops being something to resume and becomes something to buy. Eyebrow, tense and call to action change together because they are all saying the same thing.', action: '"Purchase Extension" — drawn, not wired. See the Purchase Extension handoff.', howToSee: '⚠ NOT REACHABLE FROM ANY CONTROL TODAY. The Progress ladder has no Expired rung, the Expires dropdown stops at 1 day, and the day count is clamped at zero — so nothing on either bar can produce an expired course. The arm is built and correct; wiring a way to select it is an open item on the Purchase Extension row.' },
             { name: 'No end date', when: 'The course has no access-expiry date.', detail: 'The Expires / days-to-complete meta row is omitted entirely — never a blank row and never a zero.', why: 'A row reading "Expires: —" tells the learner less than no row at all.', action: 'Unchanged; only the meta row goes.' },
             { name: 'Long title', when: 'The course name is too long for one line.', detail: 'The title wraps rather than truncating, and the meta row and buttons move down with it. ⚠ Worth building against the longest real course name, not the demo one.', why: 'Course names are supplied data, so the layout has to survive the long ones.', action: 'Unchanged.', howToSee: 'Demo bar → Long title' },
           ],
@@ -1572,6 +1574,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           ],
           edgeCases: [
             'Long course title: wraps within the title column; the cover keeps its fixed width/aspect regardless.',
+            '⚠ WHEN "SOON" STARTS IS A DECISION NOBODY HAS MADE. The head badges at 15 days or fewer, which is the Expires control’s own documented edge (1 / 7 / 15 badge; 30 and up do not) rather than a product rule. The shared `courseExpiryState` warns inside 60 days clamped to half the ENROLMENT window — a clamp this page cannot compute, because it only knows how many days are left, not when the learner enrolled. Pick a real threshold before building.',
           ],
           data: [
             'Active course + cover — today `WHITE_COURSES` (three invented demo courses) plus `useEndToEndCourseTitle()` for the real one.',
@@ -1729,7 +1732,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             { name: 'In progress', when: 'The learner has started but not finished.', detail: 'The real dial, plus Expected completion and Course access. ⚠ The only state whose figures come from real data.', why: 'The one state with real stakes — how far along they are, and whether access will outlast the work.', action: 'None beyond the Study Pace edit link beneath it.', howToSee: 'Demo bar → Progress → On Track' },
             { name: 'Milestone', when: 'The learner has passed a celebration point on the way to 100%.', detail: 'Dial pinned to 68% and "Great Work!!". ⚠ The figures here are fixed design copy (68%, "June 3", "28 Days, Ends June 10"), not the learner’s own.', why: 'A check-in ahead of 100%, to reinforce pace.', action: '"Edit My Study Pace" (drawn, not wired).', howToSee: 'Demo bar → Progress → Milestone' },
             { name: 'Complete', when: 'The learner has finished the coursework.', detail: 'Dial at 100% and "Amazing Job!!". Figures are fixed design copy. No edit link — there is no pace left to edit.', why: 'Closes the loop and hands off to what comes next — flashcards, the exam simulator.', action: 'None.', howToSee: 'Demo bar → Progress → Completed' },
-            { name: 'Expired', when: 'The learner’s access ended before they finished.', detail: '"We’re sorry but your course has expired" over an "Extend Course Now" button. ⚠ The button is drawn, not wired — clicking it is a click on the card.', why: 'The one state asking the learner to make a purchase decision.', action: '"Extend Course Now" (drawn, not wired).', howToSee: 'Demo bar → Progress → Expired' },
+            { name: 'Expired', when: 'The learner’s access ended before they finished.', detail: '"We’re sorry but your course has expired" over an "Extend Course Now" button. ⚠ The button is drawn, not wired — clicking it is a click on the card.', why: 'The one state asking the learner to make a purchase decision.', action: '"Extend Course Now" (drawn, not wired).', howToSee: '⚠ Not reachable from any control today — see the same note on the course head’s Expired state. Clicking the card itself cycles into it.' },
           ],
           flows: [
             {
@@ -1890,7 +1893,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           tabLabel: 'Readiness',
           location: 'src/components/compass/AtlasReadinessCard.tsx',
           summary:
-            'A card asking "How Ready are you for your State Exam?" over a half-dial (the top half of a ring) naming one of FOUR bands — Beginner, Developing, Proficient, Ready — instead of showing a percent, plus a fifth "Not Started" state that draws no arc at all. Its OPENING band follows the Course Progress card’s stage (a fixed lookup table), and from there a click or Enter/Space on the card steps it forward on its own — the same click-to-cycle review-device pattern Course Progress uses, built independently of it. ⚠ THE FOUR BANDS REPLACED FIVE LEVELS ON 2026-10-16 (Novice · Advanced Beginner · Competent · Proficient · Exam Ready), so the card, the demo bar and Jillienne’s bands image use one set of words.',
+            'A card asking "How Ready are you for your State Exam?" over a half-dial (the top half of a ring) naming one of FOUR bands — Beginner, Developing, Proficient, Ready — instead of showing a percent, plus a fifth "Not Started" state that draws no arc at all. Its OPENING band follows the Course Progress card’s stage (a fixed lookup table), and from there a click or Enter/Space on the card steps it forward on its own — the same click-to-cycle review-device pattern Course Progress uses, built independently of it. ⚠ THE FOUR BANDS REPLACED FIVE LEVELS ON 2026-10-16 (Novice · Advanced Beginner · Competent · Proficient · Exam Ready), so the card, the demo bar and Jillienne’s bands image use one set of words. ⚠ IT HAS NO CARD OF ITS OWN HERE: it sits inside the progress panel with Course progress and Study pace, sharing their eyebrow and drawing no fill or border — the standalone treatment with its own tan card belongs to the other progress arm, not to this page.',
           quickSummary:
             'A half-dial answering a different question from course progress: not how much of the course is done, but whether the learner could pass the state exam today. It names a band rather than showing a percent, because readiness is a judgement and a number would overstate it.',
           variants: [
@@ -1916,9 +1919,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
                 { from: 'Ready', on: 'Click again', to: 'Beginner', note: '⚠ On Home it does something else entirely — it resets the page’s shared progress back to Not Started, which also resets Course progress and the Study Journey. A learner cannot predict that from anything on screen; it is flagged as an open decision.' },
               ],
             },
-          ],
-          options: [
-            { name: 'Combined panel', what: 'The card drops its own fill and sits inside one outlined panel shared with Course progress. The "How Ready are you for your State Exam?" question and the "Help me get ready" line are both dropped — only the eyebrow and the dial remain.', howToSee: 'On wherever Readiness sits beneath the progress panel.' },
           ],
           uxLogic: [
             'The WHOLE card is `role="button"`/`tabIndex={0}` — a click or Enter/Space anywhere on it (not just the "Help me get ready" link, which is drawn text and not a real link) advances to the next level.',
@@ -2464,6 +2464,100 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
         { name: 'Study Journey & Get Licensed Steps', location: 'See its own dev-handoff feature.', note: 'Shares the same `onOpenStep`/`onOpenRequirements` callbacks, but its own inline links to the same destinations are disabled on this chrome while this card’s are not.' },
       ],
       flagsNote: '`atlas-wip-quick-links-side` picks which side of the course card this rail sits on — see the Overview handoff for why End-to-End Demo cannot change it from its own bar.',
+    },
+  },
+  {
+    /* ⚠ NOT BUILT (2026-10-21, Jillienne: "we need to add a Purchase Extension
+       Feature Card on the Development Page — To Do status"). The Expired course
+       head now draws a "Purchase Extension" button and that button goes
+       nowhere; this row is where the flow behind it gets specified.
+
+       `not-ready` is the status that keeps a row ON the Development board while
+       saying do not start it — see `isDevelopmentStatus`. There is no `to-do`
+       status; this is the nearest, and it is the one that means what "To Do"
+       means here. It renders as "Not Ready". */
+    id: 'xcel-purchase-extension',
+    title: 'Purchase Extension',
+    accent: 'blue',
+    icon: 'grid',
+    blurb:
+      'What happens after the Expired course head’s "Purchase Extension" button — buying more time on a course whose access has run out. Nothing behind the button is designed or built yet; the button is drawn so the expired state has an honest call to action.',
+    tileBlurb:
+      'The flow behind the Expired course head’s "Purchase Extension" button. Not designed yet — the button is drawn, nothing is behind it.',
+    kind: 'guided',
+    status: 'ready',
+    category: 'dev-handoff',
+    devStatus: 'not-ready',
+    brands: ['xcel'],
+    pages: [
+      {
+        label: 'Atlas Home, expired',
+        note: 'Demo bar → Progress → Expired. The course head is the only place the button appears today.',
+        to: '/dashboard-rebrand?demo=1&section=dashboard&ff=atlas-v3-progress:expired',
+      },
+    ],
+    featureFlags: [],
+    devHandoff: {
+      intro:
+        'A placeholder handoff for work that has not started. The Expired course head needs somewhere for its one remaining action to go, and this is the row that will carry it once the flow is designed.',
+      components: [],
+      uiComponents: [
+        {
+          id: 'purchase-extension-cta',
+          name: 'Purchase Extension — the button, and nothing behind it',
+          tabLabel: 'Purchase Extension',
+          location: 'src/components/compass/AtlasHomeEricE2E.tsx — the Expired arm of `AtlasCourseHeadRow` (`beginLabel`)',
+          summary:
+            'The call to action on an expired course head. It is drawn, sized and placed; pressing it does nothing, because what it should open has not been decided.',
+          quickSummary:
+            'Buying more time on a course whose access has run out. The button exists so the expired state is not a dead end, but everything behind it — what is being sold, for how long, and at what price — is still to be decided.',
+          variants: [
+            { name: 'Drawn, not wired', when: 'The learner’s access has ended.', detail: 'A single primary button where Course Overview and Begin/Resume normally sit. Pressing it does nothing at all — no navigation, no sheet, no toast.', why: 'An expired course with no action reads as a fault. One honest button is better than two that cannot help.', action: 'None yet — that is what this row is for.', howToSee: 'Demo bar → Progress → Expired' },
+          ],
+          uxLogic: [
+            '⚠ NOTHING IS WIRED. The button is a `<button>` with no handler on this page. Do not build against it expecting a route.',
+            'It REPLACES both normal actions rather than joining them — Course Overview comes off with it, because reviewing a course the learner cannot open is not an offer.',
+          ],
+          edgeCases: [
+            'A learner who never started the course and one who nearly finished it see the identical expired head today. Whether the offer should differ by how much work is left is one of the open questions below.',
+          ],
+          data: [
+            'What an extension IS — a fixed number of days, a new end date, or a re-purchase of the course — is undecided, so there is no shape to name yet.',
+            'Price, and whether it varies by course or by how long access has been gone.',
+          ],
+          stubs: [
+            'The button itself: give it a handler and a destination.',
+          ],
+        },
+      ],
+      decisions: {
+        intro:
+          'Nothing here is decided. The row exists so the questions are written down somewhere a developer will find them, rather than living in the gap behind a drawn button.',
+        items: [
+          {
+            question: 'What is actually being sold — more days, a new access window, or the course again?',
+            decision: 'Undecided.',
+            status: 'Needs weigh-in',
+            owner: 'Business',
+          },
+          {
+            question: 'Where does the button go — a checkout, a sheet over Home, or the existing purchase flow?',
+            decision: 'Undecided. Invite & Purchase already has a checkout that could take it.',
+            status: 'Needs weigh-in',
+            owner: 'Jillienne',
+          },
+          {
+            question: 'Does the offer change with how much of the course was completed?',
+            decision: 'Undecided — see the edge case on the component.',
+            status: 'Needs weigh-in',
+            owner: 'Business',
+          },
+        ],
+        openItems: [
+          'Every question above. This row is a placeholder for work that has not started.',
+          '⚠ HOW A REVIEWER REACHES THE EXPIRED STATE AT ALL. Nothing on either bar produces an expired course: the Progress ladder has no Expired rung, the Expires dropdown stops at "1 day", and the day count is clamped at zero. The course head’s Expired arm is built and correct but cannot be selected — an "Expired" option on the Expires control is the obvious fix, and it is Jillienne’s to make because the demo bar is hers.',
+        ],
+      },
     },
   },
   {
