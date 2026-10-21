@@ -189,8 +189,11 @@ describe('section routing (sectionOf)', () => {
     // status. `category: 'dev-handoff'` routes there too, so both paths agree.
     'xcel-atlas-home-overview': 'development',
     'xcel-atlas-home-course-head': 'development',
+    /* ⚠ THE READINESS ROW IS FOLDED INTO THIS ONE (2026-10-21) — "this is all
+       one component". Course progress, Study pace, Estimated completion and
+       Exam readiness share ONE outlined panel on the page, so they are one
+       feature here too; `xcel-atlas-home-readiness-panel` no longer exists. */
     'xcel-atlas-home-progress-panel': 'development',
-    'xcel-atlas-home-readiness-panel': 'development',
     'xcel-atlas-home-exam-date-card': 'development',
     'xcel-atlas-home-study-journey': 'development',
     'xcel-atlas-home-quick-links': 'development',

@@ -1512,13 +1512,13 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
      * devStatus: 'in-design'. No `quickSummary` yet — ask before writing one.
      */
     id: 'xcel-atlas-home-progress-panel',
-    title: 'Atlas Home — Course Progress Panel',
+    title: 'Atlas Home — Progress Panel',
     accent: 'blue',
     icon: 'grid',
     blurb:
-      'The left column of the Atlas Home: a Course progress dial over a Study pace plan, in one panel, with Estimated completion beneath it.',
+      'The Atlas Home\'s left column — ONE outlined panel holding four parts in order: Course progress (the dial), Study pace (the plan), Estimated completion (the date), and Exam readiness (the half-dial). ⚠ A reviewer sees only the first three on a bare `?demo=1`: readiness is `defaultEnabled: false`, so half of what this documents is behind `?ff=atlas-readiness-section`.',
     tileBlurb:
-      'The Course progress ring over Study pace — the committed default, and the only arm documented here.',
+      'One panel, four parts: Course progress, Study pace, Estimated completion and Exam readiness — the last off by default.',
     kind: 'guided',
     status: 'ready',
     category: 'dev-handoff',
@@ -1534,12 +1534,54 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     featureFlags: [
       { id: 'atlas-v3-progress', label: 'Progress', note: 'Which of the five states the module opens on (`not-started`, `on-track`, `milestone`, `completed`, `expired`). Readiness and the Study Journey’s current stop follow the same pick.' },
       { id: 'atlas-pace-card', label: 'Study pace card', note: '⚠ LEAVE IT ON `ring` — that is the committed default and the only arm this handoff describes. The flag still has a `states` variant that renders the tan five-state card, but the concept is retired and is no longer documented anywhere; see `atlas-home-progress-states-handoff` in the Archive. Setting it to `states` shows a card nothing here describes.' },
+      { id: 'atlas-readiness-section', label: 'Readiness section', note: '⚠ THE GATE ON THIS WHOLE PANEL, and it is OFF on main (`defaultEnabled: false`). `src/components/compass/AtlasHomeEricE2E.tsx` renders the card under `{!showReadiness ? null : …}`. A design-bar control, but the default is what ships.' },
     ],
     devHandoff: {
       intro:
         'One card, five states, advanced by clicking anywhere on it (or Enter/Space) — a review device standing in for whatever will eventually read the learner’s real progress record.',
       components: [],
       uiComponents: [
+        {
+          id: 'atlas-home-progress-panel',
+          name: 'Atlas Home — The Panel',
+          tabLabel: 'The Panel',
+          location: 'The panel itself is the Home\'s, not a component: `WHITE_PROGRESS_PANEL` in src/components/compass/AtlasHomeJillMain.tsx. The parts inside it are the two components below.',
+          summary:
+            'ONE outlined panel in the Home\'s left column, holding four parts in order: Course progress, Study pace, Estimated completion and Exam readiness. The parts below are two components — the ring card draws the first three, the readiness card the fourth — but a learner sees one object, which is why they are one feature.',
+          variants: [
+            { name: 'Progress and pace', when: 'The default — what a bare `?demo=1` draws.', detail: 'Course progress, Study pace and Estimated completion. Exam readiness is NOT here, because its flag is off.', why: 'It is the composition every reviewer sees unless they change something, so it is the one a build has to get right first.', action: 'None — the panel is a container; its parts carry their own controls.', howToSee: 'A bare ?demo=1.' },
+            { name: 'With Exam readiness', when: '`atlas-readiness-section` is switched on.', detail: 'The readiness half-dial joins as a fourth part, sharing the panel and the column\'s eyebrow rather than bringing a card of its own. The pace card drops its bottom padding to 0 so the two sit flush.', why: 'Progress and readiness are two different axes — how much is done, and how ready that makes you — and the panel is where a learner reads them against each other.', action: 'None at the panel level.', howToSee: 'Demo bar → Readiness section → On, or `?ff=atlas-readiness-section`.' },
+            { name: 'Expired', when: 'Access ended before the learner finished.', detail: 'The panel keeps the dial and loses everything that describes a PLAN. Readiness is hidden too, even when its flag is on.', why: 'A plan is advice about a future the learner no longer has, and a readiness score for an exam they cannot currently study for is a number with nothing behind it. What stays is how far they got, which is the argument for buying more time.', action: 'The purchase offer lives on the course head above, not here.', howToSee: 'Demo bar → Expires → Expired.' },
+          ],
+          designSpec: {
+            tokens: [
+              { role: 'Panel fill', token: '--color-atlas-tan-100' },
+              { role: 'Rules between the parts', token: '--color-atlas-nav-rule' },
+              { role: 'Section eyebrows', token: '--color-neutral-800' },
+            ],
+            responsive: [
+              '⚠ NOT RESPONSIVE, AND THAT IS THE SPEC. The column is a FIXED 296px (`flex: 0 0 auto`) — it does not reflow, there is no narrow arm, and nothing in the product renders it at another width. Build to the column, not to a range.',
+              'Padding and margins, measured off the Final Prototype — the panel carries 8px top and bottom, 24px each side, 20px corners, and 16px between the cards stacked inside it. That leaves a 248px content column; each card adds 24px above its own first section.',
+            ],
+            sources: [
+              'The FINAL PROTOTYPE is the source of truth — "Open live preview" at the top of this page. ⚠ Append `?ff=atlas-readiness-section` to see the fourth part; the default page is the three-part composition.',
+              'The panel is `WHITE_PROGRESS_PANEL` in src/components/compass/AtlasHomeJillMain.tsx; the parts are src/components/compass/AtlasPaceRingCard.tsx and src/components/compass/AtlasReadinessCard.tsx.',
+            ],
+          },
+          statesMatrix: [
+            { question: 'What states does COURSE PROGRESS have?', answer: 'One continuous arc, 0–100%, read from the learner\'s real figure. ⚠ IT SURVIVES 100% — completion and readiness are two axes, and a learner can be ready at less than 100%, so the dial is never hidden at the top of the scale. Once access has ended the eyebrow reads "Progress paused" and the arc steps to neutral instead of the brand blue.' },
+            { question: 'What states does STUDY PACE have?', answer: 'Three. A PLAN FITS — the pace name, the week goal, the hours a week and a standing sentence. NO PLAN FITS — two arms, named by whichever deadline actually bound: access-bound ("Not enough access left", which offers an extension) or exam-bound ("Not enough time before your exam", which offers nothing, because a booked exam is not something a learner can extend). ⚠ THE EXAM IS CHECKED FIRST. And GONE — the whole section is dropped once access has ended.' },
+            { question: 'What states does ESTIMATED COMPLETION have?', answer: 'A date with its own days count, as a figure row ruled above. A second row joins it when a state exam is booked, with its own count. Both go when access has ended. ⚠ The exam row is NOT reachable on this Home — it passes no exam date to `studyPace`, so that arm is live only where a surface owns the date.' },
+            { question: 'What states does EXAM READINESS have?', answer: 'Five: Not Started (the track drawn, no arc — not a band, an absence of measurement) and then four bands — Beginner, Developing, Proficient, Ready. ⚠ FOUR BANDS, NOT THE FIVE LEVELS they replaced on 2026-10-16 (Novice · Advanced Beginner · Competent · Proficient · Exam Ready); any frame still drawn against those predates the change. It opens in step with Progress via a fixed lookup, then steps on its own when clicked.' },
+            { question: 'What if the Readiness flag is off?', answer: 'The panel is the three-part composition and nothing marks the absence — there is no placeholder and no gap. That is the default on main, so it is what a reviewer sees unless they are told otherwise.' },
+          ],
+          edgeCases: [
+            '⚠ THE PANEL IS THE HOME\'S, NOT A COMPONENT. There is no `<ProgressPanel>` to build against — `WHITE_PROGRESS_PANEL` is a style object in the Home, and each card renders `bare` inside it. A developer wiring these into a different page has to bring the panel with them, or both cards will draw without a surface.',
+          ],
+          ctas: [
+            { name: 'None of its own', does: 'The panel is a container. Every control on it belongs to one of the parts below — "Customize Your Pace" and "Extend your access" to the ring, "Help me get ready" and the click-to-step to readiness.' },
+          ],
+        },
         {
           id: 'atlas-home-pace-ring',
           name: 'Atlas Home — Course Progress + Study Pace (ring)',
@@ -1580,83 +1622,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             { name: 'Extend your access', does: 'Shown only in the access-bound no-plan arm. Drawn, not wired — it is the same offer the course head\'s Purchase Extension makes.' },
           ],
         },
-      ],
-      decisions: {
-        items: [
-          {
-            question: 'Do "Edit My Study Pace" and "Extend Course Now" become real actions?',
-            decision:
-              'Not yet — both are drawn text/buttons, and a click on EITHER is read as a click on the whole card (advance state), not as pressing them specifically. A real build needs to decide whether these get their own click targets independent of the card’s advance-state behavior, or whether the card itself stops being click-to-cycle once real data drives it.',
-            status: 'Needs weigh-in',
-            owner: 'Eric',
-          },
-          {
-            question: 'Why does a 0%-complete course never show a 0% dial?',
-            decision: 'A ring reading 0% looks broken rather than "not started yet" — the Study Pace screen (a plan, not a stalled number) is the deliberate replacement (2026-10-09).',
-            status: 'Decided',
-          },
-          {
-            question: 'Are Milestone/Complete/Expired\'s figures meant to be real, or are they permanently fixed design states?',
-            decision:
-              'Unresolved. Today they are fixed design copy, same for every learner, every brand. If they ship as-is, every learner reaching Milestone sees "68%" and "1 week" regardless of their actual pace.',
-            status: 'Needs weigh-in',
-            owner: 'Product',
-          },
-        ],
-        openItems: [
-          'Whether Edit My Study Pace / Extend Course Now get real, independently-clickable actions.',
-          'Whether Milestone/Complete/Expired read real figures before this ships, or stay fixed design states.',
-        ],
-      },
-      alsoConsider: [
-        { name: 'Readiness panel', location: 'See its own dev-handoff feature.', note: 'Sits directly below this card (or shares its outlined panel on White/E2E); its level follows this card’s stage via the same Progress control.' },
-      ],
-      flagsNote:
-        '`atlas-v3-progress` picks the opening state; clicking the card (or Enter/Space) also advances it when the card is wired to the page via `onAdvance`, as it is on Home.',
-    },
-  },
-  {
-    /*
-     * ATLAS HOME — READINESS PANEL. 2026-10-19. AtlasReadinessCard — the
-     * four-band "Readiness for state exam" half-dial, directly below Course
-     * Progress (or sharing its outlined panel on White/E2E).
-     *
-     * devStatus: 'in-design'. No `quickSummary` yet — ask before writing one.
-     */
-    id: 'xcel-atlas-home-readiness-panel',
-    title: 'Atlas Home — Readiness Panel',
-    accent: 'blue',
-    icon: 'grid',
-    blurb:
-      '⚠ OFF ON MAIN — `atlas-readiness-section` is `defaultEnabled: false` (2026-10-19, Jillienne: "readiness off"), so this panel does NOT render on a bare `?demo=1`; open it with `?ff=atlas-readiness-section`. The four-band "Readiness for state exam" half-dial on the Atlas Home (Beginner · Developing · Proficient · Ready, plus a "Not Started" empty state), whose opening band follows the Course Progress card and which — on its own — steps forward by clicking it, the same review-device pattern as Progress.',
-    tileBlurb:
-      'Off by default — a half-dial under Course Progress, Novice → Advanced Beginner → Competent → Proficient → Exam Ready, synced to its stage.',
-    kind: 'guided',
-    status: 'ready',
-    category: 'dev-handoff',
-    devStatus: 'in-design',
-    brands: ['xcel'],
-    pages: [
-      {
-        label: 'Atlas Home (End-to-End Demo)',
-        note: '⚠ THE FLAG IS OFF ON MAIN, so this link shows the page WITHOUT the panel — it is here because it is the page the panel belongs to. Use the link below to actually see it.',
-        to: '/dashboard-rebrand?demo=1&section=dashboard',
-      },
-      {
-        label: 'Readiness panel switched on — what this handoff describes',
-        note: 'The same page with `?ff=atlas-readiness-section`, which turns the panel on for this visit only. It renders below Course progress, sharing the ring panel and its eyebrow (`matchPaceEyebrow`). Click the card to step through its five levels, or change UI/UX Demo Tools → Progress to re-sync it.',
-        to: '/dashboard-rebrand?demo=1&section=dashboard&ff=atlas-readiness-section',
-      },
-    ],
-    featureFlags: [
-      { id: 'atlas-readiness-section', label: 'Readiness section', note: '⚠ THE GATE ON THIS WHOLE PANEL, and it is OFF on main (`defaultEnabled: false`). `src/components/compass/AtlasHomeEricE2E.tsx` renders the card under `{!showReadiness ? null : …}`. A design-bar control, but the default is what ships.' },
-      { id: 'atlas-v3-progress', label: 'Progress', note: 'Picks which of the five Readiness levels the card opens on (via a fixed map) — the two cards never open out of sync, though this one can still be clicked independently afterward.' },
-    ],
-    devHandoff: {
-      intro:
-        'A half-dial under Course Progress naming a readiness LEVEL rather than a percent, opening in step with Progress and then — like Progress — steppable on its own by clicking it.',
-      components: [],
-      uiComponents: [
         {
           id: 'atlas-home-readiness-panel',
           name: 'Atlas Home — Readiness Panel',
@@ -1728,13 +1693,11 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           'What "Help me get ready" should link to.',
           'What the real Progress ↔ Readiness correlation rule will be, once it exists.',
           'Whether resetting the whole page from Readiness’s past-Exam-Ready click is intended end-user behavior or just a demo convenience.',
+          'Whether the Readiness section ships ON — it is `defaultEnabled: false`, so the panel a reviewer sees by default is only half of what this handoff documents.',
         ],
       },
-      alsoConsider: [
-        { name: 'Course Progress panel', location: 'See its own dev-handoff feature.', note: 'Sits directly above this card (or shares its outlined panel on White/E2E); drives this card’s opening level.' },
-      ],
       flagsNote:
-        '`atlas-v3-progress` indirectly picks this card’s opening level (via the Course Progress stage it maps from) — there is no flag that targets Readiness directly.',
+        '`atlas-v3-progress` picks the opening state; clicking the card (or Enter/Space) also advances it when the card is wired to the page via `onAdvance`, as it is on Home.',
     },
   },
   {

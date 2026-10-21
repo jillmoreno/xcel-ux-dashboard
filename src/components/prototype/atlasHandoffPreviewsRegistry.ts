@@ -65,6 +65,45 @@ const quickLinks = (props: Record<string, unknown>, entries?: string[]) => () =>
 const inPanel = (node: ReactNode) => createElement(AtlasProgressPanel, null, node)
 
 const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
+  /* THE PANEL ITSELF — its two compositions, which is the one thing neither
+     card can show on its own: what the column looks like with Exam readiness
+     ON, and what it looks like without it. The default `?demo=1` is the
+     WITHOUT, because `atlas-readiness-section` is `defaultEnabled: false`. */
+  'atlas-home-progress-panel': {
+    'Progress and pace': () =>
+      inPanel(
+        createElement(AtlasPaceRingCard, {
+          percent: 42,
+          weeks: 3,
+          hoursPerWeek: 4,
+          expected: { value: 'November 2', note: 'At current pace' },
+          standingMessage: 'You’re ahead of pace — keep it up.',
+        }),
+      ),
+    'With Exam readiness': () =>
+      inPanel([
+        createElement(AtlasPaceRingCard, {
+          key: 'pace',
+          percent: 42,
+          weeks: 3,
+          hoursPerWeek: 4,
+          expected: { value: 'November 2', note: 'At current pace' },
+          standingMessage: 'You’re ahead of pace — keep it up.',
+          readinessBelow: true,
+        }),
+        createElement(AtlasReadinessCard, {
+          key: 'readiness',
+          bare: true,
+          matchPaceEyebrow: true,
+          initialLevel: 1,
+        }),
+      ]),
+    Expired: () =>
+      inPanel(
+        createElement(AtlasPaceRingCard, { percent: 34, weeks: 3, hoursPerWeek: 4, expired: true }),
+      ),
+  },
+
   // ⚠ MAIN'S PROPS, NOT THE CARD'S DEFAULTS (2026-10-21, Jillienne: "I keep
   // seeing things from different versions... everything should be what is
   // shown in the Final Prototype view"). The Home passes `bare` and
