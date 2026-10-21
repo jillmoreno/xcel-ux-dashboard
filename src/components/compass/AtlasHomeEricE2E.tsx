@@ -2089,7 +2089,7 @@ export function WhiteCourseMeta({
            and reads as a quantity the learner can plan against; today is not a
            quantity, it is a deadline. */
         <span style={{ ...META_PAIR, marginLeft: -4 }}>
-          <span style={{ ...META_VALUE, color: tone, fontWeight: 700 }}>Today is the last day</span>
+          <span style={{ ...META_VALUE, color: tone, fontWeight: 700 }}>Today is the last day!</span>
         </span>
       ) : null}
       {(state === 'counting' || soon) && (

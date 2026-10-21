@@ -15,6 +15,7 @@ import {
   type PrototypeFeature,
 } from '@/data/prototypeFeatures'
 import {
+  handoffProseStyle,
   handoffSubheadingStyle,
   pointerLocationStyle,
 } from '@/components/prototype/devHandoffStyles'
@@ -1345,11 +1346,24 @@ function QuickSummaryPlaceholder() {
  * paragraph containing literal asterisks.
  */
 function QuickSummaryBody({ text }: { text: string }) {
+  /* ⚠ NO MEASURE CAP, AND THE BODY SIZE (2026-10-21, Jillienne: "have this text
+     fit the space of the container, no need to wrap so soon. Also match the text
+     size to the rest of the body text").
+
+     Both came from the field's first life as "Quick Summary from Jill", which
+     was set a step up in type and held to a 76ch measure because it was prose
+     in a page of spec tables and wanted to read like someone talking. It is a
+     one-or-two-sentence Summary now: at 14.5px inside a 76ch cap it wrapped
+     two-thirds of the way across its own box while every section under it ran
+     the full width, so the lead paragraph was the one thing on the page that
+     looked like it had been squeezed.
+
+     It keeps `--color-text-primary` rather than the prose secondary — the
+     Summary leads, and the one distinction worth keeping is weight of colour,
+     not size. */
   const proseStyle: React.CSSProperties = {
+    ...handoffProseStyle,
     margin: 0,
-    maxWidth: GATEWAY_PROSE_MEASURE,
-    fontSize: 14.5,
-    lineHeight: '23px',
     color: 'var(--color-text-primary)',
   }
   const blocks = text.split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean)
