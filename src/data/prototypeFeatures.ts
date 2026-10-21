@@ -1542,41 +1542,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
       components: [],
       uiComponents: [
         {
-          id: 'atlas-home-below-region',
-          name: 'Atlas Home — The Whole Region',
-          tabLabel: 'The Whole Region',
-          location: 'The region is the Home\'s own layout — src/components/compass/AtlasHomeJillMain.tsx. The parts inside it are the components below.',
-          summary:
-            'EVERYTHING UNDER THE COURSE CARD AT ONCE: the progress column on the left and the Study Journey on the right, in the same state, on the real page. The components below take the region a part at a time; this is the view a reader cannot assemble in their head, because the two columns answer each other.',
-          variants: [
-            { name: 'Not started — the default', when: 'A bare `?demo=1` — what every reviewer sees first.', detail: 'Dial at 0%, a 4-week plan with Estimated completion, and Step 2 asking for an exam date. Step 1 lists the coursework with nothing ticked.', why: 'It is the composition a build has to get right before any other, because it is the one nobody has to go looking for.', action: 'Add Date in Step 2 is the only control that changes the left column from the right.', howToSee: 'A bare ?demo=1.' },
-            { name: 'In progress', when: 'The learner is part-way through.', detail: 'The dial fills, the readiness band follows the rung, and Step 1\'s list starts ticking off — all three from ONE control.', why: 'The three move together on purpose; seeing them apart is how a reader comes to think they are independently settable.', action: 'None.', howToSee: 'Demo bar → Progress → Developing 36%.' },
-            { name: 'At the milestone', when: 'The learner has passed the celebration point.', detail: 'Dial at 75%, readiness at Proficient, and the journey\'s current stop has moved down Step 1\'s list.', why: 'The milestone is where the three columns are most obviously one story.', action: 'None.', howToSee: 'Demo bar → Progress → Proficient 75%.' },
-            { name: 'Completed', when: 'The coursework is finished.', detail: 'Dial at 100% — ⚠ IT SURVIVES, it is not hidden — readiness at Ready, and Step 1 swaps its list for the Congratulations block.', why: 'Completion and readiness are two axes: a learner can be ready at less than 100%, so the dial has to stay visible at the top of the scale.', action: 'None.', howToSee: 'Demo bar → Progress → Ready 100%.' },
-            { name: 'With Exam readiness on', when: '`atlas-readiness-section` is switched on.', detail: 'A fourth part joins the left column, sharing the panel. ⚠ IT IS OFF BY DEFAULT, so this is NOT what a reviewer sees unless they ask for it.', why: 'Half of what this ticket documents is behind a flag, and a handoff that only shows the default hides it.', action: 'None.', howToSee: '?ff=atlas-readiness-section.' },
-            { name: 'Access expired', when: 'The course access window has closed.', detail: 'The left column stops at the dial — the plan, the estimate and readiness all go — while the Study Journey is UNCHANGED beside it. ⚠ THAT ASYMMETRY IS THE POINT and it is only visible here: the journey still lists coursework the learner can no longer open.', why: 'A plan is advice about a future they no longer have; the journey is a description of the licence path, which expiry does not change. Whether the journey SHOULD react is an open question, and it is only askable with both columns on one screen.', action: 'The purchase offer is on the course head, above this region.', howToSee: 'Demo bar → Expires → Expired.' },
-          ],
-          designSpec: {
-            tokens: [
-              { role: 'Column gap', token: '--none — the two columns sit 48px apart, set in the Home' },
-            ],
-            responsive: [
-              '⚠ NOT RESPONSIVE, AND THAT IS THE SPEC. Two fixed columns — 296px on the left, the journey taking the rest — inside a desktop layout that does not reflow.',
-            ],
-            sources: [
-              'The FINAL PROTOTYPE is the source of truth, and these screens ARE it — each is the real page in a frame, pinned to its state and scrolled to the region, rather than a drawing of it.',
-              'Implemented in src/components/compass/AtlasHomeJillMain.tsx.',
-            ],
-          },
-          statesMatrix: [
-            { question: 'Why is this here when every part is documented below?', answer: 'Because the parts answer each other and the answers are only visible together: an exam date set on the RIGHT re-plans the pace on the LEFT, and one Progress control moves the dial, the readiness band and the journey\'s current stop at once. Documented apart, those relationships read as three coincidences.' },
-            { question: 'What does NOT react to the Progress control?', answer: 'Step 1\'s list is fixed at seven lines — it marks a current stop rather than computing one — and Steps 2 and 3 do not move at all. ⚠ A reviewer stepping Progress will see the left column and the readiness band change while most of the right column sits still.' },
-          ],
-          ctas: [
-            { name: 'None of its own', does: 'The region is a layout. Every control belongs to one of the parts below — Customize Your Pace and the pace link to the ring, Add Date / Edit / Remove to Step 2, and the stop links to the journey.' },
-          ],
-        },
-        {
           id: 'atlas-home-progress-panel',
           name: 'Atlas Home — The Panel',
           tabLabel: 'The Panel',
