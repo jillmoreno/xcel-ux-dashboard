@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { ArrowRight, ClipboardList, Download, Share2 } from '@/icons'
 import { ComponentLivePreview } from './PrototypeHandoffDetailPage'
-import { atlasHandoffThumbRender } from '@/components/prototype/atlasHandoffPreviewsRegistry'
+import { ComponentPreviewThumb } from '@/components/prototype/ComponentPreviewThumb'
 import { PrototypeBar, PROTOTYPE_BAR_HEIGHT } from '@/components/layout/PrototypeBar'
 import { setPrototypeWalkthrough } from '@/components/layout/prototypeWalkthrough'
 import { useAccount, professionFor } from '@/context/AccountContext'
@@ -29,7 +29,6 @@ import {
   BulletList,
 } from '@/components/prototype/DevHandoffNotesBody'
 import { getUserJiraTickets } from '@/components/prototype/jiraTicketsUtil'
-import { FeaturePreviewThumb } from '@/components/prototype/FeaturePreviewThumb'
 import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { RelatedJiraTickets } from '@/components/prototype/RelatedJiraTickets'
 import {
@@ -177,7 +176,16 @@ export function PrototypeFeaturePage({
           flexWrap: 'wrap',
         }}
       >
-        <FeatureHeaderThumb feature={feature} src={headerPreviewSrc} />
+        {/* The same picture the project row on the landing page shows, larger
+            — see `ComponentPreviewThumb`. 300x210 so it reaches the bottom of
+            the paragraph beside it. */}
+        <ComponentPreviewThumb
+          feature={feature}
+          src={headerPreviewSrc}
+          width={300}
+          height={210}
+          style={{ boxShadow: 'var(--shadow-card)' }}
+        />
 
         <div style={{ flex: '1 1 320px', minWidth: 0 }}>
         <p
@@ -783,98 +791,6 @@ function UiComponentsSection({
       )}
     </section>
   )
-}
-
-/**
- * THE HEADER PICTURE — a zoomed view of the component this feature is about,
- * not of the whole page.
- *
- * ⚠ 2026-10-21, Jillienne: "have the preview here and the first page be a
- * zoomed in view of the Course Card that we are talking about for this
- * feature", and "make this thumbnail large enough to reach the bottom of the
- * body text describing it."
- *
- * It was a 1440px page scaled to 160px wide — a grey mosaic in which the
- * component the page documents was perhaps forty pixels across. This renders
- * the REAL component instead (the same registry the States section draws from)
- * at a scale where you can see what it is, which is the only job a header
- * picture has.
- *
- * Falls back to the page thumbnail for features with no registered render —
- * the standalone HTML explorations, and any component whose states are page
- * chrome rather than props.
- */
-function FeatureHeaderThumb({
-  feature,
-  src,
-}: {
-  feature: PrototypeFeature
-  src: string | null
-}) {
-  const first = feature.devHandoff?.uiComponents?.[0]
-  const live = first ? atlasHandoffThumbRender(first.id) : undefined
-  if (!live) {
-    return (
-      <div style={{ width: HEADER_THUMB_W, flex: 'none' }}>
-        <FeaturePreviewThumb
-          feature={feature}
-          src={src}
-          width={HEADER_THUMB_W}
-          height={HEADER_THUMB_H}
-          style={{
-            display: 'block',
-            borderRadius: 'var(--radius-lg)',
-            boxShadow: 'var(--shadow-card)',
-          }}
-        />
-      </div>
-    )
-  }
-  return (
-    <div aria-hidden style={headerThumbBoxStyle}>
-      {/* ⚠ ABSOLUTE AND TRANSLATED, not a flex child. A scaled element keeps its
-          PRE-transform height in layout, so a 880px-wide card scaled to a third
-          still occupies its full height in the box and `alignItems: center` has
-          nothing useful to centre — the card ended up jammed into the top-left
-          corner. Taking it out of flow and centring it by transform is what
-          actually puts it in the middle. */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: 0,
-          width: HEADER_THUMB_RENDER_W,
-          transform: `scale(${HEADER_THUMB_W / HEADER_THUMB_RENDER_W}) translateY(-50%)`,
-          transformOrigin: 'left top',
-          pointerEvents: 'none',
-        }}
-      >
-        {live}
-      </div>
-    </div>
-  )
-}
-
-/* Sized to the text beside it: eyebrow, title, a three-line blurb and the brand
-   row come to roughly 210px, so the picture reaches the bottom of the paragraph
-   that describes it rather than stopping a third of the way down. */
-const HEADER_THUMB_W = 300
-const HEADER_THUMB_H = 210
-/* The width the component is rendered at before scaling — the course card's own
-   800 plus its panel, so the miniature is a true scaled render of the real
-   thing rather than the component reflowed into 300px. */
-const HEADER_THUMB_RENDER_W = 880
-
-const headerThumbBoxStyle: React.CSSProperties = {
-  position: 'relative',
-  width: HEADER_THUMB_W,
-  height: HEADER_THUMB_H,
-  flex: 'none',
-  overflow: 'hidden',
-  borderRadius: 'var(--radius-lg)',
-  border: '1px solid var(--color-border-subtle)',
-  background: 'var(--color-fixed-light)',
-  boxShadow: 'var(--shadow-card)',
 }
 
 /**

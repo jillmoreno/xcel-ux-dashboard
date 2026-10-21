@@ -20,7 +20,7 @@ import { ARCHIVED_ITEMS } from '@/data/archivedItems'
 import { HUB_DOCS } from '@/data/hubDocs'
 import { HubResourcesPanel } from '@/components/prototype/HubResourcesPanel'
 import { PrototypeFeaturePage } from './PrototypeFeaturePage'
-import { FeaturePreviewThumb } from '@/components/prototype/FeaturePreviewThumb'
+import { ComponentPreviewThumb } from '@/components/prototype/ComponentPreviewThumb'
 import { GeneratedThumb, THUMB_W, THUMB_H } from '@/components/prototype/GeneratedThumb'
 import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { ArchiveTable } from '@/components/prototype/ArchiveTable'
@@ -2029,12 +2029,19 @@ function ProjectRow({
           feature whose point IS the visual can override with a real capture
           via `thumbnail` — see the field's note in prototypeFeatures.ts. */}
       {hasPreview ? (
-        <FeaturePreviewThumb
+        /* ⚠ THE COMPONENT, NOT THE PAGE (2026-10-21, Jillienne: "have these
+           images match"). The feature header shows a zoomed render of the
+           component a handoff is about; this row was still scaling a 1440px
+           page into 160px, so the same feature was illustrated two different
+           ways depending on which screen you were on. `ComponentPreviewThumb`
+           falls back to the page thumbnail for features with no component
+           render, so nothing that worked before stops working. */
+        <ComponentPreviewThumb
           feature={feature}
           src={preview}
           width={THUMB_W}
           height={THUMB_H}
-          style={{ flex: 'none' }}
+          radius="var(--radius-md)"
         />
       ) : (
         <GeneratedThumb accent={feature.accent}>

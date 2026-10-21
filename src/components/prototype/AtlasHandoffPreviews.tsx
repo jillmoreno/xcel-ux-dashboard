@@ -1,11 +1,11 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { useContext, useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { AtlasCourseHeadRow, WhiteCourseMeta } from '@/components/compass/AtlasHomeEricE2E'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
 import { ATLAS_FONT_DEFAULT, atlasFontHref } from '@/components/layout/atlasFontSets'
 import { atlasSkinFor } from '@/components/layout/atlasBrandSkin'
 import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
-import { useAccount } from '@/context/AccountContext'
+import { AccountContext } from '@/context/AccountContext'
 import { AffidavitModal, type AffidavitKind } from '@/components/e2e/AffidavitModal'
 
 /**
@@ -56,7 +56,14 @@ import { AffidavitModal, type AffidavitKind } from '@/components/e2e/AffidavitMo
  */
 export function AtlasSurface({ children }: { children: ReactNode }) {
   useAtlasHeadingFont()
-  const { brand } = useAccount()
+  /* ⚠ `useContext` DIRECTLY, NOT `useAccount` (2026-10-21). `useAccount` throws
+     outside an `AccountProvider`, and these renders are no longer confined to
+     the handoff page — the landing page's project rows draw them too, and some
+     suites mount that page without the provider. The brand is one value used to
+     match a CSS attribute selector; a thrown error is a wildly disproportionate
+     failure for not knowing it. `Brand` is a one-member union, so the fallback
+     cannot drift from the real value without a compile error. */
+  const brand = useContext(AccountContext)?.brand ?? 'xcel'
   return (
     <div
       /* ⚠ ALL FOUR, ON ONE ELEMENT. The token rules are COMPOUND selectors —

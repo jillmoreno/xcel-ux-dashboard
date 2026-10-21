@@ -309,6 +309,23 @@ export function atlasHandoffVariantRender(
 }
 
 /**
+ * Thumbnail renders that differ from the gallery's first entry.
+ *
+ * ⚠ ONLY QUICK LINKS, AND FOR ONE REASON: its gallery entries are wrapped in a
+ * `MemoryRouter` so a click in one cannot rewrite the handoff page's own
+ * address bar. React Router throws on a Router inside a Router, and the
+ * thumbnail is now drawn on the landing page's project rows — inside the app's
+ * own Router — so the wrapper that protects the gallery breaks the thumbnail.
+ *
+ * A thumbnail needs no isolation: it is `pointer-events: none`, nothing in it
+ * can be clicked, and reading the real URL for its active row is harmless.
+ */
+const ATLAS_THUMB_RENDERS: Record<string, () => ReactNode> = {
+  'atlas-home-quick-links': () =>
+    createElement(AtlasJourneyLinksCard, { withoutCoursePages: true }),
+}
+
+/**
  * The FIRST registered render for a component — what the row-list thumbnail
  * draws.
  *
@@ -318,6 +335,8 @@ export function atlasHandoffVariantRender(
  * I on the right component", which one variant answers and a grid does not.
  */
 export function atlasHandoffThumbRender(componentId: string): ReactNode | undefined {
+  const override = ATLAS_THUMB_RENDERS[componentId]
+  if (override) return createElement(AtlasSurface, null, override())
   const renders = ATLAS_VARIANT_RENDERS[componentId]
   if (!renders) return undefined
   const first = Object.values(renders)[0]
