@@ -1571,7 +1571,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           statesMatrix: [
             { question: 'What are ALL the Progress possibilities?', answer: 'TEN rungs, not five — `ATLAS_PROGRESS_LADDER` is the list, and the Progress control draws straight from it: Not Started 0% · Beginner 14% · Developing 36% · Proficient 75% · Education Completed 80% · Certification Exam Passed 86% · Prep Review Completed 92% · Exam Simulators Completed 95% · Affidavit Signed 98% · Ready 100%. The default is Not Started. ⚠ EVERY RUNG CARRIES ITS OWN PERCENT AND ITS OWN READINESS BAND, so the dial and the half-dial can never be stepped out of sync — the mapping is the `readiness` field on the rung, not a second table. ⚠ AND 80 IS A FINISH LINE, not just a number: `lessonsDoneFor` reads it off that rung, so it is where "36 of 36" is reached.' },
             { question: 'What are ALL the pacing possibilities?', answer: 'THREE AXES, and they compose. (1) INTENSITY — `dashboard-pace-style`, a multiplier on the hours the course claims: Crammer ×0.75, Average ×1 (default), Thorough ×1.3. It moves the week goal, the hours a week, the completion date, the pace name and the pace icon together. (2) STANDING — `atlas-pace-standing`, the sentence under the goal: On track (default) · Ahead of goal · Behind — recoverable · Off track — adjust the goal · No data yet. (3) WHETHER A PLAN FITS AT ALL — fits, or does not, and when it does not the card names which deadline bound it: access-bound ("Not enough access left", offers an extension) or exam-bound ("Not enough time before your exam", offers nothing, because a booked exam cannot be extended). ⚠ THE EXAM IS CHECKED FIRST. ⚠ Intensity is on the DESIGN bar and standing is on the DEMO bar, so the two are reached from different places.' },
-            { question: 'What changes when an exam date IS entered, versus not?', answer: 'NOT ENTERED (and this is the default): Estimated completion is the only figure row, and the plan is bound by the access window alone. ENTERED: the state exam becomes a SECOND figure row beneath it, with its own days count, and the pace model starts planning against it — coursework has to finish seven days before the exam (`EXAM_BUFFER_DAYS`), which can make a plan stop fitting that fitted a moment earlier. ⚠ NEITHER ARM IS REACHABLE FROM THIS PAGE. The Home passes NO exam date to `studyPace` and both of its exam prompts are decoration; `cgp.examDate` is per-browser and authored by the Compass surfaces. So a reviewer here only ever sees the not-entered column. Wiring Add Date is what opens the other one.' },
+            { question: 'What changes when an exam date IS entered, versus not?', answer: 'NOT ENTERED (the default): Estimated completion is the only figure row, and the plan is bound by the access window alone. ENTERED: a FLORIDA STATE EXAM row joins beneath it with its own count, and the pace RE-PLANS against the exam — coursework has to finish seven days before it (`EXAM_BUFFER_DAYS`). Measured on the prototype: adding 28 May moved the plan from "4 Week Goal · June 5" to "1 Week Goal · about 15 hours a week · May 17". Push the date inside the buffer and no plan fits at all, named as exam-bound. ⚠ BOTH COLUMNS ARE REACHABLE HERE — Step 2 of the Study Journey owns the date: Add Date, the calendar, Edit and Remove all live on this page and write `cgp.examDate`.' },
             { question: 'What changes when Readiness IS shown, versus not?', answer: 'NOT SHOWN, and that is the default (`atlas-readiness-section` is `defaultEnabled: false`): the panel is three parts and NOTHING marks the absence — no placeholder, no gap. SHOWN: the half-dial joins as a fourth part, sharing the panel and the column\'s eyebrow rather than bringing a card of its own, and the pace card drops its bottom padding to 0 so the two sit flush. Its own five states are Not Started (track drawn, no arc — an absence of measurement, not a band) and then Beginner · Developing · Proficient · Ready. It OPENS on the band the Progress rung names and can then be clicked forward independently.' },
             { question: 'What does the whole panel do once access has ended?', answer: 'It keeps the dial and drops everything that describes a plan — the pace name, the goal, the standing sentence, Estimated completion and the exam row all go, and so does the hairline under Course progress. Readiness is hidden too, even with its flag on. The eyebrow reads "Progress paused", the arc steps to neutral, and one sentence names the percent reached. ⚠ This outranks every axis above it: no intensity, standing or exam date changes it.' },
           ],
@@ -1595,7 +1595,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             { name: 'Plan fits — behind, recoverable', when: 'The learner is a little under the goal, with time to recover.', detail: '"…That’s a little under your 3-week goal. One extra session this week puts you back on it." ⚠ RECOVERABLE IS THE WHOLE POINT — it names the fix rather than the failure, which is what separates it from Off track.', why: 'Being slightly behind is the most common state and the most actionable; a warning there would spend urgency the card needs later.', action: 'Unchanged.', howToSee: 'Demo bar → Pacing standing → Behind — recoverable.' },
             { name: 'Plan fits — off track', when: 'At the current rate the learner will NOT finish by the estimated date.', detail: '"…At this rate you won’t finish by <date>. Open your Study Plan to adjust your goal." ⚠ It names the DATE it is measured against, and sends the learner to the goal rather than telling them to work harder — the plan is the thing that is wrong.', why: 'This is the only standing where the plan itself has stopped being true, so it is the only one that asks for the plan to change.', action: 'Unchanged — the Study Plan link is the pace CTA already on the card.', howToSee: 'Demo bar → Pacing standing → Off track — adjust the goal.' },
             { name: 'Plan fits — no data yet', when: 'Nothing has been logged this week.', detail: '"No study time logged yet this week. Your 3-week goal asks for about N a week." ⚠ NO "averaging" CLAUSE — it is the one standing that cannot open with a figure, because there is nothing to average.', why: 'Zero is not a standing. Reporting "averaging 0 hours" against a goal reads as failure on a week that may be one day old.', action: 'Unchanged.', howToSee: 'Demo bar → Pacing standing → No data yet.' },
-            { name: 'Exam booked', when: 'The learner has booked a state exam date.', detail: 'The exam gets its own figure row beneath Estimated completion, with its own days count. ⚠ Nothing on this screen can set that date today — the two exam prompts here are decoration, and the date is owned by another surface. Wiring "Add date" is what brings this state back.', why: 'Once a date is booked it outranks the estimate: the plan has to be read against the deadline, not the pace.', action: 'None — the row is a figure, not a control.', howToSee: '⚠ NOT REACHABLE ON THIS HOME. It passes no exam date to `studyPace` and both of its exam prompts are decoration, so the row cannot be produced from either bar — the arm is live wherever a surface owns the date. Wiring Add Date is what brings it back.' },
+            { name: 'Exam booked', when: 'The learner has booked a state exam date.', detail: 'A FLORIDA STATE EXAM row joins beneath Estimated completion, with its own days count — and the plan above it RE-PLANS, because coursework now has to finish seven days before the exam rather than before access ends. Adding 28 May on the prototype moves the card from "4 Week Goal · June 5" to "1 Week Goal · about 15 hours a week · May 17".', why: 'Once a date is booked it outranks the estimate: the plan has to be read against the deadline the learner committed to, not the one the access window implies.', action: 'None on this card — the row is a figure. The date is set, changed and removed in Step 2 of the Study Journey.', howToSee: 'Study Journey → Step 2 → Add Date, pick a day, Set Exam Date. Edit reopens the calendar; Remove takes the date back out.' },
             { name: 'No plan fits', when: 'There is not enough time left for any honest study plan. ⚠ THE EXAM IS CHECKED FIRST: if coursework cannot finish seven days before a booked exam it is exam-bound, and only if that passes is the access window tested. The two produce different copy, so the order decides which the learner reads.', detail: 'The card names which deadline bound it. Access-bound: "Not enough access left" / "No study pace fits in the time remaining." / "Extend your access to get a plan." Exam-bound: "Not enough time before your exam" / "No study pace fits: coursework has to finish by <date>, 7 days before your exam, to leave time to review." — and no advice line, because a booked exam is not something the learner can extend. ⚠ The goal row, the hours line and the completion date all fall silent together; never one figure left standing alone.', why: 'Printing a plan the learner cannot keep is worse than saying there isn’t one.', action: 'Access-bound only: extend access. Exam-bound offers nothing, deliberately.', howToSee: 'Demo bar → Expires → a short window' },
             { name: 'Expired', when: 'The learner’s access ended before they finished.', detail: 'The card stops at the dial. Everything under the ring describes a PLAN and there is none once access has ended — the pace name, the weekly goal, the standing sentence, Estimated completion and the booked exam all go, and so does the hairline under Course progress, because there is nothing left to divide. What stays is the dial, its eyebrow reading "Progress paused" and its arc in neutral rather than the brand blue, over one sentence: "You completed N% of this course before your access ended. Purchase an extension within the next 30 days to pick up where you left off." ⚠ N IS READ FROM THE PROGRESS FIGURE, not typed, so the sentence and the ring cannot disagree. ⚠ THE 30 IS A BUSINESS RULE (`EXTENSION_GRACE_DAYS`), not arithmetic — if it ever becomes a deadline measured from the access date it has to COUNT DOWN.', why: 'How far the learner got is the argument for buying more time, so the one thing worth keeping is the figure that makes it. A plan, by contrast, is advice about a future they no longer have.', action: 'Purchase an extension. The Readiness section is hidden alongside it — a readiness score for an exam the learner cannot currently study for is a number with nothing behind it.', howToSee: 'Demo bar → Expires → Expired.' },
           ],
@@ -1712,13 +1712,13 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
      * devStatus: 'in-design'. No `quickSummary` yet — ask before writing one.
      */
     id: 'xcel-atlas-home-exam-date-card',
-    title: 'Atlas Home — Exam Date Card',
+    title: 'Atlas Home — Exam Date',
     accent: 'blue',
     icon: 'grid',
     blurb:
-      'The four-stage "Set Exam Date" card that normally sits between Course Progress and Readiness on Eric/Atlas WIP — but is explicitly hidden on White and End-to-End Demo, so it does NOT appear on the committed Home baseline this handoff set otherwise documents.',
+      'How a learner tells the Home when their state exam is, and what that date then moves. ⚠ IT LIVES IN STEP 2 OF THE STUDY JOURNEY on the committed baseline — "When is your exam?" with an Add Date button that opens a calendar in place. The four-stage "Do you know your state exam date?" card this row used to describe is a DIFFERENT component and is hidden on this chrome; it is documented second.',
     tileBlurb:
-      'Do you know your exam date? → a functional calendar → your date + days left. Wired into Home, but hidden on this baseline.',
+      'Step 2 asks, Add Date opens a calendar, and a set date re-plans the pace and adds the exam row.',
     kind: 'guided',
     status: 'ready',
     category: 'dev-handoff',
@@ -1727,7 +1727,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     pages: [
       {
         label: 'Atlas Home (End-to-End Demo)',
-        note: 'This card will NOT appear here — it is explicitly suppressed on White/End-to-End Demo chrome. Shown for reference; see the decisions log for why it is still documented against this route.',
+        note: 'Step 2 of the Study Journey, part-way down — "When is your exam?" with Add Date. ⚠ The four-stage card is a different thing and is NOT on this page; it needs the WIP chrome.',
         to: '/dashboard-rebrand?demo=1&section=dashboard',
       },
     ],
@@ -1738,12 +1738,57 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
       components: [],
       uiComponents: [
         {
+          id: 'atlas-home-exam-prompt',
+          name: 'Atlas Home — Exam Date in Step 2',
+          tabLabel: 'Step 2 Exam Date',
+          location: '`ExamDatePrompt` in src/components/compass/AtlasHomeJillMain.tsx, with the month grid in src/components/compass/AtlasExamCalendar.tsx.',
+          summary:
+            'THE ONE THE BASELINE RENDERS. Step 2 of the Study Journey asks "When is your exam?", Add Date opens a month calendar in place, and a saved date turns the step into a finished stop — the day, the count and Edit. The date is the learner\'s, kept in `cgp.examDate`, and it re-plans the study pace rather than just being displayed.',
+          variants: [
+            { name: 'Asking', when: 'No exam date is stored — the default.', detail: 'Step 2 reads "When is your exam?" over "Entering your exam date will help us structure your study plan.", with Add Date and Exam Information beneath. Nothing else on the page mentions an exam.', why: 'The question is asked where the answer belongs — the step that IS the exam — rather than in a prompt floating above the journey.', action: 'Add Date opens the calendar in place.', howToSee: 'A bare ?demo=1, with no date stored.' },
+            { name: 'Picking a date', when: 'Add Date has been pressed.', detail: 'A month grid opens INSIDE the step, with Cancel and Set Exam Date under it. ⚠ IT OPENS ON THE DEMO CLOCK, not the wall clock — May 2026 on the fixture, which is the whole point of the `today` prop: before it, the calendar opened on the real month over a pace model anchored to May and the same date read two different counts. ⚠ THE PAST IS DISABLED — 21 of the 43 cells on the May grid. ⚠ AND SET EXAM DATE IS DISABLED until a day is picked, so the button cannot save nothing.', why: 'Picking in place keeps the learner in the journey; a date is a small answer and does not deserve a page change.', action: 'Set Exam Date saves it. Cancel returns to the question with nothing stored.', howToSee: 'Step 2 → Add Date.' },
+            { name: 'Scheduled', when: 'A date is stored.', detail: 'The step becomes a finished stop: "Scheduled" with Edit beside it, over "Thursday, May 28, 2026  |  17 Days". The question and Add Date are gone — it has been answered.', why: 'A step that has been completed should read as completed. Leaving the question up beside the answer is how a page ends up asking something it already knows.', action: 'Edit reopens the calendar on the stored date.', howToSee: 'Step 2 → Add Date → pick a day → Set Exam Date.' },
+            { name: 'Editing', when: 'Edit has been pressed on a scheduled date.', detail: 'The calendar returns, and a THIRD button appears with it: Remove, beside Cancel and Set Exam Date.', why: '⚠ EDIT ALONE LETS A LEARNER MOVE A DATE BUT NEVER SAY THEY NO LONGER HAVE ONE — and this date drives the pace model, so with no way out a mistyped exam re-plans the course permanently, per browser. Remove is what makes the date safe to enter.', action: 'Remove clears `cgp.examDate` and returns Step 2 to Asking.', howToSee: 'Step 2 → Edit, once a date is set.' },
+          ],
+          designSpec: {
+            tokens: [
+              { role: 'Step heading + the question', token: '--font-body · --color-text-primary' },
+              { role: 'Add Date / Set Exam Date', token: '.cre-compass-primary' },
+              { role: 'Cancel / Remove / Edit', token: '.cre-compass-secondary' },
+              { role: 'Disabled past days', token: '--color-text-tertiary' },
+            ],
+            responsive: [
+              '⚠ NOT RESPONSIVE, AND THAT IS THE SPEC. Step 2 sits in the Study Journey column of a fixed desktop layout; nothing in the product renders it at another width.',
+              'The calendar opens IN FLOW rather than over the page — the step grows and the steps below it move down. There is no overlay, no focus trap and nothing to dismiss.',
+            ],
+            sources: [
+              'The FINAL PROTOTYPE is the source of truth — "Open live preview" at the top of this page, then Step 2. Every figure in this handoff was read off it on 2026-10-21.',
+              '⚠ AND IT IS THE ONLY SOURCE: these four states have NO isolated preview on this page, deliberately. The flow writes `cgp.examDate`, which is the same per-browser key the product reads — so a preview with working buttons would let a reader set the real demo\'s exam date by pressing Set Exam Date inside a handoff, and then wonder why the Final Prototype had re-planned. A render that cannot be pressed would show three of the four states as the same picture. Walk it on the prototype instead.',
+              'Implemented in src/components/compass/AtlasHomeJillMain.tsx (`ExamDatePrompt`) and src/components/compass/AtlasExamCalendar.tsx.',
+            ],
+          },
+          statesMatrix: [
+            { question: 'What does setting a date actually change?', answer: 'Three things at once. Step 2 becomes the Scheduled stop. The pace column gains a FLORIDA STATE EXAM figure row with its own count. And the PACE RE-PLANS — coursework has to finish seven days before the exam (`EXAM_BUFFER_DAYS`), so adding 28 May moved the card from "4 Week Goal · June 5" to "1 Week Goal · about 15 hours a week · May 17". Measured, not inferred.' },
+            { question: 'What if the exam is too soon for any plan to fit?', answer: 'The pace card says so, naming the EXAM rather than the access window — "Not enough time before your exam", with no advice line, because a booked exam is not something a learner can extend. ⚠ It is not a dead end any more: Remove is sitting next to the date that caused it.' },
+            { question: 'Where is the date kept, and who else sees it?', answer: '`cgp.examDate`, in the browser — so it is per-device and survives a reload, and a date set in Compass is already there when Home opens. ⚠ IT IS NOT PER LEARNER. Two people sharing a browser share an exam date, which is a demo-fixture property and not a shipping one.' },
+            { question: 'Why does the calendar open on May rather than this month?', answer: 'Because the whole prototype runs on a fixture clock anchored to 2026-05-11, and the calendar takes `today` as a prop rather than calling `new Date()`. When it did call the wall clock, the grid opened on the real month while the pace model planned from May — the same date then read one count in Step 2 and a different one on the pace card.' },
+          ],
+          ctas: [
+            { name: 'Add Date', does: 'Opens the month calendar inside Step 2. The entry point for the whole flow.' },
+            { name: 'Set Exam Date', does: 'Saves the picked day to `cgp.examDate`, closes the calendar and turns Step 2 into the Scheduled stop. Disabled until a day is picked.' },
+            { name: 'Cancel', does: 'Closes the calendar and changes nothing — the stored date, if there was one, is untouched.' },
+            { name: 'Edit', does: 'Reopens the calendar on the stored date, and brings Remove with it.' },
+            { name: 'Remove', does: 'Clears the stored date. Step 2 returns to asking, the exam figure row goes, and the pace re-plans against the access window alone.' },
+            { name: 'Exam Information', does: 'Opens the Exam Information sheet — the same one Quick Links points at. Present in every state; it is about the exam, not about the date.' },
+          ],
+        },
+        {
           id: 'atlas-home-exam-date-card',
-          name: 'Atlas Home — Exam Date Card',
+          name: 'Atlas Home — Exam Date Card (WIP chrome only)',
           tabLabel: 'Exam Date Card',
           location: 'src/components/compass/AtlasExamDateCard.tsx',
           summary:
-            'A single card that collects and then shows the learner’s state exam date, in four stages: Default ("Do you know your state exam date?"), No date yet ("No state exam date yet? That’s okay."), Picking a date (a working month calendar), and Date set (the chosen date and days remaining, with Edit back to the calendar). ⚠ IT DOES NOT RENDER ON HOME TODAY. The slot it was designed for is between Course progress and Readiness; the card is built and complete, and nothing currently mounts it.',
+            '⚠ NOT ON THE BASELINE — this card needs the WIP chrome, and the Home `main` serves hides it (`onWhite ? null : …`). The exam date a reviewer can actually set lives in Step 2, documented above; this is the older four-stage card kept for the WIP comparison. It collects and then shows the learner’s state exam date in four stages: Default ("Do you know your state exam date?"), No date yet ("No state exam date yet? That’s okay."), Picking a date (a working month calendar), and Date set (the chosen date and days remaining, with Edit back to the calendar). ⚠ IT DOES NOT RENDER ON HOME TODAY. The slot it was designed for is between Course progress and Readiness; the card is built and complete, and nothing currently mounts it.',
           variants: [
             { name: 'Default', when: 'The learner has not told us anything about an exam date yet.', detail: '"Do you know your state exam date?" over Not Yet / Yes.', why: 'The card has to ask before it can help, and both answers lead somewhere useful.', action: '"Not Yet" → No date yet. "Yes" → Picking a date.' },
             { name: 'No date yet', when: 'The learner said they do not have a date.', detail: '"No state exam date yet? That’s okay." then a registration blurb, then "I have my exam date".', why: 'A learner without a date still needs a path forward — registering — rather than a dead end.', action: '"I have my exam date" → Picking a date. The way back in once the learner has registered.' },
@@ -1791,15 +1836,15 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           {
             question: 'Should the Exam Date card come back on White/End-to-End Demo, or stay WIP-only?',
             decision:
-              'Currently hidden on both (2026-10-14, Eric: "remove") — but the End-to-End Demo dashboard version’s OWN description text still lists "the exam-date card" as part of what End-to-End Demo’s Home includes, which no longer matches what the code renders. One of the two needs to change: either restore the card to this baseline, or correct the version’s description so it stops claiming a component that isn’t there.',
+              '⚠ LARGELY OVERTAKEN: Step 2 carries the question on this chrome now, so the baseline is no longer missing the exam date — what is still WIP-only is the four-stage CARD. Currently hidden on both (2026-10-14, Eric: "remove") — but the End-to-End Demo dashboard version’s OWN description text still lists "the exam-date card" as part of what End-to-End Demo’s Home includes, which no longer matches what the code renders. One of the two needs to change: either restore the card to this baseline, or correct the version’s description so it stops claiming a component that isn’t there.',
             status: 'Needs weigh-in',
             owner: 'Eric',
           },
           {
             question: 'Should the collected exam date actually drive anything (pace model, Study Journey)?',
-            decision: 'Not today — it is local-state-only. Undecided whether this is a future wiring step or whether the card is headed for removal before that matters.',
-            status: 'Needs weigh-in',
-            owner: 'Eric',
+            decision:
+              'YES, AND IT DOES — answered 2026-10-20 and shipped. The date re-plans the study pace against the exam minus `EXAM_BUFFER_DAYS` (7), adds the FLORIDA STATE EXAM figure row to the pace column, and turns Step 2 into its Scheduled stop. ⚠ THE RULE THAT MADE IT SAFE TO WIRE: a page may act on a date only if it can SHOW it, CHANGE it and REMOVE it. Step 2 does all three, which is why this Home passes `examDate` to `studyPace` while the End-to-End Demo’s Home still passes `undefined` — its prompts are decoration, so a date typed in Compass weeks earlier would dead-end its pace card with no control on that page to undo it. ⚠ This answer was "Not today — local-state-only" until 2026-10-21, a day after it stopped being true.',
+            status: 'Decided',
           },
           {
             question: 'Where does the No stage’s "here" registration link go?',
@@ -1810,7 +1855,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
         ],
         openItems: [
           'Whether the card is restored to the committed baseline or the End-to-End Demo version’s description is corrected to drop the claim.',
-          'Whether/how the collected exam date should wire into the pace model and Study Journey.',
           'The "here" registration link’s real destination.',
         ],
       },
