@@ -61,14 +61,27 @@ export function paceStandingMessage({
   if (standing === 'no-data') {
     return `No study time logged yet this week. Your ${goalWeeks} goal asks for about ${formatHours(goalHoursPerWeek)} a week.`
   }
+  /* ⚠ CONTRACTIONS, AND THE SAME SHAPE THREE TIMES (2026-10-21, Jillienne:
+     "use some language that is less AI sounding"). The sentences opened
+     "You’re averaging…" and then switched to "you will", "you are" and "That
+     is" — the register changed mid-line, which is most of what made them read
+     written-by-committee. Three of the four now share one frame, "That’s …
+     your N-week goal", so the only thing that moves between standings is the
+     judgement; OFF TRACK deliberately breaks the frame, because it is the one
+     state where the goal itself has stopped being true. */
   if (standing === 'ahead') {
-    return `${averaging} That is ahead of your ${goalWeeks} goal — keep this up and you will finish early.`
+    return `${averaging} That’s ahead of your ${goalWeeks} goal — keep it up and you’ll finish early.`
   }
   if (standing === 'behind') {
-    return `${averaging} That is a little under your ${goalWeeks} goal. One extra session this week puts you back on it.`
+    return `${averaging} That’s a little under your ${goalWeeks} goal. One extra session this week puts you back on it.`
   }
   if (standing === 'off-track') {
-    return `${averaging} At this rate you will not finish by ${formatPaceDate(finishIso)}. Open your Study Plan to adjust your goal.`
+    return `${averaging} At this rate you won’t finish by ${formatPaceDate(finishIso)}. Open your Study Plan to adjust your goal.`
   }
-  return `${averaging} Based on your study goal, you are right on track.`
+  /* ⚠ IT STILL SAYS "on track" — that is the name of the standing on the demo
+     bar, and a reviewer matching the control to the card needs the words to
+     meet. "Based on your study goal, you are right on track" said the same
+     thing with a clause that carried nothing: the whole sentence is about the
+     goal. */
+  return `${averaging} That’s right on track for your ${goalWeeks} goal.`
 }

@@ -54,7 +54,12 @@ describe('the pace standing sentence', () => {
   })
 
   it('reads the goal adjectivally — "your 2-week goal", never "2 weeks goal"', () => {
-    for (const standing of ['behind', 'ahead', 'no-data'] as PaceStanding[]) {
+    /* ⚠ `on-track` JOINED THE LOOP ON 2026-10-21. It was excluded because its
+       sentence never named the goal — "Based on your study goal, you are right
+       on track" — and the rewrite that dropped that empty clause gave it the
+       same "your N-week goal" frame as the other three. Off track is still out:
+       it names a DATE rather than the goal, on purpose. */
+    for (const standing of ['behind', 'ahead', 'no-data', 'on-track'] as PaceStanding[]) {
       const said = paceStandingMessage({ ...ARGS, standing })
       expect(said, said).toMatch(/2-week goal/)
       expect(said, said).not.toMatch(/2 weeks goal/)
