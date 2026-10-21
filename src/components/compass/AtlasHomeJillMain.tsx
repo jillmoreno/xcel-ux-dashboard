@@ -895,18 +895,6 @@ export function AtlasHomeJillMain({
     window.addEventListener(ATLAS_HOME_REFRESH, onRefresh)
     return () => window.removeEventListener(ATLAS_HOME_REFRESH, onRefresh)
   }, [setVariant])
-  /* ⚠ THE MAIN CTA AT 100% IS "VIEW CERTIFICATE" (2026-10-19, Jillienne:
-     "when at 100% this main CTA should change to View Certificate"). Begin /
-     Resume are both invitations back INTO the course, and there is no course
-     left to go back into — the thing the learner wants at the end is the
-     thing they finished it for.
-
-     ⚠ THE LABEL AND THE DESTINATION MOVE TOGETHER, in one place, because a
-     button saying "View Certificate" that opened the Compass session would
-     be a worse bug than the label it fixed. `go('certificates')` is where
-     the Certificates tiles in this same column already point, so the page
-     has one answer to "where are my certificates" rather than two. It
-     no-ops under `LINKS_OFF` exactly as those tiles do. */
   /* Exam Information opens the same sheet Quick Links' own link opens, by
      the same id — `onOpenStep` is exempt from `LINKS_OFF`, so this one
      genuinely works. */
@@ -923,16 +911,22 @@ export function AtlasHomeJillMain({
   /* …and Step 3's, the same sheet Quick Links' "Applying for a License"
      opens, by the step's own id rather than a second copy of it. */
   const applyInfo = onOpenStep ? () => onOpenStep(apply.id) : undefined
-  const beginLabel = completedView
-    ? 'View Certificate'
-    : progressPick === 'not-started'
-      ? 'Begin Course'
-      : 'Resume Course'
-  const onBeginCta = completedView
-    ? () => go('certificates')
-    : LINKS_OFF && !beginOpensCompass
-      ? NO_LINK
-      : onBegin
+  /* ⚠ "REVIEW COURSE" AT 100% (2026-10-21), and the Expired arm, both mirroring
+     `AtlasHomeEricE2E` — see the note there. While access lasts there IS
+     something to go back into, and reviewing the material is what a learner
+     does between finishing the coursework and sitting the state exam; the
+     certificate is one row away in Quick Links, the coursework is not.
+
+     The destination moves with the label, so Complete shares Resume's rather
+     than keeping its own. */
+  const beginLabel = expiredView
+    ? 'Purchase Extension'
+    : completedView
+      ? 'Review Course'
+      : progressPick === 'not-started'
+        ? 'Begin Course'
+        : 'Resume Course'
+  const onBeginCta = LINKS_OFF && !beginOpensCompass ? NO_LINK : onBegin
   const advanceProgress = () =>
     setVariant(
       'atlas-v3-progress',

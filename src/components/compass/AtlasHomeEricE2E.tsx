@@ -592,18 +592,18 @@ export function AtlasHomeEricE2E({
     window.addEventListener(ATLAS_HOME_REFRESH, onRefresh)
     return () => window.removeEventListener(ATLAS_HOME_REFRESH, onRefresh)
   }, [setVariant])
-  /* ⚠ THE MAIN CTA AT 100% IS "VIEW CERTIFICATE" (2026-10-19, Jillienne:
-     "when at 100% this main CTA should change to View Certificate"). Begin /
-     Resume are both invitations back INTO the course, and there is no course
-     left to go back into — the thing the learner wants at the end is the
-     thing they finished it for.
+  /* ⚠ THE MAIN CTA AT 100% IS "REVIEW COURSE" (2026-10-21). It was "View
+     Certificate" from 2026-10-19 — the reasoning then was that Begin/Resume
+     are invitations back INTO a course and there is nothing left to go back
+     into. That turned out to be wrong: while access lasts there IS something
+     to go back into, and reviewing the material is what a learner does between
+     finishing the coursework and sitting the state exam. The certificate is
+     one row away in Quick Links; the coursework is not.
 
      ⚠ THE LABEL AND THE DESTINATION MOVE TOGETHER, in one place, because a
-     button saying "View Certificate" that opened the Compass session would
-     be a worse bug than the label it fixed. `go('certificates')` is where
-     the Certificates tiles in this same column already point, so the page
-     has one answer to "where are my certificates" rather than two. It
-     no-ops under `LINKS_OFF` exactly as those tiles do. */
+     button saying "Review Course" that opened the certificates list would be
+     a worse bug than the label it fixed. So Complete now shares Resume's
+     destination rather than keeping its own. */
   /* Exam Information opens the same sheet Quick Links' own link opens, by
      the same id — `onOpenStep` is exempt from `LINKS_OFF`, so this one
      genuinely works. */
@@ -620,18 +620,26 @@ export function AtlasHomeEricE2E({
   /* …and Step 3's, the same sheet Quick Links' "Applying for a License"
      opens, by the step's own id rather than a second copy of it. */
   const applyInfo = onOpenStep ? () => onOpenStep(apply.id) : undefined
+  /* ⚠ "REVIEW COURSE" AT 100%, NOT "VIEW CERTIFICATE" (2026-10-21, Jillienne:
+     "the cta should actually change to Review course if the course is complete
+     and the access is still available"). A learner who has finished but still
+     has access can go back into the material, and that is the more useful of
+     the two offers — the certificate is one row away in Quick Links, the
+     coursework is not.
+
+     ⚠ COMPLETION AND EXPIRY ARE ONE AXIS, so "complete AND access gone" cannot
+     occur: both read the same `progressPick`. That is why there is no
+     View-Certificate arm here any more — see the course head's handoff, where
+     the state is documented as the gap it is. */
   const beginLabel = expiredView
     ? 'Purchase Extension'
     : completedView
-      ? 'View Certificate'
+      ? 'Review Course'
       : progressPick === 'not-started'
         ? 'Begin Course'
         : 'Resume Course'
-  const onBeginCta = completedView
-    ? () => go('certificates')
-    : LINKS_OFF && !beginOpensCompass
-      ? NO_LINK
-      : onBegin
+  const onBeginCta =
+    LINKS_OFF && !beginOpensCompass ? NO_LINK : onBegin
   const advanceProgress = () =>
     setVariant(
       'atlas-v3-progress',
@@ -1997,9 +2005,9 @@ export function AtlasCourseHeadRow({
               disabled={beginDisabled}
               style={HEADER_PRIMARY}
             >
-              {/* "Resume Course" once the Design bar's Progress is past 0%
-                  (2026-10-12, Eric's request), and "View Certificate" at
-                  100% (2026-10-19) — see `beginLabel`. */}
+              {/* "Resume Course" once Progress is past 0%, "Review Course" at
+                  100% while access lasts, and "Purchase Extension" once it has
+                  gone — see `beginLabel`. */}
               {beginLabel}
             </button>
           </div>

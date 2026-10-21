@@ -200,7 +200,7 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
       }),
     'Course complete': () =>
       createElement(CourseHeadVariant, {
-        beginLabel: 'View Certificate',
+        beginLabel: 'Review Course',
         meta: 'complete',
         eyebrow: 'Congrats! You have completed this course.',
       }),
