@@ -2152,6 +2152,26 @@ function ProjectRow({
     </>
   )
 
+  /* READY FOR DEV WEARS A GREEN LEFT STROKE (2026-10-21, Jillienne: "when
+     ready for dev, also include a green left stroke on this component to help
+     them see which are ok to work on"). Sorting those rows to the top says
+     which they are only while you are at the top of the list; the stroke says
+     it wherever the row has been scrolled to, and it is the one status a
+     developer is scanning FOR.
+
+     ⚠ AN INSET BOX-SHADOW, NOT A `border-left`. The row's padding is
+     `14px 12px 14px 18px`, so a 3px border would push every cell 3px right and
+     the thumbnails, titles and tags would stop lining up with the rows above —
+     the exact misalignment the placeholder's spacer above exists to prevent.
+     An inset shadow occupies no layout box, and it CLIPS TO THE BORDER RADIUS,
+     so on the first row (which rounds its own top-left) the stroke follows the
+     corner instead of overshooting it.
+
+     Gated on `showStatus` for the same single reason the row sort is: a
+     section that draws no status chip (Prototypes) must not carry a status
+     colour either, or there is a green bar on the page with nothing anywhere
+     to explain it. */
+  const readyStroke = showStatus && statusKey === 'ready-for-dev'
   // The list no longer clips (the kebab menu would be cut off), so the end rows
   // round their own corners to keep the card's shape on hover.
   const wrap: CSSProperties = {
@@ -2162,6 +2182,9 @@ function ProjectRow({
     borderTopRightRadius: first ? 'var(--radius-lg)' : undefined,
     borderBottomLeftRadius: last ? 'var(--radius-lg)' : undefined,
     borderBottomRightRadius: last ? 'var(--radius-lg)' : undefined,
+    ...(readyStroke && {
+      boxShadow: `inset 3px 0 0 ${devStatusStrokeFor('ready-for-dev', dark)}`,
+    }),
   }
   const handlers = {
     onMouseEnter: () => setHover(true),
