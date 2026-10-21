@@ -7,6 +7,7 @@ import { AtlasExamDateCard } from '@/components/compass/AtlasExamDateCard'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
 import {
   AffidavitLauncher,
+  AtlasProgressPanel,
   AtlasSurface,
   CourseHeadVariant,
   PageFrame,
@@ -63,84 +64,88 @@ const quickLinks = (props: Record<string, unknown>, entries?: string[]) => () =>
     createElement(AtlasJourneyLinksCard, props),
   )
 
+/* The left column's cards are drawn inside the page's tan panel and have no
+ * fill of their own, so each render carries it — see `AtlasProgressPanel`. */
+const inPanel = (node: ReactNode) => createElement(AtlasProgressPanel, null, node)
+
 const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
   'atlas-home-readiness-panel': {
-    'Not Started': () => createElement(AtlasReadinessCard, { notStarted: true }),
-    Beginner: () => createElement(AtlasReadinessCard, { initialLevel: 0 }),
-    Developing: () => createElement(AtlasReadinessCard, { initialLevel: 1 }),
-    Proficient: () => createElement(AtlasReadinessCard, { initialLevel: 2 }),
-    Ready: () => createElement(AtlasReadinessCard, { initialLevel: 3 }),
-    'Combined panel': () => createElement(AtlasReadinessCard, { bare: true, initialLevel: 3 }),
+    'Not Started': () => inPanel(createElement(AtlasReadinessCard, { notStarted: true })),
+    Beginner: () => inPanel(createElement(AtlasReadinessCard, { initialLevel: 0 })),
+    Developing: () => inPanel(createElement(AtlasReadinessCard, { initialLevel: 1 })),
+    Proficient: () => inPanel(createElement(AtlasReadinessCard, { initialLevel: 2 })),
+    Ready: () => inPanel(createElement(AtlasReadinessCard, { initialLevel: 3 })),
+    'Combined panel': () => inPanel(createElement(AtlasReadinessCard, { bare: true, initialLevel: 3 })),
   },
 
   'atlas-home-progress-states': {
     'Not started': () =>
-      createElement(AtlasCourseProgressStates, {
+      inPanel(createElement(AtlasCourseProgressStates, {
         percent: 0,
         expected: PROGRESS_EXPECTED,
         access: PROGRESS_ACCESS,
         initialStage: 'zero',
-      }),
+      })),
     'In progress': () =>
-      createElement(AtlasCourseProgressStates, {
+      inPanel(createElement(AtlasCourseProgressStates, {
         percent: 42,
         expected: PROGRESS_EXPECTED,
         access: PROGRESS_ACCESS,
         initialStage: 'current',
-      }),
+      })),
     Milestone: () =>
-      createElement(AtlasCourseProgressStates, {
+      inPanel(createElement(AtlasCourseProgressStates, {
         percent: 42,
         expected: PROGRESS_EXPECTED,
         access: PROGRESS_ACCESS,
         initialStage: 'milestone',
-      }),
+      })),
     Complete: () =>
-      createElement(AtlasCourseProgressStates, {
+      inPanel(createElement(AtlasCourseProgressStates, {
         percent: 42,
         expected: PROGRESS_EXPECTED,
         access: PROGRESS_ACCESS,
         initialStage: 'complete',
-      }),
+      })),
     Expired: () =>
-      createElement(AtlasCourseProgressStates, {
+      inPanel(createElement(AtlasCourseProgressStates, {
         percent: 42,
         expected: PROGRESS_EXPECTED,
         access: PROGRESS_ACCESS,
         initialStage: 'expired',
-      }),
+      })),
     'Combined panel': () =>
-      createElement(AtlasCourseProgressStates, {
+      inPanel(createElement(AtlasCourseProgressStates, {
         bare: true,
         percent: 42,
         expected: PROGRESS_EXPECTED,
         access: PROGRESS_ACCESS,
         initialStage: 'current',
-      }),
+      })),
   },
 
   'atlas-home-pace-ring': {
     Default: () =>
-      createElement(AtlasPaceRingCard, {
+      inPanel(createElement(AtlasPaceRingCard, {
         percent: 42,
         weeks: 3,
         hoursPerWeek: 4,
         expected: { value: 'November 2', note: 'At current pace' },
         standingMessage: 'You’re ahead of pace — keep it up.',
-      }),
+      })),
     'Exam booked': () =>
-      createElement(AtlasPaceRingCard, {
+      inPanel(createElement(AtlasPaceRingCard, {
         percent: 60,
         weeks: 2,
         hoursPerWeek: 5,
         expected: { value: 'November 2' },
         exam: { label: 'Florida state exam', value: 'November 16', note: '18 days' },
-      }),
+      })),
     'No plan fits': () =>
-      createElement(AtlasPaceRingCard, {
+      inPanel(createElement(AtlasPaceRingCard, {
         percent: 10,
         noPace: { binding: 'exam', days: -2, dateIso: '2026-11-01' },
-      }),
+      })),
   },
 
   'atlas-home-exam-date-card': {

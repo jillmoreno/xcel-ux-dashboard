@@ -392,27 +392,45 @@ const moveItemStyle: CSSProperties = { display: 'flex', flexDirection: 'column',
 
 const flowNoteStyle: CSSProperties = { ...handoffMetaStyle, display: 'block' }
 
-/* ⚠ THE RENDER LEADS (2026-10-21, Jillienne: "switch so the image of the
-   component is on the left and the notes are on the right"). It also takes the
-   LARGER share — the course head is an 800px component, and a reader looks at
-   the picture first and reads the rule against it, not the other way round. */
-const renderColStyle: CSSProperties = { flex: '2 1 420px', minWidth: 0 }
+/* ⚠ THE RENDER LEADS, AND IT IS SIZED TO THE WIDEST COMPONENT (2026-10-21,
+   Jillienne: "switch so the image of the component is on the left and the
+   notes are on the right", then "this looks pretty bad").
 
-const notesColStyle: CSSProperties = { flex: '1 1 280px', minWidth: 0 }
+   840 = the course card's own 800px plus the plate's 20px of padding either
+   side. A basis of 420 looked reasonable and was not: it left the card about
+   500px of content, so the long-title state wrapped to SEVEN lines and the
+   cover — which stretches to the row's height by design — drew as a tall
+   ribbon. The state meant to show "the title wraps" was showing "the preview
+   is too narrow", which is the one thing a 1:1 render must never say.
 
-/* The ground a render stands on, and it is the PAGE's white rather than the
-   gateway's card colour (2026-10-21). Every Atlas card is drawn to be read
-   against the product page, and several of them carry their own panel fill on
-   top of it — put them on the gateway's surface instead and the fills read
-   wrong, which is half of what "the background colour is wrong" was. The
-   border stays: it bounds the plate, it is not pretending to be the card. */
+   Both columns grow from their basis, so the row divides the detail's ~1230px
+   as roughly 890 / 340 and the card renders at its true 800 with room to
+   spare. Below ~1140 they wrap to a column each at full width, which is the
+   right degradation: a narrow card is wrong, a stacked one is just taller. */
+const renderColStyle: CSSProperties = { flex: '1 1 840px', minWidth: 0 }
+
+const notesColStyle: CSSProperties = { flex: '1 1 300px', minWidth: 0 }
+
+/* ⚠ NO PLATE (2026-10-21, Jillienne: "take it out of this additional
+   container"). The renders used to sit on a bordered, padded, page-white
+   surface. Every component here already carries the panel or card fill the
+   page gives it — the course head its Primary 100 panel, Quick Links and the
+   exam-date card their own borders — so the plate was a box drawn around a
+   box, and its rounded border read as part of the design.
+
+   What it was really doing was standing in for the page's own ground. The
+   components that genuinely need one now carry it themselves, which is the
+   same correction the course head's panel was: the surface a component is
+   drawn against is part of the component's spec, not decoration the gallery
+   adds. */
 const variantRenderStyle: CSSProperties = {
-  padding: 20,
   display: 'flex',
-  justifyContent: 'center',
-  background: 'var(--color-fixed-light)',
-  border: '1px solid var(--color-border-subtle)',
-  borderRadius: 'var(--radius-lg)',
+  /* LEFT, not centred. The column is sized for the widest component (the
+     800px course head), so a 296px card centred in it drifts into the middle
+     of a field of space and no two rows line up. Against the left edge every
+     render starts where the heading above it does, and the slack falls
+     between the component and its notes, where it reads as a gutter. */
+  justifyContent: 'flex-start',
 }
 
 /* Dashed, like the Quick Summary placeholder: a solid frame at this size reads

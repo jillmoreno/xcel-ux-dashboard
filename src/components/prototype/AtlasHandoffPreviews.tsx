@@ -76,7 +76,7 @@ export function AtlasSurface({ children }: { children: ReactNode }) {
       style={{
         width: '100%',
         display: 'flex',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         /* ⚠ TWO TOKENS THE PAGE RE-POINTS FOR ITS CHILDREN, not the palette.
            `WHITE_PAGE` puts every eyebrow on the page and the progress
            figures' labels in Neutral 800 (#404040, 2026-10-14) — so a card
@@ -180,6 +180,36 @@ export function CourseHeadVariant({
 /* A fixed date, not `new Date()` — a preview that reads "0 days to complete"
    some weeks from now would look like a bug in the component. */
 const COURSE_ACCESS_ENDS = new Date(2026, 5, 10)
+
+/**
+ * THE LEFT COLUMN'S PANEL — the tan surface the progress cards are drawn on.
+ *
+ * ⚠ THE PACE RING HAS NO FILL OF ITS OWN. Its design spec says so outright:
+ * "Panel: transparent — the outlined panel comes from the Home". So with the
+ * gallery's generic plate removed it had nothing to stand on and floated on
+ * the gateway background. The panel is part of what the component looks like,
+ * the same way the course head's Primary 100 panel is — the gallery should
+ * carry the page's surface, not a surface of its own.
+ *
+ * 296px because that is the left column's real width, and the ring is drawn
+ * for that measure; wider and the dial sits in a field of space it never has.
+ * Values read off the running page: 8px 24px, 20 radius, Secondary 100.
+ */
+export function AtlasProgressPanel({ children }: { children: ReactNode }) {
+  return <div style={progressPanelStyle}>{children}</div>
+}
+
+const progressPanelStyle: CSSProperties = {
+  width: 296,
+  maxWidth: '100%',
+  boxSizing: 'border-box',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 16,
+  padding: '8px 24px',
+  borderRadius: 20,
+  background: 'var(--color-atlas-tan-100)',
+}
 
 /**
  * A real portalled, full-viewport overlay can't sit in a variant row the way
