@@ -67,7 +67,7 @@ export const COMPASS_READINESS = {
     eyebrow: 'Rubi suggests',
     title: 'Practice Policy provisions & riders',
     detail:
-      'Your answers and your confidence do not line up here yet. Twelve minutes closes the gap.',
+      'Your answers and your confidence do not line up here yet. Twelve minutes here should be enough.',
     action: 'Start practice',
   },
 }
@@ -108,7 +108,7 @@ export const COMPASS_ASSIGNMENTS: readonly CompassAssignment[] = [
     readinessLabel: 'Not proven',
     barPct: 52,
     due: 'Done',
-    tip: { head: 'Not proven', body: "You've finished the course, but your scored answers don't yet match how sure you felt. More practice closes the gap." },
+    tip: { head: 'Not proven', body: "You've finished the course, but your scored answers don't yet match how sure you felt. A little more practice will line them up." },
   },
   {
     name: 'Annuities',

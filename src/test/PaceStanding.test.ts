@@ -39,7 +39,14 @@ describe('the pace standing sentence', () => {
   it('nudges when behind, and sends you to the plan when off track', () => {
     const behind = paceStandingMessage({ ...ARGS, standing: 'behind' })
     const off = paceStandingMessage({ ...ARGS, standing: 'off-track' })
-    expect(behind).toMatch(/closes the gap/)
+    /* ⚠ PINS THE NUDGE, NOT THE WORDS (2026-10-21, Jillienne: "i hate 'closes
+       the gap'"). This asserted that exact phrase, so the copy could not be
+       reworded without a test failure that looked like a behaviour change. What
+       the case is actually about is the SHAPE of the two sentences — behind
+       offers a way back inside the goal the learner chose, off track sends them
+       to change the goal — so it matches on the recovery rather than the
+       metaphor. */
+    expect(behind).toMatch(/one extra session/i)
     expect(behind).not.toMatch(/Study Plan/)
     expect(off).toMatch(/Study Plan/)
     // Off track is the state that names the date it will not meet.

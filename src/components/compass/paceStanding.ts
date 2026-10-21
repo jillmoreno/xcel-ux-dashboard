@@ -65,7 +65,7 @@ export function paceStandingMessage({
     return `${averaging} That is ahead of your ${goalWeeks} goal — keep this up and you will finish early.`
   }
   if (standing === 'behind') {
-    return `${averaging} That is a little under your ${goalWeeks} goal. A short extra session this week closes the gap.`
+    return `${averaging} That is a little under your ${goalWeeks} goal. One extra session this week puts you back on it.`
   }
   if (standing === 'off-track') {
     return `${averaging} At this rate you will not finish by ${formatPaceDate(finishIso)}. Open your Study Plan to adjust your goal.`
