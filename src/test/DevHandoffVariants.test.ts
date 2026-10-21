@@ -30,17 +30,6 @@ import {
  * thing.
  */
 
-/** Move endpoints that are intentionally not state names. */
-const PROSE_ENDS = new Set([
-  'Any state',
-  'Any band',
-  'Either',
-  'Closed',
-  'Nothing',
-  'The next state',
-  'The next band',
-])
-
 function allHandoffComponents(): { featureId: string; component: DevHandoffComponent }[] {
   return PROTOTYPE_FEATURES.flatMap((f) => [
     ...(f.devHandoff?.components ?? []),
@@ -104,32 +93,6 @@ describe('dev-handoff variants', () => {
     const known = new Set(allHandoffComponents().map(({ component }) => component.id))
     const unknown = atlasFullWidthIds().filter((id) => !known.has(id))
     expect(unknown, unknown.join('\n')).toEqual([])
-  })
-
-  it('a flow only ever points at a state the component actually has', () => {
-    // The flow diagram names states as chips. A chip naming a state that was
-    // renamed out from under it is the same drift the render keys had, in the
-    // one section whose whole job is to be the map.
-    const bad: string[] = []
-    for (const { component } of allHandoffComponents()) {
-      const states = new Set(component.variants.map((v) => v.name))
-      for (const flow of component.flows ?? []) {
-        for (const m of flow.moves ?? []) {
-          for (const end of [m.from, m.to]) {
-            // Some ends are deliberately prose, not a named state: a move can
-            // apply from anywhere ("Any state"), can leave the component
-            // entirely ("Closed"), or can be relative ("The next state").
-            // Kept as an explicit list rather than a pattern so adding one is
-            // a decision somebody makes, which is the whole point of the test.
-            if (PROSE_ENDS.has(end)) continue
-            if (!states.has(end)) {
-              bad.push(`${component.id} → flow "${flow.title}" names "${end}"`)
-            }
-          }
-        }
-      }
-    }
-    expect(bad, bad.join('\n')).toEqual([])
   })
 
   it('every variant names the condition that produces it', () => {

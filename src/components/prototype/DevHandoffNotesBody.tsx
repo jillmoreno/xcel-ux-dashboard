@@ -4,7 +4,6 @@ import type {
   DevHandoffState,
   DevHandoffVariant,
   DevHandoffOption,
-  DevHandoffFlow,
 } from '@/data/prototypeFeatures'
 import {
   detailItemStyle,
@@ -209,178 +208,20 @@ export function DevHandoffCtasBody({ ctas }: { ctas: { name: string; does: strin
   )
 }
 
-/**
- * THE LOGIC FLOWS, drawn.
- *
- * Deliberately NOT a graph-layout engine. These machines are four to six
- * states, and an auto-router spends its complexity on edge crossings that
- * never happen here while failing in ways nobody can author around. Two fixed
- * shapes instead, each of which reads as a diagram and cannot break:
- *
- *  - `decides` is a RAIL: one vertical line, each rule branching off it to the
- *    state it selects. The rail is what carries "first match wins" — the rules
- *    are visibly walked in order, which is the single fact a reader needs to
- *    predict the result and the one a bulleted list loses.
- *  - `moves` is a row per transition: the state you are in, the thing the
- *    learner does, the state you land in.
- */
-export function DevHandoffFlowsBody({ flows }: { flows: DevHandoffFlow[] }) {
-  return (
-    // ⚠ THE PROSE METRIC IS SET ONCE, HERE, and inherited. A flow is built from
-    // nested boxes — a list, a row, a column per step — and none of them is
-    // text, so none of them set a size. Every one of them was therefore
-    // inheriting the page's 16px, and anything that landed in a gap between the
-    // chips rendered a third too large. Setting it on the root means a new
-    // wrapper cannot reintroduce that.
-    <div style={{ ...handoffProseStyle, margin: 0, display: 'flex', flexDirection: 'column', gap: 28 }}>
-      {flows.map((flow) => (
-        <div key={flow.title}>
-          <p style={flowTitleStyle}>{flow.title}</p>
-          {flow.intro && <p style={flowIntroStyle}>{flow.intro}</p>}
 
-          {flow.decides && flow.decides.length > 0 && (
-            <>
-              <p style={flowRuleNoteStyle}>
-                Checked in this order — the first rule that matches wins.
-              </p>
-              <ol style={railStyle}>
-                {flow.decides.map((d, i) => (
-                  <li key={`${d.when}-${d.show}`} style={railItemStyle}>
-                    <span aria-hidden style={railDotStyle}>
-                      {i + 1}
-                    </span>
-                    <span style={railBodyStyle}>
-                      <span style={railRowStyle}>
-                        <span style={conditionChipStyle}>{d.when}</span>
-                        <span aria-hidden style={arrowStyle}>
-                          &rarr;
-                        </span>
-                        <span style={stateChipStyle}>{d.show}</span>
-                      </span>
-                      {d.note && <span style={flowNoteStyle}>{d.note}</span>}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            </>
-          )}
 
-          {flow.moves && flow.moves.length > 0 && (
-            <ul style={{ ...movesListStyle, marginTop: flow.decides?.length ? 20 : 12 }}>
-              {flow.moves.map((m) => (
-                <li key={`${m.from}-${m.on}-${m.to}`} style={moveItemStyle}>
-                  <span style={railRowStyle}>
-                    <span style={stateChipStyle}>{m.from}</span>
-                    <span style={moveLabelStyle}>
-                      <span aria-hidden style={arrowStyle}>
-                        &rarr;
-                      </span>
-                      <span>{m.on}</span>
-                    </span>
-                    <span style={stateChipStyle}>{m.to}</span>
-                  </span>
-                  {m.note && <span style={flowNoteStyle}>{m.note}</span>}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      ))}
-    </div>
-  )
-}
 
-const flowTitleStyle: CSSProperties = handoffRowNameStyle
 
-const flowIntroStyle: CSSProperties = { ...handoffProseStyle, margin: '6px 0 0' }
 
-const flowRuleNoteStyle: CSSProperties = { ...handoffEyebrowStyle, margin: '10px 0 0' }
 
-/* The rail itself is the left border; each rule hangs off it. */
-const railStyle: CSSProperties = {
-  listStyle: 'none',
-  margin: '10px 0 0',
-  padding: '4px 0 4px 0',
-  borderLeft: '2px solid var(--color-border-subtle)',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 10,
-}
 
-const railItemStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'flex-start',
-  gap: 10,
-  paddingLeft: 14,
-}
 
-const railDotStyle: CSSProperties = {
-  flex: 'none',
-  marginLeft: -24,
-  width: 20,
-  height: 20,
-  display: 'grid',
-  placeItems: 'center',
-  borderRadius: '50%',
-  background: 'var(--color-primary-100)',
-  color: 'var(--color-primary-700)',
-  fontSize: 11,
-  fontWeight: 700,
-}
 
-const railBodyStyle: CSSProperties = { minWidth: 0, flex: 1 }
 
-const railRowStyle: CSSProperties = {
-  display: 'flex',
-  flexWrap: 'wrap',
-  alignItems: 'center',
-  gap: 8,
-}
 
-const conditionChipStyle: CSSProperties = { ...handoffProseStyle, margin: 0 }
 
-/* The state a rule lands on is the thing a reader scans the column for, so it
-   is the one element in the flow with a fill behind it. */
-const stateChipStyle: CSSProperties = {
-  padding: '3px 10px',
-  borderRadius: 'var(--radius-pill)',
-  background: 'var(--color-surface-card)',
-  border: '1px solid var(--color-border-subtle)',
-  fontSize: 12,
-  fontWeight: 700,
-  color: 'var(--color-text-primary)',
-  whiteSpace: 'nowrap',
-}
 
-/* ⚠ THE ARROW HAS TO CARRY ITS OWN SIZE. Nothing between the chips sets a
-   font-size, so these inherited the page's 16px and rendered a third larger
-   than the text they sit between. */
-const arrowStyle: CSSProperties = {
-  fontSize: 13,
-  lineHeight: '20px',
-  color: 'var(--color-text-tertiary)',
-}
 
-const moveLabelStyle: CSSProperties = {
-  ...handoffProseStyle,
-  margin: 0,
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 6,
-}
-
-const movesListStyle: CSSProperties = {
-  listStyle: 'none',
-  margin: 0,
-  padding: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 10,
-}
-
-const moveItemStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4 }
-
-const flowNoteStyle: CSSProperties = { ...handoffMetaStyle, display: 'block' }
 
 /* ⚠ THE RENDER LEADS, AND IT IS SIZED TO THE WIDEST COMPONENT (2026-10-21,
    Jillienne: "switch so the image of the component is on the left and the

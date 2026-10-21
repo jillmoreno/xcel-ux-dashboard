@@ -25,7 +25,6 @@ import {
   DevHandoffStatesMatrixBody,
   DevHandoffVariantsBody,
   DevHandoffOptionsBody,
-  DevHandoffFlowsBody,
   DevHandoffCtasBody,
   BulletList,
 } from '@/components/prototype/DevHandoffNotesBody'
@@ -589,7 +588,6 @@ const COMPONENT_SECTIONS = [
   // three sections.
   { id: 'variants', label: 'States' },
   { id: 'options', label: 'Options' },
-  { id: 'flows', label: 'Flows' },
   { id: 'ctas', label: 'CTAs' },
   { id: 'spec', label: 'Design Spec' },
   { id: 'acceptance', label: 'Acceptance' },
@@ -1131,7 +1129,6 @@ function UiComponentDetail({
   // reading different lists is how the wrong chip gets highlighted.
   const sections = COMPONENT_SECTIONS.filter((sec) => {
     if (sec.id === 'options') return Boolean(component.options?.length)
-    if (sec.id === 'flows') return Boolean(component.flows?.length)
     if (sec.id === 'ctas') return Boolean(component.ctas?.length)
     if (sec.id === 'decisions') return Boolean(decisions?.items.length)
     return true
@@ -1354,14 +1351,6 @@ function UiComponentDetail({
           'Options',
           'Display toggles. These compose with the states above rather than replacing them — any state can be shown with any option.',
           <DevHandoffOptionsBody options={component.options} />,
-        )}
-
-      {component.flows && component.flows.length > 0 &&
-        section(
-          'flows',
-          'Flows',
-          'How the component picks a state, and how the learner moves between them.',
-          <DevHandoffFlowsBody flows={component.flows} />,
         )}
 
 

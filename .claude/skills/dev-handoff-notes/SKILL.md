@@ -84,7 +84,7 @@ Master/detail rather than a persistent side rail because several previews run to
 Sections stack in this order, each with a real anchor id
 (`<componentId>--<sectionId>`), under a sticky jump nav with scroll-spy:
 
-**States · Options · Flows · CTAs · Design Spec · Acceptance · Edge cases · Questions**
+**States · Options · CTAs · Design Spec · Acceptance · Edge cases · Questions**
 
 **They were sub-tabs for a few hours on 2026-08-31 and a developer reported it
 was worse. They were right, and the reason is concrete:** inactive panels were
@@ -284,6 +284,7 @@ reason — it was restating something the page already said:
 | **Rules** (`uxLogic`) | Flows decides which state renders, the states carry their own behavior, CTAs say what each button does |
 | **Notes** (`data`, `stubs`, `a11y`) | "Remove the notes section." The dump at the bottom nobody scrolled to; what mattered in it is in Edge cases and Questions |
 | **Live Preview** | The header already has an "Open live preview" button |
+| **Flows** | "I think we can add those flow details into the states details." Every rule in a flow was either a restatement of one state's own `when`, or something a state could say better: a MOVE belongs in the originating state's `action` ("\"Not Yet\" → No date yet"), and an ORDER belongs in the `when` of the state the order protects ("⚠ THE EXAM IS CHECKED FIRST") |
 
 ⚠ **Do not re-add them by authoring the fields.** The fields are gone from
 `DevHandoffComponent` too, so a handoff written against an older version of this
