@@ -93,8 +93,17 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
   },
 
   'atlas-home-progress-states': {
+    /* ⚠ EVERY ONE OF THESE RENDERS `bare` (2026-10-21), because that is what
+       the Final Prototype renders: the Home passes `bare={onWhite}` and the
+       default version IS the White/global skin, so the card never draws its own
+       tan fill, its border, or the "Course Progress" eyebrow — it is
+       transparent inside the Home's own panel and the eyebrow reads
+       "Pre-Licensing Progress". Without this the handoff showed five previews
+       of a standalone card nobody sees, which is the same failure the Readiness
+       panel had on 2026-10-20. Verified in the browser, not assumed. */
     'Not started': () =>
       inPanel(createElement(AtlasCourseProgressStates, {
+        bare: true,
         percent: 0,
         expected: PROGRESS_EXPECTED,
         access: PROGRESS_ACCESS,
@@ -102,6 +111,7 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
       })),
     'In progress': () =>
       inPanel(createElement(AtlasCourseProgressStates, {
+        bare: true,
         percent: 42,
         expected: PROGRESS_EXPECTED,
         access: PROGRESS_ACCESS,
@@ -109,6 +119,7 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
       })),
     Milestone: () =>
       inPanel(createElement(AtlasCourseProgressStates, {
+        bare: true,
         percent: 42,
         expected: PROGRESS_EXPECTED,
         access: PROGRESS_ACCESS,
@@ -116,6 +127,7 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
       })),
     Complete: () =>
       inPanel(createElement(AtlasCourseProgressStates, {
+        bare: true,
         percent: 42,
         expected: PROGRESS_EXPECTED,
         access: PROGRESS_ACCESS,
@@ -123,18 +135,11 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
       })),
     Expired: () =>
       inPanel(createElement(AtlasCourseProgressStates, {
-        percent: 42,
-        expected: PROGRESS_EXPECTED,
-        access: PROGRESS_ACCESS,
-        initialStage: 'expired',
-      })),
-    'Combined panel': () =>
-      inPanel(createElement(AtlasCourseProgressStates, {
         bare: true,
         percent: 42,
         expected: PROGRESS_EXPECTED,
         access: PROGRESS_ACCESS,
-        initialStage: 'current',
+        initialStage: 'expired',
       })),
   },
 
@@ -159,6 +164,20 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
       inPanel(createElement(AtlasPaceRingCard, {
         percent: 10,
         noPace: { binding: 'exam', days: -2, dateIso: '2026-11-01' },
+      })),
+    /* ⚠ THE FOURTH STATE HAD NO RENDER until 2026-10-21 — the one arm a
+       developer could not see, and the one that changes the most: everything
+       under the ring goes. `expired` is a prop, so there was nothing stopping
+       it; it was simply never added, and nothing failed to say so because a
+       variant with no render draws an honest "no isolated render" note rather
+       than a gap. 34% so the sentence beneath has a real figure to read, since
+       the point of the state is that how far they got is the argument. */
+    Expired: () =>
+      inPanel(createElement(AtlasPaceRingCard, {
+        percent: 34,
+        weeks: 3,
+        hoursPerWeek: 4,
+        expired: true,
       })),
   },
 
@@ -360,29 +379,41 @@ export function atlasRegisteredVariantKeys(): Record<string, string[]> {
  * shown instead of asserted.
  *
  * ⚠ 2026-10-21, Jillienne: "show the responsiveness". The Layout note said the
- * head reflows and the title column absorbs the width; a developer had to take
- * that on trust, and the one time it was checked the figure in it was wrong by
- * 126px. A render at three widths is the same claim a reader can verify in a
- * glance — and it is the REAL component, so it cannot drift from the note
+ * course head reflows and the title column absorbs the width; a developer had
+ * to take that on trust, and the one time it was checked the figure in it was
+ * wrong by 126px. A render at two widths is the same claim a reader can verify
+ * in a glance — and it is the REAL component, so it cannot drift from the note
  * beside it the way a screenshot would.
  *
- * Returns the component's FIRST registered render (its default state), because
- * this is about width rather than state: a reader comparing three columns
- * should be reading the reflow, not three different cards.
+ * ⚠ OPT-IN, AND THAT IS THE WHOLE POINT OF THE MAP. The first version returned
+ * a render for ANY registered component, which put a 296px FIXED column — the
+ * pace ring, readiness, the journey — inside 800px and 640px frames and
+ * implied a reflow none of them has. Eight components grew a Layout heading
+ * they had authored nothing for. A component appears here only when width is
+ * genuinely a thing it does, and `responsive` notes alone no longer summon a
+ * demo.
  */
 export function atlasHandoffResponsiveRender(componentId: string): ReactNode | undefined {
+  const demo = ATLAS_RESPONSIVE_DEMO[componentId]
+  if (!demo) return undefined
   const renders = ATLAS_VARIANT_RENDERS[componentId]
   if (!renders) return undefined
-  /* ⚠ THE MOST CROWDED STATE, not the first one. The default course head has
-     two buttons and never wraps at any width this demo shows — so defaulting to
-     it drew three identical frames and demonstrated nothing. Width only matters
-     in the state that asks the most of it. */
-  const pick = ATLAS_RESPONSIVE_VARIANT[componentId]
-  const render = (pick && renders[pick]) ?? Object.values(renders)[0]
+  /* The MOST CROWDED state, not the first one. The default course head has two
+     buttons and never wraps at any width the demo shows, so defaulting to it
+     drew identical frames and demonstrated nothing. Width only matters in the
+     state that asks the most of it. */
+  const render = renders[demo.variant] ?? Object.values(renders)[0]
   return render ? createElement(AtlasSurface, null, render()) : undefined
 }
 
-/** Which state each component's responsive demo should draw. */
-const ATLAS_RESPONSIVE_VARIANT: Record<string, string> = {
-  'atlas-home-course-head': 'Expires soon',
+/**
+ * Which components demonstrate their width behaviour, and in which state.
+ *
+ * ⚠ A FIXED-WIDTH CARD DOES NOT BELONG HERE. The left column's cards are
+ * `width: 296, flex: 'none'` — they do not reflow at all, and framing them at
+ * three widths would document behaviour the product does not have. Their Layout
+ * note says "fixed column" in words, which is the honest form of the same fact.
+ */
+const ATLAS_RESPONSIVE_DEMO: Record<string, { variant: string }> = {
+  'atlas-home-course-head': { variant: 'Expires soon' },
 }

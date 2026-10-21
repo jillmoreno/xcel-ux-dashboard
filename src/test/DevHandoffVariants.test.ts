@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { describe, it, expect } from 'vitest'
 import { PROTOTYPE_FEATURES, type DevHandoffComponent } from '@/data/prototypeFeatures'
 import {
@@ -131,5 +134,44 @@ describe('dev-handoff variants', () => {
       }
     }
     expect(hits, hits.join('\n')).toEqual([])
+  })
+})
+
+/* ── The responsive demo is OPT-IN ──────────────────────────────────────────
+ *
+ * ⚠ IT WAS NOT, FOR ONE COMMIT (2026-10-21), and the failure was silent: the
+ * demo rendered for every component with a live render, so eight of them grew a
+ * "Layout" heading they had authored nothing under — and the left column's
+ * cards, which are `width: 296, flex: 'none'`, were framed at 800px and 640px
+ * as though they reflowed. A handoff that invents behaviour is worse than one
+ * that omits it, and nothing failed to say so.
+ *
+ * Read from the SOURCE rather than the module, for the reason the smoke suite
+ * reads `COMPONENT_SECTIONS` that way: the map is deliberately not exported. */
+describe('the responsive demo is declared, never inferred', () => {
+  const src = readFileSync(
+    resolve(dirname(fileURLToPath(import.meta.url)), '../components/prototype/atlasHandoffPreviewsRegistry.ts'),
+    'utf8',
+  )
+
+  it('gates on the opt-in map, not on "a render exists"', () => {
+    const fn = src.slice(
+      src.indexOf('export function atlasHandoffResponsiveRender'),
+      src.indexOf('const ATLAS_RESPONSIVE_DEMO'),
+    )
+    expect(fn, 'the demo must return early for a component that has not opted in').toMatch(
+      /const demo = ATLAS_RESPONSIVE_DEMO\[componentId\]\s*\n\s*if \(!demo\) return undefined/,
+    )
+  })
+
+  it('names a variant that the component actually registers', () => {
+    const map = src.slice(src.indexOf('const ATLAS_RESPONSIVE_DEMO'))
+    const rows = [...map.matchAll(/'([a-z0-9-]+)': \{ variant: '([^']+)' \}/g)]
+    expect(rows.length, 'at least one component should demonstrate its widths').toBeGreaterThan(0)
+    const keys = atlasRegisteredVariantKeys()
+    for (const [, id, variant] of rows) {
+      expect(keys[id], `${id} opts into a responsive demo but registers no renders`).toBeTruthy()
+      expect(keys[id], `${id}'s responsive demo names "${variant}", which it does not register`).toContain(variant)
+    }
   })
 })
