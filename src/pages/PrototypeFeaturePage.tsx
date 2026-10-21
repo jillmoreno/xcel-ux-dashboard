@@ -21,7 +21,6 @@ import { Toast } from '@/components/ui/Toast'
 import { PROTOTYPE_SHARE_ORIGIN, copyToClipboard } from '@/components/prototype/shareLink'
 import {
   DevHandoffDesignSpecBody,
-  DevHandoffAcceptanceBody,
   DevHandoffStatesMatrixBody,
   DevHandoffVariantsBody,
   DevHandoffOptionsBody,
@@ -74,7 +73,7 @@ export function PrototypeFeaturePage({
   // order stays stable). Defaults to UI Components & UX Logic, which leads the
   // set as of 2026-08-31: the components ARE the feature, and the decisions log
   // is the record of how they got that way.
-  // No hash check needed here any more: a `#<componentId>--acceptance` deep link
+  // No hash check needed here any more: a `#<componentId>--spec` deep link
   // wants the components tab, and that is now the default. `componentIdFromHash`
   // is still what opens the right COMPONENT inside it — see UiComponentsSection.
 
@@ -555,7 +554,7 @@ function OpenLivePreviewButton({ href, featureId }: { href: string; featureId: s
  */
 const COMPONENT_SECTIONS = [
   // The Summary leads: what this thing IS, before the developer meets a single
-  // token or acceptance criterion.
+  // token.
   //
   // ⚠ THE USER STORY IS GONE (2026-10-21, Jillienne: "remove user story from
   // all of the dev handoff notes. Anything that needs to be said is in the
@@ -594,12 +593,18 @@ const COMPONENT_SECTIONS = [
   // a part of the component (Figure rows) — so a reader could not tell which
   // of them they had to choose between. They are three questions, and they get
   // three sections.
-  /* ⚠ ORDER SET 2026-10-21: "States · CTAs · Questions · Edge Cases · Design
-     Spec · Acceptance". It reads as what the thing is, what you can do with it,
-     what nobody has decided, what else it has to survive — and only then the
-     numbers. Spec and the Definition of Done are what a developer opens last,
-     so they sit last; before this they split the questions off from the states
-     they are about.
+  /* ⚠ ORDER SET 2026-10-21: "States · CTAs · Questions · Edge cases · Design
+     Spec". It reads as what the thing is, what you can do with it, what nobody
+     has decided, what else it has to survive — and only then the numbers. The
+     spec is what a developer opens last, so it sits last; before this the
+     questions were split off from the states they are about.
+
+     ⚠ AND THERE IS NO ACCEPTANCE SECTION (2026-10-21, Jillienne: "QA is not
+     being done from our system"). It held a Definition of Done written as
+     criteria QA would verify, and no QA process here reads this page — so it
+     was a promise made to nobody, drifting against the states beside it. What
+     a build has to be correct about is in the states, the CTAs and the edge
+     cases, each next to the thing it describes. Don't reintroduce it.
 
      ⚠ THIS ARRAY'S ORDER MUST MATCH THE RENDER ORDER BELOW. The scroll-spy
      walks it and takes the last heading past the line, so a mismatch
@@ -620,7 +625,6 @@ const COMPONENT_SECTIONS = [
   { id: 'decisions', label: 'Questions' },
   { id: 'edge-states', label: 'Edge cases' },
   { id: 'spec', label: 'Design Spec' },
-  { id: 'acceptance', label: 'Acceptance' },
 ] as const
 
 type ComponentSectionId = (typeof COMPONENT_SECTIONS)[number]['id']
@@ -631,7 +635,6 @@ function authoredSections(c: DevHandoffComponent): string[] {
   const out: string[] = []
   if (c.variants.length) out.push(`${c.variants.length} variant${c.variants.length === 1 ? '' : 's'}`)
   if (c.designSpec) out.push('Design Spec')
-  if (c.acceptanceCriteria?.length) out.push('Acceptance')
   if (c.statesMatrix?.length) out.push('States')
   return out
 }
@@ -1020,7 +1023,7 @@ function UiComponentRow({
  * ticket, print/PDF, and any deep link to a section.
  *
  * The complaint that produced the tabs was real (stacked sections ran past
- * 3,000px and buried the acceptance criteria), but that is a NAVIGATION problem
+ * 3,000px and buried the spec), but that is a NAVIGATION problem
  * and hiding content is the wrong lever for it. Jump links fix the navigation
  * and cost the developer nothing.
  *
@@ -1328,16 +1331,6 @@ function UiComponentDetail({
         'designSpec',
       )}
 
-
-      {section(
-        'acceptance',
-        'Acceptance',
-        'Build against these and QA verifies them — the Definition of Done for this component.',
-        component.acceptanceCriteria && component.acceptanceCriteria.length > 0 ? (
-          <DevHandoffAcceptanceBody items={component.acceptanceCriteria} />
-        ) : null,
-        'acceptanceCriteria',
-      )}
 
     </section>
   )

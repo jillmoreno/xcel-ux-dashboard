@@ -46,9 +46,9 @@ function designSpecLines(spec: DevHandoffDesignSpec): string[] {
     for (const t of spec.tokens) out.push(`| ${t.role} | \`${t.token}\` |`)
     out.push('')
   }
-  out.push(...listSection('States', spec.states))
-  out.push(...listSection('Responsive', spec.responsive))
-  out.push(...listSection('Sources', spec.sources))
+  out.push(...listSection('Layout', spec.responsive))
+  out.push(...listSection('Interaction', spec.states))
+  out.push(...listSection('Source of truth', spec.sources))
   return out
 }
 
@@ -76,14 +76,6 @@ function componentLines(c: DevHandoffComponent): string[] {
     out.push('')
   }
 
-  if (c.designSpec) out.push(...designSpecLines(c.designSpec))
-
-  // Acceptance criteria as checkboxes: this list is a Definition of Done, and
-  // most trackers render `- [ ]` as something you can tick off.
-  if (c.acceptanceCriteria?.length) {
-    out.push('#### Acceptance', '', ...c.acceptanceCriteria.map((a) => `- [ ] ${a}`), '')
-  }
-
   // Edge cases: the matrix and the prose cases under ONE heading, the way the
   // page renders them since 2026-10-21.
   if (c.statesMatrix?.length || c.edgeCases?.length) {
@@ -95,6 +87,8 @@ function componentLines(c: DevHandoffComponent): string[] {
     }
     if (c.edgeCases?.length) out.push(...bullets(c.edgeCases), '')
   }
+
+  if (c.designSpec) out.push(...designSpecLines(c.designSpec))
 
   if (c.jiraTickets?.length) out.push(...listSection('Jira', c.jiraTickets))
   return out

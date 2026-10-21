@@ -2,7 +2,6 @@ import { useEffect, type CSSProperties, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { GatewayShell } from './PrototypeFeaturePage'
 import {
-  DevHandoffAcceptanceBody,
   DevHandoffDesignSpecBody,
   DevHandoffStatesMatrixBody,
   DevHandoffVariantsBody,
@@ -138,19 +137,6 @@ export function PrototypeHandoffDetailPage() {
           </p>
           <div style={previewFrameStyle}>
             <DevHandoffDesignSpecBody spec={component.designSpec} />
-          </div>
-        </section>
-      )}
-
-      {/* Acceptance criteria — testable Definition of Done. */}
-      {component.acceptanceCriteria && component.acceptanceCriteria.length > 0 && (
-        <section style={{ marginBottom: 32 }}>
-          <h2 style={sectionHeadingStyle}>Acceptance criteria</h2>
-          <p style={previewNoteStyle}>
-            Build against these and QA verifies them — the Definition of Done for this component.
-          </p>
-          <div style={previewFrameStyle}>
-            <DevHandoffAcceptanceBody items={component.acceptanceCriteria} />
           </div>
         </section>
       )}

@@ -69,7 +69,7 @@ or a pill strip (removed 2026-08-31):
 
 A row carries a **live thumbnail**, the full `name`, its `badge` + `badgeDate`
 right-aligned, a 2-line `summary`, and **chips naming what is authored** —
-`4 states · CTAs · Design Spec · Acceptance · Edge cases`. That
+`4 states · CTAs · Design Spec · Edge cases`. That
 chip row is the point of the list: it answers *"is there a spec on this one?"*
 without spending a click, and it makes an under-documented component obvious at
 a glance. It replaced a pill strip, which gave a truncated label and nothing
@@ -84,7 +84,17 @@ Master/detail rather than a persistent side rail because several previews run to
 Sections stack in this order, each with a real anchor id
 (`<componentId>--<sectionId>`), under a sticky jump nav with scroll-spy:
 
-**States · Options · CTAs · Design Spec · Acceptance · Edge cases · Questions**
+**States · Options · CTAs · Questions · Edge cases · Design Spec**
+
+⚠ **THERE IS NO ACCEPTANCE SECTION, AND DO NOT ADD ONE BACK** (2026-10-21,
+Jillienne: *"QA is not being done from our system"*). `acceptanceCriteria` held a
+Definition of Done written as criteria QA would verify — and no QA process here
+reads this page, so it was a promise made to nobody. Worse, it was a FOURTH place
+to restate the states: *"with no resolvable access-expiry date, the Expires row
+does not render at all"* was already the No end date state, already a `statesMatrix`
+row, and already a line in the spec. What a build has to be correct about belongs
+next to the thing it describes — in the state, the CTA or the edge case. The field
+is gone from the type, the page, the Markdown export and the archived rows.
 
 **They were sub-tabs for a few hours on 2026-08-31 and a developer reported it
 was worse. They were right, and the reason is concrete:** inactive panels were
@@ -93,7 +103,7 @@ characters with tabs vs 17,184 stacked). That breaks four things a developer
 does constantly and a reviewer never does — **find-in-page** across the handoff,
 **select-all-and-paste** into a ticket, **print/PDF**, and any **deep link** to a
 section. The complaint that produced the tabs was real (stacked sections ran past
-3,000px and buried the acceptance criteria) but that is a NAVIGATION problem, and
+3,000px and buried the Design Spec) but that is a NAVIGATION problem, and
 hiding content is the wrong lever for it.
 
 **If this ever looks like it wants to be tabs again, re-read those four things
@@ -105,8 +115,8 @@ array and takes the last heading past the line, so a mismatch highlights the
 wrong chip.
 
 **Every section is deep-linkable.** Anchors are `<componentId>--<sectionId>`, so
-`…/prototype/membership-sections#membership-renewal-states--acceptance` opens the
-components tab, opens that component, and lands on Acceptance — from cold, not
+`…/prototype/membership-sections#membership-renewal-states--spec` opens the
+components tab, opens that component, and lands on the Design Spec — from cold, not
 just when you were already there (`componentIdFromHash()` seeds both the tab and
 the open component). That is the link to paste when you want a dev to read one
 specific section, and it is worth knowing exists before you screenshot a spec
@@ -219,16 +229,11 @@ Optional, and worth filling — each renders as its own framed section:
 | `badge` | short flag, right-aligned on the row and beside the detail heading ("UPDATED", "NEW") |
 | `badgeDate` | **ISO `YYYY-MM-DD`.** When that badge's change landed, rendered beside it as `UPDATED · 8/31/26`. "Updated" answers *when*, which is the only thing that makes it useful a month later. **Leave it unset rather than approximating** — a badge with no date renders the bare label, which is the designed degradation, not a gap |
 | `thumbnail` | static PNG for the row, preferred over the live miniature — see *Row thumbnails* above |
-| `quickSummary` | **ASK the designer for these words — never write them yourself.** Plain text, the designer's own voice, leads the detail. See below |
-| `userStory` | `{ asA, iWant, soThat, value?, notes? }` — the PO's framing. See below |
 | `variants` | **The one list of states**, `{ name, when, detail?, why?, action? }`. `name` is also the key the live-render registry matches on — see *Variants* below |
 | `ctas` | `{ name, does }[]` — EVERY control on the component and what it does. "Course Overview — Opens the Course Overview page of the Compass application." One line per button, including the ones that are drawn and do nothing |
 | `edgeCases` | `string[]` — conditions worth knowing that are not a state with a behavior. Renders with `statesMatrix` under one "Edge cases" heading |
-| `designSpec` | `{ tokens, states, responsive, sources }` |
-| `acceptanceCriteria` | testable Definition of Done |
+| `designSpec` | `{ tokens, states?, responsive?, sources? }` — see *The Design Spec* below |
 | `statesMatrix` | `{ question, answer }` — the edge cases, ASKED AND ANSWERED. "Q: What if there is no image? A: Shift the other parts of the component to the left." A reader arrives holding a question; a row phrased as that question either matches or does not |
-| `stubs` | what's still a `console.info` and what it needs |
-| `a11y` | roles, labels, focus and keyboard behavior worth preserving |
 | `jiraTickets` | component-scoped ticket URLs |
 
 ### Variants — ONE list, and the live render is keyed to its names
@@ -275,7 +280,7 @@ not every state is reachable through a component's own props.
 
 ### What is NOT on the page any more
 
-The handoff lost four sections on 2026-10-21, and each went for the same
+The handoff lost seven sections on 2026-10-21, and each went for the same
 reason — it was restating something the page already said:
 
 | Gone | Why, and where it went |
@@ -285,6 +290,8 @@ reason — it was restating something the page already said:
 | **Notes** (`data`, `stubs`, `a11y`) | "Remove the notes section." The dump at the bottom nobody scrolled to; what mattered in it is in Edge cases and Questions |
 | **Live Preview** | The header already has an "Open live preview" button |
 | **Flows** | "I think we can add those flow details into the states details." Every rule in a flow was either a restatement of one state's own `when`, or something a state could say better: a MOVE belongs in the originating state's `action` ("\"Not Yet\" → No date yet"), and an ORDER belongs in the `when` of the state the order protects ("⚠ THE EXAM IS CHECKED FIRST") |
+| **User story** (`userStory`) | "Remove user story from all of the dev handoff notes. Anything that needs to be said is in the summary or the attached jira ticket." Ten components, ten "Not authored yet" boxes |
+| **Acceptance** (`acceptanceCriteria`) | "QA is not being done from our system." A Definition of Done written for a QA process that does not read this page — and a fourth restatement of the states beside it. What a build must be correct about now lives in the state, the CTA or the edge case it belongs to |
 
 ⚠ **Do not re-add them by authoring the fields.** The fields are gone from
 `DevHandoffComponent` too, so a handoff written against an older version of this
@@ -367,82 +374,46 @@ of explaining it.
 `WhyIsAReason.test.ts` fails on a `why` that names a person or carries a date,
 so this cannot come back quietly.
 
-### The Summary — one or two sentences on what this is for
+## The Design Spec
 
-`quickSummary` is the **first** section of every component detail: what this
-thing is about, in plain words, before a token, a state or an acceptance
-criterion.
+Four fields, and each has a rule that has been learned the hard way.
 
-**One or two sentences. Say what it is and why it exists** — the problem it
-solves for the learner — and stop. It is the only prose on the page that is
-allowed to be about intent rather than mechanics, and the value is in it being
-short enough to read before the spec rather than in it being complete.
+**`tokens` reference NAMED tokens only** — `--color-primary-700`, never
+`#0b2a4a`, never a font family. You do not need to look the values up: the page
+RESOLVES every token you name, live, with `getComputedStyle` on a scope carrying
+the component's own `data-atlas-*` attributes, and renders the literal beside a
+swatch. That is why the spec cannot disagree with the render above it — and why
+a hand-typed hex is worse than useless, since it is the one value nothing checks.
+When a colour choice was a contrast decision, say so with the ratio (e.g.
+*"`tertiary-700` — the lightest cyan clearing AA at 12px; 600 is 4.12:1, 700 is
+6.53:1"*), so nobody "brightens" it later.
 
-⚠ **RENAMED AND REOPENED 2026-10-21** (Jillienne: "change this to Summary,
-remove the ask Jill part from the skill. Make a 1-2 sentence summary on what
-this feature is about"). The field used to be headed "Quick Summary from Jill"
-and carried a hard rule: ASK the designer, every time, never draft it. That
-rule bought a second voice on the page — something a developer could read
-against Claude's reconstruction of the code — at the cost of a dashed "Jill add
-your notes here" box on every component nobody had reached yet. The nine Atlas
-components are written now, the decisions those notes were carrying have moved
-into the Flows and the decisions log where they belong, and the field is a
-plain authored summary: draft it, and let the designer edit it.
+⚠ **If a token resolves to the wrong value, the SCOPE is wrong, not the spec.**
+The Atlas palette needs all four compound attributes on one element
+(`atlasSurfaceAttrs`), and a page-level re-point needs `ATLAS_SURFACE_VARS` too —
+the eyebrow read `#5b5560` against a render drawing `#404040` for exactly that
+reason, which is the failure this section was rebuilt to make impossible.
 
-**It is NOT a restatement of `summary`.** That field describes what the
-component draws, for a developer about to build it; this one says what it is
-for, for anyone opening the page. If the two read the same, the Summary has not
-found its reason yet.
+**`responsive` renders as "Layout", and it is TWO THINGS ONLY** (2026-10-21,
+Jillienne: *"we don't need to talk too much about the layout except that it
+should be responsive and that the padding/margins are what px"*): how the
+component behaves as the width changes, and the padding and margin figures.
+Measure them off the running page. It had grown into three paragraphs of
+archaeology about a figure that had been wrong for weeks — the cover was
+documented at 130px while the page drew 256 — and an explanation of a past error
+belongs in a commit message, not in the thing a developer builds from.
 
-**Where it shows up:** the lead section of the component detail (unframed —
-plain prose, deliberately not another spec block), a `Summary` chip on the
-component's row so the list shows which components have one, and a
-`#### Summary` heading in the Markdown export, above the user story. That
-export is what gets pasted into a ticket.
+**`states` renders as "Interaction"** — hover, focus, pressed, disabled.
 
-**Formatting:** plain text, with a vocabulary of exactly two rules — blank lines
-split blocks, and a block whose every line starts `* ` or `- ` renders as a list.
-Single newlines inside a paragraph are **preserved**, not reflowed. Keep it at
-two: the moment this grows fields it becomes a form, and a form is what a
-designer writing in their own words is being spared.
-
-The list rule is not decoration — notes arrive with their own line structure
-(the first one written for this field was a lead-in, three bullets and a closing
-line), and silently reflowing them edits the designer's words. `* ` is also
-literal Markdown, so the same text exports to a ticket as a real list with no
-translation step.
-
-### The user story
-
-`userStory` renders SECOND, directly after the Summary — the designer's
-words, then the PO's framing, then the spec.
-
-It is **structured, not freeform**, and that is the point: "as a / I want / so
-that" exists precisely because it forces a role and a benefit to be named, and a
-free text field quietly becomes a second `summary`. The three clauses render
-under their own small-caps labels rather than run together as a sentence, which
-makes an unfinished story visible — a `soThat` that merely restates `iWant` is
-obvious the moment the two sit under separate headings.
-
-- `asA` — the role as a PO would name them: *"member licensed in more than one
-  state"*, not *"user"*.
-- `iWant` — the capability from the learner's side, **not a UI description**.
-- `soThat` — the benefit. If it reads as a restatement of `iWant`, the story has
-  not found its reason yet.
-- `value` — why it earns a place on the roadmap. This is the part a `summary`
-  cannot carry.
-- `notes` — scope, and especially **out** of scope, stated before a dev infers it.
-
-**A story you invented is worse than an empty section.** The un-authored state
-names the field to add, which reads as an honest gap; a plausible-sounding story
-nobody agreed to reads as a decision. If you draft one from observed behaviour,
-say so when you hand it over.
-
-**`designSpec.tokens` reference NAMED tokens only** — `--color-primary-700`,
-never `#0b2a4a`, never a px value. `tokens.css` and Figma are the sources of
-truth, so the spec can't drift. When a color choice was a contrast decision,
-say so with the ratio (e.g. *"`tertiary-700` — the lightest cyan clearing AA at
-12px; 600 is 4.12:1, 700 is 6.53:1"*), so nobody "brightens" it later.
+**`sources` is ALWAYS THE FINAL PROTOTYPE** (2026-10-21, Jillienne: *"sources of
+truth should always be the final prototype"*). Write that first, then the file
+path as *where it is implemented*, which is a different claim. **Do not list
+Figma node ids.** Every one of them here was hedged with *"not re-verified
+against current Figma"*, which handed a developer two sources and a disclaimer
+instead of an answer — and several had genuinely diverged, including a Readiness
+frame still drawn against the five levels that four bands replaced on 2026-10-16.
+The prototype is what `main` renders. Where anything disagrees with it, the
+prototype is right.
 
 ## The decisions log
 
@@ -602,12 +573,12 @@ link to the same URL.
    When you unwire something, grep the handoff for it in the same pass. This is
    the rule most often broken by a COPY change: on 2026-08-31 a copy revision
    left `membership-renewal-states` asserting *"both halves of what expiry costs
-   are stated together"* as an acceptance criterion, minutes after the code
-   stopped doing it. **A criterion is a promise a dev will hold you to.**
+   are stated together"* minutes after the code stopped doing it. **Every line
+   here is a promise a dev will hold you to.**
 5. **Check your component isn't restating a sibling's axis.** Two components on
    one feature drift toward each other: `membership-sheets` and
-   `membership-renewal-states` ended up sharing four near-verbatim acceptance
-   criteria and six identical `statesMatrix` rows before being trimmed. The
+   `membership-renewal-states` ended up sharing six identical `statesMatrix`
+   rows and four near-verbatim restatements of them before being trimmed. The
    test: name what each one OWNS in a short phrase — *"the container and its
    actions"* vs *"what the copy says"* — and move anything that fails it.
 6. **The gateway `blurb` is ONE sentence.** It is the header line under the
@@ -648,9 +619,8 @@ The gateway header's **Actions** menu carries **Share Link**, **Download .md**
 and **Copy .md**. The Markdown is generated from the same data this skill
 describes
 ([handoffMarkdown.ts](../../../src/components/prototype/handoffMarkdown.ts)) —
-decisions first, then each component — the Summary included, since a ticket is
-exactly where the designer's words earn their keep — in its on-screen order. Acceptance criteria come out as `- [ ]`
-checkboxes, since that is what a ticket renders.
+decisions first, then each component, in its on-screen order and under the same
+headings the page uses, so the two can be read side by side.
 
 An unauthored field is **skipped, not emitted empty**: a heading with nothing
 under it reads as a gap in the work rather than a gap in the export. So a thin

@@ -359,7 +359,7 @@ export function DevHandoffDesignSpecBody({ spec }: { spec: DevHandoffDesignSpec 
       )}
 
       {spec.sources && spec.sources.length > 0 && (
-        <HandoffBlock label="Sources of truth">
+        <HandoffBlock label="Source of truth">
           <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 4 }}>
             {spec.sources.map((src) => (
               <li key={src}>
@@ -429,33 +429,6 @@ const swatchStyle: CSSProperties = {
   flex: 'none',
   borderRadius: 3,
   border: '1px solid var(--color-border-strong, var(--color-border-subtle))',
-}
-
-/** Testable Definition-of-Done checklist for one component. */
-export function DevHandoffAcceptanceBody({ items }: { items: string[] }) {
-  return (
-    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {items.map((item, i) => (
-        <li
-          key={i}
-          style={{ display: 'flex', gap: 10, fontSize: 13, lineHeight: '20px', color: 'var(--color-text-secondary)' }}
-        >
-          <span
-            aria-hidden
-            style={{
-              flexShrink: 0,
-              marginTop: 2,
-              width: 14,
-              height: 14,
-              borderRadius: 4,
-              border: '1.5px solid var(--color-border-strong, var(--color-border-subtle))',
-            }}
-          />
-          <span>{item}</span>
-        </li>
-      ))}
-    </ul>
-  )
 }
 
 /**
