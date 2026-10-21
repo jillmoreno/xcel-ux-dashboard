@@ -6,6 +6,8 @@ import type {
   DevHandoffUiUxLogic,
   DevHandoffUserStory,
   DevHandoffVariant,
+  DevHandoffOption,
+  DevHandoffFlow,
 } from '@/data/prototypeFeatures'
 import {
   detailItemStyle,
@@ -141,6 +143,7 @@ function VariantRow({
             {variant.action}
           </p>
         )}
+        {variant.howToSee && <HowToSee>{variant.howToSee}</HowToSee>}
       </div>
       <div style={{ flex: '1 1 320px', minWidth: 0 }}>
         {render ? (
@@ -155,6 +158,247 @@ function VariantRow({
       </div>
     </div>
   )
+}
+
+/**
+ * The reproduction pointer under a state or an option — "Demo bar → Progress
+ * → Expired".
+ *
+ * Small, grey, and prefixed, because of what it is FOR: a dev reading the spec
+ * should be able to skip every one of these, and a reviewer who wants to go
+ * and look should find one wherever they stopped. It used to be the headline —
+ * the `when` line was `initialLevel={1}` — which inverted exactly that.
+ */
+function HowToSee({ children }: { children: ReactNode }) {
+  return (
+    <p style={howToSeeStyle}>
+      <span style={{ fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', fontSize: 10 }}>
+        How to see it
+      </span>
+      <span>{children}</span>
+    </p>
+  )
+}
+
+const howToSeeStyle: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'baseline',
+  gap: 8,
+  margin: '10px 0 0',
+  fontSize: 12,
+  lineHeight: '18px',
+  color: 'var(--color-text-tertiary)',
+}
+
+/** The display toggles — what changes, and who turns it on. */
+export function DevHandoffOptionsBody({ options }: { options: DevHandoffOption[] }) {
+  return (
+    <ul style={detailListStyle}>
+      {options.map((o, i) => (
+        <li
+          key={o.name}
+          style={{
+            ...detailItemStyle,
+            ...(i > 0 && { borderTop: '1px solid var(--color-border-subtle)', paddingTop: 12 }),
+          }}
+        >
+          <span style={{ fontWeight: 700, color: 'var(--color-text-primary)' }}>{o.name}</span>
+          <span style={{ display: 'block', marginTop: 4, color: 'var(--color-text-secondary)' }}>
+            {o.what}
+          </span>
+          {o.howToSee && <HowToSee>{o.howToSee}</HowToSee>}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/**
+ * THE LOGIC FLOWS, drawn.
+ *
+ * Deliberately NOT a graph-layout engine. These machines are four to six
+ * states, and an auto-router spends its complexity on edge crossings that
+ * never happen here while failing in ways nobody can author around. Two fixed
+ * shapes instead, each of which reads as a diagram and cannot break:
+ *
+ *  - `decides` is a RAIL: one vertical line, each rule branching off it to the
+ *    state it selects. The rail is what carries "first match wins" — the rules
+ *    are visibly walked in order, which is the single fact a reader needs to
+ *    predict the result and the one a bulleted list loses.
+ *  - `moves` is a row per transition: the state you are in, the thing the
+ *    learner does, the state you land in.
+ */
+export function DevHandoffFlowsBody({ flows }: { flows: DevHandoffFlow[] }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+      {flows.map((flow) => (
+        <div key={flow.title}>
+          <p style={flowTitleStyle}>{flow.title}</p>
+          {flow.intro && <p style={flowIntroStyle}>{flow.intro}</p>}
+
+          {flow.decides && flow.decides.length > 0 && (
+            <>
+              <p style={flowRuleNoteStyle}>
+                Checked in this order — the first rule that matches wins.
+              </p>
+              <ol style={railStyle}>
+                {flow.decides.map((d, i) => (
+                  <li key={`${d.when}-${d.show}`} style={railItemStyle}>
+                    <span aria-hidden style={railDotStyle}>
+                      {i + 1}
+                    </span>
+                    <span style={railBodyStyle}>
+                      <span style={railRowStyle}>
+                        <span style={conditionChipStyle}>{d.when}</span>
+                        <span aria-hidden style={arrowStyle}>
+                          &rarr;
+                        </span>
+                        <span style={stateChipStyle}>{d.show}</span>
+                      </span>
+                      {d.note && <span style={flowNoteStyle}>{d.note}</span>}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </>
+          )}
+
+          {flow.moves && flow.moves.length > 0 && (
+            <ul style={{ ...movesListStyle, marginTop: flow.decides?.length ? 20 : 12 }}>
+              {flow.moves.map((m) => (
+                <li key={`${m.from}-${m.on}-${m.to}`} style={moveItemStyle}>
+                  <span style={railRowStyle}>
+                    <span style={stateChipStyle}>{m.from}</span>
+                    <span style={moveLabelStyle}>
+                      <span aria-hidden style={arrowStyle}>
+                        &rarr;
+                      </span>
+                      <span>{m.on}</span>
+                    </span>
+                    <span style={stateChipStyle}>{m.to}</span>
+                  </span>
+                  {m.note && <span style={flowNoteStyle}>{m.note}</span>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+const flowTitleStyle: CSSProperties = {
+  margin: 0,
+  fontSize: 14,
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+}
+
+const flowIntroStyle: CSSProperties = {
+  margin: '6px 0 0',
+  fontSize: 13,
+  lineHeight: '20px',
+  color: 'var(--color-text-secondary)',
+}
+
+const flowRuleNoteStyle: CSSProperties = {
+  margin: '10px 0 0',
+  fontSize: 11,
+  fontWeight: 600,
+  letterSpacing: '0.04em',
+  textTransform: 'uppercase',
+  color: 'var(--color-text-tertiary)',
+}
+
+/* The rail itself is the left border; each rule hangs off it. */
+const railStyle: CSSProperties = {
+  listStyle: 'none',
+  margin: '10px 0 0',
+  padding: '4px 0 4px 0',
+  borderLeft: '2px solid var(--color-border-subtle)',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 10,
+}
+
+const railItemStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: 10,
+  paddingLeft: 14,
+}
+
+const railDotStyle: CSSProperties = {
+  flex: 'none',
+  marginLeft: -24,
+  width: 20,
+  height: 20,
+  display: 'grid',
+  placeItems: 'center',
+  borderRadius: '50%',
+  background: 'var(--color-primary-100)',
+  color: 'var(--color-primary-700)',
+  fontSize: 11,
+  fontWeight: 700,
+}
+
+const railBodyStyle: CSSProperties = { minWidth: 0, flex: 1 }
+
+const railRowStyle: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: 8,
+}
+
+const conditionChipStyle: CSSProperties = {
+  fontSize: 13,
+  lineHeight: '20px',
+  color: 'var(--color-text-secondary)',
+}
+
+/* The state a rule lands on is the thing a reader scans the column for, so it
+   is the one element in the flow with a fill behind it. */
+const stateChipStyle: CSSProperties = {
+  padding: '3px 10px',
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-surface-card)',
+  border: '1px solid var(--color-border-subtle)',
+  fontSize: 12,
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+  whiteSpace: 'nowrap',
+}
+
+const arrowStyle: CSSProperties = { color: 'var(--color-text-tertiary)' }
+
+const moveLabelStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  fontSize: 12,
+  color: 'var(--color-text-secondary)',
+}
+
+const movesListStyle: CSSProperties = {
+  listStyle: 'none',
+  margin: 0,
+  padding: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 10,
+}
+
+const moveItemStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4 }
+
+const flowNoteStyle: CSSProperties = {
+  display: 'block',
+  marginTop: 4,
+  fontSize: 12,
+  lineHeight: '18px',
+  color: 'var(--color-text-tertiary)',
 }
 
 const variantNameStyle: CSSProperties = {

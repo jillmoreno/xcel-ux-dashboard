@@ -804,8 +804,12 @@ describe('component detail — COMPONENT_SECTIONS matches the render order', () 
     // The array: `{ id: 'quick-summary', label: '…' }, …`
     const arr = src.slice(src.indexOf('const COMPONENT_SECTIONS = ['), src.indexOf('] as const'))
     const declared = [...arr.matchAll(/\{ id: '([a-z-]+)'/g)].map((m) => m[1])
-    // The render: `{section(\n        'quick-summary',` — one call per section.
-    const rendered = [...src.matchAll(/\{section\(\n\s+'([a-z-]+)',/g)].map((m) => m[1])
+    // The render: one `section(` call each. Two shapes now — a bare
+    // `{section(` for the sections that always render, and `&& section(` for
+    // Options and Flows, which are dropped when unauthored. The `{` is no
+    // longer part of the match, or the conditional two go uncounted and this
+    // reports a mismatch that isn't one.
+    const rendered = [...src.matchAll(/(?:^|[{&]\s*)section\(\n\s+'([a-z-]+)',/gm)].map((m) => m[1])
     expect(declared.length).toBeGreaterThan(0)
     // A mismatch silently highlights the wrong scroll-spy chip and nothing else
     // fails, which is why this is asserted rather than trusted.

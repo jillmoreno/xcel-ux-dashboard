@@ -273,12 +273,77 @@ export type FeatureFlagRef = {
  *  a test failure, not a silent drift. */
 export type DevHandoffVariant = {
   name: string
+  /**
+   * WHEN THE LEARNER SEES THIS, in product language — "the learner's access
+   * ended before they finished", not `percent <= 0` or `initialLevel={1}`.
+   *
+   * ⚠ REWRITTEN 2026-10-20 (Jillienne: "imagine this is like a Figma file
+   * handoff, strip out the version terms"). These were prop expressions and
+   * flag ids, which answered "how do I reproduce this in our prototype" —
+   * a question a developer implementing the component does not have. The
+   * reproduction steps did not vanish; they moved to `howToSee`.
+   */
   when: string
   detail?: string
   /** Why this variant needs to exist — the problem it solves for the learner. */
   why?: string
   /** The action the component exposes in this variant (CTA + behavior). */
   action?: string
+  /**
+   * How to reach this state in the RUNNING prototype — "Demo bar → Progress →
+   * Expired", or the flag to pin. Rendered small and grey under the state, so
+   * it is there when someone wants to go and look and invisible when they are
+   * reading the spec.
+   *
+   * This is the only place a flag id or a dashboard-version name belongs on a
+   * state. Leave it unset when the state is simply the default.
+   */
+  howToSee?: string
+}
+
+/**
+ * A DISPLAY OPTION — a toggle that changes how the component is drawn without
+ * being a state the learner moves through.
+ *
+ * Split out from `variants` on 2026-10-20, because mixing the two is most of
+ * what made the handoff hard to read: "Expired" and "Left-aligned column" sat
+ * in one list as though a reader had to choose between them. A state answers
+ * *where is the learner*; an option answers *how is this drawn*, and the two
+ * compose — every state can be shown with any option.
+ */
+export type DevHandoffOption = {
+  /** The option, named for what it does — "Combined panel", not "bare". */
+  name: string
+  /** What changes when it is on. */
+  what: string
+  /** Who turns it on, and where. Same role as a state's `howToSee`. */
+  howToSee?: string
+}
+
+/**
+ * ONE LOGIC FLOW — the part of a handoff a dev most often has to reconstruct
+ * by reading the component, laid out instead.
+ *
+ * Two shapes, because the components here have two kinds of logic and
+ * flattening them into one list is what hid them:
+ *
+ *  - `decides` — the component is handed data and picks a state. Ordered, and
+ *    FIRST MATCH WINS, the way the code's own branch chain does: a reader has
+ *    to see the order to predict the result.
+ *  - `moves` — the learner acts and the component changes state. A real state
+ *    machine (the Exam Date card is the clear one).
+ *
+ * A flow may carry both: something can be entered by data and then moved
+ * through by hand.
+ */
+export type DevHandoffFlow = {
+  /** What this flow settles, e.g. "Which progress state renders". */
+  title: string
+  intro?: string
+  /** Ordered condition → state rules. First match wins. */
+  decides?: { when: string; show: string; note?: string }[]
+  /** Learner-driven moves between states. */
+  moves?: { from: string; on: string; to: string; note?: string }[]
 }
 
 /** One user-facing action a feature exposes. */
@@ -485,8 +550,15 @@ export type DevHandoffComponent = {
    *  Renders SECOND in the handoff, directly after the Quick Summary: the
    *  designer's words, then the PO's, then the spec. */
   userStory?: DevHandoffUserStory
-  /** Every variant/state the component can render. */
+  /** Every STATE the component can render — what it looks like, and when the
+   *  learner sees it. Display toggles go in `options`, not here. */
   variants: DevHandoffVariant[]
+  /** Display toggles that compose with any state (alignment, combined panel,
+   *  which rows are shown). Rendered as their own section. */
+  options?: DevHandoffOption[]
+  /** The logic flows — how the component picks a state, and how the learner
+   *  moves between them. Rendered as a diagram. */
+  flows?: DevHandoffFlow[]
   /** The rules that decide which variant renders + key behaviors. */
   uxLogic: string[]
   /** The UI/UX logic write-up: why it exists, actions, edge cases,
@@ -1306,21 +1378,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           quickSummary:
             'This is the current Home for Atlas Learning. It’s meant to give dev a map of the whole page before they open the individual component handoffs, plus the open questions nobody’s decided yet (Quick Links side, link tiles, long title).',
           variants: [
-            {
-              name: 'WIP chrome',
-              when: 'Dashboard version renders WIP-like (not White/E2E)',
-              detail: 'Course card and Quick Links each keep their own shadowed, padded surface; the left column’s sections lose the shared outlined panel and stand as separate cards.',
-            },
-            {
-              name: 'White / End-to-End Demo chrome',
-              when: '`isEricAtlasWhiteLike(version)` is true — includes End-to-End Demo, the committed default',
-              detail: 'The course card loses its shadow and goes full-width/flush (no card padding of its own); the Course progress ring and Study pace share one outlined panel with a hairline between them (Readiness joins the same panel when its flag is on); the course-head sits on its own Primary 100 panel; no course tabs.',
-            },
-            {
-              name: 'Quick Links side',
-              when: '`atlas-wip-quick-links-side` flag',
-              detail: 'Left (default, `order: -1`) or right. Moves the whole rail without moving its markup.',
-            },
+            { name: 'Default', when: 'Every learner, on arrival.', detail: 'The course card across the top. Beneath it, a left column holding one outlined panel — Course progress over Study pace, with Readiness under them when it is on — and a right column holding the Quick Links rail, the Exam Date card and the Study Journey. ⚠ The page has no states of its own: everything that changes here is a composition option below, or a state of one of the components inside it.', why: 'A map of the whole page, so a developer meets the shape before they open the individual component handoffs.', action: 'None — the page is a container.' },
           ],
           uxLogic: [
             'Page is a flex row: the course card (`flex: 0 1 830px`/800px on White) and the Quick Links rail (`width: 234`), 32px apart.',
@@ -1454,44 +1512,29 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           tabLabel: 'Course Head',
           location: 'src/components/compass/AtlasHomeEricE2E.tsx — the course-head block inside `AtlasHomeEricE2E` (not exported separately), plus `WhiteStyleHead`',
           summary:
-            'Cover image, "Current course:" eyebrow, title, an Expires/Days-to-complete meta row, and two buttons (Course Overview, Begin/Resume Course). Renders in one of two layouts depending on chrome and a click-to-flip toggle.',
+            'Cover image, "Current course:" eyebrow, title, an Expires/Days-to-complete meta row, and two buttons (Course Overview, Begin/Resume Course). A 130px cover sits beside a bottom-aligned title and meta row, with Course Overview (fixed 130px) and Begin/Resume on their own row beneath.',
           quickSummary:
             'The course card at the top of Home — cover, title, expiry/days-to-complete, Begin/Resume.',
           variants: [
+            { name: 'Not started', when: 'The learner has not opened the course.', detail: 'The button reads "Begin Course".', why: 'The first click into a course is a different promise from returning to one.', action: '"Begin Course" opens the first lesson.', howToSee: 'Demo bar → Progress → Not Started' },
+            { name: 'In progress', when: 'The learner has started but not finished.', detail: 'The button reads "Resume Course".', why: '"Resume" only makes sense once there is somewhere to resume to.', action: '"Resume Course" returns them where they stopped.', howToSee: 'Demo bar → Progress → On Track' },
+            { name: 'No end date', when: 'The course has no access-expiry date.', detail: 'The Expires / days-to-complete meta row is omitted entirely — never a blank row and never a zero.', why: 'A row reading "Expires: —" tells the learner less than no row at all.', action: 'Unchanged; only the meta row goes.' },
+            { name: 'Long title', when: 'The course name is too long for one line.', detail: 'The title wraps rather than truncating, and the meta row and buttons move down with it. ⚠ Worth building against the longest real course name, not the demo one.', why: 'Course names are supplied data, so the layout has to survive the long ones.', action: 'Unchanged.', howToSee: 'Demo bar → Long title' },
+          ],
+          flows: [
             {
-              name: 'WIP layout (cover beside title)',
-              when: 'Default header layout',
-              detail: '260px cover beside the eyebrow/title/meta, both buttons in a row beneath. Clicking the cover swaps to the White-style layout.',
+              title: 'What the primary button says',
+              decides: [
+                { when: 'No progress yet', show: 'Not started', note: 'The button reads "Begin Course".' },
+                { when: 'Some progress', show: 'In progress', note: 'The button reads "Resume Course".' },
+              ],
             },
             {
-              name: 'White-style layout (stacked)',
-              when: 'After clicking the cover once (`whiteHead` state), or always on Eric/Atlas White itself',
-              detail: '130px cover beside a bottom-aligned eyebrow/title/meta row, then Course Overview (fixed 130px) and Begin/Resume on their own row beneath.',
-            },
-            {
-              name: 'Not started',
-              when: 'Progress = Not Started',
-              detail: 'Button reads "Begin Course".',
-            },
-            {
-              name: 'In progress / milestone',
-              when: 'Progress past Not Started, short of Complete',
-              detail: 'Button reads "Resume Course".',
-            },
-            {
-              name: 'No exam date set',
-              when: 'No access-expiry date resolves',
-              detail: 'The Expires/Days-to-complete meta row is omitted entirely — never a blank or zeroed row.',
-            },
-            {
-              name: 'Course tabs (multi-course)',
-              when: '2+ courses AND chrome is NOT White/E2E',
-              detail: 'A "Courses:" strip above the title. Hidden entirely on White/E2E chrome regardless of course count — see the Overview handoff’s note on the vestigial long-title path this strip is the only consumer of.',
-            },
-            {
-              name: 'Long title',
-              when: '`atlas-home-long-title` flag on',
-              detail: 'The visible title (`useEndToEndCourseTitle()`) becomes "Florida Life and Health Pre-licensing with Comprehensive Exam Simulators" instead of the short form — the SAME flag read also changes the title on Invited Product Detail and Checkout, so all three agree.',
+              title: 'Whether the meta row appears',
+              decides: [
+                { when: 'No access-expiry date resolves', show: 'No end date', note: 'The whole row goes — never a blank or a zero.' },
+                { when: 'Otherwise', show: 'Expires and days-to-complete' },
+              ],
             },
           ],
           uxLogic: [
@@ -1622,14 +1665,31 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           quickSummary:
             'This is the left column of the Home as it stands. It replaced the tan five-state card as the default on 2026-10-16 — the tan one is still there behind the Design bar. Course progress sits on top because where the learner has got to is the first thing they want; the plan follows from it.',
           variants: [
-            { name: 'Course progress', when: 'Always', detail: 'Eyebrow + `ProgressDial` at `percent`. ⚠ It survives 100% (2026-10-16) — completion and readiness are two axes, and a learner can be ready at less than 100%.' },
-            { name: 'Study pace — a plan fits', when: '`weeks != null`', detail: 'The pace’s NAME (derived via `paceName` over `PLANNER_PLAN`, not typed — renaming a pace in Compass renames it here), the weekly goal row, and the Estimated completion date.' },
-            { name: 'Study pace — no plan fits', when: '`weeks == null`', detail: 'TWO ARMS, and the card names whichever deadline actually bound (`noPaceMessage`, reading the pace model’s own `binding`). ACCESS-bound: "Not enough access left" / "No study pace fits in the time remaining." / "Extend your access to get a plan." EXAM-bound: "Not enough time before your exam" / "No study pace fits: coursework has to finish by <date>, 7 days before your exam, to leave time to review." — and NO advice line, because a booked exam is not something a learner can extend. ⚠ The wording is shared with `AtlasCourseProgressStates` rather than copied, so the two cards cannot disagree about whether the question is answerable OR about which deadline made it unanswerable. Reached ONE way on this Home: a short access window (the Demo Controls’ Expires setting). The default Automatic window leaves room, so the plan arm is what opens — always, on any browser. ⚠ A STORED EXAM DATE NO LONGER REACHES IT (2026-10-20). `cgp.examDate` is per-browser and authored by the COMPASS surfaces; this Home has no control over it — both of its exam prompts are decoration — so a date typed in Compass used to dead-end the card permanently on that machine with nothing on screen to explain it. The Home passes no exam date to `studyPace`; the EXAM arm is still live wherever a surface owns the date, and wiring Add Date is what brings it back here. `AtlasHomeExamDate.test.tsx` pins it.' },
-            { name: 'Expired \u2014 the card stops at the dial', when: '`expired`', detail: 'Everything under the ring describes a PLAN, and there is none once access has ended: the pace name, the weekly goal, the standing sentence, Estimated completion and the booked exam all go, and so does the hairline under Course progress (nothing left to divide). What stays is the dial \u2014 how far the learner got is the argument for the extension \u2014 with its eyebrow reading "Progress paused" and its arc in `--color-neutral-800` rather than the brand blue. Above it, one sentence: "You completed N% of this course before your access ended. Purchase an extension within the next 30 days to pick up where you left off." \u26a0 N IS READ FROM `percent`, not typed, so the sentence and the ring cannot disagree. \u26a0 THE 30 IS A BUSINESS RULE (`EXTENSION_GRACE_DAYS`), not arithmetic \u2014 if it becomes a deadline measured from the access date it has to COUNT DOWN. \u26a0 The caller also hides the Readiness section in this state. Optional and absent by default, so the End-to-End Demo\u2019s Home is unchanged.' },
-            { name: 'Figure rows (Estimated completion, state exam)', when: '`expected` / `exam`', detail: 'A small two-column table under the pace sentence, each row ruled above: the EYEBROW hard left, the FIGURE hard right at 19px serif, and the figure\u2019s count on its own line beneath it, right aligned \u2014 "(in 25 days)", or "(today)" / "(date has passed)" at the edges. \u26a0 THE LABEL IS WHAT WRAPS, not the figure: the column is 248 and a long month ("September 29", 103) would otherwise break across two lines of serif, so the figure is `nowrap` and the label takes the remainder. \u26a0 AND THE ROW THAT IS NOT LAST GIVES UP ITS BOTTOM PAD \u2014 every row carries 24 over its rule and 24 under its figure, which stacked would put 48 above the second rule against 24 below it. Only the LAST row keeps the pad and the closing hairline.' },
-            { name: 'Exam booked', when: '`exam` is passed — a booked state-exam date exists', detail: 'The state exam renders as its OWN figure row under Estimated completion, with the same label-left / figure-right shape and its own days count. ⚠ ON THIS HOME IT IS UNREACHABLE TODAY (2026-10-20): the Home passes no exam date to `studyPace`, both of its exam prompts are decoration, and `cgp.examDate` is authored by the Compass surfaces. The arm is live wherever a surface owns the date — wiring Add Date is what brings it back here.', why: 'Once a date is booked it outranks the estimate: the plan has to be read against the deadline, not against the pace alone.', action: 'None — the row is a figure, not a control.' },
-          { name: 'Readiness below', when: '`readinessBelow` — i.e. `atlas-readiness-section` is on', detail: 'Bottom padding drops to 0 so the Readiness card can sit flush inside the same panel and take the same eyebrow (`matchPaceEyebrow`).' },
-            { name: 'Left-aligned column', when: 'The column-alignment design control', detail: 'The eyebrows are left in BOTH arms; what moves is the goal row. The dials and the sentence stay centred. \u26a0 THE FIGURE ROWS NO LONGER FOLLOW THIS CONTROL AT ALL (2026-10-20): Estimated completion and the state exam are pinned label-left / figure-right on both arms, so neither arm moves them.' },
+            { name: 'Default', when: 'The learner has enough time left for a study plan to fit.', detail: 'One panel, two labelled sections. Course progress on top — an eyebrow over the dial, which survives 100% because completion and readiness are two different axes. Under a hairline, Study pace: the pace’s name, the weekly goal, and an Estimated completion date. ⚠ The pace name is read from the learner’s planner, never typed here, so renaming a pace renames it in both places.', why: 'Where the learner has got to is the first thing they want; the plan follows from it.', action: '"Customize Your Pace" opens the study planner.' },
+            { name: 'Exam booked', when: 'The learner has booked a state exam date.', detail: 'The exam gets its own figure row beneath Estimated completion, with its own days count. ⚠ Nothing on this screen can set that date today — the two exam prompts here are decoration, and the date is owned by another surface. Wiring "Add date" is what brings this state back.', why: 'Once a date is booked it outranks the estimate: the plan has to be read against the deadline, not the pace.', action: 'None — the row is a figure, not a control.' },
+            { name: 'No plan fits', when: 'There is not enough time left for any honest study plan — either access runs out first, or the exam is too close.', detail: 'The card names which deadline bound it. Access-bound: "Not enough access left" / "No study pace fits in the time remaining." / "Extend your access to get a plan." Exam-bound: "Not enough time before your exam" / "No study pace fits: coursework has to finish by <date>, 7 days before your exam, to leave time to review." — and no advice line, because a booked exam is not something the learner can extend. ⚠ The goal row, the hours line and the completion date all fall silent together; never one figure left standing alone.', why: 'Printing a plan the learner cannot keep is worse than saying there isn’t one.', action: 'Access-bound only: extend access. Exam-bound offers nothing, deliberately.', howToSee: 'Demo bar → Expires → a short window' },
+            { name: 'Expired', when: 'The learner’s access ended before they finished.', detail: 'The card stops at the dial. Everything under the ring describes a PLAN and there is none once access has ended — the pace name, the weekly goal, the standing sentence, Estimated completion and the booked exam all go, and so does the hairline under Course progress, because there is nothing left to divide. What stays is the dial, its eyebrow reading "Progress paused" and its arc in neutral rather than the brand blue, over one sentence: "You completed N% of this course before your access ended. Purchase an extension within the next 30 days to pick up where you left off." ⚠ N IS READ FROM THE PROGRESS FIGURE, not typed, so the sentence and the ring cannot disagree. ⚠ THE 30 IS A BUSINESS RULE (`EXTENSION_GRACE_DAYS`), not arithmetic — if it ever becomes a deadline measured from the access date it has to COUNT DOWN.', why: 'How far the learner got is the argument for buying more time, so the one thing worth keeping is the figure that makes it. A plan, by contrast, is advice about a future they no longer have.', action: 'Purchase an extension. The Readiness section is hidden alongside it — a readiness score for an exam the learner cannot currently study for is a number with nothing behind it.' },
+          ],
+          flows: [
+            {
+              title: 'Whether a study plan is shown, and which deadline bound it',
+              intro: 'Course progress is always drawn. Everything below the hairline depends on whether a plan fits in the time the learner has left.',
+              decides: [
+                { when: 'Coursework cannot finish 7 days before a booked exam', show: 'No plan fits', note: 'Exam-bound. No advice line — the learner cannot move the exam.' },
+                { when: 'Coursework cannot finish before access ends', show: 'No plan fits', note: 'Access-bound. Offers "Extend your access".' },
+                { when: 'A plan fits and an exam date is booked', show: 'Exam booked' },
+                { when: 'Access has already ended', show: 'Expired', note: 'The plan goes; the dial and the extension offer stay.' },
+                { when: 'A plan fits', show: 'Default' },
+              ],
+            },
+            {
+              title: 'Figure rows',
+              intro: 'Estimated completion and the state exam are rows in a small two-column table under the pace sentence — eyebrow hard left, figure hard right, with the count beneath the figure ("in 25 days", or "today" / "date has passed" at the edges).',
+              decides: [
+                { when: 'A completion estimate exists', show: 'Estimated completion row' },
+                { when: 'An exam date is booked', show: 'State exam row', note: 'Renders beneath Estimated completion.' },
+              ],
+            },
           ],
           uxLogic: [
             '⚠ Course progress LEADS the column (2026-10-16) — it sat under Study pace only because the dial used to live inside that card.',
@@ -1683,12 +1743,34 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           quickSummary:
             'The tan five-state progress module (Study Pace, Course Progress, Milestone, Complete, Expired) — the arm the page shipped with before the ring became the default on 2026-10-16. Right now clicking the card itself is just a review trick to flip states — only the Current state shows real numbers, the rest are placeholder copy.',
           variants: [
-            { name: 'Zero / Study Pace', when: 'percent ≤ 0', detail: '"We’ve set up a moderate study plan for you" + a pace pill (Moderate) + "Edit My Study Pace". No dial — a 0% course never shows a 0% ring.', why: 'A learner who hasn’t started needs a plan, not a 0% ring — a ring at zero reads as something broken.', action: '"Edit My Study Pace" (drawn, not wired).' },
-            { name: 'Current / Course Progress', when: '0 < percent < 100, not Milestone', detail: 'The real dial (the page’s own `percent`) + "Expected completion" + "Course access" figures, both real.', why: 'The one state with real stakes — how far along, and whether access will outlast the work.', action: 'No action beyond the Study Pace edit link below it.' },
-            { name: 'Milestone', when: 'Selected via the Design/Demo Progress control', detail: 'Dial pinned to 68% (design figure, not derived from `percent`) + "Great Work!!" + fixed "June 3" / "28 Days, Ends June 10" figures.', why: 'A celebratory check-in ahead of 100%, to reinforce pace.', action: '"Edit My Study Pace" (drawn, not wired).' },
-            { name: 'Complete', when: 'Selected via the Progress control', detail: 'Dial at 100% + "Amazing Job!!" + fixed "June 1" / "9 Days, Ends June 10" figures.', why: 'Closes the loop and hands off to the next step (flashcards, Exam Simulator).', action: 'None — no edit link once there is no pace left to edit.' },
-            { name: 'Expired', when: 'Selected via the Progress control', detail: '"We’re sorry but your course has expired" + a drawn (unwired) "Extend Course Now" button — clicking it is a click on the card, not the button.', why: 'Access lapsed before completion — the one state asking for a purchase decision.', action: '"Extend Course Now" (drawn, not wired; a click anywhere on the card advances state instead).' },
-            { name: 'bare (combined panel)', when: 'On White/End-to-End Demo chrome, sharing one outlined panel with Readiness when that flag is on', detail: 'No card fill/border of its own; eyebrow swaps to "Pre-Licensing Progress"; drops the Course access figure, the post-copy rule, and the "Edit My Study Pace" link entirely.', why: 'The combined panel owns the outline, so a second card border inside it reads as a box in a box.', action: 'None — the edit link is dropped in this arm.' },
+            { name: 'Not started', when: 'The learner has not opened the course yet.', detail: 'No dial — a 0% ring reads as something broken. Shows the study plan instead: "We’ve set up a moderate study plan for you", a pace pill, and "Edit My Study Pace".', why: 'A learner who hasn’t started needs a plan, not a number that says nothing.', action: '"Edit My Study Pace" (drawn, not wired).', howToSee: 'Demo bar → Progress → Not Started' },
+            { name: 'In progress', when: 'The learner has started but not finished.', detail: 'The real dial, plus Expected completion and Course access. ⚠ The only state whose figures come from real data.', why: 'The one state with real stakes — how far along they are, and whether access will outlast the work.', action: 'None beyond the Study Pace edit link beneath it.', howToSee: 'Demo bar → Progress → On Track' },
+            { name: 'Milestone', when: 'The learner has passed a celebration point on the way to 100%.', detail: 'Dial pinned to 68% and "Great Work!!". ⚠ The figures here are fixed design copy (68%, "June 3", "28 Days, Ends June 10"), not the learner’s own.', why: 'A check-in ahead of 100%, to reinforce pace.', action: '"Edit My Study Pace" (drawn, not wired).', howToSee: 'Demo bar → Progress → Milestone' },
+            { name: 'Complete', when: 'The learner has finished the coursework.', detail: 'Dial at 100% and "Amazing Job!!". Figures are fixed design copy. No edit link — there is no pace left to edit.', why: 'Closes the loop and hands off to what comes next — flashcards, the exam simulator.', action: 'None.', howToSee: 'Demo bar → Progress → Completed' },
+            { name: 'Expired', when: 'The learner’s access ended before they finished.', detail: '"We’re sorry but your course has expired" over an "Extend Course Now" button. ⚠ The button is drawn, not wired — clicking it is a click on the card.', why: 'The one state asking the learner to make a purchase decision.', action: '"Extend Course Now" (drawn, not wired).', howToSee: 'Demo bar → Progress → Expired' },
+          ],
+          flows: [
+            {
+              title: 'Which progress state renders',
+              decides: [
+                { when: 'The learner has no progress', show: 'Not started', note: 'Forced — a 0% course can never show the dial, even if the card was stepped there by hand.' },
+                { when: 'Access ended before completion', show: 'Expired' },
+                { when: 'The learner finished', show: 'Complete' },
+                { when: 'A celebration point has been passed', show: 'Milestone' },
+                { when: 'Otherwise', show: 'In progress' },
+              ],
+            },
+            {
+              title: 'Stepping through the states to review them',
+              intro: '⚠ This card is a review device first and a progress display second: two of its states (Milestone, Expired) cannot be reached from real data yet, so the whole card is clickable to walk them.',
+              moves: [
+                { from: 'Any state', on: 'Click, Enter or Space anywhere on the card', to: 'The next state', note: 'The whole card is the control — "Edit My Study Pace" and "Extend Course Now" are drawn and inert.' },
+                { from: 'Expired', on: 'Click again', to: 'Not started', note: 'The cycle wraps.' },
+              ],
+            },
+          ],
+          options: [
+            { name: 'Combined panel', what: 'The card drops its own fill and border and shares one outlined panel with Readiness. The eyebrow becomes "Pre-Licensing Progress", and the Course access figure, the rule under the copy and the "Edit My Study Pace" link are all dropped.', howToSee: 'On wherever this card shares a panel with Readiness.' },
           ],
           uxLogic: [
             'The WHOLE card is `role="button"`/`tabIndex={0}`; a click OR Enter/Space anywhere on it advances to the next state — not just "Edit My Study Pace" or "Extend Course Now", which are drawn but inert.',
@@ -1835,12 +1917,31 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           quickSummary:
             'The "how ready are you for your exam" half-dial under Progress. It opens at a level that roughly follows Progress, but clicking it on its own is independent, and clicking past Exam Ready resets the whole page back to Not Started — that last part needs a real decision before it ships.',
           variants: [
-            { name: 'Not Started', when: '`notStarted` — nothing measured yet', detail: 'The empty dial: the track is drawn and no arc is. ⚠ IT IS NOT LEVEL 1 OF 5 — it sits OUTSIDE `LEVELS` on purpose (`NOT_STARTED`), because "nothing measured yet" is not a point on the scale. Pressing the card moves into the levels proper.', why: 'An earlier pass hid the whole card at 0%, which removed the fact that readiness exists along with the number. Naming the empty state says both.', action: 'Press to show the first level.' },
-            { name: 'Beginner', when: '`initialLevel={0}` — Progress at Not Started or Expired', detail: '14% fill. "Early in development, with substantial knowledge gaps remaining."' },
-            { name: 'Developing', when: '`initialLevel={1}` — Progress On Track', detail: '36% fill. "Building competency, but still has meaningful gaps."' },
-            { name: 'Proficient', when: '`initialLevel={2}` — Progress at Milestone', detail: '75% fill. "Strong understanding; has not yet reached the ready threshold."' },
-            { name: 'Ready', when: '`initialLevel={3}` — Progress at Completed', detail: '100% fill. "Considered ready for the target outcome or exam." Clicking (or Enter/Space) AGAIN from here wraps to Beginner — unless the host passes `onPastLast`, which Home does; see uxLogic.' },
-            { name: 'bare (combined panel)', when: 'On White/End-to-End Demo chrome, sharing the outlined panel with the Course progress + Study pace ring', detail: 'No card fill of its own; drops the "How Ready are you…" question AND the "Help me get ready" link entirely — only the eyebrow + dial remain.', why: 'The combined panel owns the outline; a second card fill inside it reads as a box in a box.', action: 'None — the "Help me get ready" line is dropped in this arm.' },
+            { name: 'Not Started', when: 'Nothing has been scored yet, so there is no band to show.', detail: 'The empty dial — the track is drawn and no arc is. ⚠ It is NOT a sixth band: "nothing measured yet" is not a point on the scale, so it sits outside the band list. Pressing the card moves into the bands proper.', why: 'An earlier pass hid the whole card at 0%, which removed the fact that readiness exists along with the number. Naming the empty state says both.', action: 'Press the card to show the first band.', howToSee: 'The default on a course with no readiness score.' },
+            { name: 'Beginner', when: 'The learner is early in the course — or their access ended before they finished.', detail: 'Dial at 14%. Caption: "Early in development, with substantial knowledge gaps remaining."', howToSee: 'Demo bar → Progress → Not Started (or Expired)' },
+            { name: 'Developing', when: 'The learner is on track.', detail: 'Dial at 36%. Caption: "Building competency, but still has meaningful gaps."', howToSee: 'Demo bar → Progress → On Track' },
+            { name: 'Proficient', when: 'The learner has reached the milestone.', detail: 'Dial at 75%. Caption: "Strong understanding; has not yet reached the ready threshold."', howToSee: 'Demo bar → Progress → Milestone' },
+            { name: 'Ready', when: 'The learner has completed the course.', detail: 'Dial at 100%. Caption: "Considered ready for the target outcome or exam." ⚠ Readiness is not completion — a learner can finish a course and not be ready. Showing Ready at 100% is a stand-in until real scoring lands.', howToSee: 'Demo bar → Progress → Completed' },
+          ],
+          flows: [
+            {
+              title: 'Which band the card opens on',
+              intro: 'Readiness opens at a band derived from the learner’s course progress, so the two cards never contradict each other on arrival. Nothing keeps them in step afterwards — see the moves below.',
+              decides: [
+                { when: 'No readiness has been scored', show: 'Not Started', note: 'The empty dial, not a band.' },
+                { when: 'Progress is Not Started, or access expired', show: 'Beginner' },
+                { when: 'Progress is On Track', show: 'Developing' },
+                { when: 'Progress is at the milestone', show: 'Proficient' },
+                { when: 'Progress is Completed', show: 'Ready' },
+              ],
+              moves: [
+                { from: 'Any band', on: 'Click, Enter or Space anywhere on the card', to: 'The next band', note: 'The whole card is the control. "Help me get ready" is drawn text, not a link.' },
+                { from: 'Ready', on: 'Click again', to: 'Beginner', note: '⚠ On Home it does something else entirely — it resets the page’s shared progress back to Not Started, which also resets Course progress and the Study Journey. A learner cannot predict that from anything on screen; it is flagged as an open decision.' },
+              ],
+            },
+          ],
+          options: [
+            { name: 'Combined panel', what: 'The card drops its own fill and sits inside one outlined panel shared with Course progress. The "How Ready are you for your State Exam?" question and the "Help me get ready" line are both dropped — only the eyebrow and the dial remain.', howToSee: 'On wherever Readiness sits beneath the progress panel.' },
           ],
           uxLogic: [
             'The WHOLE card is `role="button"`/`tabIndex={0}` — a click or Enter/Space anywhere on it (not just the "Help me get ready" link, which is drawn text and not a real link) advances to the next level.',
@@ -1986,10 +2087,23 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           quickSummary:
             'A working exam-date picker, but it’s currently hidden — it doesn’t appear anywhere on Home today even though it’s fully built. Need to decide if it comes back.',
           variants: [
-            { name: 'Default', when: 'No exam date has been set yet, card just mounted/reset', detail: '"Do you know your state exam date?" + Not Yet (→ No) / Yes (→ Yes, opens the calendar). On Home, its intro sub-line is hidden via `hideIntroCopy`.' },
-            { name: 'No', when: '"Not Yet" was clicked', detail: '"No state exam date yet? That’s okay." + a registration blurb (the word "here" is bold but NOT a working link — destination undecided) + "I have my exam date" (→ Yes).' },
-            { name: 'Yes (calendar)', when: '"Yes" or "I have my exam date" was clicked, or Edit from Set', detail: 'A real month calendar opening on today’s month (or the saved date’s month, when editing). Past days and neighboring months’ days are not selectable; today is ringed; "Set Exam Date" stays disabled until a day is picked; "Cancel" returns to wherever the learner came from (or back to Set, if a date was already saved).' },
-            { name: 'Set', when: 'A date was picked and "Set Exam Date" was clicked', detail: '"Your state exam date:" + a date tile + a days-remaining tile ("Today is your state exam" at zero days) + an "Edit" link back to the calendar, pre-opened on the saved month.' },
+            { name: 'Default', when: 'The learner has not told us anything about an exam date yet.', detail: '"Do you know your state exam date?" over Not Yet / Yes.', why: 'The card has to ask before it can help, and both answers lead somewhere useful.', action: 'Not Yet, or Yes.' },
+            { name: 'No date yet', when: 'The learner said they do not have a date.', detail: '"No state exam date yet? That’s okay." then a registration blurb, then "I have my exam date".', why: 'A learner without a date still needs a path forward — registering — rather than a dead end.', action: '"I have my exam date" once they have registered.' },
+            { name: 'Picking a date', when: 'The learner said they have a date, or is editing one they set.', detail: 'A real month calendar. "Set Exam Date" stays disabled until a day is picked.', why: 'Confirms the pick before committing it.', action: 'Pick a day, then Set Exam Date.' },
+            { name: 'Date set', when: 'The learner has saved their exam date.', detail: 'The saved date and a days-remaining tile, with Edit.', why: 'The date is the thing the rest of the page reads against; it has to be visible and changeable.', action: 'Edit reopens the calendar on the saved date.' },
+          ],
+          flows: [
+            {
+              title: 'How the learner moves through the card',
+              intro: 'The only component here that is a true state machine — every move is something the learner does, not something the data decides.',
+              moves: [
+                { from: 'Default', on: '"Not Yet"', to: 'No date yet' },
+                { from: 'Default', on: '"Yes"', to: 'Picking a date' },
+                { from: 'No date yet', on: '"I have my exam date"', to: 'Picking a date', note: 'The way back in once the learner has registered.' },
+                { from: 'Picking a date', on: '"Set Exam Date"', to: 'Date set', note: 'Disabled until a day is picked.' },
+                { from: 'Date set', on: '"Edit"', to: 'Picking a date', note: 'Opens the calendar on the saved date — a date is not a one-time entry.' },
+              ],
+            },
           ],
           uxLogic: [
             'The exam date lives in LOCAL COMPONENT STATE ONLY — nothing downstream (the pace model’s "Expected completion" figure, the Study Journey, the Readiness card) reads it. Setting a date here changes nothing else on the page.',
@@ -2001,12 +2115,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           uiUxLogic: {
             why:
               'An exam date is the one piece of context the pace model and Study Journey most need and least reliably have, so the card exists to collect it opportunistically with as little friction as a two-tap flow (pick a day, confirm) — but it is explicitly NOT yet treated as real data anywhere else on the page.',
-            transitions: [
-              { name: 'Default → No', why: 'A learner without a date yet still needs a path forward (registering) rather than a dead end.', action: '"Not Yet" (no-op beyond switching stage).' },
-              { name: 'No → Yes', why: 'Once registered, the learner should be able to add the date in the same place they were asked for it.', action: '"I have my exam date" opens the calendar.' },
-              { name: 'Yes → Set', why: 'Confirms the pick before committing it, and keeps "Set Exam Date" disabled until there is something to confirm.', action: 'Pick a day, then "Set Exam Date" (disabled until a day is picked).' },
-              { name: 'Set → Yes (Edit)', why: 'A date is not a one-time entry — plans change.', action: '"Edit" reopens the calendar on the saved date’s month.' },
-            ],
             edgeCases: [
               'The card is wired into the Home layout at a fixed position (between Course Progress and Readiness) regardless of which stage it is in, so the column’s height changes as the card cycles through its four stages — nothing reserves a fixed height for it.',
               'The "here" registration link in the No stage reads as bold text rather than a real link, so a learner clicking it today gets nothing — it is drawn exactly as a link would be, which risks reading as a bug rather than an unfinished feature.',
@@ -2143,11 +2251,26 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           quickSummary:
             'Step 1/2/3 on the right side of Home. Important: Step 1’s list is a fixed, hardcoded set of lines today — it does not move with the Progress control the way Progress and Readiness do. That’s worth a decision before dev builds against it.',
           variants: [
-            { name: 'Step 1 — Study Journey (default)', when: 'Progress is anything but Completed', detail: 'A fixed 7-line list: Pre-course Affidavit, Pre-Licensing Lessons (13 of 42 completed), Prep Review (23), Simulated Exams (3), Study-manual Notice Affidavit, Final Course Exam, Survey & Certificate. Row 1 always renders as the bold "current" stop; rows 2–7 are always muted "not started" — regardless of the Progress control.' },
-            { name: 'Step 1 — Congratulations (Completed)', when: 'Progress = Completed', detail: 'Replaces the whole list with an eyebrow + "Congratulations!" + "You’ve completed your course and passed your course exams. Time to get ready for your state exam!"' },
-            { name: 'Step 2 — Pass State Exam', when: 'Always', detail: '"150 questions in 150 minutes. 70% to pass." No link on this chrome (its "What to expect" link is dropped here; WIP keeps it).' },
-            { name: 'Step 3 — Get Licensed in {state}', when: 'Always', detail: 'Retitled from the published "Apply for your License" using the learner’s state name. "Submit your certificate of completion with the application." No link on this chrome either ("How to apply" is dropped here; WIP keeps it).' },
-            { name: '{state} State Requirements button', when: 'Always, when `onOpenRequirements` is supplied', detail: 'The only click target left in this whole section on this baseline — opens the requirements sheet.' },
+            { name: 'Default', when: 'The learner has not finished the coursework.', detail: 'Step 1 is a fixed 7-line list: Pre-course Affidavit, Pre-Licensing Lessons, Study-manual Notice Affidavit, Final Exam, and the rest. Steps 2 and 3 sit beneath it.', why: 'The journey is three steps long and only the first one moves — showing all three keeps the exam and the licence in view from day one.', action: 'The rows are a checklist, not links, on this screen.' },
+            { name: 'Coursework complete', when: 'The learner has finished the coursework.', detail: 'Step 1’s whole list is replaced by an eyebrow, "Congratulations!" and a line confirming the coursework is done. Steps 2 and 3 are unchanged.', why: 'Once every row is ticked the list has nothing left to tell them; the acknowledgement is the useful thing.', action: 'None.', howToSee: 'Demo bar → Progress → Completed' },
+          ],
+          flows: [
+            {
+              title: 'What Step 1 shows',
+              decides: [
+                { when: 'The learner has finished the coursework', show: 'Congratulations' },
+                { when: 'Otherwise', show: 'The 7-line checklist' },
+              ],
+            },
+            {
+              title: 'Steps 2 and 3, which never change',
+              intro: 'Both are always drawn, in every state. They are listed here because "it does not change" is a decision a developer would otherwise have to infer from its absence.',
+              decides: [
+                { when: 'Always', show: 'Step 2 — Pass State Exam', note: '"150 questions in 150 minutes. 70% to pass." Its "What to expect" link is drawn text, not a control.' },
+                { when: 'Always', show: 'Step 3 — Get Licensed', note: 'Titled with the learner’s own state name rather than the published "Apply for your License".' },
+                { when: 'The host supplies a handler', show: 'State Requirements button', note: '⚠ The only live click target in the whole section on this screen.' },
+              ],
+            },
           ],
           uxLogic: [
             'Step 1’s list is `journeyStopsFor(path)` everywhere else in the app (a real, computed sequence of the learner’s actual coursework progress), but on White/End-to-End Demo chrome it is DISCARDED in favor of a hardcoded 7-title array — only the FIRST row is ever shown as current/in-progress, and the per-stop "done X of Y chapters, Next: Chapter N — Name" detail line (visible on WIP) never renders here at all.',
@@ -2287,12 +2410,18 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           quickSummary:
             'The compact nav card next to the course card — My Courses, My Certificates, and a few sheet links. Some of its links are the only way to reach things that are turned off elsewhere on this same page (the Study Journey’s own links), which is worth knowing before dev "fixes" one side without the other.',
           variants: [
-            { name: 'Default rows (Home)', when: 'Always', detail: 'My Courses · My Certificates · Exam Information · Applying for a License · State Requirements — 5 rows. Flashcards and Exam Simulator are hidden via `withoutCoursePages` (shown on other hosts, e.g. the Atlas My Courses page).' },
-            { name: 'Without course pages', when: '`withoutCoursePages` — Eric/Atlas WIP’s right rail', detail: 'Flashcards and Exam Simulator are dropped from the list, and the remaining icons step UP a size (15 rather than 13) to fill the room the two rows left. ⚠ This is the arm the DEFAULT Home renders, so "Default rows" above and this one describe the same five rows reached two different ways.', why: 'The WIP rail is a navigation card, not a course-tools card — the two course-page rows belong to a surface that rail does not own.', action: 'The remaining rows navigate as usual.' },
-            { name: 'Links off', when: '`linksOff` — the End-to-End Demo’s Home', detail: 'The NAVIGATING rows are drawn and inert: `go()` short-circuits before touching `setParams`, so a click changes nothing and the address bar never moves. ⚠ The three info SHEETS still open — they are local overlays, not navigation, so the card is not uniformly dead and a dev cannot infer one behavior from the other.', why: 'The end-to-end demo is a scripted walkthrough; a rail that could navigate out of it would strand the reviewer mid-script.', action: 'Nav rows: nothing. Sheet rows: open their overlay as normal.' },
-            { name: 'Home row (built, hidden)', when: 'Never, on any host — `SHOW_HOME_LINK` is hardcoded `false`', detail: 'A House icon + "Home" row exists in the component (first in the list, active when there’s no `section` param) but is unconditionally suppressed since 2026-10-07.' },
-            { name: 'Active row', when: 'The current `section`/`coursePage` matches a row', detail: 'A full-width white rounded capsule behind the row, text stepped to SemiBold. On Home itself this never triggers for any VISIBLE row — the one row that would be active there (Home) is the hidden one.' },
-            { name: 'Hover / focus', when: 'Pointer or keyboard focus on a row', detail: 'A trailing chevron fades in (reserving its space, so the row never shifts) and the label steps to Medium weight (reserved via a hidden duplicate so the card never resizes on hover).' },
+            { name: 'Default', when: 'The learner arrives on Home.', detail: 'A bordered 234px card titled "Quick Links": My Courses · My Certificates · Exam Information · Applying for a License · State Requirements. ⚠ TWO THINGS ARE TRUE OF THIS RAIL ON HOME AND BOTH ARE EASY TO MISS. Flashcards and Exam Simulator are not in the list — the rail is a navigation card here, not a course-tools card, and the remaining icons step up a size to fill the room. And the navigating rows are INERT: a click changes nothing and the address bar never moves. The three information rows still open their sheet, because a sheet is an overlay rather than navigation — so the card is not uniformly dead, and neither behavior can be inferred from the other.', why: 'One compact place to reach the things that are not on the Home screen itself.', action: 'The three information rows open a sheet. The rest are drawn and do nothing.' },
+            { name: 'Active row', when: 'The learner is on the section a row points to.', detail: 'A full-width white rounded capsule behind the row, and the label steps to SemiBold. ⚠ It never fires on Home — Home’s own row is built but switched off, and the navigating rows cannot change the section from here anyway. It is live on the surfaces where this rail does navigate.', why: 'The rail doubles as a position indicator, so the learner can see where they are without reading the page behind it.', action: 'None — it marks, it does not act.' },
+            { name: 'Hover / focus', when: 'The pointer is over a row, or the row has keyboard focus.', detail: 'A trailing chevron fades in and the label steps to Medium. ⚠ Both reserve their space, so the row never shifts as it changes — the chevron’s width and the heavier label are held by a hidden duplicate. This still happens on the inert rows.', why: 'A row has to read as clickable before it is clicked, without the list jumping as the pointer crosses it.', action: 'Activates the row, where the row does anything.' },
+          ],
+          flows: [
+            {
+              title: 'What happens when a row is clicked',
+              decides: [
+                { when: 'The row opens an information sheet', show: 'The sheet', note: 'Exam Information, Applying for a License, State Requirements. Always works.' },
+                { when: 'The row navigates', show: 'Nothing', note: 'On Home the navigating rows are switched off — the click short-circuits before changing the section.' },
+              ],
+            },
           ],
           uxLogic: [
             'My Courses / My Certificates are SECTION links — clicking sets the shell’s `section` query param in place (no real navigation).',
@@ -2419,10 +2548,28 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           quickSummary:
             'The affidavit popup that shows up after Confirmation & Password when a new learner lands on Home. Right now Cancel and agreeing both do the exact same thing — that needs a real decision on what Cancel should actually do.',
           variants: [
-            { name: 'Pre-course Affidavit', when: '`kind="pre"` (the default) — opened on arrival, before the coursework', detail: 'Heading "Pre-course Affidavit", sub-line "Before you begin the coursework". ⚠ ONE OF TWO DOCUMENTS, not one modal with two labels: `AFFIDAVIT` keys both off `kind`, and the journey row that opens each uses the same wording.', why: 'The learner has to attest before any coursework counts; opening on arrival is the only point where that is still true.', action: 'Tick the checkbox, then "Continue to course".' },
-            { name: 'Study-manual Notice Affidavit', when: '`kind="post"` — opened after the coursework, before the final exam', detail: 'Heading "Study-manual Notice Affidavit", sub-line "After the coursework, before your final exam". Identical chrome and controls to the pre-course arm; only the two strings differ.', why: 'A second, separate attestation the state requires at a different point in the journey — collapsing the two into one modal would make the record ambiguous.', action: 'Tick the checkbox, then "Continue to course".' },
-            { name: 'Unchecked (default)', when: 'On open, in EITHER `kind`', detail: '"Continue to course" is disabled (`--color-text-secondary` fill, not-allowed cursor). Cancel, the ✕, and Escape all close the modal. ⚠ A SECOND AXIS, not a third document: both `kind` arms pass through this state and the one below.' },
-            { name: 'Checked', when: 'The checkbox is ticked, in EITHER `kind`', detail: '"Continue to course" turns on (XCEL brick fill, matching the demo’s other primary buttons) — but clicking it closes the modal via the exact same handler Cancel uses.' },
+            { name: 'Pre-course Affidavit', when: 'The learner arrives, before any coursework.', detail: 'Heading "Pre-course Affidavit", sub-line "Before you begin the coursework", the course name, and a placeholder panel standing in for the real affidavit text.', why: 'The learner has to attest before any coursework counts, and arrival is the only point where that is still true.', action: 'Tick the checkbox, then "Continue to course".' },
+            { name: 'Study-manual Notice Affidavit', when: 'The learner has finished the coursework and is about to take the final exam.', detail: 'Heading "Study-manual Notice Affidavit", sub-line "After the coursework, before your final exam". Identical chrome and controls to the pre-course one — only the two strings differ.', why: 'A separate attestation the state requires at a different point. Collapsing the two into one modal would make the record ambiguous about which was signed.', action: 'Tick the checkbox, then "Continue to course".' },
+            { name: 'Not yet agreed', when: 'Either affidavit has just opened.', detail: '"Continue to course" is disabled and greyed, with a not-allowed cursor. Cancel, the ✕ and Escape all close.', why: 'The button has to be visibly unavailable, not merely inert — an enabled-looking button that does nothing reads as broken.', action: 'Tick "I have read and understand this Affidavit".' },
+            { name: 'Agreed', when: 'The learner has ticked the checkbox.', detail: '"Continue to course" turns on in the brand fill. ⚠ It then closes the modal through the same handler Cancel uses — agreeing and cancelling currently do exactly the same thing.', why: 'The attestation is the gate; the button is what passes it.', action: '"Continue to course".' },
+          ],
+          flows: [
+            {
+              title: 'Which affidavit opens',
+              intro: 'Two separate documents, not one modal with two labels. The heading and the sub-line both come from the journey step that opened it, so the modal and the row leading to it cannot say different things.',
+              decides: [
+                { when: 'The learner has not begun the coursework', show: 'Pre-course Affidavit' },
+                { when: 'The coursework is done and the final exam is next', show: 'Study-manual Notice Affidavit' },
+              ],
+            },
+            {
+              title: 'Agreeing, and leaving',
+              moves: [
+                { from: 'Not yet agreed', on: 'Tick the checkbox', to: 'Agreed' },
+                { from: 'Agreed', on: '"Continue to course"', to: 'Closed', note: '⚠ OPEN DECISION — this is the same handler Cancel uses, so nothing records that the learner agreed. What Continue should actually do is the question in the decisions log.' },
+                { from: 'Either', on: 'Cancel, ✕, or Escape', to: 'Closed', note: 'All three are the same action today, from either state.' },
+              ],
+            },
           ],
           uxLogic: [
             'Opened by Home reading `?affidavit=1` from the URL — set by the Invite flow’s Confirmation & Password page on successful submit, or reachable directly by appending the param.',

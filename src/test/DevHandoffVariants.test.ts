@@ -27,6 +27,17 @@ import { atlasRegisteredVariantKeys } from '@/components/prototype/atlasHandoffP
  * thing.
  */
 
+/** Move endpoints that are intentionally not state names. */
+const PROSE_ENDS = new Set([
+  'Any state',
+  'Any band',
+  'Either',
+  'Closed',
+  'Nothing',
+  'The next state',
+  'The next band',
+])
+
 function allHandoffComponents(): { featureId: string; component: DevHandoffComponent }[] {
   return PROTOTYPE_FEATURES.flatMap((f) => [
     ...(f.devHandoff?.components ?? []),
@@ -45,7 +56,14 @@ describe('dev-handoff variants', () => {
         orphans.push(`${componentId} — no handoff component with that id`)
         continue
       }
-      const names = new Set(component.variants.map((v) => v.name))
+      // States AND options — one render map covers both, because a reader
+      // asking "what does the combined panel look like" wants a picture for
+      // the same reason they want one of Expired. Names are unique across the
+      // two by construction; the duplicate check below is what holds that.
+      const names = new Set([
+        ...component.variants.map((v) => v.name),
+        ...(component.options ?? []).map((o) => o.name),
+      ])
       for (const key of keys) {
         if (!names.has(key)) {
           orphans.push(
@@ -60,16 +78,47 @@ describe('dev-handoff variants', () => {
     expect(orphans, orphans.join('\n')).toEqual([])
   })
 
-  it('no component lists the same variant name twice', () => {
+  it('no component reuses a name across its states and options', () => {
+    // They share one render map, so a collision silently gives two different
+    // rows the same picture.
     const dupes: string[] = []
     for (const { component } of allHandoffComponents()) {
       const seen = new Set<string>()
-      for (const v of component.variants) {
-        if (seen.has(v.name)) dupes.push(`${component.id} → "${v.name}"`)
-        seen.add(v.name)
+      for (const name of [
+        ...component.variants.map((v) => v.name),
+        ...(component.options ?? []).map((o) => o.name),
+      ]) {
+        if (seen.has(name)) dupes.push(`${component.id} → "${name}"`)
+        seen.add(name)
       }
     }
     expect(dupes, dupes.join('\n')).toEqual([])
+  })
+
+  it('a flow only ever points at a state the component actually has', () => {
+    // The flow diagram names states as chips. A chip naming a state that was
+    // renamed out from under it is the same drift the render keys had, in the
+    // one section whose whole job is to be the map.
+    const bad: string[] = []
+    for (const { component } of allHandoffComponents()) {
+      const states = new Set(component.variants.map((v) => v.name))
+      for (const flow of component.flows ?? []) {
+        for (const m of flow.moves ?? []) {
+          for (const end of [m.from, m.to]) {
+            // Some ends are deliberately prose, not a named state: a move can
+            // apply from anywhere ("Any state"), can leave the component
+            // entirely ("Closed"), or can be relative ("The next state").
+            // Kept as an explicit list rather than a pattern so adding one is
+            // a decision somebody makes, which is the whole point of the test.
+            if (PROSE_ENDS.has(end)) continue
+            if (!states.has(end)) {
+              bad.push(`${component.id} → flow "${flow.title}" names "${end}"`)
+            }
+          }
+        }
+      }
+    }
+    expect(bad, bad.join('\n')).toEqual([])
   })
 
   it('every variant names the condition that produces it', () => {

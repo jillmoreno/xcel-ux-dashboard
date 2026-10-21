@@ -64,18 +64,18 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
     Developing: () => createElement(AtlasReadinessCard, { initialLevel: 1 }),
     Proficient: () => createElement(AtlasReadinessCard, { initialLevel: 2 }),
     Ready: () => createElement(AtlasReadinessCard, { initialLevel: 3 }),
-    'bare (combined panel)': () => createElement(AtlasReadinessCard, { bare: true, initialLevel: 3 }),
+    'Combined panel': () => createElement(AtlasReadinessCard, { bare: true, initialLevel: 3 }),
   },
 
   'atlas-home-progress-states': {
-    'Zero / Study Pace': () =>
+    'Not started': () =>
       createElement(AtlasCourseProgressStates, {
         percent: 0,
         expected: PROGRESS_EXPECTED,
         access: PROGRESS_ACCESS,
         initialStage: 'zero',
       }),
-    'Current / Course Progress': () =>
+    'In progress': () =>
       createElement(AtlasCourseProgressStates, {
         percent: 42,
         expected: PROGRESS_EXPECTED,
@@ -103,7 +103,7 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
         access: PROGRESS_ACCESS,
         initialStage: 'expired',
       }),
-    'bare (combined panel)': () =>
+    'Combined panel': () =>
       createElement(AtlasCourseProgressStates, {
         bare: true,
         percent: 42,
@@ -114,36 +114,13 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
   },
 
   'atlas-home-pace-ring': {
-    // The first two name SECTIONS of one card rather than separate renders, so
-    // both point at the default card and the prose says which half to read.
-    'Course progress': () =>
+    Default: () =>
       createElement(AtlasPaceRingCard, {
         percent: 42,
         weeks: 3,
         hoursPerWeek: 4,
         expected: { value: 'November 2', note: 'At current pace' },
         standingMessage: 'You’re ahead of pace — keep it up.',
-      }),
-    'Study pace — a plan fits': () =>
-      createElement(AtlasPaceRingCard, {
-        percent: 42,
-        weeks: 3,
-        hoursPerWeek: 4,
-        expected: { value: 'November 2', note: 'At current pace' },
-        standingMessage: 'You’re ahead of pace — keep it up.',
-      }),
-    'Study pace — no plan fits': () =>
-      createElement(AtlasPaceRingCard, {
-        percent: 10,
-        noPace: { binding: 'exam', days: -2, dateIso: '2026-11-01' },
-      }),
-    'Figure rows (Estimated completion, state exam)': () =>
-      createElement(AtlasPaceRingCard, {
-        percent: 60,
-        weeks: 2,
-        hoursPerWeek: 5,
-        expected: { value: 'November 2' },
-        exam: { label: 'Florida state exam', value: 'November 16', note: '18 days' },
       }),
     'Exam booked': () =>
       createElement(AtlasPaceRingCard, {
@@ -153,29 +130,18 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
         expected: { value: 'November 2' },
         exam: { label: 'Florida state exam', value: 'November 16', note: '18 days' },
       }),
-    'Readiness below': () =>
+    'No plan fits': () =>
       createElement(AtlasPaceRingCard, {
-        percent: 42,
-        weeks: 3,
-        hoursPerWeek: 4,
-        expected: { value: 'November 2' },
-        readinessBelow: true,
-      }),
-    'Left-aligned column': () =>
-      createElement(AtlasPaceRingCard, {
-        percent: 42,
-        weeks: 3,
-        hoursPerWeek: 4,
-        expected: { value: 'November 2' },
-        align: 'left',
+        percent: 10,
+        noPace: { binding: 'exam', days: -2, dateIso: '2026-11-01' },
       }),
   },
 
   'atlas-home-exam-date-card': {
     Default: () => createElement(AtlasExamDateCard, { initialStage: 'default' }),
-    No: () => createElement(AtlasExamDateCard, { initialStage: 'no' }),
-    'Yes (calendar)': () => createElement(AtlasExamDateCard, { initialStage: 'yes' }),
-    Set: () =>
+    'No date yet': () => createElement(AtlasExamDateCard, { initialStage: 'no' }),
+    'Picking a date': () => createElement(AtlasExamDateCard, { initialStage: 'yes' }),
+    'Date set': () =>
       createElement(AtlasExamDateCard, {
         initialStage: 'set',
         initialDate: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000),
@@ -183,14 +149,15 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
   },
 
   'atlas-home-quick-links': {
-    'Default rows (Home)': quickLinks({}),
+    Default: quickLinks({}),
     'Active row': quickLinks({}, ['/?section=courses']),
-    'Without course pages': quickLinks({ withoutCoursePages: true }),
-    'Links off': quickLinks({ linksOff: true }),
   },
 
   'atlas-home-course-head': {
-    'White-style layout (stacked)': () => createElement(CourseHeadWhiteVariant),
+    // Main draws the course head one way, so this is simply what it looks
+    // like — it stopped being one of two chrome arms when the handoff was
+    // narrowed to main's walkthrough (2026-10-20).
+    'Not started': () => createElement(CourseHeadWhiteVariant),
   },
 
   'atlas-home-affidavit-modal': {

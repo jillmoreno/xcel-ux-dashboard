@@ -36,6 +36,8 @@ import {
   DevHandoffStatesMatrixBody,
   DevHandoffUserStoryBody,
   DevHandoffVariantsBody,
+  DevHandoffOptionsBody,
+  DevHandoffFlowsBody,
 } from '@/components/prototype/DevHandoffNotesBody'
 import { getUserJiraTickets } from '@/components/prototype/jiraTicketsUtil'
 import { FeaturePreviewThumb } from '@/components/prototype/FeaturePreviewThumb'
@@ -884,11 +886,21 @@ const COMPONENT_SECTIONS = [
   // components in `uiComponents`, so that grid is empty and the route could
   // only be reached by typing it. The renders now sit with their prose, on the
   // page the rows actually open.
-  { id: 'variants', label: 'Variants' },
+  // STATES · OPTIONS · FLOWS (2026-10-20, Jillienne: "imagine this is like a
+  // Figma file handoff ... this is what the default look should be, this is
+  // what expired should look like, what are all the logic flows"). One list
+  // used to hold four different kinds of thing — a state (Expired), a display
+  // toggle (Left-aligned column), a prototype branch (White / E2E chrome) and
+  // a part of the component (Figure rows) — so a reader could not tell which
+  // of them they had to choose between. They are three questions, and they get
+  // three sections.
+  { id: 'variants', label: 'States' },
+  { id: 'options', label: 'Options' },
+  { id: 'flows', label: 'Flows' },
   { id: 'logic', label: 'UX Logic' },
   { id: 'spec', label: 'Design Spec' },
   { id: 'acceptance', label: 'Acceptance' },
-  { id: 'states', label: 'States' },
+  { id: 'edge-states', label: 'Edge cases' },
   { id: 'notes', label: 'Notes' },
 ] as const
 
@@ -1425,6 +1437,18 @@ function UiComponentDetail({
   const [activeSection, setActiveSection] = useState<ComponentSectionId>('quick-summary')
   const anchorFor = (id: ComponentSectionId) => `${component.id}--${id}`
 
+  // Options and Flows are the only two sections that can be absent (see the
+  // note at their render below), so they are the only two that can leave a
+  // DEAD CHIP — one that highlights nothing and jumps nowhere, because
+  // `jump` finds no element and returns. Filtering here rather than at the
+  // nav keeps the scroll-spy walking the same list the strip draws; the two
+  // reading different lists is how the wrong chip gets highlighted.
+  const sections = COMPONENT_SECTIONS.filter((sec) => {
+    if (sec.id === 'options') return Boolean(component.options?.length)
+    if (sec.id === 'flows') return Boolean(component.flows?.length)
+    return true
+  })
+
   // The nav pins directly below the gateway's own sticky tab bar, so the two
   // stack rather than overlap.
   const navTop = (embedded ? 0 : PROTOTYPE_BAR_HEIGHT) + GATEWAY_TAB_BAR_HEIGHT
@@ -1439,8 +1463,8 @@ function UiComponentDetail({
   // (an observer would leave that one unhighlighted).
   useEffect(() => {
     const onScroll = () => {
-      let current: ComponentSectionId = COMPONENT_SECTIONS[0].id
-      for (const sec of COMPONENT_SECTIONS) {
+      let current: ComponentSectionId = sections[0].id
+      for (const sec of sections) {
         const el = document.getElementById(`${component.id}--${sec.id}`)
         if (el && el.getBoundingClientRect().top <= navTop + 72) current = sec.id
       }
@@ -1449,7 +1473,8 @@ function UiComponentDetail({
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
-  }, [component.id, navTop])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [component.id, navTop, sections.length])
 
   // Land on the right section when someone opens a shared link.
   useEffect(() => {
@@ -1572,7 +1597,7 @@ function UiComponentDetail({
           background: 'var(--ux-bg, var(--color-surface-page))',
         }}
       >
-        {COMPONENT_SECTIONS.map((sec) => {
+        {sections.map((sec) => {
           const on = sec.id === activeSection
           return (
             <button
@@ -1627,8 +1652,8 @@ function UiComponentDetail({
 
       {section(
         'variants',
-        'Variants',
-        'Every state this component can render, each beside the real component in that state — not a screenshot, so a row cannot drift from the build.',
+        'States',
+        'What the learner sees, and when. Each one beside the real component in that state — not a screenshot, so a row cannot drift from the build.',
         component.variants.length > 0 ? (
           <DevHandoffVariantsBody componentId={component.id} variants={component.variants} />
         ) : null,
@@ -1637,6 +1662,29 @@ function UiComponentDetail({
         // so the shared frame would be a box around a column of boxes.
         true,
       )}
+
+      {/* Options and Flows are the two sections that DO disappear when
+          unauthored, unlike every other one here. The always-render rule
+          exists so a reader can tell "nobody documented this" from "this
+          feature does not work that way" — and for a display toggle those are
+          the same thing. Most components have no options at all, so an
+          always-present empty section would be noise on the majority of pages
+          to make a distinction that carries nothing. */}
+      {component.options && component.options.length > 0 &&
+        section(
+          'options',
+          'Options',
+          'Display toggles. These compose with the states above rather than replacing them — any state can be shown with any option.',
+          <DevHandoffOptionsBody options={component.options} />,
+        )}
+
+      {component.flows && component.flows.length > 0 &&
+        section(
+          'flows',
+          'Flows',
+          'How the component picks a state, and how the learner moves between them.',
+          <DevHandoffFlowsBody flows={component.flows} />,
+        )}
 
       {section(
         'logic',
@@ -1665,9 +1713,9 @@ function UiComponentDetail({
       )}
 
       {section(
-        'states',
-        'States',
-        'Every state the build must handle — including loading, empty, error, and overflow paths the happy-path variants don’t show.',
+        'edge-states',
+        'Edge cases',
+        'The paths the states above don’t show — loading, empty, error, and overflow.',
         component.statesMatrix && component.statesMatrix.length > 0 ? (
           <DevHandoffStatesMatrixBody rows={component.statesMatrix} />
         ) : null,
