@@ -1209,7 +1209,27 @@ function UiComponentDetail({
            see, and the chips read as floating words. A fill plus a hairline
            under it makes it a bar; the negative margins and matching padding
            let that fill reach the full width of the column while the chips stay
-           on the text's left edge. */
+           on the text's left edge.
+
+           ⚠ NAVY AT 20%, NOT A FIXED TINT (2026-10-21, the direct ask). Card
+           white was a surface, not a bar — on a page whose cards are also white
+           the strip read as a gap in the content rather than chrome over it.
+           Written as a `color-mix` into `--color-surface-card`, which is the
+           house idiom (`scaleChipStyle` in StudyJourneyRail is the same line):
+           a percentage of the navy over whatever is actually behind, so it
+           composites correctly on both themes. A literal hex would be a light
+           strip with pale chips the moment the dark theme flips the surface
+           under it.
+
+           ⚠ AND THE NAVY IS `--color-tab-active`, NOT `--color-primary-500`.
+           This nav renders inside `.cre-prototype-stc-accent`, which re-points
+           the whole primary ramp to STC TEAL — so mixing primary-500 here
+           produces a teal wash, which is what the first attempt at this line
+           did. `--color-tab-active` is declared at `:root` as
+           `var(--color-primary-600)` and custom-property substitution happens
+           at the DECLARING element, so it carries XCEL's San Juan #26495f down
+           through the accent scope unchanged. It is also this bar's own active
+           chip, so the strip is now a 20% wash of the navy sitting on it. */
         style={{
           position: 'sticky',
           top: navTop,
@@ -1219,9 +1239,14 @@ function UiComponentDetail({
           gap: 6,
           margin: '16px -16px 0',
           padding: '10px 16px',
-          background: 'var(--color-surface-card)',
+          background: 'color-mix(in srgb, var(--color-tab-active) 20%, var(--color-surface-card))',
           borderBottom: '1px solid var(--color-border-subtle)',
-          borderRadius: 'var(--radius-md) var(--radius-md) 0 0',
+          /* ⚠ SQUARE (2026-10-21, the direct ask). It carried the card's own
+             `radius-md` on its top two corners, from when it was white and read
+             as the top of a panel. At 20% navy it is a BAR over the content,
+             and a bar with rounded shoulders floating mid-scroll reads as a
+             detached chip rather than chrome pinned to the column. */
+          borderRadius: 0,
         }}
       >
         {sections.map((sec) => {
