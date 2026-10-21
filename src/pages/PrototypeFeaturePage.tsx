@@ -30,7 +30,6 @@ import {
 } from '@/components/prototype/devHandoffStatusUtil'
 import {
   DevHandoffNotesBody,
-  DevHandoffUiUxLogicBody,
   DevHandoffDesignSpecBody,
   DevHandoffAcceptanceBody,
   DevHandoffStatesMatrixBody,
@@ -38,6 +37,7 @@ import {
   DevHandoffVariantsBody,
   DevHandoffOptionsBody,
   DevHandoffFlowsBody,
+  BulletList,
 } from '@/components/prototype/DevHandoffNotesBody'
 import { getUserJiraTickets } from '@/components/prototype/jiraTicketsUtil'
 import { FeaturePreviewThumb } from '@/components/prototype/FeaturePreviewThumb'
@@ -899,7 +899,7 @@ const COMPONENT_SECTIONS = [
   { id: 'variants', label: 'States' },
   { id: 'options', label: 'Options' },
   { id: 'flows', label: 'Flows' },
-  { id: 'logic', label: 'UX Logic' },
+  { id: 'logic', label: 'Rules' },
   { id: 'spec', label: 'Design Spec' },
   { id: 'acceptance', label: 'Acceptance' },
   { id: 'edge-states', label: 'Edge cases' },
@@ -915,7 +915,7 @@ function authoredSections(c: DevHandoffComponent): string[] {
   if (c.quickSummary) out.push('Summary')
   if (c.userStory) out.push('User Story')
   if (c.variants.length) out.push(`${c.variants.length} variant${c.variants.length === 1 ? '' : 's'}`)
-  if (c.uiUxLogic) out.push('UX Logic')
+  if (c.uxLogic.length) out.push('Rules')
   if (c.designSpec) out.push('Design Spec')
   if (c.acceptanceCriteria?.length) out.push('Acceptance')
   if (c.statesMatrix?.length) out.push('States')
@@ -1690,10 +1690,10 @@ function UiComponentDetail({
 
       {section(
         'logic',
-        'UX Logic',
-        'The reasoning and rules worked through while designing this component.',
-        component.uiUxLogic ? <DevHandoffUiUxLogicBody logic={component.uiUxLogic} /> : null,
-        'uiUxLogic',
+        'Rules',
+        'What decides which state renders, and the behaviors a build has to reproduce.',
+        component.uxLogic.length > 0 ? <BulletList items={component.uxLogic} /> : null,
+        'uxLogic',
       )}
 
       {section(
@@ -1714,12 +1714,27 @@ function UiComponentDetail({
         'acceptanceCriteria',
       )}
 
+      {/* ONE edge-case list, not two (2026-10-21). The matrix rows and the
+          prose cases used to render in different sections under the same
+          word — `statesMatrix` here, `uiUxLogic.edgeCases` up inside UX Logic
+          — so neither list was the complete answer to "what else do I have to
+          handle". */}
       {section(
         'edge-states',
         'Edge cases',
-        'The paths the states above don’t show — loading, empty, error, and overflow.',
-        component.statesMatrix && component.statesMatrix.length > 0 ? (
-          <DevHandoffStatesMatrixBody rows={component.statesMatrix} />
+        'The paths the states above don’t show — loading, empty, error, overflow, and the conditions worth knowing before you build.',
+        (component.statesMatrix && component.statesMatrix.length > 0) ||
+          (component.edgeCases && component.edgeCases.length > 0) ? (
+          <>
+            {component.statesMatrix && component.statesMatrix.length > 0 && (
+              <DevHandoffStatesMatrixBody rows={component.statesMatrix} />
+            )}
+            {component.edgeCases && component.edgeCases.length > 0 && (
+              <div style={{ marginTop: component.statesMatrix?.length ? 16 : 0 }}>
+                <BulletList items={component.edgeCases} />
+              </div>
+            )}
+          </>
         ) : null,
         'statesMatrix',
       )}
@@ -1727,7 +1742,7 @@ function UiComponentDetail({
       {section(
         'notes',
         'Notes',
-        'The full written handoff — variants, UX logic, data, stubs, and a11y.',
+        'Where it lives, the data it needs, what is still stubbed, and the accessibility behavior worth preserving.',
         <DevHandoffNotesBody component={component} />,
       )}
     </section>

@@ -6,15 +6,10 @@ import {
   DevHandoffDesignSpecBody,
   DevHandoffNotesBody,
   DevHandoffStatesMatrixBody,
-  DevHandoffUiUxLogicBody,
   DevHandoffVariantsBody,
 } from '@/components/prototype/DevHandoffNotesBody'
 import { useAccount } from '@/context/AccountContext'
-import {
-  prototypeFeatureById,
-  componentPreviewUrl,
-  type DevHandoffUiUxLogic,
-} from '@/data/prototypeFeatures'
+import { prototypeFeatureById, componentPreviewUrl } from '@/data/prototypeFeatures'
 import { RelatedJiraTickets } from '@/components/prototype/RelatedJiraTickets'
 import { atlasHandoffThumbRender } from '@/components/prototype/atlasHandoffPreviewsRegistry'
 
@@ -69,17 +64,11 @@ export function PrototypeHandoffDetailPage() {
     )
   }
 
-  // PORTED NOTE — in the Common LMS original these two were long OR-chains of
-  // specific component ids, because its previews were real React components at
-  // wildly different sizes: a 380px rail could sit beside its UI/UX logic in two
-  // columns, while a full-page composition needed the whole width with the logic
-  // stacked below.
-  //
-  // Here every preview is an iframe of a standalone HTML prototype at the same
-  // 860px frame, so the distinction has nothing left to switch on: all of them
-  // are wide. Kept as named constants rather than inlined, so the two-column
-  // pairing is one edit away if a narrow preview ever lands.
-  const stackLogicBelow = true
+  // PORTED NOTE — the original switched between two layouts here: a narrow
+  // preview beside its UI/UX logic in two columns, or a wide one with the logic
+  // stacked below. Both arms are gone with `uiUxLogic` itself (2026-10-21,
+  // redistributed into Summary, Rules and Edge cases), so there is nothing left
+  // to pair the preview with and nothing to switch on.
   const fullscreenPreview = true
 
   return (
@@ -117,54 +106,26 @@ export function PrototypeHandoffDetailPage() {
         />
       </header>
 
-      {/* Live preview — the real component(s), rendered in place.
-            - Calendar Actions is broken out into a section per CTA, so it
-              keeps its own full-width layout (+ standalone UI/UX logic below).
-            - Every other component pairs the preview with its UI/UX logic in
-              a two-column block so the rule reads alongside the UI it governs
-              (collapses to one column on narrow widths). */}
-      {/* PORTED NOTE — the original had a third arm here for 'calendar-actions',
-          whose preview was sectioned per CTA rather than shown as one component.
-          Dropped with the rest of the LMS registry; nothing PartnerHub-side needs
-          a bespoke arm, and an unreachable branch referencing a deleted component
-          would not compile. */}
-      {component.uiUxLogic && !stackLogicBelow ? (
-        <PreviewLogicColumns componentId={component.id} logic={component.uiUxLogic} />
-      ) : (
-        <section style={{ marginBottom: 32 }}>
-          <h2 style={sectionHeadingStyle}>Live preview</h2>
-          <p style={previewNoteStyle}>
-            Rendered from the real component code — interact with it directly. This stays
-            in sync with the implementation, so it won&rsquo;t drift the way a screenshot would.
-          </p>
-          {/* The same Variants section the gateway detail renders, so the two
-              pages cannot describe a component's states differently. Each row
-              frames its own render, so the shared spec-box frame would be a box
-              around a column of boxes — only the iframe fallback takes it. */}
-          {atlasHandoffThumbRender(component.id) ? (
-            <DevHandoffVariantsBody componentId={component.id} variants={component.variants} />
-          ) : (
-            <div style={previewFrameStyle}>
-              <ComponentLivePreview componentId={component.id} />
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* UI/UX logic — rendered standalone below the preview for the wide,
-          full-width previews (Calendar Actions + the study-calendar entry
-          points); every other component pairs it beside the preview above. */}
-      {component.uiUxLogic && stackLogicBelow && (
-        <section style={{ marginBottom: 32 }}>
-          <h2 style={sectionHeadingStyle}>UI/UX logic</h2>
-          <p style={previewNoteStyle}>
-            The reasoning and rules worked through while designing this component.
-          </p>
+      {/* Live preview — the real component(s), rendered in place. */}
+      <section style={{ marginBottom: 32 }}>
+        <h2 style={sectionHeadingStyle}>Live preview</h2>
+        <p style={previewNoteStyle}>
+          Rendered from the real component code — interact with it directly. This stays
+          in sync with the implementation, so it won&rsquo;t drift the way a screenshot would.
+        </p>
+        {/* The same Variants section the gateway detail renders, so the two
+            pages cannot describe a component's states differently. Each row
+            carries its own surface, so the shared spec-box frame would be a box
+            around a column of boxes — only the iframe fallback takes it. */}
+        {atlasHandoffThumbRender(component.id) ? (
+          <DevHandoffVariantsBody componentId={component.id} variants={component.variants} />
+        ) : (
           <div style={previewFrameStyle}>
-            <DevHandoffUiUxLogicBody logic={component.uiUxLogic} />
+            <ComponentLivePreview componentId={component.id} />
           </div>
-        </section>
-      )}
+        )}
+      </section>
+
 
       {/* Design spec — token-referencing (no raw values; tokens.css is
           the source of truth). */}
@@ -223,49 +184,6 @@ export function PrototypeHandoffDetailPage() {
 /* ─────────────────────────────────────────────────────────────────────────
  *  LIVE PREVIEWS — one per handoff component id.
  * ───────────────────────────────────────────────────────────────────────── */
-
-/**
- * Two-column pairing of the live preview with its UI/UX logic, so each
- * rule reads alongside the UI it governs instead of sitting in a separate
- * block far below. The preview column is given more room (it holds the
- * real component[s]); both columns wrap to a single stacked column on
- * narrow widths via flex-basis + wrap. Used for every handoff component
- * except the sectioned Calendar Actions preview.
- */
-function PreviewLogicColumns({
-  componentId,
-  logic,
-}: {
-  componentId: string
-  logic: DevHandoffUiUxLogic
-}) {
-  return (
-    <section style={{ marginBottom: 32 }}>
-      <div style={previewLogicRowStyle}>
-        <div style={previewLogicPreviewColStyle}>
-          <h2 style={sectionHeadingStyle}>Live preview</h2>
-          <p style={previewNoteStyle}>
-            Rendered from the real component code — interact with it directly. Stays in
-            sync with the implementation, so it won&rsquo;t drift the way a screenshot would.
-          </p>
-          <div style={previewFrameStyle}>
-            <ComponentLivePreview componentId={componentId} />
-          </div>
-        </div>
-        <div style={previewLogicLogicColStyle}>
-          <h2 style={sectionHeadingStyle}>UI/UX logic</h2>
-          <p style={previewNoteStyle}>
-            The reasoning and rules worked through while designing this component — paired
-            with the UI it governs.
-          </p>
-          <div style={previewFrameStyle}>
-            <DevHandoffUiUxLogicBody logic={logic} />
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
 
 /* ── Learning Resources Updates previews ──────────────────────────────
  *  All four handoff components share this one preview, wrapped once in a
@@ -402,25 +320,6 @@ const previewFrameStyle: React.CSSProperties = {
 }
 
 
-// Preview ↔ UI/UX logic two-column row. Both columns wrap to a single
-// stacked column on narrow widths (flex-wrap + flex-basis); the preview
-// column gets the larger share so multi-card galleries still breathe.
-const previewLogicRowStyle: React.CSSProperties = {
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: 24,
-  alignItems: 'flex-start',
-}
-
-const previewLogicPreviewColStyle: React.CSSProperties = {
-  flex: '2 1 520px',
-  minWidth: 0,
-}
-
-const previewLogicLogicColStyle: React.CSSProperties = {
-  flex: '1 1 320px',
-  minWidth: 0,
-}
 
 
 

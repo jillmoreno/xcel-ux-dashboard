@@ -377,29 +377,6 @@ export type DevHandoffTransition = {
   action: string
 }
 
-/** The "UI/UX logic" write-up for a component — the reasoning and rules
- *  worked through while designing it, captured for the developer:
- *   1. why it exists, 2. every action, 3. edge cases,
- *   4. toaster messaging + additional logic. */
-export type DevHandoffUiUxLogic = {
-  /** 1. Why this feature exists (the problem it solves). */
-  why: string
-  /** 2a. Flat list of the available actions — for simple components.
-   *  When `transitions` is set it takes precedence and this can be omitted. */
-  actions?: DevHandoffAction[]
-  /** 2b. The moves between the component's variants, for components that are
-   *  a state MACHINE rather than a set of independent states. Rendered
-   *  instead of `actions` when present.
-   *
-   *  ⚠ Per-variant rationale does NOT go here — it goes on the variant, as
-   *  `why` / `action`. See `DevHandoffTransition`. */
-  transitions?: DevHandoffTransition[]
-  /** 3. Edge-case scenarios the design handles. */
-  edgeCases: string[]
-  /** 4. Toaster messaging + any additional logic worked through. */
-  toasterLogic: string[]
-}
-
 /** One token reference — a role mapped to the CSS variable that drives it.
  *  We reference the NAMED token, never the raw hex/px value, so there's a
  *  single source of truth (tokens.css) and the spec can't drift. */
@@ -563,12 +540,17 @@ export type DevHandoffComponent = {
   /** The logic flows — how the component picks a state, and how the learner
    *  moves between them. Rendered as a diagram. */
   flows?: DevHandoffFlow[]
-  /** The rules that decide which variant renders + key behaviors. */
+  /**
+   * THE RULES — what decides which state renders, and the behaviors a build
+   * has to reproduce.
+   *
+   * ⚠ PROMOTED TO ITS OWN SECTION ON 2026-10-21. These were buried inside the
+   * Notes dump while a separate "UX Logic" section rendered `uiUxLogic`'s
+   * write-up above it, so the actual rules were the one thing a developer had
+   * to scroll past the spec to find. `uiUxLogic` is gone; this is the section
+   * now.
+   */
   uxLogic: string[]
-  /** The UI/UX logic write-up: why it exists, actions, edge cases,
-   *  and toaster messaging / additional logic. Rendered as its own
-   *  section on the detail screen. */
-  uiUxLogic?: DevHandoffUiUxLogic
   /** Token-referencing design spec (font / color / radius via named tokens,
    *  states, responsive + motion, sources). Rendered as its own section. */
   designSpec?: DevHandoffDesignSpec
@@ -576,6 +558,19 @@ export type DevHandoffComponent = {
   acceptanceCriteria?: string[]
   /** Non-happy-path states the build must handle (loading / empty / error / …). */
   statesMatrix?: DevHandoffState[]
+  /**
+   * Edge cases the design handles — the ones that are not a state with a
+   * behavior, but a condition worth knowing before you build.
+   *
+   * ⚠ MOVED OUT OF `uiUxLogic` ON 2026-10-21, with the rest of that field
+   * redistributed and the type retired. These are the highest-value lines in a
+   * handoff — "the registration link is bold text, not a link, so a learner
+   * clicking it gets nothing" — and they were rendering inside a UX Logic
+   * section while a SEPARATE "Edge cases" section sat below it holding
+   * `statesMatrix`. Two lists with one name, neither complete. They render
+   * together now, under the heading that was already there.
+   */
+  edgeCases?: string[]
   /** What real data / API replaces the fixtures, and the fields needed. */
   data: string[]
   /** Stubs / TODOs the developer still has to wire up. */
@@ -1391,15 +1386,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             'The Top Nav’s Home button fires `ATLAS_HOME_REFRESH`, a window event every demo card listens for: Progress resets to Not Started and every card remounts (fresh `key`), so a reviewer can restart the whole story from one button.',
             'Clicking the Course Progress card advances the Demo Controls’ Progress to the next of its five stages — the dropdown and the card are the same control, not two.',
           ],
-          uiUxLogic: {
-            why:
-              'One page, one state model: Progress drives the course-progress card, the readiness level, the current journey stop and (via the resolved stage) whether the page shows the Completed view. A developer wiring this to real data needs one source of truth, not five.',
-            edgeCases: [
-              'Completed view (Progress = Completed, 100%): the Course Progress card is hidden entirely (the dropdown still reaches it) and the right column’s Step 1 swaps the journey list for a "Congratulations!" block.',
-              '⚠ TWO TITLE MECHANISMS, ONE OF THEM DEAD. An older long-title path survives in the component but only ever feeds the course-tab strip, which never renders here — so it has no visible effect at all. The title on screen comes from a separate shared hook. Don’t "fix" one assuming it drives the other.',
-            ],
-            toasterLogic: ['None at the page level — see each card’s own handoff.'],
-          },
           designSpec: {
             tokens: [
               { role: 'Page gap (card ↔ Quick Links rail)', token: '32px' },
@@ -1416,6 +1402,10 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             'A bare `?demo=1` renders this composition: a full-width, shadowless course card over a left column holding one outlined panel, with the Quick Links rail 32px to its side. No course tabs.',
             'Pressing the Top Nav Home button resets Progress to Not Started and every demo card (Progress, Readiness, Exam Date) remounts to its zero state.',
             'The Quick Links rail moves side without re-flowing its own contents, driven by one flag read in one place.',
+          ],
+          edgeCases: [
+            'Completed view (Progress = Completed, 100%): the Course Progress card is hidden entirely (the dropdown still reaches it) and the right column’s Step 1 swaps the journey list for a "Congratulations!" block.',
+            '⚠ TWO TITLE MECHANISMS, ONE OF THEM DEAD. An older long-title path survives in the component but only ever feeds the course-tab strip, which never renders here — so it has no visible effect at all. The title on screen comes from a separate shared hook. Don’t "fix" one assuming it drives the other.',
           ],
           data: [
             'Dashboard version resolution (`resolveDashboardVersion`, `isEricAtlasWhiteLike`) — today URL/flag driven; a real build needs this to be an account-level "which experience" decision, not a query param.',
@@ -1543,6 +1533,8 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             },
           ],
           uxLogic: [
+            '⚠ CLICKING THE COVER IS A REVIEW AFFORDANCE, NOT A FEATURE. It swaps the header to an alternative layout the team was comparing. It is not meant to ship — do not build it, and do not treat the cover as interactive.',
+            'Course Overview opens the Compass Overview page for the active course; it is omitted entirely when no handler is supplied rather than rendering disabled.',
             'The visible title comes from one shared hook, so Home, the Invited Product Detail page and Checkout always agree about the course’s name. ⚠ The component also carries two older title variables that reach nothing on this page — build against the hook, not them.',
             'Cover is whichever course’s tab is active via `?whiteCourse=`; absent → the first of `WHITE_COURSES`.',
             'The meta row reads "Course Access Ends:" then the date, then an inline ", N days to complete" — one sentence, with no divider between the two halves.',
@@ -1551,19 +1543,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             'Course Overview button only renders when `onOverview` is supplied; Begin/Resume only when `onBegin` is — an action with no handler never renders as a live-looking disabled control on this component (unlike the sibling Home Course Card, which disables rather than omits).',
             'Clicking the cover is a pure local-state toggle (`whiteHead`) between the two layouts — see the Overview handoff’s decision: this is a design-review A/B, not a shipping interaction.',
           ],
-          uiUxLogic: {
-            why: 'The header has to answer three questions at a glance: which course, how far along, and what to do next.',
-            actions: [
-              { name: 'Course Overview', detail: 'Opens the Compass Overview page for the active course (`coursePage=overview`). Omitted when no handler is given.' },
-              { name: 'Begin Course / Resume Course', detail: 'Opens the Compass Course page (`coursePage=course`). Label follows the Progress stage.' },
-              { name: 'Click cover', detail: '⚠ A REVIEW AFFORDANCE, NOT A FEATURE. Clicking the cover swaps the header to an alternative layout the team was comparing. It is not meant to ship — do not build it.' },
-            ],
-            edgeCases: [
-              'Long course title: wraps within the title column; the cover keeps its fixed width/aspect regardless.',
-              'No cover image: the button/image slot is simply omitted (`shownCover ? ... : null`), title and meta take the row alone.',
-            ],
-            toasterLogic: ['None — both real actions navigate; the review-only cover click has no feedback beyond the visual swap.'],
-          },
           designSpec: {
             tokens: [
               { role: 'Eyebrow ("Current course:")', token: '--color-compass-page-eyebrow' },
@@ -1590,6 +1569,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           statesMatrix: [
             { state: 'No cover image', behavior: 'Image slot omitted; title/meta take the full row.' },
             { state: 'No handler for an action', behavior: 'Button/chip omitted, not disabled.' },
+          ],
+          edgeCases: [
+            'Long course title: wraps within the title column; the cover keeps its fixed width/aspect regardless.',
           ],
           data: [
             'Active course + cover — today `WHITE_COURSES` (three invented demo courses) plus `useEndToEndCourseTitle()` for the real one.',
@@ -1703,15 +1685,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             '⚠ NO WEEK-COUNT FALLBACK (2026-10-19). It was `: 3`, a figure nothing had computed, printed at the one moment the model has no plan to offer. `undefined` is what the card reads as "no pace fits", so the goal line, the hours line and the completion date all fall silent together.',
             'Unlike the tan arm, this card is NOT a click-to-advance review device — it has no `onAdvance`. The Demo Controls’ Progress dropdown is the only thing that moves its figures.',
           ],
-          uiUxLogic: {
-            why:
-              'The tan card steps through five states of a journey; this one shows ONE number and a way to change the plan behind it. Both read the same `studyPace` model, so they answer the same question differently rather than disagreeing about it.',
-            edgeCases: [
-              'The committed default opens at 0% and the Automatic access window — thirty days — still fits a plan, so the section opens on the PLAN arm (“Average · 4 Week Goal”), with Estimated completion below it. ⚠ THAT IS NOW TRUE ON ANY BROWSER (2026-10-20). It used to depend on `cgp.examDate` being unset: a date entered on a Compass surface survived reloads, appeared on NEITHER control bar, and turned this section into “Not enough time before your exam” for good — the one way this page could look wrong with every visible setting correct. The Home no longer reads it. The remaining no-plan arm needs a shorter Expires setting, which is a visible control.',
-            '⚠ THE LAYOUT IS A COPY, THE DATA IS NOT. This card’s panel markup was duplicated rather than shared, so editing it is safe. The pace model underneath it IS shared — change that and every surface reading it moves, which is the point: the figures must not disagree between screens.',
-            ],
-            toasterLogic: ['None — the only action is Customize Your Pace, which routes to Compass’s study planner.'],
-          },
           designSpec: {
             tokens: [
               { role: 'Panel', token: 'transparent — the outlined panel comes from the Home (`WHITE_PROGRESS_PANEL`), not from this card' },
@@ -1729,6 +1702,10 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             'A bare `?demo=1` renders THIS card in the left column — not the tan five-state one. If course-progress and study-pace are separate tan cards, the page is on the `states` arm.',
             'Course progress stays visible at 100% rather than being swapped out.',
             'When no study pace fits the remaining access, the goal row, the hours line and the completion date are all absent together — never one figure left standing on its own.',
+          ],
+          edgeCases: [
+            'The committed default opens at 0% and the Automatic access window — thirty days — still fits a plan, so the section opens on the PLAN arm (“Average · 4 Week Goal”), with Estimated completion below it. ⚠ THAT IS NOW TRUE ON ANY BROWSER (2026-10-20). It used to depend on `cgp.examDate` being unset: a date entered on a Compass surface survived reloads, appeared on NEITHER control bar, and turned this section into “Not enough time before your exam” for good — the one way this page could look wrong with every visible setting correct. The Home no longer reads it. The remaining no-plan arm needs a shorter Expires setting, which is a visible control.',
+            '⚠ THE LAYOUT IS A COPY, THE DATA IS NOT. This card’s panel markup was duplicated rather than shared, so editing it is safe. The pace model underneath it IS shared — change that and every surface reading it moves, which is the point: the figures must not disagree between screens.',
           ],
           data: [
             'The learner’s completion percentage — today the Demo Controls’ Progress flag via the shared ladder, not a progress record.',
@@ -1784,15 +1761,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             'Only the Current state reads real figures (`percent`, `expected`, `access`, all passed in). Milestone, Complete and Expired render FIXED design copy (68%, "June 3", "28 Days", "Ends June 10", etc.) regardless of the actual course.',
             'The aria-label states the step number, state name and that pressing shows the next state — it changes with every state, so a screen-reader user always knows where the cycle is and what activating it does.',
           ],
-          uiUxLogic: {
-            why:
-              'One card needs to stand in for progress at every point in a course’s life, including two states (Milestone, Expired) a prototype has no way to reach from real data yet — so it is built as a steppable review device first, a real progress display second.',
-            edgeCases: [
-              'Milestone/Complete/Expired are reachable ONLY via the Demo Controls’ Progress dropdown on Home (clicking the card alone cycles 1→5→1 through all five using its OWN state, which only matches the page when nothing else is driving it via `onAdvance`).',
-              '⚠ The dial in Milestone and Complete does not read the learner’s real figure — both override it to fixed design values (68% and 100%). A reviewer comparing this card against the rest of the page will find them disagreeing, and that is why.',
-            ],
-            toasterLogic: ['None — the whole card is one stepping control; neither drawn action fires anything.'],
-          },
           designSpec: {
             tokens: [
               { role: 'Card surface', token: '--color-primary-100 — dropped entirely under the Combined panel option' },
@@ -1818,6 +1786,10 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           statesMatrix: [
             { state: 'percent ≤ 0 mid-cycle', behavior: 'Forced to Zero regardless of where the click-cycle was.' },
             { state: 'No `access` figure supplied', behavior: 'The Course access figure (and its rule) is simply omitted on Current.' },
+          ],
+          edgeCases: [
+            'Milestone/Complete/Expired are reachable ONLY via the Demo Controls’ Progress dropdown on Home (clicking the card alone cycles 1→5→1 through all five using its OWN state, which only matches the page when nothing else is driving it via `onAdvance`).',
+            '⚠ The dial in Milestone and Complete does not read the learner’s real figure — both override it to fixed design values (68% and 100%). A reviewer comparing this card against the rest of the page will find them disagreeing, and that is why.',
           ],
           data: [
             'percent (0–100) — the active course’s real completion.',
@@ -1954,15 +1926,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             'Clicking past Ready (the last band) does NOT wrap back to Beginner the way every other band steps to the next — on Home it instead resets the WHOLE PAGE’s shared Progress control back to Not Started (`onPastLast`), which also resets Course Progress and the Study Journey. A learner reading only the Readiness card has no way to predict that from what’s on screen.',
             'The aria-label states the level number, its name, and that pressing shows the next one — it updates on every level, so a screen-reader user always knows where the cycle is and what activating it does.',
           ],
-          uiUxLogic: {
-            why:
-              'A plain percent (like Course Progress’s dial) answers "how much of the course is done"; this card answers a different question — "could I pass the exam right now" — so it needed its own vocabulary (four named competency bands, plus "Not Started") rather than reusing Progress’s number.',
-            edgeCases: [
-              '⚠ EVERY BAND IS NOW REACHABLE FROM THE PROGRESS CONTROL (2026-10-20). Under the retired five-level scale the sync map topped out at Proficient and Exam Ready could only be reached by clicking the card; with four bands, `completed` maps to Ready — the top — so nothing is undemoable through the Progress control any more. The empty Not Started state is the one thing the map does not produce: it needs the `notStarted` prop.',
-              'The reset-to-Not-Started behavior on a past-Ready click is Home-specific wiring (`onPastLast`), not something the component does on its own — a standalone mount of this card with no `onPastLast` simply wraps to Beginner, which is what the Variants gallery above shows.',
-            ],
-            toasterLogic: ['None — the whole card is one stepping control; the "Help me get ready" text fires nothing.'],
-          },
           designSpec: {
             tokens: [
               { role: 'Card surface', token: '--color-atlas-tan-200 — dropped entirely under the Combined panel option' },
@@ -1987,8 +1950,11 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             '`bare` renders with no card fill, no question line, and no "Help me get ready" link — eyebrow + dial only.',
           ],
           statesMatrix: [
-            { state: 'Progress stage has no readiness mapping', behavior: 'Falls back to Novice (level 1).' },
-            { state: 'Clicked past Exam Ready, not on Home (no `onPastLast` supplied)', behavior: 'Wraps back to Novice like every other level.' },
+            { state: 'Progress stage has no readiness mapping', behavior: 'Falls back to Beginner, the first band.' },
+            { state: 'Clicked past Ready, away from Home', behavior: 'Wraps back to Beginner. The reset-the-whole-page behavior is Home’s own wiring, not the card’s — a standalone mount just wraps.' },
+          ],
+          edgeCases: [
+            '⚠ EVERY BAND IS NOW REACHABLE FROM THE PROGRESS CONTROL (2026-10-20). Under the retired five-level scale the sync map topped out at Proficient and Exam Ready could only be reached by clicking the card; with four bands, `completed` maps to Ready — the top — so nothing is undemoable through the Progress control any more. The empty Not Started state is the one thing the map does not produce: it needs the `notStarted` prop.',
           ],
           data: [
             'initialLevel (0–4) — which of the five levels to open on; Home computes this from the Course Progress stage rather than passing a raw number.',
@@ -2117,15 +2083,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             'The whole card remounts on the page’s shared refresh key — the Top Nav’s Home button resets it (along with Course Progress and Readiness) back to Default, discarding any locally-set exam date.',
             'Colours are the COMPASS palette on every brand (not the active brand’s own palette) EXCEPT the buttons and text links, which keep the brand’s own button colour — a deliberate two-palette mix, not an oversight.',
           ],
-          uiUxLogic: {
-            why:
-              'An exam date is the one piece of context the pace model and Study Journey most need and least reliably have, so the card exists to collect it opportunistically with as little friction as a two-tap flow (pick a day, confirm) — but it is explicitly NOT yet treated as real data anywhere else on the page.',
-            edgeCases: [
-              'The card is wired into the Home layout at a fixed position (between Course Progress and Readiness) regardless of which stage it is in, so the column’s height changes as the card cycles through its four stages — nothing reserves a fixed height for it.',
-              'The "here" registration link in the No stage reads as bold text rather than a real link, so a learner clicking it today gets nothing — it is drawn exactly as a link would be, which risks reading as a bug rather than an unfinished feature.',
-            ],
-            toasterLogic: ['None — setting, editing or cancelling an exam date fires no toast.'],
-          },
           designSpec: {
             tokens: [
               { role: 'Card border', token: '--color-atlas-nav-rule' },
@@ -2154,6 +2111,10 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           statesMatrix: [
             { state: 'On Home today', behavior: '⚠ The card is not rendered at all. It is built and complete; nothing on the current Home mounts it. Everything else in this handoff describes what it does once it is placed.' },
             { state: 'Where it is meant to sit', behavior: 'Between Course progress and Readiness in the left column — that is the slot it was designed against.' },
+          ],
+          edgeCases: [
+            'The card is wired into the Home layout at a fixed position (between Course Progress and Readiness) regardless of which stage it is in, so the column’s height changes as the card cycles through its four stages — nothing reserves a fixed height for it.',
+            'The "here" registration link in the No stage reads as bold text rather than a real link, so a learner clicking it today gets nothing — it is drawn exactly as a link would be, which risks reading as a bug rather than an unfinished feature.',
           ],
           data: [
             'stateName — the state name shown in the Yes stage’s question ("your {stateName} state exam?"); Home passes the learner’s real state.',
@@ -2292,15 +2253,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             'The published licensing path has THREE steps after the coursework — Schedule State Exam, Pass State Exam, Apply for your License — but Home shows only the last two. "Schedule State Exam" never appears.',
             'No journey row ever gets a chevron. A row earns one only when it is not current and not "not-started", and in a fixed list every non-current row is "not-started" by construction.',
           ],
-          uiUxLogic: {
-            why:
-              'Steps 2 and 3 exist to keep the licensing path visible past the point the LMS stops tracking it (scheduling and sitting a state exam, then applying, both happen outside the product) — Step 1 exists to show what is still being tracked inside it.',
-            edgeCases: [
-              '⚠ Dead code worth knowing about: a filter that drops the Attestation & Affidavit stop still runs inside this component, on the computed list Home never displays. It has no visible effect — but it will the moment anyone switches Step 1 over to the real sequence, which is the obvious next change here.',
-              'The Completed-stage Congratulations copy ("passed your course exams") is stated unconditionally, with no dependency on whether the Step 1 list (fixed or real) actually shows every stop as complete.',
-            ],
-            toasterLogic: ['None — this section fires no toasts; its only interaction is the State Requirements button, which opens a sheet.'],
-          },
           designSpec: {
             tokens: [
               { role: 'Step eyebrow ("Step 1" / "Step 2" / "Step 3")', token: 'bold weight, shares STEP_EYEBROW style' },
@@ -2325,6 +2277,10 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           statesMatrix: [
             { state: 'Progress = Completed', behavior: 'Step 1 list replaced by the Congratulations block; Steps 2 & 3 and the Requirements button are unaffected.' },
             { state: 'Any other Progress value', behavior: 'Step 1 shows the fixed 7-line list with row 1 always current — visually unchanged by which Progress value is picked.' },
+          ],
+          edgeCases: [
+            '⚠ Dead code worth knowing about: a filter that drops the Attestation & Affidavit stop still runs inside this component, on the computed list Home never displays. It has no visible effect — but it will the moment anyone switches Step 1 over to the real sequence, which is the obvious next change here.',
+            'The Completed-stage Congratulations copy ("passed your course exams") is stated unconditionally, with no dependency on whether the Step 1 list (fixed or real) actually shows every stop as complete.',
           ],
           data: [
             'The fixed Step 1 titles are hardcoded in `WHITE_JOURNEY_TITLES`, not derived from any path or fixture.',
@@ -2441,15 +2397,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             'Because Home DOES supply those handlers to this card but withholds them from the Study Journey section’s own Step 2/3 links (see that handoff), "Applying for a License" and "State Requirements" are reachable from Quick Links even though the inline links that would otherwise lead to the same places are switched off elsewhere on this same page.',
             'A row with no `onClick` at all renders `disabled` — on Home every visible row has a real handler, so none render disabled here; a host that supplies neither prop would get one disabled row (State Requirements, whose only source is the `onOpenRequirements` prop with no URL fallback).',
           ],
-          uiUxLogic: {
-            why:
-              'A compact, always-visible list of "where do I go next" destinations that does not compete with the Study Journey’s own step-by-step narrative — it exists so a learner who wants My Certificates or the exam requirements does not have to read through Steps 1–3 to find them.',
-            edgeCases: [
-              'The "Home" row is fully built (icon, active-state logic, everything) and simply switched off by one `const SHOW_HOME_LINK = false` — turning it on costs nothing but might read oddly on Home itself, where it would always show as the active row (since Home never sets a `section`).',
-              'All three sheet links share the same fallback shape (`handler ?? homeAndOpen(...)`), so a host supplying neither `onOpenStep` nor `onOpenRequirements` still gets working rows — they just navigate to Home with an `?open=` param instead of calling a handler directly.',
-            ],
-            toasterLogic: ['None.'],
-          },
           designSpec: {
             tokens: [
               { role: 'Card border', token: '--color-atlas-nav-rule default, overridden on Home to a 95%-darkened --color-atlas-slate-100' },
@@ -2474,6 +2421,10 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           statesMatrix: [
             { state: 'No `onOpenStep` / `onOpenRequirements` supplied', behavior: 'Sheet links fall back to setting `?open=` on the current URL instead of calling a handler.' },
             { state: '`withoutCoursePages` true (Home)', behavior: 'Flashcards and Exam Simulator rows are omitted entirely.' },
+          ],
+          edgeCases: [
+            'The "Home" row is fully built (icon, active-state logic, everything) and simply switched off by one `const SHOW_HOME_LINK = false` — turning it on costs nothing but might read oddly on Home itself, where it would always show as the active row (since Home never sets a `section`).',
+            'All three sheet links share the same fallback shape (`handler ?? homeAndOpen(...)`), so a host supplying neither `onOpenStep` nor `onOpenRequirements` still gets working rows — they just navigate to Home with an `?open=` param instead of calling a handler directly.',
           ],
           data: [
             'onOpenStep / onOpenRequirements — the two callbacks shared with the Study Journey section; Home supplies both as real handlers.',
@@ -2589,15 +2540,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             'Focus is moved to the checkbox on open (`autoFocus`) — "the one thing to do" per the component’s own comment — but there is no focus TRAP: Tab can move focus out of the dialog into the page behind it, which Escape and the visible scrim suggest should not be possible.',
             'The course name shown ("Florida Life & Health Pre-licensing") is a hardcoded string, not read from `useEndToEndCourseTitle()` — the same mechanism the course head and Study Journey read from. It happens to agree with the demo’s short-title default today, but will silently disagree if that default, or the long-title flag, changes.',
           ],
-          uiUxLogic: {
-            why:
-              'A legal-style gate the learner must acknowledge before starting a licensing course — the design’s point is the acknowledgment itself (the checkbox), with the actual affidavit TEXT left as a placeholder pending real legal copy.',
-            edgeCases: [
-              'Cancel and an agreed Continue are currently indistinguishable in effect — both simply close the modal and reveal Home. If "Cancel" is meant to send the learner somewhere else (back to Confirmation & Password, or block them from the course), that is unbuilt.',
-              'The modal has no server-side or persisted record of the acknowledgment — closing it (by any route) and reopening via the same URL param resets the checkbox to unticked.',
-            ],
-            toasterLogic: ['None.'],
-          },
           designSpec: {
             tokens: [
               { role: 'Scrim', token: '--color-e2e-scrim' },
@@ -2626,6 +2568,10 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           statesMatrix: [
             { state: 'Checkbox unticked', behavior: '"Continue to course" renders disabled; clicking it does nothing.' },
             { state: 'Any close route (Cancel / ✕ / Escape / agreed Continue)', behavior: 'Identical outcome — the modal closes and the `affidavit` param is removed.' },
+          ],
+          edgeCases: [
+            'Cancel and an agreed Continue are currently indistinguishable in effect — both simply close the modal and reveal Home. If "Cancel" is meant to send the learner somewhere else (back to Confirmation & Password, or block them from the course), that is unbuilt.',
+            'The modal has no server-side or persisted record of the acknowledgment — closing it (by any route) and reopening via the same URL param resets the checkbox to unticked.',
           ],
           data: ['onClose — the only prop; Home supplies a handler that strips the `affidavit` URL param.'],
           stubs: [

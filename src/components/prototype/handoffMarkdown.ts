@@ -18,7 +18,6 @@
 import type {
   DevHandoffComponent,
   DevHandoffDesignSpec,
-  DevHandoffUiUxLogic,
   DevHandoffUserStory,
   PrototypeFeature,
 } from '@/data/prototypeFeatures'
@@ -50,29 +49,6 @@ function userStoryLines(story: DevHandoffUserStory): string[] {
   ]
   if (story.value) out.push(`**Why it matters.** ${story.value}`, '')
   if (story.notes?.length) out.push(...bullets(story.notes), '')
-  return out
-}
-
-function uxLogicLines(logic: DevHandoffUiUxLogic): string[] {
-  const out = ['#### UX Logic', '', logic.why, '']
-  if (logic.actions?.length) {
-    out.push('**Actions**', '')
-    for (const a of logic.actions) out.push(`- **${a.name}** — ${a.detail}`)
-    out.push('')
-  }
-  // TRANSITIONS, not variants — the states themselves are emitted once, by
-  // `componentLines` below, with their own why/action. See
-  // `DevHandoffTransition`.
-  if (logic.transitions?.length) {
-    out.push('**Transitions**', '')
-    for (const t of logic.transitions) {
-      const when = t.when ? ` _(${t.when})_` : ''
-      out.push(`- **${t.name}**${when} — ${t.why} → ${t.action}`)
-    }
-    out.push('')
-  }
-  out.push(...listSection('Edge cases', logic.edgeCases))
-  out.push(...listSection('Toaster logic', logic.toasterLogic))
   return out
 }
 
@@ -124,12 +100,7 @@ function componentLines(c: DevHandoffComponent): string[] {
     out.push('')
   }
 
-  // ⚠ BOTH, not one or the other (2026-10-20). `uiUxLogic` was an `else` over
-  // `uxLogic`, so a component carrying both — which every Atlas Home component
-  // does — exported the write-up and silently dropped the rules. The page has
-  // always rendered both, so the pasted ticket was the lossy copy of the two.
-  if (c.uiUxLogic) out.push(...uxLogicLines(c.uiUxLogic))
-  if (c.uxLogic.length) out.push(...listSection('UX Logic rules', c.uxLogic))
+  if (c.uxLogic.length) out.push(...listSection('Rules', c.uxLogic))
 
   if (c.designSpec) out.push(...designSpecLines(c.designSpec))
 
@@ -139,10 +110,16 @@ function componentLines(c: DevHandoffComponent): string[] {
     out.push('#### Acceptance', '', ...c.acceptanceCriteria.map((a) => `- [ ] ${a}`), '')
   }
 
-  if (c.statesMatrix?.length) {
-    out.push('#### States', '', '| State | Expected behaviour |', '| --- | --- |')
-    for (const s of c.statesMatrix) out.push(`| ${s.state} | ${s.behavior} |`)
-    out.push('')
+  // Edge cases: the matrix and the prose cases under ONE heading, the way the
+  // page renders them since 2026-10-21.
+  if (c.statesMatrix?.length || c.edgeCases?.length) {
+    out.push('#### Edge cases', '')
+    if (c.statesMatrix?.length) {
+      out.push('| State | Expected behaviour |', '| --- | --- |')
+      for (const st of c.statesMatrix) out.push(`| ${st.state} | ${st.behavior} |`)
+      out.push('')
+    }
+    if (c.edgeCases?.length) out.push(...bullets(c.edgeCases), '')
   }
 
   out.push(...listSection('Data', c.data))

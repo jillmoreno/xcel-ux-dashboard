@@ -102,19 +102,6 @@ const COURSE_HEADER_HANDOFF: DevHandoffComponent = {
     'The cover has an `onError` fallback to `getCourseImage(pathId)`, guarded against looping when the fallback is itself what failed.',
     'Separators are layered by ROLE: the 1px rule divides the figure from the group; 3px round dots divide pairs from each other. In the narrow column the dots are suppressed entirely (`i > 0 && !narrowHeader`), because stacked pairs do not need a horizontal separator.',
   ],
-  uiUxLogic: {
-    why:
-      'A learner arriving at the home screen needs one sentence’s worth of orientation before anything asks them to act: which course, how far in, how long left. The header is that sentence. Everything below it — the card, the pace tile, the journey — assumes the learner has already read it, which is why it carries the only unconditional statement of progress on the page.',
-    edgeCases: [
-      'Long course titles wrap to two lines and push the stat row down; the row does not reflow and the figure stays with its pairs.',
-      'Missing cover art: `onError` swaps to the path’s default image once, then stops. A fixture with no cover at all (`completed-empty`) renders the text column with no art — undesigned.',
-      'A path with no category breakdown drops the lessons pair rather than showing a zero denominator.',
-      'Below 1100px the cover stacks ABOVE the text and the stretched height comes back off — the rule lives in the stylesheet precisely so the media query can undo it; an inline `alignSelf` would beat the query while looking correct in code.',
-    ],
-    toasterLogic: [
-      'No toasts. The header is read-only — its one control (Details →) navigates and nothing here can fail.',
-    ],
-  },
   designSpec: {
     tokens: [
       { role: 'Course name', token: '--font-heading, --color-text-primary' },
@@ -167,6 +154,12 @@ const COURSE_HEADER_HANDOFF: DevHandoffComponent = {
     { state: '100% + nothing queued', behavior: '⚠ NEEDS DESIGN. Header is correct; the card below contradicts it. See the decisions log.' },
     { state: 'Expired', behavior: '⚠ COMPONENT DOES NOT RENDER — a different surface replaces the band. Decided, not a gap.' },
     { state: 'Narrow viewport (≤1100px)', behavior: 'Column layout, cover above text, stretched height removed.' },
+  ],
+  edgeCases: [
+    'Long course titles wrap to two lines and push the stat row down; the row does not reflow and the figure stays with its pairs.',
+    'Missing cover art: `onError` swaps to the path’s default image once, then stops. A fixture with no cover at all (`completed-empty`) renders the text column with no art — undesigned.',
+    'A path with no category breakdown drops the lessons pair rather than showing a zero denominator.',
+    'Below 1100px the cover stacks ABOVE the text and the stretched height comes back off — the rule lives in the stylesheet precisely so the media query can undo it; an inline `alignSelf` would beat the query while looking correct in code.',
   ],
   data: [
     '`activeProgressPath` — the learner’s current learning path: id, title, cover image, and the category breakdown the lessons pair counts.',
@@ -250,20 +243,6 @@ const JUMP_BACK_IN_HANDOFF: DevHandoffComponent = {
     'The eyebrow glyph is 13px `BookOpenThin` — the same size the Study Pace and Readiness tiles set theirs, because those sit in the same column and one eyebrow shape across the three is what makes them read as a set.',
     'The card carries NO progress bar. The header above states the same percentage; a bar here was the third saying of one number in one column.',
   ],
-  uiUxLogic: {
-    why:
-      'The home screen’s job is to get a learner back into the material in one click, without making them navigate a course list to find where they were. The card is that click. Its three shapes exist because the same button means three different things across a course’s life, and a single label for all of them would be wrong twice.',
-    edgeCases: [
-      'No course at all → the component renders nothing rather than an empty card.',
-      'Long chapter titles wrap to two lines; the CTA tracks the title because the row is centre-aligned rather than pinned.',
-      'Chapter number absent → the lesson line is omitted; the title still renders.',
-      'Part number absent → the lesson line renders without the "Part N of 3" half and without its separator dot.',
-      '⚠ 100% with `renewalReady` false → the in-progress shape renders at 100%. Undesigned; see the decisions log.',
-    ],
-    toasterLogic: [
-      'No toasts. The single CTA navigates; there is nothing here that can fail in place.',
-    ],
-  },
   designSpec: {
     tokens: [
       { role: 'Card surface', token: '--color-surface-card' },
@@ -321,6 +300,13 @@ const JUMP_BACK_IN_HANDOFF: DevHandoffComponent = {
     { state: '100% + nothing queued', behavior: '⚠ DEFECT / NEEDS DESIGN. Renders the in-progress shape ("Resume", "Lesson 42") at 100%. See the decisions log.' },
     { state: 'Expired', behavior: '⚠ COMPONENT DOES NOT RENDER — a different surface replaces the band. Decided, not a gap.' },
     { state: 'Resume target missing', behavior: '⚠ NOT DESIGNED. `onResume` is optional and silently no-ops when absent.' },
+  ],
+  edgeCases: [
+    'No course at all → the component renders nothing rather than an empty card.',
+    'Long chapter titles wrap to two lines; the CTA tracks the title because the row is centre-aligned rather than pinned.',
+    'Chapter number absent → the lesson line is omitted; the title still renders.',
+    'Part number absent → the lesson line renders without the "Part N of 3" half and without its separator dot.',
+    '⚠ 100% with `renewalReady` false → the in-progress shape renders at 100%. Undesigned; see the decisions log.',
   ],
   data: [
     '`course` — `CourseCardData`: id, title and `progress`. `progress` alone decides the not-started / in-progress split.',
@@ -620,20 +606,6 @@ export const ARCHIVED_FEATURE_ROWS: PrototypeFeature[] = [
             'Begin Course opens the Compass Course page (`section=course&coursePage=course`). Course Overview opens the Compass Overview (`coursePage=overview`).',
             'An action with no handler renders disabled (the button) or as plain text (the chip) — never a live-looking control that does nothing.',
           ],
-          uiUxLogic: {
-            why:
-              'The Course Progress header and the Jump Back In card stated the same course twice. One card carries the course, where the learner stands, and the one next step.',
-            actions: [
-              { name: 'Begin Course', detail: 'Opens the Compass Course page (the course player).' },
-              { name: 'Course Overview (chip)', detail: 'Opens the course’s Compass Overview page.' },
-            ],
-            edgeCases: [
-              'Long course title wraps to two lines at 750px; the cover stays a fixed 94px square.',
-              'Long lesson title wraps beside the button; the button never shrinks.',
-              'Facts row wraps onto a second line when the three facts plus the chip do not fit.',
-            ],
-            toasterLogic: ['No toasts — both actions navigate.'],
-          },
           designSpec: {
             tokens: [
               { role: 'Card surface', token: '--color-compass-page-card' },
@@ -673,6 +645,11 @@ export const ARCHIVED_FEATURE_ROWS: PrototypeFeature[] = [
             { state: 'No cover image', behavior: 'The cover is omitted; title and facts take the row.' },
             { state: 'No lesson breakdown', behavior: 'The Completed fact is omitted rather than reading “0 of 0”.' },
             { state: 'Coursework complete', behavior: 'Lesson pill and estimate drop; Review Course replaces Begin Course.' },
+          ],
+          edgeCases: [
+            'Long course title wraps to two lines at 750px; the cover stays a fixed 94px square.',
+            'Long lesson title wraps beside the button; the button never shrinks.',
+            'Facts row wraps onto a second line when the three facts plus the chip do not fit.',
           ],
           data: [
             'Course title and cover — the active learning path / course.',

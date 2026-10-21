@@ -69,7 +69,7 @@ or a pill strip (removed 2026-08-31):
 
 A row carries a **live thumbnail**, the full `name`, its `badge` + `badgeDate`
 right-aligned, a 2-line `summary`, and **chips naming what is authored** —
-`User Story · 4 variants · UX Logic · Design Spec · Acceptance · States`. That
+`User Story · 4 states · Rules · Design Spec · Acceptance · Edge cases`. That
 chip row is the point of the list: it answers *"is there a spec on this one?"*
 without spending a click, and it makes an under-documented component obvious at
 a glance. It replaced a pill strip, which gave a truncated label and nothing
@@ -84,7 +84,7 @@ Master/detail rather than a persistent side rail because several previews run to
 Sections stack in this order, each with a real anchor id
 (`<componentId>--<sectionId>`), under a sticky jump nav with scroll-spy:
 
-**Summary · User Story · States · Options · Flows · UX Logic · Design Spec · Acceptance · Edge cases · Notes**
+**Summary · User Story · States · Options · Flows · Rules · Design Spec · Acceptance · Edge cases · Notes**
 
 **They were sub-tabs for a few hours on 2026-08-31 and a developer reported it
 was worse. They were right, and the reason is concrete:** inactive panels were
@@ -222,7 +222,8 @@ Optional, and worth filling — each renders as its own framed section:
 | `quickSummary` | **ASK the designer for these words — never write them yourself.** Plain text, the designer's own voice, leads the detail. See below |
 | `userStory` | `{ asA, iWant, soThat, value?, notes? }` — the PO's framing. See below |
 | `variants` | **The one list of states**, `{ name, when, detail?, why?, action? }`. `name` is also the key the live-render registry matches on — see *Variants* below |
-| `uiUxLogic` | `{ why, transitions \| actions, edgeCases, toasterLogic }` — the reasoning worked through while designing it. ⚠ `transitions` was `variants` until 2026-10-20; per-state rationale now goes on the variant itself |
+| `uxLogic` | `string[]` — THE RULES: what decides which state renders, and the behaviors a build has to reproduce. Its own section since 2026-10-21 |
+| `edgeCases` | `string[]` — conditions worth knowing that are not a state with a behavior. Renders with `statesMatrix` under one "Edge cases" heading |
 | `designSpec` | `{ tokens, states, responsive, sources }` |
 | `acceptanceCriteria` | testable Definition of Done |
 | `statesMatrix` | `{ state, behavior }` for the non-happy paths |
@@ -247,9 +248,15 @@ entry carries `when` (the condition that produces it), and optionally `detail`,
   described the five levels those bands replaced four days earlier. Nothing
   failed.
 
-So: per-state rationale goes on the variant. `uiUxLogic.transitions` is only
-for components that are a state MACHINE — the Exam Date card's
-`Default → No → Yes → Set` — where the MOVE between states needs its own why.
+So: per-state rationale goes on the variant.
+
+⚠ **`uiUxLogic` IS GONE (2026-10-21).** It held four things and every one of
+them had a better home, which is why the section read as a duplicate of the
+page around it: `why` → the Summary, `edgeCases` → the Edge cases section
+(where a SECOND list under the same name already sat), `actions` → the Rules,
+and `toasterLogic` → dropped, because all nine components said "None." `Rules`
+(`uxLogic`) is the section in its place, promoted out of the Notes dump where
+it had been buried.
 
 **The live render is keyed by `name`.** `atlasHandoffPreviewsRegistry.ts` maps
 `componentId → { [variantName]: () => ReactNode }`, and the Variants section

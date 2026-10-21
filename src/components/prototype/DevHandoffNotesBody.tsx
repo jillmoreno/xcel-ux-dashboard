@@ -3,7 +3,6 @@ import type {
   DevHandoffComponent,
   DevHandoffDesignSpec,
   DevHandoffState,
-  DevHandoffUiUxLogic,
   DevHandoffUserStory,
   DevHandoffVariant,
   DevHandoffOption,
@@ -36,12 +35,10 @@ export function DevHandoffNotesBody({ component }: { component: DevHandoffCompon
       <code style={pointerLocationStyle}>{component.location}</code>
       <p style={{ ...handoffProseStyle, margin: '12px 0 0' }}>{component.summary}</p>
 
-      {/* Variants are NOT repeated here — they have their own section, which
-          pairs each one with its live render. See `DevHandoffVariantsBody`. */}
-
-      <HandoffBlock label="UX logic">
-        <BulletList items={component.uxLogic} />
-      </HandoffBlock>
+      {/* Neither the variants nor the rules are repeated here — both have
+          their own section now (`DevHandoffVariantsBody`, and the Rules
+          section's `BulletList` over `uxLogic`). Notes is what is left: where
+          it lives, what it needs, and what is still stubbed. */}
 
       <HandoffBlock label="Data dependencies">
         <BulletList items={component.data} />
@@ -442,77 +439,6 @@ const variantAbsentStyle: CSSProperties = {
   padding: 20,
   border: '1px dashed var(--color-border-subtle)',
   borderRadius: 'var(--radius-lg)',
-}
-
-/**
- * The "UI/UX logic" write-up for one component — the four-part rationale
- * captured while designing it: why it exists, every action, edge cases,
- * and toaster messaging / additional logic.
- */
-export function DevHandoffUiUxLogicBody({ logic }: { logic: DevHandoffUiUxLogic }) {
-  return (
-    <div>
-      <HandoffBlock label="Why this feature exists">
-        <p style={{ ...handoffProseStyle, margin: 0 }}>{logic.why}</p>
-      </HandoffBlock>
-
-      {logic.transitions && logic.transitions.length > 0 ? (
-        // TRANSITIONS, not variants (2026-10-20). The states themselves live in
-        // the Variants section with their own `why` / `action`; what is left
-        // here is the movement between them, which only a state machine has.
-        <HandoffBlock label="Transitions">
-          <ul style={detailListStyle}>
-            {logic.transitions.map((t, i) => (
-              <li
-                key={t.name}
-                style={{
-                  ...detailItemStyle,
-                  ...(i > 0 && {
-                    borderTop: '1px solid var(--color-border-subtle)',
-                    paddingTop: 10,
-                  }),
-                }}
-              >
-                <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{t.name}</span>
-                {t.when && (
-                  <span style={{ color: 'var(--color-text-tertiary)' }}> — {t.when}</span>
-                )}
-                <span style={{ display: 'block', marginTop: 4, color: 'var(--color-text-secondary)' }}>
-                  <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>Why it exists: </span>
-                  {t.why}
-                </span>
-                <span style={{ display: 'block', marginTop: 2, color: 'var(--color-text-secondary)' }}>
-                  <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>Action: </span>
-                  {t.action}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </HandoffBlock>
-      ) : logic.actions && logic.actions.length > 0 ? (
-        <HandoffBlock label="Available actions">
-          <ul style={detailListStyle}>
-            {logic.actions.map((a) => (
-              <li key={a.name} style={detailItemStyle}>
-                <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{a.name}</span>
-                <span style={{ display: 'block', marginTop: 2, color: 'var(--color-text-secondary)' }}>
-                  {a.detail}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </HandoffBlock>
-      ) : null}
-
-      <HandoffBlock label="Edge cases">
-        <BulletList items={logic.edgeCases} />
-      </HandoffBlock>
-
-      <HandoffBlock label="Toaster messaging & logic">
-        <BulletList items={logic.toasterLogic} />
-      </HandoffBlock>
-    </div>
-  )
 }
 
 /**
