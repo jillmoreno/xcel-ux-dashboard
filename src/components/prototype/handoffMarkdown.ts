@@ -83,7 +83,11 @@ function componentLines(c: DevHandoffComponent): string[] {
     out.push('')
   }
 
-  if (c.uxLogic.length) out.push(...listSection('Rules', c.uxLogic))
+  if (c.ctas?.length) {
+    out.push('#### CTAs', '')
+    for (const cta of c.ctas) out.push(`- **${cta.name}** — ${cta.does}`)
+    out.push('')
+  }
 
   if (c.designSpec) out.push(...designSpecLines(c.designSpec))
 

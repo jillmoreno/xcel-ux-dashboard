@@ -1,16 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { ArrowRight, ClipboardList, Download, Share2 } from '@/icons'
-import { PillTabs, type PillTabItem } from '@/components/ui/PillTabs'
 import { ComponentLivePreview } from './PrototypeHandoffDetailPage'
 import { PrototypeBar, PROTOTYPE_BAR_HEIGHT } from '@/components/layout/PrototypeBar'
 import { setPrototypeWalkthrough } from '@/components/layout/prototypeWalkthrough'
-import { useAccount, professionFor, type Membership } from '@/context/AccountContext'
+import { useAccount, professionFor } from '@/context/AccountContext'
 import {
   prototypeFeatureById,
   type DevHandoffComponent,
   type DevHandoffDecisions,
-  type FeaturePageLink,
   type PrototypeFeature,
 } from '@/data/prototypeFeatures'
 import {
@@ -29,11 +27,18 @@ import {
   DevHandoffVariantsBody,
   DevHandoffOptionsBody,
   DevHandoffFlowsBody,
+  DevHandoffCtasBody,
   BulletList,
 } from '@/components/prototype/DevHandoffNotesBody'
 import { getUserJiraTickets } from '@/components/prototype/jiraTicketsUtil'
 import { FeaturePreviewThumb } from '@/components/prototype/FeaturePreviewThumb'
-import { buildEmbedSrc, primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
+/* Aliased: this file has its own THUMB_W/THUMB_H for the 104x68 miniature on a
+   component ROW, which is a different picture at a different size. */
+import {
+  THUMB_W as LANDING_THUMB_W,
+  THUMB_H as LANDING_THUMB_H,
+} from '@/components/prototype/GeneratedThumb'
+import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { RelatedJiraTickets } from '@/components/prototype/RelatedJiraTickets'
 import {
   featureHandoffMarkdown,
@@ -46,16 +51,7 @@ import {
  * `src/data/prototypeFeatures.ts`. Sits outside AppLayout so it matches the
  * landing surface; the page links open into the live platform.
  */
-/** Member ⇄ Non-member segmented filter for the gateway's walkthrough list. */
-const MEMBERSHIP_FILTER_TABS: PillTabItem<Membership>[] = [
-  { id: 'member', label: 'Member' },
-  { id: 'non-member', label: 'Non-member' },
-]
 
-/** Props exist only for the EMBEDDED case — the UX dashboard renders this page
- *  inside its own left-nav frame so a reviewer working the board doesn't lose
- *  the nav every time they open a feature. The standalone `/prototype/:id`
- *  route passes nothing and behaves exactly as before. */
 /** The home-page section a feature lands in, as a URL. Kept in step with
  *  `sectionOf` in UxDashboardPage — same order of precedence, same fallbacks. */
 function backSectionHref(feature: PrototypeFeature): string {
@@ -162,28 +158,52 @@ export function PrototypeFeaturePage({
       maxWidth={shellMaxWidth}
       embedded={embedded}
     >
-      {/* TWO COLUMNS (2026-08-31). Everything used to stack in one column, which
-          put the thumb's 244px and the CTA's 40px between the blurb and the tab
-          bar — 41% of a 598px header spent on a picture, with the page's actual
-          navigation pushed to 709px, 71% down a 1000px viewport.
-          The picture and the control that opens it stay together as one offer;
-          they just move beside the text instead of under it.
+      {/* ⚠ THUMB LEFT, CTAs TOP RIGHT (2026-10-21, Jillienne: "move the preview
+          image to be to the left of the title section and the same size as shown
+          on the preview page (thumbnail), make the Open live preview and actions
+          be the main CTA buttons in the top right of the page").
 
-          `flexWrap` with a `1 1 420px` text column means this degrades by
-          STACKING (thumb below text) rather than by crushing either side — the
-          gateway renders at ~1016px embedded and 1280 standalone, and the rail
-          is a fixed 360 because that is the thumb's real width. */}
+          It was text-left / thumb-right, with the two buttons tucked under the
+          thumb — so the page's primary actions sat two-thirds of the way down a
+          244px picture, in the one place a reader does not look for them. Now
+          the picture identifies the page at its left edge, the title reads
+          beside it, and the actions are where actions go.
+
+          The thumb is the LANDING PAGE's size (160x110, `THUMB_W`/`THUMB_H`)
+          rather than its own 360x244 — it is an identifier here, not an offer,
+          because the offer is now a button with words on it.
+
+          `flexWrap` with a `1 1 320px` text column means this degrades by
+          stacking rather than by crushing any of the three. */}
       <header
         style={{
           marginBottom: 32,
           display: 'flex',
           alignItems: 'flex-start',
-          gap: 32,
+          gap: 24,
           rowGap: 20,
           flexWrap: 'wrap',
         }}
       >
-        <div style={{ flex: '1 1 420px', minWidth: 0 }}>
+        {/* `flex: none` at the thumb's own width so it never stretches or
+            shrinks — scaling it would change how the 1440px iframe inside
+            crops, and the point of the thumb is that it is a true scaled
+            render rather than a resized one. */}
+        <div style={{ width: LANDING_THUMB_W, flex: 'none' }}>
+          <FeaturePreviewThumb
+            feature={feature}
+            src={headerPreviewSrc}
+            width={LANDING_THUMB_W}
+            height={LANDING_THUMB_H}
+            style={{
+              display: 'block',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-card)',
+            }}
+          />
+        </div>
+
+        <div style={{ flex: '1 1 320px', minWidth: 0 }}>
         <p
           style={{
             margin: 0,
@@ -292,32 +312,23 @@ export function PrototypeFeaturePage({
             one click from the top of the gateway on every tab (it used to be a
             text link inside the Live Preview tab's caption). Follows the
             Demo-brands pick, so it opens the brand on screen. */}
-        {/* The picture sits directly above the control that opens it, so the
-            two read as one offer rather than as decoration parked elsewhere. */}
         </div>
 
-        {/* Media rail. `flex: none` at the thumb's own 360 so it never stretches
-            or shrinks — scaling it would change how the 1440px iframe inside
-            crops, and the whole point of the thumb is that it is a true 1/4
-            render rather than a resized one. */}
-        <div style={{ width: 360, flex: 'none' }}>
-          <FeaturePreviewThumb
-            feature={feature}
-            src={headerPreviewSrc}
-            width={360}
-            height={244}
-            style={{
-              display: 'block',
-              borderRadius: 'var(--radius-lg)',
-              boxShadow: 'var(--shadow-card)',
-            }}
-          />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 16 }}>
-            {headerPreviewSrc && (
-              <OpenLivePreviewButton href={headerPreviewSrc} featureId={feature.id} />
-            )}
-            <GatewayActionsMenu feature={feature} />
-          </div>
+        {/* The page's primary actions. `marginLeft: auto` pins them right while
+            still letting the row wrap them under the text on a narrow column. */}
+        <div
+          style={{
+            flex: 'none',
+            marginLeft: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          {headerPreviewSrc && (
+            <OpenLivePreviewButton href={headerPreviewSrc} featureId={feature.id} />
+          )}
+          <GatewayActionsMenu feature={feature} />
         </div>
       </header>
 
@@ -347,7 +358,6 @@ export function PrototypeFeaturePage({
           components={feature.devHandoff.uiComponents}
           embedded={embedded}
           decisions={feature.devHandoff.decisions}
-          preview={hasLivePreview ? <LivePreviewTab feature={feature} pages={pages} /> : null}
         />
       ) : (
         <TabEmptyState featureId={feature.id} field="devHandoff.uiComponents">
@@ -422,238 +432,6 @@ function componentIdFromHash(): string | null {
  *  global demo account (which would fight the gateway's account-pinning
  *  effect).
  * ───────────────────────────────────────────────────────────────────────── */
-
-function LivePreviewTab({ feature, pages }: { feature: PrototypeFeature; pages: FeaturePageLink[] }) {
-  // Follow the globally-selected brand (the Demo-brands filter in the header) so
-  // the embed re-renders in whichever brand the reviewer picked; falls back to
-  // the feature's pinned brand before any pick.
-  const { brand: liveBrand } = useAccount()
-  const defaultMembership: Membership = feature.account?.membership ?? 'member'
-
-  const effMembership = (p: FeaturePageLink): Membership => p.membership ?? defaultMembership
-  const hasMember = pages.some((p) => effMembership(p) === 'member')
-  const hasNonMember = pages.some((p) => effMembership(p) === 'non-member')
-  const showMembershipFilter = hasMember && hasNonMember
-
-  const [pageView, setPageView] = useState<Membership>(hasMember ? 'member' : 'non-member')
-  const visiblePages = showMembershipFilter
-    ? pages.filter((p) => effMembership(p) === pageView)
-    : pages
-
-  // Which walkthrough route is embedded. Keyed by index within visiblePages;
-  // resets to the first whenever the visible set changes (e.g. membership flip).
-  const [selectedIndex, setSelectedIndex] = useState(0)
-  const activeIndex = selectedIndex < visiblePages.length ? selectedIndex : 0
-  const activePage = visiblePages[activeIndex]
-
-  // An absolute (http) livePreviewUrl embeds a hosted build and WINS over the
-  // walkthrough pages, so the preview shows the real prototype while the page
-  // list + handoff notes stay. A relative livePreviewUrl keeps its old role as
-  // a no-pages fallback (after the pages).
-  const externalPreview =
-    feature.livePreviewUrl && /^https?:\/\//i.test(feature.livePreviewUrl)
-      ? feature.livePreviewUrl
-      : null
-  const activeTo = externalPreview ?? activePage?.to ?? feature.livePreviewUrl ?? feature.to ?? null
-  // Live brand (Demo-brands filter) wins over the page's pinned brand.
-  const activeBrand = liveBrand ?? activePage?.brand ?? feature.account?.brand
-  const activeMembership = activePage ? effMembership(activePage) : defaultMembership
-  const embedSrc = activeTo ? buildEmbedSrc(activeTo, activeBrand, activeMembership) : null
-
-  const openFullScreen = () => setPrototypeWalkthrough(feature.id)
-
-  // Grow the embed to its content height so the preview scrolls with the page —
-  // no "scroll within a scroll". The embed is same-origin, so we can read the
-  // rendered document height on load and keep it in sync as the content changes
-  // (switching variants remounts the iframe; in-page interactions like "Show all
-  // states" are caught by the ResizeObserver). Falls back to the fixed height
-  // until measured (or if access is ever blocked).
-  const frameRef = useRef<HTMLIFrameElement>(null)
-  const [frameHeight, setFrameHeight] = useState<number | null>(null)
-
-  // Reset the measured height whenever the embedded route changes so a taller
-  // previous variant can't leave a gap under a shorter new one before it loads.
-  useEffect(() => setFrameHeight(null), [embedSrc])
-
-  const handleFrameLoad = () => {
-    const frame = frameRef.current
-    if (!frame) return
-    try {
-      const doc = frame.contentDocument
-      const body = doc?.body
-      if (!doc || !body) return
-      // Neutralize the embedded shell's `min-height: 100vh` floor INSIDE the
-      // preview only (this style tag lives in the iframe's document, so the real
-      // app + full-screen tab are untouched). Without it the floor always
-      // inflates to fill the frame, leaving the chrome above it as a residual
-      // ~40px inner scroll no matter how tall we size the frame.
-      if (!doc.getElementById('cre-embed-fit-style')) {
-        const style = doc.createElement('style')
-        style.id = 'cre-embed-fit-style'
-        style.textContent = '.cre-platform-shell-grid{min-height:0!important}'
-        doc.head.appendChild(style)
-      }
-      const measure = () => {
-        // While a slide-over Sheet / Modal is open inside the embed, it's a
-        // `position: fixed` overlay — sized to the iframe's viewport, i.e. the
-        // content-fitted frame height (which can be 1600px+). That stretches the
-        // sheet and pushes its pinned footer far below the fold ("scrolls
-        // forever"). Pin the frame to a normal desktop height while an overlay
-        // is open so it reads like a real viewport (footer at the bottom),
-        // mirroring the `min(78vh, 900px)` CSS fallback.
-        if (doc.querySelector('.cre-sheet-overlay, .cre-modal-backdrop')) {
-          const h = Math.min(900, Math.round(window.innerHeight * 0.78))
-          frame.style.height = `${h}px`
-          setFrameHeight((prev) => (prev != null && Math.abs(prev - h) <= 1 ? prev : h))
-          return
-        }
-        // Collapse the frame to 0 first so the embedded shell's `min-height:
-        // 100vh` floor can't echo the frame's OWN height back into the measured
-        // content height (which would feed an ever-growing loop). Reading
-        // scrollHeight forces a synchronous reflow, so we read the true natural
-        // content height, then size the frame to it. Setting the height inline
-        // (not just via state) keeps the intermediate 0 from ever painting.
-        frame.style.height = '0px'
-        const h = Math.max(doc.documentElement.scrollHeight, body.scrollHeight)
-        frame.style.height = `${h}px`
-        setFrameHeight((prev) => (prev != null && Math.abs(prev - h) <= 1 ? prev : h))
-      }
-      measure()
-      const observer = new ResizeObserver(measure)
-      observer.observe(body)
-      // Opening/closing an overlay adds/removes a portal child on <body> without
-      // changing body's own box, so a ResizeObserver misses it — watch the
-      // childList too, so the frame re-pins (open) / re-grows (close) in step.
-      const portalObserver = new MutationObserver(measure)
-      portalObserver.observe(body, { childList: true })
-      // Detach when the iframe navigates/unloads so we don't touch a stale doc.
-      frame.contentWindow?.addEventListener(
-        'pagehide',
-        () => {
-          observer.disconnect()
-          portalObserver.disconnect()
-        },
-        { once: true },
-      )
-    } catch {
-      // Cross-origin or torn down — keep the fixed fallback height.
-    }
-  }
-
-  const frameStyle: React.CSSProperties = frameHeight
-    ? { ...liveFrameStyle, height: frameHeight }
-    : liveFrameStyle
-
-  return (
-    <section>
-      {/* Toolbar — membership filter + route switcher (each only when it adds
-          a real choice). */}
-      {(showMembershipFilter || visiblePages.length > 1) && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
-          {showMembershipFilter && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-tertiary)' }}>
-                Viewing as:
-              </span>
-              <PillTabs
-                label="Preview membership"
-                items={MEMBERSHIP_FILTER_TABS}
-                active={pageView}
-                onChange={(m) => {
-                  setPageView(m)
-                  setSelectedIndex(0)
-                }}
-              />
-            </div>
-          )}
-          {visiblePages.length > 1 && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-tertiary)' }}>
-                Variants:
-              </span>
-              {visiblePages.map((page, i) => {
-                const on = i === activeIndex
-                return (
-                  <button
-                    key={page.to + i}
-                    type="button"
-                    aria-pressed={on}
-                    title={page.note}
-                    onClick={() => setSelectedIndex(i)}
-                    style={{
-                      padding: '6px 13px',
-                      borderRadius: 'var(--radius-pill)',
-                      border: `1px solid ${on ? 'var(--color-action)' : 'var(--color-border-subtle)'}`,
-                      background: on ? 'var(--color-primary-100)' : 'var(--color-surface-card)',
-                      color: 'var(--color-text-primary)',
-                      fontFamily: 'var(--font-body)',
-                      fontSize: 13,
-                      fontWeight: on ? 700 : 600,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {page.label}
-                  </button>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {embedSrc && activeTo ? (
-        <>
-          <p style={{ margin: '0 0 10px', fontSize: 13, color: 'var(--color-text-secondary)' }}>
-            {activePage?.note ? `${activePage.note} ` : ''}Live embed of{' '}
-            <code style={{ fontFamily: 'ui-monospace, monospace', fontSize: 12 }}>{activeTo}</code>.
-            {/* The header's "Open live preview" button now covers the primary
-                route, so this caption link only appears when the reviewer has
-                switched to a DIFFERENT variant — which the header CTA (fixed to
-                the first route) can't reach. Same URL ⇒ no duplicate link. */}
-            {embedSrc !== primaryPreviewSrc(feature, liveBrand) && (
-              <>
-                {' '}
-                <a
-                  href={embedSrc}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={openFullScreen}
-                  style={{ color: 'var(--color-action)', fontWeight: 600, whiteSpace: 'nowrap' }}
-                >
-                  Open this variant in a new tab
-                  <Share2 size={13} aria-hidden style={{ verticalAlign: '-2px', marginLeft: 4 }} />
-                </a>
-              </>
-            )}
-          </p>
-          <iframe
-            key={embedSrc}
-            ref={frameRef}
-            onLoad={handleFrameLoad}
-            title={`Live preview — ${activePage?.label ?? feature.title}`}
-            src={embedSrc}
-            style={frameStyle}
-          />
-        </>
-      ) : (
-        <div
-          style={{
-            padding: 24,
-            background: 'var(--color-surface-card)',
-            border: '1px dashed var(--color-border-subtle)',
-            borderRadius: 'var(--radius-lg)',
-            color: 'var(--color-text-secondary)',
-            fontSize: 14,
-          }}
-        >
-          No live preview available. Add walkthrough <code>pages</code> or a{' '}
-          <code>livePreviewUrl</code> for <code>{feature.id}</code> in{' '}
-          <code>src/data/prototypeFeatures.ts</code>.
-        </div>
-      )}
-    </section>
-  )
-}
 
 /**
  * "Open live preview" — the header CTA, styled as a primary `Button` but
@@ -780,15 +558,6 @@ function OpenLivePreviewButton({ href, featureId }: { href: string; featureId: s
   )
 }
 
-const liveFrameStyle: React.CSSProperties = {
-  display: 'block',
-  width: '100%',
-  height: 'min(78vh, 900px)',
-  border: '1px solid var(--color-border-subtle)',
-  borderRadius: 'var(--radius-lg)',
-  background: 'var(--color-surface-card)',
-  boxShadow: 'var(--shadow-card)',
-}
 
 /** The "UI Components & UX Logic" tab — the feature broken down into
  *  per-component handoffs (Header, Card Styles, Carousel, …). The decisions log
@@ -850,14 +619,18 @@ const COMPONENT_SECTIONS = [
   { id: 'variants', label: 'States' },
   { id: 'options', label: 'Options' },
   { id: 'flows', label: 'Flows' },
-  { id: 'logic', label: 'Rules' },
+  { id: 'ctas', label: 'CTAs' },
   { id: 'spec', label: 'Design Spec' },
   { id: 'acceptance', label: 'Acceptance' },
   { id: 'edge-states', label: 'Edge cases' },
   { id: 'notes', label: 'Notes' },
-  // The last two are FEATURE-level, folded in when the tabs went (2026-10-21).
+  // Feature-level, folded in when the tabs went (2026-10-21).
+  //
+  // ⚠ NO LIVE PREVIEW SECTION. It was here for a few minutes and came straight
+  // back out: the header already carries an "Open live preview" button, and a
+  // second copy of the whole route embedded inside the document was the same
+  // page twice on one screen.
   { id: 'decisions', label: 'Decisions' },
-  { id: 'preview', label: 'Live Preview' },
 ] as const
 
 type ComponentSectionId = (typeof COMPONENT_SECTIONS)[number]['id']
@@ -868,7 +641,6 @@ function authoredSections(c: DevHandoffComponent): string[] {
   const out: string[] = []
   if (c.quickSummary) out.push('Summary')
   if (c.variants.length) out.push(`${c.variants.length} variant${c.variants.length === 1 ? '' : 's'}`)
-  if (c.uxLogic.length) out.push('Rules')
   if (c.designSpec) out.push('Design Spec')
   if (c.acceptanceCriteria?.length) out.push('Acceptance')
   if (c.statesMatrix?.length) out.push('States')
@@ -946,18 +718,15 @@ function UiComponentsSection({
   components,
   embedded = false,
   decisions,
-  preview,
 }: {
   components: DevHandoffComponent[]
   /** Forwarded so the section nav can pin below the gateway tab bar, whose own
    *  sticky offset depends on whether the prototype bar is on screen. */
   embedded?: boolean
-  /** The feature's decisions log and live preview, rendered as the last two
-   *  sections of the component detail's single scroll — see the one-page note
-   *  on the page body. Feature-level, so only one component's detail shows them
+  /** The feature's decisions log, rendered as the last section of the component
+   *  detail's single scroll — see the one-page note on the page body. Feature-level, so only one component's detail shows them
    *  at a time, which is all a reader can see anyway. */
   decisions?: DevHandoffDecisions
-  preview?: React.ReactNode
 }) {
   const ordered = [...components]
     .map((c, i) => ({ c, i }))
@@ -984,7 +753,6 @@ function UiComponentsSection({
         component={ordered[0]}
         embedded={embedded}
         decisions={decisions}
-        preview={preview}
       />
     )
   }
@@ -1001,7 +769,6 @@ function UiComponentsSection({
         component={open}
         embedded={embedded}
         decisions={decisions}
-        preview={preview}
         onBack={() => setOpenId(null)}
       />
     )
@@ -1042,7 +809,6 @@ function UiComponentsSection({
           </div>
         </div>
       )}
-      {preview && <div style={{ marginTop: 32 }}>{preview}</div>}
     </section>
   )
 }
@@ -1423,14 +1189,12 @@ function UiComponentDetail({
   component,
   embedded = false,
   decisions,
-  preview,
   onBack,
 }: {
   component: DevHandoffComponent
   embedded?: boolean
-  /** See `UiComponentsSection` — the last two sections of the one-page scroll. */
+  /** See `UiComponentsSection` — the last section of the one-page scroll. */
   decisions?: DevHandoffDecisions
-  preview?: React.ReactNode
   /** Omitted when the feature has a single component — there is no list to
    *  return to. */
   onBack?: () => void
@@ -1447,8 +1211,8 @@ function UiComponentDetail({
   const sections = COMPONENT_SECTIONS.filter((sec) => {
     if (sec.id === 'options') return Boolean(component.options?.length)
     if (sec.id === 'flows') return Boolean(component.flows?.length)
+    if (sec.id === 'ctas') return Boolean(component.ctas?.length)
     if (sec.id === 'decisions') return Boolean(decisions?.items.length)
-    if (sec.id === 'preview') return Boolean(preview)
     return true
   })
 
@@ -1588,6 +1352,14 @@ function UiComponentDetail({
           as tabs would promise a panel swap that no longer happens. */}
       <nav
         aria-label="Sections"
+        /* ⚠ IT NEEDS ITS OWN SURFACE (2026-10-21, Jillienne: "add a light
+           background color to this component to see better as we are scrolling
+           down"). It was the page's own colour, which is invisible against the
+           page — so while scrolling, content passed UNDER a strip you could not
+           see, and the chips read as floating words. A fill plus a hairline
+           under it makes it a bar; the negative margins and matching padding
+           let that fill reach the full width of the column while the chips stay
+           on the text's left edge. */
         style={{
           position: 'sticky',
           top: navTop,
@@ -1595,9 +1367,11 @@ function UiComponentDetail({
           display: 'flex',
           flexWrap: 'wrap',
           gap: 6,
-          margin: '16px 0 0',
-          padding: '10px 0',
-          background: 'var(--ux-bg, var(--color-surface-page))',
+          margin: '16px -16px 0',
+          padding: '10px 16px',
+          background: 'var(--color-surface-card)',
+          borderBottom: '1px solid var(--color-border-subtle)',
+          borderRadius: 'var(--radius-md) var(--radius-md) 0 0',
         }}
       >
         {sections.map((sec) => {
@@ -1681,13 +1455,15 @@ function UiComponentDetail({
           <DevHandoffFlowsBody flows={component.flows} />,
         )}
 
-      {section(
-        'logic',
-        'Rules',
-        'What decides which state renders, and the behaviors a build has to reproduce.',
-        component.uxLogic.length > 0 ? <BulletList items={component.uxLogic} /> : null,
-        'uxLogic',
-      )}
+
+      {component.ctas &&
+        component.ctas.length > 0 &&
+        section(
+          'ctas',
+          'CTAs',
+          'Every control on the component, and what it does.',
+          <DevHandoffCtasBody ctas={component.ctas} />,
+        )}
 
       {section(
         'spec',
@@ -1747,16 +1523,6 @@ function UiComponentDetail({
           <DecisionsBody decisions={decisions} />,
         )}
 
-      {preview &&
-        section(
-          'preview',
-          'Live Preview',
-          'The real route, in the prototype shell — the whole page this component sits on.',
-          preview,
-          undefined,
-          // Unframed: the preview brings its own chrome and its own frame.
-          true,
-        )}
     </section>
   )
 }

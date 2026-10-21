@@ -94,14 +94,6 @@ const COURSE_HEADER_HANDOFF: DevHandoffComponent = {
         '⚠ THIS COMPONENT DOES NOT RENDER. The whole band is replaced by a dark "Current Progress" card (Expired chip, expiry date, progress-at-expiry, Begin New Cycle). Listed so the absence reads as a decision rather than a gap — see the decisions log.',
     },
   ],
-  uxLogic: [
-    'The figure is conditional, not merely zero: `showHeaderPercent = headerPct > 0`. At 0% the element is absent along with the rule and inset that belong to it — a "0%" would be a true statement that adds nothing and costs the row its left edge.',
-    'The lessons pair is conditional on `headerTotal > 0`. A path with no category breakdown has no honest numerator, and "0 of 0 lessons" reads as a load failure rather than a state.',
-    'The title WRAPS; the row does not. `flex-wrap` on the cluster sent the whole percentage group to its own line the moment the heading got long, which moved the number away from what it described. The title column is `flex: 1; min-width: 0` so it is the thing that gives way.',
-    'Cover art is a fixed 130px SQUARE by width, with height owned by the stylesheet in the narrow column (`align-self: stretch`) so the art’s foot lands on the stat row’s rule. It stretched to the column until 2026-09-17, which made the photograph’s aspect a function of how long the title wrapped.',
-    'The cover has an `onError` fallback to `getCourseImage(pathId)`, guarded against looping when the fallback is itself what failed.',
-    'Separators are layered by ROLE: the 1px rule divides the figure from the group; 3px round dots divide pairs from each other. In the narrow column the dots are suppressed entirely (`i > 0 && !narrowHeader`), because stacked pairs do not need a horizontal separator.',
-  ],
   designSpec: {
     tokens: [
       { role: 'Course name', token: '--font-heading, --color-text-primary' },
@@ -233,15 +225,6 @@ const JUMP_BACK_IN_HANDOFF: DevHandoffComponent = {
       detail:
         '⚠ NEEDS DESIGN — and this is a defect, not just an undesigned state. The card takes its IN-PROGRESS branch at 100%, offering "Resume" and "Lesson 42 · Part 1 of 3" beside a header reading "42 of 42 lessons COMPLETED". Root cause is in the decisions log: `complete` is fed by a persona flag, not by progress.',
     },
-  ],
-  uxLogic: [
-    '`started` is read off the COURSE (`(course.progress ?? 0) > 0`), not passed in. A `started` boolean threaded beside a `course` that already answers the question is a second source for one fact.',
-    '⚠ `complete` IS passed in, and from a different signal entirely — `renewalReady` on the persona. That asymmetry is the bug behind the `completed-empty` state.',
-    'The landmark `aria-label` follows the VISIBLE eyebrow through all three shapes. This repo’s own rule, from the Get Licensed card: a region announced as one thing while reading another is the "Dash Dashboard" defect in miniature.',
-    'The CTA carries `data-cta-id="home.resume"` — the attribute is the whole integration with the moderated-test CTA registry (`TESTABLE_CTAS`). Keep it on whichever element is actually clickable.',
-    'The CTA is `flexShrink: 0` at a fixed 44px height so the title column gives way first. The reverse would wrap "Resume" onto two lines, and that is the one thing here that must stay a single tap.',
-    'The eyebrow glyph is 13px `BookOpenThin` — the same size the Study Pace and Readiness tiles set theirs, because those sit in the same column and one eyebrow shape across the three is what makes them read as a set.',
-    'The card carries NO progress bar. The header above states the same percentage; a bar here was the third saying of one number in one column.',
   ],
   designSpec: {
     tokens: [
@@ -596,15 +579,6 @@ export const ARCHIVED_FEATURE_ROWS: PrototypeFeature[] = [
               when: 'Coursework is 100%',
               detail: 'The lesson pill and estimate drop; the title reads “Coursework complete”; the button reads Review Course.',
             },
-          ],
-          uxLogic: [
-            'Renders only on the Atlas/Compass version (`?version=discoverability-atlas-compass-nav`); every other version keeps the Course Progress header and Jump Back In.',
-            'Target exam date: the stored exam date, long-formatted, else “Needs Scheduled”.',
-            'Left to complete: the same remaining-time figure the old header’s “To complete course” showed.',
-            'Completed: lessons done of lessons required; the whole fact is omitted when the path has no breakdown (never “0 of 0”).',
-            'Lesson N = lessons completed + 1; the part (1 of 3), title and estimate are the Jump Back In card’s own.',
-            'Begin Course opens the Compass Course page (`section=course&coursePage=course`). Course Overview opens the Compass Overview (`coursePage=overview`).',
-            'An action with no handler renders disabled (the button) or as plain text (the chip) — never a live-looking control that does nothing.',
           ],
           designSpec: {
             tokens: [

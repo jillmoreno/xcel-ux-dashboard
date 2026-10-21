@@ -69,7 +69,7 @@ or a pill strip (removed 2026-08-31):
 
 A row carries a **live thumbnail**, the full `name`, its `badge` + `badgeDate`
 right-aligned, a 2-line `summary`, and **chips naming what is authored** —
-`User Story · 4 states · Rules · Design Spec · Acceptance · Edge cases`. That
+`4 states · CTAs · Design Spec · Acceptance · Edge cases`. That
 chip row is the point of the list: it answers *"is there a spec on this one?"*
 without spending a click, and it makes an under-documented component obvious at
 a glance. It replaced a pill strip, which gave a truncated label and nothing
@@ -84,7 +84,7 @@ Master/detail rather than a persistent side rail because several previews run to
 Sections stack in this order, each with a real anchor id
 (`<componentId>--<sectionId>`), under a sticky jump nav with scroll-spy:
 
-**Summary · User Story · States · Options · Flows · Rules · Design Spec · Acceptance · Edge cases · Notes**
+**Summary · States · Options · Flows · CTAs · Design Spec · Acceptance · Edge cases · Notes · Decisions**
 
 **They were sub-tabs for a few hours on 2026-08-31 and a developer reported it
 was worse. They were right, and the reason is concrete:** inactive panels were
@@ -222,7 +222,7 @@ Optional, and worth filling — each renders as its own framed section:
 | `quickSummary` | **ASK the designer for these words — never write them yourself.** Plain text, the designer's own voice, leads the detail. See below |
 | `userStory` | `{ asA, iWant, soThat, value?, notes? }` — the PO's framing. See below |
 | `variants` | **The one list of states**, `{ name, when, detail?, why?, action? }`. `name` is also the key the live-render registry matches on — see *Variants* below |
-| `uxLogic` | `string[]` — THE RULES: what decides which state renders, and the behaviors a build has to reproduce. Its own section since 2026-10-21 |
+| `ctas` | `{ name, does }[]` — EVERY control on the component and what it does. "Course Overview — Opens the Course Overview page of the Compass application." One line per button, including the ones that are drawn and do nothing |
 | `edgeCases` | `string[]` — conditions worth knowing that are not a state with a behavior. Renders with `statesMatrix` under one "Edge cases" heading |
 | `designSpec` | `{ tokens, states, responsive, sources }` |
 | `acceptanceCriteria` | testable Definition of Done |
@@ -250,13 +250,21 @@ entry carries `when` (the condition that produces it), and optionally `detail`,
 
 So: per-state rationale goes on the variant.
 
-⚠ **`uiUxLogic` IS GONE (2026-10-21).** It held four things and every one of
-them had a better home, which is why the section read as a duplicate of the
-page around it: `why` → the Summary, `edgeCases` → the Edge cases section
-(where a SECOND list under the same name already sat), `actions` → the Rules,
-and `toasterLogic` → dropped, because all nine components said "None." `Rules`
-(`uxLogic`) is the section in its place, promoted out of the Notes dump where
-it had been buried.
+⚠ **`uiUxLogic` AND `uxLogic` ARE BOTH GONE (2026-10-21).** `uiUxLogic` held
+four things and every one had a better home: `why` → the Summary, `edgeCases` →
+the Edge cases section (where a SECOND list under the same name already sat),
+`actions` → the CTAs, and `toasterLogic` → dropped, because all nine components
+said "None."
+
+`uxLogic` was briefly promoted into a "Rules" section and removed the same day.
+What decides which state renders is the Flows diagram's job, the states carry
+their own behavior, and what each button does is `ctas` — so Rules was a bucket
+for whatever had not found its section yet. One page, each section answering one
+question.
+
+⚠ **AND THERE IS NO LIVE PREVIEW SECTION.** The header already carries an "Open
+live preview" button; the whole route embedded inside the document as well was
+the same page twice on one screen.
 
 **The live render is keyed by `name`.** `atlasHandoffPreviewsRegistry.ts` maps
 `componentId → { [variantName]: () => ReactNode }`, and the Variants section
@@ -264,6 +272,47 @@ renders each one beside its prose. Rename a variant without renaming the key
 and `DevHandoffVariants.test.ts` fails, naming both. A variant with no
 registered render shows an honest "no isolated render" note rather than a gap —
 not every state is reachable through a component's own props.
+
+### Every CTA gets a line
+
+⚠ **RULE (2026-10-21, Jillienne: "for every CTA there should be a line item
+explaining what it does, so Course Overview: Opens the Course Overview page of
+the Compass application").** `ctas` lists every control on the component — one
+line each, naming it the way it is labelled on screen and saying where it goes.
+
+```
+✓ { name: 'Course Overview',
+    does: 'Opens the Course Overview page of the Compass application for the
+           active course. Omitted entirely when no handler is supplied, rather
+           than rendering disabled.' }
+```
+
+**Include the dead ones, and say they are dead.** "Drawn, not wired — it does
+nothing today" is the single most useful line a handoff can carry, and it is
+the one a reader cannot get from the screenshot. Half the controls on these
+components are in that state.
+
+⚠ **BUT NOT DEMO AFFORDANCES.** Clicking the course head's cover swaps the
+header layout; that is a review device for comparing two treatments, not a
+control the product has. It was listed as a CTA for about an hour and came
+straight back out (same day). If a control exists only so the team can look at
+something, it is not part of the handoff — note it in the Edge cases if a
+developer would otherwise trip over it, and leave it out of the CTA list.
+
+A state's `action` is a different field and still earns its place: it says what
+the learner does IN that state. `ctas` says what each control IS, once.
+
+### The header: thumbnail left, actions top right
+
+The feature header is three parts in one row — the preview thumbnail at the
+left edge (the LANDING PAGE's size, `THUMB_W`/`THUMB_H` from `GeneratedThumb`),
+the eyebrow, title, blurb and brand chips beside it, and the page's two actions
+pinned right: **Open live preview** and **Actions**.
+
+⚠ Changed 2026-10-21. The thumb used to sit on the RIGHT at its own 360x244,
+with the two buttons tucked underneath it — which put the page's primary actions
+two-thirds of the way down a picture, in the one place nobody looks. The thumb
+identifies the page now; the offer is a button with words on it.
 
 ### "Why it exists" is a REASON, never a citation
 

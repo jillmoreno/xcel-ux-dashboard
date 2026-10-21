@@ -216,6 +216,38 @@ export function DevHandoffOptionsBody({ options }: { options: DevHandoffOption[]
 }
 
 /**
+ * EVERY CTA, AND WHAT IT DOES.
+ *
+ * ⚠ 2026-10-21, Jillienne: "for every CTA there should be a line item
+ * explaining what it does, so Course Overview: Opens the Course Overview page
+ * of the Compass application."
+ *
+ * The states already say what the learner does in each one; this says what
+ * each control IS, once, in plain terms — where it goes, or that it goes
+ * nowhere yet. Set as a two-column list rather than prose because the question
+ * a reader brings here is "what does THAT button do", and they arrive knowing
+ * the button's name.
+ */
+export function DevHandoffCtasBody({ ctas }: { ctas: { name: string; does: string }[] }) {
+  return (
+    <ul style={detailListStyle}>
+      {ctas.map((c, i) => (
+        <li
+          key={c.name}
+          style={{
+            ...detailItemStyle,
+            ...(i > 0 && { borderTop: '1px solid var(--color-border-subtle)', paddingTop: 10 }),
+          }}
+        >
+          <span style={{ ...handoffRowNameStyle, display: 'block' }}>{c.name}</span>
+          <span style={{ ...handoffProseStyle, display: 'block' }}>{c.does}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/**
  * THE LOGIC FLOWS, drawn.
  *
  * Deliberately NOT a graph-layout engine. These machines are four to six

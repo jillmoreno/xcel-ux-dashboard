@@ -2444,12 +2444,19 @@ const HEADER_BUTTON: CSSProperties = {
 const HEADER_PRIMARY: CSSProperties = { ...HEADER_BUTTON, padding: '5px 16px' }
 /* The last day's extra action. The secondary button's shape, re-pointed to the
    error ramp — the same red the meta row goes, so the row and the offer read as
-   one statement rather than two unrelated warnings. */
+   one statement rather than two unrelated warnings.
+
+   ⚠ IT RE-POINTS THE TOKEN, NOT THE PROPERTY. `.cre-compass-secondary` sets
+   `border-color: var(--color-compass-page-button) !important`, which beats an
+   inline `borderColor` — so the button drew red text inside a blue outline.
+   Overriding the VARIABLE the class reads is what gets through: the important
+   rule still wins, it just resolves to red. The class's hover wash and focus
+   ring follow the same token, so they come along rather than staying blue. */
 const HEADER_BUTTON_DANGER: CSSProperties = {
   ...HEADER_BUTTON,
   fontWeight: 700,
+  ['--color-compass-page-button' as string]: 'var(--color-error-700)',
   color: 'var(--color-error-700)',
-  borderColor: 'var(--color-error-700)',
 }
 const CHEVRON: CSSProperties = {
   display: 'inline-flex',
