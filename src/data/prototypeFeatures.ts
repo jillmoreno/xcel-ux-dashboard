@@ -1446,8 +1446,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
               { role: 'Buttons', token: '.cre-compass-primary / .cre-compass-secondary · --font-body' },
             ],
             responsive: [
-              'The cover is a fixed 130px wide × 105px minimum, beside a bottom-aligned title and meta row.',
-              'The course head sits in its own Primary 100 panel — 40px inset, 20px corners, 16px of margin below it before the progress row.',
+              '⚠ THE COVER IS 256px WIDE, not the 130 this line claimed until 2026-10-21 — that figure belonged to the stacked header, which is the layout you only reach by clicking the cover and which is not meant to ship. Measured off the running page: 256 wide, 12px corners, stretched to the row’s height.',
+              'The head sits on a Primary 100 panel: 40px inset all round, 20px corners, 32px between the cover and the title column, 16px of margin below the panel before the progress row.',
+              'The card it sits in is 800px wide with no padding of its own, so the panel’s 40 is the only inset between the page and the content.',
             ],
             sources: [
               'No tracked Figma frame for the current header — reference the live prototype (Live Preview tab) over any Figma node. The component file cites several node ids that have since diverged from what it draws.',

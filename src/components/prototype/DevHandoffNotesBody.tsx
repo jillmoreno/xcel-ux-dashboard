@@ -1,4 +1,6 @@
-import type { CSSProperties, ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { useAtlasBrand } from './useAtlasBrand'
+import { atlasSurfaceAttrs, ATLAS_SURFACE_VARS } from './atlasSurfaceAttrs'
 import type {
   DevHandoffDesignSpec,
   DevHandoffState,
@@ -276,65 +278,92 @@ const variantAbsentStyle: CSSProperties = {
 }
 
 /**
- * Token-referencing design spec for one component. Deliberately renders
- * NAMED tokens (CSS variables) rather than raw hex/px/font values, so the
- * spec points at tokens.css / Figma as the single source of truth and
- * can't drift.
+ * THE DESIGN SPEC, WITH THE VALUES SHOWN.
+ *
+ * ⚠ IT USED TO ONLY NAME THEM (2026-10-21). The spec said
+ * `--color-primary-200` and stopped, so a developer opened `tokens.css` to find
+ * out what they were building — on a page where every other section now shows
+ * the real thing. Each token's value is resolved live here and drawn beside its
+ * name: a swatch for a colour, the literal for anything else.
+ *
+ * ⚠ RESOLVED IN THE ATLAS CONTEXT, NOT THE GATEWAY'S. These tokens are
+ * re-pointed by the four `data-atlas-*` attributes the product shell writes, so
+ * reading them off this page would report the gateway's palette and quietly
+ * disagree with the component rendered six inches above. The list is wrapped in
+ * the same attribute set `AtlasSurface` uses.
+ *
+ * Nothing here is authored — the values cannot drift from `tokens.css`, because
+ * they ARE `tokens.css`, read at render.
  */
 export function DevHandoffDesignSpecBody({ spec }: { spec: DevHandoffDesignSpec }) {
+  const { brand } = useAtlasBrand()
+  const scope = useRef<HTMLDivElement | null>(null)
+  const [resolved, setResolved] = useState<Record<string, string>>({})
+
+  const names = useMemo(
+    () => [...new Set(spec.tokens.flatMap((t) => t.token.match(/--[a-z0-9-]+/g) ?? []))],
+    [spec.tokens],
+  )
+
+  useEffect(() => {
+    const el = scope.current
+    if (!el || names.length === 0) return
+    const cs = getComputedStyle(el)
+    const next: Record<string, string> = {}
+    for (const n of names) {
+      const v = cs.getPropertyValue(n).trim()
+      if (v) next[n] = v
+    }
+    setResolved(next)
+    // `names` is a memo over the spec, so this runs once per component.
+  }, [names])
+
   return (
     <div>
       <HandoffBlock label="Tokens">
-        <ul style={detailListStyle}>
-          {spec.tokens.map((t) => (
-            <li
-              key={t.role}
-              style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                alignItems: 'baseline',
-                gap: 8,
-                fontSize: 13,
-                lineHeight: '20px',
-              }}
-            >
-              <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{t.role}</span>
-              <code
+        <div {...atlasSurfaceAttrs(brand)} style={ATLAS_SURFACE_VARS} ref={scope}>
+          <ul style={detailListStyle}>
+            {spec.tokens.map((t, i) => (
+              <li
+                key={t.role}
                 style={{
-                  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
-                  fontSize: 12,
-                  color: 'var(--color-primary-700)',
-                  background: 'var(--color-primary-100)',
-                  borderRadius: 'var(--radius-sm, 4px)',
-                  padding: '1px 6px',
-                  wordBreak: 'break-word',
+                  ...detailItemStyle,
+                  ...(i > 0 && {
+                    borderTop: '1px solid var(--color-border-subtle)',
+                    paddingTop: 10,
+                  }),
                 }}
               >
-                {t.token}
-              </code>
-            </li>
-          ))}
-        </ul>
+                <span style={{ ...handoffRowNameStyle, display: 'block' }}>{t.role}</span>
+                <span style={{ ...handoffProseStyle, display: 'block' }}>{t.token}</span>
+                <TokenValues
+                  names={t.token.match(/--[a-z0-9-]+/g) ?? []}
+                  resolved={resolved}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
       </HandoffBlock>
 
-      {spec.states && spec.states.length > 0 && (
-        <HandoffBlock label="States">
-          <BulletList items={spec.states} />
+      {spec.responsive && spec.responsive.length > 0 && (
+        <HandoffBlock label="Layout">
+          <BulletList items={spec.responsive} />
         </HandoffBlock>
       )}
 
-      {spec.responsive && spec.responsive.length > 0 && (
-        <HandoffBlock label="Responsive & motion">
-          <BulletList items={spec.responsive} />
+      {spec.states && spec.states.length > 0 && (
+        <HandoffBlock label="Interaction">
+          <BulletList items={spec.states} />
         </HandoffBlock>
       )}
 
       {spec.sources && spec.sources.length > 0 && (
         <HandoffBlock label="Sources of truth">
           <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {spec.sources.map((s) => (
-              <li key={s}>
-                <code style={pointerLocationStyle}>{s}</code>
+            {spec.sources.map((src) => (
+              <li key={src}>
+                <code style={pointerLocationStyle}>{src}</code>
               </li>
             ))}
           </ul>
@@ -342,6 +371,64 @@ export function DevHandoffDesignSpecBody({ spec }: { spec: DevHandoffDesignSpec 
       )}
     </div>
   )
+}
+
+/** The resolved value of each token named in a row — swatch, or literal. */
+function TokenValues({
+  names,
+  resolved,
+}: {
+  names: string[]
+  resolved: Record<string, string>
+}) {
+  const found = names.filter((n) => resolved[n])
+  if (found.length === 0) return null
+  return (
+    <span style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 8 }}>
+      {found.map((n) => {
+        const value = resolved[n]
+        return (
+          <span key={n} style={tokenValueStyle}>
+            {isColour(value) && (
+              /* ⚠ A RING, NOT A BARE SQUARE. Half the Atlas palette is a
+                 near-white (#f9f8f6, #eceef0) and a swatch of it on a pale
+                 surface is an invisible rectangle — the border is what makes
+                 "this is almost white" readable as a value rather than a gap. */
+              <span aria-hidden style={{ ...swatchStyle, background: value }} />
+            )}
+            <code style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
+              {value}
+            </code>
+          </span>
+        )
+      })}
+    </span>
+  )
+}
+
+/** Good enough for what tokens.css actually holds — hex, rgb(), hsl(), color-mix(). */
+function isColour(value: string): boolean {
+  return /^(#|rgb|hsl|color-mix|oklch)/i.test(value)
+}
+
+const tokenValueStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '2px 8px',
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-surface-card)',
+  border: '1px solid var(--color-border-subtle)',
+  fontSize: 12,
+  color: 'var(--color-text-secondary)',
+}
+
+const swatchStyle: CSSProperties = {
+  width: 12,
+  height: 12,
+  flex: 'none',
+  borderRadius: 3,
+  border: '1px solid var(--color-border-strong, var(--color-border-subtle))',
 }
 
 /** Testable Definition-of-Done checklist for one component. */

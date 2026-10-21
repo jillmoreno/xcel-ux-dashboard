@@ -1,11 +1,10 @@
-import { useContext, useEffect, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { AtlasCourseHeadRow, WhiteCourseMeta } from '@/components/compass/AtlasHomeEricE2E'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
 import { ATLAS_FONT_DEFAULT, atlasFontHref } from '@/components/layout/atlasFontSets'
-import { atlasSkinFor } from '@/components/layout/atlasBrandSkin'
-import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
-import { AccountContext } from '@/context/AccountContext'
+import { atlasSurfaceAttrs, ATLAS_SURFACE_VARS } from './atlasSurfaceAttrs'
+import { useAtlasBrand } from './useAtlasBrand'
 import { AffidavitModal, type AffidavitKind } from '@/components/e2e/AffidavitModal'
 
 /**
@@ -56,14 +55,7 @@ import { AffidavitModal, type AffidavitKind } from '@/components/e2e/AffidavitMo
  */
 export function AtlasSurface({ children }: { children: ReactNode }) {
   useAtlasHeadingFont()
-  /* ⚠ `useContext` DIRECTLY, NOT `useAccount` (2026-10-21). `useAccount` throws
-     outside an `AccountProvider`, and these renders are no longer confined to
-     the handoff page — the landing page's project rows draw them too, and some
-     suites mount that page without the provider. The brand is one value used to
-     match a CSS attribute selector; a thrown error is a wildly disproportionate
-     failure for not knowing it. `Brand` is a one-member union, so the fallback
-     cannot drift from the real value without a compile error. */
-  const brand = useContext(AccountContext)?.brand ?? 'xcel'
+  const { brand } = useAtlasBrand()
   return (
     <div
       /* ⚠ ALL FOUR, ON ONE ELEMENT. The token rules are COMPOUND selectors —
@@ -76,23 +68,12 @@ export function AtlasSurface({ children }: { children: ReactNode }) {
          came out the wrong colour while every individual attribute looked
          right. Repeating `data-brand` here is harmless — it is what the
          document already says. */
-      data-brand={brand}
-      data-atlas-palette="xcel"
-      data-atlas-brand={ATLAS_HANDOFF_SKIN}
-      data-atlas-font={ATLAS_FONT_DEFAULT}
+      {...atlasSurfaceAttrs(brand)}
       style={{
         width: '100%',
         display: 'flex',
         justifyContent: 'flex-start',
-        /* ⚠ TWO TOKENS THE PAGE RE-POINTS FOR ITS CHILDREN, not the palette.
-           `WHITE_PAGE` puts every eyebrow on the page and the progress
-           figures' labels in Neutral 800 (#404040, 2026-10-14) — so a card
-           lifted out of that page draws its eyebrow in the palette's default
-           instead, which measured 91,85,96 here against the page's 64,64,64.
-           Close enough to look deliberate, which is the worst kind of wrong in
-           a spec. */
-        ['--color-compass-page-eyebrow' as string]: 'var(--color-neutral-800)',
-        ['--atlas-progress-label' as string]: 'var(--color-neutral-800)',
+        ...ATLAS_SURFACE_VARS,
       }}
     >
       {children}
@@ -100,21 +81,6 @@ export function AtlasSurface({ children }: { children: ReactNode }) {
   )
 }
 
-/**
- * The brand skin main's Atlas pages wear, resolved the way the product shell
- * resolves it — the `atlas-brand-skin-v3` flag's committed default, through
- * the same validator.
- *
- * ⚠ NOT `ATLAS_SKIN_DEFAULT`, which is the skin a `?skin=` link falls back to
- * and is a different thing. The flag defaults to `global` ("Atlas"), and the
- * two produce visibly different pages: `--color-primary-100` is #eceef0 under
- * global and a blue-grey under xcel, so the course head's whole panel came out
- * the wrong colour. Read from the catalog rather than hardcoded, so changing
- * the default moves the handoff with the product.
- */
-const ATLAS_HANDOFF_SKIN = atlasSkinFor(
-  FEATURE_FLAGS.find((f) => f.key === 'atlas-brand-skin-v3')?.defaultVariant ?? null,
-)
 
 let atlasFontUsers = 0
 
