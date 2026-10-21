@@ -874,10 +874,12 @@ const COMPONENT_SECTIONS = [
   // This array's order MUST match the render order below: the scroll-spy walks
   // it and takes the last heading past the line, so a mismatch highlights the
   // wrong chip.
-  // Named, not generic: the heading attributes the words. It is the only
-  // section on the page written by a person rather than derived from the code,
-  // and saying whose it is does the job the removed explainer line was doing.
-  { id: 'quick-summary', label: 'Quick Summary from Jill' },
+  // "Summary" since 2026-10-21 — it was "Quick Summary from Jill", which
+  // attributed the words because the field was hers to dictate and Claude's
+  // never to draft. That rule is gone (see the dev-handoff-notes skill), so
+  // the heading stops naming an author. The ID is unchanged: `#<component>--
+  // quick-summary` deep links are in circulation and a label is not a route.
+  { id: 'quick-summary', label: 'Summary' },
   { id: 'story', label: 'User Story' },
   // VARIANTS (2026-10-20) — the one section that had no home on this page.
   // The live, all-variants renders existed but were reachable only from
@@ -910,7 +912,7 @@ type ComponentSectionId = (typeof COMPONENT_SECTIONS)[number]['id']
  *  says what is documented before you spend a click finding out. */
 function authoredSections(c: DevHandoffComponent): string[] {
   const out: string[] = []
-  if (c.quickSummary) out.push('Quick Summary')
+  if (c.quickSummary) out.push('Summary')
   if (c.userStory) out.push('User Story')
   if (c.variants.length) out.push(`${c.variants.length} variant${c.variants.length === 1 ? '' : 's'}`)
   if (c.uiUxLogic) out.push('UX Logic')
@@ -1273,13 +1275,13 @@ function UiComponentRow({
 }
 
 /**
- * The default state of a Quick Summary: an empty box waiting for the designer.
+ * The default state of the Summary: an empty box waiting to be written.
  *
  * Deliberately NOT the quiet "add `quickSummary`" line every other un-authored
- * section shows. Those tell a developer that a spec field is missing, and cost
- * almost no height on purpose. This one is addressed to JILLIENNE, and it is the
- * one field on the page nobody else can fill — so it takes real space and reads
- * as a slot, not a footnote.
+ * section shows. Those tell a developer that a spec field is missing and cost
+ * almost no height on purpose. This one leads the page, so an empty one is the
+ * first thing a reader meets — it takes real space and reads as a slot, not a
+ * footnote.
  *
  * The dashed rule is what says "empty on purpose": a solid frame at this size
  * reads as a card whose content failed to load. Text is `--color-text-secondary`
@@ -1312,7 +1314,7 @@ function QuickSummaryPlaceholder() {
           color: 'var(--color-text-secondary)',
         }}
       >
-        Jill add your notes here
+        Add a summary — one or two sentences on what this is for
       </p>
     </div>
   )
@@ -1626,7 +1628,7 @@ function UiComponentDetail({
 
       {section(
         'quick-summary',
-        'Quick Summary from Jill',
+        'Summary',
         null,
         // Never null: the un-authored state is its own designed box, not the
         // shared "add this field" line — see `QuickSummaryPlaceholder`.

@@ -531,15 +531,19 @@ export type DevHandoffComponent = {
   /** One- or two-sentence summary of what it is and where it appears. */
   summary: string
   /**
-   * The DESIGNER's own plain words — what this feature is about, told to the
-   * developer before any spec. Leads the handoff (2026-09-09, Jillienne).
+   * THE SUMMARY — one or two sentences on what this feature is about, leading
+   * the handoff before any spec.
    *
-   * Deliberately unstructured, and deliberately not written by Claude: this is
-   * the one field on the page that carries the designer's voice, so it is
-   * ASKED FOR, never inferred from the code or paraphrased from `summary`.
-   * Leave it unset rather than guessing — an un-authored Quick Summary renders
-   * its own "add your notes here" box, which is honest, whereas an invented one
-   * reads as the designer's intent and is not.
+   * ⚠ RENAMED AND REOPENED 2026-10-21 (Jillienne: "change this to Summary,
+   * remove the ask Jill part from the skill"). It was "Quick Summary from
+   * Jill", and the rule was that Claude must ASK for these words and never
+   * draft them — a second voice on the page, at the cost of a dashed "Jill add
+   * your notes here" box on every component nobody had reached. It is a plain
+   * authored summary now: draft it, and let the designer edit it.
+   *
+   * Say what it is and WHY IT EXISTS — the problem it solves — and stop. It is
+   * not a restatement of `summary`: that field describes what the component
+   * draws, for a developer about to build it; this says what it is for.
    *
    * Plain text. Blank lines split paragraphs; a block whose every line starts
    * `* ` or `- ` renders as a list. There is no other formatting, on purpose
@@ -1376,7 +1380,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           summary:
             'The composition of the Home page: the course card/head on top, a left column (one outlined panel — the Course progress ring over Study pace) and a right column (study journey + Get Licensed steps) inside it, and a Quick Links rail beside the whole card. Everything on the page reads from one shared state (the Demo Controls’ Progress) so the cards cannot disagree with each other.',
           quickSummary:
-            'This is the current Home for Atlas Learning. It’s meant to give dev a map of the whole page before they open the individual component handoffs, plus the open questions nobody’s decided yet (Quick Links side, link tiles, long title).',
+            'The whole Atlas Home in one view — the course card across the top, the progress panel down the left, and the journey and quick links on the right. One shared progress value drives every card on it, so no two things on the page can disagree about where the learner is.',
           variants: [
             { name: 'Default', when: 'Every learner, on arrival.', detail: 'The course card across the top. Beneath it, a left column holding one outlined panel — Course progress over Study pace, with Readiness under them when it is on — and a right column holding the Quick Links rail, the Exam Date card and the Study Journey. ⚠ The page has no states of its own — everything that changes here is a state of one of the components inside it, each of which has its own handoff.', why: 'A map of the whole page, so a developer meets the shape before they open the individual component handoffs.', action: 'None — the page is a container.' },
           ],
@@ -1514,7 +1518,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           summary:
             'Cover image, "Current course:" eyebrow, title, an Expires/Days-to-complete meta row, and two buttons (Course Overview, Begin/Resume Course). A 130px cover sits beside a bottom-aligned title and meta row, with Course Overview (fixed 130px) and Begin/Resume on their own row beneath.',
           quickSummary:
-            'The course card at the top of Home — cover, title, expiry/days-to-complete, Begin/Resume.',
+            'The course card at the top of Home. It answers three questions at a glance — which course, how much time is left, and what to do next — and carries the only Begin/Resume button on the page.',
           variants: [
             { name: 'Not started', when: 'The learner has not opened the course.', detail: 'The button reads "Begin Course".', why: 'The first click into a course is a different promise from returning to one.', action: '"Begin Course" opens the first lesson.', howToSee: 'Demo bar → Progress → Not Started' },
             { name: 'In progress', when: 'The learner has started but not finished.', detail: 'The button reads "Resume Course".', why: '"Resume" only makes sense once there is somewhere to resume to.', action: '"Resume Course" returns them where they stopped.', howToSee: 'Demo bar → Progress → On Track' },
@@ -1664,7 +1668,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           summary:
             '⚠ THE DEFAULT ARM — what a bare `?demo=1` renders, and therefore what every reviewer sees unless they change it. One panel holding two labelled sections: Course progress (an eyebrow over a `ProgressDial`) and, under a hairline, Study pace (the pace’s name read off Compass’s planner, the weekly goal, and an Estimated completion date). Readiness, when its flag is on, renders beneath as a third section sharing the same eyebrow.',
           quickSummary:
-            'This is the left column of the Home as it stands. It replaced the tan five-state card as the default on 2026-10-16 — the tan one is still there behind the Design bar. Course progress sits on top because where the learner has got to is the first thing they want; the plan follows from it.',
+            'The left column of Home: how far the learner has got, over the study plan that gets them the rest of the way. Course progress leads because where they are is the first thing they want to know; the plan follows from it.',
           variants: [
             { name: 'Default', when: 'The learner has enough time left for a study plan to fit.', detail: 'One panel, two labelled sections. Course progress on top — an eyebrow over the dial, which survives 100% because completion and readiness are two different axes. Under a hairline, Study pace: the pace’s name, the weekly goal, and an Estimated completion date. ⚠ The pace name is read from the learner’s planner, never typed here, so renaming a pace renames it in both places.', why: 'Where the learner has got to is the first thing they want; the plan follows from it.', action: '"Customize Your Pace" opens the study planner.' },
             { name: 'Exam booked', when: 'The learner has booked a state exam date.', detail: 'The exam gets its own figure row beneath Estimated completion, with its own days count. ⚠ Nothing on this screen can set that date today — the two exam prompts here are decoration, and the date is owned by another surface. Wiring "Add date" is what brings this state back.', why: 'Once a date is booked it outranks the estimate: the plan has to be read against the deadline, not the pace.', action: 'None — the row is a figure, not a control.' },
@@ -1742,7 +1746,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           summary:
             'A single card cycling through five states of the current course’s progress: Not started (the study plan, no dial), In progress (the real completion dial), Milestone, Complete and Expired. Clicking it steps the PAGE’s shared progress rather than its own local state, so Readiness and the Study Journey move with it. ⚠ IT IS NOT WHAT HOME DRAWS BY DEFAULT — the ring card has that slot; this is the other arm of the same control, kept because it is the one that carries the Milestone and Expired treatments.',
           quickSummary:
-            'The tan five-state progress module (Study Pace, Course Progress, Milestone, Complete, Expired) — the arm the page shipped with before the ring became the default on 2026-10-16. Right now clicking the card itself is just a review trick to flip states — only the Current state shows real numbers, the rest are placeholder copy.',
+            'A second treatment of the same progress card, stepping through five named points in a course’s life. It exists because two of them — Milestone and Expired — cannot be reached from real data yet, so the card doubles as the way to review them.',
           variants: [
             { name: 'Not started', when: 'The learner has not opened the course yet.', detail: 'No dial — a 0% ring reads as something broken. Shows the study plan instead: "We’ve set up a moderate study plan for you", a pace pill, and "Edit My Study Pace".', why: 'A learner who hasn’t started needs a plan, not a number that says nothing.', action: '"Edit My Study Pace" (drawn, not wired).', howToSee: 'Demo bar → Progress → Not Started' },
             { name: 'In progress', when: 'The learner has started but not finished.', detail: 'The real dial, plus Expected completion and Course access. ⚠ The only state whose figures come from real data.', why: 'The one state with real stakes — how far along they are, and whether access will outlast the work.', action: 'None beyond the Study Pace edit link beneath it.', howToSee: 'Demo bar → Progress → On Track' },
@@ -1916,7 +1920,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           summary:
             'A card asking "How Ready are you for your State Exam?" over a half-dial (the top half of a ring) naming one of FOUR bands — Beginner, Developing, Proficient, Ready — instead of showing a percent, plus a fifth "Not Started" state that draws no arc at all. Its OPENING band follows the Course Progress card’s stage (a fixed lookup table), and from there a click or Enter/Space on the card steps it forward on its own — the same click-to-cycle review-device pattern Course Progress uses, built independently of it. ⚠ THE FOUR BANDS REPLACED FIVE LEVELS ON 2026-10-16 (Novice · Advanced Beginner · Competent · Proficient · Exam Ready), so the card, the demo bar and Jillienne’s bands image use one set of words.',
           quickSummary:
-            'The "how ready are you for your exam" half-dial under Progress. It opens at a level that roughly follows Progress, but clicking it on its own is independent, and clicking past Exam Ready resets the whole page back to Not Started — that last part needs a real decision before it ships.',
+            'A half-dial answering a different question from course progress: not how much of the course is done, but whether the learner could pass the state exam today. It names a band rather than showing a percent, because readiness is a judgement and a number would overstate it.',
           variants: [
             { name: 'Not Started', when: 'Nothing has been scored yet, so there is no band to show.', detail: 'The empty dial — the track is drawn and no arc is. ⚠ It is NOT a sixth band: "nothing measured yet" is not a point on the scale, so it sits outside the band list. Pressing the card moves into the bands proper.', why: 'An earlier pass hid the whole card at 0%, which removed the fact that readiness exists along with the number. Naming the empty state says both.', action: 'Press the card to show the first band.', howToSee: 'The default on a course with no readiness score.' },
             { name: 'Beginner', when: 'The learner is early in the course — or their access ended before they finished.', detail: 'Dial at 14%. Caption: "Early in development, with substantial knowledge gaps remaining."', howToSee: 'Demo bar → Progress → Not Started (or Expired)' },
@@ -2086,7 +2090,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           summary:
             'A single card that collects and then shows the learner’s state exam date, in four stages: Default ("Do you know your state exam date?"), No date yet ("No state exam date yet? That’s okay."), Picking a date (a working month calendar), and Date set (the chosen date and days remaining, with Edit back to the calendar). ⚠ IT DOES NOT RENDER ON HOME TODAY. The slot it was designed for is between Course progress and Readiness; the card is built and complete, and nothing currently mounts it.',
           quickSummary:
-            'A working exam-date picker, but it’s currently hidden — it doesn’t appear anywhere on Home today even though it’s fully built. Need to decide if it comes back.',
+            'A small card that collects the learner’s state exam date and then counts down to it. That date is the one piece of context the study plan and the journey most need and least reliably have, so the card asks for it where the learner is already looking.',
           variants: [
             { name: 'Default', when: 'The learner has not told us anything about an exam date yet.', detail: '"Do you know your state exam date?" over Not Yet / Yes.', why: 'The card has to ask before it can help, and both answers lead somewhere useful.', action: 'Not Yet, or Yes.' },
             { name: 'No date yet', when: 'The learner said they do not have a date.', detail: '"No state exam date yet? That’s okay." then a registration blurb, then "I have my exam date".', why: 'A learner without a date still needs a path forward — registering — rather than a dead end.', action: '"I have my exam date" once they have registered.' },
@@ -2250,7 +2254,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           summary:
             'Step 1 is headed "Complete Coursework" and lists the course sequence; Step 2 is "Pass State Exam" and Step 3 is "Get Licensed in {state}", retitled from the published licensing data with the learner’s own state. ⚠ ONLY ONE ROW IS LIVE — Pre-Licensing Education carries a real "N of 36 completed" count; every other row is fixed copy, and no row is ever marked done. The per-stop statuses are rebuilt as "not started" rather than read from the learner’s actual progress, which is the decision flagged in the log below.',
           quickSummary:
-            'Step 1/2/3 on the right side of Home. Important: Step 1’s list is a fixed, hardcoded set of lines today — it does not move with the Progress control the way Progress and Readiness do. That’s worth a decision before dev builds against it.',
+            'The three steps from coursework to licence, down the right of Home — finish the course, pass the state exam, apply for the licence. Steps 2 and 3 are there to keep the path visible past the point the product stops tracking it.',
           variants: [
             { name: 'Default', when: 'The learner is working through the coursework.', detail: 'Step 1 is headed "Complete Coursework" and lists the course sequence: Pre-Licensing Education (N of 36 completed) · Certification Exam · Prep Review (23) · State Exam Simulators (3) · Affidavit · Survey & Certificate. ⚠ A "Pre-course Affidavit" row sits ABOVE those six and is dropped whenever the pre-course affidavit is off, which is the default — so six rows is what a reviewer normally sees, and seven is the affidavit arm.', why: 'The journey is three steps long and only the first one moves — showing all three keeps the state exam and the licence in view from day one.', action: 'The rows are a checklist. Nothing in Step 1 is clickable here.' },
             { name: 'All coursework done', when: 'The learner has finished every lesson.', detail: 'The SAME list, with the education row reading "36 of 36 completed". ⚠ STEP 1 DOES NOT BECOME A CONGRATULATIONS BLOCK. One exists in the component, but it is drawn only by the other progress-card arm — on this page the list stays and the congratulation appears in the COURSE HEAD instead, where the days-remaining line is replaced by "Congrats! You have completed this course."', why: 'The learner still has two steps to go; replacing the list with a celebration would hide the sequence at the moment they need to see what is next.', action: 'None.', howToSee: 'Demo bar → Progress → Ready 100%' },
@@ -2416,7 +2420,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           summary:
             'A bordered 234px-wide card titled "Quick Links" listing section links (My Courses, My Certificates) that switch the shell’s section in place, and SHEET links (Exam Information, Applying for a License, State Requirements) that open in-place sheets when the host supplies handlers — which Home does. On Home, two course-page links (Flashcards, Exam Simulator) are hidden via `withoutCoursePages`, and a built but currently-off "Home" row sits above all of them behind a hardcoded constant.',
           quickSummary:
-            'The compact nav card next to the course card — My Courses, My Certificates, and a few sheet links. Some of its links are the only way to reach things that are turned off elsewhere on this same page (the Study Journey’s own links), which is worth knowing before dev "fixes" one side without the other.',
+            'A compact list of the places a learner goes next, beside the course card. It stays deliberately plain so it does not compete with the Study Journey’s step-by-step narrative alongside it.',
           variants: [
             { name: 'Default', when: 'The learner arrives on Home.', detail: 'A bordered 234px card titled "Quick Links": My Courses · My Certificates · Exam Information · Applying for a License · State Requirements. ⚠ TWO THINGS ARE TRUE OF THIS RAIL ON HOME AND BOTH ARE EASY TO MISS. Flashcards and Exam Simulator are not in the list — the rail is a navigation card here, not a course-tools card, and the remaining icons step up a size to fill the room. And the navigating rows are INERT: a click changes nothing and the address bar never moves. The three information rows still open their sheet, because a sheet is an overlay rather than navigation — so the card is not uniformly dead, and neither behavior can be inferred from the other.', why: 'One compact place to reach the things that are not on the Home screen itself.', action: 'The three information rows open a sheet. The rest are drawn and do nothing.' },
             { name: 'Active row', when: 'The learner is on the section a row points to.', detail: 'A full-width white rounded capsule behind the row, and the label steps to SemiBold. ⚠ It never fires on Home — Home’s own row is built but switched off, and the navigating rows cannot change the section from here anyway. It is live on the surfaces where this rail does navigate.', why: 'The rail doubles as a position indicator, so the learner can see where they are without reading the page behind it.', action: 'None — it marks, it does not act.' },
@@ -2554,7 +2558,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           summary:
             'A centered dialog, portalled to `<body>` over a darkened page, titled by its `kind` — "Pre-course Affidavit" or "Study-manual Notice Affidavit", the journey rows’ own wording, so the modal and the row that opens it cannot say different things — with a hardcoded course line ("Florida Life & Health Pre-licensing") and a placeholder grey panel standing in for the real affidavit text. A single checkbox ("I have read and understand this Affidavit") must be ticked before "Continue to course" is enabled — but Continue and Cancel both call the SAME close handler, so there is no behavioral difference between agreeing and cancelling today.',
           quickSummary:
-            'The affidavit popup that shows up after Confirmation & Password when a new learner lands on Home. Right now Cancel and agreeing both do the exact same thing — that needs a real decision on what Cancel should actually do.',
+            'The attestation a learner signs before the coursework counts, and again before the final exam. The design’s point is the acknowledgement itself — the document behind it is a placeholder until real affidavit text lands.',
           variants: [
             { name: 'Pre-course Affidavit', when: 'The learner arrives, before any coursework.', detail: 'Heading "Pre-course Affidavit", sub-line "Before you begin the coursework", the course name, and a placeholder panel standing in for the real affidavit text.', why: 'The learner has to attest before any coursework counts, and arrival is the only point where that is still true.', action: 'Tick the checkbox, then "Continue to course".' },
             { name: 'Study-manual Notice Affidavit', when: 'The learner has finished the coursework and is about to take the final exam.', detail: 'Heading "Study-manual Notice Affidavit", sub-line "After the coursework, before your final exam". Identical chrome and controls to the pre-course one — only the two strings differ.', why: 'A separate attestation the state requires at a different point. Collapsing the two into one modal would make the record ambiguous about which was signed.', action: 'Tick the checkbox, then "Continue to course".' },

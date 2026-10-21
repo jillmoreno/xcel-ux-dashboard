@@ -1,6 +1,6 @@
 ---
 name: dev-handoff-notes
-description: Author (or extend) a prototype feature's dev-handoff gateway — the UI Components & UX Logic breakdown, the Design & Product Decisions log, and the Live Preview routes. Covers the components-vs-uiComponents split, the Quick Summary the designer must be ASKED for, the row-list-and-detail rule (and why the detail is one scroll, never sub-tabs), the user story, badgeDate and thumbnail fields, the `Label — what it shows` preview-caption shape, the one-sentence blurb, the tileBlurb budget, the authored devStatus, when a feature should split in two, and the Markdown export. Trigger on "add handoff notes", "document this for dev", "dev handoff for <feature>", "add a decisions log", "new dev-handoff tile", "hand this off to engineering".
+description: Author (or extend) a prototype feature's dev-handoff gateway — the UI Components & UX Logic breakdown, the Design & Product Decisions log, and the Live Preview routes. Covers the components-vs-uiComponents split, the Summary, the row-list-and-detail rule (and why the detail is one scroll, never sub-tabs), the user story, badgeDate and thumbnail fields, the `Label — what it shows` preview-caption shape, the one-sentence blurb, the tileBlurb budget, the authored devStatus, when a feature should split in two, and the Markdown export. Trigger on "add handoff notes", "document this for dev", "dev handoff for <feature>", "add a decisions log", "new dev-handoff tile", "hand this off to engineering".
 version: 0.2.0
 author: UX Design — Colibri
 last_updated: 2026-08-31
@@ -84,7 +84,7 @@ Master/detail rather than a persistent side rail because several previews run to
 Sections stack in this order, each with a real anchor id
 (`<componentId>--<sectionId>`), under a sticky jump nav with scroll-spy:
 
-**Quick Summary · User Story · UX Logic · Design Spec · Acceptance · States · Notes**
+**Summary · User Story · States · Options · Flows · UX Logic · Design Spec · Acceptance · Edge cases · Notes**
 
 **They were sub-tabs for a few hours on 2026-08-31 and a developer reported it
 was worse. They were right, and the reason is concrete:** inactive panels were
@@ -157,7 +157,7 @@ Two things to know when authoring:
   now has **no UI route in** — it is reachable by URL only.
 
 The old **"No live preview registered for `<id>` yet"** empty state is gone with
-the section — an un-authored Quick Summary box is now what an undocumented
+the section — an un-authored Summary box is now what an undocumented
 component shows, which is a gap someone can actually fill.
 
 ### Row thumbnails
@@ -258,46 +258,38 @@ and `DevHandoffVariants.test.ts` fails, naming both. A variant with no
 registered render shows an honest "no isolated render" note rather than a gap —
 not every state is reachable through a component's own props.
 
-### The Quick Summary — ASK for it, never write it
+### The Summary — one or two sentences on what this is for
 
-`quickSummary` is the **first** section of every component detail: the designer
-telling the developer, in their own plain words, what this thing is about —
-before a token, a variant or an acceptance criterion.
+`quickSummary` is the **first** section of every component detail: what this
+thing is about, in plain words, before a token, a state or an acceptance
+criterion.
 
-> **RULE (2026-09-09, Jillienne): whenever you author or extend a dev handoff,
-> ASK the designer what they want the Quick Summary to say. Every time, for every
-> component. Do not draft it, do not infer it from the code, do not paraphrase
-> `summary` into it.**
+**One or two sentences. Say what it is and why it exists** — the problem it
+solves for the learner — and stop. It is the only prose on the page that is
+allowed to be about intent rather than mechanics, and the value is in it being
+short enough to read before the spec rather than in it being complete.
 
-Ask plainly — *"What do you want the Quick Summary to say for `<component>`?"* —
-and use the answer close to verbatim. Tidy obvious typos; do not "improve" the
-voice, expand it into spec language, or pad it out. Short is fine. One sentence
-is fine.
+⚠ **RENAMED AND REOPENED 2026-10-21** (Jillienne: "change this to Summary,
+remove the ask Jill part from the skill. Make a 1-2 sentence summary on what
+this feature is about"). The field used to be headed "Quick Summary from Jill"
+and carried a hard rule: ASK the designer, every time, never draft it. That
+rule bought a second voice on the page — something a developer could read
+against Claude's reconstruction of the code — at the cost of a dashed "Jill add
+your notes here" box on every component nobody had reached yet. The nine Atlas
+components are written now, the decisions those notes were carrying have moved
+into the Flows and the decisions log where they belong, and the field is a
+plain authored summary: draft it, and let the designer edit it.
 
-**Why the rule exists.** Every other field on this page is Claude reading the
-code back: `summary` describes what the component does, `uxLogic` reconstructs
-the rules, `designSpec` quotes the tokens. All of that is derivable. What is not
-derivable is what the designer *meant* — and if Claude writes that too, the
-handoff becomes one voice describing itself, and a developer has nothing to read
-against the implementation. The same reasoning already governs `userStory`
-(*"a story you invented is worse than an empty section"*); this field is stricter
-because it is explicitly first-person.
+**It is NOT a restatement of `summary`.** That field describes what the
+component draws, for a developer about to build it; this one says what it is
+for, for anyone opening the page. If the two read the same, the Summary has not
+found its reason yet.
 
-**If you haven't asked yet, leave it unset.** The un-authored state is its own
-designed box — a dashed empty frame reading **"Jill add your notes here"** — not
-the quiet "add this field" line the other sections use. That difference is
-deliberate: those lines tell a *developer* a spec field is missing and cost almost
-no height; this one is addressed to the designer, about the one field nobody else
-can fill, so it takes real space and reads as a slot waiting for her. An invented
-Quick Summary reads as her own words and is not, which is a worse failure than a
-blank section: it is the one field on the page nobody would think to check.
-
-**Where it shows up:** the lead section of the component detail (unframed, one
-step up in type size — plain prose, deliberately not another spec block), a
-`Quick Summary` chip on the component's row so the list shows which components
-have been spoken for, and a `#### Quick Summary` heading in the Markdown export,
-above the user story. That export is what gets pasted into a ticket, which is
-where these words matter most.
+**Where it shows up:** the lead section of the component detail (unframed —
+plain prose, deliberately not another spec block), a `Summary` chip on the
+component's row so the list shows which components have one, and a
+`#### Summary` heading in the Markdown export, above the user story. That
+export is what gets pasted into a ticket.
 
 **Formatting:** plain text, with a vocabulary of exactly two rules — blank lines
 split blocks, and a block whose every line starts `* ` or `- ` renders as a list.
@@ -313,7 +305,7 @@ translation step.
 
 ### The user story
 
-`userStory` renders SECOND, directly after the Quick Summary — the designer's
+`userStory` renders SECOND, directly after the Summary — the designer's
 words, then the PO's framing, then the spec.
 
 It is **structured, not freeform**, and that is the point: "as a / I want / so
@@ -547,7 +539,7 @@ The gateway header's **Actions** menu carries **Share Link**, **Download .md**
 and **Copy .md**. The Markdown is generated from the same data this skill
 describes
 ([handoffMarkdown.ts](../../../src/components/prototype/handoffMarkdown.ts)) —
-decisions first, then each component — Quick Summary included, since a ticket is
+decisions first, then each component — the Summary included, since a ticket is
 exactly where the designer's words earn their keep — in its on-screen order. Acceptance criteria come out as `- [ ]`
 checkboxes, since that is what a ticket renders.
 
