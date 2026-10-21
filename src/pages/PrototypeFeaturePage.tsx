@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { ArrowRight, Bolt, CircleCheck, ClipboardList, Download, Lightbulb, LockSolid, MessageCircle, Share2, X } from '@/icons'
+import { useParams } from 'react-router-dom'
+import { ArrowRight, ClipboardList, Download, Share2 } from '@/icons'
 import { PillTabs, type PillTabItem } from '@/components/ui/PillTabs'
-import { Tabs, type TabItem } from '@/components/ui/Tabs'
 import { ComponentLivePreview } from './PrototypeHandoffDetailPage'
 import { PrototypeBar, PROTOTYPE_BAR_HEIGHT } from '@/components/layout/PrototypeBar'
 import { setPrototypeWalkthrough } from '@/components/layout/prototypeWalkthrough'
@@ -10,7 +9,7 @@ import { useAccount, professionFor, type Membership } from '@/context/AccountCon
 import {
   prototypeFeatureById,
   type DevHandoffComponent,
-  type DevHandoffNotes,
+  type DevHandoffDecisions,
   type FeaturePageLink,
   type PrototypeFeature,
 } from '@/data/prototypeFeatures'
@@ -22,13 +21,6 @@ import {
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
 import { PROTOTYPE_SHARE_ORIGIN, copyToClipboard } from '@/components/prototype/shareLink'
-import {
-  type DevStatus,
-  DEV_STATUS_STROKE,
-  DEV_STATUS_LABEL,
-  readDevStatusMap,
-  writeDevStatus,
-} from '@/components/prototype/devHandoffStatusUtil'
 import {
   DevHandoffNotesBody,
   DevHandoffDesignSpecBody,
@@ -98,7 +90,7 @@ export function PrototypeFeaturePage({
   // No hash check needed here any more: a `#<componentId>--acceptance` deep link
   // wants the components tab, and that is now the default. `componentIdFromHash`
   // is still what opens the right COMPONENT inside it — see UiComponentsSection.
-  const [activeTab, setActiveTab] = useState<GatewayTab>('components')
+
 
   // If a feature pins a brand / membership (e.g. STC for the study calendar),
   // switch the demo account on ENTRY so its pages render in the right context.
@@ -149,16 +141,6 @@ export function PrototypeFeaturePage({
     })),
   )
 
-  // Every feature gateway carries the SAME three tabs, in this order, whether or
-  // not each one's data is authored yet — the tab set used to be built from
-  // whatever data happened to exist, so a feature missing its decisions log or
-  // component breakdown silently showed two tabs (or one), and a reviewer
-  // couldn't tell "not documented" from "this feature doesn't work that way".
-  // A tab with no data renders an empty state naming exactly what to add.
-  const tabItems: TabItem<GatewayTab>[] = GATEWAY_TABS
-  // Resolve the effective tab (the set is fixed now, so this only guards against
-  // a stale selection).
-  const effectiveTab: GatewayTab = tabItems.find((t) => t.id === activeTab)?.id ?? tabItems[0].id
 
   // One consistent width across the whole feature walkthrough — the page never
   // reflows when switching between the decisions log and Live Preview. Sized to
@@ -350,52 +332,29 @@ export function PrototypeFeaturePage({
           root), so the fallback covers the standalone /prototype/:id route —
           one declaration, correct in both, and it tracks each surface's own
           light/dark values instead of pinning a colour. */}
-      <div
-        style={{
-          position: 'sticky',
-          // Offset by the prototype bar ONLY when it is on screen. That bar is
-          // itself sticky at z-index 60, so pinning to 0 on the standalone route
-          // put the tabs underneath it — visible to a scroll listener, invisible
-          // to a reader. Embedded in the UX dashboard there is no bar, so 0.
-          top: embedded ? 0 : PROTOTYPE_BAR_HEIGHT,
-          zIndex: 5,
-          marginBottom: 24,
-          background: 'var(--ux-bg, var(--color-surface-page))',
-        }}
-      >
-        <Tabs items={tabItems} active={effectiveTab} onChange={setActiveTab} />
-      </div>
+      {/* ⚠ ONE PAGE PER HANDOFF (2026-10-21, Jillienne: "I want to take this tab
+          detail, and put it in the same page we are looking at. ONE PAGE per
+          handoff. Quick filters to navigate to that section.")
 
-      {/* Panels. Each falls back to an empty state naming the field to author,
-          so an undocumented tab reads as "not written yet" rather than looking
-          like the feature has nothing of that kind. */}
-      {effectiveTab === 'handoff' &&
-        (feature.devHandoff ? (
-          <DevHandoffSection notes={feature.devHandoff} featureId={feature.id} embedded />
-        ) : (
-          <TabEmptyState featureId={feature.id} field="devHandoff">
-            No design &amp; product decisions documented yet.
-          </TabEmptyState>
-        ))}
-
-      {effectiveTab === 'components' &&
-        (feature.devHandoff?.uiComponents?.length ? (
-          <UiComponentsSection components={feature.devHandoff.uiComponents} embedded={embedded} />
-        ) : (
-          <TabEmptyState featureId={feature.id} field="devHandoff.uiComponents">
-            No per-component breakdown yet — this feature&rsquo;s UI components and the UX logic
-            behind them haven&rsquo;t been split out.
-          </TabEmptyState>
-        ))}
-
-      {effectiveTab === 'live' &&
-        (hasLivePreview ? (
-          <LivePreviewTab feature={feature} pages={pages} />
-        ) : (
-          <TabEmptyState featureId={feature.id} field="pages (or livePreviewUrl)">
-            No preview available yet — there are no walkthrough routes to embed.
-          </TabEmptyState>
-        ))}
+          The three tabs — UI Components & UX Logic, Design & Product Decisions,
+          Live Preview — are gone. They split one document across three places a
+          reader had to know to look in, and the component detail already had a
+          chip strip that scrolls to a section rather than swapping a panel. The
+          decisions log and the live preview are now two more sections in that
+          same scroll, reachable from the same chips. */}
+      {feature.devHandoff?.uiComponents?.length ? (
+        <UiComponentsSection
+          components={feature.devHandoff.uiComponents}
+          embedded={embedded}
+          decisions={feature.devHandoff.decisions}
+          preview={hasLivePreview ? <LivePreviewTab feature={feature} pages={pages} /> : null}
+        />
+      ) : (
+        <TabEmptyState featureId={feature.id} field="devHandoff.uiComponents">
+          No per-component breakdown yet — this feature&rsquo;s UI components and the UX logic
+          behind them haven&rsquo;t been split out.
+        </TabEmptyState>
+      )}
     </GatewayShell>
   )
 }
@@ -438,9 +397,6 @@ function TabEmptyState({
   )
 }
 
-/** The gateway's underline tabs. Add an id here + a panel in
- *  `PrototypeFeaturePage` to introduce a new tab. */
-type GatewayTab = 'handoff' | 'components' | 'live'
 
 /**
  * The component id inside a section deep link, or null.
@@ -456,15 +412,6 @@ function componentIdFromHash(): string | null {
   return i > 0 ? hash.slice(0, i) : null
 }
 
-/** The fixed three-tab set every feature gateway shows, in order. Labels match
- *  each panel's own heading. The ids are deliberately unchanged from when the
- *  tabs were named "Dev Handoff Notes" / "UI Components and UX Rules" — they're
- *  internal, and renaming them would churn nothing but risk. */
-const GATEWAY_TABS: TabItem<GatewayTab>[] = [
-  { id: 'components', label: 'UI Components & UX Logic' },
-  { id: 'handoff', label: 'Design & Product Decisions' },
-  { id: 'live', label: 'Live Preview' },
-]
 
 /* ─────────────────────────────────────────────────────────────────────────
  *  LIVE PREVIEW TAB — embeds the feature's real route fullscreen, with the
@@ -908,6 +855,9 @@ const COMPONENT_SECTIONS = [
   { id: 'acceptance', label: 'Acceptance' },
   { id: 'edge-states', label: 'Edge cases' },
   { id: 'notes', label: 'Notes' },
+  // The last two are FEATURE-level, folded in when the tabs went (2026-10-21).
+  { id: 'decisions', label: 'Decisions' },
+  { id: 'preview', label: 'Live Preview' },
 ] as const
 
 type ComponentSectionId = (typeof COMPONENT_SECTIONS)[number]['id']
@@ -995,11 +945,19 @@ const inlineHandoffFrameStyle: React.CSSProperties = {
 function UiComponentsSection({
   components,
   embedded = false,
+  decisions,
+  preview,
 }: {
   components: DevHandoffComponent[]
   /** Forwarded so the section nav can pin below the gateway tab bar, whose own
    *  sticky offset depends on whether the prototype bar is on screen. */
   embedded?: boolean
+  /** The feature's decisions log and live preview, rendered as the last two
+   *  sections of the component detail's single scroll — see the one-page note
+   *  on the page body. Feature-level, so only one component's detail shows them
+   *  at a time, which is all a reader can see anyway. */
+  decisions?: DevHandoffDecisions
+  preview?: React.ReactNode
 }) {
   const ordered = [...components]
     .map((c, i) => ({ c, i }))
@@ -1021,7 +979,14 @@ function UiComponentsSection({
   // drop the back link. A list of one is pure indirection — the same reason the
   // tile grid was removed in the first place.
   if (ordered.length === 1) {
-    return <UiComponentDetail component={ordered[0]} embedded={embedded} />
+    return (
+      <UiComponentDetail
+        component={ordered[0]}
+        embedded={embedded}
+        decisions={decisions}
+        preview={preview}
+      />
+    )
   }
 
   const open = openId ? ordered.find((c) => c.id === openId) : null
@@ -1035,6 +1000,8 @@ function UiComponentsSection({
         key={open.id}
         component={open}
         embedded={embedded}
+        decisions={decisions}
+        preview={preview}
         onBack={() => setOpenId(null)}
       />
     )
@@ -1065,6 +1032,17 @@ function UiComponentsSection({
           <UiComponentRow key={c.id} component={c} index={i + 1} onOpen={() => setOpenId(c.id)} />
         ))}
       </div>
+      {/* The list has no chip strip of its own, so these render plainly beneath
+          it — a reader on the list still gets the whole handoff on one page. */}
+      {decisions && decisions.items.length > 0 && (
+        <div style={{ marginTop: 32 }}>
+          <h4 style={handoffSubheadingStyle}>Design &amp; product decisions</h4>
+          <div style={{ ...inlineHandoffFrameStyle, marginTop: 12 }}>
+            <DecisionsBody decisions={decisions} />
+          </div>
+        </div>
+      )}
+      {preview && <div style={{ marginTop: 32 }}>{preview}</div>}
     </section>
   )
 }
@@ -1444,10 +1422,15 @@ function QuickSummaryBody({ text }: { text: string }) {
 function UiComponentDetail({
   component,
   embedded = false,
+  decisions,
+  preview,
   onBack,
 }: {
   component: DevHandoffComponent
   embedded?: boolean
+  /** See `UiComponentsSection` — the last two sections of the one-page scroll. */
+  decisions?: DevHandoffDecisions
+  preview?: React.ReactNode
   /** Omitted when the feature has a single component — there is no list to
    *  return to. */
   onBack?: () => void
@@ -1464,6 +1447,8 @@ function UiComponentDetail({
   const sections = COMPONENT_SECTIONS.filter((sec) => {
     if (sec.id === 'options') return Boolean(component.options?.length)
     if (sec.id === 'flows') return Boolean(component.flows?.length)
+    if (sec.id === 'decisions') return Boolean(decisions?.items.length)
+    if (sec.id === 'preview') return Boolean(preview)
     return true
   })
 
@@ -1753,69 +1738,37 @@ function UiComponentDetail({
         'Where it lives, the data it needs, what is still stubbed, and the accessibility behavior worth preserving.',
         <DevHandoffNotesBody component={component} />,
       )}
+
+      {decisions && decisions.items.length > 0 &&
+        section(
+          'decisions',
+          'Decisions',
+          'The product and design questions this component raised, and where each one stands.',
+          <DecisionsBody decisions={decisions} />,
+        )}
+
+      {preview &&
+        section(
+          'preview',
+          'Live Preview',
+          'The real route, in the prototype shell — the whole page this component sits on.',
+          preview,
+          undefined,
+          // Unframed: the preview brings its own chrome and its own frame.
+          true,
+        )}
     </section>
   )
 }
 
-function DevHandoffSection({
-  notes,
-  featureId,
-  embedded = false,
-}: {
-  notes: DevHandoffNotes
-  featureId: string
-  /** When true, the section sits inside the "Design & Product Decisions" tab — the tab
-   *  label already names it, so the standalone heading + top margin are dropped
-   *  and the intro leads straight into the tiles. */
-  embedded?: boolean
-}) {
+/**
+ * The design & product decisions log — its own component since 2026-10-21, when
+ * the tab that used to hold it became a section of the one-page handoff.
+ */
+function DecisionsBody({ decisions }: { decisions: DevHandoffDecisions }) {
   return (
-    <section style={{ marginTop: embedded ? 0 : 44 }}>
-      {!embedded && (
-        <h2
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            margin: 0,
-            fontFamily: 'var(--font-heading)',
-            fontWeight: 500,
-            fontSize: 'var(--text-heading-2xl)',
-            lineHeight: 'var(--text-heading-2xl--line-height)',
-            color: 'var(--color-text-primary)',
-          }}
-        >
-          <ClipboardList size={20} aria-hidden />
-          Dev handoff notes
-        </h2>
-      )}
-      {/* Compact cards — each opens a detail screen with the full notes
-          + a live preview of the real component. Omitted when a feature keeps
-          no per-component breakdown (its Live Preview covers the examples). */}
-      {notes.components.length > 0 && (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-            gap: 12,
-          }}
-        >
-          {/* Ordered by the optional `order` field (lower = earlier); un-ordered
-              components keep their array position (stable sort). The 1-based
-              position drives the numbered tile badge. */}
-          {[...notes.components]
-            .map((c, i) => ({ c, i }))
-            .sort((a, b) => (a.c.order ?? a.i + 1000) - (b.c.order ?? b.i + 1000))
-            .map(({ c }, i) => (
-              <HandoffComponentTile key={c.id} featureId={featureId} component={c} index={i} />
-            ))}
-        </div>
-      )}
-
-      {notes.decisions && notes.decisions.items.length > 0 && (
-        <div style={{ marginTop: 28 }}>
-          <h3 style={handoffSubheadingStyle}>Design &amp; product decisions</h3>
-          {notes.decisions.intro && (
+    <>
+          {decisions.intro && (
             <p
               style={{
                 margin: '8px 0 0',
@@ -1825,11 +1778,11 @@ function DevHandoffSection({
                 color: 'var(--color-text-secondary)',
               }}
             >
-              {notes.decisions.intro}
+              {decisions.intro}
             </p>
           )}
           <ol style={{ listStyle: 'none', margin: '12px 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: 8, counterReset: 'decision' }}>
-            {notes.decisions.items.map((d, i) => (
+            {decisions.items.map((d, i) => (
               <li
                 key={d.question}
                 style={{
@@ -1865,7 +1818,7 @@ function DevHandoffSection({
               </li>
             ))}
           </ol>
-          {notes.decisions.openItems && notes.decisions.openItems.length > 0 && (
+          {decisions.openItems && decisions.openItems.length > 0 && (
             <div
               style={{
                 marginTop: 12,
@@ -1877,7 +1830,7 @@ function DevHandoffSection({
             >
               <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-warning-700)' }}>Open items</span>
               <ul style={{ margin: '6px 0 0', paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {notes.decisions.openItems.map((item) => (
+                {decisions.openItems.map((item) => (
                   <li
                     key={item}
                     style={{
@@ -1893,57 +1846,10 @@ function DevHandoffSection({
               </ul>
             </div>
           )}
-        </div>
-      )}
-
-      {notes.alsoConsider && notes.alsoConsider.length > 0 && (
-        <div style={{ marginTop: 24 }}>
-          <h3 style={handoffSubheadingStyle}>Also worth documenting</h3>
-          <ul style={{ listStyle: 'none', margin: '10px 0 0', padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {notes.alsoConsider.map((p) => (
-              <li
-                key={p.name}
-                style={{
-                  padding: '12px 16px',
-                  background: 'var(--color-surface-card)',
-                  border: '1px solid var(--color-border-subtle)',
-                  borderRadius: 'var(--radius-md)',
-                }}
-              >
-                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                  {p.name}
-                </span>
-                <code style={pointerLocationStyle}>{p.location}</code>
-                <span style={{ display: 'block', marginTop: 4, fontSize: 13, lineHeight: '19px', color: 'var(--color-text-secondary)' }}>
-                  {p.note}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {notes.flagsNote && (
-        <p
-          style={{
-            margin: '20px 0 0',
-            padding: '12px 16px',
-            background: 'var(--color-primary-100)',
-            borderRadius: 'var(--radius-md)',
-            fontSize: 13,
-            lineHeight: '19px',
-            color: 'var(--color-primary-700)',
-          }}
-        >
-          {notes.flagsNote}
-        </p>
-      )}
-    </section>
+    </>
   )
 }
 
-/** Status pill for a design/product decision — Decided (green) / Needs weigh-in
- *  (amber) / Blocked (red). Pairs color with the label (never color alone). */
 function DecisionStatusPill({ status }: { status: 'Decided' | 'Needs weigh-in' | 'Blocked' }) {
   const tone =
     status === 'Decided'
@@ -1983,227 +1889,6 @@ function DecisionStatusPill({ status }: { status: 'Decided' | 'Needs weigh-in' |
 // Dev-cycle status type, colors, labels, and storage helpers live in the shared
 // devHandoffStatusUtil module (imported above) so the landing-board tiles can
 // roll a status down to every card and reflect the cards' combined state.
-
-/** Compact card for one handoff component. Opens the per-component
- *  detail screen, which carries the full notes + a live preview. */
-function HandoffComponentTile({
-  featureId,
-  component,
-  index,
-}: {
-  featureId: string
-  component: DevHandoffComponent
-  /** 0-based position in the (ordered) list — rendered as a 1-based number
-   *  badge in place of an icon. */
-  index: number
-}) {
-  const [copied, setCopied] = useState(false)
-  const statusKey = `${featureId}:${component.id}`
-  // Hydrate the saved status from localStorage once at mount via a lazy
-  // initializer (client-only SPA — no SSR), so the tile renders once with the
-  // right value instead of empty-then-filled. Falls back to the feature's
-  // AUTHORED `devStatus` so a committed status shows for every reviewer (and so
-  // this card can't disagree with the landing board's tile banner, which reads
-  // the same default). Resolved by id rather than threaded through two layers.
-  const featureDevStatus = prototypeFeatureById(featureId)?.devStatus ?? null
-  const [devStatus, setDevStatus] = useState<DevStatus | null>(
-    () => readDevStatusMap()[statusKey] ?? featureDevStatus,
-  )
-
-  const setStatus = (status: DevStatus | null) => {
-    setDevStatus(writeDevStatus(statusKey, status))
-  }
-
-  const shareUrl = `${PROTOTYPE_SHARE_ORIGIN}/prototype/${featureId}/handoff/${component.id}`
-
-  const handleShare = () => {
-    copyToClipboard(shareUrl)
-      .then(() => setCopied(true))
-      .catch(() => {
-        // Last-ditch fallback: surface the link so the reviewer can copy
-        // it manually rather than silently failing.
-        window.prompt('Copy this link:', shareUrl)
-      })
-  }
-
-  const cardStyle: React.CSSProperties = {
-    position: 'relative',
-    // Clip the top status stroke to the card's rounded corners.
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 8,
-    height: '100%',
-    // Extra right padding so the title never slides under the kebab; extra
-    // top padding when the status banner is present so content clears it.
-    padding: `${devStatus ? 38 : 16}px 44px 16px 18px`,
-    background: 'var(--color-surface-card)',
-    border: '1px solid var(--color-border-subtle)',
-    borderRadius: 'var(--radius-lg)',
-    boxShadow: 'var(--shadow-card)',
-    color: 'inherit',
-    textDecoration: 'none',
-    transition: 'border-color 120ms ease, box-shadow 120ms ease',
-  }
-  return (
-    <div style={{ position: 'relative', height: '100%' }}>
-    <Link
-      to={`/prototype/${featureId}/handoff/${component.id}`}
-      style={cardStyle}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = 'var(--color-action)'
-        e.currentTarget.style.boxShadow = 'var(--shadow-popover)'
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = 'var(--color-border-subtle)'
-        e.currentTarget.style.boxShadow = 'var(--shadow-card)'
-      }}
-    >
-      {/* Dev-cycle status banner — a colored bar across the top of the card
-          carrying the status label as small white eyebrow text (blue = In
-          Design, green = Ready for Dev, amber = In Development). */}
-      {devStatus && (
-        <span
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            display: 'flex',
-            alignItems: 'center',
-            padding: '5px 14px',
-            background: DEV_STATUS_STROKE[devStatus],
-            color: 'var(--color-text-inverse)',
-            fontFamily: 'var(--font-body)',
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            lineHeight: 1.4,
-          }}
-        >
-          {DEV_STATUS_LABEL[devStatus]}
-        </span>
-      )}
-      <span
-        aria-hidden
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 36,
-          height: 36,
-          borderRadius: 'var(--radius-md)',
-          background: 'var(--color-primary-100)',
-          color: 'var(--color-primary-700)',
-          fontFamily: 'var(--font-heading)',
-          fontSize: 18,
-          fontWeight: 600,
-          lineHeight: 1,
-        }}
-      >
-        {index + 1}
-      </span>
-      <span style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text-primary)' }}>
-          {component.name}
-        </span>
-        {component.badge && <span style={handoffBadgeStyle}>{component.badge}</span>}
-      </span>
-      <span
-        style={{
-          fontSize: 13,
-          lineHeight: '19px',
-          color: 'var(--color-text-secondary)',
-          display: '-webkit-box',
-          WebkitLineClamp: 3,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-        }}
-      >
-        {component.summary}
-      </span>
-      <span
-        style={{
-          marginTop: 'auto',
-          paddingTop: 4,
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-          fontSize: 13,
-          fontWeight: 600,
-          color: 'var(--color-action)',
-        }}
-      >
-        Details
-        <ArrowRight size={13} aria-hidden />
-      </span>
-    </Link>
-
-      {/* Kebab actions — a sibling of the Link (not nested inside the
-          anchor) so it never triggers navigation and stays valid markup.
-          "Share Link" copies an absolute deep link to this card's detail
-          page. */}
-      <div style={{ position: 'absolute', top: 8, right: 8, zIndex: 2 }}>
-        <ActionMenu
-          label={`Actions for ${component.name}`}
-          items={[
-            {
-              id: 'in-design',
-              label: devStatus === 'in-design' ? 'In Design ✓' : 'In Design',
-              icon: <Lightbulb size={15} aria-hidden style={{ color: 'var(--color-info-700)' }} />,
-              onSelect: () => setStatus('in-design'),
-            },
-            {
-              id: 'needs-discussion',
-              label: devStatus === 'needs-discussion' ? 'Needs Discussion ✓' : 'Needs Discussion',
-              icon: <MessageCircle size={15} aria-hidden style={{ color: 'var(--color-error-600)' }} />,
-              onSelect: () => setStatus('needs-discussion'),
-            },
-            {
-              id: 'blocked',
-              label: devStatus === 'blocked' ? 'Blocked ✓' : 'Blocked',
-              icon: <LockSolid size={15} aria-hidden style={{ color: 'var(--color-neutral-900)' }} />,
-              onSelect: () => setStatus('blocked'),
-            },
-            {
-              id: 'ready-for-dev',
-              label: devStatus === 'ready-for-dev' ? 'Ready for Dev ✓' : 'Ready for Dev',
-              icon: <CircleCheck size={15} aria-hidden style={{ color: 'var(--color-success-500)' }} />,
-              onSelect: () => setStatus('ready-for-dev'),
-            },
-            {
-              id: 'in-development',
-              label: devStatus === 'in-development' ? 'In Development ✓' : 'In Development',
-              icon: <Bolt size={15} aria-hidden style={{ color: 'var(--color-warning-500)' }} />,
-              onSelect: () => setStatus('in-development'),
-            },
-            ...(devStatus
-              ? [
-                  {
-                    id: 'clear-status',
-                    label: 'Clear status',
-                    icon: <X size={15} aria-hidden />,
-                    onSelect: () => setStatus(null),
-                  },
-                ]
-              : []),
-            {
-              id: 'share',
-              label: 'Share Link',
-              icon: <Share2 size={15} aria-hidden />,
-              onSelect: handleShare,
-            },
-          ]}
-        />
-      </div>
-
-      <Toast open={copied} onClose={() => setCopied(false)} title="Link copied" tone="success">
-        The handoff link is on your clipboard.
-      </Toast>
-    </div>
-  )
-}
 
 /** Shared chrome for the gateway: prototype banner + back link + centered column. */
 /**
