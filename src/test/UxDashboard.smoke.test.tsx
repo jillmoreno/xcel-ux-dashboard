@@ -189,13 +189,15 @@ describe('section routing (sectionOf)', () => {
     // status. `category: 'dev-handoff'` routes there too, so both paths agree.
     'xcel-atlas-home-overview': 'development',
     'xcel-atlas-home-course-head': 'development',
-    /* ⚠ THE READINESS ROW IS FOLDED INTO THIS ONE (2026-10-21) — "this is all
-       one component". Course progress, Study pace, Estimated completion and
-       Exam readiness share ONE outlined panel on the page, so they are one
-       feature here too; `xcel-atlas-home-readiness-panel` no longer exists. */
-    'xcel-atlas-home-progress-panel': 'development',
-    'xcel-atlas-home-exam-date-card': 'development',
-    'xcel-atlas-home-study-journey': 'development',
+    /* ⚠ FOUR ROWS BECAME ONE (2026-10-21) — "lets adjust so that everything
+       below the course card is all part of this one feature ticket so we can
+       see all the scenarios together". The progress column and the Study
+       Journey move together: an exam date set in Step 2 re-plans the pace
+       column, and the Progress control drives the dial, the readiness band and
+       the journey's current stop at once. `xcel-atlas-home-readiness-panel`,
+       `xcel-atlas-home-exam-date-card`, `xcel-atlas-home-study-journey` and
+       `xcel-atlas-home-progress-panel` are all gone into this id. */
+    'xcel-atlas-home-below-course-card': 'development',
     'xcel-atlas-home-quick-links': 'development',
     'xcel-atlas-home-affidavit-modal': 'development',
     // Not built, and on the board deliberately: `not-ready` keeps a row in

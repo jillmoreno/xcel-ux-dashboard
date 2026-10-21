@@ -66,18 +66,12 @@ export function ExamDateScenario({
     nights: NOT_STARTED_NIGHTS,
   })
   return (
-    <div style={{ marginTop: 12 }}>
+    /* ⚠ THE WIDTH BELONGS ON THE ROOT. It was on the inner stack only, so this
+       wrapper stayed block-level and full-width — which made the variant row's
+       `flexWrap` push the notes onto their own line, and that wrap is what made
+       every state's prose land above the NEXT state's picture. */
+    <div style={{ marginTop: 12, width: 344, maxWidth: '100%' }}>
       {note ? <p style={{ ...handoffMetaStyle, margin: '0 0 10px' }}>{note}</p> : null}
-      {/* ⚠ THE BASIS, ON EVERY SCREEN. These are computed from one set of
-          inputs, and the absolute figures move with the course the Demo bar
-          has selected — so a reader comparing a screen against the page needs
-          to know which course it was drawn for. The DELTAS are the point and
-          hold regardless: which deadline binds, and when no plan fits. */}
-      <p style={{ ...handoffMetaStyle, margin: '0 0 10px' }}>
-        Drawn on the demo clock (11 May 2026), access ending 10 June, with 12
-        hours of coursework left. The hours-a-week figure follows the Demo bar’s
-        Course setting; the week goal, the dates and which deadline binds do not.
-      </p>
       <div style={pairStyle}>
         <div style={halfStyle}>
           <p style={{ ...handoffEyebrowStyle, margin: '0 0 8px' }}>Study Journey · Step 2</p>
@@ -165,11 +159,24 @@ const HOURS_REMAINING = 12
 const ACCESS_ENDS = '2026-06-10'
 const NOOP = () => {}
 
+/* ⚠ THE RENDER SITS TIGHT UNDER ITS OWN PROSE. A per-screen paragraph of
+   basis used to sit between them — seven copies of the same sentence, each
+   pushing its picture far enough from its label that the page read as a
+   jumble and the default state was hard to find at all. The basis is stated
+   ONCE, in the component's summary. */
+/* ⚠ A STACK, NOT TWO COLUMNS (2026-10-21, "the ui just looks funny, where is
+   the default view?"). Side by side this block ran the full width of the page,
+   which forced each state's prose BELOW its picture — and with the render
+   drawn before its notes, every paragraph then sat directly above the NEXT
+   state's picture. The pairing was right in the DOM and wrong to the eye, and
+   the default state was impossible to pick out of the run. Stacked and
+   narrow, the whole scenario fits the slot every other component's render
+   uses, so the page keeps one rhythm: picture, then the name and the notes
+   beside it. */
 const pairStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'minmax(0, 1fr) auto',
-  gap: 20,
-  alignItems: 'start',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 14,
 }
 const halfStyle: CSSProperties = { minWidth: 0 }
 const stepFrameStyle: CSSProperties = {
@@ -180,6 +187,7 @@ const stepFrameStyle: CSSProperties = {
 }
 const panelStyle: CSSProperties = {
   width: 296,
+  alignSelf: 'flex-start',
   boxSizing: 'border-box',
   display: 'flex',
   flexDirection: 'column',

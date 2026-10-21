@@ -1511,14 +1511,14 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
      *
      * devStatus: 'in-design'. No `quickSummary` yet — ask before writing one.
      */
-    id: 'xcel-atlas-home-progress-panel',
-    title: 'Atlas Home — Progress Panel',
+    id: 'xcel-atlas-home-below-course-card',
+    title: 'Atlas Home — Below the Course Card',
     accent: 'blue',
     icon: 'grid',
     blurb:
-      'The Atlas Home\'s left column — ONE outlined panel holding four parts in order: Course progress (the dial), Study pace (the plan), Estimated completion (the date), and Exam readiness (the half-dial). ⚠ A reviewer sees only the first three on a bare `?demo=1`: readiness is `defaultEnabled: false`, so half of what this documents is behind `?ff=atlas-readiness-section`.',
+      'EVERYTHING UNDER THE COURSE CARD, as one ticket — the Course Progress column on the left (Course progress, Study pace, Estimated completion and Exam readiness, which share one panel) and the Study Journey on the right (Steps 1, 2 and 3, with the exam date living inside Step 2). They are documented together because they MOVE together: setting an exam date in Step 2 re-plans the pace column, and the Progress control drives the dial, the readiness band and the journey\'s current stop at once. ⚠ Quick Links sits BESIDE the course card, not below it, and keeps its own ticket.',
     tileBlurb:
-      'One panel, four parts: Course progress, Study pace, Estimated completion and Exam readiness — the last off by default.',
+      'The progress column and the Study Journey, and every scenario where one moves the other.',
     kind: 'guided',
     status: 'ready',
     category: 'dev-handoff',
@@ -1668,75 +1668,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             { name: 'Help me get ready', does: '⚠ Drawn text, not a link — it fires nothing.' },
           ],
         },
-      ],
-      decisions: {
-        items: [
-          {
-            question: 'What should "Help me get ready" actually do?',
-            decision: 'Not yet decided — it is drawn in the Course Progress "Edit My Study Pace" link style but has no destination today.',
-            status: 'Needs weigh-in',
-            owner: 'Eric',
-          },
-          {
-            question: 'Is the Progress → Readiness opening-level map the real correlation, or a placeholder?',
-            decision:
-              'Placeholder. Per Eric’s own code comment, the two will be correlated "at some level" later — today’s fixed lookup (and the fact that the sync only sets the OPENING level, with no live link afterward) is a stand-in for that future rule.',
-            status: 'Needs weigh-in',
-            owner: 'Eric',
-          },
-        ],
-        openItems: [
-          'What "Help me get ready" should link to.',
-          'What the real Progress ↔ Readiness correlation rule will be, once it exists.',
-          'Whether the Readiness section ships ON — it is `defaultEnabled: false`, so the panel a reviewer sees by default is only half of what this handoff documents.',
-        ],
-      },
-      flagsNote:
-        '`atlas-v3-progress` picks the opening state; clicking the card (or Enter/Space) also advances it when the card is wired to the page via `onAdvance`, as it is on Home.',
-    },
-  },
-  {
-    /*
-     * ATLAS HOME — EXAM DATE CARD. 2026-10-19. AtlasExamDateCard — the
-     * four-stage "Set Exam Date" card.
-     *
-     * ⚠ IMPORTANT: this card is WIRED INTO the Home component but is
-     * explicitly SUPPRESSED on White/End-to-End Demo chrome (`onWhite ? null
-     * : <AtlasExamDateCard …>`, 2026-10-14, Eric: "remove") — meaning it does
-     * NOT render on the committed baseline this handoff set otherwise covers.
-     * It only shows on the separate WIP version, which is out of this
-     * handoff's scope. Documented here anyway because it is part of the same
-     * component family and is one click (a flag/version change) from coming
-     * back — see the decisions log for the discrepancy this surfaced.
-     *
-     * devStatus: 'in-design'. No `quickSummary` yet — ask before writing one.
-     */
-    id: 'xcel-atlas-home-exam-date-card',
-    title: 'Atlas Home — Exam Date',
-    accent: 'blue',
-    icon: 'grid',
-    blurb:
-      'How a learner tells the Home when their state exam is, and what that date then moves. ⚠ IT LIVES IN STEP 2 OF THE STUDY JOURNEY on the committed baseline — "When is your exam?" with an Add Date button that opens a calendar in place. The four-stage "Do you know your state exam date?" card this row used to describe is a DIFFERENT component and is hidden on this chrome; it is documented second.',
-    tileBlurb:
-      'Step 2 asks, Add Date opens a calendar, and a set date re-plans the pace and adds the exam row.',
-    kind: 'guided',
-    status: 'ready',
-    category: 'dev-handoff',
-    devStatus: 'in-design',
-    brands: ['xcel'],
-    pages: [
-      {
-        label: 'Atlas Home (End-to-End Demo)',
-        note: 'Step 2 of the Study Journey, part-way down — "When is your exam?" with Add Date. ⚠ The four-stage card is a different thing and is NOT on this page; it needs the WIP chrome.',
-        to: '/dashboard-rebrand?demo=1&section=dashboard',
-      },
-    ],
-    featureFlags: [],
-    devHandoff: {
-      intro:
-        'A functional four-stage exam-date picker, built and wired into the Home layout between Course Progress and Readiness — then explicitly turned off for White/End-to-End Demo the same day it moved there, leaving it live only on the separate, out-of-scope WIP version.',
-      components: [],
-      uiComponents: [
         {
           id: 'atlas-home-exam-prompt',
           name: 'Atlas Home — Exam Date in Step 2',
@@ -1833,83 +1764,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             { name: 'Edit', does: 'Reopens the calendar on the saved date. A date is not a one-time entry.' },
           ],
         },
-      ],
-      decisions: {
-        items: [
-          {
-            question: 'Should the Exam Date card come back on White/End-to-End Demo, or stay WIP-only?',
-            decision:
-              '⚠ LARGELY OVERTAKEN: Step 2 carries the question on this chrome now, so the baseline is no longer missing the exam date — what is still WIP-only is the four-stage CARD. Currently hidden on both (2026-10-14, Eric: "remove") — but the End-to-End Demo dashboard version’s OWN description text still lists "the exam-date card" as part of what End-to-End Demo’s Home includes, which no longer matches what the code renders. One of the two needs to change: either restore the card to this baseline, or correct the version’s description so it stops claiming a component that isn’t there.',
-            status: 'Needs weigh-in',
-            owner: 'Eric',
-          },
-          {
-            question: 'Should the collected exam date actually drive anything (pace model, Study Journey)?',
-            decision:
-              'YES, AND IT DOES — answered 2026-10-20 and shipped. The date re-plans the study pace against the exam minus `EXAM_BUFFER_DAYS` (7), adds the FLORIDA STATE EXAM figure row to the pace column, and turns Step 2 into its Scheduled stop. ⚠ THE RULE THAT MADE IT SAFE TO WIRE: a page may act on a date only if it can SHOW it, CHANGE it and REMOVE it. Step 2 does all three, which is why this Home passes `examDate` to `studyPace` while the End-to-End Demo’s Home still passes `undefined` — its prompts are decoration, so a date typed in Compass weeks earlier would dead-end its pace card with no control on that page to undo it. ⚠ This answer was "Not today — local-state-only" until 2026-10-21, a day after it stopped being true.',
-            status: 'Decided',
-          },
-          {
-            question: 'Where does the No stage’s "here" registration link go?',
-            decision: 'Undecided — no destination has been chosen yet.',
-            status: 'Needs weigh-in',
-            owner: 'Product',
-          },
-        ],
-        openItems: [
-          'Whether the card is restored to the committed baseline or the End-to-End Demo version’s description is corrected to drop the claim.',
-          'The "here" registration link’s real destination.',
-        ],
-      },
-      alsoConsider: [
-        { name: 'Course Progress panel', location: 'See its own dev-handoff feature.', note: 'The Exam Date card sits directly below it on WIP chrome (out of scope here).' },
-        { name: 'Readiness panel', location: 'See its own dev-handoff feature.', note: 'The Exam Date card sits directly above it on WIP chrome (out of scope here).' },
-      ],
-      flagsNote: 'No feature flag controls this card — its visibility is a hardcoded `onWhite` chrome check, not a flag.',
-    },
-  },
-  {
-    /*
-     * ATLAS HOME — STUDY JOURNEY & GET LICENSED STEPS. 2026-10-19. The right
-     * column's Step 1 (Study Journey list / Congratulations), Step 2 (Pass
-     * State Exam) and Step 3 (Get Licensed in {state}), plus the
-     * "{state} State Requirements" button.
-     *
-     * ⚠ IMPORTANT: on this baseline (White/End-to-End Demo), Step 1's list is
-     * NOT the real computed journey (`journeyStopsFor`) — it is a hardcoded
-     * 7-line array that never changes with the learner's actual progress.
-     * See the decisions log.
-     *
-     * devStatus: 'in-design'. No `quickSummary` yet — ask before writing one.
-     */
-    id: 'xcel-atlas-home-study-journey',
-    title: 'Atlas Home — Study Journey & Get Licensed Steps',
-    accent: 'blue',
-    icon: 'grid',
-    blurb:
-      'The right column’s three steps — Study Journey (Step 1), Pass State Exam (Step 2), Get Licensed in {state} (Step 3) — where Step 1’s list is fixed 7-line copy rather than the real, per-learner computed journey.',
-    tileBlurb:
-      'Step 1 Study Journey (a fixed list on this baseline) → Step 2 Pass State Exam → Step 3 Get Licensed — plus a State Requirements button.',
-    kind: 'guided',
-    status: 'ready',
-    category: 'dev-handoff',
-    devStatus: 'in-design',
-    brands: ['xcel'],
-    pages: [
-      {
-        label: 'Atlas Home (End-to-End Demo)',
-        note: 'The right column, below the course card. Step 1’s list does not change with the Progress control on this chrome — only the Completed stage visibly changes it (swaps to a Congratulations block).',
-        to: '/dashboard-rebrand?demo=1&section=dashboard',
-      },
-    ],
-    featureFlags: [
-      { id: 'atlas-v3-progress', label: 'Progress', note: 'At Completed, Step 1 swaps from the journey list to a Congratulations block. At every other value, Step 1’s list is unchanged on this chrome — see the decisions log.' },
-    ],
-    devHandoff: {
-      intro:
-        'Three steps naming the rest of the licensing path — study, sit the exam, apply — built on top of a shared, real journey-derivation utility that this particular chrome deliberately does not use for display.',
-      components: [],
-      uiComponents: [
         {
           id: 'atlas-home-study-journey',
           name: 'Atlas Home — Study Journey & Get Licensed Steps',
@@ -1955,6 +1809,38 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
       decisions: {
         items: [
           {
+            question: 'What should "Help me get ready" actually do?',
+            decision: 'Not yet decided — it is drawn in the Course Progress "Edit My Study Pace" link style but has no destination today.',
+            status: 'Needs weigh-in',
+            owner: 'Eric',
+          },
+          {
+            question: 'Is the Progress → Readiness opening-level map the real correlation, or a placeholder?',
+            decision:
+              'Placeholder. Per Eric’s own code comment, the two will be correlated "at some level" later — today’s fixed lookup (and the fact that the sync only sets the OPENING level, with no live link afterward) is a stand-in for that future rule.',
+            status: 'Needs weigh-in',
+            owner: 'Eric',
+          },
+          {
+            question: 'Should the Exam Date card come back on White/End-to-End Demo, or stay WIP-only?',
+            decision:
+              '⚠ LARGELY OVERTAKEN: Step 2 carries the question on this chrome now, so the baseline is no longer missing the exam date — what is still WIP-only is the four-stage CARD. Currently hidden on both (2026-10-14, Eric: "remove") — but the End-to-End Demo dashboard version’s OWN description text still lists "the exam-date card" as part of what End-to-End Demo’s Home includes, which no longer matches what the code renders. One of the two needs to change: either restore the card to this baseline, or correct the version’s description so it stops claiming a component that isn’t there.',
+            status: 'Needs weigh-in',
+            owner: 'Eric',
+          },
+          {
+            question: 'Should the collected exam date actually drive anything (pace model, Study Journey)?',
+            decision:
+              'YES, AND IT DOES — answered 2026-10-20 and shipped. The date re-plans the study pace against the exam minus `EXAM_BUFFER_DAYS` (7), adds the FLORIDA STATE EXAM figure row to the pace column, and turns Step 2 into its Scheduled stop. ⚠ THE RULE THAT MADE IT SAFE TO WIRE: a page may act on a date only if it can SHOW it, CHANGE it and REMOVE it. Step 2 does all three, which is why this Home passes `examDate` to `studyPace` while the End-to-End Demo’s Home still passes `undefined` — its prompts are decoration, so a date typed in Compass weeks earlier would dead-end its pace card with no control on that page to undo it. ⚠ This answer was "Not today — local-state-only" until 2026-10-21, a day after it stopped being true.',
+            status: 'Decided',
+          },
+          {
+            question: 'Where does the No stage’s "here" registration link go?',
+            decision: 'Undecided — no destination has been chosen yet.',
+            status: 'Needs weigh-in',
+            owner: 'Product',
+          },
+          {
             question: 'Should Step 1’s Study Journey list reflect the learner’s real progress on this baseline, the way it does on WIP?',
             decision:
               'Not today. The list is a fixed 7-line array sourced from a different Figma frame (265:8144, "text only, the rows keep their styling") and does not change as the Progress control is moved, except that Completed replaces it entirely with a Congratulations block. A stakeholder stepping Course Progress and Readiness through their visible states will notice the Study Journey does not follow.',
@@ -1976,16 +1862,18 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           },
         ],
         openItems: [
+          'What "Help me get ready" should link to.',
+          'What the real Progress ↔ Readiness correlation rule will be, once it exists.',
+          'Whether the Readiness section ships ON — it is `defaultEnabled: false`, so the panel a reviewer sees by default is only half of what this handoff documents.',
+          'Whether the card is restored to the committed baseline or the End-to-End Demo version’s description is corrected to drop the claim.',
+          'The "here" registration link’s real destination.',
           'Whether Step 1 should read the real computed journey instead of the fixed list.',
           'Whether Steps 2 and 3 should regain their links on this chrome.',
           'Whether "Schedule State Exam" belongs on Home at all, and if so where.',
         ],
       },
-      alsoConsider: [
-        { name: 'Course Progress panel', location: 'See its own dev-handoff feature.', note: 'Visibly advances with the Progress control; Step 1’s list on this baseline does not follow it the same way.' },
-        { name: 'Quick Links card', location: 'See its own dev-handoff feature.', note: 'Carries the Exam Information / Applying for a License / State Requirements sheets that may cover ground this section’s missing links would otherwise.' },
-      ],
-      flagsNote: '`atlas-v3-progress` swaps Step 1 to the Congratulations block at Completed; no other value changes anything in this section on this chrome.',
+      flagsNote:
+        '`atlas-v3-progress` picks the opening state; clicking the card (or Enter/Space) also advances it when the card is wired to the page via `onAdvance`, as it is on Home.',
     },
   },
   {

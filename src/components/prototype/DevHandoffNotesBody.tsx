@@ -98,6 +98,15 @@ function VariantRow({
       }}
     >
       <div style={stacked ? { flex: '1 1 100%', minWidth: 0 } : renderColStyle}>
+        {/* ⚠ THE NAME LEADS A STACKED ROW (2026-10-21, Jillienne: "the ui just
+            looks funny, where is the default view?"). Stacked rows put the
+            picture first and the prose under it, so every paragraph ended up
+            sitting directly above the NEXT state's picture — the pairing was
+            right in the DOM and wrong to the eye, and the default state could
+            not be picked out of the run at all. Naming the state above its own
+            render makes each row self-announcing. Side-by-side rows already
+            have the name adjacent and do not need it twice. */}
+        {stacked && <p style={{ ...handoffRowNameStyle, margin: '0 0 8px' }}>{variant.name}</p>}
         {render ? (
           <div style={variantRenderStyle}>{render}</div>
         ) : (
@@ -109,7 +118,7 @@ function VariantRow({
         )}
       </div>
       <div style={stacked ? { flex: '1 1 100%', minWidth: 0 } : notesColStyle}>
-        <p style={handoffRowNameStyle}>{variant.name}</p>
+        {stacked ? null : <p style={handoffRowNameStyle}>{variant.name}</p>}
         <p style={handoffMetaStyle}>{variant.when}</p>
         {variant.detail && variant.detail !== '—' && (
           <p style={handoffProseStyle}>{variant.detail}</p>

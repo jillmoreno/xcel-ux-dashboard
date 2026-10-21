@@ -378,7 +378,16 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
  * is not a question the DOM can be asked before it is laid out.
  * `DevHandoffVariants.test.ts` checks every id here is a real component.
  */
-const FULL_WIDTH = new Set(['atlas-home-layout', 'atlas-home-study-journey'])
+/* ⚠ `atlas-home-exam-prompt` IS FULL WIDTH BY DESIGN, not by accident. Its
+   render is TWO components at once — Step 2 and the pace column — which is the
+   whole point of those screens, and the side-by-side slot's 840px basis would
+   wrap the notes anyway. Declaring it here gets the stacked treatment
+   deliberately, with the state's name leading its own picture. */
+const FULL_WIDTH = new Set([
+  'atlas-home-layout',
+  'atlas-home-study-journey',
+  'atlas-home-exam-prompt',
+])
 
 /** Whether this component's renders take the full row — see `FULL_WIDTH`. */
 export function atlasHandoffIsFullWidth(componentId: string): boolean {
