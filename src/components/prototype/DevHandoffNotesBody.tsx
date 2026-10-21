@@ -1,6 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
 import type {
-  DevHandoffComponent,
   DevHandoffDesignSpec,
   DevHandoffState,
   DevHandoffVariant,
@@ -20,42 +19,6 @@ import {
   atlasHandoffVariantRender,
   atlasHandoffIsFullWidth,
 } from './atlasHandoffPreviewsRegistry'
-
-/**
- * The full written notes for one handoff component — location, summary,
- * and the Variants / UX logic / Data / Stubs / Accessibility blocks.
- * Rendered on the per-component detail screen
- * (`PrototypeHandoffDetailPage`). The component NAME is rendered by the
- * page as its heading, so this body starts at the location line.
- */
-export function DevHandoffNotesBody({ component }: { component: DevHandoffComponent }) {
-  return (
-    <div>
-      <p style={{ ...handoffProseStyle, margin: '12px 0 0' }}>{component.summary}</p>
-
-      {/* Neither the variants nor the rules are repeated here — both have
-          their own section now (`DevHandoffVariantsBody`, and the Rules
-          section's `BulletList` over `uxLogic`). Notes is what is left: where
-          it lives, what it needs, and what is still stubbed. */}
-
-      <HandoffBlock label="Data dependencies">
-        <BulletList items={component.data} />
-      </HandoffBlock>
-
-      {component.stubs && component.stubs.length > 0 && (
-        <HandoffBlock label="Stubs to wire up">
-          <BulletList items={component.stubs} />
-        </HandoffBlock>
-      )}
-
-      {component.a11y && component.a11y.length > 0 && (
-        <HandoffBlock label="Accessibility">
-          <BulletList items={component.a11y} />
-        </HandoffBlock>
-      )}
-    </div>
-  )
-}
 
 /**
  * THE VARIANTS SECTION — every state the component can render, each one
@@ -567,19 +530,49 @@ export function DevHandoffAcceptanceBody({ items }: { items: string[] }) {
   )
 }
 
-/** The states matrix — state → expected behavior, for the non-happy paths. */
+/**
+ * THE EDGE CASES, ASKED AND ANSWERED.
+ *
+ * ⚠ 2026-10-21, Jillienne: "frame this section as the following: Q: What if
+ * there is no Image? A: Shift the other parts of the component to the left."
+ *
+ * The Q and A markers use the same small-caps eyebrow as every other label on
+ * the page, at a fixed width, so the questions line up down the column and a
+ * reader can run an eye along the Qs without reading any of the As.
+ */
 export function DevHandoffStatesMatrixBody({ rows }: { rows: DevHandoffState[] }) {
   return (
     <ul style={detailListStyle}>
-      {rows.map((r) => (
-        <li key={r.state} style={detailItemStyle}>
-          <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{r.state}</span>
-          <span style={{ display: 'block', marginTop: 2, color: 'var(--color-text-secondary)' }}>
-            {r.behavior}
-          </span>
+      {rows.map((r, i) => (
+        <li
+          key={r.question}
+          style={{
+            ...detailItemStyle,
+            ...(i > 0 && { borderTop: '1px solid var(--color-border-subtle)', paddingTop: 12 }),
+          }}
+        >
+          <QaLine label="Q" text={r.question} strong />
+          <QaLine label="A" text={r.answer} />
         </li>
       ))}
     </ul>
+  )
+}
+
+function QaLine({ label, text, strong }: { label: string; text: string; strong?: boolean }) {
+  return (
+    <span style={{ display: 'flex', gap: 10, marginTop: strong ? 0 : 6 }}>
+      <span style={{ ...handoffEyebrowStyle, flex: 'none', width: 14, paddingTop: 2 }}>{label}</span>
+      <span
+        style={{
+          ...handoffProseStyle,
+          margin: 0,
+          ...(strong && { fontWeight: 700, color: 'var(--color-text-primary)' }),
+        }}
+      >
+        {text}
+      </span>
+    </span>
   )
 }
 

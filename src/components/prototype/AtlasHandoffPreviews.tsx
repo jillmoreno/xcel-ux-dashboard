@@ -149,6 +149,7 @@ export function CourseHeadVariant({
   beginLabel = 'Begin Course',
   meta = 'default',
   eyebrow,
+  withCertificate = false,
 }: {
   title?: string
   beginLabel?: string
@@ -159,6 +160,8 @@ export function CourseHeadVariant({
   eyebrow?: string
   /** Hidden once access has gone: nothing to review, only to buy back. */
   showOverview?: boolean
+  /** Adds "View Certificate" beside Course Overview — the completed state. */
+  withCertificate?: boolean
 }) {
   return (
     <div style={courseHeadPanelStyle}>
@@ -176,6 +179,7 @@ export function CourseHeadVariant({
         // replaces them. That difference is the whole distinction between the
         // two states, so the preview has to carry it.
         onPurchaseExtension={meta === 'last-day' ? () => {} : undefined}
+        onViewCertificate={withCertificate ? () => {} : undefined}
         // The page's OWN meta row, not a rebuild of it.
         meta={
           meta === 'none' ? undefined : (

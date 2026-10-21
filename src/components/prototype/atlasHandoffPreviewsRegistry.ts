@@ -203,6 +203,7 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
         beginLabel: 'Review Course',
         meta: 'complete',
         eyebrow: 'Congrats! You have completed this course.',
+        withCertificate: true,
       }),
     Expired: () =>
       createElement(CourseHeadVariant, {

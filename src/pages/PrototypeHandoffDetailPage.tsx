@@ -4,7 +4,6 @@ import { GatewayShell } from './PrototypeFeaturePage'
 import {
   DevHandoffAcceptanceBody,
   DevHandoffDesignSpecBody,
-  DevHandoffNotesBody,
   DevHandoffStatesMatrixBody,
   DevHandoffVariantsBody,
 } from '@/components/prototype/DevHandoffNotesBody'
@@ -170,13 +169,6 @@ export function PrototypeHandoffDetailPage() {
         </section>
       )}
 
-      {/* Full written notes — framed like the other sections. */}
-      <section>
-        <h2 style={sectionHeadingStyle}>Notes</h2>
-        <div style={{ ...previewFrameStyle, marginTop: 12 }}>
-          <DevHandoffNotesBody component={component} />
-        </div>
-      </section>
     </GatewayShell>
   )
 }

@@ -819,8 +819,13 @@ describe('component detail — COMPONENT_SECTIONS matches the render order', () 
     expect(rendered).toEqual(declared)
   })
 
-  it('leads with the Quick Summary, and seeds the active chip from it', () => {
-    expect(src).toMatch(/const COMPONENT_SECTIONS = \[\n(?:\s*\/\/.*\n)*\s*\{ id: 'quick-summary'/)
-    expect(src).toContain("useState<ComponentSectionId>('quick-summary')")
+  it('leads with the States, and seeds the active chip from it', () => {
+    /* ⚠ WAS THE QUICK SUMMARY until 2026-10-21 (Jillienne: "lets REMOVE the
+       summary section. It's just repeating itself. Lets start with the States
+       section."). The feature header's blurb says the same thing one scroll
+       higher, so the detail opens on the first thing that is not a restatement:
+       what the component actually looks like. */
+    expect(src).toMatch(/const COMPONENT_SECTIONS = \[\n(?:\s*(?:\/\/|\/\*|\*).*\n)*\s*\{ id: 'variants'/)
+    expect(src).toContain("useState<ComponentSectionId>('variants')")
   })
 })

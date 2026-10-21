@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { ArrowRight, ClipboardList, Download, Share2 } from '@/icons'
 import { ComponentLivePreview } from './PrototypeHandoffDetailPage'
+import { atlasHandoffThumbRender } from '@/components/prototype/atlasHandoffPreviewsRegistry'
 import { PrototypeBar, PROTOTYPE_BAR_HEIGHT } from '@/components/layout/PrototypeBar'
 import { setPrototypeWalkthrough } from '@/components/layout/prototypeWalkthrough'
 import { useAccount, professionFor } from '@/context/AccountContext'
@@ -19,7 +20,6 @@ import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
 import { PROTOTYPE_SHARE_ORIGIN, copyToClipboard } from '@/components/prototype/shareLink'
 import {
-  DevHandoffNotesBody,
   DevHandoffDesignSpecBody,
   DevHandoffAcceptanceBody,
   DevHandoffStatesMatrixBody,
@@ -31,12 +31,6 @@ import {
 } from '@/components/prototype/DevHandoffNotesBody'
 import { getUserJiraTickets } from '@/components/prototype/jiraTicketsUtil'
 import { FeaturePreviewThumb } from '@/components/prototype/FeaturePreviewThumb'
-/* Aliased: this file has its own THUMB_W/THUMB_H for the 104x68 miniature on a
-   component ROW, which is a different picture at a different size. */
-import {
-  THUMB_W as LANDING_THUMB_W,
-  THUMB_H as LANDING_THUMB_H,
-} from '@/components/prototype/GeneratedThumb'
 import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { RelatedJiraTickets } from '@/components/prototype/RelatedJiraTickets'
 import {
@@ -184,23 +178,7 @@ export function PrototypeFeaturePage({
           flexWrap: 'wrap',
         }}
       >
-        {/* `flex: none` at the thumb's own width so it never stretches or
-            shrinks — scaling it would change how the 1440px iframe inside
-            crops, and the point of the thumb is that it is a true scaled
-            render rather than a resized one. */}
-        <div style={{ width: LANDING_THUMB_W, flex: 'none' }}>
-          <FeaturePreviewThumb
-            feature={feature}
-            src={headerPreviewSrc}
-            width={LANDING_THUMB_W}
-            height={LANDING_THUMB_H}
-            style={{
-              display: 'block',
-              borderRadius: 'var(--radius-lg)',
-              boxShadow: 'var(--shadow-card)',
-            }}
-          />
-        </div>
+        <FeatureHeaderThumb feature={feature} src={headerPreviewSrc} />
 
         <div style={{ flex: '1 1 320px', minWidth: 0 }}>
         <p
@@ -230,17 +208,12 @@ export function PrototypeFeaturePage({
         >
           {feature.title}
         </h1>
-        <p
-          style={{
-            margin: '14px 0 0',
-            maxWidth: GATEWAY_PROSE_MEASURE,
-            fontSize: 14,
-            lineHeight: '22px',
-            color: 'var(--color-text-secondary)',
-          }}
-        >
-          {feature.blurb}
-        </p>
+        {/* ⚠ THIS IS THE SUMMARY (2026-10-21, Jillienne: "this is the summary.
+            Adjust the font size to match the body font size of the rest of the
+            application. And then lets REMOVE the summary section. It's just
+            repeating itself."). The component detail used to open with its own
+            Summary section saying the same thing one scroll further down. */}
+        <p style={{ ...handoffProseStyle, margin: '14px 0 0' }}>{feature.blurb}</p>
         {/* ONE metadata row, not two. Brands and Jira were stacked rows of the
             same label+chips shape, which read as a single noisy zone — and the
             Jira half spent a whole row rendering "None linked yet". They share a
@@ -599,7 +572,6 @@ const COMPONENT_SECTIONS = [
   // never to draft. That rule is gone (see the dev-handoff-notes skill), so
   // the heading stops naming an author. The ID is unchanged: `#<component>--
   // quick-summary` deep links are in circulation and a label is not a route.
-  { id: 'quick-summary', label: 'Summary' },
   // VARIANTS (2026-10-20) — the one section that had no home on this page.
   // The live, all-variants renders existed but were reachable only from
   // `/prototype/:featureId/handoff/:componentId`, whose only link is the tile
@@ -622,14 +594,19 @@ const COMPONENT_SECTIONS = [
   { id: 'spec', label: 'Design Spec' },
   { id: 'acceptance', label: 'Acceptance' },
   { id: 'edge-states', label: 'Edge cases' },
-  { id: 'notes', label: 'Notes' },
   // Feature-level, folded in when the tabs went (2026-10-21).
   //
   // ⚠ NO LIVE PREVIEW SECTION. It was here for a few minutes and came straight
   // back out: the header already carries an "Open live preview" button, and a
   // second copy of the whole route embedded inside the document was the same
   // page twice on one screen.
-  { id: 'decisions', label: 'Decisions' },
+  /* ⚠ "QUESTIONS", not "Decisions" (2026-10-21, Jillienne: "change to
+     Questions. Here and everywhere else"). Almost every row in it is a
+     question nobody has answered — "Needs weigh-in" on all three of the course
+     head's — so the heading was promising a record of settled calls and
+     delivering an open list. The id stays `decisions`: deep links are in
+     circulation, and the data field is still `devHandoff.decisions`. */
+  { id: 'decisions', label: 'Questions' },
 ] as const
 
 type ComponentSectionId = (typeof COMPONENT_SECTIONS)[number]['id']
@@ -638,7 +615,6 @@ type ComponentSectionId = (typeof COMPONENT_SECTIONS)[number]['id']
  *  says what is documented before you spend a click finding out. */
 function authoredSections(c: DevHandoffComponent): string[] {
   const out: string[] = []
-  if (c.quickSummary) out.push('Summary')
   if (c.variants.length) out.push(`${c.variants.length} variant${c.variants.length === 1 ? '' : 's'}`)
   if (c.designSpec) out.push('Design Spec')
   if (c.acceptanceCriteria?.length) out.push('Acceptance')
@@ -802,7 +778,7 @@ function UiComponentsSection({
           it — a reader on the list still gets the whole handoff on one page. */}
       {decisions && decisions.items.length > 0 && (
         <div style={{ marginTop: 32 }}>
-          <h4 style={handoffSubheadingStyle}>Design &amp; product decisions</h4>
+          <h4 style={handoffSubheadingStyle}>Questions</h4>
           <div style={{ ...inlineHandoffFrameStyle, marginTop: 12 }}>
             <DecisionsBody decisions={decisions} />
           </div>
@@ -810,6 +786,98 @@ function UiComponentsSection({
       )}
     </section>
   )
+}
+
+/**
+ * THE HEADER PICTURE — a zoomed view of the component this feature is about,
+ * not of the whole page.
+ *
+ * ⚠ 2026-10-21, Jillienne: "have the preview here and the first page be a
+ * zoomed in view of the Course Card that we are talking about for this
+ * feature", and "make this thumbnail large enough to reach the bottom of the
+ * body text describing it."
+ *
+ * It was a 1440px page scaled to 160px wide — a grey mosaic in which the
+ * component the page documents was perhaps forty pixels across. This renders
+ * the REAL component instead (the same registry the States section draws from)
+ * at a scale where you can see what it is, which is the only job a header
+ * picture has.
+ *
+ * Falls back to the page thumbnail for features with no registered render —
+ * the standalone HTML explorations, and any component whose states are page
+ * chrome rather than props.
+ */
+function FeatureHeaderThumb({
+  feature,
+  src,
+}: {
+  feature: PrototypeFeature
+  src: string | null
+}) {
+  const first = feature.devHandoff?.uiComponents?.[0]
+  const live = first ? atlasHandoffThumbRender(first.id) : undefined
+  if (!live) {
+    return (
+      <div style={{ width: HEADER_THUMB_W, flex: 'none' }}>
+        <FeaturePreviewThumb
+          feature={feature}
+          src={src}
+          width={HEADER_THUMB_W}
+          height={HEADER_THUMB_H}
+          style={{
+            display: 'block',
+            borderRadius: 'var(--radius-lg)',
+            boxShadow: 'var(--shadow-card)',
+          }}
+        />
+      </div>
+    )
+  }
+  return (
+    <div aria-hidden style={headerThumbBoxStyle}>
+      {/* ⚠ ABSOLUTE AND TRANSLATED, not a flex child. A scaled element keeps its
+          PRE-transform height in layout, so a 880px-wide card scaled to a third
+          still occupies its full height in the box and `alignItems: center` has
+          nothing useful to centre — the card ended up jammed into the top-left
+          corner. Taking it out of flow and centring it by transform is what
+          actually puts it in the middle. */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: 0,
+          width: HEADER_THUMB_RENDER_W,
+          transform: `scale(${HEADER_THUMB_W / HEADER_THUMB_RENDER_W}) translateY(-50%)`,
+          transformOrigin: 'left top',
+          pointerEvents: 'none',
+        }}
+      >
+        {live}
+      </div>
+    </div>
+  )
+}
+
+/* Sized to the text beside it: eyebrow, title, a three-line blurb and the brand
+   row come to roughly 210px, so the picture reaches the bottom of the paragraph
+   that describes it rather than stopping a third of the way down. */
+const HEADER_THUMB_W = 300
+const HEADER_THUMB_H = 210
+/* The width the component is rendered at before scaling — the course card's own
+   800 plus its panel, so the miniature is a true scaled render of the real
+   thing rather than the component reflowed into 300px. */
+const HEADER_THUMB_RENDER_W = 880
+
+const headerThumbBoxStyle: React.CSSProperties = {
+  position: 'relative',
+  width: HEADER_THUMB_W,
+  height: HEADER_THUMB_H,
+  flex: 'none',
+  overflow: 'hidden',
+  borderRadius: 'var(--radius-lg)',
+  border: '1px solid var(--color-border-subtle)',
+  background: 'var(--color-fixed-light)',
+  boxShadow: 'var(--shadow-card)',
 }
 
 /**
@@ -1021,150 +1089,6 @@ function UiComponentRow({
 }
 
 /**
- * The default state of the Summary: an empty box waiting to be written.
- *
- * Deliberately NOT the quiet "add `quickSummary`" line every other un-authored
- * section shows. Those tell a developer that a spec field is missing and cost
- * almost no height on purpose. This one leads the page, so an empty one is the
- * first thing a reader meets — it takes real space and reads as a slot, not a
- * footnote.
- *
- * The dashed rule is what says "empty on purpose": a solid frame at this size
- * reads as a card whose content failed to load. Text is `--color-text-secondary`
- * (7.51:1 on the page surface), not the `--color-text-tertiary` the quiet lines
- * use — that is 3.57:1 here, and a prompt nobody can read is not a prompt.
- *
- * It carries the SAME left stroke and fill as the filled state, so the two read
- * as one section in two conditions rather than as two different boxes; only the
- * dashed remainder separates waiting from written.
- */
-function QuickSummaryPlaceholder() {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        minHeight: 88,
-        padding: '18px 20px',
-        border: '1px dashed var(--color-border-subtle)',
-        borderLeft: '4px solid var(--color-primary-500)',
-        borderRadius: 'var(--radius-lg)',
-        background: 'var(--color-surface-page)',
-      }}
-    >
-      <p
-        style={{
-          margin: 0,
-          fontSize: 14.5,
-          lineHeight: '23px',
-          color: 'var(--color-text-secondary)',
-        }}
-      >
-        Add a summary — one or two sentences on what this is for
-      </p>
-    </div>
-  )
-}
-
-/**
- * The designer's own words about a component.
- *
- * Deliberately the plainest render on the page: no chrome, no frame, no
- * labelled fields — prose at the reading measure, one step up in size from the
- * spec around it so it reads as someone talking rather than as another
- * documentation block.
- *
- * The formatting vocabulary is TWO things and must stay small — the moment this
- * grows fields it becomes a form, and a form is what a designer writing in
- * their own words is being spared:
- *
- *   1. Blank lines split blocks.
- *   2. A block whose every line starts `* ` or `- ` is a list.
- *
- * Single newlines inside a paragraph are PRESERVED (`pre-line`) rather than
- * collapsed. That is not a nicety: notes get pasted in from somewhere else with
- * their own line structure, and silently reflowing them edits the designer's
- * words. The first Quick Summary written for this field was a lead-in, three
- * bullets and a closing line — reflowed, it would have run together into one
- * paragraph containing literal asterisks.
- */
-function QuickSummaryBody({ text }: { text: string }) {
-  /* ⚠ NO MEASURE CAP, AND THE BODY SIZE (2026-10-21, Jillienne: "have this text
-     fit the space of the container, no need to wrap so soon. Also match the text
-     size to the rest of the body text").
-
-     Both came from the field's first life as "Quick Summary from Jill", which
-     was set a step up in type and held to a 76ch measure because it was prose
-     in a page of spec tables and wanted to read like someone talking. It is a
-     one-or-two-sentence Summary now: at 14.5px inside a 76ch cap it wrapped
-     two-thirds of the way across its own box while every section under it ran
-     the full width, so the lead paragraph was the one thing on the page that
-     looked like it had been squeezed.
-
-     It keeps `--color-text-primary` rather than the prose secondary — the
-     Summary leads, and the one distinction worth keeping is weight of colour,
-     not size. */
-  const proseStyle: React.CSSProperties = {
-    ...handoffProseStyle,
-    margin: 0,
-    color: 'var(--color-text-primary)',
-  }
-  const blocks = text.split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean)
-
-  return (
-    // The shared section frame verbatim — same fill as every other section — with
-    // one embellishment: a 4px brand stroke down the left edge. The fill was
-    // white for a few minutes and that was the louder, worse version; a stroke
-    // marks the section without making it a different KIND of box.
-    //
-    // It replaces the frame's 1px left border rather than sitting inside it, so
-    // there is no doubled edge; the 3px that adds to the left inset is invisible
-    // against a 24px padding and keeps the stroke reading as part of the frame.
-    //
-    // `--color-primary-500` here is NOT the product brand's blue — the gateway
-    // wraps itself in `.cre-prototype-stc-accent` (tokens.css L1153), which
-    // re-points the primary ramp at the page's own teal. So the stroke lands on
-    // the same #358087 as the active tab underline above it and reads as part of
-    // THIS page's system rather than as a brand colour leaking into a doc page.
-    // Measured 4.2:1 on the page surface — decorative, but it clears the 3:1
-    // non-text bar rather than relying on it being noticed.
-    <div
-      style={{
-        ...inlineHandoffFrameStyle,
-        borderLeft: '4px solid var(--color-primary-500)',
-        display: 'grid',
-        gap: 12,
-      }}
-    >
-      {blocks.map((block, i) => {
-        const lines = block.split('\n').map((l) => l.trim()).filter(Boolean)
-        const isList = lines.length > 0 && lines.every((l) => /^[*-]\s+/.test(l))
-        if (isList) {
-          return (
-            // `listStyle` is set explicitly: the app's reset zeroes it globally,
-            // so an unstyled <ul> renders as indented lines with no markers —
-            // which reads as a paragraph someone tabbed, not a list.
-            <ul
-              key={i}
-              style={{ ...proseStyle, margin: 0, paddingLeft: 22, listStyle: 'disc', display: 'grid', gap: 6 }}
-            >
-              {lines.map((line, j) => (
-                <li key={j}>{line.replace(/^[*-]\s+/, '')}</li>
-              ))}
-            </ul>
-          )
-        }
-        return (
-          <p key={i} style={{ ...proseStyle, whiteSpace: 'pre-line' }}>
-            {lines.join('\n')}
-          </p>
-        )
-      })}
-    </div>
-  )
-}
-
-/**
  * One component's handoff: every section on ONE continuous scroll, with a sticky
  * jump nav over it.
  *
@@ -1198,7 +1122,7 @@ function UiComponentDetail({
    *  return to. */
   onBack?: () => void
 }) {
-  const [activeSection, setActiveSection] = useState<ComponentSectionId>('quick-summary')
+  const [activeSection, setActiveSection] = useState<ComponentSectionId>('variants')
   const anchorFor = (id: ComponentSectionId) => `${component.id}--${id}`
 
   // Options and Flows are the only two sections that can be absent (see the
@@ -1406,23 +1330,6 @@ function UiComponentDetail({
         })}
       </nav>
 
-      {section(
-        'quick-summary',
-        'Summary',
-        null,
-        // Never null: the un-authored state is its own designed box, not the
-        // shared "add this field" line — see `QuickSummaryPlaceholder`.
-        component.quickSummary ? (
-          <QuickSummaryBody text={component.quickSummary} />
-        ) : (
-          <QuickSummaryPlaceholder />
-        ),
-        undefined,
-        // Unframed: the spec frame exists to bound token tables and variant
-        // grids. Plain prose in a box reads as one more spec artefact, which is
-        // the opposite of what this section is.
-        true,
-      )}
 
       {section(
         'variants',
@@ -1513,17 +1420,11 @@ function UiComponentDetail({
         'statesMatrix',
       )}
 
-      {section(
-        'notes',
-        'Notes',
-        'Where it lives, the data it needs, what is still stubbed, and the accessibility behavior worth preserving.',
-        <DevHandoffNotesBody component={component} />,
-      )}
 
       {decisions && decisions.items.length > 0 &&
         section(
           'decisions',
-          'Decisions',
+          'Questions',
           'The product and design questions this component raised, and where each one stands.',
           <DecisionsBody decisions={decisions} />,
         )}

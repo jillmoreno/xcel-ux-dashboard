@@ -84,7 +84,7 @@ Master/detail rather than a persistent side rail because several previews run to
 Sections stack in this order, each with a real anchor id
 (`<componentId>--<sectionId>`), under a sticky jump nav with scroll-spy:
 
-**Summary · States · Options · Flows · CTAs · Design Spec · Acceptance · Edge cases · Notes · Decisions**
+**States · Options · Flows · CTAs · Design Spec · Acceptance · Edge cases · Questions**
 
 **They were sub-tabs for a few hours on 2026-08-31 and a developer reported it
 was worse. They were right, and the reason is concrete:** inactive panels were
@@ -226,7 +226,7 @@ Optional, and worth filling — each renders as its own framed section:
 | `edgeCases` | `string[]` — conditions worth knowing that are not a state with a behavior. Renders with `statesMatrix` under one "Edge cases" heading |
 | `designSpec` | `{ tokens, states, responsive, sources }` |
 | `acceptanceCriteria` | testable Definition of Done |
-| `statesMatrix` | `{ state, behavior }` for the non-happy paths |
+| `statesMatrix` | `{ question, answer }` — the edge cases, ASKED AND ANSWERED. "Q: What if there is no image? A: Shift the other parts of the component to the left." A reader arrives holding a question; a row phrased as that question either matches or does not |
 | `stubs` | what's still a `console.info` and what it needs |
 | `a11y` | roles, labels, focus and keyboard behavior worth preserving |
 | `jiraTickets` | component-scoped ticket URLs |
@@ -272,6 +272,27 @@ renders each one beside its prose. Rename a variant without renaming the key
 and `DevHandoffVariants.test.ts` fails, naming both. A variant with no
 registered render shows an honest "no isolated render" note rather than a gap —
 not every state is reachable through a component's own props.
+
+### What is NOT on the page any more
+
+The handoff lost four sections on 2026-10-21, and each went for the same
+reason — it was restating something the page already said:
+
+| Gone | Why, and where it went |
+|---|---|
+| **Summary** (`quickSummary`) | "This is the summary. Adjust the font size to match the body font size… and then lets REMOVE the summary section. It's just repeating itself." The FEATURE's `blurb` in the header says it one scroll higher. The detail now opens on **States** |
+| **Rules** (`uxLogic`) | Flows decides which state renders, the states carry their own behavior, CTAs say what each button does |
+| **Notes** (`data`, `stubs`, `a11y`) | "Remove the notes section." The dump at the bottom nobody scrolled to; what mattered in it is in Edge cases and Questions |
+| **Live Preview** | The header already has an "Open live preview" button |
+
+⚠ **Do not re-add them by authoring the fields.** The fields are gone from
+`DevHandoffComponent` too, so a handoff written against an older version of this
+skill will not compile — which is the intent.
+
+**"Decisions" is now "Questions"** ("change to Questions. Here and everywhere
+else"). Almost every row in it carries "Needs weigh-in", so a heading promising
+settled calls was describing an open list. The id and the data field stay
+`decisions`; only the label changed.
 
 ### Every CTA gets a line
 

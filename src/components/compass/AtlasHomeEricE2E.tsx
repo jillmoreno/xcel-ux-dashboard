@@ -757,6 +757,11 @@ export function AtlasHomeEricE2E({
           onPurchaseExtension={
             !expiredView && accessDays != null && accessDays <= 1 ? NO_LINK : undefined
           }
+          /* ⚠ BOTH, AT 100% (2026-10-21). Review Course reopens the material;
+             this opens the thing they finished it for. `go('certificates')` is
+             where the Certificates tiles in this same column already point, so
+             the page has one answer to "where are my certificates". */
+          onViewCertificate={completedView ? () => go('certificates') : undefined}
           onOverview={LINKS_OFF && !overviewOpensCompass ? NO_LINK : onOverview}
           onBegin={onBeginCta}
           beginDisabled={!completedView && !LINKS_OFF && !onBegin}
@@ -1923,6 +1928,7 @@ export function AtlasCourseHeadRow({
   onBegin,
   beginDisabled = false,
   onPurchaseExtension,
+  onViewCertificate,
 }: {
   onWhite: boolean
   cover?: string
@@ -1945,6 +1951,11 @@ export function AtlasCourseHeadRow({
    *  AND needs the offer — so it joins the normal actions rather than replacing
    *  them, which is what separates it from the Expired head. */
   onPurchaseExtension?: () => void
+  /** Shows "View Certificate" beside Course Overview. Supplied once the course
+   *  is complete: Review Course takes the learner back into the material and
+   *  this takes them to the thing they finished it for, so the two sit
+   *  together rather than one replacing the other. */
+  onViewCertificate?: () => void
 }) {
   return (
       <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
@@ -1982,6 +1993,16 @@ export function AtlasCourseHeadRow({
                 style={HEADER_BUTTON_DANGER}
               >
                 Purchase Extension
+              </button>
+            ) : null}
+            {onViewCertificate ? (
+              <button
+                type="button"
+                className="cre-compass-secondary cre-atlas-home-secondary"
+                onClick={onViewCertificate}
+                style={{ ...HEADER_BUTTON, fontWeight: 700 }}
+              >
+                View Certificate
               </button>
             ) : null}
             {showOverview ? (

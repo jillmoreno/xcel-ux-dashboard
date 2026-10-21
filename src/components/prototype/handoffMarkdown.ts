@@ -57,11 +57,6 @@ function componentLines(c: DevHandoffComponent): string[] {
   const badge = c.badge ? ` — ${c.badge}${when ? ` (${when})` : ''}` : ''
   const out = [`### ${c.name}${badge}`, '', c.summary, '']
 
-  // The designer's own words lead, as they do on screen — this export is what
-  // gets pasted into a ticket, so it is the one place they matter most.
-  // Paragraphs are already blank-line separated in the field, so it passes
-  // through as-is.
-  if (c.quickSummary) out.push('#### Quick Summary from Jill', '', c.quickSummary.trim(), '')
 
   if (c.variants.length) {
     out.push('#### Variants', '')
@@ -94,16 +89,13 @@ function componentLines(c: DevHandoffComponent): string[] {
   if (c.statesMatrix?.length || c.edgeCases?.length) {
     out.push('#### Edge cases', '')
     if (c.statesMatrix?.length) {
-      out.push('| State | Expected behaviour |', '| --- | --- |')
-      for (const st of c.statesMatrix) out.push(`| ${st.state} | ${st.behavior} |`)
-      out.push('')
+      for (const st of c.statesMatrix) {
+        out.push(`**Q.** ${st.question}`, '', `**A.** ${st.answer}`, '')
+      }
     }
     if (c.edgeCases?.length) out.push(...bullets(c.edgeCases), '')
   }
 
-  out.push(...listSection('Data', c.data))
-  out.push(...listSection('Stubs / TODO', c.stubs))
-  out.push(...listSection('Accessibility', c.a11y))
   if (c.jiraTickets?.length) out.push(...listSection('Jira', c.jiraTickets))
   return out
 }
@@ -121,7 +113,7 @@ export function featureHandoffMarkdown(feature: PrototypeFeature, origin: string
 
   const decisions = feature.devHandoff?.decisions
   if (decisions?.items.length) {
-    out.push('## Design & product decisions', '')
+    out.push('## Questions', '')
     if (decisions.intro) out.push(decisions.intro, '')
     decisions.items.forEach((d, i) => {
       out.push(`**${i + 1}. ${d.question}** _(${d.status})_`, '', d.decision, '')
