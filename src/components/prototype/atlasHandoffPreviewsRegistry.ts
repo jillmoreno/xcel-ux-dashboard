@@ -4,6 +4,7 @@ import { AtlasReadinessCard } from '@/components/compass/AtlasReadinessCard'
 import { paceStandingMessage, type PaceStanding } from '@/components/compass/paceStanding'
 import { AtlasPaceRingCard } from '@/components/compass/AtlasPaceRingCard'
 import { ExamDateScenario } from './ExamDateScenario'
+import { BelowCardRegionFrame } from './BelowCardRegionFrame'
 import { AtlasExamDateCard } from '@/components/compass/AtlasExamDateCard'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
 import {
@@ -80,6 +81,38 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
      card can show on its own: what the column looks like with Exam readiness
      ON, and what it looks like without it. The default `?demo=1` is the
      WITHOUT, because `atlas-readiness-section` is `defaultEnabled: false`. */
+  /* THE WHOLE REGION, one state per row — the only view that shows the progress
+     column and the Study Journey at the same moment. Each is the real page. */
+  'atlas-home-below-region': {
+    'Not started — the default': () =>
+      createElement(BelowCardRegionFrame, { title: 'Below the course card — not started' }),
+    'In progress': () =>
+      createElement(BelowCardRegionFrame, {
+        title: 'Below the course card — in progress',
+        ff: 'atlas-v3-progress:developing',
+      }),
+    'At the milestone': () =>
+      createElement(BelowCardRegionFrame, {
+        title: 'Below the course card — milestone',
+        ff: 'atlas-v3-progress:milestone',
+      }),
+    Completed: () =>
+      createElement(BelowCardRegionFrame, {
+        title: 'Below the course card — completed',
+        ff: 'atlas-v3-progress:completed',
+      }),
+    'With Exam readiness on': () =>
+      createElement(BelowCardRegionFrame, {
+        title: 'Below the course card — readiness on',
+        ff: 'atlas-readiness-section',
+      }),
+    'Access expired': () =>
+      createElement(BelowCardRegionFrame, {
+        title: 'Below the course card — expired',
+        ff: 'dashboard-course-expiry:-3',
+      }),
+  },
+
   'atlas-home-progress-panel': {
     'Progress and pace': () =>
       inPanel(
@@ -387,6 +420,7 @@ const FULL_WIDTH = new Set([
   'atlas-home-layout',
   'atlas-home-study-journey',
   'atlas-home-exam-prompt',
+  'atlas-home-below-region',
 ])
 
 /** Whether this component's renders take the full row — see `FULL_WIDTH`. */
