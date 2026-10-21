@@ -221,20 +221,17 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
  *
  *  - The page frames. At half a row the real page reflows to a single narrow
  *    column and the reader sees the demo bar instead of the subject.
- *  - The COURSE HEAD, which is an 800px component. In a 370px column its title
- *    wrapped to four lines, so the one state whose whole point is "the long
- *    title wraps" could not be told from the one whose point is that it does
- *    not.
+
+ * The COURSE HEAD was briefly in here for the same reason — an 800px component
+ * in a 370px column wrapped its title to four lines — but it came back out
+ * when the render moved to the wide left column, which gives it the room
+ * without taking the notes off the side.
  *
  * Listed explicitly rather than sniffed from the output, because "is this wide"
  * is not a question the DOM can be asked before it is laid out.
  * `DevHandoffVariants.test.ts` checks every id here is a real component.
  */
-const FULL_WIDTH = new Set([
-  'atlas-home-layout',
-  'atlas-home-study-journey',
-  'atlas-home-course-head',
-])
+const FULL_WIDTH = new Set(['atlas-home-layout', 'atlas-home-study-journey'])
 
 /** Whether this component's renders take the full row — see `FULL_WIDTH`. */
 export function atlasHandoffIsFullWidth(componentId: string): boolean {

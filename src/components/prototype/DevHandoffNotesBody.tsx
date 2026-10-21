@@ -134,7 +134,18 @@ function VariantRow({
           : { borderTop: '1px solid var(--color-border-subtle)', paddingTop: 20 }),
       }}
     >
-      <div style={stacked ? { flex: '1 1 100%', minWidth: 0 } : { flex: '1 1 300px', minWidth: 0 }}>
+      <div style={stacked ? { flex: '1 1 100%', minWidth: 0 } : renderColStyle}>
+        {render ? (
+          <div style={variantRenderStyle}>{render}</div>
+        ) : (
+          <p style={variantAbsentStyle}>
+            {anyRender
+              ? 'No isolated render — this state is not reachable through the component’s own props. Open the Live Preview tab to see it on the real page.'
+              : 'No live render for this component — it is a whole page, or its states come from the page around it rather than from its own props. The Live Preview tab shows it for real.'}
+          </p>
+        )}
+      </div>
+      <div style={stacked ? { flex: '1 1 100%', minWidth: 0 } : notesColStyle}>
         <p style={variantNameStyle}>{variant.name}</p>
         <p style={variantWhenStyle}>{variant.when}</p>
         {variant.detail && variant.detail !== '—' && (
@@ -153,17 +164,6 @@ function VariantRow({
           </p>
         )}
         {variant.howToSee && <HowToSee>{variant.howToSee}</HowToSee>}
-      </div>
-      <div style={stacked ? { flex: '1 1 100%', minWidth: 0 } : { flex: '1 1 320px', minWidth: 0 }}>
-        {render ? (
-          <div style={variantRenderStyle}>{render}</div>
-        ) : (
-          <p style={variantAbsentStyle}>
-            {anyRender
-              ? 'No isolated render — this state is not reachable through the component’s own props. Open the Live Preview tab to see it on the real page.'
-              : 'No live render for this component — it is a whole page, or its states come from the page around it rather than from its own props. The Live Preview tab shows it for real.'}
-          </p>
-        )}
       </div>
     </div>
   )
@@ -409,6 +409,14 @@ const flowNoteStyle: CSSProperties = {
   lineHeight: '18px',
   color: 'var(--color-text-tertiary)',
 }
+
+/* ⚠ THE RENDER LEADS (2026-10-21, Jillienne: "switch so the image of the
+   component is on the left and the notes are on the right"). It also takes the
+   LARGER share — the course head is an 800px component, and a reader looks at
+   the picture first and reads the rule against it, not the other way round. */
+const renderColStyle: CSSProperties = { flex: '2 1 420px', minWidth: 0 }
+
+const notesColStyle: CSSProperties = { flex: '1 1 280px', minWidth: 0 }
 
 const variantNameStyle: CSSProperties = {
   margin: 0,
