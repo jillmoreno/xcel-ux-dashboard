@@ -825,7 +825,11 @@ describe('component detail — COMPONENT_SECTIONS matches the render order', () 
        section."). The feature header's blurb says the same thing one scroll
        higher, so the detail opens on the first thing that is not a restatement:
        what the component actually looks like. */
-    expect(src).toMatch(/const COMPONENT_SECTIONS = \[\n(?:\s*(?:\/\/|\/\*|\*).*\n)*\s*\{ id: 'variants'/)
+    /* Any number of comment lines may precede the first entry — line comments,
+       block comments, and the continuation lines inside them, which is why this
+       skips everything that is not an entry rather than trying to describe what
+       a comment looks like. */
+    expect(src).toMatch(/const COMPONENT_SECTIONS = \[\n(?:(?!\s*\{ id:).*\n)*\s*\{ id: 'variants'/)
     expect(src).toContain("useState<ComponentSectionId>('variants')")
   })
 })

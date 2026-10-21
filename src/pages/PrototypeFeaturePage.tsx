@@ -594,25 +594,33 @@ const COMPONENT_SECTIONS = [
   // a part of the component (Figure rows) — so a reader could not tell which
   // of them they had to choose between. They are three questions, and they get
   // three sections.
+  /* ⚠ ORDER SET 2026-10-21: "States · CTAs · Questions · Edge Cases · Design
+     Spec · Acceptance". It reads as what the thing is, what you can do with it,
+     what nobody has decided, what else it has to survive — and only then the
+     numbers. Spec and the Definition of Done are what a developer opens last,
+     so they sit last; before this they split the questions off from the states
+     they are about.
+
+     ⚠ THIS ARRAY'S ORDER MUST MATCH THE RENDER ORDER BELOW. The scroll-spy
+     walks it and takes the last heading past the line, so a mismatch
+     highlights the wrong chip — `UxDashboard.smoke.test.tsx` pins the two
+     together. */
   { id: 'variants', label: 'States' },
   { id: 'options', label: 'Options' },
   { id: 'ctas', label: 'CTAs' },
+  /* Feature-level, folded in when the tabs went (2026-10-21).
+     ⚠ "QUESTIONS", not "Decisions": almost every row in it is a question
+     nobody has answered, so the old heading promised a record of settled calls
+     and delivered an open list. The id stays `decisions` — deep links are in
+     circulation, and the data field is still `devHandoff.decisions`.
+     ⚠ AND THERE IS NO LIVE PREVIEW SECTION. It was here for a few minutes and
+     came straight back out: the header already carries an "Open live preview"
+     button, and a second copy of the whole route embedded in the document was
+     the same page twice on one screen. */
+  { id: 'decisions', label: 'Questions' },
+  { id: 'edge-states', label: 'Edge cases' },
   { id: 'spec', label: 'Design Spec' },
   { id: 'acceptance', label: 'Acceptance' },
-  { id: 'edge-states', label: 'Edge cases' },
-  // Feature-level, folded in when the tabs went (2026-10-21).
-  //
-  // ⚠ NO LIVE PREVIEW SECTION. It was here for a few minutes and came straight
-  // back out: the header already carries an "Open live preview" button, and a
-  // second copy of the whole route embedded inside the document was the same
-  // page twice on one screen.
-  /* ⚠ "QUESTIONS", not "Decisions" (2026-10-21, Jillienne: "change to
-     Questions. Here and everywhere else"). Almost every row in it is a
-     question nobody has answered — "Needs weigh-in" on all three of the course
-     head's — so the heading was promising a record of settled calls and
-     delivering an open list. The id stays `decisions`: deep links are in
-     circulation, and the data field is still `devHandoff.decisions`. */
-  { id: 'decisions', label: 'Questions' },
 ] as const
 
 type ComponentSectionId = (typeof COMPONENT_SECTIONS)[number]['id']
@@ -1279,23 +1287,13 @@ function UiComponentDetail({
           <DevHandoffCtasBody ctas={component.ctas} />,
         )}
 
-      {section(
-        'spec',
-        'Design Spec',
-        'Named tokens, states, and responsive notes — values live in tokens.css and Figma, so nothing here restates raw hex / px and can’t drift.',
-        component.designSpec ? <DevHandoffDesignSpecBody spec={component.designSpec} /> : null,
-        'designSpec',
-      )}
-
-      {section(
-        'acceptance',
-        'Acceptance',
-        'Build against these and QA verifies them — the Definition of Done for this component.',
-        component.acceptanceCriteria && component.acceptanceCriteria.length > 0 ? (
-          <DevHandoffAcceptanceBody items={component.acceptanceCriteria} />
-        ) : null,
-        'acceptanceCriteria',
-      )}
+      {decisions && decisions.items.length > 0 &&
+        section(
+          'decisions',
+          'Questions',
+          'The product and design questions this component raised, and where each one stands.',
+          <DecisionsBody decisions={decisions} />,
+        )}
 
       {/* ONE edge-case list, not two (2026-10-21). The matrix rows and the
           prose cases used to render in different sections under the same
@@ -1322,14 +1320,24 @@ function UiComponentDetail({
         'statesMatrix',
       )}
 
+      {section(
+        'spec',
+        'Design Spec',
+        'Named tokens, states, and responsive notes — values live in tokens.css and Figma, so nothing here restates raw hex / px and can’t drift.',
+        component.designSpec ? <DevHandoffDesignSpecBody spec={component.designSpec} /> : null,
+        'designSpec',
+      )}
 
-      {decisions && decisions.items.length > 0 &&
-        section(
-          'decisions',
-          'Questions',
-          'The product and design questions this component raised, and where each one stands.',
-          <DecisionsBody decisions={decisions} />,
-        )}
+
+      {section(
+        'acceptance',
+        'Acceptance',
+        'Build against these and QA verifies them — the Definition of Done for this component.',
+        component.acceptanceCriteria && component.acceptanceCriteria.length > 0 ? (
+          <DevHandoffAcceptanceBody items={component.acceptanceCriteria} />
+        ) : null,
+        'acceptanceCriteria',
+      )}
 
     </section>
   )
