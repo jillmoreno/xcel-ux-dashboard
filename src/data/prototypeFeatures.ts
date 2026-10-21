@@ -1632,9 +1632,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           tabLabel: 'Readiness',
           location: 'src/components/compass/AtlasReadinessCard.tsx',
           summary:
-            'A card asking "How Ready are you for your State Exam?" over a half-dial (the top half of a ring) naming one of FOUR bands — Beginner, Developing, Proficient, Ready — instead of showing a percent, plus a fifth "Not Started" state that draws no arc at all. Its OPENING band follows the Course Progress card’s stage (a fixed lookup table), and from there a click or Enter/Space on the card steps it forward on its own — the same click-to-cycle review-device pattern Course Progress uses, built independently of it. ⚠ THE FOUR BANDS REPLACED FIVE LEVELS ON 2026-10-16 (Novice · Advanced Beginner · Competent · Proficient · Exam Ready), so the card, the demo bar and Jillienne’s bands image use one set of words. ⚠ IT HAS NO CARD OF ITS OWN HERE: it sits inside the progress panel with Course progress and Study pace, sharing their eyebrow and drawing no fill or border — the standalone treatment with its own tan card belongs to the other progress arm, not to this page.',
+            'A card asking "How Ready are you for your State Exam?" over a half-dial (the top half of a ring) naming one of FOUR bands — Beginner, Developing, Proficient, Ready — instead of showing a percent, plus a fifth "Not Started" state that draws no arc at all. Its OPENING band follows the Course Progress card’s stage (a fixed lookup table), and that lookup is the ONLY thing that sets it. ⚠ THE CARD IS NOT A CONTROL (2026-10-21): it used to step its own band on click or Enter/Space, which let a stakeholder move the demo away from what the bar said just by touching it. The Progress control owns the band now. ⚠ THE FOUR BANDS REPLACED FIVE LEVELS ON 2026-10-16 (Novice · Advanced Beginner · Competent · Proficient · Exam Ready), so the card, the demo bar and Jillienne’s bands image use one set of words. ⚠ IT HAS NO CARD OF ITS OWN HERE: it sits inside the progress panel with Course progress and Study pace, sharing their eyebrow and drawing no fill or border — the standalone treatment with its own tan card belongs to the other progress arm, not to this page.',
           variants: [
-            { name: 'Not Started', when: 'Nothing has been scored yet, so there is no band to show.', detail: 'The empty dial — the track is drawn and no arc is. ⚠ It is NOT a sixth band: "nothing measured yet" is not a point on the scale, so it sits outside the band list. Pressing the card moves into the bands proper.', why: 'An earlier pass hid the whole card at 0%, which removed the fact that readiness exists along with the number. Naming the empty state says both.', action: 'Press the card to show the first band.', howToSee: 'The default on a course with no readiness score.' },
+            { name: 'Not Started', when: 'Nothing has been scored yet, so there is no band to show.', detail: 'The empty dial — the track is drawn and no arc is. ⚠ It is NOT a sixth band: "nothing measured yet" is not a point on the scale, so it sits outside the band list. It is left by moving the Progress control off 0%, not by pressing the card.', why: 'An earlier pass hid the whole card at 0%, which removed the fact that readiness exists along with the number. Naming the empty state says both.', action: 'Press the card to show the first band.', howToSee: 'The default on a course with no readiness score.' },
             { name: 'Beginner', when: 'The learner is early in the course — or their access ended before they finished.', detail: 'Dial at 14%. Caption: "Early in development, with substantial knowledge gaps remaining."', howToSee: 'Demo bar → Progress → Not Started (or Expired)' },
             { name: 'Developing', when: 'The learner is on track.', detail: 'Dial at 36%. Caption: "Building competency, but still has meaningful gaps."', howToSee: 'Demo bar → Progress → On Track' },
             { name: 'Proficient', when: 'The learner has reached the milestone.', detail: 'Dial at 75%. Caption: "Strong understanding; has not yet reached the ready threshold."', howToSee: 'Demo bar → Progress → Milestone' },
@@ -1650,7 +1650,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
               { role: 'Rules above/below the question', token: '--color-atlas-tan-300' },
               { role: '"Help me get ready" link', token: '--color-compass-page-button' },
             ],
-            states: ['No hover styling — `cursor: pointer` is the only affordance beyond the aria-label, same as Course Progress.'],
+            states: ['⚠ NO INTERACTION AT ALL — no hover, no pointer cursor, no focus ring, and it is not in the tab order. It is a labelled `region`, not a `button`: it reports a band and nothing more. The `cursor: pointer` and the `user-select` guard went with the click, because a hand that promises a press the card cannot honour is worse than no affordance.'],
             sources: [
               'The FINAL PROTOTYPE is the source of truth — "Open live preview" at the top of this page. Where anything else disagrees with it, the prototype is right.',
               '⚠ AND IT SETTLES THE BAND NAMES. Any Figma frame still drawn against the five levels (Novice · Advanced Beginner · Competent · Proficient · Exam Ready) predates the four bands that replaced them on 2026-10-16 — the prototype shows the four.',
@@ -1659,14 +1659,13 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           },
           statesMatrix: [
             { question: 'What if a progress stage has no readiness band mapped to it?', answer: 'It falls back to Beginner, the first band.' },
-            { question: 'What if the learner clicks past Ready somewhere other than Home?', answer: 'It wraps back to Beginner. The reset-the-whole-page behavior is Home\'s own wiring, not the card\'s.' },
+            { question: 'How does a reviewer move it through the bands?', answer: 'The Progress control on the demo bar, and only that — each of its ten rungs names the band it opens. ⚠ IT USED TO BE CLICKABLE and is not any more: a card that changes itself lets a stakeholder knock the demo out of step with the bar mid-walkthrough, with nothing on screen explaining why it moved.' },
           ],
           edgeCases: [
             '⚠ EVERY BAND IS NOW REACHABLE FROM THE PROGRESS CONTROL (2026-10-20). Under the retired five-level scale the sync map topped out at Proficient and Exam Ready could only be reached by clicking the card; with four bands, `completed` maps to Ready — the top — so nothing is undemoable through the Progress control any more. The empty Not Started state is the one thing the map does not produce: it needs the `notStarted` prop.',
           ],
           ctas: [
             { name: 'Help me get ready', does: '⚠ Drawn text, not a link — it fires nothing.' },
-            { name: 'The card itself', does: 'A click, Enter or Space anywhere on it steps to the next band. Pressing past Ready resets the page\'s shared progress on Home, which is a reviewing convenience rather than a learner behavior.' },
           ],
         },
       ],
@@ -1685,18 +1684,10 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             status: 'Needs weigh-in',
             owner: 'Eric',
           },
-          {
-            question: 'Why does clicking past Ready reset the whole page to Not Started instead of wrapping to Beginner?',
-            decision:
-              'Deliberate on Home: `onPastLast` resets the shared Progress control, so reaching the top band is treated as "done with this cycle" and the whole page loops back to its start — a reviewing convenience, not a learner-facing behavior. A learner cannot predict it from anything on screen, which is why it is unclear whether it should survive into a real build.',
-            status: 'Needs weigh-in',
-            owner: 'Eric',
-          },
         ],
         openItems: [
           'What "Help me get ready" should link to.',
           'What the real Progress ↔ Readiness correlation rule will be, once it exists.',
-          'Whether resetting the whole page from Readiness’s past-Exam-Ready click is intended end-user behavior or just a demo convenience.',
           'Whether the Readiness section ships ON — it is `defaultEnabled: false`, so the panel a reviewer sees by default is only half of what this handoff documents.',
         ],
       },

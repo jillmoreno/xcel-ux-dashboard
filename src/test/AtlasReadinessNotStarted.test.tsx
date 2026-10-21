@@ -53,23 +53,37 @@ describe('the Readiness card, not started', () => {
 
   it('does not claim to be a level on the scale', () => {
     render(<AtlasReadinessCard notStarted />)
-    const card = screen.getByRole('button')
+    // A labelled `region` since the click went — it is no longer a button.
+    const card = screen.getByRole('region')
     expect(card.getAttribute('aria-label')).toContain('Not Started')
     expect(card.getAttribute('aria-label'), 'not "level 1 of 5"').not.toMatch(/level \d+ of/)
   })
 
-  it('pressing it enters the scale at the first band — the step-through is unchanged', () => {
-    /* ⚠ IT USED TO CHECK FOR "Overall readiness" HERE, the label that sat
-       under the dial on every band. That label went on 2026-10-19
-       (Jillienne: "remove this") — the section's eyebrow already says Exam
-       readiness a few lines up. What this case is actually about is that
-       pressing LEAVES the empty state, so it reads the two things that
-       prove it: the band's name, and an arc that is no longer zero. */
-    render(<AtlasReadinessCard notStarted />)
-    fireEvent.click(screen.getByRole('button'))
-    expect(screen.getByText('Beginner')).toBeInTheDocument()
-    expect(screen.queryByText('Will update as you progress through course material')).toBeNull()
-    expect(arc().getAttribute('stroke-dasharray')).not.toMatch(/^0 /)
+  /* ⚠ INVERTED 2026-10-21 (Jillienne: "readiness can be triggered from a demo
+     tool, not by clicking on it. Don't let a user click on a component to
+     change it, that will ruin the demo experience"). It asserted that CLICKING
+     entered the scale. The card is no longer a control at all: the Progress
+     ladder owns the band, and a stakeholder touching the card mid-walkthrough
+     can no longer move it away from what the bar says. */
+  it('is not a control — clicking it changes nothing', () => {
+    const { container } = render(<AtlasReadinessCard notStarted />)
+    const card = container.querySelector('.cre-atlas-readiness-states')!
+    expect(card.getAttribute('role')).toBeNull()
+    expect(card.getAttribute('tabindex')).toBeNull()
+    fireEvent.click(card)
+    // Still the empty state: no band name, the caption intact, the arc at zero.
+    expect(screen.queryByText('Beginner')).toBeNull()
+    expect(
+      screen.getByText('Will update as you progress through course material'),
+    ).toBeInTheDocument()
+    expect(arc().getAttribute('stroke-dasharray')).toMatch(/^0 /)
+  })
+
+  /* The band follows the PROP, which is the Progress rung's `readiness`. This
+     is the replacement for the step-through: one owner, and it is the bar. */
+  it('reads its band from the control, not from its own state', () => {
+    render(<AtlasReadinessCard initialLevel={2} />)
+    expect(screen.getByText('Proficient')).toBeInTheDocument()
   })
 
   it('and the label under the dial is gone on every band', () => {
@@ -85,6 +99,8 @@ describe('the Readiness card, not started', () => {
     // FOUR bands since 2026-10-16 — Beginner · Developing · Proficient ·
     // Ready, from Jillienne's bands image. It was five differently-named
     // ones (Novice … Exam Ready).
-    expect(screen.getByRole('button').getAttribute('aria-label')).toMatch(/level 1 of 4/)
+    expect(
+      document.querySelector('.cre-atlas-readiness-states')!.getAttribute('aria-label'),
+    ).toMatch(/level 1 of 4/)
   })
 })

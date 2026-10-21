@@ -63,6 +63,15 @@ const quickLinks = (props: Record<string, unknown>, entries?: string[]) => () =>
 
 /* The left column's cards are drawn inside the page's tan panel and have no
  * fill of their own, so each render carries it — see `AtlasProgressPanel`. */
+/* ⚠ THE HANDLERS THE HOME SUPPLIES, because their absence CHANGES THE COPY
+   (2026-10-21, Jillienne on a preview: "'here' should also be a link"). The
+   pace card draws "…customize your pace here." with `here` as a button when it
+   has `onCustomize` and as PLAIN TEXT when it does not — so a preview that
+   passed no handler showed a sentence the page never renders, and the one word
+   a reader is meant to click looked like prose. Same class of mismatch as the
+   `bare` one: a preview is only true if it is given what the page gives. */
+const NOOP = () => {}
+
 const inPanel = (node: ReactNode) => createElement(AtlasProgressPanel, null, node)
 
 const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
@@ -74,6 +83,7 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
     'Progress and pace': () =>
       inPanel(
         createElement(AtlasPaceRingCard, {
+          onCustomize: NOOP,
           percent: 42,
           weeks: 3,
           hoursPerWeek: 4,
@@ -93,6 +103,7 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
     'With Exam readiness': () =>
       inPanel([
         createElement(AtlasPaceRingCard, {
+          onCustomize: NOOP,
           key: 'pace',
           percent: 42,
           weeks: 3,
@@ -119,7 +130,8 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
       ]),
     Expired: () =>
       inPanel(
-        createElement(AtlasPaceRingCard, { percent: 34, weeks: 3, hoursPerWeek: 4, expired: true }),
+        createElement(AtlasPaceRingCard, {
+          onCustomize: NOOP, percent: 34, weeks: 3, hoursPerWeek: 4, expired: true }),
       ),
   },
 
@@ -150,6 +162,7 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
   'atlas-home-pace-ring': {
     Default: () =>
       inPanel(createElement(AtlasPaceRingCard, {
+          onCustomize: NOOP,
         percent: 42,
         weeks: 3,
         hoursPerWeek: 4,
@@ -184,6 +197,7 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
         () =>
           inPanel(
             createElement(AtlasPaceRingCard, {
+          onCustomize: NOOP,
               percent: 42,
               weeks: 3,
               hoursPerWeek: 4,
@@ -200,6 +214,7 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
     ),
     'Exam booked': () =>
       inPanel(createElement(AtlasPaceRingCard, {
+          onCustomize: NOOP,
         percent: 60,
         weeks: 2,
         hoursPerWeek: 5,
@@ -208,6 +223,7 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
       })),
     'No plan fits': () =>
       inPanel(createElement(AtlasPaceRingCard, {
+          onCustomize: NOOP,
         percent: 10,
         noPace: { binding: 'exam', days: -2, dateIso: '2026-11-01' },
       })),
@@ -220,6 +236,7 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
        the point of the state is that how far they got is the argument. */
     Expired: () =>
       inPanel(createElement(AtlasPaceRingCard, {
+          onCustomize: NOOP,
         percent: 34,
         weeks: 3,
         hoursPerWeek: 4,

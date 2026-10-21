@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type KeyboardEvent } from 'react'
+import type { CSSProperties } from 'react'
 import { ATLAS_COLUMN_PROSE_W, atlasSectionEyebrow, type AtlasColumnAlign } from './atlasSectionEyebrow'
 
 /**
@@ -92,7 +92,6 @@ export function AtlasReadinessCard({
   notStarted = false,
   matchPaceEyebrow = false,
   align = 'center',
-  onPastLast,
   bare = false,
 }: {
   initialLevel?: number
@@ -112,39 +111,40 @@ export function AtlasReadinessCard({
    *  alongside `matchPaceEyebrow`: it is that column's decision, and V3 and
    *  White keep their own eyebrow. */
   align?: AtlasColumnAlign
-  /** Called INSTEAD of wrapping to Novice when Exam Ready is clicked — V3
-   *  resets the page to Not Started with it (2026-10-09). */
-  onPastLast?: () => void
   /** No card of its own and a centred eyebrow, for a combined Progress +
    *  Readiness panel (Figma 286:9455; Eric/Atlas White, 2026-10-14). */
   bare?: boolean
 }) {
-  /* `null` is the empty state, not an index — see `NOT_STARTED`. Pressing
-     from there enters the scale at its first level. */
-  const [i, setI] = useState<number | null>(notStarted ? null : initialLevel)
-  const level = i == null ? NOT_STARTED : LEVELS[i]
-  const next = () => {
-    if (i == null) setI(0)
-    else if (onPastLast && i === LEVELS.length - 1) onPastLast()
-    else setI((n) => ((n ?? 0) + 1) % LEVELS.length)
-  }
-  const onKey = (e: KeyboardEvent<HTMLElement>) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      next()
-    }
-  }
+  /* ⚠ DERIVED, NOT STATE (2026-10-21, Jillienne: "readiness can be triggered
+     from a demo tool, not by clicking on it. Don't let a user click on a
+     component to change it, that will ruin the demo experience").
+
+     The card used to be a `role="button"` that stepped its own band on click
+     or Enter/Space, holding the level in `useState`. Two things were wrong
+     with that. A STAKEHOLDER could change the demo by touching it — a stray
+     click mid-walkthrough moved the card away from the state the bar said it
+     was in, with nothing on screen to explain why. And the band was then
+     owned in two places at once, which is why every call site had to pass a
+     remounting `key`: local state ignores a prop change, so the only way to
+     make the control win was to throw the component away and build a new one.
+
+     Reading `initialLevel` directly makes the Progress control the single
+     owner. The `key` on the call sites is now redundant rather than load
+     bearing, and `onPastLast` — the reset-the-page-from-the-top-band trick —
+     has nothing left to fire it. */
+  const level = notStarted ? NOT_STARTED : LEVELS[initialLevel] ?? LEVELS[0]
+  const i = notStarted ? null : initialLevel
   return (
     <section
+      /* ⚠ NOT a `role="button"` any more, and no `tabIndex`: it does nothing
+         when pressed, so announcing it as a control and putting it in the tab
+         order would promise an action that is not there. The label states the
+         band instead of inviting a press. */
       aria-label={
         i == null
-          ? `Readiness for state exam — ${NOT_STARTED.name}. ${NOT_STARTED.caption}. Press to show the first level.`
-          : `Readiness for state exam — ${level.name}, level ${i + 1} of ${LEVELS.length}. Press to show the next level.`
+          ? `Readiness for state exam — ${NOT_STARTED.name}. ${NOT_STARTED.caption}`
+          : `Readiness for state exam — ${level.name}, level ${i + 1} of ${LEVELS.length}.`
       }
-      role="button"
-      tabIndex={0}
-      onClick={next}
-      onKeyDown={onKey}
       className="cre-atlas-readiness-states"
       style={bare ? BARE_CARD : CARD}
     >
@@ -258,8 +258,11 @@ const CARD: CSSProperties = {
   boxSizing: 'border-box',
   borderRadius: 20,
   background: 'var(--color-atlas-tan-200)',
-  cursor: 'pointer',
-  userSelect: 'none',
+  /* ⚠ NO `cursor: pointer`, NO `user-select: none` (2026-10-21). Both existed
+     to serve the click: the hand said "press me" and the select guard stopped
+     a press turning into a text selection. With nothing to press, the hand is
+     a promise the card cannot keep, and blocking selection stops a reader
+     copying the band name for no reason at all. */
 }
 const EYEBROW: CSSProperties = {
   margin: 0,

@@ -341,7 +341,6 @@ export function AtlasHomeEricWhite({
             <AtlasReadinessCard
               key={`readiness-${progressPick}-${refreshKey}`}
               initialLevel={V3_READINESS_FOR[progressPick] ?? 0}
-              onPastLast={() => setVariant('atlas-v3-progress', 'not-started')}
             />
             {/* The link tiles at the BOTTOM of the column (2026-10-09, Eric's
                 request; they led it). */}

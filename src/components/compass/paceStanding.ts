@@ -40,6 +40,18 @@ export function observedHoursFor(goalHoursPerWeek: number, standing: PaceStandin
   return goalHoursPerWeek * (OBSERVED_FACTOR[standing] ?? 1)
 }
 
+/**
+ * The phrase inside the OFF-TRACK sentence that the card draws as a link.
+ *
+ * ⚠ EXPORTED SO THE SPLIT CANNOT GO STALE (2026-10-21, Jillienne: "make
+ * 'Study Plan' a clickable link"). The sentence is built here and linkified at
+ * the render site, which means two files have to agree on an exact substring —
+ * the classic way a copy edit silently turns a link back into plain text. One
+ * constant, used to build the sentence AND to split it, so a reword either
+ * keeps working or fails to compile.
+ */
+export const PACE_PLAN_LINK = 'Study Plan'
+
 export function paceStandingMessage({
   standing,
   goalHoursPerWeek,
@@ -76,7 +88,7 @@ export function paceStandingMessage({
     return `${averaging} That’s a little under your ${goalWeeks} goal. One extra session this week puts you back on it.`
   }
   if (standing === 'off-track') {
-    return `${averaging} At this rate you won’t finish by ${formatPaceDate(finishIso)}. Open your Study Plan to adjust your goal.`
+    return `${averaging} At this rate you won’t finish by ${formatPaceDate(finishIso)}. Open your ${PACE_PLAN_LINK} to adjust your goal.`
   }
   /* ⚠ IT STILL SAYS "on track" — that is the name of the standing on the demo
      bar, and a reviewer matching the control to the card needs the words to

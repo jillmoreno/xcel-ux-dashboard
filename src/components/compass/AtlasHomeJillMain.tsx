@@ -1300,7 +1300,6 @@ export function AtlasHomeJillMain({
                  the ring arm asks for it; the states card brings its own. */
               matchPaceEyebrow={paceCard === 'ring'}
               align={columnAlign}
-              onPastLast={() => setVariant('atlas-v3-progress', 'not-started')}
             />
             )}
             </div>

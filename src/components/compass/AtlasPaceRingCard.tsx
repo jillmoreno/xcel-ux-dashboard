@@ -7,6 +7,7 @@ import {
   type AtlasColumnAlign,
 } from './atlasSectionEyebrow'
 import { noPaceMessage, type NoPaceReason } from './noPaceMessage'
+import { PACE_PLAN_LINK } from './paceStanding'
 import { paceName } from '@/components/learning/compassStudyPlannerModel'
 import { PLANNER_PLAN } from '@/data/compassStudyPlannerFixtures'
 
@@ -310,7 +311,7 @@ export function AtlasPaceRingCard({
              `HybridPacingHome` so the two cards cannot report one standing
              two ways. The customise link goes with the starting-point copy:
              it belonged to the sentence that offered it. */
-          <p style={SMALL}>{standingMessage}</p>
+          <p style={SMALL}>{withPlanLink(standingMessage, onCustomize)}</p>
         ) : (
         <p style={SMALL}>
           Your default recommended study pace is just a starting point, you can further customize
@@ -586,6 +587,31 @@ const GOAL_NOTE: CSSProperties = {
 /* A BUTTON STYLED AS A LINK, inside a sentence: it navigates within the app
    rather than to an address, so an <a href> would be a lie about what it is.
    `display: inline` and the inherited type keep it on the line. */
+/**
+ * "Open your Study Plan to adjust your goal." — with Study Plan as a control.
+ *
+ * ⚠ ONLY THE OFF-TRACK SENTENCE CONTAINS THE PHRASE, so every other standing
+ * passes straight through untouched; this is a split, not a parser.
+ *
+ * ⚠ AND IT FALLS BACK TO PLAIN TEXT with no handler, which is deliberate: the
+ * sentence still reads correctly as prose, and an underlined word wired to
+ * nothing is the dead-looking control this handoff keeps arguing against.
+ * `PACE_PLAN_LINK` is the shared substring — see its note in `paceStanding.ts`.
+ */
+function withPlanLink(message: string, onCustomize?: () => void): ReactNode {
+  const at = message.indexOf(PACE_PLAN_LINK)
+  if (!onCustomize || at === -1) return message
+  return (
+    <>
+      {message.slice(0, at)}
+      <button type="button" onClick={onCustomize} style={INLINE_LINK}>
+        {PACE_PLAN_LINK}
+      </button>
+      {message.slice(at + PACE_PLAN_LINK.length)}
+    </>
+  )
+}
+
 const INLINE_LINK: CSSProperties = {
   display: 'inline',
   padding: 0,
