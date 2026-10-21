@@ -1309,7 +1309,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
       { id: 'atlas-wip-quick-links-side', label: 'Quick Links side', note: 'Left (default) or right. On the Design bar for WIP/White only — see the decision below on why E2E still reads it.' },
       { id: 'atlas-v3-progress', label: 'Progress', note: 'Which of the five Course Progress states the page opens on; Readiness and the journey’s current stop follow it.' },
       { id: 'atlas-v3-link-tiles', label: 'Link tiles', note: 'Stacked vs inline — currently has no visible effect on this page; see the decision below.' },
-      { id: 'atlas-pace-card', label: 'Study pace card', note: '⚠ DECIDES WHAT THE LEFT COLUMN IS. `ring` (the committed default) renders `AtlasPaceRingCard` — Course progress over Study pace in one panel. `states` renders the tan five-state `AtlasCourseProgressStates` instead. Design bar, but the DEFAULT ships to everyone.' },
+      { id: 'atlas-pace-card', label: 'Study pace card', note: '⚠ DECIDES WHAT THE LEFT COLUMN IS, and `ring` is the answer — the committed default, renders `AtlasPaceRingCard` (Course progress over Study pace in one panel). The `states` variant still renders the tan five-state card, but that concept is retired and is documented nowhere; see `atlas-home-progress-states-handoff` in the Archive. ⚠ NOT A BAR CONTROL since 2026-10-20 ("ring has been decided") — it is reachable through the Feature Flag panel or `?ff=` only.' },
       { id: 'atlas-readiness-section', label: 'Readiness section', note: '⚠ OFF BY DEFAULT (`defaultEnabled: false`, 2026-10-19). The Readiness panel does not render on a bare `?demo=1`; reach it with `?ff=atlas-readiness-section`.' },
     ],
     devHandoff: {
@@ -1516,9 +1516,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     accent: 'blue',
     icon: 'grid',
     blurb:
-      'The left column of the Atlas Home, in its two arms. `ring` (the committed default) is `AtlasPaceRingCard` — a Course progress dial over a Study pace plan, in one panel. `states` is the tan five-state card it forked from: Study Pace at 0%, the real completion dial, a Milestone celebration, Complete, and Expired, stepped by clicking it.',
+      'The left column of the Atlas Home: a Course progress dial over a Study pace plan, in one panel, with Estimated completion beneath it.',
     tileBlurb:
-      'The Course progress ring over Study pace (the default), and the tan five-state card behind the other arm of `atlas-pace-card`.',
+      'The Course progress ring over Study pace — the committed default, and the only arm documented here.',
     kind: 'guided',
     status: 'ready',
     category: 'dev-handoff',
@@ -1533,7 +1533,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     ],
     featureFlags: [
       { id: 'atlas-v3-progress', label: 'Progress', note: 'Which of the five states the module opens on (`not-started`, `on-track`, `milestone`, `completed`, `expired`). Readiness and the Study Journey’s current stop follow the same pick.' },
-      { id: 'atlas-pace-card', label: 'Study pace card', note: '⚠ WHICH OF THE TWO ARMS BELOW RENDERS. `ring` is the committed default (`defaultVariant: \'ring\'`); `states` is the tan card. Both read the same `studyPace` model, so they cannot disagree about the plan — only about how much of it to show.' },
+      { id: 'atlas-pace-card', label: 'Study pace card', note: '⚠ LEAVE IT ON `ring` — that is the committed default and the only arm this handoff describes. The flag still has a `states` variant that renders the tan five-state card, but the concept is retired and is no longer documented anywhere; see `atlas-home-progress-states-handoff` in the Archive. Setting it to `states` shows a card nothing here describes.' },
     ],
     devHandoff: {
       intro:
@@ -1578,53 +1578,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           ctas: [
             { name: 'Customize Your Pace', does: 'Opens Compass\'s study planner, where the learner picks a pace. ⚠ Nothing persists the chosen pace back to this card yet.' },
             { name: 'Extend your access', does: 'Shown only in the access-bound no-plan arm. Drawn, not wired — it is the same offer the course head\'s Purchase Extension makes.' },
-          ],
-        },
-        {
-          id: 'atlas-home-progress-states',
-          name: 'Atlas Home — Course Progress States',
-          tabLabel: 'Progress States',
-          location: 'src/components/compass/AtlasCourseProgressStates.tsx',
-          summary:
-            'A single card cycling through five states of the current course’s progress: Not started (the study plan, no dial), In progress (the real completion dial), Milestone, Complete and Expired. Clicking it steps the PAGE’s shared progress rather than its own local state, so Readiness and the Study Journey move with it. ⚠ IT IS NOT WHAT HOME DRAWS BY DEFAULT — the ring card has that slot; this is the other arm of the same control, kept because it is the one that carries the Milestone and Expired treatments.',
-          variants: [
-            { name: 'Not started', when: 'The learner has not opened the course yet.', detail: 'No dial — a 0% ring reads as something broken. Shows the study plan instead: "We’ve set up a moderate study plan for you", a pace pill, and "Edit My Study Pace".', why: 'A learner who hasn’t started needs a plan, not a number that says nothing.', action: '"Edit My Study Pace" (drawn, not wired).', howToSee: 'Demo bar → Progress → Not Started' },
-            { name: 'In progress', when: 'The learner has started but not finished.', detail: 'The real dial, plus Expected completion and Course access. ⚠ The only state whose figures come from real data.', why: 'The one state with real stakes — how far along they are, and whether access will outlast the work.', action: 'None beyond the Study Pace edit link beneath it.', howToSee: 'Demo bar → Progress → On Track' },
-            { name: 'Milestone', when: 'The learner has passed a celebration point on the way to 100%.', detail: 'Dial pinned to 68% and "Great Work!!". ⚠ The figures here are fixed design copy (68%, "June 3", "28 Days, Ends June 10"), not the learner’s own.', why: 'A check-in ahead of 100%, to reinforce pace.', action: '"Edit My Study Pace" (drawn, not wired).', howToSee: 'Demo bar → Progress → Milestone' },
-            { name: 'Complete', when: 'The learner has finished the coursework.', detail: 'Dial at 100% and "Amazing Job!!". Figures are fixed design copy. No edit link — there is no pace left to edit.', why: 'Closes the loop and hands off to what comes next — flashcards, the exam simulator.', action: 'None.', howToSee: 'Demo bar → Progress → Completed' },
-            { name: 'Expired', when: 'The learner’s access ended before they finished.', detail: '"We’re sorry but your course has expired" over an "Extend Course Now" button. ⚠ The button is drawn, not wired — clicking it is a click on the card.', why: 'The one state asking the learner to make a purchase decision.', action: '"Extend Course Now" (drawn, not wired).', howToSee: '⚠ Not reachable from any control today — see the same note on the course head’s Expired state. Clicking the card itself cycles into it.' },
-          ],
-          designSpec: {
-            tokens: [
-              { role: 'Card surface', token: 'NONE — the card is transparent. The fill, the 20px corners and the 8px/24px inset all come from the Home\'s own panel: --color-atlas-tan-100' },
-              { role: 'Eyebrow ("Pre-Licensing Progress")', token: '--color-neutral-800' },
-              { role: 'Dial track', token: '--color-atlas-tan-300' },
-              { role: 'Dial fill', token: '--color-atlas-dial-fill, falls back to --color-primary-500' },
-              { role: 'Dial figure + "Amazing/Great" cheer', token: '--font-heading-serif' },
-              { role: 'Rules between figures', token: '--color-primary-200' },
-            ],
-            states: ['No hover styling — `cursor: pointer` is the only affordance beyond the aria-label.'],
-            responsive: [
-              '⚠ NOT RESPONSIVE, AND THAT IS THE SPEC. It sits in the Home\'s left column, which is a FIXED 296px (`flex: 0 0 auto`) — it does not reflow, there is no narrow arm, and nothing in the product renders it at another width. Build it to the column, not to a range.',
-              'Padding and margins, measured off the Final Prototype — the card itself has NO padding of its own; the Home\'s panel carries 8px top and bottom, 24px each side, 20px corners, and 16px between the cards stacked inside it. The card is therefore 248px wide, and its own rows are 8px apart.',
-            ],
-            sources: [
-              'The FINAL PROTOTYPE is the source of truth — "Open live preview" at the top of this page. Where anything else disagrees with it, the prototype is right.',
-              'Implemented in src/components/compass/AtlasCourseProgressStates.tsx.',
-            ],
-          },
-          statesMatrix: [
-            { question: 'What if the learner has no progress part-way through a review cycle?', answer: 'It is forced back to Not started regardless of where the cycle was — a 0% course can never show the dial.' },
-            { question: 'What if there is no course-access figure?', answer: 'The figure and its rule are both omitted from the In progress state, rather than one being left standing alone.' },
-          ],
-          edgeCases: [
-            'Milestone/Complete/Expired are reachable ONLY via the Demo Controls’ Progress dropdown on Home (clicking the card alone cycles 1→5→1 through all five using its OWN state, which only matches the page when nothing else is driving it via `onAdvance`).',
-            '⚠ The dial in Milestone and Complete does not read the learner’s real figure — both override it to fixed design values (68% and 100%). A reviewer comparing this card against the rest of the page will find them disagreeing, and that is why.',
-          ],
-          ctas: [
-            { name: 'Edit My Study Pace', does: 'Drawn, not wired. Clicking it is a click on the card, which steps to the next state.' },
-            { name: 'Extend Course Now', does: 'Drawn, not wired, and the same caveat — a click reaches the card, not the button. Shown in the Expired state only.' },
-            { name: 'The card itself', does: '⚠ THE WHOLE CARD IS THE CONTROL. A click, Enter or Space anywhere on it advances to the next state. It is a review device, not a learner-facing action.' },
           ],
         },
       ],

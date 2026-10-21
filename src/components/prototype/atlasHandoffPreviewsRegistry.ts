@@ -1,7 +1,6 @@
 import { createElement, type ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { AtlasReadinessCard } from '@/components/compass/AtlasReadinessCard'
-import { AtlasCourseProgressStates } from '@/components/compass/AtlasCourseProgressStates'
 import { AtlasPaceRingCard } from '@/components/compass/AtlasPaceRingCard'
 import { AtlasExamDateCard } from '@/components/compass/AtlasExamDateCard'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
@@ -49,9 +48,6 @@ import {
  */
 type VariantRenders = Record<string, () => ReactNode>
 
-const PROGRESS_EXPECTED = { value: 'June 3', note: 'At current pace' }
-const PROGRESS_ACCESS = { value: '28 Days', note: 'Ends June 10' }
-
 /* `AtlasJourneyLinksCard` reads its active row from `useSearchParams()`, and
  * the handoff page already sits inside the app's own Router. Without an
  * isolating `MemoryRouter` PER ROW, clicking a nav row in any instance would
@@ -92,56 +88,6 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
       inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 3 })),
   },
 
-  'atlas-home-progress-states': {
-    /* ⚠ EVERY ONE OF THESE RENDERS `bare` (2026-10-21), because that is what
-       the Final Prototype renders: the Home passes `bare={onWhite}` and the
-       default version IS the White/global skin, so the card never draws its own
-       tan fill, its border, or the "Course Progress" eyebrow — it is
-       transparent inside the Home's own panel and the eyebrow reads
-       "Pre-Licensing Progress". Without this the handoff showed five previews
-       of a standalone card nobody sees, which is the same failure the Readiness
-       panel had on 2026-10-20. Verified in the browser, not assumed. */
-    'Not started': () =>
-      inPanel(createElement(AtlasCourseProgressStates, {
-        bare: true,
-        percent: 0,
-        expected: PROGRESS_EXPECTED,
-        access: PROGRESS_ACCESS,
-        initialStage: 'zero',
-      })),
-    'In progress': () =>
-      inPanel(createElement(AtlasCourseProgressStates, {
-        bare: true,
-        percent: 42,
-        expected: PROGRESS_EXPECTED,
-        access: PROGRESS_ACCESS,
-        initialStage: 'current',
-      })),
-    Milestone: () =>
-      inPanel(createElement(AtlasCourseProgressStates, {
-        bare: true,
-        percent: 42,
-        expected: PROGRESS_EXPECTED,
-        access: PROGRESS_ACCESS,
-        initialStage: 'milestone',
-      })),
-    Complete: () =>
-      inPanel(createElement(AtlasCourseProgressStates, {
-        bare: true,
-        percent: 42,
-        expected: PROGRESS_EXPECTED,
-        access: PROGRESS_ACCESS,
-        initialStage: 'complete',
-      })),
-    Expired: () =>
-      inPanel(createElement(AtlasCourseProgressStates, {
-        bare: true,
-        percent: 42,
-        expected: PROGRESS_EXPECTED,
-        access: PROGRESS_ACCESS,
-        initialStage: 'expired',
-      })),
-  },
 
   'atlas-home-pace-ring': {
     Default: () =>
