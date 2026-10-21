@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { AtlasReadinessCard } from '@/components/compass/AtlasReadinessCard'
 import { paceStandingMessage, type PaceStanding } from '@/components/compass/paceStanding'
 import { AtlasPaceRingCard } from '@/components/compass/AtlasPaceRingCard'
+import { ExamDateScenario } from './ExamDateScenario'
 import { AtlasExamDateCard } from '@/components/compass/AtlasExamDateCard'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
 import {
@@ -242,6 +243,27 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
         hoursPerWeek: 4,
         expired: true,
       })),
+  },
+
+  /* ⚠ EACH SCREEN SHOWS BOTH COMPONENTS (2026-10-21, Jillienne: "these screens
+     will need to show not only the date logic, but also what happens in the
+     Course Progress component when dates are set"). The dates below are chosen
+     against the demo clock (2026-05-11) and the committed access window
+     (2026-06-10) so each one lands in a genuinely different arm — and every
+     figure on the right is computed by `studyPace`, never typed. */
+  'atlas-home-exam-prompt': {
+    Asking: () => createElement(ExamDateScenario, {}),
+    'Picking a date': () => createElement(ExamDateScenario, { picking: true }),
+    Scheduled: () => createElement(ExamDateScenario, { examDate: '2026-05-28' }),
+    'Date inside the access window': () =>
+      createElement(ExamDateScenario, { examDate: '2026-06-02' }),
+    'Date past the access window': () =>
+      createElement(ExamDateScenario, { examDate: '2026-07-15' }),
+    'Date too close for any plan': () =>
+      createElement(ExamDateScenario, { examDate: '2026-05-14' }),
+    /* Editing is the Scheduled date reopened — same stored date, the calendar
+       showing, which is exactly what Edit does. */
+    Editing: () => createElement(ExamDateScenario, { examDate: '2026-05-28', picking: true }),
   },
 
   'atlas-home-exam-date-card': {

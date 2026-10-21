@@ -25,12 +25,16 @@
  * a control Eric adds to the End-to-End Demo tomorrow reaches this copy
  * without a second edit.
  *
- * ⚠ THE FIRST THING THIS EXPLORATION WILL WANT is the line the fix of
- * 2026-10-20 left: `examDate: undefined` in the `studyPace` call below. On
- * `main` the Home refuses the stored exam date because it owns neither prompt.
- * Wiring Add Date HERE is what earns the date back — pass `examDate` through,
- * restore it to the destructure and the `useMemo` deps, and give the card a
- * way to clear it. The long note at that call says the rest.
+ * ⚠ THIS HOME OWNS THE EXAM DATE, and the note that used to sit here said the
+ * opposite. It read "the first thing this exploration will want is
+ * `examDate: undefined` in the `studyPace` call below… wiring Add Date HERE is
+ * what earns the date back" — true when this file was a branch, and left
+ * behind when the wiring landed on 2026-10-20. It cost a reader a full day on
+ * 2026-10-21: the handoff was written from this paragraph rather than from the
+ * code, and documented the exam row as unreachable on the one page that can
+ * reach it. Step 2 has Add Date, the calendar, Edit and Remove; `examDate` is
+ * passed to `studyPace` below. `AtlasHomeEricE2E` is the Home that passes
+ * `undefined`, and the long note at that call says why the two differ.
  */
 /*
  * END-TO-END DEMO'S HOME — 2026-10-14, Eric's request ("Duplicate the white
@@ -441,9 +445,12 @@ export function AtlasHomeJillMain({
    * THE EXAM DATE BINDS AGAIN HERE — 2026-10-20, the other half of wiring Add
    * Date.
    *
-   * ⚠ `main`'s COPY OF THIS FILE PASSES `undefined`, DELIBERATELY, and the
-   * difference between the two is not a disagreement — it is the same rule
-   * answered by two pages with different powers. A page may act on a date only
+   * ⚠ `AtlasHomeEricE2E` PASSES `undefined`, DELIBERATELY, and the difference
+   * between the two Homes is not a disagreement — it is the same rule answered
+   * by two pages with different powers. (This paragraph used to say "`main`'s
+   * copy of this file passes undefined", which stopped being true the moment
+   * this file WAS main's copy; naming the other component instead is what keeps
+   * it true after a merge.) A page may act on a date only
    * if it can SHOW it, CHANGE it and REMOVE it. The End-to-End Demo's Home can
    * do none of those (both of its exam prompts are decoration, and say so), so
    * a date typed in Compass weeks earlier dead-ended its pace card for good,
@@ -1974,7 +1981,14 @@ export function ExamDateQuestionPill(wiring: ExamPromptWiring) {
   )
 }
 
-function ExamDatePrompt({
+/* ⚠ EXPORTED FOR THE DEV HANDOFF (2026-10-21). It is wholly prop-driven —
+   `examDate`, `picking` and the four handlers all arrive from the Home, and it
+   never touches `examDateStore` itself — so the handoff can draw all four of
+   its screens with inert handlers and no risk of a preview writing the real
+   `cgp.examDate`. That separation already existed; this just makes use of it
+   rather than retyping the markup into a second component, which is how the
+   handoff and the page come to disagree. */
+export function ExamDatePrompt({
   onExamInfo,
   card = false,
   ...wiring
