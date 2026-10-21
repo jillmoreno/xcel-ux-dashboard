@@ -1,31 +1,185 @@
-import { useState, type CSSProperties } from 'react'
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import { WhiteStyleHead } from '@/components/compass/AtlasHomeEricE2E'
+import { AtlasCourseHeadRow, WhiteCourseMeta } from '@/components/compass/AtlasHomeEricE2E'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
+import { ATLAS_FONT_DEFAULT, atlasFontHref } from '@/components/layout/atlasFontSets'
+import { atlasSkinFor } from '@/components/layout/atlasBrandSkin'
+import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
+import { useAccount } from '@/context/AccountContext'
 import { AffidavitModal, type AffidavitKind } from '@/components/e2e/AffidavitModal'
 
 /**
- * The two Atlas Home dev-handoff previews that cannot be a bare
- * `createElement` of the real component — everything else is called directly
- * from `atlasHandoffPreviewsRegistry.ts`, which is where the variant NAMES
- * live.
+ * The dev-handoff previews that cannot be a bare `createElement` of the real
+ * component — everything else is called directly from
+ * `atlasHandoffPreviewsRegistry.ts`, which is where the variant NAMES live.
  *
- * ⚠ THE NAMES ARE NOT IN THIS FILE, deliberately (2026-10-20). Until now each
- * preview was a gallery carrying its own hand-written captions, which made it
- * a THIRD list of a component's variants beside `variants` and
- * `uiUxLogic.variants` in `prototypeFeatures.ts` — and the three had already
- * drifted: the Readiness gallery rendered the four bands the component
- * actually has while the handoff notes still described the five levels those
- * bands replaced on 2026-10-16, and nothing failed. The registry now keys
- * every render by the variant's `name` from the data, and
- * `DevHandoffVariants.test.ts` fails when a key matches no variant, so the
- * drift is a red test rather than a wrong spec.
+ * ⚠ THE NAMES ARE NOT IN THIS FILE, deliberately (2026-10-20). Each preview
+ * used to be a gallery carrying its own hand-written captions, which made it a
+ * THIRD list of a component's variants beside the two in
+ * `prototypeFeatures.ts` — and the three had already drifted. The registry now
+ * keys every render by the variant's `name` from the data, and
+ * `DevHandoffVariants.test.ts` fails when a key matches no variant.
  *
  * This file exports COMPONENTS ONLY — `react-refresh/only-export-components`
  * does not allow a `.tsx` to export a non-component alongside its components,
- * which is the same reason the registry is a plain `.ts` (and the same split
- * this repo already uses for `v4/shared.tsx` vs `v4/sharedUtil.ts`).
+ * which is why the registry is a plain `.ts`.
  */
+
+/**
+ * THE ATLAS TOKEN ENVIRONMENT, so a preview is the component as the page
+ * actually draws it.
+ *
+ * ⚠ WITHOUT THIS EVERY ATLAS RENDER WAS SUBTLY WRONG (2026-10-21, Jillienne:
+ * "the ui is wrong, background color is wrong, text size, etc. This should be
+ * a exact 1:1 ui example of the component").
+ *
+ * The Atlas look is not in the components — it is three attributes the product
+ * shell writes onto `<html>`: `data-atlas-palette`, `data-atlas-brand` and
+ * `data-atlas-font`. `tokens.css` keys whole blocks off the combination (see
+ * "ATLAS XCEL PALETTE"), so the heading size, the brand ramps and the eyebrow
+ * colours all resolve from them. The handoff gateway is not the product shell
+ * and never set any of it, so every Atlas card here fell back to its default
+ * token values — a 38px title where the page draws 40px, and the wrong fills
+ * underneath it. The components were right the whole time; the room they were
+ * standing in was not.
+ *
+ * Set on a WRAPPER rather than on `<html>`: custom properties inherit and the
+ * selectors are plain attribute matches, so a div carries the whole palette to
+ * its subtree without repainting the gateway around it. Mirroring the shell's
+ * globals here would leak Atlas tokens onto the gateway's own chrome, which is
+ * a different product.
+ *
+ * The heading face is fetched the way the shell fetches it, because a Playfair
+ * title rendered in the fallback serif is exactly the "close enough" this is
+ * here to stop. The link is shared and ref-counted, so a page of eighteen
+ * renders loads it once.
+ */
+export function AtlasSurface({ children }: { children: ReactNode }) {
+  useAtlasHeadingFont()
+  const { brand } = useAccount()
+  return (
+    <div
+      /* ⚠ ALL FOUR, ON ONE ELEMENT. The token rules are COMPOUND selectors —
+         `[data-brand='xcel'][data-atlas-palette][data-atlas-brand='global']`
+         (tokens.css:6333) — so every attribute has to sit together or the
+         whole block is skipped. `data-brand` lives on `<html>` in the product
+         and the other three went on this wrapper, which meant none of the
+         brand-scoped rules matched and `--color-primary-100` fell through to a
+         blue-grey where the page draws #eceef0: the course head's entire panel
+         came out the wrong colour while every individual attribute looked
+         right. Repeating `data-brand` here is harmless — it is what the
+         document already says. */
+      data-brand={brand}
+      data-atlas-palette="xcel"
+      data-atlas-brand={ATLAS_HANDOFF_SKIN}
+      data-atlas-font={ATLAS_FONT_DEFAULT}
+      style={{
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        /* ⚠ TWO TOKENS THE PAGE RE-POINTS FOR ITS CHILDREN, not the palette.
+           `WHITE_PAGE` puts every eyebrow on the page and the progress
+           figures' labels in Neutral 800 (#404040, 2026-10-14) — so a card
+           lifted out of that page draws its eyebrow in the palette's default
+           instead, which measured 91,85,96 here against the page's 64,64,64.
+           Close enough to look deliberate, which is the worst kind of wrong in
+           a spec. */
+        ['--color-compass-page-eyebrow' as string]: 'var(--color-neutral-800)',
+        ['--atlas-progress-label' as string]: 'var(--color-neutral-800)',
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+/**
+ * The brand skin main's Atlas pages wear, resolved the way the product shell
+ * resolves it — the `atlas-brand-skin-v3` flag's committed default, through
+ * the same validator.
+ *
+ * ⚠ NOT `ATLAS_SKIN_DEFAULT`, which is the skin a `?skin=` link falls back to
+ * and is a different thing. The flag defaults to `global` ("Atlas"), and the
+ * two produce visibly different pages: `--color-primary-100` is #eceef0 under
+ * global and a blue-grey under xcel, so the course head's whole panel came out
+ * the wrong colour. Read from the catalog rather than hardcoded, so changing
+ * the default moves the handoff with the product.
+ */
+const ATLAS_HANDOFF_SKIN = atlasSkinFor(
+  FEATURE_FLAGS.find((f) => f.key === 'atlas-brand-skin-v3')?.defaultVariant ?? null,
+)
+
+let atlasFontUsers = 0
+
+/** Loads the Atlas heading face for as long as any preview needs it. */
+function useAtlasHeadingFont() {
+  useEffect(() => {
+    const href = atlasFontHref(ATLAS_FONT_DEFAULT)
+    if (!href) return
+    atlasFontUsers += 1
+    let link = document.head.querySelector<HTMLLinkElement>(
+      `link[data-atlas-handoff-font="${ATLAS_FONT_DEFAULT}"]`,
+    )
+    if (!link) {
+      link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = href
+      link.dataset.atlasHandoffFont = ATLAS_FONT_DEFAULT
+      document.head.appendChild(link)
+    }
+    return () => {
+      atlasFontUsers -= 1
+      if (atlasFontUsers <= 0) link?.remove()
+    }
+  }, [])
+}
+
+/**
+ * THE COURSE HEAD, as the page draws it: the real component, on the real
+ * Primary 100 panel, with the page's own meta row inside it.
+ *
+ * ⚠ ALL THREE OF THOSE WERE WRONG BEFORE 2026-10-21. The component was right
+ * and everything around it was not — no panel (so the fills read against the
+ * gateway's card colour instead of the page's), and a hand-rolled meta row
+ * with no rules, a different date format and flat label weights. The panel is
+ * part of the component's look, not decoration around it.
+ */
+export function CourseHeadVariant({
+  title = 'Florida Life and Health Pre-licensing',
+  beginLabel = 'Begin Course',
+  meta = 'default',
+}: {
+  title?: string
+  beginLabel?: string
+  /** Which meta row to draw: the countdown, the 100% congratulation, or none
+   *  at all when the course has no access-expiry date. */
+  meta?: 'default' | 'complete' | 'none'
+}) {
+  return (
+    <div style={courseHeadPanelStyle}>
+      <AtlasCourseHeadRow
+        onWhite
+        cover={`${import.meta.env.BASE_URL}courses/fl-life-health.webp`}
+        title={title}
+        beginLabel={beginLabel}
+        onCover={() => {}}
+        showOverview
+        onOverview={() => {}}
+        onBegin={() => {}}
+        // The page's OWN meta row, not a rebuild of it.
+        meta={
+          meta === 'none' ? undefined : (
+            <WhiteCourseMeta endsOn={COURSE_ACCESS_ENDS} days={29} complete={meta === 'complete'} />
+          )
+        }
+      />
+    </div>
+  )
+}
+
+/* A fixed date, not `new Date()` — a preview that reads "0 days to complete"
+   some weeks from now would look like a bug in the component. */
+const COURSE_ACCESS_ENDS = new Date(2026, 5, 10)
 
 /**
  * A real portalled, full-viewport overlay can't sit in a variant row the way
@@ -58,58 +212,9 @@ export function AffidavitLauncher({
 }
 
 /**
- * Course Head's White-style layout — the one variant of the seven that is a
- * clean, already-separate function (`WhiteStyleHead`, exported 2026-10-20 for
- * exactly this). The other six are inlined in `AtlasHomeEricE2E`'s main render
- * alongside page-local closures (`shownCover`, `onBeginCta`, `completedView`),
- * so they have no render here and the Variants section says so per row.
- */
-export function CourseHeadVariant({
-  title = 'Florida Life & Health Pre-Licensing',
-  beginLabel = 'Begin Course',
-  withMeta = true,
-  metaText = 'Course Access Ends: Dec 1, 2026, 42 days to complete',
-}: {
-  title?: string
-  beginLabel?: string
-  /** The meta row's wording — at 100% it congratulates instead of counting. */
-  metaText?: string
-  /** The Expires / days-to-complete row. Dropped entirely for the No-end-date
-   *  state — the row goes, rather than rendering blank. */
-  withMeta?: boolean
-}) {
-  return (
-    <div style={{ width: '100%', maxWidth: 480 }}>
-      <WhiteStyleHead
-        cover={`${import.meta.env.BASE_URL}courses/0.webp`}
-        title={title}
-        onCover={() => {}}
-        onOverview={() => {}}
-        onBegin={() => {}}
-        beginLabel={beginLabel}
-        meta={
-          withMeta ? (
-            <p
-              style={{
-                margin: 0,
-                fontFamily: 'var(--font-body)',
-                fontSize: 11,
-                color: 'var(--color-text-secondary)',
-              }}
-            >
-              {metaText}
-            </p>
-          ) : undefined
-        }
-      />
-    </div>
-  )
-}
-
-/**
  * THE PAGE-SHAPED STATES, shown as the real page.
  *
- * Some states here are not a component's own props at all — the whole-page
+ * Some states are not a component's own props at all — the whole-page
  * composition, and Step 1 of the Study Journey, which reads the page's shared
  * progress rather than anything passed to it. Rebuilding either in the gallery
  * would mean copying page logic into the preview, and a copy is exactly the
@@ -157,6 +262,23 @@ export function QuickLinksHoverDemo() {
       </p>
     </div>
   )
+}
+
+/* The course card is 800px wide on the page with no padding of its own, and
+   the head fills it inside a 40px panel. 720 is that content width, so the
+   title wraps where the page wraps it — which is the whole point of showing
+   the long-title state. */
+const courseHeadPanelStyle: CSSProperties = {
+  width: '100%',
+  maxWidth: 800,
+  boxSizing: 'border-box',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 24,
+  padding: 40,
+  borderRadius: 20,
+  background: 'var(--color-primary-100)',
+  ['--color-atlas-outlined-card' as string]: 'var(--color-primary-200)',
 }
 
 const pageFrameStyle: CSSProperties = {

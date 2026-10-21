@@ -7,6 +7,7 @@ import { AtlasExamDateCard } from '@/components/compass/AtlasExamDateCard'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
 import {
   AffidavitLauncher,
+  AtlasSurface,
   CourseHeadVariant,
   PageFrame,
   QuickLinksHoverDemo,
@@ -167,12 +168,9 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
   'atlas-home-course-head': {
     'Not started': () => createElement(CourseHeadVariant, { beginLabel: 'Begin Course' }),
     'In progress': () => createElement(CourseHeadVariant, { beginLabel: 'Resume Course' }),
-    'No end date': () => createElement(CourseHeadVariant, { withMeta: false }),
+    'No end date': () => createElement(CourseHeadVariant, { meta: 'none' }),
     'Course complete': () =>
-      createElement(CourseHeadVariant, {
-        beginLabel: 'View Certificate',
-        metaText: 'Course Access Ends: Dec 1, 2026, Congrats! You have completed this course.',
-      }),
+      createElement(CourseHeadVariant, { beginLabel: 'View Certificate', meta: 'complete' }),
     'Long title': () =>
       createElement(CourseHeadVariant, {
         title: 'Florida Life and Health Pre-licensing with Comprehensive Exam Simulators',
@@ -215,27 +213,37 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
 }
 
 /**
- * Components whose renders are the whole PAGE in an iframe rather than a card.
+ * Components whose render needs the WHOLE row, with the prose above it rather
+ * than beside it.
  *
- * They need the full row width: at half a row the real page reflows to a
- * single narrow column and the reader sees the demo bar instead of the thing
- * the row is about. Listed explicitly rather than sniffed from the rendered
- * output, because "is this element wide" is not a question the DOM can be
- * asked before it is laid out.
+ * Two kinds qualify, for one reason — the thing being shown is wider than half
+ * a row, and squeezing it misrepresents it:
  *
- * `DevHandoffVariants.test.ts` checks every id here is a real component, so
- * this cannot quietly point at nothing.
+ *  - The page frames. At half a row the real page reflows to a single narrow
+ *    column and the reader sees the demo bar instead of the subject.
+ *  - The COURSE HEAD, which is an 800px component. In a 370px column its title
+ *    wrapped to four lines, so the one state whose whole point is "the long
+ *    title wraps" could not be told from the one whose point is that it does
+ *    not.
+ *
+ * Listed explicitly rather than sniffed from the output, because "is this wide"
+ * is not a question the DOM can be asked before it is laid out.
+ * `DevHandoffVariants.test.ts` checks every id here is a real component.
  */
-const PAGE_FRAMED = new Set(['atlas-home-layout', 'atlas-home-study-journey'])
+const FULL_WIDTH = new Set([
+  'atlas-home-layout',
+  'atlas-home-study-journey',
+  'atlas-home-course-head',
+])
 
-/** Whether this component's renders are full-page frames — see `PAGE_FRAMED`. */
-export function atlasHandoffIsPageFramed(componentId: string): boolean {
-  return PAGE_FRAMED.has(componentId)
+/** Whether this component's renders take the full row — see `FULL_WIDTH`. */
+export function atlasHandoffIsFullWidth(componentId: string): boolean {
+  return FULL_WIDTH.has(componentId)
 }
 
-/** Test seam for `PAGE_FRAMED`. */
-export function atlasPageFramedIds(): string[] {
-  return [...PAGE_FRAMED]
+/** Test seam for `FULL_WIDTH`. */
+export function atlasFullWidthIds(): string[] {
+  return [...FULL_WIDTH]
 }
 
 /** Every variant render registered for a handoff component, or `undefined`
@@ -245,12 +253,22 @@ export function atlasHandoffVariantRenders(componentId: string): VariantRenders 
   return ATLAS_VARIANT_RENDERS[componentId]
 }
 
-/** One variant's live render, or `undefined`. */
+/**
+ * One variant's live render, or `undefined`.
+ *
+ * ⚠ THE `AtlasSurface` WRAP HAPPENS HERE, not in the entries. Every render in
+ * the map needs the Atlas token environment, and an entry that forgot it would
+ * look *almost* right — the failure mode that produced the wrong title size
+ * and fills in the first place. Wrapping centrally means it cannot be
+ * forgotten, and the page frames pass through it harmlessly: they are iframes,
+ * and the real document inside sets its own attributes.
+ */
 export function atlasHandoffVariantRender(
   componentId: string,
   variantName: string,
 ): ReactNode | undefined {
-  return ATLAS_VARIANT_RENDERS[componentId]?.[variantName]?.()
+  const node = ATLAS_VARIANT_RENDERS[componentId]?.[variantName]?.()
+  return node === undefined ? undefined : createElement(AtlasSurface, null, node)
 }
 
 /**
@@ -266,7 +284,7 @@ export function atlasHandoffThumbRender(componentId: string): ReactNode | undefi
   const renders = ATLAS_VARIANT_RENDERS[componentId]
   if (!renders) return undefined
   const first = Object.values(renders)[0]
-  return first ? first() : undefined
+  return first ? createElement(AtlasSurface, null, first()) : undefined
 }
 
 /** Test seam: the registered ids and their variant keys, so

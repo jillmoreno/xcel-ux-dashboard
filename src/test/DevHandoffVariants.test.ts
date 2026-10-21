@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { PROTOTYPE_FEATURES, type DevHandoffComponent } from '@/data/prototypeFeatures'
 import {
   atlasRegisteredVariantKeys,
-  atlasPageFramedIds,
+  atlasFullWidthIds,
 } from '@/components/prototype/atlasHandoffPreviewsRegistry'
 
 /**
@@ -98,11 +98,11 @@ describe('dev-handoff variants', () => {
     expect(dupes, dupes.join('\n')).toEqual([])
   })
 
-  it('every page-framed id is a component that exists', () => {
-    // `PAGE_FRAMED` widens a component's rows to the full width. A stale id
+  it('every full-width id is a component that exists', () => {
+    // `FULL_WIDTH` widens a component's rows to the full width. A stale id
     // there changes nothing visible, so it would sit wrong indefinitely.
     const known = new Set(allHandoffComponents().map(({ component }) => component.id))
-    const unknown = atlasPageFramedIds().filter((id) => !known.has(id))
+    const unknown = atlasFullWidthIds().filter((id) => !known.has(id))
     expect(unknown, unknown.join('\n')).toEqual([])
   })
 

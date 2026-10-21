@@ -16,7 +16,7 @@ import {
 } from './devHandoffStyles'
 import {
   atlasHandoffVariantRender,
-  atlasHandoffIsPageFramed,
+  atlasHandoffIsFullWidth,
 } from './atlasHandoffPreviewsRegistry'
 
 /**
@@ -86,7 +86,7 @@ export function DevHandoffVariantsBody({
   variants: DevHandoffVariant[]
 }) {
   const anyRender = variants.some((v) => atlasHandoffVariantRender(componentId, v.name))
-  const stacked = atlasHandoffIsPageFramed(componentId)
+  const stacked = atlasHandoffIsFullWidth(componentId)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {variants.map((v, i) => (
@@ -436,11 +436,17 @@ const variantProseStyle: CSSProperties = {
   color: 'var(--color-text-secondary)',
 }
 
+/* The ground a render stands on, and it is the PAGE's white rather than the
+   gateway's card colour (2026-10-21). Every Atlas card is drawn to be read
+   against the product page, and several of them carry their own panel fill on
+   top of it — put them on the gateway's surface instead and the fills read
+   wrong, which is half of what "the background colour is wrong" was. The
+   border stays: it bounds the plate, it is not pretending to be the card. */
 const variantRenderStyle: CSSProperties = {
   padding: 20,
   display: 'flex',
   justifyContent: 'center',
-  background: 'var(--color-surface-card)',
+  background: 'var(--color-fixed-light)',
   border: '1px solid var(--color-border-subtle)',
   borderRadius: 'var(--radius-lg)',
 }

@@ -391,22 +391,22 @@ export function AtlasHomeEricE2E({
   const expiresOn = dateFromIso(accessIso)
   const courseMeta =
     expiresOn && accessDays != null ? (
+      onWhite ? (
+        /* ⚠ ONE IMPLEMENTATION, SHARED WITH THE DEV HANDOFF (2026-10-21).
+           This arm used to be inline here, and the handoff's preview of the
+           course head hand-rolled its own approximation of it — which drew
+           without the rules, with a different date format, and read "wrong"
+           beside the real page. Extracted so the two cannot differ; the WIP
+           arm below is untouched. */
+        <WhiteCourseMeta endsOn={expiresOn} days={accessDays} complete={completedView} />
+      ) : (
       <div
-        style={
-          onWhite
-            ? // Primary 200 rules on White's Primary 100 panel (2026-10-14),
-              // where the card's own 100 would not show.
-              { ...META_ROW, borderTop: '1px solid var(--color-primary-200)', borderBottom: '1px solid var(--color-primary-200)' }
-            : META_ROW
-        }
+        style={META_ROW}
       >
         <span style={META_PAIR}>
-          {/* "Course Access Ends:" on White (2026-10-14, Eric's request). */}
-          <span style={META_LABEL}>{onWhite ? 'Course Access Ends:' : 'Expires:'}</span>
+          <span style={META_LABEL}>Expires:</span>
           <span style={META_VALUE}>
             {expiresOn.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
-            {/* Inside the value, so no gap before it; in the label's weight. */}
-            {onWhite ? <span style={META_LABEL}>,</span> : null}
           </span>
         </span>
         {/* ⚠ AT 100% IT CONGRATULATES INSTEAD OF COUNTING (2026-10-19,
@@ -417,18 +417,9 @@ export function AtlasHomeEricE2E({
             something still owed. The ACCESS DATE stays either way — access
             really does end then, certificate or no certificate. */}
         {completedView ? (
-          <span style={{ ...META_PAIR, marginLeft: onWhite ? -4 : undefined }}>
-            {onWhite ? null : <span aria-hidden style={META_DIVIDER} />}
+          <span style={META_PAIR}>
+            <span aria-hidden style={META_DIVIDER} />
             <span style={META_VALUE}>Congrats! You have completed this course.</span>
-          </span>
-        ) : onWhite ? (
-          /* White reads as one line — "…05/29/2026, 18 days to complete" —
-             with no divider (2026-10-14, Eric's request). */
-          <span style={{ ...META_PAIR, marginLeft: -4 }}>
-            <span style={META_VALUE}>
-              {accessDays} {accessDays === 1 ? 'day' : 'days'}
-            </span>
-            <span style={META_LABEL}>to complete</span>
           </span>
         ) : (
           <>
@@ -442,6 +433,7 @@ export function AtlasHomeEricE2E({
           </>
         )}
       </div>
+      )
     ) : null
 
   // V3 drops the Attestation & Affidavit stop on every progress stage
@@ -715,62 +707,18 @@ export function AtlasHomeEricE2E({
             meta={courseMeta}
           />
         ) : (
-        <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
-          {shownCover ? (
-            <button
-              type="button"
-              aria-label="Course header — layout 1 of 2. Press to show the next layout."
-              onClick={() => setWhiteHead(true)}
-              // 12 corners on Eric/Atlas White, 8 under the card’s 20 (2026-10-14)
-              // — and the 260 column's width less the panel's padding there, so
-              // its right edge lines up with that column below.
-              style={{ ...COVER_FRAME, ...COVER_TOGGLE, ...(onWhite ? { borderRadius: 12, width: V3_LEFT_W - WHITE_HEAD_PAD } : null) }}
-            >
-              <img src={shownCover} alt="" style={COVER} />
-            </button>
-          ) : null}
-          <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 15, justifyContent: 'center' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <p style={EYEBROW}>Current course</p>
-              <h2 className="cre-compass-course-title cre-atlas-home-course-title cre-atlas-home-v2-course-title" style={TITLE}>
-                {shownTitle}
-              </h2>
-              {courseMeta}
-            </div>
-            {/* The card's two actions, at the main buttons' size (2026-10-06,
-                the designer's request): Course Overview — was a 10px chip —
-                as the outline button, and Begin Course, MOVED here from the
-                Study Journey's current stop. */}
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              {LINKS_OFF || onOverview ? (
-                <button
-                  type="button"
-                  className="cre-compass-secondary cre-atlas-home-secondary"
-                  onClick={LINKS_OFF && !overviewOpensCompass ? NO_LINK : onOverview}
-                  // Bold 700, the exam-date prompt's Yes (2026-10-15, Eric's
-                  // request; Medium 500 from 2026-10-06).
-                  style={{ ...HEADER_BUTTON, fontWeight: 700 }}
-                >
-                  Course Overview
-                </button>
-              ) : null}
-              <button
-                type="button"
-                className="cre-compass-primary cre-compass-btn-primary"
-                onClick={onBeginCta}
-                /* Never disabled at completion: its handler is this page's
-                   own `go`, not the caller's `onBegin`. */
-                disabled={!completedView && !LINKS_OFF && !onBegin}
-                style={HEADER_PRIMARY}
-              >
-                {/* "Resume Course" once the Design bar's Progress is past 0%
-                    (2026-10-12, Eric's request), and "View Certificate" at
-                    100% (2026-10-19) — see `beginLabel`. */}
-                {beginLabel}
-              </button>
-            </div>
-          </div>
-        </div>
+        <AtlasCourseHeadRow
+          onWhite={onWhite}
+          cover={shownCover ?? undefined}
+          title={shownTitle}
+          meta={courseMeta}
+          beginLabel={beginLabel}
+          onCover={() => setWhiteHead(true)}
+          showOverview={LINKS_OFF || Boolean(onOverview)}
+          onOverview={LINKS_OFF && !overviewOpensCompass ? NO_LINK : onOverview}
+          onBegin={onBeginCta}
+          beginDisabled={!completedView && !LINKS_OFF && !onBegin}
+        />
         )}
 
         </div>
@@ -1903,6 +1851,171 @@ const COVER_FRAME: CSSProperties = {
 /** Exported 2026-10-20 (additive, no behavior change) so the Course Head
  *  dev-handoff preview can render the real White-style layout directly,
  *  rather than a hand-copied approximation that would drift from this one. */
+/**
+ * THE COURSE HEAD AS THE PAGE OPENS IT — a 260px cover beside the eyebrow,
+ * title, meta row and the two buttons.
+ *
+ * ⚠ THIS IS THE DEFAULT LAYOUT, and `WhiteStyleHead` below is NOT. The page
+ * mounts with `whiteHead` false, so this is what every learner sees; the
+ * stacked one is reached only by clicking the cover, which is a review
+ * affordance the handoff explicitly says not to build.
+ *
+ * Its own component since 2026-10-21, for the same reason `WhiteCourseMeta` is
+ * (2026-10-21) and `WhiteStyleHead` was (2026-10-20): the dev handoff renders
+ * the course head live, and what the page builds inline has to be rebuilt by
+ * hand over there. That rebuild had been showing the STACKED layout — the one
+ * you only get by clicking — so the handoff's "this is the default look" was
+ * the wrong picture entirely. A straight move of the page's own JSX, so the
+ * two cannot differ.
+ */
+export function AtlasCourseHeadRow({
+  onWhite,
+  cover,
+  title,
+  meta,
+  beginLabel,
+  onCover,
+  showOverview,
+  onOverview,
+  onBegin,
+  beginDisabled = false,
+}: {
+  onWhite: boolean
+  cover?: string
+  title: string
+  /** The Expires · days-to-complete row — see `WhiteCourseMeta`. */
+  meta?: ReactNode
+  beginLabel: string
+  /** Flips to the other header layout. A review affordance, not a feature. */
+  onCover: () => void
+  showOverview: boolean
+  onOverview?: () => void
+  onBegin?: () => void
+  beginDisabled?: boolean
+}) {
+  return (
+      <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
+        {cover ? (
+          <button
+            type="button"
+            aria-label="Course header — layout 1 of 2. Press to show the next layout."
+            onClick={onCover}
+            // 12 corners on Eric/Atlas White, 8 under the card’s 20 (2026-10-14)
+            // — and the 260 column's width less the panel's padding there, so
+            // its right edge lines up with that column below.
+            style={{ ...COVER_FRAME, ...COVER_TOGGLE, ...(onWhite ? { borderRadius: 12, width: V3_LEFT_W - WHITE_HEAD_PAD } : null) }}
+          >
+            <img src={cover} alt="" style={COVER} />
+          </button>
+        ) : null}
+        <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 15, justifyContent: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <p style={EYEBROW}>Current course</p>
+            <h2 className="cre-compass-course-title cre-atlas-home-course-title cre-atlas-home-v2-course-title" style={TITLE}>
+              {title}
+            </h2>
+            {meta}
+          </div>
+          {/* The card's two actions, at the main buttons' size (2026-10-06,
+              the designer's request): Course Overview — was a 10px chip —
+              as the outline button, and Begin Course, MOVED here from the
+              Study Journey's current stop. */}
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            {showOverview ? (
+              <button
+                type="button"
+                className="cre-compass-secondary cre-atlas-home-secondary"
+                onClick={onOverview}
+                // Bold 700, the exam-date prompt's Yes (2026-10-15, Eric's
+                // request; Medium 500 from 2026-10-06).
+                style={{ ...HEADER_BUTTON, fontWeight: 700 }}
+              >
+                Course Overview
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="cre-compass-primary cre-compass-btn-primary"
+              onClick={onBegin}
+              /* Never disabled at completion: its handler is this page's
+                 own `go`, not the caller's `onBegin`. */
+              disabled={beginDisabled}
+              style={HEADER_PRIMARY}
+            >
+              {/* "Resume Course" once the Design bar's Progress is past 0%
+                  (2026-10-12, Eric's request), and "View Certificate" at
+                  100% (2026-10-19) — see `beginLabel`. */}
+              {beginLabel}
+            </button>
+          </div>
+        </div>
+      </div>
+  )
+}
+
+/**
+ * THE COURSE-ACCESS META ROW under the course title — "Course Access Ends:
+ * 06/10/2026, 29 days to complete", ruled above and below.
+ *
+ * Its own component since 2026-10-21, for the same reason `WhiteStyleHead` is:
+ * the dev handoff renders the course head live, and anything the page builds
+ * inline has to be rebuilt there by hand. The hand-built copy had no rules, a
+ * different date format and a flat label weight — close enough to pass review
+ * and wrong enough to read as a different design. One implementation, drawn by
+ * the page and by its own handoff.
+ *
+ * ⚠ AT 100% IT CONGRATULATES INSTEAD OF COUNTING (2026-10-19, Jillienne: "when
+ * at 100%, this messaging should change to Congrats! You have completed this
+ * course."). "18 days to complete" is time the learner still needs; at the end
+ * it is time they no longer have any use for, and a countdown beside a
+ * finished course reads as something still owed. THE ACCESS DATE STAYS either
+ * way — access really does end then, certificate or no certificate.
+ */
+export function WhiteCourseMeta({
+  endsOn,
+  days,
+  complete = false,
+}: {
+  endsOn: Date
+  days: number
+  complete?: boolean
+}) {
+  return (
+    <div
+      /* Primary 200 rules on the panel's Primary 100 (2026-10-14), where the
+         card's own 100 would not show. */
+      style={{
+        ...META_ROW,
+        borderTop: '1px solid var(--color-primary-200)',
+        borderBottom: '1px solid var(--color-primary-200)',
+      }}
+    >
+      <span style={META_PAIR}>
+        <span style={META_LABEL}>Course Access Ends:</span>
+        <span style={META_VALUE}>
+          {endsOn.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
+          {/* Inside the value, so no gap before it; in the label's weight. */}
+          <span style={META_LABEL}>,</span>
+        </span>
+      </span>
+      {complete ? (
+        <span style={{ ...META_PAIR, marginLeft: -4 }}>
+          <span style={META_VALUE}>Congrats! You have completed this course.</span>
+        </span>
+      ) : (
+        /* One line — "…05/29/2026, 18 days to complete" — no divider
+           (2026-10-14, Eric's request). */
+        <span style={{ ...META_PAIR, marginLeft: -4 }}>
+          <span style={META_VALUE}>
+            {days} {days === 1 ? 'day' : 'days'}
+          </span>
+          <span style={META_LABEL}>to complete</span>
+        </span>
+      )}
+    </div>
+  )
+}
+
 export function WhiteStyleHead({
   cover,
   title,
