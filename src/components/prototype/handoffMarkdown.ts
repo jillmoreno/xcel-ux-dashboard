@@ -52,18 +52,10 @@ function designSpecLines(spec: DevHandoffDesignSpec): string[] {
   return out
 }
 
-/** `location` is sometimes a bare path and sometimes a paragraph of prose that
- *  happens to contain paths. Backticking the second kind renders a
- *  screen-wide code span, so only a genuine one-token path gets code
- *  formatting; anything with a sentence in it is emitted as prose. */
-function locationLine(location: string): string {
-  return /^\S+$/.test(location.trim()) ? `\`${location.trim()}\`` : location
-}
-
 function componentLines(c: DevHandoffComponent): string[] {
   const when = c.badgeDate ? shortDate(c.badgeDate) : null
   const badge = c.badge ? ` — ${c.badge}${when ? ` (${when})` : ''}` : ''
-  const out = [`### ${c.name}${badge}`, '', locationLine(c.location), '', c.summary, '']
+  const out = [`### ${c.name}${badge}`, '', c.summary, '']
 
   // The designer's own words lead, as they do on screen — this export is what
   // gets pasted into a ticket, so it is the one place they matter most.

@@ -14,7 +14,6 @@ import {
 import {
   handoffProseStyle,
   handoffSubheadingStyle,
-  pointerLocationStyle,
 } from '@/components/prototype/devHandoffStyles'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
@@ -1344,7 +1343,13 @@ function UiComponentDetail({
           />
         )}
       </h3>
-      <p style={{ ...pointerLocationStyle, margin: '8px 0 0' }}>{component.location}</p>
+      {/* ⚠ NO FILE PATH HERE (2026-10-21, Jillienne: "remove this useless
+          info"). A monospace line of repo path sat under the component's name
+          as the second thing on the page — ahead of the Summary — and it is not
+          what anyone opens a handoff to read. The Design Spec's "Sources of
+          truth" already lists the files, which is where a reader goes looking
+          for them. `location` stays in the data as the pointer it is; it just
+          stops being a headline. */}
 
       {/* Jump nav. Looks like the pill strip it replaced on purpose — the shape
           was never the problem, the hiding was. `aria-current` rather than

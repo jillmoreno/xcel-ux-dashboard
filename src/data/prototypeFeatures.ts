@@ -1549,7 +1549,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             'Access-expiry date and days-to-complete — today the pace model (`studyPace`), fed by fixture hours/access-expiry.',
           ],
           a11y: [
-            'Cover-as-toggle buttons carry an explicit `aria-label` stating which layout pressing them shows ("Course header — layout 1 of 2. Press to show the next layout."), since the image itself gives no visual affordance of being a button.',
             'Title is an <h2> inside the course card’s <section aria-label="Current course">.',
           ],
         },
@@ -1557,11 +1556,11 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
       decisions: {
         items: [
           {
-            question: 'Should the click-to-flip header layout toggle ship?',
+            question: 'What number of days left should turn the course access amber?',
             decision:
-              'No — see the Overview handoff. It exists so the two layouts can be compared live during review; a real build should commit to one and remove `whiteHead`/the cover button entirely.',
+              'Undecided — the head badges at 15 days or fewer today, and that figure is borrowed rather than chosen: it is the Expires control’s own documented edge (1 / 7 / 15 badge; 30 and up do not). The shared `courseExpiryState` warns inside 60 days clamped to half the ENROLMENT window, which this page cannot compute — it knows how many days are LEFT, not when the learner enrolled. Whatever is picked also sets where amber gives way to the red last-day treatment, so the two want deciding together.',
             status: 'Needs weigh-in',
-            owner: 'Eric',
+            owner: 'Jillienne',
           },
           {
             question: 'Why does the Begin/Resume button never read "Review Course" the way the sibling Home Course Card does once coursework is complete?',

@@ -31,7 +31,6 @@ import {
 export function DevHandoffNotesBody({ component }: { component: DevHandoffComponent }) {
   return (
     <div>
-      <code style={pointerLocationStyle}>{component.location}</code>
       <p style={{ ...handoffProseStyle, margin: '12px 0 0' }}>{component.summary}</p>
 
       {/* Neither the variants nor the rules are repeated here — both have
