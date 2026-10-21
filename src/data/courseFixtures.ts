@@ -390,6 +390,15 @@ export const EXPIRY_PICKER: { value: ExpirySelection; label: string }[] = [
      lives in TWO places: here (what the dropdown renders) and the flag's
      `variants` (the catalog's copy). Both lose it, or the control offers a
      value its own catalog does not know. */
+  /* ⚠ EXPIRED IS A NEGATIVE DAY COUNT, NOT A NEW CONCEPT — 2026-10-20,
+     Jillienne: "add an expired into the dropdown". Three days PAST the date,
+     which is the figure `hybrid-course-expiry` used for the same arm. A
+     signed number flows through `chosenExpiryDays` and the access-date
+     arithmetic untouched, where a string sentinel would need a branch in
+     every consumer — and the card's expired tier, its Extend Course CTA and
+     the pace model's "no access left" arm all fall out of the date on their
+     own. It LEADS the list because the rows run from most urgent to least. */
+  { value: -3, label: 'Expired' },
   { value: 1, label: '1 day' },
   { value: 7, label: '7 days' },
   { value: 15, label: '15 days' },

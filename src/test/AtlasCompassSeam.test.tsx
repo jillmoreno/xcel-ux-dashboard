@@ -376,22 +376,32 @@ describe('the walk’s Study Journey steps', () => {
  */
 describe('the course meta states one access window', () => {
   const readMeta = () => {
-    const line = screen.getByText(/Course Access Ends:/).closest('div')!.textContent ?? ''
+    const line = screen.getByText(/Course Access End/).closest('div')!.textContent ?? ''
     const date = line.match(/(\d{2})\/(\d{2})\/(\d{4})/)
-    // The spans concatenate with no space — "30 daysto complete".
+    // The spans concatenate with no space — "29 daysto complete".
     const days = line.match(/(\d+)\s*days?\s*to complete/i)
     expect(date, line).toBeTruthy()
-    expect(days, line).toBeTruthy()
+    /* ⚠ THE COUNT CAN BE A SENTENCE NOW (2026-10-20). On the last usable day
+       the row reads "Today is the last day" rather than "0 days to
+       complete", because a literal zero reads as a bug rather than as
+       urgency — so this returns 0 for that wording instead of failing on a
+       missing number. Past the date there is no count at all. */
+    const lastDay = /Today is the last day/i.test(line)
+    expect(days ?? lastDay, line).toBeTruthy()
     const [, mm, dd, yyyy] = date!
     const ends = new Date(Number(yyyy), Number(mm) - 1, Number(dd))
-    const count = Number(days![1])
+    const count = lastDay ? 0 : Number(days![1])
     /* ⚠ THE DEMO RUNS ON A FIXTURE CLOCK, not the real one, so the count
        cannot be checked against `new Date()`. What it CAN be checked
-       against is itself: ends − count is the day the window started from,
-       and every state has to agree about what day that is. Two windows is
-       exactly what makes them disagree. */
+       against is itself: the day the window started from, which every state
+       has to agree about. Two windows is exactly what makes them disagree.
+
+       ⚠ `count + 1`, NOT `count`, SINCE 2026-10-20. The row prints USABLE
+       days — expiry minus one, `resolveCeiling`'s long-standing rule, which
+       the header adopted so it would stop saying 30 over a plan built on
+       29. So today is the date less the count less one. */
     const impliedToday = new Date(ends)
-    impliedToday.setDate(impliedToday.getDate() - count)
+    impliedToday.setDate(impliedToday.getDate() - count - 1)
     return { count, line, impliedToday: impliedToday.toDateString() }
   }
 
@@ -413,9 +423,13 @@ describe('the course meta states one access window', () => {
     expect(new Set(days).size, JSON.stringify(seen, null, 2)).toBe(1)
   })
 
-  it('opens on thirty days — the stated default at Not Started', () => {
+  it('opens on twenty-nine usable days — the stated thirty-day default at Not Started', () => {
+    /* ⚠ 29, NOT 30, SINCE 2026-10-20, and the window is unchanged: the
+       control still sets thirty days of access, and the row now prints the
+       days a learner can STUDY in — the last of them is the day before
+       access dies. The pace card under it has always counted this way. */
     renderDashboard(`?demo=1&version=${END_TO_END_VERSION}&journey=full`)
-    expect(readMeta().count).toBe(30)
+    expect(readMeta().count).toBe(29)
   })
 
   it('an explicit Expires pick still wins at 0% \u2014 or the control does nothing where the demo opens', () => {
@@ -424,6 +438,10 @@ describe('the course meta states one access window', () => {
        opens on — the control would look broken at exactly the moment
        somebody first tries it. */
     renderDashboard(`?demo=1&version=${END_TO_END_VERSION}&journey=full&ff=dashboard-course-expiry:1`)
-    expect(readMeta().count).toBe(1)
+    /* One day of access leaves ZERO usable days — the row says "Today is the
+       last day", which `readMeta` reads as 0. The control is still reaching
+       the card, which is this case's subject. */
+    expect(readMeta().count).toBe(0)
+    expect(readMeta().line).toMatch(/Today is the last day/)
   })
 })

@@ -3562,7 +3562,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
          authored windows with one number, which is the cost — see
          `DEFAULT_EXPIRY` in `courseFixtures.ts`, where the reasoning and the
          At Risk consequence are written down. */
-      { value: '1', label: '1 day', description: 'Expiring tomorrow. Badges, and no study pace fits.' },
+      /* ⚠ THE ROW LIVES IN TWO PLACES — `EXPIRY_PICKER` renders the dropdown,
+         this is the catalog's copy, and a row in one and not the other is a
+         control offering a value its own catalog does not know. */
+      { value: '-3', label: 'Expired', description: 'Three days PAST the access date — the Atlas card goes charcoal, drops its count and offers Extend Course as its only CTA.' },
+      { value: '1', label: '1 day', description: 'Expiring tomorrow. Badges, and no study pace fits. On the Atlas card this is the last usable day.' },
       { value: '7', label: '7 days', description: 'Inside the warning window — the card badges.' },
       { value: '15', label: '15 days', description: 'The badge’s edge: half the 30-day enrolment window.' },
       { value: '30', label: '30 days', description: 'A full window, just outside the badge.' },

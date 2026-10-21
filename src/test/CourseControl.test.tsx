@@ -801,9 +801,15 @@ describe('the access-window control — "Expires"', () => {
    * In card's expiring-soon badge.
    */
   const def = FEATURE_FLAGS.find((f) => f.key === EXPIRY_FLAG_KEY)!
-  const DAYS = [1, 7, 15, 30, 90, 120, 400]
+  /* ⚠ `-3` LEADS THE LIST SINCE 2026-10-20 — Jillienne: "add an expired into
+     the dropdown". Expired is a NEGATIVE day count rather than a new kind of
+     value, so it flows through `chosenExpiryDays` and the access-date
+     arithmetic with no branch anywhere; the card's expired tier and its
+     Extend Course CTA fall out of the date on their own. The rows run most
+     urgent to least, which is why it is first and not last. */
+  const DAYS = [-3, 1, 7, 15, 30, 90, 120, 400]
 
-  it('offers the seven day counts, and no Automatic', () => {
+  it('offers the day counts in urgency order, and no Automatic', () => {
     expect(def.variants?.map((v) => v.value)).toEqual(DAYS.map(String))
     expect(EXPIRY_PICKER.map((o) => o.value)).toEqual(DAYS)
   })

@@ -43,9 +43,31 @@ export function AtlasPaceRingCard({
   noPace,
   readinessBelow = false,
   align = 'center',
+  expired = false,
   onCustomize,
 }: {
   percent: number
+  /**
+   * ACCESS HAS ENDED (2026-10-20, Jillienne: "when expired, all of the other
+   * things below the Course progress will not show").
+   *
+   * ⚠ IT TRUNCATES THE CARD, it does not restyle it. Everything under the
+   * dial — the pace name, the weekly goal, the standing sentence, Estimated
+   * completion, the booked exam — describes a PLAN, and there is no plan
+   * once the window has closed. The model already knew: `noPace` was
+   * printing "Not enough access left / No study pace fits in the time
+   * remaining / Extend your access to get a plan", which is three lines
+   * saying what the course card above now says in one.
+   *
+   * ⚠ WHAT STAYS IS THE DIAL, and that is the point of the state: how far
+   * the learner got is the one fact still worth showing, and it is the
+   * argument for the extension.
+   *
+   * ⚠ OPTIONAL, ABSENT IS THE DEFAULT — the End-to-End Demo's Home draws
+   * this card too and passes nothing, so Eric's versions are unchanged by
+   * construction rather than by a flag.
+   */
+  expired?: boolean
   /** Which way the column reads — see `AtlasColumnAlign`. Centre is the
    *  committed default; `left` is the design bar's other arm. */
   align?: AtlasColumnAlign
@@ -142,22 +164,47 @@ export function AtlasPaceRingCard({
          instead of outside it where the box looked lopsided.
        — With no pace at all there is no box, and the panel's own padding is
          the only thing holding that edge. */
-    <div style={readinessBelow || expected ? { ...PANEL, paddingBottom: 0 } : PANEL}>
+    <div style={!expired && (readinessBelow || expected) ? { ...PANEL, paddingBottom: 0 } : PANEL}>
       {/* ⚠ COURSE PROGRESS LEADS THE COLUMN (2026-10-16, Jillienne: "move
           course progress to the top - shift everything else down"). Where the
           learner HAS GOT TO is the first thing they want; the plan for the
           rest follows from it. It sat under Study pace only because the dial
           used to live inside that card. */}
       <section style={{ ...SECTION, alignItems: 'center' }} aria-label="Course progress">
-        <p style={eyebrow}>Course progress</p>
-        <ProgressDial percent={percent} />
+        {/* ⚠ "PROGRESS PAUSED" ONCE ACCESS HAS ENDED (2026-10-20,
+            Jillienne). "Course progress" is a neutral label for a live
+            figure; paused says the number is real and stopped, which is
+            exactly what the extension below would restart. The section's
+            `aria-label` stays "Course progress" — that names the REGION,
+            and a landmark that renames itself by its contents' state makes
+            the page change shape under a screen-reader user. */}
+        <p style={eyebrow}>{expired ? 'Progress paused' : 'Course progress'}</p>
+        {/* ⚠ ABOVE THE DIAL, NOT UNDER IT (2026-10-20, Jillienne: "when
+            expired, move this above the graph and remove the divider
+            line"). Under the dial it was the last thing on a truncated
+            card and read as a footnote; over it, it is the sentence the
+            figure then evidences — and with the Study pace section gone
+            there is nothing left for a divider to divide, so the hairline
+            goes with it rather than hanging under a single section.
+            ⚠ IT NAMES THE FIGURE THE DIAL IS SHOWING, so it reads
+            `percent` rather than carrying its own — the two cannot
+            disagree. */}
+        {expired ? (
+          <p style={SMALL}>
+            You completed <strong style={{ fontWeight: 700 }}>{Math.round(percent)}%</strong> of this course before your
+            access ended. Purchase an extension within the next {EXTENSION_GRACE_DAYS} days to pick up where you left
+            off.
+          </p>
+        ) : null}
+        <ProgressDial percent={percent} stroke={expired ? 'var(--color-neutral-800)' : undefined} />
       </section>
       {/* ⚠ A RULE UNDER COURSE PROGRESS (2026-10-16). The two sections sat on
           a 24px gap alone, which reads as spacing rather than a boundary —
           and the figure above it is a different kind of thing from the plan
           below. Unlike the one under Estimated completion, this one always
           has something on both sides of it. */}
-      <span aria-hidden style={DIVIDER} />
+      {expired ? null : <span aria-hidden style={DIVIDER} />}
+      {expired ? null : (
       <section style={SECTION} aria-label="Study pace">
         <p style={eyebrow}>Study pace</p>
         {/* ⚠ CENTRED, LIKE THE REST OF THE COLUMN'S CONTENT (2026-10-19,
@@ -308,6 +355,7 @@ export function AtlasPaceRingCard({
           <FigureRow label={exam.label} value={exam.value} note={exam.note} ruled={readinessBelow} />
         ) : null}
       </section>
+      )}
     </div>
   )
 }
@@ -383,7 +431,7 @@ function FigureRow({
 /** The ring. `role="img"` with the figure in the label, because the number
  *  inside it is drawn as three separate spans and would otherwise be read as
  *  "Course Progress 0 Complete". */
-function ProgressDial({ percent }: { percent: number }) {
+function ProgressDial({ percent, stroke }: { percent: number; stroke?: string }) {
   const pct = Math.max(0, Math.min(100, Math.round(percent)))
   const size = 149
   const r = 70
@@ -397,7 +445,13 @@ function ProgressDial({ percent }: { percent: number }) {
           cy={size / 2}
           r={r}
           fill="none"
-          style={{ stroke: 'var(--color-compass-page-button)' }}
+          /* ⚠ CHARCOAL WHEN ACCESS HAS ENDED (2026-10-20, Jillienne: "change
+             the progress color to a dark gray color instead of the blue").
+             The blue is the brand's live-and-moving colour; the same
+             `--color-neutral-800` the expired meta line and the journey
+             marks take says this figure has stopped. The TRACK behind it is
+             unchanged — it was never the brand's. */
+          style={{ stroke: stroke ?? 'var(--color-compass-page-button)' }}
           strokeWidth={6}
           strokeLinecap="round"
           /* At 0 the dash is zero-length, so the arc simply is not drawn —
@@ -427,6 +481,19 @@ function ProgressDial({ percent }: { percent: number }) {
    completion's rules were on the SECTION gap above and an 11px pad below. Same
    hairline, two different airs — so the card looked tighter at the bottom than
    in the middle. Both now read this. */
+/**
+ * THE GRACE WINDOW named in the expired message — 2026-10-20, Jillienne:
+ * "include in that message, purchase an extension within the next 30
+ * days...".
+ *
+ * ⚠ A BUSINESS RULE, NOT A DERIVATION, which is why it is a constant and not
+ * arithmetic on a date. Nothing on this page knows how long a lapsed
+ * enrolment keeps its progress; 30 is the figure given. If it ever becomes a
+ * real deadline measured from the access date it should COUNT DOWN — "within
+ * 27 days" three days after expiry — and at that point it belongs beside
+ * `usableDaysLeft` in `courseExpiry.ts` rather than here.
+ */
+const EXTENSION_GRACE_DAYS = 30
 const RULE_GAP = 24
 /* …and this is the separate, tighter one INSIDE a section — eyebrow to
    content. It is deliberately not `RULE_GAP`: that one is about rules, this

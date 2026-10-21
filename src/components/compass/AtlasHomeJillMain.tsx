@@ -60,7 +60,7 @@ import { COMPASS_BUTTON } from './compassButton'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
 import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
-import { CircleCheckSolid } from '@/icons'
+import { CircleCheckSolid, TriangleExclamation, CalendarExclamation } from '@/icons'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
 import type { NoPaceReason } from './noPaceMessage'
 import { ATLAS_PROGRESS_ORDER, atlasRungFor, isLessonRowTitle, journeyTitleFor } from './atlasProgressLadder'
@@ -80,6 +80,7 @@ import { getLicensedStepsFor, jurisdictionName } from '@/data/nyProducerRequirem
 import { defaultPreset, formatPaceDate, formatPaceDateLong, studyPace, daysUntil, dateFromIso, isoFromDate, NOT_STARTED_NIGHTS, PACE_STYLE_FLAG_KEY, PACE_STYLE_LABELS, resolvePaceStyle } from '@/lib/studyPace'
 import { paceIconFor } from './paceStyleIcon'
 import { clearExamDate, writeExamDate } from '@/data/examDateStore'
+import { courseExpiryTier, usableDaysLeft } from '@/data/courseExpiry'
 import { AtlasExamCalendar } from './AtlasExamCalendar'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import './atlasJourneyLink.css'
@@ -332,13 +333,13 @@ export function AtlasHomeJillMain({
   const paceCard = useFeatureFlag('atlas-pace-card').variant ?? 'ring'
   /* Whether the column carries Exam readiness at all — a design-bar on/off,
      see `atlas-readiness-section`. */
-  const showReadiness = useFeatureFlag('atlas-readiness-section').enabled
+  const showReadinessFlag = useFeatureFlag('atlas-readiness-section').enabled
   /* ⚠ READ UP HERE, not beside the other bar controls below, because the
      access window and the ring both need it before they are computed. It is
      the DEMO bar's Progress since 2026-10-16 (Eric's design control until
      then) — which state the module opens on, its figure, and the readiness
      band with it. */
-  const progressPick = useFeatureFlag('atlas-v3-progress').variant ?? 'not-started'
+  const progressPickRaw = useFeatureFlag('atlas-v3-progress').variant ?? 'not-started'
   // White's course-head panel, measured so Quick Links can take its height
   // (2026-10-14, Eric's request).
   const [headEl, setHeadEl] = useState<HTMLDivElement | null>(null)
@@ -396,6 +397,38 @@ export function AtlasHomeJillMain({
      for course access", 2026-10-16) and the thing to restore if Expires ever
      regains a per-state arm. */
   const accessIso = accessExpiresAt
+  /**
+   * EXPIRY IMPLIES THE LEARNER HAD STARTED (2026-10-20, Jillienne: "when
+   * expired, lets show some sort of progress as most users would have at
+   * least started the course before expiration").
+   *
+   * ⚠ IT MOVES THE RUNG, NOT THE RING. Every figure on the page comes off
+   * `progressPick` — the dial, the lesson count, which stops carry checks,
+   * the readiness band and the pace standing — so nudging the percent alone
+   * would have printed 36% over a journey with nothing ticked and a lesson
+   * row still reading 0 of 36. One substitution, at the source, and all of
+   * them move together.
+   *
+   * ⚠ `developing`, NOT `on-track`. 14% is barely through the door; the
+   * story expiry tells is a learner who was working and ran out of window,
+   * which 36% reads as. One word to change if that is the wrong register.
+   *
+   * ⚠ THE COST, STATED: the Progress dropdown still says "Not Started 0%"
+   * while the card shows 36%, because a stored variant cannot tell a
+   * deliberate pick from the default. An explicit Not Started + Expired is
+   * the one combination a reviewer cannot reach. The alternative is an
+   * `expired` rung on the Progress picker itself — the ladder already has
+   * one, off the picker — which is a demo-bar decision rather than a card's.
+   */
+  const accessExpired = (daysUntil(accessIso, today) ?? 1) <= 0
+  /* ⚠ READINESS GOES WITH THE PLAN (2026-10-20, Jillienne: "when expired,
+     all of the other things below the Course progress will not show"). It
+     reads how ready the learner is for an exam they can no longer sit from
+     here, and it sits in the column the pace card just truncated — leaving
+     it would put a readiness dial under a card that stops at "purchase an
+     extension". The FLAG is untouched; only this state hides it. */
+  const showReadiness = showReadinessFlag && !accessExpired
+  const progressPick = accessExpired && progressPickRaw === 'not-started' ? 'developing' : progressPickRaw
   /* HOW HARD THIS LEARNER STUDIES — the Demo Controls' Pacing axis
      (2026-10-20). `STYLE_FACTORS` has been a `studyPace` input since the
      module was ported and had never been wired to a control on any surface;
@@ -521,12 +554,127 @@ export function AtlasHomeJillMain({
      note at the ring — but it still decides the journey's completed shape. */
   const completedView = progressPick === 'completed'
   const ringAtZero = paceCard === 'ring' && atZeroProgress
-  const rawAccessDays = accessIso ? Math.max(0, daysUntil(accessIso, today) ?? 0) : null
+  /* ⚠ THE LAST USABLE DAY, NOT THE DAYS UNTIL THE DATE — 2026-10-20. This read
+     `Math.max(0, daysUntil(accessIso, today))`, one more than the number the
+     pace card directly below it plans against: `resolveCeiling` has always
+     held that "finishing on the day access dies is not finishing", so a
+     header saying "30 days to complete" sat over a plan with 29 to work in.
+     `usableDaysLeft` is that one rule, and the model reads it too now.
+
+     ⚠ CLAMPED HERE, SIGNED THERE. The helper returns a negative once access
+     has ended, which `resolveCeiling` needs; a printed count does not. */
+  const rawAccessDays = accessIso ? Math.max(0, usableDaysLeft(accessIso, today) ?? 0) : null
   /* ⚠ DERIVED, NOT OVERRIDDEN (2026-10-19). It was `atZeroProgress ? 30 :
      rawAccessDays` — a count that ignored the date printed beside it and the
      window the pace card read. The 30 lives in `accessIso` now, so this is
      arithmetic on one window again and the three figures cannot disagree. */
   const accessDays = rawAccessDays
+  /**
+   * HOW URGENT THAT DEADLINE IS — 2026-10-20, carrying the four-arm treatment
+   * across from `hybrid-course-expiry`, which proved it on Hybrid — Pacing
+   * Exploration on 2026-10-07.
+   *
+   * ⚠ NO SECOND CONTROL. Hybrid's version is a design-bar flag that picks a
+   * date to suit the arm, because that Home has no real window to read. This
+   * one is DERIVED from `accessIso` — the Expires demo control already offers
+   * 1, 7 and 15-day arms, so every tier is reachable from the bar a
+   * stakeholder is already using, and the colour cannot contradict the date.
+   *
+   * ⚠ COMPLETED NEVER WARNS, and the ladder's own 100% arm says so too — see
+   * `completedView` below, which replaces the count with the congratulation
+   * and runs first. `courseExpiryTier` enforces the same ruling from the data
+   * side, so neither path can warn a learner who has finished.
+   */
+  const expiryTier = courseExpiryTier(
+    { status: completedView ? 'completed' : 'in-progress', expiresAt: accessIso },
+    today,
+  )
+  /* ⚠ THE ICON IS PART OF THE STATE, NOT DECORATION — Hybrid's rule, and the
+     reason it is worth carrying: it is the cue that survives a greyscale
+     screen, where the tone alone says nothing at all. */
+  const expiryIcon =
+    expiryTier === 'soon' ? (
+      <TriangleExclamation size={13} aria-hidden />
+    ) : expiryTier === 'urgent' || expiryTier === 'expired' ? (
+      <CalendarExclamation size={13} aria-hidden />
+    ) : null
+  const expiryTone =
+    expiryTier === 'soon'
+      ? 'var(--color-warning-700)'
+      : expiryTier === 'urgent'
+        ? 'var(--color-error-600)'
+        : expiryTier === 'expired'
+          ? 'var(--color-neutral-800)'
+          : null
+  /* ⚠ `color: inherit`, NOT A SECOND TONE. Both styles pin their own colour,
+     so the row's `color` would not reach them and the warning would stop at
+     the icon. Inheriting keeps ONE definition of the tier's colour. */
+  const metaLabel = (base: CSSProperties) => (expiryTone ? { ...base, color: 'inherit' } : base)
+  /* ⚠ ZERO IS "TODAY IS THE LAST DAY", NOT "0 DAYS" (2026-10-20). On the day
+     before access dies there are no further days to study in, and a literal
+     "0 days to complete" reads as an error rather than as urgency. Every
+     other count keeps the wording the card has always used. */
+  /**
+   * EXTEND COURSE — the way out of the state the warning describes
+   * (2026-10-20, Jillienne).
+   *
+   * ⚠ IT APPEARS AT THE SAME MOMENT THE WARNING DOES, which is why it reads
+   * `expiryTier` rather than a day count of its own: "seven days or less,
+   * including expired" IS the tier, and two thresholds for one idea is how
+   * an amber line comes to sit above a card with nothing to act on.
+   *
+   * ⚠ SECONDARY IN AMBER OR RED, PRIMARY WHEN EXPIRED. Before the date it is
+   * the quieter of two actions — the learner can still study, and Begin
+   * Course is the thing to do. After it, Begin Course is gone and this is
+   * the only action left, so it takes the primary treatment rather than
+   * shouting in a red the card no longer needs: the charcoal meta line is
+   * already carrying the bad news.
+   *
+   * ⚠ IT DOES NOTHING YET, deliberately, and `LINKS_OFF` is not the reason.
+   * What extending actually DOES — a price, a term, a confirmation — is a
+   * product decision nobody has taken, exactly as Hybrid's `expired` arm
+   * left "what can you still do?" open. A button that draws and waits is
+   * honest about that; one wired to a guess would not be.
+   */
+  const extendCta =
+    expiryTier === 'normal' ? null : expiryTier === 'expired' ? (
+      <button type="button" className="cre-compass-primary cre-compass-btn-primary" onClick={NO_LINK} style={HEADER_PRIMARY}>
+        Purchase Extension
+      </button>
+    ) : (
+      /* ⚠ NOT `cre-compass-secondary` — that class carries the BRAND's
+         outline colour (XCEL's #9a1b1e, and `!important` on the border),
+         which would paint an amber warning in the brand's crimson and a red
+         one in a crimson close enough to look like a rendering bug. The
+         outline is built from `expiryTone` instead, so the button, the icon
+         and the line above them are one colour by construction. */
+      <button
+        type="button"
+        onClick={NO_LINK}
+        style={{
+          ...HEADER_BUTTON,
+          fontWeight: 700,
+          color: expiryTone ?? undefined,
+          borderColor: expiryTone ?? undefined,
+          background: 'transparent',
+        }}
+      >
+        Purchase Extension
+      </button>
+    )
+  /* ⚠ THE EYEBROW NAMES THE STATE ONCE ACCESS HAS ENDED (2026-10-20,
+     Jillienne, on "CURRENT COURSE": "lets make that change to Expired").
+     It is the card's first line, and "Current course" over a closed window
+     is the one label on the card still claiming the course is live.
+
+     ⚠ THE SECTION'S `aria-label` STAYS "Current course". That names the
+     REGION — what a screen-reader user is moving into — and renaming a
+     landmark by its contents' state makes the page's structure change shape
+     under them. The visible eyebrow is the state; the landmark is the
+     place. */
+  const courseEyebrow = expiryTier === 'expired' ? 'Expired' : 'Current course'
+  const daysToCompleteCopy =
+    accessDays === 0 ? 'Today is the last day' : `${accessDays} ${accessDays === 1 ? 'day' : 'days'}`
   /* EXPIRES · DAYS TO COMPLETE, under the course title (Figma 368:519,
      2026-10-13, Eric's request). The course's own access end and the days
      left to it — the figures the Access tile reads — not the frame's sample
@@ -536,21 +684,35 @@ export function AtlasHomeJillMain({
   const courseMeta =
     expiresOn && accessDays != null ? (
       <div
-        style={
-          onWhite
+        style={{
+          ...(onWhite
             ? // Primary 200 rules on White's Primary 100 panel (2026-10-14),
               // where the card's own 100 would not show.
               { ...META_ROW, borderTop: '1px solid var(--color-primary-200)', borderBottom: '1px solid var(--color-primary-200)' }
-            : META_ROW
-        }
+            : META_ROW),
+          /* ⚠ THE WHOLE ROW TAKES THE TONE, label included. Colouring only the
+             count leaves "Course Access Ends:" in grey beside a red figure,
+             which reads as a styling slip rather than a warning. `color`
+             alone — the rules and the ground stay as they are, because a
+             tinted panel would be a second, louder signal for the same
+             fact. */
+          ...(expiryTone ? { color: expiryTone } : null),
+        }}
       >
+        {/* The state's icon leads the line — see `expiryIcon`. */}
+        {expiryIcon ? (
+          <span aria-hidden style={{ display: 'inline-flex', alignItems: 'center', marginRight: -2 }}>{expiryIcon}</span>
+        ) : null}
         <span style={META_PAIR}>
           {/* "Course Access Ends:" on White (2026-10-14, Eric's request). */}
-          <span style={META_LABEL}>{onWhite ? 'Course Access Ends:' : 'Expires:'}</span>
-          <span style={META_VALUE}>
+          <span style={metaLabel(META_LABEL)}>
+            {expiryTier === 'expired' ? 'Course Access Ended:' : onWhite ? 'Course Access Ends:' : 'Expires:'}
+          </span>
+          <span style={metaLabel(META_VALUE)}>
             {expiresOn.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
-            {/* Inside the value, so no gap before it; in the label's weight. */}
-            {onWhite ? <span style={META_LABEL}>,</span> : null}
+            {/* Inside the value, so no gap before it; in the label's weight.
+                Dropped once the date has passed — nothing follows it. */}
+            {onWhite && expiryTier !== 'expired' ? <span style={metaLabel(META_LABEL)}>,</span> : null}
           </span>
         </span>
         {/* ⚠ AT 100% IT CONGRATULATES INSTEAD OF COUNTING (2026-10-19,
@@ -565,23 +727,27 @@ export function AtlasHomeJillMain({
             {onWhite ? null : <span aria-hidden style={META_DIVIDER} />}
             <span style={META_VALUE}>Congrats! You have completed this course.</span>
           </span>
+        ) : expiryTier === 'expired' ? (
+          /* ⚠ NO COUNT PAST THE DATE (2026-10-20). "0 days to complete" is a
+             countdown that has run out and still reads as a countdown; once
+             access has ended the date is the whole fact, and the only thing
+             worth adding is what to do about it — which is a product
+             question (renew? certificates?) this does not answer, exactly as
+             Hybrid's `expired` arm deliberately did not. */
+          null
         ) : onWhite ? (
           /* White reads as one line — "…05/29/2026, 18 days to complete" —
              with no divider (2026-10-14, Eric's request). */
           <span style={{ ...META_PAIR, marginLeft: -4 }}>
-            <span style={META_VALUE}>
-              {accessDays} {accessDays === 1 ? 'day' : 'days'}
-            </span>
-            <span style={META_LABEL}>to complete</span>
+            <span style={metaLabel(META_VALUE)}>{daysToCompleteCopy}</span>
+            {accessDays === 0 ? null : <span style={metaLabel(META_LABEL)}>to complete</span>}
           </span>
         ) : (
           <>
             <span aria-hidden style={META_DIVIDER} />
             <span style={META_PAIR}>
-              <span style={META_LABEL}>Days to complete:</span>
-              <span style={META_VALUE}>
-                {accessDays} {accessDays === 1 ? 'day' : 'days'}
-              </span>
+              <span style={metaLabel(META_LABEL)}>{accessDays === 0 ? 'Access:' : 'Days to complete:'}</span>
+              <span style={metaLabel(META_VALUE)}>{daysToCompleteCopy}</span>
             </span>
           </>
         )}
@@ -836,7 +1002,34 @@ export function AtlasHomeJillMain({
             tabs hidden), with no
             rule under it (2026-10-14, Eric's request). On WIP the wrapper is
             `display: contents`, so nothing about WIP's layout moves. */}
-        <div ref={onWhite ? setHeadEl : undefined} style={onWhite ? WHITE_COURSE_HEAD : { display: 'contents' }}>
+        {/* ⚠ THE PANEL GOES GREY WHEN ACCESS HAS ENDED (2026-10-20,
+            Jillienne: "lets change the background color of that container
+            when expired to be a lighter gray style"). Primary 100 is the
+            brand's "this is your live course" ground; a closed window should
+            not wear it.
+            ⚠ A GREY HEADER STRIP CARRIED THE ACCESS LINE HERE FOR ABOUT TEN
+            MINUTES THE SAME EVENING, and was reverted on sight ("i hate the
+            header. revert that and move the expiration line back where it
+            was"). The line is under the title, where it has always been;
+            only the ground changed. */}
+        <div
+          ref={onWhite ? setHeadEl : undefined}
+          style={
+            onWhite
+              ? expiryTier === 'expired'
+                ? /* ⚠ THE COURSE PROGRESS CARD'S OWN GROUND (2026-10-20,
+                     Jillienne: "have it match the same background as the
+                     course progress"). Neutral 100 for a few minutes before
+                     it — a cooler, flatter grey that read as a different
+                     surface sitting above the column rather than the same
+                     card in another state. `--color-atlas-tan-100` is what
+                     the left column is drawn on, so the expired card and the
+                     dial beside it are now one material. */
+                  { ...WHITE_COURSE_HEAD, background: 'var(--color-atlas-tan-100)' }
+                : WHITE_COURSE_HEAD
+              : { display: 'contents' }
+          }
+        >
         {/* No tabs on White (2026-10-14, Eric's request). */}
         {SHOW_COURSE_TABS && !onWhite && tabs.length > 1 ? (
           <AtlasCourseTabs courses={tabs} activeId={activeTab?.id ?? path.id} onSelect={selectCourse} onAllCourses={onAllCourses ?? (() => go('courses'))} />
@@ -857,6 +1050,9 @@ export function AtlasHomeJillMain({
             onBegin={completedView ? onBeginCta : LINKS_OFF ? NO_LINK : onBegin}
             beginLabel={beginLabel}
             meta={courseMeta}
+            /* Layout 2 is one click away on the cover — the two must not
+               disagree about whether the course is current. */
+            eyebrow={courseEyebrow}
           />
         ) : (
         <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
@@ -875,7 +1071,7 @@ export function AtlasHomeJillMain({
           ) : null}
           <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 15, justifyContent: 'center' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <p style={EYEBROW}>Current course</p>
+              <p style={EYEBROW}>{courseEyebrow}</p>
               <h2 className="cre-compass-course-title cre-atlas-home-course-title cre-atlas-home-v2-course-title" style={TITLE}>
                 {shownTitle}
               </h2>
@@ -886,7 +1082,22 @@ export function AtlasHomeJillMain({
                 as the outline button, and Begin Course, MOVED here from the
                 Study Journey's current stop. */}
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              {LINKS_OFF || onOverview ? (
+              {/* ⚠ EXTEND COURSE LEADS THE ROW, from a week out (2026-10-20,
+                  Jillienne: "for 7 days or less, (including expired), we need
+                  to add a secondary button to the left of course overview").
+                  It is the action the warning above it is ARGUING for, so it
+                  sits where the eye lands first and wears the tier's own
+                  colour — the amber or the red is one decision, read twice. */}
+              {extendCta}
+              {/* ⚠ COURSE OVERVIEW GOES WITH BEGIN COURSE ONCE ACCESS HAS
+                  ENDED (2026-10-20, Jillienne: "when expired, course overview
+                  will also not be available bc they will not have access any
+                  longer"). It read as the safe one to keep — a description
+                  rather than the course — but it opens Anjani's Compass on
+                  the walk, which is the course. Expiry takes the whole card's
+                  actions and leaves Extend, which is why Extend is primary
+                  there. */}
+              {expiryTier !== 'expired' && (LINKS_OFF || onOverview) ? (
                 <button
                   type="button"
                   className="cre-compass-secondary cre-atlas-home-secondary"
@@ -898,6 +1109,15 @@ export function AtlasHomeJillMain({
                   Course Overview
                 </button>
               ) : null}
+              {/* ⚠ NO BEGIN COURSE ONCE ACCESS HAS ENDED (2026-10-20,
+                  Jillienne: "when expired, the other cta will not be visible
+                  on the card"). It is the button the state has taken away —
+                  there is nothing to begin or resume — and its absence is
+                  why Extend wears the PRIMARY colour there rather than the
+                  charcoal of the meta line: the card would otherwise have no
+                  primary action at all. Course Overview stays: it describes
+                  the course, which expiry does not change. */}
+              {expiryTier === 'expired' ? null : (
               <button
                 type="button"
                 className="cre-compass-primary cre-compass-btn-primary"
@@ -912,6 +1132,7 @@ export function AtlasHomeJillMain({
                     100% (2026-10-19) — see `beginLabel`. */}
                 {beginLabel}
               </button>
+              )}
             </div>
           </div>
         </div>
@@ -1083,6 +1304,9 @@ export function AtlasHomeJillMain({
                       })
                 }
                 readinessBelow={showReadiness}
+                /* Everything under the dial describes a plan, and there is
+                   none once the window has closed — see the card's note. */
+                expired={expiryTier === 'expired'}
                 align={columnAlign}
                 /* ⚠ "HERE" GOES TO COMPASS'S STUDY PLANNER (2026-10-16,
                    Jillienne: "have the 'here' be a link to the study planner
@@ -1312,6 +1536,7 @@ export function AtlasHomeJillMain({
                     stop={stop}
                     current={i === currentRowIdx}
                     done={i < doneRows}
+                    expired={expiryTier === 'expired'}
                     last={i === journeyStops.length - 1}
                     onOpen={onOpenStop && !LINKS_OFF ? () => onOpenStop(stop.id) : undefined}
                     // On Track 14% only (2026-10-09, Eric): the current stop
@@ -1473,12 +1698,29 @@ function JourneyRow({
   stop,
   current,
   done = false,
+  expired = false,
   last,
   onOpen,
   progressDetail,
 }: {
   stop: JourneyStop
   current: boolean
+  /**
+   * ACCESS HAS ENDED, so none of these stops can be opened (2026-10-20,
+   * Jillienne: "the Complete coursework section will also need to be shown
+   * as Calendar-exclamation icon instead of the open circles that they could
+   * select").
+   *
+   * ⚠ IT REPLACES THE MARK, IT DOES NOT ADD ONE. The slot holds exactly one
+   * glyph and the row is in exactly one state — the same rule the padlock
+   * was given when it replaced the ring on 2026-10-15. A calendar-
+   * exclamation beside a ring would be two claims about one row.
+   *
+   * ⚠ DONE STILL OUTRANKS IT, for the reason a padlock does not survive a
+   * finished stop either: work the learner completed stays completed when
+   * the window closes, and a warning beside it would say otherwise.
+   */
+  expired?: boolean
   /** Every stop behind a completed course. Draws the solid check in place of
    *  the outline ring — and outranks `locked`, because a course you finished
    *  has nothing still shut. */
@@ -1497,11 +1739,25 @@ function JourneyRow({
     return (
       <li style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
         <span aria-hidden style={{ width: 14, flex: 'none', alignSelf: 'stretch', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, paddingTop: 7 }}>
-          <span style={MARK_CURRENT} />
+          {/* The live stop is a stop like any other once access has ended. */}
+          {expired ? <CalendarExclamation size={13} aria-hidden style={EXPIRED_MARK} /> : <span style={MARK_CURRENT} />}
           {last ? null : <span style={SPINE} />}
         </span>
         <span style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <span style={{ ...BODY_TEXT, padding: '5px 0 3px', fontSize: 13, lineHeight: '18px', fontWeight: 600, color: 'var(--color-atlas-home-current-stop, var(--color-compass-page-button))' }}>
+          {/* Same flattening as the plain row below — see its note. This
+              branch is reached with Progress past 0% AND access expired. */}
+          <span
+            style={{
+              ...BODY_TEXT,
+              padding: '5px 0 3px',
+              fontSize: 13,
+              lineHeight: '18px',
+              fontWeight: expired ? 400 : 600,
+              color: expired
+                ? 'var(--color-text-secondary)'
+                : 'var(--color-atlas-home-current-stop, var(--color-compass-page-button))',
+            }}
+          >
             {name}
             {total ? (
               <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--color-primary-900)' }}>
@@ -1536,6 +1792,12 @@ function JourneyRow({
             and a padlock beside a completed stop reads as a bug. */}
         {done ? (
           <CircleCheckSolid size={14} aria-hidden style={DONE_MARK} />
+        ) : expired ? (
+          /* ⚠ ABOVE `current` AND `locked` BOTH. Expiry is the strongest
+             claim a row can carry short of being finished: a dot saying
+             "you are here" or a padlock saying "not yet" are both wrong
+             once the window has closed on every one of them. */
+          <CalendarExclamation size={13} aria-hidden style={EXPIRED_MARK} />
         ) : current ? (
           <span style={MARK_CURRENT} />
         ) : stop.locked ? (
@@ -1560,7 +1822,11 @@ function JourneyRow({
            stay inline: the check carries a finished row's state, and
            darkening its text too would make a finished list shout louder
            than the live one. */
-        className={current ? 'cre-atlas-journey-link' : undefined}
+        /* ⚠ NOT A LINK ONCE ACCESS HAS ENDED. The class is blue with a hover
+           underline; beside a calendar-exclamation that says the stop cannot
+           be opened, it would be the one thing on the row still inviting a
+           click. */
+        className={current && !expired ? 'cre-atlas-journey-link' : undefined}
         style={{
           ...BODY_TEXT,
           flex: '1 1 0',
@@ -1568,8 +1834,15 @@ function JourneyRow({
           fontSize: 13,
           lineHeight: '18px',
           paddingTop: current ? 5 : 0,
-          fontWeight: current ? 600 : 400,
-          ...(current ? null : { color: 'var(--color-text-secondary)' }),
+          /* ⚠ EXPIRY FLATTENS THE ROW'S EMPHASIS (2026-10-20, Jillienne:
+             "make the title not bold so it matches all the things below").
+             SemiBold and the primary ink are how this row says "you are
+             here"; with the window closed nobody is anywhere, and one bold
+             dark line above five grey ones reads as the live stop it is no
+             longer. Weight AND colour, because either alone still stands
+             out. The padding stays — it aligns the text to a taller mark. */
+          fontWeight: current && !expired ? 600 : 400,
+          ...(current && !expired ? null : { color: 'var(--color-text-secondary)' }),
         }}
       >
         {stop.title}
@@ -2346,6 +2619,7 @@ function WhiteStyleHead({
   onBegin,
   beginLabel,
   meta,
+  eyebrow = 'Current course',
 }: {
   cover?: string
   title: string
@@ -2355,6 +2629,9 @@ function WhiteStyleHead({
   beginLabel: string
   /** The Expires · Days to complete row, under the title. */
   meta?: ReactNode
+  /** "Expired" once access has ended — see `courseEyebrow` at the call site.
+   *  Defaults to the label this layout has always carried. */
+  eyebrow?: string
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -2370,7 +2647,7 @@ function WhiteStyleHead({
           </button>
         ) : null}
         <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'flex-end' }}>
-          <p style={EYEBROW}>Current course</p>
+          <p style={EYEBROW}>{eyebrow}</p>
           <h2 className="cre-compass-course-title cre-atlas-home-course-title cre-atlas-home-v2-course-title" style={TITLE}>
             {title}
           </h2>
@@ -2605,6 +2882,11 @@ const MARK_CURRENT: CSSProperties = {
  * should not outweigh the words it annotates — the same call Hybrid's
  * `MARK_LOCK` records for the same glyph.
  */
+/* ⚠ THE EXPIRED MARK TAKES THE META LINE'S CHARCOAL, not the error red the
+   urgent tier uses. Fourteen of these down one column in red would read as
+   fourteen problems; the state is "closed", and the card's own line above
+   is where the news is delivered once. */
+const EXPIRED_MARK: CSSProperties = { flex: 'none', color: 'var(--color-neutral-800)' }
 const LOCK_MARK: CSSProperties = {
   width: 12,
   height: 12,

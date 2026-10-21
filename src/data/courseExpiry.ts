@@ -113,6 +113,78 @@ export function courseExpiryState(course: ExpiryInput, today: Date): CourseExpir
 }
 
 /**
+ * THE LAST DAY A LEARNER CAN ACTUALLY STUDY IN — expiry minus one.
+ *
+ * ⚠ THE RULE ALREADY EXISTED, IN TWO PLACES, AND THEY DISAGREED WITH A THIRD
+ * (2026-10-20). `resolveCeiling` in `src/lib/studyPace.ts` settled it —
+ * "finishing on the day access dies is not finishing" — and `HybridPacingHome`
+ * follows it; the Atlas Home's course card did not, so a header reading "30
+ * days to complete" sat directly above a plan built on 29. One definition,
+ * here, because this module is the one both of those already import from.
+ *
+ * Null when there is no date or it will not parse.
+ *
+ * ⚠ SIGNED, AND IT HAS TO BE. Zero is the last usable day and NEGATIVE means
+ * access ended that many days ago — which `resolveCeiling` depends on: it
+ * feeds this straight into `daysToCeiling` and `hardEndIso`, so clamping at
+ * zero would put an expired course's hard end at today and tell
+ * `noPaceMessage` the deadline is still ahead. Callers that PRINT the number
+ * clamp it themselves; the model needs the sign.
+ */
+export function usableDaysLeft(expiresAt: string | undefined, today: Date): number | null {
+  const days = daysUntilIso(expiresAt, today)
+  return days == null ? null : days - 1
+}
+
+/**
+ * HOW URGENT THE ACCESS DEADLINE IS — 2026-10-20, Jillienne, applying to the
+ * Atlas Home the four-arm treatment her Hybrid — Pacing Exploration proved on
+ * 2026-10-07 (`hybrid-course-expiry`).
+ *
+ * ⚠ DERIVED, WHERE HYBRID'S WAS FORCED. That control picks a date to suit the
+ * arm (`expiryDays = { soon: 5, urgent: 2, expired: -3 }`) because the version
+ * it lives on has no real window to read. The Atlas Home does: the Expires
+ * demo control drives `accessIso`, and it already offers 1, 7 and 15-day arms,
+ * so the tiers fall out of the date rather than needing a second control that
+ * could contradict it.
+ *
+ * ⚠ COUNTED IN USABLE DAYS, NOT DAYS-UNTIL. "Under seven days" has to mean
+ * seven days you can study in, or the warning fires a day before the figure
+ * beside it justifies.
+ *
+ * ⚠ A COMPLETED COURSE NEVER WARNS — ruling 5, the same one `courseExpiryState`
+ * checks first and for the same reason. The caller passes `status`.
+ *
+ * ⚠ THIS IS NOT `courseExpiryState`, AND THE TWO ARE NOT RIVALS. That one
+ * answers a CATALOGUE question — should this card in a grid of thirteen wear a
+ * badge? — over a per-course window that defaults to 60 days and is clamped to
+ * half the enrolment period. This answers a HERO question: the learner is
+ * looking at one course, and how close is the end? Same module, same date
+ * helpers, two different spans on purpose.
+ */
+export type CourseExpiryTier = 'normal' | 'soon' | 'urgent' | 'expired'
+
+/** Inside a week of usable study time — amber. */
+export const EXPIRY_SOON_DAYS = 7
+/** Two days or fewer — red. The last usable day itself is 0, and urgent. */
+export const EXPIRY_URGENT_DAYS = 2
+
+export function courseExpiryTier(
+  course: Pick<ExpiryInput, 'status' | 'expiresAt'>,
+  today: Date,
+): CourseExpiryTier {
+  if (course.status === 'completed') return 'normal'
+  const days = daysUntilIso(course.expiresAt, today)
+  if (days == null) return 'normal'
+  // The date itself is the day access dies, so reaching it IS expired.
+  if (days <= 0) return 'expired'
+  const usable = Math.max(0, days - 1)
+  if (usable <= EXPIRY_URGENT_DAYS) return 'urgent'
+  if (usable <= EXPIRY_SOON_DAYS) return 'soon'
+  return 'normal'
+}
+
+/**
  * `'yyyy-mm-dd'` → `'mm/dd/yyyy'`, zero-padded, 4-digit year — the ONE milestone
  * format both `Completed:` and `Expired:` use (decision 32). Returns the input
  * unchanged if it isn't an ISO date, so a malformed fixture shows something

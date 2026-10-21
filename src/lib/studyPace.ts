@@ -1,4 +1,4 @@
-import { daysUntilIso } from '@/data/courseExpiry'
+import { daysUntilIso, usableDaysLeft } from '@/data/courseExpiry'
 
 /**
  * Study Pace — the derivation, as pure functions. No React, no fixtures.
@@ -254,9 +254,13 @@ export function resolveCeiling(input: PaceInput): {
   binding: Binding
   daysToCeiling: number
 } {
-  const accessDays = input.accessExpiresAt ? daysUntilIso(input.accessExpiresAt, input.today) : null
   const examDays = input.examDate ? daysUntilIso(input.examDate, input.today) : null
-  const accessEnd = accessDays == null ? null : accessDays - 1
+  /* ⚠ THE MINUS ONE MOVED OUT, 2026-10-20 — `usableDaysLeft` in
+     `courseExpiry.ts`, which this module already imports its date helpers
+     from. Identical arithmetic; the point is that the Atlas Home's course
+     header now reads the SAME function instead of its own subtraction, which
+     is how it came to print 30 over a plan built on 29. */
+  const accessEnd = usableDaysLeft(input.accessExpiresAt, input.today)
   const examEnd = examDays == null ? null : examDays - EXAM_BUFFER_DAYS
 
   if (accessEnd == null && examEnd == null) {
