@@ -354,3 +354,35 @@ export function atlasRegisteredVariantKeys(): Record<string, string[]> {
     Object.entries(ATLAS_VARIANT_RENDERS).map(([id, renders]) => [id, Object.keys(renders)]),
   )
 }
+
+/**
+ * THE SAME COMPONENT AT SEVERAL WIDTHS — the Design Spec's "Layout" claim,
+ * shown instead of asserted.
+ *
+ * ⚠ 2026-10-21, Jillienne: "show the responsiveness". The Layout note said the
+ * head reflows and the title column absorbs the width; a developer had to take
+ * that on trust, and the one time it was checked the figure in it was wrong by
+ * 126px. A render at three widths is the same claim a reader can verify in a
+ * glance — and it is the REAL component, so it cannot drift from the note
+ * beside it the way a screenshot would.
+ *
+ * Returns the component's FIRST registered render (its default state), because
+ * this is about width rather than state: a reader comparing three columns
+ * should be reading the reflow, not three different cards.
+ */
+export function atlasHandoffResponsiveRender(componentId: string): ReactNode | undefined {
+  const renders = ATLAS_VARIANT_RENDERS[componentId]
+  if (!renders) return undefined
+  /* ⚠ THE MOST CROWDED STATE, not the first one. The default course head has
+     two buttons and never wraps at any width this demo shows — so defaulting to
+     it drew three identical frames and demonstrated nothing. Width only matters
+     in the state that asks the most of it. */
+  const pick = ATLAS_RESPONSIVE_VARIANT[componentId]
+  const render = (pick && renders[pick]) ?? Object.values(renders)[0]
+  return render ? createElement(AtlasSurface, null, render()) : undefined
+}
+
+/** Which state each component's responsive demo should draw. */
+const ATLAS_RESPONSIVE_VARIANT: Record<string, string> = {
+  'atlas-home-course-head': 'Expires soon',
+}

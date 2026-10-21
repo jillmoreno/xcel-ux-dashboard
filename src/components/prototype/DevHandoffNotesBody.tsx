@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { useAtlasBrand } from './useAtlasBrand'
 import { atlasSurfaceAttrs, ATLAS_SURFACE_VARS } from './atlasSurfaceAttrs'
+import { ResponsiveWidthDemo } from './ResponsiveWidthDemo'
 import type {
   DevHandoffDesignSpec,
   DevHandoffState,
@@ -17,6 +18,7 @@ import {
   pointerLocationStyle,
 } from './devHandoffStyles'
 import {
+  atlasHandoffResponsiveRender,
   atlasHandoffVariantRender,
   atlasHandoffIsFullWidth,
 } from './atlasHandoffPreviewsRegistry'
@@ -295,10 +297,20 @@ const variantAbsentStyle: CSSProperties = {
  * Nothing here is authored — the values cannot drift from `tokens.css`, because
  * they ARE `tokens.css`, read at render.
  */
-export function DevHandoffDesignSpecBody({ spec }: { spec: DevHandoffDesignSpec }) {
+export function DevHandoffDesignSpecBody({
+  spec,
+  componentId,
+}: {
+  spec: DevHandoffDesignSpec
+  /** Drives the responsive demonstration under "Layout" — the real component at
+   *  three widths, where one is registered. */
+  componentId?: string
+}) {
   const { brand } = useAtlasBrand()
   const scope = useRef<HTMLDivElement | null>(null)
   const [resolved, setResolved] = useState<Record<string, string>>({})
+
+  const responsiveRender = componentId ? atlasHandoffResponsiveRender(componentId) : undefined
 
   const names = useMemo(
     () => [...new Set(spec.tokens.flatMap((t) => t.token.match(/--[a-z0-9-]+/g) ?? []))],
@@ -346,9 +358,10 @@ export function DevHandoffDesignSpecBody({ spec }: { spec: DevHandoffDesignSpec 
         </div>
       </HandoffBlock>
 
-      {spec.responsive && spec.responsive.length > 0 && (
+      {((spec.responsive && spec.responsive.length > 0) || responsiveRender) && (
         <HandoffBlock label="Layout">
-          <BulletList items={spec.responsive} />
+          {spec.responsive && spec.responsive.length > 0 && <BulletList items={spec.responsive} />}
+          {responsiveRender ? <ResponsiveWidthDemo render={responsiveRender} /> : null}
         </HandoffBlock>
       )}
 

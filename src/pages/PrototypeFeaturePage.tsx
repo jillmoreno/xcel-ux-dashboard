@@ -1368,7 +1368,9 @@ function UiComponentDetail({
         'spec',
         'Design Spec',
         'Every token with its resolved value, read live from tokens.css in the Atlas context the component is drawn in — so the spec cannot disagree with the render above it.',
-        component.designSpec ? <DevHandoffDesignSpecBody spec={component.designSpec} /> : null,
+        component.designSpec ? (
+          <DevHandoffDesignSpecBody spec={component.designSpec} componentId={component.id} />
+        ) : null,
         'designSpec',
       )}
 

@@ -1459,8 +1459,8 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
               { role: 'Buttons', token: '.cre-compass-primary / .cre-compass-secondary · --font-body' },
             ],
             responsive: [
-              'RESPONSIVE, not fixed: the cover holds its 256px and the title column takes everything left over (`flex: 1 1 0`, `min-width: 0`), so a long title wraps inside the column instead of widening the card. The action row wraps when three buttons will not fit on one line.',
-              'Padding and margins, measured off the Final Prototype — 40px inset all round on the panel, 32px between the cover and the title column, 15px between the title block and the action row, 10px between buttons, 32px below the panel before the progress row. Corners: 20px on the panel, 12px on the cover.',
+              'RESPONSIVE, and the rendered proof is below. The cover holds its 256px; the title column carries a 436px basis — what its three buttons measure — so it keeps the width its own content needs instead of being the first thing squeezed. ⚠ FOUR PIXELS OF HEADROOM at the design width: the buttons measure 436 in a 440 column, so a longer label on any of the three puts the action row over onto a second line. Below about 796px the cover and the column stack rather than the column collapsing.',
+              'Padding and margins, measured off the Final Prototype — 40px inset all round on the panel, 24px between the cover and the title column, 15px between the title block and the action row, 8px between buttons, 32px below the panel before the progress row. Corners: 20px on the panel, 12px on the cover. ⚠ THE 24 AND THE 8 WERE 32 AND 10 until 2026-10-21: the eight pixels between them are what the third button needed, and the card had no other slack — its 800 is whatever is left beside the left column.',
             ],
             sources: [
               'The FINAL PROTOTYPE is the source of truth — "Open live preview" at the top of this page. Where anything else disagrees with it, the prototype is right.',

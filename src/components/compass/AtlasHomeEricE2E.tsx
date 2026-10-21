@@ -1998,7 +1998,21 @@ export function AtlasCourseHeadRow({
         ? 'var(--color-error-600)'
         : undefined
   return (
-      <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
+      /* ⚠ 24 BETWEEN THE COVER AND THE COLUMN, down from 32 (2026-10-21,
+         Jillienne: "stretch these so the ctas do not wrap"). The panel's 720 of
+         content was 256 cover + 32 + a 432 column, and three buttons with
+         "Resume Course" need 440 — so the card was EIGHT PIXELS short and the
+         third button dropped to its own line the moment Purchase Extension
+         appeared. Measured on the running page, not inferred: the handoff
+         preview was showing the wrap because the page wraps.
+         ⚠ AND THE CARD CANNOT WIDEN — its 800 is `1128 − 296 − 32`, whatever is
+         left beside the left column, so there was no outer slack to take.
+         ⚠ THE BUTTONS DO NOT MOVE UNDER THE COVER. Giving the action row the
+         panel's full width also fixes the wrap and was tried first; it reads as
+         a footer under the image instead of the title's own actions, and it
+         shortens the cover by the height it gives up. The gap was the thing
+         with slack in it. */
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'stretch' }}>
         {cover ? (
           <button
             type="button"
@@ -2007,12 +2021,31 @@ export function AtlasCourseHeadRow({
             // 12 corners on Eric/Atlas White, 8 under the card’s 20 (2026-10-14)
             // — and the 260 column's width less the panel's padding there, so
             // its right edge lines up with that column below.
-            style={{ ...COVER_FRAME, ...COVER_TOGGLE, ...(onWhite ? { borderRadius: 12, width: V3_LEFT_W - WHITE_HEAD_PAD } : null) }}
+            /* ⚠ `flex: 0 1 auto` — it may SHRINK, never grow. At the design
+               width it sits at its full 256 and lines its right edge up with
+               the column below; when the actions need more than the column has,
+               the cover gives up to 32px before anything wraps, which is both
+               the cheaper trade and the behaviour the Layout note describes. */
+            style={{
+              ...COVER_FRAME,
+              ...COVER_TOGGLE,
+              ...(onWhite
+                ? { borderRadius: 12, width: V3_LEFT_W - WHITE_HEAD_PAD, flex: '0 1 auto', minWidth: 224 }
+                : null),
+            }}
           >
             <img src={cover} alt="" style={COVER} />
           </button>
         ) : null}
-        <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 15, justifyContent: 'center' }}>
+        {/* ⚠ A 436px BASIS, NOT `1 1 0` (2026-10-21). With a zero basis this
+            column was the first thing to shrink, so at 600px it fell to 240 and
+            at 420 to SIXTY — a title column too narrow for a word, which is
+            what the responsive demo in the handoff exposed. 436 is what the
+            three buttons measure (150 + 132 + 138 + two 8px gaps), so the
+            column now holds the width its own content needs and the COVER
+            yields first, down to 224. Below that the row wraps and the two
+            stack, which is the honest end of the scale rather than a crush. */}
+        <div style={{ flex: '1 1 436px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 15, justifyContent: 'center' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <p style={EYEBROW}>{eyebrow}</p>
             <h2 className="cre-compass-course-title cre-atlas-home-course-title cre-atlas-home-v2-course-title" style={TITLE}>
@@ -2024,7 +2057,9 @@ export function AtlasCourseHeadRow({
               the designer's request): Course Overview — was a 10px chip —
               as the outline button, and Begin Course, MOVED here from the
               Study Journey's current stop. */}
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          {/* 8 between buttons, down from 10 — the other four pixels of the
+              eight the row was short. */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {onPurchaseExtension ? (
               expired ? (
                 /* PRIMARY once access has gone — nothing else is left on the
