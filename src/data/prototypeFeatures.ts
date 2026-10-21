@@ -1289,9 +1289,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     accent: 'blue',
     icon: 'grid',
     blurb:
-      'The page-level layout of the current XCEL Atlas Home (End-to-End Demo): how the course card, the course-progress / study-pace panel, the exam-date prompt, the study journey and Quick Links are arranged, and the decisions that apply to the whole page rather than one card.',
+      'The page-level layout of the Atlas Home: how the course card, the course-progress / study-pace panel, the exam-date prompt, the study journey and Quick Links are arranged, and the decisions that apply to the whole page rather than one card.',
     tileBlurb:
-      'How the Atlas Home page is laid out — column widths, ordering, the White-vs-WIP chrome differences — with each card’s own detail living in its own handoff.',
+      'How the Atlas Home page is laid out — column widths and ordering — with each card’s own detail living in its own handoff.',
     kind: 'guided',
     status: 'ready',
     category: 'dev-handoff',
@@ -1299,14 +1299,14 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     brands: ['xcel'],
     pages: [
       {
-        label: 'Atlas Home (End-to-End Demo)',
+        label: 'Atlas Home — the final prototype',
         note: 'The committed default — no `?version=` needed. Use the UI/UX Demo Tools → Progress dropdown to move the course card, progress panel and readiness card together.',
         to: '/dashboard-rebrand?demo=1&section=dashboard',
       },
     ],
     featureFlags: [
       { id: 'atlas-home-long-title', label: 'Long title', note: 'Swaps the demo course title for a long one, on Home, Invited Product Detail and Checkout at once (`useEndToEndCourseTitle`). Off by default.' },
-      { id: 'atlas-wip-quick-links-side', label: 'Quick Links side', note: 'Left (default) or right. On the Design bar for WIP/White only — see the decision below on why E2E still reads it.' },
+      { id: 'atlas-wip-quick-links-side', label: 'Quick Links side', note: '⚠ READ, BUT NOT SETTABLE HERE. The rail\'s side is whatever this flag was last set to; this page carries no control for it. See the decision below.' },
       { id: 'atlas-v3-progress', label: 'Progress', note: 'Which of the five Course Progress states the page opens on; Readiness and the journey’s current stop follow it.' },
       { id: 'atlas-v3-link-tiles', label: 'Link tiles', note: 'Stacked vs inline — currently has no visible effect on this page; see the decision below.' },
       { id: 'atlas-pace-card', label: 'Study pace card', note: '⚠ DECIDES WHAT THE LEFT COLUMN IS, and `ring` is the answer — the committed default, renders `AtlasPaceRingCard` (Course progress over Study pace in one panel). The `states` variant still renders the tan five-state card, but that concept is retired and is documented nowhere; see `atlas-home-progress-states-handoff` in the Archive. ⚠ NOT A BAR CONTROL since 2026-10-20 ("ring has been decided") — it is reachable through the Feature Flag panel or `?ff=` only.' },
@@ -1351,9 +1351,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
       decisions: {
         items: [
           {
-            question: 'Why does `atlas-wip-quick-links-side` still move Quick Links on End-to-End Demo when the flag isn’t on E2E’s own Design bar?',
+            question: 'Why does `atlas-wip-quick-links-side` still move Quick Links when this page has no control for it?',
             decision:
-              'The flag isn’t version-scoped in the code that reads it — it was only removed from WIP/White’s Design bar (2026-10-14, "hide it on WIP and White, its only versions" — a comment that predates E2E existing). E2E inherits whatever value was last set from WIP or White’s bar, with no way to change it from its own. Needs a decision: give E2E its own control, or leave Quick Links side fixed left on this version.',
+              'The flag is not version-scoped in the code that reads it — only its CONTROL was removed (2026-10-14). The page therefore inherits whatever value the flag was last left at, with no way to change it from its own. Needs a decision: give this page its own control, or fix the Quick Links side left and retire the flag.',
             status: 'Needs weigh-in',
             owner: 'Eric',
           },
@@ -1372,12 +1372,12 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           },
         ],
         openItems: [
-          'Quick Links side control for End-to-End Demo specifically.',
+          'Whether this page should carry a control for the Quick Links side at all.',
           'Whether the link tiles ship, and if so stacked or inline by default.',
         ],
       },
       alsoConsider: [
-        { name: 'Course Head / Card', location: 'See the "Atlas Home — Course Head / Card" dev-handoff feature.', note: 'The top of the card: cover, title, course tabs, Expires meta, Course Overview + Begin/Resume buttons, and the WIP-vs-White header layout toggle.' },
+        { name: 'Course Head / Card', location: 'See the "Atlas Home — Course Head / Card" dev-handoff feature.', note: 'The top of the card: cover, title, the access-expiry meta row, and the Course Overview + Begin/Resume buttons.' },
         { name: 'Course Progress panel', location: 'See its own dev-handoff feature.', note: 'AtlasCourseProgressStates — the five progress stages.' },
         { name: 'Readiness panel', location: 'See its own dev-handoff feature.', note: 'AtlasReadinessCard — the half-dial readiness levels, which follow the Progress stage.' },
         { name: 'Exam Date card', location: 'See its own dev-handoff feature.', note: 'AtlasExamDateCard.' },
@@ -1419,13 +1419,13 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     brands: ['xcel'],
     pages: [
       {
-        label: 'Atlas Home (End-to-End Demo)',
+        label: 'Atlas Home — the final prototype',
         note: 'The course head leads the card. Click the cover image to flip between the two header layouts.',
         to: '/dashboard-rebrand?demo=1&section=dashboard',
       },
     ],
     featureFlags: [
-      { id: 'atlas-home-long-title', label: 'Long title', note: 'Swaps the title for E2E’s long course name, here and on Invited Product Detail/Checkout. Off by default.' },
+      { id: 'atlas-home-long-title', label: 'Long title', note: 'Swaps in the long course name, here and on Invited Product Detail / Checkout at once. Off by default.' },
     ],
     devHandoff: {
       intro:
@@ -1526,7 +1526,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     brands: ['xcel'],
     pages: [
       {
-        label: 'Atlas Home (End-to-End Demo)',
+        label: 'Atlas Home — the final prototype',
         note: 'Leads the left column — the ring arm, which is what a bare `?demo=1` renders. Use UI/UX Demo Tools → Progress to move the figures; the Design bar’s Study pace card control switches to the `states` arm.',
         to: '/dashboard-rebrand?demo=1&section=dashboard',
       },
@@ -1673,10 +1673,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             { name: 'Date past the access window', when: 'The exam is AFTER the course access ends.', detail: '⚠ ACCESS BINDS, NOT THE EXAM. The exam row still shows with its own count, but the plan is built to finish before access ends — the earlier ceiling wins, and it is not the date the learner just typed. A 15 July exam against a 10 June window plans to June, with the exam sitting below it as a later, unreached milestone.', why: 'The learner cannot study after access ends, whatever their exam date says. Planning to the exam here would promise work on days the course is shut.', action: 'None on this card. The offer that moves the real constraint is Purchase Extension on the course head.', howToSee: 'Step 2 → Add Date → 15 July.' },
             { name: 'Date too close for any plan', when: 'The exam is inside the seven-day buffer, or too near for any pace to fit.', detail: 'NO PLAN AT ALL. The pace section drops its goal and figures and says "Not enough time before your exam" — the exam arm, not the access one — and offers NO advice line, because a booked exam is not something a learner can extend. ⚠ It is not a dead end: Remove is one press away in Step 2, next to the date that caused it.', why: 'An honest refusal beats a plan that cannot be met. Naming the exam rather than access tells the learner which of the two to change.', action: 'Remove, or Edit to a later date.', howToSee: 'Step 2 → Add Date → 14 May.' },
             { name: 'Editing', when: 'Edit has been pressed on a scheduled date.', detail: 'The calendar returns, and a THIRD button appears with it: Remove, beside Cancel and Set Exam Date.', why: '⚠ EDIT ALONE LETS A LEARNER MOVE A DATE BUT NEVER SAY THEY NO LONGER HAVE ONE — and this date drives the pace model, so with no way out a mistyped exam re-plans the course permanently, per browser. Remove is what makes the date safe to enter.', action: 'Remove clears `cgp.examDate` and returns Step 2 to Asking.', howToSee: 'Step 2 → Edit, once a date is set.' },
-            { name: 'WIP card — Default', when: 'The learner has not told us anything about an exam date yet.', detail: '"Do you know your state exam date?" over Not Yet / Yes.', why: 'The card has to ask before it can help, and both answers lead somewhere useful.', action: '"Not Yet" → No date yet. "Yes" → Picking a date.' },
-            { name: 'WIP card — No date yet', when: 'The learner said they do not have a date.', detail: '"No state exam date yet? That’s okay." then a registration blurb, then "I have my exam date".', why: 'A learner without a date still needs a path forward — registering — rather than a dead end.', action: '"I have my exam date" → Picking a date. The way back in once the learner has registered.' },
-            { name: 'WIP card — Picking a date', when: 'The learner said they have a date, or is editing one they set.', detail: 'A real month calendar. "Set Exam Date" stays disabled until a day is picked.', why: 'Confirms the pick before committing it.', action: 'Pick a day, then "Set Exam Date" → Date set. The button stays disabled until a day is picked.' },
-            { name: 'WIP card — Date set', when: 'The learner has saved their exam date.', detail: 'The saved date and a days-remaining tile, with Edit.', why: 'The date is the thing the rest of the page reads against; it has to be visible and changeable.', action: '"Edit" → Picking a date, opened on the saved date. A date is not a one-time entry.' },
           ],
           designSpec: {
             tokens: [
@@ -1734,21 +1730,14 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           {
             question: 'Is the Progress → Readiness opening-level map the real correlation, or a placeholder?',
             decision:
-              'Placeholder. Per Eric’s own code comment, the two will be correlated "at some level" later — today’s fixed lookup (and the fact that the sync only sets the OPENING level, with no live link afterward) is a stand-in for that future rule.',
-            status: 'Needs weigh-in',
-            owner: 'Eric',
-          },
-          {
-            question: 'Should the Exam Date card come back on White/End-to-End Demo, or stay WIP-only?',
-            decision:
-              '⚠ LARGELY OVERTAKEN: Step 2 carries the question on this chrome now, so the baseline is no longer missing the exam date — what is still WIP-only is the four-stage CARD. Currently hidden on both (2026-10-14, Eric: "remove") — but the End-to-End Demo dashboard version’s OWN description text still lists "the exam-date card" as part of what End-to-End Demo’s Home includes, which no longer matches what the code renders. One of the two needs to change: either restore the card to this baseline, or correct the version’s description so it stops claiming a component that isn’t there.',
+              'Placeholder. The component’s own comment says the two will be correlated "at some level" later — today’s fixed lookup (and the fact that the sync only sets the OPENING level, with no live link afterward) is a stand-in for that future rule.',
             status: 'Needs weigh-in',
             owner: 'Eric',
           },
           {
             question: 'Should the collected exam date actually drive anything (pace model, Study Journey)?',
             decision:
-              'YES, AND IT DOES — answered 2026-10-20 and shipped. The date re-plans the study pace against the exam minus `EXAM_BUFFER_DAYS` (7), adds the FLORIDA STATE EXAM figure row to the pace column, and turns Step 2 into its Scheduled stop. ⚠ THE RULE THAT MADE IT SAFE TO WIRE: a page may act on a date only if it can SHOW it, CHANGE it and REMOVE it. Step 2 does all three, which is why this Home passes `examDate` to `studyPace` while the End-to-End Demo’s Home still passes `undefined` — its prompts are decoration, so a date typed in Compass weeks earlier would dead-end its pace card with no control on that page to undo it. ⚠ This answer was "Not today — local-state-only" until 2026-10-21, a day after it stopped being true.',
+              'YES, AND IT DOES — answered 2026-10-20 and shipped. The date re-plans the study pace against the exam minus `EXAM_BUFFER_DAYS` (7), adds the FLORIDA STATE EXAM figure row to the pace column, and turns Step 2 into its Scheduled stop. ⚠ THE RULE THAT MADE IT SAFE TO WIRE: a page may act on a date only if it can SHOW it, CHANGE it and REMOVE it. Step 2 does all three, which is what earns this page the right to act on the date at all — a surface that can only DISPLAY a stored date dead-ends its own pace card, with nothing on screen to undo it. ⚠ This answer was "Not today — local-state-only" until 2026-10-21, a day after it stopped being true.',
             status: 'Decided',
           },
           {
@@ -1758,7 +1747,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             owner: 'Product',
           },
           {
-            question: 'Should Step 1’s Study Journey list reflect the learner’s real progress on this baseline, the way it does on WIP?',
+            question: 'Should Step 1’s Study Journey list reflect the learner’s real progress?',
             decision:
               'Not today. The list is a fixed 7-line array sourced from a different Figma frame (265:8144, "text only, the rows keep their styling") and does not change as the Progress control is moved, except that Completed replaces it entirely with a Congratulations block. A stakeholder stepping Course Progress and Readiness through their visible states will notice the Study Journey does not follow.',
             status: 'Needs weigh-in',
@@ -1767,7 +1756,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           {
             question: 'Should Steps 2 and 3 get their links back on this chrome?',
             decision:
-              '"What to expect" and "How to apply" are deliberately hidden here (2026-10-14, Eric’s request) — WIP keeps them. Whether the committed baseline should have them too is open.',
+              '"What to expect" and "How to apply" are deliberately hidden (2026-10-14). Whether the committed baseline should carry them is open — the steps name an action either way, so the links add a second route rather than the only one.',
             status: 'Needs weigh-in',
             owner: 'Eric',
           },
@@ -1782,7 +1771,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           'What "Help me get ready" should link to.',
           'What the real Progress ↔ Readiness correlation rule will be, once it exists.',
           'Whether the Readiness section ships ON — it is `defaultEnabled: false`, so the panel a reviewer sees by default is only half of what this handoff documents.',
-          'Whether the card is restored to the committed baseline or the End-to-End Demo version’s description is corrected to drop the claim.',
           'The "here" registration link’s real destination.',
           'Whether Step 1 should read the real computed journey instead of the fixed list.',
           'Whether Steps 2 and 3 should regain their links on this chrome.',
@@ -1815,7 +1803,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     brands: ['xcel'],
     pages: [
       {
-        label: 'Atlas Home (End-to-End Demo)',
+        label: 'Atlas Home — the final prototype',
         note: 'Sits in its own 234px-wide rail beside the course card, left by default. Its side is controlled by a flag with no control surface on this version’s own Design bar — see the Overview handoff’s logged decision on `atlas-wip-quick-links-side`.',
         to: '/dashboard-rebrand?demo=1&section=dashboard',
       },
@@ -1882,7 +1870,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           {
             question: 'Why do Quick Links’ sheet links work on Home while the Study Journey section’s own equivalent links do not?',
             decision:
-              'Home passes real `onOpenStep`/`onOpenRequirements` handlers to BOTH components, but only enables the Study Journey section’s inline links for non-White chrome (`!onWhite`) — Quick Links has no such gate, so its rows stay live everywhere Home supplies the handlers. Worth confirming this asymmetry is intended rather than an oversight in the Study Journey gate.',
+              'Home passes real `onOpenStep`/`onOpenRequirements` handlers to BOTH components, but the Study Journey section gates its own inline links behind a chrome check that this page fails, so they are inert here. Quick Links has no such gate, so its rows stay live wherever Home supplies the handlers. ⚠ The result a learner meets is two routes to the same sheet, one of which works — worth confirming the asymmetry is intended rather than an oversight in the Study Journey gate.',
             status: 'Needs weigh-in',
             owner: 'Eric',
           },
@@ -1894,9 +1882,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
       },
       alsoConsider: [
         { name: 'Atlas Home — Overview', location: 'See its own dev-handoff feature.', note: 'Already logs the `atlas-wip-quick-links-side` flag as an open decision — this card is what that flag positions.' },
-        { name: 'Study Journey & Get Licensed Steps', location: 'See its own dev-handoff feature.', note: 'Shares the same `onOpenStep`/`onOpenRequirements` callbacks, but its own inline links to the same destinations are disabled on this chrome while this card’s are not.' },
+        { name: 'Study Journey & Get Licensed Steps', location: 'See its own dev-handoff feature.', note: 'Shares the same `onOpenStep`/`onOpenRequirements` callbacks, but its own inline links to the same destinations are disabled here while this card’s are not.' },
       ],
-      flagsNote: '`atlas-wip-quick-links-side` picks which side of the course card this rail sits on — see the Overview handoff for why End-to-End Demo cannot change it from its own bar.',
+      flagsNote: '`atlas-wip-quick-links-side` picks which side of the course card this rail sits on — see the Overview handoff for why this page cannot change it.',
     },
   },
   {
@@ -2004,7 +1992,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     brands: ['xcel'],
     pages: [
       {
-        label: 'Atlas Home (End-to-End Demo), via the Affidavit URL param',
+        label: 'Atlas Home — the final prototype, via the Affidavit URL param',
         note: 'Append `&affidavit=1` to the Home URL to open it directly, or walk the Invite flow’s Confirmation & Password page, which navigates here with the param already set.',
         to: '/dashboard-rebrand?demo=1&affidavit=1&section=dashboard',
       },

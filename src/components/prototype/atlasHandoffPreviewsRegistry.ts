@@ -4,7 +4,6 @@ import { AtlasReadinessCard } from '@/components/compass/AtlasReadinessCard'
 import { paceStandingMessage, type PaceStanding } from '@/components/compass/paceStanding'
 import { AtlasPaceRingCard } from '@/components/compass/AtlasPaceRingCard'
 import { ExamDateScenario } from './ExamDateScenario'
-import { AtlasExamDateCard } from '@/components/compass/AtlasExamDateCard'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
 import {
   AffidavitLauncher,
@@ -252,14 +251,6 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
     /* Editing is the Scheduled date reopened — same stored date, the calendar
        showing, which is exactly what Edit does. */
     Editing: () => createElement(ExamDateScenario, { examDate: '2026-05-28', picking: true }),
-    'WIP card — Default': () => createElement(AtlasExamDateCard, { initialStage: 'default' }),
-    'WIP card — No date yet': () => createElement(AtlasExamDateCard, { initialStage: 'no' }),
-    'WIP card — Picking a date': () => createElement(AtlasExamDateCard, { initialStage: 'yes' }),
-    'WIP card — Date set': () =>
-      createElement(AtlasExamDateCard, {
-        initialStage: 'set',
-        initialDate: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000),
-      }),
   },
   /* THE PANEL ITSELF — its two compositions, which is the one thing neither
      card can show on its own: what the column looks like with Exam readiness
