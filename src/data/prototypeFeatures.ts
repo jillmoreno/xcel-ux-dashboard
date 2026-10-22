@@ -1377,11 +1377,21 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
   },
   {
     /*
-     * ATLAS HOME — COURSE PROGRESS PANEL. 2026-10-19. AtlasCourseProgressStates
-     * — the five-state module in the left column: Study Pace (0%), Course
-     * Progress (the real dial), Milestone, Complete, Expired.
+     * ATLAS HOME — BELOW THE COURSE CARD. 2026-10-19, rescoped 2026-10-21
+     * ("lets adjust so that everything below the course card is all part of
+     * this one feature ticket"): three components — the Panel, Steps 1–3 and
+     * the Exam Date — because an exam date set in Step 2 re-plans the pace
+     * column, and one Progress control drives the dial, the readiness band and
+     * the journey's current stop together.
      *
-     * devStatus: 'in-design'. No `quickSummary` yet — ask before writing one.
+     * ⚠ THIS HEADER NAMED `AtlasCourseProgressStates` UNTIL 2026-10-22, which
+     * was the tan five-state card — a DIFFERENT component, whose handoff was
+     * retired on 2026-10-21 (`atlas-home-progress-states-handoff` in
+     * `archivedItems.ts`). It survived the rescope by being a comment nobody
+     * reads while editing the data below it.
+     *
+     * devStatus: 'ready-for-dev' (2026-10-22). No `quickSummary` yet — ask
+     * before writing one.
      */
     id: 'xcel-atlas-home-below-course-card',
     title: 'Atlas Home — Below the Course Card',
@@ -1394,7 +1404,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     kind: 'guided',
     status: 'ready',
     category: 'dev-handoff',
-    devStatus: 'in-design',
+    devStatus: 'ready-for-dev',
     brands: ['xcel'],
     pages: [
       {
@@ -1641,7 +1651,8 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
      * ATLAS HOME — QUICK LINKS CARD. 2026-10-19. AtlasJourneyLinksCard — the
      * "Quick Links" nav card in its own rail beside the course card.
      *
-     * devStatus: 'in-design'. No `quickSummary` yet — ask before writing one.
+     * devStatus: 'ready-for-dev' (2026-10-22). No `quickSummary` yet — ask
+     * before writing one.
      */
     id: 'xcel-atlas-home-quick-links',
     title: 'Atlas Home — Quick Links Card',
@@ -1654,7 +1665,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     kind: 'guided',
     status: 'ready',
     category: 'dev-handoff',
-    devStatus: 'in-design',
+    devStatus: 'ready-for-dev',
     brands: ['xcel'],
     pages: [
       {
@@ -1714,27 +1725,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           ],
         },
       ],
-      decisions: {
-        items: [
-          {
-            question: 'Should the "Home" row come back?',
-            decision: 'Off since 2026-10-07 ("for now") — the component is otherwise unchanged and ready to show it; nobody has revisited the decision since.',
-            status: 'Needs weigh-in',
-            owner: 'Eric',
-          },
-          {
-            question: 'Why do Quick Links’ sheet links work on Home while the Study Journey section’s own equivalent links do not?',
-            decision:
-              'Home passes real `onOpenStep`/`onOpenRequirements` handlers to both components, but the Study Journey section gates its own inline links behind a check that this page fails, so they are inert here. Quick Links has no such gate, so its rows stay live wherever Home supplies the handlers. ⚠ The result a learner meets is two routes to the same sheet, one of which works — worth confirming the asymmetry is intended rather than an oversight in the Study Journey gate.',
-            status: 'Needs weigh-in',
-            owner: 'Eric',
-          },
-        ],
-        openItems: [
-          'Whether the Home row returns.',
-          'Whether the Study Journey section’s link suppression should match Quick Links’ (i.e., also stay live) rather than the reverse.',
-        ],
-      },
       alsoConsider: [
         { name: 'Atlas Home — Overview', location: 'See its own dev-handoff feature.', note: 'Already logs the `atlas-wip-quick-links-side` flag as an open decision — this card is what that flag positions.' },
         { name: 'Study Journey & Get Licensed Steps', location: 'See its own dev-handoff feature.', note: 'Shares the same `onOpenStep`/`onOpenRequirements` callbacks, but its own inline links to the same destinations are disabled here while this card’s are not.' },
