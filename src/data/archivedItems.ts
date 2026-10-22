@@ -746,4 +746,30 @@ export const ARCHIVED_ITEMS: ArchivedItem[] = [
     restoreNote:
       'Cut the `atlas-home-course-card` block out of `ARCHIVED_FEATURE_ROWS` and paste it into `PROTOTYPE_FEATURES` at the marked spot (last in the array). Then `atlas-home-course-card: development` back in `EXPECTED_PLACEMENT`, and — if `xcel-course-entry` is not also coming back — `expect(gatewayRows.length).toBeGreaterThan(0)` back in the smoke test, since this row alone makes a guided row exist again. ⚠ Keep it free of `to` and `externalUrl`, same rule as every guided row. Its `quickSummary` and `userStory` are deliberately unset — do not fill them in from the code.',
   },
+  {
+    id: 'atlas-home-overview-handoff',
+    name: 'Atlas Home — Overview (dev handoff)',
+    what: 'The page-level row of the Atlas Home handoff split (2026-10-19): how the course card, the progress panel, the exam-date prompt, the Study Journey and Quick Links are arranged — column widths and ordering — with two component specs, `atlas-home-layout` and `atlas-home-long-title`. Each card\u2019s own detail lived in its own row; this one held only the arrangement between them. `devStatus: in-design`.',
+    location:
+      'Kept VERBATIM in `src/data/archivedFeatureRows.ts` (`ARCHIVED_FEATURE_ROWS`), a module nothing imports. ⚠ THE PAGE IS UNTOUCHED: no layout, component or flag changed — only the notes about the arrangement left the Hub. What went besides the row: its id in `EXPECTED_PLACEMENT` (`src/test/UxDashboard.smoke.test.tsx`), where a comment now names this row.',
+    flag: 'None — the row documented the page, not a flag.',
+    dateRemoved: '2026-10-21',
+    reason:
+      'Jillienne, on the Development board: "remove these". The per-component rows each show their own subject at its own size, and the four that sat below the course card had just been merged into one ticket covering how they move together — which is most of what a page-level layout row was for. ⚠ What it alone carried is the arrangement BETWEEN the cards: the column widths, the ordering, and the long-title behaviour. If that question comes back, it comes back here rather than being re-derived.',
+    restoreNote:
+      'Cut the `xcel-atlas-home-overview` block out of `ARCHIVED_FEATURE_ROWS` and paste it into `PROTOTYPE_FEATURES` — anywhere in the array; nothing references it, so position is presentation only, and it read first among the Atlas Home rows. Then put `\'xcel-atlas-home-overview\': \'development\'` back in `EXPECTED_PLACEMENT`, or `accounts for every authored feature` fails naming it. ⚠ ITS RENDER WENT TOO, and two tests fail by name if you forget: re-add the `atlas-home-layout` map to `ATLAS_VARIANT_RENDERS` in `atlasHandoffPreviewsRegistry.ts` (one entry, `PageFrame` with the title "Atlas Home — page layout"), put `atlas-home-layout` back in that file\u2019s `FULL_WIDTH` set, and restore the `PageFrame` import. `PageFrame` itself is still exported from `AtlasHandoffPreviews.tsx` and is used by nothing else — this row is the only reason it is still there. ⚠ Check the layout against the page before trusting it: the row describes column widths and ordering, and both the progress panel and the Study Journey have been re-authored since it was written. NOT restored deliberately: nothing in the product, because nothing in the product was removed.',
+  },
+  {
+    id: 'purchase-extension-handoff',
+    name: 'Purchase Extension (dev handoff)',
+    what: 'A placeholder row for the flow behind the expired course head\u2019s "Purchase Extension" button — the button is drawn and nothing is behind it. `devStatus: not-ready`, so it sat on Development saying do not start, with an open-items list standing in for the handoff and one real finding: no control on either bar produces an expired course, so the expired state cannot be reached by a reviewer at all.',
+    location:
+      'Kept VERBATIM in `src/data/archivedFeatureRows.ts` (`ARCHIVED_FEATURE_ROWS`), a module nothing imports. ⚠ THE BUTTON IS UNTOUCHED: the expired course head still draws "Purchase Extension" and it still does nothing — removing the row removed the note, not the gap. What went besides the row: its id in `EXPECTED_PLACEMENT` (`src/test/UxDashboard.smoke.test.tsx`).',
+    flag: 'devStatus: not-ready',
+    dateRemoved: '2026-10-21',
+    reason:
+      'Jillienne, on the Development board: "remove these". It was a row for work that has not started, which is the same argument that cleared the board on 2026-10-15 — a board that lists nothing says more to engineering than one whose rows say do not start.',
+    restoreNote:
+      'Cut the `xcel-purchase-extension` block out of `ARCHIVED_FEATURE_ROWS` and paste it into `PROTOTYPE_FEATURES` (position is presentation only; it was last). Then `\'xcel-purchase-extension\': \'development\'` back in `EXPECTED_PLACEMENT`. ⚠ THE FINDING IN ITS OPEN ITEMS IS STILL TRUE AND IS NOW RECORDED ONLY HERE: nothing on either bar produces an expired course — the Progress control has no Expired step, the Expires dropdown stops at "1 day", and the day count is clamped at zero — so the expired course head is built, correct, and unreachable by a reviewer. An "Expired" option on the Expires control is the fix, and it is Jillienne\u2019s because the demo bar is hers. That is worth doing whether or not this row ever comes back.',
+  },
 ]

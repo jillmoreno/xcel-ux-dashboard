@@ -13,7 +13,6 @@ import {
   AtlasProgressPanel,
   AtlasSurface,
   CourseHeadVariant,
-  PageFrame,
   QuickLinksHoverDemo,
 } from './AtlasHandoffPreviews'
 
@@ -322,11 +321,6 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
       }),
   },
 
-  // The page IS the component, so the only honest render is the page.
-  'atlas-home-layout': {
-    Default: () => createElement(PageFrame, { title: 'Atlas Home — page layout' }),
-  },
-
   // Step 1 reads the page's shared progress, not its own props, so these load
   // the real route pinned to each stage rather than rebuilding the list.
   'atlas-home-affidavit-modal': {
@@ -369,7 +363,9 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
    wrap the notes anyway. Declaring it here gets the stacked treatment
    deliberately, with the state's name leading its own picture. */
 const FULL_WIDTH = new Set([
-  'atlas-home-layout',
+  /* `atlas-home-layout` was here until 2026-10-21, when the Overview row it
+     belonged to was archived ("remove these"). Its render — the only
+     `PageFrame` left on this surface — went with it. */
   'atlas-home-steps',
   'atlas-home-exam-date',
 ])

@@ -182,12 +182,13 @@ describe('section routing (sectionOf)', () => {
     // `xcel-course-entry` (the repo's first authored dev handoff, 2026-09-24)
     // stood here until 2026-10-15 — archived, `course-entry-handoff`. Both
     // handoffs were removed as "not ready"; Development lists nothing now.
-    // The Atlas Home dev-handoff split (2026-10-19) — `devStatus: 'in-design'`
-    // on all eight; a page-level Overview plus one row per component. They land
+    // The Atlas Home dev-handoff split (2026-10-19) — one row per component.
+    // ⚠ THE PAGE-LEVEL OVERVIEW AND PURCHASE EXTENSION WERE ARCHIVED on
+    // 2026-10-21 ("remove these"); both are kept in `archivedFeatureRows.ts`
+    // and a line back in here is step two of either restore. They land
     // on DEVELOPMENT, not Design: Design was archived 2026-10-15 (`design-
     // section`) and `sectionOf` now returns 'development' for any authored
     // status. `category: 'dev-handoff'` routes there too, so both paths agree.
-    'xcel-atlas-home-overview': 'development',
     'xcel-atlas-home-course-head': 'development',
     /* ⚠ FOUR ROWS BECAME ONE (2026-10-21) — "lets adjust so that everything
        below the course card is all part of this one feature ticket so we can
@@ -200,9 +201,6 @@ describe('section routing (sectionOf)', () => {
     'xcel-atlas-home-below-course-card': 'development',
     'xcel-atlas-home-quick-links': 'development',
     'xcel-atlas-home-affidavit-modal': 'development',
-    // Not built, and on the board deliberately: `not-ready` keeps a row in
-    // Development while saying do not start it (2026-10-21).
-    'xcel-purchase-extension': 'development',
   }
 
   it('accounts for every authored feature', () => {
