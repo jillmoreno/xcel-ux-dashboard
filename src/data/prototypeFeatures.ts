@@ -1274,7 +1274,8 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
      * the inline course-head markup inside `AtlasHomeEricE2E`, which is what
      * the current committed Home actually ships.
      *
-     * devStatus: 'in-design'. No `quickSummary` yet — ask before writing one.
+     * devStatus: 'ready-for-dev' (2026-10-22). No `quickSummary` yet — ask
+     * before writing one.
      */
     id: 'xcel-atlas-home-course-head',
     title: 'Atlas Home — Course Head / Card',
@@ -1287,7 +1288,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     kind: 'guided',
     status: 'ready',
     category: 'dev-handoff',
-    devStatus: 'in-design',
+    devStatus: 'ready-for-dev',
     brands: ['xcel'],
     pages: [
       {
