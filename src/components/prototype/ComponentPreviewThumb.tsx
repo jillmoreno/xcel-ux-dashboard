@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 import type { PrototypeFeature } from '@/data/prototypeFeatures'
-import { atlasHandoffThumbRender } from './atlasHandoffPreviewsRegistry'
+import { atlasHandoffThumbRender, atlasHandoffThumbWidth } from './atlasHandoffPreviewsRegistry'
 import { FeaturePreviewThumb } from './FeaturePreviewThumb'
 
 /**
@@ -38,6 +38,9 @@ export function ComponentPreviewThumb({
 }): ReactNode {
   const first = feature.devHandoff?.uiComponents?.[0]
   const live = first ? atlasHandoffThumbRender(first.id) : undefined
+  /* The width the component is drawn at before scaling — its own, when it has
+     declared one. See `ATLAS_THUMB_WIDTH`. */
+  const renderW = (first && atlasHandoffThumbWidth(first.id)) ?? RENDER_W
 
   if (!live) {
     return (
@@ -76,8 +79,8 @@ export function ComponentPreviewThumb({
           position: 'absolute',
           top: '50%',
           left: 0,
-          width: RENDER_W,
-          transform: `scale(${width / RENDER_W}) translateY(-50%)`,
+          width: renderW,
+          transform: `scale(${width / renderW}) translateY(-50%)`,
           transformOrigin: 'left top',
           pointerEvents: 'none',
         }}
@@ -88,7 +91,8 @@ export function ComponentPreviewThumb({
   )
 }
 
-/* The width the component is rendered at before scaling — the course card's own
-   800 plus its panel, so every size is a true scaled render of the real thing
-   rather than the component reflowed into a narrow box. */
+/* The DEFAULT width a component is rendered at before scaling — the course
+   card's own 800 plus its panel, so every size is a true scaled render of the
+   real thing rather than the component reflowed into a narrow box.
+   ⚠ A narrow component overrides it: see `ATLAS_THUMB_WIDTH`. */
 const RENDER_W = 880

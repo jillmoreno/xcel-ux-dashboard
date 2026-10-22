@@ -792,7 +792,14 @@ function UiComponentsSection({
       </div>
       {/* The list has no chip strip of its own, so these render plainly beneath
           it — a reader on the list still gets the whole handoff on one page. */}
-      {decisions && decisions.items.length > 0 && (
+      {/* ⚠ PRESENT, NOT NON-EMPTY (2026-10-22, Jillienne: "just because there
+          are no questions - doesnt mean to remove the section completely, just
+          show a default - no questions at the moment text"). A handoff with the
+          key and no items has BEEN ASKED and has nothing open; one with no key
+          has not been asked. Hiding both says the same thing about two
+          different states, and the first is the one a reader wants confirmed.
+          `DecisionsBody` draws the placeholder. */}
+      {decisions && (
         <div style={{ marginTop: 32 }}>
           <h4 style={handoffSubheadingStyle}>Questions</h4>
           <div style={{ ...inlineHandoffFrameStyle, marginTop: 12 }}>
@@ -1057,7 +1064,7 @@ function UiComponentDetail({
   const sections = COMPONENT_SECTIONS.filter((sec) => {
     if (sec.id === 'options') return Boolean(component.options?.length)
     if (sec.id === 'ctas') return Boolean(component.ctas?.length)
-    if (sec.id === 'decisions') return Boolean(decisions?.items.length)
+    if (sec.id === 'decisions') return Boolean(decisions)
     return true
   })
 
@@ -1331,7 +1338,7 @@ function UiComponentDetail({
           <DevHandoffCtasBody ctas={component.ctas} />,
         )}
 
-      {decisions && decisions.items.length > 0 &&
+      {decisions &&
         section(
           'decisions',
           'Questions',
@@ -1384,6 +1391,10 @@ function UiComponentDetail({
  * the tab that used to hold it became a section of the one-page handoff.
  */
 function DecisionsBody({ decisions }: { decisions: DevHandoffDecisions }) {
+  /* Nothing open, and the section says so rather than vanishing — see the gate
+     above. Open items are still drawn below if there are any: a handoff can
+     have loose ends without having an unanswered question. */
+  const empty = decisions.items.length === 0
   return (
     <>
           {decisions.intro && (
@@ -1434,6 +1445,18 @@ function DecisionsBody({ decisions }: { decisions: DevHandoffDecisions }) {
               </li>
             ))}
           </ol>
+          {empty && (
+            <p
+              style={{
+                margin: '8px 0 0',
+                fontSize: 13,
+                lineHeight: '19px',
+                color: 'var(--color-text-tertiary)',
+              }}
+            >
+              No open questions at the moment.
+            </p>
+          )}
           {decisions.openItems && decisions.openItems.length > 0 && (
             <div
               style={{

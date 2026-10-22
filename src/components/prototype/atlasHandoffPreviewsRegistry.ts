@@ -5,6 +5,7 @@ import { AtlasPaceRingCard } from '@/components/compass/AtlasPaceRingCard'
 import { ExamDateScenario } from './ExamDateScenario'
 import { AtlasRegionThumb } from './AtlasRegionThumb'
 import { AtlasStepsFrame } from './AtlasStepsFrame'
+import { AtlasSheetFrame } from './AtlasSheetFrame'
 import { pacePreviewProps, PREVIEW_ACCESS_ENDS } from './atlasPacePreview'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
 import {
@@ -300,10 +301,23 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
      against the demo clock (2026-05-11) and the committed access window
      (2026-06-10) so each one lands in a genuinely different arm — and every
      figure on the right is computed by `studyPace`, never typed. */
+  /* ⚠ TWO STATES OF THE CARD, THEN THE THREE SHEETS (2026-10-22, Jillienne:
+     "remvoee the extra sections. just have one section. Show Default view, and
+     what it looks like when hovering over a link view", then "Under States,
+     detail out what the sheet view looks like"). Active row went: it never
+     fires on Home, which is the surface this handoff documents.
+
+     The sheets are cropped out of the real page — `?open=` opens each one, so
+     nothing here is a drawn copy of a sheet. */
   'atlas-home-quick-links': {
     Default: quickLinks({}),
-    'Active row': quickLinks({ activeSection: 'courses' }),
     'Hover / focus': () => createElement(QuickLinksHoverDemo),
+    'Sheet — Exam Information': () =>
+      createElement(AtlasSheetFrame, { open: 'exam-details', title: 'Exam Information sheet' }),
+    'Sheet — Applying for a License': () =>
+      createElement(AtlasSheetFrame, { open: 'step:apply-license', title: 'Applying for a License sheet' }),
+    'Sheet — State Requirements': () =>
+      createElement(AtlasSheetFrame, { open: 'requirements', title: 'State Requirements sheet' }),
   },
 
   // ⚠ ALL FOUR ARE REAL PROPS (2026-10-21). Three of these states carried a
@@ -429,6 +443,31 @@ export function atlasHandoffVariantRender(
 ): ReactNode | undefined {
   const node = ATLAS_VARIANT_RENDERS[componentId]?.[variantName]?.()
   return node === undefined ? undefined : createElement(AtlasSurface, null, node)
+}
+
+/**
+ * THE WIDTH A THUMBNAIL RENDERS AT, before it is scaled into its plate.
+ *
+ * ⚠ 880 IS THE COURSE CARD'S WIDTH, and it is the wrong frame for a narrow
+ * component (2026-10-22, Jillienne: "zoom in on that component in the
+ * thumbnail here and previous page"). Quick Links is a 234px rail: rendered at
+ * 880 it takes a quarter of the plate and the other three quarters are empty
+ * page, so both the handoff header's 300px thumbnail and the project row's
+ * 160px one showed a card too small to read.
+ *
+ * Declaring the component's own width makes the scale fit the SUBJECT instead
+ * of the page it came from. Anything not listed keeps 880, which is right for
+ * anything the width of the course card.
+ */
+const ATLAS_THUMB_WIDTH: Record<string, number> = {
+  /* The rail is 234; 290 leaves it a little air on both sides rather than
+     bleeding into the plate's border. */
+  'atlas-home-quick-links': 290,
+}
+
+/** The render width for a component's thumbnail — see `ATLAS_THUMB_WIDTH`. */
+export function atlasHandoffThumbWidth(componentId: string): number | undefined {
+  return ATLAS_THUMB_WIDTH[componentId]
 }
 
 /**

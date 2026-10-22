@@ -30,7 +30,10 @@ const HOME_ROWS = [
 const NOT_ON_THE_RAIL = ['Flashcards', 'Exam Simulator']
 
 describe('the Quick Links previews match the Home', () => {
-  for (const variant of ['Default', 'Active row', 'Hover / focus']) {
+  /* The CARD's own states. The three `Sheet — …` variants on this component
+     render a cropped iframe of the page rather than the card, so there are no
+     rows of ours to count in them. */
+  for (const variant of ['Default', 'Hover / focus']) {
     it(`"${variant}" draws the Home's five rows and no others`, () => {
       const node = atlasHandoffVariantRender('atlas-home-quick-links', variant)
       expect(node, `no render registered for "${variant}"`).toBeTruthy()

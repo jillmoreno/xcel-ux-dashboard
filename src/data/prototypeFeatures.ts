@@ -1690,41 +1690,46 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           summary:
             'A bordered 234px-wide card titled "Quick Links" listing section links (My Courses, My Certificates) that switch the shell’s section in place, and sheet links (Exam Information, Applying for a License, State Requirements) that open in-place sheets when the host supplies handlers — which Home does. On Home, two course-page links (Flashcards, Exam Simulator) are hidden via `withoutCoursePages`, and a built but currently-off "Home" row sits above all of them behind a hardcoded constant.',
           variants: [
-            { name: 'Default', when: 'The learner arrives on Home.', detail: 'A bordered 234px card titled "Quick Links": My Courses · My Certificates · Exam Information · Applying for a License · State Requirements. Two things are true of this rail on Home, and both are easy to miss. Flashcards and Exam Simulator are not in the list — the rail is a navigation card here, not a course-tools card, and the remaining icons step up a size to fill the room. And the navigating rows are inert: a click changes nothing and the address bar never moves. The three information rows still open their sheet, because a sheet is an overlay rather than navigation — so the card is not uniformly dead, and neither behavior can be inferred from the other.', why: 'One compact place to reach the things that are not on the Home screen itself.', action: 'The three information rows open their sheet — that always works. The two navigating rows short-circuit before changing the section, so a click does nothing at all. The split is by row type, not by state.' },
-            { name: 'Active row', when: 'The learner is on the section a row points to.', detail: 'A full-width white rounded capsule behind the row, and the label steps to SemiBold. ⚠ It never fires on Home — Home’s own row is built but switched off, and the navigating rows cannot change the section from here anyway. It is live on the surfaces where this rail does navigate.', why: 'The rail doubles as a position indicator, so the learner can see where they are without reading the page behind it.', action: 'None — it marks, it does not act.' },
+            { name: 'Default', when: 'The learner arrives on Home.', detail: 'A bordered 234px card titled "Quick Links", five rows: My Courses · My Certificates · Exam Information · Applying for a License · State Requirements. ⚠ Flashcards and Exam Simulator are not in the list — the rail is a navigation card here, not a course-tools card, and the remaining icons step up a size to fill the room.', why: 'One compact place to reach the things that are not on the Home screen itself.', action: 'The three information rows open their sheets, shown below. My Courses and My Certificates are to be designed.' },
             { name: 'Hover / focus', when: 'The pointer is over a row, or the row has keyboard focus.', detail: 'A trailing chevron fades in and the label steps to Medium. Both reserve their space, so the row never shifts as it changes — the chevron’s width and the heavier label are held by a hidden duplicate. This still happens on the inert rows.', why: 'A row has to read as clickable before it is clicked, without the list jumping as the pointer crosses it.', action: 'Activates the row, where the row does anything.' },
+
+            { name: 'Sheet — Exam Information', when: 'The Exam Information row is pressed.', detail: 'A 480px-wide panel slides in from the right, over the page, headed "Exam Details" — the state exam, the provider, the fee and what to bring, with a Close in the corner. The page behind it does not move.', why: 'The exam facts are a reference, not a destination — a sheet keeps the learner on Home while they read.', action: 'Close returns to Home with nothing changed.', howToSee: 'Quick Links → Exam Information.' },
+            { name: 'Sheet — Applying for a License', when: 'The Applying for a License row is pressed.', detail: 'The same panel treatment, carrying the licence application — the steps, the fee and the governing agency for the learner’s own state.', why: 'Same reason as the exam sheet: reference material that should not cost the learner their place.', action: 'Close returns to Home.', howToSee: 'Quick Links → Applying for a License.' },
+            { name: 'Sheet — State Requirements', when: 'The State Requirements row is pressed.', detail: 'The same panel, listing the jurisdiction’s requirements — the hours, the lines of authority and the exam facts behind them.', why: 'Same reason again. All three rows are the same kind of answer and get the same kind of panel.', action: 'Close returns to Home.', howToSee: 'Quick Links → State Requirements.' },
           ],
           designSpec: {
             tokens: [
               { role: 'Card border', token: '--color-atlas-nav-rule default, overridden on Home to a 95%-darkened --color-atlas-slate-100' },
               { role: 'Title', token: '--font-heading-serif, --color-text-primary' },
               { role: 'Row icon + hover chevron', token: '--color-atlas-home-icon, falls back to --color-compass-page-button' },
-              { role: 'Active row capsule', token: '--color-surface-card background, SemiBold text' },
               { role: 'Title rule (optional)', token: '--color-atlas-tan-300' },
             ],
-            states: ['Active: white capsule + SemiBold.', 'Hover/focus: chevron fades in, label steps to Medium (space reserved so nothing shifts).', 'No handler supplied: row renders `disabled`.'],
+            states: ['Hover/focus: chevron fades in, label steps to Medium (space reserved so nothing shifts).'],
             sources: [
               'The Final Prototype is the source of truth — "Open live preview" at the top of this page. Where anything else disagrees with it, the prototype is right.',
               'Implemented in src/components/compass/AtlasJourneyLinksCard.tsx.',
             ],
           },
           statesMatrix: [
-            { question: 'What if the host supplies no handler for the sheets?', answer: 'They still work — the links fall back to setting `?open=` on the current URL instead of calling the host.' },
+            { question: 'What if a sheet has no data for this state?', answer: 'Then the row does not render. Every sheet is expected to have its content for every jurisdiction the product sells — a link that opens an empty panel is worse than an absent link, because the learner has to press it to find out there is nothing there. ⚠ The card does not enforce this today: a row renders whether or not its sheet can answer. Pass the row only when its data exists.' },
             { question: 'What if the rail is shown without the course pages?', answer: 'Flashcards and Exam Simulator are omitted entirely, and the remaining icons step up a size to fill the room.' },
           ],
-          edgeCases: [
-            'The "Home" row is fully built (icon, active-state logic, everything) and simply switched off by one `const SHOW_HOME_LINK = false` — turning it on costs nothing but might read oddly on Home itself, where it would always show as the active row (since Home never sets a `section`).',
-            'All three sheet links share the same fallback shape (`handler ?? HomeAndOpen(...)`), so a host supplying neither `onOpenStep` nor `onOpenRequirements` still gets working rows — they just navigate to Home with an `?open=` param instead of calling a handler directly.',
-          ],
           ctas: [
-            { name: 'My Courses', does: 'Switches the shell to the courses section in place. ⚠ Inert on Home — see Links off.' },
-            { name: 'My Certificates', does: 'Switches the shell to the certificates section in place. Inert on Home for the same reason.' },
-            { name: 'Exam Information', does: 'Opens the exam-information sheet over the page. Works everywhere, including on Home.' },
-            { name: 'Applying for a License', does: 'Opens the licence-application sheet. Works everywhere.' },
-            { name: 'State Requirements', does: 'Opens the state-requirements sheet. Works everywhere.' },
+            { name: 'My Courses', does: 'To be designed.' },
+            { name: 'My Certificates', does: 'To be designed.' },
+            { name: 'Exam Information', does: 'Opens the exam-information sheet over the page.' },
+            { name: 'Applying for a License', does: 'Opens the licence-application sheet.' },
+            { name: 'State Requirements', does: 'Opens the state-requirements sheet.' },
           ],
         },
       ],
+      /* ⚠ PRESENT AND EMPTY, ON PURPOSE (2026-10-22, Jillienne: "just because
+         there are no questions - doesnt mean to remove the section completely,
+         just show a default - no questions at the moment text"). Dropping the
+         key hides the section and its nav chip, which reads as a handoff that
+         was never asked the question. An empty list says it was asked and the
+         answer is none — `DecisionsBody` draws the placeholder. */
+      decisions: { items: [] },
       alsoConsider: [
         { name: 'Atlas Home — Overview', location: 'See its own dev-handoff feature.', note: 'Already logs the `atlas-wip-quick-links-side` flag as an open decision — this card is what that flag positions.' },
         { name: 'Study Journey & Get Licensed Steps', location: 'See its own dev-handoff feature.', note: 'Shares the same `onOpenStep`/`onOpenRequirements` callbacks, but its own inline links to the same destinations are disabled here while this card’s are not.' },
