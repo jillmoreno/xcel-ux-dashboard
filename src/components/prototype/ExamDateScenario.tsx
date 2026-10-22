@@ -10,6 +10,7 @@ import {
   type PaceModel,
 } from '@/lib/studyPace'
 import { noPaceMessage } from '@/components/compass/noPaceMessage'
+import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
 import { handoffEyebrowStyle, handoffMetaStyle } from './devHandoffStyles'
 
 /**
@@ -77,6 +78,15 @@ export function ExamDateScenario({
           <p style={{ ...handoffEyebrowStyle, margin: '0 0 8px' }}>Study Journey · Step 2</p>
           <div style={stepFrameStyle}>
             <ExamDatePrompt
+              /* ⚠ THE DEFAULT ARM, READ FROM THE FLAG (2026-10-21). This prop
+                 was simply not passed, so it fell to `card = false` and every
+                 screen drew the ROW arm — a bare journey stop with no tinted
+                 card and no sub-line — while `atlas-exam-prompt` defaults to
+                 `card` and the page draws the card. Seven previews of a
+                 variant nobody sees. Reading `defaultVariant` rather than
+                 hard-coding `true` means the day that default flips, these
+                 flip with it. */
+              card={EXAM_PROMPT_IS_CARD}
               examDate={examDate}
               picking={picking}
               today={TODAY}
@@ -158,6 +168,10 @@ const TODAY = new Date(2026, 4, 11)
 const HOURS_REMAINING = 12
 const ACCESS_ENDS = '2026-06-10'
 const NOOP = () => {}
+
+/** What `atlas-exam-prompt` ships as — `card`, today. */
+const EXAM_PROMPT_IS_CARD =
+  (FEATURE_FLAGS.find((f) => f.key === 'atlas-exam-prompt')?.defaultVariant ?? 'card') === 'card'
 
 /* ⚠ THE RENDER SITS TIGHT UNDER ITS OWN PROSE. A per-screen paragraph of
    basis used to sit between them — seven copies of the same sentence, each
