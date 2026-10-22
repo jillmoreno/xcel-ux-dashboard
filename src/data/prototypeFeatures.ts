@@ -1716,7 +1716,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           },
           statesMatrix: [
             { question: 'What if a sheet has no data for this state?', answer: 'Then the row does not render. Every sheet is expected to have its content for every jurisdiction the product sells — a link that opens an empty panel is worse than an absent link, because the learner has to press it to find out there is nothing there. ⚠ The card does not enforce this today: a row renders whether or not its sheet can answer. Pass the row only when its data exists.' },
-            { question: 'What if the rail is shown without the course pages?', answer: 'Flashcards and Exam Simulator are omitted entirely, and the remaining icons step up a size to fill the room.' },
           ],
           ctas: [
             { name: 'My Courses', does: 'To be designed.' },
