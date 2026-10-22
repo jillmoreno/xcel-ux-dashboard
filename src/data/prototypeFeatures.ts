@@ -1718,10 +1718,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             { name: 'Edit', does: 'Reopens the calendar on the stored date, and brings Remove with it.' },
             { name: 'Remove', does: 'Clears the stored date. Step 2 returns to asking, the exam figure row goes, and the pace re-plans against the access window alone.' },
             { name: 'Exam Information', does: 'Opens the Exam Information sheet — the same one Quick Links points at. Present in every state; it is about the exam, not about the date.' },
-            { name: 'Not Yet', does: 'Moves the card to the No-date-yet state, which offers a registration route instead of a dead end.' },
-            { name: 'Yes', does: 'Opens the month calendar so the learner can pick their exam date.' },
-            { name: 'I have my exam date', does: 'The way back into the calendar from the No-date-yet state, once the learner has registered.' },
-            { name: 'here', does: '⚠ Reads as a link in the registration blurb and is bold text — clicking it does nothing today.' },
             { name: 'Set Exam Date', does: 'Saves the picked date and moves the card to its Date-set state. Disabled until a day is chosen.' },
             { name: 'Edit', does: 'Reopens the calendar on the saved date. A date is not a one-time entry.' },
           ],
@@ -1743,22 +1739,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             status: 'Decided',
           },
           {
-            question: 'Where does the No stage’s "here" registration link go?',
-            decision: 'The destination exists; the link is not wired to it. `getLicensedStepsFor(state)` carries a registration URL per jurisdiction — Florida goes to Pearson VUE, New York to PSI — and the Exam Information sheet already opens it. What is still open is whether "here" should send the learner straight out to the provider or into that sheet first, which explains the registration before handing them off.',
-            status: 'Needs weigh-in',
-            owner: 'Product',
-          },
-          {
             question: 'Should Step 1’s Study Journey list reflect the learner’s real progress?',
             decision:
               'Not today. Only the Pre-Licensing Education row moves — it reads a real "N of 36 completed". The rest is fixed text and no row is ever ticked off, so a stakeholder stepping Course Progress and Readiness through their states will see the Study Journey stay where it is. ⚠ Completion does not replace the list either: the Congratulations block exists in the component but draws only under the other progress card, so this page keeps the list and puts the congratulation in the course head.',
-            status: 'Needs weigh-in',
-            owner: 'Eric',
-          },
-          {
-            question: 'Should Steps 2 and 3 get their links back on this page?',
-            decision:
-              '"What to expect" and "How to apply" are deliberately hidden (2026-10-14). Whether the page `main` serves should carry them is open — the steps name an action either way, so the links add a second route rather than the only one.',
             status: 'Needs weigh-in',
             owner: 'Eric',
           },
@@ -1771,9 +1754,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
         openItems: [
           'What the real Progress ↔ Readiness correlation rule will be, once it exists.',
           'Whether the Readiness section ships on — it is `defaultEnabled: false`, so the panel a reviewer sees by default is only half of what this handoff documents.',
-          'Whether "here" opens the state’s registration provider directly or the Exam Information sheet first.',
           'Whether Step 1 should read the real computed journey instead of the fixed list.',
-          'Whether Steps 2 and 3 should regain their links on this page.',
         ],
       },
       flagsNote:
