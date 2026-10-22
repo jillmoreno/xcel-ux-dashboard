@@ -52,13 +52,32 @@ export type AtlasJourneyLinksCardProps = {
    *  nothing — the learner is still on Home when it closes. The rows this
    *  does silence are the ones that would walk out of the demo. */
   linksOff?: boolean
+  /**
+   * WHICH ROW TO DRAW ACTIVE, instead of reading the URL — 2026-10-22.
+   *
+   * ⚠ IT EXISTS BECAUSE THE DEV HANDOFF CANNOT FAKE A URL ANY MORE. The
+   * Quick Links previews used to wrap this card in a `MemoryRouter` with
+   * `initialEntries: ['/?section=courses']`, which is how the Active row
+   * state was shown. React Router 7 makes a Router inside a Router a THROWN
+   * ERROR rather than a warning, and the handoff page is already inside the
+   * app's own — so that wrapper took the whole page down to a blank screen.
+   * Naming the active row is the honest replacement: the preview says which
+   * row is active rather than staging a fake address bar to imply it.
+   *
+   * ⚠ OPTIONAL, AND ABSENT MEANS READ THE URL, which is what every surface
+   * in the product does. Only the handoff passes it.
+   */
+  activeSection?: string | null
 }
 
-export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, withoutCoursePages = false, titleRule = false, linksOff = false }: AtlasJourneyLinksCardProps) {
+export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, withoutCoursePages = false, titleRule = false, linksOff = false, activeSection }: AtlasJourneyLinksCardProps) {
   const [params, setParams] = useSearchParams()
   /* Which link is the page you are on — the four that are pages; the three
-     sheet links never are. */
-  const section = params.get('section')
+     sheet links never are.
+     ⚠ `activeSection === undefined` is the test, not a falsy one: `null` is a
+        caller deliberately saying "Home", and `?? ` would hand that straight
+        back to the URL. */
+  const section = activeSection === undefined ? params.get('section') : activeSection
   const coursePage = params.get('coursePage')
   const here = (s: string, page?: string) => section === s && (page ? coursePage === page : true)
   const go = (section: string | null, extra?: Record<string, string>) =>

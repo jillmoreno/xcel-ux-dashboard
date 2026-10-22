@@ -1,5 +1,4 @@
 import { createElement, type ReactNode } from 'react'
-import { MemoryRouter } from 'react-router-dom'
 import { AtlasReadinessCard } from '@/components/compass/AtlasReadinessCard'
 import { paceStandingMessage, type PaceStanding } from '@/components/compass/paceStanding'
 import { AtlasPaceRingCard } from '@/components/compass/AtlasPaceRingCard'
@@ -51,17 +50,42 @@ import {
  */
 type VariantRenders = Record<string, () => ReactNode>
 
-/* `AtlasJourneyLinksCard` reads its active row from `useSearchParams()`, and
- * the handoff page already sits inside the app's own Router. Without an
- * isolating `MemoryRouter` PER ROW, clicking a nav row in any instance would
- * rewrite the handoff page's own address bar, and every instance would share
- * one `?section=`. */
-const quickLinks = (props: Record<string, unknown>, entries?: string[]) => () =>
-  createElement(
-    MemoryRouter,
-    entries ? { initialEntries: entries } : null,
-    createElement(AtlasJourneyLinksCard, props),
-  )
+/* ⚠ NO `MemoryRouter` HERE, AND IT IS NOT A TIDY-UP (2026-10-22, Jillienne:
+ * "whats going on with the quick links feature. nothing is loading"). These
+ * three renders wrapped the card in one, to stop a click rewriting the handoff
+ * page's own address bar and to stage `?section=courses` for the Active row.
+ * React Router 7 makes a Router inside a Router a THROWN ERROR — the handoff
+ * page is already inside the app's — so the Quick Links handoff rendered a
+ * blank page, with the reason only in the console.
+ *
+ * The two jobs the wrapper did are now done without it, and better:
+ *   - `linksOff` neuters the navigating rows, which is the same prop the
+ *     End-to-End Home uses for the same reason. A click cannot reach the URL.
+ *   - `activeSection` NAMES the active row rather than faking an address to
+ *     imply it.
+ *
+ * ⚠ Do not reach for `MemoryRouter` again on this page. Anything that needs a
+ * router of its own needs an iframe, which is what the Steps renders use. */
+/* ⚠ MAIN'S PROPS, NOT THE CARD'S DEFAULTS (2026-10-22, Jillienne: "look at
+   the main prototype. dont add any links that are not there"). The Home
+   passes `withoutCoursePages`, and without it these previews drew SEVEN rows
+   where the page draws five — Flashcards and Exam Simulator are the course's
+   own pages, and this rail is not a course-tools card. Two links invented by
+   a default.
+
+   The two sheet handlers go with it: on the Home, Exam Information, Applying
+   for a License and State Requirements open their sheets, and the card falls
+   back to a URL change when they are absent. There is no sheet host inside a
+   preview, so they are no-ops here — but passing them keeps the card on the
+   same branch the page takes rather than the fallback. */
+const quickLinks = (props: Record<string, unknown>) => () =>
+  createElement(AtlasJourneyLinksCard, {
+    withoutCoursePages: true,
+    linksOff: true,
+    onOpenStep: NOOP,
+    onOpenRequirements: NOOP,
+    ...props,
+  })
 
 /* The left column's cards are drawn inside the page's tan panel and have no
  * fill of their own, so each render carries it — see `AtlasProgressPanel`. */
@@ -278,7 +302,7 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
      figure on the right is computed by `studyPace`, never typed. */
   'atlas-home-quick-links': {
     Default: quickLinks({}),
-    'Active row': quickLinks({}, ['/?section=courses']),
+    'Active row': quickLinks({ activeSection: 'courses' }),
     'Hover / focus': () => createElement(QuickLinksHoverDemo),
   },
 
@@ -410,14 +434,17 @@ export function atlasHandoffVariantRender(
 /**
  * Thumbnail renders that differ from the gallery's first entry.
  *
- * ⚠ ONLY QUICK LINKS, AND FOR ONE REASON: its gallery entries are wrapped in a
- * `MemoryRouter` so a click in one cannot rewrite the handoff page's own
- * address bar. React Router throws on a Router inside a Router, and the
- * thumbnail is now drawn on the landing page's project rows — inside the app's
- * own Router — so the wrapper that protects the gallery breaks the thumbnail.
+ * ⚠ THIS ENTRY ONCE EXISTED TO DODGE A BUG, AND THE DODGE HID IT. Quick
+ * Links' gallery entries were wrapped in a `MemoryRouter`; React Router throws
+ * on a Router inside a Router, so the wrapper blanked anything that drew them
+ * inside the app's own Router. The thumbnail was given an unwrapped render of
+ * its own and went back to working — and because the thumbnail was the part
+ * anyone looked at, nobody noticed the GALLERY was still a blank page until
+ * 2026-10-22. The wrapper is gone now (see `quickLinks`); fix the cause, not
+ * the one caller you happen to be looking at.
  *
- * A thumbnail needs no isolation: it is `pointer-events: none`, nothing in it
- * can be clicked, and reading the real URL for its active row is harmless.
+ * It stays because it still differs: the thumbnail draws the short list
+ * (`withoutCoursePages`), which is the shape the row's 160px plate suits.
  */
 const ATLAS_THUMB_RENDERS: Record<string, () => ReactNode> = {
   'atlas-home-quick-links': () =>

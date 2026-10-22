@@ -1,5 +1,4 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
-import { MemoryRouter } from 'react-router-dom'
 import { AtlasCourseHeadRow, WhiteCourseMeta } from '@/components/compass/AtlasHomeEricE2E'
 import type { CourseExpiryTier } from '@/data/courseExpiry'
 
@@ -313,16 +312,16 @@ export function PageFrame({ ff, title }: { ff?: string; title: string }) {
  * doing the actual thing, which is closer to the truth than a drawn picture of
  * a hovered row would be.
  *
- * Its own MemoryRouter, for the reason every rail preview has one: the card
- * reads its active row from the URL, and without isolation a click here would
- * rewrite the handoff page's own address bar.
+ * ⚠ NO `MemoryRouter` (2026-10-22). It had one, to keep a click here out of
+ * the handoff page's address bar — and React Router 7 throws on a Router
+ * inside a Router, so it blanked the whole Quick Links handoff instead.
+ * `linksOff` does that job without a router; see the note on `quickLinks` in
+ * `atlasHandoffPreviewsRegistry.ts`.
  */
 export function QuickLinksHoverDemo() {
   return (
     <div>
-      <MemoryRouter>
-        <AtlasJourneyLinksCard withoutCoursePages />
-      </MemoryRouter>
+      <AtlasJourneyLinksCard withoutCoursePages linksOff />
       <p style={frameNoteStyle}>
         Hover a row, or tab into one &mdash; the chevron and the weight change are the real
         thing, not a drawn approximation.
