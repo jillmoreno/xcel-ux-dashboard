@@ -16,7 +16,7 @@ import { formatHours, formatPaceDate } from '@/lib/studyPace'
  * TRACK. Behind is a gap the learner can still close inside the goal they
  * chose, so the message is a nudge. Off track says the goal no longer fits —
  * the only state with an action attached, and the original ask was explicit
- * that it sends them to the Study Plan. Collapsing the two loses that
+ * that it sends them to the Study Planner. Collapsing the two loses that
  * action, which is the whole reason the state is worth reporting.
  */
 export type PaceStanding = 'on-track' | 'ahead' | 'behind' | 'off-track' | 'no-data'
@@ -44,13 +44,14 @@ export function observedHoursFor(goalHoursPerWeek: number, standing: PaceStandin
  * The phrase inside the OFF-TRACK sentence that the card draws as a link.
  *
  * ⚠ EXPORTED SO THE SPLIT CANNOT GO STALE (2026-10-21, Jillienne: "make
- * 'Study Plan' a clickable link"). The sentence is built here and linkified at
+ * 'Study Plan' a clickable link"; renamed to Study Planner on the same day).
+ * The sentence is built here and linkified at
  * the render site, which means two files have to agree on an exact substring —
  * the classic way a copy edit silently turns a link back into plain text. One
  * constant, used to build the sentence AND to split it, so a reword either
  * keeps working or fails to compile.
  */
-export const PACE_PLAN_LINK = 'Study Plan'
+export const PACE_PLAN_LINK = 'Study Planner'
 
 export function paceStandingMessage({
   standing,

@@ -386,7 +386,7 @@ describe('the ring card when no pace fits', () => {
         noPace={{ binding: 'exam', days: -4, dateIso: '2026-05-07' }}
       />,
     )
-    expect(screen.getByText(/coursework has to finish by May 7/)).toBeTruthy()
+    expect(screen.getByText(/Coursework has to finish by May 7/)).toBeTruthy()
     expect(screen.queryByText(/exam is today/)).toBeNull()
   })
 

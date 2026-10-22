@@ -600,7 +600,7 @@ const GOAL_NOTE: CSSProperties = {
    rather than to an address, so an <a href> would be a lie about what it is.
    `display: inline` and the inherited type keep it on the line. */
 /**
- * "Open your Study Plan to adjust your goal." — with Study Plan as a control.
+ * "Open your Study Planner to adjust your goal." — with Study Planner as a control.
  *
  * ⚠ ONLY THE OFF-TRACK SENTENCE CONTAINS THE PHRASE, so every other standing
  * passes straight through untouched; this is a split, not a parser.

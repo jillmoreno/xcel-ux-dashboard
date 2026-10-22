@@ -5,6 +5,7 @@ import { paceStandingMessage, type PaceStanding } from '@/components/compass/pac
 import { AtlasPaceRingCard } from '@/components/compass/AtlasPaceRingCard'
 import { ExamDateScenario } from './ExamDateScenario'
 import { AtlasRegionThumb } from './AtlasRegionThumb'
+import { pacePreviewProps, PREVIEW_ACCESS_ENDS } from './atlasPacePreview'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
 import {
   AffidavitLauncher,
@@ -73,6 +74,17 @@ const quickLinks = (props: Record<string, unknown>, entries?: string[]) => () =>
    `bare` one: a preview is only true if it is given what the page gives. */
 const NOOP = () => {}
 
+/* ⚠ A STANDING, BECAUSE THESE CARDS ARE ABOVE 0%. The Home shows the
+   starting-point line only while Progress is Not Started and a standing
+   sentence after that, so a 42% card with no standing draws copy the page
+   would never pair with that dial. */
+const ON_TRACK = paceStandingMessage({
+  standing: 'on-track',
+  goalHoursPerWeek: 4,
+  weeks: 3,
+  finishIso: '2026-11-02',
+})
+
 const inPanel = (node: ReactNode) => createElement(AtlasProgressPanel, null, node)
 
 const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
@@ -86,10 +98,7 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
     'Study pace — the default, at 0%': () =>
       inPanel(
         createElement(AtlasPaceRingCard, {
-          percent: 0,
-          weeks: 4,
-          hoursPerWeek: 4,
-          expected: { value: 'June 5', note: '(in 25 days)' },
+          ...pacePreviewProps({ accessExpiresAt: PREVIEW_ACCESS_ENDS, percent: 0 }),
           onCustomize: NOOP,
         }),
       ),
@@ -133,14 +142,30 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
     'Study pace — access has ended': () =>
       inPanel(createElement(AtlasPaceRingCard, { percent: 34, weeks: 3, hoursPerWeek: 4, expired: true })),
 
+    /* The three exam-date states, computed by the real model against the
+       committed access window (10 June) so the pacing difference between them
+       is the product's arithmetic and not a claim. */
     'With an exam date entered': () =>
       inPanel(
         createElement(AtlasPaceRingCard, {
-          percent: 42,
-          weeks: 2,
-          hoursPerWeek: 5,
-          expected: { value: 'November 2' },
-          exam: { label: 'Florida state exam', value: 'November 16', note: '18 days' },
+          ...pacePreviewProps({ accessExpiresAt: PREVIEW_ACCESS_ENDS, examDate: '2026-05-28', percent: 42 }),
+          standingMessage: ON_TRACK,
+          onCustomize: NOOP,
+        }),
+      ),
+    'Exam before the course expires': () =>
+      inPanel(
+        createElement(AtlasPaceRingCard, {
+          ...pacePreviewProps({ accessExpiresAt: PREVIEW_ACCESS_ENDS, examDate: '2026-06-02', percent: 42 }),
+          standingMessage: ON_TRACK,
+          onCustomize: NOOP,
+        }),
+      ),
+    'Exam after the course expires': () =>
+      inPanel(
+        createElement(AtlasPaceRingCard, {
+          ...pacePreviewProps({ accessExpiresAt: PREVIEW_ACCESS_ENDS, examDate: '2026-07-15', percent: 42 }),
+          standingMessage: ON_TRACK,
           onCustomize: NOOP,
         }),
       ),

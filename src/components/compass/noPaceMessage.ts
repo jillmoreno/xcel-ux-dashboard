@@ -14,11 +14,13 @@ import { EXAM_BUFFER_DAYS, formatPaceDateLong } from '@/lib/studyPace'
  * and a month of access left, every word of that was false, and the one
  * instruction in it would have changed nothing.
  *
- * ⚠ THE EXAM ARM OFFERS NO FIX, DELIBERATELY. Access is something a learner
- * can buy more of, so "Extend your access" is a real action. A booked exam
- * is not, and inventing an equivalent ("move your exam") would be advice
- * about someone else's calendar. Naming the deadline and its date is the
- * whole of what this state can honestly say.
+ * ⚠ THE EXAM ARM OFFERS A DIFFERENT FIX (2026-10-21). It offered none for a
+ * while, on the argument that a booked exam is not something a learner can buy
+ * more of and that suggesting "move your exam" would be advice about someone
+ * else's calendar. The gap in that: rescheduling is the learner's own move,
+ * and it is the only thing that clears this state. Access says extend your
+ * access; the exam says reschedule the exam. Both are things the person
+ * reading can actually do.
  *
  * ⚠ `both` TAKES THE EXAM'S SILENCE. When the two ceilings land on the same
  * day, extending access still buys nothing — the exam is there either way —
@@ -71,6 +73,14 @@ export function noPaceMessage(reason?: NoPaceReason): NoPaceMessage {
      state. A date and what it means survives both. */
   return {
     title: 'Not enough time before your exam',
-    note: `No study pace fits: coursework has to finish by ${formatPaceDateLong(reason.dateIso)}, ${EXAM_BUFFER_DAYS} days before your exam, to leave time to review.`,
+    note: `There isn’t enough time to complete your coursework before your exam date. Coursework has to finish by ${formatPaceDateLong(reason.dateIso)}, ${EXAM_BUFFER_DAYS} days before the exam, to leave time to review.`,
+    /* ⚠ THE EXAM ARM HAS ADVICE NOW (2026-10-21, the direct wording). The note
+       above this function still argues it should not: "a booked exam is not
+       something a learner can buy more of, and inventing an equivalent would
+       be advice about someone else's calendar." That reasoning had one gap —
+       rescheduling the exam is the learner's own move, not someone else's, and
+       it is the only thing that actually clears this state. Naming it beats
+       naming the deadline and stopping. */
+    advice: 'Consider rescheduling your exam to allow more time to finish.',
   }
 }
