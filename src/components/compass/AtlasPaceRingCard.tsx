@@ -46,6 +46,7 @@ export function AtlasPaceRingCard({
   readinessBelow = false,
   align = 'center',
   expired = false,
+  examWhenExpired = false,
   onCustomize,
 }: {
   percent: number
@@ -101,6 +102,25 @@ export function AtlasPaceRingCard({
    */
   exam?: { label: string; value: string; note?: string }
   /**
+   * KEEP THE EXAM ROW AFTER ACCESS ENDS — an alternative to the expired
+   * card's current silence, 2026-10-21.
+   *
+   * `expired` drops the whole Study pace section, and the exam row lives
+   * inside it, so a learner whose access ended with an exam still booked sees
+   * no trace of it. The argument for showing it: the booked exam is the
+   * strongest reason to buy the extension, and the sentence above the dial is
+   * already making that pitch. The argument against: the card is deliberately
+   * stripped to one fact, and a date the learner can do nothing about from
+   * here is a second.
+   *
+   * ⚠ OPTIONAL, AND ABSENT IS TODAY'S BEHAVIOUR. Both Homes pass `expired`
+   * and `exam` together already, so this is the ONE thing standing between
+   * them and the change — leave it off and the product is what it was, by
+   * construction rather than by a flag. The handoff's two expired variants
+   * are the only callers that set it.
+   */
+  examWhenExpired?: boolean
+  /**
    * The pace's name — "Crammer", "Average", "Thorough" (2026-10-20).
    *
    * ⚠ OPTIONAL, FALLING BACK TO THE MODULE CONSTANT. Until now this card
@@ -154,6 +174,11 @@ export function AtlasPaceRingCard({
   const eyebrow = atlasSectionEyebrow(align)
   const left = align === 'left'
   const noPaceCopy = noPaceMessage(noPace)
+  /* The exam row surviving expiry — see `examWhenExpired`. It is the only
+     thing the expired card can carry below its dial, so it decides the
+     divider and the panel's bottom pad the way the Study pace section does
+     on every other state. */
+  const examUnderExpired = expired && examWhenExpired && exam != null
   return (
     /* ⚠ TWO SECTIONS, NOT ONE CARD (2026-10-16, Jillienne: "should be 3
        sections: Study Pace, Course Progress, Exam Readiness as the
@@ -177,7 +202,13 @@ export function AtlasPaceRingCard({
          instead of outside it where the box looked lopsided.
        — With no pace at all there is no box, and the panel's own padding is
          the only thing holding that edge. */
-    <div style={!expired && (readinessBelow || expected) ? { ...PANEL, paddingBottom: 0 } : PANEL}>
+    <div
+      style={
+        (!expired && (readinessBelow || expected)) || examUnderExpired
+          ? { ...PANEL, paddingBottom: 0 }
+          : PANEL
+      }
+    >
       {/* ⚠ COURSE PROGRESS LEADS THE COLUMN (2026-10-16, Jillienne: "move
           course progress to the top - shift everything else down"). Where the
           learner HAS GOT TO is the first thing they want; the plan for the
@@ -217,6 +248,14 @@ export function AtlasPaceRingCard({
           below. Unlike the one under Estimated completion, this one always
           has something on both sides of it. */}
       {progressOnly ? null : expired ? null : <span aria-hidden style={DIVIDER} />}
+      {/* ⚠ NO DIVIDER OF ITS OWN. `FigureRow` always draws its top hairline,
+          so the rule that was removed when the card lost everything below the
+          dial comes back with the row that needs it — and only with it. */}
+      {examUnderExpired && exam ? (
+        <section style={SECTION} aria-label="Exam">
+          <FigureRow label={exam.label} value={exam.value} note={exam.note} />
+        </section>
+      ) : null}
       {progressOnly || expired ? null : (
       <section style={SECTION} aria-label="Study pace">
         <p style={eyebrow}>Study pace</p>

@@ -184,6 +184,23 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
        live and merely hidden. */
     'Access has ended — the course expired': () =>
       inPanel(createElement(AtlasPaceRingCard, { percent: 34, expired: true })),
+    /* ⚠ THE ALTERNATIVE, NOT A STATE THE PRODUCT REACHES (2026-10-21). The
+       pair above and below is the decision: today the expired card says
+       nothing about a booked exam, and `examWhenExpired` is the one prop
+       between the product and showing it. Both Homes already pass `expired`
+       and `exam` together, so if this wins it is a default to change, not a
+       feature to build. The exam here is the same 2 June date the
+       "Exam before the course expires" state uses, so the two read against
+       each other. */
+    'Access has ended — with the exam still booked': () =>
+      inPanel(
+        createElement(AtlasPaceRingCard, {
+          percent: 34,
+          expired: true,
+          examWhenExpired: true,
+          exam: pacePreviewProps({ examDate: '2026-06-02' }).exam,
+        }),
+      ),
 
     'Readiness — Not Started': () =>
       inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, notStarted: true })),

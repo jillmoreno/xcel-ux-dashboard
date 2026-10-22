@@ -402,6 +402,40 @@ describe('the ring card when no pace fits', () => {
     expect(screen.queryByText(/Extend your access/)).toBeNull()
   })
 
+  /* ── THE EXPIRED CARD AND A BOOKED EXAM ───────────────────────────────
+   * 2026-10-21. `expired` drops the Study pace section and the exam row
+   * lives inside it, so today an expired learner sees no trace of an exam
+   * they have booked. `examWhenExpired` is the alternative, and the handoff
+   * carries both so the choice can be made by looking at it.
+   *
+   * ⚠ THE DEFAULT IS WHAT THESE PIN. Both Homes already pass `expired` and
+   * `exam` together, so the prop defaulting to false is the only thing
+   * keeping the product where it was — flip the default by accident and the
+   * live card changes with no call site edited to show for it. */
+  const EXAM = { label: 'FLORIDA STATE EXAM', value: 'Jun 2', note: '(in 22 days)' }
+
+  it('hides a booked exam once access has ended — the committed behaviour', () => {
+    render(<AtlasPaceRingCard percent={34} expired exam={EXAM} />)
+    expect(screen.queryByText('FLORIDA STATE EXAM')).toBeNull()
+    expect(screen.queryByText('Jun 2')).toBeNull()
+    expect(screen.getByText('Progress paused')).toBeTruthy()
+  })
+
+  it('keeps the exam row when asked to, and nothing else with it', () => {
+    render(<AtlasPaceRingCard percent={34} expired examWhenExpired exam={EXAM} />)
+    expect(screen.getByText('FLORIDA STATE EXAM')).toBeTruthy()
+    expect(screen.getByText('Jun 2')).toBeTruthy()
+    /* The pace stays gone — this arm returns ONE row, not the section. */
+    expect(screen.queryByText('Study pace')).toBeNull()
+    expect(screen.queryByText('Estimated completion')).toBeNull()
+  })
+
+  it('does nothing when there is no exam to keep', () => {
+    render(<AtlasPaceRingCard percent={34} expired examWhenExpired />)
+    expect(screen.queryByText('FLORIDA STATE EXAM')).toBeNull()
+    expect(screen.getByText('Progress paused')).toBeTruthy()
+  })
+
   it('still draws the ring — progress is a fact whether or not a plan fits', () => {
     renderNoPace()
     expect(screen.getByLabelText('Course progress 0% complete')).toBeTruthy()
