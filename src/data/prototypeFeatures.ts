@@ -1744,14 +1744,14 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           },
           {
             question: 'Where does the No stage’s "here" registration link go?',
-            decision: 'Undecided — no destination has been chosen yet.',
+            decision: 'The destination exists; the link is not wired to it. `getLicensedStepsFor(state)` carries a registration URL per jurisdiction — Florida goes to Pearson VUE, New York to PSI — and the Exam Information sheet already opens it. What is still open is whether "here" should send the learner straight out to the provider or into that sheet first, which explains the registration before handing them off.',
             status: 'Needs weigh-in',
             owner: 'Product',
           },
           {
             question: 'Should Step 1’s Study Journey list reflect the learner’s real progress?',
             decision:
-              'Not today. The list is a fixed 7-line array sourced from a different Figma frame (265:8144, "text only, the rows keep their styling") and does not change as the Progress control is moved, except that Completed replaces it entirely with a Congratulations block. A stakeholder stepping Course Progress and Readiness through their visible states will notice the Study Journey does not follow.',
+              'Not today. Only the Pre-Licensing Education row moves — it reads a real "N of 36 completed". The rest is fixed text and no row is ever ticked off, so a stakeholder stepping Course Progress and Readiness through their states will see the Study Journey stay where it is. ⚠ Completion does not replace the list either: the Congratulations block exists in the component but draws only under the other progress card, so this page keeps the list and puts the congratulation in the course head.',
             status: 'Needs weigh-in',
             owner: 'Eric',
           },
@@ -1764,18 +1764,16 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           },
           {
             question: 'Why does Home skip "Schedule State Exam," the published first step after coursework?',
-            decision: 'Undetermined — it may be considered covered elsewhere (the Quick Links card’s Exam Information sheet) or simply not yet added to Home. Worth confirming before treating the omission as final.',
-            status: 'Needs weigh-in',
-            owner: 'Product',
+            decision: 'It does not skip it. Scheduling sits inside Step 2, "Pass State Exam", as the "When is your exam?" prompt with Add Date and Exam Information under it — the act is on the page without taking a step of its own. The published sequence runs Schedule, Pass, Apply; Home runs Complete Coursework, Pass, Get Licensed, and folds scheduling into the middle one.',
+            status: 'Decided',
           },
         ],
         openItems: [
           'What the real Progress ↔ Readiness correlation rule will be, once it exists.',
           'Whether the Readiness section ships on — it is `defaultEnabled: false`, so the panel a reviewer sees by default is only half of what this handoff documents.',
-          'The "here" registration link’s real destination.',
+          'Whether "here" opens the state’s registration provider directly or the Exam Information sheet first.',
           'Whether Step 1 should read the real computed journey instead of the fixed list.',
           'Whether Steps 2 and 3 should regain their links on this page.',
-          'Whether "Schedule State Exam" belongs on Home at all, and if so where.',
         ],
       },
       flagsNote:
