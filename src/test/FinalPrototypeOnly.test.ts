@@ -62,6 +62,50 @@ describe('a gateway blurb is one sentence', () => {
   })
 })
 
+/**
+ * ⚠ AND IT DOES NOT SHOUT (2026-10-21, Jillienne: "make these handoff notes
+ * not sound like an AI robot"). An audit found 48 all-caps declamations and 70
+ * warning marks in 65,000 characters. When everything is urgent nothing is, and
+ * the shouting was mine — emphasis standing in for a clear sentence.
+ *
+ * The caps rule allows literal on-screen text (FLORIDA STATE EXAM) and real
+ * acronyms; it bans the rest. The jargon list is the vocabulary a reader
+ * outside this project cannot be expected to hold: "arm", "chrome", "baseline",
+ * "rung".
+ */
+describe('handoff prose reads like a person wrote it', () => {
+  const UI_TEXT = /FLORIDA STATE EXAM/
+  const SHOUTING = /\b[A-Z][A-Z’'-]+(?:[ ,]+[A-Z][A-Z’'-]+){1,}/
+  const JARGON = /\b(arms?|chrome|baselines?|rungs?)\b/i
+
+  const strings = () => {
+    const out: { path: string; text: string }[] = []
+    for (const f of PROTOTYPE_FEATURES.filter((x) => x.devHandoff)) {
+      prose(f.devHandoff, `${f.id}.devHandoff`, out)
+      prose(f.blurb, `${f.id}.blurb`, out)
+      prose(f.tileBlurb, `${f.id}.tileBlurb`, out)
+      prose(f.featureFlags, `${f.id}.featureFlags`, out)
+    }
+    return out.filter((x) => x.text.length >= 40)
+  }
+
+  it('does not shout', () => {
+    const shouted = strings().flatMap(({ path, text }) => {
+      const hit = SHOUTING.exec(text.replace(UI_TEXT, ''))
+      return hit ? [`${path}: "${hit[0]}"`] : []
+    })
+    expect(shouted, shouted.join('\n')).toEqual([])
+  })
+
+  it('does not use words only this project knows', () => {
+    const jargon = strings().flatMap(({ path, text }) => {
+      const hit = JARGON.exec(text)
+      return hit ? [`${path}: "${hit[0]}" — ${text.slice(0, 80)}…`] : []
+    })
+    expect(jargon, jargon.join('\n')).toEqual([])
+  })
+})
+
 describe('dev handoffs describe the final prototype only', () => {
   const handoffs = PROTOTYPE_FEATURES.filter((f) => f.devHandoff)
 
