@@ -1365,8 +1365,37 @@ export function UxDashboardPage() {
       document.removeEventListener('keydown', onKey)
     }
   }, [themeOpen])
-  const [query, setQuery] = useState('')
-  const [status, setStatus] = useState<FeatureStatusKey | 'all'>('all')
+  /* ⚠ `q` AND `status` LIVE IN THE URL SO A LINK IS WORTH SHARING (2026-10-22,
+     Jillienne: "add a share link for this page"). They were component state,
+     which made a copied address reproduce the SECTION and nothing else — filter
+     to Ready for Dev, send the link, and the recipient opens on All. A share
+     link that drops the view it was sharing is the half-feature this avoids.
+     Both are seeded once from the URL and written back as they change. */
+  const [query, setQuery] = useState(() => params.get('q') ?? '')
+  const [status, setStatus] = useState<FeatureStatusKey | 'all'>(() => {
+    const v = params.get('status')
+    /* An unknown value falls back to `all` rather than filtering to nothing —
+       a stale link should open the board, not an empty one. */
+    return v && (STATUS_ORDER as readonly string[]).includes(v) ? (v as FeatureStatusKey) : 'all'
+  })
+
+  /* The other half of the share link: whatever the board is filtered to is in
+     the address, so copying it copies the view. `replace` so a filter does not
+     fill the Back button with steps nobody took. */
+  useEffect(() => {
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (query) next.set('q', query)
+        else next.delete('q')
+        if (status !== 'all') next.set('status', status)
+        else next.delete('status')
+        return next
+      },
+      { replace: true },
+    )
+  }, [query, status, setParams])
+
 
   // Demo shows no dev-cycle status. Everything in it is presentation-ready by
   // definition — that is what the section IS — so a status tag there either
@@ -1827,6 +1856,7 @@ export function UxDashboardPage() {
               <span style={countStyle}>
                 {rows.length} {rows.length === 1 ? 'project' : 'projects'}
               </span>
+              <ShareLinkButton />
             </div>
 
             {/* Status pills. Counts are of the SECTION, not of the current
@@ -2269,6 +2299,63 @@ function ProjectRow({
         {external ? href : `${window.location.origin}${href}`}
       </Toast>
     </div>
+  )
+}
+
+/**
+ * COPY A LINK TO THIS VIEW — 2026-10-22, Jillienne: "add a share link for this
+ * page."
+ *
+ * It copies `window.location.href`, which is the whole point of putting `q` and
+ * `status` in the URL a few hundred lines up: the address already describes the
+ * section, the search and the filter, so there is nothing for this button to
+ * assemble and nothing it can get wrong.
+ *
+ * ⚠ IT CONFIRMS, BECAUSE A CLIPBOARD WRITE IS INVISIBLE. A button that looks
+ * identical before and after the click leaves the reader pressing it again to
+ * find out whether it worked. "Copied" for two seconds, then back.
+ *
+ * ⚠ AND IT SAYS SO WHEN IT FAILS rather than lying. `navigator.clipboard`
+ * needs a secure context and a permission that can be refused; on a refusal the
+ * label becomes "Press ⌘C", which points at the one route that always works.
+ * Reporting success on a write that threw is the failure worth avoiding here —
+ * the reader pastes an old address into a message and never finds out.
+ */
+function ShareLinkButton() {
+  const [said, setSaid] = useState<'idle' | 'copied' | 'manual'>('idle')
+  const copy = async () => {
+    const url = window.location.href
+    try {
+      await navigator.clipboard.writeText(url)
+      setSaid('copied')
+    } catch {
+      setSaid('manual')
+    }
+    window.setTimeout(() => setSaid('idle'), 2200)
+  }
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      aria-label="Copy a link to this view"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        padding: '5px 11px',
+        border: '1px solid var(--ux-border)',
+        borderRadius: 'var(--radius-pill)',
+        background: 'var(--ux-card)',
+        color: said === 'idle' ? 'var(--ux-text-2)' : 'var(--ux-accent-strong)',
+        font: 'inherit',
+        fontSize: 12.5,
+        fontWeight: said === 'idle' ? 'inherit' : 700,
+        cursor: 'pointer',
+        flex: '0 0 auto',
+      }}
+    >
+      {said === 'copied' ? 'Copied' : said === 'manual' ? 'Press ⌘C' : 'Copy link'}
+    </button>
   )
 }
 
