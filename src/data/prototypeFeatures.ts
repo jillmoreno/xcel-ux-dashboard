@@ -1591,7 +1591,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
               { role: 'Dial fill', token: '--color-atlas-dial-fill, falls back to --color-primary-500 — same fallback Course Progress’s dial uses' },
               { role: 'Level name', token: '--font-heading-serif, --color-primary-800' },
               { role: 'Rules above/below the question', token: '--color-atlas-tan-300' },
-              { role: '"Help me get ready" link', token: '--color-compass-page-button' },
             ],
             responsive: [
 
@@ -1622,10 +1621,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
             'Every band is reachable from the Progress control (2026-10-20). Under the retired five-level scale the sync map topped out at Proficient and Exam Ready could only be reached by clicking the card; with four bands, `completed` maps to Ready — the top — so nothing is undemoable through the Progress control any more. The empty Not Started state is the one thing the map does not produce: it needs the `notStarted` prop.',
           ],
           ctas: [
-            { name: 'None of its own', does: 'The panel is a container. Every control on it belongs to one of the parts below — "Customize Your Pace" and "Extend your access" to the ring, "Help me get ready" and the click-to-step to readiness.' },
+            { name: 'None of its own', does: 'The panel is a container, and only the pace card has controls — "Customize Your Pace" and "Extend your access". Readiness has none: it is a readout, and nothing on it responds to a click.' },
             { name: 'Customize Your Pace', does: 'Opens Compass\'s study planner, where the learner picks a pace. Nothing persists the chosen pace back to this card yet.' },
             { name: 'Extend your access', does: 'Shown only in the access-bound no-plan branch. Drawn, not wired — it is the same offer the course head\'s Purchase Extension makes.' },
-            { name: 'Help me get ready', does: 'Drawn text, not a link — it fires nothing.' },
           ],
         },
         {
@@ -1732,12 +1730,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
       decisions: {
         items: [
           {
-            question: 'What should "Help me get ready" actually do?',
-            decision: 'Not yet decided — it is drawn in the Course Progress "Edit My Study Pace" link style but has no destination today.',
-            status: 'Needs weigh-in',
-            owner: 'Eric',
-          },
-          {
             question: 'Is the Progress → Readiness opening-level map the real correlation, or a placeholder?',
             decision:
               'Placeholder. The component’s own comment says the two will be correlated "at some level" later — today’s fixed lookup (and the fact that the sync only sets the opening level, with no live link afterward) is a stand-in for that future rule.',
@@ -1778,7 +1770,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           },
         ],
         openItems: [
-          'What "Help me get ready" should link to.',
           'What the real Progress ↔ Readiness correlation rule will be, once it exists.',
           'Whether the Readiness section ships on — it is `defaultEnabled: false`, so the panel a reviewer sees by default is only half of what this handoff documents.',
           'The "here" registration link’s real destination.',
