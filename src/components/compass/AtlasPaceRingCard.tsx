@@ -34,6 +34,7 @@ import { PLANNER_PLAN } from '@/data/compassStudyPlannerFixtures'
 
 export function AtlasPaceRingCard({
   percent,
+  progressOnly = false,
   weeks,
   hoursPerWeek,
   expected,
@@ -48,6 +49,17 @@ export function AtlasPaceRingCard({
   onCustomize,
 }: {
   percent: number
+  /**
+   * Draw the Course progress section and stop.
+   *
+   * The dev handoff shows this card at 0%, 36% and 100% to document the dial
+   * on its own, and the study pace beneath it is a different section with its
+   * own states — repeating it three times says nothing about progress. The
+   * page never sets this; it exists so the handoff can show a real section
+   * instead of rebuilding the eyebrow and the dial in a preview, which is how
+   * a picture comes to disagree with the thing it illustrates.
+   */
+  progressOnly?: boolean
   /**
    * ACCESS HAS ENDED (2026-10-20, Jillienne: "when expired, all of the other
    * things below the Course progress will not show").
@@ -204,8 +216,8 @@ export function AtlasPaceRingCard({
           and the figure above it is a different kind of thing from the plan
           below. Unlike the one under Estimated completion, this one always
           has something on both sides of it. */}
-      {expired ? null : <span aria-hidden style={DIVIDER} />}
-      {expired ? null : (
+      {progressOnly ? null : expired ? null : <span aria-hidden style={DIVIDER} />}
+      {progressOnly || expired ? null : (
       <section style={SECTION} aria-label="Study pace">
         <p style={eyebrow}>Study pace</p>
         {/* ⚠ CENTRED, LIKE THE REST OF THE COLUMN'S CONTENT (2026-10-19,

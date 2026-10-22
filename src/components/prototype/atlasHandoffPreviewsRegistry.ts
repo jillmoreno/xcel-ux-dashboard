@@ -76,98 +76,37 @@ const NOOP = () => {}
 const inPanel = (node: ReactNode) => createElement(AtlasProgressPanel, null, node)
 
 const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
+  /* Four sections, in the order the panel draws them: the dial, the pace, the
+     exam row, then readiness. */
   'atlas-home-panel': {
-    'Progress and pace': () =>
+    'Course progress — 0%': () => inPanel(createElement(AtlasPaceRingCard, { percent: 0, progressOnly: true })),
+    'Course progress — 36%': () => inPanel(createElement(AtlasPaceRingCard, { percent: 36, progressOnly: true })),
+    'Course progress — 100%': () => inPanel(createElement(AtlasPaceRingCard, { percent: 100, progressOnly: true })),
+
+    'Study pace — the default, at 0%': () =>
       inPanel(
         createElement(AtlasPaceRingCard, {
-          onCustomize: NOOP,
-          percent: 42,
-          weeks: 3,
+          percent: 0,
+          weeks: 4,
           hoursPerWeek: 4,
-          expected: { value: 'November 2', note: 'At current pace' },
-          /* ⚠ THE REAL BUILDER, not a typed line (2026-10-21). This said "You’re
-             ahead of pace — keep it up." on the ON-TRACK state — the wrong
-             standing's words, in copy that exists nowhere in the product, sat
-             beside prose quoting the real sentence. */
-          standingMessage: paceStandingMessage({
-            standing: 'on-track',
-            goalHoursPerWeek: 4,
-            weeks: 3,
-            finishIso: '2026-11-02',
-          }),
+          expected: { value: 'June 5', note: '(in 25 days)' },
+          onCustomize: NOOP,
         }),
       ),
-    'With Exam readiness': () =>
-      inPanel([
-        createElement(AtlasPaceRingCard, {
-          onCustomize: NOOP,
-          key: 'pace',
-          percent: 42,
-          weeks: 3,
-          hoursPerWeek: 4,
-          expected: { value: 'November 2', note: 'At current pace' },
-          /* ⚠ THE REAL BUILDER, not a typed line (2026-10-21). This said "You’re
-             ahead of pace — keep it up." on the ON-TRACK state — the wrong
-             standing's words, in copy that exists nowhere in the product, sat
-             beside prose quoting the real sentence. */
-          standingMessage: paceStandingMessage({
-            standing: 'on-track',
-            goalHoursPerWeek: 4,
-            weeks: 3,
-            finishIso: '2026-11-02',
-          }),
-          readinessBelow: true,
-        }),
-        createElement(AtlasReadinessCard, {
-          key: 'readiness',
-          bare: true,
-          matchPaceEyebrow: true,
-          initialLevel: 1,
-        }),
-      ]),
-    'Access expired — the whole panel': () =>
-      inPanel(
-        createElement(AtlasPaceRingCard, {
-          onCustomize: NOOP, percent: 34, weeks: 3, hoursPerWeek: 4, expired: true }),
-      ),
-    Default: () =>
-      inPanel(createElement(AtlasPaceRingCard, {
-          onCustomize: NOOP,
-        percent: 42,
-        weeks: 3,
-        hoursPerWeek: 4,
-        expected: { value: 'November 2', note: 'At current pace' },
-        /* ⚠ THE REAL BUILDER, not a typed line (2026-10-21). This said "You’re
-             ahead of pace — keep it up." on the ON-TRACK state — the wrong
-             standing's words, in copy that exists nowhere in the product, sat
-             beside prose quoting the real sentence. */
-          standingMessage: paceStandingMessage({
-            standing: 'on-track',
-            goalHoursPerWeek: 4,
-            weeks: 3,
-            finishIso: '2026-11-02',
-          }),
-      })),
-    /* ⚠ THE FIVE STANDINGS, drawn with the REAL sentence builder (2026-10-21,
-       "all of the pacing possibilities"). `paceStandingMessage` is what the
-       Home calls, so a copy change there moves these previews with it; a typed
-       string here would be a fifth place for the wording to drift. They are
-       sub-arms of the plan-fits state, not separate shapes — everything above
-       the sentence is identical, which is the point of showing them together. */
     ...Object.fromEntries(
       (
         [
-          ['ahead', 'Plan fits — ahead of goal'],
-          ['behind', 'Plan fits — behind, recoverable'],
-          ['off-track', 'Plan fits — off track'],
-          ['no-data', 'Plan fits — no data yet'],
+          ['on-track', 'Study pace — on track'],
+          ['ahead', 'Study pace — ahead of goal'],
+          ['behind', 'Study pace — behind, recoverable'],
+          ['off-track', 'Study pace — off track'],
+          ['no-data', 'Study pace — no data yet'],
         ] as [PaceStanding, string][]
       ).map(([standing, name]) => [
         name,
         () =>
           inPanel(
             createElement(AtlasPaceRingCard, {
-          onCustomize: NOOP,
               percent: 42,
               weeks: 3,
               hoursPerWeek: 4,
@@ -178,51 +117,43 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
                 weeks: 3,
                 finishIso: '2026-11-02',
               }),
+              onCustomize: NOOP,
             }),
           ),
       ]),
     ),
-    'Exam booked': () =>
-      inPanel(createElement(AtlasPaceRingCard, {
-          onCustomize: NOOP,
-        percent: 60,
-        weeks: 2,
-        hoursPerWeek: 5,
-        expected: { value: 'November 2' },
-        exam: { label: 'Florida state exam', value: 'November 16', note: '18 days' },
-      })),
-    'No plan fits': () =>
-      inPanel(createElement(AtlasPaceRingCard, {
-          onCustomize: NOOP,
-        percent: 10,
-        noPace: { binding: 'exam', days: -2, dateIso: '2026-11-01' },
-      })),
-    /* ⚠ THE FOURTH STATE HAD NO RENDER until 2026-10-21 — the one arm a
-       developer could not see, and the one that changes the most: everything
-       under the ring goes. `expired` is a prop, so there was nothing stopping
-       it; it was simply never added, and nothing failed to say so because a
-       variant with no render draws an honest "no isolated render" note rather
-       than a gap. 34% so the sentence beneath has a real figure to read, since
-       the point of the state is that how far they got is the argument. */
-    Expired: () =>
-      inPanel(createElement(AtlasPaceRingCard, {
-          onCustomize: NOOP,
-        percent: 34,
-        weeks: 3,
-        hoursPerWeek: 4,
-        expired: true,
-      })),
-    'Not Started': () =>
+    'Study pace — no plan fits': () =>
       inPanel(
-        createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, notStarted: true }),
+        createElement(AtlasPaceRingCard, {
+          percent: 10,
+          noPace: { binding: 'exam', days: -2, dateIso: '2026-11-01' },
+          onCustomize: NOOP,
+        }),
       ),
-    Beginner: () =>
+    'Study pace — access has ended': () =>
+      inPanel(createElement(AtlasPaceRingCard, { percent: 34, weeks: 3, hoursPerWeek: 4, expired: true })),
+
+    'With an exam date entered': () =>
+      inPanel(
+        createElement(AtlasPaceRingCard, {
+          percent: 42,
+          weeks: 2,
+          hoursPerWeek: 5,
+          expected: { value: 'November 2' },
+          exam: { label: 'Florida state exam', value: 'November 16', note: '18 days' },
+          onCustomize: NOOP,
+        }),
+      ),
+
+    'Readiness — Not Started': () =>
+      inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, notStarted: true })),
+    'Readiness — Beginner': () =>
       inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 0 })),
-    Developing: () =>
+    'Readiness — Developing': () =>
       inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 1 })),
-    Proficient: () =>
+    'Readiness — Proficient': () =>
       inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 2 })),
-    Ready: () =>
+    'Readiness — Ready': () =>
       inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 3 })),
   },
 
