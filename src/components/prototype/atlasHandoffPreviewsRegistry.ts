@@ -4,6 +4,7 @@ import { AtlasReadinessCard } from '@/components/compass/AtlasReadinessCard'
 import { paceStandingMessage, type PaceStanding } from '@/components/compass/paceStanding'
 import { AtlasPaceRingCard } from '@/components/compass/AtlasPaceRingCard'
 import { ExamDateScenario } from './ExamDateScenario'
+import { AtlasRegionThumb } from './AtlasRegionThumb'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
 import {
   AffidavitLauncher,
@@ -420,6 +421,14 @@ export function atlasHandoffVariantRender(
 const ATLAS_THUMB_RENDERS: Record<string, () => ReactNode> = {
   'atlas-home-quick-links': () =>
     createElement(AtlasJourneyLinksCard, { withoutCoursePages: true }),
+  /* ⚠ THE WHOLE REGION, NOT THE FIRST CARD IN IT (2026-10-21). The default
+     picks a component's first render, which for "Below the Course Card" is the
+     296px progress column alone — a ticket about progress, the coursework
+     steps AND the exam date, advertising itself with one third of that. The
+     steps cannot be composed from exported pieces, so the thumbnail shows the
+     page with its bars off, slid to the region. */
+  'atlas-home-panel': () =>
+    createElement(AtlasRegionThumb, { src: '/dashboard-rebrand?demo=1&section=dashboard&brand=xcel' }),
 }
 
 /**
@@ -433,7 +442,13 @@ const ATLAS_THUMB_RENDERS: Record<string, () => ReactNode> = {
  */
 export function atlasHandoffThumbRender(componentId: string): ReactNode | undefined {
   const override = ATLAS_THUMB_RENDERS[componentId]
-  if (override) return createElement(AtlasSurface, null, override())
+  /* ⚠ THE PAGE FRAME BRINGS ITS OWN CONTEXT. `AtlasSurface` exists to give a
+     loose component the Atlas token scope; an iframe of the real page already
+     has it, and wrapping one in a flex row squashes it. */
+  if (override) {
+    const node = override()
+    return componentId === 'atlas-home-panel' ? node : createElement(AtlasSurface, null, node)
+  }
   const renders = ATLAS_VARIANT_RENDERS[componentId]
   if (!renders) return undefined
   const first = Object.values(renders)[0]

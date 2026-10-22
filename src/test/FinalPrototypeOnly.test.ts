@@ -44,6 +44,24 @@ function prose(value: unknown, path: string, out: { path: string; text: string }
   }
 }
 
+/**
+ * ⚠ AND THE BLURB IS ONE SENTENCE. The skill has said so for weeks — "it is
+ * the header line under the title, and a paragraph there pushes the tab bar
+ * down the page" — and saying so stopped working: the Below the Course Card
+ * row carried four sentences, in caps, with a warning symbol in it, until
+ * 2026-10-21 ("simplify this. what is this feature about. 1 sentence.").
+ * A rule worth repeating is worth asserting.
+ */
+describe('a gateway blurb is one sentence', () => {
+  it('never runs to a second', () => {
+    const tooLong = PROTOTYPE_FEATURES.filter((f) => f.devHandoff).flatMap((f) => {
+      const sentences = f.blurb.split(/(?<=[.!?])\s+/).filter((x) => x.trim())
+      return sentences.length > 1 ? [`${f.id}: ${sentences.length} sentences — ${f.blurb}`] : []
+    })
+    expect(tooLong, tooLong.join('\n')).toEqual([])
+  })
+})
+
 describe('dev handoffs describe the final prototype only', () => {
   const handoffs = PROTOTYPE_FEATURES.filter((f) => f.devHandoff)
 
