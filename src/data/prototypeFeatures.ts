@@ -1726,17 +1726,24 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
       decisions: {
         items: [
           {
-            question: 'Is the Progress → Readiness opening-level map the real correlation, or a placeholder?',
+            question: 'When should the readiness summary start showing on the Atlas Home?',
             decision:
-              'Placeholder. The component’s own comment says the two will be correlated "at some level" later — today’s fixed lookup (and the fact that the sync only sets the opening level, with no live link afterward) is a stand-in for that future rule.',
+              'We need more requirements. There is no rule for when a learner first sees it — today the section is behind a flag that ships off, so whether it appears at all is a setting rather than a decision about the learner. What has to be answered: does it show from enrolment, or only once there is something measured to show, and does it stay once it has appeared.',
             status: 'Needs weigh-in',
-            owner: 'Eric',
+            owner: 'Product',
           },
           {
             question: 'Should the collected exam date actually drive anything (pace model, Study Journey)?',
             decision:
               'Yes. The date re-plans the pace to finish seven days before the exam, adds the exam row to the pace column, and moves Step 2 to Scheduled. Safe to wire here because Step 2 can show the date, change it and remove it — a page that can only display one leaves the learner no way to undo it.',
             status: 'Decided',
+          },
+          {
+            question: 'Where does the seven-day review buffer come from?',
+            decision:
+              'Nobody has signed it off. It was invented in the study-plan exploration, which named every unverified rule after itself — this one was `EXAM_BUFFER_INVENTED = 7`, "days between coursework done and sit date", listed with its owner as FinServ + state ops. The product copied the number into `EXAM_BUFFER_DAYS` only so the two surfaces would not quote different gaps. ⚠ It is load-bearing now: it sets the plan a learner is given, and it decides when the card refuses to make one at all. Every "seven days" in this handoff traces back to that one placeholder.',
+            status: 'Needs weigh-in',
+            owner: 'FinServ + state ops',
           },
           {
             question: 'Should Step 1’s Study Journey list reflect the learner’s real progress?',
@@ -1751,6 +1758,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           },
         ],
         openItems: [
+          'Whether seven days is the right review buffer — it is an invented placeholder, and it sets both the plan and the point at which no plan fits.',
           'What the real Progress ↔ Readiness correlation rule will be, once it exists.',
           'Whether the Readiness section ships on — it is `defaultEnabled: false`, so the panel a reviewer sees by default is only half of what this handoff documents.',
         ],
