@@ -5,6 +5,7 @@ import { paceStandingMessage, type PaceStanding } from '@/components/compass/pac
 import { AtlasPaceRingCard } from '@/components/compass/AtlasPaceRingCard'
 import { ExamDateScenario } from './ExamDateScenario'
 import { AtlasRegionThumb } from './AtlasRegionThumb'
+import { AtlasStepsFrame } from './AtlasStepsFrame'
 import { pacePreviewProps, PREVIEW_ACCESS_ENDS } from './atlasPacePreview'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
 import {
@@ -214,14 +215,19 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
       inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, initialLevel: 3 })),
   },
 
+  /* ⚠ THE COLUMN, NOT THE PAGE (2026-10-21, Jillienne: "why are we showing
+     the full screen? remove and only show the steps"). These drew `PageFrame`
+     — the whole Home — so three journey steps were documented with a picture
+     of everything around them. `AtlasStepsFrame` crops the same real page to
+     the journey column; see its note for why it is still a frame. */
   'atlas-home-steps': {
     Default: () =>
-      createElement(PageFrame, {
+      createElement(AtlasStepsFrame, {
         title: 'Study Journey — in progress',
         ff: 'atlas-v3-progress:on-track',
       }),
     'All coursework done': () =>
-      createElement(PageFrame, {
+      createElement(AtlasStepsFrame, {
         title: 'Study Journey — all coursework done',
         ff: 'atlas-v3-progress:completed',
       }),

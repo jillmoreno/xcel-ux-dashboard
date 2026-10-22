@@ -1751,11 +1751,6 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
               'It already does. Every step of the Progress control carries a `stepsDone`, so moving it ticks the stops behind the learner and moves the bold current row forward — Not Started leaves nothing checked with Pre-Licensing Education current; Education Completed checks that row and makes Certification Exam current; Affidavit Signed checks the first five. The lesson count moves with it. ⚠ Completion does not replace the list: the Congratulations block exists in the component but draws only under the other progress card, so this page keeps the list and puts the congratulation in the course head.',
             status: 'Decided',
           },
-          {
-            question: 'Why does Home skip "Schedule State Exam," the published first step after coursework?',
-            decision: 'It does not skip it. Scheduling sits inside Step 2, "Pass State Exam", as the "When is your exam?" prompt with Add Date and Exam Information under it — the act is on the page without taking a step of its own. The published sequence runs Schedule, Pass, Apply; Home runs Complete Coursework, Pass, Get Licensed, and folds scheduling into the middle one.',
-            status: 'Decided',
-          },
         ],
         openItems: [
           'Whether seven days is the right review buffer — it is an invented placeholder, and it sets both the plan and the point at which no plan fits.',
