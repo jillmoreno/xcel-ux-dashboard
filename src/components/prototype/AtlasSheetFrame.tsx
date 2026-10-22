@@ -19,13 +19,33 @@ import { useCallback, useRef, useState, type CSSProperties } from 'react'
  * import and draw. A hand-built copy would be a picture of a sheet, free to
  * drift from the sheet.
  */
-export function AtlasSheetFrame({ open, title }: { open: string; title: string }) {
+export function AtlasSheetFrame({
+  open,
+  then: drill,
+  title,
+}: {
+  open: string
+  /**
+   * A row to press once the sheet is up, by its visible label.
+   *
+   * ⚠ THE DRILL-DOWNS HAVE NO URL OF THEIR OWN (2026-10-22, Jillienne: "these
+   * should have their own section like the other sheet views do"). Exam
+   * Details' three rows open inside the panel, and `?open=` addresses sheets
+   * rather than the views under them — so the only way to show one is to take
+   * the path a learner takes: open the sheet, then press the row. The frame is
+   * same-origin, so that is one `.click()`; `pointer-events: none` blocks a
+   * reader's input, never a script's.
+   */
+  then?: string
+  title: string
+}) {
   const frame = useRef<HTMLIFrameElement | null>(null)
   const [box, setBox] = useState<Box | null>(null)
 
   const onLoad = useCallback(() => {
     const started = Date.now()
     let last: Box | null = null
+    let drilled = false
     const measure = () => {
       const win = frame.current?.contentWindow
       const doc = win?.document
@@ -36,6 +56,18 @@ export function AtlasSheetFrame({ open, title }: { open: string; title: string }
       try {
         const sheet = doc.querySelector('[role="dialog"]')
         if (!sheet) return again()
+        /* Press the row before measuring: the detail view is a different
+           height, and measuring the summary first would crop to the wrong
+           box and then settle on it. */
+        if (drill && !drilled) {
+          const row = [...sheet.querySelectorAll('button')].find((b) =>
+            (b.textContent ?? '').includes(drill),
+          )
+          if (!row) return again()
+          drilled = true
+          row.click()
+          return again()
+        }
         const r = sheet.getBoundingClientRect()
         const next: Box = {
           top: Math.round(r.top + win.scrollY),
@@ -60,7 +92,7 @@ export function AtlasSheetFrame({ open, title }: { open: string; title: string }
       }
     }
     measure()
-  }, [])
+  }, [drill])
 
   return (
     <div style={{ ...plateStyle, width: box?.width ?? GUESS_W, height: box?.height ?? GUESS_H }}>

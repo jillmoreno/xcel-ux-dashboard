@@ -318,6 +318,29 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
       createElement(AtlasSheetFrame, { open: 'step:apply-license', title: 'Applying for a License sheet' }),
     'Sheet — State Requirements': () =>
       createElement(AtlasSheetFrame, { open: 'requirements', title: 'State Requirements sheet' }),
+    /* ⚠ THE THREE DRILL-DOWNS UNDER EXAM INFORMATION (2026-10-22, Jillienne:
+       "these should have their own section like the other sheet views do").
+       They have no `?open=` of their own, so each one opens the Exam Details
+       sheet and then presses its row — the path a learner takes. The `then`
+       string is the row's visible label; see `AtlasSheetFrame`. */
+    'Sheet — How to schedule your exam': () =>
+      createElement(AtlasSheetFrame, {
+        open: 'exam-details',
+        then: 'How to schedule your exam',
+        title: 'Schedule State Exam detail',
+      }),
+    'Sheet — What to expect on your exam': () =>
+      createElement(AtlasSheetFrame, {
+        open: 'exam-details',
+        then: 'What to expect on your exam',
+        title: 'Pass State Exam detail',
+      }),
+    'Sheet — Common questions': () =>
+      createElement(AtlasSheetFrame, {
+        open: 'exam-details',
+        then: 'Common questions',
+        title: 'Common questions detail',
+      }),
   },
 
   // ⚠ ALL FOUR ARE REAL PROPS (2026-10-21). Three of these states carried a
