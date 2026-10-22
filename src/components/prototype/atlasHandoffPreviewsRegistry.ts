@@ -241,19 +241,21 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
     ),
   },
 
+  /* ⚠ FOUR SCREENS, NOT SEVEN (2026-10-21, Jillienne: "simplify the exam
+     date"). The three that went — a date inside the access window, one past
+     it, and one too close for any plan — are about what the PACE does with a
+     date, and the Panel documents all three against its own column
+     ("Exam before the course expires", "Exam after the course expires",
+     "Study pace — no plan fits"). Here they were the same two pictures with
+     different numbers. What is left is the flow: ask, pick, saved, remove. */
   'atlas-home-exam-date': {
-    Asking: () => createElement(ExamDateScenario, {}),
-    'Picking a date': () => createElement(ExamDateScenario, { picking: true }),
-    Scheduled: () => createElement(ExamDateScenario, { examDate: '2026-05-28' }),
-    'Date inside the access window': () =>
-      createElement(ExamDateScenario, { examDate: '2026-06-02' }),
-    'Date past the access window': () =>
-      createElement(ExamDateScenario, { examDate: '2026-07-15' }),
-    'Date too close for any plan': () =>
-      createElement(ExamDateScenario, { examDate: '2026-05-14' }),
-    /* Editing is the Scheduled date reopened — same stored date, the calendar
-       showing, which is exactly what Edit does. */
-    Editing: () => createElement(ExamDateScenario, { examDate: '2026-05-28', picking: true }),
+    'When is your exam?': () => createElement(ExamDateScenario, {}),
+    'The calendar': () => createElement(ExamDateScenario, { picking: true }),
+    'The date is added': () => createElement(ExamDateScenario, { examDate: '2026-05-28' }),
+    /* Remove only exists on a date already stored, so this is the calendar
+       reopened on it — which is exactly the screen Edit gives you. */
+    'Removing the date': () =>
+      createElement(ExamDateScenario, { examDate: '2026-05-28', picking: true }),
   },
   /* THE PANEL ITSELF — its two compositions, which is the one thing neither
      card can show on its own: what the column looks like with Exam readiness
