@@ -1583,17 +1583,11 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
               'Implemented in src/components/compass/AtlasHomeJillMain.tsx (`ExamDatePrompt`) and src/components/compass/AtlasExamCalendar.tsx.',
             ],
           },
-          edgeCases: [
-            'The card is wired into the Home layout at a fixed position (between Course Progress and Readiness) regardless of which stage it is in, so the column’s height changes as the card cycles through its four stages — nothing reserves a fixed height for it.',
-            'The "here" registration link in the No stage reads as bold text rather than a real link, so a learner clicking it today gets nothing — it is drawn exactly as a link would be, which risks reading as a bug rather than an unfinished feature.',
-          ],
           statesMatrix: [
             { question: 'What does setting a date actually change?', answer: 'Three things at once. Step 2 becomes the Scheduled stop. The pace column gains a FLORIDA STATE EXAM figure row with its own count. And the pace re-plans — coursework has to finish seven days before the exam (`EXAM_BUFFER_DAYS`), so adding 28 May moved the card from "4 Week Goal · June 5" to "1 Week Goal · about 14 hours a week · May 17". Measured, not inferred.' },
             { question: 'What if the exam is too soon for any plan to fit?', answer: 'The pace card says so, naming the EXAM rather than the access window — "Not enough time before your exam", with no advice line, because a booked exam is not something a learner can extend. ⚠ It is not a dead end any more: Remove is sitting next to the date that caused it.' },
             { question: 'Where is the date kept, and who else sees it?', answer: '`cgp.examDate`, in the browser — so it is per-device and survives a reload, and a date set in Compass is already there when Home opens. ⚠ It is not per learner. Two people sharing a browser share an exam date, which is a demo-fixture property and not a shipping one.' },
             { question: 'Why does the calendar open on May rather than this month?', answer: 'Because the whole prototype runs on a fixture clock anchored to 2026-05-11, and the calendar takes `today` as a prop rather than calling `new Date()`. When it did call the wall clock, the grid opened on the real month while the pace model planned from May — the same date then read one count in Step 2 and a different one on the pace card.' },
-            { question: 'What does this look like on Home today?', answer: 'Nothing — the card is not rendered at all. It is built and complete; nothing on the current Home mounts it. Everything else here describes what it does once it is placed.' },
-            { question: 'Where is it meant to sit?', answer: 'Between Course progress and Readiness in the left column — the slot it was designed against.' },
           ],
           ctas: [
             { name: 'Add Date', does: 'Opens the month calendar inside Step 2. The entry point for the whole flow.' },
