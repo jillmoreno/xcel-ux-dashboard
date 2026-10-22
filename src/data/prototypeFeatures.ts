@@ -1732,9 +1732,9 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
       decisions: {
         items: [
           {
-            question: 'Why does the Florida exam sheet quote PSI\u2019s rules?',
+            question: 'How are the sheets kept in sync with each state\u2019s exam details and requirements?',
             decision:
-              'It should not. "Exam Information" opens on "Florida licence \u00b7 Pearson VUE", and its own Common questions view then answers with PSI\u2019s reschedule policy under the header "Demo content \u2014 answers pending confirmation from PSI". PSI is New York\u2019s provider. A learner reading both lines is told two different companies run their exam, and the one they would act on is the wrong one. ⚠ It is the same rule as the states matrix below: the sheet has no confirmed Florida answers, so under "if the data is not there the link should not show", that row should not be rendering yet.',
+              'Undecided. The exam provider, the fees, the pass mark and the licensing requirements all differ by jurisdiction and all change without us \u2014 and the three sheets are only as good as that data. There is no source or refresh story for it yet.',
             status: 'Needs weigh-in',
             owner: 'Product',
           },
