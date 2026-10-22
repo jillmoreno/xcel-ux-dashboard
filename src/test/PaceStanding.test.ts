@@ -46,7 +46,7 @@ describe('the pace standing sentence', () => {
        offers a way back inside the goal the learner chose, off track sends them
        to change the goal — so it matches on the recovery rather than the
        metaphor. */
-    expect(behind).toMatch(/one extra session/i)
+    expect(behind).toMatch(/one extra study session/i)
     expect(behind).not.toMatch(/Study Plan/)
     expect(off).toMatch(/Study Plan/)
     // Off track is the state that names the date it will not meet.
@@ -59,7 +59,12 @@ describe('the pace standing sentence', () => {
        on track" — and the rewrite that dropped that empty clause gave it the
        same "your N-week goal" frame as the other three. Off track is still out:
        it names a DATE rather than the goal, on purpose. */
-    for (const standing of ['behind', 'ahead', 'no-data', 'on-track'] as PaceStanding[]) {
+    /* ⚠ `behind` LEFT THE LOOP ON 2026-10-21. Its sentence stopped naming the
+       week count — "You're averaging 2¾ hours a week, just under your goal" —
+       because the figure and the judgement now share one breath and the goal
+       is in the row directly above. The other three still name it, and the
+       plural trap this case exists for is still live for them. */
+    for (const standing of ['ahead', 'no-data', 'on-track'] as PaceStanding[]) {
       const said = paceStandingMessage({ ...ARGS, standing })
       expect(said, said).toMatch(/2-week goal/)
       expect(said, said).not.toMatch(/2 weeks goal/)

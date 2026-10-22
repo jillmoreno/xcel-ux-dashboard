@@ -65,7 +65,8 @@ export function paceStandingMessage({
   weeks: number
   finishIso: string
 }): string {
-  const averaging = `You’re averaging ${formatHours(observedHoursFor(goalHoursPerWeek, standing))} a week.`
+  const hours = formatHours(observedHoursFor(goalHoursPerWeek, standing))
+  const averaging = `You’re averaging ${hours} a week.`
   /* ⚠ ADJECTIVAL, NOT PLURAL — every use below is "your … goal", where the
      plural form reads "your 2 weeks goal". Hyphenated and singular is what
      that slot takes. */
@@ -85,7 +86,12 @@ export function paceStandingMessage({
     return `${averaging} That’s ahead of your ${goalWeeks} goal — keep it up and you’ll finish early.`
   }
   if (standing === 'behind') {
-    return `${averaging} That’s a little under your ${goalWeeks} goal. One extra session this week puts you back on it.`
+    /* ⚠ ONE SENTENCE, NOT TWO, and it does not name the week count (2026-10-21,
+       the direct wording). "You’re averaging 2¾ hours a week." followed by
+       "That’s a little under your 3-week goal." says the same thing twice —
+       the figure and the judgement belong in one breath, and the learner can
+       see the goal in the row directly above. */
+    return `You’re averaging ${hours} a week, just under your goal. One extra study session this week will help you get back on track.`
   }
   if (standing === 'off-track') {
     return `${averaging} At this rate you won’t finish by ${formatPaceDate(finishIso)}. Open your ${PACE_PLAN_LINK} to adjust your goal.`
