@@ -1739,7 +1739,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
           {
             question: 'Should the collected exam date actually drive anything (pace model, Study Journey)?',
             decision:
-              'Yes, and it does — answered 2026-10-20 and shipped. The date re-plans the study pace against the exam minus `EXAM_BUFFER_DAYS` (7), adds the FLORIDA STATE EXAM figure row to the pace column, and turns Step 2 into its Scheduled stop. The rule that made it safe to wire: a page may act on a date only if it can show it, change it and remove it. Step 2 does all three, which is what earns this page the right to act on the date at all — A surface that can only display a stored date dead-ends its own pace card, with nothing on screen to undo it.',
+              'Yes. The date re-plans the pace to finish seven days before the exam, adds the exam row to the pace column, and moves Step 2 to Scheduled. Safe to wire here because Step 2 can show the date, change it and remove it — a page that can only display one leaves the learner no way to undo it.',
             status: 'Decided',
           },
           {
