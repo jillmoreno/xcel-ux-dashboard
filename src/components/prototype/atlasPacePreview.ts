@@ -6,6 +6,7 @@ import {
   NOT_STARTED_NIGHTS,
 } from '@/lib/studyPace'
 import { noPaceMessage } from '@/components/compass/noPaceMessage'
+import { paceStandingMessage, type PaceStanding } from '@/components/compass/paceStanding'
 
 /**
  * Ring-card props for a given pair of deadlines, computed by the real model.
@@ -21,11 +22,27 @@ export function pacePreviewProps({
   examDate,
   percent = 0,
   hoursRemaining = HOURS_REMAINING,
+  standing,
 }: {
   accessExpiresAt?: string
   examDate?: string
   percent?: number
   hoursRemaining?: number
+  /**
+   * The sentence under the goal, built from THIS card's own plan.
+   *
+   * ⚠ THE REASON IT IS HERE RATHER THAN AT THE CALL SITE. Three exam states
+   * shared one hand-built `paceStandingMessage({ goalHoursPerWeek: 4, weeks: 3
+   * })`, so a card reading "2 Week Goal · about 8 hours / week" carried the
+   * sentence "You’re averaging 4 hours a week. That’s right on track for your
+   * 3-week goal." Both halves wrong, on the one line whose whole job is to
+   * agree with the figures above it. Built here it reads the same `fit` the
+   * goal does and cannot drift from it.
+   *
+   * Absent leaves `standingMessage` undefined, which is the 0% card: the Home
+   * shows the starting-point line until Progress moves.
+   */
+  standing?: PaceStanding
 }) {
   const model = studyPace({
     today: PREVIEW_TODAY,
@@ -42,10 +59,16 @@ export function pacePreviewProps({
      plan. */
   const fit = preset.state === 'no' ? model.presets.find((x) => x.state !== 'no') : preset
   const examDays = examDate ? daysUntil(examDate, PREVIEW_TODAY) : null
+  const weeks = fit ? Math.max(1, Math.round(fit.days / 7)) : undefined
+  const hoursPerWeek = fit ? Math.max(1, Math.round(fit.minsPerWeek / 60)) : undefined
   return {
     percent,
-    weeks: fit ? Math.max(1, Math.round(fit.days / 7)) : undefined,
-    hoursPerWeek: fit ? Math.max(1, Math.round(fit.minsPerWeek / 60)) : undefined,
+    weeks,
+    hoursPerWeek,
+    standingMessage:
+      standing && fit && weeks != null && hoursPerWeek != null
+        ? paceStandingMessage({ standing, goalHoursPerWeek: hoursPerWeek, weeks, finishIso: fit.finishIso })
+        : undefined,
     expected: fit ? { value: formatPaceDate(fit.finishIso), note: inDays(fit.days) } : undefined,
     exam:
       examDate && examDays != null

@@ -74,17 +74,6 @@ const quickLinks = (props: Record<string, unknown>, entries?: string[]) => () =>
    `bare` one: a preview is only true if it is given what the page gives. */
 const NOOP = () => {}
 
-/* ⚠ A STANDING, BECAUSE THESE CARDS ARE ABOVE 0%. The Home shows the
-   starting-point line only while Progress is Not Started and a standing
-   sentence after that, so a 42% card with no standing draws copy the page
-   would never pair with that dial. */
-const ON_TRACK = paceStandingMessage({
-  standing: 'on-track',
-  goalHoursPerWeek: 4,
-  weeks: 3,
-  finishIso: '2026-11-02',
-})
-
 const inPanel = (node: ReactNode) => createElement(AtlasProgressPanel, null, node)
 
 const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
@@ -144,28 +133,47 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
 
     /* The three exam-date states, computed by the real model against the
        committed access window (10 June) so the pacing difference between them
-       is the product's arithmetic and not a claim. */
+       is the product's arithmetic and not a claim.
+
+       ⚠ ALL THREE PASS A STANDING, because all three are above 0%. The Home
+       shows the starting-point line only while Progress is Not Started, so a
+       42% card without one draws copy the page would never pair with that
+       dial. `pacePreviewProps` BUILDS the sentence from the same plan the week
+       goal comes from — see the `standing` note there for what went wrong when
+       the three shared one hand-written message. */
     'With an exam date entered': () =>
       inPanel(
         createElement(AtlasPaceRingCard, {
-          ...pacePreviewProps({ accessExpiresAt: PREVIEW_ACCESS_ENDS, examDate: '2026-05-28', percent: 42 }),
-          standingMessage: ON_TRACK,
+          ...pacePreviewProps({
+            accessExpiresAt: PREVIEW_ACCESS_ENDS,
+            examDate: '2026-05-28',
+            percent: 42,
+            standing: 'on-track',
+          }),
           onCustomize: NOOP,
         }),
       ),
     'Exam before the course expires': () =>
       inPanel(
         createElement(AtlasPaceRingCard, {
-          ...pacePreviewProps({ accessExpiresAt: PREVIEW_ACCESS_ENDS, examDate: '2026-06-02', percent: 42 }),
-          standingMessage: ON_TRACK,
+          ...pacePreviewProps({
+            accessExpiresAt: PREVIEW_ACCESS_ENDS,
+            examDate: '2026-06-02',
+            percent: 42,
+            standing: 'on-track',
+          }),
           onCustomize: NOOP,
         }),
       ),
     'Exam after the course expires': () =>
       inPanel(
         createElement(AtlasPaceRingCard, {
-          ...pacePreviewProps({ accessExpiresAt: PREVIEW_ACCESS_ENDS, examDate: '2026-07-15', percent: 42 }),
-          standingMessage: ON_TRACK,
+          ...pacePreviewProps({
+            accessExpiresAt: PREVIEW_ACCESS_ENDS,
+            examDate: '2026-07-15',
+            percent: 42,
+            standing: 'on-track',
+          }),
           onCustomize: NOOP,
         }),
       ),
