@@ -1,5 +1,4 @@
 import type { Binding } from '@/lib/studyPace'
-import { EXAM_BUFFER_DAYS, formatPaceDateLong } from '@/lib/studyPace'
 
 /**
  * WHY NO STUDY PACE FITS — one wording, 2026-10-19 (Jillienne, after the
@@ -40,11 +39,16 @@ export type NoPaceReason = {
   /**
    * The ceiling itself — the model's `hardEndIso`.
    *
-   * ⚠ ON THE EXAM ARM THIS IS NOT THE EXAM DATE. `resolveCeiling` subtracts
-   * `EXAM_BUFFER_DAYS` from it: `hardEndIso` is "the last day coursework may
-   * finish", a week earlier. The first draft of this file printed it as the
-   * exam and told a learner sitting an exam on May 14 that it was "today —
-   * May 7". The copy below says what the date IS.
+   * ⚠ NOTHING PRINTS THIS, and that is deliberate (2026-10-21) — see the
+   * copy below. It stays on the shape, as `days` does, because it is what
+   * every caller already has to hand and the moment this copy wants a date
+   * again it is the only one that is safe to print.
+   *
+   * ⚠ IT IS NOT THE EXAM DATE. `resolveCeiling` subtracts `EXAM_BUFFER_DAYS`
+   * from it: `hardEndIso` is "the last day coursework may finish", a week
+   * earlier. The first draft of this file printed it as the exam and told a
+   * learner sitting an exam on May 14 that it was "today — May 7". Anything
+   * that prints it has to say what the date IS.
    */
   dateIso: string
 }
@@ -66,14 +70,25 @@ const ACCESS: NoPaceMessage = {
 
 export function noPaceMessage(reason?: NoPaceReason): NoPaceMessage {
   if (!reason || reason.binding === 'access' || reason.binding === 'none') return ACCESS
-  /* ⚠ NO COUNTDOWN. The obvious sentence is "your exam is in N days", and it
-     is the wrong one twice over: the model hands over the COURSEWORK
+  /* ⚠ NO DATES AND NO COUNTDOWN ON THIS ARM (2026-10-21, Jillienne's own
+     wording — two sentences, and this is both of them).
+
+     The countdown was never an option: the model hands over the COURSEWORK
      deadline rather than the exam, and `days` to it goes negative as soon as
-     the exam is nearer than the buffer — which is most of the ways into this
-     state. A date and what it means survives both. */
+     the exam is nearer than the buffer, which is most of the ways into this
+     state.
+
+     The DATE was shown until this change — "Coursework has to finish by
+     November 1, 7 days before the exam, to leave time to review." It is
+     accurate and it is a third sentence of arithmetic in front of someone
+     who has just been told their plan does not fit. The two sentences left
+     say the problem and the one move that fixes it; the buffer is the
+     model's business, not the card's. ⚠ If it comes back, print
+     `reason.dateIso` and say it is the COURSEWORK deadline — never the
+     exam. */
   return {
     title: 'Not enough time before your exam',
-    note: `There isn’t enough time to complete your coursework before your exam date. Coursework has to finish by ${formatPaceDateLong(reason.dateIso)}, ${EXAM_BUFFER_DAYS} days before the exam, to leave time to review.`,
+    note: 'There isn’t enough time to complete your coursework before your exam date.',
     /* ⚠ THE EXAM ARM HAS ADVICE NOW (2026-10-21, the direct wording). The note
        above this function still argues it should not: "a booked exam is not
        something a learner can buy more of, and inventing an equivalent would

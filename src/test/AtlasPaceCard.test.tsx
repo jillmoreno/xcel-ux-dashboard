@@ -366,27 +366,31 @@ describe('the ring card when no pace fits', () => {
     expect(screen.queryByText('Not enough access left')).toBeNull()
   })
 
-  it('offers no fix on the exam arm — a booked exam is not something to extend', () => {
+  it('offers rescheduling on the exam arm, never extending access', () => {
     render(
       <AtlasPaceRingCard
         percent={0}
         noPace={{ binding: 'exam', days: -4, dateIso: '2026-05-07' }}
       />,
     )
+    expect(screen.getByText(/Consider rescheduling your exam/)).toBeTruthy()
     expect(screen.queryByText(/Extend your access/)).toBeNull()
   })
 
-  /* ⚠ THE DATE IS THE COURSEWORK DEADLINE, NOT THE EXAM — `hardEndIso` is
-     `EXAM_BUFFER_DAYS` earlier. The first draft printed it as the exam and
-     told a learner sitting on May 14 that their exam was "today — May 7". */
-  it('calls the date what it is — the coursework deadline, not the exam', () => {
+  /* ⚠ THE EXAM ARM PRINTS NO DATE (2026-10-21) — two sentences, the problem
+     and the move. It is pinned because the date is tempting and it is a trap:
+     `hardEndIso` is the COURSEWORK deadline, `EXAM_BUFFER_DAYS` before the
+     exam, and the first draft printed it as the exam itself — telling a
+     learner sitting on May 14 that their exam was "today — May 7". */
+  it('prints no date on the exam arm, and never the coursework deadline as the exam', () => {
     render(
       <AtlasPaceRingCard
         percent={0}
         noPace={{ binding: 'exam', days: -4, dateIso: '2026-05-07' }}
       />,
     )
-    expect(screen.getByText(/Coursework has to finish by May 7/)).toBeTruthy()
+    expect(screen.queryByText(/May 7/)).toBeNull()
+    expect(screen.queryByText(/Coursework has to finish by/)).toBeNull()
     expect(screen.queryByText(/exam is today/)).toBeNull()
   })
 
