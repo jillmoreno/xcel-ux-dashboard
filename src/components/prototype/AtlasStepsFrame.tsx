@@ -22,8 +22,23 @@ import { useCallback, useRef, useState, type CSSProperties } from 'react'
  * during this project, and a typed offset would be wrong by the next layout
  * change and wrong silently. The frame asks the column where it is.
  *
- * Not interactive: a click on a journey link would navigate the frame away
- * from the page the crop was measured against, leaving an empty plate.
+ * ⚠ THE LINKS ARE CLICKABLE HERE (2026-10-21, Jillienne: "blue links should
+ * be clickable"). Exam Information and Applying for a License open their
+ * sheets in the preview, for real.
+ *
+ * Step 1's rows do not respond, and that is the PROTOTYPE rather than the
+ * design: those rows are meant to open the course material, and `LINKS_OFF`
+ * in `AtlasHomeJillMain` withholds `onOpenStop` because leaving Home is the
+ * one thing this demo refuses to do. Passing clicks through does not change
+ * that, and should not — a preview that navigated out of Home would be
+ * showing something the prototype does not do.
+ *
+ * ⚠ WHICH IS WHY THE CROP FOLLOWS THE SHEET. It arrives as a 480-wide panel
+ * against the right of the page, overlapping the column — crop to the column
+ * alone and clicking a link half-covers the thing you were reading with a
+ * slice of something you cannot see. The box is the UNION of the column and
+ * any open dialog, so the click shows its own result and the plate shrinks
+ * back when the sheet closes.
  */
 export function AtlasStepsFrame({ ff, title }: { ff?: string; title: string }) {
   const frame = useRef<HTMLIFrameElement | null>(null)
@@ -32,12 +47,21 @@ export function AtlasStepsFrame({ ff, title }: { ff?: string; title: string }) {
   const onLoad = useCallback(() => {
     const started = Date.now()
     let last: Box | null = null
-    const tick = () => {
+    /* ⚠ THE WATCH NEVER STOPS, because the thing it is watching for is a
+       reader's click. Settling the first measurement is the load-time job;
+       after that this is what notices a sheet opening or closing. 300ms is
+       slow enough to cost nothing and fast enough that the plate does not
+       visibly lag the panel. */
+    const watch = () => {
+      const win = frame.current?.contentWindow
+      if (win) win.setTimeout(() => { measure(true); watch() }, 300)
+    }
+    const measure = (settled: boolean) => {
       const win = frame.current?.contentWindow
       const doc = win?.document
       if (!win || !doc) return
       const again = () => {
-        if (Date.now() - started < 8000) win.setTimeout(tick, 120)
+        if (Date.now() - started < 8000) win.setTimeout(() => measure(false), 120)
       }
       try {
         /* The column is the journey section's parent — the flex child that
@@ -45,13 +69,21 @@ export function AtlasStepsFrame({ ff, title }: { ff?: string; title: string }) {
            crop to Step 1. */
         const section = doc.querySelector('section[aria-label="Study journey"]')
         const col = section?.parentElement
-        if (!col) return again()
-        const r = col.getBoundingClientRect()
+        if (!col) return settled ? undefined : again()
+        /* The column, plus whatever sheet a click has opened over it. */
+        const rects = [col.getBoundingClientRect()]
+        const sheet = doc.querySelector('[role="dialog"]')
+        if (sheet) {
+          const sr = sheet.getBoundingClientRect()
+          if (sr.width > 0 && sr.height > 0) rects.push(sr)
+        }
+        const top = Math.min(...rects.map((x) => x.top))
+        const left = Math.min(...rects.map((x) => x.left))
         const next: Box = {
-          top: Math.round(r.top + win.scrollY) - PAD,
-          left: Math.round(r.left + win.scrollX) - PAD,
-          width: Math.ceil(r.width) + PAD * 2,
-          height: Math.ceil(r.height) + PAD * 2,
+          top: Math.round(top + win.scrollY) - PAD,
+          left: Math.round(left + win.scrollX) - PAD,
+          width: Math.ceil(Math.max(...rects.map((x) => x.right)) - left) + PAD * 2,
+          height: Math.ceil(Math.max(...rects.map((x) => x.bottom)) - top) + PAD * 2,
         }
         /* ⚠ WAIT FOR THE COLUMN TO FINISH LAYING OUT, and prove it by reading
            the same box twice. The first version took whatever the first find
@@ -59,18 +91,25 @@ export function AtlasStepsFrame({ ff, title }: { ff?: string; title: string }) {
            own content had height. A sane floor alone would not have caught
            it either: the trap is a box that is plausible and still growing,
            which a second identical read is what rules out. */
-        if (next.width < MIN || next.height < MIN) return again()
-        if (!last || last.top !== next.top || last.left !== next.left || last.width !== next.width || last.height !== next.height) {
-          last = next
-          return again()
-        }
+        if (next.width < MIN || next.height < MIN) return settled ? undefined : again()
+        const same =
+          last != null &&
+          last.top === next.top &&
+          last.left === next.left &&
+          last.width === next.width &&
+          last.height === next.height
+        last = next
+        /* Settling needs the same box twice; watching does not — a sheet that
+           has just opened should be shown on the first read of it. */
+        if (!settled && !same) return again()
         setBox(next)
+        if (!settled) watch()
       } catch {
         /* Same-origin today; the guess still frames the column if that ever
            changes. */
       }
     }
-    tick()
+    measure(false)
   }, [])
 
   return (
@@ -82,6 +121,13 @@ export function AtlasStepsFrame({ ff, title }: { ff?: string; title: string }) {
         src={`${import.meta.env.BASE_URL}dashboard-rebrand?demo=1&section=dashboard&brand=xcel&chrome=off${
           ff ? `&ff=${ff}` : ''
         }`}
+        /* ⚠ LAZY, AND IT IS NOT AN OPTIMISATION (2026-10-21). Seven of these
+           render on the Steps tab, each loading the whole Atlas Home, and
+           started together they exhaust the browser's per-origin connection
+           limit — two of the seven simply never loaded, and an iframe that
+           never loads never fires `onLoad`, so its plate sat on the guess
+           showing nothing at all. Deferring to the viewport staggers them. */
+        loading="lazy"
         onLoad={onLoad}
         style={{
           position: 'absolute',
@@ -90,7 +136,6 @@ export function AtlasStepsFrame({ ff, title }: { ff?: string; title: string }) {
           width: PAGE_W,
           height: PAGE_H,
           border: 0,
-          pointerEvents: 'none',
         }}
       />
     </div>
@@ -102,7 +147,10 @@ type Box = { top: number; left: number; width: number; height: number }
 /** The page's own width with the chrome off, and tall enough that Step 3 is
  *  laid out before the column is measured. */
 const PAGE_W = 1438
-const PAGE_H = 1600
+/* ⚠ TALLER THAN THE SHEET, not just than the column. An open Exam Details
+   measured 1616 with the column, and a frame shorter than the crop it is
+   asked for shows a strip of blank plate under the content. */
+const PAGE_H = 2000
 /** A little air around the column, so the crop does not shave the ring of the
  *  first stop or the right edge of the exam prompt. */
 const PAD = 8

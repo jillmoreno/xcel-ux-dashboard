@@ -77,6 +77,10 @@ const NOOP = () => {}
 
 const inPanel = (node: ReactNode) => createElement(AtlasProgressPanel, null, node)
 
+/** One Steps render — the journey column of the real page, pinned to a state. */
+const steps = (what: string, ff: string) => () =>
+  createElement(AtlasStepsFrame, { title: `Study Journey — ${what}`, ff })
+
 const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
   /* Four sections, in the order the panel draws them: the dial, the pace, the
      exam row, then readiness. */
@@ -221,16 +225,21 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
      of everything around them. `AtlasStepsFrame` crops the same real page to
      the journey column; see its note for why it is still a frame. */
   'atlas-home-steps': {
-    Default: () =>
-      createElement(AtlasStepsFrame, {
-        title: 'Study Journey — in progress',
-        ff: 'atlas-v3-progress:on-track',
-      }),
-    'All coursework done': () =>
-      createElement(AtlasStepsFrame, {
-        title: 'Study Journey — all coursework done',
-        ff: 'atlas-v3-progress:completed',
-      }),
+    'Nothing started': steps('nothing started', 'atlas-v3-progress:not-started'),
+    Default: steps('in progress', 'atlas-v3-progress:on-track'),
+    'Part-way through the coursework': steps('part-way', 'atlas-v3-progress:developing'),
+    'Education finished, exam next': steps('education done', 'atlas-v3-progress:education-done'),
+    'One stop left': steps('one stop left', 'atlas-v3-progress:affidavit-done'),
+    'All coursework done': steps('all coursework done', 'atlas-v3-progress:completed'),
+    /* ⚠ THE SECOND AXIS OF THE COURSE CONTROL, not the Progress one — a
+       regulated course is a property of the LICENCE, so it is pinned with
+       `dashboard-course-state:<state>:regulated` and crosses every Progress
+       state rather than being one of them. Shown at the same point in the
+       course as Default, so the only difference a reader sees is the lock. */
+    'Regulated course — stops unlock in order': steps(
+      'regulated',
+      'dashboard-course-state:fl:regulated,atlas-v3-progress:on-track',
+    ),
   },
 
   'atlas-home-exam-date': {
