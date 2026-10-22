@@ -128,9 +128,6 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
           onCustomize: NOOP,
         }),
       ),
-    'Study pace — access has ended': () =>
-      inPanel(createElement(AtlasPaceRingCard, { percent: 34, weeks: 3, hoursPerWeek: 4, expired: true })),
-
     /* The three exam-date states, computed by the real model against the
        committed access window (10 June) so the pacing difference between them
        is the product's arithmetic and not a claim.
@@ -177,6 +174,16 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
           onCustomize: NOOP,
         }),
       ),
+
+    /* ⚠ LAST OF THE PACE STATES, because it is the one that ends them. It sat
+       mid-list under the name "Study pace — access has ended", which buried
+       the only state where there IS no study pace among the five that have
+       one. `expired` is read ahead of everything else on the card, so no
+       `weeks` or `hoursPerWeek` are passed here — the old render passed both
+       and the card ignored both, which read as though the figures were still
+       live and merely hidden. */
+    'Access has ended — the course expired': () =>
+      inPanel(createElement(AtlasPaceRingCard, { percent: 34, expired: true })),
 
     'Readiness — Not Started': () =>
       inPanel(createElement(AtlasReadinessCard, { bare: true, matchPaceEyebrow: true, notStarted: true })),
