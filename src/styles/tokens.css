@@ -7468,6 +7468,24 @@ a.cre-library-card-title::after {
   --admin-logo-pill: #9a1b1e;
   --admin-success: #10b981;
   --admin-success-strong: #059669; /* emerald-600 — a step under success */
+  /* STATUS CARDS — PartnerHub's Learner Compliance Analysis cards (the
+     reference's all-learners page; xcel-admin-tool.html .status-card), used for
+     Students' status-style tile row. Each status: the strip, then the deeper
+     shade for its percentage, hover and selected edge. */
+  --admin-status-card-edge: #ececec;
+  --admin-status-ink: #404040;
+  --admin-status-desc: #616161;
+  --admin-status-sep: #c7c7c7;
+  --admin-status-neutral: #c7c7c7;
+  --admin-status-neutral-deep: #a2a2a2;
+  --admin-status-blue: #015994;
+  --admin-status-blue-deep: #013c64;
+  --admin-status-red: #cb0000;
+  --admin-status-red-deep: #790000;
+  --admin-status-green: #018937;
+  --admin-status-green-deep: #005221;
+  --admin-status-dark: #404040;
+  --admin-status-dark-deep: #191919;
   --admin-success-ink: #047857;
   --admin-warn-tint: #fffbeb;
   --admin-warn-edge: #fde68a;
@@ -7602,6 +7620,10 @@ a.cre-library-card-title::after {
    inline styles cannot carry :hover. */
 .cre-admin-tile:hover { border-color: var(--admin-hover-edge) !important; }
 .cre-admin-tile:focus-visible { box-shadow: 0 0 0 2px var(--admin-brand) !important; }
+/* Students' status-style tiles: the reference's hover lift. */
+.cre-admin-status-card { transition: box-shadow 0.15s; }
+.cre-admin-status-card:hover { box-shadow: 0 4px 16px rgb(0 0 0 / 0.12); }
+.cre-admin-status-card:focus-visible { outline: 2px solid var(--admin-brand); outline-offset: 2px; }
 /* An admin text link's hover — Atlas primary 700. `!important` because the
    link's resting colour is set inline. */
 .cre-admin-text-link:hover { color: var(--admin-atlas-primary-700) !important; }

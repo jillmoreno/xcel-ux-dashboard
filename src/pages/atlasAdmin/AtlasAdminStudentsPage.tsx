@@ -235,6 +235,63 @@ export function AtlasAdminStudentsPage() {
   // Nobody on the roster yet — the first-run office.
   if (ADMIN_LEARNERS.length === 0) return <StudentsEmptyState />
 
+  /** The outcome tiles in PartnerHub's status-card style: a coloured strip
+   *  down the left, an uppercase label and a one-line note, then the count,
+   *  a thin rule and its share of the roster in the strip's deeper shade.
+   *  Selected widens the strip and edges the card in that shade. */
+  const statusGrid = (
+    <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
+      {tiles.map((t) => {
+        const n = tileCount[t.id]
+        const active = bucket === t.id
+        const [strip, deep] = STATUS_TONE[t.id]
+        return (
+          <div
+            key={t.id}
+            role="button"
+            tabIndex={0}
+            title={t.title}
+            aria-pressed={active}
+            onClick={() => pickBucket(t.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                pickBucket(t.id)
+              }
+            }}
+            className="cre-admin-status-card"
+            style={{ ...STATUS_CARD, ...(active ? { borderWidth: 1.5, borderColor: deep } : null) }}
+          >
+            <div style={{ ...STATUS_INNER, borderLeftWidth: active ? 8 : 6, borderLeftColor: active ? deep : strip }}>
+              <div>
+                <p style={STATUS_LABEL}>{t.label}</p>
+                <p style={STATUS_DESC}>{t.note}</p>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <span style={STATUS_COUNT}>{n.toLocaleString('en-US')}</span>
+                <span aria-hidden style={STATUS_SEP}>|</span>
+                <span style={{ ...STATUS_COUNT, color: deep }}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
+              </div>
+              {t.id === 'licensed' ? (
+                <select
+                  aria-label="Licensed time window"
+                  value={licensedWindow}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => setLicensedWindow(e.target.value)}
+                  style={{ ...SELECT, marginTop: 0 }}
+                >
+                  <option value="90d">Last 90 days</option>
+                  <option value="year">This year</option>
+                  <option value="all">All time</option>
+                </select>
+              ) : null}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+
   /** The outcome tiles; `withBars` false drops each tile's progress bar. */
   const tileGrid = (withBars: boolean) => (
     <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
@@ -304,6 +361,8 @@ export function AtlasAdminStudentsPage() {
       </header>
 
       <section aria-label="Pipeline outcomes" style={lite ? undefined : { ...CARD, border: 'none', padding: `24px 24px ${24 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
+        {/* Trying PartnerHub's Learner Compliance Analysis cards (above the two earlier rows). */}
+        <div style={{ marginBottom: 12 }}>{statusGrid}</div>
         {tileGrid(true)}
         {/* For comparison: the same tiles without their progress bars. */}
         <div style={{ marginTop: 12 }}>{tileGrid(false)}</div>
@@ -526,6 +585,22 @@ export function AtlasAdminStudentsPage() {
 
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
+/* PartnerHub's status cards (Students' top tile row). */
+const BODY_FONT = 'var(--font-body)'
+const STATUS_TONE: Record<PipelineBucket, [string, string]> = {
+  all: ['var(--admin-status-dark)', 'var(--admin-status-dark-deep)'],
+  'not-started': ['var(--admin-status-neutral)', 'var(--admin-status-neutral-deep)'],
+  'in-progress': ['var(--admin-status-blue)', 'var(--admin-status-blue-deep)'],
+  'off-track': ['var(--admin-status-red)', 'var(--admin-status-red-deep)'],
+  prepared: ['var(--admin-status-green)', 'var(--admin-status-green-deep)'],
+  licensed: ['var(--admin-status-green-deep)', 'var(--admin-status-green-deep)'],
+}
+const STATUS_CARD: CSSProperties = { background: 'var(--admin-surface)', borderStyle: 'solid', borderWidth: 1, borderColor: 'var(--admin-status-card-edge)', borderRadius: 12, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
+const STATUS_INNER: CSSProperties = { borderLeftStyle: 'solid', minHeight: 92, boxSizing: 'border-box', padding: 12, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8 }
+const STATUS_LABEL: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 14, fontWeight: 700, lineHeight: '22px', letterSpacing: '0.02em', textTransform: 'uppercase', color: 'var(--admin-status-ink)' }
+const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-desc)' }
+const STATUS_COUNT: CSSProperties = { fontFamily: BODY_FONT, fontSize: 24, fontWeight: 700, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-status-ink)' }
+const STATUS_SEP: CSSProperties = { fontSize: 16, fontWeight: 200, color: 'var(--admin-status-sep)' }
 /* How far the outcome container's blue runs on beneath the roster card (Standard nav). */
 const UNDERLAP = 24
 const TILE: CSSProperties = {
