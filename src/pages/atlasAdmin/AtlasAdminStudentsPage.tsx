@@ -241,7 +241,7 @@ export function AtlasAdminStudentsPage() {
    *  Selected deepens the strip and edges the card in that shade. */
   const statusGrid = (
     <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
-      {tiles.map((t) => {
+      {STATUS_ORDER.map((id) => tiles.find((x) => x.id === id)!).map((t) => {
         const n = tileCount[t.id]
         const active = bucket === t.id
         const [strip, deep] = STATUS_TONE[t.id]
@@ -640,6 +640,8 @@ function StatusDial({ total, parts }: { total: number; parts: { id: string; n: n
 }
 
 /* PartnerHub's status cards (Students' top tile row). */
+/* Their order: In progress before Not started (2026-10-23, Eric). */
+const STATUS_ORDER: PipelineBucket[] = ['all', 'in-progress', 'not-started', 'off-track', 'prepared', 'licensed']
 const BODY_FONT = 'var(--font-body)'
 const STATUS_TONE: Record<PipelineBucket, [string, string]> = {
   all: ['var(--admin-status-dark)', 'var(--admin-status-dark-deep)'],
