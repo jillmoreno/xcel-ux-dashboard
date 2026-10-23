@@ -238,7 +238,7 @@ export function AtlasAdminStudentsPage() {
   if (ADMIN_LEARNERS.length === 0) return <StudentsEmptyState />
 
   /** The outcome tiles in PartnerHub's status-card style: a coloured strip
-   *  4px left edge, the uppercase label and a one-line note, then the count,
+   *  5px left edge, the uppercase label and a one-line note, then the count,
    *  a thin rule and its share of the roster in the strip's deeper shade.
    *  Selected deepens the strip and edges the card in that shade. */
   const statusGrid = (
@@ -263,7 +263,7 @@ export function AtlasAdminStudentsPage() {
             }}
             className="cre-admin-tile cre-admin-status-card"
             /* Edge, corners, selected stroke and shadow as the tile rows below (TILE / TILE_ACTIVE); only the selected card is filled, white. */
-            style={{ ...STATUS_CARD, borderColor: lite ? 'var(--admin-atlas-primary-200)' : 'var(--admin-fill-soft)', borderLeftWidth: 4, borderLeftColor: active ? deep : strip, ...(active ? { background: 'var(--admin-surface)', outline: TILE_ACTIVE.outline, outlineOffset: TILE_ACTIVE.outlineOffset, boxShadow: TILE_ACTIVE.boxShadow } : null) }}
+            style={{ ...STATUS_CARD, borderColor: lite ? 'var(--admin-atlas-primary-200)' : 'var(--admin-fill-soft)', borderLeftWidth: 5, borderLeftColor: active ? deep : strip, ...(active ? { background: 'var(--admin-surface)', outline: TILE_ACTIVE.outline, outlineOffset: TILE_ACTIVE.outlineOffset, boxShadow: TILE_ACTIVE.boxShadow } : null) }}
           >
             <div style={STATUS_INNER}>
               <div style={STATUS_BODY}>
