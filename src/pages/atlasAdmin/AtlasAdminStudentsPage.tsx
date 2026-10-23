@@ -268,7 +268,7 @@ export function AtlasAdminStudentsPage() {
             <div style={STATUS_INNER}>
               <div style={STATUS_BODY}>
                 {/* Licensed's window sits top right, across from its eyebrow. */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 18 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 18, marginBottom: -2 }}>
                   <p style={{ ...EYEBROW, color: 'var(--admin-status-ink)' }}>{t.id === 'all' ? 'Active' : t.label}</p>
                   {t.id === 'licensed' ? (
                     <select
