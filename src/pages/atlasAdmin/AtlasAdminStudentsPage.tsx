@@ -373,7 +373,7 @@ export function AtlasAdminStudentsPage() {
               active={bucket}
               onPick={pickBucket}
               total={counts.total}
-              parts={(['in-progress', 'off-track', 'prepared', 'licensed'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
+              parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
             />
           </div>
           <div style={{ flex: '1 1 480px', minWidth: 0 }}>{statusGrid}</div>
@@ -600,10 +600,10 @@ export function AtlasAdminStudentsPage() {
 
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
-/** The status cards' dial, in the learner Home's ring style: a thin track all
- *  the way round for the students not started, and over it a thick round-capped
- *  arc per status from 12 o'clock — In progress, Off track, Prepared, Licensed
- *  — each its share of the roster, a hair apart so the caps don't touch. */
+/** The status cards' dial, in the learner Home's ring style: a thick
+ *  round-capped arc per status from 12 o'clock — In progress, Off track,
+ *  Prepared, Licensed, Not started — each its share of the roster, a hair
+ *  apart so the caps don't touch. */
 function StatusDial({ total, parts, active, onPick }: { total: number; parts: { id: PipelineBucket; n: number; color: string }[]; active: PipelineBucket; onPick: (id: PipelineBucket) => void }) {
   const size = 168
   const r = 76
@@ -614,22 +614,8 @@ function StatusDial({ total, parts, active, onPick }: { total: number; parts: { 
   const arcs = parts.map((p, i) => ({ ...p, offset: lens.slice(0, i).reduce((a, b) => a + b, 0), len: Math.max(0, lens[i] - gap) }))
   return (
     <div style={{ position: 'relative', flex: 'none', width: size, height: size }}>
-      {/* Each line selects its card: the track is Not started, each arc its status. */}
+      {/* Each arc selects its card. */}
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="group" aria-label={`${total} students by status`} style={{ display: 'block' }}>
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          role="button"
-          tabIndex={0}
-          aria-label={`Not started: show these students`}
-          aria-pressed={active === 'not-started'}
-          onClick={() => onPick('not-started')}
-          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onPick('not-started'))}
-          style={{ stroke: 'var(--admin-status-neutral)', cursor: 'pointer', outline: 'none' }}
-          strokeWidth={active === 'not-started' ? 5 : 3}
-        />
         {arcs.map((a) =>
           a.len > 0 ? (
             <circle
