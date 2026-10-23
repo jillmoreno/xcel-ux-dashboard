@@ -246,7 +246,7 @@ export function AtlasAdminStudentsPage() {
       {STATUS_ORDER.map((id) => tiles.find((x) => x.id === id)!).map((t) => {
         const n = tileCount[t.id]
         const active = bucket === t.id
-        const [strip, deep] = STATUS_TONE[t.id]
+        const [strip] = STATUS_TONE[t.id]
         return (
           <div
             key={t.id}
@@ -269,7 +269,7 @@ export function AtlasAdminStudentsPage() {
               <div style={STATUS_BODY}>
                 {/* Licensed's window sits top right, across from its eyebrow. */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 18 }}>
-                  <p style={EYEBROW}>{t.id === 'all' ? 'Active' : t.label}</p>
+                  <p style={{ ...EYEBROW, color: 'var(--admin-status-ink)' }}>{t.id === 'all' ? 'Active' : t.label}</p>
                   {t.id === 'licensed' ? (
                     <select
                       aria-label="Licensed time window"
@@ -287,7 +287,7 @@ export function AtlasAdminStudentsPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={STATUS_COUNT}>{n.toLocaleString('en-US')}</span>
                   <span aria-hidden style={STATUS_SEP}>|</span>
-                  <span style={{ ...STATUS_COUNT, color: deep }}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
+                  <span style={STATUS_COUNT}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
                 </div>
                 {t.id === 'licensed' ? null : <p style={{ ...STATUS_DESC, marginTop: -6 }}>{t.note}</p>}
               </div>
@@ -679,7 +679,7 @@ const STATUS_TONE: Record<PipelineBucket, [string, string]> = {
 const STATUS_CARD: CSSProperties = { display: 'flex', flexDirection: 'column', background: 'var(--admin-fill)', borderStyle: 'solid', borderWidth: 1, borderRadius: 11, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
 const STATUS_INNER: CSSProperties = { flex: 1, minHeight: 84, boxSizing: 'border-box', padding: '10px 16px', display: 'flex' }
 const STATUS_BODY: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
-const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-desc)' }
+const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-ink)' }
 const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 32, fontWeight: 900, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-status-ink)' }
 const STATUS_SEP: CSSProperties = { fontSize: 16, fontWeight: 200, color: 'var(--admin-status-sep)' }
 /* How far the outcome container's blue runs on beneath the roster card (Standard nav). */
