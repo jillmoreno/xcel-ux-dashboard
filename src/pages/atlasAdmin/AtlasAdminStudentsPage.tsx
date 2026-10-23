@@ -263,7 +263,7 @@ export function AtlasAdminStudentsPage() {
             style={{ ...STATUS_CARD, ...(active ? { borderWidth: 1.5, borderColor: deep } : null) }}
           >
             <div style={{ ...STATUS_INNER, borderLeftWidth: 6, borderLeftColor: active ? deep : strip }}>
-              <p style={STATUS_LABEL}>{t.label}</p>
+              <p style={EYEBROW}>{t.label}</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={STATUS_COUNT}>{n.toLocaleString('en-US')}</span>
                 <span aria-hidden style={STATUS_SEP}>|</span>
@@ -654,7 +654,6 @@ const STATUS_TONE: Record<PipelineBucket, [string, string]> = {
 /* A flex column, so the inner strip runs the card's full height whatever the row's tallest card. */
 const STATUS_CARD: CSSProperties = { display: 'flex', flexDirection: 'column', background: 'var(--admin-surface)', borderStyle: 'solid', borderWidth: 1, borderColor: 'var(--admin-status-card-edge)', borderRadius: 12, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
 const STATUS_INNER: CSSProperties = { flex: 1, borderLeftStyle: 'solid', minHeight: 92, boxSizing: 'border-box', padding: '12px 12px 12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
-const STATUS_LABEL: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 14, fontWeight: 700, lineHeight: '22px', letterSpacing: '0.02em', textTransform: 'uppercase', color: 'var(--admin-status-ink)' }
 const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-desc)' }
 const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 28, fontWeight: 800, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-status-ink)' }
 const STATUS_SEP: CSSProperties = { fontSize: 16, fontWeight: 200, color: 'var(--admin-status-sep)' }
