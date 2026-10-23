@@ -651,7 +651,7 @@ const STATUS_CARD: CSSProperties = { display: 'flex', flexDirection: 'column', b
 const STATUS_INNER: CSSProperties = { flex: 1, borderLeftStyle: 'solid', minHeight: 92, boxSizing: 'border-box', padding: '12px 12px 12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
 const STATUS_LABEL: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 14, fontWeight: 700, lineHeight: '22px', letterSpacing: '0.02em', textTransform: 'uppercase', color: 'var(--admin-status-ink)' }
 const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-desc)' }
-const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 24, fontWeight: 700, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-status-ink)' }
+const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 28, fontWeight: 700, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-status-ink)' }
 const STATUS_SEP: CSSProperties = { fontSize: 16, fontWeight: 200, color: 'var(--admin-status-sep)' }
 /* How far the outcome container's blue runs on beneath the roster card (Standard nav). */
 const UNDERLAP = 24
