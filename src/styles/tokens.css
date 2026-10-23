@@ -7508,7 +7508,7 @@ a.cre-library-card-title::after {
      outside the Atlas palette scope that defines --type-atlas-h3-*. */
   --admin-atlas-h3-size: 44px;
   --admin-atlas-h3-line: 46px;
-  /* Atlas Serif H5 (32/34) — Students' outcome tile counts. */
+  /* Atlas Serif H5 (32/34) — Students' and Invites' outcome tile counts. */
   --admin-atlas-h5-size: 32px;
   --admin-atlas-h5-line: 34px;
   /* Atlas neutral 800 — Pulse's card icons. */

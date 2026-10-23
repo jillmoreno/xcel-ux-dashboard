@@ -112,7 +112,7 @@ export function AtlasAdminInvitesPage() {
                 }}
               >
                 <p style={EYEBROW}>{t.label}</p>
-                <p style={{ margin: '4px 0 0', fontFamily: 'var(--admin-font-heading)', fontSize: 28, fontWeight: 700, lineHeight: 1, fontVariantNumeric: 'tabular-nums', color: t.color }}>{t.n}</p>
+                <p style={{ margin: '4px 0 0', fontFamily: 'var(--font-heading-serif)', fontSize: 'var(--admin-atlas-h5-size)', fontWeight: 400, lineHeight: 'var(--admin-atlas-h5-line)', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums', color: t.color }}>{t.n}</p>
                 <p style={{ margin: '6px 0 0', fontSize: 13, color: 'var(--admin-muted)' }}>{t.note}</p>
               </button>
             )
