@@ -236,7 +236,7 @@ export function AtlasAdminStudentsPage() {
   if (ADMIN_LEARNERS.length === 0) return <StudentsEmptyState />
 
   /** The outcome tiles in PartnerHub's status-card style: a coloured strip
-   *  down the left, an uppercase label and a one-line note, then the count,
+   *  across the top, an uppercase label and a one-line note, then the count,
    *  a thin rule and its share of the roster in the strip's deeper shade.
    *  Selected deepens the strip and edges the card in that shade. */
   const statusGrid = (
@@ -262,7 +262,7 @@ export function AtlasAdminStudentsPage() {
             className="cre-admin-status-card"
             style={{ ...STATUS_CARD, ...(active ? { borderWidth: 1.5, borderColor: deep } : null) }}
           >
-            <div style={{ ...STATUS_INNER, borderLeftWidth: 6, borderLeftColor: active ? deep : strip }}>
+            <div style={{ ...STATUS_INNER, borderTopWidth: 6, borderTopColor: active ? deep : strip }}>
               <p style={EYEBROW}>{t.label}</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={STATUS_COUNT}>{n.toLocaleString('en-US')}</span>
@@ -651,9 +651,9 @@ const STATUS_TONE: Record<PipelineBucket, [string, string]> = {
   prepared: ['var(--admin-status-green)', 'var(--admin-status-green-deep)'],
   licensed: ['var(--admin-status-green-deep)', 'var(--admin-status-green-deep)'],
 }
-/* A flex column, so the inner strip runs the card's full height whatever the row's tallest card. */
+/* A flex column, so every card in a row fills to the tallest. */
 const STATUS_CARD: CSSProperties = { display: 'flex', flexDirection: 'column', background: 'var(--admin-surface)', borderStyle: 'solid', borderWidth: 1, borderColor: 'var(--admin-status-card-edge)', borderRadius: 12, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
-const STATUS_INNER: CSSProperties = { flex: 1, borderLeftStyle: 'solid', minHeight: 92, boxSizing: 'border-box', padding: '12px 12px 12px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
+const STATUS_INNER: CSSProperties = { flex: 1, borderTopStyle: 'solid', minHeight: 92, boxSizing: 'border-box', padding: '14px 16px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
 const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-desc)' }
 const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 28, fontWeight: 800, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-status-ink)' }
 const STATUS_SEP: CSSProperties = { fontSize: 16, fontWeight: 200, color: 'var(--admin-status-sep)' }
