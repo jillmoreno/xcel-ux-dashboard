@@ -373,6 +373,8 @@ export function AtlasAdminStudentsPage() {
           <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
             <p style={EYEBROW}>Student Compliance</p>
             <StatusDial
+              active={bucket}
+              onPick={pickBucket}
               total={counts.total}
               parts={(['in-progress', 'off-track', 'prepared', 'licensed'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
             />
@@ -605,7 +607,7 @@ export function AtlasAdminStudentsPage() {
  *  the way round for the students not started, and over it a thick round-capped
  *  arc per status from 12 o'clock — In progress, Off track, Prepared, Licensed
  *  — each its share of the roster, a hair apart so the caps don't touch. */
-function StatusDial({ total, parts }: { total: number; parts: { id: string; n: number; color: string }[] }) {
+function StatusDial({ total, parts, active, onPick }: { total: number; parts: { id: PipelineBucket; n: number; color: string }[]; active: PipelineBucket; onPick: (id: PipelineBucket) => void }) {
   const size = 168
   const r = 76
   const stroke = 8
@@ -614,9 +616,23 @@ function StatusDial({ total, parts }: { total: number; parts: { id: string; n: n
   const lens = parts.map((p) => (total ? (c * p.n) / total : 0))
   const arcs = parts.map((p, i) => ({ ...p, offset: lens.slice(0, i).reduce((a, b) => a + b, 0), len: Math.max(0, lens[i] - gap) }))
   return (
-    <div role="img" aria-label={`${total} students: ${parts.map((p) => `${p.n} ${p.id.replace('-', ' ')}`).join(', ')}, the rest not started`} style={{ position: 'relative', flex: 'none', width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden style={{ display: 'block' }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" style={{ stroke: 'var(--admin-status-neutral)' }} strokeWidth={3} />
+    <div style={{ position: 'relative', flex: 'none', width: size, height: size }}>
+      {/* Each line selects its card: the track is Not started, each arc its status. */}
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="group" aria-label={`${total} students by status`} style={{ display: 'block' }}>
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          role="button"
+          tabIndex={0}
+          aria-label={`Not started: show these students`}
+          aria-pressed={active === 'not-started'}
+          onClick={() => onPick('not-started')}
+          onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onPick('not-started'))}
+          style={{ stroke: 'var(--admin-status-neutral)', cursor: 'pointer', outline: 'none' }}
+          strokeWidth={active === 'not-started' ? 5 : 3}
+        />
         {arcs.map((a) =>
           a.len > 0 ? (
             <circle
@@ -625,8 +641,14 @@ function StatusDial({ total, parts }: { total: number; parts: { id: string; n: n
               cy={size / 2}
               r={r}
               fill="none"
-              style={{ stroke: a.color }}
-              strokeWidth={stroke}
+              role="button"
+              tabIndex={0}
+              aria-label={`${a.n} ${a.id.replace('-', ' ')}: show these students`}
+              aria-pressed={active === a.id}
+              onClick={() => onPick(a.id)}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onPick(a.id))}
+              style={{ stroke: a.color, cursor: 'pointer', outline: 'none' }}
+              strokeWidth={active === a.id ? stroke + 4 : stroke}
               strokeLinecap="round"
               strokeDasharray={`${a.len} ${c}`}
               strokeDashoffset={-(a.offset + gap / 2)}
@@ -635,7 +657,7 @@ function StatusDial({ total, parts }: { total: number; parts: { id: string; n: n
           ) : null,
         )}
       </svg>
-      <div aria-hidden style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+      <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
         <span style={{ fontFamily: 'var(--font-heading-serif)', fontSize: 'var(--admin-atlas-h5-size)', lineHeight: 'var(--admin-atlas-h5-line)', color: 'var(--admin-ink)' }}>{total}</span>
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--admin-muted)' }}>Students</span>
       </div>
