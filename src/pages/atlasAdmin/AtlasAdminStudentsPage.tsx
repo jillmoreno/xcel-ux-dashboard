@@ -367,7 +367,7 @@ export function AtlasAdminStudentsPage() {
         {/* Trying PartnerHub's Learner Compliance Analysis cards (above the two earlier rows). */}
         <div style={{ marginBottom: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24 }}>
           <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <p style={EYEBROW}>Learner Compliance</p>
+            <p style={EYEBROW}>Student Compliance</p>
             <StatusDial
               total={counts.total}
               parts={(['in-progress', 'off-track', 'prepared', 'licensed'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
