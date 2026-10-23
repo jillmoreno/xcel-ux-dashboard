@@ -240,7 +240,7 @@ export function AtlasAdminStudentsPage() {
    *  a thin rule and its share of the roster in the strip's deeper shade.
    *  Selected widens the strip and edges the card in that shade. */
   const statusGrid = (
-    <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
+    <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
       {tiles.map((t) => {
         const n = tileCount[t.id]
         const active = bucket === t.id
@@ -360,7 +360,13 @@ export function AtlasAdminStudentsPage() {
 
       <section aria-label="Pipeline outcomes" style={lite ? undefined : { ...CARD, border: 'none', padding: `24px 24px ${24 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
         {/* Trying PartnerHub's Learner Compliance Analysis cards (above the two earlier rows). */}
-        <div style={{ marginBottom: 12 }}>{statusGrid}</div>
+        <div style={{ marginBottom: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24 }}>
+          <StatusDial
+            total={counts.total}
+            parts={(['in-progress', 'off-track', 'prepared', 'licensed'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
+          />
+          <div style={{ flex: '1 1 480px', minWidth: 0 }}>{statusGrid}</div>
+        </div>
         {tileGrid(true)}
         {/* For comparison: the same tiles without their progress bars. */}
         <div style={{ marginTop: 12 }}>{tileGrid(false)}</div>
@@ -582,6 +588,48 @@ export function AtlasAdminStudentsPage() {
 }
 
 /* ── Styles ─────────────────────────────────────────────────────────────── */
+
+/** The status cards' dial, in the learner Home's ring style: a thin track all
+ *  the way round for the students not started, and over it a thick round-capped
+ *  arc per status from 12 o'clock — In progress, Off track, Prepared, Licensed
+ *  — each its share of the roster, a hair apart so the caps don't touch. */
+function StatusDial({ total, parts }: { total: number; parts: { id: string; n: number; color: string }[] }) {
+  const size = 168
+  const r = 76
+  const stroke = 8
+  const c = 2 * Math.PI * r
+  const gap = stroke + 2 // the round caps reach stroke / 2 past each end
+  const lens = parts.map((p) => (total ? (c * p.n) / total : 0))
+  const arcs = parts.map((p, i) => ({ ...p, offset: lens.slice(0, i).reduce((a, b) => a + b, 0), len: Math.max(0, lens[i] - gap) }))
+  return (
+    <div role="img" aria-label={`${total} students: ${parts.map((p) => `${p.n} ${p.id.replace('-', ' ')}`).join(', ')}, the rest not started`} style={{ position: 'relative', flex: 'none', width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden style={{ display: 'block' }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" style={{ stroke: 'var(--admin-status-neutral)' }} strokeWidth={3} />
+        {arcs.map((a) =>
+          a.len > 0 ? (
+            <circle
+              key={a.id}
+              cx={size / 2}
+              cy={size / 2}
+              r={r}
+              fill="none"
+              style={{ stroke: a.color }}
+              strokeWidth={stroke}
+              strokeLinecap="round"
+              strokeDasharray={`${a.len} ${c}`}
+              strokeDashoffset={-(a.offset + gap / 2)}
+              transform={`rotate(-90 ${size / 2} ${size / 2})`}
+            />
+          ) : null,
+        )}
+      </svg>
+      <div aria-hidden style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+        <span style={{ fontFamily: 'var(--font-heading-serif)', fontSize: 'var(--admin-atlas-h5-size)', lineHeight: 'var(--admin-atlas-h5-line)', color: 'var(--admin-ink)' }}>{total}</span>
+        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--admin-muted)' }}>Students</span>
+      </div>
+    </div>
+  )
+}
 
 /* PartnerHub's status cards (Students' top tile row). */
 const BODY_FONT = 'var(--font-body)'
