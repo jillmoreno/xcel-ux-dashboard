@@ -270,9 +270,9 @@ export function AtlasAdminStudentsPage() {
                 <span style={{ ...STATUS_COUNT, color: deep }}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
               </div>
               {t.id === 'licensed' ? (
-                // Licensed: "Exam passed:" and its time window on one line, the select taking the rest.
+                // Licensed: "Passed:" and its time window on one line, the select taking the rest.
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <p style={{ ...STATUS_DESC, flex: 'none' }}>{t.note}:</p>
+                  <p style={{ ...STATUS_DESC, flex: 'none' }}>Passed:</p>
                   <select
                     aria-label="Licensed time window"
                     value={licensedWindow}
