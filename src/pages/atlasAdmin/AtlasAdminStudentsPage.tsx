@@ -648,7 +648,7 @@ const STATUS_TONE: Record<PipelineBucket, [string, string]> = {
 }
 /* A flex column, so the inner strip runs the card's full height whatever the row's tallest card. */
 const STATUS_CARD: CSSProperties = { display: 'flex', flexDirection: 'column', background: 'var(--admin-surface)', borderStyle: 'solid', borderWidth: 1, borderColor: 'var(--admin-status-card-edge)', borderRadius: 12, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
-const STATUS_INNER: CSSProperties = { flex: 1, borderLeftStyle: 'solid', minHeight: 92, boxSizing: 'border-box', padding: 12, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
+const STATUS_INNER: CSSProperties = { flex: 1, borderLeftStyle: 'solid', minHeight: 92, boxSizing: 'border-box', padding: '12px 12px 12px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
 const STATUS_LABEL: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 14, fontWeight: 700, lineHeight: '22px', letterSpacing: '0.02em', textTransform: 'uppercase', color: 'var(--admin-status-ink)' }
 const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-desc)' }
 const STATUS_COUNT: CSSProperties = { fontFamily: BODY_FONT, fontSize: 24, fontWeight: 700, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-status-ink)' }
