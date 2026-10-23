@@ -260,8 +260,8 @@ export function AtlasAdminStudentsPage() {
               }
             }}
             className="cre-admin-tile cre-admin-status-card"
-            /* Edge, corners, selected stroke and shadow as the tile rows below (TILE / TILE_ACTIVE); the card stays white. */
-            style={{ ...STATUS_CARD, borderColor: lite ? 'var(--admin-atlas-primary-200)' : 'var(--admin-fill-soft)', ...(active ? { outline: TILE_ACTIVE.outline, outlineOffset: TILE_ACTIVE.outlineOffset, boxShadow: TILE_ACTIVE.boxShadow } : null) }}
+            /* Edge, corners, selected stroke and shadow as the tile rows below (TILE / TILE_ACTIVE); only the selected card is filled, white. */
+            style={{ ...STATUS_CARD, borderColor: lite ? 'var(--admin-atlas-primary-200)' : 'var(--admin-fill-soft)', ...(active ? { background: 'var(--admin-surface)', outline: TILE_ACTIVE.outline, outlineOffset: TILE_ACTIVE.outlineOffset, boxShadow: TILE_ACTIVE.boxShadow } : null) }}
           >
             <div style={STATUS_INNER}>
               <div style={STATUS_BODY}>
@@ -656,7 +656,7 @@ const STATUS_TONE: Record<PipelineBucket, [string, string]> = {
   licensed: ['var(--admin-status-green-deep)', 'var(--admin-status-green-deep)'],
 }
 /* A flex column, so every card in a row fills to the tallest. */
-const STATUS_CARD: CSSProperties = { display: 'flex', flexDirection: 'column', background: 'var(--admin-surface)', borderStyle: 'solid', borderWidth: 1, borderRadius: 11, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
+const STATUS_CARD: CSSProperties = { display: 'flex', flexDirection: 'column', background: 'none', borderStyle: 'solid', borderWidth: 1, borderRadius: 11, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
 const STATUS_INNER: CSSProperties = { flex: 1, minHeight: 92, boxSizing: 'border-box', padding: '14px 16px', display: 'flex' }
 const STATUS_BAR: CSSProperties = { flex: 1, minWidth: 0, height: 6, borderRadius: 9999 }
 const STATUS_BODY: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
