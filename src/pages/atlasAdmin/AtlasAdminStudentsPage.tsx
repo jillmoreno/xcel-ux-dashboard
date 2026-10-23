@@ -673,8 +673,8 @@ const STATUS_TONE: Record<PipelineBucket, [string, string]> = {
 }
 /* A flex column, so every card in a row fills to the tallest. */
 /* Unselected: the search field's blue; the selected card is white. */
-/* The coloured bar inside each card: 8px wide, round-ended, stretched to the text's height. */
-const STATUS_BAR: CSSProperties = { flex: 'none', alignSelf: 'stretch', width: 8, borderRadius: 9999 }
+/* The coloured bar inside each card: 6px wide, round-ended, stretched to the text's height. */
+const STATUS_BAR: CSSProperties = { flex: 'none', alignSelf: 'stretch', width: 6, borderRadius: 9999 }
 const STATUS_CARD: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: 'var(--admin-fill)', borderStyle: 'solid', borderWidth: 1, borderRadius: 11, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
 const STATUS_INNER: CSSProperties = { flex: 1, minHeight: 84, boxSizing: 'border-box', padding: '10px 16px 10px 8px', display: 'flex', gap: 12 }
 const STATUS_BODY: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
