@@ -7503,11 +7503,11 @@ a.cre-library-card-title::after {
   /* Atlas Secondary 100 — the Style Guide's tan ramp (tertiary-100 in the
      Atlas palette block). Pulse's Action now boxes. */
   --admin-atlas-secondary-100: #f5f2ef;
-  /* Atlas Serif H1 — the Atlas type scale's H1 (DM Serif Display 64/64,
+  /* Atlas Serif H3 — the Atlas type scale's H3 (DM Serif Display 44/46,
      regular) for admin page titles. Spelled out because admin pages sit
-     outside the Atlas palette scope that defines --type-atlas-h1-*. */
-  --admin-atlas-h1-size: 64px;
-  --admin-atlas-h1-line: 64px;
+     outside the Atlas palette scope that defines --type-atlas-h3-*. */
+  --admin-atlas-h3-size: 44px;
+  --admin-atlas-h3-line: 46px;
   /* Atlas neutral 800 — Pulse's card icons. */
   --admin-atlas-neutral-800: #404040;
   /* Home's Quick Links card hairline as it computes on the Atlas pages
