@@ -2440,7 +2440,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       'Which invite flow the demo walks. B2B2C with email: a partner invited this learner and supplied their address, so it is locked at checkout and the password is set inline. B2B2C without email: invited, but the address is theirs to type twice (first field masked) and the password comes from a link in the confirmation email. B2C Guest Checkout: no partner, nothing known — the student information starts empty and Payment stays closed until it is complete. QR code or social link: a partner’s broadcast link, so partner pricing applies but nothing is known about who scanned it and the product options modal always opens.',
     defaultEnabled: true,
-    defaultVariant: 'b2b2c-email',
+    /* ⚠ THE GUEST, SINCE 2026-10-23 — see `DEFAULT_INVITE_FLOW`, which this
+       must equal (`InviteFlows.test.tsx` pins the pair). */
+    defaultVariant: 'b2c-guest',
     variants: [
       {
         value: 'b2b2c-email',

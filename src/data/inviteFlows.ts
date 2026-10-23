@@ -41,12 +41,22 @@ export type InviteFlowId =
 export const INVITE_FLOW_FLAG = 'invite-flow-journey'
 
 /**
- * ⚠ `b2b2c-email` IS THE DEFAULT because it is the flow the committed build
- * tells: the invitation email names Jordan, Sunrise Bank and the course, and
- * every page downstream is written for it. Changing the default changes what a
- * bare link shows, which is `promote-to-prototype`'s decision.
+ * ⚠ `b2c-guest` SINCE 2026-10-23 (was `b2b2c-email`) — Jillienne, of the
+ * Prototypes row: "clicking on this should default to the guest view".
+ *
+ * ⚠ THIS IS A BASELINE CHANGE, NOT A PREFERENCE. It decides what a bare
+ * `/end-to-end-demo` link shows — the Prototypes row, a pasted address, a
+ * stakeholder following a link in Slack — so it is `promote-to-prototype`'s
+ * decision and the owner's, which is how it was made.
+ *
+ * Why the guest: it is the LONGEST of the four and the only one that starts
+ * outside the product, on xcelsolutions.com. Every screen the other three
+ * touch, it also touches, plus five of its own — so the flow a stranger
+ * lands in shows the most of what has been built, and the three invited arms
+ * are one control away. `b2b2c-email` was the default while it was the only
+ * arm there was.
  */
-export const DEFAULT_INVITE_FLOW: InviteFlowId = 'b2b2c-email'
+export const DEFAULT_INVITE_FLOW: InviteFlowId = 'b2c-guest'
 
 export function resolveInviteFlow(value: string | null | undefined): InviteFlowId {
   switch (value) {

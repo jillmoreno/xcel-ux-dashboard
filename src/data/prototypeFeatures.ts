@@ -889,7 +889,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // All four opening rows re-stamped at the 2026-10-15 ship that retired the
     // demo site: the shared chrome every row renders — the demo bar, the
     // version picker, the prototype bar — changed under all of them.
-    lastUpdated: '2026-10-23T02:52:56Z',
+    lastUpdated: '2026-10-23T15:21:49Z',
     pinned: true,
     // An in-app route, not a document. `to` is what makes the tile navigate
     // rather than open a new tab, and it is also what the row's live preview
@@ -1002,17 +1002,35 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     title: 'Invite & Purchase — Work in Progress',
     accent: 'gold',
     icon: 'flag',
+    // ⚠ REWRITTEN 2026-10-23, when the flow stopped being one arm. The words
+    // here described the invited journey alone — product detail, Purchase Now,
+    // checkout, password — which is now ONE OF FOUR the row opens, and the
+    // only one that starts at an invitation. A row's blurb is what a
+    // stakeholder reads instead of clicking, so a blurb that names a quarter
+    // of what is behind it is the row answering "what is the product" wrongly.
     blurb:
-      'How a learner gets into the product: the Invited Product Detail page under the partner header — the personal welcome, the course header with its price card — whose Purchase Now opens the checkout, and the order confirmation where they create their password. Eric’s End-to-End Demo, in the same React build as the other rows, entered at its first page rather than its dashboard.',
+      'How a learner gets into the product — four ways in, picked from the Invite flow control on the design bar. A partner invites them WITH their email (the default: address locked at checkout) or WITHOUT it (typed twice, password set from the emailed link); a guest finds XCEL themselves and buys from the public site — course page, cart, partner-code question, then a checkout whose payment section stays closed until their details are in; or a partner’s QR code or social link brings them in with partner pricing but nobody identified. Each ends in a password and a hand-off into Atlas. The same React build as the other rows, entered at its first page rather than its dashboard.',
     tileBlurb:
-      'The way in: invited product detail, Purchase Now, checkout, then creating a password. The same build as the other rows, entered at its first page.',
+      'Four ways in — invited with or without an email, a guest buying from the public site, a partner’s QR or social link — then checkout, a password, and Atlas. The same build as the other rows.',
     kind: 'explore',
     status: 'ready',
     category: 'prototype',
     prototypeScope: 'invite',
-    lastUpdated: '2026-10-23T02:52:56Z',
+    lastUpdated: '2026-10-23T15:21:49Z',
     pinned: true,
-    to: '/end-to-end-demo?demo=1',
+    // ⚠ `/find`, THE GUEST'S FIRST SCREEN — 2026-10-23: "clicking on this
+    // should default to the guest view but the wrong screen is showing
+    // first." Two things had to move together, and only changing the default
+    // flow would have left this half-done: `InviteFlowEntrySync` deliberately
+    // never redirects on arrival (a pasted deep link must not bounce to a
+    // flow's start), so the FLAG decides which flow and this `to` decides
+    // which screen. Pointed at the bare door, the row opened Invited Product
+    // Detail — an invited arm's page — while the control said Guest Checkout.
+    //
+    // Still a plain route under the `/end-to-end-demo` door at `?demo=1`: no
+    // `?ff=` pin, no pinned version. Which PAGE of a flow a row starts on is
+    // the owner's call (`UxDashboard.smoke.test.tsx`).
+    to: '/end-to-end-demo/find?demo=1',
     brands: ['xcel'],
   },
   {

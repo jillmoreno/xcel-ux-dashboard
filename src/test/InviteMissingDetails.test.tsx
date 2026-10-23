@@ -14,6 +14,7 @@ import {
   matchingStates,
   readInviteChoice,
 } from '@/data/inviteMissingDetails'
+import { INVITE_FLOW_FLAG } from '@/data/inviteFlows'
 import { E2E_COURSE_TITLE_SHORT } from '@/pages/endToEndDemo'
 import { InvitedProductDetailPageV2 } from '@/pages/InvitedProductDetailPageV2'
 import { InvitedCheckoutPageV2 } from '@/pages/InvitedCheckoutPageV2'
@@ -69,11 +70,25 @@ function renderAt(path: string, search: string, element: React.ReactElement) {
   )
 }
 
+/**
+ * ⚠ THE INVITED ARM, PINNED — 2026-10-23, when `DEFAULT_INVITE_FLOW` moved to
+ * `b2c-guest` so the Prototypes row opens the guest walk.
+ *
+ * Everything in this file is about what an INVITATION says and what happens
+ * when a recruiter leaves its details out, which is the invited arm by
+ * definition — a guest never had an invitation to be missing anything from.
+ * These cases were reading the default instead of saying so, and a test
+ * leaning on a default is really a test OF the default; there is one of those,
+ * on purpose, in `InviteFlows.test.tsx`.
+ */
+const INVITED = `${INVITE_FLOW_FLAG}:b2b2c-email`
+/** The invited arm, nothing else said. */
+const INVITED_ONLY = `?ff=${INVITED}`
 /** The flag on, and no answer yet. */
-const ASKING = `?ff=${INVITE_MISSING_DETAILS_FLAG}:on`
+const ASKING = `?ff=${INVITE_MISSING_DETAILS_FLAG}:on,${INVITED}`
 /** The flag on, with the pair already chosen. */
 const ANSWERED =
-  `?ff=${INVITE_MISSING_DETAILS_FLAG}:on` +
+  `?ff=${INVITE_MISSING_DETAILS_FLAG}:on,${INVITED}` +
   `&${INVITE_STATE_PARAM}=Texas&${INVITE_LOA_PARAM}=${encodeURIComponent('Property & Casualty')}`
 
 describe('the missing-details flag', () => {
@@ -242,7 +257,7 @@ describe('the state search', () => {
 
 describe('Invited Product Detail', () => {
   it('opens on the advertised course when the invitation was complete', () => {
-    renderAt(PRODUCT_DETAIL, '', <InvitedProductDetailPageV2 />)
+    renderAt(PRODUCT_DETAIL, INVITED_ONLY, <InvitedProductDetailPageV2 />)
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getAllByText(new RegExp(E2E_COURSE_TITLE_SHORT)).length).toBeGreaterThan(0)
   })
@@ -270,7 +285,7 @@ describe('Invited Product Detail', () => {
   it('leaves the complete invitation’s wording alone', () => {
     /* The normal arm is untouched by all of the above — it still names the
        invitation's advertised course, in the invitation's own short form. */
-    renderAt(PRODUCT_DETAIL, '', <InvitedProductDetailPageV2 />)
+    renderAt(PRODUCT_DETAIL, INVITED_ONLY, <InvitedProductDetailPageV2 />)
     expect(screen.getByText(/has invited you to/).closest('p')!.textContent).toMatch(
       new RegExp(E2E_COURSE_TITLE_SHORT),
     )
@@ -393,7 +408,7 @@ describe('the pick carries through the flow', () => {
   })
 
   it('falls back to the advertised course when nothing was picked', () => {
-    renderAt(CHECKOUT, '', <InvitedCheckoutPageV2 />)
+    renderAt(CHECKOUT, INVITED_ONLY, <InvitedCheckoutPageV2 />)
     expect(screen.getAllByText(new RegExp(E2E_COURSE_TITLE_SHORT)).length).toBeGreaterThan(0)
   })
 
