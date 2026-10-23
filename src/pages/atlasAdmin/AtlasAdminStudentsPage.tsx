@@ -267,7 +267,7 @@ export function AtlasAdminStudentsPage() {
               <div style={STATUS_BODY}>
                 {/* The status colour carries the eyebrow: a pill 6px either side, 4px above and below. */}
                 <p style={{ ...EYEBROW, ...STATUS_PILL, background: active ? deep : strip }}>{t.id === 'all' ? 'Active' : t.label}</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={STATUS_COUNT}>{n.toLocaleString('en-US')}</span>
                   <span aria-hidden style={STATUS_SEP}>|</span>
                   <span style={{ ...STATUS_COUNT, color: deep }}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
