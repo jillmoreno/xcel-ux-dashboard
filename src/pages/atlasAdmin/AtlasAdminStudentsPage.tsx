@@ -278,9 +278,9 @@ export function AtlasAdminStudentsPage() {
                       onChange={(e) => setLicensedWindow(e.target.value)}
                       style={{ ...SELECT, marginTop: 0, width: 'auto', margin: '-6px 0' }}
                     >
-                      <option value="90d">Passed last 90 days</option>
-                      <option value="year">Passed this year</option>
-                      <option value="all">Passed all time</option>
+                      <option value="90d">Last 90 days</option>
+                      <option value="year">This year</option>
+                      <option value="all">All time</option>
                     </select>
                   ) : null}
                 </div>
