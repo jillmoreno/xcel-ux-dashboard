@@ -647,7 +647,7 @@ function StatusDial({ total, parts, active, onPick }: { total: number; parts: { 
         )}
       </svg>
       <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-        <span style={{ fontFamily: 'var(--font-heading-serif)', fontSize: 'var(--admin-atlas-h5-size)', lineHeight: 'var(--admin-atlas-h5-line)', color: 'var(--admin-ink)' }}>{total}</span>
+        <span style={{ fontFamily: 'var(--admin-font-playfair)', fontWeight: 500, fontSize: 'var(--admin-atlas-h5-size)', lineHeight: 'var(--admin-atlas-h5-line)', color: 'var(--admin-ink)' }}>{total}</span>
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--admin-muted)' }}>Students</span>
       </div>
     </div>
@@ -673,7 +673,7 @@ const STATUS_INNER: CSSProperties = { flex: 1, minHeight: 92, boxSizing: 'border
 const STATUS_PILL: CSSProperties = { alignSelf: 'flex-start', padding: '1px 10px', borderRadius: 9999, color: 'var(--admin-surface)' }
 const STATUS_BODY: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
 const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-desc)' }
-const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 32, fontWeight: 800, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-status-ink)' }
+const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 32, fontWeight: 900, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-status-ink)' }
 const STATUS_SEP: CSSProperties = { fontSize: 16, fontWeight: 200, color: 'var(--admin-status-sep)' }
 /* How far the outcome container's blue runs on beneath the roster card (Standard nav). */
 const UNDERLAP = 24
@@ -688,12 +688,12 @@ const TILE: CSSProperties = {
   outline: 'none',
 }
 const TILE_ACTIVE: CSSProperties = { background: 'var(--admin-surface)', outline: '1px solid var(--admin-atlas-primary-200)', outlineOffset: -1, boxShadow: 'var(--admin-shadow-tile-active)' }
-/* The count: the Atlas Serif H5 (DM Serif Display 32/34, regular). */
+/* The count: the Atlas H5 size (32/34) in Playfair, a step over regular. */
 const TILE_NUMBER: CSSProperties = {
   margin: '4px 0 0',
-  fontFamily: 'var(--font-heading-serif)',
+  fontFamily: 'var(--admin-font-playfair)',
   fontSize: 'var(--admin-atlas-h5-size)',
-  fontWeight: 400,
+  fontWeight: 500,
   lineHeight: 'var(--admin-atlas-h5-line)',
   letterSpacing: '-0.01em',
   fontVariantNumeric: 'tabular-nums',
