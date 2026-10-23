@@ -362,6 +362,7 @@ export const START_POINTS = {
        having left the invite flow entirely. */
     also: [
       '/end-to-end-demo',
+      '/end-to-end-demo/qr',
       '/end-to-end-demo/find',
       '/end-to-end-demo/packages',
       '/end-to-end-demo/cart',

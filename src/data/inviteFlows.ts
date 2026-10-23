@@ -103,16 +103,26 @@ export function individuallyInvited(flow: InviteFlowId): boolean {
   return flow === 'b2b2c-email' || flow === 'b2b2c-no-email'
 }
 
-/**
- * Is the student information already known, or is it the learner's to fill in?
+/*
+ * ⚠ `studentDetailsKnown` IS GONE — 2026-10-23, Jillienne: "its both - remove
+ * the known details path."
  *
- * Follows the invitation: it is what carried the name and address. Both flows
- * that arrive without one start the form empty, and the Payment section stays
- * closed until it is complete.
+ * It asked whether the invitation carried the learner's NAME AND ADDRESS, and
+ * for a day it was simply `individuallyInvited` under a second name. Then the
+ * with-email arm turned out to know only the email, and the question became:
+ * which arm knows more? The answer is neither. A recruiter inviting someone
+ * types the least they can get away with — a way to CONTACT them — and never
+ * their home address and phone number. So all four flows open the student form
+ * empty, the learner fills it in, and Payment stays closed until they press
+ * Save and continue.
+ *
+ * A predicate every flow answers the same way is not a predicate; it was
+ * removed rather than left returning `false` forever, along with the filled
+ * address display and the "Edit Student Information" expander it gated in
+ * `InvitedCheckoutPageV2`. **V1 keeps both** — `InvitedCheckoutPage.tsx` is
+ * untouched and still opens on Jordan's address behind an Edit expander, which
+ * is where to look for how that path was built if it is ever wanted back.
  */
-export function studentDetailsKnown(flow: InviteFlowId): boolean {
-  return individuallyInvited(flow)
-}
 
 /**
  * Does the learner type their address twice — the first field masked?
@@ -238,7 +248,12 @@ export function entryPathFor(flow: InviteFlowId): string {
     case 'b2c-guest':
       return '/end-to-end-demo/find'
     case 'qr-social':
-      return '/end-to-end-demo'
+      /* ⚠ THE PARTNER'S SHARE CARD, SINCE 2026-10-23 — this arm used to open
+         the Invited Product Detail page, which is where a SCAN lands. Starting
+         there skipped the only screen that explains where the link came from,
+         and left the one flow that begins outside the learner's hands looking
+         identical to the three that don't. */
+      return '/end-to-end-demo/qr'
     default:
       return '/end-to-end-demo/email'
   }

@@ -15,6 +15,7 @@ import {
   readInviteChoice,
 } from '@/data/inviteMissingDetails'
 import { INVITE_FLOW_FLAG } from '@/data/inviteFlows'
+import { GET_LICENSE_NAV } from '@/data/xcelCourseFinder'
 import { E2E_COURSE_TITLE_SHORT } from '@/pages/endToEndDemo'
 import { InvitedProductDetailPageV2 } from '@/pages/InvitedProductDetailPageV2'
 import { InvitedCheckoutPageV2 } from '@/pages/InvitedCheckoutPageV2'
@@ -89,7 +90,33 @@ const ASKING = `?ff=${INVITE_MISSING_DETAILS_FLAG}:on,${INVITED}`
 /** The flag on, with the pair already chosen. */
 const ANSWERED =
   `?ff=${INVITE_MISSING_DETAILS_FLAG}:on,${INVITED}` +
-  `&${INVITE_STATE_PARAM}=Texas&${INVITE_LOA_PARAM}=${encodeURIComponent('Property & Casualty')}`
+  `&${INVITE_STATE_PARAM}=Texas&${INVITE_LOA_PARAM}=${encodeURIComponent('Property and Casualty')}`
+
+describe('what the modal can sell', () => {
+  it('offers the catalogue\u2019s whole Get License list, not a subset of it', () => {
+    /* ⚠ 2026-10-23, Jillienne: "this modal needs to include all of these lines
+       of authority." It carried three, copied from `licensedStatesFixtures` —
+       which answers "which licences does this learner HOLD", not "what is for
+       sale". Life, Health and Securities are all sold on the site and none was
+       pickable here. */
+    expect(INVITE_LINES_OF_AUTHORITY).toEqual(GET_LICENSE_NAV)
+    for (const loa of ['Life and Health', 'Life', 'Health', 'Property and Casualty', 'Personal Lines', 'Securities']) {
+      expect(INVITE_LINES_OF_AUTHORITY as readonly string[], loa).toContain(loa)
+    }
+  })
+
+  it('speaks the catalogue\u2019s dialect — "and", never "&"', () => {
+    /* `inviteProductTitle` composes the product name from this pick, so the
+       ampersand used to follow the learner from the modal all the way to their
+       receipt while every other screen said "and". */
+    for (const loa of INVITE_LINES_OF_AUTHORITY) {
+      expect(loa, loa).not.toMatch(/&/)
+    }
+    expect(inviteProductTitle({ state: 'Florida', lineOfAuthority: 'Life and Health' })).toBe(
+      'Florida Life and Health Pre-licensing',
+    )
+  })
+})
 
 describe('the missing-details flag', () => {
   const definition = FEATURE_FLAGS.find((f) => f.key === INVITE_MISSING_DETAILS_FLAG)
@@ -147,15 +174,15 @@ describe('reading the choice out of the address', () => {
       readInviteChoice(
         new URLSearchParams({
           [INVITE_STATE_PARAM]: 'Texas',
-          [INVITE_LOA_PARAM]: 'Property & Casualty',
+          [INVITE_LOA_PARAM]: 'Property and Casualty',
         }),
       ),
-    ).toEqual({ state: 'Texas', lineOfAuthority: 'Property & Casualty' })
+    ).toEqual({ state: 'Texas', lineOfAuthority: 'Property and Casualty' })
   })
 
   it('names the product from the pair', () => {
-    expect(inviteProductTitle({ state: 'Texas', lineOfAuthority: 'Property & Casualty' })).toBe(
-      'Texas Property & Casualty Pre-licensing',
+    expect(inviteProductTitle({ state: 'Texas', lineOfAuthority: 'Property and Casualty' })).toBe(
+      'Texas Property and Casualty Pre-licensing',
     )
   })
 })
@@ -273,12 +300,12 @@ describe('Invited Product Detail', () => {
     expect(welcome.textContent).not.toMatch(/Pre-licensing/)
 
     await pickState(user, 'Texas')
-    await user.click(screen.getByRole('radio', { name: 'Property & Casualty' }))
+    await user.click(screen.getByRole('radio', { name: 'Property and Casualty' }))
     await user.click(screen.getByRole('button', { name: 'Show my course' }))
 
     /* …and once they have picked, it names THEIR course. */
     expect(screen.getByText(/has invited you to/).closest('p')!.textContent).toMatch(
-      /Texas Property & Casualty Pre-licensing/,
+      /Texas Property and Casualty Pre-licensing/,
     )
   })
 
@@ -289,6 +316,35 @@ describe('Invited Product Detail', () => {
     expect(screen.getByText(/has invited you to/).closest('p')!.textContent).toMatch(
       new RegExp(E2E_COURSE_TITLE_SHORT),
     )
+  })
+
+  it('opens with the caret in the state field, and marks it as a search', () => {
+    /* ⚠ 2026-10-23: "have a flashing cursor indicator this is the tab focus
+       etc. - maybe add a magifying glass icon (light gray) in the right of the
+       field." The modal appears over a page the learner did not ask for it on;
+       opening with focus still behind it leaves them a question, a form and no
+       sign of where typing would go. */
+    renderAt(PRODUCT_DETAIL, ASKING, <InvitedProductDetailPageV2 />)
+    const field = screen.getByRole('combobox', { name: 'State' })
+    expect(document.activeElement).toBe(field)
+    /* The ring is `.cre-e2e-search:focus-visible` in `inviteFlow.css` — the app
+       suppresses outlines globally, so the class is what restores one for a
+       keyboard user tabbing BACK to this field. jsdom applies no stylesheet,
+       so the class is what can be asserted here. */
+    expect(field).toHaveClass('cre-e2e-search')
+    /* ⚠ THE ICON IS DECORATION, and must stay out of the accessible name: the
+       label says "State" and the combobox role says it is searchable. */
+    const icon = field.parentElement?.querySelector('svg')
+    expect(icon).not.toBeNull()
+    expect(icon).toHaveAttribute('aria-hidden')
+    /* ⚠ AND THE LIST STAYS SHUT. `onFocus` opens it, which is right for a
+       learner tabbing back in and wrong for the focus the dialog gives itself:
+       an empty query matches all fifty states, so this opened the modal on a
+       fifty-item dropdown over the line-of-authority pills — the exact thing
+       the search field replaced — and made the first Escape close the LIST
+       rather than the dialog. */
+    expect(field).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('listbox')).toBeNull()
   })
 
   it('asks when the invitation was missing its details', () => {
@@ -352,7 +408,7 @@ describe('Invited Product Detail', () => {
     await pickState(user, 'Texas')
     expect(cta).toBeDisabled()
 
-    await user.click(screen.getByRole('radio', { name: 'Property & Casualty' }))
+    await user.click(screen.getByRole('radio', { name: 'Property and Casualty' }))
     expect(cta).toBeEnabled()
   })
 
@@ -360,12 +416,12 @@ describe('Invited Product Detail', () => {
     const user = userEvent.setup()
     renderAt(PRODUCT_DETAIL, ASKING, <InvitedProductDetailPageV2 />)
     await pickState(user, 'Texas')
-    await user.click(screen.getByRole('radio', { name: 'Property & Casualty' }))
+    await user.click(screen.getByRole('radio', { name: 'Property and Casualty' }))
     await user.click(screen.getByRole('button', { name: 'Show my course' }))
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(
-      screen.getAllByText(/Texas Property & Casualty Pre-licensing/).length,
+      screen.getAllByText(/Texas Property and Casualty Pre-licensing/).length,
     ).toBeGreaterThan(0)
   })
 
@@ -375,7 +431,7 @@ describe('Invited Product Detail', () => {
        know the answer, so asking again would be the flow forgetting. */
     renderAt(PRODUCT_DETAIL, ANSWERED, <InvitedProductDetailPageV2 />)
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(screen.getAllByText(/Texas Property & Casualty Pre-licensing/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Texas Property and Casualty Pre-licensing/).length).toBeGreaterThan(0)
   })
 
   it('does not strand the learner when Escape closes it', async () => {
@@ -404,7 +460,7 @@ describe('Invited Product Detail', () => {
 describe('the pick carries through the flow', () => {
   it('names the chosen course in checkout’s order summary', () => {
     renderAt(CHECKOUT, ANSWERED, <InvitedCheckoutPageV2 />)
-    expect(screen.getAllByText(/Texas Property & Casualty Pre-licensing/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Texas Property and Casualty Pre-licensing/).length).toBeGreaterThan(0)
   })
 
   it('falls back to the advertised course when nothing was picked', () => {

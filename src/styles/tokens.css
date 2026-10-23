@@ -7625,6 +7625,13 @@ a.cre-library-card-title::after {
      where the learner is, against a neutral that lets the three steps read as
      a sequence rather than as a warning. */
   --color-e2e-journey-ground: #2b2b2b;
+
+  /* The partner's QR share card (2026-10-23) — a desaturated navy, the one
+     dark ground in this flow that is NOT the charcoal of the journey rail.
+     Deliberately a different dark: the rail is XCEL's own chrome speaking to
+     the learner, this is a poster a PARTNER holds up in their branch, and the
+     two should not be mistaken for the same surface. */
+  --color-e2e-qr-ground: #2d4a63;
   /* …and the light rail's hairlines — THE RIGHT HALF'S GROUND (2026-10-22,
      the direct ask), not a shade of the rail's own warm paper. It was #ddd8d0,
      a warm grey that read as drawn lines; `--color-neutral-75` is a touch

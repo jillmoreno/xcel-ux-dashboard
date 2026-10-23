@@ -3,13 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ChevronDown } from '@/icons'
 import { ShoppingCart } from '@/icons'
 import { clearPartnerCodeAnswer } from '@/data/inviteFlows'
-import {
-  CART_PACKAGE_PARAM,
-  GET_LICENSE_NAV,
-  INVITE_LOA_PARAM,
-  INVITE_STATE_PARAM,
-  cartPackage,
-} from '@/data/xcelCourseFinder'
+import { CART_PACKAGE_PARAM, GET_LICENSE_NAV, cartPackage } from '@/data/xcelCourseFinder'
+import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
 
 /**
  * XCELSOLUTIONS.COM'S HEADER — 2026-10-22, with the guest journey's public

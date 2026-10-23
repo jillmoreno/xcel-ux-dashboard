@@ -50,6 +50,22 @@
   outline: 2px solid var(--color-xcel-brick);
   outline-offset: 2px;
 }
+
+/* ⚠ THE SEARCH FIELD NEEDS ITS OWN RING, because the app suppresses outlines
+   globally (`outline-style: none` resolves on every control) and this flow
+   restores them per component, as the CTA above does. 2026-10-23: "have a
+   flashing cursor indicator this is the tab focus etc." The caret answers the
+   moment the dialog opens; this answers the tab AFTER it, when a keyboard user
+   comes back to the field from the line-of-authority pills and the caret alone
+   is easy to miss against a placeholder.
+
+   A text input matches `:focus-visible` whenever it is focused, so this shows
+   for the autofocus too — the two indicators arrive together rather than the
+   ring waiting for a second tab. */
+.cre-e2e-search:focus-visible {
+  outline: 2px solid var(--color-xcel-brick);
+  outline-offset: 1px;
+}
 /* ⚠ A DISABLED CTA MUST NOT ANSWER. The checkout's Place Order and the
    password step's Confirm both draw grey until their field is filled, and
    those arms do not carry this class — but `:disabled` is belt and braces

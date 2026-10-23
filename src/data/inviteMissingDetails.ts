@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ALL_US_STATES } from '@/data/licensedStatesFixtures'
+import { GET_LICENSE_NAV } from '@/data/xcelCourseFinder'
 import { productUnknownFor, useInviteFlow } from '@/data/inviteFlows'
 
 /**
@@ -34,21 +35,31 @@ export const INVITE_STATE_PARAM = 'lstate'
 export const INVITE_LOA_PARAM = 'loa'
 
 /**
- * The lines of authority the invite door can sell.
+ * The lines of authority the invite door can sell — ALL SIX, the catalogue's
+ * own Get License list (2026-10-23, Jillienne of this modal: "this modal needs
+ * to include all of these lines of authority").
  *
- * ⚠ THE SAME THREE `licensedStatesFixtures` CARRIES, deliberately, and not a
- * fourth list invented here. That file is where XCEL's lines of authority live
- * for the dashboard ("the lines of authority ARE the profession axis"), and a
- * learner who picks Property & Casualty here must land on a dashboard that
- * knows what that is. They are restated rather than imported because that
- * fixture answers a different question — which licences this learner HOLDS,
- * which is empty for someone who has not bought anything yet.
+ * ⚠ IT WAS THREE, AND THEY CAME FROM THE WRONG PLACE. The three were
+ * `licensedStatesFixtures`', on the reasoning that a learner who picks
+ * Property & Casualty must land on a dashboard that knows what that is. But
+ * that fixture answers "which licences does this learner HOLD", and this modal
+ * asks "what do you want to BUY" — so it was offering a subset of the shop
+ * because of what the shelf at home looks like. Life, Health and Securities
+ * are all sold on xcelsolutions.com and none of them was pickable here.
+ *
+ * ⚠ AND THE SPELLING CHANGES WITH IT: "Life and Health", not "Life & Health".
+ * The catalogue spells it out and so does every other screen in this flow —
+ * the course page, the cart, the checkout, the receipt. The modal was the one
+ * place answering in a different dialect, and because `inviteProductTitle`
+ * composes the product name from this pick, the ampersand followed the learner
+ * all the way to their receipt.
+ *
+ * ⚠ IMPORTED, NOT RESTATED. The previous list was copied out by hand with a
+ * note explaining why; a hand copy is how the two spellings diverged in the
+ * first place. `GET_LICENSE_NAV` is the one place the catalogue's own list
+ * lives.
  */
-export const INVITE_LINES_OF_AUTHORITY = [
-  'Life & Health',
-  'Property & Casualty',
-  'Personal Lines',
-] as const
+export const INVITE_LINES_OF_AUTHORITY = GET_LICENSE_NAV
 
 export type InviteLineOfAuthority = (typeof INVITE_LINES_OF_AUTHORITY)[number]
 

@@ -46,7 +46,6 @@ import {
   individuallyInvited,
   emailsMatch,
   looksLikeEmail,
-  studentDetailsKnown,
   studentInformationComplete,
   useInviteFlow,
   type InviteFlowId,
@@ -121,9 +120,8 @@ export function InvitedCheckoutPageV2() {
      is for. The consequence to know is that switching arms does NOT retro-fill
      the form — reload to get the other arm's starting state. */
   const [student, setStudent] = useState<PostalAddress>(() =>
-    studentDetailsKnown(flow) ? STUDENT_ADDRESS : BLANK_ADDRESS,
+    BLANK_ADDRESS,
   )
-  const [studentOpen, setStudentOpen] = useState(false)
   const [studentIsBilling, setStudentIsBilling] = useState(true)
   const [billingOwn, setBillingOwn] = useState<PostalAddress>(STUDENT_ADDRESS)
   const billingAddress = studentIsBilling ? student : billingOwn
@@ -188,7 +186,7 @@ export function InvitedCheckoutPageV2() {
   const studentFormComplete = studentInformationComplete({ ...student, phone, email, emailAgain })
   /* …and whether Payment is open. The invited arms arrive complete and saved;
      Guest has to press. */
-  const studentComplete = studentDetailsKnown(flow) || studentSaved
+  const studentComplete = studentSaved
   const [filled, setFilled] = useState<Partial<Record<CardField, boolean>>>({})
   const fill = (f: CardField) => setFilled((prev) => ({ ...prev, [f]: true }))
   const [saveCard, setSaveCard] = useState(true)
@@ -329,7 +327,7 @@ export function InvitedCheckoutPageV2() {
             1. Student information
           </h3>
           <div style={{ ...PANEL, padding: 20, gap: 20, position: 'relative' }}>
-            {studentDetailsKnown(flow) ? null : (
+            {(
               <button
                 type="button"
                 aria-label="Fill in the demo learner’s details"
@@ -349,43 +347,6 @@ export function InvitedCheckoutPageV2() {
                 }}
               />
             )}
-            {/* ⚠ GUEST HAS NOTHING TO DISPLAY — 2026-10-22. B2B and B2C open on
-                the learner's name and address because the invitation carried
-                them, with an Edit expander underneath. A guest's panel would
-                otherwise open on an empty paragraph above an "Edit Student
-                Information" row offering to edit nothing, so the arm swaps the
-                display-plus-expander for the FORM ITSELF, always open: on this
-                arm filling it in is the step, not an edit to a step already
-                done. */}
-            {studentDetailsKnown(flow) ? <Address address={student} /> : null}
-            {/* THE EMAIL BLOCK sits ABOVE the form only on the arms whose form is
-                an EDIT behind an expander — there the names are in the address
-                displayed above, so the email is already below them. On Guest the
-                form IS the section, so the block is slotted inside it, under the
-                name row. See `afterName`. */}
-            {/* THE EMAIL BLOCK — 2026-10-22, and the one thing that differs
-                between B2B and B2C at Secure Checkout.
-
-                It sits in Student information rather than in Payment because
-                the address is not a payment detail: it is the identifier the
-                ACCOUNT is built on afterwards — what Confirmation mails to,
-                and in B2C what the password link is sent to. Putting it beside
-                the student's name and address is also what makes the locked
-                B2B field legible as "we already know this about you". */}
-            {studentDetailsKnown(flow) ? (
-              <EmailBlock
-                flow={flow}
-                email={email}
-                onEmailChange={setEmail}
-                emailAgain={emailAgain}
-                onEmailAgainChange={setEmailAgain}
-                onConfirmBlur={() => setConfirmTouched(true)}
-                error={emailError}
-              />
-            ) : null}
-            {/* EDIT STUDENT INFORMATION — the billing module's form, in place of
-                the Edit button (2026-10-15, Eric's request). Its "Use as
-                default billing address" makes this address the billing one. */}
             {/* ⚠ THE DEMO FILL — 2026-10-22, Jillienne: "let me click in a
                 secret place on the personal info form to auto-fill that
                 content. like bottom right of that container".
@@ -405,36 +366,15 @@ export function InvitedCheckoutPageV2() {
                 ⚠ IT DOES NOT SAVE. Filling is not the same as the learner
                 saying their details are right, and Save and continue is the
                 step being demonstrated. */}
-            {studentDetailsKnown(flow) ? (
-              <div style={studentOpen ? OPTION_OPEN : OPTION}>
-                <OptionHeader
-                  label="Edit Student Information"
-                  note="Update the fields below, then confirm."
-                  selected={studentOpen}
-                  onSelect={() => setStudentOpen(true)}
-                  open={studentOpen}
-                  onToggle={() => setStudentOpen((v) => !v)}
-                />
-                {studentOpen ? (
-                  <AddressForm
-                    value={student}
-                    onChange={setStudent}
-                    isDefault={studentIsBilling}
-                    onDefaultChange={setStudentIsBilling}
-                    confirmLabel="Confirm student information"
-                    onConfirm={() => setStudentOpen(false)}
-                  />
-                ) : null}
-              </div>
-            ) : (
-              /* ⚠ NO "Confirm student information" BUTTON ON THIS ARM. The
-                 shared form takes a confirm that CLOSES it — the right ending
-                 for an edit inside an expander, and the wrong one here, where
-                 the form is the section and closing it would hide the only
-                 thing on the page the guest has to do. The gate below reacts to
-                 the fields themselves, so there is nothing for a press to
-                 confirm: `onConfirm` is a no-op and the button is hidden with
-                 `hideConfirm`. */
+            {/* ⚠ NO "Confirm student information" BUTTON. The shared form takes
+                a confirm that CLOSES it — the right ending for an edit inside
+                an expander, and the wrong one here, where the form IS the
+                section and closing it would hide the only thing on the page
+                the learner has to do. The gate below reacts to the fields
+                themselves, so there is nothing for a press to confirm:
+                `onConfirm` is a no-op and the button is hidden with
+                `hideConfirm`. */}
+            {(
               <AddressForm
                 value={student}
                 onChange={(next) => {
@@ -898,7 +838,12 @@ type PostalAddress = {
   zip: string
 }
 
-/* DEMO DATA — the demo learner, at an invented address. */
+/* DEMO DATA — the demo learner, at an invented address.
+
+   ⚠ NO LONGER A STARTING VALUE — 2026-10-23, when both B2B2C arms turned out
+   to know only how to CONTACT the learner, never who they are. Every flow now
+   opens this form empty; this address survives as what the demo-fill corner
+   types in, which is the only thing it was ever really for. */
 const STUDENT_ADDRESS: PostalAddress = {
   first: 'Jordan',
   last: 'Navarro',
@@ -913,49 +858,6 @@ const BLANK_ADDRESS: PostalAddress = { first: '', last: '', street: '', line2: '
 
 const STATES = ['Florida', 'Georgia', 'Illinois', 'New York', 'Texas']
 
-function Address({ address }: { address: PostalAddress }) {
-  return (
-    <p style={TEXT_16}>
-      {address.first} {address.last}
-      <br />
-      {address.street}
-      {address.line2 ? (
-        <>
-          <br />
-          {address.line2}
-        </>
-      ) : null}
-      <br />
-      {address.city}, {address.state} {address.zip}
-      <br />
-      United States
-      <br />
-      {E2E_LEARNER_PHONE}
-    </p>
-  )
-}
-
-/**
- * THE EMAIL AT SECURE CHECKOUT — 2026-10-22, Jillienne's brief.
- *
- * B2B: ONE field, pre-populated from the invitation and locked. The partner
- * sent the invitation to this address, so the learner never types it and
- * cannot change it — which is the point: the address is what ties the purchase
- * back to the partner's invitation, and an editable field would let the two
- * part company.
- *
- * B2C: TWO fields, the first MASKED and the second visible.
- *
- * ⚠ THE MASKING IS DELIBERATE AND IS THE UNUSUAL PART, so it is written down
- * rather than left to look like a mistake. Masking the first field is what
- * stops the second being satisfied by a paste or an autofill — the learner has
- * to produce the address twice from memory, which is what makes the second
- * entry evidence rather than a copy. The cost is real and worth stating: a
- * learner cannot proof-read what they typed, a password manager will not fill
- * it, and a screen reader announces it as a password field. That cost is the
- * trade being explored here; if it is judged too high, the shape to try next is
- * both fields visible with paste blocked on the second.
- */
 function EmailBlock({
   flow,
   email,

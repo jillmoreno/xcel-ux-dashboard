@@ -15,7 +15,6 @@ import {
   passwordSetFromEmailedLink,
   productUnknownFor,
   resolveInviteFlow,
-  studentDetailsKnown,
   studentInformationComplete,
   type InviteFlowId,
 } from '@/data/inviteFlows'
@@ -23,6 +22,7 @@ import { E2E_LEARNER_EMAIL, E2E_PARTNER_NAME } from '@/pages/endToEndDemo'
 import { InvitedCheckoutPageV2 } from '@/pages/InvitedCheckoutPageV2'
 import { InvitedProductDetailPageV2 } from '@/pages/InvitedProductDetailPageV2'
 import { InvitedConfirmationPageV2 } from '@/pages/InvitedConfirmationPageV2'
+import { InvitedConfirmationRoute } from '@/pages/InviteFlowRoutes'
 
 /**
  * WHO IS BUYING, AT SECURE CHECKOUT — 2026-10-22, Jillienne's brief. B2B and
@@ -154,7 +154,13 @@ describe('the checkout audience flag', () => {
     expect((definition?.variants ?? []).length).toBeGreaterThan(3)
   })
 
-  /* ⚠ THE PREDICATES ARE THE CONTRACT, not the flow names. Every page asks one
+  /* ⚠ `detailsKnown` IS NOT A COLUMN — 2026-10-23. It was one until both
+     B2B2C arms turned out to know only how to CONTACT the learner, never who
+     they are, at which point every flow answered it the same way and it
+     stopped being a question. See the note where it used to live in
+     `inviteFlows.ts`.
+
+     ⚠ THE PREDICATES ARE THE CONTRACT, not the flow names. Every page asks one
      of these rather than comparing to a flow — which is what makes adding a
      fifth flow a question each predicate has to answer, instead of a search for
      every `===` across three files. The table is deliberately exhaustive: a new
@@ -165,7 +171,6 @@ describe('the checkout audience flag', () => {
       {
         partner: boolean
         invited: boolean
-        detailsKnown: boolean
         twice: boolean
         mailedLink: boolean
         productUnknown: boolean
@@ -174,7 +179,6 @@ describe('the checkout audience flag', () => {
       'b2b2c-email': {
         partner: true,
         invited: true,
-        detailsKnown: true,
         twice: false,
         mailedLink: false,
         productUnknown: false,
@@ -182,7 +186,6 @@ describe('the checkout audience flag', () => {
       'b2b2c-no-email': {
         partner: true,
         invited: true,
-        detailsKnown: true,
         twice: true,
         mailedLink: true,
         productUnknown: false,
@@ -190,7 +193,6 @@ describe('the checkout audience flag', () => {
       'b2c-guest': {
         partner: false,
         invited: false,
-        detailsKnown: false,
         twice: true,
         mailedLink: true,
         productUnknown: false,
@@ -202,7 +204,6 @@ describe('the checkout audience flag', () => {
       'qr-social': {
         partner: true,
         invited: false,
-        detailsKnown: false,
         twice: true,
         mailedLink: true,
         productUnknown: true,
@@ -213,7 +214,6 @@ describe('the checkout audience flag', () => {
       expect({
         partner: partnerAttributed(flow),
         invited: individuallyInvited(flow),
-        detailsKnown: studentDetailsKnown(flow),
         twice: emailEnteredTwice(flow),
         mailedLink: passwordSetFromEmailedLink(flow),
         productUnknown: productUnknownFor(flow),
@@ -310,10 +310,22 @@ describe('B2C checkout', () => {
 })
 
 describe('the end of the flow', () => {
-  it('B2B sets the password inline', () => {
-    renderAt(CONFIRMATION, 'b2b2c-email', <InvitedConfirmationPageV2 />)
-    expect(screen.getByRole('heading', { name: 'Create password' })).toBeInTheDocument()
+  it('B2B sets the password inline — on the SAME page the guest ends on', () => {
+    /* ⚠ 2026-10-23, Jillienne: "this step needs to match the confirmation page
+       we did for the guest version, but the create password side will skip the
+       email validation for this flow." Not a restyle — the same component.
+       `InviteFlowRoutes` picks it, so these cases render the route. */
+    renderAt(CONFIRMATION, 'b2b2c-email', <InvitedConfirmationRoute />)
+    expect(screen.getByRole('heading', { name: 'Create your password' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Check your email' })).not.toBeInTheDocument()
+    /* ⚠ AND IT SKIPS THE VERIFICATION STEP, which is the one difference. The
+       guest has to open their inbox first; an invited learner was REACHED at
+       that address, so there is nothing to prove. */
+    expect(screen.queryByRole('heading', { name: 'Confirm your email' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Go to Email/ })).toBeNull()
+    /* …while the rest of the page matches: the receipt, and the step label. */
+    expect(screen.getByText(/Thank you for your order/)).toBeInTheDocument()
+    expect(screen.getByText('Last step')).toBeInTheDocument()
   })
 
   it('B2B gates Confirm on the rules, and the demo fill is off the field', async () => {
@@ -323,27 +335,33 @@ describe('the end of the flow', () => {
        be seen doing it: the very first gesture a learner makes on this form
        satisfied every rule at once. */
     const user = userEvent.setup()
-    renderAt(CONFIRMATION, 'b2b2c-email', <InvitedConfirmationPageV2 />)
+    renderAt(CONFIRMATION, 'b2b2c-email', <InvitedConfirmationRoute />)
 
     const field = screen.getByPlaceholderText('Enter password...')
+    const cta = screen.getByRole('button', { name: 'Save Password & Log In' })
     await user.click(field)
     expect(field).toHaveValue('')
-    expect(screen.getByRole('button', { name: 'Confirm' })).toBeDisabled()
+    expect(cta).toBeDisabled()
 
     /* Typing works the slow way, and the gate holds until the rules are met. */
     await user.type(field, 'hunterhunter')
-    expect(screen.getByRole('button', { name: 'Confirm' })).toBeDisabled()
+    expect(cta).toBeDisabled()
     await user.type(field, 'A1')
-    expect(screen.getByRole('button', { name: 'Confirm' })).toBeEnabled()
+    expect(cta).toBeEnabled()
   })
 
   it('B2B fills from the corner — labelled, so it is not a trap for a keyboard', async () => {
+    /* ⚠ THE CORNER CAME WITH THE PASSWORD STEP — 2026-10-23. It was put in
+       Confirmation & Password's bottom-right the day before so that filling
+       the field and watching the requirements tick stopped being one gesture;
+       when the step moved pages the shortcut moved with it, rather than
+       quietly leaving the product in a refactor. */
     const user = userEvent.setup()
-    renderAt(CONFIRMATION, 'b2b2c-email', <InvitedConfirmationPageV2 />)
+    renderAt(CONFIRMATION, 'b2b2c-email', <InvitedConfirmationRoute />)
 
     await user.click(screen.getByRole('button', { name: 'Fill in the demo learner’s password' }))
     expect(screen.getByPlaceholderText('Enter password...')).not.toHaveValue('')
-    expect(screen.getByRole('button', { name: 'Confirm' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Save Password & Log In' })).toBeEnabled()
   })
 
   it('B2C thanks them and sends them to their inbox instead', () => {

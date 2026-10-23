@@ -15,24 +15,15 @@
  * copies of the content means the V1/V2 comparison stops being about the
  * design.
  */
-import { useEffect, useState, type CSSProperties } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { type CSSProperties } from 'react'
 import { CircleCheckSolid } from '@/icons'
-import { partnerAttributed, passwordSetFromEmailedLink, useInviteFlow } from '@/data/inviteFlows'
-import { meetsInvitePasswordRules } from '@/data/invitePasswordRules'
-import { InvitePasswordChecklist } from '@/components/e2e/InvitePasswordChecklist'
-import { LOADING_HANDOFF_MS, XcelLoadingPage } from '@/components/e2e/XcelLoadingPage'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { partnerAttributed, useInviteFlow } from '@/data/inviteFlows'
 import { PartnerHeader } from '@/components/e2e/PartnerHeader'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
 import {
-  E2E_JOURNEY_FULL,
-  E2E_JOURNEY_PARAM,
   E2E_LEARNER_EMAIL,
   E2E_PARTNER_PRICE,
-  END_TO_END_VERSION,
-  isFullJourney,
   useEndToEndDemoParams,
   useEndToEndPageChrome,
 } from './endToEndDemo'
@@ -87,89 +78,19 @@ import {
 export function InvitedConfirmationPageV2() {
   useEndToEndDemoParams()
   useEndToEndPageChrome('Confirmation & Password')
-  const navigate = useNavigate()
-  const [password, setPassword] = useState('')
-  /* ⚠ THE GATE IS THE CHECKLIST, not "is there anything in the field"
-     (2026-10-22). One definition of valid, read by the rows and by the button,
-     so the two cannot disagree. */
-  const ready = meetsInvitePasswordRules(password)
-  const [shown, setShown] = useState(false)
-  // Confirmed: the flow's end state, when `e2e-ends-at-password` is on.
-  const [done, setDone] = useState(false)
-  /* WHICH FLOW — the same `invite-flow-journey` answer the checkout read, and
-     the reason this page has two endings. B2B2C-with-email's learner was
-     vouched for by the partner, so the password is set here and now. Every
-     other flow typed its own address, so the password is set from a link mailed
-     to it — which is how
-     that address gets VERIFIED, and why the form below is replaced rather than
-     merely relabelled. Asked through `passwordSetFromEmailedLink` rather than
-     by naming arms, so a fourth arm has to answer the question.
-     See `checkoutAudience.ts`. */
+  /* WHICH FLOW — still asked, because the partner header above depends on it.
+     Which ENDING a flow gets is `InviteFlowRoutes`' decision now, through
+     `passwordSetFromEmailedLink`: this page is the one for the arms whose
+     password arrives by mail. */
   const flow = useInviteFlow()
-  const endsHere = useFeatureFlag('e2e-ends-at-password').enabled
-  // …and whether that end state RESOLVES — see `e2e-loading-opens-home`.
-  const opensHome = useFeatureFlag('e2e-loading-opens-home').enabled
-  /* WHOSE WALK IS THIS? `?journey=full` is on the End-to-End row's address and
-     not on the Invite & Purchase row's — see `isFullJourney`. */
-  const [params] = useSearchParams()
-  const fullJourney = isFullJourney(params)
 
-  /* THE HAND-OFF (2026-10-16, Jillienne: "after the loading gif page, after 3
-     seconds, should transition to the Atlas Learning Home page"). The loading
-     page waits `LOADING_HANDOFF_MS` and then opens the demo's Home, which is
-     what makes the End-to-End row ONE journey rather than two rows a reviewer
-     has to join up by hand.
-
-     ⚠ ONLY ON THE END-TO-END ROW'S WALK, and this is the whole point of that
-     row (2026-10-16, Jillienne: "the 3 designers do not merge those 2
-     together, I do, that is the purpose of the separate tile"). The Invite &
-     Purchase row opens these same three pages to answer a NARROWER question —
-     how a learner gets in — and its answer still ends at the spinner, exactly
-     as `main` shipped it on 2026-10-15. Afsana and Eric's surface is
-     untouched by this; it is Jillienne's row that walks through to Atlas.
-
-     So THREE conditions, and they are three different kinds of thing:
-       • `done`      — the reviewer pressed Confirm.
-       • `endsHere`  — `e2e-ends-at-password`, the Invite scope's promoted
-                       baseline, which decides there is a spinner at all.
-       • `fullJourney` — the ROW, via `?journey=full`.
-     plus `opensHome`, the branch flag that lets this whole behaviour be
-     switched off at promotion time without unpicking the row.
-
-     ⚠ ABOVE THE `if (done)` RETURN, because that return is an early exit and
-     a hook after it would not run on the branch that needs it. The effect
-     guards on `done` instead.
-
-     `replace`, not push: the password page is behind us and Back should leave
-     the flow, not drop the reviewer onto a form whose state is gone — the
-     same reasoning as `useEndToEndDemoParams`. No `?affidavit=1`; that modal
-     is the OFF arm's hand-off. The timer is cleared on unmount, so leaving
-     early (the Design bar's Page control, the rail) cannot navigate on top of
-     wherever the reviewer went. */
-  useEffect(() => {
-    if (!done || !endsHere || !opensHome || !fullJourney) return
-    const timer = window.setTimeout(() => {
-      /* ⚠ `journey=full` RIDES ALONG INTO THE DASHBOARD (2026-10-16). It was
-         dropped here when the hand-off landed, because nothing past the
-         spinner read it yet. The dashboard does now: it is what lets Course
-         Overview reach Anjani's Compass on THIS walk while Eric's Atlas
-         Learning tile keeps his own pages. Drop it again and the walk ends
-         in a dashboard that behaves like Eric's tile. */
-      navigate(
-        `/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}&${E2E_JOURNEY_PARAM}=${E2E_JOURNEY_FULL}`,
-        { replace: true },
-      )
-    }, LOADING_HANDOFF_MS)
-    return () => window.clearTimeout(timer)
-  }, [done, endsHere, opensHome, fullJourney, navigate])
-
-  if (done) {
-    /* THE END OF THE FLOW: the loading page, shared with the checkout's Place
-       your order hop since 2026-10-22 (`XcelLoadingPage`). It never resolves
-       on this arm unless `e2e-loading-opens-home` is on — see the effect
-       above, which owns the timer. */
-    return <XcelLoadingPage message="Taking you to your learning dashboard" />
-  }
+  /* ⚠ THE HAND-OFF LEFT WITH THE PASSWORD FORM — 2026-10-23. Pressing Confirm
+     used to end this page on the loading spinner and, on the End-to-End row's
+     full walk, hand off to Atlas Home. There is no Confirm here any more: this
+     arm's learner goes to their inbox, and the arm that presses a button now
+     ends on `XcelSplitConfirmationPage`, which carries the same two flags
+     (`e2e-ends-at-password`, `e2e-loading-opens-home`) and the same hand-off.
+     Look there, not here, for how the walk reaches the dashboard. */
 
   return (
     <div style={PAGE}>
@@ -220,7 +141,27 @@ export function InvitedConfirmationPageV2() {
             journey is a B2B walk today. If the row needs to continue, the
             thing to add is an explicit "open the link in your email" demo
             affordance here, NOT a password field. */}
-        {passwordSetFromEmailedLink(flow) ? (
+        {/* ⚠ THE ONLY ARM LEFT ON THIS PAGE — 2026-10-23. It used to be a
+            ternary: "Check your email" for the flows whose password comes
+            from a mailed link, and a Create password form beside this receipt
+            for the one that sets it inline. That second half moved to
+            `XcelSplitConfirmationPage`, which is the guest journey’s ending
+            and now both — Jillienne: "this step needs to match the
+            confirmation page we did for the guest version". `InviteFlowRoutes`
+            does the choosing, so this page renders one thing.
+
+            ⚠ IT IS STILL A GENUINELY DIFFERENT PAGE, not a state of that one:
+            there is no form here, because the emailed link IS the
+            verification step and an inline password field beside it would let
+            the learner finish without ever opening the mail.
+
+            ⚠ SO THESE WALKS STOP HERE. There is no Confirm to press, which
+            means the End-to-End row’s hand-off to Atlas has nothing to fire
+            it. Correct for the flow as briefed — the learner genuinely does
+            leave for their inbox — but it means the full journey is a
+            with-email walk. If the row needs to continue, the thing to add is
+            an explicit "open the link in your email" demo affordance, NOT a
+            password field. */}
           <section aria-labelledby="check-your-email" style={PASSWORD_COLUMN}>
             <h2 id="check-your-email" style={TITLE}>
               Check your email
@@ -240,143 +181,6 @@ export function InvitedConfirmationPageV2() {
               </p>
             </div>
           </section>
-        ) : (
-        /* CREATE PASSWORD — B2B. The partner vouched for the address, so it is
-           locked below and the password is set inline, here and now. */
-        <section aria-labelledby="create-password" style={PASSWORD_COLUMN}>
-          <h2 id="create-password" style={TITLE}>
-            Create password
-          </h2>
-          <form
-            style={{ ...FORM, position: 'relative' }}
-            onSubmit={(e) => {
-              e.preventDefault()
-              /* Belt and braces with the `disabled` arm below: a form can also
-                 be submitted by Enter in the field. */
-              if (!ready) return
-              if (endsHere) setDone(true)
-              // Off: `affidavit=1`, and Home opens the Affidavit modal over itself.
-              else navigate(`/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}&affidavit=1`)
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              <label style={FIELD_GROUP}>
-                <span style={FIELD_LABEL}>Email</span>
-                <span style={{ ...FIELD, background: 'var(--color-e2e-form-locked)' }}>
-                  <span style={{ flex: '1 0 0', minWidth: 1 }}>{DEMO_EMAIL}</span>
-                  <img src="/brand/confirmation/lock.svg" alt="Locked" width={16} height={16} style={{ display: 'block' }} />
-                </span>
-              </label>
-              <label style={FIELD_GROUP}>
-                <span style={FIELD_LABEL}>Password</span>
-                <span style={FIELD}>
-                  <input
-                    type={shown ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter password..."
-                    autoComplete="new-password"
-                    style={PASSWORD_INPUT}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShown((v) => !v)}
-                    /* ⚠ THE LABEL NAMES THE ACTION, NOT THE STATE — "Show
-                       password" while it is hidden. A control labelled for
-                       what it currently IS leaves a screen-reader user to
-                       work out what pressing it would do. `aria-pressed`
-                       carries the state, which is the pair's whole job. */
-                    aria-label={shown ? 'Hide password' : 'Show password'}
-                    aria-pressed={shown}
-                    style={EYE}
-                  >
-                    {/* ⚠ TWO ICONS, NOT ONE (2026-10-19, Jillienne: "this
-                        icon should change when clicked to show the password,
-                        there should be 2 different states"). The eye never
-                        changed, so the only feedback was the field itself —
-                        and `aria-pressed` was already telling assistive tech
-                        a state the screen did not show.
-
-                        ⚠ THE SLASH MEANS THE PASSWORD IS HIDDEN — 2026-10-22,
-                        Jillienne: "icons are backwards. eye with slash through
-                        it, password should be hidden". This was built the
-                        other way round on 10-19, on the reasoning that an icon
-                        shows what pressing it DOES; the struck eye therefore
-                        appeared while the password was legible, meaning "press
-                        to hide".
-
-                        That reasoning is sound for a LABEL and wrong for this
-                        icon, because a struck eye is not read as an
-                        instruction — it is read as a description of what the
-                        field is doing, the way a muted speaker means "sound is
-                        off" rather than "press to mute". The words carry the
-                        action (`aria-label` still says "Show password" while
-                        hidden); the picture carries the state. `eye-off.svg`
-                        is the design's own eye with a diagonal added in the
-                        identical stroke — the standard construction on its own
-                        geometry, not a second mark from somewhere else. */}
-                    <img
-                      src={shown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'}
-                      alt=""
-                      width={18}
-                      height={18}
-                      style={{ display: 'block' }}
-                    />
-                  </button>
-                </span>
-              </label>
-            </div>
-            {/* The rules, once the field has something in it (Figma 425:3001). */}
-            {/* ⚠ THE DEMO FILL MOVED OFF THE FIELD — 2026-10-22, "yes move
-                that shortcut to the bottom right".
-
-                It used to fire on the first click INTO the password field,
-                which was the cheapest shortcut available right up until the
-                requirements started ticking as you type: a field that fills
-                itself with a valid password the moment you touch it means the
-                validation this page now does is never once seen. The shortcut
-                is still here, in the corner the checkout's personal-info form
-                already uses, so walking the flow fast and demonstrating the
-                checklist stop being the same gesture.
-
-                ⚠ INVISIBLE TO THE EYE, NOT TO EVERYONE — label and tooltip, so
-                a pointer that lands on it and a screen reader both find out
-                what it is. A genuinely undiscoverable control is a trap for
-                anyone navigating by keyboard. */}
-            <button
-              type="button"
-              aria-label="Fill in the demo learner’s password"
-              title="Demo shortcut: fill in the demo learner’s password"
-              style={DEMO_FILL}
-              onClick={() => setPassword(TEST_PASSWORD)}
-            />
-            {/* ⚠ SHARED SINCE 2026-10-22 (`InvitePasswordChecklist`). The guest
-                arm sets a password too, and the same product cannot tell a
-                learner two different rules — or tick them differently —
-                depending on how they got in. */}
-            {password ? (
-              <InvitePasswordChecklist
-                password={password}
-                style={RULES}
-                headingStyle={RULE_HEADING}
-                glyph={13}
-              />
-            ) : null}
-            <div style={{ paddingTop: 8 }}>
-              <button
-                type="submit"
-                disabled={!ready}
-                /* The grey arm is the disabled look — no hover on a control
-                   that will not accept the press. */
-                className={ready ? 'cre-e2e-cta' : undefined}
-                style={ready ? CONFIRM_ON : CONFIRM}
-              >
-                Confirm
-              </button>
-            </div>
-          </form>
-        </section>
-        )}
       </main>
     </div>
   )
@@ -408,10 +212,6 @@ const EMAILED_FINE: CSSProperties = {
 }
 
 const DEMO_EMAIL = E2E_LEARNER_EMAIL
-
-/* TEST DATA ONLY — a demo password that meets the rules below (upper, lower,
-   number, special; 12 characters). Not anyone's real password. */
-const TEST_PASSWORD = 'Navarro#2026'
 
 function Fact({ term, value, spaced = false }: { term: string; value: string; spaced?: boolean }) {
   return (
@@ -496,94 +296,6 @@ const PASSWORD_COLUMN: CSSProperties = {
   padding: `${PANEL_TOP + CHECK_SIZE + CHECK_GAP}px 0 64px 88px`,
 }
 
-/* White, a #E5E7EB outline, 16 corners, a soft shadow; 40 in. */
-const FORM: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 16,
-  padding: 40,
-  borderRadius: 16,
-  border: '1px solid var(--color-e2e-form-outline)',
-  background: 'var(--color-fixed-light)',
-  filter: 'drop-shadow(0 4px 6px var(--color-e2e-form-shadow))',
-}
-
-const FIELD_GROUP: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
-
-const FIELD_LABEL: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontWeight: 600,
-  fontSize: 13,
-  lineHeight: 'normal',
-  textTransform: 'uppercase',
-  color: 'var(--color-neutral-950)',
-}
-
-const FIELD: CSSProperties = {
-  height: 44,
-  boxSizing: 'border-box',
-  display: 'flex',
-  alignItems: 'center',
-  gap: 8,
-  padding: '0 16px',
-  borderRadius: 8,
-  border: '1px solid var(--color-e2e-form-outline)',
-  background: 'var(--color-fixed-light)',
-  fontFamily: 'var(--font-body)',
-  fontSize: 14,
-  color: 'var(--color-e2e-form-text)',
-}
-
-const PASSWORD_INPUT: CSSProperties = {
-  flex: '1 0 0',
-  minWidth: 1,
-  height: '100%',
-  padding: 0,
-  border: 'none',
-  outline: 'none',
-  background: 'transparent',
-  font: 'inherit',
-  color: 'var(--color-e2e-form-placeholder)',
-}
-
-const EYE: CSSProperties = {
-  flex: 'none',
-  display: 'flex',
-  padding: 0,
-  border: 'none',
-  background: 'none',
-  cursor: 'pointer',
-}
-
-const CONFIRM: CSSProperties = {
-  width: '100%',
-  padding: '14px 0',
-  border: 'none',
-  borderRadius: 8,
-  background: 'var(--color-text-secondary)',
-  fontFamily: 'var(--font-body)',
-  fontWeight: 700,
-  fontSize: 15,
-  lineHeight: 'normal',
-  color: 'var(--color-fixed-light)',
-  cursor: 'not-allowed',
-}
-
-/* On once a password is in: XCEL's brick, as Checkout's Place your order. */
-/* ⚠ NO `background`: `.cre-e2e-cta` paints the live arm, so its hover can
-   outrank the element. The grey resting arm keeps its inline fill. */
-const CONFIRM_ON: CSSProperties = { ...CONFIRM, background: undefined, cursor: 'pointer' }
-
-/* The rules: Open Sans 13 / 18, the list indented 19.5. */
-const RULES: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  lineHeight: '18px',
-  color: 'var(--color-neutral-950)',
-}
-
-const RULE_HEADING: CSSProperties = { fontWeight: 700 }
-
 /* The demo fill's target: the card's bottom-right corner. Transparent and
    borderless — it is not part of the design, and anything visible here would
    read as a control of the product. The same shape the checkout's
@@ -593,19 +305,6 @@ const RULE_HEADING: CSSProperties = { fontWeight: 700 }
    44, and 44 here put a 4×4 corner of an invisible button over the bottom-right
    pixels of Confirm — absolutely positioned, so it paints above and would have
    taken the press. Sized to the padding, it lives entirely in the margin and
-   touches nothing. */
-const DEMO_FILL: CSSProperties = {
-  position: 'absolute',
-  right: 0,
-  bottom: 0,
-  width: 40,
-  height: 40,
-  padding: 0,
-  border: 'none',
-  background: 'transparent',
-  cursor: 'default',
-}
-
 /* THE LOADING PAGE. Centred in the body, no header above it, the topo map
    absolutely behind it (hence `position: relative`); the line under the
    spinner is Open Sans 16 / 24 as the body copy on the Invited Product

@@ -19,8 +19,13 @@ function seedElite() {
 /** Renders the bar's live URL search string so tests can assert the state the
  *  bar writes (tier / prof / prog) — the bar has no standalone tier readout. */
 function UrlProbe() {
-  const { search } = useLocation()
-  return <div data-testid="url-search">{search}</div>
+  const { pathname, search } = useLocation()
+  return (
+    <>
+      <div data-testid="url-search">{search}</div>
+      <div data-testid="url-path">{pathname}</div>
+    </>
+  )
 }
 
 function renderBar(path = '/dashboard-rebrand') {
@@ -62,6 +67,7 @@ function renderBar(path = '/dashboard-rebrand') {
 }
 
 const url = () => screen.getByTestId('url-search').textContent ?? ''
+const path = () => screen.getByTestId('url-path').textContent ?? ''
 
 beforeEach(() => {
   window.localStorage.clear()
@@ -155,6 +161,81 @@ describe('DemoControlsBar — Quick views tiers drive real state', () => {
     // the original assertions alongside a brand that HAS a ladder.
     renderBar()
     expect(screen.queryByRole('button', { name: /quick view/i })).toBeNull()
+  })
+})
+
+describe('DemoControlsBar — Reset restarts the invite walk', () => {
+  /* ⚠ 2026-10-23, Jillienne of the Reset button: "this button should refresh
+     the current Start, and invite flow at the beginning screen, it doesnt seem
+     to be working?" It didn't. Reset restored the DASHBOARD's scenario and
+     left the walk standing wherever it had got to, still holding everything it
+     had collected. */
+
+  const WALK =
+    '/end-to-end-demo/order-confirmation' +
+    '?demo=1&validated=1&lstate=Florida&loa=Life+and+Health&pkg=premier&partner=no'
+
+  /**
+   * ⚠ `?ff=` IS READ FROM `window.location.search`, NOT from the MemoryRouter
+   * entry — both have to be set or the pin is ignored and the render falls
+   * back to the catalog default. Worth the helper: the default IS `b2c-guest`
+   * since this morning, so a guest case written without it passes for the
+   * wrong reason and only the invited case tells you.
+   */
+  function renderWalk(flow: string) {
+    const at = `${WALK}&ff=invite-flow-journey:${flow}`
+    window.history.replaceState({}, '', at)
+    return renderBar(at)
+  }
+
+  it('sends the walk back to the FLOW\u2019S OWN first screen, not one fixed path', () => {
+    renderWalk('b2c-guest')
+    fireEvent.click(screen.getByRole('button', { name: /Reset/i }))
+    /* The guest starts on the public site. `START_POINTS` names
+       `/end-to-end-demo/email` for this Start, and sending a guest to an
+       invitation they never received is the mistake this flow spent a day
+       learning not to make. */
+    expect(path()).toBe('/end-to-end-demo/find')
+  })
+
+  it('\u2026and an invited arm goes to its invitation', () => {
+    renderWalk('b2b2c-no-email')
+    fireEvent.click(screen.getByRole('button', { name: /Reset/i }))
+    expect(path()).toBe('/end-to-end-demo/email')
+  })
+
+  it('drops everything the walk collected', () => {
+    renderWalk('b2c-guest')
+    fireEvent.click(screen.getByRole('button', { name: /Reset/i }))
+    const search = url()
+    for (const key of ['lstate=', 'loa=', 'pkg=', 'partner=', 'validated=']) {
+      expect(search, key).not.toContain(key)
+    }
+    /* \u2026but not the demo itself. A reviewer who reset the walk did not ask
+       to leave the demo. */
+    expect(search).toContain('demo=1')
+  })
+
+  it('KEEPS the flow it was on, even when that flow came from a pinned link', () => {
+    /* ⚠ THE BUG THE FIRST FIX HAD. Reset clears `?ff=` on purpose — a shared
+       link's pins otherwise outrank the flags it just restored — so on a guest
+       walk reached by a pinned link the flow fell back to whatever that
+       browser had stored, `InviteFlowEntrySync` saw a CHANGE, and the reviewer
+       was bounced into a different journey. Reset switching journeys is the
+       one thing it must not do. */
+    renderWalk('b2c-guest')
+    fireEvent.click(screen.getByRole('button', { name: /Reset/i }))
+    expect(path()).toBe('/end-to-end-demo/find')
+    expect(url()).not.toContain('ff=')
+    const stored = JSON.parse(window.localStorage.getItem('cgp.featureFlags') ?? '{}')
+    expect(stored['invite-flow-journey']?.variant).toBe('b2c-guest')
+  })
+
+  it('does not navigate off the invite flow — Atlas resets in place', () => {
+    renderBar('/dashboard-rebrand?demo=1&prog=mid')
+    fireEvent.click(screen.getByRole('button', { name: /Reset/i }))
+    expect(path()).toBe('/dashboard-rebrand')
+    expect(url()).not.toContain('prog=')
   })
 })
 

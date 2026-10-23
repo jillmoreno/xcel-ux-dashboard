@@ -2446,7 +2446,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     variants: [
       {
         value: 'b2b2c-email',
-        label: 'B2B2C with email',
+        /* ⚠ THE SECOND FIRE — 2026-10-23, and the mark has stopped meaning
+           "the long one". It means BUILT AND WALKABLE END TO END: this arm
+           collects the student's details from scratch like the guest does
+           (the partner passed an email and nothing else), and it ends on the
+           same confirmation page the guest ends on. The two unmarked arms
+           have not caught up. */
+        label: '🔥 B2B2C with email',
         description: 'Partner invited them, address supplied. Locked at checkout.',
       },
       {
@@ -2456,14 +2462,17 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       },
       {
         value: 'b2c-guest',
-        /* ⚠ THE DUMPSTER FIRE IS JILLIENNE'S MARK, 2026-10-22: "mark this one
-           with a dumpster on fire icon." It is the hardest arm of the four —
-           the only one that starts on the public site, builds its own cart,
-           asks for the partner code, fills the student form from scratch and
-           gates payment behind it — so the picker says so before you choose
-           it. The fire alone, not the 🗑️🔥 pair it started as — at badge size
-           two glyphs read as a smudge, and the fire is the half that carries
-           the meaning.
+        /* ⚠ THE FIRE IS JILLIENNE'S MARK, 2026-10-22: "mark this one with a
+           dumpster on fire icon", then "just use the fire" — at badge size two
+           glyphs read as a smudge, and the fire is the half that carries the
+           meaning.
+
+           It began on this arm alone, as "the hardest of the four": the only
+           one that starts on the public site, builds its own cart, asks for
+           the partner code, fills the student form from scratch and gates
+           payment behind it. `b2b2c-email` joined it on 2026-10-23, which
+           turned the mark into something more useful than a difficulty rating
+           — see the note there.
 
            ⚠ IT RIDES IN THE LABEL BECAUSE THE BAR IS PROTECTED CHROME. The
            dropdown draws whatever string the variant gives it; an icon slot

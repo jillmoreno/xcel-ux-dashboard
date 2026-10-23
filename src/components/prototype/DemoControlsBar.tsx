@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { useLocation, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   defaultDiscoverabilityVersionFor,
   isQualifyingEducationVersion,
@@ -14,6 +14,8 @@ import {
   isInviteFlowPath,
   resolveInviteFlowVersion,
 } from '@/data/inviteFlowVersions'
+import { INVITE_FLOW_FLAG, resolveInviteFlow } from '@/data/inviteFlows'
+import { clearInviteWalk, inviteWalkStart } from '@/data/inviteWalk'
 /* ⚠ THE THREE PARAM CONSTANTS ONLY — not the pickers. Reset still clears the
    Atlas axes, and they are still URL params until the conversion to
    `surface: 'design'` flags lands. The dropdowns that used to set them are
@@ -329,6 +331,7 @@ export function DemoControlsBar({
      The demo site is retired (2026-10-15) and `maturity` with it; every
      control here is for everyone. */
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const { brand, membership, tier, setTier, setBrand } = useAccount()
   const { openPanel: openVersionsPanel } = useDashboardVersionsPanel()
@@ -955,7 +958,49 @@ export function DemoControlsBar({
           // load, so a URL edit alone wouldn't take effect until a reload).
           next.delete('ff')
           clearUrlOverrides()
-          setSearchParams(next, { replace: true })
+          /* ⚠ AND THE INVITE WALK GOES BACK TO ITS FIRST SCREEN — 2026-10-23,
+          Jillienne: "this button should refresh the current Start, and
+          invite flow at the beginning screen, it doesnt seem to be
+          working?" It wasn't: Reset restored the DASHBOARD's scenario and
+          left the walk standing on whatever screen it had reached, still
+          holding the state, line of authority, package, partner answer and
+          email validation it had collected. Pressing it mid-walk changed one
+          query parameter nobody was looking at.
+
+          ⚠ THE START AND THE FLOW SURVIVE — "the CURRENT Start, and invite
+          flow". Reset restarts the walk you are ON; choosing a different one
+          is the Invite flow control's job, and it already lands you on that
+          flow's own first screen.
+
+          ⚠ THE ONE PLACE THIS BAR NAVIGATES, and the exception is worth
+          naming because the Start control immediately below deliberately
+          does NOT — it sets the flag and lets `EndToEndPageSync` jump, so
+          one jump has one owner. That sync fires on a CHANGE of start, and
+          Reset changes nothing it watches: there is no flag edit that means
+          "the same walk, from the top". Restarting is the action here, so
+          this does it rather than inventing a signal for the sync to
+          decode. */
+          const walk = clearInviteWalk(next)
+          if (isInviteFlowPath(pathname)) {
+            /* ⚠ THE FLOW IS RE-ASSERTED BEFORE THE PIN IS DROPPED, and
+            missing this made Reset do something stranger than nothing.
+            `flags` already has the `?ff=` override merged in, so this reads
+            the flow that is ACTUALLY on screen; writing it back as the
+            stored variant is what carries it through the `clearUrlOverrides`
+            above. Without it, Reset on a guest walk reached by a pinned link
+            dropped the pin, the flow fell back to whatever that browser had
+            stored, `InviteFlowEntrySync` saw a flow CHANGE and bounced the
+            reviewer to a different flow's first screen — Reset silently
+            switching journeys, which is the one thing it must not do. */
+            const flow = resolveInviteFlow(flags[INVITE_FLOW_FLAG]?.variant)
+            setVariant(INVITE_FLOW_FLAG, flow)
+            navigate(
+              { pathname: inviteWalkStart(flow), search: walk.toString() },
+              { replace: true },
+            )
+          } else {
+            setSearchParams(walk, { replace: true })
+          }
           close()
           }}
           onMouseEnter={(e) => {

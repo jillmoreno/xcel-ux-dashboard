@@ -25,6 +25,7 @@ import {
    packages a (state, line of authority) pair resolves to. Under the same
    `/end-to-end-demo` prefix so the demo bars, the version pin and
    `isInviteFlowPath` all keep working unchanged. */
+import { XcelQrInvitePage } from '@/pages/XcelQrInvitePage'
 import { XcelFindCoursePage } from '@/pages/XcelFindCoursePage'
 import { XcelPackagesPage } from '@/pages/XcelPackagesPage'
 import { XcelCartPage } from '@/pages/XcelCartPage'
@@ -222,6 +223,9 @@ export default function App() {
             See `InviteEmailPage`. */}
         {/* The public site a GUEST starts on, before any of the invited
             flow's pages. See `XcelFindCoursePage`. */}
+        {/* THE QR / SOCIAL ARM'S FIRST SCREEN — the partner's share card
+            (2026-10-23). `entryPathFor('qr-social')` points here. */}
+        <Route path="/end-to-end-demo/qr" element={<TestingGate><XcelQrInvitePage /></TestingGate>} />
         <Route path="/end-to-end-demo/find" element={<TestingGate><XcelFindCoursePage /></TestingGate>} />
         <Route path="/end-to-end-demo/packages" element={<TestingGate><XcelPackagesPage /></TestingGate>} />
         {/* …and the cart, which is where the guest journey leaves the

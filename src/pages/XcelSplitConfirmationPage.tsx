@@ -10,6 +10,7 @@ import { CART_PACKAGE_PARAM, cartPackage } from '@/data/xcelCourseFinder'
 import {
   SPLIT_JOURNEY_RAIL_FLAG,
   partnerAttributed,
+  passwordSetFromEmailedLink,
   useEmailValidated,
   useInviteFlow,
   usePartnerAttribution,
@@ -18,6 +19,7 @@ import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetail
 import { meetsInvitePasswordRules } from '@/data/invitePasswordRules'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import {
+  useEndToEndCourseTitle,
   E2E_JOURNEY_FULL,
   E2E_JOURNEY_PARAM,
   E2E_LEARNER_EMAIL,
@@ -79,12 +81,37 @@ export function XcelSplitConfirmationPage({
      receipt before it is doing a different job. */
   const railOn = useFeatureFlag(SPLIT_JOURNEY_RAIL_FLAG).enabled
   const rail = validated && railOn
+  /**
+   * ⚠ WHETHER THE CARD IS AT THE PASSWORD YET — 2026-10-23, Jillienne of the
+   * invited ending: "this step needs to match the confirmation page we did for
+   * the guest version, but the create password side will skip the email
+   * validation for this flow, all the other UI should be matching."
+   *
+   * Validation is a step some flows have and others do not, and
+   * `passwordSetFromEmailedLink` is already that question. A guest typed their
+   * address in and has to prove they can open it, so the card sends them to
+   * their inbox first; an invited learner was REACHED at that address by their
+   * partner, so there is nothing left to prove and the password is the step.
+   *
+   * ⚠ IT IS NOT `validated`, WHICH STILL GOVERNS THE RAIL. The invited arm
+   * skips the email, not the receipt: it has never seen one, so the left half
+   * stays the order just placed rather than jumping ahead to the journey panel
+   * a returning learner gets.
+   */
+  const atPassword = validated || !passwordSetFromEmailedLink(flow)
   /* ⚠ SIGNING IN TAKES A MOMENT, AND THE PAGE SAYS SO — 2026-10-22: "once log
      in is clicked, will show the loading gif page and then land user on the
      Atlas home page." The same hold Place your order uses, for the same
      reason: an account being created and a dashboard appearing in the same
      frame reads as a page swap, not as a sign-in. */
   const [signingIn, setSigningIn] = useState(false)
+  /* ⚠ THE INVITED ARM'S TWO HAND-OFF FLAGS, HONOURED HERE SINCE 2026-10-23,
+     when this page became the ending for BOTH journeys. They were
+     Confirmation & Password's, and delegating to this page without them would
+     have dropped two toggles silently — the worst way to lose behaviour. Both
+     default ON, so the committed baseline is unchanged on either arm. */
+  const endsHere = useFeatureFlag('e2e-ends-at-password').enabled
+  const opensHome = useFeatureFlag('e2e-loading-opens-home').enabled
 
   const pkg = cartPackage(
     params.get(INVITE_STATE_PARAM) ?? '',
@@ -92,6 +119,7 @@ export function XcelSplitConfirmationPage({
     params.get(CART_PACKAGE_PARAM),
   )
   const partnered = usePartnerAttribution()
+  const advertised = useEndToEndCourseTitle()
   const total = partnered ? '$65.00' : (pkg?.price ?? '$199.00')
   /* What they bought. The cart's package where there is one; otherwise the
      course the state and line of authority name, so a link straight to this
@@ -99,8 +127,15 @@ export function XcelSplitConfirmationPage({
      address, and the row is then simply not drawn rather than left blank. */
   const state = params.get(INVITE_STATE_PARAM) ?? ''
   const lineOfAuthority = params.get(INVITE_LOA_PARAM) ?? ''
+  /* ⚠ AND THE ADVERTISED COURSE LAST — 2026-10-23, when the invited arms
+     started ending here. They arrive with no cart and no picked pair: the
+     course came from the invitation, so it is `useEndToEndCourseTitle` that
+     knows it. Without this fallback a receipt for an order that definitely
+     named a course simply had no Product row. */
   const purchased =
-    pkg?.name ?? (state && lineOfAuthority ? `${state} ${lineOfAuthority} Pre-licensing` : null)
+    pkg?.name ??
+    (state && lineOfAuthority ? `${state} ${lineOfAuthority} Pre-licensing` : null) ??
+    advertised
 
   /* ⚠ THE LEARNER GOES TO THEIR INBOX — 2026-10-22, with the activation email
      mock. The page used to flip itself with a "Demo: I've clicked the link"
@@ -119,7 +154,10 @@ export function XcelSplitConfirmationPage({
      password form whose state is gone; cleared on unmount, so leaving early
      cannot navigate on top of wherever the reviewer went. */
   useEffect(() => {
-    if (!signingIn) return
+    /* ⚠ `opensHome` OFF MEANS THE SPINNER IS THE ENDING. The loading page is
+       the last screen of the walk then, deliberately — it is what the flag is
+       for. */
+    if (!signingIn || !opensHome) return
     const timer = window.setTimeout(() => {
       navigate(
         `/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}&${E2E_JOURNEY_PARAM}=${E2E_JOURNEY_FULL}`,
@@ -127,7 +165,7 @@ export function XcelSplitConfirmationPage({
       )
     }, LOADING_HANDOFF_MS)
     return () => window.clearTimeout(timer)
-  }, [signingIn, navigate])
+  }, [signingIn, opensHome, navigate])
 
   if (signingIn) return <XcelLoadingPage message="Taking you to your learning dashboard" />
 
@@ -231,7 +269,7 @@ export function XcelSplitConfirmationPage({
               email screen, parked in the corner where demo controls live,
               marked DEMO, and drawn in neither of the page's two registers so
               it cannot be mistaken for product. */}
-          {!validated ? (
+          {!atPassword ? (
             <button type="button" style={DEMO_CTA} onClick={openEmail}>
               <span style={DEMO_TAG}>Demo</span>
               Go to Email
@@ -252,12 +290,12 @@ export function XcelSplitConfirmationPage({
                 does not exist yet cannot be signed into. It is the last thing
                 standing between the learner and their course, so it gets the
                 same eyebrow as the first. */}
-            <p style={CARD_EYEBROW}>{validated ? 'Last step' : 'Next step'}</p>
+            <p style={CARD_EYEBROW}>{atPassword ? 'Last step' : 'Next step'}</p>
             <h2 id="sign-in" style={CARD_TITLE}>
-              {validated ? 'Create your password' : 'Confirm your email'}
+              {atPassword ? 'Create your password' : 'Confirm your email'}
             </h2>
 
-            {!validated ? (
+            {!atPassword ? (
               /* ⚠ THE FORM IS NOT DRAWN YET — 2026-10-22: "bc the user has not
                  yet clicked the link in their email, no reason to show these
                  fields like that cant do anything with".
@@ -390,7 +428,19 @@ export function XcelSplitConfirmationPage({
                   disabled={!ready}
                   className={ready ? 'cre-e2e-cta' : undefined}
                   style={ready ? LOG_IN_ON : LOG_IN_OFF}
-                  onClick={() => setSigningIn(true)}
+                  /* ⚠ `endsHere` OFF SKIPS THE HOLD ENTIRELY and opens Home
+                     with the Affidavit modal over it — Confirmation &
+                     Password's own OFF arm, kept when this page took over its
+                     ending. The flag decides whether the walk stops at the
+                     password or carries into the affidavit; it is not a
+                     different button. */
+                  onClick={() => {
+                    if (endsHere) setSigningIn(true)
+                    else
+                      navigate(
+                        `/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}&affidavit=1`,
+                      )
+                  }}
                 >
                   {/* ⚠ IT NAMES BOTH HALVES — 2026-10-22, the direct ask. The
                       press saves the password AND signs them in, and "Create
@@ -398,6 +448,29 @@ export function XcelSplitConfirmationPage({
                       paid, and what happens next is that they land in Atlas. */}
                   Save Password &amp; Log In
                 </button>
+                {/* ⚠ THE DEMO FILL, MOVED HERE WITH THE PASSWORD STEP —
+                    2026-10-23. It was Confirmation & Password's, put in this
+                    corner on 2026-10-22 ("yes move that shortcut to the bottom
+                    right") so that filling the field and watching the
+                    requirements tick stopped being the same gesture. That page
+                    no longer has a password form; without bringing the corner
+                    across, the shortcut would have quietly left the product in
+                    a refactor nobody would connect it to.
+
+                    ⚠ INVISIBLE TO THE EYE, NOT TO EVERYONE — label and
+                    tooltip, so a pointer that lands on it and a screen reader
+                    both find out what it is.
+
+                    ⚠ 28 SQUARE, NOT 40. This card's padding is 28; sized to
+                    the padding it lives entirely in the margin and cannot take
+                    a press meant for the button above it. */}
+                <button
+                  type="button"
+                  aria-label="Fill in the demo learner’s password"
+                  title="Demo shortcut: fill in the demo learner’s password"
+                  style={DEMO_PASSWORD_FILL}
+                  onClick={() => setPassword(TEST_PASSWORD)}
+                />
               </>
             )}
           </div>
@@ -813,6 +886,25 @@ const FIELD: CSSProperties = {
    a card pinned to the top of an otherwise empty page looks dropped rather
    than placed. */
 const FIELD_ALONE: CSSProperties = { flex: '1 1 100%', alignItems: 'center' }
+
+/* TEST DATA ONLY — a demo password that meets the rules (upper, lower, number,
+   special; 12 characters). Not anyone's real password. */
+const TEST_PASSWORD = 'Navarro#2026'
+
+/* The demo fill's target: the card's bottom-right corner, sized to its
+   padding. Transparent and borderless — it is not part of the design, and
+   anything visible here would read as a control of the product. */
+const DEMO_PASSWORD_FILL: CSSProperties = {
+  position: 'absolute',
+  right: 0,
+  bottom: 0,
+  width: 28,
+  height: 28,
+  padding: 0,
+  border: 'none',
+  background: 'transparent',
+  cursor: 'default',
+}
 
 const CARD: CSSProperties = {
   position: 'relative',

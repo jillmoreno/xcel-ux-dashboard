@@ -32,6 +32,7 @@ import { InvitedCheckoutPageV2 } from '@/pages/InvitedCheckoutPageV2'
 import { XcelFindCoursePage } from '@/pages/XcelFindCoursePage'
 import { XcelPackagesPage } from '@/pages/XcelPackagesPage'
 import { XcelCartPage } from '@/pages/XcelCartPage'
+import { XcelQrInvitePage } from '@/pages/XcelQrInvitePage'
 import { XcelPartnerCodePage } from '@/pages/XcelPartnerCodePage'
 import { XcelOrderConfirmationPage } from '@/pages/XcelOrderConfirmationPage'
 import { XcelActivationEmailPage } from '@/pages/XcelActivationEmailPage'
@@ -84,6 +85,7 @@ function renderJourney(entry: string) {
               element={<XcelActivationEmailPage />}
             />
             <Route path="/end-to-end-demo/checkout" element={<InvitedCheckoutPageV2 />} />
+            <Route path="/end-to-end-demo/qr" element={<XcelQrInvitePage />} />
             <Route path="/end-to-end-demo" element={<InvitedProductDetailPageV2 />} />
           </Routes>
         </FeatureFlagProvider>
@@ -118,8 +120,34 @@ describe('where each flow starts', () => {
     expect(entryPathFor('b2c-guest')).toBe('/end-to-end-demo/find')
     expect(entryPathFor('b2b2c-email')).toBe('/end-to-end-demo/email')
     expect(entryPathFor('b2b2c-no-email')).toBe('/end-to-end-demo/email')
-    /* A scanned code links straight to an offer — no finder, no email. */
-    expect(entryPathFor('qr-social')).toBe('/end-to-end-demo')
+    /* ⚠ AND QR / SOCIAL STARTS ON THE PARTNER'S SHARE CARD — 2026-10-23,
+       changed from `/end-to-end-demo`, which is where a SCAN lands. Starting
+       there skipped the only screen that explains where the link came from and
+       made the one flow that begins outside the learner's hands look exactly
+       like the three that don't. */
+    expect(entryPathFor('qr-social')).toBe('/end-to-end-demo/qr')
+  })
+
+  it('the QR card is the partner\u2019s screen, and says whose it is', async () => {
+    const user = userEvent.setup()
+    renderJourney(`/end-to-end-demo/qr?ff=${INVITE_FLOW_FLAG}:qr-social`)
+
+    expect(screen.getByRole('heading', { name: /Scan to start your licensing course/ })).toBeInTheDocument()
+    /* The attribution the discount downstream rests on. */
+    expect(screen.getByText(/Sunrise Bank · Tampa Office/)).toBeInTheDocument()
+    /* ⚠ THE URL IS PRINTED UNDER THE CODE. A code nobody can scan — a bad
+       camera, a printed sheet, a screen reader — still has to be reachable. */
+    expect(screen.getAllByText(/xcelsolutions\.com\/invite\//).length).toBeGreaterThan(0)
+    expect(screen.getByRole('img', { name: /QR code for/ })).toBeInTheDocument()
+    /* The partner's two actions, neither wired: the share sheet and the camera
+       roll belong to the phone, not to the product. */
+    expect(screen.getByRole('button', { name: 'Share' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Save to Photos' })).toBeInTheDocument()
+
+    /* ⚠ A REVIEWER AT A LAPTOP CANNOT SCAN, so the demo performs the crossing
+       and says that is what it is doing. */
+    await user.click(screen.getByRole('button', { name: /Scan the code/ }))
+    expect(at()).toBe('/end-to-end-demo')
   })
 
   it('keeps the Start control lit on the two new screens', () => {
@@ -867,13 +895,33 @@ describe('the demo fill', () => {
     ).toBeNull()
   })
 
-  it('is not offered on the arms that arrive filled in', () => {
-    renderJourney(
-      `/end-to-end-demo/checkout?ff=${INVITE_FLOW_FLAG}:b2b2c-email`,
-    )
-    expect(
-      screen.queryByRole('button', { name: 'Fill in the demo learner’s details' }),
-    ).not.toBeInTheDocument()
+  it('is offered on EVERY flow, because none of them arrives filled in', () => {
+    /* ⚠ THIS CASE USED TO ASSERT THE OPPOSITE for the invited arms — 2026-10-23,
+       Jillienne: "its both - remove the known details path." A recruiter types
+       a way to CONTACT someone, never their home address, so no invitation
+       arrives carrying the student's details and every arm opens the form
+       empty. The shortcut therefore has something to fill in on all four. */
+    for (const flow of ['b2b2c-email', 'b2b2c-no-email', 'b2c-guest', 'qr-social'] as const) {
+      renderJourney(`/end-to-end-demo/checkout?ff=${INVITE_FLOW_FLAG}:${flow}`)
+      expect(
+        screen.getByRole('button', { name: 'Fill in the demo learner’s details' }),
+        flow,
+      ).toBeInTheDocument()
+      expect(screen.queryByText('1200 Bayshore Boulevard'), flow).toBeNull()
+      expect(
+        screen.queryByRole('button', { name: /Edit Student Information/ }),
+        flow,
+      ).toBeNull()
+      cleanup()
+    }
+  })
+
+  it('…and B2B2C with email still arrives knowing the one thing it was sent', () => {
+    /* The email is what the partner DID pass, so it stays locked rather than
+       joining the fields the learner has to type. */
+    renderJourney(`/end-to-end-demo/checkout?ff=${INVITE_FLOW_FLAG}:b2b2c-email`)
+    expect(screen.getByDisplayValue('jordan.navarro@gmail.com')).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Save and continue' })).toBeInTheDocument()
   })
 })
 

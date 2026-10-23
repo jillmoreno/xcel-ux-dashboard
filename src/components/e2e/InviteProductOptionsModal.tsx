@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { MagnifyingGlass } from '@/icons'
 import { createPortal } from 'react-dom'
 import {
   INVITE_LINES_OF_AUTHORITY,
@@ -173,6 +174,15 @@ function StateSearch({
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const blurTimer = useRef<number | undefined>(undefined)
+  const inputRef = useRef<HTMLInputElement>(null)
+  /* ⚠ WHOSE FOCUS WAS IT? `onFocus` opens the list, which is right when a
+     learner tabs back into the field and wrong for the focus the dialog gives
+     itself on open: an empty query matches ALL FIFTY states, so autofocusing
+     without this flag opened the modal on a fifty-item dropdown covering the
+     line-of-authority pills — the exact thing the search field replaced. It
+     also made the first Escape close the LIST rather than the dialog, which
+     looked like Escape had stopped working. */
+  const programmaticFocus = useRef(true)
 
   const matches = useMemo(() => matchingStates(query), [query])
   /* Clamped on every render rather than only when the query changes: the list
@@ -188,6 +198,15 @@ function StateSearch({
 
   useEffect(() => () => window.clearTimeout(blurTimer.current), [])
 
+  /* ⚠ FOCUS ON OPEN — 2026-10-23: "have a flashing cursor indicator this is
+     the tab focus etc." A ref and an effect rather than `autoFocus`, because
+     the flag above has to be lowered immediately AFTER the focus event, and
+     `focus()` dispatches that synchronously. */
+  useEffect(() => {
+    inputRef.current?.focus()
+    programmaticFocus.current = false
+  }, [])
+
   return (
     <div style={FIELDSET}>
       <label htmlFor={id} style={LEGEND}>
@@ -196,6 +215,10 @@ function StateSearch({
       <div style={{ position: 'relative' }}>
         <input
           id={id}
+          /* The caret the dialog opens with — see the effect above. It is
+             also what puts the keyboard at the first field, which is where a
+             dialog's focus belongs anyway. */
+          ref={inputRef}
           type="text"
           role="combobox"
           aria-expanded={open}
@@ -203,6 +226,7 @@ function StateSearch({
           aria-autocomplete="list"
           aria-activedescendant={open && active >= 0 ? `${listId}-${active}` : undefined}
           autoComplete="off"
+          className="cre-e2e-search"
           placeholder="Start typing your state…"
           value={query}
           onChange={(e) => {
@@ -214,7 +238,9 @@ function StateSearch({
                state the learner is in the middle of changing. */
             if (value != null) onChange(null)
           }}
-          onFocus={() => setOpen(true)}
+          onFocus={() => {
+            if (!programmaticFocus.current) setOpen(true)
+          }}
           onBlur={() => {
             /* A click on an option blurs the input before the option's own
                handler runs, so closing is deferred by a tick. */
@@ -246,6 +272,20 @@ function StateSearch({
           }}
           style={SEARCH_INPUT}
         />
+        {/* ⚠ A SEARCH FIELD THAT LOOKS LIKE ONE — 2026-10-23: "maybe add a
+            magifying glass icon (light gray) in the right of the field". The
+            placeholder was carrying the whole message; a learner who clicks in
+            and starts typing a course name rather than a state has read the
+            box as a free-text field, which is what an unmarked rounded
+            rectangle is.
+
+            ⚠ `aria-hidden`, AND IT ADDS NOTHING FOR A SCREEN READER. The
+            label says "State" and the combobox role says it is searchable —
+            an icon announcing "search" after both would be a third telling of
+            the same thing. It also sits BEHIND the caret in reading order and
+            is not clickable: the field is the control, and an icon that looks
+            pressable but is not is worse than one that plainly is not. */}
+        <MagnifyingGlass size={15} aria-hidden style={SEARCH_ICON} />
       </div>
       {open ? (
         matches.length > 0 ? (
@@ -377,7 +417,9 @@ const SEARCH_INPUT: CSSProperties = {
   boxSizing: 'border-box',
   width: '100%',
   height: 40,
-  padding: '0 12px',
+  /* ⚠ ROOM ON THE RIGHT FOR THE ICON, so a long state name runs under it
+     rather than through it. */
+  padding: '0 36px 0 12px',
   borderRadius: 6,
   border: '1px solid var(--color-e2e-form-outline)',
   background: 'var(--color-fixed-light)',
@@ -385,6 +427,18 @@ const SEARCH_INPUT: CSSProperties = {
   fontSize: 14,
   lineHeight: '38px',
   color: 'var(--color-text-primary)',
+}
+
+/* Light grey, centred on the field's own vertical middle. Not a button: see
+   the note at the call site. */
+const SEARCH_ICON: CSSProperties = {
+  position: 'absolute',
+  right: 12,
+  top: '50%',
+  transform: 'translateY(-50%)',
+  display: 'block',
+  color: 'var(--color-neutral-400)',
+  pointerEvents: 'none',
 }
 
 const LISTBOX: CSSProperties = {

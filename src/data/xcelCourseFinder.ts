@@ -1,5 +1,11 @@
 import { ALL_US_STATES } from '@/data/licensedStatesFixtures'
-export { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
+/* ⚠ NO RE-EXPORT OF `INVITE_*_PARAM` HERE — removed 2026-10-23. This file used
+   to forward them from `inviteMissingDetails` as a convenience, which made the
+   two modules a CYCLE: the moment that file needed something back from this
+   one (`GET_LICENSE_NAV`, when the modal grew to six lines of authority), the
+   import resolved to undefined at module-eval time and every page in the flow
+   rendered blank. Nothing imported the re-export, so it cost nothing to drop.
+   Import those two from `inviteMissingDetails`, which owns them. */
 
 /**
  * THE PUBLIC SITE'S COURSE FINDER — 2026-10-22, Jillienne: "Guest Checkout.

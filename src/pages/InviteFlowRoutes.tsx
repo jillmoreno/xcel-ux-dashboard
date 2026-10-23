@@ -12,6 +12,12 @@ import { InvitedCheckoutPage } from './InvitedCheckoutPage'
 import { InvitedCheckoutPageV2 } from './InvitedCheckoutPageV2'
 import { InvitedConfirmationPage } from './InvitedConfirmationPage'
 import { InvitedConfirmationPageV2 } from './InvitedConfirmationPageV2'
+import { XcelSplitConfirmationPage } from './XcelSplitConfirmationPage'
+import {
+  passwordSetFromEmailedLink,
+  useInviteFlow,
+  useOrderConfirmationStyle,
+} from '@/data/inviteFlows'
 
 /**
  * THE INVITE FLOW'S VERSION SWITCH — 2026-10-22, with `inviteFlowVersions.ts`.
@@ -61,6 +67,35 @@ export function InvitedCheckoutRoute() {
   return useInviteFlowVersion() === 'v2' ? <InvitedCheckoutPageV2 /> : <InvitedCheckoutPage />
 }
 
+/**
+ * ⚠ THE INVITED ENDING IS THE GUEST'S PAGE NOW — 2026-10-23, Jillienne: "this
+ * step needs to match the confirmation page we did for the guest version, but
+ * the create password side will skip the email validation for this flow, all
+ * the other UI should be matching."
+ *
+ * So it is not a restyle, it is the same component. Two password screens that
+ * are meant to look identical drift — in wording, in validation, in which
+ * button does what — and this flow has spent the week collapsing exactly that
+ * kind of duplication (`MailClient`, `XcelLoadingPage`,
+ * `InvitePasswordChecklist`). `XcelSplitConfirmationPage` already asks
+ * `passwordSetFromEmailedLink` and skips straight to the password card for the
+ * arms that have nothing to verify.
+ *
+ * ⚠ `InvitedConfirmationPageV2` STILL OWNS THE OTHER ARM — "Check your email",
+ * where the password is set from a mailed link and there is no form to show.
+ * That is a genuinely different page, not a state of this one.
+ *
+ * ⚠ THE TONE FOLLOWS THE SAME CONTROL, so Thank you page switches both
+ * endings together. `receipt` resolves to Light here: that arm is the PUBLIC
+ * SITE's full-width receipt with its Launch Student Portal, which an invited
+ * learner never sees — and a control that silently did nothing on this half of
+ * the flow would be worse than one that picks the nearest real treatment.
+ */
 export function InvitedConfirmationRoute() {
-  return useInviteFlowVersion() === 'v2' ? <InvitedConfirmationPageV2 /> : <InvitedConfirmationPage />
+  const v2 = useInviteFlowVersion() === 'v2'
+  const flow = useInviteFlow()
+  const style = useOrderConfirmationStyle()
+  if (!v2) return <InvitedConfirmationPage />
+  if (passwordSetFromEmailedLink(flow)) return <InvitedConfirmationPageV2 />
+  return <XcelSplitConfirmationPage tone={style === 'split' ? 'dark' : 'light'} />
 }
