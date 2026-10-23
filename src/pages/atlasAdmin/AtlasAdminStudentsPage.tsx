@@ -289,7 +289,7 @@ export function AtlasAdminStudentsPage() {
                   <span aria-hidden style={STATUS_SEP}>|</span>
                   <span style={{ ...STATUS_COUNT, color: deep }}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
                 </div>
-                {t.id === 'licensed' ? null : <p style={{ ...STATUS_DESC, marginTop: -2 }}>{t.note}</p>}
+                {t.id === 'licensed' ? null : <p style={{ ...STATUS_DESC, marginTop: -6 }}>{t.note}</p>}
               </div>
             </div>
           </div>
