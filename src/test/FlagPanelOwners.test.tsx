@@ -133,6 +133,7 @@ describe('the owner axis', () => {
       // Joined 2026-10-19 — the Atlas Admin app at /atlas-admin, on or off.
       'atlas-admin',
       'atlas-admin-left-nav',
+      'atlas-admin-background',
       'atlas-admin-flow',
       // Joined 2026-10-13 — the two-row Atlas header, on or off.
       'atlas-header-v2',

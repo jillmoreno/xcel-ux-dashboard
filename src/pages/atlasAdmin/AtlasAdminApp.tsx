@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import { useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
 import { useDeclareDesignSurface } from '@/context/designSurface'
@@ -57,6 +57,8 @@ export function AtlasAdminApp() {
   useDeclareDesignSurface('atlas-admin')
   // The Design bar's Flow menu: go to the pick, then read "Jump to…" again.
   const flow = useFeatureFlag('atlas-admin-flow').variant
+  // The Design bar's Background: White re-points the admin page colour.
+  const whitePage = useFeatureFlag('atlas-admin-background').variant === 'white'
   const { setVariant } = useFeatureFlags()
   const navigate = useNavigate()
   useEffect(() => {
@@ -154,7 +156,7 @@ export function AtlasAdminApp() {
     <AdminStoreContext.Provider value={store}>
       {/* One root for every admin page, shell or not — it carries the
           admin-wide type rules (no widowed last word, tokens.css). */}
-      <div className="cre-atlas-admin">
+      <div className="cre-atlas-admin" style={whitePage ? ({ '--admin-page': 'var(--admin-surface)' } as CSSProperties) : undefined}>
       <Routes>
         {/* Pulse is a page of its own, outside the shell, as the reference's is. */}
         <Route path="pulse" element={<AtlasAdminPulsePage />} />

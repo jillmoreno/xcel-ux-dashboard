@@ -2408,6 +2408,29 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-admin-background',
+    /* ATLAS ADMIN — BACKGROUND (2026-10-23, Eric: "add the bg color design
+       control in"). The admin's own Toned / White, after the learner Home's
+       `atlas-background`: Toned is the admin page colour as it was (#fafafa),
+       White sets every admin page on white. Re-points `--admin-page` on the
+       app's root (`AtlasAdminApp`), so the shell, Pulse and the public pages
+       all follow. */
+    surface: 'design',
+    owner: 'eric',
+    surfaces: ['atlas-admin'],
+    versions: ['eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Background',
+    description: 'The page behind every Atlas Admin page: Toned (the admin\u2019s off-white) or White.',
+    defaultEnabled: true,
+    variants: [
+      { value: 'toned', label: 'Toned' },
+      { value: 'white', label: 'White' },
+    ],
+    defaultVariant: 'toned',
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-admin-flow',
     /* ATLAS ADMIN — JUMP TO A FLOW (2026-10-20, Eric: "add a design control
        dropdown for the flows … that do not have a left sidebar link"). The
