@@ -263,15 +263,13 @@ export function AtlasAdminStudentsPage() {
             style={{ ...STATUS_CARD, ...(active ? { borderWidth: 1.5, borderColor: deep } : null) }}
           >
             <div style={{ ...STATUS_INNER, borderLeftWidth: active ? 8 : 6, borderLeftColor: active ? deep : strip }}>
-              <div>
-                <p style={STATUS_LABEL}>{t.label}</p>
-                <p style={STATUS_DESC}>{t.note}</p>
-              </div>
+              <p style={STATUS_LABEL}>{t.label}</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={STATUS_COUNT}>{n.toLocaleString('en-US')}</span>
                 <span aria-hidden style={STATUS_SEP}>|</span>
                 <span style={{ ...STATUS_COUNT, color: deep }}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
               </div>
+              <p style={STATUS_DESC}>{t.note}</p>
               {t.id === 'licensed' ? (
                 <select
                   aria-label="Licensed time window"
@@ -595,8 +593,9 @@ const STATUS_TONE: Record<PipelineBucket, [string, string]> = {
   prepared: ['var(--admin-status-green)', 'var(--admin-status-green-deep)'],
   licensed: ['var(--admin-status-green-deep)', 'var(--admin-status-green-deep)'],
 }
-const STATUS_CARD: CSSProperties = { background: 'var(--admin-surface)', borderStyle: 'solid', borderWidth: 1, borderColor: 'var(--admin-status-card-edge)', borderRadius: 12, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
-const STATUS_INNER: CSSProperties = { borderLeftStyle: 'solid', minHeight: 92, boxSizing: 'border-box', padding: 12, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8 }
+/* A flex column, so the inner strip runs the card's full height whatever the row's tallest card. */
+const STATUS_CARD: CSSProperties = { display: 'flex', flexDirection: 'column', background: 'var(--admin-surface)', borderStyle: 'solid', borderWidth: 1, borderColor: 'var(--admin-status-card-edge)', borderRadius: 12, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
+const STATUS_INNER: CSSProperties = { flex: 1, borderLeftStyle: 'solid', minHeight: 92, boxSizing: 'border-box', padding: 12, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
 const STATUS_LABEL: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 14, fontWeight: 700, lineHeight: '22px', letterSpacing: '0.02em', textTransform: 'uppercase', color: 'var(--admin-status-ink)' }
 const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-desc)' }
 const STATUS_COUNT: CSSProperties = { fontFamily: BODY_FONT, fontSize: 24, fontWeight: 700, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-status-ink)' }
