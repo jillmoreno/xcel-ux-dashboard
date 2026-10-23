@@ -7622,8 +7622,8 @@ a.cre-library-card-title::after {
    inline styles cannot carry :hover. */
 .cre-admin-tile:hover { border-color: var(--admin-hover-edge) !important; }
 .cre-admin-tile:focus-visible { box-shadow: 0 0 0 2px var(--admin-brand) !important; }
-/* Students' status cards: hover borders them in their own status colour. */
-.cre-admin-tile.cre-admin-status-card:hover { border-color: var(--status-focus) !important; }
+/* Students' status cards keep their primary 200 edges on hover (the tiles' own hover would darken them); the coloured left edge keeps its status colour (--status-edge). */
+.cre-admin-tile.cre-admin-status-card:hover { border-top-color: var(--admin-atlas-primary-200) !important; border-right-color: var(--admin-atlas-primary-200) !important; border-bottom-color: var(--admin-atlas-primary-200) !important; border-left-color: var(--status-edge) !important; }
 /* An admin text link's hover — Atlas primary 700. `!important` because the
    link's resting colour is set inline. */
 .cre-admin-text-link:hover { color: var(--admin-atlas-primary-700) !important; }
