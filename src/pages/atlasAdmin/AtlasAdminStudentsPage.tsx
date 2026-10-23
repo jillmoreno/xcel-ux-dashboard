@@ -374,8 +374,8 @@ export function AtlasAdminStudentsPage() {
         {/* Dial: on Atlas primary 100, 32px in. */}
         {analysis === 'dial' ? (
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 40, padding: 32, borderRadius: 18, background: 'var(--admin-atlas-primary-100)' }}>
-          {/* Top-aligned, 15px down (a card's 1px edge + 14px padding), so this eyebrow shares the top cards' baseline. */}
-          <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, paddingTop: 15 }}>
+          {/* Top-aligned, 11px down (a card's 1px edge + 10px padding), so this eyebrow shares the top cards' baseline. */}
+          <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, paddingTop: 11 }}>
             <p style={EYEBROW}>Student Compliance</p>
             <StatusDial
               active={bucket}
@@ -677,7 +677,7 @@ const STATUS_TONE: Record<PipelineBucket, [string, string]> = {
 /* A flex column, so every card in a row fills to the tallest. */
 /* Unselected: the search field's blue; the selected card is white. */
 const STATUS_CARD: CSSProperties = { display: 'flex', flexDirection: 'column', background: 'var(--admin-fill)', borderStyle: 'solid', borderWidth: 1, borderRadius: 11, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
-const STATUS_INNER: CSSProperties = { flex: 1, minHeight: 92, boxSizing: 'border-box', padding: '14px 16px', display: 'flex' }
+const STATUS_INNER: CSSProperties = { flex: 1, minHeight: 84, boxSizing: 'border-box', padding: '10px 16px', display: 'flex' }
 const STATUS_BODY: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
 const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-desc)' }
 const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 32, fontWeight: 900, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-status-ink)' }
