@@ -652,7 +652,7 @@ function StatusDial({ total, parts, active, onPick }: { total: number; parts: { 
         )}
       </svg>
       <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-        <span style={{ fontFamily: 'var(--admin-font-playfair)', fontWeight: 900, fontSize: 'var(--admin-atlas-h5-size)', lineHeight: 'var(--admin-atlas-h5-line)', color: 'var(--admin-ink)' }}>{total}</span>
+        <span style={{ fontFamily: 'var(--admin-font-playfair)', fontWeight: 900, fontVariantNumeric: 'lining-nums tabular-nums', fontSize: 'var(--admin-atlas-h5-size)', lineHeight: 'var(--admin-atlas-h5-line)', color: 'var(--admin-ink)' }}>{total}</span>
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--admin-muted)' }}>Students</span>
       </div>
     </div>
@@ -679,7 +679,8 @@ const STATUS_CARD: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flex
 const STATUS_INNER: CSSProperties = { flex: 1, minHeight: 84, boxSizing: 'border-box', padding: '10px 16px 10px 8px', display: 'flex', gap: 12 }
 const STATUS_BODY: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
 const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-ink)' }
-const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 32, fontWeight: 900, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-status-ink)' }
+/* Playfair's lining figures (`lnum`): every digit on one baseline — its default old-style figures drop 3, 4, 5, 7, 9 below it. */
+const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 32, fontWeight: 900, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'lining-nums tabular-nums', color: 'var(--admin-status-ink)' }
 const STATUS_SEP: CSSProperties = { fontSize: 16, fontWeight: 200, color: 'var(--admin-status-sep)' }
 /* How far the outcome container's blue runs on beneath the roster card (Standard nav). */
 const UNDERLAP = 24
@@ -702,7 +703,7 @@ const TILE_NUMBER: CSSProperties = {
   fontWeight: 900,
   lineHeight: 'var(--admin-atlas-h5-line)',
   letterSpacing: '-0.01em',
-  fontVariantNumeric: 'tabular-nums',
+  fontVariantNumeric: 'lining-nums tabular-nums',
 }
 const TRACK: CSSProperties = {
   marginTop: 12,
