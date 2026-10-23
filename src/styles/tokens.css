@@ -7622,10 +7622,6 @@ a.cre-library-card-title::after {
    inline styles cannot carry :hover. */
 .cre-admin-tile:hover { border-color: var(--admin-hover-edge) !important; }
 .cre-admin-tile:focus-visible { box-shadow: 0 0 0 2px var(--admin-brand) !important; }
-/* Students' status-style tiles: the reference's hover lift. */
-.cre-admin-status-card { transition: box-shadow 0.15s; }
-.cre-admin-status-card:hover { box-shadow: 0 4px 16px rgb(0 0 0 / 0.12); }
-.cre-admin-status-card:focus-visible { outline: 2px solid var(--admin-brand); outline-offset: 2px; }
 /* An admin text link's hover — Atlas primary 700. `!important` because the
    link's resting colour is set inline. */
 .cre-admin-text-link:hover { color: var(--admin-atlas-primary-700) !important; }
