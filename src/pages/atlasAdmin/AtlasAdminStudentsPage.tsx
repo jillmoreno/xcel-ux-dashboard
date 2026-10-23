@@ -242,7 +242,7 @@ export function AtlasAdminStudentsPage() {
    *  a thin rule and its share of the roster in the strip's deeper shade.
    *  Selected deepens the strip and edges the card in that shade. */
   const statusGrid = (
-    <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+    <div style={{ display: 'grid', gap: 20, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
       {STATUS_ORDER.map((id) => tiles.find((x) => x.id === id)!).map((t) => {
         const n = tileCount[t.id]
         const active = bucket === t.id
@@ -263,7 +263,7 @@ export function AtlasAdminStudentsPage() {
             }}
             className="cre-admin-tile cre-admin-status-card"
             /* Hover and selected: the border turns the card's status colour (--status-focus, tokens.css); selected also fills white and lifts. */
-            style={{ ...STATUS_CARD, ['--status-focus' as string]: strip, borderColor: active ? strip : lite ? 'var(--admin-atlas-primary-200)' : 'var(--admin-fill-soft)', borderLeftWidth: 8, borderLeftColor: strip, ...(active ? { background: 'var(--admin-surface)', boxShadow: TILE_ACTIVE.boxShadow } : null) }}
+            style={{ ...STATUS_CARD, ['--status-focus' as string]: strip, ...statusEdge(active ? strip : lite ? 'var(--admin-atlas-primary-200)' : 'var(--admin-fill-soft)', strip), ...(active ? { background: 'var(--admin-surface)', boxShadow: TILE_ACTIVE.boxShadow } : null) }}
           >
             <div style={STATUS_INNER}>
               <div style={STATUS_BODY}>
@@ -655,6 +655,12 @@ function StatusDial({ total, parts, active, onPick }: { total: number; parts: { 
 }
 
 /* PartnerHub's status cards (Students' top tile row). */
+/** A status card's edges, side by side as longhands: React drops a longhand
+ *  that shares an update with the `borderColor` shorthand, which painted the
+ *  left edge in the card colour. */
+function statusEdge(edge: string, left: string): CSSProperties {
+  return { borderTopColor: edge, borderRightColor: edge, borderBottomColor: edge, borderLeftColor: left, borderLeftWidth: 8 }
+}
 /* Their order: In progress before Not started (2026-10-23, Eric). */
 const STATUS_ORDER: PipelineBucket[] = ['all', 'in-progress', 'not-started', 'off-track', 'prepared', 'licensed']
 const BODY_FONT = 'var(--font-body)'
