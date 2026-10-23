@@ -267,28 +267,29 @@ export function AtlasAdminStudentsPage() {
           >
             <div style={STATUS_INNER}>
               <div style={STATUS_BODY}>
-                <p style={EYEBROW}>{t.id === 'all' ? 'Active' : t.label}</p>
+                {/* Licensed's window sits top right, across from its eyebrow. */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 18 }}>
+                  <p style={EYEBROW}>{t.id === 'all' ? 'Active' : t.label}</p>
+                  {t.id === 'licensed' ? (
+                    <select
+                      aria-label="Licensed time window"
+                      value={licensedWindow}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => setLicensedWindow(e.target.value)}
+                      style={{ ...SELECT, marginTop: 0, width: 'auto', margin: '-6px 0' }}
+                    >
+                      <option value="90d">Passed last 90 days</option>
+                      <option value="year">Passed this year</option>
+                      <option value="all">Passed all time</option>
+                    </select>
+                  ) : null}
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={STATUS_COUNT}>{n.toLocaleString('en-US')}</span>
                   <span aria-hidden style={STATUS_SEP}>|</span>
                   <span style={{ ...STATUS_COUNT, color: deep }}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
                 </div>
-                {t.id === 'licensed' ? (
-                  // Licensed: the window says "Passed …" itself; the select only as wide as its longest option.
-                <select
-                  aria-label="Licensed time window"
-                  value={licensedWindow}
-                  onClick={(e) => e.stopPropagation()}
-                  onChange={(e) => setLicensedWindow(e.target.value)}
-                  style={{ ...SELECT, marginTop: -2, width: 'auto', alignSelf: 'flex-start' }}
-                >
-                  <option value="90d">Passed last 90 days</option>
-                  <option value="year">Passed this year</option>
-                  <option value="all">Passed all time</option>
-                </select>
-                ) : (
-                  <p style={{ ...STATUS_DESC, marginTop: -2 }}>{t.note}</p>
-                )}
+                {t.id === 'licensed' ? null : <p style={{ ...STATUS_DESC, marginTop: -2 }}>{t.note}</p>}
               </div>
             </div>
           </div>
