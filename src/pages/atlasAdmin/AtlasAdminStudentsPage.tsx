@@ -273,21 +273,18 @@ export function AtlasAdminStudentsPage() {
                   <span style={{ ...STATUS_COUNT, color: deep }}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
                 </div>
                 {t.id === 'licensed' ? (
-                  // Licensed: "Passed:" and its time window on one line, the select taking the rest.
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <p style={{ ...STATUS_DESC, flex: 'none' }}>Passed:</p>
-                    <select
-                      aria-label="Licensed time window"
-                      value={licensedWindow}
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) => setLicensedWindow(e.target.value)}
-                      style={{ ...SELECT, marginTop: 0, flex: 1, width: 'auto', minWidth: 0 }}
-                    >
-                      <option value="90d">Last 90 days</option>
-                      <option value="year">This year</option>
-                      <option value="all">All time</option>
-                    </select>
-                  </div>
+                  // Licensed: the window says "Passed …" itself; the select only as wide as its longest option.
+                <select
+                  aria-label="Licensed time window"
+                  value={licensedWindow}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => setLicensedWindow(e.target.value)}
+                  style={{ ...SELECT, marginTop: 0, width: 'auto', alignSelf: 'flex-start' }}
+                >
+                  <option value="90d">Passed last 90 days</option>
+                  <option value="year">Passed this year</option>
+                  <option value="all">Passed all time</option>
+                </select>
                 ) : (
                   <p style={STATUS_DESC}>{t.note}</p>
                 )}
