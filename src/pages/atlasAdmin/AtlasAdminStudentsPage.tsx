@@ -513,7 +513,7 @@ export function AtlasAdminStudentsPage() {
 
 const TILE: CSSProperties = {
   borderRadius: 11,
-  border: '1px solid var(--admin-atlas-primary-100)', // Atlas primary 100
+  border: '1px solid var(--admin-atlas-primary-200)', // Atlas primary 200
   background: 'var(--admin-fill-soft)', // the roster's header row; the selected tile is white
   padding: 16,
   textAlign: 'left',
