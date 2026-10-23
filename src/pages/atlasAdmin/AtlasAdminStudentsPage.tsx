@@ -235,6 +235,56 @@ export function AtlasAdminStudentsPage() {
   // Nobody on the roster yet — the first-run office.
   if (ADMIN_LEARNERS.length === 0) return <StudentsEmptyState />
 
+  /** The outcome tiles; `withBars` false drops each tile's progress bar. */
+  const tileGrid = (withBars: boolean) => (
+    <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
+      {tiles.map((t) => {
+        const n = tileCount[t.id]
+        const active = bucket === t.id
+        return (
+          <div
+            key={t.id}
+            role="button"
+            tabIndex={0}
+            title={t.title}
+            aria-pressed={active}
+            onClick={() => pickBucket(t.id)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                pickBucket(t.id)
+              }
+            }}
+            className="cre-admin-tile"
+            style={{ ...TILE, borderColor: lite ? 'var(--admin-atlas-primary-200)' : 'var(--admin-fill-soft)', ...(active ? TILE_ACTIVE : null) }}
+          >
+            <p style={EYEBROW}>{t.label}</p>
+            <p style={{ ...TILE_NUMBER, color: t.color }}>{n}</p>
+            {withBars ? (
+              <span style={TRACK}>
+                <span style={{ display: 'block', height: '100%', borderRadius: 9999, width: `${Math.max(2, Math.round((n / counts.total) * 100))}%`, background: t.bar }} />
+              </span>
+            ) : null}
+            <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--admin-text)' }}>{t.note}</p>
+            {t.id === 'licensed' ? (
+              <select
+                aria-label="Licensed time window"
+                value={licensedWindow}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) => setLicensedWindow(e.target.value)}
+                style={SELECT}
+              >
+                <option value="90d">Last 90 days</option>
+                <option value="year">This year</option>
+                <option value="all">All time</option>
+              </select>
+            ) : null}
+          </div>
+        )
+      })}
+    </div>
+  )
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <header style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
@@ -253,50 +303,9 @@ export function AtlasAdminStudentsPage() {
       </header>
 
       <section aria-label="Pipeline outcomes" style={lite ? undefined : { ...CARD, border: 'none', padding: `24px 24px ${24 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
-        <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
-          {tiles.map((t) => {
-            const n = tileCount[t.id]
-            const active = bucket === t.id
-            return (
-              <div
-                key={t.id}
-                role="button"
-                tabIndex={0}
-                title={t.title}
-                aria-pressed={active}
-                onClick={() => pickBucket(t.id)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    pickBucket(t.id)
-                  }
-                }}
-                className="cre-admin-tile"
-                style={{ ...TILE, borderColor: lite ? 'var(--admin-atlas-primary-200)' : 'var(--admin-fill-soft)', ...(active ? TILE_ACTIVE : null) }}
-              >
-                <p style={EYEBROW}>{t.label}</p>
-                <p style={{ ...TILE_NUMBER, color: t.color }}>{n}</p>
-                <span style={TRACK}>
-                  <span style={{ display: 'block', height: '100%', borderRadius: 9999, width: `${Math.max(2, Math.round((n / counts.total) * 100))}%`, background: t.bar }} />
-                </span>
-                <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--admin-text)' }}>{t.note}</p>
-                {t.id === 'licensed' ? (
-                  <select
-                    aria-label="Licensed time window"
-                    value={licensedWindow}
-                    onClick={(e) => e.stopPropagation()}
-                    onChange={(e) => setLicensedWindow(e.target.value)}
-                    style={SELECT}
-                  >
-                    <option value="90d">Last 90 days</option>
-                    <option value="year">This year</option>
-                    <option value="all">All time</option>
-                  </select>
-                ) : null}
-              </div>
-            )
-          })}
-        </div>
+        {tileGrid(true)}
+        {/* For comparison: the same tiles without their progress bars. */}
+        <div style={{ marginTop: 12 }}>{tileGrid(false)}</div>
       </section>
 
       {/* `clip`, not `hidden`: it rounds the corners the same way without making the card a scroll box, so the selection bar can pin to the window. */}
