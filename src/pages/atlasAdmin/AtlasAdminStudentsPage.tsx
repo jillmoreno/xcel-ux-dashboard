@@ -268,7 +268,7 @@ export function AtlasAdminStudentsPage() {
                 {/* The status colour: a filled dot 6px before the eyebrow. */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span aria-hidden style={{ ...STATUS_DOT, background: active ? deep : strip }} />
-                  <p style={EYEBROW}>{t.label}</p>
+                  <p style={EYEBROW}>{t.id === 'all' ? 'Active' : t.label}</p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                   <span style={STATUS_COUNT}>{n.toLocaleString('en-US')}</span>
