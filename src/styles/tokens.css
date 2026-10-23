@@ -7477,7 +7477,7 @@ a.cre-library-card-title::after {
   --admin-font-playfair: 'Playfair', Georgia, serif;
   --admin-status-ink: #404040;
   --admin-status-desc: #616161;
-  --admin-status-sep: #c7c7c7;
+  --admin-status-sep: #a2a2a2; /* neutral 500 — a step darker than the reference's 300 */
   --admin-status-neutral: #c7c7c7;
   --admin-status-neutral-deep: #a2a2a2;
   --admin-status-blue: #015994;
