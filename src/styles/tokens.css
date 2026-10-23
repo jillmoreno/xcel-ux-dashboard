@@ -7488,6 +7488,14 @@ a.cre-library-card-title::after {
   --admin-status-green-deep: #005221;
   --admin-status-dark: #404040;
   --admin-status-dark-deep: #191919;
+  /* The Atlas Style Guide's status colours (Figma Q9hUhVNzoqIQwV6J5c7xR1,
+     node 270:39) — Students' status cards and dial. */
+  --admin-atlas-status-not-started: #c3bba5;
+  --admin-atlas-status-active: #3d5a73;
+  --admin-atlas-status-off-track: #b23b2e;
+  --admin-atlas-status-in-progress: #835b16;
+  --admin-atlas-status-prepared: #2f7a5a;
+  --admin-atlas-status-licensed: #263d50;
   --admin-success-ink: #047857;
   --admin-warn-tint: #fffbeb;
   --admin-warn-edge: #fde68a;

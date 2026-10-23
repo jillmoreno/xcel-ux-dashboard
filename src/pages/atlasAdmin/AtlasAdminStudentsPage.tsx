@@ -663,13 +663,14 @@ function StatusDial({ total, parts, active, onPick }: { total: number; parts: { 
 /* Their order: In progress before Not started (2026-10-23, Eric). */
 const STATUS_ORDER: PipelineBucket[] = ['all', 'in-progress', 'not-started', 'off-track', 'prepared', 'licensed']
 const BODY_FONT = 'var(--font-body)'
-const STATUS_TONE: Record<PipelineBucket, [string, string]> = {
-  all: ['var(--admin-status-dark)', 'var(--admin-status-dark-deep)'],
-  'not-started': ['var(--admin-status-neutral)', 'var(--admin-status-neutral-deep)'],
-  'in-progress': ['var(--admin-status-blue)', 'var(--admin-status-blue-deep)'],
-  'off-track': ['var(--admin-status-red)', 'var(--admin-status-red-deep)'],
-  prepared: ['var(--admin-status-green)', 'var(--admin-status-green-deep)'],
-  licensed: ['var(--admin-status-green-deep)', 'var(--admin-status-green-deep)'],
+/* The Atlas Style Guide's status colours (Figma 270:39). */
+const STATUS_TONE: Record<PipelineBucket, [string]> = {
+  all: ['var(--admin-atlas-status-active)'],
+  'not-started': ['var(--admin-atlas-status-not-started)'],
+  'in-progress': ['var(--admin-atlas-status-in-progress)'],
+  'off-track': ['var(--admin-atlas-status-off-track)'],
+  prepared: ['var(--admin-atlas-status-prepared)'],
+  licensed: ['var(--admin-atlas-status-licensed)'],
 }
 /* A flex column, so every card in a row fills to the tallest. */
 /* Unselected: the search field's blue; the selected card is white. */
