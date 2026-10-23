@@ -647,7 +647,7 @@ function StatusDial({ total, parts, active, onPick }: { total: number; parts: { 
         )}
       </svg>
       <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-        <span style={{ fontFamily: 'var(--admin-font-playfair)', fontWeight: 500, fontSize: 'var(--admin-atlas-h5-size)', lineHeight: 'var(--admin-atlas-h5-line)', color: 'var(--admin-ink)' }}>{total}</span>
+        <span style={{ fontFamily: 'var(--admin-font-playfair)', fontWeight: 900, fontSize: 'var(--admin-atlas-h5-size)', lineHeight: 'var(--admin-atlas-h5-line)', color: 'var(--admin-ink)' }}>{total}</span>
         <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--admin-muted)' }}>Students</span>
       </div>
     </div>
@@ -688,12 +688,12 @@ const TILE: CSSProperties = {
   outline: 'none',
 }
 const TILE_ACTIVE: CSSProperties = { background: 'var(--admin-surface)', outline: '1px solid var(--admin-atlas-primary-200)', outlineOffset: -1, boxShadow: 'var(--admin-shadow-tile-active)' }
-/* The count: the Atlas H5 size (32/34) in Playfair, a step over regular. */
+/* The count: the Atlas H5 size (32/34) in Playfair Black, as the Dial cards' figures. */
 const TILE_NUMBER: CSSProperties = {
   margin: '4px 0 0',
   fontFamily: 'var(--admin-font-playfair)',
   fontSize: 'var(--admin-atlas-h5-size)',
-  fontWeight: 500,
+  fontWeight: 900,
   lineHeight: 'var(--admin-atlas-h5-line)',
   letterSpacing: '-0.01em',
   fontVariantNumeric: 'tabular-nums',
