@@ -259,8 +259,8 @@ export function AtlasAdminStudentsPage() {
             style={{ ...TILE, borderColor: lite ? 'var(--admin-atlas-primary-200)' : 'var(--admin-fill-soft)', ...(active ? TILE_ACTIVE : null) }}
           >
             <p style={EYEBROW}>{t.label}</p>
-            {/* Without the bars, Off Track's red moves to its count. */}
-            <p style={{ ...TILE_NUMBER, color: !withBars && t.id === 'off-track' ? 'var(--admin-brand)' : t.color }}>{n}</p>
+            {/* Without the bars, Off Track's red moves to its count and Prepared's green takes a step darker. */}
+            <p style={{ ...TILE_NUMBER, color: withBars ? t.color : t.id === 'off-track' ? 'var(--admin-brand)' : t.id === 'prepared' ? 'var(--admin-success-strong)' : t.color }}>{n}</p>
             {withBars ? (
               <span style={TRACK}>
                 <span style={{ display: 'block', height: '100%', borderRadius: 9999, width: `${Math.max(2, Math.round((n / counts.total) * 100))}%`, background: t.bar }} />

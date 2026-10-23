@@ -7467,6 +7467,7 @@ a.cre-library-card-title::after {
   --admin-nav-active-ink: #7a0d19;
   --admin-logo-pill: #9a1b1e;
   --admin-success: #10b981;
+  --admin-success-strong: #059669; /* emerald-600 — a step under success */
   --admin-success-ink: #047857;
   --admin-warn-tint: #fffbeb;
   --admin-warn-edge: #fde68a;
