@@ -365,7 +365,7 @@ export function AtlasAdminStudentsPage() {
 
       <section aria-label="Pipeline outcomes" style={lite ? undefined : { ...CARD, border: 'none', padding: `24px 24px ${24 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
         {/* Trying PartnerHub's Learner Compliance Analysis cards (above the two earlier rows). */}
-        <div style={{ marginBottom: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24 }}>
+        <div style={{ marginBottom: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 32 }}>
           <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
             <p style={EYEBROW}>Student Compliance</p>
             <StatusDial
