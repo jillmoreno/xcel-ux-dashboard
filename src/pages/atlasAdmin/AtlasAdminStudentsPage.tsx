@@ -236,7 +236,7 @@ export function AtlasAdminStudentsPage() {
   if (ADMIN_LEARNERS.length === 0) return <StudentsEmptyState />
 
   /** The outcome tiles in PartnerHub's status-card style: a coloured strip
-   *  dot before the uppercase label and a one-line note, then the count,
+   *  pill holding the uppercase label and a one-line note, then the count,
    *  a thin rule and its share of the roster in the strip's deeper shade.
    *  Selected deepens the strip and edges the card in that shade. */
   const statusGrid = (
@@ -265,11 +265,8 @@ export function AtlasAdminStudentsPage() {
           >
             <div style={STATUS_INNER}>
               <div style={STATUS_BODY}>
-                {/* The status colour: a filled dot 6px before the eyebrow. */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span aria-hidden style={{ ...STATUS_DOT, background: active ? deep : strip }} />
-                  <p style={EYEBROW}>{t.id === 'all' ? 'Active' : t.label}</p>
-                </div>
+                {/* The status colour carries the eyebrow: a pill 6px either side, 4px above and below. */}
+                <p style={{ ...EYEBROW, ...STATUS_PILL, background: active ? deep : strip }}>{t.id === 'all' ? 'Active' : t.label}</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                   <span style={STATUS_COUNT}>{n.toLocaleString('en-US')}</span>
                   <span aria-hidden style={STATUS_SEP}>|</span>
@@ -680,8 +677,8 @@ const STATUS_TONE: Record<PipelineBucket, [string, string]> = {
 /* A flex column, so every card in a row fills to the tallest. */
 const STATUS_CARD: CSSProperties = { display: 'flex', flexDirection: 'column', background: 'none', borderStyle: 'solid', borderWidth: 1, borderRadius: 11, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
 const STATUS_INNER: CSSProperties = { flex: 1, minHeight: 92, boxSizing: 'border-box', padding: '14px 16px', display: 'flex' }
-/* The eyebrow's cap height (12px Open Sans caps stand ~8.6px), so the dot matches the letters. */
-const STATUS_DOT: CSSProperties = { flex: 'none', width: 9, height: 9, borderRadius: '50%' }
+/* The eyebrow in its status colour's pill, as wide as the label. */
+const STATUS_PILL: CSSProperties = { alignSelf: 'flex-start', padding: '4px 6px', borderRadius: 9999, color: 'var(--admin-surface)' }
 const STATUS_BODY: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
 const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-desc)' }
 const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 32, fontWeight: 800, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-status-ink)' }
