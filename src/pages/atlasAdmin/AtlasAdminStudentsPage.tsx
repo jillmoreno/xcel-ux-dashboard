@@ -279,14 +279,14 @@ export function AtlasAdminStudentsPage() {
                   value={licensedWindow}
                   onClick={(e) => e.stopPropagation()}
                   onChange={(e) => setLicensedWindow(e.target.value)}
-                  style={{ ...SELECT, marginTop: 0, width: 'auto', alignSelf: 'flex-start' }}
+                  style={{ ...SELECT, marginTop: -2, width: 'auto', alignSelf: 'flex-start' }}
                 >
                   <option value="90d">Passed last 90 days</option>
                   <option value="year">Passed this year</option>
                   <option value="all">Passed all time</option>
                 </select>
                 ) : (
-                  <p style={STATUS_DESC}>{t.note}</p>
+                  <p style={{ ...STATUS_DESC, marginTop: -2 }}>{t.note}</p>
                 )}
               </div>
             </div>
