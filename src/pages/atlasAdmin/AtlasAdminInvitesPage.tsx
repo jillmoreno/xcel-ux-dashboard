@@ -1,5 +1,6 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { acceptedThisWeek, hoursAgoDate, isFresh, isReady, type Invite, type InviteStatus } from '@/data/atlasAdmin/invites'
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
@@ -47,6 +48,8 @@ function dateTime(hours: number) {
 
 export function AtlasAdminInvitesPage() {
   const navigate = useNavigate()
+  // As on Students: Lite sets the tiles on the page, stroked in primary 200.
+  const lite = useFeatureFlag('atlas-admin-left-nav').variant === 'lite'
   const { invites, resendInvite, showToast } = useAdminStore()
   const [filter, setFilter] = useState<Filter>('all')
   const [search, setSearch] = useState('')
@@ -93,8 +96,8 @@ export function AtlasAdminInvitesPage() {
         </button>
       </header>
 
-      {/* As on Students: the blue runs on under the table card, no gap between. */}
-      <section aria-label="Invite outcomes" style={{ ...CARD, border: 'none', padding: `16px 16px ${20 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
+      {/* As on Students: with the Standard nav the blue runs on under the table card, no gap between; with Lite the tiles sit on the page. */}
+      <section aria-label="Invite outcomes" style={lite ? undefined : { ...CARD, border: 'none', padding: `16px 16px ${20 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
         <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
           {tiles.map((t) => {
             const active = t.id !== 'all' && filter === t.id
@@ -107,7 +110,7 @@ export function AtlasAdminInvitesPage() {
                 className="cre-admin-tile"
                 style={{
                   ...TILE,
-                  border: '1px solid var(--admin-fill-soft)',
+                  border: `1px solid ${lite ? 'var(--admin-atlas-primary-200)' : 'var(--admin-fill-soft)'}`,
                   ...(active ? TILE_ACTIVE : null),
                 }}
               >

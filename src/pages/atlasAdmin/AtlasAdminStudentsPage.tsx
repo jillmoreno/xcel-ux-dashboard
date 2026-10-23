@@ -1,5 +1,6 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { MagnifyingGlass, Plus, XmarkRegular } from '@/icons'
 import {
   ADMIN_DEMO_LEARNERS,
@@ -69,6 +70,10 @@ const PAGE = 25
 
 export function AtlasAdminStudentsPage() {
   const navigate = useNavigate()
+  /* The outcome tiles follow the Left Nav design control: Lite sets them
+     straight on the page, each stroked in primary 200; Standard keeps the
+     blue container running on under the roster card, tiles unstroked. */
+  const lite = useFeatureFlag('atlas-admin-left-nav').variant === 'lite'
   const { showToast, learners: ADMIN_LEARNERS } = useAdminStore()
   const [bucket, setBucket] = useState<PipelineBucket>('all')
   const [search, setSearch] = useState('')
@@ -247,7 +252,7 @@ export function AtlasAdminStudentsPage() {
         </div>
       </header>
 
-      <section aria-label="Pipeline outcomes">
+      <section aria-label="Pipeline outcomes" style={lite ? undefined : { ...CARD, border: 'none', padding: `24px 24px ${24 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
         <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))' }}>
           {tiles.map((t) => {
             const n = tileCount[t.id]
@@ -267,7 +272,7 @@ export function AtlasAdminStudentsPage() {
                   }
                 }}
                 className="cre-admin-tile"
-                style={{ ...TILE, ...(active ? TILE_ACTIVE : null) }}
+                style={{ ...TILE, borderColor: lite ? 'var(--admin-atlas-primary-200)' : 'var(--admin-fill-soft)', ...(active ? TILE_ACTIVE : null) }}
               >
                 <p style={EYEBROW}>{t.label}</p>
                 <p style={{ ...TILE_NUMBER, color: t.color }}>{n}</p>
@@ -295,7 +300,7 @@ export function AtlasAdminStudentsPage() {
       </section>
 
       {/* `clip`, not `hidden`: it rounds the corners the same way without making the card a scroll box, so the selection bar can pin to the window. */}
-      <section style={{ ...CARD, overflow: 'clip' }}>
+      <section style={{ ...CARD, position: 'relative', overflow: 'clip' }}>
         <div style={TOOLBAR}>
           <label style={{ position: 'relative', display: 'block', width: 256 }}>
             <span style={{ position: 'absolute', left: 12, top: 10, color: 'var(--admin-faint)', display: 'flex' }}>
@@ -511,9 +516,12 @@ export function AtlasAdminStudentsPage() {
 
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
+/* How far the outcome container's blue runs on beneath the roster card (Standard nav). */
+const UNDERLAP = 24
 const TILE: CSSProperties = {
   borderRadius: 11,
-  border: '1px solid var(--admin-atlas-primary-200)', // Atlas primary 200
+  borderWidth: 1,
+  borderStyle: 'solid', // colour by Left Nav, at the tile
   background: 'var(--admin-fill-soft)', // the roster's header row; the selected tile is white
   padding: 16,
   textAlign: 'left',
