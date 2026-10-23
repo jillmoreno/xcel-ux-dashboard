@@ -248,48 +248,51 @@ export function AtlasAdminStudentsPage() {
         const active = bucket === t.id
         const [strip] = STATUS_TONE[t.id]
         return (
-          <div
-            key={t.id}
-            role="button"
-            tabIndex={0}
-            title={t.title}
-            aria-pressed={active}
-            onClick={() => pickBucket(t.id)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                pickBucket(t.id)
-              }
-            }}
-            className="cre-admin-tile cre-admin-status-card"
-            /* Edges primary 200 in every state (hover too — tokens.css); only the left edge is the status colour. Selected fills white and lifts. */
-            style={{ ...STATUS_CARD, ['--status-edge' as string]: strip, ...statusEdge(active ? 'var(--admin-atlas-primary-200)' : 'transparent', strip), ...(active ? { background: 'var(--admin-surface)', boxShadow: TILE_ACTIVE.boxShadow } : null) }}
-          >
-            <div style={STATUS_INNER}>
-              <div style={STATUS_BODY}>
-                {/* Licensed's window sits top right, across from its eyebrow. */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 18, marginBottom: -2 }}>
-                  <p style={{ ...EYEBROW, color: 'var(--admin-status-ink)' }}>{t.id === 'all' ? 'Active' : t.label}</p>
-                  {t.id === 'licensed' ? (
-                    <select
-                      aria-label="Licensed time window"
-                      value={licensedWindow}
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) => setLicensedWindow(e.target.value)}
-                      style={{ ...SELECT, marginTop: 0, width: 'auto', margin: '-6px 0' }}
-                    >
-                      <option value="90d">Last 90 days</option>
-                      <option value="year">This year</option>
-                      <option value="all">All time</option>
-                    </select>
-                  ) : null}
+          // The status colour stands outside the card: a round-ended bar butted to its left side.
+          <div key={t.id} style={{ display: 'flex', alignItems: 'stretch', minWidth: 0 }}>
+            <span aria-hidden style={{ ...STATUS_BAR, background: strip }} />
+            <div
+              role="button"
+              tabIndex={0}
+              title={t.title}
+              aria-pressed={active}
+              onClick={() => pickBucket(t.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  pickBucket(t.id)
+                }
+              }}
+              className="cre-admin-tile cre-admin-status-card"
+              /* Primary 200 edge when selected or hovered (tokens.css), none otherwise; selected fills white and lifts. */
+              style={{ ...STATUS_CARD, borderColor: active ? 'var(--admin-atlas-primary-200)' : 'transparent', ...(active ? { background: 'var(--admin-surface)', boxShadow: TILE_ACTIVE.boxShadow } : null) }}
+            >
+              <div style={STATUS_INNER}>
+                <div style={STATUS_BODY}>
+                  {/* Licensed's window sits top right, across from its eyebrow. */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 18, marginBottom: -2 }}>
+                    <p style={{ ...EYEBROW, color: 'var(--admin-status-ink)' }}>{t.id === 'all' ? 'Active' : t.label}</p>
+                    {t.id === 'licensed' ? (
+                      <select
+                        aria-label="Licensed time window"
+                        value={licensedWindow}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => setLicensedWindow(e.target.value)}
+                        style={{ ...SELECT, marginTop: 0, width: 'auto', margin: '-6px 0' }}
+                      >
+                        <option value="90d">Last 90 days</option>
+                        <option value="year">This year</option>
+                        <option value="all">All time</option>
+                      </select>
+                    ) : null}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={STATUS_COUNT}>{n.toLocaleString('en-US')}</span>
+                    <span aria-hidden style={STATUS_SEP}>|</span>
+                    <span style={STATUS_COUNT}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
+                  </div>
+                  {t.id === 'licensed' ? null : <p style={{ ...STATUS_DESC, marginTop: -6 }}>{t.note}</p>}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={STATUS_COUNT}>{n.toLocaleString('en-US')}</span>
-                  <span aria-hidden style={STATUS_SEP}>|</span>
-                  <span style={STATUS_COUNT}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
-                </div>
-                {t.id === 'licensed' ? null : <p style={{ ...STATUS_DESC, marginTop: -6 }}>{t.note}</p>}
               </div>
             </div>
           </div>
@@ -657,12 +660,6 @@ function StatusDial({ total, parts, active, onPick }: { total: number; parts: { 
 }
 
 /* PartnerHub's status cards (Students' top tile row). */
-/** A status card's edges, side by side as longhands: React drops a longhand
- *  that shares an update with the `borderColor` shorthand, which painted the
- *  left edge in the card colour. */
-function statusEdge(edge: string, left: string): CSSProperties {
-  return { borderTopColor: edge, borderRightColor: edge, borderBottomColor: edge, borderLeftColor: left, borderLeftWidth: 8 }
-}
 /* Their order: In progress before Not started (2026-10-23, Eric). */
 const STATUS_ORDER: PipelineBucket[] = ['all', 'in-progress', 'not-started', 'off-track', 'prepared', 'licensed']
 const BODY_FONT = 'var(--font-body)'
@@ -676,7 +673,9 @@ const STATUS_TONE: Record<PipelineBucket, [string, string]> = {
 }
 /* A flex column, so every card in a row fills to the tallest. */
 /* Unselected: the search field's blue; the selected card is white. */
-const STATUS_CARD: CSSProperties = { display: 'flex', flexDirection: 'column', background: 'var(--admin-fill)', borderStyle: 'solid', borderWidth: 1, borderRadius: 11, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
+/* The coloured bar beside each card: 8px, round-ended, its full height. */
+const STATUS_BAR: CSSProperties = { flex: 'none', width: 8, borderRadius: 9999 }
+const STATUS_CARD: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: 'var(--admin-fill)', borderStyle: 'solid', borderWidth: 1, borderRadius: 11, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
 const STATUS_INNER: CSSProperties = { flex: 1, minHeight: 84, boxSizing: 'border-box', padding: '10px 16px', display: 'flex' }
 const STATUS_BODY: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
 const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-ink)' }
