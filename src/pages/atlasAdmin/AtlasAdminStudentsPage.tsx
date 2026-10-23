@@ -74,6 +74,8 @@ export function AtlasAdminStudentsPage() {
      straight on the page, each stroked in primary 200; Standard keeps the
      blue container running on under the roster card, tiles unstroked. */
   const lite = useFeatureFlag('atlas-admin-left-nav').variant === 'lite'
+  // The Design bar's Student Analysis: which outcome row the page shows.
+  const analysis = useFeatureFlag('atlas-admin-student-analysis').variant ?? 'dial'
   const { showToast, learners: ADMIN_LEARNERS } = useAdminStore()
   const [bucket, setBucket] = useState<PipelineBucket>('all')
   const [search, setSearch] = useState('')
@@ -365,8 +367,10 @@ export function AtlasAdminStudentsPage() {
       </header>
 
       <section aria-label="Pipeline outcomes" style={lite ? undefined : { ...CARD, border: 'none', padding: `24px 24px ${24 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
-        {/* Trying PartnerHub's Learner Compliance Analysis cards (above the two earlier rows). */}
-        <div style={{ marginBottom: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 32 }}>
+        {/* One of three, by the Student Analysis design control: PartnerHub's
+            status cards with the dial, the tiles with progress bars, or plain. */}
+        {analysis === 'dial' ? (
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 32 }}>
           <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
             <p style={EYEBROW}>Student Compliance</p>
             <StatusDial
@@ -378,9 +382,9 @@ export function AtlasAdminStudentsPage() {
           </div>
           <div style={{ flex: '1 1 480px', minWidth: 0 }}>{statusGrid}</div>
         </div>
-        {tileGrid(true)}
-        {/* For comparison: the same tiles without their progress bars. */}
-        <div style={{ marginTop: 12 }}>{tileGrid(false)}</div>
+        ) : (
+          tileGrid(analysis === 'progress-bar')
+        )}
       </section>
 
       {/* `clip`, not `hidden`: it rounds the corners the same way without making the card a scroll box, so the selection bar can pin to the window. */}

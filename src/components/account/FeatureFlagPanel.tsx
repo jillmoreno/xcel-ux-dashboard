@@ -137,6 +137,7 @@ const REBRAND_FLAGS = [
   'atlas-home-long-title',
   'atlas-admin',
   'atlas-admin-left-nav',
+  'atlas-admin-student-analysis',
   'atlas-admin-background',
   'atlas-admin-flow',
   'atlas-v3-progress',

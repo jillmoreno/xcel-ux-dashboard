@@ -2408,6 +2408,29 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-admin-student-analysis',
+    /* ATLAS ADMIN — STUDENT ANALYSIS (2026-10-23, Eric: "add a student
+       Analysis Dropdown … with links to Dial, Progress Bar and plain").
+       Which outcome row Students shows: Dial — PartnerHub's status cards
+       beside the Student Compliance dial; Progress Bar — the tiles with
+       their bars; Plain — the tiles without. Students page only. */
+    surface: 'design',
+    owner: 'eric',
+    surfaces: ['atlas-admin'],
+    versions: ['eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Student Analysis',
+    description: 'Atlas Admin Students\u2019 outcome row: the status dial and cards, the tiles with progress bars, or plain tiles.',
+    defaultEnabled: true,
+    variants: [
+      { value: 'dial', label: 'Dial' },
+      { value: 'progress-bar', label: 'Progress Bar' },
+      { value: 'plain', label: 'Plain' },
+    ],
+    defaultVariant: 'dial',
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-admin-background',
     /* ATLAS ADMIN — BACKGROUND (2026-10-23, Eric: "add the bg color design
        control in"). The admin's own Toned / White, after the learner Home's
