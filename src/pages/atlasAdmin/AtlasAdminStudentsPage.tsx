@@ -238,7 +238,7 @@ export function AtlasAdminStudentsPage() {
   /** The outcome tiles in PartnerHub's status-card style: a coloured strip
    *  down the left, an uppercase label and a one-line note, then the count,
    *  a thin rule and its share of the roster in the strip's deeper shade.
-   *  Selected widens the strip and edges the card in that shade. */
+   *  Selected deepens the strip and edges the card in that shade. */
   const statusGrid = (
     <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
       {tiles.map((t) => {
@@ -262,7 +262,7 @@ export function AtlasAdminStudentsPage() {
             className="cre-admin-status-card"
             style={{ ...STATUS_CARD, ...(active ? { borderWidth: 1.5, borderColor: deep } : null) }}
           >
-            <div style={{ ...STATUS_INNER, borderLeftWidth: active ? 8 : 6, borderLeftColor: active ? deep : strip }}>
+            <div style={{ ...STATUS_INNER, borderLeftWidth: 6, borderLeftColor: active ? deep : strip }}>
               <p style={STATUS_LABEL}>{t.label}</p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={STATUS_COUNT}>{n.toLocaleString('en-US')}</span>
