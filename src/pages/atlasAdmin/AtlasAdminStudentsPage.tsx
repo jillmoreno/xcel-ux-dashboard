@@ -371,8 +371,9 @@ export function AtlasAdminStudentsPage() {
       <section aria-label="Pipeline outcomes" style={lite ? undefined : { ...CARD, border: 'none', padding: `24px 24px ${24 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
         {/* One of three, by the Student Analysis design control: PartnerHub's
             status cards with the dial, the tiles with progress bars, or plain. */}
+        {/* Dial: on the roster header's light blue, 32px in. */}
         {analysis === 'dial' ? (
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 40 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 40, padding: 32, borderRadius: 18, background: 'var(--admin-fill-soft)' }}>
           {/* Top-aligned, 15px down (a card's 1px edge + 14px padding), so this eyebrow shares the top cards' baseline. */}
           <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, paddingTop: 15 }}>
             <p style={EYEBROW}>Student Compliance</p>
