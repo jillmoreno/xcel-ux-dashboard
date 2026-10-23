@@ -372,7 +372,7 @@ export function AtlasAdminStudentsPage() {
         {/* One of three, by the Student Analysis design control: PartnerHub's
             status cards with the dial, the tiles with progress bars, or plain. */}
         {analysis === 'dial' ? (
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 32 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 40 }}>
           {/* Top-aligned, 15px down (a card's 1px edge + 14px padding), so this eyebrow shares the top cards' baseline. */}
           <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, paddingTop: 15 }}>
             <p style={EYEBROW}>Student Compliance</p>
