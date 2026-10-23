@@ -263,7 +263,7 @@ export function AtlasAdminStudentsPage() {
             }}
             className="cre-admin-tile cre-admin-status-card"
             /* Hover and selected: the border turns the card's status colour (--status-focus, tokens.css); selected also fills white and lifts. */
-            style={{ ...STATUS_CARD, ['--status-focus' as string]: deep, borderColor: active ? deep : lite ? 'var(--admin-atlas-primary-200)' : 'var(--admin-fill-soft)', borderLeftWidth: 8, borderLeftColor: active ? deep : strip, ...(active ? { background: 'var(--admin-surface)', boxShadow: TILE_ACTIVE.boxShadow } : null) }}
+            style={{ ...STATUS_CARD, ['--status-focus' as string]: strip, borderColor: active ? strip : lite ? 'var(--admin-atlas-primary-200)' : 'var(--admin-fill-soft)', borderLeftWidth: 8, borderLeftColor: strip, ...(active ? { background: 'var(--admin-surface)', boxShadow: TILE_ACTIVE.boxShadow } : null) }}
           >
             <div style={STATUS_INNER}>
               <div style={STATUS_BODY}>
