@@ -7473,6 +7473,8 @@ a.cre-library-card-title::after {
      Students' status-style tile row. Each status: the strip, then the deeper
      shade for its percentage, hover and selected edge. */
   --admin-status-card-edge: #ececec;
+  /* Playfair — the status cards' percentages; AtlasAdminApp loads the face. */
+  --admin-font-playfair: 'Playfair', Georgia, serif;
   --admin-status-ink: #404040;
   --admin-status-desc: #616161;
   --admin-status-sep: #c7c7c7;

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties }
 import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import { useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
 import { useDeclareDesignSurface } from '@/context/designSurface'
+import { atlasFontHref } from '@/components/layout/atlasFontSets'
 import { ADMIN_DEPARTMENTS, ADMIN_LEARNERS, type Learner } from '@/data/atlasAdmin/learners'
 import { ADMIN_INVITES, type Invite } from '@/data/atlasAdmin/invites'
 import { ADMIN_RULES, type AssignmentRule } from '@/data/atlasAdmin/assignments'
@@ -59,6 +60,17 @@ export function AtlasAdminApp() {
   const flow = useFeatureFlag('atlas-admin-flow').variant
   // The Design bar's Background: White re-points the admin page colour.
   const whitePage = useFeatureFlag('atlas-admin-background').variant === 'white'
+  // Playfair, for the type that asks for it (Students' status-card
+  // percentages) — the same Google Fonts face the Atlas pages load.
+  useEffect(() => {
+    const href = atlasFontHref('playfair-2')
+    if (!href || document.querySelector(`link[href="${href}"]`)) return
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = href
+    document.head.appendChild(link)
+    return () => link.remove()
+  }, [])
   const { setVariant } = useFeatureFlags()
   const navigate = useNavigate()
   useEffect(() => {
