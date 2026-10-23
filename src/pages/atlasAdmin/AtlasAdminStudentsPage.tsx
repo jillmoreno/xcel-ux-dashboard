@@ -525,13 +525,13 @@ const TILE: CSSProperties = {
   outline: 'none',
 }
 const TILE_ACTIVE: CSSProperties = { background: 'var(--admin-surface)', outline: '1px solid var(--admin-atlas-primary-200)', outlineOffset: -1, boxShadow: 'var(--admin-shadow-tile-active)' }
-/* The count: the Atlas Serif H4 (DM Serif Display 38/40, regular). */
+/* The count: the Atlas Serif H5 (DM Serif Display 32/34, regular). */
 const TILE_NUMBER: CSSProperties = {
   margin: '4px 0 0',
   fontFamily: 'var(--font-heading-serif)',
-  fontSize: 'var(--admin-atlas-h4-size)',
+  fontSize: 'var(--admin-atlas-h5-size)',
   fontWeight: 400,
-  lineHeight: 'var(--admin-atlas-h4-line)',
+  lineHeight: 'var(--admin-atlas-h5-line)',
   letterSpacing: '-0.01em',
   fontVariantNumeric: 'tabular-nums',
 }
