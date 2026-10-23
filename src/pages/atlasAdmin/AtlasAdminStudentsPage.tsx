@@ -366,10 +366,13 @@ export function AtlasAdminStudentsPage() {
       <section aria-label="Pipeline outcomes" style={lite ? undefined : { ...CARD, border: 'none', padding: `24px 24px ${24 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
         {/* Trying PartnerHub's Learner Compliance Analysis cards (above the two earlier rows). */}
         <div style={{ marginBottom: 12, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 24 }}>
-          <StatusDial
-            total={counts.total}
-            parts={(['in-progress', 'off-track', 'prepared', 'licensed'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
-          />
+          <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <p style={EYEBROW}>Learner Compliance</p>
+            <StatusDial
+              total={counts.total}
+              parts={(['in-progress', 'off-track', 'prepared', 'licensed'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
+            />
+          </div>
           <div style={{ flex: '1 1 480px', minWidth: 0 }}>{statusGrid}</div>
         </div>
         {tileGrid(true)}
