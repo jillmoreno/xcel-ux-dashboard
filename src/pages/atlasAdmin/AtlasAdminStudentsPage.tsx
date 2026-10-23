@@ -657,7 +657,7 @@ const STATUS_TONE: Record<PipelineBucket, [string, string]> = {
 }
 /* A flex column, so every card in a row fills to the tallest. */
 const STATUS_CARD: CSSProperties = { display: 'flex', flexDirection: 'column', background: 'var(--admin-surface)', borderStyle: 'solid', borderWidth: 1, borderColor: 'var(--admin-status-card-edge)', borderRadius: 12, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
-const STATUS_INNER: CSSProperties = { flex: 1, minHeight: 92, boxSizing: 'border-box', padding: '14px 16px 14px 12px', display: 'flex', gap: 12 }
+const STATUS_INNER: CSSProperties = { flex: 1, minHeight: 92, boxSizing: 'border-box', padding: '14px 16px 14px 12px', display: 'flex', gap: 20 }
 const STATUS_BAR: CSSProperties = { flex: 'none', alignSelf: 'stretch', width: 6, borderRadius: 9999 }
 const STATUS_BODY: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
 const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-desc)' }
