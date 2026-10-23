@@ -678,7 +678,7 @@ const STATUS_TONE: Record<PipelineBucket, [string, string]> = {
 const STATUS_CARD: CSSProperties = { display: 'flex', flexDirection: 'column', background: 'none', borderStyle: 'solid', borderWidth: 1, borderRadius: 11, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
 const STATUS_INNER: CSSProperties = { flex: 1, minHeight: 92, boxSizing: 'border-box', padding: '14px 16px', display: 'flex' }
 /* The eyebrow in its status colour's pill, as wide as the label. */
-const STATUS_PILL: CSSProperties = { alignSelf: 'flex-start', padding: '2px 10px', borderRadius: 9999, color: 'var(--admin-surface)' }
+const STATUS_PILL: CSSProperties = { alignSelf: 'flex-start', padding: '1px 10px', borderRadius: 9999, color: 'var(--admin-surface)' }
 const STATUS_BODY: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
 const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-desc)' }
 const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 32, fontWeight: 800, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-status-ink)' }
