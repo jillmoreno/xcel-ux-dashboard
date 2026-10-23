@@ -329,20 +329,22 @@ export function AtlasAdminStudentsPage() {
                 <span style={{ display: 'block', height: '100%', borderRadius: 9999, width: `${Math.max(2, Math.round((n / counts.total) * 100))}%`, background: t.bar }} />
               </span>
             ) : null}
-            <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--admin-text)' }}>{t.note}</p>
             {t.id === 'licensed' ? (
+              // As on the Dial cards: no note, the window says "Passed …" itself, as wide as its longest option.
               <select
                 aria-label="Licensed time window"
                 value={licensedWindow}
                 onClick={(e) => e.stopPropagation()}
                 onChange={(e) => setLicensedWindow(e.target.value)}
-                style={SELECT}
+                style={{ ...SELECT, width: 'auto', display: 'block' }}
               >
-                <option value="90d">Last 90 days</option>
-                <option value="year">This year</option>
-                <option value="all">All time</option>
+                <option value="90d">Passed last 90 days</option>
+                <option value="year">Passed this year</option>
+                <option value="all">Passed all time</option>
               </select>
-            ) : null}
+            ) : (
+              <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--admin-text)' }}>{t.note}</p>
+            )}
           </div>
         )
       })}
