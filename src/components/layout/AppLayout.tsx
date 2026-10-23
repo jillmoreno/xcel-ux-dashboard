@@ -4,6 +4,8 @@ import { Header } from './Header'
 import { Toast } from '@/components/ui/Toast'
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { DashboardVersionsPanelProvider } from '@/components/dashboard/DashboardVersionsPanelContext'
+import { InviteFlowVersionsPanelProvider } from '@/components/e2e/InviteFlowVersionsPanelContext'
+import { InviteFlowVersionsPanel } from '@/components/e2e/InviteFlowVersionsPanel'
 import { MembershipVersionsPanelProvider } from '@/components/membership/MembershipVersionsPanelContext'
 import { MembershipPageVersionPanelProvider } from '@/components/membership/MembershipPageVersionPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
@@ -19,7 +21,7 @@ import { DeviceFrameProvider, DeviceFrame } from './DeviceFrameContext'
 import { PrototypeChrome } from './PrototypeChrome'
 import { DesignSurfaceProvider } from '@/context/DesignSurfaceProvider'
 import { MobileNavProvider } from './MobileNavContext'
-import { EndToEndPageSync } from '@/pages/EndToEndPageSync'
+import { EndToEndPageSync, InviteFlowEntrySync, InviteSurfaceSync } from '@/pages/EndToEndPageSync'
 
 /**
  * `bare` (2026-10-14, Eric's request) — the providers and the prototype chrome
@@ -70,6 +72,10 @@ export function AppLayout({ bare = false }: { bare?: boolean } = {}) {
         <ProfileAvatarProvider>
         <LearningPathsPanelProvider>
           <DashboardVersionsPanelProvider>
+            {/* The invite flow's own version picker (2026-10-22). Its own
+                provider rather than a second flag on the dashboard one — see
+                `InviteFlowVersionsPanelContext`. */}
+            <InviteFlowVersionsPanelProvider>
             <MembershipPageVersionPanelProvider>
             <MembershipVersionsPanelProvider>
             <JumpBackInPanelProvider>
@@ -83,6 +89,9 @@ export function AppLayout({ bare = false }: { bare?: boolean } = {}) {
                   {/* The End-to-End Demo's Page control ↔ its route. Here, under
                       the flag store, because its pages span both layouts. */}
                   <EndToEndPageSync />
+                  {/* …and the flow's own door, when the Invite flow control
+                      changes which one it is (2026-10-22). */}
+                  <InviteFlowEntrySync />
                   {/* MobileNavProvider bridges the header's hamburger to the
                       mobile shell's nav drawer (see MobileNavContext). */}
                   <MobileNavProvider>
@@ -95,6 +104,11 @@ export function AppLayout({ bare = false }: { bare?: boolean } = {}) {
                         passed in as a prop, so a provider inside the frame
                         would not reach the bar. */}
                     <DesignSurfaceProvider>
+                    {/* The invite flow declares itself as a surface, so the
+                        Design bar carries its controls and not Atlas's
+                        (2026-10-22). Inside the provider, unlike the two syncs
+                        above — it writes the state the provider holds. */}
+                    <InviteSurfaceSync />
                     <DeviceFrame chrome={<PrototypeChrome />}>
                       {bare ? (
                         <Outlet />
@@ -165,6 +179,14 @@ export function AppLayout({ bare = false }: { bare?: boolean } = {}) {
                     </DesignSurfaceProvider>
                   </MobileNavProvider>
                   <FeatureFlagPanel />
+                  {/* Mounted beside the Feature Flag sheet and for the same
+                      reason: OUTSIDE `DeviceFrame`, so the slide-over covers the
+                      viewport rather than the previewed device. It is gated on
+                      `open` inside `Sheet`, so mounting it on every route costs
+                      nothing — and it has to be here rather than in `Header`,
+                      because the invite pages render `AppLayout bare` and have
+                      no Header to hang it off. */}
+                  <InviteFlowVersionsPanel />
                   <Toast
                     open={navBlocked}
                     onClose={() => setNavBlocked(false)}
@@ -179,6 +201,7 @@ export function AppLayout({ bare = false }: { bare?: boolean } = {}) {
             </JumpBackInPanelProvider>
             </MembershipVersionsPanelProvider>
             </MembershipPageVersionPanelProvider>
+            </InviteFlowVersionsPanelProvider>
           </DashboardVersionsPanelProvider>
         </LearningPathsPanelProvider>
         </ProfileAvatarProvider>

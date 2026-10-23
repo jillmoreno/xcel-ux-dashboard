@@ -18,13 +18,29 @@ import { E2E_PARTNER_NAME } from '@/pages/endToEndDemo'
  * from the accessibility tree there: an empty banner landmark is an
  * announcement with no content behind it.
  */
-export function PartnerHeader({ bare = false }: { bare?: boolean } = {}) {
+export function PartnerHeader({
+  bare = false,
+  partner = true,
+}: { bare?: boolean; partner?: boolean } = {}) {
   if (bare) return <header aria-hidden style={HEADER} />
+  /* ⚠ `partner={false}` IS XCEL'S OWN HEADER — 2026-10-22, with the four invite
+     flows. B2C Guest Checkout has no partner anywhere in it, and this header
+     was naming Sunrise Bank regardless: the most visible version of the page
+     claiming a relationship the learner does not have, sitting above a banner
+     that had just been fixed for the same lie.
+
+     The lockup goes, the XCEL logo stays — unlike `bare`, which empties the bar
+     for the loading state. The bar keeps its height either way, so nothing
+     below it moves when a reviewer switches flow on the design bar. */
   return (
     <header style={HEADER}>
-      <p style={TEXT}>{E2E_PARTNER_NAME}</p>
-      <span aria-hidden style={DIVIDER} />
-      <p style={TEXT}>Official Partner of</p>
+      {partner ? (
+        <>
+          <p style={TEXT}>{E2E_PARTNER_NAME}</p>
+          <span aria-hidden style={DIVIDER} />
+          <p style={TEXT}>Official Partner of</p>
+        </>
+      ) : null}
       <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={LOGO} />
     </header>
   )

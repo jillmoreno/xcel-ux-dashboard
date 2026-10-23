@@ -10,11 +10,22 @@ import { TOPO_CONTOURS, TOPO_VIEWBOX } from './topoContours'
  * off under reduced motion — and a soft wash of the page colour sits over
  * the middle so the spinner and its line read over the lines.
  */
-export function TopoBackground() {
+export function TopoBackground({
+  entrance = false,
+}: {
+  /**
+   * ⚠ OPT-IN, because this component is shared. The loading page draws the
+   * same map while a learner waits — a background that grows into place there
+   * would be a second thing moving beside the spinner, and the spinner is the
+   * one carrying the meaning. Only the confirmation, where the map IS the
+   * arrival, asks for it.
+   */
+  entrance?: boolean
+} = {}) {
   return (
     <div aria-hidden style={WRAP}>
       <svg
-        className="cre-e2e-loading-topo"
+        className={entrance ? 'cre-e2e-topo-enter' : 'cre-e2e-loading-topo'}
         viewBox={TOPO_VIEWBOX}
         preserveAspectRatio="xMidYMid slice"
         width="100%"

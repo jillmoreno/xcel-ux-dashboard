@@ -4654,13 +4654,116 @@ a.cre-library-card-title::after {
     transform: scale(1.06) translate(-1.5%, 1%);
   }
 }
+/* THE TOPO'S ARRIVAL — 2026-10-22, the direct ask ("can we do something cool
+   with the background image growing larger or fading in and out when user
+   first lands here").
+
+   ⚠ IT GROWS INTO THE AMBIENT DRIFT RATHER THAN REPLACING IT. One shorthand
+   declares both: the entrance runs once and ENDS at scale(1), which is exactly
+   where `cre-e2e-drift` begins, and the drift's delay matches the entrance's
+   duration so it picks up the instant the other lets go. Two animations on one
+   element both touching `transform` would otherwise fight — sequencing is what
+   makes them one continuous movement instead.
+
+   ⚠ SLOW AND SHALLOW ON PURPOSE. 1.6s and six percent: this is a page the
+   learner has just landed on after paying, and the one thing it must not do is
+   look like it is still loading. The movement should be noticed after the
+   reading, not before it. */
+.cre-e2e-topo-enter {
+  transform-origin: 50% 50%;
+  animation:
+    cre-e2e-topo-in 1600ms cubic-bezier(0.22, 1, 0.36, 1) both,
+    cre-e2e-drift 40s ease-in-out 1600ms infinite alternate;
+}
+
+@keyframes cre-e2e-topo-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* THE SPLIT CONFIRMATION'S SUCCESS TICK — 2026-10-22, the direct ask ("can the
+   top graphic move a little? like a micro interaction").
+
+   ⚠ IT PLAYS ONCE AND STOPS, which is what separates a micro-interaction from
+   the ambient motion around it. The topo behind breathes forever because it is
+   wallpaper; this marks a moment — the order going through — and a tick that
+   kept pulsing would read as a page still working rather than one that has
+   finished. `forwards` holds the settled state.
+
+   The overshoot is the whole gesture: up past full size, then back. A linear
+   fade-in would be motion without meaning. */
+.cre-e2e-order-tick {
+  transform-origin: 50% 50%;
+  animation: cre-e2e-tick-in 620ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* …and a single soft ring leaving it, one beat behind, so the eye is drawn to
+   the tick rather than to the whole panel arriving. */
+.cre-e2e-order-tick-ring {
+  transform-origin: 50% 50%;
+  animation: cre-e2e-tick-ring 900ms ease-out 180ms both;
+}
+
+@keyframes cre-e2e-tick-in {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes cre-e2e-tick-ring {
+  from {
+    opacity: 0.5;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cre-e2e-loading-arc,
   .cre-e2e-loading-arc-inner,
   .cre-e2e-loading-pulse,
   .cre-e2e-loading-dot,
-  .cre-e2e-loading-topo {
+  .cre-e2e-loading-topo,
+  .cre-e2e-order-tick-ring {
     animation: none;
+  }
+  /* ⚠ THE TOPO STILL FADES IN. Like the tick below, this one uses `both`, so
+     switching it off outright would strand the background at 94% and
+     invisible. A fade with no movement is the honest reduced-motion reading of
+     "it arrives". */
+  .cre-e2e-topo-enter {
+    animation: cre-e2e-tick-fade 300ms ease-out both;
+  }
+  /* ⚠ THE TICK KEEPS A FADE RATHER THAN NOTHING. `both` means the element
+     holds the FROM state until the animation runs, so switching this one off
+     outright would leave it at 40% size and invisible — reduced motion must
+     not mean a missing graphic. A plain fade carries the arrival without the
+     movement. */
+  .cre-e2e-order-tick {
+    animation: cre-e2e-tick-fade 200ms ease-out both;
+  }
+}
+
+@keyframes cre-e2e-tick-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
@@ -7499,6 +7602,36 @@ a.cre-library-card-title::after {
   --color-e2e-partner-divider: #d1d1d1;
   /* The course header's band and its price card's outline (Figma 420:2080). */
   --color-e2e-course-band: #3a3a3a;
+  /* The partner bar's amber (2026-10-22) — the public site's own, and the one
+     place in the invite flow that is neither XCEL brick nor neutral. It marks
+     the PARTNER offer as a different register from XCEL's own CTAs, which is
+     worth a token rather than a literal: the distinction is the thing
+     `partnerAttributed` carries through the whole flow. */
+  --color-e2e-partner-accent: #e0a32e;
+  /* The order confirmation's grey panel headers (2026-10-22) — the public
+     site's own, a cool grey that is not any of the form greys above it. */
+  --color-e2e-detail-head: #c8d0da;
+  /* The split confirmation's dark rail (2026-10-22). Fixed values, not the
+     neutral ramp: this is the one dark ground in the invite flow and it must
+     not flip with the theme — the same reason the prototype bar's colours are
+     re-pinned for dark mode. */
+  --color-e2e-split-rail: #0d1b2a;
+  --color-e2e-split-line: rgb(120 200 210 / 0.35);
+  --color-e2e-split-label: #6fb7c7;
+  --color-e2e-split-tick: #3fbf6a;
+  /* The journey rail's ground (2026-10-22) — the charcoal of the wordmark's
+     "CEL", a shade deeper than the course band so white type has room. The X's
+     brick is the HIGHLIGHT on this panel, not the ground: one red mark saying
+     where the learner is, against a neutral that lets the three steps read as
+     a sequence rather than as a warning. */
+  --color-e2e-journey-ground: #2b2b2b;
+  /* …and the light rail's hairlines — THE RIGHT HALF'S GROUND (2026-10-22,
+     the direct ask), not a shade of the rail's own warm paper. It was #ddd8d0,
+     a warm grey that read as drawn lines; `--color-neutral-75` is a touch
+     LIGHTER than the beige it sits on, so the rules separate by lifting rather
+     than by darkening, and the two halves of the page share a colour without
+     sharing a ground. */
+  --color-e2e-split-rule-light: var(--color-neutral-75);
   --color-e2e-card-outline: #dddddd;
   /* The course details' links and Flashcards heading (Figma 420:2099). */
   --color-e2e-link: #2d5872;

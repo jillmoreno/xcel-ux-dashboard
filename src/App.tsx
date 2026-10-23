@@ -10,10 +10,27 @@ import { LinksPage } from '@/pages/LinksPage'
 import { PrdsPage } from '@/pages/PrdsPage'
 import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
 import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
-import { InviteEmailPage } from '@/pages/InviteEmailPage'
-import { InvitedProductDetailPage } from '@/pages/InvitedProductDetailPage'
-import { InvitedCheckoutPage } from '@/pages/InvitedCheckoutPage'
-import { InvitedConfirmationPage } from '@/pages/InvitedConfirmationPage'
+/* THE INVITE FLOW IS VERSIONED SINCE 2026-10-22, so these four routes name a
+   SWITCH rather than a page — each picks V1's page or its V2 fork from the
+   `invite-flow-version` flag. The paths, and everything that depends on them,
+   are unchanged. See `InviteFlowRoutes.tsx` and `inviteFlowVersions.ts`. */
+import {
+  InviteEmailRoute,
+  InvitedProductDetailRoute,
+  InvitedCheckoutRoute,
+  InvitedConfirmationRoute,
+} from '@/pages/InviteFlowRoutes'
+/* THE GUEST JOURNEY STARTS ON THE PUBLIC SITE (2026-10-22) — two screens ahead
+   of Invited Product Detail: xcelsolutions.com's course finder, then the
+   packages a (state, line of authority) pair resolves to. Under the same
+   `/end-to-end-demo` prefix so the demo bars, the version pin and
+   `isInviteFlowPath` all keep working unchanged. */
+import { XcelFindCoursePage } from '@/pages/XcelFindCoursePage'
+import { XcelPackagesPage } from '@/pages/XcelPackagesPage'
+import { XcelCartPage } from '@/pages/XcelCartPage'
+import { XcelPartnerCodePage } from '@/pages/XcelPartnerCodePage'
+import { XcelOrderConfirmationPage } from '@/pages/XcelOrderConfirmationPage'
+import { XcelActivationEmailPage } from '@/pages/XcelActivationEmailPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DashboardRebrandPage } from '@/pages/DashboardRebrandPage'
 import { RecommendedCardABComparePage } from '@/pages/RecommendedCardABComparePage'
@@ -203,12 +220,30 @@ export default function App() {
             is a page before it, not a new front door, so every link, every
             `?ff=` pin and the Prototypes row all still land where they did.
             See `InviteEmailPage`. */}
-        <Route path="/end-to-end-demo/email" element={<TestingGate><InviteEmailPage /></TestingGate>} />
-        <Route path="/end-to-end-demo" element={<TestingGate><InvitedProductDetailPage /></TestingGate>} />
+        {/* The public site a GUEST starts on, before any of the invited
+            flow's pages. See `XcelFindCoursePage`. */}
+        <Route path="/end-to-end-demo/find" element={<TestingGate><XcelFindCoursePage /></TestingGate>} />
+        <Route path="/end-to-end-demo/packages" element={<TestingGate><XcelPackagesPage /></TestingGate>} />
+        {/* …and the cart, which is where the guest journey leaves the
+            marketing site for the flow's own checkout. */}
+        <Route path="/end-to-end-demo/cart" element={<TestingGate><XcelCartPage /></TestingGate>} />
+        {/* "Do you have a Partner Code?" as its own step — the `page` arm of
+            the `partner-code-ask` toggle. The `modal` arm draws the same
+            question over the checkout instead. */}
+        <Route path="/end-to-end-demo/partner-code" element={<TestingGate><XcelPartnerCodePage /></TestingGate>} />
+        {/* The public site's order confirmation — the GUEST journey's ending.
+            The invited flows end on Confirmation & Password instead; see
+            `XcelOrderConfirmationPage` for why they are two pages. */}
+        <Route path="/end-to-end-demo/order-confirmation" element={<TestingGate><XcelOrderConfirmationPage /></TestingGate>} />
+        {/* The activation email the split confirmation sends the learner to —
+            its link is what brings them back able to sign in. */}
+        <Route path="/end-to-end-demo/activation-email" element={<TestingGate><XcelActivationEmailPage /></TestingGate>} />
+        <Route path="/end-to-end-demo/email" element={<TestingGate><InviteEmailRoute /></TestingGate>} />
+        <Route path="/end-to-end-demo" element={<TestingGate><InvitedProductDetailRoute /></TestingGate>} />
         {/* …and its checkout, which Purchase Now opens. See `InvitedCheckoutPage`. */}
-        <Route path="/end-to-end-demo/checkout" element={<TestingGate><InvitedCheckoutPage /></TestingGate>} />
+        <Route path="/end-to-end-demo/checkout" element={<TestingGate><InvitedCheckoutRoute /></TestingGate>} />
         {/* …then Confirmation & Password, which Place your order opens. */}
-        <Route path="/end-to-end-demo/confirmation" element={<TestingGate><InvitedConfirmationPage /></TestingGate>} />
+        <Route path="/end-to-end-demo/confirmation" element={<TestingGate><InvitedConfirmationRoute /></TestingGate>} />
       </Route>
       <Route
         path="/prototype/:featureId/handoff/:componentId"

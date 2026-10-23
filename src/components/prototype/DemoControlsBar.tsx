@@ -7,6 +7,13 @@ import {
   dashboardVersionLabel,
 } from '@/data/dashboardVersions'
 import { useDashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanelContext'
+import { useInviteFlowVersionsPanel } from '@/components/e2e/InviteFlowVersionsPanelContext'
+import {
+  INVITE_FLOW_VERSION_FLAG,
+  inviteFlowVersionLabel,
+  isInviteFlowPath,
+  resolveInviteFlowVersion,
+} from '@/data/inviteFlowVersions'
 /* ⚠ THE THREE PARAM CONSTANTS ONLY — not the pickers. Reset still clears the
    Atlas axes, and they are still URL params until the conversion to
    `surface: 'design'` flags lands. The dropdowns that used to set them are
@@ -325,6 +332,22 @@ export function DemoControlsBar({
   const [searchParams, setSearchParams] = useSearchParams()
   const { brand, membership, tier, setTier, setBrand } = useAccount()
   const { openPanel: openVersionsPanel } = useDashboardVersionsPanel()
+  /* THE VERSION CONTROL ANSWERS TO THE SURFACE YOU ARE ON — 2026-10-22, with
+     the invite flow's own versions. On the four `/end-to-end-demo` routes this
+     button opened DASHBOARD Versions, which is the wrong catalog twice over:
+     the invite flow pins `version=eric-atlas-e2e` on mount regardless of what
+     is picked, so every card in that sheet was inert there, and the control
+     announced a dashboard the reviewer was not looking at.
+
+     ⚠ IT REPLACES RATHER THAN JOINS the dashboard picker on those routes. A
+     second button would be two grids side by side, one of which does nothing
+     where it is shown — and the dashboard version becomes pickable again the
+     moment the flow hands off to `/dashboard-rebrand`, which is where it
+     starts mattering.
+
+     Null when no provider is mounted (test harnesses) — the bar then keeps its
+     dashboard behaviour everywhere, exactly as before. */
+  const inviteVersionsPanel = useInviteFlowVersionsPanel()
   /* The version the picker would open on — the URL's if it has one, else the
      brand's committed default. The SAME resolution `PlatformShell` uses, so the
      pill cannot name a different version from the one on screen. */
@@ -332,6 +355,24 @@ export function DemoControlsBar({
     searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand)
   const { flags, definitions, setEnabled, setVariant, setSecondaryVariant, clearUrlOverrides } =
     useFeatureFlags()
+  /* WHICH VERSION THIS ROUTE'S CONTROL IS ABOUT. On the invite flow it is the
+     `invite-flow-version` flag; everywhere else the dashboard id above. One
+     pair of values so the label, the aria-label and the sheet the button opens
+     cannot disagree about which surface is being versioned. */
+  const onInviteFlow = isInviteFlowPath(pathname) && inviteVersionsPanel != null
+  const versionControl = onInviteFlow
+    ? {
+        noun: 'Invite flow version',
+        label: inviteFlowVersionLabel(
+          resolveInviteFlowVersion(flags[INVITE_FLOW_VERSION_FLAG]?.variant),
+        ),
+        open: inviteVersionsPanel.openPanel,
+      }
+    : {
+        noun: 'Dashboard version',
+        label: dashboardVersionLabel(activeVersionId),
+        open: openVersionsPanel,
+      }
   // Read current count flags so the bar can reflect reality on open (without
   // mutating anything until the reviewer interacts).
   const professionCount = useFeatureFlag('profession-count')
@@ -957,11 +998,11 @@ export function DemoControlsBar({
           <button
           type="button"
           className="cre-demo-controls-btn"
-          aria-label={`Dashboard version: ${dashboardVersionLabel(activeVersionId)}`}
-          title={`Dashboard version: ${dashboardVersionLabel(activeVersionId)}`}
+          aria-label={`${versionControl.noun}: ${versionControl.label}`}
+          title={`${versionControl.noun}: ${versionControl.label}`}
           style={versionTriggerStyle}
           onClick={() => {
-          openVersionsPanel()
+          versionControl.open()
           close()
           }}
           onMouseEnter={(e) => {

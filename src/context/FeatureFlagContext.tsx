@@ -282,6 +282,18 @@ export function designControlsFor(
     /* ⚠ A DECLARED SURFACE IS EXCLUSIVE IN BOTH DIRECTIONS — 2026-10-16,
        second pass, and the first one only did half of it.
 
+       ⚠ AND IT IS THE ONLY ROUTE-ISH SCOPE THERE IS, since 2026-10-22. A
+       `paths` field lived here for half a day, matching pathname prefixes and
+       exclusive in ONE direction: a control naming paths showed on those
+       alone, a control naming none showed everywhere. It was added so the
+       invite flow's controls would not reach Atlas Home while Brand and Long
+       title still reached checkout — and the half it left undone is exactly
+       what Jillienne asked for next: "these design controls should not show
+       when the Start is set to Invite & Checkout, they should display for
+       Atlas." Two mechanisms with different exclusivity is one more than the
+       catalog can explain, so the invite flow became a SURFACE
+       (`InviteSurfaceSync` declares it from the route) and `paths` went.
+
        It used to be: a control that NAMES surfaces appears on those alone.
        That stopped the planner's arms riding along on Home, but it left the
        other half untouched — every control naming NO surface still appeared
@@ -2341,6 +2353,282 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'atlas', label: 'Atlas' },
       { value: 'compass', label: 'Compass' },
     ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-flow-version',
+    /* THE INVITE FLOW'S VERSION (2026-10-22, Jillienne: "i need to create a V2
+       in the version panel for the invite flow"). Which build of the invite
+       door renders at all four of its routes — the email, Invited Product
+       Detail, checkout and Confirmation & Password.
+
+       ⚠ IT IS A FLAG RATHER THAN A `?version=` ID, and that is forced rather
+       than preferred. `useEndToEndDemoParams` writes `version=eric-atlas-e2e`
+       onto these four pages on mount, because they are that dashboard
+       version's way in — so an invite id in the same parameter is overwritten a
+       tick after it is read. The flag store is the one place on these routes
+       that is not already spoken for, and it brings per-browser persistence
+       and `?ff=` pinning with it. `inviteFlowVersions.ts` carries the long
+       form of this.
+
+       ⚠ THE VARIANTS MUST MATCH `INVITE_FLOW_VERSIONS`. The picker lists that
+       catalog and writes the id straight back here; a row with no variant is a
+       card that selects nothing. `InviteFlowVersions.test.ts` holds the two
+       lists together.
+
+       DEFAULT `v2` ON THIS BRANCH, which is the branch rule — the flag default
+       is what makes a branch build show the work. On `main` it is `v1`: the
+       End-to-End and Invite & Purchase rows both open this flow, so the default
+       here IS what stakeholders see, and moving it is `promote-to-prototype`'s
+       decision rather than this flag's. */
+    group: 'Navigation',
+    label: 'Invite flow version',
+    description:
+      'Which build of the Invite & Purchase flow renders at its four routes — the invitation email, Invited Product Detail, checkout, and Confirmation & Password. V1 is the released baseline; V2 is the checkout exploration.',
+    defaultEnabled: true,
+    defaultVariant: 'v2',
+    variants: [
+      { value: 'v1', label: 'V1', description: 'The released baseline — the flow as the End-to-End row shows it.' },
+      { value: 'v2', label: 'V2', description: 'The checkout exploration. A fork of V1; identical until it is changed.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-flow-journey',
+    /* WHICH INVITE FLOW ARE WE WALKING — 2026-10-22, Jillienne: "i think i
+       need 1 refinement row where we can review all of the different flows, so
+       maybe that is a design tool dropdown to select which flow we are working
+       through?"
+
+       ONE control, ONE Refinement row, four flows. Four rows for four arms of
+       one build would be four links going stale separately; this is one
+       address that always shows all four.
+
+       ⚠ FOUR VARIANTS MAKES IT A DROPDOWN, not pills, and that is the bar's own
+       rule rather than anything set here — `SEGMENTED_MAX` is 3 in
+       `DesignControlsBar`, above which a control becomes "INVITE FLOW: … ⌄".
+       Which is exactly the shape asked for, with no edit to protected chrome.
+
+       ⚠ IT REPLACES `checkout-audience` (B2B / B2C / Guest), which stood for
+       half a day. That control collapsed two questions into one: WHO sent them
+       (a partner, or nobody) and WHAT the invitation carried (their details,
+       their email, or nothing). These four separate them, which is what makes
+       `qr-social` expressible at all — partner-attributed, individually
+       unknown.
+
+         B2B2C with email    — a partner invited them and supplied the address.
+                               Locked at checkout; password set inline.
+         B2B2C w/o email     — a partner invited them, no address. Typed twice,
+                               masked first; password from the emailed link.
+         B2C Guest Checkout  — no partner, nothing known. The student form
+                               starts empty and Payment stays closed until it
+                               is complete.
+         QR code / social    — a partner's broadcast link. Partner pricing, but
+                               nothing known about who scanned it, and no
+                               product chosen: the options modal is inherent
+                               here rather than a toggle.
+
+       The long form of every predicate is in `inviteFlows.ts`.
+
+       DEFAULT `b2b2c-email`: it is the flow the committed build tells — the
+       invitation email names Jordan, Sunrise Bank and the course. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite'],
+    group: 'Navigation',
+    label: 'Invite flow',
+    description:
+      'Which invite flow the demo walks. B2B2C with email: a partner invited this learner and supplied their address, so it is locked at checkout and the password is set inline. B2B2C without email: invited, but the address is theirs to type twice (first field masked) and the password comes from a link in the confirmation email. B2C Guest Checkout: no partner, nothing known — the student information starts empty and Payment stays closed until it is complete. QR code or social link: a partner’s broadcast link, so partner pricing applies but nothing is known about who scanned it and the product options modal always opens.',
+    defaultEnabled: true,
+    defaultVariant: 'b2b2c-email',
+    variants: [
+      {
+        value: 'b2b2c-email',
+        label: 'B2B2C with email',
+        description: 'Partner invited them, address supplied. Locked at checkout.',
+      },
+      {
+        value: 'b2b2c-no-email',
+        label: 'B2B2C w/o email',
+        description: 'Partner invited them, no address. Typed twice, password from the emailed link.',
+      },
+      {
+        value: 'b2c-guest',
+        /* ⚠ THE DUMPSTER FIRE IS JILLIENNE'S MARK, 2026-10-22: "mark this one
+           with a dumpster on fire icon." It is the hardest arm of the four —
+           the only one that starts on the public site, builds its own cart,
+           asks for the partner code, fills the student form from scratch and
+           gates payment behind it — so the picker says so before you choose
+           it. The fire alone, not the 🗑️🔥 pair it started as — at badge size
+           two glyphs read as a smudge, and the fire is the half that carries
+           the meaning.
+
+           ⚠ IT RIDES IN THE LABEL BECAUSE THE BAR IS PROTECTED CHROME. The
+           dropdown draws whatever string the variant gives it; an icon slot
+           would mean editing `DemoBar`, which is shared chrome and not this
+           flag's to change. */
+        label: '🔥 B2C Guest Checkout',
+        description: 'No partner, nothing known. Student form empty, Payment closed until it is complete.',
+      },
+      {
+        value: 'qr-social',
+        label: 'QR code or social link',
+        description: 'A partner\u2019s broadcast link: partner pricing, nobody identified, product options always asked.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'order-confirmation-style',
+    /* WHICH THANK-YOU PAGE THE GUEST FLOW ENDS ON — 2026-10-22, Jillienne: "i
+       want another version of this thank you page, use a feature flag dropdown
+       to show different ones".
+
+       Receipt — the public site's own: full width, order number, Launch
+                 Student Portal, the two Order Details panels.
+       Split —   a dark receipt rail on the left and the topo background on the
+                 right carrying a sign-in card, in the loading page's register.
+                 On this one the learner must validate from their email before
+                 they can log in.
+
+       ⚠ TWO ENDINGS, NOT TWO SKINS. The receipt hands over a portal button and
+       assumes the account is ready; the split screen sends them to their inbox
+       first. That is a different promise about when they can start, which is
+       the thing worth comparing.
+
+       ⚠ THREE IS STILL A SEGMENTED GROUP, not a dropdown — the bar switches
+       shape ABOVE three (`SEGMENTED_MAX`). A fourth style makes it the dropdown
+       that was originally asked for, with nothing here to change. Three side by
+       side is the better control for three anyway: the point is comparing them,
+       and a popover hides two of the options while you look at the first. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite'],
+    group: 'Navigation',
+    label: 'Thank you page',
+    description:
+      'Which confirmation the guest flow ends on. Receipt: the public site’s own — order number, Launch Student Portal, Order Details. Split: the confirmation as a dark receipt rail beside the topo background and a sign-in card, where the learner has to validate from their email before they can log in.',
+    defaultEnabled: true,
+    /* ⚠ `light` SINCE 2026-10-22 (was `receipt`). The receipt is still the
+       public site's own ending and still one click away; this is the treatment
+       the branch is putting forward. */
+    defaultVariant: 'light',
+    variants: [
+      { value: 'receipt', label: 'Receipt', description: 'The public site’s own, full width.' },
+      { value: 'split', label: 'Split', description: 'Dark receipt rail beside the topo background and a sign-in card.' },
+      { value: 'light', label: 'Light', description: 'The same split, with the rail in warm paper rather than the dark ground.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'split-journey-rail',
+    /* THE JOURNEY RAIL, AFTER THE EMAIL IS VALIDATED — 2026-10-22, Jillienne:
+       "add a feature toggle that hides this section completely and on default
+       only shows the last step section, centered in the screen."
+
+       On —  the three-step "Your Journey at a Glance" panel on its charcoal
+             ground, beside the password card.
+       Off — nothing on the left at all, and the card centres itself in the
+             page. THE DEFAULT.
+
+       ⚠ OFF BY DEFAULT, WHICH IS THE ARGUMENT THIS FLAG MAKES. The learner has
+       come back from their inbox to do exactly one thing — set a password —
+       and a panel listing the months ahead competes with it at the moment it
+       matters least. The rail is kept because it is a real option for this
+       screen, not because the screen needs it.
+
+       ⚠ IT ONLY GOVERNS THE VALIDATED STATE. Before validating, the left half
+       is the RECEIPT, and that panel is doing a different job — proving the
+       order exists while the learner is off in their mail. This toggle does
+       not touch it. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite'],
+    group: 'Navigation',
+    label: 'Journey rail',
+    description:
+      'The three-step “Your Journey at a Glance” panel beside the password card, after the learner validates their email. Off — the default — leaves the card centred on the page by itself.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'partner-code-ask',
+    /* WHERE THE PARTNER CODE QUESTION IS ASKED — 2026-10-22, Jillienne: "i
+       think we should explore a variant of this simply showing over the
+       checkout screen in a simple modal instead of taking user to another page
+       right away. make it a toggle to compare both versions?"
+
+       Page — "Do you have a Partner Code?" is its own step between the cart
+              and the checkout, which is what the design shows today.
+       Modal — the same question over the checkout, so the learner never leaves
+              the page they came to pay on.
+
+       ⚠ A PRESENTATION AXIS, NOT A BEHAVIOUR ONE. Both arms ask the same
+       question, take the same two answers and have the same consequence — Yes
+       makes the purchase partner-attributed and the price moves. One shared
+       component draws the question for both (`PartnerCodeAsk`), so the two
+       cannot drift into being different questions, which is the thing that
+       would make the comparison worthless.
+
+       ⚠ ONLY THE FLOWS WITH NO PARTNER ALREADY see it at all. An invited
+       learner's partner is on their invitation and a scanned code carries its
+       own attribution; asking either whether they have a code is asking
+       something the flow already answered. See `asksForPartnerCode`.
+
+       ⚠ DEFAULT `modal` SINCE 2026-10-22 (was `page`). It opened on `page`
+       because that is the arm the design showed first and the modal read as
+       the thing being tried; the modal is now the one being taken forward, so
+       it is what a bare load gets. Both arms are one click apart on the bar,
+       and which becomes the Prototypes baseline is `promote-to-prototype`'s
+       decision rather than this line's. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite'],
+    group: 'Navigation',
+    label: 'Partner code ask',
+    description:
+      'Where “Do you have a Partner Code?” is asked on the flows that have no partner yet. Page: its own step between the cart and the checkout. Modal: the same question over the checkout, so the learner never leaves the page they came to pay on. Answering Yes makes the purchase partner-attributed on both arms, which is what moves the price.',
+    defaultEnabled: true,
+    defaultVariant: 'modal',
+    variants: [
+      { value: 'page', label: 'Page', description: 'Its own step between the cart and the checkout.' },
+      { value: 'modal', label: 'Modal', description: 'Over the checkout — the learner never leaves the page.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-missing-details',
+    /* THE RECRUITER LEFT THE DETAILS BLANK — 2026-10-22, Jillienne's brief:
+       "if the user clicks on the email invite, but the recruiter did not enter
+       a state or line of authority for the user … we do not know what product
+       to show them, we need to trigger a modal to show the users the options".
+
+       OFF (the baseline): the invitation named the course, which is the story
+       the email itself tells — Sunrise Bank invited Jordan to a specific
+       package — and the invite door opens on that product.
+       ON: it did not, so Invited Product Detail opens with a modal asking for
+       the state and the line of authority, and the product is named from the
+       answer.
+
+       ⚠ DEFAULT OFF, which parts company with the usual "flags default ON on
+       your branch" rule, on purpose. The email page is the flow's first screen
+       and it names the course in the invitation's own words; an ON default
+       would have every reviewer read that letter and then be asked what they
+       are licensing for, which reads as a bug in the demo rather than as the
+       case being explored. The control sits on the Design bar on these pages,
+       one click away.
+
+       ⚠ THE MODAL IS NOT THE FEATURE — the missing pair is, and the pair is
+       what NAMES the product. `inviteMissingDetails.ts` carries the long form,
+       including why the answer lives in the address rather than in page state. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite'],
+    group: 'Navigation',
+    label: 'Invitation missing details',
+    description:
+      'On, the recruiter left the state and line of authority blank, so the invite door does not know what product to show: Invited Product Detail opens with a modal offering the options, and the product is named from the pick (carried through checkout and confirmation). Off, the invitation named the course and the flow opens on it.',
+    defaultEnabled: false,
     page: 'dashboard-rebrand',
   },
   {

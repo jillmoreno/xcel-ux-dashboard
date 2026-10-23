@@ -43,6 +43,23 @@ const INTENTIONALLY_OUT_OF_PANEL = new Set([
   /* THE ACCESS-WINDOW DROPDOWN — 2026-10-15, "Expires". Its own pill on the
      same bar; eight rows is too many to nest under Course. */
   'dashboard-course-expiry',
+  /* THE INVITE FLOW'S VERSION — 2026-10-22. Reached from the Invite Flow
+     Versions picker, which the demo bar's version control opens on the four
+     `/end-to-end-demo` routes. It is out of the panel for the reason the
+     DASHBOARD Version row was taken out of it on 2026-10-05: a version gets ONE
+     route to it, and a panel row beside a picker is the same destination twice,
+     with the row being the worse of the two (a segmented control of bare "V1 /
+     V2" against cards that say what each version IS and when it changed).
+
+     ⚠ WHAT IT COSTS, so it is a decision rather than a discovery: unlike the
+     dropdowns above, this control is NOT on the bar everywhere — it only
+     replaces the dashboard picker on the invite routes. So from
+     `/dashboard-rebrand` there is no way to change the invite version before
+     walking into the flow. That is survivable because the picker navigates to
+     the flow's first screen when you pick, so the natural order (go to the
+     flow, then switch) works — and if it turns out to be wrong, the fix is a
+     panel row here, not a second button on the bar. */
+  'invite-flow-version',
 
   /* ⚠ REVIEWED AND EMPTIED, 2026-09-28. Four flags sat here as "unreviewed"
      for one commit — `study-pace-widget`, `dashboard-journey-complete`,

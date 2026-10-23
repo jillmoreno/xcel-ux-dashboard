@@ -161,6 +161,15 @@ const REBRAND_FLAGS = [
   'atlas-wip-quick-links-side',
   'atlas-background',
   'demo-start-point',
+  /* B2B vs B2C at Secure Checkout — 2026-10-22. On the Design bar AND here,
+     for the reason spelled out above `atlas-heading-font`: the bar is the fast
+     route while you are on the checkout, the panel is where it is findable
+     from anywhere in the version. */
+  'invite-flow-journey',
+  'partner-code-ask',
+  'order-confirmation-style',
+  'split-journey-rail',
+  'invite-missing-details',
   'e2e-ends-at-password',
   'e2e-loading-opens-home',
   'e2e-course-overview-opens-compass',

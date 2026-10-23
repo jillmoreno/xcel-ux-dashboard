@@ -36,6 +36,21 @@ export type DesignSurfaceId =
   | 'compass:course'
   | 'compass:study-planner'
   | 'compass:progress'
+  /* ⚠ THE INVITE & PURCHASE FLOW — 2026-10-22, Jillienne: "these design
+     controls should not show when the Start is set to Invite & Checkout, they
+     should display for Atlas."
+
+     ⚠ DECLARED FROM THE ROUTE, unlike every Compass surface above. Compass
+     needs a context because it is entered through a launcher and its page is
+     `useState` — neither reaches the address bar. The invite flow DOES: every
+     screen of it lives under `/end-to-end-demo`, and `isInviteFlowPath`
+     already says so. It still goes through this context rather than a second
+     route-matching field on the flag, because what matters is not how a
+     surface is recognised but that `designControlsFor` treats every surface
+     the same way — exclusive in BOTH directions. A parallel mechanism that was
+     exclusive one way is what let Atlas's Brand, Affidavit, Long title and
+     Readiness ride along on a checkout screen. */
+  | 'invite'
 
 export type DesignSurfaceCtx = {
   surface: DesignSurfaceId | null
@@ -86,4 +101,5 @@ export const DESIGN_SURFACE_LABELS: Record<DesignSurfaceId, string> = {
   'compass:course': 'Compass · Learn',
   'compass:study-planner': 'Compass · Study planner',
   'compass:progress': 'Compass · Progress',
+  invite: 'Invite & Checkout',
 }

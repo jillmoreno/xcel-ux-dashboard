@@ -245,6 +245,10 @@ export const E2E_LEARNER_FIRST = 'Jordan'
 export const E2E_LEARNER_NAME = 'Jordan Navarro'
 export const E2E_LEARNER_EMAIL = 'jordan.navarro@gmail.com'
 
+/** …and the phone the checkout's address block has always displayed, named so
+ *  the Guest form's demo fill and that block cannot drift apart. */
+export const E2E_LEARNER_PHONE = '555 010 0199'
+
 /**
  * ⚠ THE PARTNER IS SUNRISE BANK, EVERYWHERE — 2026-10-19 ("use Sunrise Bank
  * everywhere, keep Jordan Navarro"). It was "Pristine Solutions Financial
@@ -351,7 +355,22 @@ export const START_POINTS = {
     /* ⚠ WHOLE PATHNAMES, NOT PREFIXES — `startAt` matches exactly, which is
        what lets `/end-to-end-demo/email` and `/end-to-end-demo` be different
        entries in a list where one path is the other's child. */
-    also: ['/end-to-end-demo', '/end-to-end-demo/checkout', '/end-to-end-demo/confirmation'],
+    /* ⚠ THE GUEST JOURNEY'S TWO PUBLIC-SITE SCREENS JOINED THIS LIST on
+       2026-10-22. They are part of the same walk — a guest's way IN — so the
+       control must stay lit on them; without that it goes quiet for the first
+       two screens of a flow it is supposed to name, which reads as the demo
+       having left the invite flow entirely. */
+    also: [
+      '/end-to-end-demo',
+      '/end-to-end-demo/find',
+      '/end-to-end-demo/packages',
+      '/end-to-end-demo/cart',
+      '/end-to-end-demo/partner-code',
+      '/end-to-end-demo/order-confirmation',
+      '/end-to-end-demo/activation-email',
+      '/end-to-end-demo/checkout',
+      '/end-to-end-demo/confirmation',
+    ],
   },
   atlas: { pathname: '/dashboard-rebrand', section: null },
   compass: { pathname: '/dashboard-rebrand', section: 'compass' },
