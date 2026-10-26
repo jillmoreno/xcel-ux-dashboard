@@ -1,4 +1,4 @@
-import { createContext, useContext, useRef, useState, type ReactNode, type MutableRefObject } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { Toast } from '@/components/ui/Toast'
 
 /**
@@ -24,23 +24,16 @@ import { Toast } from '@/components/ui/Toast'
  * never appear. Copying with the bar hidden is the normal case now that the
  * kebab is one bar up.
  */
-export type DemoShareActions = {
-  copyLink: () => void
-  copyDemoLink: () => void
-}
-
-type Ctx = {
-  ref: MutableRefObject<DemoShareActions | null>
-  notifyCopied: () => void
-}
-
-const DemoShareContext = createContext<Ctx | null>(null)
+import { DemoShareContext, type DemoShareActions } from './demoShareActionsUtil'
 
 export function DemoShareProvider({ children }: { children: ReactNode }) {
   const ref = useRef<DemoShareActions | null>(null)
   const [copied, setCopied] = useState(false)
+  const publish = (actions: DemoShareActions | null) => {
+    ref.current = actions
+  }
   return (
-    <DemoShareContext.Provider value={{ ref, notifyCopied: () => setCopied(true) }}>
+    <DemoShareContext.Provider value={{ ref, publish, notifyCopied: () => setCopied(true) }}>
       {children}
       <Toast
         open={copied}
@@ -53,17 +46,4 @@ export function DemoShareProvider({ children }: { children: ReactNode }) {
       </Toast>
     </DemoShareContext.Provider>
   )
-}
-
-/** For `DemoControlsBar` — publish the handlers. Safe outside a provider
- *  (returns null) so the bar can still be unit-mounted standalone. */
-export function useDemoShareRegistry(): Ctx | null {
-  return useContext(DemoShareContext)
-}
-
-/** For `PrototypeBar` — read them at click time. Null until the bar has
- *  published, which is also the signal that there is nothing to share (any
- *  route but the rebrand), so the kebab hides itself. */
-export function useDemoShareActions(): DemoShareActions | null {
-  return useContext(DemoShareContext)?.ref.current ?? null
 }

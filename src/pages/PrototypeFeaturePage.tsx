@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { ArrowRight, ClipboardList, Download, Share2 } from '@/icons'
 import { ComponentLivePreview } from './PrototypeHandoffDetailPage'
 import { ComponentPreviewThumb } from '@/components/prototype/ComponentPreviewThumb'
@@ -30,6 +30,9 @@ import {
 import { getUserJiraTickets } from '@/components/prototype/jiraTicketsUtil'
 import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { RelatedJiraTickets } from '@/components/prototype/RelatedJiraTickets'
+import { FeatureLinks } from '@/components/prototype/FeatureLinks'
+import { hasComponentLivePreview } from '@/components/prototype/handoffPreviewUtil'
+import { variantDeckForComponent } from '@/data/variantDecks'
 import {
   featureHandoffMarkdown,
   handoffMarkdownFilename,
@@ -286,6 +289,12 @@ export function PrototypeFeaturePage({
             />
           </span>
         </div>
+        {/* Links get their OWN line rather than joining the row above. The
+            brand pills and the ticket affordance are both short and fixed;
+            these carry arbitrary-length titles, so sharing a line would make the
+            row's wrap point depend on what someone named a document. (Carried
+            from the Common LMS hub 2026-10-26.) */}
+        <FeatureLinks compact scopeKey={feature.id} configLinks={feature.links} />
         {/* Primary CTA — directly under Demo brands, so the live prototype is
             one click from the top of the gateway on every tab (it used to be a
             text link inside the Live Preview tab's caption). Follows the
@@ -334,6 +343,7 @@ export function PrototypeFeaturePage({
       {feature.devHandoff?.uiComponents?.length ? (
         <UiComponentsSection
           components={feature.devHandoff.uiComponents}
+          featureId={feature.id}
           embedded={embedded}
           decisions={feature.devHandoff.decisions}
         />
@@ -611,6 +621,14 @@ const COMPONENT_SECTIONS = [
      highlights the wrong chip — `UxDashboard.smoke.test.tsx` pins the two
      together. */
   { id: 'variants', label: 'States' },
+  // OPT-IN UI UPDATES — carried from the Common LMS hub 2026-10-26 (there,
+  // 2026-09-21, Jillienne: "because this is a small component, lets add the
+  // UI updates images right below the Quick Summary"). Renders only for a
+  // component with `showPreview`, and is filtered out of this nav otherwise —
+  // NOT rendered as an "add this field" line. Directly under States here,
+  // the pictures of the states just described. Ask the designer per feature;
+  // never set it by judging the render yourself (dev-handoff-notes skill).
+  { id: 'preview', label: 'UI updates' },
   { id: 'options', label: 'Options' },
   { id: 'ctas', label: 'CTAs' },
   /* Feature-level, folded in when the tabs went (2026-10-21).
@@ -708,9 +726,13 @@ const inlineHandoffFrameStyle: React.CSSProperties = {
 
 function UiComponentsSection({
   components,
+  featureId,
   embedded = false,
   decisions,
 }: {
+  /** Forwarded so the detail can build the standalone handoff URL — the page
+   *  that renders every variant of a component side by side. */
+  featureId: string
   components: DevHandoffComponent[]
   /** Forwarded so the section nav can pin below the gateway tab bar, whose own
    *  sticky offset depends on whether the prototype bar is on screen. */
@@ -743,6 +765,7 @@ function UiComponentsSection({
     return (
       <UiComponentDetail
         component={ordered[0]}
+        featureId={featureId}
         embedded={embedded}
         decisions={decisions}
       />
@@ -759,6 +782,7 @@ function UiComponentsSection({
         // would carry into the next component's render.
         key={open.id}
         component={open}
+        featureId={featureId}
         embedded={embedded}
         decisions={decisions}
         onBack={() => setOpenId(null)}
@@ -1018,6 +1042,27 @@ function UiComponentRow({
   )
 }
 
+/** The "see it rendered" affordance on a component detail. A bordered row, not a
+ *  bare text link: it sits between the component's name and the section nav, and
+ *  a plain link there reads as part of the location line above it. */
+const variantsLinkStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+  justifyContent: 'space-between',
+  maxWidth: 520,
+  margin: '14px 0 0',
+  padding: '11px 14px',
+  background: 'var(--color-surface-card)',
+  border: '1px solid var(--color-border-subtle)',
+  borderRadius: 'var(--radius-lg)',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  lineHeight: '18px',
+  textDecoration: 'none',
+  transition: 'border-color 120ms ease',
+}
+
 /**
  * One component's handoff: every section on ONE continuous scroll, with a sticky
  * jump nav over it.
@@ -1040,11 +1085,13 @@ function UiComponentRow({
  */
 function UiComponentDetail({
   component,
+  featureId,
   embedded = false,
   decisions,
   onBack,
 }: {
   component: DevHandoffComponent
+  featureId: string
   embedded?: boolean
   /** See `UiComponentsSection` — the last section of the one-page scroll. */
   decisions?: DevHandoffDecisions
@@ -1062,6 +1109,7 @@ function UiComponentDetail({
   // nav keeps the scroll-spy walking the same list the strip draws; the two
   // reading different lists is how the wrong chip gets highlighted.
   const sections = COMPONENT_SECTIONS.filter((sec) => {
+    if (sec.id === 'preview') return Boolean(component.showPreview)
     if (sec.id === 'options') return Boolean(component.options?.length)
     if (sec.id === 'ctas') return Boolean(component.ctas?.length)
     if (sec.id === 'decisions') return Boolean(decisions)
@@ -1203,6 +1251,88 @@ function UiComponentDetail({
           for them. `location` stays in the data as the pointer it is; it just
           stops being a headline. */}
 
+      {/* The door to the rendered variants.
+       *
+       * The gallery it opens has existed since the component was written — every
+       * state, on every surface the model feeds, built from the real fixtures.
+       * Nothing linked to it. It sits on the standalone handoff route, and the
+       * ONLY thing that linked there is `HandoffComponentTile`, which renders
+       * from `components` — and the features using this tab all carry
+       * `components: []`. So the best asset on the page was reachable only by
+       * typing its URL.
+       *
+       * It is a link out rather than an inline render on purpose: that page
+       * widens to 1440 for previews that run to ~1232px (the renewal-states
+       * trio is three real surfaces side by side), and this column is ~1016px
+       * when the gateway is embedded in the UX dashboard.
+       *
+       * Gated on `hasComponentLivePreview` so it is never offered for a
+       * component whose id has no preview registered — a link promising a
+       * picture that resolves to "No preview available." is worse than no link.
+       */}
+      {hasComponentLivePreview(component.id) && (
+        <Link
+          to={`/prototype/${featureId}/handoff/${component.id}`}
+          style={variantsLinkStyle}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'var(--color-action)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'var(--color-border-subtle)'
+          }}
+        >
+          <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span style={{ fontWeight: 700, color: 'var(--color-action)' }}>
+              {component.variants.length > 0
+                ? `See all ${component.variants.length} variants rendered`
+                : 'See this component rendered'}
+            </span>
+            <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
+              Every state on every surface it feeds — the real components, not a description of
+              them.
+            </span>
+          </span>
+          <ArrowRight size={16} aria-hidden style={{ color: 'var(--color-action)', flex: 'none' }} />
+        </Link>
+      )}
+
+      {/* The stakeholder door.
+       *
+       * Separate from the link above on purpose — they answer different
+       * questions. That one shows the component; this one shows every STRING
+       * the model can produce, beside the surfaces, read out of the model
+       * rather than transcribed. It is the surface to send someone who wants to
+       * approve copy, and it is the only handoff page outside the password
+       * gate.
+       */}
+      {(() => {
+        const deck = variantDeckForComponent(component.id)
+        if (!deck) return null
+        return (
+          <Link
+            to={`/variants/${deck.id}`}
+            style={{ ...variantsLinkStyle, marginTop: 10 }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'var(--color-action)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--color-border-subtle)'
+            }}
+          >
+            <span style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <span style={{ fontWeight: 700, color: 'var(--color-action)' }}>
+                Variants &amp; copy deck — shareable, no password
+              </span>
+              <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
+                Every state with the exact words it produces, read from the model so it cannot
+                drift.
+              </span>
+            </span>
+            <ArrowRight size={16} aria-hidden style={{ color: 'var(--color-action)', flex: 'none' }} />
+          </Link>
+        )
+      })()}
+
       {/* Jump nav. Looks like the pill strip it replaced on purpose — the shape
           was never the problem, the hiding was. `aria-current` rather than
           `role="tab"`: these navigate within a document now, and announcing them
@@ -1312,6 +1442,27 @@ function UiComponentDetail({
         // so the shared frame would be a box around a column of boxes.
         true,
       )}
+
+      {component.showPreview &&
+        section(
+          'preview',
+          'UI updates',
+          'The component as it renders today — the real thing, not a capture, so it cannot drift from the build.',
+          <ComponentLivePreview
+            componentId={component.id}
+            fallback={
+              <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-tertiary)' }}>
+                No preview resolves for <code>{component.id}</code> — set <code>previewUrl</code> on
+                the component, or a <code>pages</code> entry on its feature, in{' '}
+                <code>src/data/prototypeFeatures.ts</code>.
+              </p>
+            }
+          />,
+          undefined,
+          // Unframed: each variant inside carries its own bounded card, so the
+          // shared frame would put a box in a box.
+          true,
+        )}
 
       {/* Options and Flows are the two sections that DO disappear when
           unauthored, unlike every other one here. The always-render rule
@@ -1582,6 +1733,10 @@ export function GatewayShell({
    *  already provides all three, and a second one nests a page inside a page. */
   embedded?: boolean
 }) {
+  // Read BEFORE the `embedded` early return, or the hook order changes between
+  // renders when a caller flips that prop.
+  const [chromeParams] = useSearchParams()
+  const hideChrome = chromeParams.get('chrome') === 'off'
   if (embedded) {
     return (
       <div className="cre-prototype-stc-accent" style={{ color: 'var(--color-text-primary)' }}>
@@ -1603,7 +1758,12 @@ export function GatewayShell({
         fontFamily: 'var(--font-body)',
       }}
     >
-      <PrototypeBar back={back} />
+      {/* `?chrome=off` drops the bar, matching what `PrototypeChrome` does for
+          the in-app routes — a gateway page can be the TARGET of a Live Preview
+          pill (a Variants & Copy deck is), and in a 1440px iframe the dark bar
+          is a strip of unrelated prototype chrome across the top of the thing
+          being reviewed. URL-only and opt-in. (Common LMS hub, 2026-10-26.) */}
+      {!hideChrome && <PrototypeBar back={back} />}
 
       <div style={{ maxWidth, margin: '0 auto', padding: '32px 24px 80px' }}>
         {children}

@@ -15,6 +15,10 @@ import { PREVIEW_FRAME_W } from './featurePreviewSrc'
  * The frame is inert (`pointer-events: none`, `tabIndex={-1}`, `aria-hidden`)
  * so it reads as a picture, not a second copy of the app to interact with.
  *
+ * `thumbnailFocus` on the feature zooms into one region of that frame rather
+ * than showing it whole — see the field's own note for the geometry, and why
+ * a wide, short subject cannot be both fully spanned and legible.
+ *
  * COST: each frame without a `thumbnail` boots the app. One is nothing; a list
  * of them is not. `loading="lazy"` defers the ones below the fold, and
  * authoring `thumbnail` on a feature opts it out entirely.
@@ -44,7 +48,13 @@ export function FeaturePreviewThumb({
 }) {
   const [imgFailed, setImgFailed] = useState(false)
   if (!feature.thumbnail && !src) return null
-  const scale = width / PREVIEW_FRAME_W
+  // A focus rectangle zooms into one region; without one the frame is shown
+  // whole, which at 360/1440 is the historical 1/4 render.
+  const focus = feature.thumbnailFocus
+  const scale = width / (focus?.w ?? PREVIEW_FRAME_W)
+  // The iframe must be tall enough to CONTAIN the focus region, or the region
+  // is translated up out of a frame that was never rendered that far down.
+  const frameH = (focus?.y ?? 0) + height / scale
   const framed = src ? `${src}${src.includes('?') ? '&' : '?'}chrome=off` : null
   // The image wins only while it is actually loadable AND there is something to
   // fall back to; with no `src` a broken image is still better than nothing,
@@ -85,9 +95,13 @@ export function FeaturePreviewThumb({
           loading="lazy"
           style={{
             width: PREVIEW_FRAME_W,
-            height: height / scale,
+            height: frameH,
             border: 0,
-            transform: `scale(${scale})`,
+            // `translate` AFTER `scale` moves in the scaled space, so the
+            // offsets stay in frame pixels and read as the focus rectangle.
+            transform: focus
+              ? `scale(${scale}) translate(${-focus.x}px, ${-focus.y}px)`
+              : `scale(${scale})`,
             transformOrigin: 'top left',
             pointerEvents: 'none',
           }}

@@ -7,7 +7,7 @@ import {
 } from './prototypeWalkthrough'
 import { prototypeFeatureById } from '@/data/prototypeFeatures'
 import { ActionMenu } from '@/components/ui/ActionMenu'
-import { useDemoShareActions } from '@/components/prototype/demoShareActions'
+import { useDemoShareActions } from '@/components/prototype/demoShareActionsUtil'
 import { Share2, BrowserWindow, ArrowUpRightFromSquare } from '@/icons'
 import { isBranchDeploy } from '@/data/deployContext'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'

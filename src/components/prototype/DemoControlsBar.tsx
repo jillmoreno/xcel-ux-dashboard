@@ -30,7 +30,7 @@ import {
   Grid,
   ArrowsRotate,
 } from '@/icons'
-import { useDemoShareRegistry } from './demoShareActions'
+import { useDemoShareRegistry } from './demoShareActionsUtil'
 import { DemoBar, DemoDropdown } from './DemoBar'
 import { licensedProfessionsFor } from '@/data/licensedStatesFixtures'
 import { readDemoDayOffset, setDemoDayOffset } from '@/data/demoDay'
@@ -857,7 +857,15 @@ export function DemoControlsBar({
     close()
   }
 
-  if (shareRegistry) shareRegistry.ref.current = onRebrand ? { copyLink, copyDemoLink } : null
+  // Written after EVERY render (no dependency list, on purpose) so the
+  // prototype bar's kebab always reads the handlers closed over the current
+  // captured state. An effect calling the provider's own `publish`, rather than
+  // a render-time `ref.current =`: the React Compiler lint refuses a mutation
+  // of a value returned from a hook, and a click can only happen after the
+  // effect has run, so nothing is lost by waiting. (Common LMS hub, 2026-10-26.)
+  useEffect(() => {
+    shareRegistry?.publish(onRebrand ? { copyLink, copyDemoLink } : null)
+  })
 
   // Off-state: render nothing on any other route, or when the PrototypeBar's
   // "Demo" toggle has hidden the banner (all hooks above have run).

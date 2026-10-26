@@ -366,3 +366,33 @@ follow the link.
 | [`src/data/hubDocs.ts`](src/data/hubDocs.ts) | The **Hub Resources** section's rows (2026-10-15) — the three guides under `public/`, each with its page, its PDF and who it is for. Code rather than a board, because the list changes when a file is added. |
 | [`src/data/nyProducerRequirements.ts`](src/data/nyProducerRequirements.ts) | The New York Insurance Producer licence — the QE Focused version's demo. Sole owner of its INVENTED hour/exam figures, plus `examFactsFor` (the per-state exam facts the Readiness page reads). |
 
+## Siblings and syncs
+
+This gateway has two siblings carrying the same code — `../jill-dashboard-ux-designs`
+(the Common LMS, where the gateway was born) and `../partnerhub-ux-dashboard`.
+The sync procedure is the `port-ux-dashboard` skill, Step 0. ⚠ Sync from
+`main` in the `xcel-main` worktree, never from whichever branch the main
+checkout happens to be on — the LMS's first pass on 2026-10-26 copied from a
+feature tip 80 commits behind `main` and missed the 2026-10-20/21 handoff
+rebuild.
+
+- **2026-10-26 — the Common LMS hub synced FROM this repo @ `e7af3ea`**: the
+  twelve-section rail, the four boards, the To Do Board, Hub Resources, the
+  prototype bar's Design Hub label and actions kebab, the Not Ready rule, the
+  protect-framework hook, the seven workflow skills, and the one-page handoff
+  with States · Options · CTAs · Edge cases · Design Spec. Its decisions differ
+  where its product does — two Prototypes scopes (`dashboard-rebrand`,
+  `legacy-dashboard`), a Jill-only roster, Hub Resources empty, Refinement's
+  product control hidden, and its handoff detail is a SUPERSET that keeps its
+  own User Story · UX Logic · Acceptance · Notes · Quick Summary AFTER the XCEL
+  sections (34 features carry them). Its gateway keeps the three former tabs as
+  three stacked sections (Questions, Live Preview) under a jump nav.
+- **The same day, these came BACK from the LMS**: the opt-in **UI updates**
+  section under States (`showPreview` on a component — ASK the designer, see
+  the skill), the per-feature **Links** row on the gateway header
+  (`FeatureLinks`, `links` on a feature), the **Variants & Copy deck**
+  mechanism (`/variants/:deckId`, `src/data/variantDecks.ts`, the detail's two
+  "see it rendered" doors — no deck registered here yet), `thumbnailFocus` on a
+  feature, `preview` on an edge-case row (`StatePreviewFrame`), `?chrome=off`
+  on the gateway shell, and the `demoShareActionsUtil.ts` hook split that keeps
+  `demoShareActions.tsx` component-only for fast refresh.

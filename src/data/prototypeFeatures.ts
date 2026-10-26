@@ -415,6 +415,22 @@ export type DevHandoffState = {
   question: string
   /** What the component does about it, as the answer. */
   answer: string
+  /**
+   * A PICTURE of the state, shown under the description. `src` is any URL that
+   * renders that state alone — the convention is a design board plus its own
+   * isolation param, e.g.
+   * `/prototypes/home-identity-strip-variants.html?only=st-auto-renews`, so the
+   * board stays the single place these are drawn and the handoff cannot drift
+   * from it.
+   *
+   * Prefer an id-addressed URL over a cropped one. A crop is a set of pixel
+   * offsets that keep pointing somewhere after the document beneath them moves,
+   * and the failure is silent — the wrong state, rendered confidently.
+   *
+   * `height` is the frame's height in CSS px (default 120); size it to the
+   * state, since a tall frame round a 46px row is mostly empty.
+   */
+  preview?: { src: string; height?: number }
 }
 
 /** A component documented in depth for the implementing developer. */
@@ -486,6 +502,11 @@ export type DevHandoffComponent = {
    */
   thumbnail?: string
   /** Where it lives in the codebase (file path, optionally a node). */
+  /** Render the component's live preview as its own section, directly under the
+   *  Quick Summary. OPT-IN and meant for SMALL components: it is the real
+   *  render, so a component that stacks every variant (e.g. the renewal-states
+   *  trio at ~2,900px) would bury its own spec underneath it. */
+  showPreview?: boolean
   location: string
   /** One- or two-sentence summary of what it is and where it appears. */
   summary: string
@@ -673,6 +694,22 @@ export type PrototypeFeature = {
    * runtime (persisted per browser in localStorage); those merge with these.
    */
   jiraTickets?: string[]
+  /**
+   * Anything this feature points at that lives elsewhere — research, decks,
+   * transcripts, write-ups, Figma files, a deployed build — surfaced as its own
+   * "Links:" line in the gateway header. Deliberately open-ended rather than
+   * scoped to one kind, so a link can just be added as needed. Same two-source shape as
+   * `jiraTickets`: this array is the shared baseline everyone sees, and links
+   * added at runtime persist per browser in localStorage and merge with it.
+   *
+   * `label` is optional but usually worth writing: unlabelled falls back to the
+   * hostname, and these URLs often end in a document id, so a row of
+   * unlabelled ones reads as noise.
+   *
+   * NOT the `links` nav section — that is the dashboard's shared address book;
+   * this is scoped to one feature and sits beside its Jira row.
+   */
+  links?: { url: string; label?: string }[]
   /** Tile accent color (pulls from brand tokens). */
   accent: FeatureAccent
   /** Icon key — resolved to an icon component on the landing page (`ICONS`
@@ -692,6 +729,21 @@ export type PrototypeFeature = {
    * image in the list.
    */
   thumbnail?: string
+  /**
+   * Zoom the LIVE preview thumbnail into one region instead of showing the
+   * whole page at 1/4. The rectangle is in the 1440-wide frame's own CSS
+   * pixels: `x`/`y` is its top-left, `w` its width, and the height follows
+   * from the thumb's aspect — so a focus is "start here, this wide".
+   *
+   * GEOMETRY, because it decides what you can ask for: the thumb is 360x244
+   * and the frame is 1440 wide, so showing the full width IS the 1/4 render
+   * (1440 / (360/244) = 976, the whole page). Any real zoom therefore crops
+   * horizontally. A wide, short subject cannot be both fully spanned and
+   * legible — pick which end matters.
+   *
+   * Ignored when `thumbnail` is set (a flat image is already the crop it is).
+   */
+  thumbnailFocus?: { x: number; y: number; w: number }
   /**
    * Pins the feature to the TOP of its home-page section, ahead of whatever
    * the current order would put there. Declared rather than achieved by

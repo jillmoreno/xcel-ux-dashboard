@@ -9,6 +9,7 @@ import { QaNotesPage } from '@/pages/QaNotesPage'
 import { LinksPage } from '@/pages/LinksPage'
 import { PrdsPage } from '@/pages/PrdsPage'
 import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
+import { VariantDeckPage } from '@/pages/VariantDeckPage'
 import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
 /* THE INVITE FLOW IS VERSIONED SINCE 2026-10-22, so these four routes name a
    SWITCH rather than a page — each picks V1's page or its V2 fork from the
@@ -207,6 +208,11 @@ export default function App() {
           than their whole branch. Takes its entire definition from the URL, so
           it needs no per-component code. See `ComponentReviewPage`. */}
       <Route path="/review" element={<TestingGate><ComponentReviewPage /></TestingGate>} />
+      {/* Variants & Copy decks — every state of a model, on every surface it
+          feeds, with the exact strings it produces (carried from the Common
+          LMS hub 2026-10-26; no deck is registered here yet). The one handoff
+          surface aimed at stakeholders. */}
+      <Route path="/variants/:deckId" element={<TestingGate><VariantDeckPage /></TestingGate>} />
       {/* The Atlas header on its own, not wired into the shell. See `AtlasHeader`. */}
       <Route path="/atlas-header-preview" element={<TestingGate><AtlasHeaderPreviewPage /></TestingGate>} />
       {/* The End-to-End Demo's first page, before its dashboard: blank under the

@@ -415,6 +415,24 @@ frame still drawn against the five levels that four bands replaced on 2026-10-16
 The prototype is what `main` renders. Where anything disagrees with it, the
 prototype is right.
 
+### Carried from the Common LMS hub (2026-10-26)
+
+Four fields this repo gained in the two-way sync — all optional, none changes a
+handoff that does not use them:
+
+| Field | What goes in it |
+|---|---|
+| `showPreview` (component) | **Opt-in** "UI updates" section directly under States — the live `ComponentLivePreview`. Only for components whose render is genuinely small. ⚠ **ASK the designer whether she wants the images, per feature** — never set it by judging the render yourself, and default to off when she hasn't answered: an unasked-for preview pushes the spec down the page for every developer. |
+| `links` (feature) | `{ url, label? }[]` — anything the feature points at that lives elsewhere (research, decks, Figma, a build), as its own "Links:" line in the header. Runtime links persist per browser beside them. Not the Resources nav section. |
+| `thumbnailFocus` (feature) | `{ x, y, w }` in the 1440px frame's own pixels — zoom the live thumbnail into one region instead of the whole page at 1/4. Ignored when `thumbnail` is set. |
+| `preview` (edge-case row) | `{ src, height? }` — a picture of that state under its Q/A, from an id-addressed URL (a design board plus its isolation param), never a crop. |
+
+The **Variants & Copy deck** (`/variants/:deckId`) is the stakeholder door for a
+state machine's copy — every state with the exact strings it produces, read
+from the model. Register a `VariantDeckMeta` in `src/data/variantDecks.ts` plus
+a row builder in `VariantDeckPage.tsx`'s `DECK_ROWS`, and the component detail
+offers the link. None is registered here yet.
+
 ## The decisions log
 
 `decisions: { intro?, items, openItems? }`, each item

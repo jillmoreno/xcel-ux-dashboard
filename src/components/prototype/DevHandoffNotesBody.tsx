@@ -454,6 +454,72 @@ const swatchStyle: CSSProperties = {
 }
 
 /**
+ * A picture of ONE state, under its description in the states matrix.
+ *
+ * It renders the design board at a FIXED 1040px and scales that down to the
+ * column, rather than letting the board reflow into a ~700px frame. The board's
+ * row is a `minmax(0,1fr) auto` grid whose name and quote are inline spans, so
+ * below its design width the two run into the membership cluster instead of
+ * ellipsing — the picture would be documenting a collision that the real
+ * component does not have. Scaling shows the layout as designed at any column
+ * width, which is the whole reason to show a picture at all.
+ *
+ * The scale is measured rather than assumed: this column is ~1232px standalone
+ * and ~1016px embedded in the UX dashboard, so a hardcoded factor is wrong in
+ * one of the two places.
+ *
+ * Inert by construction — an illustration, not a second copy to poke at.
+ */
+const STATE_PREVIEW_FRAME_W = 1040
+
+function StatePreviewFrame({ preview }: { preview: NonNullable<DevHandoffState['preview']> }) {
+  const boxRef = useRef<HTMLSpanElement>(null)
+  const [scale, setScale] = useState(1)
+  useEffect(() => {
+    const box = boxRef.current
+    if (!box) return
+    const measure = () => setScale(box.clientWidth / STATE_PREVIEW_FRAME_W)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(box)
+    return () => ro.disconnect()
+  }, [])
+  const designH = preview.height ?? 120
+  return (
+    <span
+      ref={boxRef}
+      aria-hidden
+      style={{
+        display: 'block',
+        marginTop: 8,
+        height: designH * scale,
+        overflow: 'hidden',
+        borderRadius: 'var(--radius-md)',
+        border: '1px solid var(--color-border-subtle)',
+        background: 'var(--color-surface-card)',
+      }}
+    >
+      <iframe
+        src={preview.src}
+        title=""
+        tabIndex={-1}
+        loading="lazy"
+        scrolling="no"
+        style={{
+          width: STATE_PREVIEW_FRAME_W,
+          height: designH,
+          border: 0,
+          display: 'block',
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+          pointerEvents: 'none',
+        }}
+      />
+    </span>
+  )
+}
+
+/**
  * THE EDGE CASES, ASKED AND ANSWERED.
  *
  * ⚠ 2026-10-21, Jillienne: "frame this section as the following: Q: What if
@@ -476,6 +542,7 @@ export function DevHandoffStatesMatrixBody({ rows }: { rows: DevHandoffState[] }
         >
           <QaLine label="Q" text={r.question} strong />
           <QaLine label="A" text={r.answer} />
+          {r.preview && <StatePreviewFrame preview={r.preview} />}
         </li>
       ))}
     </ul>
