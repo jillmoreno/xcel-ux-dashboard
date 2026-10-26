@@ -7664,9 +7664,9 @@ a.cre-library-card-title::after {
 }
 /* Licensed's time window: beside the pill, pulled into its line; when the
    card is too narrow for both (the selected LICENSED pill 94 + 8 + the
-   select's 103), it wraps to its own line under the pill instead of squeezing. */
+   select's 101), it wraps to its own line under the pill instead of squeezing. */
 .cre-admin-status-window { margin: -6px 0; }
-@container (max-width: 204.9px) {
+@container (max-width: 202.9px) {
   .cre-admin-status-window { margin: -9px 0 4px; } /* 4px under the eyebrow's letters, not its line box */
 }
 /* An admin text link's hover — Atlas primary 700. `!important` because the
