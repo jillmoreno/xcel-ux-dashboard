@@ -329,7 +329,12 @@ export function AtlasAdminStudentsPage() {
                   {/* One row: the share lighter than the count — primary 400 (600 read the same as the count's 800). */}
                   <span style={oneRow ? { ...STATUS_COUNT, color: 'var(--admin-atlas-primary-400)' } : STATUS_COUNT}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
                 </div>
-                {t.id === 'licensed' ? (windowBelow ? licensedPicker : null) : <p style={STATUS_DESC}>{t.note}</p>}
+                {t.id === 'licensed' ? (windowBelow ? licensedPicker : null) : (
+                  <p style={STATUS_DESC}>
+                    {/* The note's figures in semibold: split on the numbers, every odd piece is one. */}
+                    {t.note.split(/(\d[\d,]*)/).map((part, i) => (i % 2 ? <b key={i} style={{ fontWeight: 600 }}>{part}</b> : part))}
+                  </p>
+                )}
               </div>
             </div>
           </div>
