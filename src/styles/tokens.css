@@ -7542,9 +7542,10 @@ a.cre-library-card-title::after {
   --admin-atlas-h5-line: 34px;
   /* Atlas neutral 800 — Pulse's card icons. */
   --admin-atlas-neutral-800: #404040;
-  /* Home's Quick Links card hairline as it computes on the Atlas pages
-     (slate-100 darkened 5%) — the Students sidebar's temporary card. */
-  --admin-quicklinks-rule: #dde0e2;
+  /* The Lite nav card's hairline — a step lighter than Home's Quick Links
+     (#dde0e2, slate-100 darkened 5%): slate-100 itself, the Style Guide's
+     tertiary 100 (2026-10-26, Eric). */
+  --admin-quicklinks-rule: #e9ecee;
   --admin-cta: var(--admin-brand);
   --admin-cta-hover: var(--admin-brand-ink);
   /* The public pages (Partner with us, invites, the welcome email, the
