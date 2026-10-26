@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from 'react'
+import { Fragment, useMemo, useState, type CSSProperties } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ChevronDownRegular, CircleDotSolid, MagnifyingGlass, Plus, XmarkRegular } from '@/icons'
@@ -331,8 +331,13 @@ export function AtlasAdminStudentsPage() {
                 </div>
                 {t.id === 'licensed' ? (windowBelow ? licensedPicker : null) : (
                   <p style={STATUS_DESC}>
-                    {/* The note's figures in semibold: split on the numbers, every odd piece is one. */}
-                    {t.note.split(/(\d[\d,]*)/).map((part, i) => (i % 2 ? <b key={i} style={{ fontWeight: 600 }}>{part}</b> : part))}
+                    {/* Each " · " value on its own line, its figures in semibold (split on the numbers: every odd piece is one). */}
+                    {t.note.split(' · ').map((line, l) => (
+                      <Fragment key={l}>
+                        {l ? <br /> : null}
+                        {line.split(/(\d[\d,]*)/).map((part, i) => (i % 2 ? <b key={i} style={{ fontWeight: 600 }}>{part}</b> : part))}
+                      </Fragment>
+                    ))}
                   </p>
                 )}
               </div>
