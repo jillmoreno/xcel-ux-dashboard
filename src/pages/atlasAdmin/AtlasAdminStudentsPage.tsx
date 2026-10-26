@@ -406,7 +406,9 @@ export function AtlasAdminStudentsPage() {
       <header style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
         <div style={{ minWidth: 0 }}>
           <h2 style={PAGE_H1}>Students</h2>
-          <p style={PAGE_SUB}>{counts.total} students · Active pipeline plus licensed in the last 90 days</p>
+          <p style={PAGE_SUB}>
+            <b style={{ fontWeight: 600 }}>{counts.total} students</b> · Active pipeline plus licensed in the last 90 days
+          </p>
         </div>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
           <button type="button" onClick={() => exportCsv(rows)} style={ATLAS_BUTTON_SECONDARY}>
