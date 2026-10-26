@@ -755,6 +755,20 @@ function StatusDial({
             />
           ) : null,
         )}
+        {/* Active Students selected (the default): a full ring in its colour at 20%, at a selected arc's width, washed over every segment. */}
+        {active === 'all' ? (
+          <circle
+            aria-hidden
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            stroke="var(--admin-atlas-status-active)"
+            strokeOpacity={0.2}
+            strokeWidth={stroke + 4}
+            style={{ pointerEvents: 'none' }}
+          />
+        ) : null}
       </svg>
       <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
         <span style={DIAL_LABEL}>Total</span>
