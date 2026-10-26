@@ -677,7 +677,7 @@ const STATUS_TONE: Record<PipelineBucket, [string]> = {
 /* The coloured bar inside each card: 6px wide, round-ended, stretched to the text's height. */
 const STATUS_BAR: CSSProperties = { flex: 'none', alignSelf: 'stretch', width: 6, borderRadius: 9999 }
 const STATUS_CARD: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: 'var(--admin-fill)', borderStyle: 'solid', borderWidth: 1, borderRadius: 11, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
-const STATUS_INNER: CSSProperties = { flex: 1, minHeight: 84, boxSizing: 'border-box', padding: '10px 16px 10px 8px', display: 'flex', gap: 12 }
+const STATUS_INNER: CSSProperties = { flex: 1, minHeight: 84, boxSizing: 'border-box', padding: '10px 16px 10px 8px', display: 'flex', gap: 20 }
 const STATUS_BODY: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
 const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-ink)' }
 /* Playfair's lining figures (`lnum`): every digit on one baseline — its default old-style figures drop 3, 4, 5, 7, 9 below it. */
