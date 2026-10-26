@@ -102,9 +102,12 @@ export function AtlasAdminStudentsPage() {
     const el = cardRowRef.current
     if (!el) return
     const ro = new ResizeObserver(() => {
-      const mins = [...el.querySelectorAll<HTMLElement>('.cre-admin-status-card')].map(
-        (c) => Math.max(0, ...[...c.querySelectorAll<HTMLElement>('.cre-admin-status-pill, select')].map((x) => x.offsetWidth)) + 2 * 16 + 2,
-      )
+      // Each card's narrowest: its pill, its window, or its figure row (the children's widths plus the 12px gaps), whichever is widest.
+      const mins = [...el.querySelectorAll<HTMLElement>('.cre-admin-status-card')].map((c) => {
+        const row = c.querySelector<HTMLElement>('[data-figure-row]')
+        const rowW = row ? [...row.children].reduce((w, x) => w + (x as HTMLElement).offsetWidth, 0) + (row.children.length - 1) * 12 + 2 : 0
+        return Math.max(rowW, ...[...c.querySelectorAll<HTMLElement>('.cre-admin-status-pill, select')].map((x) => x.offsetWidth)) + 2 * 16 + 2
+      })
       const fits = (n: number) => {
         let sum = (n - 1) * 12
         for (let col = 0; col < n; col++) sum += Math.max(0, ...mins.filter((_, i) => i % n === col))
@@ -282,6 +285,7 @@ export function AtlasAdminStudentsPage() {
         /* The figures' rules: primary 100 on the white selected card; at rest primary 200 lightened 20%. */
         const figureRule = `1px solid ${active ? 'var(--admin-atlas-primary-100)' : 'color-mix(in srgb, var(--admin-atlas-primary-200), white 20%)'}`
         const windowBelow = oneRow
+        const note = t.id === 'all' ? 'Students active in learning pipeline' : t.note
         /* Our own chevron, 10px in from the right edge — Chrome's native arrow ignores padding. */
         const licensedPicker =
           t.id === 'licensed' ? (
@@ -335,26 +339,35 @@ export function AtlasAdminStudentsPage() {
                   </StatusPill>
                   {windowBelow ? null : licensedPicker}
                 </div>
-                {/* One row: a rule 8px above and below the figures, across the card (figureRule). */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'stretch',
-                    /* One row: 18px either side of the count | share rule (8 more than the 3×2's 10). */
-                    gap: oneRow ? 18 : 10,
-                    marginTop: oneRow ? 6 : 2,
-                    marginBottom: oneRow ? 2 : 0,
-                    ...(oneRow ? { padding: '8px 0', borderTop: figureRule, borderBottom: figureRule } : null),
-                  }}
-                >
-                  {/* Playfair's -1.68px tracking trails the count too; 2px back puts the rule mid-way between the figures' ink. */}
-                  <span style={{ ...STATUS_COUNT, marginRight: 2 }}>{n.toLocaleString('en-US')}</span>
-                  <span aria-hidden style={STATUS_SEP} />
-                  {/* One row: the share lighter than the count — primary 400 (600 read the same as the count's 800). */}
-                  <span style={oneRow ? { ...STATUS_COUNT, color: 'var(--admin-atlas-primary-400)' } : STATUS_COUNT}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
-                </div>
-                {t.id === 'licensed' ? (windowBelow ? licensedPicker : null) : (
-                  <StatusNote>{t.id === 'all' ? 'Students active in learning pipeline' : t.note}</StatusNote>
+                {oneRow ? (
+                  <>
+                    {/* One row, as Invites' tiles (2026-10-26): no share — the count, a 1px rule with 12px either side, then the note on two
+                        lines, under one rule. */}
+                    <div data-figure-row style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 6, paddingTop: 8, borderTop: figureRule }}>
+                      {/* Playfair's -1.68px tracking trails the count too; 2px back keeps the rule mid-way. */}
+                      <span style={{ ...STATUS_COUNT, marginRight: 2 }}>{n.toLocaleString('en-US')}</span>
+                      {t.id === 'licensed' ? null : (
+                        <>
+                          <span aria-hidden style={{ flex: 'none', alignSelf: 'stretch', width: 1, borderRadius: 1, background: 'var(--admin-atlas-primary-200)' }} />
+                          {/* Two values break at their " · "; one runs top-heavy over two lines. */}
+                          <StatusNote twoLines={!note.includes(' · ')} style={{ whiteSpace: 'nowrap' }}>
+                            {note}
+                          </StatusNote>
+                        </>
+                      )}
+                    </div>
+                    {t.id === 'licensed' ? licensedPicker : null}
+                  </>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'stretch', gap: 10, marginTop: 2 }}>
+                      {/* Playfair's -1.68px tracking trails the count too; 2px back puts the rule mid-way between the figures' ink. */}
+                      <span style={{ ...STATUS_COUNT, marginRight: 2 }}>{n.toLocaleString('en-US')}</span>
+                      <span aria-hidden style={STATUS_SEP} />
+                      <span style={STATUS_COUNT}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
+                    </div>
+                    {t.id === 'licensed' ? null : <StatusNote>{note}</StatusNote>}
+                  </>
                 )}
               </div>
             </div>
@@ -475,7 +488,7 @@ export function AtlasAdminStudentsPage() {
             />
           </div>
           {/* The cards centred on the dial: a box the dial's height, level with it (the dial panel's 16px + eyebrow 18 + gap 8), the grid centred in it. */}
-          <div style={{ ...ANALYSIS_PANEL, position: 'relative', flex: '1 1 480px', minWidth: 0, padding: `${16 + 18 + 8}px 24px 16px` }}>
+          <div style={{ ...ANALYSIS_PANEL, position: 'relative', flex: '1 1 480px', minWidth: 0, padding: `${16 + 18 + 8}px 16px 16px` }}>
             {/* At least the dial's height (cards centred in it); taller once the cards wrap to a second row. */}
             <div style={{ minHeight: DIAL_SIZE_ONE_ROW, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>{statusGrid(6)}</div>
           </div>
