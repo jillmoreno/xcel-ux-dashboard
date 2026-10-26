@@ -147,8 +147,24 @@ export function AtlasAdminInvitesPage() {
         </div>
       </section>
 
-      <section style={{ ...CARD, position: 'relative', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 20px', borderBottom: '1px solid var(--admin-rule)' }}>
+      {/* `clip`, not `hidden`: rounded the same, but not a scroll box, so the filter bar below can pin to the window. */}
+      <section style={{ ...CARD, position: 'relative', overflow: 'clip' }}>
+        {/* The filter bar pins where the Lite nav's card does — 24px under the global nav — as the table scrolls under it. */}
+        <div
+          style={{
+            position: 'sticky',
+            top: 'calc(var(--admin-header-h, 0px) + 24px)',
+            zIndex: 5,
+            background: 'var(--admin-surface)',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 12,
+            padding: '12px 20px',
+            borderBottom: '1px solid var(--admin-rule)',
+          }}
+        >
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {(
               [
