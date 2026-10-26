@@ -253,6 +253,7 @@ export function AtlasAdminStudentsPage() {
         const active = bucket === t.id
         const [strip] = STATUS_TONE[t.id]
         const oneRow = columns === 6
+        const figureRule = `1px solid ${active ? 'var(--admin-atlas-primary-100)' : 'var(--admin-atlas-primary-200)'}`
         const windowBelow = oneRow
         /* Our own chevron, 10px in from the right edge — Chrome's native arrow ignores padding. */
         const licensedPicker =
@@ -309,7 +310,7 @@ export function AtlasAdminStudentsPage() {
                   </span>
                   {windowBelow ? null : licensedPicker}
                 </div>
-                {/* One row: a rule 8px under the figures, across the card — primary 200 at rest, 100 on the white selected card. */}
+                {/* One row: a rule 8px above and below the figures, across the card — primary 200 at rest, 100 on the white selected card. */}
                 <div
                   style={{
                     display: 'flex',
@@ -317,7 +318,7 @@ export function AtlasAdminStudentsPage() {
                     gap: 10,
                     marginTop: oneRow ? 10 : 2,
                     marginBottom: oneRow ? 2 : 0,
-                    ...(oneRow ? { paddingBottom: 8, borderBottom: `1px solid ${active ? 'var(--admin-atlas-primary-100)' : 'var(--admin-atlas-primary-200)'}` } : null),
+                    ...(oneRow ? { padding: '8px 0', borderTop: figureRule, borderBottom: figureRule } : null),
                   }}
                 >
                   {/* Playfair's -1.68px tracking trails the count too; 2px back puts the rule mid-way between the figures' ink. */}
