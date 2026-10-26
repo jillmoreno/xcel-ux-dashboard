@@ -562,7 +562,8 @@ export function AtlasAdminStudentsPage() {
             </colgroup>
             <thead style={{ background: 'var(--admin-fill-soft)' }}>
               <tr>
-                <th className="cre-admin-sticky-col" style={{ ...TH, width: 40, padding: '12px 16px' }}>
+                {/* On the headers' bottom line, like the two-line headers' second line. */}
+                <th className="cre-admin-sticky-col" style={{ ...TH, width: 40, padding: '12px 16px', verticalAlign: 'bottom' }}>
                   <input
                     type="checkbox"
                     aria-label="Select all visible"
@@ -574,7 +575,8 @@ export function AtlasAdminStudentsPage() {
                         return next
                       })
                     }
-                    style={CHECKBOX}
+                    /* 3px down so its centre meets the capitals' centre on that line. */
+                    style={{ ...CHECKBOX, position: 'relative', top: 3 }}
                   />
                 </th>
                 {ROSTER_COLS.slice(1).map((c) => (
