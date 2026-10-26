@@ -101,7 +101,7 @@ export function AtlasAdminStudentsPage() {
   useEffect(() => {
     const el = cardRowRef.current
     if (!el) return
-    const ro = new ResizeObserver(() => {
+    const fit = () => {
       // Each card's narrowest: its pill, its window, or its figure row (the children's widths plus the 12px gaps), whichever is widest.
       const mins = [...el.querySelectorAll<HTMLElement>('.cre-admin-status-card')].map((c) => {
         const row = c.querySelector<HTMLElement>('[data-figure-row]')
@@ -114,8 +114,13 @@ export function AtlasAdminStudentsPage() {
         return sum <= el.clientWidth
       }
       setCardCols([6, 3, 2, 1].find(fits) ?? 1)
-    })
+    }
+    // Re-fit when the row's width changes, and when what sets each card's narrowest changes size — a pill, a note, the window — which
+    // a late web font does without the row itself resizing. None of those depends on the column count, so this cannot loop.
+    const ro = new ResizeObserver(fit)
     ro.observe(el)
+    el.querySelectorAll<HTMLElement>('.cre-admin-status-pill, [data-figure-row] > *').forEach((x) => ro.observe(x))
+    document.fonts?.ready.then(fit)
     return () => ro.disconnect()
   }, [analysis]) // the row exists only under Dial — re-attach when the design control switches back to it
 
@@ -475,6 +480,8 @@ export function AtlasAdminStudentsPage() {
             <p style={EYEBROW}>Student Compliance</p>
             <StatusDial
               size={DIAL_SIZE_ONE_ROW}
+              hug={6}
+              discGap={6}
               active={bucket}
               onPick={pickBucket}
               total={counts.total}
@@ -754,7 +761,7 @@ const STATUS_BODY: CSSProperties = { containerType: 'inline-size', flex: 1, minW
 /* The 1px rule between count and share, as tall as the figures less 1px each end. */
 const STATUS_SEP: CSSProperties = { flex: 'none', width: 1, margin: '1px 0', borderRadius: 1, background: 'var(--admin-atlas-primary-200)' }
 /* The one-row version's smaller dial (2026-10-26). */
-const DIAL_SIZE_ONE_ROW = 150
+const DIAL_SIZE_ONE_ROW = 120 // as Invites' (2026-10-26), with its tighter centre — the labels 6px nearer the figure, the disc 6px in
 /* The gap between Dial's cards — 8, so six fit across the cards panel at full width (2026-10-26). */
 const CARD_GAP = 8
 /* …and their side padding: 12 (16 top and bottom), for the same reason. */
