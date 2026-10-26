@@ -732,12 +732,12 @@ function StatusDial({
     <div style={{ position: 'relative', flex: 'none', width: size, height: size }}>
       {/* Each arc selects its card. */}
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="group" aria-label={`${total} students by status`} style={{ display: 'block' }}>
-        {/* Whatever is selected: a disc 4px inside the ring's inner edge, in the selected status's colour at 8%. */}
+        {/* Whatever is selected: a disc 8px inside the ring's inner edge, in the selected status's colour at 8%. */}
         <circle
           aria-hidden
           cx={size / 2}
           cy={size / 2}
-          r={r - stroke / 2 - 4}
+          r={r - stroke / 2 - 8}
           fill={active === 'all' ? 'var(--admin-atlas-status-active)' : (parts.find((p) => p.id === active)?.color ?? 'none')}
           fillOpacity={0.08}
           style={{ pointerEvents: 'none' }}
