@@ -1,7 +1,7 @@
-import { Fragment, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
-import { ChevronDownRegular, CircleDotSolid, MagnifyingGlass, Plus, XmarkRegular } from '@/icons'
+import { ChevronDownRegular, MagnifyingGlass, Plus, XmarkRegular } from '@/icons'
 import {
   ADMIN_DEMO_LEARNERS,
   ADMIN_DEPARTMENTS,
@@ -15,8 +15,8 @@ import {
 } from '@/data/atlasAdmin/learners'
 import { LOCATIONS, jobRoleOf, membersOfLocation } from '@/data/atlasAdmin/organization'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
-import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, CARD, CHIP, CHIP_ON, EYEBROW, PAGE_H1, PAGE_SUB } from './adminStyles'
-import { ChipMenu, MenuItem, PreparedPill, ReadinessCell, StagePill } from './adminUi'
+import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, CARD, CHIP, CHIP_ON, EYEBROW, PAGE_H1, PAGE_SUB, STATUS_CARD, STATUS_COUNT } from './adminStyles'
+import { ChipMenu, MenuItem, PreparedPill, ReadinessCell, StagePill, StatusNote, StatusPill } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
 import { StudentsEmptyState } from './StudentsEmptyState'
 
@@ -330,11 +330,9 @@ export function AtlasAdminStudentsPage() {
                 {/* Licensed's window sits top right, across from its pill (in the one-row version, under its figures). */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                   {/* Default: a status-coloured dot beside the label. Active: the dot slides open, left to right, into a filled pill (tokens.css). */}
-                  <span className="cre-admin-status-pill" data-active={active || undefined} style={{ '--pill': strip } as CSSProperties}>
-                    <span aria-hidden className="cre-admin-status-pill-fill" />
-                    <CircleDotSolid aria-hidden size={12} className="cre-admin-status-pill-icon" />
+                  <StatusPill color={strip} active={active}>
                     {t.id === 'all' ? 'Active Students' : t.label}
-                  </span>
+                  </StatusPill>
                   {windowBelow ? null : licensedPicker}
                 </div>
                 {/* One row: a rule 8px above and below the figures, across the card (figureRule). */}
@@ -356,15 +354,7 @@ export function AtlasAdminStudentsPage() {
                   <span style={oneRow ? { ...STATUS_COUNT, color: 'var(--admin-atlas-primary-400)' } : STATUS_COUNT}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
                 </div>
                 {t.id === 'licensed' ? (windowBelow ? licensedPicker : null) : (
-                  <p style={STATUS_DESC}>
-                    {/* Each " · " value on its own line, its figures in semibold (split on the numbers: every odd piece is one). */}
-                    {(t.id === 'all' ? 'Students active in learning pipeline' : t.note).split(' · ').map((line, l) => (
-                      <Fragment key={l}>
-                        {l ? <br /> : null}
-                        {line.split(/(\d[\d,]*)/).map((part, i) => (i % 2 ? <b key={i} style={{ fontWeight: 600 }}>{part}</b> : part))}
-                      </Fragment>
-                    ))}
-                  </p>
+                  <StatusNote>{t.id === 'all' ? 'Students active in learning pipeline' : t.note}</StatusNote>
                 )}
               </div>
             </div>
@@ -807,7 +797,6 @@ function StatusDial({
 /* PartnerHub's status cards (Students' top tile row). */
 /* Their order: In progress before Not started (2026-10-23, Eric). */
 const STATUS_ORDER: PipelineBucket[] = ['all', 'in-progress', 'not-started', 'off-track', 'prepared', 'licensed']
-const BODY_FONT = 'var(--font-body)'
 /* The Atlas Style Guide's status colours (Figma 270:39). */
 const STATUS_TONE: Record<PipelineBucket, [string]> = {
   all: ['var(--admin-atlas-status-active)'],
@@ -817,13 +806,8 @@ const STATUS_TONE: Record<PipelineBucket, [string]> = {
   prepared: ['var(--admin-atlas-status-prepared)'],
   licensed: ['var(--admin-atlas-status-licensed)'],
 }
-/* Atlas UX Design 527:603 (Active) / 527:746 (Default): 14px corners; 16px in (the one-row version 24px top and bottom). A flex column, so every card in a row fills to the tallest. */
-const STATUS_CARD: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: 'none', borderStyle: 'solid', borderWidth: 1, borderRadius: 14, cursor: 'pointer', textAlign: 'left' }
 /* A size container, so Licensed's window can drop to its own line when the card is too narrow for it beside the pill (tokens.css). */
 const STATUS_BODY: CSSProperties = { containerType: 'inline-size', flex: 1, minWidth: 0, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
-const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 11, lineHeight: '13px', color: 'var(--admin-text)' }
-/* Playfair Bold with lining figures (`lnum`): every digit on one baseline — its default old-style figures drop 3, 4, 5, 7, 9 below it. */
-const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 28, fontWeight: 700, lineHeight: '20px', letterSpacing: '-1.68px', whiteSpace: 'nowrap', fontVariantNumeric: 'lining-nums proportional-nums', color: 'var(--admin-atlas-ink)' }
 /* The 1px rule between count and share, as tall as the figures less 1px each end. */
 const STATUS_SEP: CSSProperties = { flex: 'none', width: 1, margin: '1px 0', borderRadius: 1, background: 'var(--admin-atlas-primary-200)' }
 /* The small caps over and under the dial's total. */

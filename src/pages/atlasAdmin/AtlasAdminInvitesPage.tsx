@@ -4,7 +4,8 @@ import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { acceptedThisWeek, hoursAgoDate, isFresh, isReady, type Invite, type InviteStatus } from '@/data/atlasAdmin/invites'
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
-import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
+import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, PAGE_H1, PAGE_SUB, PILL, STATUS_CARD, STATUS_COUNT } from './adminStyles'
+import { StatusNote, StatusPill } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
 
 /**
@@ -77,11 +78,12 @@ export function AtlasAdminInvitesPage() {
     else setOpen(inv)
   }
 
+  /* Each tile's pill colour, from the Atlas status colours Students uses: needs you (red), part-way (brown), just sent (slate), done (green). */
   const tiles: { id: Filter; label: string; note: string; color: string; n: number }[] = [
-    { id: 'ready', label: 'Ready to resend', note: '48h+ unopened or stuck', color: 'var(--admin-brand)', n: count('ready') },
-    { id: 'opened', label: 'Opened, not accepted', note: 'setup help usually closes it', color: 'var(--admin-ink)', n: count('opened') },
-    { id: 'fresh', label: 'Sent under 24h', note: 'wait until tomorrow', color: 'var(--admin-ink)', n: count('fresh') },
-    { id: 'all', label: 'Accepted this week', note: 'purchased · now in the pipeline', color: 'var(--admin-success-ink)', n: invites.filter(acceptedThisWeek).length },
+    { id: 'ready', label: 'Ready to resend', note: '48h+ unopened or stuck', color: 'var(--admin-atlas-status-off-track)', n: count('ready') },
+    { id: 'opened', label: 'Opened, not accepted', note: 'setup help usually closes it', color: 'var(--admin-atlas-status-in-progress)', n: count('opened') },
+    { id: 'fresh', label: 'Sent under 24h', note: 'wait until tomorrow', color: 'var(--admin-atlas-status-active)', n: count('fresh') },
+    { id: 'all', label: 'Accepted this week', note: 'purchased · now in the pipeline', color: 'var(--admin-atlas-status-prepared)', n: invites.filter(acceptedThisWeek).length },
   ]
 
   return (
@@ -98,28 +100,43 @@ export function AtlasAdminInvitesPage() {
 
       {/* As on Students: with the Standard nav the blue runs on under the table card, no gap between; with Lite the tiles sit on the page. */}
       <section aria-label="Invite outcomes" style={lite ? undefined : { ...CARD, border: 'none', padding: `16px 16px ${20 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
-        <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-          {tiles.map((t) => {
-            const active = t.id !== 'all' && filter === t.id
-            return (
-              <button
-                key={t.label}
-                type="button"
-                aria-pressed={t.id === 'all' ? undefined : active}
-                onClick={() => (t.id === 'all' ? pick('enrolled') : pick(t.id))}
-                className="cre-admin-tile"
-                style={{
-                  ...TILE,
-                  border: `1px solid ${lite ? 'var(--admin-atlas-primary-200)' : 'var(--admin-fill-soft)'}`,
-                  ...(active ? TILE_ACTIVE : null),
-                }}
-              >
-                <p style={EYEBROW}>{t.label}</p>
-                <p style={{ margin: '4px 0 0', fontFamily: 'var(--font-heading-serif)', fontSize: 'var(--admin-atlas-h5-size)', fontWeight: 400, lineHeight: 'var(--admin-atlas-h5-line)', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums', color: t.color }}>{t.n}</p>
-                <p style={{ margin: '6px 0 0', fontSize: 13, color: 'var(--admin-muted)' }}>{t.note}</p>
-              </button>
-            )
-          })}
+        {/* Students' status cards on Students' primary 100 panel (24px in, 18px corners): the selected card white and lifted, the rest on
+            the search field's fill with no edge (primary 200 on hover), a status pill, the figure ruled above and below, an 11px note. */}
+        <div style={{ borderRadius: 18, background: 'var(--admin-atlas-primary-100)', padding: '16px 24px' }}>
+          <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+            {tiles.map((t) => {
+              // Accepted this week filters to Enrolled, so it reads selected there.
+              const active = filter === (t.id === 'all' ? 'enrolled' : t.id)
+              const rule = `1px solid ${active ? 'var(--admin-atlas-primary-100)' : 'color-mix(in srgb, var(--admin-atlas-primary-200), white 20%)'}`
+              return (
+                <button
+                  key={t.label}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => (t.id === 'all' ? pick('enrolled') : pick(t.id))}
+                  className="cre-admin-tile cre-admin-status-card"
+                  style={{
+                    ...STATUS_CARD,
+                    padding: 16,
+                    gap: 8,
+                    alignItems: 'flex-start', // the pill keeps its own width; the ruled figure stretches itself
+                    fontFamily: 'var(--font-body)',
+                    borderColor: 'transparent',
+                    background: active ? 'var(--admin-surface)' : 'var(--admin-fill)',
+                    boxShadow: active ? 'var(--admin-shadow-tile-active)' : undefined,
+                  }}
+                >
+                  <StatusPill color={t.color} active={active}>
+                    {t.label}
+                  </StatusPill>
+                  <span style={{ display: 'flex', alignSelf: 'stretch', marginTop: 6, marginBottom: 2, padding: '8px 0', borderTop: rule, borderBottom: rule }}>
+                    <span style={STATUS_COUNT}>{t.n}</span>
+                  </span>
+                  <StatusNote>{t.note}</StatusNote>
+                </button>
+              )
+            })}
+          </div>
         </div>
       </section>
 
@@ -289,9 +306,6 @@ export function AtlasAdminInvitesPage() {
 
 /* How far the outcome container's blue runs on beneath the table card. */
 const UNDERLAP = 24
-const TILE: CSSProperties = { borderRadius: 11, background: 'var(--admin-fill-soft)', padding: 16, textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-body)' }
-/* Students' selected tile: primary 400 drawn inside the edge, lifted 4/4 at 15%. */
-const TILE_ACTIVE: CSSProperties = { background: 'var(--admin-surface)', outline: '1px solid var(--admin-atlas-primary-200)', outlineOffset: -1, boxShadow: 'var(--admin-shadow-tile-active)' }
 const SEG: CSSProperties = {
   whiteSpace: 'nowrap',
   borderRadius: 9999,

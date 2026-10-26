@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { Fragment, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import type { LearnerStage, PreparedToPass, Readiness } from '@/data/atlasAdmin/learners'
 import { STAGE_LABEL } from '@/data/atlasAdmin/learners'
 import { useAdminStore } from './adminStore'
-import { CHIP, MENU, MENU_ITEM, PILL } from './adminStyles'
+import { CircleDotSolid } from '@/icons'
+import { CHIP, MENU, MENU_ITEM, PILL, STATUS_DESC } from './adminStyles'
 
 /** ATLAS ADMIN — the small shared pieces (2026-10-19). */
 
@@ -181,4 +182,31 @@ export function AdminToast() {
       {toast}
     </div>
   ) : null
+}
+
+/** A status card's pill (tokens.css): at rest a dot in `color` beside the
+ *  label; active, the dot slides open left to right into a filled pill. */
+export function StatusPill({ color, active, children }: { color: string; active: boolean; children: ReactNode }) {
+  return (
+    <span className="cre-admin-status-pill" data-active={active || undefined} style={{ '--pill': color } as CSSProperties}>
+      <span aria-hidden className="cre-admin-status-pill-fill" />
+      <CircleDotSolid aria-hidden size={12} className="cre-admin-status-pill-icon" />
+      {children}
+    </span>
+  )
+}
+
+/** A status card's note: each " · " value on its own line, its figures in
+ *  semibold (split on the numbers: every odd piece is one). */
+export function StatusNote({ children }: { children: string }) {
+  return (
+    <p style={STATUS_DESC}>
+      {children.split(' · ').map((line, l) => (
+        <Fragment key={l}>
+          {l ? <br /> : null}
+          {line.split(/(\d[\d,]*)/).map((part, i) => (i % 2 ? <b key={i} style={{ fontWeight: 600 }}>{part}</b> : part))}
+        </Fragment>
+      ))}
+    </p>
+  )
 }
