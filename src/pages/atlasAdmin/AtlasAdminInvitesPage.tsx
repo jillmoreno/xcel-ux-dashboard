@@ -400,8 +400,8 @@ const UNDERLAP = 24
 const PANEL_RADIUS = 18
 /* The table card's corner radius (CARD). */
 const CARD_RADIUS = 18
-/* Students' one-row dial size. */
-const DIAL_SIZE_INVITES = 150
+/* The Invites dial: 120 square (Students' is 150); the strokes stay 8px. */
+const DIAL_SIZE_INVITES = 120
 const SEG: CSSProperties = {
   whiteSpace: 'nowrap',
   borderRadius: 9999,
