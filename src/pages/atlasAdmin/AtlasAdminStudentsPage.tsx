@@ -409,7 +409,7 @@ export function AtlasAdminStudentsPage() {
           {/* The same, its six cards in one row (2026-10-26, for comparison) — the dial and the cards each in their own panel, side by side and the same height. */}
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', gap: 8 }}>
             {/* The eyebrow and dial centred across; 24px above, 16px below. */}
-            <div style={{ ...ANALYSIS_PANEL, flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '24px 16px 16px' }}>
+            <div style={{ ...ANALYSIS_PANEL, flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '24px 16px 16px' }}>
               <p style={EYEBROW}>Student Compliance</p>
               <StatusDial
                 active={bucket}
