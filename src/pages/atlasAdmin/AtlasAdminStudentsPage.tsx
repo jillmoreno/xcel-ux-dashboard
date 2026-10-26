@@ -281,7 +281,7 @@ export function AtlasAdminStudentsPage() {
                         value={licensedWindow}
                         onClick={(e) => e.stopPropagation()}
                         onChange={(e) => setLicensedWindow(e.target.value)}
-                        style={{ ...SELECT, marginTop: undefined, appearance: 'none', padding: '4px 24px 4px 6px', width: 'auto', cursor: 'pointer' }}
+                        style={{ ...SELECT, marginTop: undefined, appearance: 'none', padding: '4px 24px 4px 10px', width: 'auto', cursor: 'pointer' }}
                       >
                         <option value="90d">Last 90 days</option>
                         <option value="year">This year</option>
