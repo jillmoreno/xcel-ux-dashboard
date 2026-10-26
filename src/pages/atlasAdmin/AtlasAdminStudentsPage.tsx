@@ -698,7 +698,7 @@ const STATUS_TONE: Record<PipelineBucket, [string]> = {
 const STATUS_CARD: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: 'none', borderStyle: 'solid', borderWidth: 1, borderRadius: 14, cursor: 'pointer', textAlign: 'left' }
 /* A size container, so Licensed's window can drop to its own line when the card is too narrow for it beside the pill (tokens.css). */
 const STATUS_BODY: CSSProperties = { containerType: 'inline-size', flex: 1, minWidth: 0, boxSizing: 'border-box', padding: 16, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
-const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 13, lineHeight: '13px', color: 'var(--admin-atlas-ink)' }
+const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 13, lineHeight: '15px', color: 'var(--admin-atlas-ink)' }
 /* Playfair Bold with lining figures (`lnum`): every digit on one baseline — its default old-style figures drop 3, 4, 5, 7, 9 below it. */
 const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 28, fontWeight: 700, lineHeight: '20px', letterSpacing: '-1.68px', whiteSpace: 'nowrap', fontVariantNumeric: 'lining-nums proportional-nums', color: 'var(--admin-atlas-ink)' }
 /* The 1px rule between count and share, as tall as the figures less 1px each end. */

@@ -7667,7 +7667,7 @@ a.cre-library-card-title::after {
    select's 101), it wraps to its own line under the pill instead of squeezing. */
 .cre-admin-status-window { margin: -6px 0; }
 @container (max-width: 202.9px) {
-  .cre-admin-status-window { margin: -9px 0 4px; } /* 4px under the eyebrow's letters, not its line box */
+  .cre-admin-status-window { margin: -5px 0 4px; } /* 8px under the pill's letters, not its line box */
 }
 /* An admin text link's hover — Atlas primary 700. `!important` because the
    link's resting colour is set inline. */
