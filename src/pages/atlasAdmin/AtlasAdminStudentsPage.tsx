@@ -239,9 +239,10 @@ export function AtlasAdminStudentsPage() {
 
   /** The outcome cards (Atlas UX Design 527:603 / 527:746): the status pill,
    *  the count, a thin rule and its share of the roster, then a one-line note.
-   *  Selecting a card slides its pill open into the status colour. */
-  const statusGrid = (
-    <div style={{ display: 'grid', gap: 20, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+   *  Selecting a card slides its pill open into the status colour.
+   *  `columns`: 3 (two rows) or 6 (one row, the comparison below it). */
+  const statusGrid = (columns: 3 | 6) => (
+    <div style={{ display: 'grid', gap: 20, gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
       {STATUS_ORDER.map((id) => tiles.find((x) => x.id === id)!).map((t) => {
         const n = tileCount[t.id]
         const active = bucket === t.id
@@ -381,18 +382,34 @@ export function AtlasAdminStudentsPage() {
             status cards with the dial, the tiles with progress bars, or plain. */}
         {/* Dial: on Atlas primary 100, 32px in. */}
         {analysis === 'dial' ? (
-        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 40, padding: 32, borderRadius: 18, background: 'var(--admin-atlas-primary-100)' }}>
-          {/* Top-aligned, 15px down (a card's 1px edge + 14px padding), so this eyebrow shares the top cards' baseline. */}
-          <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, paddingTop: 15 }}>
-            <p style={EYEBROW}>Student Compliance</p>
-            <StatusDial
-              active={bucket}
-              onPick={pickBucket}
-              total={counts.total}
-              parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
-            />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 40, padding: 32, borderRadius: 18, background: 'var(--admin-atlas-primary-100)' }}>
+            {/* Top-aligned, 15px down (a card's 1px edge + 14px padding), so this eyebrow shares the top cards' baseline. */}
+            <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, paddingTop: 15 }}>
+              <p style={EYEBROW}>Student Compliance</p>
+              <StatusDial
+                active={bucket}
+                onPick={pickBucket}
+                total={counts.total}
+                parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
+              />
+            </div>
+            <div style={{ flex: '1 1 480px', minWidth: 0 }}>{statusGrid(3)}</div>
           </div>
-          <div style={{ flex: '1 1 480px', minWidth: 0 }}>{statusGrid}</div>
+          {/* The same, its six cards in one row (2026-10-26, for comparison). */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 40, padding: 32, borderRadius: 18, background: 'var(--admin-atlas-primary-100)' }}>
+            {/* Top-aligned, 15px down (a card's 1px edge + 14px padding), so this eyebrow shares the top cards' baseline. */}
+            <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, paddingTop: 15 }}>
+              <p style={EYEBROW}>Student Compliance</p>
+              <StatusDial
+                active={bucket}
+                onPick={pickBucket}
+                total={counts.total}
+                parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
+              />
+            </div>
+            <div style={{ flex: '1 1 480px', minWidth: 0 }}>{statusGrid(6)}</div>
+          </div>
         </div>
         ) : (
           tileGrid(analysis === 'progress-bar')
