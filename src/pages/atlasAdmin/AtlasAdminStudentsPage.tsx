@@ -762,8 +762,9 @@ function StatusDial({
               style={{ stroke: a.color, cursor: 'pointer', outline: 'none' }}
               strokeWidth={active === a.id ? stroke + 4 : stroke}
               strokeLinecap="round"
-              strokeDasharray={`${a.len} ${c}`}
-              strokeDashoffset={-(a.offset + gap / 2)}
+              /* Selected, its caps reach 2px further each end — so its dash is 4px shorter and starts 2px later, keeping the gaps. */
+              strokeDasharray={`${Math.max(0, a.len - (active === a.id ? 4 : 0))} ${c}`}
+              strokeDashoffset={-(a.offset + gap / 2 + (active === a.id ? 2 : 0))}
               transform={`rotate(-90 ${size / 2} ${size / 2})`}
             />
           ) : null,
