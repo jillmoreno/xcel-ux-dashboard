@@ -427,7 +427,7 @@ export function AtlasAdminStudentsPage() {
             or plain. */}
         {analysis === 'dial' ? (
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch' }}>
-          {/* The eyebrow and dial centred across, 16px from the top. On the cards' resting fill, square on the right, running
+          {/* The eyebrow and dial centred across, 16px from the top, 24px in at the sides. On the cards' resting fill, square on the right, running
               ANALYSIS_RADIUS on under the cards panel (its padding grows to match, so the dial stays put). */}
           <div
             style={{
@@ -441,7 +441,7 @@ export function AtlasAdminStudentsPage() {
               alignItems: 'center',
               justifyContent: 'flex-start',
               gap: 8,
-              padding: `16px ${16 + ANALYSIS_RADIUS}px 16px 16px`,
+              padding: `16px ${24 + ANALYSIS_RADIUS}px 16px 24px`,
             }}
           >
             <p style={EYEBROW}>Student Compliance</p>
