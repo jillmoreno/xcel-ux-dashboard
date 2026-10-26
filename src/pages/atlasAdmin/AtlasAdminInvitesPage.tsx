@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { acceptedThisWeek, hoursAgoDate, isFresh, isReady, type Invite, type InviteStatus } from '@/data/atlasAdmin/invites'
@@ -57,6 +57,21 @@ export function AtlasAdminInvitesPage() {
   const [shown, setShown] = useState(PAGE)
   const [inviting, setInviting] = useState(false)
   const [open, setOpen] = useState<Invite | null>(null)
+  /* Whether the filter bar is pinned: it has come away from the top of its card. */
+  const barRef = useRef<HTMLDivElement>(null)
+  const [pinned, setPinned] = useState(false)
+  useEffect(() => {
+    const check = () => {
+      const bar = barRef.current
+      if (bar?.parentElement) setPinned(bar.getBoundingClientRect().top - bar.parentElement.getBoundingClientRect().top > 1)
+    }
+    window.addEventListener('scroll', check, { passive: true })
+    window.addEventListener('resize', check)
+    return () => {
+      window.removeEventListener('scroll', check)
+      window.removeEventListener('resize', check)
+    }
+  }, [])
 
   const count = (f: Filter) => invites.filter(TEST[f]).length
   const rows = useMemo(() => {
@@ -182,11 +197,15 @@ export function AtlasAdminInvitesPage() {
       <section style={{ ...CARD, position: 'relative', overflow: 'clip', overflowClipMargin: 1 }}>
         {/* The filter bar pins where the Lite nav's card does — 24px under the global nav — as the table scrolls under it. */}
         <div
+          ref={barRef}
           style={{
             position: 'sticky',
             top: 'calc(var(--admin-header-h, 0px) + 24px)',
             zIndex: 5,
             background: 'var(--admin-surface)',
+            /* At rest, the card's inner corner radius (18 less its 1px edge), so the bar's fill stays off the card's rounded stroke. */
+            borderTopLeftRadius: pinned ? 0 : 17,
+            borderTopRightRadius: pinned ? 0 : 17,
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
@@ -196,13 +215,15 @@ export function AtlasAdminInvitesPage() {
             borderBottom: '1px solid var(--admin-rule)',
           }}
         >
-          {/* Pinned, the 24px between it and the global nav would show the rows scrolling past; this strip of page colour hides them. It runs
-              1px past each side to cover the card's edge too (the card's 1px clip margin lets it), and its last pixel is the card's top edge —
-              at rest that redraws the edge it sits on, pinned it gives the bar the top stroke the card scrolled away. */}
-          <span
-            aria-hidden
-            style={{ position: 'absolute', bottom: '100%', left: -1, right: -1, height: 25, boxSizing: 'border-box', background: 'var(--admin-page)', borderBottom: '1px solid var(--admin-rule)', pointerEvents: 'none' }}
-          />
+          {/* Pinned only: the 24px between it and the global nav would show the rows scrolling past, so this strip of page colour hides
+              them. It runs 1px past each side to cover the card's edge too (the card's 1px clip margin lets it), and its last pixel gives the
+              bar the top stroke the card scrolled away. At rest it is not drawn, so the card keeps its rounded top corners. */}
+          {pinned ? (
+            <span
+              aria-hidden
+              style={{ position: 'absolute', bottom: '100%', left: -1, right: -1, height: 25, boxSizing: 'border-box', background: 'var(--admin-page)', borderBottom: '1px solid var(--admin-rule)', pointerEvents: 'none' }}
+            />
+          ) : null}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {(
               [
