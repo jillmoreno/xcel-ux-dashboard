@@ -83,8 +83,8 @@ export function AtlasAdminInvitesPage() {
     { id: 'ready', label: 'Ready to resend', note: '48h+ unopened or stuck', color: 'var(--admin-atlas-status-off-track)', n: count('ready') },
     { id: 'opened', label: 'Opened, not accepted', note: 'setup help usually closes it', color: 'var(--admin-atlas-status-in-progress)', n: count('opened') },
     { id: 'fresh', label: 'Sent under 24h', note: 'wait until tomorrow', color: 'var(--admin-atlas-status-active)', n: count('fresh') },
-    { id: 'purchased', label: 'Purchased', note: 'paid · course not opened yet', color: 'var(--admin-atlas-status-licensed)', n: count('purchased') },
-    { id: 'all', label: 'Accepted this week', note: 'purchased · now in the pipeline', color: 'var(--admin-atlas-status-prepared)', n: invites.filter(acceptedThisWeek).length },
+    { id: 'purchased', label: 'Purchased', note: 'paid, course not opened yet', color: 'var(--admin-atlas-status-licensed)', n: count('purchased') },
+    { id: 'all', label: 'Accepted this week', note: 'purchased, now in the pipeline', color: 'var(--admin-atlas-status-prepared)', n: invites.filter(acceptedThisWeek).length },
   ]
 
   return (
@@ -136,7 +136,9 @@ export function AtlasAdminInvitesPage() {
                   <span style={{ display: 'flex', alignItems: 'flex-start', gap: 8, alignSelf: 'stretch', marginTop: 6, marginBottom: 2, padding: '8px 0', borderTop: rule, borderBottom: rule }}>
                     <span style={STATUS_COUNT}>{t.n}</span>
                     {/* 1px up: the count's figures start 1px above its box, the note's letters 2.6px into theirs. */}
-                    <StatusNote style={{ marginTop: -1 }}>{t.note}</StatusNote>
+                    <StatusNote style={{ marginTop: -1 }} twoLines>
+                      {t.note}
+                    </StatusNote>
                   </span>
                 </button>
               )

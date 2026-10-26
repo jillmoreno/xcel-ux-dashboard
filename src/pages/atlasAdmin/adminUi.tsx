@@ -197,11 +197,13 @@ export function StatusPill({ color, active, children }: { color: string; active:
 }
 
 /** A status card's note: each " · " value on its own line, its figures in
- *  semibold (split on the numbers: every odd piece is one). */
-export function StatusNote({ children, style }: { children: string; style?: CSSProperties }) {
+ *  semibold (split on the numbers: every odd piece is one). `twoLines`
+ *  instead breaks it once, at the word that leaves the top line the
+ *  shortest it can be while still longer than the second. */
+export function StatusNote({ children, style, twoLines }: { children: string; style?: CSSProperties; twoLines?: boolean }) {
   return (
     <p style={style ? { ...STATUS_DESC, ...style } : STATUS_DESC}>
-      {children.split(' · ').map((line, l) => (
+      {(twoLines ? topHeavy(children) : children.split(' · ')).map((line, l) => (
         <Fragment key={l}>
           {l ? <br /> : null}
           {line.split(/(\d[\d,]*)/).map((part, i) => (i % 2 ? <b key={i} style={{ fontWeight: 600 }}>{part}</b> : part))}
@@ -209,4 +211,16 @@ export function StatusNote({ children, style }: { children: string; style?: CSSP
       ))}
     </p>
   )
+}
+
+/** Two lines, the top one longer: the earliest word break past which the
+ *  top line outruns the rest. One word stays on one line. */
+function topHeavy(text: string): string[] {
+  const words = text.split(' ')
+  for (let k = 1; k < words.length; k++) {
+    const top = words.slice(0, k).join(' ')
+    const rest = words.slice(k).join(' ')
+    if (top.length > rest.length) return [top, rest]
+  }
+  return [text]
 }
