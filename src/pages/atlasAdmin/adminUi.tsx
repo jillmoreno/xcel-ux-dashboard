@@ -236,6 +236,7 @@ export function StatusDial<Id extends string>({
   centre = total,
   over = 'Total',
   unit,
+  hug = 0,
   parts,
   active,
   onPick,
@@ -248,6 +249,8 @@ export function StatusDial<Id extends string>({
   /** The small caps over the centre figure. */
   over?: string
   unit: string
+  /** Pulls the labels over and under the centre figure this many px closer to it. */
+  hug?: number
   parts: { id: Id; n: number; color: string; label?: string }[]
   /** The selected part — or 'all', or null for none. */
   active: Id | 'all' | null
@@ -304,7 +307,7 @@ export function StatusDial<Id extends string>({
       </svg>
       <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
         <span style={DIAL_LABEL}>{over}</span>
-        <span style={{ fontFamily: 'var(--admin-font-playfair)', fontWeight: 900, fontVariantNumeric: 'lining-nums tabular-nums', fontFeatureSettings: '"lnum" 1, "tnum" 1', fontSize: 'var(--admin-atlas-h5-size)', lineHeight: 'var(--admin-atlas-h5-line)', color: 'var(--admin-ink)' }}>{centre}</span>
+        <span style={{ fontFamily: 'var(--admin-font-playfair)', fontWeight: 900, fontVariantNumeric: 'lining-nums tabular-nums', fontFeatureSettings: '"lnum" 1, "tnum" 1', fontSize: 'var(--admin-atlas-h5-size)', lineHeight: 'var(--admin-atlas-h5-line)', color: 'var(--admin-ink)', margin: `${-hug}px 0` }}>{centre}</span>
         <span style={DIAL_LABEL}>{unit}</span>
       </div>
     </div>
