@@ -133,8 +133,9 @@ export function AtlasAdminInvitesPage() {
           </div>
           {/* Students' status cards on Students' primary 100 panel (18px corners): the selected card white and lifted, the rest on the search
               field's fill with no edge (primary 200 on hover), a status pill, the count ruled above, a 1px rule, an 11px note. */}
-          <div style={{ position: 'relative', boxSizing: 'border-box', borderRadius: PANEL_RADIUS, background: 'var(--admin-atlas-primary-100)', padding: `${16 + 18 + 8}px 16px 16px` }}>
-            {/* The dial's height (its panel's eyebrow 18 + gap 8 above it), the tiles centred in it and wrapping when the row runs out. */}
+          <div style={{ position: 'relative', flex: '1 1 480px', minWidth: 0, boxSizing: 'border-box', borderRadius: PANEL_RADIUS, background: 'var(--admin-atlas-primary-100)', padding: `${16 + 18 + 8}px 16px 16px` }}>
+            {/* The dial's height (its panel's eyebrow 18 + gap 8 above it), the tiles centred in it, sharing the row's width but never narrower
+                than their content, and wrapping when the row runs out. */}
             <div style={{ minHeight: DIAL_SIZE_INVITES, display: 'flex', flexWrap: 'wrap', alignContent: 'center', gap: 12 }}>
               {tiles.map((t) => {
                 const active = filter === t.filter
@@ -148,7 +149,8 @@ export function AtlasAdminInvitesPage() {
                     className="cre-admin-tile cre-admin-status-card"
                     style={{
                       ...STATUS_CARD,
-                      flex: 'none',
+                      flex: '1 1 0',
+                      minWidth: 'max-content',
                       padding: 16,
                       gap: 8,
                       alignItems: 'flex-start', // the pill keeps its own width; the ruled figure stretches itself
