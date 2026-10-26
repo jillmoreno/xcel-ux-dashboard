@@ -294,8 +294,8 @@ export function AtlasAdminStudentsPage() {
                 borderColor: oneRow ? 'transparent' : 'var(--admin-atlas-primary-200)',
                 background: active ? 'var(--admin-surface)' : oneRow ? 'var(--admin-fill)' : 'none',
                 boxShadow: active && oneRow ? 'var(--admin-shadow-tile-active)' : undefined,
-                /* One row: at least 156px — the dial's ring (its 168px box less 4px each side) less 4px. */
-                minHeight: oneRow ? 156 : undefined,
+                /* One row: at least the dial's ring (its box less DIAL_INSET each side) less 4px. */
+                minHeight: oneRow ? DIAL_SIZE_ONE_ROW - 2 * DIAL_INSET - 4 : undefined,
               }}
             >
               <div style={{ ...STATUS_BODY, padding: oneRow ? '24px 16px' : 16, containerType: oneRow ? 'normal' : 'inline-size' }}>
@@ -419,14 +419,15 @@ export function AtlasAdminStudentsPage() {
             <div style={{ ...ANALYSIS_PANEL, flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '24px 16px 16px' }}>
               <p style={EYEBROW}>Student Compliance</p>
               <StatusDial
+                size={DIAL_SIZE_ONE_ROW}
                 active={bucket}
                 onPick={pickBucket}
                 total={counts.total}
                 parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
               />
             </div>
-            {/* The cards' tops on the ring's outer edge: the dial panel's 24px + eyebrow 18 + gap 8, + the 4px between the dial's box and its ring. */}
-            <div style={{ ...ANALYSIS_PANEL, flex: '1 1 480px', minWidth: 0, padding: '54px 24px 16px' }}>{statusGrid(6)}</div>
+            {/* The cards' tops on the ring's outer edge: the dial panel's 24px + eyebrow 18 + gap 8 + DIAL_INSET. */}
+            <div style={{ ...ANALYSIS_PANEL, flex: '1 1 480px', minWidth: 0, padding: `${24 + 18 + 8 + DIAL_INSET}px 24px 16px` }}>{statusGrid(6)}</div>
           </div>
         </div>
         ) : (
@@ -663,10 +664,22 @@ export function AtlasAdminStudentsPage() {
  *  round-capped arc per status from 12 o'clock — In progress, Off track,
  *  Prepared, Licensed, Not started — each its share of the roster, a hair
  *  apart so the caps don't touch. */
-function StatusDial({ total, parts, active, onPick }: { total: number; parts: { id: PipelineBucket; n: number; color: string }[]; active: PipelineBucket; onPick: (id: PipelineBucket) => void }) {
-  const size = 168
-  const r = 76
+function StatusDial({
+  total,
+  parts,
+  active,
+  onPick,
+  size = DIAL_SIZE,
+}: {
+  total: number
+  parts: { id: PipelineBucket; n: number; color: string }[]
+  active: PipelineBucket
+  onPick: (id: PipelineBucket) => void
+  /** The square it draws in; the ring sits DIAL_INSET inside it. The centre text keeps its size. */
+  size?: number
+}) {
   const stroke = 8
+  const r = size / 2 - DIAL_INSET - stroke / 2
   const c = 2 * Math.PI * r
   const gap = stroke + 2 // the round caps reach stroke / 2 past each end
   const lens = parts.map((p) => (total ? (c * p.n) / total : 0))
@@ -729,6 +742,11 @@ const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize:
 const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 28, fontWeight: 700, lineHeight: '20px', letterSpacing: '-1.68px', whiteSpace: 'nowrap', fontVariantNumeric: 'lining-nums proportional-nums', color: 'var(--admin-atlas-ink)' }
 /* The 1px rule between count and share, as tall as the figures less 1px each end. */
 const STATUS_SEP: CSSProperties = { flex: 'none', width: 1, margin: '1px 0', borderRadius: 1, background: 'var(--admin-atlas-primary-200)' }
+/* The dial's default square, and the gap between its edge and the ring's outer edge (leaving room for a selected arc's 12px stroke). */
+const DIAL_SIZE = 168
+const DIAL_INSET = 4
+/* The one-row version's smaller dial (2026-10-26). */
+const DIAL_SIZE_ONE_ROW = 150
 /* One panel of the Dial analysis: Atlas primary 100, 32px in. */
 const ANALYSIS_PANEL: CSSProperties = { boxSizing: 'border-box', padding: 32, borderRadius: 18, background: 'var(--admin-atlas-primary-100)' }
 /* How far the outcome container's blue runs on beneath the roster card (Standard nav). */
