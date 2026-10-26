@@ -7637,7 +7637,7 @@ a.cre-library-card-title::after {
    to its own line under the eyebrow instead of squeezing. */
 .cre-admin-status-window { margin: -6px 0; }
 @container (max-width: 171.9px) {
-  .cre-admin-status-window { margin: -4px 0 4px; }
+  .cre-admin-status-window { margin: -9px 0 4px; } /* 4px under the eyebrow's letters, not its line box */
 }
 /* An admin text link's hover — Atlas primary 700. `!important` because the
    link's resting colour is set inline. */
