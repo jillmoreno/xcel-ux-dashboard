@@ -198,9 +198,9 @@ export function StatusPill({ color, active, children }: { color: string; active:
 
 /** A status card's note: each " · " value on its own line, its figures in
  *  semibold (split on the numbers: every odd piece is one). */
-export function StatusNote({ children }: { children: string }) {
+export function StatusNote({ children, style }: { children: string; style?: CSSProperties }) {
   return (
-    <p style={STATUS_DESC}>
+    <p style={style ? { ...STATUS_DESC, ...style } : STATUS_DESC}>
       {children.split(' · ').map((line, l) => (
         <Fragment key={l}>
           {l ? <br /> : null}

@@ -132,10 +132,11 @@ export function AtlasAdminInvitesPage() {
                   <StatusPill color={t.color} active={active}>
                     {t.label}
                   </StatusPill>
-                  {/* The note beside the count, 8px off it, inside the ruled band. */}
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'stretch', marginTop: 6, marginBottom: 2, padding: '8px 0', borderTop: rule, borderBottom: rule }}>
+                  {/* The note beside the count, 8px off it, top-aligned with it, inside the ruled band. */}
+                  <span style={{ display: 'flex', alignItems: 'flex-start', gap: 8, alignSelf: 'stretch', marginTop: 6, marginBottom: 2, padding: '8px 0', borderTop: rule, borderBottom: rule }}>
                     <span style={STATUS_COUNT}>{t.n}</span>
-                    <StatusNote>{t.note}</StatusNote>
+                    {/* 1px up: the count's figures start 1px above its box, the note's letters 2.6px into theirs. */}
+                    <StatusNote style={{ marginTop: -1 }}>{t.note}</StatusNote>
                   </span>
                 </button>
               )
