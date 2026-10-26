@@ -78,11 +78,12 @@ export function AtlasAdminInvitesPage() {
     else setOpen(inv)
   }
 
-  /* Each tile's pill colour, from the Atlas status colours Students uses: needs you (red), part-way (brown), just sent (slate), done (green). */
+  /* Each tile's pill colour, from the Atlas status colours Students uses: needs you (red), part-way (brown), just sent (slate), paid (navy), done (green). */
   const tiles: { id: Filter; label: string; note: string; color: string; n: number }[] = [
     { id: 'ready', label: 'Ready to resend', note: '48h+ unopened or stuck', color: 'var(--admin-atlas-status-off-track)', n: count('ready') },
     { id: 'opened', label: 'Opened, not accepted', note: 'setup help usually closes it', color: 'var(--admin-atlas-status-in-progress)', n: count('opened') },
     { id: 'fresh', label: 'Sent under 24h', note: 'wait until tomorrow', color: 'var(--admin-atlas-status-active)', n: count('fresh') },
+    { id: 'purchased', label: 'Purchased', note: 'paid · course not opened yet', color: 'var(--admin-atlas-status-licensed)', n: count('purchased') },
     { id: 'all', label: 'Accepted this week', note: 'purchased · now in the pipeline', color: 'var(--admin-atlas-status-prepared)', n: invites.filter(acceptedThisWeek).length },
   ]
 
