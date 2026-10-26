@@ -1,7 +1,7 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
-import { MagnifyingGlass, Plus, XmarkRegular } from '@/icons'
+import { CircleDotSolid, MagnifyingGlass, Plus, XmarkRegular } from '@/icons'
 import {
   ADMIN_DEMO_LEARNERS,
   ADMIN_DEPARTMENTS,
@@ -237,10 +237,9 @@ export function AtlasAdminStudentsPage() {
   // Nobody on the roster yet — the first-run office.
   if (ADMIN_LEARNERS.length === 0) return <StudentsEmptyState />
 
-  /** The outcome tiles in PartnerHub's status-card style: a coloured strip
-   *  8px left edge, the uppercase label and a one-line note, then the count,
-   *  a thin rule and its share of the roster in the strip's deeper shade.
-   *  Selected deepens the strip and edges the card in that shade. */
+  /** The outcome cards (Atlas UX Design 527:603 / 527:746): the status pill,
+   *  the count, a thin rule and its share of the roster, then a one-line note.
+   *  Selecting a card slides its pill open into the status colour. */
   const statusGrid = (
     <div style={{ display: 'grid', gap: 20, gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
       {STATUS_ORDER.map((id) => tiles.find((x) => x.id === id)!).map((t) => {
@@ -262,38 +261,39 @@ export function AtlasAdminStudentsPage() {
                 }
               }}
               className="cre-admin-tile cre-admin-status-card"
-              /* Primary 200 edge when selected or hovered (tokens.css), none otherwise; selected fills white and lifts. */
-              style={{ ...STATUS_CARD, borderColor: active ? 'var(--admin-atlas-primary-200)' : 'transparent', ...(active ? { background: 'var(--admin-surface)', boxShadow: TILE_ACTIVE.boxShadow } : null) }}
+              /* Atlas UX Design 527:603 / 527:746 — selected is white edged in primary 200, the rest a primary 100 edge on no fill. */
+              style={{ ...STATUS_CARD, borderColor: active ? 'var(--admin-atlas-primary-200)' : 'var(--admin-atlas-primary-100)', ...(active ? { background: 'var(--admin-surface)' } : null) }}
             >
-              <div style={STATUS_INNER}>
-                {/* The status colour: a round-ended bar 8px in from the card's left side, as tall as the text beside it. */}
-                <span aria-hidden style={{ ...STATUS_BAR, background: strip }} />
-                <div style={STATUS_BODY}>
-                  {/* Licensed's window sits top right, across from its eyebrow. */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 18, marginBottom: -2 }}>
-                    <p style={{ ...EYEBROW, color: 'var(--admin-status-ink)' }}>{t.id === 'all' ? 'Active' : t.label}</p>
-                    {t.id === 'licensed' ? (
-                      <select
-                        aria-label="Licensed time window"
-                        value={licensedWindow}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={(e) => setLicensedWindow(e.target.value)}
-                        className="cre-admin-status-window"
-                        style={{ ...SELECT, marginTop: undefined, width: 'auto', flex: 'none' }}
-                      >
-                        <option value="90d">Last 90 days</option>
-                        <option value="year">This year</option>
-                        <option value="all">All time</option>
-                      </select>
-                    ) : null}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={STATUS_COUNT}>{n.toLocaleString('en-US')}</span>
-                    <span aria-hidden style={STATUS_SEP}>|</span>
-                    <span style={STATUS_COUNT}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
-                  </div>
-                  {t.id === 'licensed' ? null : <p style={{ ...STATUS_DESC, marginTop: -6 }}>{t.note}</p>}
+              <div style={STATUS_BODY}>
+                {/* Licensed's window sits top right, across from its pill. */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  {/* Default: a status-coloured dot beside the label. Active: the dot slides open, left to right, into a filled pill (tokens.css). */}
+                  <span className="cre-admin-status-pill" data-active={active || undefined} style={{ '--pill': strip } as CSSProperties}>
+                    <span aria-hidden className="cre-admin-status-pill-fill" />
+                    <CircleDotSolid aria-hidden size={12} className="cre-admin-status-pill-icon" />
+                    {t.id === 'all' ? 'Active' : t.label}
+                  </span>
+                  {t.id === 'licensed' ? (
+                    <select
+                      aria-label="Licensed time window"
+                      value={licensedWindow}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => setLicensedWindow(e.target.value)}
+                      className="cre-admin-status-window"
+                      style={{ ...SELECT, marginTop: undefined, width: 'auto', flex: 'none' }}
+                    >
+                      <option value="90d">Last 90 days</option>
+                      <option value="year">This year</option>
+                      <option value="all">All time</option>
+                    </select>
+                  ) : null}
                 </div>
+                <div style={{ display: 'flex', alignItems: 'stretch', gap: 10, marginTop: 2 }}>
+                  <span style={STATUS_COUNT}>{n.toLocaleString('en-US')}</span>
+                  <span aria-hidden style={STATUS_SEP} />
+                  <span style={STATUS_COUNT}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
+                </div>
+                {t.id === 'licensed' ? null : <p style={STATUS_DESC}>{t.note}</p>}
               </div>
             </div>
           </div>
@@ -673,18 +673,15 @@ const STATUS_TONE: Record<PipelineBucket, [string]> = {
   prepared: ['var(--admin-atlas-status-prepared)'],
   licensed: ['var(--admin-atlas-status-licensed)'],
 }
-/* A flex column, so every card in a row fills to the tallest. */
-/* Unselected: the search field's blue; the selected card is white. */
-/* The coloured bar inside each card: 6px wide, round-ended, stretched to the text's height. */
-const STATUS_BAR: CSSProperties = { flex: 'none', alignSelf: 'stretch', width: 6, borderRadius: 9999 }
-const STATUS_CARD: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: 'var(--admin-fill)', borderStyle: 'solid', borderWidth: 1, borderRadius: 11, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
-const STATUS_INNER: CSSProperties = { flex: 1, minHeight: 84, boxSizing: 'border-box', padding: '14px 16px 14px 8px', display: 'flex', gap: 20 }
-/* A size container, so Licensed's window can drop to its own line when the card is too narrow for it beside the eyebrow (tokens.css). */
-const STATUS_BODY: CSSProperties = { containerType: 'inline-size', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
-const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-ink)' }
-/* Playfair's lining figures (`lnum`): every digit on one baseline — its default old-style figures drop 3, 4, 5, 7, 9 below it. */
-const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 28, fontWeight: 900, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'lining-nums tabular-nums', color: 'var(--admin-status-ink)' }
-const STATUS_SEP: CSSProperties = { fontSize: 16, fontWeight: 200, color: 'var(--admin-status-sep)' }
+/* Atlas UX Design 527:603 (Active) / 527:746 (Default): 16px in, 14px corners. A flex column, so every card in a row fills to the tallest. */
+const STATUS_CARD: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: 'none', borderStyle: 'solid', borderWidth: 1, borderRadius: 14, cursor: 'pointer', textAlign: 'left' }
+/* A size container, so Licensed's window can drop to its own line when the card is too narrow for it beside the pill (tokens.css). */
+const STATUS_BODY: CSSProperties = { containerType: 'inline-size', flex: 1, minWidth: 0, boxSizing: 'border-box', padding: 16, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
+const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 13, lineHeight: '13px', color: 'var(--admin-atlas-ink)' }
+/* Playfair Bold with lining figures (`lnum`): every digit on one baseline — its default old-style figures drop 3, 4, 5, 7, 9 below it. */
+const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 28, fontWeight: 700, lineHeight: '20px', letterSpacing: '-1.68px', whiteSpace: 'nowrap', fontVariantNumeric: 'lining-nums proportional-nums', color: 'var(--admin-atlas-ink)' }
+/* The 1px rule between count and share, as tall as the figures less 1px each end. */
+const STATUS_SEP: CSSProperties = { flex: 'none', width: 1, margin: '1px 0', borderRadius: 1, background: 'var(--admin-atlas-primary-200)' }
 /* How far the outcome container's blue runs on beneath the roster card (Standard nav). */
 const UNDERLAP = 24
 const TILE: CSSProperties = {
