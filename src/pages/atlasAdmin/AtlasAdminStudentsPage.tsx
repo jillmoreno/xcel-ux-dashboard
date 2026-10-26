@@ -755,8 +755,9 @@ function StatusDial({
         )}
       </svg>
       <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+        <span style={DIAL_LABEL}>Total</span>
         <span style={{ fontFamily: 'var(--admin-font-playfair)', fontWeight: 900, fontVariantNumeric: 'lining-nums tabular-nums', fontSize: 'var(--admin-atlas-h5-size)', lineHeight: 'var(--admin-atlas-h5-line)', color: 'var(--admin-ink)' }}>{total}</span>
-        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--admin-muted)' }}>Students</span>
+        <span style={DIAL_LABEL}>Students</span>
       </div>
     </div>
   )
@@ -784,6 +785,8 @@ const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize:
 const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 28, fontWeight: 700, lineHeight: '20px', letterSpacing: '-1.68px', whiteSpace: 'nowrap', fontVariantNumeric: 'lining-nums proportional-nums', color: 'var(--admin-atlas-ink)' }
 /* The 1px rule between count and share, as tall as the figures less 1px each end. */
 const STATUS_SEP: CSSProperties = { flex: 'none', width: 1, margin: '1px 0', borderRadius: 1, background: 'var(--admin-atlas-primary-200)' }
+/* The small caps over and under the dial's total. */
+const DIAL_LABEL: CSSProperties = { fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--admin-muted)' }
 /* The dial's default square, and the gap between its edge and the ring's outer edge (leaving room for a selected arc's 12px stroke). */
 const DIAL_SIZE = 168
 const DIAL_INSET = 4
