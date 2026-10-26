@@ -132,9 +132,11 @@ export function AtlasAdminInvitesPage() {
                   <StatusPill color={t.color} active={active}>
                     {t.label}
                   </StatusPill>
-                  {/* The note beside the count, 8px off it, centred on it, under a rule (none below, 2026-10-26). */}
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'stretch', marginTop: 6, paddingTop: 8, borderTop: rule }}>
-                    <span style={STATUS_COUNT}>{t.n}</span>
+                  {/* The note beside the count, a 1px rule between them with 12px either side, centred on it, under a rule (none below, 2026-10-26). */}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 12, alignSelf: 'stretch', marginTop: 6, paddingTop: 8, borderTop: rule }}>
+                    {/* Playfair's -1.68px tracking trails the count too; 2px back keeps the rule mid-way. */}
+                    <span style={{ ...STATUS_COUNT, marginRight: 2 }}>{t.n}</span>
+                    <span aria-hidden style={{ flex: 'none', alignSelf: 'stretch', width: 1, borderRadius: 1, background: 'var(--admin-atlas-primary-200)' }} />
                     <StatusNote twoLines>
                       {t.note}
                     </StatusNote>
