@@ -455,8 +455,10 @@ export function AtlasAdminStudentsPage() {
               parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
             />
           </div>
-          {/* The cards' tops 8px above the ring's outer edge (the dial panel's 16px + eyebrow 18 + gap 8 + DIAL_INSET, less 8); 25px under them. */}
-          <div style={{ ...ANALYSIS_PANEL, position: 'relative', flex: '1 1 480px', minWidth: 0, padding: `${16 + 18 + 8 + DIAL_INSET - 8}px 24px 25px` }}>{statusGrid(6)}</div>
+          {/* The cards centred on the dial: a box the dial's height, level with it (the dial panel's 16px + eyebrow 18 + gap 8), the grid centred in it. */}
+          <div style={{ ...ANALYSIS_PANEL, position: 'relative', flex: '1 1 480px', minWidth: 0, padding: `${16 + 18 + 8}px 24px 16px` }}>
+            <div style={{ height: DIAL_SIZE_ONE_ROW, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>{statusGrid(6)}</div>
+          </div>
         </div>
         ) : analysis === 'dial-grid' ? (
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 40, padding: 32, borderRadius: 18, background: 'var(--admin-atlas-primary-100)' }}>
