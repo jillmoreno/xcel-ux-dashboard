@@ -318,7 +318,7 @@ export function AtlasAdminStudentsPage() {
                     alignItems: 'stretch',
                     /* One row: 18px either side of the count | share rule (8 more than the 3×2's 10). */
                     gap: oneRow ? 18 : 10,
-                    marginTop: oneRow ? 10 : 2,
+                    marginTop: oneRow ? 6 : 2,
                     marginBottom: oneRow ? 2 : 0,
                     ...(oneRow ? { padding: '8px 0', borderTop: figureRule, borderBottom: figureRule } : null),
                   }}
