@@ -755,7 +755,7 @@ function StatusDial({
             />
           ) : null,
         )}
-        {/* Active Students selected (the default): a full ring in its colour at 30%, at a selected arc's width, washed over every segment. */}
+        {/* Active Students selected (the default): a full ring in its colour at 30%, 2px wider than a selected arc (14px), washed over every segment. */}
         {active === 'all' ? (
           <circle
             aria-hidden
@@ -765,7 +765,7 @@ function StatusDial({
             fill="none"
             stroke="var(--admin-atlas-status-active)"
             strokeOpacity={0.3}
-            strokeWidth={stroke + 4}
+            strokeWidth={stroke + 6}
             style={{ pointerEvents: 'none' }}
           />
         ) : null}
