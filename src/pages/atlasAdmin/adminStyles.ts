@@ -188,6 +188,7 @@ export const INPUT: CSSProperties = {
    so every card in a row fills to the tallest. The pill is StatusPill and the
    note StatusNote (adminUi). */
 export const STATUS_CARD: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: 'none', borderStyle: 'solid', borderWidth: 1, borderRadius: 14, cursor: 'pointer', textAlign: 'left' }
-/* Playfair Bold with lining figures (`lnum`): every digit on one baseline — its default old-style figures drop 3, 4, 5, 7, 9 below it. */
-export const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 28, fontWeight: 700, lineHeight: '20px', letterSpacing: '-1.68px', whiteSpace: 'nowrap', fontVariantNumeric: 'lining-nums proportional-nums', color: 'var(--admin-atlas-ink)' }
+/* Playfair Bold with lining figures (`lnum`, asked for both ways so no browser falls back): every numeral the same height on one
+   baseline — Playfair's default old-style figures drop 3, 4, 5, 7, 9 below it and raise 6 and 8. */
+export const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 28, fontWeight: 700, lineHeight: '20px', letterSpacing: '-1.68px', whiteSpace: 'nowrap', fontVariantNumeric: 'lining-nums proportional-nums', fontFeatureSettings: '"lnum" 1, "pnum" 1', color: 'var(--admin-atlas-ink)' }
 export const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: 'var(--font-body)', fontSize: 11, lineHeight: '13px', color: 'var(--admin-text)' }

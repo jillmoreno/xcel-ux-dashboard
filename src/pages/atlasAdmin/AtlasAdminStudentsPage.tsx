@@ -787,7 +787,7 @@ function StatusDial({
       </svg>
       <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
         <span style={DIAL_LABEL}>Total</span>
-        <span style={{ fontFamily: 'var(--admin-font-playfair)', fontWeight: 900, fontVariantNumeric: 'lining-nums tabular-nums', fontSize: 'var(--admin-atlas-h5-size)', lineHeight: 'var(--admin-atlas-h5-line)', color: 'var(--admin-ink)' }}>{total}</span>
+        <span style={{ fontFamily: 'var(--admin-font-playfair)', fontWeight: 900, fontVariantNumeric: 'lining-nums tabular-nums', fontFeatureSettings: '"lnum" 1, "tnum" 1', fontSize: 'var(--admin-atlas-h5-size)', lineHeight: 'var(--admin-atlas-h5-line)', color: 'var(--admin-ink)' }}>{total}</span>
         <span style={DIAL_LABEL}>Students</span>
       </div>
     </div>
@@ -842,6 +842,7 @@ const TILE_NUMBER: CSSProperties = {
   lineHeight: 'var(--admin-atlas-h5-line)',
   letterSpacing: '-0.01em',
   fontVariantNumeric: 'lining-nums tabular-nums',
+  fontFeatureSettings: '"lnum" 1, "tnum" 1',
 }
 const TRACK: CSSProperties = {
   marginTop: 12,
