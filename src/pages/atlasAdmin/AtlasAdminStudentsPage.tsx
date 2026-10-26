@@ -294,8 +294,8 @@ export function AtlasAdminStudentsPage() {
                 borderColor: oneRow ? 'transparent' : 'var(--admin-atlas-primary-200)',
                 background: active ? 'var(--admin-surface)' : oneRow ? 'var(--admin-fill)' : 'none',
                 boxShadow: active && oneRow ? 'var(--admin-shadow-tile-active)' : undefined,
-                /* One row: at least as tall as the dial (168px). */
-                minHeight: oneRow ? 168 : undefined,
+                /* One row: at least as tall as the dial's ring — its 168px box less 4px each side (radius 76 + half its 8px stroke). */
+                minHeight: oneRow ? 160 : undefined,
               }}
             >
               <div style={{ ...STATUS_BODY, padding: oneRow ? '24px 16px' : 16, containerType: oneRow ? 'normal' : 'inline-size' }}>
@@ -425,8 +425,8 @@ export function AtlasAdminStudentsPage() {
                 parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
               />
             </div>
-            {/* The cards' tops on the dial's top: the dial panel's 24px + eyebrow 18 + gap 8. */}
-            <div style={{ ...ANALYSIS_PANEL, flex: '1 1 480px', minWidth: 0, padding: '50px 24px 16px' }}>{statusGrid(6)}</div>
+            {/* The cards' tops on the ring's outer edge: the dial panel's 24px + eyebrow 18 + gap 8, + the 4px between the dial's box and its ring. */}
+            <div style={{ ...ANALYSIS_PANEL, flex: '1 1 480px', minWidth: 0, padding: '54px 24px 16px' }}>{statusGrid(6)}</div>
           </div>
         </div>
         ) : (
