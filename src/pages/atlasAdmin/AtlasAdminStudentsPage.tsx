@@ -281,18 +281,19 @@ export function AtlasAdminStudentsPage() {
                         value={licensedWindow}
                         onClick={(e) => e.stopPropagation()}
                         onChange={(e) => setLicensedWindow(e.target.value)}
-                        style={{ ...SELECT, marginTop: undefined, appearance: 'none', padding: '4px 22px 4px 6px', width: 'auto', cursor: 'pointer' }}
+                        style={{ ...SELECT, marginTop: undefined, appearance: 'none', padding: '4px 24px 4px 6px', width: 'auto', cursor: 'pointer' }}
                       >
                         <option value="90d">Last 90 days</option>
                         <option value="year">This year</option>
                         <option value="all">All time</option>
                       </select>
-                      <ChevronDownRegular aria-hidden size={8} style={{ position: 'absolute', right: 10, top: '50%', translate: '0 -50%', pointerEvents: 'none', color: 'var(--admin-text)' }} />
+                      <ChevronDownRegular aria-hidden size={10} style={{ position: 'absolute', right: 10, top: '50%', translate: '0 -50%', pointerEvents: 'none', color: 'var(--admin-text)' }} />
                     </span>
                   ) : null}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'stretch', gap: 10, marginTop: 2 }}>
-                  <span style={STATUS_COUNT}>{n.toLocaleString('en-US')}</span>
+                  {/* Playfair's -1.68px tracking trails the count too; 2px back puts the rule mid-way between the figures' ink. */}
+                  <span style={{ ...STATUS_COUNT, marginRight: 2 }}>{n.toLocaleString('en-US')}</span>
                   <span aria-hidden style={STATUS_SEP} />
                   <span style={STATUS_COUNT}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
                 </div>
