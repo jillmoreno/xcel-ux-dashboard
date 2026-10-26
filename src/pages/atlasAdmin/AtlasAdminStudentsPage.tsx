@@ -287,11 +287,13 @@ export function AtlasAdminStudentsPage() {
                 }
               }}
               className="cre-admin-tile cre-admin-status-card"
-              /* Selected: white, edged in primary 200. At rest — 3×2: no fill, the same edge; one row: the search field's fill, no edge (primary 200 on hover, tokens.css). */
+              /* 3×2: primary 200 edge always; selected fills white. One row: no edge (primary 200 on hover, tokens.css) — at rest the
+                 search field's fill, selected white and lifted on the tiles' 4/4 15% shadow. */
               style={{
                 ...STATUS_CARD,
-                borderColor: active || !oneRow ? 'var(--admin-atlas-primary-200)' : 'transparent',
+                borderColor: oneRow ? 'transparent' : 'var(--admin-atlas-primary-200)',
                 background: active ? 'var(--admin-surface)' : oneRow ? 'var(--admin-fill)' : 'none',
+                boxShadow: active && oneRow ? 'var(--admin-shadow-tile-active)' : undefined,
               }}
             >
               <div style={{ ...STATUS_BODY, padding: oneRow ? '24px 16px' : 16, containerType: oneRow ? 'normal' : 'inline-size' }}>
