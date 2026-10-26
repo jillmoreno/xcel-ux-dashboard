@@ -300,7 +300,7 @@ export function AtlasAdminStudentsPage() {
                 minHeight: oneRow ? DIAL_SIZE_ONE_ROW - 2 * DIAL_INSET - 4 : undefined,
               }}
             >
-              <div style={{ ...STATUS_BODY, padding: oneRow ? '16px 16px 24px' : 16, containerType: oneRow ? 'normal' : 'inline-size' }}>
+              <div style={{ ...STATUS_BODY, padding: 16, containerType: oneRow ? 'normal' : 'inline-size' }}>
                 {/* Licensed's window sits top right, across from its pill (in the one-row version, under its figures). */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                   {/* Default: a status-coloured dot beside the label. Active: the dot slides open, left to right, into a filled pill (tokens.css). */}
