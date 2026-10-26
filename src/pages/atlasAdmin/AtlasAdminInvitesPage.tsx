@@ -162,7 +162,8 @@ export function AtlasAdminInvitesPage() {
                       boxShadow: active ? 'var(--admin-shadow-tile-active)' : undefined,
                     }}
                   >
-                    <StatusPill color={t.color} active={active}>
+                    {/* Invites' labels 1px higher than Students' (tokens.css sets 2.65 / 1.35), the pill's height unchanged. */}
+                    <StatusPill color={t.color} active={active} style={{ paddingTop: 1.65, paddingBottom: 2.35 }}>
                       {t.label}
                     </StatusPill>
                     {/* The note beside the count, a 1px rule between them with 12px either side, centred on it, under a rule (none below, 2026-10-26). */}

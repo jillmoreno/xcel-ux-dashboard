@@ -186,9 +186,9 @@ export function AdminToast() {
 
 /** A status card's pill (tokens.css): at rest a dot in `color` beside the
  *  label; active, the dot slides open left to right into a filled pill. */
-export function StatusPill({ color, active, children }: { color: string; active: boolean; children: ReactNode }) {
+export function StatusPill({ color, active, style, children }: { color: string; active: boolean; style?: CSSProperties; children: ReactNode }) {
   return (
-    <span className="cre-admin-status-pill" data-active={active || undefined} style={{ '--pill': color } as CSSProperties}>
+    <span className="cre-admin-status-pill" data-active={active || undefined} style={{ '--pill': color, ...style } as CSSProperties}>
       <span aria-hidden className="cre-admin-status-pill-fill" />
       <CircleDotSolid aria-hidden size={12} className="cre-admin-status-pill-icon" />
       {children}
