@@ -294,8 +294,8 @@ export function AtlasAdminStudentsPage() {
                 borderColor: oneRow ? 'transparent' : 'var(--admin-atlas-primary-200)',
                 background: active ? 'var(--admin-surface)' : oneRow ? 'var(--admin-fill)' : 'none',
                 boxShadow: active && oneRow ? 'var(--admin-shadow-tile-active)' : undefined,
-                /* One row: at least as tall as the dial's ring — its 168px box less 4px each side (radius 76 + half its 8px stroke). */
-                minHeight: oneRow ? 160 : undefined,
+                /* One row: at least 156px — the dial's ring (its 168px box less 4px each side) less 4px. */
+                minHeight: oneRow ? 156 : undefined,
               }}
             >
               <div style={{ ...STATUS_BODY, padding: oneRow ? '24px 16px' : 16, containerType: oneRow ? 'normal' : 'inline-size' }}>
