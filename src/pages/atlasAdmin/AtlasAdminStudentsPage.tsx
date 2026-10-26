@@ -742,19 +742,6 @@ function StatusDial({
           fillOpacity={0.08}
           style={{ pointerEvents: 'none' }}
         />
-        {/* Active Students selected (the default): a full primary 200 ring, 2px wider than a selected arc (14px), laid under the segments (drawn first). */}
-        {active === 'all' ? (
-          <circle
-            aria-hidden
-            cx={size / 2}
-            cy={size / 2}
-            r={r}
-            fill="none"
-            stroke="var(--admin-atlas-primary-200)"
-            strokeWidth={stroke + 6}
-            style={{ pointerEvents: 'none' }}
-          />
-        ) : null}
         {arcs.map((a) =>
           a.len > 0 ? (
             <circle
