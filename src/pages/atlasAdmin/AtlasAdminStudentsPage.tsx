@@ -309,7 +309,17 @@ export function AtlasAdminStudentsPage() {
                   </span>
                   {windowBelow ? null : licensedPicker}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'stretch', gap: 10, marginTop: oneRow ? 10 : 2, marginBottom: oneRow ? 8 : 0 }}>
+                {/* One row: a primary 100 rule 6px under the figures, across the card. */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'stretch',
+                    gap: 10,
+                    marginTop: oneRow ? 10 : 2,
+                    marginBottom: oneRow ? 8 : 0,
+                    ...(oneRow ? { paddingBottom: 6, borderBottom: '1px solid var(--admin-atlas-primary-100)' } : null),
+                  }}
+                >
                   {/* Playfair's -1.68px tracking trails the count too; 2px back puts the rule mid-way between the figures' ink. */}
                   <span style={{ ...STATUS_COUNT, marginRight: 2 }}>{n.toLocaleString('en-US')}</span>
                   <span aria-hidden style={STATUS_SEP} />
