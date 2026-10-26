@@ -313,7 +313,8 @@ export function AtlasAdminStudentsPage() {
                   {/* Playfair's -1.68px tracking trails the count too; 2px back puts the rule mid-way between the figures' ink. */}
                   <span style={{ ...STATUS_COUNT, marginRight: 2 }}>{n.toLocaleString('en-US')}</span>
                   <span aria-hidden style={STATUS_SEP} />
-                  <span style={STATUS_COUNT}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
+                  {/* One row: the share two levels lighter than the count — primary 600 against its 800. */}
+                  <span style={oneRow ? { ...STATUS_COUNT, color: 'var(--admin-atlas-primary-600)' } : STATUS_COUNT}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
                 </div>
                 {t.id === 'licensed' ? (windowBelow ? licensedPicker : null) : <p style={STATUS_DESC}>{t.note}</p>}
               </div>
