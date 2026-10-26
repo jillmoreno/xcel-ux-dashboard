@@ -307,7 +307,7 @@ export function AtlasAdminStudentsPage() {
                   <span className="cre-admin-status-pill" data-active={active || undefined} style={{ '--pill': strip } as CSSProperties}>
                     <span aria-hidden className="cre-admin-status-pill-fill" />
                     <CircleDotSolid aria-hidden size={12} className="cre-admin-status-pill-icon" />
-                    {t.id === 'all' ? 'Active' : t.label}
+                    {t.id === 'all' ? 'Active Students' : t.label}
                   </span>
                   {windowBelow ? null : licensedPicker}
                 </div>
@@ -332,7 +332,7 @@ export function AtlasAdminStudentsPage() {
                 {t.id === 'licensed' ? (windowBelow ? licensedPicker : null) : (
                   <p style={STATUS_DESC}>
                     {/* Each " · " value on its own line, its figures in semibold (split on the numbers: every odd piece is one). */}
-                    {t.note.split(' · ').map((line, l) => (
+                    {(t.id === 'all' ? 'Students active in learning pipeline' : t.note).split(' · ').map((line, l) => (
                       <Fragment key={l}>
                         {l ? <br /> : null}
                         {line.split(/(\d[\d,]*)/).map((part, i) => (i % 2 ? <b key={i} style={{ fontWeight: 600 }}>{part}</b> : part))}
