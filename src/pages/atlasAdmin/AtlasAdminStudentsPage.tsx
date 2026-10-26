@@ -408,8 +408,8 @@ export function AtlasAdminStudentsPage() {
           </div>
           {/* The same, its six cards in one row (2026-10-26, for comparison) — the dial and the cards each in their own panel, side by side and the same height. */}
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', gap: 8 }}>
-            {/* The eyebrow and dial centred both ways — the same space above as below. */}
-            <div style={{ ...ANALYSIS_PANEL, flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '24px 16px' }}>
+            {/* The eyebrow and dial centred across; 24px above, 16px below. */}
+            <div style={{ ...ANALYSIS_PANEL, flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '24px 16px 16px' }}>
               <p style={EYEBROW}>Student Compliance</p>
               <StatusDial
                 active={bucket}
@@ -418,7 +418,7 @@ export function AtlasAdminStudentsPage() {
                 parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
               />
             </div>
-            <div style={{ ...ANALYSIS_PANEL, flex: '1 1 480px', minWidth: 0 }}>{statusGrid(6)}</div>
+            <div style={{ ...ANALYSIS_PANEL, flex: '1 1 480px', minWidth: 0, padding: '32px 32px 24px' }}>{statusGrid(6)}</div>
           </div>
         </div>
         ) : (
