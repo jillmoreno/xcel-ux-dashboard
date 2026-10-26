@@ -309,7 +309,7 @@ export function AtlasAdminStudentsPage() {
                   </span>
                   {windowBelow ? null : licensedPicker}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'stretch', gap: 10, marginTop: oneRow ? 6 : 2, marginBottom: oneRow ? 4 : 0 }}>
+                <div style={{ display: 'flex', alignItems: 'stretch', gap: 10, marginTop: oneRow ? 10 : 2, marginBottom: oneRow ? 8 : 0 }}>
                   {/* Playfair's -1.68px tracking trails the count too; 2px back puts the rule mid-way between the figures' ink. */}
                   <span style={{ ...STATUS_COUNT, marginRight: 2 }}>{n.toLocaleString('en-US')}</span>
                   <span aria-hidden style={STATUS_SEP} />
