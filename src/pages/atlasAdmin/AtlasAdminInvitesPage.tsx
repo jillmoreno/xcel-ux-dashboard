@@ -132,8 +132,8 @@ export function AtlasAdminInvitesPage() {
                   <StatusPill color={t.color} active={active}>
                     {t.label}
                   </StatusPill>
-                  {/* The note beside the count, 8px off it, centred on it, inside the ruled band. */}
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'stretch', marginTop: 6, marginBottom: 2, padding: '8px 0', borderTop: rule, borderBottom: rule }}>
+                  {/* The note beside the count, 8px off it, centred on it, under a rule (none below, 2026-10-26). */}
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, alignSelf: 'stretch', marginTop: 6, paddingTop: 8, borderTop: rule }}>
                     <span style={STATUS_COUNT}>{t.n}</span>
                     <StatusNote twoLines>
                       {t.note}
