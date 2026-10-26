@@ -623,7 +623,7 @@ export function AtlasAdminStudentsPage() {
                     <StagePill stage={l.stage} />
                   </td>
                   <td style={{ ...TD, whiteSpace: 'nowrap', color: 'var(--admin-text)' }}>{relativeDays(l.lastActiveDays)}</td>
-                  <td style={{ ...TD, whiteSpace: 'nowrap', color: 'var(--admin-text)' }}>{formatExamDate(l.examDate)}</td>
+                  <td style={{ ...TD, whiteSpace: 'nowrap', fontWeight: l.examDate ? 700 : undefined, color: 'var(--admin-text)' }}>{formatExamDate(l.examDate)}</td>
                 </tr>
               ))}
               {visible.length === 0 ? (
@@ -808,8 +808,8 @@ const TH: CSSProperties = {
   whiteSpace: 'nowrap',
 }
 const TD: CSSProperties = { padding: '12px', verticalAlign: 'middle' }
-/* The progress columns: just the figure, no ring (2026-10-26). */
-const PCT_TD: CSSProperties = { ...TD, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-text)' }
+/* The progress columns: just the figure, no ring, in bold like every figure in the rows (2026-10-26). */
+const PCT_TD: CSSProperties = { ...TD, whiteSpace: 'nowrap', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: 'var(--admin-text)' }
 /* The roster's columns, widths fixed so filtering never moves them. Learner
    takes what is left; at the card's 1310px every column shows. Long headers
    break onto a second line. */

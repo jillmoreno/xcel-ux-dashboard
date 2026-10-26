@@ -83,7 +83,12 @@ export function ReadinessCell({ readiness, score }: { readiness: Readiness | nul
   return (
     <span style={{ fontSize: 13, color: READINESS_INK[readiness], fontWeight: 600, whiteSpace: 'nowrap' }}>
       {READINESS_LABEL[readiness]}
-      {score !== null ? <span style={{ fontWeight: 400, color: 'var(--admin-muted)' }}> · {score}</span> : null}
+      {score !== null ? (
+        <span style={{ fontWeight: 400, color: 'var(--admin-muted)' }}>
+          {' · '}
+          <b style={{ fontWeight: 700 }}>{score}</b>
+        </span>
+      ) : null}
     </span>
   )
 }
