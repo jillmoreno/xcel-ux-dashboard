@@ -16,7 +16,7 @@ import {
 import { LOCATIONS, jobRoleOf, membersOfLocation } from '@/data/atlasAdmin/organization'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, CARD, CHIP, CHIP_ON, EYEBROW, PAGE_H1, PAGE_SUB } from './adminStyles'
-import { ChipMenu, MenuItem, PreparedPill, ProgressRing, ReadinessCell, StagePill } from './adminUi'
+import { ChipMenu, MenuItem, PreparedPill, ReadinessCell, StagePill } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
 import { StudentsEmptyState } from './StudentsEmptyState'
 
@@ -553,7 +553,13 @@ export function AtlasAdminStudentsPage() {
         ) : null}
 
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ minWidth: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
+          {/* Fixed layout on set column widths: the whole roster fits the card at 1310px, and no column moves when a status card refilters it. */}
+          <table style={{ width: '100%', minWidth: ROSTER_MIN, tableLayout: 'fixed', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
+            <colgroup>
+              {ROSTER_COLS.map((c) => (
+                <col key={c.key} style={c.width ? { width: c.width } : undefined} />
+              ))}
+            </colgroup>
             <thead style={{ background: 'var(--admin-fill-soft)' }}>
               <tr>
                 <th className="cre-admin-sticky-col" style={{ ...TH, width: 40, padding: '12px 16px' }}>
@@ -571,13 +577,17 @@ export function AtlasAdminStudentsPage() {
                     style={CHECKBOX}
                   />
                 </th>
-                {['Learner', 'Team', 'Progress (content)', 'Progress (exam prep)', 'Readiness', 'Prepared to Pass', 'Stage', 'Last active', 'Exam date'].map(
-                  (h) => (
-                    <th key={h} style={TH}>
-                      {h}
-                    </th>
-                  ),
-                )}
+                {ROSTER_COLS.slice(1).map((c) => (
+                  <th key={c.key} style={{ ...TH, verticalAlign: 'bottom' }}>
+                    {c.label}
+                    {c.label2 ? (
+                      <>
+                        <br />
+                        {c.label2}
+                      </>
+                    ) : null}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -600,13 +610,9 @@ export function AtlasAdminStudentsPage() {
                       {l.email}
                     </p>
                   </td>
-                  <td style={{ ...TD, whiteSpace: 'nowrap', color: 'var(--admin-text)' }}>{l.team}</td>
-                  <td style={TD}>
-                    <ProgressRing pct={l.contentPct} color="var(--admin-success-ink)" label="Course content" />
-                  </td>
-                  <td style={TD}>
-                    <ProgressRing pct={l.prepPct} color="var(--admin-slate-700)" label="Exam prep" />
-                  </td>
+                  <td style={{ ...TD, color: 'var(--admin-text)' }}>{l.team}</td>
+                  <td style={PCT_TD}>{l.contentPct === null ? '—' : `${l.contentPct}%`}</td>
+                  <td style={PCT_TD}>{l.prepPct === null ? '—' : `${l.prepPct}%`}</td>
                   <td style={TD}>
                     <ReadinessCell readiness={l.readiness} score={l.score} />
                   </td>
@@ -802,6 +808,26 @@ const TH: CSSProperties = {
   whiteSpace: 'nowrap',
 }
 const TD: CSSProperties = { padding: '12px', verticalAlign: 'middle' }
+/* The progress columns: just the figure, no ring (2026-10-26). */
+const PCT_TD: CSSProperties = { ...TD, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-text)' }
+/* The roster's columns, widths fixed so filtering never moves them. Learner
+   takes what is left; at the card's 1310px every column shows. Long headers
+   break onto a second line. */
+const ROSTER_COLS: { key: string; label?: string; label2?: string; width?: number }[] = [
+  { key: 'select', width: 48 },
+  { key: 'learner', label: 'Learner' },
+  { key: 'team', label: 'Team', width: 150 },
+  /* Each its widest content across the whole roster, plus 24px of padding (measured 2026-10-26). */
+  { key: 'content', label: 'Progress', label2: '(content)', width: 100 },
+  { key: 'prep', label: 'Progress', label2: '(exam prep)', width: 110 },
+  { key: 'readiness', label: 'Readiness', width: 112 },
+  { key: 'prepared', label: 'Prepared', label2: 'to Pass', width: 142 },
+  { key: 'stage', label: 'Stage', width: 128 },
+  { key: 'active', label: 'Last active', width: 108 },
+  { key: 'exam', label: 'Exam date', width: 112 },
+]
+/* Below this the card scrolls sideways — Learner keeps 262px, its longest email. */
+const ROSTER_MIN = ROSTER_COLS.reduce((n, c) => n + (c.width ?? 262), 0)
 const CHECKBOX: CSSProperties = { width: 16, height: 16, accentColor: 'var(--admin-brand)', cursor: 'pointer' }
 const NAME: CSSProperties = {
   padding: 0,
