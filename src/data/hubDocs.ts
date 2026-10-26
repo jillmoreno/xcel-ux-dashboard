@@ -41,10 +41,10 @@ export const HUB_DOCS: HubDoc[] = [
     title: 'Designer Workflow on the Hub',
     audience: 'Every day · designers',
     blurb:
-      'The day-to-day. Sitting down, keeping your branch current, building a change, sharing it on Refinement, promoting a surface — plus the ready-made routines, the morning auto-rebase, and what to say when something breaks. Assumes your machine is already set up.',
+      'The day-to-day. Sitting down, keeping your branch current, building a change, sharing it on Refinement, promoting a surface, writing the dev handoff — plus the ready-made routines, the morning auto-rebase, and what to say when something breaks. Assumes your machine is already set up.',
     href: '/designer-workflow/',
     pdf: '/designer-workflow/designer-workflow.pdf',
-    updated: '2026-10-16',
+    updated: '2026-10-26',
   },
   {
     id: 'contributing',
@@ -54,7 +54,7 @@ export const HUB_DOCS: HubDoc[] = [
       'Getting set up: the accounts, the clone, the dependencies, putting your name on your commits — then the words you will see, the shape of the whole loop in one picture, where a new screen belongs, and the one feature-flag rule. Ends by handing you to the day-to-day guide.',
     href: '/contributing/',
     pdf: '/contributing/contributing.pdf',
-    updated: '2026-10-15',
+    updated: '2026-10-26',
   },
   {
     id: 'about',

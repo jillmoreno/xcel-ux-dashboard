@@ -346,6 +346,7 @@ export function PrototypeFeaturePage({
           featureId={feature.id}
           embedded={embedded}
           decisions={feature.devHandoff.decisions}
+          designerNotes={feature.devHandoff.designerNotes}
         />
       ) : (
         <TabEmptyState featureId={feature.id} field="devHandoff.uiComponents">
@@ -643,6 +644,11 @@ const COMPONENT_SECTIONS = [
   { id: 'decisions', label: 'Questions' },
   { id: 'edge-states', label: 'Edge cases' },
   { id: 'spec', label: 'Design Spec' },
+  /* Feature-level, and LAST (2026-10-26): the designer's own free-form words
+     to engineering, for whatever the sections above have no slot for. Always
+     drawn — blank by default — so "nothing to add" is visible rather than
+     indistinguishable from "never asked". `devHandoff.designerNotes`. */
+  { id: 'designer-notes', label: "Designer's Notes" },
 ] as const
 
 type ComponentSectionId = (typeof COMPONENT_SECTIONS)[number]['id']
@@ -729,6 +735,7 @@ function UiComponentsSection({
   featureId,
   embedded = false,
   decisions,
+  designerNotes,
 }: {
   /** Forwarded so the detail can build the standalone handoff URL — the page
    *  that renders every variant of a component side by side. */
@@ -741,6 +748,8 @@ function UiComponentsSection({
    *  detail's single scroll — see the one-page note on the page body. Feature-level, so only one component's detail shows them
    *  at a time, which is all a reader can see anyway. */
   decisions?: DevHandoffDecisions
+  /** The designer's free-form notes — the last section of the scroll. */
+  designerNotes?: string[]
 }) {
   const ordered = [...components]
     .map((c, i) => ({ c, i }))
@@ -768,6 +777,7 @@ function UiComponentsSection({
         featureId={featureId}
         embedded={embedded}
         decisions={decisions}
+        designerNotes={designerNotes}
       />
     )
   }
@@ -785,6 +795,7 @@ function UiComponentsSection({
         featureId={featureId}
         embedded={embedded}
         decisions={decisions}
+        designerNotes={designerNotes}
         onBack={() => setOpenId(null)}
       />
     )
@@ -831,6 +842,13 @@ function UiComponentsSection({
           </div>
         </div>
       )}
+      {/* Always, blank by default — see `designerNotes` on the type. */}
+      <div style={{ marginTop: 32 }}>
+        <h4 style={handoffSubheadingStyle}>Designer&rsquo;s Notes</h4>
+        <div style={{ ...inlineHandoffFrameStyle, marginTop: 12 }}>
+          <DesignerNotesBody notes={designerNotes} />
+        </div>
+      </div>
     </section>
   )
 }
@@ -1088,6 +1106,7 @@ function UiComponentDetail({
   featureId,
   embedded = false,
   decisions,
+  designerNotes,
   onBack,
 }: {
   component: DevHandoffComponent
@@ -1095,6 +1114,8 @@ function UiComponentDetail({
   embedded?: boolean
   /** See `UiComponentsSection` — the last section of the one-page scroll. */
   decisions?: DevHandoffDecisions
+  /** The designer's free-form notes — rendered last, blank by default. */
+  designerNotes?: string[]
   /** Omitted when the feature has a single component — there is no list to
    *  return to. */
   onBack?: () => void
@@ -1201,8 +1222,7 @@ function UiComponentDetail({
         </div>
       ) : (
         <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--color-text-tertiary)' }}>
-          Not authored yet — add <code>{missingField}</code> in{' '}
-          <code>src/data/prototypeFeatures.ts</code>.
+          Not authored yet — add <code>{missingField}</code> to this handoff&rsquo;s data file.
         </p>
       )}
     </div>
@@ -1532,8 +1552,39 @@ function UiComponentDetail({
         'designSpec',
       )}
 
-
+      {section(
+        'designer-notes',
+        'Designer’s Notes',
+        'Anything the designer wants engineering to know that the sections above have no slot for.',
+        <DesignerNotesBody notes={designerNotes} />,
+        'designerNotes',
+      )}
     </section>
+  )
+}
+
+/**
+ * The designer's own words, as paragraphs — or the blank default. Drawn in
+ * both the list view and the detail so "nothing to add" is a visible state
+ * (the same reasoning as the Questions placeholder, 2026-10-22).
+ */
+function DesignerNotesBody({ notes }: { notes?: string[] }) {
+  const items = (notes ?? []).map((n) => n.trim()).filter(Boolean)
+  if (items.length === 0) {
+    return (
+      <p style={{ margin: 0, fontSize: 13, lineHeight: '19px', color: 'var(--color-text-tertiary)' }}>
+        No designer’s notes on this handoff yet.
+      </p>
+    )
+  }
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {items.map((n, i) => (
+        <p key={i} style={{ margin: 0, fontSize: 14, lineHeight: '21px', color: 'var(--color-text-primary)' }}>
+          {n}
+        </p>
+      ))}
+    </div>
   )
 }
 

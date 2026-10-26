@@ -116,6 +116,14 @@ export function featureHandoffMarkdown(feature: PrototypeFeature, origin: string
     if (decisions.openItems?.length) out.push(...listSection('Open items', decisions.openItems))
   }
 
+  // The designer's own words, when there are any — an empty section would read
+  // as a gap in the work, which is the opposite of what "nothing to add" means.
+  const notes = (feature.devHandoff?.designerNotes ?? []).map((n) => n.trim()).filter(Boolean)
+  if (notes.length) {
+    out.push("## Designer's notes", '')
+    for (const n of notes) out.push(n, '')
+  }
+
   const components = feature.devHandoff?.uiComponents ?? []
   if (components.length) {
     out.push('## UI components & UX logic', '')

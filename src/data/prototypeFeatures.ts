@@ -1,5 +1,6 @@
 import type { Brand, Membership } from '@/context/AccountContext'
 import type { DevStatus } from '@/components/prototype/devHandoffStatusUtil'
+import { HANDOFF_FEATURES } from './handoffFeatures'
 
 /**
  * ─────────────────────────────────────────────────────────────────────────
@@ -603,6 +604,14 @@ export type DevHandoffNotes = {
   alsoConsider?: DevHandoffPointer[]
   /** Closing note — e.g. how the demo feature flags map to these. */
   flagsNote?: string
+  /** DESIGNER'S NOTES (2026-10-26, Jillienne: "blank on default, and you can
+   *  ask the designer for any additional notes when the handoff is being
+   *  created"). Free-form paragraphs from the designer to engineering —
+   *  anything the structured sections have no slot for. Rendered as the LAST
+   *  section of the one-page handoff, drawn even when empty so a reader can
+   *  see there was nothing to add, and exported to Markdown only when there
+   *  is something. `/dev-handoff-notes` asks for it at the end of authoring. */
+  designerNotes?: string[]
 }
 
 export type PrototypeFeature = {
@@ -882,7 +891,7 @@ const PROTOTYPE_BASE = '/prototypes'
  *  inverse so that fails a test instead.
  * ───────────────────────────────────────────────────────────────────────── */
 
-export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
+const AUTHORED_FEATURES: PrototypeFeature[] = [
   {
     /*
      * THE IN-APP ROW THAT WAS THE ONLY ONE until 2026-10-14 — the invite row
@@ -1925,6 +1934,13 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     },
   },
 ]
+
+/**
+ * The rows the dashboard lists: the hand-authored ones above, then every dev
+ * handoff in `src/data/handoffs/` (2026-10-26 — one file per feature, the
+ * designers' own; `handoffFeatures.ts` says why). Consumers see one list.
+ */
+export const PROTOTYPE_FEATURES: PrototypeFeature[] = [...AUTHORED_FEATURES, ...HANDOFF_FEATURES]
 
 export function prototypeFeatureById(id: string): PrototypeFeature | undefined {
   return PROTOTYPE_FEATURES.find((f) => f.id === id)

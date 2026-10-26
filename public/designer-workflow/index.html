@@ -45,6 +45,36 @@
   routines and the morning task belong HERE, not there. The glossary and the
   troubleshooting table live here only — they were in both until today.
 
+  WHAT THE 2026-10-26 PASS CHANGED — the dev handoff became the designers' job:
+
+      Part 6   NEW, "Writing the dev handoff", between Prototype and Reading
+               the Hub, so every later part moved up one (map 7, trouble 8,
+               routines 9, morning 10, glossary 11; the nav and the two body
+               cross-references moved with them — the part numbers in THIS
+               comment's older blocks are left as they were written).
+               THE ROW IS THE DESIGNER'S OWN FILE. `/dev-handoff-notes` used
+               to write `src/data/prototypeFeatures.ts`, which the hook
+               refuses on a design branch — so for a few hours this part
+               taught a Markdown hand-over to Jill. Same day, her call:
+               handoffs moved to `src/data/handoffs/`, one file per feature
+               named after its id, globbed by `handoffFeatures.ts` and
+               unprotected. So the steps are: run it, answer, let it check
+               the code, it writes the file, push, move the To Do card to
+               Ready for Prototype and Handoff (that column's cards are
+               Jill's by the server's rule), set the status as the work
+               moves. ⚠ The status is THE DESIGNER'S — the first draft said
+               "leave it Not Ready until Jill says otherwise" and she
+               corrected it the same hour: the only two guardrails are
+               ship-to-main and promote-to-prototype. Not Ready is the
+               fail-closed DEFAULT for an unread page, not a lock.
+      Part 9   `/dev-handoff-notes` moved from "Jill's: recognise, don't run"
+               to "Yours" (four and four now), with a "Which one do I want?"
+               row.
+      Part 7   the Development row names who writes it and who puts it in.
+      Part 8   one row, for the refusal a designer sees if the routine
+               reaches the project list.
+      Part 11  three entries: Dev handoff, Development (section), Not Ready.
+
   WHAT THE 2026-10-16 PASS CHANGED, all of it main catching up with itself:
 
       Part 3   gained "Putting a decision on the design bar" — the two bars,
@@ -398,12 +428,13 @@
       <p class="eyebrow">The Hub</p>
       <a href="#refinement"><small>4</small>Sharing on Refinement</a>
       <a href="#promote"><small>5</small>Prototype and shipping</a>
-      <a href="#map"><small>6</small>Reading the Hub</a>
+      <a href="#handoff"><small>6</small>Writing the dev handoff</a>
+      <a href="#map"><small>7</small>Reading the Hub</a>
       <p class="eyebrow">Help</p>
-      <a href="#trouble"><small>7</small>When something goes wrong</a>
-      <a href="#routines"><small>8</small>The routines</a>
-      <a href="#morning"><small>9</small>Scheduled routines</a>
-      <a href="#glossary"><small>10</small>Glossary</a>
+      <a href="#trouble"><small>8</small>When something goes wrong</a>
+      <a href="#routines"><small>9</small>The routines</a>
+      <a href="#morning"><small>10</small>Scheduled routines</a>
+      <a href="#glossary"><small>11</small>Glossary</a>
     </nav>
     <div class="theme">
       <button type="button" id="theme-toggle" aria-label="Switch to dark mode" aria-pressed="false" title="Switch to dark mode">
@@ -415,7 +446,7 @@
 
   <main>
     <header class="head">
-      <p class="asof">As of 16 October 2026 · written by Jill Moreno</p>
+      <p class="asof">As of 26 October 2026 · written by Jill Moreno</p>
       <h1>Designer Workflow on the Hub</h1>
       <div class="actions">
         <a href="designer-workflow.pdf" download><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 12v1.5h10V12"/></svg>Download as PDF</a>
@@ -444,7 +475,7 @@
         <li><p><b>Read the line before, and the summary after.</b> Claude says what it is about to do, then what it did. If either surprises you, ask before going on.</p></li>
         <li><p><b>Allow the permission card when it matches what you asked for.</b> If it describes something else, click Deny and ask what it was trying to do.</p></li>
         <li><p><b>A refusal naming a file is correct.</b> That file is the Hub's own machinery and only Jill changes it. Tell her what you needed.</p></li>
-        <li><p><b>Type <code>/</code> for the routines.</b> Yours are <code>/promote-component</code>, <code>/share-branch</code> and <code>/promote-to-prototype</code> &mdash; <a href="#routines">Part 8</a> says what each one does.</p></li>
+        <li><p><b>Type <code>/</code> for the routines.</b> Yours are <code>/promote-component</code>, <code>/share-branch</code> and <code>/promote-to-prototype</code> &mdash; <a href="#routines">Part 9</a> says what each one does.</p></li>
       </ol>
 
       <h3>Then ask one question</h3>
@@ -478,7 +509,7 @@
       <div class="say"><span class="me">YOU</span><q>How far behind main am I now, and what is the review link?</q></div>
       <p>You want <b>0 behind</b>. Netlify takes two to four minutes to build, and <a href="https://app.netlify.com/projects/ux-design-xceldashboard/deploys">the deploys page</a> shows where it is up to. Click through from the page a reviewer would start on: if it looks like it did before the rebase, you are done. If something that used to work is broken, that is where main and your branch disagree &mdash; tell Jill which page.</p>
 
-      <div class="note"><p>Or have Claude do all of this for you every weekday morning &mdash; <a href="#morning">Part 9</a>.</p></div>
+      <div class="note"><p>Or have Claude do all of this for you every weekday morning &mdash; <a href="#morning">Part 10</a>.</p></div>
     </section>
 
     <section id="build">
@@ -601,8 +632,45 @@
       <p>If you own the surface, you can also decide something should NOT go in. Say so, archive the Refinement row, and tell Jill; she has a routine that records why a branch was tried and declined.</p>
     </section>
 
+    <section id="handoff">
+      <h2><span class="part">Part 6</span>Writing the dev handoff</h2>
+      <p class="lead">A handoff is the page a developer builds a feature from. You write it with <code>/dev-handoff-notes</code>, in your own words. It becomes your own row on the Development board, in a file that is yours, with a status you set as the work moves. The only things you cannot do are ship to main, which is Jill's, and promote to prototype for a surface you do not own (<a href="#promote">Part 5</a>).</p>
+      <p><b>What it is.</b> One page per feature at <code>/prototype/&#8249;feature&#8250;</code>: one scroll, with a chip strip that jumps between its sections &mdash; <b>States</b>, <b>Options</b>, <b>CTAs</b>, <b>Questions</b>, <b>Edge cases</b>, <b>Design Spec</b>, and <b>Designer's Notes</b> last &mdash; and an <b>Open live preview</b> button in the header. A section you have not written yet still shows, with a note naming the gap, so a reader can tell "not written" from "there is none". The page exports as Markdown from its Actions menu &mdash; Share Link, Download .md, Copy .md &mdash; so a ticket can carry it.</p>
+      <div class="rule-box">A developer will build exactly what the page says.<small>Every line is a promise. A state you left out is a state they will not build; a line describing something you have since changed is something they will build wrong.</small></div>
+      <h3>Have these ready before you start</h3>
+      <p>The routine asks for them one at a time, component by component. It does not invent any of them, so a thin answer gives a thin page.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>It asks for</th><th>Which means</th><th>The shape of a good answer</th></tr></thead>
+        <tbody>
+          <tr><td class="k">The components</td><td>What the feature is made of. One is fine; six is fine. Each needs a name, where it lives on the page, and two lines on what it is for.</td><td>"Course Progress card &mdash; Home, top of the right column. Shows how far through the course the learner is and what to do next."</td></tr>
+          <tr><td class="k">The states</td><td>Every version of each component, with <i>when</i> it appears and, where it is not obvious, <i>why</i>. This is the one list of states; there is no second one anywhere else on the page.</td><td>"No end date &mdash; when the learner has no access-expiry date. The Expires row does not render at all."</td></tr>
+          <tr><td class="k">The buttons</td><td>Every control on the component and what it does, one line each, including the ones that are drawn and do nothing yet.</td><td>"Course Overview &mdash; opens the Course Overview page in Compass."</td></tr>
+          <tr><td class="k">The edge cases</td><td>Asked and answered: a question and its answer. A developer arrives holding the question, so phrase it as one.</td><td>"Q: What if there is no image? A: The other parts of the card shift left."</td></tr>
+          <tr><td class="k">The spec</td><td>The tokens it uses, how it behaves at each width, and where the design lives (the Figma link).</td><td>"Padding is space-4; the title is text-lg on neutral-900; under 768px the two columns stack."</td></tr>
+          <tr><td class="k">The decisions</td><td>Each question that came up during Refinement, with the answer <i>and the reasoning</i>, marked Decided, Needs weigh-in or Blocked. The reasoning is the part that is still useful in six months.</td><td>"Flat list, because month headings fight a column sort."</td></tr>
+          <tr><td class="k">The switches</td><td>Which feature flag drives it, which brands it should be demoable in, and whether a member and a non-member both reach it.</td><td>"Flag <code>study-streak-v2</code>; both tiers; Atlas only."</td></tr>
+          <tr><td class="k">Your notes</td><td>Asked last: anything engineering should know that the sections above have no slot for &mdash; sequencing, a caution, a preference. Blank unless you add something, and the page says so rather than hiding the section.</td><td>"Ship the card before the streak history endpoint exists; mock the count at 0 and we will wire it in the next sprint."</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Running it</h3>
+      <ol class="steps">
+        <li><b class="t">On your branch, once the feature is built and the Refinement discussion has settled.</b>
+          <div class="say"><span class="me">YOU</span><q>/dev-handoff-notes for the Study Streak card</q></div>
+          <p>Name the feature. If a handoff for it already exists, say "extend it" &mdash; the routine adds to the page rather than starting a second one.</p></li>
+        <li><b class="t">Correct what it found, then answer six questions.</b><p>It reads your component first and shows you what the code already says &mdash; the components, the states, the buttons &mdash; so most of your job is "did it miss one?". Then it asks, one at a time and in plain words: why a state exists where that is not obvious, the edge cases (no data, loading, failure, long text), what you decided and why, what is still open, and last, "anything else?" &mdash; that is your Designer's Notes, and "no" is a fine answer. Say "not decided yet" when that is the truth: it becomes a Needs weigh-in item a developer can see, rather than a gap they will fill in themselves.</p></li>
+        <li><b class="t">Let it check your words against the code.</b><p>It reads the component you actually built and names where the two disagree. Fix the words, or the code, before going on. A handoff describing last week's version is worse than none.</p></li>
+        <li><b class="t">It writes your row.</b><p>The handoff is one file, named after the feature, in <code>src/data/handoffs/</code>. It is yours: nobody else edits it, and Claude will change it for you whenever you ask. The routine runs the type check and the tests before it hands back, and a file that is wrong in a way the board cannot show fails those with the file named.</p></li>
+        <li><b class="t">Say yes.</b><p>It ends with one question, "Commit and push?". Yes, and it hands you the link to your page on your branch build. The row is under Development there, next to the work it describes, and merges with that work.</p></li>
+        <li><b class="t">Move your card.</b><p>On the To Do Board, drag this chunk's card to <b>Ready for Prototype and Handoff</b>. A card in that column is Jill's whoever put it there, which is how she knows there is a handoff to read. If the chunk has no card, add one.</p></li>
+        <li><b class="t">Set the status.</b><p>A new handoff lands as <b>Not Ready</b>, so a page nobody has looked at never tells engineering to start. From there the status is yours. The one the team sees is in the file, so change it the way you change anything else on your branch: say "mark the Study Streak handoff Ready for Dev" to Claude, then push. The five are Not Ready, In Design, Needs Discussion, Blocked and Ready for Dev. The row's &#8942; on the Hub offers the same five, but that changes it in your own browser only &mdash; useful for trying a view, not for telling anyone.</p></li>
+        <li><b class="t">Read it the way a developer would.</b><p>Open <code>/prototype/&#8249;feature&#8250;</code> on your branch build and use find-in-page for a token name &mdash; the page is one scroll, so everything is there. Every section has its own address; copy it with the section in it when you want someone to read one thing.</p></li>
+      </ol>
+      <div class="note"><p><b>Why one file each.</b> Until 26 October the row lived in the project list, which is one of the Hub's own files, so the routine was one you could start and Jill had to finish. Now a handoff is its own file and the project list is never touched. Two designers writing two handoffs never edit the same file, which is the same reason your components get a sibling copy (<a href="#build">Part 3</a>).</p></div>
+      <div class="note warn"><p>Changed a component after its handoff was written? Run the routine again on the same feature. The page says what the build does, and a developer reading an old page builds an old thing.</p></div>
+    </section>
+
     <section id="map">
-      <h2><span class="part">Part 6</span>Reading the Hub</h2>
+      <h2><span class="part">Part 7</span>Reading the Hub</h2>
       <p class="lead">The Hub is at <code>ux-design-xceldashboard.netlify.app</code>, behind one password that Jill gives out. Everyone, stakeholders included, sees the same thing. Nothing inside is locked. Twelve sections in four groups:</p>
       <div class="tablewrap"><table>
         <thead><tr><th>Group</th><th>Section</th><th>What it is for</th><th>Who adds to it</th></tr></thead>
@@ -613,7 +681,7 @@
           <tr><td>Design &amp; Research</td><td class="k">Resources</td><td>Briefs, Figma files, references. Things that live elsewhere — including this guide.</td><td>Anyone, on the page.</td></tr>
           <tr><td>Design &amp; Research</td><td class="k">PRDs</td><td>The product requirements the designs answer.</td><td>Anyone, on the page.</td></tr>
           <tr><td>Design &amp; Research</td><td class="k">Explorations</td><td>Standalone HTML documents: outside products and ideas rebuilt on our tokens. Five today.</td><td>Jill adds the row; send her the file.</td></tr>
-          <tr><td>Dev Handoff</td><td class="k">Development</td><td>Handoff notes for engineering. Empty right now.</td><td>Written with <code>/dev-handoff-notes</code>, which Jill runs with you.</td></tr>
+          <tr><td>Dev Handoff</td><td class="k">Development</td><td>Handoff notes for engineering, each with a status chip.</td><td>You, with <code>/dev-handoff-notes</code> (<a href="#handoff">Part 6</a>): the row is your own file, and so is its status.</td></tr>
           <tr><td>Dev Handoff</td><td class="k">Done</td><td>Finished and signed off.</td><td>Jill.</td></tr>
           <tr><td>Dev Handoff</td><td class="k">Archive</td><td>Components and sections removed from the project, with how to bring each back.</td><td>Jill.</td></tr>
           <tr><td>Dev Handoff</td><td class="k">QA Notes</td><td>Design-versus-build findings with captures.</td><td>Anyone, on the page.</td></tr>
@@ -625,7 +693,7 @@
     </section>
 
     <section id="trouble">
-      <h2><span class="part">Part 7</span>When something goes wrong</h2>
+      <h2><span class="part">Part 8</span>When something goes wrong</h2>
       <p class="lead">None of these lose work. Find the message, read what it means, say the sentence.</p>
       <div class="tablewrap"><table>
         <thead><tr><th>You see</th><th>It means</th><th>Say to Claude</th></tr></thead>
@@ -642,6 +710,7 @@
           <tr><td>Claude says it cannot run a command or lacks permission</td><td>The permission card was denied, or needs approving.</td><td>Click Allow on the card, or "Try again."</td></tr>
           <tr><td>Your Refinement row shows an old Updated time</td><td>The stamp changes when the row is saved, not when the branch changes.</td><td>Open the row on the Hub, click Save.</td></tr>
           <tr><td>Your commits show the author as "Claude"</td><td>Your git name was never set on this computer.</td><td>Set it, per the <a href="/contributing/">Contributing guide</a>. Then: "Re-author my commits on this branch to me."</td></tr>
+          <tr><td>While writing a handoff, a refusal naming <code>prototypeFeatures.ts</code></td><td>Claude tried to put the row in the project list instead of its own file.</td><td>"Put the handoff in its own file under src/data/handoffs/, named after the feature." Then carry on (<a href="#handoff">Part 6</a>).</td></tr>
           <tr><td>Your design control shows up on a page that has nothing to do with it</td><td>The flag has no <code>surfaces</code>, so it appears everywhere the version it belongs to is on screen.</td><td>"Scope my design control to the Compass surfaces only."</td></tr>
           <tr><td>You are not sure what Claude just did</td><td>Anything.</td><td>"Summarise what you changed in the last step, file by file." Then decide.</td></tr>
         </tbody>
@@ -650,9 +719,9 @@
     </section>
 
     <section id="routines">
-      <h2><span class="part">Part 8</span>The routines, and when to use each</h2>
+      <h2><span class="part">Part 9</span>The routines, and when to use each</h2>
       <p class="lead">A routine is a checklist Claude runs with you. Type <code>/</code> and its name in the chat box. It asks you a few questions, does the steps in order, and stops short of anything it should not decide for you.</p>
-      <p>Three of them are yours. Five belong to Jill; know their names so you recognise them when she mentions one.</p>
+      <p>Four of them are yours. Four belong to Jill; know their names so you recognise them when she mentions one.</p>
       <h3>Which one do I want?</h3>
       <div class="tablewrap"><table>
         <thead><tr><th>You are thinking</th><th>Reach for</th></tr></thead>
@@ -660,6 +729,7 @@
           <tr><td>"I want eyes on this one card, not the whole branch."</td><td><code>/promote-component</code></td></tr>
           <tr><td>"I want the team to look at my branch."</td><td><code>/share-branch</code></td></tr>
           <tr><td>"This is what my surface should be. Ship it."</td><td><code>/promote-to-prototype</code>, then tell Jill</td></tr>
+          <tr><td>"It's built and discussed. Engineering needs to read it."</td><td><code>/dev-handoff-notes</code>, then move your card to Ready for Prototype and Handoff</td></tr>
           <tr><td>"I'm done discussing this row."</td><td>Archive, on the row's ⋮ (no routine)</td></tr>
           <tr><td>"We tried it and decided not to."</td><td>Tell Jill; she runs <code>/retire-from-refinement</code></td></tr>
           <tr><td>"I need a frozen link for a user test."</td><td>Tell Jill; she runs <code>/promote-to-testing</code></td></tr>
@@ -671,6 +741,7 @@
         <tbody>
           <tr><td><code>/promote-component</code></td><td>One component on your branch wants feedback and the rest of the branch would distract from it.</td><td>Which component (name it, or select it in the browser pane first). Which of its flag's variants to show side by side. A note telling the reviewer what to look at.</td><td>Finds the feature flag that drives the component. If there is none, shows you the flag it would add (its name, label, the one line it changes in your component) and waits for your yes. Checks the branch is pushed and built. Builds one review page with every variant stacked, each pinned. Opens Refinement's Add link form with it filled in.</td><td>Save the row (you click Add). Add a flag without showing you first. Share the whole branch.</td></tr>
           <tr><td><code>/share-branch</code></td><td>A chunk of work is ready for the team to look at.</td><td>One yes, up front, covering the checks, the commit and the push. A title. A one-line note on what to look at. What feature this is a chunk of. Which product (it guesses from the files you touched: Compass files mean Compass).</td><td>Checks you are on a branch, not main. Says so if the branch has got long. Runs the type check and the tests. Commits anything uncommitted and pushes. Works out the Netlify address and waits for the build to finish. Opens Refinement's Add link form with everything filled in, your name included. Then opens the To Do Board's card sheet, filled in, in <b>Ready For Refinement</b>. Offers to cut your next branch.</td><td>Save the row or the card (you click <b>Add link</b>, then <b>Add card</b>). Run on main. Commit or push without the yes it asked you for.</td></tr>
+          <tr><td><code>/dev-handoff-notes</code></td><td>The feature is built, the Refinement discussion has settled, and engineering needs to read it. Also when a component changes after its handoff was written.</td><td>Component by component: its states with when and why, every button and what it does, the edge cases as question and answer, the tokens and responsive behaviour, the decisions with their reasoning, the flag, the brands, member and non-member.</td><td>Reads the component you built and names where your words and the code disagree. Writes the row as its own file under <code>src/data/handoffs/</code>, named after the feature, status Not Ready, and runs the checks. Tells you what is still unwritten.</td><td>Invent a state or a reason you did not give. Touch the project list. Ship to main, or promote a surface you do not own.</td></tr>
           <tr><td><code>/promote-to-prototype</code></td><td>Your branch is what your surface should become, and you own that surface. Run it before you tell Jill it is ready.</td><td>For every flag whose default your branch changed: should this be the default, and which variant? Design-bar controls are listed separately, because those never ship as defaults.</td><td>Compares your branch with main and lists every candidate. Groups them by the Prototypes row they reach; a group that is not yours needs that owner's yes. Edits the flag defaults, runs the checks, commits on your branch. Reminds you to archive the Refinement row after the merge.</td><td>Merge anything. Add a Prototypes row. Change the default dashboard version. All three are Jill's.</td></tr>
         </tbody>
       </table></div>
@@ -682,13 +753,12 @@
           <tr><td><code>/promote-to-testing</code></td><td>Freezing a branch onto the separate user-test site and handing back participant and moderator links. A frozen link does not move when main does.</td></tr>
           <tr><td><code>/retire-from-refinement</code></td><td>Closing a Refinement row properly when the work was promoted or declined: deciding what happens to the branch and writing the record of why. Different from Archive on the kebab, which only hides.</td></tr>
           <tr><td><code>/archive-a-feature</code></td><td>Retiring a component or variant without deleting it, and writing the Archive-section row that says how to bring it back.</td></tr>
-          <tr><td><code>/dev-handoff-notes</code></td><td>Writing the handoff page engineering reads on the Development board. She runs it with you, because it asks for your words.</td></tr>
         </tbody>
       </table></div>
     </section>
 
     <section id="morning">
-      <h2><span class="part">Part 9</span>Scheduled routines</h2>
+      <h2><span class="part">Part 10</span>Scheduled routines</h2>
       <p class="lead">Claude Code can run a job on a schedule: you describe it once and it runs in your project folder, in a fresh session, and sends you a note when it is done. Two are worth having &mdash; a rebase every weekday morning, and a sweep for old backup branches on Fridays.</p>
       <p>Two things to know about either of them:</p>
       <ul>
@@ -754,7 +824,7 @@
     </section>
 
     <section id="glossary">
-      <h2><span class="part">Part 10</span>Glossary</h2>
+      <h2><span class="part">Part 11</span>Glossary</h2>
       <div class="tablewrap"><table>
         <thead><tr><th>Term</th><th>Meaning here</th></tr></thead>
         <tbody>
@@ -783,12 +853,15 @@
           <tr><td class="k">Archive (Refinement)</td><td>Hiding a row from the board, reversibly, with a stamp of who and when.</td></tr>
           <tr><td class="k">Archive (nav section)</td><td>The list of things removed from the project and how to bring each back. Different thing, same word.</td></tr>
           <tr><td class="k">Explorations</td><td>Standalone HTML documents on the Hub. Not the product.</td></tr>
+          <tr><td class="k">Dev handoff</td><td>The page a developer builds a feature from &mdash; components, states, buttons, edge cases, spec and decisions &mdash; at <code>/prototype/&#8249;feature&#8250;</code>. You write it with <code>/dev-handoff-notes</code>, and the row is your own file.</td></tr>
+          <tr><td class="k">Development (section)</td><td>Where handoffs wait for engineering, each with a status chip. Under Dev Handoff in the nav.</td></tr>
+          <tr><td class="k">Not Ready</td><td>The status every handoff lands with, so an unread page never tells engineering to start. Yours to change, in the file. The row's &#8942; changes it for your browser only.</td></tr>
           <tr><td class="k">Pull request, PR</td><td>GitHub's page for a branch that is proposed for main. Jill opens and merges them.</td></tr>
         </tbody>
       </table></div>
     </section>
 
-    <footer>Designer Workflow on the Hub · 16 October 2026 · The draft is the Claude doc of the same name; this page is what the Hub serves. The longer walkthrough, with pictures, is the <a href="/contributing/">Contributing guide</a>; stakeholders get <a href="/about/">How to read this dashboard</a>.</footer>
+    <footer>Designer Workflow on the Hub · 26 October 2026 · The draft is the Claude doc of the same name; this page is what the Hub serves. The longer walkthrough, with pictures, is the <a href="/contributing/">Contributing guide</a>; stakeholders get <a href="/about/">How to read this dashboard</a>.</footer>
   </main>
 </div>
 

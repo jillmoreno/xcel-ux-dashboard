@@ -1,20 +1,123 @@
 ---
 name: dev-handoff-notes
 description: Author (or extend) a prototype feature's dev-handoff gateway — the UI Components & UX Logic breakdown, the Design & Product Decisions log, and the Live Preview routes. Covers the components-vs-uiComponents split, the Summary, the row-list-and-detail rule (and why the detail is one scroll, never sub-tabs), the user story, badgeDate and thumbnail fields, the `Label — what it shows` preview-caption shape, the one-sentence blurb, the tileBlurb budget, the authored devStatus, when a feature should split in two, and the Markdown export. Trigger on "add handoff notes", "document this for dev", "dev handoff for <feature>", "add a decisions log", "new dev-handoff tile", "hand this off to engineering".
-version: 0.2.0
+version: 0.3.0
 author: UX Design — Colibri
-last_updated: 2026-08-31
+last_updated: 2026-10-26
 status: active
 ---
 
 # Dev handoff notes
 
 Everything a prototype feature needs so a developer can build from it. All of it
-is **data** in [src/data/prototypeFeatures.ts](../../../src/data/prototypeFeatures.ts) —
-adding or extending a handoff is a data-only change. Do not add rendering code
-unless a rule below says so.
+is **data**, and adding or extending a handoff is a data-only change. Do not add
+rendering code unless a rule below says so.
+
+## How to run this with a designer (2026-10-26)
+
+**Read this first.** Everything below it is the rulebook for what a good handoff
+contains. This is the ORDER OF OPERATIONS when a designer says
+`/dev-handoff-notes for <feature>` on their own branch (Jillienne: "I want to
+make it as easy as possible on these designers"). The aim: they answer six short
+questions in their own words and get a page, without ever seeing a field name.
+
+**Step 0 — read before asking.** Find the component(s) on their branch and read
+them. Draft from the code everything it can tell you: the component list, the
+states (each flag arm and each conditional is a state), every button and link
+and what it does, the tokens used, the route the preview opens on. Pick the
+`id` from the title, the `accent` and the `icon` yourself. Never ask the
+designer for something the code already says, and never ask them to look at
+code. (There is ONE brand in this repo — `Brand` is a one-member union — so the
+"ask which brands" item under *Before you finish* is answered: `['xcel']`.)
+
+**Step 1 — the components.** Show the list you found, one line each, and ask:
+*"This is what I think the feature is made of. Did I miss anything, or is one
+of these not part of it?"*
+
+**Step 2 — the states.** For each component, show the states you found with
+when each appears, and ask: *"Did I miss a state? And for any where it isn't
+obvious, why does that state exist?"* The why goes on the state (`why`). If
+they do not know, leave `why` off rather than inventing one.
+
+**Step 3 — the buttons.** Show every control you found and what it does. Ask:
+*"Is that what each one does? Anything that is drawn but doesn't work yet?"*
+Every control gets a `ctas` line, the inert ones included.
+
+**Step 4 — the edge cases.** Ask, as questions: *"What happens when there is
+no data yet? While it loads? If something fails? When the text is too long?"*
+Write each as a question and its answer (`statesMatrix`). "Haven't thought
+about it" becomes a Needs weigh-in item in the decisions, not a blank.
+
+**Step 5 — the decisions.** Ask: *"What did you decide on the way here, and
+why? And what is still open?"* Record the question, the decision and the
+REASONING. Open ones are Needs weigh-in or Blocked. If nothing was decided,
+write `decisions: { items: [] }` so the page says there are no questions rather
+than that nobody asked (2026-10-22 rule).
+
+**Step 6 — anything else.** *"Anything else engineering should know that we
+haven't covered?"* That is Designer's Notes. "No" is `designerNotes: []`.
+
+**Then, without asking:** write `src/data/handoffs/<id>.ts` from the skeleton
+in that folder's README, `devStatus: 'not-ready'`, run `npx tsc -b`, lint the
+file, and run `npx vitest run`. Fix anything red yourself. Then say, in plain
+words, what was written and what is still thin (which sections have nothing in
+them), and ask ONE yes: *"Commit and push?"* After the push, give them the
+link — `https://<branch-with-dashes>--ux-design-xceldashboard.netlify.app/prototype/<id>`
+— and remind them to move their To Do Board card to **Ready for Prototype and
+Handoff**. The single yes is deliberate (Jillienne, 2026-10-26: "single yes is
+right"): a handoff is not a Refinement row, so this does not hand off to
+`share-branch`.
+
+**Running it again on the same feature** reads the existing file, compares it
+with the code, and asks only about what changed.
+
+**Never:** write into `prototypeFeatures.ts`; set `ready-for-dev` unasked;
+invent a why or a decision; use a field name in a question; ask more than one
+question at a time; stop with a file that fails `tsc`.
+
+## Where the row goes: ONE FILE PER FEATURE, in `src/data/handoffs/` (2026-10-26)
+
+**A NEW handoff is `src/data/handoffs/<id>.ts`** — `export default` one
+`PrototypeFeature` with `category: 'dev-handoff'`, and **the file name IS the
+id.** `handoffFeatures.ts` globs the folder and `prototypeFeatures.ts` spreads
+it into `PROTOTYPE_FEATURES`, so nothing downstream knows the difference.
+[src/data/handoffs/README.md](../../../src/data/handoffs/README.md) carries the
+skeleton; copy it rather than an Atlas Home row.
+
+⚠ **NEVER write a handoff row into `prototypeFeatures.ts`.** That file is on the
+protected list — the hook refuses it on a design branch and
+`FrameworkProtection.test.ts` reds the suite if it is edited by hand — and
+until today that is exactly where this skill wrote, which made it a routine a
+designer could start and not finish. The folder is deliberately unprotected;
+that is the whole reason it exists. The four Atlas Home rows of 2026-10-19
+predate it and stay where they are; **extending one of those** means moving it
+first: cut the row into `handoffs/<its id>.ts`, drop its line from the smoke
+test's `EXPECTED_PLACEMENT`, then extend it there.
+
+Three things the folder enforces at load, so a wrong file fails the suite with
+the file named rather than vanishing from the board:
+
+- the file name and the `id` match;
+- `category` is `'dev-handoff'`;
+- **`import type` only from `../prototypeFeatures`** — the glob is eager, so the
+  handoff module runs BEFORE `prototypeFeatures.ts` finishes, and a value import
+  (`PROTOTYPE_BASE`, say) is a ReferenceError on first load that no editor
+  warns about. Write the route string out instead.
+
+**The row is the designer's, and so is its status.** It starts at
+`devStatus: 'not-ready'` (the fail-closed default below) and the designer moves
+it from there as the work moves. When the file is pushed the designer moves
+their To Do Board card to **Ready for Prototype and
+Handoff**, whose cards are Jillienne's by the server's rule — that is how she
+learns there is a page to read. `HandoffFolder.test.ts` pins all of this.
 
 ## The three fixed gateway tabs
+
+⚠ **THE TABS ARE GONE (2026-10-21, "ONE PAGE per handoff").** The gateway is one
+scroll with a chip strip — States · Options · CTAs · Questions · Edge cases ·
+Design Spec · Designer's Notes — and the live preview is the header's button.
+The data fields below are unchanged, so the rest of this section still says
+where each one renders; read "tab" as "section".
 
 A guided feature's gateway (`/prototype/:featureId`) always renders the same
 three tabs, defined once as `GATEWAY_TABS` in
@@ -218,7 +321,7 @@ read against the variant above it, which is a real misreading on a stacked list.
 
 ## Authoring a `DevHandoffComponent`
 
-Required: `id` · `name` · `location` · `summary` · `variants` · `uxLogic` · `data`.
+Required: `id` · `name` · `location` · `summary` · `variants`. (⚠ `uxLogic` and `data` stood in this line until 2026-10-26 and neither exists on the type — a file carrying them fails `tsc`.)
 
 Optional, and worth filling — each renders as its own framed section:
 
@@ -471,12 +574,17 @@ archived (`prototype-tile-landing`).
 | `kindLabel` | overrides the derived kind tag. Set `'Feature'` on an `explore` tile that opens ONE page rather than the whole platform. |
 | `thumbnail` | a real capture instead of the generated mark — see Thumbnails below. |
 
-### `devStatus` — Not Ready unless she says otherwise (2026-09-24)
+### `devStatus` — starts Not Ready; the designer moves it (2026-09-24, revised 2026-10-26)
 
-**THE STANDING RULE, from Jillienne: everything reaches developers as NOT READY
-unless she specifically says it is ready.** Never author `ready-for-dev` or
-`in-development` on a new handoff off your own judgement — that is her call, and
-only hers.
+**A NEW handoff is authored `not-ready`.** A page nobody has read must not tell
+engineering to start. **After that the status is the designer's** (Jillienne,
+2026-10-26: "they can change this status to anything they need to be. The only
+guardrails that the designer cannot do is promote to main or promote to
+prototype" — and, same day, "promote to prototype stays with the owners", so
+that one is the scope owner's as `PROTOTYPE_SCOPES` already says) — set it in
+the FILE when asked, which is what the team sees; the
+row's kebab (below) is a per-browser override. Until 2026-10-26 this read "never author `ready-for-dev` —
+that is her call, and only hers"; the default is the same, the lock is gone.
 
 `not-ready` is a Development status: the row sits on the Development board (so
 engineering can see what is coming) while saying plainly that nobody should
@@ -518,7 +626,10 @@ counting how many of their rows were placed by the fallback, and that banner was
 removed on 2026-09-01 (`8005c5a`). Placement is silent now — a row landing in the
 wrong section shows no warning anywhere on the page. The smoke test's
 `EXPECTED_PLACEMENT` map is what catches it, so when a row moves, update that map
-in the same commit.
+in the same commit. **Folder rows are exempt from that map** — a file in
+`src/data/handoffs/` lands on Development by construction and
+`HandoffFolder.test.ts` checks it instead, which is what lets a designer add a
+row without editing a test.
 
 `devStatus` also drives the status filter pills and the row's status chip, all
 through one resolver (`featureStatusKeyOf` in `devHandoffStatusUtil`). One field,
@@ -579,9 +690,27 @@ link to the same URL.
   **leave a comment on `pages` saying why**, or the next session will read the
   missing non-member view as a bug and add it back.
 
+## Designer's Notes — ask for them last (2026-10-26)
+
+`devHandoff.designerNotes?: string[]` — the designer's own free-form words to
+engineering, one paragraph per entry, for whatever the structured sections have
+no slot for: sequencing ("ship the card before the history endpoint exists; mock
+the count at 0"), a caution, a preference, a thank-you. **Blank by default**, and
+the page still draws the section — "No designer's notes on this handoff yet" —
+so a reader can tell "nothing to add" from "never asked" (Jillienne: "they will
+be blank on default, and you can ask the designer for any additional notes when
+the handoff is being created").
+
+So: **after the components and the decisions are authored, ask once** —
+*"Anything else engineering should know that the sections above have no slot
+for?"* — and write what they say, in their words, as paragraphs. "No" means
+`designerNotes: []`, which is the honest state, not a gap. It renders as the
+LAST section of the one-page handoff in both views and goes into the Markdown
+export only when there is something in it.
+
 ## Before you finish
 
-1. **Ask which brands** the feature should be demoable in — never assume.
+1. **Ask which brands** the feature should be demoable in — never assume. (Moot in THIS repo: one brand, `['xcel']` — see *How to run this with a designer*.)
 2. **Both `member` and `non-member`** must be reachable from the gateway, unless
    the feature isn't membership-gated (then comment why, per above).
 3. **Surface the feature flags** that drive its variants, in `featureFlags` +

@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url'
 import { PROTOTYPE_FEATURES, PROTOTYPE_SCOPES, componentPreviewUrl } from '@/data/prototypeFeatures'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
 import { HUB_DOCS } from '@/data/hubDocs'
+import { HANDOFF_IDS } from '@/data/handoffFeatures'
 
 /**
  * Smoke test for the XCEL dashboard.
@@ -204,7 +205,13 @@ describe('section routing (sectionOf)', () => {
   }
 
   it('accounts for every authored feature', () => {
-    const ids = PROTOTYPE_FEATURES.map((f) => f.id).sort()
+    // The HAND-authored ones. A handoff in `src/data/handoffs/` is a designer's
+    // own file (2026-10-26) and lands on Development by construction —
+    // `HandoffFolder.test.ts` pins that — so it is not listed here, or a
+    // designer would have to edit this test to add a row.
+    const ids = PROTOTYPE_FEATURES.map((f) => f.id)
+      .filter((id) => !HANDOFF_IDS.has(id))
+      .sort()
     expect(ids).toEqual(Object.keys(EXPECTED_PLACEMENT).sort())
   })
 

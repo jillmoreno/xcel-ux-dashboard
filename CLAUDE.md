@@ -119,6 +119,20 @@ prototype" skill: a new SCOPE is a decision Jillienne makes in
 `PROTOTYPE_SCOPES`, and a second row for an existing scope is a Refinement
 job.
 
+**DEV HANDOFFS ARE THE DESIGNERS' OWN ROWS (2026-10-26).** A handoff is one
+file per feature in `src/data/handoffs/`, written by `/dev-handoff-notes` on
+the designer's branch. It lands on the Development board as `not-ready` and
+**the status is the designer's from there** — set in the file, which is what
+everyone sees (the row's kebab is a per-browser override). The only guardrails
+are the two that already exist: `ship-to-main` is Jillienne's, and
+`promote-to-prototype` is the scope owner's (confirmed 2026-10-26: "promote to
+prototype stays with the owners"). The folder is deliberately OFF the protected
+list: until today the row lived in `prototypeFeatures.ts`, so the routine was
+one a designer could start and not finish. The file name is the id, which is
+what keeps two designers out of one file. `src/data/handoffs/README.md` has
+the skeleton; the four Atlas Home rows of 2026-10-19 predate the folder and
+stay where they are.
+
 **The way OUT is `retire-from-refinement`** (2026-09-29), and it runs both when
 the work shipped and when it did not. It exists because of the second bullet
 above: a row's build lives on a Netlify BRANCH deploy, so deleting the branch
@@ -278,7 +292,7 @@ file, so the two cannot drift apart.
 | File | What it is |
 |---|---|
 | `src/pages/UxDashboardPage.tsx` | the gateway page — sections, nav, the rail |
-| `src/data/prototypeFeatures.ts` | the project rows and where each one points |
+| `src/data/prototypeFeatures.ts` | the project rows and where each one points — EXCEPT dev handoffs, which are the designers' own, one file each in `src/data/handoffs/` (unprotected, 2026-10-26) |
 | `src/data/archivedItems.ts` | the Archive table |
 | `src/data/gatewayMode.ts`, `src/data/deployContext.ts` | the per-site and per-context build switches |
 | `netlify.toml`, `scripts/public-redirects.mjs` | the edge rules, and how branch builds differ from production |
@@ -360,6 +374,7 @@ follow the link.
 
 | File | Holds |
 |---|---|
+| [`src/data/handoffs/`](src/data/handoffs/README.md) | **The designers' dev handoffs, one file per feature (2026-10-26).** The file name is the row id, `category: 'dev-handoff'`, `export default` a `PrototypeFeature`; `handoffFeatures.ts` globs the folder and `prototypeFeatures.ts` spreads it into `PROTOTYPE_FEATURES`, so the board, the gateway and the export see one list. Not protected — `/dev-handoff-notes` writes here on a design branch. `HandoffFolder.test.ts` pins the rules; the smoke test's `EXPECTED_PLACEMENT` exempts these ids. |
 | [`src/data/prototypeFeatures.ts`](src/data/prototypeFeatures.ts) | The five XCEL rows + `PROTOTYPE_BASE`. The type block is verbatim from the LMS (so the ported components compile unchanged) plus one added field, `previewUrl`. Rows are ported verbatim from the LMS dashboard, which still has its own copies. |
 | [`src/data/archivedItems.ts`](src/data/archivedItems.ts) | The Archive table — two rows as of 2026-09-16 (the Profile page's Motivational Statement card, and the Dashboard MVP version retired by the flag audit). |
 | [`src/data/qaNotes.ts`](src/data/qaNotes.ts) | The committed QA seed — empty; findings are authored on the page. |
