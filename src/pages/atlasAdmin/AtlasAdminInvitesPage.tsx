@@ -162,8 +162,9 @@ export function AtlasAdminInvitesPage() {
                       boxShadow: active ? 'var(--admin-shadow-tile-active)' : undefined,
                     }}
                   >
-                    {/* Invites' labels 1px higher than Students' (tokens.css sets 2.65 / 1.35), the pill's height unchanged. */}
-                    <StatusPill color={t.color} active={active} style={{ paddingTop: 1.65, paddingBottom: 2.35 }}>
+                    {/* Invites' labels 1px higher than Students' (tokens.css sets 2.65 / 1.35), the pill's height unchanged; and 2px further from the
+                        dot (17 → 19 at rest, 22 → 24 selected, so the pill keeps one width in both states). */}
+                    <StatusPill color={t.color} active={active} style={{ paddingTop: 1.65, paddingBottom: 2.35, paddingLeft: active ? 24 : 19 }}>
                       {t.label}
                     </StatusPill>
                     {/* The note beside the count, a 1px rule between them with 12px either side, centred on it, under a rule (none below, 2026-10-26). */}
