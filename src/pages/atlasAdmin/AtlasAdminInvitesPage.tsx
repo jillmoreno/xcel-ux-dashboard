@@ -101,9 +101,9 @@ export function AtlasAdminInvitesPage() {
 
       {/* As on Students: with the Standard nav the blue runs on under the table card, no gap between; with Lite the tiles sit on the page. */}
       <section aria-label="Invite outcomes" style={lite ? undefined : { ...CARD, border: 'none', padding: `16px 16px ${20 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
-        {/* Students' status cards on Students' primary 100 panel (24px in, 18px corners): the selected card white and lifted, the rest on
+        {/* Students' status cards on Students' primary 100 panel (16px in all round, 18px corners): the selected card white and lifted, the rest on
             the search field's fill with no edge (primary 200 on hover), a status pill, the figure ruled above and below, an 11px note. */}
-        <div style={{ width: 'fit-content', maxWidth: '100%', boxSizing: 'border-box', borderRadius: 18, background: 'var(--admin-atlas-primary-100)', padding: '16px 24px' }}>
+        <div style={{ width: 'fit-content', maxWidth: '100%', boxSizing: 'border-box', borderRadius: 18, background: 'var(--admin-atlas-primary-100)', padding: 16 }}>
           {/* Each tile as wide as its content, wrapping when the row runs out. */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
             {tiles.map((t) => {
