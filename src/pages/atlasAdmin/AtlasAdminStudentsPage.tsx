@@ -106,10 +106,10 @@ export function AtlasAdminStudentsPage() {
       const mins = [...el.querySelectorAll<HTMLElement>('.cre-admin-status-card')].map((c) => {
         const row = c.querySelector<HTMLElement>('[data-figure-row]')
         const rowW = row ? [...row.children].reduce((w, x) => w + (x as HTMLElement).offsetWidth, 0) + (row.children.length - 1) * 12 + 2 : 0
-        return Math.max(rowW, ...[...c.querySelectorAll<HTMLElement>('.cre-admin-status-pill, select')].map((x) => x.offsetWidth)) + 2 * 16 + 2
+        return Math.max(rowW, ...[...c.querySelectorAll<HTMLElement>('.cre-admin-status-pill, select')].map((x) => x.offsetWidth)) + 2 * CARD_PAD_X + 2
       })
       const fits = (n: number) => {
-        let sum = (n - 1) * 12
+        let sum = (n - 1) * CARD_GAP
         for (let col = 0; col < n; col++) sum += Math.max(0, ...mins.filter((_, i) => i % n === col))
         return sum <= el.clientWidth
       }
@@ -264,7 +264,7 @@ export function AtlasAdminStudentsPage() {
   /** The outcome cards (Atlas UX Design 527:603 / 527:746): the status pill,
    *  the count, a thin rule and its share of the roster, then a one-line note.
    *  Selecting a card slides its pill open into the status colour.
-   *  `columns`: 3 (two rows, Dial (3×2)) or 6 (one row, Dial — 12px
+   *  `columns`: 3 (two rows, Dial (3×2)) or 6 (one row, Dial — CARD_GAP
    *  apart, and Licensed's window under its figures so every card's figures
    *  share a line). The one row never squeezes a card narrower than its
    *  content, and a pill is as wide at rest as selected (tokens.css), so a
@@ -275,7 +275,7 @@ export function AtlasAdminStudentsPage() {
   const statusGrid = (columns: 3 | 6) => (
     <div
       ref={columns === 6 ? cardRowRef : undefined}
-      style={{ display: 'grid', gap: columns === 6 ? 12 : 20, gridTemplateColumns: columns === 6 ? `repeat(${cardCols}, minmax(min-content, 1fr))` : 'repeat(3, minmax(0, 1fr))' }}
+      style={{ display: 'grid', gap: columns === 6 ? CARD_GAP : 20, gridTemplateColumns: columns === 6 ? `repeat(${cardCols}, minmax(min-content, 1fr))` : 'repeat(3, minmax(0, 1fr))' }}
     >
       {STATUS_ORDER.map((id) => tiles.find((x) => x.id === id)!).map((t) => {
         const n = tileCount[t.id]
@@ -328,7 +328,7 @@ export function AtlasAdminStudentsPage() {
                 boxShadow: active && oneRow ? 'var(--admin-shadow-tile-active)' : undefined,
               }}
             >
-              <div style={{ ...STATUS_BODY, padding: 16, containerType: oneRow ? 'normal' : 'inline-size' }}>
+              <div style={{ ...STATUS_BODY, padding: oneRow ? `16px ${CARD_PAD_X}px` : 16, containerType: oneRow ? 'normal' : 'inline-size' }}>
                 {/* Licensed's window sits top right, across from its pill (in the one-row version, under its figures). */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                   {/* Default: a status-coloured dot beside the label. Active: the dot slides open, left to right, into a filled pill (tokens.css). */}
@@ -755,6 +755,10 @@ const STATUS_BODY: CSSProperties = { containerType: 'inline-size', flex: 1, minW
 const STATUS_SEP: CSSProperties = { flex: 'none', width: 1, margin: '1px 0', borderRadius: 1, background: 'var(--admin-atlas-primary-200)' }
 /* The one-row version's smaller dial (2026-10-26). */
 const DIAL_SIZE_ONE_ROW = 150
+/* The gap between Dial's cards — 8, so six fit across the cards panel at full width (2026-10-26). */
+const CARD_GAP = 8
+/* …and their side padding: 12 (16 top and bottom), for the same reason. */
+const CARD_PAD_X = 12
 /* One panel of the Dial analysis: Atlas primary 100, 32px in. */
 const ANALYSIS_RADIUS = 18
 const ANALYSIS_PANEL: CSSProperties = { boxSizing: 'border-box', padding: 32, borderRadius: ANALYSIS_RADIUS, background: 'var(--admin-atlas-primary-100)' }
