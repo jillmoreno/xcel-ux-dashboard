@@ -197,8 +197,12 @@ export function AtlasAdminInvitesPage() {
           }}
         >
           {/* Pinned, the 24px between it and the global nav would show the rows scrolling past; this strip of page colour hides them. It runs
-              1px past each side to cover the card's edge too (the card's 1px clip margin lets it). */}
-          <span aria-hidden style={{ position: 'absolute', bottom: '100%', left: -1, right: -1, height: 24, background: 'var(--admin-page)', pointerEvents: 'none' }} />
+              1px past each side to cover the card's edge too (the card's 1px clip margin lets it), and its last pixel is the card's top edge —
+              at rest that redraws the edge it sits on, pinned it gives the bar the top stroke the card scrolled away. */}
+          <span
+            aria-hidden
+            style={{ position: 'absolute', bottom: '100%', left: -1, right: -1, height: 25, boxSizing: 'border-box', background: 'var(--admin-page)', borderBottom: '1px solid var(--admin-rule)', pointerEvents: 'none' }}
+          />
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {(
               [
