@@ -732,7 +732,7 @@ function StatusDial({
     <div style={{ position: 'relative', flex: 'none', width: size, height: size }}>
       {/* Each arc selects its card. */}
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="group" aria-label={`${total} students by status`} style={{ display: 'block' }}>
-        {/* Active Students selected (the default): a full ring in its colour at 30%, 2px wider than a selected arc (14px), laid under the segments (drawn first). */}
+        {/* Active Students selected (the default): a full primary 200 ring, 2px wider than a selected arc (14px), laid under the segments (drawn first). */}
         {active === 'all' ? (
           <circle
             aria-hidden
@@ -740,8 +740,7 @@ function StatusDial({
             cy={size / 2}
             r={r}
             fill="none"
-            stroke="var(--admin-atlas-status-active)"
-            strokeOpacity={0.3}
+            stroke="var(--admin-atlas-primary-200)"
             strokeWidth={stroke + 6}
             style={{ pointerEvents: 'none' }}
           />
