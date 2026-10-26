@@ -404,8 +404,8 @@ export function AtlasAdminStudentsPage() {
             or plain. */}
         {analysis === 'dial' ? (
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', gap: 8 }}>
-          {/* The eyebrow and dial centred across; 24px above, 16px below. */}
-          <div style={{ ...ANALYSIS_PANEL, flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '24px 16px 16px' }}>
+          {/* The eyebrow and dial centred across, 16px from the top — pinned there, so the ring's top stays on the cards' tops whichever panel is taller. */}
+          <div style={{ ...ANALYSIS_PANEL, flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', gap: 8, padding: 16 }}>
             <p style={EYEBROW}>Student Compliance</p>
             <StatusDial
               size={DIAL_SIZE_ONE_ROW}
@@ -415,8 +415,8 @@ export function AtlasAdminStudentsPage() {
               parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
             />
           </div>
-          {/* The cards' tops on the ring's outer edge: the dial panel's 24px + eyebrow 18 + gap 8 + DIAL_INSET; 25px under them. */}
-          <div style={{ ...ANALYSIS_PANEL, flex: '1 1 480px', minWidth: 0, padding: `${24 + 18 + 8 + DIAL_INSET}px 24px 25px` }}>{statusGrid(6)}</div>
+          {/* The cards' tops on the ring's outer edge: the dial panel's 16px + eyebrow 18 + gap 8 + DIAL_INSET; 25px under them. */}
+          <div style={{ ...ANALYSIS_PANEL, flex: '1 1 480px', minWidth: 0, padding: `${16 + 18 + 8 + DIAL_INSET}px 24px 25px` }}>{statusGrid(6)}</div>
         </div>
         ) : analysis === 'dial-grid' ? (
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 40, padding: 32, borderRadius: 18, background: 'var(--admin-atlas-primary-100)' }}>
