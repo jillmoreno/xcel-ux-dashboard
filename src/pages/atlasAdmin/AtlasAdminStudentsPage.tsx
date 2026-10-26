@@ -15,7 +15,7 @@ import {
 } from '@/data/atlasAdmin/learners'
 import { LOCATIONS, jobRoleOf, membersOfLocation } from '@/data/atlasAdmin/organization'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
-import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, CARD, CHIP, CHIP_ON, DIAL_INSET, EYEBROW, PAGE_H1, PAGE_SUB, STATUS_CARD, STATUS_COUNT } from './adminStyles'
+import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, CARD, CHIP, CHIP_ON, EYEBROW, PAGE_H1, PAGE_SUB, STATUS_CARD, STATUS_COUNT } from './adminStyles'
 import { ChipMenu, MenuItem, PreparedPill, ReadinessCell, StagePill, StatusDial, StatusNote, StatusPill } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
 import { StudentsEmptyState } from './StudentsEmptyState'
@@ -326,8 +326,6 @@ export function AtlasAdminStudentsPage() {
                 borderColor: oneRow ? 'transparent' : 'var(--admin-atlas-primary-200)',
                 background: active ? 'var(--admin-surface)' : oneRow ? 'var(--admin-fill)' : 'none',
                 boxShadow: active && oneRow ? 'var(--admin-shadow-tile-active)' : undefined,
-                /* One row: at least the dial's ring (its box less DIAL_INSET each side) less 4px. */
-                minHeight: oneRow ? DIAL_SIZE_ONE_ROW - 2 * DIAL_INSET - 4 : undefined,
               }}
             >
               <div style={{ ...STATUS_BODY, padding: 16, containerType: oneRow ? 'normal' : 'inline-size' }}>
