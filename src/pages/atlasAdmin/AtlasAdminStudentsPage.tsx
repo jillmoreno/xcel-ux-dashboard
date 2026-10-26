@@ -240,13 +240,34 @@ export function AtlasAdminStudentsPage() {
   /** The outcome cards (Atlas UX Design 527:603 / 527:746): the status pill,
    *  the count, a thin rule and its share of the roster, then a one-line note.
    *  Selecting a card slides its pill open into the status colour.
-   *  `columns`: 3 (two rows) or 6 (one row, the comparison below it). */
+   *  `columns`: 3 (two rows) or 6 (one row, the comparison below it — 12px
+   *  apart, and Licensed's window under its figures so every card's figures
+   *  share a line). */
   const statusGrid = (columns: 3 | 6) => (
-    <div style={{ display: 'grid', gap: 20, gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+    <div style={{ display: 'grid', gap: columns === 6 ? 12 : 20, gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
       {STATUS_ORDER.map((id) => tiles.find((x) => x.id === id)!).map((t) => {
         const n = tileCount[t.id]
         const active = bucket === t.id
         const [strip] = STATUS_TONE[t.id]
+        const windowBelow = columns === 6
+        /* Our own chevron, 10px in from the right edge — Chrome's native arrow ignores padding. */
+        const licensedPicker =
+          t.id === 'licensed' ? (
+            <span className={windowBelow ? undefined : 'cre-admin-status-window'} style={{ position: 'relative', display: 'inline-flex', flex: 'none', alignSelf: 'flex-start' }}>
+              <select
+                aria-label="Licensed time window"
+                value={licensedWindow}
+                onClick={(e) => e.stopPropagation()}
+                onChange={(e) => setLicensedWindow(e.target.value)}
+                style={{ ...SELECT, marginTop: undefined, appearance: 'none', padding: '4px 24px 4px 10px', width: 'auto', cursor: 'pointer' }}
+              >
+                <option value="90d">Last 90 days</option>
+                <option value="year">This year</option>
+                <option value="all">All time</option>
+              </select>
+              <ChevronDownRegular aria-hidden size={10} style={{ position: 'absolute', right: 10, top: '50%', translate: '0 -50%', pointerEvents: 'none', color: 'var(--admin-text)' }} />
+            </span>
+          ) : null
         return (
           <div key={t.id} style={{ display: 'flex', alignItems: 'stretch', minWidth: 0 }}>
             <div
@@ -266,7 +287,7 @@ export function AtlasAdminStudentsPage() {
               style={{ ...STATUS_CARD, borderColor: 'var(--admin-atlas-primary-200)', ...(active ? { background: 'var(--admin-surface)' } : null) }}
             >
               <div style={STATUS_BODY}>
-                {/* Licensed's window sits top right, across from its pill. */}
+                {/* Licensed's window sits top right, across from its pill (in the one-row version, under its figures). */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                   {/* Default: a status-coloured dot beside the label. Active: the dot slides open, left to right, into a filled pill (tokens.css). */}
                   <span className="cre-admin-status-pill" data-active={active || undefined} style={{ '--pill': strip } as CSSProperties}>
@@ -274,23 +295,7 @@ export function AtlasAdminStudentsPage() {
                     <CircleDotSolid aria-hidden size={12} className="cre-admin-status-pill-icon" />
                     {t.id === 'all' ? 'Active' : t.label}
                   </span>
-                  {t.id === 'licensed' ? (
-                    /* Our own chevron, 10px in from the right edge — Chrome's native arrow ignores padding. */
-                    <span className="cre-admin-status-window" style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
-                      <select
-                        aria-label="Licensed time window"
-                        value={licensedWindow}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={(e) => setLicensedWindow(e.target.value)}
-                        style={{ ...SELECT, marginTop: undefined, appearance: 'none', padding: '4px 24px 4px 10px', width: 'auto', cursor: 'pointer' }}
-                      >
-                        <option value="90d">Last 90 days</option>
-                        <option value="year">This year</option>
-                        <option value="all">All time</option>
-                      </select>
-                      <ChevronDownRegular aria-hidden size={10} style={{ position: 'absolute', right: 10, top: '50%', translate: '0 -50%', pointerEvents: 'none', color: 'var(--admin-text)' }} />
-                    </span>
-                  ) : null}
+                  {windowBelow ? null : licensedPicker}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'stretch', gap: 10, marginTop: 2 }}>
                   {/* Playfair's -1.68px tracking trails the count too; 2px back puts the rule mid-way between the figures' ink. */}
@@ -298,7 +303,7 @@ export function AtlasAdminStudentsPage() {
                   <span aria-hidden style={STATUS_SEP} />
                   <span style={STATUS_COUNT}>{counts.total ? Math.round((n / counts.total) * 100) : 0}%</span>
                 </div>
-                {t.id === 'licensed' ? null : <p style={STATUS_DESC}>{t.note}</p>}
+                {t.id === 'licensed' ? (windowBelow ? licensedPicker : null) : <p style={STATUS_DESC}>{t.note}</p>}
               </div>
             </div>
           </div>
