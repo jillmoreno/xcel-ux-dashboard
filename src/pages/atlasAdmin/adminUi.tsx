@@ -237,6 +237,7 @@ export function StatusDial<Id extends string>({
   over = 'Total',
   unit,
   hug = 0,
+  discGap = 8,
   parts,
   active,
   onPick,
@@ -251,6 +252,8 @@ export function StatusDial<Id extends string>({
   unit: string
   /** Pulls the labels over and under the centre figure this many px closer to it. */
   hug?: number
+  /** The space between the ring's inner edge and the tinted disc inside it. */
+  discGap?: number
   parts: { id: Id; n: number; color: string; label?: string }[]
   /** The selected part — or 'all', or null for none. */
   active: Id | 'all' | null
@@ -279,7 +282,7 @@ export function StatusDial<Id extends string>({
             <stop offset="1" stopColor={discColor} stopOpacity={0} />
           </linearGradient>
         </defs>
-        <circle aria-hidden cx={size / 2} cy={size / 2} r={r - stroke / 2 - 8} fill={`url(#${discFade})`} style={{ pointerEvents: 'none' }} />
+        <circle aria-hidden cx={size / 2} cy={size / 2} r={r - stroke / 2 - discGap} fill={`url(#${discFade})`} style={{ pointerEvents: 'none' }} />
         {arcs.map((a) =>
           a.len > 0 ? (
             <circle

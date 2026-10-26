@@ -127,6 +127,7 @@ export function AtlasAdminInvitesPage() {
               over="Active"
               unit="Invites"
               hug={6}
+              discGap={6}
               parts={tiles.map((t) => ({ id: t.key, n: t.n, color: t.color, label: t.label.toLowerCase() }))}
               active={tiles.find((t) => filter === t.filter)?.key ?? null}
               onPick={(key) => pick(tiles.find((t) => t.key === key)!.filter)}
