@@ -346,17 +346,16 @@ export function AtlasAdminStudentsPage() {
                     <div data-figure-row style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 6, paddingTop: 8, borderTop: figureRule }}>
                       {/* Playfair's -1.68px tracking trails the count too; 2px back keeps the rule mid-way. */}
                       <span style={{ ...STATUS_COUNT, marginRight: 2 }}>{n.toLocaleString('en-US')}</span>
-                      {t.id === 'licensed' ? null : (
-                        <>
-                          <span aria-hidden style={{ flex: 'none', alignSelf: 'stretch', width: 1, borderRadius: 1, background: 'var(--admin-atlas-primary-200)' }} />
-                          {/* Two values break at their " · "; one runs top-heavy over two lines. */}
-                          <StatusNote twoLines={!note.includes(' · ')} style={{ whiteSpace: 'nowrap' }}>
-                            {note}
-                          </StatusNote>
-                        </>
+                      <span aria-hidden style={{ flex: 'none', alignSelf: 'stretch', width: 1, borderRadius: 1, background: 'var(--admin-atlas-primary-200)' }} />
+                      {/* Licensed's window sits where the others' note does. Two values break at their " · "; one runs top-heavy over two lines. */}
+                      {t.id === 'licensed' ? (
+                        licensedPicker
+                      ) : (
+                        <StatusNote twoLines={!note.includes(' · ')} style={{ whiteSpace: 'nowrap' }}>
+                          {note}
+                        </StatusNote>
                       )}
                     </div>
-                    {t.id === 'licensed' ? licensedPicker : null}
                   </>
                 ) : (
                   <>
