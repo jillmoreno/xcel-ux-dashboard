@@ -421,7 +421,8 @@ export function AtlasAdminStudentsPage() {
                 parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
               />
             </div>
-            <div style={{ ...ANALYSIS_PANEL, flex: '1 1 480px', minWidth: 0, padding: '24px 24px 16px' }}>{statusGrid(6)}</div>
+            {/* The cards centred top to bottom in the panel (as tall as the dial's). */}
+            <div style={{ ...ANALYSIS_PANEL, flex: '1 1 480px', minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '16px 24px' }}>{statusGrid(6)}</div>
           </div>
         </div>
         ) : (
