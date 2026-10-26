@@ -7632,6 +7632,13 @@ a.cre-library-card-title::after {
 .cre-admin-tile:focus-visible { box-shadow: 0 0 0 2px var(--admin-brand) !important; }
 /* Students' status cards show a primary 200 edge on hover (the tiles' own hover would darken it). */
 .cre-admin-tile.cre-admin-status-card:hover { border-color: var(--admin-atlas-primary-200) !important; }
+/* Licensed's time window: beside the eyebrow, pulled into its 18px line; when
+   the card is too narrow for both (LICENSED 65 + 8 + the select's 99), it wraps
+   to its own line under the eyebrow instead of squeezing. */
+.cre-admin-status-window { margin: -6px 0; }
+@container (max-width: 171.9px) {
+  .cre-admin-status-window { margin: -4px 0 4px; }
+}
 /* An admin text link's hover — Atlas primary 700. `!important` because the
    link's resting colour is set inline. */
 .cre-admin-text-link:hover { color: var(--admin-atlas-primary-700) !important; }

@@ -270,7 +270,7 @@ export function AtlasAdminStudentsPage() {
                 <span aria-hidden style={{ ...STATUS_BAR, background: strip }} />
                 <div style={STATUS_BODY}>
                   {/* Licensed's window sits top right, across from its eyebrow. */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 18, marginBottom: -2 }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8, minHeight: 18, marginBottom: -2 }}>
                     <p style={{ ...EYEBROW, color: 'var(--admin-status-ink)' }}>{t.id === 'all' ? 'Active' : t.label}</p>
                     {t.id === 'licensed' ? (
                       <select
@@ -278,7 +278,8 @@ export function AtlasAdminStudentsPage() {
                         value={licensedWindow}
                         onClick={(e) => e.stopPropagation()}
                         onChange={(e) => setLicensedWindow(e.target.value)}
-                        style={{ ...SELECT, marginTop: 0, width: 'auto', margin: '-6px 0' }}
+                        className="cre-admin-status-window"
+                        style={{ ...SELECT, marginTop: undefined, width: 'auto', flex: 'none' }}
                       >
                         <option value="90d">Last 90 days</option>
                         <option value="year">This year</option>
@@ -678,7 +679,8 @@ const STATUS_TONE: Record<PipelineBucket, [string]> = {
 const STATUS_BAR: CSSProperties = { flex: 'none', alignSelf: 'stretch', width: 6, borderRadius: 9999 }
 const STATUS_CARD: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: 'var(--admin-fill)', borderStyle: 'solid', borderWidth: 1, borderRadius: 11, overflow: 'hidden', cursor: 'pointer', textAlign: 'left' }
 const STATUS_INNER: CSSProperties = { flex: 1, minHeight: 84, boxSizing: 'border-box', padding: '10px 16px 10px 8px', display: 'flex', gap: 20 }
-const STATUS_BODY: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
+/* A size container, so Licensed's window can drop to its own line when the card is too narrow for it beside the eyebrow (tokens.css). */
+const STATUS_BODY: CSSProperties = { containerType: 'inline-size', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
 const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 12, lineHeight: '16px', color: 'var(--admin-status-ink)' }
 /* Playfair's lining figures (`lnum`): every digit on one baseline — its default old-style figures drop 3, 4, 5, 7, 9 below it. */
 const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 28, fontWeight: 900, lineHeight: 1, whiteSpace: 'nowrap', fontVariantNumeric: 'lining-nums tabular-nums', color: 'var(--admin-status-ink)' }
