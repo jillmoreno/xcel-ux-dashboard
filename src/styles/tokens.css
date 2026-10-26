@@ -7492,7 +7492,7 @@ a.cre-library-card-title::after {
   --admin-status-dark-deep: #191919;
   /* The Atlas Style Guide's status colours (Figma Q9hUhVNzoqIQwV6J5c7xR1,
      node 270:39) — Students' status cards and dial. */
-  --admin-atlas-status-not-started: #c3bba5;
+  --admin-atlas-status-not-started: #bfad94; /* Atlas tertiary 400 — a level up from the style guide's #c3bba5 (2026-10-26) */
   --admin-atlas-status-active: #3d5a73;
   --admin-atlas-status-off-track: #b23b2e;
   --admin-atlas-status-in-progress: #835b16;
