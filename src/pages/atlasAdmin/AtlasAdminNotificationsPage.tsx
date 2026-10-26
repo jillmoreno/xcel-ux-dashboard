@@ -149,12 +149,12 @@ export function AtlasAdminNotificationsPage() {
                           </button>
                         </div>
                         {/* The status line, then the links — each across the full row under a 1px rule. */}
-                        <p style={{ margin: '10px 0 0', paddingTop: 8, paddingRight: 4, borderTop: '1px solid var(--admin-atlas-primary-100)', display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 11, lineHeight: '11.5px', color: 'var(--admin-muted)' }}>
+                        <p style={{ margin: '10px 0 0', paddingTop: 8, paddingRight: 4, borderTop: `1px solid ${active ? 'var(--admin-atlas-secondary-200)' : 'var(--admin-atlas-primary-100)'}`, display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 11, lineHeight: '11.5px', color: 'var(--admin-muted)' }}>
                           {/* Centred on the first line (11.5 − 6) / 2, however many lines follow. */}
                           <span aria-hidden style={{ flex: 'none', marginTop: 2.75, width: 6, height: 6, borderRadius: '50%', background: isOn(n) ? 'var(--admin-success-ink)' : 'var(--admin-faint)' }} />
                           {statusLine(n)}
                         </p>
-                        <div style={{ marginTop: 10, paddingTop: 8, borderTop: '1px solid var(--admin-atlas-primary-100)', display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 20 }}>
+                        <div style={{ marginTop: 10, paddingTop: 8, borderTop: `1px solid ${active ? 'var(--admin-atlas-secondary-200)' : 'var(--admin-atlas-primary-100)'}`, display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 20 }}>
                           {n.actions.map((a) => (
                             <button
                               key={a}

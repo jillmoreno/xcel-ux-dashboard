@@ -7534,6 +7534,7 @@ a.cre-library-card-title::after {
   /* Atlas Secondary 100 — the Style Guide's tan ramp (tertiary-100 in the
      Atlas palette block). Pulse's Action now boxes. */
   --admin-atlas-secondary-100: #f5f2ef;
+  --admin-atlas-secondary-200: #e7e0d6; /* the guide's tan ramp, a step up from 100 */
   /* Atlas Serif H3 — the Atlas type scale's H3 (DM Serif Display 44/46,
      regular) for admin page titles. Spelled out because admin pages sit
      outside the Atlas palette scope that defines --type-atlas-h3-*. */
