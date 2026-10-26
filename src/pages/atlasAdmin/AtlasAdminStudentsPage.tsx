@@ -404,8 +404,8 @@ export function AtlasAdminStudentsPage() {
             or plain. */}
         {analysis === 'dial' ? (
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', gap: 8 }}>
-          {/* The eyebrow and dial centred across; 24px above, 16px below. */}
-          <div style={{ ...ANALYSIS_PANEL, flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '24px 16px 16px' }}>
+          {/* The eyebrow and dial centred across; 24px above, 16px below. On the cards' resting fill. */}
+          <div style={{ ...ANALYSIS_PANEL, background: 'var(--admin-fill)', flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '24px 16px 16px' }}>
             <p style={EYEBROW}>Student Compliance</p>
             <StatusDial
               size={DIAL_SIZE_ONE_ROW}
