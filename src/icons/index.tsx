@@ -112,6 +112,7 @@ import PlaySvg from './play.svg?react'
 import ShareNodesSvg from './share-nodes.svg?react'
 import DotSolidSvg from './dot-solid.svg?react'
 import CircleDotSolidSvg from './circle-dot-solid.svg?react'
+import ChevronDownRegularSvg from './chevron-down-regular.svg?react'
 // Compass Rubi rail (Figma 49:3053), fetched 2026-09-23 at 7.3.1.
 import PaperPlaneTopSolidSvg from './paper-plane-top-solid.svg?react'
 // Compass course navigation footer (Figma 31:1221), fetched 2026-09-23 at 7.3.1.
@@ -350,6 +351,7 @@ export const Play = makeIcon(PlaySvg) // FA: play (light) — Atlas Admin's Repo
 export const ShareNodes = makeIcon(ShareNodesSvg) // FA: share-nodes (light) — Atlas Admin's Reports
 export const DotSolid = makeIcon(DotSolidSvg) // FA: dot (solid)
 export const CircleDotSolid = makeIcon(CircleDotSolidSvg) // FA: circle-dot (solid)
+export const ChevronDownRegular = makeIcon(ChevronDownRegularSvg) // FA: chevron-down (regular)
 export const PaperPlaneTopSolid = makeIcon(PaperPlaneTopSolidSvg) // FA: paper-plane-top (solid)
 export const CircleUser = makeIcon(CircleUserSvg) // FA: circle-user
 export const CircleInfo = makeIcon(CircleInfoSvg)

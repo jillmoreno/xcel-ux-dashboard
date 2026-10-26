@@ -1,7 +1,7 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
-import { ChevronDown, CircleDotSolid, MagnifyingGlass, Plus, XmarkRegular } from '@/icons'
+import { ChevronDownRegular, CircleDotSolid, MagnifyingGlass, Plus, XmarkRegular } from '@/icons'
 import {
   ADMIN_DEMO_LEARNERS,
   ADMIN_DEPARTMENTS,
@@ -287,7 +287,7 @@ export function AtlasAdminStudentsPage() {
                         <option value="year">This year</option>
                         <option value="all">All time</option>
                       </select>
-                      <ChevronDown aria-hidden size={8} style={{ position: 'absolute', right: 10, top: '50%', translate: '0 -50%', pointerEvents: 'none', color: 'var(--admin-text)' }} />
+                      <ChevronDownRegular aria-hidden size={8} style={{ position: 'absolute', right: 10, top: '50%', translate: '0 -50%', pointerEvents: 'none', color: 'var(--admin-text)' }} />
                     </span>
                   ) : null}
                 </div>
