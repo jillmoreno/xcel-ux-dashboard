@@ -215,8 +215,10 @@ export function AtlasAdminInvitesPage() {
                 height: CARD_RADIUS + 1,
                 boxSizing: 'border-box',
                 background: 'var(--admin-surface)',
-                border: '1px solid var(--admin-rule)',
-                borderBottom: 'none',
+                /* Longhands only — mixed with the `border` shorthand React drops the edge. */
+                borderTop: '1px solid var(--admin-rule)',
+                borderLeft: '1px solid var(--admin-rule)',
+                borderRight: '1px solid var(--admin-rule)',
                 borderRadius: `${CARD_RADIUS}px ${CARD_RADIUS}px 0 0`,
               }}
             />
@@ -259,7 +261,16 @@ export function AtlasAdminInvitesPage() {
           />
         </div>
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ minWidth: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
+          {/* Fixed layout on set column widths (the All list's, measured 2026-10-26) so no filter moves a column; Name takes the rest. */}
+          <table style={{ width: '100%', minWidth: 740, tableLayout: 'fixed', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13 }}>
+            <colgroup>
+              <col />
+              <col style={{ width: 203 }} />
+              <col style={{ width: 211 }} />
+              <col style={{ width: 167 }} />
+              <col style={{ width: 135 }} />
+              <col style={{ width: 154 }} />
+            </colgroup>
             <thead style={{ background: 'var(--admin-fill-soft)' }}>
               <tr>
                 <th style={{ ...TH, paddingLeft: 20 }}>Name</th>
