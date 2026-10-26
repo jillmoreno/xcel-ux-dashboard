@@ -316,7 +316,7 @@ export function AtlasAdminStudentsPage() {
                     alignItems: 'stretch',
                     gap: 10,
                     marginTop: oneRow ? 10 : 2,
-                    marginBottom: oneRow ? 8 : 0,
+                    marginBottom: oneRow ? 2 : 0,
                     ...(oneRow ? { paddingBottom: 6, borderBottom: '1px solid var(--admin-atlas-primary-100)' } : null),
                   }}
                 >
