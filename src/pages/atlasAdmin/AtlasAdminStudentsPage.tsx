@@ -401,10 +401,10 @@ export function AtlasAdminStudentsPage() {
             </div>
             <div style={{ flex: '1 1 480px', minWidth: 0 }}>{statusGrid(3)}</div>
           </div>
-          {/* The same, its six cards in one row (2026-10-26, for comparison). */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 40, padding: 32, borderRadius: 18, background: 'var(--admin-atlas-primary-100)' }}>
-            {/* Top-aligned, 15px down (a card's 1px edge + 14px padding), so this eyebrow shares the top cards' baseline. */}
-            <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, paddingTop: 15 }}>
+          {/* The same, its six cards in one row (2026-10-26, for comparison) — the dial and the cards each in their own panel, side by side and the same height. */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', gap: 20 }}>
+            {/* Top-aligned, 15px down (a card's 1px edge + 14px padding), so this eyebrow shares the cards' baseline. */}
+            <div style={{ ...ANALYSIS_PANEL, flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: `${32 + 15}px 32px 32px` }}>
               <p style={EYEBROW}>Student Compliance</p>
               <StatusDial
                 active={bucket}
@@ -413,7 +413,7 @@ export function AtlasAdminStudentsPage() {
                 parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
               />
             </div>
-            <div style={{ flex: '1 1 480px', minWidth: 0 }}>{statusGrid(6)}</div>
+            <div style={{ ...ANALYSIS_PANEL, flex: '1 1 480px', minWidth: 0 }}>{statusGrid(6)}</div>
           </div>
         </div>
         ) : (
@@ -708,6 +708,8 @@ const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize:
 const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 28, fontWeight: 700, lineHeight: '20px', letterSpacing: '-1.68px', whiteSpace: 'nowrap', fontVariantNumeric: 'lining-nums proportional-nums', color: 'var(--admin-atlas-ink)' }
 /* The 1px rule between count and share, as tall as the figures less 1px each end. */
 const STATUS_SEP: CSSProperties = { flex: 'none', width: 1, margin: '1px 0', borderRadius: 1, background: 'var(--admin-atlas-primary-200)' }
+/* One panel of the Dial analysis: Atlas primary 100, 32px in. */
+const ANALYSIS_PANEL: CSSProperties = { boxSizing: 'border-box', padding: 32, borderRadius: 18, background: 'var(--admin-atlas-primary-100)' }
 /* How far the outcome container's blue runs on beneath the roster card (Standard nav). */
 const UNDERLAP = 24
 const TILE: CSSProperties = {
