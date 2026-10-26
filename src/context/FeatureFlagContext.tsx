@@ -2424,6 +2424,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     defaultEnabled: true,
     variants: [
       { value: 'dial', label: 'Dial' },
+      /* The dial beside a 3×2 grid of cards — Dial's layout until 2026-10-26, kept to come back to. */
+      { value: 'dial-grid', label: 'Dial (3×2)' },
       { value: 'progress-bar', label: 'Progress Bar' },
       { value: 'plain', label: 'Plain' },
     ],

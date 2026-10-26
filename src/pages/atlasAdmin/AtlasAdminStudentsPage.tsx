@@ -240,7 +240,7 @@ export function AtlasAdminStudentsPage() {
   /** The outcome cards (Atlas UX Design 527:603 / 527:746): the status pill,
    *  the count, a thin rule and its share of the roster, then a one-line note.
    *  Selecting a card slides its pill open into the status colour.
-   *  `columns`: 3 (two rows) or 6 (one row, the comparison below it — 12px
+   *  `columns`: 3 (two rows, Dial (3×2)) or 6 (one row, Dial — 12px
    *  apart, and Licensed's window under its figures so every card's figures
    *  share a line). The one row never squeezes a card narrower than its
    *  content, and a pill is as wide at rest as selected (tokens.css), so a
@@ -396,40 +396,41 @@ export function AtlasAdminStudentsPage() {
       </header>
 
       <section aria-label="Pipeline outcomes" style={lite ? undefined : { ...CARD, border: 'none', padding: `24px 24px ${24 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
-        {/* One of three, by the Student Analysis design control: PartnerHub's
-            status cards with the dial, the tiles with progress bars, or plain. */}
-        {/* Dial: on Atlas primary 100, 32px in. */}
+        {/* One of four, by the Student Analysis design control. Dial: the dial
+            and the six status cards in one row, each in its own panel, side by
+            side and the same height (2026-10-26). Dial (3×2): Dial's layout
+            until then — the dial beside a 3×2 grid on one primary 100 panel,
+            32px in — kept to come back to. Then the tiles with progress bars,
+            or plain. */}
         {analysis === 'dial' ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 40, padding: 32, borderRadius: 18, background: 'var(--admin-atlas-primary-100)' }}>
-            {/* Top-aligned, 15px down (a card's 1px edge + 14px padding), so this eyebrow shares the top cards' baseline. */}
-            <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, paddingTop: 15 }}>
-              <p style={EYEBROW}>Student Compliance</p>
-              <StatusDial
-                active={bucket}
-                onPick={pickBucket}
-                total={counts.total}
-                parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
-              />
-            </div>
-            <div style={{ flex: '1 1 480px', minWidth: 0 }}>{statusGrid(3)}</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', gap: 8 }}>
+          {/* The eyebrow and dial centred across; 24px above, 16px below. */}
+          <div style={{ ...ANALYSIS_PANEL, flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '24px 16px 16px' }}>
+            <p style={EYEBROW}>Student Compliance</p>
+            <StatusDial
+              size={DIAL_SIZE_ONE_ROW}
+              active={bucket}
+              onPick={pickBucket}
+              total={counts.total}
+              parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
+            />
           </div>
-          {/* The same, its six cards in one row (2026-10-26, for comparison) — the dial and the cards each in their own panel, side by side and the same height. */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', gap: 8 }}>
-            {/* The eyebrow and dial centred across; 24px above, 16px below. */}
-            <div style={{ ...ANALYSIS_PANEL, flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '24px 16px 16px' }}>
-              <p style={EYEBROW}>Student Compliance</p>
-              <StatusDial
-                size={DIAL_SIZE_ONE_ROW}
-                active={bucket}
-                onPick={pickBucket}
-                total={counts.total}
-                parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
-              />
-            </div>
-            {/* The cards' tops on the ring's outer edge: the dial panel's 24px + eyebrow 18 + gap 8 + DIAL_INSET. */}
-            <div style={{ ...ANALYSIS_PANEL, flex: '1 1 480px', minWidth: 0, padding: `${24 + 18 + 8 + DIAL_INSET}px 24px 16px` }}>{statusGrid(6)}</div>
+          {/* The cards' tops on the ring's outer edge: the dial panel's 24px + eyebrow 18 + gap 8 + DIAL_INSET. */}
+          <div style={{ ...ANALYSIS_PANEL, flex: '1 1 480px', minWidth: 0, padding: `${24 + 18 + 8 + DIAL_INSET}px 24px 16px` }}>{statusGrid(6)}</div>
+        </div>
+        ) : analysis === 'dial-grid' ? (
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 40, padding: 32, borderRadius: 18, background: 'var(--admin-atlas-primary-100)' }}>
+          {/* Top-aligned, 15px down (a card's 1px edge + 14px padding), so this eyebrow shares the top cards' baseline. */}
+          <div style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, paddingTop: 15 }}>
+            <p style={EYEBROW}>Student Compliance</p>
+            <StatusDial
+              active={bucket}
+              onPick={pickBucket}
+              total={counts.total}
+              parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
+            />
           </div>
+          <div style={{ flex: '1 1 480px', minWidth: 0 }}>{statusGrid(3)}</div>
         </div>
         ) : (
           tileGrid(analysis === 'progress-bar')
