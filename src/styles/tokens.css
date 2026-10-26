@@ -7641,7 +7641,8 @@ a.cre-library-card-title::after {
    the circle-dot fades in over where the dot was. */
 .cre-admin-status-pill {
   position: relative; isolation: isolate; display: inline-flex; align-items: center;
-  height: 15px; box-sizing: border-box; padding: 2px 8px 2px 17px; border-radius: 10px;
+  /* 15px after the label at rest (8 + the 7 the selected state adds on the left), so the pill is one width in both states. */
+  height: 15px; box-sizing: border-box; padding: 2px 15px 2px 17px; border-radius: 10px;
   font-family: var(--font-body); font-size: 11px; font-weight: 600; line-height: 12px;
   letter-spacing: 1.3px; text-transform: uppercase; white-space: nowrap;
   color: var(--admin-atlas-pill-ink);

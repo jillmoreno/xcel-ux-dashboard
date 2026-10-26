@@ -242,9 +242,12 @@ export function AtlasAdminStudentsPage() {
    *  Selecting a card slides its pill open into the status colour.
    *  `columns`: 3 (two rows) or 6 (one row, the comparison below it — 12px
    *  apart, and Licensed's window under its figures so every card's figures
-   *  share a line). */
+   *  share a line). The one row never squeezes a card narrower than its
+   *  content, and a pill is as wide at rest as selected (tokens.css), so a
+   *  card always has room for its selected pill. Its cards are not size
+   *  containers — containment would hide their content's width from the grid. */
   const statusGrid = (columns: 3 | 6) => (
-    <div style={{ display: 'grid', gap: columns === 6 ? 12 : 20, gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+    <div style={{ display: 'grid', gap: columns === 6 ? 12 : 20, gridTemplateColumns: columns === 6 ? 'repeat(6, minmax(min-content, 1fr))' : 'repeat(3, minmax(0, 1fr))' }}>
       {STATUS_ORDER.map((id) => tiles.find((x) => x.id === id)!).map((t) => {
         const n = tileCount[t.id]
         const active = bucket === t.id
@@ -291,7 +294,7 @@ export function AtlasAdminStudentsPage() {
                 background: active ? 'var(--admin-surface)' : oneRow ? 'var(--admin-fill)' : 'none',
               }}
             >
-              <div style={{ ...STATUS_BODY, padding: oneRow ? '24px 16px' : 16 }}>
+              <div style={{ ...STATUS_BODY, padding: oneRow ? '24px 16px' : 16, containerType: oneRow ? 'normal' : 'inline-size' }}>
                 {/* Licensed's window sits top right, across from its pill (in the one-row version, under its figures). */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                   {/* Default: a status-coloured dot beside the label. Active: the dot slides open, left to right, into a filled pill (tokens.css). */}
