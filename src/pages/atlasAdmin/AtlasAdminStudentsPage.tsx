@@ -288,7 +288,7 @@ export function AtlasAdminStudentsPage() {
               }}
               className="cre-admin-tile cre-admin-status-card"
               /* 3×2: primary 200 edge always; selected fills white. One row: no edge (primary 200 on hover, tokens.css) — at rest the
-                 fill 30% lighter than its panel's (STATUS_CARD_REST), selected white and lifted on the tiles' 4/4 15% shadow. */
+                 fill 50% lighter than its panel's (STATUS_CARD_REST), selected white and lifted on the tiles' 4/4 15% shadow. */
               style={{
                 ...STATUS_CARD,
                 borderColor: oneRow ? 'transparent' : 'var(--admin-atlas-primary-200)',
@@ -749,8 +749,8 @@ const DIAL_SIZE = 168
 const DIAL_INSET = 4
 /* The one-row version's smaller dial (2026-10-26). */
 const DIAL_SIZE_ONE_ROW = 150
-/* Dial's status cards at rest: 30% lighter than the panels' fill they sit on. */
-const STATUS_CARD_REST = 'color-mix(in srgb, var(--admin-fill), white 30%)'
+/* Dial's status cards at rest: 50% lighter than the panels' fill they sit on. */
+const STATUS_CARD_REST = 'color-mix(in srgb, var(--admin-fill), white 50%)'
 /* One panel of the Dial analysis: Atlas primary 100, 32px in. */
 const ANALYSIS_PANEL: CSSProperties = { boxSizing: 'border-box', padding: 32, borderRadius: 18, background: 'var(--admin-atlas-primary-100)' }
 /* How far the outcome container's blue runs on beneath the roster card (Standard nav). */
