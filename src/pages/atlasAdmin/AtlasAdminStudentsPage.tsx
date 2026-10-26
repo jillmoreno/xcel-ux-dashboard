@@ -732,6 +732,20 @@ function StatusDial({
     <div style={{ position: 'relative', flex: 'none', width: size, height: size }}>
       {/* Each arc selects its card. */}
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="group" aria-label={`${total} students by status`} style={{ display: 'block' }}>
+        {/* Active Students selected (the default): a full ring in its colour at 30%, 2px wider than a selected arc (14px), laid under the segments (drawn first). */}
+        {active === 'all' ? (
+          <circle
+            aria-hidden
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            stroke="var(--admin-atlas-status-active)"
+            strokeOpacity={0.3}
+            strokeWidth={stroke + 6}
+            style={{ pointerEvents: 'none' }}
+          />
+        ) : null}
         {arcs.map((a) =>
           a.len > 0 ? (
             <circle
@@ -755,20 +769,6 @@ function StatusDial({
             />
           ) : null,
         )}
-        {/* Active Students selected (the default): a full ring in its colour at 30%, 2px wider than a selected arc (14px), washed over every segment. */}
-        {active === 'all' ? (
-          <circle
-            aria-hidden
-            cx={size / 2}
-            cy={size / 2}
-            r={r}
-            fill="none"
-            stroke="var(--admin-atlas-status-active)"
-            strokeOpacity={0.3}
-            strokeWidth={stroke + 6}
-            style={{ pointerEvents: 'none' }}
-          />
-        ) : null}
       </svg>
       <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
         <span style={DIAL_LABEL}>Total</span>
