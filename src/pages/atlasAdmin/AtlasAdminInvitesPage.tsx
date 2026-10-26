@@ -103,7 +103,8 @@ export function AtlasAdminInvitesPage() {
         {/* Students' status cards on Students' primary 100 panel (24px in, 18px corners): the selected card white and lifted, the rest on
             the search field's fill with no edge (primary 200 on hover), a status pill, the figure ruled above and below, an 11px note. */}
         <div style={{ borderRadius: 18, background: 'var(--admin-atlas-primary-100)', padding: '16px 24px' }}>
-          <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+          {/* Each tile as wide as its content, wrapping when the row runs out. */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
             {tiles.map((t) => {
               // Accepted this week filters to Enrolled, so it reads selected there.
               const active = filter === (t.id === 'all' ? 'enrolled' : t.id)
@@ -117,6 +118,7 @@ export function AtlasAdminInvitesPage() {
                   className="cre-admin-tile cre-admin-status-card"
                   style={{
                     ...STATUS_CARD,
+                    flex: 'none',
                     padding: 16,
                     gap: 8,
                     alignItems: 'flex-start', // the pill keeps its own width; the ruled figure stretches itself
