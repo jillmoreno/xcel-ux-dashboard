@@ -7646,7 +7646,7 @@ a.cre-library-card-title::after {
   /* 16px tall: the 12px circle-dot then has 2px above, below and to its left (it is positioned, so the label's padding does not move it).
      The label's capitals centred by eye: Open Sans 11px in a 12px line puts its baseline 10.27px down and its cap height is 7.85px,
      so 2px of top padding left 4.42px above the capitals and 3.73px below — 1.65 / 2.35 evens that to 4.07 either side. */
-  height: 16px; box-sizing: border-box; padding: 1.65px 15px 2.35px 17px; border-radius: 10px;
+  height: 16px; box-sizing: border-box; padding: 2.65px 15px 1.35px 17px; border-radius: 10px; /* then 1px lower again, by eye (2026-10-26) */
   font-family: var(--font-body); font-size: 11px; font-weight: 600; line-height: 12px;
   letter-spacing: 1.3px; text-transform: uppercase; white-space: nowrap;
   color: var(--admin-atlas-pill-ink);
