@@ -280,8 +280,8 @@ export function AtlasAdminStudentsPage() {
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => setLicensedWindow(e.target.value)}
                       className="cre-admin-status-window"
-                      /* 4px wider than its own fit (99px for "Last 90 days"), which lands between the label and the chevron. */
-                      style={{ ...SELECT, marginTop: undefined, width: 103, flex: 'none' }}
+                      /* 4px more after the chevron than the field's own 6px. */
+                      style={{ ...SELECT, marginTop: undefined, padding: '4px 10px 4px 6px', width: 'auto', flex: 'none' }}
                     >
                       <option value="90d">Last 90 days</option>
                       <option value="year">This year</option>
