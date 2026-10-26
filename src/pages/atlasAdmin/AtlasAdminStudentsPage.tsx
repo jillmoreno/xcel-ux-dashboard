@@ -249,7 +249,8 @@ export function AtlasAdminStudentsPage() {
         const n = tileCount[t.id]
         const active = bucket === t.id
         const [strip] = STATUS_TONE[t.id]
-        const windowBelow = columns === 6
+        const oneRow = columns === 6
+        const windowBelow = oneRow
         /* Our own chevron, 10px in from the right edge — Chrome's native arrow ignores padding. */
         const licensedPicker =
           t.id === 'licensed' ? (
@@ -283,10 +284,14 @@ export function AtlasAdminStudentsPage() {
                 }
               }}
               className="cre-admin-tile cre-admin-status-card"
-              /* Selected: white, edged in primary 200. At rest: the search field's fill, no edge (primary 200 on hover, tokens.css). */
-              style={{ ...STATUS_CARD, borderColor: active ? 'var(--admin-atlas-primary-200)' : 'transparent', background: active ? 'var(--admin-surface)' : 'var(--admin-fill)' }}
+              /* Selected: white, edged in primary 200. At rest — 3×2: no fill, the same edge; one row: the search field's fill, no edge (primary 200 on hover, tokens.css). */
+              style={{
+                ...STATUS_CARD,
+                borderColor: active || !oneRow ? 'var(--admin-atlas-primary-200)' : 'transparent',
+                background: active ? 'var(--admin-surface)' : oneRow ? 'var(--admin-fill)' : 'none',
+              }}
             >
-              <div style={STATUS_BODY}>
+              <div style={{ ...STATUS_BODY, padding: oneRow ? '24px 16px' : 16 }}>
                 {/* Licensed's window sits top right, across from its pill (in the one-row version, under its figures). */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                   {/* Default: a status-coloured dot beside the label. Active: the dot slides open, left to right, into a filled pill (tokens.css). */}
@@ -297,7 +302,7 @@ export function AtlasAdminStudentsPage() {
                   </span>
                   {windowBelow ? null : licensedPicker}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'stretch', gap: 10, marginTop: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'stretch', gap: 10, marginTop: oneRow ? 6 : 2 }}>
                   {/* Playfair's -1.68px tracking trails the count too; 2px back puts the rule mid-way between the figures' ink. */}
                   <span style={{ ...STATUS_COUNT, marginRight: 2 }}>{n.toLocaleString('en-US')}</span>
                   <span aria-hidden style={STATUS_SEP} />
@@ -699,10 +704,10 @@ const STATUS_TONE: Record<PipelineBucket, [string]> = {
   prepared: ['var(--admin-atlas-status-prepared)'],
   licensed: ['var(--admin-atlas-status-licensed)'],
 }
-/* Atlas UX Design 527:603 (Active) / 527:746 (Default): 14px corners, 24px in top and bottom, 16px at the sides. A flex column, so every card in a row fills to the tallest. */
+/* Atlas UX Design 527:603 (Active) / 527:746 (Default): 14px corners; 16px in (the one-row version 24px top and bottom). A flex column, so every card in a row fills to the tallest. */
 const STATUS_CARD: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: 'none', borderStyle: 'solid', borderWidth: 1, borderRadius: 14, cursor: 'pointer', textAlign: 'left' }
 /* A size container, so Licensed's window can drop to its own line when the card is too narrow for it beside the pill (tokens.css). */
-const STATUS_BODY: CSSProperties = { containerType: 'inline-size', flex: 1, minWidth: 0, boxSizing: 'border-box', padding: '24px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
+const STATUS_BODY: CSSProperties = { containerType: 'inline-size', flex: 1, minWidth: 0, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
 const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: BODY_FONT, fontSize: 13, lineHeight: '15px', color: 'var(--admin-atlas-ink)' }
 /* Playfair Bold with lining figures (`lnum`): every digit on one baseline — its default old-style figures drop 3, 4, 5, 7, 9 below it. */
 const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 28, fontWeight: 700, lineHeight: '20px', letterSpacing: '-1.68px', whiteSpace: 'nowrap', fontVariantNumeric: 'lining-nums proportional-nums', color: 'var(--admin-atlas-ink)' }
