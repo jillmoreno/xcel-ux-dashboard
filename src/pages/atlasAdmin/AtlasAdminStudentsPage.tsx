@@ -402,7 +402,7 @@ export function AtlasAdminStudentsPage() {
             <div style={{ flex: '1 1 480px', minWidth: 0 }}>{statusGrid(3)}</div>
           </div>
           {/* The same, its six cards in one row (2026-10-26, for comparison) — the dial and the cards each in their own panel, side by side and the same height. */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', gap: 20 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', gap: 8 }}>
             {/* Top-aligned, 15px down (a card's 1px edge + 14px padding), so this eyebrow shares the cards' baseline. */}
             <div style={{ ...ANALYSIS_PANEL, flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, padding: `${32 + 15}px 32px 32px` }}>
               <p style={EYEBROW}>Student Compliance</p>
