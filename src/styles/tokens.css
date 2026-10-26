@@ -7662,11 +7662,11 @@ a.cre-library-card-title::after {
 @media (prefers-reduced-motion: reduce) {
   .cre-admin-status-pill, .cre-admin-status-pill-fill, .cre-admin-status-pill-icon { transition: none; }
 }
-/* Licensed's time window: beside the eyebrow, pulled into its 18px line; when
-   the card is too narrow for both (LICENSED 65 + 8 + the select's 99), it wraps
-   to its own line under the eyebrow instead of squeezing. */
+/* Licensed's time window: beside the pill, pulled into its line; when the
+   card is too narrow for both (the selected LICENSED pill 94 + 8 + the
+   select's 103), it wraps to its own line under the pill instead of squeezing. */
 .cre-admin-status-window { margin: -6px 0; }
-@container (max-width: 171.9px) {
+@container (max-width: 204.9px) {
   .cre-admin-status-window { margin: -9px 0 4px; } /* 4px under the eyebrow's letters, not its line box */
 }
 /* An admin text link's hover — Atlas primary 700. `!important` because the

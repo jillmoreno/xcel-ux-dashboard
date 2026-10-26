@@ -261,8 +261,8 @@ export function AtlasAdminStudentsPage() {
                 }
               }}
               className="cre-admin-tile cre-admin-status-card"
-              /* Atlas UX Design 527:603 / 527:746 — selected is white edged in primary 200, the rest a primary 100 edge on no fill. */
-              style={{ ...STATUS_CARD, borderColor: active ? 'var(--admin-atlas-primary-200)' : 'var(--admin-atlas-primary-100)', ...(active ? { background: 'var(--admin-surface)' } : null) }}
+              /* Atlas UX Design 527:603 / 527:746 — selected is white, the rest no fill; both edged in primary 200 (a step up from the file's 100 at rest). */
+              style={{ ...STATUS_CARD, borderColor: 'var(--admin-atlas-primary-200)', ...(active ? { background: 'var(--admin-surface)' } : null) }}
             >
               <div style={STATUS_BODY}>
                 {/* Licensed's window sits top right, across from its pill. */}
@@ -280,7 +280,8 @@ export function AtlasAdminStudentsPage() {
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => setLicensedWindow(e.target.value)}
                       className="cre-admin-status-window"
-                      style={{ ...SELECT, marginTop: undefined, width: 'auto', flex: 'none' }}
+                      /* 4px wider than its own fit (99px for "Last 90 days"), which lands between the label and the chevron. */
+                      style={{ ...SELECT, marginTop: undefined, width: 103, flex: 'none' }}
                     >
                       <option value="90d">Last 90 days</option>
                       <option value="year">This year</option>
