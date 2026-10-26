@@ -4,8 +4,8 @@ import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { acceptedThisWeek, hoursAgoDate, isFresh, isReady, type Invite, type InviteStatus } from '@/data/atlasAdmin/invites'
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
-import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, PAGE_H1, PAGE_SUB, PILL, STATUS_CARD, STATUS_COUNT } from './adminStyles'
-import { StatusNote, StatusPill } from './adminUi'
+import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, PAGE_H1, PAGE_SUB, PILL, STATUS_CARD, STATUS_COUNT } from './adminStyles'
+import { StatusDial, StatusNote, StatusPill } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
 
 /**
@@ -79,12 +79,13 @@ export function AtlasAdminInvitesPage() {
   }
 
   /* Each tile's pill colour, from the Atlas status colours Students uses: needs you (red), part-way (brown), just sent (slate), paid (navy), done (green). */
-  const tiles: { id: Filter; label: string; note: string; color: string; n: number }[] = [
-    { id: 'ready', label: 'Ready to resend', note: '48h+ unopened or stuck', color: 'var(--admin-atlas-status-off-track)', n: count('ready') },
-    { id: 'opened', label: 'Opened, not accepted', note: 'setup help usually closes it', color: 'var(--admin-atlas-status-in-progress)', n: count('opened') },
-    { id: 'fresh', label: 'Sent under 24h', note: 'wait until tomorrow', color: 'var(--admin-atlas-status-active)', n: count('fresh') },
-    { id: 'purchased', label: 'Purchased', note: 'paid, course not opened yet', color: 'var(--admin-atlas-status-licensed)', n: count('purchased') },
-    { id: 'all', label: 'Accepted this week', note: 'purchased, now in the pipeline', color: 'var(--admin-atlas-status-prepared)', n: invites.filter(acceptedThisWeek).length },
+  /* `filter` is the table filter a tile sets — Accepted this week sets Enrolled, so it reads selected there. */
+  const tiles: { key: string; filter: Filter; label: string; note: string; color: string; n: number }[] = [
+    { key: 'ready', filter: 'ready', label: 'Ready to resend', note: '48h+ unopened or stuck', color: 'var(--admin-atlas-status-off-track)', n: count('ready') },
+    { key: 'opened', filter: 'opened', label: 'Opened, not accepted', note: 'setup help usually closes it', color: 'var(--admin-atlas-status-in-progress)', n: count('opened') },
+    { key: 'fresh', filter: 'fresh', label: 'Sent under 24h', note: 'wait until tomorrow', color: 'var(--admin-atlas-status-active)', n: count('fresh') },
+    { key: 'purchased', filter: 'purchased', label: 'Purchased', note: 'paid, course not opened yet', color: 'var(--admin-atlas-status-licensed)', n: count('purchased') },
+    { key: 'accepted', filter: 'enrolled', label: 'Accepted this week', note: 'purchased, now in the pipeline', color: 'var(--admin-atlas-status-prepared)', n: invites.filter(acceptedThisWeek).length },
   ]
 
   return (
@@ -101,49 +102,78 @@ export function AtlasAdminInvitesPage() {
 
       {/* As on Students: with the Standard nav the blue runs on under the table card, no gap between; with Lite the tiles sit on the page. */}
       <section aria-label="Invite outcomes" style={lite ? undefined : { ...CARD, border: 'none', padding: `16px 16px ${20 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
-        {/* Students' status cards on Students' primary 100 panel (16px in all round, 18px corners): the selected card white and lifted, the rest on
-            the search field's fill with no edge (primary 200 on hover), a status pill, the figure ruled above and below, an 11px note. */}
-        <div style={{ width: 'fit-content', maxWidth: '100%', boxSizing: 'border-box', borderRadius: 18, background: 'var(--admin-atlas-primary-100)', padding: 16 }}>
-          {/* Each tile as wide as its content, wrapping when the row runs out. */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-            {tiles.map((t) => {
-              // Accepted this week filters to Enrolled, so it reads selected there.
-              const active = filter === (t.id === 'all' ? 'enrolled' : t.id)
-              const rule = `1px solid ${active ? 'var(--admin-atlas-primary-100)' : 'color-mix(in srgb, var(--admin-atlas-primary-200), white 20%)'}`
-              return (
-                <button
-                  key={t.label}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => (t.id === 'all' ? pick('enrolled') : pick(t.id))}
-                  className="cre-admin-tile cre-admin-status-card"
-                  style={{
-                    ...STATUS_CARD,
-                    flex: 'none',
-                    padding: 16,
-                    gap: 8,
-                    alignItems: 'flex-start', // the pill keeps its own width; the ruled figure stretches itself
-                    fontFamily: 'var(--font-body)',
-                    borderColor: 'transparent',
-                    background: active ? 'var(--admin-surface)' : 'var(--admin-fill)',
-                    boxShadow: active ? 'var(--admin-shadow-tile-active)' : undefined,
-                  }}
-                >
-                  <StatusPill color={t.color} active={active}>
-                    {t.label}
-                  </StatusPill>
-                  {/* The note beside the count, a 1px rule between them with 12px either side, centred on it, under a rule (none below, 2026-10-26). */}
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 12, alignSelf: 'stretch', marginTop: 6, paddingTop: 8, borderTop: rule }}>
-                    {/* Playfair's -1.68px tracking trails the count too; 2px back keeps the rule mid-way. */}
-                    <span style={{ ...STATUS_COUNT, marginRight: 2 }}>{t.n}</span>
-                    <span aria-hidden style={{ flex: 'none', alignSelf: 'stretch', width: 1, borderRadius: 1, background: 'var(--admin-atlas-primary-200)' }} />
-                    <StatusNote twoLines>
-                      {t.note}
-                    </StatusNote>
-                  </span>
-                </button>
-              )
-            })}
+        {/* As on Students: the dial in its own panel on the cards' resting fill, square on the right and underlapping the cards panel by its
+            corner radius; the tiles centred on the dial. */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch' }}>
+          <div
+            style={{
+              boxSizing: 'border-box',
+              background: 'var(--admin-fill)',
+              borderRadius: `${PANEL_RADIUS}px 0 0 ${PANEL_RADIUS}px`,
+              marginRight: -PANEL_RADIUS,
+              flex: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 8,
+              padding: `16px ${24 + PANEL_RADIUS}px 16px 24px`,
+            }}
+          >
+            <p style={EYEBROW}>Invite Activity</p>
+            {/* Active invites: one arc per tile, against the tiles' combined count, which the centre reads too. */}
+            <StatusDial
+              size={DIAL_SIZE_INVITES}
+              total={tiles.reduce((n, t) => n + t.n, 0)}
+              over="Active"
+              unit="Invites"
+              parts={tiles.map((t) => ({ id: t.key, n: t.n, color: t.color, label: t.label.toLowerCase() }))}
+              active={tiles.find((t) => filter === t.filter)?.key ?? null}
+              onPick={(key) => pick(tiles.find((t) => t.key === key)!.filter)}
+            />
+          </div>
+          {/* Students' status cards on Students' primary 100 panel (18px corners): the selected card white and lifted, the rest on the search
+              field's fill with no edge (primary 200 on hover), a status pill, the count ruled above, a 1px rule, an 11px note. */}
+          <div style={{ position: 'relative', boxSizing: 'border-box', borderRadius: PANEL_RADIUS, background: 'var(--admin-atlas-primary-100)', padding: `${16 + 18 + 8}px 16px 16px` }}>
+            {/* The dial's height (its panel's eyebrow 18 + gap 8 above it), the tiles centred in it and wrapping when the row runs out. */}
+            <div style={{ minHeight: DIAL_SIZE_INVITES, display: 'flex', flexWrap: 'wrap', alignContent: 'center', gap: 12 }}>
+              {tiles.map((t) => {
+                const active = filter === t.filter
+                const rule = `1px solid ${active ? 'var(--admin-atlas-primary-100)' : 'color-mix(in srgb, var(--admin-atlas-primary-200), white 20%)'}`
+                return (
+                  <button
+                    key={t.key}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => pick(t.filter)}
+                    className="cre-admin-tile cre-admin-status-card"
+                    style={{
+                      ...STATUS_CARD,
+                      flex: 'none',
+                      padding: 16,
+                      gap: 8,
+                      alignItems: 'flex-start', // the pill keeps its own width; the ruled figure stretches itself
+                      fontFamily: 'var(--font-body)',
+                      borderColor: 'transparent',
+                      background: active ? 'var(--admin-surface)' : 'var(--admin-fill)',
+                      boxShadow: active ? 'var(--admin-shadow-tile-active)' : undefined,
+                    }}
+                  >
+                    <StatusPill color={t.color} active={active}>
+                      {t.label}
+                    </StatusPill>
+                    {/* The note beside the count, a 1px rule between them with 12px either side, centred on it, under a rule (none below, 2026-10-26). */}
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 12, alignSelf: 'stretch', marginTop: 6, paddingTop: 8, borderTop: rule }}>
+                      {/* Playfair's -1.68px tracking trails the count too; 2px back keeps the rule mid-way. */}
+                      <span style={{ ...STATUS_COUNT, marginRight: 2 }}>{t.n}</span>
+                      <span aria-hidden style={{ flex: 'none', alignSelf: 'stretch', width: 1, borderRadius: 1, background: 'var(--admin-atlas-primary-200)' }} />
+                      <StatusNote twoLines>
+                        {t.note}
+                      </StatusNote>
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
           </div>
         </div>
       </section>
@@ -330,6 +360,10 @@ export function AtlasAdminInvitesPage() {
 
 /* How far the outcome container's blue runs on beneath the table card. */
 const UNDERLAP = 24
+/* The dial panels' corner radius, and how far the dial panel runs on under the cards panel. */
+const PANEL_RADIUS = 18
+/* Students' one-row dial size. */
+const DIAL_SIZE_INVITES = 150
 const SEG: CSSProperties = {
   whiteSpace: 'nowrap',
   borderRadius: 9999,

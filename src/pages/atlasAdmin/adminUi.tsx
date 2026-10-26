@@ -1,10 +1,10 @@
-import { Fragment, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { Fragment, useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import type { LearnerStage, PreparedToPass, Readiness } from '@/data/atlasAdmin/learners'
 import { STAGE_LABEL } from '@/data/atlasAdmin/learners'
 import { useAdminStore } from './adminStore'
 import { CircleDotSolid } from '@/icons'
-import { CHIP, MENU, MENU_ITEM, PILL, STATUS_DESC } from './adminStyles'
+import { CHIP, DIAL_INSET, DIAL_LABEL, DIAL_SIZE, MENU, MENU_ITEM, PILL, STATUS_DESC } from './adminStyles'
 
 /** ATLAS ADMIN — the small shared pieces (2026-10-19). */
 
@@ -223,4 +223,90 @@ function topHeavy(text: string): string[] {
     if (top.length > rest.length) return [top, rest]
   }
   return [text]
+}
+
+/** The status cards' dial (Students, Invites), in the learner Home's ring
+ *  style: a thick round-capped arc per part from 12 o'clock, each its share
+ *  of `total`, a hair apart so the caps don't touch. Each arc picks its card;
+ *  the selected arc thickens, and a disc inside the ring takes its colour,
+ *  fading top to bottom. The centre reads `over` (default Total) / `centre`
+ *  (default `total`) / `unit`. */
+export function StatusDial<Id extends string>({
+  total,
+  centre = total,
+  over = 'Total',
+  unit,
+  parts,
+  active,
+  onPick,
+  allColor,
+  pale = [],
+  size = DIAL_SIZE,
+}: {
+  total: number
+  centre?: number
+  /** The small caps over the centre figure. */
+  over?: string
+  unit: string
+  parts: { id: Id; n: number; color: string; label?: string }[]
+  /** The selected part — or 'all', or null for none. */
+  active: Id | 'all' | null
+  onPick: (id: Id) => void
+  /** The disc's colour when 'all' is selected. */
+  allColor?: string
+  /** Parts whose colour is pale enough to need the disc at 25% rather than 15%. */
+  pale?: Id[]
+  /** The square it draws in; the ring sits DIAL_INSET inside it. The centre text keeps its size. */
+  size?: number
+}) {
+  const stroke = 8
+  const r = size / 2 - DIAL_INSET - stroke / 2
+  const c = 2 * Math.PI * r
+  const gap = stroke + 2 // the round caps reach stroke / 2 past each end
+  const lens = parts.map((p) => (total ? (c * p.n) / total : 0))
+  const arcs = parts.map((p, i) => ({ ...p, offset: lens.slice(0, i).reduce((a, b) => a + b, 0), len: Math.max(0, lens[i] - gap) }))
+  const discFade = `dial-fade-${useId().replace(/:/g, '')}`
+  const discColor = active === 'all' ? (allColor ?? 'transparent') : (parts.find((p) => p.id === active)?.color ?? 'transparent')
+  return (
+    <div style={{ position: 'relative', flex: 'none', width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="group" aria-label={`${total} ${unit.toLowerCase()} by status`} style={{ display: 'block' }}>
+        <defs>
+          <linearGradient id={discFade} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor={discColor} stopOpacity={active !== 'all' && active !== null && pale.includes(active) ? 0.25 : 0.15} />
+            <stop offset="1" stopColor={discColor} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <circle aria-hidden cx={size / 2} cy={size / 2} r={r - stroke / 2 - 8} fill={`url(#${discFade})`} style={{ pointerEvents: 'none' }} />
+        {arcs.map((a) =>
+          a.len > 0 ? (
+            <circle
+              key={a.id}
+              cx={size / 2}
+              cy={size / 2}
+              r={r}
+              fill="none"
+              role="button"
+              tabIndex={0}
+              aria-label={`${a.n} ${a.label ?? a.id.replace('-', ' ')}: show these ${unit.toLowerCase()}`}
+              aria-pressed={active === a.id}
+              onClick={() => onPick(a.id)}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onPick(a.id))}
+              style={{ stroke: a.color, cursor: 'pointer', outline: 'none' }}
+              strokeWidth={active === a.id ? stroke + 4 : stroke}
+              strokeLinecap="round"
+              /* Selected, its caps reach 2px further each end — so its dash is 4px shorter and starts 2px later, keeping the gaps. */
+              strokeDasharray={`${Math.max(0, a.len - (active === a.id ? 4 : 0))} ${c}`}
+              strokeDashoffset={-(a.offset + gap / 2 + (active === a.id ? 2 : 0))}
+              transform={`rotate(-90 ${size / 2} ${size / 2})`}
+            />
+          ) : null,
+        )}
+      </svg>
+      <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+        <span style={DIAL_LABEL}>{over}</span>
+        <span style={{ fontFamily: 'var(--admin-font-playfair)', fontWeight: 900, fontVariantNumeric: 'lining-nums tabular-nums', fontFeatureSettings: '"lnum" 1, "tnum" 1', fontSize: 'var(--admin-atlas-h5-size)', lineHeight: 'var(--admin-atlas-h5-line)', color: 'var(--admin-ink)' }}>{centre}</span>
+        <span style={DIAL_LABEL}>{unit}</span>
+      </div>
+    </div>
+  )
 }

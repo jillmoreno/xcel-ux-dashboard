@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ChevronDownRegular, MagnifyingGlass, Plus, XmarkRegular } from '@/icons'
@@ -15,8 +15,8 @@ import {
 } from '@/data/atlasAdmin/learners'
 import { LOCATIONS, jobRoleOf, membersOfLocation } from '@/data/atlasAdmin/organization'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
-import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, CARD, CHIP, CHIP_ON, EYEBROW, PAGE_H1, PAGE_SUB, STATUS_CARD, STATUS_COUNT } from './adminStyles'
-import { ChipMenu, MenuItem, PreparedPill, ReadinessCell, StagePill, StatusNote, StatusPill } from './adminUi'
+import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, CARD, CHIP, CHIP_ON, DIAL_INSET, EYEBROW, PAGE_H1, PAGE_SUB, STATUS_CARD, STATUS_COUNT } from './adminStyles'
+import { ChipMenu, MenuItem, PreparedPill, ReadinessCell, StagePill, StatusDial, StatusNote, StatusPill } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
 import { StudentsEmptyState } from './StudentsEmptyState'
 
@@ -468,6 +468,9 @@ export function AtlasAdminStudentsPage() {
               active={bucket}
               onPick={pickBucket}
               total={counts.total}
+              unit="Students"
+              allColor={STATUS_TONE.all[0]}
+              pale={['not-started']}
               parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
             />
           </div>
@@ -486,6 +489,9 @@ export function AtlasAdminStudentsPage() {
               active={bucket}
               onPick={pickBucket}
               total={counts.total}
+              unit="Students"
+              allColor={STATUS_TONE.all[0]}
+              pale={['not-started']}
               parts={(['in-progress', 'off-track', 'prepared', 'licensed', 'not-started'] as const).map((id) => ({ id, n: tileCount[id], color: STATUS_TONE[id][0] }))}
             />
           </div>
@@ -721,79 +727,6 @@ export function AtlasAdminStudentsPage() {
 
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
-/** The status cards' dial, in the learner Home's ring style: a thick
- *  round-capped arc per status from 12 o'clock — In progress, Off track,
- *  Prepared, Licensed, Not started — each its share of the roster, a hair
- *  apart so the caps don't touch. */
-function StatusDial({
-  total,
-  parts,
-  active,
-  onPick,
-  size = DIAL_SIZE,
-}: {
-  total: number
-  parts: { id: PipelineBucket; n: number; color: string }[]
-  active: PipelineBucket
-  onPick: (id: PipelineBucket) => void
-  /** The square it draws in; the ring sits DIAL_INSET inside it. The centre text keeps its size. */
-  size?: number
-}) {
-  const stroke = 8
-  const r = size / 2 - DIAL_INSET - stroke / 2
-  const c = 2 * Math.PI * r
-  const gap = stroke + 2 // the round caps reach stroke / 2 past each end
-  const lens = parts.map((p) => (total ? (c * p.n) / total : 0))
-  const arcs = parts.map((p, i) => ({ ...p, offset: lens.slice(0, i).reduce((a, b) => a + b, 0), len: Math.max(0, lens[i] - gap) }))
-  const discFade = `dial-fade-${useId().replace(/:/g, '')}`
-  const discColor = active === 'all' ? 'var(--admin-atlas-status-active)' : (parts.find((p) => p.id === active)?.color ?? 'transparent')
-  return (
-    <div style={{ position: 'relative', flex: 'none', width: size, height: size }}>
-      {/* Each arc selects its card. */}
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="group" aria-label={`${total} students by status`} style={{ display: 'block' }}>
-        {/* Whatever is selected: a disc 8px inside the ring's inner edge, fading top to bottom from the selected status's colour at 15%
-            (Not started's pale tan at 25%) to nothing. */}
-        <defs>
-          <linearGradient id={discFade} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor={discColor} stopOpacity={active === 'not-started' ? 0.25 : 0.15} />
-            <stop offset="1" stopColor={discColor} stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <circle aria-hidden cx={size / 2} cy={size / 2} r={r - stroke / 2 - 8} fill={`url(#${discFade})`} style={{ pointerEvents: 'none' }} />
-        {arcs.map((a) =>
-          a.len > 0 ? (
-            <circle
-              key={a.id}
-              cx={size / 2}
-              cy={size / 2}
-              r={r}
-              fill="none"
-              role="button"
-              tabIndex={0}
-              aria-label={`${a.n} ${a.id.replace('-', ' ')}: show these students`}
-              aria-pressed={active === a.id}
-              onClick={() => onPick(a.id)}
-              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onPick(a.id))}
-              style={{ stroke: a.color, cursor: 'pointer', outline: 'none' }}
-              strokeWidth={active === a.id ? stroke + 4 : stroke}
-              strokeLinecap="round"
-              /* Selected, its caps reach 2px further each end — so its dash is 4px shorter and starts 2px later, keeping the gaps. */
-              strokeDasharray={`${Math.max(0, a.len - (active === a.id ? 4 : 0))} ${c}`}
-              strokeDashoffset={-(a.offset + gap / 2 + (active === a.id ? 2 : 0))}
-              transform={`rotate(-90 ${size / 2} ${size / 2})`}
-            />
-          ) : null,
-        )}
-      </svg>
-      <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-        <span style={DIAL_LABEL}>Total</span>
-        <span style={{ fontFamily: 'var(--admin-font-playfair)', fontWeight: 900, fontVariantNumeric: 'lining-nums tabular-nums', fontFeatureSettings: '"lnum" 1, "tnum" 1', fontSize: 'var(--admin-atlas-h5-size)', lineHeight: 'var(--admin-atlas-h5-line)', color: 'var(--admin-ink)' }}>{total}</span>
-        <span style={DIAL_LABEL}>Students</span>
-      </div>
-    </div>
-  )
-}
-
 /* PartnerHub's status cards (Students' top tile row). */
 /* Their order: In progress before Not started (2026-10-23, Eric). */
 const STATUS_ORDER: PipelineBucket[] = ['all', 'in-progress', 'not-started', 'off-track', 'prepared', 'licensed']
@@ -810,11 +743,6 @@ const STATUS_TONE: Record<PipelineBucket, [string]> = {
 const STATUS_BODY: CSSProperties = { containerType: 'inline-size', flex: 1, minWidth: 0, boxSizing: 'border-box', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 8 }
 /* The 1px rule between count and share, as tall as the figures less 1px each end. */
 const STATUS_SEP: CSSProperties = { flex: 'none', width: 1, margin: '1px 0', borderRadius: 1, background: 'var(--admin-atlas-primary-200)' }
-/* The small caps over and under the dial's total. */
-const DIAL_LABEL: CSSProperties = { fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--admin-muted)' }
-/* The dial's default square, and the gap between its edge and the ring's outer edge (leaving room for a selected arc's 12px stroke). */
-const DIAL_SIZE = 168
-const DIAL_INSET = 4
 /* The one-row version's smaller dial (2026-10-26). */
 const DIAL_SIZE_ONE_ROW = 150
 /* One panel of the Dial analysis: Atlas primary 100, 32px in. */

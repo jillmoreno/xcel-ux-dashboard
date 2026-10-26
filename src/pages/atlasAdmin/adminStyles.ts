@@ -192,3 +192,10 @@ export const STATUS_CARD: CSSProperties = { flex: 1, minWidth: 0, display: 'flex
    baseline — Playfair's default old-style figures drop 3, 4, 5, 7, 9 below it and raise 6 and 8. */
 export const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 28, fontWeight: 700, lineHeight: '20px', letterSpacing: '-1.68px', whiteSpace: 'nowrap', fontVariantNumeric: 'lining-nums proportional-nums', fontFeatureSettings: '"lnum" 1, "pnum" 1', color: 'var(--admin-atlas-ink)' }
 export const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: 'var(--font-body)', fontSize: 11, lineHeight: '13px', color: 'var(--admin-text)' }
+
+/* The status dial (StatusDial, adminUi): its default square, and the gap between its edge and the ring's outer edge (room for a
+   selected arc's 12px stroke). */
+export const DIAL_SIZE = 168
+export const DIAL_INSET = 4
+/* The small caps over and under the dial's total. */
+export const DIAL_LABEL: CSSProperties = { fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--admin-muted)' }
