@@ -253,7 +253,8 @@ export function AtlasAdminStudentsPage() {
         const active = bucket === t.id
         const [strip] = STATUS_TONE[t.id]
         const oneRow = columns === 6
-        const figureRule = `1px solid ${active ? 'var(--admin-atlas-primary-100)' : 'var(--admin-atlas-primary-200)'}`
+        /* The figures' rules: primary 100 on the white selected card; at rest primary 200 lightened 20%. */
+        const figureRule = `1px solid ${active ? 'var(--admin-atlas-primary-100)' : 'color-mix(in srgb, var(--admin-atlas-primary-200), white 20%)'}`
         const windowBelow = oneRow
         /* Our own chevron, 10px in from the right edge — Chrome's native arrow ignores padding. */
         const licensedPicker =
@@ -310,7 +311,7 @@ export function AtlasAdminStudentsPage() {
                   </span>
                   {windowBelow ? null : licensedPicker}
                 </div>
-                {/* One row: a rule 8px above and below the figures, across the card — primary 200 at rest, 100 on the white selected card. */}
+                {/* One row: a rule 8px above and below the figures, across the card (figureRule). */}
                 <div
                   style={{
                     display: 'flex',
