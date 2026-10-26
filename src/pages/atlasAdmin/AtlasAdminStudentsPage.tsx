@@ -1,4 +1,4 @@
-import { Fragment, useId, useMemo, useState, type CSSProperties } from 'react'
+import { Fragment, useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ChevronDownRegular, CircleDotSolid, MagnifyingGlass, Plus, XmarkRegular } from '@/icons'
@@ -94,6 +94,27 @@ export function AtlasAdminStudentsPage() {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [licensedWindow, setLicensedWindow] = useState('90d')
   const [inviting, setInviting] = useState(false)
+  /* Dial's cards reflow 6 → 3 → 2 → 1 across: the most columns whose widest pill (plus the card's padding and edge) still fits each
+     column. Pills keep their selected width at rest, so the choice never changes with the selection. */
+  const cardRowRef = useRef<HTMLDivElement>(null)
+  const [cardCols, setCardCols] = useState(6)
+  useEffect(() => {
+    const el = cardRowRef.current
+    if (!el) return
+    const ro = new ResizeObserver(() => {
+      const mins = [...el.querySelectorAll<HTMLElement>('.cre-admin-status-card')].map(
+        (c) => Math.max(0, ...[...c.querySelectorAll<HTMLElement>('.cre-admin-status-pill, select')].map((x) => x.offsetWidth)) + 2 * 16 + 2,
+      )
+      const fits = (n: number) => {
+        let sum = (n - 1) * 12
+        for (let col = 0; col < n; col++) sum += Math.max(0, ...mins.filter((_, i) => i % n === col))
+        return sum <= el.clientWidth
+      }
+      setCardCols([6, 3, 2, 1].find(fits) ?? 1)
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [analysis]) // the row exists only under Dial — re-attach when the design control switches back to it
 
   const counts = useMemo(() => {
     const by = (b: PipelineBucket) => ADMIN_LEARNERS.filter((l) => bucketOf(l) === b)
@@ -244,10 +265,15 @@ export function AtlasAdminStudentsPage() {
    *  apart, and Licensed's window under its figures so every card's figures
    *  share a line). The one row never squeezes a card narrower than its
    *  content, and a pill is as wide at rest as selected (tokens.css), so a
-   *  card always has room for its selected pill. Its cards are not size
-   *  containers — containment would hide their content's width from the grid. */
+   *  card always has room for its selected pill; past that the cards reflow
+   *  to 3, 2 or 1 across (cardCols).
+   *  Its cards are not size containers — containment would hide their
+   *  content's width from the row. */
   const statusGrid = (columns: 3 | 6) => (
-    <div style={{ display: 'grid', gap: columns === 6 ? 12 : 20, gridTemplateColumns: columns === 6 ? 'repeat(6, minmax(min-content, 1fr))' : 'repeat(3, minmax(0, 1fr))' }}>
+    <div
+      ref={columns === 6 ? cardRowRef : undefined}
+      style={{ display: 'grid', gap: columns === 6 ? 12 : 20, gridTemplateColumns: columns === 6 ? `repeat(${cardCols}, minmax(min-content, 1fr))` : 'repeat(3, minmax(0, 1fr))' }}
+    >
       {STATUS_ORDER.map((id) => tiles.find((x) => x.id === id)!).map((t) => {
         const n = tileCount[t.id]
         const active = bucket === t.id
@@ -457,7 +483,8 @@ export function AtlasAdminStudentsPage() {
           </div>
           {/* The cards centred on the dial: a box the dial's height, level with it (the dial panel's 16px + eyebrow 18 + gap 8), the grid centred in it. */}
           <div style={{ ...ANALYSIS_PANEL, position: 'relative', flex: '1 1 480px', minWidth: 0, padding: `${16 + 18 + 8}px 24px 16px` }}>
-            <div style={{ height: DIAL_SIZE_ONE_ROW, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>{statusGrid(6)}</div>
+            {/* At least the dial's height (cards centred in it); taller once the cards wrap to a second row. */}
+            <div style={{ minHeight: DIAL_SIZE_ONE_ROW, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>{statusGrid(6)}</div>
           </div>
         </div>
         ) : analysis === 'dial-grid' ? (
