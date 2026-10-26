@@ -1,7 +1,7 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
-import { CircleDotSolid, MagnifyingGlass, Plus, XmarkRegular } from '@/icons'
+import { ChevronDown, CircleDotSolid, MagnifyingGlass, Plus, XmarkRegular } from '@/icons'
 import {
   ADMIN_DEMO_LEARNERS,
   ADMIN_DEPARTMENTS,
@@ -274,19 +274,21 @@ export function AtlasAdminStudentsPage() {
                     {t.id === 'all' ? 'Active' : t.label}
                   </span>
                   {t.id === 'licensed' ? (
-                    <select
-                      aria-label="Licensed time window"
-                      value={licensedWindow}
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) => setLicensedWindow(e.target.value)}
-                      className="cre-admin-status-window"
-                      /* 4px more after the chevron than the field's own 6px. */
-                      style={{ ...SELECT, marginTop: undefined, padding: '4px 10px 4px 6px', width: 'auto', flex: 'none' }}
-                    >
-                      <option value="90d">Last 90 days</option>
-                      <option value="year">This year</option>
-                      <option value="all">All time</option>
-                    </select>
+                    /* Our own chevron, 10px in from the right edge — Chrome's native arrow ignores padding. */
+                    <span className="cre-admin-status-window" style={{ position: 'relative', display: 'inline-flex', flex: 'none' }}>
+                      <select
+                        aria-label="Licensed time window"
+                        value={licensedWindow}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => setLicensedWindow(e.target.value)}
+                        style={{ ...SELECT, marginTop: undefined, appearance: 'none', padding: '4px 22px 4px 6px', width: 'auto', cursor: 'pointer' }}
+                      >
+                        <option value="90d">Last 90 days</option>
+                        <option value="year">This year</option>
+                        <option value="all">All time</option>
+                      </select>
+                      <ChevronDown aria-hidden size={8} style={{ position: 'absolute', right: 10, top: '50%', translate: '0 -50%', pointerEvents: 'none', color: 'var(--admin-text)' }} />
+                    </span>
                   ) : null}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'stretch', gap: 10, marginTop: 2 }}>
