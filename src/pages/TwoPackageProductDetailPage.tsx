@@ -205,17 +205,18 @@ export function TwoPackageProductDetailPage() {
                     </p>
                   </div>
                 </section>
-              </div>
-              {/* The state reporting fee — Figma 542:2304, for Florida — last in the rail (2026-10-27, Eric). */}
-              {/* Its type matched to the info box above — title 20 / 24, copy and link 15 / 21 (2026-10-27, Eric); its height its
-                  own now, since the fixed 140 was sized for the larger type. */}
-              <div style={{ ...FEE_CARD, height: 'auto', padding: '0 25px' }}>
-                <p style={SIDE_TITLE}>State reporting fee required</p>
-                <p style={SIDE_BODY}>{FL_FEE}</p>
-                <button type="button" className="cre-e2e-textlink" // Not LINK spread: its `font: inherit` shorthand beats these longhands in React. No colour, so the class's link blue (and hover) holds.
-                  style={{ ...SIDE_BODY, color: undefined, padding: 0, border: 'none', background: 'none', textAlign: 'left', fontWeight: 500, textDecoration: 'underline', cursor: 'pointer' }}>
-                  100% transparent pricing
-                </button>
+                <hr aria-hidden style={SIDE_RULE} />
+                {/* The state reporting fee — Figma 542:2304, for Florida — the box's last section, under a rule, set as the others
+                    (2026-10-27, Eric). */}
+                <section style={SIDE_SECTION}>
+                  <h2 style={SIDE_TITLE}>State reporting fee required</h2>
+                  <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <p style={{ margin: 0 }}>{FL_FEE}</p>
+                    <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block' }}>
+                      100% transparent pricing
+                    </button>
+                  </div>
+                </section>
               </div>
             </div>
           </div>
@@ -677,18 +678,6 @@ const SIDE_BOX: CSSProperties = {
   background: 'var(--color-secondary-100)',
 }
 
-/* The state fee: 140 tall; title, fee, link. */
-const FEE_CARD: CSSProperties = {
-  boxSizing: 'border-box',
-  height: 140,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'flex-start',
-  gap: 10,
-  padding: '18px 25px 0',
-  borderRadius: 10,
-  background: 'var(--color-fixed-light)', // no edge now, as the box above (2026-10-27, Eric)
-}
 
 
 
