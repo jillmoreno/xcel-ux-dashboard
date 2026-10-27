@@ -948,7 +948,8 @@ const RADIO: CSSProperties = {
 const RADIO_ON: CSSProperties = { border: '2px solid var(--color-xcel-brick)' }
 const RADIO_DOT: CSSProperties = { width: 12, height: 12, borderRadius: '50%', background: 'var(--color-xcel-brick)' }
 
-const OPTION_BODY: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 20, padding: 28 }
+// 4 less above the package name (2026-10-27, Eric; was 28 all round).
+const OPTION_BODY: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 20, padding: '24px 28px 28px' }
 
 const OPTION_TITLE: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
