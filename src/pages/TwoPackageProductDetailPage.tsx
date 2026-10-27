@@ -911,7 +911,7 @@ const PACKAGE_GRID: CSSProperties = {
   columnGap: 32, // 8 less between the cards (2026-10-27, Eric; was 40)
   rowGap: 32,
   alignItems: 'start',
-  padding: '32px 32px 24px', // 8 less below the grid (2026-10-27, Eric)
+  padding: '32px 32px 32px', // 24 below the grid, then 8 back (2026-10-27, Eric)
   borderRadius: 10,
   background: 'var(--color-secondary-100)',
 }
