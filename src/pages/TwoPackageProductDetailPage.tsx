@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type 
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
+import { RubiMark, RubiWordmark } from '@/icons'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
 
@@ -297,7 +298,7 @@ export function TwoPackageProductDetailPage() {
                   </thead>
                   <tbody>
                     {COMPARISON.map((row, r) => (
-                      <tr key={row.feature}>
+                      <tr key={r}>
                         {/* No rule under the last row (2026-10-27, Eric). */}
                         <th scope="row" style={{ ...COMPARE_FEATURE, paddingLeft: 0, ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null) }}>
                           <strong style={{ fontWeight: 800 }}>{row.feature}</strong>
@@ -430,7 +431,7 @@ const PACKAGES: {
 ]
 
 /* The comparison grid — Eric's CoWork table, 2026-10-27, verbatim. */
-const COMPARISON: { feature: string; detail?: ReactNode; standard: boolean; premier: boolean }[] = [
+const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; premier: boolean }[] = [
   // First row: Standard's lead item, moved up from its list (2026-10-27, Eric).
   {
     feature: 'XCEL’s proven 3-part training program',
@@ -447,7 +448,16 @@ const COMPARISON: { feature: string; detail?: ReactNode; standard: boolean; prem
     standard: true,
     premier: true,
   },
-  { feature: 'Rubi™ AI Study Partner', detail: 'Built-in AI tutor with real-time guidance and answers', standard: true, premier: true },
+  {
+    // The Rubi mark and wordmark in place of 'Rubi™', at the text's 15 (2026-10-27, Eric); the label keeps the name for screen readers.
+    feature: (
+      <span role="img" aria-label="Rubi™ AI Study Partner" style={{ whiteSpace: 'nowrap' }}>
+        <RubiMark width={13} aria-hidden style={{ verticalAlign: '-2px', marginRight: 3 }} />
+        <RubiWordmark height={13} width={35} aria-hidden style={{ verticalAlign: '-2px', marginRight: 4 }} />
+        <span aria-hidden>AI Study Partner</span>
+      </span>
+    ),
+    detail: 'Built-in AI tutor with real-time guidance and answers', standard: true, premier: true },
   {
     feature: 'Recorded Livestream Exam Review (Life and Health, English)',
     detail: 'Recording of a one-day exam review class with playback controls',
