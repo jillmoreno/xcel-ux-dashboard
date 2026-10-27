@@ -206,10 +206,13 @@ export function TwoPackageProductDetailPage() {
                 </section>
               </div>
               {/* The state reporting fee — Figma 542:2304, for Florida — last in the rail (2026-10-27, Eric). */}
-              <div style={FEE_CARD}>
-                <p style={FEE_TITLE}>State reporting fee required</p>
-                <p style={FEE_TEXT}>{FL_FEE}</p>
-                <button type="button" className="cre-e2e-textlink" style={FEE_LINK}>
+              {/* Its type matched to the info box above — title 20 / 24, copy and link 15 / 21 (2026-10-27, Eric); its height its
+                  own now, since the fixed 140 was sized for the larger type. */}
+              <div style={{ ...FEE_CARD, height: 'auto', paddingBottom: 18 }}>
+                <p style={SIDE_TITLE}>State reporting fee required</p>
+                <p style={SIDE_BODY}>{FL_FEE}</p>
+                <button type="button" className="cre-e2e-textlink" // Not LINK spread: its `font: inherit` shorthand beats these longhands in React. No colour, so the class's link blue (and hover) holds.
+                  style={{ ...SIDE_BODY, color: undefined, padding: 0, border: 'none', background: 'none', textAlign: 'left', fontWeight: 500, textDecoration: 'underline', cursor: 'pointer' }}>
                   100% transparent pricing
                 </button>
               </div>
@@ -676,36 +679,8 @@ const FEE_CARD: CSSProperties = {
   background: 'var(--color-fixed-light)',
 }
 
-const FEE_TITLE: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-e2e-serif)',
-  fontWeight: 700,
-  fontSize: 20,
-  lineHeight: '27px',
-  color: 'var(--color-text-primary)',
-}
 
-const FEE_TEXT: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontSize: 18,
-  lineHeight: '27px',
-  color: 'var(--color-text-primary)',
-}
 
-const FEE_LINK: CSSProperties = {
-  marginTop: 5,
-  padding: 0,
-  border: 'none',
-  background: 'none',
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 500,
-  fontSize: 18,
-  lineHeight: '27px',
-
-  textDecoration: 'underline',
-  cursor: 'pointer',
-}
 
 const ADD_TO_CART: CSSProperties = {
   height: 55,
@@ -894,7 +869,7 @@ const PACKAGE_GRID: CSSProperties = {
   columnGap: 40,
   rowGap: 32,
   alignItems: 'start',
-  padding: 32,
+  padding: '32px 32px 24px', // 8 less below the grid (2026-10-27, Eric)
   borderRadius: 10,
   background: 'var(--color-secondary-100)',
 }
@@ -976,7 +951,8 @@ const OPTION_STRIKE: CSSProperties = { position: 'absolute', left: -2, top: '50%
 /* Under each card: its description, then what sets it apart. */
 
 /* The shared sections in a frame: no fill, the resting package card's 1px #DDD edge (2026-10-27, Eric; was a Secondary 100 band). */
-const SHARED: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 40, padding: 40, borderRadius: 10, border: '1px solid var(--color-e2e-card-outline)' }
+// No edge now either (2026-10-27, Eric).
+const SHARED: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 40, padding: 40, borderRadius: 10 }
 
 const SHARED_EYEBROW: CSSProperties = {
   margin: 0,
