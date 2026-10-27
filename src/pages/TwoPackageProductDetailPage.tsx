@@ -302,7 +302,7 @@ export function TwoPackageProductDetailPage() {
                     the column, and this showing either side of it read as a stray edge (2026-10-27, Eric). */}
                 <div aria-hidden style={{ ...PIN_LAYER, ...fadeGround(fade.head), opacity: 'calc(1 - var(--pinned, 0))' }} />
                 {/* Pinned, the tan ground shows from the browser's top to under the cards and nothing scrolls visibly beneath. Condensed,
-                    it is Figma 548:3477's frame at the column's width — 32 either side of the cards, 16 above, 24 below — square on top, 10 corners below — no shadow (2026-10-27, Eric; was 20%). */}
+                    it is Figma 548:3477's frame at the column's width — 32 either side of the cards, 16 above, 24 below — square on top, 10 corners below, a shadow along its bottom edge only. */}
                 <div
                   aria-hidden
                   style={{ ...PIN_BACKDROP, top: `calc(${-(browserTop + CARDS_PIN_GAP)}px + 24px * var(--p, 0))` }}
@@ -1004,6 +1004,9 @@ const PIN_BACKDROP: CSSProperties = {
   zIndex: -1,
   borderRadius: '0 0 10px 10px',
   background: 'linear-gradient(to bottom, var(--color-secondary-200), var(--color-secondary-100))',
+  // A shadow on the bottom edge only — the negative spread keeps it off the sides — shown with the frame, i.e. once content
+  // is scrolling under it (2026-10-27, Eric).
+  boxShadow: '0 8px 10px -8px rgb(0 0 0 / 0.2)',
   opacity: 'var(--pinned, 0)',
   transition: 'opacity 0.15s ease',
   pointerEvents: 'none',
