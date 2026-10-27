@@ -496,9 +496,8 @@ const PAGE: CSSProperties = {
 const WELCOME: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  // 48 top, 40 bottom (2026-10-15, Eric's requests: 40 / 32, then 8 more
-  // on each).
-  padding: '48px 240px 40px',
+  // 32 top and bottom on this page (2026-10-27, Eric's request; the original PDP's 48 / 40).
+  padding: '32px 240px',
   background: 'var(--color-secondary-200)',
 }
 
