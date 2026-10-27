@@ -93,7 +93,7 @@ export function TwoPackageProductDetailPage() {
   /* THE CARDS PIN (2026-10-27, Eric): 40 under the top of the browser, for the rest of the page. The packages ground is three
      stacked pieces — heading, cards, comparison — so the cards can be a direct child of the long column and stay stuck past
      the ground's end. The ground's fade runs over the heading and the cards, so both are measured (offsetHeight ignores the
-     pin). Once pinned, a page-coloured backdrop covers from the browser's top to 16 under the cards, so what scrolls up
+     pin). Once pinned, a tan backdrop covers from the browser's top to 8 under the cards, so what scrolls up
      disappears there rather than showing beneath them. */
   const headRef = useRef<HTMLDivElement>(null)
   const cardsRef = useRef<HTMLDivElement>(null)
@@ -284,7 +284,7 @@ export function TwoPackageProductDetailPage() {
                 aria-labelledby="choose-package"
                 style={{ ...PACKAGE_GRID, ...fadeGround(fade.head), top: pinTop }}
               >
-                {/* Pinned, the page shows from the browser's top to 16 under the cards and nothing scrolls visibly beneath. */}
+                {/* Pinned, the tan ground shows from the browser's top to 8 under the cards and nothing scrolls visibly beneath. */}
                 <div aria-hidden style={{ ...PIN_BACKDROP, top: -pinTop, opacity: pinned ? 1 : 0 }} />
                 {PACKAGES.map((p) => {
                   const on = p.id === picked
@@ -972,15 +972,16 @@ const PACKAGE_GROUND_FOOT: CSSProperties = {
 
 /* The cards pin this far under the top of the browser (2026-10-27, Eric). */
 const CARDS_PIN_GAP = 40
-/* Pinned, the page's own colour behind the cards, from the browser's top (set inline) to 16 under them. Behind the cards, over
-   the cards' own fill. */
+/* Pinned, the ground's tan behind the cards — its fade and its 10 corners — from the browser's top (set inline) to 8 under
+   the cards (2026-10-27, Eric; was the page's white, to 16 under them). Behind the cards, over the cards' own fill. */
 const PIN_BACKDROP: CSSProperties = {
   position: 'absolute',
   left: 0,
   right: 0,
-  bottom: -16,
+  bottom: -8, // 8 under the cards (2026-10-27, Eric)
   zIndex: -1,
-  background: 'var(--color-fixed-light)',
+  borderRadius: 10,
+  background: 'linear-gradient(to bottom, var(--color-secondary-200), var(--color-secondary-100))',
   transition: 'opacity 0.15s ease',
   pointerEvents: 'none',
 }
