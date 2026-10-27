@@ -272,7 +272,7 @@ export function TwoPackageProductDetailPage() {
                           <button
                             type="button"
                             className={`cre-e2e-add-to-cart ${p.id === 'premier' ? 'cre-e2e-cta' : 'cre-e2e-outline'}`}
-                            style={{ ...ADD_TO_CART, height: 39, alignSelf: 'stretch' }} // 16 shorter than the rail's 55 (2026-10-27, Eric)
+                            style={{ ...ADD_TO_CART, height: 39, alignSelf: 'stretch', paddingTop: 2, paddingBottom: 0 }} // label 1 lower: a button centres its content box, so 2 on top shifts it 1 // 16 shorter than the rail's 55 (2026-10-27, Eric)
                             onClick={(e) => {
                               e.stopPropagation()
                               setPicked(p.id)
