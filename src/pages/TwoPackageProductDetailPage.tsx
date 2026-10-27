@@ -251,7 +251,7 @@ export function TwoPackageProductDetailPage() {
                         </span>
                         <span style={OPTION_BODY}>
                           <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
-                            <span style={OPTION_TAG}>{p.short}</span>
+                            <span style={SHARED_EYEBROW}>{p.short}</span>
                             <span style={OPTION_TITLE}>{p.title}</span>
                           </span>
                           <span style={OPTION_PRICE_ROW}>
@@ -959,20 +959,6 @@ const RADIO_ON: CSSProperties = { border: '2px solid var(--color-xcel-brick)' }
 const RADIO_DOT: CSSProperties = { width: 12, height: 12, borderRadius: '50%', background: 'var(--color-xcel-brick)' }
 
 const OPTION_BODY: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 20, padding: 28 }
-
-/* The package's name in an outlined pill, in the title's charcoal (2026-10-27, Eric; the design's brick). */
-const OPTION_TAG: CSSProperties = {
-  padding: '2px 8px 0',
-  borderRadius: 18,
-  border: '1px solid var(--color-text-primary)',
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 500,
-  fontSize: 14,
-  lineHeight: '18px',
-  letterSpacing: '1.4px',
-  textTransform: 'uppercase',
-  color: 'var(--color-text-primary)',
-}
 
 const OPTION_TITLE: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
