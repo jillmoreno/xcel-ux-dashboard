@@ -883,7 +883,7 @@ const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
   // The two cards side by side, the comparison table under them across both columns.
-  columnGap: 40,
+  columnGap: 32, // 8 less between the cards (2026-10-27, Eric; was 40)
   rowGap: 32,
   alignItems: 'start',
   padding: '32px 32px 24px', // 8 less below the grid (2026-10-27, Eric)
