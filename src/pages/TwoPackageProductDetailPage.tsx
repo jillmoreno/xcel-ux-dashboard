@@ -274,9 +274,13 @@ export function TwoPackageProductDetailPage() {
                       {/* What this package does differently, under the card (Figma 544:3090): the lead-in in regular weight, then each
                           item's bold title over its plain description, 6 within an item, 16 between. */}
                       <div style={DIFF}>
-                        {p.diffs.map((d, i) => (
+                        {/* The lead-in, then a rule under it (2026-10-27, Eric). */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          <p style={BODY}>{p.diffTitle}</p>
+                          <hr aria-hidden style={SIDE_RULE} />
+                        </div>
+                        {p.diffs.map((d) => (
                           <div key={d.title} style={DIFF_ITEM}>
-                            {i === 0 ? <p style={BODY}>{p.diffTitle}</p> : null}
                             <p style={{ ...BODY, fontWeight: 800 }}>{d.title}</p>
                             <p style={BODY}>{d.detail}</p>
                           </div>
