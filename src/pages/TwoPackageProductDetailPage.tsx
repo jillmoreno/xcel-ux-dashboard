@@ -1113,7 +1113,7 @@ const OPTION_BUY: CSSProperties = {
   borderRadius: pinLerp(5, 8),
   fontSize: pinLerp(18, 15),
   whiteSpace: 'nowrap',
-  paddingTop: 2,
+  paddingTop: pinLerp(2, 0), // condensed, centred — the label 1 higher (2026-10-27, Eric)
   paddingBottom: 0,
 }
 
