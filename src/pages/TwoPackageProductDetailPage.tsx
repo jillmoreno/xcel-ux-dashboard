@@ -1016,8 +1016,8 @@ const OPTION_STRIKE: CSSProperties = { position: 'absolute', left: -2, top: '50%
 const DIFF: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 16, padding: '24px 24px 32px' }
 const DIFF_ITEM: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
 
-/* The shared sections, in a Secondary 100 band of their own. */
-const SHARED: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 40, padding: 40, borderRadius: 10, background: 'var(--color-secondary-100)' }
+/* The shared sections in a frame: no fill, the resting package card's 1px #DDD edge (2026-10-27, Eric; was a Secondary 100 band). */
+const SHARED: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 40, padding: 40, borderRadius: 10, border: '1px solid var(--color-e2e-card-outline)' }
 
 const SHARED_EYEBROW: CSSProperties = {
   margin: 0,
