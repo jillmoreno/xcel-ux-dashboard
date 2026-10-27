@@ -135,8 +135,8 @@ export function TwoPackageProductDetailPage() {
       {/* The rail's frame starts above the course header now, so the rail can start level with its title (2026-10-27, Eric). */}
       <div style={{ position: 'relative' }}>
       <section aria-label="Course" style={COURSE_HEAD}>
-        {/* As wide as the details' left column below — the rail's 350 and its 80 gap kept clear (2026-10-27, Eric). */}
-        <div style={{ width: 'calc(100% - 350px - 80px)', display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {/* As wide as the details' left column below — the rail and its gutter kept clear (2026-10-27, Eric). */}
+        <div style={{ width: `calc(100% - ${RAIL_W}px - ${RAIL_GUTTER}px)`, display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* 2 between the title and its intro (the design's 10, 8 less — 2026-10-27, Eric). */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <h2 style={COURSE_HEAD_TITLE}>
@@ -584,6 +584,11 @@ const COURSE_HEAD_TITLE: CSSProperties = {
 }
 
 
+/* The rail and the gutter beside it (2026-10-27, Eric: the left column 42 wider and the gutter 48 — the gutter's 32 back
+   plus 10 off the rail; were 350 and 80). */
+const RAIL_W = 340
+const RAIL_GUTTER = 48
+
 /* The details' top padding: 24 on this page (2026-10-27, Eric; the original's 40). */
 const DETAILS_TOP = 24
 
@@ -597,7 +602,7 @@ const RAIL: CSSProperties = {
   // The rail stops 40 above the footer (2026-10-15, Eric's request).
   bottom: 40,
   right: 240,
-  width: 350,
+  width: RAIL_W,
   zIndex: 1,
 }
 
@@ -878,7 +883,7 @@ const LEGAL_LINKS: CSSProperties = {
 
 /* The main column beside the rail: everything left of its 350 and an 80 gap. */
 // 40 between the packages and the shared frame (2026-10-27, Eric; was 56).
-const WIDE_COLUMN: CSSProperties = { width: 'calc(100% - 350px - 80px)', display: 'flex', flexDirection: 'column', gap: 40 }
+const WIDE_COLUMN: CSSProperties = { width: `calc(100% - ${RAIL_W}px - ${RAIL_GUTTER}px)`, display: 'flex', flexDirection: 'column', gap: 40 }
 
 /* Two cards side by side, wrapping to one column when narrow. */
 /* Figma 544:3250: both packages on one Secondary 100 ground, 32 in, 10 corners, the columns 40 apart. */
