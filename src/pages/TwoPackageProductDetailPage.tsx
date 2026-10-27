@@ -462,6 +462,13 @@ const PACKAGES: {
 
 /* The comparison grid — Eric's CoWork table, 2026-10-27, verbatim. */
 const COMPARISON: { feature: string; detail?: string; standard: boolean; premier: boolean }[] = [
+  // First row: Standard's lead item, moved up from its list (2026-10-27, Eric).
+  {
+    feature: 'XCEL’s proven 3-part training program',
+    detail: 'With an AI-powered study partner that helps you learn, practice, and prepare for your exam with confidence in as little as 2 weeks.',
+    standard: true,
+    premier: true,
+  },
   { feature: 'Pre-licensing Course', detail: 'Online self-study that covers the fundamentals and meets state education requirements', standard: true, premier: true },
   { feature: 'Prep Review Course', detail: 'Condensed review of key material, weighted to the state exam outline', standard: true, premier: true },
   { feature: 'Exam Simulators', detail: '3 simulators weighted by topic, unlimited retakes', standard: true, premier: true },
