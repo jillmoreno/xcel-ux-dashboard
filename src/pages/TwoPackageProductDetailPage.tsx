@@ -1000,8 +1000,8 @@ const COMPARE_FEATURE: CSSProperties = {
   fontWeight: 400,
   textAlign: 'left',
   verticalAlign: 'top',
-  // 4 shorter rows (2026-10-27, Eric; was 12). Longhands, so the outer columns' paddingLeft / paddingRight: 0 hold.
-  paddingTop: 10,
+  // 4 shorter rows, then 1 back on top (2026-10-27, Eric; was 12). Longhands, so the outer columns' paddingLeft / paddingRight: 0 hold.
+  paddingTop: 11,
   paddingBottom: 10,
   paddingLeft: 8,
   paddingRight: 8,
@@ -1013,8 +1013,8 @@ const COMPARE_CELL: CSSProperties = {
   fontSize: 18,
   lineHeight: '21px',
   verticalAlign: 'middle', // centred in the row, however many lines its feature runs to (2026-10-27, Eric)
-  // 4 shorter rows (2026-10-27, Eric; was 12). Longhands, so the outer columns' paddingLeft / paddingRight: 0 hold.
-  paddingTop: 10,
+  // 4 shorter rows, then 1 back on top (2026-10-27, Eric; was 12). Longhands, so the outer columns' paddingLeft / paddingRight: 0 hold.
+  paddingTop: 11,
   paddingBottom: 10,
   paddingLeft: 8,
   paddingRight: 8,
