@@ -266,11 +266,12 @@ export function TwoPackageProductDetailPage() {
                               <img src="/brand/e2e-price-strike.svg" alt="" aria-hidden style={OPTION_STRIKE} />
                             </span>
                           </span>
-                          {/* Each card's own Purchase, under its price (2026-10-27, Eric; was the rail's price card). Brick on the
-                              selected card, outlined on the other; buying either package picks it first. */}
+                          {/* Each card's own Purchase, under its price (2026-10-27, Eric; was the rail's price card). Premier's is always the brick
+                              one and Standard's always outlined, whichever card is selected — Premier stays the strongest call. Buying
+                              either package picks it first. */}
                           <button
                             type="button"
-                            className={`cre-e2e-add-to-cart ${on ? 'cre-e2e-cta' : 'cre-e2e-outline'}`}
+                            className={`cre-e2e-add-to-cart ${p.id === 'premier' ? 'cre-e2e-cta' : 'cre-e2e-outline'}`}
                             style={{ ...ADD_TO_CART, height: 39, alignSelf: 'stretch' }} // 16 shorter than the rail's 55 (2026-10-27, Eric)
                             onClick={(e) => {
                               e.stopPropagation()
