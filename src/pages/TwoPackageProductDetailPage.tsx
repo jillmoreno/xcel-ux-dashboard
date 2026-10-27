@@ -433,8 +433,8 @@ const COMPARISON: { feature: string; detail?: ReactNode; standard: boolean; prem
     feature: 'XCEL’s proven 3-part training program',
     detail: (
       <>
-        <strong style={{ fontWeight: 800 }}>1.</strong> Pre-Licensing Course <strong style={{ fontWeight: 800 }}>2.</strong> Prep Review Course{' '}
-        <strong style={{ fontWeight: 800 }}>3.</strong> Exam Simulators
+        <strong style={{ fontWeight: 800 }}>1.</strong>Pre-Licensing Course <strong style={{ fontWeight: 800 }}>2.</strong>Prep Review Course{' '}
+        <strong style={{ fontWeight: 800 }}>3.</strong>Exam Simulators
       </>
     ),
     standard: true,
