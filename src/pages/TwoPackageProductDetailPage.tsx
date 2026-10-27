@@ -1008,7 +1008,7 @@ const COMPARE_CELL: CSSProperties = {
   fontWeight: 800,
   fontSize: 18,
   lineHeight: '21px',
-  verticalAlign: 'top',
+  verticalAlign: 'middle', // centred in the row, however many lines its feature runs to (2026-10-27, Eric)
   padding: '12px 8px',
   borderBottom: '1px solid var(--color-secondary-300)',
 }
