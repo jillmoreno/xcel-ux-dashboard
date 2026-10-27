@@ -326,7 +326,7 @@ export function TwoPackageProductDetailPage() {
                         }}
                         style={{ ...OPTION_CARD, ...(on ? OPTION_ON : null) }}
                       >
-                        {/* The strip along the top: the badge in the corner (Premier). The radio that sat 10 in from the
+                        {/* The strip along the top: the badge in the top-right corner (Premier). The radio that sat 10 in from the
                             right is gone (2026-10-27, Eric) — the brick edge and the column shade say which is picked. */}
                         <span style={OPTION_TOP}>
                           {p.badge ? <span style={OPTION_BADGE}>{p.badge}</span> : null}
@@ -1044,17 +1044,19 @@ const OPTION_ON: CSSProperties = { boxShadow: 'inset 0 0 0 2px var(--color-xcel-
 /* The top strip: the badge's 34 tall even where there is no badge, so both cards' bodies start level. */
 const OPTION_TOP: CSSProperties = { display: 'flex', alignItems: 'flex-end', gap: 10, minHeight: pinLerp(34, 24) } // 24 condensed
 
-/* PASS GUARANTEE: brick, the card's own corner top left and a 10 corner bottom right. */
+/* PASS GUARANTEE: brick, in the top right (2026-10-27, Eric; was the top left) — the card's own corner top right and a 10 corner
+   bottom left. */
 const OPTION_BADGE: CSSProperties = {
   height: pinLerp(34, 24),
   boxSizing: 'border-box',
   display: 'flex',
   alignItems: 'center',
-  paddingTop: pinLerp(10, 4),
+  paddingTop: pinLerp(11, 5), // the label 1 lower (2026-10-27, Eric)
   paddingRight: 16,
-  paddingBottom: pinLerp(8, 3),
+  paddingBottom: pinLerp(7, 2),
   paddingLeft: 16,
-  borderRadius: '10px 0 10px 0',
+  marginLeft: 'auto',
+  borderRadius: '0 10px 0 10px',
   background: 'var(--color-xcel-brick)',
   color: 'var(--color-fixed-light)',
   fontFamily: 'var(--font-e2e-avenir)',
