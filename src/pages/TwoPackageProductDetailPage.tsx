@@ -307,7 +307,16 @@ export function TwoPackageProductDetailPage() {
                     {COMPARISON.map((row, r) => (
                       <tr key={r}>
                         {/* No rule under the last row (2026-10-27, Eric). */}
-                        <th scope="row" style={{ ...COMPARE_FEATURE, paddingLeft: 0, ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null) }}>
+                        {/* With Standard picked, the features it does not include fade back 30% (2026-10-27, Eric). */}
+                        <th
+                          scope="row"
+                          style={{
+                            ...COMPARE_FEATURE,
+                            paddingLeft: 0,
+                            ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null),
+                            ...(picked === 'standard' && !row.standard ? { color: 'color-mix(in srgb, var(--color-text-primary) 70%, transparent)' } : null),
+                          }}
+                        >
                           <strong style={{ fontWeight: 800 }}>{row.feature}</strong>
                           {row.detail ? <>: {row.detail}</> : null}
                         </th>
