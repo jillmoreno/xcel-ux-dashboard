@@ -573,8 +573,9 @@ const COURSE_HEAD_RULE: CSSProperties = { margin: 0, height: 1, border: 'none', 
    to the details' end. */
 const RAIL: CSSProperties = {
   position: 'absolute',
-  // Level with the details' first line (DETAILS' 40 top padding) — with no dark band, there is no edge for Purchase to sit on.
-  top: 40,
+  // Level with the package cards' tops (2026-10-27, Eric): DETAILS' 40 top padding, then 'Select your package:' (24) and the
+  // section's 15 gap. Only where the rail starts — RAIL_STICKY still pins it as before.
+  top: 40 + 24 + 15,
   // The rail stops 40 above the footer (2026-10-15, Eric's request).
   bottom: 40,
   right: 240,
