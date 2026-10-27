@@ -273,12 +273,13 @@ export function TwoPackageProductDetailPage() {
                       </button>
                       {/* What this package does differently, under the card (Figma 544:3090): the lead-in in regular weight, then each
                           item's bold title over its plain description, 6 within an item, 16 between. */}
+                      {/* The lead-in and the rule under it, on their own shared row: the shorter one sits at the row's bottom, so both
+                          packages' lead-ins end — and their rules fall — level (2026-10-27, Eric). */}
+                      <div style={DIFF_LEAD}>
+                        <p style={BODY}>{p.diffTitle}</p>
+                        <hr aria-hidden style={SIDE_RULE} />
+                      </div>
                       <div style={DIFF}>
-                        {/* The lead-in, then a rule under it (2026-10-27, Eric). */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                          <p style={BODY}>{p.diffTitle}</p>
-                          <hr aria-hidden style={SIDE_RULE} />
-                        </div>
                         {p.diffs.map((d) => (
                           <div key={d.title} style={DIFF_ITEM}>
                             <p style={{ ...BODY, fontWeight: 800 }}>{d.title}</p>
@@ -932,15 +933,18 @@ const WIDE_COLUMN: CSSProperties = { width: 'calc(100% - 350px - 80px)', display
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-  gap: 40,
+  // Each package spans three shared rows — card, lead-in, details — so the two lead-ins share a row height (PACKAGE_PANEL).
+  columnGap: 40,
+  rowGap: 0,
   alignItems: 'start',
   padding: 32,
   borderRadius: 10,
   background: 'var(--color-secondary-100)',
 }
 
-/* A card and its details, on the shared ground — no fill of its own. */
-const PACKAGE_PANEL: CSSProperties = { display: 'flex', flexDirection: 'column', minWidth: 0 }
+/* A card and its details, on the shared ground — no fill of its own. A subgrid over PACKAGE_GRID's rows (card, lead-in, details),
+   so the rows line up across the two packages. */
+const PACKAGE_PANEL: CSSProperties = { display: 'grid', gridRow: 'span 3', gridTemplateRows: 'subgrid', rowGap: 0, minWidth: 0 }
 
 /* Figma 542:2930: a 10-cornered card, its edge drawn inset (1px #DDD at rest, 2px brick selected) so selecting moves nothing and
    the corner badge sits flush on the edge. The strip along the top, then the body 28 in. */
@@ -1028,8 +1032,10 @@ const OPTION_WAS: CSSProperties = { position: 'relative', fontFamily: 'var(--fon
 const OPTION_STRIKE: CSSProperties = { position: 'absolute', left: -2, top: '50%', width: 68, height: 2.15, transform: 'translateY(-50%) rotate(-7.43deg)' }
 
 /* Under each card: its description, then what sets it apart. */
-/* Figma 544:3250: 24 under the card, flush with its edges (the ground's 32 does the padding). */
-const DIFF: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 24 }
+/* Figma 544:3250: the lead-in 24 under the card, its rule 10 under it, set to the bottom of the shared row; then the items, 16
+   below and 16 apart. Flush with the card's edges (the ground's 32 does the padding). */
+const DIFF_LEAD: CSSProperties = { display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: 10, paddingTop: 24, alignSelf: 'stretch' }
+const DIFF: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 16 }
 const DIFF_ITEM: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
 
 /* The shared sections in a frame: no fill, the resting package card's 1px #DDD edge (2026-10-27, Eric; was a Secondary 100 band). */
