@@ -1041,7 +1041,9 @@ const OPTION_CARD: CSSProperties = {
   cursor: 'pointer',
   font: 'inherit',
 }
-const OPTION_ON: CSSProperties = { boxShadow: 'inset 0 0 0 2px var(--color-xcel-brick)' }
+// Selected: a 1 brick edge (was 2) and a small shadow at the pinned frame's 20%, falling to the sides and below, not above
+// (2026-10-27, Eric).
+const OPTION_ON: CSSProperties = { boxShadow: 'inset 0 0 0 1px var(--color-xcel-brick), 0 4px 8px -2px rgb(0 0 0 / 0.2)' }
 
 /* The top strip: the badge's 34 tall even where there is no badge, so both cards' bodies start level. */
 const OPTION_TOP: CSSProperties = { display: 'flex', alignItems: 'flex-end', gap: 10, minHeight: pinLerp(34, 24) } // 24 condensed
