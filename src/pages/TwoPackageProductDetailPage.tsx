@@ -452,8 +452,9 @@ const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; p
     // The Rubi mark and wordmark in place of 'Rubi™', at the text's 15 (2026-10-27, Eric); the label keeps the name for screen readers.
     feature: (
       <span role="img" aria-label="Rubi™ AI Study Partner" style={{ whiteSpace: 'nowrap' }}>
-        <RubiMark width={13} aria-hidden style={{ verticalAlign: '-2px', marginRight: 3 }} />
-        <RubiWordmark height={13} width={35} aria-hidden style={{ verticalAlign: '-2px', marginRight: 4 }} />
+        {/* The capitals' height (11 at 15px Avenir), sitting on the baseline; 6 after the wordmark. */}
+        <RubiMark width={10} height={11} aria-hidden style={{ verticalAlign: '0px', marginRight: 2 }} />
+        <RubiWordmark height={11} width={30} aria-hidden style={{ verticalAlign: '0px', marginRight: 6 }} />
         <span aria-hidden>AI Study Partner</span>
       </span>
     ),
