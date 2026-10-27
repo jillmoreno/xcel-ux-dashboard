@@ -302,7 +302,7 @@ export function TwoPackageProductDetailPage() {
                     the column, and this showing either side of it read as a stray edge (2026-10-27, Eric). */}
                 <div aria-hidden style={{ ...PIN_LAYER, ...fadeGround(fade.head), opacity: 'calc(1 - var(--pinned, 0))' }} />
                 {/* Pinned, the tan ground shows from the browser's top to under the cards and nothing scrolls visibly beneath. Condensed,
-                    it is Figma 548:3477's frame, 24 round the cards (the cards keep their width), 16 above them, square on top, 10 corners below — no shadow (2026-10-27, Eric; was 20%). */}
+                    it is Figma 548:3477's frame at the column's width — 32 either side of the cards, 16 above, 24 below — square on top, 10 corners below — no shadow (2026-10-27, Eric; was 20%). */}
                 <div
                   aria-hidden
                   style={{ ...PIN_BACKDROP, top: `calc(${-(browserTop + CARDS_PIN_GAP)}px + 24px * var(--p, 0))` }}
@@ -997,9 +997,9 @@ const CARDS_PIN_GAP = 40
    the cards (2026-10-27, Eric; was the page's white, to 16 under them). Behind the cards, over the cards' own fill. */
 const PIN_BACKDROP: CSSProperties = {
   position: 'absolute',
-  // Condensed, 24 round the cards (Figma 548:3477's 32, 8 less — 2026-10-27, Eric): the sides come in, the cards stay put.
-  left: pinLerp(0, 8),
-  right: pinLerp(0, 8),
+  // The column's full width, condensed too (2026-10-27, Eric; it came in 8 a side) — 32 either side of the cards, 24 below.
+  left: 0,
+  right: 0,
   bottom: pinLerp(-8, -24), // 8 under the cards (2026-10-27, Eric)
   zIndex: -1,
   borderRadius: '0 0 10px 10px',
