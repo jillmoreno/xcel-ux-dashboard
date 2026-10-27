@@ -154,14 +154,6 @@ export function TwoPackageProductDetailPage() {
         <aside aria-label="Purchase" style={RAIL}>
           <div style={RAIL_STICKY}>
             <div style={SIDE_BOXES}>
-              {/* The state reporting fee — Figma 542:2304, for Florida. */}
-              <div style={FEE_CARD}>
-                <p style={FEE_TITLE}>State reporting fee required</p>
-                <p style={FEE_TEXT}>{FL_FEE}</p>
-                <button type="button" className="cre-e2e-textlink" style={FEE_LINK}>
-                  100% transparent pricing
-                </button>
-              </div>
               <div style={SIDE_BOX_PAIR}>
                 <section style={SIDE_SECTION}>
                   <h2 style={SIDE_TITLE}>At a Glance</h2>
@@ -212,6 +204,14 @@ export function TwoPackageProductDetailPage() {
                     </p>
                   </div>
                 </section>
+              </div>
+              {/* The state reporting fee — Figma 542:2304, for Florida — last in the rail (2026-10-27, Eric). */}
+              <div style={FEE_CARD}>
+                <p style={FEE_TITLE}>State reporting fee required</p>
+                <p style={FEE_TEXT}>{FL_FEE}</p>
+                <button type="button" className="cre-e2e-textlink" style={FEE_LINK}>
+                  100% transparent pricing
+                </button>
               </div>
             </div>
           </div>
