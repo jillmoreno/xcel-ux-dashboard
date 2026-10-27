@@ -296,13 +296,13 @@ export function TwoPackageProductDetailPage() {
                 ref={cardsRef}
                 role="radiogroup"
                 aria-labelledby="choose-package"
-                style={{ ...PACKAGE_GRID, ...fadeGround(fade.head), top: `calc(${browserTop + CARDS_PIN_GAP}px - 8px * var(--p, 0))` }}
+                style={{ ...PACKAGE_GRID, ...fadeGround(fade.head), top: `calc(${browserTop + CARDS_PIN_GAP}px - 16px * var(--p, 0))` }}
               >
                 {/* Pinned, the tan ground shows from the browser's top to under the cards and nothing scrolls visibly beneath. Condensed,
-                    it is Figma 548:3477's frame: 32 round the cards, square on top, 10 corners below, a 20% shadow. */}
+                    it is Figma 548:3477's frame, 8 tighter: 24 round the cards (the cards keep their width), square on top, 10 corners below, a 20% shadow. */}
                 <div
                   aria-hidden
-                  style={{ ...PIN_BACKDROP, top: `calc(${-(browserTop + CARDS_PIN_GAP)}px + 8px * var(--p, 0))` }}
+                  style={{ ...PIN_BACKDROP, top: `calc(${-(browserTop + CARDS_PIN_GAP)}px + 16px * var(--p, 0))` }}
                 />
                 {PACKAGES.map((p) => {
                   const on = p.id === picked
@@ -994,9 +994,10 @@ const CARDS_PIN_GAP = 40
    the cards (2026-10-27, Eric; was the page's white, to 16 under them). Behind the cards, over the cards' own fill. */
 const PIN_BACKDROP: CSSProperties = {
   position: 'absolute',
-  left: 0,
-  right: 0,
-  bottom: pinLerp(-8, -32), // 8 under the cards (2026-10-27, Eric), 32 condensed (Figma 548:3477)
+  // Condensed, 24 round the cards (Figma 548:3477's 32, 8 less — 2026-10-27, Eric): the sides come in, the cards stay put.
+  left: pinLerp(0, 8),
+  right: pinLerp(0, 8),
+  bottom: pinLerp(-8, -24), // 8 under the cards (2026-10-27, Eric)
   zIndex: -1,
   borderRadius: '0 0 10px 10px',
   background: 'linear-gradient(to bottom, var(--color-secondary-200), var(--color-secondary-100))',
