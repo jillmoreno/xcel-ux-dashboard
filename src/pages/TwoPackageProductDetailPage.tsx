@@ -293,8 +293,14 @@ export function TwoPackageProductDetailPage() {
                   <thead>
                     <tr>
                       <th scope="col" style={{ ...COMPARE_HEAD, paddingLeft: 0 }}>Feature</th>
-                      <th scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK, ...(picked === 'standard' ? COMPARE_PICKED : null) }}>Standard</th>
-                      <th scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK, paddingRight: 0, ...(picked === 'premier' ? COMPARE_PICKED : null) }}>Premier</th>
+                      {/* Each package's header picks it — its column tints and its card selects (2026-10-27, Eric). */}
+                      {PACKAGES.map((p) => (
+                        <th key={p.id} scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK, ...(p.id === 'premier' ? { paddingRight: 0 } : null), ...(picked === p.id ? COMPARE_PICKED : null) }}>
+                          <button type="button" aria-pressed={picked === p.id} onClick={() => setPicked(p.id)} style={COMPARE_PICK}>
+                            {p.short}
+                          </button>
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
@@ -987,6 +993,8 @@ const COMPARE_HEAD: CSSProperties = {
 const COMPARE_MARK: CSSProperties = { width: 120, textAlign: 'center' }
 /* The selected package's column, header included: a step darker than the ground's Secondary 100 (2026-10-27, Eric). */
 const COMPARE_PICKED: CSSProperties = { background: 'var(--color-secondary-200)' }
+/* The header's pick button: the header's own type, no chrome. */
+const COMPARE_PICK: CSSProperties = { padding: 0, border: 'none', background: 'none', font: 'inherit', letterSpacing: 'inherit', textTransform: 'inherit', color: 'inherit', cursor: 'pointer' }
 const COMPARE_FEATURE: CSSProperties = {
   ...SIDE_BODY,
   fontWeight: 400,
