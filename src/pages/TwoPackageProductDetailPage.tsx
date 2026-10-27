@@ -1037,8 +1037,8 @@ const OPTION_CARD: CSSProperties = {
   border: 'none',
   borderRadius: 10,
   boxShadow: 'inset 0 0 0 1px var(--color-e2e-card-outline)',
-  // At rest, 20% of the tan ground shows through (2026-10-27, Eric); selected is solid white (OPTION_ON).
-  background: 'color-mix(in srgb, var(--color-fixed-light) 80%, transparent)',
+  // At rest, 40% of the tan ground shows through (2026-10-27, Eric: 20, then 20 more); selected is solid white (OPTION_ON).
+  background: 'color-mix(in srgb, var(--color-fixed-light) 60%, transparent)',
   cursor: 'pointer',
   font: 'inherit',
 }
