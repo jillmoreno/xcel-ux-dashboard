@@ -350,7 +350,7 @@ export function TwoPackageProductDetailPage() {
   )
 }
 
-/* The two packages. Standard's copy is the original page's (the live Standard
+/* The two packages, Standard on the left (2026-10-27). Standard's copy is the original page's (the live Standard
    product page); Premier's is its live page's, 2026-10-27. */
 const PACKAGES: {
   id: PackageId
@@ -365,6 +365,22 @@ const PACKAGES: {
   diffs: { title: string; detail: string }[]
 }[] = [
   {
+    id: 'standard',
+    short: 'Standard',
+    title: 'Standard Florida Life and Health Pre-licensing Package',
+    courseName: 'Florida Life and Health Pre-licensing',
+    price: E2E_PARTNER_PRICE,
+    was: E2E_ORIGINAL_PRICE,
+    description:
+      'Our standard Life & Health Pre-licensing course provides a solid foundation to help you prepare to pass your Life & Health licensing exam without all of the extras. This package is ideal for those who are self-motivated and will prioritize learning on their own.',
+    diffTitle: 'The essentials:',
+    diffs: [
+      {
+        title: 'XCEL’s proven 3-part training program',
+        detail: 'With an AI-powered study partner that helps you learn, practice, and prepare for your exam with confidence in as little as 2 weeks.',
+      },
+    ],
+  },  {
     id: 'premier',
     short: 'Premier',
     title: 'Premier Florida Life and Health Pre-licensing Package',
@@ -383,24 +399,7 @@ const PACKAGES: {
       { title: 'Flashcards - Life, Health, and Accident Insurance', detail: '800+ flashcards to test & reinforce your knowledge of fundamentals.' },
       { title: 'Pass Guarantee', detail: 'Our Pass Guarantee comes with the Premier package.' },
     ],
-  },
-  {
-    id: 'standard',
-    short: 'Standard',
-    title: 'Standard Florida Life and Health Pre-licensing Package',
-    courseName: 'Florida Life and Health Pre-licensing',
-    price: E2E_PARTNER_PRICE,
-    was: E2E_ORIGINAL_PRICE,
-    description:
-      'Our standard Life & Health Pre-licensing course provides a solid foundation to help you prepare to pass your Life & Health licensing exam without all of the extras. This package is ideal for those who are self-motivated and will prioritize learning on their own.',
-    diffTitle: 'The essentials:',
-    diffs: [
-      {
-        title: 'XCEL’s proven 3-part training program',
-        detail: 'With an AI-powered study partner that helps you learn, practice, and prepare for your exam with confidence in as little as 2 weeks.',
-      },
-    ],
-  },
+  }
 ]
 
 /* Florida's reporting fee — DEMO DATA, see the header. */
