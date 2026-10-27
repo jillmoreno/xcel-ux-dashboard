@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atlas vs. Compass — Typography &amp; Color Audit</title>
+<style>
+  :root {
+    --ink: #1f2430;
+    --muted: #5b6372;
+    --faint: #8890a0;
+    --line: #e4e2db;
+    --bg: #fcfbf8;
+    --card: #ffffff;
+    --accent: #3d5a73;
+    --accent-soft: #eceef0;
+    --good: #2f7a5a;
+    --warn: #835b16;
+    --bad: #b23b2e;
+    font-family: Georgia, 'Source Serif 4', serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 56px 28px 120px; }
+  header.doc-head { border-bottom: 1px solid var(--line); padding-bottom: 24px; margin-bottom: 36px; }
+  h1 {
+    font-family: Georgia, 'Source Serif 4', serif;
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+  .byline { color: var(--muted); font-size: 14px; }
+  h2 {
+    font-family: Georgia, 'Source Serif 4', serif;
+    font-size: 22px;
+    font-weight: 600;
+    margin: 44px 0 14px;
+    padding-top: 8px;
+  }
+  h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 28px 0 10px;
+  }
+  p { margin: 0 0 12px; }
+  ul, ol { margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 10px; }
+  code {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.9em;
+    background: var(--accent-soft);
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 20px;
+    font-size: 14.5px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    background: #f5f3ed;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  tr:last-child td { border-bottom: none; }
+  .match { color: var(--good); font-weight: 600; }
+  .callout {
+    background: var(--accent-soft);
+    border: 1px solid #d8dee4;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .callout b { color: var(--accent); }
+  .decisions-table td:first-child, .decisions-table th:first-child { width: 36px; text-align: center; }
+  .decisions-table td:nth-child(2) { font-weight: 600; width: 28%; }
+  footer {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--faint);
+    font-size: 13px;
+  }
+  @media print {
+    body { background: #fff; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="doc-head">
+    <h1>Atlas vs. Compass — Typography &amp; Color Audit</h1>
+    <div class="byline">October 27, 2026 · prepared by Jillienne</div>
+  </header>
+
+  <h2>Sources reviewed</h2>
+  <ul>
+    <li><b>Atlas</b>: Figma "Atlas Style Guide" — global color palette frame (node 3-1032) and status-color legend (node 270-39)</li>
+    <li><b>Compass</b>: <code>compassdesignsystemv5 1.html</code> — Colors and Typography sections (inlined CSS custom properties, v5)</li>
+  </ul>
+
+  <h2>TL;DR</h2>
+  <ul>
+    <li>The underlying <b>color hex values already match</b> almost everywhere between Atlas and Compass — this is a naming/structure problem, not a color problem.</li>
+    <li><b>Typography is where the two systems genuinely diverge</b> — different font families, different scales, different weight conventions.</li>
+    <li>Atlas also has a few internal inconsistencies (independent of Compass) worth cleaning up while this is being discussed.</li>
+  </ul>
+
+  <h2>Decisions needed</h2>
+  <table class="decisions-table">
+    <tr><th>#</th><th>Decision</th><th>Options on the table</th></tr>
+    <tr>
+      <td>1</td>
+      <td>Which font families become canonical</td>
+      <td><b>A)</b> Atlas's (Playfair/DM Serif Display + Open Sans) &nbsp; <b>B)</b> Compass's (Source Serif 4 + Inter) &nbsp; <b>C)</b> Something new</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Which color-naming convention to adopt</td>
+      <td><b>A)</b> Atlas's numeric scale (<code>primary/500</code>, <code>accent/3</code>…) &nbsp; <b>B)</b> Compass's semantic/role names (<code>--c-steel</code>, <code>--c-emphasis-fill</code>…)</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Whether Atlas needs a "Rubi"/terracotta-style accent</td>
+      <td><b>A)</b> It already exists elsewhere in Atlas (confirm name/hex) &nbsp; <b>B)</b> Adopt Compass's <code>#B4552F</code> &nbsp; <b>C)</b> Not needed</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Which heading sizes and weights to standardize on</td>
+      <td><b>A)</b> Atlas's scale (bolder, larger top end) &nbsp; <b>B)</b> Compass's scale (lighter weights, more compact) &nbsp; <b>C)</b> A new blended scale</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Who owns fixing Atlas's internal naming mix-ups (font-name conflict, duplicate "4xl" token, "2xl"/"3xl" mismatch, duplicate neutral tokens)</td>
+      <td>Needs an owner assigned</td>
+    </tr>
+  </table>
+
+  <h2>1. Colors</h2>
+
+  <h3>1a. Where they already agree (same hex, different names)</h3>
+  <table>
+    <tr><th>Compass token</th><th>Compass hex</th><th>Atlas token</th><th>Atlas hex</th><th>Match</th></tr>
+    <tr><td><code>--c-steel</code></td><td>#3D5A73</td><td>primary/500</td><td>#3D5A73</td><td class="match">Identical</td></tr>
+    <tr><td><code>--c-slate</code> / <code>--c-focus</code></td><td>#263D50</td><td>tertiary/500</td><td>#263D50</td><td class="match">Identical</td></tr>
+    <tr><td><code>--c-ring-track</code></td><td>#C3BBA5</td><td>secondary/500</td><td>#C3BBA5</td><td class="match">Identical</td></tr>
+    <tr><td><code>--c-hairline</code></td><td>#E0DBCD</td><td>accent/1</td><td>#E0DBCD</td><td class="match">Identical</td></tr>
+    <tr><td><code>--c-emphasis-hairline</code></td><td>#D8DEE4</td><td>accent/2</td><td>#D8DEE4</td><td class="match">Identical</td></tr>
+    <tr><td><code>--c-emphasis-fill</code></td><td>#ECEEF0</td><td>accent/3</td><td>#ECEEF0</td><td class="match">Identical</td></tr>
+    <tr><td><code>--c-pass</code></td><td>#2F7A5A</td><td>status legend "Prepared"</td><td>#2F7A5A</td><td class="match">Identical</td></tr>
+    <tr><td><code>--c-review-text</code></td><td>#835B16</td><td>status legend "In Progress"</td><td>#835B16</td><td class="match">Identical</td></tr>
+    <tr><td><code>--c-error</code></td><td>#B23B2E</td><td>status legend "Off track"</td><td>#B23B2E</td><td class="match">Identical</td></tr>
+  </table>
+
+  <h3>1b. Gaps / open questions</h3>
+  <ul>
+    <li>Compass defines a dedicated <b>"Rubi" accent</b> — terracotta <code>#B4552F</code> plus a soft tint (<code>#F7EDE7</code> / <code>rgba(180,85,47,.08)</code>) — called out as a hard brand rule ("Terracotta = Rubi, the coach"). Nothing in the two Atlas frames reviewed defines an equivalent token.</li>
+    <li>Compass's <code>--c-review</code> (#C08A2E, fill/dot only, never text) and its ink/muted/faint text tiers (#1F1D18 / #5B5560 / #706B63) don't have obvious counterparts in the two Atlas frames reviewed — worth checking Atlas's broader neutral scale for these.</li>
+    <li>Atlas's neutral set (separate from the primary/secondary/tertiary/accent scale) has duplicate-looking tokens that resolve to <b>different values</b>: <code>Neutral/Darkest</code> = #292929 vs <code>Neutral/darkest</code> = #0A0A0A. (<code>Neutral/Neutral</code> vs <code>Neutral/neutral</code> are at least the same value, #A2A2A2, just inconsistently cased.)</li>
+  </ul>
+
+  <h3>1c. Naming convention mismatch — the real conflict</h3>
+  <ul>
+    <li><b>Atlas</b>: numeric brand scale — <code>primary/100…900</code>, <code>secondary/100…900</code>, <code>tertiary/100…900</code>, <code>accent/1-3</code>, plus a separate <code>neutral/*</code> set.</li>
+    <li><b>Compass</b>: semantic, role-based names — <code>--c-steel</code>, <code>--c-slate</code>, <code>--c-surface</code>, <code>--c-ink/muted/faint</code>, <code>--c-emphasis-fill</code>, <code>--c-border-interactive</code>, <code>--c-pass/review/error</code>, etc.</li>
+    <li>Role-based names read closer to Compass's "rules that never bend" (e.g. "emphasis is a role, not a surface") and are easier to apply correctly in product code; numeric scales are more flexible for future tints/shades. Either way, the team needs <b>one published token map</b> so <code>primary/500</code> and <code>--c-steel</code> are never two separate sources of truth for the same hex.</li>
+  </ul>
+
+  <h2>2. Typography</h2>
+
+  <h3>2a. Font families</h3>
+  <ul>
+    <li><b>Atlas headings</b>: two parallel systems, both literally labeled "Heading 1–4" — a serif set (named "Playfair" on its swatch, "Playfair 2" in the style-guide table, and described as "DM Serif Display" in the usage copy — three different names for what appears to be one typeface) and a separate <b>Open Sans</b> heading set.</li>
+    <li><b>Atlas body/UI</b>: Open Sans.</li>
+    <li><b>Compass headings</b>: Source Serif 4. <b>Compass body/UI</b>: Inter. <b>Compass code</b>: JetBrains Mono.</li>
+    <li><b>Conflict</b>: no shared typeface between the two systems — different serif (Playfair/DM Serif Display vs. Source Serif 4) and different sans (Open Sans vs. Inter).</li>
+  </ul>
+
+  <h3>2b. Internal Atlas naming to resolve before merging</h3>
+  <ul>
+    <li>The font card is internally inconsistent: shown as "Playfair", described as "DM Serif Display" in the usage guidance, and labeled "Playfair 2" in the heading-styles table. Which is the real typeface?</li>
+    <li>Atlas's serif Heading 2 (32px/34px) and Heading 3 (27px/29px) are both tagged with the <b>same scale token "4xl"</b> — two different sizes sharing one token name.</li>
+    <li>Atlas's published design variable <code>font size/heading/2xl</code> = 28, but the on-canvas style-guide table labels that same 28px row <b>"3xl"</b> instead — the token numbering in the variables panel doesn't match the label designers and engineers actually see in the guide.</li>
+  </ul>
+
+  <h3>2c. Type scale comparison</h3>
+  <table>
+    <tr><th>Use</th><th>Atlas — Serif heading set</th><th>Atlas — Open Sans heading set</th><th>Atlas — Paragraph set</th><th>Compass</th></tr>
+    <tr><td>Display/largest</td><td>40px/42px, "5xl", Bold/700 (Heading 1)</td><td>32px/36px, "4xl" (Heading 1)</td><td>—</td><td><code>--text-display</code> 34px, Serif 500, -0.02em</td></tr>
+    <tr><td>H1</td><td>32px/34px, "4xl" (Heading 2)</td><td>28px/34px, "3xl" (Heading 2)</td><td>—</td><td><code>--text-h1</code> 28px, Serif 500</td></tr>
+    <tr><td>H2</td><td>27px/29px, "4xl" (Heading 3)</td><td>24px/28px, "2xl" (Heading 3)</td><td>—</td><td><code>--text-h2</code> 20px, Serif 600</td></tr>
+    <tr><td>H3/H4</td><td>22px/24px, "2xl" (Heading 4)</td><td>20px/24px, "1xl" (Heading 4)</td><td>—</td><td>(no equivalent tier)</td></tr>
+    <tr><td>Body</td><td>—</td><td>—</td><td>P1 16px/20px</td><td><code>--text-body</code> 15px, Sans 400, line-height 1.55</td></tr>
+    <tr><td>Small</td><td>—</td><td>—</td><td>P2 13px/17px</td><td><code>--text-sm</code> 13px, Sans 400</td></tr>
+    <tr><td>Caption/meta</td><td>—</td><td>—</td><td>P3 11px/15px, P4 10px/14px</td><td>(no equivalent tier)</td></tr>
+    <tr><td>Eyebrow</td><td>—</td><td>—</td><td>—</td><td><code>--text-eyebrow</code> 11px, Sans 600, 0.14em uppercase (no Atlas equivalent reviewed)</td></tr>
+  </table>
+
+  <p><b>Observations</b></p>
+  <ul>
+    <li>Atlas's scale has more, smaller steps (two separate 4-step heading ladders plus a 4-step paragraph ladder); Compass compresses everything into 6 named roles (display/h1/h2/body/sm/eyebrow).</li>
+    <li><b>Font weight convention differs</b>: Atlas headings default to Bold/700 (with SemiBold/Regular variants also defined under the Open Sans heading set); Compass headings use 500 (display/h1) or 600 (h2) — never 700.</li>
+    <li><b>Line-height ratios differ</b>: Atlas's paragraph set is tighter (roughly 1.25–1.4x depending on size) vs. Compass body at 1.55x; headings are closer (both land near 1.2x).</li>
+  </ul>
+
+  <h2>Appendix</h2>
+  <ul>
+    <li>Atlas color variables captured from Figma node 3-1032 (palette) and node 270-39 (status legend) via Figma Desktop.</li>
+    <li>Compass tokens captured from the <code>:root</code> custom properties and <code>#typography</code> section of <code>compassdesignsystemv5 1.html</code>.</li>
+  </ul>
+
+  <footer>Atlas vs. Compass — Typography &amp; Color Audit · generated for internal design-system discussion</footer>
+
+</div>
+</body>
+</html>

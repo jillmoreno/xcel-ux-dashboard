@@ -1356,7 +1356,10 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
      * as three sections and the four open questions as the Questions table.
      * Content captured as reviewed — not a draft. Sources: the Atlas Figma
      * Style Guide (nodes 3-1032 and 270-39) and Compass
-     * `compassdesignsystemv5 1.html`.
+     * `compassdesignsystemv5 1.html`. The full document is
+     * `public/prototypes/xcel-design-system-audit.html` — the row's live
+     * preview and its Links row both open it; the sections' own previews
+     * point at the two systems in use.
      *
      * ⚠ NO `devStatus`: it is an Explorations row, and `sectionOf` reads a
      * status before the category (the smoke test pins this).
@@ -1374,12 +1377,23 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     status: 'ready',
     category: 'exploration',
     brands: ['xcel'],
-    /* The two systems in use, as the Live Preview — the audit's own sources
-       are a Figma file and an HTML document that are not routes here. */
+    /* The document first — it is what "Open live preview" and the row's
+       thumbnail show — then the two systems in use. */
     pages: [
+      {
+        label: 'The audit — the full document',
+        note: 'Sources reviewed, the decisions table, the color match table, the type-scale comparison.',
+        to: `${PROTOTYPE_BASE}/xcel-design-system-audit.html`,
+        newTab: true,
+      },
       { label: 'Atlas Home — the Atlas tokens in use', to: '/dashboard-rebrand?demo=1' },
       { label: 'Compass — the Compass tokens in use', to: '/dashboard-rebrand?demo=1&section=compass' },
     ],
+    livePreviewUrl: `${PROTOTYPE_BASE}/xcel-design-system-audit.html`,
+    /* The document on the gateway header's Links row too — "i want to share
+       the actual audit file" — so it is one click from the page as well as
+       the preview. Relative: `isLinkableHref` resolves against the origin. */
+    links: [{ url: `${PROTOTYPE_BASE}/xcel-design-system-audit.html`, label: 'The audit document' }],
     devHandoff: {
       intro:
         'Three findings from putting the two systems side by side, then the four decisions they leave open. The underlying color hex values already match almost everywhere between Atlas and Compass \u2014 this is a naming/structure problem, not a color problem. Typography is where the two systems genuinely diverge. Atlas also has a few internal inconsistencies worth cleaning up.',
@@ -1445,12 +1459,17 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
           },
           {
             question: 'Which heading sizes and weights to standardize on?',
-            /* ⚠ The brief this was captured from ended mid-sentence after
-               "more compact), or a" — the third option is still to be named. */
             decision:
-              'Atlas\u2019s scale (bolder, larger top end) or Compass\u2019s (lighter weights, more compact), or a third option still to be named.',
+              'Atlas\u2019s scale (bolder, larger top end), Compass\u2019s scale (lighter weights, more compact), or a new blended scale.',
             status: 'Needs weigh-in',
             owner: 'Design',
+          },
+          {
+            question:
+              'Who owns fixing Atlas\u2019s internal naming mix-ups (font-name conflict, duplicate \u201c4xl\u201d token, \u201c2xl\u201d/\u201c3xl\u201d mismatch, duplicate neutral tokens)?',
+            decision: 'Needs an owner assigned.',
+            status: 'Needs weigh-in',
+            owner: 'Unassigned',
           },
         ],
         openItems: [
@@ -1458,6 +1477,7 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
           'Color-naming convention \u2014 numeric scale or semantic roles.',
           'A Rubi/terracotta-style accent for Atlas, or not.',
           'The heading size and weight scale.',
+          'An owner for Atlas\u2019s internal naming clean-up.',
         ],
       },
       designerNotes: [],
