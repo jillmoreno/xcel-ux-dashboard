@@ -1028,11 +1028,11 @@ const COMPARE_HEAD: CSSProperties = {
 const COMPARE_MARK: CSSProperties = { width: 120, textAlign: 'center' }
 /* The selected package's column, header included: a step darker than the ground's Secondary 100 (2026-10-27, Eric). */
 /* The selected package's column, header included (2026-10-27, Eric): full Secondary 200 at the top, fading row by row to a
-   35% tint of it over the ground's Secondary 100 by the last row (10, 20, 30, then 35). Each cell carries its own slice of the fade — row `n` of
+   40% tint of it over the ground's Secondary 100 by the last row (10, 20, 30, 35, then 40). Each cell carries its own slice of the fade — row `n` of
    the header plus COMPARISON.length rows — so the slices meet without a step. */
 function pickedShade(n: number): CSSProperties {
   const rows = COMPARISON.length + 1
-  const tint = (k: number) => `color-mix(in srgb, var(--color-secondary-200) ${Math.round(100 - (65 * k) / rows)}%, var(--color-secondary-100))`
+  const tint = (k: number) => `color-mix(in srgb, var(--color-secondary-200) ${Math.round(100 - (60 * k) / rows)}%, var(--color-secondary-100))`
   return { background: `linear-gradient(to bottom, ${tint(n)}, ${tint(n + 1)})` }
 }
 /* The header's pick button: the header's own type, no chrome. */
