@@ -447,7 +447,7 @@ const COMPARISON: { feature: string; detail?: string; standard: boolean; premier
   // First row: Standard's lead item, moved up from its list (2026-10-27, Eric).
   {
     feature: 'XCEL’s proven 3-part training program',
-    detail: 'Our AI-powered study partner that helps you learn, practice, and prepare for your exam with confidence in as little as 2 weeks.',
+    detail: 'Our AI-powered study partner helps you learn, practice, and prepare for your exam with confidence in as little as 2 weeks.',
     standard: true,
     premier: true,
   },
