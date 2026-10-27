@@ -240,7 +240,8 @@ export function TwoPackageProductDetailPage() {
                 {PACKAGES.map((p) => {
                   const on = p.id === picked
                   return (
-                    <div key={p.id} style={{ display: 'flex', flexDirection: 'column', gap: 24, minWidth: 0 }}>
+                    <div key={p.id} style={PACKAGE_PANEL}>
+                      {/* Figma 544:3072: the card sits on top of its details in one Secondary 100 panel. */}
                       <button
                         type="button"
                         role="radio"
@@ -269,15 +270,14 @@ export function TwoPackageProductDetailPage() {
                           </span>
                         </span>
                       </button>
-                      {/* What this package does differently (its description paragraph removed, 2026-10-27 — still on PACKAGES). */}
+                      {/* What this package does differently, under the card (Figma 544:3090): the lead-in in regular weight, then each
+                          item's bold title over its plain description, 6 within an item, 16 between. */}
                       <div style={DIFF}>
-                        {/* Regular weight (2026-10-27, Eric) — the items under it stay bold. */}
-                        <p style={BODY}>{p.diffTitle}</p>
-                        {p.diffs.map((d) => (
-                          <div key={d.title}>
-                            <p style={BODY_STRONG}>{d.title}</p>
-                            {/* No check here — the differences read as plain copy (2026-10-27, Eric). */}
-                            <p style={{ ...INCLUDED_ITEM, paddingLeft: 0 }}>{d.detail}</p>
+                        {p.diffs.map((d, i) => (
+                          <div key={d.title} style={DIFF_ITEM}>
+                            {i === 0 ? <p style={BODY}>{p.diffTitle}</p> : null}
+                            <p style={{ ...BODY, fontWeight: 800 }}>{d.title}</p>
+                            <p style={BODY}>{d.detail}</p>
                           </div>
                         ))}
                       </div>
@@ -921,7 +921,10 @@ const LEGAL_LINKS: CSSProperties = {
 const WIDE_COLUMN: CSSProperties = { width: 'calc(100% - 350px - 80px)', display: 'flex', flexDirection: 'column', gap: 56 }
 
 /* Two cards side by side, wrapping to one column when narrow. */
-const PACKAGE_GRID: CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 32, alignItems: 'start' }
+/* The two panels the same height (stretch), so their Secondary 100 ends level. */
+const PACKAGE_GRID: CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 32, alignItems: 'stretch' }
+
+const PACKAGE_PANEL: CSSProperties = { display: 'flex', flexDirection: 'column', minWidth: 0, borderRadius: 10, background: 'var(--color-secondary-100)' }
 
 /* Figma 542:2930: a 10-cornered card, its edge drawn inset (1px #DDD at rest, 2px brick selected) so selecting moves nothing and
    the corner badge sits flush on the edge. The strip along the top, then the body 28 in. */
@@ -1009,7 +1012,9 @@ const OPTION_WAS: CSSProperties = { position: 'relative', fontFamily: 'var(--fon
 const OPTION_STRIKE: CSSProperties = { position: 'absolute', left: -2, top: '50%', width: 68, height: 2.15, transform: 'translateY(-50%) rotate(-7.43deg)' }
 
 /* Under each card: its description, then what sets it apart. */
-const DIFF: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 15 }
+/* Figma 544:3090: 24 in, 24 above, 32 below. */
+const DIFF: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 16, padding: '24px 24px 32px' }
+const DIFF_ITEM: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
 
 /* The shared sections, in a Secondary 100 band of their own. */
 const SHARED: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 40, padding: 40, borderRadius: 10, background: 'var(--color-secondary-100)' }
