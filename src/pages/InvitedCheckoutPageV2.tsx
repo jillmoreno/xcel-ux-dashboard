@@ -36,6 +36,14 @@ import {
 import { CART_PACKAGE_PARAM, cartPackage } from '@/data/xcelCourseFinder'
 import { LOADING_HANDOFF_MS, XcelLoadingPage } from '@/components/e2e/XcelLoadingPage'
 import { PartnerCodeAskModal } from '@/components/e2e/PartnerCodeAsk'
+import { VerifyEmailModal } from '@/components/e2e/VerifyEmailModal'
+import {
+  EMAIL_VERIFIED_PARAM,
+  readVerifiedIdentity,
+  storeVerifiedIdentity,
+  useEmailVerified,
+  type VerifiedIdentity,
+} from '@/data/inviteVerification'
 import {
   PARTNER_CODE_PARAM,
   asksForPartnerCode,
@@ -48,6 +56,8 @@ import {
   looksLikeEmail,
   studentInformationComplete,
   useInviteFlow,
+  verifiesEmailBeforeCheckout,
+  signedIn,
   type InviteFlowId,
 } from '@/data/inviteFlows'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
@@ -113,14 +123,47 @@ export function InvitedCheckoutPageV2() {
      have a code IS partner-attributed from that moment, which is what moves
      the price below. */
   const partnered = usePartnerAttribution()
+  /* THE EMAIL VERIFICATION, on the arm that proves the address BEFORE the
+     checkout opens — 2026-10-27. The modal sits over this page until the code
+     is accepted, which writes `verified=1` into the address (so Reset can put
+     the modal back, and a reload does not ask twice) and keeps what was typed
+     for the tab. See `inviteVerification.ts` for why the identity is not in
+     the URL. */
+  const verifiesFirst = verifiesEmailBeforeCheckout(flow)
+  const emailVerified = useEmailVerified()
+  const verifyingEmail = verifiesFirst && !emailVerified
+  /* ⚠ READ ONCE, AT MOUNT, like the student state below: a `verified=1` link
+     opened in a fresh tab finds nothing here and the walk names the demo
+     learner instead, which is the fallback the module promises. */
+  const [verifiedIdentity, setVerifiedIdentity] = useState<VerifiedIdentity | null>(() =>
+    verifiesFirst && emailVerified ? readVerifiedIdentity() : null,
+  )
+  /* ⚠ THE LOCKED ADDRESS — what the disabled email field shows, and what the
+     gate counts, on the two arms that do not type it twice. The with-email
+     arm's is the one the partner supplied; the verified arm's is the one the
+     code came back from. */
+  const lockedEmail = verifiesFirst ? (verifiedIdentity?.email ?? E2E_LEARNER_EMAIL) : E2E_LEARNER_EMAIL
   /* ⚠ GUEST STARTS BLANK — 2026-10-22. The initialiser is a function so the
      arm is read once, at mount, rather than on every render: a reviewer who
      flips the control mid-page keeps what they have typed instead of having it
      wiped, and `?ff=` decides what they START with, which is what the control
      is for. The consequence to know is that switching arms does NOT retro-fill
      the form — reload to get the other arm's starting state. */
+  /* ⚠ THE SIGNED-IN ARM ARRIVES FILLED — 2026-10-27. The one flow where the
+     site genuinely knows the learner: the account holds a name, an address
+     and a phone, and a returning customer shown ten empty fields would be
+     asked for what they typed the last time. The with-email and no-email arms
+     stay empty for the reason recorded above `STUDENT_ADDRESS`: an
+     invitation never carries these. */
+  const knownAccount = signedIn(flow)
   const [student, setStudent] = useState<PostalAddress>(() =>
-    BLANK_ADDRESS,
+    /* The verified arm already asked the learner's name on the way in, so the
+       form opens with it — asking twice would be the modal's work undone. */
+    knownAccount
+      ? STUDENT_ADDRESS
+      : verifiedIdentity
+        ? { ...BLANK_ADDRESS, first: verifiedIdentity.first, last: verifiedIdentity.last }
+        : BLANK_ADDRESS,
   )
   const [studentIsBilling, setStudentIsBilling] = useState(true)
   const [billingOwn, setBillingOwn] = useState<PostalAddress>(STUDENT_ADDRESS)
@@ -151,14 +194,17 @@ export function InvitedCheckoutPageV2() {
   /* ⚠ PHONE IS THE GUEST FORM'S ONLY FIELD OUTSIDE `PostalAddress`, so it is
      its own state rather than a tenth member of a type three other forms
      share. */
-  const [phone, setPhone] = useState('')
+  const [phone, setPhone] = useState(knownAccount ? E2E_LEARNER_PHONE : '')
   /* ⚠ THE GATE IS A PRESS NOW, NOT A WATCHER — 2026-10-22, Jillienne: "there
      should be a save and continue that unlocks the next step". Payment used to
      open the moment the last field happened to be valid, which is a section
      appearing underneath you mid-keystroke; it now opens when the learner says
      they are done. The difference matters beyond tidiness: a form that commits
      itself has no moment where the learner can review what they typed. */
-  const [studentSaved, setStudentSaved] = useState(false)
+  /* …and the signed-in arm arrives SAVED: the account's details were
+     confirmed when the account was made, so Payment is open from the first
+     render. Editing a field withdraws that, as it does on every arm. */
+  const [studentSaved, setStudentSaved] = useState(knownAccount)
   /* ⚠ PRESSING SAVE IS ALSO "I'VE FINISHED TYPING" — 2026-10-22. The error
      waited on blur alone, which is right while someone is still in the field
      and wrong at the moment they try to move on: with a mismatch the Save
@@ -183,7 +229,15 @@ export function InvitedCheckoutPageV2() {
      throughout — the Payment column is not conditional CODE, it is wrapped in
      something that happens never to close on those arms. */
   /* Enough typed to be worth saving — what Save and continue needs. */
-  const studentFormComplete = studentInformationComplete({ ...student, phone, email, emailAgain })
+  /* ⚠ THE LOCKED ARMS COUNT THE LOCKED ADDRESS — 2026-10-27. The pair state
+     below is only ever typed on the twice-typed arms, so on a locked arm it
+     sat empty and `studentInformationComplete` could never pass unless the
+     demo fill had been pressed: Save and continue silently refused a form
+     the learner had filled by hand. The disabled field IS the address being
+     submitted, so it is what the gate checks. */
+  const studentFormComplete = emailEnteredTwice(flow)
+    ? studentInformationComplete({ ...student, phone, email, emailAgain })
+    : studentInformationComplete({ ...student, phone, email: lockedEmail, emailAgain: lockedEmail })
   /* …and whether Payment is open. The invited arms arrive complete and saved;
      Guest has to press. */
   const studentComplete = studentSaved
@@ -275,6 +329,24 @@ export function InvitedCheckoutPageV2() {
     }
   }, [])
 
+  const emailVerifiedWith = (identity: VerifiedIdentity) => {
+    storeVerifiedIdentity(identity)
+    setVerifiedIdentity({
+      first: identity.first.trim(),
+      last: identity.last.trim(),
+      email: identity.email.trim(),
+    })
+    /* The name the learner just gave is the name on the form — a modal that
+       asked for it and then presented two empty fields would be asking twice. */
+    setStudent((prev) => ({ ...prev, first: identity.first.trim(), last: identity.last.trim() }))
+    setStudentSaved(false)
+    const next = new URLSearchParams(params)
+    next.set(EMAIL_VERIFIED_PARAM, '1')
+    /* `replace`, as the partner answer: the learner stays on the page they
+       came to pay on, and Back should not reopen a modal they have passed. */
+    setParams(next, { replace: true })
+  }
+
   const answerPartnerCode = (value: 'yes' | 'no') => {
     const next = new URLSearchParams(params)
     next.set(PARTNER_CODE_PARAM, value)
@@ -298,6 +370,17 @@ export function InvitedCheckoutPageV2() {
           placements of one question — the question itself is the same
           component. */}
       {askingForPartnerCode ? <PartnerCodeAskModal onAnswer={answerPartnerCode} /> : null}
+      {/* ⚠ THE VERIFIED ARM'S MODAL — 2026-10-27. Over the checkout rather
+          than a page before it, for the partner question's reason: the
+          learner can see where they are going, and the form behind cannot be
+          filled until the address it will be submitted with has been proven.
+          "Back to the course" is the way out, and it is a real one. */}
+      {verifyingEmail ? (
+        <VerifyEmailModal
+          onVerified={emailVerifiedWith}
+          onBack={() => navigate(`/end-to-end-demo?${params.toString()}`)}
+        />
+      ) : null}
       {/* ⚠ THE BROWSER WINDOW CONTINUES HERE (2026-10-19, Jillienne: "can
           we also add this browser header to the email/invite flows so it
           feels like a seamless experience"). These pages render OUTSIDE the
@@ -389,6 +472,14 @@ export function InvitedCheckoutPageV2() {
                 afterName={
                   <EmailBlock
                     flow={flow}
+                    lockedEmail={lockedEmail}
+                    lockedNote={
+                      verifiesFirst
+                        ? 'This is the address you verified. Your account will be created with it.'
+                        : knownAccount
+                          ? 'This is the email on your XCEL account. Your learning dashboard account will be created with it.'
+                          : `This is the address ${E2E_PARTNER_NAME} sent your invitation to. Your account will be created with it.`
+                    }
                     email={email}
                     onEmailChange={(v) => {
                       setEmail(v)
@@ -860,6 +951,8 @@ const STATES = ['Florida', 'Georgia', 'Illinois', 'New York', 'Texas']
 
 function EmailBlock({
   flow,
+  lockedEmail,
+  lockedNote,
   email,
   onEmailChange,
   emailAgain,
@@ -868,6 +961,12 @@ function EmailBlock({
   error,
 }: {
   flow: InviteFlowId
+  /** What the disabled field shows on the arms that do not type the address
+   *  twice — the partner's, or the one the verification code came back from
+   *  (2026-10-27). */
+  lockedEmail: string
+  /** …and why it is locked, under the field. */
+  lockedNote: string
   email: string
   onEmailChange: (v: string) => void
   emailAgain: string
@@ -898,7 +997,7 @@ function EmailBlock({
           <span style={{ position: 'relative', display: 'block' }}>
             <input
               type="email"
-              value={E2E_LEARNER_EMAIL}
+              value={lockedEmail}
               disabled
               readOnly
               aria-describedby="checkout-email-note"
@@ -920,7 +1019,7 @@ function EmailBlock({
           </span>
         </label>
         <p id="checkout-email-note" style={EMAIL_NOTE}>
-          {`This is the address ${E2E_PARTNER_NAME} sent your invitation to. Your account will be created with it.`}
+          {lockedNote}
         </p>
       </div>
     )

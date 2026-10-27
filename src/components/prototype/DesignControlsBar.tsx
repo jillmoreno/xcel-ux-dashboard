@@ -1,6 +1,7 @@
-import type { CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Check, Flag, Sliders } from '@/icons'
+import { Check, ChevronDown, Flag, Sliders, X } from '@/icons'
+import { Sheet } from '@/components/ui/Sheet'
 import { useAccount } from '@/context/AccountContext'
 import {
   designControlsFor,
@@ -424,6 +425,14 @@ function DesignControl({
      trigger's `aria-label`, and doing it here by hand skipped that. The
      Nudge control announced itself as "None" — its value with nothing
      saying which axis — until this went through the shared path. */
+  /* ⚠ THE LONG LIST OPENS AT THE SIDE — 2026-10-27, see `picker` on the
+     flag. The trigger stays on the bar in the square shape every other
+     control wears; what opens is the versions sheet's room rather than a
+     popover under the bar. */
+  if (def.picker === 'sheet') {
+    return <SheetPicker def={def} current={current} label={label} onPick={onPick} />
+  }
+
   return (
     <DemoDropdown
       id={def.key}
@@ -465,7 +474,7 @@ function DesignControl({
               <>
                 <span aria-hidden style={ROW_BADGE}>{v.badge ?? v.label}</span>
                 <span style={{ flex: 1, minWidth: 0 }}>
-                  <span aria-hidden style={{ display: 'block' }}>{v.description}</span>
+                  <span aria-hidden style={ROW_DESCRIPTION}>{v.description}</span>
                   {v.detail ? <span aria-hidden style={ROW_DETAIL}>{v.detail}</span> : null}
                 </span>
               </>
@@ -485,6 +494,229 @@ function DesignControl({
 
 /* Her numbered badge on a menu row — `#dashDemo .menu button .n`: a small
    rounded square holding the nudge's number. */
+/**
+ * A variant control as a SHEET — 2026-10-27, Jillienne on the Invite flow
+ * menu: "trigger this as sheet view where we can see all the options better,
+ * there will likely be more added."
+ *
+ * ⚠ THE SAME SHEET THE VERSION PICKERS USE (`Sheet`), with one card per
+ * option — the label as the card's title, the description in full under it,
+ * the detail beneath that, Default marked, the chosen one outlined. It is
+ * built directly on `Sheet` rather than on `DashboardVersionsPanel` because
+ * that panel's cards are VERSIONS: each carries a created and a modified date
+ * and clamps its description to two lines, and a journey has neither dates
+ * nor a description worth cutting short.
+ *
+ * ⚠ THE TRIGGER IS NOT A `DemoDropdown`. That component owns its popover and
+ * the bar's one-open-at-a-time `openId`; this opens a dialog that closes
+ * itself, so it keeps its own `open` and leaves the bar's menu state alone.
+ * The square trigger's styles are shared, so it still looks like its
+ * neighbours — the chevron points sideways because that is where it opens.
+ */
+export function SheetPicker({
+  def,
+  current,
+  label,
+  onPick,
+}: {
+  def: FeatureFlagDefinition
+  current: string | undefined
+  label: string
+  onPick: (variant: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const variants = def.variants ?? []
+  const close = () => setOpen(false)
+  return (
+    <span className={SQUARE_GROUP_CLASS} style={SQUARE_GROUP}>
+      <span style={SQUARE_LABEL}>{def.label}</span>
+      <button
+        type="button"
+        className="cre-demo-controls-btn"
+        /* Restated, as `DemoDropdown` does in square mode: the name beside the
+           button is decoration to a screen reader. */
+        aria-label={`${def.label}: ${label}`}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        style={{ ...DEMO_TRIGGER, ...SQUARE_TRIGGER }}
+        onClick={() => setOpen(true)}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = DEMO_HOVER_FILL
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = DEMO_FAINT_FILL
+        }}
+      >
+        {label}
+        <ChevronDown size={13} aria-hidden style={{ transform: 'rotate(-90deg)' }} />
+      </button>
+      <Sheet open={open} onClose={close} title={def.label} width={460} side="right">
+        {/* The header the version sheets draw: Close alone, a rule, then the
+            title — so the two sheets read as one family. */}
+        <div style={SHEET_TOP}>
+          <button type="button" onClick={close} aria-label="Close panel" style={SHEET_CLOSE}>
+            <X size={16} aria-hidden />
+            Close
+          </button>
+        </div>
+        <div aria-hidden style={{ height: 1, background: 'var(--color-border-subtle)' }} />
+        <header style={SHEET_HEADER}>
+          <h2 style={SHEET_TITLE}>{def.label}</h2>
+          <p style={SHEET_INTRO}>
+            {variants.length} options. Pick one and the bar follows.
+          </p>
+        </header>
+        <div role="radiogroup" aria-label={def.label} style={SHEET_LIST}>
+          {variants.map((v) => {
+            const active = v.value === current
+            const isDefault = v.value === def.defaultVariant
+            return (
+              <button
+                key={v.value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                /* One sentence to a screen reader, not three fragments. */
+                aria-label={[v.label, v.description, v.detail].filter(Boolean).join(' — ')}
+                style={{ ...SHEET_CARD, ...(active ? SHEET_CARD_ON : null) }}
+                onClick={() => {
+                  onPick(v.value)
+                  close()
+                }}
+              >
+                <span aria-hidden style={SHEET_CARD_TITLE}>
+                  <span style={{ flex: 1, minWidth: 0 }}>{v.label}</span>
+                  {isDefault ? <span style={SHEET_DEFAULT}>Default</span> : null}
+                  {active ? <Check size={15} aria-hidden /> : null}
+                </span>
+                {v.description ? (
+                  <span aria-hidden style={SHEET_CARD_BODY}>
+                    {v.description}
+                  </span>
+                ) : null}
+                {v.detail ? (
+                  <span aria-hidden style={SHEET_CARD_DETAIL}>
+                    {v.detail}
+                  </span>
+                ) : null}
+              </button>
+            )
+          })}
+          {def.panelNote ? <p style={SHEET_NOTE}>{def.panelNote}</p> : null}
+        </div>
+      </Sheet>
+    </span>
+  )
+}
+
+const SHEET_TOP: CSSProperties = { padding: '20px 24px 12px', display: 'flex', flexDirection: 'column' }
+
+const SHEET_CLOSE: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 8,
+  alignSelf: 'flex-start',
+  padding: 0,
+  background: 'transparent',
+  border: 'none',
+  color: 'var(--color-secondary-600)',
+  fontFamily: 'var(--font-body)',
+  fontSize: 14,
+  fontWeight: 600,
+  cursor: 'pointer',
+}
+
+const SHEET_HEADER: CSSProperties = { padding: '16px 24px 4px', display: 'flex', flexDirection: 'column', gap: 6 }
+
+const SHEET_TITLE: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-heading)',
+  fontWeight: 600,
+  fontSize: 24,
+  lineHeight: '32px',
+  color: 'var(--color-primary-700)',
+}
+
+const SHEET_INTRO: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  lineHeight: '20px',
+  color: 'var(--color-text-secondary)',
+}
+
+const SHEET_LIST: CSSProperties = {
+  flex: 1,
+  minHeight: 0,
+  overflowY: 'auto',
+  padding: '12px 24px 24px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 10,
+}
+
+const SHEET_CARD: CSSProperties = {
+  width: '100%',
+  textAlign: 'left',
+  background: 'var(--color-surface-card)',
+  border: '1px solid var(--color-border-subtle)',
+  borderRadius: 'var(--radius-md)',
+  padding: '12px 14px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 4,
+  cursor: 'pointer',
+  boxShadow: 'var(--shadow-card)',
+  color: 'var(--color-text-primary)',
+}
+
+const SHEET_CARD_ON: CSSProperties = {
+  border: '2px solid var(--color-neutral-darkest)',
+  padding: '11px 13px',
+}
+
+const SHEET_CARD_TITLE: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  fontFamily: 'var(--font-body)',
+  fontWeight: 600,
+  fontSize: 15,
+  lineHeight: '22px',
+}
+
+const SHEET_CARD_BODY: CSSProperties = {
+  display: 'block',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  lineHeight: '20px',
+  color: 'var(--color-text-secondary)',
+}
+
+const SHEET_CARD_DETAIL: CSSProperties = {
+  ...SHEET_CARD_BODY,
+  fontSize: 12,
+  lineHeight: '18px',
+}
+
+const SHEET_DEFAULT: CSSProperties = {
+  padding: '1px 8px',
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-neutral-100)',
+  color: 'var(--color-text-secondary)',
+  fontSize: 11,
+  fontWeight: 600,
+  lineHeight: '18px',
+}
+
+const SHEET_NOTE: CSSProperties = {
+  margin: '6px 2px 0',
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  lineHeight: '18px',
+  color: 'var(--color-text-secondary)',
+}
+
 const ROW_BADGE: CSSProperties = {
   flex: '0 0 19px',
   height: 19,
@@ -499,6 +731,15 @@ const ROW_BADGE: CSSProperties = {
 }
 
 /* The sub-line under a row's title — her `.sub`. */
+/* The row's title, a step under the menu's 14 (2026-10-27, Jillienne on the
+   Invite flow menu: "make this text smaller") — six two-line rows at the
+   menu's own size ran the panel taller than the screen it sits over. */
+const ROW_DESCRIPTION: CSSProperties = {
+  display: 'block',
+  fontSize: 12,
+  lineHeight: 1.35,
+}
+
 const ROW_DETAIL: CSSProperties = {
   display: 'block',
   marginTop: 1,

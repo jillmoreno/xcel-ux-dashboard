@@ -183,6 +183,23 @@ export type FeatureFlagDefinition = {
    * reviewer needs in order to read the three options correctly.
    */
   panelNote?: string
+  /**
+   * OPEN AS A SHEET, NOT A DROPDOWN — 2026-10-27, Jillienne on the Invite
+   * flow menu: "trigger this as sheet view where we can see all the options
+   * better, there will likely be more added."
+   *
+   * The design bar picks a control's shape from its count — a few options
+   * are a segmented group, more are a dropdown. A dropdown holds four or
+   * five one-line rows well and six two-line ones badly: the Invite flow
+   * menu ran past the bottom of the checkout it sits over. This says the
+   * list is long enough, or its rows wordy enough, to deserve the versions
+   * sheet's room instead — a trigger on the bar as before, opening a panel
+   * at the side with one card per option, the description in full and the
+   * default marked. The sheet takes any number of rows, which is the point.
+   *
+   * Only `variants` controls read it; an on/off switch has nothing to list.
+   */
+  picker?: 'sheet'
   /** Additional page cards this flag should ALSO surface under (it counts +
    *  renders on each). Use when one flag drives filters on more than one page —
    *  e.g. `profession-count` / `state-count` gate the filter rows on BOTH the
@@ -2427,6 +2444,16 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
                                nothing known about who scanned it, and no
                                product chosen: the options modal is inherent
                                here rather than a toggle.
+         B2B2C verified      — a partner invited them, no address, and the
+                               learner proves one BEFORE checkout: a modal
+                               asks name and email, sends a 6-digit code, and
+                               the code unlocks the checkout. Locked after;
+                               password inline. (2026-10-27, the fifth arm.)
+         Signed-in XCEL       — a returning customer, signed in to the public
+                               site. Checkout filled from the account, email
+                               locked, no partner question; the dashboard's
+                               own password is set on the confirmation page,
+                               with a line saying why. (2026-10-27, sixth.)
 
        The long form of every predicate is in `inviteFlows.ts`.
 
@@ -2437,8 +2464,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surfaces: ['invite'],
     group: 'Navigation',
     label: 'Invite flow',
+    /* Six two-line rows and counting — see the field's note. */
+    picker: 'sheet',
     description:
-      'Which invite flow the demo walks. B2B2C with email: a partner invited this learner and supplied their address, so it is locked at checkout and the password is set inline. B2B2C without email: invited, but the address is theirs to type twice (first field masked) and the password comes from a link in the confirmation email. B2C Guest Checkout: no partner, nothing known — the student information starts empty and Payment stays closed until it is complete. QR code or social link: a partner’s broadcast link, so partner pricing applies but nothing is known about who scanned it and the product options modal always opens.',
+      'Which invite flow the demo walks. B2B2C with email: a partner invited this learner and supplied their address, so it is locked at checkout and the password is set inline. B2B2C without email: invited, but the address is theirs to type twice (first field masked) and the password comes from a link in the confirmation email. B2C Guest Checkout: no partner, nothing known — the student information starts empty and Payment stays closed until it is complete. QR code or social link: a partner’s broadcast link, so partner pricing applies but nothing is known about who scanned it and the product options modal always opens. B2B2C verified email: invited without an address, and the learner proves one before checkout — name and email in a modal, a 6-digit code sent to it — after which it is locked and the password is set inline. Signed-in XCEL account: a returning customer on the public site, known by name — checkout arrives filled with the account email locked, no partner question, and the confirmation page explains that the learning dashboard needs a password of its own.',
     defaultEnabled: true,
     /* ⚠ THE GUEST, SINCE 2026-10-23 — see `DEFAULT_INVITE_FLOW`, which this
        must equal (`InviteFlows.test.tsx` pins the pair). */
@@ -2485,6 +2514,37 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
         value: 'qr-social',
         label: 'QR code or social link',
         description: 'A partner\u2019s broadcast link: partner pricing, nobody identified, product options always asked.',
+      },
+      {
+        value: 'b2b2c-verified',
+        /* THE FIFTH ARM — 2026-10-27, Jillienne: "another invite flow, that
+           includes a modal prior to the checkout flow that requires the first
+           name, last name, and email address, and this will send a 6-digit
+           pin to the users email that they will need to enter before they
+           can continue with the checkout flow."
+
+           It is the no-email arm with the proof moved FORWARD: instead of
+           typing the address twice at checkout and setting the password from
+           a mailed link afterwards, the learner proves the address before
+           the checkout opens, and from there it behaves like the with-email
+           arm — locked at checkout, password inline. The predicates in
+           `inviteFlows.ts` say so; the modal is `VerifyEmailModal`. */
+        label: 'B2B2C verified email',
+        description: 'Partner invited them, no address. Name and email proven by a 6-digit code before checkout.',
+      },
+      {
+        value: 'xcel-signed-in',
+        /* THE SIXTH ARM — 2026-10-27, Jillienne: "another invite flow that is
+           for a user that is already logged into the Xcel site, but when they
+           complete their purchase, they will need to create a new password."
+
+           A returning XCEL customer on the public site. The header knows
+           them, checkout arrives filled from the account with Payment open
+           and the email locked, no partner question is asked, and the
+           confirmation page's password card says why a new password is
+           needed. `signedIn` in `inviteFlows.ts` is the predicate. */
+        label: 'Signed-in XCEL account',
+        description: 'Already an XCEL customer, signed in. Checkout filled from the account; a new password after the order.',
       },
     ],
     page: 'dashboard-rebrand',

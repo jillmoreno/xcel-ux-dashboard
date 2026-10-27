@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ChevronDown } from '@/icons'
-import { ShoppingCart } from '@/icons'
-import { clearPartnerCodeAnswer } from '@/data/inviteFlows'
+import { CircleUser, ShoppingCart } from '@/icons'
+import { clearPartnerCodeAnswer, signedIn, useInviteFlow } from '@/data/inviteFlows'
 import { CART_PACKAGE_PARAM, GET_LICENSE_NAV, cartPackage } from '@/data/xcelCourseFinder'
 import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
 
@@ -38,6 +38,11 @@ export function XcelSiteHeader({
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const [open, setOpen] = useState(false)
+  /* THE SIGNED-IN ARM — 2026-10-27. The one thing the public site's header
+     changes when it knows you: Log In becomes the account mark and My
+     Training, which is what the real site draws (see the signed-in journey's
+     screens). Both inert, like the rest of the bar. */
+  const knownAccount = signedIn(useInviteFlow())
   /* ⚠ THE COUNT COMES FROM THE CART ITSELF, not a prop. The cart is the
      address (see `cartPackage`), so the badge reads the same source the cart
      page does and cannot say "1" over an empty basket. */
@@ -165,7 +170,16 @@ export function XcelSiteHeader({
               </span>
             ) : null}
           </span>
-          <span style={LOG_IN}>Log In</span>
+          {knownAccount ? (
+            <>
+              <span style={ACCOUNT_SLOT} aria-label="Your account">
+                <CircleUser size={19} aria-hidden />
+              </span>
+              <span style={MY_TRAINING}>My Training</span>
+            </>
+          ) : (
+            <span style={LOG_IN}>Log In</span>
+          )}
         </div>
       </header>
     </>
@@ -356,4 +370,18 @@ const LOG_IN: CSSProperties = {
   background: 'var(--color-xcel-brick-600)',
   color: 'var(--color-fixed-light)',
   fontWeight: 800,
+}
+
+/* The signed-in pair: the account mark beside the cart, and My Training in
+   the site's ink rather than the brick — on the real site it is the quiet
+   "you are already in" button, not the call to action Log In is. */
+const ACCOUNT_SLOT: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  color: 'var(--color-text-primary)',
+}
+
+const MY_TRAINING: CSSProperties = {
+  ...LOG_IN,
+  background: 'var(--color-neutral-950)',
 }

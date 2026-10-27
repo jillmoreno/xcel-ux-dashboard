@@ -1,10 +1,12 @@
 import type { PrototypeFeature } from '../prototypeFeatures'
 
 /**
- * THE FOUR INVITE FLOWS — the first handoff written in this folder, as the
- * practice run of `/dev-handoff-notes` with its designer (2026-10-27).
+ * THE SIX INVITE FLOWS — the first handoff written in this folder, as the
+ * practice run of `/dev-handoff-notes` with its designer (2026-10-27). Four
+ * that morning; the verified-email and signed-in journeys joined the same
+ * afternoon.
  *
- * One build, four journeys picked from the Invite flow design control. Every
+ * One build, six journeys picked from the Invite flow design control. Every
  * screen decides what to draw by asking two questions — who sent the learner
  * (a partner, or nobody) and what that carried (their email, or nothing) —
  * never by comparing to a flow by name. The components below are the SCREENS,
@@ -12,21 +14,21 @@ import type { PrototypeFeature } from '../prototypeFeatures'
  */
 const feature: PrototypeFeature = {
   id: 'xcel-invite-flows',
-  title: 'Invite & Purchase — the four invite flows',
+  title: 'Invite & Purchase — the six invite flows',
   kind: 'guided',
   status: 'ready',
   category: 'dev-handoff',
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Jill',
-  lastUpdated: '2026-10-27T12:24:08Z',
+  lastUpdated: '2026-10-27T18:10:00Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
   blurb:
-    'Four ways into one purchase — invited with an email, invited without one, a guest from the public site, and a partner’s QR or social link — converging on one checkout and one password screen.',
+    'Six ways into one purchase — invited with an email, invited without one, invited and verified by a code before checkout, a guest from the public site, a signed-in XCEL customer, and a partner’s QR or social link — converging on one checkout and one password screen.',
   tileBlurb:
-    'Four journeys into one checkout: invited with email, invited without, guest from the public site, and a partner’s QR link. Twelve screens, one password screen.',
+    'Six journeys into one checkout: invited with email, without, or verified by code; a guest; a signed-in XCEL customer; a partner’s QR link. Thirteen screens, one password screen.',
   pages: [
     {
       label: 'Guest checkout — the public site, from Find a course',
@@ -44,15 +46,25 @@ const feature: PrototypeFeature = {
       to: '/end-to-end-demo/email?demo=1&ff=invite-flow-journey:b2b2c-no-email',
     },
     {
+      label: 'Invited, verified email — the code before checkout',
+      note: 'A partner invited this person without an address. Over the checkout, a modal asks name and email, sends a 6-digit code, and unlocks the form when it is typed back. Locked after; password set inline.',
+      to: '/end-to-end-demo/checkout?demo=1&ff=invite-flow-journey:b2b2c-verified',
+    },
+    {
+      label: 'Signed-in XCEL customer — the public site, already known',
+      note: 'The header shows My Training; checkout arrives filled from the account with the email locked and Payment open; no partner question. The order ends at a new password for the learning dashboard, with a line saying why.',
+      to: '/end-to-end-demo/find?demo=1&ff=invite-flow-journey:xcel-signed-in',
+    },
+    {
       label: 'QR or social link — the partner’s share card',
       note: 'Partner pricing with nobody identified, so the product options modal always opens on the product page.',
       to: '/end-to-end-demo/qr?demo=1&ff=invite-flow-journey:qr-social',
     },
   ],
   featureFlags: [
-    { id: 'invite-flow-journey', label: 'Invite flow', note: 'Which of the four journeys the walk is in. Guest checkout is the default.' },
+    { id: 'invite-flow-journey', label: 'Invite flow', note: 'Which of the six journeys the walk is in. Guest checkout is the default.' },
     { id: 'invite-flow-version', label: 'Invite flow version', note: 'The newer invite flow is this build; the released one is kept untouched behind the control.' },
-    { id: 'order-confirmation-style', label: 'Thank you page', note: 'Receipt, Split or Light. Light is the default; Receipt resolves to Light on the invited journey.' },
+    { id: 'order-confirmation-style', label: 'Thank you page', note: 'Receipt, Split or Light. Light is the default; Receipt resolves to Light on the invited and signed-in journeys.' },
     { id: 'split-journey-rail', label: 'Journey rail', note: 'After validation, draws the three-step rail beside the password card. Off by default.' },
     { id: 'partner-code-ask', label: 'Partner code ask', note: 'The guest’s yes/no as its own page or as a modal over checkout. Modal is the default.' },
     { id: 'invite-missing-details', label: 'Invitation missing details', note: 'Opens the product options modal on the invited journeys. The QR journey opens it regardless.' },
@@ -61,9 +73,9 @@ const feature: PrototypeFeature = {
   ],
   devHandoff: {
     flagsNote:
-      'The Invite flow control is the axis; the other design controls pick treatments inside a journey. None of them is a product setting — they exist so the four journeys and their variants can be reviewed from one address.',
+      'The Invite flow control is the axis; the other design controls pick treatments inside a journey. None of them is a product setting — they exist so the six journeys and their variants can be reviewed from one address.',
     intro:
-      'Twelve screens, in the order a guest meets them, then the three screens only the invited and QR journeys see. Each screen asks the same two questions — who sent the learner, and what that carried — and its states are the answers.',
+      'Thirteen screens, in the order a guest meets them, then the four screens only the invited and QR journeys see. Each screen asks the same questions — who sent the learner, what that carried, and whether the site already knows them — and its states are the answers.',
     components: [],
     uiComponents: [
       {
@@ -121,6 +133,7 @@ const feature: PrototypeFeature = {
           { name: 'Line of authority', does: 'Picks the line. Always the same five today regardless of education — the finder was only ever walked for Get License.' },
           { name: 'Find courses', does: 'Off until all three are chosen. Writes the state and line into the address, clears any partner answer, and opens Packages.' },
           { name: 'Get License (header)', does: 'Opens the six-item lines-of-authority menu. The one real route in the header.' },
+          { name: 'Log In / My Training (header)', does: 'Log In on every journey but the signed-in one, where the account mark and My Training draw instead. Both drawn, not wired.' },
           { name: 'Enter partner code + Go', does: 'Drawn, not wired. Local state only.' },
           { name: 'Continuing Education, Study Tools & Reviews, cart icon, Log In (header)', does: 'Drawn, not wired.' },
           { name: 'Go to Partner Site (header bar)', does: 'Drawn, not wired.' },
@@ -367,22 +380,76 @@ const feature: PrototypeFeature = {
         },
       },
       {
-        id: 'invite-checkout',
+        id: 'invite-verify-email',
         order: 8,
+        name: 'Verify your email',
+        tabLabel: 'Verify email',
+        location: 'Not a route. Drawn over /end-to-end-demo/checkout on the verified journey, until the code is accepted.',
+        summary:
+          'The verified journey’s one screen of its own: a two-step modal over the checkout. First who you are — first name, last name, email — then the 6-digit code that was sent to that address. The checkout behind it is drawn but not usable until the code is in; once it is, the address is as known as one the partner supplied, so it is locked at checkout and the password is set inline.',
+        variants: [
+          { name: 'Your details', when: 'On arrival at checkout on the verified journey. Three fields and Send code.', action: 'Send code → the code step' },
+          { name: 'Details incomplete', when: 'Send code pressed with a gap. Each missing or malformed field gets its own message and a red outline; the step does not advance.', why: 'The button is never greyed — a disabled Send refuses to say what is wrong.' },
+          { name: 'Enter your code', when: 'After Send. Six boxes that advance as you type, backspace back, and take a paste; the lead names the address the code went to.', action: 'Verify and continue → the checkout form' },
+          { name: 'Code incomplete', when: 'Verify pressed with fewer than six digits. “Enter all six digits of the code.”' },
+          { name: 'Code wrong', when: 'Six digits that do not match. “That code didn’t match. Check the email and try again.” Red outlines; the digits stay so they can be corrected.' },
+          { name: 'Code resent', when: 'Resend code pressed. The boxes clear and a status says a new code was sent.' },
+          { name: 'Demo inbox open', when: 'Demo · Show the email we sent was pressed. A drawn message carrying the code, with Use this code.', why: 'Nothing is sent in the prototype; this is how a reviewer finds out what the email says, marked as a demo affordance so it does not read as product.' },
+        ],
+        ctas: [
+          { name: 'First name, Last name, Email address', does: 'The three required fields. Email must look like an address.' },
+          { name: 'Send code', does: 'Checks the three fields; advances to the code step. Never disabled.' },
+          { name: 'Back to the course', does: 'Returns to the invited product detail page, carrying the walk’s address. The only way out that is not through.' },
+          { name: 'Digit 1–6', does: 'One digit each. Typing advances, Backspace on an empty box moves back, arrow keys move, a paste spreads across the boxes.' },
+          { name: 'Verify and continue', does: 'Checks the six digits against the code; on a match writes verified=1 into the address, keeps the identity for the tab, fills the name on the form and locks the email.' },
+          { name: 'Resend code', does: 'Clears the boxes and announces a new code. The code itself does not change in the prototype.' },
+          { name: 'Use a different email', does: 'Back to the details step with the fields as they were.' },
+          { name: 'Demo · Show the email we sent', does: 'Reveals the drawn email with the code. A demo affordance.' },
+          { name: 'Use this code', does: 'In the drawn email; fills the six boxes.' },
+          { name: 'Demo fill corner', does: 'An invisible corner on the details step that fills the demo learner’s name and email. It fills; it does not send.' },
+        ],
+        statesMatrix: [
+          { question: 'What if the learner reloads after verifying?', answer: 'verified=1 is in the address, so the modal does not reopen; the name and email are kept for the tab. A verified link opened in a fresh tab names the demo learner instead.' },
+          { question: 'What if the code expires, or too many wrong codes are typed?', answer: 'Open — see the decisions log. The prototype’s code is fixed and never expires; the copy says ten minutes.' },
+          { question: 'Can the modal be dismissed?', answer: 'No ✕ and no Escape, as the partner question. Back to the course is the way out.' },
+        ],
+        edgeCases: ['Names and addresses wrap; the modal scrolls inside itself on short viewports.', 'Errors never appear while the learner is still typing; they wait for Send or Verify to be pressed.', 'The name and email are not put in the URL — see the module note in src/data/inviteVerification.ts.'],
+        designSpec: {
+          tokens: [
+            { role: 'Scrim', token: '--color-e2e-scrim' },
+            { role: 'Dialog surface', token: '--color-fixed-light' },
+            { role: 'Field fill', token: '--color-e2e-field' },
+            { role: 'Field and code-box outline', token: '--color-e2e-card-outline' },
+            { role: 'Error text and outline', token: '--color-status-error-text' },
+            { role: 'Send, Verify and text links', token: '--color-xcel-brick-600' },
+            { role: 'Demo inbox surface', token: '--color-e2e-summary' },
+            { role: 'Body face', token: '--font-e2e-avenir' },
+          ],
+          responsive: ['A 560px dialog that shrinks to the viewport with 24px around it; the two name fields stack below 400px of dialog width. Padding is raw pixels in the component.'],
+          sources: ['The final prototype at /end-to-end-demo/checkout?demo=1&ff=invite-flow-journey:b2b2c-verified is the source of truth.', 'Implemented in src/components/e2e/VerifyEmailModal.tsx and src/data/inviteVerification.ts; the journey’s answers in src/data/inviteFlows.ts.'],
+        },
+      },
+      {
+        id: 'invite-checkout',
+        order: 9,
         name: 'Checkout',
         tabLabel: 'Checkout',
-        location: '/end-to-end-demo/checkout — where all four journeys converge.',
+        location: '/end-to-end-demo/checkout — where all six journeys converge.',
         summary:
-          'Student information, then Payment, then Place your order. Every journey fills the student form from empty and Payment stays locked until Save and continue; the email block is the one thing that changes with the journey.',
+          'Student information, then Payment, then Place your order. Every journey but the signed-in one fills the student form from empty and Payment stays locked until Save and continue; the email block is the other thing that changes with the journey.',
         variants: [
           { name: 'Partner question over the page', when: 'Guest journey with the ask set to Modal, until YES or NO is pressed. The modal cannot be dismissed.' },
-          { name: 'Email locked', when: 'Invited with email. A disabled field holding the invited address, a lock icon, and a note that this is where the invitation was sent.', why: 'The partner supplied the address, so the learner confirming it would be confirming something they did not type.' },
-          { name: 'Email typed twice', when: 'Every other journey. The first field is masked like a password and a second field asks for it again.', why: 'Masking stops the browser autofilling and the learner glancing; the second field is the only check there is on an address nobody else knows.' },
+          { name: 'Verify your email over the page', when: 'The verified journey, until the 6-digit code is accepted. The modal cannot be dismissed; Back to the course is the way out.', why: 'The form below is submitted with the address being proven, so it should not be fillable until the proof is in.', action: 'Code accepted → the form, with the name filled and the email locked' },
+          { name: 'Email locked — invited', when: 'Invited with email. A disabled field holding the invited address, a lock icon, and a note that this is where the invitation was sent.', why: 'The partner supplied the address, so the learner confirming it would be confirming something they did not type.' },
+          { name: 'Email locked — verified', when: 'The verified journey, after the code. The same disabled field holding the address the code came back from, and a note that this is the address they verified.', why: 'A code that came back from the address is better evidence than a second typing.' },
+          { name: 'Email locked — account', when: 'The signed-in journey. The same disabled field holding the account’s email, and a note that the learning dashboard account will be created with it.' },
+          { name: 'Filled from the account', when: 'The signed-in journey, on arrival. Name, address and phone are the account’s and Payment is already open; editing any field locks it again until Save and continue.', why: 'The site knows this person; ten empty fields would ask a returning customer for what they typed last time. The real site folds these into a summary with an Edit button, which is an open presentation question.' },
+          { name: 'Email typed twice', when: 'The invited-without-email, guest and QR journeys. The first field is masked like a password and a second field asks for it again.', why: 'Masking stops the browser autofilling and the learner glancing; the second field is the only check there is on an address nobody else knows.' },
           { name: 'Email note — before confirming', when: 'The two fields do not yet match. “Enter it twice so we can be sure we can reach you.”' },
           { name: 'Email note — confirmed', when: 'Both look like an address and match. “Your order confirmation and account link will be sent here.”' },
           { name: 'Email error — missing', when: 'The second field is blank while the first is filled, after leaving the field or pressing Save. “Re-enter your email address to confirm it.”' },
           { name: 'Email error — mismatch', when: 'The two differ, after leaving the field or pressing Save. “These addresses don’t match.” Red outline on the second field only.' },
-          { name: 'Payment locked', when: 'Until Save and continue succeeds, on every journey. The column is dimmed and inert, with “Complete your student information to continue to payment.”', why: 'No invitation ever carries a home address or a phone number, so there is nothing to pre-fill and nothing to pay against until the learner has given them.' },
+          { name: 'Payment locked', when: 'Until Save and continue succeeds, on every journey but the signed-in one. The column is dimmed and inert, with “Complete your student information to continue to payment.”', why: 'No invitation ever carries a home address or a phone number, so there is nothing to pre-fill and nothing to pay against until the learner has given them.' },
           { name: 'Save pressed incomplete', when: 'Save and continue with a gap. An alert names the email if that is the problem, otherwise the required fields.' },
           { name: 'Re-locked by editing', when: 'Any student field changes after a save. Payment locks again until the next save.' },
           { name: 'Billing — defaulted to student', when: 'The default. The heading says so and the student address shows as the billing address.' },
@@ -399,7 +466,7 @@ const feature: PrototypeFeature = {
           { name: 'Email address, Re-enter email address', does: 'The twice-typed pair, masked, with autofill off so the browser cannot defeat the masking.' },
           { name: 'Country', does: 'One option, United States of America.' },
           { name: 'Use as default billing address', does: 'On the student form, ties the billing address to the student address. On the billing forms it is drawn, not wired.' },
-          { name: 'Save and continue', does: 'Never greyed. Checks the form; opens Payment when it is complete, otherwise shows the alert.' },
+          { name: 'Save and continue', does: 'Never greyed. Checks the form; opens Payment when it is complete, otherwise shows the alert. On the locked-email journeys the locked address is what it counts.' },
           { name: 'Edit billing address, Use a different billing address', does: 'Choose and open their form; a second click folds it.' },
           { name: 'Confirm billing address', does: 'Folds the form and commits the address to the note.' },
           { name: 'Delete (billing forms)', does: 'Drawn, not wired.' },
@@ -440,18 +507,19 @@ const feature: PrototypeFeature = {
       },
       {
         id: 'invite-order-confirmation',
-        order: 9,
+        order: 10,
         name: 'Order confirmation and password',
         tabLabel: 'Confirmation',
-        location: '/end-to-end-demo/order-confirmation for guest and QR; /end-to-end-demo/confirmation for the invited-with-email journey. One component, three treatments.',
+        location: '/end-to-end-demo/order-confirmation for guest, QR and signed-in; /end-to-end-demo/confirmation for the invited journeys. One component, three treatments.',
         summary:
           'The receipt on one side and the next step on the other: “Confirm your email” for a guest, or the password card straight away for an invited learner. One screen serves both journeys so the two cannot drift apart in wording, validation or which button does what.',
         variants: [
           { name: 'Dark', when: 'The Thank you page control says Split. A dark rail, a green tick with an animated ring, the receipt in a bordered card with a perforation.' },
-          { name: 'Light', when: 'The control says Light, the default, or Receipt on the invited journey. No tick, no box, no perforation; hairline rules and a left-ranged heading.', why: 'On the invited journey the receipt treatment has no second step to show, so it resolves to the lighter page rather than an empty frame.' },
+          { name: 'Light', when: 'The control says Light, the default, or Receipt on the invited and signed-in journeys. No tick, no box, no perforation; hairline rules and a left-ranged heading.', why: 'On those journeys the receipt treatment has no password step to show, so it resolves to the lighter page rather than an empty frame.' },
           { name: 'Receipt', when: 'The control says Receipt on the guest or QR journey. A single-column receipt with Launch Student Portal instead of a password card.' },
           { name: 'Before validation', when: 'Guest and QR, before the activation email was opened. Receipt on the left, “Confirm your email” on the right naming the address.' },
-          { name: 'At the password', when: 'Invited journeys immediately; guest and QR after activating. The password card with its checklist.' },
+          { name: 'At the password', when: 'Invited and signed-in journeys immediately; guest and QR after activating. The password card with its checklist.' },
+          { name: 'A new password — signed in', when: 'The signed-in journey. The card is headed “Create a new password” and a note explains that the learning dashboard is a new account with its own password, and that the XCEL site password does not change.', why: 'This learner already has an XCEL password and will reach for it; the card has to say it is a different account before the field asks for anything.' },
           { name: 'Validated, rail on', when: 'After validation with the Journey rail control on. A three-step rail named from the state and line replaces the receipt.' },
           { name: 'Validated, rail off', when: 'After validation, the default. The password card sits alone, centred.' },
           { name: 'Invited keeps the receipt', when: 'The invited journey. The receipt stays beside the password card because this learner has never seen one.', why: 'An invited learner arrives at the password without passing a receipt, so the order they just placed has to be shown somewhere.' },
@@ -500,7 +568,7 @@ const feature: PrototypeFeature = {
       },
       {
         id: 'invite-check-your-email',
-        order: 10,
+        order: 11,
         name: 'Check your email',
         tabLabel: 'Check your email',
         location: '/end-to-end-demo/confirmation — the ending of the invited-without-email journey.',
@@ -534,7 +602,7 @@ const feature: PrototypeFeature = {
       },
       {
         id: 'invite-activation-email',
-        order: 11,
+        order: 12,
         name: 'Activation email',
         tabLabel: 'Activation email',
         location: '/end-to-end-demo/activation-email — reached from “Confirm your email” on the guest and QR journeys.',
@@ -567,7 +635,7 @@ const feature: PrototypeFeature = {
       },
       {
         id: 'invite-loading-page',
-        order: 12,
+        order: 13,
         name: 'Loading page',
         tabLabel: 'Loading page',
         location: 'Not a route. Drawn in place by Checkout (“Placing your order”) and by the confirmation (“Taking you to your learning dashboard”).',
@@ -600,6 +668,16 @@ const feature: PrototypeFeature = {
         {
           question: 'Three journeys or four?',
           decision: 'Four. Who sent the learner and what that carried are two questions, and three journeys collapsed them: a partner’s QR link is partner-priced with nobody identified, which none of the other three cover. Every page asks a predicate rather than a flow name, so a fifth journey is a row and an answer to each question, not a search for every comparison.',
+          status: 'Decided',
+        },
+        {
+          question: 'Does the verified journey ask for the address again at checkout?',
+          decision: 'No. A 6-digit code that came back from the address is better evidence than a second typing, so once it is accepted the journey answers like invited-with-email: the field is locked at checkout and the password is set inline, with nothing left for a mailed link to prove. The modal is the whole difference, and the pages ask a predicate for it rather than the journey’s name.',
+          status: 'Decided',
+        },
+        {
+          question: 'Why does a signed-in XCEL customer set a password at all?',
+          decision: 'Because the learning dashboard is a new account beside the site’s, with its own password. The signed-in journey keeps every other advantage of being known — filled student information, the account email locked, no partner question, no inbox step — and the password card says in one line why a new password is being asked for.',
           status: 'Decided',
         },
         {
@@ -662,6 +740,18 @@ const feature: PrototypeFeature = {
           owner: 'Design',
         },
         {
+          question: 'Does a signed-in XCEL customer still verify their email with a 6-digit code?',
+          decision: 'Open. The account already has an email XCEL reaches them at, so the prototype skips the code on this journey and sets the password straight after the order. Whether the dashboard account needs its own proof of the address — the verified journey’s code — even when the XCEL account already holds one is the question to settle.',
+          status: 'Needs weigh-in',
+          owner: 'Product and Engineering',
+        },
+        {
+          question: 'How is the verification code delivered, and what happens when it expires or is wrong too many times?',
+          decision: 'Open. The prototype sends nothing and accepts one fixed code; the copy promises ten minutes. Delivery, expiry, a retry limit and what Resend actually does need engineering’s answer before this journey is built.',
+          status: 'Needs weigh-in',
+          owner: 'Engineering',
+        },
+        {
           question: 'When does the QR code become scannable?',
           decision: 'Open. The code is drawn anatomy, not an encoding. It should be real before anyone is asked to scan it from a screen in a room.',
           status: 'Needs weigh-in',
@@ -674,6 +764,9 @@ const feature: PrototypeFeature = {
         'Settle where Launch Student Portal leads on the receipt treatment.',
         'Give the invited-without-email journey a way forward in the demo.',
         'Make the QR code scannable.',
+        'Decide the verified journey’s code delivery, expiry and retry limits — the prototype’s code is fixed and never expires.',
+        'Decide whether a signed-in XCEL customer verifies their email with the 6-digit code even though the account already holds an address.',
+        'Decide whether the signed-in checkout folds the known student information into a summary with Edit, as the real site does, or keeps the open form.',
         'Bring both loading holds down from 3 seconds to 2.',
       ],
     },

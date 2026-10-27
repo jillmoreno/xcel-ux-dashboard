@@ -242,6 +242,9 @@ export function useEndToEndPageChrome(title: string): void {
  * dashboard signs the learner in as Navarro.
  */
 export const E2E_LEARNER_FIRST = 'Jordan'
+/** The surname on its own — the verified arm's modal fills first and last
+ *  separately (2026-10-27). `E2E_LEARNER_NAME` is the pair, unchanged. */
+export const E2E_LEARNER_LAST = 'Navarro'
 export const E2E_LEARNER_NAME = 'Jordan Navarro'
 export const E2E_LEARNER_EMAIL = 'jordan.navarro@gmail.com'
 

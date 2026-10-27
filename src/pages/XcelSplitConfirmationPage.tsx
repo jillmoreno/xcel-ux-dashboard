@@ -12,8 +12,10 @@ import {
   partnerAttributed,
   passwordSetFromEmailedLink,
   useEmailValidated,
+  signedIn,
   useInviteFlow,
   usePartnerAttribution,
+  verifiesEmailBeforeCheckout,
 } from '@/data/inviteFlows'
 import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
 import { meetsInvitePasswordRules } from '@/data/invitePasswordRules'
@@ -28,6 +30,7 @@ import {
   useEndToEndDemoParams,
   useEndToEndPageChrome,
 } from './endToEndDemo'
+import { readVerifiedIdentity } from '@/data/inviteVerification'
 import './inviteFlow.css'
 
 /**
@@ -71,6 +74,15 @@ export function XcelSplitConfirmationPage({
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const flow = useInviteFlow()
+  /* THE VERIFIED ARM'S OWN NAME AND ADDRESS — 2026-10-27. The learner typed
+     them into the modal before checkout, so the receipt greets that person and
+     the locked email is the one the code came back from. Read once; every
+     other arm (and a fresh tab) falls back to the demo learner. */
+  const [verified] = useState(() =>
+    verifiesEmailBeforeCheckout(flow) ? readVerifiedIdentity() : null,
+  )
+  const learnerFirst = verified?.first || E2E_LEARNER_FIRST
+  const learnerEmail = verified?.email || E2E_LEARNER_EMAIL
   const validated = useEmailValidated()
   const [password, setPassword] = useState('')
   const [shown, setShown] = useState(false)
@@ -223,7 +235,7 @@ export function XcelSplitConfirmationPage({
                 you for your order" — not two fragments a screen reader reads
                 as separate things. */}
             <h1 id="order-thanks" style={light ? THANKS_LIGHT : THANKS}>
-              {E2E_LEARNER_FIRST},
+              {learnerFirst},
               <br />
               Thank you for your order!
             </h1>
@@ -291,9 +303,25 @@ export function XcelSplitConfirmationPage({
                 standing between the learner and their course, so it gets the
                 same eyebrow as the first. */}
             <p style={CARD_EYEBROW}>{atPassword ? 'Last step' : 'Next step'}</p>
+            {/* ⚠ "A NEW PASSWORD", ON THE SIGNED-IN ARM — 2026-10-27,
+                Jillienne: "they will need to create a new password … with a
+                message indicating they need a new password." This learner
+                has an XCEL password already and will reach for it; the
+                heading and the note under it say, before the field does,
+                that this is a different account. */}
             <h2 id="sign-in" style={CARD_TITLE}>
-              {atPassword ? 'Create your password' : 'Confirm your email'}
+              {atPassword
+                ? signedIn(flow)
+                  ? 'Create a new password'
+                  : 'Create your password'
+                : 'Confirm your email'}
             </h2>
+            {atPassword && signedIn(flow) ? (
+              <p style={CARD_NOTE}>
+                You’re signed in to xcelsolutions.com, but your learning dashboard is a new
+                account and needs a password of its own. Your XCEL site password doesn’t change.
+              </p>
+            ) : null}
 
             {!atPassword ? (
               /* ⚠ THE FORM IS NOT DRAWN YET — 2026-10-22: "bc the user has not
@@ -317,7 +345,7 @@ export function XcelSplitConfirmationPage({
                     thinks the mail is only a receipt has a reason to open it. */}
                 <p style={CARD_NOTE}>
                   Open the email we sent to{' '}
-                  <strong style={{ fontWeight: 800 }}>{E2E_LEARNER_EMAIL}</strong> and click the
+                  <strong style={{ fontWeight: 800 }}>{learnerEmail}</strong> and click the
                   verification link to activate your account.
                 </p>
 
@@ -357,7 +385,7 @@ export function XcelSplitConfirmationPage({
                 <label style={FIELD_GROUP}>
                   <span style={FIELD_LABEL}>Email</span>
                   <span style={{ ...INPUT_SHELL, background: 'var(--color-e2e-form-locked)' }}>
-                    <span style={{ flex: '1 0 0', minWidth: 1 }}>{E2E_LEARNER_EMAIL}</span>
+                    <span style={{ flex: '1 0 0', minWidth: 1 }}>{learnerEmail}</span>
                     <img src="/brand/confirmation/lock.svg" alt="Locked" width={16} height={16} style={{ display: 'block' }} />
                   </span>
                 </label>

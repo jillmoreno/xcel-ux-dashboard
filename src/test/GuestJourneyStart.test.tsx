@@ -120,6 +120,10 @@ describe('where each flow starts', () => {
     expect(entryPathFor('b2c-guest')).toBe('/end-to-end-demo/find')
     expect(entryPathFor('b2b2c-email')).toBe('/end-to-end-demo/email')
     expect(entryPathFor('b2b2c-no-email')).toBe('/end-to-end-demo/email')
+    /* The verified arm is invited too — same letter, the proof comes later. */
+    expect(entryPathFor('b2b2c-verified')).toBe('/end-to-end-demo/email')
+    /* A signed-in customer starts on the public site, as a guest does. */
+    expect(entryPathFor('xcel-signed-in')).toBe('/end-to-end-demo/find')
     /* ⚠ AND QR / SOCIAL STARTS ON THE PARTNER'S SHARE CARD — 2026-10-23,
        changed from `/end-to-end-demo`, which is where a SCAN lands. Starting
        there skipped the only screen that explains where the link came from and
@@ -617,6 +621,9 @@ describe('the partner code question', () => {
     expect(asksForPartnerCode('b2b2c-email')).toBe(false)
     expect(asksForPartnerCode('b2b2c-no-email')).toBe(false)
     expect(asksForPartnerCode('qr-social')).toBe(false)
+    /* ⚠ AND NOT A SIGNED-IN ACCOUNT (2026-10-27): the account already
+       carries its affiliation, so the question has been answered. */
+    expect(asksForPartnerCode('xcel-signed-in')).toBe(false)
   })
 
   it('page arm: Checkout goes to a step of its own', async () => {
@@ -901,7 +908,7 @@ describe('the demo fill', () => {
        a way to CONTACT someone, never their home address, so no invitation
        arrives carrying the student's details and every arm opens the form
        empty. The shortcut therefore has something to fill in on all four. */
-    for (const flow of ['b2b2c-email', 'b2b2c-no-email', 'b2c-guest', 'qr-social'] as const) {
+    for (const flow of ['b2b2c-email', 'b2b2c-no-email', 'b2c-guest', 'qr-social', 'b2b2c-verified'] as const) {
       renderJourney(`/end-to-end-demo/checkout?ff=${INVITE_FLOW_FLAG}:${flow}`)
       expect(
         screen.getByRole('button', { name: 'Fill in the demo learner’s details' }),

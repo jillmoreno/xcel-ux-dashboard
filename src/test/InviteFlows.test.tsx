@@ -141,16 +141,22 @@ describe('the checkout audience flag', () => {
       'b2b2c-no-email',
       'b2c-guest',
       'qr-social',
+      'b2b2c-verified',
+      'xcel-signed-in',
     ])
     expect(definition?.defaultVariant).toBe(DEFAULT_INVITE_FLOW)
   })
 
-  it('has enough options to render as a dropdown, not pills', () => {
+  it('opens as a sheet, not a dropdown or pills', () => {
     /* ⚠ 2026-10-22, the ask: "a design tool dropdown to select which flow we
-       are working through". The bar switches shape on a COUNT —
-       `SEGMENTED_MAX` is 3 in `DesignControlsBar` — so four flows is what makes
-       it a dropdown, with no edit to that protected file. Drop to three and the
-       control silently becomes pills again. */
+       are working through" — and the bar switches shape on a COUNT
+       (`SEGMENTED_MAX` is 3 in `DesignControlsBar`), so four flows made it a
+       dropdown. By 2026-10-27 there were six two-line rows and the menu ran
+       past the checkout it sits over: "trigger this as sheet view where we
+       can see all the options better, there will likely be more added." The
+       flag says so itself; the count still has to clear the pills threshold
+       or the sheet trigger is doing a job three buttons could. */
+    expect(definition?.picker).toBe('sheet')
     expect((definition?.variants ?? []).length).toBeGreaterThan(3)
   })
 
@@ -190,6 +196,30 @@ describe('the checkout audience flag', () => {
         mailedLink: true,
         productUnknown: false,
       },
+      /* ⚠ THE NO-EMAIL ARM WITH THE PROOF MOVED FORWARD — 2026-10-27. Same
+         partner, same invitation, but the address is proven by a code BEFORE
+         the checkout opens, so downstream it answers like the with-email arm:
+         not typed twice, password inline. The modal is the difference, and it
+         is asked through `verifiesEmailBeforeCheckout`. */
+      'b2b2c-verified': {
+        partner: true,
+        invited: true,
+        twice: false,
+        mailedLink: false,
+        productUnknown: false,
+      },
+      /* ⚠ THE RETURNING CUSTOMER — 2026-10-27. No partner and no invitation,
+         like the guest, but the site KNOWS them: the address is the account's
+         (not typed twice) and the password is set inline, with a line saying
+         the dashboard needs one of its own. `signedIn` is the predicate the
+         header, the checkout and the password card ask. */
+      'xcel-signed-in': {
+        partner: false,
+        invited: false,
+        twice: false,
+        mailedLink: false,
+        productUnknown: false,
+      },
       'b2c-guest': {
         partner: false,
         invited: false,
@@ -224,6 +254,8 @@ describe('the checkout audience flag', () => {
   it('falls back rather than rendering neither arm', () => {
     expect(resolveInviteFlow('b2c-guest')).toBe('b2c-guest')
     expect(resolveInviteFlow('qr-social')).toBe('qr-social')
+    expect(resolveInviteFlow('b2b2c-verified')).toBe('b2b2c-verified')
+    expect(resolveInviteFlow('xcel-signed-in')).toBe('xcel-signed-in')
     expect(resolveInviteFlow('enterprise')).toBe(DEFAULT_INVITE_FLOW)
     expect(resolveInviteFlow(null)).toBe(DEFAULT_INVITE_FLOW)
   })

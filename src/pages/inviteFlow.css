@@ -66,6 +66,12 @@
   outline: 2px solid var(--color-xcel-brick);
   outline-offset: 1px;
 }
+/* The verification modal's fields and code boxes carry the same ring
+   (2026-10-27) — the one dialog in the flow that is mostly typing. */
+.cre-e2e-input:focus-visible {
+  outline: 2px solid var(--color-xcel-brick);
+  outline-offset: 1px;
+}
 /* ⚠ A DISABLED CTA MUST NOT ANSWER. The checkout's Place Order and the
    password step's Confirm both draw grey until their field is filled, and
    those arms do not carry this class — but `:disabled` is belt and braces

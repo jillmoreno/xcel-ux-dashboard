@@ -37,6 +37,16 @@ export type InviteFlowId =
   /** A partner's QR code or social post. Partner-attributed, but a broadcast
    *  link knows nothing about whoever scanned it. */
   | 'qr-social'
+  /** A partner invited this person and left the email out — and the learner
+   *  PROVES the address before checkout: name and email in a modal, a 6-digit
+   *  code to that address, the code typed back. From there the address is as
+   *  known as if the partner had supplied it. 2026-10-27. */
+  | 'b2b2c-verified'
+  /** Already an XCEL customer, signed in to xcelsolutions.com. No partner, no
+   *  invitation; the site knows who they are, so checkout arrives filled in
+   *  and the email is the account's — and the learning dashboard still needs
+   *  a password of its own, set on the confirmation page. 2026-10-27. */
+  | 'xcel-signed-in'
 
 export const INVITE_FLOW_FLAG = 'invite-flow-journey'
 
@@ -64,6 +74,8 @@ export function resolveInviteFlow(value: string | null | undefined): InviteFlowI
     case 'b2b2c-no-email':
     case 'b2c-guest':
     case 'qr-social':
+    case 'b2b2c-verified':
+    case 'xcel-signed-in':
       return value
     default:
       return DEFAULT_INVITE_FLOW
@@ -88,7 +100,9 @@ export function useInviteFlow(): InviteFlowId {
  * the other three cover.
  */
 export function partnerAttributed(flow: InviteFlowId): boolean {
-  return flow !== 'b2c-guest'
+  /* The two public-site arms: a stranger, and a returning customer whose
+     account carries no partner (2026-10-27 — see `signedIn`). */
+  return flow !== 'b2c-guest' && !signedIn(flow)
 }
 
 /**
@@ -100,7 +114,55 @@ export function partnerAttributed(flow: InviteFlowId): boolean {
  * banner lie if the two questions are collapsed into one.
  */
 export function individuallyInvited(flow: InviteFlowId): boolean {
-  return flow === 'b2b2c-email' || flow === 'b2b2c-no-email'
+  return flow === 'b2b2c-email' || flow === 'b2b2c-no-email' || flow === 'b2b2c-verified'
+}
+
+/**
+ * Does the learner prove their email BEFORE the checkout opens — name and
+ * address in a modal, a 6-digit code sent to it, the code typed back?
+ *
+ * ⚠ 2026-10-27, Jillienne: "another invite flow, that includes a modal prior
+ * to the checkout flow that requires the first name, last name, and email
+ * address, and this will send a 6-digit pin to the users email that they will
+ * need to enter before they can continue with the checkout flow."
+ *
+ * ⚠ ITS OWN QUESTION, because two others follow from it. Once a code has come
+ * back from an address, that address is as known as one the partner supplied:
+ * it is not typed twice at checkout and the password is set inline. Both of
+ * those predicates ask this one rather than naming the flow, so the day a
+ * second flow verifies up front it gets the same downstream answers for free.
+ * The modal itself, the code and where the identity is kept are in
+ * `inviteVerification.ts`.
+ */
+export function verifiesEmailBeforeCheckout(flow: InviteFlowId): boolean {
+  return flow === 'b2b2c-verified'
+}
+
+/**
+ * Is the learner already an XCEL customer, signed in to the public site?
+ *
+ * ⚠ 2026-10-27, Jillienne: "another invite flow that is for a user that is
+ * already logged into the Xcel site, but when they complete their purchase,
+ * they will need to create a new password. So there would be an email field,
+ * and a create password field. With a message indicating they need a new
+ * password."
+ *
+ * The site knows this person: the header shows My Training instead of Log In,
+ * the student information arrives filled from the account and Payment is
+ * open on arrival, and the email is the account's — locked, not typed twice.
+ * It is not asked for a partner code either: an account created through a
+ * partner site already carries that affiliation, and a question the account
+ * has answered is not asked again in the middle of a purchase.
+ *
+ * ⚠ THE PASSWORD IS STILL SET, and that is the arm's whole point. The
+ * learning dashboard is a NEW account beside the XCEL site's, with its own
+ * password; the confirmation page says so above the field rather than
+ * presenting a password prompt to someone who believes they already have one.
+ * `passwordSetFromEmailedLink` is false here for the with-email arm's reason —
+ * the address is one XCEL has already reached this learner at.
+ */
+export function signedIn(flow: InviteFlowId): boolean {
+  return flow === 'xcel-signed-in'
 }
 
 /*
@@ -127,12 +189,16 @@ export function individuallyInvited(flow: InviteFlowId): boolean {
 /**
  * Does the learner type their address twice — the first field masked?
  *
- * Every flow but `b2b2c-email`, and for one reason: that is the only flow where
- * the address came from someone who already had it. Everywhere else it is typed,
- * so producing it twice is the only evidence it can be reached.
+ * Every flow but `b2b2c-email` and `b2b2c-verified`, and for one reason: those
+ * are the flows where the address is already known to be reachable — supplied
+ * by someone who had it, or proven by a code sent to it. Everywhere else it is
+ * typed, so producing it twice is the only evidence it can be reached.
  */
 export function emailEnteredTwice(flow: InviteFlowId): boolean {
-  return flow !== 'b2b2c-email'
+  /* ⚠ AND NOT THE VERIFIED ARM EITHER (2026-10-27): a code has already come
+     back from that address, which is better evidence than a second typing.
+     Nor the signed-in arm: the address is the account's. */
+  return flow !== 'b2b2c-email' && !verifiesEmailBeforeCheckout(flow) && !signedIn(flow)
 }
 
 /**
@@ -148,7 +214,10 @@ export function emailEnteredTwice(flow: InviteFlowId): boolean {
  * unfindable bug if they were ever one predicate.
  */
 export function passwordSetFromEmailedLink(flow: InviteFlowId): boolean {
-  return flow !== 'b2b2c-email'
+  /* The verified arm proved the address before paying, so there is nothing
+     left for a mailed link to prove — the password is set inline. The
+     signed-in arm's address is one XCEL already reaches them at; same answer. */
+  return flow !== 'b2b2c-email' && !verifiesEmailBeforeCheckout(flow) && !signedIn(flow)
 }
 
 /**
@@ -245,7 +314,10 @@ export function studentInformationComplete(details: {
  */
 export function entryPathFor(flow: InviteFlowId): string {
   switch (flow) {
+    /* A signed-in customer starts where a guest does — on the public site —
+       with the header already knowing them (2026-10-27). */
     case 'b2c-guest':
+    case 'xcel-signed-in':
       return '/end-to-end-demo/find'
     case 'qr-social':
       /* ⚠ THE PARTNER'S SHARE CARD, SINCE 2026-10-23 — this arm used to open
@@ -331,7 +403,9 @@ export function usePartnerCodeAnswered(): boolean {
  * the flow already answered, in the middle of a purchase.
  */
 export function asksForPartnerCode(flow: InviteFlowId): boolean {
-  return !partnerAttributed(flow)
+  /* ⚠ NOR A SIGNED-IN ACCOUNT (2026-10-27) — see `signedIn`: the account
+     already carries its affiliation, or its absence. */
+  return !partnerAttributed(flow) && !signedIn(flow)
 }
 
 /**

@@ -4,7 +4,12 @@ import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import { XcelFooter } from '@/components/e2e/XcelFooter'
 import { XcelSiteHeader } from '@/components/e2e/XcelSiteHeader'
 import { CART_PACKAGE_PARAM, cartPackage } from '@/data/xcelCourseFinder'
-import { useOrderConfirmationStyle, usePartnerAttribution } from '@/data/inviteFlows'
+import {
+  signedIn,
+  useInviteFlow,
+  useOrderConfirmationStyle,
+  usePartnerAttribution,
+} from '@/data/inviteFlows'
 import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
 import {
   E2E_LEARNER_EMAIL,
@@ -41,8 +46,16 @@ export function XcelOrderConfirmationPage() {
      keeps working whichever is selected, and a reviewer can flip between them
      without the address changing under them. */
   const style = useOrderConfirmationStyle()
+  const flow = useInviteFlow()
   if (style === 'split') return <XcelSplitConfirmationPage tone="dark" />
   if (style === 'light') return <XcelSplitConfirmationPage tone="light" />
+  /* ⚠ THE RECEIPT HAS NO PASSWORD STEP, AND THE SIGNED-IN ARM NEEDS ONE —
+     2026-10-27. Its Launch Student Portal assumes the account is ready; this
+     learner's dashboard account does not exist until they set its password.
+     So the receipt resolves to the light split here, exactly as it does for
+     the invited journey in `InviteFlowRoutes` — one password screen, not a
+     second one drawn inside the receipt. */
+  if (signedIn(flow)) return <XcelSplitConfirmationPage tone="light" />
   return <XcelReceiptConfirmation />
 }
 
