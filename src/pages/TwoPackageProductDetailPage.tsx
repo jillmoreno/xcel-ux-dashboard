@@ -293,14 +293,15 @@ export function TwoPackageProductDetailPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {COMPARISON.map((row) => (
+                    {COMPARISON.map((row, r) => (
                       <tr key={row.feature}>
-                        <th scope="row" style={COMPARE_FEATURE}>
+                        {/* No rule under the last row (2026-10-27, Eric). */}
+                        <th scope="row" style={r === COMPARISON.length - 1 ? { ...COMPARE_FEATURE, borderBottom: 'none' } : COMPARE_FEATURE}>
                           <strong style={{ fontWeight: 800 }}>{row.feature}</strong>
                           {row.detail ? `: ${row.detail}` : null}
                         </th>
                         {[row.standard, row.premier].map((has, i) => (
-                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
+                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
                             <span aria-hidden>{has ? '✓' : '—'}</span>
                             <span className="cre-visually-hidden">{has ? 'Included' : 'Not included'}</span>
                           </td>
