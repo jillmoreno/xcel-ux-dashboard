@@ -269,9 +269,8 @@ export function TwoPackageProductDetailPage() {
                           </span>
                         </span>
                       </button>
-                      {/* What this package does differently. */}
+                      {/* What this package does differently (its description paragraph removed, 2026-10-27 — still on PACKAGES). */}
                       <div style={DIFF}>
-                        <p style={BODY}>{p.description}</p>
                         <p style={BODY_STRONG}>{p.diffTitle}</p>
                         {p.diffs.map((d) => (
                           <div key={d.title}>
