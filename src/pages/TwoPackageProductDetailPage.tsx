@@ -1090,10 +1090,19 @@ const OPTION_TITLE: CSSProperties = {
 }
 
 // Condensed, as tall as the button beside it, the old price a space from the new.
-const OPTION_PRICE_ROW: CSSProperties = { display: 'flex', alignItems: 'center', gap: pinLerp(16, 6), minHeight: pinLerp(32, 34) }
+// The two prices on one baseline (2026-10-27, Eric); wrap only so align-content can still centre that line in the row.
+const OPTION_PRICE_ROW: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'baseline',
+  alignContent: 'center',
+  gap: pinLerp(16, 6),
+  minHeight: pinLerp(32, 34),
+}
 /* Avenir Book. Condensed, 20 and 12 with a 46 strike — under the design's 22 / 14 / 53 so the Purchase labels keep 8 either side
    in a 322 card (2026-10-27, Eric). */
-const OPTION_PRICE: CSSProperties = { fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: pinLerp(28, 20), lineHeight: pinLerp(32, 26), color: 'var(--color-text-primary)' }
+const OPTION_PRICE: CSSProperties = { fontFamily: 'var(--font-e2e-avenir)', fontWeight: 500, // Medium, a step up from Book (2026-10-27, Eric)
+   fontSize: pinLerp(28, 20), lineHeight: pinLerp(32, 26), color: 'var(--color-text-primary)' }
 const OPTION_WAS: CSSProperties = { position: 'relative', fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: pinLerp(18, 12), lineHeight: pinLerp(32, 26), color: 'var(--color-neutral-600)' } // a step darker (2026-10-27, Eric)
 /* The brick strike, 68 long at -7.43°, 1 thick (2026-10-27, Eric; was 2.15 — the SVG stretches to fit). */
 const OPTION_STRIKE: CSSProperties = { position: 'absolute', left: -2, top: '50%', width: pinLerp(68, 46), height: 1, transform: 'translateY(-50%) rotate(-7.43deg)' }
