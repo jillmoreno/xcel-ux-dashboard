@@ -209,7 +209,7 @@ export function TwoPackageProductDetailPage() {
               {/* The state reporting fee — Figma 542:2304, for Florida — last in the rail (2026-10-27, Eric). */}
               {/* Its type matched to the info box above — title 20 / 24, copy and link 15 / 21 (2026-10-27, Eric); its height its
                   own now, since the fixed 140 was sized for the larger type. */}
-              <div style={{ ...FEE_CARD, height: 'auto', paddingBottom: 18 }}>
+              <div style={{ ...FEE_CARD, height: 'auto', padding: '0 25px' }}>
                 <p style={SIDE_TITLE}>State reporting fee required</p>
                 <p style={SIDE_BODY}>{FL_FEE}</p>
                 <button type="button" className="cre-e2e-textlink" // Not LINK spread: its `font: inherit` shorthand beats these longhands in React. No colour, so the class's link blue (and hover) holds.
@@ -732,7 +732,8 @@ const SIDE_SECTION: CSSProperties = { display: 'flex', flexDirection: 'column', 
 /* The shared frame: 32 either side of the rule, as at its edges. */
 // White with the state fee card's 1px #DDD edge (2026-10-27, Eric; was Secondary 100).
 // No edge now (2026-10-27, Eric).
-const SIDE_BOX_PAIR: CSSProperties = { ...SIDE_BOX, gap: 32, background: 'var(--color-fixed-light)' }
+// …and no top or bottom padding (2026-10-27, Eric); 32 at the sides still.
+const SIDE_BOX_PAIR: CSSProperties = { ...SIDE_BOX, gap: 32, background: 'var(--color-fixed-light)', padding: '0 32px' }
 
 const SIDE_RULE: CSSProperties = {
   margin: 0,
