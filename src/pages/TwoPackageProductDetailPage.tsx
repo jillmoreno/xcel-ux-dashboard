@@ -451,7 +451,7 @@ const COMPARISON: { feature: string; detail?: string; standard: boolean; premier
     standard: true,
     premier: true,
   },
-  { feature: 'Pre-licensing Course', detail: 'Online self-study that covers the fundamentals and meets state education requirements', standard: true, premier: true },
+  { feature: 'Pre-licensing Course', detail: 'Online, self-paced fundamentals course that meets all state requirements', standard: true, premier: true },
   { feature: 'Prep Review Course', detail: 'Condensed review of key material, weighted to the state exam outline', standard: true, premier: true },
   { feature: 'Exam Simulators', detail: '3 simulators weighted by topic, unlimited retakes', standard: true, premier: true },
   {
