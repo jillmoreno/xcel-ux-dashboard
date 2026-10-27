@@ -132,7 +132,8 @@ export function TwoPackageProductDetailPage() {
       {/* THE COURSE HEADER — Figma 544:2970 (2026-10-27), in place of the dark band: the title in brick, a line on the packages,
           then a rule. */}
       <section aria-label="Course" style={COURSE_HEAD}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {/* 2 between the title and its intro (the design's 10, 8 less — 2026-10-27, Eric). */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <h2 style={COURSE_HEAD_TITLE}>
             Florida Life and Health <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
           </h2>
@@ -553,8 +554,8 @@ const WELCOME_BODY: CSSProperties = {
 /* The price card's height. */
 const PRICE_CARD_H = 171
 
-/* The course header (Figma 544:2970): 32 down, 240 in, 24 to the rule. */
-const COURSE_HEAD: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 24, padding: '32px 240px 0' }
+/* The course header (Figma 544:2970): 40 down (the design's 32, 8 more — 2026-10-27, Eric), 240 in, 24 to the rule. */
+const COURSE_HEAD: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 24, padding: '40px 240px 0' }
 
 /* Roboto Slab Bold 45 / 55 in the design — the page's slab serif token (Rockwell, then Roboto Slab) — in XCEL brick. */
 const COURSE_HEAD_TITLE: CSSProperties = {
