@@ -129,15 +129,21 @@ export function TwoPackageProductDetailPage() {
           </p>
         </div>
       </section>
-      <section aria-label="Course" style={COURSE}>
-        <div style={COURSE_ROW}>
-          <div style={COURSE_TEXT}>
-            <h2 style={COURSE_TITLE}>
-              Florida Life and Health <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span>
-            </h2>
-          </div>
-          <span aria-hidden style={PRICE_SLOT} />
+      {/* THE COURSE HEADER — Figma 544:2970 (2026-10-27), in place of the dark band: the title in brick, a line on the packages,
+          then a rule. */}
+      <section aria-label="Course" style={COURSE_HEAD}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <h2 style={COURSE_HEAD_TITLE}>
+            Florida Life and Health <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
+          </h2>
+          <p style={{ ...BODY, maxWidth: 996 }}>
+            Our pre-licensing packages are updated annually and designed with a simplified approach to help you understand and
+            retain complex insurance concepts and terms. <strong style={{ fontWeight: 800 }}>Learn faster and retain more</strong> with
+            our interactive lessons plans and quizzes.{' '}
+            <strong style={{ fontWeight: 800 }}>Pass the Florida state licensing exam the first time.</strong>
+          </p>
         </div>
+        <hr aria-hidden style={COURSE_HEAD_RULE} />
       </section>
       <div style={{ position: 'relative' }}>
         <aside aria-label="Purchase" style={RAIL}>
@@ -545,67 +551,30 @@ const WELCOME_BODY: CSSProperties = {
   // (2026-10-15, Eric's request) — `useEvenLines` sets the width.
 }
 
-/* The band's padding, the price card's height and where Purchase's middle
-   sits in it — shared by the band and the price cards' drop. */
-
-const BAND_PAD = 26
+/* The price card's height. */
 const PRICE_CARD_H = 171
-const PURCHASE_MIDDLE = 24 + 53 + 14 + 55 / 2 // the card's top padding, price row, gap, half the button
 
-/* The course header: the dark band, 26 above and below (2026-10-14, Eric's
-   request; the design had 40 below), 240 in each side. */
-const COURSE: CSSProperties = {
-  // 6 moved from below to above (2026-10-15, Eric's request): Rockwell's
-  // capitals sit high in their line, so equal padding left the title's ink
-  // high in the band. This centres the capitals.
-  // 10 more top and bottom (same day, Eric's requests: 20, then back 10):
-  // the band is 110.
-  padding: `${BAND_PAD + 6 + 10}px 240px ${BAND_PAD - 6 + 10}px`,
-  background: 'var(--color-e2e-course-band)',
-}
+/* The course header (Figma 544:2970): 32 down, 240 in, 24 to the rule. */
+const COURSE_HEAD: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 24, padding: '32px 240px 0' }
 
-/* The price card pushed right, its edge on the welcome copy's above — both
-   end 240 in (2026-10-14, Eric's request). 80 stays the least gap. */
-const COURSE_ROW: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 80,
-}
-
-/* The rest of the row, so the short title sits on one line — the band 80
-   shorter (2026-10-15, Eric's request; the design's 498, its breadcrumb's
-   width, wrapped it to two). */
-const COURSE_TEXT: CSSProperties = {
-  flex: '1 1 0',
-  minWidth: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  // 31 — one off the design's 32, so the band is exactly 80 shorter.
-  gap: 31,
-}
-
-
-
-const COURSE_TITLE: CSSProperties = {
+/* Roboto Slab Bold 45 / 55 in the design — the page's slab serif token (Rockwell, then Roboto Slab) — in XCEL brick. */
+const COURSE_HEAD_TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-e2e-serif)',
   fontWeight: 700,
-  fontSize: 30,
-  lineHeight: '38px',
-  color: 'var(--color-fixed-light)',
+  fontSize: 45,
+  lineHeight: '55px',
+  color: 'var(--color-xcel-brick)',
 }
 
-/* The price card's empty slot in the band, at its size. */
-// No height: the band sets its own, 80 shorter (2026-10-15, Eric's request).
-const PRICE_SLOT: CSSProperties = { width: 350, flex: 'none' }
+const COURSE_HEAD_RULE: CSSProperties = { margin: 0, height: 1, border: 'none', background: 'var(--color-secondary-300)' }
 
-/* THE RIGHT RAIL: 240 in from the right, beside the details, from Purchase's
-   middle above the band's bottom edge (so that middle sits ON the edge) down
+/* THE RIGHT RAIL: 240 in from the right, beside the details, from their first line down
    to the details' end. */
 const RAIL: CSSProperties = {
   position: 'absolute',
-  top: -PURCHASE_MIDDLE,
+  // Level with the details' first line (DETAILS' 40 top padding) — with no dark band, there is no edge for Purchase to sit on.
+  top: 40,
   // The rail stops 40 above the footer (2026-10-15, Eric's request).
   bottom: 40,
   right: 240,
