@@ -4,7 +4,7 @@ import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { acceptedThisWeek, hoursAgoDate, isFresh, isReady, type Invite, type InviteStatus } from '@/data/atlasAdmin/invites'
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
-import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, PAGE_H1, PAGE_SUB, PILL, STATUS_CARD, STATUS_COUNT } from './adminStyles'
+import { ATLAS_BUTTON_PRIMARY, BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, PAGE_H1, PAGE_SUB, PILL, STATUS_CARD, STATUS_COUNT } from './adminStyles'
 import { StatusDial, StatusNote, StatusPill } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
 
@@ -95,7 +95,8 @@ export function AtlasAdminInvitesPage() {
           <h2 style={PAGE_H1}>Invites</h2>
           <p style={PAGE_SUB}>{invites.length} sent · Resend when stuck at Sent or Opened for 48+ hours · funnel through purchase</p>
         </div>
-        <button type="button" className="cre-admin-brand" onClick={() => setInviting(true)} style={BUTTON_BRAND}>
+        {/* The Atlas primary button, as Students' Invite learners. */}
+        <button type="button" onClick={() => setInviting(true)} style={ATLAS_BUTTON_PRIMARY}>
           Invite students
         </button>
       </header>
