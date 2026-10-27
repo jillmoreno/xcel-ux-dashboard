@@ -536,6 +536,28 @@ is gone, and "Back to board" returns. `Demo.test.tsx` pins every row of the
 table above; `LinkRowThumb.test.tsx`'s product-pill test became the
 tag-stays test.
 
+### The project rows have an archive too (2026-10-27)
+
+Jillienne, on an Explorations row's kebab: "i want the ellipsis to be able
+to archive these things." Until then a row in code — `PROTOTYPE_FEATURES`,
+the handoff folder — left the board only by the archive convention: cut it
+into `archivedFeatureRows.ts`, write an `ARCHIVED_ITEMS` row, commit,
+deploy. Right for unwiring a component; wrong for "this exploration is done,
+get it off the list", which is a decision made on the page.
+
+| Question | Call |
+|---|---|
+| Where is the fact kept? | **A Blobs store, `row-archive`** — `netlify/functions/row-archive.ts`, one record per row id: `archivedAt` (stamped by the server, once) and `archivedBy` (the browser's last Refinement author, blank if none). Not a per-browser override: an archive one person sees and another does not is a row in two places. |
+| What moves? | **Nothing but the row.** The file stays, `/prototype/<id>` still opens, the export still finds it. The page hides the row from its section and lists it under **Archive → Archived from the boards**, drawn as the row it was, stamped "Archived <date> · <name>". |
+| Which rows? | **Any row that takes dev-cycle actions** — Explorations, Development, Done. Prototypes rows are the product and their kebab stays Copy link only. |
+| The way back? | **Unarchive**, in the archived row's kebab, for anyone. The kebab there is Copy link and Unarchive, nothing else. |
+| The nav counts? | Each section counts without its archived rows; **Archive counts `ARCHIVED_ITEMS` plus the archived rows.** |
+| Where the endpoint is unreachable? | The Archive item is not offered — the plain dev server has no `/api/*`; `xcel-dashboard-netlify` in `launch.json` is how to see it locally. |
+
+`rowArchiveStore.ts` is the client half; `RowArchiveEndpoint.test.ts` runs
+the handler over an in-memory store and pins that the first stamp stands;
+`RowArchive.test.tsx` pins the read's three answers.
+
 ### Refinement is the review inbox; Prototypes is the product (2026-09-18)
 
 **Labels vs ids, because they differ.** The review inbox is LABELLED

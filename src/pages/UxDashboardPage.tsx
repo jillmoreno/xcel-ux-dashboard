@@ -28,7 +28,7 @@ import { ArchiveTable } from '@/components/prototype/ArchiveTable'
 import { QaNotesPanel } from '@/components/prototype/QaNotesPanel'
 import { DemoPanel, LinksPanel, PrdsPanel, ResearchPanel } from '@/components/prototype/LinksPanel'
 import { TodoBoardPanel } from '@/components/prototype/TodoBoardPanel'
-import { LINK_PRODUCTS, useLinkCount, type LinkProduct } from '@/data/linkStore'
+import { LINK_PRODUCTS, readLastAuthor, useLinkCount, type LinkProduct } from '@/data/linkStore'
 import { formatUpdated } from '@/components/prototype/formatUpdated'
 import { useDemoCount } from '@/data/demoStore'
 import { useResearchCount } from '@/data/researchStore'
@@ -55,9 +55,12 @@ import {
   setFeatureInDesign,
 } from '@/components/prototype/prototypeDoneUtil'
 import { ActionMenu } from '@/components/ui/ActionMenu'
+import { setRowArchived, useRowArchive, type ArchivedRow } from '@/data/rowArchiveStore'
 import {
   ArrowLeft,
+  ArrowRotateLeft,
   Bolt,
+  Package,
   CalendarDay,
   Check,
   ChevronRight,
@@ -1312,6 +1315,23 @@ export function UxDashboardPage() {
   const [done, setDone] = useState<Record<string, boolean>>(getDoneOverrides)
   const [inDesign, setInDesign] = useState<Record<string, boolean>>(getInDesignOverrides)
   const [statusTick, setStatusTick] = useState(0)
+  /* THE ROW ARCHIVE — 2026-10-27, Jillienne on an Explorations row's kebab:
+     "i want the ellipsis to be able to archive these things." Server-side,
+     like Refinement's: a row named here is hidden from its section and
+     listed under Archive with Unarchive, stamped who and when. Not a
+     per-browser override — an archive one person sees and another does not
+     is a row that is in two places. See `rowArchiveStore.ts`. */
+  const rowArchive = useRowArchive()
+  const setArchived = useCallback((f: PrototypeFeature, archived: boolean) => {
+    /* `readLastAuthor` is the browser's last Refinement author — the same
+       label the link boards stamp with. Nobody has set one on a fresh
+       browser, and an empty stamp is honest. */
+    void setRowArchived(f.id, archived, readLastAuthor()).catch(() => {})
+  }, [])
+  const archivedRows = useMemo(
+    () => PROTOTYPE_FEATURES.filter((f) => rowArchive.rows[f.id]),
+    [rowArchive.rows],
+  )
   const [theme, setTheme] = useState<UxTheme>(readTheme)
   const [palette, setPaletteState] = useState<UxPaletteId>(readPalette)
   const setPalette = (next: UxPaletteId) => {
@@ -1497,13 +1517,16 @@ export function UxDashboardPage() {
       'todo-board': [],
     }
     for (const f of PROTOTYPE_FEATURES) {
+      /* An archived row is off the board — it is listed under Archive, with
+         the archived handoff rows, by `archivedRows`. */
+      if (rowArchive.rows[f.id]) continue
       out[sectionOf(f, rollupOf(f), done[f.id] ?? !!f.done)].push(f)
     }
     return out
     // statusTick: a roll-up write changes which section a row belongs to; the
     // done map moves a row into (or out of) Done from the kebab.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- statusTick invalidates an impure localStorage read
-  }, [statusTick, done])
+  }, [statusTick, done, rowArchive.rows])
 
   const q = query.trim().toLowerCase()
   const inSection = bySection[section]
@@ -1610,6 +1633,10 @@ export function UxDashboardPage() {
             dark={dark}
             onOpen={opensInFrame(f) ? setOpen : undefined}
             showStatus={showStatus}
+            /* Archive is offered where the store can take it and the row is
+               not the product (Prototypes rows show no status and take no
+               dev-cycle action, archive included). */
+            archive={rowArchive.available && showStatus ? { state: 'can', onSet: setArchived } : undefined}
           />
         ))}
       </div>
@@ -1660,7 +1687,9 @@ export function UxDashboardPage() {
                         ? prdCount
                         : s.id === 'todo-board'
                           ? todoBoardCount
-                          : (s.count ?? bySection[s.id].length)
+                          : s.id === 'archive'
+                            ? ARCHIVED_ITEMS.length + archivedRows.length
+                            : (s.count ?? bySection[s.id].length)
             return (
               <div key={s.id}>
                 {/* NAV_EYEBROWS rows first — authored, by id, above specific
@@ -1832,9 +1861,42 @@ export function UxDashboardPage() {
           // shell — they carry it themselves, see `TodoBoardSheets.tsx`.
           <TodoBoardPanel prefill={todoPrefill} onPrefillConsumed={consumeTodoPrefill} />
         ) : section === 'archive' ? (
-          <div style={ARCHIVE_BRIDGE}>
-            <ArchiveTable />
-          </div>
+          <>
+            {/* THE ROWS ARCHIVED FROM THE BOARDS — 2026-10-27 — above the
+                components table, drawn as the rows they were so a reviewer
+                recognises them, each stamped who and when. Unarchive is in
+                the kebab; the file is where it always was. */}
+            {archivedRows.length > 0 && (
+              <section aria-labelledby="archived-rows" style={{ marginBottom: 28 }}>
+                <h2 id="archived-rows" style={archivedRowsTitleStyle}>
+                  Archived from the boards
+                </h2>
+                <div style={{ display: 'grid', gap: 10 }}>
+                  {archivedRows.map((f) => (
+                    <div key={f.id} style={{ display: 'grid', gap: 6 }}>
+                      <p style={archivedStampStyle}>{archivedStamp(rowArchive.rows[f.id])}</p>
+                      <ProjectRow
+                        feature={f}
+                        statusKey={statusKeyOf(f, done, inDesign)}
+                        isDone={done[f.id] ?? !!f.done}
+                        isInDesign={inDesign[f.id] ?? !!f.inProgress}
+                        onToggleDone={toggleDone}
+                        onToggleInDesign={toggleInDesign}
+                        onSetRollup={setRollup}
+                        dark={dark}
+                        onOpen={opensInFrame(f) ? setOpen : undefined}
+                        showStatus={false}
+                        archive={{ state: 'archived', onSet: setArchived }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+            <div style={ARCHIVE_BRIDGE}>
+              <ArchiveTable />
+            </div>
+          </>
         ) : section === 'hub-resources' ? (
           // No `ARCHIVE_BRIDGE`: styled on this page's own `--ux-*` palette,
           // the same call `LinksPanel` makes.
@@ -1921,6 +1983,30 @@ function statusMenuIcon(status: DevStatus, dark: boolean): ReactNode {
   return <Glyph size={15} aria-hidden style={{ color: devStatusStrokeFor(status, dark) }} />
 }
 
+/** "Archived Oct 27, 2026 · Jill" — the server's stamp, the label it was
+ *  given, and nothing when the label was empty. */
+function archivedStamp(row: ArchivedRow | undefined): string {
+  if (!row) return ''
+  const when = formatUpdated(row.archivedAt)
+  return row.archivedBy.trim() ? `Archived ${when} · ${row.archivedBy.trim()}` : `Archived ${when}`
+}
+
+const archivedRowsTitleStyle: CSSProperties = {
+  margin: '0 0 12px',
+  fontFamily: 'var(--font-heading)',
+  fontSize: 15,
+  fontWeight: 700,
+  color: 'var(--ux-text)',
+}
+
+const archivedStampStyle: CSSProperties = {
+  margin: '0 0 0 4px',
+  fontSize: 11.5,
+  fontWeight: 600,
+  letterSpacing: '0.02em',
+  color: 'var(--ux-text-3)',
+}
+
 type ProjectRowProps = {
   feature: PrototypeFeature
   statusKey: FeatureStatusKey
@@ -1936,6 +2022,10 @@ type ProjectRowProps = {
   onToggleDone: (f: PrototypeFeature) => void
   onToggleInDesign: (f: PrototypeFeature) => void
   onSetRollup: (f: PrototypeFeature, status: DevStatus | null) => void
+  /** The row archive (2026-10-27): `can` offers Archive in the kebab, and
+   *  `archived` — the rows listed under Archive — offers Unarchive and
+   *  nothing else but Copy link. Absent where the store is unreachable. */
+  archive?: { state: 'can' | 'archived'; onSet: (f: PrototypeFeature, archived: boolean) => void }
 }
 
 function ProjectRow({
@@ -1949,6 +2039,7 @@ function ProjectRow({
   onToggleDone,
   onToggleInDesign,
   onSetRollup,
+  archive,
 }: ProjectRowProps) {
   const [hover, setHover] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -2055,7 +2146,21 @@ function ProjectRow({
     icon: <Share2 size={15} aria-hidden />,
     onSelect: copyLink,
   }
-  const items = copyOnly ? [copyItem] : [
+  /* ARCHIVE / UNARCHIVE — 2026-10-27. An archived row's kebab is Copy link
+     and the way back, nothing else: every other item sets a status on a row
+     that is off the board. Archive itself sits last on a live row, under the
+     statuses, because it is the one item that takes the row away. */
+  const items = archive?.state === 'archived'
+    ? [
+        copyItem,
+        {
+          id: 'unarchive',
+          label: 'Unarchive',
+          icon: <ArrowRotateLeft size={15} aria-hidden />,
+          onSelect: () => archive.onSet(feature, false),
+        },
+      ]
+    : copyOnly ? [copyItem] : [
     copyItem,
     ...(canSetRollup
       ? [
@@ -2090,6 +2195,16 @@ function ProjectRow({
       icon: isDone ? <ArrowLeft size={15} aria-hidden /> : <Check size={15} aria-hidden />,
       onSelect: () => onToggleDone(feature),
     },
+    ...(archive?.state === 'can'
+      ? [
+          {
+            id: 'archive',
+            label: 'Archive',
+            icon: <Package size={15} aria-hidden />,
+            onSelect: () => archive.onSet(feature, true),
+          },
+        ]
+      : []),
   ]
 
   const inner = (

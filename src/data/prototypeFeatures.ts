@@ -1348,6 +1348,121 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     livePreviewUrl: `${PROTOTYPE_BASE}/xcel-pace-presets.html`,
     brands: ['xcel'],
   },
+  {
+    /*
+     * ATLAS vs. COMPASS — TYPOGRAPHY & COLOR AUDIT (2026-10-27). An exploration
+     * with no document behind it: the audit IS the decisions log, so the row is
+     * `kind: 'guided'` and opens its own gateway page, where the findings sit
+     * as three sections and the four open questions as the Questions table.
+     * Content captured as reviewed — not a draft. Sources: the Atlas Figma
+     * Style Guide (nodes 3-1032 and 270-39) and Compass
+     * `compassdesignsystemv5 1.html`.
+     *
+     * ⚠ NO `devStatus`: it is an Explorations row, and `sectionOf` reads a
+     * status before the category (the smoke test pins this).
+     */
+    id: 'xcel-design-system-audit',
+    title: 'Atlas vs. Compass — Typography & Color Audit',
+    accent: 'teal',
+    icon: 'grid',
+    blurb:
+      'An audit comparing Atlas\u2019s and Compass\u2019s color and typography tokens to find one shared source of truth.',
+    tileBlurb:
+      'Side-by-side audit of the Atlas and Compass design systems\u2019 colors and typography \u2014 where they already match, where they conflict, and the decisions the team needs to make.',
+    kind: 'guided',
+    kindLabel: 'Audit',
+    status: 'ready',
+    category: 'exploration',
+    brands: ['xcel'],
+    /* The two systems in use, as the Live Preview — the audit's own sources
+       are a Figma file and an HTML document that are not routes here. */
+    pages: [
+      { label: 'Atlas Home — the Atlas tokens in use', to: '/dashboard-rebrand?demo=1' },
+      { label: 'Compass — the Compass tokens in use', to: '/dashboard-rebrand?demo=1&section=compass' },
+    ],
+    devHandoff: {
+      intro:
+        'Three findings from putting the two systems side by side, then the four decisions they leave open. The underlying color hex values already match almost everywhere between Atlas and Compass \u2014 this is a naming/structure problem, not a color problem. Typography is where the two systems genuinely diverge. Atlas also has a few internal inconsistencies worth cleaning up.',
+      components: [],
+      uiComponents: [
+        {
+          id: 'audit-color',
+          order: 1,
+          name: 'Color',
+          tabLabel: 'Color',
+          previewUrl: '/dashboard-rebrand?demo=1',
+          location: 'Atlas Figma Style Guide nodes 3-1032 and 270-39; Compass compassdesignsystemv5 1.html.',
+          summary:
+            'The underlying color hex values already match almost everywhere between Atlas and Compass \u2014 this is a naming/structure problem, not a color problem. Atlas names its scale numerically (primary/500, accent/3\u2026); Compass names roles (--c-steel, --c-emphasis-fill\u2026).',
+          variants: [],
+        },
+        {
+          id: 'audit-typography',
+          order: 2,
+          name: 'Typography',
+          tabLabel: 'Typography',
+          previewUrl: '/dashboard-rebrand?demo=1&section=compass',
+          location: 'Atlas Figma Style Guide nodes 3-1032 and 270-39; Compass compassdesignsystemv5 1.html.',
+          summary:
+            'Typography is where the two systems genuinely diverge \u2014 different font families, different scales, different weight conventions. Atlas: Playfair/DM Serif Display + Open Sans, a bolder scale with a larger top end. Compass: Source Serif 4 + Inter, lighter weights, more compact.',
+          variants: [],
+        },
+        {
+          id: 'audit-atlas-internal',
+          order: 3,
+          name: 'Atlas internal consistency',
+          tabLabel: 'Atlas internals',
+          previewUrl: '/dashboard-rebrand?demo=1',
+          location: 'Atlas Figma Style Guide nodes 3-1032 and 270-39.',
+          summary:
+            'Atlas also has a few internal inconsistencies (independent of Compass) worth cleaning up.',
+          variants: [],
+        },
+      ],
+      decisions: {
+        intro: 'Decisions needed.',
+        items: [
+          {
+            question: 'Which font families become canonical?',
+            decision:
+              'Atlas\u2019s (Playfair/DM Serif Display + Open Sans), Compass\u2019s (Source Serif 4 + Inter), or something new?',
+            status: 'Needs weigh-in',
+            owner: 'Design',
+          },
+          {
+            question: 'Which color-naming convention to adopt?',
+            decision:
+              'Atlas\u2019s numeric scale (primary/500, accent/3\u2026) or Compass\u2019s semantic/role names (--c-steel, --c-emphasis-fill\u2026)?',
+            status: 'Needs weigh-in',
+            owner: 'Design',
+          },
+          {
+            question: 'Whether Atlas needs a \u201cRubi\u201d/terracotta-style accent?',
+            decision:
+              'It may already exist elsewhere in Atlas under a different name, or Compass\u2019s #B4552F could be adopted, or it may not be needed.',
+            status: 'Needs weigh-in',
+            owner: 'Design',
+          },
+          {
+            question: 'Which heading sizes and weights to standardize on?',
+            /* ⚠ The brief this was captured from ended mid-sentence after
+               "more compact), or a" — the third option is still to be named. */
+            decision:
+              'Atlas\u2019s scale (bolder, larger top end) or Compass\u2019s (lighter weights, more compact), or a third option still to be named.',
+            status: 'Needs weigh-in',
+            owner: 'Design',
+          },
+        ],
+        openItems: [
+          'Canonical font families.',
+          'Color-naming convention \u2014 numeric scale or semantic roles.',
+          'A Rubi/terracotta-style accent for Atlas, or not.',
+          'The heading size and weight scale.',
+        ],
+      },
+      designerNotes: [],
+    },
+  },
   // ARCHIVED 2026-10-15 — `xcel-course-entry` (Course Header & Jump Back In,
   // the first authored handoff) stood here, with the two component specs it
   // referenced declared above the array. All kept verbatim in
