@@ -736,7 +736,8 @@ const SECTION_TITLE: CSSProperties = {
 const SIDE_SECTION: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 18 }
 
 /* The shared frame: 32 either side of the rule, as at its edges. */
-const SIDE_BOX_PAIR: CSSProperties = { ...SIDE_BOX, gap: 32 }
+// White with the state fee card's 1px #DDD edge (2026-10-27, Eric; was Secondary 100).
+const SIDE_BOX_PAIR: CSSProperties = { ...SIDE_BOX, gap: 32, background: 'var(--color-fixed-light)', border: '1px solid var(--color-e2e-card-outline)' }
 
 const SIDE_RULE: CSSProperties = {
   margin: 0,
