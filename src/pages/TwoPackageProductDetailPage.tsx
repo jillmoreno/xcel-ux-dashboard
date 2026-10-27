@@ -275,10 +275,8 @@ export function TwoPackageProductDetailPage() {
                         {p.diffs.map((d) => (
                           <div key={d.title}>
                             <p style={BODY_STRONG}>{d.title}</p>
-                            <p style={INCLUDED_ITEM}>
-                              <img src="/brand/e2e-check.svg" alt="" width={12} height={10} style={CHECK} />
-                              {d.detail}
-                            </p>
+                            {/* No check here — the differences read as plain copy (2026-10-27, Eric). */}
+                            <p style={{ ...INCLUDED_ITEM, paddingLeft: 0 }}>{d.detail}</p>
                           </div>
                         ))}
                       </div>
