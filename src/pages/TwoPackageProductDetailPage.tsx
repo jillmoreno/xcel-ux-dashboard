@@ -90,20 +90,50 @@ export function TwoPackageProductDetailPage() {
   const [params] = useSearchParams()
   useEndToEndDemoParams()
   const [picked, setPicked] = useState<PackageId>('premier')
-  /* Where the cards end inside the packages ground — the ground's tint fades out there (PACKAGE_GRID). */
-  const groundRef = useRef<HTMLDivElement>(null)
-  const [cardsBottom, setCardsBottom] = useState(0)
+  /* THE CARDS PIN (2026-10-27, Eric): 40 under the top of the browser, for the rest of the page. The packages ground is three
+     stacked pieces — heading, cards, comparison — so the cards can be a direct child of the long column and stay stuck past
+     the ground's end. The ground's fade runs over the heading and the cards, so both are measured (offsetHeight ignores the
+     pin). Once pinned, a page-coloured backdrop covers from the browser's top to 16 under the cards, so what scrolls up
+     disappears there rather than showing beneath them. */
+  const headRef = useRef<HTMLDivElement>(null)
+  const cardsRef = useRef<HTMLDivElement>(null)
+  const [fade, setFade] = useState({ head: 0, cards: 0 })
+  const [pinTop, setPinTop] = useState(CARDS_PIN_GAP)
+  const [pinned, setPinned] = useState(false)
   useLayoutEffect(() => {
-    const ground = groundRef.current
-    const card = ground?.querySelector<HTMLElement>('[role=radio]')
-    if (!ground || !card) return
-    const fit = () => setCardsBottom(card.getBoundingClientRect().bottom - ground.getBoundingClientRect().top)
+    const head = headRef.current
+    const cards = cardsRef.current
+    if (!head || !cards) return
+    // The demo stage's browser chrome is sticky over the page; the "top of the browser" is its bottom edge.
+    const chrome = document.querySelector<HTMLElement>('.cre-browser-chrome')
+    const browserTop = () => (chrome ? (parseFloat(getComputedStyle(chrome).top) || 0) + chrome.offsetHeight : 0)
+    const fit = () => {
+      setFade({ head: head.offsetHeight, cards: cards.offsetHeight })
+      setPinTop(browserTop() + CARDS_PIN_GAP)
+    }
+    const check = () => setPinned(head.getBoundingClientRect().bottom < browserTop() + CARDS_PIN_GAP - 0.5)
     fit()
-    const ro = new ResizeObserver(fit)
-    ro.observe(card)
-    ro.observe(ground)
-    return () => ro.disconnect()
+    check()
+    const ro = new ResizeObserver(() => {
+      fit()
+      check()
+    })
+    ro.observe(head)
+    ro.observe(cards)
+    window.addEventListener('scroll', check, { capture: true, passive: true })
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('scroll', check, { capture: true })
+    }
   }, [])
+  const fadeSpan = fade.head + fade.cards || 300
+  const fadeGround = (offset: number): CSSProperties => ({
+    backgroundColor: 'var(--color-secondary-100)',
+    backgroundImage: 'linear-gradient(to bottom, var(--color-secondary-200), var(--color-secondary-100))',
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: `100% ${fadeSpan}px`,
+    backgroundPosition: `0 ${-offset}px`,
+  })
   const pkg = PACKAGES.find((p) => p.id === picked)!
   const welcomeRef = useRef<HTMLParagraphElement>(null)
   useEvenLines(welcomeRef)
@@ -238,22 +268,24 @@ export function TwoPackageProductDetailPage() {
         <main style={DETAILS}>
           <div style={WIDE_COLUMN}>
             {/* THE PACKAGES — two radio cards (Figma 542:2125), each with what sets it apart underneath. */}
-            <section aria-label="Choose a package" style={SECTION}>
-              {/* The ground starts in the selected column's tint and fades to its own Secondary 100 by the cards' bottom
-                  (2026-10-27, Eric). */}
+            {/* display: contents, so the pinned cards' containing block is the whole column (see the pin, above). */}
+            <section aria-label="Choose a package" style={{ display: 'contents' }}>
+              {/* The ground's first piece: its top corners, 24 above the heading. The tint fades over this and the cards. */}
+              <div ref={headRef} style={{ ...PACKAGE_GROUND_HEAD, ...fadeGround(0) }}>
+                {/* In the rail's At a Glance style — the slab serif at 20 / 24 — inside the ground, 4 above and 16 below
+                    (2026-10-27, Eric). */}
+                <h2 id="choose-package" style={{ ...SIDE_TITLE, paddingTop: 4, paddingBottom: 16 }}>
+                  Select your package:
+                </h2>
+              </div>
               <div
-                ref={groundRef}
-                style={{
-                  ...PACKAGE_GROUND,
-                  background: `linear-gradient(to bottom, var(--color-secondary-200) 0, var(--color-secondary-100) ${cardsBottom || 300}px)`,
-                }}
+                ref={cardsRef}
+                role="radiogroup"
+                aria-labelledby="choose-package"
+                style={{ ...PACKAGE_GRID, ...fadeGround(fade.head), top: pinTop }}
               >
-              {/* In the rail's At a Glance style — the slab serif at 20 / 24 — now inside the ground, 4 above and 16 below
-                  (2026-10-27, Eric). */}
-              <h2 id="choose-package" style={{ ...SIDE_TITLE, paddingTop: 4, paddingBottom: 16 }}>
-                Select your package:
-              </h2>
-              <div role="radiogroup" aria-labelledby="choose-package" style={PACKAGE_GRID}>
+                {/* Pinned, the page shows from the browser's top to 16 under the cards and nothing scrolls visibly beneath. */}
+                <div aria-hidden style={{ ...PIN_BACKDROP, top: -pinTop, opacity: pinned ? 1 : 0 }} />
                 {PACKAGES.map((p) => {
                   const on = p.id === picked
                   return (
@@ -310,8 +342,10 @@ export function TwoPackageProductDetailPage() {
                     </div>
                   )
                 })}
-                {/* THE COMPARISON GRID (2026-10-27, Eric's CoWork content) — under both cards, across the ground: each feature, then a
-                    120-wide check column per package. Replaces the per-package lists. */}
+              </div>
+              {/* THE COMPARISON GRID (2026-10-27, Eric's CoWork content) — under both cards, across the ground: each feature, then a
+                  120-wide check column per package. Replaces the per-package lists. The ground's last piece, its bottom corners. */}
+              <div style={PACKAGE_GROUND_FOOT}>
                 <table style={COMPARE}>
                   {/* In 'Select your package:''s style, 8 in like the column text below it (2026-10-27, Eric). */}
                   <caption style={{ ...SIDE_TITLE, textAlign: 'left', paddingBottom: 20 }}>Standard and Premier package comparison:</caption>
@@ -355,7 +389,6 @@ export function TwoPackageProductDetailPage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
               </div>
             </section>
 
@@ -908,19 +941,48 @@ const WIDE_COLUMN: CSSProperties = { width: `calc(100% - ${RAIL_W}px - ${RAIL_GU
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-  // The two cards side by side, the comparison table under them across both columns.
+  // The two cards side by side; they pin (the comparison table is the ground's next piece now).
   columnGap: 32, // 8 less between the cards (2026-10-27, Eric; was 40)
   rowGap: 32,
   alignItems: 'start',
+  paddingRight: 32,
+  paddingLeft: 32,
+  position: 'sticky',
+  zIndex: 2,
 }
 
-/* The ground the heading, cards and grid sit on: 32 in (24 on top), 10 corners; its fill is set inline (the fade). */
-const PACKAGE_GROUND: CSSProperties = {
+/* The ground the heading, cards and grid sit on, in three pieces (the pin): 32 in (24 on top), 10 corners. The heading's and the
+   cards' fill is the fade, set inline. */
+const PACKAGE_GROUND_HEAD: CSSProperties = {
   paddingTop: 24, // 8 less than the sides, above the heading (2026-10-27, Eric)
+  paddingRight: 32,
+  paddingLeft: 32,
+  borderTopLeftRadius: 10,
+  borderTopRightRadius: 10,
+}
+const PACKAGE_GROUND_FOOT: CSSProperties = {
+  paddingTop: 32,
   paddingRight: 32,
   paddingBottom: 32,
   paddingLeft: 32,
-  borderRadius: 10,
+  borderBottomLeftRadius: 10,
+  borderBottomRightRadius: 10,
+  background: 'var(--color-secondary-100)',
+}
+
+/* The cards pin this far under the top of the browser (2026-10-27, Eric). */
+const CARDS_PIN_GAP = 40
+/* Pinned, the page's own colour behind the cards, from the browser's top (set inline) to 16 under them. Behind the cards, over
+   the cards' own fill. */
+const PIN_BACKDROP: CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  right: 0,
+  bottom: -16,
+  zIndex: -1,
+  background: 'var(--color-fixed-light)',
+  transition: 'opacity 0.15s ease',
+  pointerEvents: 'none',
 }
 
 /* A card on the shared ground. */
@@ -1002,7 +1064,7 @@ const SHARED_EYEBROW: CSSProperties = {
 
 /* THE COMPARISON TABLE: across the ground under the cards, the feature column taking what the two 120 mark columns leave. */
 // 8 in on each side, so its rules run only as wide as the text (2026-10-27, Eric); the cells' outer padding is taken off to match.
-const COMPARE: CSSProperties = { gridColumn: '1 / -1', width: 'calc(100% - 16px)', margin: '0 8px', borderCollapse: 'collapse', tableLayout: 'fixed' }
+const COMPARE: CSSProperties = { width: 'calc(100% - 16px)', margin: '0 8px', borderCollapse: 'collapse', tableLayout: 'fixed' }
 const COMPARE_HEAD: CSSProperties = {
   ...SHARED_EYEBROW,
   color: 'var(--color-text-secondary)',
