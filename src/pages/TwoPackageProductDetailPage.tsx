@@ -277,27 +277,39 @@ export function TwoPackageProductDetailPage() {
                           </button>
                         </span>
                       </div>
-                      {/* What this package does differently, under the card (Figma 544:3090): the lead-in in regular weight, then each
-                          item's bold title over its plain description, 6 within an item, 16 between. */}
-                      {/* The lead-in and the rule under it, on their own shared row: the shorter one sits at the row's bottom, so both
-                          packages' lead-ins end — and their rules fall — level (2026-10-27, Eric). */}
-                      <div style={DIFF_LEAD}>
-                        {/* The shared section's eyebrow, in the page's charcoal rather than brick (2026-10-27, Eric). */}
-                        <p style={{ ...SHARED_EYEBROW, color: 'var(--color-text-primary)' }}>{p.diffTitle}</p>
-                        <hr aria-hidden style={SIDE_RULE} />
-                      </div>
-                      <div style={DIFF}>
-                        {p.diffs.map((d) => (
-                          <div key={d.title} style={DIFF_ITEM}>
-                            <p style={{ ...BODY, fontWeight: 800 }}>{d.title}</p>
-                            {/* The rail's body size, 15 / 21 (2026-10-27, Eric). */}
-                            <p style={SIDE_BODY}>{d.detail}</p>
-                          </div>
-                        ))}
-                      </div>
                     </div>
                   )
                 })}
+                {/* THE COMPARISON GRID (2026-10-27, Eric's CoWork content) — under both cards, across the ground: each feature, then a
+                    120-wide check column per package. Replaces the per-package lists. */}
+                <table style={COMPARE}>
+                  <caption style={{ ...SHARED_EYEBROW, color: 'var(--color-text-primary)', textAlign: 'left', paddingBottom: 12 }}>
+                    Florida Life &amp; Health Pre-licensing Package Comparison
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col" style={COMPARE_HEAD}>Feature</th>
+                      <th scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK }}>Standard</th>
+                      <th scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK }}>Premier</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {COMPARISON.map((row) => (
+                      <tr key={row.feature}>
+                        <th scope="row" style={COMPARE_FEATURE}>
+                          <strong style={{ fontWeight: 800 }}>{row.feature}</strong>
+                          {row.detail ? `: ${row.detail}` : null}
+                        </th>
+                        {[row.standard, row.premier].map((has, i) => (
+                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
+                            <span aria-hidden>{has ? '✓' : '—'}</span>
+                            <span className="cre-visually-hidden">{has ? 'Included' : 'Not included'}</span>
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </section>
 
@@ -428,6 +440,28 @@ const PACKAGES: {
       { title: 'Pass Guarantee', detail: 'Our Pass Guarantee comes with the Premier package.' },
     ],
   }
+]
+
+/* The comparison grid — Eric's CoWork table, 2026-10-27, verbatim. */
+const COMPARISON: { feature: string; detail?: string; standard: boolean; premier: boolean }[] = [
+  { feature: 'Pre-licensing Course', detail: 'Online self-study that covers the fundamentals and meets state education requirements', standard: true, premier: true },
+  { feature: 'Prep Review Course', detail: 'Condensed review of key material, weighted to the state exam outline', standard: true, premier: true },
+  { feature: 'Exam Simulators', detail: '3 simulators weighted by topic, unlimited retakes', standard: true, premier: true },
+  {
+    feature: 'Extended Access',
+    detail: '30 days for the Pre-licensing Course, then 30 days for the Prep Review Course and simulators',
+    standard: true,
+    premier: true,
+  },
+  { feature: 'Rubi™ AI Study Partner', detail: 'Built-in AI tutor with real-time guidance and answers', standard: true, premier: true },
+  {
+    feature: 'Recorded Livestream Exam Review (Life and Health, English)',
+    detail: 'Recording of a one-day exam review class with playback controls',
+    standard: false,
+    premier: true,
+  },
+  { feature: 'Flashcards (Life, Health, and Accident Insurance)', detail: '800+ cards covering fundamentals', standard: false, premier: true },
+  { feature: 'Pass Guarantee (Prepared to Pass Promise)', standard: false, premier: true },
 ]
 
 /* Florida's reporting fee — DEMO DATA, see the header. */
@@ -892,18 +926,17 @@ const WIDE_COLUMN: CSSProperties = { width: 'calc(100% - 350px - 80px)', display
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-  // Each package spans three shared rows — card, lead-in, details — so the two lead-ins share a row height (PACKAGE_PANEL).
+  // The two cards side by side, the comparison table under them across both columns.
   columnGap: 40,
-  rowGap: 0,
+  rowGap: 32,
   alignItems: 'start',
   padding: 32,
   borderRadius: 10,
   background: 'var(--color-secondary-100)',
 }
 
-/* A card and its details, on the shared ground — no fill of its own. A subgrid over PACKAGE_GRID's rows (card, lead-in, details),
-   so the rows line up across the two packages. */
-const PACKAGE_PANEL: CSSProperties = { display: 'grid', gridRow: 'span 3', gridTemplateRows: 'subgrid', rowGap: 0, minWidth: 0 }
+/* A card on the shared ground. */
+const PACKAGE_PANEL: CSSProperties = { display: 'flex', flexDirection: 'column', minWidth: 0 }
 
 /* Figma 542:2930: a 10-cornered card, its edge drawn inset (1px #DDD at rest, 2px brick selected) so selecting moves nothing and
    the corner badge sits flush on the edge. The strip along the top, then the body 28 in. */
@@ -977,12 +1010,6 @@ const OPTION_WAS: CSSProperties = { position: 'relative', fontFamily: 'var(--fon
 const OPTION_STRIKE: CSSProperties = { position: 'absolute', left: -2, top: '50%', width: 68, height: 2.15, transform: 'translateY(-50%) rotate(-7.43deg)' }
 
 /* Under each card: its description, then what sets it apart. */
-/* Figma 544:3250: the lead-in 24 under the card, its rule 10 under it, set to the bottom of the shared row; then the items, 16
-   below and 16 apart. Flush with the card's edges (the ground's 32 does the padding). */
-// 8 in at the sides, the card itself full width (2026-10-27, Eric).
-const DIFF_LEAD: CSSProperties = { display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: 10, padding: '24px 8px 0', alignSelf: 'stretch' }
-const DIFF: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 16, padding: '16px 8px 0' }
-const DIFF_ITEM: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
 
 /* The shared sections in a frame: no fill, the resting package card's 1px #DDD edge (2026-10-27, Eric; was a Secondary 100 band). */
 const SHARED: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 40, padding: 40, borderRadius: 10, border: '1px solid var(--color-e2e-card-outline)' }
@@ -996,4 +1023,33 @@ const SHARED_EYEBROW: CSSProperties = {
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
   color: 'var(--color-xcel-brick)',
+}
+
+/* THE COMPARISON TABLE: across the ground under the cards, the feature column taking what the two 120 mark columns leave. */
+const COMPARE: CSSProperties = { gridColumn: '1 / -1', width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }
+const COMPARE_HEAD: CSSProperties = {
+  ...SHARED_EYEBROW,
+  color: 'var(--color-text-secondary)',
+  fontSize: 12,
+  textAlign: 'left',
+  padding: '0 8px 10px',
+  borderBottom: '1px solid var(--color-secondary-300)',
+}
+const COMPARE_MARK: CSSProperties = { width: 120, textAlign: 'center' }
+const COMPARE_FEATURE: CSSProperties = {
+  ...SIDE_BODY,
+  fontWeight: 400,
+  textAlign: 'left',
+  verticalAlign: 'top',
+  padding: '12px 8px',
+  borderBottom: '1px solid var(--color-secondary-300)',
+}
+const COMPARE_CELL: CSSProperties = {
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 800,
+  fontSize: 18,
+  lineHeight: '21px',
+  verticalAlign: 'top',
+  padding: '12px 8px',
+  borderBottom: '1px solid var(--color-secondary-300)',
 }
