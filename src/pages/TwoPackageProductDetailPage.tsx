@@ -316,7 +316,7 @@ export function TwoPackageProductDetailPage() {
                     120-wide check column per package. Replaces the per-package lists. */}
                 <table style={COMPARE}>
                   {/* In 'Select your package:''s style, 8 in like the column text below it (2026-10-27, Eric). */}
-                  <caption style={{ ...SIDE_TITLE, textAlign: 'left', paddingBottom: 20 }}>Compare Standard and Premier Packages:</caption>
+                  <caption style={{ ...SIDE_TITLE, textAlign: 'left', paddingBottom: 20 }}>Standard and Premier Package Comparison:</caption>
                   <thead>
                     <tr>
                       <th scope="col" style={{ ...COMPARE_HEAD, paddingLeft: 0 }}>Feature</th>
