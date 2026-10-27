@@ -1089,11 +1089,12 @@ const OPTION_TITLE: CSSProperties = {
 
 // Condensed, as tall as the button beside it, the old price a space from the new.
 const OPTION_PRICE_ROW: CSSProperties = { display: 'flex', alignItems: 'center', gap: pinLerp(16, 6), minHeight: pinLerp(32, 34) }
-/* Avenir Book. */
-const OPTION_PRICE: CSSProperties = { fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: pinLerp(28, 22), lineHeight: pinLerp(32, 26), color: 'var(--color-text-primary)' }
-const OPTION_WAS: CSSProperties = { position: 'relative', fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: pinLerp(18, 14), lineHeight: pinLerp(32, 26), color: 'var(--color-neutral-500)' }
+/* Avenir Book. Condensed, 20 and 12 with a 46 strike — under the design's 22 / 14 / 53 so the Purchase labels keep 8 either side
+   in a 322 card (2026-10-27, Eric). */
+const OPTION_PRICE: CSSProperties = { fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: pinLerp(28, 20), lineHeight: pinLerp(32, 26), color: 'var(--color-text-primary)' }
+const OPTION_WAS: CSSProperties = { position: 'relative', fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: pinLerp(18, 12), lineHeight: pinLerp(32, 26), color: 'var(--color-neutral-500)' }
 /* The brick strike, 68 long at -7.43°. */
-const OPTION_STRIKE: CSSProperties = { position: 'absolute', left: -2, top: '50%', width: pinLerp(68, 53), height: 2.15, transform: 'translateY(-50%) rotate(-7.43deg)' }
+const OPTION_STRIKE: CSSProperties = { position: 'absolute', left: -2, top: '50%', width: pinLerp(68, 46), height: 2.15, transform: 'translateY(-50%) rotate(-7.43deg)' }
 
 /* Each card's Purchase (2026-10-27, Eric; was the rail's price card): 39 tall, across the card under the price. Condensing, it
    slides across to clear the price (--px), then rises into its row (the body's bottom padding, --py), 34 tall — Figma 548:3477.
