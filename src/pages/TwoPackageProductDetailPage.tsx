@@ -296,8 +296,11 @@ export function TwoPackageProductDetailPage() {
                 ref={cardsRef}
                 role="radiogroup"
                 aria-labelledby="choose-package"
-                style={{ ...PACKAGE_GRID, ...fadeGround(fade.head), top: `calc(${browserTop + CARDS_PIN_GAP}px - 24px * var(--p, 0))` }}
+                style={{ ...PACKAGE_GRID, top: `calc(${browserTop + CARDS_PIN_GAP}px - 24px * var(--p, 0))` }}
               >
+                {/* The cards' piece of the ground, on its own layer so it can go once they pin — the condensed frame is narrower than
+                    the column, and this showing either side of it read as a stray edge (2026-10-27, Eric). */}
+                <div aria-hidden style={{ ...PIN_LAYER, ...fadeGround(fade.head), opacity: 'calc(1 - var(--pinned, 0))' }} />
                 {/* Pinned, the tan ground shows from the browser's top to under the cards and nothing scrolls visibly beneath. Condensed,
                     it is Figma 548:3477's frame, 24 round the cards (the cards keep their width), 16 above them, square on top, 10 corners below, a 20% shadow. */}
                 <div
@@ -1006,6 +1009,8 @@ const PIN_BACKDROP: CSSProperties = {
   transition: 'opacity 0.15s ease',
   pointerEvents: 'none',
 }
+/* A layer behind the cards, inside their sticky row. */
+const PIN_LAYER: CSSProperties = { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: -1, pointerEvents: 'none' }
 /* The scroll over which pinned cards condense. */
 const PIN_CONDENSE = 160
 
