@@ -282,8 +282,8 @@ export function TwoPackageProductDetailPage() {
                       {/* The lead-in and the rule under it, on their own shared row: the shorter one sits at the row's bottom, so both
                           packages' lead-ins end — and their rules fall — level (2026-10-27, Eric). */}
                       <div style={DIFF_LEAD}>
-                        {/* The shared section's red eyebrow (2026-10-27, Eric). */}
-                        <p style={SHARED_EYEBROW}>{p.diffTitle}</p>
+                        {/* The shared section's eyebrow, in the page's charcoal rather than brick (2026-10-27, Eric). */}
+                        <p style={{ ...SHARED_EYEBROW, color: 'var(--color-text-primary)' }}>{p.diffTitle}</p>
                         <hr aria-hidden style={SIDE_RULE} />
                       </div>
                       <div style={DIFF}>
