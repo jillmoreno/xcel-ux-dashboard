@@ -918,7 +918,8 @@ const LEGAL_LINKS: CSSProperties = {
 /* THE PACKAGE CARDS AND THE SHARED SECTIONS (2026-10-27). */
 
 /* The main column beside the rail: everything left of its 350 and an 80 gap. */
-const WIDE_COLUMN: CSSProperties = { width: 'calc(100% - 350px - 80px)', display: 'flex', flexDirection: 'column', gap: 56 }
+// 40 between the packages and the shared frame (2026-10-27, Eric; was 56).
+const WIDE_COLUMN: CSSProperties = { width: 'calc(100% - 350px - 80px)', display: 'flex', flexDirection: 'column', gap: 40 }
 
 /* Two cards side by side, wrapping to one column when narrow. */
 /* The two panels the same height (stretch), so their Secondary 100 ends level. */
