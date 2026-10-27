@@ -271,7 +271,8 @@ export function TwoPackageProductDetailPage() {
                       </button>
                       {/* What this package does differently (its description paragraph removed, 2026-10-27 — still on PACKAGES). */}
                       <div style={DIFF}>
-                        <p style={BODY_STRONG}>{p.diffTitle}</p>
+                        {/* Regular weight (2026-10-27, Eric) — the items under it stay bold. */}
+                        <p style={BODY}>{p.diffTitle}</p>
                         {p.diffs.map((d) => (
                           <div key={d.title}>
                             <p style={BODY_STRONG}>{d.title}</p>
