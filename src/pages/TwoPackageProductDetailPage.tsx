@@ -388,7 +388,7 @@ const PACKAGES: {
     was: E2E_ORIGINAL_PRICE,
     description:
       'Our standard Life & Health Pre-licensing course provides a solid foundation to help you prepare to pass your Life & Health licensing exam without all of the extras. This package is ideal for those who are self-motivated and will prioritize learning on their own.',
-    diffTitle: 'The essentials:',
+    diffTitle: 'Standard includes:',
     diffs: [
       {
         title: 'XCEL’s proven 3-part training program',
