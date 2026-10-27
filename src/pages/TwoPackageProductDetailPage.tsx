@@ -239,19 +239,21 @@ export function TwoPackageProductDetailPage() {
           <div style={WIDE_COLUMN}>
             {/* THE PACKAGES — two radio cards (Figma 542:2125), each with what sets it apart underneath. */}
             <section aria-label="Choose a package" style={SECTION}>
-              {/* In the rail's At a Glance style — the slab serif at 20 / 24 (2026-10-27, Eric). */}
-              <h2 style={SIDE_TITLE}>Select your package:</h2>
               {/* The ground starts in the selected column's tint and fades to its own Secondary 100 by the cards' bottom
                   (2026-10-27, Eric). */}
               <div
                 ref={groundRef}
-                role="radiogroup"
-                aria-label="Package"
                 style={{
-                  ...PACKAGE_GRID,
+                  ...PACKAGE_GROUND,
                   background: `linear-gradient(to bottom, var(--color-secondary-200) 0, var(--color-secondary-100) ${cardsBottom || 300}px)`,
                 }}
               >
+              {/* In the rail's At a Glance style — the slab serif at 20 / 24 — now inside the ground, 0 above and 12 below
+                  (2026-10-27, Eric). */}
+              <h2 id="choose-package" style={{ ...SIDE_TITLE, paddingTop: 0, paddingBottom: 12 }}>
+                Select your package:
+              </h2>
+              <div role="radiogroup" aria-labelledby="choose-package" style={PACKAGE_GRID}>
                 {PACKAGES.map((p) => {
                   const on = p.id === picked
                   return (
@@ -355,6 +357,7 @@ export function TwoPackageProductDetailPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
               </div>
             </section>
 
@@ -911,9 +914,15 @@ const PACKAGE_GRID: CSSProperties = {
   columnGap: 32, // 8 less between the cards (2026-10-27, Eric; was 40)
   rowGap: 32,
   alignItems: 'start',
-  padding: '32px 32px 32px', // 24 below the grid, then 8 back (2026-10-27, Eric)
+}
+
+/* The ground the heading, cards and grid sit on: 32 in (24 on top), 10 corners; its fill is set inline (the fade). */
+const PACKAGE_GROUND: CSSProperties = {
+  paddingTop: 24, // 8 less than the sides, above the heading (2026-10-27, Eric)
+  paddingRight: 32,
+  paddingBottom: 32,
+  paddingLeft: 32,
   borderRadius: 10,
-  background: 'var(--color-secondary-100)',
 }
 
 /* A card on the shared ground. */
