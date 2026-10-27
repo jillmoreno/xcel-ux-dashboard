@@ -26,6 +26,7 @@ import {
    packages a (state, line of authority) pair resolves to. Under the same
    `/end-to-end-demo` prefix so the demo bars, the version pin and
    `isInviteFlowPath` all keep working unchanged. */
+import { TwoPackageProductDetailPage } from '@/pages/TwoPackageProductDetailPage'
 import { XcelQrInvitePage } from '@/pages/XcelQrInvitePage'
 import { XcelFindCoursePage } from '@/pages/XcelFindCoursePage'
 import { XcelPackagesPage } from '@/pages/XcelPackagesPage'
@@ -250,6 +251,9 @@ export default function App() {
         <Route path="/end-to-end-demo/activation-email" element={<TestingGate><XcelActivationEmailPage /></TestingGate>} />
         <Route path="/end-to-end-demo/email" element={<TestingGate><InviteEmailRoute /></TestingGate>} />
         <Route path="/end-to-end-demo" element={<TestingGate><InvitedProductDetailRoute /></TestingGate>} />
+        {/* THE TWO-PACKAGE PDP (2026-10-27, feat/pdp-multi-product) — Standard and Premier on one page; a sibling of
+            Invited Product Detail, not one of the versioned invite-flow switches. See `TwoPackageProductDetailPage`. */}
+        <Route path="/end-to-end-demo/two-package" element={<TestingGate><TwoPackageProductDetailPage /></TestingGate>} />
         {/* …and its checkout, which Purchase Now opens. See `InvitedCheckoutPage`. */}
         <Route path="/end-to-end-demo/checkout" element={<TestingGate><InvitedCheckoutRoute /></TestingGate>} />
         {/* …then Confirmation & Password, which Place your order opens. */}
