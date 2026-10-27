@@ -97,6 +97,9 @@ import MagnifyingGlassRegularSvg from './magnifying-glass-regular.svg?react'
 import GearRegularSvg from './gear-regular.svg?react'
 import XmarkRegularSvg from './xmark-regular.svg?react'
 import DotSolidSvg from './dot-solid.svg?react'
+import Circle1RegularSvg from './circle-1-regular.svg?react'
+import Circle2RegularSvg from './circle-2-regular.svg?react'
+import Circle3RegularSvg from './circle-3-regular.svg?react'
 // Compass Rubi rail (Figma 49:3053), fetched 2026-09-23 at 7.3.1.
 import PaperPlaneTopSolidSvg from './paper-plane-top-solid.svg?react'
 // Compass course navigation footer (Figma 31:1221), fetched 2026-09-23 at 7.3.1.
@@ -320,6 +323,9 @@ export const MagnifyingGlassRegular = makeIcon(MagnifyingGlassRegularSvg) // FA:
 export const GearRegular = makeIcon(GearRegularSvg) // FA: gear (regular)
 export const XmarkRegular = makeIcon(XmarkRegularSvg) // FA: xmark (regular)
 export const DotSolid = makeIcon(DotSolidSvg) // FA: dot (solid)
+export const Circle1Regular = makeIcon(Circle1RegularSvg) // FA: circle-1 (regular)
+export const Circle2Regular = makeIcon(Circle2RegularSvg) // FA: circle-2 (regular)
+export const Circle3Regular = makeIcon(Circle3RegularSvg) // FA: circle-3 (regular)
 export const PaperPlaneTopSolid = makeIcon(PaperPlaneTopSolidSvg) // FA: paper-plane-top (solid)
 export const CircleUser = makeIcon(CircleUserSvg) // FA: circle-user
 export const CircleInfo = makeIcon(CircleInfoSvg)

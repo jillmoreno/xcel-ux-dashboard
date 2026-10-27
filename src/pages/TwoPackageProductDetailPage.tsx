@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type 
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
+import { Circle1Regular, Circle2Regular, Circle3Regular } from '@/icons'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
 
@@ -426,6 +427,9 @@ const PACKAGES: {
   }
 ]
 
+/* The 3-part row's circled step numbers: the text's height, sitting on its line, 4 before the name. */
+const STEP_ICON: CSSProperties = { verticalAlign: '-2px', marginRight: 4 }
+
 /* The comparison grid — Eric's CoWork table, 2026-10-27, verbatim. */
 const COMPARISON: { feature: string; detail?: ReactNode; standard: boolean; premier: boolean }[] = [
   // First row: Standard's lead item, moved up from its list (2026-10-27, Eric).
@@ -433,15 +437,18 @@ const COMPARISON: { feature: string; detail?: ReactNode; standard: boolean; prem
     feature: 'XCEL’s proven 3-part training program',
     detail: (
       <>
-        {/* Each step its number tight to its name, a wider space between steps (2026-10-27, Eric). */}
+        {/* Each step led by Font Awesome's circled number at the text's 15, a wider space between steps (2026-10-27, Eric). */}
         <span style={{ marginRight: 8 }}>
-          <strong style={{ fontWeight: 800 }}>1</strong>-Pre-Licensing Course
+          <Circle1Regular aria-label="Step 1" size={15} style={STEP_ICON} />
+          Pre-Licensing Course
         </span>{' '}
         <span style={{ marginRight: 8 }}>
-          <strong style={{ fontWeight: 800 }}>2</strong>-Prep Review Course
+          <Circle2Regular aria-label="Step 2" size={15} style={STEP_ICON} />
+          Prep Review Course
         </span>{' '}
         <span>
-          <strong style={{ fontWeight: 800 }}>3</strong>-Exam Simulators
+          <Circle3Regular aria-label="Step 3" size={15} style={STEP_ICON} />
+          Exam Simulators
         </span>
       </>
     ),
@@ -1037,4 +1044,3 @@ const COMPARE_CELL: CSSProperties = {
   padding: '12px 8px',
   borderBottom: '1px solid var(--color-secondary-300)',
 }
-
