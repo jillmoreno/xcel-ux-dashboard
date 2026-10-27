@@ -284,24 +284,24 @@ export function TwoPackageProductDetailPage() {
                     120-wide check column per package. Replaces the per-package lists. */}
                 <table style={COMPARE}>
                   {/* In 'Select your package:''s style, 8 in like the column text below it (2026-10-27, Eric). */}
-                  <caption style={{ ...SIDE_TITLE, textAlign: 'left', padding: '0 8px 12px' }}>Compare Florida Life &amp; Health Pre-licensing Packages:</caption>
+                  <caption style={{ ...SIDE_TITLE, textAlign: 'left', paddingBottom: 12 }}>Compare Florida Life &amp; Health Pre-licensing Packages:</caption>
                   <thead>
                     <tr>
-                      <th scope="col" style={COMPARE_HEAD}>Feature</th>
+                      <th scope="col" style={{ ...COMPARE_HEAD, paddingLeft: 0 }}>Feature</th>
                       <th scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK }}>Standard</th>
-                      <th scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK }}>Premier</th>
+                      <th scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK, paddingRight: 0 }}>Premier</th>
                     </tr>
                   </thead>
                   <tbody>
                     {COMPARISON.map((row, r) => (
                       <tr key={row.feature}>
                         {/* No rule under the last row (2026-10-27, Eric). */}
-                        <th scope="row" style={r === COMPARISON.length - 1 ? { ...COMPARE_FEATURE, borderBottom: 'none' } : COMPARE_FEATURE}>
+                        <th scope="row" style={{ ...COMPARE_FEATURE, paddingLeft: 0, ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null) }}>
                           <strong style={{ fontWeight: 800 }}>{row.feature}</strong>
                           {row.detail ? `: ${row.detail}` : null}
                         </th>
                         {[row.standard, row.premier].map((has, i) => (
-                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
+                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(i === 1 ? { paddingRight: 0 } : null), ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
                             <span aria-hidden>{has ? '✓' : '—'}</span>
                             <span className="cre-visually-hidden">{has ? 'Included' : 'Not included'}</span>
                           </td>
@@ -1033,7 +1033,8 @@ const SHARED_EYEBROW: CSSProperties = {
 }
 
 /* THE COMPARISON TABLE: across the ground under the cards, the feature column taking what the two 120 mark columns leave. */
-const COMPARE: CSSProperties = { gridColumn: '1 / -1', width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }
+// 8 in on each side, so its rules run only as wide as the text (2026-10-27, Eric); the cells' outer padding is taken off to match.
+const COMPARE: CSSProperties = { gridColumn: '1 / -1', width: 'calc(100% - 16px)', margin: '0 8px', borderCollapse: 'collapse', tableLayout: 'fixed' }
 const COMPARE_HEAD: CSSProperties = {
   ...SHARED_EYEBROW,
   color: 'var(--color-text-secondary)',
