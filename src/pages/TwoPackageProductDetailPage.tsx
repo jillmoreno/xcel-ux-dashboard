@@ -235,8 +235,8 @@ export function TwoPackageProductDetailPage() {
           <div style={WIDE_COLUMN}>
             {/* THE PACKAGES — two radio cards (Figma 542:2125), each with what sets it apart underneath. */}
             <section aria-label="Choose a package" style={SECTION}>
-              {/* In the package titles' Avenir Heavy, at the section-title size (2026-10-27, Eric). */}
-              <h2 style={{ ...SECTION_TITLE, fontFamily: 'var(--font-e2e-avenir)', fontWeight: 800 }}>Select your package:</h2>
+              {/* In the rail's At a Glance style — the slab serif at 20 / 24 (2026-10-27, Eric). */}
+              <h2 style={SIDE_TITLE}>Select your package:</h2>
               <div role="radiogroup" aria-label="Package" style={PACKAGE_GRID}>
                 {PACKAGES.map((p) => {
                   const on = p.id === picked
