@@ -435,13 +435,13 @@ const COMPARISON: { feature: string; detail?: ReactNode; standard: boolean; prem
       <>
         {/* Each step its number tight to its name, a wider space between steps (2026-10-27, Eric). */}
         <span style={{ marginRight: 8 }}>
-          <strong style={{ fontWeight: 800 }}>1.</strong>Pre-Licensing Course
+          <strong style={{ fontWeight: 800 }}>1</strong>-Pre-Licensing Course
         </span>{' '}
         <span style={{ marginRight: 8 }}>
-          <strong style={{ fontWeight: 800 }}>2.</strong>Prep Review Course
+          <strong style={{ fontWeight: 800 }}>2</strong>-Prep Review Course
         </span>{' '}
         <span>
-          <strong style={{ fontWeight: 800 }}>3.</strong>Exam Simulators
+          <strong style={{ fontWeight: 800 }}>3</strong>-Exam Simulators
         </span>
       </>
     ),
