@@ -1043,10 +1043,10 @@ const OPTION_CARD: CSSProperties = {
 }
 // Selected: a 1 brick edge (was 2) and a small 30% shadow (the pinned frame's 20%, then 10 more), falling to the sides and below, not above
 // (2026-10-27, Eric).
-// Inside the brick edge, a 2 rule in the ground's tan, Secondary 200 (2026-10-27, Eric) — the second inset ring is 3 wide, drawn under the first.
+// Inside the brick edge, a 4 rule in the ground's tan, Secondary 200 (2026-10-27, Eric; was 2) — the second inset ring is 5 wide, drawn under the first.
 const OPTION_ON: CSSProperties = {
   boxShadow:
-    'inset 0 0 0 1px var(--color-xcel-brick), inset 0 0 0 3px var(--color-secondary-200), 0 4px 8px -2px rgb(0 0 0 / 0.3)',
+    'inset 0 0 0 1px var(--color-xcel-brick), inset 0 0 0 5px var(--color-secondary-200), 0 4px 8px -2px rgb(0 0 0 / 0.3)',
 }
 
 /* The top strip: the badge's 34 tall even where there is no badge, so both cards' bodies start level. */
