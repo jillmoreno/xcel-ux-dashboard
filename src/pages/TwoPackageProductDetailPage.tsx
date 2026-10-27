@@ -295,7 +295,7 @@ export function TwoPackageProductDetailPage() {
                       <th scope="col" style={{ ...COMPARE_HEAD, paddingLeft: 0 }}>Feature</th>
                       {/* Each package's header picks it — its column tints and its card selects (2026-10-27, Eric). */}
                       {PACKAGES.map((p) => (
-                        <th key={p.id} scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK, ...(p.id === 'premier' ? { paddingRight: 0 } : null), ...(picked === p.id ? COMPARE_PICKED : null) }}>
+                        <th key={p.id} scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK, ...(picked === p.id ? COMPARE_PICKED : null) }}>
                           <button type="button" aria-pressed={picked === p.id} onClick={() => setPicked(p.id)} style={COMPARE_PICK}>
                             {p.short}
                           </button>
@@ -321,7 +321,7 @@ export function TwoPackageProductDetailPage() {
                           {row.detail ? <>: {row.detail}</> : null}
                         </th>
                         {[row.standard, row.premier].map((has, i) => (
-                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(i === 1 ? { paddingRight: 0 } : null), ...(picked === (i === 0 ? 'standard' : 'premier') ? COMPARE_PICKED : null), ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
+                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(picked === (i === 0 ? 'standard' : 'premier') ? COMPARE_PICKED : null), ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
                             <span aria-hidden>{has ? '✓' : '—'}</span>
                             <span className="cre-visually-hidden">{has ? 'Included' : 'Not included'}</span>
                           </td>
