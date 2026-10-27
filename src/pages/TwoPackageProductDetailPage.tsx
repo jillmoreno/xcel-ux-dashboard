@@ -242,7 +242,7 @@ export function TwoPackageProductDetailPage() {
                   const on = p.id === picked
                   return (
                     <div key={p.id} style={PACKAGE_PANEL}>
-                      {/* Figma 544:3072: the card sits on top of its details in one Secondary 100 panel. */}
+                      {/* Figma 544:3250: the card, its details under it, on the shared ground. */}
                       <button
                         type="button"
                         role="radio"
@@ -573,7 +573,7 @@ const COURSE_HEAD_RULE: CSSProperties = { margin: 0, height: 1, border: 'none', 
    to the details' end. */
 const RAIL: CSSProperties = {
   position: 'absolute',
-  // Level with the package cards' tops (2026-10-27, Eric): DETAILS' 40 top padding, then 'Select your package:' (24) and the
+  // Level with the packages' ground (2026-10-27, Eric): DETAILS' 40 top padding, then 'Select your package:' (24) and the
   // section's 15 gap. Only where the rail starts — RAIL_STICKY still pins it as before.
   top: 40 + 24 + 15,
   // The rail stops 40 above the footer (2026-10-15, Eric's request).
@@ -924,10 +924,19 @@ const LEGAL_LINKS: CSSProperties = {
 const WIDE_COLUMN: CSSProperties = { width: 'calc(100% - 350px - 80px)', display: 'flex', flexDirection: 'column', gap: 40 }
 
 /* Two cards side by side, wrapping to one column when narrow. */
-/* The two panels the same height (stretch), so their Secondary 100 ends level. */
-const PACKAGE_GRID: CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 32, alignItems: 'stretch' }
+/* Figma 544:3250: both packages on one Secondary 100 ground, 32 in, 10 corners, the columns 40 apart. */
+const PACKAGE_GRID: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+  gap: 40,
+  alignItems: 'start',
+  padding: 32,
+  borderRadius: 10,
+  background: 'var(--color-secondary-100)',
+}
 
-const PACKAGE_PANEL: CSSProperties = { display: 'flex', flexDirection: 'column', minWidth: 0, borderRadius: 10, background: 'var(--color-secondary-100)' }
+/* A card and its details, on the shared ground — no fill of its own. */
+const PACKAGE_PANEL: CSSProperties = { display: 'flex', flexDirection: 'column', minWidth: 0 }
 
 /* Figma 542:2930: a 10-cornered card, its edge drawn inset (1px #DDD at rest, 2px brick selected) so selecting moves nothing and
    the corner badge sits flush on the edge. The strip along the top, then the body 28 in. */
@@ -1015,8 +1024,8 @@ const OPTION_WAS: CSSProperties = { position: 'relative', fontFamily: 'var(--fon
 const OPTION_STRIKE: CSSProperties = { position: 'absolute', left: -2, top: '50%', width: 68, height: 2.15, transform: 'translateY(-50%) rotate(-7.43deg)' }
 
 /* Under each card: its description, then what sets it apart. */
-/* Figma 544:3090: 24 in, 24 above, 32 below. */
-const DIFF: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 16, padding: '24px 24px 32px' }
+/* Figma 544:3250: 24 under the card, flush with its edges (the ground's 32 does the padding). */
+const DIFF: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 24 }
 const DIFF_ITEM: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
 
 /* The shared sections in a frame: no fill, the resting package card's 1px #DDD edge (2026-10-27, Eric; was a Secondary 100 band). */
