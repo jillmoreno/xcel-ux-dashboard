@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type 
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
-import { Circle1Regular, Circle2Regular, Circle3Regular } from '@/icons'
+import { Circle1Solid, Circle2Solid, Circle3Solid } from '@/icons'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
 
@@ -439,15 +439,15 @@ const COMPARISON: { feature: string; detail?: ReactNode; standard: boolean; prem
       <>
         {/* Each step led by Font Awesome's circled number at the text's 15, a wider space between steps (2026-10-27, Eric). */}
         <span style={{ marginRight: 8 }}>
-          <Circle1Regular aria-label="Step 1" size={15} style={STEP_ICON} />
+          <Circle1Solid aria-label="Step 1" size={15} style={STEP_ICON} />
           Pre-Licensing Course
         </span>{' '}
         <span style={{ marginRight: 8 }}>
-          <Circle2Regular aria-label="Step 2" size={15} style={STEP_ICON} />
+          <Circle2Solid aria-label="Step 2" size={15} style={STEP_ICON} />
           Prep Review Course
         </span>{' '}
         <span>
-          <Circle3Regular aria-label="Step 3" size={15} style={STEP_ICON} />
+          <Circle3Solid aria-label="Step 3" size={15} style={STEP_ICON} />
           Exam Simulators
         </span>
       </>
