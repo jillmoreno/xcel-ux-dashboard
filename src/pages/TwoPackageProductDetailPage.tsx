@@ -1075,7 +1075,7 @@ const OPTION_BODY: CSSProperties = {
   flexDirection: 'column',
   alignItems: 'flex-start',
   gap: pinLerp(20, 10),
-  paddingTop: pinLerp(24, 14),
+  paddingTop: pinLerp(8, 6), // 16 less on the page, 8 less condensed (2026-10-27, Eric; was 24 / 14)
   paddingRight: 28,
   paddingBottom: pinLerp(87, 28, 'py'),
   paddingLeft: 28,
