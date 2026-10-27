@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
@@ -298,7 +298,7 @@ export function TwoPackageProductDetailPage() {
                         {/* No rule under the last row (2026-10-27, Eric). */}
                         <th scope="row" style={{ ...COMPARE_FEATURE, paddingLeft: 0, ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null) }}>
                           <strong style={{ fontWeight: 800 }}>{row.feature}</strong>
-                          {row.detail ? `: ${row.detail}` : null}
+                          {row.detail ? <>: {row.detail}</> : null}
                         </th>
                         {[row.standard, row.premier].map((has, i) => (
                           <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(i === 1 ? { paddingRight: 0 } : null), ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
@@ -427,11 +427,16 @@ const PACKAGES: {
 ]
 
 /* The comparison grid — Eric's CoWork table, 2026-10-27, verbatim. */
-const COMPARISON: { feature: string; detail?: string; standard: boolean; premier: boolean }[] = [
+const COMPARISON: { feature: string; detail?: ReactNode; standard: boolean; premier: boolean }[] = [
   // First row: Standard's lead item, moved up from its list (2026-10-27, Eric).
   {
     feature: 'XCEL’s proven 3-part training program',
-    detail: 'Pre-Licensing Course, Prep Review Course, Exam Simulators',
+    detail: (
+      <>
+        <strong style={{ fontWeight: 800 }}>1.</strong> Pre-Licensing Course <strong style={{ fontWeight: 800 }}>2.</strong> Prep Review Course{' '}
+        <strong style={{ fontWeight: 800 }}>3.</strong> Exam Simulators
+      </>
+    ),
     standard: true,
     premier: true,
   },
