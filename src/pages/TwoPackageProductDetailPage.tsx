@@ -687,8 +687,7 @@ const FEE_CARD: CSSProperties = {
   gap: 10,
   padding: '18px 25px 0',
   borderRadius: 10,
-  border: '1px solid var(--color-e2e-card-outline)',
-  background: 'var(--color-fixed-light)',
+  background: 'var(--color-fixed-light)', // no edge now, as the box above (2026-10-27, Eric)
 }
 
 
@@ -732,7 +731,8 @@ const SIDE_SECTION: CSSProperties = { display: 'flex', flexDirection: 'column', 
 
 /* The shared frame: 32 either side of the rule, as at its edges. */
 // White with the state fee card's 1px #DDD edge (2026-10-27, Eric; was Secondary 100).
-const SIDE_BOX_PAIR: CSSProperties = { ...SIDE_BOX, gap: 32, background: 'var(--color-fixed-light)', border: '1px solid var(--color-e2e-card-outline)' }
+// No edge now (2026-10-27, Eric).
+const SIDE_BOX_PAIR: CSSProperties = { ...SIDE_BOX, gap: 32, background: 'var(--color-fixed-light)' }
 
 const SIDE_RULE: CSSProperties = {
   margin: 0,
