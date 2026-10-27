@@ -1077,7 +1077,7 @@ const OPTION_BODY: CSSProperties = {
   gap: pinLerp(20, 10),
   paddingTop: pinLerp(8, 6), // 16 less on the page, 8 less condensed (2026-10-27, Eric; was 24 / 14)
   paddingRight: 28,
-  paddingBottom: pinLerp(87, 28, 'py'),
+  paddingBottom: pinLerp(87, 20, 'py'), // 20 condensed (2026-10-27, Eric; was the design's 28)
   paddingLeft: 28,
 }
 
@@ -1108,7 +1108,7 @@ const OPTION_BUY: CSSProperties = {
   position: 'absolute',
   left: 'calc(28px + (var(--price-w, 0px) + 10px) * var(--px, 0))',
   right: 28,
-  bottom: 28,
+  bottom: pinLerp(28, 20, 'py'), // with the body's bottom padding
   height: pinLerp(39, 34),
   borderRadius: pinLerp(5, 8),
   fontSize: pinLerp(18, 15),
