@@ -11,6 +11,9 @@ const feature: PrototypeFeature = {
   status: 'ready',
   category: 'dev-handoff',
   devStatus: 'not-ready', // start here; move it yourself as the work moves
+  surface: 'atlas', // the kind tag's word: 'atlas' · 'invite' · 'compass' · 'admin'
+  owner: 'Anjani', // the designer tag — whoever ran the routine; it confirms your name first
+  lastUpdated: '2026-10-27T00:00:00Z', // the Updated tag; the routine stamps it on every write
   accent: 'blue',
   icon: 'grid', // 'grid' | 'calendar' | 'flag' | 'monitor'
   brands: ['xcel'],

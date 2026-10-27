@@ -661,6 +661,22 @@ export type PrototypeFeature = {
    */
   lastUpdated?: string
   /**
+   * DEV HANDOFF ROWS ONLY (2026-10-27, Jillienne on the Development board:
+   * "above the feature tag, add the designer tag and last updated tag, same
+   * styling we do on the prototypes page … feature could be updated to Atlas,
+   * Invite Flow, Compass, or Admin"). `surface` is which product surface the
+   * handoff is about — the kind tag's word — and `owner` is the designer who
+   * wrote it, the tag with the user icon — the person who RAN the routine, not
+   * the surface's owner (2026-10-27: four Atlas Home rows briefly read "Eric"
+   * off a fallback to the scope owner; Jill wrote them). No fallback now. `lastUpdated` is reused for the Updated tag: when the handoff last
+   * changed, stamped by `/dev-handoff-notes` on every write.
+   *
+   * ⚠ NOT `prototypeScope`. That field means "this row IS the surface's source
+   * of truth", and the smoke test refuses it on any non-Prototypes row.
+   */
+  surface?: PrototypeScope
+  owner?: string
+  /**
    * When true, the tile is password-gated: it shows a "Locked" badge and the
    * first click per session opens the prototype password modal before
    * navigating. Unlocked (non-`locked`) tiles open straight through with no
@@ -1357,6 +1373,9 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
      * before writing one.
      */
     id: 'xcel-atlas-home-course-head',
+    surface: 'atlas',
+    owner: 'Jill',
+    lastUpdated: '2026-10-21T17:44:45Z',
     title: 'Atlas Home — Course Head / Card',
     accent: 'blue',
     icon: 'grid',
@@ -1474,6 +1493,9 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
      * before writing one.
      */
     id: 'xcel-atlas-home-below-course-card',
+    surface: 'atlas',
+    owner: 'Jill',
+    lastUpdated: '2026-10-22T12:39:39Z',
     title: 'Atlas Home — Below the Course Card',
     accent: 'blue',
     icon: 'grid',
@@ -1728,6 +1750,9 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
      * before writing one.
      */
     id: 'xcel-atlas-home-quick-links',
+    surface: 'atlas',
+    owner: 'Jill',
+    lastUpdated: '2026-10-22T12:02:11Z',
     title: 'Atlas Home — Quick Links Card',
     accent: 'blue',
     icon: 'grid',
@@ -1833,6 +1858,9 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
      * devStatus: 'in-design'. No `quickSummary` yet — ask before writing one.
      */
     id: 'xcel-atlas-home-affidavit-modal',
+    surface: 'atlas',
+    owner: 'Jill',
+    lastUpdated: '2026-10-22T12:39:39Z',
     title: 'Atlas Home — Affidavit Modal',
     accent: 'blue',
     icon: 'grid',

@@ -10,6 +10,7 @@ import {
 } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
+  type PrototypeScope,
   PROTOTYPE_FEATURES,
   prototypeFeatureById,
   prototypeScopeLabel,
@@ -1596,12 +1597,10 @@ export function UxDashboardPage() {
         </div>
       )}
       <div style={listStyle}>
-        {g.rows.map((f, i) => (
+        {g.rows.map((f) => (
           <ProjectRow
             key={f.id}
             feature={f}
-            first={i === 0}
-            last={i === g.rows.length - 1}
             statusKey={statusKeyOf(f, done, inDesign)}
             isDone={done[f.id] ?? !!f.done}
             isInDesign={inDesign[f.id] ?? !!f.inProgress}
@@ -1927,8 +1926,6 @@ type ProjectRowProps = {
   statusKey: FeatureStatusKey
   isDone: boolean
   isInDesign: boolean
-  first: boolean
-  last: boolean
   dark: boolean
   /** Set when this row's gateway should open inside the dashboard frame. The
    *  row stays a real `<a href>` either way, so cmd/middle-click still opens
@@ -1946,8 +1943,6 @@ function ProjectRow({
   statusKey,
   isDone,
   isInDesign,
-  first,
-  last,
   dark,
   onOpen,
   showStatus,
@@ -2013,9 +2008,21 @@ function ProjectRow({
       ? []
       : [
           scopeLabel ??
+            (feature.surface && SURFACE_TAG[feature.surface]) ??
             feature.kindLabel ??
             (external ? 'Standalone HTML' : feature.kind === 'explore' ? 'Full platform' : 'Feature'),
         ]
+  /* A handoff row's designer and Updated tags, same shape as `prototypeTags`.
+     The designer is the row's own `owner` and nothing else: a fallback to the
+     surface's scope owner named Eric on four handoffs Jill wrote
+     (2026-10-27), so a row with no owner simply has no designer tag. */
+  const handoffOwner = feature.owner
+  const handoffTags: { key: string; text: string; icon?: ReactNode; srPrefix?: string }[] = isPrototypeRow
+    ? []
+    : [
+        { key: 'owner', text: handoffOwner ?? '', icon: <User size={11} aria-hidden style={{ flex: 'none' }} />, srPrefix: 'Designer: ' },
+        { key: 'updated', text: feature.lastUpdated ? `Updated ${formatUpdated(feature.lastUpdated)}` : '' },
+      ].filter((t) => t.text)
   // The row's status chip and the pill that filters it are the same resolver,
   // so a pill can never disagree with the rows it produces.
   const chip = featureStatusChipFor(statusKey, dark)
@@ -2157,14 +2164,33 @@ function ProjectRow({
           </span>
         </span>
       ) : (
-        <span style={showStatus ? tagColStyle : tagColSoloStyle}>
-          {meta.map((m) => (
-            <span key={m} style={metaChipStyle}>
-              {m}
-            </span>
-          ))}
+        /* EVERY OTHER ROW'S TAG COLUMN wears the Prototypes rows' outlined,
+           square tags, stacked (2026-10-27, Jillienne on the Development
+           board: "have this feature tag match the UI from the prototypes
+           page", then "above the feature tag, add the designer tag and last
+           updated tag, same styling we do on the prototypes page"). Who wrote
+           it, when it last changed, then WHICH SURFACE it is about — Atlas,
+           Invite Flow, Compass, Admin — in place of the word "Feature", which
+           said the same thing on every row. A row with no `surface` keeps the
+           old kind word. The status beside the stack keeps its own tinted
+           tag. */
+        <span style={showStatus ? tagAreaHandoffStyle : tagAreaHandoffSoloStyle}>
+          <span style={tagStackStyle}>
+            {handoffTags.map((t) => (
+              <span key={t.key} style={t.icon ? { ...prototypeTagStyle, display: 'inline-flex', alignItems: 'center', gap: 4 } : prototypeTagStyle}>
+                {t.icon}
+                {t.srPrefix && <span className="cre-visually-hidden">{t.srPrefix}</span>}
+                {t.text}
+              </span>
+            ))}
+            {meta.map((m) => (
+              <span key={m} style={prototypeTagStyle}>
+                {m}
+              </span>
+            ))}
+          </span>
           {showStatus && (
-            <span style={{ ...metaChipStyle, ...statusTagStyle(chip.color) }}>{chip.label}</span>
+            <span style={{ ...metaChipStyle, ...statusTagStyle(chip.color, statusKey) }}>{chip.label}</span>
           )}
         </span>
       )}
@@ -2202,19 +2228,20 @@ function ProjectRow({
      colour either, or there is a green bar on the page with nothing anywhere
      to explain it. */
   const readyStroke = showStatus && statusKey === 'ready-for-dev'
-  // The list no longer clips (the kebab menu would be cut off), so the end rows
-  // round their own corners to keep the card's shape on hover.
+  /* EVERY ROW IS ITS OWN CARD (2026-10-27, Jillienne on the Development
+     board: "I don't love that these items are all connected, they feel like a
+     table, but they are actually cards"). The list used to be ONE bordered,
+     shadowed card with a divider under each row and only the end rows rounding
+     their corners — which is a table's anatomy. Now each row carries the
+     border, the radius and the shadow itself, and the list is a stack with a
+     gap. The Ready for Dev stroke joins the card shadow in one `boxShadow`:
+     a second declaration would replace the first, not add to it. */
   const wrap: CSSProperties = {
     ...rowWrapStyle,
     background: hover ? 'var(--ux-bg)' : 'var(--ux-card)',
-    borderBottom: last ? 'none' : rowWrapStyle.borderBottom,
-    borderTopLeftRadius: first ? 'var(--radius-lg)' : undefined,
-    borderTopRightRadius: first ? 'var(--radius-lg)' : undefined,
-    borderBottomLeftRadius: last ? 'var(--radius-lg)' : undefined,
-    borderBottomRightRadius: last ? 'var(--radius-lg)' : undefined,
-    ...(readyStroke && {
-      boxShadow: `inset 3px 0 0 ${devStatusStrokeFor('ready-for-dev', dark)}`,
-    }),
+    boxShadow: readyStroke
+      ? `inset 3px 0 0 ${devStatusStrokeFor('ready-for-dev', dark)}, var(--shadow-card)`
+      : 'var(--shadow-card)',
   }
   const handlers = {
     onMouseEnter: () => setHover(true),
@@ -2748,14 +2775,12 @@ const groupLabelStyle: CSSProperties = {
 }
 const groupNoteStyle: CSSProperties = { margin: '3px 0 0', fontSize: 12.5, color: 'var(--ux-text-2)' }
 
+/** The list is a STACK OF CARDS, not a card of rows (2026-10-27) — see the
+ *  note on `wrap` in ProjectRow. No border, background or shadow here: each
+ *  row draws its own. The gap is what says "these are separate things". */
 const listStyle: CSSProperties = {
-  border: '1px solid var(--ux-border)',
-  borderRadius: 'var(--radius-lg)',
-  /* Deliberately NOT `overflow: hidden` — the row kebab's menu is absolutely
-     positioned, so clipping the list would clip the menu. The first/last rows
-     round their own corners instead (see ProjectRow's `first` / `last`). */
-  background: 'var(--ux-card)',
-  boxShadow: 'var(--shadow-card)',
+  display: 'grid',
+  gap: 10,
 }
 
 const rowStyle: CSSProperties = {
@@ -2784,8 +2809,12 @@ const rowWrapStyle: CSSProperties = {
   alignItems: 'center',
   gap: 8,
   padding: '14px 12px 14px 18px',
-  borderBottom: '1px solid var(--ux-border)',
-  transition: 'background 120ms',
+  /* The card: its own border and radius, on every row. Deliberately NOT
+     `overflow: hidden` — the kebab's menu is absolutely positioned and would
+     be clipped. */
+  border: '1px solid var(--ux-border)',
+  borderRadius: 'var(--radius-lg)',
+  transition: 'background 120ms, box-shadow 120ms',
 }
 
 const bodyStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }
@@ -2826,26 +2855,32 @@ const metaChipStyle: CSSProperties = {
   whiteSpace: 'nowrap',
 }
 
-/** Two fixed columns, not a flex row. Every row is its OWN grid container, so
- *  an `auto` column is sized by that row's own content — "Done" and "Needs
- *  Discussion" would put the kind chip at a different x on every line. The
- *  widths are the measured widest label in each column ("Standalone HTML" 100px,
- *  "Needs Discussion" 108px, at 10.5/700 + 8px padding a side) plus a little
- *  slack, so the tags all START at the same x down the whole list — each one
- *  still hugs its own text (`justifySelf: start` on the chip), so the column is
- *  the alignment guide, not the tag's width. */
-const tagColStyle: CSSProperties = {
+/* `tagColStyle` / `tagColSoloStyle` (104px + 112px, the filled kind pill
+   beside the status) went on 2026-10-27, when every non-Prototypes row took
+   the 156px stack below. */
+
+/** The kind tag's word for a handoff about a surface (2026-10-27) — shorter
+ *  than the Prototypes rows' scope labels, which name a door. */
+const SURFACE_TAG: Record<PrototypeScope, string> = {
+  'end-to-end': 'End-to-End',
+  invite: 'Invite Flow',
+  atlas: 'Atlas',
+  compass: 'Compass',
+  admin: 'Admin',
+}
+
+/** A handoff row's tag area (2026-10-27): the same 156px stack the Prototypes
+ *  rows use — designer, Updated, surface — and the status tag to its right,
+ *  wide enough for "Ready for Dev". The solo form is for sections that drop
+ *  the status column. */
+const tagAreaHandoffStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: '104px 112px',
+  gridTemplateColumns: '156px 112px',
   alignItems: 'center',
   gap: 6,
   flex: 'none',
 }
-
-/** Demo drops the status column rather than leaving a 112px hole in front of
- *  the chevron. The kind column keeps its width, so the tag still lines up
- *  down the list. */
-const tagColSoloStyle: CSSProperties = { ...tagColStyle, gridTemplateColumns: '104px' }
+const tagAreaHandoffSoloStyle: CSSProperties = { ...tagAreaHandoffStyle, gridTemplateColumns: '156px' }
 
 /** The Prototypes rows' tag area: the STACK (one tag per line, wide enough for
  *  "Updated Oct 14, 8:47 PM" at the tag's own size) and, to its right, a column
@@ -2879,7 +2914,16 @@ const prototypeTagStyle: CSSProperties = {
  *  hover background and in every theme — 12% is as far as it can go before the
  *  text's own contrast against it starts dropping below AA on the pale
  *  statuses. */
-function statusTagStyle(color: string): CSSProperties {
+function statusTagStyle(color: string, key?: string): CSSProperties {
+  /* READY FOR DEV IS THE ONE FILLED PILL (2026-10-27, Jillienne on the
+     Development board: "when marked ready for dev, make the pill dark and the
+     text light to help differentiate those items"). Every other status tints
+     at 12%; this one is the status a developer is scanning the board for, so
+     it is solid in its own colour, and reads as the one thing on the row
+     that is different. The text is the CARD's own colour, not a fixed white:
+     the status colour flips to a pale stop on the dark palettes, where white
+     on it would fail contrast, and the card colour flips with it. */
+  if (key === 'ready-for-dev') return { background: color, color: 'var(--ux-card)' }
   return { background: `color-mix(in srgb, ${color} 12%, transparent)`, color }
 }
 

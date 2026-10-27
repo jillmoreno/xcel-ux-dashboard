@@ -57,6 +57,11 @@ describe('the dev-handoff folder', () => {
       const key = featureStatusKeyOf(f, false, false, null)
       expect(featureStatusChipFor(key).label, `${f.id} reaches developers as Ready`).not.toBe('Ready')
       expect(PROTOTYPE_FEATURES.find((p) => p.id === f.id), `${f.id} is not in PROTOTYPE_FEATURES`).toBe(f)
+      // The three tags the row wears (2026-10-27): surface, designer, Updated.
+      expect(f.surface, `${f.id} needs a surface — the kind tag's word`).toBeTruthy()
+      expect(f.prototypeScope, `${f.id}: a handoff carries \`surface\`, never \`prototypeScope\``).toBeUndefined()
+      expect(f.owner, `${f.id} needs an owner — the designer tag`).toBeTruthy()
+      expect(f.lastUpdated && !Number.isNaN(Date.parse(f.lastUpdated)), `${f.id} needs a parseable lastUpdated`).toBe(true)
     }
     // No id collides with a hand-authored row.
     const ids = PROTOTYPE_FEATURES.map((f) => f.id)

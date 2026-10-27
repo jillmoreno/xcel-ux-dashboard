@@ -30,6 +30,18 @@ designer for something the code already says, and never ask them to look at
 code. (There is ONE brand in this repo — `Brand` is a one-member union — so the
 "ask which brands" item under *Before you finish* is answered: `['xcel']`.)
 
+**Three tag fields (2026-10-27).** `surface` from the files the feature lives
+in (`atlas` · `invite` · `compass` · `admin` — the kind tag reads Atlas ·
+Invite Flow · Compass · Admin), no question needed. `lastUpdated` is now, in
+UTC (`date -u +%Y-%m-%dT%H:%M:%SZ`), re-stamped on EVERY write. And `owner`
+is **the person running the routine** — the designer tag names who wrote the
+handoff, never the surface's owner (Jillienne: "designer should be Jill,
+because she is the one that ran the skill to create the handoff"). **Confirm
+it before the first question**, with the git name offered as the Hub spells
+it (Jill · Anjani · Eric · Afsana · Cody): *"I'll name you as the designer, as
+Jill — right?"* Then Step 1. Never `prototypeScope`: the smoke test refuses it
+on a handoff.
+
 **Step 1 — the components.** Show the list you found, one line each, and ask:
 *"This is what I think the feature is made of. Did I miss anything, or is one
 of these not part of it?"*
