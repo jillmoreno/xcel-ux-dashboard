@@ -240,16 +240,24 @@ export function TwoPackageProductDetailPage() {
                         onClick={() => setPicked(p.id)}
                         style={{ ...OPTION_CARD, ...(on ? OPTION_ON : null) }}
                       >
-                        {p.badge ? <span style={OPTION_BADGE}>{p.badge}</span> : null}
-                        <span aria-hidden style={{ ...RADIO, ...(on ? RADIO_ON : null) }}>
-                          {on ? <span style={RADIO_DOT} /> : null}
+                        {/* The strip along the top: the badge in the corner (Premier), the radio 10 in from the right. */}
+                        <span style={OPTION_TOP}>
+                          {p.badge ? <span style={OPTION_BADGE}>{p.badge}</span> : null}
+                          <span aria-hidden style={{ ...RADIO, ...(on ? RADIO_ON : null) }}>
+                            {on ? <span style={RADIO_DOT} /> : null}
+                          </span>
                         </span>
-                        <span style={OPTION_TITLE}>{p.title}</span>
-                        <span style={{ ...PRICE_ROW, justifyContent: 'flex-start' }}>
-                          <span style={PRICE}>{p.price}</span>
-                          <span style={WAS_PRICE}>
-                            <s style={{ textDecoration: 'none' }}>{p.was}</s>
-                            <img src="/brand/e2e-price-strike.svg" alt="" aria-hidden style={STRIKE} />
+                        <span style={OPTION_BODY}>
+                          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+                            <span style={OPTION_TAG}>{p.short}</span>
+                            <span style={OPTION_TITLE}>{p.title}</span>
+                          </span>
+                          <span style={OPTION_PRICE_ROW}>
+                            <span style={OPTION_PRICE}>{p.price}</span>
+                            <span style={OPTION_WAS}>
+                              <s style={{ textDecoration: 'none' }}>{p.was}</s>
+                              <img src="/brand/e2e-price-strike.svg" alt="" aria-hidden style={OPTION_STRIKE} />
+                            </span>
                           </span>
                         </span>
                       </button>
@@ -367,7 +375,7 @@ const PACKAGES: {
   {
     id: 'standard',
     short: 'Standard',
-    title: 'Standard Florida Life and Health Pre-licensing Package',
+    title: 'Florida Life and Health Pre-licensing Package',
     courseName: 'Florida Life and Health Pre-licensing',
     price: E2E_PARTNER_PRICE,
     was: E2E_ORIGINAL_PRICE,
@@ -383,7 +391,7 @@ const PACKAGES: {
   },  {
     id: 'premier',
     short: 'Premier',
-    title: 'Premier Florida Life and Health Pre-licensing Package',
+    title: 'Florida Life and Health Pre-licensing Package',
     courseName: 'Florida Life and Health Pre-licensing Premier',
     price: '$97.50', // DEMO DATA — see the header
     was: '$299.00',
@@ -947,39 +955,43 @@ const WIDE_COLUMN: CSSProperties = { width: 'calc(100% - 350px - 80px)', display
 /* Two cards side by side, wrapping to one column when narrow. */
 const PACKAGE_GRID: CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 32, alignItems: 'start' }
 
-/* Figma 542:2142 (at rest) / 542:2126 (selected): 28 in, 20 between, 10 corners. */
+/* Figma 542:2930: a 10-cornered card, its edge drawn inset (1px #DDD at rest, 2px brick selected) so selecting moves nothing and
+   the corner badge sits flush on the edge. The strip along the top, then the body 28 in. */
 const OPTION_CARD: CSSProperties = {
   position: 'relative',
   overflow: 'hidden',
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'flex-start',
-  gap: 20,
-  padding: 28,
+  alignItems: 'stretch',
+  padding: 0,
   textAlign: 'left',
+  border: 'none',
   borderRadius: 10,
-  borderWidth: 1,
-  borderStyle: 'solid',
-  borderColor: 'var(--color-e2e-card-outline)',
+  boxShadow: 'inset 0 0 0 1px var(--color-e2e-card-outline)',
   background: 'var(--color-fixed-light)',
   cursor: 'pointer',
   font: 'inherit',
 }
-/* Selected: 2px brick, the padding 1 less so nothing moves. */
-const OPTION_ON: CSSProperties = { borderWidth: 2, borderColor: 'var(--color-xcel-brick)', padding: 27 }
+const OPTION_ON: CSSProperties = { boxShadow: 'inset 0 0 0 2px var(--color-xcel-brick)' }
 
+/* The top strip: the badge's 34 tall even where there is no badge, so both cards' bodies start level. */
+const OPTION_TOP: CSSProperties = { display: 'flex', alignItems: 'flex-end', gap: 10, minHeight: 34 }
+
+/* PASS GUARANTEE: brick, the card's own corner top left and a 10 corner bottom right. */
 const OPTION_BADGE: CSSProperties = {
-  position: 'absolute',
-  top: 0,
-  right: 0,
-  padding: '10px 16px',
+  height: 34,
+  boxSizing: 'border-box',
+  display: 'flex',
+  alignItems: 'center',
+  padding: '10px 16px 8px',
+  borderRadius: '10px 0 10px 0',
   background: 'var(--color-xcel-brick)',
   color: 'var(--color-fixed-light)',
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
   fontSize: 13,
-  lineHeight: '16px',
   textTransform: 'uppercase',
+  whiteSpace: 'nowrap',
 }
 
 const RADIO: CSSProperties = {
@@ -987,6 +999,8 @@ const RADIO: CSSProperties = {
   width: 24,
   height: 24,
   flex: 'none',
+  marginLeft: 'auto',
+  marginRight: 10,
   borderRadius: '50%',
   border: '1px solid var(--color-e2e-card-outline)',
   display: 'grid',
@@ -995,7 +1009,36 @@ const RADIO: CSSProperties = {
 const RADIO_ON: CSSProperties = { border: '2px solid var(--color-xcel-brick)' }
 const RADIO_DOT: CSSProperties = { width: 12, height: 12, borderRadius: '50%', background: 'var(--color-xcel-brick)' }
 
-const OPTION_TITLE: CSSProperties = { ...SECTION_TITLE, fontSize: 30, lineHeight: '38px' }
+const OPTION_BODY: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 20, padding: 28 }
+
+/* The package's name in an outlined brick pill. */
+const OPTION_TAG: CSSProperties = {
+  padding: '2px 8px 0',
+  borderRadius: 18,
+  border: '1px solid var(--color-xcel-brick)',
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 500,
+  fontSize: 14,
+  lineHeight: '18px',
+  letterSpacing: '1.4px',
+  textTransform: 'uppercase',
+  color: 'var(--color-xcel-brick)',
+}
+
+const OPTION_TITLE: CSSProperties = {
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 800,
+  fontSize: 24,
+  lineHeight: '34px',
+  color: 'var(--color-text-primary)',
+}
+
+const OPTION_PRICE_ROW: CSSProperties = { display: 'flex', alignItems: 'center', gap: 16 }
+/* Avenir Book. */
+const OPTION_PRICE: CSSProperties = { fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: 28, lineHeight: '32px', color: 'var(--color-text-primary)' }
+const OPTION_WAS: CSSProperties = { position: 'relative', fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: 18, lineHeight: '32px', color: 'var(--color-neutral-500)' }
+/* The brick strike, 68 long at -7.43°. */
+const OPTION_STRIKE: CSSProperties = { position: 'absolute', left: -2, top: '50%', width: 68, height: 2.15, transform: 'translateY(-50%) rotate(-7.43deg)' }
 
 /* Under each card: its description, then what sets it apart. */
 const DIFF: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 15 }
