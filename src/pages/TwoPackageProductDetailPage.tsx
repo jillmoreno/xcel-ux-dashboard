@@ -565,7 +565,7 @@ const WELCOME_BODY: CSSProperties = {
 }
 
 /* The course header's top padding — also where the rail starts. */
-const COURSE_HEAD_TOP = 40
+const COURSE_HEAD_TOP = 56 // 16 more below the welcome band (2026-10-27, Eric; was 40)
 
 /* The course header (Figma 544:2970): 40 down (the design's 32, 8 more — 2026-10-27, Eric), 240 in, 24 to the rule. */
 const COURSE_HEAD: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 24, padding: `${COURSE_HEAD_TOP}px 240px 0` }
