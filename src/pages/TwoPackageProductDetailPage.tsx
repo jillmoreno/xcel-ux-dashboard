@@ -575,13 +575,16 @@ const COURSE_HEAD_TITLE: CSSProperties = {
 
 const COURSE_HEAD_RULE: CSSProperties = { margin: 0, height: 1, border: 'none', background: 'var(--color-secondary-300)' }
 
+/* The details' top padding: 24 on this page (2026-10-27, Eric; the original's 40). The rail starts from it. */
+const DETAILS_TOP = 24
+
 /* THE RIGHT RAIL: 240 in from the right, beside the details, from their first line down
    to the details' end. */
 const RAIL: CSSProperties = {
   position: 'absolute',
-  // Level with the packages' ground (2026-10-27, Eric): DETAILS' 40 top padding, then 'Select your package:' (24) and the
+  // Level with the packages' ground (2026-10-27, Eric): DETAILS' top padding, then 'Select your package:' (24) and the
   // section's 15 gap. Only where the rail starts — RAIL_STICKY still pins it as before.
-  top: 40 + 24 + 15,
+  top: DETAILS_TOP + 24 + 15,
   // The rail stops 40 above the footer (2026-10-15, Eric's request).
   bottom: 40,
   right: 240,
@@ -759,7 +762,8 @@ const ADD_TO_CART: CSSProperties = {
 
 /* The course details: 40 below the band, 240 in, a 640 column. Sections 40
    apart, each title 15 above its copy, paragraphs 20 apart (the design's). */
-const DETAILS: CSSProperties = { padding: '40px 240px' }
+// 24 above on this page (2026-10-27, Eric; the original's 40), 40 below.
+const DETAILS: CSSProperties = { padding: `${DETAILS_TOP}px 240px 40px` }
 
 
 const SECTION: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 15 }
