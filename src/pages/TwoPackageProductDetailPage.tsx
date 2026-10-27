@@ -93,13 +93,12 @@ export function TwoPackageProductDetailPage() {
   /* THE CARDS PIN (2026-10-27, Eric): 40 under the top of the browser, for the rest of the page. The packages ground is three
      stacked pieces — heading, cards, comparison — so the cards can be a direct child of the long column and stay stuck past
      the ground's end. The ground's fade runs over the heading and the cards, so both are measured (offsetHeight ignores the
-     pin). Once pinned, a tan backdrop covers from the browser's top to 8 under the cards, so what scrolls up
+     pin). Once pinned, a tan backdrop covers from the browser's top to under the cards, so what scrolls up
      disappears there rather than showing beneath them. */
   const headRef = useRef<HTMLDivElement>(null)
   const cardsRef = useRef<HTMLDivElement>(null)
   const [fade, setFade] = useState({ head: 0, cards: 0 })
-  const [pinTop, setPinTop] = useState(CARDS_PIN_GAP)
-  const [pinned, setPinned] = useState(false)
+  const [browserTop, setBrowserTop] = useState(0)
   useLayoutEffect(() => {
     const head = headRef.current
     const cards = cardsRef.current
@@ -109,9 +108,24 @@ export function TwoPackageProductDetailPage() {
     const browserTop = () => (chrome ? (parseFloat(getComputedStyle(chrome).top) || 0) + chrome.offsetHeight : 0)
     const fit = () => {
       setFade({ head: head.offsetHeight, cards: cards.offsetHeight })
-      setPinTop(browserTop() + CARDS_PIN_GAP)
+      setBrowserTop(browserTop())
     }
-    const check = () => setPinned(head.getBoundingClientRect().bottom < browserTop() + CARDS_PIN_GAP - 0.5)
+    /* THE CONDENSE (2026-10-27, Eric — Figma 548:3477): from the moment the cards pin, the next PIN_CONDENSE px of scroll
+       shrink them into the compact layout, scroll-linked, so scrolling back up grows them again. Written straight onto CSS
+       variables, not React state, so a scroll re-renders nothing: --p is the progress; --px eases out (the Purchase button
+       slides across beside the price first) and --py eases in (then rises into the price's row); --price-w is each card's
+       price width, which the button clears. */
+    const check = () => {
+      const over = browserTop() + CARDS_PIN_GAP - head.getBoundingClientRect().bottom
+      const p = Math.min(1, Math.max(0, over / PIN_CONDENSE))
+      cards.style.setProperty('--pinned', over > 0.5 ? '1' : '0')
+      cards.style.setProperty('--p', String(p))
+      cards.style.setProperty('--px', String(1 - (1 - p) ** 2))
+      cards.style.setProperty('--py', String(p ** 2))
+      cards.querySelectorAll<HTMLElement>('[data-price-row]').forEach((row) => {
+        row.parentElement?.style.setProperty('--price-w', `${row.offsetWidth}px`)
+      })
+    }
     fit()
     check()
     const ro = new ResizeObserver(() => {
@@ -282,10 +296,14 @@ export function TwoPackageProductDetailPage() {
                 ref={cardsRef}
                 role="radiogroup"
                 aria-labelledby="choose-package"
-                style={{ ...PACKAGE_GRID, ...fadeGround(fade.head), top: pinTop }}
+                style={{ ...PACKAGE_GRID, ...fadeGround(fade.head), top: `calc(${browserTop + CARDS_PIN_GAP}px - 8px * var(--p, 0))` }}
               >
-                {/* Pinned, the tan ground shows from the browser's top to 8 under the cards and nothing scrolls visibly beneath. */}
-                <div aria-hidden style={{ ...PIN_BACKDROP, top: -pinTop, opacity: pinned ? 1 : 0 }} />
+                {/* Pinned, the tan ground shows from the browser's top to under the cards and nothing scrolls visibly beneath. Condensed,
+                    it is Figma 548:3477's frame: 32 round the cards, square on top, 10 corners below, a 20% shadow. */}
+                <div
+                  aria-hidden
+                  style={{ ...PIN_BACKDROP, top: `calc(${-(browserTop + CARDS_PIN_GAP)}px + 8px * var(--p, 0))` }}
+                />
                 {PACKAGES.map((p) => {
                   const on = p.id === picked
                   return (
@@ -315,7 +333,7 @@ export function TwoPackageProductDetailPage() {
                             <span style={SHARED_EYEBROW}>{p.short}</span>
                             <span style={OPTION_TITLE}>{p.title}</span>
                           </span>
-                          <span style={OPTION_PRICE_ROW}>
+                          <span data-price-row style={OPTION_PRICE_ROW}>
                             <span style={OPTION_PRICE}>{p.price}</span>
                             <span style={OPTION_WAS}>
                               <s style={{ textDecoration: 'none' }}>{p.was}</s>
@@ -328,7 +346,7 @@ export function TwoPackageProductDetailPage() {
                           <button
                             type="button"
                             className={`cre-e2e-add-to-cart ${p.id === 'premier' ? 'cre-e2e-cta' : 'cre-e2e-outline'}`}
-                            style={{ ...ADD_TO_CART, height: 39, alignSelf: 'stretch', paddingTop: 2, paddingBottom: 0 }} // label 1 lower: a button centres its content box, so 2 on top shifts it 1 // 16 shorter than the rail's 55 (2026-10-27, Eric)
+                            style={OPTION_BUY}
                             onClick={(e) => {
                               e.stopPropagation()
                               setPicked(p.id)
@@ -978,12 +996,21 @@ const PIN_BACKDROP: CSSProperties = {
   position: 'absolute',
   left: 0,
   right: 0,
-  bottom: -8, // 8 under the cards (2026-10-27, Eric)
+  bottom: pinLerp(-8, -32), // 8 under the cards (2026-10-27, Eric), 32 condensed (Figma 548:3477)
   zIndex: -1,
-  borderRadius: 10,
+  borderRadius: '0 0 10px 10px',
   background: 'linear-gradient(to bottom, var(--color-secondary-200), var(--color-secondary-100))',
+  boxShadow: '0 4px 16px rgb(0 0 0 / calc(0.2 * var(--p, 0)))', // 20%, as it condenses (2026-10-27, Eric)
+  opacity: 'var(--pinned, 0)',
   transition: 'opacity 0.15s ease',
   pointerEvents: 'none',
+}
+/* The scroll over which pinned cards condense. */
+const PIN_CONDENSE = 160
+
+/* A length from the full card (a) to the condensed one (b), by the pin's progress — --p, or one of its eased forms. */
+function pinLerp(a: number, b: number, v: 'p' | 'px' | 'py' = 'p'): string {
+  return `calc(${a}px + ${b - a}px * var(--${v}, 0))`
 }
 
 /* A card on the shared ground. */
@@ -1009,15 +1036,18 @@ const OPTION_CARD: CSSProperties = {
 const OPTION_ON: CSSProperties = { boxShadow: 'inset 0 0 0 2px var(--color-xcel-brick)' }
 
 /* The top strip: the badge's 34 tall even where there is no badge, so both cards' bodies start level. */
-const OPTION_TOP: CSSProperties = { display: 'flex', alignItems: 'flex-end', gap: 10, minHeight: 34 }
+const OPTION_TOP: CSSProperties = { display: 'flex', alignItems: 'flex-end', gap: 10, minHeight: pinLerp(34, 24) } // 24 condensed
 
 /* PASS GUARANTEE: brick, the card's own corner top left and a 10 corner bottom right. */
 const OPTION_BADGE: CSSProperties = {
-  height: 34,
+  height: pinLerp(34, 24),
   boxSizing: 'border-box',
   display: 'flex',
   alignItems: 'center',
-  padding: '10px 16px 8px',
+  paddingTop: pinLerp(10, 4),
+  paddingRight: 16,
+  paddingBottom: pinLerp(8, 3),
+  paddingLeft: 16,
   borderRadius: '10px 0 10px 0',
   background: 'var(--color-xcel-brick)',
   color: 'var(--color-fixed-light)',
@@ -1029,22 +1059,54 @@ const OPTION_BADGE: CSSProperties = {
 }
 
 // 4 less above the package name (2026-10-27, Eric; was 28 all round).
-const OPTION_BODY: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 20, padding: '24px 28px 28px' }
+// Condensed (Figma 548:3477): 14 above, 10 between. The Purchase button sits in the bottom padding — 28, plus its 39 and the 20
+// over it until the condense lifts it into the price's row.
+const OPTION_BODY: CSSProperties = {
+  position: 'relative',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: pinLerp(20, 10),
+  paddingTop: pinLerp(24, 14),
+  paddingRight: 28,
+  paddingBottom: pinLerp(87, 28, 'py'),
+  paddingLeft: 28,
+}
 
 const OPTION_TITLE: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
-  fontSize: 24,
-  lineHeight: '34px',
+  fontSize: pinLerp(24, 18),
+  lineHeight: pinLerp(34, 24),
   color: 'var(--color-text-primary)',
 }
 
-const OPTION_PRICE_ROW: CSSProperties = { display: 'flex', alignItems: 'center', gap: 16 }
+// Condensed, as tall as the button beside it, the old price a space from the new.
+const OPTION_PRICE_ROW: CSSProperties = { display: 'flex', alignItems: 'center', gap: pinLerp(16, 6), minHeight: pinLerp(32, 34) }
 /* Avenir Book. */
-const OPTION_PRICE: CSSProperties = { fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: 28, lineHeight: '32px', color: 'var(--color-text-primary)' }
-const OPTION_WAS: CSSProperties = { position: 'relative', fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: 18, lineHeight: '32px', color: 'var(--color-neutral-500)' }
+const OPTION_PRICE: CSSProperties = { fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: pinLerp(28, 22), lineHeight: pinLerp(32, 26), color: 'var(--color-text-primary)' }
+const OPTION_WAS: CSSProperties = { position: 'relative', fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: pinLerp(18, 14), lineHeight: pinLerp(32, 26), color: 'var(--color-neutral-500)' }
 /* The brick strike, 68 long at -7.43°. */
-const OPTION_STRIKE: CSSProperties = { position: 'absolute', left: -2, top: '50%', width: 68, height: 2.15, transform: 'translateY(-50%) rotate(-7.43deg)' }
+const OPTION_STRIKE: CSSProperties = { position: 'absolute', left: -2, top: '50%', width: pinLerp(68, 53), height: 2.15, transform: 'translateY(-50%) rotate(-7.43deg)' }
+
+/* Each card's Purchase (2026-10-27, Eric; was the rail's price card): 39 tall, across the card under the price. Condensing, it
+   slides across to clear the price (--px), then rises into its row (the body's bottom padding, --py), 34 tall — Figma 548:3477.
+   10 from the price and a 15 label rather than the design's 16 and 16: a 740 column makes the cards 322, not 370, and "Purchase
+   Standard" needs the room.
+   The label sits 1 low: a button centres its content box, so 2 on top shifts it 1. */
+const OPTION_BUY: CSSProperties = {
+  ...ADD_TO_CART,
+  position: 'absolute',
+  left: 'calc(28px + (var(--price-w, 0px) + 10px) * var(--px, 0))',
+  right: 28,
+  bottom: 28,
+  height: pinLerp(39, 34),
+  borderRadius: pinLerp(5, 8),
+  fontSize: pinLerp(18, 15),
+  whiteSpace: 'nowrap',
+  paddingTop: 2,
+  paddingBottom: 0,
+}
 
 /* Under each card: its description, then what sets it apart. */
 
