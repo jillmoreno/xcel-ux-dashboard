@@ -273,12 +273,10 @@ export function TwoPackageProductDetailPage() {
                         }}
                         style={{ ...OPTION_CARD, ...(on ? OPTION_ON : null) }}
                       >
-                        {/* The strip along the top: the badge in the corner (Premier), the radio 10 in from the right. */}
+                        {/* The strip along the top: the badge in the corner (Premier). The radio that sat 10 in from the
+                            right is gone (2026-10-27, Eric) — the brick edge and the column shade say which is picked. */}
                         <span style={OPTION_TOP}>
                           {p.badge ? <span style={OPTION_BADGE}>{p.badge}</span> : null}
-                          <span aria-hidden style={{ ...RADIO, ...(on ? RADIO_ON : null) }}>
-                            {on ? <span style={RADIO_DOT} /> : null}
-                          </span>
                         </span>
                         <span style={OPTION_BODY}>
                           <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
@@ -966,21 +964,6 @@ const OPTION_BADGE: CSSProperties = {
   textTransform: 'uppercase',
   whiteSpace: 'nowrap',
 }
-
-const RADIO: CSSProperties = {
-  boxSizing: 'border-box',
-  width: 24,
-  height: 24,
-  flex: 'none',
-  marginLeft: 'auto',
-  marginRight: 10,
-  borderRadius: '50%',
-  border: '1px solid var(--color-e2e-card-outline)',
-  display: 'grid',
-  placeItems: 'center',
-}
-const RADIO_ON: CSSProperties = { border: '2px solid var(--color-xcel-brick)' }
-const RADIO_DOT: CSSProperties = { width: 12, height: 12, borderRadius: '50%', background: 'var(--color-xcel-brick)' }
 
 // 4 less above the package name (2026-10-27, Eric; was 28 all round).
 const OPTION_BODY: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 20, padding: '24px 28px 28px' }
