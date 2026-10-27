@@ -1037,7 +1037,8 @@ const OPTION_CARD: CSSProperties = {
   border: 'none',
   borderRadius: 10,
   boxShadow: 'inset 0 0 0 1px var(--color-e2e-card-outline)',
-  background: 'var(--color-fixed-light)',
+  // At rest, 20% of the tan ground shows through (2026-10-27, Eric); selected is solid white (OPTION_ON).
+  background: 'color-mix(in srgb, var(--color-fixed-light) 80%, transparent)',
   cursor: 'pointer',
   font: 'inherit',
 }
@@ -1046,6 +1047,7 @@ const OPTION_CARD: CSSProperties = {
 const OPTION_ON: CSSProperties = {
   boxShadow:
     'inset 0 0 0 1px var(--color-e2e-card-outline), inset 0 0 0 7px var(--color-secondary-200), 0 4px 8px -2px rgb(0 0 0 / 0.3)',
+  background: 'var(--color-fixed-light)',
 }
 
 /* The top strip: the badge's 34 tall even where there is no badge, so both cards' bodies start level. */
