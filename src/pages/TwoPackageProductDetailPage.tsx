@@ -248,9 +248,9 @@ export function TwoPackageProductDetailPage() {
                   background: `linear-gradient(to bottom, var(--color-secondary-200) 0, var(--color-secondary-100) ${cardsBottom || 300}px)`,
                 }}
               >
-              {/* In the rail's At a Glance style — the slab serif at 20 / 24 — now inside the ground, 0 above and 12 below
+              {/* In the rail's At a Glance style — the slab serif at 20 / 24 — now inside the ground, 4 above and 16 below
                   (2026-10-27, Eric). */}
-              <h2 id="choose-package" style={{ ...SIDE_TITLE, paddingTop: 0, paddingBottom: 12 }}>
+              <h2 id="choose-package" style={{ ...SIDE_TITLE, paddingTop: 4, paddingBottom: 16 }}>
                 Select your package:
               </h2>
               <div role="radiogroup" aria-labelledby="choose-package" style={PACKAGE_GRID}>
