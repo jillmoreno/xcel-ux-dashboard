@@ -333,7 +333,8 @@ export function TwoPackageProductDetailPage() {
                         </span>
                         <span style={OPTION_BODY}>
                           <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
-                            <span style={SHARED_EYEBROW}>{p.short}</span>
+                            {/* 2 smaller condensed (2026-10-27, Eric). */}
+                            <span style={{ ...SHARED_EYEBROW, fontSize: pinLerp(14, 12) }}>{p.short}</span>
                             <span style={OPTION_TITLE}>{p.title}</span>
                           </span>
                           <span data-price-row style={OPTION_PRICE_ROW}>
