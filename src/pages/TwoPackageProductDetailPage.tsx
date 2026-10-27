@@ -132,6 +132,8 @@ export function TwoPackageProductDetailPage() {
       </section>
       {/* THE COURSE HEADER — Figma 544:2970 (2026-10-27), in place of the dark band: the title in brick, a line on the packages,
           then a rule. */}
+      {/* The rail's frame starts above the course header now, so the rail can start level with its title (2026-10-27, Eric). */}
+      <div style={{ position: 'relative' }}>
       <section aria-label="Course" style={COURSE_HEAD}>
         {/* As wide as the details' left column below — the rail's 350 and its 80 gap kept clear (2026-10-27, Eric). */}
         <div style={{ width: 'calc(100% - 350px - 80px)', display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -150,7 +152,6 @@ export function TwoPackageProductDetailPage() {
         <hr aria-hidden style={COURSE_HEAD_RULE} />
         </div>
       </section>
-      <div style={{ position: 'relative' }}>
         <aside aria-label="Purchase" style={RAIL}>
           <div style={RAIL_STICKY}>
             <div style={SIDE_BOXES}>
@@ -563,8 +564,11 @@ const WELCOME_BODY: CSSProperties = {
   // (2026-10-15, Eric's request) — `useEvenLines` sets the width.
 }
 
+/* The course header's top padding — also where the rail starts. */
+const COURSE_HEAD_TOP = 40
+
 /* The course header (Figma 544:2970): 40 down (the design's 32, 8 more — 2026-10-27, Eric), 240 in, 24 to the rule. */
-const COURSE_HEAD: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 24, padding: '40px 240px 0' }
+const COURSE_HEAD: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 24, padding: `${COURSE_HEAD_TOP}px 240px 0` }
 
 /* Roboto Slab Bold 45 / 55 in the design — the page's slab serif token (Rockwell, then Roboto Slab) — in XCEL brick. */
 const COURSE_HEAD_TITLE: CSSProperties = {
@@ -578,16 +582,16 @@ const COURSE_HEAD_TITLE: CSSProperties = {
 
 const COURSE_HEAD_RULE: CSSProperties = { margin: 0, height: 1, border: 'none', background: 'var(--color-secondary-300)' }
 
-/* The details' top padding: 24 on this page (2026-10-27, Eric; the original's 40). The rail starts from it. */
+/* The details' top padding: 24 on this page (2026-10-27, Eric; the original's 40). */
 const DETAILS_TOP = 24
 
 /* THE RIGHT RAIL: 240 in from the right, beside the details, from their first line down
    to the details' end. */
 const RAIL: CSSProperties = {
   position: 'absolute',
-  // Level with the packages' ground (2026-10-27, Eric): DETAILS' top padding, then 'Select your package:' (24) and the
-  // section's 15 gap. Only where the rail starts — RAIL_STICKY still pins it as before.
-  top: DETAILS_TOP + 24 + 15,
+  // Level with the course title's top (2026-10-27, Eric): COURSE_HEAD's 40 top padding. Only where the rail starts —
+  // RAIL_STICKY still pins it as before.
+  top: COURSE_HEAD_TOP,
   // The rail stops 40 above the footer (2026-10-15, Eric's request).
   bottom: 40,
   right: 240,
