@@ -315,7 +315,6 @@ export function TwoPackageProductDetailPage() {
 
             {/* EVERYTHING BOTH PACKAGES SHARE. */}
             <div style={SHARED}>
-              <p style={SHARED_EYEBROW}>Included in both packages</p>
               <section style={SECTION}>
                 <h2 style={SECTION_TITLE}>What You'll Learn</h2>
                 <ul style={LEARN_LIST}>
@@ -323,21 +322,6 @@ export function TwoPackageProductDetailPage() {
                     <li key={topic}>{topic}</li>
                   ))}
                 </ul>
-              </section>
-              <section style={SECTION}>
-                <h2 style={SECTION_TITLE}>What's Included</h2>
-                <div style={INCLUDED}>
-                  <p style={BODY_STRONG}>XCEL’s Proven 3-Part Training Program:</p>
-                  {INCLUDED_ITEMS.map((item) => (
-                    <div key={item.title}>
-                      <p style={BODY_STRONG}>{item.title}</p>
-                      <p style={INCLUDED_ITEM}>
-                        <img src="/brand/e2e-check.svg" alt="" width={12} height={10} style={CHECK} />
-                        {item.detail}
-                      </p>
-                    </div>
-                  ))}
-                </div>
               </section>
               <section style={SECTION}>
                 <h2 style={SECTION_TITLE}>How It Works</h2>
@@ -483,28 +467,6 @@ const FOOTER_COLUMNS: { title: string; width: number | string; links: string[] }
 ]
 
 /* The design's copy, verbatim. */
-const INCLUDED_ITEMS: { title: string; detail: string; link?: boolean }[] = [
-  { title: 'Pre-licensing Course', detail: 'Online self-study course providing fundamentals and satisfies any state requirements.' },
-  {
-    title: 'Prep Review Course',
-    detail: 'Scaled down content focusing on the most important material weighted to match your state exam outline.',
-  },
-  {
-    title: 'Exam Simulator',
-    detail: 'The three exam simulators with unlimited retakes are weighted by topic to match the state exam.',
-  },
-  {
-    title: 'Extended Access',
-    detail: '30-day access to the Pre-licensing course & then 30 days for the prep review course & exam simulators.',
-  },
-  {
-    title: 'AI-Powered Study Partner, Rubi™',
-    detail:
-      'Study smarter with an AI-powered tutor built into your course that delivers real-time guidance, instant answers, and personalized support every step of the way.',
-  },
-  // The Premier extras — Recorded Livestream Exam Review and Flashcards — went
-  // with the live product page, the standard package (2026-10-15).
-]
 
 /* The live product page's What You'll Learn (2026-10-15). */
 const WHAT_YOULL_LEARN = [
@@ -807,7 +769,6 @@ const BODY: CSSProperties = {
 // 15 on 21 in every rail box (2026-10-15, Eric's request; was 16/22).
 const SIDE_BODY: CSSProperties = { ...BODY, fontSize: 15, lineHeight: '21px' }
 
-const BODY_STRONG: CSSProperties = { ...BODY, fontWeight: 900 }
 
 /* What You'll Learn: a plain disc list in the body type. */
 const LEARN_LIST: CSSProperties = {
@@ -824,17 +785,8 @@ const PARAGRAPHS: CSSProperties = { display: 'flex', flexDirection: 'column', ga
 
 /* Each heading, 3 to its checked line, 15 to the next heading; the intro
    line 20 above the first. */
-const INCLUDED: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 15 }
 
-const INCLUDED_ITEM: CSSProperties = {
-  ...BODY,
-  position: 'relative',
-  marginTop: 3,
-  paddingLeft: 23,
-  color: 'var(--color-text-secondary)',
-}
 
-const CHECK: CSSProperties = { position: 'absolute', left: 0, top: 8, display: 'block' }
 
 const LINK: CSSProperties = {
   padding: 0,
