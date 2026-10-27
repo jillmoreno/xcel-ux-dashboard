@@ -133,12 +133,14 @@ export function TwoPackageProductDetailPage() {
       {/* THE COURSE HEADER — Figma 544:2970 (2026-10-27), in place of the dark band: the title in brick, a line on the packages,
           then a rule. */}
       <section aria-label="Course" style={COURSE_HEAD}>
+        {/* As wide as the details' left column below — the rail's 350 and its 80 gap kept clear (2026-10-27, Eric). */}
+        <div style={{ width: 'calc(100% - 350px - 80px)', display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* 2 between the title and its intro (the design's 10, 8 less — 2026-10-27, Eric). */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <h2 style={COURSE_HEAD_TITLE}>
             Florida Life and Health <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
           </h2>
-          <p style={{ ...BODY, maxWidth: 996 }}>
+          <p style={BODY}>
             Our pre-licensing packages are updated annually and designed with a simplified approach to help you understand and
             retain complex insurance concepts and terms. <strong style={{ fontWeight: 800 }}>Learn faster and retain more</strong> with
             our interactive lessons plans and quizzes.{' '}
@@ -146,28 +148,11 @@ export function TwoPackageProductDetailPage() {
           </p>
         </div>
         <hr aria-hidden style={COURSE_HEAD_RULE} />
+        </div>
       </section>
       <div style={{ position: 'relative' }}>
         <aside aria-label="Purchase" style={RAIL}>
           <div style={RAIL_STICKY}>
-            {/* The price card: the selected package's price, and Purchase. */}
-            <div style={PRICE_CARD}>
-              <p style={PRICE_ROW}>
-                <span style={PRICE}>{pkg.price}</span>
-                <span style={WAS_PRICE}>
-                  <s style={{ textDecoration: 'none' }}>{pkg.was}</s>
-                  <img src="/brand/e2e-price-strike.svg" alt="" aria-hidden style={STRIKE} />
-                </span>
-              </p>
-              <button
-                type="button"
-                className="cre-e2e-add-to-cart cre-e2e-cta"
-                style={ADD_TO_CART}
-                onClick={() => navigate(`/end-to-end-demo/checkout?${new URLSearchParams({ ...Object.fromEntries(params), package: picked }).toString()}`)}
-              >
-                Purchase {pkg.short}
-              </button>
-            </div>
             <div style={SIDE_BOXES}>
               {/* The state reporting fee — Figma 542:2304, for Florida. */}
               <div style={FEE_CARD}>
@@ -243,11 +228,18 @@ export function TwoPackageProductDetailPage() {
                   return (
                     <div key={p.id} style={PACKAGE_PANEL}>
                       {/* Figma 544:3250: the card, its details under it, on the shared ground. */}
-                      <button
-                        type="button"
+                      {/* A div with the radio role, not a button: it holds a real button (Purchase), and buttons cannot nest. */}
+                      <div
                         role="radio"
+                        tabIndex={0}
                         aria-checked={on}
                         onClick={() => setPicked(p.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            setPicked(p.id)
+                          }
+                        }}
                         style={{ ...OPTION_CARD, ...(on ? OPTION_ON : null) }}
                       >
                         {/* The strip along the top: the badge in the corner (Premier), the radio 10 in from the right. */}
@@ -269,8 +261,22 @@ export function TwoPackageProductDetailPage() {
                               <img src="/brand/e2e-price-strike.svg" alt="" aria-hidden style={OPTION_STRIKE} />
                             </span>
                           </span>
+                          {/* Each card's own Purchase, under its price (2026-10-27, Eric; was the rail's price card). Brick on the
+                              selected card, outlined on the other; buying either package picks it first. */}
+                          <button
+                            type="button"
+                            className={`cre-e2e-add-to-cart ${on ? 'cre-e2e-cta' : 'cre-e2e-outline'}`}
+                            style={{ ...ADD_TO_CART, alignSelf: 'stretch' }}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setPicked(p.id)
+                              navigate(`/end-to-end-demo/checkout?${new URLSearchParams({ ...Object.fromEntries(params), package: p.id }).toString()}`)
+                            }}
+                          >
+                            Purchase {p.short}
+                          </button>
                         </span>
-                      </button>
+                      </div>
                       {/* What this package does differently, under the card (Figma 544:3090): the lead-in in regular weight, then each
                           item's bold title over its plain description, 6 within an item, 16 between. */}
                       {/* The lead-in and the rule under it, on their own shared row: the shorter one sits at the row's bottom, so both
@@ -557,9 +563,6 @@ const WELCOME_BODY: CSSProperties = {
   // (2026-10-15, Eric's request) — `useEvenLines` sets the width.
 }
 
-/* The price card's height. */
-const PRICE_CARD_H = 171
-
 /* The course header (Figma 544:2970): 40 down (the design's 32, 8 more — 2026-10-27, Eric), 240 in, 24 to the rule. */
 const COURSE_HEAD: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 24, padding: '40px 240px 0' }
 
@@ -603,60 +606,7 @@ const RAIL_STICKY: CSSProperties = {
   gap: 24,
 }
 
-/* 350 × 171, 1px #DDD, 10 radius: the price row 24 down, then Purchase 25 in
-   from each side, 25 above the bottom. */
-const PRICE_CARD: CSSProperties = {
-  boxSizing: 'border-box',
-  height: PRICE_CARD_H,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'stretch',
-  gap: 14,
-  padding: '24px 25px 25px',
-  borderRadius: 10,
-  border: '1px solid var(--color-e2e-card-outline)',
-  background: 'var(--color-fixed-light)',
-  // The live home page's partner-code box shadow (2026-10-15, Eric's request).
-  boxShadow: 'var(--shadow-e2e-partner-code)',
-}
-
-const PRICE_ROW: CSSProperties = {
-  margin: 0,
-  height: 53,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 14.324,
-}
-
-const PRICE: CSSProperties = {
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 800,
-  fontSize: 28.649,
-  lineHeight: '37.243px',
-  color: 'var(--color-text-primary)',
-}
-
-/* The was-price in Gray/400, struck by the brick line, tilted as drawn. */
-const WAS_PRICE: CSSProperties = {
-  position: 'relative',
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontSize: 25.784,
-  lineHeight: '34.378px',
-  color: 'var(--color-e2e-was-price)',
-}
-
-const STRIKE: CSSProperties = {
-  position: 'absolute',
-  left: -3,
-  top: '50%',
-  width: 98,
-  height: 2.15,
-  transform: 'translateY(-50%) rotate(-6.71deg)',
-}
-
-
-/* Under the price card, 24 down, 24 apart: the side boxes. */
+/* The rail's boxes, 24 apart (the price card moved into the package cards, 2026-10-27). */
 /* No widowed words (2026-10-15, Eric's request): the last two words are
    joined by a no-break space, so a wrap always carries two words down. */
 function noWidow(text: string): string {
