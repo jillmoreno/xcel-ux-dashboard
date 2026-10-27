@@ -418,7 +418,7 @@ const PACKAGES: {
     badge: 'Pass Guarantee',
     description:
       'Our Premier package adds flashcards, a recorded review class, and our Pass Guarantee to the standard package and is ideal for those looking to maximize their studying with various learning formats.',
-    diffTitle: 'Includes everything in Standard, plus:',
+    diffTitle: 'Includes Standard, plus:',
     diffs: [
       {
         title: 'Recorded Livestream Exam Review - Life and Health English',
