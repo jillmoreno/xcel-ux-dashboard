@@ -90,6 +90,20 @@ export function TwoPackageProductDetailPage() {
   const [params] = useSearchParams()
   useEndToEndDemoParams()
   const [picked, setPicked] = useState<PackageId>('premier')
+  /* Where the cards end inside the packages ground — the ground's tint fades out there (PACKAGE_GRID). */
+  const groundRef = useRef<HTMLDivElement>(null)
+  const [cardsBottom, setCardsBottom] = useState(0)
+  useLayoutEffect(() => {
+    const ground = groundRef.current
+    const card = ground?.querySelector<HTMLElement>('[role=radio]')
+    if (!ground || !card) return
+    const fit = () => setCardsBottom(card.getBoundingClientRect().bottom - ground.getBoundingClientRect().top)
+    fit()
+    const ro = new ResizeObserver(fit)
+    ro.observe(card)
+    ro.observe(ground)
+    return () => ro.disconnect()
+  }, [])
   const pkg = PACKAGES.find((p) => p.id === picked)!
   const welcomeRef = useRef<HTMLParagraphElement>(null)
   useEvenLines(welcomeRef)
@@ -227,7 +241,17 @@ export function TwoPackageProductDetailPage() {
             <section aria-label="Choose a package" style={SECTION}>
               {/* In the rail's At a Glance style — the slab serif at 20 / 24 (2026-10-27, Eric). */}
               <h2 style={SIDE_TITLE}>Select your package:</h2>
-              <div role="radiogroup" aria-label="Package" style={PACKAGE_GRID}>
+              {/* The ground starts in the selected column's tint and fades to its own Secondary 100 by the cards' bottom
+                  (2026-10-27, Eric). */}
+              <div
+                ref={groundRef}
+                role="radiogroup"
+                aria-label="Package"
+                style={{
+                  ...PACKAGE_GRID,
+                  background: `linear-gradient(to bottom, var(--color-secondary-200) 0, var(--color-secondary-100) ${cardsBottom || 300}px)`,
+                }}
+              >
                 {PACKAGES.map((p) => {
                   const on = p.id === picked
                   return (
