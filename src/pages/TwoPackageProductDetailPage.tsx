@@ -120,7 +120,8 @@ export function TwoPackageProductDetailPage() {
       <section aria-label="Personal welcome" style={WELCOME}>
         <div style={WELCOME_CONTENT}>
           <span aria-hidden style={WELCOME_RULE} />
-          <h1 style={WELCOME_TITLE}>You’ve been invited</h1>
+          {/* 8 nearer its copy than the original PDP's 4 gap (2026-10-27, Eric): the gap's 4, less 8. */}
+          <h1 style={{ ...WELCOME_TITLE, marginBottom: -8 }}>You’ve been invited</h1>
           <p ref={welcomeRef} style={WELCOME_BODY}>
             <strong style={{ fontWeight: 800 }}>{E2E_PARTNER_NAME}</strong> has invited
             you to enroll in{' '}
