@@ -997,7 +997,9 @@ const COMPARE_HEAD: CSSProperties = {
   color: 'var(--color-text-secondary)',
   fontSize: 12,
   textAlign: 'left',
-  padding: '0 8px 10px',
+  // A rule above as well as below, 10 clear of each (2026-10-27, Eric).
+  padding: '10px 8px',
+  borderTop: '1px solid var(--color-secondary-300)',
   borderBottom: '1px solid var(--color-secondary-300)',
 }
 const COMPARE_MARK: CSSProperties = { width: 120, textAlign: 'center' }
