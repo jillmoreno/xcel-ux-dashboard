@@ -320,7 +320,7 @@ export function TwoPackageProductDetailPage() {
                       <th scope="col" style={{ ...COMPARE_HEAD, paddingLeft: 0 }}>Feature</th>
                       {/* Each package's header picks it — its column tints and its card selects (2026-10-27, Eric). */}
                       {PACKAGES.map((p) => (
-                        <th key={p.id} scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK, ...(picked === p.id ? COMPARE_PICKED : null) }}>
+                        <th key={p.id} scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK, ...(picked === p.id ? pickedShade(0) : null) }}>
                           <button type="button" aria-pressed={picked === p.id} onClick={() => setPicked(p.id)} style={COMPARE_PICK}>
                             {p.short}
                           </button>
@@ -346,7 +346,7 @@ export function TwoPackageProductDetailPage() {
                           {row.detail ? <>: {row.detail}</> : null}
                         </th>
                         {[row.standard, row.premier].map((has, i) => (
-                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(picked === (i === 0 ? 'standard' : 'premier') ? COMPARE_PICKED : null), ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
+                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(picked === (i === 0 ? 'standard' : 'premier') ? pickedShade(r + 1) : null), ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
                             <span aria-hidden>{has ? '✓' : '—'}</span>
                             <span className="cre-visually-hidden">{has ? 'Included' : 'Not included'}</span>
                           </td>
@@ -1027,7 +1027,14 @@ const COMPARE_HEAD: CSSProperties = {
 }
 const COMPARE_MARK: CSSProperties = { width: 120, textAlign: 'center' }
 /* The selected package's column, header included: a step darker than the ground's Secondary 100 (2026-10-27, Eric). */
-const COMPARE_PICKED: CSSProperties = { background: 'var(--color-secondary-200)' }
+/* The selected package's column, header included (2026-10-27, Eric): full Secondary 200 at the top, fading row by row to a
+   10% tint of it over the ground's Secondary 100 by the last row. Each cell carries its own slice of the fade — row `n` of
+   the header plus COMPARISON.length rows — so the slices meet without a step. */
+function pickedShade(n: number): CSSProperties {
+  const rows = COMPARISON.length + 1
+  const tint = (k: number) => `color-mix(in srgb, var(--color-secondary-200) ${Math.round(100 - (90 * k) / rows)}%, var(--color-secondary-100))`
+  return { background: `linear-gradient(to bottom, ${tint(n)}, ${tint(n + 1)})` }
+}
 /* The header's pick button: the header's own type, no chrome. */
 const COMPARE_PICK: CSSProperties = { padding: 0, border: 'none', background: 'none', font: 'inherit', letterSpacing: 'inherit', textTransform: 'inherit', color: 'inherit', cursor: 'pointer' }
 const COMPARE_FEATURE: CSSProperties = {
