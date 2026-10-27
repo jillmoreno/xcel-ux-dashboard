@@ -978,8 +978,9 @@ const OPTION_STRIKE: CSSProperties = { position: 'absolute', left: -2, top: '50%
 /* Under each card: its description, then what sets it apart. */
 /* Figma 544:3250: the lead-in 24 under the card, its rule 10 under it, set to the bottom of the shared row; then the items, 16
    below and 16 apart. Flush with the card's edges (the ground's 32 does the padding). */
-const DIFF_LEAD: CSSProperties = { display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: 10, paddingTop: 24, alignSelf: 'stretch' }
-const DIFF: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 16 }
+// 8 in at the sides, the card itself full width (2026-10-27, Eric).
+const DIFF_LEAD: CSSProperties = { display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: 10, padding: '24px 8px 0', alignSelf: 'stretch' }
+const DIFF: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 16, padding: '16px 8px 0' }
 const DIFF_ITEM: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
 
 /* The shared sections in a frame: no fill, the resting package card's 1px #DDD edge (2026-10-27, Eric; was a Secondary 100 band). */
