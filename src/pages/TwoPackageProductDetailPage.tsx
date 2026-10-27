@@ -283,7 +283,8 @@ export function TwoPackageProductDetailPage() {
                         {p.diffs.map((d) => (
                           <div key={d.title} style={DIFF_ITEM}>
                             <p style={{ ...BODY, fontWeight: 800 }}>{d.title}</p>
-                            <p style={BODY}>{d.detail}</p>
+                            {/* The rail's body size, 15 / 21 (2026-10-27, Eric). */}
+                            <p style={SIDE_BODY}>{d.detail}</p>
                           </div>
                         ))}
                       </div>
