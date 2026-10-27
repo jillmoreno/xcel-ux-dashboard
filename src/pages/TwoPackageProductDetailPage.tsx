@@ -283,9 +283,8 @@ export function TwoPackageProductDetailPage() {
                 {/* THE COMPARISON GRID (2026-10-27, Eric's CoWork content) — under both cards, across the ground: each feature, then a
                     120-wide check column per package. Replaces the per-package lists. */}
                 <table style={COMPARE}>
-                  <caption style={{ ...SHARED_EYEBROW, color: 'var(--color-text-primary)', textAlign: 'left', paddingBottom: 12 }}>
-                    Florida Life &amp; Health Pre-licensing Package Comparison
-                  </caption>
+                  {/* In 'Select your package:''s style, 8 in like the column text below it (2026-10-27, Eric). */}
+                  <caption style={{ ...SIDE_TITLE, textAlign: 'left', padding: '0 8px 12px' }}>Compare Florida Life &amp; Health Pre-licensing:</caption>
                   <thead>
                     <tr>
                       <th scope="col" style={COMPARE_HEAD}>Feature</th>
