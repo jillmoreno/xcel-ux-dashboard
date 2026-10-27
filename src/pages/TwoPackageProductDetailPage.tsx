@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
 import { RubiMark, RubiWordmark } from '@/icons'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
 
@@ -99,6 +100,8 @@ export function TwoPackageProductDetailPage() {
   const cardsRef = useRef<HTMLDivElement>(null)
   const [fade, setFade] = useState({ head: 0, cards: 0 })
   const [browserTop, setBrowserTop] = useState(0)
+  /* The design bar's Compact cards: the compact layout on the page too, not only once pinned. */
+  const compact = useFeatureFlag('pdp-compact-cards').enabled
   useLayoutEffect(() => {
     const head = headRef.current
     const cards = cardsRef.current
@@ -120,8 +123,11 @@ export function TwoPackageProductDetailPage() {
       const p = Math.min(1, Math.max(0, over / PIN_CONDENSE))
       cards.style.setProperty('--pinned', over > 0.5 ? '1' : '0')
       cards.style.setProperty('--p', String(p))
-      cards.style.setProperty('--px', String(1 - (1 - p) ** 2))
-      cards.style.setProperty('--py', String(p ** 2))
+      // The cards' own progress — --p, or 1 throughout when Compact cards is on; the frame round them always follows --p.
+      const c = compact ? 1 : p
+      cards.style.setProperty('--cp', String(c))
+      cards.style.setProperty('--px', String(1 - (1 - c) ** 2))
+      cards.style.setProperty('--py', String(c ** 2))
       cards.querySelectorAll<HTMLElement>('[data-price-row]').forEach((row) => {
         row.parentElement?.style.setProperty('--price-w', `${row.offsetWidth}px`)
       })
@@ -139,7 +145,7 @@ export function TwoPackageProductDetailPage() {
       ro.disconnect()
       window.removeEventListener('scroll', check, { capture: true })
     }
-  }, [])
+  }, [compact])
   const fadeSpan = fade.head + fade.cards || 300
   const fadeGround = (offset: number): CSSProperties => ({
     backgroundColor: 'var(--color-secondary-100)',
@@ -1001,7 +1007,7 @@ const PIN_BACKDROP: CSSProperties = {
   // The column's full width, condensed too (2026-10-27, Eric; it came in 8 a side) — 32 either side of the cards, 24 below.
   left: 0,
   right: 0,
-  bottom: pinLerp(-8, -24), // 8 under the cards (2026-10-27, Eric)
+  bottom: pinLerp(-8, -24, 'p'), // 8 under the cards (2026-10-27, Eric)
   zIndex: -1,
   borderRadius: '0 0 10px 10px',
   background: 'linear-gradient(to bottom, var(--color-secondary-200), var(--color-secondary-100))',
@@ -1017,8 +1023,9 @@ const PIN_LAYER: CSSProperties = { position: 'absolute', top: 0, right: 0, botto
 /* The scroll over which pinned cards condense. */
 const PIN_CONDENSE = 160
 
-/* A length from the full card (a) to the condensed one (b), by the pin's progress — --p, or one of its eased forms. */
-function pinLerp(a: number, b: number, v: 'p' | 'px' | 'py' = 'p'): string {
+/* A length from the full card (a) to the condensed one (b), by the cards' progress — --cp, or one of its eased forms — or, for
+   the frame round them, the pin's own --p. */
+function pinLerp(a: number, b: number, v: 'p' | 'cp' | 'px' | 'py' = 'cp'): string {
   return `calc(${a}px + ${b - a}px * var(--${v}, 0))`
 }
 

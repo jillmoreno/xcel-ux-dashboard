@@ -169,6 +169,7 @@ const REBRAND_FLAGS = [
   'partner-code-ask',
   'order-confirmation-style',
   'split-journey-rail',
+  'pdp-compact-cards',
   'invite-missing-details',
   'e2e-ends-at-password',
   'e2e-loading-opens-home',

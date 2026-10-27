@@ -2623,6 +2623,30 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'pdp-compact-cards',
+    /* THE TWO-PACKAGE PDP'S CARDS, ON THE PAGE — 2026-10-27, Eric: "make the
+       smaller cards a design control option."
+
+       Off — the full cards on the page (title 24, price 28, Purchase across
+             the card under the price), condensing into the compact layout
+             as they pin. THE DEFAULT.
+       On  — the compact layout (Figma 548:3477) on the page too: title 18,
+             price 20, Purchase beside the price. Pinning then only tightens
+             the frame round them.
+
+       ⚠ THE PINNED CARDS ARE COMPACT EITHER WAY. This decides what the page
+       shows before the cards pin, which is the comparison worth making. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite'],
+    group: 'Layout',
+    label: 'Compact cards',
+    description:
+      'The two-package PDP\u2019s package cards. Off \u2014 the default \u2014 draws the full cards on the page, condensing as they pin. On draws the compact pinned layout on the page too.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'partner-code-ask',
     /* WHERE THE PARTNER CODE QUESTION IS ASKED — 2026-10-22, Jillienne: "i
        think we should explore a variant of this simply showing over the
