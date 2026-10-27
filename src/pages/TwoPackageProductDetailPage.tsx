@@ -310,24 +310,6 @@ export function TwoPackageProductDetailPage() {
                     ))}
                   </tbody>
                 </table>
-                {/* THE PER-PACKAGE LISTS, back under the grid (2026-10-27, Eric) — each in its card's column. Auto-placed in two
-                    rows (both lead-ins, then both lists) so the lead-ins and their rules sit level whatever their length. */}
-                {PACKAGES.map((p) => (
-                  <div key={`${p.id}-lead`} style={DIFF_LEAD}>
-                    <p style={{ ...SHARED_EYEBROW, color: 'var(--color-text-primary)' }}>{p.diffTitle}</p>
-                    <hr aria-hidden style={SIDE_RULE} />
-                  </div>
-                ))}
-                {PACKAGES.map((p) => (
-                  <div key={`${p.id}-list`} style={DIFF}>
-                    {p.diffs.map((d) => (
-                      <div key={d.title} style={DIFF_ITEM}>
-                        <p style={{ ...BODY, fontWeight: 800 }}>{d.title}</p>
-                        <p style={SIDE_BODY}>{d.detail}</p>
-                      </div>
-                    ))}
-                  </div>
-                ))}
               </div>
             </section>
 
@@ -1079,8 +1061,3 @@ const COMPARE_CELL: CSSProperties = {
   borderBottom: '1px solid var(--color-secondary-300)',
 }
 
-/* The per-package lists under the grid: the lead-in at the bottom of its row with a rule under it, then the items 16 apart; 8 in
-   at the sides. The grid's 32 row gap sits above the lead-ins; the lists follow 16 below their rules. */
-const DIFF_LEAD: CSSProperties = { display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: 10, padding: '0 8px', alignSelf: 'stretch' }
-const DIFF: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 16, padding: '0 8px', marginTop: -16 }
-const DIFF_ITEM: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
