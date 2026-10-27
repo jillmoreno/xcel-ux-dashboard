@@ -149,7 +149,6 @@ export function TwoPackageProductDetailPage() {
             <strong style={{ fontWeight: 800 }}>Pass the Florida state licensing exam the first time.</strong>
           </p>
         </div>
-        <hr aria-hidden style={COURSE_HEAD_RULE} />
         </div>
       </section>
         <aside aria-label="Purchase" style={RAIL}>
@@ -580,7 +579,6 @@ const COURSE_HEAD_TITLE: CSSProperties = {
   color: 'var(--color-xcel-brick)',
 }
 
-const COURSE_HEAD_RULE: CSSProperties = { margin: 0, height: 1, border: 'none', background: 'var(--color-secondary-300)' }
 
 /* The details' top padding: 24 on this page (2026-10-27, Eric; the original's 40). */
 const DETAILS_TOP = 24
