@@ -431,7 +431,7 @@ const COMPARISON: { feature: string; detail?: string; standard: boolean; premier
   // First row: Standard's lead item, moved up from its list (2026-10-27, Eric).
   {
     feature: 'XCEL’s proven 3-part training program',
-    detail: 'Complete Pre-Licensing Course, Take Prep Review Course, Finish with Exam Simulators',
+    detail: 'Pre-Licensing Course, Prep Review Course, Exam Simulators',
     standard: true,
     premier: true,
   },
