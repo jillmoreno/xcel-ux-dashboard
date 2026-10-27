@@ -296,13 +296,13 @@ export function TwoPackageProductDetailPage() {
                 ref={cardsRef}
                 role="radiogroup"
                 aria-labelledby="choose-package"
-                style={{ ...PACKAGE_GRID, ...fadeGround(fade.head), top: `calc(${browserTop + CARDS_PIN_GAP}px - 16px * var(--p, 0))` }}
+                style={{ ...PACKAGE_GRID, ...fadeGround(fade.head), top: `calc(${browserTop + CARDS_PIN_GAP}px - 24px * var(--p, 0))` }}
               >
                 {/* Pinned, the tan ground shows from the browser's top to under the cards and nothing scrolls visibly beneath. Condensed,
-                    it is Figma 548:3477's frame, 8 tighter: 24 round the cards (the cards keep their width), square on top, 10 corners below, a 20% shadow. */}
+                    it is Figma 548:3477's frame, 24 round the cards (the cards keep their width), 16 above them, square on top, 10 corners below, a 20% shadow. */}
                 <div
                   aria-hidden
-                  style={{ ...PIN_BACKDROP, top: `calc(${-(browserTop + CARDS_PIN_GAP)}px + 16px * var(--p, 0))` }}
+                  style={{ ...PIN_BACKDROP, top: `calc(${-(browserTop + CARDS_PIN_GAP)}px + 24px * var(--p, 0))` }}
                 />
                 {PACKAGES.map((p) => {
                   const on = p.id === picked
