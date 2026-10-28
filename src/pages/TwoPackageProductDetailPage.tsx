@@ -2,7 +2,7 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSPropert
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
-import { BallotCheckThin, ChartLineUpThin, ClipboardListThin, FileCertificateThin, RubiMark, RubiWordmark } from '@/icons'
+import { BallotCheckLight, ChartLineUpLight, ClipboardListLight, FileCertificateLight, RubiMark, RubiWordmark } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
@@ -666,10 +666,10 @@ const BENEFIT_TILES = [
   // `units` is how wide each glyph's drawing is in Font Awesome's 512-high grid, so every icon gets the same scale and its box ends
   // where its drawing does — and the 12 to the label is the same 12 in all four (2026-10-28, Eric). The certificate's viewBox is
   // 576 wide but its drawing stops at 512, so its box is trimmed to 512.
-  { Icon: ClipboardListThin, text: 'Eliminate test anxiety', maxWidth: 70, units: 384, viewWidth: 384 },
-  { Icon: ChartLineUpThin, text: 'Track your study progress', maxWidth: 84, units: 512, viewWidth: 512 },
-  { Icon: BallotCheckThin, text: 'Access 800+ practice exam questions', maxWidth: 108, units: 384, viewWidth: 384 },
-  { Icon: FileCertificateThin, text: 'Become licensed in a few weeks', maxWidth: 86, units: 512, viewWidth: 576 },
+  { Icon: ClipboardListLight, text: 'Eliminate test anxiety', maxWidth: 70, units: 384, viewWidth: 384 },
+  { Icon: ChartLineUpLight, text: 'Track your study progress', maxWidth: 84, units: 512, viewWidth: 512 },
+  { Icon: BallotCheckLight, text: 'Access 800+ practice exam questions', maxWidth: 108, units: 384, viewWidth: 384 },
+  { Icon: FileCertificateLight, text: 'Become licensed in a few weeks', maxWidth: 86, units: 512, viewWidth: 576 },
 ]
 
 /* The three parts, in xcelsolutions.com's home-page words (2026-10-28, Eric; were this PDP's Step 1–3 and a Pass Your Exam! line). */
@@ -948,7 +948,7 @@ const STEP_TITLE: CSSProperties = SIDE_TITLE
 const STEP_BODY: CSSProperties = { ...BODY, marginTop: 7, color: 'var(--color-text-secondary)' } // 7 under the title (2026-10-28, Eric: 11, then 4 less; the site's 15)
 
 /* Figma 558:3578, then opened up (2026-10-28, Eric): no fills, a 1 #DDD rule over the row like the one under it, and a 1 rule
-   between the four (the outer ends flush with the column). Each 8 / 16 in; a 34 Font Awesome Thin icon in the
+   between the four (the outer ends flush with the column). Each 8 / 16 in; a Font Awesome icon (34 Thin in the design) in the
    darker brick (Primary 600, #7B1618), 12 from its label in Avenir Medium 11 / 14. */
 // Each benefit as wide as its content, no padding; the row spreads them with the rules between (2026-10-28, Eric).
 const BENEFITS: CSSProperties = {
@@ -964,9 +964,10 @@ const BENEFIT: CSSProperties = { flex: 'none', display: 'flex', alignItems: 'cen
 const BENEFIT_RULE: CSSProperties = { flex: 'none', width: 1, alignSelf: 'stretch', background: 'var(--color-e2e-card-outline)' }
 // A 34 square, as Font Awesome sizes a glyph (1em). A 34 x 52 box fitted every icon to whichever side ran out first, so the narrow
 // 384-wide clipboard and ballot drew 45 tall beside a 34 chart and a 30 certificate (2026-10-28).
-// 29 high — the design's 34, 15% smaller (2026-10-28, Eric); each icon's width follows its drawing (BENEFIT_TILES). Overflow shows,
+// 26 high — the design's 34, 15% smaller, then 10% more (2026-10-28, Eric) — in Font Awesome Light, a step up from the design's
+// Thin; each icon's width follows its drawing (BENEFIT_TILES). Overflow shows,
 // as Font Awesome's does, so a glyph that runs past its grid (the certificate's ribbon) is not clipped.
-const BENEFIT_ICON_SIZE = 29
+const BENEFIT_ICON_SIZE = 26
 const BENEFIT_ICON: CSSProperties = {
   flex: 'none',
   height: BENEFIT_ICON_SIZE,
@@ -974,9 +975,9 @@ const BENEFIT_ICON: CSSProperties = {
   color: 'color-mix(in srgb, var(--color-xcel-brick) 80%, black)', // #7B1618
 }
 const BENEFIT_TEXT: CSSProperties = {
-  // 3 lower against its icon (2026-10-28, Eric) — nudged, so the row's height and centring are untouched.
+  // 2 lower against its icon (2026-10-28, Eric: 3, then 1 back) — nudged, so the row's height and centring are untouched.
   position: 'relative',
-  top: 3,
+  top: 2,
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 500,
   fontSize: 11,

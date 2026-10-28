@@ -73,6 +73,9 @@ import FileCertificateThinSvg from './file-certificate-thin.svg?react'
 import ClipboardListThinSvg from './clipboard-list-thin.svg?react'
 import ChartLineUpThinSvg from './chart-line-up-thin.svg?react'
 import BallotCheckThinSvg from './ballot-check-thin.svg?react'
+import ClipboardListLightSvg from './clipboard-list-light.svg?react'
+import ChartLineUpLightSvg from './chart-line-up-light.svg?react'
+import BallotCheckLightSvg from './ballot-check-light.svg?react'
 import FileCertificateLightSvg from './file-certificate-light.svg?react'
 import HourglassClockThinSvg from './hourglass-clock-thin.svg?react'
 import HourglassClockLightSvg from './hourglass-clock-light.svg?react'
@@ -306,6 +309,9 @@ export const FileCertificateThin = makeIcon(FileCertificateThinSvg) // FA: file-
 export const ClipboardListThin = makeIcon(ClipboardListThinSvg) // FA: clipboard-list (thin)
 export const ChartLineUpThin = makeIcon(ChartLineUpThinSvg) // FA: chart-line-up (thin)
 export const BallotCheckThin = makeIcon(BallotCheckThinSvg) // FA: ballot-check (thin)
+export const ClipboardListLight = makeIcon(ClipboardListLightSvg) // FA: clipboard-list (light)
+export const ChartLineUpLight = makeIcon(ChartLineUpLightSvg) // FA: chart-line-up (light)
+export const BallotCheckLight = makeIcon(BallotCheckLightSvg) // FA: ballot-check (light)
 export const FileCertificateLight = makeIcon(FileCertificateLightSvg) // FA: file-certificate (light)
 export const HourglassClockThin = makeIcon(HourglassClockThinSvg) // FA: hourglass-clock (thin)
 export const HourglassClockLight = makeIcon(HourglassClockLightSvg) // FA: hourglass-clock (light)
