@@ -1477,9 +1477,9 @@ const TOP_TRAY: CSSProperties = {
   justifyContent: 'center',
   alignItems: 'stretch',
   gap: 24,
-  paddingTop: 16,
+  paddingTop: 8, // 8 above and below (2026-10-28, Eric; the design's 16)
   paddingRight: 24,
-  paddingBottom: 16,
+  paddingBottom: 8,
   paddingLeft: 24,
   // The packages ground's fade, Secondary 200 to 100 down the tray (2026-10-28, Eric; was flat 100, the design's flat 200).
   background: 'linear-gradient(to bottom, var(--color-secondary-200), var(--color-secondary-100))',
