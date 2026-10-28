@@ -278,14 +278,22 @@ export function TwoPackageProductDetailPage() {
       >
         {/* The strip along the top: the badge in the top-right corner (Premier). The radio that sat 10 in from the
             right is gone (2026-10-27, Eric) — the brick edge and the column shade say which is picked. */}
-        <span style={OPTION_TOP}>
-          {p.badge ? <span style={OPTION_BADGE}>{p.badge}</span> : null}
-        </span>
+        {single ? (
+          /* Single, the mini tray's tab in the top-left corner: PASS GUARANTEE and the package's name in one (2026-10-28, Eric). */
+          <span style={{ ...MINI_TAB, alignSelf: 'flex-start' }}>
+            {p.badge ? <span style={MINI_BADGE}>{p.badge}</span> : null}
+            <span style={{ ...MINI_TAB_LABEL, ...(p.badge ? { paddingLeft: 0 } : null) }}>{p.short} package</span>
+          </span>
+        ) : (
+          <span style={OPTION_TOP}>
+            {p.badge ? <span style={OPTION_BADGE}>{p.badge}</span> : null}
+          </span>
+        )}
         {single ? (
           /* THE SINGLE-PRODUCT CARD (2026-10-28, Eric): laid out across, like the mini tray's — the title on the left, the price
              over its Purchase on the right — in the page card's own sizes and spacing, the card the column's width. */
           <span style={SINGLE_BODY}>
-            {heading}
+            <span style={{ ...OPTION_TITLE, minWidth: 0 }}>{`${place} ${localize(p.title)}`}</span>
             <span style={SINGLE_BUY_COLUMN}>
               {prices}
               {buy(SINGLE_BUY)}
@@ -1753,6 +1761,7 @@ const SINGLE_BODY: CSSProperties = {
   alignItems: 'flex-end',
   justifyContent: 'space-between',
   gap: 32,
+  paddingTop: 12, // under the tab, which now carries the package's name
   paddingBottom: pinLerp(28, 20),
 }
 const SINGLE_BUY_COLUMN: CSSProperties = { flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: pinLerp(10, 6) }
