@@ -1495,7 +1495,7 @@ const MINI_CARD: CSSProperties = {
   flexDirection: 'column',
   alignItems: 'flex-start',
   borderRadius: 10,
-  background: 'color-mix(in srgb, var(--color-fixed-light) 40%, transparent)',
+  background: 'color-mix(in srgb, var(--color-fixed-light) 60%, transparent)', // 60% white at rest (2026-10-28, Eric; the design's 40)
   cursor: 'pointer',
 }
 const MINI_CARD_ON: CSSProperties = { background: 'var(--color-fixed-light)' }
