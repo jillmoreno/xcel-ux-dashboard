@@ -945,10 +945,12 @@ const BENEFIT: CSSProperties = {
   borderRadius: 10,
   background: 'var(--color-secondary-100)',
 }
+// A 34 square, as Font Awesome sizes a glyph (1em). A 34 x 52 box fitted every icon to whichever side ran out first, so the narrow
+// 384-wide clipboard and ballot drew 45 tall beside a 34 chart and a 30 certificate (2026-10-28).
 const BENEFIT_ICON: CSSProperties = {
   flex: 'none',
   width: 34,
-  height: 52,
+  height: 34,
   color: 'color-mix(in srgb, var(--color-xcel-brick) 80%, black)', // #7B1618
 }
 const BENEFIT_TEXT: CSSProperties = {
