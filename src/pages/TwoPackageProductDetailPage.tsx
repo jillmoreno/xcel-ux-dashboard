@@ -907,7 +907,7 @@ const STEP_BODY: CSSProperties = { ...BODY, marginTop: 11, color: 'var(--color-t
 
 /* A section's subhead: the course intro's own type — BODY, 18 / 27 Avenir (2026-10-28, Eric; was 20 / 30 Medium) — its two lines 8
    apart. */
-const SUBHEAD: CSSProperties = { ...BODY, display: 'flex', flexDirection: 'column', gap: 8, marginTop: -8, paddingBottom: 16 } // 16 more to the steps (2026-10-28, Eric: 8, then 8 more); 8 nearer its heading (7, not the section's 15)
+const SUBHEAD: CSSProperties = { ...BODY, display: 'flex', flexDirection: 'column', gap: 8, marginTop: -8, paddingBottom: 20 } // 20 more to the steps (2026-10-28, Eric: 8, 8, then 4); 8 nearer its heading (7, not the section's 15)
 
 const SIDE_BODY: CSSProperties = { ...BODY, fontSize: 15, lineHeight: '21px' }
 
