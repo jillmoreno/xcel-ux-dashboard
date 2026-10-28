@@ -93,6 +93,11 @@ export function TwoPackageProductDetailPage() {
   const [picked, setPicked] = useState<PackageId>('premier')
   /* Change state or line: the selector slides open under the heading (2026-10-28, Eric). */
   const [changeOpen, setChangeOpen] = useState(false)
+  /* The state and line of authority the page is written for — the selector's two choices (2026-10-28, Eric). Every "Florida" and
+     "Life and Health" on the page follows them; `localize` rewrites the data's own copies (titles, the course name, the specs). */
+  const [place, setPlace] = useState('Florida')
+  const [line, setLine] = useState('Life and Health')
+  const localize = (text: string) => text.replaceAll('Florida', place).replaceAll('Life and Health', line)
   /* THE CARDS PIN (2026-10-27, Eric): 40 under the top of the browser, for the rest of the page. The packages ground is three
      stacked pieces — heading, cards, comparison — so the cards can be a direct child of the long column and stay stuck past
      the ground's end. The ground's fade runs over the heading and the cards, so both are measured (offsetHeight ignores the
@@ -209,7 +214,10 @@ export function TwoPackageProductDetailPage() {
           <p ref={welcomeRef} style={WELCOME_BODY}>
             <strong style={{ fontWeight: 800 }}>{E2E_PARTNER_NAME}</strong> has invited
             you to enroll in{' '}
-            <strong style={{ fontWeight: 800 }}>Florida Life and Health Pre-licensing</strong>. Choose
+            <strong style={{ fontWeight: 800 }}>
+              {place} {line} Pre-licensing
+            </strong>
+            . Choose
             your package below and start learning today!
           </p>
         </div>
@@ -224,13 +232,13 @@ export function TwoPackageProductDetailPage() {
         {/* 2 between the title and its intro (the design's 10, 8 less — 2026-10-27, Eric). */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <h2 style={COURSE_HEAD_TITLE}>
-            Florida Life and Health <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
+            {place} {line} <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
           </h2>
           <p style={BODY}>
             Our pre-licensing packages are updated annually and designed with a simplified approach to help you understand and
             retain complex insurance concepts and terms. <strong style={{ fontWeight: 800 }}>Learn faster and retain more</strong> with
             our interactive lessons plans and quizzes.{' '}
-            <strong style={{ fontWeight: 800 }}>Pass the Florida state licensing exam the first time.</strong>
+            <strong style={{ fontWeight: 800 }}>Pass the {place} state licensing exam the first time.</strong>
           </p>
         </div>
         </div>
@@ -245,7 +253,7 @@ export function TwoPackageProductDetailPage() {
                     {TRAINING_SPECS.map(([term, value]) => (
                       <div key={term}>
                         <dt style={{ display: 'inline' }}>{term}</dt>{' '}
-                        <dd style={{ display: 'inline', margin: 0, fontWeight: 800 }}>{value}</dd>
+                        <dd style={{ display: 'inline', margin: 0, fontWeight: 800 }}>{localize(value)}</dd>
                       </div>
                     ))}
                   </dl>
@@ -285,7 +293,7 @@ export function TwoPackageProductDetailPage() {
                     <dl style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
                       {[
                         ['Course Provided By:', 'XCEL Solutions LLC.'],
-                        ['Course Name:', pkg.courseName],
+                        ['Course Name:', localize(pkg.courseName)],
                         ['Approved course ID:', '1191656'],
                       ].map(([term, value]) => (
                         <div key={term} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -296,7 +304,7 @@ export function TwoPackageProductDetailPage() {
                     </dl>
                     <p style={SIDE_BODY}>
                       <button type="button" className="cre-e2e-textlink" style={LINK}>
-                        {noWidow('Florida Insurance Licensing Requirements')}
+                        {noWidow(`${place} Insurance Licensing Requirements`)}
                         <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
                       </button>
                     </p>
@@ -308,7 +316,7 @@ export function TwoPackageProductDetailPage() {
                 <section style={SIDE_SECTION}>
                   <h2 style={SIDE_TITLE}>State reporting fee required</h2>
                   <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <p style={{ margin: 0 }}>{FL_FEE}</p>
+                    <p style={{ margin: 0 }}>{STATE_ABBR[place] ?? place} fee due at checkout: {STATE_FEE}</p>
                     <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block' }}>
                       100% transparent pricing
                       <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
@@ -330,7 +338,7 @@ export function TwoPackageProductDetailPage() {
                     (2026-10-27, Eric). */}
                 <div style={PACKAGES_HEAD_ROW}>
                   <h2 id="choose-package" style={SIDE_TITLE}>
-                    Select your Florida package:
+                    Select your {place} package:
                   </h2>
                   {/* Back to the state or line-of-authority choice — one link on the heading's baseline, right-aligned, in the rail's
                       link type, no underline (2026-10-28, Eric; was two, Change state · Change line). It opens the selector below. */}
@@ -372,7 +380,13 @@ export function TwoPackageProductDetailPage() {
                       <span style={CHANGE_FIELD}>
                         {/* Defaults to the page's own state and line (2026-10-28, Eric). No .cre-e2e-input: its brick focus ring
                             showed on every click of a select, and was taken off (2026-10-28, Eric). */}
-                        <select aria-label="State" defaultValue="Florida" className="cre-e2e-select" style={CHANGE_SELECT}>
+                        <select
+                          aria-label="State"
+                          value={place}
+                          onChange={(e) => setPlace(e.target.value)}
+                          className="cre-e2e-select"
+                          style={CHANGE_SELECT}
+                        >
                           {CHANGE_STATES.map((st) => (
                             <option key={st}>{st}</option>
                           ))}
@@ -380,7 +394,13 @@ export function TwoPackageProductDetailPage() {
                         <AngleDownSolid size={16} aria-hidden style={CHANGE_CHEVRON} />
                       </span>
                       <span style={CHANGE_FIELD}>
-                        <select aria-label="Line of authority" defaultValue="Life and Health" className="cre-e2e-select" style={CHANGE_SELECT}>
+                        <select
+                          aria-label="Line of authority"
+                          value={line}
+                          onChange={(e) => setLine(e.target.value)}
+                          className="cre-e2e-select"
+                          style={CHANGE_SELECT}
+                        >
                           {CHANGE_LINES.map((line) => (
                             <option key={line}>{line}</option>
                           ))}
@@ -436,7 +456,7 @@ export function TwoPackageProductDetailPage() {
                           <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
                             {/* 2 smaller condensed (2026-10-27, Eric). */}
                             <span style={{ ...SHARED_EYEBROW, fontSize: pinLerp(14, 12) }}>{p.short}</span>
-                            <span style={OPTION_TITLE}>{p.title}</span>
+                            <span style={OPTION_TITLE}>{localize(p.title)}</span>
                           </span>
                           <span data-price-row style={OPTION_PRICE_ROW}>
                             <span style={OPTION_PRICE}>{p.price}</span>
@@ -696,7 +716,10 @@ const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; p
 ]
 
 /* Florida's reporting fee — DEMO DATA, see the header. */
-const FL_FEE = 'FL fee due at checkout: $20'
+// The reporting fee line reads `${abbreviation} fee due at checkout: $20` for whichever state is chosen. DEMO: one invented fee
+// for every state.
+const STATE_FEE = '$20'
+const STATE_ABBR: Record<string, string> = { Arizona: 'AZ', Florida: 'FL', Georgia: 'GA', Ohio: 'OH', Texas: 'TX' }
 
 /* The design's columns, at its widths (each column's left edge to the next). */
 const FOOTER_COLUMNS: { title: string; width: number | string; links: string[] }[] = [
