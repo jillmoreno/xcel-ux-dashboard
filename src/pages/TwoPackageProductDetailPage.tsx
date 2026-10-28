@@ -1217,12 +1217,12 @@ const PACKAGES_HEAD_ROW: CSSProperties = {
 }
 
 /* The state / line selector (Figma 558:3600): the label in Avenir Heavy 13 / 21, then two white 35-high selects, a 0.5 Neutral 400
-   edge and 4 corners, Avenir Medium 12, a 16 solid angle-down in brick 16 in from the right; 16 between, centred, 16 to the cards. */
+   edge and 4 corners, Avenir Medium 12, a 16 solid angle-down in brick 16 in from the right; 16 between, left-aligned, 16 to the cards. */
 const CHANGE_SLIDE: CSSProperties = { display: 'grid', transition: 'grid-template-rows 0.3s ease' }
 const CHANGE_ROW: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center',
+  justifyContent: 'flex-start', // left-aligned with the heading (2026-10-28, Eric; the design centres it)
   gap: 16,
   paddingTop: 8,
   paddingBottom: 24, // its own 8, then 16 to the cards
