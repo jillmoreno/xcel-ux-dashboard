@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
@@ -464,18 +464,15 @@ export function TwoPackageProductDetailPage() {
                 </div>
                 {/* Four benefits in tiles — Figma 558:3578 (2026-10-28, Eric). */}
                 <ul style={BENEFITS}>
-                  {BENEFIT_TILES.map(({ Icon, text }, i) => (
-                    <li
-                      key={text}
-                      style={{
-                        ...BENEFIT,
-                        ...(i === 0 ? { paddingLeft: 0 } : { borderLeft: '1px solid var(--color-e2e-card-outline)' }),
-                        ...(i === BENEFIT_TILES.length - 1 ? { paddingRight: 0 } : null),
-                      }}
-                    >
-                      <Icon aria-hidden style={BENEFIT_ICON} />
-                      <span style={BENEFIT_TEXT}>{text}</span>
-                    </li>
+                  {BENEFIT_TILES.map(({ Icon, text, maxWidth }, i) => (
+                    <Fragment key={text}>
+                      {/* The rule between two, the space either side of it the row's own (space-between). */}
+                      {i > 0 ? <li aria-hidden style={BENEFIT_RULE} /> : null}
+                      <li style={BENEFIT}>
+                        <Icon aria-hidden style={BENEFIT_ICON} />
+                        <span style={{ ...BENEFIT_TEXT, maxWidth }}>{text}</span>
+                      </li>
+                    </Fragment>
                   ))}
                 </ul>
                 {/* The three parts as xcelsolutions.com's home page draws them (2026-10-28, Eric): the number in brick beside each,
@@ -655,10 +652,13 @@ const WHAT_YOULL_LEARN = [
    Rubi™, what unlocks what, the 70 / 80 / 85% marks, the 24-hour revisit. */
 /* The four benefit tiles under the training program's subhead (Figma 558:3578). Their copy is xcelsolutions.com's list. */
 const BENEFIT_TILES = [
-  { Icon: ClipboardListThin, text: 'Eliminate test anxiety' },
-  { Icon: ChartLineUpThin, text: 'Track your study progress' },
-  { Icon: BallotCheckThin, text: 'Access 800+ practice exam questions' },
-  { Icon: FileCertificateThin, text: 'Become licensed in a few weeks' },
+  // Each label's width is its first line's, so every one sets on two lines as in the design and the row has room for its rules
+  // — "Access 800+ practice / exam questions" on two, not the design's three (2026-10-28, Eric). On one line each, the four
+  // run wider than the column.
+  { Icon: ClipboardListThin, text: 'Eliminate test anxiety', maxWidth: 70 },
+  { Icon: ChartLineUpThin, text: 'Track your study progress', maxWidth: 84 },
+  { Icon: BallotCheckThin, text: 'Access 800+ practice exam questions', maxWidth: 108 },
+  { Icon: FileCertificateThin, text: 'Become licensed in a few weeks', maxWidth: 86 },
 ]
 
 /* The three parts, in xcelsolutions.com's home-page words (2026-10-28, Eric; were this PDP's Step 1–3 and a Pass Your Exam! line). */
@@ -939,25 +939,18 @@ const STEP_BODY: CSSProperties = { ...BODY, marginTop: 7, color: 'var(--color-te
 /* Figma 558:3578, then opened up (2026-10-28, Eric): no fills, a 1 #DDD rule over the row like the one under it, and a 1 rule
    between the four (the outer ends flush with the column). Each 8 / 16 in; a 34 Font Awesome Thin icon in the
    darker brick (Primary 600, #7B1618), 12 from its label in Avenir Medium 11 / 14. */
+// Each benefit as wide as its content, no padding; the row spreads them with the rules between (2026-10-28, Eric).
 const BENEFITS: CSSProperties = {
   display: 'flex',
+  justifyContent: 'space-between',
   margin: 0,
   padding: 0,
   paddingTop: 15, // the section's gap, as below the row
   borderTop: '1px solid var(--color-e2e-card-outline)',
   listStyle: 'none',
 }
-const BENEFIT: CSSProperties = {
-  flex: '1 1 0',
-  minWidth: 0,
-  display: 'flex',
-  alignItems: 'center',
-  gap: 12,
-  paddingTop: 8,
-  paddingRight: 16,
-  paddingBottom: 8,
-  paddingLeft: 16,
-}
+const BENEFIT: CSSProperties = { flex: 'none', display: 'flex', alignItems: 'center', gap: 12 }
+const BENEFIT_RULE: CSSProperties = { flex: 'none', width: 1, alignSelf: 'stretch', background: 'var(--color-e2e-card-outline)' }
 // A 34 square, as Font Awesome sizes a glyph (1em). A 34 x 52 box fitted every icon to whichever side ran out first, so the narrow
 // 384-wide clipboard and ballot drew 45 tall beside a 34 chart and a 30 certificate (2026-10-28).
 const BENEFIT_ICON: CSSProperties = {
@@ -967,8 +960,6 @@ const BENEFIT_ICON: CSSProperties = {
   color: 'color-mix(in srgb, var(--color-xcel-brick) 80%, black)', // #7B1618
 }
 const BENEFIT_TEXT: CSSProperties = {
-  flex: '1 1 0',
-  minWidth: 0,
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 500,
   fontSize: 11,
