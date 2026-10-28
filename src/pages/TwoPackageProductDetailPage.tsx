@@ -2,7 +2,7 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSPropert
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
-import { BallotCheckLight, ChartLineUpLight, ClipboardListLight, FileCertificateLight, RubiMark, RubiWordmark } from '@/icons'
+import { BallotCheckLight, ChartLineUpLight, FaceSmileLight, FileCertificateLight, RubiMark, RubiWordmark } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
@@ -666,7 +666,8 @@ const BENEFIT_TILES = [
   // `units` is how wide each glyph's drawing is in Font Awesome's 512-high grid, so every icon gets the same scale and its box ends
   // where its drawing does — and the 12 to the label is the same 12 in all four (2026-10-28, Eric). The certificate's viewBox is
   // 576 wide but its drawing stops at 512, so its box is trimmed to 512.
-  { Icon: ClipboardListLight, text: 'Eliminate test anxiety', maxWidth: 70, units: 384, viewWidth: 384 },
+  // face-smile, not the design's clipboard-list (2026-10-28, Eric).
+  { Icon: FaceSmileLight, text: 'Eliminate test anxiety', maxWidth: 70, units: 512, viewWidth: 512 },
   { Icon: ChartLineUpLight, text: 'Track your study progress', maxWidth: 84, units: 512, viewWidth: 512 },
   { Icon: BallotCheckLight, text: 'Access 800+ practice exam questions', maxWidth: 108, units: 384, viewWidth: 384 },
   { Icon: FileCertificateLight, text: 'Become licensed in a few weeks', maxWidth: 86, units: 512, viewWidth: 576 },
