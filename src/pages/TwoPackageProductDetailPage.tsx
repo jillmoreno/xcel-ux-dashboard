@@ -464,7 +464,7 @@ export function TwoPackageProductDetailPage() {
                 </div>
                 {/* Four benefits in tiles — Figma 558:3578 (2026-10-28, Eric). */}
                 <ul style={BENEFITS}>
-                  {BENEFIT_TILES.map(({ Icon, text, maxWidth, units, viewWidth }, i) => (
+                  {BENEFIT_TILES.map(({ Icon, text, maxWidth, units, viewWidth, scale = 1 }, i) => (
                     <Fragment key={text}>
                       {/* The rule between two, the space either side of it the row's own (space-between). */}
                       {i > 0 ? <li aria-hidden style={BENEFIT_RULE} /> : null}
@@ -473,8 +473,9 @@ export function TwoPackageProductDetailPage() {
                           aria-hidden
                           style={{
                             ...BENEFIT_ICON,
-                            width: (viewWidth * BENEFIT_ICON_SIZE) / 512,
-                            marginRight: -((viewWidth - units) * BENEFIT_ICON_SIZE) / 512,
+                            height: BENEFIT_ICON_SIZE * scale,
+                            width: (viewWidth * BENEFIT_ICON_SIZE * scale) / 512,
+                            marginRight: -((viewWidth - units) * BENEFIT_ICON_SIZE * scale) / 512,
                           }}
                         />
                         <span style={{ ...BENEFIT_TEXT, maxWidth }}>{text}</span>
@@ -658,7 +659,7 @@ const WHAT_YOULL_LEARN = [
    third (2026-10-15, Eric's request) with every fact kept: the three parts,
    Rubi™, what unlocks what, the 70 / 80 / 85% marks, the 24-hour revisit. */
 /* The four benefit tiles under the training program's subhead (Figma 558:3578). Their copy is xcelsolutions.com's list. */
-const BENEFIT_TILES = [
+const BENEFIT_TILES: { Icon: typeof FaceGrinLight; text: string; maxWidth: number; units: number; viewWidth: number; scale?: number }[] = [
   // Each label's width is its first line's, so every one sets on two lines as in the design and the row has room for its rules
   // — "Access 800+ practice / exam questions" on two, not the design's three (2026-10-28, Eric). On one line each, the four
   // run wider than the column.
@@ -670,7 +671,9 @@ const BENEFIT_TILES = [
   { Icon: FaceGrinLight, text: 'Eliminate test anxiety', maxWidth: 70, units: 512, viewWidth: 512 },
   { Icon: ChartLineUpLight, text: 'Track your study progress', maxWidth: 84, units: 512, viewWidth: 512 },
   { Icon: BallotCheckLight, text: 'Access 800+ practice exam questions', maxWidth: 108, units: 384, viewWidth: 384 },
-  { Icon: FileCertificateLight, text: 'Become licensed in a few weeks', maxWidth: 86, units: 512, viewWidth: 576 },
+  // The certificate draws the full 512 across and its ribbon hangs 32 below the grid, so at the shared scale it read larger and
+  // heavier than the other three; it is drawn at 88% (2026-10-28, Eric).
+  { Icon: FileCertificateLight, text: 'Become licensed in a few weeks', maxWidth: 86, units: 512, viewWidth: 576, scale: 0.88 },
 ]
 
 /* The three parts, in xcelsolutions.com's home-page words (2026-10-28, Eric; were this PDP's Step 1–3 and a Pass Your Exam! line). */
