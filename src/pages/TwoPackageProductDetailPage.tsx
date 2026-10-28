@@ -1531,11 +1531,12 @@ const MINI_BADGE: CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   width: 148,
-  paddingTop: 1,
+  paddingTop: 3, // 1 lower (2026-10-28, Eric; was 1)
   background: 'var(--color-xcel-brick)',
   color: 'var(--color-fixed-light)',
 }
-const MINI_TAB_LABEL: CSSProperties = { paddingTop: 3, paddingLeft: 16, color: 'var(--color-xcel-brick)' }
+const MINI_TAB_LABEL: CSSProperties = { paddingTop: 5, // 1 lower (2026-10-28, Eric; was 3 — centred, 2 more moves it 1)
+  paddingLeft: 16, color: 'var(--color-xcel-brick)' }
 const MINI_BODY: CSSProperties = {
   alignSelf: 'stretch',
   display: 'flex',
