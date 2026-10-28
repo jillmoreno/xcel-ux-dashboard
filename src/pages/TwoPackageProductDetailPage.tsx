@@ -260,8 +260,9 @@ export function TwoPackageProductDetailPage() {
                 <hr aria-hidden style={SIDE_RULE} />
                 <section style={SIDE_SECTION}>
                   <h2 style={SIDE_TITLE}>Regulatory Information</h2>
-                  <div style={{ ...PARAGRAPHS, gap: 28 }}>
-                    <dl style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 18 }}>
+                  {/* 14 between every group, the link included (2026-10-28, Eric; was 18, and 28 to the link). */}
+                  <div style={{ ...PARAGRAPHS, gap: 14 }}>
+                    <dl style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
                       {[
                         ['Course Provided By:', 'XCEL Solutions LLC.'],
                         ['Course Name:', pkg.courseName],
