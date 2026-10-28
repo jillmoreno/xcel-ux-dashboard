@@ -436,7 +436,7 @@ export function TwoPackageProductDetailPage() {
             <div style={SHARED}>
               {/* What You'll Learn moved to the rail, under At a Glance (2026-10-28, Eric). */}
               <section style={SECTION}>
-                <h2 style={SECTION_TITLE}>How It Works</h2>
+                <h2 style={SECTION_TITLE}>How XCEL’s 3-Part Training Program Works</h2>
                 <div style={PARAGRAPHS}>
                   {HOW_IT_WORKS.map((step) => (
                     <p key={step.label} style={BODY}>
