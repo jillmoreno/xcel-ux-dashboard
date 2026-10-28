@@ -462,13 +462,19 @@ export function TwoPackageProductDetailPage() {
                     insurance licensing exams on the first try.
                   </p>
                 </div>
-                <div style={PARAGRAPHS}>
-                  {HOW_IT_WORKS.map((step) => (
-                    <p key={step.label} style={BODY}>
-                      <strong style={{ fontWeight: 800 }}>{step.label}</strong> {step.body}
-                    </p>
+                {/* The three parts as xcelsolutions.com's home page draws them (2026-10-28, Eric): the number in brick beside each,
+                    a slab-serif title, the copy in grey, a #DDD rule between parts. */}
+                <ol style={STEPS}>
+                  {HOW_IT_WORKS.map((step, i) => (
+                    <li key={step.number} style={i < HOW_IT_WORKS.length - 1 ? STEP : { ...STEP, ...STEP_LAST }}>
+                      <span aria-hidden style={STEP_NUMBER}>{step.number}</span>
+                      <div style={{ minWidth: 0 }}>
+                        <h3 style={STEP_TITLE}>{step.title}</h3>
+                        <p style={STEP_BODY}>{step.body}</p>
+                      </div>
+                    </li>
                   ))}
-                </div>
+                </ol>
               </section>
             </div>
           </div>
@@ -631,22 +637,22 @@ const WHAT_YOULL_LEARN = [
 /* Each step's number and label (in Heavy), then its copy — trimmed about a
    third (2026-10-15, Eric's request) with every fact kept: the three parts,
    Rubi™, what unlocks what, the 70 / 80 / 85% marks, the 24-hour revisit. */
-const HOW_IT_WORKS: { label: string; body: string }[] = [
+/* The three parts, in xcelsolutions.com's home-page words (2026-10-28, Eric; were this PDP's Step 1–3 and a Pass Your Exam! line). */
+const HOW_IT_WORKS: { number: string; title: string; body: string }[] = [
   {
-    label: 'Step 1 – Complete the Pre-Licensing Course:',
-    body: 'A solid foundation for your exam that satisfies any state pre-licensing education requirement — keywords, streamlined content, short intro/summary videos, review notes and chapter exams. Rubi™, our AI-powered study partner, explains concepts, creates extra practice and answers course questions instantly. Aim for 70% or better on course exams.',
+    number: '01',
+    title: 'Pre-License Education Builds a Solid Foundation',
+    body: 'Our pre-licensing courses deliver easy-to-follow content and teach key concepts through engaging videos, review notes, and practice questions. Now, with AI-powered learning from Rubi™, you can get instant answers, real-world examples, and multi-language support.',
   },
   {
-    label: 'Step 2 – Take the Prep Review Course:',
-    body: 'Finishing Part 1 unlocks the Prep Review Course (Part 2) and Exam Simulator (Part 3), the sections students value most. The Prep Review focuses on the most important material, weighted to match the state exam. Aim for 80% or better on chapter exams. With Premier, now is a good time for the Livestream Exam Review and Flashcards.',
+    number: '02',
+    title: 'Exam-Focused Prep That Gets You Ready to Pass',
+    body: 'After Part 1, you’ll unlock the Prep Review Course, with clear, exam-focused content that helps you focus on what matters most. Rubi™ continues to support your progress, helping you understand tough concepts and build exam-day confidence.',
   },
   {
-    label: 'Step 3 – Finish with the Exam Simulators:',
-    body: 'Three simulators, each weighted by topic to match the state exam, with unlimited retakes; each unlocks when you complete the one before. Aim for 85% or better, and revisit them at least 24 hours before your state exam to keep the material fresh.',
-  },
-  {
-    label: 'Pass Your Exam!', // no "Step 4 –" (2026-10-28, Eric)
-    body: 'Complete all three parts and you will have learned everything you need to pass on your first attempt.',
+    number: '03',
+    title: 'Take Unlimited Practice Exams',
+    body: 'There are three exam simulators. Each simulator is weighted by topic to match the state exam, allows for unlimited retakes, and can only be unlocked by completing the previous exam. The exam environment is meant to mimic the state exam.',
   },
 ]
 
@@ -881,6 +887,38 @@ const BODY: CSSProperties = {
 
 /* The side boxes' copy: 16 / 22 (2026-10-15, Eric's requests). */
 // 15 on 21 in every rail box (2026-10-15, Eric's request; was 16/22).
+/* THE THREE PARTS — xcelsolutions.com's (2026-10-28, Eric): each a row, the number 31 wide and 23 clear of its title; the slab
+   serif at 28 / 34 for both; the copy Avenir 20 / 31 in grey, 15 under its title; 30 under the copy, a 1 #DDD rule, 30 to the next
+   part. The last has no rule. */
+const STEPS: CSSProperties = { margin: 0, padding: 0, listStyle: 'none' }
+const STEP: CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: 23,
+  paddingBottom: 30,
+  marginBottom: 30,
+  borderBottom: '1px solid var(--color-e2e-card-outline)',
+}
+const STEP_LAST: CSSProperties = { paddingBottom: 0, marginBottom: 0, borderBottom: 'none' }
+const STEP_NUMBER: CSSProperties = {
+  flex: 'none',
+  minWidth: 31,
+  fontFamily: 'var(--font-e2e-serif)',
+  fontWeight: 700,
+  fontSize: 28,
+  lineHeight: '34px',
+  color: 'var(--color-xcel-brick)',
+}
+const STEP_TITLE: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-e2e-serif)',
+  fontWeight: 700,
+  fontSize: 28,
+  lineHeight: '34px',
+  color: 'var(--color-text-primary)',
+}
+const STEP_BODY: CSSProperties = { ...BODY, marginTop: 15, fontSize: 20, lineHeight: '31px', color: 'var(--color-text-secondary)' }
+
 /* A section's subhead: the course intro's own type — BODY, 18 / 27 Avenir (2026-10-28, Eric; was 20 / 30 Medium) — its two lines 8
    apart. */
 const SUBHEAD: CSSProperties = { ...BODY, display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 8 } // 8 more to the steps (2026-10-28, Eric)
