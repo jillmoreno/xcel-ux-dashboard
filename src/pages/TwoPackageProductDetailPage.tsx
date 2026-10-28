@@ -91,6 +91,8 @@ export function TwoPackageProductDetailPage() {
   const [params] = useSearchParams()
   useEndToEndDemoParams()
   const [picked, setPicked] = useState<PackageId>('premier')
+  /* Change state or line: the selector slides open under the heading (2026-10-28, Eric). */
+  const [changeOpen, setChangeOpen] = useState(false)
   /* THE CARDS PIN (2026-10-27, Eric): 40 under the top of the browser, for the rest of the page. The packages ground is three
      stacked pieces — heading, cards, comparison — so the cards can be a direct child of the long column and stay stuck past
      the ground's end. The ground's fade runs over the heading and the cards, so both are measured (offsetHeight ignores the
@@ -328,14 +330,63 @@ export function TwoPackageProductDetailPage() {
                     Select your Florida package:
                   </h2>
                   {/* Back to the state or line-of-authority choice — one link on the heading's baseline, right-aligned, in the rail's
-                      link type, no underline (2026-10-28, Eric; was two, Change state · Change line). Not wired yet. */}
+                      link type, no underline (2026-10-28, Eric; was two, Change state · Change line). It opens the selector below. */}
                   <div style={SIDE_BODY}>
                     {/* A solid angle-down after it, its drawing 4 clear — the glyph is 384 wide in an 11 square, so 1.4 of that is air (2026-10-28,
                         Eric; angle-right first). */}
-                    <button type="button" className="cre-e2e-textlink" style={PLAIN_LINK}>
+                    <button
+                      type="button"
+                      className="cre-e2e-textlink"
+                      style={PLAIN_LINK}
+                      aria-expanded={changeOpen}
+                      aria-controls="change-state-or-line"
+                      onClick={() => setChangeOpen((o) => !o)}
+                    >
                       Change state or line
-                      <AngleDownSolid size={11} aria-hidden style={{ marginLeft: 2.6, verticalAlign: '-1px' }} />
+                      {/* Turns over when the selector is open. */}
+                      <AngleDownSolid
+                        size={11}
+                        aria-hidden
+                        style={{
+                          marginLeft: 2.6,
+                          verticalAlign: '-1px',
+                          transform: changeOpen ? 'rotate(180deg)' : 'none',
+                          transition: 'transform 0.25s ease',
+                        }}
+                      />
                     </button>
+                  </div>
+                </div>
+                {/* THE SELECTOR — Figma 558:3600 (2026-10-28, Eric): slides open between the heading and the cards. A 0fr → 1fr grid row,
+                    so it opens to its own height; inert while shut, so its selects are out of the tab order. Not wired: picking
+                    changes nothing on the page yet. */}
+                <div style={{ ...CHANGE_SLIDE, gridTemplateRows: changeOpen ? '1fr' : '0fr' }}>
+                  <div id="change-state-or-line" inert={!changeOpen} style={{ overflow: 'hidden', minHeight: 0 }}>
+                    <div style={CHANGE_ROW}>
+                      <span style={CHANGE_LABEL}>Select different state and or line of authority:</span>
+                      <span style={CHANGE_FIELD}>
+                        <select aria-label="State" defaultValue="" className="cre-e2e-input" style={CHANGE_SELECT}>
+                          <option value="" disabled>
+                            Select state
+                          </option>
+                          {CHANGE_STATES.map((st) => (
+                            <option key={st}>{st}</option>
+                          ))}
+                        </select>
+                        <AngleDownSolid size={16} aria-hidden style={CHANGE_CHEVRON} />
+                      </span>
+                      <span style={CHANGE_FIELD}>
+                        <select aria-label="Line of authority" defaultValue="" className="cre-e2e-input" style={CHANGE_SELECT}>
+                          <option value="" disabled>
+                            Select line of authority
+                          </option>
+                          {CHANGE_LINES.map((line) => (
+                            <option key={line}>{line}</option>
+                          ))}
+                        </select>
+                        <AngleDownSolid size={16} aria-hidden style={CHANGE_CHEVRON} />
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -670,6 +721,17 @@ const WHAT_YOULL_LEARN = [
 /* Each step's number and label (in Heavy), then its copy — trimmed about a
    third (2026-10-15, Eric's request) with every fact kept: the three parts,
    Rubi™, what unlocks what, the 70 / 80 / 85% marks, the 24-hour revisit. */
+/* The selector's choices. DEMO: the states xcelsolutions.com lists; the lines are a short, invented set. */
+const CHANGE_STATES = [
+  'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida',
+  'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland',
+  'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire',
+  'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania',
+  'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'U.S. Virgin Islands', 'Utah', 'Vermont', 'Virginia',
+  'Washington', 'West Virginia', 'Wisconsin', 'Wyoming',
+]
+const CHANGE_LINES = ['Life and Health', 'Life', 'Accident and Health', 'Property and Casualty', 'Personal Lines']
+
 /* The four benefit tiles under the training program's subhead (Figma 558:3578). Their copy is xcelsolutions.com's list. */
 const BENEFIT_TILES: { Icon: typeof FaceGrinLight; text: string; maxWidth: number; units: number; viewWidth: number; scale?: number }[] = [
   // Each label's width is its first line's, so every one sets on two lines as in the design and the row has room for its rules
@@ -1152,6 +1214,55 @@ const PACKAGES_HEAD_ROW: CSSProperties = {
   gap: 16,
   paddingTop: 4,
   paddingBottom: 16,
+}
+
+/* The state / line selector (Figma 558:3600): the label in Avenir Heavy 13 / 21, then two white 35-high selects, a 0.5 Neutral 400
+   edge and 4 corners, Avenir Medium 12, a 16 solid angle-down in brick 16 in from the right; 16 between, centred, 16 to the cards. */
+const CHANGE_SLIDE: CSSProperties = { display: 'grid', transition: 'grid-template-rows 0.3s ease' }
+const CHANGE_ROW: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 16,
+  paddingTop: 8,
+  paddingBottom: 24, // its own 8, then 16 to the cards
+}
+const CHANGE_LABEL: CSSProperties = {
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 800,
+  fontSize: 13,
+  lineHeight: '21px',
+  color: 'var(--color-text-primary)',
+  whiteSpace: 'nowrap',
+}
+const CHANGE_FIELD: CSSProperties = { position: 'relative', display: 'inline-flex' }
+const CHANGE_SELECT: CSSProperties = {
+  appearance: 'none',
+  height: 35,
+  margin: 0,
+  paddingTop: 1,
+  paddingRight: 44, // 16 + the chevron's 16 + 12
+  paddingBottom: 0,
+  paddingLeft: 16,
+  borderWidth: 0.5,
+  borderStyle: 'solid',
+  borderColor: 'var(--color-neutral-400)',
+  borderRadius: 4,
+  background: 'var(--color-fixed-light)',
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 500,
+  fontSize: 12,
+  lineHeight: '14px',
+  color: 'var(--color-text-primary)',
+  cursor: 'pointer',
+}
+const CHANGE_CHEVRON: CSSProperties = {
+  position: 'absolute',
+  right: 16,
+  top: '50%',
+  transform: 'translateY(-50%)',
+  color: 'var(--color-xcel-brick)',
+  pointerEvents: 'none',
 }
 
 /* The ground the heading, cards and grid sit on, in three pieces (the pin): 32 in (24 on top), 10 corners. The heading's and the
