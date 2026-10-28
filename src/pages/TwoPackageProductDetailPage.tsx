@@ -1769,7 +1769,7 @@ const SINGLE_BODY: CSSProperties = {
 }
 /* A step up from the card's title (2026-10-28, Eric): 24 / 30 compact, 28 / 36 full — the page's next size up. */
 const SINGLE_TITLE: CSSProperties = { ...OPTION_TITLE, minWidth: 0, fontSize: pinLerp(28, 24), lineHeight: pinLerp(36, 30) }
-const SINGLE_BUY_COLUMN: CSSProperties = { flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: pinLerp(10, 6) }
+const SINGLE_BUY_COLUMN: CSSProperties = { flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: pinLerp(6, 2) } // 4 less over the Purchase (2026-10-28, Eric)
 const SINGLE_BUY: CSSProperties = {
   ...ADD_TO_CART,
   height: pinLerp(39, 34),
