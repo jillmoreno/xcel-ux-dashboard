@@ -570,24 +570,28 @@ export function TwoPackageProductDetailPage() {
                   <caption style={{ ...SIDE_TITLE, textAlign: 'left', paddingBottom: 20 }}>
                     {single ? 'Premier package includes:' : 'Standard and Premier package comparison:'}
                   </caption>
-                  <thead>
-                    <tr>
-                      <th scope="col" style={{ ...COMPARE_HEAD, paddingLeft: 0 }}>Feature</th>
-                      {/* Each package's header picks it — its column tints and its card selects (2026-10-27, Eric). */}
-                      {/* Single, the one column's header is only its name — there is nothing to pick between. */}
-                      {packages.map((p) => (
-                        <th key={p.id} scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK, ...(picked === p.id ? pickedShade(0) : null) }}>
-                          {single ? (
-                            p.short
-                          ) : (
-                            <button type="button" aria-pressed={picked === p.id} onClick={() => setPicked(p.id)} style={COMPARE_PICK}>
-                              {p.short}
-                            </button>
-                          )}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
+                  {/* Single, no header row and so no rules over it: one column of checks under "Premier package includes:" says it
+                      (2026-10-28, Eric). */}
+                  {single ? null : (
+                    <thead>
+                      <tr>
+                        <th scope="col" style={{ ...COMPARE_HEAD, paddingLeft: 0 }}>Feature</th>
+                        {/* Each package's header picks it — its column tints and its card selects (2026-10-27, Eric). */}
+                        {/* Single, the one column's header is only its name — there is nothing to pick between. */}
+                        {packages.map((p) => (
+                          <th key={p.id} scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK, ...(picked === p.id ? pickedShade(0) : null) }}>
+                            {single ? (
+                              p.short
+                            ) : (
+                              <button type="button" aria-pressed={picked === p.id} onClick={() => setPicked(p.id)} style={COMPARE_PICK}>
+                                {p.short}
+                              </button>
+                            )}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                  )}
                   <tbody>
                     {COMPARISON.map((row, r) => (
                       <tr key={r}>
