@@ -1057,7 +1057,7 @@ const PIN_LAYER: CSSProperties = { position: 'absolute', top: 0, right: 0, botto
 /* The tray's feathered edge, at its widest. */
 const TRAY_FEATHER = 15
 /* The scroll over which the comparison's tan fades once it is up past the tray. */
-const FOOT_FADE = 40
+const FOOT_FADE = 80 // (2026-10-28, Eric; was 40)
 /* The scroll over which pinned cards condense. */
 const PIN_CONDENSE = 160
 
