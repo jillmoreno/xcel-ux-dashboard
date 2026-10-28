@@ -961,6 +961,9 @@ const BENEFIT_ICON: CSSProperties = {
   color: 'color-mix(in srgb, var(--color-xcel-brick) 80%, black)', // #7B1618
 }
 const BENEFIT_TEXT: CSSProperties = {
+  // 3 lower against its icon (2026-10-28, Eric) — nudged, so the row's height and centring are untouched.
+  position: 'relative',
+  top: 3,
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 500,
   fontSize: 11,
