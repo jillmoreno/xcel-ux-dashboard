@@ -111,8 +111,14 @@ export function TwoPackageProductDetailPage() {
   const footRef = useRef<HTMLDivElement>(null)
   const [fade, setFade] = useState({ head: 0, cards: 0 })
   const [browserTop, setBrowserTop] = useState(0)
-  /* The design bar's Compact cards: the compact layout on the page too, not only once pinned. */
-  const compact = useFeatureFlag('pdp-compact-cards').enabled
+  /* The design bar's Course Cards (2026-10-28, Eric; was the on/off Compact cards): Large condense as they pin; Compact are the
+     compact layout on the page too; the two Top trays leave the cards on the page, full size and unpinned, and slide a
+     full-width tray down from the top of the browser once they have scrolled off. */
+  const cardsMode = useFeatureFlag('pdp-course-cards').variant ?? 'large'
+  const compact = cardsMode === 'compact'
+  const topTray = cardsMode === 'tray-compact' || cardsMode === 'tray-mini' ? cardsMode : null
+  const topTrayRef = useRef<HTMLDivElement>(null)
+  const [trayShown, setTrayShown] = useState(false)
   useLayoutEffect(() => {
     const head = headRef.current
     const cards = cardsRef.current
@@ -130,7 +136,13 @@ export function TwoPackageProductDetailPage() {
        slides across beside the price first) and --py eases in (then rises into the price's row); --price-w is each card's
        price width, which the button clears. */
     const check = () => {
-      const over = browserTop() + CARDS_PIN_GAP - head.getBoundingClientRect().bottom
+      // The Top trays: the cards stay on the page, and the tray shows once the last of them is up past the browser's top.
+      if (topTray) setTrayShown(cards.getBoundingClientRect().bottom < browserTop())
+      else setTrayShown(false)
+      topTrayRef.current?.querySelectorAll<HTMLElement>('[data-price-row]').forEach((row) => {
+        row.parentElement?.style.setProperty('--price-w', `${row.offsetWidth}px`)
+      })
+      const over = topTray ? -1 : browserTop() + CARDS_PIN_GAP - head.getBoundingClientRect().bottom
       const p = Math.min(1, Math.max(0, over / PIN_CONDENSE))
       cards.style.setProperty('--pinned', over > 0.5 ? '1' : '0')
       cards.style.setProperty('--p', String(p))
@@ -144,7 +156,8 @@ export function TwoPackageProductDetailPage() {
          at once at first). */
       const tray = trayRef.current
       const foot = footRef.current
-      if (tray && foot) {
+      if (topTray) foot?.style.removeProperty('--foot-fill')
+      else if (tray && foot) {
         const past = tray.getBoundingClientRect().bottom - foot.getBoundingClientRect().bottom
         const gone = Math.min(1, Math.max(0, past / FOOT_FADE))
         const left = 1 - gone
@@ -171,7 +184,7 @@ export function TwoPackageProductDetailPage() {
       ro.disconnect()
       window.removeEventListener('scroll', check, { capture: true })
     }
-  }, [compact])
+  }, [compact, topTray])
   const fadeSpan = fade.head + fade.cards || 300
   const fadeGround = (offset: number): CSSProperties => ({
     backgroundColor: 'var(--color-secondary-100)',
@@ -204,9 +217,97 @@ export function TwoPackageProductDetailPage() {
     }
   }, [])
 
+  /* Purchase: picks the package, then on to the checkout. */
+  const purchase = (id: PackageId) => {
+    setPicked(id)
+    navigate(`/end-to-end-demo/checkout?${new URLSearchParams({ ...Object.fromEntries(params), package: id }).toString()}`)
+  }
+  /* One package card — on the page, and in the Top Compact Card Tray. */
+  const renderCard = (p: (typeof PACKAGES)[number]) => {
+    const on = p.id === picked
+    // A div with the radio role, not a button: it holds a real button (Purchase), and buttons cannot nest.
+    return (
+      <div
+        role="radio"
+        tabIndex={0}
+        aria-checked={on}
+        onClick={() => setPicked(p.id)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            setPicked(p.id)
+          }
+        }}
+        style={{ ...OPTION_CARD, ...(on ? OPTION_ON : null) }}
+      >
+        {/* The strip along the top: the badge in the top-right corner (Premier). The radio that sat 10 in from the
+            right is gone (2026-10-27, Eric) — the brick edge and the column shade say which is picked. */}
+        <span style={OPTION_TOP}>
+          {p.badge ? <span style={OPTION_BADGE}>{p.badge}</span> : null}
+        </span>
+        <span style={OPTION_BODY}>
+          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+            {/* 2 smaller condensed (2026-10-27, Eric). */}
+            <span style={{ ...SHARED_EYEBROW, fontSize: pinLerp(14, 12) }}>{p.short}</span>
+            {/* The state leads the title again, as a check on which state is chosen (2026-10-28, Eric). */}
+            <span style={OPTION_TITLE}>{`${place} ${localize(p.title)}`}</span>
+          </span>
+          <span data-price-row style={OPTION_PRICE_ROW}>
+            <span style={OPTION_PRICE}>{p.price}</span>
+            <span style={OPTION_WAS}>
+              <s style={{ textDecoration: 'none' }}>{p.was}</s>
+              <img src="/brand/e2e-price-strike.svg" alt="" aria-hidden style={OPTION_STRIKE} />
+            </span>
+          </span>
+          {/* Each card's own Purchase, under its price (2026-10-27, Eric; was the rail's price card). Premier's is always the brick
+              one and Standard's always outlined, whichever card is selected — Premier stays the strongest call. Buying
+              either package picks it first. */}
+          <button
+            type="button"
+            className={`cre-e2e-add-to-cart ${p.id === 'premier' ? 'cre-e2e-cta' : `cre-e2e-outline${on ? '' : ' cre-e2e-outline--quiet'}`}`}
+            style={OPTION_BUY}
+            onClick={(e) => {
+              e.stopPropagation()
+              purchase(p.id)
+            }}
+          >
+            Purchase {p.short}
+          </button>
+        </span>
+      </div>
+    )
+  }
+
   return (
     <div style={PAGE}>
       <StandaloneBrowserChrome />
+      {/* THE TOP TRAYS (2026-10-28, Eric): full width, sliding down from the top of the browser once the cards on the page have
+          scrolled off it, and back up when they return. A zero-height sticky row holds a clip the tray slides out of, so it is
+          hidden above the browser's top rather than drawn over the chrome. */}
+      {topTray ? (
+        <div style={{ ...TOP_TRAY_PIN, top: browserTop }}>
+          <div style={TOP_TRAY_CLIP}>
+            <div
+              ref={topTrayRef}
+              role="radiogroup"
+              aria-label="Choose your package"
+              aria-hidden={!trayShown}
+              inert={!trayShown}
+              style={{ ...TOP_TRAY, transform: trayShown ? 'none' : 'translateY(-100%)' }}
+            >
+              {PACKAGES.map((p) =>
+                topTray === 'tray-compact' ? (
+                  <div key={p.id} style={{ ...PACKAGE_PANEL, ...TOP_TRAY_CARD }}>
+                    {renderCard(p)}
+                  </div>
+                ) : (
+                  <MiniCard key={p.id} p={p} on={p.id === picked} title={`${place} ${localize(p.title)}`} onPick={() => setPicked(p.id)} onBuy={() => purchase(p.id)} />
+                ),
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
       <PartnerHeader />
       <section aria-label="Personal welcome" style={WELCOME}>
         <div style={WELCOME_CONTENT}>
@@ -428,7 +529,7 @@ export function TwoPackageProductDetailPage() {
                 ref={cardsRef}
                 role="radiogroup"
                 aria-labelledby="choose-package"
-                style={{ ...PACKAGE_GRID, top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }}
+                style={{ ...PACKAGE_GRID, ...(topTray ? { position: 'relative' } : { top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }) }}
               >
                 {/* The cards' piece of the ground, on its own layer so it can go once they pin — the condensed frame is narrower than
                     the column, and this showing either side of it read as a stray edge (2026-10-27, Eric). */}
@@ -440,64 +541,12 @@ export function TwoPackageProductDetailPage() {
                   ref={trayRef}
                   style={{ ...PIN_BACKDROP, top: `calc(${-(browserTop + CARDS_PIN_GAP)}px + 28px * var(--p, 0))` }}
                 />
-                {PACKAGES.map((p) => {
-                  const on = p.id === picked
-                  return (
-                    <div key={p.id} style={PACKAGE_PANEL}>
-                      {/* Figma 544:3250: the card, its details under it, on the shared ground. */}
-                      {/* A div with the radio role, not a button: it holds a real button (Purchase), and buttons cannot nest. */}
-                      <div
-                        role="radio"
-                        tabIndex={0}
-                        aria-checked={on}
-                        onClick={() => setPicked(p.id)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            setPicked(p.id)
-                          }
-                        }}
-                        style={{ ...OPTION_CARD, ...(on ? OPTION_ON : null) }}
-                      >
-                        {/* The strip along the top: the badge in the top-right corner (Premier). The radio that sat 10 in from the
-                            right is gone (2026-10-27, Eric) — the brick edge and the column shade say which is picked. */}
-                        <span style={OPTION_TOP}>
-                          {p.badge ? <span style={OPTION_BADGE}>{p.badge}</span> : null}
-                        </span>
-                        <span style={OPTION_BODY}>
-                          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
-                            {/* 2 smaller condensed (2026-10-27, Eric). */}
-                            <span style={{ ...SHARED_EYEBROW, fontSize: pinLerp(14, 12) }}>{p.short}</span>
-                            {/* The state leads the title again, as a check on which state is chosen (2026-10-28, Eric). */}
-                            <span style={OPTION_TITLE}>{`${place} ${localize(p.title)}`}</span>
-                          </span>
-                          <span data-price-row style={OPTION_PRICE_ROW}>
-                            <span style={OPTION_PRICE}>{p.price}</span>
-                            <span style={OPTION_WAS}>
-                              <s style={{ textDecoration: 'none' }}>{p.was}</s>
-                              <img src="/brand/e2e-price-strike.svg" alt="" aria-hidden style={OPTION_STRIKE} />
-                            </span>
-                          </span>
-                          {/* Each card's own Purchase, under its price (2026-10-27, Eric; was the rail's price card). Premier's is always the brick
-                              one and Standard's always outlined, whichever card is selected — Premier stays the strongest call. Buying
-                              either package picks it first. */}
-                          <button
-                            type="button"
-                            className={`cre-e2e-add-to-cart ${p.id === 'premier' ? 'cre-e2e-cta' : `cre-e2e-outline${on ? '' : ' cre-e2e-outline--quiet'}`}`}
-                            style={OPTION_BUY}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setPicked(p.id)
-                              navigate(`/end-to-end-demo/checkout?${new URLSearchParams({ ...Object.fromEntries(params), package: p.id }).toString()}`)
-                            }}
-                          >
-                            Purchase {p.short}
-                          </button>
-                        </span>
-                      </div>
-                    </div>
-                  )
-                })}
+                {PACKAGES.map((p) => (
+                  <div key={p.id} style={PACKAGE_PANEL}>
+                    {/* Figma 544:3250: the card, on the shared ground. */}
+                    {renderCard(p)}
+                  </div>
+                ))}
               </div>
               {/* THE COMPARISON GRID (2026-10-27, Eric's CoWork content) — under both cards, across the ground: each feature, then a
                   120-wide check column per package. Replaces the per-package lists. The ground's last piece, its bottom corners. */}
@@ -638,6 +687,66 @@ export function TwoPackageProductDetailPage() {
 
 /* The two packages, Standard on the left (2026-10-27). Standard's copy is the original page's (the live Standard
    product page); Premier's is its live page's, 2026-10-27. */
+/* THE TOP MINI CARD TRAY'S CARD — Figma 560:3783 (2026-10-28, Eric): the package's name as a tan tab in the top-left corner (Premier's
+   behind its brick PASS GUARANTEE), then the title, 18 / 24 Heavy, beside the price over its Purchase. Picked, white with a 2 brick
+   edge; at rest, 40% white with the 1 #D9D9D9 one. Both Purchase buttons are brick, as the design draws them. */
+function MiniCard({ p, on, title, onPick, onBuy }: {
+  p: (typeof PACKAGES)[number]
+  on: boolean
+  title: string
+  onPick: () => void
+  onBuy: () => void
+}) {
+  return (
+    <div
+      role="radio"
+      tabIndex={0}
+      aria-checked={on}
+      onClick={onPick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onPick()
+        }
+      }}
+      style={{ ...MINI_CARD, ...(on ? MINI_CARD_ON : null) }}
+    >
+      <span style={MINI_TAB}>
+        {p.badge ? <span style={MINI_BADGE}>{p.badge}</span> : null}
+        <span style={MINI_TAB_LABEL}>{p.short} package</span>
+      </span>
+      <span style={MINI_BODY}>
+        <span style={MINI_TITLE}>{title}</span>
+        <span style={MINI_PRICE_COLUMN}>
+          <span style={MINI_PRICES}>
+            <span style={MINI_PRICE}>
+              <span style={MINI_DOLLAR}>$</span>
+              {p.price.replace(/^\$/, '')}
+            </span>
+            <span style={MINI_WAS}>
+              <s style={{ textDecoration: 'none' }}>{p.was}</s>
+              <img src="/brand/e2e-price-strike.svg" alt="" aria-hidden style={MINI_STRIKE} />
+            </span>
+          </span>
+          <button
+            type="button"
+            className="cre-e2e-add-to-cart cre-e2e-cta"
+            style={MINI_BUY}
+            onClick={(e) => {
+              e.stopPropagation()
+              onBuy()
+            }}
+          >
+            Purchase {p.short}
+          </button>
+        </span>
+      </span>
+      {/* The edge, over the tab so the tab's corner sits inside it. */}
+      <span aria-hidden style={{ ...MINI_EDGE, ...(on ? MINI_EDGE_ON : null) }} />
+    </div>
+  )
+}
+
 const PACKAGES: {
   id: PackageId
   short: string
@@ -1364,6 +1473,121 @@ const TRAY_FEATHER = 15
 const FOOT_FADE = 80 // (2026-10-28, Eric; was 40)
 /* The scroll over which pinned cards condense. */
 const PIN_CONDENSE = 160
+
+/* The Top trays (2026-10-28, Eric): a zero-height row stuck at the browser's top (set inline), over the page's pinned header but
+   under the browser chrome; the clip under it hides the tray until it slides down. */
+const TOP_TRAY_PIN: CSSProperties = { position: 'sticky', zIndex: 20, height: 0 }
+const TOP_TRAY_CLIP: CSSProperties = { position: 'absolute', top: 0, right: 0, left: 0, overflow: 'hidden', paddingBottom: 12, pointerEvents: 'none' }
+/* Figma 560:3783: the browser's full width in Secondary 200, 16 above and below, the two cards 552 wide and 24 apart, centred. The
+   compact cards ride it in their condensed state. */
+const TOP_TRAY: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'stretch',
+  gap: 24,
+  paddingTop: 16,
+  paddingRight: 24,
+  paddingBottom: 16,
+  paddingLeft: 24,
+  background: 'var(--color-secondary-200)',
+  boxShadow: '0 6px 10px -8px rgb(0 0 0 / 0.2)',
+  transition: 'transform 0.3s ease',
+  pointerEvents: 'auto',
+  ['--p' as string]: 1,
+  ['--cp' as string]: 1,
+  ['--px' as string]: 1,
+  ['--py' as string]: 1,
+}
+const TOP_TRAY_CARD: CSSProperties = { flex: '0 1 552px' }
+
+const MINI_CARD: CSSProperties = {
+  position: 'relative',
+  flex: '0 1 552px',
+  minWidth: 0,
+  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  borderRadius: 10,
+  background: 'color-mix(in srgb, var(--color-fixed-light) 40%, transparent)',
+  cursor: 'pointer',
+}
+const MINI_CARD_ON: CSSProperties = { background: 'var(--color-fixed-light)' }
+const MINI_EDGE: CSSProperties = {
+  position: 'absolute',
+  top: 0,
+  right: 0,
+  bottom: 0,
+  left: 0,
+  borderRadius: 10,
+  boxShadow: 'inset 0 0 0 1px var(--color-e2e-card-outline)',
+  pointerEvents: 'none',
+}
+const MINI_EDGE_ON: CSSProperties = { boxShadow: 'inset 0 0 0 2px var(--color-xcel-brick)' }
+/* The tab: Secondary 200, an 8 corner bottom right, 25 tall; Premier's brick badge 148 wide at its left. */
+const MINI_TAB: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  height: 25,
+  paddingRight: 16,
+  borderBottomRightRadius: 8,
+  background: 'var(--color-secondary-200)',
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 800,
+  fontSize: 13,
+  textTransform: 'uppercase',
+  whiteSpace: 'nowrap',
+}
+const MINI_BADGE: CSSProperties = {
+  alignSelf: 'stretch',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 148,
+  paddingTop: 1,
+  background: 'var(--color-xcel-brick)',
+  color: 'var(--color-fixed-light)',
+}
+const MINI_TAB_LABEL: CSSProperties = { paddingTop: 3, paddingLeft: 16, color: 'var(--color-xcel-brick)' }
+const MINI_BODY: CSSProperties = {
+  alignSelf: 'stretch',
+  display: 'flex',
+  alignItems: 'flex-end',
+  gap: 10,
+  paddingRight: 20,
+  paddingBottom: 20,
+  paddingLeft: 20,
+}
+const MINI_TITLE: CSSProperties = {
+  flex: '1 0 0',
+  minWidth: 0,
+  maxWidth: 244,
+  marginRight: 'auto',
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 800,
+  fontSize: 18,
+  lineHeight: '24px',
+  color: 'var(--color-text-primary)',
+}
+const MINI_PRICE_COLUMN: CSSProperties = { flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }
+const MINI_PRICES: CSSProperties = { display: 'flex', alignItems: 'baseline', gap: 6, whiteSpace: 'nowrap' }
+const MINI_PRICE: CSSProperties = { fontFamily: 'var(--font-e2e-avenir)', fontWeight: 500, fontSize: 22, lineHeight: '26px', color: 'var(--color-text-primary)' }
+/* The dollar sign raised and smaller, 14.19 — the design's superscript. */
+const MINI_DOLLAR: CSSProperties = { fontSize: 14.19, verticalAlign: '0.45em', lineHeight: 0 }
+const MINI_WAS: CSSProperties = { position: 'relative', fontFamily: 'var(--font-e2e-avenir)', fontWeight: 400, fontSize: 14, lineHeight: '26px', color: 'var(--color-neutral-500)' }
+const MINI_STRIKE: CSSProperties = { position: 'absolute', left: -2, top: '50%', width: 53, height: 1, transform: 'translateY(-50%) rotate(-7.43deg)' }
+const MINI_BUY: CSSProperties = {
+  ...ADD_TO_CART,
+  height: 34,
+  paddingTop: 0,
+  paddingRight: 16,
+  paddingBottom: 0,
+  paddingLeft: 16,
+  borderRadius: 6,
+  fontSize: 16,
+  whiteSpace: 'nowrap',
+}
 
 /* A length from the full card (a) to the condensed one (b), by the cards' progress — --cp, or one of its eased forms — or, for
    the frame round them, the pin's own --p. */

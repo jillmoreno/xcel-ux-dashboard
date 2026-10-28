@@ -2623,7 +2623,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
-    key: 'pdp-compact-cards',
+    key: 'pdp-course-cards',
     /* THE TWO-PACKAGE PDP'S CARDS, ON THE PAGE — 2026-10-27, Eric: "make the
        smaller cards a design control option."
 
@@ -2635,15 +2635,32 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
              the frame round them.
 
        ⚠ THE PINNED CARDS ARE COMPACT EITHER WAY. This decides what the page
-       shows before the cards pin, which is the comparison worth making. */
+       shows before the cards pin, which is the comparison worth making.
+
+       2026-10-28, Eric: the on/off became a four-way Course Cards dropdown — the two above, plus two full-width trays that
+       slide down from the top of the browser once the cards on the page have scrolled off the top (the cards on the page
+       then scroll away like the rest of it, full size):
+
+       large         — Large Cards: the off above. THE DEFAULT.
+       compact       — Compact Cards: the on above.
+       tray-compact  — Top Compact Card Tray: the compact cards, in a full-width tray from the top.
+       tray-mini     — Top Mini Card Tray: Figma 560:3783 — a 16-tall tan strip, the eyebrow as a tab in each card's corner,
+                       the title beside the price and its Purchase. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
     surfaces: ['invite'],
     group: 'Layout',
-    label: 'Compact cards',
+    label: 'Course Cards',
     description:
-      'The two-package PDP\u2019s package cards. Off \u2014 the default \u2014 draws the full cards on the page, condensing as they pin. On draws the compact pinned layout on the page too.',
-    defaultEnabled: false,
+      'The two-package PDP\u2019s package cards. Large Cards \u2014 the default \u2014 condense as they pin; Compact Cards draws the compact layout on the page too; the two Top trays leave the cards on the page and slide a full-width tray down from the top of the browser once they have scrolled off.',
+    defaultEnabled: true,
+    defaultVariant: 'large',
+    variants: [
+      { value: 'large', label: 'Large Cards', description: 'The full cards on the page, condensing into the compact layout as they pin. The default.' },
+      { value: 'compact', label: 'Compact Cards', description: 'The compact layout on the page too; pinning only tightens the frame round them.' },
+      { value: 'tray-compact', label: 'Top Compact Card Tray', description: 'The cards stay on the page; a full-width tray of the compact cards slides down from the top once they have scrolled off.' },
+      { value: 'tray-mini', label: 'Top Mini Card Tray', description: 'Figma 560:3783 — a slim full-width tray of mini cards slides down from the top once the cards have scrolled off.' },
+    ],
     page: 'dashboard-rebrand',
   },
   {
