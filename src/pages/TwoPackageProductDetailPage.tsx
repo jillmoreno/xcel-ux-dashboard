@@ -98,6 +98,8 @@ export function TwoPackageProductDetailPage() {
      disappears there rather than showing beneath them. */
   const headRef = useRef<HTMLDivElement>(null)
   const cardsRef = useRef<HTMLDivElement>(null)
+  const trayRef = useRef<HTMLDivElement>(null)
+  const footRef = useRef<HTMLDivElement>(null)
   const [fade, setFade] = useState({ head: 0, cards: 0 })
   const [browserTop, setBrowserTop] = useState(0)
   /* The design bar's Compact cards: the compact layout on the page too, not only once pinned. */
@@ -128,6 +130,14 @@ export function TwoPackageProductDetailPage() {
       cards.style.setProperty('--cp', String(c))
       cards.style.setProperty('--px', String(1 - (1 - c) ** 2))
       cards.style.setProperty('--py', String(c ** 2))
+      /* Once the comparison's piece of the ground has scrolled up past the tray's bottom edge, its tan goes, so none shows
+         through the tray's feathered edges over the white page (2026-10-28, Eric). */
+      const tray = trayRef.current
+      const foot = footRef.current
+      if (tray && foot) {
+        if (foot.getBoundingClientRect().bottom <= tray.getBoundingClientRect().bottom) foot.style.setProperty('--foot-fill', 'transparent')
+        else foot.style.removeProperty('--foot-fill')
+      }
       cards.querySelectorAll<HTMLElement>('[data-price-row]').forEach((row) => {
         row.parentElement?.style.setProperty('--price-w', `${row.offsetWidth}px`)
       })
@@ -323,6 +333,7 @@ export function TwoPackageProductDetailPage() {
                     it is Figma 548:3477's frame at the column's width — 32 either side of the cards, 16 above, 24 below — square on top, 10 corners below, a shadow along its bottom edge only. */}
                 <div
                   aria-hidden
+                  ref={trayRef}
                   style={{ ...PIN_BACKDROP, top: `calc(${-(browserTop + CARDS_PIN_GAP)}px + 24px * var(--p, 0))` }}
                 />
                 {PACKAGES.map((p) => {
@@ -385,7 +396,7 @@ export function TwoPackageProductDetailPage() {
               </div>
               {/* THE COMPARISON GRID (2026-10-27, Eric's CoWork content) — under both cards, across the ground: each feature, then a
                   120-wide check column per package. Replaces the per-package lists. The ground's last piece, its bottom corners. */}
-              <div style={PACKAGE_GROUND_FOOT}>
+              <div ref={footRef} style={PACKAGE_GROUND_FOOT}>
                 <table style={COMPARE}>
                   {/* In 'Select your package:''s style, 8 in like the column text below it (2026-10-27, Eric). */}
                   <caption style={{ ...SIDE_TITLE, textAlign: 'left', paddingBottom: 20 }}>Standard and Premier package comparison:</caption>
@@ -1007,7 +1018,8 @@ const PACKAGE_GROUND_FOOT: CSSProperties = {
   paddingLeft: 32,
   borderBottomLeftRadius: 10,
   borderBottomRightRadius: 10,
-  background: 'var(--color-secondary-100)',
+  // Transparent once it is up past the pinned tray (--foot-fill, set on scroll).
+  background: 'var(--foot-fill, var(--color-secondary-100))',
 }
 
 /* The cards pin this far under the top of the browser (2026-10-27, Eric). */
