@@ -330,10 +330,10 @@ export function TwoPackageProductDetailPage() {
                   {/* Back to the state, or the line of authority — two links 16 apart, on the heading's baseline, right-aligned, in
                       the rail's link type (2026-10-28, Eric). Not wired yet. */}
                   <div style={{ ...SIDE_BODY, display: 'flex', gap: 16 }}>
-                    <button type="button" className="cre-e2e-textlink" style={LINK}>
+                    <button type="button" className="cre-e2e-textlink" style={PLAIN_LINK}>
                       Change state
                     </button>
-                    <button type="button" className="cre-e2e-textlink" style={LINK}>
+                    <button type="button" className="cre-e2e-textlink" style={PLAIN_LINK}>
                       Change line
                     </button>
                   </div>
@@ -1044,6 +1044,10 @@ const LINK: CSSProperties = {
   textDecorationThickness: 1,
   cursor: 'pointer',
 }
+
+/* LINK without its underline (2026-10-28, Eric — the packages heading's Change state / Change line). Left unset rather than
+   'none', so the class's hover underline still shows: an inline value would outrank it. */
+const PLAIN_LINK: CSSProperties = { ...LINK, textDecoration: undefined, textDecorationThickness: undefined }
 
 /* The footer: a 2px #666 rule on top; 40 above the logo and the column
    headings, 240 in each side; the legal bar 284 down. */
