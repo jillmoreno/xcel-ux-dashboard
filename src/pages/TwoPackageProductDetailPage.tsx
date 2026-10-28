@@ -1220,7 +1220,17 @@ const OPTION_BUY: CSSProperties = {
 
 /* The shared sections in a frame: no fill, the resting package card's 1px #DDD edge (2026-10-27, Eric; was a Secondary 100 band). */
 // No edge now either (2026-10-27, Eric).
-const SHARED: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 40, padding: 40, borderRadius: 10 }
+// No left padding (2026-10-28, Eric): the section starts flush with the packages ground's edge above.
+const SHARED: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 40,
+  paddingTop: 40,
+  paddingRight: 40,
+  paddingBottom: 40,
+  paddingLeft: 0,
+  borderRadius: 10,
+}
 
 const SHARED_EYEBROW: CSSProperties = {
   margin: 0,
