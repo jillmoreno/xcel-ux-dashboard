@@ -823,7 +823,7 @@ const SECTION_TITLE: CSSProperties = {
 /* The side boxes' titles: the section serif at 18 / 22 (2026-10-15, Eric:
    14, 16, then 18). */
 /* A box's contents without the box — the two in SIDE_BOX_PAIR. */
-const SIDE_SECTION: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 18 }
+const SIDE_SECTION: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 14 } // 14 under each heading (2026-10-28, Eric; was 18)
 
 /* The shared frame: 32 either side of the rule, as at its edges. */
 // White with the state fee card's 1px #DDD edge (2026-10-27, Eric; was Secondary 100).
