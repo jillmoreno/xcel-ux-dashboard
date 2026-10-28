@@ -1233,6 +1233,7 @@ const CHANGE_ROW: CSSProperties = {
   paddingLeft: 16,
   // Secondary 300, a step darker than the selected column's 200 (2026-10-28, Eric), and 16 clear of the cards under it.
   background: 'var(--color-secondary-300)',
+  borderRadius: 10, // the cards' corners
   marginBottom: 16,
 }
 const CHANGE_LABEL: CSSProperties = {
