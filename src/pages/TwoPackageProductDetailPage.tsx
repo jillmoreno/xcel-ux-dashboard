@@ -432,14 +432,7 @@ export function TwoPackageProductDetailPage() {
 
             {/* EVERYTHING BOTH PACKAGES SHARE. */}
             <div style={SHARED}>
-              <section style={SECTION}>
-                <h2 style={SECTION_TITLE}>What You'll Learn</h2>
-                <ul style={LEARN_LIST}>
-                  {WHAT_YOULL_LEARN.map((topic) => (
-                    <li key={topic}>{topic}</li>
-                  ))}
-                </ul>
-              </section>
+              {/* What You'll Learn moved to the rail, under At a Glance (2026-10-28, Eric). */}
               <section style={SECTION}>
                 <h2 style={SECTION_TITLE}>How It Works</h2>
                 <div style={PARAGRAPHS}>
