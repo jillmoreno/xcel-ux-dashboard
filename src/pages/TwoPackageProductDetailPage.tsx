@@ -137,7 +137,11 @@ export function TwoPackageProductDetailPage() {
       const foot = footRef.current
       if (tray && foot) {
         const past = tray.getBoundingClientRect().bottom - foot.getBoundingClientRect().bottom
-        const left = 1 - Math.min(1, Math.max(0, past / FOOT_FADE))
+        const gone = Math.min(1, Math.max(0, past / FOOT_FADE))
+        const left = 1 - gone
+        // The tray's side feathering waits for the same moment and comes in over the same scroll (2026-10-28, Eric): against
+        // the tan ground beside it a soft side edge only read as a seam.
+        cards.style.setProperty('--tray-side-feather', `${(gone * TRAY_FEATHER).toFixed(1)}px`)
         if (left < 1) foot.style.setProperty('--foot-fill', `color-mix(in srgb, var(--color-secondary-100) ${Math.round(left * 100)}%, transparent)`)
         else foot.style.removeProperty('--foot-fill')
       }
@@ -1041,7 +1045,7 @@ const PIN_BACKDROP: CSSProperties = {
   // No shadow: the left, right and bottom edges feather out over 15 instead (2026-10-28, Eric; was a bottom-edge shadow, then 20). The
   // two masks intersect, so a corner fades both ways.
   maskImage:
-    'linear-gradient(to right, transparent, #000 15px, #000 calc(100% - 15px), transparent), linear-gradient(to bottom, #000 calc(100% - 15px), transparent)',
+    'linear-gradient(to right, transparent, #000 var(--tray-side-feather, 0px), #000 calc(100% - var(--tray-side-feather, 0px)), transparent), linear-gradient(to bottom, #000 calc(100% - 15px), transparent)',
   maskComposite: 'intersect',
   opacity: 'var(--pinned, 0)',
   transition: 'opacity 0.15s ease',
@@ -1049,6 +1053,8 @@ const PIN_BACKDROP: CSSProperties = {
 }
 /* A layer behind the cards, inside their sticky row. */
 const PIN_LAYER: CSSProperties = { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: -1, pointerEvents: 'none' }
+/* The tray's feathered edge, at its widest. */
+const TRAY_FEATHER = 15
 /* The scroll over which the comparison's tan fades once it is up past the tray. */
 const FOOT_FADE = 40
 /* The scroll over which pinned cards condense. */
