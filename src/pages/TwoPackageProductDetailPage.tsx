@@ -1485,7 +1485,7 @@ const TOP_TRAY: CSSProperties = {
   justifyContent: 'center',
   alignItems: 'stretch',
   gap: 24,
-  paddingTop: 8, // 8 above (2026-10-28, Eric; the design's 16)
+  paddingTop: 12, // 12 above (2026-10-28, Eric: 8, then 4 more; the design's 16)
   paddingRight: 24,
   paddingBottom: 16,
   paddingLeft: 24,
