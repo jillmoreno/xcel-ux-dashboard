@@ -1227,7 +1227,7 @@ const CHANGE_ROW: CSSProperties = {
   flexDirection: 'column',
   alignItems: 'flex-start',
   gap: 6,
-  paddingTop: 8,
+  paddingTop: 12, // 4 more over the label (2026-10-28, Eric)
   paddingRight: 16,
   paddingBottom: 16, // 8 less (2026-10-28, Eric)
   paddingLeft: 16,
