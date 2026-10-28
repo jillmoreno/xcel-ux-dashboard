@@ -228,14 +228,6 @@ export function TwoPackageProductDetailPage() {
   /* One package card. */
   const renderCard = (p: (typeof PACKAGES)[number]) => {
     const on = p.id === picked
-    const heading = (
-      <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, minWidth: 0 }}>
-        {/* 2 smaller condensed (2026-10-27, Eric). */}
-        <span style={{ ...SHARED_EYEBROW, fontSize: pinLerp(14, 12) }}>{p.short}</span>
-        {/* The state leads the title again, as a check on which state is chosen (2026-10-28, Eric). */}
-        <span style={OPTION_TITLE}>{`${place} ${localize(p.title)}`}</span>
-      </span>
-    )
     const prices = (
       <span data-price-row style={OPTION_PRICE_ROW}>
         <span style={OPTION_PRICE}>{p.price}</span>
@@ -276,39 +268,32 @@ export function TwoPackageProductDetailPage() {
         }}
         style={{ ...OPTION_CARD, ...(on ? OPTION_ON : null) }}
       >
-        {/* The strip along the top: the badge in the top-right corner (Premier). The radio that sat 10 in from the
-            right is gone (2026-10-27, Eric) — the brick edge and the column shade say which is picked. */}
+        {/* THE TAB (2026-10-28, Eric; was the eyebrow over the title and PASS GUARANTEE top right): the mini tray's, top left —
+            the package's name on tan, behind Premier's brick PASS GUARANTEE. */}
+        <span style={{ ...MINI_TAB, alignSelf: 'flex-start' }}>
+          {p.badge ? <span style={MINI_BADGE}>{p.badge}</span> : null}
+          <span style={{ ...MINI_TAB_LABEL, ...(p.badge ? { paddingLeft: 0 } : null) }}>{p.short} package</span>
+        </span>
         {single ? (
-          <>
-            {/* Single, the mini tray's tab in the top-left corner: PASS GUARANTEE and the package's name in one (2026-10-28, Eric). */}
-            <span style={{ ...MINI_TAB, alignSelf: 'flex-start' }}>
-              {p.badge ? <span style={MINI_BADGE}>{p.badge}</span> : null}
-              <span style={{ ...MINI_TAB_LABEL, ...(p.badge ? { paddingLeft: 0 } : null) }}>{p.short} package</span>
-            </span>
-            {/* THE SINGLE-PRODUCT CARD (2026-10-28, Eric): laid out across, like the mini tray's — the title on the left, the price
-                over its Purchase on the right — in the page card's own sizes and spacing, the card the column's width. */}
-            <span style={SINGLE_BODY}>
-              <span style={SINGLE_TITLE}>{`${place} ${localize(p.title)}`}</span>
-              <span style={SINGLE_BUY_COLUMN}>
-                {prices}
-                {buy(SINGLE_BUY)}
-              </span>
-            </span>
-            {/* The card's 1 edge drawn again over everything, so its top runs across the tab (2026-10-28, Eric). */}
-            <span aria-hidden style={MINI_EDGE} />
-          </>
-        ) : (
-          <>
-            <span style={OPTION_TOP}>
-              {p.badge ? <span style={OPTION_BADGE}>{p.badge}</span> : null}
-            </span>
-            <span style={OPTION_BODY}>
-              {heading}
+          /* THE SINGLE-PRODUCT CARD (2026-10-28, Eric): laid out across, like the mini tray's — the title on the left, the price
+             over its Purchase on the right — in the page card's own sizes and spacing, the card the column's width. */
+          <span style={SINGLE_BODY}>
+            <span style={SINGLE_TITLE}>{`${place} ${localize(p.title)}`}</span>
+            <span style={SINGLE_BUY_COLUMN}>
               {prices}
-              {buy(OPTION_BUY)}
+              {buy(SINGLE_BUY)}
             </span>
-          </>
+          </span>
+        ) : (
+          <span style={{ ...OPTION_BODY, paddingTop: 12 }}>
+            {/* The state leads the title, as a check on which state is chosen (2026-10-28, Eric). 12 under the tab. */}
+            <span style={OPTION_TITLE}>{`${place} ${localize(p.title)}`}</span>
+            {prices}
+            {buy(OPTION_BUY)}
+          </span>
         )}
+        {/* The card's 1 edge drawn again over everything, so its top runs across the tab (2026-10-28, Eric). */}
+        <span aria-hidden style={MINI_EDGE} />
       </div>
     )
   }
@@ -1669,31 +1654,6 @@ const OPTION_ON: CSSProperties = {
   boxShadow:
     'inset 0 0 0 1px var(--color-e2e-card-outline), inset 0 0 0 7px var(--color-secondary-200), 0 4px 8px -2px rgb(0 0 0 / 0.3)',
   background: 'var(--color-fixed-light)',
-}
-
-/* The top strip: the badge's 34 tall even where there is no badge, so both cards' bodies start level. */
-const OPTION_TOP: CSSProperties = { display: 'flex', alignItems: 'flex-end', gap: 10, minHeight: pinLerp(34, 24) } // 24 condensed
-
-/* PASS GUARANTEE: brick, in the top right (2026-10-27, Eric; was the top left) — the card's own corner top right and a 10 corner
-   bottom left. */
-const OPTION_BADGE: CSSProperties = {
-  height: pinLerp(34, 24),
-  boxSizing: 'border-box',
-  display: 'flex',
-  alignItems: 'center',
-  paddingTop: pinLerp(11, 5), // the label 1 lower (2026-10-27, Eric)
-  paddingRight: 16,
-  paddingBottom: pinLerp(7, 2),
-  paddingLeft: 16,
-  marginLeft: 'auto',
-  borderRadius: '0 10px 0 10px',
-  background: 'var(--color-xcel-brick)',
-  color: 'var(--color-fixed-light)',
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 800,
-  fontSize: 13,
-  textTransform: 'uppercase',
-  whiteSpace: 'nowrap',
 }
 
 // 4 less above the package name (2026-10-27, Eric; was 28 all round).
