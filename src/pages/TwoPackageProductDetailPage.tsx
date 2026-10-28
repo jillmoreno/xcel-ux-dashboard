@@ -1231,8 +1231,8 @@ const CHANGE_ROW: CSSProperties = {
   paddingRight: 16,
   paddingBottom: 16, // 8 less (2026-10-28, Eric)
   paddingLeft: 16,
-  // The selected column's darker tint, Secondary 200 (2026-10-28, Eric), and 16 clear of the cards under it.
-  background: 'var(--color-secondary-200)',
+  // Secondary 300, a step darker than the selected column's 200 (2026-10-28, Eric), and 16 clear of the cards under it.
+  background: 'var(--color-secondary-300)',
   marginBottom: 16,
 }
 const CHANGE_LABEL: CSSProperties = {
