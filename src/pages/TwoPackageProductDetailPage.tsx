@@ -1023,9 +1023,11 @@ const PIN_BACKDROP: CSSProperties = {
   zIndex: -1,
   borderRadius: '0 0 10px 10px',
   background: 'linear-gradient(to bottom, var(--color-secondary-200), var(--color-secondary-100))',
-  // A shadow on the bottom edge only — the negative spread keeps it off the sides — shown with the frame, i.e. once content
-  // is scrolling under it (2026-10-27, Eric).
-  boxShadow: '0 6px 10px -8px rgb(0 0 0 / 0.2)', // 2 shorter (2026-10-27, Eric; was 0 8px)
+  // No shadow: the left, right and bottom edges feather out over 20 instead (2026-10-28, Eric; was a bottom-edge shadow). The
+  // two masks intersect, so a corner fades both ways.
+  maskImage:
+    'linear-gradient(to right, transparent, #000 20px, #000 calc(100% - 20px), transparent), linear-gradient(to bottom, #000 calc(100% - 20px), transparent)',
+  maskComposite: 'intersect',
   opacity: 'var(--pinned, 0)',
   transition: 'opacity 0.15s ease',
   pointerEvents: 'none',
