@@ -1228,7 +1228,12 @@ const CHANGE_ROW: CSSProperties = {
   alignItems: 'flex-start',
   gap: 6,
   paddingTop: 8,
-  paddingBottom: 24, // its own 8, then 16 to the cards
+  paddingRight: 16,
+  paddingBottom: 16, // 8 less (2026-10-28, Eric)
+  paddingLeft: 16,
+  // The selected column's darker tint, Secondary 200 (2026-10-28, Eric), and 16 clear of the cards under it.
+  background: 'var(--color-secondary-200)',
+  marginBottom: 16,
 }
 const CHANGE_LABEL: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
