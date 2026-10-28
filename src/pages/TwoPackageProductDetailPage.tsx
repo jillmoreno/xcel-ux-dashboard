@@ -331,17 +331,17 @@ export function TwoPackageProductDetailPage() {
                 ref={cardsRef}
                 role="radiogroup"
                 aria-labelledby="choose-package"
-                style={{ ...PACKAGE_GRID, top: `calc(${browserTop + CARDS_PIN_GAP}px - 24px * var(--p, 0))` }}
+                style={{ ...PACKAGE_GRID, top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }}
               >
                 {/* The cards' piece of the ground, on its own layer so it can go once they pin — the condensed frame is narrower than
                     the column, and this showing either side of it read as a stray edge (2026-10-27, Eric). */}
                 <div aria-hidden style={{ ...PIN_LAYER, ...fadeGround(fade.head), opacity: 'calc(1 - var(--pinned, 0))' }} />
                 {/* Pinned, the tan ground shows from the browser's top to under the cards and nothing scrolls visibly beneath. Condensed,
-                    it is Figma 548:3477's frame at the column's width — 32 either side of the cards, 16 above, 24 below — square on top, 10 corners below, a shadow along its bottom edge only. */}
+                    it is Figma 548:3477's frame at the column's width — 32 either side of the cards, 12 above (2026-10-28, Eric; was 16), 24 below — square on top, 10 corners below, a shadow along its bottom edge only. */}
                 <div
                   aria-hidden
                   ref={trayRef}
-                  style={{ ...PIN_BACKDROP, top: `calc(${-(browserTop + CARDS_PIN_GAP)}px + 24px * var(--p, 0))` }}
+                  style={{ ...PIN_BACKDROP, top: `calc(${-(browserTop + CARDS_PIN_GAP)}px + 28px * var(--p, 0))` }}
                 />
                 {PACKAGES.map((p) => {
                   const on = p.id === picked
