@@ -1541,6 +1541,7 @@ const MINI_BODY: CSSProperties = {
   display: 'flex',
   alignItems: 'flex-end',
   gap: 10,
+  marginTop: -4, // 4 less above the titles (2026-10-28, Eric)
   paddingRight: 20,
   paddingBottom: 20,
   paddingLeft: 20,
