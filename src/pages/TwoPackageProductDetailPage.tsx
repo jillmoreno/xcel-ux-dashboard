@@ -124,6 +124,8 @@ export function TwoPackageProductDetailPage() {
   // The Top Mini Card Tray draws the page's cards compact too (2026-10-28, Eric).
   const compact = cardsMode === 'compact' || cardsMode === 'tray-mini'
   const topTray = cardsMode === 'tray-mini'
+  /* No Card Trays (2026-10-28, Eric): nothing pins and nothing slides down — the full cards scroll away with the page. */
+  const unpinned = topTray || cardsMode === 'none'
   const [trayShown, setTrayShown] = useState(false)
   useLayoutEffect(() => {
     const head = headRef.current
@@ -145,7 +147,7 @@ export function TwoPackageProductDetailPage() {
       // The Top tray: the cards stay on the page, and the tray shows once the last of them is up past the browser's top.
       if (topTray) setTrayShown(cards.getBoundingClientRect().bottom < browserTop())
       else setTrayShown(false)
-      const over = topTray ? -1 : browserTop() + CARDS_PIN_GAP - head.getBoundingClientRect().bottom
+      const over = unpinned ? -1 : browserTop() + CARDS_PIN_GAP - head.getBoundingClientRect().bottom
       const p = Math.min(1, Math.max(0, over / PIN_CONDENSE))
       cards.style.setProperty('--pinned', over > 0.5 ? '1' : '0')
       cards.style.setProperty('--p', String(p))
@@ -159,7 +161,7 @@ export function TwoPackageProductDetailPage() {
          at once at first). */
       const tray = trayRef.current
       const foot = footRef.current
-      if (topTray) foot?.style.removeProperty('--foot-fill')
+      if (unpinned) foot?.style.removeProperty('--foot-fill')
       else if (tray && foot) {
         const past = tray.getBoundingClientRect().bottom - foot.getBoundingClientRect().bottom
         const gone = Math.min(1, Math.max(0, past / FOOT_FADE))
@@ -187,7 +189,7 @@ export function TwoPackageProductDetailPage() {
       ro.disconnect()
       window.removeEventListener('scroll', check, { capture: true })
     }
-  }, [compact, topTray])
+  }, [compact, topTray, unpinned])
   const fadeSpan = fade.head + fade.cards || 300
   const fadeGround = (offset: number): CSSProperties => ({
     backgroundColor: 'var(--color-secondary-100)',
@@ -543,7 +545,7 @@ export function TwoPackageProductDetailPage() {
                 ref={cardsRef}
                 role="radiogroup"
                 aria-labelledby="choose-package"
-                style={{ ...PACKAGE_GRID, ...(topTray ? { position: 'relative' } : { top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }) }}
+                style={{ ...PACKAGE_GRID, ...(unpinned ? { position: 'relative' } : { top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }) }}
               >
                 {/* The cards' piece of the ground, on its own layer so it can go once they pin — the condensed frame is narrower than
                     the column, and this showing either side of it read as a stray edge (2026-10-27, Eric). */}
