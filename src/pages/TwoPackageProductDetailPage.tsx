@@ -1231,8 +1231,9 @@ const CHANGE_ROW: CSSProperties = {
   paddingRight: 16,
   paddingBottom: 16, // 8 less (2026-10-28, Eric)
   paddingLeft: 16,
-  // Secondary 300, a step darker than the selected column's 200 (2026-10-28, Eric), and 16 clear of the cards under it.
-  background: 'var(--color-secondary-300)',
+  // No fill, the resting card's 1 #DDD edge (2026-10-28, Eric; was Secondary 200, 300, then the card's fill), and 16 clear of the
+  // cards under it.
+  boxShadow: 'inset 0 0 0 1px var(--color-e2e-card-outline)',
   borderRadius: 10, // the cards' corners
   marginBottom: 16,
 }
