@@ -982,7 +982,7 @@ const PACKAGE_GRID: CSSProperties = {
   // The two cards side by side; they pin (the comparison table is the ground's next piece now).
   // Pinned, the cards widen: 24 at the sides like the frame's bottom, and 24 between them (2026-10-28, Eric). On the page, 32 and
   // 32, in line with the comparison below.
-  columnGap: pinLerp(24, 16, 'p'), // 8 less again (2026-10-28, Eric; was 40, then 32 / 24)
+  columnGap: 24, // pinned too (2026-10-28, Eric; was 40, then 32 / 24, then 24 / 16)
   rowGap: 32,
   alignItems: 'start',
   paddingRight: pinLerp(32, 24, 'p'),
