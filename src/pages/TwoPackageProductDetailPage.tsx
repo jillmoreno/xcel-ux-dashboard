@@ -370,8 +370,9 @@ export function TwoPackageProductDetailPage() {
                       <span style={CHANGE_LABEL}>Change state and or line of authority:</span>
                       <div style={CHANGE_FIELDS}>
                       <span style={CHANGE_FIELD}>
-                        {/* Defaults to the page's own state and line (2026-10-28, Eric). */}
-                        <select aria-label="State" defaultValue="Florida" className="cre-e2e-input" style={CHANGE_SELECT}>
+                        {/* Defaults to the page's own state and line (2026-10-28, Eric). No .cre-e2e-input: its brick focus ring
+                            showed on every click of a select, and was taken off (2026-10-28, Eric). */}
+                        <select aria-label="State" defaultValue="Florida" style={CHANGE_SELECT}>
                           {CHANGE_STATES.map((st) => (
                             <option key={st}>{st}</option>
                           ))}
@@ -379,7 +380,7 @@ export function TwoPackageProductDetailPage() {
                         <AngleDownSolid size={16} aria-hidden style={CHANGE_CHEVRON} />
                       </span>
                       <span style={CHANGE_FIELD}>
-                        <select aria-label="Line of authority" defaultValue="Life and Health" className="cre-e2e-input" style={CHANGE_SELECT}>
+                        <select aria-label="Line of authority" defaultValue="Life and Health" style={CHANGE_SELECT}>
                           {CHANGE_LINES.map((line) => (
                             <option key={line}>{line}</option>
                           ))}
