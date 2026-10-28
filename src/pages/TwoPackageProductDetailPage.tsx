@@ -603,6 +603,7 @@ export function TwoPackageProductDetailPage() {
                             ...COMPARE_FEATURE,
                             paddingLeft: 0,
                             ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null),
+                            ...(single && r === 0 ? COMPARE_FIRST_RULE : null),
                             ...(picked === 'standard' && !row.standard ? { color: 'color-mix(in srgb, var(--color-text-primary) 60%, transparent)' } : null),
                           }}
                         >
@@ -610,7 +611,7 @@ export function TwoPackageProductDetailPage() {
                           {row.detail ? <>: {row.detail}</> : null}
                         </th>
                         {packages.map((p) => row[p.id]).map((has, i) => (
-                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(picked === packages[i].id ? pickedShade(r + 1) : null), ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
+                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(picked === packages[i].id ? pickedShade(r + 1) : null), ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null), ...(single && r === 0 ? COMPARE_FIRST_RULE : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
                             <span aria-hidden>{has ? '✓' : '—'}</span>
                             <span className="cre-visually-hidden">{has ? 'Included' : 'Not included'}</span>
                           </td>
@@ -1816,6 +1817,8 @@ const COMPARE_FEATURE: CSSProperties = {
   paddingRight: 8,
   borderBottom: '1px solid var(--color-secondary-300)',
 }
+/* Single, with no header row, the rule over the first item stays (2026-10-28, Eric). */
+const COMPARE_FIRST_RULE: CSSProperties = { borderTop: '1px solid var(--color-secondary-300)' }
 const COMPARE_CELL: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
