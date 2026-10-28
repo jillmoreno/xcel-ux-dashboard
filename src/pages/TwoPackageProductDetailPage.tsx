@@ -1226,7 +1226,7 @@ const SHARED: CSSProperties = {
   flexDirection: 'column',
   gap: 40,
   paddingTop: 48, // 8 more above (2026-10-28, Eric)
-  paddingRight: 40,
+  paddingRight: 32, // as the left (2026-10-28, Eric)
   paddingBottom: 40,
   paddingLeft: 32,
   borderRadius: 10,
