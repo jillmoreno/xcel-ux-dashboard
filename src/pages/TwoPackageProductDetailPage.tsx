@@ -1200,7 +1200,9 @@ const SHARED_EYEBROW: CSSProperties = {
 
 /* THE COMPARISON TABLE: across the ground under the cards, the feature column taking what the two 120 mark columns leave. */
 // 8 in on each side, so its rules run only as wide as the text (2026-10-27, Eric); the cells' outer padding is taken off to match.
-const COMPARE: CSSProperties = { width: 'calc(100% - 16px)', margin: '0 8px', borderCollapse: 'collapse', tableLayout: 'fixed' }
+// Flush with the ground's 32, so the grid lines up with the cards and "Select your Florida package:" above (2026-10-28, Eric;
+// it sat 8 further in).
+const COMPARE: CSSProperties = { width: '100%', margin: 0, borderCollapse: 'collapse', tableLayout: 'fixed' }
 const COMPARE_HEAD: CSSProperties = {
   ...SHARED_EYEBROW,
   color: 'var(--color-text-secondary)',
