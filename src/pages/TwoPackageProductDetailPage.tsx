@@ -228,6 +228,39 @@ export function TwoPackageProductDetailPage() {
   /* One package card. */
   const renderCard = (p: (typeof PACKAGES)[number]) => {
     const on = p.id === picked
+    const heading = (
+      <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, minWidth: 0 }}>
+        {/* 2 smaller condensed (2026-10-27, Eric). */}
+        <span style={{ ...SHARED_EYEBROW, fontSize: pinLerp(14, 12) }}>{p.short}</span>
+        {/* The state leads the title again, as a check on which state is chosen (2026-10-28, Eric). */}
+        <span style={OPTION_TITLE}>{`${place} ${localize(p.title)}`}</span>
+      </span>
+    )
+    const prices = (
+      <span data-price-row style={OPTION_PRICE_ROW}>
+        <span style={OPTION_PRICE}>{p.price}</span>
+        <span style={OPTION_WAS}>
+          <s style={{ textDecoration: 'none' }}>{p.was}</s>
+          <img src="/brand/e2e-price-strike.svg" alt="" aria-hidden style={OPTION_STRIKE} />
+        </span>
+      </span>
+    )
+    /* Each card's own Purchase, under its price (2026-10-27, Eric; was the rail's price card). Premier's is always the brick one and
+       Standard's always outlined, whichever card is selected — Premier stays the strongest call. Buying either package picks it
+       first. */
+    const buy = (style: CSSProperties) => (
+      <button
+        type="button"
+        className={`cre-e2e-add-to-cart ${p.id === 'premier' ? 'cre-e2e-cta' : `cre-e2e-outline${on ? '' : ' cre-e2e-outline--quiet'}`}`}
+        style={style}
+        onClick={(e) => {
+          e.stopPropagation()
+          purchase(p.id)
+        }}
+      >
+        Purchase {p.short}
+      </button>
+    )
     // A div with the radio role, not a button: it holds a real button (Purchase), and buttons cannot nest.
     return (
       <div
@@ -248,35 +281,23 @@ export function TwoPackageProductDetailPage() {
         <span style={OPTION_TOP}>
           {p.badge ? <span style={OPTION_BADGE}>{p.badge}</span> : null}
         </span>
-        <span style={OPTION_BODY}>
-          <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
-            {/* 2 smaller condensed (2026-10-27, Eric). */}
-            <span style={{ ...SHARED_EYEBROW, fontSize: pinLerp(14, 12) }}>{p.short}</span>
-            {/* The state leads the title again, as a check on which state is chosen (2026-10-28, Eric). */}
-            <span style={OPTION_TITLE}>{`${place} ${localize(p.title)}`}</span>
-          </span>
-          <span data-price-row style={OPTION_PRICE_ROW}>
-            <span style={OPTION_PRICE}>{p.price}</span>
-            <span style={OPTION_WAS}>
-              <s style={{ textDecoration: 'none' }}>{p.was}</s>
-              <img src="/brand/e2e-price-strike.svg" alt="" aria-hidden style={OPTION_STRIKE} />
+        {single ? (
+          /* THE SINGLE-PRODUCT CARD (2026-10-28, Eric): laid out across, like the mini tray's — the title on the left, the price
+             over its Purchase on the right — in the page card's own sizes and spacing, the card the column's width. */
+          <span style={SINGLE_BODY}>
+            {heading}
+            <span style={SINGLE_BUY_COLUMN}>
+              {prices}
+              {buy(SINGLE_BUY)}
             </span>
           </span>
-          {/* Each card's own Purchase, under its price (2026-10-27, Eric; was the rail's price card). Premier's is always the brick
-              one and Standard's always outlined, whichever card is selected — Premier stays the strongest call. Buying
-              either package picks it first. */}
-          <button
-            type="button"
-            className={`cre-e2e-add-to-cart ${p.id === 'premier' ? 'cre-e2e-cta' : `cre-e2e-outline${on ? '' : ' cre-e2e-outline--quiet'}`}`}
-            style={OPTION_BUY}
-            onClick={(e) => {
-              e.stopPropagation()
-              purchase(p.id)
-            }}
-          >
-            Purchase {p.short}
-          </button>
-        </span>
+        ) : (
+          <span style={OPTION_BODY}>
+            {heading}
+            {prices}
+            {buy(OPTION_BUY)}
+          </span>
+        )}
       </div>
     )
   }
@@ -526,7 +547,7 @@ export function TwoPackageProductDetailPage() {
                 ref={cardsRef}
                 role="radiogroup"
                 aria-labelledby="choose-package"
-                style={{ ...PACKAGE_GRID, ...(single ? SINGLE_GRID : null), ...(topTray ? { position: 'relative' } : { top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }) }}
+                style={{ ...PACKAGE_GRID, ...(topTray ? { position: 'relative' } : { top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }) }}
               >
                 {/* The cards' piece of the ground, on its own layer so it can go once they pin — the condensed frame is narrower than
                     the column, and this showing either side of it read as a stray edge (2026-10-27, Eric). */}
@@ -1368,8 +1389,6 @@ const PACKAGE_GRID: CSSProperties = {
   zIndex: 2,
 }
 
-/* Single, the one card as wide as each of the multi-product page's two (2026-10-28, Eric): the same two columns, the card in the first. */
-const SINGLE_GRID: CSSProperties = { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }
 
 /* The packages heading and its links on one baseline, the links right-aligned; 4 above, 16 below (the heading's own were). */
 const PACKAGES_HEAD_ROW: CSSProperties = {
@@ -1724,6 +1743,29 @@ const OPTION_BUY: CSSProperties = {
   whiteSpace: 'nowrap',
   paddingTop: pinLerp(2, 0), // condensed, centred — the label 1 higher (2026-10-27, Eric)
   paddingBottom: 0,
+}
+
+/* The single-product card's body (2026-10-28, Eric): OPTION_BODY's padding and type, laid across — the title, then the price over its
+   Purchase at the right, their bottoms level. The Purchase sits in the flow here, so the bottom padding is only the button's own 28 / 20. */
+const SINGLE_BODY: CSSProperties = {
+  ...OPTION_BODY,
+  flexDirection: 'row',
+  alignItems: 'flex-end',
+  justifyContent: 'space-between',
+  gap: 32,
+  paddingBottom: pinLerp(28, 20),
+}
+const SINGLE_BUY_COLUMN: CSSProperties = { flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: pinLerp(10, 6) }
+const SINGLE_BUY: CSSProperties = {
+  ...ADD_TO_CART,
+  height: pinLerp(39, 34),
+  borderRadius: pinLerp(5, 8),
+  fontSize: pinLerp(18, 15),
+  whiteSpace: 'nowrap',
+  paddingTop: pinLerp(2, 0),
+  paddingRight: 24,
+  paddingBottom: 0,
+  paddingLeft: 24,
 }
 
 /* Under each card: its description, then what sets it apart. */
