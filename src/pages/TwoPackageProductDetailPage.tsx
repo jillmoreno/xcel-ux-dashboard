@@ -1575,7 +1575,7 @@ const MINI_BADGE: CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   width: 148,
-  paddingTop: 3, // 1 lower (2026-10-28, Eric; was 1)
+  paddingTop: 5, // 2 lower (2026-10-28, Eric: 1, then 1 more; was 1 — centred, 2 more moves it 1)
   background: 'var(--color-xcel-brick)',
   color: 'var(--color-fixed-light)',
 }
