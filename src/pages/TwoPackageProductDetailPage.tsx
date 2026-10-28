@@ -896,7 +896,7 @@ const STEP: CSSProperties = {
   alignItems: 'flex-start',
   gap: 23,
   paddingBottom: 30,
-  marginBottom: 30,
+  marginBottom: 38, // 38 under the rule (2026-10-28, Eric; the site's 30)
   borderBottom: '1px solid var(--color-e2e-card-outline)',
 }
 const STEP_LAST: CSSProperties = { paddingBottom: 0, marginBottom: 0, borderBottom: 'none' }
