@@ -883,7 +883,7 @@ const BODY: CSSProperties = {
 // 15 on 21 in every rail box (2026-10-15, Eric's request; was 16/22).
 /* A section's subhead: the course intro's own type — BODY, 18 / 27 Avenir (2026-10-28, Eric; was 20 / 30 Medium) — its two lines 8
    apart. */
-const SUBHEAD: CSSProperties = { ...BODY, display: 'flex', flexDirection: 'column', gap: 8 }
+const SUBHEAD: CSSProperties = { ...BODY, display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 8 } // 8 more to the steps (2026-10-28, Eric)
 
 const SIDE_BODY: CSSProperties = { ...BODY, fontSize: 15, lineHeight: '21px' }
 
