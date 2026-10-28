@@ -456,7 +456,8 @@ export function TwoPackageProductDetailPage() {
                           <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
                             {/* 2 smaller condensed (2026-10-27, Eric). */}
                             <span style={{ ...SHARED_EYEBROW, fontSize: pinLerp(14, 12) }}>{p.short}</span>
-                            <span style={OPTION_TITLE}>{localize(p.title)}</span>
+                            {/* The state leads the title again, as a check on which state is chosen (2026-10-28, Eric). */}
+                            <span style={OPTION_TITLE}>{`${place} ${localize(p.title)}`}</span>
                           </span>
                           <span data-price-row style={OPTION_PRICE_ROW}>
                             <span style={OPTION_PRICE}>{p.price}</span>
