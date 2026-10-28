@@ -285,8 +285,8 @@ export function TwoPackageProductDetailPage() {
             </span>
           </span>
         ) : (
-          <span style={{ ...OPTION_BODY, paddingTop: 12 }}>
-            {/* The state leads the title, as a check on which state is chosen (2026-10-28, Eric). 12 under the tab. */}
+          <span style={{ ...OPTION_BODY, paddingTop: 20 }}>
+            {/* The state leads the title, as a check on which state is chosen (2026-10-28, Eric). 20 under the tab (12, then 8 more). */}
             <span style={OPTION_TITLE}>{`${place} ${localize(p.title)}`}</span>
             {prices}
             {buy(OPTION_BUY)}
@@ -1724,7 +1724,7 @@ const SINGLE_BODY: CSSProperties = {
   alignItems: 'flex-end',
   justifyContent: 'space-between',
   gap: 32,
-  paddingTop: 12, // under the tab, which now carries the package's name
+  paddingTop: 20, // under the tab, which now carries the package's name (2026-10-28, Eric: 12, then 8 more)
   paddingBottom: pinLerp(36, 28), // 8 more under the title and the Purchase (2026-10-28, Eric)
 }
 /* A step up from the card's title (2026-10-28, Eric): 24 / 30 compact, 28 / 36 full — the page's next size up. */
