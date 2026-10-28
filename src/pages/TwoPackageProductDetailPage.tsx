@@ -1228,9 +1228,9 @@ const CHANGE_ROW: CSSProperties = {
   alignItems: 'flex-start',
   gap: 6,
   paddingTop: 12, // 4 more over the label (2026-10-28, Eric)
-  paddingRight: 16,
+  paddingRight: 32, // (2026-10-28, Eric; was 16)
   paddingBottom: 16, // 8 less (2026-10-28, Eric)
-  paddingLeft: 16,
+  paddingLeft: 32,
   // No fill, the resting card's 1 #DDD edge (2026-10-28, Eric; was Secondary 200, 300, then the card's fill), and 16 clear of the
   // cards under it.
   boxShadow: 'inset 0 0 0 1px var(--color-e2e-card-outline)',
