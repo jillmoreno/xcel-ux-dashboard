@@ -903,7 +903,7 @@ const STEP_LAST: CSSProperties = { paddingBottom: 0, marginBottom: 0, borderBott
 // Number and title in the rail's heading size, 20 / 24 (2026-10-28, Eric; the site's 28 / 34); the copy back in BODY's 18 / 27.
 const STEP_NUMBER: CSSProperties = { ...SIDE_TITLE, flex: 'none', color: 'var(--color-xcel-brick)' }
 const STEP_TITLE: CSSProperties = SIDE_TITLE
-const STEP_BODY: CSSProperties = { ...BODY, marginTop: 11, color: 'var(--color-text-secondary)' } // 11 under the title (2026-10-28, Eric; the site's 15)
+const STEP_BODY: CSSProperties = { ...BODY, marginTop: 7, color: 'var(--color-text-secondary)' } // 7 under the title (2026-10-28, Eric: 11, then 4 less; the site's 15)
 
 /* A section's subhead: the course intro's own type — BODY, 18 / 27 Avenir (2026-10-28, Eric; was 20 / 30 Medium) — its two lines 8
    apart. */
