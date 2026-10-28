@@ -232,6 +232,16 @@ export function TwoPackageProductDetailPage() {
                   </dl>
                 </section>
                 <hr aria-hidden style={SIDE_RULE} />
+                {/* What You'll Learn, in the rail too — the body's list in the rail's type (2026-10-28, Eric). */}
+                <section style={SIDE_SECTION}>
+                  <h2 style={SIDE_TITLE}>What You'll Learn</h2>
+                  <ul style={SIDE_LEARN_LIST}>
+                    {WHAT_YOULL_LEARN.map((topic) => (
+                      <li key={topic}>{topic}</li>
+                    ))}
+                  </ul>
+                </section>
+                <hr aria-hidden style={SIDE_RULE} />
                 <section style={SIDE_SECTION}>
                   <h2 style={SIDE_TITLE}>What to Expect</h2>
                   <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -864,6 +874,9 @@ const LEARN_LIST: CSSProperties = {
   gap: 4,
   listStyle: 'disc',
 }
+
+/* The same list in the rail: its 15 / 21 body, the disc 18 in, the At a Glance rows' 8 apart. */
+const SIDE_LEARN_LIST: CSSProperties = { ...LEARN_LIST, ...SIDE_BODY, paddingLeft: 18, gap: 8 }
 
 const PARAGRAPHS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 20 }
 
