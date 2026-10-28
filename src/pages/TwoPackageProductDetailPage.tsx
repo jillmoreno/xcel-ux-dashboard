@@ -869,7 +869,9 @@ const LEARN_LIST: CSSProperties = {
 }
 
 /* The same list in the rail: its 15 / 21 body, the disc 18 in, the At a Glance rows' 8 apart. */
-const SIDE_LEARN_LIST: CSSProperties = { ...LEARN_LIST, ...SIDE_BODY, paddingLeft: 18, gap: 8 }
+// Plain wrapping, not BODY's `pretty`: a lone last word is fine here (2026-10-28, Eric) — `pretty` was pulling a second word down
+// and breaking the items early.
+const SIDE_LEARN_LIST: CSSProperties = { ...LEARN_LIST, ...SIDE_BODY, paddingLeft: 18, gap: 8, textWrap: 'wrap' }
 
 const PARAGRAPHS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 20 }
 
