@@ -355,7 +355,7 @@ export function TwoPackageProductDetailPage() {
                               either package picks it first. */}
                           <button
                             type="button"
-                            className={`cre-e2e-add-to-cart ${p.id === 'premier' ? 'cre-e2e-cta' : 'cre-e2e-outline'}`}
+                            className={`cre-e2e-add-to-cart ${p.id === 'premier' ? 'cre-e2e-cta' : `cre-e2e-outline${on ? '' : ' cre-e2e-outline--quiet'}`}`}
                             style={OPTION_BUY}
                             onClick={(e) => {
                               e.stopPropagation()

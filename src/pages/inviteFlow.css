@@ -143,6 +143,14 @@
   outline: 2px solid var(--color-xcel-brick);
   outline-offset: 2px;
 }
+/* On a card that is not the selected one — the two-package PDP — the outline
+   button takes the card's own tone rather than white, so it does not read as
+   the brightest thing on a card that is stepped back (2026-10-28, Eric). It
+   still fills brick under the cursor: `:not(:hover)` keeps this out of the
+   way of the rule above. */
+.cre-e2e-outline--quiet:not(:hover) {
+  background: transparent;
+}
 
 /* ── text links: the fee note, the course links, the terms ──────────────── */
 
