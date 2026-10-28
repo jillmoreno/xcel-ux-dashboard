@@ -1481,7 +1481,8 @@ const TOP_TRAY: CSSProperties = {
   paddingRight: 24,
   paddingBottom: 16,
   paddingLeft: 24,
-  background: 'var(--color-secondary-100)', // Secondary 100 (2026-10-28, Eric; the design's 200)
+  // The packages ground's fade, Secondary 200 to 100 down the tray (2026-10-28, Eric; was flat 100, the design's flat 200).
+  background: 'linear-gradient(to bottom, var(--color-secondary-200), var(--color-secondary-100))',
   boxShadow: '0 6px 10px -8px rgb(0 0 0 / 0.3)', // 30% (2026-10-28, Eric; was 20)
   transition: 'transform 0.3s ease',
   pointerEvents: 'auto',
