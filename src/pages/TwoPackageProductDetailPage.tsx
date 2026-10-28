@@ -323,9 +323,21 @@ export function TwoPackageProductDetailPage() {
               <div ref={headRef} style={{ ...PACKAGE_GROUND_HEAD, ...fadeGround(0) }}>
                 {/* In the rail's At a Glance style — the slab serif at 20 / 24 — inside the ground, 4 above and 16 below
                     (2026-10-27, Eric). */}
-                <h2 id="choose-package" style={{ ...SIDE_TITLE, paddingTop: 4, paddingBottom: 16 }}>
-                  Select your Florida package:
-                </h2>
+                <div style={PACKAGES_HEAD_ROW}>
+                  <h2 id="choose-package" style={SIDE_TITLE}>
+                    Select your Florida package:
+                  </h2>
+                  {/* Back to the state, or the line of authority — two links 16 apart, on the heading's baseline, right-aligned, in
+                      the rail's link type (2026-10-28, Eric). Not wired yet. */}
+                  <div style={{ ...SIDE_BODY, display: 'flex', gap: 16 }}>
+                    <button type="button" className="cre-e2e-textlink" style={LINK}>
+                      Change state
+                    </button>
+                    <button type="button" className="cre-e2e-textlink" style={LINK}>
+                      Change line
+                    </button>
+                  </div>
+                </div>
               </div>
               <div
                 ref={cardsRef}
@@ -1126,6 +1138,16 @@ const PACKAGE_GRID: CSSProperties = {
   paddingLeft: pinLerp(32, 24, 'p'),
   position: 'sticky',
   zIndex: 2,
+}
+
+/* The packages heading and its links on one baseline, the links right-aligned; 4 above, 16 below (the heading's own were). */
+const PACKAGES_HEAD_ROW: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  justifyContent: 'space-between',
+  gap: 16,
+  paddingTop: 4,
+  paddingBottom: 16,
 }
 
 /* The ground the heading, cards and grid sit on, in three pieces (the pin): 32 in (24 on top), 10 corners. The heading's and the
