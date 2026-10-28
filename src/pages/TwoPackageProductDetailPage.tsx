@@ -437,7 +437,8 @@ export function TwoPackageProductDetailPage() {
                     (2026-10-27, Eric). */}
                 <div style={PACKAGES_HEAD_ROW}>
                   <h2 id="choose-package" style={SIDE_TITLE}>
-                    Select your {place} package:
+                    {/* Single, there is nothing to select (2026-10-28, Eric). */}
+                    {single ? <>Your {place} state package:</> : <>Select your {place} package:</>}
                   </h2>
                   {/* Back to the state or line-of-authority choice — one link on the heading's baseline, right-aligned, in the rail's
                       link type, no underline (2026-10-28, Eric; was two, Change state · Change line). It opens the selector below. */}
@@ -525,7 +526,7 @@ export function TwoPackageProductDetailPage() {
                 ref={cardsRef}
                 role="radiogroup"
                 aria-labelledby="choose-package"
-                style={{ ...PACKAGE_GRID, ...(topTray ? { position: 'relative' } : { top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }) }}
+                style={{ ...PACKAGE_GRID, ...(single ? SINGLE_GRID : null), ...(topTray ? { position: 'relative' } : { top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }) }}
               >
                 {/* The cards' piece of the ground, on its own layer so it can go once they pin — the condensed frame is narrower than
                     the column, and this showing either side of it read as a stray edge (2026-10-27, Eric). */}
@@ -1366,6 +1367,9 @@ const PACKAGE_GRID: CSSProperties = {
   position: 'sticky',
   zIndex: 2,
 }
+
+/* Single, the one card as wide as each of the multi-product page's two (2026-10-28, Eric): the same two columns, the card in the first. */
+const SINGLE_GRID: CSSProperties = { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }
 
 /* The packages heading and its links on one baseline, the links right-aligned; 4 above, 16 below (the heading's own were). */
 const PACKAGES_HEAD_ROW: CSSProperties = {
