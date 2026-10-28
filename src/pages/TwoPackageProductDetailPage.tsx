@@ -455,6 +455,14 @@ export function TwoPackageProductDetailPage() {
               {/* What You'll Learn moved to the rail, under At a Glance (2026-10-28, Eric). */}
               <section style={SECTION}>
                 <h2 style={SECTION_TITLE}>Our 3-Part Training Program</h2>
+                {/* The subhead (2026-10-28, Eric). */}
+                <div style={SUBHEAD}>
+                  <p style={{ margin: 0 }}>
+                    Our unique, highly-effective, 3-Part Training Program is proven to help candidates pass their insurance licensing exams
+                    the first time.
+                  </p>
+                  <p style={{ margin: 0 }}>9 out of 10 students say XCEL helped them feel prepared to pass!</p>
+                </div>
                 <div style={PARAGRAPHS}>
                   {HOW_IT_WORKS.map((step) => (
                     <p key={step.label} style={BODY}>
@@ -861,6 +869,19 @@ const SIDE_RULE: CSSProperties = {
 // 20 on 24 (2026-10-15, Eric's request: 2 up from 18/22).
 const SIDE_TITLE: CSSProperties = { ...SECTION_TITLE, fontSize: 20, lineHeight: '24px' }
 
+
+/* A section's subhead: a step up from the body — 20 / 30, Avenir Medium — its two lines 8 apart. */
+const SUBHEAD: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 8,
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 500,
+  fontSize: 20,
+  lineHeight: '30px',
+  color: 'var(--color-text-primary)',
+  textWrap: 'pretty',
+}
 
 const BODY: CSSProperties = {
   margin: 0,
