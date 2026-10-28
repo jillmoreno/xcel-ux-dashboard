@@ -2651,13 +2651,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Layout',
     label: 'Course Cards',
     description:
-      'The two-package PDP\u2019s package cards. Large Cards \u2014 the default \u2014 condense as they pin; Compact Cards draws the compact layout on the page too; the Top Mini Card Tray leaves the cards on the page and slides a full-width tray down from the top of the browser once they have scrolled off.',
+      'The two-package PDP\u2019s package cards. Large Cards \u2014 the default \u2014 condense as they pin; Compact Cards draws the compact layout on the page too; the Top Mini Card Tray leaves the cards on the page and slides a full-width tray down from the top of the browser once they have scrolled off, with the page\u2019s cards compact too.',
     defaultEnabled: true,
     defaultVariant: 'large',
     variants: [
       { value: 'large', label: 'Large Cards', description: 'The full cards on the page, condensing into the compact layout as they pin. The default.' },
       { value: 'compact', label: 'Compact Cards', description: 'The compact layout on the page too; pinning only tightens the frame round them.' },
-      { value: 'tray-mini', label: 'Top Mini Card Tray', description: 'Figma 560:3783 — a slim full-width tray of mini cards slides down from the top once the cards have scrolled off.' },
+      { value: 'tray-mini', label: 'Top Mini Card Tray', description: 'Figma 560:3783 — the cards on the page compact, and a slim full-width tray of mini cards slides down from the top once they have scrolled off.' },
     ],
     page: 'dashboard-rebrand',
   },

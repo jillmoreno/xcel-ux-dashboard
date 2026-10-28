@@ -116,7 +116,8 @@ export function TwoPackageProductDetailPage() {
      full-width tray down from the top of the browser once they have scrolled off. (A Top Compact Card Tray — the compact
      cards in it — was taken out the same day, Eric.) */
   const cardsMode = useFeatureFlag('pdp-course-cards').variant ?? 'large'
-  const compact = cardsMode === 'compact'
+  // The Top Mini Card Tray draws the page's cards compact too (2026-10-28, Eric).
+  const compact = cardsMode === 'compact' || cardsMode === 'tray-mini'
   const topTray = cardsMode === 'tray-mini'
   const [trayShown, setTrayShown] = useState(false)
   useLayoutEffect(() => {
