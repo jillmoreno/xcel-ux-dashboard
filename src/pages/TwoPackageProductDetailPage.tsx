@@ -464,8 +464,15 @@ export function TwoPackageProductDetailPage() {
                 </div>
                 {/* Four benefits in tiles — Figma 558:3578 (2026-10-28, Eric). */}
                 <ul style={BENEFITS}>
-                  {BENEFIT_TILES.map(({ Icon, text }) => (
-                    <li key={text} style={BENEFIT}>
+                  {BENEFIT_TILES.map(({ Icon, text }, i) => (
+                    <li
+                      key={text}
+                      style={{
+                        ...BENEFIT,
+                        ...(i === 0 ? { paddingLeft: 0 } : { borderLeft: '1px solid var(--color-e2e-card-outline)' }),
+                        ...(i === BENEFIT_TILES.length - 1 ? { paddingRight: 0 } : null),
+                      }}
+                    >
                       <Icon aria-hidden style={BENEFIT_ICON} />
                       <span style={BENEFIT_TEXT}>{text}</span>
                     </li>
@@ -929,9 +936,17 @@ const STEP_NUMBER: CSSProperties = { ...SIDE_TITLE, flex: 'none', color: 'var(--
 const STEP_TITLE: CSSProperties = SIDE_TITLE
 const STEP_BODY: CSSProperties = { ...BODY, marginTop: 7, color: 'var(--color-text-secondary)' } // 7 under the title (2026-10-28, Eric: 11, then 4 less; the site's 15)
 
-/* Figma 558:3578: four equal tiles 8 apart, each Secondary 100 with 10 corners, 8 / 16 in; a 34 Font Awesome Thin icon in the
+/* Figma 558:3578, then opened up (2026-10-28, Eric): no fills, a 1 #DDD rule over the row like the one under it, and a 1 rule
+   between the four (the outer ends flush with the column). Each 8 / 16 in; a 34 Font Awesome Thin icon in the
    darker brick (Primary 600, #7B1618), 12 from its label in Avenir Medium 11 / 14. */
-const BENEFITS: CSSProperties = { display: 'flex', gap: 8, margin: 0, padding: 0, listStyle: 'none' }
+const BENEFITS: CSSProperties = {
+  display: 'flex',
+  margin: 0,
+  padding: 0,
+  paddingTop: 15, // the section's gap, as below the row
+  borderTop: '1px solid var(--color-e2e-card-outline)',
+  listStyle: 'none',
+}
 const BENEFIT: CSSProperties = {
   flex: '1 1 0',
   minWidth: 0,
@@ -942,8 +957,6 @@ const BENEFIT: CSSProperties = {
   paddingRight: 16,
   paddingBottom: 8,
   paddingLeft: 16,
-  borderRadius: 10,
-  background: 'var(--color-secondary-100)',
 }
 // A 34 square, as Font Awesome sizes a glyph (1em). A 34 x 52 box fitted every icon to whichever side ran out first, so the narrow
 // 384-wide clipboard and ballot drew 45 tall beside a 34 chart and a 30 certificate (2026-10-28).
