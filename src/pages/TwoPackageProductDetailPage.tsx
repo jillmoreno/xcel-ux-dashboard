@@ -2,7 +2,7 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSPropert
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
-import { AngleDownSolid, BallotCheckLight, ChartLineUpLight, FaceGrinLight, FileCertificateLight, RubiMark, RubiWordmark } from '@/icons'
+import { AngleDownSolid, AngleRightSolid, BallotCheckLight, ChartLineUpLight, FaceGrinLight, FileCertificateLight, RubiMark, RubiWordmark } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
@@ -272,7 +272,8 @@ export function TwoPackageProductDetailPage() {
                       </div>
                     ))}
                     <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block', marginTop: -2 }}>
-                      Recommended study plan.
+                      Recommended study plan
+                      <AngleRightSolid size={11} aria-hidden style={LINK_CHEVRON} />
                     </button>
                   </div>
                 </section>
@@ -296,6 +297,7 @@ export function TwoPackageProductDetailPage() {
                     <p style={SIDE_BODY}>
                       <button type="button" className="cre-e2e-textlink" style={LINK}>
                         {noWidow('Florida Insurance Licensing Requirements')}
+                        <AngleRightSolid size={11} aria-hidden style={LINK_CHEVRON} />
                       </button>
                     </p>
                   </div>
@@ -309,6 +311,7 @@ export function TwoPackageProductDetailPage() {
                     <p style={{ margin: 0 }}>{FL_FEE}</p>
                     <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block' }}>
                       100% transparent pricing
+                      <AngleRightSolid size={11} aria-hidden style={LINK_CHEVRON} />
                     </button>
                   </div>
                 </section>
@@ -337,7 +340,7 @@ export function TwoPackageProductDetailPage() {
                     <button
                       type="button"
                       className="cre-e2e-textlink"
-                      style={PLAIN_LINK}
+                      style={{ ...PLAIN_LINK, fontSize: 19, lineHeight: '24px' }} // 35% up from the rail's 14 / 18 (2026-10-28, Eric)
                       aria-expanded={changeOpen}
                       aria-controls="change-state-or-line"
                       onClick={() => setChangeOpen((o) => !o)}
@@ -345,10 +348,11 @@ export function TwoPackageProductDetailPage() {
                       Change state or line
                       {/* Turns over when the selector is open. */}
                       <AngleDownSolid
-                        size={11}
+                        size={15}
                         aria-hidden
                         style={{
-                          marginLeft: 2.6,
+                          // 15, 35% up from 11 (2026-10-28, Eric); its drawing 4 clear — 384 wide in a 15 square leaves 1.9 of air.
+                          marginLeft: 2.1,
                           verticalAlign: '-1px',
                           transform: changeOpen ? 'rotate(180deg)' : 'none',
                           transition: 'transform 0.25s ease',
@@ -1111,6 +1115,10 @@ const LINK: CSSProperties = {
   // No underline at rest (2026-10-28, Eric) — the class's hover underline still shows, as nothing inline outranks it.
   cursor: 'pointer',
 }
+
+/* The angle-right after each of the rail's links (2026-10-28, Eric): 11, its drawing 4 clear of the text — the drawing is under 5 wide
+   in an 11 square, so 3.45 of that is air (measured). */
+const LINK_CHEVRON: CSSProperties = { marginLeft: 0.55, verticalAlign: '-1px' }
 
 /* The packages heading's Change state or line — LINK, now that LINK itself has no underline (2026-10-28, Eric). */
 const PLAIN_LINK: CSSProperties = LINK
