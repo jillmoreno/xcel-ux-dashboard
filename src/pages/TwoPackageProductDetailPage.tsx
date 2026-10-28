@@ -273,7 +273,7 @@ export function TwoPackageProductDetailPage() {
                     ))}
                     <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block', marginTop: -2 }}>
                       Recommended study plan
-                      <AngleRightSolid size={11} aria-hidden style={LINK_CHEVRON} />
+                      <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
                     </button>
                   </div>
                 </section>
@@ -297,7 +297,7 @@ export function TwoPackageProductDetailPage() {
                     <p style={SIDE_BODY}>
                       <button type="button" className="cre-e2e-textlink" style={LINK}>
                         {noWidow('Florida Insurance Licensing Requirements')}
-                        <AngleRightSolid size={11} aria-hidden style={LINK_CHEVRON} />
+                        <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
                       </button>
                     </p>
                   </div>
@@ -311,7 +311,7 @@ export function TwoPackageProductDetailPage() {
                     <p style={{ margin: 0 }}>{FL_FEE}</p>
                     <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block' }}>
                       100% transparent pricing
-                      <AngleRightSolid size={11} aria-hidden style={LINK_CHEVRON} />
+                      <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
                     </button>
                   </div>
                 </section>
@@ -1116,9 +1116,9 @@ const LINK: CSSProperties = {
   cursor: 'pointer',
 }
 
-/* The angle-right after each of the rail's links (2026-10-28, Eric): 11, its drawing 4 clear of the text — the drawing is under 5 wide
-   in an 11 square, so 3.45 of that is air (measured). */
-const LINK_CHEVRON: CSSProperties = { marginLeft: 0.55, verticalAlign: '-1px' }
+/* The angle-right after each of the rail's links (2026-10-28, Eric): 15, the size of Change state or line's angle-down, its drawing 4
+   clear of the text and centred on it — the drawing is 6.6 wide in a 15 square, so most of the square is air (measured). */
+const LINK_CHEVRON: CSSProperties = { marginLeft: -0.65, verticalAlign: '-3px' }
 
 /* The packages heading's Change state or line — LINK, now that LINK itself has no underline (2026-10-28, Eric). */
 const PLAIN_LINK: CSSProperties = LINK
