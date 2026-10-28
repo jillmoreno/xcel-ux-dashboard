@@ -1047,8 +1047,9 @@ const PIN_BACKDROP: CSSProperties = {
   maskImage:
     'linear-gradient(to right, transparent, #000 var(--tray-side-feather, 0px), #000 calc(100% - var(--tray-side-feather, 0px)), transparent), linear-gradient(to bottom, #000 calc(100% - 15px), transparent)',
   maskComposite: 'intersect',
+  // ⚠ NO TRANSITION. The cards' own piece of the ground switches off the instant they pin (PIN_LAYER), so a fade-in here left
+  // 150ms with neither layer fully there — the tray's background blinked as it appeared (2026-10-28, Eric).
   opacity: 'var(--pinned, 0)',
-  transition: 'opacity 0.15s ease',
   pointerEvents: 'none',
 }
 /* A layer behind the cards, inside their sticky row. */
