@@ -503,7 +503,7 @@ const PACKAGES: {
   {
     id: 'standard',
     short: 'Standard',
-    title: 'Florida Life and Health Pre-licensing Package',
+    title: 'Life and Health Pre-licensing Package', // no "Florida" (2026-10-28, Eric)
     courseName: 'Florida Life and Health Pre-licensing',
     price: E2E_PARTNER_PRICE,
     was: E2E_ORIGINAL_PRICE,
@@ -519,7 +519,7 @@ const PACKAGES: {
   },  {
     id: 'premier',
     short: 'Premier',
-    title: 'Florida Life and Health Pre-licensing Package',
+    title: 'Life and Health Pre-licensing Package',
     courseName: 'Florida Life and Health Pre-licensing Premier',
     price: '$97.50', // DEMO DATA — see the header
     was: '$299.00',
