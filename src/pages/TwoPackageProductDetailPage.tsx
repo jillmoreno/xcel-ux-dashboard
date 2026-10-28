@@ -130,12 +130,15 @@ export function TwoPackageProductDetailPage() {
       cards.style.setProperty('--cp', String(c))
       cards.style.setProperty('--px', String(1 - (1 - c) ** 2))
       cards.style.setProperty('--py', String(c ** 2))
-      /* Once the comparison's piece of the ground has scrolled up past the tray's bottom edge, its tan goes, so none shows
-         through the tray's feathered edges over the white page (2026-10-28, Eric). */
+      /* Once the comparison's piece of the ground has scrolled up past the tray's bottom edge, its tan fades out over the next
+         FOOT_FADE px of scroll, so none shows through the tray's feathered edges over the white page (2026-10-28, Eric; it went
+         at once at first). */
       const tray = trayRef.current
       const foot = footRef.current
       if (tray && foot) {
-        if (foot.getBoundingClientRect().bottom <= tray.getBoundingClientRect().bottom) foot.style.setProperty('--foot-fill', 'transparent')
+        const past = tray.getBoundingClientRect().bottom - foot.getBoundingClientRect().bottom
+        const left = 1 - Math.min(1, Math.max(0, past / FOOT_FADE))
+        if (left < 1) foot.style.setProperty('--foot-fill', `color-mix(in srgb, var(--color-secondary-100) ${Math.round(left * 100)}%, transparent)`)
         else foot.style.removeProperty('--foot-fill')
       }
       cards.querySelectorAll<HTMLElement>('[data-price-row]').forEach((row) => {
@@ -1046,6 +1049,8 @@ const PIN_BACKDROP: CSSProperties = {
 }
 /* A layer behind the cards, inside their sticky row. */
 const PIN_LAYER: CSSProperties = { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: -1, pointerEvents: 'none' }
+/* The scroll over which the comparison's tan fades once it is up past the tray. */
+const FOOT_FADE = 40
 /* The scroll over which pinned cards condense. */
 const PIN_CONDENSE = 160
 
