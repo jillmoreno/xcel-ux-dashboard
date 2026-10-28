@@ -279,32 +279,35 @@ export function TwoPackageProductDetailPage() {
         {/* The strip along the top: the badge in the top-right corner (Premier). The radio that sat 10 in from the
             right is gone (2026-10-27, Eric) — the brick edge and the column shade say which is picked. */}
         {single ? (
-          /* Single, the mini tray's tab in the top-left corner: PASS GUARANTEE and the package's name in one (2026-10-28, Eric). */
-          <span style={{ ...MINI_TAB, alignSelf: 'flex-start' }}>
-            {p.badge ? <span style={MINI_BADGE}>{p.badge}</span> : null}
-            <span style={{ ...MINI_TAB_LABEL, ...(p.badge ? { paddingLeft: 0 } : null) }}>{p.short} package</span>
-          </span>
-        ) : (
-          <span style={OPTION_TOP}>
-            {p.badge ? <span style={OPTION_BADGE}>{p.badge}</span> : null}
-          </span>
-        )}
-        {single ? (
-          /* THE SINGLE-PRODUCT CARD (2026-10-28, Eric): laid out across, like the mini tray's — the title on the left, the price
-             over its Purchase on the right — in the page card's own sizes and spacing, the card the column's width. */
-          <span style={SINGLE_BODY}>
-            <span style={{ ...OPTION_TITLE, minWidth: 0 }}>{`${place} ${localize(p.title)}`}</span>
-            <span style={SINGLE_BUY_COLUMN}>
-              {prices}
-              {buy(SINGLE_BUY)}
+          <>
+            {/* Single, the mini tray's tab in the top-left corner: PASS GUARANTEE and the package's name in one (2026-10-28, Eric). */}
+            <span style={{ ...MINI_TAB, alignSelf: 'flex-start' }}>
+              {p.badge ? <span style={MINI_BADGE}>{p.badge}</span> : null}
+              <span style={{ ...MINI_TAB_LABEL, ...(p.badge ? { paddingLeft: 0 } : null) }}>{p.short} package</span>
             </span>
-          </span>
+            {/* THE SINGLE-PRODUCT CARD (2026-10-28, Eric): laid out across, like the mini tray's — the title on the left, the price
+                over its Purchase on the right — in the page card's own sizes and spacing, the card the column's width. */}
+            <span style={SINGLE_BODY}>
+              <span style={{ ...OPTION_TITLE, minWidth: 0 }}>{`${place} ${localize(p.title)}`}</span>
+              <span style={SINGLE_BUY_COLUMN}>
+                {prices}
+                {buy(SINGLE_BUY)}
+              </span>
+            </span>
+            {/* The card's 1 edge drawn again over everything, so its top runs across the tab (2026-10-28, Eric). */}
+            <span aria-hidden style={MINI_EDGE} />
+          </>
         ) : (
-          <span style={OPTION_BODY}>
-            {heading}
-            {prices}
-            {buy(OPTION_BUY)}
-          </span>
+          <>
+            <span style={OPTION_TOP}>
+              {p.badge ? <span style={OPTION_BADGE}>{p.badge}</span> : null}
+            </span>
+            <span style={OPTION_BODY}>
+              {heading}
+              {prices}
+              {buy(OPTION_BUY)}
+            </span>
+          </>
         )}
       </div>
     )
