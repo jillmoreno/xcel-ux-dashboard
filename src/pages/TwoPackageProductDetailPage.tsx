@@ -458,10 +458,9 @@ export function TwoPackageProductDetailPage() {
                 {/* The subhead (2026-10-28, Eric). */}
                 <div style={SUBHEAD}>
                   <p style={{ margin: 0 }}>
-                    Our unique, highly-effective, 3-Part Training Program is proven to help candidates pass their insurance licensing exams
-                    the first time.
+                    9 out of 10 students say XCEL’s proven 3-Part Training Program left them feeling prepared, and helped them pass their
+                    insurance licensing exams on the first try.
                   </p>
-                  <p style={{ margin: 0 }}>9 out of 10 students say XCEL helped them feel prepared to pass!</p>
                 </div>
                 <div style={PARAGRAPHS}>
                   {HOW_IT_WORKS.map((step) => (
