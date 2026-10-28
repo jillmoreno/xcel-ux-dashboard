@@ -709,7 +709,14 @@ function MiniCard({ p, on, title, onPick, onBuy }: {
         <span style={{ ...MINI_TAB_LABEL, ...(p.badge ? { paddingLeft: 0 } : null) }}>{p.short} package</span>
       </span>
       <span style={MINI_BODY}>
-        <span style={MINI_TITLE}>{title}</span>
+        <span style={MINI_TITLE}>
+          {title.split('Pre-licensing').map((part, i) => (
+            <Fragment key={i}>
+              {i > 0 ? <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> : null}
+              {part}
+            </Fragment>
+          ))}
+        </span>
         <span style={MINI_PRICE_COLUMN}>
           <span style={MINI_PRICES}>
             <span style={MINI_PRICE}>
@@ -1489,10 +1496,10 @@ const TOP_TRAY: CSSProperties = {
   pointerEvents: 'auto',
 }
 
+/* Figma 560:3858 (2026-10-28, Eric): each card as wide as its content — the 244 title, 26, the price — not 552. */
 const MINI_CARD: CSSProperties = {
   position: 'relative',
-  flex: '0 1 552px',
-  minWidth: 0,
+  flex: 'none',
   overflow: 'hidden',
   display: 'flex',
   flexDirection: 'column',
@@ -1542,28 +1549,28 @@ const MINI_BADGE: CSSProperties = {
 }
 const MINI_TAB_LABEL: CSSProperties = { paddingTop: 5, // 1 lower (2026-10-28, Eric; was 3 — centred, 2 more moves it 1)
   paddingLeft: 16, color: 'var(--color-xcel-brick)' }
+/* Figma 560:3858: the title and the price centred on each other, 26 apart; 16 under them, 20 either side. */
 const MINI_BODY: CSSProperties = {
   alignSelf: 'stretch',
   display: 'flex',
-  alignItems: 'flex-end',
-  gap: 10,
-  marginTop: -4, // 4 less above the titles (2026-10-28, Eric)
+  alignItems: 'center',
+  gap: 26,
   paddingRight: 20,
-  paddingBottom: 20,
+  paddingBottom: 16,
   paddingLeft: 20,
 }
+// 244 wide, 10 down from the row's centre line — "Pre-licensing" kept whole, so it breaks before it as the design does.
 const MINI_TITLE: CSSProperties = {
-  flex: '1 0 0',
-  minWidth: 0,
-  maxWidth: 244,
-  marginRight: 'auto',
+  flex: 'none',
+  width: 244,
+  paddingTop: 10,
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
   fontSize: 18,
   lineHeight: '24px',
   color: 'var(--color-text-primary)',
 }
-const MINI_PRICE_COLUMN: CSSProperties = { flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 } // 8 less to the button (2026-10-28, Eric: 4, then 4 more; the design's 8)
+const MINI_PRICE_COLUMN: CSSProperties = { flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 } // the design's 8 (Figma 560:3858)
 const MINI_PRICES: CSSProperties = { display: 'flex', alignItems: 'baseline', gap: 6, whiteSpace: 'nowrap' }
 const MINI_PRICE: CSSProperties = { fontFamily: 'var(--font-e2e-avenir)', fontWeight: 500, fontSize: 22, lineHeight: '26px', color: 'var(--color-text-primary)' }
 /* The dollar sign raised and smaller, 14.19 — the design's superscript. */
