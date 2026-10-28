@@ -870,19 +870,6 @@ const SIDE_RULE: CSSProperties = {
 const SIDE_TITLE: CSSProperties = { ...SECTION_TITLE, fontSize: 20, lineHeight: '24px' }
 
 
-/* A section's subhead: a step up from the body — 20 / 30, Avenir Medium — its two lines 8 apart. */
-const SUBHEAD: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 8,
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 500,
-  fontSize: 20,
-  lineHeight: '30px',
-  color: 'var(--color-text-primary)',
-  textWrap: 'pretty',
-}
-
 const BODY: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-e2e-avenir)',
@@ -895,6 +882,10 @@ const BODY: CSSProperties = {
 
 /* The side boxes' copy: 16 / 22 (2026-10-15, Eric's requests). */
 // 15 on 21 in every rail box (2026-10-15, Eric's request; was 16/22).
+/* A section's subhead: the course intro's own type — BODY, 18 / 27 Avenir (2026-10-28, Eric; was 20 / 30 Medium) — its two lines 8
+   apart. */
+const SUBHEAD: CSSProperties = { ...BODY, display: 'flex', flexDirection: 'column', gap: 8 }
+
 const SIDE_BODY: CSSProperties = { ...BODY, fontSize: 15, lineHeight: '21px' }
 
 
