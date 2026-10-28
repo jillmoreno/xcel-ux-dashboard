@@ -888,7 +888,7 @@ const BODY: CSSProperties = {
 /* The side boxes' copy: 16 / 22 (2026-10-15, Eric's requests). */
 // 15 on 21 in every rail box (2026-10-15, Eric's request; was 16/22).
 /* THE THREE PARTS — xcelsolutions.com's (2026-10-28, Eric): each a row, the number 31 wide and 23 clear of its title; the slab
-   serif at 28 / 34 for both; the copy Avenir 20 / 31 in grey, 15 under its title; 30 under the copy, a 1 #DDD rule, 30 to the next
+   serif for both; the copy in grey, 15 under its title; 30 under the copy, a 1 #DDD rule, 30 to the next
    part. The last has no rule. */
 const STEPS: CSSProperties = { margin: 0, padding: 0, listStyle: 'none' }
 const STEP: CSSProperties = {
@@ -900,24 +900,10 @@ const STEP: CSSProperties = {
   borderBottom: '1px solid var(--color-e2e-card-outline)',
 }
 const STEP_LAST: CSSProperties = { paddingBottom: 0, marginBottom: 0, borderBottom: 'none' }
-const STEP_NUMBER: CSSProperties = {
-  flex: 'none',
-  minWidth: 31,
-  fontFamily: 'var(--font-e2e-serif)',
-  fontWeight: 700,
-  fontSize: 28,
-  lineHeight: '34px',
-  color: 'var(--color-xcel-brick)',
-}
-const STEP_TITLE: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-e2e-serif)',
-  fontWeight: 700,
-  fontSize: 28,
-  lineHeight: '34px',
-  color: 'var(--color-text-primary)',
-}
-const STEP_BODY: CSSProperties = { ...BODY, marginTop: 15, fontSize: 20, lineHeight: '31px', color: 'var(--color-text-secondary)' }
+// Number and title in the rail's heading size, 20 / 24 (2026-10-28, Eric; the site's 28 / 34); the copy back in BODY's 18 / 27.
+const STEP_NUMBER: CSSProperties = { ...SIDE_TITLE, flex: 'none', color: 'var(--color-xcel-brick)' }
+const STEP_TITLE: CSSProperties = SIDE_TITLE
+const STEP_BODY: CSSProperties = { ...BODY, marginTop: 15, color: 'var(--color-text-secondary)' }
 
 /* A section's subhead: the course intro's own type — BODY, 18 / 27 Avenir (2026-10-28, Eric; was 20 / 30 Medium) — its two lines 8
    apart. */
