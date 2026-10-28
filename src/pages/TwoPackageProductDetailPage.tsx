@@ -112,12 +112,12 @@ export function TwoPackageProductDetailPage() {
   const [fade, setFade] = useState({ head: 0, cards: 0 })
   const [browserTop, setBrowserTop] = useState(0)
   /* The design bar's Course Cards (2026-10-28, Eric; was the on/off Compact cards): Large condense as they pin; Compact are the
-     compact layout on the page too; the two Top trays leave the cards on the page, full size and unpinned, and slide a
-     full-width tray down from the top of the browser once they have scrolled off. */
+     compact layout on the page too; the Top Mini Card Tray leaves the cards on the page, full size and unpinned, and slides a
+     full-width tray down from the top of the browser once they have scrolled off. (A Top Compact Card Tray — the compact
+     cards in it — was taken out the same day, Eric.) */
   const cardsMode = useFeatureFlag('pdp-course-cards').variant ?? 'large'
   const compact = cardsMode === 'compact'
-  const topTray = cardsMode === 'tray-compact' || cardsMode === 'tray-mini' ? cardsMode : null
-  const topTrayRef = useRef<HTMLDivElement>(null)
+  const topTray = cardsMode === 'tray-mini'
   const [trayShown, setTrayShown] = useState(false)
   useLayoutEffect(() => {
     const head = headRef.current
@@ -136,12 +136,9 @@ export function TwoPackageProductDetailPage() {
        slides across beside the price first) and --py eases in (then rises into the price's row); --price-w is each card's
        price width, which the button clears. */
     const check = () => {
-      // The Top trays: the cards stay on the page, and the tray shows once the last of them is up past the browser's top.
+      // The Top tray: the cards stay on the page, and the tray shows once the last of them is up past the browser's top.
       if (topTray) setTrayShown(cards.getBoundingClientRect().bottom < browserTop())
       else setTrayShown(false)
-      topTrayRef.current?.querySelectorAll<HTMLElement>('[data-price-row]').forEach((row) => {
-        row.parentElement?.style.setProperty('--price-w', `${row.offsetWidth}px`)
-      })
       const over = topTray ? -1 : browserTop() + CARDS_PIN_GAP - head.getBoundingClientRect().bottom
       const p = Math.min(1, Math.max(0, over / PIN_CONDENSE))
       cards.style.setProperty('--pinned', over > 0.5 ? '1' : '0')
@@ -222,7 +219,7 @@ export function TwoPackageProductDetailPage() {
     setPicked(id)
     navigate(`/end-to-end-demo/checkout?${new URLSearchParams({ ...Object.fromEntries(params), package: id }).toString()}`)
   }
-  /* One package card — on the page, and in the Top Compact Card Tray. */
+  /* One package card. */
   const renderCard = (p: (typeof PACKAGES)[number]) => {
     const on = p.id === picked
     // A div with the radio role, not a button: it holds a real button (Purchase), and buttons cannot nest.
@@ -281,29 +278,22 @@ export function TwoPackageProductDetailPage() {
   return (
     <div style={PAGE}>
       <StandaloneBrowserChrome />
-      {/* THE TOP TRAYS (2026-10-28, Eric): full width, sliding down from the top of the browser once the cards on the page have
+      {/* THE TOP MINI CARD TRAY (2026-10-28, Eric): full width, sliding down from the top of the browser once the cards on the page have
           scrolled off it, and back up when they return. A zero-height sticky row holds a clip the tray slides out of, so it is
           hidden above the browser's top rather than drawn over the chrome. */}
       {topTray ? (
         <div style={{ ...TOP_TRAY_PIN, top: browserTop }}>
           <div style={TOP_TRAY_CLIP}>
             <div
-              ref={topTrayRef}
               role="radiogroup"
               aria-label="Choose your package"
               aria-hidden={!trayShown}
               inert={!trayShown}
               style={{ ...TOP_TRAY, transform: trayShown ? 'none' : 'translateY(-100%)' }}
             >
-              {PACKAGES.map((p) =>
-                topTray === 'tray-compact' ? (
-                  <div key={p.id} style={{ ...PACKAGE_PANEL, ...TOP_TRAY_CARD }}>
-                    {renderCard(p)}
-                  </div>
-                ) : (
-                  <MiniCard key={p.id} p={p} on={p.id === picked} title={`${place} ${localize(p.title)}`} onPick={() => setPicked(p.id)} onBuy={() => purchase(p.id)} />
-                ),
-              )}
+              {PACKAGES.map((p) => (
+                <MiniCard key={p.id} p={p} on={p.id === picked} title={`${place} ${localize(p.title)}`} onPick={() => setPicked(p.id)} onBuy={() => purchase(p.id)} />
+              ))}
             </div>
           </div>
         </div>
@@ -689,7 +679,7 @@ export function TwoPackageProductDetailPage() {
    product page); Premier's is its live page's, 2026-10-27. */
 /* THE TOP MINI CARD TRAY'S CARD — Figma 560:3783 (2026-10-28, Eric): the package's name as a tan tab in the top-left corner (Premier's
    behind its brick PASS GUARANTEE), then the title, 18 / 24 Heavy, beside the price over its Purchase. Picked, white with a 2 brick
-   edge; at rest, 40% white with the 1 #D9D9D9 one. Both Purchase buttons are brick, as the design draws them. */
+   edge; at rest, 40% white with the 1 #D9D9D9 one. */
 function MiniCard({ p, on, title, onPick, onBuy }: {
   p: (typeof PACKAGES)[number]
   on: boolean
@@ -713,7 +703,8 @@ function MiniCard({ p, on, title, onPick, onBuy }: {
     >
       <span style={MINI_TAB}>
         {p.badge ? <span style={MINI_BADGE}>{p.badge}</span> : null}
-        <span style={MINI_TAB_LABEL}>{p.short} package</span>
+        {/* Beside the badge, only the tab's 10 gap — no 16 in from the left (2026-10-28, Eric). */}
+        <span style={{ ...MINI_TAB_LABEL, ...(p.badge ? { paddingLeft: 0 } : null) }}>{p.short} package</span>
       </span>
       <span style={MINI_BODY}>
         <span style={MINI_TITLE}>{title}</span>
@@ -730,7 +721,8 @@ function MiniCard({ p, on, title, onPick, onBuy }: {
           </span>
           <button
             type="button"
-            className="cre-e2e-add-to-cart cre-e2e-cta"
+            // Premier's brick; Standard's the outline, white with a brick edge and label (Figma 559:3753, 2026-10-28, Eric).
+            className={`cre-e2e-add-to-cart ${p.id === 'premier' ? 'cre-e2e-cta' : 'cre-e2e-outline'}`}
             style={MINI_BUY}
             onClick={(e) => {
               e.stopPropagation()
@@ -1474,12 +1466,11 @@ const FOOT_FADE = 80 // (2026-10-28, Eric; was 40)
 /* The scroll over which pinned cards condense. */
 const PIN_CONDENSE = 160
 
-/* The Top trays (2026-10-28, Eric): a zero-height row stuck at the browser's top (set inline), over the page's pinned header but
+/* The Top Mini Card Tray (2026-10-28, Eric): a zero-height row stuck at the browser's top (set inline), over the page's pinned header but
    under the browser chrome; the clip under it hides the tray until it slides down. */
 const TOP_TRAY_PIN: CSSProperties = { position: 'sticky', zIndex: 20, height: 0 }
 const TOP_TRAY_CLIP: CSSProperties = { position: 'absolute', top: 0, right: 0, left: 0, overflow: 'hidden', paddingBottom: 12, pointerEvents: 'none' }
-/* Figma 560:3783: the browser's full width in Secondary 200, 16 above and below, the two cards 552 wide and 24 apart, centred. The
-   compact cards ride it in their condensed state. */
+/* Figma 560:3783: the browser’s full width (in Secondary 100 now; the design’s 200), 16 above and below, the two cards 552 wide and 24 apart, centred. */
 const TOP_TRAY: CSSProperties = {
   display: 'flex',
   justifyContent: 'center',
@@ -1493,12 +1484,7 @@ const TOP_TRAY: CSSProperties = {
   boxShadow: '0 6px 10px -8px rgb(0 0 0 / 0.2)',
   transition: 'transform 0.3s ease',
   pointerEvents: 'auto',
-  ['--p' as string]: 1,
-  ['--cp' as string]: 1,
-  ['--px' as string]: 1,
-  ['--py' as string]: 1,
 }
-const TOP_TRAY_CARD: CSSProperties = { flex: '0 1 552px' }
 
 const MINI_CARD: CSSProperties = {
   position: 'relative',
@@ -1570,7 +1556,7 @@ const MINI_TITLE: CSSProperties = {
   lineHeight: '24px',
   color: 'var(--color-text-primary)',
 }
-const MINI_PRICE_COLUMN: CSSProperties = { flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }
+const MINI_PRICE_COLUMN: CSSProperties = { flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 } // 4 less to the button (2026-10-28, Eric; the design's 8)
 const MINI_PRICES: CSSProperties = { display: 'flex', alignItems: 'baseline', gap: 6, whiteSpace: 'nowrap' }
 const MINI_PRICE: CSSProperties = { fontFamily: 'var(--font-e2e-avenir)', fontWeight: 500, fontSize: 22, lineHeight: '26px', color: 'var(--color-text-primary)' }
 /* The dollar sign raised and smaller, 14.19 — the design's superscript. */
