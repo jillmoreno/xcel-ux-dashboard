@@ -877,7 +877,59 @@ const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; p
 // The reporting fee line reads `${abbreviation} fee due at checkout: $20` for whichever state is chosen. DEMO: one invented fee
 // for every state.
 const STATE_FEE = '$20'
-const STATE_ABBR: Record<string, string> = { Arizona: 'AZ', Florida: 'FL', Georgia: 'GA', Ohio: 'OH', Texas: 'TX' }
+// All fifty, in order — the selector's states are its keys (2026-10-28, Eric; was five).
+const STATE_ABBR: Record<string, string> = {
+  Alabama: 'AL',
+  Alaska: 'AK',
+  Arizona: 'AZ',
+  Arkansas: 'AR',
+  California: 'CA',
+  Colorado: 'CO',
+  Connecticut: 'CT',
+  Delaware: 'DE',
+  Florida: 'FL',
+  Georgia: 'GA',
+  Hawaii: 'HI',
+  Idaho: 'ID',
+  Illinois: 'IL',
+  Indiana: 'IN',
+  Iowa: 'IA',
+  Kansas: 'KS',
+  Kentucky: 'KY',
+  Louisiana: 'LA',
+  Maine: 'ME',
+  Maryland: 'MD',
+  Massachusetts: 'MA',
+  Michigan: 'MI',
+  Minnesota: 'MN',
+  Mississippi: 'MS',
+  Missouri: 'MO',
+  Montana: 'MT',
+  Nebraska: 'NE',
+  Nevada: 'NV',
+  'New Hampshire': 'NH',
+  'New Jersey': 'NJ',
+  'New Mexico': 'NM',
+  'New York': 'NY',
+  'North Carolina': 'NC',
+  'North Dakota': 'ND',
+  Ohio: 'OH',
+  Oklahoma: 'OK',
+  Oregon: 'OR',
+  Pennsylvania: 'PA',
+  'Rhode Island': 'RI',
+  'South Carolina': 'SC',
+  'South Dakota': 'SD',
+  Tennessee: 'TN',
+  Texas: 'TX',
+  Utah: 'UT',
+  Vermont: 'VT',
+  Virginia: 'VA',
+  Washington: 'WA',
+  'West Virginia': 'WV',
+  Wisconsin: 'WI',
+  Wyoming: 'WY',
+}
 
 /* The design's columns, at its widths (each column's left edge to the next). */
 const FOOTER_COLUMNS: { title: string; width: number | string; links: string[] }[] = [
@@ -904,9 +956,8 @@ const WHAT_YOULL_LEARN = [
 /* Each step's number and label (in Heavy), then its copy — trimmed about a
    third (2026-10-15, Eric's request) with every fact kept: the three parts,
    Rubi™, what unlocks what, the 70 / 80 / 85% marks, the 24-hour revisit. */
-/* The selector's choices (2026-10-28, Eric). States: Florida and four others picked at random — a demo's worth, not the catalog.
-   Lines: what xcelsolutions.com's course finder offers for Florida with Get License chosen. */
-const CHANGE_STATES = ['Arizona', 'Florida', 'Georgia', 'Ohio', 'Texas']
+/* The selector's choices (2026-10-28, Eric). States: all fifty (was Florida and four others at random). Lines: what xcelsolutions.com's course finder offers for Florida with Get License chosen. */
+const CHANGE_STATES = Object.keys(STATE_ABBR)
 const CHANGE_LINES = ['Life and Health', 'Life', 'Health', 'Property and Casualty', 'Personal Lines']
 
 /* The four benefit tiles under the training program's subhead (Figma 558:3578). Their copy is xcelsolutions.com's list. */
