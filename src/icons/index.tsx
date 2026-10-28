@@ -77,6 +77,7 @@ import ClipboardListLightSvg from './clipboard-list-light.svg?react'
 import ChartLineUpLightSvg from './chart-line-up-light.svg?react'
 import BallotCheckLightSvg from './ballot-check-light.svg?react'
 import FaceSmileLightSvg from './face-smile-light.svg?react'
+import FaceGrinLightSvg from './face-grin-light.svg?react'
 import FileCertificateLightSvg from './file-certificate-light.svg?react'
 import HourglassClockThinSvg from './hourglass-clock-thin.svg?react'
 import HourglassClockLightSvg from './hourglass-clock-light.svg?react'
@@ -314,6 +315,7 @@ export const ClipboardListLight = makeIcon(ClipboardListLightSvg) // FA: clipboa
 export const ChartLineUpLight = makeIcon(ChartLineUpLightSvg) // FA: chart-line-up (light)
 export const BallotCheckLight = makeIcon(BallotCheckLightSvg) // FA: ballot-check (light)
 export const FaceSmileLight = makeIcon(FaceSmileLightSvg) // FA: face-smile (light)
+export const FaceGrinLight = makeIcon(FaceGrinLightSvg) // FA: face-grin (light)
 export const FileCertificateLight = makeIcon(FileCertificateLightSvg) // FA: file-certificate (light)
 export const HourglassClockThin = makeIcon(HourglassClockThinSvg) // FA: hourglass-clock (thin)
 export const HourglassClockLight = makeIcon(HourglassClockLightSvg) // FA: hourglass-clock (light)
