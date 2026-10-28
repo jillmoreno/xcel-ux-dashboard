@@ -1106,16 +1106,14 @@ const LINK: CSSProperties = {
   fontFamily: 'inherit',
   fontSize: 14,
   lineHeight: '18px',
-  fontWeight: 500,
-
-  textDecoration: 'underline',
-  textDecorationThickness: 1,
+  // Avenir Heavy, the next face up from Medium — Avenir has no 600 or 700, so those draw Heavy anyway (2026-10-28, Eric; was 500).
+  fontWeight: 800,
+  // No underline at rest (2026-10-28, Eric) — the class's hover underline still shows, as nothing inline outranks it.
   cursor: 'pointer',
 }
 
-/* LINK without its underline (2026-10-28, Eric — the packages heading's Change state or line). Left unset rather than
-   'none', so the class's hover underline still shows: an inline value would outrank it. */
-const PLAIN_LINK: CSSProperties = { ...LINK, textDecoration: undefined, textDecorationThickness: undefined }
+/* The packages heading's Change state or line — LINK, now that LINK itself has no underline (2026-10-28, Eric). */
+const PLAIN_LINK: CSSProperties = LINK
 
 /* The footer: a 2px #666 rule on top; 40 above the logo and the column
    headings, 240 in each side; the legal bar 284 down. */
