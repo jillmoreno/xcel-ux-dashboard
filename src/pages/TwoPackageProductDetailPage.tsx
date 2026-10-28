@@ -370,10 +370,8 @@ export function TwoPackageProductDetailPage() {
                       <span style={CHANGE_LABEL}>Change state and or line of authority:</span>
                       <div style={CHANGE_FIELDS}>
                       <span style={CHANGE_FIELD}>
-                        <select aria-label="State" defaultValue="" className="cre-e2e-input" style={CHANGE_SELECT}>
-                          <option value="" disabled>
-                            Select state
-                          </option>
+                        {/* Defaults to the page's own state and line (2026-10-28, Eric). */}
+                        <select aria-label="State" defaultValue="Florida" className="cre-e2e-input" style={CHANGE_SELECT}>
                           {CHANGE_STATES.map((st) => (
                             <option key={st}>{st}</option>
                           ))}
@@ -381,10 +379,7 @@ export function TwoPackageProductDetailPage() {
                         <AngleDownSolid size={16} aria-hidden style={CHANGE_CHEVRON} />
                       </span>
                       <span style={CHANGE_FIELD}>
-                        <select aria-label="Line of authority" defaultValue="" className="cre-e2e-input" style={CHANGE_SELECT}>
-                          <option value="" disabled>
-                            Select line of authority
-                          </option>
+                        <select aria-label="Line of authority" defaultValue="Life and Health" className="cre-e2e-input" style={CHANGE_SELECT}>
                           {CHANGE_LINES.map((line) => (
                             <option key={line}>{line}</option>
                           ))}
@@ -727,16 +722,10 @@ const WHAT_YOULL_LEARN = [
 /* Each step's number and label (in Heavy), then its copy — trimmed about a
    third (2026-10-15, Eric's request) with every fact kept: the three parts,
    Rubi™, what unlocks what, the 70 / 80 / 85% marks, the 24-hour revisit. */
-/* The selector's choices. DEMO: the states xcelsolutions.com lists; the lines are a short, invented set. */
-const CHANGE_STATES = [
-  'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida',
-  'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland',
-  'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire',
-  'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania',
-  'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'U.S. Virgin Islands', 'Utah', 'Vermont', 'Virginia',
-  'Washington', 'West Virginia', 'Wisconsin', 'Wyoming',
-]
-const CHANGE_LINES = ['Life and Health', 'Life', 'Accident and Health', 'Property and Casualty', 'Personal Lines']
+/* The selector's choices (2026-10-28, Eric). States: Florida and four others picked at random — a demo's worth, not the catalog.
+   Lines: what xcelsolutions.com's course finder offers for Florida with Get License chosen. */
+const CHANGE_STATES = ['Arizona', 'Florida', 'Georgia', 'Ohio', 'Texas']
+const CHANGE_LINES = ['Life and Health', 'Life', 'Health', 'Property and Casualty', 'Personal Lines']
 
 /* The four benefit tiles under the training program's subhead (Figma 558:3578). Their copy is xcelsolutions.com's list. */
 const BENEFIT_TILES: { Icon: typeof FaceGrinLight; text: string; maxWidth: number; units: number; viewWidth: number; scale?: number }[] = [
