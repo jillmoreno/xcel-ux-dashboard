@@ -363,7 +363,7 @@ export function TwoPackageProductDetailPage() {
                 <div style={{ ...CHANGE_SLIDE, gridTemplateRows: changeOpen ? '1fr' : '0fr' }}>
                   <div id="change-state-or-line" inert={!changeOpen} style={{ overflow: 'hidden', minHeight: 0 }}>
                     <div style={CHANGE_ROW}>
-                      <span style={CHANGE_LABEL}>Select different state and or line of authority:</span>
+                      <span style={CHANGE_LABEL}>Change state and or line of authority:</span>
                       <span style={CHANGE_FIELD}>
                         <select aria-label="State" defaultValue="" className="cre-e2e-input" style={CHANGE_SELECT}>
                           <option value="" disabled>
