@@ -701,7 +701,8 @@ function MiniCard({ p, on, title, onPick, onBuy }: {
       }}
       style={{ ...MINI_CARD, ...(on ? MINI_CARD_ON : null) }}
     >
-      <span style={MINI_TAB}>
+      {/* Picked, over the ring, as the page's badge sits over its card's (2026-10-28, Eric). */}
+      <span style={{ ...MINI_TAB, ...(on ? { position: 'relative', zIndex: 1 } : null) }}>
         {p.badge ? <span style={MINI_BADGE}>{p.badge}</span> : null}
         {/* Beside the badge, only the tab's 10 gap — no 16 in from the left (2026-10-28, Eric). */}
         <span style={{ ...MINI_TAB_LABEL, ...(p.badge ? { paddingLeft: 0 } : null) }}>{p.short} package</span>
@@ -1498,7 +1499,9 @@ const MINI_CARD: CSSProperties = {
   background: 'color-mix(in srgb, var(--color-fixed-light) 60%, transparent)', // 60% white at rest (2026-10-28, Eric; the design's 40)
   cursor: 'pointer',
 }
-const MINI_CARD_ON: CSSProperties = { background: 'var(--color-fixed-light)' }
+// Picked, the page's selected card's ring and shadow (OPTION_ON — 2026-10-28, Eric; was the design's 2 brick edge): the shadow on the
+// card, the rings on its edge layer, over the tab.
+const MINI_CARD_ON: CSSProperties = { background: 'var(--color-fixed-light)', boxShadow: '0 4px 8px -2px rgb(0 0 0 / 0.3)' }
 const MINI_EDGE: CSSProperties = {
   position: 'absolute',
   top: 0,
@@ -1509,7 +1512,7 @@ const MINI_EDGE: CSSProperties = {
   boxShadow: 'inset 0 0 0 1px var(--color-e2e-card-outline)',
   pointerEvents: 'none',
 }
-const MINI_EDGE_ON: CSSProperties = { boxShadow: 'inset 0 0 0 2px var(--color-xcel-brick)' }
+const MINI_EDGE_ON: CSSProperties = { boxShadow: 'inset 0 0 0 1px var(--color-e2e-card-outline), inset 0 0 0 7px var(--color-secondary-200)' }
 /* The tab: Secondary 200, an 8 corner bottom right, 25 tall; Premier's brick badge 148 wide at its left. */
 const MINI_TAB: CSSProperties = {
   display: 'flex',
