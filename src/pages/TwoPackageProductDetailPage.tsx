@@ -1489,7 +1489,7 @@ const TOP_TRAY: CSSProperties = {
   paddingRight: 24,
   paddingBottom: 16,
   paddingLeft: 24,
-  background: 'var(--color-secondary-200)',
+  background: 'var(--color-secondary-100)', // Secondary 100 (2026-10-28, Eric; the design's 200)
   boxShadow: '0 6px 10px -8px rgb(0 0 0 / 0.2)',
   transition: 'transform 0.3s ease',
   pointerEvents: 'auto',
