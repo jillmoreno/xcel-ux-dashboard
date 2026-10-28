@@ -970,11 +970,13 @@ const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
   // The two cards side by side; they pin (the comparison table is the ground's next piece now).
-  columnGap: 32, // 8 less between the cards (2026-10-27, Eric; was 40)
+  // Pinned, the cards widen: 24 at the sides like the frame's bottom, and 24 between them (2026-10-28, Eric). On the page, 32 and
+  // 32, in line with the comparison below.
+  columnGap: pinLerp(32, 24, 'p'), // 8 less between the cards (2026-10-27, Eric; was 40)
   rowGap: 32,
   alignItems: 'start',
-  paddingRight: 32,
-  paddingLeft: 32,
+  paddingRight: pinLerp(32, 24, 'p'),
+  paddingLeft: pinLerp(32, 24, 'p'),
   position: 'sticky',
   zIndex: 2,
 }
