@@ -464,12 +464,19 @@ export function TwoPackageProductDetailPage() {
                 </div>
                 {/* Four benefits in tiles — Figma 558:3578 (2026-10-28, Eric). */}
                 <ul style={BENEFITS}>
-                  {BENEFIT_TILES.map(({ Icon, text, maxWidth }, i) => (
+                  {BENEFIT_TILES.map(({ Icon, text, maxWidth, units, viewWidth }, i) => (
                     <Fragment key={text}>
                       {/* The rule between two, the space either side of it the row's own (space-between). */}
                       {i > 0 ? <li aria-hidden style={BENEFIT_RULE} /> : null}
                       <li style={BENEFIT}>
-                        <Icon aria-hidden style={BENEFIT_ICON} />
+                        <Icon
+                          aria-hidden
+                          style={{
+                            ...BENEFIT_ICON,
+                            width: (viewWidth * BENEFIT_ICON_SIZE) / 512,
+                            marginRight: -((viewWidth - units) * BENEFIT_ICON_SIZE) / 512,
+                          }}
+                        />
                         <span style={{ ...BENEFIT_TEXT, maxWidth }}>{text}</span>
                       </li>
                     </Fragment>
@@ -655,10 +662,14 @@ const BENEFIT_TILES = [
   // Each label's width is its first line's, so every one sets on two lines as in the design and the row has room for its rules
   // — "Access 800+ practice / exam questions" on two, not the design's three (2026-10-28, Eric). On one line each, the four
   // run wider than the column.
-  { Icon: ClipboardListThin, text: 'Eliminate test anxiety', maxWidth: 70 },
-  { Icon: ChartLineUpThin, text: 'Track your study progress', maxWidth: 84 },
-  { Icon: BallotCheckThin, text: 'Access 800+ practice exam questions', maxWidth: 108 },
-  { Icon: FileCertificateThin, text: 'Become licensed in a few weeks', maxWidth: 86 },
+  //
+  // `units` is how wide each glyph's drawing is in Font Awesome's 512-high grid, so every icon gets the same scale and its box ends
+  // where its drawing does — and the 12 to the label is the same 12 in all four (2026-10-28, Eric). The certificate's viewBox is
+  // 576 wide but its drawing stops at 512, so its box is trimmed to 512.
+  { Icon: ClipboardListThin, text: 'Eliminate test anxiety', maxWidth: 70, units: 384, viewWidth: 384 },
+  { Icon: ChartLineUpThin, text: 'Track your study progress', maxWidth: 84, units: 512, viewWidth: 512 },
+  { Icon: BallotCheckThin, text: 'Access 800+ practice exam questions', maxWidth: 108, units: 384, viewWidth: 384 },
+  { Icon: FileCertificateThin, text: 'Become licensed in a few weeks', maxWidth: 86, units: 512, viewWidth: 576 },
 ]
 
 /* The three parts, in xcelsolutions.com's home-page words (2026-10-28, Eric; were this PDP's Step 1–3 and a Pass Your Exam! line). */
@@ -953,11 +964,13 @@ const BENEFIT: CSSProperties = { flex: 'none', display: 'flex', alignItems: 'cen
 const BENEFIT_RULE: CSSProperties = { flex: 'none', width: 1, alignSelf: 'stretch', background: 'var(--color-e2e-card-outline)' }
 // A 34 square, as Font Awesome sizes a glyph (1em). A 34 x 52 box fitted every icon to whichever side ran out first, so the narrow
 // 384-wide clipboard and ballot drew 45 tall beside a 34 chart and a 30 certificate (2026-10-28).
-// 29 — the design's 34, 15% smaller (2026-10-28, Eric).
+// 29 high — the design's 34, 15% smaller (2026-10-28, Eric); each icon's width follows its drawing (BENEFIT_TILES). Overflow shows,
+// as Font Awesome's does, so a glyph that runs past its grid (the certificate's ribbon) is not clipped.
+const BENEFIT_ICON_SIZE = 29
 const BENEFIT_ICON: CSSProperties = {
   flex: 'none',
-  width: 29,
-  height: 29,
+  height: BENEFIT_ICON_SIZE,
+  overflow: 'visible',
   color: 'color-mix(in srgb, var(--color-xcel-brick) 80%, black)', // #7B1618
 }
 const BENEFIT_TEXT: CSSProperties = {
