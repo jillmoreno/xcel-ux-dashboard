@@ -72,6 +72,18 @@
   outline: 2px solid var(--color-xcel-brick);
   outline-offset: 1px;
 }
+/* The two-package PDP's state / line selects (2026-10-28, Eric): no brick ring
+   — it showed on every click — but their Neutral 400 edge goes two steps
+   darker, to Neutral 600, while they have focus. The edge colour lives here,
+   not inline, or the focus rule could never win. */
+.cre-e2e-select {
+  border-color: var(--color-neutral-400);
+  transition: border-color 0.15s ease;
+}
+.cre-e2e-select:focus {
+  border-color: var(--color-neutral-600);
+  outline: none;
+}
 /* ⚠ A DISABLED CTA MUST NOT ANSWER. The checkout's Place Order and the
    password step's Confirm both draw grey until their field is filled, and
    those arms do not carry this class — but `:disabled` is belt and braces

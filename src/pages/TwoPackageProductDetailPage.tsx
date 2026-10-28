@@ -372,7 +372,7 @@ export function TwoPackageProductDetailPage() {
                       <span style={CHANGE_FIELD}>
                         {/* Defaults to the page's own state and line (2026-10-28, Eric). No .cre-e2e-input: its brick focus ring
                             showed on every click of a select, and was taken off (2026-10-28, Eric). */}
-                        <select aria-label="State" defaultValue="Florida" style={CHANGE_SELECT}>
+                        <select aria-label="State" defaultValue="Florida" className="cre-e2e-select" style={CHANGE_SELECT}>
                           {CHANGE_STATES.map((st) => (
                             <option key={st}>{st}</option>
                           ))}
@@ -380,7 +380,7 @@ export function TwoPackageProductDetailPage() {
                         <AngleDownSolid size={16} aria-hidden style={CHANGE_CHEVRON} />
                       </span>
                       <span style={CHANGE_FIELD}>
-                        <select aria-label="Line of authority" defaultValue="Life and Health" style={CHANGE_SELECT}>
+                        <select aria-label="Line of authority" defaultValue="Life and Health" className="cre-e2e-select" style={CHANGE_SELECT}>
                           {CHANGE_LINES.map((line) => (
                             <option key={line}>{line}</option>
                           ))}
@@ -1255,7 +1255,7 @@ const CHANGE_SELECT: CSSProperties = {
   paddingLeft: 16,
   borderWidth: 0.5,
   borderStyle: 'solid',
-  borderColor: 'var(--color-neutral-400)',
+  // The edge's colour is .cre-e2e-select's (inviteFlow.css): Neutral 400, two steps darker on focus.
   borderRadius: 4,
   background: 'var(--color-fixed-light)',
   fontFamily: 'var(--font-e2e-avenir)',
