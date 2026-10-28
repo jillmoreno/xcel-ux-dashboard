@@ -221,7 +221,7 @@ export function TwoPackageProductDetailPage() {
             <div style={SIDE_BOXES}>
               <div style={SIDE_BOX_PAIR}>
                 <section style={SIDE_SECTION}>
-                  <h2 style={SIDE_TITLE}>At a Glance</h2>
+                  <h2 style={SIDE_TITLE}>Course Details</h2>
                   <dl style={{ ...SIDE_BODY, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {TRAINING_SPECS.map(([term, value]) => (
                       <div key={term}>
