@@ -327,14 +327,11 @@ export function TwoPackageProductDetailPage() {
                   <h2 id="choose-package" style={SIDE_TITLE}>
                     Select your Florida package:
                   </h2>
-                  {/* Back to the state, or the line of authority — two links 16 apart, on the heading's baseline, right-aligned, in
-                      the rail's link type (2026-10-28, Eric). Not wired yet. */}
-                  <div style={{ ...SIDE_BODY, display: 'flex', gap: 16 }}>
+                  {/* Back to the state or line-of-authority choice — one link on the heading's baseline, right-aligned, in the rail's
+                      link type, no underline (2026-10-28, Eric; was two, Change state · Change line). Not wired yet. */}
+                  <div style={SIDE_BODY}>
                     <button type="button" className="cre-e2e-textlink" style={PLAIN_LINK}>
-                      Change state
-                    </button>
-                    <button type="button" className="cre-e2e-textlink" style={PLAIN_LINK}>
-                      Change line
+                      Change state or line
                     </button>
                   </div>
                 </div>
@@ -1045,7 +1042,7 @@ const LINK: CSSProperties = {
   cursor: 'pointer',
 }
 
-/* LINK without its underline (2026-10-28, Eric — the packages heading's Change state / Change line). Left unset rather than
+/* LINK without its underline (2026-10-28, Eric — the packages heading's Change state or line). Left unset rather than
    'none', so the class's hover underline still shows: an inline value would outrank it. */
 const PLAIN_LINK: CSSProperties = { ...LINK, textDecoration: undefined, textDecorationThickness: undefined }
 
