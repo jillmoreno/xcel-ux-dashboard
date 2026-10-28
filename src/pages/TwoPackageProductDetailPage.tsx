@@ -1010,11 +1010,12 @@ const BODY: CSSProperties = {
    serif for both; the copy in grey, 15 under its title; 30 under the copy, a 1 #DDD rule, 30 to the next
    part. The last has no rule. */
 // A rule over the first part too, 38 above it like the rules between parts (2026-10-28, Eric).
+// The training program's rules are a step lighter than the cards' #DDD: Neutral 100, #ECECEC (2026-10-28, Eric).
 const STEPS: CSSProperties = {
   margin: 0,
   padding: 0,
   paddingTop: 38,
-  borderTop: '1px solid var(--color-e2e-card-outline)',
+  borderTop: '1px solid var(--color-neutral-100)',
   listStyle: 'none',
 }
 const STEP: CSSProperties = {
@@ -1023,7 +1024,7 @@ const STEP: CSSProperties = {
   gap: 23,
   paddingBottom: 30,
   marginBottom: 38, // 38 under the rule (2026-10-28, Eric; the site's 30)
-  borderBottom: '1px solid var(--color-e2e-card-outline)',
+  borderBottom: '1px solid var(--color-neutral-100)',
 }
 const STEP_LAST: CSSProperties = { paddingBottom: 0, marginBottom: 0, borderBottom: 'none' }
 // Number and title in the rail's heading size, 20 / 24 (2026-10-28, Eric; the site's 28 / 34); the copy back in BODY's 18 / 27.
@@ -1041,11 +1042,11 @@ const BENEFITS: CSSProperties = {
   margin: 0,
   padding: 0,
   paddingTop: 15, // the section's gap, as below the row
-  borderTop: '1px solid var(--color-e2e-card-outline)',
+  borderTop: '1px solid var(--color-neutral-100)',
   listStyle: 'none',
 }
 const BENEFIT: CSSProperties = { flex: 'none', display: 'flex', alignItems: 'center', gap: 12 }
-const BENEFIT_RULE: CSSProperties = { flex: 'none', width: 1, alignSelf: 'stretch', background: 'var(--color-e2e-card-outline)' }
+const BENEFIT_RULE: CSSProperties = { flex: 'none', width: 1, alignSelf: 'stretch', background: 'var(--color-neutral-100)' }
 // A 34 square, as Font Awesome sizes a glyph (1em). A 34 x 52 box fitted every icon to whichever side ran out first, so the narrow
 // 384-wide clipboard and ballot drew 45 tall beside a 34 chart and a 30 certificate (2026-10-28).
 // 26 high — the design's 34, 15% smaller, then 10% more (2026-10-28, Eric) — in Font Awesome Light, a step up from the design's
