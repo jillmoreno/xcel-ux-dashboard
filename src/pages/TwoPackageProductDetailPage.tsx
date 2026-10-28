@@ -53,9 +53,11 @@ function lineWidths(el: HTMLElement): number[] {
  * `text-wrap: balance` evens lines but can still leave the last one longer.
  * This narrows the block, 4px at a time, while it keeps the same number of
  * lines, and keeps the width whose lines are closest in length with the last
- * no longer than the first. Re-run when the room changes.
+ * no longer than the first. Re-run when the room changes, and when the copy
+ * does (`content`) — a longer state or line can wrap a sentence that fitted,
+ * and a width kept from the longer copy would hold the shorter one at two lines.
  */
-function useEvenLines(ref: React.RefObject<HTMLElement | null>) {
+function useEvenLines(ref: React.RefObject<HTMLElement | null>, content = '') {
   useLayoutEffect(() => {
     const el = ref.current
     const parent = el?.parentElement
@@ -81,7 +83,7 @@ function useEvenLines(ref: React.RefObject<HTMLElement | null>) {
     const ro = new ResizeObserver(fit)
     ro.observe(parent)
     return () => ro.disconnect()
-  }, [ref])
+  }, [ref, content])
 }
 
 type PackageId = 'premier' | 'standard'
@@ -180,7 +182,7 @@ export function TwoPackageProductDetailPage() {
   })
   const pkg = PACKAGES.find((p) => p.id === picked)!
   const welcomeRef = useRef<HTMLParagraphElement>(null)
-  useEvenLines(welcomeRef)
+  useEvenLines(welcomeRef, `${place} ${line}`)
   useEffect(() => {
     const root = document.documentElement
     const before = { palette: root.dataset.atlasPalette, brand: root.dataset.atlasBrand }
@@ -375,38 +377,48 @@ export function TwoPackageProductDetailPage() {
                 <div style={{ ...CHANGE_SLIDE, gridTemplateRows: changeOpen ? '1fr' : '0fr' }}>
                   <div id="change-state-or-line" inert={!changeOpen} style={{ overflow: 'hidden', minHeight: 0 }}>
                     <div style={CHANGE_ROW}>
-                      <span style={CHANGE_LABEL}>Change state and or line of authority:</span>
+                      {/* Each select under its own label (2026-10-28, Eric; was one label over both), in Avenir regular. */}
                       <div style={CHANGE_FIELDS}>
-                      <span style={CHANGE_FIELD}>
-                        {/* Defaults to the page's own state and line (2026-10-28, Eric). No .cre-e2e-input: its brick focus ring
-                            showed on every click of a select, and was taken off (2026-10-28, Eric). */}
-                        <select
-                          aria-label="State"
-                          value={place}
-                          onChange={(e) => setPlace(e.target.value)}
-                          className="cre-e2e-select"
-                          style={CHANGE_SELECT}
-                        >
-                          {CHANGE_STATES.map((st) => (
-                            <option key={st}>{st}</option>
-                          ))}
-                        </select>
-                        <AngleDownSolid size={16} aria-hidden style={CHANGE_CHEVRON} />
-                      </span>
-                      <span style={CHANGE_FIELD}>
-                        <select
-                          aria-label="Line of authority"
-                          value={line}
-                          onChange={(e) => setLine(e.target.value)}
-                          className="cre-e2e-select"
-                          style={CHANGE_SELECT}
-                        >
-                          {CHANGE_LINES.map((line) => (
-                            <option key={line}>{line}</option>
-                          ))}
-                        </select>
-                        <AngleDownSolid size={16} aria-hidden style={CHANGE_CHEVRON} />
-                      </span>
+                        <div style={CHANGE_COLUMN}>
+                          <label htmlFor="change-state" style={CHANGE_LABEL}>
+                            Change state:
+                          </label>
+                          <span style={CHANGE_FIELD}>
+                            {/* Defaults to the page's own state and line (2026-10-28, Eric). No .cre-e2e-input: its brick focus ring
+                                showed on every click of a select, and was taken off (2026-10-28, Eric). */}
+                            <select
+                              id="change-state"
+                              value={place}
+                              onChange={(e) => setPlace(e.target.value)}
+                              className="cre-e2e-select"
+                              style={CHANGE_SELECT}
+                            >
+                              {CHANGE_STATES.map((st) => (
+                                <option key={st}>{st}</option>
+                              ))}
+                            </select>
+                            <AngleDownSolid size={16} aria-hidden style={CHANGE_CHEVRON} />
+                          </span>
+                        </div>
+                        <div style={CHANGE_COLUMN}>
+                          <label htmlFor="change-line" style={CHANGE_LABEL}>
+                            Change line of authority:
+                          </label>
+                          <span style={CHANGE_FIELD}>
+                            <select
+                              id="change-line"
+                              value={line}
+                              onChange={(e) => setLine(e.target.value)}
+                              className="cre-e2e-select"
+                              style={CHANGE_SELECT}
+                            >
+                              {CHANGE_LINES.map((option) => (
+                                <option key={option}>{option}</option>
+                              ))}
+                            </select>
+                            <AngleDownSolid size={16} aria-hidden style={CHANGE_CHEVRON} />
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -762,12 +774,12 @@ const BENEFIT_TILES: { Icon: typeof FaceGrinLight; text: string; maxWidth: numbe
   // where its drawing does — and the 12 to the label is the same 12 in all four (2026-10-28, Eric). The certificate's viewBox is
   // 576 wide but its drawing stops at 512, so its box is trimmed to 512.
   // face-grin, not the design's clipboard-list (2026-10-28, Eric; face-smile first).
-  { Icon: FaceGrinLight, text: 'Eliminate test anxiety', maxWidth: 70, units: 512, viewWidth: 512 },
-  { Icon: ChartLineUpLight, text: 'Track your study progress', maxWidth: 84, units: 512, viewWidth: 512 },
-  { Icon: BallotCheckLight, text: 'Access 800+ practice exam questions', maxWidth: 108, units: 384, viewWidth: 384 },
+  { Icon: FaceGrinLight, text: 'Eliminate test anxiety', maxWidth: 73, units: 512, viewWidth: 512 },
+  { Icon: ChartLineUpLight, text: 'Track your study progress', maxWidth: 87, units: 512, viewWidth: 512 },
+  { Icon: BallotCheckLight, text: 'Access 800+ practice exam questions', maxWidth: 112, units: 384, viewWidth: 384 },
   // The certificate draws the full 512 across and its ribbon hangs 32 below the grid, so at the shared scale it read larger and
   // heavier than the other three; it is drawn at 91.5% — 24 x 25 (2026-10-28, Eric; 88% first).
-  { Icon: FileCertificateLight, text: 'Become licensed in a few weeks', maxWidth: 86, units: 512, viewWidth: 576, scale: 0.915 },
+  { Icon: FileCertificateLight, text: 'Become licensed in a few weeks', maxWidth: 89, units: 512, viewWidth: 576, scale: 0.915 },
 ]
 
 /* The three parts, in xcelsolutions.com's home-page words (2026-10-28, Eric; were this PDP's Step 1–3 and a Pass Your Exam! line). */
@@ -1078,7 +1090,7 @@ const BENEFIT_TEXT: CSSProperties = {
   position: 'relative',
   top: 2,
   fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 500,
+  fontWeight: 800, // Heavy, a step up from Medium — Avenir has nothing between (2026-10-28, Eric)
   fontSize: 11,
   lineHeight: '14px',
   color: 'var(--color-text-primary)',
@@ -1259,9 +1271,10 @@ const CHANGE_ROW: CSSProperties = {
   borderTop: '1px solid var(--color-e2e-card-outline)',
   marginBottom: 16,
 }
+const CHANGE_COLUMN: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }
 const CHANGE_LABEL: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 800,
+  fontWeight: 400, // regular (2026-10-28, Eric; the design's Heavy)
   fontSize: 13,
   lineHeight: '21px',
   color: 'var(--color-text-primary)',
