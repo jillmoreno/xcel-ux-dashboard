@@ -1101,7 +1101,10 @@ const LINK: CSSProperties = {
   textAlign: 'left',
   border: 'none',
   background: 'none',
-  font: 'inherit',
+  // 13 / 18 (2026-10-28, Eric; was the rail's 15 / 21 by inheritance) — longhands, so nothing here is reset by a `font` shorthand.
+  fontFamily: 'inherit',
+  fontSize: 13,
+  lineHeight: '18px',
   fontWeight: 500,
 
   textDecoration: 'underline',
