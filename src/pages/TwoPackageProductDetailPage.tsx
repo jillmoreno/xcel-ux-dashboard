@@ -890,7 +890,14 @@ const BODY: CSSProperties = {
 /* THE THREE PARTS — xcelsolutions.com's (2026-10-28, Eric): each a row, the number 31 wide and 23 clear of its title; the slab
    serif for both; the copy in grey, 15 under its title; 30 under the copy, a 1 #DDD rule, 30 to the next
    part. The last has no rule. */
-const STEPS: CSSProperties = { margin: 0, padding: 0, listStyle: 'none' }
+// A rule over the first part too, 38 above it like the rules between parts (2026-10-28, Eric).
+const STEPS: CSSProperties = {
+  margin: 0,
+  padding: 0,
+  paddingTop: 38,
+  borderTop: '1px solid var(--color-e2e-card-outline)',
+  listStyle: 'none',
+}
 const STEP: CSSProperties = {
   display: 'flex',
   alignItems: 'flex-start',
