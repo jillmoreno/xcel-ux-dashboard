@@ -1113,8 +1113,8 @@ const OPTION_BODY: CSSProperties = {
 const OPTION_TITLE: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
-  fontSize: pinLerp(24, 18),
-  lineHeight: pinLerp(34, 24),
+  fontSize: pinLerp(24, 20), // 20 / 26 compact (2026-10-28, Eric; the design's 18 / 24)
+  lineHeight: pinLerp(34, 26),
   color: 'var(--color-text-primary)',
 }
 
