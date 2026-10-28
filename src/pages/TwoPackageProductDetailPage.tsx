@@ -1023,10 +1023,10 @@ const PIN_BACKDROP: CSSProperties = {
   zIndex: -1,
   borderRadius: '0 0 10px 10px',
   background: 'linear-gradient(to bottom, var(--color-secondary-200), var(--color-secondary-100))',
-  // No shadow: the left, right and bottom edges feather out over 20 instead (2026-10-28, Eric; was a bottom-edge shadow). The
+  // No shadow: the left, right and bottom edges feather out over 15 instead (2026-10-28, Eric; was a bottom-edge shadow, then 20). The
   // two masks intersect, so a corner fades both ways.
   maskImage:
-    'linear-gradient(to right, transparent, #000 20px, #000 calc(100% - 20px), transparent), linear-gradient(to bottom, #000 calc(100% - 20px), transparent)',
+    'linear-gradient(to right, transparent, #000 15px, #000 calc(100% - 15px), transparent), linear-gradient(to bottom, #000 calc(100% - 15px), transparent)',
   maskComposite: 'intersect',
   opacity: 'var(--pinned, 0)',
   transition: 'opacity 0.15s ease',
