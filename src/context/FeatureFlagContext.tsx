@@ -2623,6 +2623,36 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'pdp-products',
+    /* THE PDP'S PRODUCTS — 2026-10-28, Eric: "Duplicate this page based on a
+       single product … add a design control to be able to flip between the
+       single product page and the multi-product page."
+
+       multi  — Standard and Premier side by side, the comparison grid under
+                them. THE DEFAULT.
+       single — Premier alone: one card, the comparison's Standard column
+                gone, and the grid captioned "Premier package includes:". The
+                top tray carries the one card too.
+
+       One page, not two files: everything but the cards and the grid is the
+       same page, and it is still being tuned a pixel at a time — two copies
+       would drift with every tweak. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite'],
+    group: 'Layout',
+    label: 'Products',
+    description:
+      'The two-package PDP as a multi-product page \u2014 the default, Standard and Premier side by side \u2014 or a single-product page, Premier alone with its own \u201cincludes\u201d list.',
+    defaultEnabled: true,
+    defaultVariant: 'multi',
+    variants: [
+      { value: 'multi', label: 'Multi-product', description: 'Standard and Premier side by side, with the comparison grid. The default.' },
+      { value: 'single', label: 'Single product', description: 'Premier alone, the grid captioned \u201cPremier package includes:\u201d with only its column.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'pdp-course-cards',
     /* THE TWO-PACKAGE PDP'S CARDS, ON THE PAGE — 2026-10-27, Eric: "make the
        smaller cards a design control option."

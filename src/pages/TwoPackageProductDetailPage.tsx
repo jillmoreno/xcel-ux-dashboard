@@ -92,7 +92,12 @@ export function TwoPackageProductDetailPage() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   useEndToEndDemoParams()
-  const [picked, setPicked] = useState<PackageId>('premier')
+  const [chosen, setPicked] = useState<PackageId>('premier')
+  /* The design bar's Products (2026-10-28, Eric): the multi-product page, or the single-product one — Premier alone, its card
+     the only one and the comparison its own list. Single always has Premier picked, whatever was picked before the switch. */
+  const single = useFeatureFlag('pdp-products').variant === 'single'
+  const picked: PackageId = single ? 'premier' : chosen
+  const packages = single ? PACKAGES.filter((p) => p.id === 'premier') : PACKAGES
   /* Change state or line: the selector slides open under the heading (2026-10-28, Eric). */
   const [changeOpen, setChangeOpen] = useState(false)
   /* The state and line of authority the page is written for — the selector's two choices (2026-10-28, Eric). Every "Florida" and
@@ -292,7 +297,7 @@ export function TwoPackageProductDetailPage() {
               inert={!trayShown}
               style={{ ...TOP_TRAY, transform: trayShown ? 'none' : 'translateY(-100%)' }}
             >
-              {PACKAGES.map((p) => (
+              {packages.map((p) => (
                 <MiniCard key={p.id} p={p} on={p.id === picked} title={`${place} ${localize(p.title)}`} onPick={() => setPicked(p.id)} onBuy={() => purchase(p.id)} />
               ))}
             </div>
@@ -532,7 +537,7 @@ export function TwoPackageProductDetailPage() {
                   ref={trayRef}
                   style={{ ...PIN_BACKDROP, top: `calc(${-(browserTop + CARDS_PIN_GAP)}px + 28px * var(--p, 0))` }}
                 />
-                {PACKAGES.map((p) => (
+                {packages.map((p) => (
                   <div key={p.id} style={PACKAGE_PANEL}>
                     {/* Figma 544:3250: the card, on the shared ground. */}
                     {renderCard(p)}
@@ -544,16 +549,23 @@ export function TwoPackageProductDetailPage() {
               <div ref={footRef} style={PACKAGE_GROUND_FOOT}>
                 <table style={COMPARE}>
                   {/* In 'Select your package:''s style, 8 in like the column text below it (2026-10-27, Eric). */}
-                  <caption style={{ ...SIDE_TITLE, textAlign: 'left', paddingBottom: 20 }}>Standard and Premier package comparison:</caption>
+                  <caption style={{ ...SIDE_TITLE, textAlign: 'left', paddingBottom: 20 }}>
+                    {single ? 'Premier package includes:' : 'Standard and Premier package comparison:'}
+                  </caption>
                   <thead>
                     <tr>
                       <th scope="col" style={{ ...COMPARE_HEAD, paddingLeft: 0 }}>Feature</th>
                       {/* Each package's header picks it — its column tints and its card selects (2026-10-27, Eric). */}
-                      {PACKAGES.map((p) => (
+                      {/* Single, the one column's header is only its name — there is nothing to pick between. */}
+                      {packages.map((p) => (
                         <th key={p.id} scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK, ...(picked === p.id ? pickedShade(0) : null) }}>
-                          <button type="button" aria-pressed={picked === p.id} onClick={() => setPicked(p.id)} style={COMPARE_PICK}>
-                            {p.short}
-                          </button>
+                          {single ? (
+                            p.short
+                          ) : (
+                            <button type="button" aria-pressed={picked === p.id} onClick={() => setPicked(p.id)} style={COMPARE_PICK}>
+                              {p.short}
+                            </button>
+                          )}
                         </th>
                       ))}
                     </tr>
@@ -575,8 +587,8 @@ export function TwoPackageProductDetailPage() {
                           <strong style={{ fontWeight: 800 }}>{row.feature}</strong>
                           {row.detail ? <>: {row.detail}</> : null}
                         </th>
-                        {[row.standard, row.premier].map((has, i) => (
-                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(picked === (i === 0 ? 'standard' : 'premier') ? pickedShade(r + 1) : null), ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
+                        {packages.map((p) => row[p.id]).map((has, i) => (
+                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(picked === packages[i].id ? pickedShade(r + 1) : null), ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
                             <span aria-hidden>{has ? '✓' : '—'}</span>
                             <span className="cre-visually-hidden">{has ? 'Included' : 'Not included'}</span>
                           </td>
