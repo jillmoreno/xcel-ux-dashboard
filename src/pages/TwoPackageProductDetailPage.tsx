@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type 
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
-import { RubiMark, RubiWordmark } from '@/icons'
+import { BallotCheckThin, ChartLineUpThin, ClipboardListThin, FileCertificateThin, RubiMark, RubiWordmark } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
@@ -462,6 +462,15 @@ export function TwoPackageProductDetailPage() {
                     insurance licensing exams on the first try.
                   </p>
                 </div>
+                {/* Four benefits in tiles — Figma 558:3578 (2026-10-28, Eric). */}
+                <ul style={BENEFITS}>
+                  {BENEFIT_TILES.map(({ Icon, text }) => (
+                    <li key={text} style={BENEFIT}>
+                      <Icon aria-hidden style={BENEFIT_ICON} />
+                      <span style={BENEFIT_TEXT}>{text}</span>
+                    </li>
+                  ))}
+                </ul>
                 {/* The three parts as xcelsolutions.com's home page draws them (2026-10-28, Eric): the number in brick beside each,
                     a slab-serif title, the copy in grey, a #DDD rule between parts. */}
                 <ol style={STEPS}>
@@ -637,6 +646,14 @@ const WHAT_YOULL_LEARN = [
 /* Each step's number and label (in Heavy), then its copy — trimmed about a
    third (2026-10-15, Eric's request) with every fact kept: the three parts,
    Rubi™, what unlocks what, the 70 / 80 / 85% marks, the 24-hour revisit. */
+/* The four benefit tiles under the training program's subhead (Figma 558:3578). Their copy is xcelsolutions.com's list. */
+const BENEFIT_TILES = [
+  { Icon: ClipboardListThin, text: 'Eliminate test anxiety' },
+  { Icon: ChartLineUpThin, text: 'Track your study progress' },
+  { Icon: BallotCheckThin, text: 'Access 800+ practice exam questions' },
+  { Icon: FileCertificateThin, text: 'Become licensed in a few weeks' },
+]
+
 /* The three parts, in xcelsolutions.com's home-page words (2026-10-28, Eric; were this PDP's Step 1–3 and a Pass Your Exam! line). */
 const HOW_IT_WORKS: { number: string; title: string; body: string }[] = [
   {
@@ -911,6 +928,38 @@ const STEP_LAST: CSSProperties = { paddingBottom: 0, marginBottom: 0, borderBott
 const STEP_NUMBER: CSSProperties = { ...SIDE_TITLE, flex: 'none', color: 'var(--color-xcel-brick)' }
 const STEP_TITLE: CSSProperties = SIDE_TITLE
 const STEP_BODY: CSSProperties = { ...BODY, marginTop: 7, color: 'var(--color-text-secondary)' } // 7 under the title (2026-10-28, Eric: 11, then 4 less; the site's 15)
+
+/* Figma 558:3578: four equal tiles 8 apart, each Secondary 100 with 10 corners, 8 / 16 in; a 34 Font Awesome Thin icon in the
+   darker brick (Primary 600, #7B1618), 12 from its label in Avenir Medium 11 / 14. */
+const BENEFITS: CSSProperties = { display: 'flex', gap: 8, margin: 0, padding: 0, listStyle: 'none' }
+const BENEFIT: CSSProperties = {
+  flex: '1 1 0',
+  minWidth: 0,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+  paddingTop: 8,
+  paddingRight: 16,
+  paddingBottom: 8,
+  paddingLeft: 16,
+  borderRadius: 10,
+  background: 'var(--color-secondary-100)',
+}
+const BENEFIT_ICON: CSSProperties = {
+  flex: 'none',
+  width: 34,
+  height: 52,
+  color: 'color-mix(in srgb, var(--color-xcel-brick) 80%, black)', // #7B1618
+}
+const BENEFIT_TEXT: CSSProperties = {
+  flex: '1 1 0',
+  minWidth: 0,
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 500,
+  fontSize: 11,
+  lineHeight: '14px',
+  color: 'var(--color-text-primary)',
+}
 
 /* A section's subhead: the course intro's own type — BODY, 18 / 27 Avenir (2026-10-28, Eric; was 20 / 30 Medium) — its two lines 8
    apart. */

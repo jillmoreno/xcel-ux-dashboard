@@ -70,6 +70,9 @@ import AngleRightRegularSvg from './angle-right-regular.svg?react'
 import AngleRightSolidSvg from './angle-right-solid.svg?react'
 import CalendarThinSvg from './calendar-thin.svg?react'
 import FileCertificateThinSvg from './file-certificate-thin.svg?react'
+import ClipboardListThinSvg from './clipboard-list-thin.svg?react'
+import ChartLineUpThinSvg from './chart-line-up-thin.svg?react'
+import BallotCheckThinSvg from './ballot-check-thin.svg?react'
 import FileCertificateLightSvg from './file-certificate-light.svg?react'
 import HourglassClockThinSvg from './hourglass-clock-thin.svg?react'
 import HourglassClockLightSvg from './hourglass-clock-light.svg?react'
@@ -300,6 +303,9 @@ export const AngleRightRegular = makeIcon(AngleRightRegularSvg) // FA: angle-rig
 export const AngleRightSolid = makeIcon(AngleRightSolidSvg) // FA: angle-right (solid)
 export const CalendarThin = makeIcon(CalendarThinSvg) // FA: calendar (thin)
 export const FileCertificateThin = makeIcon(FileCertificateThinSvg) // FA: file-certificate (thin)
+export const ClipboardListThin = makeIcon(ClipboardListThinSvg) // FA: clipboard-list (thin)
+export const ChartLineUpThin = makeIcon(ChartLineUpThinSvg) // FA: chart-line-up (thin)
+export const BallotCheckThin = makeIcon(BallotCheckThinSvg) // FA: ballot-check (thin)
 export const FileCertificateLight = makeIcon(FileCertificateLightSvg) // FA: file-certificate (light)
 export const HourglassClockThin = makeIcon(HourglassClockThinSvg) // FA: hourglass-clock (thin)
 export const HourglassClockLight = makeIcon(HourglassClockLightSvg) // FA: hourglass-clock (light)
