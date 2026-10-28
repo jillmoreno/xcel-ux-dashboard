@@ -244,7 +244,8 @@ export function TwoPackageProductDetailPage() {
                 <hr aria-hidden style={SIDE_RULE} />
                 <section style={SIDE_SECTION}>
                   <h2 style={SIDE_TITLE}>What to Expect</h2>
-                  <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 18 }}>
+                  {/* 14 between the groups (2026-10-28, Eric; was 18). */}
+                  <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
                     {WHAT_TO_EXPECT.map(([head, line]) => (
                       <div key={head} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <strong style={{ fontWeight: 800 }}>{noWidow(head)}</strong>
