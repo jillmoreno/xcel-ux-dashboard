@@ -2,7 +2,7 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSPropert
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
-import { AngleRightSolid, BallotCheckLight, ChartLineUpLight, FaceGrinLight, FileCertificateLight, RubiMark, RubiWordmark } from '@/icons'
+import { AngleDownSolid, BallotCheckLight, ChartLineUpLight, FaceGrinLight, FileCertificateLight, RubiMark, RubiWordmark } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
@@ -330,10 +330,11 @@ export function TwoPackageProductDetailPage() {
                   {/* Back to the state or line-of-authority choice — one link on the heading's baseline, right-aligned, in the rail's
                       link type, no underline (2026-10-28, Eric; was two, Change state · Change line). Not wired yet. */}
                   <div style={SIDE_BODY}>
-                    {/* A solid angle-right after it, 4 clear (2026-10-28, Eric). */}
+                    {/* A solid angle-down after it, its drawing 4 clear — the glyph is 384 wide in an 11 square, so 1.4 of that is air (2026-10-28,
+                        Eric; angle-right first). */}
                     <button type="button" className="cre-e2e-textlink" style={PLAIN_LINK}>
                       Change state or line
-                      <AngleRightSolid size={11} aria-hidden style={{ marginLeft: 4, verticalAlign: '-1px' }} />
+                      <AngleDownSolid size={11} aria-hidden style={{ marginLeft: 2.6, verticalAlign: '-1px' }} />
                     </button>
                   </div>
                 </div>

@@ -68,6 +68,7 @@ import PenFieldRegularSvg from './pen-field-regular.svg?react'
 import ClipboardListCheckRegularSvg from './clipboard-list-check-regular.svg?react'
 import AngleRightRegularSvg from './angle-right-regular.svg?react'
 import AngleRightSolidSvg from './angle-right-solid.svg?react'
+import AngleDownSolidSvg from './angle-down-solid.svg?react'
 import CalendarThinSvg from './calendar-thin.svg?react'
 import FileCertificateThinSvg from './file-certificate-thin.svg?react'
 import ClipboardListThinSvg from './clipboard-list-thin.svg?react'
@@ -306,6 +307,7 @@ export const PenFieldRegular = makeIcon(PenFieldRegularSvg) // FA: pen-field (re
 export const ClipboardListCheckRegular = makeIcon(ClipboardListCheckRegularSvg) // FA: clipboard-list-check (regular)
 export const AngleRightRegular = makeIcon(AngleRightRegularSvg) // FA: angle-right (regular)
 export const AngleRightSolid = makeIcon(AngleRightSolidSvg) // FA: angle-right (solid)
+export const AngleDownSolid = makeIcon(AngleDownSolidSvg) // FA: angle-down (solid)
 export const CalendarThin = makeIcon(CalendarThinSvg) // FA: calendar (thin)
 export const FileCertificateThin = makeIcon(FileCertificateThinSvg) // FA: file-certificate (thin)
 export const ClipboardListThin = makeIcon(ClipboardListThinSvg) // FA: clipboard-list (thin)
