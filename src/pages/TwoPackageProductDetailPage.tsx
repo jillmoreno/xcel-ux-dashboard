@@ -620,7 +620,7 @@ const HOW_IT_WORKS: { label: string; body: string }[] = [
     body: 'Three simulators, each weighted by topic to match the state exam, with unlimited retakes; each unlocks when you complete the one before. Aim for 85% or better, and revisit them at least 24 hours before your state exam to keep the material fresh.',
   },
   {
-    label: 'Step 4 – Pass Your Exam!',
+    label: 'Pass Your Exam!', // no "Step 4 –" (2026-10-28, Eric)
     body: 'Complete all three parts and you will have learned everything you need to pass on your first attempt.',
   },
 ]
