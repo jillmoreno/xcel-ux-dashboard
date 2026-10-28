@@ -1243,10 +1243,12 @@ const CHANGE_LABEL: CSSProperties = {
   color: 'var(--color-text-primary)',
   whiteSpace: 'nowrap',
 }
-const CHANGE_FIELDS: CSSProperties = { display: 'flex', gap: 16 }
-const CHANGE_FIELD: CSSProperties = { position: 'relative', display: 'inline-flex' }
+// Two equal columns, each as wide as the wider select — the state select takes the line of authority's width (2026-10-28, Eric).
+const CHANGE_FIELDS: CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }
+const CHANGE_FIELD: CSSProperties = { position: 'relative', display: 'flex' }
 const CHANGE_SELECT: CSSProperties = {
   appearance: 'none',
+  width: '100%',
   height: 35,
   margin: 0,
   paddingTop: 1,
