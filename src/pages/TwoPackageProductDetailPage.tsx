@@ -364,6 +364,7 @@ export function TwoPackageProductDetailPage() {
                   <div id="change-state-or-line" inert={!changeOpen} style={{ overflow: 'hidden', minHeight: 0 }}>
                     <div style={CHANGE_ROW}>
                       <span style={CHANGE_LABEL}>Change state and or line of authority:</span>
+                      <div style={CHANGE_FIELDS}>
                       <span style={CHANGE_FIELD}>
                         <select aria-label="State" defaultValue="" className="cre-e2e-input" style={CHANGE_SELECT}>
                           <option value="" disabled>
@@ -386,6 +387,7 @@ export function TwoPackageProductDetailPage() {
                         </select>
                         <AngleDownSolid size={16} aria-hidden style={CHANGE_CHEVRON} />
                       </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1219,11 +1221,12 @@ const PACKAGES_HEAD_ROW: CSSProperties = {
 /* The state / line selector (Figma 558:3600): the label in Avenir Heavy 13 / 21, then two white 35-high selects, a 0.5 Neutral 400
    edge and 4 corners, Avenir Medium 12, a 16 solid angle-down in brick 16 in from the right; 16 between, left-aligned, 16 to the cards. */
 const CHANGE_SLIDE: CSSProperties = { display: 'grid', transition: 'grid-template-rows 0.3s ease' }
+// The label over the two selects, 6 above them (2026-10-28, Eric; the design sets it beside them), all left-aligned with the heading.
 const CHANGE_ROW: CSSProperties = {
   display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-start', // left-aligned with the heading (2026-10-28, Eric; the design centres it)
-  gap: 16,
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: 6,
   paddingTop: 8,
   paddingBottom: 24, // its own 8, then 16 to the cards
 }
@@ -1235,6 +1238,7 @@ const CHANGE_LABEL: CSSProperties = {
   color: 'var(--color-text-primary)',
   whiteSpace: 'nowrap',
 }
+const CHANGE_FIELDS: CSSProperties = { display: 'flex', gap: 16 }
 const CHANGE_FIELD: CSSProperties = { position: 'relative', display: 'inline-flex' }
 const CHANGE_SELECT: CSSProperties = {
   appearance: 'none',
