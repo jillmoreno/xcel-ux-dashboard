@@ -288,7 +288,7 @@ export function TwoPackageProductDetailPage() {
             {/* THE SINGLE-PRODUCT CARD (2026-10-28, Eric): laid out across, like the mini tray's — the title on the left, the price
                 over its Purchase on the right — in the page card's own sizes and spacing, the card the column's width. */}
             <span style={SINGLE_BODY}>
-              <span style={{ ...OPTION_TITLE, minWidth: 0 }}>{`${place} ${localize(p.title)}`}</span>
+              <span style={SINGLE_TITLE}>{`${place} ${localize(p.title)}`}</span>
               <span style={SINGLE_BUY_COLUMN}>
                 {prices}
                 {buy(SINGLE_BUY)}
@@ -1765,8 +1765,10 @@ const SINGLE_BODY: CSSProperties = {
   justifyContent: 'space-between',
   gap: 32,
   paddingTop: 12, // under the tab, which now carries the package's name
-  paddingBottom: pinLerp(28, 20),
+  paddingBottom: pinLerp(36, 28), // 8 more under the title and the Purchase (2026-10-28, Eric)
 }
+/* A step up from the card's title (2026-10-28, Eric): 24 / 30 compact, 28 / 36 full — the page's next size up. */
+const SINGLE_TITLE: CSSProperties = { ...OPTION_TITLE, minWidth: 0, fontSize: pinLerp(28, 24), lineHeight: pinLerp(36, 30) }
 const SINGLE_BUY_COLUMN: CSSProperties = { flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: pinLerp(10, 6) }
 const SINGLE_BUY: CSSProperties = {
   ...ADD_TO_CART,
