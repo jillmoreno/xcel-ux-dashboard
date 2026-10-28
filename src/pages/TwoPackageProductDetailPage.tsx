@@ -1228,11 +1228,10 @@ const CHANGE_ROW: CSSProperties = {
   alignItems: 'flex-start',
   gap: 6,
   paddingTop: 12, // 4 more over the label (2026-10-28, Eric)
-  paddingBottom: 16, // 8 less (2026-10-28, Eric)
-  // No fill and no side padding — a 1 #DDD rule above and below, square, flush with the column (2026-10-28, Eric; was a tinted,
-  // then outlined, 10-cornered box) — and 16 clear of the cards under it.
+  paddingBottom: 8, // (2026-10-28, Eric; was 24, then 16)
+  // No fill and no side padding — a 1 #DDD rule above it only, square, flush with the column (2026-10-28, Eric; was a tinted, then
+  // outlined, 10-cornered box, then ruled above and below) — and 16 clear of the cards under it.
   borderTop: '1px solid var(--color-e2e-card-outline)',
-  borderBottom: '1px solid var(--color-e2e-card-outline)',
   marginBottom: 16,
 }
 const CHANGE_LABEL: CSSProperties = {
