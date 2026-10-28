@@ -307,7 +307,7 @@ export function TwoPackageProductDetailPage() {
                 {/* In the rail's At a Glance style — the slab serif at 20 / 24 — inside the ground, 4 above and 16 below
                     (2026-10-27, Eric). */}
                 <h2 id="choose-package" style={{ ...SIDE_TITLE, paddingTop: 4, paddingBottom: 16 }}>
-                  Select your package:
+                  Select your Florida package:
                 </h2>
               </div>
               <div
