@@ -672,8 +672,8 @@ const BENEFIT_TILES: { Icon: typeof FaceGrinLight; text: string; maxWidth: numbe
   { Icon: ChartLineUpLight, text: 'Track your study progress', maxWidth: 84, units: 512, viewWidth: 512 },
   { Icon: BallotCheckLight, text: 'Access 800+ practice exam questions', maxWidth: 108, units: 384, viewWidth: 384 },
   // The certificate draws the full 512 across and its ribbon hangs 32 below the grid, so at the shared scale it read larger and
-  // heavier than the other three; it is drawn at 88% (2026-10-28, Eric).
-  { Icon: FileCertificateLight, text: 'Become licensed in a few weeks', maxWidth: 86, units: 512, viewWidth: 576, scale: 0.88 },
+  // heavier than the other three; it is drawn at 91.5% — 24 x 25 (2026-10-28, Eric; 88% first).
+  { Icon: FileCertificateLight, text: 'Become licensed in a few weeks', maxWidth: 86, units: 512, viewWidth: 576, scale: 0.915 },
 ]
 
 /* The three parts, in xcelsolutions.com's home-page words (2026-10-28, Eric; were this PDP's Step 1–3 and a Pass Your Exam! line). */
