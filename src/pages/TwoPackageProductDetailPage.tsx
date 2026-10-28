@@ -454,7 +454,7 @@ export function TwoPackageProductDetailPage() {
             <div style={SHARED}>
               {/* What You'll Learn moved to the rail, under At a Glance (2026-10-28, Eric). */}
               <section style={SECTION}>
-                <h2 style={SECTION_TITLE}>Earn Your License Fast with Our 3-Part Training Program</h2>
+                <h2 style={SECTION_TITLE}>Earn your license fast with our 3-Part Training Program</h2>
                 {/* The subhead (2026-10-28, Eric). */}
                 <div style={SUBHEAD}>
                   <p style={{ margin: 0 }}>
