@@ -440,7 +440,7 @@ export function TwoPackageProductDetailPage() {
         {single ? (
           <div style={HEAD_WITH_PACKAGE_C}>
             <span style={{ ...PILL_BADGE_C, gridColumn: '1 / -1', justifySelf: 'start' }}>Pass Guarantee</span>
-            <h2 style={COURSE_HEAD_TITLE}>
+            <h2 style={{ ...COURSE_HEAD_TITLE, alignSelf: 'end' }}>
               {/* A break after the line of authority (2026-10-29, Eric). */}
               {place} {line}
               <br />
@@ -1654,7 +1654,10 @@ const PILL_BADGE_B: CSSProperties = {
 /* Copy C (2026-10-29, Eric) — B's, to start; change these to compare. */
 // C (2026-10-29, Eric): the pill across, then the title with the package far right beside it, then the intro across.
 const HEAD_WITH_PACKAGE_C: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'center', columnGap: 32, rowGap: 16, marginTop: 48 }
-const HEAD_PACKAGE_C: CSSProperties = { ...HEAD_PACKAGE_B, justifySelf: 'end' }
+// At the row's foot with the title, then lifted 17 — the title's last baseline above its line box's bottom — so the Purchase's
+// bottom edge sits on "Package"'s baseline (2026-10-29, Eric; was centred on the title). Lifted by position, not margin, so the
+// row keeps its height and the title stays put.
+const HEAD_PACKAGE_C: CSSProperties = { ...HEAD_PACKAGE_B, justifySelf: 'end', alignSelf: 'end', position: 'relative', top: -17 }
 const PILL_BADGE_C: CSSProperties = { ...PILL_BADGE_B }
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
