@@ -926,7 +926,7 @@ const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; p
     standard: false,
     premier: true,
   },
-  { feature: 'Flashcards (Life, Health, and Accident Insurance)', detail: '800+ cards covering fundamentals', standard: false, premier: true },
+  { feature: 'Flashcards (Life, Health, and Accident Insurance)', detail: '800+ cards covering fundamentals', standard: false, premier: true, link: 'Learn More' }, // (2026-10-29, Eric)
   // A Learn more link after it (2026-10-29, Eric).
   { feature: 'Pass Guarantee (Prepared to Pass Promise)', standard: false, premier: true, link: 'Learn More' },
 ]
