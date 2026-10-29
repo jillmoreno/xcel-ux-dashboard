@@ -1775,9 +1775,9 @@ const HEAD_WITH_PACKAGE_D: CSSProperties = { ...HEAD_WITH_PACKAGE_C }
 // The packages' column, the row's full height so PASS GUARANTEE sits at the rule's foot (2026-10-29, Eric).
 const HEAD_PACKAGE_D: CSSProperties = { gridColumn: 3, gridRow: 1, alignSelf: 'stretch', justifySelf: 'end', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }
 const PREMIER_TILE_D: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginBottom: 16 }
-// Between Standard and Premier: a 1 Secondary 250 rule, 24 above it (2026-10-29, Eric; 16, then 8 more); PASS GUARANTEE hangs
+// Between Standard and Premier: a 1 Secondary 250 rule, 32 above it (2026-10-29, Eric; 16, then 8 more, then 8 more); PASS GUARANTEE hangs
 // from it.
-const PACKAGE_DIVIDE_D: CSSProperties = { marginTop: 24, borderTop: `1px solid ${SECONDARY_250}` }
+const PACKAGE_DIVIDE_D: CSSProperties = { marginTop: 32, borderTop: `1px solid ${SECONDARY_250}` }
 // The title and its intro, in the first column, from the top. 8 between them (2026-10-29, Eric; 24, then 16 less).
 const HEAD_TEXT_D: CSSProperties = { gridColumn: 1, gridRow: 1, alignSelf: 'start', display: 'flex', flexDirection: 'column', gap: 8 }
 // 24 from the package options, 40 from the title (2026-10-29, Eric; C's is 24 from the title, 40 from the options).
