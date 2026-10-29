@@ -101,6 +101,7 @@ export function TwoPackageProductDetailPage() {
   const singleHead = useFeatureFlag('pdp-single-head').variant ?? 'c'
   // D's head shows Premier on both pages — packages[0] is Standard on the multi-product page.
   const PREMIER = PACKAGES.find((p) => p.id === 'premier') ?? PACKAGES[0]
+  const STANDARD = PACKAGES.find((p) => p.id === 'standard') ?? PACKAGES[0]
   const picked: PackageId = single ? 'premier' : chosen
   const packages = single ? PACKAGES.filter((p) => p.id === 'premier') : PACKAGES
   /* Change state or line: the selector slid open under the heading (2026-10-28, Eric). Nothing opens it now (2026-10-29, Eric: the link
@@ -441,7 +442,8 @@ export function TwoPackageProductDetailPage() {
               <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
             </h2>
             {/* A 1 rule between the title and the package, from the pill's top to the Purchase's bottom edge (2026-10-29, Eric). */}
-            <span aria-hidden style={HEAD_RULE_D} />
+            {/* On the multi page, down past the Standard tile too (2026-10-29, Eric). */}
+            <span aria-hidden style={single ? HEAD_RULE_D : { ...HEAD_RULE_D, gridRow: '1 / 4', marginBottom: 0 }} />
             <div style={{ ...HEAD_PACKAGE_D, gridColumn: 3, gridRow: 2, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
               {/* The crown and PREMIER PACKAGE over the price, centred like it (2026-10-29, Eric). */}
               <span style={PACKAGE_LABEL_D}>
@@ -451,7 +453,18 @@ export function TwoPackageProductDetailPage() {
               {/* No package name; the price row 8 up, centred over the Purchase (2026-10-29, Eric). */}
               {renderCard(PREMIER, true, { price: 8, center: true })}
             </div>
-            <p style={{ ...BODY, gridColumn: '1 / -1', gridRow: 3, marginTop: 8, marginBottom: -8 }}>
+            {/* The multi page's Standard tile under Premier's, in its format — the name over the price over the Purchase, centred
+                (2026-10-29, Eric). */}
+            {single ? null : (
+              <div style={{ ...STANDARD_TILE_D, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
+                <span style={{ ...PACKAGE_LABEL_D, position: 'static' }}>
+                  <span style={PACKAGE_STRIP_LABEL_C}>Standard package</span>
+                </span>
+                {renderCard(STANDARD, true, { price: 8, center: true })}
+              </div>
+            )}
+            {/* Under the title, at its width (2026-10-29, Eric; was across the full width under both). */}
+            <p style={{ ...BODY, gridColumn: 1, gridRow: 3, alignSelf: 'start', marginTop: 8, marginBottom: -8 }}>
               Updated every year, our packages make complex insurance concepts simple.{' '}
               <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
               <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
@@ -1769,6 +1782,8 @@ const HEAD_RULE_C: CSSProperties = { gridColumn: 2, gridRow: '1 / 3', alignSelf:
 const HEAD_WITH_PACKAGE_D: CSSProperties = { ...HEAD_WITH_PACKAGE_C }
 const HEAD_PACKAGE_D: CSSProperties = { ...HEAD_PACKAGE_C }
 const HEAD_RULE_D: CSSProperties = { ...HEAD_RULE_C }
+// D's Standard tile on the multi page: under Premier's, right, at the row's top.
+const STANDARD_TILE_D: CSSProperties = { gridColumn: 3, gridRow: 3, alignSelf: 'start', justifySelf: 'end', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
