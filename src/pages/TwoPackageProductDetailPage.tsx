@@ -1726,8 +1726,9 @@ const PACKAGE_STRIP_C: CSSProperties = {
   // No hairlines above and below (2026-10-29, Eric; the design's Secondary 300 pair).
 }
 const PACKAGE_STRIP_D: CSSProperties = { ...PACKAGE_STRIP_C }
-// Over D's price: centred, and 12 under it to clear the price row's 8 lift with 4 to spare.
-const PACKAGE_LABEL_D: CSSProperties = { alignSelf: 'center', display: 'flex', alignItems: 'center', gap: 5, marginBottom: 12, color: 'var(--color-text-primary)' }
+// Over D's price: centred, and 12 under it to clear the price row's 8 lift with 4 to spare. Raised 20.5 on its own so its
+// baseline is "Includes our Pass Guarantee"'s, across the rule (2026-10-29, Eric; measured).
+const PACKAGE_LABEL_D: CSSProperties = { alignSelf: 'center', display: 'flex', alignItems: 'center', gap: 5, marginBottom: 12, position: 'relative', top: -20.5, color: 'var(--color-text-primary)' }
 const PACKAGE_STRIP_ROW_C: CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, paddingTop: 2, paddingBottom: 2 }
 // One line at its own width — the design's fixed 148 wraps it in our Avenir.
 const PACKAGE_STRIP_LABEL_C: CSSProperties = {
