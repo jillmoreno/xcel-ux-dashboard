@@ -392,8 +392,9 @@ export function TwoPackageProductDetailPage() {
         {/* 2 between the title and its intro (the design's 10, 8 less — 2026-10-27, Eric). */}
         {/* Single, its pieces are the head grid's own: the title beside the package, the intro across under both. */}
         <div style={single ? { display: 'contents' } : { display: 'flex', flexDirection: 'column', gap: COURSE_TITLE_GAP }}>
-          {/* Single, centred on the package box beside it (2026-10-29, Eric). */}
-          <h2 style={single ? { ...COURSE_HEAD_TITLE, alignSelf: 'center' } : COURSE_HEAD_TITLE}>
+          {/* Single, centred on the package box beside it (2026-10-29, Eric) — by eye, not by box: the line box has 3 above the
+              capitals and 17 below the last baseline, so it drops 7 to centre the cap-top-to-baseline block. */}
+          <h2 style={single ? { ...COURSE_HEAD_TITLE, alignSelf: 'center', position: 'relative', top: 7 } : COURSE_HEAD_TITLE}>
             {place} {line} <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
           </h2>
           {/* The concise intro (2026-10-29, Eric), in place of "Our pre-licensing packages are updated annually and designed with a
