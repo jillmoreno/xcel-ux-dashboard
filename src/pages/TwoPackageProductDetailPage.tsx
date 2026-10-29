@@ -234,12 +234,13 @@ export function TwoPackageProductDetailPage() {
     /* No card is picked by clicking any more (2026-10-29, Eric): the selected look is a hover, so `on` is false and the resting look
        is every card's; the Purchase buttons keep hovers of their own. */
     const on = false
+    // Copy C's (`lift`) both 2 larger (2026-10-29, Eric), its strike sized to the struck price rather than fixed.
     const prices = (
       <span data-price-row style={OPTION_PRICE_ROW}>
-        <span style={OPTION_PRICE}>{p.price}</span>
-        <span style={OPTION_WAS}>
+        <span style={lift ? { ...OPTION_PRICE, fontSize: `calc(${OPTION_PRICE.fontSize} + 2px)` } : OPTION_PRICE}>{p.price}</span>
+        <span style={lift ? { ...OPTION_WAS, fontSize: `calc(${OPTION_WAS.fontSize} + 2px)` } : OPTION_WAS}>
           <s style={{ textDecoration: 'none' }}>{p.was}</s>
-          <img src="/brand/e2e-price-strike.svg" alt="" aria-hidden style={OPTION_STRIKE} />
+          <img src="/brand/e2e-price-strike.svg" alt="" aria-hidden style={lift ? { ...OPTION_STRIKE, width: 'calc(100% + 4px)' } : OPTION_STRIKE} />
         </span>
       </span>
     )
