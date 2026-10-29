@@ -3,7 +3,7 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSPropert
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
-import { AngleDownSolid, AngleRightSolid, BallotCheckLight, ChartLineUpLight, FaceGrinLight, FileCertificateLight, RubiMark, RubiWordmark } from '@/icons'
+import { AngleDownSolid, AngleRightSolid, BallotCheckLight, ShieldCheckSolid, ChartLineUpLight, FaceGrinLight, FileCertificateLight, RubiMark, RubiWordmark } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
@@ -441,11 +441,21 @@ export function TwoPackageProductDetailPage() {
             </p>
           </div>
         ) : null}
-        {/* COPY C (2026-10-29, Eric): B again, under it, for more comparison — its own HEAD_WITH_PACKAGE_C / HEAD_PACKAGE_C /
-            PILL_BADGE_C. */}
+        {/* COPY C (2026-10-29, Eric): B again, under it, for more comparison — its own HEAD_WITH_PACKAGE_C / HEAD_PACKAGE_C. */}
         {single ? (
           <div style={HEAD_WITH_PACKAGE_C}>
-            <span style={{ ...PILL_BADGE_C, gridColumn: 1, gridRow: 1, justifySelf: 'start' }}>Pass Guarantee</span>
+            {/* Figma 573:3972 (2026-10-29, Eric), in place of the PASS GUARANTEE pill: PREMIER PACKAGE, a rule, then a shield and
+                "Includes our Pass Guarantee" in brick, between hairlines above and below. */}
+            <div style={{ ...PACKAGE_STRIP_C, gridColumn: 1, gridRow: 1, justifySelf: 'start' }}>
+              <div style={PACKAGE_STRIP_ROW_C}>
+                <span style={PACKAGE_STRIP_LABEL_C}>Premier package</span>
+                <span aria-hidden style={PACKAGE_STRIP_RULE_C} />
+                <span style={PACKAGE_STRIP_GUARANTEE_C}>
+                  <ShieldCheckSolid size={14} aria-hidden />
+                  <span style={{ paddingTop: 1 }}>Includes our Pass Guarantee</span>
+                </span>
+              </div>
+            </div>
             <h2 style={{ ...COURSE_HEAD_TITLE, color: 'var(--color-text-primary)', alignSelf: 'end', gridColumn: 1, gridRow: 2 }}>
               {/* A break after the line of authority (2026-10-29, Eric). */}
               {place} {line}
@@ -1667,7 +1677,40 @@ const HEAD_WITH_PACKAGE_C: CSSProperties = { display: 'grid', gridTemplateColumn
 // bottom edge sits on "Package"'s baseline (2026-10-29, Eric; was centred on the title). Lifted by position, not margin, so the
 // row keeps its height and the title stays put.
 const HEAD_PACKAGE_C: CSSProperties = { ...HEAD_PACKAGE_B, justifySelf: 'end', alignSelf: 'end', position: 'relative', top: -17 }
-const PILL_BADGE_C: CSSProperties = { ...PILL_BADGE_B }
+/* Figma 573:3972: Secondary 300 hairlines top and bottom, 2 inside them and 2 again round the row; Avenir Medium 14. */
+const PACKAGE_STRIP_C: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  paddingTop: 2,
+  paddingBottom: 2,
+  borderTop: '1px solid var(--color-secondary-300)',
+  borderBottom: '1px solid var(--color-secondary-300)',
+}
+const PACKAGE_STRIP_ROW_C: CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, paddingTop: 2, paddingBottom: 2 }
+// One line at its own width — the design's fixed 148 wraps it in our Avenir.
+const PACKAGE_STRIP_LABEL_C: CSSProperties = {
+  whiteSpace: 'nowrap',
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 500,
+  fontSize: 14,
+  lineHeight: '14px',
+  letterSpacing: 1.4,
+  textTransform: 'uppercase',
+  color: 'var(--color-text-primary)',
+}
+const PACKAGE_STRIP_RULE_C: CSSProperties = { alignSelf: 'stretch', width: 1, background: 'var(--color-secondary-300)' }
+const PACKAGE_STRIP_GUARANTEE_C: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 5,
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 500,
+  fontSize: 14,
+  lineHeight: '12px',
+  whiteSpace: 'nowrap',
+  color: 'var(--color-xcel-brick)',
+}
 // The rule's own column between the title and the package, down both rows; its foot lifted 17 like the package's, to the
 // Purchase's bottom edge.
 // 8 left of the gap's middle (2026-10-29, Eric), the title and package staying put.
