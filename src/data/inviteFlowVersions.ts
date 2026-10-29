@@ -23,6 +23,8 @@
  * Mirrors `dashboardVersions.ts` in shape so `DashboardVersionsPanel` can back
  * this picker unchanged: its `VersionPickerItem` is the whole contract.
  */
+import type { DesignerId } from '@/context/FeatureFlagContext'
+
 
 export type InviteFlowVersionId = 'v1' | 'v2'
 
@@ -32,12 +34,19 @@ export type InviteFlowVersion = {
   createdAt: string
   modifiedAt: string
   description: string
+  /** Whose version this is — the tab it sits under in the Invite Flow
+   *  Versions sheet (2026-10-29, Jillienne: "the versions sheet should also
+   *  include all of the designer names, like in the atlas side"). Absent means
+   *  Jill, resolved through `flagOwner` like every other owner. A designer's
+   *  V3 names them here and lands on their tab. */
+  owner?: DesignerId
 }
 
 export const INVITE_FLOW_VERSIONS: InviteFlowVersion[] = [
   {
     id: 'v1',
     label: 'Invite Flow V1',
+    owner: 'jill',
     createdAt: '2026-10-14',
     modifiedAt: '2026-10-20',
     description:
@@ -46,6 +55,7 @@ export const INVITE_FLOW_VERSIONS: InviteFlowVersion[] = [
   {
     id: 'v2',
     label: 'Invite Flow V2',
+    owner: 'jill',
     createdAt: '2026-10-22',
     modifiedAt: '2026-10-22',
     description:

@@ -19,12 +19,15 @@ import { useInviteFlowVersionsPanel } from './InviteFlowVersionsPanelContext'
  * a fourth unchanged. Keeping one panel is what stops the cards drifting into
  * two slightly different designs.
  *
- * ⚠ NO DESIGNER TABS. The panel's `designerTabs` note says why: only the
- * dashboard versions have owners, and putting Jill / Eric / Anjani over a list
- * neither of them owns is three people's names on something that has one.
- * The invite flow's owners are Afsana and Eric at the SCOPE level
- * (`PROTOTYPE_SCOPES`), which is a different question from whose tab a card
- * sits under.
+ * DESIGNER TABS SINCE 2026-10-29 (Jillienne: "when on the invite flow of the
+ * prototype, the versions sheet should also include all of the designer
+ * names, like in the atlas side"). Until then the list had no tabs because
+ * its versions had no owners; `InviteFlowVersion.owner` gives them one, so
+ * the same `designerTabs` the dashboard sheet uses files V1 and V2 under Jill
+ * and a designer's V3 under them. The tabs are `FLAG_DESIGNERS`, so a new
+ * designer appears here the moment they join that roster. The SCOPE's owners
+ * (Afsana and Eric, `PROTOTYPE_SCOPES`) remain a different question from whose
+ * tab a card sits under.
  *
  * ⚠ NO "Set as default" EITHER (`hideSetDefault`). For the dashboard that
  * button writes a per-browser default; here the default is the flag's
@@ -58,6 +61,7 @@ export function InviteFlowVersionsPanel() {
       onClose={() => panel?.closePanel()}
       title="Invite Flow Versions"
       versions={INVITE_FLOW_VERSIONS}
+      designerTabs
       activeVersionId={activeVersionId}
       defaultVersionId={defaultVersionId}
       hideSetDefault
