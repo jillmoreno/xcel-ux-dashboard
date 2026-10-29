@@ -1953,8 +1953,8 @@ const COMPARE_HEAD: CSSProperties = {
 const COMPARE_MARK: CSSProperties = { width: 120, textAlign: 'center' }
 /* Premier's column, header included, in flat Secondary 100 (2026-10-29, Eric: 200, then 100; it was the PICKED package's column,
    fading from 200 down the rows, and moved with each click on a card). */
-// On the Secondary 100 ground now, so 30% of the way to 200 to show (2026-10-29, Eric).
-const PREMIER_SHADE: CSSProperties = { background: 'color-mix(in srgb, var(--color-secondary-200) 30%, var(--color-secondary-100))' }
+// On the Secondary 100 ground now, so halfway to 200 to show (2026-10-29, Eric: 30%, then 50%).
+const PREMIER_SHADE: CSSProperties = { background: 'color-mix(in srgb, var(--color-secondary-200) 50%, var(--color-secondary-100))' }
 const COMPARE_FEATURE: CSSProperties = {
   ...SIDE_BODY,
   fontWeight: 400,
