@@ -915,7 +915,7 @@ const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; p
   },
   { feature: 'Flashcards (Life, Health, and Accident Insurance)', detail: '800+ cards covering fundamentals', standard: false, premier: true },
   // A Learn more link after it (2026-10-29, Eric).
-  { feature: 'Pass Guarantee (Prepared to Pass Promise)', standard: false, premier: true, link: 'Learn more' },
+  { feature: 'Pass Guarantee (Prepared to Pass Promise)', standard: false, premier: true, link: 'Learn More' },
 ]
 
 /* Florida's reporting fee — DEMO DATA, see the header. */
