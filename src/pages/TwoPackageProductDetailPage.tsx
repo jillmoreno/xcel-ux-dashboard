@@ -634,12 +634,18 @@ export function TwoPackageProductDetailPage() {
                 <div style={OTHER_INFO}>
                     {/* Course Specs, first, out of the rail (2026-10-29, Eric). */}
                     <section style={SIDE_SECTION}>
-                      <h2 style={SIDE_TITLE}>Course Specs</h2>
-                      <dl style={{ ...SIDE_BODY, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {/* On two lines like the other two; each spec's value under its name, as Regulatory Information's are
+                          (2026-10-29, Eric). */}
+                      <h2 style={SIDE_TITLE}>
+                        Course
+                        <br />
+                        Specs
+                      </h2>
+                      <dl style={{ ...SIDE_BODY, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
                         {TRAINING_SPECS.map(([term, value]) => (
-                          <div key={term}>
-                            <dt style={{ display: 'inline' }}>{term}</dt>{' '}
-                            <dd style={{ display: 'inline', margin: 0, fontWeight: 800 }}>{localize(value)}</dd>
+                          <div key={term} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            <dt>{term}</dt>
+                            <dd style={{ margin: 0, fontWeight: 800 }}>{localize(value)}</dd>
                           </div>
                         ))}
                       </dl>
