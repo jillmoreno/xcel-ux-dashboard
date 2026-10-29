@@ -296,7 +296,7 @@ export function TwoPackageProductDetailPage() {
           </span>
         )}
         {/* The card's 1 edge drawn again over everything, so its top runs across the tab (2026-10-28, Eric). Not on the
-            multi-product Premier card, which has no outer stroke (2026-10-29, Eric). */}
+            multi-product Premier card, whose stroke is the CSS's alone, at half strength (2026-10-29, Eric) — two would stack. */}
         {single || p.id !== 'premier' ? <span aria-hidden style={MINI_EDGE} /> : null}
       </div>
     )

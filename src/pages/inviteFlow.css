@@ -174,8 +174,8 @@
 .cre-e2e-package-card--on,
 .cre-e2e-package-card:hover {
   background: var(--color-fixed-light) !important;
-  /* No 1 outer stroke now — the 7 ring is the edge (2026-10-29, Eric). */
-  box-shadow: inset 0 0 0 7px var(--color-secondary-200), 0 4px 8px -2px rgb(0 0 0 / 0.3) !important;
+  /* The 1 outer stroke at half its strength (2026-10-29, Eric: gone, then back at 50%). */
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-e2e-card-outline) 50%, transparent), inset 0 0 0 7px var(--color-secondary-200), 0 4px 8px -2px rgb(0 0 0 / 0.3) !important;
 }
 .cre-e2e-outline--quiet:not(:hover) {
   background: transparent;
