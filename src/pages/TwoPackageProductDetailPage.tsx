@@ -1270,7 +1270,7 @@ const OTHER_INFO: CSSProperties = { display: 'grid', // Each column 10 narrower 
 // the 14 under them.
 const OTHER_INFO_RULE: CSSProperties = { alignSelf: 'stretch', marginTop: 2 * 24 + 14, background: 'var(--color-secondary-200)' } // Secondary 200 (2026-10-29, Eric; was 300)
 // Between the facts in a column: a 1 rule, 14 clear either side (the list's gap above it, this padding below) (2026-10-29, Eric).
-const OTHER_INFO_ITEM_RULE: CSSProperties = { borderTop: '1px solid var(--color-secondary-300)', paddingTop: 14 }
+const OTHER_INFO_ITEM_RULE: CSSProperties = { borderTop: '1px solid var(--color-secondary-200)', paddingTop: 14 } // Secondary 200, as the gutters' (2026-10-29, Eric; was 300)
 const OTHER_INFO_GROUND: CSSProperties = {
   marginRight: -32,
   marginLeft: -32,
