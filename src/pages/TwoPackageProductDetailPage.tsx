@@ -667,6 +667,8 @@ export function TwoPackageProductDetailPage() {
                         </p>
                       </div>
                     </section>
+                    {/* The rule between the two, 48 either side (2026-10-29, Eric). */}
+                    <span aria-hidden style={OTHER_INFO_RULE} />
                     {/* The state reporting fee — Figma 542:2304 (2026-10-27, Eric). */}
                     <section style={SIDE_SECTION}>
                       <h2 style={SIDE_TITLE}>State reporting fee required</h2>
@@ -1220,7 +1222,9 @@ const SIDE_RULE: CSSProperties = {
 
 // 20 on 24 (2026-10-15, Eric's request: 2 up from 18/22).
 /* Other course information's two columns, 300 wide and 32 apart, each starting level (2026-10-29, Eric; was three, a third each). */
-const OTHER_INFO: CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 300px))', columnGap: 32, alignItems: 'start' }
+const OTHER_INFO: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 300px) 1px minmax(0, 300px)', columnGap: 48, alignItems: 'start' }
+// A 1 Secondary 300 rule, the boxes' full height, 48 either side (2026-10-29, Eric; the columns were 32 apart).
+const OTHER_INFO_RULE: CSSProperties = { alignSelf: 'stretch', background: 'var(--color-secondary-300)' }
 /* Their tan ground: the packages ground's Secondary 100, 10 corners and 32 padding, pulled out over SHARED's 32 sides so its edges
    line up with the packages ground above and its text with the text. */
 const OTHER_INFO_GROUND: CSSProperties = {
