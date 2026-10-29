@@ -420,7 +420,8 @@ export function TwoPackageProductDetailPage() {
             HEAD_RULE_D / PACKAGE_STRIP_D to change and compare. */}
         {/* On the multi-product page too, above its own head, for comparison (2026-10-29, Eric). */}
         {!single || singleHead === 'd' ? (
-          <div style={single ? HEAD_WITH_PACKAGE_D : { ...HEAD_WITH_PACKAGE_D, marginBottom: 48 }}>
+          <div style={single ? HEAD_WITH_PACKAGE_D : { ...HEAD_WITH_PACKAGE_D, marginRight: -32, marginBottom: 48, marginLeft: -32 }}>
+            {/* On the multi page, out past the column's 32 side padding to its edges, as on the single page (2026-10-29, Eric). */}
             {/* Figma 573:3972 (2026-10-29, Eric), in place of the PASS GUARANTEE pill: PREMIER PACKAGE, a rule, then a shield and
                 "Includes our Pass Guarantee" in brick, between hairlines above and below. */}
             {/* D (2026-10-29, Eric): only the shield and "Includes our Pass Guarantee" here, at the left, no rule — the crown and
