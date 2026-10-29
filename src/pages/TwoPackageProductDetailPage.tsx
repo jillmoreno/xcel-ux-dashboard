@@ -1780,8 +1780,8 @@ const PREMIER_TILE_D: CSSProperties = { display: 'flex', flexDirection: 'column'
 const PACKAGE_DIVIDE_D: CSSProperties = { marginTop: 32, borderTop: `1px solid ${SECONDARY_250}` }
 // The title and its intro, in the first column, from the top. 8 between them (2026-10-29, Eric; 24, then 16 less).
 const HEAD_TEXT_D: CSSProperties = { gridColumn: 1, gridRow: 1, alignSelf: 'start', display: 'flex', flexDirection: 'column', gap: 8 }
-// 32 from the package options, 40 from the title (2026-10-29, Eric; 24, then 8 more; C's is 24 from the title, 40 from the options).
-const HEAD_RULE_D: CSSProperties = { ...HEAD_RULE_C, gridRow: 1, marginBottom: 0, left: 8, marginRight: 8 }
+// Its foot at Purchase Premier's bottom edge (2026-10-29, Eric). 32 from the package options, 40 from the title (2026-10-29, Eric; 24, then 8 more; C's is 24 from the title, 40 from the options).
+const HEAD_RULE_D: CSSProperties = { ...HEAD_RULE_C, gridRow: 1, marginBottom: 16, left: 8, marginRight: 8 }
 // D's Standard tile on the multi page, at the column's top.
 const STANDARD_TILE_D: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }
 const PACKAGE_GRID: CSSProperties = {
