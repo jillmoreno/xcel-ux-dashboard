@@ -675,7 +675,7 @@ export function TwoPackageProductDetailPage() {
                         </p>
                       </div>
                     </section>
-                    {/* The rule between the two, 48 either side (2026-10-29, Eric). */}
+                    {/* The rule between the two, 32 either side (2026-10-29, Eric). */}
                     <span aria-hidden style={OTHER_INFO_RULE} />
                     {/* The state reporting fee — Figma 542:2304 (2026-10-27, Eric). */}
                     <section style={SIDE_SECTION}>
@@ -1234,10 +1234,12 @@ const SIDE_RULE: CSSProperties = {
 
 // 20 on 24 (2026-10-15, Eric's request: 2 up from 18/22).
 /* Other course information's two columns, 300 wide and 32 apart, each starting level (2026-10-29, Eric; was three, a third each). */
-const OTHER_INFO: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 300px) 1px minmax(0, 300px)', columnGap: 48, alignItems: 'start' }
-// A 1 Secondary 300 rule, the boxes' full height, 48 either side (2026-10-29, Eric; the columns were 32 apart).
-// It starts under the headings, level with the content's top — a heading's two 24 lines and its 14 gap (2026-10-29, Eric).
-const OTHER_INFO_RULE: CSSProperties = { alignSelf: 'stretch', marginTop: 2 * 24 + 14, background: 'var(--color-secondary-300)' }
+// The left column only as wide as it needs, up to 240, so the rule and the fee sit further left; 32 either side of the rule
+// (2026-10-29, Eric; was two 300 columns, 48 either side).
+const OTHER_INFO: CSSProperties = { display: 'grid', gridTemplateColumns: 'fit-content(240px) 1px minmax(0, 1fr)', columnGap: 32, alignItems: 'start' }
+// A 1 Secondary 300 rule between the columns.
+// Full height, the headings' too (2026-10-29, Eric; it started under them for a while).
+const OTHER_INFO_RULE: CSSProperties = { alignSelf: 'stretch', background: 'var(--color-secondary-300)' }
 /* Their tan ground: the packages ground's Secondary 100, 10 corners and 32 padding, pulled out over SHARED's 32 sides so its edges
    line up with the packages ground above and its text with the text. */
 const OTHER_INFO_GROUND: CSSProperties = {
