@@ -1575,7 +1575,7 @@ const HEAD_PACKAGE: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'stretch',
-  paddingLeft: 32,
+  paddingLeft: 40, // 8 more right of the rule (2026-10-29, Eric; was 32)
   borderLeft: `1px solid ${SECONDARY_250}`,
 }
 const PACKAGE_GRID: CSSProperties = {
