@@ -640,8 +640,8 @@ export function TwoPackageProductDetailPage() {
               </section>
               {/* OTHER COURSE INFORMATION (2026-10-29, Eric): Regulatory Information and the state reporting fee, moved out of the
                   rail into two columns under the training program, in the rail's own type. What to Expect went back to the rail. */}
-              <section style={SECTION}>
-                <h2 style={SECTION_TITLE}>Other course information</h2>
+              {/* No title now, on a tan ground like the packages' — its 10 corners and 32 padding, out to the same edges (2026-10-29, Eric). */}
+              <section aria-label="Other course information" style={OTHER_INFO_GROUND}>
                 <div style={OTHER_INFO}>
                     <section style={SIDE_SECTION}>
                       <h2 style={SIDE_TITLE}>Regulatory Information</h2>
@@ -1220,7 +1220,19 @@ const SIDE_RULE: CSSProperties = {
 
 // 20 on 24 (2026-10-15, Eric's request: 2 up from 18/22).
 /* Other course information's two columns, 300 wide and 32 apart, each starting level (2026-10-29, Eric; was three, a third each). */
-const OTHER_INFO: CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 300px))', columnGap: 32, alignItems: 'start', paddingTop: 9 }
+const OTHER_INFO: CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 300px))', columnGap: 32, alignItems: 'start' }
+/* Their tan ground: the packages ground's Secondary 100, 10 corners and 32 padding, pulled out over SHARED's 32 sides so its edges
+   line up with the packages ground above and its text with the text. */
+const OTHER_INFO_GROUND: CSSProperties = {
+  marginRight: -32,
+  marginLeft: -32,
+  paddingTop: 32,
+  paddingRight: 32,
+  paddingBottom: 32,
+  paddingLeft: 32,
+  borderRadius: 10,
+  background: 'var(--color-secondary-100)',
+}
 const SIDE_TITLE: CSSProperties = { ...SECTION_TITLE, fontSize: 20, lineHeight: '24px' }
 
 
