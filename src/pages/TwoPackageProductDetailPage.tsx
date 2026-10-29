@@ -1663,7 +1663,8 @@ const HEAD_PACKAGE_C: CSSProperties = { ...HEAD_PACKAGE_B, justifySelf: 'end', a
 const PILL_BADGE_C: CSSProperties = { ...PILL_BADGE_B }
 // The rule's own column between the title and the package, down both rows; its foot lifted 17 like the package's, to the
 // Purchase's bottom edge.
-const HEAD_RULE_C: CSSProperties = { gridColumn: 2, gridRow: '1 / 3', alignSelf: 'stretch', width: 1, marginBottom: 17, background: SECONDARY_250 }
+// 8 left of the gap's middle (2026-10-29, Eric), the title and package staying put.
+const HEAD_RULE_C: CSSProperties = { gridColumn: 2, gridRow: '1 / 3', alignSelf: 'stretch', width: 1, marginBottom: 17, position: 'relative', left: -8, background: SECONDARY_250 }
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
