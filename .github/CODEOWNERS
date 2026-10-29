@@ -1,0 +1,6 @@
+# Every file is Jillienne's to approve. With main's branch-protection rule
+# (2026-10-29: pull request required, code-owner review required, admins
+# exempt) this is what makes "ship to main" hers alone on GitHub's side:
+# a designer's pull request cannot merge without her review, and a designer
+# cannot push to main directly at all. She pushes main herself, as admin.
+* @jillmoreno

@@ -85,6 +85,18 @@ Cody for Admin, Jillienne for end to end. A promotion is a commit of defaults on
 reaches no stakeholder by itself. **Only Jillienne merges** — `ship-to-main`,
 which refuses a branch with a group its owner has not decided — **and only she
 sets the default dashboard version.** That is the lock, for every scope.
+**MAIN IS LOCKED TWICE (2026-10-29).** On GitHub, `main` carries a
+branch-protection rule — pull request required, code-owner review required,
+force-pushes and deletion refused, admins exempt — and `.github/CODEOWNERS`
+names Jillienne for every file, so a designer cannot push to main and cannot
+merge a pull request into it without her review, whatever tool sent it. That
+is the lock. In Claude, `.claude/hooks/protect-main.mjs` (PreToolUse on Bash)
+refuses, for anyone but her, a push aimed at main, a switch onto main, a
+commit or merge while standing on it, and `gh pr merge` — with a message
+saying whose step it is. That is the explanation, and like the file guard it
+only sees Claude's commands. `MainProtection.test.ts` pins both halves. She is
+exempt from both, so `ship-to-main` is unchanged for her.
+
 **Anyone promotes to Refinement**, and that door is unchanged —
 `share-branch` — `promote-to-refinement` until 2026-10-15, briefly `share`, and
 both older names still work —

@@ -27,9 +27,12 @@ designers, developers and stakeholders alike. A designer's branch does not ship
 itself.
 
 If `git config user.email` is not Jillienne's, **stop and say so**: the branch is
-ready, and she merges it. (The framework-protection hook already blocks the file
-edits; this is the same boundary one step later, and nothing enforces it but
-this line.)
+ready, and she merges it. **Since 2026-10-29 this IS enforced, twice:**
+`.claude/hooks/protect-main.mjs` refuses the push, the merge and the switch
+onto main for anyone else before they run, and GitHub's branch protection on
+`main` (pull request + code-owner review required, admins exempt, with
+`.github/CODEOWNERS` naming her) refuses a designer's push to main whatever
+sent it. She is exempt from both, so every step below runs for her as before.
 
 ## Steps
 

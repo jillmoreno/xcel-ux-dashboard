@@ -51,10 +51,10 @@ export const HUB_DOCS: HubDoc[] = [
     title: 'Contributing to the dashboard',
     audience: 'Once · your first day',
     blurb:
-      'Getting set up: the accounts, the clone, the dependencies, putting your name on your commits — then the words you will see, the shape of the whole loop in one picture, where a new screen belongs, and the one feature-flag rule. Ends by handing you to the day-to-day guide.',
+      'Your first day, from nothing. What the Hub, your branch and Claude are; the whole loop in one picture; the accounts and the setup, sentence by sentence; the words you will see; where work lives; the one rule about switches; your first change. Hands you to the day-to-day guide.',
     href: '/contributing/',
     pdf: '/contributing/contributing.pdf',
-    updated: '2026-10-26',
+    updated: '2026-10-29',
   },
   {
     id: 'about',

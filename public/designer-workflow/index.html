@@ -338,6 +338,9 @@
      layout on the one box that has an icon. */
   .rule-box.alert { display: flex; gap: 16px; align-items: flex-start; }
   .rule-box .sign { width: 36px; height: 36px; flex: none; margin-top: 2px; }
+  /* ⚠ The shapes ALSO carry fill attributes: weasyprint ignores these
+     stylesheet fills on inline SVG and printed the sign black (2026-10-29).
+     On screen the rules below win over the attributes, as CSS does. */
   .rule-box .sign .face { fill: var(--stop); }
   .rule-box .sign .bar { fill: var(--stop-ink); }
   /* The label takes its own line and the sentence starts under it — her ask.
@@ -459,7 +462,7 @@
       <p class="lead">This guide is the day-to-day: sit down, build something, get it in front of the team. It assumes your machine is already set up.</p>
       <div class="note"><p><b>First time on this project?</b> Go to <a href="/contributing/">Contributing to the dashboard</a>.</p></div>
       <div class="rule-box alert">
-        <svg class="sign" viewBox="0 0 24 24" aria-hidden="true"><path class="face" d="M7.5 1h9L23 7.5v9L16.5 23h-9L1 16.5v-9Z"/><rect class="bar" x="6" y="10.8" width="12" height="2.4" rx="1.2"/></svg>
+        <svg class="sign" viewBox="0 0 24 24" aria-hidden="true"><path class="face" fill="#c33c2e" d="M7.5 1h9L23 7.5v9L16.5 23h-9L1 16.5v-9Z"/><rect class="bar" fill="#ffffff" x="6" y="10.8" width="12" height="2.4" rx="1.2"/></svg>
         <div><b>Most Important Thing.</b> You work on YOUR BRANCH. Never push directly to main.<small>If you ever find yourself on main, stop and tell Jill.</small></div>
       </div>
     </section>
@@ -698,6 +701,7 @@
       <div class="tablewrap"><table>
         <thead><tr><th>You see</th><th>It means</th><th>Say to Claude</th></tr></thead>
         <tbody>
+          <tr><td>"BLOCKED: that pushes to main" (or "moves you onto main")</td><td>You asked for something that would change main, which is Jill's. Claude stopped before running it; GitHub would have refused it too.</td><td>"Switch back to my feature branch." Then <code>/share-branch</code> to put the work in front of the team, and tell Jill when it is ready to ship.</td></tr>
           <tr><td>A refusal naming a file, like "UxDashboardPage.tsx is protected"</td><td>That file is the Hub's own machinery. Only Jill edits it.</td><td>Nothing. Tell Jill what you needed changed.</td></tr>
           <tr><td>"Updates were rejected because the tip of your current branch is behind"</td><td>You rebased, so your branch's history changed, and a normal push is refused.</td><td>"Push with force-with-lease." Your branch only. Never main.</td></tr>
           <tr><td>"CONFLICT (content): Merge conflict in …"</td><td>Main and your commit changed the same lines. The rebase paused for you to choose.</td><td>"Show me both sides." Then "Keep my version" / "Keep main's version" / "Keep both", then "Continue the rebase." Lost? "Abort the rebase" and ask Jill.</td></tr>

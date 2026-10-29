@@ -6,482 +6,423 @@
 <meta name="robots" content="noindex" />
 <title>Contributing to the XCEL UX Dashboard</title>
 <!--
-  The DESIGNER guide — how a second designer gets work onto this dashboard.
-  Served from the Hub as the "Contributing" section (an iframe of this page)
-  and at /contributing/ directly. Until 2026-10-15 the stakeholder site 404'd
-  the folder at the edge, because it describes the team's working process. One
-  site now, and this folder is NOT blocked on it (scripts/public-redirects.mjs
-  keeps one rule, for /recaps/*): hiding the guide from the one site would hide
-  it from the designers it is written for. Stakeholders get /about/.
+  THE FIRST-DAY GUIDE — how a brand-new designer gets from nothing to their
+  first change on the Hub. Read once; the day-to-day guide (/designer-workflow/)
+  is every day after.
 
-  Self-contained: system fonts, one shared stylesheet (../guides/guide.css), no
-  app code. The PDF beside this file is rendered FROM this file:
+  RESTRUCTURED 2026-10-29, Jillienne: "restructured to better match the layout
+  of the day to day. I want very simple high level overview, with a wireframe
+  if possible, and then really get into the details. Pretend this designer is
+  brand new. Explain everything in the most simplest of terms."
+
+  So: the same rail, the same numbered Parts and the same speech bubbles as
+  the day-to-day guide — one shape for both — and the order is overview first
+  (Part 0 says what the three things are, Part 1 is the whole loop as one
+  drawing), then setup, then the words, then the rules, then the first change.
+  The Quick / Full tab switch of the 2026-10-15 version is gone: two views of
+  one document was the thing that made it feel repetitive.
+
+  Served at /contributing/ and from Hub Resources. One site since 2026-10-15,
+  and this folder is NOT blocked on it (scripts/public-redirects.mjs keeps one
+  rule, for /recaps/*). Stakeholders get /about/.
+
+  Self-contained: system fonts, the shared stylesheet (../guides/guide.css —
+  OneSite.test.tsx pins that this page and /about/ keep using it) plus the
+  rail layout inline below, no app code. The drawing uses LITERAL light
+  colours: weasyprint's inline SVG does not read CSS variables, and a picture
+  of a light screen should not invert with the page around it.
+
+  The PDF beside this file is rendered FROM this file:
 
       weasyprint public/contributing/index.html public/contributing/contributing.pdf
 
-  Regenerate it whenever this page changes — a test asserts the PDF exists and
-  is newer than nothing, but cannot know it is current. Last updated 2026-10-15
-  (the public toggle removed throughout, Feature Refinement added, /share-branch).
+  Regenerate it whenever this page changes — a test asserts the PDF exists,
+  but cannot know it is current.
 -->
 <link rel="stylesheet" href="../guides/guide.css" />
+<style>
+  /* THE RAIL LAYOUT, ported from /designer-workflow/ so the two guides are one
+     shape. Everything else — type, tables, callouts, print — is guide.css. */
+  :root {
+    --rail: #16243a;
+    --rail-ink: #eef2f7;
+    --rail-muted: #9fb4cd;
+    --you: #1a3c69;
+    --you-ink: #ffffff;
+    --you-soft: #eef2f7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --rail: #111a2a; --you: #9cc2e5; --you-ink: #0f1a26; --you-soft: #263445; }
+  }
+  .page { max-width: none; padding: 0; display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
+  .rail { background: var(--rail); color: var(--rail-ink); padding: 32px 22px; position: sticky; top: 0; height: 100vh; overflow: auto; display: flex; flex-direction: column; }
+  .rail .lockup { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 28px; }
+  .rail .mark { width: 22px; height: 22px; flex: none; margin-top: 3px; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+  .rail .mark i { display: block; border: 1.5px solid var(--rail-muted); border-radius: 3px; }
+  .rail .lockup b { display: block; font-weight: 600; font-size: 17px; line-height: 1.2; }
+  .rail .lockup span { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--rail-muted); margin-top: 3px; }
+  .rail .eyebrow { font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rail-muted); margin: 22px 0 8px; }
+  .rail nav a { display: block; color: var(--rail-ink); text-decoration: none; font-size: 14px; padding: 6px 10px; border-radius: 6px; }
+  .rail nav a:hover { background: rgba(255,255,255,0.06); }
+  .rail nav a small { color: var(--rail-muted); font-size: 12px; margin-right: 6px; font-variant-numeric: tabular-nums; }
+  main { padding: 48px 56px 96px; max-width: 980px; }
+  .head .asof { font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 10px; }
+  .head h1 { font-size: 34px; margin: 0 0 14px; }
+  .head .actions { margin: 0 0 8px; }
+  section { margin: 0 0 52px; scroll-margin-top: 24px; }
+  h2 { font-size: 27px; line-height: 1.15; margin: 0 0 6px; padding-top: 0; }
+  h2 .part { display: block; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; font-weight: 600; }
+  h3 { font-size: 18px; margin: 28px 0 8px; }
+  p, li { max-width: 72ch; }
+  .lead { font-size: 18px; color: var(--ink-2); margin: 0 0 16px; }
+  .say { display: flex; gap: 10px; align-items: flex-start; margin: 8px 0 10px; max-width: 68ch; }
+  .say .me { flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--you); color: var(--you-ink); font-size: 10.5px; font-weight: 700; text-align: center; line-height: 32px; letter-spacing: 0.02em; }
+  .say q { display: block; quotes: none; background: var(--you-soft); border: 1px solid var(--line); border-radius: 14px 14px 14px 4px; padding: 9px 14px; font-size: 16px; color: var(--ink); }
+  .say q::before, .say q::after { content: none; }
+  .say .copy { flex: none; align-self: flex-start; margin-top: 3px; width: 26px; height: 26px; display: grid; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 7px; background: var(--card); color: var(--ink-3); cursor: pointer; opacity: 0; transition: opacity 120ms ease; }
+  .say:hover .copy, .say:focus-within .copy { opacity: 1; }
+  .say .copy:hover, .say .copy[data-done] { opacity: 1; color: var(--accent); border-color: var(--accent); }
+  .say .copy svg { width: 13px; height: 13px; }
+  @media (hover: none) { .say .copy { opacity: 1; } }
+  ol.steps { list-style: none; padding: 0; margin: 12px 0 0; counter-reset: step; }
+  ol.steps > li { position: relative; padding: 0 0 18px 44px; counter-increment: step; max-width: none; }
+  ol.steps > li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-size: 13px; font-weight: 700; text-align: center; line-height: 28px; }
+  ol.steps > li > b.t { display: block; margin-bottom: 4px; font-size: 16px; }
+  ol.steps > li > p { margin: 4px 0 0; }
+  .note { border-left: 3px solid var(--accent); background: var(--card); padding: 12px 16px; margin: 18px 0; max-width: 72ch; }
+  .note.warn { border-left-color: var(--warn-ink); background: var(--warn-soft); }
+  .note p:last-child { margin-bottom: 0; }
+  .rule-box { background: var(--rail); color: var(--rail-ink); padding: 20px 24px; border-radius: 12px; font-size: 20px; line-height: 1.35; max-width: 40em; margin: 22px 0 0; }
+  .rule-box small { display: block; font-size: 15px; color: var(--rail-muted); margin-top: 8px; }
+  /* THE ONE WARNING WITH A STOP SIGN, the same block the day-to-day guide
+     opens with (2026-10-29, Jillienne: "we don't want them to accidentally
+     ship to main, let's put that warning block in this file too"). One sign
+     per guide: a second would spend it. */
+  .rule-box.alert { display: flex; gap: 16px; align-items: flex-start; }
+  .rule-box .sign { width: 36px; height: 36px; flex: none; margin-top: 2px; }
+  /* The sign's colours are attributes on the shapes, not rules here:
+     weasyprint ignores stylesheet fills on inline SVG and printed it black. */
+  .rule-box.alert b { display: block; }
+  .three { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 16px 0 6px; }
+  .three div { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .three b { display: block; font-size: 16px; margin-bottom: 4px; }
+  .three p { margin: 0; font-size: 14px; color: var(--ink-2); }
+  .tablewrap { margin: 14px 0 18px; }
+  /* Tables wrap in every column here: guide.css pins the first column to one
+     line, and this guide's first columns are sentences, which pushed the
+     other columns into a sliver and the table off the printed page. */
+  td.k, td:first-child { white-space: normal; font-weight: 600; }
+  td code { white-space: normal; word-break: break-word; }
+  table { table-layout: fixed; }
+  footer { margin-top: 56px; }
+  @media (max-width: 880px) {
+    .page { grid-template-columns: 1fr; }
+    .rail { position: static; height: auto; padding: 22px 20px; }
+    .rail nav { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 2px 12px; }
+    .rail .eyebrow { grid-column: 1 / -1; }
+    main { padding: 32px 20px 72px; }
+  }
+  @media print {
+    :root { --rail: #1a3c69; --rail-ink: #eef2f7; --rail-muted: #9fb4cd; --you: #1a3c69; --you-ink: #fff; --you-soft: #eef2f7; }
+    .rail, .say .copy { display: none; }
+    .page { display: block; }
+    main { padding: 0; max-width: none; }
+    .say q { border-color: #999; }
+    .say .me { font-size: 7.5pt; letter-spacing: 0; }
+    .three { grid-template-columns: 1fr 1fr 1fr; }
+    .three div, .rule-box, .note, ol.steps > li { page-break-inside: avoid; }
+    /* Tables may break between rows: guide.css keeps a whole table on one
+       page, and the glossary is taller than a page's remainder, which left a
+       page holding nothing but its own heading. */
+    table, .tablewrap { page-break-inside: auto; }
+    tr { page-break-inside: avoid; }
+    thead { display: table-header-group; }
+    .btn { display: inline-block; width: auto; }
+    h2 { page-break-after: avoid; }
+  }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
 </head>
 <body>
 <div class="page">
 
-<header>
-  <div class="mast">
-    <div>
-      <p class="eyebrow">XCEL UX Dashboard · for designers</p>
+  <aside class="rail">
+    <div class="lockup">
+      <div class="mark" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+      <div><b>UX Design Hub</b><span>Atlas LMS &amp; Compass Learning</span></div>
+    </div>
+    <nav aria-label="Parts">
+      <p class="eyebrow">Start here</p>
+      <a href="#what"><small>0</small>What this is</a>
+      <a href="#picture"><small>1</small>The whole thing in one picture</a>
+      <p class="eyebrow">Getting set up</p>
+      <a href="#need"><small>2</small>What you need</a>
+      <a href="#setup"><small>3</small>Setting up your computer</a>
+      <p class="eyebrow">How it works</p>
+      <a href="#words"><small>4</small>The words you will see</a>
+      <a href="#homes"><small>5</small>Where your work lives</a>
+      <a href="#flags"><small>6</small>The one rule: switches</a>
+      <p class="eyebrow">Your first day</p>
+      <a href="#first"><small>7</small>Your first change</a>
+      <a href="#never"><small>8</small>Things never to do</a>
+      <a href="#next"><small>9</small>Then: the day-to-day guide</a>
+    </nav>
+  </aside>
+
+  <main>
+    <header class="head">
+      <p class="asof">As of 29 October 2026 · written by Jill Moreno</p>
       <h1>Contributing to the dashboard</h1>
-    </div>
-    <div class="actions">
-      <a class="btn" href="contributing.pdf" download>
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 12v1.5h10V12"/></svg>
-        Download as PDF
-      </a>
-      <a class="btn ghost noprint" href="/">← Back to the dashboard</a>
-    </div>
-  </div>
-  <p class="lede">How to get your work in front of the team and then in front of stakeholders — from getting the project onto your computer to seeing your change land in Prototypes. Everything happens in the <strong>Claude desktop app</strong>: each step is a sentence you say to Claude. Nothing is typed into a terminal, and github.com is only opened once, to accept the invitation.</p>
-  <p class="meta">Last updated 26 October 2026 · Owner: Jillienne Moreno · Applies to <code>jillmoreno/xcel-ux-dashboard</code></p>
-</header>
+      <div class="actions">
+        <a class="btn" href="contributing.pdf" download><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 12v1.5h10V12"/></svg>Download as PDF</a>
+        <a class="btn ghost noprint" href="/">← Back to the dashboard</a>
+      </div>
+    </header>
 
-<!-- ── View switch: Quick walkthrough (default) · Full guide ─────────────
-     Two views of one document. The quick view is eight illustrated cards for a
-     first read; the full guide is the reference. Both are in this file, so the
-     PDF carries both (print shows quick first, then the full guide) and neither
-     can drift from the other's facts without the diff showing it. -->
-<div class="views noprint" role="tablist" aria-label="How much detail">
-  <button type="button" role="tab" id="tab-quick" aria-controls="view-quick" aria-selected="true">Quick walkthrough</button>
-  <button type="button" role="tab" id="tab-full" aria-controls="view-full" aria-selected="false">Full guide</button>
-  <span class="views-hint">Two minutes with pictures, or the whole thing.</span>
+    <section id="what">
+      <h2><span class="part">Part 0</span>What this is</h2>
+      <p class="lead">This page gets you from nothing to your first change in front of the team. Read it once, on your first day. After that, the <a href="/designer-workflow/">day-to-day guide</a> is the one you keep open.</p>
+      <p>There are only three things to understand, and the rest of this page is detail about them.</p>
+      <div class="three">
+        <div><b>The Hub</b><p>A website where everyone — designers, developers, stakeholders — sees the team's work. It has a list of the product as it stands, and a board where work under discussion is reviewed.</p></div>
+        <div><b>Your branch</b><p>Your own private copy of the project. You change it as much as you like. Nothing on it is seen by anyone until you choose to share it, and nothing on it changes the product until Jill decides it does.</p></div>
+        <div><b>Claude</b><p>The desktop app you type sentences to. It does every technical step for you — copying the project, saving your work, publishing it — so you never type a command.</p></div>
+      </div>
+      <div class="rule-box">You design. Claude does the technical parts. Jill decides what ships.<small>You never type a command, you never run the website on your own computer, and you never touch the copy of the project that everyone sees.</small></div>
+    </section>
+
+    <section id="picture">
+      <h2><span class="part">Part 1</span>The whole thing in one picture</h2>
+      <p class="lead">Your work travels left to right. Every box is a place; every arrow is one sentence you say to Claude, or one click.</p>
+      <div class="shot wide" role="img" aria-label="Wireframe of the loop: your computer with the project folder and Claude; an arrow labelled push to GitHub, your branch; an arrow labelled builds to your branch build, a web address that is your branch live; an arrow labelled add link to the Hub, where your chunk sits on the Refinement board and the team opens it and talks; then Jill ships it into Prototypes, the product as it stands.">
+        <svg viewBox="0 0 960 300" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif">
+          <defs><marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#6b7280"/></marker></defs>
+          <rect x="16" y="60" width="176" height="150" rx="12" fill="#fff" stroke="#c8ced6" stroke-width="1.5"/>
+          <text x="104" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1.4">YOUR COMPUTER</text>
+          <rect x="34" y="104" width="140" height="34" rx="6" fill="#f3f5f8" stroke="#dfe3e8"/>
+          <text x="104" y="126" text-anchor="middle" font-size="12.5" fill="#1b1d21">the project folder</text>
+          <rect x="34" y="146" width="140" height="34" rx="6" fill="#eef2f7" stroke="#dfe3e8"/>
+          <text x="104" y="168" text-anchor="middle" font-size="12.5" fill="#1a3c69" font-weight="600">Claude, connected to it</text>
+          <text x="104" y="200" text-anchor="middle" font-size="11" fill="#6b7280">you work here</text>
+          <line x1="192" y1="135" x2="236" y2="135" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arw)"/>
+          <text x="214" y="124" text-anchor="middle" font-size="10.5" fill="#6b7280">"push"</text>
+          <rect x="238" y="60" width="150" height="150" rx="12" fill="#fff" stroke="#c8ced6" stroke-width="1.5"/>
+          <text x="313" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1.4">GITHUB</text>
+          <text x="313" y="118" text-anchor="middle" font-size="13" fill="#1b1d21">your branch</text>
+          <text x="313" y="138" text-anchor="middle" font-size="12" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">feat/…</text>
+          <text x="313" y="170" text-anchor="middle" font-size="11" fill="#6b7280">a safe copy online,</text>
+          <text x="313" y="186" text-anchor="middle" font-size="11" fill="#6b7280">yours alone</text>
+          <line x1="388" y1="135" x2="432" y2="135" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arw)"/>
+          <text x="410" y="124" text-anchor="middle" font-size="10.5" fill="#6b7280">builds</text>
+          <rect x="434" y="60" width="176" height="150" rx="12" fill="#fff" stroke="#c8ced6" stroke-width="1.5"/>
+          <text x="522" y="88" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1.4">YOUR BRANCH BUILD</text>
+          <rect x="450" y="104" width="144" height="26" rx="6" fill="#f3f5f8" stroke="#dfe3e8"/>
+          <text x="522" y="121" text-anchor="middle" font-size="10.5" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">feat-…--ux-design-…</text>
+          <text x="522" y="156" text-anchor="middle" font-size="12" fill="#1b1d21">a web address that is</text>
+          <text x="522" y="172" text-anchor="middle" font-size="12" fill="#1b1d21">your branch, live</text>
+          <text x="522" y="198" text-anchor="middle" font-size="11" fill="#6b7280">this is your preview</text>
+          <line x1="610" y1="135" x2="654" y2="135" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arw)"/>
+          <text x="632" y="124" text-anchor="middle" font-size="10.5" fill="#6b7280">add link</text>
+          <rect x="656" y="24" width="288" height="252" rx="12" fill="#fff" stroke="#c8ced6" stroke-width="1.5"/>
+          <text x="800" y="50" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1.4">THE HUB</text>
+          <rect x="672" y="64" width="62" height="196" rx="6" fill="#16243a"/>
+          <text x="703" y="84" text-anchor="middle" font-size="7.5" fill="#9fb4cd" letter-spacing="1">DEMO</text>
+          <rect x="680" y="92" width="46" height="12" rx="3" fill="#2b3f5e"/>
+          <text x="703" y="101" text-anchor="middle" font-size="7.5" fill="#eef2f7">Prototypes</text>
+          <text x="703" y="124" text-anchor="middle" font-size="7.5" fill="#9fb4cd" letter-spacing="1">DESIGN</text>
+          <rect x="680" y="132" width="46" height="12" rx="3" fill="#3a7bd5"/>
+          <text x="703" y="141" text-anchor="middle" font-size="7.5" fill="#fff">Refinement</text>
+          <rect x="680" y="150" width="46" height="10" rx="3" fill="#2b3f5e"/>
+          <rect x="680" y="166" width="46" height="10" rx="3" fill="#2b3f5e"/>
+          <text x="703" y="194" text-anchor="middle" font-size="7.5" fill="#9fb4cd" letter-spacing="1">HANDOFF</text>
+          <rect x="680" y="202" width="46" height="10" rx="3" fill="#2b3f5e"/>
+          <rect x="680" y="218" width="46" height="10" rx="3" fill="#2b3f5e"/>
+          <text x="748" y="80" font-size="9" font-weight="700" fill="#1b1d21">Refinement</text>
+          <text x="748" y="92" font-size="7.5" fill="#6b7280">work under discussion</text>
+          <rect x="748" y="100" width="178" height="30" rx="6" fill="#eef2f7" stroke="#1f4e88"/>
+          <text x="758" y="113" font-size="8.5" fill="#1b1d21" font-weight="600">Your chunk — the link you added</text>
+          <text x="758" y="124" font-size="7.5" fill="#6b7280">you · Updated today · Atlas</text>
+          <rect x="748" y="136" width="178" height="22" rx="6" fill="#fafafa" stroke="#eceef1"/>
+          <text x="758" y="150" font-size="8" fill="#8a9099">someone else's chunk</text>
+          <text x="748" y="176" font-size="8" fill="#454b55">the team opens it and talks, you push again</text>
+          <line x1="837" y1="186" x2="837" y2="206" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arw)"/>
+          <text x="848" y="200" font-size="9" fill="#6b7280">Jill ships it</text>
+          <rect x="748" y="210" width="178" height="48" rx="6" fill="#1f4e88"/>
+          <text x="837" y="229" text-anchor="middle" font-size="9" font-weight="700" fill="#cfdcec" letter-spacing="1">PROTOTYPES</text>
+          <text x="837" y="246" text-anchor="middle" font-size="10" fill="#fff">the product as it stands</text>
+        </svg>
+      </div>
+      <p>In words, left to right:</p>
+      <ol>
+        <li><b>You change the project</b> in a folder on your computer, by talking to Claude.</li>
+        <li><b>Claude sends your branch to GitHub</b> when you say "push". GitHub is the online copy; your branch there is yours alone.</li>
+        <li><b>Netlify builds your branch into a website</b> at its own address, a few minutes after every push. That address is your preview. You never run the site yourself.</li>
+        <li><b>You add that address to Refinement</b> on the Hub. The moment you do, everyone with the Hub's link can open it.</li>
+        <li><b>The team looks and talks.</b> You change, push again; the address stays the same.</li>
+        <li><b>Jill ships it.</b> When a piece is decided, she puts your branch into the product. Prototypes then shows it, and you start the next piece on a fresh branch.</li>
+      </ol>
+      <div class="rule-box alert">
+        <svg class="sign" viewBox="0 0 24 24" aria-hidden="true"><path class="face" fill="#c33c2e" d="M7.5 1h9L23 7.5v9L16.5 23h-9L1 16.5v-9Z"/><rect class="bar" fill="#ffffff" x="6" y="10.8" width="12" height="2.4" rx="1.2"/></svg>
+        <div><b>Most Important Thing.</b> You work on YOUR BRANCH. Never push directly to main.<small>"Push" always means your branch. Main is the copy everyone sees, and only Jill puts anything there. If you ever find yourself on main, stop and tell her.</small></div>
+      </div>
+      <div class="note"><p><b>The one-sentence version.</b> Branch, build, share, discuss, ship. The day-to-day guide walks that loop every day; this page gets you to the start of it.</p></div>
+    </section>
+
+    <section id="need">
+      <h2><span class="part">Part 2</span>What you need</h2>
+      <p class="lead">Four things, and Jill gives you three of them.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>You need</th><th>How you get it</th><th>How you know it worked</th></tr></thead>
+        <tbody>
+          <tr><td class="k">A GitHub account, invited to the project</td><td>Make a free account at github.com if you have none. Jill invites you; GitHub emails you; click <b>Accept</b>.</td><td>Open <code>github.com/jillmoreno/xcel-ux-dashboard</code>. A list of files means you are in; a "404" means ask Jill.</td></tr>
+          <tr><td class="k">The Claude desktop app, connected to GitHub</td><td>Install Claude. Inside it: <b>Settings → Connectors → GitHub → Connect</b>, sign in when it asks, and allow it.</td><td>GitHub shows as connected in Settings. This is what lets Claude copy the project down and send your work up.</td></tr>
+          <tr><td class="k">An empty folder on your computer</td><td>Make one anywhere, for example <i>Documents › xcel-ux-dashboard</i>. Claude fills it in Part 3.</td><td>It exists and it is empty.</td></tr>
+          <tr><td class="k">The Hub's address and password</td><td>Ask Jill. Every branch build uses the same password.</td><td>The Hub opens in your browser.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note"><p><b>You do not need</b> Terminal, Node, git, GitHub Desktop, a Netlify account, or any idea what those are. Anything that would normally need a typed command, Claude does when you ask in plain English.</p></div>
+    </section>
+
+    <section id="setup">
+      <h2><span class="part">Part 3</span>Setting up your computer</h2>
+      <p class="lead">Once, on your first day. Four sentences to Claude, each with a copy button when you hover it.</p>
+      <ol class="steps">
+        <li><b class="t">Connect the folder.</b><p>Open the Claude desktop app, go to the <b>Code</b> tab, and choose the empty folder you made. From now on, Claude can read and change what is in it.</p></li>
+        <li><b class="t">Copy the project down.</b>
+          <div class="say"><span class="me">YOU</span><q>Clone the GitHub repository jillmoreno/xcel-ux-dashboard into this folder.</q></div>
+          <p>"Clone" means copy. A minute later the folder is full of the project's files. You will not read them; Claude will.</p></li>
+        <li><b class="t">Install what the project needs.</b>
+          <div class="say"><span class="me">YOU</span><q>Install the project's dependencies.</q></div>
+          <p>The project leans on a few hundred small pieces of code other people wrote. This fetches them. A few minutes; you only do it once, and Claude will tell you if it ever needs doing again.</p></li>
+        <li><b class="t">Put your name on your work.</b>
+          <div class="say"><span class="me">YOU</span><q>For this project, set my git name to Your Name and my git email to you@scorebuilders.com.</q></div>
+          <p>Use your real name and your work email. Every change you save carries this name, so the team can see whose it is. Skip it and your work shows up as "Claude".</p></li>
+        <li><b class="t">Check.</b>
+          <div class="say"><span class="me">YOU</span><q>Which branch am I on, and is the project up to date?</q></div>
+          <p>Claude should say you are on <code>main</code> and up to date. That is the one time you should be on main — Part 7 moves you off it before you change anything.</p></li>
+      </ol>
+      <div class="note warn"><p><b>Nothing here runs the website.</b> You will never start the site on your own computer, and you do not need to. Your preview is the branch build in Part 1, which Netlify makes for you.</p></div>
+    </section>
+
+    <section id="words">
+      <h2><span class="part">Part 4</span>The words you will see</h2>
+      <p class="lead">You never type these. Claude says them back to you, so here is what each one means.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Word</th><th>Plain meaning</th></tr></thead>
+        <tbody>
+          <tr><td class="k">the Hub</td><td>The website where the team's work is seen. One address, one password, everyone.</td></tr>
+          <tr><td class="k">main</td><td>The one copy of the project that IS the product. Only Jill changes it.</td></tr>
+          <tr><td class="k">branch</td><td>Your own copy of the project, named like <code>feat/study-streak-card</code>. Everything you do happens on a branch.</td></tr>
+          <tr><td class="k">commit</td><td>A saved snapshot of your branch, with a short note saying what changed. Several a day is normal.</td></tr>
+          <tr><td class="k">push</td><td>Sending your commits to GitHub. After every push, Netlify builds your branch and the team can see it.</td></tr>
+          <tr><td class="k">branch build</td><td>Your branch as a live website, at its own address. Your preview, and the thing you share.</td></tr>
+          <tr><td class="k">rebase</td><td>Moving your branch so it starts from today's main instead of the day you made it. Every few days; the day-to-day guide shows how.</td></tr>
+          <tr><td class="k">ship to main, merge</td><td>Jill putting your branch into main. The only way anything reaches the product.</td></tr>
+          <tr><td class="k">switch, feature flag</td><td>A named on/off in the code that hides your change until it is decided. Part 6.</td></tr>
+          <tr><td class="k">Refinement</td><td>The Hub's board for work under discussion. Anyone adds to it, on the page.</td></tr>
+          <tr><td class="k">Prototypes</td><td>The Hub's list of the product as it stands. Only shipping changes it.</td></tr>
+          <tr><td class="k">routine</td><td>A ready-made checklist Claude runs with you, started by typing <code>/</code> and its name. <code>/share-branch</code> is the one you will use most.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note warn"><p><b>You work on your branch. Jill works on main.</b> The one rule under every word above — it is the stop sign in <a href="#picture">Part 1</a>.</p></div>
+    </section>
+
+    <section id="homes">
+      <h2><span class="part">Part 5</span>Where your work lives</h2>
+      <p class="lead">Two kinds of work, two homes. Picking the wrong one is the most common mistake here, so say which kind it is when you ask Claude to build it.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>You are making</th><th>Say to Claude</th><th>What it is</th><th>Reviewers open</th></tr></thead>
+        <tbody>
+          <tr><td class="k">A piece of the product</td><td>"a React component, behind a feature flag that is on by default on this branch"</td><td>A page, a card, a panel, or a new version of something that already exists, in the app's own code.</td><td>Your branch build at <code>/dashboard-rebrand?demo=1</code></td></tr>
+          <tr><td class="k">A standalone page to look at</td><td>"a standalone HTML page in public/demos"</td><td>A single hand-made web page, not wired into the app. An idea, a comparison, a brief answered in pictures.</td><td>Your branch build at <code>/demos/your-file.html</code></td></tr>
+        </tbody>
+      </table></div>
+      <div class="note warn"><p><b>Never <code>public/prototypes/</code>.</b> That folder holds finished explorations that each have a row on the Hub and their own tests. Work in review goes in <code>public/demos/</code>, which exists for exactly that.</p></div>
+      <p><b>Changing something that already exists?</b> Do not edit it. Ask Claude to copy it to a sibling and build on the copy, with a switch choosing between the two. That way you and the person editing the original never collide. The routine <code>/promote-component</code> does this for you.</p>
+    </section>
+
+    <section id="flags">
+      <h2><span class="part">Part 6</span>The one rule: switches</h2>
+      <p class="lead">Every change to the product sits behind a switch. That one idea is what lets five designers work on one product without anyone's half-finished work appearing in front of stakeholders.</p>
+      <ol>
+        <li><b>On your branch, the switch is on.</b> Your branch build shows your work.</li>
+        <li><b>On main, the switch is off.</b> The product looks exactly as it did.</li>
+        <li><b>When Jill ships your branch, she decides the switch.</b> On, and it is in the product. Off, and the code is there but nothing shows until someone decides otherwise.</li>
+      </ol>
+      <p>You get all of this by asking for it in the same breath as the work:</p>
+      <div class="say"><span class="me">YOU</span><q>Build it behind a feature flag that is on by default on this branch.</q></div>
+      <p>Then ask "What is the flag called?" and write it down. Reviewers can flip any switch live on your build from the robot icon on the dark bar, so you can show both versions from one address.</p>
+      <div class="note"><p><b>Why not just add it to Prototypes?</b> Prototypes holds one row per surface, all pointing at main, and a test refuses any other row. Your work reaches Prototypes by its switch turning on in main, never by adding a row.</p></div>
+    </section>
+
+    <section id="first">
+      <h2><span class="part">Part 7</span>Your first change, start to finish</h2>
+      <p class="lead">Set up and ready? This is the loop from Part 1 with the actual sentences. The day-to-day guide has the long version; this is enough for day one.</p>
+      <ol class="steps">
+        <li><b class="t">Get off main and onto a branch of your own.</b>
+          <div class="say"><span class="me">YOU</span><q>Fetch origin, then make a new branch called feat/short-name from origin/main and switch to it.</q></div>
+          <p>Name it <code>feat/</code> and two or three words, lowercase, joined with dashes. Claude confirms you are on it.</p></li>
+        <li><b class="t">Say what you want, the way you would to a developer beside you.</b><p>Name the page, the component, what it should do instead, and which kind of work it is (Part 5). Ask for the switch (Part 6). If Claude names a file you do not recognise, ask "What is that file?" before saying yes.</p></li>
+        <li><b class="t">Share it.</b>
+          <div class="say"><span class="me">YOU</span><q>/share-branch</q></div>
+          <p>One routine does the rest: it checks the work, saves it, pushes it, waits for Netlify to build your branch, and opens the Refinement form already filled in. You read it over and click <b>Add link</b>. Then it opens a card for the To Do Board; click <b>Add card</b>.</p></li>
+        <li><b class="t">Look at it the way a reviewer would.</b><p>Open your row on the Hub and click through from the page a reviewer would start on, not straight to your component. Things that are invisible on a direct link are obvious on the first click.</p></li>
+        <li><b class="t">Keep going.</b><p>Each further change is step 2 and then <code>/share-branch</code> again; the address stays the same. When the next change is really a different piece of work, start a fresh branch for it.</p></li>
+      </ol>
+      <div class="note"><p><b>That is a chunk.</b> Finish a chunk, share it, start a fresh branch for the next. Small branches are the habit the whole Hub is built around.</p></div>
+    </section>
+
+    <section id="never">
+      <h2><span class="part">Part 8</span>Things never to do</h2>
+      <p class="lead">Short, because Claude refuses most of them for you and says why.</p>
+      <ul>
+        <li><b>Never push to main.</b> Every push to main rebuilds the Hub for everyone. Be on your branch (Part 7, step 1) before asking Claude to push anything. You cannot do it by accident: Claude refuses the command and says whose step it is, and GitHub refuses the push even if something slipped past Claude.</li>
+        <li><b>Never add a row to Prototypes.</b> Your work gets there by its switch turning on in main, nothing else.</li>
+        <li><b>Never run the site on your own computer.</b> Your branch build is the preview.</li>
+        <li><b>Never edit the Hub's own files.</b> The project list, the demo bar, the routines. Claude refuses and names the file; ask Jill.</li>
+        <li><b>Never put review pages in <code>public/prototypes/</code>.</b> Those go in <code>public/demos/</code>.</li>
+        <li><b>Never invent a number.</b> A fee, a lesson count, a date XCEL has not published is marked as invented in the code and on screen. Ask instead.</li>
+        <li><b>Never share the main Hub address as your work.</b> Send your branch build. The main address shows what is already decided, and everything else the team is doing.</li>
+      </ul>
+    </section>
+
+    <section id="next">
+      <h2><span class="part">Part 9</span>Then: the day-to-day guide</h2>
+      <p class="lead">That is the setup done, and your first change shared. Everything after today is the other guide.</p>
+      <p>It covers sitting down each day, keeping your branch current, building a change properly, sharing it on Refinement, making your surface the prototype, writing the dev handoff for engineering, the ready-made routines, the morning auto-rebase, and what to say to Claude when something goes wrong.</p>
+      <p><a class="btn" href="/designer-workflow/">Designer Workflow on the Hub →</a></p>
+      <p class="small">The two guides are one shape on purpose: this one is <b>once, your first day</b>; that one is <b>every day after</b>. The glossary and the troubleshooting table live there.</p>
+    </section>
+
+    <footer>Contributing to the dashboard · 29 October 2026 · The first-day guide. Every day after is the <a href="/designer-workflow/">Designer Workflow guide</a>; stakeholders get <a href="/about/">How to read this dashboard</a>.</footer>
+  </main>
 </div>
-
-<!-- ═══════════════════════════ QUICK WALKTHROUGH ═══════════════════════════ -->
-<div id="view-quick" class="view" role="tabpanel" aria-labelledby="tab-quick">
-
-<p class="print-only eyebrow">Part 1 · Quick walkthrough</p>
-
-<section id="q-loop">
-  <h2>The loop, in one picture</h2>
-  <div class="shot wide" role="img" aria-label="Diagram: your branch is built by Netlify at its own address; you add that address to Refinement, where it joins the other chunks of the same feature and everyone with the Hub link can open it; a pull request and the promote step move it into Prototypes.">
-    <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
-      <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#6b7280"/></marker></defs>
-      <!-- you -->
-      <rect x="14" y="60" width="128" height="86" rx="10" fill="#fff" stroke="#dfe3e8"/>
-      <text x="78" y="86" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1.2">YOUR BRANCH</text>
-      <text x="78" y="108" text-anchor="middle" font-size="12.5" fill="#1b1d21" font-family="ui-monospace, Menlo, monospace">feat/…</text>
-      <text x="78" y="128" text-anchor="middle" font-size="11" fill="#454b55">Claude pushes it</text>
-      <!-- netlify -->
-      <line x1="142" y1="103" x2="186" y2="103" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar)"/>
-      <rect x="188" y="60" width="150" height="86" rx="10" fill="#fff" stroke="#dfe3e8"/>
-      <text x="263" y="86" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1.2">BRANCH BUILD</text>
-      <text x="263" y="106" text-anchor="middle" font-size="10.5" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">feat-…--ux-design-</text>
-      <text x="263" y="120" text-anchor="middle" font-size="10.5" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">xceldashboard.netlify.app</text>
-      <text x="263" y="138" text-anchor="middle" font-size="10.5" fill="#454b55">built from the Hub</text>
-      <!-- refinement -->
-      <line x1="338" y1="103" x2="382" y2="103" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar)"/>
-      <text x="360" y="92" text-anchor="middle" font-size="10" fill="#6b7280">paste</text>
-      <rect x="384" y="30" width="170" height="146" rx="10" fill="#fff" stroke="#dfe3e8"/>
-      <text x="469" y="54" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1.2">REFINEMENT</text>
-      <text x="400" y="72" font-size="8.5" font-weight="700" fill="#6b7280" letter-spacing="0.9">STUDY STREAK CARD</text>
-      <rect x="400" y="78" width="138" height="28" rx="6" fill="#e9eef4" stroke="#dfe3e8"/>
-      <text x="410" y="96" font-size="11" fill="#1b1d21">Your new chunk</text>
-      <rect x="400" y="110" width="138" height="24" rx="6" fill="#fafafa" stroke="#eceef1"/>
-      <text x="410" y="126" font-size="10" fill="#8a9099">1 earlier chunk</text>
-      <text x="469" y="152" text-anchor="middle" font-size="10.5" fill="#454b55">chunks of one feature,</text>
-      <text x="469" y="166" text-anchor="middle" font-size="10.5" fill="#454b55">newest first</text>
-      <!-- prototypes -->
-      <line x1="554" y1="103" x2="598" y2="103" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar)"/>
-      <text x="576" y="92" text-anchor="middle" font-size="10" fill="#6b7280">PR</text>
-      <rect x="600" y="60" width="108" height="86" rx="10" fill="#1f4e88"/>
-      <text x="654" y="86" text-anchor="middle" font-size="11" font-weight="700" fill="#cfdcec" letter-spacing="1.2">PROTOTYPES</text>
-      <text x="654" y="108" text-anchor="middle" font-size="12" fill="#fff">the product</text>
-      <text x="654" y="128" text-anchor="middle" font-size="10.5" fill="#cfdcec">promote → merge</text>
-    </svg>
-  </div>
-  <p class="small">Left to right: you make a branch and Claude pushes your work to it, Netlify builds it at its own address, that address goes into Refinement where it joins the other chunks of the same feature, and a PR plus the promote step lands it in Prototypes. Everyone with the Hub link — the team and stakeholders alike — sees a Refinement row the moment it is added. Everything below is one of those boxes in detail.</p>
-</section>
-
-<section id="q-steps">
-  <h2>Eight steps</h2>
-  <div class="qgrid">
-
-    <article class="qcard">
-      <h3><span class="n">1</span>Get the project onto your computer</h3>
-      <div class="shot" role="img" aria-label="A Claude desktop chat. You: Clone the GitHub repository jillmoreno/xcel-ux-dashboard into this folder. Claude: Done — the project is in Documents/xcel-ux-dashboard.">
-        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
-          <rect x="8" y="8" width="304" height="134" rx="8" fill="#fff" stroke="#dfe3e8"/>
-          <rect x="8" y="8" width="304" height="26" rx="8" fill="#f5f5f5"/><rect x="8" y="26" width="304" height="8" fill="#f5f5f5"/>
-          <text x="20" y="25" font-size="9" fill="#6b7280">Folder: Documents › xcel-ux-dashboard <tspan fill="#2f6b4f">· GitHub connected</tspan></text>
-          <rect x="70" y="44" width="232" height="34" rx="10" fill="#e9eef4"/>
-          <text x="82" y="58" font-size="9.5" fill="#1b1d21">Clone the GitHub repository</text>
-          <text x="82" y="71" font-size="9.5" fill="#1b1d21">jillmoreno/xcel-ux-dashboard into this folder.</text>
-          <rect x="18" y="88" width="232" height="44" rx="10" fill="#fff" stroke="#dfe3e8"/>
-          <text x="30" y="103" font-size="9.5" fill="#1b1d21">Done — 640 files are in the folder.</text>
-          <text x="30" y="116" font-size="9.5" fill="#6b7280">You're on <tspan font-family="ui-monospace, Menlo, monospace">main</tspan>. Make a branch before</text>
-          <text x="30" y="127" font-size="9.5" fill="#6b7280">changing anything (step 2).</text>
-        </svg>
-      </div>
-      <p>Once. Make an empty folder, open the Claude desktop app, connect that folder, and say <em>"Clone the GitHub repository jillmoreno/xcel-ux-dashboard into this folder."</em> Claude brings it down. You do <strong>not</strong> run the site locally — your preview is the branch build in step 5.</p>
-    </article>
-
-    <article class="qcard">
-      <h3><span class="n">2</span>Make a branch</h3>
-      <div class="shot" role="img" aria-label="A Claude desktop chat. You: Make a new branch called feat/study-streak-card from main and switch to it. Claude: Done — you're on feat/study-streak-card. It will appear on GitHub the first time you push.">
-        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
-          <rect x="8" y="8" width="304" height="134" rx="8" fill="#fff" stroke="#dfe3e8"/>
-          <rect x="8" y="8" width="304" height="26" rx="8" fill="#f5f5f5"/><rect x="8" y="26" width="304" height="8" fill="#f5f5f5"/>
-          <text x="20" y="25" font-size="9" fill="#6b7280">Folder: Documents › xcel-ux-dashboard <tspan fill="#2f6b4f">· GitHub connected</tspan></text>
-          <rect x="70" y="44" width="232" height="34" rx="10" fill="#e9eef4"/>
-          <text x="82" y="58" font-size="9.5" fill="#1b1d21">Make a new branch called <tspan font-family="ui-monospace, Menlo, monospace">feat/study-</tspan></text>
-          <text x="82" y="71" font-size="9.5" fill="#1b1d21"><tspan font-family="ui-monospace, Menlo, monospace">streak-card</tspan> from main and switch to it.</text>
-          <rect x="18" y="88" width="232" height="44" rx="10" fill="#fff" stroke="#dfe3e8"/>
-          <text x="30" y="103" font-size="9.5" fill="#1b1d21">Done — you're on <tspan font-family="ui-monospace, Menlo, monospace">feat/study-streak-card</tspan>.</text>
-          <text x="30" y="116" font-size="9.5" fill="#6b7280">Nothing on main has changed. The branch</text>
-          <text x="30" y="127" font-size="9.5" fill="#6b7280">appears on GitHub the first time you push.</text>
-        </svg>
-      </div>
-      <p>Tell Claude <em>"Make a new branch called feat/your-thing from main and switch to it."</em> Name it <code>feat/</code> plus two or three words, lowercase, joined with dashes. A branch is your own copy to work in — nothing on it changes what anyone else sees until it is merged.</p>
-    </article>
-
-    <article class="qcard">
-      <h3><span class="n">3</span>Build it with Claude</h3>
-      <div class="shot" role="img" aria-label="A Claude desktop chat asking for a card behind a feature flag, a file tree showing src and public/demos, and a flag toggle set to on">
-        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
-          <rect x="10" y="10" width="190" height="52" rx="10" fill="#e9eef4"/>
-          <text x="22" y="30" font-size="10.5" fill="#1b1d21">Add a study-streak card to Home,</text>
-          <text x="22" y="46" font-size="10.5" fill="#1b1d21">behind a flag — default ON here.</text>
-          <rect x="10" y="74" width="190" height="66" rx="8" fill="#fff" stroke="#dfe3e8"/>
-          <text x="22" y="94" font-size="10" fill="#454b55" font-family="ui-monospace, Menlo, monospace">src/ <tspan fill="#6b7280">← React work</tspan></text>
-          <text x="22" y="112" font-size="10" fill="#454b55" font-family="ui-monospace, Menlo, monospace">public/demos/ <tspan fill="#6b7280">← HTML</tspan></text>
-          <text x="22" y="130" font-size="10" fill="#454b55" font-family="ui-monospace, Menlo, monospace">CLAUDE.md <tspan fill="#6b7280">← Claude reads</tspan></text>
-          <rect x="212" y="10" width="98" height="130" rx="8" fill="#fff" stroke="#dfe3e8"/>
-          <text x="261" y="34" text-anchor="middle" font-size="9.5" fill="#6b7280" font-weight="700" letter-spacing="1">YOUR FLAG</text>
-          <rect x="238" y="52" width="46" height="22" rx="11" fill="#1f4e88"/><circle cx="273" cy="63" r="8" fill="#fff"/>
-          <text x="261" y="96" text-anchor="middle" font-size="9.5" fill="#1b1d21">default: on</text>
-          <text x="261" y="110" text-anchor="middle" font-size="9" fill="#6b7280">on your branch</text>
-          <text x="261" y="124" text-anchor="middle" font-size="9" fill="#6b7280">only</text>
-        </svg>
-      </div>
-      <p>In the Claude desktop app, describe the work. Say which kind it is — a React surface (<code>src/</code>) or an HTML exploration (<code>public/demos/</code>) — and ask for a feature flag with its default <strong>on</strong> on your branch. Every so often: <em>"Commit what we have so far."</em></p>
-    </article>
-
-    <article class="qcard">
-      <h3><span class="n">4</span>Ask Claude to run the checks</h3>
-      <div class="shot" role="img" aria-label="A chat bubble asking Claude to run the type check, the tests and lint, followed by three rows with green ticks: Types, Tests (832 passed), Lint">
-        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
-          <rect x="96" y="10" width="212" height="24" rx="10" fill="#e9eef4"/>
-          <text x="108" y="26" font-size="9.5" fill="#1b1d21">Run the type check, the tests and lint.</text>
-          <g font-size="11">
-            <rect x="12" y="46" width="296" height="28" rx="6" fill="#e8f4ee"/><text x="26" y="65" fill="#2f6b4f">✓</text><text x="46" y="65" fill="#1b1d21">Types</text><text x="300" y="65" text-anchor="end" fill="#2f6b4f" font-size="10">clean</text>
-            <rect x="12" y="80" width="296" height="28" rx="6" fill="#e8f4ee"/><text x="26" y="99" fill="#2f6b4f">✓</text><text x="46" y="99" fill="#1b1d21">Tests</text><text x="300" y="99" text-anchor="end" fill="#2f6b4f" font-size="10">834 passed</text>
-            <rect x="12" y="114" width="296" height="28" rx="6" fill="#e8f4ee"/><text x="26" y="133" fill="#2f6b4f">✓</text><text x="46" y="133" fill="#1b1d21">Lint</text><text x="300" y="133" text-anchor="end" fill="#2f6b4f" font-size="10">clean</text>
-          </g>
-        </svg>
-      </div>
-      <p>Before every publish, say <em>"Run the type check, the tests and lint."</em> Claude runs them and reports. A failing test is usually a recorded decision talking to you — ask Claude what it protects. Touched <code>public/prototypes/</code>? Add <em>"and the smoke suites."</em></p>
-    </article>
-
-    <article class="qcard">
-      <h3><span class="n">5</span>Publish — that is the deploy</h3>
-      <div class="shot" role="img" aria-label="A chat bubble asking Claude to commit and push to the branch, an arrow to a Netlify cloud, then a browser address bar showing the branch build URL">
-        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif"><defs><marker id="ar5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#6b7280"/></marker></defs>
-          <rect x="12" y="14" width="150" height="40" rx="10" fill="#e9eef4"/>
-          <text x="22" y="30" font-size="9" fill="#1b1d21">Commit everything and push it</text>
-          <text x="22" y="43" font-size="9" fill="#1b1d21">to feat/study-streak-card.</text>
-          <line x1="164" y1="34" x2="184" y2="34" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar5)"/>
-          <path d="M206 48 a14 14 0 0 1 4-27 a18 18 0 0 1 34 -4 a13 13 0 0 1 10 24 a10 10 0 0 1 -6 7 z" fill="#e9eef4" stroke="#1f4e88"/>
-          <text x="232" y="40" text-anchor="middle" font-size="9.5" fill="#1f4e88" font-weight="700">Netlify builds</text>
-          <text x="232" y="66" text-anchor="middle" font-size="9.5" fill="#6b7280">~2–3 minutes</text>
-          <rect x="12" y="86" width="296" height="52" rx="8" fill="#fff" stroke="#dfe3e8"/>
-          <rect x="22" y="96" width="276" height="20" rx="10" fill="#f5f5f5"/>
-          <text x="30" y="110" font-size="7" fill="#1b1d21" font-family="ui-monospace, Menlo, monospace">feat-study-streak-card--ux-design-xceldashboard.netlify.app</text>
-          <text x="22" y="131" font-size="9.5" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">/dashboard-rebrand?demo=1 <tspan fill="#6b7280" font-family="system-ui, sans-serif">← the link to share</tspan></text>
-        </svg>
-      </div>
-      <p>Say <em>"Commit everything and push it to feat/your-thing."</em> Claude sends it to GitHub; Netlify builds your branch as its own site. Share <code>…/dashboard-rebrand?demo=1</code> so reviewers see your committed defaults. <strong>Every pushed branch gets an address</strong> — anyone with the link and the site password can open it.</p>
-    </article>
-
-    <article class="qcard">
-      <h3><span class="n">6</span>Add it to Refinement</h3>
-      <div class="shot" role="img" aria-label="The Refinement section on the Hub with an Add link button, and the form: Address, Title, Note, Feature">
-        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
-          <rect x="8" y="8" width="84" height="134" rx="6" fill="#f5f5f5"/>
-          <text x="18" y="34" font-size="10" fill="#6b7280">Prototypes</text>
-          <rect x="12" y="42" width="76" height="20" rx="4" fill="#1f4e88"/><text x="18" y="56" font-size="10" fill="#fff" font-weight="700">Refinement</text>
-          <text x="18" y="82" font-size="10" fill="#6b7280">Resources</text><text x="18" y="102" font-size="10" fill="#6b7280">Research</text>
-          <text x="104" y="26" font-size="12" font-weight="700" fill="#1b1d21">Refinement</text>
-          <rect x="248" y="14" width="62" height="20" rx="5" fill="#1f4e88"/><text x="279" y="28" text-anchor="middle" font-size="9.5" fill="#fff" font-weight="700">Add link</text>
-          <rect x="104" y="42" width="206" height="100" rx="8" fill="#fff" stroke="#dfe3e8"/>
-          <g font-size="9.5" fill="#454b55">
-            <text x="114" y="60">Address</text><rect x="170" y="50" width="130" height="14" rx="3" fill="#f5f5f5"/><text x="175" y="60" font-size="8" fill="#1b1d21" font-family="ui-monospace, Menlo, monospace">https://feat-…?demo=1</text>
-            <text x="114" y="80">Title</text><rect x="170" y="70" width="130" height="14" rx="3" fill="#f5f5f5"/><text x="175" y="80" font-size="8" fill="#1b1d21">Streak card — feat/…</text>
-            <text x="114" y="100">Note</text><rect x="170" y="90" width="130" height="14" rx="3" fill="#f5f5f5"/><text x="175" y="100" font-size="8" fill="#1b1d21">Home, under Current Progress</text>
-            <text x="114" y="120">Feature</text><rect x="170" y="110" width="130" height="14" rx="3" fill="#f5f5f5"/><text x="175" y="120" font-size="8" fill="#1b1d21">Study streak card</text>
-          </g>
-        </svg>
-      </div>
-      <p>Refinement → <strong>Add link</strong>. Paste the address, title it with your branch name, say where to look, and name the <strong>feature</strong> this is a chunk of. Everyone with the Hub link — the team and stakeholders alike — sees it the moment you click Add.</p>
-      <p><strong>Much faster — it covers steps 4 and 5 as well:</strong> in your Claude chat, say <code>/share-branch</code>. It runs the checks, commits, pushes, waits for Netlify to build your branch, works out the address, drafts the title and note, asks what feature this is a chunk of, and gives you a link that opens this form already filled in — you check it and click Add. Then it offers to cut your next branch. (<code>/promote-to-refinement</code> is the old name and still works.)</p>
-    </article>
-
-    <article class="qcard">
-      <h3><span class="n">7</span>Discuss and iterate</h3>
-      <div class="shot" role="img" aria-label="A Refinement row under its feature heading, with an edit button, and an arrow looping back to push again">
-        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif"><defs><marker id="ar7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#6b7280"/></marker></defs>
-          <rect x="12" y="24" width="296" height="56" rx="8" fill="#fff" stroke="#dfe3e8"/>
-          <text x="24" y="46" font-size="11" font-weight="600" fill="#1b1d21">Study streak card — feat/…</text>
-          <text x="24" y="64" font-size="9.5" fill="#6b7280">netlify.app · added 18 Sep · by Sam</text>
-          <text x="24" y="20" font-size="8" font-weight="700" fill="#6b7280" letter-spacing="0.9">STUDY STREAK CARD</text>
-          <rect x="280" y="34" width="20" height="20" rx="4" fill="#fff" stroke="#dfe3e8"/><text x="290" y="48" text-anchor="middle" font-size="10" fill="#454b55">✎</text>
-          <path d="M160 96 C160 130 60 130 60 100" fill="none" stroke="#1f4e88" stroke-width="1.5" marker-end="url(#ar7)"/>
-          <text x="130" y="140" text-anchor="middle" font-size="9.5" fill="#1f4e88">change → checks → Claude pushes · same address</text>
-          <text x="236" y="112" text-anchor="middle" font-size="10" fill="#454b55">the team talks where it</text>
-          <text x="236" y="126" text-anchor="middle" font-size="10" fill="#454b55">already talks — not here</text>
-        </svg>
-      </div>
-      <p>The team opens the row and talks. You change with Claude, ask for the checks, ask Claude to push again — the address stays the same, so the row stays right. <strong>Edit</strong> the row if its title or note should change.</p>
-    </article>
-
-    <article class="qcard">
-      <h3><span class="n">8</span>PR → promote → merge → retire</h3>
-      <div class="shot" role="img" aria-label="A pull request card, then a promote checklist deciding each flag, then a merge into main, then the Refinement row removed">
-        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif"><defs><marker id="ar9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#6b7280"/></marker></defs>
-          <rect x="10" y="30" width="86" height="64" rx="8" fill="#fff" stroke="#dfe3e8"/>
-          <text x="53" y="50" text-anchor="middle" font-size="9.5" font-weight="700" fill="#6b7280" letter-spacing="1">YOU · PR</text>
-          <text x="53" y="70" text-anchor="middle" font-size="10" fill="#1b1d21">feat/… → main</text>
-          <text x="53" y="84" text-anchor="middle" font-size="9" fill="#6b7280">one line to Claude</text>
-          <line x1="98" y1="62" x2="114" y2="62" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar9)"/>
-          <rect x="116" y="18" width="110" height="88" rx="8" fill="#fff" stroke="#dfe3e8"/>
-          <text x="171" y="36" text-anchor="middle" font-size="9.5" font-weight="700" fill="#6b7280" letter-spacing="1">JILLIENNE · PROMOTE</text>
-          <g font-size="9" fill="#1b1d21">
-            <rect x="126" y="46" width="10" height="10" rx="2" fill="#1f4e88"/><text x="130.5" y="54" font-size="7.5" fill="#fff" text-anchor="middle" font-weight="700">✓</text><text x="142" y="54" font-family="ui-monospace, Menlo, monospace">study-streak</text><circle cx="214" cy="51" r="4" fill="#2f6b4f"/>
-            <rect x="126" y="64" width="10" height="10" rx="2" fill="#fff" stroke="#6b7280"/><text x="142" y="72" font-family="ui-monospace, Menlo, monospace">nav-test</text><circle cx="214" cy="69" r="4" fill="#fff" stroke="#6b7280"/>
-            <text x="171" y="94" text-anchor="middle" fill="#6b7280" font-size="8">● ships · ○ back to main</text>
-          </g>
-          <line x1="228" y1="62" x2="244" y2="62" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar9)"/>
-          <rect x="246" y="30" width="64" height="64" rx="8" fill="#1f4e88"/>
-          <text x="278" y="56" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">merge</text>
-          <text x="278" y="72" text-anchor="middle" font-size="9" fill="#cfdcec">the Hub</text>
-          <text x="278" y="84" text-anchor="middle" font-size="9" fill="#cfdcec">rebuilds</text>
-          <rect x="60" y="118" width="200" height="22" rx="6" fill="#f5f5f5" stroke="#dfe3e8" stroke-dasharray="3 3"/>
-          <text x="160" y="133" text-anchor="middle" font-size="9.5" fill="#6b7280">then: /retire-from-refinement — it lives in Prototypes now</text>
-        </svg>
-      </div>
-      <p>Tell Claude <em>"Open a pull request from feat/your-thing to main and add Jillienne as reviewer."</em> She runs <code>promote-to-prototype</code> on your branch — each flag your branch changed is kept on or set back to <code>main</code>'s value — then merges. The Hub rebuilds. Then say <code>/retire-from-refinement</code> to take the row off — it records what was decided before it goes. When the feature is built and engineering needs to read it, that is <code>/dev-handoff-notes</code> — Part 6 of the <a href="/designer-workflow/#handoff">day-to-day guide</a> — written on your branch before the PR, so it merges with the work.</p>
-    </article>
-
-  </div>
-</section>
-
-<section id="q-rules">
-  <h2>Four rules that cover most mistakes</h2>
-  <div class="qrules">
-    <div class="callout warn"><span class="lab">Never push to main</span><p>Every push to <code>main</code> rebuilds the Hub for everyone. Branch, then PR.</p></div>
-    <div class="callout warn"><span class="lab">Promotion is a flag, not a tile</span><p>Prototypes holds one row per product surface — the dashboard, Compass — and a test guards the list. Your work reaches a row by a flag default flipping on <code>main</code>.</p></div>
-    <div class="callout warn"><span class="lab">Review HTML goes in public/demos/</span><p>Both folders work on your branch build. <code>public/demos/</code> is for work in review and is meant to be short-lived; <code>public/prototypes/</code> is for a document that is becoming a permanent row. Only the second needs a row in the project list.</p></div>
-    <div class="callout warn"><span class="lab">Every branch gets an address</span><p>Anyone with the link and the site password can open it — including work you are not ready to show. Nothing confidential on a branch.</p></div>
-  </div>
-  <p class="small noprint">Need the why behind any of these, the form field by field, or the troubleshooting table? Switch to the <a href="#full" data-view="full">Full guide</a>.</p>
-</section>
-
-</div><!-- /view-quick -->
-
-<!-- ═══════════════════════════════ FULL GUIDE ═══════════════════════════════ -->
-<div id="view-full" class="view" role="tabpanel" aria-labelledby="tab-full" hidden>
-
-<p class="print-only eyebrow" style="page-break-before: always">Part 2 · Full guide</p>
-
-<nav class="toc" aria-label="Contents">
-  <p>Contents</p>
-  <ol>
-    <li><a href="#big-picture">The big picture</a></li>
-    <li><a href="#need">What you need before you start</a></li>
-    <li><a href="#two-kinds">Two kinds of work, two homes</a></li>
-    <li><a href="#flags">Feature flags — the one rule</a></li>
-    <li><a href="#dont">Things not to do</a></li>
-    <li><a href="#next">Then: the day-to-day guide</a></li>
-  </ol>
-</nav>
-
-<!-- ───────────────────────────────────────────────────────────────────── -->
-<section id="big-picture">
-  <h2><span class="num">01</span>The big picture</h2>
-  <p>The dashboard is <strong>one codebase deployed to one website</strong> — the Hub, behind one site password that designers, developers and stakeholders are all given. Every <code>git push</code> to <code>main</code> rebuilds it. (Until 2026-10-15 there was a second, trimmed site for stakeholders; it is retired.)</p>
-
-  <div class="tablewrap">
-  <table>
-    <thead><tr><th>Group in the rail</th><th>Sections</th><th>What they are</th></tr></thead>
-    <tbody>
-      <tr><td><strong>Demo</strong></td><td>Prototypes</td><td>The product as it stands — one row per surface, every row <code>main</code>’s build.</td></tr>
-      <tr><td><strong>Design &amp; Research</strong></td><td>Refinement · Research · Resources · PRDs · Explorations</td><td>Four boards authored on the page, then the hand-authored documents — outside products and ideas rebuilt on our tokens.</td></tr>
-      <tr><td><strong>Dev Handoff</strong></td><td>Development · Done · Archive · QA Notes</td><td>What engineering is building, what shipped, what was removed, and design-vs-build findings.</td></tr>
-    </tbody>
-  </table>
-  </div>
-  <p class="small">Nothing in the rail is locked: the site password is the only door. The old <em>Designers</em> group (Design · Exploration behind a second gate) went on 2026-10-15.</p>
-
-  <p>Two sections do the work of getting a design in front of people, and they are different acts:</p>
-  <ul>
-    <li><strong>Refinement</strong> is the review inbox. It is a list of links you add <em>on the page</em> — no code, no commit. A row points at your branch's own build (or an HTML file on it), and it is <strong>one chunk of work</strong>: rows group under the <em>feature</em> they are chunks of, newest first, so a run of small branches reads as one piece of work with a history you can still click through. Everyone with the Hub link sees every row.</li>
-    <li><strong>Prototypes</strong> is the product as it stands — the live React build at the flag defaults committed on <code>main</code>. Only a merge to <code>main</code> changes it, and only Jillienne decides what merges into that baseline.</li>
-  </ul>
-
-  <p>So the loop is:</p>
-  <div class="flow">
-    <span>branch</span><i>→</i><span><code>/share-branch</code></span><i>→</i><span>everyone with the Hub link sees it</span><i>→</i><span>discuss &amp; iterate</span><i>→</i><span>PR</span><i>→</i><span>promote</span><i>→</i><span>merge</span><i>→</i><span>retire the row</span><i>→</i><span>next chunk</span>
-  </div>
-  <p class="small">The rest of this guide walks each of those, in order, with the exact commands and the exact fields.</p>
-</section>
-
-<!-- ───────────────────────────────────────────────────────────────────── -->
-<section id="need">
-  <h2><span class="num">02</span>What you need before you start</h2>
-  <ul>
-    <li><strong>A GitHub account, with access to the project.</strong> Jillienne invites you; GitHub emails you; click <em>Accept</em>. To check it worked, open <code>github.com/jillmoreno/xcel-ux-dashboard</code> in your browser — if you see a list of files rather than a 404, you are in.</li>
-    <li><strong>The Claude desktop app, with GitHub connected.</strong> In Claude: <em>Settings → Connectors → GitHub → Connect</em>, sign in to GitHub when it asks, and allow it. This is what lets Claude bring the project down to your computer and send your changes back up. Without it Claude can edit files but cannot talk to GitHub.</li>
-    <li><strong>An empty folder on your computer</strong> for the project — for example <em>Documents › xcel-ux-dashboard</em>. Claude fills it in step 1.</li>
-    <li><strong>The full site's address.</strong> Ask Jillienne.</li>
-  </ul>
-  <div class="callout tip">
-    <span class="lab">You do not need</span>
-    <p>Terminal, Node, git, GitHub Desktop, or a Netlify account. Anything that would normally need a typed command, Claude does when you ask it in plain English. You never have to know what the command was.</p>
-  </div>
-</section>
-
-
-
-<!-- ───────────────────────────────────────────────────────────────────── -->
-<section id="words">
-  <h2><span class="num">03</span>The words you will see</h2>
-  <p>Six of them, over and over. You never type a git command — Claude does that — but you will read these in what it tells you.</p>
-  <div class="tablewrap">
-  <table>
-    <thead><tr><th>Word</th><th>Plain meaning</th></tr></thead>
-    <tbody>
-      <tr><td><code>main</code></td><td>The one branch that IS the product. Only Jillienne changes it.</td></tr>
-      <tr><td>branch</td><td>Your own copy of the code, named like <code>feat/compass-week-view</code>. Everything you do happens on a branch.</td></tr>
-      <tr><td>commit</td><td>A saved snapshot of your branch with a short note saying what changed.</td></tr>
-      <tr><td>push</td><td>Sending your commits to GitHub. Netlify then builds them and the team can see them.</td></tr>
-      <tr><td>rebase</td><td>Moving your branch so it starts from today's <code>main</code> instead of the day you created it. You will do this every few days; the day-to-day guide has the steps.</td></tr>
-      <tr><td>merge</td><td>Jillienne putting your branch into <code>main</code>. She calls this "ship to main".</td></tr>
-    </tbody>
-  </table>
-  </div>
-
-  <div class="callout warn">
-    <span class="lab">The one rule under everything</span>
-    <p><strong>You work on your branch, Jillienne works on <code>main</code>.</strong> If you ever find yourself on <code>main</code>, stop and tell her.</p>
-  </div>
-</section>
-
-<!-- ───────────────────────────────────────────────────────────────────── -->
-<section id="two-kinds">
-  <h2><span class="num">04</span>Two kinds of work, two homes</h2>
-  <p>Where files go depends on what you are making, and picking wrong is the most common mistake in this repo.</p>
-  <div class="tablewrap">
-  <table>
-    <thead><tr><th>You are making</th><th>It lives in</th><th>Reviewers open</th><th>Promoted by</th></tr></thead>
-    <tbody>
-      <tr><td>A React surface of the product</td><td><code>src/</code> — a page in the shell, a card, a panel, a variant of an existing block. Behind a feature flag.</td><td><code>&lt;branch&gt;--…netlify.app/dashboard-rebrand?demo=1</code></td><td>Flipping the flag's default on <code>main</code> (the promote skill).</td></tr>
-      <tr><td>A standalone HTML exploration</td><td><code>public/demos/&lt;your-file&gt;.html</code> — a hand-authored page answering a brief, not wired into the app.</td><td><code>&lt;branch&gt;--…netlify.app/demos/&lt;your-file&gt;.html</code></td><td>Moving it to <code>public/prototypes/</code> with a row in <code>prototypeFeatures.ts</code> if it is a finished exploration, or rebuilding it in <code>src/</code> if it became a product surface.</td></tr>
-    </tbody>
-  </table>
-  </div>
-  <div class="callout warn">
-    <span class="lab">Why <code>public/demos/</code> and not <code>public/prototypes/</code></span>
-    <p><code>public/prototypes/</code> holds the finished standalone explorations — each one has a row in the feature list and its own smoke assertions, and the user-test build 404s the whole folder at the edge. <code>public/demos/</code> is the folder for HTML in review, and it is deliberately left open everywhere. Nothing should live there long, and nothing there gets a row in the feature list — the Refinement panel is its listing.</p>
-  </div>
-</section>
-
-<!-- ───────────────────────────────────────────────────────────────────── -->
-<section id="flags">
-  <h2><span class="num">05</span>Feature flags — the one rule</h2>
-  <p>Every change to the product starts <strong>invisible to Prototypes</strong>: behind a flag whose default on <code>main</code> is off (or set to the existing variant). That is what lets many designers work on the same product without anyone's half-finished idea appearing in front of stakeholders.</p>
-  <p>On <strong>your branch</strong>, you set that flag's default <em>on</em>. That is what makes your branch build show your work at <code>?demo=1</code>. It also means the promote skill can see, mechanically, exactly which defaults your branch changed — the list it asks Jillienne about in step 8 is the diff of the flag catalog between your branch and <code>main</code>.</p>
-  <ul>
-    <li>Flags live in <code>src/context/FeatureFlagContext.tsx</code>, in <code>FEATURE_FLAGS</code>. Ask Claude to add yours there and to add it to the <code>/dashboard-rebrand</code> panel scope so reviewers can toggle it.</li>
-    <li>Reviewers can flip flags live on your build: hover the prototype bar and find the robot icon, which opens the flag sheet. In demo mode those flips are temporary and reset on exit.</li>
-    <li>Do not promote by adding a row to Prototypes. That section holds one row per product surface — all the same build on <code>main</code> — and a test compares it in both directions, so an unexpected row fails the suite.</li>
-  </ul>
-</section>
-
-
-
-<!-- ───────────────────────────────────────────────────────────────────── -->
-<section id="dont">
-  <h2><span class="num">06</span>Things not to do</h2>
-  <ul>
-    <li><strong>Don't push to <code>main</code>.</strong> Every push to <code>main</code> rebuilds the Hub, which stakeholders are looking at. Always be on a branch before asking Claude to push — step 2 — and get to <code>main</code> only through a pull request.</li>
-    <li><strong>Don't add a row to Prototypes</strong> or change a row's <code>category</code> to <code>'prototype'</code>. Promotion is a flag default, never a tile move.</li>
-    <li><strong>Don't put review HTML in <code>public/prototypes/</code>.</strong> That folder is the finished standalone explorations, each with a row in the feature list and its own smoke assertions. Work in review goes in <code>public/demos/</code>, which exists for exactly that and gets no row.</li>
-    <li><strong>Don't change a flag's default on <code>main</code> yourself.</strong> That is the promote step, and it is Jillienne's call.</li>
-    <li><strong>Send your branch build, never the main dashboard.</strong> Your branch address shows your work; the main address shows what is already decided, and everything else the team is doing.</li>
-    <li><strong>Don't invent data.</strong> A number, a URL, a lesson count or a fee that XCEL has not published is flagged as <code>INVENTED</code> in the code and named as such on screen. <code>CLAUDE.md</code> records why, several times over.</li>
-    <li><strong>Don't draft the Quick Summary</strong> on a dev-handoff component — ask Jillienne for it. The <code>dev-handoff-notes</code> skill says the same.</li>
-  </ul>
-</section>
-
-<!-- ───────────────────────────────────────────────────────────────────── -->
-<section id="next">
-  <h2><span class="num">07</span>Then: the day-to-day guide</h2>
-  <p>That is the setup done. Everything after your first day — rebasing, building a change, sharing it on Refinement, promoting a surface, writing the dev handoff, the ready-made routines, and what to say when something breaks — is the other guide:</p>
-  <p><a class="btn" href="/designer-workflow/">Designer Workflow on the Hub →</a></p>
-  <p class="small">The two used to describe the same loop at two lengths, which is why they felt repetitive. Since 15 October this one is <strong>once, on your first day</strong>, and that one is <strong>every day after it</strong>. The glossary and the troubleshooting table live there now, not here.</p>
-</section>
-
-
-
-
-
-</div><!-- /view-full -->
 
 <script>
-  // The view switch. Hash-addressable (#quick / #full) so a link can open the
-  // full guide directly, remembered per browser, and a no-op in print — the
-  // stylesheet shows both views there. Progressive: with scripting off, the
-  // quick view shows (the full one is `hidden`) and the tabs do nothing.
+  /* A COPY BUTTON ON EVERY SPEECH BUBBLE, added here so a new bubble gets one
+     for free — the same idea the day-to-day guide carries. */
   (function () {
-    var tabs = document.querySelectorAll('[role="tab"]');
-    var views = { quick: document.getElementById('view-quick'), full: document.getElementById('view-full') };
-    function show(name, push) {
-      if (!views[name]) name = 'quick';
-      Object.keys(views).forEach(function (k) {
-        views[k].hidden = k !== name;
-        var t = document.getElementById('tab-' + k);
-        if (t) t.setAttribute('aria-selected', String(k === name));
+    if (!navigator.clipboard) return;
+    var icon = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="8" rx="1.5"/><path d="M10.5 5.5V3.5a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2"/></svg>';
+    document.querySelectorAll('.say').forEach(function (say) {
+      var q = say.querySelector('q');
+      if (!q) return;
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'copy';
+      b.setAttribute('aria-label', 'Copy this sentence');
+      b.title = 'Copy';
+      b.innerHTML = icon;
+      b.addEventListener('click', function () {
+        navigator.clipboard.writeText(q.textContent.trim()).then(function () {
+          b.setAttribute('data-done', '');
+          b.title = 'Copied';
+          setTimeout(function () { b.removeAttribute('data-done'); b.title = 'Copy'; }, 1400);
+        });
       });
-      try { localStorage.setItem('xcel.contributing.view', name); } catch (e) {}
-      if (push && history.replaceState) history.replaceState(null, '', '#' + name);
-    }
-    tabs.forEach(function (t) {
-      t.addEventListener('click', function () { show(t.id.replace('tab-', ''), true); });
+      say.appendChild(b);
     });
-    document.querySelectorAll('[data-view]').forEach(function (a) {
-      a.addEventListener('click', function (e) { e.preventDefault(); show(a.getAttribute('data-view'), true); window.scrollTo(0, 0); });
-    });
-    var fromHash = (location.hash || '').replace('#', '');
-    var saved = null;
-    try { saved = localStorage.getItem('xcel.contributing.view'); } catch (e) {}
-    // A hash naming a SECTION of the full guide (#need, #flags…) should open
-    // the full guide and let the browser scroll to it. ⚠ #steps, #glossary,
-    // #trouble and #refinement-form were sections here until 2026-10-15 and
-    // are now in /designer-workflow/; an old link carrying one falls through
-    // to the quick view, which is the right failure.
-    if (fromHash && !views[fromHash] && document.getElementById(fromHash)) {
-      show(views.quick.querySelector('#' + fromHash) ? 'quick' : 'full', false);
-      setTimeout(function () { var el = document.getElementById(fromHash); if (el) el.scrollIntoView(); }, 0);
-    } else {
-      show(views[fromHash] ? fromHash : saved || 'quick', false);
-    }
   })();
 </script>
-
-<footer>
-  <p>Part of the XCEL UX Dashboard. The reasoning behind every decision described here is in the repo's <code>CLAUDE.md</code>; the one-time site setup is in <code>README.md</code>. The day-to-day guide is <a href="/designer-workflow/">Designer Workflow on the Hub</a>; stakeholders get a shorter companion page, <a href="/about/">How to read this dashboard</a>. All three sit on the Hub under <strong>Team → Hub Resources</strong>.</p>
-</footer>
-
-</div>
 </body>
 </html>
