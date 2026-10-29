@@ -644,7 +644,12 @@ export function TwoPackageProductDetailPage() {
               <section aria-label="Other course information" style={OTHER_INFO_GROUND}>
                 <div style={OTHER_INFO}>
                     <section style={SIDE_SECTION}>
-                      <h2 style={SIDE_TITLE}>Regulatory Information</h2>
+                      <h2 style={SIDE_TITLE}>
+                        {/* Broken after the first word (2026-10-29, Eric). */}
+                        Regulatory
+                        <br />
+                        Information
+                      </h2>
                       {/* 14 between every group, the link included (2026-10-28, Eric; was 18, and 28 to the link). */}
                       <div style={{ ...PARAGRAPHS, gap: 14 }}>
                         <dl style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -661,7 +666,10 @@ export function TwoPackageProductDetailPage() {
                         </dl>
                         <p style={SIDE_BODY}>
                           <button type="button" className="cre-e2e-textlink" style={LINK}>
-                            {noWidow(`${place} Insurance Licensing Requirements`)}
+                            {/* Two lines, broken after "Insurance" (2026-10-29, Eric). */}
+                            {place} Insurance
+                            <br />
+                            Licensing Requirements
                             <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
                           </button>
                         </p>
@@ -671,7 +679,11 @@ export function TwoPackageProductDetailPage() {
                     <span aria-hidden style={OTHER_INFO_RULE} />
                     {/* The state reporting fee — Figma 542:2304 (2026-10-27, Eric). */}
                     <section style={SIDE_SECTION}>
-                      <h2 style={SIDE_TITLE}>State reporting fee required</h2>
+                      <h2 style={SIDE_TITLE}>
+                        State reporting
+                        <br />
+                        fee required
+                      </h2>
                       <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 8 }}>
                         <p style={{ margin: 0 }}>{STATE_ABBR[place] ?? place} fee due at checkout: {STATE_FEE}</p>
                         <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block' }}>
@@ -1224,8 +1236,8 @@ const SIDE_RULE: CSSProperties = {
 /* Other course information's two columns, 300 wide and 32 apart, each starting level (2026-10-29, Eric; was three, a third each). */
 const OTHER_INFO: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 300px) 1px minmax(0, 300px)', columnGap: 48, alignItems: 'start' }
 // A 1 Secondary 300 rule, the boxes' full height, 48 either side (2026-10-29, Eric; the columns were 32 apart).
-// It starts under the headings, level with the content's top — a heading's 24 line and its 14 gap (2026-10-29, Eric).
-const OTHER_INFO_RULE: CSSProperties = { alignSelf: 'stretch', marginTop: 24 + 14, background: 'var(--color-secondary-300)' }
+// It starts under the headings, level with the content's top — a heading's two 24 lines and its 14 gap (2026-10-29, Eric).
+const OTHER_INFO_RULE: CSSProperties = { alignSelf: 'stretch', marginTop: 2 * 24 + 14, background: 'var(--color-secondary-300)' }
 /* Their tan ground: the packages ground's Secondary 100, 10 corners and 32 padding, pulled out over SHARED's 32 sides so its edges
    line up with the packages ground above and its text with the text. */
 const OTHER_INFO_GROUND: CSSProperties = {
