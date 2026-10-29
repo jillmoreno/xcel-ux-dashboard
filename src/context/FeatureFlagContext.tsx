@@ -2678,7 +2678,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        tray-mini-bottom — Bottom Mini Card Tray (2026-10-29): the same tray pinned to the bottom of the browser, sliding up.
        tray-mini     — Top Mini Card Tray: Figma 560:3783 — a 16-tall tan strip, the eyebrow as a tab in each card's corner,
                        the title beside the price and its Purchase. */
-    surface: 'design',
+    /* OFF THE DESIGN BAR (2026-10-29, Eric: "hide the design control for the card controls drop down"). Not `surface: 'design'`
+       any more, so the bar does not draw it; the flag, its four arms and its default (No Card Trays) all stand, and `?ff=pdp-course-cards:<arm>`
+       or the Feature Flag panel still switch it. Putting it back on the bar is restoring this line: surface: 'design', */
     versions: ['eric-atlas-e2e'],
     surfaces: ['invite'],
     group: 'Layout',
