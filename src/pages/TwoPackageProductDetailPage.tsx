@@ -413,7 +413,7 @@ export function TwoPackageProductDetailPage() {
                 <section style={{ ...SIDE_SECTION, alignItems: 'flex-start' }}>
                   <h2 style={SIDE_TITLE}>Our Pass Guarantee</h2>
                   <p style={SIDE_BODY}>
-                    We’re confident we can prepare you to pass your state licensing exam on the first try.
+                    We’ll prepare you to pass your state licensing exam on the first try.
                   </p>
                   {/* Avenir set here, as on the welcome link — outside a paragraph it had inherited the page's default face. */}
                   <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, display: 'block', fontFamily: 'var(--font-e2e-avenir)' }}>
