@@ -392,7 +392,8 @@ export function TwoPackageProductDetailPage() {
         {/* 2 between the title and its intro (the design's 10, 8 less — 2026-10-27, Eric). */}
         {/* Single, its pieces are the head grid's own: the title beside the package, the intro across under both. */}
         <div style={single ? { display: 'contents' } : { display: 'flex', flexDirection: 'column', gap: COURSE_TITLE_GAP }}>
-          <h2 style={COURSE_HEAD_TITLE}>
+          {/* Single, centred on the package box beside it (2026-10-29, Eric). */}
+          <h2 style={single ? { ...COURSE_HEAD_TITLE, alignSelf: 'center' } : COURSE_HEAD_TITLE}>
             {place} {line} <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
           </h2>
           {/* The concise intro (2026-10-29, Eric), in place of "Our pre-licensing packages are updated annually and designed with a
@@ -1571,7 +1572,7 @@ const HEAD_WITH_PACKAGE: CSSProperties = { display: 'grid', gridTemplateColumns:
 const HEAD_PACKAGE: CSSProperties = {
   gridColumn: 2,
   gridRow: 1,
-  alignSelf: 'start', // its own height, so the rule runs the panel's full height (2026-10-29, Eric; was to the title's baseline)
+  alignSelf: 'center', // its own height, centred on the title (2026-10-29, Eric), so the rule runs the panel's full height (2026-10-29, Eric; was to the title's baseline)
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'stretch',
