@@ -200,6 +200,19 @@ export function TwoPackageProductDetailPage() {
   })
   const pkg = PACKAGES.find((p) => p.id === picked)!
   const welcomeRef = useRef<HTMLParagraphElement>(null)
+  /* THE RAIL STARTS LEVEL WITH THE INTRO under the course title (2026-10-29, Eric; was level with the title): the title's height is
+     measured, since a long state or line wraps it to a third line. */
+  const courseTitleRef = useRef<HTMLHeadingElement>(null)
+  const [railTop, setRailTop] = useState(COURSE_HEAD_TOP)
+  useLayoutEffect(() => {
+    const title = courseTitleRef.current
+    if (!title) return
+    const fit = () => setRailTop(COURSE_HEAD_TOP + title.offsetHeight + COURSE_TITLE_GAP)
+    fit()
+    const ro = new ResizeObserver(fit)
+    ro.observe(title)
+    return () => ro.disconnect()
+  }, [])
   useEvenLines(welcomeRef, `${place} ${line}`)
   useEffect(() => {
     const root = document.documentElement
@@ -348,8 +361,8 @@ export function TwoPackageProductDetailPage() {
         {/* As wide as the details' left column below — the rail and its gutter kept clear (2026-10-27, Eric). */}
         <div style={{ width: `calc(100% - ${RAIL_W}px - ${RAIL_GUTTER}px)`, display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* 2 between the title and its intro (the design's 10, 8 less — 2026-10-27, Eric). */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <h2 style={COURSE_HEAD_TITLE}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: COURSE_TITLE_GAP }}>
+          <h2 ref={courseTitleRef} style={COURSE_HEAD_TITLE}>
             {place} {line} <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
           </h2>
           <p style={BODY}>
@@ -361,7 +374,7 @@ export function TwoPackageProductDetailPage() {
         </div>
         </div>
       </section>
-        <aside aria-label="Purchase" style={RAIL}>
+        <aside aria-label="Purchase" style={{ ...RAIL, top: railTop }}>
           <div style={RAIL_STICKY}>
             <div style={SIDE_BOXES}>
               <div style={SIDE_BOX_PAIR}>
@@ -1116,6 +1129,8 @@ const COURSE_HEAD_TOP = 56 // 16 more below the welcome band (2026-10-27, Eric; 
 const COURSE_HEAD: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 24, padding: `${COURSE_HEAD_TOP}px 240px 0` }
 
 /* Roboto Slab Bold 45 / 55 in the design — the page's slab serif token (Rockwell, then Roboto Slab) — in XCEL brick. */
+/* Between the course title and its intro. */
+const COURSE_TITLE_GAP = 2
 const COURSE_HEAD_TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-e2e-serif)',
