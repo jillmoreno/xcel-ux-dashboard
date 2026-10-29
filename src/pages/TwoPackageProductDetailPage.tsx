@@ -1783,8 +1783,20 @@ const HEAD_RULE_C: CSSProperties = { gridColumn: 2, gridRow: '1 / 3', alignSelf:
 const HEAD_WITH_PACKAGE_D: CSSProperties = { ...HEAD_WITH_PACKAGE_C }
 const HEAD_PACKAGE_D: CSSProperties = { ...HEAD_PACKAGE_C }
 const HEAD_RULE_D: CSSProperties = { ...HEAD_RULE_C }
-// D's Standard tile on the multi page: under Premier's, right, at the row's top.
-const STANDARD_TILE_D: CSSProperties = { gridColumn: 3, gridRow: 3, alignSelf: 'start', justifySelf: 'end', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }
+// D's Standard tile on the multi page: under Premier's, right, at the row's top. A 1 Secondary 250 rule over it, 16 from
+// Premier's Purchase and 16 above STANDARD PACKAGE (2026-10-29, Eric) — up 17 to undo Premier's lift onto the title's baseline.
+const STANDARD_TILE_D: CSSProperties = {
+  gridColumn: 3,
+  gridRow: 3,
+  alignSelf: 'start',
+  justifySelf: 'end',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  marginTop: -17,
+  paddingTop: 16,
+  borderTop: `1px solid ${SECONDARY_250}`,
+}
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
