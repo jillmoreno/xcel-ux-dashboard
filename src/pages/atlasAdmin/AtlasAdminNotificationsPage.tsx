@@ -5,7 +5,7 @@ import { ADMIN_NOTIFICATIONS, type NotificationAction, type NotificationDef, typ
 import { AdminDialog } from './AdminDialog'
 import { CadenceDialog, PeopleDialog } from './adminDialogs'
 import { ADMIN_BASE, ADMIN_EMAIL, useAdminStore } from './adminStore'
-import { ATLAS_BUTTON_PRIMARY, BUTTON_BRAND, BUTTON_OUTLINE, CARD, FIELD_LABEL, INPUT, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
+import { ATLAS_BUTTON_PRIMARY, BUTTON_BRAND, BUTTON_OUTLINE, CARD, FIELD_LABEL, INPUT, PAGE_H1, PAGE_SUB, PILL, SWITCH, SWITCH_KNOB as KNOB, switchKnobLeft } from './adminStyles'
 
 /**
  * ATLAS ADMIN · NOTIFICATIONS — rebuilt from colibri-b2b.vercel.app/
@@ -145,7 +145,7 @@ export function AtlasAdminNotificationsPage() {
                             }}
                             style={{ ...SWITCH, background: isOn(n) ? 'var(--admin-brand)' : 'var(--admin-rule-strong)' }}
                           >
-                            <span style={{ ...KNOB, left: isOn(n) ? 18 : 2 }} />
+                            <span style={{ ...KNOB, left: switchKnobLeft(isOn(n)) }} />
                           </button>
                         </div>
                         {/* The status line, then the links — each across the full row under a 1px rule. */}
@@ -473,6 +473,4 @@ const ACTIVE_FRAME: CSSProperties = {
 }
 const SELECTED: CSSProperties = { ...PILL, marginLeft: 8, padding: '1px 8px', fontSize: 10, background: 'var(--admin-surface)', color: 'var(--admin-brand)', boxShadow: 'inset 0 0 0 1px var(--admin-brand-edge)' }
 const ACTION: CSSProperties = { padding: 0, border: 'none', background: 'none', fontSize: 12, fontWeight: 600, color: 'var(--admin-atlas-primary-500)', cursor: 'pointer' }
-const SWITCH: CSSProperties = { position: 'relative', flex: 'none', width: 36, height: 20, border: 'none', borderRadius: 9999, padding: 0, cursor: 'pointer' }
-const KNOB: CSSProperties = { position: 'absolute', top: 2, width: 16, height: 16, borderRadius: '50%', background: 'var(--admin-surface)', boxShadow: '0 1px 2px rgb(0 0 0 / 0.2)', transition: 'left 120ms ease' }
 const ADD: CSSProperties = { width: 120, border: '1px dashed var(--admin-rule-strong)', borderRadius: 9999, padding: '3px 10px', fontSize: 12, outline: 'none', fontFamily: 'var(--font-body)' }

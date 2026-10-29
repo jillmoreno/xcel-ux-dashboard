@@ -5,7 +5,7 @@ import { ADMIN_REPORTS, REPORT_COLUMNS, reportRows, type ReportCategory, type Re
 import { AdminDialog } from './AdminDialog'
 import { CadenceDialog, PeopleDialog } from './adminDialogs'
 import { ADMIN_BASE, ADMIN_EMAIL, DAYS, TIMES, useAdminStore } from './adminStore'
-import { BUTTON_BRAND, BUTTON_OUTLINE, BUTTON_RADIUS, CARD, EYEBROW, FIELD_LABEL, HEADING, INPUT, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
+import { BUTTON_BRAND, BUTTON_OUTLINE, BUTTON_RADIUS, SWITCH, SWITCH_KNOB as KNOB, switchKnobLeft, CARD, EYEBROW, FIELD_LABEL, HEADING, INPUT, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
 import { ChipMenu, MenuItem } from './adminUi'
 
 /**
@@ -132,7 +132,7 @@ export function AtlasAdminReportsPage() {
             }}
             style={{ ...SWITCH, background: active ? 'var(--admin-success-ink)' : 'var(--admin-rule-strong)' }}
           >
-            <span style={{ ...KNOB, left: active ? 22 : 2 }} />
+            <span style={{ ...KNOB, left: switchKnobLeft(active) }} />
           </button>
         </div>
         <div style={{ marginTop: 16, borderRadius: 10, background: 'var(--admin-fill-soft)', padding: '12px 16px' }}>
@@ -574,8 +574,6 @@ function ScheduleDialog({ report, onClose, onSave }: { report: ReportDef; onClos
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
 const DARK: CSSProperties = { ...BUTTON_BRAND, background: 'var(--admin-ink)', borderRadius: 10, padding: '8px 14px', fontSize: 13 }
-const SWITCH: CSSProperties = { position: 'relative', flex: 'none', width: 44, height: 24, border: 'none', borderRadius: 9999, padding: 0, cursor: 'pointer' }
-const KNOB: CSSProperties = { position: 'absolute', top: 2, width: 20, height: 20, borderRadius: '50%', background: 'var(--admin-surface)', boxShadow: '0 1px 2px rgb(0 0 0 / 0.2)', transition: 'left 120ms ease' }
 const VIEW: CSSProperties = { fontSize: 13, fontWeight: 600, color: 'var(--admin-brand)', textDecoration: 'none' }
 const SUBCARD: CSSProperties = { borderRadius: 10, border: '1px solid var(--admin-rule)', padding: '12px 16px' }
 const TEXT_BRAND: CSSProperties = { padding: 0, border: 'none', background: 'none', fontSize: 13, fontWeight: 600, color: 'var(--admin-brand)', cursor: 'pointer' }

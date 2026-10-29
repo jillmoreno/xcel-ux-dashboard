@@ -26,6 +26,12 @@ export const PAGE_SUB: CSSProperties = { margin: '4px 0 0', fontSize: 14, color:
 /* The admin's button corner — the Atlas learner buttons' 9 (2026-10-29, Eric; the admin's buttons were pills). */
 export const BUTTON_RADIUS = 9
 
+/* THE ADMIN'S TOGGLE (2026-10-29, Eric): Notifications' 36 × 20 switch, a 16 knob 2 in — the standard, Reports' 44 × 24 brought
+   down to it. The track's colour is the caller's. */
+export const SWITCH: CSSProperties = { position: 'relative', flex: 'none', width: 36, height: 20, border: 'none', borderRadius: 9999, padding: 0, cursor: 'pointer' }
+export const SWITCH_KNOB: CSSProperties = { position: 'absolute', top: 2, width: 16, height: 16, borderRadius: '50%', background: 'var(--admin-surface)', boxShadow: '0 1px 2px rgb(0 0 0 / 0.2)', transition: 'left 120ms ease' }
+export const switchKnobLeft = (on: boolean) => (on ? 18 : 2)
+
 /* White card, 18 corners, slate-200 edge. */
 export const CARD: CSSProperties = {
   borderRadius: 18,
