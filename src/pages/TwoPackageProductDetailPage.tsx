@@ -295,8 +295,9 @@ export function TwoPackageProductDetailPage() {
             {buy(STACKED_BUY)}
           </span>
         )}
-        {/* The card's 1 edge drawn again over everything, so its top runs across the tab (2026-10-28, Eric). */}
-        <span aria-hidden style={MINI_EDGE} />
+        {/* The card's 1 edge drawn again over everything, so its top runs across the tab (2026-10-28, Eric). Not on the
+            multi-product Premier card, which has no outer stroke (2026-10-29, Eric). */}
+        {single || p.id !== 'premier' ? <span aria-hidden style={MINI_EDGE} /> : null}
       </div>
     )
   }
