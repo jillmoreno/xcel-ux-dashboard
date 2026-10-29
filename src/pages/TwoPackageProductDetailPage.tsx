@@ -236,7 +236,9 @@ export function TwoPackageProductDetailPage() {
   }
   /* One package card. */
   const renderCard = (p: (typeof PACKAGES)[number]) => {
-    const on = p.id === picked
+    /* No card is picked by clicking any more (2026-10-29, Eric): the selected look is a hover, so `on` is false and the resting look
+       is every card's; the Purchase buttons keep hovers of their own. */
+    const on = false
     const prices = (
       <span data-price-row style={OPTION_PRICE_ROW}>
         <span style={OPTION_PRICE}>{p.price}</span>
@@ -262,21 +264,9 @@ export function TwoPackageProductDetailPage() {
         Purchase {p.short}
       </button>
     )
-    // A div with the radio role, not a button: it holds a real button (Purchase), and buttons cannot nest.
+    // Not clickable now — a hover lifts it (cre-e2e-package-card, inviteFlow.css: the selected ring and shadow).
     return (
-      <div
-        role="radio"
-        tabIndex={0}
-        aria-checked={on}
-        onClick={() => setPicked(p.id)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            setPicked(p.id)
-          }
-        }}
-        style={{ ...OPTION_CARD, ...(on ? OPTION_ON : null) }}
-      >
+      <div className="cre-e2e-package-card" style={OPTION_CARD}>
         {/* THE TAB (2026-10-28, Eric; was the eyebrow over the title and PASS GUARANTEE top right): the mini tray's, top left —
             the package's name on tan, behind Premier's brick PASS GUARANTEE. */}
         {/* Gone from the multi-product page's cards (2026-10-29, Eric) — their titles name the package now; the single card keeps it. */}
@@ -508,7 +498,7 @@ export function TwoPackageProductDetailPage() {
               </div>
               <div
                 ref={cardsRef}
-                role="radiogroup"
+                role="group"
                 aria-labelledby="choose-package"
                 style={{ ...PACKAGE_GRID, ...(unpinned ? { position: 'relative' } : { top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }) }}
               >
@@ -1815,16 +1805,10 @@ const OPTION_CARD: CSSProperties = {
   boxShadow: 'inset 0 0 0 1px var(--color-e2e-card-outline)',
   // At rest, 40% of the tan ground shows through (2026-10-27, Eric: 20, then 20 more); selected is solid white (OPTION_ON).
   background: 'color-mix(in srgb, var(--color-fixed-light) 60%, transparent)',
-  cursor: 'pointer',
   font: 'inherit',
 }
-// Selected (2026-10-27, Eric): the resting card's 1 #DDD edge (was brick), inside it a 6 rule in the ground's tan, Secondary 200
-// (was 2, then 4) — the second inset ring is 7 wide, drawn under the first — and a small 30% shadow to the sides and below.
-const OPTION_ON: CSSProperties = {
-  boxShadow:
-    'inset 0 0 0 1px var(--color-e2e-card-outline), inset 0 0 0 7px var(--color-secondary-200), 0 4px 8px -2px rgb(0 0 0 / 0.3)',
-  background: 'var(--color-fixed-light)',
-}
+// The selected look — the 1 #DDD edge, a 6 Secondary 200 ring inside it, a small 30% shadow, white — is the cards' hover now
+// (.cre-e2e-package-card:hover, inviteFlow.css; 2026-10-29, Eric).
 
 // 4 less above the package name (2026-10-27, Eric; was 28 all round).
 // Condensed (Figma 548:3477): 14 above, 10 between. The Purchase button sits in the bottom padding — 28, plus its 39 and the 20
