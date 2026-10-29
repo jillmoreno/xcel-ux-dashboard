@@ -1224,7 +1224,8 @@ const SIDE_RULE: CSSProperties = {
 /* Other course information's two columns, 300 wide and 32 apart, each starting level (2026-10-29, Eric; was three, a third each). */
 const OTHER_INFO: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 300px) 1px minmax(0, 300px)', columnGap: 48, alignItems: 'start' }
 // A 1 Secondary 300 rule, the boxes' full height, 48 either side (2026-10-29, Eric; the columns were 32 apart).
-const OTHER_INFO_RULE: CSSProperties = { alignSelf: 'stretch', background: 'var(--color-secondary-300)' }
+// It starts under the headings, level with the content's top — a heading's 24 line and its 14 gap (2026-10-29, Eric).
+const OTHER_INFO_RULE: CSSProperties = { alignSelf: 'stretch', marginTop: 24 + 14, background: 'var(--color-secondary-300)' }
 /* Their tan ground: the packages ground's Secondary 100, 10 corners and 32 padding, pulled out over SHARED's 32 sides so its edges
    line up with the packages ground above and its text with the text. */
 const OTHER_INFO_GROUND: CSSProperties = {
