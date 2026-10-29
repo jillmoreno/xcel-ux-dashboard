@@ -365,18 +365,7 @@ export function TwoPackageProductDetailPage() {
           <div style={RAIL_STICKY}>
             <div style={SIDE_BOXES}>
               <div style={SIDE_BOX_PAIR}>
-                <section style={SIDE_SECTION}>
-                  <h2 style={SIDE_TITLE}>Course Specs</h2>
-                  <dl style={{ ...SIDE_BODY, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {TRAINING_SPECS.map(([term, value]) => (
-                      <div key={term}>
-                        <dt style={{ display: 'inline' }}>{term}</dt>{' '}
-                        <dd style={{ display: 'inline', margin: 0, fontWeight: 800 }}>{localize(value)}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </section>
-                <hr aria-hidden style={SIDE_RULE} />
+                {/* Course Specs moved to the course information box under the training program (2026-10-29, Eric). */}
                 {/* What You'll Learn, in the rail too — the body's list in the rail's type (2026-10-28, Eric). */}
                 <section style={SIDE_SECTION}>
                   <h2 style={SIDE_TITLE}>What You'll Learn</h2>
@@ -643,6 +632,19 @@ export function TwoPackageProductDetailPage() {
               {/* No title now, on a tan ground like the packages' — its 10 corners and 32 padding, out to the same edges (2026-10-29, Eric). */}
               <section aria-label="Other course information" style={OTHER_INFO_GROUND}>
                 <div style={OTHER_INFO}>
+                    {/* Course Specs, first, out of the rail (2026-10-29, Eric). */}
+                    <section style={SIDE_SECTION}>
+                      <h2 style={SIDE_TITLE}>Course Specs</h2>
+                      <dl style={{ ...SIDE_BODY, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {TRAINING_SPECS.map(([term, value]) => (
+                          <div key={term}>
+                            <dt style={{ display: 'inline' }}>{term}</dt>{' '}
+                            <dd style={{ display: 'inline', margin: 0, fontWeight: 800 }}>{localize(value)}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </section>
+                    <span aria-hidden style={OTHER_INFO_RULE} />
                     <section style={SIDE_SECTION}>
                       <h2 style={SIDE_TITLE}>
                         {/* Broken after the first word (2026-10-29, Eric). */}
@@ -680,9 +682,9 @@ export function TwoPackageProductDetailPage() {
                     {/* The state reporting fee — Figma 542:2304 (2026-10-27, Eric). */}
                     <section style={SIDE_SECTION}>
                       <h2 style={SIDE_TITLE}>
-                        State reporting
+                        State Reporting
                         <br />
-                        fee required
+                        Fee Required
                       </h2>
                       <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 8 }}>
                         <p style={{ margin: 0 }}>{STATE_ABBR[place] ?? place} fee due at checkout: {STATE_FEE}</p>
@@ -1234,9 +1236,9 @@ const SIDE_RULE: CSSProperties = {
 
 // 20 on 24 (2026-10-15, Eric's request: 2 up from 18/22).
 /* Other course information's two columns, 300 wide and 32 apart, each starting level (2026-10-29, Eric; was three, a third each). */
-// The left column only as wide as it needs, up to 240, so the rule and the fee sit further left; 32 either side of the rule
-// (2026-10-29, Eric; was two 300 columns, 48 either side).
-const OTHER_INFO: CSSProperties = { display: 'grid', gridTemplateColumns: 'fit-content(240px) 1px minmax(0, 1fr)', columnGap: 32, alignItems: 'start' }
+// Course Specs, Regulatory Information, the fee (2026-10-29, Eric): three equal columns, 32 either side of each rule (was two 300
+// columns, 48 either side, then the left one up to 240).
+const OTHER_INFO: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 1px minmax(0, 1fr) 1px minmax(0, 1fr)', columnGap: 32, alignItems: 'start' }
 // A 1 Secondary 300 rule between the columns.
 // Full height, the headings' too (2026-10-29, Eric; it started under them for a while).
 const OTHER_INFO_RULE: CSSProperties = { alignSelf: 'stretch', background: 'var(--color-secondary-300)' }
