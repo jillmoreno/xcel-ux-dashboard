@@ -4,7 +4,7 @@ import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { acceptedThisWeek, hoursAgoDate, isFresh, isReady, type Invite, type InviteStatus } from '@/data/atlasAdmin/invites'
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
-import { ATLAS_BUTTON_PRIMARY, BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, PAGE_H1, PAGE_SUB, PILL, STATUS_CARD, STATUS_COUNT } from './adminStyles'
+import { ATLAS_BUTTON_PRIMARY, BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, PAGE_H1, PAGE_SUB, PILL, STATUS_CARD, STATUS_COUNT, TABLE_HEAD } from './adminStyles'
 import { StatusDial, StatusNote, StatusPill } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
 
@@ -431,7 +431,8 @@ const SEARCH: CSSProperties = {
   color: 'var(--admin-ink)',
   outline: 'none',
 }
-const TH: CSSProperties = { padding: 12, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-muted)', whiteSpace: 'nowrap' }
+// The admin's standard table header label (2026-10-29, Eric; was 12).
+const TH: CSSProperties = { ...TABLE_HEAD, padding: 12, whiteSpace: 'nowrap' }
 const TD: CSSProperties = { padding: 12 }
 const NAME: CSSProperties = { padding: 0, border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: 'var(--admin-ink)', cursor: 'pointer' }
 const RESEND: CSSProperties = { borderRadius: 9999, border: 'none', background: 'none', padding: '6px 12px', fontSize: 13, fontWeight: 600 }

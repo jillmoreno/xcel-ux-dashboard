@@ -98,6 +98,16 @@ export const ATLAS_BUTTON_SECONDARY: CSSProperties = {
   fontWeight: 500,
 }
 
+/* THE TABLE HEADER LABEL (2026-10-29, Eric): the Reports library's — 11 / bold / uppercase / 0.08em in Muted — the admin's standard,
+   on Reports, Invites and Students. Padding is each table's own. */
+export const TABLE_HEAD: CSSProperties = {
+  fontSize: 11,
+  fontWeight: 700,
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  color: 'var(--admin-muted)',
+}
+
 /* Eyebrow / table head: 12 / bold / uppercase / 0.08em. */
 export const EYEBROW: CSSProperties = {
   margin: 0,

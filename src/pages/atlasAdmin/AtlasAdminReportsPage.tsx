@@ -5,7 +5,7 @@ import { ADMIN_REPORTS, REPORT_COLUMNS, reportRows, type ReportCategory, type Re
 import { AdminDialog } from './AdminDialog'
 import { CadenceDialog, PeopleDialog } from './adminDialogs'
 import { ADMIN_BASE, ADMIN_EMAIL, DAYS, TIMES, useAdminStore } from './adminStore'
-import { BUTTON_BRAND, BUTTON_OUTLINE, BUTTON_RADIUS, SWITCH, SWITCH_KNOB as KNOB, switchKnobLeft, CARD, EYEBROW, FIELD_LABEL, HEADING, INPUT, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
+import { BUTTON_BRAND, BUTTON_OUTLINE, BUTTON_RADIUS, SWITCH, SWITCH_KNOB as KNOB, switchKnobLeft, TABLE_HEAD, CARD, EYEBROW, FIELD_LABEL, HEADING, INPUT, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
 import { ChipMenu, MenuItem } from './adminUi'
 
 /**
@@ -580,7 +580,7 @@ const TEXT_BRAND: CSSProperties = { padding: 0, border: 'none', background: 'non
 const TABLE_LINK: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 2, borderRadius: 10, border: '1px solid var(--admin-rule)', padding: '10px 12px', textDecoration: 'none', background: 'var(--admin-surface)' }
 const SEG: CSSProperties = { border: 'none', borderRadius: 8, padding: '5px 10px', fontSize: 13, fontWeight: 600, background: 'none', color: 'var(--admin-text)', cursor: 'pointer' }
 const SEG_ON: CSSProperties = { ...SEG, background: 'var(--admin-ink)', color: 'var(--admin-surface)' }
-const TH: CSSProperties = { padding: 12, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--admin-muted)', whiteSpace: 'nowrap' }
+const TH: CSSProperties = { ...TABLE_HEAD, padding: 12, whiteSpace: 'nowrap' }
 const TD: CSSProperties = { padding: 12 }
 const ICON_BTN: CSSProperties = { padding: 0, border: 'none', background: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }
 const NEW: CSSProperties = { ...PILL, marginLeft: 8, padding: '1px 6px', fontSize: 9, letterSpacing: '0.06em', textTransform: 'uppercase', background: 'var(--admin-success-tint)', color: 'var(--admin-success-ink)' }

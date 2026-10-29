@@ -15,7 +15,7 @@ import {
 } from '@/data/atlasAdmin/learners'
 import { LOCATIONS, jobRoleOf, membersOfLocation } from '@/data/atlasAdmin/organization'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
-import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, CARD, CHIP, CHIP_ON, EYEBROW, PAGE_H1, PAGE_SUB, STATUS_CARD, STATUS_COUNT } from './adminStyles'
+import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, CARD, CHIP, CHIP_ON, EYEBROW, PAGE_H1, PAGE_SUB, STATUS_CARD, STATUS_COUNT, TABLE_HEAD } from './adminStyles'
 import { ChipMenu, MenuItem, PreparedPill, ReadinessCell, StagePill, StatusDial, StatusNote, StatusPill } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
 import { StudentsEmptyState } from './StudentsEmptyState'
@@ -841,15 +841,8 @@ const TEXT_BUTTON: CSSProperties = {
   color: 'var(--admin-ink)',
   cursor: 'pointer',
 }
-const TH: CSSProperties = {
-  padding: '12px',
-  fontSize: 12,
-  fontWeight: 700,
-  textTransform: 'uppercase',
-  letterSpacing: '0.08em',
-  color: 'var(--admin-muted)',
-  whiteSpace: 'nowrap',
-}
+// The admin's standard table header label (2026-10-29, Eric; was 12).
+const TH: CSSProperties = { ...TABLE_HEAD, padding: '12px', whiteSpace: 'nowrap' }
 const TD: CSSProperties = { padding: '12px', verticalAlign: 'middle' }
 /* The progress columns: just the figure, no ring, in bold like every figure in the rows (2026-10-26). */
 const PCT_TD: CSSProperties = { ...TD, whiteSpace: 'nowrap', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: 'var(--admin-text)' }
