@@ -294,7 +294,8 @@ export function TwoPackageProductDetailPage() {
             {prices}
             {/* The price stacked over its Purchase, the button across the card in the flow (2026-10-29, Eric; it slid beside the
                 price as the cards condensed). */}
-            {buy(STACKED_BUY)}
+            {/* Single, 100 narrower than the card's 326 (2026-10-29, Eric). */}
+            {buy(single ? { ...STACKED_BUY, alignSelf: 'center', width: 226 } : STACKED_BUY)}
           </span>
         )}
         {/* The card's 1 edge drawn again over everything, so its top runs across the tab (2026-10-28, Eric). Not on the
