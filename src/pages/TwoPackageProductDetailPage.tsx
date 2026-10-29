@@ -227,7 +227,8 @@ export function TwoPackageProductDetailPage() {
     navigate(`/end-to-end-demo/checkout?${new URLSearchParams({ ...Object.fromEntries(params), package: id }).toString()}`)
   }
   /* One package card. */
-  const renderCard = (p: (typeof PACKAGES)[number]) => {
+  /* `left`: copy B's package, set flush left under the title (2026-10-29, Eric). */
+  const renderCard = (p: (typeof PACKAGES)[number], left = false) => {
     /* No card is picked by clicking any more (2026-10-29, Eric): the selected look is a hover, so `on` is false and the resting look
        is every card's; the Purchase buttons keep hovers of their own. */
     const on = false
@@ -285,7 +286,7 @@ export function TwoPackageProductDetailPage() {
             </span>
           </span>
         ) : (
-          <span style={single ? UNCARDED_BODY : { ...OPTION_BODY, paddingTop: 40, paddingBottom: pinLerp(28, 24), alignItems: 'center', textAlign: 'center' }}>
+          <span style={single ? (left ? { ...UNCARDED_BODY, paddingTop: 0, alignItems: 'flex-start', textAlign: 'left' } : UNCARDED_BODY) : { ...OPTION_BODY, paddingTop: 40, paddingBottom: pinLerp(28, 24), alignItems: 'center', textAlign: 'center' }}>
             {/* Centred (2026-10-29, Eric). */}
             {/* 40 from the card's top (2026-10-29, Eric: 24 with no tab above it, then 8 more, and 8 more; 20 under the tab). */}
             {/* A card's own title where it has one — Standard's is "Standard Course" (2026-10-29, Eric). */}
@@ -296,7 +297,7 @@ export function TwoPackageProductDetailPage() {
             {/* The price stacked over its Purchase, the button across the card in the flow (2026-10-29, Eric; it slid beside the
                 price as the cards condensed). */}
             {/* Single, 4 less under the price, and only as wide as its label and 24 padding (2026-10-29, Eric). */}
-            {buy(single ? { ...STACKED_BUY, marginTop: -4, alignSelf: 'center' } : STACKED_BUY)}
+            {buy(single ? { ...STACKED_BUY, marginTop: -4, alignSelf: left ? 'flex-start' : 'center' } : STACKED_BUY)}
           </span>
         )}
         {/* The card's 1 edge drawn again over everything, so its top runs across the tab (2026-10-28, Eric). Not on the
@@ -415,20 +416,22 @@ export function TwoPackageProductDetailPage() {
         </div>
         {/* COPY B (2026-10-29, Eric): the single head again, right under the first, to work changes out on and compare. Its own
             HEAD_WITH_PACKAGE_B / HEAD_PACKAGE_B, so changing it leaves the first as it is. Remove once one is chosen. */}
+        {/* B (2026-10-29, Eric): one column — PASS GUARANTEE as a pill over the title, the title the column's full width, then
+            the package, price and Purchase under it with no box, then the intro. */}
         {single ? (
           <div style={HEAD_WITH_PACKAGE_B}>
-            <h2 style={{ ...COURSE_HEAD_TITLE, alignSelf: 'center', position: 'relative', top: 7 }}>
+            <span style={PILL_BADGE_B}>Pass Guarantee</span>
+            <h2 style={COURSE_HEAD_TITLE}>
               {place} {line} <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
             </h2>
-            <p style={{ ...BODY, gridColumn: '1 / -1' }}>
+            <div style={{ ...HEAD_PACKAGE_B, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
+              {renderCard(packages[0], true)}
+            </div>
+            <p style={BODY}>
               Updated every year, our packages make complex insurance concepts simple.{' '}
               <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
               <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
             </p>
-            <div style={{ ...HEAD_PACKAGE_B, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
-              <span style={{ ...TOP_BADGE, alignSelf: 'center' }}>Pass Guarantee</span>
-              {renderCard(packages[0])}
-            </div>
           </div>
         ) : null}
         </div>
@@ -1606,8 +1609,26 @@ const HEAD_PACKAGE: CSSProperties = {
   boxShadow: 'inset 0 0 0 1px var(--color-e2e-card-outline)',
 }
 /* Copy B of the single head (2026-10-29, Eric) — starts identical to the first, 48 below it; change these to compare. */
-const HEAD_WITH_PACKAGE_B: CSSProperties = { ...HEAD_WITH_PACKAGE, marginTop: 48 }
-const HEAD_PACKAGE_B: CSSProperties = { ...HEAD_PACKAGE }
+const HEAD_WITH_PACKAGE_B: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 16, marginTop: 48 }
+const HEAD_PACKAGE_B: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }
+/* The badge as a pill: the tab's type and brick, round ends, 10 either side of the label. */
+const PILL_BADGE_B: CSSProperties = {
+  alignSelf: 'flex-start',
+  display: 'inline-flex',
+  alignItems: 'center',
+  height: 21,
+  paddingTop: 3,
+  paddingRight: 10,
+  paddingLeft: 10,
+  borderRadius: 999,
+  background: 'var(--color-xcel-brick)',
+  color: 'var(--color-fixed-light)',
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 800,
+  fontSize: 11,
+  textTransform: 'uppercase',
+  whiteSpace: 'nowrap',
+}
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
