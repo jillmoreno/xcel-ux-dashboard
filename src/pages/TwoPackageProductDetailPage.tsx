@@ -641,7 +641,7 @@ export function TwoPackageProductDetailPage() {
                         <br />
                         Specifications
                       </h2>
-                      {/* A rule under each title, the column's width (2026-10-29, Eric; was a rule between the columns). */}
+                      {/* A rule under each title, the column's width (2026-10-29, Eric). */}
                       <hr aria-hidden style={SIDE_RULE} />
                       <dl style={{ ...SIDE_BODY, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
                         {TRAINING_SPECS.map(([term, value]) => (
@@ -652,6 +652,8 @@ export function TwoPackageProductDetailPage() {
                         ))}
                       </dl>
                     </section>
+                    {/* Rules between the columns again, full height (2026-10-29, Eric; under each title for a while). */}
+                    <span aria-hidden style={OTHER_INFO_RULE} />
                     <section style={SIDE_SECTION}>
                       <h2 style={SIDE_TITLE}>
                         {/* Broken after the first word (2026-10-29, Eric). */}
@@ -659,7 +661,7 @@ export function TwoPackageProductDetailPage() {
                         <br />
                         Information
                       </h2>
-                      {/* A rule under each title, the column's width (2026-10-29, Eric; was a rule between the columns). */}
+                      {/* A rule under each title, the column's width (2026-10-29, Eric). */}
                       <hr aria-hidden style={SIDE_RULE} />
                       {/* 14 between every group, the link included (2026-10-28, Eric; was 18, and 28 to the link). */}
                       <div style={{ ...PARAGRAPHS, gap: 14 }}>
@@ -688,6 +690,7 @@ export function TwoPackageProductDetailPage() {
                         </p>
                       </div>
                     </section>
+                    <span aria-hidden style={OTHER_INFO_RULE} />
                     {/* The state reporting fee — Figma 542:2304 (2026-10-27, Eric). */}
                     <section style={SIDE_SECTION}>
                       <h2 style={SIDE_TITLE}>
@@ -695,7 +698,7 @@ export function TwoPackageProductDetailPage() {
                         <br />
                         Fee Required
                       </h2>
-                      {/* A rule under each title, the column's width (2026-10-29, Eric; was a rule between the columns). */}
+                      {/* A rule under each title, the column's width (2026-10-29, Eric). */}
                       <hr aria-hidden style={SIDE_RULE} />
                       {/* The fee as the other columns' facts — its amount under its name, in Heavy — then a rule over the link, as in
                           Regulatory Information (2026-10-29, Eric). */}
@@ -1255,12 +1258,15 @@ const SIDE_RULE: CSSProperties = {
 /* Other course information's two columns, 300 wide and 32 apart, each starting level (2026-10-29, Eric; was three, a third each). */
 // Course Specs, Regulatory Information, the fee (2026-10-29, Eric): three equal columns 32 apart, no rules between them now (was two
 // 300 columns, 48 either side of a rule, then the left one up to 240, then three with a rule 32 either side).
-const OTHER_INFO: CSSProperties = { display: 'grid', // Each column 10 narrower than a third of the room (2026-10-29, Eric), the 30 that frees shared between the two gutters, so the
-  // columns reach both edges — 63 apart.
-  gridTemplateColumns: 'repeat(3, calc((100% - 96px) / 3 - 10px))', justifyContent: 'space-between', columnGap: 48, // 48 apart (2026-10-29, Eric: 32, 40, then 48)
+const OTHER_INFO: CSSProperties = { display: 'grid', // Each column 10 narrower than a third of the room (2026-10-29, Eric), reaching both edges; a 1 rule centred in each gutter, the
+  // space either side of it shared out evenly (about 31).
+  gridTemplateColumns: 'calc((100% - 96px) / 3 - 10px) 1px calc((100% - 96px) / 3 - 10px) 1px calc((100% - 96px) / 3 - 10px)',
+  justifyContent: 'space-between', // 48 apart (2026-10-29, Eric: 32, 40, then 48)
   alignItems: 'start' }
 /* Their tan ground: the packages ground's Secondary 100, 10 corners and 32 padding, pulled out over SHARED's 32 sides so its edges
    line up with the packages ground above and its text with the text. */
+// A 1 Secondary 300 rule between two columns, their full height (2026-10-29, Eric).
+const OTHER_INFO_RULE: CSSProperties = { alignSelf: 'stretch', background: 'var(--color-secondary-300)' }
 const OTHER_INFO_GROUND: CSSProperties = {
   marginRight: -32,
   marginLeft: -32,
