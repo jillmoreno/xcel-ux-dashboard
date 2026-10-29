@@ -411,9 +411,10 @@ export function TwoPackageProductDetailPage() {
               <section style={PASS_GUARANTEE_BOX}>
                 <h2 style={SIDE_TITLE}>Our Pass Guarantee</h2>
                 <p style={SIDE_BODY}>
-                  We’re so confident in our ability to prepare you to pass your state insurance licensing exam on the first try,
+                  We’re confident we can prepare you to pass your state licensing exam on the first try.
                 </p>
-                <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, display: 'block' }}>
+                {/* Avenir set here, as on the welcome link — outside a paragraph it had inherited the page's default face. */}
+                <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, display: 'block', fontFamily: 'var(--font-e2e-avenir)' }}>
                   Pass Guarantee Policy
                   <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
                 </button>
