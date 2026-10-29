@@ -642,7 +642,7 @@ export function TwoPackageProductDetailPage() {
                         Specifications
                       </h2>
                       {/* A rule under each title, the column's width (2026-10-29, Eric). */}
-                      <hr aria-hidden style={SIDE_RULE} />
+                      <hr aria-hidden style={OTHER_INFO_HR} />
                       <dl style={{ ...SIDE_BODY, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
                         {/* A rule between each spec (2026-10-29, Eric) — a top edge, as a dl cannot hold an hr. */}
                         {TRAINING_SPECS.map(([term, value], i) => (
@@ -663,7 +663,7 @@ export function TwoPackageProductDetailPage() {
                         Information
                       </h2>
                       {/* A rule under each title, the column's width (2026-10-29, Eric). */}
-                      <hr aria-hidden style={SIDE_RULE} />
+                      <hr aria-hidden style={OTHER_INFO_HR} />
                       {/* 14 between every group, the link included (2026-10-28, Eric; was 18, and 28 to the link). */}
                       <div style={{ ...PARAGRAPHS, gap: 14 }}>
                         <dl style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -679,7 +679,7 @@ export function TwoPackageProductDetailPage() {
                           ))}
                         </dl>
                         {/* A rule over the link, to give it focus (2026-10-29, Eric). */}
-                        <hr aria-hidden style={SIDE_RULE} />
+                        <hr aria-hidden style={OTHER_INFO_HR} />
                         <p style={SIDE_BODY}>
                           <button type="button" className="cre-e2e-textlink" style={LINK}>
                             {/* Two lines, broken after "Insurance" (2026-10-29, Eric). */}
@@ -700,7 +700,7 @@ export function TwoPackageProductDetailPage() {
                         Fee Required
                       </h2>
                       {/* A rule under each title, the column's width (2026-10-29, Eric). */}
-                      <hr aria-hidden style={SIDE_RULE} />
+                      <hr aria-hidden style={OTHER_INFO_HR} />
                       {/* The fee as the other columns' facts — its amount under its name, in Heavy — then a rule over the link, as in
                           Regulatory Information (2026-10-29, Eric). */}
                       <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -708,7 +708,7 @@ export function TwoPackageProductDetailPage() {
                           <dt>{STATE_ABBR[place] ?? place} fee due at checkout:</dt>
                           <dd style={{ margin: 0, fontWeight: 800 }}>{STATE_FEE}</dd>
                         </dl>
-                        <hr aria-hidden style={SIDE_RULE} />
+                        <hr aria-hidden style={OTHER_INFO_HR} />
                         <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block' }}>
                           100% transparent pricing
                           <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
@@ -1270,6 +1270,8 @@ const OTHER_INFO: CSSProperties = { display: 'grid', // Each column 10 narrower 
 // the 14 under them.
 const OTHER_INFO_RULE: CSSProperties = { alignSelf: 'stretch', marginTop: 2 * 24 + 14, background: 'var(--color-secondary-200)' } // Secondary 200 (2026-10-29, Eric; was 300)
 // Between the facts in a column: a 1 rule, 14 clear either side (the list's gap above it, this padding below) (2026-10-29, Eric).
+// Every rule in the course information box in Secondary 200 (2026-10-29, Eric; the rail's are 300).
+const OTHER_INFO_HR: CSSProperties = { ...SIDE_RULE, background: 'var(--color-secondary-200)' }
 const OTHER_INFO_ITEM_RULE: CSSProperties = { borderTop: '1px solid var(--color-secondary-200)', paddingTop: 14 } // Secondary 200, as the gutters' (2026-10-29, Eric; was 300)
 const OTHER_INFO_GROUND: CSSProperties = {
   marginRight: -32,
