@@ -455,8 +455,8 @@ export function TwoPackageProductDetailPage() {
             {/* display: contents, so the pinned cards' containing block is the whole column (see the pin, above). */}
             <section aria-label="Choose a package" style={{ display: 'contents' }}>
               {/* The ground's first piece: its top corners, 24 above the heading. The tint fades over this and the cards. */}
-              <div ref={headRef} style={single ? { ...PACKAGE_GROUND_HEAD, paddingTop: 0 } : PACKAGE_GROUND_HEAD}>
-                {/* Single, Premier's PASS GUARANTEE at the ground's very top, left with everything else (2026-10-29, Eric). */}
+              <div ref={headRef} style={single ? { ...PACKAGE_GROUND_HEAD, paddingTop: 0, textAlign: 'center' } : PACKAGE_GROUND_HEAD}>
+                {/* Single, Premier's PASS GUARANTEE at the ground's very top, centred with everything else (2026-10-29, Eric; was left). */}
                 {single ? <span style={TOP_BADGE}>Pass Guarantee</span> : null}
                 {/* In the rail's At a Glance style — the slab serif at 20 / 24 — inside the ground, 4 above and 16 below
                     (2026-10-27, Eric). */}
@@ -526,8 +526,8 @@ export function TwoPackageProductDetailPage() {
                 role="group"
                 aria-labelledby={single ? undefined : 'choose-package'}
                 aria-label={single ? 'Your package' : undefined}
-                // Single, the one card in the left of two columns — the multi page's Premier card at its multi width (2026-10-29, Eric).
-                style={{ ...PACKAGE_GRID, ...(single ? { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' } : null), ...(unpinned ? { position: 'relative' } : { top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }) }}
+                // Single, the one card at the multi card's width, centred in the ground (2026-10-29, Eric; was the left of two columns).
+                style={{ ...PACKAGE_GRID, ...(single ? { gridTemplateColumns: 'minmax(0, 326px)', justifyContent: 'center' } : null), ...(unpinned ? { position: 'relative' } : { top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }) }}
               >
                 {/* The cards' piece of the ground, on its own layer so it can go once they pin — the condensed frame is narrower than
                     the column, and this showing either side of it read as a stray edge (2026-10-27, Eric). */}
@@ -1875,7 +1875,8 @@ const OPTION_BODY: CSSProperties = {
 }
 /* The single page's Premier, out of its card (2026-10-29, Eric): the contents straight on the ground, left, at the card's width. */
 const UNCARDED: CSSProperties = { position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }
-const UNCARDED_BODY: CSSProperties = { ...OPTION_BODY, paddingTop: 24, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, alignItems: 'flex-start', textAlign: 'left' }
+// Centred (2026-10-29, Eric; was left).
+const UNCARDED_BODY: CSSProperties = { ...OPTION_BODY, paddingTop: 24, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, alignItems: 'center', textAlign: 'center' }
 
 const OPTION_TITLE: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
