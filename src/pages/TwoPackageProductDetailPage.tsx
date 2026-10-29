@@ -510,7 +510,7 @@ export function TwoPackageProductDetailPage() {
               >
                 {/* The cards' piece of the ground, on its own layer so it can go once they pin — the condensed frame is narrower than
                     the column, and this showing either side of it read as a stray edge (2026-10-27, Eric). */}
-                <div aria-hidden style={{ ...PIN_LAYER, boxShadow: GROUND_EDGE_SIDES, opacity: 'calc(1 - var(--pinned, 0))' }} />
+                <div aria-hidden style={{ ...PIN_LAYER, boxShadow: GROUND_EDGE_SIDES, background: GROUND_FILL, opacity: 'calc(1 - var(--pinned, 0))' }} />
                 {/* Pinned, the tan ground shows from the browser's top to under the cards and nothing scrolls visibly beneath. Condensed,
                     it is Figma 548:3477's frame at the column's width — 32 either side of the cards, 12 above (2026-10-28, Eric; was 16), 24 below — square on top, 10 corners below, a shadow along its bottom edge only. */}
                 <div
@@ -1610,6 +1610,8 @@ const CHANGE_CHEVRON: CSSProperties = {
    piece, so it takes no room and nothing inside moves. */
 const GROUND_EDGE = 'var(--color-secondary-200)' // a step lighter, with the table's rules (2026-10-29, Eric; was 300)
 const GROUND_EDGE_SIDES = `inset 1px 0 0 ${GROUND_EDGE}, inset -1px 0 0 ${GROUND_EDGE}`
+// And a light fill again, half of Secondary 100 (2026-10-29, Eric).
+const GROUND_FILL = 'color-mix(in srgb, var(--color-secondary-100) 50%, transparent)'
 const PACKAGE_GROUND_HEAD: CSSProperties = {
   paddingTop: 24, // 8 less than the sides, above the heading (2026-10-27, Eric)
   paddingRight: 32,
@@ -1617,6 +1619,7 @@ const PACKAGE_GROUND_HEAD: CSSProperties = {
   borderTopLeftRadius: 10,
   borderTopRightRadius: 10,
   boxShadow: `${GROUND_EDGE_SIDES}, inset 0 1px 0 ${GROUND_EDGE}`,
+  background: GROUND_FILL,
 }
 const PACKAGE_GROUND_FOOT: CSSProperties = {
   paddingTop: 32,
@@ -1626,6 +1629,7 @@ const PACKAGE_GROUND_FOOT: CSSProperties = {
   borderBottomLeftRadius: 10,
   borderBottomRightRadius: 10,
   boxShadow: `${GROUND_EDGE_SIDES}, inset 0 -1px 0 ${GROUND_EDGE}`,
+  background: GROUND_FILL,
 }
 
 /* The cards pin this far under the top of the browser (2026-10-27, Eric). */
