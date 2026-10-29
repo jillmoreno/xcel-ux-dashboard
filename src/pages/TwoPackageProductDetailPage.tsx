@@ -886,6 +886,7 @@ const PACKAGES: {
   },  {
     id: 'premier',
     short: 'Premier',
+    cardTitle: 'Premier Package', // (2026-10-29, Eric)
     title: 'Life and Health Pre-licensing Package',
     courseName: 'Florida Life and Health Pre-licensing Premier',
     price: '$97.50', // DEMO DATA — see the header
