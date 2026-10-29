@@ -1763,10 +1763,11 @@ const MINI_BODY: CSSProperties = {
   paddingBottom: 16,
   paddingLeft: 20,
 }
-// 244 wide, 10 down from the row's centre line — "Pre-licensing" kept whole, so it breaks before it as the design does.
+// 204 wide, 10 down from the row's centre line — "Pre-licensing" kept whole, so it breaks before it as the design does. 40 nearer
+// the price (2026-10-29, Eric; the design's 244 left 78 between the title's text and the price).
 const MINI_TITLE: CSSProperties = {
   flex: 'none',
-  width: 244,
+  width: 204,
   paddingTop: 10,
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
