@@ -1567,7 +1567,7 @@ const SINGLE_ACROSS = false
 /* The single page's course head: the title, the package on its right with its badge on top, and the intro across the full width
    under both (2026-10-29, Eric). The package as wide as its Purchase, which fits its label, no padding either side (2026-10-29, Eric; 270, then 222), 32 past a
    Secondary 250 rule — so the rule sits further right and the title widens. */
-const HEAD_WITH_PACKAGE: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'start', columnGap: 32, rowGap: 24 }
+const HEAD_WITH_PACKAGE: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'start', columnGap: 72, rowGap: 24 } // 72 to the box, enough to set the title in 3 lines (2026-10-29, Eric; was 32)
 const HEAD_PACKAGE: CSSProperties = {
   gridColumn: 2,
   gridRow: 1,
