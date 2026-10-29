@@ -2675,6 +2675,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        compact       — Compact Cards: the on above.
        none          — No Card Trays (added the same day; the cards compact since 10-29): the cards on the page, scrolling away with it — no pinned
                        tray, no top tray. THE DEFAULT, the same day: a tray shows only when one is picked. Four choices, so the design bar draws it as a dropdown.
+       tray-mini-bottom — Bottom Mini Card Tray (2026-10-29): the same tray pinned to the bottom of the browser, sliding up.
        tray-mini     — Top Mini Card Tray: Figma 560:3783 — a 16-tall tan strip, the eyebrow as a tab in each card's corner,
                        the title beside the price and its Purchase. */
     surface: 'design',
@@ -2690,6 +2691,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'large', label: 'Large Cards', description: 'The full cards on the page, pinning under the top of the browser and condensing into the compact layout as they do.' },
       { value: 'compact', label: 'Compact Cards', description: 'The compact layout on the page too; pinning only tightens the frame round them.' },
       { value: 'tray-mini', label: 'Top Mini Card Tray', description: 'Figma 560:3783 — the cards on the page compact, and a slim full-width tray of mini cards slides down from the top once they have scrolled off.' },
+      { value: 'tray-mini-bottom', label: 'Bottom Mini Card Tray', description: 'The Top Mini Card Tray’s twin, pinned to the bottom of the browser: it slides up from there once the cards on the page have scrolled off the top.' },
       { value: 'none', label: 'No Card Trays', description: 'The default. No tray at all: the compact cards stay on the page and scroll away with it — nothing pins, nothing slides down from the top.' },
     ],
     page: 'dashboard-rebrand',

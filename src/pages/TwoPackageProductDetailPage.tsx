@@ -123,10 +123,13 @@ export function TwoPackageProductDetailPage() {
   const cardsMode = useFeatureFlag('pdp-course-cards').variant ?? 'large'
   // The Top Mini Card Tray draws the page's cards compact too (2026-10-28, Eric), and so does No Card Trays, the default
   // (2026-10-29, Eric) — only Large Cards draws them large.
-  const compact = cardsMode === 'compact' || cardsMode === 'tray-mini' || cardsMode === 'none'
+  const compact = cardsMode === 'compact' || cardsMode === 'tray-mini' || cardsMode === 'tray-mini-bottom' || cardsMode === 'none'
   const topTray = cardsMode === 'tray-mini'
+  /* The Bottom Mini Card Tray (2026-10-29, Eric): the same tray, pinned to the bottom of the browser and sliding up from it. */
+  const bottomTray = cardsMode === 'tray-mini-bottom'
+  const miniTray = topTray || bottomTray
   /* No Card Trays (2026-10-28, Eric): nothing pins and nothing slides down — the full cards scroll away with the page. */
-  const unpinned = topTray || cardsMode === 'none'
+  const unpinned = miniTray || cardsMode === 'none'
   const [trayShown, setTrayShown] = useState(false)
   useLayoutEffect(() => {
     const head = headRef.current
@@ -146,7 +149,7 @@ export function TwoPackageProductDetailPage() {
        price width, which the button clears. */
     const check = () => {
       // The Top tray: the cards stay on the page, and the tray shows once the last of them is up past the browser's top.
-      if (topTray) setTrayShown(cards.getBoundingClientRect().bottom < browserTop())
+      if (miniTray) setTrayShown(cards.getBoundingClientRect().bottom < browserTop())
       else setTrayShown(false)
       const over = unpinned ? -1 : browserTop() + CARDS_PIN_GAP - head.getBoundingClientRect().bottom
       const p = Math.min(1, Math.max(0, over / PIN_CONDENSE))
@@ -190,7 +193,7 @@ export function TwoPackageProductDetailPage() {
       ro.disconnect()
       window.removeEventListener('scroll', check, { capture: true })
     }
-  }, [compact, topTray, unpinned])
+  }, [compact, miniTray, unpinned])
   const fadeSpan = fade.head + fade.cards || 300
   const fadeGround = (offset: number): CSSProperties => ({
     backgroundColor: 'var(--color-secondary-100)',
@@ -314,6 +317,10 @@ export function TwoPackageProductDetailPage() {
     )
   }
 
+  const miniCards = packages.map((p) => (
+    <MiniCard key={p.id} p={p} on={p.id === picked} title={`${place} ${localize(p.title)}`} onPick={() => setPicked(p.id)} onBuy={() => purchase(p.id)} />
+  ))
+
   return (
     <div style={PAGE}>
       <StandaloneBrowserChrome />
@@ -330,9 +337,7 @@ export function TwoPackageProductDetailPage() {
               inert={!trayShown}
               style={{ ...TOP_TRAY, transform: trayShown ? 'none' : 'translateY(-100%)' }}
             >
-              {packages.map((p) => (
-                <MiniCard key={p.id} p={p} on={p.id === picked} title={`${place} ${localize(p.title)}`} onPick={() => setPicked(p.id)} onBuy={() => purchase(p.id)} />
-              ))}
+              {miniCards}
             </div>
           </div>
         </div>
@@ -771,6 +776,23 @@ export function TwoPackageProductDetailPage() {
           </ul>
         </div>
       </footer>
+      {/* THE BOTTOM MINI CARD TRAY (2026-10-29, Eric): the top tray's twin, pinned to the bottom of the browser — a zero-height sticky
+          row at the page's end, the tray sliding up out of its clip once the cards on the page have scrolled off the top. */}
+      {bottomTray ? (
+        <div style={BOTTOM_TRAY_PIN}>
+          <div style={BOTTOM_TRAY_CLIP}>
+            <div
+              role="radiogroup"
+              aria-label="Choose your package"
+              aria-hidden={!trayShown}
+              inert={!trayShown}
+              style={{ ...TOP_TRAY, ...BOTTOM_TRAY, transform: trayShown ? 'none' : 'translateY(100%)' }}
+            >
+              {miniCards}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -1655,6 +1677,11 @@ const PIN_CONDENSE = 160
    under the browser chrome; the clip under it hides the tray until it slides down. */
 const TOP_TRAY_PIN: CSSProperties = { position: 'sticky', zIndex: 20, height: 0 }
 const TOP_TRAY_CLIP: CSSProperties = { position: 'absolute', top: 0, right: 0, left: 0, overflow: 'hidden', paddingBottom: 12, pointerEvents: 'none' }
+/* The bottom tray's row and clip: the top's, turned over — stuck to the browser's bottom, the clip's room for the shadow above. */
+const BOTTOM_TRAY_PIN: CSSProperties = { position: 'sticky', bottom: 0, zIndex: 20, height: 0 }
+const BOTTOM_TRAY_CLIP: CSSProperties = { position: 'absolute', right: 0, bottom: 0, left: 0, overflow: 'hidden', paddingTop: 12, pointerEvents: 'none' }
+// Its shadow cast up, onto the page above it.
+const BOTTOM_TRAY: CSSProperties = { boxShadow: '0 -6px 10px -8px rgb(0 0 0 / 0.3)' }
 /* Figma 560:3783: the browser’s full width (in Secondary 100 now; the design’s 200), 16 above and below, the two cards 552 wide and 24 apart, centred. */
 const TOP_TRAY: CSSProperties = {
   display: 'flex',
