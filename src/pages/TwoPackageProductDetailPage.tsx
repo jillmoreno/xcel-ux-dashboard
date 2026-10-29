@@ -287,8 +287,8 @@ export function TwoPackageProductDetailPage() {
             {/* Centred (2026-10-29, Eric). */}
             {/* 40 from the card's top (2026-10-29, Eric: 24 with no tab above it, then 8 more, and 8 more; 20 under the tab). */}
             {/* A card's own title where it has one — Standard's is "Standard Course" (2026-10-29, Eric). */}
-            {/* 8 closer to the price, all caps (2026-10-29, Eric). */}
-            <span style={{ ...OPTION_TITLE, marginBottom: -8, textTransform: 'uppercase' }}>{p.cardTitle ?? `${place} ${localize(p.title)}`}</span>
+            {/* 8 closer to the price (2026-10-29, Eric; all caps, then back). */}
+            <span style={{ ...OPTION_TITLE, marginBottom: -8 }}>{p.cardTitle ?? `${place} ${localize(p.title)}`}</span>
             {prices}
             {/* The price stacked over its Purchase, the button across the card in the flow (2026-10-29, Eric; it slid beside the
                 price as the cards condensed). */}
