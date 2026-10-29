@@ -259,7 +259,7 @@ export function TwoPackageProductDetailPage() {
       <button
         type="button"
         className={`cre-e2e-add-to-cart ${p.id === 'premier' ? 'cre-e2e-cta' : `cre-e2e-outline${on ? '' : ' cre-e2e-outline--quiet'}`}`}
-        style={style}
+        style={{ ...style, ...(p.id === 'premier' ? SOLID_BUY_WEIGHT : null) }}
         onClick={(e) => {
           e.stopPropagation()
           purchase(p.id)
@@ -830,7 +830,7 @@ function MiniCard({ p, on, title, onPick, onBuy }: {
             type="button"
             // Premier's brick; Standard's the outline, white with a brick edge and label (Figma 559:3753, 2026-10-28, Eric).
             className={`cre-e2e-add-to-cart ${p.id === 'premier' ? 'cre-e2e-cta' : 'cre-e2e-outline'}`}
-            style={MINI_BUY}
+            style={{ ...MINI_BUY, ...(p.id === 'premier' ? SOLID_BUY_WEIGHT : null) }}
             onClick={(e) => {
               e.stopPropagation()
               onBuy()
@@ -1223,6 +1223,8 @@ const SIDE_BOX: CSSProperties = {
 
 
 
+/* The solid brick Purchase buttons a weight up — Heavy, Avenir's next weight after Medium (2026-10-29, Eric). The outlined ones stay Medium. */
+const SOLID_BUY_WEIGHT: CSSProperties = { fontWeight: 800 }
 const ADD_TO_CART: CSSProperties = {
   height: 55,
   borderRadius: 5,
