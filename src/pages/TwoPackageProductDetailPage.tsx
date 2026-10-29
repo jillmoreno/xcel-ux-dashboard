@@ -1705,7 +1705,7 @@ const PACKAGE_STRIP_GUARANTEE_C: CSSProperties = {
   gap: 5,
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 500,
-  fontSize: 14,
+  fontSize: 15, // 1 up (2026-10-29, Eric; the design's 14)
   lineHeight: '12px',
   whiteSpace: 'nowrap',
   color: 'var(--color-xcel-brick)',
