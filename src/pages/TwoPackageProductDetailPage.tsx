@@ -386,61 +386,6 @@ export function TwoPackageProductDetailPage() {
                     ))}
                   </ul>
                 </section>
-                <hr aria-hidden style={SIDE_RULE} />
-                <section style={SIDE_SECTION}>
-                  <h2 style={SIDE_TITLE}>What to Expect</h2>
-                  {/* 14 between the groups (2026-10-28, Eric; was 18). */}
-                  <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    {WHAT_TO_EXPECT.map(([head, line]) => (
-                      <div key={head} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        <strong style={{ fontWeight: 800 }}>{noWidow(head)}</strong>
-                        <span>{noWidow(line)}</span>
-                      </div>
-                    ))}
-                    <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block', marginTop: -2 }}>
-                      Recommended study plan
-                      <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
-                    </button>
-                  </div>
-                </section>
-                <hr aria-hidden style={SIDE_RULE} />
-                <section style={SIDE_SECTION}>
-                  <h2 style={SIDE_TITLE}>Regulatory Information</h2>
-                  {/* 14 between every group, the link included (2026-10-28, Eric; was 18, and 28 to the link). */}
-                  <div style={{ ...PARAGRAPHS, gap: 14 }}>
-                    <dl style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                      {[
-                        ['Course Provided By:', 'XCEL Solutions LLC.'],
-                        ['Course Name:', localize(pkg.courseName)],
-                        ['Approved course ID:', '1191656'],
-                      ].map(([term, value]) => (
-                        <div key={term} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                          <dt>{term}</dt>
-                          <dd style={{ margin: 0, fontWeight: 800 }}>{noWidow(value)}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                    <p style={SIDE_BODY}>
-                      <button type="button" className="cre-e2e-textlink" style={LINK}>
-                        {noWidow(`${place} Insurance Licensing Requirements`)}
-                        <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
-                      </button>
-                    </p>
-                  </div>
-                </section>
-                <hr aria-hidden style={SIDE_RULE} />
-                {/* The state reporting fee — Figma 542:2304, for Florida — the box's last section, under a rule, set as the others
-                    (2026-10-27, Eric). */}
-                <section style={SIDE_SECTION}>
-                  <h2 style={SIDE_TITLE}>State reporting fee required</h2>
-                  <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <p style={{ margin: 0 }}>{STATE_ABBR[place] ?? place} fee due at checkout: {STATE_FEE}</p>
-                    <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block' }}>
-                      100% transparent pricing
-                      <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
-                    </button>
-                  </div>
-                </section>
               </div>
             </div>
           </div>
@@ -674,6 +619,64 @@ export function TwoPackageProductDetailPage() {
                     </li>
                   ))}
                 </ol>
+              </section>
+              {/* OTHER COURSE INFORMATION (2026-10-29, Eric): What to Expect, Regulatory Information and the state reporting fee, moved
+                  out of the rail into three columns under the training program, in the rail's own type. */}
+              <section style={SECTION}>
+                <h2 style={SECTION_TITLE}>Other course information</h2>
+                <div style={OTHER_INFO}>
+                    <section style={SIDE_SECTION}>
+                      <h2 style={SIDE_TITLE}>What to Expect</h2>
+                      {/* 14 between the groups (2026-10-28, Eric; was 18). */}
+                      <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        {WHAT_TO_EXPECT.map(([head, line]) => (
+                          <div key={head} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                            <strong style={{ fontWeight: 800 }}>{noWidow(head)}</strong>
+                            <span>{noWidow(line)}</span>
+                          </div>
+                        ))}
+                        <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block', marginTop: -2 }}>
+                          Recommended study plan
+                          <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
+                        </button>
+                      </div>
+                    </section>
+                    <section style={SIDE_SECTION}>
+                      <h2 style={SIDE_TITLE}>Regulatory Information</h2>
+                      {/* 14 between every group, the link included (2026-10-28, Eric; was 18, and 28 to the link). */}
+                      <div style={{ ...PARAGRAPHS, gap: 14 }}>
+                        <dl style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                          {[
+                            ['Course Provided By:', 'XCEL Solutions LLC.'],
+                            ['Course Name:', localize(pkg.courseName)],
+                            ['Approved course ID:', '1191656'],
+                          ].map(([term, value]) => (
+                            <div key={term} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                              <dt>{term}</dt>
+                              <dd style={{ margin: 0, fontWeight: 800 }}>{noWidow(value)}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                        <p style={SIDE_BODY}>
+                          <button type="button" className="cre-e2e-textlink" style={LINK}>
+                            {noWidow(`${place} Insurance Licensing Requirements`)}
+                            <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
+                          </button>
+                        </p>
+                      </div>
+                    </section>
+                    {/* The state reporting fee — Figma 542:2304 (2026-10-27, Eric). */}
+                    <section style={SIDE_SECTION}>
+                      <h2 style={SIDE_TITLE}>State reporting fee required</h2>
+                      <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <p style={{ margin: 0 }}>{STATE_ABBR[place] ?? place} fee due at checkout: {STATE_FEE}</p>
+                        <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block' }}>
+                          100% transparent pricing
+                          <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
+                        </button>
+                      </div>
+                    </section>
+                </div>
               </section>
             </div>
           </div>
@@ -1214,6 +1217,8 @@ const SIDE_RULE: CSSProperties = {
 
 
 // 20 on 24 (2026-10-15, Eric's request: 2 up from 18/22).
+/* Other course information's three columns, 32 apart, each starting level (2026-10-29, Eric). */
+const OTHER_INFO: CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', columnGap: 32, alignItems: 'start', paddingTop: 9 }
 const SIDE_TITLE: CSSProperties = { ...SECTION_TITLE, fontSize: 20, lineHeight: '24px' }
 
 
