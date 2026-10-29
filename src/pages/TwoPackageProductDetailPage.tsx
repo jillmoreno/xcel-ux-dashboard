@@ -439,7 +439,7 @@ export function TwoPackageProductDetailPage() {
             PILL_BADGE_C. */}
         {single ? (
           <div style={HEAD_WITH_PACKAGE_C}>
-            <span style={PILL_BADGE_C}>Pass Guarantee</span>
+            <span style={{ ...PILL_BADGE_C, gridColumn: '1 / -1', justifySelf: 'start' }}>Pass Guarantee</span>
             <h2 style={COURSE_HEAD_TITLE}>
               {/* A break after the line of authority (2026-10-29, Eric). */}
               {place} {line}
@@ -449,7 +449,7 @@ export function TwoPackageProductDetailPage() {
             <div style={{ ...HEAD_PACKAGE_C, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
               {renderCard(packages[0], true)}
             </div>
-            <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
+            <p style={{ ...BODY, gridColumn: '1 / -1', marginTop: 8, marginBottom: -8 }}>
               Updated every year, our packages make complex insurance concepts simple.{' '}
               <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
               <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
@@ -1652,8 +1652,9 @@ const PILL_BADGE_B: CSSProperties = {
   whiteSpace: 'nowrap',
 }
 /* Copy C (2026-10-29, Eric) — B's, to start; change these to compare. */
-const HEAD_WITH_PACKAGE_C: CSSProperties = { ...HEAD_WITH_PACKAGE_B }
-const HEAD_PACKAGE_C: CSSProperties = { ...HEAD_PACKAGE_B }
+// C (2026-10-29, Eric): the pill across, then the title with the package far right beside it, then the intro across.
+const HEAD_WITH_PACKAGE_C: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'center', columnGap: 32, rowGap: 16, marginTop: 48 }
+const HEAD_PACKAGE_C: CSSProperties = { ...HEAD_PACKAGE_B, justifySelf: 'end' }
 const PILL_BADGE_C: CSSProperties = { ...PILL_BADGE_B }
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
