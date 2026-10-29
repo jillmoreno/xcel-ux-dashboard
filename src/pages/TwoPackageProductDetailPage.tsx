@@ -227,9 +227,10 @@ export function TwoPackageProductDetailPage() {
     navigate(`/end-to-end-demo/checkout?${new URLSearchParams({ ...Object.fromEntries(params), package: id }).toString()}`)
   }
   /* One package card. */
-  /* `left`: copy B's package, set flush left under the title (2026-10-29, Eric). `lift`: copy C's, its name and price row raised
-     by these px (position only, so the Purchase stays put). */
-  const renderCard = (p: (typeof PACKAGES)[number], left = false, lift?: { title: number; price: number }) => {
+  /* `left`: copy B's package, set flush left under the title (2026-10-29, Eric). `lift`: copy C's — its price row raised by
+     `price` px (position only, so the Purchase stays put) and centred over the Purchase, and no package name (2026-10-29, Eric;
+     the name went up 16 first, then went). */
+  const renderCard = (p: (typeof PACKAGES)[number], left = false, lift?: { price: number }) => {
     /* No card is picked by clicking any more (2026-10-29, Eric): the selected look is a hover, so `on` is false and the resting look
        is every card's; the Purchase buttons keep hovers of their own. */
     const on = false
@@ -293,10 +294,10 @@ export function TwoPackageProductDetailPage() {
             {/* A card's own title where it has one — Standard's is "Standard Course" (2026-10-29, Eric). */}
             {/* 8 closer to the price (2026-10-29, Eric; all caps, then back). */}
             {/* Single, 4 closer still (2026-10-29, Eric). */}
-            <span style={{ ...OPTION_TITLE, marginBottom: single ? -12 : -8, ...(lift ? { position: 'relative', top: -lift.title } : null) }}>
-              {p.cardTitle ?? `${place} ${localize(p.title)}`}
-            </span>
-            {lift ? <span style={{ position: 'relative', top: -lift.price }}>{prices}</span> : prices}
+            {lift ? null : (
+              <span style={{ ...OPTION_TITLE, marginBottom: single ? -12 : -8 }}>{p.cardTitle ?? `${place} ${localize(p.title)}`}</span>
+            )}
+            {lift ? <span style={{ position: 'relative', top: -lift.price, alignSelf: 'center' }}>{prices}</span> : prices}
             {/* The price stacked over its Purchase, the button across the card in the flow (2026-10-29, Eric; it slid beside the
                 price as the cards condensed). */}
             {/* Single, 4 less under the price, and only as wide as its label and 24 padding (2026-10-29, Eric). */}
@@ -469,8 +470,8 @@ export function TwoPackageProductDetailPage() {
             {/* A 1 rule between the title and the package, from the pill's top to the Purchase's bottom edge (2026-10-29, Eric). */}
             <span aria-hidden style={HEAD_RULE_C} />
             <div style={{ ...HEAD_PACKAGE_C, gridColumn: 3, gridRow: 2, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
-              {/* Its name 16 up and its price row 8 up (2026-10-29, Eric). */}
-              {renderCard(packages[0], true, { title: 16, price: 8 })}
+              {/* No package name; the price row 8 up, centred over the Purchase (2026-10-29, Eric). */}
+              {renderCard(packages[0], true, { price: 8 })}
             </div>
             <p style={{ ...BODY, gridColumn: '1 / -1', gridRow: 3, marginTop: 8, marginBottom: -8 }}>
               Updated every year, our packages make complex insurance concepts simple.{' '}
