@@ -1575,12 +1575,12 @@ const HEAD_PACKAGE: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'stretch',
-  // A rounded box in place of the rule (2026-10-29, Eric): the cards' 1 outline and 10 corners, 24 at the sides and bottom, none
+  // A rounded box in place of the rule (2026-10-29, Eric): the cards' 1 outline and 10 corners, 32 at the sides, 16 at the bottom, none
   // on top, so the badge hangs from its top edge.
   paddingTop: 0,
-  paddingRight: 24,
+  paddingRight: 32, // 32 at the sides (2026-10-29, Eric; was 24)
   paddingBottom: 16, // 16 under the Purchase (2026-10-29, Eric; was 24)
-  paddingLeft: 24,
+  paddingLeft: 32,
   borderRadius: 10,
   boxShadow: 'inset 0 0 0 1px var(--color-e2e-card-outline)',
 }
