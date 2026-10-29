@@ -187,7 +187,7 @@
   border-radius: 2px;
 }
 
-/* In brick — the two-package PDP's comparison table links (2026-10-29, Eric); every other text link stays blue. */
+/* In brick — every text link on the two-package PDP (2026-10-29, Eric; the comparison table's first). Blue elsewhere. */
 .cre-e2e-textlink--brick {
   color: var(--color-xcel-brick);
 }

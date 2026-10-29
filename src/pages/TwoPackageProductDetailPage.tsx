@@ -400,7 +400,7 @@ export function TwoPackageProductDetailPage() {
                         <span>{noWidow(line)}</span>
                       </div>
                     ))}
-                    <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block', marginTop: -2 }}>
+                    <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, display: 'block', marginTop: -2 }}>
                       Recommended study plan
                       <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
                     </button>
@@ -431,7 +431,7 @@ export function TwoPackageProductDetailPage() {
                         Eric; angle-right first). */}
                     <button
                       type="button"
-                      className="cre-e2e-textlink"
+                      className="cre-e2e-textlink cre-e2e-textlink--brick"
                       style={PLAIN_LINK}
                       aria-expanded={changeOpen}
                       aria-controls="change-state-or-line"
@@ -576,7 +576,7 @@ export function TwoPackageProductDetailPage() {
                         >
                           <strong style={{ fontWeight: 800 }}>{row.feature}</strong>
                           {row.detail ? <>: {row.detail}</> : null}
-                          {/* A text link after the feature, 8 to its right, in the page's link style but brick (2026-10-29, Eric). */}
+                          {/* A text link after the feature, 8 to its right, in the page's link style (2026-10-29, Eric). */}
                           {row.link ? (
                             <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, marginLeft: 8 }}>
                               {row.link}
@@ -698,7 +698,7 @@ export function TwoPackageProductDetailPage() {
                         {/* A rule over the link, to give it focus (2026-10-29, Eric). */}
                         <hr aria-hidden style={OTHER_INFO_HR} />
                         <p style={SIDE_BODY}>
-                          <button type="button" className="cre-e2e-textlink" style={LINK}>
+                          <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={LINK}>
                             {/* Two lines, broken after "Insurance" (2026-10-29, Eric). */}
                             {place} Insurance
                             <br />
@@ -725,7 +725,7 @@ export function TwoPackageProductDetailPage() {
                           <dd style={{ margin: 0, fontWeight: 800 }}>{STATE_FEE}</dd>
                         </dl>
                         <hr aria-hidden style={OTHER_INFO_HR} />
-                        <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block' }}>
+                        <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, display: 'block' }}>
                           100% transparent pricing
                           <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
                         </button>
