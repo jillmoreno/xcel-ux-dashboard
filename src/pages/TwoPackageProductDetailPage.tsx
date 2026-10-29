@@ -427,7 +427,8 @@ export function TwoPackageProductDetailPage() {
             <div style={{ ...HEAD_PACKAGE_B, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
               {renderCard(packages[0], true)}
             </div>
-            <p style={BODY}>
+            {/* 8 further from the Purchase and 8 nearer the table below (2026-10-29, Eric). */}
+            <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
               Updated every year, our packages make complex insurance concepts simple.{' '}
               <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
               <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
