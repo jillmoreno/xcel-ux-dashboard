@@ -1565,8 +1565,9 @@ const WIDE_COLUMN: CSSProperties = { width: `calc(100% - ${RAIL_W}px - ${RAIL_GU
    page wears the multi page's Premier card, at its multi size. true brings the across card back. */
 const SINGLE_ACROSS = false
 /* The single page's course head: the title, the package on its right with its badge on top, and the intro across the full width
-   under both (2026-10-29, Eric). The package 270 wide — the multi card's button width (its 326 less 28 either side) — 32 past a Secondary 250 rule. */
-const HEAD_WITH_PACKAGE: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 303px', alignItems: 'start', columnGap: 32, rowGap: 24 }
+   under both (2026-10-29, Eric). The package as wide as its 222 Purchase, no padding either side (2026-10-29, Eric; was 270 with the button 24 in), 32 past a
+   Secondary 250 rule — so the rule sits further right and the title widens. */
+const HEAD_WITH_PACKAGE: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 255px', alignItems: 'start', columnGap: 32, rowGap: 24 }
 const HEAD_PACKAGE: CSSProperties = {
   gridColumn: 2,
   gridRow: 1,
