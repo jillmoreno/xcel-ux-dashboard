@@ -258,7 +258,8 @@ export function TwoPackageProductDetailPage() {
     )
     // Not clickable now — a hover lifts it (cre-e2e-package-card, inviteFlow.css: the selected ring and shadow); Premier is lifted at rest; Standard has no hover at all (2026-10-29, Eric).
     return (
-      <div className={p.id === 'premier' ? 'cre-e2e-package-card cre-e2e-package-card--on' : undefined} style={OPTION_CARD}>
+      // Single, out of its card: no fill, ring or shadow — the contents on the ground, left (2026-10-29, Eric).
+      <div className={p.id === 'premier' && !single ? 'cre-e2e-package-card cre-e2e-package-card--on' : undefined} style={single ? UNCARDED : OPTION_CARD}>
         {/* THE TAB (2026-10-28, Eric; was the eyebrow over the title and PASS GUARANTEE top right): the mini tray's, top left —
             the package's name on tan, behind Premier's brick PASS GUARANTEE. */}
         {/* Gone from the multi-product page's cards (2026-10-29, Eric) — their titles name the package now. The single page wears
@@ -268,7 +269,7 @@ export function TwoPackageProductDetailPage() {
             {p.badge ? <span style={MINI_BADGE}>{p.badge}</span> : null}
             <span style={{ ...MINI_TAB_LABEL, ...(p.badge ? { paddingLeft: 0 } : null) }}>{p.short} package</span>
           </span>
-        ) : p.badge ? (
+        ) : p.badge && !single ? (
           /* Premier's brick PASS GUARANTEE back in its corner (2026-10-29, Eric) — on its own, laid over the card so the two titles
              stay level; the package name stays in the title. */
           <span style={CORNER_BADGE}>{p.badge}</span>
@@ -284,7 +285,7 @@ export function TwoPackageProductDetailPage() {
             </span>
           </span>
         ) : (
-          <span style={{ ...OPTION_BODY, paddingTop: 40, paddingBottom: pinLerp(28, 24), alignItems: 'center', textAlign: 'center' }}>
+          <span style={single ? UNCARDED_BODY : { ...OPTION_BODY, paddingTop: 40, paddingBottom: pinLerp(28, 24), alignItems: 'center', textAlign: 'center' }}>
             {/* Centred (2026-10-29, Eric). */}
             {/* 40 from the card's top (2026-10-29, Eric: 24 with no tab above it, then 8 more, and 8 more; 20 under the tab). */}
             {/* A card's own title where it has one — Standard's is "Standard Course" (2026-10-29, Eric). */}
@@ -298,7 +299,7 @@ export function TwoPackageProductDetailPage() {
         )}
         {/* The card's 1 edge drawn again over everything, so its top runs across the tab (2026-10-28, Eric). Not on the
             multi-product Premier card, whose stroke is the CSS's alone, at half strength (2026-10-29, Eric) — two would stack. */}
-        {(single && SINGLE_ACROSS) || p.id !== 'premier' ? <span aria-hidden style={MINI_EDGE} /> : null}
+        {single ? null : p.id !== 'premier' ? <span aria-hidden style={MINI_EDGE} /> : null}
       </div>
     )
   }
@@ -454,7 +455,9 @@ export function TwoPackageProductDetailPage() {
             {/* display: contents, so the pinned cards' containing block is the whole column (see the pin, above). */}
             <section aria-label="Choose a package" style={{ display: 'contents' }}>
               {/* The ground's first piece: its top corners, 24 above the heading. The tint fades over this and the cards. */}
-              <div ref={headRef} style={PACKAGE_GROUND_HEAD}>
+              <div ref={headRef} style={single ? { ...PACKAGE_GROUND_HEAD, paddingTop: 0 } : PACKAGE_GROUND_HEAD}>
+                {/* Single, Premier's PASS GUARANTEE at the ground's very top, left with everything else (2026-10-29, Eric). */}
+                {single ? <span style={TOP_BADGE}>Pass Guarantee</span> : null}
                 {/* In the rail's At a Glance style — the slab serif at 20 / 24 — inside the ground, 4 above and 16 below
                     (2026-10-27, Eric). */}
                 {/* Single, no heading at all (2026-10-29, Eric; was "Your {place} state package:") — the card goes straight in. */}
@@ -1779,6 +1782,8 @@ const CORNER_BADGE: CSSProperties = {
   borderBottomLeftRadius: 8,
   color: 'var(--color-fixed-light)',
 }
+/* The single page's badge, in the flow at the ground's top-left (2026-10-29, Eric). */
+const TOP_BADGE: CSSProperties = { ...CORNER_BADGE, position: 'static', transform: 'none', display: 'inline-flex' }
 const MINI_TAB_LABEL: CSSProperties = { paddingTop: 5, // 1 lower (2026-10-28, Eric; was 3 — centred, 2 more moves it 1)
   paddingLeft: 16, color: 'var(--color-xcel-brick)' }
 /* Figma 560:3858: the title and the price centred on each other, 26 apart; 16 under them, 20 either side. */
@@ -1868,6 +1873,9 @@ const OPTION_BODY: CSSProperties = {
   paddingBottom: pinLerp(87, 20, 'py'), // 20 condensed (2026-10-27, Eric; was the design's 28)
   paddingLeft: 28,
 }
+/* The single page's Premier, out of its card (2026-10-29, Eric): the contents straight on the ground, left, at the card's width. */
+const UNCARDED: CSSProperties = { position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }
+const UNCARDED_BODY: CSSProperties = { ...OPTION_BODY, paddingTop: 24, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, alignItems: 'flex-start', textAlign: 'left' }
 
 const OPTION_TITLE: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
