@@ -1775,7 +1775,8 @@ const MINI_TITLE: CSSProperties = {
   lineHeight: '24px',
   color: 'var(--color-text-primary)',
 }
-const MINI_PRICE_COLUMN: CSSProperties = { flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 } // the design's 8 (Figma 560:3858)
+// 8 higher (2026-10-29, Eric) — moved, not resized, so the card keeps its height.
+const MINI_PRICE_COLUMN: CSSProperties = { position: 'relative', top: -8, flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 } // the design's 8 (Figma 560:3858)
 const MINI_PRICES: CSSProperties = { display: 'flex', alignItems: 'baseline', gap: 6, whiteSpace: 'nowrap' }
 const MINI_PRICE: CSSProperties = { fontFamily: 'var(--font-e2e-avenir)', fontWeight: 500, fontSize: 22, lineHeight: '26px', color: 'var(--color-text-primary)' }
 /* The dollar sign raised and smaller, 14.19 — the design's superscript. */
