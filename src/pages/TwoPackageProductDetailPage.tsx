@@ -406,20 +406,22 @@ export function TwoPackageProductDetailPage() {
         <aside aria-label="Purchase" style={{ ...RAIL, top: railTop }}>
           <div style={RAIL_STICKY}>
             <div style={SIDE_BOXES}>
-              {/* OUR PASS GUARANTEE — Figma 572:3910 (2026-10-29, Eric): the rail's first module, in the rail's own type (the title in
-                  the rail's serif 20 / 24, the copy 15 / 21, the link the page's) — a 1 edge, 8 corners, 32 in. */}
-              <section style={PASS_GUARANTEE_BOX}>
-                <h2 style={SIDE_TITLE}>Our Pass Guarantee</h2>
-                <p style={SIDE_BODY}>
-                  We’re confident we can prepare you to pass your state licensing exam on the first try.
-                </p>
-                {/* Avenir set here, as on the welcome link — outside a paragraph it had inherited the page's default face. */}
-                <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, display: 'block', fontFamily: 'var(--font-e2e-avenir)' }}>
-                  Pass Guarantee Policy
-                  <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
-                </button>
-              </section>
               <div style={SIDE_BOX_PAIR}>
+                {/* OUR PASS GUARANTEE — Figma 572:3910 (2026-10-29, Eric): the rail's first module, in the rail's own type (the title in
+                    the rail's serif 20 / 24, the copy 15 / 21, the link the page's). Unframed now, like the modules under it, with a
+                    rule between (2026-10-29, Eric; it had the design's 1 edge, 8 corners, 32 in). */}
+                <section style={{ ...SIDE_SECTION, alignItems: 'flex-start' }}>
+                  <h2 style={SIDE_TITLE}>Our Pass Guarantee</h2>
+                  <p style={SIDE_BODY}>
+                    We’re confident we can prepare you to pass your state licensing exam on the first try.
+                  </p>
+                  {/* Avenir set here, as on the welcome link — outside a paragraph it had inherited the page's default face. */}
+                  <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, display: 'block', fontFamily: 'var(--font-e2e-avenir)' }}>
+                    Pass Guarantee Policy
+                    <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
+                  </button>
+                </section>
+                <hr aria-hidden style={SIDE_RULE} />
                 {/* Course Specs moved to the course information box under the training program (2026-10-29, Eric). */}
                 {/* What You'll Learn, in the rail too — the body's list in the rail's type (2026-10-28, Eric). */}
                 <section style={SIDE_SECTION}>
@@ -1227,17 +1229,6 @@ const WHAT_TO_EXPECT: [string, string][] = [
   ['Pass in 2 weeks or less!', 'Our 3-part training program will prepare you to pass fast!'],
 ]
 
-/* Figma 572:3910's frame: a 1 #E4E0D7 edge (Secondary 300's neighbour, so the token), 8 corners, 32 in; the rail's 14 between
-   its pieces rather than the design's 11, to match the modules under it. */
-const PASS_GUARANTEE_BOX: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'flex-start',
-  gap: 14,
-  padding: 31, // 32 to the text, the edge's 1 included — so it lines up with the modules under it
-  border: '1px solid var(--color-secondary-300)',
-  borderRadius: 8,
-}
 const SIDE_BOXES: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
