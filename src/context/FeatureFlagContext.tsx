@@ -2681,7 +2681,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     versions: ['eric-atlas-e2e'],
     surfaces: ['invite'],
     group: 'Layout',
-    label: 'Course Cards',
+    label: 'Pinned Cards', // (2026-10-29, Eric; was Course Cards — the key stays `pdp-course-cards`)
     description:
       'The two-package PDP\u2019s package cards. No Card Trays \u2014 the default \u2014 leaves the compact cards to scroll away with the page; Large Cards condense as they pin; Compact Cards draws the compact layout on the page too; the Top Mini Card Tray leaves the cards on the page and slides a full-width tray down from the top of the browser once they have scrolled off, with the page\u2019s cards compact too.',
     defaultEnabled: true,
