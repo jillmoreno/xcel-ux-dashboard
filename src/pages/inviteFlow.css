@@ -170,6 +170,8 @@
 .cre-e2e-package-card {
   transition: background-color 0.15s ease, box-shadow 0.15s ease;
 }
+/* Premier wears it at rest too (2026-10-29, Eric). */
+.cre-e2e-package-card--on,
 .cre-e2e-package-card:hover {
   background: var(--color-fixed-light) !important;
   box-shadow: inset 0 0 0 1px var(--color-e2e-card-outline), inset 0 0 0 7px var(--color-secondary-200), 0 4px 8px -2px rgb(0 0 0 / 0.3) !important;

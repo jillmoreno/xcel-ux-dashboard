@@ -269,9 +269,9 @@ export function TwoPackageProductDetailPage() {
         Purchase {p.short}
       </button>
     )
-    // Not clickable now — a hover lifts it (cre-e2e-package-card, inviteFlow.css: the selected ring and shadow).
+    // Not clickable now — a hover lifts it (cre-e2e-package-card, inviteFlow.css: the selected ring and shadow); Premier is lifted at rest.
     return (
-      <div className="cre-e2e-package-card" style={OPTION_CARD}>
+      <div className={`cre-e2e-package-card${p.id === 'premier' ? ' cre-e2e-package-card--on' : ''}`} style={OPTION_CARD}>
         {/* THE TAB (2026-10-28, Eric; was the eyebrow over the title and PASS GUARANTEE top right): the mini tray's, top left —
             the package's name on tan, behind Premier's brick PASS GUARANTEE. */}
         {/* Gone from the multi-product page's cards (2026-10-29, Eric) — their titles name the package now; the single card keeps it. */}
