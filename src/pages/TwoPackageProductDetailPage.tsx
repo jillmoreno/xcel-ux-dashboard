@@ -355,14 +355,9 @@ export function TwoPackageProductDetailPage() {
           <h2 ref={courseTitleRef} style={COURSE_HEAD_TITLE}>
             {place} {line} <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
           </h2>
+          {/* The concise intro (2026-10-29, Eric), in place of "Our pre-licensing packages are updated annually and designed with a
+              simplified approach…". */}
           <p style={BODY}>
-            Our pre-licensing packages are updated annually and designed with a simplified approach to help you understand and
-            retain complex insurance concepts and terms. <strong style={{ fontWeight: 800 }}>Learn faster and retain more</strong> with
-            our interactive lessons plans and quizzes.{' '}
-            <strong style={{ fontWeight: 800 }}>Pass the {place} state licensing exam the first time.</strong>
-          </p>
-          {/* A CONCISE VERSION, under the original for comparison (2026-10-29, Eric) — one of the two goes once it is decided. */}
-          <p style={{ ...BODY, marginTop: 16 }}>
             Updated every year, our packages make complex insurance concepts simple.{' '}
             <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
             <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
