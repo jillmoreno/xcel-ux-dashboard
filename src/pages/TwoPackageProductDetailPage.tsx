@@ -312,6 +312,22 @@ export function TwoPackageProductDetailPage() {
     )
   }
 
+  /* Copies B and C's PREMIER PACKAGE | Includes our Pass Guarantee strip (Figma 573:3972; 2026-10-29, Eric). */
+  const packageStripRow = (
+    <div style={PACKAGE_STRIP_ROW_C}>
+      {/* A crown at its left, the shield's gap and size (2026-10-29, Eric). */}
+      <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--color-text-primary)' }}>
+        <CrownSolid size={14} aria-hidden />
+        <span style={PACKAGE_STRIP_LABEL_C}>Premier package</span>
+      </span>
+      <span aria-hidden style={PACKAGE_STRIP_RULE_C} />
+      <span style={PACKAGE_STRIP_GUARANTEE_C}>
+        <ShieldCheckSolid size={14} aria-hidden />
+        <span style={{ paddingTop: 1 }}>Includes our Pass Guarantee</span>
+      </span>
+    </div>
+  )
+
   const miniCards = packages.map((p) => (
     <MiniCard key={p.id} p={p} on={p.id === picked} title={`${place} ${localize(p.title)}`} onPick={() => setPicked(p.id)} onBuy={() => purchase(p.id)} />
   ))
@@ -425,7 +441,9 @@ export function TwoPackageProductDetailPage() {
             the package, price and Purchase under it with no box, then the intro. */}
         {single ? (
           <div style={HEAD_WITH_PACKAGE_B}>
-            <span style={PILL_BADGE_B}>Pass Guarantee</span>
+            {/* C's strip in place of the pill, and C's price block — no package name, the price over the Purchase — straight under
+                the title (2026-10-29, Eric). */}
+            <div style={PACKAGE_STRIP_C}>{packageStripRow}</div>
             <h2 style={COURSE_HEAD_TITLE}>
               {/* A break after the line of authority (2026-10-29, Eric). */}
               {place} {line}
@@ -433,7 +451,7 @@ export function TwoPackageProductDetailPage() {
               <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
             </h2>
             <div style={{ ...HEAD_PACKAGE_B, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
-              {renderCard(packages[0], true)}
+              {renderCard(packages[0], true, { price: 0 })}
             </div>
             {/* 8 further from the Purchase and 8 nearer the table below (2026-10-29, Eric). */}
             <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
@@ -448,20 +466,7 @@ export function TwoPackageProductDetailPage() {
           <div style={HEAD_WITH_PACKAGE_C}>
             {/* Figma 573:3972 (2026-10-29, Eric), in place of the PASS GUARANTEE pill: PREMIER PACKAGE, a rule, then a shield and
                 "Includes our Pass Guarantee" in brick, between hairlines above and below. */}
-            <div style={{ ...PACKAGE_STRIP_C, gridColumn: 1, gridRow: 1, justifySelf: 'start' }}>
-              <div style={PACKAGE_STRIP_ROW_C}>
-                {/* A crown at its left, the shield's gap and size (2026-10-29, Eric). */}
-                <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--color-text-primary)' }}>
-                  <CrownSolid size={14} aria-hidden />
-                  <span style={PACKAGE_STRIP_LABEL_C}>Premier package</span>
-                </span>
-                <span aria-hidden style={PACKAGE_STRIP_RULE_C} />
-                <span style={PACKAGE_STRIP_GUARANTEE_C}>
-                  <ShieldCheckSolid size={14} aria-hidden />
-                  <span style={{ paddingTop: 1 }}>Includes our Pass Guarantee</span>
-                </span>
-              </div>
-            </div>
+            <div style={{ ...PACKAGE_STRIP_C, gridColumn: 1, gridRow: 1, justifySelf: 'start' }}>{packageStripRow}</div>
             <h2 style={{ ...COURSE_HEAD_TITLE, color: 'var(--color-text-primary)', alignSelf: 'end', gridColumn: 1, gridRow: 2 }}>
               {/* A break after the line of authority (2026-10-29, Eric). */}
               {place} {line}
@@ -1658,24 +1663,6 @@ const HEAD_PACKAGE: CSSProperties = {
 /* Copy B of the single head (2026-10-29, Eric) — starts identical to the first, 48 below it; change these to compare. */
 const HEAD_WITH_PACKAGE_B: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 16, marginTop: 48 }
 const HEAD_PACKAGE_B: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }
-/* The badge as a pill: the tab's type and brick, round ends, 10 either side of the label. */
-const PILL_BADGE_B: CSSProperties = {
-  alignSelf: 'flex-start',
-  display: 'inline-flex',
-  alignItems: 'center',
-  height: 21,
-  paddingTop: 3,
-  paddingRight: 10,
-  paddingLeft: 10,
-  borderRadius: 999,
-  background: 'var(--color-xcel-brick)',
-  color: 'var(--color-fixed-light)',
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 800,
-  fontSize: 11,
-  textTransform: 'uppercase',
-  whiteSpace: 'nowrap',
-}
 /* Copy C (2026-10-29, Eric) — B's, to start; change these to compare. */
 // C (2026-10-29, Eric): the pill across, then the title with the package far right beside it, then the intro across.
 const HEAD_WITH_PACKAGE_C: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto auto', alignItems: 'center', columnGap: 32, rowGap: 16, marginTop: 48 }
