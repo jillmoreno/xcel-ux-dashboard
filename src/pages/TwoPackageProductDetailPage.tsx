@@ -638,26 +638,29 @@ export function TwoPackageProductDetailPage() {
                   </p>
                 </div>
                 {/* Four benefits in tiles — Figma 558:3578 (2026-10-28, Eric). */}
-                <ul style={BENEFITS}>
-                  {BENEFIT_TILES.map(({ Icon, text, maxWidth, units, viewWidth, scale = 1 }, i) => (
-                    <Fragment key={text}>
-                      {/* The rule between two, the space either side of it the row's own (space-between). */}
-                      {i > 0 ? <li aria-hidden style={BENEFIT_RULE} /> : null}
-                      <li style={BENEFIT}>
-                        <Icon
-                          aria-hidden
-                          style={{
-                            ...BENEFIT_ICON,
-                            height: BENEFIT_ICON_SIZE * scale,
-                            width: (viewWidth * BENEFIT_ICON_SIZE * scale) / 512,
-                            marginRight: -((viewWidth - units) * BENEFIT_ICON_SIZE * scale) / 512,
-                          }}
-                        />
-                        <span style={{ ...BENEFIT_TEXT, maxWidth }}>{text}</span>
-                      </li>
-                    </Fragment>
-                  ))}
-                </ul>
+                {/* Hidden (2026-10-29, Eric) — kept whole behind SHOW_BENEFITS, so showing them again is one word. */}
+                {SHOW_BENEFITS ? (
+                  <ul style={BENEFITS}>
+                    {BENEFIT_TILES.map(({ Icon, text, maxWidth, units, viewWidth, scale = 1 }, i) => (
+                      <Fragment key={text}>
+                        {/* The rule between two, the space either side of it the row's own (space-between). */}
+                        {i > 0 ? <li aria-hidden style={BENEFIT_RULE} /> : null}
+                        <li style={BENEFIT}>
+                          <Icon
+                            aria-hidden
+                            style={{
+                              ...BENEFIT_ICON,
+                              height: BENEFIT_ICON_SIZE * scale,
+                              width: (viewWidth * BENEFIT_ICON_SIZE * scale) / 512,
+                              marginRight: -((viewWidth - units) * BENEFIT_ICON_SIZE * scale) / 512,
+                            }}
+                          />
+                          <span style={{ ...BENEFIT_TEXT, maxWidth }}>{text}</span>
+                        </li>
+                      </Fragment>
+                    ))}
+                  </ul>
+                ) : null}
                 {/* The three parts as xcelsolutions.com's home page draws them (2026-10-28, Eric): the number in brick beside each,
                     a slab-serif title, the copy in grey, a #DDD rule between parts. */}
                 <ol style={STEPS}>
@@ -963,6 +966,8 @@ const CHANGE_STATES = Object.keys(STATE_ABBR)
 const CHANGE_LINES = ['Life and Health', 'Life', 'Health', 'Property and Casualty', 'Personal Lines']
 
 /* The four benefit tiles under the training program's subhead (Figma 558:3578). Their copy is xcelsolutions.com's list. */
+/* The benefit tiles under the 3-Part Training Program subhead — hidden (2026-10-29, Eric). */
+const SHOW_BENEFITS = false
 const BENEFIT_TILES: { Icon: typeof FaceGrinLight; text: string; maxWidth: number; units: number; viewWidth: number; scale?: number }[] = [
   // Each label's width is its first line's, so every one sets on two lines as in the design and the row has room for its rules
   // — "Access 800+ practice / exam questions" on two, not the design's three (2026-10-28, Eric). On one line each, the four
