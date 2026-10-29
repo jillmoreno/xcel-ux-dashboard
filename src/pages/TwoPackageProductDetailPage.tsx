@@ -338,7 +338,7 @@ export function TwoPackageProductDetailPage() {
           <h1 style={{ ...WELCOME_TITLE, marginBottom: -8 }}>You’ve been invited</h1>
           {/* The sentence, and on its baseline at the band's right edge — the rail's right edge — the link, in place of "Choose your
               package below and start learning today!" (2026-10-29, Eric). The page's standard link type with an angle-right; it no
-              longer opens the on-page selector. */}
+              longer opens the on-page selector. Avenir set here — out of a paragraph, it had inherited the page's default face. */}
           <div style={{ alignSelf: 'stretch', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 24 }}>
             <p ref={welcomeRef} style={WELCOME_BODY}>
               <strong style={{ fontWeight: 800 }}>{E2E_PARTNER_NAME}</strong> has invited
@@ -348,7 +348,7 @@ export function TwoPackageProductDetailPage() {
               </strong>
               .
             </p>
-            <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...PLAIN_LINK, flex: 'none' }}>
+            <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...PLAIN_LINK, flex: 'none', fontFamily: 'var(--font-e2e-avenir)' }}>
               Change state/line of authority
               <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
             </button>
