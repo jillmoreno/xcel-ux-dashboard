@@ -143,7 +143,7 @@ export function AtlasAdminPulsePage() {
             {/* Hugging their content. */}
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 8 }}>
               <Figure hug label="Need intervention" value={pulse.offTrack.length} bg={FIGURE_TINT} ink="var(--admin-amber)" note={`${pulse.noPrep} no prep · ${pulse.noActivity} no recent activity`} />
-              <Figure hug label="Exam ready" value={pulse.prepared.length} bg={FIGURE_TINT} ink="var(--admin-success-ink)" note={`${pulse.dated.length} exams scheduled · ${pulse.undated.length} not yet booked`} />
+              <Figure hug label="Exam ready" value={pulse.prepared.length} bg={FIGURE_TINT} ink="var(--admin-success-ink)" note={`${pulse.dated.length} scheduled · ${pulse.undated.length} not booked`} />
               <Figure hug label="Forecasted licensed" value={pulse.forecast} bg={FIGURE_TINT} ink="var(--admin-chart-blue)" note={`${pulse.licensed} licensed now · ${pulse.rate}% of the pipeline`} />
             </div>
             <Action
