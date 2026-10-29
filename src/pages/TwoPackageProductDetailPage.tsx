@@ -287,12 +287,14 @@ export function TwoPackageProductDetailPage() {
             </span>
           </span>
         ) : (
-          <span style={{ ...OPTION_BODY, paddingTop: 24 }}>
+          <span style={{ ...OPTION_BODY, paddingTop: 24, paddingBottom: pinLerp(28, 24) }}>
             {/* 24 from the card's top, with no tab above it now (2026-10-29, Eric; 20 under the tab). */}
             {/* A card's own title where it has one — Standard's is "Standard Course" (2026-10-29, Eric). */}
             <span style={OPTION_TITLE}>{p.cardTitle ?? `${place} ${localize(p.title)}`}</span>
             {prices}
-            {buy(OPTION_BUY)}
+            {/* The price stacked over its Purchase, the button across the card in the flow (2026-10-29, Eric; it slid beside the
+                price as the cards condensed). */}
+            {buy(STACKED_BUY)}
           </span>
         )}
         {/* The card's 1 edge drawn again over everything, so its top runs across the tab (2026-10-28, Eric). */}
@@ -413,7 +415,7 @@ export function TwoPackageProductDetailPage() {
                 <div style={PACKAGES_HEAD_ROW}>
                   <h2 id="choose-package" style={SIDE_TITLE}>
                     {/* Single, there is nothing to select (2026-10-28, Eric). */}
-                    {single ? <>Your {place} state package:</> : <>Select your {place} package:</>}
+                    {single ? <>Your {place} state package:</> : <>Select a package:</>}
                   </h2>
                   {/* Back to the state or line-of-authority choice — one link on the heading's baseline, right-aligned, in the rail's
                       link type, no underline (2026-10-28, Eric; was two, Change state · Change line). It opens the selector below. */}
@@ -1852,24 +1854,6 @@ const OPTION_WAS: CSSProperties = { position: 'relative', fontFamily: 'var(--fon
 /* The brick strike, 68 long at -7.43°, 1 thick (2026-10-27, Eric; was 2.15 — the SVG stretches to fit). */
 const OPTION_STRIKE: CSSProperties = { position: 'absolute', left: -2, top: '50%', width: pinLerp(68, 46), height: 1, transform: 'translateY(-50%) rotate(-7.43deg)' }
 
-/* Each card's Purchase (2026-10-27, Eric; was the rail's price card): 39 tall, across the card under the price. Condensing, it
-   slides across to clear the price (--px), then rises into its row (the body's bottom padding, --py), 34 tall — Figma 548:3477.
-   10 from the price and a 15 label rather than the design's 16 and 16: a 740 column makes the cards 322, not 370, and "Purchase
-   Standard" needs the room.
-   The label sits 1 low: a button centres its content box, so 2 on top shifts it 1. */
-const OPTION_BUY: CSSProperties = {
-  ...ADD_TO_CART,
-  position: 'absolute',
-  left: 'calc(28px + (var(--price-w, 0px) + 10px) * var(--px, 0))',
-  right: 28,
-  bottom: pinLerp(28, 20, 'py'), // with the body's bottom padding
-  height: pinLerp(39, 34),
-  borderRadius: pinLerp(5, 8),
-  fontSize: pinLerp(18, 15),
-  whiteSpace: 'nowrap',
-  paddingTop: pinLerp(2, 0), // condensed, centred — the label 1 higher (2026-10-27, Eric)
-  paddingBottom: 0,
-}
 
 /* The single-product card's body (2026-10-28, Eric): OPTION_BODY's padding and type, laid across — the title, then the price over its
    Purchase at the right, their bottoms level. The Purchase sits in the flow here, so the bottom padding is only the button's own 28 / 20. */
@@ -1896,6 +1880,9 @@ const SINGLE_BUY: CSSProperties = {
   paddingBottom: 0,
   paddingLeft: 24,
 }
+
+/* The page cards' Purchase under the price, across the card (2026-10-29, Eric). */
+const STACKED_BUY: CSSProperties = { ...SINGLE_BUY, alignSelf: 'stretch' }
 
 /* Under each card: its description, then what sets it apart. */
 
