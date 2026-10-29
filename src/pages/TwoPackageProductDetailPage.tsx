@@ -497,7 +497,16 @@ export function TwoPackageProductDetailPage() {
           <div style={HEAD_WITH_PACKAGE_D}>
             {/* Figma 573:3972 (2026-10-29, Eric), in place of the PASS GUARANTEE pill: PREMIER PACKAGE, a rule, then a shield and
                 "Includes our Pass Guarantee" in brick, between hairlines above and below. */}
-            <div style={{ ...PACKAGE_STRIP_D, gridColumn: 1, gridRow: 1, justifySelf: 'start' }}>{packageStripRow}</div>
+            {/* D (2026-10-29, Eric): only the shield and "Includes our Pass Guarantee" here, at the left, no rule — the crown and
+                PREMIER PACKAGE moved over the price. */}
+            <div style={{ ...PACKAGE_STRIP_D, gridColumn: 1, gridRow: 1, justifySelf: 'start' }}>
+              <div style={PACKAGE_STRIP_ROW_C}>
+                <span style={PACKAGE_STRIP_GUARANTEE_C}>
+                  <ShieldCheckSolid size={14} aria-hidden />
+                  <span style={{ paddingTop: 1 }}>Includes our Pass Guarantee</span>
+                </span>
+              </div>
+            </div>
             <h2 style={{ ...COURSE_HEAD_TITLE, color: 'var(--color-text-primary)', alignSelf: 'end', gridColumn: 1, gridRow: 2 }}>
               {/* A break after the line of authority (2026-10-29, Eric). */}
               {place} {line}
@@ -507,6 +516,11 @@ export function TwoPackageProductDetailPage() {
             {/* A 1 rule between the title and the package, from the pill's top to the Purchase's bottom edge (2026-10-29, Eric). */}
             <span aria-hidden style={HEAD_RULE_D} />
             <div style={{ ...HEAD_PACKAGE_D, gridColumn: 3, gridRow: 2, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
+              {/* The crown and PREMIER PACKAGE over the price, centred like it (2026-10-29, Eric). */}
+              <span style={PACKAGE_LABEL_D}>
+                <CrownSolid size={14} aria-hidden />
+                <span style={PACKAGE_STRIP_LABEL_C}>Premier package</span>
+              </span>
               {/* No package name; the price row 8 up, centred over the Purchase (2026-10-29, Eric). */}
               {renderCard(packages[0], true, { price: 8, center: true })}
             </div>
@@ -1712,6 +1726,8 @@ const PACKAGE_STRIP_C: CSSProperties = {
   // No hairlines above and below (2026-10-29, Eric; the design's Secondary 300 pair).
 }
 const PACKAGE_STRIP_D: CSSProperties = { ...PACKAGE_STRIP_C }
+// Over D's price: centred, and 12 under it to clear the price row's 8 lift with 4 to spare.
+const PACKAGE_LABEL_D: CSSProperties = { alignSelf: 'center', display: 'flex', alignItems: 'center', gap: 5, marginBottom: 12, color: 'var(--color-text-primary)' }
 const PACKAGE_STRIP_ROW_C: CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, paddingTop: 2, paddingBottom: 2 }
 // One line at its own width — the design's fixed 148 wraps it in our Avenir.
 const PACKAGE_STRIP_LABEL_C: CSSProperties = {
