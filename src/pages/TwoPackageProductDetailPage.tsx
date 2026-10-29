@@ -452,8 +452,8 @@ export function TwoPackageProductDetailPage() {
                 </div>
               )}
               <div style={single ? PREMIER_TILE_D : { ...PREMIER_TILE_D, ...PACKAGE_DIVIDE_D }}>
-                {/* PASS GUARANTEE hung from the rule between the packages, its square edge on it (2026-10-29, Eric). */}
-                <span style={{ ...TOP_BADGE, alignSelf: 'center' }}>Pass Guarantee</span>
+                {/* PASS GUARANTEE under the rule between the packages, 16 below it (2026-10-29, Eric; hung from it, then 16 down). */}
+                <span style={{ ...TOP_BADGE, alignSelf: 'center', marginTop: 16 }}>Pass Guarantee</span>
                 {/* 24 under the tab (2026-10-29, Eric; 16, then 8 more). */}
                 <span style={{ ...PACKAGE_LABEL_D, position: 'static', marginTop: 24 }}>
                   <CrownSolid size={14} aria-hidden />
