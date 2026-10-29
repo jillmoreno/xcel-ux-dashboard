@@ -1579,7 +1579,7 @@ const HEAD_PACKAGE: CSSProperties = {
   // on top, so the badge hangs from its top edge.
   paddingTop: 0,
   paddingRight: 24,
-  paddingBottom: 24,
+  paddingBottom: 16, // 16 under the Purchase (2026-10-29, Eric; was 24)
   paddingLeft: 24,
   borderRadius: 10,
   boxShadow: 'inset 0 0 0 1px var(--color-e2e-card-outline)',
