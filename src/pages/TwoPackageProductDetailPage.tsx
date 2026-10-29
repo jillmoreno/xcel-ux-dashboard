@@ -383,19 +383,31 @@ export function TwoPackageProductDetailPage() {
       <section aria-label="Course" style={COURSE_HEAD}>
         {/* As wide as the details' left column below — the rail and its gutter kept clear (2026-10-27, Eric). */}
         {/* 32 in either side, so the title and intro line up with "Select package:" in the ground below (2026-10-29, Eric). */}
-        <div style={{ width: `calc(100% - ${RAIL_W}px - ${RAIL_GUTTER}px)`, boxSizing: 'border-box', paddingRight: 32, paddingLeft: 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {/* Single, no left padding (2026-10-29, Eric). */}
+        <div style={{ width: `calc(100% - ${RAIL_W}px - ${RAIL_GUTTER}px)`, boxSizing: 'border-box', paddingRight: 32, paddingLeft: single ? 0 : 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {/* Single, the package beside the title and intro, on the right — out of the tan ground (2026-10-29, Eric); the title and
+            intro narrow to make room. */}
+        <div style={single ? HEAD_WITH_PACKAGE : { display: 'contents' }}>
         {/* 2 between the title and its intro (the design's 10, 8 less — 2026-10-27, Eric). */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: COURSE_TITLE_GAP }}>
+        {/* Single, its pieces are the head grid's own: the title beside the package, the intro across under both. */}
+        <div style={single ? { display: 'contents' } : { display: 'flex', flexDirection: 'column', gap: COURSE_TITLE_GAP }}>
           <h2 style={COURSE_HEAD_TITLE}>
             {place} {line} <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
           </h2>
           {/* The concise intro (2026-10-29, Eric), in place of "Our pre-licensing packages are updated annually and designed with a
               simplified approach…". */}
-          <p style={BODY}>
+          <p style={single ? { ...BODY, gridColumn: '1 / -1' } : BODY}>
             Updated every year, our packages make complex insurance concepts simple.{' '}
             <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
             <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
           </p>
+        </div>
+        {single ? (
+          <div style={HEAD_PACKAGE}>
+            <span style={{ ...TOP_BADGE, alignSelf: 'center' }}>Pass Guarantee</span>
+            {renderCard(packages[0])}
+          </div>
+        ) : null}
         </div>
         </div>
       </section>
@@ -457,8 +469,6 @@ export function TwoPackageProductDetailPage() {
             <section aria-label="Choose a package" style={{ display: 'contents' }}>
               {/* The ground's first piece: its top corners, 24 above the heading. The tint fades over this and the cards. */}
               <div ref={headRef} style={single ? { ...PACKAGE_GROUND_HEAD, paddingTop: 0, textAlign: 'center' } : PACKAGE_GROUND_HEAD}>
-                {/* Single, Premier's PASS GUARANTEE at the ground's very top, centred with everything else (2026-10-29, Eric; was left). */}
-                {single ? <span style={TOP_BADGE}>Pass Guarantee</span> : null}
                 {/* In the rail's At a Glance style — the slab serif at 20 / 24 — inside the ground, 4 above and 16 below
                     (2026-10-27, Eric). */}
                 {/* Single, no heading at all (2026-10-29, Eric; was "Your {place} state package:") — the card goes straight in. */}
@@ -540,7 +550,8 @@ export function TwoPackageProductDetailPage() {
                   ref={trayRef}
                   style={{ ...PIN_BACKDROP, top: `calc(${-(browserTop + CARDS_PIN_GAP)}px + 28px * var(--p, 0))` }}
                 />
-                {packages.map((p) => (
+                {/* Single, the card is up beside the title now (2026-10-29, Eric) — the grid stays, empty, for the pin's measures. */}
+                {(single ? [] : packages).map((p) => (
                   <div key={p.id} style={PACKAGE_PANEL}>
                     {/* Figma 544:3250: the card, on the shared ground. */}
                     {renderCard(p)}
@@ -1551,6 +1562,10 @@ const WIDE_COLUMN: CSSProperties = { width: `calc(100% - ${RAIL_W}px - ${RAIL_GU
 /* The single page's card laid across — title left, price over Purchase right (2026-10-28, Eric). Off since 2026-10-29: the single
    page wears the multi page's Premier card, at its multi size. true brings the across card back. */
 const SINGLE_ACROSS = false
+/* The single page's course head: the title, the package on its right with its badge on top, and the intro across the full width
+   under both (2026-10-29, Eric). */
+const HEAD_WITH_PACKAGE: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 240px', alignItems: 'start', columnGap: 32, rowGap: 24 }
+const HEAD_PACKAGE: CSSProperties = { gridColumn: 2, gridRow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
