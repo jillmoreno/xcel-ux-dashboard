@@ -418,36 +418,36 @@ export function TwoPackageProductDetailPage() {
         {/* Single, the package beside the title and intro, on the right — out of the tan ground (2026-10-29, Eric); the title and
             intro narrow to make room. */}
         {/* COPY D (2026-10-29, Eric): C's layout worked further — Single head's D (it sat under C at first). Its own HEAD_WITH_PACKAGE_D / HEAD_PACKAGE_D /
-            HEAD_RULE_D / PACKAGE_STRIP_D to change and compare. */}
+            HEAD_RULE_D to change and compare. */}
         {/* On the multi-product page too, above its own head, for comparison (2026-10-29, Eric). */}
         {!single || singleHead === 'd' ? (
           <div style={single ? HEAD_WITH_PACKAGE_D : { ...HEAD_WITH_PACKAGE_D, marginRight: -32, marginBottom: 48, marginLeft: -32 }}>
             {/* On the multi page, out past the column's 32 side padding to its edges, as on the single page (2026-10-29, Eric). */}
-            {/* Figma 573:3972 (2026-10-29, Eric), in place of the PASS GUARANTEE pill: PREMIER PACKAGE, a rule, then a shield and
-                "Includes our Pass Guarantee" in brick, between hairlines above and below. */}
-            {/* D (2026-10-29, Eric): only the shield and "Includes our Pass Guarantee" here, at the left, no rule — the crown and
-                PREMIER PACKAGE moved over the price. */}
-            <div style={{ ...PACKAGE_STRIP_D, gridColumn: 1, gridRow: 1, justifySelf: 'start' }}>
-              <div style={PACKAGE_STRIP_ROW_C}>
-                <span style={PACKAGE_STRIP_GUARANTEE_C}>
-                  <ShieldCheckSolid size={14} aria-hidden />
-                  <span style={{ paddingTop: 1 }}>Includes our Pass Guarantee</span>
-                </span>
-              </div>
+            {/* No "Includes our Pass Guarantee" strip over the title now — the tab over PREMIER PACKAGE says it (2026-10-29, Eric). */}
+            {/* The title up at the rule's top, its intro 24 under it at its width (2026-10-29, Eric); the package keeps its place. */}
+            <div style={HEAD_TEXT_D}>
+              <h2 style={{ ...COURSE_HEAD_TITLE, color: 'var(--color-text-primary)' }}>
+                {/* A break after the line of authority (2026-10-29, Eric). */}
+                {place} {line}
+                <br />
+                <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
+              </h2>
+              <p style={{ ...BODY, marginBottom: -8 }}>
+                Updated every year, our packages make complex insurance concepts simple.{' '}
+                <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
+                <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
+              </p>
             </div>
-            <h2 style={{ ...COURSE_HEAD_TITLE, color: 'var(--color-text-primary)', alignSelf: 'end', gridColumn: 1, gridRow: 2 }}>
-              {/* A break after the line of authority (2026-10-29, Eric). */}
-              {place} {line}
-              <br />
-              <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
-            </h2>
             {/* A 1 rule between the title and the package, from the pill's top to the Purchase's bottom edge (2026-10-29, Eric). */}
             {/* On the multi page, down past the Standard tile too (2026-10-29, Eric). */}
-            <span aria-hidden style={single ? HEAD_RULE_D : { ...HEAD_RULE_D, gridRow: '1 / 4', marginBottom: 0 }} />
-            <div style={{ ...HEAD_PACKAGE_D, gridColumn: 3, gridRow: 2, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
+            <span aria-hidden style={single ? HEAD_RULE_D : { ...HEAD_RULE_D, gridRow: '1 / 3', marginBottom: 0 }} />
+            <div style={{ ...HEAD_PACKAGE_D, gridColumn: 3, gridRow: 1, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
               {/* The crown and PREMIER PACKAGE over the price, centred like it (2026-10-29, Eric). */}
+              {/* The cards' PASS GUARANTEE tab, centred over PREMIER PACKAGE (2026-10-29, Eric). */}
+              {/* At the column's top, level with the rule's (2026-10-29, Eric); the rest stays down on the title's baseline. */}
+              <span style={{ ...TOP_BADGE, alignSelf: 'center' }}>Pass Guarantee</span>
               {/* Back down to its price, the Standard tile's spacing (2026-10-29, Eric; it was raised to the guarantee's baseline). */}
-              <span style={{ ...PACKAGE_LABEL_D, position: 'static' }}>
+              <span style={{ ...PACKAGE_LABEL_D, position: 'static', marginTop: 'auto' }}>
                 <CrownSolid size={14} aria-hidden />
                 <span style={PACKAGE_STRIP_LABEL_C}>Premier package</span>
               </span>
@@ -464,12 +464,6 @@ export function TwoPackageProductDetailPage() {
                 {renderCard(STANDARD, true, { price: 8, center: true })}
               </div>
             )}
-            {/* Under the title, at its width (2026-10-29, Eric; was across the full width under both). */}
-            <p style={{ ...BODY, gridColumn: 1, gridRow: 3, alignSelf: 'start', marginTop: 8, marginBottom: -8 }}>
-              Updated every year, our packages make complex insurance concepts simple.{' '}
-              <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
-              <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
-            </p>
           </div>
         ) : null}
         {!single || singleHead === 'a' ? (
@@ -1745,7 +1739,6 @@ const PACKAGE_STRIP_C: CSSProperties = {
   paddingBottom: 10, // 8 more under it (2026-10-29, Eric; was 2)
   // No hairlines above and below (2026-10-29, Eric; the design's Secondary 300 pair).
 }
-const PACKAGE_STRIP_D: CSSProperties = { ...PACKAGE_STRIP_C }
 // Over D's price: centred, and 12 under it to clear the price row's 8 lift with 4 to spare. Raised 20.5 on its own so its
 // baseline is "Includes our Pass Guarantee"'s, across the rule (2026-10-29, Eric; measured).
 const PACKAGE_LABEL_D: CSSProperties = { alignSelf: 'center', display: 'flex', alignItems: 'center', gap: 5, marginBottom: 12, position: 'relative', top: -20.5, color: 'var(--color-text-primary)' }
@@ -1781,20 +1774,24 @@ const PACKAGE_STRIP_GUARANTEE_C: CSSProperties = {
 const HEAD_RULE_C: CSSProperties = { gridColumn: 2, gridRow: '1 / 3', alignSelf: 'stretch', width: 1, marginBottom: 17, position: 'relative', left: -8, background: SECONDARY_250 }
 /* Copy D (2026-10-29, Eric) — C's, to start; Single head's D. */
 const HEAD_WITH_PACKAGE_D: CSSProperties = { ...HEAD_WITH_PACKAGE_C }
-const HEAD_PACKAGE_D: CSSProperties = { ...HEAD_PACKAGE_C }
+// Down both rows, its tab at the top and its Purchase's foot 17 above the row's — on the title's last baseline (2026-10-29, Eric).
+// Its own 125 tall from the rule's top, as it was with the guarantee strip over the title: the tab at the top, the rest down at
+// the foot (2026-10-29, Eric).
+const HEAD_PACKAGE_D: CSSProperties = { ...HEAD_PACKAGE_C, alignSelf: 'start', top: 0, marginTop: 0, minHeight: 125 } // not B's -10
+// The title and its intro, in the first column down both rows, from the top.
+const HEAD_TEXT_D: CSSProperties = { gridColumn: 1, gridRow: '1 / 3', alignSelf: 'start', display: 'flex', flexDirection: 'column', gap: 24 }
 // 24 from the package options, 40 from the title (2026-10-29, Eric; C's is 24 from the title, 40 from the options).
-const HEAD_RULE_D: CSSProperties = { ...HEAD_RULE_C, left: 8 }
+const HEAD_RULE_D: CSSProperties = { ...HEAD_RULE_C, gridRow: '1 / 2', marginBottom: 0, left: 8 }
 // D's Standard tile on the multi page: under Premier's, right, at the row's top. A 1 Secondary 250 rule over it, 16 from
-// Premier's Purchase and 16 above STANDARD PACKAGE (2026-10-29, Eric) — up 17 to undo Premier's lift onto the title's baseline.
+// Premier's Purchase and 16 above STANDARD PACKAGE (2026-10-29, Eric).
 const STANDARD_TILE_D: CSSProperties = {
   gridColumn: 3,
-  gridRow: 3,
+  gridRow: 2,
   alignSelf: 'start',
   justifySelf: 'end',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
-  marginTop: -17,
   paddingTop: 16,
   borderTop: `1px solid ${SECONDARY_250}`,
 }
