@@ -170,6 +170,7 @@ const REBRAND_FLAGS = [
   'order-confirmation-style',
   'split-journey-rail',
   'pdp-products',
+  'pdp-single-head',
   'pdp-course-cards',
   'invite-missing-details',
   'e2e-ends-at-password',

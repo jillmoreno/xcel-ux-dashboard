@@ -97,6 +97,8 @@ export function TwoPackageProductDetailPage() {
   /* The design bar's Products (2026-10-28, Eric): the multi-product page, or the single-product one — Premier alone, its card
      the only one and the comparison its own list. Single always has Premier picked, whatever was picked before the switch. */
   const single = useFeatureFlag('pdp-products').variant === 'single'
+  /* The single page's course head — A, B or C (2026-10-29, Eric; C the default, A and B kept to draw on). */
+  const singleHead = useFeatureFlag('pdp-single-head').variant ?? 'c'
   const picked: PackageId = single ? 'premier' : chosen
   const packages = single ? PACKAGES.filter((p) => p.id === 'premier') : PACKAGES
   /* Change state or line: the selector slid open under the heading (2026-10-28, Eric). Nothing opens it now (2026-10-29, Eric: the link
@@ -410,6 +412,7 @@ export function TwoPackageProductDetailPage() {
         <div style={{ width: `calc(100% - ${RAIL_W}px - ${RAIL_GUTTER}px)`, boxSizing: 'border-box', paddingRight: single ? 0 : 32, paddingLeft: single ? 0 : 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* Single, the package beside the title and intro, on the right — out of the tan ground (2026-10-29, Eric); the title and
             intro narrow to make room. */}
+        {!single || singleHead === 'a' ? (
         <div style={single ? HEAD_WITH_PACKAGE : { display: 'contents' }}>
         {/* 2 between the title and its intro (the design's 10, 8 less — 2026-10-27, Eric). */}
         {/* Single, its pieces are the head grid's own: the title beside the package, the intro across under both. */}
@@ -435,11 +438,12 @@ export function TwoPackageProductDetailPage() {
           </div>
         ) : null}
         </div>
+        ) : null}
         {/* COPY B (2026-10-29, Eric): the single head again, right under the first, to work changes out on and compare. Its own
             HEAD_WITH_PACKAGE_B / HEAD_PACKAGE_B, so changing it leaves the first as it is. Remove once one is chosen. */}
         {/* B (2026-10-29, Eric): one column — PASS GUARANTEE as a pill over the title, the title the column's full width, then
             the package, price and Purchase under it with no box, then the intro. */}
-        {single ? (
+        {single && singleHead === 'b' ? (
           <div style={HEAD_WITH_PACKAGE_B}>
             {/* C's strip in place of the pill, and C's price block — no package name, the price over the Purchase — straight under
                 the title (2026-10-29, Eric). */}
@@ -463,7 +467,7 @@ export function TwoPackageProductDetailPage() {
           </div>
         ) : null}
         {/* COPY C (2026-10-29, Eric): B again, under it, for more comparison — its own HEAD_WITH_PACKAGE_C / HEAD_PACKAGE_C. */}
-        {single ? (
+        {single && singleHead === 'c' ? (
           <div style={HEAD_WITH_PACKAGE_C}>
             {/* Figma 573:3972 (2026-10-29, Eric), in place of the PASS GUARANTEE pill: PREMIER PACKAGE, a rule, then a shield and
                 "Includes our Pass Guarantee" in brick, between hairlines above and below. */}
@@ -477,6 +481,32 @@ export function TwoPackageProductDetailPage() {
             {/* A 1 rule between the title and the package, from the pill's top to the Purchase's bottom edge (2026-10-29, Eric). */}
             <span aria-hidden style={HEAD_RULE_C} />
             <div style={{ ...HEAD_PACKAGE_C, gridColumn: 3, gridRow: 2, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
+              {/* No package name; the price row 8 up, centred over the Purchase (2026-10-29, Eric). */}
+              {renderCard(packages[0], true, { price: 8, center: true })}
+            </div>
+            <p style={{ ...BODY, gridColumn: '1 / -1', gridRow: 3, marginTop: 8, marginBottom: -8 }}>
+              Updated every year, our packages make complex insurance concepts simple.{' '}
+              <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
+              <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
+            </p>
+          </div>
+        ) : null}
+        {/* COPY D (2026-10-29, Eric): C again, right under it while C is the head — its own HEAD_WITH_PACKAGE_D / HEAD_PACKAGE_D /
+            HEAD_RULE_D / PACKAGE_STRIP_D to change and compare. */}
+        {single && singleHead === 'c' ? (
+          <div style={HEAD_WITH_PACKAGE_D}>
+            {/* Figma 573:3972 (2026-10-29, Eric), in place of the PASS GUARANTEE pill: PREMIER PACKAGE, a rule, then a shield and
+                "Includes our Pass Guarantee" in brick, between hairlines above and below. */}
+            <div style={{ ...PACKAGE_STRIP_D, gridColumn: 1, gridRow: 1, justifySelf: 'start' }}>{packageStripRow}</div>
+            <h2 style={{ ...COURSE_HEAD_TITLE, color: 'var(--color-text-primary)', alignSelf: 'end', gridColumn: 1, gridRow: 2 }}>
+              {/* A break after the line of authority (2026-10-29, Eric). */}
+              {place} {line}
+              <br />
+              <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
+            </h2>
+            {/* A 1 rule between the title and the package, from the pill's top to the Purchase's bottom edge (2026-10-29, Eric). */}
+            <span aria-hidden style={HEAD_RULE_D} />
+            <div style={{ ...HEAD_PACKAGE_D, gridColumn: 3, gridRow: 2, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
               {/* No package name; the price row 8 up, centred over the Purchase (2026-10-29, Eric). */}
               {renderCard(packages[0], true, { price: 8, center: true })}
             </div>
@@ -1661,13 +1691,13 @@ const HEAD_PACKAGE: CSSProperties = {
   borderRadius: 10,
   boxShadow: 'inset 0 0 0 1px var(--color-e2e-card-outline)',
 }
-/* Copy B of the single head (2026-10-29, Eric) — starts identical to the first, 48 below it; change these to compare. */
-const HEAD_WITH_PACKAGE_B: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 16, marginTop: 48 }
+/* Copy B of the single head (2026-10-29, Eric) — the design bar's Single head picks A, B or C (pdp-single-head). */
+const HEAD_WITH_PACKAGE_B: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 16 }
 // 10 nearer the title (2026-10-29, Eric).
 const HEAD_PACKAGE_B: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: -10 }
 /* Copy C (2026-10-29, Eric) — B's, to start; change these to compare. */
 // C (2026-10-29, Eric): the pill across, then the title with the package far right beside it, then the intro across.
-const HEAD_WITH_PACKAGE_C: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto auto', alignItems: 'center', columnGap: 32, rowGap: 16, marginTop: 48 }
+const HEAD_WITH_PACKAGE_C: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto auto', alignItems: 'center', columnGap: 32, rowGap: 16 }
 // At the row's foot with the title, then lifted 17 — the title's last baseline above its line box's bottom — so the Purchase's
 // bottom edge sits on "Package"'s baseline (2026-10-29, Eric; was centred on the title). Lifted by position, not margin, so the
 // row keeps its height and the title stays put.
@@ -1681,6 +1711,7 @@ const PACKAGE_STRIP_C: CSSProperties = {
   paddingBottom: 10, // 8 more under it (2026-10-29, Eric; was 2)
   // No hairlines above and below (2026-10-29, Eric; the design's Secondary 300 pair).
 }
+const PACKAGE_STRIP_D: CSSProperties = { ...PACKAGE_STRIP_C }
 const PACKAGE_STRIP_ROW_C: CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, paddingTop: 2, paddingBottom: 2 }
 // One line at its own width — the design's fixed 148 wraps it in our Avenir.
 const PACKAGE_STRIP_LABEL_C: CSSProperties = {
@@ -1711,6 +1742,10 @@ const PACKAGE_STRIP_GUARANTEE_C: CSSProperties = {
 // Purchase's bottom edge.
 // 8 left of the gap's middle (2026-10-29, Eric), the title and package staying put.
 const HEAD_RULE_C: CSSProperties = { gridColumn: 2, gridRow: '1 / 3', alignSelf: 'stretch', width: 1, marginBottom: 17, position: 'relative', left: -8, background: SECONDARY_250 }
+/* Copy D (2026-10-29, Eric) — C's, to start, 48 under it; change these to compare. */
+const HEAD_WITH_PACKAGE_D: CSSProperties = { ...HEAD_WITH_PACKAGE_C, marginTop: 48 }
+const HEAD_PACKAGE_D: CSSProperties = { ...HEAD_PACKAGE_C }
+const HEAD_RULE_D: CSSProperties = { ...HEAD_RULE_C }
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',

@@ -2648,7 +2648,37 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     defaultVariant: 'multi',
     variants: [
       { value: 'multi', label: 'Multi-product', description: 'Standard and Premier side by side, with the comparison grid. The default.' },
-      { value: 'single', label: 'Single product', description: 'Premier alone, the grid captioned \u201cPremier package includes:\u201d with only its column.' },
+      { value: 'single', label: 'Single product', description: 'Premier alone, the grid captioned \u201cPackage includes:\u201d with only its column.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'pdp-single-head',
+    /* THE SINGLE-PRODUCT PDP'S COURSE HEAD — 2026-10-29, Eric: "make copy C
+       the default one for now. But keep copies A and B in case I want to draw
+       on them further." Three treatments of the title, the Pass Guarantee and
+       the price, worked out side by side on the page and now one at a time.
+
+       a — the title beside a boxed price tile, its PASS GUARANTEE tab on top.
+       b — PREMIER PACKAGE | Pass Guarantee over the title, the price and
+           Purchase under it, left.
+       c — the same strip over a dark title, the price and Purchase far right
+           past a rule, the Purchase on the title's baseline. THE DEFAULT.
+
+       Single-product only; the multi-product page has its own head. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite'],
+    group: 'Layout',
+    label: 'Single head',
+    description:
+      'The single-product PDP\u2019s course head: A, the boxed price tile beside the title; B, the package strip over the title with the price under it; or C, the strip over the title with the price far right \u2014 the default.',
+    defaultEnabled: true,
+    defaultVariant: 'c',
+    variants: [
+      { value: 'a', label: 'A', description: 'The title beside a boxed price tile with its PASS GUARANTEE tab.' },
+      { value: 'b', label: 'B', description: 'The package strip over the title, the price and Purchase under it.' },
+      { value: 'c', label: 'C', description: 'The package strip over a dark title, the price far right past a rule. The default.' },
     ],
     page: 'dashboard-rebrand',
   },
