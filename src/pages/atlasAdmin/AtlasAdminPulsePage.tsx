@@ -6,7 +6,7 @@ import { BookOpen, CalendarRegular, ChartSimple, Envelope, Sparkles, TriangleExc
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, BUTTON_BRAND, BUTTON_OUTLINE, EYEBROW, FIELD_LABEL, HEADING, INPUT, PILL, STATUS_COUNT, STATUS_DESC } from './adminStyles'
-import { StatusPill } from './adminUi'
+import { StatusNote, StatusPill } from './adminUi'
 import { STUDENT_FILTER_PARAM } from './AtlasAdminStudentsPage'
 
 /**
@@ -58,6 +58,10 @@ export function AtlasAdminPulsePage() {
     const prep = learners.filter((l) => l.prepPct !== null && l.stage !== 'licensed')
     return {
       offTrack,
+      // The Briefing tiles' notes, as the Students status cards word theirs (2026-10-29, Eric).
+      noPrep: offTrack.filter((l) => l.stage === 'done-no-prep').length,
+      noActivity: offTrack.filter((l) => l.stage === 'stalled').length,
+      licensed: licensed.length,
       prepared,
       dated,
       undated,
@@ -138,9 +142,9 @@ export function AtlasAdminPulsePage() {
             </Box>
             {/* Hugging their content. */}
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 8 }}>
-              <Figure hug label="Need intervention" value={pulse.offTrack.length} bg={FIGURE_TINT} ink="var(--admin-amber)" />
-              <Figure hug label="Exam ready" value={pulse.prepared.length} bg={FIGURE_TINT} ink="var(--admin-success-ink)" />
-              <Figure hug label="Forecasted licensed" value={pulse.forecast} bg={FIGURE_TINT} ink="var(--admin-chart-blue)" />
+              <Figure hug label="Need intervention" value={pulse.offTrack.length} bg={FIGURE_TINT} ink="var(--admin-amber)" note={`${pulse.noPrep} no prep · ${pulse.noActivity} no recent activity`} />
+              <Figure hug label="Exam ready" value={pulse.prepared.length} bg={FIGURE_TINT} ink="var(--admin-success-ink)" note={`${pulse.dated.length} exams scheduled · ${pulse.undated.length} not yet booked`} />
+              <Figure hug label="Forecasted licensed" value={pulse.forecast} bg={FIGURE_TINT} ink="var(--admin-chart-blue)" note={`${pulse.licensed} licensed now · ${pulse.rate}% of the pipeline`} />
             </div>
             <Action
               button={
@@ -374,7 +378,8 @@ function Figure({ label, value, bg, ink, note, hug }: { label: string; value: nu
         {note ? (
           <>
             <span aria-hidden style={{ flex: 'none', alignSelf: 'stretch', width: 1, borderRadius: 1, background: 'var(--admin-atlas-primary-200)' }} />
-            <span style={STATUS_DESC}>{note}</span>
+            {/* A " · " note in the Students cards' StatusNote — a line each, figures in semibold; a sentence as it is. */}
+            {note.includes(' · ') ? <StatusNote>{note}</StatusNote> : <span style={STATUS_DESC}>{note}</span>}
           </>
         ) : null}
       </span>
