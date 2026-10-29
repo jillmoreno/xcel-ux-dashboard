@@ -840,13 +840,7 @@ const PACKAGES: {
 
 /* The comparison grid — Eric's CoWork table, 2026-10-27, verbatim. */
 const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; premier: boolean }[] = [
-  // First row: Standard's lead item, moved up from its list (2026-10-27, Eric).
-  {
-    feature: 'XCEL’s proven 3-part training program',
-    detail: 'Pre-Licensing Course, Prep Review Course, Exam Simulators',
-    standard: true,
-    premier: true,
-  },
+  // The 3-part training program row is gone (2026-10-29, Eric) — its three parts are the rows that follow.
   { feature: 'Pre-licensing Course', detail: 'Online, self-paced fundamentals course that meets all state requirements', standard: true, premier: true },
   { feature: 'Prep Review Course', detail: 'Condensed review of key material, weighted to the state exam outline', standard: true, premier: true },
   { feature: 'Exam Simulators', detail: '3 simulators weighted by topic, unlimited retakes', standard: true, premier: true },
