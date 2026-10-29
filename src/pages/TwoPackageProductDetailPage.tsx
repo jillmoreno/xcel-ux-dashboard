@@ -121,8 +121,9 @@ export function TwoPackageProductDetailPage() {
      full-width tray down from the top of the browser once they have scrolled off. (A Top Compact Card Tray — the compact
      cards in it — was taken out the same day, Eric.) */
   const cardsMode = useFeatureFlag('pdp-course-cards').variant ?? 'large'
-  // The Top Mini Card Tray draws the page's cards compact too (2026-10-28, Eric).
-  const compact = cardsMode === 'compact' || cardsMode === 'tray-mini'
+  // The Top Mini Card Tray draws the page's cards compact too (2026-10-28, Eric), and so does No Card Trays, the default
+  // (2026-10-29, Eric) — only Large Cards draws them large.
+  const compact = cardsMode === 'compact' || cardsMode === 'tray-mini' || cardsMode === 'none'
   const topTray = cardsMode === 'tray-mini'
   /* No Card Trays (2026-10-28, Eric): nothing pins and nothing slides down — the full cards scroll away with the page. */
   const unpinned = topTray || cardsMode === 'none'

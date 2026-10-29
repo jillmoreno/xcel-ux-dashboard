@@ -2673,7 +2673,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
 
        large         — Large Cards: the off above.
        compact       — Compact Cards: the on above.
-       none          — No Card Trays (added the same day): the full cards on the page, scrolling away with it — no pinned
+       none          — No Card Trays (added the same day; the cards compact since 10-29): the cards on the page, scrolling away with it — no pinned
                        tray, no top tray. THE DEFAULT, the same day: a tray shows only when one is picked. Four choices, so the design bar draws it as a dropdown.
        tray-mini     — Top Mini Card Tray: Figma 560:3783 — a 16-tall tan strip, the eyebrow as a tab in each card's corner,
                        the title beside the price and its Purchase. */
@@ -2683,14 +2683,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Layout',
     label: 'Course Cards',
     description:
-      'The two-package PDP\u2019s package cards. No Card Trays \u2014 the default \u2014 leaves the full cards to scroll away with the page; Large Cards condense as they pin; Compact Cards draws the compact layout on the page too; the Top Mini Card Tray leaves the cards on the page and slides a full-width tray down from the top of the browser once they have scrolled off, with the page\u2019s cards compact too.',
+      'The two-package PDP\u2019s package cards. No Card Trays \u2014 the default \u2014 leaves the compact cards to scroll away with the page; Large Cards condense as they pin; Compact Cards draws the compact layout on the page too; the Top Mini Card Tray leaves the cards on the page and slides a full-width tray down from the top of the browser once they have scrolled off, with the page\u2019s cards compact too.',
     defaultEnabled: true,
     defaultVariant: 'none', // no trays unless one is picked (2026-10-28, Eric; was large)
     variants: [
       { value: 'large', label: 'Large Cards', description: 'The full cards on the page, pinning under the top of the browser and condensing into the compact layout as they do.' },
       { value: 'compact', label: 'Compact Cards', description: 'The compact layout on the page too; pinning only tightens the frame round them.' },
       { value: 'tray-mini', label: 'Top Mini Card Tray', description: 'Figma 560:3783 — the cards on the page compact, and a slim full-width tray of mini cards slides down from the top once they have scrolled off.' },
-      { value: 'none', label: 'No Card Trays', description: 'The default. No tray at all: the full cards stay on the page and scroll away with it — nothing pins, nothing slides down from the top.' },
+      { value: 'none', label: 'No Card Trays', description: 'The default. No tray at all: the compact cards stay on the page and scroll away with it — nothing pins, nothing slides down from the top.' },
     ],
     page: 'dashboard-rebrand',
   },
