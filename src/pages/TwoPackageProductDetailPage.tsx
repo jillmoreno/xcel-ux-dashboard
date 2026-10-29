@@ -296,7 +296,8 @@ export function TwoPackageProductDetailPage() {
         ) : (
           <span style={{ ...OPTION_BODY, paddingTop: 20 }}>
             {/* The state leads the title, as a check on which state is chosen (2026-10-28, Eric). 20 under the tab (12, then 8 more). */}
-            <span style={OPTION_TITLE}>{`${place} ${localize(p.title)}`}</span>
+            {/* A card's own title where it has one — Standard's is "Standard Course" (2026-10-29, Eric). */}
+            <span style={OPTION_TITLE}>{p.cardTitle ?? `${place} ${localize(p.title)}`}</span>
             {prices}
             {buy(OPTION_BUY)}
           </span>
@@ -859,6 +860,8 @@ const PACKAGES: {
   price: string
   was: string
   badge?: string
+  /** The page card's title, in place of the state and package name. */
+  cardTitle?: string
   description: string
   diffTitle: string
   diffs: { title: string; detail: string }[]
@@ -866,6 +869,7 @@ const PACKAGES: {
   {
     id: 'standard',
     short: 'Standard',
+    cardTitle: 'Standard Course', // (2026-10-29, Eric)
     title: 'Life and Health Pre-licensing Package', // no "Florida" (2026-10-28, Eric)
     courseName: 'Florida Life and Health Pre-licensing',
     price: E2E_PARTNER_PRICE,
