@@ -7636,6 +7636,10 @@ a.cre-library-card-title::after {
 .cre-admin-tile:focus-visible { box-shadow: 0 0 0 2px var(--admin-brand) !important; }
 /* Students' status cards show a primary 200 edge on hover (the tiles' own hover would darken it). */
 .cre-admin-tile.cre-admin-status-card:hover { border-color: var(--admin-atlas-primary-200) !important; }
+/* Pulse's Briefing figure tiles: a shadow on hover, the Students status card's active one (2026-10-29, Eric) — each one scrolls to its card. */
+.cre-admin-figure-tile { transition: box-shadow 0.15s ease; }
+.cre-admin-figure-tile:hover { box-shadow: var(--admin-shadow-tile-active); }
+.cre-admin-figure-tile:focus-visible { outline: 2px solid var(--admin-brand); outline-offset: 2px; }
 /* Students' status pill (Atlas UX Design 527:746 Default → 527:603 Active).
    At rest the fill is clipped to a 13px dot in the status colour; selected,
    the clip opens left to right into the whole pill, the label turns white and

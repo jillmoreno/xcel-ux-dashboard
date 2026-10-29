@@ -110,8 +110,9 @@ export function AtlasAdminPulsePage() {
     const n = Math.max(0, Math.min(TOTAL - 1, i))
     setCurrent(n)
     const el = document.querySelector<HTMLElement>(`[data-pulse-card="${n}"]`)
-    // To just under the sticky head, not the browser's top, where the head would cover it.
-    const below = (headRef.current?.getBoundingClientRect().bottom ?? 0) + 16
+    // To just under the sticky head where it pins (not where it sits now, lower down before the page has scrolled), not the
+    // browser's top, where the head would cover it.
+    const below = browserTop + 20 + (headRef.current?.offsetHeight ?? 0) + 16
     if (el) window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - below, behavior: 'smooth' })
     el?.focus({ preventScroll: true })
   }
@@ -177,9 +178,9 @@ export function AtlasAdminPulsePage() {
             </Box>
             {/* Hugging their content. */}
             <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 8 }}>
-              <Figure hug label="Need intervention" value={pulse.offTrack.length} bg={FIGURE_TINT} ink="var(--admin-amber)" note={`${pulse.noPrep} no prep · ${pulse.noActivity} no recent activity`} />
-              <Figure hug label="Exam ready" value={pulse.prepared.length} bg={FIGURE_TINT} ink="var(--admin-success-ink)" note={`${pulse.dated.length} scheduled · ${pulse.undated.length} not booked`} />
-              <Figure hug label="Forecasted licensed" value={pulse.forecast} bg={FIGURE_TINT} ink="var(--admin-chart-blue)" note={`${pulse.licensed} licensed now · ${pulse.rate}% of the pipeline`} />
+              <Figure hug onClick={() => go(1)} label="Need intervention" value={pulse.offTrack.length} bg={FIGURE_TINT} ink="var(--admin-amber)" note={`${pulse.noPrep} no prep · ${pulse.noActivity} no recent activity`} />
+              <Figure hug onClick={() => go(2)} label="Exam ready" value={pulse.prepared.length} bg={FIGURE_TINT} ink="var(--admin-success-ink)" note={`${pulse.dated.length} scheduled · ${pulse.undated.length} not booked`} />
+              <Figure hug onClick={() => go(3)} label="Forecasted licensed" value={pulse.forecast} bg={FIGURE_TINT} ink="var(--admin-chart-blue)" note={`${pulse.licensed} licensed now · ${pulse.rate}% of the pipeline`} />
             </div>
             <Action
               button={
@@ -402,9 +403,14 @@ function Box({ label, children }: { label: string; children: ReactNode }) {
 
 /* A figure tile in the Students status cards' treatment (2026-10-29, Eric): the title as a status pill — a dot in `ink` beside the
    label — then, under a 1px rule, the count in Playfair; a note, if any, beside the count past a 1px rule, in the cards' note type. */
-function Figure({ label, value, bg, ink, note, hug }: { label: string; value: number; bg: string; ink: string; note?: string; hug?: boolean }) {
+// With `onClick`, a button: a shadow on hover, and the click scrolls to the card it summarises (2026-10-29, Eric).
+function Figure({ label, value, bg, ink, note, hug, onClick }: { label: string; value: number; bg: string; ink: string; note?: string; hug?: boolean; onClick?: () => void }) {
+  const Tag = onClick ? 'button' : 'div'
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, padding: 16, borderRadius: 10, background: bg, flex: hug ? 'none' : undefined }}>
+    <Tag
+      {...(onClick ? { type: 'button' as const, onClick, className: 'cre-admin-figure-tile' } : null)}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, padding: 16, border: 'none', borderRadius: 10, background: bg, flex: hug ? 'none' : undefined, font: 'inherit', textAlign: 'left', cursor: onClick ? 'pointer' : undefined }}
+    >
       <StatusPill color={ink} active={false}>
         {label}
       </StatusPill>
@@ -418,7 +424,7 @@ function Figure({ label, value, bg, ink, note, hug }: { label: string; value: nu
           </>
         ) : null}
       </span>
-    </div>
+    </Tag>
   )
 }
 
