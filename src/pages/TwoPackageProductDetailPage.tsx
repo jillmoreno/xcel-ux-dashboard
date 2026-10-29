@@ -653,7 +653,7 @@ export function TwoPackageProductDetailPage() {
                         ))}
                       </dl>
                     </section>
-                    {/* Rules between the columns again, full height (2026-10-29, Eric; under each title for a while). */}
+                    {/* Rules between the columns, starting level with the title rules (2026-10-29, Eric). */}
                     <span aria-hidden style={OTHER_INFO_RULE} />
                     <section style={SIDE_SECTION}>
                       <h2 style={SIDE_TITLE}>
@@ -1266,8 +1266,9 @@ const OTHER_INFO: CSSProperties = { display: 'grid', // Each column 10 narrower 
   alignItems: 'start' }
 /* Their tan ground: the packages ground's Secondary 100, 10 corners and 32 padding, pulled out over SHARED's 32 sides so its edges
    line up with the packages ground above and its text with the text. */
-// A 1 Secondary 300 rule between two columns, their full height (2026-10-29, Eric).
-const OTHER_INFO_RULE: CSSProperties = { alignSelf: 'stretch', background: 'var(--color-secondary-300)' }
+// A 1 Secondary 300 rule between two columns, from the title rules' height down (2026-10-29, Eric) — a title's two 24 lines and
+// the 14 under them.
+const OTHER_INFO_RULE: CSSProperties = { alignSelf: 'stretch', marginTop: 2 * 24 + 14, background: 'var(--color-secondary-300)' }
 // Between the facts in a column: a 1 rule, 14 clear either side (the list's gap above it, this padding below) (2026-10-29, Eric).
 const OTHER_INFO_ITEM_RULE: CSSProperties = { borderTop: '1px solid var(--color-secondary-300)', paddingTop: 14 }
 const OTHER_INFO_GROUND: CSSProperties = {
