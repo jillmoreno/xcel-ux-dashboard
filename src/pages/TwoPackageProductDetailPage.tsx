@@ -290,7 +290,8 @@ export function TwoPackageProductDetailPage() {
             {/* 40 from the card's top (2026-10-29, Eric: 24 with no tab above it, then 8 more, and 8 more; 20 under the tab). */}
             {/* A card's own title where it has one — Standard's is "Standard Course" (2026-10-29, Eric). */}
             {/* 8 closer to the price (2026-10-29, Eric; all caps, then back). */}
-            <span style={{ ...OPTION_TITLE, marginBottom: -8 }}>{p.cardTitle ?? `${place} ${localize(p.title)}`}</span>
+            {/* Single, 4 closer still (2026-10-29, Eric). */}
+            <span style={{ ...OPTION_TITLE, marginBottom: single ? -12 : -8 }}>{p.cardTitle ?? `${place} ${localize(p.title)}`}</span>
             {prices}
             {/* The price stacked over its Purchase, the button across the card in the flow (2026-10-29, Eric; it slid beside the
                 price as the cards condensed). */}
@@ -1904,8 +1905,8 @@ const OPTION_BODY: CSSProperties = {
 const UNCARDED: CSSProperties = { position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }
 // Centred (2026-10-29, Eric; was left).
 // No side padding (2026-10-29, Eric; 24 either side for a moment).
-// 20 above the title (2026-10-29, Eric; 24, then 4 less).
-const UNCARDED_BODY: CSSProperties = { ...OPTION_BODY, paddingTop: 20, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, alignItems: 'center', textAlign: 'center' }
+// 16 above the title (2026-10-29, Eric; 24, then 4 less, and 4 less again).
+const UNCARDED_BODY: CSSProperties = { ...OPTION_BODY, paddingTop: 16, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, alignItems: 'center', textAlign: 'center' }
 
 const OPTION_TITLE: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
