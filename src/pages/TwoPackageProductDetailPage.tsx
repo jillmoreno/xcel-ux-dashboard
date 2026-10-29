@@ -1901,7 +1901,8 @@ const OPTION_BODY: CSSProperties = {
 /* The single page's Premier, out of its card (2026-10-29, Eric): the contents straight on the ground, left, at the card's width. */
 const UNCARDED: CSSProperties = { position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }
 // Centred (2026-10-29, Eric; was left).
-const UNCARDED_BODY: CSSProperties = { ...OPTION_BODY, paddingTop: 24, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, alignItems: 'center', textAlign: 'center' }
+// 24 either side, so the Purchase sits 24 in from the column's edges (2026-10-29, Eric).
+const UNCARDED_BODY: CSSProperties = { ...OPTION_BODY, paddingTop: 24, paddingRight: 24, paddingBottom: 0, paddingLeft: 24, alignItems: 'center', textAlign: 'center' }
 
 const OPTION_TITLE: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
