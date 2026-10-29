@@ -261,8 +261,9 @@ export function TwoPackageProductDetailPage() {
       <div className={p.id === 'premier' ? 'cre-e2e-package-card cre-e2e-package-card--on' : undefined} style={OPTION_CARD}>
         {/* THE TAB (2026-10-28, Eric; was the eyebrow over the title and PASS GUARANTEE top right): the mini tray's, top left —
             the package's name on tan, behind Premier's brick PASS GUARANTEE. */}
-        {/* Gone from the multi-product page's cards (2026-10-29, Eric) — their titles name the package now; the single card keeps it. */}
-        {single ? (
+        {/* Gone from the multi-product page's cards (2026-10-29, Eric) — their titles name the package now. The single page wears
+            the multi Premier card now too (SINGLE_ACROSS, below), so this and the across body are off; kept for a way back. */}
+        {single && SINGLE_ACROSS ? (
           <span style={{ ...MINI_TAB, alignSelf: 'flex-start' }}>
             {p.badge ? <span style={MINI_BADGE}>{p.badge}</span> : null}
             <span style={{ ...MINI_TAB_LABEL, ...(p.badge ? { paddingLeft: 0 } : null) }}>{p.short} package</span>
@@ -272,7 +273,7 @@ export function TwoPackageProductDetailPage() {
              stay level; the package name stays in the title. */
           <span style={CORNER_BADGE}>{p.badge}</span>
         ) : null}
-        {single ? (
+        {single && SINGLE_ACROSS ? (
           /* THE SINGLE-PRODUCT CARD (2026-10-28, Eric): laid out across, like the mini tray's — the title on the left, the price
              over its Purchase on the right — in the page card's own sizes and spacing, the card the column's width. */
           <span style={SINGLE_BODY}>
@@ -297,7 +298,7 @@ export function TwoPackageProductDetailPage() {
         )}
         {/* The card's 1 edge drawn again over everything, so its top runs across the tab (2026-10-28, Eric). Not on the
             multi-product Premier card, whose stroke is the CSS's alone, at half strength (2026-10-29, Eric) — two would stack. */}
-        {single || p.id !== 'premier' ? <span aria-hidden style={MINI_EDGE} /> : null}
+        {(single && SINGLE_ACROSS) || p.id !== 'premier' ? <span aria-hidden style={MINI_EDGE} /> : null}
       </div>
     )
   }
@@ -456,12 +457,14 @@ export function TwoPackageProductDetailPage() {
               <div ref={headRef} style={PACKAGE_GROUND_HEAD}>
                 {/* In the rail's At a Glance style — the slab serif at 20 / 24 — inside the ground, 4 above and 16 below
                     (2026-10-27, Eric). */}
-                <div style={PACKAGES_HEAD_ROW}>
-                  <h2 id="choose-package" style={SIDE_TITLE}>
-                    {/* Single, there is nothing to select (2026-10-28, Eric). */}
-                    {single ? <>Your {place} state package:</> : <>Select a package:</>}
-                  </h2>
-                </div>
+                {/* Single, no heading at all (2026-10-29, Eric; was "Your {place} state package:") — the card goes straight in. */}
+                {single ? null : (
+                  <div style={PACKAGES_HEAD_ROW}>
+                    <h2 id="choose-package" style={SIDE_TITLE}>
+                      Select a package:
+                    </h2>
+                  </div>
+                )}
                 {/* THE SELECTOR — Figma 558:3600 (2026-10-28, Eric): slides open between the heading and the cards. A 0fr → 1fr grid row,
                     so it opens to its own height; inert while shut, so its selects are out of the tab order. Not wired: picking
                     changes nothing on the page yet. */}
@@ -518,8 +521,10 @@ export function TwoPackageProductDetailPage() {
               <div
                 ref={cardsRef}
                 role="group"
-                aria-labelledby="choose-package"
-                style={{ ...PACKAGE_GRID, ...(unpinned ? { position: 'relative' } : { top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }) }}
+                aria-labelledby={single ? undefined : 'choose-package'}
+                aria-label={single ? 'Your package' : undefined}
+                // Single, the one card in the left of two columns — the multi page's Premier card at its multi width (2026-10-29, Eric).
+                style={{ ...PACKAGE_GRID, ...(single ? { gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' } : null), ...(unpinned ? { position: 'relative' } : { top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }) }}
               >
                 {/* The cards' piece of the ground, on its own layer so it can go once they pin — the condensed frame is narrower than
                     the column, and this showing either side of it read as a stray edge (2026-10-27, Eric). */}
@@ -544,9 +549,9 @@ export function TwoPackageProductDetailPage() {
                 <table style={COMPARE}>
                   {/* In 'Select your package:''s style, 8 in like the column text below it (2026-10-27, Eric). */}
                   <caption style={{ ...SIDE_TITLE, textAlign: 'left', paddingBottom: 20 }}>
-                    {single ? 'Premier package includes:' : 'Compare packages:'}
+                    {single ? 'Package includes:' : 'Compare packages:'}
                   </caption>
-                  {/* Single, no header row and so no rules over it: one column of checks under "Premier package includes:" says it
+                  {/* Single, no header row and so no rules over it: one column of checks under "Package includes:" says it
                       (2026-10-28, Eric). */}
                   {single ? null : (
                     <thead>
@@ -1539,6 +1544,9 @@ const WIDE_COLUMN: CSSProperties = { width: `calc(100% - ${RAIL_W}px - ${RAIL_GU
 
 /* Two cards side by side, wrapping to one column when narrow. */
 /* Figma 544:3250: both packages on one Secondary 100 ground, 32 in, 10 corners, the columns 40 apart. */
+/* The single page's card laid across — title left, price over Purchase right (2026-10-28, Eric). Off since 2026-10-29: the single
+   page wears the multi page's Premier card, at its multi size. true brings the across card back. */
+const SINGLE_ACROSS = false
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
