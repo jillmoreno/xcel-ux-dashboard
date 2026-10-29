@@ -1779,7 +1779,8 @@ const HEAD_WITH_PACKAGE_D: CSSProperties = { ...HEAD_WITH_PACKAGE_C }
 // the foot (2026-10-29, Eric).
 const HEAD_PACKAGE_D: CSSProperties = { ...HEAD_PACKAGE_C, alignSelf: 'start', top: 0, marginTop: 0, minHeight: 125 } // not B's -10
 // The title and its intro, in the first column down both rows, from the top.
-const HEAD_TEXT_D: CSSProperties = { gridColumn: 1, gridRow: '1 / 3', alignSelf: 'start', display: 'flex', flexDirection: 'column', gap: 24 }
+// 8 between the title and its intro (2026-10-29, Eric; 24, then 16 less).
+const HEAD_TEXT_D: CSSProperties = { gridColumn: 1, gridRow: '1 / 3', alignSelf: 'start', display: 'flex', flexDirection: 'column', gap: 8 }
 // 24 from the package options, 40 from the title (2026-10-29, Eric; C's is 24 from the title, 40 from the options).
 const HEAD_RULE_D: CSSProperties = { ...HEAD_RULE_C, gridRow: '1 / 2', marginBottom: 0, left: 8 }
 // D's Standard tile on the multi page: under Premier's, right, at the row's top. A 1 Secondary 250 rule over it, 16 from
