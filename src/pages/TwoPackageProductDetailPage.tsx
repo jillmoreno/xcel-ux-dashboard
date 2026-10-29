@@ -634,9 +634,13 @@ export function TwoPackageProductDetailPage() {
                 <div style={OTHER_INFO}>
                     {/* Course Specs, first, out of the rail (2026-10-29, Eric). */}
                     <section style={SIDE_SECTION}>
-                      {/* One line, level with the other two titles' first line, but two lines tall so its rule starts where theirs do
-                          (2026-10-29, Eric); each spec's value under its name, as Regulatory Information's are. */}
-                      <h2 style={{ ...SIDE_TITLE, minHeight: 2 * 24 }}>Course Specs</h2>
+                      {/* "Course Specifications", on two lines like the other two (2026-10-29, Eric; was "Course Specs"); each spec's
+                          value under its name, as Regulatory Information's are. */}
+                      <h2 style={SIDE_TITLE}>
+                        Course
+                        <br />
+                        Specifications
+                      </h2>
                       {/* A rule under each title, the column's width (2026-10-29, Eric; was a rule between the columns). */}
                       <hr aria-hidden style={SIDE_RULE} />
                       <dl style={{ ...SIDE_BODY, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -671,6 +675,8 @@ export function TwoPackageProductDetailPage() {
                             </div>
                           ))}
                         </dl>
+                        {/* A rule over the link, to give it focus (2026-10-29, Eric). */}
+                        <hr aria-hidden style={SIDE_RULE} />
                         <p style={SIDE_BODY}>
                           <button type="button" className="cre-e2e-textlink" style={LINK}>
                             {/* Two lines, broken after "Insurance" (2026-10-29, Eric). */}
@@ -691,8 +697,14 @@ export function TwoPackageProductDetailPage() {
                       </h2>
                       {/* A rule under each title, the column's width (2026-10-29, Eric; was a rule between the columns). */}
                       <hr aria-hidden style={SIDE_RULE} />
-                      <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        <p style={{ margin: 0 }}>{STATE_ABBR[place] ?? place} fee due at checkout: {STATE_FEE}</p>
+                      {/* The fee as the other columns' facts — its amount under its name, in Heavy — then a rule over the link, as in
+                          Regulatory Information (2026-10-29, Eric). */}
+                      <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        <dl style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                          <dt>{STATE_ABBR[place] ?? place} fee due at checkout:</dt>
+                          <dd style={{ margin: 0, fontWeight: 800 }}>{STATE_FEE}</dd>
+                        </dl>
+                        <hr aria-hidden style={SIDE_RULE} />
                         <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block' }}>
                           100% transparent pricing
                           <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
