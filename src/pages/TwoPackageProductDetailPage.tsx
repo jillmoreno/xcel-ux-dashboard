@@ -1689,6 +1689,8 @@ const PACKAGE_STRIP_C: CSSProperties = {
 const PACKAGE_STRIP_ROW_C: CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, paddingTop: 2, paddingBottom: 2 }
 // One line at its own width — the design's fixed 148 wraps it in our Avenir.
 const PACKAGE_STRIP_LABEL_C: CSSProperties = {
+  position: 'relative',
+  top: 1, // 1 lower (2026-10-29, Eric)
   whiteSpace: 'nowrap',
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 500,
