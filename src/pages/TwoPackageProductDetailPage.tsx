@@ -338,6 +338,7 @@ export function TwoPackageProductDetailPage() {
         <InviteProductOptionsModal
           reason="broadcast-link"
           headingFont="var(--font-e2e-serif)"
+          dismissOnScrim
           onChoose={(choice) => {
             setPlace(choice.state)
             setLine(choice.lineOfAuthority)

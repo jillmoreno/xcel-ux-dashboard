@@ -38,6 +38,7 @@ export function InviteProductOptionsModal({
   onDismiss,
   reason,
   headingFont,
+  dismissOnScrim,
 }: {
   /** Both halves picked — the flow writes them to the address and carries on. */
   onChoose: (choice: InviteProductChoice) => void
@@ -58,6 +59,10 @@ export function InviteProductOptionsModal({
   /** The title's face, where the page around it sets its own serif — the two-package PDP passes its `--font-e2e-serif`
    *  (2026-10-29, Eric). The invite flow's own uses leave it out and keep `--font-heading-serif`. */
   headingFont?: string
+  /** A click on the scrim, outside the dialog, closes it (`onDismiss`) — the two-package PDP's use, where the page behind is
+   *  complete and the modal only changes it (2026-10-29, Eric). The invite flow leaves it off: there, the page behind cannot be
+   *  drawn without an answer (see the note above). */
+  dismissOnScrim?: boolean
 }) {
   const [state, setState] = useState<InviteState | null>(null)
   const [lineOfAuthority, setLineOfAuthority] = useState<InviteLineOfAuthority | null>(null)
@@ -72,7 +77,12 @@ export function InviteProductOptionsModal({
   }, [onDismiss])
 
   return createPortal(
-    <div style={SCRIM}>
+    <div
+      style={SCRIM}
+      onMouseDown={dismissOnScrim ? (e) => {
+        if (e.target === e.currentTarget) onDismiss()
+      } : undefined}
+    >
       <div
         role="dialog"
         aria-modal="true"
