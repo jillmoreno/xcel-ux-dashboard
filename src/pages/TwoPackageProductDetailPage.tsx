@@ -199,19 +199,6 @@ export function TwoPackageProductDetailPage() {
   }, [compact, miniTray, unpinned])
   const pkg = PACKAGES.find((p) => p.id === picked)!
   const welcomeRef = useRef<HTMLParagraphElement>(null)
-  /* THE RAIL STARTS LEVEL WITH THE INTRO under the course title (2026-10-29, Eric; was level with the title): the title's height is
-     measured, since a long state or line wraps it to a third line. */
-  const courseTitleRef = useRef<HTMLHeadingElement>(null)
-  const [railTop, setRailTop] = useState(COURSE_HEAD_TOP)
-  useLayoutEffect(() => {
-    const title = courseTitleRef.current
-    if (!title) return
-    const fit = () => setRailTop(COURSE_HEAD_TOP + title.offsetHeight + COURSE_TITLE_GAP)
-    fit()
-    const ro = new ResizeObserver(fit)
-    ro.observe(title)
-    return () => ro.disconnect()
-  }, [])
   useEvenLines(welcomeRef, `${place} ${line}`)
   useEffect(() => {
     const root = document.documentElement
@@ -390,7 +377,7 @@ export function TwoPackageProductDetailPage() {
         <div style={{ width: `calc(100% - ${RAIL_W}px - ${RAIL_GUTTER}px)`, boxSizing: 'border-box', paddingRight: 32, paddingLeft: 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* 2 between the title and its intro (the design's 10, 8 less — 2026-10-27, Eric). */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: COURSE_TITLE_GAP }}>
-          <h2 ref={courseTitleRef} style={COURSE_HEAD_TITLE}>
+          <h2 style={COURSE_HEAD_TITLE}>
             {place} {line} <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
           </h2>
           {/* The concise intro (2026-10-29, Eric), in place of "Our pre-licensing packages are updated annually and designed with a
@@ -403,7 +390,7 @@ export function TwoPackageProductDetailPage() {
         </div>
         </div>
       </section>
-        <aside aria-label="Purchase" style={{ ...RAIL, top: railTop }}>
+        <aside aria-label="Purchase" style={RAIL}>
           <div style={RAIL_STICKY}>
             <div style={SIDE_BOXES}>
               <div style={SIDE_BOX_PAIR}>
