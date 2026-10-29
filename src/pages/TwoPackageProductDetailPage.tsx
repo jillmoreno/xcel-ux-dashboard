@@ -1677,15 +1677,14 @@ const HEAD_WITH_PACKAGE_C: CSSProperties = { display: 'grid', gridTemplateColumn
 // bottom edge sits on "Package"'s baseline (2026-10-29, Eric; was centred on the title). Lifted by position, not margin, so the
 // row keeps its height and the title stays put.
 const HEAD_PACKAGE_C: CSSProperties = { ...HEAD_PACKAGE_B, justifySelf: 'end', alignSelf: 'end', position: 'relative', top: -17 }
-/* Figma 573:3972: Secondary 300 hairlines top and bottom, 2 inside them and 2 again round the row; Avenir Medium 14. */
+/* Figma 573:3972: 2 top and bottom and 2 again round the row; Avenir Medium 14. */
 const PACKAGE_STRIP_C: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
   paddingTop: 2,
   paddingBottom: 2,
-  borderTop: '1px solid var(--color-secondary-300)',
-  borderBottom: '1px solid var(--color-secondary-300)',
+  // No hairlines above and below (2026-10-29, Eric; the design's Secondary 300 pair).
 }
 const PACKAGE_STRIP_ROW_C: CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, paddingTop: 2, paddingBottom: 2 }
 // One line at its own width — the design's fixed 148 wraps it in our Avenir.
