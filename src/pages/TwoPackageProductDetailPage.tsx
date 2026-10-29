@@ -1177,8 +1177,8 @@ const COURSE_HEAD_TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-e2e-serif)',
   fontWeight: 700,
-  fontSize: 32, // H3 size on both pages (2026-10-29, Eric; was 45 / 55)
-  lineHeight: '40px',
+  fontSize: 38, // halfway between the H2's 45 / 55 and an H3's 32 / 40, on both pages (2026-10-29, Eric)
+  lineHeight: '48px',
   color: 'var(--color-xcel-brick)',
 }
 
