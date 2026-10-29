@@ -863,7 +863,7 @@ const PACKAGES: {
   {
     id: 'standard',
     short: 'Standard',
-    cardTitle: 'Standard Course', // (2026-10-29, Eric)
+    cardTitle: 'Standard Package', // (2026-10-29, Eric; was Standard Course)
     title: 'Life and Health Pre-licensing Package', // no "Florida" (2026-10-28, Eric)
     courseName: 'Florida Life and Health Pre-licensing',
     price: E2E_PARTNER_PRICE,
