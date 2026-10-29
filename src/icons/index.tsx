@@ -49,6 +49,7 @@ import CircleSolidSvg from './circle-solid.svg?react'
 import CircleRegularSvg from './circle-regular.svg?react'
 import CircleCheckSolidSvg from './circle-check-solid.svg?react'
 import ShieldCheckSolidSvg from './shield-check-solid.svg?react'
+import CrownSolidSvg from './crown-solid.svg?react'
 import CircleCheckRegularSvg from './circle-check-regular.svg?react'
 import ClockRegularSvg from './clock-regular.svg?react'
 import HouseRegularSvg from './house-regular.svg?react'
@@ -293,6 +294,7 @@ export const CircleSolid = makeIcon(CircleSolidSvg) // FA: circle (solid)
 export const CircleRegular = makeIcon(CircleRegularSvg) // FA: circle (regular)
 export const CircleCheckSolid = makeIcon(CircleCheckSolidSvg) // FA: circle-check (solid)
 export const ShieldCheckSolid = makeIcon(ShieldCheckSolidSvg) // FA: shield-check (solid)
+export const CrownSolid = makeIcon(CrownSolidSvg) // FA: crown (solid)
 export const CircleCheckRegular = makeIcon(CircleCheckRegularSvg) // FA: circle-check (regular)
 export const ClockRegular = makeIcon(ClockRegularSvg) // FA: clock (regular)
 export const HouseRegular = makeIcon(HouseRegularSvg) // FA: house (regular)

@@ -3,7 +3,7 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSPropert
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
-import { AngleDownSolid, AngleRightSolid, BallotCheckLight, ShieldCheckSolid, ChartLineUpLight, FaceGrinLight, FileCertificateLight, RubiMark, RubiWordmark } from '@/icons'
+import { AngleDownSolid, AngleRightSolid, BallotCheckLight, CrownSolid, ShieldCheckSolid, ChartLineUpLight, FaceGrinLight, FileCertificateLight, RubiMark, RubiWordmark } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
@@ -448,7 +448,11 @@ export function TwoPackageProductDetailPage() {
                 "Includes our Pass Guarantee" in brick, between hairlines above and below. */}
             <div style={{ ...PACKAGE_STRIP_C, gridColumn: 1, gridRow: 1, justifySelf: 'start' }}>
               <div style={PACKAGE_STRIP_ROW_C}>
-                <span style={PACKAGE_STRIP_LABEL_C}>Premier package</span>
+                {/* A crown at its left, the shield's gap and size (2026-10-29, Eric). */}
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--color-text-primary)' }}>
+                  <CrownSolid size={14} aria-hidden />
+                  <span style={PACKAGE_STRIP_LABEL_C}>Premier package</span>
+                </span>
                 <span aria-hidden style={PACKAGE_STRIP_RULE_C} />
                 <span style={PACKAGE_STRIP_GUARANTEE_C}>
                   <ShieldCheckSolid size={14} aria-hidden />
