@@ -634,9 +634,9 @@ export function TwoPackageProductDetailPage() {
                 <div style={OTHER_INFO}>
                     {/* Course Specs, first, out of the rail (2026-10-29, Eric). */}
                     <section style={SIDE_SECTION}>
-                      {/* One line, a line down, so it sits on the other two titles' second line (2026-10-29, Eric); each spec's value
-                          under its name, as Regulatory Information's are. */}
-                      <h2 style={{ ...SIDE_TITLE, paddingTop: 24 }}>Course Specs</h2>
+                      {/* One line, level with the other two titles' first line, but two lines tall so its rule starts where theirs do
+                          (2026-10-29, Eric); each spec's value under its name, as Regulatory Information's are. */}
+                      <h2 style={{ ...SIDE_TITLE, minHeight: 2 * 24 }}>Course Specs</h2>
                       {/* A rule under each title, the column's width (2026-10-29, Eric; was a rule between the columns). */}
                       <hr aria-hidden style={SIDE_RULE} />
                       <dl style={{ ...SIDE_BODY, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
