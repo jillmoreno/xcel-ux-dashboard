@@ -1322,7 +1322,7 @@ const OTHER_INFO_GROUND: CSSProperties = {
   paddingBottom: 32,
   paddingLeft: 32,
   borderRadius: 10,
-  background: 'var(--color-secondary-100)',
+  // No fill now (2026-10-29, Eric; was the packages' Secondary 100) — the padding kept, so nothing moves.
 }
 const SIDE_TITLE: CSSProperties = { ...SECTION_TITLE, fontSize: 20, lineHeight: '24px' }
 
