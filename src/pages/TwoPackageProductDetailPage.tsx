@@ -1184,8 +1184,10 @@ const RAIL: CSSProperties = {
   top: COURSE_HEAD_TOP,
   // The rail stops 40 above the footer (2026-10-15, Eric's request).
   bottom: 40,
-  right: 240,
-  width: RAIL_W,
+  // The text's own column, 32 in from each side of the old 340 (2026-10-29, Eric: its modules' side padding gone, the rail pushed
+  // over to keep the text where it was). RAIL_W stays 340 for the column and the gutter the rest of the page measures by.
+  right: 240 + 32,
+  width: RAIL_W - 64,
   zIndex: 1,
 }
 
@@ -1302,7 +1304,8 @@ const SIDE_SECTION: CSSProperties = { display: 'flex', flexDirection: 'column', 
 // White with the state fee card's 1px #DDD edge (2026-10-27, Eric; was Secondary 100).
 // No edge now (2026-10-27, Eric).
 // …and no top or bottom padding (2026-10-27, Eric); 32 at the sides still.
-const SIDE_BOX_PAIR: CSSProperties = { ...SIDE_BOX, gap: 32, background: 'var(--color-fixed-light)', padding: '0 32px' }
+// No side padding (2026-10-29, Eric) — the rail narrows by the 64 instead (RAIL), so the text stays where it was.
+const SIDE_BOX_PAIR: CSSProperties = { ...SIDE_BOX, gap: 32, background: 'var(--color-fixed-light)', padding: 0 }
 
 const SIDE_RULE: CSSProperties = {
   margin: 0,
