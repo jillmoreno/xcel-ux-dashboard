@@ -1701,13 +1701,13 @@ const MINI_TAB: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: 10,
-  height: 25,
+  height: 21, // 11 / 13 of the design's 25, with the type (2026-10-29, Eric)
   paddingRight: 16,
   borderBottomRightRadius: 8,
   background: 'var(--color-secondary-200)',
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
-  fontSize: 13,
+  fontSize: 11, // every card's eyebrow 11 (2026-10-29, Eric; the design's 13)
   textTransform: 'uppercase',
   whiteSpace: 'nowrap',
 }
@@ -1716,7 +1716,7 @@ const MINI_BADGE: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  width: 148,
+  width: 125, // 11 / 13 of the design's 148, with the type (2026-10-29, Eric)
   paddingTop: 5, // 2 lower (2026-10-28, Eric: 1, then 1 more; was 1 — centred, 2 more moves it 1)
   background: 'var(--color-xcel-brick)',
   color: 'var(--color-fixed-light)',
