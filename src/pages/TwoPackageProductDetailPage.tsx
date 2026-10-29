@@ -343,11 +343,11 @@ export function TwoPackageProductDetailPage() {
             </strong>
             .{' '}
             {/* The selector's link, here in place of "Choose your package below and start learning today!" (2026-10-29, Eric; it sat
-                right of "Select a package:"). At the sentence's own size; it still opens the selector over the cards. */}
+                right of "Select a package:"). In the page's standard link type, 14 Heavy; it still opens the selector over the cards. */}
             <button
               type="button"
               className="cre-e2e-textlink cre-e2e-textlink--brick"
-              style={{ ...PLAIN_LINK, fontSize: 'inherit', lineHeight: 'inherit' }}
+              style={PLAIN_LINK}
               aria-expanded={changeOpen}
               aria-controls="change-state-or-line"
               onClick={() => setChangeOpen((o) => !o)}
@@ -360,7 +360,7 @@ export function TwoPackageProductDetailPage() {
                 style={{
                   // 15, 35% up from 11 (2026-10-28, Eric); its drawing 4 clear — 384 wide in a 15 square leaves 1.9 of air.
                   marginLeft: 2.1,
-                  verticalAlign: '-2.5px',
+                  verticalAlign: '-3.5px', // 1 under centred on the 14 text (2026-10-28, Eric)
                   transform: changeOpen ? 'rotate(180deg)' : 'none',
                   transition: 'transform 0.25s ease',
                 }}
