@@ -287,7 +287,8 @@ export function TwoPackageProductDetailPage() {
             </span>
           </span>
         ) : (
-          <span style={{ ...OPTION_BODY, paddingTop: 24, paddingBottom: pinLerp(28, 24) }}>
+          <span style={{ ...OPTION_BODY, paddingTop: 24, paddingBottom: pinLerp(28, 24), alignItems: 'center', textAlign: 'center' }}>
+            {/* Centred (2026-10-29, Eric). */}
             {/* 24 from the card's top, with no tab above it now (2026-10-29, Eric; 20 under the tab). */}
             {/* A card's own title where it has one — Standard's is "Standard Course" (2026-10-29, Eric). */}
             <span style={OPTION_TITLE}>{p.cardTitle ?? `${place} ${localize(p.title)}`}</span>
@@ -528,7 +529,7 @@ export function TwoPackageProductDetailPage() {
                 <table style={COMPARE}>
                   {/* In 'Select your package:''s style, 8 in like the column text below it (2026-10-27, Eric). */}
                   <caption style={{ ...SIDE_TITLE, textAlign: 'left', paddingBottom: 20 }}>
-                    {single ? 'Premier package includes:' : 'Standard and Premier package comparison:'}
+                    {single ? 'Premier package includes:' : 'Compare packages:'}
                   </caption>
                   {/* Single, no header row and so no rules over it: one column of checks under "Premier package includes:" says it
                       (2026-10-28, Eric). */}
