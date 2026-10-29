@@ -576,9 +576,9 @@ export function TwoPackageProductDetailPage() {
                         >
                           <strong style={{ fontWeight: 800 }}>{row.feature}</strong>
                           {row.detail ? <>: {row.detail}</> : null}
-                          {/* A text link after the feature, 8 to its right, in the page's link style (2026-10-29, Eric). */}
+                          {/* A text link after the feature, 8 to its right, in the page's link style but brick (2026-10-29, Eric). */}
                           {row.link ? (
-                            <button type="button" className="cre-e2e-textlink" style={{ ...LINK, marginLeft: 8 }}>
+                            <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, marginLeft: 8 }}>
                               {row.link}
                               <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
                             </button>

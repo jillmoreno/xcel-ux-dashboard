@@ -187,6 +187,17 @@
   border-radius: 2px;
 }
 
+/* In brick — the two-package PDP's comparison table links (2026-10-29, Eric); every other text link stays blue. */
+.cre-e2e-textlink--brick {
+  color: var(--color-xcel-brick);
+}
+.cre-e2e-textlink--brick:hover {
+  color: color-mix(in srgb, var(--color-xcel-brick) 75%, black);
+}
+.cre-e2e-textlink--brick:focus-visible {
+  outline-color: var(--color-xcel-brick);
+}
+
 /* ── the invitation's own CTA ───────────────────────────────────────────── */
 
 /* ⚠ NOT `.cre-e2e-cta`. That one is the flow's brick, and the letter draws a
