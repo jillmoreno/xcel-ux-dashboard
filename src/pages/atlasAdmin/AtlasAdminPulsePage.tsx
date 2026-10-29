@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ADMIN_USER, bucketOf, byNeed, formatExamDate, type Learner } from '@/data/atlasAdmin/learners'
 import { toIso } from '@/data/atlasAdmin/assignments'
@@ -43,6 +43,37 @@ export function AtlasAdminPulsePage() {
   const navigate = useNavigate()
   const week = weekOf(date)
   const [current, setCurrent] = useState(0)
+  /* THE STICKY HEAD (2026-10-29, Eric): the subhead and the progress bar pin 20 under the top of the browser — under the prototype
+     bar when there is one — on an opaque ground from the browser's top down, so the cards scroll away under it unseen. */
+  const headRef = useRef<HTMLDivElement>(null)
+  const [browserTop, setBrowserTop] = useState(0)
+  const [stuck, setStuck] = useState(false)
+  useEffect(() => {
+    const bar = document.querySelector<HTMLElement>('.cre-prototype-bar')
+    const fit = () => setBrowserTop(bar && getComputedStyle(bar).position === 'sticky' ? bar.offsetHeight : 0)
+    fit()
+    window.addEventListener('resize', fit)
+    return () => window.removeEventListener('resize', fit)
+  }, [])
+  /* SCROLL SPY (2026-10-29, Eric): as the cards scroll up, the bar lights the card that has reached the sticky head, as a click on
+     it would; at the page's end, the last. */
+  useEffect(() => {
+    const spy = () => {
+      const head = headRef.current
+      if (!head) return
+      setStuck(head.getBoundingClientRect().top <= browserTop + 20.5)
+      const line = head.getBoundingClientRect().bottom + 24
+      const cards = [...document.querySelectorAll<HTMLElement>('[data-pulse-card]')]
+      const atEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2
+      let n = 0
+      cards.forEach((el, i) => {
+        if (el.getBoundingClientRect().top <= line) n = i
+      })
+      setCurrent(atEnd ? cards.length - 1 : n)
+    }
+    window.addEventListener('scroll', spy, { passive: true })
+    return () => window.removeEventListener('scroll', spy)
+  }, [browserTop])
   const [dialog, setDialog] = useState<'email' | 'brief' | 'ask' | null>(null)
   const [reminded, setReminded] = useState(false)
 
@@ -79,7 +110,9 @@ export function AtlasAdminPulsePage() {
     const n = Math.max(0, Math.min(TOTAL - 1, i))
     setCurrent(n)
     const el = document.querySelector<HTMLElement>(`[data-pulse-card="${n}"]`)
-    el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    // To just under the sticky head, not the browser's top, where the head would cover it.
+    const below = (headRef.current?.getBoundingClientRect().bottom ?? 0) + 16
+    if (el) window.scrollTo({ top: window.scrollY + el.getBoundingClientRect().top - below, behavior: 'smooth' })
     el?.focus({ preventScroll: true })
   }
   useEffect(() => {
@@ -125,12 +158,14 @@ export function AtlasAdminPulsePage() {
       <main style={{ maxWidth: 680, margin: '0 auto', padding: '24px 16px 64px' }}>
         <p style={{ ...EYEBROW, fontSize: 10 }}>Weekly briefing</p>
         <h1 style={{ margin: '6px 0 4px', fontFamily: HEADING, fontSize: 24, fontWeight: 700, color: 'var(--admin-ink)' }}>Good morning, {ADMIN_USER.name.split(' ')[0]}.</h1>
+        <div ref={headRef} style={{ ...STICKY_HEAD, top: browserTop + 20, ...(stuck ? STICKY_COVER : null) }}>
         <p style={{ margin: 0, fontSize: 13, color: 'var(--admin-text)' }}>Licensing pipeline: intervention first, then exam scheduling.</p>
-        <nav aria-label="Briefing cards" style={{ position: 'sticky', top: 0, zIndex: 1, display: 'flex', gap: 4, padding: '12px 0', background: 'var(--admin-page)' }}>
+        <nav aria-label="Briefing cards" style={{ display: 'flex', gap: 4, padding: '12px 0' }}>
           {Array.from({ length: TOTAL }, (_, i) => (
             <button key={i} type="button" aria-label={`Card ${i + 1}`} aria-current={i === current || undefined} onClick={() => go(i)} style={{ flex: 1, height: 4, padding: 0, border: 'none', borderRadius: 9999, background: i <= current ? 'var(--admin-brand)' : 'var(--admin-rule)', cursor: 'pointer' }} />
           ))}
         </nav>
+        </div>
         <p className="sr-only" aria-live="polite">
           Card {current + 1} of {TOTAL}. Use left and right arrow keys to move between cards.
         </p>
@@ -473,5 +508,9 @@ function AskDialog({ onClose, onSend }: { onClose: () => void; onSend: () => voi
 
 const PAGE: CSSProperties = { minHeight: '100vh', background: 'var(--admin-page)', fontFamily: 'var(--font-body)' }
 const TOP: CSSProperties = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 24px', borderBottom: '1px solid var(--admin-rule)', background: 'var(--admin-surface)' }
+/* The sticky head, 20 under the browser's top (`top`, set inline), on the page's own ground. Once pinned, a shadow-less band of that
+   ground (STICKY_COVER) fills the 20 above it too, so nothing shows scrolling between it and the browser's top. */
+const STICKY_HEAD: CSSProperties = { position: 'sticky', zIndex: 2, background: 'var(--admin-page)' }
+const STICKY_COVER: CSSProperties = { boxShadow: '0 -20px 0 0 var(--admin-page)' }
 const CARD_STYLE: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 12, padding: 32, borderRadius: 14, border: '1px solid var(--admin-rule)', background: 'var(--admin-surface)', scrollMarginTop: 40, outline: 'none' }
 const TOAST: CSSProperties = { position: 'fixed', left: '50%', bottom: 24, transform: 'translateX(-50%)', zIndex: 60, padding: '10px 16px', borderRadius: 9999, background: 'var(--admin-ink)', color: 'var(--admin-surface)', fontSize: 13 }
