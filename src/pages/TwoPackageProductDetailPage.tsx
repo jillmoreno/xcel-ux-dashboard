@@ -279,10 +279,13 @@ export function TwoPackageProductDetailPage() {
       >
         {/* THE TAB (2026-10-28, Eric; was the eyebrow over the title and PASS GUARANTEE top right): the mini tray's, top left —
             the package's name on tan, behind Premier's brick PASS GUARANTEE. */}
-        <span style={{ ...MINI_TAB, alignSelf: 'flex-start' }}>
-          {p.badge ? <span style={MINI_BADGE}>{p.badge}</span> : null}
-          <span style={{ ...MINI_TAB_LABEL, ...(p.badge ? { paddingLeft: 0 } : null) }}>{p.short} package</span>
-        </span>
+        {/* Gone from the multi-product page's cards (2026-10-29, Eric) — their titles name the package now; the single card keeps it. */}
+        {single ? (
+          <span style={{ ...MINI_TAB, alignSelf: 'flex-start' }}>
+            {p.badge ? <span style={MINI_BADGE}>{p.badge}</span> : null}
+            <span style={{ ...MINI_TAB_LABEL, ...(p.badge ? { paddingLeft: 0 } : null) }}>{p.short} package</span>
+          </span>
+        ) : null}
         {single ? (
           /* THE SINGLE-PRODUCT CARD (2026-10-28, Eric): laid out across, like the mini tray's — the title on the left, the price
              over its Purchase on the right — in the page card's own sizes and spacing, the card the column's width. */
@@ -294,8 +297,8 @@ export function TwoPackageProductDetailPage() {
             </span>
           </span>
         ) : (
-          <span style={{ ...OPTION_BODY, paddingTop: 20 }}>
-            {/* The state leads the title, as a check on which state is chosen (2026-10-28, Eric). 20 under the tab (12, then 8 more). */}
+          <span style={{ ...OPTION_BODY, paddingTop: 24 }}>
+            {/* 24 from the card's top, with no tab above it now (2026-10-29, Eric; 20 under the tab). */}
             {/* A card's own title where it has one — Standard's is "Standard Course" (2026-10-29, Eric). */}
             <span style={OPTION_TITLE}>{p.cardTitle ?? `${place} ${localize(p.title)}`}</span>
             {prices}
