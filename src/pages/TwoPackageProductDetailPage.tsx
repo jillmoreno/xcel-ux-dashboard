@@ -114,7 +114,6 @@ export function TwoPackageProductDetailPage() {
   const cardsRef = useRef<HTMLDivElement>(null)
   const trayRef = useRef<HTMLDivElement>(null)
   const footRef = useRef<HTMLDivElement>(null)
-  const [fade, setFade] = useState({ head: 0, cards: 0 })
   const [browserTop, setBrowserTop] = useState(0)
   /* The design bar's Course Cards (2026-10-28, Eric; was the on/off Compact cards): Large condense as they pin; Compact are the
      compact layout on the page too; the Top Mini Card Tray leaves the cards on the page, full size and unpinned, and slides a
@@ -139,7 +138,6 @@ export function TwoPackageProductDetailPage() {
     const chrome = document.querySelector<HTMLElement>('.cre-browser-chrome')
     const browserTop = () => (chrome ? (parseFloat(getComputedStyle(chrome).top) || 0) + chrome.offsetHeight : 0)
     const fit = () => {
-      setFade({ head: head.offsetHeight, cards: cards.offsetHeight })
       setBrowserTop(browserTop())
     }
     /* THE CONDENSE (2026-10-27, Eric — Figma 548:3477): from the moment the cards pin, the next PIN_CONDENSE px of scroll
@@ -194,14 +192,6 @@ export function TwoPackageProductDetailPage() {
       window.removeEventListener('scroll', check, { capture: true })
     }
   }, [compact, miniTray, unpinned])
-  const fadeSpan = fade.head + fade.cards || 300
-  const fadeGround = (offset: number): CSSProperties => ({
-    backgroundColor: 'var(--color-secondary-100)',
-    backgroundImage: 'linear-gradient(to bottom, var(--color-secondary-200), var(--color-secondary-100))',
-    backgroundRepeat: 'no-repeat',
-    backgroundSize: `100% ${fadeSpan}px`,
-    backgroundPosition: `0 ${-offset}px`,
-  })
   const pkg = PACKAGES.find((p) => p.id === picked)!
   const welcomeRef = useRef<HTMLParagraphElement>(null)
   /* THE RAIL STARTS LEVEL WITH THE INTRO under the course title (2026-10-29, Eric; was level with the title): the title's height is
@@ -422,7 +412,7 @@ export function TwoPackageProductDetailPage() {
             {/* display: contents, so the pinned cards' containing block is the whole column (see the pin, above). */}
             <section aria-label="Choose a package" style={{ display: 'contents' }}>
               {/* The ground's first piece: its top corners, 24 above the heading. The tint fades over this and the cards. */}
-              <div ref={headRef} style={{ ...PACKAGE_GROUND_HEAD, ...fadeGround(0) }}>
+              <div ref={headRef} style={PACKAGE_GROUND_HEAD}>
                 {/* In the rail's At a Glance style — the slab serif at 20 / 24 — inside the ground, 4 above and 16 below
                     (2026-10-27, Eric). */}
                 <div style={PACKAGES_HEAD_ROW}>
@@ -520,7 +510,7 @@ export function TwoPackageProductDetailPage() {
               >
                 {/* The cards' piece of the ground, on its own layer so it can go once they pin — the condensed frame is narrower than
                     the column, and this showing either side of it read as a stray edge (2026-10-27, Eric). */}
-                <div aria-hidden style={{ ...PIN_LAYER, ...fadeGround(fade.head), opacity: 'calc(1 - var(--pinned, 0))' }} />
+                <div aria-hidden style={{ ...PIN_LAYER, boxShadow: GROUND_EDGE_SIDES, opacity: 'calc(1 - var(--pinned, 0))' }} />
                 {/* Pinned, the tan ground shows from the browser's top to under the cards and nothing scrolls visibly beneath. Condensed,
                     it is Figma 548:3477's frame at the column's width — 32 either side of the cards, 12 above (2026-10-28, Eric; was 16), 24 below — square on top, 10 corners below, a shadow along its bottom edge only. */}
                 <div
@@ -1623,12 +1613,18 @@ const CHANGE_CHEVRON: CSSProperties = {
 
 /* The ground the heading, cards and grid sit on, in three pieces (the pin): 32 in (24 on top), 10 corners. The heading's and the
    cards' fill is the fade, set inline. */
+/* THE PACKAGES GROUND, OUTLINED (2026-10-29, Eric; it was a tan fill, Secondary 200 fading to 100): no fill, a 1 edge round the whole
+   of it — heading, cards, comparison — in the comparison's row-rule colour, Secondary 300. Drawn as inset shadows, one side per
+   piece, so it takes no room and nothing inside moves. */
+const GROUND_EDGE = 'var(--color-secondary-200)' // a step lighter, with the table's rules (2026-10-29, Eric; was 300)
+const GROUND_EDGE_SIDES = `inset 1px 0 0 ${GROUND_EDGE}, inset -1px 0 0 ${GROUND_EDGE}`
 const PACKAGE_GROUND_HEAD: CSSProperties = {
   paddingTop: 24, // 8 less than the sides, above the heading (2026-10-27, Eric)
   paddingRight: 32,
   paddingLeft: 32,
   borderTopLeftRadius: 10,
   borderTopRightRadius: 10,
+  boxShadow: `${GROUND_EDGE_SIDES}, inset 0 1px 0 ${GROUND_EDGE}`,
 }
 const PACKAGE_GROUND_FOOT: CSSProperties = {
   paddingTop: 32,
@@ -1637,8 +1633,7 @@ const PACKAGE_GROUND_FOOT: CSSProperties = {
   paddingLeft: 32,
   borderBottomLeftRadius: 10,
   borderBottomRightRadius: 10,
-  // Transparent once it is up past the pinned tray (--foot-fill, set on scroll).
-  background: 'var(--foot-fill, var(--color-secondary-100))',
+  boxShadow: `${GROUND_EDGE_SIDES}, inset 0 -1px 0 ${GROUND_EDGE}`,
 }
 
 /* The cards pin this far under the top of the browser (2026-10-27, Eric). */
@@ -1961,8 +1956,8 @@ const COMPARE_HEAD: CSSProperties = {
   paddingBottom: 10,
   paddingLeft: 8,
   paddingRight: 8,
-  borderTop: '1px solid var(--color-secondary-300)',
-  borderBottom: '1px solid var(--color-secondary-300)',
+  borderTop: '1px solid var(--color-secondary-200)',
+  borderBottom: '1px solid var(--color-secondary-200)',
 }
 const COMPARE_MARK: CSSProperties = { width: 120, textAlign: 'center' }
 /* The selected package's column, header included: a step darker than the ground's Secondary 100 (2026-10-27, Eric). */
@@ -1986,10 +1981,10 @@ const COMPARE_FEATURE: CSSProperties = {
   paddingBottom: 10,
   paddingLeft: 8,
   paddingRight: 8,
-  borderBottom: '1px solid var(--color-secondary-300)',
+  borderBottom: '1px solid var(--color-secondary-200)',
 }
 /* Single, with no header row, the rule over the first item stays (2026-10-28, Eric). */
-const COMPARE_FIRST_RULE: CSSProperties = { borderTop: '1px solid var(--color-secondary-300)' }
+const COMPARE_FIRST_RULE: CSSProperties = { borderTop: '1px solid var(--color-secondary-200)' }
 const COMPARE_CELL: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
@@ -2001,5 +1996,5 @@ const COMPARE_CELL: CSSProperties = {
   paddingBottom: 10,
   paddingLeft: 8,
   paddingRight: 8,
-  borderBottom: '1px solid var(--color-secondary-300)',
+  borderBottom: '1px solid var(--color-secondary-200)',
 }
