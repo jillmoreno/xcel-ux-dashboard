@@ -262,11 +262,20 @@ work changes. `FrameworkProtection.test.ts` is the backstop for the edits a hook
 cannot see — a hand edit in an IDE, or `sed` through the shell — and it fails the
 suite you run before pushing, naming the files.
 
-⚠ It is a guardrail, not a lock: the email check is one command to change. It
-exists to stop someone wandering into the wrong file, not to defend the repo.
-It also only intercepts **Claude's** edits — a hand edit in an IDE reaches the
-file, and `FrameworkProtection.test.ts` is what catches that, when the suite is
-run before pushing.
+**A second hook guards `main` the same way (2026-10-29)** —
+`.claude/hooks/protect-main.mjs`, on every shell command: a push aimed at
+main, a switch onto main, a commit or merge while standing on it, or a
+pull-request merge is refused for anyone but Jillienne, in plain words.
+`MainProtection.test.ts` pins what it refuses and, as importantly, what it
+leaves alone (the daily `git rebase origin/main`).
+
+⚠ Both hooks are guardrails, not locks: the email check is one command to
+change, and they only intercept **Claude's** commands — a hand edit in an IDE
+reaches the file, a hand-typed terminal reaches git. `FrameworkProtection.test.ts`
+is what catches the file edits, when the suite is run before pushing. **`main`
+is the one thing that IS locked**, by GitHub's branch protection and
+`.github/CODEOWNERS` (see "MAIN IS LOCKED TWICE" above): that refuses a
+designer's push whatever sent it.
 
 ⚠ **THE DEMO CONTROLS JOINED THE TABLE ON 2026-10-05**, after two designers
 edited the bar in the same week and collided: one adding three controls for
@@ -312,6 +321,7 @@ file, so the two cannot drift apart.
 | `src/components/prototype/DemoControlsBar.tsx`, `src/components/prototype/DemoBar.tsx`, `src/components/prototype/demoBarUtil.ts` | the demo controls bar — which controls every reviewer sees |
 | `src/components/prototype/DesignControlsBar.tsx` | the design controls bar — you do not edit it to get a control on it (see below) |
 | `src/components/layout/AdminToolsMenu.tsx` | the robot — the UI/UX Demo Tools menu |
+| `.claude/hooks/`, `.claude/settings.json`, `.github/` | the two guards — the file guard and the main guard — the settings that wire them, and the CODEOWNERS file behind main's GitHub lock |
 | `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `share-branch` (was `promote-to-refinement`, kept as a pointer; `share` for one day), `promote-component`, `promote-to-testing`, `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
 | `public/contributing/`, `public/designer-workflow/`, `public/about/` | the three guides (regenerate the PDFs if you do edit them) |
 

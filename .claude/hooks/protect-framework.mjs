@@ -60,6 +60,10 @@ export const PROTECTED = [
   '.claude/skills/',
   '.claude/hooks/',
   '.claude/settings.json',
+  /* CODEOWNERS is half of main's GitHub lock (2026-10-29) — it takes effect
+     only once on main, which needs Jillienne's review anyway, but a designer
+     should not be editing it on a branch either. */
+  '.github/',
   'public/contributing/',
   'public/about/',
 ]
@@ -78,6 +82,8 @@ const INSTEAD = {
     'This is server code behind Refinement, Links and QA Notes. Adding a Refinement link does not need a code change — open Refinement on the full site and use "Add link", or say "/promote-to-refinement".',
   '.claude/skills/':
     'These are Jillienne’s skills. Run them, don’t edit them.',
+  '.github/':
+    'This is the CODEOWNERS file behind main’s GitHub lock — Jillienne’s. Nothing about your design work lives here.',
   'src/components/prototype/DemoControlsBar.tsx':
     'This is the shared demo controls bar — which controls every reviewer sees. It is one list that every designer edits, which is how two branches collide. Your own exploration belongs behind a FEATURE FLAG (it shows up in the Feature Flag panel, reachable from the flag icon on the bar) or behind a DASHBOARD VERSION of your own. If you genuinely need a control on the bar, ask Jillienne.',
   'src/components/layout/AdminToolsMenu.tsx':

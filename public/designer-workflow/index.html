@@ -753,7 +753,7 @@
       <div class="tablewrap"><table>
         <thead><tr><th>Routine</th><th>What it is for</th></tr></thead>
         <tbody>
-          <tr><td><code>/ship-to-main</code></td><td>Merging a finished branch into main. The only way anything reaches the product. It refuses a branch whose owner has not run <code>/promote-to-prototype</code>.</td></tr>
+          <tr><td><code>/ship-to-main</code></td><td>Merging a finished branch into main. The only way anything reaches the product. It refuses a branch whose owner has not run <code>/promote-to-prototype</code>. Since 29 October it is enforced for everyone else: Claude refuses the commands before they run, and GitHub refuses the push even if something got past Claude.</td></tr>
           <tr><td><code>/promote-to-testing</code></td><td>Freezing a branch onto the separate user-test site and handing back participant and moderator links. A frozen link does not move when main does.</td></tr>
           <tr><td><code>/retire-from-refinement</code></td><td>Closing a Refinement row properly when the work was promoted or declined: deciding what happens to the branch and writing the record of why. Different from Archive on the kebab, which only hides.</td></tr>
           <tr><td><code>/archive-a-feature</code></td><td>Retiring a component or variant without deleting it, and writing the Archive-section row that says how to bring it back.</td></tr>
