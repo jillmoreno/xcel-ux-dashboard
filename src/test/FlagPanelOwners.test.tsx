@@ -165,8 +165,9 @@ describe('the owner axis', () => {
     /* ⚠ `anjani` JOINED 2026-10-15 — the Compass scope owner (`PROTOTYPE_SCOPES`),
        labeling only: she owns no dashboard version, so her tab in the
        Dashboard Versions sheet renders empty. Last in the list, so she does
-       not become the default tab by an ordering accident. */
-    expect(FLAG_DESIGNERS.map((d) => d.id)).toEqual(['jill', 'eric', 'anjani'])
+       not become the default tab by an ordering accident.
+       `afsana` joined 2026-10-29, before her first flag, for the same reason. */
+    expect(FLAG_DESIGNERS.map((d) => d.id)).toEqual(['jill', 'eric', 'anjani', 'afsana'])
   })
 })
 

@@ -246,7 +246,7 @@ export type FeatureFlagDefinition = {
  * ⚠ IT IS A FILTER, NOT A PERMISSION. Both designers see both tabs and can flip
  * anything in either. Nothing here gates who may change what.
  */
-export type DesignerId = 'jill' | 'eric' | 'anjani'
+export type DesignerId = 'jill' | 'eric' | 'anjani' | 'afsana'
 
 /** The tab strip's order and labels. The FIRST entry is the default selection,
  *  so reordering this changes which tab the panel opens on.
@@ -263,6 +263,12 @@ export const FLAG_DESIGNERS: { id: DesignerId; label: string }[] = [
   { id: 'jill', label: 'Jill' },
   { id: 'eric', label: 'Eric' },
   { id: 'anjani', label: 'Anjani' },
+  /* `afsana` ADDED 2026-10-29, the day she was invited to the repo and before
+     anything of hers exists — so her first flag can name her as owner rather
+     than failing the type check, or quietly filing under Jill. She co-owns
+     the Invite & Purchase scope (`PROTOTYPE_SCOPES`); like Anjani she owns no
+     dashboard version yet, so her tab in the versions sheet renders empty. */
+  { id: 'afsana', label: 'Afsana' },
 ]
 
 /** A flag's (or a version's) owner, resolving the absent case in ONE place so

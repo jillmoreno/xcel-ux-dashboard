@@ -48,6 +48,14 @@ unconditionally.** Sharing is simply the moment that cost becomes visible.
 
 **Stop and offer to create one. Never create one silently, and never guess.**
 
+**When you do create it, set its `owner` (2026-10-29).** `owner: '<id>'` from
+`FLAG_DESIGNERS` in `FeatureFlagContext.tsx` — the designer running this,
+confirmed the way `/dev-handoff-notes` confirms a name (*"I'll put you down as
+the flag's owner, as Afsana — right?"*). A flag with no owner files under Jill
+in the flag sheet, quietly; a flag naming an id that is not in the roster fails
+the type check, loudly — in which case the roster needs the name first, which
+is Jillienne's one-line change, not something to work around.
+
 Show the designer, before touching anything:
 
 - the **key** (kebab-case, stable forever — `localStorage` references it),
