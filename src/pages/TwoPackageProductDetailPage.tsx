@@ -390,8 +390,10 @@ export function TwoPackageProductDetailPage() {
         {/* 2 between the title and its intro (the design's 10, 8 less — 2026-10-27, Eric). */}
         {/* Single, its pieces are the head grid's own: the title beside the package, the intro across under both. */}
         <div style={single ? { display: 'contents' } : { display: 'flex', flexDirection: 'column', gap: COURSE_TITLE_GAP }}>
-          <h2 style={COURSE_HEAD_TITLE}>
+          <h2 style={single ? { ...COURSE_HEAD_TITLE, position: 'relative' } : COURSE_HEAD_TITLE}>
             {place} {line} <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
+            {/* Single, the rule between the title and the package, from the title's top to its last line's baseline (2026-10-29, Eric). */}
+            {single ? <span aria-hidden style={HEAD_RULE} /> : null}
           </h2>
           {/* The concise intro (2026-10-29, Eric), in place of "Our pre-licensing packages are updated annually and designed with a
               simplified approach…". */}
@@ -1572,9 +1574,12 @@ const HEAD_PACKAGE: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'stretch',
-  paddingLeft: 32,
-  borderLeft: `1px solid ${SECONDARY_250}`,
+  paddingLeft: 33, // 32 past the rule, which is the title's now (HEAD_RULE)
 }
+const TITLE_BASELINE_UP = 17 // measured: the 38 / 48 serif's baseline sits 17 above its line box's bottom
+/* At the package column's left edge — the grid's 32 gap past the title — down to the title's last baseline: the 48 line's
+   bottom less its half-leading and the serif's descent. */
+const HEAD_RULE: CSSProperties = { position: 'absolute', top: 0, bottom: TITLE_BASELINE_UP, right: -33, width: 1, background: SECONDARY_250 }
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
@@ -1901,8 +1906,8 @@ const OPTION_BODY: CSSProperties = {
 /* The single page's Premier, out of its card (2026-10-29, Eric): the contents straight on the ground, left, at the card's width. */
 const UNCARDED: CSSProperties = { position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }
 // Centred (2026-10-29, Eric; was left).
-// 24 either side, so the Purchase sits 24 in from the column's edges (2026-10-29, Eric).
-const UNCARDED_BODY: CSSProperties = { ...OPTION_BODY, paddingTop: 24, paddingRight: 24, paddingBottom: 0, paddingLeft: 24, alignItems: 'center', textAlign: 'center' }
+// No side padding (2026-10-29, Eric; 24 either side for a moment).
+const UNCARDED_BODY: CSSProperties = { ...OPTION_BODY, paddingTop: 24, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, alignItems: 'center', textAlign: 'center' }
 
 const OPTION_TITLE: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
