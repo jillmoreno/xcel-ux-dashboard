@@ -425,7 +425,10 @@ export function TwoPackageProductDetailPage() {
           <div style={HEAD_WITH_PACKAGE_B}>
             <span style={PILL_BADGE_B}>Pass Guarantee</span>
             <h2 style={COURSE_HEAD_TITLE}>
-              {place} {line} <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
+              {/* A break after the line of authority (2026-10-29, Eric). */}
+              {place} {line}
+              <br />
+              <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
             </h2>
             <div style={{ ...HEAD_PACKAGE_B, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
               {renderCard(packages[0], true)}
