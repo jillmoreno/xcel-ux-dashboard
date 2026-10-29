@@ -48,7 +48,7 @@ export const HUB_DOCS: HubDoc[] = [
   },
   {
     id: 'contributing',
-    title: 'Contributing to the dashboard',
+    title: 'First Time - Contributing to the Hub',
     audience: 'Once · your first day',
     blurb:
       'Your first day, from nothing. What the Hub, your branch and Claude are; the whole loop in one picture; the accounts and the setup, sentence by sentence; the words you will see; where work lives; the one rule about switches; your first change. Hands you to the day-to-day guide.',
