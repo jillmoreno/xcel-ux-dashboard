@@ -1782,7 +1782,8 @@ const HEAD_RULE_C: CSSProperties = { gridColumn: 2, gridRow: '1 / 3', alignSelf:
 /* Copy D (2026-10-29, Eric) — C's, to start; Single head's D. */
 const HEAD_WITH_PACKAGE_D: CSSProperties = { ...HEAD_WITH_PACKAGE_C }
 const HEAD_PACKAGE_D: CSSProperties = { ...HEAD_PACKAGE_C }
-const HEAD_RULE_D: CSSProperties = { ...HEAD_RULE_C }
+// 24 from the package options, 40 from the title (2026-10-29, Eric; C's is 24 from the title, 40 from the options).
+const HEAD_RULE_D: CSSProperties = { ...HEAD_RULE_C, left: 8 }
 // D's Standard tile on the multi page: under Premier's, right, at the row's top. A 1 Secondary 250 rule over it, 16 from
 // Premier's Purchase and 16 above STANDARD PACKAGE (2026-10-29, Eric) — up 17 to undo Premier's lift onto the title's baseline.
 const STANDARD_TILE_D: CSSProperties = {
