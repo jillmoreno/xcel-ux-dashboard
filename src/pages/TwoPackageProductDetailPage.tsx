@@ -294,8 +294,7 @@ export function TwoPackageProductDetailPage() {
             {prices}
             {/* The price stacked over its Purchase, the button across the card in the flow (2026-10-29, Eric; it slid beside the
                 price as the cards condensed). */}
-            {/* Single, 100 narrower than the card's 326 (2026-10-29, Eric). */}
-            {buy(single ? { ...STACKED_BUY, alignSelf: 'center', width: 226 } : STACKED_BUY)}
+            {buy(STACKED_BUY)}
           </span>
         )}
         {/* The card's 1 edge drawn again over everything, so its top runs across the tab (2026-10-28, Eric). Not on the
@@ -383,8 +382,8 @@ export function TwoPackageProductDetailPage() {
       <section aria-label="Course" style={COURSE_HEAD}>
         {/* As wide as the details' left column below — the rail and its gutter kept clear (2026-10-27, Eric). */}
         {/* 32 in either side, so the title and intro line up with "Select package:" in the ground below (2026-10-29, Eric). */}
-        {/* Single, no left padding (2026-10-29, Eric). */}
-        <div style={{ width: `calc(100% - ${RAIL_W}px - ${RAIL_GUTTER}px)`, boxSizing: 'border-box', paddingRight: 32, paddingLeft: single ? 0 : 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {/* Single, no padding either side (2026-10-29, Eric: the left, then the right). */}
+        <div style={{ width: `calc(100% - ${RAIL_W}px - ${RAIL_GUTTER}px)`, boxSizing: 'border-box', paddingRight: single ? 0 : 32, paddingLeft: single ? 0 : 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* Single, the package beside the title and intro, on the right — out of the tan ground (2026-10-29, Eric); the title and
             intro narrow to make room. */}
         <div style={single ? HEAD_WITH_PACKAGE : { display: 'contents' }}>
@@ -403,7 +402,8 @@ export function TwoPackageProductDetailPage() {
           </p>
         </div>
         {single ? (
-          <div style={HEAD_PACKAGE}>
+          <div style={{ ...HEAD_PACKAGE, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
+            {/* The multi page's card sizes (2026-10-29, Eric): its --cp, so the title, price and button condense the same way. */}
             <span style={{ ...TOP_BADGE, alignSelf: 'center' }}>Pass Guarantee</span>
             {renderCard(packages[0])}
           </div>
@@ -1563,9 +1563,18 @@ const WIDE_COLUMN: CSSProperties = { width: `calc(100% - ${RAIL_W}px - ${RAIL_GU
    page wears the multi page's Premier card, at its multi size. true brings the across card back. */
 const SINGLE_ACROSS = false
 /* The single page's course head: the title, the package on its right with its badge on top, and the intro across the full width
-   under both (2026-10-29, Eric). */
-const HEAD_WITH_PACKAGE: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 240px', alignItems: 'start', columnGap: 32, rowGap: 24 }
-const HEAD_PACKAGE: CSSProperties = { gridColumn: 2, gridRow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }
+   under both (2026-10-29, Eric). The package 270 wide — the multi card's button width (its 326 less 28 either side) — 32 past a Secondary 250 rule. */
+const HEAD_WITH_PACKAGE: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 303px', alignItems: 'start', columnGap: 32, rowGap: 24 }
+const HEAD_PACKAGE: CSSProperties = {
+  gridColumn: 2,
+  gridRow: 1,
+  alignSelf: 'stretch',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'stretch',
+  paddingLeft: 32,
+  borderLeft: `1px solid ${SECONDARY_250}`,
+}
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
