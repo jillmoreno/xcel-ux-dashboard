@@ -563,7 +563,8 @@ export function TwoPackageProductDetailPage() {
               </div>
               {/* THE COMPARISON GRID (2026-10-27, Eric's CoWork content) — under both cards, across the ground: each feature, then a
                   120-wide check column per package. Replaces the per-package lists. The ground's last piece, its bottom corners. */}
-              <div ref={footRef} style={PACKAGE_GROUND_FOOT}>
+              {/* Single, the ground is only this piece now, so its top corners round like its bottom ones (2026-10-29, Eric). */}
+              <div ref={footRef} style={single ? { ...PACKAGE_GROUND_FOOT, borderTopLeftRadius: 10, borderTopRightRadius: 10 } : PACKAGE_GROUND_FOOT}>
                 <table style={COMPARE}>
                   {/* In 'Select your package:''s style, 8 in like the column text below it (2026-10-27, Eric). */}
                   <caption style={{ ...SIDE_TITLE, textAlign: 'left', paddingBottom: 20 }}>
