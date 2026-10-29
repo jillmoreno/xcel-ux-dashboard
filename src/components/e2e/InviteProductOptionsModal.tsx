@@ -37,6 +37,7 @@ export function InviteProductOptionsModal({
   onChoose,
   onDismiss,
   reason,
+  headingFont,
 }: {
   /** Both halves picked — the flow writes them to the address and carries on. */
   onChoose: (choice: InviteProductChoice) => void
@@ -54,6 +55,9 @@ export function InviteProductOptionsModal({
    * claiming an invitation that was never sent.
    */
   reason: 'invitation-incomplete' | 'broadcast-link'
+  /** The title's face, where the page around it sets its own serif — the two-package PDP passes its `--font-e2e-serif`
+   *  (2026-10-29, Eric). The invite flow's own uses leave it out and keep `--font-heading-serif`. */
+  headingFont?: string
 }) {
   const [state, setState] = useState<InviteState | null>(null)
   const [lineOfAuthority, setLineOfAuthority] = useState<InviteLineOfAuthority | null>(null)
@@ -77,7 +81,7 @@ export function InviteProductOptionsModal({
         style={MODAL}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <h2 id="invite-options-title" style={TITLE}>
+          <h2 id="invite-options-title" style={headingFont ? { ...TITLE, fontFamily: headingFont } : TITLE}>
             What are you licensing for?
           </h2>
           {/* ⚠ IT SAYS WHY IT IS ASKING. The learner clicked a link in an
