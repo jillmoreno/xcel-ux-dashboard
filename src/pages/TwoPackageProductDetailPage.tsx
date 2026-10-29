@@ -644,8 +644,9 @@ export function TwoPackageProductDetailPage() {
                       {/* A rule under each title, the column's width (2026-10-29, Eric). */}
                       <hr aria-hidden style={SIDE_RULE} />
                       <dl style={{ ...SIDE_BODY, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                        {TRAINING_SPECS.map(([term, value]) => (
-                          <div key={term} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        {/* A rule between each spec (2026-10-29, Eric) — a top edge, as a dl cannot hold an hr. */}
+                        {TRAINING_SPECS.map(([term, value], i) => (
+                          <div key={term} style={{ display: 'flex', flexDirection: 'column', gap: 3, ...(i > 0 ? OTHER_INFO_ITEM_RULE : null) }}>
                             <dt>{term}</dt>
                             <dd style={{ margin: 0, fontWeight: 800 }}>{localize(value)}</dd>
                           </div>
@@ -670,8 +671,8 @@ export function TwoPackageProductDetailPage() {
                             ['Course Provided By:', 'XCEL Solutions LLC.'],
                             ['Course Name:', localize(pkg.courseName)],
                             ['Approved course ID:', '1191656'],
-                          ].map(([term, value]) => (
-                            <div key={term} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                          ].map(([term, value], i) => (
+                            <div key={term} style={{ display: 'flex', flexDirection: 'column', gap: 3, ...(i > 0 ? OTHER_INFO_ITEM_RULE : null) }}>
                               <dt>{term}</dt>
                               <dd style={{ margin: 0, fontWeight: 800 }}>{noWidow(value)}</dd>
                             </div>
@@ -1267,6 +1268,8 @@ const OTHER_INFO: CSSProperties = { display: 'grid', // Each column 10 narrower 
    line up with the packages ground above and its text with the text. */
 // A 1 Secondary 300 rule between two columns, their full height (2026-10-29, Eric).
 const OTHER_INFO_RULE: CSSProperties = { alignSelf: 'stretch', background: 'var(--color-secondary-300)' }
+// Between the facts in a column: a 1 rule, 14 clear either side (the list's gap above it, this padding below) (2026-10-29, Eric).
+const OTHER_INFO_ITEM_RULE: CSSProperties = { borderTop: '1px solid var(--color-secondary-300)', paddingTop: 14 }
 const OTHER_INFO_GROUND: CSSProperties = {
   marginRight: -32,
   marginLeft: -32,
