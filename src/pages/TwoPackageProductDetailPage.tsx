@@ -439,17 +439,19 @@ export function TwoPackageProductDetailPage() {
             PILL_BADGE_C. */}
         {single ? (
           <div style={HEAD_WITH_PACKAGE_C}>
-            <span style={{ ...PILL_BADGE_C, gridColumn: '1 / -1', justifySelf: 'start' }}>Pass Guarantee</span>
-            <h2 style={{ ...COURSE_HEAD_TITLE, alignSelf: 'end' }}>
+            <span style={{ ...PILL_BADGE_C, gridColumn: 1, gridRow: 1, justifySelf: 'start' }}>Pass Guarantee</span>
+            <h2 style={{ ...COURSE_HEAD_TITLE, alignSelf: 'end', gridColumn: 1, gridRow: 2 }}>
               {/* A break after the line of authority (2026-10-29, Eric). */}
               {place} {line}
               <br />
               <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
             </h2>
-            <div style={{ ...HEAD_PACKAGE_C, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
+            {/* A 1 rule between the title and the package, from the pill's top to the Purchase's bottom edge (2026-10-29, Eric). */}
+            <span aria-hidden style={HEAD_RULE_C} />
+            <div style={{ ...HEAD_PACKAGE_C, gridColumn: 3, gridRow: 2, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
               {renderCard(packages[0], true)}
             </div>
-            <p style={{ ...BODY, gridColumn: '1 / -1', marginTop: 8, marginBottom: -8 }}>
+            <p style={{ ...BODY, gridColumn: '1 / -1', gridRow: 3, marginTop: 8, marginBottom: -8 }}>
               Updated every year, our packages make complex insurance concepts simple.{' '}
               <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
               <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
@@ -1653,12 +1655,15 @@ const PILL_BADGE_B: CSSProperties = {
 }
 /* Copy C (2026-10-29, Eric) — B's, to start; change these to compare. */
 // C (2026-10-29, Eric): the pill across, then the title with the package far right beside it, then the intro across.
-const HEAD_WITH_PACKAGE_C: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'center', columnGap: 32, rowGap: 16, marginTop: 48 }
+const HEAD_WITH_PACKAGE_C: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto auto', alignItems: 'center', columnGap: 32, rowGap: 16, marginTop: 48 }
 // At the row's foot with the title, then lifted 17 — the title's last baseline above its line box's bottom — so the Purchase's
 // bottom edge sits on "Package"'s baseline (2026-10-29, Eric; was centred on the title). Lifted by position, not margin, so the
 // row keeps its height and the title stays put.
 const HEAD_PACKAGE_C: CSSProperties = { ...HEAD_PACKAGE_B, justifySelf: 'end', alignSelf: 'end', position: 'relative', top: -17 }
 const PILL_BADGE_C: CSSProperties = { ...PILL_BADGE_B }
+// The rule's own column between the title and the package, down both rows; its foot lifted 17 like the package's, to the
+// Purchase's bottom edge.
+const HEAD_RULE_C: CSSProperties = { gridColumn: 2, gridRow: '1 / 3', alignSelf: 'stretch', width: 1, marginBottom: 17, background: SECONDARY_250 }
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
