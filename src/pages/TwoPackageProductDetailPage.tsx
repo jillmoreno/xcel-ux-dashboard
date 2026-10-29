@@ -441,7 +441,7 @@ export function TwoPackageProductDetailPage() {
             {/* A 1 rule between the title and the packages, the head's full height (2026-10-29, Eric). */}
             <span aria-hidden style={HEAD_RULE_D} />
             {/* The packages, one column down the rule's height (2026-10-29, Eric): Standard first on the multi page, a rule, then
-                Premier; PASS GUARANTEE pinned to the column's foot — the rule's — its rounded corners up. */}
+                Premier with PASS GUARANTEE hanging from that rule. */}
             <div style={{ ...HEAD_PACKAGE_D, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
               {single ? null : (
                 <div style={STANDARD_TILE_D}>
@@ -452,13 +452,14 @@ export function TwoPackageProductDetailPage() {
                 </div>
               )}
               <div style={single ? PREMIER_TILE_D : { ...PREMIER_TILE_D, ...PACKAGE_DIVIDE_D }}>
-                <span style={{ ...PACKAGE_LABEL_D, position: 'static' }}>
+                {/* PASS GUARANTEE hung from the rule between the packages, its square edge on it (2026-10-29, Eric). */}
+                <span style={{ ...TOP_BADGE, alignSelf: 'center' }}>Pass Guarantee</span>
+                <span style={{ ...PACKAGE_LABEL_D, position: 'static', marginTop: 16 }}>
                   <CrownSolid size={14} aria-hidden />
                   <span style={PACKAGE_STRIP_LABEL_C}>Premier package</span>
                 </span>
                 {renderCard(PREMIER, true, { price: 8, center: true })}
               </div>
-              <span style={PASS_TAB_D}>Pass Guarantee</span>
             </div>
           </div>
         ) : null}
@@ -1773,8 +1774,9 @@ const HEAD_WITH_PACKAGE_D: CSSProperties = { ...HEAD_WITH_PACKAGE_C }
 // The packages' column, the row's full height so PASS GUARANTEE sits at the rule's foot (2026-10-29, Eric).
 const HEAD_PACKAGE_D: CSSProperties = { gridColumn: 3, gridRow: 1, alignSelf: 'stretch', justifySelf: 'end', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }
 const PREMIER_TILE_D: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginBottom: 16 }
-// Between Standard and Premier: a 1 Secondary 250 rule, 16 either side.
-const PACKAGE_DIVIDE_D: CSSProperties = { marginTop: 16, paddingTop: 16, borderTop: `1px solid ${SECONDARY_250}` }
+// Between Standard and Premier: a 1 Secondary 250 rule, 24 above it (2026-10-29, Eric; 16, then 8 more); PASS GUARANTEE hangs
+// from it.
+const PACKAGE_DIVIDE_D: CSSProperties = { marginTop: 24, borderTop: `1px solid ${SECONDARY_250}` }
 // The title and its intro, in the first column, from the top. 8 between them (2026-10-29, Eric; 24, then 16 less).
 const HEAD_TEXT_D: CSSProperties = { gridColumn: 1, gridRow: 1, alignSelf: 'start', display: 'flex', flexDirection: 'column', gap: 8 }
 // 24 from the package options, 40 from the title (2026-10-29, Eric; C's is 24 from the title, 40 from the options).
@@ -2015,8 +2017,6 @@ const CORNER_BADGE: CSSProperties = {
 }
 /* The single page's badge, in the flow at the ground's top-left (2026-10-29, Eric). */
 const TOP_BADGE: CSSProperties = { ...CORNER_BADGE, position: 'static', transform: 'none', display: 'inline-flex' }
-// The cards' tab turned over: at the column's foot, its square edge on the bottom, 8 corners up top.
-const PASS_TAB_D: CSSProperties = { ...TOP_BADGE, alignSelf: 'center', marginTop: 'auto', borderBottomLeftRadius: 0, borderBottomRightRadius: 0, borderTopLeftRadius: 8, borderTopRightRadius: 8 }
 const MINI_TAB_LABEL: CSSProperties = { paddingTop: 5, // 1 lower (2026-10-28, Eric; was 3 — centred, 2 more moves it 1)
   paddingLeft: 16, color: 'var(--color-xcel-brick)' }
 /* Figma 560:3858: the title and the price centred on each other, 26 apart; 16 under them, 20 either side. */
