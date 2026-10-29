@@ -102,6 +102,7 @@ export const ATLAS_BUTTON_SECONDARY: CSSProperties = {
    on Reports, Invites and Students. Padding is each table's own. */
 export const TABLE_HEAD: CSSProperties = {
   fontSize: 11,
+  lineHeight: '14px', // (2026-10-29, Eric; it inherited 16.5)
   fontWeight: 700,
   textTransform: 'uppercase',
   letterSpacing: '0.08em',
