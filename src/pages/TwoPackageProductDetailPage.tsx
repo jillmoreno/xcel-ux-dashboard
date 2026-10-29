@@ -386,6 +386,24 @@ export function TwoPackageProductDetailPage() {
                     ))}
                   </ul>
                 </section>
+                <hr aria-hidden style={SIDE_RULE} />
+                {/* Back in the rail under What You'll Learn (2026-10-29, Eric). */}
+                <section style={SIDE_SECTION}>
+                  <h2 style={SIDE_TITLE}>What to Expect</h2>
+                  {/* 14 between the groups (2026-10-28, Eric; was 18). */}
+                  <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    {WHAT_TO_EXPECT.map(([head, line]) => (
+                      <div key={head} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <strong style={{ fontWeight: 800 }}>{noWidow(head)}</strong>
+                        <span>{noWidow(line)}</span>
+                      </div>
+                    ))}
+                    <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block', marginTop: -2 }}>
+                      Recommended study plan
+                      <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
+                    </button>
+                  </div>
+                </section>
               </div>
             </div>
           </div>
@@ -620,27 +638,11 @@ export function TwoPackageProductDetailPage() {
                   ))}
                 </ol>
               </section>
-              {/* OTHER COURSE INFORMATION (2026-10-29, Eric): What to Expect, Regulatory Information and the state reporting fee, moved
-                  out of the rail into three columns under the training program, in the rail's own type. */}
+              {/* OTHER COURSE INFORMATION (2026-10-29, Eric): Regulatory Information and the state reporting fee, moved out of the
+                  rail into two columns under the training program, in the rail's own type. What to Expect went back to the rail. */}
               <section style={SECTION}>
                 <h2 style={SECTION_TITLE}>Other course information</h2>
                 <div style={OTHER_INFO}>
-                    <section style={SIDE_SECTION}>
-                      <h2 style={SIDE_TITLE}>What to Expect</h2>
-                      {/* 14 between the groups (2026-10-28, Eric; was 18). */}
-                      <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                        {WHAT_TO_EXPECT.map(([head, line]) => (
-                          <div key={head} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                            <strong style={{ fontWeight: 800 }}>{noWidow(head)}</strong>
-                            <span>{noWidow(line)}</span>
-                          </div>
-                        ))}
-                        <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block', marginTop: -2 }}>
-                          Recommended study plan
-                          <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
-                        </button>
-                      </div>
-                    </section>
                     <section style={SIDE_SECTION}>
                       <h2 style={SIDE_TITLE}>Regulatory Information</h2>
                       {/* 14 between every group, the link included (2026-10-28, Eric; was 18, and 28 to the link). */}
@@ -1217,8 +1219,8 @@ const SIDE_RULE: CSSProperties = {
 
 
 // 20 on 24 (2026-10-15, Eric's request: 2 up from 18/22).
-/* Other course information's three columns, 32 apart, each starting level (2026-10-29, Eric). */
-const OTHER_INFO: CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', columnGap: 32, alignItems: 'start', paddingTop: 9 }
+/* Other course information's two columns, 300 wide and 32 apart, each starting level (2026-10-29, Eric; was three, a third each). */
+const OTHER_INFO: CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 300px))', columnGap: 32, alignItems: 'start', paddingTop: 9 }
 const SIDE_TITLE: CSSProperties = { ...SECTION_TITLE, fontSize: 20, lineHeight: '24px' }
 
 
@@ -1254,7 +1256,7 @@ const STEP: CSSProperties = {
   marginBottom: 38, // 38 under the rule (2026-10-28, Eric; the site's 30)
   borderBottom: '1px solid var(--color-neutral-100)',
 }
-const STEP_LAST: CSSProperties = { paddingBottom: 0, marginBottom: 0, borderBottom: 'none' }
+const STEP_LAST: CSSProperties = { marginBottom: 0 } // keeps its rule underneath now (2026-10-29, Eric; was none)
 // Number and title in the rail's heading size, 20 / 24 (2026-10-28, Eric; the site's 28 / 34); the copy back in BODY's 18 / 27.
 const STEP_NUMBER: CSSProperties = { ...SIDE_TITLE, flex: 'none', color: 'var(--color-xcel-brick)' }
 const STEP_TITLE: CSSProperties = SIDE_TITLE
