@@ -1936,6 +1936,8 @@ const SHARED_EYEBROW: CSSProperties = {
 // Flush with the ground's 32, so the grid lines up with the cards and "Select your Florida package:" above (2026-10-28, Eric;
 // it sat 8 further in).
 const COMPARE: CSSProperties = { width: '100%', margin: 0, borderCollapse: 'collapse', tableLayout: 'fixed' }
+/* The comparison's row rules: 40% of the way from Secondary 200 to 300 (2026-10-29, Eric; 300, then 200). */
+const COMPARE_RULE = 'color-mix(in srgb, var(--color-secondary-300) 40%, var(--color-secondary-200))'
 const COMPARE_HEAD: CSSProperties = {
   ...SHARED_EYEBROW,
   color: 'var(--color-text-secondary)',
@@ -1947,14 +1949,14 @@ const COMPARE_HEAD: CSSProperties = {
   paddingBottom: 10,
   paddingLeft: 8,
   paddingRight: 8,
-  borderTop: '1px solid var(--color-secondary-200)',
-  borderBottom: '1px solid var(--color-secondary-200)',
+  borderTop: `1px solid ${COMPARE_RULE}`,
+  borderBottom: `1px solid ${COMPARE_RULE}`,
 }
 const COMPARE_MARK: CSSProperties = { width: 120, textAlign: 'center' }
 /* Premier's column, header included, in flat Secondary 100 (2026-10-29, Eric: 200, then 100; it was the PICKED package's column,
    fading from 200 down the rows, and moved with each click on a card). */
-// On the Secondary 100 ground now, so halfway to 200 to show (2026-10-29, Eric: 30%, then 50%).
-const PREMIER_SHADE: CSSProperties = { background: 'color-mix(in srgb, var(--color-secondary-200) 50%, var(--color-secondary-100))' }
+// On the Secondary 100 ground now, so 60% of the way to 200 to show (2026-10-29, Eric: 30%, 50%, then 60%).
+const PREMIER_SHADE: CSSProperties = { background: 'color-mix(in srgb, var(--color-secondary-200) 60%, var(--color-secondary-100))' }
 const COMPARE_FEATURE: CSSProperties = {
   ...SIDE_BODY,
   fontWeight: 400,
@@ -1965,10 +1967,10 @@ const COMPARE_FEATURE: CSSProperties = {
   paddingBottom: 10,
   paddingLeft: 8,
   paddingRight: 8,
-  borderBottom: '1px solid var(--color-secondary-200)',
+  borderBottom: `1px solid ${COMPARE_RULE}`,
 }
 /* Single, with no header row, the rule over the first item stays (2026-10-28, Eric). */
-const COMPARE_FIRST_RULE: CSSProperties = { borderTop: '1px solid var(--color-secondary-200)' }
+const COMPARE_FIRST_RULE: CSSProperties = { borderTop: `1px solid ${COMPARE_RULE}` }
 const COMPARE_CELL: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
@@ -1980,5 +1982,5 @@ const COMPARE_CELL: CSSProperties = {
   paddingBottom: 10,
   paddingLeft: 8,
   paddingRight: 8,
-  borderBottom: '1px solid var(--color-secondary-200)',
+  borderBottom: `1px solid ${COMPARE_RULE}`,
 }
