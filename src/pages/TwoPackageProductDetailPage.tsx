@@ -341,8 +341,31 @@ export function TwoPackageProductDetailPage() {
             <strong style={{ fontWeight: 800 }}>
               {place} {line} Pre-licensing
             </strong>
-            . Choose
-            your package below and start learning today!
+            .{' '}
+            {/* The selector's link, here in place of "Choose your package below and start learning today!" (2026-10-29, Eric; it sat
+                right of "Select a package:"). At the sentence's own size; it still opens the selector over the cards. */}
+            <button
+              type="button"
+              className="cre-e2e-textlink cre-e2e-textlink--brick"
+              style={{ ...PLAIN_LINK, fontSize: 'inherit', lineHeight: 'inherit' }}
+              aria-expanded={changeOpen}
+              aria-controls="change-state-or-line"
+              onClick={() => setChangeOpen((o) => !o)}
+            >
+              Change state or line of authority
+              {/* Turns over when the selector is open. */}
+              <AngleDownSolid
+                size={15}
+                aria-hidden
+                style={{
+                  // 15, 35% up from 11 (2026-10-28, Eric); its drawing 4 clear — 384 wide in a 15 square leaves 1.9 of air.
+                  marginLeft: 2.1,
+                  verticalAlign: '-2.5px',
+                  transform: changeOpen ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 0.25s ease',
+                }}
+              />
+            </button>
           </p>
         </div>
       </section>
@@ -419,34 +442,6 @@ export function TwoPackageProductDetailPage() {
                     {/* Single, there is nothing to select (2026-10-28, Eric). */}
                     {single ? <>Your {place} state package:</> : <>Select a package:</>}
                   </h2>
-                  {/* Back to the state or line-of-authority choice — one link on the heading's baseline, right-aligned, in the rail's
-                      link type, no underline (2026-10-28, Eric; was two, Change state · Change line). It opens the selector below. */}
-                  <div style={SIDE_BODY}>
-                    {/* A solid angle-down after it, its drawing 4 clear — the glyph is 384 wide in an 11 square, so 1.4 of that is air (2026-10-28,
-                        Eric; angle-right first). */}
-                    <button
-                      type="button"
-                      className="cre-e2e-textlink cre-e2e-textlink--brick"
-                      style={PLAIN_LINK}
-                      aria-expanded={changeOpen}
-                      aria-controls="change-state-or-line"
-                      onClick={() => setChangeOpen((o) => !o)}
-                    >
-                      Change state or line of authority
-                      {/* Turns over when the selector is open. */}
-                      <AngleDownSolid
-                        size={15}
-                        aria-hidden
-                        style={{
-                          // 15, 35% up from 11 (2026-10-28, Eric); its drawing 4 clear — 384 wide in a 15 square leaves 1.9 of air.
-                          marginLeft: 2.1,
-                          verticalAlign: '-3.5px', // 1 under centred on the 14 text (2026-10-28, Eric)
-                          transform: changeOpen ? 'rotate(180deg)' : 'none',
-                          transition: 'transform 0.25s ease',
-                        }}
-                      />
-                    </button>
-                  </div>
                 </div>
                 {/* THE SELECTOR — Figma 558:3600 (2026-10-28, Eric): slides open between the heading and the cards. A 0fr → 1fr grid row,
                     so it opens to its own height; inert while shut, so its selects are out of the tab order. Not wired: picking
