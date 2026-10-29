@@ -446,7 +446,8 @@ export function TwoPackageProductDetailPage() {
             <span aria-hidden style={single ? HEAD_RULE_D : { ...HEAD_RULE_D, gridRow: '1 / 4', marginBottom: 0 }} />
             <div style={{ ...HEAD_PACKAGE_D, gridColumn: 3, gridRow: 2, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
               {/* The crown and PREMIER PACKAGE over the price, centred like it (2026-10-29, Eric). */}
-              <span style={PACKAGE_LABEL_D}>
+              {/* Back down to its price, the Standard tile's spacing (2026-10-29, Eric; it was raised to the guarantee's baseline). */}
+              <span style={{ ...PACKAGE_LABEL_D, position: 'static' }}>
                 <CrownSolid size={14} aria-hidden />
                 <span style={PACKAGE_STRIP_LABEL_C}>Premier package</span>
               </span>
