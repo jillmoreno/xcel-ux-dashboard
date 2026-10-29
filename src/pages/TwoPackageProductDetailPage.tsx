@@ -563,6 +563,13 @@ export function TwoPackageProductDetailPage() {
                         >
                           <strong style={{ fontWeight: 800 }}>{row.feature}</strong>
                           {row.detail ? <>: {row.detail}</> : null}
+                          {/* A text link after the feature, 8 to its right, in the page's link style (2026-10-29, Eric). */}
+                          {row.link ? (
+                            <button type="button" className="cre-e2e-textlink" style={{ ...LINK, marginLeft: 8 }}>
+                              {row.link}
+                              <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
+                            </button>
+                          ) : null}
                         </th>
                         {packages.map((p) => row[p.id]).map((has, i) => (
                           <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(picked === packages[i].id ? pickedShade(r + 1) : null), ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null), ...(single && r === 0 ? COMPARE_FIRST_RULE : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
@@ -877,7 +884,7 @@ const PACKAGES: {
 ]
 
 /* The comparison grid — Eric's CoWork table, 2026-10-27, verbatim. */
-const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; premier: boolean }[] = [
+const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; premier: boolean; link?: string }[] = [
   // The 3-part training program row is gone (2026-10-29, Eric) — its three parts are the rows that follow.
   { feature: 'Pre-licensing Course', detail: 'Online, self-paced fundamentals course that meets all state requirements', standard: true, premier: true },
   { feature: 'Prep Review Course', detail: 'Condensed review of key material, weighted to the state exam outline', standard: true, premier: true },
@@ -907,7 +914,8 @@ const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; p
     premier: true,
   },
   { feature: 'Flashcards (Life, Health, and Accident Insurance)', detail: '800+ cards covering fundamentals', standard: false, premier: true },
-  { feature: 'Pass Guarantee (Prepared to Pass Promise)', standard: false, premier: true },
+  // A Learn more link after it (2026-10-29, Eric).
+  { feature: 'Pass Guarantee (Prepared to Pass Promise)', standard: false, premier: true, link: 'Learn more' },
 ]
 
 /* Florida's reporting fee — DEMO DATA, see the header. */
