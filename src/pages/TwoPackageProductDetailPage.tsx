@@ -637,6 +637,8 @@ export function TwoPackageProductDetailPage() {
                       {/* One line, a line down, so it sits on the other two titles' second line (2026-10-29, Eric); each spec's value
                           under its name, as Regulatory Information's are. */}
                       <h2 style={{ ...SIDE_TITLE, paddingTop: 24 }}>Course Specs</h2>
+                      {/* A rule under each title, the column's width (2026-10-29, Eric; was a rule between the columns). */}
+                      <hr aria-hidden style={SIDE_RULE} />
                       <dl style={{ ...SIDE_BODY, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
                         {TRAINING_SPECS.map(([term, value]) => (
                           <div key={term} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -646,7 +648,6 @@ export function TwoPackageProductDetailPage() {
                         ))}
                       </dl>
                     </section>
-                    <span aria-hidden style={OTHER_INFO_RULE} />
                     <section style={SIDE_SECTION}>
                       <h2 style={SIDE_TITLE}>
                         {/* Broken after the first word (2026-10-29, Eric). */}
@@ -654,6 +655,8 @@ export function TwoPackageProductDetailPage() {
                         <br />
                         Information
                       </h2>
+                      {/* A rule under each title, the column's width (2026-10-29, Eric; was a rule between the columns). */}
+                      <hr aria-hidden style={SIDE_RULE} />
                       {/* 14 between every group, the link included (2026-10-28, Eric; was 18, and 28 to the link). */}
                       <div style={{ ...PARAGRAPHS, gap: 14 }}>
                         <dl style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -679,8 +682,6 @@ export function TwoPackageProductDetailPage() {
                         </p>
                       </div>
                     </section>
-                    {/* The rule between the two, 32 either side (2026-10-29, Eric). */}
-                    <span aria-hidden style={OTHER_INFO_RULE} />
                     {/* The state reporting fee — Figma 542:2304 (2026-10-27, Eric). */}
                     <section style={SIDE_SECTION}>
                       <h2 style={SIDE_TITLE}>
@@ -688,6 +689,8 @@ export function TwoPackageProductDetailPage() {
                         <br />
                         Fee Required
                       </h2>
+                      {/* A rule under each title, the column's width (2026-10-29, Eric; was a rule between the columns). */}
+                      <hr aria-hidden style={SIDE_RULE} />
                       <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 8 }}>
                         <p style={{ margin: 0 }}>{STATE_ABBR[place] ?? place} fee due at checkout: {STATE_FEE}</p>
                         <button type="button" className="cre-e2e-textlink" style={{ ...LINK, display: 'block' }}>
@@ -1238,12 +1241,9 @@ const SIDE_RULE: CSSProperties = {
 
 // 20 on 24 (2026-10-15, Eric's request: 2 up from 18/22).
 /* Other course information's two columns, 300 wide and 32 apart, each starting level (2026-10-29, Eric; was three, a third each). */
-// Course Specs, Regulatory Information, the fee (2026-10-29, Eric): three equal columns, 32 either side of each rule (was two 300
-// columns, 48 either side, then the left one up to 240).
-const OTHER_INFO: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 1px minmax(0, 1fr) 1px minmax(0, 1fr)', columnGap: 32, alignItems: 'start' }
-// A 1 Secondary 300 rule between the columns.
-// Full height, the headings' too (2026-10-29, Eric; it started under them for a while).
-const OTHER_INFO_RULE: CSSProperties = { alignSelf: 'stretch', background: 'var(--color-secondary-300)' }
+// Course Specs, Regulatory Information, the fee (2026-10-29, Eric): three equal columns 32 apart, no rules between them now (was two
+// 300 columns, 48 either side of a rule, then the left one up to 240, then three with a rule 32 either side).
+const OTHER_INFO: CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', columnGap: 32, alignItems: 'start' }
 /* Their tan ground: the packages ground's Secondary 100, 10 corners and 32 padding, pulled out over SHARED's 32 sides so its edges
    line up with the packages ground above and its text with the text. */
 const OTHER_INFO_GROUND: CSSProperties = {
