@@ -352,7 +352,8 @@ export function TwoPackageProductDetailPage() {
       <div style={{ position: 'relative' }}>
       <section aria-label="Course" style={COURSE_HEAD}>
         {/* As wide as the details' left column below — the rail and its gutter kept clear (2026-10-27, Eric). */}
-        <div style={{ width: `calc(100% - ${RAIL_W}px - ${RAIL_GUTTER}px)`, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {/* 32 in either side, so the title and intro line up with "Select a package:" in the ground below (2026-10-29, Eric). */}
+        <div style={{ width: `calc(100% - ${RAIL_W}px - ${RAIL_GUTTER}px)`, boxSizing: 'border-box', paddingRight: 32, paddingLeft: 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* 2 between the title and its intro (the design's 10, 8 less — 2026-10-27, Eric). */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: COURSE_TITLE_GAP }}>
           <h2 ref={courseTitleRef} style={COURSE_HEAD_TITLE}>
