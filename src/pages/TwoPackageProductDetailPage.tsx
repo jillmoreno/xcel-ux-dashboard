@@ -1575,8 +1575,14 @@ const HEAD_PACKAGE: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'stretch',
-  paddingLeft: 40, // 8 more right of the rule (2026-10-29, Eric; was 32)
-  borderLeft: `1px solid ${SECONDARY_250}`,
+  // A rounded box in place of the rule (2026-10-29, Eric): the cards' 1 outline and 10 corners, 24 at the sides and bottom, none
+  // on top, so the badge hangs from its top edge.
+  paddingTop: 0,
+  paddingRight: 24,
+  paddingBottom: 24,
+  paddingLeft: 24,
+  borderRadius: 10,
+  boxShadow: 'inset 0 0 0 1px var(--color-e2e-card-outline)',
 }
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
