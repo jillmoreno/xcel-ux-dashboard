@@ -5,7 +5,8 @@ import { toIso } from '@/data/atlasAdmin/assignments'
 import { BookOpen, CalendarRegular, ChartSimple, Envelope, Sparkles, TriangleExclamation, Users } from '@/icons'
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
-import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, BUTTON_BRAND, BUTTON_OUTLINE, EYEBROW, FIELD_LABEL, HEADING, INPUT, PILL } from './adminStyles'
+import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, BUTTON_BRAND, BUTTON_OUTLINE, EYEBROW, FIELD_LABEL, HEADING, INPUT, PILL, STATUS_COUNT, STATUS_DESC } from './adminStyles'
+import { StatusPill } from './adminUi'
 import { STUDENT_FILTER_PARAM } from './AtlasAdminStudentsPage'
 
 /**
@@ -360,14 +361,23 @@ function Box({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
+/* A figure tile in the Students status cards' treatment (2026-10-29, Eric): the title as a status pill — a dot in `ink` beside the
+   label — then, under a 1px rule, the count in Playfair; a note, if any, beside the count past a 1px rule, in the cards' note type. */
 function Figure({ label, value, bg, ink, note, hug }: { label: string; value: number; bg: string; ink: string; note?: string; hug?: boolean }) {
   return (
-    <div style={{ padding: 16, borderRadius: 10, background: bg, flex: hug ? 'none' : undefined }}>
-      <p style={{ ...LABEL, color: ink }}>{label}</p>
-      {/* A 1px rule between title and count, across the content width. */}
-      {hug ? <hr style={{ margin: '12px 0 8px', border: 'none', borderTop: '1px solid var(--admin-rule)' }} /> : null}
-      <strong style={{ display: 'block', marginTop: 4, fontFamily: HEADING, fontSize: 22, color: 'var(--admin-ink)' }}>{value}</strong>
-      {note ? <span style={{ fontSize: 11, color: 'var(--admin-text)' }}>{note}</span> : null}
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, padding: 16, borderRadius: 10, background: bg, flex: hug ? 'none' : undefined }}>
+      <StatusPill color={ink} active={false}>
+        {label}
+      </StatusPill>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 12, alignSelf: 'stretch', marginTop: 6, paddingTop: 8, borderTop: '1px solid var(--admin-atlas-primary-200)' }}>
+        <span style={{ ...STATUS_COUNT, marginRight: 2 }}>{value}</span>
+        {note ? (
+          <>
+            <span aria-hidden style={{ flex: 'none', alignSelf: 'stretch', width: 1, borderRadius: 1, background: 'var(--admin-atlas-primary-200)' }} />
+            <span style={STATUS_DESC}>{note}</span>
+          </>
+        ) : null}
+      </span>
     </div>
   )
 }
