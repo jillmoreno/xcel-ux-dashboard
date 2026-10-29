@@ -510,7 +510,7 @@ export function TwoPackageProductDetailPage() {
               >
                 {/* The cards' piece of the ground, on its own layer so it can go once they pin — the condensed frame is narrower than
                     the column, and this showing either side of it read as a stray edge (2026-10-27, Eric). */}
-                <div aria-hidden style={{ ...PIN_LAYER, boxShadow: GROUND_EDGE_SIDES, background: GROUND_FILL, opacity: 'calc(1 - var(--pinned, 0))' }} />
+                <div aria-hidden style={{ ...PIN_LAYER, background: GROUND_FILL, opacity: 'calc(1 - var(--pinned, 0))' }} />
                 {/* Pinned, the tan ground shows from the browser's top to under the cards and nothing scrolls visibly beneath. Condensed,
                     it is Figma 548:3477's frame at the column's width — 32 either side of the cards, 12 above (2026-10-28, Eric; was 16), 24 below — square on top, 10 corners below, a shadow along its bottom edge only. */}
                 <div
@@ -1605,20 +1605,16 @@ const CHANGE_CHEVRON: CSSProperties = {
 
 /* The ground the heading, cards and grid sit on, in three pieces (the pin): 32 in (24 on top), 10 corners. The heading's and the
    cards' fill is the fade, set inline. */
-/* THE PACKAGES GROUND, OUTLINED (2026-10-29, Eric; it was a tan fill, Secondary 200 fading to 100): no fill, a 1 edge round the whole
-   of it — heading, cards, comparison — in the comparison's row-rule colour, Secondary 300. Drawn as inset shadows, one side per
-   piece, so it takes no room and nothing inside moves. */
-const GROUND_EDGE = 'var(--color-secondary-200)' // a step lighter, with the table's rules (2026-10-29, Eric; was 300)
-const GROUND_EDGE_SIDES = `inset 1px 0 0 ${GROUND_EDGE}, inset -1px 0 0 ${GROUND_EDGE}`
-// And a light fill again, half of Secondary 100 (2026-10-29, Eric).
-const GROUND_FILL = 'color-mix(in srgb, var(--color-secondary-100) 50%, transparent)'
+/* THE PACKAGES GROUND (2026-10-29, Eric): for a while no fill and a 1 Secondary 200 outline instead of the tan fade; now a flat
+   Secondary 100 fill and no outline. */
+// Filled again, Secondary 100 (2026-10-29, Eric: half, then all of it) — and no edge now, the fill alone (GROUND_EDGE unused).
+const GROUND_FILL = 'var(--color-secondary-100)'
 const PACKAGE_GROUND_HEAD: CSSProperties = {
   paddingTop: 24, // 8 less than the sides, above the heading (2026-10-27, Eric)
   paddingRight: 32,
   paddingLeft: 32,
   borderTopLeftRadius: 10,
   borderTopRightRadius: 10,
-  boxShadow: `${GROUND_EDGE_SIDES}, inset 0 1px 0 ${GROUND_EDGE}`,
   background: GROUND_FILL,
 }
 const PACKAGE_GROUND_FOOT: CSSProperties = {
@@ -1628,7 +1624,6 @@ const PACKAGE_GROUND_FOOT: CSSProperties = {
   paddingLeft: 32,
   borderBottomLeftRadius: 10,
   borderBottomRightRadius: 10,
-  boxShadow: `${GROUND_EDGE_SIDES}, inset 0 -1px 0 ${GROUND_EDGE}`,
   background: GROUND_FILL,
 }
 
@@ -1958,7 +1953,8 @@ const COMPARE_HEAD: CSSProperties = {
 const COMPARE_MARK: CSSProperties = { width: 120, textAlign: 'center' }
 /* Premier's column, header included, in flat Secondary 100 (2026-10-29, Eric: 200, then 100; it was the PICKED package's column,
    fading from 200 down the rows, and moved with each click on a card). */
-const PREMIER_SHADE: CSSProperties = { background: 'var(--color-secondary-100)' }
+// On the Secondary 100 ground now, so 30% of the way to 200 to show (2026-10-29, Eric).
+const PREMIER_SHADE: CSSProperties = { background: 'color-mix(in srgb, var(--color-secondary-200) 30%, var(--color-secondary-100))' }
 const COMPARE_FEATURE: CSSProperties = {
   ...SIDE_BODY,
   fontWeight: 400,
