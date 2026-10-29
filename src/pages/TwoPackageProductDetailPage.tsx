@@ -1,3 +1,4 @@
+import { InviteProductOptionsModal } from '@/components/e2e/InviteProductOptionsModal'
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
@@ -101,6 +102,9 @@ export function TwoPackageProductDetailPage() {
   /* Change state or line: the selector slid open under the heading (2026-10-28, Eric). Nothing opens it now (2026-10-29, Eric: the link
      no longer does), so it stays shut; the panel is kept for when something does. */
   const changeOpen = false
+  /* The welcome line's link opens the Invite & Purchase flow's "What are you licensing for?" modal (2026-10-29, Eric) — the same
+     component; a pick rewrites the page's state and line. */
+  const [optionsOpen, setOptionsOpen] = useState(false)
   /* The state and line of authority the page is written for — the selector's two choices (2026-10-28, Eric). Every "Florida" and
      "Life and Health" on the page follows them; `localize` rewrites the data's own copies (titles, the course name, the specs). */
   const [place, setPlace] = useState('Florida')
@@ -330,6 +334,17 @@ export function TwoPackageProductDetailPage() {
           </div>
         </div>
       ) : null}
+      {optionsOpen ? (
+        <InviteProductOptionsModal
+          reason="broadcast-link"
+          onChoose={(choice) => {
+            setPlace(choice.state)
+            setLine(choice.lineOfAuthority)
+            setOptionsOpen(false)
+          }}
+          onDismiss={() => setOptionsOpen(false)}
+        />
+      ) : null}
       <PartnerHeader />
       <section aria-label="Personal welcome" style={WELCOME}>
         <div style={WELCOME_CONTENT}>
@@ -348,7 +363,13 @@ export function TwoPackageProductDetailPage() {
               </strong>
               .
             </p>
-            <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...PLAIN_LINK, flex: 'none', fontFamily: 'var(--font-e2e-avenir)' }}>
+            <button
+              type="button"
+              className="cre-e2e-textlink cre-e2e-textlink--brick"
+              aria-haspopup="dialog"
+              onClick={() => setOptionsOpen(true)}
+              style={{ ...PLAIN_LINK, flex: 'none', fontFamily: 'var(--font-e2e-avenir)' }}
+            >
               Change state/line of authority
               <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
             </button>
