@@ -440,8 +440,7 @@ export function TwoPackageProductDetailPage() {
         {single ? (
           <div style={HEAD_WITH_PACKAGE_C}>
             <span style={{ ...PILL_BADGE_C, gridColumn: '1 / -1', justifySelf: 'start' }}>Pass Guarantee</span>
-            {/* 12 lower, on its own (2026-10-29, Eric: 8, then 4 more). */}
-            <h2 style={{ ...COURSE_HEAD_TITLE, position: 'relative', top: 12 }}>
+            <h2 style={COURSE_HEAD_TITLE}>
               {/* A break after the line of authority (2026-10-29, Eric). */}
               {place} {line}
               <br />
