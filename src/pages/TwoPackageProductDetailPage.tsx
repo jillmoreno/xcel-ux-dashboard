@@ -413,6 +413,24 @@ export function TwoPackageProductDetailPage() {
           </div>
         ) : null}
         </div>
+        {/* COPY B (2026-10-29, Eric): the single head again, right under the first, to work changes out on and compare. Its own
+            HEAD_WITH_PACKAGE_B / HEAD_PACKAGE_B, so changing it leaves the first as it is. Remove once one is chosen. */}
+        {single ? (
+          <div style={HEAD_WITH_PACKAGE_B}>
+            <h2 style={{ ...COURSE_HEAD_TITLE, alignSelf: 'center', position: 'relative', top: 7 }}>
+              {place} {line} <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
+            </h2>
+            <p style={{ ...BODY, gridColumn: '1 / -1' }}>
+              Updated every year, our packages make complex insurance concepts simple.{' '}
+              <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
+              <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
+            </p>
+            <div style={{ ...HEAD_PACKAGE_B, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
+              <span style={{ ...TOP_BADGE, alignSelf: 'center' }}>Pass Guarantee</span>
+              {renderCard(packages[0])}
+            </div>
+          </div>
+        ) : null}
         </div>
       </section>
         <aside aria-label="Purchase" style={RAIL}>
@@ -1587,6 +1605,9 @@ const HEAD_PACKAGE: CSSProperties = {
   borderRadius: 10,
   boxShadow: 'inset 0 0 0 1px var(--color-e2e-card-outline)',
 }
+/* Copy B of the single head (2026-10-29, Eric) — starts identical to the first, 48 below it; change these to compare. */
+const HEAD_WITH_PACKAGE_B: CSSProperties = { ...HEAD_WITH_PACKAGE, marginTop: 48 }
+const HEAD_PACKAGE_B: CSSProperties = { ...HEAD_PACKAGE }
 const PACKAGE_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
