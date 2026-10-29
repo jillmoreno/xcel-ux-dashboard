@@ -1255,8 +1255,9 @@ const SIDE_RULE: CSSProperties = {
 /* Other course information's two columns, 300 wide and 32 apart, each starting level (2026-10-29, Eric; was three, a third each). */
 // Course Specs, Regulatory Information, the fee (2026-10-29, Eric): three equal columns 32 apart, no rules between them now (was two
 // 300 columns, 48 either side of a rule, then the left one up to 240, then three with a rule 32 either side).
-const OTHER_INFO: CSSProperties = { display: 'grid', // Each column 10 narrower than a third of the room (2026-10-29, Eric), the 30 left over at the right.
-  gridTemplateColumns: 'repeat(3, calc((100% - 96px) / 3 - 10px))', columnGap: 48, // 48 apart (2026-10-29, Eric: 32, 40, then 48)
+const OTHER_INFO: CSSProperties = { display: 'grid', // Each column 10 narrower than a third of the room (2026-10-29, Eric), the 30 that frees shared between the two gutters, so the
+  // columns reach both edges — 63 apart.
+  gridTemplateColumns: 'repeat(3, calc((100% - 96px) / 3 - 10px))', justifyContent: 'space-between', columnGap: 48, // 48 apart (2026-10-29, Eric: 32, 40, then 48)
   alignItems: 'start' }
 /* Their tan ground: the packages ground's Secondary 100, 10 corners and 32 padding, pulled out over SHARED's 32 sides so its edges
    line up with the packages ground above and its text with the text. */
