@@ -491,9 +491,9 @@ export function TwoPackageProductDetailPage() {
             </p>
           </div>
         ) : null}
-        {/* COPY D (2026-10-29, Eric): C again, right under it while C is the head — its own HEAD_WITH_PACKAGE_D / HEAD_PACKAGE_D /
+        {/* COPY D (2026-10-29, Eric): C's layout worked further — Single head's D (it sat under C at first). Its own HEAD_WITH_PACKAGE_D / HEAD_PACKAGE_D /
             HEAD_RULE_D / PACKAGE_STRIP_D to change and compare. */}
-        {single && singleHead === 'c' ? (
+        {single && singleHead === 'd' ? (
           <div style={HEAD_WITH_PACKAGE_D}>
             {/* Figma 573:3972 (2026-10-29, Eric), in place of the PASS GUARANTEE pill: PREMIER PACKAGE, a rule, then a shield and
                 "Includes our Pass Guarantee" in brick, between hairlines above and below. */}
@@ -1759,8 +1759,8 @@ const PACKAGE_STRIP_GUARANTEE_C: CSSProperties = {
 // Purchase's bottom edge.
 // 8 left of the gap's middle (2026-10-29, Eric), the title and package staying put.
 const HEAD_RULE_C: CSSProperties = { gridColumn: 2, gridRow: '1 / 3', alignSelf: 'stretch', width: 1, marginBottom: 17, position: 'relative', left: -8, background: SECONDARY_250 }
-/* Copy D (2026-10-29, Eric) — C's, to start, 48 under it; change these to compare. */
-const HEAD_WITH_PACKAGE_D: CSSProperties = { ...HEAD_WITH_PACKAGE_C, marginTop: 48 }
+/* Copy D (2026-10-29, Eric) — C's, to start; Single head's D. */
+const HEAD_WITH_PACKAGE_D: CSSProperties = { ...HEAD_WITH_PACKAGE_C }
 const HEAD_PACKAGE_D: CSSProperties = { ...HEAD_PACKAGE_C }
 const HEAD_RULE_D: CSSProperties = { ...HEAD_RULE_C }
 const PACKAGE_GRID: CSSProperties = {

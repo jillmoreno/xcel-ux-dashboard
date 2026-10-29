@@ -2664,6 +2664,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
            Purchase under it, left.
        c — the same strip over a dark title, the price and Purchase far right
            past a rule, the Purchase on the title's baseline. THE DEFAULT.
+       d — C, with the crown and PREMIER PACKAGE over the price on the
+           guarantee's baseline, and Includes our Pass Guarantee alone at the
+           left (2026-10-29, Eric: "save D as a version as well").
 
        Single-product only; the multi-product page has its own head. */
     surface: 'design',
@@ -2672,13 +2675,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Layout',
     label: 'Single head',
     description:
-      'The single-product PDP\u2019s course head: A, the boxed price tile beside the title; B, the package strip over the title with the price under it; or C, the strip over the title with the price far right \u2014 the default.',
+      'The single-product PDP\u2019s course head: A, the boxed price tile beside the title; B, the package strip over the title with the price under it; C, the strip over the title with the price far right \u2014 the default; or D, C with PREMIER PACKAGE over the price.',
     defaultEnabled: true,
     defaultVariant: 'c',
     variants: [
       { value: 'a', label: 'A', description: 'The title beside a boxed price tile with its PASS GUARANTEE tab.' },
       { value: 'b', label: 'B', description: 'The package strip over the title, the price and Purchase under it.' },
       { value: 'c', label: 'C', description: 'The package strip over a dark title, the price far right past a rule. The default.' },
+      { value: 'd', label: 'D', description: 'C with the crown and PREMIER PACKAGE over the price, Includes our Pass Guarantee alone at the left.' },
     ],
     page: 'dashboard-rebrand',
   },
