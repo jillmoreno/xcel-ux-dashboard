@@ -539,17 +539,11 @@ export function TwoPackageProductDetailPage() {
                     <thead>
                       <tr>
                         <th scope="col" style={{ ...COMPARE_HEAD, paddingLeft: 0 }}>Feature</th>
-                        {/* Each package's header picks it — its column tints and its card selects (2026-10-27, Eric). */}
-                        {/* Single, the one column's header is only its name — there is nothing to pick between. */}
+                        {/* Each header is only its name now — the grid no longer follows the picked card, and its headers no longer pick
+                            (2026-10-29, Eric). Premier's column is always the shaded one. */}
                         {packages.map((p) => (
-                          <th key={p.id} scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK, ...(picked === p.id ? pickedShade(0) : null) }}>
-                            {single ? (
-                              p.short
-                            ) : (
-                              <button type="button" aria-pressed={picked === p.id} onClick={() => setPicked(p.id)} style={COMPARE_PICK}>
-                                {p.short}
-                              </button>
-                            )}
+                          <th key={p.id} scope="col" style={{ ...COMPARE_HEAD, ...COMPARE_MARK, ...(p.id === 'premier' ? PREMIER_SHADE : null) }}>
+                            {p.short}
                           </th>
                         ))}
                       </tr>
@@ -559,7 +553,6 @@ export function TwoPackageProductDetailPage() {
                     {COMPARISON.map((row, r) => (
                       <tr key={r}>
                         {/* No rule under the last row (2026-10-27, Eric). */}
-                        {/* With Standard picked, the features it does not include fade back 40% (2026-10-27, Eric: 30, then 10 more). */}
                         <th
                           scope="row"
                           style={{
@@ -567,7 +560,6 @@ export function TwoPackageProductDetailPage() {
                             paddingLeft: 0,
                             ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null),
                             ...(single && r === 0 ? COMPARE_FIRST_RULE : null),
-                            ...(picked === 'standard' && !row.standard ? { color: 'color-mix(in srgb, var(--color-text-primary) 60%, transparent)' } : null),
                           }}
                         >
                           <strong style={{ fontWeight: 800 }}>{row.feature}</strong>
@@ -581,7 +573,7 @@ export function TwoPackageProductDetailPage() {
                           ) : null}
                         </th>
                         {packages.map((p) => row[p.id]).map((has, i) => (
-                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(picked === packages[i].id ? pickedShade(r + 1) : null), ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null), ...(single && r === 0 ? COMPARE_FIRST_RULE : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
+                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(packages[i].id === 'premier' ? PREMIER_SHADE : null), ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null), ...(single && r === 0 ? COMPARE_FIRST_RULE : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
                             <span aria-hidden>{has ? '✓' : '—'}</span>
                             <span className="cre-visually-hidden">{has ? 'Included' : 'Not included'}</span>
                           </td>
@@ -1960,17 +1952,9 @@ const COMPARE_HEAD: CSSProperties = {
   borderBottom: '1px solid var(--color-secondary-200)',
 }
 const COMPARE_MARK: CSSProperties = { width: 120, textAlign: 'center' }
-/* The selected package's column, header included: a step darker than the ground's Secondary 100 (2026-10-27, Eric). */
-/* The selected package's column, header included (2026-10-27, Eric): full Secondary 200 at the top, fading row by row to a
-   40% tint of it over the ground's Secondary 100 by the last row (10, 20, 30, 35, then 40). Each cell carries its own slice of the fade — row `n` of
-   the header plus COMPARISON.length rows — so the slices meet without a step. */
-function pickedShade(n: number): CSSProperties {
-  const rows = COMPARISON.length + 1
-  const tint = (k: number) => `color-mix(in srgb, var(--color-secondary-200) ${Math.round(100 - (60 * k) / rows)}%, var(--color-secondary-100))`
-  return { background: `linear-gradient(to bottom, ${tint(n)}, ${tint(n + 1)})` }
-}
-/* The header's pick button: the header's own type, no chrome. */
-const COMPARE_PICK: CSSProperties = { padding: 0, border: 'none', background: 'none', font: 'inherit', letterSpacing: 'inherit', textTransform: 'inherit', color: 'inherit', cursor: 'pointer' }
+/* Premier's column, header included, in flat Secondary 200 (2026-10-29, Eric; it was the PICKED package's column, fading from 200 down
+   the rows, and moved with each click on a card). */
+const PREMIER_SHADE: CSSProperties = { background: 'var(--color-secondary-200)' }
 const COMPARE_FEATURE: CSSProperties = {
   ...SIDE_BODY,
   fontWeight: 400,
