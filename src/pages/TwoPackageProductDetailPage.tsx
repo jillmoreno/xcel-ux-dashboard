@@ -230,7 +230,7 @@ export function TwoPackageProductDetailPage() {
   /* `left`: copy B's package, set flush left under the title (2026-10-29, Eric). `lift`: copy C's — its price row raised by
      `price` px (position only, so the Purchase stays put) and centred over the Purchase, and no package name (2026-10-29, Eric;
      the name went up 16 first, then went). */
-  const renderCard = (p: (typeof PACKAGES)[number], left = false, lift?: { price: number }) => {
+  const renderCard = (p: (typeof PACKAGES)[number], left = false, lift?: { price: number; center?: boolean }) => {
     /* No card is picked by clicking any more (2026-10-29, Eric): the selected look is a hover, so `on` is false and the resting look
        is every card's; the Purchase buttons keep hovers of their own. */
     const on = false
@@ -298,7 +298,7 @@ export function TwoPackageProductDetailPage() {
             {lift ? null : (
               <span style={{ ...OPTION_TITLE, marginBottom: single ? -12 : -8 }}>{p.cardTitle ?? `${place} ${localize(p.title)}`}</span>
             )}
-            {lift ? <span style={{ position: 'relative', top: -lift.price, alignSelf: 'center' }}>{prices}</span> : prices}
+            {lift ? <span style={{ position: 'relative', top: -lift.price, alignSelf: lift.center ? 'center' : 'flex-start' }}>{prices}</span> : prices}
             {/* The price stacked over its Purchase, the button across the card in the flow (2026-10-29, Eric; it slid beside the
                 price as the cards condensed). */}
             {/* Single, 4 less under the price, and only as wide as its label and 24 padding (2026-10-29, Eric). */}
@@ -451,6 +451,7 @@ export function TwoPackageProductDetailPage() {
               <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
             </h2>
             <div style={{ ...HEAD_PACKAGE_B, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
+              {/* The price left, over the Purchase's left edge (2026-10-29, Eric). */}
               {renderCard(packages[0], true, { price: 0 })}
             </div>
             {/* 8 further from the Purchase and 8 nearer the table below (2026-10-29, Eric). */}
@@ -477,7 +478,7 @@ export function TwoPackageProductDetailPage() {
             <span aria-hidden style={HEAD_RULE_C} />
             <div style={{ ...HEAD_PACKAGE_C, gridColumn: 3, gridRow: 2, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
               {/* No package name; the price row 8 up, centred over the Purchase (2026-10-29, Eric). */}
-              {renderCard(packages[0], true, { price: 8 })}
+              {renderCard(packages[0], true, { price: 8, center: true })}
             </div>
             <p style={{ ...BODY, gridColumn: '1 / -1', gridRow: 3, marginTop: 8, marginBottom: -8 }}>
               Updated every year, our packages make complex insurance concepts simple.{' '}
@@ -1662,7 +1663,8 @@ const HEAD_PACKAGE: CSSProperties = {
 }
 /* Copy B of the single head (2026-10-29, Eric) — starts identical to the first, 48 below it; change these to compare. */
 const HEAD_WITH_PACKAGE_B: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 16, marginTop: 48 }
-const HEAD_PACKAGE_B: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }
+// 10 nearer the title (2026-10-29, Eric).
+const HEAD_PACKAGE_B: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: -10 }
 /* Copy C (2026-10-29, Eric) — B's, to start; change these to compare. */
 // C (2026-10-29, Eric): the pill across, then the title with the package far right beside it, then the intro across.
 const HEAD_WITH_PACKAGE_C: CSSProperties = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto auto', alignItems: 'center', columnGap: 32, rowGap: 16, marginTop: 48 }
@@ -1676,7 +1678,7 @@ const PACKAGE_STRIP_C: CSSProperties = {
   flexDirection: 'column',
   alignItems: 'flex-start',
   paddingTop: 2,
-  paddingBottom: 2,
+  paddingBottom: 10, // 8 more under it (2026-10-29, Eric; was 2)
   // No hairlines above and below (2026-10-29, Eric; the design's Secondary 300 pair).
 }
 const PACKAGE_STRIP_ROW_C: CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, paddingTop: 2, paddingBottom: 2 }
