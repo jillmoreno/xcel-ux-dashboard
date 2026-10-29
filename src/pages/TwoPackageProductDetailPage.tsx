@@ -267,6 +267,10 @@ export function TwoPackageProductDetailPage() {
             {p.badge ? <span style={MINI_BADGE}>{p.badge}</span> : null}
             <span style={{ ...MINI_TAB_LABEL, ...(p.badge ? { paddingLeft: 0 } : null) }}>{p.short} package</span>
           </span>
+        ) : p.badge ? (
+          /* Premier's brick PASS GUARANTEE back in its corner (2026-10-29, Eric) — on its own, laid over the card so the two titles
+             stay level; the package name stays in the title. */
+          <span style={CORNER_BADGE}>{p.badge}</span>
         ) : null}
         {single ? (
           /* THE SINGLE-PRODUCT CARD (2026-10-28, Eric): laid out across, like the mini tray's — the title on the left, the price
@@ -279,11 +283,12 @@ export function TwoPackageProductDetailPage() {
             </span>
           </span>
         ) : (
-          <span style={{ ...OPTION_BODY, paddingTop: 24, paddingBottom: pinLerp(28, 24), alignItems: 'center', textAlign: 'center' }}>
+          <span style={{ ...OPTION_BODY, paddingTop: 32, paddingBottom: pinLerp(28, 24), alignItems: 'center', textAlign: 'center' }}>
             {/* Centred (2026-10-29, Eric). */}
-            {/* 24 from the card's top, with no tab above it now (2026-10-29, Eric; 20 under the tab). */}
+            {/* 32 from the card's top (2026-10-29, Eric: 24 with no tab above it, then 8 more; 20 under the tab). */}
             {/* A card's own title where it has one — Standard's is "Standard Course" (2026-10-29, Eric). */}
-            <span style={OPTION_TITLE}>{p.cardTitle ?? `${place} ${localize(p.title)}`}</span>
+            {/* 8 closer to the price (2026-10-29, Eric). */}
+            <span style={{ ...OPTION_TITLE, marginBottom: -8 }}>{p.cardTitle ?? `${place} ${localize(p.title)}`}</span>
             {prices}
             {/* The price stacked over its Purchase, the button across the card in the flow (2026-10-29, Eric; it slid beside the
                 price as the cards condensed). */}
@@ -1749,6 +1754,16 @@ const MINI_BADGE: CSSProperties = {
   width: 125, // 11 / 13 of the design's 148, with the type (2026-10-29, Eric)
   paddingTop: 3, // 1 lower than centred (2026-10-28, Eric: 1 down, 1 more, then 1 back up on 10-29; centred, 2 moves it 1)
   background: 'var(--color-xcel-brick)',
+  color: 'var(--color-fixed-light)',
+}
+/* The multi-product card's badge alone, top left: the tab's type and the badge's brick, the tab's 8 corner bottom right. */
+const CORNER_BADGE: CSSProperties = {
+  ...MINI_TAB,
+  ...MINI_BADGE,
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  paddingRight: 0,
   color: 'var(--color-fixed-light)',
 }
 const MINI_TAB_LABEL: CSSProperties = { paddingTop: 5, // 1 lower (2026-10-28, Eric; was 3 — centred, 2 more moves it 1)
