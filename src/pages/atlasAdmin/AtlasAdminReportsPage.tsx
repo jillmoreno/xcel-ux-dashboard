@@ -5,7 +5,7 @@ import { ADMIN_REPORTS, REPORT_COLUMNS, reportRows, type ReportCategory, type Re
 import { AdminDialog } from './AdminDialog'
 import { CadenceDialog, PeopleDialog } from './adminDialogs'
 import { ADMIN_BASE, ADMIN_EMAIL, DAYS, TIMES, useAdminStore } from './adminStore'
-import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, FIELD_LABEL, HEADING, INPUT, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
+import { BUTTON_BRAND, BUTTON_OUTLINE, BUTTON_RADIUS, CARD, EYEBROW, FIELD_LABEL, HEADING, INPUT, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
 import { ChipMenu, MenuItem } from './adminUi'
 
 /**
@@ -586,7 +586,7 @@ const TH: CSSProperties = { padding: 12, fontSize: 11, fontWeight: 700, textTran
 const TD: CSSProperties = { padding: 12 }
 const ICON_BTN: CSSProperties = { padding: 0, border: 'none', background: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }
 const NEW: CSSProperties = { ...PILL, marginLeft: 8, padding: '1px 6px', fontSize: 9, letterSpacing: '0.06em', textTransform: 'uppercase', background: 'var(--admin-success-tint)', color: 'var(--admin-success-ink)' }
-const RUN: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 5, border: 'none', borderRadius: 9999, padding: '6px 12px', fontSize: 12, fontWeight: 600, background: 'var(--admin-ink)', color: 'var(--admin-surface)', cursor: 'pointer' }
+const RUN: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 5, border: 'none', borderRadius: BUTTON_RADIUS, padding: '6px 12px', fontSize: 12, fontWeight: 600, background: 'var(--admin-ink)', color: 'var(--admin-surface)', cursor: 'pointer' }
 const ROUND: CSSProperties = { marginLeft: 6, width: 28, height: 28, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--admin-rule)', borderRadius: 9999, background: 'var(--admin-surface)', color: 'var(--admin-text)', cursor: 'pointer', verticalAlign: 'middle' }
-const SMALL: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid var(--admin-rule)', borderRadius: 9999, padding: '6px 12px', fontSize: 12, fontWeight: 600, background: 'var(--admin-surface)', color: 'var(--admin-ink)', cursor: 'pointer' }
+const SMALL: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid var(--admin-rule)', borderRadius: BUTTON_RADIUS, padding: '6px 12px', fontSize: 12, fontWeight: 600, background: 'var(--admin-surface)', color: 'var(--admin-ink)', cursor: 'pointer' }
 const FILTER: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6, border: '1px solid var(--admin-rule)', borderRadius: 9999, padding: '3px 10px', fontSize: 11, fontWeight: 600, background: 'var(--admin-surface)', color: 'var(--admin-text)', cursor: 'pointer' }

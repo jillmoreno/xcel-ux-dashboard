@@ -398,7 +398,7 @@ function ProductTab() {
               ['agency', 'Your agency pays'],
             ] as const
           ).map(([id, label]) => (
-            <button key={id} type="button" aria-pressed={payer === id} onClick={() => setPayer(id)} style={payer === id ? { ...BUTTON_BRAND, padding: '6px 14px', fontSize: 13 } : { ...BUTTON_OUTLINE, padding: '6px 14px', fontSize: 13 }}>
+            <button key={id} type="button" aria-pressed={payer === id} onClick={() => setPayer(id)} style={{ ...(payer === id ? BUTTON_BRAND : BUTTON_OUTLINE), padding: '6px 14px', fontSize: 13, borderRadius: 9999 }}>
               {label}
             </button>
           ))}

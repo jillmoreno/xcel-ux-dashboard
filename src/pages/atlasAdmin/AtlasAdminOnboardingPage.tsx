@@ -4,6 +4,7 @@ import { ADMIN_COMPANY, ADMIN_USER } from '@/data/atlasAdmin/learners'
 import { STATES } from '@/data/atlasAdmin/assignments'
 import { Check } from '@/icons'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
+import { BUTTON_RADIUS } from './adminStyles'
 import { AdminToast } from './adminUi'
 import { ALERTS, STEP_IDS, freshAnswers, type OnboardingAnswers } from './onboarding'
 
@@ -510,6 +511,6 @@ const SERIF: CSSProperties = { fontFamily: 'var(--admin-font-serif)', fontWeight
 const BODY: CSSProperties = { margin: 0, fontSize: 13, lineHeight: 1.6, color: 'var(--admin-public-text)' }
 const KICK: CSSProperties = { margin: 0, fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--admin-public-muted)' }
 const INPUT: CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '9px 11px', borderRadius: 8, border: '1px solid var(--admin-public-rule)', background: 'var(--admin-surface)', fontFamily: 'inherit', fontSize: 12, color: 'var(--admin-public-ink)' }
-const CTA: CSSProperties = { border: 'none', borderRadius: 9999, background: 'var(--admin-brand)', padding: '10px 18px', fontFamily: 'inherit', fontSize: 12, fontWeight: 700, color: 'var(--admin-surface)', cursor: 'pointer' }
-const GHOST: CSSProperties = { borderRadius: 9999, border: '1px solid var(--admin-brand)', background: 'var(--admin-surface)', padding: '7px 14px', fontFamily: 'inherit', fontSize: 12, fontWeight: 700, color: 'var(--admin-brand)', cursor: 'pointer' }
+const CTA: CSSProperties = { border: 'none', borderRadius: BUTTON_RADIUS, background: 'var(--admin-brand)', padding: '10px 18px', fontFamily: 'inherit', fontSize: 12, fontWeight: 700, color: 'var(--admin-surface)', cursor: 'pointer' }
+const GHOST: CSSProperties = { borderRadius: BUTTON_RADIUS, border: '1px solid var(--admin-brand)', background: 'var(--admin-surface)', padding: '7px 14px', fontFamily: 'inherit', fontSize: 12, fontWeight: 700, color: 'var(--admin-brand)', cursor: 'pointer' }
 const LINK: CSSProperties = { padding: 0, border: 'none', background: 'none', fontFamily: 'inherit', fontSize: 12, color: 'var(--admin-public-text)', cursor: 'pointer' }

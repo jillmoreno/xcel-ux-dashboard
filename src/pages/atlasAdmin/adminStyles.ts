@@ -23,6 +23,9 @@ export const PAGE_H1: CSSProperties = {
 }
 export const PAGE_SUB: CSSProperties = { margin: '4px 0 0', fontSize: 14, color: 'var(--admin-text)' }
 
+/* The admin's button corner — the Atlas learner buttons' 9 (2026-10-29, Eric; the admin's buttons were pills). */
+export const BUTTON_RADIUS = 9
+
 /* White card, 18 corners, slate-200 edge. */
 export const CARD: CSSProperties = {
   borderRadius: 18,
@@ -30,14 +33,14 @@ export const CARD: CSSProperties = {
   background: 'var(--admin-surface)',
 }
 
-/* Pill buttons: outlined and brand. 37 tall at 14 / 600. */
+/* The buttons: outlined and brand. 37 tall at 14 / 600. 9px corners — the Atlas buttons' (2026-10-29, Eric; were pills). */
 const PILL_BUTTON: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
   gap: 8,
   whiteSpace: 'nowrap',
-  borderRadius: 9999,
+  borderRadius: BUTTON_RADIUS,
   padding: '8px 16px',
   fontFamily: BODY,
   fontSize: 14,
