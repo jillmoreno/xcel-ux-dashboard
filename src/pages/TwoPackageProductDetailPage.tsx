@@ -98,8 +98,9 @@ export function TwoPackageProductDetailPage() {
   const single = useFeatureFlag('pdp-products').variant === 'single'
   const picked: PackageId = single ? 'premier' : chosen
   const packages = single ? PACKAGES.filter((p) => p.id === 'premier') : PACKAGES
-  /* Change state or line: the selector slides open under the heading (2026-10-28, Eric). */
-  const [changeOpen, setChangeOpen] = useState(false)
+  /* Change state or line: the selector slid open under the heading (2026-10-28, Eric). Nothing opens it now (2026-10-29, Eric: the link
+     no longer does), so it stays shut; the panel is kept for when something does. */
+  const changeOpen = false
   /* The state and line of authority the page is written for — the selector's two choices (2026-10-28, Eric). Every "Florida" and
      "Life and Health" on the page follows them; `localize` rewrites the data's own copies (titles, the course name, the specs). */
   const [place, setPlace] = useState('Florida')
@@ -335,38 +336,23 @@ export function TwoPackageProductDetailPage() {
           <span aria-hidden style={WELCOME_RULE} />
           {/* 8 nearer its copy than the original PDP's 4 gap (2026-10-27, Eric): the gap's 4, less 8. */}
           <h1 style={{ ...WELCOME_TITLE, marginBottom: -8 }}>You’ve been invited</h1>
-          <p ref={welcomeRef} style={WELCOME_BODY}>
-            <strong style={{ fontWeight: 800 }}>{E2E_PARTNER_NAME}</strong> has invited
-            you to enroll in{' '}
-            <strong style={{ fontWeight: 800 }}>
-              {place} {line} Pre-licensing
-            </strong>
-            .{' '}
-            {/* The selector's link, here in place of "Choose your package below and start learning today!" (2026-10-29, Eric; it sat
-                right of "Select a package:"). In the page's standard link type, 14 Heavy; it still opens the selector over the cards. */}
-            <button
-              type="button"
-              className="cre-e2e-textlink cre-e2e-textlink--brick"
-              style={PLAIN_LINK}
-              aria-expanded={changeOpen}
-              aria-controls="change-state-or-line"
-              onClick={() => setChangeOpen((o) => !o)}
-            >
-              Change state or line of authority
-              {/* Turns over when the selector is open. */}
-              <AngleDownSolid
-                size={15}
-                aria-hidden
-                style={{
-                  // 15, 35% up from 11 (2026-10-28, Eric); its drawing 4 clear — 384 wide in a 15 square leaves 1.9 of air.
-                  marginLeft: 2.1,
-                  verticalAlign: '-3.5px', // 1 under centred on the 14 text (2026-10-28, Eric)
-                  transform: changeOpen ? 'rotate(180deg)' : 'none',
-                  transition: 'transform 0.25s ease',
-                }}
-              />
+          {/* The sentence, and on its baseline at the band's right edge — the rail's right edge — the link, in place of "Choose your
+              package below and start learning today!" (2026-10-29, Eric). The page's standard link type with an angle-right; it no
+              longer opens the on-page selector. */}
+          <div style={{ alignSelf: 'stretch', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 24 }}>
+            <p ref={welcomeRef} style={WELCOME_BODY}>
+              <strong style={{ fontWeight: 800 }}>{E2E_PARTNER_NAME}</strong> has invited
+              you to enroll in{' '}
+              <strong style={{ fontWeight: 800 }}>
+                {place} {line} Pre-licensing
+              </strong>
+              .
+            </p>
+            <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...PLAIN_LINK, flex: 'none' }}>
+              Change state/line of authority
+              <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
             </button>
-          </p>
+          </div>
         </div>
       </section>
       {/* THE COURSE HEADER — Figma 544:2970 (2026-10-27), in place of the dark band: the title in brick, a line on the packages,
