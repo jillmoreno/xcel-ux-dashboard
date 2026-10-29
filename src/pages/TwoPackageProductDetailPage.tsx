@@ -351,7 +351,8 @@ export function TwoPackageProductDetailPage() {
           <span aria-hidden style={WELCOME_RULE} />
           {/* 8 nearer its copy than the original PDP's 4 gap (2026-10-27, Eric): the gap's 4, less 8. */}
           <h1 style={{ ...WELCOME_TITLE, marginBottom: -8 }}>You’ve been invited</h1>
-          {/* The sentence, and on its baseline at the band's right edge — the rail's right edge — the link, in place of "Choose your
+          {/* The sentence, and on its baseline in a rail-wide box at the band's right edge — so it starts at the rail's left edge
+              (2026-10-29, Eric; it was right-aligned to the rail's right edge) — the link, in place of "Choose your
               package below and start learning today!" (2026-10-29, Eric). The page's standard link type with an angle-right; it no
               longer opens the on-page selector. Avenir set here — out of a paragraph, it had inherited the page's default face. */}
           <div style={{ alignSelf: 'stretch', display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 24 }}>
@@ -368,7 +369,8 @@ export function TwoPackageProductDetailPage() {
               className="cre-e2e-textlink cre-e2e-textlink--brick"
               aria-haspopup="dialog"
               onClick={() => setOptionsOpen(true)}
-              style={{ ...PLAIN_LINK, flex: 'none', fontFamily: 'var(--font-e2e-avenir)' }}
+              style={{ ...PLAIN_LINK, flex: 'none', width: RAIL_W - 32, textAlign: 'left', // the rail's text starts 32 in
+  fontFamily: 'var(--font-e2e-avenir)' }}
             >
               Change state/line of authority
               <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
