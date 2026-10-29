@@ -361,6 +361,12 @@ export function TwoPackageProductDetailPage() {
             our interactive lessons plans and quizzes.{' '}
             <strong style={{ fontWeight: 800 }}>Pass the {place} state licensing exam the first time.</strong>
           </p>
+          {/* A CONCISE VERSION, under the original for comparison (2026-10-29, Eric) — one of the two goes once it is decided. */}
+          <p style={{ ...BODY, marginTop: 16 }}>
+            Updated every year, our packages make complex insurance concepts simple.{' '}
+            <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
+            <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
+          </p>
         </div>
         </div>
       </section>
