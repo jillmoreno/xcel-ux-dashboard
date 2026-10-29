@@ -472,7 +472,7 @@ export function TwoPackageProductDetailPage() {
                       aria-controls="change-state-or-line"
                       onClick={() => setChangeOpen((o) => !o)}
                     >
-                      Change state or line
+                      Change state or line of authority
                       {/* Turns over when the selector is open. */}
                       <AngleDownSolid
                         size={15}
