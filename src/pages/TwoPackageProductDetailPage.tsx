@@ -1756,14 +1756,18 @@ const MINI_BADGE: CSSProperties = {
   background: 'var(--color-xcel-brick)',
   color: 'var(--color-fixed-light)',
 }
-/* The multi-product card's badge alone, top left: the tab's type and the badge's brick, the tab's 8 corner bottom right. */
+/* The multi-product card's badge alone, centred on its top edge (2026-10-29, Eric; top left, then top right): the tab's type
+   and the badge's brick, both bottom corners 8. */
 const CORNER_BADGE: CSSProperties = {
   ...MINI_TAB,
   ...MINI_BADGE,
   position: 'absolute',
   top: 0,
-  left: 0,
+  left: '50%',
+  transform: 'translateX(-50%)',
   paddingRight: 0,
+  borderBottomRightRadius: 8,
+  borderBottomLeftRadius: 8,
   color: 'var(--color-fixed-light)',
 }
 const MINI_TAB_LABEL: CSSProperties = { paddingTop: 5, // 1 lower (2026-10-28, Eric; was 3 — centred, 2 more moves it 1)
