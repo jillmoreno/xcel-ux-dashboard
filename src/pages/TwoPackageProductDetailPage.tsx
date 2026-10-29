@@ -99,6 +99,8 @@ export function TwoPackageProductDetailPage() {
   const single = useFeatureFlag('pdp-products').variant === 'single'
   /* The single page's course head — A, B or C (2026-10-29, Eric; C the default, A and B kept to draw on). */
   const singleHead = useFeatureFlag('pdp-single-head').variant ?? 'c'
+  // D's head shows Premier on both pages — packages[0] is Standard on the multi-product page.
+  const PREMIER = PACKAGES.find((p) => p.id === 'premier') ?? PACKAGES[0]
   const picked: PackageId = single ? 'premier' : chosen
   const packages = single ? PACKAGES.filter((p) => p.id === 'premier') : PACKAGES
   /* Change state or line: the selector slid open under the heading (2026-10-28, Eric). Nothing opens it now (2026-10-29, Eric: the link
@@ -233,6 +235,8 @@ export function TwoPackageProductDetailPage() {
      `price` px (position only, so the Purchase stays put) and centred over the Purchase, and no package name (2026-10-29, Eric;
      the name went up 16 first, then went). */
   const renderCard = (p: (typeof PACKAGES)[number], left = false, lift?: { price: number; center?: boolean }) => {
+    // Unboxed — the single page's look — on the single page, and wherever a head copy shows it (D on the multi page too).
+    const bare = single || !!lift
     /* No card is picked by clicking any more (2026-10-29, Eric): the selected look is a hover, so `on` is false and the resting look
        is every card's; the Purchase buttons keep hovers of their own. */
     const on = false
@@ -265,7 +269,7 @@ export function TwoPackageProductDetailPage() {
     // Not clickable now — a hover lifts it (cre-e2e-package-card, inviteFlow.css: the selected ring and shadow); Premier is lifted at rest; Standard has no hover at all (2026-10-29, Eric).
     return (
       // Single, out of its card: no fill, ring or shadow — the contents on the ground, left (2026-10-29, Eric).
-      <div className={p.id === 'premier' && !single ? 'cre-e2e-package-card cre-e2e-package-card--on' : undefined} style={single ? UNCARDED : OPTION_CARD}>
+      <div className={p.id === 'premier' && !bare ? 'cre-e2e-package-card cre-e2e-package-card--on' : undefined} style={bare ? UNCARDED : OPTION_CARD}>
         {/* THE TAB (2026-10-28, Eric; was the eyebrow over the title and PASS GUARANTEE top right): the mini tray's, top left —
             the package's name on tan, behind Premier's brick PASS GUARANTEE. */}
         {/* Gone from the multi-product page's cards (2026-10-29, Eric) — their titles name the package now. The single page wears
@@ -275,7 +279,7 @@ export function TwoPackageProductDetailPage() {
             {p.badge ? <span style={MINI_BADGE}>{p.badge}</span> : null}
             <span style={{ ...MINI_TAB_LABEL, ...(p.badge ? { paddingLeft: 0 } : null) }}>{p.short} package</span>
           </span>
-        ) : p.badge && !single ? (
+        ) : p.badge && !bare ? (
           /* Premier's brick PASS GUARANTEE back in its corner (2026-10-29, Eric) — on its own, laid over the card so the two titles
              stay level; the package name stays in the title. */
           <span style={CORNER_BADGE}>{p.badge}</span>
@@ -291,25 +295,25 @@ export function TwoPackageProductDetailPage() {
             </span>
           </span>
         ) : (
-          <span style={single ? (left ? { ...UNCARDED_BODY, paddingTop: 0, alignItems: 'flex-start', textAlign: 'left' } : UNCARDED_BODY) : { ...OPTION_BODY, paddingTop: 40, paddingBottom: pinLerp(28, 24), alignItems: 'center', textAlign: 'center' }}>
+          <span style={bare ? (left ? { ...UNCARDED_BODY, paddingTop: 0, alignItems: 'flex-start', textAlign: 'left' } : UNCARDED_BODY) : { ...OPTION_BODY, paddingTop: 40, paddingBottom: pinLerp(28, 24), alignItems: 'center', textAlign: 'center' }}>
             {/* Centred (2026-10-29, Eric). */}
             {/* 40 from the card's top (2026-10-29, Eric: 24 with no tab above it, then 8 more, and 8 more; 20 under the tab). */}
             {/* A card's own title where it has one — Standard's is "Standard Course" (2026-10-29, Eric). */}
             {/* 8 closer to the price (2026-10-29, Eric; all caps, then back). */}
             {/* Single, 4 closer still (2026-10-29, Eric). */}
             {lift ? null : (
-              <span style={{ ...OPTION_TITLE, marginBottom: single ? -12 : -8 }}>{p.cardTitle ?? `${place} ${localize(p.title)}`}</span>
+              <span style={{ ...OPTION_TITLE, marginBottom: bare ? -12 : -8 }}>{p.cardTitle ?? `${place} ${localize(p.title)}`}</span>
             )}
             {lift ? <span style={{ position: 'relative', top: -lift.price, alignSelf: lift.center ? 'center' : 'flex-start' }}>{prices}</span> : prices}
             {/* The price stacked over its Purchase, the button across the card in the flow (2026-10-29, Eric; it slid beside the
                 price as the cards condensed). */}
             {/* Single, 4 less under the price, and only as wide as its label and 24 padding (2026-10-29, Eric). */}
-            {buy(single ? { ...STACKED_BUY, marginTop: -4, alignSelf: left ? 'flex-start' : 'center' } : STACKED_BUY)}
+            {buy(bare ? { ...STACKED_BUY, marginTop: -4, alignSelf: left ? 'flex-start' : 'center' } : STACKED_BUY)}
           </span>
         )}
         {/* The card's 1 edge drawn again over everything, so its top runs across the tab (2026-10-28, Eric). Not on the
             multi-product Premier card, whose stroke is the CSS's alone, at half strength (2026-10-29, Eric) — two would stack. */}
-        {single ? null : p.id !== 'premier' ? <span aria-hidden style={MINI_EDGE} /> : null}
+        {bare ? null : p.id !== 'premier' ? <span aria-hidden style={MINI_EDGE} /> : null}
       </div>
     )
   }
@@ -412,6 +416,47 @@ export function TwoPackageProductDetailPage() {
         <div style={{ width: `calc(100% - ${RAIL_W}px - ${RAIL_GUTTER}px)`, boxSizing: 'border-box', paddingRight: single ? 0 : 32, paddingLeft: single ? 0 : 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* Single, the package beside the title and intro, on the right — out of the tan ground (2026-10-29, Eric); the title and
             intro narrow to make room. */}
+        {/* COPY D (2026-10-29, Eric): C's layout worked further — Single head's D (it sat under C at first). Its own HEAD_WITH_PACKAGE_D / HEAD_PACKAGE_D /
+            HEAD_RULE_D / PACKAGE_STRIP_D to change and compare. */}
+        {/* On the multi-product page too, above its own head, for comparison (2026-10-29, Eric). */}
+        {!single || singleHead === 'd' ? (
+          <div style={single ? HEAD_WITH_PACKAGE_D : { ...HEAD_WITH_PACKAGE_D, marginBottom: 48 }}>
+            {/* Figma 573:3972 (2026-10-29, Eric), in place of the PASS GUARANTEE pill: PREMIER PACKAGE, a rule, then a shield and
+                "Includes our Pass Guarantee" in brick, between hairlines above and below. */}
+            {/* D (2026-10-29, Eric): only the shield and "Includes our Pass Guarantee" here, at the left, no rule — the crown and
+                PREMIER PACKAGE moved over the price. */}
+            <div style={{ ...PACKAGE_STRIP_D, gridColumn: 1, gridRow: 1, justifySelf: 'start' }}>
+              <div style={PACKAGE_STRIP_ROW_C}>
+                <span style={PACKAGE_STRIP_GUARANTEE_C}>
+                  <ShieldCheckSolid size={14} aria-hidden />
+                  <span style={{ paddingTop: 1 }}>Includes our Pass Guarantee</span>
+                </span>
+              </div>
+            </div>
+            <h2 style={{ ...COURSE_HEAD_TITLE, color: 'var(--color-text-primary)', alignSelf: 'end', gridColumn: 1, gridRow: 2 }}>
+              {/* A break after the line of authority (2026-10-29, Eric). */}
+              {place} {line}
+              <br />
+              <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
+            </h2>
+            {/* A 1 rule between the title and the package, from the pill's top to the Purchase's bottom edge (2026-10-29, Eric). */}
+            <span aria-hidden style={HEAD_RULE_D} />
+            <div style={{ ...HEAD_PACKAGE_D, gridColumn: 3, gridRow: 2, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
+              {/* The crown and PREMIER PACKAGE over the price, centred like it (2026-10-29, Eric). */}
+              <span style={PACKAGE_LABEL_D}>
+                <CrownSolid size={14} aria-hidden />
+                <span style={PACKAGE_STRIP_LABEL_C}>Premier package</span>
+              </span>
+              {/* No package name; the price row 8 up, centred over the Purchase (2026-10-29, Eric). */}
+              {renderCard(PREMIER, true, { price: 8, center: true })}
+            </div>
+            <p style={{ ...BODY, gridColumn: '1 / -1', gridRow: 3, marginTop: 8, marginBottom: -8 }}>
+              Updated every year, our packages make complex insurance concepts simple.{' '}
+              <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
+              <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
+            </p>
+          </div>
+        ) : null}
         {!single || singleHead === 'a' ? (
         <div style={single ? HEAD_WITH_PACKAGE : { display: 'contents' }}>
         {/* 2 between the title and its intro (the design's 10, 8 less — 2026-10-27, Eric). */}
@@ -481,46 +526,6 @@ export function TwoPackageProductDetailPage() {
             {/* A 1 rule between the title and the package, from the pill's top to the Purchase's bottom edge (2026-10-29, Eric). */}
             <span aria-hidden style={HEAD_RULE_C} />
             <div style={{ ...HEAD_PACKAGE_C, gridColumn: 3, gridRow: 2, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
-              {/* No package name; the price row 8 up, centred over the Purchase (2026-10-29, Eric). */}
-              {renderCard(packages[0], true, { price: 8, center: true })}
-            </div>
-            <p style={{ ...BODY, gridColumn: '1 / -1', gridRow: 3, marginTop: 8, marginBottom: -8 }}>
-              Updated every year, our packages make complex insurance concepts simple.{' '}
-              <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
-              <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
-            </p>
-          </div>
-        ) : null}
-        {/* COPY D (2026-10-29, Eric): C's layout worked further — Single head's D (it sat under C at first). Its own HEAD_WITH_PACKAGE_D / HEAD_PACKAGE_D /
-            HEAD_RULE_D / PACKAGE_STRIP_D to change and compare. */}
-        {single && singleHead === 'd' ? (
-          <div style={HEAD_WITH_PACKAGE_D}>
-            {/* Figma 573:3972 (2026-10-29, Eric), in place of the PASS GUARANTEE pill: PREMIER PACKAGE, a rule, then a shield and
-                "Includes our Pass Guarantee" in brick, between hairlines above and below. */}
-            {/* D (2026-10-29, Eric): only the shield and "Includes our Pass Guarantee" here, at the left, no rule — the crown and
-                PREMIER PACKAGE moved over the price. */}
-            <div style={{ ...PACKAGE_STRIP_D, gridColumn: 1, gridRow: 1, justifySelf: 'start' }}>
-              <div style={PACKAGE_STRIP_ROW_C}>
-                <span style={PACKAGE_STRIP_GUARANTEE_C}>
-                  <ShieldCheckSolid size={14} aria-hidden />
-                  <span style={{ paddingTop: 1 }}>Includes our Pass Guarantee</span>
-                </span>
-              </div>
-            </div>
-            <h2 style={{ ...COURSE_HEAD_TITLE, color: 'var(--color-text-primary)', alignSelf: 'end', gridColumn: 1, gridRow: 2 }}>
-              {/* A break after the line of authority (2026-10-29, Eric). */}
-              {place} {line}
-              <br />
-              <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
-            </h2>
-            {/* A 1 rule between the title and the package, from the pill's top to the Purchase's bottom edge (2026-10-29, Eric). */}
-            <span aria-hidden style={HEAD_RULE_D} />
-            <div style={{ ...HEAD_PACKAGE_D, gridColumn: 3, gridRow: 2, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
-              {/* The crown and PREMIER PACKAGE over the price, centred like it (2026-10-29, Eric). */}
-              <span style={PACKAGE_LABEL_D}>
-                <CrownSolid size={14} aria-hidden />
-                <span style={PACKAGE_STRIP_LABEL_C}>Premier package</span>
-              </span>
               {/* No package name; the price row 8 up, centred over the Purchase (2026-10-29, Eric). */}
               {renderCard(packages[0], true, { price: 8, center: true })}
             </div>
