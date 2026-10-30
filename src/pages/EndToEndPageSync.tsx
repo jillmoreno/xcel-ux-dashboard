@@ -10,7 +10,12 @@ import {
 } from './endToEndDemo'
 import { clearPartnerCodeAnswer, entryPathFor, useInviteFlow } from '@/data/inviteFlows'
 import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
-import { isInviteFlowPath } from '@/data/inviteFlowVersions'
+import {
+  INVITE_FLOW_VERSION_FLAG,
+  isInviteFlowPath,
+  resolveInviteFlowVersion,
+} from '@/data/inviteFlowVersions'
+import { inviteV3Surface, useInviteModel } from '@/data/inviteFlowsV3'
 import { useDeclareDesignSurface } from '@/context/designSurface'
 
 /**
@@ -152,6 +157,10 @@ export function InviteFlowEntrySync() {
  */
 export function InviteSurfaceSync() {
   const { pathname } = useLocation()
-  useDeclareDesignSurface(isInviteFlowPath(pathname) ? 'invite' : null)
+  /* V3 declares its own surface, one per model type — `inviteFlowsV3.ts`. */
+  const version = resolveInviteFlowVersion(useFeatureFlag(INVITE_FLOW_VERSION_FLAG).variant)
+  const model = useInviteModel()
+  const surface = version === 'v3' ? inviteV3Surface(model) : 'invite'
+  useDeclareDesignSurface(isInviteFlowPath(pathname) ? surface : null)
   return null
 }
