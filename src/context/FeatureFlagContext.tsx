@@ -2667,6 +2667,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        d — C, with the crown and PREMIER PACKAGE over the price on the
            guarantee's baseline, and Includes our Pass Guarantee alone at the
            left (2026-10-29, Eric: "save D as a version as well").
+       e — B, with the multi-product page's Premier card for its pricing
+           (2026-10-30, Eric).
 
        Single-product only; the multi-product page has its own head. */
     surface: 'design',
@@ -2675,7 +2677,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Layout',
     label: 'Single head',
     description:
-      'The single-product PDP\u2019s course head: A, the boxed price tile beside the title; B, the package strip over the title with the price under it; C, the strip over the title with the price far right \u2014 the default; or D, C with PREMIER PACKAGE over the price.',
+      'The single-product PDP\u2019s course head: A, the boxed price tile beside the title; B, the package strip over the title with the price under it; C, the strip over the title with the price far right \u2014 the default; D, C with PREMIER PACKAGE over the price; or E, B with the multi page\u2019s Premier card.',
     defaultEnabled: true,
     defaultVariant: 'c',
     variants: [
@@ -2683,6 +2685,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'b', label: 'B', description: 'The package strip over the title, the price and Purchase under it.' },
       { value: 'c', label: 'C', description: 'The package strip over a dark title, the price far right past a rule. The default.' },
       { value: 'd', label: 'D', description: 'C with the crown and PREMIER PACKAGE over the price, Includes our Pass Guarantee alone at the left.' },
+      { value: 'e', label: 'E', description: 'B with the multi-product page\u2019s Premier card in place of its price and Purchase.' },
     ],
     page: 'dashboard-rebrand',
   },

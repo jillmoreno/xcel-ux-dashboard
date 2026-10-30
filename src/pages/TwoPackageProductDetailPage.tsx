@@ -235,9 +235,10 @@ export function TwoPackageProductDetailPage() {
   /* `left`: copy B's package, set flush left under the title (2026-10-29, Eric). `lift`: copy C's — its price row raised by
      `price` px (position only, so the Purchase stays put) and centred over the Purchase, and no package name (2026-10-29, Eric;
      the name went up 16 first, then went). */
-  const renderCard = (p: (typeof PACKAGES)[number], left = false, lift?: { price: number; center?: boolean }) => {
+  const renderCard = (p: (typeof PACKAGES)[number], left = false, lift?: { price: number; center?: boolean }, carded = false) => {
     // Unboxed — the single page's look — on the single page, and wherever a head copy shows it (D on the multi page too).
-    const bare = single || !!lift
+    // `carded` keeps the multi page's card wherever it is drawn — Single head E's (2026-10-30, Eric).
+    const bare = !carded && (single || !!lift)
     /* No card is picked by clicking any more (2026-10-29, Eric): the selected look is a hover, so `on` is false and the resting look
        is every card's; the Purchase buttons keep hovers of their own. */
     const on = false
@@ -531,6 +532,30 @@ export function TwoPackageProductDetailPage() {
             <div style={{ ...HEAD_PACKAGE_B, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
               {/* The price left, over the Purchase's left edge (2026-10-29, Eric). */}
               {renderCard(packages[0], true, { price: 0 })}
+            </div>
+            {/* 8 further from the Purchase and 8 nearer the table below (2026-10-29, Eric). */}
+            <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
+              Updated every year, our packages make complex insurance concepts simple.{' '}
+              <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
+              <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
+            </p>
+          </div>
+        ) : null}
+        {/* COPY E (2026-10-30, Eric): B duplicated, the multi page's Premier card for its pricing. */}
+        {single && singleHead === 'e' ? (
+          <div style={HEAD_WITH_PACKAGE_B}>
+            {/* C's strip in place of the pill, and C's price block — no package name, the price over the Purchase — straight under
+                the title (2026-10-29, Eric). */}
+            {/* No strip over the title in E (2026-10-30, Eric) — the card carries the package and its guarantee. */}
+            <h2 style={COURSE_HEAD_TITLE}>
+              {/* A break after the line of authority (2026-10-29, Eric). */}
+              {place} {line}
+              <br />
+              <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
+            </h2>
+            {/* The multi page's Premier card in place of B's price and Purchase, at its size there (2026-10-30, Eric). */}
+            <div style={{ ...HEAD_PACKAGE_B, ...HEAD_CARD_E, '--cp': 1, '--px': 1, '--py': 1 } as CSSProperties}>
+              {renderCard(PREMIER, false, undefined, true)}
             </div>
             {/* 8 further from the Purchase and 8 nearer the table below (2026-10-29, Eric). */}
             <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
@@ -1796,6 +1821,8 @@ const HEAD_RULE_C: CSSProperties = { gridColumn: 2, gridRow: '1 / 3', alignSelf:
 /* Copy D (2026-10-29, Eric) — C's, to start; Single head's D. */
 // Copy D above the multi page's own head — off (2026-10-30, Eric: "hide this"); true shows it again.
 const D_ON_MULTI = false
+// Single head E: the multi page's Premier card, its width there (2026-10-30, Eric).
+const HEAD_CARD_E: CSSProperties = { width: 358, marginTop: 8, alignItems: 'stretch' }
 const HEAD_WITH_PACKAGE_D: CSSProperties = { ...HEAD_WITH_PACKAGE_C }
 // The packages' column, the row's full height so PASS GUARANTEE sits at the rule's foot (2026-10-29, Eric).
 const HEAD_PACKAGE_D: CSSProperties = { gridColumn: 3, gridRow: 1, alignSelf: 'stretch', justifySelf: 'end', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }
