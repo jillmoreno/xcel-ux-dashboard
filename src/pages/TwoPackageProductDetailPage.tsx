@@ -439,7 +439,8 @@ export function TwoPackageProductDetailPage() {
                 <br />
                 <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
               </h2>
-              <p style={{ ...BODY, marginBottom: -8 }}>
+              {/* At the rail's Pass Guarantee body size, 15 / 21 (2026-10-30, Eric; was 18 / 27). */}
+              <p style={{ ...SIDE_BODY, marginBottom: -8 }}>
                 Updated every year, our packages make complex insurance concepts simple.{' '}
                 <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
                 <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
