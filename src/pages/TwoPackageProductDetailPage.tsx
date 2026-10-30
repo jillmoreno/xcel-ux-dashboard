@@ -1061,7 +1061,7 @@ const PACKAGES: {
     courseName: 'Florida Life and Health Pre-licensing Premier',
     price: '$97.50', // DEMO DATA — see the header
     was: '$299.00',
-    badge: 'Pass Guarantee',
+    badge: 'Best Value', // (2026-10-30, Eric; was 'Pass Guarantee')
     description:
       'Our Premier package adds flashcards, a recorded review class, and our Pass Guarantee to the standard package and is ideal for those looking to maximize their studying with various learning formats.',
     diffTitle: 'Everything in Standard plus:',
