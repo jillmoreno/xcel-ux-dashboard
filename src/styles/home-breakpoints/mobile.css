@@ -1,0 +1,57 @@
+/*
+ * THE LEARNER HOME AT Mobile Portrait — 402 × 874 (2026-10-30, Eric). Every rule is scoped to [data-home-bp='mobile'] — this breakpoint
+ * only. See index.css for how these files work.
+ */
+
+/* One column, 16 in from the device's edges. */
+[data-home-bp='mobile'] section:has(> .cre-dash-serif-headings) {
+  padding: 24px 16px 40px !important;
+}
+/* The page row (Quick Links | the course) stacks: the course first, Quick Links under it. */
+[data-home-bp='mobile'] div:has(> section[aria-label='Current course']) {
+  flex-direction: column-reverse !important;
+  align-items: stretch !important;
+  gap: 24px !important;
+}
+[data-home-bp='mobile'] div:has(> section[aria-label='Current course']) > * {
+  width: auto !important;
+  max-width: none !important;
+  flex: none !important;
+}
+/* The course head: the cover over the title, both the card's width. */
+[data-home-bp='mobile'] section[aria-label='Current course'] div:has(> button[aria-label^='Course header']) {
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+/* Their flex-basis is a WIDTH in the row; in a column it would become a height. */
+[data-home-bp='mobile'] section[aria-label='Current course'] div:has(> button[aria-label^='Course header']) > * {
+  flex: none !important;
+}
+/* The course card's panel: 24 in, not 40. */
+[data-home-bp='mobile'] section[aria-label='Current course'] > div:first-child {
+  padding: 24px !important;
+}
+[data-home-bp='mobile'] button[aria-label^='Course header'] {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 16 / 9;
+}
+/* The body row (progress | study journey) stacks too. */
+[data-home-bp='mobile'] section[aria-label='Current course'] div:has(> div > section[aria-label='Study journey']) {
+  flex-direction: column !important;
+  gap: 32px !important;
+}
+[data-home-bp='mobile'] section[aria-label='Current course'] div:has(> div > section[aria-label='Study journey']) > div {
+  width: auto !important;
+  flex: none !important;
+}
+
+/* The header: 16 in, and the account pill shows its icon alone — the name does not fit beside the logo at 402. */
+[data-home-bp='mobile'] header {
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+[data-home-bp='mobile'] .cre-atlas-hdr-pill:has(svg) {
+  font-size: 0 !important;
+  gap: 0 !important;
+}

@@ -16,6 +16,9 @@ import { isAtlasCompassNavVersion, resolveDashboardVersion } from '@/data/dashbo
 import { useAccount } from '@/context/AccountContext'
 import { BrowserWindow, MobileScreen, Monitor, TabletScreen } from '@/icons'
 import { isTestSession } from '@/data/gatewayMode'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { homeBreakpointFor } from '@/data/homeBreakpoints'
+import '@/styles/home-breakpoints/index.css'
 
 /**
  * Device-preview frame for the prototype. A toggle in the PrototypeBar
@@ -132,6 +135,28 @@ export function DeviceFrame({ chrome, children }: { chrome?: ReactNode; children
   const atlas = isAtlasCompassNavVersion(
     resolveDashboardVersion(new URLSearchParams(useLocation().search).get('version'), brand),
   )
+  /* THE BREAKPOINT FRAME (2026-10-30, Eric) — the design bar's Breakpoint control. When one is picked it wins over the
+     device toggle: the app is drawn in a viewport of exactly that width and height, scrolling inside it, with its size
+     captioned. `data-home-bp` is what scopes each breakpoint's own stylesheet (src/styles/home-breakpoints/). */
+  const breakpoint = homeBreakpointFor(useFeatureFlag('home-breakpoint').variant)
+  if (breakpoint)
+    return (
+      <div className="cre-bp-stage">
+        {chrome}
+        <div className="cre-bp-canvas">
+          <p className="cre-bp-caption">
+            {breakpoint.label} · {breakpoint.width} × {breakpoint.height}
+          </p>
+          <div
+            className="cre-bp-viewport"
+            data-home-bp={breakpoint.id}
+            style={{ width: breakpoint.width, height: breakpoint.height }}
+          >
+            {children}
+          </div>
+        </div>
+      </div>
+    )
   if (device === 'desktop')
     return (
       <>

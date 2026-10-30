@@ -3185,6 +3185,38 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'home-breakpoint',
+    /* THE DEVICE BREAKPOINT TOOL — 2026-10-30, Eric: "create a design tool … for device breakpoints. Then … versions using
+       the breakpoints … for the learner homepage so that I can adjust each breakpoint as needed."
+
+       live    — no frame: the app at the browser's own width, as before. THE DEFAULT.
+       mobile / tablet / desktop / wide — the app drawn in a viewport of exactly that size (`HOME_BREAKPOINTS`,
+                 src/data/homeBreakpoints.ts), scrolling inside it, with the size captioned above.
+
+       Each breakpoint's Home layout is its OWN stylesheet in src/styles/home-breakpoints/, scoped by the frame's
+       `data-home-bp`, so a change for Mobile Portrait cannot move Desktop. Off (`live`), none of them applies and the Home is
+       the baseline untouched.
+
+       ⚠ A DESIGN CONTROL, so it never reaches Prototypes; the stylesheets ride only inside the frame. A breakpoint layout
+       that should SHIP is a media query in the product's own styles, decided at merge. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    group: 'Layout',
+    label: 'Breakpoint',
+    description:
+      'Draws the app at a device breakpoint: Live (default, the browser\u2019s width), Mobile Portrait 402 \u00d7 874, Tablet Portrait 820 \u00d7 1180, Desktop 1366 \u00d7 650 or Desktop Wide 1920 \u00d7 1080. Each breakpoint has its own Home stylesheet.',
+    defaultEnabled: true,
+    defaultVariant: 'live',
+    variants: [
+      { value: 'live', label: 'Live', description: 'No frame — the browser\u2019s own width.' },
+      { value: 'mobile', label: 'Mobile 402', description: 'Mobile Portrait, 402 \u00d7 874.' },
+      { value: 'tablet', label: 'Tablet 820', description: 'Tablet Portrait, 820 \u00d7 1180.' },
+      { value: 'desktop', label: 'Desktop 1366', description: 'Desktop, 1366 \u00d7 650.' },
+      { value: 'wide', label: 'Wide 1920', description: 'Desktop Wide, 1920 \u00d7 1080.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-pace-card',
     /* THE STUDY PACE CARD, TWO WAYS (2026-10-16, Jillienne: "lets add a
        component variant for this section. update to this new UI, keep the

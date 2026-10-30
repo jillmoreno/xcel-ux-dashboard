@@ -1,0 +1,59 @@
+/*
+ * THE BREAKPOINT FRAME AND EACH BREAKPOINT'S HOME — 2026-10-30, Eric.
+ *
+ * The frame: the design bar's Breakpoint control (`home-breakpoint`) draws the app in a viewport of one of
+ * `HOME_BREAKPOINTS` (src/data/homeBreakpoints.ts) — DeviceFrame. These rules are only the stage it sits on.
+ *
+ * Each breakpoint's Home is its own file below, every rule scoped to `[data-home-bp='<id>']`, so a change to one cannot
+ * reach another, and with the control on Live none of them applies. The Home's styles are inline, so a rule here needs
+ * `!important` to win — that is expected in these files and nowhere else. Hook on the page's own landmarks (aria-labels,
+ * the existing class names) rather than adding hooks to the Home: the baseline stays untouched.
+ *
+ * ⚠ RELOAD AFTER EDITING ONE OF THE FOUR. They come in through `@import`, and the dev server does not always hot-swap an
+ * imported stylesheet — the page can sit on the old rules with no error.
+ */
+@import './mobile.css';
+@import './tablet.css';
+@import './desktop.css';
+@import './wide.css';
+
+.cre-bp-stage {
+  min-height: 100vh;
+  background: var(--color-neutral-900);
+}
+/* Scrolls sideways when the breakpoint is wider than the window (Desktop Wide on a laptop). */
+.cre-bp-canvas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px 48px;
+  overflow-x: auto;
+}
+.cre-bp-caption {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-neutral-300);
+}
+/* The device itself: exactly the breakpoint's size, the app scrolling inside it. */
+.cre-bp-viewport {
+  flex: none;
+  overflow: auto;
+  background: var(--color-surface-page);
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.35), 0 18px 50px rgb(0 0 0 / 0.45);
+}
+
+/* The Demo frame's traffic-light strip is a browser mock; inside a device it is not part of the device. */
+.cre-bp-viewport .cre-browser-chrome {
+  display: none !important;
+}
+/* The header sticks under the prototype bars on the page (`top` is their height). Inside a device it scrolls with the
+   device's own scroller, where there are no bars above it. */
+.cre-bp-viewport header {
+  top: 0 !important;
+}
