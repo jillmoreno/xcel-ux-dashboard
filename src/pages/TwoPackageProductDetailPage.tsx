@@ -1642,16 +1642,16 @@ const LEARN_LIST: CSSProperties = {
 // Plain wrapping, not BODY's `pretty`: a lone last word is fine here (2026-10-28, Eric) — `pretty` was pulling a second word down
 // and breaking the items early.
 const SIDE_LEARN_LIST: CSSProperties = { ...LEARN_LIST, ...SIDE_BODY, paddingLeft: 18, gap: 8, textWrap: 'wrap', listStyle: 'none' }
-// The disc's stand-in (2026-10-30, Eric): a 5 square with 3 corners in Secondary 500, centred on the first line's x-height — 9 down
-// the 21 line at 15 Avenir, measured (baseline 15, x-height 7); 8 from the text. It was a 3 × 13 stroke, round-ended, cap top to
-// baseline (brick, then Secondary 200, 400, 500).
+// The disc's stand-in (2026-10-30, Eric): a 6 square with 2 corners in Secondary 500 (5 with 3 first), centred on the first line's
+// x-height — 8.5 down the 21 line at 15 Avenir, measured (baseline 15, x-height 7); 8 from the text. It was a 3 × 13 stroke,
+// round-ended, cap top to baseline (brick, then Secondary 200, 400, 500).
 const LEARN_STROKE: CSSProperties = {
   position: 'absolute',
-  left: -13,
-  top: 9,
-  width: 5,
-  height: 5,
-  borderRadius: 3,
+  left: -14,
+  top: 8.5,
+  width: 6,
+  height: 6,
+  borderRadius: 2,
   background: 'var(--color-secondary-500)',
 }
 
