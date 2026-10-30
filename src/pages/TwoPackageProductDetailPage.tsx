@@ -1652,7 +1652,7 @@ const LEARN_STROKE: CSSProperties = {
   width: 8,
   height: 8,
   borderRadius: 2, // (2026-10-30, Eric; was 3)
-  background: 'var(--color-secondary-500)',
+  background: 'var(--color-secondary-400)', // one lighter (2026-10-30, Eric; was 500)
 }
 
 const PARAGRAPHS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 20 }
