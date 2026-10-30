@@ -170,8 +170,8 @@
 .cre-e2e-package-card {
   transition: background-color 0.15s ease, box-shadow 0.15s ease;
 }
-/* Premier wears it at rest too (2026-10-29, Eric). */
-.cre-e2e-package-card--on,
+/* Premier wore it at rest too (2026-10-29, Eric) — no longer: at rest it is Standard's single 1 stroke (2026-10-30, Eric).
+   Re-add `.cre-e2e-package-card--on,` to this selector to bring it back. */
 .cre-e2e-package-card:hover {
   background: var(--color-fixed-light) !important;
   /* The 1 outer stroke at half its strength (2026-10-29, Eric: gone, then back at 50%). No drop shadow (2026-10-30, Eric). */
