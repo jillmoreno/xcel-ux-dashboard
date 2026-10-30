@@ -315,7 +315,8 @@ export function TwoPackageProductDetailPage() {
             )}
             {/* Premier's "with Pass Guarantee" as a text link under its name, no chevron (2026-10-30, Eric). Not wired. */}
             {!lift && !bare && p.id === 'premier' ? (
-              <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, fontFamily: 'var(--font-e2e-avenir)', marginBottom: -8 }}>
+              <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, fontFamily: 'var(--font-e2e-avenir)', marginBottom: plain ? 0 : -8 }}>
+                {/* Plain (Single head E), 8 more under it (2026-10-30, Eric). */}
                 with Pass Guarantee
               </button>
             ) : !lift && !bare ? (
@@ -1826,7 +1827,8 @@ const HEAD_RULE_C: CSSProperties = { gridColumn: 2, gridRow: '1 / 3', alignSelf:
 // Copy D above the multi page's own head — off (2026-10-30, Eric: "hide this"); true shows it again.
 const D_ON_MULTI = false
 // Single head E: the multi page's Premier card, its width there (2026-10-30, Eric).
-const HEAD_CARD_E: CSSProperties = { width: 358, marginTop: 8, alignItems: 'stretch' }
+// 8 less above it (2026-10-30, Eric; was 8).
+const HEAD_CARD_E: CSSProperties = { width: 358, marginTop: 0, alignItems: 'stretch' }
 const HEAD_WITH_PACKAGE_D: CSSProperties = { ...HEAD_WITH_PACKAGE_C }
 // The packages' column, the row's full height so PASS GUARANTEE sits at the rule's foot (2026-10-29, Eric).
 const HEAD_PACKAGE_D: CSSProperties = { gridColumn: 3, gridRow: 1, alignSelf: 'stretch', justifySelf: 'end', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }
