@@ -36,9 +36,10 @@ import {
 import { CART_PACKAGE_PARAM, cartPackage } from '@/data/xcelCourseFinder'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
 import { XcelLoadingStatus } from '@/components/e2e/XcelLoadingStatus'
+import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
 import { PartnerCodeAskModal } from '@/components/e2e/PartnerCodeAsk'
 import { VerifyEmailModalV3 } from '@/components/e2e/VerifyEmailModalV3'
-import { useInviteFlowV3, verifiesEmailFirst } from '@/data/inviteFlowsV3'
+import { emailCheckV3, useInviteFlowV3, verifiesEmailFirst } from '@/data/inviteFlowsV3'
 import {
   EMAIL_VERIFIED_PARAM,
   readVerifiedIdentity,
@@ -135,6 +136,9 @@ export function InvitedCheckoutPageV3() {
   const v3Flow = useInviteFlowV3()
   const verifiesFirst = verifiesEmailBeforeCheckout(flow) || verifiesEmailFirst(v3Flow)
   const typesEmailTwice = emailEnteredTwice(flow) && !verifiesFirst
+  /* V3's Has Atlas flows sign in to an account the learner already has, so
+     the checkout arrives with their details filled in (`checkout-1b`). */
+  const v3Check = emailCheckV3(v3Flow)
   const emailVerified = useEmailVerified()
   const verifyingEmail = verifiesFirst && !emailVerified
   /* ⚠ READ ONCE, AT MOUNT, like the student state below: a `verified=1` link
@@ -147,7 +151,15 @@ export function InvitedCheckoutPageV3() {
      gate counts, on the two arms that do not type it twice. The with-email
      arm's is the one the partner supplied; the verified arm's is the one the
      code came back from. */
-  const lockedEmail = verifiesFirst ? (verifiedIdentity?.email ?? E2E_LEARNER_EMAIL) : E2E_LEARNER_EMAIL
+  /* ⚠ EMPTY UNTIL THE CHECK IS DONE — 2026-10-30, Afsana: the email "should
+     show up after a user has verified their email post OTP or signed in".
+     It fell back to the demo learner's address while the check was still
+     open over the page, so the form claimed an address nobody had given. */
+  const lockedEmail = verifiesFirst
+    ? emailVerified
+      ? (verifiedIdentity?.email ?? E2E_LEARNER_EMAIL)
+      : ''
+    : E2E_LEARNER_EMAIL
   /* ⚠ GUEST STARTS BLANK — 2026-10-22. The initialiser is a function so the
      arm is read once, at mount, rather than on every render: a reviewer who
      flips the control mid-page keeps what they have typed instead of having it
@@ -164,7 +176,7 @@ export function InvitedCheckoutPageV3() {
   const [student, setStudent] = useState<PostalAddress>(() =>
     /* The verified arm already asked the learner's name on the way in, so the
        form opens with it — asking twice would be the modal's work undone. */
-    knownAccount
+    knownAccount || (v3Check.accountKnown && emailVerified)
       ? STUDENT_ADDRESS
       : verifiedIdentity
         ? { ...BLANK_ADDRESS, first: verifiedIdentity.first, last: verifiedIdentity.last }
@@ -343,7 +355,11 @@ export function InvitedCheckoutPageV3() {
     })
     /* The name the learner just gave is the name on the form — a modal that
        asked for it and then presented two empty fields would be asking twice. */
-    setStudent((prev) => ({ ...prev, first: identity.first.trim(), last: identity.last.trim() }))
+    setStudent((prev) =>
+      v3Check.accountKnown
+        ? STUDENT_ADDRESS
+        : { ...prev, first: identity.first.trim(), last: identity.last.trim() },
+    )
     setStudentSaved(false)
     const next = new URLSearchParams(params)
     next.set(EMAIL_VERIFIED_PARAM, '1')
@@ -371,7 +387,14 @@ export function InvitedCheckoutPageV3() {
           than before it, so the comparison with the `page` arm is between two
           placements of one question — the question itself is the same
           component. */}
-      {askingForPartnerCode ? <PartnerCodeAskModal onAnswer={answerPartnerCode} /> : null}
+      {askingForPartnerCode ? (
+        <PartnerCodeAskModal
+          v3
+          onAnswer={answerPartnerCode}
+          /* Closing without an answer goes back to the cart it came from. */
+          onClose={() => navigate(`/end-to-end-demo/cart?${params.toString()}`)}
+        />
+      ) : null}
       {/* ⚠ THE VERIFIED ARM'S MODAL — 2026-10-27. Over the checkout rather
           than a page before it, for the partner question's reason: the
           learner can see where they are going, and the form behind cannot be
@@ -380,7 +403,11 @@ export function InvitedCheckoutPageV3() {
       {/* V3's email check (`VerifyEmailModalV3`, email only), after the
           partner question when a flow asks both — never two dialogs at once. */}
       {verifyingEmail && !askingForPartnerCode ? (
-        <VerifyEmailModalV3 onVerified={emailVerifiedWith} />
+        <VerifyEmailModalV3
+          onVerified={emailVerifiedWith}
+          second={v3Check.second}
+          signsIn={v3Check.signsIn}
+        />
       ) : null}
       {/* ⚠ THE BROWSER WINDOW CONTINUES HERE (2026-10-19, Jillienne: "can
           we also add this browser header to the email/invite flows so it
@@ -477,7 +504,9 @@ export function InvitedCheckoutPageV3() {
                     lockedEmail={lockedEmail}
                     lockedNote={
                       verifiesFirst
-                        ? 'This is the address you verified. Your account will be created with it.'
+                        ? emailVerified
+                          ? 'This is the address you verified. Your account will be created with it.'
+                          : null
                         : knownAccount
                           ? 'This is the email on your XCEL account. Your learning dashboard account will be created with it.'
                           : `This is the address ${E2E_PARTNER_NAME} sent your invitation to. Your account will be created with it.`
@@ -963,8 +992,9 @@ function EmailBlock({
    *  twice — the partner's, or the one the verification code came back from
    *  (2026-10-27). */
   lockedEmail: string
-  /** …and why it is locked, under the field. */
-  lockedNote: string
+  /** …and why it is locked, under the field. None while there is no
+   *  address yet. */
+  lockedNote: string | null
   email: string
   onEmailChange: (v: string) => void
   emailAgain: string
@@ -998,7 +1028,7 @@ function EmailBlock({
               value={lockedEmail}
               disabled
               readOnly
-              aria-describedby="checkout-email-note"
+              aria-describedby={lockedNote ? 'checkout-email-note' : undefined}
               style={{
                 ...FIELD,
                 paddingRight: 36,
@@ -1016,9 +1046,11 @@ function EmailBlock({
             />
           </span>
         </label>
-        <p id="checkout-email-note" style={EMAIL_NOTE}>
-          {lockedNote}
-        </p>
+        {lockedNote ? (
+          <p id="checkout-email-note" style={EMAIL_NOTE}>
+            {lockedNote}
+          </p>
+        ) : null}
       </div>
     )
   }
@@ -1920,9 +1952,10 @@ const TERMS_LINK: CSSProperties = {
 /** "Placing your order" — the file's dialog: the flow's loading spinner in a
  *  card over the checkout, for the same three seconds V2's page holds. */
 function PlacingOrderDialog() {
+  const layer = useV3DialogLayer()
   return (
-    <div style={PLACING_SCRIM}>
-      <div role="dialog" aria-modal="true" aria-label="Placing your order" style={PLACING_CARD}>
+    <div style={{ ...PLACING_SCRIM, ...layer.scrim }}>
+      <div role="dialog" aria-modal="true" aria-label="Placing your order" style={{ ...PLACING_CARD, ...layer.card }}>
         <XcelLoadingStatus message="Placing your order" />
       </div>
     </div>
@@ -1940,10 +1973,11 @@ const PLACING_SCRIM: CSSProperties = {
   background: 'var(--color-e2e-scrim)',
 }
 
+/* 460 — the file's stylesheet sizes every dialog so. */
 const PLACING_CARD: CSSProperties = {
   boxSizing: 'border-box',
-  width: 560,
-  maxWidth: '100%',
+  width: 460,
+  maxWidth: 'calc(100vw - 48px)',
   display: 'flex',
   justifyContent: 'center',
   padding: '64px 36px 52px',

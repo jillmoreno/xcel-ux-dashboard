@@ -281,3 +281,10 @@
   opacity: 1;
   visibility: visible;
 }
+
+/* No browser dropdown arrow on the state type-ahead — the field draws its own
+   search icon (Afsana's file: `input[list]::-webkit-calendar-picker-indicator`). */
+.cre-e2e-typeahead::-webkit-calendar-picker-indicator {
+  display: none !important;
+  opacity: 0;
+}
