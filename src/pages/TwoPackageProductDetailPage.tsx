@@ -1647,7 +1647,7 @@ const SIDE_LEARN_LIST: CSSProperties = { ...LEARN_LIST, ...SIDE_BODY, paddingLef
 // 200, 400, 500).
 const LEARN_STROKE: CSSProperties = {
   position: 'absolute',
-  left: -16,
+  left: -17, // 9 from the text (2026-10-30, Eric; was 8)
   top: 5.5, // 1 above the line's centre (2026-10-30, Eric)
   width: 8,
   height: 8,
