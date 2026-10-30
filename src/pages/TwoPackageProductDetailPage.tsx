@@ -267,10 +267,11 @@ export function TwoPackageProductDetailPage() {
         Purchase {p.short}
       </button>
     )
-    // Not clickable now — a hover lifts it (cre-e2e-package-card, inviteFlow.css: the selected ring and shadow); Premier is lifted at rest; Standard has no hover at all (2026-10-29, Eric).
+    // Not clickable now — a hover lifts it (cre-e2e-package-card, inviteFlow.css: the selected ring and shadow); Premier was lifted at rest; Standard had no hover at all (2026-10-29, Eric) — both hover now (2026-10-30).
     return (
       // Single, out of its card: no fill, ring or shadow — the contents on the ground, left (2026-10-29, Eric).
-      <div className={p.id === 'premier' && !bare ? 'cre-e2e-package-card cre-e2e-package-card--on' : undefined} style={bare ? UNCARDED : OPTION_CARD}>
+      <div className={bare ? undefined : p.id === 'premier' ? 'cre-e2e-package-card cre-e2e-package-card--on' : 'cre-e2e-package-card'} style={bare ? UNCARDED : OPTION_CARD}>
+        {/* Standard takes the hover ring too (2026-10-30, Eric). */}
         {/* THE TAB (2026-10-28, Eric; was the eyebrow over the title and PASS GUARANTEE top right): the mini tray's, top left —
             the package's name on tan, behind Premier's brick PASS GUARANTEE. */}
         {/* Gone from the multi-product page's cards (2026-10-29, Eric) — their titles name the package now. The single page wears
