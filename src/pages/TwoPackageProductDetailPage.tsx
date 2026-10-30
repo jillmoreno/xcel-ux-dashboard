@@ -310,11 +310,10 @@ export function TwoPackageProductDetailPage() {
                 {p.cardTitle ?? `${place} ${localize(p.title)}`}
               </span>
             )}
-            {/* Premier's Pass Guarantee as a text link under its name (2026-10-30, Eric). Not wired. */}
+            {/* Premier's "with Pass Guarantee" as a text link under its name, no chevron (2026-10-30, Eric). Not wired. */}
             {!lift && !bare && p.id === 'premier' ? (
               <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, fontFamily: 'var(--font-e2e-avenir)', marginBottom: -8 }}>
-                Pass Guarantee
-                <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
+                with Pass Guarantee
               </button>
             ) : null}
             {lift ? <span style={{ position: 'relative', top: -lift.price, alignSelf: lift.center ? 'center' : 'flex-start' }}>{prices}</span> : prices}
