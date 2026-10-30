@@ -1648,10 +1648,10 @@ const SIDE_LEARN_LIST: CSSProperties = { ...LEARN_LIST, ...SIDE_BODY, paddingLef
 const LEARN_STROKE: CSSProperties = {
   position: 'absolute',
   left: -16,
-  top: 6.5,
+  top: 5.5, // 1 above the line's centre (2026-10-30, Eric)
   width: 8,
   height: 8,
-  borderRadius: 3,
+  borderRadius: 2, // (2026-10-30, Eric; was 3)
   background: 'var(--color-secondary-500)',
 }
 
