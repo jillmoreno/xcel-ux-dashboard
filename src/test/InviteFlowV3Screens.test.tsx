@@ -4,13 +4,19 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
-import { InvitedCheckoutRoute, InvitedProductDetailRoute, QrInviteRoute } from '@/pages/InviteFlowRoutes'
+import {
+  InvitedCheckoutRoute,
+  InvitedConfirmationRoute,
+  InvitedProductDetailRoute,
+  QrInviteRoute,
+} from '@/pages/InviteFlowRoutes'
 
 /**
  * INVITE FLOW V3, THE B2B OPENING SCREENS — 2026-10-30, from Afsana's
  * `xcel-b2b2c-email-flow.html`: the QR code, step 2 ("Select your state and
  * line of authority"), then the product page with "Showing the course for";
- * and the email check over the checkout (`VerifyEmailModalV3`).
+ * the email check over the checkout (`VerifyEmailModalV3`); and the endings
+ * (`InvitedConfirmationPageV3`).
  */
 
 function renderAt(path: string, ff: string) {
@@ -24,6 +30,7 @@ function renderAt(path: string, ff: string) {
             <Route path="/end-to-end-demo/qr" element={<QrInviteRoute />} />
             <Route path="/end-to-end-demo" element={<InvitedProductDetailRoute />} />
             <Route path="/end-to-end-demo/checkout" element={<InvitedCheckoutRoute />} />
+            <Route path="/end-to-end-demo/confirmation" element={<InvitedConfirmationRoute />} />
           </Routes>
           <Where />
         </FeatureFlagProvider>
@@ -172,5 +179,34 @@ describe('Invite Flow V3 — the checkout', () => {
 
     expect(screen.getByRole('dialog', { name: 'Placing your order' })).toBeInTheDocument()
     expect(screen.getByText('Secure Checkout')).toBeInTheDocument()
+  })
+})
+
+describe('Invite Flow V3 — the endings', () => {
+  const CONFIRMATION = '/end-to-end-demo/confirmation'
+
+  it('asks a new learner to create a password, gated on the rules', async () => {
+    renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+    expect(screen.getByRole('heading', { name: 'Thank you for your order, Jordan!' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Create your password' })).toBeInTheDocument()
+    const save = screen.getByRole('button', { name: 'Save Password & Log In' })
+    expect(save).toBeDisabled()
+    await userEvent.click(screen.getByRole('button', { name: /demo learner’s password/ }))
+    expect(save).toBeEnabled()
+  })
+
+  it('sends a learner who already has Atlas straight to their course', () => {
+    renderAt(CONFIRMATION, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:has-atlas')
+    expect(screen.getByRole('heading', { name: 'Start learning' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Start Course' })).toBeInTheDocument()
+    expect(screen.queryByLabelText(/Password/)).not.toBeInTheDocument()
+  })
+
+  it('never shows V2’s "Confirm your email" ending on V3', () => {
+    for (const flow of ['qr-net-new', 'qr-ocd', 'qr-atlas-login', 'qr-atlas-auto']) {
+      const { unmount } = renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:${flow}`)
+      expect(screen.queryByText(/Confirm your email|Check your email/)).not.toBeInTheDocument()
+      unmount()
+    }
   })
 })

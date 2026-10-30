@@ -53,7 +53,6 @@ import {
   usePartnerCodeAnswered,
   usePartnerCodeAsk,
   emailEnteredTwice,
-  individuallyInvited,
   emailsMatch,
   looksLikeEmail,
   studentInformationComplete,
@@ -314,14 +313,14 @@ export function InvitedCheckoutPageV3() {
      rail) cannot navigate on top of wherever the reviewer went. */
   useEffect(() => {
     if (!placing) return
-    const destination = individuallyInvited(flow)
-      ? '/end-to-end-demo/confirmation'
-      : '/end-to-end-demo/order-confirmation'
+    /* V3: every flow ends on V3's own ending page (2026-10-30), not the
+       public site's receipt. */
+    const destination = '/end-to-end-demo/confirmation'
     const timer = window.setTimeout(() => {
       navigate(`${destination}?${params.toString()}`, { replace: true })
     }, LOADING_HANDOFF_MS)
     return () => window.clearTimeout(timer)
-  }, [placing, flow, navigate, params])
+  }, [placing, navigate, params])
 
   useEffect(() => {
     const before = document.title

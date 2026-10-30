@@ -100,11 +100,7 @@ describe('the invite flow version switch', () => {
     })
 
     it(`renders V3's ${name} on v3`, () => {
-      /* V3's confirmation page is the "Check your email" ending, which only
-         the flows that do NOT verify the email first reach (2026-10-30) —
-         the log-in widget flow is the one that does not. */
-      const version = name === 'confirmation' ? 'v3,invite-v3-flow-b2b:qr-atlas-login' : 'v3'
-      const { unmount } = renderRoute(Route, version, path)
+      const { unmount } = renderRoute(Route, 'v3', path)
       expect(screen.getByText(`V3 ${name}`)).toBeInTheDocument()
       expect(screen.queryByText(`V2 ${name}`)).not.toBeInTheDocument()
       expect(screen.queryByText(`V1 ${name}`)).not.toBeInTheDocument()

@@ -2644,7 +2644,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        and a popover hides two of the options while you look at the first. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite', 'invite:v3-b2b', 'invite:v3-b2c'],
+    /* Not on V3: V3 has its own ending, which neither control changes. */
+    surfaces: ['invite'],
     group: 'Navigation',
     label: 'Thank you page',
     description:
@@ -2684,7 +2685,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        not touch it. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite', 'invite:v3-b2b', 'invite:v3-b2c'],
+    /* Not on V3: V3 has its own ending, which neither control changes. */
+    surfaces: ['invite'],
     group: 'Navigation',
     label: 'Journey rail',
     description:
