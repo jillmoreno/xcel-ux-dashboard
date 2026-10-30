@@ -2028,7 +2028,11 @@ const CORNER_BADGE: CSSProperties = {
   top: 0,
   left: '50%',
   transform: 'translateX(-50%)',
-  paddingRight: 0,
+  // Fit to its text, 16 either side; the text 1 higher (2026-10-30, Eric; was 125 wide, 3 over the text).
+  width: 'auto',
+  paddingRight: 16,
+  paddingLeft: 16,
+  paddingTop: 1,
   borderBottomRightRadius: 8,
   borderBottomLeftRadius: 8,
   color: 'var(--color-fixed-light)',
