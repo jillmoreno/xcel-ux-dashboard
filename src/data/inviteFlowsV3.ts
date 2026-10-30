@@ -179,6 +179,14 @@ export function verifiesEmailFirst(flow: InviteFlowV3): boolean {
   return flow.screens.includes('verify-1')
 }
 
+/** Which ending the flow reaches after the order (`InvitedConfirmationPageV3`):
+ *  a password for the flows new to Atlas, "Start learning" for the ones that
+ *  already have an account. Read from the file's screen order — its last
+ *  screen is `create-password-filled`, `ready` or `ready-login`. */
+export function inviteEndingV3(flow: InviteFlowV3): 'create-password' | 'ready' {
+  return flow.screens.includes('create-password') ? 'create-password' : 'ready'
+}
+
 /** The V3 flow on screen: the chosen model, then that model's chosen flow.
  *  Both flow flags are read every render so the hook order never changes. */
 export function useInviteFlowV3(): InviteFlowV3 {
