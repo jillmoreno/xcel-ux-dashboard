@@ -300,7 +300,7 @@ export function TwoPackageProductDetailPage() {
             </span>
           </span>
         ) : (
-          <span style={bare ? (left ? { ...UNCARDED_BODY, paddingTop: 0, alignItems: 'flex-start', textAlign: 'left' } : UNCARDED_BODY) : { ...OPTION_BODY, paddingTop: 40, paddingBottom: pinLerp(28, 24), alignItems: 'center', textAlign: 'center', ...(plain ? { padding: 0 } : null) }}>
+          <span style={bare ? (left ? { ...UNCARDED_BODY, paddingTop: 0, alignItems: 'flex-start', textAlign: 'left' } : UNCARDED_BODY) : { ...OPTION_BODY, paddingTop: 40, paddingBottom: pinLerp(28, 24), alignItems: 'center', textAlign: 'center', ...(plain ? { padding: 0, alignItems: 'flex-start', textAlign: 'left' } : null) }}>
             {/* Centred (2026-10-29, Eric). */}
             {/* 40 from the card's top (2026-10-29, Eric: 24 with no tab above it, then 8 more, and 8 more; 20 under the tab). */}
             {/* A card's own title where it has one — Standard's is "Standard Course" (2026-10-29, Eric). */}
@@ -328,8 +328,8 @@ export function TwoPackageProductDetailPage() {
             {/* The price stacked over its Purchase, the button across the card in the flow (2026-10-29, Eric; it slid beside the
                 price as the cards condensed). */}
             {/* Single, 4 less under the price, and only as wide as its label and 24 padding (2026-10-29, Eric). */}
-            {/* Plain (Single head E), fit to its label with 32 either side (2026-10-30, Eric). */}
-            {buy(bare ? { ...STACKED_BUY, marginTop: -4, alignSelf: left ? 'flex-start' : 'center' } : plain ? { ...STACKED_BUY, alignSelf: 'center', paddingRight: 32, paddingLeft: 32 } : STACKED_BUY)}
+            {/* Plain (Single head E), fit to its label with 32 either side, left like the rest (2026-10-30, Eric). */}
+            {buy(bare ? { ...STACKED_BUY, marginTop: -4, alignSelf: left ? 'flex-start' : 'center' } : plain ? { ...STACKED_BUY, alignSelf: 'flex-start', paddingRight: 32, paddingLeft: 32 } : STACKED_BUY)}
           </span>
         )}
         {/* The card's 1 edge drawn again over everything, so its top runs across the tab (2026-10-28, Eric). Not on the
