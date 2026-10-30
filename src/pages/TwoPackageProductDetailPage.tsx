@@ -235,10 +235,12 @@ export function TwoPackageProductDetailPage() {
   /* `left`: copy B's package, set flush left under the title (2026-10-29, Eric). `lift`: copy C's — its price row raised by
      `price` px (position only, so the Purchase stays put) and centred over the Purchase, and no package name (2026-10-29, Eric;
      the name went up 16 first, then went). */
-  const renderCard = (p: (typeof PACKAGES)[number], left = false, lift?: { price: number; center?: boolean }, carded = false) => {
+  const renderCard = (p: (typeof PACKAGES)[number], left = false, lift?: { price: number; center?: boolean }, carded: false | 'card' | 'plain' = false) => {
     // Unboxed — the single page's look — on the single page, and wherever a head copy shows it (D on the multi page too).
-    // `carded` keeps the multi page's card wherever it is drawn — Single head E's (2026-10-30, Eric).
+    // `carded` keeps the multi page's card wherever it is drawn — Single head E's (2026-10-30, Eric). 'plain' keeps its insides
+    // only: no tab, hover, edge or padding (2026-10-30, Eric).
     const bare = !carded && (single || !!lift)
+    const plain = carded === 'plain'
     /* No card is picked by clicking any more (2026-10-29, Eric): the selected look is a hover, so `on` is false and the resting look
        is every card's; the Purchase buttons keep hovers of their own. */
     const on = false
@@ -271,7 +273,7 @@ export function TwoPackageProductDetailPage() {
     // Not clickable now — a hover lifts it (cre-e2e-package-card, inviteFlow.css: the selected ring and shadow); Premier was lifted at rest; Standard had no hover at all (2026-10-29, Eric) — both hover now (2026-10-30).
     return (
       // Single, out of its card: no fill, ring or shadow — the contents on the ground, left (2026-10-29, Eric).
-      <div className={bare ? undefined : p.id === 'premier' ? 'cre-e2e-package-card cre-e2e-package-card--on' : 'cre-e2e-package-card'} style={bare ? UNCARDED : OPTION_CARD}>
+      <div className={bare || plain ? undefined : p.id === 'premier' ? 'cre-e2e-package-card cre-e2e-package-card--on' : 'cre-e2e-package-card'} style={bare || plain ? UNCARDED : OPTION_CARD}>
         {/* Standard takes the hover ring too (2026-10-30, Eric). */}
         {/* THE TAB (2026-10-28, Eric; was the eyebrow over the title and PASS GUARANTEE top right): the mini tray's, top left —
             the package's name on tan, behind Premier's brick PASS GUARANTEE. */}
@@ -282,7 +284,7 @@ export function TwoPackageProductDetailPage() {
             {p.badge ? <span style={MINI_BADGE}>{p.badge}</span> : null}
             <span style={{ ...MINI_TAB_LABEL, ...(p.badge ? { paddingLeft: 0 } : null) }}>{p.short} package</span>
           </span>
-        ) : p.badge && !bare ? (
+        ) : p.badge && !bare && !plain ? (
           /* Premier's brick PASS GUARANTEE back in its corner (2026-10-29, Eric) — on its own, laid over the card so the two titles
              stay level; the package name stays in the title. */
           <span style={CORNER_BADGE}>{p.badge}</span>
@@ -298,7 +300,7 @@ export function TwoPackageProductDetailPage() {
             </span>
           </span>
         ) : (
-          <span style={bare ? (left ? { ...UNCARDED_BODY, paddingTop: 0, alignItems: 'flex-start', textAlign: 'left' } : UNCARDED_BODY) : { ...OPTION_BODY, paddingTop: 40, paddingBottom: pinLerp(28, 24), alignItems: 'center', textAlign: 'center' }}>
+          <span style={bare ? (left ? { ...UNCARDED_BODY, paddingTop: 0, alignItems: 'flex-start', textAlign: 'left' } : UNCARDED_BODY) : { ...OPTION_BODY, paddingTop: 40, paddingBottom: pinLerp(28, 24), alignItems: 'center', textAlign: 'center', ...(plain ? { padding: 0 } : null) }}>
             {/* Centred (2026-10-29, Eric). */}
             {/* 40 from the card's top (2026-10-29, Eric: 24 with no tab above it, then 8 more, and 8 more; 20 under the tab). */}
             {/* A card's own title where it has one — Standard's is "Standard Course" (2026-10-29, Eric). */}
@@ -553,9 +555,10 @@ export function TwoPackageProductDetailPage() {
               <br />
               <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
             </h2>
-            {/* The multi page's Premier card in place of B's price and Purchase, at its size there (2026-10-30, Eric). */}
+            {/* The multi page's Premier card in place of B's price and Purchase, at its size there (2026-10-30, Eric) — its insides only:
+                no BEST VALUE, hover, edge or padding (2026-10-30, Eric). */}
             <div style={{ ...HEAD_PACKAGE_B, ...HEAD_CARD_E, '--cp': 1, '--px': 1, '--py': 1 } as CSSProperties}>
-              {renderCard(PREMIER, false, undefined, true)}
+              {renderCard(PREMIER, false, undefined, 'plain')}
             </div>
             {/* 8 further from the Purchase and 8 nearer the table below (2026-10-29, Eric). */}
             <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
