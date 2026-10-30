@@ -242,6 +242,7 @@ export function AtlasHomeEricE2E({
   /* Eric's Figma pass on the ring card (Figma 592:457, 2026-10-30) — a sibling file, switched in here only, so the
      original keeps drawing everywhere else. `atlas-pace-card-figma` off is the card as it was. */
   const RingCard = useFeatureFlag('atlas-pace-card-figma').enabled ? AtlasPaceRingCardFigma : AtlasPaceRingCard
+  // …and its panel 32 a side, not 24 (2026-10-30, Eric) — set where the panel is drawn, below.
   /* Whether the column carries Exam readiness at all — a design-bar on/off,
      see `atlas-readiness-section`. */
   const showReadiness = useFeatureFlag('atlas-readiness-section').enabled
@@ -811,7 +812,7 @@ export function AtlasHomeEricE2E({
               style={
                 onWhite
                   ? paceCard === 'ring'
-                    ? { ...WHITE_PROGRESS_PANEL, gap: 0 }
+                    ? { ...WHITE_PROGRESS_PANEL, gap: 0, ...(RingCard === AtlasPaceRingCardFigma ? { paddingLeft: 32, paddingRight: 32 } : null) }
                     : WHITE_PROGRESS_PANEL
                   : { display: 'contents' }
               }
