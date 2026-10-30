@@ -446,7 +446,8 @@ export function TwoPackageProductDetailPage() {
               </p>
             </div>
             {/* A 1 rule between the title and the packages, the head's full height (2026-10-29, Eric). */}
-            <span aria-hidden style={HEAD_RULE_D} />
+            {/* Single, the rule down to the intro's last baseline and 8 more right of it — 40 to the package (2026-10-30, Eric). */}
+            <span aria-hidden style={single ? { ...HEAD_RULE_D, marginBottom: 0, marginRight: 16 } : HEAD_RULE_D} />
             {/* The packages, one column down the rule's height (2026-10-29, Eric): Standard first on the multi page, a rule, then
                 Premier with PASS GUARANTEE hanging from that rule. */}
             <div style={{ ...HEAD_PACKAGE_D, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
