@@ -234,7 +234,8 @@ export function AtlasPaceRingCardFigma({
             `aria-label` stays "Course progress" — that names the REGION,
             and a landmark that renames itself by its contents' state makes
             the page change shape under a screen-reader user. */}
-        <p style={eyebrow}>{expired ? 'Progress paused' : 'Course progress'}</p>
+        {/* Centred over the dial (2026-10-30, Eric) — the other eyebrows stay left. */}
+        <p style={{ ...eyebrow, textAlign: 'center' }}>{expired ? 'Progress paused' : 'Course progress'}</p>
         {/* ⚠ ABOVE THE DIAL, NOT UNDER IT (2026-10-20, Jillienne: "when
             expired, move this above the graph and remove the divider
             line"). Under the dial it was the last thing on a truncated
