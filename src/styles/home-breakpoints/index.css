@@ -15,7 +15,6 @@
 @import './mobile.css';
 @import './tablet.css';
 @import './desktop.css';
-@import './wide.css';
 
 .cre-bp-stage {
   align-items: center;
@@ -30,8 +29,8 @@
   text-transform: uppercase;
   color: var(--color-neutral-300);
 }
-/* The device itself: exactly the breakpoint's size, the app scrolling inside it. Wider than the window (Desktop Wide on a
-   laptop), the page scrolls sideways. */
+/* The device itself: exactly the breakpoint's size, the app scrolling inside it. Wider than the window, the page scrolls
+   sideways. */
 .cre-bp-viewport {
   flex: none;
   overflow: auto;

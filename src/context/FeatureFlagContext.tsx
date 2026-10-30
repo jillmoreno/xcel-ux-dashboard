@@ -3205,7 +3205,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        the breakpoints … for the learner homepage so that I can adjust each breakpoint as needed."
 
        live    — no frame: the app at the browser's own width, as before. THE DEFAULT.
-       mobile / tablet / desktop / wide — the app drawn in a viewport of exactly that size (`HOME_BREAKPOINTS`,
+       mobile / tablet / desktop — the app drawn in a viewport of exactly that size (`HOME_BREAKPOINTS`,
                  src/data/homeBreakpoints.ts), scrolling inside it, with the size captioned above.
 
        Each breakpoint's Home layout is its OWN stylesheet in src/styles/home-breakpoints/, scoped by the frame's
@@ -3219,7 +3219,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Layout',
     label: 'Breakpoint',
     description:
-      'Draws the app at a device breakpoint: Live (default, the browser\u2019s width), Mobile Portrait 402 \u00d7 874, Tablet Portrait 820 \u00d7 1180, Desktop 1366 \u00d7 650 or Desktop Wide 1920 \u00d7 1080. Each breakpoint has its own Home stylesheet.',
+      'Draws the app at a device breakpoint: Live (default, the browser\u2019s width), Mobile Portrait 402 \u00d7 874, Tablet Portrait 820 \u00d7 1180, or Desktop 1366 \u00d7 650. Each breakpoint has its own Home stylesheet.',
     defaultEnabled: true,
     defaultVariant: 'live',
     variants: [
@@ -3227,7 +3227,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'mobile', label: 'Mobile 402', description: 'Mobile Portrait, 402 \u00d7 874.' },
       { value: 'tablet', label: 'Tablet 820', description: 'Tablet Portrait, 820 \u00d7 1180.' },
       { value: 'desktop', label: 'Desktop 1366', description: 'Desktop, 1366 \u00d7 650.' },
-      { value: 'wide', label: 'Wide 1920', description: 'Desktop Wide, 1920 \u00d7 1080.' },
     ],
     page: 'dashboard-rebrand',
   },
