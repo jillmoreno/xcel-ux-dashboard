@@ -239,3 +239,45 @@
   outline: 2px solid var(--color-mail-accent);
   outline-offset: 2px;
 }
+
+/* THE LINE-OF-AUTHORITY TOOLTIP — Invite Flow V3, 2026-10-30, from Afsana's
+   `xcel-b2b2c-email-flow.html` (`.loa-info` / `.loa-tip` there). Shown on
+   hover and on keyboard focus of the ⓘ beside the label. */
+.cre-e2e-loa-tip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  width: 260px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--color-text-primary);
+  color: var(--color-fixed-light);
+  font-family: var(--font-e2e-avenir);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 17px;
+  letter-spacing: normal;
+  text-transform: none;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
+  pointer-events: none;
+  z-index: 5;
+  white-space: normal;
+}
+.cre-e2e-loa-tip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--color-text-primary);
+}
+.cre-e2e-loa-info:hover .cre-e2e-loa-tip,
+.cre-e2e-loa-info:focus .cre-e2e-loa-tip {
+  opacity: 1;
+  visibility: visible;
+}

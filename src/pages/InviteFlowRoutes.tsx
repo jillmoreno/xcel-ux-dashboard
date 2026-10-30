@@ -6,13 +6,19 @@ import {
 } from '@/data/inviteFlowVersions'
 import { InviteEmailPage } from './InviteEmailPage'
 import { InviteEmailPageV2 } from './InviteEmailPageV2'
+import { InviteEmailPageV3 } from './InviteEmailPageV3'
 import { InvitedProductDetailPage } from './InvitedProductDetailPage'
 import { InvitedProductDetailPageV2 } from './InvitedProductDetailPageV2'
+import { InvitedProductDetailPageV3 } from './InvitedProductDetailPageV3'
 import { InvitedCheckoutPage } from './InvitedCheckoutPage'
 import { InvitedCheckoutPageV2 } from './InvitedCheckoutPageV2'
+import { InvitedCheckoutPageV3 } from './InvitedCheckoutPageV3'
 import { InvitedConfirmationPage } from './InvitedConfirmationPage'
 import { InvitedConfirmationPageV2 } from './InvitedConfirmationPageV2'
+import { InvitedConfirmationPageV3 } from './InvitedConfirmationPageV3'
 import { XcelSplitConfirmationPage } from './XcelSplitConfirmationPage'
+import { XcelQrInvitePage } from './XcelQrInvitePage'
+import { XcelQrInvitePageV3 } from './XcelQrInvitePageV3'
 import {
   passwordSetFromEmailedLink,
   useInviteFlow,
@@ -22,7 +28,8 @@ import {
 /**
  * THE INVITE FLOW'S VERSION SWITCH — 2026-10-22, with `inviteFlowVersions.ts`.
  *
- * One component per route, each choosing between the V1 page and its V2 fork.
+ * One component per route, each choosing between the V1 page, its V2 fork and
+ * V3 (Afsana's concept, a fork of V2 — 2026-10-29).
  * The choice is made HERE rather than inside the pages, which is what keeps the
  * fork honest: neither page knows a second version exists, so neither grows a
  * conditional, and either can be rewritten without reading the other.
@@ -55,16 +62,28 @@ function useInviteFlowVersion(): InviteFlowVersionId {
   return resolveInviteFlowVersion(flag.variant)
 }
 
+/** The QR code. Not versioned until V3 (2026-10-30): V1 and V2 share the
+ *  partner's phone share card; V3 draws the code alone, as Afsana's file does. */
+export function QrInviteRoute() {
+  return useInviteFlowVersion() === 'v3' ? <XcelQrInvitePageV3 /> : <XcelQrInvitePage />
+}
+
 export function InviteEmailRoute() {
-  return useInviteFlowVersion() === 'v2' ? <InviteEmailPageV2 /> : <InviteEmailPage />
+  const version = useInviteFlowVersion()
+  if (version === 'v3') return <InviteEmailPageV3 />
+  return version === 'v2' ? <InviteEmailPageV2 /> : <InviteEmailPage />
 }
 
 export function InvitedProductDetailRoute() {
-  return useInviteFlowVersion() === 'v2' ? <InvitedProductDetailPageV2 /> : <InvitedProductDetailPage />
+  const version = useInviteFlowVersion()
+  if (version === 'v3') return <InvitedProductDetailPageV3 />
+  return version === 'v2' ? <InvitedProductDetailPageV2 /> : <InvitedProductDetailPage />
 }
 
 export function InvitedCheckoutRoute() {
-  return useInviteFlowVersion() === 'v2' ? <InvitedCheckoutPageV2 /> : <InvitedCheckoutPage />
+  const version = useInviteFlowVersion()
+  if (version === 'v3') return <InvitedCheckoutPageV3 />
+  return version === 'v2' ? <InvitedCheckoutPageV2 /> : <InvitedCheckoutPage />
 }
 
 /**
@@ -92,10 +111,14 @@ export function InvitedCheckoutRoute() {
  * the flow would be worse than one that picks the nearest real treatment.
  */
 export function InvitedConfirmationRoute() {
-  const v2 = useInviteFlowVersion() === 'v2'
+  const version = useInviteFlowVersion()
   const flow = useInviteFlow()
   const style = useOrderConfirmationStyle()
-  if (!v2) return <InvitedConfirmationPage />
-  if (passwordSetFromEmailedLink(flow)) return <InvitedConfirmationPageV2 />
+  if (version === 'v1') return <InvitedConfirmationPage />
+  if (passwordSetFromEmailedLink(flow)) {
+    return version === 'v3' ? <InvitedConfirmationPageV3 /> : <InvitedConfirmationPageV2 />
+  }
+  /* V3 shares V2's other arm: `XcelSplitConfirmationPage` is the guest's page,
+     not a V2 page, so it is not forked. Fork it before changing it for V3. */
   return <XcelSplitConfirmationPage tone={style === 'split' ? 'dark' : 'light'} />
 }

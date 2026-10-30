@@ -14,8 +14,10 @@ import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
 /* THE INVITE FLOW IS VERSIONED SINCE 2026-10-22, so these four routes name a
    SWITCH rather than a page — each picks V1's page or its V2 fork from the
    `invite-flow-version` flag. The paths, and everything that depends on them,
-   are unchanged. See `InviteFlowRoutes.tsx` and `inviteFlowVersions.ts`. */
+   are unchanged. See `InviteFlowRoutes.tsx` and `inviteFlowVersions.ts`.
+   The QR code joined them with V3 (2026-10-30). */
 import {
+  QrInviteRoute,
   InviteEmailRoute,
   InvitedProductDetailRoute,
   InvitedCheckoutRoute,
@@ -26,7 +28,6 @@ import {
    packages a (state, line of authority) pair resolves to. Under the same
    `/end-to-end-demo` prefix so the demo bars, the version pin and
    `isInviteFlowPath` all keep working unchanged. */
-import { XcelQrInvitePage } from '@/pages/XcelQrInvitePage'
 import { XcelFindCoursePage } from '@/pages/XcelFindCoursePage'
 import { XcelPackagesPage } from '@/pages/XcelPackagesPage'
 import { XcelCartPage } from '@/pages/XcelCartPage'
@@ -231,7 +232,7 @@ export default function App() {
             flow's pages. See `XcelFindCoursePage`. */}
         {/* THE QR / SOCIAL ARM'S FIRST SCREEN — the partner's share card
             (2026-10-23). `entryPathFor('qr-social')` points here. */}
-        <Route path="/end-to-end-demo/qr" element={<TestingGate><XcelQrInvitePage /></TestingGate>} />
+        <Route path="/end-to-end-demo/qr" element={<TestingGate><QrInviteRoute /></TestingGate>} />
         <Route path="/end-to-end-demo/find" element={<TestingGate><XcelFindCoursePage /></TestingGate>} />
         <Route path="/end-to-end-demo/packages" element={<TestingGate><XcelPackagesPage /></TestingGate>} />
         {/* …and the cart, which is where the guest journey leaves the

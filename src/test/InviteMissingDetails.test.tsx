@@ -82,7 +82,7 @@ function renderAt(path: string, search: string, element: React.ReactElement) {
  * leaning on a default is really a test OF the default; there is one of those,
  * on purpose, in `InviteFlows.test.tsx`.
  */
-const INVITED = `${INVITE_FLOW_FLAG}:b2b2c-email`
+const INVITED = `${INVITE_FLOW_FLAG}:b2b2c-email,invite-flow-version:v2`
 /** The invited arm, nothing else said. */
 const INVITED_ONLY = `?ff=${INVITED}`
 /** The flag on, and no answer yet. */
@@ -123,7 +123,7 @@ describe('the missing-details flag', () => {
 
   it('is a design control scoped to the invite flow', () => {
     expect(definition?.surface).toBe('design')
-    expect(definition?.surfaces).toEqual(['invite'])
+    expect(definition?.surfaces).toEqual(['invite', 'invite:v3-b2b', 'invite:v3-b2c'])
   })
 
   it('defaults OFF', () => {
@@ -356,9 +356,9 @@ describe('Invited Product Detail', () => {
     /* ⚠ SAME CLASS AS THE WELCOME BANNER. "Your invitation didn't include
        these details" is true of a recruiter's omission and false of a QR code
        on a poster — there was no invitation to leave anything out of. */
-    window.history.replaceState({}, '', `${PRODUCT_DETAIL}?ff=invite-flow-journey:qr-social`)
+    window.history.replaceState({}, '', `${PRODUCT_DETAIL}?ff=invite-flow-journey:qr-social,invite-flow-version:v2`)
     render(
-      <MemoryRouter initialEntries={[`${PRODUCT_DETAIL}?ff=invite-flow-journey:qr-social`]}>
+      <MemoryRouter initialEntries={[`${PRODUCT_DETAIL}?ff=invite-flow-journey:qr-social,invite-flow-version:v2`]}>
         <AccountProvider>
           <FeatureFlagProvider>
             <Routes>

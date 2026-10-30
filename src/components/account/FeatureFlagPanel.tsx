@@ -166,6 +166,10 @@ const REBRAND_FLAGS = [
      route while you are on the checkout, the panel is where it is findable
      from anywhere in the version. */
   'invite-flow-journey',
+  /* Invite Flow V3's model type and its two flow lists — 2026-10-30. */
+  'invite-v3-model',
+  'invite-v3-flow-b2b',
+  'invite-v3-flow-b2c',
   'partner-code-ask',
   'order-confirmation-style',
   'split-journey-rail',

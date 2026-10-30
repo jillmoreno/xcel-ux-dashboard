@@ -45,7 +45,9 @@ function renderAt(path: string, flow: InviteFlowId, element: React.ReactElement)
   /* ⚠ `?ff=` IS READ FROM `window.location.search`, not from the MemoryRouter
      entry — so both are set, or the render falls back to catalog defaults and
      the test passes for the wrong reason. */
-  const ff = `${INVITE_FLOW_FLAG}:${flow}`
+  /* Pinned to V2: these flows are V1/V2's control. V3 picks its flow from its
+     own model-type controls (`inviteFlowsV3.ts`) and ignores this one. */
+  const ff = `${INVITE_FLOW_FLAG}:${flow},invite-flow-version:v2`
   window.history.replaceState({}, '', `${path}?ff=${ff}`)
   return render(
     <MemoryRouter initialEntries={[`${path}?ff=${ff}`]}>
