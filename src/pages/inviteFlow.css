@@ -166,7 +166,7 @@
    still fills brick under the cursor: `:not(:hover)` keeps this out of the
    way of the rule above. */
 /* The two-package PDP's cards on the page (2026-10-29, Eric): no longer picked by a click — hovering one gives it the selected look,
-   white with the inset tan ring and a small shadow. !important over the inline resting style. The Purchase buttons' own hovers stand. */
+   white with the inset tan ring. !important over the inline resting style. The Purchase buttons' own hovers stand. */
 .cre-e2e-package-card {
   transition: background-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -174,8 +174,8 @@
 .cre-e2e-package-card--on,
 .cre-e2e-package-card:hover {
   background: var(--color-fixed-light) !important;
-  /* The 1 outer stroke at half its strength (2026-10-29, Eric: gone, then back at 50%). */
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-e2e-card-outline) 50%, transparent), inset 0 0 0 7px var(--color-secondary-200), 0 4px 8px -2px rgb(0 0 0 / 0.3) !important;
+  /* The 1 outer stroke at half its strength (2026-10-29, Eric: gone, then back at 50%). No drop shadow (2026-10-30, Eric). */
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-e2e-card-outline) 50%, transparent), inset 0 0 0 7px var(--color-secondary-200) !important;
 }
 .cre-e2e-outline--quiet:not(:hover) {
   background: transparent;
