@@ -310,6 +310,13 @@ export function TwoPackageProductDetailPage() {
                 {p.cardTitle ?? `${place} ${localize(p.title)}`}
               </span>
             )}
+            {/* Premier's Pass Guarantee as a text link under its name (2026-10-30, Eric). Not wired. */}
+            {!lift && !bare && p.id === 'premier' ? (
+              <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, fontFamily: 'var(--font-e2e-avenir)', marginBottom: -8 }}>
+                Pass Guarantee
+                <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
+              </button>
+            ) : null}
             {lift ? <span style={{ position: 'relative', top: -lift.price, alignSelf: lift.center ? 'center' : 'flex-start' }}>{prices}</span> : prices}
             {/* The price stacked over its Purchase, the button across the card in the flow (2026-10-29, Eric; it slid beside the
                 price as the cards condensed). */}
