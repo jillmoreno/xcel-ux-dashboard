@@ -419,8 +419,9 @@ export function TwoPackageProductDetailPage() {
             intro narrow to make room. */}
         {/* COPY D (2026-10-29, Eric): C's layout worked further — Single head's D (it sat under C at first). Its own HEAD_WITH_PACKAGE_D / HEAD_PACKAGE_D /
             HEAD_RULE_D to change and compare. */}
-        {/* On the multi-product page too, above its own head, for comparison (2026-10-29, Eric). */}
-        {!single || singleHead === 'd' ? (
+        {/* On the multi-product page too, above its own head, for comparison (2026-10-29, Eric) — hidden there (2026-10-30, Eric);
+            D_ON_MULTI brings it back. */}
+        {(!single && D_ON_MULTI) || (single && singleHead === 'd') ? (
           <div style={single ? HEAD_WITH_PACKAGE_D : { ...HEAD_WITH_PACKAGE_D, marginRight: -32, marginBottom: 48, marginLeft: -32 }}>
             {/* On the multi page, out past the column's 32 side padding to its edges, as on the single page (2026-10-29, Eric). */}
             {/* No "Includes our Pass Guarantee" strip over the title now — the tab over PREMIER PACKAGE says it (2026-10-29, Eric). */}
@@ -1771,6 +1772,8 @@ const PACKAGE_STRIP_GUARANTEE_C: CSSProperties = {
 // 8 left of the gap's middle (2026-10-29, Eric), the title and package staying put.
 const HEAD_RULE_C: CSSProperties = { gridColumn: 2, gridRow: '1 / 3', alignSelf: 'stretch', width: 1, marginBottom: 17, position: 'relative', left: -8, background: SECONDARY_250 }
 /* Copy D (2026-10-29, Eric) — C's, to start; Single head's D. */
+// Copy D above the multi page's own head — off (2026-10-30, Eric: "hide this"); true shows it again.
+const D_ON_MULTI = false
 const HEAD_WITH_PACKAGE_D: CSSProperties = { ...HEAD_WITH_PACKAGE_C }
 // The packages' column, the row's full height so PASS GUARANTEE sits at the rule's foot (2026-10-29, Eric).
 const HEAD_PACKAGE_D: CSSProperties = { gridColumn: 3, gridRow: 1, alignSelf: 'stretch', justifySelf: 'end', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }
