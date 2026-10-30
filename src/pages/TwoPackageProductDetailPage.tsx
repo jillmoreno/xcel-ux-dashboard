@@ -527,8 +527,8 @@ export function TwoPackageProductDetailPage() {
             {/* C's strip in place of the pill, and C's price block — no package name, the price over the Purchase — straight under
                 the title (2026-10-29, Eric). */}
             <div style={PACKAGE_STRIP_C}>{packageStripRow}</div>
-            <h2 style={COURSE_HEAD_TITLE}>
-              {/* A break after the line of authority (2026-10-29, Eric). */}
+            <h2 style={{ ...COURSE_HEAD_TITLE, color: 'var(--color-text-primary)' }}>
+              {/* A break after the line of authority (2026-10-29, Eric). In the page's dark text, not brick (2026-10-30, Eric). */}
               {place} {line}
               <br />
               <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
