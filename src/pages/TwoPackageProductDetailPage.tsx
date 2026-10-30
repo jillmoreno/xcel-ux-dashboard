@@ -1639,16 +1639,16 @@ const LEARN_LIST: CSSProperties = {
 // Plain wrapping, not BODY's `pretty`: a lone last word is fine here (2026-10-28, Eric) — `pretty` was pulling a second word down
 // and breaking the items early.
 const SIDE_LEARN_LIST: CSSProperties = { ...LEARN_LIST, ...SIDE_BODY, paddingLeft: 18, gap: 8, textWrap: 'wrap', listStyle: 'none' }
-// The disc's stand-in (2026-10-30, Eric): 3 wide, Secondary 200 (brick at first), round ends, from the first line's cap top to its baseline — 4 and 15 down
+// The disc's stand-in (2026-10-30, Eric): 3 wide, Secondary 400 (brick, then 200), round ends, from the first line's cap top to its baseline — 4 and 15 down
 // the 21 line at 15 Avenir, measured.
 const LEARN_STROKE: CSSProperties = {
   position: 'absolute',
-  left: -14,
+  left: -11, // 3 nearer the text (2026-10-30, Eric; was -14)
   top: 4,
   width: 3,
   height: 11,
   borderRadius: 1.5,
-  background: 'var(--color-secondary-200)',
+  background: 'var(--color-secondary-400)',
 }
 
 const PARAGRAPHS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 20 }
