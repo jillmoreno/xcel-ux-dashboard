@@ -2130,9 +2130,9 @@ const UNCARDED: CSSProperties = { position: 'relative', display: 'flex', flexDir
 // 16 above the title (2026-10-29, Eric; 24, then 4 less, and 4 less again).
 const UNCARDED_BODY: CSSProperties = { ...OPTION_BODY, paddingTop: 16, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, alignItems: 'center', textAlign: 'center' }
 
-// Premier's title with its crown before it: 6 apart, the crown as tall as the title's line (2026-10-30, Eric).
+// Premier's title with its crown before it: 6 apart, the crown 80% of the title's line (2026-10-30, Eric; the full line, then 20% less).
 const TITLE_WITH_CROWN: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6 }
-const TITLE_CROWN: CSSProperties = { width: 'auto', height: pinLerp(34, 26), flexShrink: 0 }
+const TITLE_CROWN: CSSProperties = { width: 'auto', height: `calc(${pinLerp(34, 26)} * 0.8)`, flexShrink: 0 }
 const OPTION_TITLE: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
