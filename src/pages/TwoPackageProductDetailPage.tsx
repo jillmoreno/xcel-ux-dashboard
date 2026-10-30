@@ -450,7 +450,8 @@ export function TwoPackageProductDetailPage() {
             <span aria-hidden style={single ? { ...HEAD_RULE_D, marginBottom: 0, marginRight: 16 } : HEAD_RULE_D} />
             {/* The packages, one column down the rule's height (2026-10-29, Eric): Standard first on the multi page, a rule, then
                 Premier with PASS GUARANTEE hanging from that rule. */}
-            <div style={{ ...HEAD_PACKAGE_D, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
+            {/* Single, 16 in on the right (2026-10-30, Eric). */}
+            <div style={{ ...HEAD_PACKAGE_D, ...(single ? { paddingRight: 16 } : null), '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
               {single ? null : (
                 <div style={STANDARD_TILE_D}>
                   <span style={{ ...PACKAGE_LABEL_D, position: 'static' }}>
