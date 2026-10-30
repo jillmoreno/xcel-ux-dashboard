@@ -315,6 +315,11 @@ export function TwoPackageProductDetailPage() {
               <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, fontFamily: 'var(--font-e2e-avenir)', marginBottom: -8 }}>
                 with Pass Guarantee
               </button>
+            ) : !lift && !bare ? (
+              /* Standard keeps the link's line, empty, so the two cards' prices and Purchases stay level (2026-10-30, Eric). */
+              <span aria-hidden style={{ ...LINK, fontFamily: 'var(--font-e2e-avenir)', marginBottom: -8, visibility: 'hidden' }}>
+                with Pass Guarantee
+              </span>
             ) : null}
             {lift ? <span style={{ position: 'relative', top: -lift.price, alignSelf: lift.center ? 'center' : 'flex-start' }}>{prices}</span> : prices}
             {/* The price stacked over its Purchase, the button across the card in the flow (2026-10-29, Eric; it slid beside the
