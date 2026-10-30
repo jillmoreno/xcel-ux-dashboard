@@ -603,7 +603,7 @@ export function TwoPackageProductDetailPage() {
             {/* display: contents, so the pinned cards' containing block is the whole column (see the pin, above). */}
             <section aria-label="Choose a package" style={{ display: 'contents' }}>
               {/* The ground's first piece: its top corners, 24 above the heading. The tint fades over this and the cards. */}
-              <div ref={headRef} style={single ? { ...PACKAGE_GROUND_HEAD, paddingTop: 0, textAlign: 'center' } : PACKAGE_GROUND_HEAD}>
+              <div ref={headRef} style={single ? { ...PACKAGE_GROUND_HEAD, paddingTop: 0, textAlign: 'center' } : CARDS_ON_WHITE ? { ...PACKAGE_GROUND_HEAD, ...OFF_GROUND } : PACKAGE_GROUND_HEAD}>
                 {/* In the rail's At a Glance style — the slab serif at 20 / 24 — inside the ground, 4 above and 16 below
                     (2026-10-27, Eric). */}
                 {/* Single, no heading at all (2026-10-29, Eric; was "Your {place} state package:") — the card goes straight in. */}
@@ -677,7 +677,7 @@ export function TwoPackageProductDetailPage() {
               >
                 {/* The cards' piece of the ground, on its own layer so it can go once they pin — the condensed frame is narrower than
                     the column, and this showing either side of it read as a stray edge (2026-10-27, Eric). */}
-                <div aria-hidden style={{ ...PIN_LAYER, background: GROUND_FILL, opacity: 'calc(1 - var(--pinned, 0))' }} />
+                <div aria-hidden style={{ ...PIN_LAYER, background: CARDS_ON_WHITE ? 'transparent' : GROUND_FILL, opacity: 'calc(1 - var(--pinned, 0))' }} />
                 {/* Pinned, the tan ground shows from the browser's top to under the cards and nothing scrolls visibly beneath. Condensed,
                     it is Figma 548:3477's frame at the column's width — 32 either side of the cards, 12 above (2026-10-28, Eric; was 16), 24 below — square on top, 10 corners below, a shadow along its bottom edge only. */}
                 <div
@@ -696,7 +696,8 @@ export function TwoPackageProductDetailPage() {
               {/* THE COMPARISON GRID (2026-10-27, Eric's CoWork content) — under both cards, across the ground: each feature, then a
                   120-wide check column per package. Replaces the per-package lists. The ground's last piece, its bottom corners. */}
               {/* Single, the ground is only this piece now, so its top corners round like its bottom ones (2026-10-29, Eric). */}
-              <div ref={footRef} style={single ? { ...PACKAGE_GROUND_FOOT, borderTopLeftRadius: 10, borderTopRightRadius: 10 } : PACKAGE_GROUND_FOOT}>
+              {/* Multi, the heading and cards on the white with the title (2026-10-30, Eric) — the ground is this piece alone, 32 under the cards. */}
+              <div ref={footRef} style={single ? { ...PACKAGE_GROUND_FOOT, borderTopLeftRadius: 10, borderTopRightRadius: 10 } : CARDS_ON_WHITE ? { ...PACKAGE_GROUND_FOOT, ...FOOT_ALONE } : PACKAGE_GROUND_FOOT}>
                 <table style={COMPARE}>
                   {/* In 'Select your package:''s style, 8 in like the column text below it (2026-10-27, Eric). */}
                   <caption style={{ ...SIDE_TITLE, textAlign: 'left', paddingBottom: 20 }}>
@@ -1885,6 +1886,10 @@ const PACKAGE_GROUND_HEAD: CSSProperties = {
   borderTopRightRadius: 10,
   background: GROUND_FILL,
 }
+// Multi, "Select package:" and the two cards off the tan, on the white with the title (2026-10-30, Eric). The pinned frame is unchanged.
+const CARDS_ON_WHITE = true
+const OFF_GROUND: CSSProperties = { background: 'transparent', borderTopLeftRadius: 0, borderTopRightRadius: 0 }
+const FOOT_ALONE: CSSProperties = { marginTop: 32, borderTopLeftRadius: 10, borderTopRightRadius: 10 }
 const PACKAGE_GROUND_FOOT: CSSProperties = {
   paddingTop: 32,
   paddingRight: 32,
