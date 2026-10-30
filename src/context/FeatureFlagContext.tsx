@@ -2566,12 +2566,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surfaces: ['invite:v3-b2b', 'invite:v3-b2c'],
     group: 'Navigation',
     label: 'Model type',
-    description: 'Invite Flow V3 only. Which business model the flow belongs to: B2B (a partner’s QR code) or B2C (direct from the public site). Picking one shows that model’s flows.',
+    description: 'Invite Flow V3 only. Which business model the flow belongs to: B2B invite (a partner’s QR code) or B2C guest checkout (direct from the public site’s cart). Picking one shows that model’s flows.',
     defaultEnabled: true,
     defaultVariant: 'b2b',
     variants: [
-      { value: 'b2b', label: 'B2B', description: 'A partner’s QR code. Partner pricing; the learner proves their email by code.' },
-      { value: 'b2c', label: 'B2C', description: 'Direct from the public site’s cart. No partner.' },
+      { value: 'b2b', label: 'B2B invite', description: 'A partner’s QR code. Partner pricing; the learner proves their email by code.' },
+      { value: 'b2c', label: 'B2C guest', description: 'Direct from the public site’s cart. No partner.' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -2587,7 +2587,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Navigation',
     label: 'Invite flow',
     picker: 'sheet',
-    description: 'Invite Flow V3, B2B. Which of the four QR flows the demo walks: net new, has OCD but no Atlas, or has Atlas — opening a log-in widget, or logging in and being signed in automatically with the checkout filled.',
+    description: 'Invite Flow V3, B2B invite. Which of the four QR invite flows the demo walks: net new, has OCD but no Atlas, or has Atlas — opening a log-in widget, or logging in and being signed in automatically with the checkout filled.',
     defaultEnabled: true,
     defaultVariant: 'qr-net-new',
     variants: [
@@ -2606,9 +2606,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     versions: ['eric-atlas-e2e'],
     surfaces: ['invite:v3-b2c'],
     group: 'Navigation',
-    label: 'Invite flow',
+    /* "Guest checkout", not "Invite flow" — 2026-10-30, Afsana: the B2C flows
+       "are actually not invite flows, rather they pertain to guest checkout".
+       The key keeps its name so stored picks and shared links still work. */
+    label: 'Guest checkout',
     picker: 'sheet',
-    description: 'Invite Flow V3, B2C. Which of the four direct flows the demo walks: net new, has OCD but no Atlas, or has Atlas — opening a log-in widget, or logging in and being signed in automatically with the checkout filled.',
+    description: 'Invite Flow V3, B2C guest checkout. Which of the four guest checkout flows the demo walks: net new, has OCD but no Atlas, or has Atlas — opening a log-in widget, or logging in and being signed in automatically with the checkout filled.',
     defaultEnabled: true,
     defaultVariant: 'net-new',
     variants: [
@@ -2767,7 +2770,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        including why the answer lives in the address rather than in page state. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite', 'invite:v3-b2b', 'invite:v3-b2c'],
+    /* Not on V3's B2C: guest checkout has no invitation to be missing anything. */
+    surfaces: ['invite', 'invite:v3-b2b'],
     group: 'Navigation',
     label: 'Invitation missing details',
     description:
