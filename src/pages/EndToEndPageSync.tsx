@@ -10,7 +10,22 @@ import {
 } from './endToEndDemo'
 import { clearPartnerCodeAnswer, entryPathFor, useInviteFlow } from '@/data/inviteFlows'
 import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
-import { isInviteFlowPath } from '@/data/inviteFlowVersions'
+import {
+  INVITE_FLOW_VERSION_FLAG,
+  isInviteFlowPath,
+  resolveInviteFlowVersion,
+} from '@/data/inviteFlowVersions'
+import {
+  V3_B2C_CART,
+  entryPathV3,
+  v3ScreensFor,
+  inviteV3Surface,
+  useInviteFlowV3,
+  useInviteModel,
+} from '@/data/inviteFlowsV3'
+import { CART_PACKAGE_PARAM } from '@/data/xcelCourseFinder'
+import { clearInviteWalk } from '@/data/inviteWalk'
+import { clearVerifiedIdentity } from '@/data/inviteVerification'
 import { useDeclareDesignSurface } from '@/context/designSurface'
 
 /**
@@ -43,7 +58,7 @@ export function EndToEndPageSync() {
      share an entry: a guest has no invitation email to click, so opening them
      on one is opening them on a screen their flow has no version of. See
      `entryPathFor`. */
-  const flow = useInviteFlow()
+  const entry = useInviteEntryPath()
   const here = startPointAt(pathname, params.get('section'))
   const lastHere = useRef<StartPoint | null | undefined>(undefined)
   const lastPicked = useRef<string | undefined>(undefined)
@@ -76,12 +91,11 @@ export function EndToEndPageSync() {
     /* …except the three End-to-End Demo pages, which pin their own version on
        arrival (`useEndToEndDemoParams`). Setting it here as well keeps the
        jump from flashing the old version's chrome for a tick. */
-    const pathname_ = target.pathname.startsWith('/end-to-end-demo')
-      ? entryPathFor(flow)
-      : target.pathname
+    const pathname_ = target.pathname.startsWith('/end-to-end-demo') ? entry : target.pathname
+    if (pathname_ === '/end-to-end-demo/cart') fillV3Cart(next)
     if (pathname_.startsWith('/end-to-end-demo')) next.set('version', END_TO_END_VERSION)
     navigate(`${pathname_}?${next.toString()}`)
-  }, [here, picked, setVariant, navigate, params, flow])
+  }, [here, picked, setVariant, navigate, params, entry])
 
   return null
 }
@@ -113,29 +127,78 @@ export function InviteFlowEntrySync() {
   const { pathname } = useLocation()
   const [params] = useSearchParams()
   const navigate = useNavigate()
-  const entry = entryPathFor(useInviteFlow())
-  const lastEntry = useRef<string | undefined>(undefined)
+  const entry = useInviteEntryPath()
+  const version = resolveInviteFlowVersion(useFeatureFlag(INVITE_FLOW_VERSION_FLAG).variant)
+  const model = useInviteModel()
+  const v3FlowId = useInviteFlowV3().id
+  /* ⚠ ON V3 EVERY FLOW PICK RESTARTS THE WALK — 2026-10-30, Afsana: "when I
+     click on another invite flow, it should start at the first screen for that
+     respective flow". V1/V2 compare entry paths, so two flows sharing a door
+     leave the reviewer where they are (see the note above); V3's flows share
+     doors too — four start at the QR code, four at the cart — and differ from
+     the very next screen, so V3 compares the FLOW. */
+  const key = version === 'v3' ? `v3:${v3FlowId}` : entry
+  const lastKey = useRef<string | undefined>(undefined)
 
   useEffect(() => {
-    const previous = lastEntry.current
-    lastEntry.current = entry
+    const previous = lastKey.current
+    lastKey.current = key
     /* First render is not a change — never move anyone on arrival, or a pasted
        deep link into the middle of a flow would bounce to its start. */
-    if (previous === undefined || previous === entry) return
+    if (previous === undefined || previous === key) return
     /* Outside the flow this control means nothing; a reviewer on the dashboard
        who flips it is configuring, not navigating. */
     if (!isInviteFlowPath(pathname)) return
-    const next = clearPartnerCodeAnswer(params)
+    /* V3 starts the new flow from nothing — no pick, no partner answer, no
+       verified address carried over from the last walk. */
+    const next = version === 'v3' ? clearInviteWalk(params) : clearPartnerCodeAnswer(params)
+    if (version === 'v3') clearVerifiedIdentity()
     next.delete(INVITE_STATE_PARAM)
     next.delete(INVITE_LOA_PARAM)
+    if (entry === '/end-to-end-demo/cart') fillV3Cart(next)
     /* `replace`: the page they were on belongs to a flow that is no longer
        selected, so leaving it in history means Back returns them to a screen
        the current flow has no version of — this bug, reached by a different
        button. */
     navigate({ pathname: entry, search: next.toString() }, { replace: true })
-  }, [entry, pathname, params, navigate])
+  }, [key, version, entry, pathname, params, navigate])
+
+  /* ⚠ ON V3, A SCREEN OUTSIDE THE MODEL'S FLOWS GOES TO ITS FIRST SCREEN —
+     2026-10-30, Afsana: "make sure that all the B2C flows start with this
+     screen" (the cart). The effect above only moves a walk when the ENTRY
+     changes; the Demo bar's Reset (protected, and reading V1/V2's flow), a
+     pasted link and the Prototypes row all arrive without one, on the QR
+     card or the public homepage. This catches every one of them. */
+  useEffect(() => {
+    if (version !== 'v3' || !isInviteFlowPath(pathname)) return
+    if (v3ScreensFor(model).includes(pathname)) return
+    const next = new URLSearchParams(params)
+    if (entry === '/end-to-end-demo/cart') fillV3Cart(next)
+    navigate({ pathname: entry, search: next.toString() }, { replace: true })
+  }, [version, model, pathname, entry, params, navigate])
 
   return null
+}
+
+/** Where the selected flow starts. V3's flows start at their own first screen
+ *  — the QR code for B2B, the cart for B2C (`entryPathV3`, 2026-10-30); V1
+ *  and V2 keep `entryPathFor`. */
+function useInviteEntryPath(): string {
+  const flow = useInviteFlow()
+  const version = resolveInviteFlowVersion(useFeatureFlag(INVITE_FLOW_VERSION_FLAG).variant)
+  const v3 = useInviteFlowV3()
+  return version === 'v3' ? entryPathV3(v3) : entryPathFor(flow)
+}
+
+/** Only V3's B2C flows START at the cart, so a walk entering there with an
+ *  empty cart gets the file's Arizona Health Premier (`V3_B2C_CART`). */
+function fillV3Cart(next: URLSearchParams) {
+  /* All three or none: a package with no state and line of authority (what
+     Reset and a flow switch leave behind) is an empty cart. */
+  if (next.has(CART_PACKAGE_PARAM) && next.has(INVITE_STATE_PARAM) && next.has(INVITE_LOA_PARAM)) return
+  next.set(INVITE_STATE_PARAM, V3_B2C_CART.lstate)
+  next.set(INVITE_LOA_PARAM, V3_B2C_CART.loa)
+  next.set(CART_PACKAGE_PARAM, V3_B2C_CART.pkg)
 }
 
 /**
@@ -152,6 +215,10 @@ export function InviteFlowEntrySync() {
  */
 export function InviteSurfaceSync() {
   const { pathname } = useLocation()
-  useDeclareDesignSurface(isInviteFlowPath(pathname) ? 'invite' : null)
+  /* V3 declares its own surface, one per model type — `inviteFlowsV3.ts`. */
+  const version = resolveInviteFlowVersion(useFeatureFlag(INVITE_FLOW_VERSION_FLAG).variant)
+  const model = useInviteModel()
+  const surface = version === 'v3' ? inviteV3Surface(model) : 'invite'
+  useDeclareDesignSurface(isInviteFlowPath(pathname) ? surface : null)
   return null
 }

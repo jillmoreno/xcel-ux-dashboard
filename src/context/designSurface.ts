@@ -51,6 +51,12 @@ export type DesignSurfaceId =
      exclusive one way is what let Atlas's Brand, Affidavit, Long title and
      Readiness ride along on a checkout screen. */
   | 'invite'
+  /* INVITE FLOW V3, by model type — 2026-10-30. The same route as `invite`,
+     declared instead of it while V3 is selected, so V3's model and flow
+     controls show and V1/V2's flow control does not. One surface per model is
+     what lets the bar show only that model's flows (`inviteFlowsV3.ts`). */
+  | 'invite:v3-b2b'
+  | 'invite:v3-b2c'
 
 export type DesignSurfaceCtx = {
   surface: DesignSurfaceId | null
@@ -102,4 +108,6 @@ export const DESIGN_SURFACE_LABELS: Record<DesignSurfaceId, string> = {
   'compass:study-planner': 'Compass · Study planner',
   'compass:progress': 'Compass · Progress',
   invite: 'Invite & Checkout',
+  'invite:v3-b2b': 'Invite Flow V3 · B2B invite',
+  'invite:v3-b2c': 'Invite Flow V3 · B2C guest checkout',
 }

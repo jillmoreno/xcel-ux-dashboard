@@ -2393,7 +2393,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        card that selects nothing. `InviteFlowVersions.test.ts` holds the two
        lists together.
 
-       DEFAULT `v2` ON THIS BRANCH, which is the branch rule — the flag default
+       DEFAULT `v3` ON feat/invite-flow-v3 (2026-10-29, Afsana's concept;
+       `v2` before it), which is the branch rule — the flag default
        is what makes a branch build show the work. On `main` it is `v1`: the
        End-to-End and Invite & Purchase rows both open this flow, so the default
        here IS what stakeholders see, and moving it is `promote-to-prototype`'s
@@ -2401,12 +2402,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Navigation',
     label: 'Invite flow version',
     description:
-      'Which build of the Invite & Purchase flow renders at its four routes — the invitation email, Invited Product Detail, checkout, and Confirmation & Password. V1 is the released baseline; V2 is the checkout exploration.',
+      "Which build of the Invite & Purchase flow renders at its four routes — the invitation email, Invited Product Detail, checkout, and Confirmation & Password. V1 is the released baseline; V2 is the checkout exploration; V3 is Afsana's concept.",
     defaultEnabled: true,
-    defaultVariant: 'v2',
+    defaultVariant: 'v3',
     variants: [
       { value: 'v1', label: 'V1', description: 'The released baseline — the flow as the End-to-End row shows it.' },
       { value: 'v2', label: 'V2', description: 'The checkout exploration. A fork of V1; identical until it is changed.' },
+      { value: 'v3', label: 'V3', description: "Afsana's concept. A fork of V2; identical until it is changed." },
     ],
     page: 'dashboard-rebrand',
   },
@@ -2550,6 +2552,77 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'invite-v3-model',
+    /* INVITE FLOW V3'S MODEL TYPE — 2026-10-30, Afsana: "each flow is split by
+       model type (e.g., b2b, b2c). once model type is selected, then flow is
+       available." V3 only: it names the two V3 surfaces and nothing else, so
+       V1 and V2 never see it and keep `invite-flow-journey`.
+
+       The chosen model is what `InviteSurfaceSync` declares as the surface,
+       which is what shows that model's flow control below and hides the
+       other's. `inviteFlowsV3.ts` carries the long form. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2c'],
+    group: 'Navigation',
+    label: 'Model type',
+    description: 'Invite Flow V3 only. Which business model the flow belongs to: B2B invite (a partner’s QR code) or B2C guest checkout (direct from the public site’s cart). Picking one shows that model’s flows.',
+    defaultEnabled: true,
+    defaultVariant: 'b2b',
+    variants: [
+      { value: 'b2b', label: 'B2B invite', description: 'A partner’s QR code. Partner pricing; the learner proves their email by code.' },
+      { value: 'b2c', label: 'B2C guest', description: 'Direct from the public site’s cart. No partner.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-v3-flow-b2b',
+    /* V3's B2B flows, from Afsana's `xcel-b2b2c-email-flow.html`. Shown only
+       while Model type is B2B — see `invite-v3-model`. The variants must
+       match `INVITE_FLOWS_V3`'s B2B rows; `InviteFlowsV3.test.ts` holds them
+       together. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2b'],
+    group: 'Navigation',
+    label: 'Invite flow',
+    picker: 'sheet',
+    description: 'Invite Flow V3, B2B invite. Which of the four QR invite flows the demo walks: net new, has OCD but no Atlas, or has Atlas — opening a log-in widget, or logging in and being signed in automatically with the checkout filled.',
+    defaultEnabled: true,
+    defaultVariant: 'qr-net-new',
+    variants: [
+      { value: 'qr-net-new', label: 'QR: Net New: No OCD, No Atlas', description: 'New to XCEL. Verify email by code, full checkout, then create a password.' },
+      { value: 'qr-ocd', label: 'QR: OCD, but no Atlas', description: 'Has an OCD account, no Atlas. Same screens as Net New for now.' },
+      { value: 'qr-atlas-login', label: 'QR: Has Atlas: Open Log-In Widget', description: 'Already on Atlas. Email check opens a log-in widget; ends ready to log in.' },
+      { value: 'qr-atlas-auto', label: 'QR: Has Atlas: Automatic Sign-in Post OTP', description: 'Already on Atlas. Logs in, then signed in automatically with the checkout filled.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-v3-flow-b2c',
+    /* V3's B2C flows — the B2B control's twin, shown only while Model type is
+       B2C. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2c'],
+    group: 'Navigation',
+    /* "Guest checkout", not "Invite flow" — 2026-10-30, Afsana: the B2C flows
+       "are actually not invite flows, rather they pertain to guest checkout".
+       The key keeps its name so stored picks and shared links still work. */
+    label: 'Guest checkout',
+    picker: 'sheet',
+    description: 'Invite Flow V3, B2C guest checkout. Which of the four guest checkout flows the demo walks: net new, has OCD but no Atlas, or has Atlas — opening a log-in widget, or logging in and being signed in automatically with the checkout filled.',
+    defaultEnabled: true,
+    defaultVariant: 'net-new',
+    variants: [
+      { value: 'net-new', label: 'Net New: No OCD, No Atlas', description: 'New to XCEL. Verify email by code, full checkout, then create a password.' },
+      { value: 'ocd-no-atlas', label: 'OCD, but no Atlas', description: 'Has an OCD account, no Atlas. Same screens as Net New for now.' },
+      { value: 'has-atlas-login', label: 'Has Atlas: Open Log-In Widget', description: 'Already on Atlas. Email check opens a log-in widget before checkout.' },
+      { value: 'has-atlas', label: 'Has Atlas: Automatic Sign-in Post OTP', description: 'Already on Atlas. Logs in, then signed in automatically with the checkout filled.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'order-confirmation-style',
     /* WHICH THANK-YOU PAGE THE GUEST FLOW ENDS ON — 2026-10-22, Jillienne: "i
        want another version of this thank you page, use a feature flag dropdown
@@ -2574,6 +2647,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        and a popover hides two of the options while you look at the first. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
+    /* Not on V3: V3 has its own ending, which neither control changes. */
     surfaces: ['invite'],
     group: 'Navigation',
     label: 'Thank you page',
@@ -2614,6 +2688,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        not touch it. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
+    /* Not on V3: V3 has its own ending, which neither control changes. */
     surfaces: ['invite'],
     group: 'Navigation',
     label: 'Journey rail',
@@ -2654,6 +2729,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        decision rather than this line's. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
+    /* Not on V3: V3 always asks over the cart (Afsana's file, 2026-10-30). */
     surfaces: ['invite'],
     group: 'Navigation',
     label: 'Partner code ask',
@@ -2694,7 +2770,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        including why the answer lives in the address rather than in page state. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite'],
+    /* Not on V3's B2C: guest checkout has no invitation to be missing anything. */
+    surfaces: ['invite', 'invite:v3-b2b'],
     group: 'Navigation',
     label: 'Invitation missing details',
     description:

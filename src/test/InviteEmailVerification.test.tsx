@@ -62,7 +62,7 @@ const CHECKOUT = '/end-to-end-demo/checkout'
 const CONFIRMATION = '/end-to-end-demo/confirmation'
 
 function renderAt(path: string, flow: InviteFlowId, extra = '') {
-  const entry = `${path}?ff=${INVITE_FLOW_FLAG}:${flow}${extra}`
+  const entry = `${path}?ff=${INVITE_FLOW_FLAG}:${flow},invite-flow-version:v2${extra}`
   /* `?ff=` is read from `window.location.search`, not the router. */
   window.history.replaceState({}, '', entry)
   return render(

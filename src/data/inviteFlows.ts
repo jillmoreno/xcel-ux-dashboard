@@ -1,5 +1,7 @@
 import { useSearchParams } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { INVITE_FLOW_VERSION_FLAG, resolveInviteFlowVersion } from './inviteFlowVersions'
+import { useInviteFlowV3 } from './inviteFlowsV3'
 
 /**
  * THE FOUR INVITE FLOWS — 2026-10-22, Jillienne: "i think i need 1 refinement
@@ -83,7 +85,13 @@ export function resolveInviteFlow(value: string | null | undefined): InviteFlowI
 }
 
 export function useInviteFlow(): InviteFlowId {
-  return resolveInviteFlow(useFeatureFlag(INVITE_FLOW_FLAG).variant)
+  const flow = resolveInviteFlow(useFeatureFlag(INVITE_FLOW_FLAG).variant)
+  const version = resolveInviteFlowVersion(useFeatureFlag(INVITE_FLOW_VERSION_FLAG).variant)
+  /* ⚠ ON V3 THE FLOW COMES FROM V3'S OWN CONTROLS (2026-10-30), which hide
+     this one. Every V3 flow walks as its V2 `base` until its own screens are
+     built — `inviteFlowsV3.ts`. V1 and V2 are unchanged. */
+  const v3 = useInviteFlowV3()
+  return version === 'v3' ? v3.base : flow
 }
 
 /* ── The questions each page asks ──────────────────────────────────────── */
