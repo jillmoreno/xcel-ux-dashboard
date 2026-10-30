@@ -413,8 +413,9 @@ export function TwoPackageProductDetailPage() {
       <section aria-label="Course" style={COURSE_HEAD}>
         {/* As wide as the details' left column below — the rail and its gutter kept clear (2026-10-27, Eric). */}
         {/* 32 in either side, so the title and intro line up with "Select package:" in the ground below (2026-10-29, Eric). */}
-        {/* Single, no padding either side (2026-10-29, Eric: the left, then the right). */}
-        <div style={{ width: `calc(100% - ${RAIL_W}px - ${RAIL_GUTTER}px)`, boxSizing: 'border-box', paddingRight: single ? 0 : 32, paddingLeft: single ? 0 : 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {/* Single, no padding either side (2026-10-29, Eric: the left, then the right). Multi, none on the left either — the title,
+            "Select package:" and the cards all on the comparison frame's left edge (2026-10-30, Eric). */}
+        <div style={{ width: `calc(100% - ${RAIL_W}px - ${RAIL_GUTTER}px)`, boxSizing: 'border-box', paddingRight: single ? 0 : 32, paddingLeft: single || CARDS_ON_WHITE ? 0 : 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* Single, the package beside the title and intro, on the right — out of the tan ground (2026-10-29, Eric); the title and
             intro narrow to make room. */}
         {/* COPY D (2026-10-29, Eric): C's layout worked further — Single head's D (it sat under C at first). Its own HEAD_WITH_PACKAGE_D / HEAD_PACKAGE_D /
@@ -673,7 +674,7 @@ export function TwoPackageProductDetailPage() {
                 aria-labelledby={single ? undefined : 'choose-package'}
                 aria-label={single ? 'Your package' : undefined}
                 // Single, the one card at the multi card's width, centred in the ground (2026-10-29, Eric; was the left of two columns).
-                style={{ ...PACKAGE_GRID, ...(single ? { gridTemplateColumns: 'minmax(0, 326px)', justifyContent: 'center' } : null), ...(unpinned ? { position: 'relative' } : { top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }) }}
+                style={{ ...PACKAGE_GRID, ...(CARDS_ON_WHITE ? CARDS_FLUSH : null), ...(single ? { gridTemplateColumns: 'minmax(0, 326px)', justifyContent: 'center' } : null), ...(unpinned ? { position: 'relative' } : { top: `calc(${browserTop + CARDS_PIN_GAP}px - 28px * var(--p, 0))` }) }}
               >
                 {/* The cards' piece of the ground, on its own layer so it can go once they pin — the condensed frame is narrower than
                     the column, and this showing either side of it read as a stray edge (2026-10-27, Eric). */}
@@ -1889,7 +1890,9 @@ const PACKAGE_GROUND_HEAD: CSSProperties = {
 // Multi, "Select package:" and the two cards off the tan, on the white with the title (2026-10-30, Eric). The pinned frame is unchanged.
 const CARDS_ON_WHITE = true
 // 12 from the subhead to "Select package:" (2026-10-30, Eric: 40 less than the 52 it had — no padding, and 16 into the main's 24).
-const OFF_GROUND: CSSProperties = { background: 'transparent', borderTopLeftRadius: 0, borderTopRightRadius: 0, paddingTop: 0, marginTop: -16 }
+const OFF_GROUND: CSSProperties = { background: 'transparent', borderTopLeftRadius: 0, borderTopRightRadius: 0, paddingTop: 0, marginTop: -16, paddingRight: 0, paddingLeft: 0 }
+// The cards flush with the comparison frame's sides on the page (2026-10-30, Eric); pinned, 24 in as before.
+const CARDS_FLUSH: CSSProperties = { paddingRight: pinLerp(0, 24, 'p'), paddingLeft: pinLerp(0, 24, 'p') }
 const FOOT_ALONE: CSSProperties = { marginTop: 32, borderTopLeftRadius: 10, borderTopRightRadius: 10 }
 const PACKAGE_GROUND_FOOT: CSSProperties = {
   paddingTop: 32,
