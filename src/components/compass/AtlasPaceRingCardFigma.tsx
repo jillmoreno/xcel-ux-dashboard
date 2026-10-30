@@ -1,0 +1,832 @@
+import type { CSSProperties, ReactNode } from 'react'
+import { CalendarThin, GaugeThin } from '@/icons'
+import {
+  ATLAS_SECTION_EYEBROW,
+  atlasSectionEyebrow,
+  type AtlasColumnAlign,
+} from './atlasSectionEyebrow'
+import { noPaceMessage, type NoPaceReason } from './noPaceMessage'
+import { PACE_PLAN_LINK } from './paceStanding'
+
+/**
+ * ERIC'S FIGMA PASS ON THE RING CARD — 2026-10-30 (Figma 592:457, "Progress, Pace & Completion"). A SIBLING of
+ * `AtlasPaceRingCard`, copied from it on main that day and switched in at the End-to-End Home's call site by
+ * `atlas-pace-card-figma`; the original is untouched, so Jill/Atlas-Main and anything else drawing it do not move.
+ *
+ * What differs, and only this:
+ *   — Study pace: left-aligned; the gauge (34, top on the hairline's top), a hairline, then the pace name as a small
+ *     uppercase tag over the week goal in the date's type (Playfair 19, lining figures) and the hours. The name reads
+ *     STEADY here, typed — Compass calls the same plan "Average" (`paceName`), so the two surfaces differ on purpose.
+ *   — The sentence under it runs left, the column's width.
+ *   — Estimated completion: its eyebrow, then the calendar, a hairline and the date over its note — the pace row's shape.
+ *     The exam row below it keeps the original's label-left / figure-right row.
+ * Everything else — the expired state, the booked exam, the standing message, the rules and their air — is the
+ * original's, verbatim.
+ *
+ * — the original's notes follow —
+ *
+ * THE STUDY PACE CARD AS A RING — a module of its own since 2026-10-16
+ * (Jillienne: "lets add a component variant for this section. update to this
+ * new UI, keep the other one accessible from the dropdown").
+ *
+ * ⚠ IT IS A SIBLING, NOT A REPLACEMENT. `AtlasCourseProgressStates` — the tan
+ * card with Study pace / Readiness / State exam as pressable states — is
+ * untouched, and a design control picks between them at the call site. That
+ * is CLAUDE.md's rule for changing something that already exists, and here it
+ * is load-bearing: the two cards answer differently. The tan one steps
+ * through five states of a journey; this one shows ONE number and a way to
+ * change the plan behind it.
+ *
+ * ⚠ FORKED FROM `HybridHomeV1`'s PACE PANEL, where this layout already lived
+ * inline (its `PACE_PANEL` + `ProgressDial`). Copied rather than imported, on
+ * purpose: that file is another designer's working home and pulling a shared
+ * component out from under it would make a change here a change there. The
+ * LAYOUT is duplicated; the DATA is not — both read the same `studyPace`
+ * model from their own callers, so the cards cannot disagree about the plan.
+ */
+
+export function AtlasPaceRingCardFigma({
+  percent,
+  progressOnly = false,
+  weeks,
+  hoursPerWeek,
+  expected,
+  exam,
+  paceStyleName,
+  paceIcon,
+  standingMessage,
+  noPace,
+  readinessBelow = false,
+  expired = false,
+  examWhenExpired = false,
+  onCustomize,
+}: {
+  percent: number
+  /**
+   * Draw the Course progress section and stop.
+   *
+   * The dev handoff shows this card at 0%, 36% and 100% to document the dial
+   * on its own, and the study pace beneath it is a different section with its
+   * own states — repeating it three times says nothing about progress. The
+   * page never sets this; it exists so the handoff can show a real section
+   * instead of rebuilding the eyebrow and the dial in a preview, which is how
+   * a picture comes to disagree with the thing it illustrates.
+   */
+  progressOnly?: boolean
+  /**
+   * ACCESS HAS ENDED (2026-10-20, Jillienne: "when expired, all of the other
+   * things below the Course progress will not show").
+   *
+   * ⚠ IT TRUNCATES THE CARD, it does not restyle it. Everything under the
+   * dial — the pace name, the weekly goal, the standing sentence, Estimated
+   * completion, the booked exam — describes a PLAN, and there is no plan
+   * once the window has closed. The model already knew: `noPace` was
+   * printing "Not enough access left / No study pace fits in the time
+   * remaining / Extend your access to get a plan", which is three lines
+   * saying what the course card above now says in one.
+   *
+   * ⚠ WHAT STAYS IS THE DIAL, and that is the point of the state: how far
+   * the learner got is the one fact still worth showing, and it is the
+   * argument for the extension.
+   *
+   * ⚠ OPTIONAL, ABSENT IS THE DEFAULT — the End-to-End Demo's Home draws
+   * this card too and passes nothing, so Eric's versions are unchanged by
+   * construction rather than by a flag.
+   */
+  expired?: boolean
+  /** Which way the column reads — see `AtlasColumnAlign`. Centre is the
+   *  committed default; `left` is the design bar's other arm. */
+  align?: AtlasColumnAlign
+  /**
+   * THE BOOKED EXAM, under Estimated completion — 2026-10-20, from Jillienne's
+   * third screen ("FLORIDA STATE EXAM / November 16 · 18 days").
+   *
+   * ⚠ OPTIONAL, AND ABSENT IS THE DEFAULT. This card is drawn by two Homes —
+   * the End-to-End Demo's and Jill/Atlas-Main's. Only the second owns an exam
+   * date (the first refuses to read one, deliberately; see its `studyPace`
+   * note), so only the second passes this and the demo's card is unchanged by
+   * construction rather than by a flag.
+   *
+   * ⚠ THE LABEL IS THE CALLER'S because it names the JURISDICTION — "Florida
+   * state exam" — which this card cannot know. `expected` sets the precedent:
+   * value plus an optional note, rendered the same way, so the two blocks
+   * cannot drift apart in type or in treatment.
+   */
+  exam?: { label: string; value: string; note?: string }
+  /**
+   * KEEP THE EXAM ROW AFTER ACCESS ENDS — an alternative to the expired
+   * card's current silence, 2026-10-21.
+   *
+   * `expired` drops the whole Study pace section, and the exam row lives
+   * inside it, so a learner whose access ended with an exam still booked sees
+   * no trace of it. The argument for showing it: the booked exam is the
+   * strongest reason to buy the extension, and the sentence above the dial is
+   * already making that pitch. The argument against: the card is deliberately
+   * stripped to one fact, and a date the learner can do nothing about from
+   * here is a second.
+   *
+   * ⚠ OPTIONAL, AND ABSENT IS TODAY'S BEHAVIOUR. Both Homes pass `expired`
+   * and `exam` together already, so this is the ONE thing standing between
+   * them and the change — leave it off and the product is what it was, by
+   * construction rather than by a flag. The handoff's two expired variants
+   * are the only callers that set it.
+   */
+  examWhenExpired?: boolean
+  /**
+   * The pace's name — "Crammer", "Average", "Thorough" (2026-10-20).
+   *
+   * ⚠ OPTIONAL, FALLING BACK TO THE MODULE CONSTANT. Until now this card
+   * printed `paceName(PLANNER_PLAN.dayMins)`, which is a FROZEN fixture and so
+   * has always read "Average" on every surface that draws the card. The
+   * End-to-End Demo still gets that; the Atlas Home passes the name its own
+   * pacing control resolved. Absent means "unchanged", which is what keeps the
+   * demo's card the card it was.
+   */
+  paceStyleName?: string
+  /** The glyph beside the goal. Defaults to the gauge this card has always
+   *  drawn — see `paceIconFor` for the three-step mapping. */
+  paceIcon?: ReactNode
+  /** The finish DATE the same pace model produces, and its note. Shown under
+   *  the week goal so the plan's span and the date it lands on are read
+   *  together — they come from one `paceFit`, so they cannot describe two
+   *  different plans, which is the failure the week count was derived to
+   *  avoid in the first place. */
+  /** Hours a week the recommended plan asks for — the pace model's own
+   *  `minsPerWeek`, not `hoursRemaining / weeks`. The model splits the work
+   *  over the nights a learner actually studies, so dividing the total myself
+   *  would quietly answer a different question and disagree with the plan it
+   *  sits under. */
+  hoursPerWeek?: number
+  /** The sentence under the goal once the learner is past 0% — how they are
+   *  doing against it, built by `paceStandingMessage`. Undefined at 0%,
+   *  where the starting-point copy stands instead. */
+  standingMessage?: string
+  expected?: { value: string; note?: string }
+  /** Whether the Exam readiness section follows this card in the column.
+   *  Only the BOTTOM rule of Estimated completion depends on it: that rule
+   *  separates this card from what comes next, so with nothing next it is a
+   *  line under the last thing on screen. */
+  readinessBelow?: boolean
+  /** Whole weeks the current plan runs to — the same figure the sentence and
+   *  the goal line both read, so they cannot describe two different plans.
+   *
+   *  ⚠ UNDEFINED MEANS NO PACE FITS, and the card says so rather than
+   *  printing a number (2026-10-19). It took a `number` with the caller
+   *  falling back to a hardcoded 3 when `paceFit` came back empty — so with
+   *  one day of access left, the hours line and the completion date both
+   *  correctly vanished while a made-up "3 Week Goal" stayed, leaving the
+   *  one figure on the card that nothing had computed. */
+  weeks?: number
+  /** WHY no pace fits, when none does — the pace model's own `binding`,
+   *  `daysToCeiling` and `hardEndIso`. Undefined keeps the access wording
+   *  this card has always shown; see `noPaceMessage`. */
+  noPace?: NoPaceReason
+  onCustomize?: () => void
+}) {
+  // Every eyebrow left in this copy (Figma 592:457), whatever the Home's column alignment.
+  const eyebrow = atlasSectionEyebrow('left')
+  const noPaceCopy = noPaceMessage(noPace)
+  /* The exam row surviving expiry — see `examWhenExpired`. It is the only
+     thing the expired card can carry below its dial, so it decides the
+     divider and the panel's bottom pad the way the Study pace section does
+     on every other state. */
+  const examUnderExpired = expired && examWhenExpired && exam != null
+  return (
+    /* ⚠ TWO SECTIONS, NOT ONE CARD (2026-10-16, Jillienne: "should be 3
+       sections: Study Pace, Course Progress, Exam Readiness as the
+       eyebrows"). The third is the Readiness card below, which takes the same
+       eyebrow.
+
+       It was ONE panel headed "Your study pace" with the dial inside it —
+       which made the progress figure look like part of the pace, when they
+       answer different questions: the pace is the plan, the dial is where the
+       learner has got to against it. Splitting them is what lets each be
+       named. */
+    /* ⚠ THE PANEL'S BOTTOM AIR BELONGS TO WHATEVER IS LAST.
+       — With readiness following, the card ENDS on its rule: the air below
+         belongs to what the rule divides, and the panel's own 24 as well
+         would push readiness a pad further off than the rule above it.
+       — With Estimated completion last, THE BOX CARRIES ITS OWN 24 now
+         (2026-10-19, Jillienne: "there should be padding below the date to
+         match the padding above the date"), so the panel adds none. The air
+         under the date is the same 24 it always was — it just sits inside
+         the box, where it is symmetric with the 24 over the eyebrow,
+         instead of outside it where the box looked lopsided.
+       — With no pace at all there is no box, and the panel's own padding is
+         the only thing holding that edge. */
+    <div
+      style={
+        (!expired && (readinessBelow || expected)) || examUnderExpired
+          ? { ...PANEL, paddingBottom: 0 }
+          : PANEL
+      }
+    >
+      {/* ⚠ COURSE PROGRESS LEADS THE COLUMN (2026-10-16, Jillienne: "move
+          course progress to the top - shift everything else down"). Where the
+          learner HAS GOT TO is the first thing they want; the plan for the
+          rest follows from it. It sat under Study pace only because the dial
+          used to live inside that card. */}
+      <section style={{ ...SECTION, alignItems: 'center' }} aria-label="Course progress">
+        {/* ⚠ "PROGRESS PAUSED" ONCE ACCESS HAS ENDED (2026-10-20,
+            Jillienne). "Course progress" is a neutral label for a live
+            figure; paused says the number is real and stopped, which is
+            exactly what the extension below would restart. The section's
+            `aria-label` stays "Course progress" — that names the REGION,
+            and a landmark that renames itself by its contents' state makes
+            the page change shape under a screen-reader user. */}
+        <p style={eyebrow}>{expired ? 'Progress paused' : 'Course progress'}</p>
+        {/* ⚠ ABOVE THE DIAL, NOT UNDER IT (2026-10-20, Jillienne: "when
+            expired, move this above the graph and remove the divider
+            line"). Under the dial it was the last thing on a truncated
+            card and read as a footnote; over it, it is the sentence the
+            figure then evidences — and with the Study pace section gone
+            there is nothing left for a divider to divide, so the hairline
+            goes with it rather than hanging under a single section.
+            ⚠ IT NAMES THE FIGURE THE DIAL IS SHOWING, so it reads
+            `percent` rather than carrying its own — the two cannot
+            disagree. */}
+        {expired ? (
+          <p style={SMALL}>
+            You completed <strong style={{ fontWeight: 700 }}>{Math.round(percent)}%</strong> of this course before your
+            access ended. Purchase an extension within the next {EXTENSION_GRACE_DAYS} days to pick up where you left
+            off.
+          </p>
+        ) : null}
+        <ProgressDial percent={percent} stroke={expired ? 'var(--color-neutral-800)' : undefined} />
+      </section>
+      {/* ⚠ A RULE UNDER COURSE PROGRESS (2026-10-16). The two sections sat on
+          a 24px gap alone, which reads as spacing rather than a boundary —
+          and the figure above it is a different kind of thing from the plan
+          below. Unlike the one under Estimated completion, this one always
+          has something on both sides of it. */}
+      {progressOnly ? null : expired ? null : <span aria-hidden style={DIVIDER} />}
+      {/* ⚠ NO DIVIDER OF ITS OWN. `FigureRow` always draws its top hairline,
+          so the rule that was removed when the card lost everything below the
+          dial comes back with the row that needs it — and only with it. */}
+      {examUnderExpired && exam ? (
+        <section style={SECTION} aria-label="Exam">
+          <FigureRow label={exam.label} value={exam.value} note={exam.note} />
+        </section>
+      ) : null}
+      {progressOnly || expired ? null : (
+      <section style={SECTION} aria-label="Study pace">
+        <p style={eyebrow}>Study pace</p>
+        {/* ⚠ CENTRED, LIKE THE REST OF THE COLUMN'S CONTENT (2026-10-19,
+            Jillienne: "have these be centered aligned to match the whole
+            container of content"). Course progress centres its dial and
+            Exam readiness centres its dial and caption; Study pace was the
+            one section still running left, so the column had two alignments
+            in it. The EYEBROWS stay left — all four of them do, and that is
+            the pattern: the label left, the thing it names centred. */}
+        {/* ⚠ THE GOAL ROW FOLLOWS THE LABELS ON THE LEFT ARM (2026-10-19,
+            Jillienne: "left align this", with that variant on). The dials,
+            the sentence and the completion date stay centred — the arm has
+            been narrowed and widened one element at a time, so each thing
+            it moves is asked for rather than assumed. */}
+        {/* Figma 593:729: the gauge at 34, its top on the hairline's top (3 under the row's), a hairline 3 short of the row
+            at each end, 12 either side; then the pace name over the goal and the hours. */}
+        <div style={ICON_ROW}>
+          <span aria-hidden style={{ ...ICON, alignSelf: 'flex-start', marginTop: 3 }}>
+            {paceIcon ?? <GaugeThin size={34} aria-hidden />}
+          </span>
+          <span aria-hidden style={{ ...ICON_RULE, marginTop: 3, marginBottom: 3 }} />
+          {weeks == null ? (
+            <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+              <span style={GOAL_FALLBACK}>{noPaceCopy.title}</span>
+              <span style={GOAL_NOTE}>{noPaceCopy.note}</span>
+            </span>
+          ) : (
+            <span style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
+              <span style={GOAL_TAG}>{paceStyleName ?? PACE_NAME}</span>
+              <span style={GOAL}>{weeks} Week Goal</span>
+              {hoursPerWeek != null ? (
+                <span style={GOAL_NOTE}>
+                  about {hoursPerWeek} hour{hoursPerWeek === 1 ? '' : 's'} / week
+                </span>
+              ) : null}
+            </span>
+          )}
+        </div>
+        {/* ⚠ "HERE" IS THE CONTROL NOW, not a button below (2026-10-16,
+            Jillienne's copy). The sentence it replaces ended "you can change
+            your pace below" and pointed at a "Customize Your Pace" button;
+            this one points at itself, so that button went with the old
+            wording — leaving both would have been two ways to the same page,
+            one of which the copy no longer mentions. */}
+        {weeks == null ? (
+          /* ⚠ A DIFFERENT SENTENCE, NOT THE SAME ONE (2026-10-19). "Customize
+             your pace here" points at a planner that has nothing to plan.
+             The link goes, because there is nowhere useful for it to go.
+
+             ⚠ AND SOMETIMES THERE IS NO SENTENCE AT ALL. Access is something
+             a learner can buy more of; a booked exam is not, so the exam arm
+             of `noPaceMessage` offers no fix and this line is simply absent
+             rather than filled with advice that cannot work. */
+          noPaceCopy.advice ? <p style={SMALL}>{noPaceCopy.advice}</p> : null
+        ) : standingMessage ? (
+          /* ⚠ ONCE THERE IS A PACE, THE CARD REPORTS IT (2026-10-19,
+             Jillienne: "we need this type of messaging to be considered for
+             the study pace section for when a user is no longer at 0%").
+             "Your default recommended study pace is just a starting point"
+             is true on day one and stale every day after — by then the
+             learner HAS a pace, and how it is going is the thing worth the
+             line. The sentence is `paceStanding.ts`'s, shared with
+             `HybridPacingHome` so the two cards cannot report one standing
+             two ways. The customise link goes with the starting-point copy:
+             it belonged to the sentence that offered it. */
+          <p style={SMALL}>{withPlanLink(standingMessage, onCustomize)}</p>
+        ) : (
+        <p style={SMALL}>
+          Your default recommended study pace is just a starting point, you can further customize
+          your pace{' '}
+          {onCustomize ? (
+            <button type="button" onClick={onCustomize} style={INLINE_LINK}>
+              here
+            </button>
+          ) : (
+            'here'
+          )}
+          .
+        </p>
+        )}
+        {expected ? (
+          /* ⚠ THE RULE GOES, THE PADDING STAYS (2026-10-19, Jillienne: "there
+             should be padding below the date to match the padding above the
+             date"). With nothing below it there is nothing to divide, so the
+             bottom hairline is dropped — but the 24 under the date is KEPT,
+             because the box is a box either way and 24 over the eyebrow with
+             0 under the date reads as a mistake. The panel gives up its own
+             bottom pad in exchange (see `PANEL`), so the air below the date
+             is the same 24 it has always been — it just sits inside the box
+             now, where it is symmetric, instead of outside it. */
+          <CalendarRow
+            label="Estimated completion"
+            value={expected.value}
+            note={expected.note}
+            /* ⚠ THE RULE AND THE PAD BELONG TO WHICHEVER ROW IS LAST. With
+               the exam row following, this one neither closes the stack nor
+               supplies the air under it — the exam row's own top rule is the
+               next line down, and a bottom rule here would put two hairlines
+               24 apart with nothing between them. */
+            ruled={!exam && readinessBelow}
+            tight={exam != null}
+          />
+        ) : null}
+        {/* ⚠ RULED ABOVE, LIKE THE BLOCK IT FOLLOWS, so the column keeps one
+            rhythm — the hairline belongs to the block BELOW it here, which is
+            the rule `Estimated completion` already follows. */}
+        {exam ? (
+          <FigureRow label={exam.label} value={exam.value} note={exam.note} ruled={readinessBelow} />
+        ) : null}
+      </section>
+      )}
+    </div>
+  )
+}
+
+/**
+ * ESTIMATED COMPLETION, FIGMA 593:750 — the eyebrow, then the calendar, a hairline and the date over its note: the pace
+ * row's shape, so the two read as a pair. The box, its rules and its air are `FigureRow`'s (`EXPECTED`), so `ruled` and
+ * `tight` mean what they mean there.
+ */
+function CalendarRow({
+  label,
+  value,
+  note,
+  ruled = false,
+  tight = false,
+}: {
+  label: string
+  value: string
+  note?: string
+  ruled?: boolean
+  tight?: boolean
+}) {
+  return (
+    <div
+      style={{
+        ...EXPECTED,
+        flexDirection: 'column',
+        alignItems: 'stretch',
+        gap: SECTION_GAP,
+        ...(ruled ? null : { borderBottom: 'none' }),
+        ...(tight ? { paddingBottom: 0 } : null),
+      }}
+    >
+      <p style={EXPECTED_LABEL}>{label}</p>
+      <div style={ICON_ROW}>
+        <span aria-hidden style={{ ...ICON, width: 30, justifyContent: 'center', paddingTop: 2 }}>
+          <CalendarThin size={34} aria-hidden />
+        </span>
+        <span aria-hidden style={{ ...ICON_RULE, marginTop: 2, marginBottom: 2 }} />
+        <span style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
+          <span style={DATE}>{value}</span>
+          {note ? <span style={DATE_NOTE}>{note}</span> : null}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * ONE FIGURE ROW — the label hard left, the figure hard right, and the
+ * figure's note on its own line under it (2026-10-20, Jillienne: "have the
+ * eyebrow header be left aligned, the date be right aligned, and the (days
+ * remaining) small text underneath the date right aligned").
+ *
+ * ⚠ IT REPLACES A CENTRED PAIR, AND TAKES A DECISION OFF THE ARM. The row
+ * used to sit label and figure together as a GROUP — centred in the column,
+ * or against its left edge on the `align: 'left'` arm — so the arm decided
+ * where the pair went. Pinned to the two edges there is nothing left for it
+ * to decide, and the two rows read as a small table rather than two clumps.
+ *
+ * ⚠ THE NOTE IS A LINE NOW, NOT A ` · ` SUFFIX — which quietly reopens
+ * something that was closed. Estimated completion's note was dropped on
+ * 2026-10-19 because the label takes 166 of the column's 272 and
+ * "May 24 · At current pace" wrapped mid-phrase. Under the figure it has the
+ * figure's own width, so that constraint is gone: `expected.note` renders
+ * again the moment a caller passes one. None does today — the EXAM row is
+ * the only note on the card, and its days figure is what this was asked for.
+ *
+ * ⚠ BASELINE STILL WORKS, which is the one thing that looks at risk. The
+ * right side is a COLUMN now, and a flex column's first baseline is its
+ * first line's — the figure's — so the label still sits on the figure's
+ * letters rather than on the middle of a two-line box.
+ *
+ * `ruled` is the BOTTOM hairline only; the top one is always drawn. See
+ * `readinessBelow` for why the bottom one comes and goes.
+ *
+ * ⚠ `tight` IS WHAT KEEPS TWO ROWS FROM DOUBLING THEIR AIR — 2026-10-20,
+ * Jillienne: "remove that additional padding above the divider line that is
+ * making this look uneven". Every row carries 24 above its rule (its own
+ * offset plus the section's gap) and 24 below the figure, which is right for
+ * ONE row. Stacked, the first row's 24 under the figure lands on top of the
+ * second's 24 over the rule — 48 above that line against 24 below it, which
+ * is the lopsided gap she saw. The row that has another row after it gives
+ * its bottom pad up; the LAST row keeps it, because there is nothing below
+ * to supply the air.
+ */
+function FigureRow({
+  label,
+  value,
+  note,
+  ruled = false,
+  tight = false,
+}: {
+  label: string
+  value: string
+  note?: string
+  ruled?: boolean
+  tight?: boolean
+}) {
+  return (
+    <div
+      style={{
+        ...EXPECTED,
+        ...(ruled ? null : { borderBottom: 'none' }),
+        ...(tight ? { paddingBottom: 0 } : null),
+      }}
+    >
+      <p style={EXPECTED_LABEL}>{label}</p>
+      <div style={FIGURE}>
+        <p style={EXPECTED_VALUE}>{value}</p>
+        {note ? <p style={EXPECTED_NOTE}>{note}</p> : null}
+      </div>
+    </div>
+  )
+}
+
+/** The ring. `role="img"` with the figure in the label, because the number
+ *  inside it is drawn as three separate spans and would otherwise be read as
+ *  "Course Progress 0 Complete". */
+function ProgressDial({ percent, stroke }: { percent: number; stroke?: string }) {
+  const pct = Math.max(0, Math.min(100, Math.round(percent)))
+  const size = 149
+  const r = 70
+  const c = 2 * Math.PI * r
+  return (
+    <div role="img" aria-label={`Course progress ${pct}% complete`} style={{ position: 'relative', width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden style={{ display: 'block' }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" style={{ stroke: 'var(--color-atlas-nav-rule)' }} strokeWidth={3} />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          /* ⚠ CHARCOAL WHEN ACCESS HAS ENDED (2026-10-20, Jillienne: "change
+             the progress color to a dark gray color instead of the blue").
+             The blue is the brand's live-and-moving colour; the same
+             `--color-neutral-800` the expired meta line and the journey
+             marks take says this figure has stopped. The TRACK behind it is
+             unchanged — it was never the brand's. */
+          style={{ stroke: stroke ?? 'var(--color-compass-page-button)' }}
+          strokeWidth={6}
+          strokeLinecap="round"
+          /* At 0 the dash is zero-length, so the arc simply is not drawn —
+             which is the honest picture of "not started" and the reason this
+             needs no empty-state branch. */
+          strokeDasharray={`${(c * pct) / 100} ${c}`}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      </svg>
+      {/* ⚠ NO "COURSE PROGRESS" INSIDE THE RING (2026-10-16, Jillienne:
+          "remove the Course progress words from within the chart"). The
+          section's eyebrow says it now, and the dial repeating it was the
+          cost of promoting that label out of the card — two of the same words
+          a centimetre apart. "Complete" stays: it qualifies the FIGURE, which
+          the eyebrow does not. */}
+      <div aria-hidden style={DIAL_TEXT}>
+        <span style={DIAL_FIGURE}>{pct}%</span>
+        <span style={DIAL_CAPTION}>Complete</span>
+      </div>
+    </div>
+  )
+}
+
+/* ⚠ ONE GAP AROUND EVERY RULE (2026-10-16, Jillienne: "spacing between the
+   components and the divider lines should be the same"). The column's own gap
+   is what sat either side of the divider under Course progress; Estimated
+   completion's rules were on the SECTION gap above and an 11px pad below. Same
+   hairline, two different airs — so the card looked tighter at the bottom than
+   in the middle. Both now read this. */
+/**
+ * THE GRACE WINDOW named in the expired message — 2026-10-20, Jillienne:
+ * "include in that message, purchase an extension within the next 30
+ * days...".
+ *
+ * ⚠ A BUSINESS RULE, NOT A DERIVATION, which is why it is a constant and not
+ * arithmetic on a date. Nothing on this page knows how long a lapsed
+ * enrolment keeps its progress; 30 is the figure given. If it ever becomes a
+ * real deadline measured from the access date it should COUNT DOWN — "within
+ * 27 days" three days after expiry — and at that point it belongs beside
+ * `usableDaysLeft` in `courseExpiry.ts` rather than here.
+ */
+const EXTENSION_GRACE_DAYS = 30
+const RULE_GAP = 24
+/* …and this is the separate, tighter one INSIDE a section — eyebrow to
+   content. It is deliberately not `RULE_GAP`: that one is about rules, this
+   one is about a label and the thing it names. */
+const SECTION_GAP = 11
+
+const PANEL: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  /* Stretch, not centre: each section owns its own alignment now — the pace
+     reads left, the dial sits centred — and a centring parent would shrink
+     the left-aligned one to its content. */
+  alignItems: 'stretch',
+  gap: RULE_GAP,
+  /* ⚠ NO HORIZONTAL PADDING (2026-10-16, Jillienne: "remove left/right
+     padding"). It was `24px 22px`, and the 22 was itself a squeeze — the note
+     here read "22 across, not 24, so 'Customize Your Pace ›' fits one line".
+     With the fill gone there is nothing for side padding to inset FROM: the
+     card sits directly on the Atlas Home's tan container, which has padding of
+     its own, so this was inset inside an inset. Dropping it also retires the
+     one-line squeeze, since the text now has the full column. */
+  padding: '24px 0',
+  borderRadius: 8,
+  /* ⚠ NO FILL (2026-10-16, Jillienne: "remove the blue background here"). The
+     panel was tinted in `HybridHomeV1`, where it sits on white and the tint is
+     what separates it — that file's own note says "the tint carries the
+     panel", which is why it has no shadow either. HERE it sits inside the
+     Atlas Home's tan container, so the tint was a second surface on top of a
+     surface. Without it the padding and the rule below do the separating.
+     ⚠ SO IT NOW HAS NEITHER FILL NOR SHADOW: if this card is ever reused on a
+     white ground it will have nothing to sit on, and that is the moment to
+     give it back one of the two rather than both. */
+  background: 'transparent',
+  boxSizing: 'border-box',
+}
+/**
+ * WHAT EVERY RULE ON THIS CARD IS DRAWN IN — 2026-10-20, Jillienne: "lets
+ * have the divider lines be the same color as the background of the page".
+ *
+ * ⚠ THE PAGE'S GREY, NOT THE CARD'S OWN GROUND. Taken literally that would
+ * make them invisible: the column sits on #f9f8f6 and a rule in its own
+ * background is not a rule. This is `#eceef0` — the grey the Atlas page
+ * draws its outlined cards and its course band in, which IS the background
+ * behind the white of the page, and reads as a soft cool line against the
+ * column rather than the tan one it replaces.
+ *
+ * ⚠ NOT THE TOKEN ITSELF. `--color-atlas-nav-rule` is still the tan, and
+ * fourteen other files draw nav rules, card edges and the progress ring's
+ * own track with it — repointing the token would move all of them. This is
+ * one constant for THIS card, which is also what keeps its three rules the
+ * same line as each other.
+ */
+const RULE_LINE = 'var(--color-atlas-outlined-card, var(--color-compass-page-card))'
+/* One section of the column — an eyebrow and what it names. */
+const SECTION: CSSProperties = { display: 'flex', flexDirection: 'column', gap: SECTION_GAP }
+/* The column's own hairline, the same one Estimated completion is ruled with
+   so the card has one kind of divider rather than two. */
+const DIVIDER: CSSProperties = { display: 'block', height: 1, background: RULE_LINE }
+/* …and the workload under it, in the body treatment the paragraph below
+   uses, because it is a fact about the plan rather than another heading. */
+const GOAL_NOTE: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  lineHeight: '15px',
+  color: 'var(--color-text-secondary)',
+}
+/* A BUTTON STYLED AS A LINK, inside a sentence: it navigates within the app
+   rather than to an address, so an <a href> would be a lie about what it is.
+   `display: inline` and the inherited type keep it on the line. */
+/**
+ * "Open your Study Planner to adjust your goal." — with Study Planner as a control.
+ *
+ * ⚠ ONLY THE OFF-TRACK SENTENCE CONTAINS THE PHRASE, so every other standing
+ * passes straight through untouched; this is a split, not a parser.
+ *
+ * ⚠ AND IT FALLS BACK TO PLAIN TEXT with no handler, which is deliberate: the
+ * sentence still reads correctly as prose, and an underlined word wired to
+ * nothing is the dead-looking control this handoff keeps arguing against.
+ * `PACE_PLAN_LINK` is the shared substring — see its note in `paceStanding.ts`.
+ */
+function withPlanLink(message: string, onCustomize?: () => void): ReactNode {
+  const at = message.indexOf(PACE_PLAN_LINK)
+  if (!onCustomize || at === -1) return message
+  return (
+    <>
+      {message.slice(0, at)}
+      <button type="button" onClick={onCustomize} style={INLINE_LINK}>
+        {PACE_PLAN_LINK}
+      </button>
+      {message.slice(at + PACE_PLAN_LINK.length)}
+    </>
+  )
+}
+
+const INLINE_LINK: CSSProperties = {
+  display: 'inline',
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  font: 'inherit',
+  color: 'var(--color-compass-page-button)',
+  fontWeight: 700,
+  textDecoration: 'underline',
+  textUnderlineOffset: 2,
+  cursor: 'pointer',
+}
+/* The week goal in the completion date's type — Playfair 19 / 19, lining figures (Figma 592:499 restyled, 2026-10-30). */
+const GOAL: CSSProperties = {
+  fontFamily: 'var(--font-heading-serif)',
+  fontSize: 19,
+  lineHeight: '19px',
+  letterSpacing: '-0.03em',
+  fontVariantNumeric: 'lining-nums',
+  color: 'var(--color-text-primary)',
+}
+/* The no-pace title keeps the body face — it is a sentence, not a figure. */
+const GOAL_FALLBACK: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+}
+/* The pace's name over the goal, small and tracked. */
+const GOAL_TAG: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 10,
+  fontWeight: 600,
+  lineHeight: '14px',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: 'var(--color-compass-page-eyebrow)',
+}
+/* Typed, not derived — see the file's head note. `paceName(PLANNER_PLAN.dayMins)` is the way back to Compass's word. */
+const PACE_NAME = 'Steady'
+/* The pace and completion rows: icon, hairline, text, 12 apart. */
+const ICON_ROW: CSSProperties = { display: 'flex', alignItems: 'center', gap: 12 }
+const ICON: CSSProperties = { display: 'inline-flex', flexShrink: 0, color: 'var(--color-compass-page-button)' }
+/* The hairline beside an icon — the row's height, a few short at each end (set at the call site). */
+const ICON_RULE: CSSProperties = { alignSelf: 'stretch', width: 1, flexShrink: 0, background: 'var(--color-border-subtle)' }
+/* The completion date and its note, under the calendar's hairline (Figma 593:767 / 593:768). */
+const DATE: CSSProperties = { ...GOAL }
+const DATE_NOTE: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  lineHeight: '12px',
+  color: 'var(--color-text-secondary)',
+}
+const SMALL: CSSProperties = {
+  /* A MEASURE, not the card's width — see `ATLAS_COLUMN_PROSE_W`. `auto`
+     sides keep the narrower block centred under the full-width rules above
+     it rather than hanging off one edge. */
+  // Left and the column's width in this copy (Figma 592:501); the original centres it at a measure.
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  lineHeight: '15px',
+  textAlign: 'left',
+  color: 'var(--color-text-secondary)',
+}
+/* Ruled off above and below, as the design draws it — the date is a
+   different kind of fact from the sentence over it, and the rules are what
+   say so without a second card. */
+/* ⚠ ONE LINE, NOT TWO (2026-10-19, Jillienne: "move this to the right of the
+   eyebrow - no need for 2 lines"). The label and the date were stacked on a
+   2px gap, which gave two short lines a 93-tall band to sit in. Side by side
+   they are a label and its value, which is what they are. */
+const EXPECTED: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'row',
+  /* BASELINE, not centre: an 11px tracked label beside a 19px serif figure
+     lines up on the letters sitting on the same line, not on the middle of
+     two boxes of different heights. */
+  alignItems: 'baseline',
+  /* ⚠ THE LABEL AND THE FIGURE ARE PUSHED APART, not spaced (2026-10-20) —
+     the two edges are the alignment, so the gap is only the floor under a
+     long label meeting a long figure. */
+  justifyContent: 'space-between',
+  gap: 10,
+  padding: `${RULE_GAP}px 0`,
+  /* The section's gap already puts `SECTION_GAP` above this box, so the rule
+     needs the remainder to stand off by the same `RULE_GAP` as the one under
+     Course progress. Written as the subtraction rather than 13, so moving
+     either constant keeps the two rules matched. */
+  marginTop: RULE_GAP - SECTION_GAP,
+  borderTop: `1px solid ${RULE_LINE}`,
+  borderBottom: `1px solid ${RULE_LINE}`,
+}
+/* The same eyebrow as the card's own — it labels a figure in the same column
+   and had no reason to be a smaller, bolder one. */
+/* `flex: 'none'` so the label keeps its own width in the row rather than
+   being squeezed by a long date; `alignSelf: auto` so the box's baseline
+   alignment applies to it. */
+/* ⚠ `textAlign: 'left'` IS BELT AND BRACES, and worth keeping. `flex: 'none'`
+   already shrinks the <p> to its own text, so there is nothing for the
+   alignment to act on — but the shared eyebrow it spreads sets `center`, and
+   the day someone gives this label a width that reads as the row centring
+   itself again. */
+/* ⚠ THE LABEL IS WHAT GIVES WAY, not the figure (2026-10-20). It was
+   `flex: 'none'`, which put the whole squeeze on the right-hand side: at 248
+   of column, "FLORIDA STATE EXAM" takes 143 and leaves 95 for a date needing
+   about 105, so "November 16" broke after the month and the row ran to three
+   lines. A LABEL wrapping to two lines of 11px is ordinary; a DATE broken
+   across two lines of 19px serif is not — and the figure is the thing the row
+   exists to show. `minWidth: 0` is what actually lets it wrap. */
+const EXPECTED_LABEL: CSSProperties = { ...ATLAS_SECTION_EYEBROW, alignSelf: 'auto', minWidth: 0, textAlign: 'left' }
+/* The figure and its note, stacked against the right edge, at their own
+   width — see the label's note for which side yields. */
+const FIGURE: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-end',
+  flex: 'none',
+}
+/* ⚠ THE FIGURE ALIGNS, THE BOX DOES NOT. Shrinking the box to its content
+   would take the two rules in with it — they have to span the column, which
+   is the whole reason they read as rules rather than underlines. So the
+   alignment lives on the text and on `FIGURE`'s cross axis. */
+const EXPECTED_VALUE: CSSProperties = {
+  margin: 0,
+  textAlign: 'right',
+  /* One line, always — see `EXPECTED_LABEL`. */
+  whiteSpace: 'nowrap',
+  fontFamily: 'var(--font-heading-serif)',
+  fontSize: 19,
+  lineHeight: '24px',
+  color: 'var(--color-text-primary)',
+}
+/* The note rides on the date's line, in body type — it qualifies the figure
+   rather than standing beside it as a second one. */
+/* ⚠ A <p> UNDER THE FIGURE SINCE 2026-10-20, not a span inside it — so it
+   needs its own `margin: 0` and line height, which it inherited before. It
+   is the same 11px secondary treatment as `GOAL_NOTE`; the two are the only
+   sub-lines on the card and they should read alike. */
+const EXPECTED_NOTE: CSSProperties = {
+  margin: 0,
+  textAlign: 'right',
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  lineHeight: '15px',
+  fontWeight: 400,
+  color: 'var(--color-text-secondary)',
+}
+const DIAL_TEXT: CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 3,
+  textAlign: 'center',
+}
+const DIAL_CAPTION: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontWeight: 600,
+  fontSize: 10,
+  lineHeight: '15px',
+  letterSpacing: '0.18em',
+  textTransform: 'uppercase',
+  color: 'var(--color-compass-page-eyebrow)',
+}
+const DIAL_FIGURE: CSSProperties = {
+  fontFamily: 'var(--font-heading-serif)',
+  fontSize: 38,
+  lineHeight: '30px',
+  letterSpacing: '-0.06em',
+  color: 'var(--color-text-primary)',
+}

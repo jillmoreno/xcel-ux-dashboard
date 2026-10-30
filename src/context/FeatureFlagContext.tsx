@@ -3185,6 +3185,21 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-pace-card-figma',
+    /* ERIC'S FIGMA PASS ON THE RING CARD — 2026-10-30 (Figma 592:457). On: `AtlasPaceRingCardFigma`, a sibling copied from
+       `AtlasPaceRingCard` that day — left-aligned, hairlines beside the gauge and a calendar, the week goal and the date in
+       Playfair 19 with lining figures, the pace named Steady. Off: the card as it was. Swapped at the End-to-End Home's
+       call site only; Jill/Atlas-Main keeps the original. ON on this branch, per the flag rule. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Pace card: Figma',
+    description:
+      'The ring card in Eric\u2019s Figma pass (592:457): left-aligned, a hairline beside the gauge and a calendar, the goal and date in Playfair 19, the pace named Steady. Off draws the card as it was.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'home-breakpoint',
     /* THE DEVICE BREAKPOINT TOOL — 2026-10-30, Eric: "create a design tool … for device breakpoints. Then … versions using
        the breakpoints … for the learner homepage so that I can adjust each breakpoint as needed."

@@ -141,6 +141,8 @@ const REBRAND_FLAGS = [
   // THE DEVICE BREAKPOINT the app is framed at — Live / Mobile / Tablet / Desktop / Wide, 2026-10-30 (Eric). A design-bar
   // control; listed so it is reachable from the panel too.
   'home-breakpoint',
+  // Eric's Figma pass on the ring card, 2026-10-30 — on/off.
+  'atlas-pace-card-figma',
   'course-launcher-style',
   'dashboard-clp-style',
   // Pacing tile treatment on the Testing version — lo-fi / rate / runway /

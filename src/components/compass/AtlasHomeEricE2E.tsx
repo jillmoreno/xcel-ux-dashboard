@@ -31,6 +31,7 @@ import type { NoPaceReason } from './noPaceMessage'
 import { ATLAS_PROGRESS_ORDER, atlasRungFor, isLessonRowTitle, journeyTitleFor } from './atlasProgressLadder'
 import { paceStandingMessage, type PaceStanding } from './paceStanding'
 import { AtlasPaceRingCard } from './AtlasPaceRingCard'
+import { AtlasPaceRingCardFigma } from './AtlasPaceRingCardFigma'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag, useFeatureFlags, useCourseDemo } from '@/context/FeatureFlagContext'
 import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
@@ -238,6 +239,9 @@ export function AtlasHomeEricE2E({
   /* Which Study Pace card — the dial or the stepped states. A design-bar
      radiogroup; see `atlas-pace-card`. */
   const paceCard = useFeatureFlag('atlas-pace-card').variant ?? 'ring'
+  /* Eric's Figma pass on the ring card (Figma 592:457, 2026-10-30) — a sibling file, switched in here only, so the
+     original keeps drawing everywhere else. `atlas-pace-card-figma` off is the card as it was. */
+  const RingCard = useFeatureFlag('atlas-pace-card-figma').enabled ? AtlasPaceRingCardFigma : AtlasPaceRingCard
   /* Whether the column carries Exam readiness at all — a design-bar on/off,
      see `atlas-readiness-section`. */
   const showReadiness = useFeatureFlag('atlas-readiness-section').enabled
@@ -830,7 +834,7 @@ export function AtlasHomeEricE2E({
                  hardcoded week count is how those two start describing
                  different plans. `HybridHomeV1` pins its 3 deliberately and
                  records the derivation it dropped — this one keeps it. */
-              <AtlasPaceRingCard
+              <RingCard
                 /* The ladder carries the figure for every state now,
                    including 0 — see the note there. The `percent` prop is the
                    persona's and only stands in for a state with no figure. */
