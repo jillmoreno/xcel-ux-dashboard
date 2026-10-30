@@ -492,7 +492,8 @@ export function TwoPackageProductDetailPage() {
         <div style={single ? { display: 'contents' } : { display: 'flex', flexDirection: 'column', gap: COURSE_TITLE_GAP }}>
           {/* Single, centred on the package box beside it (2026-10-29, Eric) — by eye, not by box: the line box has 3 above the
               capitals and 17 below the last baseline, so it drops 7 to centre the cap-top-to-baseline block. */}
-          <h2 style={single ? { ...COURSE_HEAD_TITLE, alignSelf: 'center', position: 'relative', top: 7 } : COURSE_HEAD_TITLE}>
+          {/* Multi, in the page's dark text rather than brick (2026-10-30, Eric). */}
+          <h2 style={single ? { ...COURSE_HEAD_TITLE, alignSelf: 'center', position: 'relative', top: 7 } : { ...COURSE_HEAD_TITLE, color: 'var(--color-text-primary)' }}>
             {place} {line} <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
           </h2>
           {/* The concise intro (2026-10-29, Eric), in place of "Our pre-licensing packages are updated annually and designed with a
