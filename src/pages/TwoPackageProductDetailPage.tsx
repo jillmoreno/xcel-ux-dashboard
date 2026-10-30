@@ -1644,9 +1644,9 @@ const SIDE_LEARN_LIST: CSSProperties = { ...LEARN_LIST, ...SIDE_BODY, paddingLef
 const LEARN_STROKE: CSSProperties = {
   position: 'absolute',
   left: -11, // 3 nearer the text (2026-10-30, Eric; was -14)
-  top: 4,
+  top: 3, // 2 taller, 1 each end (2026-10-30, Eric; was 4 and 11)
   width: 3,
-  height: 11,
+  height: 13,
   borderRadius: 1.5,
   background: 'var(--color-secondary-500)',
 }
