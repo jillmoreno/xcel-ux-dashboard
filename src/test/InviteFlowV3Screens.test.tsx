@@ -4,12 +4,13 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
-import { InvitedProductDetailRoute, QrInviteRoute } from '@/pages/InviteFlowRoutes'
+import { InvitedCheckoutRoute, InvitedProductDetailRoute, QrInviteRoute } from '@/pages/InviteFlowRoutes'
 
 /**
  * INVITE FLOW V3, THE B2B OPENING SCREENS — 2026-10-30, from Afsana's
  * `xcel-b2b2c-email-flow.html`: the QR code, step 2 ("Select your state and
- * line of authority"), then the product page with "Showing the course for".
+ * line of authority"), then the product page with "Showing the course for";
+ * and the email check over the checkout (`VerifyEmailModalV3`).
  */
 
 function renderAt(path: string, ff: string) {
@@ -22,6 +23,7 @@ function renderAt(path: string, ff: string) {
           <Routes>
             <Route path="/end-to-end-demo/qr" element={<QrInviteRoute />} />
             <Route path="/end-to-end-demo" element={<InvitedProductDetailRoute />} />
+            <Route path="/end-to-end-demo/checkout" element={<InvitedCheckoutRoute />} />
           </Routes>
           <Where />
         </FeatureFlagProvider>
@@ -83,5 +85,52 @@ describe('Invite Flow V3 — B2B opening screens', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Update course' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getByTestId('where').textContent).toMatch(/loa=Life(&|$)/)
+  })
+})
+
+const CHECKOUT = '/end-to-end-demo/checkout'
+
+describe('Invite Flow V3 — the email check', () => {
+  it('asks for the email only, and keeps Continue off until it is an address', async () => {
+    renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+    const dialog = screen.getByRole('dialog', { name: 'Verify your email to continue' })
+    expect(dialog).toBeInTheDocument()
+    expect(screen.queryByLabelText(/First name/)).not.toBeInTheDocument()
+    const go = screen.getByRole('button', { name: 'Continue' })
+    expect(go).toBeDisabled()
+    await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example')
+    expect(go).toBeDisabled()
+    await userEvent.type(screen.getByLabelText(/Email address/), '.com')
+    expect(go).toBeEnabled()
+  })
+
+  it('takes any six digits, then locks the verified address on the checkout', async () => {
+    renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+    await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+
+    expect(screen.getByRole('heading', { name: 'Enter your code' })).toBeInTheDocument()
+    const confirm = screen.getByRole('button', { name: 'Confirm' })
+    expect(confirm).toBeDisabled()
+    await userEvent.type(screen.getByLabelText('Digit 1 of 6'), '111111')
+    expect(confirm).toBeEnabled()
+    await userEvent.click(confirm)
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByTestId('where').textContent).toContain('verified=1')
+    expect(screen.getByDisplayValue('sam@example.com')).toBeDisabled()
+    expect(screen.getByText(/This is the address you verified/)).toBeInTheDocument()
+  })
+
+  it('asks after the partner question on a B2C flow, never both at once', async () => {
+    renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:net-new,partner-code-ask:modal')
+    expect(screen.queryByRole('dialog', { name: 'Verify your email to continue' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /^no$/i }))
+    expect(screen.getByRole('dialog', { name: 'Verify your email to continue' })).toBeInTheDocument()
+  })
+
+  it('does not ask on the log-in widget flow', () => {
+    renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-atlas-login`)
+    expect(screen.queryByRole('dialog', { name: 'Verify your email to continue' })).not.toBeInTheDocument()
   })
 })

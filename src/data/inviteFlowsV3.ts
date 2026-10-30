@@ -170,6 +170,15 @@ export function useInviteModel(): InviteModelId {
   return resolveInviteModel(useFeatureFlag(INVITE_V3_MODEL_FLAG).variant)
 }
 
+/** Does this flow ask for the email, and a code sent to it, before the
+ *  checkout? Seven of the eight do — every flow whose screens include the
+ *  file's `verify-1`. "QR: Has Atlas: Open Log-In Widget" checks the email
+ *  with a log-in instead (`verify-login-1`), which is not built yet.
+ *  `VerifyEmailModalV3` is the check. */
+export function verifiesEmailFirst(flow: InviteFlowV3): boolean {
+  return flow.screens.includes('verify-1')
+}
+
 /** The V3 flow on screen: the chosen model, then that model's chosen flow.
  *  Both flow flags are read every render so the hook order never changes. */
 export function useInviteFlowV3(): InviteFlowV3 {
