@@ -1888,7 +1888,8 @@ const PACKAGE_GROUND_HEAD: CSSProperties = {
 }
 // Multi, "Select package:" and the two cards off the tan, on the white with the title (2026-10-30, Eric). The pinned frame is unchanged.
 const CARDS_ON_WHITE = true
-const OFF_GROUND: CSSProperties = { background: 'transparent', borderTopLeftRadius: 0, borderTopRightRadius: 0 }
+// 12 from the subhead to "Select package:" (2026-10-30, Eric: 40 less than the 52 it had — no padding, and 16 into the main's 24).
+const OFF_GROUND: CSSProperties = { background: 'transparent', borderTopLeftRadius: 0, borderTopRightRadius: 0, paddingTop: 0, marginTop: -16 }
 const FOOT_ALONE: CSSProperties = { marginTop: 32, borderTopLeftRadius: 10, borderTopRightRadius: 10 }
 const PACKAGE_GROUND_FOOT: CSSProperties = {
   paddingTop: 32,
