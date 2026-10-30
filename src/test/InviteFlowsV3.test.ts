@@ -70,3 +70,17 @@ describe('Invite Flow V3 model types and flows', () => {
     expect(resolveInviteModel('b2x')).toBe(DEFAULT_INVITE_MODEL)
   })
 })
+
+describe('Invite Flow V3 — B2C is guest checkout, not an invite', () => {
+  it('names the B2C side guest checkout on the Design bar', () => {
+    const flag = (key: string) => FEATURE_FLAGS.find((f) => f.key === key)
+    expect(flag(INVITE_V3_FLOW_FLAGS.b2c)?.label).toBe('Guest checkout')
+    expect(flag(INVITE_V3_FLOW_FLAGS.b2b)?.label).toBe('Invite flow')
+    expect(flag(INVITE_V3_MODEL_FLAG)?.variants?.map((v) => v.label)).toEqual(['B2B invite', 'B2C guest'])
+  })
+
+  it('offers no invitation controls on the B2C side', () => {
+    const keys = designControlsFor('eric-atlas-e2e', 'eric', inviteV3Surface('b2c')).map((d) => d.key)
+    expect(keys).not.toContain('invite-missing-details')
+  })
+})

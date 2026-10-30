@@ -123,7 +123,7 @@ describe('the missing-details flag', () => {
 
   it('is a design control scoped to the invite flow', () => {
     expect(definition?.surface).toBe('design')
-    expect(definition?.surfaces).toEqual(['invite', 'invite:v3-b2b', 'invite:v3-b2c'])
+    expect(definition?.surfaces).toEqual(['invite', 'invite:v3-b2b'])
   })
 
   it('defaults OFF', () => {

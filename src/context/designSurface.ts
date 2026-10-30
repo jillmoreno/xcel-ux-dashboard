@@ -116,6 +116,6 @@ export const DESIGN_SURFACE_LABELS: Record<DesignSurfaceId, string> = {
   'compass:progress': 'Compass · Progress',
   'compass:workspace': 'Compass · Workspace',
   invite: 'Invite & Checkout',
-  'invite:v3-b2b': 'Invite Flow V3 · B2B',
-  'invite:v3-b2c': 'Invite Flow V3 · B2C',
+  'invite:v3-b2b': 'Invite Flow V3 · B2B invite',
+  'invite:v3-b2c': 'Invite Flow V3 · B2C guest checkout',
 }

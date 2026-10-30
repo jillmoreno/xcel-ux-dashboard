@@ -54,8 +54,8 @@ export type InviteFlowV3 = {
 }
 
 export const INVITE_MODELS: { id: InviteModelId; label: string; description: string }[] = [
-  { id: 'b2b', label: 'B2B', description: 'A partner’s QR code. Partner pricing; the learner proves their email by code.' },
-  { id: 'b2c', label: 'B2C', description: 'Direct from the public site’s cart. No partner.' },
+  { id: 'b2b', label: 'B2B invite', description: 'A partner’s QR code. Partner pricing; the learner proves their email by code.' },
+  { id: 'b2c', label: 'B2C guest', description: 'Direct from the public site’s cart. No partner.' },
 ]
 
 const QR_START = ['qr', 'variation-4', 'variation-4-filled', 'pdp']
