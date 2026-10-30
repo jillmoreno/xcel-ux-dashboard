@@ -1,5 +1,7 @@
 import { useEffect, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
+import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
+import { XmarkRegular } from '@/icons'
 
 /**
  * "DO YOU HAVE A PARTNER CODE?" — 2026-10-22, and the question the guest
@@ -72,24 +74,53 @@ export function PartnerCodeAskPage({ onAnswer }: { onAnswer: (a: PartnerCodeAnsw
  * dismissed either, and a modal that could would be an easier question than the
  * page version rather than the same one in a different place.
  */
-export function PartnerCodeAskModal({ onAnswer }: { onAnswer: (a: PartnerCodeAnswer) => void }) {
+export function PartnerCodeAskModal({
+  onAnswer,
+  v3 = false,
+  onClose,
+}: {
+  onAnswer: (a: PartnerCodeAnswer) => void
+  /** Draws an ✕ in the top right corner and closes on Escape, without an
+   *  answer (Invite Flow V3, 2026-10-30, Afsana). Without it the dialog has
+   *  no dismiss, as on V1/V2. */
+  onClose?: () => void
+  /** Invite Flow V3's treatment, from Afsana's file (2026-10-30): 460 wide,
+   *  rounded corners, and the backdrop kept off the Demo and Design bars
+   *  (`useV3DialogLayer`), the card centred and the page held still. The file also draws the question in a dark title
+   *  band; Afsana asked for it to go, so it is not drawn. Off for V1/V2. */
+  v3?: boolean
+}) {
+  const layer = useV3DialogLayer(v3)
   /* Focus the dialog on open so a keyboard user is inside it, since there is no
      dismiss to tab to. */
   useEffect(() => {
     const el = document.getElementById('partner-code-modal')
     el?.focus()
   }, [])
+  useEffect(() => {
+    if (!onClose) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
 
   return createPortal(
-    <div style={SCRIM}>
+    <div style={{ ...SCRIM, ...layer.scrim }}>
       <div
         id="partner-code-modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="partner-code-question"
         tabIndex={-1}
-        style={MODAL}
+        style={v3 ? { ...MODAL, ...V3_MODAL, ...layer.card } : MODAL}
       >
+        {onClose ? (
+          <button type="button" aria-label="Close" onClick={onClose} style={CLOSE}>
+            <XmarkRegular size={18} aria-hidden />
+          </button>
+        ) : null}
         <Body onAnswer={onAnswer} />
       </div>
     </div>,
@@ -190,4 +221,29 @@ const MODAL: CSSProperties = {
   padding: '40px 32px',
   background: 'var(--color-fixed-light)',
   boxShadow: '0 10px 30px var(--color-e2e-form-shadow)',
+}
+
+/* Invite Flow V3 — the file's stylesheet sizes every dialog 460 and rounds it. */
+const V3_MODAL: CSSProperties = {
+  width: 460,
+  maxWidth: 'calc(100vw - 48px)',
+  borderRadius: 8,
+}
+
+/* The ✕ — top right, quiet until hovered, the size of a finger. */
+const CLOSE: CSSProperties = {
+  position: 'absolute',
+  top: 12,
+  right: 12,
+  width: 32,
+  height: 32,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 0,
+  border: 'none',
+  borderRadius: 4,
+  background: 'transparent',
+  color: 'var(--color-text-secondary)',
+  cursor: 'pointer',
 }

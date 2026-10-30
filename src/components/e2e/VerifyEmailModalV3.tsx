@@ -13,7 +13,10 @@ import {
   type VerifiedIdentity,
 } from '@/data/inviteVerification'
 import { looksLikeEmail } from '@/data/inviteFlows'
-import { E2E_LEARNER_EMAIL } from '@/pages/endToEndDemo'
+import { E2E_LEARNER_EMAIL, E2E_LEARNER_FIRST } from '@/pages/endToEndDemo'
+import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
+import { XcelLoadingStatus } from '@/components/e2e/XcelLoadingStatus'
+import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
 import '@/pages/inviteFlow.css'
 
 /**
@@ -28,9 +31,9 @@ import '@/pages/inviteFlow.css'
  *   - the first step asks for the EMAIL ONLY ("Provide your email address."),
  *     not first name, last name and email; the name is asked at checkout;
  *   - both steps carry the short grey rule under the title;
- *   - Continue and Confirm sit on the right and stay OFF until the step is
- *     complete (V2's are always on and explain on press);
- *   - the code boxes are larger (64 × 76) and centred; Resend code and Use a
+ *   - 460 wide, with Continue, Confirm and Log in full width, OFF until the
+ *     step is complete (V2's are always on and explain on press);
+ *   - the code boxes are 54 × 66 and centred; Resend code and Use a
  *     different email sit under the expiry note, split by a thin bar;
  *   - ANY six digits are accepted, as in the file — there is no wrong code and
  *     no demo inbox. V2 checks against `DEMO_VERIFICATION_CODE`.
@@ -38,14 +41,29 @@ import '@/pages/inviteFlow.css'
  * Like V2's: portalled, a fixed scrim, `role="dialog"`, focused on open, no ✕
  * and no Escape — the checkout behind cannot be used until the code is in.
  * The file has no "Back to the course", so neither does this.
+ *
+ * ⚠ THE HAS ATLAS FLOWS GO FURTHER (2026-10-30, `emailCheckV3`): after the
+ * address, a learner who already has Atlas either SIGNS IN — "Log in to
+ * continue", the address locked, a password (`login-1`/`login-2`) — or gets
+ * the code as above; and two of them hold on "Signing you in" (`signing-in`)
+ * before the checkout opens. On those flows the email step's button reads
+ * Confirm rather than Continue, as the file has it.
  */
 export function VerifyEmailModalV3({
   onVerified,
+  second = 'code',
+  signsIn = false,
 }: {
-  /** The code was accepted — the address it was sent to is now known. */
+  /** The check is done — the address is proven, or the learner signed in. */
   onVerified: (identity: VerifiedIdentity) => void
+  /** After the address: a code sent to it, or a log-in to an account the
+   *  learner already has. */
+  second?: 'code' | 'login'
+  /** Hold on "Signing you in" before the checkout. */
+  signsIn?: boolean
 }) {
-  const [step, setStep] = useState<'email' | 'code'>('email')
+  const [step, setStep] = useState<'email' | 'code' | 'login' | 'signing-in'>('email')
+  const layer = useV3DialogLayer()
   const [email, setEmail] = useState('')
   const ready = looksLikeEmail(email)
   /* Email only — the name is asked at checkout, so it is empty here. */
@@ -55,23 +73,36 @@ export function VerifyEmailModalV3({
     document.getElementById('verify-email-modal')?.focus()
   }, [])
 
+  /* The second step is done: hold on "Signing you in" first where the flow
+     has it, the flow's usual three seconds. */
+  const done = () => (signsIn ? setStep('signing-in') : onVerified(identity))
+  useEffect(() => {
+    if (step !== 'signing-in') return
+    const timer = window.setTimeout(() => onVerified(identity), LOADING_HANDOFF_MS)
+    return () => window.clearTimeout(timer)
+    // `identity` is rebuilt every render; the address cannot change on this step.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, onVerified])
+
   return createPortal(
-    <div style={SCRIM}>
+    <div style={{ ...SCRIM, ...layer.scrim }}>
       <div
         id="verify-email-modal"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="verify-email-title"
-        aria-describedby="verify-email-lead"
+        /* "Signing you in" has no heading, so it names itself. */
+        aria-labelledby={step === 'signing-in' ? undefined : 'verify-email-title'}
+        aria-describedby={step === 'signing-in' ? undefined : 'verify-email-lead'}
+        aria-label={step === 'signing-in' ? 'Signing you in' : undefined}
         tabIndex={-1}
-        style={MODAL}
+        style={{ ...MODAL, ...layer.card }}
       >
         {step === 'email' ? (
           <form
             style={BODY}
             onSubmit={(e) => {
               e.preventDefault()
-              if (ready) setStep('code')
+              if (ready) setStep(second)
             }}
             noValidate
           >
@@ -110,7 +141,7 @@ export function VerifyEmailModalV3({
                 aria-disabled={!ready}
                 style={ready ? CTA : CTA_OFF}
               >
-                Continue
+                {second === 'login' ? 'Confirm' : 'Continue'}
               </button>
             </div>
 
@@ -124,8 +155,14 @@ export function VerifyEmailModalV3({
               onClick={() => setEmail(E2E_LEARNER_EMAIL)}
             />
           </form>
+        ) : step === 'code' ? (
+          <CodeStep identity={identity} onVerified={done} onChangeEmail={() => setStep('email')} />
+        ) : step === 'login' ? (
+          <LoginStep email={email} onLoggedIn={done} />
         ) : (
-          <CodeStep identity={identity} onVerified={onVerified} onChangeEmail={() => setStep('email')} />
+          <div style={SIGNING_IN}>
+            <XcelLoadingStatus message="Signing you in" />
+          </div>
         )}
       </div>
     </div>,
@@ -139,7 +176,7 @@ function CodeStep({
   onChangeEmail,
 }: {
   identity: VerifiedIdentity
-  onVerified: (identity: VerifiedIdentity) => void
+  onVerified: () => void
   onChangeEmail: () => void
 }) {
   const [digits, setDigits] = useState<string[]>(() => Array(VERIFICATION_CODE_LENGTH).fill(''))
@@ -199,7 +236,7 @@ function CodeStep({
       style={BODY}
       onSubmit={(e) => {
         e.preventDefault()
-        if (ready) onVerified(identity)
+        if (ready) onVerified()
       }}
       noValidate
     >
@@ -280,6 +317,115 @@ function CodeStep({
   )
 }
 
+/** "Log in to continue" — the Has Atlas log-in widget (`login-1`, `login-2`).
+ *  The address is the one just given, locked; Log in stays off until there
+ *  is a password. Any password is accepted, as in the file. */
+function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => void }) {
+  const [password, setPassword] = useState('')
+  const [shown, setShown] = useState(false)
+  const ready = password !== ''
+  return (
+    <form
+      style={BODY}
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (ready) onLoggedIn()
+      }}
+      noValidate
+    >
+      <div style={HEAD}>
+        <h2 id="verify-email-title" style={TITLE}>
+          Log in to continue
+        </h2>
+        <div aria-hidden style={RULE} />
+        <p id="verify-email-lead" style={LEAD}>
+          Welcome back, {E2E_LEARNER_FIRST}! Sign in to finish checking out.
+        </p>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <label htmlFor="login-email" style={FIELD_GROUP}>
+          <span style={FIELD_LABEL}>
+            Email address <span aria-hidden>*</span>
+          </span>
+          <span style={{ position: 'relative', display: 'block' }}>
+            <input
+              id="login-email"
+              type="email"
+              value={email.trim()}
+              readOnly
+              disabled
+              style={{
+                ...FIELD,
+                paddingRight: 36,
+                background: 'var(--color-e2e-form-locked)',
+                color: 'var(--color-text-secondary)',
+                cursor: 'not-allowed',
+              }}
+            />
+            <img
+              src="/brand/confirmation/lock.svg"
+              alt="Locked"
+              width={16}
+              height={16}
+              style={{ position: 'absolute', right: 11, top: 11, display: 'block' }}
+            />
+          </span>
+        </label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <label htmlFor="login-password" style={FIELD_GROUP}>
+            <span style={FIELD_LABEL}>
+              Password <span aria-hidden>*</span>
+            </span>
+            <span style={{ position: 'relative', display: 'block' }}>
+              <input
+                id="login-password"
+                type={shown ? 'text' : 'password'}
+                required
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ ...FIELD, paddingRight: 40 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShown((v) => !v)}
+                aria-label={shown ? 'Hide password' : 'Show password'}
+                aria-pressed={shown}
+                style={EYE}
+              >
+                <img
+                  src={shown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'}
+                  alt=""
+                  width={18}
+                  height={18}
+                  style={{ display: 'block' }}
+                />
+              </button>
+            </span>
+          </label>
+          <button type="button" style={FORGOT} title="Not wired in this prototype">
+            Forgot password?
+          </button>
+        </div>
+      </div>
+
+      <div style={ACTIONS}>
+        <button
+          type="submit"
+          className="cre-e2e-cta"
+          disabled={!ready}
+          aria-disabled={!ready}
+          style={ready ? CTA : CTA_OFF}
+        >
+          Log in
+        </button>
+      </div>
+    </form>
+  )
+}
+
 /* ── Styles — the file's ────────────────────────────────────────────────── */
 
 const SCRIM: CSSProperties = {
@@ -293,11 +439,13 @@ const SCRIM: CSSProperties = {
   background: 'var(--color-e2e-scrim)',
 }
 
+/* 460 wide and the buttons full width: the file's stylesheet overrides its
+   own markup's 560 (`[role=dialog] { width: 460px !important }`). */
 const MODAL: CSSProperties = {
   boxSizing: 'border-box',
   position: 'relative',
-  width: 560,
-  maxWidth: '100%',
+  width: 460,
+  maxWidth: 'calc(100vw - 48px)',
   maxHeight: '100%',
   overflowY: 'auto',
   padding: '36px 36px 32px',
@@ -384,15 +532,15 @@ const CODE_ROW: CSSProperties = { display: 'flex', gap: 12, justifyContent: 'cen
 
 const CODE_BOX: CSSProperties = {
   boxSizing: 'border-box',
-  width: 64,
-  height: 76,
+  width: 54,
+  height: 66,
   padding: 0,
   borderRadius: 4,
   background: 'var(--color-e2e-field)',
   textAlign: 'center',
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
-  fontSize: 30,
+  fontSize: 28,
   color: 'var(--color-text-primary)',
   border: '1px solid var(--color-e2e-card-outline)',
 }
@@ -416,7 +564,9 @@ const CTA: CSSProperties = {
   fontSize: 15,
   letterSpacing: '0.02em',
   cursor: 'pointer',
-  alignSelf: 'flex-end',
+  alignSelf: 'stretch',
+  width: '100%',
+  boxSizing: 'border-box',
 }
 
 const CTA_OFF: CSSProperties = {
@@ -457,4 +607,35 @@ const DEMO_FILL: CSSProperties = {
   border: 'none',
   background: 'transparent',
   cursor: 'default',
+}
+
+const EYE: CSSProperties = {
+  position: 'absolute',
+  right: 10,
+  top: 10,
+  display: 'inline-flex',
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  cursor: 'pointer',
+}
+
+const FORGOT: CSSProperties = {
+  alignSelf: 'flex-start',
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 800,
+  fontSize: 13,
+  color: '#00539a',
+  cursor: 'pointer',
+}
+
+/* "Signing you in" — the file's: the spinner alone in the dialog, as on
+   "Placing your order". */
+const SIGNING_IN: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'center',
+  padding: '28px 0 20px',
 }

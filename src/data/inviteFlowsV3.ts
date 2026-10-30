@@ -93,10 +93,13 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
   {
     id: 'qr-atlas-auto',
     model: 'b2b',
-    label: 'QR: Has Atlas: Automatic Sign-in Post OTC',
-    description: 'Already on Atlas. Signed in automatically after the one-time code.',
+    label: 'QR: Has Atlas: Automatic Sign-in Post OTP',
+    description: 'Already on Atlas. Logs in, then signed in automatically with the checkout filled.',
     base: 'qr-social',
-    screens: [...QR_START, ...VERIFY, ...CODE, 'signing-in', ...CHECKOUT, 'placing', 'ready'],
+    /* ⚠ LOG-IN, NOT A CODE — 2026-10-30, Afsana: the two automatic flows "are
+       supposed to let them log in, and then sign them in with filled
+       checkout". The file has `code-1`/`code-2` here; this replaces them. */
+    screens: [...QR_START, ...VERIFY, 'login-1', 'login-2', 'signing-in', ...CHECKOUT, 'placing', 'ready'],
   },
   {
     id: 'net-new',
@@ -125,10 +128,11 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
   {
     id: 'has-atlas',
     model: 'b2c',
-    label: 'Has Atlas: Automatic Sign-in Post OTC',
-    description: 'Already on Atlas. Signed in automatically after the one-time code.',
+    label: 'Has Atlas: Automatic Sign-in Post OTP',
+    description: 'Already on Atlas. Logs in, then signed in automatically with the checkout filled.',
     base: 'b2c-guest',
-    screens: [...CART_START, ...VERIFY, ...CODE, 'signing-in', ...CHECKOUT, 'placing-modal', 'ready'],
+    /* Log-in, not a code — see `qr-atlas-auto`. */
+    screens: [...CART_START, ...VERIFY, 'login-1', 'login-2', 'signing-in', ...CHECKOUT, 'placing-modal', 'ready'],
   },
 ]
 
@@ -170,14 +174,57 @@ export function useInviteModel(): InviteModelId {
   return resolveInviteModel(useFeatureFlag(INVITE_V3_MODEL_FLAG).variant)
 }
 
-/** Does this flow ask for the email, and a code sent to it, before the
- *  checkout? Seven of the eight do — every flow whose screens include the
- *  file's `verify-1`. "QR: Has Atlas: Open Log-In Widget" checks the email
- *  with a log-in instead (`verify-login-1`), which is not built yet.
- *  `VerifyEmailModalV3` is the check. */
+/** Does this flow check the email over the checkout before it can be used?
+ *  All eight do, since the log-in flows were built (2026-10-30): every flow's
+ *  screens include `verify-1`, or `verify-login-1` for "QR: Has Atlas: Open
+ *  Log-In Widget". `VerifyEmailModalV3` is the check. */
 export function verifiesEmailFirst(flow: InviteFlowV3): boolean {
-  return flow.screens.includes('verify-1')
+  return flow.screens.includes('verify-1') || flow.screens.includes('verify-login-1')
 }
+
+/** What the email check does after the address, read from the file's screens:
+ *
+ *    second      `code` — a 6-digit code sent to it (`code-1`); or `login` —
+ *                the learner already has Atlas and signs in with a password
+ *                (`login-1`). Every Has Atlas flow logs in (2026-10-30).
+ *    signsIn     a "Signing you in" hold before the checkout (`signing-in`).
+ *                "Has Atlas: Open Log-In Widget" (B2C) goes straight on.
+ *    accountKnown  the learner is signed in to an account they already have,
+ *                so the checkout arrives with their details filled in
+ *                (`checkout-1b`).
+ */
+export function emailCheckV3(flow: InviteFlowV3): {
+  second: 'code' | 'login'
+  signsIn: boolean
+  accountKnown: boolean
+} {
+  const second = flow.screens.includes('login-1') ? 'login' : 'code'
+  const signsIn = flow.screens.includes('signing-in')
+  return { second, signsIn, accountKnown: second === 'login' || signsIn }
+}
+
+/** Where a V3 flow starts: the partner's QR code for B2B, the public site's
+ *  cart for B2C — the first screen of each in the file. */
+export function entryPathV3(flow: InviteFlowV3): string {
+  return flow.model === 'b2b' ? '/end-to-end-demo/qr' : '/end-to-end-demo/cart'
+}
+
+/** The screens a V3 model's flows can be on. Anything else under
+ *  `/end-to-end-demo` — the public site's homepage and packages, the
+ *  invitation email, another model's first screen — is not part of any of
+ *  its flows, and `InviteFlowEntrySync` sends the walk back to the model's
+ *  first screen (2026-10-30, Afsana: "make sure that all the B2C flows start
+ *  with this screen", the cart). */
+export function v3ScreensFor(model: InviteModelId): readonly string[] {
+  return model === 'b2b'
+    ? ['/end-to-end-demo/qr', '/end-to-end-demo', '/end-to-end-demo/checkout', '/end-to-end-demo/confirmation']
+    : ['/end-to-end-demo/cart', '/end-to-end-demo/checkout', '/end-to-end-demo/confirmation']
+}
+
+/** The file's B2C cart holds Arizona Health Pre-licensing Premier. A V3 B2C
+ *  walk that starts with nothing in the cart starts with that. */
+export const V3_B2C_CART = { lstate: 'Arizona', loa: 'Health', pkg: 'premier' } as const
+
 
 /** Which ending the flow reaches after the order (`InvitedConfirmationPageV3`):
  *  a password for the flows new to Atlas, "Start learning" for the ones that

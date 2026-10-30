@@ -52,6 +52,7 @@ export function CourseChoiceFields({
             placeholder="Start typing your state…"
             value={state}
             onChange={(e) => onState(e.target.value)}
+            className="cre-e2e-typeahead"
             style={INPUT}
           />
           <svg aria-hidden viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={SEARCH_ICON}>

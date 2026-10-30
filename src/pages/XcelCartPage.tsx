@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import { XcelFooter } from '@/components/e2e/XcelFooter'
@@ -6,12 +6,16 @@ import { XcelSiteHeader } from '@/components/e2e/XcelSiteHeader'
 import { CART_PACKAGE_PARAM, cartPackage } from '@/data/xcelCourseFinder'
 import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
 import {
+  PARTNER_CODE_PARAM,
   asksForPartnerCode,
   clearPartnerCodeAnswer,
   usePartnerCodeAnswered,
   usePartnerCodeAsk,
   useInviteFlow,
 } from '@/data/inviteFlows'
+import { PartnerCodeAskModal } from '@/components/e2e/PartnerCodeAsk'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { INVITE_FLOW_VERSION_FLAG, resolveInviteFlowVersion } from '@/data/inviteFlowVersions'
 import { useEndToEndDemoParams, useEndToEndPageChrome } from './endToEndDemo'
 import './inviteFlow.css'
 
@@ -49,8 +53,15 @@ export function XcelCartPage() {
   const flow = useInviteFlow()
   const ask = usePartnerCodeAsk()
   const answered = usePartnerCodeAnswered()
+  /* ⚠ INVITE FLOW V3 ASKS HERE, OVER THE CART — 2026-10-30, Afsana's file
+     (`cart` → `pc-modal`). Checkout opens the question on this page and the
+     answer goes on to the checkout, whichever arm the Page/Modal control is
+     on. V1/V2 are unchanged. */
+  const v3 = resolveInviteFlowVersion(useFeatureFlag(INVITE_FLOW_VERSION_FLAG).variant) === 'v3'
+  const asksHere = v3 && asksForPartnerCode(flow) && !answered
+  const [asking, setAsking] = useState(false)
   const checkoutPath =
-    asksForPartnerCode(flow) && ask === 'page' && !answered
+    !v3 && asksForPartnerCode(flow) && ask === 'page' && !answered
       ? '/end-to-end-demo/partner-code'
       : '/end-to-end-demo/checkout'
 
@@ -63,6 +74,17 @@ export function XcelCartPage() {
 
   return (
     <div style={PAGE}>
+      {asking ? (
+        <PartnerCodeAskModal
+          v3
+          onClose={() => setAsking(false)}
+          onAnswer={(answer) => {
+            const next = new URLSearchParams(params)
+            next.set(PARTNER_CODE_PARAM, answer)
+            navigate({ pathname: '/end-to-end-demo/checkout', search: next.toString() })
+          }}
+        />
+      ) : null}
       <StandaloneBrowserChrome />
       <XcelSiteHeader />
 
@@ -128,7 +150,9 @@ export function XcelCartPage() {
                   className="cre-e2e-cta"
                   style={CHECKOUT}
                   onClick={() =>
-                    navigate({ pathname: checkoutPath, search: params.toString() })
+                    asksHere
+                      ? setAsking(true)
+                      : navigate({ pathname: checkoutPath, search: params.toString() })
                   }
                 >
                   Checkout

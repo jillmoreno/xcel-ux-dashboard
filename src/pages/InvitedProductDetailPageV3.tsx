@@ -25,6 +25,7 @@ import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHe
 import { CourseChoiceFields } from '@/components/e2e/CourseChoiceFields'
 import { matchState } from '@/data/inviteFlowsV3'
 import { TopoBackground } from '@/components/e2e/TopoBackground'
+import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
 import type { FinderLineOfAuthority } from '@/data/xcelCourseFinder'
 import {
   individuallyInvited,
@@ -1191,6 +1192,7 @@ function ChangeCourseDialog({
   )
   const state = matchState(typed)
   const ready = state != null && loa != null
+  const layer = useV3DialogLayer()
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onCancel()
@@ -1199,12 +1201,12 @@ function ChangeCourseDialog({
     return () => window.removeEventListener('keydown', onKey)
   }, [onCancel])
   return (
-    <div style={CHANGE_SCRIM} onClick={onCancel}>
+    <div style={{ ...CHANGE_SCRIM, ...layer.scrim }} onClick={onCancel}>
       <form
         role="dialog"
         aria-modal="true"
         aria-labelledby="v3-change-title"
-        style={CHANGE_CARD}
+        style={{ ...CHANGE_CARD, ...layer.card }}
         onClick={(e) => e.stopPropagation()}
         onSubmit={(e) => {
           e.preventDefault()
@@ -1212,7 +1214,7 @@ function ChangeCourseDialog({
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <h2 id="v3-change-title" style={{ ...CHOOSE_TITLE, fontSize: 22, lineHeight: '30px' }}>
+          <h2 id="v3-change-title" style={{ ...CHOOSE_TITLE, ...CHANGE_TITLE_BAND }}>
             Change your course
           </h2>
           <p style={CHOOSE_BODY}>Update your state or line of authority and we’ll bring up the right course.</p>
@@ -1226,13 +1228,20 @@ function ChangeCourseDialog({
           loa={loa}
           onLoa={setLoa}
         />
-        {/* Cancel above Update course, as the file stacks them. */}
+        {/* Update course full width, Cancel centred under it — the file's
+            stylesheet reorders its own markup (`[data-change-save] { order: 1 }`). */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 12 }}>
-          <button type="button" onClick={onCancel} style={CHANGE_CANCEL}>
-            Cancel
-          </button>
-          <button type="submit" disabled={!ready} aria-disabled={!ready} style={ready ? GATE_ON : GATE_OFF}>
+          {/* Off is the brick at half strength, not grey — the file's script. */}
+          <button
+            type="submit"
+            disabled={!ready}
+            aria-disabled={!ready}
+            style={ready ? GATE_ON : { ...GATE_ON, opacity: 0.5, cursor: 'not-allowed' }}
+          >
             Update course
+          </button>
+          <button type="button" onClick={onCancel} style={{ ...CHANGE_CANCEL, alignSelf: 'center' }}>
+            Cancel
           </button>
         </div>
       </form>
@@ -1354,11 +1363,13 @@ const CHANGE_SCRIM: CSSProperties = {
   background: 'rgba(0,0,0,.45)',
 }
 
+/* 460 wide, the title a dark band across the top — the file's stylesheet
+   overrides on every dialog but the email check's. */
 const CHANGE_CARD: CSSProperties = {
   boxSizing: 'border-box',
   position: 'relative',
-  width: 560,
-  maxWidth: '100%',
+  width: 460,
+  maxWidth: 'calc(100vw - 48px)',
   display: 'flex',
   flexDirection: 'column',
   gap: 20,
@@ -1377,4 +1388,14 @@ const CHANGE_CANCEL: CSSProperties = {
   fontSize: 14,
   color: '#00539a',
   cursor: 'pointer',
+}
+
+const CHANGE_TITLE_BAND: CSSProperties = {
+  fontSize: 22,
+  lineHeight: '30px',
+  margin: '-36px -36px 10px',
+  padding: '10px 36px',
+  background: '#3a3a3a',
+  color: '#fff',
+  borderRadius: '8px 8px 0 0',
 }
