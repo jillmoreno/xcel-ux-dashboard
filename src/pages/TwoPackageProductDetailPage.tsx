@@ -607,7 +607,11 @@ export function TwoPackageProductDetailPage() {
                   <h2 style={SIDE_TITLE}>What You'll Learn</h2>
                   <ul style={SIDE_LEARN_LIST}>
                     {WHAT_YOULL_LEARN.map((topic) => (
-                      <li key={topic}>{topic}</li>
+                      <li key={topic} style={{ position: 'relative' }}>
+                        {/* A stroke for the disc (2026-10-30, Eric). */}
+                        <span aria-hidden style={LEARN_STROKE} />
+                        {topic}
+                      </li>
                     ))}
                   </ul>
                 </section>
@@ -1634,7 +1638,18 @@ const LEARN_LIST: CSSProperties = {
 /* The same list in the rail: its 15 / 21 body, the disc 18 in, the At a Glance rows' 8 apart. */
 // Plain wrapping, not BODY's `pretty`: a lone last word is fine here (2026-10-28, Eric) — `pretty` was pulling a second word down
 // and breaking the items early.
-const SIDE_LEARN_LIST: CSSProperties = { ...LEARN_LIST, ...SIDE_BODY, paddingLeft: 18, gap: 8, textWrap: 'wrap' }
+const SIDE_LEARN_LIST: CSSProperties = { ...LEARN_LIST, ...SIDE_BODY, paddingLeft: 18, gap: 8, textWrap: 'wrap', listStyle: 'none' }
+// The disc's stand-in (2026-10-30, Eric): 3 wide, Secondary 200 (brick at first), round ends, from the first line's cap top to its baseline — 4 and 15 down
+// the 21 line at 15 Avenir, measured.
+const LEARN_STROKE: CSSProperties = {
+  position: 'absolute',
+  left: -14,
+  top: 4,
+  width: 3,
+  height: 11,
+  borderRadius: 1.5,
+  background: 'var(--color-secondary-200)',
+}
 
 const PARAGRAPHS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 20 }
 
