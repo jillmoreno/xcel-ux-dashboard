@@ -129,7 +129,10 @@ export function TwoPackageProductDetailPage() {
      compact layout on the page too; the Top Mini Card Tray leaves the cards on the page, full size and unpinned, and slides a
      full-width tray down from the top of the browser once they have scrolled off. (A Top Compact Card Tray — the compact
      cards in it — was taken out the same day, Eric.) */
-  const cardsMode = useFeatureFlag('pdp-course-cards').variant ?? 'large'
+  // The card trays OFF whatever the flag holds (2026-10-30, Eric: "turn off the pinned package card trays") — a browser that had one
+  // picked keeps it in storage, and the control is off the bar. CARD_TRAYS_OFF = false hands the choice back to the flag.
+  const cardsFlag: string = useFeatureFlag('pdp-course-cards').variant ?? 'large'
+  const cardsMode = CARD_TRAYS_OFF ? 'none' : cardsFlag
   // The Top Mini Card Tray draws the page's cards compact too (2026-10-28, Eric), and so does No Card Trays, the default
   // (2026-10-29, Eric) — only Large Cards draws them large.
   const compact = cardsMode === 'compact' || cardsMode === 'tray-mini' || cardsMode === 'tray-mini-bottom' || cardsMode === 'none'
@@ -1841,6 +1844,8 @@ const HEAD_RULE_C: CSSProperties = { gridColumn: 2, gridRow: '1 / 3', alignSelf:
 /* Copy D (2026-10-29, Eric) — C's, to start; Single head's D. */
 // Copy D above the multi page's own head — off (2026-10-30, Eric: "hide this"); true shows it again.
 const D_ON_MULTI = false
+// No pinned cards, top tray or bottom tray, whatever pdp-course-cards holds (2026-10-30, Eric).
+const CARD_TRAYS_OFF: boolean = true
 // Single head E: the multi page's Premier card, its width there (2026-10-30, Eric).
 // 8 less above it (2026-10-30, Eric; was 8).
 const HEAD_CARD_E: CSSProperties = { width: 358, marginTop: 0, alignItems: 'stretch' }
