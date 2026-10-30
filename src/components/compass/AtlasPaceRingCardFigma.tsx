@@ -614,7 +614,8 @@ const PANEL: CSSProperties = {
  * one constant for THIS card, which is also what keeps its three rules the
  * same line as each other.
  */
-const RULE_LINE = 'var(--color-atlas-outlined-card, var(--color-compass-page-card))'
+// The vertical hairlines' colour in this copy — Border Subtle (2026-10-30, Eric; the original's is the outlined-card tan).
+const RULE_LINE = 'var(--color-border-subtle)'
 /* One section of the column — an eyebrow and what it names. */
 const SECTION: CSSProperties = { display: 'flex', flexDirection: 'column', gap: SECTION_GAP }
 /* The column's own hairline, the same one Estimated completion is ruled with
