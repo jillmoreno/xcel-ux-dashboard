@@ -36,7 +36,8 @@ import {
 import { CART_PACKAGE_PARAM, cartPackage } from '@/data/xcelCourseFinder'
 import { LOADING_HANDOFF_MS, XcelLoadingPage } from '@/components/e2e/XcelLoadingPage'
 import { PartnerCodeAskModal } from '@/components/e2e/PartnerCodeAsk'
-import { VerifyEmailModal } from '@/components/e2e/VerifyEmailModal'
+import { VerifyEmailModalV3 } from '@/components/e2e/VerifyEmailModalV3'
+import { useInviteFlowV3, verifiesEmailFirst } from '@/data/inviteFlowsV3'
 import {
   EMAIL_VERIFIED_PARAM,
   readVerifiedIdentity,
@@ -58,7 +59,6 @@ import {
   useInviteFlow,
   verifiesEmailBeforeCheckout,
   signedIn,
-  type InviteFlowId,
 } from '@/data/inviteFlows'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
@@ -129,7 +129,12 @@ export function InvitedCheckoutPageV3() {
      the modal back, and a reload does not ask twice) and keeps what was typed
      for the tab. See `inviteVerification.ts` for why the identity is not in
      the URL. */
-  const verifiesFirst = verifiesEmailBeforeCheckout(flow)
+  /* ⚠ V3: WHICH FLOWS VERIFY COMES FROM V3'S OWN CATALOG (2026-10-30) —
+     seven of the eight, whatever their V2 `base` is. `emailEnteredTwice`
+     below is answered with it too: a verified address is not typed twice. */
+  const v3Flow = useInviteFlowV3()
+  const verifiesFirst = verifiesEmailBeforeCheckout(flow) || verifiesEmailFirst(v3Flow)
+  const typesEmailTwice = emailEnteredTwice(flow) && !verifiesFirst
   const emailVerified = useEmailVerified()
   const verifyingEmail = verifiesFirst && !emailVerified
   /* ⚠ READ ONCE, AT MOUNT, like the student state below: a `verified=1` link
@@ -213,7 +218,7 @@ export function InvitedCheckoutPageV3() {
   const [triedToSave, setTriedToSave] = useState(false)
   const emailFinished = confirmTouched || triedToSave
   /** What the email pair is wrong ABOUT, or null. */
-  const emailError: 'mismatch' | 'missing' | null = !emailEnteredTwice(flow)
+  const emailError: 'mismatch' | 'missing' | null = !typesEmailTwice
     ? null
     : !emailFinished
       ? null
@@ -235,7 +240,7 @@ export function InvitedCheckoutPageV3() {
      demo fill had been pressed: Save and continue silently refused a form
      the learner had filled by hand. The disabled field IS the address being
      submitted, so it is what the gate checks. */
-  const studentFormComplete = emailEnteredTwice(flow)
+  const studentFormComplete = typesEmailTwice
     ? studentInformationComplete({ ...student, phone, email, emailAgain })
     : studentInformationComplete({ ...student, phone, email: lockedEmail, emailAgain: lockedEmail })
   /* …and whether Payment is open. The invited arms arrive complete and saved;
@@ -375,11 +380,10 @@ export function InvitedCheckoutPageV3() {
           learner can see where they are going, and the form behind cannot be
           filled until the address it will be submitted with has been proven.
           "Back to the course" is the way out, and it is a real one. */}
-      {verifyingEmail ? (
-        <VerifyEmailModal
-          onVerified={emailVerifiedWith}
-          onBack={() => navigate(`/end-to-end-demo?${params.toString()}`)}
-        />
+      {/* V3's email check (`VerifyEmailModalV3`, email only), after the
+          partner question when a flow asks both — never two dialogs at once. */}
+      {verifyingEmail && !askingForPartnerCode ? (
+        <VerifyEmailModalV3 onVerified={emailVerifiedWith} />
       ) : null}
       {/* ⚠ THE BROWSER WINDOW CONTINUES HERE (2026-10-19, Jillienne: "can
           we also add this browser header to the email/invite flows so it
@@ -471,7 +475,7 @@ export function InvitedCheckoutPageV3() {
                 hideConfirm
                 afterName={
                   <EmailBlock
-                    flow={flow}
+                    typesTwice={typesEmailTwice}
                     lockedEmail={lockedEmail}
                     lockedNote={
                       verifiesFirst
@@ -950,7 +954,7 @@ const BLANK_ADDRESS: PostalAddress = { first: '', last: '', street: '', line2: '
 const STATES = ['Florida', 'Georgia', 'Illinois', 'New York', 'Texas']
 
 function EmailBlock({
-  flow,
+  typesTwice,
   lockedEmail,
   lockedNote,
   email,
@@ -960,7 +964,8 @@ function EmailBlock({
   onConfirmBlur,
   error,
 }: {
-  flow: InviteFlowId
+  /** Is the address typed twice here, or locked? V3 answers per flow. */
+  typesTwice: boolean
   /** What the disabled field shows on the arms that do not type the address
    *  twice — the partner's, or the one the verification code came back from
    *  (2026-10-27). */
@@ -983,7 +988,7 @@ function EmailBlock({
    */
   error: 'mismatch' | 'missing' | null
 }) {
-  if (!emailEnteredTwice(flow)) {
+  if (!typesTwice) {
     return (
       <div style={EMAIL_BLOCK}>
         <label style={EMAIL_FIELD_GROUP}>

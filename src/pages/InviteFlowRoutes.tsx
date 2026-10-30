@@ -24,6 +24,7 @@ import {
   useInviteFlow,
   useOrderConfirmationStyle,
 } from '@/data/inviteFlows'
+import { useInviteFlowV3, verifiesEmailFirst } from '@/data/inviteFlowsV3'
 
 /**
  * THE INVITE FLOW'S VERSION SWITCH — 2026-10-22, with `inviteFlowVersions.ts`.
@@ -113,9 +114,14 @@ export function InvitedCheckoutRoute() {
 export function InvitedConfirmationRoute() {
   const version = useInviteFlowVersion()
   const flow = useInviteFlow()
+  const v3Flow = useInviteFlowV3()
   const style = useOrderConfirmationStyle()
   if (version === 'v1') return <InvitedConfirmationPage />
-  if (passwordSetFromEmailedLink(flow)) {
+  /* V3: a flow that verified the email before checkout sets its password on
+     the page, as V2's verified flow does — nothing is left for a mailed link
+     to prove (2026-10-30). */
+  const verifiedFirst = version === 'v3' && verifiesEmailFirst(v3Flow)
+  if (passwordSetFromEmailedLink(flow) && !verifiedFirst) {
     return version === 'v3' ? <InvitedConfirmationPageV3 /> : <InvitedConfirmationPageV2 />
   }
   /* V3 shares V2's other arm: `XcelSplitConfirmationPage` is the guest's page,
