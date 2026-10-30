@@ -328,7 +328,8 @@ export function TwoPackageProductDetailPage() {
             {/* The price stacked over its Purchase, the button across the card in the flow (2026-10-29, Eric; it slid beside the
                 price as the cards condensed). */}
             {/* Single, 4 less under the price, and only as wide as its label and 24 padding (2026-10-29, Eric). */}
-            {buy(bare ? { ...STACKED_BUY, marginTop: -4, alignSelf: left ? 'flex-start' : 'center' } : STACKED_BUY)}
+            {/* Plain (Single head E), fit to its label with 32 either side (2026-10-30, Eric). */}
+            {buy(bare ? { ...STACKED_BUY, marginTop: -4, alignSelf: left ? 'flex-start' : 'center' } : plain ? { ...STACKED_BUY, alignSelf: 'center', paddingRight: 32, paddingLeft: 32 } : STACKED_BUY)}
           </span>
         )}
         {/* The card's 1 edge drawn again over everything, so its top runs across the tab (2026-10-28, Eric). Not on the
