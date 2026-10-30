@@ -303,7 +303,11 @@ export function TwoPackageProductDetailPage() {
             {/* 8 closer to the price (2026-10-29, Eric; all caps, then back). */}
             {/* Single, 4 closer still (2026-10-29, Eric). */}
             {lift ? null : (
-              <span style={{ ...OPTION_TITLE, marginBottom: bare ? -12 : -8 }}>{p.cardTitle ?? `${place} ${localize(p.title)}`}</span>
+              <span style={{ ...OPTION_TITLE, marginBottom: bare ? -12 : -8, ...(p.id === 'premier' ? TITLE_WITH_CROWN : null) }}>
+                {/* Premier's crown, 6 left of its name, the line's own height (2026-10-30, Eric). */}
+                {p.id === 'premier' ? <CrownSolid aria-hidden style={TITLE_CROWN} /> : null}
+                {p.cardTitle ?? `${place} ${localize(p.title)}`}
+              </span>
             )}
             {lift ? <span style={{ position: 'relative', top: -lift.price, alignSelf: lift.center ? 'center' : 'flex-start' }}>{prices}</span> : prices}
             {/* The price stacked over its Purchase, the button across the card in the flow (2026-10-29, Eric; it slid beside the
@@ -2126,6 +2130,9 @@ const UNCARDED: CSSProperties = { position: 'relative', display: 'flex', flexDir
 // 16 above the title (2026-10-29, Eric; 24, then 4 less, and 4 less again).
 const UNCARDED_BODY: CSSProperties = { ...OPTION_BODY, paddingTop: 16, paddingRight: 0, paddingBottom: 0, paddingLeft: 0, alignItems: 'center', textAlign: 'center' }
 
+// Premier's title with its crown before it: 6 apart, the crown as tall as the title's line (2026-10-30, Eric).
+const TITLE_WITH_CROWN: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 6 }
+const TITLE_CROWN: CSSProperties = { width: 'auto', height: pinLerp(34, 26), flexShrink: 0 }
 const OPTION_TITLE: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
