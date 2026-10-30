@@ -34,7 +34,8 @@ import {
   useInviteChoice,
 } from '@/data/inviteMissingDetails'
 import { CART_PACKAGE_PARAM, cartPackage } from '@/data/xcelCourseFinder'
-import { LOADING_HANDOFF_MS, XcelLoadingPage } from '@/components/e2e/XcelLoadingPage'
+import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
+import { XcelLoadingStatus } from '@/components/e2e/XcelLoadingStatus'
 import { PartnerCodeAskModal } from '@/components/e2e/PartnerCodeAsk'
 import { VerifyEmailModalV3 } from '@/components/e2e/VerifyEmailModalV3'
 import { useInviteFlowV3, verifiesEmailFirst } from '@/data/inviteFlowsV3'
@@ -361,15 +362,12 @@ export function InvitedCheckoutPageV3() {
     setParams(next, { replace: true })
   }
 
-  /* ⚠ THE WHOLE PAGE, NOT AN OVERLAY. A spinner laid over a checkout still
-     shows the card form underneath it, which invites a second press on an
-     order already placed — and the flow's other hand-off (Confirmation &
-     Password's) replaces its page too, so the two look like one product
-     doing one thing. */
-  if (placing) return <XcelLoadingPage message="Placing your order" />
-
+  /* V3: "PLACING YOUR ORDER" IS A DIALOG OVER THE CHECKOUT, not V2's whole
+     loading page — Afsana's file, screen `placing` (2026-10-30). The scrim
+     covers the form, so the order cannot be pressed a second time. */
   return (
     <div style={PAGE}>
+      {placing ? <PlacingOrderDialog /> : null}
       {/* ⚠ THE MODAL ARM OF `partner-code-ask`. Drawn over the checkout rather
           than before it, so the comparison with the `page` arm is between two
           placements of one question — the question itself is the same
@@ -463,6 +461,7 @@ export function InvitedCheckoutPageV3() {
                 `hideConfirm`. */}
             {(
               <AddressForm
+                divider={false}
                 value={student}
                 onChange={(next) => {
                   setStudent(next)
@@ -560,16 +559,11 @@ export function InvitedCheckoutPageV3() {
              place yet. */
           onClickCapture={studentComplete ? () => setOrderReady(true) : undefined}
         >
-          {/* "Secure" on the title's baseline (2026-10-15, Eric's request). */}
-          <div style={PAYMENT_TITLE_ROW}>
-            <h3 id="checkout-payment" style={STEP_TITLE}>
-              2. Payment
-            </h3>
-            <span style={SECURE_TAG}>
-              Secure
-              <img src="/brand/checkout/lock-small.svg" alt="" width={7} height={10} style={{ display: 'block' }} />
-            </span>
-          </div>
+          {/* V3: no "Secure" tag beside the title (2026-10-30, Afsana's
+              file) — the page's own Secure Checkout header already says it. */}
+          <h3 id="checkout-payment" style={STEP_TITLE}>
+            2. Payment
+          </h3>
           {/* GUEST'S CLOSED PAYMENT COLUMN — 2026-10-22, Jillienne: "the
               payment section is not available until the student information is
               fulled out".
@@ -1107,10 +1101,15 @@ function AddressForm({
   onConfirm,
   saveAdditional = false,
   hideConfirm = false,
+  divider = true,
   afterName,
   afterAddress,
   actions,
 }: {
+  /** The rule along the form's top. On for the billing expanders, where it
+   *  parts the form from its option row; off for the student form (V3,
+   *  2026-10-30, Afsana's file), where nothing sits above it. */
+  divider?: boolean
   value: PostalAddress
   onChange: (next: PostalAddress) => void
   isDefault?: boolean
@@ -1151,7 +1150,7 @@ function AddressForm({
 }) {
   const set = (k: keyof PostalAddress) => (v: string) => onChange({ ...value, [k]: v })
   return (
-    <div style={OPTION_BODY}>
+    <div style={divider ? OPTION_BODY : { ...OPTION_BODY, borderTop: undefined }}>
       <div style={TWO_UP}>
         <TextField label="First Name" value={value.first} onChange={set('first')} />
         <TextField label="Last Name" value={value.last} onChange={set('last')} />
@@ -1418,26 +1417,6 @@ const STEP_TITLE: CSSProperties = {
   fontSize: 18,
   lineHeight: '25px',
   color: 'var(--color-neutral-950)',
-}
-
-const PAYMENT_TITLE_ROW: CSSProperties = {
-  display: 'flex',
-  alignItems: 'baseline',
-  // Flush with the panel's right edge (2026-10-15, Eric's request; 20 in
-  // before).
-  justifyContent: 'space-between',
-}
-
-const SECURE_TAG: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 4,
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 800,
-  fontSize: 11,
-  lineHeight: '14px',
-  textTransform: 'uppercase',
-  color: 'var(--color-text-secondary)',
 }
 
 const PANEL: CSSProperties = {
@@ -1937,4 +1916,39 @@ const TERMS_LINK: CSSProperties = {
   textDecoration: 'underline',
   textDecorationThickness: 1,
   cursor: 'pointer',
+}
+
+/** "Placing your order" — the file's dialog: the flow's loading spinner in a
+ *  card over the checkout, for the same three seconds V2's page holds. */
+function PlacingOrderDialog() {
+  return (
+    <div style={PLACING_SCRIM}>
+      <div role="dialog" aria-modal="true" aria-label="Placing your order" style={PLACING_CARD}>
+        <XcelLoadingStatus message="Placing your order" />
+      </div>
+    </div>
+  )
+}
+
+const PLACING_SCRIM: CSSProperties = {
+  position: 'fixed',
+  inset: 0,
+  zIndex: 1000,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 24,
+  background: 'var(--color-e2e-scrim)',
+}
+
+const PLACING_CARD: CSSProperties = {
+  boxSizing: 'border-box',
+  width: 560,
+  maxWidth: '100%',
+  display: 'flex',
+  justifyContent: 'center',
+  padding: '64px 36px 52px',
+  background: 'var(--color-fixed-light)',
+  boxShadow: '0 10px 30px var(--color-e2e-form-shadow)',
+  borderRadius: 8,
 }

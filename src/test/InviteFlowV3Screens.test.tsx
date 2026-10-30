@@ -134,3 +134,43 @@ describe('Invite Flow V3 — the email check', () => {
     expect(screen.queryByRole('dialog', { name: 'Verify your email to continue' })).not.toBeInTheDocument()
   })
 })
+
+describe('Invite Flow V3 — the checkout', () => {
+  const VERIFIED = CHECKOUT
+  const FF = `${V3_B2B},invite-v3-flow-b2b:qr-net-new`
+
+  function renderVerified() {
+    /* `verified=1` — past the email check, on the checkout itself. */
+    window.history.replaceState({}, '', `${VERIFIED}?ff=${FF}&verified=1`)
+    return render(
+      <MemoryRouter initialEntries={[`${VERIFIED}?ff=${FF}&verified=1`]}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <Routes>
+              <Route path="/end-to-end-demo/checkout" element={<InvitedCheckoutRoute />} />
+            </Routes>
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+  }
+
+  it('drops the "Secure" tag beside 2. Payment', () => {
+    renderVerified()
+    expect(screen.getByRole('heading', { name: '2. Payment' })).toBeInTheDocument()
+    expect(screen.queryByText('Secure')).not.toBeInTheDocument()
+  })
+
+  it('places the order in a dialog over the checkout, not on a page of its own', async () => {
+    renderVerified()
+    await userEvent.click(screen.getByRole('button', { name: /demo learner/i }))
+    await userEvent.click(screen.getByRole('button', { name: 'Save and continue' }))
+    /* The card form's own fill — the first of its click-to-fill fields. */
+    await userEvent.click(screen.getAllByRole('button', { name: /click to fill/i })[0])
+    await userEvent.click(screen.getByRole('button', { name: 'Confirm Payment Method' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Place your order' }))
+
+    expect(screen.getByRole('dialog', { name: 'Placing your order' })).toBeInTheDocument()
+    expect(screen.getByText('Secure Checkout')).toBeInTheDocument()
+  })
+})
