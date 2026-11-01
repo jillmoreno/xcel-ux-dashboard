@@ -449,7 +449,7 @@
 
   <main>
     <header class="head">
-      <p class="asof">As of 26 October 2026 · written by Jill Moreno</p>
+      <p class="asof">As of 1 November 2026 · written by Jill Moreno</p>
       <h1>Designer Workflow on the Hub</h1>
       <div class="actions">
         <a href="designer-workflow.pdf" download><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 12v1.5h10V12"/></svg>Download as PDF</a>
@@ -478,7 +478,7 @@
         <li><p><b>Read the line before, and the summary after.</b> Claude says what it is about to do, then what it did. If either surprises you, ask before going on.</p></li>
         <li><p><b>Allow the permission card when it matches what you asked for.</b> If it describes something else, click Deny and ask what it was trying to do.</p></li>
         <li><p><b>A refusal naming a file is correct.</b> That file is the Hub's own machinery and only Jill changes it. Tell her what you needed.</p></li>
-        <li><p><b>Type <code>/</code> for the routines.</b> Yours are <code>/promote-component</code>, <code>/share-branch</code> and <code>/promote-to-prototype</code> &mdash; <a href="#routines">Part 9</a> says what each one does.</p></li>
+        <li><p><b>Type <code>/</code> for the routines.</b> Yours are <code>/promote-component</code>, <code>/share-branch</code>, <code>/share-to-stage</code> and <code>/promote-to-prototype</code> &mdash; <a href="#routines">Part 9</a> says what each one does.</p></li>
       </ol>
 
       <h3>Then ask one question</h3>
@@ -601,8 +601,8 @@
     </section>
 
     <section id="promote">
-      <h2><span class="part">Part 5</span>Making your surface the prototype, and who ships it</h2>
-      <p class="lead">Prototypes is the one section that means "this is the product". It holds one row per surface, every row is main's build, and each surface has an owner who decides what it should be.</p>
+      <h2><span class="part">Part 5</span>Making your surface the prototype, and who releases it</h2>
+      <p class="lead">Prototypes is the one section that means "this is the product". It holds one row per surface, and each surface has an owner who decides what it should be. Since 1 November the section has a <b>Main &middot; Stage</b> switch above the rows: the same five rows, and the switch picks which build each one opens. <b>Main</b> is the released product. <b>Stage</b> is what owners have decided and shared, waiting on Jill's release.</p>
       <div class="tablewrap"><table>
         <thead><tr><th>Surface on Prototypes</th><th>Owner</th><th>Review address</th></tr></thead>
         <tbody>
@@ -613,31 +613,42 @@
           <tr><td class="k">Admin Tool</td><td>Cody</td><td>placeholder until it is built</td></tr>
         </tbody>
       </table></div>
-      <p>There are two separate decisions, made by two different people:</p>
+      <p>A chunk of work lives in three places, in order, and two different people move it:</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Place</th><th>What it means</th><th>Who puts it there</th><th>How</th></tr></thead>
+        <tbody>
+          <tr><td class="k">Refinement link</td><td>Your branch build. One chunk, under discussion.</td><td>You</td><td><code>/share-branch</code> (<a href="#refinement">Part 4</a>)</td></tr>
+          <tr><td class="k">Stage</td><td>The <code>stage</code> branch's build. Your surface as you have decided it should be, open to everyone from Prototypes &rarr; Stage, not yet released.</td><td>The surface's owner, or Jill</td><td><code>/share-to-stage</code> (below)</td></tr>
+          <tr><td class="k">Main</td><td>The released product. Prototypes &rarr; Main.</td><td>Jill only</td><td><code>/release</code></td></tr>
+        </tbody>
+      </table></div>
+      <p>So there are two separate decisions, made by two different people:</p>
       <ul>
-        <li><b>What the surface should be</b> is the owner's call, and the owner records it by running the promotion on their own branch.</li>
-        <li><b>When it reaches main</b> is Jill's call, and only she can do it.</li>
+        <li><b>What the surface should be</b> is the owner's call. The owner records it by promoting on their own branch and shares it to stage, where everyone can open it.</li>
+        <li><b>When stage becomes main</b> is Jill's call, and only she can do it. A release takes everything on stage at once &mdash; which is fine, because each of you owns one surface and stays in it. <code>/share-to-stage</code> refuses a branch that crosses into another owner's files.</li>
       </ul>
       <h3>When your branch is what your surface should become</h3>
       <ol class="steps">
-        <li><p>Make sure the branch is current (<a href="#rebase">Part 2</a>) and the review link looks right.</p></li>
-        <li><p>On your branch, name your scope: "for Compass" (Anjani), "for Atlas Learning" or "for Invite &amp; Purchase" (Eric).</p>
-          <div class="say"><span class="me">YOU</span><q>/promote-to-prototype for Compass</q></div></li>
-        <li><p>Claude lists the flags your branch introduced and asks, for each, whether it should be the default. Say yes to the ones that are your design and no to anything experimental you are not ready to stand behind.</p></li>
-        <li><p>It commits those defaults on your branch. Nothing has reached a stakeholder yet; this is a decision written down, not a release.</p></li>
-        <li><div class="say"><span class="me">YOU</span><q>Push my branch.</q></div></li>
-        <li><p>Tell Jill, in words: "My Compass branch feat/… is ready to ship." Include the review link.</p></li>
-        <li><p>Jill runs ship-to-main. It refuses a branch whose owner has not run step 2, so the order matters.</p></li>
-        <li><p>A few minutes after she ships, your surface's row on Prototypes is your work. Its Updated tag changes to that moment.</p></li>
-        <li><p>Archive your Refinement row (<a href="#refinement">Part 4</a>), since the board is for things under discussion and this one is decided.</p></li>
-        <li><p>Start the next piece from a fresh branch off main (<a href="#build">Part 3</a>, step 1). Do not keep working on the shipped branch.</p></li>
+        <li><p>Make sure the branch is current (<a href="#rebase">Part 2</a>) and the review link looks right. You must own the surface the branch changes &mdash; Compass is Anjani's, Atlas Learning is Eric's, Invite &amp; Purchase is Afsana and Eric's.</p></li>
+        <li><p>On your branch:</p>
+          <div class="say"><span class="me">YOU</span><q>/share-to-stage</q></div>
+          <p>It says where you are and what it is about to do, and asks once. Say yes.</p></li>
+        <li><p><b>The flag questions.</b> If your branch changed any flag defaults and you have not yet decided them, it lists each one and asks: should this be the default, and which variant? Say yes to the ones that are your design and no to anything experimental you are not ready to stand behind. It writes the answers as a commit on your branch. (This is <code>/promote-to-prototype</code>, run for you; you can still run it on its own if you want to record the decision without staging yet.)</p></li>
+        <li><p><b>Stage comes into your branch.</b> It merges today's <code>stage</code> into your branch so the two agree. If someone else's work touched the same lines, it stops and shows both sides &mdash; the same choice as a rebase conflict (<a href="#rebase">Part 2</a>): keep mine, keep stage's, keep both. If you cannot tell, say "Abort the merge" and ask the other owner; a conflict on stage is two owners in one file.</p></li>
+        <li><p>It runs the build and the tests, pushes your branch, and moves <code>stage</code> to it. Then it waits for Netlify to build the stage address and hands you the link.</p></li>
+        <li><p>On the Hub, <b>Prototypes &rarr; Stage</b> now opens your work for your surface. <b>Main does not</b>, yet. It also opens a card for the To Do Board's <b>On Stage</b> column, dated; click Add card. That column is the one place that says what is waiting on a release and since when.</p></li>
+        <li><p>Tell Jill, in words: "My Compass branch is on stage." Include the stage link.</p></li>
+        <li><p>Jill runs <code>/release</code>, which puts stage onto main. A few minutes later your surface's row under <b>Main</b> is your work, and its Updated tag changes to that moment. Main and Stage are the same build again until the next share.</p></li>
+        <li><p>Archive your Refinement row (<a href="#refinement">Part 4</a>), since the board is for things under discussion and this one is decided. Move your On Stage card along, or off the board.</p></li>
+        <li><p>Start the next piece from a fresh branch off main (<a href="#build">Part 3</a>, step 1). Do not keep working on the released branch.</p></li>
       </ol>
       <p>If you own the surface, you can also decide something should NOT go in. Say so, archive the Refinement row, and tell Jill; she has a routine that records why a branch was tried and declined.</p>
+      <p><b>Stage is not a second Refinement.</b> A Refinement link is one idea, isolated, that may change tomorrow; stage is a decision. Share to stage when you would be happy for Jill to release it that afternoon without asking you anything.</p>
     </section>
 
     <section id="handoff">
       <h2><span class="part">Part 6</span>Writing the dev handoff</h2>
-      <p class="lead">A handoff is the page a developer builds a feature from. You write it with <code>/dev-handoff-notes</code>, in your own words. It becomes your own row on the Development board, in a file that is yours, with a status you set as the work moves. The only things you cannot do are ship to main, which is Jill's, and promote to prototype for a surface you do not own (<a href="#promote">Part 5</a>).</p>
+      <p class="lead">A handoff is the page a developer builds a feature from. You write it with <code>/dev-handoff-notes</code>, in your own words. It becomes your own row on the Development board, in a file that is yours, with a status you set as the work moves. The only things you cannot do are release to main, which is Jill's, and share to stage for a surface you do not own (<a href="#promote">Part 5</a>).</p>
       <p><b>What it is.</b> One page per feature at <code>/prototype/&#8249;feature&#8250;</code>: one scroll, with a chip strip that jumps between its sections &mdash; <b>States</b>, <b>Options</b>, <b>CTAs</b>, <b>Questions</b>, <b>Edge cases</b>, <b>Design Spec</b>, and <b>Designer's Notes</b> last &mdash; and an <b>Open live preview</b> button in the header. A section you have not written yet still shows, with a note naming the gap, so a reader can tell "not written" from "there is none". The page exports as Markdown from its Actions menu &mdash; Share Link, Download .md, Copy .md &mdash; so a ticket can carry it.</p>
       <div class="rule-box">A developer will build exactly what the page says.<small>Every line is a promise. A state you left out is a state they will not build; a line describing something you have since changed is something they will build wrong.</small></div>
       <h3>Have these ready before you start</h3>
@@ -678,7 +689,7 @@
       <div class="tablewrap"><table>
         <thead><tr><th>Group</th><th>Section</th><th>What it is for</th><th>Who adds to it</th></tr></thead>
         <tbody>
-          <tr><td>Demo</td><td class="k">Prototypes</td><td>The product as it stands: one row per surface, all main's build.</td><td>Owners promote; Jill merges.</td></tr>
+          <tr><td>Demo</td><td class="k">Prototypes</td><td>The product as it stands: one row per surface, with a Main &middot; Stage switch &mdash; Main is the released build, Stage is what owners have shared and Jill has not yet released.</td><td>Owners share to stage; Jill releases.</td></tr>
           <tr><td>Design &amp; Research</td><td class="k">Refinement</td><td>Chunks of work under discussion, grouped by the feature they belong to. As many as you like. Filter by name, archive when done.</td><td>Anyone, on the page.</td></tr>
           <tr><td>Design &amp; Research</td><td class="k">Research</td><td>Research links and rationale.</td><td>Anyone, on the page.</td></tr>
           <tr><td>Design &amp; Research</td><td class="k">Resources</td><td>Briefs, Figma files, references. Things that live elsewhere — including this guide.</td><td>Anyone, on the page.</td></tr>
@@ -688,7 +699,7 @@
           <tr><td>Dev Handoff</td><td class="k">Done</td><td>Finished and signed off.</td><td>Jill.</td></tr>
           <tr><td>Dev Handoff</td><td class="k">Archive</td><td>Components and sections removed from the project, with how to bring each back.</td><td>Jill.</td></tr>
           <tr><td>Dev Handoff</td><td class="k">QA Notes</td><td>Design-versus-build findings with captures.</td><td>Anyone, on the page.</td></tr>
-          <tr><td>Team</td><td class="k">To Do Board</td><td>Who is working on what, as four columns a card moves across.</td><td>Anyone, on the page.</td></tr>
+          <tr><td>Team</td><td class="k">To Do Board</td><td>Who is working on what, as five columns a card moves across &mdash; On Stage is the one that says what is waiting on a release.</td><td>Anyone, on the page.</td></tr>
           <tr><td>Team</td><td class="k">Hub Resources</td><td>The Hub's own guides — this one, Contributing, and the stakeholder page. Each opens in a new tab with a PDF beside it.</td><td>Code, not a board: the list changes when a file is added.</td></tr>
         </tbody>
       </table></div>
@@ -701,7 +712,7 @@
       <div class="tablewrap"><table>
         <thead><tr><th>You see</th><th>It means</th><th>Say to Claude</th></tr></thead>
         <tbody>
-          <tr><td>"BLOCKED: that pushes to main" (or "moves you onto main")</td><td>You asked for something that would change main, which is Jill's. Claude stopped before running it; GitHub would have refused it too.</td><td>"Switch back to my feature branch." Then <code>/share-branch</code> to put the work in front of the team, and tell Jill when it is ready to ship.</td></tr>
+          <tr><td>"BLOCKED: that pushes to main" (or "moves you onto main")</td><td>You asked for something that would change main, which is Jill's. Claude stopped before running it; GitHub would have refused it too.</td><td>"Switch back to my feature branch." Then <code>/share-branch</code> to put the work in front of the team, and <code>/share-to-stage</code> when your surface is decided; Jill releases stage to main.</td></tr>
           <tr><td>A refusal naming a file, like "UxDashboardPage.tsx is protected"</td><td>That file is the Hub's own machinery. Only Jill edits it.</td><td>Nothing. Tell Jill what you needed changed.</td></tr>
           <tr><td>"Updates were rejected because the tip of your current branch is behind"</td><td>You rebased, so your branch's history changed, and a normal push is refused.</td><td>"Push with force-with-lease." Your branch only. Never main.</td></tr>
           <tr><td>"CONFLICT (content): Merge conflict in …"</td><td>Main and your commit changed the same lines. The rebase paused for you to choose.</td><td>"Show me both sides." Then "Keep my version" / "Keep main's version" / "Keep both", then "Continue the rebase." Lost? "Abort the rebase" and ask Jill.</td></tr>
@@ -732,7 +743,9 @@
         <tbody>
           <tr><td>"I want eyes on this one card, not the whole branch."</td><td><code>/promote-component</code></td></tr>
           <tr><td>"I want the team to look at my branch."</td><td><code>/share-branch</code></td></tr>
-          <tr><td>"This is what my surface should be. Ship it."</td><td><code>/promote-to-prototype</code>, then tell Jill</td></tr>
+          <tr><td>"This is what my surface should be."</td><td><code>/share-to-stage</code> &mdash; it asks the flag questions, puts your surface on the stage build, and files the On Stage card. Then tell Jill.</td></tr>
+          <tr><td>"I want to record which flags are my surface's defaults, but not stage it yet."</td><td><code>/promote-to-prototype</code></td></tr>
+          <tr><td>"Release what is on stage."</td><td>Jill's &mdash; <code>/release</code></td></tr>
           <tr><td>"It's built and discussed. Engineering needs to read it."</td><td><code>/dev-handoff-notes</code>, then move your card to Ready for Prototype and Handoff</td></tr>
           <tr><td>"I'm done discussing this row."</td><td>Archive, on the row's ⋮ (no routine)</td></tr>
           <tr><td>"We tried it and decided not to."</td><td>Tell Jill; she runs <code>/retire-from-refinement</code></td></tr>
@@ -746,14 +759,15 @@
           <tr><td><code>/promote-component</code></td><td>One component on your branch wants feedback and the rest of the branch would distract from it.</td><td>Which component (name it, or select it in the browser pane first). Which of its flag's variants to show side by side. A note telling the reviewer what to look at.</td><td>Finds the feature flag that drives the component. If there is none, shows you the flag it would add (its name, label, the one line it changes in your component) and waits for your yes. Checks the branch is pushed and built. Builds one review page with every variant stacked, each pinned. Opens Refinement's Add link form with it filled in.</td><td>Save the row (you click Add). Add a flag without showing you first. Share the whole branch.</td></tr>
           <tr><td><code>/share-branch</code></td><td>A chunk of work is ready for the team to look at.</td><td>One yes, up front, covering the checks, the commit and the push. A title. A one-line note on what to look at. What feature this is a chunk of. Which product (it guesses from the files you touched: Compass files mean Compass).</td><td>Checks you are on a branch, not main. Says so if the branch has got long. Runs the type check and the tests. Commits anything uncommitted and pushes. Works out the Netlify address and waits for the build to finish. Opens Refinement's Add link form with everything filled in, your name included. Then opens the To Do Board's card sheet, filled in, in <b>Ready For Refinement</b>. Offers to cut your next branch.</td><td>Save the row or the card (you click <b>Add link</b>, then <b>Add card</b>). Run on main. Commit or push without the yes it asked you for.</td></tr>
           <tr><td><code>/dev-handoff-notes</code></td><td>The feature is built, the Refinement discussion has settled, and engineering needs to read it. Also when a component changes after its handoff was written.</td><td>Component by component: its states with when and why, every button and what it does, the edge cases as question and answer, the tokens and responsive behaviour, the decisions with their reasoning, the flag, the brands, member and non-member.</td><td>Reads the component you built and names where your words and the code disagree. Writes the row as its own file under <code>src/data/handoffs/</code>, named after the feature, status Not Ready, and runs the checks. Tells you what is still unwritten.</td><td>Invent a state or a reason you did not give. Touch the project list. Ship to main, or promote a surface you do not own.</td></tr>
-          <tr><td><code>/promote-to-prototype</code></td><td>Your branch is what your surface should become, and you own that surface. Run it before you tell Jill it is ready.</td><td>For every flag whose default your branch changed: should this be the default, and which variant? Design-bar controls are listed separately, because those never ship as defaults.</td><td>Compares your branch with main and lists every candidate. Groups them by the Prototypes row they reach; a group that is not yours needs that owner's yes. Edits the flag defaults, runs the checks, commits on your branch. Reminds you to archive the Refinement row after the merge.</td><td>Merge anything. Add a Prototypes row. Change the default dashboard version. All three are Jill's.</td></tr>
+          <tr><td><code>/promote-to-prototype</code></td><td>Your branch is what your surface should become, and you own that surface. Run it before you tell Jill it is ready.</td><td>For every flag whose default your branch changed: should this be the default, and which variant? Design-bar controls are listed separately, because those never ship as defaults.</td><td>Compares your branch with main and lists every candidate. Groups them by the Prototypes row they reach; a group that is not yours needs that owner's yes. Edits the flag defaults, runs the checks, commits on your branch. Reminds you to share to stage next.</td><td>Merge anything. Add a Prototypes row. Change the default dashboard version. All three are Jill's.</td></tr>
+          <tr><td><code>/share-to-stage</code></td><td>Your branch is what your surface should become, and you own that surface. The step after Refinement, before Jill's release.</td><td>One yes, up front, covering the merge, the checks and the pushes. The <code>/promote-to-prototype</code> flag questions, if your branch has not answered them yet.</td><td>Checks every file you changed belongs to a surface you own. Runs the flag questions if needed. Merges today's stage into your branch (stops on a conflict and shows both sides). Runs the build and the tests. Pushes your branch and moves stage to it. Waits for the stage build and hands you the link. Opens the On Stage card filled in.</td><td>Touch main. Merge a surface you do not own. Force-push stage. Resolve a conflict for you.</td></tr>
         </tbody>
       </table></div>
       <h3>Jill's: recognise, don't run</h3>
       <div class="tablewrap"><table>
         <thead><tr><th>Routine</th><th>What it is for</th></tr></thead>
         <tbody>
-          <tr><td><code>/ship-to-main</code></td><td>Merging a finished branch into main. The only way anything reaches the product. It refuses a branch whose owner has not run <code>/promote-to-prototype</code>. Since 29 October it is enforced for everyone else: Claude refuses the commands before they run, and GitHub refuses the push even if something got past Claude.</td></tr>
+          <tr><td><code>/release</code></td><td>Merging <code>stage</code> into main &mdash; everything on stage, at once. The only way anything reaches the product. It refuses a stage with an undecided flag group. Since 29 October it is enforced for everyone else: Claude refuses the commands before they run, and GitHub refuses the push even if something got past Claude. (<code>/ship-to-main</code> is the old name and still answers, but a branch no longer goes to main directly &mdash; it goes to stage first.)</td></tr>
           <tr><td><code>/promote-to-testing</code></td><td>Freezing a branch onto the separate user-test site and handing back participant and moderator links. A frozen link does not move when main does.</td></tr>
           <tr><td><code>/retire-from-refinement</code></td><td>Closing a Refinement row properly when the work was promoted or declined: deciding what happens to the branch and writing the record of why. Different from Archive on the kebab, which only hides.</td></tr>
           <tr><td><code>/archive-a-feature</code></td><td>Retiring a component or variant without deleting it, and writing the Archive-section row that says how to bring it back.</td></tr>
@@ -843,7 +857,11 @@
           <tr><td class="k">Rebase</td><td>Replaying your commits on top of today's main. Done on your own branch, as often as you like.</td></tr>
           <tr><td class="k">Force push with lease</td><td>The push you need after a rebase. Safe on your branch; it refuses if someone else pushed there first. Never on main.</td></tr>
           <tr><td class="k">Conflict</td><td>Main and your commit changed the same lines. You pick which wins.</td></tr>
-          <tr><td class="k">Merge, ship to main</td><td>Jill putting a branch into main with <code>/ship-to-main</code>. The only way anything reaches main.</td></tr>
+          <tr><td class="k">Release (was ship to main)</td><td>Jill putting <code>stage</code> into main with <code>/release</code>. The only way anything reaches main. Everything on stage goes at once.</td></tr>
+          <tr><td class="k">Stage</td><td>The <code>stage</code> branch and its build, between a Refinement link and main: what owners have decided and shared, waiting on a release. Opened from Prototypes &rarr; Stage.</td></tr>
+          <tr><td class="k">Share to stage</td><td>The owner putting their surface onto stage with <code>/share-to-stage</code>. Runs the promote-to-prototype questions if the branch has not answered them.</td></tr>
+          <tr><td class="k">Main &middot; Stage</td><td>The switch above the Prototypes rows. Same rows; Main opens the released build, Stage opens the stage build.</td></tr>
+          <tr><td class="k">On Stage</td><td>The To Do Board column for a chunk that is on stage and waiting on a release, with the date in its note.</td></tr>
           <tr><td class="k">Feature flag</td><td>A named switch in the code that picks between the old and new version of something. On by default on your branch; Jill decides the default on main.</td></tr>
           <tr><td class="k">Design controls bar</td><td>The light cyan strip carrying the decisions still open inside one exploration. You add to it by marking your flag <code>surface: 'design'</code>, never by editing the bar. The amber bar beside it is the demo bar, and that one is Jill's.</td></tr>
           <tr><td class="k">Sibling copy</td><td>Copying a component to a V2 file instead of editing it, so two people never edit the same file. <code>/promote-component</code> does this.</td></tr>
@@ -851,7 +869,7 @@
           <tr><td class="k">Chunk</td><td>One piece of work, one branch, one Refinement row. Chunks of the same feature group together on the board.</td></tr>
           <tr><td class="k">Feature (on Refinement)</td><td>What a chunk is part of, and the heading its row sits under. Free text, with the board's existing features offered as you type.</td></tr>
           <tr><td class="k">Share (was promote to refinement)</td><td>Putting one chunk of your branch's work on the Refinement board for discussion. Anyone, any time.</td></tr>
-          <tr><td class="k">Promote to prototype</td><td>The owner recording which flags are their surface's defaults, on their branch. Not a release.</td></tr>
+          <tr><td class="k">Promote to prototype</td><td>The owner recording which flags are their surface's defaults, on their branch. Not a release. <code>/share-to-stage</code> runs it for you if you have not.</td></tr>
           <tr><td class="k">Branch build, review link</td><td>Your branch as a website: <code>https://‹branch›--ux-design-xceldashboard.netlify.app/…?demo=1</code>.</td></tr>
           <tr><td class="k"><code>?demo=1</code></td><td>Turns on the demo controls bar, so a reviewer can change learner, progress and tier.</td></tr>
           <tr><td class="k">Archive (Refinement)</td><td>Hiding a row from the board, reversibly, with a stamp of who and when.</td></tr>
@@ -860,12 +878,12 @@
           <tr><td class="k">Dev handoff</td><td>The page a developer builds a feature from &mdash; components, states, buttons, edge cases, spec and decisions &mdash; at <code>/prototype/&#8249;feature&#8250;</code>. You write it with <code>/dev-handoff-notes</code>, and the row is your own file.</td></tr>
           <tr><td class="k">Development (section)</td><td>Where handoffs wait for engineering, each with a status chip. Under Dev Handoff in the nav.</td></tr>
           <tr><td class="k">Not Ready</td><td>The status every handoff lands with, so an unread page never tells engineering to start. Yours to change, in the file. The row's &#8942; changes it for your browser only.</td></tr>
-          <tr><td class="k">Pull request, PR</td><td>GitHub's page for a branch that is proposed for main. Jill opens and merges them.</td></tr>
+          <tr><td class="k">Pull request, PR</td><td>GitHub's page for a branch that is proposed for main. You will not need one: your branch goes to stage, and Jill releases stage. The word still appears in GitHub's own messages.</td></tr>
         </tbody>
       </table></div>
     </section>
 
-    <footer>Designer Workflow on the Hub · 26 October 2026 · The draft is the Claude doc of the same name; this page is what the Hub serves. The longer walkthrough, with pictures, is the <a href="/contributing/">Contributing guide</a>; stakeholders get <a href="/about/">How to read this dashboard</a>.</footer>
+    <footer>Designer Workflow on the Hub · 1 November 2026 · The draft is the Claude doc of the same name; this page is what the Hub serves. The longer walkthrough, with pictures, is the <a href="/contributing/">Contributing guide</a>; stakeholders get <a href="/about/">How to read this dashboard</a>.</footer>
   </main>
 </div>
 

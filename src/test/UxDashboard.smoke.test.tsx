@@ -42,7 +42,7 @@ function renderDashboard(initialPath = '/') {
 }
 
 /** The nav order is load-bearing — see `NAV_EYEBROWS` in UxDashboardPage.tsx.
- *  Ten sections since 2026-10-15: Design is retired with the Designers group
+ *  Twelve sections since 2026-10-15 (ten plus the two Team sections): Design is retired with the Designers group
  *  it headed, Explorations (was Exploration) moved up to sit under PRDs, and
  *  Archive and QA Notes sit under Dev Handoff, ungated. */
 const EXPECTED_SECTIONS = [

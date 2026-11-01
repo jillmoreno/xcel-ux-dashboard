@@ -107,8 +107,9 @@ nothing needs to be locked." So:
   the modal wiring are gone from the page. `PrototypeLock.tsx` and
   `prototypeLockUtil.ts` stay — the archived tile landing reads them.
 
-Ten sections: Prototypes · Refinement · Research · Resources · PRDs ·
-Explorations · Development · Done · Archive · QA Notes. The two
+Twelve sections: Prototypes · Refinement · Research · Resources · PRDs ·
+Explorations · Development · Done · Archive · QA Notes · To Do Board · Hub
+Resources. The two
 `archivedItems.ts` rows `design-section` and `designers-gate` carry the
 restore notes. The "Sections" and "Exploration" passages below describe the
 rail as it was and are kept as history.
@@ -1700,3 +1701,19 @@ claim this behaviour but nothing there implements it). That fallback is what
 lets paths be authored before the screenshots exist, and makes deleting a PNG a
 safe way to retire it.
 
+## Stage, and the Main · Stage switch (2026-11-01)
+
+Prototypes gained a second build without gaining a section. A long-lived
+`stage` branch sits between a designer's branch and `main`: owners merge
+into it with `/share-to-stage`, Jillienne merges it into `main` with
+`/release` (`ship-to-main` is kept as an alias). Netlify builds it at
+`stage--ux-design-xceldashboard.netlify.app` like any branch. On the Hub the
+**Main · Stage** switch above the Prototypes rows picks which build each row
+opens — same rows, same `to`, different origin under Stage (`?build=stage`
+in the address). `src/data/stageBuild.ts` is the module; the smoke test pins
+both views and that no other section shows the switch. The To Do Board's
+fifth column, **On Stage**, is where "what is waiting on a release, since
+when" lives, because the Hub cannot read stage from main (same site
+password, cross-origin). Why a switch and not a section: Jillienne,
+2026-11-01 — "I want the prototype page to have both Main and Stage options
+there, not a new page in the rail."
