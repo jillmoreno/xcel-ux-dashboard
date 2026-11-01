@@ -103,7 +103,7 @@ const feature: PrototypeFeature = {
           { name: 'QR code', does: 'An image with an accessible label. It is drawn QR anatomy with a deterministic fill and is not scannable; the code header says how to encode the real address.' },
           { name: 'View invitation (invitation email)', does: 'Opens the invited product detail page, carrying the walk’s parameters and any flag pins. The only wired control in that message.' },
           { name: 'Activate my account (activation email)', does: 'Marks the account validated and returns to the order confirmation at the password card. The only wired control in that message.' },
-          { name: 'Mail chrome — Notifications, Settings, account menu, New Mail, folders, Filter, Sort, message rows, reader toolbar', does: 'Drawn, not wired. Real buttons so they are reachable and announced, by design; the open row carries the current marker; the Filter and Sort icons are stand-ins until the registry has the real glyphs.' },
+          { name: 'The rest of the mail client — Notifications, Settings, account menu, New Mail, folders, Filter, Sort, message rows, reader toolbar', does: 'Drawn, not wired. Real buttons so they are reachable and announced, by design; the open row carries the current marker; the Filter and Sort icons are stand-ins until the registry has the real glyphs.' },
         ],
         statesMatrix: [
           { question: 'What if the learner wants to scan the code from a screen in a room?', answer: 'They cannot yet — the code is not real. Encoding the invite address is called out as a to-do before anyone is asked to scan it.' },
