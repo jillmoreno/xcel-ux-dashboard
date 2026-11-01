@@ -55,7 +55,7 @@ export const PROTOTYPE_BUILDS: ReadonlyArray<{ id: PrototypeBuild; label: string
   {
     id: 'main',
     label: 'Main',
-    note: 'The released product.',
+    note: 'The main branch of the repo, reserved for demos. The product design as it is right now.',
   },
   {
     id: 'stage',

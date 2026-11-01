@@ -830,7 +830,7 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     const radios = within(group).getAllByRole('radio')
     expect(radios.map((r) => r.textContent)).toEqual(['Main', 'Stage'])
     expect(radios[0]).toHaveAttribute('aria-checked', 'true')
-    expect(document.querySelector('[data-build-note]')!.textContent).toMatch(/released product/i)
+    expect(document.querySelector('[data-build-note]')!.textContent).toMatch(/main branch/i)
     // Under Main every row that opens is exactly its authored `to` — the
     // pre-switch behaviour, byte for byte.
     for (const f of openingRows()) expect(hrefOf(f.id), f.id).toBe(f.to)
