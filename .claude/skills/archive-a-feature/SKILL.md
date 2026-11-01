@@ -129,6 +129,6 @@ deliberately changed. Then `ship-to-main`.
 - **`reason` is the argument**, so a reader can tell whether it still holds.
 - **Don't archive a refactor.** Rows are for things that were reachable and had
   an opinion.
-- **A fork ends here.** When `promote-to-prototype` picks a winner between two
+- **A fork ends here.** When `decide-defaults` picks a winner between two
   sibling variants, the loser is archived — that is the ending
-  `promote-component` promises when it tells a designer to fork a component.
+  `share-component` promises when it tells a designer to fork a component.

@@ -48,7 +48,7 @@ export const HUB_HOST = 'ux-design-xceldashboard.netlify.app'
 export const STAGE_ORIGIN = `https://${STAGE_BRANCH}--${HUB_HOST}`
 
 /** Which build a Prototypes row opens. `main` is the released product; `stage`
- *  is what owners have shared to stage and Jillienne has not yet released. */
+ *  is what owners have shared to stage and is awaiting release. */
 export type PrototypeBuild = 'main' | 'stage'
 
 export const PROTOTYPE_BUILDS: ReadonlyArray<{ id: PrototypeBuild; label: string; note: string }> = [
@@ -60,7 +60,7 @@ export const PROTOTYPE_BUILDS: ReadonlyArray<{ id: PrototypeBuild; label: string
   {
     id: 'stage',
     label: 'Stage',
-    note: 'What surface owners have shared to stage and Jillienne has not yet released. Same rows, the stage branch’s build.',
+    note: 'Shared to stage and awaiting release. Same rows, the stage branch’s build.',
   },
 ]
 

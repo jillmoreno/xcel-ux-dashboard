@@ -30,7 +30,7 @@ A row kept after its branch is deleted is a dead link with a note attached.
 
 At the END of a Refinement row's life, both ways it can end:
 
-- **Promoted** — `promote-to-prototype` has run and the flags are in the baseline.
+- **Promoted** — `decide-defaults` has run and the flags are in the baseline.
   That skill's step 6 already says "retire the Refinement row"; this is that step,
   done properly.
 - **Declined** — the work is not going into Prototypes. This is the case the
@@ -104,7 +104,7 @@ not a default. Present it with **AskUserQuestion**:
   it. ⚠ Say in the row that it is a SNAPSHOT: a branch build renders its own old
   code forever and drifts from `main` silently, so it is evidence of what was
   shown, never of what the product does now.
-- **Freeze it** — `promote-to-testing`, when it has to be citable and stable
+- **Freeze it** — `freeze-for-testing`, when it has to be citable and stable
   (a user test, a sign-off).
 
 ### 4. Write the Archive row
@@ -167,6 +167,6 @@ people will ask for in three months.
 
 ## The other half
 
-`promote-to-refinement` puts a row up. `promote-to-prototype` decides whether its
+`promote-to-refinement` puts a row up. `decide-defaults` decides whether its
 flags ship. This is how the row ends, either way — and the only one of the three
 that runs when the answer is no.

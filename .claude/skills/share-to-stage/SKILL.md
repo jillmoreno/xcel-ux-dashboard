@@ -1,6 +1,6 @@
 ---
 name: share-to-stage
-description: Put the branch you are on onto STAGE — the build between a Refinement link and main. For a surface you own, it records which of the branch's flag defaults become the surface's defaults (the promote-to-prototype questions, run here if the branch has not answered them yet), merges today's `stage` into the branch, runs the checks, pushes, fast-forwards `stage` to the branch, waits for Netlify to build the stage address, and files the card in the To Do Board's On Stage column. Nothing reaches main — Jillienne releases stage to main with `/release`. Trigger on "share to stage", "stage this", "put this on stage", "stage my branch", "promote to stage", "/share-to-stage".
+description: Put the branch you are on onto STAGE — the build between a Refinement link and main. For a surface you own, it records which of the branch's flag defaults become the surface's defaults (the flag questions — `decide-defaults`, formerly promote-to-prototype — run here if the branch has not answered them yet), merges today's `stage` into the branch, runs the checks, pushes, fast-forwards `stage` to the branch, waits for Netlify to build the stage address, and files the card in the To Do Board's On Stage column. Nothing reaches main — Jillienne releases stage to main with `/release`. Trigger on "share to stage", "stage this", "put this on stage", "stage my branch", "promote to stage", "/share-to-stage".
 version: 1.0.0
 author: UX Design — Colibri
 last_updated: 2026-11-01
@@ -19,7 +19,7 @@ everyone can open — the **Stage** build — without touching `main`.
 Until now a chunk could be in two places: the designer's own branch build (a
 Refinement row — "under discussion") and `main` (a Prototypes row — "released").
 There was nothing between *decided* and *released*. An owner who had run
-`promote-to-prototype` had a commit of defaults on their branch and no way to
+`decide-defaults` had a commit of defaults on their branch and no way to
 show anybody what the surface would look like with them, until Jillienne
 merged — and one merge was the only way for any work, from any owner, to
 become visible as the product.
@@ -87,7 +87,7 @@ git rev-list --left-right --count origin/main...HEAD
 ### 2. Whose surface is this? — the ownership check
 
 Work out the scopes the branch touches and who is asking, exactly as
-`promote-to-prototype` does ("How a candidate gets its scope" and the identity
+`decide-defaults` does ("How a candidate gets its scope" and the identity
 table under "Owner action"):
 
 ```bash
@@ -116,7 +116,7 @@ A branch that changes only the gateway, docs, tests or skills has no scope
 and no owner question — it is Jillienne's to stage, and anyone else is told
 so.
 
-### 3. Have the flag defaults been decided? — the promote-to-prototype questions
+### 3. Have the flag defaults been decided? — the flag questions (`decide-defaults`)
 
 ```bash
 git diff origin/main...HEAD -- src/context/FeatureFlagContext.tsx src/data/dashboardVersions.ts
@@ -124,11 +124,11 @@ git log origin/main..HEAD --grep='promote' --oneline
 ```
 
 If a `defaultEnabled` or `defaultVariant` moved and there is no promotion
-commit covering it, **run `promote-to-prototype` now, on this branch**, before
+commit covering it, **run `decide-defaults` now, on this branch**, before
 anything else. It asks per flag — keep this default, or set it back to main's
 value, and which variant — lists `surface: 'design'` controls separately, and
 commits the answers on the branch. A designer who typed `/share-to-stage`
-should only ever need to learn this one command; `promote-to-prototype` stays
+should only ever need to learn this one command; `decide-defaults` stays
 available on its own for an owner who wants to record the decision without
 staging yet.
 
@@ -246,7 +246,7 @@ release. Either is fine; archiving is the usual answer.
   caller's. A branch that crosses into another owner's surface is handed to
   that owner, not merged.
 - **Defaults decided first.** No branch reaches stage with an undecided flag
-  default — `promote-to-prototype`'s questions run here if they have not.
+  default — `decide-defaults`'s questions run here if they have not.
 - **Stage into the branch, then fast-forward stage.** Never merge on a stage
   checkout, never `--force` stage, never resolve a conflict for the designer.
 - **`npm run build` after the merge**, not before. The merge is what might

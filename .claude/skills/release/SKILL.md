@@ -96,7 +96,7 @@ THIS step keeps it true:
 git diff --name-only origin/main...origin/stage -- src public | sort
 ```
 
-Map the changed paths to scopes with the rule in `promote-to-prototype` ("How
+Map the changed paths to scopes with the rule in `decide-defaults` ("How
 a candidate gets its scope"): Compass paths → `xcel-compass`; the Atlas home
 and learning pages → `xcel-atlas-learning`; the invite pages → `xcel-invite`;
 anything under the product app → `xcel-dashboard` as well, since the
