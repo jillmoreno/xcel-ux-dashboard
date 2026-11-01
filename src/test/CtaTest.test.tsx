@@ -489,7 +489,7 @@ describe('?test=1 — the moderated session view', () => {
        was never told about. */
     const { container } = renderChrome('?test=1')
     expect(container.querySelector('.cre-prototype-bar')).toBeNull()
-    expect(screen.queryByRole('link', { name: /Prototype home/i })).toBeNull()
+    expect(screen.queryByRole('link', { name: /Hub home/i })).toBeNull()
   })
 
   it('leaves every control alone on a normal load', () => {

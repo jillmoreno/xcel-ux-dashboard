@@ -354,7 +354,7 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     expect(screen.queryByRole('group', { name: 'Filter by designer' })).toBeNull()
   })
 
-  it('Archive hides the row, Show archive lists it with who and when, Unarchive puts it back', async () => {
+  it('Hide hides the row, Show hidden lists it with who and when, Unhide puts it back', async () => {
     const user = userEvent.setup()
     localStorage.setItem('cgp.links.lastAuthor', 'Jill')
     const { writes } = liveEndpoint([
@@ -364,14 +364,14 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     render(<DemoPanel />)
     await waitFor(() => expect(screen.getByText('2 links')).toBeInTheDocument())
     // No door until something is archived.
-    expect(screen.queryByRole('button', { name: /Show archive/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Show hidden/ })).toBeNull()
 
     await user.click(screen.getByRole('button', { name: 'Actions for Hide me' }))
     const menu = await screen.findByRole('menu')
     // Archive sits beside Remove, not instead of it.
-    expect(within(menu).getByRole('menuitem', { name: 'Archive' })).toBeInTheDocument()
+    expect(within(menu).getByRole('menuitem', { name: 'Hide' })).toBeInTheDocument()
     expect(within(menu).getByRole('menuitem', { name: 'Remove' })).toBeInTheDocument()
-    await user.click(within(menu).getByRole('menuitem', { name: 'Archive' }))
+    await user.click(within(menu).getByRole('menuitem', { name: 'Hide' }))
 
     // A SAVE with the intent and the label; the stamp is the server's.
     await waitFor(() => expect(writes).toHaveLength(1))
@@ -385,20 +385,20 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
     expect(screen.queryByText('Hide me')).not.toBeInTheDocument()
     expect(screen.getByText('Keep me')).toBeInTheDocument()
-    const door = screen.getByRole('button', { name: 'Show archive · 1' })
+    const door = screen.getByRole('button', { name: 'Show hidden · 1' })
 
     // The archive view: the hidden row, its stamp, no Add button, a way back.
     await user.click(door)
     expect(screen.getByText('Hide me')).toBeInTheDocument()
     expect(screen.queryByText('Keep me')).not.toBeInTheDocument()
     expect(screen.getByText(/^Archived .*· Jill$/)).toBeInTheDocument()
-    expect(screen.getByText('1 link hidden from the board. Unarchive one to put it back.')).toBeInTheDocument()
+    expect(screen.getByText('1 link hidden from the board. Unhide one to put it back.')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Add link' })).toBeNull()
     expect(screen.getByRole('button', { name: 'Back to board' })).toBeInTheDocument()
 
     // Anyone can unarchive — no owner check, the same kebab.
     await user.click(screen.getByRole('button', { name: 'Actions for Hide me' }))
-    await user.click(await screen.findByRole('menuitem', { name: 'Unarchive' }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Unhide' }))
     await waitFor(() => expect(writes).toHaveLength(2))
     expect(writes[1].body.archived).toBe(false)
     expect(writes[1].body.archivedBy).toBe('')
@@ -417,7 +417,7 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     ])
     render(<DemoPanel />)
     await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
-    await user.click(screen.getByRole('button', { name: 'Show archive · 1' }))
+    await user.click(screen.getByRole('button', { name: 'Show hidden · 1' }))
     await user.click(screen.getByRole('button', { name: 'Actions for Old one' }))
     await user.click(await screen.findByRole('menuitem', { name: 'Edit' }))
     await user.click(await screen.findByRole('button', { name: 'Save changes' }))

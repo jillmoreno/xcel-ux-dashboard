@@ -374,7 +374,7 @@ function PrototypeActionsMenu() {
              which is why they now carry descriptions. This one keeps the
              prototype chrome: the recipient lands on the same view with the
              bars still there and can keep changing things. */
-          description: 'This exact view, with the prototype bars. They can keep exploring.',
+          description: 'This exact view, with the review bars. They can keep exploring.',
           onSelect: actions.copyLink,
         },
         {
@@ -434,8 +434,8 @@ function PrototypeHomeIcon() {
     <Link
       to="/"
       onClick={() => clearPrototypeWalkthrough()}
-      aria-label="Prototype home"
-      title="Prototype home"
+      aria-label="Hub home"
+      title="Hub home"
       style={{
         display: 'inline-flex',
         alignItems: 'center',

@@ -148,7 +148,7 @@ describe('XCEL dashboard — mount and nav', () => {
     // than deleted so that putting the link back is a deliberate act with a
     // failing test behind it, not something that drifts back in.
     renderDashboard()
-    expect(screen.queryByRole('link', { name: /How to read this dashboard/ })).toBeNull()
+    expect(screen.queryByRole('link', { name: /How to read the Hub/ })).toBeNull()
   })
 })
 
@@ -854,7 +854,7 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     expect(groups.map((g) => g.getAttribute('data-group'))).toEqual(['source-of-truth', 'in-progress'])
     expect(groups[0].textContent).toContain('stage branch')
     expect(groups[0].textContent).not.toContain('main, at the committed baseline')
-    expect(document.querySelector('[data-build-note]')!.textContent).toContain('shared to stage')
+    expect(document.querySelector('[data-build-note]')!.textContent).toMatch(/shared to stage/i)
   })
 
   it('the build is in the address — `?build=stage` — and absent for Main', async () => {

@@ -1566,13 +1566,17 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
         isLive(link)
           ? {
               id: 'archive',
-              label: 'Archive',
+              /* HIDE, not Archive (2026-11-01, Jillienne): "Archive" is also
+                 the nav section for things removed from the project, and a
+                 row that is merely hidden from Refinement is not that. Same
+                 store, same `archived` field — only the word changed. */
+              label: 'Hide',
               icon: <Package size={13} aria-hidden />,
               onSelect: () => void archive(link, true),
             }
           : {
               id: 'unarchive',
-              label: 'Unarchive',
+              label: 'Unhide',
               icon: <ArrowRotateLeft size={13} aria-hidden />,
               onSelect: () => void archive(link, false),
             },
@@ -1797,7 +1801,7 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
           {p.archivable && !inArchive && archived.length > 0 && (
             <button type="button" onClick={() => setShowArchive(true)} style={archiveLinkStyle}>
               <Package size={12} aria-hidden />
-              Show archive · {archived.length}
+              Show hidden · {archived.length}
             </button>
           )}
           {inArchive && (
@@ -1812,8 +1816,8 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
       {inArchive && (
         <p style={archiveNoteStyle}>
           {archived.length === 0
-            ? 'Nothing in the archive.'
-            : `${archived.length} ${archived.length === 1 ? p.noun : p.nounPlural} hidden from the board. Unarchive one to put it back.`}
+            ? 'Nothing hidden.'
+            : `${archived.length} ${archived.length === 1 ? p.noun : p.nounPlural} hidden from the board. Unhide one to put it back.`}
         </p>
       )}
 
