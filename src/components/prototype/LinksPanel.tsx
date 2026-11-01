@@ -1826,7 +1826,7 @@ const LINKS_PRESENTATION: LinkBoardPresentation = {
   showThumb: false,
   showProduct: false,
   showBadges: false,
-  emptyHint: 'Everything here is added on the page — nothing is authored in code.',
+  emptyHint: 'Nothing here yet. Add a link.',
   saveHint:
     'Saved to the shared store — everyone who opens this site sees it, and it survives a cleared cache. The date is stamped for you.',
 }
@@ -1854,7 +1854,7 @@ const RESEARCH_PRESENTATION: LinkBoardPresentation = {
   showProduct: false,
   showBadges: false,
   emptyHint:
-    'Nothing here yet. Attach the studies, findings and rationale behind the designs — everything is added on the page, not in code.',
+    'Nothing here yet. Add a link to a study or finding.',
   saveHint:
     'Saved to the shared store — everyone who opens this site sees it, and it survives a cleared cache. The date is stamped for you.',
 }
@@ -1879,7 +1879,7 @@ const PRD_PRESENTATION: LinkBoardPresentation = {
   showProduct: false,
   showBadges: false,
   emptyHint:
-    'Nothing here yet. Attach the PRDs and requirement docs the designs answer — everything is added on the page, not in code.',
+    'Nothing here yet. Add a link to a PRD.',
   saveHint:
     'Saved to the shared store — everyone who opens this site sees it, and it survives a cleared cache. The date is stamped for you.',
 }
@@ -1921,7 +1921,7 @@ export function DemoPanel({
     // chunk of, and a chunk replaced by a later one folds under "earlier".
     showFeature: true,
     emptyHint:
-      'Push a branch, paste its Netlify URL here, and everyone with the Hub link can open it.',
+      'Nothing here yet. Push a branch and paste its link here.',
     saveHint:
       'Saved to the shared store — the team sees it on the full site right away. The date is stamped for you.',
     // From `/?section=demo&add=1&url=…&title=…&note=…` — what

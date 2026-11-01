@@ -830,7 +830,7 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     const radios = within(group).getAllByRole('radio')
     expect(radios.map((r) => r.textContent)).toEqual(['Main', 'Stage'])
     expect(radios[0]).toHaveAttribute('aria-checked', 'true')
-    expect(document.querySelector('[data-build-note]')!.textContent).toContain('main’s build')
+    expect(document.querySelector('[data-build-note]')!.textContent).toMatch(/released product/i)
     // Under Main every row that opens is exactly its authored `to` — the
     // pre-switch behaviour, byte for byte.
     for (const f of openingRows()) expect(hrefOf(f.id), f.id).toBe(f.to)
@@ -852,8 +852,10 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     // Both cards are still there, in the same order, and neither claims to be main.
     const groups = [...document.querySelectorAll('main [data-group]')]
     expect(groups.map((g) => g.getAttribute('data-group'))).toEqual(['source-of-truth', 'in-progress'])
-    expect(groups[0].textContent).toContain('stage branch')
-    expect(groups[0].textContent).not.toContain('main, at the committed baseline')
+    // The notes are one plain line each (2026-11-01): the stage view says
+    // "next release", and never claims to be what the product is right now.
+    expect(groups[0].textContent).toContain('next release')
+    expect(groups[0].textContent).not.toContain('right now')
     expect(document.querySelector('[data-build-note]')!.textContent).toMatch(/shared to stage/i)
   })
 

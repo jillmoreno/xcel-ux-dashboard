@@ -55,12 +55,12 @@ export const PROTOTYPE_BUILDS: ReadonlyArray<{ id: PrototypeBuild; label: string
   {
     id: 'main',
     label: 'Main',
-    note: 'The released product — main’s build at the committed baseline.',
+    note: 'The released product.',
   },
   {
     id: 'stage',
     label: 'Stage',
-    note: 'Shared to stage and awaiting release. Same rows, the stage branch’s build.',
+    note: 'Shared to stage, waiting for release.',
   },
 ]
 

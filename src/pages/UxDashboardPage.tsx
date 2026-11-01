@@ -186,7 +186,7 @@ const SECTIONS: SectionDef[] = [
     // rows carry the explanation now (scope, owner, Updated, Coming soon),
     // and a sentence over them repeated it. Empty draws no lede at all; see
     // the render site, which skips the <p> rather than drawing a blank one.
-    blurb: '',
+    blurb: 'The product as it is right now.',
   },
   {
     // The REVIEW INBOX, authored on the page (2026-09-18) — labelled
@@ -205,7 +205,7 @@ const SECTIONS: SectionDef[] = [
     /* The counterweight to Prototypes' single row: as many as you like, because
        nothing here claims to be settled. */
     blurb:
-      'Work in review — branches, components and explorations the team is discussing. As many as you like; nothing here is the source of truth. Added on the page, not in code.',
+      'Work the team is still discussing.',
   },
   {
     // A BOARD since 2026-10-07, authored on the page like Resources — before
@@ -216,7 +216,7 @@ const SECTIONS: SectionDef[] = [
     id: 'research',
     label: 'Research',
     blurb:
-      'The evidence behind the designs — studies, findings, rationale and references. Added on the page, not in code.',
+      'The studies and findings behind the designs.',
   },
   {
     // UNGATED, which is the decision in this entry. (It sat directly under
@@ -242,7 +242,7 @@ const SECTIONS: SectionDef[] = [
     // Notes'.
     id: 'links',
     label: 'Resources',
-    blurb: 'Everything that lives elsewhere — briefs, boards, builds and references. Added on the page, not in code.',
+    blurb: 'Links to things that live somewhere else.',
   },
   {
     // The fourth board (2026-10-07), Research's twin: the product requirements
@@ -252,7 +252,7 @@ const SECTIONS: SectionDef[] = [
     id: 'prds',
     label: 'PRDs',
     blurb:
-      'The product requirements the designs answer — one link per document. Added on the page, not in code.',
+      'The requirements documents the designs answer.',
   },
   {
     // The hand-authored documents — outside products and ideas rebuilt on our
@@ -266,7 +266,7 @@ const SECTIONS: SectionDef[] = [
     // `?section=exploration` links and `category: exploration` need no alias.
     id: 'exploration',
     label: 'Explorations',
-    blurb: 'Outside products and ideas rebuilt on our tokens, components and UX conventions — documents, kept in code.',
+    blurb: 'Design explorations, kept as documents.',
   },
   // ARCHIVED 2026-10-15 — Design stood here, first in the old restricted
   // group, with Exploration beneath it (moved up under PRDs, above). Design
@@ -286,7 +286,7 @@ const SECTIONS: SectionDef[] = [
     // sentence too until it was archived on 2026-09-29.)
     id: 'development',
     label: 'Development',
-    blurb: 'Specified and handed off, in build, or under test.',
+    blurb: 'Features handed off to developers.',
   },
   {
     // Finished work, pulled out of the pipeline sections so those show only
@@ -298,7 +298,7 @@ const SECTIONS: SectionDef[] = [
     // comment there.
     id: 'done',
     label: 'Done',
-    blurb: 'Finished and signed off — kept for reference, not in flight.',
+    blurb: 'Finished work, kept for reference.',
   },
   {
     // Ungated since 2026-10-15 with the rest of the old restricted group — the
@@ -306,7 +306,7 @@ const SECTIONS: SectionDef[] = [
     id: 'archive',
     label: 'Archive',
     blurb:
-      'Components and variants removed from the project — what each was, where the code still lives, and how to bring it back.',
+      'Things removed from the project, and how to bring them back.',
     count: ARCHIVED_ITEMS.length,
   },
   {
@@ -321,7 +321,7 @@ const SECTIONS: SectionDef[] = [
     id: 'qa-notes',
     label: 'QA Notes',
     blurb:
-      'Findings from design-vs-build review — an Expected and an Actual capture, the detail, and where each one stands.',
+      'Where the build does not match the design.',
     // No `count` here: findings can be authored on the page, so a static number
     // is wrong as soon as one is added. Supplied live below, like To Do's.
   },
@@ -349,7 +349,7 @@ const SECTIONS: SectionDef[] = [
     id: 'todo-board',
     label: 'To Do Board',
     blurb:
-      'Who is working on what — move a card as its status changes so nobody doubles up. Added on the page, not in code.',
+      'Who is working on what.',
   },
   {
     // HUB RESOURCES — 2026-10-15, Jillienne: "add a Hub Resources in the new
@@ -371,7 +371,7 @@ const SECTIONS: SectionDef[] = [
     id: 'hub-resources',
     label: 'Hub Resources',
     blurb:
-      'How this dashboard is worked on, and how to read it — the guides that ship with the site. Each opens in a new tab, with a PDF beside it.',
+      'The guides for using the Hub.',
     count: HUB_DOCS.length,
   },
   // ARCHIVED 2026-09-29 — the To Do and Contributing sections stood here, last
@@ -2785,16 +2785,16 @@ function groupRows(
       id: 'source-of-truth',
       label: 'Final prototype — source of truth',
       note: stage
-        ? 'What the product will be at the next release: the stage branch, at the defaults its owners have shared.'
-        : 'What the product is right now: main, at the committed baseline.',
+        ? 'What the product will be at the next release.'
+        : 'What the product is right now.',
       rows: truth,
     },
     {
       id: 'in-progress',
       label: 'Work in progress',
       note: stage
-        ? 'The doors around it, each its owner’s, as they stand on stage. Jillienne releases stage to main.'
-        : 'The doors around it, each its owner’s. What is picked from here becomes the final prototype.',
+        ? 'The pieces around it, as they stand on stage.'
+        : 'The pieces around it, each owned by one designer.',
       rows: rest,
     },
   ].filter((g) => g.rows.length > 0)
