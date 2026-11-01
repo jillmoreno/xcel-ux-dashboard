@@ -56,6 +56,7 @@ import {
 } from '@/components/prototype/prototypeDoneUtil'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { setRowArchived, useRowArchive, type ArchivedRow } from '@/data/rowArchiveStore'
+import { PROTOTYPE_BUILDS, parsePrototypeBuild, prototypeHref, type PrototypeBuild } from '@/data/stageBuild'
 import {
   ArrowLeft,
   ArrowRotateLeft,
@@ -1399,6 +1400,12 @@ export function UxDashboardPage() {
        a stale link should open the board, not an empty one. */
     return v && (STATUS_ORDER as readonly string[]).includes(v) ? (v as FeatureStatusKey) : 'all'
   })
+  /* WHICH BUILD THE PROTOTYPES ROWS OPEN — Main or Stage (2026-11-01). In the
+     address as `?build=stage` so a link to "look at what is on stage" is a
+     link, and absent for Main so every existing Hub link means what it meant.
+     See `stageBuild.ts` for why this is a switch on Prototypes and not a
+     section of its own. */
+  const [build, setBuild] = useState<PrototypeBuild>(() => parsePrototypeBuild(params.get('build')))
 
   /* The other half of the share link: whatever the board is filtered to is in
      the address, so copying it copies the view. `replace` so a filter does not
@@ -1411,11 +1418,13 @@ export function UxDashboardPage() {
         else next.delete('q')
         if (status !== 'all') next.set('status', status)
         else next.delete('status')
+        if (build !== 'main') next.set('build', build)
+        else next.delete('build')
         return next
       },
       { replace: true },
     )
-  }, [query, status, setParams])
+  }, [query, status, build, setParams])
 
 
   // Demo shows no dev-cycle status. Everything in it is presentation-ready by
@@ -1611,7 +1620,7 @@ export function UxDashboardPage() {
      end-to-end row stands in its own card under its own heading; the doors
      around it — the work in progress — sit in a second card beneath. Every
      other section is the one unlabelled list it always was. */
-  const rowGroups = groupRows(section, rows).map((g) => (
+  const rowGroups = groupRows(section, rows, build).map((g) => (
     <div key={g.id} data-group={g.id}>
       {g.label && (
         <div style={groupHeadStyle}>
@@ -1637,6 +1646,7 @@ export function UxDashboardPage() {
                not the product (Prototypes rows show no status and take no
                dev-cycle action, archive included). */
             archive={rowArchive.available && showStatus ? { state: 'can', onSet: setArchived } : undefined}
+            build={section === 'prototypes' ? build : undefined}
           />
         ))}
       </div>
@@ -1920,6 +1930,35 @@ export function UxDashboardPage() {
               <ShareLinkButton />
             </div>
 
+            {/* MAIN · STAGE (2026-11-01). Prototypes shows no status pills —
+                the section IS the product — so this strip takes their place
+                there. It does not filter the rows; it decides which BUILD the
+                same five rows open. The active build's note sits beside it so
+                "Stage" is never a bare word to a stakeholder who has not read
+                the guide. */}
+            {section === 'prototypes' && (
+              <div style={buildRowStyle}>
+                <div style={pillRowStyle} role="radiogroup" aria-label="Which build the rows open">
+                  {PROTOTYPE_BUILDS.map((b) => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={build === b.id}
+                      data-build={b.id}
+                      onClick={() => setBuild(b.id)}
+                      style={{ ...pillStyle, ...(build === b.id ? pillActiveStyle : null) }}
+                    >
+                      {b.label}
+                    </button>
+                  ))}
+                </div>
+                <p style={buildNoteStyle} data-build-note>
+                  {PROTOTYPE_BUILDS.find((b) => b.id === build)!.note}
+                </p>
+              </div>
+            )}
+
             {/* Status pills. Counts are of the SECTION, not of the current
                 selection, so a pill says how many it would show rather than how
                 many survive the pick you already made. Only statuses actually
@@ -2026,6 +2065,10 @@ type ProjectRowProps = {
    *  `archived` — the rows listed under Archive — offers Unarchive and
    *  nothing else but Copy link. Absent where the store is unreachable. */
   archive?: { state: 'can' | 'archived'; onSet: (f: PrototypeFeature, archived: boolean) => void }
+  /** Which build a PROTOTYPES row opens (2026-11-01) — `main` unless the
+   *  section's Main · Stage switch says otherwise. Rows outside Prototypes
+   *  ignore it: nothing else on the Hub opens a build of the product. */
+  build?: PrototypeBuild
 }
 
 function ProjectRow({
@@ -2040,6 +2083,7 @@ function ProjectRow({
   onToggleInDesign,
   onSetRollup,
   archive,
+  build = 'main',
 }: ProjectRowProps) {
   const [hover, setHover] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -2062,9 +2106,16 @@ function ProjectRow({
   // admin tool to show it's disabled". A live frame of the surface behind a
   // held-back row read as an invitation; the abstract mark reads as closed.
   const hasPreview = !placeholder && Boolean(feature.thumbnail || preview)
-  const href = feature.externalUrl ?? feature.to ?? `/prototype/${feature.id}`
-  const external = Boolean(feature.externalUrl)
   const isPrototypeRow = feature.category === 'prototype'
+  /* A Prototypes row's `to` is a same-origin path on main's build; under the
+     section's Stage switch the same path opens on the stage origin instead
+     (`stageBuild.ts`). Every other row is what it always was. */
+  const href =
+    feature.externalUrl ??
+    (feature.to ? (isPrototypeRow ? prototypeHref(feature.to, build) : feature.to) : `/prototype/${feature.id}`)
+  // An absolute href is one the copy-link button must not prefix with this
+  // origin — a document's, or a Prototypes row's under Stage.
+  const external = Boolean(feature.externalUrl) || /^https?:\/\//.test(href)
   /* The three facts a Prototypes row carries beside its title (2026-10-14):
      which door it is (an empty scope label means none — the product row),
      whose surface it is, and when that surface last changed on `main`. */
@@ -2813,6 +2864,22 @@ const searchInputStyle: CSSProperties = {
 
 const pillRowStyle: CSSProperties = { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }
 
+/* The Main · Stage strip and its one-line note, side by side on a wide pane
+   and stacked on a narrow one. The note takes the row's bottom margin so the
+   two read as one control. */
+const buildRowStyle: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'baseline',
+  columnGap: 14,
+  marginBottom: 14,
+}
+const buildNoteStyle: CSSProperties = {
+  margin: '0 0 14px',
+  fontSize: 12.5,
+  color: 'var(--ux-text-2)',
+}
+
 const pillStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
@@ -2860,21 +2927,29 @@ const countStyle: CSSProperties = { marginLeft: 'auto', fontSize: 12.5, color: '
 function groupRows(
   section: UxSection,
   rows: PrototypeFeature[],
+  build: PrototypeBuild = 'main',
 ): { id: string; label?: string; note?: string; rows: PrototypeFeature[] }[] {
   if (section !== 'prototypes') return [{ id: 'all', rows }]
   const truth = rows.filter((f) => f.prototypeScope === 'end-to-end')
   const rest = rows.filter((f) => f.prototypeScope !== 'end-to-end')
+  // The same two cards under either build; only the notes change, because
+  // "main, at the committed baseline" is a false statement about stage.
+  const stage = build === 'stage'
   return [
     {
       id: 'source-of-truth',
       label: 'Final prototype — source of truth',
-      note: 'What the product is right now: main, at the committed baseline.',
+      note: stage
+        ? 'What the product will be at the next release: the stage branch, at the defaults its owners have shared.'
+        : 'What the product is right now: main, at the committed baseline.',
       rows: truth,
     },
     {
       id: 'in-progress',
       label: 'Work in progress',
-      note: 'The doors around it, each its owner’s. What is picked from here becomes the final prototype.',
+      note: stage
+        ? 'The doors around it, each its owner’s, as they stand on stage. Jillienne releases stage to main.'
+        : 'The doors around it, each its owner’s. What is picked from here becomes the final prototype.',
       rows: rest,
     },
   ].filter((g) => g.rows.length > 0)
