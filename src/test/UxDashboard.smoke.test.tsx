@@ -856,7 +856,7 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     // "next release", and never claims to be what the product is right now.
     expect(groups[0].textContent).toContain('next release')
     expect(groups[0].textContent).not.toContain('right now')
-    expect(document.querySelector('[data-build-note]')!.textContent).toMatch(/shared to stage/i)
+    expect(document.querySelector('[data-build-note]')!.textContent).toMatch(/stage branch/i)
   })
 
   it('the build is in the address — `?build=stage` — and absent for Main', async () => {

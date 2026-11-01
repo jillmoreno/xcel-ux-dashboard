@@ -60,7 +60,7 @@ export const PROTOTYPE_BUILDS: ReadonlyArray<{ id: PrototypeBuild; label: string
   {
     id: 'stage',
     label: 'Stage',
-    note: 'Shared to stage, waiting for release.',
+    note: 'The stage branch of the repo. What the product design will be at the next release.',
   },
 ]
 
