@@ -70,9 +70,29 @@ release. The Hub cannot read stage from main (same password, cross-origin),
 so what is WAITING on stage is the To Do Board's **On Stage** column, which
 `share-to-stage` files into, not a tag on the rows.
 
+**THE VOCABULARY (2026-11-01).** Jillienne settled the words designers read,
+after an audit found the same thing under several names and one name on
+several things. In guides, About and UI copy: **routine** (not skill, not
+command); **the design lead (Jill)** for the role — defined once per guide as
+the person in charge of the project's GitHub repository, who owns `main` and
+releases — with "Jill" in conversational lines and "Jillienne" only in this
+file, code comments and commit history; **the Hub** for the site (never "the
+dashboard", which is the learner's; "gateway" and "UX Dashboard" are code and
+repo terms); **branch link** / **stage link** for a Netlify build address
+(not review link, not branch build); **review bar** for the dark bar (the
+component is still `PrototypeBar.tsx`); **Hide / Unhide / Show hidden** for
+the Refinement row action, so **Archive** means only the nav section; and
+**"promote" is retired as a designer word** — it had named four acts. The
+routines are now `share-component` · `share-branch` · `share-to-stage`
+(put work where people can see it), `decide-defaults` (a step inside
+share-to-stage; designers never type it), `freeze-for-testing`, and the
+design lead's `release`. Old names are alias skills. Code identifiers,
+paths and server fields did not change. Older paragraphs in this file keep
+the names they were written with; they are history.
+
 **THE TO DO BOARD (2026-10-15)** is the rail's last section and the one
-thing on it that is not about a prototype: four columns — To Do, Working On
-It, Ready For Refinement, Ready for Prototype and Handoff — that say who is
+thing on it that is not about a prototype: five columns — To Do, Working On
+It, Ready For Refinement, On Stage (2026-11-01), Ready for Prototype and Handoff — that say who is
 on what this week. Authored on the page like Refinement, on its own Blobs
 store, with its own people roster seeded from the same five names. Two rules
 are the SERVER's: a card in the handoff column is Jillienne's however it got
@@ -136,7 +156,7 @@ Two things that follow, and both have bitten:
 - **A Refinement row pinned with `?ff=` tracks `main`,** so it goes stale
   silently when the component changes underneath — no error, it just quietly
   becomes something else. When something must NOT move (a user test, a
-  sign-off), that is `promote-to-testing`'s frozen branch, not a Refinement row.
+  sign-off), that is `freeze-for-testing`'s frozen branch, not a Refinement row.
 - **Refinement rows are not in git,** so there is no record of what was shown
   when. It is a working surface, not a decision log — the decisions log on a dev
   handoff is where a decision gets recorded.
@@ -153,8 +173,8 @@ strip both treat an archived row as off the board. Refinement only — the
 other three boards keep free-text authors and no archive.
 
 The ways in are already built: `share-branch` (a branch),
-`promote-component` (one widget's variants), `promote-to-prototype` (moving
-something into the source of truth). There is deliberately no "create a second
+`share-component` (one widget's variants), `share-to-stage` (moving a decided
+surface onto the stage build). There is deliberately no "create a second
 prototype" skill: a new SCOPE is a decision Jillienne makes in
 `PROTOTYPE_SCOPES`, and a second row for an existing scope is a Refinement
 job.
@@ -243,7 +263,7 @@ scope — the product IS React here now, exactly as it is in the LMS.
    `CourseContentV2.tsx` is the worked example. The original is never touched, so
    you cannot conflict with whoever else is editing it. **Fork the layout, import
    the data:** if both versions duplicate the content, the comparison is no longer
-   about your change. Say `/promote-component` and it will do this with you.
+   about your change. Say `/share-component` and it will do this with you.
 3. **Share it — say `/share-branch`.** One command, and it was three until
    2026-10-15: it runs the type check and the tests, commits, pushes (Netlify
    builds your branch at its own address), waits for that build, and hands you
@@ -264,7 +284,7 @@ scope — the product IS React here now, exactly as it is in the LMS.
    working the whole time, which is what hid it.
 
 4. **Decided? Share it to stage — say `/share-to-stage`.** For a surface you
-   own. It asks the `promote-to-prototype` questions if your branch has not
+   own. It asks the flag questions (`decide-defaults`) if your branch has not
    answered them (which flag defaults become the surface's), merges today's
    `stage` into your branch, runs the checks, pushes, moves `stage` to your
    branch, waits for the stage build, and files the **On Stage** card. On the
@@ -359,7 +379,7 @@ file, so the two cannot drift apart.
 | `src/components/prototype/DesignControlsBar.tsx` | the design controls bar — you do not edit it to get a control on it (see below) |
 | `src/components/layout/AdminToolsMenu.tsx` | the robot — the UI/UX Demo Tools menu |
 | `.claude/hooks/`, `.claude/settings.json`, `.github/` | the two guards — the file guard and the main guard — the settings that wire them, and the CODEOWNERS file behind main's GitHub lock |
-| `.claude/skills/` | `release` (was `ship-to-main`, kept as a pointer), `share-to-stage`, `promote-to-prototype`, `share-branch` (was `promote-to-refinement`, kept as a pointer; `share` for one day), `promote-component`, `promote-to-testing`, `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
+| `.claude/skills/` | `release` (was `ship-to-main`), `share-to-stage`, `share-branch` (was `promote-to-refinement`; `share` for one day), `share-component` (was `promote-component`), `decide-defaults` (was `promote-to-prototype`, before that `promote-to-demo`), `freeze-for-testing` (was `promote-to-testing`), `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — every old name kept as an alias pointer. Jillienne's. Run them; don't edit them. |
 | `public/contributing/`, `public/designer-workflow/`, `public/about/` | the three guides (regenerate the PDFs if you do edit them) |
 
 ## Stack

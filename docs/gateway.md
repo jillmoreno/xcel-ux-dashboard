@@ -1717,3 +1717,15 @@ when" lives, because the Hub cannot read stage from main (same site
 password, cross-origin). Why a switch and not a section: Jillienne,
 2026-11-01 — "I want the prototype page to have both Main and Stage options
 there, not a new page in the rail."
+
+## The vocabulary (2026-11-01)
+
+Designer-facing words, settled by Jillienne after the terminology audit —
+the full list is in CLAUDE.md under "THE VOCABULARY". The short form:
+*routine* for a `/` command; *the design lead (Jill)* for the role that owns
+the GitHub repository and `main`; *the Hub* for this site; *branch link* and
+*stage link* for Netlify build addresses; *review bar* for the dark bar;
+*Hide / Unhide / Show hidden* on Refinement rows, so *Archive* is only the nav
+section; and no "promote" — `share-component`, `share-branch`,
+`share-to-stage`, `decide-defaults`, `freeze-for-testing`, `release`, with
+every old name an alias skill.
