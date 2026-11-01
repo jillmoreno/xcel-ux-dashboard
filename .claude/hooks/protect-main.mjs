@@ -31,9 +31,10 @@ import { fileURLToPath } from 'node:url'
 import { isOwner } from './protect-framework.mjs'
 
 const INSTEAD =
-  'Shipping to main is Jillienne’s step — see "Ship to main" in the day-to-day guide. ' +
+  'Releasing to main is Jillienne’s step — see "Release" in the day-to-day guide. ' +
   'Your work reaches the team from YOUR BRANCH: say "/share-branch" to put it on Refinement, ' +
-  'and tell Jill when it is ready to ship. If you are standing on main by accident, say ' +
+  'and "/share-to-stage" when your surface is decided; Jill releases stage to main. ' +
+  'If you are standing on main by accident, say ' +
   '"switch back to my feature branch".'
 
 /** Does `command` write to main, or move onto it? `currentBranch` is where the

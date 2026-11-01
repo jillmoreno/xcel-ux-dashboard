@@ -15,6 +15,13 @@ stakeholders are sent to see on the Hub.
 
 ## Vocabulary, because it moved on 2026-09-18
 
+> **2026-11-01 — a third place, STAGE.** Between a Refinement link (the
+> designer's branch) and Prototypes under Main (`main`) there is now the
+> `stage` branch, shown by the Main · Stage switch on Prototypes. This skill
+> is unchanged — it records the decision on the branch — but the step after
+> it is `/share-to-stage` (the owner's), not "tell Jillienne"; and the merge
+> skill is `/release` (`ship-to-main` still answers). See `share-to-stage`.
+
 The XCEL UX Dashboard has two ungated sections and they are different acts:
 
 | Section | What it is | How things get in |
@@ -464,7 +471,11 @@ decision, applied by Jillienne* — because the row's `owner` says who decides
 and the commit's author says who typed, and the two being different is
 exactly the fact worth recording.
 
-Then tell Jillienne the branch is ready to merge, and summarise: which flag
+Then **share it to stage** — `/share-to-stage` merges the branch into the
+`stage` build so everyone can open the decided surface from Prototypes →
+Stage, and files the On Stage card; Jillienne releases stage to main with
+`/release` (2026-11-01). If you ran this FROM `share-to-stage`, it carries on
+from here. Either way, summarise: which flag
 defaults now ship in Prototypes, and what stayed sandbox-only.
 
 ### 6. After the merge — retire the Refinement row
@@ -489,9 +500,10 @@ surface instead. Retiring it is for when the conversation is over.
 - **Each group is its scope owner's — to decide AND to run this for.** Anjani
   promotes the Compass group on her own branch; Jillienne the end-to-end and
   invite groups. A group you do not own is listed and left alone.
-- **Only Jillienne merges.** A promotion is a commit on a branch; `ship-to-main`
-  is where it becomes the product, and that skill is hers. It refuses a branch
-  with an undecided group.
+- **Only Jillienne releases.** A promotion is a commit on a branch;
+  `share-to-stage` (the owner's) puts it on the stage build, and `release`
+  (hers, formerly `ship-to-main`) is where it becomes the product. Both refuse
+  an undecided group.
 - **The default dashboard version is Jillienne's alone.** The one lever that
   chooses what renders for everyone, in every scope.
 - **Promoting a version displaces one.** Name the one being replaced when you

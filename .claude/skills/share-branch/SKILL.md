@@ -295,6 +295,12 @@ A no is a perfectly good answer. Ask once.
 
 ## The other half
 
+> **2026-11-01:** and a third — `share-to-stage`. Refinement is where a chunk
+> is discussed; when its owner decides it is the surface, `/share-to-stage`
+> puts it on the stage build (Prototypes → Stage on the Hub), and Jillienne's
+> `/release` puts stage on main. Same word, same shape: a share moves your
+> work somewhere others can see it, and never to main.
+
 `promote-to-prototype` runs on the PR before merge and ends by retiring the
 row. `retire-from-refinement` is the way out when the work did not ship.
 Between them the loop is: this skill puts the work on the table; those take it

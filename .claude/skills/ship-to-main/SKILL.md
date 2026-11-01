@@ -1,241 +1,32 @@
 ---
 name: ship-to-main
-description: Merge the finished branch you are on into `main` and push, so both Netlify sites rebuild. Covers the checks that must pass first, the promote-to-prototype gate when flag defaults changed, the main-is-in-a-worktree trap that makes `git switch main` fail, staging without sweeping in stray working files, and confirming the merged tree is the one that was tested. Trigger on "ship it", "ship to main", "merge to main", "push this to main", "put this live", "/ship-to-main".
-version: 1.0.0
+description: The old name for `release`. Jillienne merges `stage` into `main` and pushes, so the Hub rebuilds. Follow `.claude/skills/release/SKILL.md`; it is the whole skill. Trigger on "ship it", "ship to main", "merge to main", "push this to main", "put this live", "/ship-to-main".
+version: 2.0.0
 author: UX Design — Colibri
-last_updated: 2026-09-24
-status: active
+last_updated: 2026-11-01
+status: alias
 ---
 
-# Skill: Ship to main
+# Skill: Ship to main → `release`
 
-The last step. The branch is finished and reviewed; this puts it on `main` and
-therefore on **both** Netlify sites.
+**Read `.claude/skills/release/SKILL.md` and follow it.** There is nothing
+else here on purpose — two copies is how a step gets fixed in one and not the
+other (the same reasoning as `promote-to-refinement` → `share-branch`).
 
-## Why this exists
+## Why it was renamed (2026-11-01)
 
-The three `promote-*` skills cover *sharing* a branch (Refinement), *freezing*
-one (Testing) and deciding *flag baselines* (Prototype). None of them covers the
-plain act of shipping, which is the most repeated one — and it has four traps
-that cost real time on 2026-09-24 alone. Each step below that starts with ⚠ is
-one of them, written down because they were all hit.
+`ship-to-main` merged a *designer's branch* into main, which made Jillienne's
+merge the first moment anyone could see decided work as the product. The
+`stage` branch now sits in between: owners `/share-to-stage`, everyone can
+open the stage build from Prototypes → Stage, and what Jillienne merges is
+`stage`, not a branch. The act is the same; its input changed, and "release"
+is what a stakeholder calls it.
 
-## ⚠ Before anything: this is an owner action
+⚠ **The one thing this alias must never do is the old thing.** If someone asks
+to "ship feat/x to main", the answer is: share it to stage first
+(`/share-to-stage`, the owner's step), then release. A branch never goes to
+main directly any more — that skipped the one build everyone can see first.
 
-`main` is live on the Hub — the one Netlify site since 2026-10-15, for
-designers, developers and stakeholders alike. A designer's branch does not ship
-itself.
-
-If `git config user.email` is not Jillienne's, **stop and say so**: the branch is
-ready, and she merges it. **Since 2026-10-29 this IS enforced, twice:**
-`.claude/hooks/protect-main.mjs` refuses the push, the merge and the switch
-onto main for anyone else before they run, and GitHub's branch protection on
-`main` (pull request + code-owner review required, admins exempt, with
-`.github/CODEOWNERS` naming her) refuses a designer's push to main whatever
-sent it. She is exempt from both, so every step below runs for her as before.
-
-## Steps
-
-### 1. Where are we, and is it current?
-
-```bash
-git rev-parse --abbrev-ref HEAD
-git fetch origin --quiet
-git rev-list --left-right --count origin/main...HEAD
-```
-
-- On `main` already, or detached: stop and say so.
-- Output is `<behind>  <ahead>`. **Behind > 0 → rebase before anything else.**
-  Testing a branch that is behind tests a tree that will never exist:
-
-```bash
-git rebase origin/main
-```
-
-⚠ **`git switch main` FAILS IN THIS REPO** and it fails *quietly* if you chain
-it with `&&`:
-
-```
-fatal: 'main' is already checked out at '/Users/jill.moreno/xcel-main'
-```
-
-`main` lives in a second worktree. On 2026-09-24 a `git switch -q main && git pull`
-failed at the switch, the pull never ran, and the branch created on the next line
-was cut from the wrong commit — silently. **Never `git switch main` in the
-primary checkout. Use the worktree** (step 6), and check `git worktree list` if
-the path has moved.
-
-### 2. Did any flag default change?
-
-```bash
-git diff origin/main...HEAD -- src/context/FeatureFlagContext.tsx
-```
-
-If `defaultEnabled` or `defaultVariant` moved, **run `promote-to-prototype`
-first, on this branch, before the merge.** Merging publishes to both sites, so
-the baseline has to be decided beforehand. Adding a NEW field (`maturity`,
-say) is not a baseline change — only a changed default is.
-
-⚠ **EVERY GROUP, NOT JUST A COMMIT (2026-10-14).** Candidates are grouped by
-the Prototypes row they reach, and each group is decided by its scope owner —
-Anjani for Compass, Jillienne for the rest (`PROTOTYPE_SCOPES` in
-`prototypeFeatures.ts`). A promotion commit on the branch is not enough on its
-own: check its body covers every group whose defaults changed. A group it
-names as *waiting on its owner*, or does not name at all, is NOT READY — hand
-the branch back to that owner. Do not decide it here: this skill is the merge,
-and the merge is the one thing on this list that is Jillienne's alone.
-
-### 2b. Stamp the Prototypes rows the branch changed (2026-10-14)
-
-Every row on the Prototypes section carries `lastUpdated` — the time its
-surface last changed on `main` — and shows it as an "Updated" tag. A client
-cannot know that at run time and a Netlify build cannot compute it from its
-shallow clone, so THIS step is where it is kept true:
-
-```bash
-git diff --name-only origin/main...HEAD -- src public | sort
-```
-
-Map the changed paths to scopes with the rule in `promote-to-prototype`
-("How a candidate gets its scope"): Compass paths → `xcel-compass`; the Atlas
-home and learning pages → `xcel-atlas-learning`; the invite pages →
-`xcel-invite`; anything under the product app → `xcel-dashboard` as well,
-since the end-to-end row shows all of it. Set each affected row's
-`lastUpdated` in `prototypeFeatures.ts` to now, in UTC:
-
-```bash
-date -u +%Y-%m-%dT%H:%M:%SZ
-```
-
-Commit it with the branch (it is data; the smoke test checks the shape). A
-branch that changes only the gateway, docs or tests stamps nothing.
-
-### 3. Verify — all three, on this branch
-
-```bash
-npm run build                                   # ⚠ THE ACTUAL DEPLOY GATE
-npx vitest run
-npx eslint <the files this branch changed>
-```
-
-⚠ **`npm run build`, NOT `npx tsc -b --noEmit`.** Netlify runs
-`npm run build`, which is `tsc -b && vite build` — so a type error fails the
-deploy on BOTH sites. And `tsc -b` is *incremental*: it trusts its cached build
-info, so a run that passed ten minutes ago can pass again while the real build
-fails. `--force` defeats the cache; `npm run build` is what actually ships.
-
-This is not hypothetical. On 2026-09-24, commit `681599d` added a test importing
-a `.mjs` file with no type declarations. `vitest` passed (esbuild does not
-typecheck), `eslint` passed, `tsc` was never re-run — and **both site builds
-errored**. Nothing was live-broken, because Netlify keeps serving the last good
-build, but nothing deployed for hours and no one was told.
-
-⚠ **`npm run lint` IS NOT A GATE and never will be.** It reports **1883
-problems on `main`** (1843 errors) as of 2026-09-24. Lint the CHANGED FILES
-ONLY, and when one of them reports something, check whether `main`'s copy
-reports it too before calling it yours:
-
-```bash
-git show origin/main:path/to/file.tsx > /tmp/base.tsx   # then lint /tmp/base.tsx
-```
-
-⚠ **Never read an exit code through a pipe.** `npx eslint . | tail` reports
-*tail's* status, which is always 0. That is how "lint finished clean" was
-reported on a run that had not.
-
-Browser-visible change? Verify it in the Browser pane **the way a person
-reaches it** — click through from the page they start on, not by loading the
-final URL. Three bugs shipped on 2026-09-24 (a row that opened the wrong page,
-a preview with its controls stripped, a row in the wrong section) were all
-invisible to a direct URL load and obvious on the first click.
-
-### 4. Commit — and look at what you are staging
-
-```bash
-git status --short      # ⚠ READ THIS. Then stage deliberately:
-git add -- <the paths this change touches>
-```
-
-⚠ **`git add -A` sweeps whatever is sitting in the working tree.** On
-2026-09-24 it pulled a personal `.docx` from the repo root into an unrelated
-commit, and it reached `main` before anyone noticed. `.gitignore` now covers the
-usual shapes, but the habit is the fix: name the paths, or read `git status`
-first and know why every line is there.
-
-Message style: what changed and **why**, with ⚠ on anything a reader would
-otherwise undo. The repo's commit bodies carry the reasoning; keep that.
-
-### 5. Push the branch
-
-```bash
-git push -u origin <branch>
-```
-
-The branch is pushed BEFORE the merge, so the work exists somewhere other than
-one laptop if the merge goes wrong.
-
-### 6. Merge — in the main worktree, fast-forward only
-
-```bash
-cd /Users/jill.moreno/xcel-main
-git fetch origin --quiet
-git status --short                       # must be clean
-git merge --ff-only origin/<branch>
-```
-
-`--ff-only` on purpose: `main`'s recent history is linear, and a merge commit
-here would be a new shape nobody chose. If it refuses, the branch is behind —
-go back to step 1 and rebase.
-
-### 7. Confirm the merged tree is the one you tested
-
-```bash
-git diff --stat origin/<branch> HEAD     # expect NO output
-```
-
-`xcel-main` has no `node_modules`, so the suite cannot run there. This is what
-stands in for re-running it: identical tree, already-verified result. If it
-prints anything, do not push — work out what merged that you did not test.
-
-### 8. Push, and say what changed where
-
-```bash
-git push origin main
-```
-
-Then tell Jillienne, in plain language, **what each site looks like now** —
-they are different audiences and the same commit can mean different things to
-each:
-
-| Site | Who | Notes |
-|---|---|---|
-| `ux-design-xceldashboard` | everyone — designers, developers, stakeholders | every control, every section; the production deploy 404s `/recaps/*` |
-
-The user-testing site is **not** affected — it tracks the frozen `test/session-1`
-and moves only by a deliberate force-push. Say so if a session is running.
-
-⚠ **Then check that it actually built.** A failed build does not take the site
-down — Netlify keeps serving the last good deploy — so the failure mode is a
-change that silently never arrives:
-
-```bash
-netlify api listSiteDeploys --data '{"site_id":"ux-design-xceldashboard.netlify.app"}'
-```
-
-## Guardrails
-
-- **Owner only.** A designer's branch is ready; Jillienne ships it.
-- **Never `git switch main`** — it is a worktree. Use `/Users/jill.moreno/xcel-main`.
-- **Never `git add -A`** without reading `git status --short` first.
-- **Flag defaults are decided before the merge**, via `promote-to-prototype`,
-  **by each group's owner.** An undecided group does not merge.
-- **`--ff-only`.** A refusal means rebase, not `--no-ff`.
-- **Tree-identical before pushing `main`.** No exceptions — it is two live sites.
-- **Lint the diff, not the repo**, and never through a pipe.
-- **`npm run build` is the gate**, not `tsc --noEmit` — `tsc -b` caches, and the
-  deploy runs the build.
-- **A failed deploy is silent.** Netlify keeps serving the last good build, so
-  the site looks fine and the change simply never arrives. Check the deploy
-  state after pushing `main` (step 8) rather than assuming.
-- **Don't delete the branch** in the same breath. Ask; it is free to keep and
-  occasionally useful to go back to.
+The name is kept because it is written in places that outlive a rename —
+`protect-main.mjs`'s message, three guides, and muscle memory. Both names
+work; `/release` is the one the guides teach.
