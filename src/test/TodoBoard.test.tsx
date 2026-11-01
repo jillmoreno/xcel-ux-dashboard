@@ -145,7 +145,7 @@ describe('the todo-board endpoint', () => {
     expect(blocked.some((b) => b.startsWith('/api'))).toBe(false)
   })
 
-  it('declares the same four columns the client does', () => {
+  it('declares the same five columns the client does', () => {
     /* ⚠ THE COUPLING THAT ROTS. The function re-declares the column ids rather
        than importing them, because it is a trust boundary — the same call
        `linkBoard.ts` makes for `ALLOWED_TYPES`. A column added on one side
@@ -250,7 +250,7 @@ describe('where a dropped card lands', () => {
 /* ── the board ────────────────────────────────────────────────────────────── */
 
 describe('TodoBoardPanel', () => {
-  it('draws the four columns, each counting its own cards', async () => {
+  it('draws the five columns, each counting its own cards', async () => {
     mockBoard([
       card({ id: 'card-001', column: 'todo' }),
       card({ id: 'card-002', column: 'todo', title: 'Admin Tool — first React screen', owner: 'Eric' }),
@@ -259,7 +259,7 @@ describe('TodoBoardPanel', () => {
     render(<TodoBoardPanel />)
     await boardReady()
 
-    for (const label of ['To Do', 'Working On It', 'Ready For Refinement', 'Ready for Prototype and Handoff']) {
+    for (const label of ['To Do', 'Working On It', 'Ready For Refinement', 'On Stage', 'Ready for Prototype and Handoff']) {
       expect(screen.getByLabelText(label)).toBeTruthy()
     }
     expect(within(screen.getByLabelText('To Do')).getByText('2')).toBeTruthy()
@@ -636,6 +636,19 @@ describe('the promote-to-refinement hand-off', () => {
     expect((within(dialog).getByLabelText('Owner') as HTMLSelectElement).value).toBe('Eric')
   })
 
+  it('share-to-stage files straight into On Stage, which does not auto-assign', async () => {
+    // 2026-11-01. The skill opens `?section=todo-board&add=1&column=stage`.
+    // On Stage is the owner's card, not Jillienne's: the handoff rule stays
+    // on the LAST column. A staged chunk that silently became hers would hide
+    // who is waiting on the release.
+    mockBoard([])
+    render(<TodoBoardPanel prefill={{ title: 'Week view', note: 'Staged 2026-11-01 — https://stage--x', owner: 'Anjani', column: 'stage' }} />)
+    const dialog = await screen.findByRole('dialog')
+    expect((within(dialog).getByLabelText('Column') as HTMLSelectElement).value).toBe('stage')
+    expect((within(dialog).getByLabelText('Owner') as HTMLSelectElement).value).toBe('Anjani')
+    expect(within(dialog).getByLabelText('Column')).toHaveTextContent('On Stage')
+  })
+
   it('opens no sheet at all when the board cannot author', async () => {
     // A prefill against an unreachable endpoint is a form that throws the
     // designer's edits away on Add — the same reason `LinkBoardPanel` waits
@@ -687,7 +700,7 @@ describe('the promote-to-refinement hand-off', () => {
     expect((within(dialog).getByLabelText('Owner') as HTMLSelectElement).value).toBe('Eric')
   })
 
-  it('falls back to To Do when the column is not one of the four', async () => {
+  it('falls back to To Do when the column is not one of the five', async () => {
     mockBoard([])
     renderDashboard('/?section=todo-board&add=1&column=backlog&title=X')
     const dialog = await screen.findByRole('dialog')

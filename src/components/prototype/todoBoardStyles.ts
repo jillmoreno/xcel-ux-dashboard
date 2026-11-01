@@ -172,7 +172,9 @@ export function filterAvatarStyle(active: boolean): CSSProperties {
  */
 export const boardStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+  // Five since 2026-11-01 (On Stage). Still one row: the board is read left
+  // to right as a card's life, and wrapping would break the sentence.
+  gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
   gap: 16,
   alignItems: 'start',
   paddingBottom: 12,

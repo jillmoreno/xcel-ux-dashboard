@@ -48,6 +48,13 @@ export const TODO_COLUMNS = [
   { id: 'todo', label: 'To Do' },
   { id: 'working', label: 'Working On It' },
   { id: 'refine', label: 'Ready For Refinement' },
+  /** ON STAGE (2026-11-01, Jillienne). The chunk is on the `stage` build —
+   *  its owner ran `/share-to-stage` — and is waiting on her `/release`. This
+   *  column is the Hub's ONLY record of what is staged and since when: the
+   *  Prototypes rows cannot read stage from main (see `stageBuild.ts`), so
+   *  the card carries the date in its note. A card that has sat here long is
+   *  the "stale stage" signal she asked for. */
+  { id: 'stage', label: 'On Stage' },
   {
     id: 'handoff',
     label: 'Ready for Prototype and Handoff',

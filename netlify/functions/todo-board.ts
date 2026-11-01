@@ -53,13 +53,13 @@ export const config = {
 const STORE_NAME = 'todo-board'
 
 /**
- * The four columns, in board order. Re-declared here rather than imported from
+ * The five columns, in board order (`stage` — On Stage — added 2026-11-01). Re-declared here rather than imported from
  * `src/data/todoBoardStore.ts` for the reason `ALLOWED_TYPES` is re-declared
  * in `linkBoard.ts`: this is a trust boundary, and the client module is a
  * compile-time claim about code we wrote. `TodoBoard.test.tsx` parses both
  * files and asserts they agree, so the duplication cannot drift silently.
  */
-export const COLUMNS = ['todo', 'working', 'refine', 'handoff'] as const
+export const COLUMNS = ['todo', 'working', 'refine', 'stage', 'handoff'] as const
 
 /** The column that assigns itself. See "THE HANDOFF RULE" above. */
 export const AUTO_ASSIGN_COLUMN = 'handoff'
