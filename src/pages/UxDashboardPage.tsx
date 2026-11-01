@@ -286,7 +286,7 @@ const SECTIONS: SectionDef[] = [
     // sentence too until it was archived on 2026-09-29.)
     id: 'development',
     label: 'Development',
-    blurb: 'Features handed off to developers.',
+    blurb: 'Detailed handoff documentation for developers.',
   },
   {
     // Finished work, pulled out of the pipeline sections so those show only
@@ -321,7 +321,7 @@ const SECTIONS: SectionDef[] = [
     id: 'qa-notes',
     label: 'QA Notes',
     blurb:
-      'Where the build does not match the design.',
+      'A place to capture where the build does not match the design.',
     // No `count` here: findings can be authored on the page, so a static number
     // is wrong as soon as one is added. Supplied live below, like To Do's.
   },
@@ -349,7 +349,7 @@ const SECTIONS: SectionDef[] = [
     id: 'todo-board',
     label: 'To Do Board',
     blurb:
-      'Who is working on what.',
+      'Internal checklist of items for the UX team to review and discuss.',
   },
   {
     // HUB RESOURCES — 2026-10-15, Jillienne: "add a Hub Resources in the new
