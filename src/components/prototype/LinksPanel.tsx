@@ -58,7 +58,9 @@ import {
   Trash,
   User,
 } from '@/icons'
-import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu'
+import { type ActionMenuItem } from '@/components/ui/ActionMenu'
+import { HubRow, type HubRowTag } from './HubRow'
+import { hubListStyle, hubTagStyle } from './hubRowStyles'
 import { Modal } from '@/components/ui/Modal'
 import {
   DEFAULT_PRODUCT,
@@ -243,12 +245,6 @@ const THUMB_GLYPH = {
 
 /* ── styles ───────────────────────────────────────────────────────────────── */
 
-const wrapStyle: CSSProperties = { maxWidth: 820 }
-
-/** 820 + the icon box (44) + the gap (10), so the text column keeps exactly the
- *  width it had before the marker was added rather than paying for it. */
-const wrapThumbStyle: CSSProperties = { maxWidth: 874 }
-
 const fieldStyle: CSSProperties = {
   width: '100%',
   font: 'inherit',
@@ -340,65 +336,11 @@ const modalHintStyle: CSSProperties = {
   margin: '2px 0 16px',
 }
 
-const listStyle: CSSProperties = {
-  listStyle: 'none',
-  margin: 0,
-  padding: 0,
-  border: '1px solid var(--ux-border)',
-  borderRadius: 12,
-  overflow: 'hidden',
-  background: 'var(--ux-card)',
-}
-
-const itemStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'minmax(0,1fr) auto',
-  gap: 10,
-  alignItems: 'start',
-  padding: '11px 12px',
-  borderBottom: '1px solid var(--ux-border)',
-}
-
-const titleLinkStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 6,
-  fontSize: 14,
-  fontWeight: 600,
-  color: 'var(--ux-text)',
-  textDecoration: 'none',
-}
-
 const metaStyle: CSSProperties = {
   fontSize: 12,
   color: 'var(--ux-text-3)',
   margin: '3px 0 0',
   overflowWrap: 'anywhere',
-}
-
-const noteTextStyle: CSSProperties = {
-  fontSize: 13,
-  lineHeight: 1.55,
-  color: 'var(--ux-text-2)',
-  margin: '5px 0 0',
-}
-
-/* A neutral LABEL, deliberately not colour-coded. `ResourceIcon` is the warning
-   here: it began as a content type, picked up per-card glyphs for variety, and
-   the field's two jobs stopped coinciding. A type says what a link IS; giving
-   each one a hue would invent a meaning ramp nobody asked for, and two of the
-   palettes are olive-greens a "Design" green would vanish into. */
-const chipStyle: CSSProperties = {
-  display: 'inline-block',
-  fontSize: 11,
-  fontWeight: 700,
-  letterSpacing: '0.04em',
-  textTransform: 'uppercase',
-  padding: '2px 7px',
-  borderRadius: 999,
-  background: 'var(--ux-chip)',
-  color: 'var(--ux-text-2)',
-  flex: 'none',
 }
 
 const filterRowStyle: CSSProperties = {
@@ -466,56 +408,9 @@ const segmentActiveStyle: CSSProperties = {
   color: 'var(--ux-on-accent)',
 }
 
-/* ── the row's icon box ──
-   44px, not the 160x110 an Exploration row gets.
-   
-   That size exists to be a PICTURE — it is the crop a real screenshot is taken
-   at, and Exploration rows can fill it with a live miniature of their own URL.
-   Refinement rows can never have one (see `GeneratedThumb`), so at 160x110 the
-   tile was a picture-shaped hole with a glyph floating in it, and every row
-   paid ~110px of height for the emptiness.
-
-   At 44 it stops claiming to be a picture and becomes what it actually is: a
-   marker. It still carries both facts — the glyph is the kind of destination,
-   the hue is the branch — and the rows get about a third shorter. */
-const ICON_BOX = 44
-
-/* ── the right-hand column ──
-   Exploration's shape: the row's own facts on the left, everything ABOUT the
-   row banked down the right edge, so the eye can run straight down one column
-   for "whose is this" or "can I send it on" without re-reading titles. */
-/* The row's right-hand area, the gateway's Prototypes rows' shape (2026-10-15):
-   a 156px stack of tags, an 84px status column, then the kebab. Fixed widths
-   on purpose — the stacks and the kebabs line up down the list whatever a
-   row carries. */
-const sideAreaStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: '156px 84px auto',
-  alignItems: 'center',
-  gap: 6,
-  flex: 'none',
-}
-const tagStackStyle: CSSProperties = { display: 'grid', gridTemplateColumns: '156px', alignItems: 'center', gap: 6 }
-const statusColStyle: CSSProperties = { display: 'grid', gridTemplateColumns: '84px', alignItems: 'center', gap: 6 }
-
-/* The outlined, square-cornered, sentence-case TAG — `prototypeTagStyle` on the
-   gateway, copied here rather than imported so the two panels stay free of
-   each other's modules. Same size and weight as the uppercase badge it
-   replaces, so a row mixing the two (Public is still solid) sits at one scale. */
-const linkTagStyle: CSSProperties = {
-  padding: '1px 8px',
-  justifySelf: 'start',
-  borderRadius: 4,
-  background: 'transparent',
-  border: '1px solid var(--ux-border)',
-  color: 'var(--ux-text-2)',
-  fontSize: 10.5,
-  fontWeight: 600,
-  whiteSpace: 'nowrap',
-  maxWidth: 156,
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-}
+/* The outlined, square-cornered TAG is `hubTagStyle` now (2026-11-01) — one
+   module for every section's row, see `hubRowStyles.ts`. */
+const linkTagStyle: CSSProperties = hubTagStyle
 
 /* ── the visibility badge ──
    A different colour from the product tag on purpose: those are two kinds of
@@ -880,7 +775,7 @@ function FeatureGroupBlock({
   group: FeatureGroup
   expanded: boolean
   onToggle: () => void
-  renderRow: (link: StoredLink, last: boolean) => ReactNode
+  renderRow: (link: StoredLink) => ReactNode
 }) {
   const earlier = group.earlier.length
   const shown = expanded ? [...group.current, ...group.earlier] : group.current
@@ -901,8 +796,8 @@ function FeatureGroupBlock({
           </button>
         )}
       </div>
-      <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-        {shown.map((link, i) => renderRow(link, i === shown.length - 1))}
+      <ul style={hubListStyle}>
+        {shown.map((link) => renderRow(link))}
       </ul>
     </li>
   )
@@ -1603,164 +1498,99 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
    * list; a grouped board has a last row per block, so the caller is now the
    * only thing that can know.
    */
-  const renderRow = (link: StoredLink, last: boolean) => {
+  const renderRow = (link: StoredLink) => {
     // Re-checked at the point of USE, not trusted from the store — see
     // `safeHref`. A row whose address cannot be linked still shows, as
     // text, so it can be found and fixed rather than silently vanishing.
     const href = safeHref(link.url)
-    // Assembled rather than interpolated, so an absent author leaves no
-    // stray separator — a trailing "·" reads as a value that failed to
-    // load, which is the same reason a self-paid Seat cell on the admin
-    // roster is blank rather than "n/a".
-    const meta = [
-      hostOf(link.url),
-      link.addedDate && `added ${link.addedDate}`,
-      // Not here when it is a badge instead — printing it twice would
-      // make the row look like two different facts about one person.
-      !p.showBadges && link.addedBy.trim() && `by ${link.addedBy.trim()}`,
-      !href && 'not a linkable address',
-    ].filter(Boolean)
+    const author = link.addedBy.trim()
+    const Glyph = THUMB_GLYPH[linkThumbKind(link.url)]
+    /* THE ROW IS `HubRow` (2026-11-01) — the same card every section draws.
+       Jillienne: "I want ALL of the pages to follow this similar UI so its
+       consistent." Before today Refinement had a 44px marker in a divided
+       list and the other three boards had no tile, no tags and two icon
+       buttons where the kebab goes. What a LINK row says, in that anatomy:
+         thumbnail    the generated tile — glyph for what the link opens,
+                      hue for which deploy it is on (`linkRowThumb.ts`).
+                      Never a live frame: every Refinement row is a
+                      cross-origin branch build behind a password, see
+                      `GeneratedThumb.tsx`.
+         title        the link's title; the row opens it in a new tab.
+         description  the note.
+         caption      the host — the one fact that is neither, kept so two
+                      rows on one branch can be seen to be.
+         tags         who added it · when it last changed (the server's
+                      Updated stamp, else the day it was added) · what it
+                      is — the product on Refinement, the Type elsewhere.
+         status       "Link copied", for the moment after Share Link.
+         kebab        Edit · Share Link · Hide / Unhide · Remove. */
+    const tags: HubRowTag[] = [
+      ...(author
+        ? [
+            {
+              key: 'author',
+              text: author,
+              icon: <User size={11} aria-hidden style={{ flex: 'none' }} />,
+              srPrefix: 'Added by ',
+            },
+          ]
+        : []),
+      ...(p.showUpdated && link.updatedAt
+        ? [{ key: 'updated', text: `Updated ${formatUpdated(link.updatedAt)}` }]
+        : link.addedDate
+          ? [{ key: 'added', text: `Added ${link.addedDate}` }]
+          : []),
+      ...(!isLive(link)
+        ? [
+            {
+              key: 'archived',
+              text: `Hidden ${formatUpdated(link.archivedAt)}${link.archivedBy.trim() ? ` · ${link.archivedBy.trim()}` : ''}`,
+            },
+          ]
+        : []),
+      ...(p.showProduct
+        ? [{ key: 'product', text: linkProductLabel(link.product), style: productBadgeStyle(link.product) }]
+        : p.showType && link.type
+          ? [{ key: 'type', text: linkTypeLabel(link.type) }]
+          : []),
+    ]
+    const actions = rowActions(link)
     return (
-      <li
-        key={link.id}
-        // Hover / focus-within live in `tokens.css` — inline
-        // `CSSProperties` cannot carry a pseudo-class.
-        className="cre-uxlinks-row"
-        style={{
-          ...itemStyle,
-          // The tile is a real third column rather than a float, so the
-          // text block wraps beside it instead of under it, and every
-          // row's text starts at the same x whatever its note's length.
-          ...(p.showThumb
-            ? {
-                gridTemplateColumns: `${ICON_BOX}px minmax(0,1fr) auto`,
-                alignItems: 'start',
-                padding: '12px',
-              }
-            : null),
-          borderBottom: last ? 'none' : itemStyle.borderBottom,
-        }}
-      >
-        {p.showThumb && (
-          <GeneratedThumb
-            accent={thumbAccents[hostKey(link.url)]}
-            boost={1.7}
-            width={ICON_BOX}
-            height={ICON_BOX}
-          >
-            {/* 20 in a 44 box. The 34 an Exploration tile uses swims
-                here and, at this size, clips against the corners. */}
-            {(() => {
-              const Glyph = THUMB_GLYPH[linkThumbKind(link.url)]
-              return <Glyph size={20} />
-            })()}
-          </GeneratedThumb>
-        )}
-        <div style={{ minWidth: 0 }}>
-          {p.showType && link.type && (
-            <span style={{ ...chipStyle, marginBottom: 4 }}>
-              {linkTypeLabel(link.type)}
-            </span>
-          )}
-          {href ? (
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cre-uxlinks-title"
-              style={titleLinkStyle}
-            >
-              {link.title}
-              <ArrowUpRightFromSquare size={11} aria-hidden style={{ flex: 'none' }} />
-              <span className="cre-visually-hidden"> — opens in a new tab</span>
-            </a>
-          ) : (
-            <span style={{ ...titleLinkStyle, color: 'var(--ux-text-2)' }}>
-              {link.title}
-              <span className="cre-visually-hidden"> — address cannot be opened</span>
-            </span>
-          )}
-          <p style={metaStyle}>{meta.join(' · ')}</p>
-          {link.note.trim() && <p style={noteTextStyle}>{link.note}</p>}
-        </div>
-        {p.showBadges ? (
-          /* THE REFINEMENT ROW'S TAGS MATCH THE PROTOTYPES ROWS' —
-             2026-10-15, Jillienne: "update the refinement tags to
-             better match what we did on this page". The same shape
-             and the same order: a STACK of outlined, sentence-case
-             tags — who (the author, with the user icon), when (the
-             Updated stamp), what (the product, in its hue) — then a
-             column to the right for the row's STATUS (Public / UX
-             Only, where the gateway's rows put Coming soon), then the
-             kebab. The column is present on every row, so the stacks
-             line up down the list. */
-          <div style={sideAreaStyle}>
-            <div style={tagStackStyle}>
-              {link.addedBy.trim() && (
-                <span style={{ ...linkTagStyle, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                  <User size={11} aria-hidden style={{ flex: 'none' }} />
-                  <span className="cre-visually-hidden">Added by </span>
-                  {link.addedBy.trim()}
-                </span>
-              )}
-              {p.showUpdated && link.updatedAt && (
-                <span style={linkTagStyle}>Updated {formatUpdated(link.updatedAt)}</span>
-              )}
-              {!isLive(link) && (
-                <span style={linkTagStyle}>
-                  Archived {formatUpdated(link.archivedAt)}
-                  {link.archivedBy.trim() && ` · ${link.archivedBy.trim()}`}
-                </span>
-              )}
-              {p.showProduct && (
-                <span style={productBadgeStyle(link.product)}>
-                  {linkProductLabel(link.product)}
-                </span>
-              )}
-            </div>
-            <div style={statusColStyle}>
-              {shared === link.id && <span style={linkTagStyle}>Link copied</span>}
-            </div>
-            {rowActions(link).length > 0 && (
-              <ActionMenu
-                label={`Actions for ${link.title}`}
-                items={rowActions(link)}
-                triggerStyle={{ color: 'var(--ux-text-3)' }}
-              />
-            )}
-          </div>
-        ) : (
-          canAuthor && (
-            <div style={{ display: 'flex', gap: 6, flex: 'none' }}>
-              <button
-                type="button"
-                onClick={() => beginEdit(link)}
-                disabled={busy}
-                className="cre-uxlinks-action"
-                style={iconBtnStyle}
-                aria-label={`Edit ${link.title}`}
-              >
-                <PenToSquare size={12} aria-hidden />
-              </button>
-              <button
-                type="button"
-                onClick={() => void remove(link)}
-                disabled={busy}
-                className="cre-uxlinks-action"
-                style={iconBtnStyle}
-                aria-label={`Remove ${link.title}`}
-              >
-                <Trash size={12} aria-hidden />
-              </button>
-            </div>
-          )
-        )}
+      <li key={link.id} style={{ listStyle: 'none' }}>
+        <HubRow
+          id={`link-${link.id}`}
+          // Hover / focus-within live in `tokens.css` — inline
+          // `CSSProperties` cannot carry a pseudo-class.
+          className="cre-uxlinks-row"
+          titleClassName="cre-uxlinks-title"
+          thumb={
+            <GeneratedThumb accent={thumbAccents[hostKey(link.url)]} boost={1.7}>
+              <Glyph size={34} />
+            </GeneratedThumb>
+          }
+          title={link.title}
+          titleAdornment={
+            href ? (
+              <ArrowUpRightFromSquare size={11} aria-hidden style={{ flex: 'none', color: 'var(--ux-text-3)' }} />
+            ) : undefined
+          }
+          titleSr={href ? ' — opens in a new tab' : ' — address cannot be opened'}
+          description={link.note.trim() || undefined}
+          caption={href ? hostOf(link.url) : `${hostOf(link.url)} · not a linkable address`}
+          tags={tags}
+          statusWidth={84}
+          status={shared === link.id ? <span style={hubTagStyle}>Link copied</span> : null}
+          href={href ?? undefined}
+          external
+          actions={canAuthor || actions.length > 0 ? actions : undefined}
+          menuLabel={`Actions for ${link.title}`}
+        />
       </li>
     )
   }
 
   return (
-    <div style={p.showThumb ? wrapThumbStyle : wrapStyle}>
+    <div>
       {/* ── toolbar ── */}
       {index.links.length > 0 && (
         <div style={toolbarStyle}>
@@ -1942,10 +1772,10 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
               }.`}
         </p>
       ) : (
-        <ul style={listStyle}>
-          {items.map((item, i) =>
+        <ul style={hubListStyle}>
+          {items.map((item) =>
             item.kind === 'single' ? (
-              renderRow(item.link, i === items.length - 1)
+              renderRow(item.link)
             ) : (
               <FeatureGroupBlock
                 key={item.key}

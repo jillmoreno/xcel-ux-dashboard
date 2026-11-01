@@ -66,15 +66,18 @@ function mockEndpoint(rows: StoredLink[]) {
   return { writes }
 }
 
-/** The icon box is `aria-hidden` decoration with no text, so it cannot be found
- *  by role or name. Its fixed 44px square is what identifies it — Exploration's
- *  tile is 160x110, and the difference is the point: a Refinement row can never
- *  hold a picture, so it gets a marker instead of a picture-shaped hole. */
-const ICON_BOX = '44px'
+/** The tile is `aria-hidden` decoration with no text, so it cannot be found
+ *  by role or name. Its fixed 160x110 box is what identifies it — the same
+ *  box every section's row draws since 2026-11-01 (it was a 44px marker on
+ *  Refinement alone until then). A Refinement row still cannot hold a live
+ *  picture — see `GeneratedThumb.tsx` — so what fills the box is the
+ *  generated tile: a glyph for the destination, a hue for the branch. */
+const TILE_W = '160px'
+const TILE_H = '110px'
 
 function tiles(): HTMLElement[] {
   return Array.from(document.querySelectorAll<HTMLElement>('li span[aria-hidden]')).filter(
-    (n) => n.style.width === ICON_BOX && n.style.height === ICON_BOX,
+    (n) => n.style.width === TILE_W && n.style.height === TILE_H,
   )
 }
 
@@ -86,7 +89,7 @@ afterEach(() => {
 
 /* ── which board gets a picture ───────────────────────────────────────────── */
 
-describe('the tile is Refinement-only', () => {
+describe('every board draws the tile (2026-11-01)', () => {
   it('draws one tile per Refinement row', async () => {
     mockEndpoint([row(), row({ id: 'demo-002', title: 'Learner Home' })])
     render(<DemoPanel />)
@@ -94,14 +97,16 @@ describe('the tile is Refinement-only', () => {
     expect(tiles()).toHaveLength(2)
   })
 
-  it('draws none on Resources', async () => {
-    // Same component, same endpoint shape. If this ever starts passing tiles,
-    // it is because someone made the flag unconditional — which would put a
-    // kind-glyph on a Figma link whose kind this code cannot read.
+  it('draws one on Resources too', async () => {
+    // Until 2026-11-01 Resources drew none: a kind-glyph on a Figma link
+    // whose kind this code cannot read said nothing. It draws the row's tile
+    // now because every section's row does (Jillienne: "I want ALL of the
+    // pages to follow this similar UI"), and an unreadable destination falls
+    // to the `other` glyph rather than to an empty column.
     mockEndpoint([row({ id: 'link-001', type: 'brief', url: 'https://figma.com/file/x' })])
     render(<LinksPanel />)
     await screen.findByText('Xcel Home')
-    expect(tiles()).toHaveLength(0)
+    expect(tiles()).toHaveLength(1)
   })
 })
 
@@ -280,12 +285,16 @@ describe('badges sit under the title', () => {
     expect(within(li).queryByText('by')).not.toBeInTheDocument()
   })
 
-  it('leaves Resources on its meta line', async () => {
-    // Links has one fact where Refinement has three, and its suite pins the
-    // meta line's exact shape — including the no-author case.
-    mockEndpoint([row({ id: 'link-001', title: 'A brief', addedBy: 'Jill', addedDate: '2026-09-10' })])
+  it('gives Resources the same tags, with the Type where Refinement has the product', async () => {
+    // One row shape for every board (2026-11-01): who, when, what. On
+    // Resources "what" is the link's Type, and there is still no product
+    // control — the product is a Refinement fact.
+    mockEndpoint([row({ id: 'link-001', title: 'A brief', type: 'brief', addedBy: 'Jill', addedDate: '2026-09-10' })])
     render(<LinksPanel />)
-    expect(await screen.findByText(/added 2026-09-10 · by Jill/)).toBeInTheDocument()
+    const li = (await screen.findByText('A brief')).closest('li')!
+    expect(within(li).getByText('Jill').textContent).toBe('Added by Jill')
+    expect(within(li).getByText('Added 2026-09-10')).toBeInTheDocument()
+    expect(within(li).getByText('Brief')).toBeInTheDocument()
     expect(screen.queryByRole('radio', { name: 'Both' })).not.toBeInTheDocument()
   })
 })

@@ -391,7 +391,8 @@ describe('Refinement — designer pills and the archive (2026-10-15)', () => {
     await user.click(door)
     expect(screen.getByText('Hide me')).toBeInTheDocument()
     expect(screen.queryByText('Keep me')).not.toBeInTheDocument()
-    expect(screen.getByText(/^Archived .*· Jill$/)).toBeInTheDocument()
+    // The stamp is a tag on the row, worded the way the kebab is (Hide, 2026-11-01).
+    expect(screen.getByText(/^Hidden .*· Jill$/)).toBeInTheDocument()
     expect(screen.getByText('1 link hidden from the board. Unhide one to put it back.')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Add link' })).toBeNull()
     expect(screen.getByRole('button', { name: 'Back to board' })).toBeInTheDocument()

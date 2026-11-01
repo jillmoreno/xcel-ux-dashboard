@@ -1,17 +1,30 @@
 import { useState } from 'react'
-import { ChevronRight, X } from '@/icons'
+import { Package, X } from '@/icons'
 import { Sheet } from '@/components/ui/Sheet'
 import { ARCHIVED_ITEMS, type ArchivedItem } from '@/data/archivedItems'
+import { GeneratedThumb, THUMB_H, THUMB_W } from './GeneratedThumb'
+import { HubImageThumb, HubRow } from './HubRow'
+import { hubListStyle } from './hubRowStyles'
 
 /**
- * The Archive tab body (Design & Development → Archive). A compact table of
- * things removed from the project — three columns (Item Name · Description ·
- * Date Removed). Clicking a row opens a right-side detail Sheet with the full
- * record (where it lived, governing flag, reason, and how to restore).
+ * The Archive section's body — the components and variants removed from the
+ * project (`ARCHIVED_ITEMS`, see that file for the "unwire but keep the code
+ * + log a row" convention). Clicking a row opens a right-side detail Sheet
+ * with the full record: where it lived, the governing flag, the reason, and
+ * how to restore it.
  *
- * Data-driven off `ARCHIVED_ITEMS` (src/data/archivedItems.ts); see that file
- * for the "unwire but keep the code + log a row" convention. Styled entirely
- * via design tokens, and reuses the shared `ui/Sheet` drawer primitive.
+ * ROWS, NOT A TABLE (2026-11-01). It was a three-column table — Item Name ·
+ * Description · Date Removed — the one section on the Hub drawn as a grid.
+ * Jillienne, on the Prototypes rows: "I want ALL of the pages to follow this
+ * similar UI so its consistent." So each item is a `HubRow` now: its
+ * screenshot (or the generated mark, in the archive's neutral hue) for the
+ * thumbnail, its name and what it was, and three tags — when it was removed,
+ * the flag that governed it, and where it lived. The row opens the same
+ * Sheet it always did; the kebab offers the same thing, for the keyboard.
+ *
+ * The rows are on `--ux-*` tokens like every other panel's; the Sheet is
+ * unchanged and still reads the brand tokens the `ARCHIVE_BRIDGE` wrapper at
+ * the call site re-points, so that wrapper stays.
  */
 export function ArchiveTable() {
   const [selected, setSelected] = useState<ArchivedItem | null>(null)
@@ -20,44 +33,36 @@ export function ArchiveTable() {
 
   return (
     <>
-      <div
-        style={{
-          border: '1px solid var(--color-border-subtle)',
-          borderRadius: 'var(--radius-xl)',
-          background: 'var(--color-surface-card)',
-          boxShadow: 'var(--shadow-card)',
-          overflow: 'hidden',
-        }}
-      >
-        <table
-          style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-            fontSize: 13,
-            lineHeight: '20px',
-            color: 'var(--color-text-primary)',
-          }}
-        >
-          <thead>
-            <tr>
-              <Th>Item Name</Th>
-              <Th>Description</Th>
-              <Th>Date Removed</Th>
-              {/* trailing chevron column */}
-              <Th aria-hidden style={{ width: 44 }} />
-            </tr>
-          </thead>
-          <tbody>
-            {ARCHIVED_ITEMS.map((item, i) => (
-              <ArchiveRow
-                key={item.id}
-                item={item}
-                first={i === 0}
-                onOpen={() => setSelected(item)}
-              />
-            ))}
-          </tbody>
-        </table>
+      <div style={hubListStyle}>
+        {ARCHIVED_ITEMS.map((item) => (
+          <HubRow
+            key={item.id}
+            id={`archived-${item.id}`}
+            thumb={
+              item.screenshot ? (
+                /* The same path the Sheet's screenshot resolves — BASE_URL in
+                   front, so a branch build served under a prefix still finds
+                   the file. */
+                <HubImageThumb src={`${import.meta.env.BASE_URL}${item.screenshot}`} width={THUMB_W} height={THUMB_H} />
+              ) : (
+                <GeneratedThumb accent="neutral">
+                  <Package size={34} />
+                </GeneratedThumb>
+              )
+            }
+            title={item.name}
+            description={item.what}
+            tags={[
+              { key: 'removed', text: `Removed ${item.dateRemoved}` },
+              ...(item.flag ? [{ key: 'flag', text: item.flag, title: `Governing flag: ${item.flag}` }] : []),
+              { key: 'location', text: locationLabel(item.location), title: item.location },
+            ]}
+            onOpen={() => setSelected(item)}
+            openLabel={`View details for ${item.name}`}
+            actions={[{ id: 'details', label: 'View details', onSelect: () => setSelected(item) }]}
+            menuLabel={`Actions for ${item.name}`}
+          />
+        ))}
       </div>
 
       <ArchiveDetailSheet item={selected} onClose={() => setSelected(null)} />
@@ -65,76 +70,16 @@ export function ArchiveTable() {
   )
 }
 
-/** One clickable row. The whole row acts as a button (keyboard + pointer) that
- *  opens the detail Sheet. */
-function ArchiveRow({
-  item,
-  first,
-  onOpen,
-}: {
-  item: ArchivedItem
-  first: boolean
-  onOpen: () => void
-}) {
-  const [hover, setHover] = useState(false)
-  const cell: React.CSSProperties = {
-    padding: '14px 16px',
-    verticalAlign: 'top',
-    borderTop: first ? 'none' : '1px solid var(--color-border-subtle)',
-  }
-  return (
-    <tr
-      role="button"
-      tabIndex={0}
-      aria-label={`View details for ${item.name}`}
-      onClick={onOpen}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          onOpen()
-        }
-      }}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      onFocus={() => setHover(true)}
-      onBlur={() => setHover(false)}
-      style={{
-        cursor: 'pointer',
-        background: hover ? 'var(--color-neutral-50)' : 'transparent',
-        outline: 'none',
-        transition: 'background 100ms ease',
-      }}
-    >
-      {/* Item Name */}
-      <td style={{ ...cell, minWidth: 220, fontWeight: 700, color: 'var(--color-text-primary)' }}>
-        {item.name}
-      </td>
-
-      {/* Description — brief (clamped to two lines) */}
-      <td style={{ ...cell, color: 'var(--color-text-secondary)' }}>
-        <span
-          style={{
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-          }}
-        >
-          {item.what}
-        </span>
-      </td>
-
-      {/* Date Removed */}
-      <td style={{ ...cell, whiteSpace: 'nowrap', color: 'var(--color-text-primary)' }}>
-        {item.dateRemoved}
-      </td>
-
-      {/* Chevron affordance */}
-      <td style={{ ...cell, textAlign: 'right', color: 'var(--color-text-tertiary)' }}>
-        <ChevronRight size={16} aria-hidden />
-      </td>
-    </tr>
-  )
+/** The last path segment of where an item lived — `ProfilePage.tsx` rather
+ *  than the whole `src/pages/ProfilePage.tsx — the card under …` sentence,
+ *  which is the Sheet's to show in full. A location that is prose rather
+ *  than a path (nothing with a slash in it) is shown as it is, clipped by
+ *  the tag. */
+function locationLabel(location: string): string {
+  const head = location.split(/\s[—–-]\s/)[0].trim()
+  if (!head.includes('/')) return head
+  const parts = head.split('/')
+  return parts[parts.length - 1] || head
 }
 
 /** The right-side detail drawer — the full record for the selected item. */
@@ -337,35 +282,6 @@ function Field({
         {children}
       </div>
     </div>
-  )
-}
-
-/** Shared header-cell chrome. */
-function Th({
-  children,
-  style,
-  ...rest
-}: React.ThHTMLAttributes<HTMLTableCellElement>) {
-  return (
-    <th
-      scope="col"
-      {...rest}
-      style={{
-        textAlign: 'left',
-        padding: '12px 16px',
-        background: 'var(--color-neutral-50)',
-        borderBottom: '1px solid var(--color-border-subtle)',
-        fontSize: 11,
-        fontWeight: 700,
-        letterSpacing: '0.06em',
-        textTransform: 'uppercase',
-        color: 'var(--color-text-tertiary)',
-        whiteSpace: 'nowrap',
-        ...style,
-      }}
-    >
-      {children}
-    </th>
   )
 }
 

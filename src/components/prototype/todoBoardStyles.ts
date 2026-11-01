@@ -324,6 +324,7 @@ export const cardNoteStyle: CSSProperties = {
 export const cardMetaStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
+  flexWrap: 'wrap',
   gap: 6,
   minWidth: 0,
 }
@@ -342,9 +343,6 @@ export const cardMetaStyle: CSSProperties = {
  */
 export const ownerLabelStyle: CSSProperties = {
   minWidth: 0,
-  fontSize: 11.5,
-  fontWeight: 600,
-  color: 'var(--ux-text-2)',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
