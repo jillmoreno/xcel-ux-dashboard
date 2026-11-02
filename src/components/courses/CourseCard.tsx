@@ -284,6 +284,60 @@ function coverFilter(gated: boolean | undefined, expiry: CourseExpiryState): str
  * you just didn't pass. Progress and score are different numbers, and the row
  * holds both — the score rides in the label (`Failed: 62%`).
  */
+/**
+ * THE COURSE META ROWS — delivery on one line, then credit, hours and state
+ * separated by hairlines.
+ *
+ * ⚠ EXPORTED FOR THE SAME REASON `StatusRow` IS (2026-11-02, Jillienne, with
+ * the sheet's hero selected: "this ui in the sheet should match this from the
+ * card"). The Course Details sheet was writing its own version — one line,
+ * middots, the state dropped to a second line — off a THIRD private copy of
+ * the label maps, so the card and the sheet described one course two ways.
+ * Now the sheet renders this, and they cannot drift.
+ *
+ * `fontSize` because the hosts differ: the card is 12. The sheet takes the
+ * default so the two are identical, which is what was asked for.
+ */
+export function CourseMeta({ data, fontSize = 12 }: { data: CourseCardData; fontSize?: number }) {
+  const DeliveryIcon = DELIVERY_ICON[data.delivery]
+  const row: CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 8,
+    fontFamily: 'var(--font-body)',
+    fontSize,
+    fontWeight: 500,
+  }
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
+      <span style={row}>
+        <DeliveryIcon size={16} aria-hidden />
+        {DELIVERY_LABEL[data.delivery]}
+      </span>
+      <div style={row}>
+        <span>{BADGE_LABEL[data.badge]}</span>
+        <MetaRule />
+        <span>
+          {data.hours} {data.hours === 1 ? 'Hour' : 'Hours'}
+        </span>
+        {/* The state is the thing that separates two otherwise identical CE
+            courses in different jurisdictions, so it is last and never
+            trimmed — but a record without one draws no empty rule. */}
+        {data.state && (
+          <>
+            <MetaRule />
+            <span>{data.state}</span>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function MetaRule() {
+  return <span aria-hidden style={{ width: 1, height: 12, background: 'var(--color-border-subtle)' }} />
+}
+
 export function StatusRow({
   data,
   status,
@@ -984,43 +1038,7 @@ function CompactCourseCard({
           overflow: 'hidden',
           minHeight: dense ? undefined : 40,
         })}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              fontFamily: 'var(--font-body)',
-              fontSize: 12,
-              fontWeight: 500,
-            }}
-          >
-            <DeliveryIcon size={16} aria-hidden />
-            {DELIVERY_LABEL[data.delivery]}
-          </span>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              fontFamily: 'var(--font-body)',
-              fontSize: 12,
-              fontWeight: 500,
-            }}
-          >
-            <span>{BADGE_LABEL[data.badge]}</span>
-            <span aria-hidden style={{ width: 1, height: 12, background: 'var(--color-border-subtle)' }} />
-            <span>
-              {data.hours} {data.hours === 1 ? 'Hour' : 'Hours'}
-            </span>
-            {data.state && (
-              <>
-                <span aria-hidden style={{ width: 1, height: 12, background: 'var(--color-border-subtle)' }} />
-                <span>{data.state}</span>
-              </>
-            )}
-          </div>
-        </div>
+        <CourseMeta data={data} />
       </div>
       {/* Status + progress bar replaces the price slot (catalog footer position). */}
       <div style={{ display: 'flex', flexDirection: 'column', padding: progressPadding }}>
