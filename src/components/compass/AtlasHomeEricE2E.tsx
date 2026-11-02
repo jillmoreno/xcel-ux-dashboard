@@ -1222,7 +1222,8 @@ export function AtlasHomeEricE2E({
             own Flashcards and Exam Simulator. The sheets open here, in place. */}
         <AtlasJourneyLinksCard
           withoutCoursePages
-          linksOff={LINKS_OFF}
+          // My Courses and My Certificates link again (2026-11-02, Eric's
+          // request) — exempt from `LINKS_OFF`, like the three sheets.
           onOpenStep={onOpenStep}
           onOpenRequirements={onOpenRequirements}
           // Outlined in Secondary 100 darkened 5% (2026-10-13, Eric's request;
