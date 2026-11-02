@@ -613,14 +613,15 @@ const heroStyle: CSSProperties = {
   padding: '0 20px 16px',
 }
 
+/* No rules above or below the progress bar (2026-11-02, the direct ask). The
+   zone was banded between two `border-subtle` hairlines; the spacing stays, so
+   the status row and the bar keep their place and only the lines go. */
 const statusZoneStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 12,
   padding: '16px 20px',
   background: 'var(--color-surface-card)',
-  borderTop: '1px solid var(--color-border-subtle)',
-  borderBottom: '1px solid var(--color-border-subtle)',
   marginBottom: 20,
 }
 
