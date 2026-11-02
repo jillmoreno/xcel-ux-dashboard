@@ -9,7 +9,10 @@ import { PlatformShell } from '@/components/layout/PlatformShell'
 import { TranscriptPrintPage } from '@/pages/TranscriptPrintPage'
 import {
   filterTranscripts,
+  groupKey,
+  inGroups,
   searchTranscripts,
+  transcriptGroups,
   transcriptsFor,
   transcriptYear,
 } from '@/data/transcriptFixtures'
@@ -207,5 +210,142 @@ describe('the printed transcript', () => {
     renderPrint('?filter=nonsense')
     expect(bodyRows().length).toBe(transcriptsFor('xcel').length)
     expect(screen.getByText('All completed courses')).toBeTruthy()
+  })
+})
+
+/**
+ * CHOOSING WHICH TRANSCRIPT TO DOWNLOAD — 2026-11-02, Jillienne: "if a user has
+ * multiple professions or states, then they will need to select which
+ * transcript to download."
+ *
+ * The thing worth guarding is the CONDITION, not the sheet: a learner with one
+ * profession in one state has exactly one document, and a dialog asking which
+ * of their one document they meant can only be dismissed. So the count decides,
+ * and these cases pin both sides of it.
+ */
+describe('transcriptGroups', () => {
+  const all = transcriptsFor('xcel')
+
+  it('groups by profession and state together, not either alone', () => {
+    const groups = transcriptGroups(all)
+    // Pre-Licensing appears in two states, so the pair must split them.
+    const prelicense = groups.filter((g) => g.profession === 'Insurance Pre-Licensing')
+    expect(prelicense.length).toBeGreaterThan(1)
+    expect(new Set(prelicense.map((g) => g.state)).size).toBe(prelicense.length)
+  })
+
+  it('accounts for every row and every hour exactly once', () => {
+    const groups = transcriptGroups(all)
+    expect(groups.reduce((n, g) => n + g.courses, 0)).toBe(all.length)
+    expect(groups.reduce((n, g) => n + g.hours, 0)).toBe(all.reduce((n, r) => n + r.hours, 0))
+  })
+
+  it('orders the biggest first — the one most likely to be wanted', () => {
+    const hours = transcriptGroups(all).map((g) => g.hours)
+    expect(hours).toEqual([...hours].sort((a, b) => b - a))
+  })
+
+  it('spans each group’s completions', () => {
+    for (const g of transcriptGroups(all)) {
+      expect(g.firstCompleted <= g.lastCompleted).toBe(true)
+    }
+  })
+})
+
+describe('inGroups', () => {
+  const all = transcriptsFor('xcel')
+
+  it('narrows to the chosen pair', () => {
+    const key = groupKey('Insurance Pre-Licensing', 'Texas')
+    const rows = inGroups(all, [key])
+    expect(rows.length).toBeGreaterThan(0)
+    for (const r of rows) {
+      expect(r.profession).toBe('Insurance Pre-Licensing')
+      expect(r.state).toBe('Texas')
+    }
+  })
+
+  /* ⚠ EMPTY MEANS EVERYTHING, and the print view depends on it: no `?groups=`
+     is the single-transcript learner who was never asked, and the View link,
+     which shows what is on screen. */
+  it('treats an empty selection as the whole history', () => {
+    expect(inGroups(all, []).length).toBe(all.length)
+  })
+})
+
+describe('the Download chooser', () => {
+  const openSheet = () => {
+    renderSection()
+    fireEvent.click(screen.getByRole('button', { name: /^Download$/ }))
+  }
+
+  /* The links lost their "All" on 2026-11-02 — asserted because the shorter
+     labels are also what lets the control row hold everything at this shell's
+     892px content box. */
+  it('labels the two links Download and View', () => {
+    renderSection()
+    expect(screen.getByRole('button', { name: /^Download$/ })).toBeTruthy()
+    expect(screen.getByRole('link', { name: /^View$/ })).toBeTruthy()
+    expect(screen.queryByText('Download All')).toBeNull()
+    expect(screen.queryByText('View All')).toBeNull()
+  })
+
+  it('offers one row per profession-and-state pair, and says how many', () => {
+    const groups = transcriptGroups(transcriptsFor('xcel'))
+    expect(groups.length).toBeGreaterThan(1)
+    openSheet()
+    const sheet = screen.getByRole('dialog')
+    expect(within(sheet).getByText(`${groups.length} Transcripts Available.`)).toBeTruthy()
+    expect(within(sheet).getAllByRole('checkbox').length).toBe(groups.length)
+  })
+
+  /* Nothing ticked on open, and Export inert until something is: a transcript
+     is a compliance document, and clicking straight through should not send a
+     board sheets covering professions it has no business seeing. */
+  it('starts at nothing selected, with Export disabled', () => {
+    openSheet()
+    const sheet = screen.getByRole('dialog')
+    expect(within(sheet).getByText('0 Selected')).toBeTruthy()
+    expect(within(sheet).getByRole('button', { name: 'Export' })).toBeDisabled()
+  })
+
+  it('counts a selection and enables Export', () => {
+    openSheet()
+    const sheet = screen.getByRole('dialog')
+    fireEvent.click(within(sheet).getAllByRole('checkbox')[0])
+    expect(within(sheet).getByText('1 Selected')).toBeTruthy()
+    expect(within(sheet).getByRole('button', { name: 'Export' })).not.toBeDisabled()
+  })
+
+  it('selects all, then offers to clear instead', () => {
+    const groups = transcriptGroups(transcriptsFor('xcel'))
+    openSheet()
+    const sheet = screen.getByRole('dialog')
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Select All' }))
+    expect(within(sheet).getByText(`${groups.length} Selected`)).toBeTruthy()
+    // The label states what pressing it does, not what the state is.
+    expect(within(sheet).getByRole('button', { name: 'Clear All' })).toBeTruthy()
+  })
+})
+
+describe('the printed transcript names a partial scope', () => {
+  it('says which transcript it is when groups were chosen', () => {
+    renderPrint(`?groups=${encodeURIComponent(groupKey('Insurance Pre-Licensing', 'Texas'))}`)
+    expect(screen.getByText('Texas · Insurance Pre-Licensing')).toBeTruthy()
+    const rows = document.querySelectorAll('tbody tr')
+    expect(rows.length).toBe(inGroups(transcriptsFor('xcel'), [groupKey('Insurance Pre-Licensing', 'Texas')]).length)
+  })
+
+  /* ⚠ A WHOLE-HISTORY SHEET SAYS NOTHING, deliberately: there is no subset to
+     declare, and a "Transcript: everything" line is noise on a document. */
+  it('says nothing about scope when it covers everything', () => {
+    renderPrint()
+    expect(screen.queryByText(/·\s*Insurance/)).toBeNull()
+  })
+
+  it('does not print an unexplained empty sheet for an unknown group', () => {
+    renderPrint('?groups=Nonsense%7CNowhere')
+    expect(screen.getByText('No matching transcript')).toBeTruthy()
+    expect(screen.getByText('No completed courses in this range.')).toBeTruthy()
   })
 })

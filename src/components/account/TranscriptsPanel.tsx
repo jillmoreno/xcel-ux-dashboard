@@ -1,5 +1,6 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { ChevronDown, Download, FileText } from '@/icons'
+import { ExportTranscriptSheet } from './ExportTranscriptSheet'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PillTabs, type PillTabItem } from '@/components/ui/PillTabs'
 import { SearchInput } from '@/components/ui/SearchInput'
@@ -9,6 +10,7 @@ import {
   formatTranscriptDate,
   searchTranscripts,
   showingLabel,
+  transcriptGroups,
   transcriptsFor,
   transcriptYear,
   type TranscriptFilter,
@@ -60,6 +62,33 @@ export function TranscriptsPanel() {
   const [filter, setFilter] = useState<TranscriptFilter>('all')
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<SortState>({ key: 'completedDate', dir: 'desc' })
+  const [exporting, setExporting] = useState(false)
+
+  /*
+   * ONE TRANSCRIPT OR SEVERAL — the whole of the export decision.
+   *
+   * A transcript is per profession and state (see `transcriptGroups`), so a
+   * learner with one of each has exactly one document and must never be asked
+   * which of their one document they meant. With more than one, Download opens
+   * the pick-list; with exactly one, it goes straight to the sheet.
+   *
+   * ⚠ GROUPED FROM THE WHOLE HISTORY, not the filtered rows. A learner who has
+   * narrowed to this year still owns every transcript they own — hiding the
+   * Texas option because this year's filter excluded it would make the export
+   * depend on a control that has nothing to do with it.
+   */
+  const groups = useMemo(() => transcriptGroups(all), [all])
+  const printHref = (keys: readonly string[] = []) => {
+    const params = new URLSearchParams()
+    if (filter !== 'all') params.set('filter', filter)
+    if (keys.length > 0) params.set('groups', keys.join(','))
+    const q = params.toString()
+    return `/print/transcript${q ? `?${q}` : ''}`
+  }
+  const openExport = () => {
+    if (groups.length > 1) setExporting(true)
+    else window.open(printHref(), '_blank', 'noopener,noreferrer')
+  }
 
   /* FILTER, THEN SEARCH, THEN SORT — in that order, and the order is visible
      in the result count: the count below the pills reports what the learner is
@@ -117,24 +146,34 @@ export function TranscriptsPanel() {
           is BESIDE the strip and not on the pills: this repo's convention is
           segmented filters with no per-pill counts and the total alongside.
 
-          ⚠ THE ACTIONS WRAP TO THEIR OWN ROW HERE, and that is deliberate
-          rather than a miss. The design's table is 1101px wide; this shell's
-          account content box is 892 at a 1440 viewport (a 208px sub-nav plus
-          the narrowed account gutter), and the three items need 907. Forcing
-          them onto one row would crush the pills, so they share the row
-          wherever there is room and the actions drop — still right-aligned,
-          still reading as the table's actions — where there is not. */}
+          ⚠ IT FITS ON ONE ROW ONLY BECAUSE THE LABELS ARE SHORT. This shell's
+          account content box is 892px at a 1440 viewport (a 208px sub-nav plus
+          the narrowed account gutter) against the design's 1101, and the three
+          items need 860 of it. At "Download All" / "View All" they needed 907
+          and the actions wrapped. `flexWrap` is kept as the narrow fallback —
+          they drop, still right-aligned, rather than crushing the pills — but
+          at this width and these labels nothing wraps. Lengthening either
+          label is what would bring the wrap back. */}
       <div style={controlRowStyle}>
         <PillTabs label="Filter transcripts" items={tabs} active={filter} onChange={setFilter} />
         <span style={countStyle}>{showingLabel(rows.length)}</span>
+        {/* "Download" and "View", not "Download All" / "View All" (2026-11-02,
+            the direct ask). Shortening them is also what lets this row hold
+            everything at 892px — the wrap noted above only happened at the
+            longer labels. */}
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 20 }}>
-          <a href="/print/transcript" target="_blank" rel="noreferrer" style={actionStyle}>
+          {/* A BUTTON, because it may open a chooser rather than navigate.
+              Making it a link would promise a destination it does not always
+              have, and would open an empty tab behind the sheet. */}
+          <button type="button" onClick={openExport} style={actionStyle}>
             <Download size={16} aria-hidden />
-            Download All
-          </a>
-          <a href="/print/transcript" target="_blank" rel="noreferrer" style={actionStyle}>
+            Download
+          </button>
+          {/* View always goes straight to the document: it shows what is on
+              screen, and what is on screen is every transcript. */}
+          <a href={printHref()} target="_blank" rel="noreferrer" style={actionStyle}>
             <FileText size={16} aria-hidden />
-            View All
+            View
           </a>
         </div>
       </div>
@@ -226,6 +265,16 @@ export function TranscriptsPanel() {
           </table>
         </div>
       )}
+
+      <ExportTranscriptSheet
+        open={exporting}
+        onClose={() => setExporting(false)}
+        groups={groups}
+        onExport={(keys) => {
+          setExporting(false)
+          window.open(printHref(keys), '_blank', 'noopener,noreferrer')
+        }}
+      />
     </div>
   )
 }
@@ -275,6 +324,10 @@ const countStyle: CSSProperties = {
 /* The two text buttons (nodes 2009:28300–28301). `--color-action` rather than
    the Figma's #F59233 — see the note at the top of the file. */
 const actionStyle: CSSProperties = {
+  background: 'transparent',
+  border: 'none',
+  padding: 0,
+  cursor: 'pointer',
   display: 'inline-flex',
   alignItems: 'center',
   gap: 8,

@@ -4,7 +4,11 @@ import type { ChangeEventHandler, ReactNode } from 'react'
 type Props = {
   checked?: boolean
   onChange?: ChangeEventHandler<HTMLInputElement>
-  label: string
+  /** ⚠ A NODE SINCE 2026-11-02, widened from `string` for the Export Transcript
+   *  sheet, whose rows carry a title over a meta line. It is only ever rendered
+   *  as a child — nothing here reads it as text — so every existing caller
+   *  passing a string is unaffected. Keep it rendered, never measured. */
+  label: ReactNode
   value?: string
   /** Optional icon rendered between the checkbox and the label text. */
   icon?: ReactNode

@@ -6,6 +6,8 @@ import { profileFor } from '@/data/accountProfileFixtures'
 import {
   filterTranscripts,
   formatTranscriptDate,
+  inGroups,
+  transcriptGroups,
   transcriptYear,
   transcriptsFor,
   type TranscriptFilter,
@@ -45,10 +47,28 @@ export function TranscriptPrintPage() {
   const { brand, membership } = useAccount()
   const isMember = membership === 'member'
   const filter = parseFilter(params.get('filter'))
+  /* WHICH TRANSCRIPTS — the Export sheet's selection, as `?groups=`. Absent
+     means every one of them, which is both the single-transcript learner who
+     was never asked and the View link, which shows what is on screen. */
+  const chosen = useMemo(() => (params.get('groups') ?? '').split(',').filter(Boolean), [params])
   const rows = useMemo(
-    () => filterTranscripts(transcriptsFor(brand), filter),
-    [brand, filter],
+    () => inGroups(filterTranscripts(transcriptsFor(brand), filter), chosen),
+    [brand, filter, chosen],
   )
+
+  /* ⚠ THE SHEET NAMES ITS SCOPE WHEN IT IS NOT EVERYTHING. A document covering
+     one state's continuing education must say so on its face — a board reading
+     an untitled subset has no way to know hours are missing, and the learner
+     who exported it has no way to prove they are not. */
+  const scope = useMemo(() => {
+    if (chosen.length === 0) return null
+    const named = transcriptGroups(transcriptsFor(brand)).filter((g) => chosen.includes(g.key))
+    return named.length > 0
+      ? named.map((g) => `${g.state} · ${g.profession}`).join('; ')
+      : // A `?groups=` naming nothing real: say so rather than printing an
+        // unexplained empty sheet.
+        'No matching transcript'
+  }, [brand, chosen])
   /* `personal.name` is the learner's full name — the same field the purchase
      receipt prints as "billed to", so the two documents name them identically. */
   const learner = profileFor(brand, isMember)
@@ -81,6 +101,12 @@ export function TranscriptPrintPage() {
           <span style={metaLabelStyle}>Range</span>
           {range}
         </p>
+        {scope ? (
+          <p style={{ ...metaLineStyle, gridColumn: '1 / -1' }}>
+            <span style={metaLabelStyle}>Transcript</span>
+            {scope}
+          </p>
+        ) : null}
         <p style={metaLineStyle}>
           <span style={metaLabelStyle}>Courses</span>
           {rows.length}

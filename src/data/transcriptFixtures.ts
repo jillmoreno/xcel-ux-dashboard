@@ -311,6 +311,95 @@ export function searchTranscripts(
   )
 }
 
+/**
+ * ONE TRANSCRIPT PER PROFESSION AND STATE — 2026-11-02, Jillienne: "if a user
+ * has multiple professions or states, then they will need to select which
+ * transcript to download."
+ *
+ * ⚠ THE GROUP IS THE DOCUMENT, and that is the point of the whole export
+ * sheet. A board in Texas does not want a learner's Florida continuing
+ * education on the same sheet, and a Florida CE renewal does not want their
+ * pre-licensing hours counted into it. So a learner with one profession in one
+ * state has ONE transcript and should never be asked to choose; a learner with
+ * several has one per pair, and picks.
+ *
+ * ⚠ THE DESIGN'S ROWS CARRY A LICENCE, AND THIS CANNOT YET. Its sheet reads
+ * "North Carolina Renewal Learning Path - 28 Hrs / License Expires 9/30/2025 ·
+ * 55% Complete" — an expiry and a progress figure that come from licence
+ * records. Licenses was archived from this prototype on 2026-09-30
+ * (`archivedItems.ts`), so there is nothing to read them from, and inventing an
+ * expiry date would be a compliance figure made up out of nothing. The row
+ * shows what IS derivable — the hours, the course count and the span the
+ * completions cover — and the licence line is logged as an open item.
+ */
+export type TranscriptGroup = {
+  /** `profession|state`, the pair itself — stable, and what `?groups=` carries. */
+  key: string
+  profession: string
+  state: string
+  /** Credit hours in this group. Non-credit rows add zero, by design. */
+  hours: number
+  courses: number
+  /** ISO, the earliest and latest completion in the group. */
+  firstCompleted: string
+  lastCompleted: string
+}
+
+export function groupKey(profession: string, state: string): string {
+  return `${profession}|${state}`
+}
+
+/**
+ * The groups a learner's history falls into, largest first.
+ *
+ * Ordered by hours rather than alphabetically because the sheet is a pick-list:
+ * the transcript someone is most likely to want is the one they have done the
+ * most work toward.
+ */
+export function transcriptGroups(rows: readonly TranscriptRecord[]): TranscriptGroup[] {
+  const map = new Map<string, TranscriptGroup>()
+  for (const r of rows) {
+    const key = groupKey(r.profession, r.state)
+    const found = map.get(key)
+    if (!found) {
+      map.set(key, {
+        key,
+        profession: r.profession,
+        state: r.state,
+        hours: r.hours,
+        courses: 1,
+        firstCompleted: r.completedDate,
+        lastCompleted: r.completedDate,
+      })
+      continue
+    }
+    found.hours += r.hours
+    found.courses += 1
+    if (r.completedDate < found.firstCompleted) found.firstCompleted = r.completedDate
+    if (r.completedDate > found.lastCompleted) found.lastCompleted = r.completedDate
+  }
+  return [...map.values()].sort((a, b) => b.hours - a.hours || a.key.localeCompare(b.key))
+}
+
+/** Narrow a history to the chosen groups. An empty selection means no filter —
+ *  the caller decides whether that is "everything" or "nothing"; the print view
+ *  treats it as everything, because a sheet with no groups named is the
+ *  single-transcript learner who was never asked. */
+export function inGroups(
+  rows: readonly TranscriptRecord[],
+  keys: readonly string[],
+): TranscriptRecord[] {
+  if (keys.length === 0) return [...rows]
+  const wanted = new Set(keys)
+  return rows.filter((r) => wanted.has(groupKey(r.profession, r.state)))
+}
+
+/** The sheet's row title — "Florida · Insurance Continuing Education — 24 Hrs".
+ *  "Hrs" is the design's abbreviation, kept so the two read the same. */
+export function groupLabel(group: TranscriptGroup): string {
+  return `${group.state} · ${group.profession} — ${group.hours} Hrs`
+}
+
 /** `2026-04-10` → `4/10/2026`, as the certificate card and its panel write it. */
 export function formatTranscriptDate(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number)
