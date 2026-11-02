@@ -2838,12 +2838,25 @@ function CertificatesSection() {
       /* The Atlas card only where the shared one has not taken over — Eric's
          versions, and the baseline with the control turned over. */
       atlasCards={wip && !sharedCert}
-      /* ⚠ STILL PASSED ON THE SHARED ARM. The not-yet-earned state is the
-         HOST's word either way (the record says completed), and the shared card
-         now draws it properly rather than leaving the rows it cannot fill
-         empty — so dropping this here would silently re-issue a certificate
-         the learner has not earned. */
-      inProgressIds={wip ? ['cert-xcel-lh-prelicense'] : undefined}
+      /*
+       * NO NOT-YET-EARNED CERTIFICATE ON THIS PAGE (2026-11-02, Jillienne:
+       * "there should not be an IN PROGRESS certificate, only Completed").
+       *
+       * It was never a record state — `cert-xcel-lh-prelicense` is
+       * `status: 'completed'` with a real issue date and a reporting date, and
+       * the not-yet-earned look was a presentational overlay this page painted
+       * over it. Dropping the overlay makes the card say what the record says.
+       *
+       * ⚠ THE CAPABILITY IS UNWIRED, NOT REMOVED. `CertificateCard`'s
+       * `inProgress`, `AtlasCertificateCard`'s, and the detail panel's matching
+       * state all stay — a certificate that genuinely is not issued yet must
+       * not fall through to the issued treatment and claim a date it has not
+       * got. Re-wiring is passing ids here again.
+       *
+       * Eric's versions keep the overlay he asked for on 2026-10-13: his Home
+       * has that course under way, so its certificate is not earned there.
+       */
+      inProgressIds={wip && !baseline ? ['cert-xcel-lh-prelicense'] : undefined}
       sharedCardSerif={sharedCert}
       // White's cards: the guide's Secondary 100 fill with a 1px Secondary 200
       // outline (2026-10-14, Eric's request) — the tan ramp, by role, so the

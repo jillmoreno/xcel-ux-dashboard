@@ -6,6 +6,8 @@ import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { PlatformShell } from '@/components/layout/PlatformShell'
+import { CertificateActionPanel } from '@/components/certificates/CertificateActionPanel'
+import { certificatesFor } from '@/data/certificateFixtures'
 import { atlasCoursesFor } from '@/data/atlasCourseCards'
 import { myCoursesFor } from '@/data/myCoursesFixtures'
 
@@ -196,16 +198,16 @@ describe('My Certificates on the Atlas baseline', () => {
     expect(within(sheet).getByText('View Certificate')).toBeTruthy()
   })
 
-  /* A certificate for a course still under way: nothing has been issued, so
-     there is no document to offer and no reporting line to print. */
-  it('opens a not-yet-earned certificate on the in-progress arm', () => {
+  /* Every certificate on this page is an issued one as of 2026-11-02, so the
+     Life & Health card opens the issued state too — which is what its record
+     has always said. The panel's not-yet-earned state is covered directly at
+     the foot of this file; no card reaches it from here any more. */
+  it('opens the Life & Health certificate on the issued state as well', () => {
     renderShell(`section=certificates&version=${BASELINE}`)
     fireEvent.click(screen.getByRole('button', { name: /View details for Life & Health Pre-Licensing/ }))
     const sheet = screen.getByRole('dialog')
-    expect(within(sheet).getByText('Not Yet Earned')).toBeTruthy()
-    expect(within(sheet).queryByText('View Certificate')).toBeNull()
-    expect(within(sheet).queryByText(/Certificate Issued:/)).toBeNull()
-    expect(within(sheet).getByText('Continue Course')).toBeTruthy()
+    expect(within(sheet).getByText('Certificate Issued')).toBeTruthy()
+    expect(within(sheet).queryByText('Not Yet Earned')).toBeNull()
   })
 
   it('leaves the cards inert when the flag is off', () => {
@@ -254,26 +256,37 @@ describe('the certificates page draws the shared card', () => {
     expect(card.style.getPropertyValue('--cert-accent')).not.toBe('')
   })
 
-  it('gives the not-yet-earned certificate a line rather than a hole', () => {
+  /* ⚠ EVERY CERTIFICATE HERE IS AN ISSUED ONE (2026-11-02, Jillienne: "there
+     should not be an IN PROGRESS certificate, only Completed").
+     The not-yet-earned look was never a record state — the Life & Health
+     record is `status: 'completed'` with an issue date and a reporting date —
+     it was an overlay this page painted over it. */
+  it('shows no not-yet-earned certificate', () => {
     renderShell(`section=certificates&version=${BASELINE}`)
-    expect(screen.getByText('Issued when you complete the course')).toBeTruthy()
-    expect(screen.getByText(/IN\s*PROGRESS/)).toBeTruthy()
+    expect(screen.queryByText(/IN\s*PROGRESS/)).toBeNull()
+    expect(screen.queryByText('Issued when you complete the course')).toBeNull()
   })
 
-  /* ⚠ AND IT MUST NOT CLAIM TO BE EARNED. The record says `completed` — the
-     not-yet-earned state is the host's word — so a card that read the status
-     straight off the data would print COMPLETED over a certificate the learner
-     has not got. */
-  it('does not label the not-yet-earned certificate COMPLETED', () => {
+  it('draws the Life & Health certificate as issued, like its record', () => {
     renderShell(`section=certificates&version=${BASELINE}`)
     const card = screen.getByRole('button', { name: /View details for Life & Health/ })
-    expect(within(card).queryByText('COMPLETED')).toBeNull()
+    expect(within(card).getByText('COMPLETED')).toBeTruthy()
   })
 
   it('draws the Atlas card when the control says atlas', () => {
     renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-card-style:atlas`)
     expect(screen.getAllByText('Certificate').length).toBeGreaterThan(0)
     expect(screen.queryByText('COMPLETED')).toBeNull()
+  })
+})
+
+/* ⚠ UNWIRED, NOT REMOVED. A certificate that genuinely is not issued yet must
+   not fall through to the issued treatment and claim a date it has not got, so
+   the card keeps the state — this is the host that still asks for it. */
+describe('the not-yet-earned treatment survives where it is still wanted', () => {
+  it('Eric’s version still paints its certificate as not yet earned', () => {
+    renderShell(`section=certificates&version=${ERIC_WIP}`)
+    expect(screen.getByText('In-Progress')).toBeTruthy()
   })
 })
 
@@ -319,5 +332,37 @@ describe('atlasCoursesFor — the library as Atlas cards', () => {
     for (const card of atlasCoursesFor('xcel')) {
       if (card.completed) expect(card.badge).toBeUndefined()
     }
+  })
+})
+
+/**
+ * ⚠ THE PANEL'S NOT-YET-EARNED STATE HAS NO ROUTE TO IT RIGHT NOW, which is
+ * exactly why it is tested directly. This page shows only issued certificates
+ * (2026-11-02), and the one host that still paints a certificate as not yet
+ * earned does not make its cards clickable — so nothing in the product opens
+ * this state today.
+ *
+ * It is kept rather than deleted because the alternative failure is worse than
+ * dead code: a certificate that genuinely is not issued would fall through to
+ * the issued state and print an issue date, a reporting status and a View
+ * Certificate button for a document that does not exist. Deleting it is how
+ * that bug gets written later.
+ */
+describe('the Certificate Details panel still covers a certificate not yet issued', () => {
+  const record = certificatesFor('xcel').find((c) => c.id === 'cert-xcel-lh-prelicense')!
+
+  it('claims no issue date, no reporting and no document', () => {
+    render(
+      <MemoryRouter>
+        <AccountProvider>
+          <CertificateActionPanel open onClose={() => {}} data={record} inProgress />
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    const sheet = screen.getByRole('dialog')
+    expect(within(sheet).getByText('Not Yet Earned')).toBeTruthy()
+    expect(within(sheet).queryByText('View Certificate')).toBeNull()
+    expect(within(sheet).queryByText(/Certificate Issued:/)).toBeNull()
+    expect(within(sheet).getByText('Continue Course')).toBeTruthy()
   })
 })

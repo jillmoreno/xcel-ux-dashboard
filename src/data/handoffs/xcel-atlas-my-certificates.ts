@@ -36,9 +36,9 @@ const feature: PrototypeFeature = {
   icon: 'grid',
   brands: ['xcel'],
   blurb:
-    'The learner’s certificates on one page, reached from Home’s Quick Links and drawn with the shared certificate card under a serif title, every one of them opening a Certificate Details slide-over that covers issued, not-yet-earned and action-required certificates alike.',
+    'The learner’s issued certificates on one page, reached from Home’s Quick Links and drawn with the shared certificate card under a serif title, every one of them opening a Certificate Details slide-over.',
   tileBlurb:
-    'Certificates in the Atlas shell. Every card opens its detail — the panel now covers issued and not-yet-earned certificates, fixing an empty sheet across the product.',
+    'Issued certificates on one page, on the shared card with a serif title. Every card opens its detail — a sheet that used to render empty for an issued certificate.',
   pages: [
     {
       label: 'My Certificates — the page as it ships',
@@ -126,7 +126,7 @@ const feature: PrototypeFeature = {
           'The title top-left in the heading serif, a status badge top-right \u2014 an icon in a tinted circle with the status spelled out beneath it \u2014 then the profession, a row of state, hours and credit type, and a label-and-value pair for Certificate Issued and Reporting Status. The status word under the badge is set in capitals. The kebab sits bottom-right. The whole card opens its detail, and says so: a 6px accent stroke slides onto the left edge on hover or focus and the title turns the accent colour and underlines.',
         variants: [
           { name: 'Issued', when: 'The certificate has been earned. An award badge over COMPLETED, in the brand ramp, with the issue date and the reporting line.' },
-          { name: 'Not yet earned', when: 'The course is still under way. An hourglass badge over an “In Progress” tag in the information ramp, and one line \u2014 "Issued when you complete the course" \u2014 in place of the issue and reporting rows.', why: 'Those two rows have nothing to say yet, and the grid sizes every row to its tallest card, so leaving them out left a title over blank space.' },
+          { name: 'Not yet earned', when: 'Never, on this page \u2014 see the decision below. The card can draw it (an hourglass badge over an \u201cIn Progress\u201d tag, and one line in place of the issue and reporting rows) and keeps the ability on purpose, but nothing here asks for it: every certificate this page lists is an issued one.', why: 'Kept rather than deleted because a certificate that genuinely is not issued must not fall through to the issued treatment and print a date it has not got.' },
           { name: 'Action required', when: 'Something is outstanding. A triangle-exclamation badge over an “Action required” tag in the warning ramp, the course completion date instead of an issue date, and a "Certificate Pending" pill naming what is needed. Reachable from the tabbed page, whose status tabs this page hides.' },
           { name: 'External', when: 'A certificate the learner uploaded, taken elsewhere. A neutral badge over EXTERNAL and an "Issued By" line. Also tab-only.' },
           { name: 'Serif title', when: 'On this page only. The heading serif in place of the sans title the tabbed page draws.', why: 'The page title is serif, and a sans card title under it read as a different product.' },
@@ -235,9 +235,9 @@ const feature: PrototypeFeature = {
           status: 'Decided',
         },
         {
-          question: 'What does a not-yet-earned certificate show?',
+          question: 'Does the page ever show a certificate that is not yet earned?',
           decision:
-            'An hourglass badge over an “In Progress” tag in the information ramp, matching the slide-over it opens, and one line — "Issued when you complete the course" — where the issue date and reporting status would go. Not an empty card, and not a COMPLETED tag over a certificate nobody has earned.',
+            'No. Every certificate on this page is an issued one. A not-yet-earned look was briefly painted over the Life & Health card, but that was never a record state \u2014 that record carries an issue date and a reporting date \u2014 so the overlay made the page disagree with its own data. The card and the detail sheet both keep the ability to draw one, unwired, because a certificate that genuinely is not issued must not fall through to the issued treatment and claim a date, a reporting status and a document it has not got.',
           status: 'Decided',
         },
         {
@@ -270,6 +270,7 @@ const feature: PrototypeFeature = {
         },
       ],
       openItems: [
+        'Settle whether a learner part-way through a course should hold its completion certificate at all \u2014 Home shows Life & Health in progress while this page lists its certificate as issued, which is the records disagreeing rather than the pages.',
         'Design the ⋮ menu, or decide the card’s click is the whole affordance and drop the ⋮.',
         'Point View Certificate at a real document.',
         'Decide whether a certificate carries its own issued date, separate from course completion.',
