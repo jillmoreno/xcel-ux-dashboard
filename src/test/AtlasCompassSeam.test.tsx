@@ -359,7 +359,7 @@ describe('the walk’s Study Journey steps', () => {
   it('puts Set Exam Date in his Step 2 with `atlas-exam-date-step` on, and sets a date with it', async () => {
     /* Figma 466:856, 2026-10-19 (Eric's request): the pill above the steps
        and the "150 scored" line go; the four-state panel takes Step 2. */
-    renderDashboard('?demo=1&section=dashboard&ff=atlas-exam-date-step:on')
+    renderDashboard('?demo=1&section=dashboard&version=eric-atlas-e2e&ff=atlas-exam-date-step:on')
     const page = within(screen.getByTestId('page'))
     expect(page.queryByText(/150 scored questions/)).toBeNull()
     const step = within(page.getByRole('region', { name: 'Pass State Exam' }))

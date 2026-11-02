@@ -27,8 +27,8 @@ afterEach(() => {
 })
 beforeEach(clearExamDate)
 
-function renderHome(version = 'jill-atlas-main') {
-  window.history.replaceState({}, '', '/dashboard-rebrand')
+function renderHome(version = 'jill-atlas-main', ff = '') {
+  window.history.replaceState({}, '', `/dashboard-rebrand?demo=1&version=${version}${ff}`)
   return render(
     <MemoryRouter initialEntries={[`/dashboard-rebrand?demo=1&version=${version}`]}>
       <AccountProvider>
@@ -252,7 +252,8 @@ describe('the Add Date prompt on Jill/Atlas-Main', () => {
   })
 
   it('…while the End-to-End Demo keeps the recitation on a bare route', () => {
-    renderHome('eric-atlas-e2e')
+    // The "150 scored" line is the exam-date step's to replace when it is on.
+    renderHome('eric-atlas-e2e', '&ff=atlas-exam-date-step:off')
     const step3 = within(screen.getByRole('region', { name: 'Get Licensed in Florida' }))
     expect(step3.getByText(/Apply online, then submit/)).toBeTruthy()
     expect(screen.getByText(/150 scored questions/)).toBeTruthy()
