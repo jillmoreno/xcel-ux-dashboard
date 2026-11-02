@@ -2975,6 +2975,42 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-certificates-card-style',
+    /* WHICH CERTIFICATE CARD (2026-11-02, Jillienne: "the UI for the
+       certificates needs help. they also need to better match what is
+       happening in the LMS dashboard").
+
+       Shared: the card the rest of the product draws, with its title in the
+       serif face. The audit it came out of, in short — the Atlas card led with
+       a "Certificate" pill, which every card on a certificates page could wear
+       and which therefore said nothing, while the STATUS, the one varying fact,
+       sat at 11px in grey on the right. It also dropped the profession line, so
+       two continuing-education certificates in one state differed only by
+       title; it had no hover or focus treatment even after the whole card
+       became a button; and its not-yet-earned card was a title over two rows of
+       empty space, because the rows it could not fill are sized by the tallest
+       card in the row. The shared card answers all four: an icon badge with the
+       status spelled out under it, the profession line, the hover stroke and
+       title underline that say a card opens, and a real not-yet-earned state.
+
+       Atlas: the Figma card (375:1250), kept so the two can be read side by
+       side.
+
+       ⚠ THE BASELINE ONLY, like its siblings. Eric's versions keep the Atlas
+       card. */
+    group: 'Widgets',
+    label: 'Certificates card',
+    description:
+      'Which card the Atlas certificates page draws. Shared (default, 2026-11-02): the card the rest of the product uses \u2014 a status badge with the status spelled out, the profession line, the hover treatment that says a card opens, and a real not-yet-earned state \u2014 with its title in the serif face. Atlas: the Figma card (375:1250), whose status pill said nothing and whose not-yet-earned card was mostly empty space.',
+    defaultEnabled: true,
+    defaultVariant: 'shared',
+    variants: [
+      { value: 'shared', label: 'Shared (LMS)' },
+      { value: 'atlas', label: 'Atlas' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-certificates-open-detail',
     /* A CERTIFICATE CARD OPENS. On, every Atlas certificate card opens the
        Certificate Details slide-over — and so does its \u22ee, which called

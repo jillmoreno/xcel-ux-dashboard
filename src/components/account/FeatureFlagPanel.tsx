@@ -184,6 +184,7 @@ const REBRAND_FLAGS = [
   'atlas-courses-card-style',
   'atlas-courses-from-library',
   'atlas-courses-open-course',
+  'atlas-certificates-card-style',
   'atlas-certificates-open-detail',
   'e2e-walk-journey-steps',
   'atlas-header-v2',

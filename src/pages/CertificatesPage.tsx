@@ -42,6 +42,7 @@ export function CertificatesPage({
   atlasBarColor,
   atlasInProgressPill,
   atlasOpenAll = false,
+  sharedCardSerif = false,
 }: {
   embedded?: boolean
   hideSearch?: boolean
@@ -82,6 +83,9 @@ export function CertificatesPage({
    * the tabbed page, where Action Required is one click away.
    */
   atlasOpenAll?: boolean
+  /** The shared card's title in the heading serif — the Atlas pages, which draw
+   *  it in place of `AtlasCertificateCard` since 2026-11-02. */
+  sharedCardSerif?: boolean
 } = {}) {
   const { brand } = useAccount()
   const all = useMemo(() => certificatesFor(brand), [brand])
@@ -315,7 +319,13 @@ export function CertificatesPage({
                       inProgressPill={atlasInProgressPill}
                     />
                   ) : (
-                    <CertificateCard data={cert} onOpen={setDetailId} />
+                    <CertificateCard
+                      data={cert}
+                      onOpen={setDetailId}
+                      openAnyStatus={atlasOpenAll}
+                      inProgress={inProgressIds?.includes(cert.id)}
+                      titleSerif={sharedCardSerif}
+                    />
                   )}
                 </div>
               ))}

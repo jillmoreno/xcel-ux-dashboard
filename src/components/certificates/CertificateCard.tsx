@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { Award, TriangleExclamation, CircleInfo, MoreVertical } from '@/icons'
+import { Award, TriangleExclamation, CircleInfo, HourglassClock, MoreVertical } from '@/icons'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { useTheme } from '@/context/ThemeContext'
 import {
@@ -34,16 +34,41 @@ export function CertificateCard({
   data,
   onOpen,
   onOptions,
+  openAnyStatus = false,
+  inProgress = false,
+  titleSerif = false,
 }: {
   data: Certificate
-  /** Open the action-required detail slide-over. */
+  /** Open the Certificate Details slide-over. */
   onOpen?: (id: string) => void
-  /** Kebab (⋮) menu click — falls back to a console stub. */
+  /** Kebab (⋮) menu click. Without one, the ⋮ opens the detail on a card that
+   *  opens at all; failing that it falls back to a console stub. */
   onOptions?: (id: string) => void
+  /**
+   * EVERY CARD OPENS, not only an action-required one — 2026-11-02.
+   *
+   * Off (the default) is the rule this card has always had, and it is still
+   * right for the tabbed page: Action Required is one click away there, and a
+   * completed certificate's own row is the kebab. A host that hides the tabs
+   * has no such route, which is what this is for.
+   */
+  openAnyStatus?: boolean
+  /**
+   * NOT YET EARNED — the certificate for a course still under way.
+   *
+   * ⚠ IT IS THE HOST'S WORD, NOT THE RECORD'S. Such a certificate is still
+   * `status: 'completed'` in the fixtures, so the card cannot read it off
+   * `data` and has to be told. It beats `isCompleted` everywhere below: a
+   * certificate that has not been issued must not wear the COMPLETED tag.
+   */
+  inProgress?: boolean
+  /** The title in the heading serif — the Atlas pages, as `CourseCard`'s own
+   *  `titleSerif`. */
+  titleSerif?: boolean
 }) {
   const isAction = data.status === 'action-required'
   const isExternal = data.status === 'external'
-  const isCompleted = data.status === 'completed'
+  const isCompleted = data.status === 'completed' && !inProgress
   const pending = data.action ? CERT_ACTION_META[data.action].pendingLabel : null
   // Dark theme (rebrand): the card surface flips navy, but the title
   // (`.cre-cert-card-title` class = `var(--color-text-primary)`) and the status
@@ -59,7 +84,17 @@ export function CertificateCard({
   // title color (`--cert-link`), and `icon`/`box`/`tag` the filled-tint badge +
   // status tag. (External's `link` stays `text-primary` — the title just
   // underlines on hover; a gray hover title would read as *less* emphasis.)
-  const accent = isAction
+  const accent = inProgress
+    ? {
+        /* THE INFO RAMP, matching the detail panel's "Not Yet Earned" banner, so
+           the card and the sheet it opens agree about what this state is. */
+        stroke: 'var(--color-info-500)',
+        link: 'var(--color-info-700)',
+        icon: 'var(--color-info-600)',
+        box: 'var(--color-info-100)',
+        tag: dark ? 'var(--color-info-300)' : 'var(--color-info-800)',
+      }
+    : isAction
     ? {
         stroke: 'var(--color-warning-500)',
         link: 'var(--color-warning-700)',
@@ -85,7 +120,7 @@ export function CertificateCard({
           tag: dark ? 'var(--color-primary-300)' : 'var(--color-primary-700)',
         }
 
-  const clickable = isAction && onOpen != null
+  const clickable = (isAction || openAnyStatus) && onOpen != null
   const open = () => onOpen?.(data.id)
 
   return (
@@ -117,7 +152,11 @@ export function CertificateCard({
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <h3
           className="cre-cert-card-title"
-          style={dark ? { ...titleStyle, color: '#f1f3f7' } : titleStyle}
+          style={{
+            ...titleStyle,
+            ...(titleSerif ? SERIF_TITLE : null),
+            ...(dark ? { color: '#f1f3f7' } : null),
+          }}
         >
           {data.title}
         </h3>
@@ -130,8 +169,15 @@ export function CertificateCard({
               background: accent.box,
             }}
           >
-            {isAction ? <TriangleExclamation size={20} aria-hidden /> : <Award size={22} aria-hidden />}
+            {inProgress ? (
+              <HourglassClock size={20} aria-hidden />
+            ) : isAction ? (
+              <TriangleExclamation size={20} aria-hidden />
+            ) : (
+              <Award size={22} aria-hidden />
+            )}
           </span>
+          {inProgress && <span style={{ ...tagStyle, color: accent.tag }}>IN&nbsp;PROGRESS</span>}
           {isCompleted && <span style={{ ...tagStyle, color: accent.tag }}>COMPLETED</span>}
           {isExternal && <span style={{ ...tagStyle, color: accent.tag }}>EXTERNAL</span>}
           {isAction && (
@@ -151,7 +197,13 @@ export function CertificateCard({
           <Divider />
           <span>{data.badge}</span>
         </div>
-        {isAction ? (
+        {inProgress ? (
+          /* ⚠ A LINE, NOT A GAP. Nothing has been issued and nothing reported,
+             so both rows below are absent — and because the grid sizes every
+             row to its tallest card, that left this one as a title over two
+             rows of empty space. It says what is outstanding instead. */
+          <span style={completedStyle}>Issued when you complete the course</span>
+        ) : isAction ? (
           <span style={completedStyle}>Course Completed {formatDate(data.completedDate)}</span>
         ) : (
           <div style={infoGridStyle}>
@@ -186,7 +238,11 @@ export function CertificateCard({
         style={kebabStyle}
         onClick={(e) => {
           e.stopPropagation()
+          /* With no menu designed yet, the honest destination is the card's
+             own: the detail, where View Certificate and Go to Course live. A
+             real menu (Download · Print · Report) is an open decision. */
           if (onOptions) onOptions(data.id)
+          else if (clickable) open()
           else console.info('certificate:options', data.id)
         }}
       >
@@ -194,6 +250,21 @@ export function CertificateCard({
       </button>
     </div>
   )
+}
+
+/* THE SERIF TITLE (2026-11-02) — the Atlas pages set their headings in the
+   heading serif, and a sans card title under a serif page title read as a
+   different product. Same prop, same reason, as `CourseCard`'s `titleSerif`.
+
+   ⚠ THE 700 IS WHAT RENDERS, NOT A PREFERENCE. The Atlas font skin carries
+   `[data-atlas-palette][data-atlas-font="playfair-2"] [style*="--font-heading-serif"]
+   { font-weight: 700 !important }` in tokens.css, so an inline serif on those
+   pages is Bold whatever this asks for. Written as 700 so the source matches
+   the screen. */
+const SERIF_TITLE: CSSProperties = {
+  fontFamily: 'var(--font-heading-serif)',
+  fontWeight: 700,
+  letterSpacing: '-0.01em',
 }
 
 /** The "Reporting Status" line value — one of three variants. Exported for

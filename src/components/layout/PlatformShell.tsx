@@ -2806,6 +2806,11 @@ function CertificatesSection() {
   const baseline = isE2ELikeVersion(sectionVersion)
   const quickLinksMode = useFeatureFlag('atlas-pages-quick-links').variant
   const openDetail = useFeatureFlag('atlas-certificates-open-detail').enabled
+  /* Which card — the shared one by default since 2026-11-02; see
+     `atlas-certificates-card-style` for what the audit found. Read
+     unconditionally, ANDed after (the hook-count trap). */
+  const certCardStyle = useFeatureFlag('atlas-certificates-card-style').variant
+  const sharedCert = baseline && certCardStyle !== 'atlas'
   const showQuickLinks = wip && !(baseline && quickLinksMode !== 'shown')
   return (
     <CertificatesPage
@@ -2830,8 +2835,16 @@ function CertificatesSection() {
       // Figma 375:1311's cards (2026-10-13, Eric's request) — and the Life &
       // Health certificate as IN-PROGRESS: WIP's Home has that course under
       // way, so its certificate is not earned yet.
-      atlasCards={wip}
+      /* The Atlas card only where the shared one has not taken over — Eric's
+         versions, and the baseline with the control turned over. */
+      atlasCards={wip && !sharedCert}
+      /* ⚠ STILL PASSED ON THE SHARED ARM. The not-yet-earned state is the
+         HOST's word either way (the record says completed), and the shared card
+         now draws it properly rather than leaving the rows it cannot fill
+         empty — so dropping this here would silently re-issue a certificate
+         the learner has not earned. */
       inProgressIds={wip ? ['cert-xcel-lh-prelicense'] : undefined}
+      sharedCardSerif={sharedCert}
       // White's cards: the guide's Secondary 100 fill with a 1px Secondary 200
       // outline (2026-10-14, Eric's request) — the tan ramp, by role, so the
       // other brands read the same tan.

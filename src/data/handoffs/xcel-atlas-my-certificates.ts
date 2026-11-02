@@ -36,7 +36,7 @@ const feature: PrototypeFeature = {
   icon: 'grid',
   brands: ['xcel'],
   blurb:
-    'The learner’s certificates inside the Atlas shell — reached from Home’s Quick Links, drawn with the Atlas certificate card, every one of them opening a Certificate Details slide-over that now covers issued and not-yet-earned certificates as well as the action-required ones it was written for.',
+    'The learner’s certificates on one page, reached from Home’s Quick Links and drawn with the shared certificate card under a serif title, every one of them opening a Certificate Details slide-over that covers issued, not-yet-earned and action-required certificates alike.',
   tileBlurb:
     'Certificates in the Atlas shell. Every card opens its detail — the panel now covers issued and not-yet-earned certificates, fixing an empty sheet across the product.',
   pages: [
@@ -63,6 +63,7 @@ const feature: PrototypeFeature = {
   ],
   featureFlags: [
     { id: 'atlas-certificates-open-detail', label: 'Certificates open their detail', note: 'Whether the card and its kebab open the slide-over. Off restores the page with nothing clickable on it. It does not decide what the panel can draw: the issued and not-yet-earned states are always built, because the shared course card was already reaching them.' },
+    { id: 'atlas-certificates-card-style', label: 'Certificates card', note: 'Shared is the card documented here. Atlas draws the earlier card instead \u2014 the one the audit of 2026-11-02 replaced.' },
     { id: 'atlas-pages-quick-links', label: 'Quick Links on the learning pages', note: 'Shared with My Courses. Hidden, which is what this page shows; Shown puts the side rail back and re-centres the content.' },
   ],
   devHandoff: {
@@ -117,39 +118,49 @@ const feature: PrototypeFeature = {
       {
         id: 'atlas-certificate-card',
         order: 2,
-        name: 'Atlas certificate card',
+        name: 'Certificate card',
         tabLabel: 'The card',
         location:
-          'src/components/certificates/AtlasCertificateCard.tsx — Figma "Atlas UX Design" 375:1250. A sibling of the shared CertificateCard, not a variant of it; it imports that card’s ReportingStatus so the two can never disagree.',
+          'src/components/certificates/CertificateCard.tsx. The same component /my-learning/certificates draws \u2014 not a copy. AtlasCertificateCard.tsx is the earlier card, kept behind the Certificates card control.',
         summary:
-          'A rounded status bar across the top carrying a "Certificate" pill and the status word, with the ⋮ beside it; the title in the serif; then state | hours | requirement, "Certificate Issued: date" and "Reporting Status: value". The whole card is the button.',
+          'The title top-left in the heading serif, a status badge top-right \u2014 an icon in a tinted circle with the status spelled out beneath it \u2014 then the profession, a row of state, hours and credit type, and a label-and-value pair for Certificate Issued and Reporting Status. The status word under the badge is set in capitals. The kebab sits bottom-right. The whole card opens its detail, and says so: a 6px accent stroke slides onto the left edge on hover or focus and the title turns the accent colour and underlines.',
         variants: [
-          { name: 'Completed', when: 'An issued certificate — the page’s common case. All three detail lines draw.' },
-          { name: 'In progress', when: 'The host names the id in inProgressIds (the Life & Health certificate, whose course is still under way). The bar reads In-Progress, and the issued and reporting lines are hidden.', why: 'Nothing has been issued, so printing an issue date would be a claim the product cannot support.' },
-          { name: 'Action required', when: 'status is action-required. The status word changes; this is the only variant the page could open before 2026-11-02, and its tab is hidden.' },
-          { name: 'External', when: 'A certificate the learner uploaded. Reachable only on the tabbed page.' },
+          { name: 'Issued', when: 'The certificate has been earned. An award badge over COMPLETED, in the brand ramp, with the issue date and the reporting line.' },
+          { name: 'Not yet earned', when: 'The course is still under way. An hourglass badge over an “In Progress” tag in the information ramp, and one line \u2014 "Issued when you complete the course" \u2014 in place of the issue and reporting rows.', why: 'Those two rows have nothing to say yet, and the grid sizes every row to its tallest card, so leaving them out left a title over blank space.' },
+          { name: 'Action required', when: 'Something is outstanding. A triangle-exclamation badge over an “Action required” tag in the warning ramp, the course completion date instead of an issue date, and a "Certificate Pending" pill naming what is needed. Reachable from the tabbed page, whose status tabs this page hides.' },
+          { name: 'External', when: 'A certificate the learner uploaded, taken elsewhere. A neutral badge over EXTERNAL and an "Issued By" line. Also tab-only.' },
+          { name: 'Serif title', when: 'On this page only. The heading serif in place of the sans title the tabbed page draws.', why: 'The page title is serif, and a sans card title under it read as a different product.' },
         ],
         ctas: [
-          { name: 'The card', does: 'Opens the Certificate Details slide-over, for any status, when openAnyStatus is set. Keyboard: Enter and Space, with role="button" and an aria-label naming the certificate.' },
-          { name: 'The ⋮', does: 'Opens the same slide-over. It was a dead control — rendered, labelled for screen readers, wired to console.info — and with no menu designed yet the honest destination is the detail, where View Certificate and Go to Course already live. A real menu is open below.' },
+          { name: 'The card', does: 'Opens the Certificate Details slide-over, for any status. Keyboard: Enter and Space, with a role and a label naming the certificate.' },
+          { name: 'The kebab', does: 'Opens the same slide-over. With no menu designed yet the honest destination is the card\u2019s own; a Download, Print and Report menu is an open decision below.' },
+          { name: 'The reporting status information icon', does: 'A tooltip explaining a pending roster submission. Drawn only on that one reporting value.' },
         ],
         statesMatrix: [
-          { question: 'Why does the ⋮ do the same thing as the card?', answer: 'Because the alternative was leaving it dead. It is explicitly a placeholder for a Download / Print / Report menu, not a considered equivalence.' },
-          { question: 'Does the shared CertificateCard become clickable too?', answer: 'No. It keeps the action-required rule, which is still right for the tabbed page where Action Required is one click away. Only the Atlas card takes openAnyStatus.' },
-          { question: 'How does the card know a certificate is "in progress"?', answer: 'It is told. The record is still status: completed in the fixtures — in-progress is a presentational decision the host makes from inProgressIds — so neither the card nor the panel can read it off the data.' },
+          { question: 'Why not the card the page drew before?', answer: 'An audit on 2026-11-02 found four things wrong with it. It led with a "Certificate" pill \u2014 the one fact every card on a certificates page shares, so it distinguished nothing \u2014 while the status, the fact that actually varies, sat at 11px in grey on the right. It dropped the profession line, so two continuing-education certificates in one state differed only by title. It had no hover or focus treatment even after the whole card became a button. And its not-yet-earned card was a title over two rows of empty space.' },
+          { question: 'Why does the kebab do the same thing as the card?', answer: 'Because the alternative was leaving it dead. It is a placeholder for a Download, Print and Report menu, not a considered equivalence.' },
+          { question: 'How does the card know a certificate is not yet earned?', answer: 'It is told. The record is still marked completed \u2014 not-yet-earned is a decision the page makes from a list of ids \u2014 so the card cannot read it off the data, and a card that did would print COMPLETED over a certificate the learner has not got.' },
+          { question: 'Does the tabbed page change?', answer: 'No. Every one of these is an opt-in prop, so /my-learning/certificates draws exactly what it drew before: the sans title, and only an action-required card clickable.' },
         ],
-        edgeCases: ['The ⋮ stops propagation, so it never also fires the card’s own click.'],
+        edgeCases: [
+          'The kebab stops propagation, so it never also fires the card\u2019s own click.',
+          'Titles wrap freely; the grid sizes each row to its tallest card, so a two-line title lifts its whole row.',
+          'In dark mode the card surface flips and the title and status tag are re-pinned to light stops, which the component handles.',
+        ],
         designSpec: {
           tokens: [
-            { role: 'Card surface', token: '--color-fixed-light' },
-            { role: 'Status bar fill', token: '--color-atlas-tan-300' },
-            { role: 'Certificate pill fill', token: '--color-primary-100' },
-            { role: 'Certificate pill rule', token: '--color-primary-200' },
-            { role: 'Kebab circle', token: '--color-atlas-tan-200' },
-            { role: 'Title face', token: '--font-heading-serif' },
+            { role: 'Issued badge and stroke', token: '--color-primary-100 / --color-primary-500' },
+            { role: 'Not-yet-earned badge and stroke', token: '--color-info-100 / --color-info-500' },
+            { role: 'Action-required badge and stroke', token: '--color-warning-100 / --color-warning-500' },
+            { role: 'External badge', token: '--color-neutral-100' },
+            { role: 'Kebab circle', token: '--color-tertiary-100' },
+            { role: 'Title face on this page', token: '--font-heading-serif' },
           ],
-          responsive: ['Fixed 24px padding and a 16px radius; the card fills its grid cell.'],
-          sources: ['src/components/certificates/AtlasCertificateCard.tsx; Figma 375:1250, 375:1311, 379:1368–1374, 411:1382.'],
+          responsive: ['The hover stroke and title colour live in tokens.css on .cre-cert-card, driven by the --cert-accent and --cert-link properties the card sets per status.'],
+          sources: [
+            'src/components/certificates/CertificateCard.tsx.',
+            'Status matrix: Figma file uVUMm2ZJ6YWoc9NqjTpqWb, node 122:2018 \u2014 each status in Default and Hover.',
+          ],
         },
       },
       {
@@ -215,6 +226,18 @@ const feature: PrototypeFeature = {
           question: 'Is the page heading "Certificates" or "My Certificates"?',
           decision:
             'My Certificates, on the Atlas page header only. It matches the Quick Links row that reaches it and My Courses beside it; SECTION_TITLES is left alone so no other version’s nav is renamed.',
+          status: 'Decided',
+        },
+        {
+          question: 'Which certificate card does the page draw?',
+          decision:
+            'The card the rest of the product already uses, with its title in the serif face. An audit on 2026-11-02 found four faults in the one it replaced: a "Certificate" pill in the loudest position saying the one thing every card on the page shares, while the status it should have been saying sat at 11px in grey; no profession line, so two continuing-education certificates in one state differed only by title; no hover or focus treatment, after the whole card had become a button; and a not-yet-earned card that was a title over two rows of empty space. The earlier card is kept behind the Certificates card control.',
+          status: 'Decided',
+        },
+        {
+          question: 'What does a not-yet-earned certificate show?',
+          decision:
+            'An hourglass badge over an “In Progress” tag in the information ramp, matching the slide-over it opens, and one line — "Issued when you complete the course" — where the issue date and reporting status would go. Not an empty card, and not a COMPLETED tag over a certificate nobody has earned.',
           status: 'Decided',
         },
         {

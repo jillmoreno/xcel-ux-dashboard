@@ -214,6 +214,69 @@ describe('My Certificates on the Atlas baseline', () => {
   })
 })
 
+/**
+ * THE CERTIFICATE CARD AUDIT (2026-11-02, Jillienne: "the UI for the
+ * certificates needs help. they also need to better match what is happening in
+ * the LMS dashboard, audit and make some decisions there").
+ *
+ * Four findings, and each case below is one of them:
+ *
+ *   the pill said nothing   every card on a certificates page is a
+ *                           certificate, so a "Certificate" pill is the one
+ *                           thing it cannot distinguish — while the STATUS sat
+ *                           at 11px in grey on the right.
+ *   no profession           two continuing-education certificates in one state
+ *                           differed only by title.
+ *   no hover state          the whole card became a button and nothing said so.
+ *   an empty card           the not-yet-earned card was a title over two rows
+ *                           of blank space, because the rows it cannot fill are
+ *                           sized by the tallest card in the row.
+ */
+describe('the certificates page draws the shared card', () => {
+  it('spells the status out instead of pilling the obvious', () => {
+    renderShell(`section=certificates&version=${BASELINE}`)
+    expect(screen.getAllByText('COMPLETED').length).toBeGreaterThan(0)
+    // The pill every card could wear, and therefore the one that told you
+    // nothing. Its absence IS the finding.
+    expect(screen.queryByText('Certificate')).toBeNull()
+  })
+
+  it('carries the profession line again', () => {
+    renderShell(`section=certificates&version=${BASELINE}`)
+    expect(screen.getAllByText('Insurance Continuing Education').length).toBeGreaterThan(0)
+  })
+
+  /* The accent custom property is what `.cre-cert-card` reads for the 6px hover
+     stroke and the title underline. A card that opens has to say it does. */
+  it('sets the accent the hover treatment reads', () => {
+    renderShell(`section=certificates&version=${BASELINE}`)
+    const card = screen.getByRole('button', { name: /View details for Annuity/ })
+    expect(card.style.getPropertyValue('--cert-accent')).not.toBe('')
+  })
+
+  it('gives the not-yet-earned certificate a line rather than a hole', () => {
+    renderShell(`section=certificates&version=${BASELINE}`)
+    expect(screen.getByText('Issued when you complete the course')).toBeTruthy()
+    expect(screen.getByText(/IN\s*PROGRESS/)).toBeTruthy()
+  })
+
+  /* ⚠ AND IT MUST NOT CLAIM TO BE EARNED. The record says `completed` — the
+     not-yet-earned state is the host's word — so a card that read the status
+     straight off the data would print COMPLETED over a certificate the learner
+     has not got. */
+  it('does not label the not-yet-earned certificate COMPLETED', () => {
+    renderShell(`section=certificates&version=${BASELINE}`)
+    const card = screen.getByRole('button', { name: /View details for Life & Health/ })
+    expect(within(card).queryByText('COMPLETED')).toBeNull()
+  })
+
+  it('draws the Atlas card when the control says atlas', () => {
+    renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-card-style:atlas`)
+    expect(screen.getAllByText('Certificate').length).toBeGreaterThan(0)
+    expect(screen.queryByText('COMPLETED')).toBeNull()
+  })
+})
+
 describe('atlasCoursesFor — the library as Atlas cards', () => {
   /* ⚠ ARCHIVING IS A LOCATION, NOT A STATUS (decision 33/34), and the Atlas
      page has no View Archived link — so an archived card would sit on the only
