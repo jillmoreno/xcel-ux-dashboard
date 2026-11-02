@@ -276,13 +276,17 @@ export function useInviteFlowV3(): InviteFlowV3 {
    Afsana: a learner signed in to an existing XCEL account checks out from the
    cart, and what happens depends on what is in it —
 
-     targeted   only the 526 targeted SKUs: Checkout signs them out ("Signing
+     Checkout asks the Partner Code question first, whatever the cart holds
+     (2026-11-02). Yes collects the code — and a code leads to a partner
+     site this prototype does not have, so that is the end of the walk. No:
+
+     targeted   only the 526 targeted SKUs: they are signed out ("Signing
                 you out", with a platform-update notice), then the new guest
-                checkout — Partner Code, Verify your email, then a log-in if
-                the email has Atlas or a code if it does not; checkout; Start
-                course or Create password.
-     mixed      some items are not targeted: the cart says they were removed,
-                and the rest goes as `targeted`.
+                checkout — Verify your email, then a log-in if the email has
+                Atlas or a code if it does not; checkout; Start course or
+                Create password.
+     mixed      some items are not targeted: a dialog says they will be
+                dropped; proceeding drops them and goes on as `targeted`.
      none       nothing targeted: the existing checkout, signed in, student
                 information filled from the account — and the walk ends
                 there; Place your order goes nowhere.
@@ -320,14 +324,23 @@ export function signedInFlowV3(
 ): InviteFlowV3 {
   if (cart === 'none') {
     /* The existing checkout is the last screen (Afsana, 2026-11-02). */
-    return { ...flow, base: 'xcel-signed-in', screens: ['cart', ...CHECKOUT] }
+    return { ...flow, base: 'xcel-signed-in', screens: ['cart', 'pc-modal', ...CHECKOUT] }
   }
   const check = email === 'atlas' ? ['verify-login-1', 'login-1', 'login-2'] : [...VERIFY, ...CODE]
   const ending = email === 'atlas' ? ['ready'] : NEW_PASSWORD
   return {
     ...flow,
     base: signedOut ? 'b2c-guest' : 'xcel-signed-in',
-    screens: ['cart', 'signing-out', 'pc-modal', ...check, 'checkout-1', ...CHECKOUT, 'placing', ...ending],
+    screens: [
+      ...CART_START,
+      ...(cart === 'mixed' ? ['drop-notice'] : []),
+      'signing-out',
+      ...check,
+      'checkout-1',
+      ...CHECKOUT,
+      'placing',
+      ...ending,
+    ],
   }
 }
 
@@ -343,19 +356,27 @@ export const V3_NON_TARGETED_ITEM: V3CartLine = {
   includes: ['New York Life and Health Flashcards'],
 }
 
-/** What the signed-in flow's cart holds, beyond the address's package, and
- *  what was taken out of it. `line` replaces the package when it is set (the
- *  `none` cart holds only the non-targeted item); `removed` is the mixed
- *  cart's banner. Null off this flow. */
-export function useV3SignedInCart(): { cart: V3CartContents; line: V3CartLine | null; removed: string[] } | null {
+/** What the signed-in flow's cart holds, beyond the address's package.
+ *  `line` replaces the package (the `none` cart holds only the non-targeted
+ *  item); `extra` sits beside it (the mixed cart, until Checkout drops it —
+ *  `dropped` names what goes). Null off this flow. */
+export function useV3SignedInCart(): {
+  cart: V3CartContents
+  line: V3CartLine | null
+  extra: V3CartLine | null
+  dropped: string[]
+} | null {
   const flow = useInviteFlowV3()
+  const [params] = useSearchParams()
   const version = resolveInviteFlowVersion(useFeatureFlag(INVITE_FLOW_VERSION_FLAG).variant)
   const cart = resolveV3Cart(useFeatureFlag(INVITE_V3_CART_FLAG).variant)
   if (version !== 'v3' || flow.id !== 'xcel-signed-in') return null
+  const holdsExtra = cart === 'mixed' && params.get(V3_SIGNED_OUT_PARAM) !== '1'
   return {
     cart,
     line: cart === 'none' ? V3_NON_TARGETED_ITEM : null,
-    removed: cart === 'mixed' ? [V3_NON_TARGETED_ITEM.name] : [],
+    extra: holdsExtra ? V3_NON_TARGETED_ITEM : null,
+    dropped: cart === 'mixed' ? [V3_NON_TARGETED_ITEM.name] : [],
   }
 }
 

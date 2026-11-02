@@ -15,6 +15,7 @@ import {
 } from '@/data/inviteFlows'
 import { PartnerCodeAskModal } from '@/components/e2e/PartnerCodeAsk'
 import { SigningOutDialog } from '@/components/e2e/SigningOutDialog'
+import { PartnerCodeEntryDialog, UnsupportedItemDialog } from '@/components/e2e/SignedInCartDialogs'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
 import { V3_SIGNED_OUT_PARAM, useV3SignedInCart } from '@/data/inviteFlowsV3'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
@@ -51,15 +52,17 @@ export function XcelCartPage() {
   const inCart = cartPackage(state, lineOfAuthority, params.get(CART_PACKAGE_PARAM))
   /* ⚠ V3'S SIGNED-IN OCD LEARNER — 2026-11-02, Afsana. Their cart can hold a
      product outside the 526 targeted SKUs: as the whole cart (`none`), or
-     beside a targeted one, in which case it has already been taken out and a
-     banner says so (`mixed`). Off that flow this is null and the cart is the
-     address's package, as before. */
+     beside a targeted one (`mixed`) until Checkout drops it. Off that flow
+     this is null and the cart is the address's package, as before. */
   const signedInCart = useV3SignedInCart()
   const pkg = inCart && signedInCart?.line ? signedInCart.line : inCart
   const signedOut = params.get(V3_SIGNED_OUT_PARAM) === '1'
-  /* Checkout signs a targeted cart's learner out first ("Signing you out"),
-     then asks the Partner Code question as it does any guest. */
-  const signsOutFirst = signedInCart != null && signedInCart.cart !== 'none' && !signedOut
+  const extra = pkg ? (signedInCart?.extra ?? null) : null
+  const total = pkg && extra ? sumPrices(pkg.price, extra.price) : pkg?.price
+  /* Checkout asks the signed-in learner the Partner Code question first,
+     whatever the cart holds; what follows depends on the answer and the cart
+     (`onSignedInAnswer`). Once signed out they are a guest like any other. */
+  const signedInAsk = signedInCart != null && !signedOut
   /* WHERE CHECKOUT GOES. On the `page` arm the partner-code question is a step
      of its own between here and the checkout; on the `modal` arm the checkout
      draws it over itself, so this goes straight there. Flows that already have
@@ -79,17 +82,38 @@ export function XcelCartPage() {
       ? '/end-to-end-demo/partner-code'
       : '/end-to-end-demo/checkout'
   const [signingOut, setSigningOut] = useState(false)
+  const [entering, setEntering] = useState(false)
+  const [dropping, setDropping] = useState(false)
+  /* Signed out after a No: on to the checkout as a guest, where Verify your
+     email opens. A mixed cart's extra item goes with the sign-out. */
   useEffect(() => {
     if (!signingOut) return
     const timer = window.setTimeout(() => {
       const next = new URLSearchParams(params)
       next.set(V3_SIGNED_OUT_PARAM, '1')
-      setParams(next, { replace: true })
-      setSigningOut(false)
-      setAsking(true)
+      next.set(PARTNER_CODE_PARAM, 'no')
+      navigate({ pathname: '/end-to-end-demo/checkout', search: next.toString() })
     }, LOADING_HANDOFF_MS)
     return () => window.clearTimeout(timer)
-  }, [signingOut, params, setParams])
+  }, [signingOut, params, navigate])
+
+  /* ⚠ THE SIGNED-IN LEARNER'S ANSWER — 2026-11-02, Afsana. Yes collects the
+     code, whatever the cart. No signs a targeted cart out; tells a mixed cart
+     what will be dropped first; and takes a cart with nothing targeted to the
+     existing checkout (returns false, so the answer goes on as anyone's). */
+  const onSignedInAnswer = (answer: 'yes' | 'no'): boolean => {
+    if (!signedInAsk) return false
+    if (answer === 'yes') {
+      setAsking(false)
+      setEntering(true)
+      return true
+    }
+    if (signedInCart.cart === 'none') return false
+    setAsking(false)
+    if (signedInCart.cart === 'mixed') setDropping(true)
+    else setSigningOut(true)
+    return true
+  }
 
   const remove = () => {
     /* Emptying the cart ends the purchase the answer belonged to. */
@@ -101,11 +125,23 @@ export function XcelCartPage() {
   return (
     <div style={PAGE}>
       {signingOut ? <SigningOutDialog /> : null}
+      {entering ? <PartnerCodeEntryDialog onCancel={() => setEntering(false)} /> : null}
+      {dropping && signedInCart ? (
+        <UnsupportedItemDialog
+          items={signedInCart.dropped}
+          onCancel={() => setDropping(false)}
+          onProceed={() => {
+            setDropping(false)
+            setSigningOut(true)
+          }}
+        />
+      ) : null}
       {asking ? (
         <PartnerCodeAskModal
           v3
           onClose={() => setAsking(false)}
           onAnswer={(answer) => {
+            if (onSignedInAnswer(answer)) return
             const next = new URLSearchParams(params)
             next.set(PARTNER_CODE_PARAM, answer)
             navigate({ pathname: '/end-to-end-demo/checkout', search: next.toString() })
@@ -117,21 +153,6 @@ export function XcelCartPage() {
 
       <main style={BODY}>
         <h1 style={TITLE}>Your cart</h1>
-        {/* V3, signed in with a mixed cart: what was taken out, and why. */}
-        {pkg && signedInCart && signedInCart.removed.length > 0 ? (
-          <div role="status" style={REMOVED}>
-            <p style={REMOVED_TEXT}>
-              The following items have been removed from your cart because they are not supported for an
-              ongoing platform update:
-            </p>
-            <ul style={REMOVED_LIST}>
-              {signedInCart.removed.map((name) => (
-                <li key={name}>{name}</li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-
         {pkg ? (
           <div style={LAYOUT}>
             <section aria-label="Items" style={ITEMS}>
@@ -156,6 +177,16 @@ export function XcelCartPage() {
                 </div>
                 <p style={ITEM_PRICE}>{pkg.price}</p>
               </div>
+              {/* V3, signed in with a mixed cart: the item outside the
+                  targeted SKUs, until Checkout drops it. */}
+              {extra ? (
+                <div style={ITEM}>
+                  <div style={ITEM_MAIN}>
+                    <p style={ITEM_NAME}>{extra.name}</p>
+                  </div>
+                  <p style={ITEM_PRICE}>{extra.price}</p>
+                </div>
+              ) : null}
             </section>
 
             <aside aria-labelledby="order-summary" style={SUMMARY}>
@@ -175,11 +206,11 @@ export function XcelCartPage() {
                 <div style={TOTALS}>
                   <p style={TOTAL_ROW}>
                     <span>Subtotal</span>
-                    <span>{pkg.price}</span>
+                    <span>{total}</span>
                   </p>
                   <p style={{ ...TOTAL_ROW, fontWeight: 800 }}>
                     <span>Order Total</span>
-                    <span>{pkg.price}</span>
+                    <span>{total}</span>
                   </p>
                 </div>
                 {/* ⚠ THE HAND-OFF. This is the one control on the public site
@@ -191,11 +222,9 @@ export function XcelCartPage() {
                   className="cre-e2e-cta"
                   style={CHECKOUT}
                   onClick={() =>
-                    signsOutFirst
-                      ? setSigningOut(true)
-                      : asksHere
-                        ? setAsking(true)
-                        : navigate({ pathname: checkoutPath, search: params.toString() })
+                    signedInAsk || asksHere
+                      ? setAsking(true)
+                      : navigate({ pathname: checkoutPath, search: params.toString() })
                   }
                 >
                   Checkout
@@ -228,6 +257,12 @@ export function XcelCartPage() {
   )
 }
 
+/** "$299.00" + "$49.00" → "$348.00". */
+function sumPrices(...prices: string[]): string {
+  const cents = prices.reduce((sum, p) => sum + Math.round(Number(p.replace(/[^0-9.]/g, '')) * 100), 0)
+  return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
 const PAGE: CSSProperties = { minHeight: '100%', background: 'var(--color-fixed-light)' }
@@ -248,24 +283,6 @@ const TITLE: CSSProperties = {
   lineHeight: '38px',
   color: 'var(--color-text-primary)',
 }
-
-/* The removed-items notice — quiet, under the title, before the cart. */
-const REMOVED: CSSProperties = {
-  boxSizing: 'border-box',
-  padding: '14px 18px',
-  borderRadius: 6,
-  border: '1px solid var(--color-e2e-card-outline)',
-  borderLeft: '4px solid var(--color-xcel-brick-600)',
-  background: 'var(--color-neutral-75)',
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontSize: 15,
-  lineHeight: '22px',
-  color: 'var(--color-text-primary)',
-}
-
-const REMOVED_TEXT: CSSProperties = { margin: 0 }
-
-const REMOVED_LIST: CSSProperties = { margin: '6px 0 0', paddingLeft: 22, fontWeight: 800 }
 
 const LAYOUT: CSSProperties = {
   display: 'flex',

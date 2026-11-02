@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { AccountProvider } from '@/context/AccountContext'
@@ -485,24 +485,75 @@ describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
     expect(screen.queryByText('Log In')).not.toBeInTheDocument()
   })
 
-  it('names what a mixed cart lost, and keeps the targeted course', () => {
-    cartAt(`${SIGNED_IN},invite-v3-cart:mixed`)
-    const banner = screen.getByText(/have been removed from your cart/).closest('[role="status"]')!
-    expect(banner).toHaveTextContent('not supported for an ongoing platform update')
-    expect(banner).toHaveTextContent('New York Life and Health Flashcards')
-    expect(screen.getByText('Arizona Health Pre-licensing Premier')).toBeInTheDocument()
+  it('asks the Partner Code question before anything else', () => {
+    for (const cart of ['targeted', 'mixed', 'none'] as const) {
+      const flow = signedInFlowV3(base, cart, 'no-atlas', false)
+      expect(flow.screens.slice(0, 2)).toEqual(['cart', 'pc-modal'])
+    }
+    expect(signedInFlowV3(base, 'mixed', 'atlas', false).screens).toContain('drop-notice')
+    expect(signedInFlowV3(base, 'targeted', 'atlas', false).screens).not.toContain('drop-notice')
   })
 
-  it('signs a targeted cart out at Checkout, then asks the Partner Code question as a guest', async () => {
+  it('keeps both items in a mixed cart until Checkout drops one', () => {
+    cartAt(`${SIGNED_IN},invite-v3-cart:mixed`)
+    expect(screen.getByText('Arizona Health Pre-licensing Premier')).toBeInTheDocument()
+    expect(screen.getByText('New York Life and Health Flashcards')).toBeInTheDocument()
+    expect(screen.queryByText(/have been removed from your cart/)).not.toBeInTheDocument()
+  })
+
+  it('collects a partner code on Yes, whatever the cart holds', async () => {
+    for (const cart of ['targeted', 'mixed', 'none']) {
+      const { unmount } = cartAt(`${SIGNED_IN},invite-v3-cart:${cart}`)
+      await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+      await userEvent.click(screen.getByRole('button', { name: 'YES' }))
+      const entry = screen.getByRole('dialog', { name: 'Enter your Partner Code' })
+      const go = within(entry).getByRole('button', { name: 'Go to Partner Site' })
+      expect(go).toBeDisabled()
+      await userEvent.type(within(entry).getByLabelText('Partner code'), 'ACME')
+      expect(go).toBeEnabled()
+      expect(screen.queryByRole('dialog', { name: 'Signing you out' })).not.toBeInTheDocument()
+      unmount()
+    }
+  })
+
+  async function answerNo(cart: string) {
+    cartAt(`${SIGNED_IN},invite-v3-cart:${cart}`)
+    await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+    expect(screen.getByRole('dialog')).toHaveTextContent('Do you have a Partner Code?')
+    await userEvent.click(screen.getByRole('button', { name: 'NO' }))
+  }
+
+  async function expectSignedOutToCheckout() {
+    expect(screen.getByRole('dialog', { name: 'Signing you out' })).toHaveTextContent('ongoing platform update')
+    await act(() => vi.advanceTimersByTimeAsync(LOADING_HANDOFF_MS))
+    expect(screen.getByText('Checkout page')).toBeInTheDocument()
+    expect(screen.getByTestId('where').textContent).toContain('signedout=1')
+    expect(screen.getByTestId('where').textContent).toContain('partner=no')
+  }
+
+  it('signs a targeted cart out on No, then goes to the checkout', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
-      cartAt(`${SIGNED_IN},invite-v3-cart:targeted`)
+      await answerNo('targeted')
+      await expectSignedOutToCheckout()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('tells a mixed cart what will be dropped on No, and signs out only if they proceed', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      await answerNo('mixed')
+      const notice = screen.getByRole('dialog', { name: /not supported/ })
+      expect(notice).toHaveTextContent('New York Life and Health Flashcards')
+      await userEvent.click(within(notice).getByRole('button', { name: 'Cancel' }))
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+
       await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
-      expect(screen.getByRole('dialog', { name: 'Signing you out' })).toHaveTextContent('ongoing platform update')
-      await act(() => vi.advanceTimersByTimeAsync(LOADING_HANDOFF_MS))
-      expect(screen.getByRole('dialog')).toHaveTextContent('Do you have a Partner Code?')
-      expect(screen.getByTestId('where').textContent).toContain('signedout=1')
-      expect(screen.getByText('Log In')).toBeInTheDocument()
+      await userEvent.click(screen.getByRole('button', { name: 'NO' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Proceed to checkout' }))
+      await expectSignedOutToCheckout()
     } finally {
       vi.useRealTimers()
     }
@@ -530,10 +581,9 @@ describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
     expect(screen.queryByRole('dialog', { name: 'Placing your order' })).not.toBeInTheDocument()
   })
 
-  it('takes a cart with nothing targeted straight to the existing checkout', async () => {
-    cartAt(`${SIGNED_IN},invite-v3-cart:none`)
-    expect(screen.getByText('New York Life and Health Flashcards')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+  it('takes a cart with nothing targeted to the existing checkout on No', async () => {
+    await answerNo('none')
     expect(screen.getByText('Checkout page')).toBeInTheDocument()
+    expect(screen.getByTestId('where').textContent).not.toContain('signedout=1')
   })
 })
