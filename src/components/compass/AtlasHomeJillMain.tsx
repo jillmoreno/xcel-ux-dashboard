@@ -335,6 +335,10 @@ export function AtlasHomeJillMain({
   const walkSteps = true
   /* Which Study Pace card — the dial or the stepped states. A design-bar
      radiogroup; see `atlas-pace-card`. */
+  /* Whether Home's Quick Links reach My Courses and My Certificates
+     (2026-11-02). `LINKS_OFF` below silences every navigating row; these two
+     are real pages now, so they are let back through. */
+  const learningPagesLive = useFeatureFlag('atlas-home-opens-learning-pages').enabled
   const paceCard = useFeatureFlag('atlas-pace-card').variant ?? 'ring'
   /* Whether the column carries Exam readiness at all — a design-bar on/off,
      see `atlas-readiness-section`. */
@@ -1533,6 +1537,10 @@ export function AtlasHomeJillMain({
         <AtlasJourneyLinksCard
           withoutCoursePages
           linksOff={LINKS_OFF}
+          /* …except the two learning-page rows, which are real pages now
+             (2026-11-02). `LINKS_OFF` was silencing the only way to click into
+             them. See `atlas-home-opens-learning-pages`. */
+          learningPagesLive={learningPagesLive}
           onOpenStep={onOpenStep}
           onOpenRequirements={onOpenRequirements}
           // Outlined in Secondary 100 darkened 5% (2026-10-13, Eric's request;

@@ -116,6 +116,46 @@ describe('My Courses on the Atlas baseline', () => {
   })
 })
 
+/**
+ * ⚠ THE ONLY DOOR, AND IT WAS SHUT (2026-11-02, Jillienne on the preview:
+ * "when i click on my courses, my certificates in the preview right now, its
+ * not working").
+ *
+ * `LINKS_OFF` in the Home file draws every navigating Quick Links row and
+ * wires it to nothing — set on 2026-10-15 so the demo could not walk out of
+ * itself, and correct while both pages were inert. Once the pages were real
+ * the rows were still silent, so the pages were unreachable by clicking: the
+ * work shipped behind a door that had been nailed shut a fortnight earlier.
+ *
+ * These two cases are the ones that would have caught it. They assert the
+ * ROUTE, not the page — a page nobody can reach is not done.
+ */
+describe('Home’s Quick Links reach the two learning pages', () => {
+  const clickRow = (label: string) =>
+    fireEvent.click(within(screen.getByRole('navigation', { name: 'Quick links' })).getByText(label))
+
+  it('My Courses opens My Courses', () => {
+    renderShell(`section=dashboard&version=${BASELINE}`)
+    clickRow('My Courses')
+    expect(screen.getByRole('heading', { name: 'My Courses' })).toBeTruthy()
+  })
+
+  it('My Certificates opens My Certificates', () => {
+    renderShell(`section=dashboard&version=${BASELINE}`)
+    clickRow('My Certificates')
+    expect(screen.getByRole('heading', { name: 'My Certificates' })).toBeTruthy()
+  })
+
+  /* The rows go quiet again with the control off — which is what they did
+     between 2026-10-15 and today, and what the demo wanted while the
+     destinations were dead ends. */
+  it('goes quiet again when the control is off', () => {
+    renderShell(`section=dashboard&version=${BASELINE}&ff=atlas-home-opens-learning-pages:off`)
+    clickRow('My Courses')
+    expect(screen.queryByRole('heading', { name: 'My Courses' })).toBeNull()
+  })
+})
+
 describe('Eric’s WIP keeps the page he asked for', () => {
   it('still has its Quick Links rail', () => {
     renderShell(`section=courses&version=${ERIC_WIP}`)

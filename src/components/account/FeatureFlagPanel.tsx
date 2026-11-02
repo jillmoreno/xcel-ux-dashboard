@@ -179,6 +179,7 @@ const REBRAND_FLAGS = [
      buttons, and whether a certificate card opens. Listed here for the reason
      `FlagPanelScope.test.ts` enforces: a flag claiming `dashboard-rebrand` and
      missing from this list is reachable only by hand-editing `?ff=`. */
+  'atlas-home-opens-learning-pages',
   'atlas-pages-quick-links',
   'atlas-courses-card-style',
   'atlas-courses-from-library',

@@ -2837,6 +2837,32 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
      three designers do not wire each other's surfaces; she assembles them.
      ====================================================================== */
   {
+    key: 'atlas-home-opens-learning-pages',
+    /* HOME'S QUICK LINKS REACH THE TWO LEARNING PAGES (2026-11-02, Jillienne,
+       on the preview: "when i click on my courses, my certificates in the
+       preview right now, its not working").
+
+       `LINKS_OFF` in the Home file draws those rows and wires them to nothing
+       — set on 2026-10-15 so the demo could not walk out of itself. It was
+       right then: both pages were inert, so a click landed a reviewer on a
+       dead end. Both are real pages now, inside the same shell, each with a
+       Back to Home, and the rows were the ONLY way to click into them — so
+       the pages built that day were unreachable without typing a URL.
+
+       On: the two rows navigate. Off: they are silent again, as before.
+
+       ⚠ THE OTHER ROWS ARE UNTOUCHED. Flashcards and Exam Simulator still
+       leave, and are not covered — both hosts that set `LINKS_OFF` also pass
+       `withoutCoursePages`, so those rows are not drawn at all. The three
+       information rows open a sheet over Home and were never covered. */
+    group: 'Navigation',
+    label: 'Quick Links open the learning pages',
+    description:
+      'Home\u2019s Quick Links rows for My Courses and My Certificates navigate to those pages. Off, they are drawn and do nothing \u2014 which is what they did from 2026-10-15, when both pages were still inert. Flashcards, Exam Simulator and the three information rows are unaffected.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-pages-quick-links',
     /* QUICK LINKS OFF THE LEARNING PAGES (2026-11-02, Jillienne: "they don't
        need to be here, so on default, hide that side, this will shift over the
