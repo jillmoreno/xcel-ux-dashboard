@@ -125,7 +125,7 @@ const feature: PrototypeFeature = {
         summary:
           'The title top-left in the heading serif, a status badge top-right \u2014 an icon in a tinted circle with the status spelled out beneath it \u2014 then the profession, a row of state, hours and credit type, and a label-and-value pair for Certificate Issued and Reporting Status. The status word under the badge is set in capitals. The kebab sits bottom-right. The whole card opens its detail, and says so: a 6px accent stroke slides onto the left edge on hover or focus and the title turns the accent colour and underlines.',
         variants: [
-          { name: 'Issued', when: 'The certificate has been earned. An award badge over COMPLETED, in the brand ramp, with the issue date and the reporting line.' },
+          { name: 'Issued', when: 'The certificate has been earned. An award badge over COMPLETED in the pass ramp \u2014 the green the Compass surfaces use for mastery \u2014 with the issue date and the reporting line.', why: 'It was the brand primary ramp, which on this brand is a navy, so the one status a learner is pleased to see looked like any other furniture.' },
           { name: 'Not yet earned', when: 'Never, on this page \u2014 see the decision below. The card can draw it (an hourglass badge over an \u201cIn Progress\u201d tag, and one line in place of the issue and reporting rows) and keeps the ability on purpose, but nothing here asks for it: every certificate this page lists is an issued one.', why: 'Kept rather than deleted because a certificate that genuinely is not issued must not fall through to the issued treatment and print a date it has not got.' },
           { name: 'Action required', when: 'Something is outstanding. A triangle-exclamation badge over an “Action required” tag in the warning ramp, the course completion date instead of an issue date, and a "Certificate Pending" pill naming what is needed. Reachable from the tabbed page, whose status tabs this page hides.' },
           { name: 'External', when: 'A certificate the learner uploaded, taken elsewhere. A neutral badge over EXTERNAL and an "Issued By" line. Also tab-only.' },
@@ -149,7 +149,8 @@ const feature: PrototypeFeature = {
         ],
         designSpec: {
           tokens: [
-            { role: 'Issued badge and stroke', token: '--color-primary-100 / --color-primary-500' },
+            { role: 'Issued badge and stroke', token: '--color-pass-100 / --color-pass-500' },
+            { role: 'Issued glyph and status word', token: '--color-pass-600 / --color-pass-700' },
             { role: 'Not-yet-earned badge and stroke', token: '--color-info-100 / --color-info-500' },
             { role: 'Action-required badge and stroke', token: '--color-warning-100 / --color-warning-500' },
             { role: 'External badge', token: '--color-neutral-100' },

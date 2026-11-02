@@ -273,6 +273,19 @@ describe('the certificates page draws the shared card', () => {
     expect(within(card).getByText('COMPLETED')).toBeTruthy()
   })
 
+  /* AN EARNED CERTIFICATE IS GREEN (2026-11-02, against the Compass palette's
+     `--c-pass`). It was the brand primary ramp — a navy on this brand — so the
+     one status a learner is pleased to see looked like any other furniture.
+     Pinned by TOKEN, not by colour: the card must point at the pass ramp, and
+     a later eye-dropper edit back to primary or to the brighter functional
+     green fails here. */
+  it('paints a completed certificate from the pass ramp', () => {
+    renderShell(`section=certificates&version=${BASELINE}`)
+    const card = screen.getByRole('button', { name: /View details for Annuity/ })
+    expect(card.style.getPropertyValue('--cert-accent')).toBe('var(--color-pass-500)')
+    expect(card.style.getPropertyValue('--cert-link')).toBe('var(--color-pass-700)')
+  })
+
   it('draws the Atlas card when the control says atlas', () => {
     renderShell(`section=certificates&version=${BASELINE}&ff=atlas-certificates-card-style:atlas`)
     expect(screen.getAllByText('Certificate').length).toBeGreaterThan(0)

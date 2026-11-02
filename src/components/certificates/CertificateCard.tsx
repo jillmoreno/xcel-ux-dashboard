@@ -77,9 +77,10 @@ export function CertificateCard({
   const dark = useTheme().theme === 'dark'
 
   // Status accent (Figma 122:2018, MCKissock green/orange remapped to our
-  // tokens): `completed` reads as an earned certificate (brand **primary** ramp);
+  // tokens): `completed` reads as an earned certificate (the **pass** ramp —
+  // green, as of 2026-11-02; it was the brand primary, which is a navy here);
   // `external` is a neutral third-party cert (gray ramp — distinct from the
-  // primary you-earned-it cards); `action-required` reads as a warning (amber).
+  // green you-earned-it cards); `action-required` reads as a warning (amber).
   // `stroke` drives the hover left stroke (`--cert-accent`), `link` the hover
   // title color (`--cert-link`), and `icon`/`box`/`tag` the filled-tint badge +
   // status tag. (External's `link` stays `text-primary` — the title just
@@ -113,11 +114,25 @@ export function CertificateCard({
           tag: dark ? 'var(--color-neutral-700)' : 'var(--color-text-secondary)',
         }
       : {
-          stroke: 'var(--color-primary-500)',
-          link: 'var(--color-primary-700)',
-          icon: 'var(--color-primary-600)',
-          box: 'var(--color-primary-100)',
-          tag: dark ? 'var(--color-primary-300)' : 'var(--color-primary-700)',
+          /* AN EARNED CERTIFICATE IS GREEN (2026-11-02, the direct ask:
+             completed certificates "should take on this green color. and
+             shades of it", against the Compass palette's `--c-pass`).
+
+             It was the brand primary ramp, which on this brand is a navy —
+             so the one status a learner is pleased to see looked the same as
+             any other brand furniture. The pass ramp is the Compass surfaces'
+             own "on track / mastery" green, and the design-system audit lists
+             it as already identical across the two systems.
+
+             ⚠ THE STOPS ARE THE SAME SHAPE AS EVERY OTHER STATUS HERE — 100
+             fill, 600 glyph, 500 stroke, 700 link and tag, 300 for the tag on
+             the dark card. Only the ramp changed, so the three statuses stay
+             comparable. */
+          stroke: 'var(--color-pass-500)',
+          link: 'var(--color-pass-700)',
+          icon: 'var(--color-pass-600)',
+          box: 'var(--color-pass-100)',
+          tag: dark ? 'var(--color-pass-300)' : 'var(--color-pass-700)',
         }
 
   const clickable = (isAction || openAnyStatus) && onOpen != null
