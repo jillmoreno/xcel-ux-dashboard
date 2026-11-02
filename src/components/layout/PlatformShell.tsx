@@ -48,6 +48,7 @@ import {
   AccountSectionPlaceholder,
 } from '@/components/account/AccountSectionLayout'
 import { isAccountSection } from '@/components/account/accountSections'
+import { TranscriptsPanel } from '@/components/account/TranscriptsPanel'
 import { NotificationsPanel } from '@/components/notifications/NotificationsPanel'
 import { GiftRecipientsPanel } from '@/components/account/purchases/GiftRecipientsPanel'
 import { PurchasesSection } from '@/components/account/purchases/PurchasesPanel'
@@ -2959,6 +2960,11 @@ function renderBody(
         // choice, because this function is not a component and cannot read a
         // flag itself.
         <PurchasesSection />
+      ) : active === 'transcripts' ? (
+        /* The course history (2026-11-02), from Figma 2009:28153. It was an
+           `AccountSectionPlaceholder` reading "Transcripts — not built yet",
+           which is what the TODO below used to cover. */
+        <TranscriptsPanel />
       ) : active === 'notifications' ? (
         // The header bell's "View all" lands here. It was an
         // `AccountSectionPlaceholder` until the bell shipped, which made the
@@ -2967,10 +2973,12 @@ function renderBody(
         // address rather than one of them being renamed.
         <NotificationsPanel />
       ) : (
-        // TODO(feature): the remaining two (Transcripts, My Purchases) are
-        // placeholders — real pages drop in here, still wrapped by
-        // AccountSectionLayout. It was four until 2026-09-30, when Licenses
-        // and Payment Methods were archived.
+        // TODO(feature): nothing is a placeholder here any more — Transcripts
+        // was the last one (2026-11-02). The branch stays because
+        // `AccountSectionId` is a union a future section joins, and a new id
+        // landing on a blank screen is worse than one landing on "not built
+        // yet". It was four placeholders until 2026-09-30, when Licenses and
+        // Payment Methods were archived, and two until today.
         <AccountSectionPlaceholder id={active} />
       )
     return (

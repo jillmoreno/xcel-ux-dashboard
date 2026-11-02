@@ -4525,6 +4525,13 @@ a.cre-library-card-title::after {
    text label — color is never the sole carrier of meaning, so a
    black-and-white printer still produces a readable handout. */
 @media print {
+  /* `.cre-print-hide` is the name to use (2026-11-02, when Transcripts got a
+     print view of its own and the chrome moved into `PrintDocumentShell`).
+     The study-calendar name is kept beside it rather than renamed: it is on
+     markup outside that shell too, and a print view that silently stops
+     hiding its toolbar puts the toolbar in the saved PDF — a failure nobody
+     sees until they open the file. */
+  .cre-print-hide,
   .cre-study-calendar-print-hide {
     display: none !important;
   }

@@ -51,6 +51,7 @@ import { ResourceUpdatesPage } from '@/pages/ResourceUpdatesPage'
 import { AchievementsPage } from '@/pages/AchievementsPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
 import { PrintViewPage } from '@/pages/PrintViewPage'
+import { TranscriptPrintPage } from '@/pages/TranscriptPrintPage'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { useAccount, supportsMembership } from '@/context/AccountContext'
 import {
@@ -173,6 +174,9 @@ export default function App() {
           no header / nav chrome — acts as a PDF-style viewer that
           hands off to the browser's Print → Save-as-PDF dialog. */}
       <Route path="/print/study-calendar" element={<PrintViewPage />} />
+      {/* The printed transcript (2026-11-02) — both of the Transcripts page's
+          actions open it. Outside AppLayout for the same reason as above. */}
+      <Route path="/print/transcript" element={<TranscriptPrintPage />} />
       {/* Prototype gateway also sits outside AppLayout so it reads as a
           distinct landing surface (no platform header). `/` is the front
           door; each guided feature gets its own curated page list. */}
