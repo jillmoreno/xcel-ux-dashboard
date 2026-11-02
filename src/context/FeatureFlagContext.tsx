@@ -2813,6 +2813,160 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
+  /* ======================================================================
+     THE ATLAS LEARNING PAGES — 2026-11-02, Jillienne: "there should be a my
+     courses and my certificates page that is accessible from the home page,
+     lets refine those".
+
+     Both pages were reachable from Home's Quick Links and both were INERT —
+     the Quick Links handoff says so itself, in the CTA list: "My Courses" and
+     "My Certificates" are each recorded as `does: 'To be designed.'`. These
+     three flags are what that line becomes.
+
+     ⚠ THREE KEYS, NOT ONE, for the reason `e2e-course-overview-opens-compass`
+     and `e2e-begin-opens-compass-session` are two: a reviewer notices "the
+     list is my real courses now", "the button goes somewhere" and "I can open
+     a certificate" separately, so they are promoted separately rather than as
+     one switch that cannot be half-taken.
+
+     ⚠ NOTHING OF ERIC'S MOVES. His WIP and White versions keep the page he
+     built: the list flag reads the library on EVERY Atlas version (it is the
+     page's data source, not a layout), but the course CTA is gated on the
+     E2E-like versions only — Jillienne's baseline — exactly where
+     `isE2ELikeVersion` already unwired it on his promotion (2026-10-15). The
+     three designers do not wire each other's surfaces; she assembles them.
+     ====================================================================== */
+  {
+    key: 'atlas-pages-quick-links',
+    /* QUICK LINKS OFF THE LEARNING PAGES (2026-11-02, Jillienne: "they don't
+       need to be here, so on default, hide that side, this will shift over the
+       existing cards to the left").
+
+       Hidden (default): My Courses and My Certificates drop the rail and the
+       cards run the full width of the shell's content box. Shown: the rail is
+       back where it was, and the pages go back to the centred, aside-width
+       column Eric sized in October.
+
+       ⚠ IT TAKES THE ONLY DOOR BETWEEN THE TWO PAGES. Quick Links is how a
+       learner goes from My Courses to My Certificates without passing through
+       Home — hidden, that hop is Back to Home → Quick Links → the other page.
+       Nothing is stranded (the header's Home and the page's own Back to Home
+       both work) and it was raised before this was built; it is a known cost,
+       not an oversight.
+
+       ⚠ THE BASELINE ONLY, like the flags below. Eric asked for this rail on
+       both pages on 2026-10-13 and his WIP / White keep it. */
+    group: 'Navigation',
+    label: 'Quick Links on the learning pages',
+    description:
+      'Whether My Courses and My Certificates carry the Quick Links rail. Hidden (default, 2026-11-02): no rail, cards full width. Shown: the rail returns and the pages re-centre at their October width. \u26a0 Hidden also removes the only route between the two pages that does not go through Home. Eric\u2019s WIP and White keep their rail either way.',
+    defaultEnabled: true,
+    defaultVariant: 'hidden',
+    variants: [
+      { value: 'hidden', label: 'Hidden' },
+      { value: 'shown', label: 'Shown' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-courses-card-style',
+    /* WHICH COURSE CARD MY COURSES DRAWS (2026-11-02, Jillienne: "update the
+       Course Card UI to follow the UI used in the lms Dashboard… use the shared
+       course card, but update the course title to the serif font, do NOT put a
+       cta on the card").
+
+       Shared (default): the `CourseCard` the LMS dashboard and
+       `/my-learning/courses` render — image header, delivery · badge · hours ·
+       state, the progress bar and percentage, the status and expiry badges, and
+       the ⋮ into Course Details. Its title is in the serif face (`titleSerif`)
+       and it carries NO call to action, which is the card as it already is: the
+       shared card has never had a button.
+
+       Atlas: `AtlasCourseCard`, the Figma card (213:3619) with the serif title,
+       the "Available until" line and the full-width Resume / Begin button.
+       `atlas-courses-from-library` then decides whether it draws the design's
+       three cards or the real library.
+
+       ⚠ SHARED MEANS THE PAGE DRAWS ITS OWN GRID. The shell stops passing
+       `cards` entirely, so `MyCoursesPage` renders the list it already knows
+       how to render — the real fixtures, the responsive grid, the ⋮ wired to
+       its own Course Details panel and the empty state included. That is the
+       reason this is the cheap arm and not the expensive one.
+
+       ⚠ THE BASELINE ONLY. Eric's WIP and White keep the Atlas card. */
+    group: 'Widgets',
+    label: 'My Courses card',
+    description:
+      'Which card the Atlas My Courses page draws. Shared (default, 2026-11-02): the LMS dashboard\u2019s `CourseCard` \u2014 progress bar, delivery and credit meta, status badges, \u22ee into Course Details \u2014 with its title in the serif face and no call to action. Atlas: the Figma card (213:3619) with the \u201cAvailable until\u201d line and the full-width button. Eric\u2019s WIP and White keep the Atlas card either way.',
+    defaultEnabled: true,
+    defaultVariant: 'shared',
+    variants: [
+      { value: 'shared', label: 'Shared (LMS)' },
+      { value: 'atlas', label: 'Atlas' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-courses-from-library',
+    /* MY COURSES READS THE LEARNER'S LIBRARY. On (`atlasCoursesFor`), the page
+       renders the same fixtures `/my-learning/courses` reads, so the Demo
+       bar's Course and Progress controls move it and a fourth enrolment wraps
+       to a second row. Off, the three hand-picked `ATLAS_MY_COURSES` cards —
+       the design's own content, which is what every stakeholder has seen so
+       far.
+
+       ⚠ ARCHIVED COURSES STAY OUT either way; see `atlasCoursesFor`. The page
+       has no View Archived link, so an archived card would be unreachable to
+       explain and identical to an active one.
+
+       ⚠ THE BASELINE ONLY, like its siblings. Eric's WIP and White draw the
+       Atlas card, so an ungated default of ON reached through them and swapped
+       his three Figma cards for the fixtures — his content, not this flag's to
+       change. */
+    group: 'Widgets',
+    label: 'My Courses list',
+    description:
+      'The content of the ATLAS course card on the baseline: the learner\u2019s real enrolments (the fixtures the non-Atlas page reads), wrapping three to a row, so the Demo bar\u2019s Course and Progress controls move the page. Off: the three hand-picked design cards. Only reaches the page when `atlas-courses-card-style` is Atlas \u2014 the shared card reads the library inherently. Eric\u2019s WIP and White keep their three cards either way. Archived courses are excluded throughout.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-courses-open-course',
+    /* RESUME / BEGIN COURSE GO SOMEWHERE. On, the card's button opens the
+       course the way Home's own card does — `?section=course&coursePage=course`.
+       Off, the inert button Eric promoted.
+
+       ⚠ THE E2E-LIKE VERSIONS ONLY, and that is the whole scoping. WIP and
+       White already wire their FIRST card (`i === 0`) and are untouched; this
+       flag is about the baseline, where `!isE2ELikeVersion(...)` disabled all
+       three buttons. A page of courses whose every button is dead is the thing
+       being fixed. */
+    group: 'Navigation',
+    label: 'My Courses buttons open the course',
+    description:
+      'Resume / Begin / Retake Course on the Atlas My Courses card opens the course page, as Home\u2019s own course card does. Off, the buttons are drawn disabled \u2014 what the baseline had before. Eric\u2019s WIP and White versions already wire their first card and are unaffected either way.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-certificates-open-detail',
+    /* A CERTIFICATE CARD OPENS. On, every Atlas certificate card opens the
+       Certificate Details slide-over — and so does its \u22ee, which called
+       `console.info` and nothing else. Off, both are inert again.
+
+       ⚠ THE PANEL HAD TO LEARN TWO NEW STATES FOR THIS. `CertificateActionPanel`
+       was written for an action-required certificate only: it keys its whole
+       body off `CERT_ACTION_META[data.action]`, so an ISSUED certificate opened
+       an empty sheet with an "Action Required" banner. It now has an issued arm
+       and an in-progress arm; the action-required arm is unchanged. That is why
+       the flag gates the OPENING and not the panel. */
+    group: 'Navigation',
+    label: 'Certificates open their detail',
+    description:
+      'Every Atlas certificate card \u2014 and its \u22ee \u2014 opens the Certificate Details slide-over, which now covers issued and not-yet-earned certificates as well as action-required ones. Off, the card and the kebab do nothing, as before.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
   {
     key: 'e2e-session-keeps-atlas-header',
     /* THE WALK'S LESSON KEEPS A WAY HOME (2026-10-16, Jillienne: "this course

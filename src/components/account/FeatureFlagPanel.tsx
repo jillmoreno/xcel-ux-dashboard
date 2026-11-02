@@ -175,6 +175,15 @@ const REBRAND_FLAGS = [
   'e2e-course-overview-opens-compass',
   'e2e-begin-opens-compass-session',
   'e2e-session-keeps-atlas-header',
+  /* The Atlas learning pages (2026-11-02) — My Courses' data source and its
+     buttons, and whether a certificate card opens. Listed here for the reason
+     `FlagPanelScope.test.ts` enforces: a flag claiming `dashboard-rebrand` and
+     missing from this list is reachable only by hand-editing `?ff=`. */
+  'atlas-pages-quick-links',
+  'atlas-courses-card-style',
+  'atlas-courses-from-library',
+  'atlas-courses-open-course',
+  'atlas-certificates-open-detail',
   'e2e-walk-journey-steps',
   'atlas-header-v2',
   'atlas-white-top-nav',

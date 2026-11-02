@@ -23,6 +23,17 @@ export type AtlasCourseCardData = {
   availableDate: string
   /** The rest of it, e.g. "5:49 PM CDT". */
   availableTime?: string
+  /**
+   * THE DATE ROW'S LABEL, when "Available until:" is wrong — 2026-11-02, for
+   * the real library (`atlasCoursesFor`): most courses carry no expiry, so the
+   * row reads "Enrolled:" over the enrolment date instead.
+   *
+   * ⚠ IT DOES NOT APPLY TO A COMPLETED CARD. `completed` already fixes both the
+   * label ("Completed:") and the glyph (the circle-check), and it is the
+   * stronger statement of the two — a finished course is not "enrolled since".
+   * Setting both is not an error; `completed` simply wins.
+   */
+  dateLabel?: string
   actionLabel: string
   /** `secondary`: the outline button — white fill, brand-red border and label
    *  (2026-10-06, for the Begin Course cards). Default `primary`. */
@@ -79,7 +90,7 @@ export function AtlasCourseCard({
             16px box), and both lines 1px larger — 12 and 11 (2026-10-06). */}
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-body)', fontSize: 12, lineHeight: '18px' }}>
           {data.completed ? <CircleCheckRegular size={12} aria-hidden /> : <CalendarRegular size={12} aria-hidden />}
-          {data.completed ? 'Completed:' : 'Available until:'}
+          {data.completed ? 'Completed:' : (data.dateLabel ?? 'Available until:')}
         </span>
         <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, lineHeight: '18px', whiteSpace: 'nowrap' }}>
           <strong style={{ fontWeight: 700 }}>{data.availableDate}</strong>

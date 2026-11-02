@@ -34,6 +34,7 @@ export function AtlasCertificateCard({
   style,
   barColor,
   inProgressPill,
+  openAnyStatus = false,
 }: {
   data: Certificate
   /** A certificate not yet earned — the course is still under way (Eric/Atlas
@@ -48,13 +49,28 @@ export function AtlasCertificateCard({
   /** Shows the Certificate pill on an in-progress card too, with this merged
    *  over its style (Eric/Atlas White's Secondary 200 / 300, 2026-10-14). */
   inProgressPill?: CSSProperties
-  /** Open the action-required detail slide-over. */
+  /** Open the Certificate Details slide-over. */
   onOpen?: (id: string) => void
-  /** Kebab (⋮) menu click — falls back to a console stub. */
+  /**
+   * EVERY CARD OPENS, not only an action-required one — 2026-11-02, Jillienne:
+   * a certificates page you cannot open a certificate from.
+   *
+   * ⚠ IT NEEDED THE PANEL TO GROW TWO ARMS FIRST. `CertificateActionPanel` keys
+   * its body off `CERT_ACTION_META[data.action]`, which only an action-required
+   * record has — so before its issued and in-progress arms existed, turning this
+   * on opened an empty sheet headed "Action Required". Do not set this against a
+   * host that cannot render those states.
+   *
+   * Off (the default) keeps the shared `CertificateCard`'s rule exactly, which
+   * is what every non-Atlas page still wants.
+   */
+  openAnyStatus?: boolean
+  /** Kebab (⋮) menu click. Without one, the ⋮ opens the detail on a card that
+   *  opens at all; failing that it falls back to a console stub. */
   onOptions?: (id: string) => void
 }) {
   const isAction = data.status === 'action-required'
-  const clickable = isAction && onOpen != null
+  const clickable = (isAction || openAnyStatus) && onOpen != null
   const open = () => onOpen?.(data.id)
   const status = inProgress
     ? 'In-Progress'
@@ -105,7 +121,14 @@ export function AtlasCertificateCard({
           style={KEBAB}
           onClick={(e) => {
             e.stopPropagation()
+            /* The ⋮ was a DEAD CONTROL until 2026-11-02 — rendered, labelled
+               for screen readers, wired to `console.info`. With no menu
+               designed yet, the honest thing is the same destination as the
+               card: the detail, where View Certificate and Go to Course live.
+               A real ⋮ menu (Download · Print · Report) is an open decision on
+               the dev handoff. */
             if (onOptions) onOptions(data.id)
+            else if (clickable) open()
             else console.info('certificate:options', data.id)
           }}
         >
