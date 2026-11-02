@@ -1,3 +1,4 @@
+import { V3_SIGNED_OUT_PARAM } from './inviteFlowsV3'
 import { CART_PACKAGE_PARAM } from '@/data/xcelCourseFinder'
 import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
 import { EMAIL_VERIFIED_PARAM } from '@/data/inviteVerification'
@@ -49,6 +50,9 @@ export const INVITE_WALK_PARAMS: readonly string[] = [
   /* The verified arm's "I proved my address" — 2026-10-27. Reset puts the
      modal back in front of the checkout, which is the walk's beginning there. */
   EMAIL_VERIFIED_PARAM,
+  /* Invite Flow V3's signed-in learner, signed out at Checkout — 2026-11-02.
+     Reset signs them back in, which is where that walk begins. */
+  V3_SIGNED_OUT_PARAM,
 ]
 
 /** The same parameters, minus the walk's progress. Does not mutate its input. */

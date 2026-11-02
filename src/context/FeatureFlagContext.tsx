@@ -2740,7 +2740,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        other's. `inviteFlowsV3.ts` carries the long form. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2b', 'invite:v3-b2c'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2c', 'invite:v3-b2c-signed-in'],
     group: 'Navigation',
     label: 'Model type',
     description: 'Invite Flow V3 only. Which business model the flow belongs to: B2B invite (a partner’s QR code) or B2C guest checkout (direct from the public site’s cart). Picking one shows that model’s flows.',
@@ -2781,7 +2781,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        B2C. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2c'],
+    surfaces: ['invite:v3-b2c', 'invite:v3-b2c-signed-in'],
     group: 'Navigation',
     /* "Guest checkout", not "Invite flow" — 2026-10-30, Afsana: the B2C flows
        "are actually not invite flows, rather they pertain to guest checkout".
@@ -2796,6 +2796,45 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'ocd-no-atlas', label: 'OCD, but no Atlas', description: 'Has an OCD account, no Atlas. Same screens as Net New for now.' },
       { value: 'has-atlas-login', label: 'Has Atlas: Open Log-In Widget', description: 'Already on Atlas. Email check opens a log-in widget before checkout.' },
       { value: 'has-atlas', label: 'Has Atlas: Automatic Sign-in Post OTP', description: 'Already on Atlas. Logs in, then signed in automatically with the checkout filled.' },
+      { value: 'xcel-signed-in', label: 'Signed in to XCEL (OCD)', description: 'Signed in to an existing XCEL account. The cart decides the checkout — pick Cart contents beside this.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-v3-cart',
+    /* THE SIGNED-IN LEARNER'S CART — 2026-11-02, Afsana. Which of the three
+       cases the "Signed in to XCEL (OCD)" flow walks; shown only on that flow
+       (`invite:v3-b2c-signed-in`). See `signedInFlowV3`. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2c-signed-in'],
+    group: 'Navigation',
+    label: 'Cart contents',
+    description: 'Invite Flow V3, signed in to XCEL. Targeted SKUs only: Checkout signs them out into the new guest checkout. Mixed: the cart removes what is not targeted, says so, then the same. No targeted SKUs: the existing checkout, signed in.',
+    defaultEnabled: true,
+    defaultVariant: 'targeted',
+    variants: [
+      { value: 'targeted', label: 'Targeted only', description: 'Only targeted SKUs (Arizona Health Pre-licensing Premier). Signed out at Checkout, then the new guest checkout.' },
+      { value: 'mixed', label: 'Mixed', description: 'A targeted SKU and one that is not (New York Life and Health Flashcards). The cart removes it and says so.' },
+      { value: 'none', label: 'None targeted', description: 'No targeted SKUs (New York Life and Health Flashcards). The existing checkout, student information filled from the account.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'invite-v3-email-account',
+    /* Which way "Verify your email" goes for the signed-out OCD learner — a
+       log-in when the email they give has Atlas, a code when it does not. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2c-signed-in'],
+    group: 'Navigation',
+    label: 'Email belongs to',
+    description: 'Invite Flow V3, signed in to XCEL, targeted or mixed cart. The email given at Verify your email: an Atlas account (log in, then Start course) or no Atlas account (a code, then Create password).',
+    defaultEnabled: true,
+    defaultVariant: 'no-atlas',
+    variants: [
+      { value: 'atlas', label: 'Atlas account', description: 'Log in, enter the rest at checkout, then Start course.' },
+      { value: 'no-atlas', label: 'No Atlas account', description: 'A code, enter the rest at checkout, then Create password.' },
     ],
     page: 'dashboard-rebrand',
   },

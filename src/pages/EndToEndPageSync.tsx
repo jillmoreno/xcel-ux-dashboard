@@ -218,7 +218,8 @@ export function InviteSurfaceSync() {
   /* V3 declares its own surface, one per model type — `inviteFlowsV3.ts`. */
   const version = resolveInviteFlowVersion(useFeatureFlag(INVITE_FLOW_VERSION_FLAG).variant)
   const model = useInviteModel()
-  const surface = version === 'v3' ? inviteV3Surface(model) : 'invite'
+  const v3FlowId = useInviteFlowV3().id
+  const surface = version === 'v3' ? inviteV3Surface(model, v3FlowId) : 'invite'
   useDeclareDesignSurface(isInviteFlowPath(pathname) ? surface : null)
   return null
 }

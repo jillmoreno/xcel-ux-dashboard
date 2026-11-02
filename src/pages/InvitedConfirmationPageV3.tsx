@@ -31,7 +31,7 @@ import { LOADING_HANDOFF_MS, XcelLoadingPage } from '@/components/e2e/XcelLoadin
 import { InvitePasswordChecklist } from '@/components/e2e/InvitePasswordChecklist'
 import { CART_PACKAGE_PARAM, cartPackage } from '@/data/xcelCourseFinder'
 import { usePartnerAttribution } from '@/data/inviteFlows'
-import { inviteEndingV3, useInviteFlowV3 } from '@/data/inviteFlowsV3'
+import { inviteEndingV3, useInviteFlowV3, useV3SignedInCart } from '@/data/inviteFlowsV3'
 import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
 import { meetsInvitePasswordRules } from '@/data/invitePasswordRules'
 import { readVerifiedIdentity } from '@/data/inviteVerification'
@@ -65,11 +65,14 @@ export function InvitedConfirmationPageV3() {
 
   /* What was bought, and for how much — V2's ending's reading of the same
      address, so the receipt agrees with the checkout. */
-  const pkg = cartPackage(
+  const inCart = cartPackage(
     params.get(INVITE_STATE_PARAM) ?? '',
     params.get(INVITE_LOA_PARAM) ?? '',
     params.get(CART_PACKAGE_PARAM),
   )
+  /* The signed-in learner's non-targeted item, where that is what they bought. */
+  const signedInLine = useV3SignedInCart()?.line
+  const pkg = inCart && signedInLine ? signedInLine : inCart
   const partnered = usePartnerAttribution()
   const advertised = useEndToEndCourseTitle()
   const total = partnered ? '$65.00' : (pkg?.price ?? '$199.00')

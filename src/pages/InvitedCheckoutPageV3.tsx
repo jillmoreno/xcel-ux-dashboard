@@ -39,7 +39,7 @@ import { XcelLoadingStatus } from '@/components/e2e/XcelLoadingStatus'
 import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
 import { PartnerCodeAskModal } from '@/components/e2e/PartnerCodeAsk'
 import { VerifyEmailModalV3 } from '@/components/e2e/VerifyEmailModalV3'
-import { emailCheckV3, useInviteFlowV3, verifiesEmailFirst } from '@/data/inviteFlowsV3'
+import { emailCheckV3, useInviteFlowV3, useV3SignedInCart, verifiesEmailFirst } from '@/data/inviteFlowsV3'
 import {
   EMAIL_VERIFIED_PARAM,
   readVerifiedIdentity,
@@ -292,11 +292,15 @@ export function InvitedCheckoutPageV3() {
      the checkout said $199, and the receipt said $299 again. A checkout that
      disagrees with the cart it came from is the one number on the page nobody
      can explain away. */
-  const pkg = cartPackage(
+  const inCart = cartPackage(
     params.get(INVITE_STATE_PARAM) ?? '',
     params.get(INVITE_LOA_PARAM) ?? '',
     params.get(CART_PACKAGE_PARAM),
   )
+  /* V3's signed-in learner with no targeted SKUs checks out what their cart
+     holds — the non-targeted item, not the address's course (2026-11-02). */
+  const signedInLine = useV3SignedInCart()?.line
+  const pkg = inCart && signedInLine ? signedInLine : inCart
   const courseTitle = pkg?.name ?? (inviteChoice ? inviteProductTitle(inviteChoice) : advertisedTitle)
   /* What is in the box. The cart's package where there is one — a learner who
      bought the standard package must not be shown Premier's three lines. */

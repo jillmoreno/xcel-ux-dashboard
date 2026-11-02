@@ -35,7 +35,10 @@ describe('Invite Flow V3 model types and flows', () => {
       const rows = INVITE_FLOWS_V3.filter((f) => f.model === model).map((f) => f.id).sort()
       expect(variants).toEqual(rows)
       expect(def?.defaultVariant).toBe(DEFAULT_INVITE_FLOW_V3[model])
-      expect(def?.surfaces).toEqual([inviteV3Surface(model)])
+      /* B2C's list also shows on the signed-in flow's own surface. */
+      expect(def?.surfaces).toEqual(
+        model === 'b2b' ? [inviteV3Surface(model)] : [inviteV3Surface(model), inviteV3Surface(model, 'xcel-signed-in')],
+      )
     })
   }
 
@@ -57,9 +60,10 @@ describe('Invite Flow V3 model types and flows', () => {
     expect(keys).not.toContain(INVITE_V3_FLOW_FLAGS.b2c)
   })
 
-  it('carries the eight flows from Afsana’s file, four per model', () => {
-    expect(INVITE_FLOWS_V3).toHaveLength(8)
+  it('carries the eight flows from Afsana’s file, plus the signed-in OCD flow', () => {
+    expect(INVITE_FLOWS_V3).toHaveLength(9)
     expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2b')).toHaveLength(4)
+    expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2c')).toHaveLength(5)
     expect(INVITE_FLOWS_V3.find((f) => f.id === 'qr-net-new')?.label).toBe('QR: Net New: No OCD, No Atlas')
   })
 

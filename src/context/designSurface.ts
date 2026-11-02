@@ -64,6 +64,9 @@ export type DesignSurfaceId =
      what lets the bar show only that model's flows (`inviteFlowsV3.ts`). */
   | 'invite:v3-b2b'
   | 'invite:v3-b2c'
+  /* …and B2C's signed-in OCD flow, which adds its cart and email controls
+     (2026-11-02). */
+  | 'invite:v3-b2c-signed-in'
 
 export type DesignSurfaceCtx = {
   surface: DesignSurfaceId | null
@@ -118,4 +121,5 @@ export const DESIGN_SURFACE_LABELS: Record<DesignSurfaceId, string> = {
   invite: 'Invite & Checkout',
   'invite:v3-b2b': 'Invite Flow V3 · B2B invite',
   'invite:v3-b2c': 'Invite Flow V3 · B2C guest checkout',
+  'invite:v3-b2c-signed-in': 'Invite Flow V3 · B2C guest checkout',
 }

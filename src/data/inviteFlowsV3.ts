@@ -1,5 +1,7 @@
+import { useSearchParams } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import type { InviteFlowId } from './inviteFlows'
+import { INVITE_FLOW_VERSION_FLAG, resolveInviteFlowVersion } from './inviteFlowVersions'
 import { ALL_US_STATES } from './licensedStatesFixtures'
 
 /**
@@ -43,6 +45,7 @@ export type InviteFlowV3Id =
   | 'ocd-no-atlas'
   | 'has-atlas-login'
   | 'has-atlas'
+  | 'xcel-signed-in'
 
 export type InviteFlowV3 = {
   id: InviteFlowV3Id
@@ -134,6 +137,17 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
     /* Log-in, not a code — see `qr-atlas-auto`. */
     screens: [...CART_START, ...VERIFY, 'login-1', 'login-2', 'signing-in', ...CHECKOUT, 'placing-modal', 'ready'],
   },
+  {
+    /* SIGNED IN TO AN EXISTING XCEL (OCD) ACCOUNT — 2026-11-02, Afsana. Its
+       screens depend on the cart and the email given, so this row is only the
+       starting point: `signedInFlowV3` works out the walk. */
+    id: 'xcel-signed-in',
+    model: 'b2c',
+    label: 'Signed in to XCEL (OCD)',
+    description: 'Already signed in to an XCEL account. What happens at checkout depends on the cart: the targeted products sign them out into the new guest checkout.',
+    base: 'xcel-signed-in',
+    screens: ['cart', ...CHECKOUT, 'placing', 'ready'],
+  },
 ]
 
 export const INVITE_V3_MODEL_FLAG = 'invite-v3-model'
@@ -152,9 +166,14 @@ export const DEFAULT_INVITE_FLOW_V3: Record<InviteModelId, InviteFlowV3Id> = {
   b2c: 'net-new',
 }
 
-/** The Design bar surface V3 declares for a model. */
-export function inviteV3Surface(model: InviteModelId): 'invite:v3-b2b' | 'invite:v3-b2c' {
-  return model === 'b2b' ? 'invite:v3-b2b' : 'invite:v3-b2c'
+/** The Design bar surface V3 declares for a model — and, on B2C, a surface of
+ *  its own for the signed-in flow, which carries the cart and email controls. */
+export function inviteV3Surface(
+  model: InviteModelId,
+  flowId?: InviteFlowV3Id,
+): 'invite:v3-b2b' | 'invite:v3-b2c' | 'invite:v3-b2c-signed-in' {
+  if (model === 'b2b') return 'invite:v3-b2b'
+  return flowId === 'xcel-signed-in' ? 'invite:v3-b2c-signed-in' : 'invite:v3-b2c'
 }
 
 export function resolveInviteModel(value: string | null | undefined): InviteModelId {
@@ -200,7 +219,10 @@ export function emailCheckV3(flow: InviteFlowV3): {
 } {
   const second = flow.screens.includes('login-1') ? 'login' : 'code'
   const signsIn = flow.screens.includes('signing-in')
-  return { second, signsIn, accountKnown: second === 'login' || signsIn }
+  /* Filled when the walk skips the empty student form (`checkout-1`) — the
+     Has Atlas flows, which sign in to an account that holds the details. The
+     signed-out OCD learner logs in too, but enters the rest at checkout. */
+  return { second, signsIn, accountKnown: !flow.screens.includes('checkout-1') }
 }
 
 /** Where a V3 flow starts: the partner's QR code for B2B, the public site's
@@ -240,7 +262,99 @@ export function useInviteFlowV3(): InviteFlowV3 {
   const model = useInviteModel()
   const b2b = useFeatureFlag(INVITE_V3_FLOW_FLAGS.b2b).variant
   const b2c = useFeatureFlag(INVITE_V3_FLOW_FLAGS.b2c).variant
-  return resolveInviteFlowV3(model, model === 'b2b' ? b2b : b2c)
+  const cart = resolveV3Cart(useFeatureFlag(INVITE_V3_CART_FLAG).variant)
+  const email = resolveV3EmailAccount(useFeatureFlag(INVITE_V3_EMAIL_ACCOUNT_FLAG).variant)
+  const [params] = useSearchParams()
+  const flow = resolveInviteFlowV3(model, model === 'b2b' ? b2b : b2c)
+  return flow.id === 'xcel-signed-in'
+    ? signedInFlowV3(flow, cart, email, params.get(V3_SIGNED_OUT_PARAM) === '1')
+    : flow
+}
+
+/* ── Signed in to XCEL (OCD) — 2026-11-02 ─────────────────────────────────
+
+   Afsana: a learner signed in to an existing XCEL account checks out from the
+   cart, and what happens depends on what is in it —
+
+     targeted   only the 526 targeted SKUs: Checkout signs them out ("Signing
+                you out", with a platform-update notice), then the new guest
+                checkout — Partner Code, Verify your email, then a log-in if
+                the email has Atlas or a code if it does not; checkout; Start
+                course or Create password.
+     mixed      some items are not targeted: the cart says they were removed,
+                and the rest goes as `targeted`.
+     none       nothing targeted: the existing checkout, signed in, student
+                information filled from the account.
+
+   Two Design bar controls choose the case — `invite-v3-cart` and, for the
+   targeted cases, `invite-v3-email-account` — shown only on this flow. */
+
+export type V3CartContents = 'targeted' | 'mixed' | 'none'
+export type V3EmailAccount = 'atlas' | 'no-atlas'
+
+export const INVITE_V3_CART_FLAG = 'invite-v3-cart'
+export const INVITE_V3_EMAIL_ACCOUNT_FLAG = 'invite-v3-email-account'
+
+/** Set once Checkout has signed the learner out; Reset and a flow switch clear
+ *  it with the rest of the walk (`INVITE_WALK_PARAMS`). */
+export const V3_SIGNED_OUT_PARAM = 'signedout'
+
+export function resolveV3Cart(value: string | null | undefined): V3CartContents {
+  return value === 'mixed' || value === 'none' ? value : 'targeted'
+}
+
+export function resolveV3EmailAccount(value: string | null | undefined): V3EmailAccount {
+  return value === 'atlas' ? 'atlas' : 'no-atlas'
+}
+
+/** The signed-in flow's walk for this cart, email and sign-out state. Until
+ *  the sign-out the learner is the V2 signed-in arm (`xcel-signed-in`: the
+ *  site header knows them, checkout fills from the account); after it, a
+ *  guest (`b2c-guest`). */
+export function signedInFlowV3(
+  flow: InviteFlowV3,
+  cart: V3CartContents,
+  email: V3EmailAccount,
+  signedOut: boolean,
+): InviteFlowV3 {
+  if (cart === 'none') {
+    return { ...flow, base: 'xcel-signed-in', screens: ['cart', ...CHECKOUT, 'placing', 'ready'] }
+  }
+  const check = email === 'atlas' ? ['verify-login-1', 'login-1', 'login-2'] : [...VERIFY, ...CODE]
+  const ending = email === 'atlas' ? ['ready'] : NEW_PASSWORD
+  return {
+    ...flow,
+    base: signedOut ? 'b2c-guest' : 'xcel-signed-in',
+    screens: ['cart', 'signing-out', 'pc-modal', ...check, 'checkout-1', ...CHECKOUT, 'placing', ...ending],
+  }
+}
+
+/** The line a cart, checkout and receipt list — a course package's fields. */
+export type V3CartLine = { name: string; price: string; listPrice: string; includes: string[] }
+
+/** The demo's one product outside the 526 targeted SKUs.
+ *  ⚠ ITS PRICES ARE INVENTED — not on the live site. */
+export const V3_NON_TARGETED_ITEM: V3CartLine = {
+  name: 'New York Life and Health Flashcards',
+  price: '$49.00',
+  listPrice: '$69.00',
+  includes: ['New York Life and Health Flashcards'],
+}
+
+/** What the signed-in flow's cart holds, beyond the address's package, and
+ *  what was taken out of it. `line` replaces the package when it is set (the
+ *  `none` cart holds only the non-targeted item); `removed` is the mixed
+ *  cart's banner. Null off this flow. */
+export function useV3SignedInCart(): { cart: V3CartContents; line: V3CartLine | null; removed: string[] } | null {
+  const flow = useInviteFlowV3()
+  const version = resolveInviteFlowVersion(useFeatureFlag(INVITE_FLOW_VERSION_FLAG).variant)
+  const cart = resolveV3Cart(useFeatureFlag(INVITE_V3_CART_FLAG).variant)
+  if (version !== 'v3' || flow.id !== 'xcel-signed-in') return null
+  return {
+    cart,
+    line: cart === 'none' ? V3_NON_TARGETED_ITEM : null,
+    removed: cart === 'mixed' ? [V3_NON_TARGETED_ITEM.name] : [],
+  }
 }
 
 /** A typed state, matched to the list's own spelling — or null while it names

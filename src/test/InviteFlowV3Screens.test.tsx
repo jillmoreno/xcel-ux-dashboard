@@ -13,7 +13,14 @@ import {
 import { XcelCartPage } from '@/pages/XcelCartPage'
 import { InviteFlowEntrySync } from '@/pages/EndToEndPageSync'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
-import { INVITE_FLOWS_V3, emailCheckV3, entryPathV3, verifiesEmailFirst } from '@/data/inviteFlowsV3'
+import {
+  INVITE_FLOWS_V3,
+  emailCheckV3,
+  entryPathV3,
+  inviteEndingV3,
+  signedInFlowV3,
+  verifiesEmailFirst,
+} from '@/data/inviteFlowsV3'
 
 /**
  * INVITE FLOW V3, THE B2B OPENING SCREENS — 2026-10-30, from Afsana's
@@ -221,7 +228,7 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
     try {
       renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-atlas-login`)
       await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
-      await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
       expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
       expect(screen.getByDisplayValue('jordan@example.com')).toBeDisabled()
@@ -242,7 +249,7 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
   it('goes straight to a filled checkout on the B2C log-in flow — no Signing you in', async () => {
     renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:has-atlas-login,partner-code-ask:modal&partner=no')
     await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
-    await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
     await userEvent.type(screen.getByLabelText(/^Password/), 'anything')
     await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
@@ -250,7 +257,10 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
   })
 
   it('asks every flow’s email, and knows which sign in', () => {
-    for (const flow of INVITE_FLOWS_V3) expect(verifiesEmailFirst(flow)).toBe(true)
+    /* The signed-in flow's check depends on its cart — see its own tests. */
+    for (const flow of INVITE_FLOWS_V3.filter((f) => f.id !== 'xcel-signed-in')) {
+      expect(verifiesEmailFirst(flow)).toBe(true)
+    }
     const check = (id: string) => emailCheckV3(INVITE_FLOWS_V3.find((f) => f.id === id)!)
     expect(check('qr-atlas-login')).toEqual({ second: 'login', signsIn: true, accountKnown: true })
     expect(check('has-atlas-login')).toEqual({ second: 'login', signsIn: false, accountKnown: true })
@@ -426,5 +436,82 @@ describe('Invite Flow V3 — picking another flow restarts the walk', () => {
     const where = screen.getByTestId('where').textContent!
     expect(where).toMatch(/^\/end-to-end-demo\/cart\?/)
     expect(where).toContain('pkg=premier')
+  })
+})
+
+describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
+  const SIGNED_IN = 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-in'
+  const base = INVITE_FLOWS_V3.find((f) => f.id === 'xcel-signed-in')!
+
+  it('routes each cart and email to its own walk', () => {
+    const none = signedInFlowV3(base, 'none', 'atlas', false)
+    expect(verifiesEmailFirst(none)).toBe(false)
+    expect(none.base).toBe('xcel-signed-in')
+
+    const atlas = signedInFlowV3(base, 'targeted', 'atlas', true)
+    expect(emailCheckV3(atlas)).toEqual({ second: 'login', signsIn: false, accountKnown: false })
+    expect(inviteEndingV3(atlas)).toBe('ready')
+    expect(atlas.base).toBe('b2c-guest')
+
+    const noAtlas = signedInFlowV3(base, 'mixed', 'no-atlas', true)
+    expect(emailCheckV3(noAtlas).second).toBe('code')
+    expect(inviteEndingV3(noAtlas)).toBe('create-password')
+
+    /* Signed in until Checkout signs them out. */
+    expect(signedInFlowV3(base, 'targeted', 'atlas', false).base).toBe('xcel-signed-in')
+  })
+
+  function cartAt(ff: string) {
+    const search = `?ff=${ff}&lstate=Arizona&loa=Health&pkg=premier`
+    window.history.replaceState({}, '', `/end-to-end-demo/cart${search}`)
+    return render(
+      <MemoryRouter initialEntries={[`/end-to-end-demo/cart${search}`]}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <Routes>
+              <Route path="/end-to-end-demo/cart" element={<XcelCartPage />} />
+              <Route path="/end-to-end-demo/checkout" element={<p>Checkout page</p>} />
+            </Routes>
+            <Where />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+  }
+
+  it('shows My Training, not Log In, while signed in', () => {
+    cartAt(`${SIGNED_IN},invite-v3-cart:targeted`)
+    expect(screen.getByText('My Training')).toBeInTheDocument()
+    expect(screen.queryByText('Log In')).not.toBeInTheDocument()
+  })
+
+  it('names what a mixed cart lost, and keeps the targeted course', () => {
+    cartAt(`${SIGNED_IN},invite-v3-cart:mixed`)
+    const banner = screen.getByText(/have been removed from your cart/).closest('[role="status"]')!
+    expect(banner).toHaveTextContent('not supported for an ongoing platform update')
+    expect(banner).toHaveTextContent('New York Life and Health Flashcards')
+    expect(screen.getByText('Arizona Health Pre-licensing Premier')).toBeInTheDocument()
+  })
+
+  it('signs a targeted cart out at Checkout, then asks the Partner Code question as a guest', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      cartAt(`${SIGNED_IN},invite-v3-cart:targeted`)
+      await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+      expect(screen.getByRole('dialog', { name: 'Signing you out' })).toHaveTextContent('ongoing platform update')
+      await act(() => vi.advanceTimersByTimeAsync(LOADING_HANDOFF_MS))
+      expect(screen.getByRole('dialog')).toHaveTextContent('Do you have a Partner Code?')
+      expect(screen.getByTestId('where').textContent).toContain('signedout=1')
+      expect(screen.getByText('Log In')).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('takes a cart with nothing targeted straight to the existing checkout', async () => {
+    cartAt(`${SIGNED_IN},invite-v3-cart:none`)
+    expect(screen.getByText('New York Life and Health Flashcards')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+    expect(screen.getByText('Checkout page')).toBeInTheDocument()
   })
 })

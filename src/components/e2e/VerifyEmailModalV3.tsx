@@ -46,8 +46,8 @@ import '@/pages/inviteFlow.css'
  * address, a learner who already has Atlas either SIGNS IN — "Log in to
  * continue", the address locked, a password (`login-1`/`login-2`) — or gets
  * the code as above; and two of them hold on "Signing you in" (`signing-in`)
- * before the checkout opens. On those flows the email step's button reads
- * Confirm rather than Continue, as the file has it.
+ * before the checkout opens. The email step's button reads Continue on every
+ * flow (2026-11-02, Afsana) — the file had Confirm on the log-in flows.
  */
 export function VerifyEmailModalV3({
   onVerified,
@@ -141,7 +141,7 @@ export function VerifyEmailModalV3({
                 aria-disabled={!ready}
                 style={ready ? CTA : CTA_OFF}
               >
-                {second === 'login' ? 'Confirm' : 'Continue'}
+                Continue
               </button>
             </div>
 
