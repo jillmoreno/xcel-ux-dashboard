@@ -508,6 +508,28 @@ describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
     }
   })
 
+  it('ends a cart with nothing targeted at the checkout — Place your order goes nowhere', async () => {
+    const ff = `${SIGNED_IN},invite-v3-cart:none`
+    window.history.replaceState({}, '', `${CHECKOUT}?ff=${ff}`)
+    render(
+      <MemoryRouter initialEntries={[`${CHECKOUT}?ff=${ff}&lstate=Arizona&loa=Health&pkg=premier`]}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <Routes>
+              <Route path="/end-to-end-demo/checkout" element={<InvitedCheckoutRoute />} />
+            </Routes>
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Save and continue' }))
+    await userEvent.click(screen.getAllByRole('button', { name: /click to fill/i })[0])
+    await userEvent.click(screen.getByRole('button', { name: 'Confirm Payment Method' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Place your order' }))
+    expect(screen.queryByRole('dialog', { name: 'Placing your order' })).not.toBeInTheDocument()
+  })
+
   it('takes a cart with nothing targeted straight to the existing checkout', async () => {
     cartAt(`${SIGNED_IN},invite-v3-cart:none`)
     expect(screen.getByText('New York Life and Health Flashcards')).toBeInTheDocument()

@@ -299,7 +299,13 @@ export function InvitedCheckoutPageV3() {
   )
   /* V3's signed-in learner with no targeted SKUs checks out what their cart
      holds — the non-targeted item, not the address's course (2026-11-02). */
-  const signedInLine = useV3SignedInCart()?.line
+  const signedInCart = useV3SignedInCart()
+  const signedInLine = signedInCart?.line
+  /* ⚠ THE WALK ENDS HERE for a signed-in cart with nothing targeted —
+     2026-11-02, Afsana: "make the last screen just be the secure checkout
+     page". That is the existing checkout, outside the new flow, so Place your
+     order goes nowhere on this case. */
+  const endsAtCheckout = signedInCart?.cart === 'none'
   const pkg = inCart && signedInLine ? signedInLine : inCart
   const courseTitle = pkg?.name ?? (inviteChoice ? inviteProductTitle(inviteChoice) : advertisedTitle)
   /* What is in the box. The cart's package where there is one — a learner who
@@ -905,7 +911,10 @@ export function InvitedCheckoutPageV3() {
                  page will not accept. */
               className={canOrder ? 'cre-e2e-cta' : undefined}
               style={canOrder ? PLACE_ORDER_ON : PLACE_ORDER}
-              onClick={() => setPlacing(true)}
+              onClick={() => {
+                if (!endsAtCheckout) setPlacing(true)
+              }}
+              title={endsAtCheckout ? 'The end of this flow — the existing checkout' : undefined}
             >
               Place your order
             </button>

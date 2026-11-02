@@ -284,7 +284,8 @@ export function useInviteFlowV3(): InviteFlowV3 {
      mixed      some items are not targeted: the cart says they were removed,
                 and the rest goes as `targeted`.
      none       nothing targeted: the existing checkout, signed in, student
-                information filled from the account.
+                information filled from the account — and the walk ends
+                there; Place your order goes nowhere.
 
    Two Design bar controls choose the case — `invite-v3-cart` and, for the
    targeted cases, `invite-v3-email-account` — shown only on this flow. */
@@ -318,7 +319,8 @@ export function signedInFlowV3(
   signedOut: boolean,
 ): InviteFlowV3 {
   if (cart === 'none') {
-    return { ...flow, base: 'xcel-signed-in', screens: ['cart', ...CHECKOUT, 'placing', 'ready'] }
+    /* The existing checkout is the last screen (Afsana, 2026-11-02). */
+    return { ...flow, base: 'xcel-signed-in', screens: ['cart', ...CHECKOUT] }
   }
   const check = email === 'atlas' ? ['verify-login-1', 'login-1', 'login-2'] : [...VERIFY, ...CODE]
   const ending = email === 'atlas' ? ['ready'] : NEW_PASSWORD
