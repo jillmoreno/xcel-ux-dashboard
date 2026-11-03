@@ -2883,6 +2883,26 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-account-quick-links',
+    /* THE ACCOUNT PAGES IN THE LEARNING PAGES' LAYOUT (2026-11-03, Eric's
+       request: "match them to the styles on the Certificates page"). On:
+       Profile, Notifications, Transcripts and My Purchases take My
+       Certificates' header (Back to Home and the serif title over the
+       content) and its left column, with the account nav as a Quick Links
+       card in Quick Links' place. Off: the shared account sub-nav and title.
+       Baseline versions only (`useAtlasAccountPages`). ON on this branch, per
+       the flag rule. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Account pages: Quick Links layout',
+    description:
+      'The account pages wear My Certificates\u2019 layout \u2014 Back to Home and the serif title, and the account nav as a Quick Links card on the left. Off: the shared account sub-nav.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-quick-links-course-count',
     /* HOW MANY COURSES, BESIDE QUICK LINKS' MY COURSES (2026-11-03, Eric's
        request). On: "My Courses (3)", 4 after the label, the figure bold —

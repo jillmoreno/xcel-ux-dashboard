@@ -3,6 +3,8 @@ import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ATLAS_NAV_PARAM, type AtlasNavVersion } from './atlasNavVersion'
 import { isAtlasCompassNavVersion, resolveDashboardVersion } from '@/data/dashboardVersions'
 import { useAccount } from '@/context/AccountContext'
+import { isAccountSection } from '@/components/account/accountSections'
+import { useAtlasAccountPages } from '@/components/account/useAtlasAccountPages'
 
 /**
  * Which navigation the rebrand shell draws, and what follows from it —
@@ -247,5 +249,9 @@ export const BREADCRUMB_SECTIONS: readonly string[] = ['courses', 'certificates'
  * note recording exactly that risk.
  */
 export function useSectionBreadcrumb(active: string): boolean {
-  return useNavPlacement() === 'top' && BREADCRUMB_SECTIONS.includes(active)
+  /* …and the account pages, when they take the learning pages' layout
+     (2026-11-03, `useAtlasAccountPages`). Read unconditionally — the
+     hook-count trap. */
+  const atlasAccount = useAtlasAccountPages()
+  return useNavPlacement() === 'top' && (BREADCRUMB_SECTIONS.includes(active) || (atlasAccount && isAccountSection(active)))
 }

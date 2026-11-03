@@ -1,6 +1,9 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useMyCoursesCount } from './useMyCoursesCount'
+import { useAccount } from '@/context/AccountContext'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { accountSectionsFor, type AccountSectionId } from '@/components/account/accountSections'
 import {
   AngleRightRegular,
   BallotCheckRegular,
@@ -158,6 +161,37 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
           label="State Requirements"
           onClick={onOpenRequirements ?? homeAndOpen('requirements')}
         />
+      </ul>
+    </nav>
+  )
+}
+
+/**
+ * THE ACCOUNT NAV AS A QUICK LINKS CARD — 2026-11-03, Eric's request. The
+ * account pages' own sections (Profile · Notifications · Transcripts · My
+ * Purchases, and Purchased for Others where the brand has it), drawn in this
+ * card's title, rows, hover and active capsule, so the account pages wear
+ * the same left column as My Courses and My Certificates. Replaces
+ * `AccountSubNav` there; see `useAtlasAccountPages`.
+ */
+export function AtlasAccountLinksCard({
+  active,
+  onSelect,
+  style,
+}: {
+  active: AccountSectionId
+  onSelect: (id: AccountSectionId) => void
+  style?: CSSProperties
+}) {
+  const { brand } = useAccount()
+  const giftRecipientsOn = useFeatureFlag('gift-recipients').enabled
+  return (
+    <nav aria-label="Account sections" style={{ ...SIDE_CARD, ...style }}>
+      <p style={TITLE}>My Account</p>
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {accountSectionsFor(brand, giftRecipientsOn).map(({ id, label, icon: Icon }) => (
+          <SideLink key={id} icon={<Icon size={13} aria-hidden />} label={label} active={id === active} onClick={() => onSelect(id)} />
+        ))}
       </ul>
     </nav>
   )

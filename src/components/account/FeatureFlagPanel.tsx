@@ -163,6 +163,8 @@ const REBRAND_FLAGS = [
   'atlas-header-mode-switch',
   // The course count beside Quick Links' My Courses, 2026-11-03 — on/off.
   'atlas-quick-links-course-count',
+  // The account pages in the learning pages' layout, 2026-11-03 — on/off.
+  'atlas-account-quick-links',
   'atlas-exam-date-step',
   'atlas-v3-progress',
   'atlas-v3-link-tiles',
