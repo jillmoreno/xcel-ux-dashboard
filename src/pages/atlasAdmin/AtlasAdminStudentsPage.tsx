@@ -73,7 +73,6 @@ export function AtlasAdminStudentsPage() {
   /* The outcome tiles follow the Left Nav design control: Lite sets them
      straight on the page, each stroked in primary 200; Standard keeps the
      blue container running on under the roster card, tiles unstroked. */
-  const lite = useFeatureFlag('atlas-admin-left-nav').variant === 'lite'
   // The Design bar's Student Analysis: which outcome row the page shows.
   const analysis = useFeatureFlag('atlas-admin-student-analysis').variant ?? 'dial'
   const { showToast, learners: ADMIN_LEARNERS } = useAdminStore()
@@ -400,7 +399,7 @@ export function AtlasAdminStudentsPage() {
               }
             }}
             className="cre-admin-tile"
-            style={{ ...TILE, borderColor: lite ? 'var(--admin-atlas-primary-200)' : 'var(--admin-fill-soft)', ...(active ? TILE_ACTIVE : null) }}
+            style={{ ...TILE, borderColor: 'var(--admin-atlas-primary-200)', ...(active ? TILE_ACTIVE : null) }}
           >
             <p style={EYEBROW}>{t.label}</p>
             {/* Without the bars, Off Track's red moves to its count and Prepared's green takes a step darker. */}
@@ -451,7 +450,9 @@ export function AtlasAdminStudentsPage() {
         </div>
       </header>
 
-      <section aria-label="Pipeline outcomes" style={lite ? undefined : { ...CARD, border: 'none', padding: `24px 24px ${24 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
+      {/* Lite's treatment on both navs since 2026-11-03 (Eric's request) — see the same note on Invites. The Standard arm was
+          `{ ...CARD, border: 'none', padding: 24px 24px (24 + UNDERLAP), marginBottom: -(24 + UNDERLAP), background: primary 100 }`. */}
+      <section aria-label="Pipeline outcomes">
         {/* One of four, by the Student Analysis design control. Dial: the dial
             and the six status cards in one row, each in its own panel, side by
             side and the same height (2026-10-26). Dial (3×2): Dial's layout
@@ -769,8 +770,6 @@ const CARD_PAD_X = 12
 /* One panel of the Dial analysis: Atlas primary 100, 32px in. */
 const ANALYSIS_RADIUS = 18
 const ANALYSIS_PANEL: CSSProperties = { boxSizing: 'border-box', padding: 32, borderRadius: ANALYSIS_RADIUS, background: 'var(--admin-atlas-primary-100)' }
-/* How far the outcome container's blue runs on beneath the roster card (Standard nav). */
-const UNDERLAP = 24
 const TILE: CSSProperties = {
   borderRadius: 11,
   borderWidth: 1,
