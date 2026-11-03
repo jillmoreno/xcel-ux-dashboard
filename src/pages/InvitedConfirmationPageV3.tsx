@@ -187,11 +187,7 @@ export function InvitedConfirmationPageV3() {
                   Start learning
                 </h2>
                 <div aria-hidden style={CARD_RULE} />
-                <p style={CARD_BODY}>
-                  Begin making progress in{' '}
-                  <strong style={{ color: 'var(--color-text-primary)', fontWeight: 800 }}>{purchased}</strong>{' '}
-                  today.
-                </p>
+                <p style={CARD_BODY}>Begin your learning journey today.</p>
                 <button type="button" className="cre-e2e-cta" style={CTA_ON} onClick={() => setSigningIn(true)}>
                   Start Course
                 </button>
