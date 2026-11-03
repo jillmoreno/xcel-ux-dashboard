@@ -440,6 +440,10 @@ function PlatformShellBody() {
   /* …and the account pages, in the same layout (2026-11-03) — see
      `useAtlasAccountPages`. */
   const atlasAccountPage = useAtlasAccountPages() && isAccountSection(active)
+  /* The containers' 16 — see `--atlas-card-radius` on the grid. Read
+     unconditionally, ANDed after (the hook-count trap). */
+  const cardRadiusFlag = useFeatureFlag('atlas-card-radius-16').enabled
+  const cardRadius16 = cardRadiusFlag && atlasNav && isE2ELikeVersion(shellVersion)
   const e2eSectionIndent =
     atlasAccountPage ||
     (isE2ELikeVersion(shellVersion) && !atlasQuickLinksHidden && e2eQuickLinksLeft && (active === 'courses' || active === 'certificates'))
@@ -1103,6 +1107,11 @@ function PlatformShellBody() {
         // edge, the same offset the rails pin at. Read by the Atlas home's
         // sticky left column (`LearnerFocusedBand`).
         ['--cre-shell-top' as string]: `${headerBottom}px`,
+        /* EVERY CONTAINER AT 16 on the learner and account pages (2026-11-03,
+           Eric's request) — the cards, panels and Quick Links read
+           `var(--atlas-card-radius, <their own>)`, so with this unset they
+           keep their own corners. Buttons and pills never read it. */
+        ...(cardRadius16 ? { ['--atlas-card-radius' as string]: '16px' } : null),
         // Eric/Atlas White's Home is on WHITE (2026-10-12, Eric's request;
         // Figma 312:1649) — the course header keeps its own panel.
         // …and its My Courses and Certificates, WIP's pages on White's white
@@ -2858,7 +2867,7 @@ const E2E_QUICK_LINKS_LIFT = 16.5 + 6 + 34 + 24
    after it, the cards sit Home's 32 from Quick Links (2026-11-03). */
 const E2E_QUICK_LINKS_COLUMN_W = 8 + WIP_QUICK_LINKS_W + 8
 // …and Home's 20 corners, not the card's own 12 (2026-11-03).
-const WIP_QUICK_LINKS_LIFTED: CSSProperties = { ...WIP_QUICK_LINKS, marginTop: -E2E_QUICK_LINKS_LIFT, marginLeft: 8, width: WIP_QUICK_LINKS_W, flex: 'none', borderRadius: 20 }
+const WIP_QUICK_LINKS_LIFTED: CSSProperties = { ...WIP_QUICK_LINKS, marginTop: -E2E_QUICK_LINKS_LIFT, marginLeft: 8, width: WIP_QUICK_LINKS_W, flex: 'none', borderRadius: 'var(--atlas-card-radius, 20px)' }
 
 /* Certificates in the shell. Eric/Atlas WIP drops the page's search, result
    count and filter rail, and status tabs (2026-10-13, Eric's request), and

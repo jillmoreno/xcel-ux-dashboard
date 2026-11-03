@@ -2883,6 +2883,25 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-card-radius-16',
+    /* EVERY CONTAINER AT 16 (2026-11-03, Eric's request: "all main container
+       corners … on My Account pages as well as all of the Learner pages to
+       16px. Do not alter buttons, pills"). On: the shell sets
+       `--atlas-card-radius: 16px`, which the Home's panels, Quick Links, the
+       course and certificate cards and the account pages' cards read. Off:
+       each keeps its own (20, 12, 8). Baseline versions only. ON on this
+       branch, per the flag rule. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-e2e'],
+    group: 'Layout',
+    label: 'Containers: 16 corners',
+    description:
+      'Every card and panel on the learner and account pages at a 16px corner; buttons and pills unchanged. Off: each keeps its own.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-account-quick-links',
     /* THE ACCOUNT PAGES IN THE LEARNING PAGES' LAYOUT (2026-11-03, Eric's
        request: "match them to the styles on the Certificates page"). On:

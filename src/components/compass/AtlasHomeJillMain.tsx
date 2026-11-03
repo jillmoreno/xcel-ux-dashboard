@@ -1268,7 +1268,7 @@ export function AtlasHomeJillMain({
             {/* Not on Eric/Atlas White (2026-10-14, Eric's request: "remove");
                 WIP keeps it. */}
             {onWhite ? null : (
-              <AtlasExamDateCard key={refreshKey} stateName={state} style={{ ...RAIL_CARD_BORDER, borderRadius: 20 }} hideIntroCopy />
+              <AtlasExamDateCard key={refreshKey} stateName={state} style={{ ...RAIL_CARD_BORDER, borderRadius: 'var(--atlas-card-radius, 20px)' }} hideIntroCopy />
             )}
             {/* The READINESS card, under the module (Figma 254:8012, 2026-10-08). */}
             {/* On the Completed view it opens on Proficient (2026-10-09, Eric). */}
@@ -1557,7 +1557,7 @@ export function AtlasHomeJillMain({
             border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)',
             ...(onWhite && headH ? { height: headH } : null),
             // …and its 20 corners (same day).
-            ...(onWhite ? { borderRadius: 20 } : null),
+            ...(onWhite ? { borderRadius: 'var(--atlas-card-radius, 20px)' } : null),
           }}
         />
 
@@ -2352,7 +2352,7 @@ const EXAM_CARD: CSSProperties = {
   gap: 16,
   boxSizing: 'border-box',
   padding: '12px 16px',
-  borderRadius: 12,
+  borderRadius: 'var(--atlas-card-radius, 12px)',
   background: 'var(--color-primary-100)',
   marginBottom: 6,
 }
@@ -2491,7 +2491,7 @@ const CARD: CSSProperties = {
   paddingBottom: 40,
   paddingLeft: 40,
   boxSizing: 'border-box',
-  borderRadius: 20, // the inner cards' 20 (2026-10-13, Eric's request); it was 14
+  borderRadius: 'var(--atlas-card-radius, 20px)', // the inner cards' 20 (2026-10-13, Eric's request); it was 14
   background: 'var(--color-compass-course-card)',
   // No outer stroke (2026-10-02, the designer's request); the Compass MEDIUM
   // shadow lifts it instead (the small one was tried the same day).
@@ -2635,7 +2635,7 @@ const WHITE_PROGRESS_PANEL: CSSProperties = {
   // column is where the content ends up widest.
   padding: '8px 24px',
   boxSizing: 'border-box',
-  borderRadius: 20,
+  borderRadius: 'var(--atlas-card-radius, 20px)',
   // No stroke, a Secondary 100 fill (2026-10-15, Eric's request; it had
   // Quick Links' border).
   background: 'var(--color-atlas-tan-100)',
@@ -2663,7 +2663,7 @@ const WHITE_COURSE_HEAD: CSSProperties = {
   // 8 more below it, before the Progress row (2026-10-14, Eric's requests:
   // 8, then 8 more; 8 less on 2026-10-15).
   marginBottom: 8,
-  borderRadius: 20,
+  borderRadius: 'var(--atlas-card-radius, 20px)',
   background: 'var(--color-primary-100)',
 }
 

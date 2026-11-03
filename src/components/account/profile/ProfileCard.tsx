@@ -48,7 +48,7 @@ export function ProfileCard({ title, icon: Icon, onEdit, editLabel, children }: 
 const cardStyle: CSSProperties = {
   background: 'var(--color-surface-card)',
   border: '1px solid var(--color-border-subtle)',
-  borderRadius: 'var(--radius-lg)',
+  borderRadius: 'var(--atlas-card-radius, var(--radius-lg))',
   padding: '20px 24px 24px',
   display: 'flex',
   flexDirection: 'column',

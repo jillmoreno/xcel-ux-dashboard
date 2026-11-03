@@ -140,7 +140,7 @@ const wrapStyle: CSSProperties = {
 
 const cardStyle: CSSProperties = {
   border: '1px solid var(--color-border-subtle)',
-  borderRadius: 'var(--radius-md)',
+  borderRadius: 'var(--atlas-card-radius, var(--radius-md))',
   background: 'var(--color-surface-card)',
   overflow: 'hidden',
 }

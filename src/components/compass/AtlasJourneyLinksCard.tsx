@@ -260,7 +260,7 @@ const SIDE_CARD: CSSProperties = {
   gap: 16,
   padding: '24px 32px 32px',
   boxSizing: 'border-box',
-  borderRadius: 12,
+  borderRadius: 'var(--atlas-card-radius, 12px)',
   border: '1px solid var(--color-atlas-nav-rule)',
 }
 /* The Readiness card's Tertiary 300 hairline. */
