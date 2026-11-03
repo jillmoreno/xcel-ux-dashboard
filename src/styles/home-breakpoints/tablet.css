@@ -1,0 +1,27 @@
+/*
+ * THE LEARNER HOME AT Tablet Portrait — 820 × 1180 (2026-10-30, Eric). Every rule is scoped to [data-home-bp='tablet'] — this breakpoint
+ * only. See index.css for how these files work.
+ */
+
+/* 32 in from the device's edges. */
+[data-home-bp='tablet'] section:has(> .cre-dash-serif-headings) {
+  padding: 32px 32px 48px !important;
+}
+/* Quick Links goes under the course — beside it, the course column is too narrow at 820. */
+[data-home-bp='tablet'] div:has(> section[aria-label='Current course']) {
+  flex-direction: column-reverse !important;
+  align-items: stretch !important;
+  gap: 32px !important;
+}
+[data-home-bp='tablet'] div:has(> section[aria-label='Current course']) > * {
+  width: auto !important;
+  max-width: none !important;
+  flex: none !important;
+}
+/* The course head stays a row: the cover at its 256, the title taking the rest. Wrapped, the cover lost its height. */
+[data-home-bp='tablet'] section[aria-label='Current course'] div:has(> button[aria-label^='Course header']) {
+  flex-wrap: nowrap !important;
+}
+[data-home-bp='tablet'] section[aria-label='Current course'] div:has(> button[aria-label^='Course header']) > div {
+  flex: 1 1 0 !important;
+}

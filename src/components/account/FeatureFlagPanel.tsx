@@ -138,6 +138,9 @@ const REBRAND_FLAGS = [
   // Same story. ⚠ Losing `surface: 'design'` also makes this a
   // promote-to-prototype candidate, which it was deliberately not before.
   'atlas-pace-card',
+  // THE DEVICE BREAKPOINT the app is framed at — Live / Mobile / Tablet / Desktop / Wide, 2026-10-30 (Eric). A design-bar
+  // control; listed so it is reachable from the panel too.
+  'home-breakpoint',
   'course-launcher-style',
   'dashboard-clp-style',
   // Pacing tile treatment on the Testing version — lo-fi / rate / runway /

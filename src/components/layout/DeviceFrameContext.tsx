@@ -16,6 +16,9 @@ import { isAtlasCompassNavVersion, resolveDashboardVersion } from '@/data/dashbo
 import { useAccount } from '@/context/AccountContext'
 import { BrowserWindow, MobileScreen, Monitor, TabletScreen } from '@/icons'
 import { isTestSession } from '@/data/gatewayMode'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { homeBreakpointFor } from '@/data/homeBreakpoints'
+import '@/styles/home-breakpoints/index.css'
 
 /**
  * Device-preview frame for the prototype. A toggle in the PrototypeBar
@@ -132,24 +135,39 @@ export function DeviceFrame({ chrome, children }: { chrome?: ReactNode; children
   const atlas = isAtlasCompassNavVersion(
     resolveDashboardVersion(new URLSearchParams(useLocation().search).get('version'), brand),
   )
-  if (device === 'desktop')
+  const homeBreakpoint = homeBreakpointFor(useFeatureFlag('home-breakpoint').variant)
+  /* THE BREAKPOINT FRAME (2026-10-30, Eric) — the design bar's Breakpoint control. When one is picked it wins over the
+     device toggle: the app is drawn in a viewport of exactly that width and height, scrolling inside it, with its size
+     captioned. `data-home-bp` is what scopes each breakpoint's own stylesheet (src/styles/home-breakpoints/).
+
+     ⚠ ONE TREE FOR DESKTOP, THE DEMO FRAME AND EVERY BREAKPOINT — the same two divs in the same places, restyled. A
+     different tree REMOUNTS the chrome, and the chrome's demo mode resets every flag to its baseline on the way back in —
+     so picking a breakpoint put Breakpoint straight back to Live ("the breakpoints are not working", 2026-10-30). Desktop
+     keeps its unwrapped layout through `display: contents`. */
+  const breakpoint = homeBreakpoint
+  if (device === 'desktop' || device === 'desktop-framed' || breakpoint) {
+    const plain = device === 'desktop' && !breakpoint
     return (
-      <>
+      <div className={breakpoint ? 'cre-demo-stage cre-bp-stage' : plain ? undefined : 'cre-demo-stage'} style={plain ? CONTENTS : undefined}>
         {chrome}
-        {children}
-      </>
-    )
-  // Demo frame: the full-width prototype/demo bars sit at the top of the dark
-  // stage; the app itself (browser chrome → app header → content) is centered
-  // inside a rounded browser-style window below them. The window chrome (traffic
-  // lights) is injected by the Header as the window's top strip; the CSS rounds
-  // it to meet the window's rounded corners. No `overflow` on the stage so the
-  // app's sticky bars keep working (same rule as the narrow frames below).
-  if (device === 'desktop-framed') {
-    return (
-      <div className="cre-demo-stage">
-        {chrome}
-        <div className={atlas ? 'cre-demo-stage-window cre-demo-stage-window--atlas' : 'cre-demo-stage-window'}>
+        {breakpoint ? (
+          <p className="cre-bp-caption">
+            {breakpoint.label} · {breakpoint.width} × {breakpoint.height}
+          </p>
+        ) : null}
+        <div
+          className={
+            breakpoint
+              ? 'cre-bp-viewport'
+              : plain
+                ? undefined
+                : atlas
+                  ? 'cre-demo-stage-window cre-demo-stage-window--atlas'
+                  : 'cre-demo-stage-window'
+          }
+          data-home-bp={breakpoint?.id}
+          style={breakpoint ? { width: breakpoint.width, height: breakpoint.height } : plain ? CONTENTS : undefined}
+        >
           {children}
         </div>
       </div>
@@ -202,6 +220,8 @@ const DEVICE_OPTIONS: {
   { id: 'tablet', label: 'iPad / Tablet', Icon: TabletScreen, disabled: true },
   { id: 'mobile', label: 'Mobile', Icon: MobileScreen, disabled: true },
 ]
+
+const CONTENTS: CSSProperties = { display: 'contents' }
 
 const BACKDROP: CSSProperties = {
   minHeight: '100vh',
