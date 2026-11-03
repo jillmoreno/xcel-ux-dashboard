@@ -2391,10 +2391,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        reference's sidebar. Lite is Home's Quick Links card — outlined, 13px
        rows, the current page semi-bold in an Atlas Primary 100 capsule — on
        the page's own colour with no rule beside it. Every admin page. */
-    surface: 'design',
-    owner: 'eric',
-    surfaces: ['atlas-admin'],
-    versions: ['eric-atlas-e2e'],
+    /* OFF THE DESIGN BAR since 2026-11-03 (Eric: "make the left nav standard
+       … and the white paper the standard. Then remove the design controls").
+       Decided: Standard. The flag stays so `?ff=` can still reach the other arm. */
     group: 'Navigation',
     label: 'Left Nav',
     description:
@@ -2440,10 +2439,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        White sets every admin page on white. Re-points `--admin-page` on the
        app's root (`AtlasAdminApp`), so the shell, Pulse and the public pages
        all follow. */
-    surface: 'design',
-    owner: 'eric',
-    surfaces: ['atlas-admin'],
-    versions: ['eric-atlas-e2e'],
+    /* OFF THE DESIGN BAR since 2026-11-03 (Eric: "make the left nav standard
+       … and the white paper the standard. Then remove the design controls").
+       Decided: White. The flag stays so `?ff=` can still reach the other arm. */
     group: 'Navigation',
     label: 'Background',
     description: 'The page behind every Atlas Admin page: Toned (the admin\u2019s off-white) or White.',
@@ -2452,7 +2450,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'toned', label: 'Toned' },
       { value: 'white', label: 'White' },
     ],
-    defaultVariant: 'toned',
+    defaultVariant: 'white',
     page: 'dashboard-rebrand',
   },
   {
