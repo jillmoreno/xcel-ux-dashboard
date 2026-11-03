@@ -134,7 +134,7 @@ export function InvitedConfirmationPageV3() {
                 <div aria-hidden style={CARD_RULE} />
                 <label style={FIELD_GROUP}>
                   <span style={FIELD_LABEL}>Email</span>
-                  <span style={{ ...INPUT_SHELL, background: 'var(--color-e2e-form-locked)' }}>
+                  <span style={{ ...INPUT_SHELL, background: 'var(--color-e2e-form-locked-v3)' }}>
                     <span style={{ flex: '1 0 0', minWidth: 1 }}>{learnerEmail}</span>
                     <img src="/brand/confirmation/lock.svg" alt="Locked" width={16} height={16} style={{ display: 'block' }} />
                   </span>

@@ -7715,6 +7715,11 @@ a.cre-library-card-title::after {
   --color-xcel-brick-600: #7b1618;
   --color-e2e-form-outline: #e5e7eb;
   --color-e2e-form-locked: #f3f4f6;
+  /* V3's locked EMAIL field — darker, so it reads as uneditable rather than
+     as an empty input (2026-11-03, Afsana). A step past the form outline
+     (#e5e7eb) so the field's edge still shows; V1/V2 keep the lighter one.
+     #666 text on it is 4.6:1. */
+  --color-e2e-form-locked-v3: #dfe2e6;
   --color-e2e-form-text: #4a5568;
   --color-e2e-form-placeholder: #4b5563;
   --color-e2e-form-shadow: rgb(0 0 0 / 0.05);

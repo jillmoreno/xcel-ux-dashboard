@@ -1047,7 +1047,7 @@ function EmailBlock({
               style={{
                 ...FIELD,
                 paddingRight: 36,
-                background: 'var(--color-e2e-form-locked)',
+                background: 'var(--color-e2e-form-locked-v3)',
                 color: 'var(--color-text-secondary)',
                 cursor: 'not-allowed',
               }}
