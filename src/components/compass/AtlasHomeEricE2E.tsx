@@ -792,6 +792,12 @@ export function AtlasHomeEricE2E({
           onOverview={LINKS_OFF && !overviewOpensCompass ? NO_LINK : onOverview}
           onBegin={onBeginCta}
           beginDisabled={!completedView && !LINKS_OFF && !onBegin}
+          /* ACCESS GONE BY DATE (the demo bar's Expires → Expired, 2026-11-03,
+             Eric's request): Resume comes off and Purchase Extension is the
+             primary, last, with Course Overview kept. The ladder's own
+             `expired` rung keeps its own arm above (`beginLabel`). */
+          tier={!expiredView && expiryTier === 'expired' ? 'expired' : undefined}
+          overviewWhenExpired
         />
         )}
 
@@ -1999,6 +2005,7 @@ export function AtlasCourseHeadRow({
   onOverview,
   onBegin,
   beginDisabled = false,
+  overviewWhenExpired = false,
   onPurchaseExtension,
   onViewCertificate,
   tier = 'normal',
@@ -2032,6 +2039,9 @@ export function AtlasCourseHeadRow({
    * which is the point of warning them at all. It is the action the row above
    * it is ARGUING for, so it leads.
    */
+  /** Keep Course Overview once access has gone (the End-to-End Home,
+   *  2026-11-03, Eric's request). Off, it comes off with Begin. */
+  overviewWhenExpired?: boolean
   onPurchaseExtension?: () => void
   /** Shows "View Certificate" beside Course Overview. Supplied once the course
    *  is complete: Review Course takes the learner back into the material and
@@ -2125,19 +2135,7 @@ export function AtlasCourseHeadRow({
               eight the row was short. */}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {onPurchaseExtension ? (
-              expired ? (
-                /* PRIMARY once access has gone — nothing else is left on the
-                   card, so the one remaining action takes the one remaining
-                   primary treatment. */
-                <button
-                  type="button"
-                  className="cre-compass-primary cre-compass-btn-primary"
-                  onClick={onPurchaseExtension}
-                  style={HEADER_PRIMARY}
-                >
-                  Purchase Extension
-                </button>
-              ) : (
+              expired ? null : (
                 <button
                   type="button"
                   /* ⚠ NO `cre-compass-secondary` WHILE A TONE IS SET. That class
@@ -2172,7 +2170,7 @@ export function AtlasCourseHeadRow({
                 View Certificate
               </button>
             ) : null}
-            {showOverview && !expired ? (
+            {showOverview && (!expired || overviewWhenExpired) ? (
               <button
                 type="button"
                 className="cre-compass-secondary cre-atlas-home-secondary"
@@ -2200,6 +2198,20 @@ export function AtlasCourseHeadRow({
               {beginLabel}
             </button>
             )}
+            {onPurchaseExtension && expired ? (
+              /* PRIMARY once access has gone, and LAST (2026-11-03, Eric's
+                 request — it led the row until then): Begin is gone, so the
+                 one remaining action takes the primary treatment and the
+                 primary's place at the end of the row. */
+              <button
+                type="button"
+                className="cre-compass-primary cre-compass-btn-primary"
+                onClick={onPurchaseExtension}
+                style={HEADER_PRIMARY}
+              >
+                Purchase Extension
+              </button>
+            ) : null}
           </div>
         </div>
       </div>
