@@ -29,3 +29,17 @@ const SERIF: CSSProperties = {
   lineHeight: 'var(--type-atlas-h7-base-line, 28px)',
   letterSpacing: '-0.01em',
 }
+
+/**
+ * …and the same sheets' left and right padding at 32, from the shared 22
+ * (2026-11-03, Eric's request) — the head (Close, eyebrow, title) and the
+ * scrolling body both, so they keep one edge. Same switch, same reach:
+ * `null` off the Atlas versions or with `atlas-sheet-title-serif` off.
+ */
+export function useSheetInset(): CSSProperties | null {
+  const on = useFeatureFlag('atlas-sheet-title-serif').enabled
+  const atlas = useAtlasSkin() != null
+  return on && atlas ? INSET : null
+}
+
+const INSET: CSSProperties = { paddingLeft: 32, paddingRight: 32 }

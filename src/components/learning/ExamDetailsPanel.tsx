@@ -4,7 +4,7 @@ import { examFactsFor, jurisdictionName } from '@/data/nyProducerRequirements'
 import { useExamDate } from '@/data/examDateStore'
 import { EXAM_FAQ, examDetailRows } from '@/data/examDetails'
 import { GoverningAgencyBlock } from './GoverningAgencyBlock'
-import { useSheetTitleSerif } from './useSheetTitleSerif'
+import { useSheetInset, useSheetTitleSerif } from './useSheetTitleSerif'
 import './examDetails.css'
 
 /**
@@ -49,6 +49,7 @@ export function ExamDetailsPanel({
 }) {
   // Playfair on the Atlas versions (2026-11-03) — see `useSheetTitleSerif`.
   const titleSerif = useSheetTitleSerif()
+  const sheetInset = useSheetInset()
   const where = jurisdictionName(state)
   /* THE VENDOR FOLLOWS THE JURISDICTION (2026-10-15). "PSI" was written into
      the sub-line, so a Florida sitting — Pearson VUE, in person only — was
@@ -63,7 +64,7 @@ export function ExamDetailsPanel({
       {/* The step sheet's header, matched deliberately — this opens from the
           same column and stacks under the same sheets, so a different close
           affordance would read as an unrelated surface. */}
-      <div style={{ flexShrink: 0, padding: '18px 22px 0' }}>
+      <div style={{ flexShrink: 0, padding: '18px 22px 0', ...sheetInset }}>
         <button type="button" onClick={onClose} className="cre-link-action cre-cta-ink" style={closeStyle}>
           <X size={14} aria-hidden />
           Close
@@ -73,7 +74,7 @@ export function ExamDetailsPanel({
         <p style={subStyle}>{where ? `${where} licence · ${vendor}` : vendor}</p>
       </div>
 
-      <div style={bodyStyle}>
+      <div style={{ ...bodyStyle, ...sheetInset }}>
         <ul style={rowListStyle}>
           {examDetailRows(hasExamDate, state).map((row) => (
             <li key={row.id}>
@@ -99,9 +100,10 @@ export function ExamDetailsPanel({
 export function ExamFaqPanel({ onClose, onBack }: { onClose: () => void; onBack?: () => void }) {
   // Playfair on the Atlas versions (2026-11-03) — see `useSheetTitleSerif`.
   const titleSerif = useSheetTitleSerif()
+  const sheetInset = useSheetInset()
   return (
     <>
-      <div style={{ flexShrink: 0, padding: '18px 22px 0' }}>
+      <div style={{ flexShrink: 0, padding: '18px 22px 0', ...sheetInset }}>
       {/* ⚠ BACK, NOT CLOSE, WHEN THIS OPENED FROM A MENU (2026-10-19,
           Jillienne: "lets make it seamless so it seems like a journey …
           clicking the option, and new sheet auto shows instantly and then a
@@ -126,7 +128,7 @@ export function ExamFaqPanel({ onClose, onBack }: { onClose: () => void; onBack?
         <p style={subStyle}>Demo content — answers pending confirmation from PSI</p>
       </div>
 
-      <div style={bodyStyle}>
+      <div style={{ ...bodyStyle, ...sheetInset }}>
         {/* A definition list, not an accordion. Five short answers fit in one
             scroll, and collapsing them would hide the thing the sheet exists to
             show behind five more clicks. */}

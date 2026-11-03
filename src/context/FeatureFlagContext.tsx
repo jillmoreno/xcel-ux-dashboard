@@ -2868,16 +2868,17 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        "change the title in the side sheets to playfair"). On, Exam Details,
        Common questions, a Get Licensed step and State Requirements set their
        title in the heading serif on the Atlas versions — the sheets Quick
-       Links opens. Off, the shared title style. See `useSheetTitleSerif`.
+       Links opens — and, the same day, 32 left and right rather than 22.
+       Off, the shared title style and padding. See `useSheetTitleSerif`.
        Default ON on Eric's branch so its build shows the work; whether it
        ships is decided at merge. */
     surface: 'design',
     owner: 'eric',
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
-    label: 'Sheet titles: Playfair',
+    label: 'Sheets: Atlas type & spacing',
     description:
-      'The side sheets Quick Links opens \u2014 Exam Details, Common questions, Applying for a License and State Requirements \u2014 set their title in Playfair on the Atlas versions. Off: the shared heading face.',
+      'The side sheets Quick Links opens \u2014 Exam Details, Common questions, Applying for a License and State Requirements \u2014 set their title in Playfair at H7 and take 32 left and right on the Atlas versions. Off: the shared title and the shared 22.',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },

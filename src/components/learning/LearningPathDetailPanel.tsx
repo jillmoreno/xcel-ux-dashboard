@@ -1,4 +1,4 @@
-import { useSheetTitleSerif } from './useSheetTitleSerif'
+import { useSheetInset, useSheetTitleSerif } from './useSheetTitleSerif'
 import { useState, type ComponentType, type CSSProperties, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useFocusMode } from '@/components/layout/useFocusMode'
@@ -147,6 +147,7 @@ export function LearningPathDetailPanelContent({
 }) {
   // Playfair on the Atlas versions (2026-11-03) — see `useSheetTitleSerif`.
   const titleSerif = useSheetTitleSerif()
+  const sheetInset = useSheetInset()
   const { brand } = useAccount()
   const navigate = useNavigate()
   const focusMode = useFocusMode()
@@ -400,7 +401,7 @@ export function LearningPathDetailPanelContent({
   return (
     <>
       {/* Pinned header — close, title, sub-line, persistent CTA row. */}
-      <div style={{ flexShrink: 0, padding: '18px 22px 0' }}>
+      <div style={{ flexShrink: 0, padding: '18px 22px 0', ...sheetInset }}>
         <button type="button" onClick={onClose} className="cre-link-action" style={closeStyle}>
           <X size={14} aria-hidden />
           Close
@@ -462,7 +463,7 @@ export function LearningPathDetailPanelContent({
       )}
 
       {/* Scrolling body */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 22px 40px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 22px 40px', ...sheetInset }}>
         {activeHalf === 'progress' ? (
           <>
             <div style={{ display: 'flex', gap: 18, alignItems: 'center', marginBottom: 6 }}>

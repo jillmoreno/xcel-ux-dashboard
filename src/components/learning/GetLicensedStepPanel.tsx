@@ -1,4 +1,4 @@
-import { useSheetTitleSerif } from './useSheetTitleSerif'
+import { useSheetInset, useSheetTitleSerif } from './useSheetTitleSerif'
 import type { CSSProperties } from 'react'
 import { ArrowLeft, X } from '@/icons'
 import { ProseFacts, ProseItem, ProseText } from './sheetProse'
@@ -55,13 +55,14 @@ export function GetLicensedStepPanel({
 }) {
   // Playfair on the Atlas versions (2026-11-03) — see `useSheetTitleSerif`.
   const titleSerif = useSheetTitleSerif()
+  const sheetInset = useSheetInset()
   const where = jurisdictionName(state)
   return (
     <>
       {/* Pinned header, matching the requirements sheet's — the two open from
           the same column and a different close affordance in each would read as
           two unrelated surfaces. */}
-      <div style={{ flexShrink: 0, padding: '18px 22px 0' }}>
+      <div style={{ flexShrink: 0, padding: '18px 22px 0', ...sheetInset }}>
       {/* ⚠ BACK, NOT CLOSE, WHEN THIS OPENED FROM A MENU (2026-10-19,
           Jillienne: "lets make it seamless so it seems like a journey …
           clicking the option, and new sheet auto shows instantly and then a
@@ -85,7 +86,7 @@ export function GetLicensedStepPanel({
         <h2 style={{ ...titleStyle, ...titleSerif }}>{step.title}</h2>
       </div>
 
-      <div style={bodyStyle}>
+      <div style={{ ...bodyStyle, ...sheetInset }}>
         <p style={leadStyle}>{step.detail}</p>
         {/* ⚠ THE META LINE BECAME A FACT ROW — 2026-10-07, the direct ask ("do
             the same for How to apply and what to expect"), matching the
