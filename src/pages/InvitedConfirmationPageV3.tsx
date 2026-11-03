@@ -19,7 +19,8 @@
  *                    last step is to start the course.
  *
  * The left panel is the same on both: the thank-you, the confirmation number,
- * the product and the total. Either button holds on the flow's loading page
+ * the product and the total — V2's dark receipt since 2026-11-03, in one of
+ * four versions (`ConfirmationReceiptV3`). Either button holds on the flow's loading page
  * and lands on the learning dashboard, the way V2's ending does.
  */
 import { useEffect, useState, type CSSProperties } from 'react'
@@ -29,9 +30,17 @@ import { PartnerHeader } from '@/components/e2e/PartnerHeader'
 import { TopoBackground } from '@/components/e2e/TopoBackground'
 import { LOADING_HANDOFF_MS, XcelLoadingPage } from '@/components/e2e/XcelLoadingPage'
 import { InvitePasswordChecklist } from '@/components/e2e/InvitePasswordChecklist'
+import { ConfirmationReceiptV3 } from '@/components/e2e/ConfirmationReceiptV3'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { CART_PACKAGE_PARAM, cartPackage } from '@/data/xcelCourseFinder'
 import { usePartnerAttribution } from '@/data/inviteFlows'
-import { inviteEndingV3, useInviteFlowV3, useV3SignedInCart } from '@/data/inviteFlowsV3'
+import {
+  INVITE_V3_RECEIPT_FLAG,
+  inviteEndingV3,
+  resolveReceiptVersion,
+  useInviteFlowV3,
+  useV3SignedInCart,
+} from '@/data/inviteFlowsV3'
 import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
 import { meetsInvitePasswordRules } from '@/data/invitePasswordRules'
 import { readVerifiedIdentity } from '@/data/inviteVerification'
@@ -53,6 +62,7 @@ export function InvitedConfirmationPageV3() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const ending = inviteEndingV3(useInviteFlowV3())
+  const receipt = resolveReceiptVersion(useFeatureFlag(INVITE_V3_RECEIPT_FLAG).variant)
   /* The address the code came back from, when the flow verified one; the demo
      learner otherwise. V3's check asks for the email only, so the name is the
      demo learner's either way. */
@@ -103,25 +113,15 @@ export function InvitedConfirmationPageV3() {
       {/* XCEL's logo alone, as the file draws it — no partner lockup. */}
       <PartnerHeader partner={false} />
       <main style={MAIN}>
-        <section aria-labelledby="order-thanks" style={RAIL}>
-          <h1 id="order-thanks" style={THANKS}>
-            Thank you for your order, {E2E_LEARNER_FIRST}!
-          </h1>
-          <div>
-            <p style={RAIL_LABEL}>Confirmation number</p>
-            <p style={CONFIRMATION_NUMBER}>XL00186764</p>
-          </div>
-          <dl style={FACTS}>
-            <div>
-              <dt style={RAIL_LABEL}>Product</dt>
-              <dd style={FACT_VALUE}>{purchased}</dd>
-            </div>
-            <div>
-              <dt style={RAIL_LABEL}>Order total</dt>
-              <dd style={FACT_VALUE}>{total}</dd>
-            </div>
-          </dl>
-        </section>
+        {/* V2's dark receipt, in the version the Design bar picks — 2026-11-03,
+            Afsana. It replaced the file's grey rail. */}
+        <ConfirmationReceiptV3
+          version={receipt}
+          first={E2E_LEARNER_FIRST}
+          confirmation="XL00186764"
+          product={purchased}
+          total={total}
+        />
 
         <section aria-labelledby="sign-in" style={STAGE}>
           <TopoBackground entrance />
@@ -225,65 +225,6 @@ const MAIN: CSSProperties = {
   flexWrap: 'wrap',
   alignItems: 'stretch',
   minHeight: 520,
-}
-
-/* The receipt. `#2f3338` and `#c9ced6` are the file's own; no token carries
-   them yet. */
-const RAIL: CSSProperties = {
-  flex: '0 1 370px',
-  boxSizing: 'border-box',
-  padding: '48px 40px',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 28,
-  background: '#2f3338',
-  color: '#fff',
-}
-
-const THANKS: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-e2e-serif)',
-  fontWeight: 700,
-  fontSize: 22,
-  lineHeight: 1.25,
-  color: '#fff',
-}
-
-const RAIL_LABEL: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 800,
-  fontSize: 12,
-  letterSpacing: '.08em',
-  textTransform: 'uppercase',
-  color: '#c9ced6',
-}
-
-const CONFIRMATION_NUMBER: CSSProperties = {
-  margin: '6px 0 0',
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontWeight: 800,
-  fontSize: 26,
-  lineHeight: '32px',
-  letterSpacing: '.06em',
-  color: '#fff',
-}
-
-const FACTS: CSSProperties = {
-  margin: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 18,
-  paddingTop: 22,
-  borderTop: '1px solid rgba(255,255,255,.18)',
-}
-
-const FACT_VALUE: CSSProperties = {
-  margin: '4px 0 0',
-  fontFamily: 'var(--font-e2e-avenir)',
-  fontSize: 16,
-  lineHeight: '22px',
-  color: '#fff',
 }
 
 const STAGE: CSSProperties = {

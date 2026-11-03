@@ -263,6 +263,18 @@ describe('Invite Flow V3 — the endings', () => {
     expect(screen.queryByLabelText(/Password/)).not.toBeInTheDocument()
   })
 
+  it('draws V2’s dark receipt in both versions, Classic and Ticket', () => {
+    for (const version of ['classic', 'ticket']) {
+      const { unmount } = renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:qr-net-new,invite-v3-receipt:${version}`)
+      const receipt = screen.getByRole('region', { name: 'Thank you for your order, Jordan!' })
+      for (const term of ['Confirmation number', 'Product', 'Order total']) {
+        expect(within(receipt).getByText(term)).toBeInTheDocument()
+      }
+      expect(within(receipt).getByText('XL00186764')).toBeInTheDocument()
+      unmount()
+    }
+  })
+
   it('never shows V2’s "Confirm your email" ending on V3', () => {
     for (const flow of ['qr-net-new', 'qr-ocd', 'qr-atlas-login', 'qr-atlas-auto']) {
       const { unmount } = renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:${flow}`)
