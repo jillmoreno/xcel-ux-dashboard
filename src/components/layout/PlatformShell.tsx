@@ -2812,7 +2812,8 @@ const E2E_QUICK_LINKS_LIFT = 16.5 + 6 + 34 + 24
 /* Its column: 8 in, the card's 234 and 8 more — with the page's own 24 gap
    after it, the cards sit Home's 32 from Quick Links (2026-11-03). */
 const E2E_QUICK_LINKS_COLUMN_W = 8 + WIP_QUICK_LINKS_W + 8
-const WIP_QUICK_LINKS_LIFTED: CSSProperties = { ...WIP_QUICK_LINKS, marginTop: -E2E_QUICK_LINKS_LIFT, marginLeft: 8, width: WIP_QUICK_LINKS_W, flex: 'none' }
+// …and Home's 20 corners, not the card's own 12 (2026-11-03).
+const WIP_QUICK_LINKS_LIFTED: CSSProperties = { ...WIP_QUICK_LINKS, marginTop: -E2E_QUICK_LINKS_LIFT, marginLeft: 8, width: WIP_QUICK_LINKS_W, flex: 'none', borderRadius: 20 }
 
 /* Certificates in the shell. Eric/Atlas WIP drops the page's search, result
    count and filter rail, and status tabs (2026-10-13, Eric's request), and
