@@ -125,6 +125,8 @@ const RECEIPT: CSSProperties = {
   gap: 14,
   padding: '22px 18px 26px',
   border: '1px solid var(--color-e2e-split-line)',
+  /* Rounded on V3, as the Ticket is (2026-11-03, Afsana); V2's is square. */
+  borderRadius: 6,
 }
 
 const TICK_WRAP: CSSProperties = {
