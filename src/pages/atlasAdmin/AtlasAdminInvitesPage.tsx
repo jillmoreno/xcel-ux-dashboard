@@ -1,6 +1,5 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { acceptedThisWeek, hoursAgoDate, isFresh, isReady, type Invite, type InviteStatus } from '@/data/atlasAdmin/invites'
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
@@ -50,7 +49,6 @@ function dateTime(hours: number) {
 export function AtlasAdminInvitesPage() {
   const navigate = useNavigate()
   // As on Students: Lite sets the tiles on the page, stroked in primary 200.
-  const lite = useFeatureFlag('atlas-admin-left-nav').variant === 'lite'
   const { invites, resendInvite, showToast } = useAdminStore()
   const [filter, setFilter] = useState<Filter>('all')
   const [search, setSearch] = useState('')
@@ -102,7 +100,10 @@ export function AtlasAdminInvitesPage() {
       </header>
 
       {/* As on Students: with the Standard nav the blue runs on under the table card, no gap between; with Lite the tiles sit on the page. */}
-      <section aria-label="Invite outcomes" style={lite ? undefined : { ...CARD, border: 'none', padding: `16px 16px ${20 + UNDERLAP}px`, marginBottom: -(24 + UNDERLAP), background: 'var(--admin-atlas-primary-100)' }}>
+      {/* Lite's treatment on both navs since 2026-11-03 (Eric's request): the activity panel sits on the page on its own, rather than the
+          Standard nav's blue running on under the table card. The Standard arm was
+          `{ ...CARD, border: 'none', padding: 16px 16px (20 + UNDERLAP), marginBottom: -(24 + UNDERLAP), background: primary 100 }`. */}
+      <section aria-label="Invite outcomes">
         {/* As on Students: the dial in its own panel on the cards' resting fill, square on the right and underlapping the cards panel by its
             corner radius; the tiles centred on the dial. */}
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'stretch' }}>
@@ -398,8 +399,6 @@ export function AtlasAdminInvitesPage() {
 
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
-/* How far the outcome container's blue runs on beneath the table card. */
-const UNDERLAP = 24
 /* The dial panels' corner radius, and how far the dial panel runs on under the cards panel. */
 const PANEL_RADIUS = 18
 /* The table card's corner radius (CARD). */
