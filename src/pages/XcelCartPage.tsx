@@ -16,8 +16,7 @@ import {
 import { PartnerCodeAskModal } from '@/components/e2e/PartnerCodeAsk'
 import { SigningOutDialog } from '@/components/e2e/SigningOutDialog'
 import { PartnerCodeEntryDialog, UnsupportedItemDialog } from '@/components/e2e/SignedInCartDialogs'
-import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
-import { V3_SIGNED_OUT_PARAM, useV3SignedInCart } from '@/data/inviteFlowsV3'
+import { SIGNING_OUT_MS, V3_SIGNED_OUT_PARAM, useV3SignedInCart } from '@/data/inviteFlowsV3'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { INVITE_FLOW_VERSION_FLAG, resolveInviteFlowVersion } from '@/data/inviteFlowVersions'
 import { useEndToEndDemoParams, useEndToEndPageChrome } from './endToEndDemo'
@@ -93,7 +92,7 @@ export function XcelCartPage() {
       next.set(V3_SIGNED_OUT_PARAM, '1')
       next.set(PARTNER_CODE_PARAM, 'no')
       navigate({ pathname: '/end-to-end-demo/checkout', search: next.toString() })
-    }, LOADING_HANDOFF_MS)
+    }, SIGNING_OUT_MS)
     return () => window.clearTimeout(timer)
   }, [signingOut, params, navigate])
 

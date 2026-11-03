@@ -19,6 +19,7 @@ import {
   emailCheckV3,
   entryPathV3,
   inviteEndingV3,
+  SIGNING_OUT_MS,
   signedInFlowV3,
   verifiesEmailFirst,
 } from '@/data/inviteFlowsV3'
@@ -588,7 +589,10 @@ describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
 
   async function expectSignedOutToCheckout() {
     expect(screen.getByRole('dialog', { name: 'Signing you out' })).toHaveTextContent('ongoing platform update')
-    await act(() => vi.advanceTimersByTimeAsync(LOADING_HANDOFF_MS))
+    /* Held for 4 seconds — still there just before. */
+    await act(() => vi.advanceTimersByTimeAsync(SIGNING_OUT_MS - 100))
+    expect(screen.getByRole('dialog', { name: 'Signing you out' })).toBeInTheDocument()
+    await act(() => vi.advanceTimersByTimeAsync(100))
     expect(screen.getByText('Checkout page')).toBeInTheDocument()
     expect(screen.getByTestId('where').textContent).toContain('signedout=1')
     expect(screen.getByTestId('where').textContent).toContain('partner=no')

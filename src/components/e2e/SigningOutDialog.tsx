@@ -64,5 +64,6 @@ const NOTICE: CSSProperties = {
   fontSize: 14,
   lineHeight: '20px',
   color: 'var(--color-text-primary)',
-  textAlign: 'center',
+  /* Left-aligned (2026-11-03, Afsana) — it was centred under nothing. */
+  textAlign: 'left',
 }

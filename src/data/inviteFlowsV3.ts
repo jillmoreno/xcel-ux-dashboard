@@ -321,6 +321,11 @@ export const INVITE_V3_EMAIL_ACCOUNT_FLAG = 'invite-v3-email-account'
  *  it with the rest of the walk (`INVITE_WALK_PARAMS`). */
 export const V3_SIGNED_OUT_PARAM = 'signedout'
 
+/** How long "Signing you out" holds before the checkout — 4 seconds
+ *  (2026-11-03, Afsana), a second longer than the flow's other loading holds
+ *  (`LOADING_HANDOFF_MS`), so the platform-update notice above it can be read. */
+export const SIGNING_OUT_MS = 4000
+
 export function resolveV3Cart(value: string | null | undefined): V3CartContents {
   return value === 'mixed' || value === 'none' ? value : 'targeted'
 }
