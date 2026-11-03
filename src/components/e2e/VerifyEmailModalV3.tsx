@@ -363,6 +363,7 @@ function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => voi
       }}
       noValidate
     >
+      <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
       <div style={HEAD}>
         <h2 id="verify-email-title" style={TITLE}>
           Log in to continue
@@ -556,8 +557,8 @@ const NOTE: CSSProperties = {
   color: 'var(--color-text-secondary)',
 }
 
-/* The header's own mark, smaller, centred over the email and code steps'
-   headings (2026-11-03, Afsana). */
+/* The header's own mark, smaller, centred over the email, code and log-in
+   steps' headings (2026-11-03, Afsana). */
 const CODE_LOGO: CSSProperties = { display: 'block', width: 132, height: 42, objectFit: 'contain', alignSelf: 'center' }
 
 /* Under Confirm: the resend line, then Use a different email. */
