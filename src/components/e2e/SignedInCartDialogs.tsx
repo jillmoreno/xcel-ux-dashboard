@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
+import { XmarkRegular } from '@/icons'
 
 /**
  * THE SIGNED-IN OCD CART'S TWO DIALOGS — Invite Flow V3, 2026-11-02, Afsana.
@@ -12,7 +13,7 @@ import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
  *         walk ends on this dialog.
  *   No, mixed cart → UnsupportedItemDialog: the item outside the targeted SKUs
  *         will be dropped. Proceeding signs them out and goes on as the
- *         targeted cart does.
+ *         targeted cart does; the ✕ (or Escape, or the scrim) stays.
  *
  * 460 wide, as every V3 dialog, and with no dark title band — the Partner Code
  * question they open from had its band taken off at Afsana's request.
@@ -96,6 +97,11 @@ export function UnsupportedItemDialog({
         style={{ ...CARD, ...layer.card }}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* An ✕ in the corner rather than Cancel under the button
+            (2026-11-03, Afsana) — the Partner Code question's. */}
+        <button type="button" aria-label="Close" onClick={onCancel} style={CLOSE}>
+          <XmarkRegular size={18} aria-hidden />
+        </button>
         <div style={HEAD}>
           <h2 id="v3-unsupported-title" style={TITLE}>
             {count} not supported
@@ -113,9 +119,6 @@ export function UnsupportedItemDialog({
         <div style={ACTIONS}>
           <button type="button" onClick={onProceed} style={PRIMARY}>
             Proceed to checkout
-          </button>
-          <button type="button" onClick={onCancel} style={CANCEL}>
-            Cancel
           </button>
         </div>
       </div>
@@ -135,6 +138,24 @@ const SCRIM: CSSProperties = {
   justifyContent: 'center',
   padding: 24,
   background: 'var(--color-e2e-scrim)',
+}
+
+/* The Partner Code question's ✕ (`PartnerCodeAsk`). */
+const CLOSE: CSSProperties = {
+  position: 'absolute',
+  top: 12,
+  right: 12,
+  width: 32,
+  height: 32,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 0,
+  border: 'none',
+  borderRadius: 4,
+  background: 'transparent',
+  color: 'var(--color-text-secondary)',
+  cursor: 'pointer',
 }
 
 const CARD: CSSProperties = {
@@ -169,7 +190,8 @@ const BODY: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 
-const LIST: CSSProperties = { ...BODY, margin: 0, paddingLeft: 20, fontWeight: 800 }
+/* Bulleted (2026-11-03, Afsana) — the base styles strip list markers. */
+const LIST: CSSProperties = { ...BODY, margin: 0, paddingLeft: 20, fontWeight: 800, listStyleType: 'disc' }
 
 const FIELD: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
 

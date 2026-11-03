@@ -764,7 +764,9 @@ describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
       await answerNo('mixed')
       const notice = screen.getByRole('dialog', { name: /not supported/ })
       expect(notice).toHaveTextContent('New York Life and Health Flashcards')
-      await userEvent.click(within(notice).getByRole('button', { name: 'Cancel' }))
+      /* An ✕ in the corner, no Cancel under the button. */
+      expect(within(notice).queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument()
+      await userEvent.click(within(notice).getByRole('button', { name: 'Close' }))
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 
       await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
