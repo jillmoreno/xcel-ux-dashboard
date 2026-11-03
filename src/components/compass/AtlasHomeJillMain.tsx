@@ -1093,6 +1093,9 @@ export function AtlasHomeJillMain({
                  different plans. `HybridHomeV1` pins its 3 deliberately and
                  records the derivation it dropped — this one keeps it. */
               <RingCard
+                /* Ready 100%: the dial alone — no rule, no Study pace (2026-11-03,
+                   Eric's request); a finished course has no plan left to pace. */
+                progressOnly={completedView}
                 /* The ladder carries the figure for every state now,
                    including 0 — see the note there. The `percent` prop is the
                    persona's and only stands in for a state with no figure. */
