@@ -1,7 +1,7 @@
 import { useSearchParams } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ALL_US_STATES } from '@/data/licensedStatesFixtures'
-import { GET_LICENSE_NAV } from '@/data/xcelCourseFinder'
+import { FINDER_LINES_OF_AUTHORITY } from '@/data/xcelCourseFinder'
 import { productUnknownFor, useInviteFlow } from '@/data/inviteFlows'
 
 /**
@@ -59,7 +59,11 @@ export const INVITE_LOA_PARAM = 'loa'
  * first place. `GET_LICENSE_NAV` is the one place the catalogue's own list
  * lives.
  */
-export const INVITE_LINES_OF_AUTHORITY = GET_LICENSE_NAV
+export const INVITE_LINES_OF_AUTHORITY = FINDER_LINES_OF_AUTHORITY
+
+/* ⚠ NO SECURITIES (2026-10-30, Eric: "remove"). It was here as the Get License nav's sixth entry, but it is a different kind of
+   product, not a line of authority (`GET_LICENSE_NAV`'s own note), so the modal offers the five lines of authority alone. The nav
+   keeps it. Back to `GET_LICENSE_NAV` above to restore. */
 
 export type InviteLineOfAuthority = (typeof INVITE_LINES_OF_AUTHORITY)[number]
 

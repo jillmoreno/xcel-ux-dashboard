@@ -2643,6 +2643,119 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'pdp-products',
+    /* THE PDP'S PRODUCTS — 2026-10-28, Eric: "Duplicate this page based on a
+       single product … add a design control to be able to flip between the
+       single product page and the multi-product page."
+
+       multi  — Standard and Premier side by side, the comparison grid under
+                them. THE DEFAULT.
+       single — Premier alone: one card, the comparison's Standard column
+                gone, and the grid captioned "Premier package includes:". The
+                top tray carries the one card too.
+
+       One page, not two files: everything but the cards and the grid is the
+       same page, and it is still being tuned a pixel at a time — two copies
+       would drift with every tweak. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite'],
+    group: 'Layout',
+    label: 'Products',
+    description:
+      'The two-package PDP as a multi-product page \u2014 the default, Standard and Premier side by side \u2014 or a single-product page, Premier alone with its own \u201cincludes\u201d list.',
+    defaultEnabled: true,
+    defaultVariant: 'multi',
+    variants: [
+      { value: 'multi', label: 'Multi-product', description: 'Standard and Premier side by side, with the comparison grid. The default.' },
+      { value: 'single', label: 'Single product', description: 'Premier alone, the grid captioned \u201cPackage includes:\u201d with only its column.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'pdp-single-head',
+    /* THE SINGLE-PRODUCT PDP'S COURSE HEAD — 2026-10-29, Eric: "make copy C
+       the default one for now. But keep copies A and B in case I want to draw
+       on them further." Three treatments of the title, the Pass Guarantee and
+       the price, worked out side by side on the page and now one at a time.
+
+       a — the title beside a boxed price tile, its PASS GUARANTEE tab on top.
+       b — PREMIER PACKAGE | Pass Guarantee over the title, the price and
+           Purchase under it, left.
+       c — the same strip over a dark title, the price and Purchase far right
+           past a rule, the Purchase on the title's baseline. THE DEFAULT.
+       d — C, with the crown and PREMIER PACKAGE over the price on the
+           guarantee's baseline, and Includes our Pass Guarantee alone at the
+           left (2026-10-29, Eric: "save D as a version as well").
+       e — B, with the multi-product page's Premier card for its pricing
+           (2026-10-30, Eric).
+
+       Single-product only; the multi-product page has its own head. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite'],
+    group: 'Layout',
+    label: 'Single head',
+    description:
+      'The single-product PDP\u2019s course head: A, the boxed price tile beside the title; B, the package strip over the title with the price under it; C, the strip over the title with the price far right \u2014 the default; D, C with PREMIER PACKAGE over the price; or E, B with the multi page\u2019s Premier card.',
+    defaultEnabled: true,
+    defaultVariant: 'c',
+    variants: [
+      { value: 'a', label: 'A', description: 'The title beside a boxed price tile with its PASS GUARANTEE tab.' },
+      { value: 'b', label: 'B', description: 'The package strip over the title, the price and Purchase under it.' },
+      { value: 'c', label: 'C', description: 'The package strip over a dark title, the price far right past a rule. The default.' },
+      { value: 'd', label: 'D', description: 'C with the crown and PREMIER PACKAGE over the price, Includes our Pass Guarantee alone at the left.' },
+      { value: 'e', label: 'E', description: 'B with the multi-product page\u2019s Premier card in place of its price and Purchase.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'pdp-course-cards',
+    /* THE TWO-PACKAGE PDP'S CARDS, ON THE PAGE — 2026-10-27, Eric: "make the
+       smaller cards a design control option."
+
+       Off — the full cards on the page (title 24, price 28, Purchase across
+             the card under the price), condensing into the compact layout
+             as they pin. THE DEFAULT.
+       On  — the compact layout (Figma 548:3477) on the page too: title 18,
+             price 20, Purchase beside the price. Pinning then only tightens
+             the frame round them.
+
+       ⚠ THE PINNED CARDS ARE COMPACT EITHER WAY. This decides what the page
+       shows before the cards pin, which is the comparison worth making.
+
+       2026-10-28, Eric: the on/off became a Course Cards dropdown — the two above, plus a full-width tray that
+       slides down from the top of the browser once the cards on the page have scrolled off the top (the cards on the page
+       then scroll away like the rest of it, full size):
+
+       large         — Large Cards: the off above.
+       compact       — Compact Cards: the on above.
+       none          — No Card Trays (added the same day; the cards compact since 10-29): the cards on the page, scrolling away with it — no pinned
+                       tray, no top tray. THE DEFAULT, the same day: a tray shows only when one is picked. Four choices, so the design bar draws it as a dropdown.
+       tray-mini-bottom — Bottom Mini Card Tray (2026-10-29): the same tray pinned to the bottom of the browser, sliding up.
+       tray-mini     — Top Mini Card Tray: Figma 560:3783 — a 16-tall tan strip, the eyebrow as a tab in each card's corner,
+                       the title beside the price and its Purchase. */
+    /* OFF THE DESIGN BAR (2026-10-29, Eric: "hide the design control for the card controls drop down"). Not `surface: 'design'`
+       any more, so the bar does not draw it; the flag, its four arms and its default (No Card Trays) all stand, and `?ff=pdp-course-cards:<arm>`
+       or the Feature Flag panel still switch it. Putting it back on the bar is restoring this line: surface: 'design', */
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite'],
+    group: 'Layout',
+    label: 'Card Controls', // (2026-10-29, Eric; was Course Cards, then Pinned Cards — the key stays `pdp-course-cards`)
+    description:
+      'The two-package PDP\u2019s package cards. No Card Trays \u2014 the default \u2014 leaves the compact cards to scroll away with the page; Large Cards condense as they pin; Compact Cards draws the compact layout on the page too; the Top Mini Card Tray leaves the cards on the page and slides a full-width tray down from the top of the browser once they have scrolled off, with the page\u2019s cards compact too.',
+    defaultEnabled: true,
+    defaultVariant: 'none', // no trays unless one is picked (2026-10-28, Eric; was large)
+    variants: [
+      { value: 'large', label: 'Large Cards', description: 'The full cards on the page, pinning under the top of the browser and condensing into the compact layout as they do.' },
+      { value: 'compact', label: 'Compact Cards', description: 'The compact layout on the page too; pinning only tightens the frame round them.' },
+      { value: 'tray-mini', label: 'Top Mini Card Tray', description: 'Figma 560:3783 — the cards on the page compact, and a slim full-width tray of mini cards slides down from the top once they have scrolled off.' },
+      { value: 'tray-mini-bottom', label: 'Bottom Mini Card Tray', description: 'The Top Mini Card Tray’s twin, pinned to the bottom of the browser: it slides up from there once the cards on the page have scrolled off the top.' },
+      { value: 'none', label: 'No Card Trays', description: 'The default. No tray at all: the compact cards stay on the page and scroll away with it — nothing pins, nothing slides down from the top.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'partner-code-ask',
     /* WHERE THE PARTNER CODE QUESTION IS ASKED — 2026-10-22, Jillienne: "i
        think we should explore a variant of this simply showing over the

@@ -37,6 +37,8 @@ export function InviteProductOptionsModal({
   onChoose,
   onDismiss,
   reason,
+  headingFont,
+  dismissOnScrim,
 }: {
   /** Both halves picked — the flow writes them to the address and carries on. */
   onChoose: (choice: InviteProductChoice) => void
@@ -54,6 +56,13 @@ export function InviteProductOptionsModal({
    * claiming an invitation that was never sent.
    */
   reason: 'invitation-incomplete' | 'broadcast-link'
+  /** The title's face, where the page around it sets its own serif — the two-package PDP passes its `--font-e2e-serif`
+   *  (2026-10-29, Eric). The invite flow's own uses leave it out and keep `--font-heading-serif`. */
+  headingFont?: string
+  /** A click on the scrim, outside the dialog, closes it (`onDismiss`) — the two-package PDP's use, where the page behind is
+   *  complete and the modal only changes it (2026-10-29, Eric). The invite flow leaves it off: there, the page behind cannot be
+   *  drawn without an answer (see the note above). */
+  dismissOnScrim?: boolean
 }) {
   const [state, setState] = useState<InviteState | null>(null)
   const [lineOfAuthority, setLineOfAuthority] = useState<InviteLineOfAuthority | null>(null)
@@ -68,7 +77,12 @@ export function InviteProductOptionsModal({
   }, [onDismiss])
 
   return createPortal(
-    <div style={SCRIM}>
+    <div
+      style={SCRIM}
+      onMouseDown={dismissOnScrim ? (e) => {
+        if (e.target === e.currentTarget) onDismiss()
+      } : undefined}
+    >
       <div
         role="dialog"
         aria-modal="true"
@@ -77,7 +91,7 @@ export function InviteProductOptionsModal({
         style={MODAL}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <h2 id="invite-options-title" style={TITLE}>
+          <h2 id="invite-options-title" style={headingFont ? { ...TITLE, fontFamily: headingFont } : TITLE}>
             What are you licensing for?
           </h2>
           {/* ⚠ IT SAYS WHY IT IS ASKING. The learner clicked a link in an

@@ -48,6 +48,8 @@ import CircleCheckSvg from './circle-check.svg?react'
 import CircleSolidSvg from './circle-solid.svg?react'
 import CircleRegularSvg from './circle-regular.svg?react'
 import CircleCheckSolidSvg from './circle-check-solid.svg?react'
+import ShieldCheckSolidSvg from './shield-check-solid.svg?react'
+import CrownSolidSvg from './crown-solid.svg?react'
 import CircleCheckRegularSvg from './circle-check-regular.svg?react'
 import ClockRegularSvg from './clock-regular.svg?react'
 import HouseRegularSvg from './house-regular.svg?react'
@@ -68,8 +70,17 @@ import PenFieldRegularSvg from './pen-field-regular.svg?react'
 import ClipboardListCheckRegularSvg from './clipboard-list-check-regular.svg?react'
 import AngleRightRegularSvg from './angle-right-regular.svg?react'
 import AngleRightSolidSvg from './angle-right-solid.svg?react'
+import AngleDownSolidSvg from './angle-down-solid.svg?react'
 import CalendarThinSvg from './calendar-thin.svg?react'
 import FileCertificateThinSvg from './file-certificate-thin.svg?react'
+import ClipboardListThinSvg from './clipboard-list-thin.svg?react'
+import ChartLineUpThinSvg from './chart-line-up-thin.svg?react'
+import BallotCheckThinSvg from './ballot-check-thin.svg?react'
+import ClipboardListLightSvg from './clipboard-list-light.svg?react'
+import ChartLineUpLightSvg from './chart-line-up-light.svg?react'
+import BallotCheckLightSvg from './ballot-check-light.svg?react'
+import FaceSmileLightSvg from './face-smile-light.svg?react'
+import FaceGrinLightSvg from './face-grin-light.svg?react'
 import FileCertificateLightSvg from './file-certificate-light.svg?react'
 import HourglassClockThinSvg from './hourglass-clock-thin.svg?react'
 import HourglassClockLightSvg from './hourglass-clock-light.svg?react'
@@ -282,6 +293,8 @@ export const CircleCheck = makeIcon(CircleCheckSvg) // FA: circle-check
 export const CircleSolid = makeIcon(CircleSolidSvg) // FA: circle (solid)
 export const CircleRegular = makeIcon(CircleRegularSvg) // FA: circle (regular)
 export const CircleCheckSolid = makeIcon(CircleCheckSolidSvg) // FA: circle-check (solid)
+export const ShieldCheckSolid = makeIcon(ShieldCheckSolidSvg) // FA: shield-check (solid)
+export const CrownSolid = makeIcon(CrownSolidSvg) // FA: crown (solid)
 export const CircleCheckRegular = makeIcon(CircleCheckRegularSvg) // FA: circle-check (regular)
 export const ClockRegular = makeIcon(ClockRegularSvg) // FA: clock (regular)
 export const HouseRegular = makeIcon(HouseRegularSvg) // FA: house (regular)
@@ -298,8 +311,17 @@ export const PenFieldRegular = makeIcon(PenFieldRegularSvg) // FA: pen-field (re
 export const ClipboardListCheckRegular = makeIcon(ClipboardListCheckRegularSvg) // FA: clipboard-list-check (regular)
 export const AngleRightRegular = makeIcon(AngleRightRegularSvg) // FA: angle-right (regular)
 export const AngleRightSolid = makeIcon(AngleRightSolidSvg) // FA: angle-right (solid)
+export const AngleDownSolid = makeIcon(AngleDownSolidSvg) // FA: angle-down (solid)
 export const CalendarThin = makeIcon(CalendarThinSvg) // FA: calendar (thin)
 export const FileCertificateThin = makeIcon(FileCertificateThinSvg) // FA: file-certificate (thin)
+export const ClipboardListThin = makeIcon(ClipboardListThinSvg) // FA: clipboard-list (thin)
+export const ChartLineUpThin = makeIcon(ChartLineUpThinSvg) // FA: chart-line-up (thin)
+export const BallotCheckThin = makeIcon(BallotCheckThinSvg) // FA: ballot-check (thin)
+export const ClipboardListLight = makeIcon(ClipboardListLightSvg) // FA: clipboard-list (light)
+export const ChartLineUpLight = makeIcon(ChartLineUpLightSvg) // FA: chart-line-up (light)
+export const BallotCheckLight = makeIcon(BallotCheckLightSvg) // FA: ballot-check (light)
+export const FaceSmileLight = makeIcon(FaceSmileLightSvg) // FA: face-smile (light)
+export const FaceGrinLight = makeIcon(FaceGrinLightSvg) // FA: face-grin (light)
 export const FileCertificateLight = makeIcon(FileCertificateLightSvg) // FA: file-certificate (light)
 export const HourglassClockThin = makeIcon(HourglassClockThinSvg) // FA: hourglass-clock (thin)
 export const HourglassClockLight = makeIcon(HourglassClockLightSvg) // FA: hourglass-clock (light)

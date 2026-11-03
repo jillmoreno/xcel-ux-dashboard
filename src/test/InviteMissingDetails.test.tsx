@@ -15,7 +15,7 @@ import {
   readInviteChoice,
 } from '@/data/inviteMissingDetails'
 import { INVITE_FLOW_FLAG } from '@/data/inviteFlows'
-import { GET_LICENSE_NAV } from '@/data/xcelCourseFinder'
+import { FINDER_LINES_OF_AUTHORITY } from '@/data/xcelCourseFinder'
 import { E2E_COURSE_TITLE_SHORT } from '@/pages/endToEndDemo'
 import { InvitedProductDetailPageV2 } from '@/pages/InvitedProductDetailPageV2'
 import { InvitedCheckoutPageV2 } from '@/pages/InvitedCheckoutPageV2'
@@ -93,16 +93,18 @@ const ANSWERED =
   `&${INVITE_STATE_PARAM}=Texas&${INVITE_LOA_PARAM}=${encodeURIComponent('Property and Casualty')}`
 
 describe('what the modal can sell', () => {
-  it('offers the catalogue\u2019s whole Get License list, not a subset of it', () => {
+  it('offers the catalogue\u2019s lines of authority, not Securities (2026-10-30, Eric)', () => {
     /* ⚠ 2026-10-23, Jillienne: "this modal needs to include all of these lines
        of authority." It carried three, copied from `licensedStatesFixtures` —
        which answers "which licences does this learner HOLD", not "what is for
        sale". Life, Health and Securities are all sold on the site and none was
        pickable here. */
-    expect(INVITE_LINES_OF_AUTHORITY).toEqual(GET_LICENSE_NAV)
-    for (const loa of ['Life and Health', 'Life', 'Health', 'Property and Casualty', 'Personal Lines', 'Securities']) {
+    expect(INVITE_LINES_OF_AUTHORITY).toEqual(FINDER_LINES_OF_AUTHORITY)
+    for (const loa of ['Life and Health', 'Life', 'Health', 'Property and Casualty', 'Personal Lines']) {
       expect(INVITE_LINES_OF_AUTHORITY as readonly string[], loa).toContain(loa)
     }
+    // Securities is on the Get License nav, not here — a different kind of product (2026-10-30, Eric).
+    expect(INVITE_LINES_OF_AUTHORITY as readonly string[]).not.toContain('Securities')
   })
 
   it('speaks the catalogue\u2019s dialect — "and", never "&"', () => {
