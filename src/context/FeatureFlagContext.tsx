@@ -2847,29 +2847,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
-    key: 'invite-v3-receipt',
-    /* V3'S ORDER RECEIPT — 2026-11-03, Afsana: "update the confirmation design
-       to mimic the attached image, which is what currently occurs in Invite
-       Flow V2. create 4 versions so that we can choose 1" — then "keep the
-       classic and ticket design only". Both are V2's dark receipt
-       (`XcelSplitConfirmationPage`); `classic` is it exactly.
-       The left half of `InvitedConfirmationPageV3`, on every V3 flow — see
-       `ConfirmationReceiptV3`. */
-    surface: 'design',
-    versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2b', 'invite:v3-b2c', 'invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
-    group: 'Layout',
-    label: 'Confirmation receipt',
-    description: 'Invite Flow V3’s order confirmation: V2’s dark receipt as it is, or as one torn ticket.',
-    defaultEnabled: true,
-    defaultVariant: 'classic',
-    variants: [
-      { value: 'classic', label: 'Classic', description: 'V2’s receipt as it is: the tick and thank-you in an outlined box, a dashed tear line, then the three rows.' },
-      { value: 'ticket', label: 'Ticket', description: 'The whole receipt is one outlined ticket, with the tear line across its middle.' },
-    ],
-    page: 'dashboard-rebrand',
-  },
-  {
     key: 'order-confirmation-style',
     /* WHICH THANK-YOU PAGE THE GUEST FLOW ENDS ON — 2026-10-22, Jillienne: "i
        want another version of this thank you page, use a feature flag dropdown

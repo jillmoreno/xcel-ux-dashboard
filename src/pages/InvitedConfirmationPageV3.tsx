@@ -19,8 +19,8 @@
  *                    last step is to start the course.
  *
  * The left panel is the same on both: the thank-you, the confirmation number,
- * the product and the total — V2's dark receipt since 2026-11-03, in one of
- * four versions (`ConfirmationReceiptV3`). Either button holds on the flow's loading page
+ * the product and the total — V2 guest checkout's light receipt since
+ * 2026-11-03 (`ConfirmationReceiptV3`). Either button holds on the flow's loading page
  * and lands on the learning dashboard, the way V2's ending does.
  */
 import { useEffect, useState, type CSSProperties } from 'react'
@@ -31,13 +31,10 @@ import { TopoBackground } from '@/components/e2e/TopoBackground'
 import { LOADING_HANDOFF_MS, XcelLoadingPage } from '@/components/e2e/XcelLoadingPage'
 import { InvitePasswordChecklist } from '@/components/e2e/InvitePasswordChecklist'
 import { ConfirmationReceiptV3 } from '@/components/e2e/ConfirmationReceiptV3'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { CART_PACKAGE_PARAM, cartPackage } from '@/data/xcelCourseFinder'
 import { usePartnerAttribution } from '@/data/inviteFlows'
 import {
-  INVITE_V3_RECEIPT_FLAG,
   inviteEndingV3,
-  resolveReceiptVersion,
   useInviteFlowV3,
   useV3SignedInCart,
 } from '@/data/inviteFlowsV3'
@@ -62,7 +59,6 @@ export function InvitedConfirmationPageV3() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const ending = inviteEndingV3(useInviteFlowV3())
-  const receipt = resolveReceiptVersion(useFeatureFlag(INVITE_V3_RECEIPT_FLAG).variant)
   /* The address the code came back from, when the flow verified one; the demo
      learner otherwise. V3's check asks for the email only, so the name is the
      demo learner's either way. */
@@ -113,10 +109,8 @@ export function InvitedConfirmationPageV3() {
       {/* XCEL's logo alone, as the file draws it — no partner lockup. */}
       <PartnerHeader partner={false} />
       <main style={MAIN}>
-        {/* V2's dark receipt, in the version the Design bar picks — 2026-11-03,
-            Afsana. It replaced the file's grey rail. */}
+        {/* V2 guest checkout's light receipt — 2026-11-03, Afsana. */}
         <ConfirmationReceiptV3
-          version={receipt}
           first={E2E_LEARNER_FIRST}
           confirmation="XL00186764"
           product={purchased}

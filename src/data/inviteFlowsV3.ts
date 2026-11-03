@@ -507,11 +507,3 @@ export function matchState(typed: string): string | null {
      `inviteFlows`, which imports this. */
   return ALL_US_STATES.find((s) => s.toLowerCase() === t) ?? null
 }
-
-/** The Design bar's choice of V3 order receipt (`invite-v3-receipt`,
- *  2026-11-03) — `ConfirmationReceiptV3` draws it. */
-export const INVITE_V3_RECEIPT_FLAG = 'invite-v3-receipt'
-
-export function resolveReceiptVersion(value: string | null | undefined): 'classic' | 'ticket' {
-  return value === 'ticket' ? 'ticket' : 'classic'
-}
