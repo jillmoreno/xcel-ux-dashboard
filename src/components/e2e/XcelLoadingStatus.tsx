@@ -6,10 +6,19 @@ import type { CSSProperties } from 'react'
  * draw the same one over the checkout (Afsana's file, screen `placing`). The
  * loading page renders this, so the two cannot drift.
  */
-export function XcelLoadingStatus({ message }: { message: string }) {
+export function XcelLoadingStatus({
+  message,
+  size = 72,
+}: {
+  message: string
+  /** The spinner's width in px — the drawing scales; 72 is the loading
+   *  page's. V3's Signing you in / out dialogs draw it smaller (2026-11-03,
+   *  Afsana: "a bit too large"). */
+  size?: number
+}) {
   return (
-    <div role="status" aria-live="polite" style={LOADING_STACK}>
-      <svg aria-hidden viewBox="0 0 72 72" width={72} height={72} style={{ display: 'block', overflow: 'visible' }}>
+    <div role="status" aria-live="polite" style={{ ...LOADING_STACK, gap: Math.round((size * 28) / 72) }}>
+      <svg aria-hidden viewBox="0 0 72 72" width={size} height={size} style={{ display: 'block', overflow: 'visible' }}>
         <circle cx={36} cy={36} r={32} fill="none" strokeWidth={3} style={{ stroke: 'var(--color-e2e-form-outline)' }} />
         <circle
           className="cre-e2e-loading-arc"

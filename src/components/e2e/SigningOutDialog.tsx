@@ -17,10 +17,14 @@ export function SigningOutDialog() {
   return createPortal(
     <div style={{ ...SCRIM, ...layer.scrim }}>
       <div role="dialog" aria-modal="true" aria-label="Signing you out" style={{ ...CARD, ...layer.card }}>
+        {/* The XCEL logo, centred at the top, as on V3's email check
+            (2026-11-03, Afsana). */}
+        <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={LOGO} />
         <p role="note" style={NOTICE}>
           To support an ongoing platform update, we need to sign you out.
         </p>
-        <XcelLoadingStatus message="Signing you out" />
+        {/* 48, as Signing you in — the loading page's 72 is a whole page's. */}
+        <XcelLoadingStatus message="Signing you out" size={48} />
       </div>
     </div>,
     document.body,
@@ -52,6 +56,9 @@ const CARD: CSSProperties = {
   boxShadow: '0 10px 30px var(--color-e2e-form-shadow)',
   borderRadius: 8,
 }
+
+/* The email check's size (`CODE_LOGO` in `VerifyEmailModalV3`). */
+const LOGO: CSSProperties = { display: 'block', width: 132, height: 42, objectFit: 'contain' }
 
 const NOTICE: CSSProperties = {
   alignSelf: 'stretch',

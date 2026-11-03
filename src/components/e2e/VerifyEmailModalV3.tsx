@@ -167,7 +167,8 @@ export function VerifyEmailModalV3({
           <LoginStep email={email} onLoggedIn={done} />
         ) : (
           <div style={SIGNING_IN}>
-            <XcelLoadingStatus message="Signing you in" />
+            <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
+            <XcelLoadingStatus message="Signing you in" size={SIGNING_SPINNER} />
           </div>
         )}
       </div>
@@ -561,7 +562,7 @@ const NOTE: CSSProperties = {
 }
 
 /* The header's own mark, smaller, centred over the email, code and log-in
-   steps' headings (2026-11-03, Afsana). */
+   steps' headings and the Signing you in hold (2026-11-03, Afsana). */
 const CODE_LOGO: CSSProperties = { display: 'block', width: 132, height: 42, objectFit: 'contain', alignSelf: 'center' }
 
 /* Under Confirm: the resend line, then Use a different email. */
@@ -666,8 +667,15 @@ const FORGOT: CSSProperties = {
 
 /* "Signing you in" — the file's: the spinner alone in the dialog, as on
    "Placing your order". */
+/* The logo centred over the spinner, as on the email, code and log-in steps
+   (2026-11-03, Afsana). */
+/* Smaller than the loading page's 72 (2026-11-03, Afsana). */
+const SIGNING_SPINNER = 48
+
 const SIGNING_IN: CSSProperties = {
   display: 'flex',
-  justifyContent: 'center',
-  padding: '28px 0 20px',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 28,
+  padding: '4px 0 20px',
 }
