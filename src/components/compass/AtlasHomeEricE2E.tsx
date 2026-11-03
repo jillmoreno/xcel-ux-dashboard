@@ -771,7 +771,7 @@ export function AtlasHomeEricE2E({
                 : 'Current course'
           }
           beginLabel={beginLabel}
-          onCover={() => setWhiteHead(true)}
+          // No layout swap on a cover click any more (2026-11-03, Eric's request).
           /* Nothing to review once access has gone — the only move left is to
              buy it back, so Course Overview comes off rather than sitting
              beside a purchase CTA. */
@@ -1973,6 +1973,19 @@ const COVER_FRAME: CSSProperties = {
  * the wrong picture entirely. A straight move of the page's own JSX, so the
  * two cannot differ.
  */
+/* The course header's cover: a button that swaps the layout when there is a
+   swap to make, a plain frame when there is not (2026-11-03). Same box, so
+   the header lays out identically either way. */
+function CoverFrame({ onCover, style, children }: { onCover?: () => void; style: CSSProperties; children: ReactNode }) {
+  return onCover ? (
+    <button type="button" aria-label="Course header — layout 1 of 2. Press to show the next layout." onClick={onCover} style={style}>
+      {children}
+    </button>
+  ) : (
+    <div style={{ ...style, cursor: 'default' }}>{children}</div>
+  )
+}
+
 export function AtlasCourseHeadRow({
   onWhite,
   cover,
@@ -2000,7 +2013,9 @@ export function AtlasCourseHeadRow({
   eyebrow?: string
   beginLabel: string
   /** Flips to the other header layout. A review affordance, not a feature. */
-  onCover: () => void
+  /** A click on the cover swaps the header's layout. Absent, the cover is
+   *  a plain image with nothing to click (2026-11-03, Eric's request). */
+  onCover?: () => void
   showOverview: boolean
   onOverview?: () => void
   onBegin?: () => void
@@ -2064,10 +2079,8 @@ export function AtlasCourseHeadRow({
          with slack in it. */
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'stretch' }}>
         {cover ? (
-          <button
-            type="button"
-            aria-label="Course header — layout 1 of 2. Press to show the next layout."
-            onClick={onCover}
+          <CoverFrame
+            onCover={onCover}
             // 12 corners on Eric/Atlas White, 8 under the card’s 20 (2026-10-14)
             // — and the 260 column's width less the panel's padding there, so
             // its right edge lines up with that column below.
@@ -2085,7 +2098,7 @@ export function AtlasCourseHeadRow({
             }}
           >
             <img src={cover} alt="" style={COVER} />
-          </button>
+          </CoverFrame>
         ) : null}
         {/* ⚠ A 436px BASIS, NOT `1 1 0` (2026-10-21). With a zero basis this
             column was the first thing to shrink, so at 600px it fell to 240 and

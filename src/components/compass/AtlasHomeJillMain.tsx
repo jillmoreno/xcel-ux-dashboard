@@ -1018,7 +1018,7 @@ export function AtlasHomeJillMain({
              card's status line, and a finished course is a status. */
           eyebrow={completedView ? 'Congrats! You have completed this course.' : courseEyebrow}
           beginLabel={beginLabel}
-          onCover={() => setWhiteHead(true)}
+          // No layout swap on a cover click any more (2026-11-03, Eric's request).
           showOverview={LINKS_OFF || Boolean(onOverview)}
           onOverview={LINKS_OFF && !overviewOpensCompass ? NO_LINK : onOverview}
           onBegin={onBeginCta}
