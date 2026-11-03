@@ -140,7 +140,7 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
 describe('Invite Flow V3 — the email check', () => {
   it('asks for the email only, and keeps Continue off until it is an address', async () => {
     renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
-    const dialog = screen.getByRole('dialog', { name: 'Verify your email to continue' })
+    const dialog = screen.getByRole('dialog', { name: 'Enter your email to continue' })
     expect(dialog).toBeInTheDocument()
     expect(screen.queryByLabelText(/First name/)).not.toBeInTheDocument()
     /* The checkout behind says nothing about an address nobody has given yet. */
@@ -198,9 +198,9 @@ describe('Invite Flow V3 — the email check', () => {
 
   it('asks after the partner question on a B2C flow, never both at once', async () => {
     renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:net-new,partner-code-ask:modal')
-    expect(screen.queryByRole('dialog', { name: 'Verify your email to continue' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'Enter your email to continue' })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /^no$/i }))
-    expect(screen.getByRole('dialog', { name: 'Verify your email to continue' })).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'Enter your email to continue' })).toBeInTheDocument()
   })
 
 })
@@ -416,14 +416,14 @@ describe('Invite Flow V3 — dialogs leave the bars usable', () => {
      1000 that covered them (`useBelowDemoBars`). */
   it('layers the email check under the Demo and Design bars’ menus', () => {
     renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
-    const scrim = screen.getByRole('dialog', { name: 'Verify your email to continue' }).parentElement!
+    const scrim = screen.getByRole('dialog', { name: 'Enter your email to continue' }).parentElement!
     expect(scrim.style.zIndex).toBe('55')
   })
 
   /* The file's stylesheet: every dialog 460 wide, its gated button full width. */
   it('draws the email check 460 wide with a full-width button', () => {
     renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
-    const dialog = screen.getByRole('dialog', { name: 'Verify your email to continue' })
+    const dialog = screen.getByRole('dialog', { name: 'Enter your email to continue' })
     expect(dialog.style.width).toBe('460px')
     expect(screen.getByRole('button', { name: 'Continue' }).style.width).toBe('100%')
   })
@@ -436,7 +436,7 @@ describe('Invite Flow V3 — dialogs leave the bars usable', () => {
       ({ top: 200, bottom: 800, left: 40, right: 1240, width: 1200, height: 600 }) as DOMRect
     document.body.appendChild(stage)
     const { unmount } = renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
-    const scrim = screen.getByRole('dialog', { name: 'Verify your email to continue' }).parentElement!
+    const scrim = screen.getByRole('dialog', { name: 'Enter your email to continue' }).parentElement!
     expect(scrim.style.top).toBe('200px')
     expect(scrim.style.left).toBe('40px')
     expect(scrim.style.width).toBe('1200px')

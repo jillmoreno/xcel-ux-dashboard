@@ -114,7 +114,7 @@ export function VerifyEmailModalV3({
             <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
             <div style={HEAD}>
               <h2 id="verify-email-title" style={TITLE}>
-                Verify your email to continue
+                Enter your email to continue
               </h2>
               <div aria-hidden style={RULE} />
               <p id="verify-email-lead" style={LEAD}>
