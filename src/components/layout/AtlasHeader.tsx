@@ -1,5 +1,5 @@
 import type { MouseEvent, ReactNode } from 'react'
-import { Bell, ChevronDown, CircleUser, FileText, LogOut, Receipt, User } from '@/icons'
+import { AngleRightRegular, Bell, ChevronDown, CircleUser, FileText, LogOut, Receipt, User } from '@/icons'
 import { AtlasHeaderMenu, AtlasHeaderMenuDivider, AtlasHeaderMenuItem } from './AtlasHeaderMenu'
 import './atlasHeader.css'
 
@@ -63,6 +63,7 @@ export function AtlasHeader({
   onHelp,
   extraNav = [],
   modeMenu,
+  quickLinksMenu = false,
 }: {
   /** Which nav pill is filled. */
   current?: 'home' | 'courses' | null
@@ -88,7 +89,12 @@ export function AtlasHeader({
   extraNav?: readonly { label: string; href: string; current?: boolean }[]
   /** Learner / Admin mode — see `AtlasHeaderMode`. */
   modeMenu?: AtlasHeaderMode
+  /** The profile menu's links in Quick Links' hover — no fill; the ink to
+   *  the page-button blue, one weight up, and an angle-right at the far end
+   *  (2026-11-03, Eric's request). Absent, the menu's own fill hover. */
+  quickLinksMenu?: boolean
 }) {
+  const trail = quickLinksMenu ? <AngleRightRegular size={13} aria-hidden /> : undefined
   const to = (k: keyof AtlasHeaderLinks) => links[k] ?? '#'
   // A link's href, routed through `onNavigate` when there is one.
   const go = (k: keyof AtlasHeaderLinks) => ({
@@ -271,34 +277,36 @@ export function AtlasHeader({
             {/* 8px under the first rule and 12px over the second —
                 2026-10-20, Eric's request — so the links do not sit on
                 either rule. */}
-            <div style={{ padding: '8px 0 12px' }}>
+            <div className={quickLinksMenu ? 'cre-atlas-hdr-quick' : undefined} style={{ padding: '8px 0 12px' }}>
               {modeMenu?.mode === 'admin' ? (
                 modeMenu.adminLinks.map((l) => (
-                  <AtlasHeaderMenuItem key={l.href} href={l.href} onSelect={onNavigate ? () => onNavigate(l.href) : undefined} icon={l.icon}>
+                  <AtlasHeaderMenuItem trailing={trail} key={l.href} href={l.href} onSelect={onNavigate ? () => onNavigate(l.href) : undefined} icon={l.icon}>
                     {l.label}
                   </AtlasHeaderMenuItem>
                 ))
               ) : (
                 <>
-                  <AtlasHeaderMenuItem href={to('profile')} onSelect={pick('profile')} icon={<User size={18} />}>
+                  <AtlasHeaderMenuItem trailing={trail} href={to('profile')} onSelect={pick('profile')} icon={<User size={18} />}>
                     Profile
                   </AtlasHeaderMenuItem>
-                  <AtlasHeaderMenuItem href={to('notifications')} onSelect={pick('notifications')} icon={<Bell size={18} />}>
+                  <AtlasHeaderMenuItem trailing={trail} href={to('notifications')} onSelect={pick('notifications')} icon={<Bell size={18} />}>
                     Notifications
                   </AtlasHeaderMenuItem>
-                  <AtlasHeaderMenuItem href={to('transcripts')} onSelect={pick('transcripts')} icon={<FileText size={18} />}>
+                  <AtlasHeaderMenuItem trailing={trail} href={to('transcripts')} onSelect={pick('transcripts')} icon={<FileText size={18} />}>
                     Transcripts
                   </AtlasHeaderMenuItem>
-                  <AtlasHeaderMenuItem href={to('purchases')} onSelect={pick('purchases')} icon={<Receipt size={18} />}>
+                  <AtlasHeaderMenuItem trailing={trail} href={to('purchases')} onSelect={pick('purchases')} icon={<Receipt size={18} />}>
                     My Purchases
                   </AtlasHeaderMenuItem>
                 </>
               )}
             </div>
             <AtlasHeaderMenuDivider />
-            <AtlasHeaderMenuItem href={to('logout')} onSelect={onLogout} icon={<LogOut size={18} />}>
-              Logout
-            </AtlasHeaderMenuItem>
+            <div className={quickLinksMenu ? 'cre-atlas-hdr-quick' : undefined}>
+              <AtlasHeaderMenuItem trailing={trail} href={to('logout')} onSelect={onLogout} icon={<LogOut size={18} />}>
+                Logout
+              </AtlasHeaderMenuItem>
+            </div>
           </AtlasHeaderMenu>
         </div>
       </header>

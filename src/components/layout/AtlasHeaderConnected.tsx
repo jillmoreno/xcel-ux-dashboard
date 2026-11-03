@@ -2,6 +2,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAccount } from '@/context/AccountContext'
 import { useNotifications } from '@/context/NotificationsContext'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useAtlasAccountPages } from '@/components/account/useAtlasAccountPages'
 import { useProfileAvatar } from '@/context/ProfileAvatarContext'
 import { WHITE_COURSES, WHITE_COURSE_PARAM, WHITE_FIRST_COURSE_ID } from '@/data/atlasWhiteCourses'
 import { AtlasHeader } from './AtlasHeader'
@@ -45,6 +46,9 @@ export function AtlasHeaderConnected({
      are not on this branch, so Admin opens that branch's build — see
      `ATLAS_ADMIN_BUILD`. */
   const modeSwitch = useFeatureFlag('atlas-header-mode-switch').enabled
+  /* The profile menu's links in Quick Links' hover, with the account pages'
+     Quick Links layout (2026-11-03). */
+  const quickLinksMenu = useAtlasAccountPages()
 
   const section = params.get('section')
   const current =
@@ -87,6 +91,7 @@ export function AtlasHeaderConnected({
     <AtlasHeader
       current={current}
       onHelp={onHelp}
+      quickLinksMenu={quickLinksMenu}
       modeMenu={
         modeSwitch
           ? { mode: 'learner', adminLinks: [], onSwitch: () => window.location.assign(`${ATLAS_ADMIN_BUILD}${window.location.search}`) }

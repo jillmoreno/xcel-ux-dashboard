@@ -1107,9 +1107,10 @@ function PlatformShellBody() {
         // Figma 312:1649) — the course header keeps its own panel.
         // …and its My Courses and Certificates, WIP's pages on White's white
         // (2026-10-14, Eric's request).
-        ...(atlasNav &&
+        // …and the account pages in that layout (2026-11-03, Eric's request).
+        ...((atlasNav &&
         (active === 'dashboard' || active === 'courses' || active === 'certificates') &&
-        isEricAtlasWhiteLike(shellVersion)
+        isEricAtlasWhiteLike(shellVersion)) || atlasAccountPage
           ? { background: 'var(--color-fixed-light)' }
           : atlasNav && (active === 'dashboard' || active === 'course' || active === 'resources')
             ? { background: 'var(--color-compass-page)' }

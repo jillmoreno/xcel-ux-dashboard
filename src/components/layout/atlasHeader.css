@@ -129,6 +129,33 @@
   background-color: var(--atlas-hdr-item-hover);
   outline: none;
 }
+/* THE PROFILE MENU IN QUICK LINKS' HOVER (2026-11-03, Eric's request) —
+   `quickLinksMenu` on AtlasHeader. No fill: the ink goes to the page-button
+   blue and up one weight, Regular 400 → Medium 500, and an angle-right shows
+   at the row's far end — `.cre-compass-v2-row`'s treatment in tokens.css.
+   The chevron holds its place by opacity, so the row never shifts. */
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item {
+  transition: color 120ms ease;
+}
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:hover,
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:focus-visible {
+  background-color: transparent;
+  color: var(--color-compass-page-button);
+  font-weight: 500;
+}
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:focus-visible {
+  outline: 2px solid var(--color-compass-page-button);
+  outline-offset: -2px;
+}
+.cre-atlas-hdr .cre-atlas-hdr-item-trailing {
+  color: var(--color-compass-page-button);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:hover .cre-atlas-hdr-item-trailing,
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:focus-visible .cre-atlas-hdr-item-trailing {
+  opacity: 1;
+}
 
 .cre-atlas-hdr .cre-atlas-hdr-pill:focus-visible,
 .cre-atlas-hdr .cre-atlas-hdr-eyebrow-link:focus-visible,
