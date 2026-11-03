@@ -1135,6 +1135,8 @@ const PACKAGES: {
 
 /* The comparison grid — Eric's CoWork table, 2026-10-27, verbatim. */
 const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; premier: boolean; link?: string }[] = [
+  // First since 2026-11-03 (Eric), and "Prepared 2 Pass" — a Learn more link after it (2026-10-29, Eric).
+  { feature: 'Pass Guarantee (Prepared 2 Pass Promise)', standard: false, premier: true, link: 'Learn More' },
   // The 3-part training program row is gone (2026-10-29, Eric) — its three parts are the rows that follow.
   { feature: 'Pre-licensing Course', detail: 'Online, self-paced fundamentals course that meets all state requirements', standard: true, premier: true },
   { feature: 'Prep Review Course', detail: 'Condensed review of key material, weighted to the state exam outline', standard: true, premier: true },
@@ -1164,8 +1166,6 @@ const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; p
     premier: true,
   },
   { feature: 'Flashcards (Life, Health, and Accident Insurance)', detail: '800+ cards covering fundamentals', standard: false, premier: true, link: 'Learn More' }, // (2026-10-29, Eric)
-  // A Learn more link after it (2026-10-29, Eric).
-  { feature: 'Pass Guarantee (Prepared to Pass Promise)', standard: false, premier: true, link: 'Learn More' },
 ]
 
 /* Florida's reporting fee — DEMO DATA, see the header. */
