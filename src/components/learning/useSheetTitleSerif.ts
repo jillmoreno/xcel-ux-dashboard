@@ -12,8 +12,7 @@ import { useAtlasSkin } from '@/components/layout/atlasBrandSkin'
  * each panel: `null` off the Atlas versions (no Atlas skin on `<html>`) or
  * with `atlas-sheet-title-serif` off, and the panels keep their own title
  * style untouched. `--font-heading-serif` rather than a literal, so the
- * Headings control still swaps it. The weight, size and line stay the
- * panel's own.
+ * Headings control still swaps it. The weight stays the panel's own.
  */
 export function useSheetTitleSerif(): CSSProperties | null {
   const on = useFeatureFlag('atlas-sheet-title-serif').enabled
@@ -21,4 +20,12 @@ export function useSheetTitleSerif(): CSSProperties | null {
   return on && atlas ? SERIF : null
 }
 
-const SERIF: CSSProperties = { fontFamily: 'var(--font-heading-serif)', letterSpacing: '-0.01em' }
+/* One step up the Atlas scale (2026-11-03, Eric's request). The panels'
+   titles were 21/27 — the scale's H8 (22 on this Home) — so one level up is
+   H7, 27/29 under Playfair. */
+const SERIF: CSSProperties = {
+  fontFamily: 'var(--font-heading-serif)',
+  fontSize: 'var(--type-atlas-h7-base-size, 24px)',
+  lineHeight: 'var(--type-atlas-h7-base-line, 28px)',
+  letterSpacing: '-0.01em',
+}
