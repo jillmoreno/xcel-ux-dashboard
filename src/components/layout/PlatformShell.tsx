@@ -432,6 +432,14 @@ function PlatformShellBody() {
      hook COUNT between renders and React throws the shell away. */
   const atlasQuickLinksMode = useFeatureFlag('atlas-pages-quick-links').variant
   const atlasQuickLinksHidden = isE2ELikeVersion(shellVersion) && atlasQuickLinksMode !== 'shown'
+  /* …and with the rail SHOWN on the left (2026-11-03, Eric's request, as his
+     breakpoints branch): the title over the first card rather than over Quick
+     Links, which rises to the crumb's line — see `E2E_QUICK_LINKS_LIFT`. */
+  const e2eQuickLinksLeft = useFeatureFlag('atlas-wip-quick-links-side').variant !== 'right'
+  const e2eSectionIndent =
+    isE2ELikeVersion(shellVersion) && !atlasQuickLinksHidden && e2eQuickLinksLeft && (active === 'courses' || active === 'certificates')
+      ? WIP_QUICK_LINKS_W + 24
+      : undefined
   /* ⚠ THE ACCOUNT PAGES HAVE THEIR OWN NAV, AND IT IS NOT THIS ONE
      (2026-10-19, Jillienne: "clicking on profile should not show this random
      left nav. remove it"). Profile, Notifications, Transcripts, My Purchases
@@ -1473,6 +1481,7 @@ function PlatformShellBody() {
                   ? ATLAS_MY_COURSES_WIDTH
                   : undefined
               }
+              indent={e2eSectionIndent}
             />
           ) : (
           <SectionPageHeader
@@ -2721,7 +2730,7 @@ function MyCoursesSection() {
   return (
     <MyCoursesPage
       embedded
-      aside={showQuickLinks ? <AtlasJourneyLinksCard withoutCoursePages={wip} style={wip ? WIP_QUICK_LINKS : undefined} /> : undefined}
+      aside={showQuickLinks ? <AtlasJourneyLinksCard withoutCoursePages={wip} style={wip ? (baseline && !quickLinksRight ? WIP_QUICK_LINKS_LIFTED : WIP_QUICK_LINKS) : undefined} /> : undefined}
       // On the LEFT again on WIP (2026-10-13, Eric's request — its Home's
       // Quick Links moved left the same day); `asideRight` stays available.
       // …at the Home card's 230 (same day). The Design bar's Quick Links
@@ -2788,6 +2797,13 @@ function MyCoursesSection() {
 // 234, so the longest label's hover weight fits on one line (2026-10-14).
 const WIP_QUICK_LINKS_W = 234
 const WIP_QUICK_LINKS: CSSProperties = { border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)', padding: 24 }
+/* Its standard position on the End-to-End version (2026-11-03, Eric's
+   request): level with the "Back to Home" crumb, as Home's sits at the top of
+   its page — the page header's crumb row and title (16.5 + 6 + 34) and the
+   24 the page keeps above its first row. The header steps right in exchange
+   (`indent`), over the first card. */
+const E2E_QUICK_LINKS_LIFT = 16.5 + 6 + 34 + 24
+const WIP_QUICK_LINKS_LIFTED: CSSProperties = { ...WIP_QUICK_LINKS, marginTop: -E2E_QUICK_LINKS_LIFT }
 
 /* Certificates in the shell. Eric/Atlas WIP drops the page's search, result
    count and filter rail, and status tabs (2026-10-13, Eric's request), and
@@ -2821,7 +2837,7 @@ function CertificatesSection() {
       // The Home card's dimensions — 230 wide, 24 in, its Primary 200 outline
       // (2026-10-13, Eric's request). Off the baseline since 2026-11-02 —
       // `atlas-pages-quick-links`.
-      aside={showQuickLinks ? <AtlasJourneyLinksCard withoutCoursePages style={WIP_QUICK_LINKS} /> : undefined}
+      aside={showQuickLinks ? <AtlasJourneyLinksCard withoutCoursePages style={baseline && !quickLinksRight ? WIP_QUICK_LINKS_LIFTED : WIP_QUICK_LINKS} /> : undefined}
       asideWidth={WIP_QUICK_LINKS_W}
       asideRight={quickLinksRight}
       /* Centred at the October width while the rail is there; full width
@@ -2857,7 +2873,10 @@ function CertificatesSection() {
        * Eric's versions keep the overlay he asked for on 2026-10-13: his Home
        * has that course under way, so its certificate is not earned there.
        */
-      inProgressIds={wip && !baseline ? ['cert-xcel-lh-prelicense'] : undefined}
+      // …and on the baseline with the Atlas card (2026-11-03, Eric's
+      // feat/quick-links, as his breakpoints row): Home has that course
+      // under way, so its certificate is not earned yet.
+      inProgressIds={wip && (!baseline || !sharedCert) ? ['cert-xcel-lh-prelicense'] : undefined}
       sharedCardSerif={sharedCert}
       // White's cards: the guide's Secondary 100 fill with a 1px Secondary 200
       // outline (2026-10-14, Eric's request) — the tan ramp, by role, so the

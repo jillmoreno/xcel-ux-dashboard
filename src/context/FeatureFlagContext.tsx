@@ -2887,7 +2887,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       'Whether My Courses and My Certificates carry the Quick Links rail. Hidden (default, 2026-11-02): no rail, cards full width. Shown: the rail returns and the pages re-centre at their October width. \u26a0 Hidden also removes the only route between the two pages that does not go through Home. Eric\u2019s WIP and White keep their rail either way.',
     defaultEnabled: true,
-    defaultVariant: 'hidden',
+    // SHOWN on Eric's feat/quick-links (2026-11-03) — the rail beside the
+    // cards, level with the crumb, as his breakpoints row. Hidden is
+    // Jillienne's baseline on main; which ships is decided at merge.
+    defaultVariant: 'shown',
     variants: [
       { value: 'hidden', label: 'Hidden' },
       { value: 'shown', label: 'Shown' },
@@ -2925,7 +2928,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       'Which card the Atlas My Courses page draws. Shared (default, 2026-11-02): the LMS dashboard\u2019s `CourseCard` \u2014 progress bar, delivery and credit meta, status badges, \u22ee into Course Details \u2014 with its title in the serif face and no call to action. Atlas: the Figma card (213:3619) with the \u201cAvailable until\u201d line and the full-width button. Eric\u2019s WIP and White keep the Atlas card either way.',
     defaultEnabled: true,
-    defaultVariant: 'shared',
+    // Atlas on Eric's feat/quick-links (2026-11-03) — the cards his
+    // breakpoints row draws. Shared is Jillienne's baseline on main; which
+    // ships is decided at merge.
+    defaultVariant: 'atlas',
     variants: [
       { value: 'shared', label: 'Shared (LMS)' },
       { value: 'atlas', label: 'Atlas' },
@@ -2953,7 +2959,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'My Courses list',
     description:
       'The content of the ATLAS course card on the baseline: the learner\u2019s real enrolments (the fixtures the non-Atlas page reads), wrapping three to a row, so the Demo bar\u2019s Course and Progress controls move the page. Off: the three hand-picked design cards. Only reaches the page when `atlas-courses-card-style` is Atlas \u2014 the shared card reads the library inherently. Eric\u2019s WIP and White keep their three cards either way. Archived courses are excluded throughout.',
-    defaultEnabled: true,
+    // Off (the three design courses) on Eric's feat/quick-links (2026-11-03) — the cards his
+    // breakpoints row draws. On is Jillienne's baseline on main; which
+    // ships is decided at merge.
+    defaultEnabled: false,
     page: 'dashboard-rebrand',
   },
   {
@@ -3003,7 +3012,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       'Which card the Atlas certificates page draws. Shared (default, 2026-11-02): the card the rest of the product uses \u2014 a status badge with the status spelled out, the profession line, the hover treatment that says a card opens, and a real not-yet-earned state \u2014 with its title in the serif face. Atlas: the Figma card (375:1250), whose status pill said nothing and whose not-yet-earned card was mostly empty space.',
     defaultEnabled: true,
-    defaultVariant: 'shared',
+    // Atlas on Eric's feat/quick-links (2026-11-03) — the cards his
+    // breakpoints row draws. Shared is Jillienne's baseline on main; which
+    // ships is decided at merge.
+    defaultVariant: 'atlas',
     variants: [
       { value: 'shared', label: 'Shared (LMS)' },
       { value: 'atlas', label: 'Atlas' },

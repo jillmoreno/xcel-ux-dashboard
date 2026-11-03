@@ -33,7 +33,17 @@ afterEach(cleanup)
 const BASELINE = 'jill-atlas-main'
 const ERIC_WIP = 'eric-atlas-v3'
 
-function renderShell(query: string) {
+/* MAIN'S BASELINE, pinned — Eric's feat/quick-links (2026-11-03) defaults
+   these four to his breakpoints row's pages (Quick Links shown, the Atlas
+   cards, the three design courses). This file pins Jillienne's pages, so
+   every render starts from them; a test's own `ff=` tokens come after and
+   win. */
+const MAIN_PINS = 'atlas-pages-quick-links:hidden,atlas-courses-card-style:shared,atlas-certificates-card-style:shared,atlas-courses-from-library:on'
+
+function renderShell(rawQuery: string) {
+  const query = rawQuery.includes('ff=')
+    ? rawQuery.replace('ff=', `ff=${MAIN_PINS},`)
+    : `${rawQuery}&ff=${MAIN_PINS}`
   /* ⚠ THE QUERY GOES ON `window.location` TOO, not just the router. `?ff=`
      overrides are read by `readUrlFlagOverrides` straight off
      `window.location.search` — deliberately, so a pinned link survives
