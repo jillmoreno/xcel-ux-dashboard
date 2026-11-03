@@ -69,10 +69,10 @@ describe('Invite Flow V3 model types and flows', () => {
     expect(keys).not.toContain(INVITE_V3_FLOW_FLAGS.b2c)
   })
 
-  it('carries the eight flows from Afsana’s file, plus Direct Email, the signed-in OCD flow and the partner-code alternative', () => {
-    expect(INVITE_FLOWS_V3).toHaveLength(11)
+  it('carries the eight flows from Afsana’s file, plus Direct Email, the two OCD flows and the partner-code alternative', () => {
+    expect(INVITE_FLOWS_V3).toHaveLength(12)
     expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2b')).toHaveLength(5)
-    expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2c')).toHaveLength(6)
+    expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2c')).toHaveLength(7)
     expect(INVITE_FLOWS_V3.find((f) => f.id === 'qr-net-new')?.label).toBe('QR: Net New: No OCD, No Atlas')
   })
 

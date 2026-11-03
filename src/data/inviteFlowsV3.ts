@@ -47,6 +47,7 @@ export type InviteFlowV3Id =
   | 'has-atlas-login'
   | 'has-atlas'
   | 'xcel-signed-in'
+  | 'xcel-signed-out'
   | 'pc-after-add'
 
 export type InviteFlowV3 = {
@@ -165,6 +166,19 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
     screens: ['cart', ...CHECKOUT, 'placing', 'ready'],
   },
   {
+    /* NOT SIGNED IN TO AN XCEL (OCD) ACCOUNT — 2026-11-03, Afsana: the
+       signed-in flow's twin, "main difference is that we would not be logging
+       them out". The same carts, dialogs and controls; a guest throughout, so
+       nothing is signed out and the checkout is never filled from an
+       account. `ocdCartFlowV3` works out the walk. */
+    id: 'xcel-signed-out',
+    model: 'b2c',
+    label: 'Not signed in to XCEL (OCD)',
+    description: 'Has an XCEL account but is not signed in. What happens at checkout depends on the cart, as when signed in — without the sign-out.',
+    base: 'b2c-guest',
+    screens: ['cart', ...CHECKOUT, 'placing', 'ready'],
+  },
+  {
     /* ⚠ AN ALTERNATIVE, NOT FROM THE FILE — 2026-11-03, Afsana: "immediate
        check for partner code after clicking 'go to cart'". It opens where
        V2's guest checkout puts the course in the cart — the packages page,
@@ -206,7 +220,8 @@ export function inviteV3Surface(
 ): 'invite:v3-b2b' | 'invite:v3-b2c' | 'invite:v3-b2c-signed-in' | 'invite:v3-b2c-pc-first' {
   if (model === 'b2b') return 'invite:v3-b2b'
   if (flowId === 'pc-after-add') return 'invite:v3-b2c-pc-first'
-  return flowId === 'xcel-signed-in' ? 'invite:v3-b2c-signed-in' : 'invite:v3-b2c'
+  /* Both OCD flows carry Cart contents and Email belongs to. */
+  return isOcdCartFlow(flowId) ? 'invite:v3-b2c-signed-in' : 'invite:v3-b2c'
 }
 
 export function resolveInviteModel(value: string | null | undefined): InviteModelId {
@@ -311,9 +326,15 @@ export function useInviteFlowV3(): InviteFlowV3 {
   const [params] = useSearchParams()
   const flow = resolveInviteFlowV3(model, model === 'b2b' ? b2b : b2c)
   if (flow.id === 'pc-after-add') return pcFirstFlowV3(flow, email)
+  if (flow.id === 'xcel-signed-out') return ocdCartFlowV3(flow, cart, email)
   return flow.id === 'xcel-signed-in'
     ? signedInFlowV3(flow, cart, email, params.get(V3_SIGNED_OUT_PARAM) === '1')
     : flow
+}
+
+/** The two OCD flows — signed in or not — whose cart decides the checkout. */
+export function isOcdCartFlow(id: InviteFlowV3Id | undefined): boolean {
+  return id === 'xcel-signed-in' || id === 'xcel-signed-out'
 }
 
 /** The alternative's walk after Checkout, by the email given at Verify your
@@ -409,6 +430,34 @@ export function signedInFlowV3(
   }
 }
 
+/** The NOT-signed-in OCD flow's walk (2026-11-03): the signed-in walk with
+ *  no sign-out, a guest from start to finish (`b2c-guest`). With nothing
+ *  targeted it ends on the existing checkout, as signed in — but blank, since
+ *  no account is signed in to fill it. */
+export function ocdCartFlowV3(flow: InviteFlowV3, cart: V3CartContents, email: V3EmailAccount): InviteFlowV3 {
+  if (cart === 'none') return { ...flow, base: 'b2c-guest', screens: ['cart', 'pc-modal', 'checkout-1', ...CHECKOUT] }
+  const check = email === 'atlas' ? ['verify-login-1', 'login-1', 'login-2'] : [...VERIFY, ...CODE]
+  const ending = email === 'atlas' ? ['ready'] : NEW_PASSWORD
+  return {
+    ...flow,
+    base: 'b2c-guest',
+    screens: [
+      ...CART_START,
+      ...(cart === 'mixed' ? ['drop-notice'] : []),
+      ...check,
+      'checkout-1',
+      ...CHECKOUT,
+      'placing',
+      ...ending,
+    ],
+  }
+}
+
+/** Set once a NOT-signed-in mixed cart has dropped its non-targeted item —
+ *  the signed-in flow's sign-out does that job there. Reset and a flow switch
+ *  clear it with the rest of the walk (`INVITE_WALK_PARAMS`). */
+export const V3_DROPPED_PARAM = 'dropped'
+
 /** The line a cart, checkout and receipt list — a course package's fields. */
 export type V3CartLine = { name: string; price: string; listPrice: string; includes: string[] }
 
@@ -421,12 +470,13 @@ export const V3_NON_TARGETED_ITEM: V3CartLine = {
   includes: ['New York Life and Health Flashcards'],
 }
 
-/** What the signed-in flow's cart holds, beyond the address's package.
- *  `line` replaces the package (the `none` cart holds only the non-targeted
- *  item); `extra` sits beside it (the mixed cart, until Checkout drops it —
- *  `dropped` names what goes). Null off this flow. */
+/** What an OCD flow's cart holds, beyond the address's package — signed in
+ *  or not (`signedIn`). `line` replaces the package (the `none` cart holds
+ *  only the non-targeted item); `extra` sits beside it (the mixed cart, until
+ *  Checkout drops it — `dropped` names what goes). Null off those flows. */
 export function useV3SignedInCart(): {
   cart: V3CartContents
+  signedIn: boolean
   line: V3CartLine | null
   extra: V3CartLine | null
   dropped: string[]
@@ -435,10 +485,12 @@ export function useV3SignedInCart(): {
   const [params] = useSearchParams()
   const version = resolveInviteFlowVersion(useFeatureFlag(INVITE_FLOW_VERSION_FLAG).variant)
   const cart = resolveV3Cart(useFeatureFlag(INVITE_V3_CART_FLAG).variant)
-  if (version !== 'v3' || flow.id !== 'xcel-signed-in') return null
-  const holdsExtra = cart === 'mixed' && params.get(V3_SIGNED_OUT_PARAM) !== '1'
+  if (version !== 'v3' || !isOcdCartFlow(flow.id)) return null
+  const holdsExtra =
+    cart === 'mixed' && params.get(V3_SIGNED_OUT_PARAM) !== '1' && params.get(V3_DROPPED_PARAM) !== '1'
   return {
     cart,
+    signedIn: flow.id === 'xcel-signed-in',
     line: cart === 'none' ? V3_NON_TARGETED_ITEM : null,
     extra: holdsExtra ? V3_NON_TARGETED_ITEM : null,
     dropped: cart === 'mixed' ? [V3_NON_TARGETED_ITEM.name] : [],

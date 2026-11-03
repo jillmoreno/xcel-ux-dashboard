@@ -2791,7 +2791,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        The key keeps its name so stored picks and shared links still work. */
     label: 'Guest checkout',
     picker: 'sheet',
-    description: 'Invite Flow V3, B2C guest checkout. Which guest checkout flow the demo walks: net new, has OCD but no Atlas, or has Atlas — opening a log-in widget, or signed in automatically after the email with the checkout filled; signed in to XCEL; or the alternative that asks for a partner code at Go to Cart.',
+    description: 'Invite Flow V3, B2C guest checkout. Which guest checkout flow the demo walks: net new, has OCD but no Atlas, or has Atlas — opening a log-in widget, or signed in automatically after the email with the checkout filled; signed in to XCEL, or not; or the alternative that asks for a partner code at Go to Cart.',
     defaultEnabled: true,
     defaultVariant: 'net-new',
     variants: [
@@ -2800,6 +2800,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'has-atlas-login', label: 'Has Atlas: Open Log-In Widget', description: 'Already on Atlas. Email check opens a log-in widget before checkout.' },
       { value: 'has-atlas', label: 'Has Atlas: Automatic Sign-in Post OTP', description: 'Already on Atlas. After the email, signed in automatically — the checkout arrives filled.' },
       { value: 'xcel-signed-in', label: 'Signed in to XCEL (OCD)', description: 'Signed in to an existing XCEL account. The cart decides the checkout — pick Cart contents beside this.' },
+      { value: 'xcel-signed-out', label: 'Not signed in to XCEL (OCD)', description: 'Has an XCEL account but is not signed in. The cart decides the checkout, as when signed in — without the sign-out.' },
       /* Afsana's alternative (2026-11-03): its row is light orange in the
          sheet — `inviteFlow.css`, keyed on this label. */
       { value: 'pc-after-add', label: 'Alternative: immediate check for partner code after clicking ‘go to cart’', description: 'Starts at “Added to your cart”. Go to Cart asks for a partner code, then Your cart; Checkout goes straight to Verify your email — a code, or a log-in if the email has Atlas (pick Email belongs to beside this).' },
@@ -2808,21 +2809,22 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   },
   {
     key: 'invite-v3-cart',
-    /* THE SIGNED-IN LEARNER'S CART — 2026-11-02, Afsana. Which of the three
-       cases the "Signed in to XCEL (OCD)" flow walks; shown only on that flow
-       (`invite:v3-b2c-signed-in`). See `signedInFlowV3`. */
+    /* THE OCD LEARNER'S CART — 2026-11-02, Afsana. Which of the three cases
+       the "Signed in to XCEL (OCD)" flow walks — and, since 2026-11-03, "Not
+       signed in to XCEL (OCD)"; shown only on those two
+       (`invite:v3-b2c-signed-in`). See `signedInFlowV3`, `ocdCartFlowV3`. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
     surfaces: ['invite:v3-b2c-signed-in'],
     group: 'Navigation',
     label: 'Cart contents',
-    description: 'Invite Flow V3, signed in to XCEL. Checkout asks the Partner Code question first; Yes collects the code, whatever the cart. On No — targeted SKUs only: signed out into the new guest checkout. Mixed: a dialog says what will be dropped, then the same. No targeted SKUs: the existing checkout, signed in, which ends the walk.',
+    description: 'Invite Flow V3, signed in to XCEL or not. Checkout asks the Partner Code question first; Yes collects the code, whatever the cart. On No — targeted SKUs only: on to the new guest checkout (signed out first, if signed in). Mixed: a dialog says what will be dropped, then the same. No targeted SKUs: the existing checkout, which ends the walk.',
     defaultEnabled: true,
     defaultVariant: 'targeted',
     variants: [
-      { value: 'targeted', label: 'Targeted only', description: 'Only targeted SKUs (Arizona Health Pre-licensing Premier). No partner code: signed out, then the new guest checkout.' },
-      { value: 'mixed', label: 'Mixed', description: 'A targeted SKU and one that is not (New York Life and Health Flashcards). No partner code: told it will be dropped, then signed out.' },
-      { value: 'none', label: 'None targeted', description: 'No targeted SKUs (New York Life and Health Flashcards). No partner code: the existing checkout, student information filled from the account — the last screen of the walk.' },
+      { value: 'targeted', label: 'Targeted only', description: 'Only targeted SKUs (Arizona Health Pre-licensing Premier). No partner code: the new guest checkout — signed out first, if signed in.' },
+      { value: 'mixed', label: 'Mixed', description: 'A targeted SKU and one that is not (New York Life and Health Flashcards). No partner code: told it will be dropped, then on — signed out first, if signed in.' },
+      { value: 'none', label: 'None targeted', description: 'No targeted SKUs (New York Life and Health Flashcards). No partner code: the existing checkout — filled from the account if signed in — the last screen of the walk.' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -2835,7 +2837,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surfaces: ['invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
     group: 'Navigation',
     label: 'Email belongs to',
-    description: 'Invite Flow V3 — signed in to XCEL (targeted or mixed cart), and the alternative that asks for a partner code at Go to Cart. The email given at Verify your email: an Atlas account (log in, then Start course) or no Atlas account (a code, then Create password).',
+    description: 'Invite Flow V3 — signed in to XCEL or not (targeted or mixed cart), and the alternative that asks for a partner code at Go to Cart. The email given at Verify your email: an Atlas account (log in, then Start course) or no Atlas account (a code, then Create password).',
     defaultEnabled: true,
     defaultVariant: 'no-atlas',
     variants: [

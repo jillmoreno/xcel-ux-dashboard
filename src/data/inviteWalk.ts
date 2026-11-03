@@ -1,4 +1,4 @@
-import { V3_SIGNED_OUT_PARAM } from './inviteFlowsV3'
+import { V3_DROPPED_PARAM, V3_SIGNED_OUT_PARAM } from './inviteFlowsV3'
 import { CART_PACKAGE_PARAM } from '@/data/xcelCourseFinder'
 import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
 import { EMAIL_VERIFIED_PARAM } from '@/data/inviteVerification'
@@ -53,6 +53,9 @@ export const INVITE_WALK_PARAMS: readonly string[] = [
   /* Invite Flow V3's signed-in learner, signed out at Checkout — 2026-11-02.
      Reset signs them back in, which is where that walk begins. */
   V3_SIGNED_OUT_PARAM,
+  /* …and the not-signed-in learner's mixed cart, its extra item dropped at
+     Checkout (2026-11-03). */
+  V3_DROPPED_PARAM,
 ]
 
 /** The same parameters, minus the walk's progress. Does not mutate its input. */

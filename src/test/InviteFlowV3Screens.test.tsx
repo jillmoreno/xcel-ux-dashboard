@@ -20,7 +20,9 @@ import {
   emailCheckV3,
   entryPathV3,
   inviteEndingV3,
+  inviteV3Surface,
   SIGNING_OUT_MS,
+  ocdCartFlowV3,
   signedInFlowV3,
   verifiesEmailFirst,
 } from '@/data/inviteFlowsV3'
@@ -345,9 +347,11 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
   })
 
   it('asks every flow’s email, and knows which sign in', () => {
-    /* The signed-in flow's check depends on its cart — see its own tests.
+    /* The OCD flows' check depends on the cart — see their own tests.
        Direct Email has none: the partner supplied the address. */
-    for (const flow of INVITE_FLOWS_V3.filter((f) => f.id !== 'xcel-signed-in' && f.id !== 'direct-email')) {
+    for (const flow of INVITE_FLOWS_V3.filter(
+      (f) => f.id !== 'xcel-signed-in' && f.id !== 'xcel-signed-out' && f.id !== 'direct-email',
+    )) {
       expect(verifiesEmailFirst(flow)).toBe(true)
     }
     const check = (id: string) => emailCheckV3(INVITE_FLOWS_V3.find((f) => f.id === id)!)
@@ -481,6 +485,79 @@ describe('Invite Flow V3 — every B2C flow starts at the cart', () => {
   it('leaves V2’s guest walk on the public homepage', () => {
     arriveAt('/end-to-end-demo/find', 'invite-flow-version:v2,invite-flow-journey:b2c-guest')
     expect(screen.getByTestId('where').textContent).toMatch(/^\/end-to-end-demo\/find\?/)
+  })
+})
+
+describe('Invite Flow V3 — not signed in to XCEL (OCD)', () => {
+  const SIGNED_OUT = 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out'
+  const base = INVITE_FLOWS_V3.find((f) => f.id === 'xcel-signed-out')!
+
+  it('walks as the signed-in flow, a guest throughout and never signed out', () => {
+    for (const cart of ['targeted', 'mixed', 'none'] as const) {
+      const flow = ocdCartFlowV3(base, cart, 'no-atlas')
+      expect(flow.base).toBe('b2c-guest')
+      expect(flow.screens).not.toContain('signing-out')
+      expect(flow.screens.slice(0, 2)).toEqual(['cart', 'pc-modal'])
+    }
+    expect(ocdCartFlowV3(base, 'mixed', 'atlas').screens).toContain('drop-notice')
+    expect(emailCheckV3(ocdCartFlowV3(base, 'targeted', 'atlas')).second).toBe('login')
+    expect(emailCheckV3(ocdCartFlowV3(base, 'targeted', 'no-atlas')).second).toBe('code')
+    expect(verifiesEmailFirst(ocdCartFlowV3(base, 'none', 'atlas'))).toBe(false)
+    /* Its controls are the signed-in flow's. */
+    expect(inviteV3Surface('b2c', 'xcel-signed-out')).toBe(inviteV3Surface('b2c', 'xcel-signed-in'))
+  })
+
+  function cartAt(cart: string) {
+    const search = `?ff=${SIGNED_OUT},invite-v3-cart:${cart}&lstate=Arizona&loa=Health&pkg=premier`
+    window.history.replaceState({}, '', `/end-to-end-demo/cart${search}`)
+    return render(
+      <MemoryRouter initialEntries={[`/end-to-end-demo/cart${search}`]}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <Routes>
+              <Route path="/end-to-end-demo/cart" element={<XcelCartPage />} />
+              <Route path="/end-to-end-demo/checkout" element={<p>Checkout page</p>} />
+            </Routes>
+            <Where />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+  }
+
+  it('shows Log In, not My Training', () => {
+    cartAt('targeted')
+    expect(screen.getByText('Log In')).toBeInTheDocument()
+    expect(screen.queryByText('My Training')).not.toBeInTheDocument()
+  })
+
+  it('goes straight to the checkout on No — no Signing you out', async () => {
+    cartAt('targeted')
+    await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+    await userEvent.click(screen.getByRole('button', { name: 'NO' }))
+    expect(screen.queryByRole('dialog', { name: 'Signing you out' })).not.toBeInTheDocument()
+    expect(screen.getByText('Checkout page')).toBeInTheDocument()
+    expect(screen.getByTestId('where').textContent).toContain('partner=no')
+    expect(screen.getByTestId('where').textContent).not.toContain('signedout=1')
+  })
+
+  it('tells a mixed cart what will be dropped, then drops it on the way — no sign-out', async () => {
+    cartAt('mixed')
+    expect(screen.getByText('New York Life and Health Flashcards')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+    await userEvent.click(screen.getByRole('button', { name: 'NO' }))
+    expect(screen.getByRole('dialog', { name: /not supported/ })).toHaveTextContent('New York Life and Health Flashcards')
+    await userEvent.click(screen.getByRole('button', { name: 'Proceed to checkout' }))
+    expect(screen.queryByRole('dialog', { name: 'Signing you out' })).not.toBeInTheDocument()
+    expect(screen.getByText('Checkout page')).toBeInTheDocument()
+    expect(screen.getByTestId('where').textContent).toContain('dropped=1')
+  })
+
+  it('collects a partner code on Yes, as when signed in', async () => {
+    cartAt('none')
+    await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+    await userEvent.click(screen.getByRole('button', { name: 'YES' }))
+    expect(screen.getByRole('dialog', { name: 'Enter your Partner Code' })).toBeInTheDocument()
   })
 })
 

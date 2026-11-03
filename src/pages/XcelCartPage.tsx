@@ -16,7 +16,7 @@ import {
 import { PartnerCodeAskModal } from '@/components/e2e/PartnerCodeAsk'
 import { SigningOutDialog } from '@/components/e2e/SigningOutDialog'
 import { PartnerCodeEntryDialog, UnsupportedItemDialog } from '@/components/e2e/SignedInCartDialogs'
-import { SIGNING_OUT_MS, V3_SIGNED_OUT_PARAM, useV3SignedInCart } from '@/data/inviteFlowsV3'
+import { SIGNING_OUT_MS, V3_DROPPED_PARAM, V3_SIGNED_OUT_PARAM, useV3SignedInCart } from '@/data/inviteFlowsV3'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { INVITE_FLOW_VERSION_FLAG, resolveInviteFlowVersion } from '@/data/inviteFlowVersions'
 import { useEndToEndDemoParams, useEndToEndPageChrome } from './endToEndDemo'
@@ -96,10 +96,26 @@ export function XcelCartPage() {
     return () => window.clearTimeout(timer)
   }, [signingOut, params, navigate])
 
-  /* ⚠ THE SIGNED-IN LEARNER'S ANSWER — 2026-11-02, Afsana. Yes collects the
-     code, whatever the cart. No signs a targeted cart out; tells a mixed cart
-     what will be dropped first; and takes a cart with nothing targeted to the
-     existing checkout (returns false, so the answer goes on as anyone's). */
+  /* On to the checkout after a No. Signed in, by way of "Signing you out";
+     NOT signed in (2026-11-03, Afsana: "we would not be logging them out"),
+     straight there — a mixed cart's extra item dropped on the way. */
+  const leaveForCheckout = (dropsExtra: boolean) => {
+    if (signedInCart?.signedIn) {
+      setSigningOut(true)
+      return
+    }
+    const next = new URLSearchParams(params)
+    next.set(PARTNER_CODE_PARAM, 'no')
+    if (dropsExtra) next.set(V3_DROPPED_PARAM, '1')
+    navigate({ pathname: '/end-to-end-demo/checkout', search: next.toString() })
+  }
+
+  /* ⚠ THE OCD LEARNER'S ANSWER — 2026-11-02, Afsana; the same whether signed
+     in or not (2026-11-03). Yes collects the code, whatever the cart. No
+     sends a targeted cart on (signing it out if signed in); tells a mixed
+     cart what will be dropped first; and takes a cart with nothing targeted
+     to the existing checkout (returns false, so the answer goes on as
+     anyone's). */
   const onSignedInAnswer = (answer: 'yes' | 'no'): boolean => {
     if (!signedInAsk) return false
     if (answer === 'yes') {
@@ -110,7 +126,7 @@ export function XcelCartPage() {
     if (signedInCart.cart === 'none') return false
     setAsking(false)
     if (signedInCart.cart === 'mixed') setDropping(true)
-    else setSigningOut(true)
+    else leaveForCheckout(false)
     return true
   }
 
@@ -131,7 +147,7 @@ export function XcelCartPage() {
           onCancel={() => setDropping(false)}
           onProceed={() => {
             setDropping(false)
-            setSigningOut(true)
+            leaveForCheckout(true)
           }}
         />
       ) : null}
