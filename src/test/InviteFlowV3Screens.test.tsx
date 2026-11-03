@@ -260,6 +260,33 @@ describe('Invite Flow V3 — the endings', () => {
     expect(save).toBeEnabled()
   })
 
+  it('asks for the password twice, and holds Save until they match', async () => {
+    renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+    const save = screen.getByRole('button', { name: 'Save Password & Log In' })
+    await userEvent.type(screen.getByPlaceholderText('Enter password...'), 'Navarro#2026')
+    expect(save).toBeDisabled()
+    const confirm = screen.getByPlaceholderText('Re-enter password...')
+    await userEvent.type(confirm, 'Navarro#20')
+    expect(screen.getByRole('alert')).toHaveTextContent('Passwords do not match.')
+    expect(save).toBeDisabled()
+    await userEvent.type(confirm, '26')
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(save).toBeEnabled()
+  })
+
+  it('lists V3’s seven rules under "Password must:", with a strength meter', async () => {
+    renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+    expect(screen.getByText('Password must:')).toBeInTheDocument()
+    expect(screen.queryByText('Password requirements')).not.toBeInTheDocument()
+    expect(screen.getByText(/^be 9-15 characters/)).toBeInTheDocument()
+    expect(screen.getByText(/^use only the following special characters !@#\$%\^&\*\._-/)).toBeInTheDocument()
+    expect(screen.getByText(/^be different from username/)).toBeInTheDocument()
+    const meter = screen.getByRole('meter', { name: 'Password strength' })
+    expect(meter).toHaveAttribute('aria-valuenow', '0')
+    await userEvent.click(screen.getByRole('button', { name: /demo learner’s password/ }))
+    expect(meter).not.toHaveAttribute('aria-valuenow', '0')
+  })
+
   it('sends a learner who already has Atlas straight to their course', () => {
     renderAt(CONFIRMATION, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:has-atlas')
     expect(screen.getByRole('heading', { name: 'Start learning' })).toBeInTheDocument()

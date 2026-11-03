@@ -29,7 +29,7 @@ import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import { PartnerHeader } from '@/components/e2e/PartnerHeader'
 import { TopoBackground } from '@/components/e2e/TopoBackground'
 import { LOADING_HANDOFF_MS, XcelLoadingPage } from '@/components/e2e/XcelLoadingPage'
-import { InvitePasswordChecklist } from '@/components/e2e/InvitePasswordChecklist'
+import { InvitePasswordChecklistV3 } from '@/components/e2e/InvitePasswordChecklistV3'
 import { ConfirmationReceiptV3 } from '@/components/e2e/ConfirmationReceiptV3'
 import { CART_PACKAGE_PARAM, cartPackage } from '@/data/xcelCourseFinder'
 import { usePartnerAttribution } from '@/data/inviteFlows'
@@ -39,7 +39,7 @@ import {
   useV3SignedInCart,
 } from '@/data/inviteFlowsV3'
 import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
-import { meetsInvitePasswordRules } from '@/data/invitePasswordRules'
+import { meetsInvitePasswordRulesV3 } from '@/data/invitePasswordRulesV3'
 import { readVerifiedIdentity } from '@/data/inviteVerification'
 import {
   useEndToEndCourseTitle,
@@ -66,7 +66,12 @@ export function InvitedConfirmationPageV3() {
   const learnerEmail = verified?.email || E2E_LEARNER_EMAIL
   const [password, setPassword] = useState('')
   const [shown, setShown] = useState(false)
-  const ready = meetsInvitePasswordRules(password)
+  /* Confirm password — 2026-11-03, Afsana. The mismatch speaks once the
+     second field has something in it, never while it is still empty. */
+  const [confirm, setConfirm] = useState('')
+  const [confirmShown, setConfirmShown] = useState(false)
+  const mismatch = confirm.length > 0 && confirm !== password
+  const ready = meetsInvitePasswordRulesV3(password, learnerEmail) && confirm === password
   const [signingIn, setSigningIn] = useState(false)
 
   /* What was bought, and for how much — V2's ending's reading of the same
@@ -162,7 +167,44 @@ export function InvitedConfirmationPageV3() {
                     </button>
                   </span>
                 </label>
-                <InvitePasswordChecklist password={password} style={RULES} headingStyle={FIELD_LABEL} />
+                <InvitePasswordChecklistV3 password={password} username={learnerEmail} />
+                <div style={FIELD_GROUP}>
+                  <label style={FIELD_GROUP}>
+                    <span style={FIELD_LABEL}>Confirm password</span>
+                    <span style={mismatch ? { ...INPUT_SHELL, border: '1px solid var(--color-error-600)' } : INPUT_SHELL}>
+                      <input
+                        type={confirmShown ? 'text' : 'password'}
+                        value={confirm}
+                        onChange={(e) => setConfirm(e.target.value)}
+                        placeholder="Re-enter password..."
+                        autoComplete="new-password"
+                        aria-invalid={mismatch}
+                        aria-describedby={mismatch ? 'confirm-mismatch' : undefined}
+                        style={PASSWORD_INPUT}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setConfirmShown((v) => !v)}
+                        aria-label={confirmShown ? 'Hide confirm password' : 'Show confirm password'}
+                        aria-pressed={confirmShown}
+                        style={EYE}
+                      >
+                        <img
+                          src={confirmShown ? '/brand/confirmation/eye.svg' : '/brand/confirmation/eye-off.svg'}
+                          alt=""
+                          width={18}
+                          height={18}
+                          style={{ display: 'block' }}
+                        />
+                      </button>
+                    </span>
+                  </label>
+                  {mismatch ? (
+                    <p id="confirm-mismatch" role="alert" style={MISMATCH}>
+                      Passwords do not match.
+                    </p>
+                  ) : null}
+                </div>
                 <button
                   type="button"
                   disabled={!ready}
@@ -178,7 +220,10 @@ export function InvitedConfirmationPageV3() {
                   aria-label="Fill in the demo learner’s password"
                   title="Demo shortcut: fill in the demo learner’s password"
                   style={DEMO_PASSWORD_FILL}
-                  onClick={() => setPassword(TEST_PASSWORD)}
+                  onClick={() => {
+                    setPassword(TEST_PASSWORD)
+                    setConfirm(TEST_PASSWORD)
+                  }}
                 />
               </>
             ) : (
@@ -229,9 +274,11 @@ const STAGE: CSSProperties = {
   overflow: 'hidden',
 }
 
+/* 440, both endings (2026-11-03, Afsana) — widened for the password step's
+   seven rules and meter, and Start learning matches it. */
 const CARD: CSSProperties = {
   position: 'relative',
-  width: 380,
+  width: 440,
   maxWidth: '100%',
   boxSizing: 'border-box',
   display: 'flex',
@@ -324,14 +371,12 @@ const EYE: CSSProperties = {
   cursor: 'pointer',
 }
 
-const RULES: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 6,
+const MISMATCH: CSSProperties = {
+  margin: 0,
   fontFamily: 'var(--font-e2e-avenir)',
-  fontSize: 11,
-  lineHeight: '17px',
-  color: 'var(--color-text-secondary)',
+  fontSize: 13,
+  lineHeight: '18px',
+  color: 'var(--color-error-600)',
 }
 
 /* No `background` when on: `cre-e2e-cta` carries the brick and its hover and
