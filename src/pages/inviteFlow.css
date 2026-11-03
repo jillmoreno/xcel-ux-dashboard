@@ -310,3 +310,17 @@
 [role='radio'][aria-label^='Has Atlas: Automatic Sign-in Post OTP'] span {
   color: var(--color-e2e-alt-flow-ink) !important;
 }
+
+/* V3'S TWO OCD FLOWS, LIGHT GREEN — 2026-11-03, Afsana: "change the color of
+   the tab/container for 'signed in to XCEL (OCD)' and 'not signed in to XCEL
+   (OCD)' green". Found and tinted as the orange rows above are. */
+[role='radio'][aria-label^='Signed in to XCEL (OCD)'],
+[role='radio'][aria-label^='Not signed in to XCEL (OCD)'] {
+  background: var(--color-e2e-ocd-flow) !important;
+  border-color: var(--color-e2e-ocd-flow-line) !important;
+  color: var(--color-e2e-ocd-flow-ink) !important;
+}
+[role='radio'][aria-label^='Signed in to XCEL (OCD)'] span,
+[role='radio'][aria-label^='Not signed in to XCEL (OCD)'] span {
+  color: var(--color-e2e-ocd-flow-ink) !important;
+}

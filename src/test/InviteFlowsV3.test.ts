@@ -106,15 +106,25 @@ describe('Invite Flow V3 model types and flows', () => {
     expect(keys).not.toContain('invite-v3-cart')
   })
 
-  it('keys each light orange row on a real flow’s label', () => {
-    /* `inviteFlow.css` finds each row by the start of its label. */
+  it('keys each tinted row on a real flow’s label — orange and green', () => {
+    /* `inviteFlow.css` finds each row by the start of its label; each colour
+       is its own rule, so read them apart. */
     const css = readFileSync(resolve(__dirname, '../pages/inviteFlow.css'), 'utf8')
-    const prefixes = [...new Set([...css.matchAll(/aria-label\^='([^']+)'/g)].map((m) => m[1]))]
-    const labels = INVITE_FLOWS_V3.map((f) => f.label)
-    const orange = (id: string) => prefixes.some((p) => INVITE_FLOWS_V3.find((f) => f.id === id)!.label.startsWith(p))
-    for (const p of prefixes) expect(labels.some((l) => l.startsWith(p))).toBe(true)
-    for (const id of ['pc-after-add', 'qr-atlas-auto', 'has-atlas'] as const) expect(orange(id)).toBe(true)
-    for (const id of ['net-new', 'has-atlas-login', 'qr-atlas-login', 'direct-email'] as const) expect(orange(id)).toBe(false)
+    const prefixesBefore = (token: string) => {
+      const rule = css.slice(0, css.indexOf(token))
+      const block = rule.slice(rule.lastIndexOf('}') + 1)
+      return [...block.matchAll(/aria-label\^='([^']+)'/g)].map((m) => m[1])
+    }
+    const orange = prefixesBefore('var(--color-e2e-alt-flow)')
+    const green = prefixesBefore('var(--color-e2e-ocd-flow)')
+    const label = (id: string) => INVITE_FLOWS_V3.find((f) => f.id === id)!.label
+    const tinted = (prefixes: string[], id: string) => prefixes.some((p) => label(id).startsWith(p))
+    for (const id of ['pc-after-add', 'qr-atlas-auto', 'has-atlas']) expect(tinted(orange, id)).toBe(true)
+    for (const id of ['xcel-signed-in', 'xcel-signed-out']) expect(tinted(green, id)).toBe(true)
+    for (const id of ['net-new', 'has-atlas-login', 'qr-atlas-login', 'direct-email']) {
+      expect(tinted(orange, id) || tinted(green, id)).toBe(false)
+    }
+    expect(tinted(orange, 'xcel-signed-in')).toBe(false)
   })
 
   it('never resolves a flow from the other model’s list', () => {
