@@ -17,7 +17,7 @@ import { ALL_US_STATES } from './licensedStatesFixtures'
  * On V3 that control is not shown; these three are, instead:
  *
  *   invite-v3-model       B2B or B2C
- *   invite-v3-flow-b2b    the four B2B flows
+ *   invite-v3-flow-b2b    the B2B flows — Direct Email, then the file's four QR flows
  *   invite-v3-flow-b2c    the four B2C flows
  *
  * ⚠ ONE FLOW CONTROL PER MODEL, AND THAT IS HOW THE PICKER FILTERS. The Design
@@ -37,6 +37,7 @@ import { ALL_US_STATES } from './licensedStatesFixtures'
 export type InviteModelId = 'b2b' | 'b2c'
 
 export type InviteFlowV3Id =
+  | 'direct-email'
   | 'qr-net-new'
   | 'qr-ocd'
   | 'qr-atlas-login'
@@ -69,6 +70,19 @@ const CHECKOUT = ['checkout-1b', 'checkout-2', 'checkout-3']
 const NEW_PASSWORD = ['create-password', 'create-password-filled']
 
 export const INVITE_FLOWS_V3: InviteFlowV3[] = [
+  {
+    /* ⚠ NOT FROM THE FILE — 2026-11-03, Afsana: B2B's first flow and its
+       default, pulled from V2's "B2B2C with email". The partner's invitation
+       email names the learner and supplies the address, so there is no email
+       check: invitation → product page → checkout with the address locked →
+       create a password. It walks as V2's flow (`base`). */
+    id: 'direct-email',
+    model: 'b2b',
+    label: 'Direct Email',
+    description: 'Partner invited them, address supplied. Locked at checkout.',
+    base: 'b2b2c-email',
+    screens: ['email', 'pdp', 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
+  },
   {
     id: 'qr-net-new',
     model: 'b2b',
@@ -158,11 +172,11 @@ export const INVITE_V3_FLOW_FLAGS: Record<InviteModelId, string> = {
   b2c: 'invite-v3-flow-b2c',
 }
 
-/** The file opens on B2B's first flow, so V3 does too. */
+/** V3 opens on B2B's first flow — Direct Email since 2026-11-03. */
 export const DEFAULT_INVITE_MODEL: InviteModelId = 'b2b'
 
 export const DEFAULT_INVITE_FLOW_V3: Record<InviteModelId, InviteFlowV3Id> = {
-  b2b: 'qr-net-new',
+  b2b: 'direct-email',
   b2c: 'net-new',
 }
 
@@ -194,9 +208,10 @@ export function useInviteModel(): InviteModelId {
 }
 
 /** Does this flow check the email over the checkout before it can be used?
- *  All eight do, since the log-in flows were built (2026-10-30): every flow's
- *  screens include `verify-1`, or `verify-login-1` for "QR: Has Atlas: Open
- *  Log-In Widget". `VerifyEmailModalV3` is the check. */
+ *  All the file's flows do, since the log-in flows were built (2026-10-30):
+ *  their screens include `verify-1`, or `verify-login-1` for "QR: Has Atlas:
+ *  Open Log-In Widget". Direct Email does not — the partner supplied the
+ *  address. `VerifyEmailModalV3` is the check. */
 export function verifiesEmailFirst(flow: InviteFlowV3): boolean {
   return flow.screens.includes('verify-1') || flow.screens.includes('verify-login-1')
 }
@@ -226,8 +241,10 @@ export function emailCheckV3(flow: InviteFlowV3): {
 }
 
 /** Where a V3 flow starts: the partner's QR code for B2B, the public site's
- *  cart for B2C — the first screen of each in the file. */
+ *  cart for B2C — the first screen of each in the file — and the invitation
+ *  email for Direct Email. */
 export function entryPathV3(flow: InviteFlowV3): string {
+  if (flow.screens[0] === 'email') return '/end-to-end-demo/email'
   return flow.model === 'b2b' ? '/end-to-end-demo/qr' : '/end-to-end-demo/cart'
 }
 
@@ -239,7 +256,7 @@ export function entryPathV3(flow: InviteFlowV3): string {
  *  with this screen", the cart). */
 export function v3ScreensFor(model: InviteModelId): readonly string[] {
   return model === 'b2b'
-    ? ['/end-to-end-demo/qr', '/end-to-end-demo', '/end-to-end-demo/checkout', '/end-to-end-demo/confirmation']
+    ? ['/end-to-end-demo/email', '/end-to-end-demo/qr', '/end-to-end-demo', '/end-to-end-demo/checkout', '/end-to-end-demo/confirmation']
     : ['/end-to-end-demo/cart', '/end-to-end-demo/checkout', '/end-to-end-demo/confirmation']
 }
 

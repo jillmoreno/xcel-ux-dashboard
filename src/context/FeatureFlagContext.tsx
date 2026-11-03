@@ -2754,7 +2754,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   },
   {
     key: 'invite-v3-flow-b2b',
-    /* V3's B2B flows, from Afsana's `xcel-b2b2c-email-flow.html`. Shown only
+    /* V3's B2B flows: Direct Email (V2's "B2B2C with email", first and the
+       default since 2026-11-03), then the four QR flows from Afsana's
+       `xcel-b2b2c-email-flow.html`. Shown only
        while Model type is B2B — see `invite-v3-model`. The variants must
        match `INVITE_FLOWS_V3`'s B2B rows; `InviteFlowsV3.test.ts` holds them
        together. */
@@ -2764,10 +2766,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Navigation',
     label: 'Invite flow',
     picker: 'sheet',
-    description: 'Invite Flow V3, B2B invite. Which of the four QR invite flows the demo walks: net new, has OCD but no Atlas, or has Atlas — opening a log-in widget, or logging in and being signed in automatically with the checkout filled.',
+    description: 'Invite Flow V3, B2B invite. Which invite flow the demo walks: Direct Email (the partner’s invitation, address supplied), or one of the four QR flows — net new, has OCD but no Atlas, or has Atlas, opening a log-in widget or logging in and being signed in automatically with the checkout filled.',
     defaultEnabled: true,
-    defaultVariant: 'qr-net-new',
+    defaultVariant: 'direct-email',
     variants: [
+      { value: 'direct-email', label: 'Direct Email', description: 'Partner invited them, address supplied. Locked at checkout.' },
       { value: 'qr-net-new', label: 'QR: Net New: No OCD, No Atlas', description: 'New to XCEL. Verify email by code, full checkout, then create a password.' },
       { value: 'qr-ocd', label: 'QR: OCD, but no Atlas', description: 'Has an OCD account, no Atlas. Same screens as Net New for now.' },
       { value: 'qr-atlas-login', label: 'QR: Has Atlas: Open Log-In Widget', description: 'Already on Atlas. Email check opens a log-in widget; ends ready to log in.' },

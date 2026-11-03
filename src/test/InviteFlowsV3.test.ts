@@ -7,9 +7,11 @@ import {
   INVITE_MODELS,
   INVITE_V3_FLOW_FLAGS,
   INVITE_V3_MODEL_FLAG,
+  entryPathV3,
   inviteV3Surface,
   resolveInviteFlowV3,
   resolveInviteModel,
+  verifiesEmailFirst,
 } from '@/data/inviteFlowsV3'
 
 /**
@@ -60,11 +62,25 @@ describe('Invite Flow V3 model types and flows', () => {
     expect(keys).not.toContain(INVITE_V3_FLOW_FLAGS.b2c)
   })
 
-  it('carries the eight flows from Afsana’s file, plus the signed-in OCD flow', () => {
-    expect(INVITE_FLOWS_V3).toHaveLength(9)
-    expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2b')).toHaveLength(4)
+  it('carries the eight flows from Afsana’s file, plus Direct Email and the signed-in OCD flow', () => {
+    expect(INVITE_FLOWS_V3).toHaveLength(10)
+    expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2b')).toHaveLength(5)
     expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2c')).toHaveLength(5)
     expect(INVITE_FLOWS_V3.find((f) => f.id === 'qr-net-new')?.label).toBe('QR: Net New: No OCD, No Atlas')
+  })
+
+  it('opens B2B on Direct Email — V2’s B2B2C with email, first in the list', () => {
+    const b2b = INVITE_FLOWS_V3.filter((f) => f.model === 'b2b')
+    expect(b2b[0]).toMatchObject({
+      id: 'direct-email',
+      label: 'Direct Email',
+      description: 'Partner invited them, address supplied. Locked at checkout.',
+      base: 'b2b2c-email',
+    })
+    expect(DEFAULT_INVITE_FLOW_V3.b2b).toBe('direct-email')
+    expect(FEATURE_FLAGS.find((f) => f.key === INVITE_V3_FLOW_FLAGS.b2b)?.variants?.[0].value).toBe('direct-email')
+    expect(entryPathV3(b2b[0])).toBe('/end-to-end-demo/email')
+    expect(verifiesEmailFirst(b2b[0])).toBe(false)
   })
 
   it('never resolves a flow from the other model’s list', () => {

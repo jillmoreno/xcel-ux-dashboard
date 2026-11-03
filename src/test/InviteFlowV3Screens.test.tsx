@@ -56,7 +56,9 @@ function Where() {
   return <output data-testid="where">{pathname + search}</output>
 }
 
-const V3_B2B = 'invite-flow-version:v3,invite-v3-model:b2b'
+/* B2B's QR flows. Direct Email is B2B's default since 2026-11-03, so the QR
+   screens name a QR flow. */
+const V3_B2B = 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:qr-net-new'
 
 describe('Invite Flow V3 — B2B opening screens', () => {
   it('draws the QR code alone on V3, and the phone card on V2', () => {
@@ -281,8 +283,9 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
   })
 
   it('asks every flow’s email, and knows which sign in', () => {
-    /* The signed-in flow's check depends on its cart — see its own tests. */
-    for (const flow of INVITE_FLOWS_V3.filter((f) => f.id !== 'xcel-signed-in')) {
+    /* The signed-in flow's check depends on its cart — see its own tests.
+       Direct Email has none: the partner supplied the address. */
+    for (const flow of INVITE_FLOWS_V3.filter((f) => f.id !== 'xcel-signed-in' && f.id !== 'direct-email')) {
       expect(verifiesEmailFirst(flow)).toBe(true)
     }
     const check = (id: string) => emailCheckV3(INVITE_FLOWS_V3.find((f) => f.id === id)!)
