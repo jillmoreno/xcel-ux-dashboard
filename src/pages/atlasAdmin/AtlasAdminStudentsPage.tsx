@@ -765,8 +765,9 @@ const STATUS_SEP: CSSProperties = { flex: 'none', width: 1, margin: '1px 0', bor
 const DIAL_SIZE_ONE_ROW = 120 // as Invites' (2026-10-26), with its tighter centre — the labels 6px nearer the figure, the disc 6px in
 /* The gap between Dial's cards — 8, so six fit across the cards panel at full width (2026-10-26). */
 const CARD_GAP = 8
-/* …and their side padding: 12 (16 top and bottom), for the same reason. */
-const CARD_PAD_X = 12
+/* …and their side padding: 10 (16 top and bottom), for the same reason — 12 until 2026-11-03, when the 200 left nav left six 13px
+   short of one row (Eric's request: "put them on one row"). */
+const CARD_PAD_X = 10
 /* One panel of the Dial analysis: Atlas primary 100, 32px in. */
 const ANALYSIS_RADIUS = 18
 const ANALYSIS_PANEL: CSSProperties = { boxSizing: 'border-box', padding: 32, borderRadius: ANALYSIS_RADIUS, background: 'var(--admin-atlas-primary-100)' }
