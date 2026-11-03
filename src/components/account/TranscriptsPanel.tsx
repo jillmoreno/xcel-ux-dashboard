@@ -6,6 +6,8 @@ import { PillTabs, type PillTabItem } from '@/components/ui/PillTabs'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { useAccount } from '@/context/AccountContext'
 import { useAtlasAccountPages } from './useAtlasAccountPages'
+import { AtlasFilterPills } from './AtlasFilterPills'
+import { ATLAS_FIRST_CELL, ATLAS_NAME_CELL, ATLAS_TABLE_CARD, ATLAS_TD, ATLAS_TH, ATLAS_THEAD } from './atlasAccountTableStyles'
 import {
   filterTranscripts,
   formatTranscriptDate,
@@ -68,6 +70,7 @@ export function TranscriptsPanel() {
      framed by the cards' 1px rule all round, its column titles sitting on
      the header's bottom line, and that line 1px rather than 2. */
   const atlasFrame = useAtlasAccountPages()
+  const cell = atlasFrame ? ATLAS_TD : BODY_CELL
 
   /*
    * ONE TRANSCRIPT OR SEVERAL — the whole of the export decision.
@@ -160,7 +163,12 @@ export function TranscriptsPanel() {
           at this width and these labels nothing wraps. Lengthening either
           label is what would bring the wrap back. */}
       <div style={controlRowStyle}>
-        <PillTabs label="Filter transcripts" items={tabs} active={filter} onChange={setFilter} />
+        {/* The admin table header's pills under the account pages' Quick Links layout (2026-11-03). */}
+        {atlasFrame ? (
+          <AtlasFilterPills label="Filter transcripts" items={tabs} active={filter} onChange={setFilter} />
+        ) : (
+          <PillTabs label="Filter transcripts" items={tabs} active={filter} onChange={setFilter} />
+        )}
         <span style={countStyle}>{showingLabel(rows.length)}</span>
         {/* "Download" and "View", not "Download All" / "View All" (2026-11-02,
             the direct ask). Shortening them is also what lets this row hold
@@ -198,8 +206,8 @@ export function TranscriptsPanel() {
           }
         />
       ) : (
-        <div style={atlasFrame ? ATLAS_TABLE_WRAP : tableWrapStyle}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-body)' }}>
+        <div style={atlasFrame ? ATLAS_TABLE_CARD : tableWrapStyle}>
+          <table className={atlasFrame ? 'cre-atlas-table' : undefined} style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-body)' }}>
             <caption className="cre-visually-hidden">
               {`Completed courses — ${
                 filter === 'all'
@@ -214,7 +222,7 @@ export function TranscriptsPanel() {
                 <col key={col.key} style={{ width: col.width }} />
               ))}
             </colgroup>
-            <thead>
+            <thead style={atlasFrame ? ATLAS_THEAD : undefined}>
               <tr>
                 {COLUMNS.map((col, i) => {
                   const active = sort.key === col.key
@@ -223,7 +231,12 @@ export function TranscriptsPanel() {
                       key={col.key}
                       scope="col"
                       aria-sort={ariaSort(col.key)}
-                      style={{ ...HEADER_CELL, ...(atlasFrame && { verticalAlign: 'bottom', borderBottom: '1px solid var(--color-neutral-500)' }), ...(i === 0 && { paddingLeft: 24 }), ...col.cellStyle }}
+                      /* The admin table's header under the Quick Links layout (2026-11-03) — its own padding, type and fill. */
+                      style={
+                        atlasFrame
+                          ? { ...ATLAS_TH, verticalAlign: 'bottom', ...(i === 0 && ATLAS_FIRST_CELL), ...col.cellStyle }
+                          : { ...HEADER_CELL, ...(i === 0 && { paddingLeft: 24 }), ...col.cellStyle }
+                      }
                     >
                       <button
                         type="button"
@@ -252,18 +265,18 @@ export function TranscriptsPanel() {
                 <tr key={row.id}>
                   {/* The course name is the only SemiBold cell (12/18), as in
                       the design — it is what the row is about. */}
-                  <th scope="row" style={{ ...BODY_CELL, ...TITLE_CELL }}>
+                  <th scope="row" style={atlasFrame ? { ...ATLAS_TD, ...ATLAS_FIRST_CELL, ...ATLAS_NAME_CELL } : { ...BODY_CELL, ...TITLE_CELL }}>
                     {row.title}
                   </th>
-                  <td style={BODY_CELL}>{row.profession}</td>
-                  <td style={BODY_CELL}>{row.state}</td>
+                  <td style={cell}>{row.profession}</td>
+                  <td style={cell}>{row.state}</td>
                   {/* Hours right-aligned: it is the one numeric column, and a
                       ragged-left number column is harder to compare. ZERO IS
                       PRINTED, not blanked — a non-credit completion earning no
                       hours is a fact, and an empty cell reads as missing data. */}
-                  <td style={{ ...BODY_CELL, ...NUMERIC_CELL }}>{row.hours}</td>
-                  <td style={BODY_CELL}>{formatTranscriptDate(row.enrolledDate)}</td>
-                  <td style={BODY_CELL}>{formatTranscriptDate(row.completedDate)}</td>
+                  <td style={{ ...cell, ...NUMERIC_CELL }}>{row.hours}</td>
+                  <td style={cell}>{formatTranscriptDate(row.enrolledDate)}</td>
+                  <td style={cell}>{formatTranscriptDate(row.completedDate)}</td>
                 </tr>
               ))}
             </tbody>
@@ -353,13 +366,6 @@ const tableWrapStyle: CSSProperties = {
   background: 'var(--color-surface-card)',
 }
 
-const ATLAS_TABLE_WRAP: CSSProperties = {
-  border: '1px solid var(--color-border-subtle)',
-  borderRadius: 'var(--atlas-card-radius, 16px)',
-  overflow: 'hidden',
-  background: 'var(--color-surface-card)',
-}
-
 /* The caption uses the repo's own `.cre-visually-hidden` rather than a local
    copy of the clip trick — a caption, not a visual heading, because the table
    needs a name a screen reader can announce and the filter it is showing is
@@ -417,5 +423,8 @@ const headerButtonStyle: CSSProperties = {
   padding: 0,
   font: 'inherit',
   color: 'inherit',
+  /* A button does not inherit these by default — the admin table's uppercase, tracked titles need them (2026-11-03). */
+  textTransform: 'inherit',
+  letterSpacing: 'inherit',
   cursor: 'pointer',
 }
