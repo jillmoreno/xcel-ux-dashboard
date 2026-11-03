@@ -438,7 +438,7 @@ function PlatformShellBody() {
   const e2eQuickLinksLeft = useFeatureFlag('atlas-wip-quick-links-side').variant !== 'right'
   const e2eSectionIndent =
     isE2ELikeVersion(shellVersion) && !atlasQuickLinksHidden && e2eQuickLinksLeft && (active === 'courses' || active === 'certificates')
-      ? WIP_QUICK_LINKS_W + 24
+      ? E2E_QUICK_LINKS_COLUMN_W + 24
       : undefined
   /* ⚠ THE ACCOUNT PAGES HAVE THEIR OWN NAV, AND IT IS NOT THIS ONE
      (2026-10-19, Jillienne: "clicking on profile should not show this random
@@ -1482,6 +1482,8 @@ function PlatformShellBody() {
                   : undefined
               }
               indent={e2eSectionIndent}
+              // …and 16 lower, so the crumb's top is Quick Links' top (2026-11-03).
+              extraTop={e2eSectionIndent != null ? E2E_PAGE_DROP : undefined}
             />
           ) : (
           <SectionPageHeader
@@ -2748,7 +2750,7 @@ function MyCoursesSection() {
       /* Centred at the October width while the rail is there; full width
          without it, so the cards "shift over to the left" (2026-11-02). */
       contentWidth={showQuickLinks ? ATLAS_MY_COURSES_WIDTH : undefined}
-      asideWidth={wip ? WIP_QUICK_LINKS_W : ATLAS_MY_COURSES_ASIDE_W}
+      asideWidth={wip ? (baseline && !quickLinksRight ? E2E_QUICK_LINKS_COLUMN_W : WIP_QUICK_LINKS_W) : ATLAS_MY_COURSES_ASIDE_W}
       /* THE SHARED CARD'S TWO PROPS (2026-11-02, Jillienne: "use the shared
          course card, but update the course title to the serif font, do NOT put
          a cta on the card"). The shared card has never had a call to action, so
@@ -2800,12 +2802,16 @@ const WIP_QUICK_LINKS: CSSProperties = { border: '1px solid color-mix(in srgb, v
 /* Its standard position on the End-to-End version (2026-11-03, Eric's
    request): level with the "Back to Home" crumb, as Home's sits at the top of
    its page — the page header's crumb row and title (16.5 + 6 + 34) and the
-   24 the page keeps above its first row, less 16 — and 8 in from the
-   column's edge — so it sits exactly where Home's does, measured from the
-   top nav and from the left (2026-11-03, Eric's request: "the same on all
-   pages"). The header steps right in exchange (`indent`), over the first
-   card. */
-const E2E_QUICK_LINKS_LIFT = 16.5 + 6 + 34 + 24 - 16
+   24 the page keeps above its first row — and 8 in from the column's edge —
+   so it sits exactly where Home's does, measured from the top nav and from
+   the left (2026-11-03, Eric's request: "the same on all pages"). The page
+   drops 16 to meet it (`E2E_PAGE_DROP`), so the crumb's top is its top, and
+   the header steps right over the first card (`indent`). */
+const E2E_PAGE_DROP = 16
+const E2E_QUICK_LINKS_LIFT = 16.5 + 6 + 34 + 24
+/* Its column: 8 in, the card's 234 and 8 more — with the page's own 24 gap
+   after it, the cards sit Home's 32 from Quick Links (2026-11-03). */
+const E2E_QUICK_LINKS_COLUMN_W = 8 + WIP_QUICK_LINKS_W + 8
 const WIP_QUICK_LINKS_LIFTED: CSSProperties = { ...WIP_QUICK_LINKS, marginTop: -E2E_QUICK_LINKS_LIFT, marginLeft: 8, width: WIP_QUICK_LINKS_W, flex: 'none' }
 
 /* Certificates in the shell. Eric/Atlas WIP drops the page's search, result
@@ -2841,7 +2847,7 @@ function CertificatesSection() {
       // (2026-10-13, Eric's request). Off the baseline since 2026-11-02 —
       // `atlas-pages-quick-links`.
       aside={showQuickLinks ? <AtlasJourneyLinksCard withoutCoursePages style={baseline && !quickLinksRight ? WIP_QUICK_LINKS_LIFTED : WIP_QUICK_LINKS} /> : undefined}
-      asideWidth={WIP_QUICK_LINKS_W}
+      asideWidth={baseline && !quickLinksRight ? E2E_QUICK_LINKS_COLUMN_W : WIP_QUICK_LINKS_W}
       asideRight={quickLinksRight}
       /* Centred at the October width while the rail is there; full width
          without it, so the cards shift left (2026-11-02). */
