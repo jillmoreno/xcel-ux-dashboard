@@ -112,12 +112,13 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
     id: 'qr-atlas-auto',
     model: 'b2b',
     label: 'QR: Has Atlas: Automatic Sign-in Post OTP',
-    description: 'Already on Atlas. Logs in, then signed in automatically with the checkout filled.',
+    description: 'Already on Atlas. After the email, signed in automatically — the checkout arrives filled.',
     base: 'qr-social',
-    /* ⚠ LOG-IN, NOT A CODE — 2026-10-30, Afsana: the two automatic flows "are
-       supposed to let them log in, and then sign them in with filled
-       checkout". The file has `code-1`/`code-2` here; this replaces them. */
-    screens: [...QR_START, ...VERIFY, 'login-1', 'login-2', 'signing-in', ...CHECKOUT, 'placing', 'ready'],
+    /* ⚠ NO SECOND STEP — 2026-11-03, Afsana: after the email and Continue,
+       "the signing you in modal needs to show, and then secure checkout page
+       with their info. pre-populated". It logged in first from 2026-10-30;
+       the file had a code (`code-1`/`code-2`). */
+    screens: [...QR_START, ...VERIFY, 'signing-in', ...CHECKOUT, 'placing', 'ready'],
   },
   {
     id: 'net-new',
@@ -147,10 +148,10 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
     id: 'has-atlas',
     model: 'b2c',
     label: 'Has Atlas: Automatic Sign-in Post OTP',
-    description: 'Already on Atlas. Logs in, then signed in automatically with the checkout filled.',
+    description: 'Already on Atlas. After the email, signed in automatically — the checkout arrives filled.',
     base: 'b2c-guest',
-    /* Log-in, not a code — see `qr-atlas-auto`. */
-    screens: [...CART_START, ...VERIFY, 'login-1', 'login-2', 'signing-in', ...CHECKOUT, 'placing-modal', 'ready'],
+    /* Straight to Signing you in after the email — see `qr-atlas-auto`. */
+    screens: [...CART_START, ...VERIFY, 'signing-in', ...CHECKOUT, 'placing-modal', 'ready'],
   },
   {
     /* SIGNED IN TO AN EXISTING XCEL (OCD) ACCOUNT — 2026-11-02, Afsana. Its
@@ -236,9 +237,10 @@ export function verifiesEmailFirst(flow: InviteFlowV3): boolean {
 
 /** What the email check does after the address, read from the file's screens:
  *
- *    second      `code` — a 6-digit code sent to it (`code-1`); or `login` —
+ *    second      `code` — a 6-digit code sent to it (`code-1`); `login` —
  *                the learner already has Atlas and signs in with a password
- *                (`login-1`). Every Has Atlas flow logs in (2026-10-30).
+ *                (`login-1`); or `none` — the two automatic flows go straight
+ *                on to "Signing you in" (2026-11-03).
  *    signsIn     a "Signing you in" hold before the checkout (`signing-in`).
  *                "Has Atlas: Open Log-In Widget" (B2C) goes straight on.
  *    accountKnown  the learner is signed in to an account they already have,
@@ -246,11 +248,11 @@ export function verifiesEmailFirst(flow: InviteFlowV3): boolean {
  *                (`checkout-1b`).
  */
 export function emailCheckV3(flow: InviteFlowV3): {
-  second: 'code' | 'login'
+  second: 'code' | 'login' | 'none'
   signsIn: boolean
   accountKnown: boolean
 } {
-  const second = flow.screens.includes('login-1') ? 'login' : 'code'
+  const second = flow.screens.includes('login-1') ? 'login' : flow.screens.includes('code-1') ? 'code' : 'none'
   const signsIn = flow.screens.includes('signing-in')
   /* Filled when the walk skips the empty student form (`checkout-1`) — the
      Has Atlas flows, which sign in to an account that holds the details. The

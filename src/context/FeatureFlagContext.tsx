@@ -2766,7 +2766,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Navigation',
     label: 'Invite flow',
     picker: 'sheet',
-    description: 'Invite Flow V3, B2B invite. Which invite flow the demo walks: Direct Email (the partner’s invitation, address supplied), or one of the four QR flows — net new, has OCD but no Atlas, or has Atlas, opening a log-in widget or logging in and being signed in automatically with the checkout filled.',
+    description: 'Invite Flow V3, B2B invite. Which invite flow the demo walks: Direct Email (the partner’s invitation, address supplied), or one of the four QR flows — net new, has OCD but no Atlas, or has Atlas, opening a log-in widget or signed in automatically after the email with the checkout filled.',
     defaultEnabled: true,
     defaultVariant: 'direct-email',
     variants: [
@@ -2774,7 +2774,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'qr-net-new', label: 'QR: Net New: No OCD, No Atlas', description: 'New to XCEL. Verify email by code, full checkout, then create a password.' },
       { value: 'qr-ocd', label: 'QR: OCD, but no Atlas', description: 'Has an OCD account, no Atlas. Same screens as Net New for now.' },
       { value: 'qr-atlas-login', label: 'QR: Has Atlas: Open Log-In Widget', description: 'Already on Atlas. Email check opens a log-in widget; ends ready to log in.' },
-      { value: 'qr-atlas-auto', label: 'QR: Has Atlas: Automatic Sign-in Post OTP', description: 'Already on Atlas. Logs in, then signed in automatically with the checkout filled.' },
+      { value: 'qr-atlas-auto', label: 'QR: Has Atlas: Automatic Sign-in Post OTP', description: 'Already on Atlas. After the email, signed in automatically — the checkout arrives filled.' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -2791,14 +2791,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        The key keeps its name so stored picks and shared links still work. */
     label: 'Guest checkout',
     picker: 'sheet',
-    description: 'Invite Flow V3, B2C guest checkout. Which guest checkout flow the demo walks: net new, has OCD but no Atlas, or has Atlas — opening a log-in widget, or logging in and being signed in automatically with the checkout filled; signed in to XCEL; or the alternative that asks for a partner code at Go to Cart.',
+    description: 'Invite Flow V3, B2C guest checkout. Which guest checkout flow the demo walks: net new, has OCD but no Atlas, or has Atlas — opening a log-in widget, or signed in automatically after the email with the checkout filled; signed in to XCEL; or the alternative that asks for a partner code at Go to Cart.',
     defaultEnabled: true,
     defaultVariant: 'net-new',
     variants: [
       { value: 'net-new', label: 'Net New: No OCD, No Atlas', description: 'New to XCEL. Verify email by code, full checkout, then create a password.' },
       { value: 'ocd-no-atlas', label: 'OCD, but no Atlas', description: 'Has an OCD account, no Atlas. Same screens as Net New for now.' },
       { value: 'has-atlas-login', label: 'Has Atlas: Open Log-In Widget', description: 'Already on Atlas. Email check opens a log-in widget before checkout.' },
-      { value: 'has-atlas', label: 'Has Atlas: Automatic Sign-in Post OTP', description: 'Already on Atlas. Logs in, then signed in automatically with the checkout filled.' },
+      { value: 'has-atlas', label: 'Has Atlas: Automatic Sign-in Post OTP', description: 'Already on Atlas. After the email, signed in automatically — the checkout arrives filled.' },
       { value: 'xcel-signed-in', label: 'Signed in to XCEL (OCD)', description: 'Signed in to an existing XCEL account. The cart decides the checkout — pick Cart contents beside this.' },
       /* Afsana's alternative (2026-11-03): its row is light orange in the
          sheet — `inviteFlow.css`, keyed on this label. */

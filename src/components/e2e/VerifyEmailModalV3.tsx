@@ -58,9 +58,10 @@ export function VerifyEmailModalV3({
 }: {
   /** The check is done — the address is proven, or the learner signed in. */
   onVerified: (identity: VerifiedIdentity) => void
-  /** After the address: a code sent to it, or a log-in to an account the
-   *  learner already has. */
-  second?: 'code' | 'login'
+  /** After the address: a code sent to it, a log-in to an account the
+   *  learner already has, or nothing — the automatic flows go straight to
+   *  "Signing you in" (2026-11-03). */
+  second?: 'code' | 'login' | 'none'
   /** Hold on "Signing you in" before the checkout. */
   signsIn?: boolean
 }) {
@@ -104,7 +105,9 @@ export function VerifyEmailModalV3({
             style={BODY}
             onSubmit={(e) => {
               e.preventDefault()
-              if (ready) setStep(second)
+              if (!ready) return
+              if (second === 'none') done()
+              else setStep(second)
             }}
             noValidate
           >

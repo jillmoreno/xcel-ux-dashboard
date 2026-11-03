@@ -310,6 +310,30 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
     }
   })
 
+  it('signs the automatic flows in straight after the email — no log-in, no code', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      for (const ff of [
+        `${V3_B2B},invite-v3-flow-b2b:qr-atlas-auto`,
+        'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:has-atlas,partner-code-ask:modal&partner=no',
+      ]) {
+        const { unmount } = renderAt(CHECKOUT, ff)
+        await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
+        await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+
+        expect(screen.getByRole('dialog', { name: 'Signing you in' })).toBeInTheDocument()
+        expect(screen.queryByRole('heading', { name: 'Log in to continue' })).not.toBeInTheDocument()
+        await act(() => vi.advanceTimersByTimeAsync(LOADING_HANDOFF_MS))
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+        expect(screen.getByDisplayValue('Jordan')).toBeInTheDocument()
+        expect(screen.queryByText(/This is the address you verified/)).not.toBeInTheDocument()
+        unmount()
+      }
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('goes straight to a filled checkout on the B2C log-in flow — no Signing you in', async () => {
     renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:has-atlas-login,partner-code-ask:modal&partner=no')
     await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
@@ -329,8 +353,8 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
     const check = (id: string) => emailCheckV3(INVITE_FLOWS_V3.find((f) => f.id === id)!)
     expect(check('qr-atlas-login')).toEqual({ second: 'login', signsIn: true, accountKnown: true })
     expect(check('has-atlas-login')).toEqual({ second: 'login', signsIn: false, accountKnown: true })
-    expect(check('has-atlas')).toEqual({ second: 'login', signsIn: true, accountKnown: true })
-    expect(check('qr-atlas-auto')).toEqual({ second: 'login', signsIn: true, accountKnown: true })
+    expect(check('has-atlas')).toEqual({ second: 'none', signsIn: true, accountKnown: true })
+    expect(check('qr-atlas-auto')).toEqual({ second: 'none', signsIn: true, accountKnown: true })
     expect(check('net-new')).toEqual({ second: 'code', signsIn: false, accountKnown: false })
   })
 })

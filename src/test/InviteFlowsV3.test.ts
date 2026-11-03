@@ -106,13 +106,15 @@ describe('Invite Flow V3 model types and flows', () => {
     expect(keys).not.toContain('invite-v3-cart')
   })
 
-  it('keys the light orange row on the alternative’s label', () => {
-    /* `inviteFlow.css` finds the row by the start of its label. */
+  it('keys each light orange row on a real flow’s label', () => {
+    /* `inviteFlow.css` finds each row by the start of its label. */
     const css = readFileSync(resolve(__dirname, '../pages/inviteFlow.css'), 'utf8')
-    const prefix = css.match(/aria-label\^='([^']+)'/)?.[1]
-    const alt = FEATURE_FLAGS.find((f) => f.key === INVITE_V3_FLOW_FLAGS.b2c)?.variants?.find((v) => v.value === 'pc-after-add')
-    expect(prefix).toBeTruthy()
-    expect(alt?.label.startsWith(prefix!)).toBe(true)
+    const prefixes = [...new Set([...css.matchAll(/aria-label\^='([^']+)'/g)].map((m) => m[1]))]
+    const labels = INVITE_FLOWS_V3.map((f) => f.label)
+    const orange = (id: string) => prefixes.some((p) => INVITE_FLOWS_V3.find((f) => f.id === id)!.label.startsWith(p))
+    for (const p of prefixes) expect(labels.some((l) => l.startsWith(p))).toBe(true)
+    for (const id of ['pc-after-add', 'qr-atlas-auto', 'has-atlas'] as const) expect(orange(id)).toBe(true)
+    for (const id of ['net-new', 'has-atlas-login', 'qr-atlas-login', 'direct-email'] as const) expect(orange(id)).toBe(false)
   })
 
   it('never resolves a flow from the other model’s list', () => {

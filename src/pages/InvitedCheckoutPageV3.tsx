@@ -514,7 +514,9 @@ export function InvitedCheckoutPageV3() {
                     lockedEmail={lockedEmail}
                     lockedNote={
                       verifiesFirst
-                        ? emailVerified
+                        ? /* None on the automatic sign-in flows — they already
+                             have an account (2026-11-03, Afsana). */
+                          emailVerified && v3Check.second !== 'none'
                           ? 'This is the address you verified. Your account will be created with it.'
                           : null
                         : knownAccount
