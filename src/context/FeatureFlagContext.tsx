@@ -2250,11 +2250,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
 
        ⚠ DEFAULT ON, the "flags default ON on your branch" rule, so the branch
        link shows V2. Whether it stays on is `decide-defaults`' question at
-       share-to-stage, not this branch's. Scoped to the E2E version, beside
-       the Affidavit control it modifies; no `owner`, so the panel files it
-       under Jill rather than adding a row to Eric's pinned list. */
+       share-to-stage, not this branch's. Scoped to BOTH Homes that open the
+       modal: `jill-atlas-main` is `END_TO_END_VERSION`, the Home the invite
+       flow lands on with `?affidavit=1` and the one the Prototypes rows open;
+       `eric-atlas-e2e` is where the Affidavit control it modifies lives. No
+       `owner`, so the panel files it under Jill rather than adding a row to
+       Eric's pinned list. */
     surface: 'design',
-    versions: ['eric-atlas-e2e'],
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Affidavit V2',
     description:

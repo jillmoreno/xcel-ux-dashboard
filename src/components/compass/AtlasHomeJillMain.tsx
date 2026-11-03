@@ -52,6 +52,7 @@ import {
   useDashboardCourseTitle,
 } from '@/pages/endToEndDemo'
 import { AffidavitModal, type AffidavitKind } from '@/components/e2e/AffidavitModal'
+import { AffidavitModalV2 } from '@/components/e2e/AffidavitModalV2'
 import { useAccount } from '@/context/AccountContext'
 import {
   AngleRightRegular,
@@ -825,6 +826,8 @@ export function AtlasHomeJillMain({
       : searchParams.get('affidavit') === '1'
         ? 'pre'
         : null
+  // The Design bar's Affidavit V2 (2026-11-03, Afsana) — which modal opens.
+  const AffidavitDialog = useFeatureFlag('atlas-affidavit-v2').enabled ? AffidavitModalV2 : AffidavitModal
   // The Design bar's Link tiles (V3 only, 2026-10-09) — Stacked (default) or Inline.
   const stackedTiles = (useFeatureFlag('atlas-v3-link-tiles').variant ?? 'stacked') !== 'inline'
   // The Design bar's Quick Links side (2026-10-13) — Left (default) or Right.
@@ -1575,7 +1578,7 @@ export function AtlasHomeJillMain({
           learner signs on arriving, and it is what the flow has always
           opened. */}
       {affidavitKind ? (
-        <AffidavitModal
+        <AffidavitDialog
           kind={affidavitKind}
           onClose={() => {
             setAffidavit('off')

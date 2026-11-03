@@ -81,10 +81,11 @@ describe('AffidavitModalV2', () => {
     expect(scrimOf().style.zIndex).toBe('1000')
   })
 
-  it('is on by default on this branch, on the Design bar of the E2E version', () => {
+  it('is on by default on this branch, on the Design bar of both Homes that open it', () => {
     const flag = FEATURE_FLAGS.find((f) => f.key === 'atlas-affidavit-v2')
     expect(flag?.defaultEnabled).toBe(true)
     expect(flag?.surface).toBe('design')
-    expect(flag?.versions).toEqual(['eric-atlas-e2e'])
+    // jill-atlas-main is where the invite flow lands (END_TO_END_VERSION).
+    expect(flag?.versions).toEqual(['jill-atlas-main', 'eric-atlas-e2e'])
   })
 })
