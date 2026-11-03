@@ -25,7 +25,7 @@ import { CircleXmarkThin, Square, SquareCheck } from '@/icons'
 export type AffidavitKind = 'pre' | 'post'
 
 /** The journey's own names, so the modal matches the row it belongs to. */
-const AFFIDAVIT: Record<AffidavitKind, { title: string; when: string }> = {
+export const AFFIDAVIT: Record<AffidavitKind, { title: string; when: string }> = {
   pre: { title: 'Pre-course Affidavit', when: 'Before you begin the coursework' },
   post: { title: 'Study-manual Notice Affidavit', when: 'After the coursework, before your final exam' },
 }

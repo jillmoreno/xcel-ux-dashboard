@@ -155,6 +155,7 @@ const REBRAND_FLAGS = [
      the page, the panel is where every flag is findable. */
   'atlas-heading-font',
   'atlas-affidavit',
+  'atlas-affidavit-v2',
   'atlas-home-long-title',
   'atlas-v3-progress',
   'atlas-v3-link-tiles',

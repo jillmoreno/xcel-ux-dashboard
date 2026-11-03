@@ -2242,6 +2242,27 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-affidavit-v2',
+    /* AFFIDAVIT V2 — 2026-11-03, Afsana (`feat/affidavits`). On: the
+       End-to-End Home opens `AffidavitModalV2`; off: V1, untouched. Its first
+       change is that the modal no longer covers the review bar, the demo
+       controls or the design controls — see the V2 file's header.
+
+       ⚠ DEFAULT ON, the "flags default ON on your branch" rule, so the branch
+       link shows V2. Whether it stays on is `decide-defaults`' question at
+       share-to-stage, not this branch's. Scoped to the E2E version, beside
+       the Affidavit control it modifies; no `owner`, so the panel files it
+       under Jill rather than adding a row to Eric's pinned list. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit V2',
+    description:
+      'Which affidavit modal the End-to-End Demo’s Home opens. On: V2 — the page dims below the review bar and the demo and design controls, which stay usable while the modal is open. Off: V1, which covers the whole window.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-home-long-title',
     /* A REFERENCE TOGGLE beside Headings on the Design bar (2026-10-07, Eric's
        request: "add another toggle … to show this long title for reference").
