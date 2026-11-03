@@ -9,10 +9,12 @@ import { AtlasSheetFrame } from './AtlasSheetFrame'
 import { pacePreviewProps, PREVIEW_ACCESS_ENDS } from './atlasPacePreview'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
 import {
+  ActiveCourseCardPreview,
   AffidavitLauncher,
   AtlasProgressPanel,
   AtlasSurface,
   CourseHeadVariant,
+  ExpiredCourseCardPreview,
   QuickLinksHoverDemo,
 } from './AtlasHandoffPreviews'
 
@@ -348,6 +350,88 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
   // asked what they looked like — and `WhiteStyleHead` takes `beginLabel`,
   // `meta` and `title`, so every one of them always was reachable. The note
   // was wrong, not the component.
+  /* ──────────────────────────────────────────────────────────────────────
+     PURCHASE EXTENSION (2026-11-03). Four components, and not one of them is
+     a new drawing: the trigger and the button are the course head in its
+     access states, the argument is the pace card in its expired and no-plan
+     states, and the fourth is the real `CourseCard`. Everything below renders
+     the shipped component with real props, which is the point — a screenshot
+     of this feature would be stale the next time the access row is touched,
+     and the access row has been touched three times.
+     ────────────────────────────────────────────────────────────────────── */
+
+  /* The tiers, shown on the one row that expresses them. `courseExpiryTier`
+     is a function and has no UI of its own, so the honest preview of "when
+     the offer appears" is the row whose tone and wording the tier decides. */
+  'extension-trigger': {
+    Normal: () => createElement(CourseHeadVariant, { beginLabel: 'Resume Course' }),
+    Soon: () =>
+      createElement(CourseHeadVariant, { beginLabel: 'Resume Course', meta: 'expiring-soon' }),
+    Urgent: () =>
+      createElement(CourseHeadVariant, { beginLabel: 'Resume Course', meta: 'last-day' }),
+    Expired: () =>
+      createElement(CourseHeadVariant, { beginLabel: 'Resume Course', meta: 'expired', eyebrow: 'Expired' }),
+    Completed: () =>
+      createElement(CourseHeadVariant, {
+        beginLabel: 'Review Course',
+        meta: 'complete',
+        eyebrow: 'Congrats! You have completed this course.',
+        withCertificate: true,
+      }),
+  },
+
+  /* The same component again, keyed to this handoff's own variant names. The
+     renders are deliberately identical to the trigger's — that IS the finding:
+     one row carries both the countdown and the offer, so the reader sees the
+     button arrive and escalate on the thing it arrives on. */
+  'extension-course-head': {
+    'Alongside, in the warning tone': () =>
+      createElement(CourseHeadVariant, { beginLabel: 'Resume Course', meta: 'expiring-soon' }),
+    'Alongside, in the error tone': () =>
+      createElement(CourseHeadVariant, { beginLabel: 'Resume Course', meta: 'last-day' }),
+    'Alone and primary': () =>
+      createElement(CourseHeadVariant, { beginLabel: 'Resume Course', meta: 'expired', eyebrow: 'Expired' }),
+    Absent: () => createElement(CourseHeadVariant, { beginLabel: 'Resume Course' }),
+  },
+
+  'extension-argument': {
+    'Progress paused': () => inPanel(createElement(AtlasPaceRingCard, { percent: 34, expired: true })),
+    /* The two no-plan branches: the access-bound one offers an extension, the
+       exam-bound one offers nothing. Rendered as a pair because the contrast
+       is the decision — an extension cannot move a booked exam. */
+    'No plan fits — access-bound': () =>
+      inPanel(
+        createElement(AtlasPaceRingCard, {
+          ...pacePreviewProps({ accessExpiresAt: '2026-05-13', percent: 12 }),
+        }),
+      ),
+    'No plan fits — exam-bound': () =>
+      inPanel(
+        createElement(AtlasPaceRingCard, {
+          ...pacePreviewProps({ examDate: '2026-05-15', percent: 12 }),
+        }),
+      ),
+    'Exam after access ends': () =>
+      inPanel(
+        createElement(AtlasPaceRingCard, {
+          ...pacePreviewProps({
+            accessExpiresAt: PREVIEW_ACCESS_ENDS,
+            examDate: '2026-07-15',
+            percent: 34,
+          }),
+        }),
+      ),
+  },
+
+  /* ⚠ THE REAL CARD, NOT A DRAWING OF IT, and that matters here more than
+     anywhere else on this handoff: the whole finding is that this surface
+     words the offer differently from the other three. A redrawn approximation
+     would be me restating the wording rather than showing it. */
+  'extension-course-card': {
+    'Expired course': () => createElement(ExpiredCourseCardPreview),
+    'Anything else': () => createElement(ActiveCourseCardPreview),
+  },
+
   'atlas-home-course-head': {
     'Not started': () => createElement(CourseHeadVariant, { beginLabel: 'Begin Course' }),
     'In progress': () => createElement(CourseHeadVariant, { beginLabel: 'Resume Course' }),

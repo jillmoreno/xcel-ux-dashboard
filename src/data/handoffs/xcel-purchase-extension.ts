@@ -11,6 +11,16 @@ import type { PrototypeFeature } from '../prototypeFeatures'
  * states since 2026-10-21 and the document explaining it was a forward
  * reference to nothing.
  *
+ * ⚠ THE ROW THUMBNAILS ARE CAPTURES, THE PREVIEWS ARE LIVE. Each component's
+ * detail page renders the real component from the registry, so the spec cannot
+ * drift from the implementation. The four PNGs are only the 104x68 pictures on
+ * the row list, which the field's own note says to prefer: a live miniature of
+ * these components reads as a blank plate (three of the four are mostly white
+ * at that size), costs a render per visible row, and puts its text in the DOM
+ * where find-in-page hits it. They are padded to the tile's ratio so `cover`
+ * cannot crop the Purchase Extension button off the right, which is the one
+ * thing each picture is for. Re-shoot them when the access row changes.
+ *
  * ⚠ IT IS A GATHERING, NOT A NEW DESIGN. Nothing here is invented. The trigger
  * arithmetic is `courseExpiryTier`'s, the three button treatments are the
  * course head's, the expired message and its thirty-day window are the pace
@@ -71,6 +81,7 @@ const feature: PrototypeFeature = {
     uiComponents: [
       {
         id: 'extension-trigger',
+        thumbnail: '/prototype-thumbs/components/xcel-purchase-extension-extension-trigger.png',
         order: 1,
         name: 'When the offer appears',
         tabLabel: 'The trigger',
@@ -106,6 +117,7 @@ const feature: PrototypeFeature = {
       },
       {
         id: 'extension-course-head',
+        thumbnail: '/prototype-thumbs/components/xcel-purchase-extension-extension-course-head.png',
         order: 2,
         name: 'The button on the course head',
         tabLabel: 'The button',
@@ -144,6 +156,7 @@ const feature: PrototypeFeature = {
       },
       {
         id: 'extension-argument',
+        thumbnail: '/prototype-thumbs/components/xcel-purchase-extension-extension-argument.png',
         order: 3,
         name: 'The argument for it',
         tabLabel: 'The pitch',
@@ -178,6 +191,7 @@ const feature: PrototypeFeature = {
       },
       {
         id: 'extension-course-card',
+        thumbnail: '/prototype-thumbs/components/xcel-purchase-extension-extension-course-card.png',
         order: 4,
         name: 'The same offer in My Courses',
         tabLabel: 'Enrol again',

@@ -27,6 +27,8 @@ const PREVIEW_TIER: Record<PreviewMeta, CourseExpiryTier> = {
   none: 'normal',
 }
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
+import { CourseCard } from '@/components/courses/CourseCard'
+import { myCoursesFor } from '@/data/myCoursesFixtures'
 import { ATLAS_FONT_DEFAULT, atlasFontHref } from '@/components/layout/atlasFontSets'
 import { atlasSurfaceAttrs, ATLAS_SURFACE_VARS } from './atlasSurfaceAttrs'
 import { useAtlasBrand } from './useAtlasBrand'
@@ -372,4 +374,46 @@ const launchButtonStyle: CSSProperties = {
   fontWeight: 600,
   fontSize: 13,
   cursor: 'pointer',
+}
+
+/**
+ * THE MY COURSES CARD, EXPIRED AND ACTIVE — for the Purchase Extension
+ * handoff, 2026-11-03.
+ *
+ * ⚠ THE REAL `CourseCard`, fed a real record from the real library. The whole
+ * reason this card is on that handoff is that it words the extension offer
+ * differently from the other three surfaces — "Enrol again", chosen to avoid
+ * implying the learner's work comes back. A redrawn approximation would be the
+ * handoff restating that wording instead of showing it, and the wording is the
+ * finding.
+ *
+ * ⚠ NO `onActivate`, SO THE TITLE STAYS A LINK. The handoff page is inside the
+ * app's own router, so a link is safe here; passing a handler would swap the
+ * title for a span and quietly change the card's shape away from the shipped
+ * one. Do not add a MemoryRouter — see the registry's note.
+ */
+export function ExpiredCourseCardPreview() {
+  return <CourseCardPreview expired />
+}
+
+export function ActiveCourseCardPreview() {
+  return <CourseCardPreview />
+}
+
+function CourseCardPreview({ expired = false }: { expired?: boolean }) {
+  const library = myCoursesFor('xcel')
+  /* The lapsed pre-licence course is the library's own expired record, so the
+     frozen percentage beside the link is the fixture's and not a number chosen
+     to make the point. */
+  const base =
+    library.find((c) => c.id === 'mc-xcel-pc-prelicense-lapsed') ?? library[0]
+  const active = library.find((c) => c.myStatus === 'in-progress') ?? library[0]
+  const data = expired
+    ? { ...base, status: 'in-progress' as const, expiresAt: '2026-04-01' }
+    : active
+  return (
+    <div style={{ width: 265 }}>
+      <CourseCard data={data} compact fluid />
+    </div>
+  )
 }
