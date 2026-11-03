@@ -1,3 +1,5 @@
+import { useAtlasAccountPages } from '@/components/account/useAtlasAccountPages'
+import { ATLAS_TABLE_CARD, ATLAS_THEAD } from '@/components/account/atlasAccountTableStyles'
 import { useState, type CSSProperties } from 'react'
 import { Bell, Check, Sliders } from '@/icons'
 import { NotificationRow } from './NotificationRow'
@@ -41,11 +43,14 @@ import { useNotifications } from '@/context/NotificationsContext'
 export function NotificationsPanel() {
   const { items, unread, markRead, markAllRead, mutedCount } = useNotifications()
   const [prefsOpen, setPrefsOpen] = useState(false)
+  /* Atlas Admin's table card — its rule, corner and soft header fill — under the account pages' Quick Links layout (2026-11-03,
+     Eric's request). The rows inside are the feed's own. */
+  const atlasFrame = useAtlasAccountPages()
 
   return (
     <div style={wrapStyle}>
-      <section aria-label="Your notifications" style={cardStyle}>
-        <header style={headerStyle}>
+      <section aria-label="Your notifications" style={atlasFrame ? ATLAS_TABLE_CARD : cardStyle}>
+        <header style={atlasFrame ? { ...headerStyle, ...ATLAS_THEAD, borderBottom: '1px solid var(--admin-rule)' } : headerStyle}>
           <div style={{ minWidth: 0 }}>
             <h2 style={titleStyle}>All notifications</h2>
             {/* The count is of the WHOLE list, with unread called out
