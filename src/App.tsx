@@ -34,6 +34,7 @@ import { XcelCartPage } from '@/pages/XcelCartPage'
 import { XcelPartnerCodePage } from '@/pages/XcelPartnerCodePage'
 import { XcelOrderConfirmationPage } from '@/pages/XcelOrderConfirmationPage'
 import { XcelActivationEmailPage } from '@/pages/XcelActivationEmailPage'
+import { AtlasAdminApp } from '@/pages/atlasAdmin/AtlasAdminApp'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DashboardRebrandPage } from '@/pages/DashboardRebrandPage'
 import { RecommendedCardABComparePage } from '@/pages/RecommendedCardABComparePage'
@@ -262,6 +263,10 @@ export default function App() {
         <Route path="/end-to-end-demo/checkout" element={<TestingGate><InvitedCheckoutRoute /></TestingGate>} />
         {/* …then Confirmation & Password, which Place your order opens. */}
         <Route path="/end-to-end-demo/confirmation" element={<TestingGate><InvitedConfirmationRoute /></TestingGate>} />
+        {/* ATLAS ADMIN (2026-10-19, feat/atlas-admin) — the admin app rebuilt
+            from colibri-b2b.vercel.app, its own sidebar and header inside the
+            demo chrome, behind the `atlas-admin` flag. See `AtlasAdminApp`. */}
+        <Route path="/atlas-admin/*" element={<TestingGate><AtlasAdminApp /></TestingGate>} />
       </Route>
       <Route
         path="/prototype/:featureId/handoff/:componentId"

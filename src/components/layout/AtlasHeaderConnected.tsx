@@ -41,11 +41,11 @@ export function AtlasHeaderConnected({
   const { unread } = useNotifications()
   const [params] = useSearchParams()
   const navigate = useNavigate()
-  /* LEARNER / ADMIN MODE in the profile menu — from feat/atlas-admin
-     (2026-10-20), brought here 2026-11-03 (Eric's request). The admin pages
-     are not on this branch, so Admin opens that branch's build — see
-     `ATLAS_ADMIN_BUILD`. */
+  /* LEARNER / ADMIN MODE in the profile menu. On erics-atlas-primary the
+     admin pages are in this build, so Admin navigates here rather than to
+     feat/atlas-admin's build — either switch turns it on. */
   const modeSwitch = useFeatureFlag('atlas-header-mode-switch').enabled
+  const atlasAdmin = useFeatureFlag('atlas-admin').enabled
   /* The profile menu's links in Quick Links' hover, with the account pages'
      Quick Links layout (2026-11-03). */
   const quickLinksMenu = useAtlasAccountPages()
@@ -93,8 +93,8 @@ export function AtlasHeaderConnected({
       onHelp={onHelp}
       quickLinksMenu={quickLinksMenu}
       modeMenu={
-        modeSwitch
-          ? { mode: 'learner', adminLinks: [], onSwitch: () => window.location.assign(`${ATLAS_ADMIN_BUILD}${window.location.search}`) }
+        modeSwitch || atlasAdmin
+          ? { mode: 'learner', adminLinks: [], onSwitch: () => navigate(`/atlas-admin/students${window.location.search}`) }
           : undefined
       }
       user={{
@@ -144,8 +144,3 @@ export function AtlasHeaderConnected({
     />
   )
 }
-
-/* Atlas Admin's Students page on feat/atlas-admin's branch build — the
-   admin pages live there until they reach main, so the switch crosses to
-   it, carrying the query (demo, version, flags) along. */
-const ATLAS_ADMIN_BUILD = 'https://feat-atlas-admin--ux-design-xceldashboard.netlify.app/atlas-admin/students'

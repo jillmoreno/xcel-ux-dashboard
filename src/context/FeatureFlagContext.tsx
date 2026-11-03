@@ -2922,6 +2922,144 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-admin',
+    /* ATLAS ADMIN (2026-10-19, feat/atlas-admin, Eric's request: "Create XCEL
+       Admin home page based on … colibri-b2b.vercel.app/students", then "pull
+       in all pages and functionality from the site"). On, `/atlas-admin/*`
+       draws the admin app — its sidebar, header and pages, rebuilt in React
+       on the admin fixture. Off, the route says the flag is off. Default ON on
+       Eric's branch so its build shows the work; the Admin row on Prototypes
+       is Cody's scope, so whether this becomes it is his decision. */
+    group: 'Navigation',
+    label: 'Atlas Admin',
+    description:
+      'The Atlas Admin app at /atlas-admin \u2014 Students, Invites, Reports, Notifications, Resources and Settings, rebuilt from the colibri-b2b reference on demo data. Off: the route says the flag is off.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+    owner: 'eric',
+  },
+  {
+    key: 'atlas-admin-left-nav',
+    /* ATLAS ADMIN — LEFT NAV (2026-10-20, Eric: "make a Design Control
+       dropdown for Left Nav: with the one that is still on the other pages as
+       Standard and this outlined version called Lite"). Standard is the
+       reference's sidebar. Lite is Home's Quick Links card — outlined, 13px
+       rows, the current page semi-bold in an Atlas Primary 100 capsule — on
+       the page's own colour with no rule beside it. Every admin page. */
+    surface: 'design',
+    owner: 'eric',
+    surfaces: ['atlas-admin'],
+    versions: ['eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Left Nav',
+    description:
+      'Atlas Admin\u2019s sidebar. Standard: the reference\u2019s white sidebar with its rule. Lite: Home\u2019s Quick Links card, outlined, on the page colour.',
+    defaultEnabled: true,
+    variants: [
+      { value: 'standard', label: 'Standard' },
+      { value: 'lite', label: 'Lite' },
+    ],
+    defaultVariant: 'standard',
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-admin-student-analysis',
+    /* ATLAS ADMIN — STUDENT ANALYSIS (2026-10-23, Eric: "add a student
+       Analysis Dropdown … with links to Dial, Progress Bar and plain").
+       Which outcome row Students shows: Dial — PartnerHub's status cards
+       beside the Student Compliance dial; Progress Bar — the tiles with
+       their bars; Plain — the tiles without. Students page only. */
+    surface: 'design',
+    owner: 'eric',
+    surfaces: ['atlas-admin'],
+    versions: ['eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Student Analysis',
+    description: 'Atlas Admin Students\u2019 outcome row: the status dial and cards, the tiles with progress bars, or plain tiles.',
+    defaultEnabled: true,
+    variants: [
+      { value: 'dial', label: 'Dial' },
+      /* The dial beside a 3×2 grid of cards — Dial's layout until 2026-10-26, kept to come back to. */
+      { value: 'dial-grid', label: 'Dial (3×2)' },
+      { value: 'progress-bar', label: 'Progress Bar' },
+      { value: 'plain', label: 'Plain' },
+    ],
+    defaultVariant: 'dial',
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-admin-background',
+    /* ATLAS ADMIN — BACKGROUND (2026-10-23, Eric: "add the bg color design
+       control in"). The admin's own Toned / White, after the learner Home's
+       `atlas-background`: Toned is the admin page colour as it was (#fafafa),
+       White sets every admin page on white. Re-points `--admin-page` on the
+       app's root (`AtlasAdminApp`), so the shell, Pulse and the public pages
+       all follow. */
+    surface: 'design',
+    owner: 'eric',
+    surfaces: ['atlas-admin'],
+    versions: ['eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Background',
+    description: 'The page behind every Atlas Admin page: Toned (the admin\u2019s off-white) or White.',
+    defaultEnabled: true,
+    variants: [
+      { value: 'toned', label: 'Toned' },
+      { value: 'white', label: 'White' },
+    ],
+    defaultVariant: 'toned',
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-admin-flow',
+    /* ATLAS ADMIN — JUMP TO A FLOW (2026-10-20, Eric: "add a design control
+       dropdown for the flows … that do not have a left sidebar link"). The
+       reference reaches these by address or from inside another page, so a
+       reviewer would otherwise need the URLs. Picking one goes there and the
+       control returns to "Jump to…" — it is a jump menu, not a state, which
+       is why `atlas-admin` reads it and resets it rather than anything
+       drawing from it.
+
+       `surfaces: ['atlas-admin']` puts it on the admin app alone, and the app
+       declaring that surface is also what takes the dashboard's controls off
+       the bar there. `versions` is the default the admin route resolves to. */
+    surface: 'design',
+    owner: 'eric',
+    surfaces: ['atlas-admin'],
+    versions: ['eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Flow',
+    description:
+      'Atlas Admin: jump to a page with no sidebar link \u2014 Pulse, the public pages (Partner with us, welcome inbox, onboarding, a recruit\u2019s invite and event join) and the admin pages reached from inside others.',
+    defaultEnabled: true,
+    variants: [
+      { value: 'jump', label: 'Jump to\u2026' },
+      { value: 'pulse', label: 'Pulse briefing' },
+      { value: 'partner-with-us', label: 'Partner with us' },
+      { value: 'welcome', label: 'Welcome inbox' },
+      { value: 'onboarding', label: 'Onboarding wizard' },
+      { value: 'students/sample', label: 'Students (with students)' },
+      { value: 'students/empty', label: 'Students (empty roster)' },
+      { value: 'invite/summit-insurance-group/coleen-acker', label: 'Recruit invite' },
+      { value: 'join/event/coleen-acker', label: 'Career event join' },
+      { value: 'reports/team-comparison', label: 'Department comparison' },
+      { value: 'my-team', label: 'My team' },
+      { value: 'assignments', label: 'Assignment rules' },
+      { value: 'engagement', label: 'Engagement' },
+      { value: 'video-engagement', label: 'Video engagement' },
+      { value: 'learning-center', label: 'Learning center' },
+      { value: 'licenses', label: 'Licenses & seats' },
+      { value: 'organization', label: 'Organization' },
+      { value: 'teams', label: 'Teams' },
+      { value: 'enterprise', label: 'Enterprise insights' },
+      { value: 'pricing', label: 'Pricing' },
+      { value: 'product-offering', label: 'Product offering' },
+      { value: 'internal/portal-analytics', label: 'Portal analytics' },
+    ],
+    defaultVariant: 'jump',
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'e2e-begin-opens-compass-session',
     /* BEGIN COURSE OPENS THE COMPASS SESSION (2026-10-16, Jillienne, with the
        button selected: "make this button go into the compass course"). The

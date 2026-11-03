@@ -128,6 +128,16 @@ describe('the owner axis', () => {
       'atlas-wip-quick-links-side',
       // Joined 2026-10-14 — Background: Toned (WIP) or White (White).
       'atlas-background',
+      /* `atlas-e2e-page` stood here until 2026-10-16, when it was replaced by
+         the `demo-start-point` DEMO control — Eric owns no equivalent now,
+         because where the demo opens stopped being one version's design
+         decision. See the `atlas-e2e-page-control` row in archivedItems.ts. */
+      // Joined 2026-10-19 — the Atlas Admin app at /atlas-admin, on or off.
+      'atlas-admin',
+      'atlas-admin-left-nav',
+      'atlas-admin-student-analysis',
+      'atlas-admin-background',
+      'atlas-admin-flow',
       // Joined 2026-11-03 — every container at a 16 corner.
       'atlas-card-radius-16',
       // Joined 2026-11-03 — the account pages in the learning pages' layout.
@@ -138,10 +148,6 @@ describe('the owner axis', () => {
       'atlas-header-mode-switch',
       // Joined 2026-11-03 — the side sheets' titles in Playfair.
       'atlas-sheet-title-serif',
-      /* `atlas-e2e-page` stood here until 2026-10-16, when it was replaced by
-         the `demo-start-point` DEMO control — Eric owns no equivalent now,
-         because where the demo opens stopped being one version's design
-         decision. See the `atlas-e2e-page-control` row in archivedItems.ts. */
       // Joined 2026-10-13 — the two-row Atlas header, on or off.
       'atlas-header-v2',
       // Joined 2026-10-12 — Eric/Atlas White's Static / Dropdown Top Nav.

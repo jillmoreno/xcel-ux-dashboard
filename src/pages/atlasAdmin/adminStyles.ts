@@ -1,0 +1,221 @@
+import type { CSSProperties } from 'react'
+
+/**
+ * ATLAS ADMIN — the shared styles (2026-10-19). Values from the reference's own
+ * classes (colibri-b2b.vercel.app), through the `--admin-*` tokens in
+ * tokens.css. Kept apart from the components so a page can take a style
+ * without taking a component.
+ */
+
+export const HEADING = 'var(--admin-font-heading)'
+export const BODY = 'var(--font-body)'
+
+/* Page headline: the Atlas Serif H3 (2026-10-23, Eric — tried the H1, then
+   "try h3"). Was Open Sans 30 / bold, tight. */
+export const PAGE_H1: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-heading-serif)',
+  fontSize: 'var(--admin-atlas-h3-size)',
+  fontWeight: 400,
+  lineHeight: 'var(--admin-atlas-h3-line)',
+  letterSpacing: '-0.01em',
+  color: 'var(--admin-ink)',
+}
+export const PAGE_SUB: CSSProperties = { margin: '4px 0 0', fontSize: 14, color: 'var(--admin-text)' }
+
+/* The admin's button corner — the Atlas learner buttons' 9 (2026-10-29, Eric; the admin's buttons were pills). */
+export const BUTTON_RADIUS = 9
+
+/* THE ADMIN'S TOGGLE (2026-10-29, Eric): Notifications' 36 × 20 switch, a 16 knob 2 in — the standard, Reports' 44 × 24 brought
+   down to it. The track's colour is the caller's. */
+export const SWITCH: CSSProperties = { position: 'relative', flex: 'none', width: 36, height: 20, border: 'none', borderRadius: 9999, padding: 0, cursor: 'pointer' }
+export const SWITCH_KNOB: CSSProperties = { position: 'absolute', top: 2, width: 16, height: 16, borderRadius: '50%', background: 'var(--admin-surface)', boxShadow: '0 1px 2px rgb(0 0 0 / 0.2)', transition: 'left 120ms ease' }
+export const switchKnobLeft = (on: boolean) => (on ? 18 : 2)
+
+/* White card, 18 corners, slate-200 edge. */
+export const CARD: CSSProperties = {
+  borderRadius: 18,
+  border: '1px solid var(--admin-rule)',
+  background: 'var(--admin-surface)',
+}
+
+/* The buttons: outlined and brand. 37 tall at 14 / 600. 9px corners — the Atlas buttons' (2026-10-29, Eric; were pills). */
+const PILL_BUTTON: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  whiteSpace: 'nowrap',
+  borderRadius: BUTTON_RADIUS,
+  padding: '8px 16px',
+  fontFamily: BODY,
+  fontSize: 14,
+  fontWeight: 600,
+  lineHeight: '19px',
+  cursor: 'pointer',
+}
+export const BUTTON_OUTLINE: CSSProperties = {
+  ...PILL_BUTTON,
+  border: '1px solid var(--admin-rule-strong)',
+  background: 'var(--admin-surface)',
+  color: 'var(--admin-ink)',
+}
+export const BUTTON_BRAND: CSSProperties = {
+  ...PILL_BUTTON,
+  border: '1px solid transparent',
+  background: 'var(--admin-cta)',
+  color: 'var(--admin-surface)',
+}
+
+/* The Atlas learner buttons (Home's Begin Course / Course Overview):
+   13.5 on 5 × 8, 9px corners; primary bold on the CTA, secondary a 1px
+   CTA outline at medium weight. */
+const ATLAS_BUTTON: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+  whiteSpace: 'nowrap',
+  borderRadius: 9,
+  padding: '5px 8px',
+  fontFamily: BODY,
+  fontSize: 13.5,
+  lineHeight: '20.25px',
+  cursor: 'pointer',
+}
+export const ATLAS_BUTTON_PRIMARY: CSSProperties = {
+  ...ATLAS_BUTTON,
+  border: '1px solid transparent',
+  background: 'var(--admin-cta)',
+  color: 'var(--admin-surface)',
+  fontWeight: 700,
+}
+export const ATLAS_BUTTON_SECONDARY: CSSProperties = {
+  ...ATLAS_BUTTON,
+  border: '1px solid var(--admin-cta)',
+  background: 'transparent',
+  color: 'var(--admin-cta)',
+  fontWeight: 500,
+}
+
+/* THE TABLE HEADER LABEL (2026-10-29, Eric): the Reports library's — 11 / bold / uppercase / 0.08em in Muted — the admin's standard,
+   on Reports, Invites and Students. Padding is each table's own. */
+export const TABLE_HEAD: CSSProperties = {
+  fontSize: 11,
+  lineHeight: '14px', // (2026-10-29, Eric; it inherited 16.5)
+  fontWeight: 700,
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  color: 'var(--admin-muted)',
+}
+
+/* Eyebrow / table head: 12 / bold / uppercase / 0.08em. */
+export const EYEBROW: CSSProperties = {
+  margin: 0,
+  fontSize: 12,
+  fontWeight: 700,
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  color: 'var(--admin-muted)',
+}
+
+/* The dashed filter chip. */
+export const CHIP: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 4,
+  whiteSpace: 'nowrap',
+  borderRadius: 9999,
+  border: '1px dashed var(--admin-rule-strong)',
+  background: 'transparent',
+  padding: '4px 12px',
+  fontFamily: BODY,
+  fontSize: 13,
+  fontWeight: 600,
+  color: 'var(--admin-text)',
+  cursor: 'pointer',
+}
+/* An applied filter: solid, with its ×. */
+export const CHIP_ON: CSSProperties = {
+  ...CHIP,
+  border: '1px solid var(--admin-ink)',
+  background: 'var(--admin-ink)',
+  color: 'var(--admin-surface)',
+}
+
+/* A dropdown menu under a chip. */
+export const MENU: CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  top: '100%',
+  zIndex: 20,
+  marginTop: 4,
+  padding: 4,
+  borderRadius: 12,
+  border: '1px solid var(--admin-rule)',
+  background: 'var(--admin-surface)',
+  boxShadow: 'var(--admin-shadow-menu)',
+}
+export const MENU_ITEM: CSSProperties = {
+  display: 'block',
+  width: '100%',
+  borderRadius: 8,
+  border: 'none',
+  background: 'none',
+  padding: '8px 12px',
+  textAlign: 'left',
+  fontFamily: BODY,
+  fontSize: 14,
+  color: 'var(--admin-ink)',
+  cursor: 'pointer',
+}
+
+/* Status pills — 12 / 600, ringed. */
+export const PILL: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  whiteSpace: 'nowrap',
+  borderRadius: 9999,
+  padding: '2px 10px',
+  fontSize: 12,
+  fontWeight: 600,
+}
+
+export const FIELD_LABEL: CSSProperties = {
+  display: 'block',
+  margin: '0 0 8px',
+  fontSize: 11,
+  fontWeight: 700,
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  color: 'var(--admin-text)',
+}
+export const INPUT: CSSProperties = {
+  width: '100%',
+  boxSizing: 'border-box',
+  borderRadius: 12,
+  border: '1px solid var(--admin-rule)',
+  background: 'var(--admin-surface)',
+  padding: '10px 12px',
+  fontFamily: BODY,
+  fontSize: 14,
+  color: 'var(--admin-ink)',
+  outline: 'none',
+}
+
+/* ── The status cards (Students' outcome row, Invites' tiles) ── Atlas UX
+   Design 527:603 (Active) / 527:746 (Default): 14px corners, a flex column
+   so every card in a row fills to the tallest. The pill is StatusPill and the
+   note StatusNote (adminUi). */
+export const STATUS_CARD: CSSProperties = { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: 'none', borderStyle: 'solid', borderWidth: 1, borderRadius: 14, cursor: 'pointer', textAlign: 'left' }
+/* Playfair Bold with lining figures (`lnum`, asked for both ways so no browser falls back): every numeral the same height on one
+   baseline — Playfair's default old-style figures drop 3, 4, 5, 7, 9 below it and raise 6 and 8. */
+export const STATUS_COUNT: CSSProperties = { fontFamily: 'var(--admin-font-playfair)', fontSize: 28, fontWeight: 700, lineHeight: '20px', letterSpacing: '-1.68px', whiteSpace: 'nowrap', fontVariantNumeric: 'lining-nums proportional-nums', fontFeatureSettings: '"lnum" 1, "pnum" 1', color: 'var(--admin-atlas-ink)' }
+export const STATUS_DESC: CSSProperties = { margin: 0, fontFamily: 'var(--font-body)', fontSize: 11, lineHeight: '13px', color: 'var(--admin-text)' }
+
+/* The status dial (StatusDial, adminUi): its default square, and the gap between its edge and the ring's outer edge (room for a
+   selected arc's 12px stroke). */
+export const DIAL_SIZE = 168
+export const DIAL_INSET = 4
+/* The small caps over and under the dial's total. */
+export const DIAL_LABEL: CSSProperties = { fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--admin-muted)' }

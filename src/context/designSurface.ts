@@ -51,6 +51,11 @@ export type DesignSurfaceId =
      exclusive one way is what let Atlas's Brand, Affidavit, Long title and
      Readiness ride along on a checkout screen. */
   | 'invite'
+  /* Atlas Admin (`/atlas-admin/*`, feat/atlas-admin) — the whole app is one
+     surface, so the bar carries its own controls there and none of the
+     dashboard's (Brand, Affidavit, Pace standing …), which draw nothing on
+     an admin page. */
+  | 'atlas-admin'
 
 export type DesignSurfaceCtx = {
   surface: DesignSurfaceId | null
@@ -102,4 +107,5 @@ export const DESIGN_SURFACE_LABELS: Record<DesignSurfaceId, string> = {
   'compass:study-planner': 'Compass · Study planner',
   'compass:progress': 'Compass · Progress',
   invite: 'Invite & Checkout',
+  'atlas-admin': 'Atlas Admin',
 }

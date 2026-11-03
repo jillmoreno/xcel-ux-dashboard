@@ -7710,6 +7710,134 @@ a.cre-library-card-title::after {
   --color-e2e-form-shadow: rgb(0 0 0 / 0.05);
   /* The Affidavit modal's scrim — Home darkened behind it. */
   --color-e2e-scrim: rgb(0 0 0 / 0.5);
+  /* ── ATLAS ADMIN (2026-10-19, feat/atlas-admin) ─────────────────────────
+     The admin app rebuilt from colibri-b2b.vercel.app, its values read off
+     the reference's own classes (Tailwind's slate ramp, its brand red and the
+     status colours). One block, so the admin pages never reach for a raw
+     hex. Theme-stable: the reference has no dark mode. */
+  --admin-page: #fafafa;
+  --admin-surface: #ffffff;
+  --admin-ink: #0f172a; /* slate-900 — headings, names */
+  --admin-text: #475569; /* slate-600 — body */
+  --admin-muted: #64748b; /* slate-500 — labels, emails */
+  --admin-faint: #94a3b8; /* slate-400 — placeholders */
+  --admin-rule: #e2e8f0; /* slate-200 — every edge */
+  --admin-rule-strong: #cbd5e1; /* slate-300 — dashed chips, outlined buttons */
+  --admin-hover-edge: #94a3b8;
+  --admin-fill: #f1f5f9; /* slate-100 — search, track */
+  --admin-fill-soft: #f8fafc; /* slate-50 — table head, row hover */
+  --admin-slate-700: #334155;
+  --admin-slate-800: #1e293b;
+  --admin-brand: #a22328;
+  --admin-brand-ink: #7f1a1f;
+  --admin-brand-tint: #fef2f2;
+  --admin-brand-edge: #fecaca;
+  /* The shell — sidebar and header (neutral, not slate, in the reference). */
+  --admin-chrome-rule: #e8e8e8;
+  --admin-chrome-text: #525252;
+  --admin-chrome-title: #0a0a0a;
+  --admin-chrome-header: rgb(255 255 255 / 0.88);
+  --admin-nav-active-bg: #f7e9ea; /* also the avatar */
+  --admin-nav-active-ink: #7a0d19;
+  --admin-logo-pill: #9a1b1e;
+  --admin-success: #10b981;
+  --admin-success-strong: #059669; /* emerald-600 — a step under success */
+  /* STATUS CARDS — PartnerHub's Learner Compliance Analysis cards (the
+     reference's all-learners page; xcel-admin-tool.html .status-card), used for
+     Students' status-style tile row. Each status: the strip, then the deeper
+     shade for its percentage, hover and selected edge. */
+  --admin-status-card-edge: #ececec;
+  /* Playfair — the status cards' percentages; AtlasAdminApp loads the face. */
+  --admin-font-playfair: 'Playfair', Georgia, serif;
+  --admin-status-ink: #404040;
+  --admin-atlas-ink: #18242e;        /* Atlas UX Design status cards' figures and notes */
+  --admin-atlas-pill-ink: #383838;   /* a status pill's label at rest */
+  --admin-status-desc: #616161;
+  --admin-status-sep: #a2a2a2; /* neutral 500 — a step darker than the reference's 300 */
+  --admin-status-neutral: #c7c7c7;
+  --admin-status-neutral-deep: #a2a2a2;
+  --admin-status-blue: #015994;
+  --admin-status-blue-deep: #013c64;
+  --admin-status-red: #cb0000;
+  --admin-status-red-deep: #790000;
+  --admin-status-green: #018937;
+  --admin-status-green-deep: #005221;
+  --admin-status-dark: #404040;
+  --admin-status-dark-deep: #191919;
+  /* The Atlas Style Guide's status colours (Figma Q9hUhVNzoqIQwV6J5c7xR1,
+     node 270:39) — Students' status cards and dial. */
+  --admin-atlas-status-not-started: #bfad94; /* Atlas tertiary 400 — a level up from the style guide's #c3bba5 (2026-10-26) */
+  --admin-atlas-status-active: #3d5a73;
+  --admin-atlas-status-off-track: #b23b2e;
+  --admin-atlas-status-in-progress: #835b16;
+  --admin-atlas-status-prepared: #2f7a5a;
+  --admin-atlas-status-licensed: #263d50;
+  --admin-success-ink: #047857;
+  --admin-warn-tint: #fffbeb;
+  --admin-warn-edge: #fde68a;
+  --admin-warn-ink: #451a03;
+  --admin-font-heading: var(--font-body);
+  --admin-shadow-menu: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --admin-shadow-tile-active: 0 4px 4px rgb(0 0 0 / 0.15);
+  --admin-scrim: rgb(15 23 42 / 0.45);
+  /* The learner record's extras. */
+  --admin-brand-soft-edge: #f2cdd0; /* outlined brand buttons */
+  --admin-brand-hover-bg: #fdf6f6;
+  --admin-success-tint: #ecfdf5;
+  --admin-success-edge: #b7e4d0;
+  --admin-amber: #b45309;
+  --admin-amber-tint: #fff7e6;
+  --admin-amber-edge: #f5d9a8;
+  /* Engagement's KPI and pipeline accents (the reference's blue-600 and
+     violet-600). */
+  --admin-chart-blue: #2563eb;
+  --admin-chart-violet: #7c3aed;
+  /* THE CTA FILL, apart from the brand accent — 2026-10-20. Everywhere it
+     is the brand red, as before; `.cre-admin-atlas` below re-points the
+     accent to the Atlas navy and leaves CTAs on XCEL red. */
+  /* Atlas Primary 100 — the Atlas Style Guide's primary ramp, as
+     `[data-brand='xcel'][data-atlas-palette]` sets it. Named here because
+     the admin pages are not inside that palette scope, so
+     var(--color-primary-100) would give plain XCEL's step. The sidebar's
+     selected item (2026-10-20, Eric's request). */
+  --admin-atlas-primary-100: #eaeef1;
+  --admin-atlas-primary-200: #cbd5dc;
+  --admin-atlas-primary-400: #6b8ca3;
+  --admin-atlas-primary-500: #2d5872;
+  --admin-atlas-primary-700: #1b3544;
+  /* Atlas Secondary 100 — the Style Guide's tan ramp (tertiary-100 in the
+     Atlas palette block). Pulse's Action now boxes. */
+  --admin-atlas-secondary-100: #f5f2ef;
+  --admin-atlas-secondary-200: #e7e0d6; /* the guide's tan ramp, a step up from 100 */
+  /* Atlas Serif H3 — the Atlas type scale's H3 (DM Serif Display 44/46,
+     regular) for admin page titles. Spelled out because admin pages sit
+     outside the Atlas palette scope that defines --type-atlas-h3-*. */
+  --admin-atlas-h3-size: 44px;
+  --admin-atlas-h3-line: 46px;
+  /* Atlas Serif H5 (32/34) — Students' and Invites' outcome tile counts. */
+  --admin-atlas-h5-size: 32px;
+  --admin-atlas-h5-line: 34px;
+  /* Atlas neutral 800 — Pulse's card icons. */
+  --admin-atlas-neutral-800: #404040;
+  /* The Lite nav card's hairline — a step lighter than Home's Quick Links
+     (#dde0e2, slate-100 darkened 5%): slate-100 itself, the Style Guide's
+     tertiary 100 (2026-10-26, Eric). */
+  --admin-quicklinks-rule: #e9ecee;
+  --admin-cta: var(--admin-brand);
+  --admin-cta-hover: var(--admin-brand-ink);
+  /* The public pages (Partner with us, invites, the welcome email, the
+     onboarding wizard): the reference's warm paper, its ink (#3a2a28 at
+     full strength and the alphas it uses) and its Merriweather headings. */
+  --admin-public-bg: #fbf5f0;
+  --admin-public-tint: #f6ebe3;
+  --admin-public-ink: #3a2a28;
+  --admin-public-text: rgb(58 42 40 / 0.72);
+  --admin-public-muted: rgb(58 42 40 / 0.55);
+  --admin-public-rule: rgb(58 42 40 / 0.12);
+  --admin-public-dark: #3a2a28;
+  --admin-public-on-dark: rgb(255 255 255 / 0.78);
+  --admin-public-mail: #f3f1ef;
+  --admin-font-serif: 'Merriweather', Georgia, serif;
   /* The price card's struck-through was-price (Invitation - Account Creation
      2:448, the design's Gray/400). */
   --color-e2e-was-price: #98a2b3;
@@ -7780,3 +7908,180 @@ a.cre-library-card-title::after {
 .cre-support-card--compact:active {
   box-shadow: none;
 }
+
+/* ── ATLAS ADMIN hover states (2026-10-19) — the reference's, by class, since
+   inline styles cannot carry :hover. */
+.cre-admin-tile:hover { border-color: var(--admin-hover-edge) !important; }
+.cre-admin-tile:focus-visible { box-shadow: 0 0 0 2px var(--admin-brand) !important; }
+/* Students' status cards show a primary 200 edge on hover (the tiles' own hover would darken it). */
+.cre-admin-tile.cre-admin-status-card:hover { border-color: var(--admin-atlas-primary-200) !important; }
+/* Pulse's Briefing figure tiles: a shadow on hover, the Students status card's active one (2026-10-29, Eric) — each one scrolls to its card. */
+.cre-admin-figure-tile { transition: box-shadow 0.15s ease; }
+.cre-admin-figure-tile:hover { box-shadow: var(--admin-shadow-tile-active); }
+.cre-admin-figure-tile:focus-visible { outline: 2px solid var(--admin-brand); outline-offset: 2px; }
+/* Students' status pill (Atlas UX Design 527:746 Default → 527:603 Active).
+   At rest the fill is clipped to a 13px dot in the status colour; selected,
+   the clip opens left to right into the whole pill, the label turns white and
+   the circle-dot fades in over where the dot was. */
+.cre-admin-status-pill {
+  position: relative; isolation: isolate; display: inline-flex; align-items: center;
+  /* 15px after the label at rest (8 + the 7 the selected state adds on the left), so the pill is one width in both states. The label
+     sits 6px off the 13px dot (19 in), 10px off the 12px icon selected (24 in) — 2px more than at first (2026-10-26). */
+  /* 16px tall: the 12px circle-dot then has 2px above, below and to its left (it is positioned, so the label's padding does not move it).
+     The label's capitals centred by eye: Open Sans 11px in a 12px line puts its baseline 10.27px down and its cap height is 7.85px,
+     so 2px of top padding left 4.42px above the capitals and 3.73px below — 1.65 / 2.35 evens that to 4.07 either side. */
+  height: 16px; box-sizing: border-box; padding: 2.65px 15px 1.35px 19px; border-radius: 10px; /* then 1px lower again, by eye (2026-10-26) */
+  font-family: var(--font-body); font-size: 11px; font-weight: 600; line-height: 12px;
+  letter-spacing: 1.3px; text-transform: uppercase; white-space: nowrap;
+  color: var(--admin-atlas-pill-ink);
+  transition: padding 280ms cubic-bezier(0.4, 0, 0.2, 1), color 280ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.cre-admin-status-pill-fill {
+  position: absolute; inset: 0; z-index: -1; border-radius: 10px; background: var(--pill);
+  clip-path: inset(1.5px calc(100% - 13px) 1.5px 0 round 6.5px);
+  transition: clip-path 280ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.cre-admin-status-pill-icon {
+  position: absolute; left: 2px; top: 50%; translate: 0 -50%; color: #fff; opacity: 0;
+  transition: opacity 200ms ease;
+}
+.cre-admin-status-pill[data-active] { padding-left: 24px; padding-right: 10px; color: #fff; }
+.cre-admin-status-pill[data-active] .cre-admin-status-pill-fill { clip-path: inset(0 0 0 0 round 10px); }
+.cre-admin-status-pill[data-active] .cre-admin-status-pill-icon { opacity: 1; transition-delay: 120ms; }
+@media (prefers-reduced-motion: reduce) {
+  .cre-admin-status-pill, .cre-admin-status-pill-fill, .cre-admin-status-pill-icon { transition: none; }
+}
+/* Licensed's time window: beside the pill, pulled into its line; when the
+   card is too narrow for both (the LICENSED pill 96 + 8 + the
+   select's 101), it wraps to its own line under the pill instead of squeezing. */
+.cre-admin-status-window { margin: -6px 0; }
+@container (max-width: 204.9px) {
+  .cre-admin-status-window { margin: -5px 0 4px; } /* 8px under the pill's letters, not its line box */
+}
+/* An admin text link's hover — Atlas primary 700. `!important` because the
+   link's resting colour is set inline. */
+.cre-admin-text-link:hover { color: var(--admin-atlas-primary-700) !important; }
+
+/* ATLAS ADMIN'S ROOT (2026-10-20). `display: contents` so it adds no box —
+   every admin page, inside the shell or not, lays out as before. It exists
+   to carry admin-wide rules by inheritance:
+
+   NO WIDOWS. Text that wraps never leaves one word alone on its last line —
+   the browser brings the last two down together (`text-wrap: pretty`,
+   Eric's rule). It inherits, so it reaches every paragraph, heading, cell
+   and label; anything set `white-space: nowrap` is unaffected, as it never
+   wraps. */
+.cre-atlas-admin {
+  display: contents;
+  text-wrap: pretty;
+}
+
+/* A demo HOTSPOT (2026-10-20): a pulsing dot that jumps the demo to another
+   state — the empty Students page's way back to the sample roster. */
+.cre-admin-hotspot {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 3px solid var(--admin-surface);
+  border-radius: 9999px;
+  background: var(--admin-cta);
+  box-shadow: 0 0 0 0 var(--admin-cta);
+  cursor: pointer;
+  animation: cre-admin-hotspot-pulse 1.8s ease-out infinite;
+}
+.cre-admin-hotspot:focus-visible { outline: 2px solid var(--admin-cta); outline-offset: 3px; }
+@keyframes cre-admin-hotspot-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--admin-cta) 55%, transparent); }
+  100% { box-shadow: 0 0 0 14px color-mix(in srgb, var(--admin-cta) 0%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cre-admin-hotspot { animation: none; }
+}
+.cre-admin-chip:hover { border-color: var(--admin-hover-edge) !important; color: var(--admin-ink) !important; }
+.cre-admin-row:hover { background: var(--admin-fill-soft); }
+/* A table's pinned first column (the Students roster's checkboxes): it stays
+   at the left edge while the table scrolls sideways, on the row's own fill so
+   the columns slide under it. */
+.cre-admin-sticky-col { position: sticky; left: 0; z-index: 1; background: var(--admin-surface); }
+thead .cre-admin-sticky-col { background: var(--admin-fill-soft); }
+.cre-admin-row:hover > .cre-admin-sticky-col { background: var(--admin-fill-soft); }
+.cre-admin-name:hover { color: var(--admin-brand) !important; text-decoration: underline; }
+.cre-admin-menu-item:hover { background: var(--admin-fill-soft) !important; }
+.cre-admin-outline:hover { border-color: var(--admin-hover-edge) !important; background: var(--admin-fill-soft) !important; }
+.cre-admin-brand:hover { background: var(--admin-cta-hover) !important; }
+
+/* ── Atlas Admin's Standard sidebar rows — the Atlas course rail's ────────
+   2026-10-20, Eric: "make the Standard left nav items text, hover, spacing
+   and active styles match" the course rail (`.cre-atlas-nav-row` on the
+   Atlas/Compass Global Navigation version), keeping the admin's icons.
+   The values are the rail's as they resolve under the Atlas palette —
+   spelled out because the admin pages sit outside that palette's scope:
+   13/17 Open Sans, 34 tall, 4/8/4/16 padding, 8 corners; #616161 at rest;
+   hover #eceef0 with #263d50 ink; current #eceef0, #3d5a73, SemiBold. */
+.cre-admin-side-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  box-sizing: border-box;
+  padding: 4px 8px 4px 16px;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 17px;
+  font-weight: 400;
+  color: #616161;
+  text-decoration: none;
+  transition: background-color 120ms ease;
+}
+.cre-admin-side-row:hover {
+  background: #eceef0;
+  color: #263d50;
+}
+.cre-admin-side-row[aria-current='page'],
+.cre-admin-side-row[aria-current='page']:hover {
+  background: #eceef0;
+  color: #3d5a73;
+  font-weight: 600;
+}
+.cre-admin-side-row:focus-visible {
+  outline: 2px solid #3d5a73;
+  outline-offset: -2px;
+}
+
+/* ── Atlas Admin on the Atlas Global Navigation palette ─────────────────
+   2026-10-20, Eric: "on this page only, rework the colors using the Atlas
+   Global navigation colors for everything except the CTAs, leaving them
+   the XCEL red". A class on the PAGE (Notifications), so the shell and every
+   other page are untouched: it re-points the --admin-* tokens to the
+   global nav's own (atlasHeader.css — navy #31485c, tint #eceff1, its
+   greys and rules, its link blue), and the CTA fill to XCEL's CTA red.
+   Success and amber stay: they mean something, and the nav has no
+   equivalent. Dialogs portal to <body>, outside the class, so they keep
+   the standing palette. */
+.cre-admin-atlas {
+  --admin-ink: #191919;
+  --admin-text: #282828;
+  --admin-muted: #505050;
+  --admin-faint: #8c8c8c;
+  --admin-rule: #dcdcdc;
+  --admin-rule-strong: #c8c8c8;
+  --admin-hover-edge: #8c8c8c;
+  --admin-fill: #ebebeb;
+  --admin-fill-soft: #eceff1;
+  --admin-slate-700: #31485c;
+  --admin-slate-800: #31485c;
+  --admin-brand: #31485c;
+  --admin-brand-ink: #31485c;
+  --admin-brand-tint: #eceff1;
+  --admin-brand-edge: #c8c8c8;
+  --admin-brand-soft-edge: #c8c8c8;
+  --admin-brand-hover-bg: #eceff1;
+  --admin-nav-active-bg: #eceff1;
+  --admin-nav-active-ink: #31485c;
+  --admin-chart-blue: #2980b9;
+  --admin-cta: var(--color-cta-500);
+  --admin-cta-hover: var(--color-cta-600, var(--color-cta-500));
+}
+.cre-admin-soft:hover { background: var(--admin-brand-hover-bg) !important; }
