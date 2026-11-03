@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { PillTabs, type PillTabItem } from '@/components/ui/PillTabs'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { useAccount } from '@/context/AccountContext'
+import { useAtlasAccountPages } from './useAtlasAccountPages'
 import {
   filterTranscripts,
   formatTranscriptDate,
@@ -63,6 +64,10 @@ export function TranscriptsPanel() {
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<SortState>({ key: 'completedDate', dir: 'desc' })
   const [exporting, setExporting] = useState(false)
+  /* In the learning pages' layout (2026-11-03, Eric's request): the table
+     framed by the cards' 1px rule all round, its column titles sitting on
+     the header's bottom line, and that line 1px rather than 2. */
+  const atlasFrame = useAtlasAccountPages()
 
   /*
    * ONE TRANSCRIPT OR SEVERAL — the whole of the export decision.
@@ -193,7 +198,7 @@ export function TranscriptsPanel() {
           }
         />
       ) : (
-        <div style={tableWrapStyle}>
+        <div style={atlasFrame ? ATLAS_TABLE_WRAP : tableWrapStyle}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-body)' }}>
             <caption className="cre-visually-hidden">
               {`Completed courses — ${
@@ -218,7 +223,7 @@ export function TranscriptsPanel() {
                       key={col.key}
                       scope="col"
                       aria-sort={ariaSort(col.key)}
-                      style={{ ...HEADER_CELL, ...(i === 0 && { paddingLeft: 24 }), ...col.cellStyle }}
+                      style={{ ...HEADER_CELL, ...(atlasFrame && { verticalAlign: 'bottom', borderBottom: '1px solid var(--color-neutral-500)' }), ...(i === 0 && { paddingLeft: 24 }), ...col.cellStyle }}
                     >
                       <button
                         type="button"
@@ -344,6 +349,13 @@ const actionStyle: CSSProperties = {
 const tableWrapStyle: CSSProperties = {
   borderTopLeftRadius: 16,
   borderTopRightRadius: 16,
+  overflow: 'hidden',
+  background: 'var(--color-surface-card)',
+}
+
+const ATLAS_TABLE_WRAP: CSSProperties = {
+  border: '1px solid var(--color-border-subtle)',
+  borderRadius: 'var(--atlas-card-radius, 16px)',
   overflow: 'hidden',
   background: 'var(--color-surface-card)',
 }

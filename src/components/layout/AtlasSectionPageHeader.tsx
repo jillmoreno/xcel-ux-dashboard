@@ -17,6 +17,8 @@ export function AtlasSectionPageHeader({
   title,
   onBack,
   contentWidth,
+  indent,
+  extraTop,
 }: {
   title: string
   onBack: () => void
@@ -24,6 +26,12 @@ export function AtlasSectionPageHeader({
    *  width and centres with it, so the title sits on the content's left edge
    *  (My Courses, 2026-10-06). Omitted, it spans the column as before. */
   contentWidth?: number
+  /** Further in from the content's left edge, so the title sits over the
+   *  first card beside a left Quick Links rather than over it (the End-to-End
+   *  version's My Courses and Certificates, 2026-11-02). */
+  indent?: number
+  /** More room above the crumb, on top of the shared 24 (2026-11-03). */
+  extraTop?: number
 }) {
   return (
     // No bottom padding (2026-10-06, Eric's request) — main's header style is 16;
@@ -35,6 +43,8 @@ export function AtlasSectionPageHeader({
         ...(contentWidth != null
           ? { maxWidth: contentWidth + 80, margin: '0 auto', boxSizing: 'border-box' as const }
           : null),
+        ...(indent != null ? { paddingLeft: 40 + indent } : null),
+        ...(extraTop != null ? { paddingTop: 24 + extraTop } : null),
       }}
     >
       <p style={CRUMB_ROW}>

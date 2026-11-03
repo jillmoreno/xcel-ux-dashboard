@@ -1,6 +1,8 @@
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAccount } from '@/context/AccountContext'
 import { useNotifications } from '@/context/NotificationsContext'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useAtlasAccountPages } from '@/components/account/useAtlasAccountPages'
 import { useProfileAvatar } from '@/context/ProfileAvatarContext'
 import { WHITE_COURSES, WHITE_COURSE_PARAM, WHITE_FIRST_COURSE_ID } from '@/data/atlasWhiteCourses'
 import { AtlasHeader } from './AtlasHeader'
@@ -39,6 +41,14 @@ export function AtlasHeaderConnected({
   const { unread } = useNotifications()
   const [params] = useSearchParams()
   const navigate = useNavigate()
+  /* LEARNER / ADMIN MODE in the profile menu — from feat/atlas-admin
+     (2026-10-20), brought here 2026-11-03 (Eric's request). The admin pages
+     are not on this branch, so Admin opens that branch's build — see
+     `ATLAS_ADMIN_BUILD`. */
+  const modeSwitch = useFeatureFlag('atlas-header-mode-switch').enabled
+  /* The profile menu's links in Quick Links' hover, with the account pages'
+     Quick Links layout (2026-11-03). */
+  const quickLinksMenu = useAtlasAccountPages()
 
   const section = params.get('section')
   const current =
@@ -81,6 +91,12 @@ export function AtlasHeaderConnected({
     <AtlasHeader
       current={current}
       onHelp={onHelp}
+      quickLinksMenu={quickLinksMenu}
+      modeMenu={
+        modeSwitch
+          ? { mode: 'learner', adminLinks: [], onSwitch: () => window.location.assign(`${ATLAS_ADMIN_BUILD}${window.location.search}`) }
+          : undefined
+      }
       user={{
         name: `${user.firstName} ${user.lastName}`,
         /* ⚠ JORDAN'S, TO MATCH THE NAME ON THE SAME LINE (2026-10-19,
@@ -128,3 +144,8 @@ export function AtlasHeaderConnected({
     />
   )
 }
+
+/* Atlas Admin's Students page on feat/atlas-admin's branch build — the
+   admin pages live there until they reach main, so the switch crosses to
+   it, carrying the query (demo, version, flags) along. */
+const ATLAS_ADMIN_BUILD = 'https://feat-atlas-admin--ux-design-xceldashboard.netlify.app/atlas-admin/students'

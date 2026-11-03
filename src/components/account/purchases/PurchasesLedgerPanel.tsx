@@ -340,7 +340,7 @@ function ReceiptSheetBody({
 const tableWrapStyle: CSSProperties = {
   background: 'var(--color-surface-card)',
   border: '1px solid var(--color-neutral-light)',
-  borderRadius: 'var(--radius-xl)',
+  borderRadius: 'var(--atlas-card-radius, var(--radius-xl))',
   overflowX: 'auto',
 }
 

@@ -19,7 +19,8 @@ import { CourseLauncherProvider, useCourseLauncher } from './CourseLauncherConte
 import { ResourceLauncherProvider, useResourceLauncher } from './ResourceLauncherContext'
 import { CatalogPage } from '@/pages/CatalogPage'
 import { MyCoursesPage } from '@/pages/MyCoursesPage'
-import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
+import { AtlasAccountLinksCard, AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
+import { useAtlasAccountPages } from '@/components/account/useAtlasAccountPages'
 import { AtlasCourseCard } from '@/components/compass/AtlasCourseCard'
 import {
   ATLAS_COURSE_CARD_W,
@@ -47,7 +48,7 @@ import {
   AccountSectionLayout,
   AccountSectionPlaceholder,
 } from '@/components/account/AccountSectionLayout'
-import { isAccountSection } from '@/components/account/accountSections'
+import { isAccountSection, type AccountSectionId } from '@/components/account/accountSections'
 import { TranscriptsPanel } from '@/components/account/TranscriptsPanel'
 import { NotificationsPanel } from '@/components/notifications/NotificationsPanel'
 import { GiftRecipientsPanel } from '@/components/account/purchases/GiftRecipientsPanel'
@@ -432,6 +433,22 @@ function PlatformShellBody() {
      hook COUNT between renders and React throws the shell away. */
   const atlasQuickLinksMode = useFeatureFlag('atlas-pages-quick-links').variant
   const atlasQuickLinksHidden = isE2ELikeVersion(shellVersion) && atlasQuickLinksMode !== 'shown'
+  /* …and with the rail SHOWN on the left (2026-11-03, Eric's request, as his
+     breakpoints branch): the title over the first card rather than over Quick
+     Links, which rises to the crumb's line — see `E2E_QUICK_LINKS_LIFT`. */
+  const e2eQuickLinksLeft = useFeatureFlag('atlas-wip-quick-links-side').variant !== 'right'
+  /* …and the account pages, in the same layout (2026-11-03) — see
+     `useAtlasAccountPages`. */
+  const atlasAccountPage = useAtlasAccountPages() && isAccountSection(active)
+  /* The containers' 16 — see `--atlas-card-radius` on the grid. Read
+     unconditionally, ANDed after (the hook-count trap). */
+  const cardRadiusFlag = useFeatureFlag('atlas-card-radius-16').enabled
+  const cardRadius16 = cardRadiusFlag && atlasNav && isE2ELikeVersion(shellVersion)
+  const e2eSectionIndent =
+    atlasAccountPage ||
+    (isE2ELikeVersion(shellVersion) && !atlasQuickLinksHidden && e2eQuickLinksLeft && (active === 'courses' || active === 'certificates'))
+      ? E2E_QUICK_LINKS_COLUMN_W + 24
+      : undefined
   /* ⚠ THE ACCOUNT PAGES HAVE THEIR OWN NAV, AND IT IS NOT THIS ONE
      (2026-10-19, Jillienne: "clicking on profile should not show this random
      left nav. remove it"). Profile, Notifications, Transcripts, My Purchases
@@ -1090,13 +1107,19 @@ function PlatformShellBody() {
         // edge, the same offset the rails pin at. Read by the Atlas home's
         // sticky left column (`LearnerFocusedBand`).
         ['--cre-shell-top' as string]: `${headerBottom}px`,
+        /* EVERY CONTAINER AT 16 on the learner and account pages (2026-11-03,
+           Eric's request) — the cards, panels and Quick Links read
+           `var(--atlas-card-radius, <their own>)`, so with this unset they
+           keep their own corners. Buttons and pills never read it. */
+        ...(cardRadius16 ? { ['--atlas-card-radius' as string]: '16px' } : null),
         // Eric/Atlas White's Home is on WHITE (2026-10-12, Eric's request;
         // Figma 312:1649) — the course header keeps its own panel.
         // …and its My Courses and Certificates, WIP's pages on White's white
         // (2026-10-14, Eric's request).
-        ...(atlasNav &&
+        // …and the account pages in that layout (2026-11-03, Eric's request).
+        ...((atlasNav &&
         (active === 'dashboard' || active === 'courses' || active === 'certificates') &&
-        isEricAtlasWhiteLike(shellVersion)
+        isEricAtlasWhiteLike(shellVersion)) || atlasAccountPage
           ? { background: 'var(--color-fixed-light)' }
           : atlasNav && (active === 'dashboard' || active === 'course' || active === 'resources')
             ? { background: 'var(--color-compass-page)' }
@@ -1469,10 +1492,13 @@ function PlatformShellBody() {
               // My Courses centres its content; the header follows it — until
               // the rail goes and the cards run full width (2026-11-02).
               contentWidth={
-                (active === 'courses' || wipCertificates) && !atlasQuickLinksHidden
+                ((active === 'courses' || wipCertificates) && !atlasQuickLinksHidden) || atlasAccountPage
                   ? ATLAS_MY_COURSES_WIDTH
                   : undefined
               }
+              indent={e2eSectionIndent}
+              // …and 16 lower, so the crumb's top is Quick Links' top (2026-11-03).
+              extraTop={e2eSectionIndent != null ? E2E_PAGE_DROP : undefined}
             />
           ) : (
           <SectionPageHeader
@@ -2292,7 +2318,8 @@ function SectionShell({
           : atlasHome || atlasResources
           ? 56
           : `${headerAbove ? 0 : 24}px ${
-              isAccountSection(active) ? ACCOUNT_SECTION_GUTTER : 40
+              // …except under the learning pages' header, which is set to 40.
+              isAccountSection(active) && !breadcrumbHeader ? ACCOUNT_SECTION_GUTTER : 40
             }px 64px`,
       }}
     >
@@ -2721,7 +2748,7 @@ function MyCoursesSection() {
   return (
     <MyCoursesPage
       embedded
-      aside={showQuickLinks ? <AtlasJourneyLinksCard withoutCoursePages={wip} style={wip ? WIP_QUICK_LINKS : undefined} /> : undefined}
+      aside={showQuickLinks ? <AtlasJourneyLinksCard withoutCoursePages={wip} style={wip ? (baseline && !quickLinksRight ? WIP_QUICK_LINKS_LIFTED : WIP_QUICK_LINKS) : undefined} /> : undefined}
       // On the LEFT again on WIP (2026-10-13, Eric's request — its Home's
       // Quick Links moved left the same day); `asideRight` stays available.
       // …at the Home card's 230 (same day). The Design bar's Quick Links
@@ -2739,7 +2766,7 @@ function MyCoursesSection() {
       /* Centred at the October width while the rail is there; full width
          without it, so the cards "shift over to the left" (2026-11-02). */
       contentWidth={showQuickLinks ? ATLAS_MY_COURSES_WIDTH : undefined}
-      asideWidth={wip ? WIP_QUICK_LINKS_W : ATLAS_MY_COURSES_ASIDE_W}
+      asideWidth={wip ? (baseline && !quickLinksRight ? E2E_QUICK_LINKS_COLUMN_W : WIP_QUICK_LINKS_W) : ATLAS_MY_COURSES_ASIDE_W}
       /* THE SHARED CARD'S TWO PROPS (2026-11-02, Jillienne: "use the shared
          course card, but update the course title to the serif font, do NOT put
          a cta on the card"). The shared card has never had a call to action, so
@@ -2782,12 +2809,65 @@ function MyCoursesSection() {
     />
   )
 }
+/* An account page's frame: the shared sub-nav beside it, or — under
+   `useAtlasAccountPages` (2026-11-03) — My Certificates' layout, with the
+   account nav as a Quick Links card in Quick Links' place, at its width, lift
+   and gap. A component so it can read the hook; `SectionContent` cannot. */
+function AccountSection({
+  active,
+  onSelect,
+  body,
+}: {
+  active: AccountSectionId
+  onSelect: (id: AccountSectionId) => void
+  body: ReactNode
+}) {
+  const atlas = useAtlasAccountPages()
+  if (!atlas) {
+    return (
+      <AccountSectionLayout active={active} onSelect={onSelect}>
+        {body}
+      </AccountSectionLayout>
+    )
+  }
+  return (
+    <div
+      style={{
+        maxWidth: ATLAS_MY_COURSES_WIDTH,
+        margin: '24px auto 0',
+        display: 'grid',
+        gridTemplateColumns: `${E2E_QUICK_LINKS_COLUMN_W}px minmax(0, 1fr)`,
+        gap: 24,
+        alignItems: 'start',
+      }}
+    >
+      <AtlasAccountLinksCard active={active} onSelect={onSelect} style={WIP_QUICK_LINKS_LIFTED} />
+      <div style={{ minWidth: 0 }}>{body}</div>
+    </div>
+  )
+}
+
 /* Eric/Atlas WIP's Quick Links on My Courses and Certificates — its Home
    card's (AtlasHomeEricV3): 230 wide, 24 in, outlined in Secondary 100
    darkened 5%. */
 // 234, so the longest label's hover weight fits on one line (2026-10-14).
 const WIP_QUICK_LINKS_W = 234
 const WIP_QUICK_LINKS: CSSProperties = { border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)', padding: 24 }
+/* Its standard position on the End-to-End version (2026-11-03, Eric's
+   request): level with the "Back to Home" crumb, as Home's sits at the top of
+   its page — the page header's crumb row and title (16.5 + 6 + 34) and the
+   24 the page keeps above its first row — and 8 in from the column's edge —
+   so it sits exactly where Home's does, measured from the top nav and from
+   the left (2026-11-03, Eric's request: "the same on all pages"). The page
+   drops 16 to meet it (`E2E_PAGE_DROP`), so the crumb's top is its top, and
+   the header steps right over the first card (`indent`). */
+const E2E_PAGE_DROP = 16
+const E2E_QUICK_LINKS_LIFT = 16.5 + 6 + 34 + 24
+/* Its column: 8 in, the card's 234 and 8 more — with the page's own 24 gap
+   after it, the cards sit Home's 32 from Quick Links (2026-11-03). */
+const E2E_QUICK_LINKS_COLUMN_W = 8 + WIP_QUICK_LINKS_W + 8
+// …and Home's 20 corners, not the card's own 12 (2026-11-03).
+const WIP_QUICK_LINKS_LIFTED: CSSProperties = { ...WIP_QUICK_LINKS, marginTop: -E2E_QUICK_LINKS_LIFT, marginLeft: 8, width: WIP_QUICK_LINKS_W, flex: 'none', borderRadius: 'var(--atlas-card-radius, 20px)' }
 
 /* Certificates in the shell. Eric/Atlas WIP drops the page's search, result
    count and filter rail, and status tabs (2026-10-13, Eric's request), and
@@ -2821,8 +2901,8 @@ function CertificatesSection() {
       // The Home card's dimensions — 230 wide, 24 in, its Primary 200 outline
       // (2026-10-13, Eric's request). Off the baseline since 2026-11-02 —
       // `atlas-pages-quick-links`.
-      aside={showQuickLinks ? <AtlasJourneyLinksCard withoutCoursePages style={WIP_QUICK_LINKS} /> : undefined}
-      asideWidth={WIP_QUICK_LINKS_W}
+      aside={showQuickLinks ? <AtlasJourneyLinksCard withoutCoursePages style={baseline && !quickLinksRight ? WIP_QUICK_LINKS_LIFTED : WIP_QUICK_LINKS} /> : undefined}
+      asideWidth={baseline && !quickLinksRight ? E2E_QUICK_LINKS_COLUMN_W : WIP_QUICK_LINKS_W}
       asideRight={quickLinksRight}
       /* Centred at the October width while the rail is there; full width
          without it, so the cards shift left (2026-11-02). */
@@ -2857,7 +2937,10 @@ function CertificatesSection() {
        * Eric's versions keep the overlay he asked for on 2026-10-13: his Home
        * has that course under way, so its certificate is not earned there.
        */
-      inProgressIds={wip && !baseline ? ['cert-xcel-lh-prelicense'] : undefined}
+      // …and on the baseline with the Atlas card (2026-11-03, Eric's
+      // feat/quick-links, as his breakpoints row): Home has that course
+      // under way, so its certificate is not earned yet.
+      inProgressIds={wip && (!baseline || !sharedCert) ? ['cert-xcel-lh-prelicense'] : undefined}
       sharedCardSerif={sharedCert}
       // White's cards: the guide's Secondary 100 fill with a 1px Secondary 200
       // outline (2026-10-14, Eric's request) — the tan ramp, by role, so the
@@ -2981,11 +3064,7 @@ function renderBody(
         // Payment Methods were archived, and two until today.
         <AccountSectionPlaceholder id={active} />
       )
-    return (
-      <AccountSectionLayout active={active} onSelect={(id) => onSelect(id)}>
-        {body}
-      </AccountSectionLayout>
-    )
+    return <AccountSection active={active} onSelect={(id) => onSelect(id)} body={body} />
   }
   // (Gift Recipients — purchase-for-others tracking — is an account section
   // above; `/account/gift-recipients` redirects here.)

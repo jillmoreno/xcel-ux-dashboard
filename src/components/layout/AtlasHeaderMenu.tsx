@@ -139,11 +139,15 @@ export function AtlasHeaderMenuItem({
   href = '#',
   icon,
   onSelect,
+  trailing,
   children,
 }: {
   href?: string
   icon?: ReactNode
   onSelect?: () => void
+  /** After the label, at the row's far end — the Quick Links hover's
+   *  angle-right on the profile menu (2026-11-03). */
+  trailing?: ReactNode
   children: ReactNode
 }) {
   return (
@@ -167,6 +171,11 @@ export function AtlasHeaderMenuItem({
         </span>
       ) : null}
       {children}
+      {trailing ? (
+        <span aria-hidden className="cre-atlas-hdr-item-trailing" style={{ display: 'inline-flex', marginLeft: 'auto' }}>
+          {trailing}
+        </span>
+      ) : null}
     </a>
   )
 }

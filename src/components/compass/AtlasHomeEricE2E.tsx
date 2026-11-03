@@ -23,6 +23,7 @@ import { accessCountLabel } from './atlasCourseAccess'
 import { courseExpiryTier, usableDaysLeft } from '@/data/courseExpiry'
 import type { CourseExpiryTier } from '@/data/courseExpiry'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
+import { AtlasExamDateStep } from './AtlasExamDateStep'
 import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
 import { CircleCheckSolid } from '@/icons'
@@ -31,6 +32,7 @@ import type { NoPaceReason } from './noPaceMessage'
 import { ATLAS_PROGRESS_ORDER, atlasRungFor, isLessonRowTitle, journeyTitleFor } from './atlasProgressLadder'
 import { paceStandingMessage, type PaceStanding } from './paceStanding'
 import { AtlasPaceRingCard } from './AtlasPaceRingCard'
+import { AtlasPaceRingCardFigma } from './AtlasPaceRingCardFigma'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag, useFeatureFlags, useCourseDemo } from '@/context/FeatureFlagContext'
 import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
@@ -242,6 +244,10 @@ export function AtlasHomeEricE2E({
      are real pages now, so they are let back through. */
   const learningPagesLive = useFeatureFlag('atlas-home-opens-learning-pages').enabled
   const paceCard = useFeatureFlag('atlas-pace-card').variant ?? 'ring'
+  /* Eric's Figma pass on the ring card (592:457), from his breakpoints
+     branch (2026-11-03) — a sibling, switched here by `atlas-pace-card-figma`;
+     its panel takes 32 a side. */
+  const RingCard = useFeatureFlag('atlas-pace-card-figma').enabled ? AtlasPaceRingCardFigma : AtlasPaceRingCard
   /* Whether the column carries Exam readiness at all — a design-bar on/off,
      see `atlas-readiness-section`. */
   const showReadiness = useFeatureFlag('atlas-readiness-section').enabled
@@ -636,6 +642,14 @@ export function AtlasHomeEricE2E({
   const columnAlign = useFeatureFlag('atlas-home-align').variant === 'left' ? 'left' : 'center'
   /* The design bar's Exam date prompt — Row (default) or Card. */
   const examPromptCard = useFeatureFlag('atlas-exam-prompt').variant === 'card'
+  /* SET EXAM DATE IN STEP 2 (2026-10-19, Eric's request) — off the walk only;
+     the walk's Step 2 is Jillienne's prompt. */
+  const examDateStepFlag = useFeatureFlag('atlas-exam-date-step').enabled
+  const examDateStep = examDateStepFlag && !walkSteps
+  /* Bumped by a click on Step 2's title — the panel remounts at Default
+     (2026-10-19, Eric's request: a reset for demoing, with no look of its
+     own). */
+  const [examDateResetKey, setExamDateResetKey] = useState(0)
   const examInfo = onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : undefined
   /* …and Step 3's, the same sheet Quick Links' "Applying for a License"
      opens, by the step's own id rather than a second copy of it. */
@@ -765,7 +779,7 @@ export function AtlasHomeEricE2E({
                 : 'Current course'
           }
           beginLabel={beginLabel}
-          onCover={() => setWhiteHead(true)}
+          // No layout swap on a cover click any more (2026-11-03, Eric's request).
           /* Nothing to review once access has gone — the only move left is to
              buy it back, so Course Overview comes off rather than sitting
              beside a purchase CTA. */
@@ -775,7 +789,8 @@ export function AtlasHomeEricE2E({
              also need is the way to buy more time. Once access has GONE the
              head drops to the purchase CTA alone — see `beginLabel`. */
           onPurchaseExtension={
-            !expiredView && accessDays != null && accessDays <= 1 ? NO_LINK : undefined
+            // …and never at Ready 100% (2026-11-03, Eric's request).
+            !completedView && !expiredView && accessDays != null && accessDays <= 1 ? NO_LINK : undefined
           }
           /* ⚠ BOTH, AT 100% (2026-10-21). Review Course reopens the material;
              this opens the thing they finished it for. `go('certificates')` is
@@ -785,6 +800,12 @@ export function AtlasHomeEricE2E({
           onOverview={LINKS_OFF && !overviewOpensCompass ? NO_LINK : onOverview}
           onBegin={onBeginCta}
           beginDisabled={!completedView && !LINKS_OFF && !onBegin}
+          /* ACCESS GONE BY DATE (the demo bar's Expires → Expired, 2026-11-03,
+             Eric's request): Resume comes off and Purchase Extension is the
+             primary, last, with Course Overview kept. The ladder's own
+             `expired` rung keeps its own arm above (`beginLabel`). */
+          tier={!expiredView && expiryTier === 'expired' ? 'expired' : undefined}
+          overviewWhenExpired
         />
         )}
 
@@ -819,7 +840,7 @@ export function AtlasHomeEricE2E({
               style={
                 onWhite
                   ? paceCard === 'ring'
-                    ? { ...WHITE_PROGRESS_PANEL, gap: 0 }
+                    ? { ...WHITE_PROGRESS_PANEL, gap: 0, ...(RingCard === AtlasPaceRingCardFigma ? { paddingLeft: 32, paddingRight: 32, paddingBottom: 40 } : null) }
                     : WHITE_PROGRESS_PANEL
                   : { display: 'contents' }
               }
@@ -842,7 +863,10 @@ export function AtlasHomeEricE2E({
                  hardcoded week count is how those two start describing
                  different plans. `HybridHomeV1` pins its 3 deliberately and
                  records the derivation it dropped — this one keeps it. */
-              <AtlasPaceRingCard
+              <RingCard
+                /* Ready 100%: the dial alone — no rule, no Study pace (2026-11-03,
+                   Eric's request); a finished course has no plan left to pace. */
+                progressOnly={completedView}
                 /* The ladder carries the figure for every state now,
                    including 0 — see the note there. The `percent` prop is the
                    persona's and only stands in for a state with no figure. */
@@ -974,7 +998,7 @@ export function AtlasHomeEricE2E({
             {/* Not on Eric/Atlas White (2026-10-14, Eric's request: "remove");
                 WIP keeps it. */}
             {onWhite ? null : (
-              <AtlasExamDateCard key={refreshKey} stateName={state} style={{ ...RAIL_CARD_BORDER, borderRadius: 20 }} hideIntroCopy />
+              <AtlasExamDateCard key={refreshKey} stateName={state} style={{ ...RAIL_CARD_BORDER, borderRadius: 'var(--atlas-card-radius, 20px)' }} hideIntroCopy />
             )}
             {/* The READINESS card, under the module (Figma 254:8012, 2026-10-08). */}
             {/* On the Completed view it opens on Proficient (2026-10-09, Eric). */}
@@ -1076,7 +1100,10 @@ export function AtlasHomeEricE2E({
 
           {/* Right: the journey — at most 335, White's (2026-10-13, Eric's
               request). */}
-          <div style={{ flex: '1 1 0', minWidth: 0, maxWidth: 335, display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* 360 with Set Exam Date on, so its "Do you know your state exam
+              date?" sits on one line: its 226 plus the panel's 24 + 24 in, 12
+              gap and the 73 Yes column (2026-10-19, Eric's request). */}
+          <div style={{ flex: '1 1 0', minWidth: 0, maxWidth: examDateStep ? 360 : 335, display: 'flex', flexDirection: 'column', gap: 24 }}>
             {/* THE STATE EXAM DATE PROMPT, above the steps — Figma 428:3134
                 (2026-10-15, Eric's request). Its own width, wider than the
                 steps' 335. Yes and Not Yet are not wired yet. */}
@@ -1085,7 +1112,9 @@ export function AtlasHomeEricE2E({
                 `ExamDatePrompt`; this position is Eric's Atlas Learning tile
                 and carries the pill he promoted — see `ExamDateQuestionPill`
                 for why they are two components. */}
-            {walkSteps ? null : <ExamDateQuestionPill />}
+            {/* Gone when Step 2 carries Set Exam Date (`atlas-exam-date-step`,
+                2026-10-19) — the question is asked there instead. */}
+            {walkSteps || examDateStep ? null : <ExamDateQuestionPill />}
             {/* ⚠ AT 100% THE RING ARM SHOWS THE STOPS, ALL DONE (2026-10-16,
                 Jillienne: "we need to show the items in step 1 as compelted").
                 The work is what was completed, so the list is the thing worth
@@ -1168,7 +1197,18 @@ export function AtlasHomeEricE2E({
                  the same question on screen twice. Replacing the sentence is
                  also what makes the step ask something instead of reciting
                  figures the learner cannot act on yet. */
-              detail={walkSteps ? <ExamDatePrompt onExamInfo={examInfo} card={examPromptCard} /> : pass.detail}
+              detail={
+                walkSteps ? (
+                  <ExamDatePrompt onExamInfo={examInfo} card={examPromptCard} />
+                ) : examDateStep ? undefined : (
+                  pass.detail
+                )
+              }
+              /* SET EXAM DATE (Figma 466:856, 2026-10-19, Eric's request), in
+                 place of the "150 scored questions…" line and the pill above
+                 the steps. Off the walk only. */
+              panel={examDateStep ? <AtlasExamDateStep key={examDateResetKey} stateName={state ?? 'your'} /> : undefined}
+              onTitle={examDateStep ? () => setExamDateResetKey((k) => k + 1) : undefined}
               link={pass.detailLabel ?? 'What to expect'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(pass.id) : undefined}
             />
@@ -1245,7 +1285,7 @@ export function AtlasHomeEricE2E({
             border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)',
             ...(onWhite && headH ? { height: headH } : null),
             // …and its 20 corners (same day).
-            ...(onWhite ? { borderRadius: 20 } : null),
+            ...(onWhite ? { borderRadius: 'var(--atlas-card-radius, 20px)' } : null),
           }}
         />
 
@@ -1594,12 +1634,20 @@ function Step({
   detail,
   link,
   onLink,
+  panel,
+  onTitle,
 }: {
   number: number
   title: string
   /** A node, not just a string, since 2026-10-16: Step 2's detail is the
    *  state-exam-date prompt on the walk, not a sentence. */
   detail?: ReactNode
+  /** A block under the title, outside the detail's paragraph — Set Exam
+   *  Date (2026-10-19). */
+  panel?: ReactNode
+  /** A click on the title — a hidden demo control, drawn exactly as the
+   *  title: no cursor, hover or pressed look (2026-10-19). */
+  onTitle?: () => void
   link: string
   onLink?: () => void
 }) {
@@ -1607,9 +1655,14 @@ function Step({
     <section aria-label={title} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
         <p style={STEP_EYEBROW}>Step {number}</p>
-        <p style={STEP_TITLE}>{title}</p>
+        {/* With `onTitle`, the title resets Set Exam Date to its first state —
+            for demoing, so it keeps the title's look exactly. */}
+        <p style={STEP_TITLE} onClick={onTitle}>
+          {title}
+        </p>
       </div>
       {detail ? <p style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }}>{detail}</p> : null}
+      {panel}
       {onLink ? (
         <button type="button" className="cre-compass-v2-link" onClick={onLink} style={LINK}>
           {link} →
@@ -1750,7 +1803,7 @@ const EXAM_CARD: CSSProperties = {
   gap: 16,
   boxSizing: 'border-box',
   padding: '12px 16px',
-  borderRadius: 12,
+  borderRadius: 'var(--atlas-card-radius, 12px)',
   background: 'var(--color-primary-100)',
   marginBottom: 6,
 }
@@ -1889,7 +1942,7 @@ const CARD: CSSProperties = {
   paddingBottom: 40,
   paddingLeft: 40,
   boxSizing: 'border-box',
-  borderRadius: 20, // the inner cards' 20 (2026-10-13, Eric's request); it was 14
+  borderRadius: 'var(--atlas-card-radius, 20px)', // the inner cards' 20 (2026-10-13, Eric's request); it was 14
   background: 'var(--color-compass-course-card)',
   // No outer stroke (2026-10-02, the designer's request); the Compass MEDIUM
   // shadow lifts it instead (the small one was tried the same day).
@@ -1938,6 +1991,19 @@ const COVER_FRAME: CSSProperties = {
  * the wrong picture entirely. A straight move of the page's own JSX, so the
  * two cannot differ.
  */
+/* The course header's cover: a button that swaps the layout when there is a
+   swap to make, a plain frame when there is not (2026-11-03). Same box, so
+   the header lays out identically either way. */
+function CoverFrame({ onCover, style, children }: { onCover?: () => void; style: CSSProperties; children: ReactNode }) {
+  return onCover ? (
+    <button type="button" aria-label="Course header — layout 1 of 2. Press to show the next layout." onClick={onCover} style={style}>
+      {children}
+    </button>
+  ) : (
+    <div style={{ ...style, cursor: 'default' }}>{children}</div>
+  )
+}
+
 export function AtlasCourseHeadRow({
   onWhite,
   cover,
@@ -1950,6 +2016,7 @@ export function AtlasCourseHeadRow({
   onOverview,
   onBegin,
   beginDisabled = false,
+  overviewWhenExpired = false,
   onPurchaseExtension,
   onViewCertificate,
   tier = 'normal',
@@ -1965,7 +2032,9 @@ export function AtlasCourseHeadRow({
   eyebrow?: string
   beginLabel: string
   /** Flips to the other header layout. A review affordance, not a feature. */
-  onCover: () => void
+  /** A click on the cover swaps the header's layout. Absent, the cover is
+   *  a plain image with nothing to click (2026-11-03, Eric's request). */
+  onCover?: () => void
   showOverview: boolean
   onOverview?: () => void
   onBegin?: () => void
@@ -1981,6 +2050,9 @@ export function AtlasCourseHeadRow({
    * which is the point of warning them at all. It is the action the row above
    * it is ARGUING for, so it leads.
    */
+  /** Keep Course Overview once access has gone (the End-to-End Home,
+   *  2026-11-03, Eric's request). Off, it comes off with Begin. */
+  overviewWhenExpired?: boolean
   onPurchaseExtension?: () => void
   /** Shows "View Certificate" beside Course Overview. Supplied once the course
    *  is complete: Review Course takes the learner back into the material and
@@ -2029,10 +2101,8 @@ export function AtlasCourseHeadRow({
          with slack in it. */
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'stretch' }}>
         {cover ? (
-          <button
-            type="button"
-            aria-label="Course header — layout 1 of 2. Press to show the next layout."
-            onClick={onCover}
+          <CoverFrame
+            onCover={onCover}
             // 12 corners on Eric/Atlas White, 8 under the card’s 20 (2026-10-14)
             // — and the 260 column's width less the panel's padding there, so
             // its right edge lines up with that column below.
@@ -2050,7 +2120,7 @@ export function AtlasCourseHeadRow({
             }}
           >
             <img src={cover} alt="" style={COVER} />
-          </button>
+          </CoverFrame>
         ) : null}
         {/* ⚠ A 436px BASIS, NOT `1 1 0` (2026-10-21). With a zero basis this
             column was the first thing to shrink, so at 600px it fell to 240 and
@@ -2076,19 +2146,7 @@ export function AtlasCourseHeadRow({
               eight the row was short. */}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {onPurchaseExtension ? (
-              expired ? (
-                /* PRIMARY once access has gone — nothing else is left on the
-                   card, so the one remaining action takes the one remaining
-                   primary treatment. */
-                <button
-                  type="button"
-                  className="cre-compass-primary cre-compass-btn-primary"
-                  onClick={onPurchaseExtension}
-                  style={HEADER_PRIMARY}
-                >
-                  Purchase Extension
-                </button>
-              ) : (
+              expired ? null : (
                 <button
                   type="button"
                   /* ⚠ NO `cre-compass-secondary` WHILE A TONE IS SET. That class
@@ -2123,7 +2181,7 @@ export function AtlasCourseHeadRow({
                 View Certificate
               </button>
             ) : null}
-            {showOverview && !expired ? (
+            {showOverview && (!expired || overviewWhenExpired) ? (
               <button
                 type="button"
                 className="cre-compass-secondary cre-atlas-home-secondary"
@@ -2151,6 +2209,20 @@ export function AtlasCourseHeadRow({
               {beginLabel}
             </button>
             )}
+            {onPurchaseExtension && expired ? (
+              /* PRIMARY once access has gone, and LAST (2026-11-03, Eric's
+                 request — it led the row until then): Begin is gone, so the
+                 one remaining action takes the primary treatment and the
+                 primary's place at the end of the row. */
+              <button
+                type="button"
+                className="cre-compass-primary cre-compass-btn-primary"
+                onClick={onPurchaseExtension}
+                style={HEADER_PRIMARY}
+              >
+                Purchase Extension
+              </button>
+            ) : null}
           </div>
         </div>
       </div>
@@ -2401,7 +2473,7 @@ const WHITE_PROGRESS_PANEL: CSSProperties = {
   // column is where the content ends up widest.
   padding: '8px 24px',
   boxSizing: 'border-box',
-  borderRadius: 20,
+  borderRadius: 'var(--atlas-card-radius, 20px)',
   // No stroke, a Secondary 100 fill (2026-10-15, Eric's request; it had
   // Quick Links' border).
   background: 'var(--color-atlas-tan-100)',
@@ -2429,7 +2501,7 @@ const WHITE_COURSE_HEAD: CSSProperties = {
   // 8 more below it, before the Progress row (2026-10-14, Eric's requests:
   // 8, then 8 more; 8 less on 2026-10-15).
   marginBottom: 8,
-  borderRadius: 20,
+  borderRadius: 'var(--atlas-card-radius, 20px)',
   background: 'var(--color-primary-100)',
 }
 
