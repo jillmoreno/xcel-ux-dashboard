@@ -53,7 +53,6 @@ export function AtlasPaceRingCardFigma({
   expected,
   exam,
   paceStyleName,
-  paceIcon,
   standingMessage,
   noPace,
   readinessBelow = false,
@@ -288,7 +287,9 @@ export function AtlasPaceRingCardFigma({
             at each end, 12 either side; then the pace name over the goal and the hours. */}
         <div style={ICON_ROW}>
           <span aria-hidden style={{ ...ICON, alignSelf: 'flex-start', marginTop: 3 }}>
-            {paceIcon ?? <GaugeThin size={34} aria-hidden />}
+            {/* Always the Thin gauge (2026-11-03, Eric's request), whatever
+                pace style `paceIcon` names — the Figma card's own glyph. */}
+            <GaugeThin size={34} aria-hidden />
           </span>
           <span aria-hidden style={{ ...ICON_RULE, marginTop: 3, marginBottom: 3 }} />
           {weeks == null ? (
