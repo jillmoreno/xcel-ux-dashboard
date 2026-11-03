@@ -6,6 +6,7 @@ import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider, useFeatureFlags } from '@/context/FeatureFlagContext'
 import {
   InvitedCheckoutRoute,
+  InviteEmailRoute,
   InvitedConfirmationRoute,
   InvitedProductDetailRoute,
   QrInviteRoute,
@@ -39,6 +40,7 @@ function renderAt(path: string, ff: string) {
       <AccountProvider>
         <FeatureFlagProvider>
           <Routes>
+            <Route path="/end-to-end-demo/email" element={<InviteEmailRoute />} />
             <Route path="/end-to-end-demo/qr" element={<QrInviteRoute />} />
             <Route path="/end-to-end-demo" element={<InvitedProductDetailRoute />} />
             <Route path="/end-to-end-demo/checkout" element={<InvitedCheckoutRoute />} />
@@ -110,6 +112,28 @@ describe('Invite Flow V3 — B2B opening screens', () => {
 })
 
 const CHECKOUT = '/end-to-end-demo/checkout'
+
+describe('Invite Flow V3 — the Direct Email invitation', () => {
+  const DIRECT = 'invite-flow-version:v3,invite-v3-model:b2b,invite-v3-flow-b2b:direct-email'
+
+  it('says who invited them and why to open it — no name, prices or eyebrow', () => {
+    renderAt('/end-to-end-demo/email', DIRECT)
+    expect(screen.getByRole('heading', { level: 1, name: 'You’re Invited to Get Licensed' })).toBeInTheDocument()
+    const letter = screen.getByRole('article')
+    expect(letter).toHaveTextContent('Hi there,')
+    expect(letter).toHaveTextContent(
+      'Sunrise Bank has invited you to begin your licensing journey. Open your invitation to access your discount!',
+    )
+    expect(letter).toHaveTextContent('Official partner of')
+    expect(screen.getByText('CodyMcClintock@tampa.com')).toBeInTheDocument()
+    expect(screen.queryByText('support@xcelsolutions.com')).not.toBeInTheDocument()
+    expect(letter).not.toHaveTextContent(/Sent for|This is an example/)
+    expect(letter).not.toHaveTextContent(/\$65|\$199|saves you|Opens the|Invitation/)
+
+    /* The ending's red Start Course button, not V2's navy pill. */
+    expect(within(letter).getByRole('button', { name: 'View invitation' })).toHaveClass('cre-e2e-cta')
+  })
+})
 
 describe('Invite Flow V3 — the email check', () => {
   it('asks for the email only, and keeps Continue off until it is an address', async () => {

@@ -21,14 +21,10 @@ import {
   CircleUser,
 } from '@/icons'
 import {
-  E2E_COURSE_TITLE_SHORT,
   E2E_EMAIL_ADMIN,
   E2E_EMAIL_OFFICE,
-  E2E_LEARNER_FIRST,
   E2E_LEARNER_NAME,
-  E2E_ORIGINAL_PRICE,
   E2E_PARTNER_NAME,
-  E2E_PARTNER_PRICE,
   useEndToEndDemoParams,
   useEndToEndPageChrome,
 } from './endToEndDemo'
@@ -66,19 +62,6 @@ import './inviteFlow.css'
  * demo's (`E2E_LEARNER_*`). The second message exists to make the inbox read
  * as an inbox rather than a page with one row on it.
  */
-/** "$199.00" → "$199" — the email sets prices large and the cents are noise
- *  at that size. The flow's own pages keep them. */
-function shortPrice(v: string): string {
-  return v.replace(/\.00$/, '')
-}
-
-/** ⚠ DERIVED, NEVER TYPED. The design says "saves you $134"; that is
- *  199 − 65, and writing it by hand is a third number to keep in step with
- *  the two above it. */
-const emailSaving = shortPrice(
-  `$${(Number(E2E_ORIGINAL_PRICE.replace(/[^0-9.]/g, '')) - Number(E2E_PARTNER_PRICE.replace(/[^0-9.]/g, ''))).toFixed(2)}`,
-)
-
 export function InviteEmailPageV3() {
   useEndToEndDemoParams()
   useEndToEndPageChrome('Inbox')
@@ -111,8 +94,8 @@ export function InviteEmailPageV3() {
           {
             from: 'XCEL Solutions',
             when: 'Today',
-            subject: `You’re invited: ${E2E_COURSE_TITLE_SHORT}…`,
-            preview: `${E2E_PARTNER_NAME} invited ${E2E_LEARNER_FIRST} to enroll at th…`,
+            subject: 'You’re Invited to Get Licensed',
+            preview: `${E2E_PARTNER_NAME} has invited you to begin your licensing journey…`,
             open: true,
           },
           /* A second message, so the inbox reads as an inbox. Nothing about it
@@ -129,11 +112,12 @@ export function InviteEmailPageV3() {
           {/* The client's own eyebrow over the subject — which mailbox you
               are reading in, as the design draws it. */}
           <p style={READER_EYEBROW}>Inbox</p>
-          <h1 style={SUBJECT}>You’re invited: {E2E_COURSE_TITLE_SHORT}</h1>
+          <h1 style={SUBJECT}>You’re Invited to Get Licensed</h1>
           <div style={FROM_ROW}>
             <CircleUser size={40} aria-hidden style={{ color: 'var(--color-neutral-300)', flex: 'none' }} />
             <div style={{ minWidth: 0, flex: '1 1 0' }}>
-              <p style={FROM_ADDRESS}>support@xcelsolutions.com</p>
+              {/* From the recruiter, not XCEL support (2026-11-03, Afsana). */}
+              <p style={FROM_ADDRESS}>CodyMcClintock@tampa.com</p>
               <p style={FROM_TO}>
                 <span style={{ fontWeight: 600 }}>To:</span> {E2E_LEARNER_NAME}
               </p>
@@ -149,59 +133,33 @@ export function InviteEmailPageV3() {
               said Pristine Solutions; the whole flow is Sunrise Bank now. */}
           <article style={EMAIL}>
             <header style={EMAIL_HEAD}>
-              <span aria-hidden style={PARTNER_MARK}>
-                {/* A GENERIC SUNRISE, not a logo. Sunrise Bank is invented,
-                    so there is no real mark to reproduce — a sun over a
-                    horizon reads as the name without borrowing anyone's
-                    identity. Replace it the day a real partner's artwork
-                    arrives, the way the XCEL lockup beside it is real. */}
-                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden focusable="false">
-                  <circle cx="12" cy="13" r="5" fill="currentColor" />
-                  <rect x="3" y="16" width="18" height="2" rx="1" fill="currentColor" />
-                </svg>
-              </span>
               <p style={EMAIL_PARTNER}>{E2E_PARTNER_NAME}</p>
               <span aria-hidden style={EMAIL_HEAD_RULE} />
               <p style={EMAIL_OFFICIAL}>Official partner of</p>
               <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={EMAIL_LOGO} />
             </header>
+            {/* ⚠ V3'S LETTER — 2026-11-03, Afsana: no eyebrow, no name, no
+                prices, no note under the button. It says who invited them
+                and why to open it; the course and the discount are the
+                invitation's to show. */}
             <div style={EMAIL_BODY}>
-              <p style={EMAIL_EYEBROW}>Invitation</p>
-              <p style={EMAIL_GREETING}>Hi {E2E_LEARNER_FIRST},</p>
+              <p style={EMAIL_GREETING}>Hi there,</p>
               <p style={EMAIL_COPY}>
-                <strong style={{ fontWeight: 700 }}>{E2E_PARTNER_NAME}</strong> invited you to enroll in the{' '}
-                <strong style={{ fontWeight: 700 }}>{E2E_COURSE_TITLE_SHORT}</strong> package for {E2E_EMAIL_OFFICE}.
-                You pay your own way, at the office price. No partner code.
+                <strong style={{ fontWeight: 700 }}>{E2E_PARTNER_NAME}</strong> has invited you to begin your licensing
+                journey. Open your invitation to access your discount!
               </p>
-              {/* ⚠ THE SAVING IS DERIVED, not a third typed number — see
-                  `emailSaving`. Three prices written by hand is three
-                  chances for them to stop adding up. */}
-              <p style={EMAIL_PRICE_ROW}>
-                <span style={EMAIL_PRICE}>{shortPrice(E2E_PARTNER_PRICE)}</span>
-                <span style={EMAIL_PRICE_WAS}>{shortPrice(E2E_ORIGINAL_PRICE)}</span>
-                <span style={EMAIL_SAVING}>
-                  {E2E_PARTNER_NAME} saves you {emailSaving}
-                </span>
-              </p>
-              <button type="button" onClick={openInvitation} className="cre-email-cta" style={EMAIL_CTA}>
+              {/* The red of the ending's Start Course (`.cre-e2e-cta`), not V2's
+                  navy pill (2026-11-03, Afsana). */}
+              <button type="button" onClick={openInvitation} className="cre-e2e-cta" style={EMAIL_CTA}>
                 View invitation
               </button>
-              <p style={EMAIL_CTA_NOTE}>
-                Opens the {E2E_EMAIL_OFFICE} page with {E2E_COURSE_TITLE_SHORT.replace('Florida ', '')} already
-                selected. The link stays live.
-              </p>
             </div>
-            {/* The sign-off: who it was sent on behalf of, and the one line
-                that says this is a demo of what a RECRUIT receives rather
-                than mail to the admin account. */}
+            {/* The sign-off — who to reply to. V3 drops V2's "Sent for…"
+                line and its demo disclaimer (2026-11-03, Afsana). */}
             <footer style={EMAIL_FOOT}>
               <p style={EMAIL_FOOT_NAME}>XCEL Solutions</p>
-              <p style={EMAIL_FOOT_LINE}>
-                Sent for {E2E_EMAIL_ADMIN} · {E2E_EMAIL_OFFICE} · {E2E_PARTNER_NAME}
-              </p>
               <p style={EMAIL_FOOT_FINE}>
-                Reply to this email to reach {E2E_EMAIL_ADMIN} at {E2E_EMAIL_OFFICE}. This is an example of what a
-                recruit receives. It is not mail to the admin account.
+                Reply to this email to reach {E2E_EMAIL_ADMIN} at {E2E_EMAIL_OFFICE}.
               </p>
             </footer>
           </article>
@@ -246,28 +204,17 @@ const EMAIL: CSSProperties = {
   width: '100%',
   alignSelf: 'center',
 }
-/* ⚠ A WARM BAND, NOT A WHITE ONE (2026-10-19, the design). It is the one
-   stripe of partner colour in the message and what separates the lockup from
-   the letter under it; on white the two ran together. */
+/* WHITE ON V3 (2026-11-03, Afsana), the partner's name and "Official
+   partner of" in black — V2 keeps its warm band. The rule under it is what
+   separates the lockup from the letter now. */
 const EMAIL_HEAD: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'center',
   gap: 12,
   padding: '16px 24px',
-  background: 'var(--color-email-partner-band)',
+  background: 'var(--color-fixed-light)',
   borderBottom: '1px solid var(--color-mail-rule)',
-}
-/* The partner's mark — a navy tile, the size of the wordmark beside it. */
-const PARTNER_MARK: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  flex: 'none',
-  width: 30,
-  height: 30,
-  borderRadius: 6,
-  background: 'var(--color-email-partner-mark)',
-  color: 'var(--color-fixed-light)',
 }
 const EMAIL_PARTNER: CSSProperties = {
   margin: 0,
@@ -283,22 +230,11 @@ const EMAIL_OFFICIAL: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontWeight: 400,
   fontSize: 12,
-  color: 'var(--color-text-secondary)',
+  color: 'var(--color-text-primary)',
 }
 const EMAIL_HEAD_RULE: CSSProperties = { width: 1, height: 22, flex: 'none', background: 'var(--color-mail-rule)' }
 const EMAIL_LOGO: CSSProperties = { height: 20, width: 'auto', display: 'block' }
 const EMAIL_BODY: CSSProperties = { padding: '30px 34px 34px', display: 'flex', flexDirection: 'column', gap: 16 }
-/* The design's blue eyebrow over the greeting — the one word that says what
-   kind of letter this is before you read it. */
-const EMAIL_EYEBROW: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-body)',
-  fontWeight: 700,
-  fontSize: 11,
-  letterSpacing: '0.14em',
-  textTransform: 'uppercase',
-  color: 'var(--color-email-accent)',
-}
 /* Serif, as the design draws it — the letter's own voice, not the client's. */
 const EMAIL_GREETING: CSSProperties = {
   margin: 0,
@@ -309,56 +245,20 @@ const EMAIL_GREETING: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 const EMAIL_COPY: CSSProperties = { margin: 0, fontSize: 15, lineHeight: '25px' }
-/* The price, what it was, and what the partner takes off — one line, aligned
-   on the baseline so the struck figure sits with the live one. */
-const EMAIL_PRICE_ROW: CSSProperties = {
-  margin: '4px 0 0',
-  display: 'flex',
-  alignItems: 'baseline',
-  flexWrap: 'wrap',
-  gap: 10,
-}
-const EMAIL_PRICE: CSSProperties = { fontSize: 27, fontWeight: 700, lineHeight: '32px' }
-const EMAIL_PRICE_WAS: CSSProperties = {
-  fontSize: 16,
-  color: 'var(--color-text-tertiary, var(--color-text-secondary))',
-  textDecoration: 'line-through',
-}
-/* A quiet green pill. It is the only colour in the letter after the eyebrow,
-   which is the point — the saving is the thing the recruit is being told. */
-const EMAIL_SAVING: CSSProperties = {
-  alignSelf: 'center',
-  padding: '5px 12px',
-  borderRadius: 999,
-  background: 'var(--color-email-saving-bg)',
-  color: 'var(--color-email-saving-ink)',
-  fontSize: 12,
-  fontWeight: 600,
-  whiteSpace: 'nowrap',
-}
-/* ⚠ A PILL, LEFT-ALIGNED, AND NOT THE BRICK (2026-10-19, the design). The
-   first pass centred a brick CTA because the invite flow's buttons are
-   brick; this letter draws a navy pill at the text's left edge, in line with
-   everything above it. `.cre-email-cta` owns the fill so the hover can
-   outrank the element — see `inviteFlow.css`. */
+/* ⚠ THE ENDING'S START COURSE, NOT V2'S NAVY PILL (2026-11-03, Afsana):
+   `.cre-e2e-cta` owns the brick fill and its hover; this is that button's
+   shape (`CTA_ON` in `InvitedConfirmationPageV3`), centred. */
 const EMAIL_CTA: CSSProperties = {
-  alignSelf: 'flex-start',
+  alignSelf: 'center',
   marginTop: 6,
-  display: 'inline-flex',
-  alignItems: 'center',
-  padding: '13px 26px',
+  padding: '12px 20px',
+  borderRadius: 4,
   border: 'none',
-  borderRadius: 999,
-  fontFamily: 'inherit',
-  fontSize: 15,
+  color: 'var(--color-fixed-light)',
+  fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 700,
+  fontSize: 15,
   cursor: 'pointer',
-}
-const EMAIL_CTA_NOTE: CSSProperties = {
-  margin: 0,
-  fontSize: 12.5,
-  lineHeight: '19px',
-  color: 'var(--color-text-secondary)',
 }
 const EMAIL_FOOT: CSSProperties = {
   padding: '18px 34px 24px',
@@ -368,7 +268,6 @@ const EMAIL_FOOT: CSSProperties = {
   gap: 4,
 }
 const EMAIL_FOOT_NAME: CSSProperties = { margin: 0, fontSize: 13, fontWeight: 700 }
-const EMAIL_FOOT_LINE: CSSProperties = { margin: 0, fontSize: 12.5, color: 'var(--color-text-secondary)' }
 const EMAIL_FOOT_FINE: CSSProperties = {
   margin: '8px 0 0',
   fontSize: 11.5,
