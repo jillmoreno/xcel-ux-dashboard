@@ -294,7 +294,12 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
       expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
-      expect(screen.getByDisplayValue('jordan@example.com')).toBeDisabled()
+      /* The address in the sentence, bold — no email field, only the password. */
+      const dialog = screen.getByRole('dialog')
+      expect(dialog).toHaveTextContent('Welcome back, Jordan! Sign in to jordan@example.com to finish checking out.')
+      expect(within(dialog).getByText('jordan@example.com').tagName).toBe('STRONG')
+      expect(within(dialog).queryByLabelText(/Email address/)).not.toBeInTheDocument()
+      expect(within(dialog).queryAllByRole('textbox')).toHaveLength(0)
       const logIn = screen.getByRole('button', { name: 'Log in' })
       expect(logIn).toBeDisabled()
       await userEvent.type(screen.getByLabelText(/^Password/), 'anything')

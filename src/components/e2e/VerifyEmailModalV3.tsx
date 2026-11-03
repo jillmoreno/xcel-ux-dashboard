@@ -373,40 +373,15 @@ function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => voi
           Log in to continue
         </h2>
         <div aria-hidden style={RULE} />
+        {/* The address in the sentence, not a field (2026-11-03, Afsana) — it
+            was a locked email field above the password. */}
         <p id="verify-email-lead" style={LEAD}>
-          Welcome back, {E2E_LEARNER_FIRST}! Sign in to finish checking out.
+          Welcome back, {E2E_LEARNER_FIRST}! Sign in to <strong style={{ fontWeight: 800 }}>{email.trim()}</strong>{' '}
+          to finish checking out.
         </p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <label htmlFor="login-email" style={FIELD_GROUP}>
-          <span style={FIELD_LABEL}>
-            Email address <span aria-hidden>*</span>
-          </span>
-          <span style={{ position: 'relative', display: 'block' }}>
-            <input
-              id="login-email"
-              type="email"
-              value={email.trim()}
-              readOnly
-              disabled
-              style={{
-                ...FIELD,
-                paddingRight: 36,
-                background: 'var(--color-e2e-form-locked)',
-                color: 'var(--color-text-secondary)',
-                cursor: 'not-allowed',
-              }}
-            />
-            <img
-              src="/brand/confirmation/lock.svg"
-              alt="Locked"
-              width={16}
-              height={16}
-              style={{ position: 'absolute', right: 11, top: 11, display: 'block' }}
-            />
-          </span>
-        </label>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label htmlFor="login-password" style={FIELD_GROUP}>
             <span style={FIELD_LABEL}>
