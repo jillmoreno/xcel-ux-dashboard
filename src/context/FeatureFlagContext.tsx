@@ -2863,6 +2863,25 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-sheet-title-serif',
+    /* THE SIDE SHEETS' TITLES IN PLAYFAIR (2026-11-03, Eric's request:
+       "change the title in the side sheets to playfair"). On, Exam Details,
+       Common questions, a Get Licensed step and State Requirements set their
+       title in the heading serif on the Atlas versions — the sheets Quick
+       Links opens. Off, the shared title style. See `useSheetTitleSerif`.
+       Default ON on Eric's branch so its build shows the work; whether it
+       ships is decided at merge. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Sheet titles: Playfair',
+    description:
+      'The side sheets Quick Links opens \u2014 Exam Details, Common questions, Applying for a License and State Requirements \u2014 set their title in Playfair on the Atlas versions. Off: the shared heading face.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-pages-quick-links',
     /* QUICK LINKS OFF THE LEARNING PAGES (2026-11-02, Jillienne: "they don't
        need to be here, so on default, hide that side, this will shift over the

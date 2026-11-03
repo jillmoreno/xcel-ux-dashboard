@@ -1,3 +1,4 @@
+import { useSheetTitleSerif } from './useSheetTitleSerif'
 import { useState, type ComponentType, type CSSProperties, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useFocusMode } from '@/components/layout/useFocusMode'
@@ -144,6 +145,8 @@ export function LearningPathDetailPanelContent({
    */
   view?: 'tabs' | 'progress' | 'requirements'
 }) {
+  // Playfair on the Atlas versions (2026-11-03) — see `useSheetTitleSerif`.
+  const titleSerif = useSheetTitleSerif()
   const { brand } = useAccount()
   const navigate = useNavigate()
   const focusMode = useFocusMode()
@@ -402,7 +405,7 @@ export function LearningPathDetailPanelContent({
           <X size={14} aria-hidden />
           Close
         </button>
-        <h2 style={titleStyle}>{path.title}</h2>
+        <h2 style={{ ...titleStyle, ...titleSerif }}>{path.title}</h2>
         <p style={subStyle}>{subLine}</p>
         {/* Placement: above the Go to Learning Path CTA (and the tabs) — stays
             visible on both Progress and Requirements. */}

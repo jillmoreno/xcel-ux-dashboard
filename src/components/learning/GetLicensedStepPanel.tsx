@@ -1,3 +1,4 @@
+import { useSheetTitleSerif } from './useSheetTitleSerif'
 import type { CSSProperties } from 'react'
 import { ArrowLeft, X } from '@/icons'
 import { ProseFacts, ProseItem, ProseText } from './sheetProse'
@@ -52,6 +53,8 @@ export function GetLicensedStepPanel({
    *  place — the header then offers Back to that menu instead of Close. */
   onBack?: () => void
 }) {
+  // Playfair on the Atlas versions (2026-11-03) — see `useSheetTitleSerif`.
+  const titleSerif = useSheetTitleSerif()
   const where = jurisdictionName(state)
   return (
     <>
@@ -79,7 +82,7 @@ export function GetLicensedStepPanel({
           </button>
         )}
         <p style={eyebrowStyle}>Post-course process</p>
-        <h2 style={titleStyle}>{step.title}</h2>
+        <h2 style={{ ...titleStyle, ...titleSerif }}>{step.title}</h2>
       </div>
 
       <div style={bodyStyle}>

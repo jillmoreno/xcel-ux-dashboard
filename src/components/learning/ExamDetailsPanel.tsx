@@ -4,6 +4,7 @@ import { examFactsFor, jurisdictionName } from '@/data/nyProducerRequirements'
 import { useExamDate } from '@/data/examDateStore'
 import { EXAM_FAQ, examDetailRows } from '@/data/examDetails'
 import { GoverningAgencyBlock } from './GoverningAgencyBlock'
+import { useSheetTitleSerif } from './useSheetTitleSerif'
 import './examDetails.css'
 
 /**
@@ -46,6 +47,8 @@ export function ExamDetailsPanel({
   onSelect: (id: string) => void
   onClose: () => void
 }) {
+  // Playfair on the Atlas versions (2026-11-03) — see `useSheetTitleSerif`.
+  const titleSerif = useSheetTitleSerif()
   const where = jurisdictionName(state)
   /* THE VENDOR FOLLOWS THE JURISDICTION (2026-10-15). "PSI" was written into
      the sub-line, so a Florida sitting — Pearson VUE, in person only — was
@@ -66,7 +69,7 @@ export function ExamDetailsPanel({
           Close
         </button>
         <p style={eyebrowStyle}>Your state exam</p>
-        <h2 style={titleStyle}>Exam Details</h2>
+        <h2 style={{ ...titleStyle, ...titleSerif }}>Exam Details</h2>
         <p style={subStyle}>{where ? `${where} licence · ${vendor}` : vendor}</p>
       </div>
 
@@ -94,6 +97,8 @@ export function ExamDetailsPanel({
 }
 
 export function ExamFaqPanel({ onClose, onBack }: { onClose: () => void; onBack?: () => void }) {
+  // Playfair on the Atlas versions (2026-11-03) — see `useSheetTitleSerif`.
+  const titleSerif = useSheetTitleSerif()
   return (
     <>
       <div style={{ flexShrink: 0, padding: '18px 22px 0' }}>
@@ -117,7 +122,7 @@ export function ExamFaqPanel({ onClose, onBack }: { onClose: () => void; onBack?
           </button>
         )}
         <p style={eyebrowStyle}>Your state exam</p>
-        <h2 style={titleStyle}>Common questions</h2>
+        <h2 style={{ ...titleStyle, ...titleSerif }}>Common questions</h2>
         <p style={subStyle}>Demo content — answers pending confirmation from PSI</p>
       </div>
 
