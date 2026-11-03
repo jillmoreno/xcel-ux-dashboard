@@ -781,7 +781,8 @@ export function AtlasHomeEricE2E({
              also need is the way to buy more time. Once access has GONE the
              head drops to the purchase CTA alone — see `beginLabel`. */
           onPurchaseExtension={
-            !expiredView && accessDays != null && accessDays <= 1 ? NO_LINK : undefined
+            // …and never at Ready 100% (2026-11-03, Eric's request).
+            !completedView && !expiredView && accessDays != null && accessDays <= 1 ? NO_LINK : undefined
           }
           /* ⚠ BOTH, AT 100% (2026-10-21). Review Course reopens the material;
              this opens the thing they finished it for. `go('certificates')` is

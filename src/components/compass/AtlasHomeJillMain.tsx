@@ -1027,7 +1027,8 @@ export function AtlasHomeJillMain({
              the tier for the treatment: outlined in the tier's own colour while
              access lasts, primary and alone once it has gone. Still wired to
              nothing, deliberately: what extending DOES is undecided. */
-          onPurchaseExtension={expiryTier === 'normal' ? undefined : NO_LINK}
+          // Never at Ready 100% — a finished course has nothing left to extend for (2026-11-03, Eric's request).
+          onPurchaseExtension={expiryTier === 'normal' || completedView ? undefined : NO_LINK}
           /* ⚠ BOTH, AT 100%. Review Course reopens the material; this opens the
              thing they finished it for. */
           onViewCertificate={completedView ? () => go('certificates') : undefined}
