@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useMyCoursesCount } from './useMyCoursesCount'
 import {
   AngleRightRegular,
   BallotCheckRegular,
@@ -90,6 +91,8 @@ export type AtlasJourneyLinksCardProps = {
 }
 
 export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, withoutCoursePages = false, titleRule = false, linksOff = false, learningPagesLive = false, activeSection }: AtlasJourneyLinksCardProps) {
+  // The count beside My Courses — see `useMyCoursesCount`.
+  const coursesCount = useMyCoursesCount()
   const [params, setParams] = useSearchParams()
   /* Which link is the page you are on — the four that are pages; the three
      sheet links never are.
@@ -130,7 +133,7 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
         {SHOW_HOME_LINK ? (
           <SideLink icon={<HouseBlankRegular size={13} aria-hidden />} label="Home" active={section == null} onClick={() => go(null)} />
         ) : null}
-        <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" active={here('courses')} onClick={() => go('courses', undefined, linksOff && !learningPagesLive)} />
+        <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" count={coursesCount} active={here('courses')} onClick={() => go('courses', undefined, linksOff && !learningPagesLive)} />
         {/* 15% larger in WIP's card (2026-10-13, Eric's request): 15, not 13 —
             the wide certificate glyph read small beside the book. */}
         <SideLink icon={<FileCertificateRegular size={withoutCoursePages ? 15 : 13} aria-hidden />} label="My Certificates" active={here('certificates')} onClick={() => go('certificates', undefined, linksOff && !learningPagesLive)} />
@@ -163,11 +166,15 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
 function SideLink({
   icon,
   label,
+  count,
   active = false,
   onClick,
 }: {
   icon: ReactNode
   label: string
+  /** A count after the label, 4 on — "(3)", the parentheses at the label's
+   *  weight and the figure bold (2026-11-03, Eric's request). */
+  count?: number | null
   /** The page you are on — a white capsule behind the row. */
   active?: boolean
   onClick?: () => void
@@ -188,8 +195,19 @@ function SideLink({
         {/* `data-label` feeds a hidden Medium copy (`.cre-quick-link-label`,
             tokens.css) that holds the hover weight's width, so a card sized to
             its content does not grow on hover (2026-10-13). */}
-        <span className="cre-quick-link-label" data-label={label} style={{ flex: '1 1 0', minWidth: 0, textAlign: 'left' }}>
-          {label}
+        <span className="cre-quick-link-label" data-label={count == null ? label : `${label} (${count})`} style={{ flex: '1 1 0', minWidth: 0, textAlign: 'left' }}>
+          {count == null ? (
+            label
+          ) : (
+            <span>
+              {label}
+              {/* Out of the row's name, so it is still "My Courses" to a
+                  screen reader and to every test that finds it by name. */}
+              <span aria-hidden style={{ marginLeft: 4 }}>
+                (<span style={{ fontWeight: 700 }}>{count}</span>)
+              </span>
+            </span>
+          )}
         </span>
         {/* Shown on hover / focus only (2026-10-13, Eric's request) —
             `.cre-quick-link-chevron`, tokens.css. It keeps its space, so the

@@ -2883,6 +2883,22 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-quick-links-course-count',
+    /* HOW MANY COURSES, BESIDE QUICK LINKS' MY COURSES (2026-11-03, Eric's
+       request). On: "My Courses (3)", 4 after the label, the figure bold —
+       the count of what My Courses draws (`useMyCoursesCount`). Off: the
+       label alone. ON on this branch, per the flag rule. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Quick Links: course count',
+    description:
+      'Quick Links\u2019 My Courses row carries the number of courses on My Courses, in parentheses. Off: the label alone.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-header-mode-switch',
     /* LEARNER / ADMIN MODE IN THE PROFILE MENU (2026-11-03, Eric's request,
        from feat/atlas-admin). On: "(Learner Mode)" after the name, and
