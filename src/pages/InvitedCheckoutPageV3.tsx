@@ -1971,7 +1971,10 @@ function PlacingOrderDialog() {
   return (
     <div style={{ ...PLACING_SCRIM, ...layer.scrim }}>
       <div role="dialog" aria-modal="true" aria-label="Placing your order" style={{ ...PLACING_CARD, ...layer.card }}>
-        <XcelLoadingStatus message="Placing your order" />
+        {/* The XCEL logo centred at the top and the smaller spinner, as on
+            Signing you in / out (2026-11-03, Afsana). */}
+        <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={PLACING_LOGO} />
+        <XcelLoadingStatus message="Placing your order" size={48} />
       </div>
     </div>
   )
@@ -1988,14 +1991,19 @@ const PLACING_SCRIM: CSSProperties = {
   background: 'var(--color-e2e-scrim)',
 }
 
+/* The email check's logo size (`CODE_LOGO` in `VerifyEmailModalV3`). */
+const PLACING_LOGO: CSSProperties = { display: 'block', width: 132, height: 42, objectFit: 'contain' }
+
 /* 460 — the file's stylesheet sizes every dialog so. */
 const PLACING_CARD: CSSProperties = {
   boxSizing: 'border-box',
   width: 460,
   maxWidth: 'calc(100vw - 48px)',
   display: 'flex',
-  justifyContent: 'center',
-  padding: '64px 36px 52px',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 32,
+  padding: '32px 32px 44px',
   background: 'var(--color-fixed-light)',
   boxShadow: '0 10px 30px var(--color-e2e-form-shadow)',
   borderRadius: 8,
