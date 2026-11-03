@@ -399,9 +399,54 @@ describe('the ring card when no pace fits', () => {
         noPace={{ binding: 'exam', days: -4, dateIso: '2026-05-07' }}
       />,
     )
-    expect(screen.getByText(/before your exam date/)).toBeTruthy()
-    // The access arm's note — a count of days left — must not appear here.
+    expect(screen.getByText(/complete the coursework in the time remaining/)).toBeTruthy()
+    // The access note — a count of days left — must not appear here.
     expect(screen.queryByText(/Your access expires/)).toBeNull()
+  })
+
+  /* ⚠ THE EXAM'S COUNT IS THE EXAM'S, NOT THE COURSEWORK DEADLINE'S. `days`
+     here is -4 — the coursework deadline is already behind us, which is one
+     of the ordinary ways into this state — while the exam itself is three
+     days off. A card that derived the exam from `days` would say "-4", or
+     "3" only by adding a buffer it should not know about. */
+  it('counts to the exam, not to the coursework deadline', () => {
+    render(
+      <AtlasPaceRingCard
+        percent={0}
+        noPace={{ binding: 'exam', days: -4, dateIso: '2026-05-07', examDays: 3 }}
+      />,
+    )
+    expect(screen.getByText(/Your Exam is in 3 days\./)).toBeTruthy()
+    expect(screen.queryByText(/-4/)).toBeNull()
+  })
+
+  /* Absent means say nothing — the second sentence stands on its own. */
+  it('omits the exam count when it was not given', () => {
+    render(
+      <AtlasPaceRingCard percent={0} noPace={{ binding: 'exam', days: -4, dateIso: '2026-05-07' }} />,
+    )
+    expect(screen.getByText('There is not enough time to complete the coursework in the time remaining.')).toBeTruthy()
+    expect(screen.queryByText(/Your Exam is/)).toBeNull()
+  })
+
+  /* A date left behind in the store goes negative; "in -3 days" is worse than
+     silence, and zero is "today" for the same reason as everywhere else. */
+  it('says nothing for a past exam, and "today" at zero', () => {
+    const { unmount } = render(
+      <AtlasPaceRingCard
+        percent={0}
+        noPace={{ binding: 'exam', days: -9, dateIso: '2026-05-02', examDays: -2 }}
+      />,
+    )
+    expect(screen.queryByText(/Your Exam is/)).toBeNull()
+    unmount()
+    render(
+      <AtlasPaceRingCard
+        percent={0}
+        noPace={{ binding: 'exam', days: -7, dateIso: '2026-05-04', examDays: 0 }}
+      />,
+    )
+    expect(screen.getByText(/Your Exam is today\./)).toBeTruthy()
   })
 
   /* The other half of the same guard, from the access side. */

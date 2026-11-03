@@ -131,7 +131,7 @@ function PaceColumn({ model, examDate }: { model: PaceModel; examDate?: string }
             ? { label: 'Florida state exam', value: formatPaceDate(examDate), note: inDays(examDays) }
             : undefined
         }
-        noPace={fit ? undefined : noPaceReason(model)}
+        noPace={fit ? undefined : noPaceReason(model, examDate)}
         onCustomize={NOOP}
       />
     </div>
@@ -140,9 +140,13 @@ function PaceColumn({ model, examDate }: { model: PaceModel; examDate?: string }
 
 /** The shape `AtlasPaceRingCard` wants when nothing fits — the model's own
  *  binding, so the card names the deadline that actually bound. */
-function noPaceReason(model: PaceModel) {
+function noPaceReason(model: PaceModel, examDate?: string) {
   const binding = model.binding === 'exam' ? 'exam' : 'access'
-  return { binding, days: model.daysToCeiling, dateIso: model.hardEndIso } as Parameters<
+  /* The exam's own countdown, from the date this scenario was given — never
+     from `daysToCeiling`, which is the coursework deadline. See
+     `NoPaceReason.examDays`. */
+  const examDays = examDate ? daysUntil(examDate, TODAY) : undefined
+  return { binding, days: model.daysToCeiling, dateIso: model.hardEndIso, examDays } as Parameters<
     typeof noPaceMessage
   >[0]
 }

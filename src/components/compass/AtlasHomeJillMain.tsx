@@ -84,7 +84,7 @@ import { getLicensedStepsFor, jurisdictionName } from '@/data/nyProducerRequirem
 import { defaultPreset, formatPaceDate, formatPaceDateLong, studyPace, daysUntil, dateFromIso, isoFromDate, NOT_STARTED_NIGHTS, PACE_STYLE_FLAG_KEY, PACE_STYLE_LABELS, resolvePaceStyle } from '@/lib/studyPace'
 import { paceIconFor } from './paceStyleIcon'
 import { clearExamDate, writeExamDate } from '@/data/examDateStore'
-import { courseExpiryTier, usableDaysLeft } from '@/data/courseExpiry'
+import { courseExpiryTier, daysUntilIso, usableDaysLeft } from '@/data/courseExpiry'
 import { AtlasCourseHeadRow, WhiteCourseMeta } from './AtlasHomeEricE2E'
 import { AtlasExamCalendar } from './AtlasExamCalendar'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
@@ -513,6 +513,11 @@ export function AtlasHomeJillMain({
     binding: model.binding,
     days: model.daysToCeiling,
     dateIso: model.hardEndIso,
+    /* ⚠ THE EXAM'S OWN COUNT, from the exam date — not `daysToCeiling`, which
+       is the coursework deadline a review buffer earlier. See
+       `NoPaceReason.examDays`; deriving one from the other is the mistake that
+       file exists to prevent. */
+    examDays: examDate ? (daysUntilIso(examDate, today) ?? undefined) : undefined,
   }
   /*
    * ADD DATE, WIRED — 2026-10-20. Three pieces of state and nothing else: the

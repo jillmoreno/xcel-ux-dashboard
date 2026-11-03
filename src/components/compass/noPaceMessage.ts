@@ -51,6 +51,25 @@ export type NoPaceReason = {
    * that prints it has to say what the date IS.
    */
   dateIso: string
+  /**
+   * DAYS TO THE EXAM ITSELF — 2026-11-03, for "Your Exam is in 32 days."
+   *
+   * ⚠ IT IS NOT `days`, AND IT MUST NOT BE DERIVED FROM IT. `days` counts to
+   * the COURSEWORK deadline, which `resolveCeiling` sets a review buffer
+   * earlier than the exam. The two differ by exactly `EXAM_BUFFER_DAYS` today,
+   * so `days + 7` would be right — and it is still the wrong way to get this
+   * number. That inference is the bug this file was written after: a first
+   * draft printed the coursework deadline as the exam and told a learner
+   * sitting on May 14 that it was "today — May 7". A buffer that ever becomes
+   * per-course, or a ceiling that stops being the exam's, breaks the
+   * derivation silently and prints a confident wrong date. So the caller,
+   * which has the exam date in its hand, passes the count.
+   *
+   * ⚠ OPTIONAL, AND ABSENT MEANS SAY NOTHING. A caller that has not been
+   * taught to pass it gets the note without the first sentence, rather than a
+   * count invented out of the one that is here.
+   */
+  examDays?: number
 }
 
 export type NoPaceMessage = {
@@ -115,6 +134,19 @@ function accessMessage(reason?: NoPaceReason): NoPaceMessage {
   }
 }
 
+/** "Your Exam is in 32 days. " — or nothing at all when there is no count to
+ *  give. Returns a trailing space so the caller can concatenate either way.
+ *
+ *  ⚠ A PAST EXAM SAYS NOTHING. `examDays` can be negative (a date left behind
+ *  in the store), and "in -3 days" is worse than silence; the second sentence
+ *  still stands on its own. Zero is "today", for the same reason the access
+ *  branch and the course head both refuse to print a literal zero. */
+function examCountSentence(examDays?: number): string {
+  if (examDays == null || examDays < 0) return ''
+  if (examDays === 0) return 'Your Exam is today. '
+  return `Your Exam is in ${examDays} ${examDays === 1 ? 'day' : 'days'}. `
+}
+
 export function noPaceMessage(reason?: NoPaceReason): NoPaceMessage {
   if (!reason || reason.binding === 'access' || reason.binding === 'none') {
     return accessMessage(reason)
@@ -137,7 +169,11 @@ export function noPaceMessage(reason?: NoPaceReason): NoPaceMessage {
      exam. */
   return {
     title: NO_PACE_TITLE,
-    note: 'There isn’t enough time to complete your coursework before your exam date.',
+    /* Two sentences since 2026-11-03 (Jillienne's wording): the exam's own
+       countdown, then why it is a problem. The count leads because it is the
+       fact the learner does not already have — they know their coursework is
+       unfinished; what they are working out is how long they have. */
+    note: `${examCountSentence(reason.examDays)}There is not enough time to complete the coursework in the time remaining.`,
     /* ⚠ THE EXAM ARM HAS ADVICE NOW (2026-10-21, the direct wording). The note
        above this function still argues it should not: "a booked exam is not
        something a learner can buy more of, and inventing an equivalent would

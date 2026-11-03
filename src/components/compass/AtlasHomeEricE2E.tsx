@@ -371,6 +371,14 @@ export function AtlasHomeEricE2E({
     binding: model.binding,
     days: model.daysToCeiling,
     dateIso: model.hardEndIso,
+    /* ⚠ NO EXAM COUNT ON THIS PAGE, and that is not an omission. The model
+       above is given `examDate: undefined` on purpose — the exam deliberately
+       does not bind here (see the long note on it) — so `binding` can never be
+       'exam' and the exam copy never renders. Passing a count for an exam the
+       model is ignoring would be handing the card a figure from a deadline it
+       was told not to look at. If Add Date is ever wired here, this moves in
+       step with the `examDate` on the model, not before it. */
+    examDays: undefined,
   }
   /* NOT STARTED — the 0% state. Several things read it: the access window
      below, the ring's figure, and the Readiness card's empty band. */

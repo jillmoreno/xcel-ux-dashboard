@@ -80,6 +80,10 @@ export function pacePreviewProps({
           binding: model.binding === 'exam' ? 'exam' : 'access',
           days: model.daysToCeiling,
           dateIso: model.hardEndIso,
+          /* The count to the EXAM, not to the coursework deadline `days`
+             carries — see `NoPaceReason.examDays` for why this is passed
+             rather than derived. */
+          examDays: examDays ?? undefined,
         } as Parameters<typeof noPaceMessage>[0]),
   }
 }
