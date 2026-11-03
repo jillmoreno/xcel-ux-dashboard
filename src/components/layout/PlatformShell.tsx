@@ -2800,10 +2800,13 @@ const WIP_QUICK_LINKS: CSSProperties = { border: '1px solid color-mix(in srgb, v
 /* Its standard position on the End-to-End version (2026-11-03, Eric's
    request): level with the "Back to Home" crumb, as Home's sits at the top of
    its page — the page header's crumb row and title (16.5 + 6 + 34) and the
-   24 the page keeps above its first row. The header steps right in exchange
-   (`indent`), over the first card. */
-const E2E_QUICK_LINKS_LIFT = 16.5 + 6 + 34 + 24
-const WIP_QUICK_LINKS_LIFTED: CSSProperties = { ...WIP_QUICK_LINKS, marginTop: -E2E_QUICK_LINKS_LIFT }
+   24 the page keeps above its first row, less 16 — and 8 in from the
+   column's edge — so it sits exactly where Home's does, measured from the
+   top nav and from the left (2026-11-03, Eric's request: "the same on all
+   pages"). The header steps right in exchange (`indent`), over the first
+   card. */
+const E2E_QUICK_LINKS_LIFT = 16.5 + 6 + 34 + 24 - 16
+const WIP_QUICK_LINKS_LIFTED: CSSProperties = { ...WIP_QUICK_LINKS, marginTop: -E2E_QUICK_LINKS_LIFT, marginLeft: 8, width: WIP_QUICK_LINKS_W, flex: 'none' }
 
 /* Certificates in the shell. Eric/Atlas WIP drops the page's search, result
    count and filter rail, and status tabs (2026-10-13, Eric's request), and
