@@ -1831,6 +1831,16 @@
 html,
 :root {
   color-scheme: light;
+  /* LINING FIGURES, ALWAYS (2026-11-03, Eric: "when the Playfair font is
+     used for numerals … it always uses the lining numerals rather than the
+     old style numerals"). Playfair's default figures are old-style; Open
+     Sans and Lato already draw lining ones, so this only changes Playfair.
+     A feature setting rather than `font-variant-numeric`, on purpose: it
+     inherits everywhere and survives an element setting `tabular-nums`,
+     which would otherwise reset the numeric variant and bring the old-style
+     figures back. An element that sets its own `font-feature-settings` must
+     include "lnum" itself. */
+  font-feature-settings: 'lnum';
 }
 
 @layer base {
