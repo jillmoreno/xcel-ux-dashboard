@@ -10,7 +10,7 @@ import { BODY } from './adminStyles'
 
 /**
  * ATLAS ADMIN — THE SHELL (2026-10-19). The reference's sidebar and header:
- * a 264 white sidebar (five sections and Settings under a rule), and a
+ * a 240 white sidebar (five sections and Settings under a rule), and a
  * translucent header carrying the page title and the signed-in admin. Every
  * admin page renders inside it.
  *
@@ -230,7 +230,7 @@ const SIDEBAR: CSSProperties = {
   alignSelf: 'flex-start',
   height: 'calc(100vh - var(--admin-header-h, 0px))',
   boxSizing: 'border-box',
-  width: 264,
+  width: 240, // 240 since 2026-11-03 (Eric), from 264
   flex: 'none',
   display: 'flex',
   flexDirection: 'column',
