@@ -126,12 +126,36 @@ describe('Invite Flow V3 — the email check', () => {
     expect(go).toBeEnabled()
   })
 
+  it('shows the one-time code step with the logo, and unlocks Resend after 10 minutes', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+      await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+      await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+
+      const dialog = screen.getByRole('dialog')
+      expect(within(dialog).getByAltText(/XCEL/)).toBeInTheDocument()
+      expect(dialog).toHaveTextContent('To verify your email address, enter the 6-digit code we sent to sam@example.com.')
+      expect(dialog).toHaveTextContent('Be sure to check your spam or junk folders. This code will expire in 10 minutes.')
+      expect(dialog).toHaveTextContent('Didn’t receive the code? Resend code in 10:00')
+      expect(within(dialog).queryByRole('button', { name: 'Resend code' })).not.toBeInTheDocument()
+      expect(within(dialog).getByRole('button', { name: 'Use a different email' })).toBeInTheDocument()
+
+      for (let i = 0; i < 600; i++) await act(() => vi.advanceTimersByTimeAsync(1000))
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Resend code' }))
+      expect(dialog).toHaveTextContent('We sent a new code to sam@example.com.')
+      expect(dialog).toHaveTextContent('Resend code in 10:00')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('takes any six digits, then locks the verified address on the checkout', async () => {
     renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
     await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
     await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
 
-    expect(screen.getByRole('heading', { name: 'Enter your code' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Enter your one-time code' })).toBeInTheDocument()
     const confirm = screen.getByRole('button', { name: 'Confirm' })
     expect(confirm).toBeDisabled()
     await userEvent.type(screen.getByLabelText('Digit 1 of 6'), '111111')

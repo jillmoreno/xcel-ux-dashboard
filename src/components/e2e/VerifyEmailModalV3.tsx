@@ -33,8 +33,10 @@ import '@/pages/inviteFlow.css'
  *   - both steps carry the short grey rule under the title;
  *   - 460 wide, with Continue, Confirm and Log in full width, OFF until the
  *     step is complete (V2's are always on and explain on press);
- *   - the code boxes are 54 × 66 and centred; Resend code and Use a
- *     different email sit under the expiry note, split by a thin bar;
+ *   - the code boxes are 54 × 66 and centred. Since 2026-11-03 (Afsana) the
+ *     code step carries the XCEL logo over "Enter your one-time code", and
+ *     under Confirm: "Didn't receive the code? Resend code in 10:00",
+ *     counting down until Resend unlocks, then Use a different email;
  *   - ANY six digits are accepted, as in the file — there is no wrong code and
  *     no demo inbox. V2 checks against `DEMO_VERIFICATION_CODE`.
  *
@@ -106,6 +108,7 @@ export function VerifyEmailModalV3({
             }}
             noValidate
           >
+            <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
             <div style={HEAD}>
               <h2 id="verify-email-title" style={TITLE}>
                 Verify your email to continue
@@ -181,6 +184,14 @@ function CodeStep({
 }) {
   const [digits, setDigits] = useState<string[]>(() => Array(VERIFICATION_CODE_LENGTH).fill(''))
   const [resent, setResent] = useState(false)
+  /* Resend unlocks when the code expires — 10 minutes, counted down under
+     Confirm (2026-11-03, Afsana). */
+  const [secondsLeft, setSecondsLeft] = useState(RESEND_AFTER_S)
+  useEffect(() => {
+    if (secondsLeft <= 0) return
+    const t = window.setTimeout(() => setSecondsLeft((s) => s - 1), 1000)
+    return () => window.clearTimeout(t)
+  }, [secondsLeft])
   const inputs = useRef<(HTMLInputElement | null)[]>([])
   const entered = digits.join('')
   const ready = codeComplete(entered)
@@ -240,14 +251,18 @@ function CodeStep({
       }}
       noValidate
     >
+      {/* The XCEL mark over the heading, to make it read as official
+          (2026-11-03, Afsana). */}
+      <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
       <div style={HEAD}>
         <h2 id="verify-email-title" style={TITLE}>
-          Enter your code
+          Enter your one-time code
         </h2>
         <div aria-hidden style={RULE} />
         <p id="verify-email-lead" style={LEAD}>
-          We sent a 6‑digit code to <strong style={{ fontWeight: 800 }}>{identity.email.trim()}</strong>.
-          Enter it below to continue to checkout.
+          To verify your email address, enter the 6-digit code we sent to{' '}
+          <strong style={{ fontWeight: 800 }}>{identity.email.trim()}</strong>. Be sure to check your spam or junk
+          folders. This code will expire in 10 minutes.
         </p>
       </div>
 
@@ -275,31 +290,6 @@ function CodeStep({
             />
           ))}
         </div>
-        {resent ? (
-          <p role="status" style={NOTE}>
-            We sent a new code to {identity.email.trim()}.
-          </p>
-        ) : (
-          <p style={NOTE}>The code expires in 10 minutes.</p>
-        )}
-        <div style={LINK_ROW}>
-          <button
-            type="button"
-            className="cre-e2e-textlink"
-            style={TEXT_LINK}
-            onClick={() => {
-              setResent(true)
-              setDigits(Array(VERIFICATION_CODE_LENGTH).fill(''))
-              inputs.current[0]?.focus()
-            }}
-          >
-            Resend code
-          </button>
-          <span aria-hidden style={BAR} />
-          <button type="button" className="cre-e2e-textlink" style={TEXT_LINK} onClick={onChangeEmail}>
-            Use a different email
-          </button>
-        </div>
       </div>
 
       <div style={ACTIONS}>
@@ -313,8 +303,48 @@ function CodeStep({
           Confirm
         </button>
       </div>
+
+      <div style={RESEND_GROUP}>
+        <p style={NOTE}>
+          <strong style={{ fontWeight: 800 }}>Didn’t receive the code?</strong>{' '}
+          {secondsLeft > 0 ? (
+            <span role="timer" aria-live="off">
+              Resend code in {formatCountdown(secondsLeft)}
+            </span>
+          ) : (
+            <button
+              type="button"
+              className="cre-e2e-textlink"
+              style={TEXT_LINK}
+              onClick={() => {
+                setResent(true)
+                setSecondsLeft(RESEND_AFTER_S)
+                setDigits(Array(VERIFICATION_CODE_LENGTH).fill(''))
+                inputs.current[0]?.focus()
+              }}
+            >
+              Resend code
+            </button>
+          )}
+        </p>
+        {resent ? (
+          <p role="status" style={NOTE}>
+            We sent a new code to {identity.email.trim()}.
+          </p>
+        ) : null}
+        <button type="button" className="cre-e2e-textlink" style={TEXT_LINK} onClick={onChangeEmail}>
+          Use a different email
+        </button>
+      </div>
     </form>
   )
+}
+
+const RESEND_AFTER_S = 10 * 60
+
+/** 600 → "10:00", 59 → "0:59". */
+function formatCountdown(seconds: number): string {
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
 }
 
 /** "Log in to continue" — the Has Atlas log-in widget (`login-1`, `login-2`).
@@ -526,6 +556,13 @@ const NOTE: CSSProperties = {
   color: 'var(--color-text-secondary)',
 }
 
+/* The header's own mark, smaller, centred over the email and code steps'
+   headings (2026-11-03, Afsana). */
+const CODE_LOGO: CSSProperties = { display: 'block', width: 132, height: 42, objectFit: 'contain', alignSelf: 'center' }
+
+/* Under Confirm: the resend line, then Use a different email. */
+const RESEND_GROUP: CSSProperties = { display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 10 }
+
 const CODE_GROUP: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8 }
 
 const CODE_ROW: CSSProperties = { display: 'flex', gap: 12, justifyContent: 'center' }
@@ -576,8 +613,6 @@ const CTA_OFF: CSSProperties = {
   cursor: 'not-allowed',
 }
 
-const LINK_ROW: CSSProperties = { display: 'flex', alignItems: 'center', gap: 10 }
-
 /* `#00539a`, the file's link blue — V2's links are brick. */
 const TEXT_LINK: CSSProperties = {
   padding: 0,
@@ -588,13 +623,6 @@ const TEXT_LINK: CSSProperties = {
   fontSize: 13,
   color: '#00539a',
   cursor: 'pointer',
-}
-
-const BAR: CSSProperties = {
-  display: 'inline-block',
-  width: 1,
-  height: 14,
-  background: 'var(--color-text-secondary)',
 }
 
 const DEMO_FILL: CSSProperties = {
