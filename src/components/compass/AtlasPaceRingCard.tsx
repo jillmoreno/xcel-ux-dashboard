@@ -69,8 +69,8 @@ export function AtlasPaceRingCard({
    * dial — the pace name, the weekly goal, the standing sentence, Estimated
    * completion, the booked exam — describes a PLAN, and there is no plan
    * once the window has closed. The model already knew: `noPace` was
-   * printing "Not enough access left / No study pace fits in the time
-   * remaining / Extend your access to get a plan", which is three lines
+   * printing "Not Enough Time Remaining / Your access expires in N days /
+   * Extend your access", which is three lines
    * saying what the course card above now says in one.
    *
    * ⚠ WHAT STAYS IS THE DIAL, and that is the point of the state: how far

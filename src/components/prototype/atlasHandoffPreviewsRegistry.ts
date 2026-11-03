@@ -399,10 +399,16 @@ const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
     /* The two no-plan branches: the access-bound one offers an extension, the
        exam-bound one offers nothing. Rendered as a pair because the contrast
        is the decision — an extension cannot move a booked exam. */
+    /* ⚠ A LONG COURSE IN A MONTH'S WINDOW, not a two-day scramble. This state
+       is reachable two ways — a little access left, or a lot of coursework —
+       and the second is the one the copy was written for ("Your access expires
+       in 33 days"). A two-day example renders the singular and reads as an
+       edge case; 120 hours against a 32-day window is the ordinary shape of
+       the problem. The singular and the zero are pinned in the tests. */
     'No plan fits — access-bound': () =>
       inPanel(
         createElement(AtlasPaceRingCard, {
-          ...pacePreviewProps({ accessExpiresAt: '2026-05-13', percent: 12 }),
+          ...pacePreviewProps({ accessExpiresAt: '2026-06-13', percent: 12, hoursRemaining: 120 }),
         }),
       ),
     'No plan fits — exam-bound': () =>

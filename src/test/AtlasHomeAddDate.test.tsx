@@ -203,7 +203,7 @@ describe('the Add Date prompt on Jill/Atlas-Main', () => {
   it('lets a too-close exam bind the pace card — with a way out two clicks off', () => {
     writeExamDate(isoPlusDays(FIXTURE_TODAY, 8))
     renderHome()
-    expect(screen.getByText(/Not enough time before your exam/)).toBeTruthy()
+    expect(screen.getByText(/before your exam date/)).toBeTruthy()
     /* ⚠ THE WAY OUT IS WALKED, NOT ASSERTED PRESENT. Since Remove moved into
        the calendar's footer, "a dead end" and "a way out" differ only by
        whether Edit opens the calendar — so the case clicks it. If Edit ever
@@ -212,13 +212,13 @@ describe('the Add Date prompt on Jill/Atlas-Main', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }))
     expect(readExamDate()).toBeNull()
-    expect(screen.queryByText(/Not enough time before your exam/)).toBeNull()
+    expect(screen.queryByText(/before your exam date/)).toBeNull()
   })
 
   it('…while the End-to-End Demo still refuses the same date', () => {
     writeExamDate(isoPlusDays(FIXTURE_TODAY, 8))
     renderHome('eric-atlas-e2e')
-    expect(screen.queryByText(/Not enough time before your exam/)).toBeNull()
+    expect(screen.queryByText(/before your exam date/)).toBeNull()
     expect(screen.getByText(/Week Goal/)).toBeTruthy()
   })
 
