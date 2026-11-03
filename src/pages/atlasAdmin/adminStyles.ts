@@ -10,14 +10,14 @@ import type { CSSProperties } from 'react'
 export const HEADING = 'var(--admin-font-heading)'
 export const BODY = 'var(--font-body)'
 
-/* Page headline: the Atlas Serif H3 (2026-10-23, Eric — tried the H1, then
+/* Page headline: the Atlas Serif H4 since 2026-11-03 (one step down, Eric); H3 from 2026-10-23 (tried the H1, then
    "try h3"). Was Open Sans 30 / bold, tight. */
 export const PAGE_H1: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading-serif)',
-  fontSize: 'var(--admin-atlas-h3-size)',
+  fontSize: 'var(--admin-atlas-h4-size)',
   fontWeight: 400,
-  lineHeight: 'var(--admin-atlas-h3-line)',
+  lineHeight: 'var(--admin-atlas-h4-line)',
   letterSpacing: '-0.01em',
   color: 'var(--admin-ink)',
 }
