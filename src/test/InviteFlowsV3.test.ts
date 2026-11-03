@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { FEATURE_FLAGS, designControlsFor } from '@/context/FeatureFlagContext'
 import {
@@ -7,6 +9,9 @@ import {
   INVITE_MODELS,
   INVITE_V3_FLOW_FLAGS,
   INVITE_V3_MODEL_FLAG,
+  emailCheckV3,
+  inviteEndingV3,
+  pcFirstFlowV3,
   entryPathV3,
   inviteV3Surface,
   resolveInviteFlowV3,
@@ -39,7 +44,9 @@ describe('Invite Flow V3 model types and flows', () => {
       expect(def?.defaultVariant).toBe(DEFAULT_INVITE_FLOW_V3[model])
       /* B2C's list also shows on the signed-in flow's own surface. */
       expect(def?.surfaces).toEqual(
-        model === 'b2b' ? [inviteV3Surface(model)] : [inviteV3Surface(model), inviteV3Surface(model, 'xcel-signed-in')],
+        model === 'b2b'
+          ? [inviteV3Surface(model)]
+          : [inviteV3Surface(model), inviteV3Surface(model, 'xcel-signed-in'), inviteV3Surface(model, 'pc-after-add')],
       )
     })
   }
@@ -62,10 +69,10 @@ describe('Invite Flow V3 model types and flows', () => {
     expect(keys).not.toContain(INVITE_V3_FLOW_FLAGS.b2c)
   })
 
-  it('carries the eight flows from Afsana’s file, plus Direct Email and the signed-in OCD flow', () => {
-    expect(INVITE_FLOWS_V3).toHaveLength(10)
+  it('carries the eight flows from Afsana’s file, plus Direct Email, the signed-in OCD flow and the partner-code alternative', () => {
+    expect(INVITE_FLOWS_V3).toHaveLength(11)
     expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2b')).toHaveLength(5)
-    expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2c')).toHaveLength(5)
+    expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2c')).toHaveLength(6)
     expect(INVITE_FLOWS_V3.find((f) => f.id === 'qr-net-new')?.label).toBe('QR: Net New: No OCD, No Atlas')
   })
 
@@ -81,6 +88,31 @@ describe('Invite Flow V3 model types and flows', () => {
     expect(FEATURE_FLAGS.find((f) => f.key === INVITE_V3_FLOW_FLAGS.b2b)?.variants?.[0].value).toBe('direct-email')
     expect(entryPathV3(b2b[0])).toBe('/end-to-end-demo/email')
     expect(verifiesEmailFirst(b2b[0])).toBe(false)
+  })
+
+  it('starts the partner-code alternative at the packages page, and asks before the cart', () => {
+    const alt = INVITE_FLOWS_V3.find((f) => f.id === 'pc-after-add')!
+    expect(alt.label).toBe('Alternative: immediate check for partner code after clicking ‘go to cart’')
+    expect(entryPathV3(alt)).toBe('/end-to-end-demo/packages')
+    expect(alt.screens.slice(0, 4)).toEqual(['packages', 'added-to-cart', 'pc-modal', 'cart'])
+    expect(emailCheckV3(pcFirstFlowV3(alt, 'no-atlas')).second).toBe('code')
+    expect(emailCheckV3(pcFirstFlowV3(alt, 'atlas'))).toEqual({ second: 'login', signsIn: false, accountKnown: true })
+    expect(inviteEndingV3(pcFirstFlowV3(alt, 'atlas'))).toBe('ready')
+    expect(inviteEndingV3(pcFirstFlowV3(alt, 'no-atlas'))).toBe('create-password')
+    /* Its Email belongs to control shows on its own surface. */
+    const keys = designControlsFor('eric-atlas-e2e', 'eric', inviteV3Surface('b2c', 'pc-after-add')).map((d) => d.key)
+    expect(keys).toContain('invite-v3-email-account')
+    expect(keys).toContain(INVITE_V3_FLOW_FLAGS.b2c)
+    expect(keys).not.toContain('invite-v3-cart')
+  })
+
+  it('keys the light orange row on the alternative’s label', () => {
+    /* `inviteFlow.css` finds the row by the start of its label. */
+    const css = readFileSync(resolve(__dirname, '../pages/inviteFlow.css'), 'utf8')
+    const prefix = css.match(/aria-label\^='([^']+)'/)?.[1]
+    const alt = FEATURE_FLAGS.find((f) => f.key === INVITE_V3_FLOW_FLAGS.b2c)?.variants?.find((v) => v.value === 'pc-after-add')
+    expect(prefix).toBeTruthy()
+    expect(alt?.label.startsWith(prefix!)).toBe(true)
   })
 
   it('never resolves a flow from the other model’s list', () => {

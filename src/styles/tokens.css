@@ -7657,6 +7657,12 @@ a.cre-library-card-title::after {
   --color-e2e-split-line: rgb(120 200 210 / 0.35);
   --color-e2e-split-label: #6fb7c7;
   --color-e2e-split-tick: #3fbf6a;
+  /* An ALTERNATIVE flow's row in the Design bar's flow sheet — light orange
+     (2026-11-03, Afsana), fixed in both themes like the rail above, with its
+     own ink so it reads on either. `inviteFlow.css` applies it. */
+  --color-e2e-alt-flow: #ffe6d1;
+  --color-e2e-alt-flow-line: #f4a96b;
+  --color-e2e-alt-flow-ink: #3d2410;
   /* The journey rail's ground (2026-10-22) — the charcoal of the wordmark's
      "CEL", a shade deeper than the course band so white type has room. The X's
      brick is the HIGHLIGHT on this panel, not the ground: one red mark saying

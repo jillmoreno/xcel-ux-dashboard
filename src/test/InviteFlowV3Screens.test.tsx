@@ -12,6 +12,7 @@ import {
   QrInviteRoute,
 } from '@/pages/InviteFlowRoutes'
 import { XcelCartPage } from '@/pages/XcelCartPage'
+import { XcelPackagesPage } from '@/pages/XcelPackagesPage'
 import { InviteFlowEntrySync } from '@/pages/EndToEndPageSync'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
 import {
@@ -456,6 +457,52 @@ describe('Invite Flow V3 — every B2C flow starts at the cart', () => {
   it('leaves V2’s guest walk on the public homepage', () => {
     arriveAt('/end-to-end-demo/find', 'invite-flow-version:v2,invite-flow-journey:b2c-guest')
     expect(screen.getByTestId('where').textContent).toMatch(/^\/end-to-end-demo\/find\?/)
+  })
+})
+
+describe('Invite Flow V3 — the partner-code alternative', () => {
+  const ALT = 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:pc-after-add'
+
+  function walkFrom(ff: string) {
+    const search = `?ff=${ff}&lstate=Arizona&loa=Health&pkg=premier`
+    window.history.replaceState({}, '', `/end-to-end-demo/packages${search}`)
+    return render(
+      <MemoryRouter initialEntries={[`/end-to-end-demo/packages${search}`]}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <Routes>
+              <Route path="/end-to-end-demo/packages" element={<XcelPackagesPage />} />
+              <Route path="/end-to-end-demo/cart" element={<XcelCartPage />} />
+              <Route path="/end-to-end-demo/checkout" element={<p>Checkout page</p>} />
+            </Routes>
+            <Where />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+  }
+
+  it('opens on “Added to your cart”, asks at Go to Cart, then Checkout goes straight on', async () => {
+    walkFrom(ALT)
+    const added = screen.getByRole('dialog', { name: 'Added to your cart' })
+    expect(added).toHaveTextContent('Arizona Health Pre-licensing Premier')
+
+    await userEvent.click(within(added).getByRole('button', { name: 'Go to Cart' }))
+    expect(screen.getByRole('dialog')).toHaveTextContent('Do you have a Partner Code?')
+    expect(screen.getByTestId('where').textContent).toMatch(/^\/end-to-end-demo\/packages\?/)
+
+    await userEvent.click(screen.getByRole('button', { name: 'NO' }))
+    expect(screen.getByRole('heading', { name: 'Your cart' })).toBeInTheDocument()
+    expect(screen.getByTestId('where').textContent).toContain('partner=no')
+
+    /* Answered already, so Checkout does not ask a second time. */
+    await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+    expect(screen.getByText('Checkout page')).toBeInTheDocument()
+  })
+
+  it('leaves the other B2C flows adding by hand', () => {
+    walkFrom('invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:net-new')
+    expect(screen.queryByRole('dialog', { name: 'Added to your cart' })).not.toBeInTheDocument()
   })
 })
 

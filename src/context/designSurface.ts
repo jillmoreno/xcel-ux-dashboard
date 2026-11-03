@@ -67,6 +67,9 @@ export type DesignSurfaceId =
   /* …and B2C's signed-in OCD flow, which adds its cart and email controls
      (2026-11-02). */
   | 'invite:v3-b2c-signed-in'
+  /* …and B2C's "Alternative: immediate check for partner code" flow, which
+     adds the Email belongs to control (2026-11-03). */
+  | 'invite:v3-b2c-pc-first'
 
 export type DesignSurfaceCtx = {
   surface: DesignSurfaceId | null
@@ -122,4 +125,5 @@ export const DESIGN_SURFACE_LABELS: Record<DesignSurfaceId, string> = {
   'invite:v3-b2b': 'Invite Flow V3 · B2B invite',
   'invite:v3-b2c': 'Invite Flow V3 · B2C guest checkout',
   'invite:v3-b2c-signed-in': 'Invite Flow V3 · B2C guest checkout',
+  'invite:v3-b2c-pc-first': 'Invite Flow V3 · B2C guest checkout',
 }

@@ -13,7 +13,12 @@ import {
   type CoursePackage,
 } from '@/data/xcelCourseFinder'
 import { INVITE_LOA_PARAM, INVITE_STATE_PARAM } from '@/data/inviteMissingDetails'
-import { clearPartnerCodeAnswer } from '@/data/inviteFlows'
+import { PARTNER_CODE_PARAM, clearPartnerCodeAnswer } from '@/data/inviteFlows'
+import { PartnerCodeAskModal } from '@/components/e2e/PartnerCodeAsk'
+import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { INVITE_FLOW_VERSION_FLAG, resolveInviteFlowVersion } from '@/data/inviteFlowVersions'
+import { useInviteFlowV3 } from '@/data/inviteFlowsV3'
 import { useEndToEndDemoParams, useEndToEndPageChrome } from './endToEndDemo'
 import './inviteFlow.css'
 
@@ -42,7 +47,19 @@ export function XcelPackagesPage() {
   const [params, setParams] = useSearchParams()
   const lineOfAuthority = params.get(INVITE_LOA_PARAM) ?? ''
   const state = params.get(INVITE_STATE_PARAM) ?? ''
-  const [added, setAdded] = useState<CoursePackage | null>(null)
+  /* ⚠ V3'S ALTERNATIVE OPENS ON THE CONFIRMATION — 2026-11-03, Afsana: the
+     "Alternative: immediate check for partner code" flow's first screen is
+     this page with "Added to your cart" already showing, for the package the
+     walk was given (`fillV3Cart`). Go to Cart then asks the Partner Code
+     question here, and the answer goes on to the cart. Every other flow adds
+     by hand and goes straight to the cart, as before. */
+  const version = resolveInviteFlowVersion(useFeatureFlag(INVITE_FLOW_VERSION_FLAG).variant)
+  const v3FlowId = useInviteFlowV3().id
+  const pcFirst = version === 'v3' && v3FlowId === 'pc-after-add'
+  const [added, setAdded] = useState<CoursePackage | null>(() =>
+    pcFirst ? (packagesFor(state, lineOfAuthority).find((p) => p.id === params.get(CART_PACKAGE_PARAM)) ?? null) : null,
+  )
+  const [asking, setAsking] = useState<CoursePackage | null>(null)
 
   useEndToEndPageChrome(
     lineOfAuthority
@@ -167,8 +184,14 @@ export function XcelPackagesPage() {
       {added ? (
         <AddedToCart
           pkg={added}
+          v3={pcFirst}
           onClose={() => setAdded(null)}
           onGoToCart={() => {
+            if (pcFirst) {
+              setAsking(added)
+              setAdded(null)
+              return
+            }
             /* ⚠ WHICH PACKAGE RIDES ALONG. The cart names the one that was
                added and prices it, so "Add to Cart" has to say WHICH — the
                state and line of authority alone cannot tell Premier from
@@ -177,6 +200,20 @@ export function XcelPackagesPage() {
                from a previous one goes. */
             const next = clearPartnerCodeAnswer(params)
             next.set(CART_PACKAGE_PARAM, added.id)
+            navigate({ pathname: '/end-to-end-demo/cart', search: next.toString() })
+          }}
+        />
+      ) : null}
+      {/* The alternative's question, between Go to Cart and the cart. The
+          answer rides along, so the cart's Checkout does not ask again. */}
+      {asking ? (
+        <PartnerCodeAskModal
+          v3
+          onClose={() => setAsking(null)}
+          onAnswer={(answer) => {
+            const next = clearPartnerCodeAnswer(params)
+            next.set(CART_PACKAGE_PARAM, asking.id)
+            next.set(PARTNER_CODE_PARAM, answer)
             navigate({ pathname: '/end-to-end-demo/cart', search: next.toString() })
           }}
         />
@@ -219,13 +256,20 @@ function PackageCard({ pkg, onAdd }: { pkg: CoursePackage; onAdd: () => void }) 
  */
 function AddedToCart({
   pkg,
+  v3 = false,
   onClose,
   onGoToCart,
 }: {
   pkg: CoursePackage
+  /** V3's alternative (2026-11-03, Afsana): drawn like V3's other dialogs —
+   *  the scrim on the simulated window only, the Demo and Design bars left
+   *  usable, centred in what the learner sees, the page held still
+   *  (`useV3DialogLayer`). Off, it is V2's, unchanged. */
+  v3?: boolean
   onClose: () => void
   onGoToCart: () => void
 }) {
+  const layer = useV3DialogLayer(v3)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -235,8 +279,8 @@ function AddedToCart({
   }, [onClose])
 
   return createPortal(
-    <div style={SCRIM}>
-      <div role="dialog" aria-modal="true" aria-labelledby="added-title" style={CART_MODAL}>
+    <div style={{ ...SCRIM, ...layer.scrim }}>
+      <div role="dialog" aria-modal="true" aria-labelledby="added-title" style={{ ...CART_MODAL, ...layer.card }}>
         <div style={CART_HEAD}>
           <h2 id="added-title" style={CART_TITLE}>
             Added to your cart

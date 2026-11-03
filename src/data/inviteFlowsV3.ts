@@ -47,6 +47,7 @@ export type InviteFlowV3Id =
   | 'has-atlas-login'
   | 'has-atlas'
   | 'xcel-signed-in'
+  | 'pc-after-add'
 
 export type InviteFlowV3 = {
   id: InviteFlowV3Id
@@ -162,6 +163,22 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
     base: 'xcel-signed-in',
     screens: ['cart', ...CHECKOUT, 'placing', 'ready'],
   },
+  {
+    /* ⚠ AN ALTERNATIVE, NOT FROM THE FILE — 2026-11-03, Afsana: "immediate
+       check for partner code after clicking 'go to cart'". It opens where
+       V2's guest checkout puts the course in the cart — the packages page,
+       "Added to your cart" showing — and asks the Partner Code question at
+       Go to Cart instead of at Checkout. Your cart, then Checkout goes
+       straight to Verify your email; the rest is the usual walk, a code or a
+       log-in by the email given (`pcFirstFlowV3`). Its row in the picker is
+       light orange (`inviteFlow.css`). */
+    id: 'pc-after-add',
+    model: 'b2c',
+    label: 'Alternative: immediate check for partner code after clicking ‘go to cart’',
+    description: 'Starts at “Added to your cart”. Go to Cart asks for a partner code, then Your cart; Checkout goes straight to Verify your email — a code, or a log-in if the email has Atlas.',
+    base: 'b2c-guest',
+    screens: ['packages', 'added-to-cart', 'pc-modal', 'cart', ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
+  },
 ]
 
 export const INVITE_V3_MODEL_FLAG = 'invite-v3-model'
@@ -185,8 +202,9 @@ export const DEFAULT_INVITE_FLOW_V3: Record<InviteModelId, InviteFlowV3Id> = {
 export function inviteV3Surface(
   model: InviteModelId,
   flowId?: InviteFlowV3Id,
-): 'invite:v3-b2b' | 'invite:v3-b2c' | 'invite:v3-b2c-signed-in' {
+): 'invite:v3-b2b' | 'invite:v3-b2c' | 'invite:v3-b2c-signed-in' | 'invite:v3-b2c-pc-first' {
   if (model === 'b2b') return 'invite:v3-b2b'
+  if (flowId === 'pc-after-add') return 'invite:v3-b2c-pc-first'
   return flowId === 'xcel-signed-in' ? 'invite:v3-b2c-signed-in' : 'invite:v3-b2c'
 }
 
@@ -241,10 +259,12 @@ export function emailCheckV3(flow: InviteFlowV3): {
 }
 
 /** Where a V3 flow starts: the partner's QR code for B2B, the public site's
- *  cart for B2C — the first screen of each in the file — and the invitation
- *  email for Direct Email. */
+ *  cart for B2C — the first screen of each in the file — the invitation
+ *  email for Direct Email, and the packages page for the alternative that
+ *  asks at Go to Cart. */
 export function entryPathV3(flow: InviteFlowV3): string {
   if (flow.screens[0] === 'email') return '/end-to-end-demo/email'
+  if (flow.screens[0] === 'packages') return '/end-to-end-demo/packages'
   return flow.model === 'b2b' ? '/end-to-end-demo/qr' : '/end-to-end-demo/cart'
 }
 
@@ -257,7 +277,12 @@ export function entryPathV3(flow: InviteFlowV3): string {
 export function v3ScreensFor(model: InviteModelId): readonly string[] {
   return model === 'b2b'
     ? ['/end-to-end-demo/email', '/end-to-end-demo/qr', '/end-to-end-demo', '/end-to-end-demo/checkout', '/end-to-end-demo/confirmation']
-    : ['/end-to-end-demo/cart', '/end-to-end-demo/checkout', '/end-to-end-demo/confirmation']
+    : [
+        '/end-to-end-demo/packages',
+        '/end-to-end-demo/cart',
+        '/end-to-end-demo/checkout',
+        '/end-to-end-demo/confirmation',
+      ]
 }
 
 /** The file's B2C cart holds Arizona Health Pre-licensing Premier. A V3 B2C
@@ -283,9 +308,25 @@ export function useInviteFlowV3(): InviteFlowV3 {
   const email = resolveV3EmailAccount(useFeatureFlag(INVITE_V3_EMAIL_ACCOUNT_FLAG).variant)
   const [params] = useSearchParams()
   const flow = resolveInviteFlowV3(model, model === 'b2b' ? b2b : b2c)
+  if (flow.id === 'pc-after-add') return pcFirstFlowV3(flow, email)
   return flow.id === 'xcel-signed-in'
     ? signedInFlowV3(flow, cart, email, params.get(V3_SIGNED_OUT_PARAM) === '1')
     : flow
+}
+
+/** The alternative's walk after Checkout, by the email given at Verify your
+ *  email (`invite-v3-email-account`): a code and the full checkout, then a
+ *  password; or, with Atlas, a log-in, the checkout filled from the account,
+ *  then Start course — "Has Atlas: Open Log-In Widget"'s screens. */
+export function pcFirstFlowV3(flow: InviteFlowV3, email: V3EmailAccount): InviteFlowV3 {
+  const start = ['packages', 'added-to-cart', 'pc-modal', 'cart']
+  return {
+    ...flow,
+    screens:
+      email === 'atlas'
+        ? [...start, ...VERIFY, 'login-1', 'login-2', ...CHECKOUT, 'placing', 'ready']
+        : [...start, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
+  }
 }
 
 /* ── Signed in to XCEL (OCD) — 2026-11-02 ─────────────────────────────────

@@ -2740,7 +2740,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        other's. `inviteFlowsV3.ts` carries the long form. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2b', 'invite:v3-b2c', 'invite:v3-b2c-signed-in'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2c', 'invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
     group: 'Navigation',
     label: 'Model type',
     description: 'Invite Flow V3 only. Which business model the flow belongs to: B2B invite (a partner’s QR code) or B2C guest checkout (direct from the public site’s cart). Picking one shows that model’s flows.',
@@ -2784,14 +2784,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        B2C. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2c', 'invite:v3-b2c-signed-in'],
+    surfaces: ['invite:v3-b2c', 'invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
     group: 'Navigation',
     /* "Guest checkout", not "Invite flow" — 2026-10-30, Afsana: the B2C flows
        "are actually not invite flows, rather they pertain to guest checkout".
        The key keeps its name so stored picks and shared links still work. */
     label: 'Guest checkout',
     picker: 'sheet',
-    description: 'Invite Flow V3, B2C guest checkout. Which of the four guest checkout flows the demo walks: net new, has OCD but no Atlas, or has Atlas — opening a log-in widget, or logging in and being signed in automatically with the checkout filled.',
+    description: 'Invite Flow V3, B2C guest checkout. Which guest checkout flow the demo walks: net new, has OCD but no Atlas, or has Atlas — opening a log-in widget, or logging in and being signed in automatically with the checkout filled; signed in to XCEL; or the alternative that asks for a partner code at Go to Cart.',
     defaultEnabled: true,
     defaultVariant: 'net-new',
     variants: [
@@ -2800,6 +2800,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'has-atlas-login', label: 'Has Atlas: Open Log-In Widget', description: 'Already on Atlas. Email check opens a log-in widget before checkout.' },
       { value: 'has-atlas', label: 'Has Atlas: Automatic Sign-in Post OTP', description: 'Already on Atlas. Logs in, then signed in automatically with the checkout filled.' },
       { value: 'xcel-signed-in', label: 'Signed in to XCEL (OCD)', description: 'Signed in to an existing XCEL account. The cart decides the checkout — pick Cart contents beside this.' },
+      /* Afsana's alternative (2026-11-03): its row is light orange in the
+         sheet — `inviteFlow.css`, keyed on this label. */
+      { value: 'pc-after-add', label: 'Alternative: immediate check for partner code after clicking ‘go to cart’', description: 'Starts at “Added to your cart”. Go to Cart asks for a partner code, then Your cart; Checkout goes straight to Verify your email — a code, or a log-in if the email has Atlas (pick Email belongs to beside this).' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -2829,10 +2832,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        log-in when the email they give has Atlas, a code when it does not. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2c-signed-in'],
+    surfaces: ['invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
     group: 'Navigation',
     label: 'Email belongs to',
-    description: 'Invite Flow V3, signed in to XCEL, targeted or mixed cart. The email given at Verify your email: an Atlas account (log in, then Start course) or no Atlas account (a code, then Create password).',
+    description: 'Invite Flow V3 — signed in to XCEL (targeted or mixed cart), and the alternative that asks for a partner code at Go to Cart. The email given at Verify your email: an Atlas account (log in, then Start course) or no Atlas account (a code, then Create password).',
     defaultEnabled: true,
     defaultVariant: 'no-atlas',
     variants: [
@@ -2852,7 +2855,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `ConfirmationReceiptV3`. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2b', 'invite:v3-b2c', 'invite:v3-b2c-signed-in'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2c', 'invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
     group: 'Layout',
     label: 'Confirmation receipt',
     description: 'Invite Flow V3’s order confirmation: V2’s dark receipt as it is, or as one torn ticket.',

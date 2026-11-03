@@ -92,7 +92,7 @@ export function EndToEndPageSync() {
        arrival (`useEndToEndDemoParams`). Setting it here as well keeps the
        jump from flashing the old version's chrome for a tick. */
     const pathname_ = target.pathname.startsWith('/end-to-end-demo') ? entry : target.pathname
-    if (pathname_ === '/end-to-end-demo/cart') fillV3Cart(next)
+    if (startsWithCart(pathname_)) fillV3Cart(next)
     if (pathname_.startsWith('/end-to-end-demo')) next.set('version', END_TO_END_VERSION)
     navigate(`${pathname_}?${next.toString()}`)
   }, [here, picked, setVariant, navigate, params, entry])
@@ -155,7 +155,7 @@ export function InviteFlowEntrySync() {
     if (version === 'v3') clearVerifiedIdentity()
     next.delete(INVITE_STATE_PARAM)
     next.delete(INVITE_LOA_PARAM)
-    if (entry === '/end-to-end-demo/cart') fillV3Cart(next)
+    if (startsWithCart(entry)) fillV3Cart(next)
     /* `replace`: the page they were on belongs to a flow that is no longer
        selected, so leaving it in history means Back returns them to a screen
        the current flow has no version of — this bug, reached by a different
@@ -173,7 +173,7 @@ export function InviteFlowEntrySync() {
     if (version !== 'v3' || !isInviteFlowPath(pathname)) return
     if (v3ScreensFor(model).includes(pathname)) return
     const next = new URLSearchParams(params)
-    if (entry === '/end-to-end-demo/cart') fillV3Cart(next)
+    if (startsWithCart(entry)) fillV3Cart(next)
     navigate({ pathname: entry, search: next.toString() }, { replace: true })
   }, [version, model, pathname, entry, params, navigate])
 
@@ -188,6 +188,12 @@ function useInviteEntryPath(): string {
   const version = resolveInviteFlowVersion(useFeatureFlag(INVITE_FLOW_VERSION_FLAG).variant)
   const v3 = useInviteFlowV3()
   return version === 'v3' ? entryPathV3(v3) : entryPathFor(flow)
+}
+
+/** V3's B2C flows start at the cart — or, for the alternative that asks at
+ *  Go to Cart, at the packages page with it just added (2026-11-03). */
+function startsWithCart(path: string): boolean {
+  return path === '/end-to-end-demo/cart' || path === '/end-to-end-demo/packages'
 }
 
 /** Only V3's B2C flows START at the cart, so a walk entering there with an
