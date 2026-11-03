@@ -2863,6 +2863,25 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-pace-card-figma',
+    /* ERIC'S FIGMA PASS ON THE RING CARD — 2026-10-30 (Figma 592:457), on
+       feat/learner-home-breakpoints; brought here 2026-11-03. On:
+       `AtlasPaceRingCardFigma`, a sibling copied from `AtlasPaceRingCard` —
+       left-aligned, hairlines beside the gauge and a calendar, the week goal
+       and the date in Playfair 19 with lining figures, the pace named Steady,
+       the panel 32 a side. Off: the card as it was. Swapped at the call sites
+       of Jill/Atlas-Main and the End-to-End Home. ON on this branch, per the
+       flag rule. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Pace card: Figma',
+    description:
+      'The ring card in Eric\u2019s Figma pass (592:457): left-aligned, a hairline beside the gauge and a calendar, the goal and date in Playfair 19, the pace named Steady. Off draws the card as it was.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-sheet-title-serif',
     /* THE SIDE SHEETS' TITLES IN PLAYFAIR (2026-11-03, Eric's request:
        "change the title in the side sheets to playfair"). On, Exam Details,

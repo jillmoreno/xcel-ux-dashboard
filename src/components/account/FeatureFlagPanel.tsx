@@ -157,6 +157,8 @@ const REBRAND_FLAGS = [
   'atlas-affidavit',
   'atlas-home-long-title',
   'atlas-sheet-title-serif',
+  // Eric's Figma pass on the ring card, 2026-10-30 — on/off.
+  'atlas-pace-card-figma',
   'atlas-v3-progress',
   'atlas-v3-link-tiles',
   'atlas-wip-quick-links-side',

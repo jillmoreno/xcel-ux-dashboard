@@ -31,6 +31,7 @@ import type { NoPaceReason } from './noPaceMessage'
 import { ATLAS_PROGRESS_ORDER, atlasRungFor, isLessonRowTitle, journeyTitleFor } from './atlasProgressLadder'
 import { paceStandingMessage, type PaceStanding } from './paceStanding'
 import { AtlasPaceRingCard } from './AtlasPaceRingCard'
+import { AtlasPaceRingCardFigma } from './AtlasPaceRingCardFigma'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag, useFeatureFlags, useCourseDemo } from '@/context/FeatureFlagContext'
 import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
@@ -242,6 +243,10 @@ export function AtlasHomeEricE2E({
      are real pages now, so they are let back through. */
   const learningPagesLive = useFeatureFlag('atlas-home-opens-learning-pages').enabled
   const paceCard = useFeatureFlag('atlas-pace-card').variant ?? 'ring'
+  /* Eric's Figma pass on the ring card (592:457), from his breakpoints
+     branch (2026-11-03) — a sibling, switched here by `atlas-pace-card-figma`;
+     its panel takes 32 a side. */
+  const RingCard = useFeatureFlag('atlas-pace-card-figma').enabled ? AtlasPaceRingCardFigma : AtlasPaceRingCard
   /* Whether the column carries Exam readiness at all — a design-bar on/off,
      see `atlas-readiness-section`. */
   const showReadiness = useFeatureFlag('atlas-readiness-section').enabled
@@ -811,7 +816,7 @@ export function AtlasHomeEricE2E({
               style={
                 onWhite
                   ? paceCard === 'ring'
-                    ? { ...WHITE_PROGRESS_PANEL, gap: 0 }
+                    ? { ...WHITE_PROGRESS_PANEL, gap: 0, ...(RingCard === AtlasPaceRingCardFigma ? { paddingLeft: 32, paddingRight: 32 } : null) }
                     : WHITE_PROGRESS_PANEL
                   : { display: 'contents' }
               }
@@ -834,7 +839,7 @@ export function AtlasHomeEricE2E({
                  hardcoded week count is how those two start describing
                  different plans. `HybridHomeV1` pins its 3 deliberately and
                  records the derivation it dropped — this one keeps it. */
-              <AtlasPaceRingCard
+              <RingCard
                 /* The ladder carries the figure for every state now,
                    including 0 — see the note there. The `percent` prop is the
                    persona's and only stands in for a state with no figure. */
