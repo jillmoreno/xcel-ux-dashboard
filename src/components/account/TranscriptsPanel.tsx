@@ -65,8 +65,8 @@ export function TranscriptsPanel() {
   const [sort, setSort] = useState<SortState>({ key: 'completedDate', dir: 'desc' })
   const [exporting, setExporting] = useState(false)
   /* In the learning pages' layout (2026-11-03, Eric's request): the table
-     framed by the cards' 1px rule all round, and its column titles sitting on
-     the header's bottom line. */
+     framed by the cards' 1px rule all round, its column titles sitting on
+     the header's bottom line, and that line 1px rather than 2. */
   const atlasFrame = useAtlasAccountPages()
 
   /*
@@ -223,7 +223,7 @@ export function TranscriptsPanel() {
                       key={col.key}
                       scope="col"
                       aria-sort={ariaSort(col.key)}
-                      style={{ ...HEADER_CELL, ...(atlasFrame && { verticalAlign: 'bottom' }), ...(i === 0 && { paddingLeft: 24 }), ...col.cellStyle }}
+                      style={{ ...HEADER_CELL, ...(atlasFrame && { verticalAlign: 'bottom', borderBottom: '1px solid var(--color-neutral-500)' }), ...(i === 0 && { paddingLeft: 24 }), ...col.cellStyle }}
                     >
                       <button
                         type="button"
