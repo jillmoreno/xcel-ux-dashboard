@@ -1,4 +1,4 @@
-import type { MouseEvent } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 import { Bell, ChevronDown, CircleUser, FileText, LogOut, Receipt, User } from '@/icons'
 import { AtlasHeaderMenu, AtlasHeaderMenuDivider, AtlasHeaderMenuItem } from './AtlasHeaderMenu'
 import './atlasHeader.css'
@@ -37,6 +37,20 @@ export type AtlasHeaderLinks = Partial<
   Record<'home' | 'logo' | 'help' | 'allCourses' | 'profile' | 'notifications' | 'transcripts' | 'purchases' | 'logout', string>
 >
 
+/**
+ * LEARNER / ADMIN MODE in the profile menu — 2026-10-20, Eric: the Atlas
+ * Admin pill's switching and links, moved into this menu in its styling.
+ * The menu says which mode is on under the email — Mode: Admin / Learner,
+ * the other one switching; in `admin` its links are `adminLinks`, in `learner` they are the
+ * learner's own (Profile … My Purchases). Absent, the menu
+ * is exactly what it was.
+ */
+export type AtlasHeaderMode = {
+  mode: 'learner' | 'admin'
+  adminLinks: readonly { label: string; href: string; icon: ReactNode }[]
+  onSwitch: () => void
+}
+
 export function AtlasHeader({
   current = 'home',
   user,
@@ -47,6 +61,8 @@ export function AtlasHeader({
   onNavigate,
   showCourses = true,
   onHelp,
+  extraNav = [],
+  modeMenu,
 }: {
   /** Which nav pill is filled. */
   current?: 'home' | 'courses' | null
@@ -66,6 +82,12 @@ export function AtlasHeader({
    *  `links.help`, as the standalone preview still has it. The sheet itself is
    *  the shared `Header`'s (`HelpSheet`), the same one Hybrid's Help opens. */
   onHelp?: () => void
+  /** More pills after Home — 2026-10-20, Atlas Admin's "Admin" (Eric's
+   *  request). `current` fills one; give it and leave `current` above null so
+   *  Home is not filled too. Absent, the nav is exactly what it was. */
+  extraNav?: readonly { label: string; href: string; current?: boolean }[]
+  /** Learner / Admin mode — see `AtlasHeaderMode`. */
+  modeMenu?: AtlasHeaderMode
 }) {
   const to = (k: keyof AtlasHeaderLinks) => links[k] ?? '#'
   // A link's href, routed through `onNavigate` when there is one.
@@ -114,6 +136,24 @@ export function AtlasHeader({
           <a {...go('home')} className="cre-atlas-hdr-pill" aria-current={current === 'home' ? 'page' : undefined}>
             Home
           </a>
+          {extraNav.map((item) => (
+            <a
+              key={item.label}
+              href={item.href}
+              onClick={
+                onNavigate
+                  ? (e: MouseEvent) => {
+                      e.preventDefault()
+                      onNavigate(item.href)
+                    }
+                  : undefined
+              }
+              className="cre-atlas-hdr-pill"
+              aria-current={item.current ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          ))}
           {showCourses ? (
           <AtlasHeaderMenu align="left" trigger="My Courses" selected={current === 'courses'} panelStyle={COURSES_PANEL}>
             {courses.map((c) => (
@@ -181,7 +221,18 @@ export function AtlasHeader({
                     surface, not in this row, and nothing about it was
                     asked. */}
                 <CircleUser size={22} aria-hidden />
-                {user.name}
+                {/* THE NAME SEMI-BOLD, THE MODE REGULAR after it — 2026-10-20,
+                    Eric: "add space after user name and add (Admin)", then "Mode"
+                    after it — "(Admin Mode)" / "(Learner Mode)". Only
+                    with a mode menu; without one the trigger is the name
+                    alone, at the pill's own weight, as it was. */}
+                {modeMenu ? (
+                  <span>
+                    <span style={{ fontWeight: 600 }}>{user.name}</span> <span style={{ fontWeight: 400 }}>({modeMenu.mode === 'admin' ? 'Admin Mode' : 'Learner Mode'})</span>
+                  </span>
+                ) : (
+                  user.name
+                )}
               </>
             }
             panelStyle={PROFILE_PANEL}
@@ -190,20 +241,60 @@ export function AtlasHeader({
               <AtlasHeaderAvatar user={user} />
               <span style={{ fontSize: 16, lineHeight: '28px', fontWeight: 700, color: 'var(--atlas-hdr-name)', whiteSpace: 'nowrap' }}>{user.name}</span>
               <span style={{ fontSize: 12, lineHeight: '16px', fontWeight: 400, color: 'var(--atlas-hdr-email)', whiteSpace: 'nowrap' }}>{user.email}</span>
+              {modeMenu ? (
+                /* MODE: ADMIN LEARNER — 2026-10-20, Eric's request. The two
+                   modes as the header's own pills at 85%; the one you are in
+                   reads selected, the other switches. It is the menu's only
+                   switch — the "Switch to … Mode" row went the same day. */
+                <span role="group" aria-label="Mode" style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginTop: 8, fontSize: 12, lineHeight: '16px', color: 'var(--atlas-hdr-email)', whiteSpace: 'nowrap' }}>
+                  {/* `baseline` above puts this on the pills' text line. */}
+                  <span style={{ marginRight: 2, fontWeight: 600 }}>Mode:</span>
+                  {(['admin', 'learner'] as const).map((m) => {
+                    const on = modeMenu.mode === m
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        aria-pressed={on}
+                        className={`cre-atlas-hdr-pill cre-atlas-hdr-pill--sm${on ? ' is-selected' : ''}`}
+                        onClick={on ? undefined : modeMenu.onSwitch}
+                        style={{ cursor: on ? 'default' : 'pointer' }}
+                      >
+                        {m === 'admin' ? 'Admin' : 'Learner'}
+                      </button>
+                    )
+                  })}
+                </span>
+              ) : null}
             </div>
             <AtlasHeaderMenuDivider />
-            <AtlasHeaderMenuItem href={to('profile')} onSelect={pick('profile')} icon={<User size={18} />}>
-              Profile
-            </AtlasHeaderMenuItem>
-            <AtlasHeaderMenuItem href={to('notifications')} onSelect={pick('notifications')} icon={<Bell size={18} />}>
-              Notifications
-            </AtlasHeaderMenuItem>
-            <AtlasHeaderMenuItem href={to('transcripts')} onSelect={pick('transcripts')} icon={<FileText size={18} />}>
-              Transcripts
-            </AtlasHeaderMenuItem>
-            <AtlasHeaderMenuItem href={to('purchases')} onSelect={pick('purchases')} icon={<Receipt size={18} />}>
-              My Purchases
-            </AtlasHeaderMenuItem>
+            {/* 8px under the first rule and 12px over the second —
+                2026-10-20, Eric's request — so the links do not sit on
+                either rule. */}
+            <div style={{ padding: '8px 0 12px' }}>
+              {modeMenu?.mode === 'admin' ? (
+                modeMenu.adminLinks.map((l) => (
+                  <AtlasHeaderMenuItem key={l.href} href={l.href} onSelect={onNavigate ? () => onNavigate(l.href) : undefined} icon={l.icon}>
+                    {l.label}
+                  </AtlasHeaderMenuItem>
+                ))
+              ) : (
+                <>
+                  <AtlasHeaderMenuItem href={to('profile')} onSelect={pick('profile')} icon={<User size={18} />}>
+                    Profile
+                  </AtlasHeaderMenuItem>
+                  <AtlasHeaderMenuItem href={to('notifications')} onSelect={pick('notifications')} icon={<Bell size={18} />}>
+                    Notifications
+                  </AtlasHeaderMenuItem>
+                  <AtlasHeaderMenuItem href={to('transcripts')} onSelect={pick('transcripts')} icon={<FileText size={18} />}>
+                    Transcripts
+                  </AtlasHeaderMenuItem>
+                  <AtlasHeaderMenuItem href={to('purchases')} onSelect={pick('purchases')} icon={<Receipt size={18} />}>
+                    My Purchases
+                  </AtlasHeaderMenuItem>
+                </>
+              )}
+            </div>
             <AtlasHeaderMenuDivider />
             <AtlasHeaderMenuItem href={to('logout')} onSelect={onLogout} icon={<LogOut size={18} />}>
               Logout

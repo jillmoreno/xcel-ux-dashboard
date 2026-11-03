@@ -2863,6 +2863,23 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-header-mode-switch',
+    /* LEARNER / ADMIN MODE IN THE PROFILE MENU (2026-11-03, Eric's request,
+       from feat/atlas-admin). On: "(Learner Mode)" after the name, and
+       Mode: Admin / Learner pills under the email — Admin opens the
+       atlas-admin branch build, where the admin pages live. Off: the menu as
+       it was. ON on this branch, per the flag rule. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Profile menu: mode switch',
+    description:
+      'The profile menu says Learner Mode and offers Mode: Admin / Learner; Admin opens the Atlas Admin build. Off: the menu as it was.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-pace-card-figma',
     /* ERIC'S FIGMA PASS ON THE RING CARD — 2026-10-30 (Figma 592:457), on
        feat/learner-home-breakpoints; brought here 2026-11-03. On:
