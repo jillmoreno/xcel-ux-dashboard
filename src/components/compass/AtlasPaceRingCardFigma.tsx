@@ -213,13 +213,13 @@ export function AtlasPaceRingCardFigma({
          instead of outside it where the box looked lopsided.
        — With no pace at all there is no box, and the panel's own padding is
          the only thing holding that edge. */
-    <div
-      style={
-        (!expired && (readinessBelow || expected)) || examUnderExpired
-          ? { ...PANEL, paddingBottom: 0 }
-          : PANEL
-      }
-    >
+    /* ⚠ SINCE 2026-11-03 THE CARD ADDS NO AIR BELOW ITSELF AT ALL (Eric:
+       "assure that all progress panel instances have at least 40 pixels of
+       padding at the bottom"). The rules above made the trailing space depend
+       on what came last — 24 under the date, nothing under a paused dial —
+       so the panel's own pad could not promise a floor. Now the last row is
+       tight and the host panel's 40 is the whole of it, in every state. */
+    <div style={{ ...PANEL, paddingBottom: 0 }}>
       {/* ⚠ COURSE PROGRESS LEADS THE COLUMN (2026-10-16, Jillienne: "move
           course progress to the top - shift everything else down"). Where the
           learner HAS GOT TO is the first thing they want; the plan for the
@@ -371,14 +371,14 @@ export function AtlasPaceRingCardFigma({
                next line down, and a bottom rule here would put two hairlines
                24 apart with nothing between them. */
             ruled={!exam && readinessBelow}
-            tight={exam != null}
+            tight
           />
         ) : null}
         {/* ⚠ RULED ABOVE, LIKE THE BLOCK IT FOLLOWS, so the column keeps one
             rhythm — the hairline belongs to the block BELOW it here, which is
             the rule `Estimated completion` already follows. */}
         {exam ? (
-          <FigureRow label={exam.label} value={exam.value} note={exam.note} ruled={readinessBelow} />
+          <FigureRow label={exam.label} value={exam.value} note={exam.note} ruled={readinessBelow} tight />
         ) : null}
       </section>
       )}

@@ -825,7 +825,7 @@ export function AtlasHomeEricE2E({
               style={
                 onWhite
                   ? paceCard === 'ring'
-                    ? { ...WHITE_PROGRESS_PANEL, gap: 0, ...(RingCard === AtlasPaceRingCardFigma ? { paddingLeft: 32, paddingRight: 32 } : null) }
+                    ? { ...WHITE_PROGRESS_PANEL, gap: 0, ...(RingCard === AtlasPaceRingCardFigma ? { paddingLeft: 32, paddingRight: 32, paddingBottom: 40 } : null) }
                     : WHITE_PROGRESS_PANEL
                   : { display: 'contents' }
               }
