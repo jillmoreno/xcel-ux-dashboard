@@ -206,6 +206,10 @@
    24 all round, the course card's inset. */
 [data-home-bp='mobile'] .cre-atlas-pace-list-copy {
   padding: 0 24px 24px !important;
+  /* The column's full width whatever it holds — one short row under the
+     tabs would otherwise shrink it to fit. */
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 /* Its rule under Course progress: 16 above and below, the same as the rule
    over Estimated completion (same day) — the panel's 24 gap less 8 each way. */
@@ -221,4 +225,30 @@
 [data-home-bp='mobile'] .cre-atlas-pace-list-copy section > p:first-child,
 [data-home-bp='mobile'] .cre-atlas-pace-list-copy section[aria-label='Study pace'] > div:last-child > p:first-child {
   margin-bottom: -4px !important;
+}
+
+/* ONE ROW AT A TIME, UNDER TABS (2026-11-04, Eric's request) — the list
+   layout with `data-tab` naming the row that shows. The tabs are the headers
+   now, so the in-panel labels and the rules between rows go. */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] section > p:first-child,
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] section[aria-label='Study pace'] > div:last-child > p:first-child,
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] section[aria-label='Course progress'] + span {
+  display: none !important;
+}
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab='progress'] section[aria-label='Study pace'],
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab='pace'] section[aria-label='Course progress'],
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab='pace'] section[aria-label='Study pace'] > div:last-child,
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab='completion'] section[aria-label='Course progress'],
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab='completion'] section[aria-label='Study pace'] > :not(:last-child) {
+  display: none !important;
+}
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab='completion'] section[aria-label='Study pace'] > div:last-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: none !important;
+}
+/* …and the column holding it stretches to the page's width: it is drawn at
+   `align-self: flex-start`, which a short tabbed panel would shrink. */
+[data-home-bp='mobile'] div:has(> .cre-atlas-pace-list-copy) {
+  align-self: stretch !important;
 }

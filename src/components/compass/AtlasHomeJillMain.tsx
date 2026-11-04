@@ -44,6 +44,7 @@
  * `onWhite` false sides) are carried over unchanged and never taken here.
  */
 import { cloneElement, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { ATLAS_SECTION_EYEBROW } from './atlasSectionEyebrow'
 import { useSearchParams } from 'react-router-dom'
 import { isEricAtlasWhiteLike, resolveDashboardVersion } from '@/data/dashboardVersions'
 import {
@@ -350,6 +351,12 @@ export function AtlasHomeJillMain({
      only — see `ringListCopy` below. Rendered, not hidden: a hidden copy is
      still a second copy of every figure on the card. */
   const phoneFrame = useFeatureFlag('home-breakpoint').variant === 'mobile'
+  /* THREE PHONE LAYOUTS FOR THE PROGRESS PANEL (2026-11-04, Eric's request),
+     cycled by a click on the panel's bottom-left corner: the two columns, the
+     list (`listProgress`), and one row at a time under tabs. A demo toggle in
+     page state, like the course head's cover click. */
+  const [phoneLayout, setPhoneLayout] = useState<'columns' | 'list' | 'tabs'>('columns')
+  const [phoneTab, setPhoneTab] = useState<PacePhoneTab>('progress')
   /* Whether the column carries Exam readiness at all — a design-bar on/off,
      see `atlas-readiness-section`. */
   const showReadinessFlag = useFeatureFlag('atlas-readiness-section').enabled
@@ -936,6 +943,11 @@ export function AtlasHomeJillMain({
   /* THE RING CARD, hoisted so the phone can draw it twice (2026-11-04, Eric's
      request): as it is, and again under it as a list (`listProgress`) —
      see `ringListCopy` below. One element, so the two cannot disagree. */
+  /* Whether the corner switch is there at all — the phone, the ring card in
+     Figma's version on the white page — and whether a layout other than the
+     two columns is up. */
+  const phoneSwitch = phoneFrame && onWhite && paceCard === 'ring' && RingCard === AtlasPaceRingCardFigma
+  const phoneAltLayout = phoneSwitch && phoneLayout !== 'columns'
   const ringCard = (
     <RingCard
       /* Ready 100%: the dial alone — no rule, no Study pace (2026-11-03,
@@ -1225,14 +1237,30 @@ export function AtlasHomeJillMain({
                 off than the one inside the card. The STATES arm keeps it:
                 its two cards have no rule between them to measure from. */}
             <div
-              style={
-                onWhite
+              /* The phone's other two layouts (see `phoneLayout`) take the
+                 list copy's class, which the two-column rules skip and the
+                 list and tab rules in home-breakpoints/mobile.css target. */
+              className={phoneAltLayout ? 'cre-atlas-pace-list-copy' : undefined}
+              data-tab={phoneAltLayout && phoneLayout === 'tabs' ? phoneTab : undefined}
+              style={{
+                ...(onWhite
                   ? paceCard === 'ring'
                     ? { ...WHITE_PROGRESS_PANEL, gap: 0, ...(RingCard === AtlasPaceRingCardFigma ? { paddingLeft: 32, paddingRight: 32, paddingBottom: 40 } : null) }
                     : WHITE_PROGRESS_PANEL
-                  : { display: 'contents' }
-              }
+                  : { display: 'contents' }),
+                ...(phoneSwitch ? { position: 'relative' as const } : null),
+                ...(phoneAltLayout && phoneLayout === 'tabs' ? { marginTop: PACE_TAB_H, borderTopLeftRadius: 0 } : null),
+              }}
             >
+            {phoneAltLayout && phoneLayout === 'tabs' ? <PacePhoneTabs active={phoneTab} onSelect={setPhoneTab} /> : null}
+            {phoneSwitch ? (
+              <button
+                type="button"
+                aria-label={`Progress layout: ${phoneLayout}. Switch layout`}
+                onClick={() => setPhoneLayout((l) => (l === 'columns' ? 'list' : l === 'list' ? 'tabs' : 'columns'))}
+                style={PACE_LAYOUT_SWITCH}
+              />
+            ) : null}
             {/* ⚠ THE RING SURVIVES 100% (2026-10-16, Jillienne: "100% still
                 needs to show the course progress section because they might
                 not always be 100% complete, but still ready"). Completion and
@@ -1251,7 +1279,7 @@ export function AtlasHomeJillMain({
                  hardcoded week count is how those two start describing
                  different plans. `HybridHomeV1` pins its 3 deliberately and
                  records the derivation it dropped — this one keeps it. */
-              ringCard
+              phoneAltLayout ? cloneElement(ringCard, { listProgress: true }) : ringCard
             ) : completedView ? null : (
             <AtlasCourseProgressStates
               bare={onWhite}
@@ -1345,15 +1373,6 @@ export function AtlasHomeJillMain({
             />
             )}
             </div>
-            {/* THE PROGRESS PANEL AGAIN, AS A LIST — 2026-11-04, Eric's request:
-                the same card under the first, its Course progress drawn as a
-                row like Study pace and Estimated completion. Drawn at the
-                Mobile breakpoint only, so the two can be compared there. */}
-            {SHOW_PACE_LIST_COPY && phoneFrame && onWhite && paceCard === 'ring' && RingCard === AtlasPaceRingCardFigma ? (
-              <div className="cre-atlas-pace-list-copy" style={{ ...WHITE_PROGRESS_PANEL, gap: 0 }}>
-                {cloneElement(ringCard, { listProgress: true })}
-              </div>
-            ) : null}
             {/* The link tiles at the BOTTOM of the column (2026-10-09, Eric's
                 request; they led it). */}
             {!SHOW_LINK_TILES ? null : stackedTiles ? (
@@ -2659,13 +2678,6 @@ const META_VALUE: CSSProperties = { fontWeight: 600, color: 'var(--color-text-pr
 /* Eric/Atlas White's Progress + Readiness panel (Figma 286:9455, 2026-10-14):
    a Primary 200 outline, 20 corners, 24 / 32 in, 16 between. The hairline
    between them is the design's #E7E0D6 — tan 300 is the nearest token. */
-/* THE PHONE'S LIST COPY OF THE PROGRESS PANEL — OFF, "for now" (2026-11-04,
-   Eric's request, the same day it was built). Set true to draw it again under
-   the two-column panel at the Mobile breakpoint: the card's `listProgress`
-   arm and its rules in home-breakpoints/mobile.css (`.cre-atlas-pace-list-copy`)
-   are kept as they were. */
-const SHOW_PACE_LIST_COPY = false
-
 const WHITE_PROGRESS_PANEL: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
@@ -3131,4 +3143,74 @@ const EXAM_CAL_PANEL: CSSProperties = {
   padding: 12,
   borderRadius: 12,
   background: 'var(--color-surface-card)',
+}
+
+/* ─── The phone's tabbed progress panel (2026-11-04, Eric's request) ─── */
+
+type PacePhoneTab = 'progress' | 'pace' | 'completion'
+
+const PACE_PHONE_TABS: readonly { id: PacePhoneTab; lines: [string, string] }[] = [
+  { id: 'progress', lines: ['Course', 'progress'] },
+  { id: 'pace', lines: ['Study', 'pace'] },
+  { id: 'completion', lines: ['Estimated', 'completion'] },
+]
+
+/** The tab strip's height — the panel drops by it, and the strip sits in the
+ *  space above, its bottom on the panel's top edge. */
+const PACE_TAB_H = 48
+
+/** The headers as tabs over the panel's top edge, each on two lines. The
+ *  active one takes the panel's fill and joins it; the others are an outline
+ *  on three sides. The titles keep the eyebrow's colour either way. */
+function PacePhoneTabs({ active, onSelect }: { active: PacePhoneTab; onSelect: (t: PacePhoneTab) => void }) {
+  return (
+    <div role="tablist" aria-label="Course progress panel" style={{ position: 'absolute', left: 0, bottom: '100%', display: 'flex', gap: 4, height: PACE_TAB_H }}>
+      {PACE_PHONE_TABS.map((t) => {
+        const on = t.id === active
+        return (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            onClick={() => onSelect(t.id)}
+            style={{
+              ...ATLAS_SECTION_EYEBROW,
+              alignSelf: 'auto',
+              display: 'block',
+              boxSizing: 'border-box',
+              height: '100%',
+              padding: '7px 14px 0',
+              textAlign: 'left',
+              cursor: on ? 'default' : 'pointer',
+              borderRadius: '12px 12px 0 0',
+              border: '1px solid',
+              borderBottom: 'none',
+              borderColor: on ? 'transparent' : 'var(--color-border-subtle)',
+              background: on ? 'var(--color-atlas-tan-100)' : 'transparent',
+            }}
+          >
+            {t.lines[0]}
+            <br />
+            {t.lines[1]}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+/** The bottom-left corner of the progress panel — an unmarked click target
+ *  that cycles its three phone layouts, like the course head's cover. */
+const PACE_LAYOUT_SWITCH: CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  bottom: 0,
+  width: 40,
+  height: 40,
+  padding: 0,
+  border: 'none',
+  background: 'transparent',
+  cursor: 'pointer',
+  zIndex: 1,
 }
