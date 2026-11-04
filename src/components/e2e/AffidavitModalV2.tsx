@@ -148,6 +148,9 @@ function prefillVals(f: AffForm, st: string): { vals: Vals; readOnly: string[] }
     first: 'Jordan', middle: 'Lee', last: 'Navarro', addr1: '1420 Maple Avenue', addr2: 'Apt 3B', city, state: st, zip,
     phone: '(555) 214-7788', email: 'jordan.navarro@example.com', date: today, s_date: today, sigdate: today,
     examdate: today, examdt: `${today}T10:30`, course: `${STATES[st] ?? ''} Life & Health Prelicensing`,
+    // The state-specific forms ask for one name field (2026-11-04); where it
+    // is a signature (NY, CO, CT, WI, WV) the form's `noPrefill` leaves it empty.
+    fullname: 'Jordan Lee Navarro',
   }
   const vals: Vals = {}
   const skip = f.noPrefill ?? []

@@ -6,7 +6,7 @@ import { AffidavitModal } from '@/components/e2e/AffidavitModal'
 import { AffidavitModalV2 } from '@/components/e2e/AffidavitModalV2'
 import { resolveAffidavit } from '@/components/e2e/affidavitModalV2Util'
 import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
-import { ENTRIES, FORMS, STATES } from '@/data/affidavitForms'
+import { ENTRIES, FORMS, STATES, type AffField } from '@/data/affidavitForms'
 
 /**
  * AFFIDAVIT V2 — 2026-11-03, Afsana. The first change V2 makes: the modal
@@ -235,6 +235,56 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(screen.getByLabelText(/Last four of SSN/)).toBeTruthy()
     // The Student Legal Name keeps its red box — only the heading went.
     expect(screen.getByText('Student Legal Name (first and last name)').closest('.aff2-flag')).not.toBeNull()
+  })
+
+  /* THE SIX STATE-SPECIFIC FINAL AFFIDAVITS match their documents field for
+     field (2026-11-04, Afsana's "State Specific Affidavit" folder) — the
+     documents' own labels, in the documents' order. The one addition is the
+     product's "I confirm that the above information is accurate", kept on
+     purpose and left out of these lists. */
+  const STATE_DOCUMENT_FIELDS: Record<string, string[]> = {
+    NY_POST: ['Full Name', 'Today’s Date'],
+    CO_POST: ['Course Name', 'Date of Pre-licensing Final Exam', 'Student Full Name', 'Date', 'Relationship to Examinee', 'Proctor Address', 'Proctor Name (print)', 'Proctor Signature'],
+    CT_POST: ['Course Name', 'Date of Prelicensing Final Exam', 'Student Full Name', 'Date', 'Relationship to Examinee', 'Proctor Address', 'Proctor Name (print)', 'Proctor Signature'],
+    MN_POST: [
+      'Name of Exam', 'Date & Time of Exam Completion', 'Company & Address where exam was completed', 'City', 'State', 'Zip Code',
+      'Name', 'License #', 'Date of Birth',
+      'Business Address', 'City', 'State', 'Zip Code',
+      'Mailing Address (if different than above)', 'City', 'State', 'Zip Code',
+      'Daytime Phone', 'E-mail', 'Student Signature', 'Date',
+      'Proctor’s Full Legal Name', 'Note your type of relationship to the student.', 'Proctor Signature', 'Date', 'Employer & Job Title',
+      'Business Address', 'City', 'State', 'Zip Code', 'Business/Daytime Phone', 'E-mail',
+    ],
+    WI_POST: ['Student Full Name', 'Today’s Date', 'Proctor Full Address', 'Proctor Phone Number', 'Proctor Full Name', 'Relationship to Examinee', 'Today’s Date'],
+    WV_POST: ['Student Full Name', 'Relationship to Examinee', 'Proctor Full Name', 'Today’s Date'],
+  }
+  const formFields = (key: string) => {
+    const flat = (l: AffField[] = []): AffField[] =>
+      l.flatMap((x) => (x.flagGroup ? flat(x.flagGroup) : x.depGroup ? flat(x.items) : x.block ? [] : x.row ? x.row : [x]))
+    const f = FORMS[key]!
+    return flat(f.pages.flatMap((p) => p.fields ?? []).concat(f.fields)).filter((x) => x.id !== 'agree')
+  }
+
+  it.each(Object.keys(STATE_DOCUMENT_FIELDS))('%s asks for exactly the fields on its state document', (key) => {
+    // The data writes Today's Date with a straight apostrophe; compare the words.
+    const norm = (s?: string) => (s ?? '').replace(/[’']/g, '’')
+    expect(formFields(key).map((x) => norm(x.label))).toEqual(STATE_DOCUMENT_FIELDS[key])
+  })
+
+  it('never splits a name on the state-specific forms, and leaves e-signature names empty', () => {
+    for (const key of Object.keys(STATE_DOCUMENT_FIELDS)) {
+      const ids = formFields(key).map((x) => x.id)
+      for (const split of ['first', 'middle', 'last', 'suffix']) expect(ids, `${key} ${split}`).not.toContain(split)
+    }
+    render(<AffidavitModalV2 onClose={() => {}} moment="post" state="NY" pattern="page" />)
+    expect((screen.getByLabelText(/^Full Name/) as HTMLInputElement).value).toBe('')
+    expect((screen.getByLabelText(/Today.s Date/) as HTMLInputElement).readOnly).toBe(true)
+  })
+
+  it('Minnesota: the mailing address is optional, with no "same as" checkbox', () => {
+    const fields = formFields('MN_POST')
+    expect(fields.find((x) => x.id === 'mail_same')).toBeUndefined()
+    expect(fields.filter((x) => x.id?.startsWith('mail_')).every((x) => !x.required)).toBe(true)
   })
 
   it('resolves every ready entry in the explorer to a form', () => {

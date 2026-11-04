@@ -20,6 +20,24 @@
  *   · 2026-11-04 — California, After course exam (`CA_POST_LH`): no "Course
  *     Completion Roster upload form" heading. The heading only — its red box
  *     round the Student Legal Name stays. Afsana's change.
+ *   · 2026-11-04 — THE SIX STATE-SPECIFIC FINAL AFFIDAVITS (`CO_POST`,
+ *     `CT_POST`, `MN_POST`, `NY_POST`, `WI_POST`, `WV_POST`) match their
+ *     state documents field for field, from Afsana's "State Specific
+ *     Affidavit" folder. The explorer split names and addresses by house
+ *     rule (its Notes); these forms are the state's, so they cannot:
+ *       - every student name is ONE field, labelled as the document labels
+ *         it (NY "Full Name", CO/CT/WI/WV "Student Full Name", MN "Name"
+ *         under the document's own "Student's Full Legal Name, License
+ *         Number, & DOB");
+ *       - CO/CT's Proctor Address is one line, with the document's
+ *         "(street address, city, state, zip code)";
+ *       - CT's exam date carries the document's "(mm/dd/yyyy)";
+ *       - MN's Mailing Address is optional "(if different than above)",
+ *         with no "same as my business address" checkbox; its proctor Date
+ *         carries "Must match course &/or exam".
+ *     Kept on purpose though no document has them: the "I confirm that the
+ *     above information is accurate" checkbox (the product pre-fills these
+ *     forms; Afsana, 2026-11-04) and the pre-filled, locked Today's Date.
  *
  * ⚠ THE EXPLORER IS AN ADMIN TOOL AND SOME OF THIS IS ITS BOOKKEEPING.
  * `status` (ready / received / missing) says whether the document has been
@@ -562,12 +580,13 @@ FORMS.NY_POST={
   ]}],
   fields:[
     {block:{h4:'Student E-Signature:'}},
-    FORMS.KY_PRE.fields[1],FORMS.KY_PRE.fields[2],
+    /* One field, as the document has it (2026-11-04); it was First / Middle / Last / Suffix. */
+      {id:'fullname',label:'Full Name',required:true,placeholder:'Type your full name',ac:'name'},
     {id:'date',type:'date',label:"Today's Date",required:true},
     FORMS.KY_PRE.fields[0]
   ],
   flagFields:['agree'],
-  noPrefill:['first','middle','last','suffix'],
+  noPrefill:['fullname'],
   note:'The doc’s button reads "Attest"; the explorer shows "I Attest" instead. The "I confirm that the above information is accurate" checkbox (highlighted in red) comes after Today’s Date. Full Name is split into the same name fields as the other states. The name fields are the e-signature, so they are not pre-filled.'
 };
 FORMS.CO_POST={
@@ -582,19 +601,16 @@ FORMS.CO_POST={
       {id:'examdate',type:'date',label:'Date of Pre-licensing Final Exam',required:true},
       {block:{p:'I affirm that I personally completed the entire study material of the course. I also affirm that I completed the exam without assistance from any course material, other than source material, or from any person(s).'}},
       {block:{h4:'Student Signature:'}},
-      FORMS.KY_PRE.fields[1],FORMS.KY_PRE.fields[2],
+      /* One field, as the document has it (2026-11-04); it was First / Middle / Last / Suffix. */
+      {id:'fullname',label:'Student Full Name',required:true,placeholder:'Type your full name',ac:'name'},
       {id:'date',type:'date',label:'Date',required:true},
       FORMS.KY_PRE.fields[0]
     ]},
     {who:'proctor',blocks:[],fields:[
       {block:{h:'To be completed and Signed by Exam Monitor',u:true}},
       {id:'rel',type:'radio',label:'Relationship to Examinee',required:true,options:['Co-Worker (neither above or below the line of supervision)','Librarian','Licensed Agent']},
-      {block:{h4:'Proctor Address:'}},
-      {id:'p_addr1',label:'Address Line 1',required:true,placeholder:'Street address'},
-      {id:'p_addr2',label:'Address Line 2 (Optional)',placeholder:'Apt, suite, unit, etc.'},
-      {id:'p_city',label:'City',required:true,placeholder:'City'},
-      {id:'p_state',type:'select',label:'State',required:true,placeholder:'Select state',options:'AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY'.split(' ')},
-      {id:'p_zip',label:'Zip',required:true,placeholder:'ZIP code',inputmode:'numeric'},
+      /* One line, as the document has it (2026-11-04); it was Address Line 1 / 2, City, State and Zip. */
+      {id:'p_addr',label:'Proctor Address',required:true,placeholder:'Street address, city, state, zip code',ac:'off',help:'street address, city, state, zip code'},
       {block:{p:'I certify that I verified the identification of the student. In addition, I administered the final examination and certify that it was sealed until administration and completed without assistance or outside assistance of any kind.'}},
       {id:'p_name',label:'Proctor Name (print)',required:true,placeholder:'Proctor full name'},
       {id:'p_sig',label:'Proctor Signature',required:true,placeholder:'Proctor types full name'}
@@ -606,7 +622,7 @@ FORMS.CO_POST={
   ],
   fields:[],
   flagFields:['agree'],
-  noPrefill:['first','middle','last','suffix'],
+  noPrefill:['fullname'],
   lock:['examdate','course'],
   noLink:true,
   note:'Three parts: the student’s affirmation, the exam monitor (proctor) section, and the Student Certification Statement. The doc’s "Circle one" relationship becomes radio buttons, and the one-line proctor address is split into address fields. The "I confirm that the above information is accurate" checkbox (highlighted in red) sits right above the Exam Monitor section. In Pagination, Next also waits for that page’s required fields. The name fields are the student signature, so they are not pre-filled. Course Name and Date of Pre-licensing Final Exam are pre-filled and locked. No Link out option: the student and proctor complete many fields, so the form is always shown in full.'
@@ -616,7 +632,7 @@ FORMS.CT_POST=(function(){
   c.docHeader='Connecticut Pre-licensing Insurance';
   c.title='Connecticut Pre-licensing Insurance - Affidavit of Personal Responsibility';
   c.source='Word doc · CT PE-Post Final Affidavit';
-  c.pages[0].fields.find(x=>x.id==='examdate').label='Date of Prelicensing Final Exam';
+  {const d=c.pages[0].fields.find(x=>x.id==='examdate');d.label='Date of Prelicensing Final Exam';d.help='mm/dd/yyyy';}
   const cert=c.pages[2].blocks[1];cert.p=cert.p.replace('Colorado Division of Insurance','Connecticut Department of Insurance');
   c.note='Same structure as Colorado’s affidavit: the student’s affirmation, the exam monitor (proctor) section, and the Student Certification Statement. The doc’s "Circle one" relationship becomes radio buttons, and the one-line proctor address is split into address fields.';
   c.note+=' The "I confirm that the above information is accurate" checkbox (highlighted in red) sits right above the Exam Monitor section.';
@@ -639,11 +655,13 @@ FORMS.CT_POST=(function(){
       {id:'examname',label:'Name of Exam',readonly:true,value:'Certification Exam -Minnesota Life Prelciensing'},
       {id:'examdt',type:'datetime-local',label:'Date & Time of Exam Completion',required:true},
       {flagGroup:addr('loc_','Company & Address where exam was completed',true)},
-      FORMS.KY_PRE.fields[1],FORMS.KY_PRE.fields[2],
+      /* The document's own heading and one Name field (2026-11-04); it was First / Middle / Last / Suffix. */
+      {block:{h4:'Student’s Full Legal Name, License Number, & DOB'}},
+      {id:'name',label:'Name',required:true,placeholder:'Full legal name',ac:'name',sameAs:'fullname'},
       {row:[{id:'license',label:'License #',required:true,placeholder:'License number'},{id:'dob',type:'date',label:'Date of Birth',required:true,ac:'bday'}]},
       ...addr('bus_','Business Address',true),
-      {id:'mail_same',type:'checkbox',label:'My mailing address is the same as my business address'},
-      {depGroup:'mail_same',items:addr('mail_','Mailing Address (if different than above)',true)},
+      /* As the document has it (2026-11-04): optional, under its own "(if different than above)". The explorer's "same as my business address" checkbox is gone. */
+      ...addr('mail_','Mailing Address (if different than above)',false),
       {row:[{id:'phone',type:'tel',label:'Daytime Phone',required:true,placeholder:'(555) 000-0000',ac:'tel'},{id:'email',type:'email',label:'E-mail',required:true,placeholder:'Enter email address',ac:'email'}]},
       {block:{p:'<em><strong>I certify that I personally completed the above-named exam without outside assistance of any kind.</strong></em>'}},
       {id:'sig',label:'Student Signature',required:true,placeholder:'Type your full name',ac:'name'},
@@ -655,7 +673,7 @@ FORMS.CT_POST=(function(){
       {id:'p_rel',label:'Note your type of relationship to the student.',required:true,placeholder:'Relationship to the student'},
       {block:{p:'I certify that I am at least 18 years of age, with no financial or other conflict of interest with respect to a student’s successful completion of the examination. I verified the identity of the student listed above on this form (i.e. valid photo ID), and I ensured that the exam was completed without outside assistance of any kind (i.e. human, study material, notes, computer, cell phone, etc.), and that I physically monitored the student throughout the entire exam process.'}},
       {id:'p_sig',label:'Proctor Signature',required:true,placeholder:'Proctor types full name'},
-      {id:'p_date',type:'date',label:'Date',required:true,sameAs:'sigdate'},
+      {id:'p_date',type:'date',label:'Date',required:true,sameAs:'sigdate',help:'Must match course &/or exam'},
       {id:'p_job',label:'Employer & Job Title',required:true,placeholder:'Employer and job title'},
       ...addr('p_bus_','Business Address',true),
       {row:[{id:'p_phone',type:'tel',label:'Business/Daytime Phone',required:true,placeholder:'(555) 000-0000'},{id:'p_email',type:'email',label:'E-mail',required:true,placeholder:'Enter email address'}]}
@@ -676,7 +694,8 @@ FORMS.WV_POST={
     {who:'student',blocks:[{h:'TO BE COMPLETED BY THE STUDENT'}],fields:[
       {block:{p:'I declare that I completed the exam with no assistance from any person(s), course material, or any additional source of information. This exam will be proctored by an approved proctor who is an impartial, disinterested third party with no financial relationship to the student.'}},
       {block:{h4:'Student E-Signature:'}},
-      FORMS.KY_PRE.fields[1],FORMS.KY_PRE.fields[2],
+      /* One field, as the document has it (2026-11-04); it was First / Middle / Last / Suffix. */
+      {id:'fullname',label:'Student Full Name',required:true,placeholder:'Type your full name',ac:'name'},
       FORMS.KY_PRE.fields[0]
     ]},
     {who:'proctor',blocks:[{h:'TO BE COMPLETED BY THE PROCTOR'}],fields:[
@@ -693,7 +712,7 @@ FORMS.WV_POST={
   ],
   fields:[],
   flagFields:['agree'],
-  noPrefill:['first','middle','last','suffix','date'],
+  noPrefill:['fullname','date'],
   note:'Same three-part structure as CO and CT (student, proctor, certification statement). The button reads "Attest". The doc’s "check one" relationship becomes radio buttons. The "I confirm that the above information is accurate" checkbox (highlighted in red) ends the student section. The name fields are the e-signature, so they are not pre-filled.'
 };
 FORMS.WI_POST={
@@ -705,7 +724,8 @@ FORMS.WI_POST={
   pages:[
     {who:'student',blocks:[{p:'I affirm that I personally completed the entire study material of the course. I also affirm that I completed the exam without assistance from any course material, other than source material, or from any person(s).'}],fields:[
       {block:{h4:'Student E-Signature:'}},
-      FORMS.KY_PRE.fields[1],FORMS.KY_PRE.fields[2],
+      /* One field, as the document has it (2026-11-04); it was First / Middle / Last / Suffix. */
+      {id:'fullname',label:'Student Full Name',required:true,placeholder:'Type your full name',ac:'name'},
       {id:'s_date',type:'date',label:"Today's Date",required:true},
       FORMS.KY_PRE.fields[0]
     ]},
@@ -725,7 +745,7 @@ FORMS.WI_POST={
   ],
   fields:[],
   flagFields:['agree'],
-  noPrefill:['first','middle','last','suffix','date'],
+  noPrefill:['fullname','date'],
   note:'Same three-part structure as WV (student, exam monitor, certification statement). The button reads "Attest". Student Full Name becomes the First/Middle/Last/Suffix rows; the doc’s "check one" relationship becomes radio buttons. Unlike WV, the proctor also gives an address and phone number, and the options include Neighbor instead of Licensed Agent. The "I confirm that the above information is accurate" checkbox (highlighted in red) ends the student section. The name fields are the e-signature, so they are not pre-filled.'
 };
 
