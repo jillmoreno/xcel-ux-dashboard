@@ -56,6 +56,9 @@ const card = (over: Partial<TodoCard> = {}): TodoCard => ({
   column: 'todo',
   position: 1,
   addedDate: '2026-10-15',
+  // No surface by default — `scope` joined the card 2026-11-04 and only the
+  // cards `/share-to-stage` files carry one.
+  scope: '',
   // Live by default — the archive fields joined the card 2026-10-16.
   archived: false,
   archivedAt: '',
@@ -155,6 +158,28 @@ describe('the todo-board endpoint', () => {
       .map((x) => x.replaceAll("'", ''))
     const clientIds = [...store.matchAll(/id: '([a-z]+)'/g)].map((m) => m[1])
     expect(fnIds).toEqual(clientIds)
+  })
+
+  it('declares the same Prototypes scopes the catalog does', () => {
+    /* ⚠ THE SAME COUPLING THAT ROTS, one boundary further out. The function
+       re-declares the scope ids rather than importing them (a trust boundary,
+       like the columns); the CLIENT store reads them off `PROTOTYPE_SCOPES`
+       itself, so the thing both must agree with is the catalog.
+
+       A scope added to the catalog but not here is silent in the worst way:
+       `/share-to-stage` files a card naming it, the endpoint normalises the
+       field to '' on the way in, and the Prototypes row for that surface
+       stays blank — the exact failure the scope field was added to fix
+       (2026-11-04), reintroduced for the newest surface only. */
+    const catalog = readFileSync(resolve(root, 'src/data/prototypeFeatures.ts'), 'utf8')
+    const block = /export const PROTOTYPE_SCOPES[\s\S]*?\n\]/.exec(catalog)![0]
+    const catalogIds = [...block.matchAll(/^\s{4}id: '([a-z-]+)',$/gm)].map((m) => m[1])
+    const fnIds = /export const SCOPES = \[([^\]]+)\]/
+      .exec(fn)![1]
+      .match(/'([a-z-]+)'/g)!
+      .map((x) => x.replaceAll("'", ''))
+    expect(catalogIds.length).toBe(5)
+    expect(fnIds).toEqual(catalogIds)
   })
 
   it('declares the same person colours the client does, and the same retirements', () => {

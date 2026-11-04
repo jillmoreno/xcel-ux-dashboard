@@ -24,6 +24,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
+import { PROTOTYPE_SCOPES, type PrototypeScope } from '@/data/prototypeFeatures'
+
 const BASE = '/api/todo-board'
 
 /** Fired on every successful write so the nav count re-reads. A plain
@@ -190,6 +192,23 @@ export type TodoCard = {
   archivedAt: string
   /** Who archived it — a typed label, like `owner`; '' when live. */
   archivedBy: string
+  /** WHICH PROTOTYPES SURFACE THIS CARD IS ABOUT, or '' for the cards that are
+   *  about no surface at all (most of them — the board is a week's work, not a
+   *  product map).
+   *
+   *  Set by `/share-to-stage`, which knows the scope it just staged, and read
+   *  by the PROTOTYPES rows: a card in the `stage` column carrying a scope is
+   *  the Hub's record that that surface is waiting on a release, and the row
+   *  draws its "Staged" tag from it (2026-11-04). The Hub still cannot read
+   *  the stage BUILD — `stageBuild.ts` explains why, and that has not changed
+   *  — but it can read a record its own store was told to keep, and this is
+   *  that record. Which is why the staged date lives here rather than as a
+   *  hand-stamped field on `prototypeFeatures.ts`.
+   *
+   *  '' is the norm and the fallback: an unknown scope normalises to it rather
+   *  than being stored, so a card can never claim a surface that does not
+   *  exist. */
+  scope: PrototypeScope | ''
 }
 
 export type TodoPerson = {
@@ -335,6 +354,13 @@ function isPerson(v: unknown): v is TodoPerson {
   return typeof o.id === 'string' && typeof o.name === 'string'
 }
 
+/** Whether a value is one of the five Prototypes scopes. Read against the
+ *  catalog itself rather than a copied list, so a new scope in
+ *  `PROTOTYPE_SCOPES` is immediately a scope a card may carry. */
+export function isPrototypeScope(value: unknown): value is PrototypeScope {
+  return typeof value === 'string' && PROTOTYPE_SCOPES.some((s) => s.id === value)
+}
+
 /** Normalise rather than trust: a record from an older version of the endpoint
  *  should degrade to a usable card instead of throwing the whole page. */
 function normaliseCard(v: TodoCard): TodoCard {
@@ -355,6 +381,11 @@ function normaliseCard(v: TodoCard): TodoCard {
     archived: v.archived === true,
     archivedAt: typeof v.archivedAt === 'string' ? v.archivedAt : '',
     archivedBy: typeof v.archivedBy === 'string' ? v.archivedBy : '',
+    /* ⚠ DEFAULTS TO NO SCOPE, like `archived` defaults to live: every card
+       written before 2026-11-04 has no `scope` key, and the Prototypes rows
+       ask "which cards name my surface?" — a missing key must answer "none"
+       rather than matching something. */
+    scope: isPrototypeScope(v.scope) ? v.scope : '',
   }
 }
 
@@ -439,6 +470,11 @@ export type TodoCardDraft = {
    *  re-dating the archive on every later save. */
   archivedAt?: string
   archivedBy?: string
+  /** ⚠ ECHOED FOR THE SAME REASON THE ARCHIVE FIELDS ARE — every write is a
+   *  whole-record PUT, so a move or an edit that omitted this would silently
+   *  drop the card's scope, and the Prototypes row's "Staged" tag would
+   *  vanish the first time anybody dragged the card. Every caller echoes it. */
+  scope?: PrototypeScope | ''
 }
 
 export function draftProblems(draft: TodoCardDraft): string[] {
@@ -467,6 +503,11 @@ export type TodoCardPrefill = {
    *  has nobody by that name. */
   owner?: string
   column?: TodoColumn
+  /** Which Prototypes surface the card is about — `/share-to-stage` knows it,
+   *  and it is what lets the Compass row say "Staged · Nov 4 · Anjani". A
+   *  REQUEST like `owner` and `column`: validated against the catalog by
+   *  `isPrototypeScope` before it reaches the draft. */
+  scope?: PrototypeScope | ''
 }
 
 /**
@@ -562,6 +603,7 @@ export function moveCard(card: TodoCard, column: TodoColumn, position: number): 
     archived: card.archived,
     archivedAt: card.archivedAt,
     archivedBy: card.archivedBy,
+    scope: card.scope,
   })
 }
 
@@ -585,6 +627,7 @@ export function setCardOwner(card: TodoCard, owner: string): Promise<TodoCard> {
     archived: card.archived,
     archivedAt: card.archivedAt,
     archivedBy: card.archivedBy,
+    scope: card.scope,
   })
 }
 
@@ -613,6 +656,7 @@ export function archiveCard(card: TodoCard, by: string): Promise<TodoCard> {
     // the server only mints one when there is none.
     archivedAt: card.archivedAt,
     archivedBy: by,
+    scope: card.scope,
   })
 }
 
@@ -625,8 +669,11 @@ export function unarchiveCard(card: TodoCard): Promise<TodoCard> {
     column: card.column,
     position: card.position,
     // The server clears the stamp and the name when `archived` is false, so
-    // they are not sent back.
+    // they are not sent back. The SCOPE is — it has nothing to do with
+    // archiving, and a card that came back without one would take the
+    // Prototypes row's "Staged" tag down with it.
     archived: false,
+    scope: card.scope,
   })
 }
 
@@ -725,6 +772,64 @@ export function useTodoBoardCount(): number {
     }
   }, [])
   return count
+}
+
+/**
+ * WHAT IS WAITING ON STAGE, by surface — the Prototypes rows' side of the
+ * On Stage column (2026-11-04).
+ *
+ * The problem it solves: a designer runs `/share-to-stage`, the stage build
+ * goes up, they flip the Prototypes switch to Stage — and the card looks
+ * exactly as it did, because the only thing the switch changed was the row's
+ * href. The share worked and the Hub said nothing. This is what the row reads
+ * to say "Staged · Nov 4 · Anjani" instead.
+ *
+ * ⚠ IT DOES NOT READ THE STAGE BUILD, and the distinction is the whole reason
+ * this is allowed to exist. `stageBuild.ts` is still right: main's build
+ * cannot fetch the stage site — cross-origin, behind the same site password,
+ * and the fetch carries no credentials. What it CAN read is a record on its
+ * own Blobs store, written by the skill at the moment it staged something.
+ * The On Stage card already was that record; all that was missing was the
+ * scope on it, so a card could be matched to a row.
+ *
+ * Live, like the counts: `/share-to-stage` files its card in another tab, and
+ * a tag that only refreshed on reload would be wrong for exactly as long as
+ * somebody left the Hub open.
+ *
+ * ARCHIVED CARDS ARE OFF THE BOARD, so they are off this too — archiving a
+ * stage card is how you say "this is released now", and the row should go
+ * quiet when you do. Where two live cards name one scope (two chunks of the
+ * same surface staged in one week, which is normal), the MOST RECENTLY ADDED
+ * wins the tag: the question the row answers is "since when has this surface
+ * been waiting", and the newest share is the honest answer to it.
+ */
+export function useStagedScopes(): Readonly<Record<string, TodoCard>> {
+  const [staged, setStaged] = useState<Readonly<Record<string, TodoCard>>>({})
+  useEffect(() => {
+    let live = true
+    const read = () => {
+      void readBoard().then((index) => {
+        if (!live) return
+        const next: Record<string, TodoCard> = {}
+        for (const card of index.cards) {
+          if (card.archived || card.column !== 'stage' || !card.scope) continue
+          const held = next[card.scope]
+          // `addedDate` is `yyyy-mm-dd`, so a string compare is a date
+          // compare. `updatedAt` would re-order on an unrelated edit — a typo
+          // fixed in the note is not a re-stage.
+          if (!held || card.addedDate > held.addedDate) next[card.scope] = card
+        }
+        setStaged(next)
+      })
+    }
+    read()
+    window.addEventListener(EVENT, read)
+    return () => {
+      live = false
+      window.removeEventListener(EVENT, read)
+    }
+  }, [])
+  return staged
 }
 
 /* ── export ───────────────────────────────────────────────────────────────── */

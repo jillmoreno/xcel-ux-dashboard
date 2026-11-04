@@ -220,10 +220,25 @@ and say so. Otherwise open the add form prefilled:
 ```bash
 OWNER=$(git config user.name | awk '{print $1}')
 node -e '
-const [site,title,note,url,owner]=process.argv.slice(1);
-const q=new URLSearchParams({section:"todo-board",add:"1",column:"stage",title,note:`${note} ${url}`.trim(),owner});
-console.log(`${site}/?${q}`)' "https://ux-design-xceldashboard.netlify.app" "$TITLE" "Staged $(date +%Y-%m-%d) —" "$STAGE_URL" "$OWNER"
+const [site,title,note,url,owner,scope]=process.argv.slice(1);
+const q=new URLSearchParams({section:"todo-board",add:"1",column:"stage",title,note:`${note} ${url}`.trim(),owner,scope});
+console.log(`${site}/?${q}`)' "https://ux-design-xceldashboard.netlify.app" "$TITLE" "Staged $(date +%Y-%m-%d) —" "$STAGE_URL" "$OWNER" "$SCOPE"
 ```
+
+⚠ **`scope` IS WHAT MAKES THE PROTOTYPES ROW SAY ANYTHING** (2026-11-04). It
+is the scope id you decided the defaults for in step 3 — `compass`,
+`atlas`, `invite`, `end-to-end`, `admin` — and without it the card still
+files correctly and the row stays silent, which is exactly the failure this
+field was added to fix: Anjani shared Compass to stage on 2026-11-04, the
+share worked, and the Compass row looked identical because nothing on the
+Hub knew the card was about Compass. Set `SCOPE` alongside `TITLE` and
+`STAGE_URL`; if the branch staged more than one scope, file one card per
+scope rather than one card naming two.
+
+If the chunk already HAS a card you are moving rather than adding, the scope
+has to be set on it as well — the move is a drag on the board, which carries
+the field but cannot invent it. Say so: open the card, and if it was filed
+before this field existed, re-file it with the form above.
 
 Same rules as `share-branch` step 11: nothing saves until the button is
 clicked; the owner is resolved against the roster on the page.
@@ -254,8 +269,12 @@ release. Either is fine; archiving is the usual answer.
 - **Never names `main`.** Not in a push, not in a merge. `/release` is the
   only thing that writes main, and it is Jillienne's.
 - **The default dashboard version is Jillienne's**, on stage as on main.
-- **The card is the staged-date record.** Do not invent a `stagedAt` field on
-  the Prototypes rows; the Hub cannot read stage.
+- **The card is the staged-date record,** and since 2026-11-04 it is also
+  what the Prototypes row READS to draw its "Staged" tag — which is why the
+  card must carry `scope`. Still do not invent a `stagedAt` field on the
+  Prototypes rows: the Hub cannot read the stage BUILD, and a hand-stamped
+  field in `prototypeFeatures.ts` would be a second copy of this record that
+  nobody remembers to update. The card is the one record; the row reads it.
 - **Say what Stage shows now, and that Main does not.** Every time.
 
 ## The other two
