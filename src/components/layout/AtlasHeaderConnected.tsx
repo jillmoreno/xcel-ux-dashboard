@@ -8,7 +8,7 @@ import { WHITE_COURSES, WHITE_COURSE_PARAM, WHITE_FIRST_COURSE_ID } from '@/data
 import { AtlasHeader } from './AtlasHeader'
 import { END_TO_END_VERSION } from '@/pages/endToEndDemo'
 import { ATLAS_HOME_REFRESH } from './atlasHomeRefresh'
-import { BookRegular, CircleInfoRegular, ClipboardListCheckRegular, FileCertificateRegular, PenFieldRegular } from '@/icons'
+import { BookRegular, CircleInfoRegular, ClipboardListCheckRegular, FileCertificateRegular, HouseBlankRegular, PenFieldRegular } from '@/icons'
 import { ATLAS_OPEN_PARAM } from '@/components/compass/AtlasJourneyLinksCard'
 import { useMyCoursesCount } from '@/components/compass/useMyCoursesCount'
 import { GET_LICENSED_STEPS } from '@/data/nyProducerRequirements'
@@ -98,6 +98,8 @@ export function AtlasHeaderConnected({
   const apply = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1]
   const homeAndOpen = (what: string) => () => navigate(shell((n) => n.set(ATLAS_OPEN_PARAM, what)))
   const phoneLinks = [
+    // Home first (2026-11-04, Eric's request) — FA house-blank, Regular like the rest.
+    { label: 'Home', icon: <HouseBlankRegular size={18} />, onSelect: () => navigate(home) },
     { label: 'My Courses', icon: <BookRegular size={18} />, count: coursesCount, onSelect: () => navigate(shell((n) => n.set('section', 'courses'))) },
     { label: 'My Certificates', icon: <FileCertificateRegular size={18} />, onSelect: () => navigate(shell((n) => n.set('section', 'certificates'))) },
     { label: 'Exam Information', icon: <CircleInfoRegular size={18} />, onSelect: homeAndOpen('exam-details') },

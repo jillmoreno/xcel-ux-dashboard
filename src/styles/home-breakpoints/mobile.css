@@ -443,7 +443,8 @@
   grid-column: 2 !important;
   grid-row: 1 !important;
   align-self: stretch !important;
-  padding: 0 0 8px !important;
+  padding: 0 !important;
+  border-bottom: none !important;
 }
 /* The button under the title, beside the image (same day, Eric's request);
    the dates run full width below both. */
@@ -454,6 +455,12 @@
 }
 [data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > div:nth-child(3) {
   grid-row: 3 !important;
+  /* THE RULE MOVES HERE (same day, Eric's request): under the image and the
+     button, across the card's whole content width, over the dates — the
+     title's own goes. 8 above it (the row gap) and 8 below. */
+  border-top: 1px solid var(--color-border-subtle) !important;
+  padding-top: 8px !important;
+  margin-top: 4px !important;
 }
 [data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > div:nth-child(3) {
   padding-bottom: 4px !important;
