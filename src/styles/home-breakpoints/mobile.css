@@ -423,20 +423,26 @@
   padding: 16px !important;
   align-items: start !important;
 }
+/* A 96 square beside the title; the dates and the button run under both,
+   from the image's left edge (same day, Eric's request — they sat in the
+   right column beside a tall image). */
 [data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > :first-child {
   grid-column: 1 !important;
-  grid-row: 1 / span 3 !important;
-  align-self: stretch !important;
+  grid-row: 1 !important;
 }
 [data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > :first-child img {
-  height: 100% !important;
-  min-height: 96px !important;
+  width: 96px !important;
+  height: 96px !important;
 }
 [data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > :not(:first-child) {
-  grid-column: 2 !important;
+  grid-column: 1 / -1 !important;
 }
-/* The title sits at the top of its column, its rule 8 under it. */
-[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > h3 {
+/* The title beside the image, its rule 8 under it. `:not(:first-child)` only
+   to outrank the full-width rule above. */
+[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > h3:not(:first-child) {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  align-self: stretch !important;
   padding: 0 0 8px !important;
 }
 [data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > div:nth-child(3) {
