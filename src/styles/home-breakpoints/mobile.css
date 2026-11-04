@@ -73,6 +73,14 @@
 [data-home-bp='mobile'] .cre-atlas-hdr > header {
   padding-left: 16px !important;
   padding-right: 16px !important;
+  /* 16 shallower (2026-11-04, Eric's request): 56, from 72. Every item is
+     centred on the row's middle; the logo's artwork fills its image top to
+     bottom, so centring the image centres what is seen. */
+  height: 56px !important;
+  align-items: center !important;
+}
+[data-home-bp='mobile'] .cre-atlas-hdr > header > * {
+  align-self: center !important;
 }
 /* The logo at 70% — 77 × 28, from 110 × 40. */
 [data-home-bp='mobile'] .cre-atlas-hdr-logo img {
