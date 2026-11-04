@@ -128,3 +128,28 @@
 [data-home-bp='mobile'] .cre-atlas-hdr > div:first-child {
   padding-right: 16px !important;
 }
+
+/* COURSE PROGRESS ON A PHONE (2026-11-04, Eric's request): the eyebrow on two
+   lines, left aligned; the dial cut to 100 — as small as it goes with
+   "Complete" still inside at its own 10px — and the figure down to 28 so
+   "100%" fits too; both on the panel's left edge. */
+[data-home-bp='mobile'] section[aria-label='Course progress'] {
+  align-items: flex-start !important;
+}
+[data-home-bp='mobile'] section[aria-label='Course progress'] > p:first-child {
+  align-self: flex-start !important;
+  width: min-content !important;
+  text-align: left !important;
+}
+[data-home-bp='mobile'] section[aria-label='Course progress'] > div[aria-label^='Course progress'] {
+  width: 100px !important;
+  height: 100px !important;
+}
+[data-home-bp='mobile'] section[aria-label='Course progress'] > div[aria-label^='Course progress'] > svg {
+  width: 100% !important;
+  height: 100% !important;
+}
+[data-home-bp='mobile'] section[aria-label='Course progress'] > div[aria-label^='Course progress'] > div > span:first-child {
+  font-size: 28px !important;
+  line-height: 24px !important;
+}
