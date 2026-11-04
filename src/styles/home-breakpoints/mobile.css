@@ -504,3 +504,40 @@
   padding-right: 0 !important;
   padding-top: 16px !important;
 }
+
+/* THE ACCOUNT PAGES ON A PHONE (2026-11-04, Eric's request) — Profile,
+   Notifications, Transcripts and My Purchases in the other phone pages'
+   style: Home's 16 at the sides, one column, and no My Account card — the
+   profile menu in the header carries those four links. */
+[data-home-bp='mobile'] section:has(nav[aria-label='Account sections']) {
+  padding: 0 16px 40px !important;
+}
+[data-home-bp='mobile'] nav[aria-label='Account sections'] {
+  display: none !important;
+}
+/* Notifications' header: the title on its own line, Mark all read and
+   Preferences under it — side by side they squeezed the title to three. */
+[data-home-bp='mobile'] section > header:has(> div > button) {
+  flex-wrap: wrap !important;
+}
+[data-home-bp='mobile'] section > header:has(> div > button) > :first-child {
+  flex: 1 1 100% !important;
+}
+[data-home-bp='mobile'] section > header:has(> div > button) > div:last-child {
+  margin-left: -8px !important;
+}
+/* The account tables — Transcripts', My Purchases' — scroll sideways inside
+   their card on a phone, rather than being cut at its edge. */
+[data-home-bp='mobile'] div:has(> table.cre-atlas-table) {
+  overflow-x: auto !important;
+}
+/* Transcripts' note in the body text's size, not a 17/28 lead. */
+[data-home-bp='mobile'] p[style*='max-width: 963px'] {
+  font-size: 14px !important;
+  line-height: 21px !important;
+}
+/* …at a readable width: 640 at least, or My Purchases' Summary folds to a
+   word a line. */
+[data-home-bp='mobile'] table.cre-atlas-table {
+  min-width: 640px !important;
+}
