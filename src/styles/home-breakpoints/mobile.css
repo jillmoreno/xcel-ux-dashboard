@@ -544,3 +544,9 @@
 [data-home-bp='mobile'] table.cre-atlas-table {
   min-width: 640px !important;
 }
+
+/* The phone's breadcrumb 2 smaller — 12, from the page's +1 14 (2026-11-04,
+   Eric's request). `[style]` only to outrank that rule. */
+[data-home-bp='mobile'] nav[aria-label='Breadcrumb'][style] {
+  font-size: 12px !important;
+}

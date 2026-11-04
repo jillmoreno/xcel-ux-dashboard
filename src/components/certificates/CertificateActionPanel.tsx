@@ -3,6 +3,7 @@ import { ArrowLeft, CircleCheck, CircleExclamation, FileCertificateRegular, Hour
 import { Sheet } from '@/components/ui/Sheet'
 import { CERT_ACTION_META, certificatePdfUrl, type Certificate } from '@/data/certificateFixtures'
 import { ReportingStatus } from './CertificateCard'
+import { COMPASS_BUTTON } from '@/components/compass/compassButton'
 
 /**
  * CERTIFICATE DETAILS slide-over. From the 2.0 Certificates designs.
@@ -198,22 +199,29 @@ export function CertificateActionPanel({
           {/* …and 8 less under them: the column's 16 alone, not 16 + 8. */}
           <div style={{ marginTop: inline ? 0 : 8 }}>
             <p style={whatToDoStyle}>What would you like to do?</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+            {/* 8 between the buttons in the card, so View Certificate and Go to
+                Course share one row at 402 (12 put them a pixel over). */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: inline ? 8 : 12 }}>
               {/* View Certificate leads on an issued one — it is the thing the
                   learner came for. See `pdfUrl` for what it opens today. */}
               {pdfUrl ? (
-                <a href={pdfUrl} style={{ ...(inline ? rowTileStyle : actionTileStyle), textDecoration: 'none' }}>
-                  <FileCertificateRegular size={26} aria-hidden style={{ color: 'var(--color-tertiary-600)', flexShrink: 0 }} />
-                  <TileLabel text="View Certificate" twoLines={inline} />
+                <a
+                  href={pdfUrl}
+                  className={inline ? PRIMARY_CLASS : undefined}
+                  style={{ ...(inline ? rowTileStyle : actionTileStyle), textDecoration: 'none' }}
+                >
+                  <FileCertificateRegular size={inline ? 20 : 26} aria-hidden style={inline ? INLINE_ICON : { color: 'var(--color-tertiary-600)' }} />
+                  <span>View Certificate</span>
                 </a>
               ) : null}
               <button
                 type="button"
                 onClick={() => console.info('cert:go-to-course', data.id)}
+                className={inline ? PRIMARY_CLASS : undefined}
                 style={inline ? rowTileStyle : actionTileStyle}
               >
-                <PersonRunning size={26} aria-hidden style={{ color: 'var(--color-tertiary-600)', flexShrink: 0 }} />
-                <TileLabel text={inProgress ? 'Continue Course' : 'Go to Course'} twoLines={inline} />
+                <PersonRunning size={inline ? 20 : 26} aria-hidden style={inline ? INLINE_ICON : { color: 'var(--color-tertiary-600)' }} />
+                <span>{inProgress ? 'Continue Course' : 'Go to Course'}</span>
               </button>
             </div>
           </div>
@@ -231,21 +239,6 @@ function SheetOrInline({ inline, open, onClose, children }: { inline: boolean; o
     <Sheet open={open} onClose={onClose} title="Certificate Details" width={544}>
       {children}
     </Sheet>
-  )
-}
-
-/** A tile's label — in the card, on two lines broken at the last space
- *  ("View / Certificate", "Go to / Course"), left aligned beside the icon. */
-function TileLabel({ text, twoLines }: { text: string; twoLines: boolean }) {
-  if (!twoLines) return <span>{text}</span>
-  const at = text.lastIndexOf(' ')
-  if (at < 0) return <span style={{ textAlign: 'left' }}>{text}</span>
-  return (
-    <span style={{ textAlign: 'left' }}>
-      {text.slice(0, at)}
-      <br />
-      {text.slice(at + 1)}
-    </span>
   )
 }
 
@@ -272,30 +265,16 @@ function formatDate(iso: string): string {
    the card's are around it. */
 const inlineStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 16 }
 
-/* THE TILES ON THEIR SIDE, in the card (2026-11-04, Eric's request): the
-   icon left, the two-line label beside it, the pair sharing the row. */
+/* IN THE CARD THE ACTIONS ARE THE STANDARD PRIMARY BUTTON (2026-11-04,
+   Eric's request) — the brand's filled button, white label, its icon kept at
+   20 (from the tiles' 26) on the left. Sized to their label, side by side;
+   their sides 14, not 18, so the pair still shares one row at 402. */
+const PRIMARY_CLASS = 'cre-compass-primary cre-compass-btn-primary'
 const rowTileStyle: CSSProperties = {
-  // Half the row each, so a lone tile is the same size as a pair's.
-  flex: '0 1 calc(50% - 6px)',
-  minWidth: 0,
-  display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'flex-start',
-  gap: 12,
-  padding: '12px 16px',
-  background: 'var(--color-surface-card)',
-  border: '1px solid var(--color-border-subtle)',
-  borderRadius: 'var(--radius-lg)',
-  boxShadow: 'var(--shadow-card)',
-  cursor: 'pointer',
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  fontWeight: 600,
-  color: 'var(--color-tertiary-700)',
-  textAlign: 'left',
-  lineHeight: 1.2,
+  ...COMPASS_BUTTON,
+  padding: '11px 14px',
 }
+const INLINE_ICON: CSSProperties = { flexShrink: 0, color: 'currentColor' }
 
 const scrollStyle: CSSProperties = {
   flex: 1,
