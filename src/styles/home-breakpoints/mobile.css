@@ -102,3 +102,10 @@
   font-size: 0 !important;
   gap: 0 !important;
 }
+
+/* The English | Help band: Help ends where the three bars do (2026-11-04,
+   Eric's request) — 25 in, the bars' right edge as measured: the row's 16,
+   the menu button's 8 padding, and 1 of sub-pixel width rounding. */
+[data-home-bp='mobile'] .cre-atlas-hdr > div:first-child {
+  padding-right: 25px !important;
+}
