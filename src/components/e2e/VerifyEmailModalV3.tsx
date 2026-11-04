@@ -55,6 +55,7 @@ export function VerifyEmailModalV3({
   onVerified,
   second = 'code',
   signsIn = false,
+  suppliedEmail,
 }: {
   /** The check is done — the address is proven, or the learner signed in. */
   onVerified: (identity: VerifiedIdentity) => void
@@ -64,10 +65,16 @@ export function VerifyEmailModalV3({
   second?: 'code' | 'login' | 'none'
   /** Hold on "Signing you in" before the checkout. */
   signsIn?: boolean
+  /** An address the flow already has — Direct Email's invitation supplied it
+   *  (2026-11-04). The check opens on its second step with it, and there is
+   *  no "Use a different email": the partner named this one. */
+  suppliedEmail?: string
 }) {
-  const [step, setStep] = useState<'email' | 'code' | 'login' | 'signing-in'>('email')
+  const [step, setStep] = useState<'email' | 'code' | 'login' | 'signing-in'>(() =>
+    suppliedEmail && second !== 'none' ? second : 'email',
+  )
   const layer = useV3DialogLayer()
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(suppliedEmail ?? '')
   const ready = looksLikeEmail(email)
   /* Email only — the name is asked at checkout, so it is empty here. */
   const identity: VerifiedIdentity = { first: '', last: '', email }
@@ -162,7 +169,11 @@ export function VerifyEmailModalV3({
             />
           </form>
         ) : step === 'code' ? (
-          <CodeStep identity={identity} onVerified={done} onChangeEmail={() => setStep('email')} />
+          <CodeStep
+            identity={identity}
+            onVerified={done}
+            onChangeEmail={suppliedEmail ? undefined : () => setStep('email')}
+          />
         ) : step === 'login' ? (
           <LoginStep email={email} onLoggedIn={done} />
         ) : (
@@ -184,7 +195,8 @@ function CodeStep({
 }: {
   identity: VerifiedIdentity
   onVerified: () => void
-  onChangeEmail: () => void
+  /** Absent when the address was supplied — there is no other to use. */
+  onChangeEmail?: () => void
 }) {
   const [digits, setDigits] = useState<string[]>(() => Array(VERIFICATION_CODE_LENGTH).fill(''))
   const [resent, setResent] = useState(false)
@@ -336,9 +348,11 @@ function CodeStep({
             We sent a new code to {identity.email.trim()}.
           </p>
         ) : null}
-        <button type="button" className="cre-e2e-textlink" style={TEXT_LINK} onClick={onChangeEmail}>
-          Use a different email
-        </button>
+        {onChangeEmail ? (
+          <button type="button" className="cre-e2e-textlink" style={TEXT_LINK} onClick={onChangeEmail}>
+            Use a different email
+          </button>
+        ) : null}
       </div>
     </form>
   )

@@ -15,6 +15,7 @@ import { XcelCartPage } from '@/pages/XcelCartPage'
 import { XcelPackagesPage } from '@/pages/XcelPackagesPage'
 import { InviteFlowEntrySync } from '@/pages/EndToEndPageSync'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
+import { E2E_LEARNER_EMAIL } from '@/pages/endToEndDemo'
 import {
   INVITE_FLOWS_V3,
   emailCheckV3,
@@ -136,6 +137,43 @@ describe('Invite Flow V3 — the Direct Email invitation', () => {
 
     /* The ending's red Start Course button, not V2's navy pill. */
     expect(within(letter).getByRole('button', { name: 'View invitation' })).toHaveClass('cre-e2e-cta')
+  })
+
+  it('after Purchase, sends a code to the supplied address when it has no Atlas', async () => {
+    renderAt(CHECKOUT, `${DIRECT},invite-v3-email-account:no-atlas`)
+    const dialog = screen.getByRole('dialog', { name: 'Enter your one-time code' })
+    expect(dialog).toHaveTextContent(E2E_LEARNER_EMAIL)
+    /* Never asks for the address, and there is no other to use. */
+    expect(screen.queryByRole('dialog', { name: 'Enter your email to continue' })).not.toBeInTheDocument()
+    expect(within(dialog).queryByRole('button', { name: 'Use a different email' })).not.toBeInTheDocument()
+  })
+
+  it('leaves the checkout’s email plain until the check is done, then locks it', async () => {
+    renderAt(CHECKOUT, `${DIRECT},invite-v3-email-account:no-atlas`)
+    /* Behind the code: no lock, no grey, no address. */
+    expect(screen.queryByAltText('Locked')).not.toBeInTheDocument()
+    expect(screen.queryByDisplayValue(E2E_LEARNER_EMAIL)).not.toBeInTheDocument()
+    const dialog = screen.getByRole('dialog', { name: 'Enter your one-time code' })
+    await userEvent.type(within(dialog).getByLabelText('Digit 1 of 6'), '111111')
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Confirm' }))
+    expect(screen.getByAltText('Locked')).toBeInTheDocument()
+    expect(screen.getByDisplayValue(E2E_LEARNER_EMAIL)).toBeDisabled()
+    expect(screen.getByText('This is the address you verified. Your account will be created with it.')).toBeInTheDocument()
+  })
+
+  it('says nothing under the locked email after a password log-in', async () => {
+    renderAt(CHECKOUT, `${DIRECT},invite-v3-email-account:atlas`)
+    await userEvent.type(screen.getByLabelText(/^Password/), 'anything')
+    await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
+    expect(screen.getByDisplayValue(E2E_LEARNER_EMAIL)).toBeDisabled()
+    expect(screen.queryByText(/This is the address you verified/)).not.toBeInTheDocument()
+  })
+
+  it('after Purchase, asks the learner to log in when the address has Atlas', () => {
+    renderAt(CHECKOUT, `${DIRECT},invite-v3-email-account:atlas`)
+    const dialog = screen.getByRole('dialog', { name: 'Log in to continue' })
+    expect(dialog).toHaveTextContent(E2E_LEARNER_EMAIL)
+    expect(screen.queryByRole('dialog', { name: 'Enter your one-time code' })).not.toBeInTheDocument()
   })
 })
 
@@ -376,11 +414,8 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
   })
 
   it('asks every flow’s email, and knows which sign in', () => {
-    /* The OCD flows' check depends on the cart — see their own tests.
-       Direct Email has none: the partner supplied the address. */
-    for (const flow of INVITE_FLOWS_V3.filter(
-      (f) => f.id !== 'xcel-signed-in' && f.id !== 'xcel-signed-out' && f.id !== 'direct-email',
-    )) {
+    /* The OCD flows' check depends on the cart — see their own tests. */
+    for (const flow of INVITE_FLOWS_V3.filter((f) => f.id !== 'xcel-signed-in' && f.id !== 'xcel-signed-out')) {
       expect(verifiesEmailFirst(flow)).toBe(true)
     }
     const check = (id: string) => emailCheckV3(INVITE_FLOWS_V3.find((f) => f.id === id)!)

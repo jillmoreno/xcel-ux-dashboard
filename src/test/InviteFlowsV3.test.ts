@@ -8,7 +8,9 @@ import {
   INVITE_FLOWS_V3,
   INVITE_MODELS,
   INVITE_V3_FLOW_FLAGS,
+  INVITE_V3_EMAIL_ACCOUNT_FLAG,
   INVITE_V3_MODEL_FLAG,
+  directEmailFlowV3,
   emailCheckV3,
   inviteEndingV3,
   pcFirstFlowV3,
@@ -16,6 +18,7 @@ import {
   inviteV3Surface,
   resolveInviteFlowV3,
   resolveInviteModel,
+  suppliesEmailV3,
   verifiesEmailFirst,
 } from '@/data/inviteFlowsV3'
 
@@ -45,7 +48,7 @@ describe('Invite Flow V3 model types and flows', () => {
       /* B2C's list also shows on the signed-in flow's own surface. */
       expect(def?.surfaces).toEqual(
         model === 'b2b'
-          ? [inviteV3Surface(model)]
+          ? [inviteV3Surface(model), inviteV3Surface(model, 'direct-email')]
           : [inviteV3Surface(model), inviteV3Surface(model, 'xcel-signed-in'), inviteV3Surface(model, 'pc-after-add')],
       )
     })
@@ -87,7 +90,24 @@ describe('Invite Flow V3 model types and flows', () => {
     expect(DEFAULT_INVITE_FLOW_V3.b2b).toBe('direct-email')
     expect(FEATURE_FLAGS.find((f) => f.key === INVITE_V3_FLOW_FLAGS.b2b)?.variants?.[0].value).toBe('direct-email')
     expect(entryPathV3(b2b[0])).toBe('/end-to-end-demo/email')
-    expect(verifiesEmailFirst(b2b[0])).toBe(false)
+  })
+
+  it('checks Direct Email’s supplied address after Purchase — a log-in with Atlas, a code without', () => {
+    const direct = INVITE_FLOWS_V3.find((f) => f.id === 'direct-email')!
+    expect(suppliesEmailV3(direct)).toBe(true)
+    expect(verifiesEmailFirst(directEmailFlowV3(direct, 'no-atlas'))).toBe(true)
+    expect(emailCheckV3(directEmailFlowV3(direct, 'no-atlas'))).toEqual({ second: 'code', signsIn: false, accountKnown: false })
+    expect(emailCheckV3(directEmailFlowV3(direct, 'atlas'))).toEqual({ second: 'login', signsIn: false, accountKnown: true })
+    expect(inviteEndingV3(directEmailFlowV3(direct, 'no-atlas'))).toBe('create-password')
+    expect(inviteEndingV3(directEmailFlowV3(direct, 'atlas'))).toBe('ready')
+    /* The default row is the code's walk, Email belongs to's default. */
+    expect(directEmailFlowV3(direct, 'no-atlas').screens).toEqual(direct.screens)
+    expect(suppliesEmailV3(INVITE_FLOWS_V3.find((f) => f.id === 'qr-net-new')!)).toBe(false)
+    const keys = designControlsFor('eric-atlas-e2e', 'eric', inviteV3Surface('b2b', 'direct-email')).map((d) => d.key)
+    expect(keys).toContain(INVITE_V3_EMAIL_ACCOUNT_FLAG)
+    expect(designControlsFor('eric-atlas-e2e', 'eric', inviteV3Surface('b2b', 'qr-net-new')).map((d) => d.key)).not.toContain(
+      INVITE_V3_EMAIL_ACCOUNT_FLAG,
+    )
   })
 
   it('starts the partner-code alternative at the packages page, and asks before the cart', () => {

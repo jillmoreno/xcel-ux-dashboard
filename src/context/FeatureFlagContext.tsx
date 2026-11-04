@@ -2740,7 +2740,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        other's. `inviteFlowsV3.ts` carries the long form. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2b', 'invite:v3-b2c', 'invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2b-direct-email', 'invite:v3-b2c', 'invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
     group: 'Navigation',
     label: 'Model type',
     description: 'Invite Flow V3 only. Which business model the flow belongs to: B2B invite (a partner’s QR code) or B2C guest checkout (direct from the public site’s cart). Picking one shows that model’s flows.',
@@ -2762,7 +2762,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        together. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2b'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2b-direct-email'],
     group: 'Navigation',
     label: 'Invite flow',
     picker: 'sheet',
@@ -2832,13 +2832,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   {
     key: 'invite-v3-email-account',
     /* Which way "Verify your email" goes for the signed-out OCD learner — a
-       log-in when the email they give has Atlas, a code when it does not. */
+       log-in when the email they give has Atlas, a code when it does not.
+       Direct Email too (2026-11-04): the supplied address, after Purchase. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
+    surfaces: ['invite:v3-b2b-direct-email', 'invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
     group: 'Navigation',
     label: 'Email belongs to',
-    description: 'Invite Flow V3 — signed in to XCEL or not (targeted or mixed cart), and the alternative that asks for a partner code at Go to Cart. The email given at Verify your email: an Atlas account (log in, then Start course) or no Atlas account (a code, then Create password).',
+    description: 'Invite Flow V3 — B2B Direct Email (the supplied address, after Purchase), signed in to XCEL or not (targeted or mixed cart), and the alternative that asks for a partner code at Go to Cart. The email given at Verify your email: an Atlas account (log in, then Start course) or no Atlas account (a code, then Create password).',
     defaultEnabled: true,
     defaultVariant: 'no-atlas',
     variants: [
@@ -2996,7 +2997,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surface: 'design',
     versions: ['eric-atlas-e2e'],
     /* Not on V3's B2C: guest checkout has no invitation to be missing anything. */
-    surfaces: ['invite', 'invite:v3-b2b'],
+    surfaces: ['invite', 'invite:v3-b2b', 'invite:v3-b2b-direct-email'],
     group: 'Navigation',
     label: 'Invitation missing details',
     description:

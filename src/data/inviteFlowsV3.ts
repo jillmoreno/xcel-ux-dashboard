@@ -77,13 +77,16 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
        default, pulled from V2's "B2B2C with email". The partner's invitation
        email names the learner and supplies the address, so there is no email
        check: invitation → product page → checkout with the address locked →
-       create a password. It walks as V2's flow (`base`). */
+       create a password. It walks as V2's flow (`base`).
+       ⚠ SINCE 2026-11-04 PURCHASE CHECKS THE ADDRESS: a code, or a log-in
+       when it has Atlas — `directEmailFlowV3`. These are the code's screens,
+       the default of Email belongs to. */
     id: 'direct-email',
     model: 'b2b',
     label: 'Direct Email',
     description: 'Partner invited them, address supplied. Locked at checkout.',
     base: 'b2b2c-email',
-    screens: ['email', 'pdp', 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
+    screens: ['email', 'pdp', ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
   },
   {
     id: 'qr-net-new',
@@ -217,8 +220,14 @@ export const DEFAULT_INVITE_FLOW_V3: Record<InviteModelId, InviteFlowV3Id> = {
 export function inviteV3Surface(
   model: InviteModelId,
   flowId?: InviteFlowV3Id,
-): 'invite:v3-b2b' | 'invite:v3-b2c' | 'invite:v3-b2c-signed-in' | 'invite:v3-b2c-pc-first' {
-  if (model === 'b2b') return 'invite:v3-b2b'
+):
+  | 'invite:v3-b2b'
+  | 'invite:v3-b2b-direct-email'
+  | 'invite:v3-b2c'
+  | 'invite:v3-b2c-signed-in'
+  | 'invite:v3-b2c-pc-first' {
+  /* Direct Email carries Email belongs to (2026-11-04). */
+  if (model === 'b2b') return flowId === 'direct-email' ? 'invite:v3-b2b-direct-email' : 'invite:v3-b2b'
   if (flowId === 'pc-after-add') return 'invite:v3-b2c-pc-first'
   /* Both OCD flows carry Cart contents and Email belongs to. */
   return isOcdCartFlow(flowId) ? 'invite:v3-b2c-signed-in' : 'invite:v3-b2c'
@@ -247,7 +256,21 @@ export function useInviteModel(): InviteModelId {
  *  Open Log-In Widget". Direct Email does not — the partner supplied the
  *  address. `VerifyEmailModalV3` is the check. */
 export function verifiesEmailFirst(flow: InviteFlowV3): boolean {
-  return flow.screens.includes('verify-1') || flow.screens.includes('verify-login-1')
+  return (
+    flow.screens.includes('verify-1') ||
+    flow.screens.includes('verify-login-1') ||
+    /* Direct Email checks the address it already has — a code or a log-in,
+       no email step (2026-11-04). */
+    flow.screens.includes('code-1') ||
+    flow.screens.includes('login-1')
+  )
+}
+
+/** Did the partner supply the address? Direct Email's invitation names it, so
+ *  the email check opens on its second step — the code or the log-in — with
+ *  that address, never asking for it (2026-11-04, Afsana). */
+export function suppliesEmailV3(flow: InviteFlowV3): boolean {
+  return flow.screens[0] === 'email'
 }
 
 /** What the email check does after the address, read from the file's screens:
@@ -326,6 +349,7 @@ export function useInviteFlowV3(): InviteFlowV3 {
   const [params] = useSearchParams()
   const flow = resolveInviteFlowV3(model, model === 'b2b' ? b2b : b2c)
   if (flow.id === 'pc-after-add') return pcFirstFlowV3(flow, email)
+  if (flow.id === 'direct-email') return directEmailFlowV3(flow, email)
   if (flow.id === 'xcel-signed-out') return ocdCartFlowV3(flow, cart, email)
   return flow.id === 'xcel-signed-in'
     ? signedInFlowV3(flow, cart, email, params.get(V3_SIGNED_OUT_PARAM) === '1')
@@ -349,6 +373,23 @@ export function pcFirstFlowV3(flow: InviteFlowV3, email: V3EmailAccount): Invite
       email === 'atlas'
         ? [...start, ...VERIFY, 'login-1', 'login-2', ...CHECKOUT, 'placing', 'ready']
         : [...start, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
+  }
+}
+
+/** Direct Email's walk after Purchase, by whether the supplied address has
+ *  Atlas (`invite-v3-email-account`) — 2026-11-04, Afsana: "if the email is
+ *  linked with an atlas account, they are prompted to sign in. if is not,
+ *  they have to enter the one time code". The established modals: Log in to
+ *  continue, then the checkout filled from the account and Start course; or
+ *  Enter your one-time code, the full checkout, then a password. */
+export function directEmailFlowV3(flow: InviteFlowV3, email: V3EmailAccount): InviteFlowV3 {
+  const start = ['email', 'pdp']
+  return {
+    ...flow,
+    screens:
+      email === 'atlas'
+        ? [...start, 'login-1', 'login-2', ...CHECKOUT, 'placing', 'ready']
+        : [...start, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
   }
 }
 

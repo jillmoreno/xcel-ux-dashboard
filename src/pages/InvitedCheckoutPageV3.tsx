@@ -39,7 +39,7 @@ import { XcelLoadingStatus } from '@/components/e2e/XcelLoadingStatus'
 import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
 import { PartnerCodeAskModal } from '@/components/e2e/PartnerCodeAsk'
 import { VerifyEmailModalV3 } from '@/components/e2e/VerifyEmailModalV3'
-import { emailCheckV3, useInviteFlowV3, useV3SignedInCart, verifiesEmailFirst } from '@/data/inviteFlowsV3'
+import { emailCheckV3, suppliesEmailV3, useInviteFlowV3, useV3SignedInCart, verifiesEmailFirst } from '@/data/inviteFlowsV3'
 import {
   EMAIL_VERIFIED_PARAM,
   readVerifiedIdentity,
@@ -417,6 +417,8 @@ export function InvitedCheckoutPageV3() {
           onVerified={emailVerifiedWith}
           second={v3Check.second}
           signsIn={v3Check.signsIn}
+          /* Direct Email: the invitation's address, checked after Purchase. */
+          suppliedEmail={suppliesEmailV3(v3Flow) ? E2E_LEARNER_EMAIL : undefined}
         />
       ) : null}
       {/* ⚠ THE BROWSER WINDOW CONTINUES HERE (2026-10-19, Jillienne: "can
@@ -511,12 +513,14 @@ export function InvitedCheckoutPageV3() {
                 afterName={
                   <EmailBlock
                     typesTwice={typesEmailTwice}
+                    locked={!verifiesFirst || emailVerified}
                     lockedEmail={lockedEmail}
                     lockedNote={
                       verifiesFirst
-                        ? /* None on the automatic sign-in flows — they already
-                             have an account (2026-11-03, Afsana). */
-                          emailVerified && v3Check.second !== 'none'
+                        ? /* Only after a code. None on the automatic sign-in
+                             flows (2026-11-03) or after a password log-in
+                             (2026-11-04, Afsana) — they already have an account. */
+                          emailVerified && v3Check.second === 'code'
                           ? 'This is the address you verified. Your account will be created with it.'
                           : null
                         : knownAccount
@@ -992,6 +996,7 @@ const STATES = ['Florida', 'Georgia', 'Illinois', 'New York', 'Texas']
 
 function EmailBlock({
   typesTwice,
+  locked,
   lockedEmail,
   lockedNote,
   email,
@@ -1003,6 +1008,10 @@ function EmailBlock({
 }: {
   /** Is the address typed twice here, or locked? V3 answers per flow. */
   typesTwice: boolean
+  /** Locked yet? Not while the email check is still open over the page — the
+   *  field is a plain, empty one until the code is confirmed or the learner
+   *  logs in, and only then turns grey with the lock (2026-11-04, Afsana). */
+  locked: boolean
   /** What the disabled field shows on the arms that do not type the address
    *  twice — the partner's, or the one the verification code came back from
    *  (2026-10-27). */
@@ -1038,27 +1047,34 @@ function EmailBlock({
               submitted, so it stays a real input and is disabled — the lock is
               then a fact about the control rather than a picture of one. */}
           <span style={{ position: 'relative', display: 'block' }}>
-            <input
-              type="email"
-              value={lockedEmail}
-              disabled
-              readOnly
-              aria-describedby={lockedNote ? 'checkout-email-note' : undefined}
-              style={{
-                ...FIELD,
-                paddingRight: 36,
-                background: 'var(--color-e2e-form-locked-v3)',
-                color: 'var(--color-text-secondary)',
-                cursor: 'not-allowed',
-              }}
-            />
-            <img
-              src="/brand/confirmation/lock.svg"
-              alt="Locked"
-              width={16}
-              height={16}
-              style={{ position: 'absolute', right: 11, top: 11, display: 'block' }}
-            />
+            {locked ? (
+              <>
+                <input
+                  type="email"
+                  value={lockedEmail}
+                  disabled
+                  readOnly
+                  aria-describedby={lockedNote ? 'checkout-email-note' : undefined}
+                  style={{
+                    ...FIELD,
+                    paddingRight: 36,
+                    background: 'var(--color-e2e-form-locked-v3)',
+                    color: 'var(--color-text-secondary)',
+                    cursor: 'not-allowed',
+                  }}
+                />
+                <img
+                  src="/brand/confirmation/lock.svg"
+                  alt="Locked"
+                  width={16}
+                  height={16}
+                  style={{ position: 'absolute', right: 11, top: 11, display: 'block' }}
+                />
+              </>
+            ) : (
+              /* Behind the email check's scrim, so nothing can type here. */
+              <input type="email" value="" readOnly style={{ ...FIELD, paddingRight: 10 }} />
+            )}
           </span>
         </label>
         {lockedNote ? (
