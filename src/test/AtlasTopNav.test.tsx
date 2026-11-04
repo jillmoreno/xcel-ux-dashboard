@@ -36,6 +36,14 @@ function Search() {
 function atlasArm() {
   window.history.replaceState({}, '', '/dashboard-rebrand?ff=compass-surface:atlas')
 }
+/* HER RAIL WITHOUT THE WORKSPACE — 2026-11-04. `compass-workspace` defaults
+   ON, so the rail carries a sixth row wherever it is not turned off. The two
+   cases that pin HER five rows pin them with it off, because those five are
+   her 2026-10-15 design and the Workspace is an addition on top; the case
+   below them pins the sixth. Same `?ff=` door as `atlasArm`. */
+function noWorkspace() {
+  window.history.replaceState({}, '', '/dashboard-rebrand?ff=compass-workspace:off')
+}
 afterEach(() => window.history.replaceState({}, '', '/'))
 function renderNav(search: string, expanding = false) {
   const sep = search.startsWith('?') ? '&' : '?'
@@ -233,12 +241,24 @@ describe('the Compass rail is Anjani’s on Hybrid', () => {
        simulator · Progress) became five with icons — Overview · Learn · Study
        planner · Ask Rubi · Progress — and Flashcards and Exam Simulator moved
        under an EXAM PREP rule as locked rows beside Practice. */
+    noWorkspace()
     renderRail('hybrid-pacing')
     expect(railOf()).toEqual(['Overview', 'Learn', 'Study planner', 'Ask Rubi', 'Progress'])
     const locked = [...document.querySelectorAll('ul[aria-label="Exam prep"] li')].map(
       (li) => li.querySelector('.cre-rail__locked-tx')?.textContent,
     )
     expect(locked).toEqual(['Practice', 'Flashcards', 'Exam Simulator'])
+  })
+
+  it('gains a Workspace row when her Workspace is on, at the end, moving nothing', () => {
+    /* ⚠ THE ONE INVENTION IN THE WORKSPACE PORT (2026-11-04). Her v4 opens the
+       workspace from inside the course, not from the rail — there is no rail
+       row for it in her file at all — so where it sits here is a decision the
+       port had to make. Last, after Progress, is the least opinionated one
+       available: her five keep their order and nothing moves to make room.
+       If she wants it elsewhere, this is the test that says where it is. */
+    renderRail('hybrid-pacing')
+    expect(railOf()).toEqual(['Overview', 'Learn', 'Study planner', 'Ask Rubi', 'Progress', 'Workspace'])
   })
 
   it('a locked row explains itself on the first tap and opens the Exam prep dialog on the second', () => {
@@ -339,6 +359,7 @@ describe('Hybrid’s Course row opens Anjani’s course landing', () => {
     /* ⚠ REBUILT 2026-10-15: her five modules became a two-part gated course —
        see `compassCourseLandingFixtures` for what changed and why "Not proven"
        left this page. */
+    noWorkspace()
     openCourse('hybrid-pacing')
     expect(railOf()).toHaveLength(5)
     expect(screen.getByRole('region', { name: 'Learn page' })).toBeTruthy()

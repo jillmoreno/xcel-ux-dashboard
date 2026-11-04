@@ -89,6 +89,16 @@ const REBRAND_FLAGS = [
   'compass-surface',
   'compass-dashboard-nudge',
   'compass-dashboard-state',
+  // Her Workspace and its six axes (2026-11-04, from v4). Listed here as well
+  // as on the Design bar: the bar scopes them to `compass:workspace`, and a
+  // reviewer who is not on that page still needs a way to reach them.
+  'compass-workspace',
+  'compass-workspace-layout',
+  'compass-workspace-home',
+  'compass-workspace-story',
+  'compass-workspace-sessions',
+  'compass-workspace-rubi',
+  'compass-workspace-view',
   'compass-panel',
   'compass-planner-rubi',
   'compass-planner-return',

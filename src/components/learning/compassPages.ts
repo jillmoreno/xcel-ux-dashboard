@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react'
-import { BookOpenRegular, CalendarRegular, GaugeLight, HouseRegular } from '@/icons'
+import { BookOpenRegular, CalendarRegular, GaugeLight, HouseRegular, NotebookRegular } from '@/icons'
 import type { CompassPage } from './CompassCoursePlayer'
 
 /**
@@ -41,4 +41,24 @@ export const HYBRID_COMPASS_PAGES: CompassPageRow[] = [
   { id: 'course', label: 'Learn', icon: BookOpenRegular },
   { id: 'study-planner', label: 'Study planner', icon: CalendarRegular },
   { id: 'progress', label: 'Progress', icon: GaugeLight, disabled: true },
+]
+
+/**
+ * HER RAIL, PLUS THE WORKSPACE — 2026-11-04, from v4.
+ *
+ * A separate list rather than a `workspace: boolean` on the rows above, for
+ * the reason `HYBRID_COMPASS_PAGES` is itself a second list rather than an
+ * edit of `COMPASS_PAGES`: the rail that reads it should not have to know the
+ * flag, and a row that is sometimes absent is easier to get wrong than two
+ * lists that are each always right.
+ *
+ * ⚠ IT GOES LAST, after Progress. Her prototype opens the workspace from
+ * inside the course rather than from the rail at all — there is no rail row
+ * for it in v4 — so its position here is the one invention in this port, and
+ * it is the least opinionated one available: a new destination at the end,
+ * where nothing moves to make room for it.
+ */
+export const HYBRID_COMPASS_PAGES_WITH_WORKSPACE: CompassPageRow[] = [
+  ...HYBRID_COMPASS_PAGES,
+  { id: 'workspace', label: 'Workspace', icon: NotebookRegular },
 ]

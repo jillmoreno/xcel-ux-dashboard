@@ -1576,6 +1576,181 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     ],
     page: 'dashboard-rebrand',
   },
+  /* ── ANJANI'S WORKSPACE — six controls, 2026-11-04 ────────────────────────
+     Ported from `public/prototypes/xcel-compass-workspace-v4.html`, the file
+     she staged on 2026-11-04. The Workspace was the one screen in that build
+     with no React equivalent; everything else had been ported on 10-15/16.
+
+     ⚠ THREE OF THESE SIX ARE SWITCHED OFF IN HER FILE. It builds the
+     Workspace, Home and Story control groups on its demo bar and then removes
+     all three on a `setTimeout(…, 0)`, so what loads carries only Sessions,
+     Rubi replies and View. The code behind the hidden three is complete — only
+     the choosers are gone, which reads as a surface she parked rather than one
+     she settled. Jillienne's instruction (2026-11-04) was to port her work
+     "with the demo tools in place so that the different variations can be
+     shown in stage", and a hidden layout chooser makes the layouts
+     unshowable. So all six are controls, and every default below is the one
+     her file opens on — Stage shows her choices until somebody moves a
+     switch. If she removed them because she HAD settled, the fix is to delete
+     the two flags, not to re-hide them. */
+  {
+    key: 'compass-workspace',
+    /* THE SURFACE GATE. Off on `main` until this is released; ON on the
+       branch, which is what makes the branch build show the work. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['compass:workspace'],
+    group: 'Widgets',
+    label: 'Workspace',
+    description:
+      'Anjani\u2019s private study surface \u2014 everything a learner marked in their course, and what they can make from it. Ported from her v4 prototype; off until the Workspace is released.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-workspace-layout',
+    /* HER SIX ARRANGEMENTS. ⚠ FOUR OF THEM ARE SKETCHES and are ported as
+       sketches — `Three pane`, `Review first`, `Index` and `Stage board` are
+       about twenty lines each in her file against Notebook's 113. They
+       arrange the same panes rather than being designs in their own right.
+       Filling them in would have made them mine, so the descriptions say
+       which four they are and a reviewer reads a thin one correctly. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['compass:workspace'],
+    group: 'Widgets',
+    label: 'Workspace layout',
+    description:
+      'Which of Anjani\u2019s six workspace arrangements draws. Notebook is hers and the fullest; Course notebook is the next most developed. The other four are sketches in her prototype and are ported at that fidelity.',
+    variants: [
+      { value: 'F', label: 'Notebook', description: 'Hers \u2014 capture, coach, make' },
+      { value: 'E', label: 'Course notebook', description: 'The chapter as a written page' },
+      { value: 'A', label: 'Three pane', description: 'Sketch' },
+      { value: 'B', label: 'Review first', description: 'Sketch' },
+      { value: 'C', label: 'Index', description: 'Sketch' },
+      { value: 'D', label: 'Stage board', description: 'Sketch' },
+    ],
+    defaultVariant: 'F',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-workspace-home',
+    /* WHAT THE WORKSPACE OPENS ON before a mark is chosen. Notebook only —
+       the other five layouts have no home state in her file. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['compass:workspace'],
+    group: 'Widgets',
+    label: 'Workspace home',
+    description:
+      'What the Notebook layout opens on before a mark is chosen. Pick up is hers. The other five layouts have no home state in her prototype, so this control only bites on Notebook.',
+    variants: [
+      { value: 'A', label: 'Pick up', description: 'Hers \u2014 carry on where you stopped' },
+      { value: 'B', label: 'Shelf', description: 'Everything made, as objects' },
+      { value: 'C', label: 'By chapter', description: 'Grouped the way the course is' },
+      { value: 'D', label: 'Today', description: 'What this session is for' },
+      { value: 'E', label: 'Map', description: 'The course as a shape' },
+    ],
+    defaultVariant: 'A',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-workspace-story',
+    /* HOW FULL THE WORKSPACE IS — her `WS.stage`, and the axis that decides
+       whether a reviewer sees an empty state or a mid-journey one.
+       ⚠ NOTEBOOK ONLY, and that is hers: `saved()` pins the level to
+       Mid-journey for every other layout, because the sketches were never
+       drawn against a partial workspace. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['compass:workspace'],
+    group: 'Widgets',
+    label: 'Workspace story',
+    description:
+      'How much the learner has marked. Mid-journey is hers \u2014 all eleven marks. The emptier levels are how she argues the first-run states. Notebook only: her own code pins every other layout to Mid-journey.',
+    variants: [
+      { value: '5', label: 'Mid-journey', description: 'All eleven marks' },
+      { value: '1', label: 'Empty', description: 'Nothing marked yet' },
+      { value: '2', label: 'First mark', description: 'One note' },
+      { value: '3', label: 'A few marks', description: 'Four' },
+      { value: '4', label: 'Made something', description: 'Four, plus a deck' },
+    ],
+    defaultVariant: '5',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-workspace-sessions',
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['compass:workspace'],
+    group: 'Widgets',
+    label: 'Saved conversations',
+    description:
+      'How the saved Rubi conversations are arranged in the make rail. One of the three controls her prototype leaves visible on its own bar.',
+    variants: [
+      { value: 'list', label: 'List', description: 'Hers' },
+      { value: 'time', label: 'By time', description: 'Stamped, newest first' },
+      { value: 'cards', label: 'Cards', description: 'One tile each' },
+    ],
+    defaultVariant: 'list',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-workspace-rubi',
+    /* HOW AN ANSWER ARRIVES. The content is identical across all five — the
+       axis is the shape of the reply, not what it says, which is the whole
+       point of showing them side by side. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['compass:workspace'],
+    group: 'Widgets',
+    label: 'Rubi replies',
+    description:
+      'What a Rubi answer looks like when it lands on a mark. The words are the same in all five \u2014 the question is how the answer arrives.',
+    variants: [
+      { value: 'M', label: 'Chat + Card', description: 'Hers' },
+      { value: 'A', label: 'Note', description: 'Folded into the mark' },
+      { value: 'B', label: 'Chat', description: 'Conversation only' },
+      { value: 'C', label: 'Card', description: 'A standalone answer card' },
+      { value: 'D', label: 'Avatar', description: 'Rubi speaks, with a face' },
+    ],
+    defaultVariant: 'M',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-workspace-view',
+    /* THE DEVICE FRAME. Kept as a control rather than folded into the
+       responsive preview: she uses it to argue the workspace is a phone
+       surface as much as a desktop one, and that argument is easier to see
+       side by side than by resizing a window. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['compass:workspace'],
+    group: 'Widgets',
+    label: 'Workspace view',
+    description:
+      'The device the workspace is drawn for. Her argument is that this is a phone surface as much as a desktop one; the narrow frames drop the make rail the way her prototype does.',
+    variants: [
+      { value: 'web', label: 'Web', description: 'Hers' },
+      { value: 'ios', label: 'iPhone', description: '' },
+      { value: 'android', label: 'Android', description: '' },
+    ],
+    defaultVariant: 'web',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
   {
     key: 'compass-dashboard-state',
     /* HER DEV TOGGLE — 2026-10-16. Her prototype carries two dashboards and a
