@@ -104,10 +104,12 @@ describe('AffidavitModalV2', () => {
 describe('AffidavitModalV2 — the explorer’s forms', () => {
   const ready = () => act(async () => { await new Promise((r) => requestAnimationFrame(() => r(null))) })
 
-  it('lists every explorer state on the State control, and defaults to Florida before the course begins', () => {
-    expect(FEATURE_FLAGS.find((f) => f.key === 'affidavit-v2-state')?.variants?.map((v) => v.value)).toEqual(
-      Object.keys(STATES).sort((a, b) => STATES[a]!.localeCompare(STATES[b]!)),
-    )
+  it('lists every explorer state on the State control, then Non-state specific, and defaults to Florida before the course begins', () => {
+    const states = Object.keys(STATES).filter((k) => k !== 'GEN')
+    expect(FEATURE_FLAGS.find((f) => f.key === 'affidavit-v2-state')?.variants?.map((v) => v.value)).toEqual([
+      ...states.sort((a, b) => STATES[a]!.localeCompare(STATES[b]!)),
+      'GEN',
+    ])
     render(<AffidavitModalV2 onClose={() => {}} />)
     expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(FORMS.FL_LH_EN!.title)
   })
@@ -292,6 +294,46 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     const fields = formFields('MN_POST')
     expect(fields.find((x) => x.id === 'mail_same')).toBeUndefined()
     expect(fields.filter((x) => x.id?.startsWith('mail_')).every((x) => !x.required)).toBe(true)
+  })
+
+  /* NON-STATE SPECIFIC (2026-11-04) — XCEL's own forms, from Afsana's
+     "Non-State Specific" folder. */
+  it('Non-state specific, before the course begins: the generic Terms and Conditions, English then Spanish', async () => {
+    const onClose = vi.fn()
+    render(<AffidavitModalV2 onClose={onClose} moment="pre" state="GEN" pattern="page" />)
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe('XCEL Generic Terms and Conditions')
+    expect(screen.getByText('Acknowledgement of Terms and Conditions of Pre-licensing Course Completion')).toBeTruthy()
+    await ready()
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    await ready()
+    expect(screen.getByText(/Reconocimiento de los Términos y Condiciones/)).toBeTruthy()
+    const name = screen.getByLabelText(/Student Full Name/) as HTMLInputElement
+    expect(name.value).toBe('') // typed, not pre-filled: it is the signature
+    expect(screen.queryByLabelText(/I confirm that the above information is accurate/)).toBeNull()
+    const agree = screen.getByRole('button', { name: 'I Agree' }) as HTMLButtonElement
+    expect(agree.disabled).toBe(true)
+    fireEvent.change(name, { target: { value: 'Jordan Navarro' } })
+    fireEvent.click(agree)
+    expect(onClose).toHaveBeenCalled()
+  })
+
+  it('Non-state specific, before the course exam: the general attestation, signed with Attest', async () => {
+    render(<AffidavitModalV2 onClose={() => {}} moment="exam" state="GEN" pattern="page" />)
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(
+      'Prelicensing Education Insurance - Proctor acknowledgement and Student attestation',
+    )
+    expect(screen.getByText('THIS EXAM MUST BE MONITORED BY A DISINTERESTED THIRD PARTY PROCTOR')).toBeTruthy()
+    await ready()
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    await ready()
+    expect(screen.getByText('Student Attestation:')).toBeTruthy()
+    expect(screen.getByText('Student E-Signature:')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Attest' })).toBeTruthy()
+  })
+
+  it('Non-state specific, after the course exam: none, and the modal says so in words that fit', () => {
+    render(<AffidavitModalV2 onClose={() => {}} moment="post" state="GEN" />)
+    expect(screen.getByText(/There’s no non-state specific affidavit after course exam/)).toBeTruthy()
   })
 
   it('resolves every ready entry in the explorer to a form', () => {

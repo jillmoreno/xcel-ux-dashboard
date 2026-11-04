@@ -435,7 +435,10 @@ export function AffidavitModalV2({
                 ? `The ${formLabel(entry).toLowerCase()} for ${STATES[entry.st]} hasn’t been added yet.`
                 : entry
                   ? 'There’s no document to show for this state yet.'
-                  : `${STATES[state] ?? state} has no affidavit ${MOMENTS.find((m) => m.id === moment)?.label.toLowerCase()}. Pick another state or moment on the Design bar.`}
+                  : `${
+                      // `GEN` is not a state, so it does not read as one.
+                      state === 'GEN' ? 'There’s no non-state specific affidavit' : `${STATES[state] ?? state} has no affidavit`
+                    } ${MOMENTS.find((m) => m.id === moment)?.label.toLowerCase()}. Pick another state or moment on the Design bar.`}
             </div>
             <div className="aff2-foot">
               <button type="button" className="aff2-btn" disabled>I Agree</button>

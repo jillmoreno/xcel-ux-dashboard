@@ -2311,7 +2311,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Affidavit state',
     description:
-      'Whose affidavit V2 shows. A state with no form at the chosen moment says so in the modal, as the explorer does.',
+      'Whose affidavit V2 shows. A state with no form at the chosen moment says so in the modal, as the explorer does. Non-state specific: XCEL\u2019s generic Terms and Conditions before the course begins, and its general attestation before the course exam.',
     variants: [
       { value: 'CA', label: 'California' },
       { value: 'CO', label: 'Colorado' },
@@ -2327,6 +2327,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'OR', label: 'Oregon' },
       { value: 'WV', label: 'West Virginia' },
       { value: 'WI', label: 'Wisconsin' },
+      // Not a state (2026-11-04): XCEL's generic forms — `GEN` in affidavitForms.ts.
+      { value: 'GEN', label: 'Non-state specific' },
     ],
     defaultVariant: 'FL',
     defaultEnabled: true,

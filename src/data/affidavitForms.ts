@@ -757,3 +757,73 @@ FORMS.WI_POST={
    Compliance Manager signature. Done here, after every form has grabbed KY_PRE.fields[0..2] by index. NV shares this array.
    (The explorer's own fix-up, kept as it is.) */
 {const f=FORMS.KY_PRE.fields,a=f.shift()!;f.splice(f.findIndex(x=>x.id==='cmsig'),0,a);}
+
+/* ── NON-STATE SPECIFIC — added 2026-11-04, not in the explorer ────────────
+   Afsana: "when affidavit state = non-state specific, add modal for xcel
+   generic terms and conditions (before course begins) and a general
+   attestation (before the course exam)". From her "Non-State Specific"
+   folder: XCEL Generic Terms and Conditions-Pre-Course Affidavit.docx and
+   XCEL PE General Pre-Final Attestation.docx, in their words, their bold and
+   their underline. `GEN` is a pseudo-state: the Design bar's State control
+   lists it last as "Non-state specific". There is no after-exam form — the
+   attestation itself says the learner and proctor complete the state's POST
+   FINAL affidavit.
+
+   Like the state forms, a typed Student Full Name is the signature, so it is
+   not pre-filled; and with nothing else pre-filled there is no "I confirm
+   that the above information is accurate" box. The terms carry the English
+   and the Spanish text one after the other, as the document does, so
+   Pagination shows them as two pages. */
+STATES.GEN = 'Non-state specific'
+ENTRIES.push(
+  {m:'pre',doc:'terms',st:'GEN',status:'ready',form:'GEN_PRE'},
+  {m:'exam',st:'GEN',status:'ready',form:'GEN_EXAM'},
+)
+FORMS.GEN_PRE={
+  docHeader:'XCEL Generic Terms and Conditions (Non-State Specific)',
+  title:'XCEL Generic Terms and Conditions',
+  source:'Word doc · XCEL Generic Terms and Conditions-Pre-Course Affidavit',
+  pages:[
+    {blocks:[
+      {h:'Acknowledgement of Terms and Conditions of Pre-licensing Course Completion'},
+      {p:'I understand and acknowledge that the pre-licensing insurance course final exam must be a proctored, closed-book exam with no assistance provided. A disinterested third party must proctor the exam. <strong>The disinterested third-party proctor or monitor is an individual who has <u>none</u> of the following: </strong>family relationship with the student; is a direct supervisor of the student; or a person directly supervised by the student.'},
+      {p:'A certificate of course completion is to be presented to the student who successfully passes the exam with a score of 70% or better within 2 days of the completion date. The pre-licensing course completion date is the date the proctor signs and dates the exam.'}
+    ]},
+    {blocks:[
+      {h:'Reconocimiento de los Términos y Condiciones de la Finalización del Curso de Pre-licencia'},
+      {p:'Yo entiendo y reconozco que el examen final del curso de seguro pre-licencia debe ser un examen supervisado y cerrado sin ayuda. Un tercero desinteresado debe supervisar el examen. <strong>El supervisor o monitor de terceros desinteresados es un individuo que no tiene ninguno de los siguientes: relación familiar con el estudiante; es un supervisor directo del estudiante; o una persona directamente supervisada por el estudiante.</strong>'},
+      {p:'Un certificado de finalización del curso debe ser presentado al estudiante que pase el examen con una puntuación de 70% o mejor dentro de los 2 días de la fecha de finalización. La fecha de finalización del curso de pre-licencia es la fecha en que el supervisor firma y fecha el examen.'}
+    ]}
+  ],
+  fields:[
+    {id:'fullname',label:'Student Full Name',required:true,placeholder:'Type your full name',ac:'name'}
+  ],
+  noPrefill:['fullname'],
+  note:'Not in the explorer: added 2026-11-04 from the Non-State Specific folder. The document names no button, so it is the default "I Agree".'
+};
+FORMS.GEN_EXAM={
+  docHeader:'XCEL PE General Attestation (non-state specific)',
+  title:'Prelicensing Education Insurance - Proctor acknowledgement and Student attestation',
+  agreeLabel:'Attest',
+  source:'Word doc · XCEL PE General Pre-Final Attestation',
+  pages:[
+    {blocks:[
+      {p:'THIS EXAM MUST BE MONITORED BY A DISINTERESTED THIRD PARTY PROCTOR'},
+      {h:'Definition of a Proctor:'},
+      {p:'The proctor must be a disinterested third party, with a minimum age of 18 years, who can be any person <strong>except for family members</strong> or individuals who have a financial interest in the success of the student taking the examination. Co-worker proctors must not be above or below in the student’s line of supervision.'},
+      {h:'Proctor Information and responsibilities:'},
+      {p:'A proctor is a disinterested third party with no conflict of interest that must verify the identity of the student listed above (i.e., valid photo ID). The proctor must personally observe the completion of the self-study course exam to ensure it is completed without outside assistance of any kind (i.e., human, study material, notes, computer, cell phone, etc.) and physically monitor the student throughout the entire exam process and complete the <strong>POST FINAL affidavit.</strong>'}
+    ]},
+    {blocks:[
+      {h:'Student Attestation:'},
+      {p:'I declare that I will personally complete this exam with no assistance from any person(s), course material, or any additional source of information. This exam will be monitored by a proctor who is an impartial, disinterested third party or currently licensed agent with no family or financial relationship to me. Membership in a professional association/organization does not constitute a financial relationship.'},
+      {p:'I also understand that the proctor and I will be required to complete the <strong>POST FINAL affidavit.</strong>'}
+    ]}
+  ],
+  fields:[
+    {block:{h4:'Student E-Signature:'}},
+    {id:'fullname',label:'Student Full Name',required:true,placeholder:'Type your full name',ac:'name'}
+  ],
+  noPrefill:['fullname'],
+  note:'Not in the explorer: added 2026-11-04 from the Non-State Specific folder. The button reads "Attest", as the document has it.'
+};
