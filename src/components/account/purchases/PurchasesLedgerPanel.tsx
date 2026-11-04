@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Sheet } from '@/components/ui/Sheet'
 import { useAccount } from '@/context/AccountContext'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { profileFor } from '@/data/accountProfileFixtures'
 import {
   formatMoney,
@@ -67,6 +68,11 @@ export function PurchasesLedgerPanel() {
      variants does not also change what is at the top. */
   const [sort, setSort] = useState<SortState>({ key: 'orderDate', dir: 'desc' })
   const [openId, setOpenId] = useState<string | null>(null)
+  /* ON A PHONE SUMMARY COMES BEFORE ORDER NUMBER (2026-11-04, Eric's
+     request) — what was bought, then its reference. Every other width keeps
+     the ledger's order. */
+  const summaryFirst = useFeatureFlag('home-breakpoint').variant === 'mobile'
+  const columns = summaryFirst ? [COLUMNS[0], COLUMNS[2], COLUMNS[1], ...COLUMNS.slice(3)] : COLUMNS
   /* Atlas Admin's table — its card, header and cells — under the account pages' Quick Links layout (2026-11-03, Eric's request). */
   const atlasFrame = useAtlasAccountPages()
   const head = atlasFrame ? ATLAS_TH : HEADER_CELL
@@ -117,14 +123,14 @@ export function PurchasesLedgerPanel() {
       <div style={atlasFrame ? { ...ATLAS_TABLE_CARD, overflowX: 'auto' } : tableWrapStyle}>
         <table className={atlasFrame ? 'cre-atlas-table' : undefined} style={tableStyle}>
           <colgroup>
-            {COLUMNS.map((col) => (
+            {columns.map((col) => (
               <col key={col.key} style={{ width: col.width }} />
             ))}
             <col style={{ width: 44 }} />
           </colgroup>
           <thead style={atlasFrame ? ATLAS_THEAD : undefined}>
             <tr>
-              {COLUMNS.map((col, i) => {
+              {columns.map((col, i) => {
                 const active = sort.key === col.key
                 return (
                   <th
@@ -216,11 +222,12 @@ export function PurchasesLedgerPanel() {
                   <td style={{ ...cell, paddingLeft: atlasFrame ? 20 : 24, whiteSpace: 'nowrap' }}>
                     {formatOrderDate(record.orderDate)}
                   </td>
-                  <td style={{ ...cell, whiteSpace: 'nowrap' }}>{record.orderNumber}</td>
+                  {summaryFirst ? null : <td style={{ ...cell, whiteSpace: 'nowrap' }}>{record.orderNumber}</td>}
                   <td style={cell}>
                     <span style={summaryLeadStyle}>{lead}</span>
                     {more > 0 && <span style={summaryMoreStyle}> +{more} more</span>}
                   </td>
+                  {summaryFirst ? <td style={{ ...cell, whiteSpace: 'nowrap' }}>{record.orderNumber}</td> : null}
                   <td style={cell}>
                     <span
                       style={{
