@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from
 import { useSearchParams } from 'react-router-dom'
 import { AngleRightRegular } from '@/icons'
 import { WHITE_COURSES, WHITE_COURSE_PARAM, WHITE_FIRST_COURSE_ID, whiteCourseFor } from '@/data/atlasWhiteCourses'
+import { ATLAS_HOME_COURSE_PARAM } from '@/data/atlasCourseCards'
 
 /**
  * THE TOP NAV's "MY COURSES" DROPDOWN — Figma 323:2001 (2026-10-12, Eric's
@@ -107,6 +108,8 @@ export function AtlasTopNavCoursesDropdown({ selected = false }: { selected?: bo
                   current={c.id === activeId}
                   onClick={() =>
                     go((n) => {
+                      // A pick here replaces a My Courses card's (2026-11-04).
+                      n.delete(ATLAS_HOME_COURSE_PARAM)
                       if (c.id === WHITE_FIRST_COURSE_ID) n.delete(WHITE_COURSE_PARAM)
                       else n.set(WHITE_COURSE_PARAM, c.id)
                     })
