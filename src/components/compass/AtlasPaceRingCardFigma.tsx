@@ -326,6 +326,21 @@ export function AtlasPaceRingCardFigma({
               {hoursPerWeek != null ? (
                 <span style={GOAL_NOTE}>
                   about {hoursPerWeek} hour{hoursPerWeek === 1 ? '' : 's'} / week
+                  {/* The list row carries the customise link on this line, in
+                      place of the starting-point sentence below (2026-11-04,
+                      Eric's request). */}
+                  {listProgress ? (
+                    <>
+                      {' — customize your study pace '}
+                      {onCustomize ? (
+                        <button type="button" onClick={onCustomize} style={INLINE_LINK}>
+                          here
+                        </button>
+                      ) : (
+                        'here'
+                      )}
+                    </>
+                  ) : null}
                 </span>
               ) : null}
             </span>
@@ -359,7 +374,7 @@ export function AtlasPaceRingCardFigma({
              two ways. The customise link goes with the starting-point copy:
              it belonged to the sentence that offered it. */
           <p style={SMALL}>{withPlanLink(standingMessage, onCustomize)}</p>
-        ) : (
+        ) : listProgress ? null : (
         <p style={SMALL}>
           Your default recommended study pace is just a starting point, you can further customize
           your pace{' '}

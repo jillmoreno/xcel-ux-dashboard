@@ -346,6 +346,10 @@ export function AtlasHomeJillMain({
      branch (2026-11-03) — a sibling, switched here by `atlas-pace-card-figma`;
      its panel takes 32 a side. */
   const RingCard = useFeatureFlag('atlas-pace-card-figma').enabled ? AtlasPaceRingCardFigma : AtlasPaceRingCard
+  /* The list copy of the progress panel is drawn at the Mobile breakpoint
+     only — see `ringListCopy` below. Rendered, not hidden: a hidden copy is
+     still a second copy of every figure on the card. */
+  const phoneFrame = useFeatureFlag('home-breakpoint').variant === 'mobile'
   /* Whether the column carries Exam readiness at all — a design-bar on/off,
      see `atlas-readiness-section`. */
   const showReadinessFlag = useFeatureFlag('atlas-readiness-section').enabled
@@ -1338,11 +1342,10 @@ export function AtlasHomeJillMain({
             </div>
             {/* THE PROGRESS PANEL AGAIN, AS A LIST — 2026-11-04, Eric's request:
                 the same card under the first, its Course progress drawn as a
-                row like Study pace and Estimated completion. Hidden
-                everywhere but the Mobile breakpoint, which shows it
-                (home-breakpoints/mobile.css) so the two can be compared. */}
-            {onWhite && paceCard === 'ring' && RingCard === AtlasPaceRingCardFigma ? (
-              <div className="cre-atlas-pace-list-copy" style={{ ...WHITE_PROGRESS_PANEL, gap: 0, display: 'none' }}>
+                row like Study pace and Estimated completion. Drawn at the
+                Mobile breakpoint only, so the two can be compared there. */}
+            {phoneFrame && onWhite && paceCard === 'ring' && RingCard === AtlasPaceRingCardFigma ? (
+              <div className="cre-atlas-pace-list-copy" style={{ ...WHITE_PROGRESS_PANEL, gap: 0 }}>
                 {cloneElement(ringCard, { listProgress: true })}
               </div>
             ) : null}
