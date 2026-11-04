@@ -2890,7 +2890,11 @@ const E2E_QUICK_LINKS_LIFT = 16.5 + 6 + 34 + 24
    after it, the cards sit Home's 32 from Quick Links (2026-11-03). */
 const E2E_QUICK_LINKS_COLUMN_W = 8 + WIP_QUICK_LINKS_W + 8
 // …and Home's 20 corners, not the card's own 12 (2026-11-03).
-const WIP_QUICK_LINKS_LIFTED: CSSProperties = { ...WIP_QUICK_LINKS, marginTop: -E2E_QUICK_LINKS_LIFT, marginLeft: 8, width: WIP_QUICK_LINKS_W, flex: 'none', borderRadius: 'var(--atlas-card-radius, 20px)' }
+/* ⚠ 7.5 IN, NOT 8 (2026-11-04, Eric: the icons and text "shifting one or two
+   pixels to the right" from Home). These pages centre an odd 1081 column, so
+   8 in landed the card half a pixel right of Home's, which rounds to a visible
+   jump. 7.5 puts it on Home's exact x. */
+const WIP_QUICK_LINKS_LIFTED: CSSProperties = { ...WIP_QUICK_LINKS, marginTop: -E2E_QUICK_LINKS_LIFT, marginLeft: 7.5, width: WIP_QUICK_LINKS_W, flex: 'none', borderRadius: 'var(--atlas-card-radius, 20px)' }
 
 /* Certificates in the shell. Eric/Atlas WIP drops the page's search, result
    count and filter rail, and status tabs (2026-10-13, Eric's request), and
