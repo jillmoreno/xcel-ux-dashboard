@@ -603,16 +603,18 @@ function AffidavitBody({
   )
 }
 
-/* The page dimmed below the review chrome, the modal near the top of it, as
-   the explorer places it (36 down). `top` is set at render. */
+/* The page dimmed below the review chrome, the modal centred on what is left
+   of it — Home, not the whole window (2026-11-04, Afsana: "the modal needs to
+   be at the center of the learner home screen"; the explorer pinned it 36
+   down). `top` is set at render, so the centre moves with the bars. */
 const SCRIM: CSSProperties = {
   position: 'fixed',
   inset: 0,
   zIndex: 55,
   display: 'flex',
-  alignItems: 'flex-start',
+  alignItems: 'center',
   justifyContent: 'center',
-  padding: '36px 16px',
+  padding: '24px 16px',
   boxSizing: 'border-box',
   background: 'var(--color-aff-scrim)',
 }

@@ -59,6 +59,13 @@ describe('AffidavitModalV2', () => {
     expect(scrimOf().style.top).toBe('44px')
   })
 
+  it('centres the modal on Home — the area below the bars — both ways', () => {
+    bar('cre-prototype-bar', 44)
+    render(<AffidavitModalV2 onClose={() => {}} />)
+    expect(scrimOf().style.alignItems).toBe('center')
+    expect(scrimOf().style.justifyContent).toBe('center')
+  })
+
   it('covers the whole window when no bar is on screen (?chrome=off)', () => {
     render(<AffidavitModalV2 onClose={() => {}} />)
     expect(scrimOf().style.top).toBe('0px')
