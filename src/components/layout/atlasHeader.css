@@ -56,6 +56,25 @@
 .cre-atlas-hdr .cre-atlas-hdr-pill--icon {
   padding: 0 8px;
 }
+/* The phone's three-bar menu — drawn only at the Mobile breakpoint
+   (home-breakpoints/mobile.css). */
+.cre-atlas-hdr .cre-atlas-hdr-burger,
+.cre-atlas-hdr div:has(> .cre-atlas-hdr-burger) {
+  display: none;
+}
+/* 85% of the pill — 2026-10-20, Eric: the profile menu's Mode: Admin /
+   Learner switch, "the basic style used in the header buttons but 15%
+   smaller". Every size scales; the colours, weight and states stay the
+   pill's own. */
+.cre-atlas-hdr .cre-atlas-hdr-pill--sm {
+  gap: 6.8px;
+  /* 26, not 25.5 — Eric, the same day: a whole pixel. */
+  height: 26px;
+  padding: 0 10.2px;
+  border-radius: 6.8px;
+  font-size: 11.9px;
+  line-height: 17px;
+}
 .cre-atlas-hdr .cre-atlas-hdr-pill:hover,
 .cre-atlas-hdr .cre-atlas-hdr-pill[aria-current='page'],
 .cre-atlas-hdr .cre-atlas-hdr-pill.is-selected,
@@ -116,6 +135,33 @@
   background-color: var(--atlas-hdr-item-hover);
   outline: none;
 }
+/* THE PROFILE MENU IN QUICK LINKS' HOVER (2026-11-03, Eric's request) —
+   `quickLinksMenu` on AtlasHeader. No fill: the ink goes to the page-button
+   blue and up one weight, Regular 400 → Medium 500, and an angle-right shows
+   at the row's far end — `.cre-compass-v2-row`'s treatment in tokens.css.
+   The chevron holds its place by opacity, so the row never shifts. */
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item {
+  transition: color 120ms ease;
+}
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:hover,
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:focus-visible {
+  background-color: transparent;
+  color: var(--color-compass-page-button);
+  font-weight: 500;
+}
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:focus-visible {
+  outline: 2px solid var(--color-compass-page-button);
+  outline-offset: -2px;
+}
+.cre-atlas-hdr .cre-atlas-hdr-item-trailing {
+  color: var(--color-compass-page-button);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:hover .cre-atlas-hdr-item-trailing,
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:focus-visible .cre-atlas-hdr-item-trailing {
+  opacity: 1;
+}
 
 .cre-atlas-hdr .cre-atlas-hdr-pill:focus-visible,
 .cre-atlas-hdr .cre-atlas-hdr-eyebrow-link:focus-visible,
@@ -136,4 +182,29 @@
 }
 .cre-atlas-hdr .cre-atlas-dd:not(.is-open):hover {
   background-color: var(--atlas-hdr-tint);
+}
+
+/* THE PROFILE MENU'S ROWS IN QUICK LINKS' OWN STYLE (2026-11-04, Eric's
+   request), at every width — the card's 13/18 secondary text, a 13 icon in
+   an 18 box in the home-icon colour, 8 between, rows on its 34 pitch. Only
+   with `quickLinksMenu`, the switch that already gives these rows Quick
+   Links' hover. */
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item {
+  gap: 8px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--color-text-secondary);
+}
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item > span[aria-hidden]:first-child {
+  width: 18px;
+  color: var(--color-atlas-home-icon, var(--color-compass-page-button));
+}
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item > span[aria-hidden]:first-child svg {
+  width: 13px;
+  height: 13px;
+}
+/* The hover's blue again, after the resting ink above, or that would win. */
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:hover,
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:focus-visible {
+  color: var(--color-compass-page-button);
 }

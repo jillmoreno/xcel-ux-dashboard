@@ -161,6 +161,15 @@ const REBRAND_FLAGS = [
   'atlas-heading-font',
   'atlas-affidavit',
   'atlas-home-long-title',
+  'atlas-sheet-title-serif',
+  // The profile menu's Learner / Admin mode, 2026-11-03 — on/off.
+  'atlas-header-mode-switch',
+  // The course count beside Quick Links' My Courses, 2026-11-03 — on/off.
+  'atlas-quick-links-course-count',
+  // The account pages in the learning pages' layout, 2026-11-03 — on/off.
+  'atlas-account-quick-links',
+  // Every container at a 16 corner, 2026-11-03 — on/off.
+  'atlas-card-radius-16',
   'atlas-exam-date-step',
   'atlas-v3-progress',
   'atlas-v3-link-tiles',

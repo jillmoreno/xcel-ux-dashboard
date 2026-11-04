@@ -1,11 +1,17 @@
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAccount } from '@/context/AccountContext'
 import { useNotifications } from '@/context/NotificationsContext'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useAtlasAccountPages } from '@/components/account/useAtlasAccountPages'
 import { useProfileAvatar } from '@/context/ProfileAvatarContext'
 import { WHITE_COURSES, WHITE_COURSE_PARAM, WHITE_FIRST_COURSE_ID } from '@/data/atlasWhiteCourses'
 import { AtlasHeader } from './AtlasHeader'
 import { END_TO_END_VERSION } from '@/pages/endToEndDemo'
 import { ATLAS_HOME_REFRESH } from './atlasHomeRefresh'
+import { BookRegular, CircleInfoRegular, ClipboardListCheckRegular, FileCertificateRegular, PenFieldRegular } from '@/icons'
+import { ATLAS_OPEN_PARAM } from '@/components/compass/AtlasJourneyLinksCard'
+import { useMyCoursesCount } from '@/components/compass/useMyCoursesCount'
+import { GET_LICENSED_STEPS } from '@/data/nyProducerRequirements'
 
 /**
  * `AtlasHeader` IN THE REBRAND SHELL (2026-10-13) — the standalone header fed
@@ -39,6 +45,15 @@ export function AtlasHeaderConnected({
   const { unread } = useNotifications()
   const [params] = useSearchParams()
   const navigate = useNavigate()
+  /* LEARNER / ADMIN MODE in the profile menu — from feat/atlas-admin
+     (2026-10-20), brought here 2026-11-03 (Eric's request). The admin pages
+     are not on this branch, so Admin opens that branch's build — see
+     `ATLAS_ADMIN_BUILD`. */
+  const modeSwitch = useFeatureFlag('atlas-header-mode-switch').enabled
+  /* The profile menu's links in Quick Links' hover, with the account pages'
+     Quick Links layout (2026-11-03). */
+  const quickLinksMenu = useAtlasAccountPages()
+  const coursesCount = useMyCoursesCount()
 
   const section = params.get('section')
   const current =
@@ -77,10 +92,29 @@ export function AtlasHeaderConnected({
           return `/end-to-end-demo?${next.toString()}`
         })()
       : undefined
+  /* THE PHONE'S MENU — Quick Links' rows, to the same places (2026-11-04,
+     Eric's request). The three information rows open their sheet on Home
+     through `?open=`, which is what the card does from any other page. */
+  const apply = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1]
+  const homeAndOpen = (what: string) => () => navigate(shell((n) => n.set(ATLAS_OPEN_PARAM, what)))
+  const phoneLinks = [
+    { label: 'My Courses', icon: <BookRegular size={18} />, count: coursesCount, onSelect: () => navigate(shell((n) => n.set('section', 'courses'))) },
+    { label: 'My Certificates', icon: <FileCertificateRegular size={18} />, onSelect: () => navigate(shell((n) => n.set('section', 'certificates'))) },
+    { label: 'Exam Information', icon: <CircleInfoRegular size={18} />, onSelect: homeAndOpen('exam-details') },
+    { label: 'Applying for a License', icon: <PenFieldRegular size={18} />, onSelect: homeAndOpen(`step:${apply.id}`) },
+    { label: 'State Requirements', icon: <ClipboardListCheckRegular size={18} />, onSelect: homeAndOpen('requirements') },
+  ]
   return (
     <AtlasHeader
       current={current}
+      phoneLinks={phoneLinks}
       onHelp={onHelp}
+      quickLinksMenu={quickLinksMenu}
+      modeMenu={
+        modeSwitch
+          ? { mode: 'learner', adminLinks: [], onSwitch: () => window.location.assign(`${ATLAS_ADMIN_BUILD}${window.location.search}`) }
+          : undefined
+      }
       user={{
         name: `${user.firstName} ${user.lastName}`,
         /* ⚠ JORDAN'S, TO MATCH THE NAME ON THE SAME LINE (2026-10-19,
@@ -128,3 +162,8 @@ export function AtlasHeaderConnected({
     />
   )
 }
+
+/* Atlas Admin's Students page on feat/atlas-admin's branch build — the
+   admin pages live there until they reach main, so the switch crosses to
+   it, carrying the query (demo, version, flags) along. */
+const ATLAS_ADMIN_BUILD = 'https://feat-atlas-admin--ux-design-xceldashboard.netlify.app/atlas-admin/students'

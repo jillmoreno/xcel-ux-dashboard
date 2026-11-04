@@ -1,3 +1,5 @@
+import { useAtlasAccountPages } from '../useAtlasAccountPages'
+import { ATLAS_FIRST_CELL, ATLAS_TABLE_CARD, ATLAS_TD, ATLAS_TH, ATLAS_THEAD } from '../atlasAccountTableStyles'
 import { useMemo, useState, type CSSProperties, type KeyboardEvent } from 'react'
 import { ChevronDown, ChevronRight, X } from '@/icons'
 import { Button } from '@/components/ui/Button'
@@ -65,6 +67,9 @@ export function PurchasesLedgerPanel() {
      variants does not also change what is at the top. */
   const [sort, setSort] = useState<SortState>({ key: 'orderDate', dir: 'desc' })
   const [openId, setOpenId] = useState<string | null>(null)
+  /* Atlas Admin's table — its card, header and cells — under the account pages' Quick Links layout (2026-11-03, Eric's request). */
+  const atlasFrame = useAtlasAccountPages()
+  const head = atlasFrame ? ATLAS_TH : HEADER_CELL
 
   const rows = useMemo(() => {
     const { key, dir } = sort
@@ -109,15 +114,15 @@ export function PurchasesLedgerPanel() {
 
   return (
     <div className="cre-account-actions">
-      <div style={tableWrapStyle}>
-        <table style={tableStyle}>
+      <div style={atlasFrame ? { ...ATLAS_TABLE_CARD, overflowX: 'auto' } : tableWrapStyle}>
+        <table className={atlasFrame ? 'cre-atlas-table' : undefined} style={tableStyle}>
           <colgroup>
             {COLUMNS.map((col) => (
               <col key={col.key} style={{ width: col.width }} />
             ))}
             <col style={{ width: 44 }} />
           </colgroup>
-          <thead>
+          <thead style={atlasFrame ? ATLAS_THEAD : undefined}>
             <tr>
               {COLUMNS.map((col, i) => {
                 const active = sort.key === col.key
@@ -127,8 +132,8 @@ export function PurchasesLedgerPanel() {
                     scope="col"
                     aria-sort={ariaSort(col.key)}
                     style={{
-                      ...HEADER_CELL,
-                      ...(i === 0 && { paddingLeft: 24 }),
+                      ...head,
+                      ...(i === 0 && (atlasFrame ? ATLAS_FIRST_CELL : { paddingLeft: 24 })),
                       ...(col.alignRight && { textAlign: 'right' }),
                     }}
                   >
@@ -162,7 +167,7 @@ export function PurchasesLedgerPanel() {
               })}
               {/* The chevron column has no label — it is an affordance, and a
                   header over it would imply something sortable. */}
-              <th scope="col" style={{ ...HEADER_CELL, paddingRight: 24 }}>
+              <th scope="col" style={{ ...head, paddingRight: atlasFrame ? 20 : 24 }}>
                 <span className="cre-sr-only">Open receipt</span>
               </th>
             </tr>
@@ -179,8 +184,11 @@ export function PurchasesLedgerPanel() {
                  two parallel rules with a dead gap between them.
                  ⚠ `GiftRecipientsTable`, which this chrome came from, has the
                  same latent issue and has not been changed. */
-              const cell: CSSProperties =
-                rowIndex === rows.length - 1 ? { ...BODY_CELL, borderBottom: 'none' } : BODY_CELL
+              /* The admin table's cells under the Quick Links layout (2026-11-03) rule each row ABOVE it instead, so the last row
+                 needs no exception there. */
+              const cell: CSSProperties = atlasFrame
+                ? ATLAS_TD
+                : rowIndex === rows.length - 1 ? { ...BODY_CELL, borderBottom: 'none' } : BODY_CELL
               return (
                 <tr
                   key={record.id}
@@ -205,7 +213,7 @@ export function PurchasesLedgerPanel() {
                     }
                   }}
                 >
-                  <td style={{ ...cell, paddingLeft: 24, whiteSpace: 'nowrap' }}>
+                  <td style={{ ...cell, paddingLeft: atlasFrame ? 20 : 24, whiteSpace: 'nowrap' }}>
                     {formatOrderDate(record.orderDate)}
                   </td>
                   <td style={{ ...cell, whiteSpace: 'nowrap' }}>{record.orderNumber}</td>
@@ -239,7 +247,7 @@ export function PurchasesLedgerPanel() {
                   >
                     {formatMoney(record.total)}
                   </td>
-                  <td style={{ ...cell, paddingRight: 24, textAlign: 'right' }}>
+                  <td style={{ ...cell, paddingRight: atlasFrame ? 20 : 24, textAlign: 'right' }}>
                     <ChevronRight size={14} aria-hidden style={{ color: 'var(--color-neutral-600)' }} />
                   </td>
                 </tr>
@@ -340,7 +348,7 @@ function ReceiptSheetBody({
 const tableWrapStyle: CSSProperties = {
   background: 'var(--color-surface-card)',
   border: '1px solid var(--color-neutral-light)',
-  borderRadius: 'var(--radius-xl)',
+  borderRadius: 'var(--atlas-card-radius, var(--radius-xl))',
   overflowX: 'auto',
 }
 
@@ -392,6 +400,9 @@ const headerButtonStyle: CSSProperties = {
   padding: 0,
   font: 'inherit',
   color: 'inherit',
+  /* A button does not inherit these by default — the admin table's uppercase, tracked titles need them (2026-11-03). */
+  textTransform: 'inherit',
+  letterSpacing: 'inherit',
   cursor: 'pointer',
 }
 

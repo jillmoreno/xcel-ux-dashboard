@@ -323,7 +323,9 @@ describe('the expired card loses the brand blue', () => {
      grey. The course card is the panel the access line sits inside. */
   const courseCard = () => {
     let n: HTMLElement | null = screen.getByText(/Course Access End/) as HTMLElement
-    while (n && !(n.style.borderRadius === '20px' && n.style.padding === '40px')) n = n.parentElement
+    // The radius is `var(--atlas-card-radius, 20px)` since 2026-11-03; the
+    // 40 padding is what tells the card apart.
+    while (n && !(n.style.borderRadius.includes('20px') && n.style.padding === '40px')) n = n.parentElement
     return n!
   }
 

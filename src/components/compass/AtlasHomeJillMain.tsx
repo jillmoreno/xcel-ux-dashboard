@@ -43,7 +43,8 @@
  * demo's Home can change without changing either. Its WIP branches (the
  * `onWhite` false sides) are carried over unchanged and never taken here.
  */
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { cloneElement, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { ATLAS_SECTION_EYEBROW } from './atlasSectionEyebrow'
 import { useSearchParams } from 'react-router-dom'
 import { isEricAtlasWhiteLike, resolveDashboardVersion } from '@/data/dashboardVersions'
 import {
@@ -70,6 +71,7 @@ import type { NoPaceReason } from './noPaceMessage'
 import { ATLAS_PROGRESS_ORDER, atlasRungFor, isLessonRowTitle, journeyTitleFor } from './atlasProgressLadder'
 import { paceStandingMessage, type PaceStanding } from './paceStanding'
 import { AtlasPaceRingCard } from './AtlasPaceRingCard'
+import { AtlasPaceRingCardFigma } from './AtlasPaceRingCardFigma'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag, useFeatureFlags, useCourseDemo } from '@/context/FeatureFlagContext'
 import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
@@ -341,6 +343,20 @@ export function AtlasHomeJillMain({
      are real pages now, so they are let back through. */
   const learningPagesLive = useFeatureFlag('atlas-home-opens-learning-pages').enabled
   const paceCard = useFeatureFlag('atlas-pace-card').variant ?? 'ring'
+  /* Eric's Figma pass on the ring card (592:457), from his breakpoints
+     branch (2026-11-03) — a sibling, switched here by `atlas-pace-card-figma`;
+     its panel takes 32 a side. */
+  const RingCard = useFeatureFlag('atlas-pace-card-figma').enabled ? AtlasPaceRingCardFigma : AtlasPaceRingCard
+  /* The list copy of the progress panel is drawn at the Mobile breakpoint
+     only — see `ringListCopy` below. Rendered, not hidden: a hidden copy is
+     still a second copy of every figure on the card. */
+  const phoneFrame = useFeatureFlag('home-breakpoint').variant === 'mobile'
+  /* THREE PHONE LAYOUTS FOR THE PROGRESS PANEL (2026-11-04, Eric's request),
+     cycled by a click on the panel's bottom-left corner: the two columns, the
+     list (`listProgress`), and one row at a time under tabs. A demo toggle in
+     page state, like the course head's cover click. */
+  const [phoneLayout, setPhoneLayout] = useState<'columns' | 'list' | 'tabs'>('columns')
+  const [phoneTab, setPhoneTab] = useState<PacePhoneTab>('progress')
   /* Whether the column carries Exam readiness at all — a design-bar on/off,
      see `atlas-readiness-section`. */
   const showReadinessFlag = useFeatureFlag('atlas-readiness-section').enabled
@@ -910,7 +926,7 @@ export function AtlasHomeJillMain({
   /* A My Courses card's course, when the learner came from one (2026-11-04,
      Eric's request) — its title and cover; the card set Progress and Expires
      on its way here. See `atlasHomeStateFor`. */
-  const cardCourse = atlasHomeCourseFor(searchParams.get(ATLAS_HOME_COURSE_PARAM))
+  const cardCourse = atlasHomeCourseFor(searchParams.get(ATLAS_HOME_COURSE_PARAM), e2eBrand)
   const shownTitle = cardCourse?.title ?? e2eTitle
   const shownCover = cardCourse?.imageUrl ?? activeTab?.coverUrl ?? coverUrl
   const selectCourse = (id: string) => {
@@ -923,6 +939,155 @@ export function AtlasHomeJillMain({
     })
     onSelectCourse?.(id)
   }
+
+  /* THE RING CARD, hoisted so the phone can draw it twice (2026-11-04, Eric's
+     request): as it is, and again under it as a list (`listProgress`) —
+     see `ringListCopy` below. One element, so the two cannot disagree. */
+  /* Whether the corner switch is there at all — the phone, the ring card in
+     Figma's version on the white page — and whether a layout other than the
+     two columns is up. */
+  const phoneSwitch = phoneFrame && onWhite && paceCard === 'ring' && RingCard === AtlasPaceRingCardFigma
+  const phoneAltLayout = phoneSwitch && phoneLayout !== 'columns'
+  const ringCard = (
+    <RingCard
+      /* Ready 100%: the dial alone — no rule, no Study pace (2026-11-03,
+         Eric's request); a finished course has no plan left to pace. */
+      progressOnly={completedView}
+      /* The ladder carries the figure for every state now,
+         including 0 — see the note there. The `percent` prop is the
+         persona's and only stands in for a state with no figure. */
+      percent={progress.percent ?? percent}
+      /* ⚠ NO FALLBACK (2026-10-19). It was `: 3` — a week count
+         nothing had computed, printed at the one moment the model
+         has no plan to offer. `undefined` is what the card reads as
+         "no pace fits", and it is the same condition that already
+         empties the hours line and the completion date, so all
+         three now say the same thing instead of two vanishing while
+         the third made a number up. */
+      weeks={paceFit ? Math.max(1, Math.round(paceFit.days / 7)) : undefined}
+      /* The name and the glyph are the SAME choice as the figures
+         above — see `paceStyle`. The demo's card passes neither and
+         keeps the frozen "Average" it has always printed. */
+      paceStyleName={PACE_STYLE_LABELS[paceStyle]}
+      paceIcon={paceIconFor(paceStyle)}
+      /* ⚠ THE BOOKED EXAM, from the same store the prompt writes and
+         counted off the same `today` — 2026-10-20, the third screen's
+         "FLORIDA STATE EXAM / November 16 · 18 days".
+
+         This is the pair the mock could not make agree: the count
+         there read 18 beside a "29 Days" in Step 2 for one date,
+         because the calendar was on the wall clock and this column on
+         the fixture. Both are `daysUntil(examDate, today)` now, so
+         they are the same subtraction or neither renders.
+
+         The LABEL names the state, which is why the card takes it
+         rather than typing it — `state` is `jurisdictionName(path.state)`,
+         so it follows the Course control like every other fact here. */
+      exam={
+        examDate && examDays != null
+          ? {
+              label: state ? `${state} state exam`.toUpperCase() : 'STATE EXAM',
+              value: formatPaceDateLong(examDate),
+              /* The three arms moved into `inDaysNote` on
+                 2026-10-20 so this row and Estimated completion
+                 count in one voice — see the note there. */
+              note: inDaysNote(examDays),
+            }
+          : undefined
+      }
+      noPace={noPace}
+      /* ⚠ THE SAME `paceFit` THE WEEK COUNT READS, which is the
+         whole reason both live on this card: the span and the date
+         it lands on come from one model, so they cannot describe
+         two different plans. The states card's `expected` prop is
+         built from the same place for the same reason — see its
+         note there. */
+      /* ⚠ NO "AT CURRENT PACE" AT 0% (2026-10-16, Jillienne: "at 0%
+         remove this bit"). There is no current pace to be at — the
+         learner has not started, so the date is what the
+         RECOMMENDED plan would reach, not a projection from
+         anything they have done. The note would be claiming a
+         measurement that does not exist yet. The DATE stays: it is
+         the plan's, and the plan is real. */
+      /* ⚠ NO NOTE ON THE RING CARD SINCE 2026-10-19, and it is the
+         one-line row that decides it (Jillienne: "move this to the
+         right of the eyebrow - no need for 2 lines"). The label
+         takes 166 of the column's 272, which leaves room for a
+         date and not for a date plus a qualifier — with the note
+         the value wrapped to "May 24 · At / current pace", which
+         is two lines and an ugly break rather than the one line
+         that was asked for. "At current pace" was already
+         suppressed at 0% (there is no current pace before you
+         start); this drops it at every state, on the ring arm
+         only. The STATES card below still passes it. */
+      expected={
+        paceFit
+          ? {
+              /* The month written out — this figure stands alone
+                 at 19px, where the short form is for dates inside
+                 sentences. See `formatPaceDateLong`. */
+              value: formatPaceDateLong(paceFit.finishIso),
+              /* ⚠ A NOTE HERE AGAIN, AND IT IS A DIFFERENT ONE
+                 (2026-10-20, Jillienne: "add the days underneath
+                 this section too"). The note dropped on 10-19 was
+                 "At current pace" — a qualifier on the date, which
+                 had nowhere to go on a one-line row and was wrong
+                 at 0% anyway, where there is no current pace to be
+                 at. This is a COUNT, it is true at every state,
+                 and the row has a second line for it now.
+                 ⚠ `paceFit.days` — the model's own span, the same
+                 one the week goal is rounded from, so the date and
+                 the count cannot describe two different plans. */
+              note: inDaysNote(paceFit.days),
+            }
+          : undefined
+      }
+      /* THE MODEL'S OWN `minsPerWeek`, not `hoursRemaining / weeks`.
+         The model spreads the work over the nights a learner
+         actually studies; dividing the total myself would answer a
+         different question and disagree with the plan it sits
+         under. Rounded to the hour — the sentence says "about". */
+      hoursPerWeek={paceFit ? Math.max(1, Math.round(paceFit.minsPerWeek / 60)) : undefined}
+      /* So the card knows whether its last rule has anything below
+         it to divide — see `readinessBelow`. */
+      standingMessage={
+        atZeroProgress || !paceFit
+          ? undefined
+          : paceStandingMessage({
+              standing: paceStanding,
+              /* The model's own figure for this pace, so the
+                 sentence and the week goal above it cannot
+                 disagree about the plan. */
+              goalHoursPerWeek: Number.isFinite(paceFit.minsPerWeek) ? paceFit.minsPerWeek / 60 : 0,
+              weeks: Math.max(1, Math.round(paceFit.days / 7)),
+              finishIso: paceFit.finishIso,
+            })
+      }
+      readinessBelow={showReadiness}
+      /* Everything under the dial describes a plan, and there is
+         none once the window has closed — see the card's note. */
+      expired={expiryTier === 'expired'}
+      align={columnAlign}
+      /* ⚠ "HERE" GOES TO COMPASS'S STUDY PLANNER (2026-10-16,
+         Jillienne: "have the 'here' be a link to the study planner
+         of the compass application"). It was `onOpenStop(
+         'study-plan')` — the Atlas journey's own stop, a different
+         page with a similar name. `compassPage` seeds Compass's
+         page on arrival, the same param the lesson's exit uses. */
+      onCustomize={() =>
+        setParams(
+          (prev) => {
+            const next = new URLSearchParams(prev)
+            next.set('section', 'compass')
+            next.set('compassPage', 'study-planner')
+            next.delete('coursePage')
+            return next
+          },
+          { replace: true },
+        )
+      }
+    />
+  )
 
   return (
     // 40 between Quick Links and the course card on White, 8 more than WIP's
@@ -1024,7 +1189,7 @@ export function AtlasHomeJillMain({
              card's status line, and a finished course is a status. */
           eyebrow={completedView ? 'Congrats! You have completed this course.' : courseEyebrow}
           beginLabel={beginLabel}
-          onCover={() => setWhiteHead(true)}
+          // No layout swap on a cover click any more (2026-11-03, Eric's request).
           showOverview={LINKS_OFF || Boolean(onOverview)}
           onOverview={LINKS_OFF && !overviewOpensCompass ? NO_LINK : onOverview}
           onBegin={onBeginCta}
@@ -1033,7 +1198,8 @@ export function AtlasHomeJillMain({
              the tier for the treatment: outlined in the tier's own colour while
              access lasts, primary and alone once it has gone. Still wired to
              nothing, deliberately: what extending DOES is undecided. */
-          onPurchaseExtension={expiryTier === 'normal' ? undefined : NO_LINK}
+          // Never at Ready 100% — a finished course has nothing left to extend for (2026-11-03, Eric's request).
+          onPurchaseExtension={expiryTier === 'normal' || completedView ? undefined : NO_LINK}
           /* ⚠ BOTH, AT 100%. Review Course reopens the material; this opens the
              thing they finished it for. */
           onViewCertificate={completedView ? () => go('certificates') : undefined}
@@ -1071,14 +1237,30 @@ export function AtlasHomeJillMain({
                 off than the one inside the card. The STATES arm keeps it:
                 its two cards have no rule between them to measure from. */}
             <div
-              style={
-                onWhite
+              /* The phone's other two layouts (see `phoneLayout`) take the
+                 list copy's class, which the two-column rules skip and the
+                 list and tab rules in home-breakpoints/mobile.css target. */
+              className={phoneAltLayout ? 'cre-atlas-pace-list-copy' : undefined}
+              data-tab={phoneAltLayout && phoneLayout === 'tabs' ? phoneTab : undefined}
+              style={{
+                ...(onWhite
                   ? paceCard === 'ring'
-                    ? { ...WHITE_PROGRESS_PANEL, gap: 0 }
+                    ? { ...WHITE_PROGRESS_PANEL, gap: 0, ...(RingCard === AtlasPaceRingCardFigma ? { paddingLeft: 32, paddingRight: 32, paddingBottom: 40 } : null) }
                     : WHITE_PROGRESS_PANEL
-                  : { display: 'contents' }
-              }
+                  : { display: 'contents' }),
+                ...(phoneSwitch ? { position: 'relative' as const } : null),
+                ...(phoneAltLayout && phoneLayout === 'tabs' ? { marginTop: PACE_TAB_H, borderTopLeftRadius: 0, borderTopRightRadius: 0, border: `1px solid ${PACE_TAB_STROKE}` } : null),
+              }}
             >
+            {phoneAltLayout && phoneLayout === 'tabs' ? <PacePhoneTabs active={phoneTab} onSelect={setPhoneTab} /> : null}
+            {phoneSwitch ? (
+              <button
+                type="button"
+                aria-label={`Progress layout: ${phoneLayout}. Switch layout`}
+                onClick={() => setPhoneLayout((l) => (l === 'columns' ? 'list' : l === 'list' ? 'tabs' : 'columns'))}
+                style={PACE_LAYOUT_SWITCH}
+              />
+            ) : null}
             {/* ⚠ THE RING SURVIVES 100% (2026-10-16, Jillienne: "100% still
                 needs to show the course progress section because they might
                 not always be 100% complete, but still ready"). Completion and
@@ -1097,141 +1279,7 @@ export function AtlasHomeJillMain({
                  hardcoded week count is how those two start describing
                  different plans. `HybridHomeV1` pins its 3 deliberately and
                  records the derivation it dropped — this one keeps it. */
-              <AtlasPaceRingCard
-                /* The ladder carries the figure for every state now,
-                   including 0 — see the note there. The `percent` prop is the
-                   persona's and only stands in for a state with no figure. */
-                percent={progress.percent ?? percent}
-                /* ⚠ NO FALLBACK (2026-10-19). It was `: 3` — a week count
-                   nothing had computed, printed at the one moment the model
-                   has no plan to offer. `undefined` is what the card reads as
-                   "no pace fits", and it is the same condition that already
-                   empties the hours line and the completion date, so all
-                   three now say the same thing instead of two vanishing while
-                   the third made a number up. */
-                weeks={paceFit ? Math.max(1, Math.round(paceFit.days / 7)) : undefined}
-                /* The name and the glyph are the SAME choice as the figures
-                   above — see `paceStyle`. The demo's card passes neither and
-                   keeps the frozen "Average" it has always printed. */
-                paceStyleName={PACE_STYLE_LABELS[paceStyle]}
-                paceIcon={paceIconFor(paceStyle)}
-                /* ⚠ THE BOOKED EXAM, from the same store the prompt writes and
-                   counted off the same `today` — 2026-10-20, the third screen's
-                   "FLORIDA STATE EXAM / November 16 · 18 days".
-
-                   This is the pair the mock could not make agree: the count
-                   there read 18 beside a "29 Days" in Step 2 for one date,
-                   because the calendar was on the wall clock and this column on
-                   the fixture. Both are `daysUntil(examDate, today)` now, so
-                   they are the same subtraction or neither renders.
-
-                   The LABEL names the state, which is why the card takes it
-                   rather than typing it — `state` is `jurisdictionName(path.state)`,
-                   so it follows the Course control like every other fact here. */
-                exam={
-                  examDate && examDays != null
-                    ? {
-                        label: state ? `${state} state exam`.toUpperCase() : 'STATE EXAM',
-                        value: formatPaceDateLong(examDate),
-                        /* The three arms moved into `inDaysNote` on
-                           2026-10-20 so this row and Estimated completion
-                           count in one voice — see the note there. */
-                        note: inDaysNote(examDays),
-                      }
-                    : undefined
-                }
-                noPace={noPace}
-                /* ⚠ THE SAME `paceFit` THE WEEK COUNT READS, which is the
-                   whole reason both live on this card: the span and the date
-                   it lands on come from one model, so they cannot describe
-                   two different plans. The states card's `expected` prop is
-                   built from the same place for the same reason — see its
-                   note there. */
-                /* ⚠ NO "AT CURRENT PACE" AT 0% (2026-10-16, Jillienne: "at 0%
-                   remove this bit"). There is no current pace to be at — the
-                   learner has not started, so the date is what the
-                   RECOMMENDED plan would reach, not a projection from
-                   anything they have done. The note would be claiming a
-                   measurement that does not exist yet. The DATE stays: it is
-                   the plan's, and the plan is real. */
-                /* ⚠ NO NOTE ON THE RING CARD SINCE 2026-10-19, and it is the
-                   one-line row that decides it (Jillienne: "move this to the
-                   right of the eyebrow - no need for 2 lines"). The label
-                   takes 166 of the column's 272, which leaves room for a
-                   date and not for a date plus a qualifier — with the note
-                   the value wrapped to "May 24 · At / current pace", which
-                   is two lines and an ugly break rather than the one line
-                   that was asked for. "At current pace" was already
-                   suppressed at 0% (there is no current pace before you
-                   start); this drops it at every state, on the ring arm
-                   only. The STATES card below still passes it. */
-                expected={
-                  paceFit
-                    ? {
-                        /* The month written out — this figure stands alone
-                           at 19px, where the short form is for dates inside
-                           sentences. See `formatPaceDateLong`. */
-                        value: formatPaceDateLong(paceFit.finishIso),
-                        /* ⚠ A NOTE HERE AGAIN, AND IT IS A DIFFERENT ONE
-                           (2026-10-20, Jillienne: "add the days underneath
-                           this section too"). The note dropped on 10-19 was
-                           "At current pace" — a qualifier on the date, which
-                           had nowhere to go on a one-line row and was wrong
-                           at 0% anyway, where there is no current pace to be
-                           at. This is a COUNT, it is true at every state,
-                           and the row has a second line for it now.
-                           ⚠ `paceFit.days` — the model's own span, the same
-                           one the week goal is rounded from, so the date and
-                           the count cannot describe two different plans. */
-                        note: inDaysNote(paceFit.days),
-                      }
-                    : undefined
-                }
-                /* THE MODEL'S OWN `minsPerWeek`, not `hoursRemaining / weeks`.
-                   The model spreads the work over the nights a learner
-                   actually studies; dividing the total myself would answer a
-                   different question and disagree with the plan it sits
-                   under. Rounded to the hour — the sentence says "about". */
-                hoursPerWeek={paceFit ? Math.max(1, Math.round(paceFit.minsPerWeek / 60)) : undefined}
-                /* So the card knows whether its last rule has anything below
-                   it to divide — see `readinessBelow`. */
-                standingMessage={
-                  atZeroProgress || !paceFit
-                    ? undefined
-                    : paceStandingMessage({
-                        standing: paceStanding,
-                        /* The model's own figure for this pace, so the
-                           sentence and the week goal above it cannot
-                           disagree about the plan. */
-                        goalHoursPerWeek: Number.isFinite(paceFit.minsPerWeek) ? paceFit.minsPerWeek / 60 : 0,
-                        weeks: Math.max(1, Math.round(paceFit.days / 7)),
-                        finishIso: paceFit.finishIso,
-                      })
-                }
-                readinessBelow={showReadiness}
-                /* Everything under the dial describes a plan, and there is
-                   none once the window has closed — see the card's note. */
-                expired={expiryTier === 'expired'}
-                align={columnAlign}
-                /* ⚠ "HERE" GOES TO COMPASS'S STUDY PLANNER (2026-10-16,
-                   Jillienne: "have the 'here' be a link to the study planner
-                   of the compass application"). It was `onOpenStop(
-                   'study-plan')` — the Atlas journey's own stop, a different
-                   page with a similar name. `compassPage` seeds Compass's
-                   page on arrival, the same param the lesson's exit uses. */
-                onCustomize={() =>
-                  setParams(
-                    (prev) => {
-                      const next = new URLSearchParams(prev)
-                      next.set('section', 'compass')
-                      next.set('compassPage', 'study-planner')
-                      next.delete('coursePage')
-                      return next
-                    },
-                    { replace: true },
-                  )
-                }
-              />
+              phoneAltLayout ? cloneElement(ringCard, { listProgress: true, listPace: phoneLayout === 'list' }) : ringCard
             ) : completedView ? null : (
             <AtlasCourseProgressStates
               bare={onWhite}
@@ -1274,7 +1322,7 @@ export function AtlasHomeJillMain({
             {/* Not on Eric/Atlas White (2026-10-14, Eric's request: "remove");
                 WIP keeps it. */}
             {onWhite ? null : (
-              <AtlasExamDateCard key={refreshKey} stateName={state} style={{ ...RAIL_CARD_BORDER, borderRadius: 20 }} hideIntroCopy />
+              <AtlasExamDateCard key={refreshKey} stateName={state} style={{ ...RAIL_CARD_BORDER, borderRadius: 'var(--atlas-card-radius, 20px)' }} hideIntroCopy />
             )}
             {/* The READINESS card, under the module (Figma 254:8012, 2026-10-08). */}
             {/* On the Completed view it opens on Proficient (2026-10-09, Eric). */}
@@ -1563,7 +1611,7 @@ export function AtlasHomeJillMain({
             border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)',
             ...(onWhite && headH ? { height: headH } : null),
             // …and its 20 corners (same day).
-            ...(onWhite ? { borderRadius: 20 } : null),
+            ...(onWhite ? { borderRadius: 'var(--atlas-card-radius, 20px)' } : null),
           }}
         />
 
@@ -2358,7 +2406,7 @@ const EXAM_CARD: CSSProperties = {
   gap: 16,
   boxSizing: 'border-box',
   padding: '12px 16px',
-  borderRadius: 12,
+  borderRadius: 'var(--atlas-card-radius, 12px)',
   background: 'var(--color-primary-100)',
   marginBottom: 6,
 }
@@ -2497,7 +2545,7 @@ const CARD: CSSProperties = {
   paddingBottom: 40,
   paddingLeft: 40,
   boxSizing: 'border-box',
-  borderRadius: 20, // the inner cards' 20 (2026-10-13, Eric's request); it was 14
+  borderRadius: 'var(--atlas-card-radius, 20px)', // the inner cards' 20 (2026-10-13, Eric's request); it was 14
   background: 'var(--color-compass-course-card)',
   // No outer stroke (2026-10-02, the designer's request); the Compass MEDIUM
   // shadow lifts it instead (the small one was tried the same day).
@@ -2641,7 +2689,7 @@ const WHITE_PROGRESS_PANEL: CSSProperties = {
   // column is where the content ends up widest.
   padding: '8px 24px',
   boxSizing: 'border-box',
-  borderRadius: 20,
+  borderRadius: 'var(--atlas-card-radius, 20px)',
   // No stroke, a Secondary 100 fill (2026-10-15, Eric's request; it had
   // Quick Links' border).
   background: 'var(--color-atlas-tan-100)',
@@ -2669,7 +2717,7 @@ const WHITE_COURSE_HEAD: CSSProperties = {
   // 8 more below it, before the Progress row (2026-10-14, Eric's requests:
   // 8, then 8 more; 8 less on 2026-10-15).
   marginBottom: 8,
-  borderRadius: 20,
+  borderRadius: 'var(--atlas-card-radius, 20px)',
   background: 'var(--color-primary-100)',
 }
 
@@ -3095,4 +3143,100 @@ const EXAM_CAL_PANEL: CSSProperties = {
   padding: 12,
   borderRadius: 12,
   background: 'var(--color-surface-card)',
+}
+
+/* ─── The phone's tabbed progress panel (2026-11-04, Eric's request) ─── */
+
+type PacePhoneTab = 'progress' | 'pace' | 'completion'
+
+/* One line each (2026-11-04, Eric: 10px with normal tracking, the largest
+   size at which all three fit across the 370 panel). They were two lines at
+   the eyebrow's 11 and 0.16em. */
+const PACE_PHONE_TABS: readonly { id: PacePhoneTab; label: string }[] = [
+  { id: 'progress', label: 'Course progress' },
+  { id: 'pace', label: 'Study pace' },
+  { id: 'completion', label: 'Estimated completion' },
+]
+
+/** The tab strip's height — the panel drops by it, and the strip sits in the
+ *  space above, its bottom on the panel's top edge. */
+const PACE_TAB_H = 32
+/** Each tab's side padding — as much as the 11px titles leave on a 402 phone. */
+const PACE_TAB_PAD_X = 10
+/** The tabs' and the panel's outline — Neutral 100, a step lighter than the
+ *  subtle border's 200 and not the panel's Tan 100 fill, so it shows. The
+ *  inactive tabs take it as their fill. */
+const PACE_TAB_STROKE = 'var(--color-neutral-100)'
+
+/** The headers as tabs over the panel's top edge, each on two lines. The
+ *  active one takes the panel's fill and joins it; the others are an outline
+ *  on three sides. The titles keep the eyebrow's colour either way. */
+function PacePhoneTabs({ active, onSelect }: { active: PacePhoneTab; onSelect: (t: PacePhoneTab) => void }) {
+  return (
+    /* One pixel taller than the tabs and one left, so the active tab's
+       outline meets the panel's own and its fill covers the panel's top
+       stroke where they join; the inactive tabs stand on that stroke. */
+    <div role="tablist" aria-label="Course progress panel" style={{ position: 'absolute', left: -1, right: -1, bottom: '100%', display: 'flex', alignItems: 'flex-start', gap: 4, height: PACE_TAB_H + 1, zIndex: 1 }}>
+      {PACE_PHONE_TABS.map((t) => {
+        const on = t.id === active
+        return (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={on}
+            onClick={() => onSelect(t.id)}
+            style={{
+              ...ATLAS_SECTION_EYEBROW,
+              alignSelf: 'auto',
+              display: 'block',
+              // Across the panel's whole width, each by its title's length.
+              flex: '1 1 auto',
+              boxSizing: 'border-box',
+              height: on ? PACE_TAB_H + 1 : PACE_TAB_H,
+              /* The title 1 lower, so 1 less under it (same day): the
+                 centred line's box starts 1 further down on both arms — the
+                 active tab's extra pixel is the one that covers the join. */
+              padding: on ? `1px ${PACE_TAB_PAD_X}px 0` : `2px ${PACE_TAB_PAD_X}px 0`,
+              textAlign: 'center',
+              // 11, with the sides cut to fit all three on one line (same day).
+              fontSize: 11,
+              letterSpacing: 'normal',
+              whiteSpace: 'nowrap',
+              cursor: on ? 'default' : 'pointer',
+              borderRadius: '12px 12px 0 0',
+              /* SWAPPED (2026-11-04, Eric's request): the ACTIVE tab has the
+                 stroke and the panel's fill, joined to the panel's outline;
+                 the inactive ones are a fill with no stroke. */
+              border: on ? `1px solid ${PACE_TAB_STROKE}` : 'none',
+              borderBottom: 'none',
+              /* FLIPPED the same day: the active tab the darker Neutral 100,
+                 the inactive ones the panel's lighter Tan 100 — and the
+                 active title a weight up. */
+              background: on ? PACE_TAB_STROKE : 'var(--color-atlas-tan-100)',
+              // The active title another weight up — 600 (same day).
+              fontWeight: on ? 600 : 400,
+            }}
+          >
+            {t.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+/** The bottom-left corner of the progress panel — an unmarked click target
+ *  that cycles its three phone layouts, like the course head's cover. */
+const PACE_LAYOUT_SWITCH: CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  bottom: 0,
+  width: 40,
+  height: 40,
+  padding: 0,
+  border: 'none',
+  background: 'transparent',
+  cursor: 'pointer',
+  zIndex: 1,
 }

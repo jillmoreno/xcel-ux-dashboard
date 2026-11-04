@@ -21,6 +21,7 @@ export function AtlasHeaderMenu({
   align,
   selected = false,
   panelStyle,
+  triggerClassName,
   children,
 }: {
   /** What the pill shows. */
@@ -32,6 +33,9 @@ export function AtlasHeaderMenu({
   /** The trigger names the current page: filled, like a current nav pill. */
   selected?: boolean
   panelStyle: CSSProperties
+  /** Classes added to the trigger pill — the phone's three-bar menu takes the
+   *  icon pill and the class that shows it only at the Mobile breakpoint. */
+  triggerClassName?: string
   children: ReactNode
 }) {
   const [open, setOpen] = useState(false)
@@ -84,7 +88,7 @@ export function AtlasHeaderMenu({
       <button
         ref={triggerRef}
         type="button"
-        className={selected ? 'cre-atlas-hdr-pill is-selected' : 'cre-atlas-hdr-pill'}
+        className={`cre-atlas-hdr-pill${selected ? ' is-selected' : ''}${triggerClassName ? ` ${triggerClassName}` : ''}`}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={id}
@@ -139,11 +143,15 @@ export function AtlasHeaderMenuItem({
   href = '#',
   icon,
   onSelect,
+  trailing,
   children,
 }: {
   href?: string
   icon?: ReactNode
   onSelect?: () => void
+  /** After the label, at the row's far end — the Quick Links hover's
+   *  angle-right on the profile menu (2026-11-03). */
+  trailing?: ReactNode
   children: ReactNode
 }) {
   return (
@@ -167,6 +175,11 @@ export function AtlasHeaderMenuItem({
         </span>
       ) : null}
       {children}
+      {trailing ? (
+        <span aria-hidden className="cre-atlas-hdr-item-trailing" style={{ display: 'inline-flex', marginLeft: 'auto' }}>
+          {trailing}
+        </span>
+      ) : null}
     </a>
   )
 }

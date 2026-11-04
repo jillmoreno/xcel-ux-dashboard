@@ -2883,6 +2883,117 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-card-radius-16',
+    /* EVERY CONTAINER AT 16 (2026-11-03, Eric's request: "all main container
+       corners … on My Account pages as well as all of the Learner pages to
+       16px. Do not alter buttons, pills"). On: the shell sets
+       `--atlas-card-radius: 16px`, which the Home's panels, Quick Links, the
+       course and certificate cards and the account pages' cards read. Off:
+       each keeps its own (20, 12, 8). Baseline versions only. ON on this
+       branch, per the flag rule. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-e2e'],
+    group: 'Layout',
+    label: 'Containers: 16 corners',
+    description:
+      'Every card and panel on the learner and account pages at a 16px corner; buttons and pills unchanged. Off: each keeps its own.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-account-quick-links',
+    /* THE ACCOUNT PAGES IN THE LEARNING PAGES' LAYOUT (2026-11-03, Eric's
+       request: "match them to the styles on the Certificates page"). On:
+       Profile, Notifications, Transcripts and My Purchases take My
+       Certificates' header (Back to Home and the serif title over the
+       content) and its left column, with the account nav as a Quick Links
+       card in Quick Links' place. Off: the shared account sub-nav and title.
+       Baseline versions only (`useAtlasAccountPages`). ON on this branch, per
+       the flag rule. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Account pages: Quick Links layout',
+    description:
+      'The account pages wear My Certificates\u2019 layout \u2014 Back to Home and the serif title, and the account nav as a Quick Links card on the left. Off: the shared account sub-nav.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-quick-links-course-count',
+    /* HOW MANY COURSES, BESIDE QUICK LINKS' MY COURSES (2026-11-03, Eric's
+       request). On: "My Courses (3)", 4 after the label, the figure bold —
+       the count of what My Courses draws (`useMyCoursesCount`). Off: the
+       label alone. ON on this branch, per the flag rule. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Quick Links: course count',
+    description:
+      'Quick Links\u2019 My Courses row carries the number of courses on My Courses, in parentheses. Off: the label alone.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-header-mode-switch',
+    /* LEARNER / ADMIN MODE IN THE PROFILE MENU (2026-11-03, Eric's request,
+       from feat/atlas-admin). On: "(Learner Mode)" after the name, and
+       Mode: Admin / Learner pills under the email — Admin opens the
+       atlas-admin branch build, where the admin pages live. Off: the menu as
+       it was. ON on this branch, per the flag rule. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Profile menu: mode switch',
+    description:
+      'The profile menu says Learner Mode and offers Mode: Admin / Learner; Admin opens the Atlas Admin build. Off: the menu as it was.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-pace-card-figma',
+    /* ERIC'S FIGMA PASS ON THE RING CARD — 2026-10-30 (Figma 592:457), on
+       feat/learner-home-breakpoints; brought here 2026-11-03. On:
+       `AtlasPaceRingCardFigma`, a sibling copied from `AtlasPaceRingCard` —
+       left-aligned, hairlines beside the gauge and a calendar, the week goal
+       and the date in Playfair 19 with lining figures, the pace named Steady,
+       the panel 32 a side. Off: the card as it was. Swapped at the call sites
+       of Jill/Atlas-Main and the End-to-End Home. ON on this branch, per the
+       flag rule. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Pace card: Figma',
+    description:
+      'The ring card in Eric\u2019s Figma pass (592:457): left-aligned, a hairline beside the gauge and a calendar, the goal and date in Playfair 19, the pace named Steady. Off draws the card as it was.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-sheet-title-serif',
+    /* THE SIDE SHEETS' TITLES IN PLAYFAIR (2026-11-03, Eric's request:
+       "change the title in the side sheets to playfair"). On, Exam Details,
+       Common questions, a Get Licensed step and State Requirements set their
+       title in the heading serif on the Atlas versions — the sheets Quick
+       Links opens — and, the same day, 32 left and right rather than 22.
+       Off, the shared title style and padding. See `useSheetTitleSerif`.
+       Default ON on Eric's branch so its build shows the work; whether it
+       ships is decided at merge. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Sheets: Atlas type & spacing',
+    description:
+      'The side sheets Quick Links opens \u2014 Exam Details, Common questions, Applying for a License and State Requirements \u2014 set their title in Playfair at H7 and take 32 left and right on the Atlas versions. Off: the shared title and the shared 22.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-pages-quick-links',
     /* QUICK LINKS OFF THE LEARNING PAGES (2026-11-02, Jillienne: "they don't
        need to be here, so on default, hide that side, this will shift over the
@@ -2907,7 +3018,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       'Whether My Courses and My Certificates carry the Quick Links rail. Hidden (default, 2026-11-02): no rail, cards full width. Shown: the rail returns and the pages re-centre at their October width. \u26a0 Hidden also removes the only route between the two pages that does not go through Home. Eric\u2019s WIP and White keep their rail either way.',
     defaultEnabled: true,
-    defaultVariant: 'hidden',
+    // SHOWN on Eric's feat/quick-links (2026-11-03) — the rail beside the
+    // cards, level with the crumb, as his breakpoints row. Hidden is
+    // Jillienne's baseline on main; which ships is decided at merge.
+    defaultVariant: 'shown',
     variants: [
       { value: 'hidden', label: 'Hidden' },
       { value: 'shown', label: 'Shown' },
@@ -2945,7 +3059,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       'Which card the Atlas My Courses page draws. Shared (default, 2026-11-02): the LMS dashboard\u2019s `CourseCard` \u2014 progress bar, delivery and credit meta, status badges, \u22ee into Course Details \u2014 with its title in the serif face and no call to action. Atlas: the Figma card (213:3619) with the \u201cAvailable until\u201d line and the full-width button. Eric\u2019s WIP and White keep the Atlas card either way.',
     defaultEnabled: true,
-    defaultVariant: 'shared',
+    // Atlas on Eric's feat/quick-links (2026-11-03) — the cards his
+    // breakpoints row draws. Shared is Jillienne's baseline on main; which
+    // ships is decided at merge.
+    defaultVariant: 'atlas',
     variants: [
       { value: 'shared', label: 'Shared (LMS)' },
       { value: 'atlas', label: 'Atlas' },
@@ -2973,7 +3090,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'My Courses list',
     description:
       'The content of the ATLAS course card on the baseline: the learner\u2019s real enrolments (the fixtures the non-Atlas page reads), wrapping three to a row, so the Demo bar\u2019s Course and Progress controls move the page. Off: the three hand-picked design cards. Only reaches the page when `atlas-courses-card-style` is Atlas \u2014 the shared card reads the library inherently. Eric\u2019s WIP and White keep their three cards either way. Archived courses are excluded throughout.',
-    defaultEnabled: true,
+    // Off (the three design courses) on Eric's feat/quick-links (2026-11-03) — the cards his
+    // breakpoints row draws. On is Jillienne's baseline on main; which
+    // ships is decided at merge.
+    defaultEnabled: false,
     page: 'dashboard-rebrand',
   },
   {
@@ -3023,7 +3143,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       'Which card the Atlas certificates page draws. Shared (default, 2026-11-02): the card the rest of the product uses \u2014 a status badge with the status spelled out, the profession line, the hover treatment that says a card opens, and a real not-yet-earned state \u2014 with its title in the serif face. Atlas: the Figma card (375:1250), whose status pill said nothing and whose not-yet-earned card was mostly empty space.',
     defaultEnabled: true,
-    defaultVariant: 'shared',
+    // Atlas on Eric's feat/quick-links (2026-11-03) — the cards his
+    // breakpoints row draws. Shared is Jillienne's baseline on main; which
+    // ships is decided at merge.
+    defaultVariant: 'atlas',
     variants: [
       { value: 'shared', label: 'Shared (LMS)' },
       { value: 'atlas', label: 'Atlas' },
@@ -3418,21 +3541,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'card', label: 'Card' },
       { value: 'row', label: 'Row (as a stop)' },
     ],
-    page: 'dashboard-rebrand',
-  },
-  {
-    key: 'atlas-pace-card-figma',
-    /* ERIC'S FIGMA PASS ON THE RING CARD — 2026-10-30 (Figma 592:457). On: `AtlasPaceRingCardFigma`, a sibling copied from
-       `AtlasPaceRingCard` that day — left-aligned, hairlines beside the gauge and a calendar, the week goal and the date in
-       Playfair 19 with lining figures, the pace named Steady. Off: the card as it was. Swapped at the End-to-End Home's
-       call site only; Jill/Atlas-Main keeps the original. ON on this branch, per the flag rule. */
-    surface: 'design',
-    versions: ['eric-atlas-e2e'],
-    group: 'Widgets',
-    label: 'Pace card: Figma',
-    description:
-      'The ring card in Eric\u2019s Figma pass (592:457): left-aligned, a hairline beside the gauge and a calendar, the goal and date in Playfair 19, the pace named Steady. Off draws the card as it was.',
-    defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
   {

@@ -53,15 +53,32 @@ export function AtlasPaceRingCardFigma({
   expected,
   exam,
   paceStyleName,
-  paceIcon,
   standingMessage,
   noPace,
   readinessBelow = false,
   expired = false,
   examWhenExpired = false,
   onCustomize,
+  listProgress = false,
+  listPace = false,
 }: {
   percent: number
+  /**
+   * COURSE PROGRESS AS A LIST ROW (2026-11-04, Eric's request, for the phone):
+   * the section drawn the way Study pace and Estimated completion are — the
+   * eyebrow left, then a dial at the icons' 34 with nothing inside it, a
+   * hairline, and the figure at the goal's size over "Complete" in the pace
+   * name's style. Absent is the big centred dial, unchanged.
+   */
+  listProgress?: boolean
+  /**
+   * STUDY PACE AS A LIST ROW TOO (2026-11-04) — the pace name beside the
+   * eyebrow, the hours on the goal's line, and "Customize your study pace
+   * here" in place of the starting-point sentence. Split from `listProgress`
+   * the same day: the phone's tabbed layout draws Course progress as a row
+   * but keeps Study pace exactly as the two-column card has it.
+   */
+  listPace?: boolean
   /**
    * Draw the Course progress section and stop.
    *
@@ -214,19 +231,19 @@ export function AtlasPaceRingCardFigma({
          instead of outside it where the box looked lopsided.
        — With no pace at all there is no box, and the panel's own padding is
          the only thing holding that edge. */
-    <div
-      style={
-        (!expired && (readinessBelow || expected)) || examUnderExpired
-          ? { ...PANEL, paddingBottom: 0 }
-          : PANEL
-      }
-    >
+    /* ⚠ SINCE 2026-11-03 THE CARD ADDS NO AIR BELOW ITSELF AT ALL (Eric:
+       "assure that all progress panel instances have at least 40 pixels of
+       padding at the bottom"). The rules above made the trailing space depend
+       on what came last — 24 under the date, nothing under a paused dial —
+       so the panel's own pad could not promise a floor. Now the last row is
+       tight and the host panel's 40 is the whole of it, in every state. */
+    <div style={{ ...PANEL, paddingBottom: 0 }}>
       {/* ⚠ COURSE PROGRESS LEADS THE COLUMN (2026-10-16, Jillienne: "move
           course progress to the top - shift everything else down"). Where the
           learner HAS GOT TO is the first thing they want; the plan for the
           rest follows from it. It sat under Study pace only because the dial
           used to live inside that card. */}
-      <section style={{ ...SECTION, alignItems: 'center' }} aria-label="Course progress">
+      <section style={listProgress ? SECTION : { ...SECTION, alignItems: 'center' }} aria-label="Course progress">
         {/* ⚠ "PROGRESS PAUSED" ONCE ACCESS HAS ENDED (2026-10-20,
             Jillienne). "Course progress" is a neutral label for a live
             figure; paused says the number is real and stopped, which is
@@ -235,7 +252,7 @@ export function AtlasPaceRingCardFigma({
             and a landmark that renames itself by its contents' state makes
             the page change shape under a screen-reader user. */}
         {/* Centred over the dial (2026-10-30, Eric) — the other eyebrows stay left. */}
-        <p style={{ ...eyebrow, textAlign: 'center' }}>{expired ? 'Progress paused' : 'Course progress'}</p>
+        <p style={{ ...eyebrow, textAlign: listProgress ? 'left' : 'center' }}>{expired ? 'Progress paused' : 'Course progress'}</p>
         {/* ⚠ ABOVE THE DIAL, NOT UNDER IT (2026-10-20, Jillienne: "when
             expired, move this above the graph and remove the divider
             line"). Under the dial it was the last thing on a truncated
@@ -253,7 +270,20 @@ export function AtlasPaceRingCardFigma({
             off.
           </p>
         ) : null}
-        <ProgressDial percent={percent} stroke={expired ? 'var(--color-neutral-800)' : undefined} />
+        {listProgress ? (
+          <div style={ICON_ROW}>
+            <span aria-hidden style={{ ...ICON, alignSelf: 'flex-start', marginTop: 3 }}>
+              <MiniProgressDial percent={percent} stroke={expired ? 'var(--color-neutral-800)' : undefined} />
+            </span>
+            <span aria-hidden style={{ ...ICON_RULE, marginTop: 3, marginBottom: 3 }} />
+            <span style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
+              <span style={GOAL}>{Math.max(0, Math.min(100, Math.round(percent)))}%</span>
+              <span style={GOAL_TAG}>Complete</span>
+            </span>
+          </div>
+        ) : (
+          <ProgressDial percent={percent} stroke={expired ? 'var(--color-neutral-800)' : undefined} />
+        )}
       </section>
       {/* ⚠ A RULE UNDER COURSE PROGRESS (2026-10-16). The two sections sat on
           a 24px gap alone, which reads as spacing rather than a boundary —
@@ -271,7 +301,17 @@ export function AtlasPaceRingCardFigma({
       ) : null}
       {progressOnly || expired ? null : (
       <section style={SECTION} aria-label="Study pace">
-        <p style={eyebrow}>Study pace</p>
+        <p style={eyebrow}>
+          Study pace
+          {/* The list row names the pace up here, one weight up (2026-11-04,
+              Eric's request) — it was the tag over the goal. */}
+          {listPace && weeks != null ? (
+            <>
+              {' — '}
+              <span style={{ fontWeight: 600 }}>{paceStyleName ?? PACE_NAME}</span>
+            </>
+          ) : null}
+        </p>
         {/* ⚠ CENTRED, LIKE THE REST OF THE COLUMN'S CONTENT (2026-10-19,
             Jillienne: "have these be centered aligned to match the whole
             container of content"). Course progress centres its dial and
@@ -288,13 +328,46 @@ export function AtlasPaceRingCardFigma({
             at each end, 12 either side; then the pace name over the goal and the hours. */}
         <div style={ICON_ROW}>
           <span aria-hidden style={{ ...ICON, alignSelf: 'flex-start', marginTop: 3 }}>
-            {paceIcon ?? <GaugeThin size={34} aria-hidden />}
+            {/* Always the Thin gauge (2026-11-03, Eric's request), whatever
+                pace style `paceIcon` names — the Figma card's own glyph. */}
+            <GaugeThin size={34} aria-hidden />
           </span>
           <span aria-hidden style={{ ...ICON_RULE, marginTop: 3, marginBottom: 3 }} />
           {weeks == null ? (
             <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
               <span style={GOAL_FALLBACK}>{noPaceCopy.title}</span>
               <span style={GOAL_NOTE}>{noPaceCopy.note}</span>
+            </span>
+          ) : listPace ? (
+            /* THE LIST ROW (2026-11-04, Eric's request): the pace name moved
+               up beside the eyebrow, the goal and its hours under it as on
+               the two-column card, then the customise link. */
+            <span style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
+              <span style={GOAL}>
+                {weeks} Week Goal
+              </span>
+              {/* The hours under the goal, as on the two-column card (2026-11-04,
+                  Eric: moved back below, its own style). */}
+              {hoursPerWeek != null ? (
+                <span style={GOAL_NOTE}>
+                  about {hoursPerWeek} hour{hoursPerWeek === 1 ? '' : 's'} / week
+                </span>
+              ) : null}
+              {/* Only where the starting-point sentence would be — at 0%.
+                  Past it the standing message below reports the pace, as on
+                  every other progress level (same day). */}
+              {standingMessage ? null : (
+                <span style={GOAL_NOTE}>
+                  Customize your study pace{' '}
+                  {onCustomize ? (
+                    <button type="button" onClick={onCustomize} style={INLINE_LINK}>
+                      here
+                    </button>
+                  ) : (
+                    'here'
+                  )}
+                </span>
+              )}
             </span>
           ) : (
             <span style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
@@ -336,7 +409,7 @@ export function AtlasPaceRingCardFigma({
              two ways. The customise link goes with the starting-point copy:
              it belonged to the sentence that offered it. */
           <p style={SMALL}>{withPlanLink(standingMessage, onCustomize)}</p>
-        ) : (
+        ) : listPace ? null : (
         <p style={SMALL}>
           Your default recommended study pace is just a starting point, you can further customize
           your pace{' '}
@@ -370,14 +443,14 @@ export function AtlasPaceRingCardFigma({
                next line down, and a bottom rule here would put two hairlines
                24 apart with nothing between them. */
             ruled={!exam && readinessBelow}
-            tight={exam != null}
+            tight
           />
         ) : null}
         {/* ⚠ RULED ABOVE, LIKE THE BLOCK IT FOLLOWS, so the column keeps one
             rhythm — the hairline belongs to the block BELOW it here, which is
             the rule `Estimated completion` already follows. */}
         {exam ? (
-          <FigureRow label={exam.label} value={exam.value} note={exam.note} ruled={readinessBelow} />
+          <FigureRow label={exam.label} value={exam.value} note={exam.note} ruled={readinessBelow} tight />
         ) : null}
       </section>
       )}
@@ -494,6 +567,32 @@ function FigureRow({
         {note ? <p style={EXPECTED_NOTE}>{note}</p> : null}
       </div>
     </div>
+  )
+}
+
+/** The list row's dial — the icons' 34, the ring's track and arc in
+ *  proportion, and no figure inside: the figure is the row's text beside it. */
+function MiniProgressDial({ percent, stroke }: { percent: number; stroke?: string }) {
+  const pct = Math.max(0, Math.min(100, Math.round(percent)))
+  const size = 34
+  /* 16 with a 2 arc: 34 across outside the arc, the gauge's own 34 (2026-11-04). */
+  const r = 16
+  const c = 2 * Math.PI * r
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden style={{ display: 'block' }}>
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" style={{ stroke: 'var(--color-atlas-nav-rule)' }} strokeWidth={1.5} />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        style={{ stroke: stroke ?? 'var(--color-compass-page-button)' }}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeDasharray={`${(c * pct) / 100} ${c}`}
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+    </svg>
   )
 }
 

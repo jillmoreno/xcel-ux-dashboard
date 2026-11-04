@@ -1,5 +1,9 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useMyCoursesCount } from './useMyCoursesCount'
+import { useAccount } from '@/context/AccountContext'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { accountSectionsFor, type AccountSectionId } from '@/components/account/accountSections'
 import {
   AngleRightRegular,
   BallotCheckRegular,
@@ -90,6 +94,8 @@ export type AtlasJourneyLinksCardProps = {
 }
 
 export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, withoutCoursePages = false, titleRule = false, linksOff = false, learningPagesLive = false, activeSection }: AtlasJourneyLinksCardProps) {
+  // The count beside My Courses — see `useMyCoursesCount`.
+  const coursesCount = useMyCoursesCount()
   const [params, setParams] = useSearchParams()
   /* Which link is the page you are on — the four that are pages; the three
      sheet links never are.
@@ -130,7 +136,7 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
         {SHOW_HOME_LINK ? (
           <SideLink icon={<HouseBlankRegular size={13} aria-hidden />} label="Home" active={section == null} onClick={() => go(null)} />
         ) : null}
-        <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" active={here('courses')} onClick={() => go('courses', undefined, linksOff && !learningPagesLive)} />
+        <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" count={coursesCount} active={here('courses')} onClick={() => go('courses', undefined, linksOff && !learningPagesLive)} />
         {/* 15% larger in WIP's card (2026-10-13, Eric's request): 15, not 13 —
             the wide certificate glyph read small beside the book. */}
         <SideLink icon={<FileCertificateRegular size={withoutCoursePages ? 15 : 13} aria-hidden />} label="My Certificates" active={here('certificates')} onClick={() => go('certificates', undefined, linksOff && !learningPagesLive)} />
@@ -160,14 +166,49 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
   )
 }
 
+/**
+ * THE ACCOUNT NAV AS A QUICK LINKS CARD — 2026-11-03, Eric's request. The
+ * account pages' own sections (Profile · Notifications · Transcripts · My
+ * Purchases, and Purchased for Others where the brand has it), drawn in this
+ * card's title, rows, hover and active capsule, so the account pages wear
+ * the same left column as My Courses and My Certificates. Replaces
+ * `AccountSubNav` there; see `useAtlasAccountPages`.
+ */
+export function AtlasAccountLinksCard({
+  active,
+  onSelect,
+  style,
+}: {
+  active: AccountSectionId
+  onSelect: (id: AccountSectionId) => void
+  style?: CSSProperties
+}) {
+  const { brand } = useAccount()
+  const giftRecipientsOn = useFeatureFlag('gift-recipients').enabled
+  return (
+    <nav aria-label="Account sections" style={{ ...SIDE_CARD, ...style }}>
+      <p style={TITLE}>My Account</p>
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {accountSectionsFor(brand, giftRecipientsOn).map(({ id, label, icon: Icon }) => (
+          <SideLink key={id} icon={<Icon size={13} aria-hidden />} label={label} active={id === active} onClick={() => onSelect(id)} />
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
 function SideLink({
   icon,
   label,
+  count,
   active = false,
   onClick,
 }: {
   icon: ReactNode
   label: string
+  /** A count after the label, 4 on — "(3)", the parentheses at the label's
+   *  weight and the figure bold (2026-11-03, Eric's request). */
+  count?: number | null
   /** The page you are on — a white capsule behind the row. */
   active?: boolean
   onClick?: () => void
@@ -188,8 +229,19 @@ function SideLink({
         {/* `data-label` feeds a hidden Medium copy (`.cre-quick-link-label`,
             tokens.css) that holds the hover weight's width, so a card sized to
             its content does not grow on hover (2026-10-13). */}
-        <span className="cre-quick-link-label" data-label={label} style={{ flex: '1 1 0', minWidth: 0, textAlign: 'left' }}>
-          {label}
+        <span className="cre-quick-link-label" data-label={count == null ? label : `${label} (${count})`} style={{ flex: '1 1 0', minWidth: 0, textAlign: 'left' }}>
+          {count == null ? (
+            label
+          ) : (
+            <span>
+              {label}
+              {/* Out of the row's name, so it is still "My Courses" to a
+                  screen reader and to every test that finds it by name. */}
+              <span aria-hidden style={{ marginLeft: 4 }}>
+                (<span style={{ fontWeight: 700 }}>{count}</span>)
+              </span>
+            </span>
+          )}
         </span>
         {/* Shown on hover / focus only (2026-10-13, Eric's request) —
             `.cre-quick-link-chevron`, tokens.css. It keeps its space, so the
@@ -208,7 +260,7 @@ const SIDE_CARD: CSSProperties = {
   gap: 16,
   padding: '24px 32px 32px',
   boxSizing: 'border-box',
-  borderRadius: 12,
+  borderRadius: 'var(--atlas-card-radius, 12px)',
   border: '1px solid var(--color-atlas-nav-rule)',
 }
 /* The Readiness card's Tertiary 300 hairline. */

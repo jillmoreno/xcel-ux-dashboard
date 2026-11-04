@@ -250,7 +250,7 @@ const PANEL_DEFAULT: CSSProperties = {
   boxSizing: 'border-box',
   width: '100%',
   padding: '16px 24px',
-  borderRadius: 12,
+  borderRadius: 'var(--atlas-card-radius, 12px)',
   background: 'var(--color-primary-100)',
 }
 /* No, Yes and Date Set: white inside a Primary 200 edge, 24 in. */
@@ -261,7 +261,7 @@ const PANEL: CSSProperties = {
   boxSizing: 'border-box',
   width: '100%',
   padding: 24,
-  borderRadius: 12,
+  borderRadius: 'var(--atlas-card-radius, 12px)',
   border: '1px solid var(--color-primary-200)',
   background: 'var(--color-fixed-light)',
 }

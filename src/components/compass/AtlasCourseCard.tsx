@@ -161,7 +161,7 @@ const CARD: CSSProperties = {
   rowGap: 8,
   padding: 24,
   boxSizing: 'border-box',
-  borderRadius: 12,
+  borderRadius: 'var(--atlas-card-radius, 12px)',
   border: '1px solid var(--color-atlas-nav-rule)',
   // The Course Overview course card's fill (2026-10-06, Eric's request).
   background: 'var(--color-compass-course-card)',
