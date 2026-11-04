@@ -218,6 +218,12 @@ export type FeatureFlagDefinition = {
    *  two Jump Back In versions (standard vs. quick-links) so only one
    *  ever renders. */
   mutexGroup?: string
+  /** Optional: leave this control OFF the Design bar while another control
+   *  is on one of these arms — a control that means nothing in that case
+   *  should not be there to be clicked. Read by `designControlsFor` from the
+   *  live flag values (see `liveFlagsForDesignBarRef`). 2026-11-04, Afsana:
+   *  Line of authority goes when Affidavit state is Non-state specific. */
+  hiddenWhen?: { flag: string; variants: string[] }
 }
 
 /* ─── pages ────────────────────────────────────────────────────────── */
@@ -287,6 +293,14 @@ export const FLAG_DESIGNERS: { id: DesignerId; label: string }[] = [
  * design control is adding a flag and nothing else. That is the point: the bar
  * itself is protected chrome that nobody needs to edit.
  */
+/* THE LIVE FLAG VALUES, for `hiddenWhen` (2026-11-04). `designControlsFor`
+   is a catalog filter and `DesignControlsBar` — protected chrome — calls it
+   with a version and a surface, not with the flags. Rather than change the
+   bar, the provider leaves its current values here on every render; the bar
+   reads `useFeatureFlags()`, so it re-renders, and re-picks, after every
+   change. Null outside a provider, where `hiddenWhen` falls back to defaults. */
+const liveFlagsForDesignBarRef: { current: Record<string, FeatureFlagState> | null } = { current: null }
+
 export function designControlsFor(
   versionId: string,
   versionOwner: DesignerId,
@@ -296,6 +310,14 @@ export function designControlsFor(
 ): FeatureFlagDefinition[] {
   return FEATURE_FLAGS.filter((def) => {
     if (def.surface !== 'design') return false
+    /* `hiddenWhen` — off the bar while another control is on a named arm.
+       Outside a provider (tests) the other control reads as its default. */
+    if (def.hiddenWhen) {
+      const { flag, variants } = def.hiddenWhen
+      const other = FEATURE_FLAGS.find((f) => f.key === flag)
+      const arm = liveFlagsForDesignBarRef.current?.[flag]?.variant ?? other?.defaultVariant
+      if (arm != null && variants.includes(arm)) return false
+    }
     /* ⚠ A DECLARED SURFACE IS EXCLUSIVE IN BOTH DIRECTIONS — 2026-10-16,
        second pass, and the first one only did half of it.
 
@@ -2357,7 +2379,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Affidavit language',
     description:
-      'The course language, for the forms that come in more than one — today, Florida’s pre-course Study-manual notices (English or Spanish). Every other form is English whatever this says.',
+      'The course language, for the forms that come in more than one — Florida’s pre-course Study-manual notices and the Non-state specific Terms and Conditions (English or Spanish). Every other form is English whatever this says.',
     variants: [
       { value: 'English', label: 'English' },
       { value: 'Spanish', label: 'Spanish' },
@@ -2378,6 +2400,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        that signs one form for all lines ignores this. */
     surface: 'design',
     versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    // XCEL's generic forms sign the same for every line (2026-11-04, Afsana).
+    hiddenWhen: { flag: 'affidavit-v2-state', variants: ['GEN'] },
     group: 'Widgets',
     label: 'Affidavit line of authority',
     description:
@@ -5253,6 +5277,15 @@ export function FeatureFlagProvider({ children }: { children: ReactNode }) {
       clearUrlOverrides,
     ],
   )
+
+  /* For `designControlsFor`'s `hiddenWhen` — see `liveFlagsForDesignBarRef`.
+     ⚠ A RENDER-TIME WRITE, ON PURPOSE. It has to be current when the bar
+     re-picks its controls in this same render; an effect would land one
+     change late. It is idempotent (the values this provider is handing out
+     anyway), and the rule-abiding fix is for the protected `DesignControlsBar`
+     to pass its `flags` to `designControlsFor` — Jillienne's file. */
+  // eslint-disable-next-line react-hooks/immutability -- see the note above
+  liveFlagsForDesignBarRef.current = readFlags
 
   return (
     <FeatureFlagContext.Provider value={value}>

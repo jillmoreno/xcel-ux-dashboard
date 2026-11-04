@@ -79,6 +79,8 @@ export type AffForm = {
 export type AffEntry = {
   m: AffidavitMoment; doc?: string; st: string; status: "ready" | "received" | "missing"; form?: string
   loas?: string[]; variants?: Record<string, Record<string, string>>
+  /** One form per course language and no line of authority (Non-state specific, 2026-11-04). */
+  byLanguage?: Record<string, string>
 }
 
 export const MOMENTS: { id: AffidavitMoment; label: string }[] =[{id:'pre',label:'Before course begins'},{id:'exam',label:'Before course exam'},{id:'post',label:'After course exam'}];
@@ -771,24 +773,43 @@ FORMS.WI_POST={
 
    Like the state forms, a typed Student Full Name is the signature, so it is
    not pre-filled; and with nothing else pre-filled there is no "I confirm
-   that the above information is accurate" box. The terms carry the English
-   and the Spanish text one after the other, as the document does, so
-   Pagination shows them as two pages. */
+   that the above information is accurate" box. The terms come in English and
+   Spanish, one after the other in the document; the Design bar's Language
+   picks one, as it does for Florida's notices. */
 STATES.GEN = 'Non-state specific'
 ENTRIES.push(
-  {m:'pre',doc:'terms',st:'GEN',status:'ready',form:'GEN_PRE'},
+  {m:'pre',doc:'terms',st:'GEN',status:'ready',byLanguage:{English:'GEN_PRE_EN',Spanish:'GEN_PRE_ES'}},
   {m:'exam',st:'GEN',status:'ready',form:'GEN_EXAM'},
 )
-FORMS.GEN_PRE={
+FORMS.GEN_PRE_EN={
   docHeader:'XCEL Generic Terms and Conditions (Non-State Specific)',
   title:'XCEL Generic Terms and Conditions',
-  source:'Word doc · XCEL Generic Terms and Conditions-Pre-Course Affidavit',
+  source:'Word doc · XCEL Generic Terms and Conditions-Pre-Course Affidavit (English section)',
   pages:[
     {blocks:[
       {h:'Acknowledgement of Terms and Conditions of Pre-licensing Course Completion'},
       {p:'I understand and acknowledge that the pre-licensing insurance course final exam must be a proctored, closed-book exam with no assistance provided. A disinterested third party must proctor the exam. <strong>The disinterested third-party proctor or monitor is an individual who has <u>none</u> of the following: </strong>family relationship with the student; is a direct supervisor of the student; or a person directly supervised by the student.'},
       {p:'A certificate of course completion is to be presented to the student who successfully passes the exam with a score of 70% or better within 2 days of the completion date. The pre-licensing course completion date is the date the proctor signs and dates the exam.'}
-    ]},
+    ]}
+  ],
+  fields:[
+    {id:'fullname',label:'Student Full Name',required:true,placeholder:'Type your full name',ac:'name'}
+  ],
+  noPrefill:['fullname'],
+  note:'Not in the explorer: added 2026-11-04 from the Non-State Specific folder. The document names no button, so it is the default "I Agree".'
+};
+/* The document's Spanish section (2026-11-04, Afsana: "when set to spanish,
+   only show the spanish version … this is what was done for FL"). Like
+   Florida's Spanish notices: the title stays the document's, the modal is
+   marked Spanish, and the button is "Acepto". The document has one, English
+   "Student Full Name" line under both sections, so that label stays. */
+FORMS.GEN_PRE_ES={
+  docHeader:'XCEL Generic Terms and Conditions (Non-State Specific)',
+  title:'XCEL Generic Terms and Conditions',
+  lang:'es',
+  agreeLabel:'Acepto',
+  source:'Word doc · XCEL Generic Terms and Conditions-Pre-Course Affidavit (Spanish section)',
+  pages:[
     {blocks:[
       {h:'Reconocimiento de los Términos y Condiciones de la Finalización del Curso de Pre-licencia'},
       {p:'Yo entiendo y reconozco que el examen final del curso de seguro pre-licencia debe ser un examen supervisado y cerrado sin ayuda. Un tercero desinteresado debe supervisar el examen. <strong>El supervisor o monitor de terceros desinteresados es un individuo que no tiene ninguno de los siguientes: relación familiar con el estudiante; es un supervisor directo del estudiante; o una persona directamente supervisada por el estudiante.</strong>'},
@@ -799,7 +820,7 @@ FORMS.GEN_PRE={
     {id:'fullname',label:'Student Full Name',required:true,placeholder:'Type your full name',ac:'name'}
   ],
   noPrefill:['fullname'],
-  note:'Not in the explorer: added 2026-11-04 from the Non-State Specific folder. The document names no button, so it is the default "I Agree".'
+  note:'Not in the explorer: added 2026-11-04 from the Non-State Specific folder. The Spanish section of the same document.'
 };
 FORMS.GEN_EXAM={
   docHeader:'XCEL PE General Attestation (non-state specific)',

@@ -22,6 +22,10 @@ export function resolveAffidavit(
 ): ResolvedAffidavit {
   const entry = ENTRIES.find((e) => e.m === moment && e.st === state)
   if (!entry) return { entry, form: null }
+  if (entry.byLanguage) {
+    const key = entry.byLanguage[language] ?? Object.values(entry.byLanguage)[0]
+    return { entry, form: key ? (FORMS[key] ?? null) : null }
+  }
   if (entry.variants) {
     const loas = Object.keys(entry.variants)
     const loa = loas.includes(lineOfAuthority) ? lineOfAuthority : loas[0]

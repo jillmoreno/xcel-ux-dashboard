@@ -5,7 +5,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AffidavitModal } from '@/components/e2e/AffidavitModal'
 import { AffidavitModalV2 } from '@/components/e2e/AffidavitModalV2'
 import { resolveAffidavit } from '@/components/e2e/affidavitModalV2Util'
-import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
+import { MemoryRouter } from 'react-router-dom'
+import { FEATURE_FLAGS, FeatureFlagProvider, designControlsFor, useFeatureFlags } from '@/context/FeatureFlagContext'
 import { ENTRIES, FORMS, STATES, type AffField } from '@/data/affidavitForms'
 
 /**
@@ -298,15 +299,14 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
 
   /* NON-STATE SPECIFIC (2026-11-04) — XCEL's own forms, from Afsana's
      "Non-State Specific" folder. */
-  it('Non-state specific, before the course begins: the generic Terms and Conditions, English then Spanish', async () => {
+  it('Non-state specific, before the course begins, in English: the English terms only', async () => {
     const onClose = vi.fn()
-    render(<AffidavitModalV2 onClose={onClose} moment="pre" state="GEN" pattern="page" />)
+    render(<AffidavitModalV2 onClose={onClose} moment="pre" state="GEN" pattern="page" language="English" />)
     expect(screen.getByRole('heading', { level: 2 }).textContent).toBe('XCEL Generic Terms and Conditions')
     expect(screen.getByText('Acknowledgement of Terms and Conditions of Pre-licensing Course Completion')).toBeTruthy()
+    expect(screen.queryByText(/Reconocimiento de los Términos y Condiciones/)).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Next' })).toBeNull() // one page, the English one
     await ready()
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
-    await ready()
-    expect(screen.getByText(/Reconocimiento de los Términos y Condiciones/)).toBeTruthy()
     const name = screen.getByLabelText(/Student Full Name/) as HTMLInputElement
     expect(name.value).toBe('') // typed, not pre-filled: it is the signature
     expect(screen.queryByLabelText(/I confirm that the above information is accurate/)).toBeNull()
@@ -315,6 +315,14 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     fireEvent.change(name, { target: { value: 'Jordan Navarro' } })
     fireEvent.click(agree)
     expect(onClose).toHaveBeenCalled()
+  })
+
+  it('Non-state specific, before the course begins, in Spanish: the Spanish terms only, as Florida’s are', async () => {
+    render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="GEN" pattern="page" language="Spanish" />)
+    expect(screen.getByText(/Reconocimiento de los Términos y Condiciones/)).toBeTruthy()
+    expect(screen.queryByText('Acknowledgement of Terms and Conditions of Pre-licensing Course Completion')).toBeNull()
+    expect(screen.getByRole('dialog').getAttribute('lang')).toBe('es')
+    expect(screen.getByRole('button', { name: 'Acepto' })).toBeTruthy()
   })
 
   it('Non-state specific, before the course exam: the general attestation, signed with Attest', async () => {
@@ -342,5 +350,38 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
       if (e.status === 'ready' || e.variants) expect(r.form, `${e.m} ${e.st}`).not.toBeNull()
       else expect(r.form, `${e.m} ${e.st}`).toBeNull()
     }
+  })
+})
+
+/* LINE OF AUTHORITY LEAVES THE BAR FOR NON-STATE SPECIFIC (2026-11-04) —
+   `hiddenWhen` on `affidavit-v2-loa`, read live by `designControlsFor`. */
+describe('the Design bar’s affidavit controls', () => {
+  function Probe() {
+    const { setVariant } = useFeatureFlags()
+    const keys = designControlsFor('jill-atlas-main', 'jill').map((f) => f.key)
+    return (
+      <>
+        <output data-testid="controls">{keys.join(' ')}</output>
+        <button type="button" onClick={() => setVariant('affidavit-v2-state', 'GEN')}>Non-state specific</button>
+        <button type="button" onClick={() => setVariant('affidavit-v2-state', 'FL')}>Florida</button>
+      </>
+    )
+  }
+
+  it('drops Line of authority while State is Non-state specific, and brings it back after', () => {
+    render(
+      <MemoryRouter>
+        <FeatureFlagProvider>
+          <Probe />
+        </FeatureFlagProvider>
+      </MemoryRouter>,
+    )
+    const controls = () => screen.getByTestId('controls').textContent!.split(' ')
+    expect(controls()).toContain('affidavit-v2-loa')
+    fireEvent.click(screen.getByRole('button', { name: 'Non-state specific' }))
+    expect(controls()).not.toContain('affidavit-v2-loa')
+    expect(controls()).toContain('affidavit-v2-state') // only that one goes
+    fireEvent.click(screen.getByRole('button', { name: 'Florida' }))
+    expect(controls()).toContain('affidavit-v2-loa')
   })
 })
