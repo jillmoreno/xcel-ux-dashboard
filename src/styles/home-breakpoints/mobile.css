@@ -33,8 +33,13 @@
 [data-home-bp='mobile'] section[aria-label='Current course'] > div:first-child {
   padding: 24px !important;
   /* 40 less on top (2026-11-04, Eric's request): 48 above the eyebrow → 8,
-     then 8 back the same day → 16. */
-  padding-top: 16px !important;
+     then 8 back the same day → 16, then 4 more → 20. */
+  padding-top: 20px !important;
+}
+/* The "Current course" eyebrow 4 closer to the course name — 4, from the
+   column's 8 (2026-11-04, Eric's request). */
+[data-home-bp='mobile'] section[aria-label='Current course'] p:has(+ .cre-atlas-home-course-title) {
+  margin-bottom: -4px !important;
 }
 /* …and the cover box that drew NOTHING at this width — its image is placed
    absolutely inside a box with no height of its own — goes, with the 24 row
@@ -100,6 +105,13 @@
 }
 [data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-burger {
   display: inline-flex !important;
+  /* The bars themselves 16 from the right edge (2026-11-04, Eric's request):
+     no right padding or border, so the glyph ends where the row's 16 inset
+     does. */
+  padding-right: 0 !important;
+  border-right-width: 0 !important;
+  /* No hover fill — a phone has no hover (same day). */
+  background-color: transparent !important;
 }
 [data-home-bp='mobile'] .cre-atlas-hdr-pill:has(svg) {
   font-size: 0 !important;
@@ -107,8 +119,8 @@
 }
 
 /* The English | Help band: Help ends where the three bars do (2026-11-04,
-   Eric's request) — 25 in, the bars' right edge as measured: the row's 16,
-   the menu button's 8 padding, and 1 of sub-pixel width rounding. */
+   Eric's request) — 16 in, where the bars end since the menu button lost
+   its right padding the same day. */
 [data-home-bp='mobile'] .cre-atlas-hdr > div:first-child {
-  padding-right: 25px !important;
+  padding-right: 16px !important;
 }
