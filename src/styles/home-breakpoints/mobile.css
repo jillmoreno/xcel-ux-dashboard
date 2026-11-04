@@ -531,10 +531,13 @@
 [data-home-bp='mobile'] div:has(> table.cre-atlas-table) {
   overflow-x: auto !important;
 }
-/* Transcripts' note in the body text's size, not a 17/28 lead. */
-[data-home-bp='mobile'] p[style*='max-width: 963px'] {
-  font-size: 14px !important;
-  line-height: 21px !important;
+/* Transcripts' note at the filter pills' 13, in Regular (same day, Eric's
+   request) — not a 17/28 lead. The second attribute is only there to
+   outrank the page-wide +1 rule above. */
+[data-home-bp='mobile'] p[style*='max-width: 963px'][style*='font-size'] {
+  font-size: 13px !important;
+  line-height: 19.5px !important;
+  font-weight: 400 !important;
 }
 /* …at a readable width: 640 at least, or My Purchases' Summary folds to a
    word a line. */
