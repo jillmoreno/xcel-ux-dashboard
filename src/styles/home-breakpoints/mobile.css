@@ -292,3 +292,27 @@
   margin-left: 24px !important;
   margin-right: 24px !important;
 }
+
+/* BOTH PHONE MENUS IN THE QUICK LINKS CARD'S ROWS (2026-11-04, Eric's
+   request) — the profile menu and the three-bar menu: 13/18 text in the
+   secondary ink, a 13 icon in its 18 box in the home-icon colour, 8 between,
+   and the rows on the card's 34 pitch (8 + 18 + 8). The hover stays the
+   Quick Links one the profile menu already wears. */
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-item {
+  gap: 8px !important;
+  font-size: 13px !important;
+  line-height: 18px !important;
+  color: var(--color-text-secondary) !important;
+}
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:hover,
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:focus-visible {
+  color: var(--color-compass-page-button) !important;
+}
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-item > span[aria-hidden]:first-child {
+  width: 18px !important;
+  color: var(--color-atlas-home-icon, var(--color-compass-page-button)) !important;
+}
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-item > span[aria-hidden]:first-child svg {
+  width: 13px !important;
+  height: 13px !important;
+}
