@@ -25,7 +25,11 @@ import {
   ATLAS_MY_COURSES,
   ATLAS_MY_COURSES_ASIDE_W,
   ATLAS_MY_COURSES_WIDTH,
+  ATLAS_HOME_COURSE_PARAM,
+  atlasHomeStateFor,
 } from '@/data/atlasCourseCards'
+import type { AtlasCourseCardData } from '@/components/compass/AtlasCourseCard'
+import { WHITE_COURSE_PARAM } from '@/data/atlasWhiteCourses'
 import { LearningPathPage } from '@/pages/LearningPathPage'
 import { LearningPathsHome } from '@/components/learning/LearningPathsHome'
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
@@ -33,9 +37,9 @@ import { isHomeActive } from '@/components/learning/learningPathsHomeUtil'
 import { useLearningPathSummariesForBrand } from '@/data/learningPathsCountVariant'
 import { activePathIdFor, learningPathsFor } from '@/data/learningFixtures'
 import { hasStudyCalendarFor, studyCalendarFor } from '@/data/studyCalendarFixtures'
-import { isCoursePathCe } from '@/data/courseFixtures'
+import { EXPIRY_FLAG_KEY, isCoursePathCe } from '@/data/courseFixtures'
 import { InlineStudyCalendar } from '@/components/learning/study-calendar/InlineStudyCalendar'
-import { useCeStudyPlanEnabled, useCourseDemo, useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useCeStudyPlanEnabled, useCourseDemo, useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
 import { StudyWeekSummary } from '@/components/learning/study-calendar/StudyWeekSummary'
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { useTheme, type NavVariant } from '@/context/ThemeContext'
@@ -2616,6 +2620,24 @@ function ShellResourcesPanel() {
 function MyCoursesSection() {
   const [params, setParams] = useSearchParams()
   const { brand } = useAccount()
+  /* THE CARD OPENS HOME IN ITS OWN STATE (2026-11-04, Eric's request) — see
+     `atlasHomeStateFor`. The demo bar's Progress and Expires are set as if
+     picked there, then Home opens on `?atlasCourse=`. */
+  const { setVariant } = useFeatureFlags()
+  const openHomeFor = (c: AtlasCourseCardData) => {
+    const { progress, expiry } = atlasHomeStateFor(c)
+    setVariant('atlas-v3-progress', progress)
+    setVariant(EXPIRY_FLAG_KEY, expiry)
+    setParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.delete('section')
+      next.delete('coursePage')
+      next.delete(WHITE_COURSE_PARAM)
+      next.set(ATLAS_HOME_COURSE_PARAM, c.id)
+      return next
+    })
+    window.scrollTo(0, 0)
+  }
   /* ⚠ RESOLVED, NOT RAW — 2026-10-14, when End-to-End Demo became the default
      and a bare `?demo=1` had to render Eric's page. See `resolveDashboardVersion`. */
   const sectionVersion = resolveDashboardVersion(params.get('version'), brand)
@@ -2662,6 +2684,7 @@ function MyCoursesSection() {
                 data={c}
                 // Unwired on the End-to-End Demo (2026-10-15, Eric's request).
                 onAction={i === 0 && sectionVersion !== 'eric-atlas-e2e' ? openCourse : undefined}
+                onOpen={() => openHomeFor(c)}
                 // White's active cards in Primary 100 on its white page
                 // (2026-10-14, Eric's request); completed cards keep no fill.
                 activeFill={white ? 'var(--color-primary-100)' : undefined}
