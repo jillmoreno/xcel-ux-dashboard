@@ -125,7 +125,7 @@ export function VerifyEmailModalV3({
               </h2>
               <div aria-hidden style={RULE} />
               <p id="verify-email-lead" style={LEAD}>
-                Provide your email address.
+                Provide your email address. We use it to find or create your account.
               </p>
             </div>
 

@@ -181,7 +181,7 @@ describe('Invite Flow V3 — the email check', () => {
   it('asks for the email only, and keeps Continue off until it is an address', async () => {
     renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
     const dialog = screen.getByRole('dialog', { name: 'Enter your email to continue' })
-    expect(dialog).toBeInTheDocument()
+    expect(dialog).toHaveAccessibleDescription('Provide your email address. We use it to find or create your account.')
     expect(screen.queryByLabelText(/First name/)).not.toBeInTheDocument()
     /* The checkout behind says nothing about an address nobody has given yet. */
     expect(screen.queryByDisplayValue(/@/)).not.toBeInTheDocument()
