@@ -3149,15 +3149,18 @@ const EXAM_CAL_PANEL: CSSProperties = {
 
 type PacePhoneTab = 'progress' | 'pace' | 'completion'
 
-const PACE_PHONE_TABS: readonly { id: PacePhoneTab; lines: [string, string] }[] = [
-  { id: 'progress', lines: ['Course', 'progress'] },
-  { id: 'pace', lines: ['Study', 'pace'] },
-  { id: 'completion', lines: ['Estimated', 'completion'] },
+/* One line each (2026-11-04, Eric: 10px with normal tracking, the largest
+   size at which all three fit across the 370 panel). They were two lines at
+   the eyebrow's 11 and 0.16em. */
+const PACE_PHONE_TABS: readonly { id: PacePhoneTab; label: string }[] = [
+  { id: 'progress', label: 'Course progress' },
+  { id: 'pace', label: 'Study pace' },
+  { id: 'completion', label: 'Estimated completion' },
 ]
 
 /** The tab strip's height — the panel drops by it, and the strip sits in the
  *  space above, its bottom on the panel's top edge. */
-const PACE_TAB_H = 48
+const PACE_TAB_H = 32
 
 /** The headers as tabs over the panel's top edge, each on two lines. The
  *  active one takes the panel's fill and joins it; the others are an outline
@@ -3180,8 +3183,11 @@ function PacePhoneTabs({ active, onSelect }: { active: PacePhoneTab; onSelect: (
               display: 'block',
               boxSizing: 'border-box',
               height: '100%',
-              padding: '7px 14px 0',
+              padding: '0 14px',
               textAlign: 'center',
+              fontSize: 10,
+              letterSpacing: 'normal',
+              whiteSpace: 'nowrap',
               cursor: on ? 'default' : 'pointer',
               borderRadius: '12px 12px 0 0',
               border: '1px solid',
@@ -3192,9 +3198,7 @@ function PacePhoneTabs({ active, onSelect }: { active: PacePhoneTab; onSelect: (
               background: on ? 'var(--color-atlas-tan-100)' : 'transparent',
             }}
           >
-            {t.lines[0]}
-            <br />
-            {t.lines[1]}
+            {t.label}
           </button>
         )
       })}
