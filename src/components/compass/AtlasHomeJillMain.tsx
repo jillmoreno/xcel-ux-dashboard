@@ -947,7 +947,11 @@ export function AtlasHomeJillMain({
      Figma's version on the white page — and whether a layout other than the
      two columns is up. */
   const phoneSwitch = phoneFrame && onWhite && paceCard === 'ring' && RingCard === AtlasPaceRingCardFigma
-  const phoneAltLayout = phoneSwitch && phoneLayout !== 'columns'
+  /* ⚠ AT 100% THE TWO COLUMNS TAKE THE LIST'S ROW TOO (2026-11-04, Eric's
+     request): with only Course progress left on the card there is nothing to
+     sit beside the dial, so its full-width row stands in. The tabs keep
+     their own. */
+  const phoneAltLayout = phoneSwitch && (phoneLayout !== 'columns' || completedView)
   const ringCard = (
     <RingCard
       /* Ready 100%: the dial alone — no rule, no Study pace (2026-11-03,
