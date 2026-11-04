@@ -428,7 +428,7 @@
    right column beside a tall image). */
 [data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > :first-child {
   grid-column: 1 !important;
-  grid-row: 1 !important;
+  grid-row: 1 / span 2 !important;
 }
 [data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > :first-child img {
   width: 96px !important;
@@ -444,6 +444,16 @@
   grid-row: 1 !important;
   align-self: stretch !important;
   padding: 0 0 8px !important;
+}
+/* The button under the title, beside the image (same day, Eric's request);
+   the dates run full width below both. */
+[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > button:not(:first-child) {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  align-self: end !important;
+}
+[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > div:nth-child(3) {
+  grid-row: 3 !important;
 }
 [data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > div:nth-child(3) {
   padding-bottom: 4px !important;
