@@ -99,7 +99,16 @@ export function AtlasHeaderConnected({
   const homeAndOpen = (what: string) => () => navigate(shell((n) => n.set(ATLAS_OPEN_PARAM, what)))
   const phoneLinks = [
     // Home first (2026-11-04, Eric's request) — FA house-blank, Regular like the rest.
-    { label: 'Home', icon: <HouseBlankRegular size={18} />, onSelect: () => navigate(home) },
+    {
+      label: 'Home',
+      icon: <HouseBlankRegular size={18} />,
+      // As the logo does: Home, and the event that starts it over and closes
+      // an information page open on it.
+      onSelect: () => {
+        navigate(home)
+        window.dispatchEvent(new Event(ATLAS_HOME_REFRESH))
+      },
+    },
     { label: 'My Courses', icon: <BookRegular size={18} />, count: coursesCount, onSelect: () => navigate(shell((n) => n.set('section', 'courses'))) },
     { label: 'My Certificates', icon: <FileCertificateRegular size={18} />, onSelect: () => navigate(shell((n) => n.set('section', 'certificates'))) },
     { label: 'Exam Information', icon: <CircleInfoRegular size={18} />, onSelect: homeAndOpen('exam-details') },
