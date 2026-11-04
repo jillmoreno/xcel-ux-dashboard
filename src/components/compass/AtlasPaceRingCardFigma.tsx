@@ -342,16 +342,21 @@ export function AtlasPaceRingCardFigma({
                   </span>
                 ) : null}
               </span>
-              <span style={GOAL_NOTE}>
-                Customize your study pace{' '}
-                {onCustomize ? (
-                  <button type="button" onClick={onCustomize} style={INLINE_LINK}>
-                    here
-                  </button>
-                ) : (
-                  'here'
-                )}
-              </span>
+              {/* Only where the starting-point sentence would be — at 0%.
+                  Past it the standing message below reports the pace, as on
+                  every other progress level (same day). */}
+              {standingMessage ? null : (
+                <span style={GOAL_NOTE}>
+                  Customize your study pace{' '}
+                  {onCustomize ? (
+                    <button type="button" onClick={onCustomize} style={INLINE_LINK}>
+                      here
+                    </button>
+                  ) : (
+                    'here'
+                  )}
+                </span>
+              )}
             </span>
           ) : (
             <span style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
