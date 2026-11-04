@@ -323,7 +323,7 @@ export function AtlasHeader({
             triggerLabel="Menu"
             triggerClassName="cre-atlas-hdr-pill--icon cre-atlas-hdr-burger"
             trigger={<Bars size={20} aria-hidden style={{ width: (20 * 448) / 512 }} />}
-            panelStyle={PROFILE_PANEL}
+            panelStyle={PHONE_MENU_PANEL}
           >
             <div className={quickLinksMenu ? 'cre-atlas-hdr-quick' : undefined} style={{ padding: '4px 0' }}>
               {(phoneLinks ?? []).map((l) => (
@@ -331,7 +331,10 @@ export function AtlasHeader({
                   {/* One span, so the row's flex gap does not open between the
                       label and Quick Links' count — brackets in the label's
                       weight, the figure bold. */}
-                  <span>
+                  {/* `cre-quick-link-label` holds the hover weight's width, so the
+                      menu — as wide as its rows — does not grow on hover. */}
+                  <span className="cre-quick-link-label" data-label={l.count != null ? `${l.label} (${l.count})` : l.label}>
+                    <span>
                     {l.label}
                     {l.count != null ? (
                       <>
@@ -339,6 +342,7 @@ export function AtlasHeader({
                         <strong style={{ fontWeight: 700 }}>{l.count}</strong>)
                       </>
                     ) : null}
+                    </span>
                   </span>
                 </AtlasHeaderMenuItem>
               ))}
@@ -438,6 +442,13 @@ const PROFILE_PANEL = {
   padding: 8,
   border: '1px solid var(--atlas-hdr-rule)',
   borderRadius: 12,
+} as const
+
+/* The phone's menu: the profile panel's frame, as wide as its rows and no
+   wider (2026-11-04, Eric's request) — it was the profile panel's 256. */
+const PHONE_MENU_PANEL = {
+  ...PROFILE_PANEL,
+  width: 'max-content',
 } as const
 
 const IDENTITY = {
