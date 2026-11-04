@@ -216,6 +216,16 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(statements?.plain).toBeUndefined()
   })
 
+  it('Illinois after the exam: no roster heading and no red box, the SSN field kept', () => {
+    render(<AffidavitModalV2 onClose={() => {}} moment="post" state="IL" pattern="page" />)
+    const last = FORMS.IL_POST!.pages.length - 1
+    for (let i = 0; i < last; i++) fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.queryByText('Course Completion Roster upload form')).toBeNull()
+    const ssn = screen.getByLabelText(/Full SSN/)
+    expect(ssn.closest('.aff2-flag')).toBeNull()
+    expect(screen.getByText(/Education providers are required to collect/)).toBeTruthy()
+  })
+
   it('resolves every ready entry in the explorer to a form', () => {
     for (const e of ENTRIES) {
       const r = resolveAffidavit(e.m, e.st, 'English')

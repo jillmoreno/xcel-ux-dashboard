@@ -12,6 +12,13 @@
  * and `olh` strings are HTML (bold, links, line breaks); everything else is
  * plain text.
  *
+ * ⚠ WHERE THIS FILE NOW DIFFERS FROM THE EXPLORER — carry these over by hand
+ * on the next port, or make them in the explorer first:
+ *   · 2026-11-04 — Illinois, After course exam (`IL_POST`): no "Course
+ *     Completion Roster upload form" heading and no red box around the roster
+ *     section. Afsana's change. (California's after-exam form has the same
+ *     heading, untouched; its red box is round the Student Legal Name.)
+ *
  * ⚠ THE EXPLORER IS AN ADMIN TOOL AND SOME OF THIS IS ITS BOOKKEEPING.
  * `status` (ready / received / missing) says whether the document has been
  * added yet; the modal shows a form only when there is one, and an honest
@@ -504,16 +511,17 @@ FORMS.IL_POST={
     {id:'sig',label:'Student Signature',required:true,placeholder:'Type your full name',ac:'name'},
     {id:'date',type:'date',label:"Today's Date",required:true},
     {block:{p:'The date on this affidavit is the course completion date.'}},
-    {flagGroup:[
-      {block:{h:'Course Completion Roster upload form',u:true}},
-      {block:{p:'Education providers are required to collect and report the following information below upon course completion.'}},
-      {id:'ssn',label:'Full SSN',required:true,placeholder:'000-00-0000',inputmode:'numeric',maxlength:11,digits:9,ac:'off'}
-    ]},
+    /* CHANGED FROM THE EXPLORER (2026-11-04, Afsana): the roster section's
+       "Course Completion Roster upload form" heading is gone, and so is the
+       red box (a `flagGroup`) around it; the sentence and the Full SSN field
+       stay, in the order they were. */
+    {block:{p:'Education providers are required to collect and report the following information below upon course completion.'}},
+    {id:'ssn',label:'Full SSN',required:true,placeholder:'000-00-0000',inputmode:'numeric',maxlength:11,digits:9,ac:'off'},
     FORMS.KY_PRE.fields[0]
   ],
   flagFields:['agree'],
   agreeLabel:'I Attest and Confirm',
-  note:'Includes the Course Completion Roster section (full SSN) from the same Word doc. Full SSN must be 9 digits; dashes are allowed. The roster section and Full SSN field are highlighted in red. The button reads "I Attest and Confirm". The "I confirm that the above information is accurate" checkbox (highlighted in red) comes after the roster section.'
+  note:'Includes the Course Completion Roster section (full SSN) from the same Word doc. Full SSN must be 9 digits; dashes are allowed. The button reads "I Attest and Confirm". The "I confirm that the above information is accurate" checkbox comes after the roster section.'
 };
 FORMS.OH_POST_P={
   docHeader:'Ohio Property Pre-Licensing Insurance Affidavit',
