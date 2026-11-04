@@ -217,3 +217,8 @@
 [data-home-bp='mobile'] .cre-atlas-pace-list-copy section[aria-label='Study pace'] > div:last-child > div > span:first-child {
   width: 34px !important;
 }
+/* Each label 4 nearer its row — 7, from the column's 11 (same day). */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy section > p:first-child,
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy section[aria-label='Study pace'] > div:last-child > p:first-child {
+  margin-bottom: -4px !important;
+}
