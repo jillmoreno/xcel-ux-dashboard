@@ -47,7 +47,8 @@ import { CourseDetailsPanel } from '@/components/courses/CourseDetailsPanel'
 import { useCourseLauncher } from '@/components/layout/CourseLauncherContext'
 import { useDeviceFrame } from '@/components/layout/DeviceFrameContext'
 import { ProgressTrackerCard } from '@/components/learning/ProgressTrackerCard'
-import { LearningPathDetailPanel } from '@/components/learning/LearningPathDetailPanel'
+import { LearningPathDetailPanel, LearningPathDetailPanelContent } from '@/components/learning/LearningPathDetailPanel'
+import { AtlasSectionPageHeader } from '@/components/layout/AtlasSectionPageHeader'
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
 import {
   useLearningPathCardsForBrand,
@@ -257,6 +258,11 @@ export function MembershipOverview({
    * and open an empty sheet, which is exactly how this failed the first time.
    */
   const [examDetailsOpen, setExamDetailsOpen] = useState(false)
+  /* ⚠ ON THE PHONE THESE ARE PAGES, NOT SHEETS (2026-11-04, Eric's request):
+     Exam Information, Applying for a License and State Requirements open in
+     Home's place with Back to Home and a page title — see `phoneInfoPage`
+     below. The same state drives both; only the surface differs. */
+  const phoneFrame = useFeatureFlag('home-breakpoint').variant === 'mobile'
   const openStepById = (id: string) => {
     if (id === EXAM_DETAILS_STEP_ID) setExamDetailsOpen(true)
     else setOpenStepId(id)
@@ -509,6 +515,14 @@ export function MembershipOverview({
   const [handledOpen, setHandledOpen] = useState<string | null>(null)
   if (openRequest !== handledOpen) {
     setHandledOpen(openRequest)
+    /* A new request REPLACES what is open (2026-11-04) — on the phone these
+       are pages, and the menu can be used from one of them; without this the
+       step page above outranked a later State Requirements. */
+    if (openRequest) {
+      setExamDetailsOpen(false)
+      setOpenStepId(null)
+      setDetailOpen(false)
+    }
     if (openRequest === 'exam-details') setExamDetailsOpen(true)
     else if (openRequest === 'requirements') openDetail('requirements')
     else if (openRequest?.startsWith('step:')) setOpenStepId(openRequest.slice(5))
@@ -1694,6 +1708,35 @@ export function MembershipOverview({
   // Focused, which is where it surfaced.
   const topBand =
     expiredBand || (clpJumpBackInOnly ? clpFullWidthBand : learnerFocusedBand || clpFullWidthBand)
+
+  /* THE PHONE'S INFORMATION PAGES — the sheets' own content, under the shell's
+     Back to Home and a page title, at Home's width (2026-11-04). Their sheet
+     headers (Close, eyebrow, title) are hidden in home-breakpoints/mobile.css:
+     the page header says all of it. */
+  const closeInfo = () => {
+    setExamDetailsOpen(false)
+    setOpenStepId(null)
+    setDetailOpen(false)
+  }
+  const infoPage: { title: string; body: ReactNode } | null = !phoneFrame
+    ? null
+    : openStepId === EXAM_FAQ_STEP_ID
+      ? { title: 'Common Questions', body: <ExamFaqPanel onClose={closeInfo} /> }
+      : openStep
+        ? { title: openStep.title, body: <GetLicensedStepPanel step={openStep} state={activeProgressPath?.state} onClose={closeInfo} /> }
+        : examDetailsOpen
+          ? { title: 'Exam Information', body: <ExamDetailsPanel state={activeProgressPath?.state} onSelect={setOpenStepId} onClose={closeInfo} /> }
+          : detailOpen && activeProgressPath
+            ? { title: 'State Requirements', body: <LearningPathDetailPanelContent path={activeProgressPath} onClose={closeInfo} view="requirements" /> }
+            : null
+  if (infoPage) {
+    return (
+      <div className="cre-phone-info-page">
+        <AtlasSectionPageHeader title={infoPage.title} onBack={closeInfo} />
+        <div className="cre-phone-info-body">{infoPage.body}</div>
+      </div>
+    )
+  }
 
 
   return (
