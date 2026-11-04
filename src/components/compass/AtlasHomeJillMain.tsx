@@ -3176,12 +3176,14 @@ function PacePhoneTabs({ active, onSelect }: { active: PacePhoneTab; onSelect: (
               boxSizing: 'border-box',
               height: '100%',
               padding: '7px 14px 0',
-              textAlign: 'left',
+              textAlign: 'center',
               cursor: on ? 'default' : 'pointer',
               borderRadius: '12px 12px 0 0',
               border: '1px solid',
               borderBottom: 'none',
-              borderColor: on ? 'transparent' : 'var(--color-border-subtle)',
+              /* Neutral 100, one step lighter than the subtle border's 200
+                 (same day). */
+              borderColor: on ? 'transparent' : 'var(--color-neutral-100)',
               background: on ? 'var(--color-atlas-tan-100)' : 'transparent',
             }}
           >
