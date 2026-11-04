@@ -1249,7 +1249,7 @@ export function AtlasHomeJillMain({
                     : WHITE_PROGRESS_PANEL
                   : { display: 'contents' }),
                 ...(phoneSwitch ? { position: 'relative' as const } : null),
-                ...(phoneAltLayout && phoneLayout === 'tabs' ? { marginTop: PACE_TAB_H, borderTopLeftRadius: 0 } : null),
+                ...(phoneAltLayout && phoneLayout === 'tabs' ? { marginTop: PACE_TAB_H, borderTopLeftRadius: 0, border: `1px solid ${PACE_TAB_STROKE}` } : null),
               }}
             >
             {phoneAltLayout && phoneLayout === 'tabs' ? <PacePhoneTabs active={phoneTab} onSelect={setPhoneTab} /> : null}
@@ -3161,13 +3161,20 @@ const PACE_PHONE_TABS: readonly { id: PacePhoneTab; label: string }[] = [
 /** The tab strip's height — the panel drops by it, and the strip sits in the
  *  space above, its bottom on the panel's top edge. */
 const PACE_TAB_H = 32
+/** The tabs' and the panel's outline — Neutral 100, a step lighter than the
+ *  subtle border's 200 and not the panel's Tan 100 fill, so it shows. The
+ *  inactive tabs take it as their fill. */
+const PACE_TAB_STROKE = 'var(--color-neutral-100)'
 
 /** The headers as tabs over the panel's top edge, each on two lines. The
  *  active one takes the panel's fill and joins it; the others are an outline
  *  on three sides. The titles keep the eyebrow's colour either way. */
 function PacePhoneTabs({ active, onSelect }: { active: PacePhoneTab; onSelect: (t: PacePhoneTab) => void }) {
   return (
-    <div role="tablist" aria-label="Course progress panel" style={{ position: 'absolute', left: 0, bottom: '100%', display: 'flex', gap: 4, height: PACE_TAB_H }}>
+    /* One pixel taller than the tabs and one left, so the active tab's
+       outline meets the panel's own and its fill covers the panel's top
+       stroke where they join; the inactive tabs stand on that stroke. */
+    <div role="tablist" aria-label="Course progress panel" style={{ position: 'absolute', left: -1, bottom: '100%', display: 'flex', alignItems: 'flex-start', gap: 4, height: PACE_TAB_H + 1, zIndex: 1 }}>
       {PACE_PHONE_TABS.map((t) => {
         const on = t.id === active
         return (
@@ -3182,20 +3189,20 @@ function PacePhoneTabs({ active, onSelect }: { active: PacePhoneTab; onSelect: (
               alignSelf: 'auto',
               display: 'block',
               boxSizing: 'border-box',
-              height: '100%',
-              padding: '0 14px',
+              height: on ? PACE_TAB_H + 1 : PACE_TAB_H,
+              padding: on ? '0 14px 1px' : '0 14px',
               textAlign: 'center',
               fontSize: 10,
               letterSpacing: 'normal',
               whiteSpace: 'nowrap',
               cursor: on ? 'default' : 'pointer',
               borderRadius: '12px 12px 0 0',
-              border: '1px solid',
+              /* SWAPPED (2026-11-04, Eric's request): the ACTIVE tab has the
+                 stroke and the panel's fill, joined to the panel's outline;
+                 the inactive ones are a fill with no stroke. */
+              border: on ? `1px solid ${PACE_TAB_STROKE}` : 'none',
               borderBottom: 'none',
-              /* Neutral 100, one step lighter than the subtle border's 200
-                 (same day). */
-              borderColor: on ? 'transparent' : 'var(--color-neutral-100)',
-              background: on ? 'var(--color-atlas-tan-100)' : 'transparent',
+              background: on ? 'var(--color-atlas-tan-100)' : PACE_TAB_STROKE,
             }}
           >
             {t.label}
