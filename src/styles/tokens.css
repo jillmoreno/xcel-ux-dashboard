@@ -7716,6 +7716,38 @@ a.cre-library-card-title::after {
   /* xcelsolutions.com's Enter Partner Code box (.hero_partner_code), read
      off the live page 2026-10-15 — the price card's shadow. */
   --shadow-e2e-partner-code: 0 4px 16px 0 rgb(0 0 0 / 0.12);
+  /* Affidavit V2 (2026-11-03, Afsana) — read off her Affidavit Explorer's XCEL
+     mock, which pins them as fixed product colours, the same in both themes.
+     Used by `affidavitModalV2.css` only. */
+  --color-aff-navy: #2d4454;
+  --color-aff-ink: #111111;
+  --color-aff-label: #1e2a33;
+  --color-aff-muted-ink: #34414c;
+  --color-aff-hint: #56636f;
+  --color-aff-placeholder: #6b7680;
+  --color-aff-line: #e2e5e8;
+  --color-aff-input-rule: #c9ced3;
+  --color-aff-disabled: #b9c3cc;
+  --color-aff-chip: #f1f3f5;
+  --color-aff-progress: #dde2e7;
+  --color-aff-track: #eef1f4;
+  --color-aff-thumb: #9aa6b1;
+  --color-aff-table-rule: #9aa0a6;
+  --color-aff-table-head: #e6e8ea;
+  --color-aff-table-ink: #444444;
+  --color-aff-flag: #fbd5da;
+  --color-aff-flag-rule: #c8102e;
+  --color-aff-banner: #fff0d1;
+  --color-aff-banner-rule: #a86400;
+  --color-aff-banner-ink: #4f3000;
+  --color-aff-link: #1f5f8b;
+  --color-aff-link-ground: #f6f8fa;
+  --color-aff-link-rule: #c9d3dc;
+  --color-aff-status: #e8f4ec;
+  --color-aff-status-ink: #1e5b34;
+  --color-aff-focus: #f2a900;
+  --color-aff-scrim: rgb(32 44 56 / 0.55);
+  --shadow-aff-modal: 0 20px 60px rgb(0 0 0 / 0.35);
 }
 
 /* ── Help & Support entry cards ─────────────────────────────────────────

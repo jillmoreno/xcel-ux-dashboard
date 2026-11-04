@@ -1,8 +1,10 @@
-import { act, cleanup, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it } from 'vitest'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AffidavitModal } from '@/components/e2e/AffidavitModal'
 import { AffidavitModalV2 } from '@/components/e2e/AffidavitModalV2'
+import { resolveAffidavit } from '@/components/e2e/affidavitModalV2Util'
 import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
+import { ENTRIES, FORMS, STATES } from '@/data/affidavitForms'
 
 /**
  * AFFIDAVIT V2 — 2026-11-03, Afsana. The first change V2 makes: the modal
@@ -69,11 +71,6 @@ describe('AffidavitModalV2', () => {
     expect(z).toBeLessThan(60)
   })
 
-  it('shows the same document as V1 — the names are imported, not copied', () => {
-    render(<AffidavitModalV2 kind="post" onClose={() => {}} />)
-    expect(screen.getByRole('heading', { name: 'Study-manual Notice Affidavit' })).toBeTruthy()
-  })
-
   it('leaves V1 as it was: the whole window, at 1000', () => {
     bar('cre-prototype-bar', 44)
     render(<AffidavitModal onClose={() => {}} />)
@@ -82,10 +79,93 @@ describe('AffidavitModalV2', () => {
   })
 
   it('is on by default on this branch, on the Design bar of both Homes that open it', () => {
-    const flag = FEATURE_FLAGS.find((f) => f.key === 'atlas-affidavit-v2')
-    expect(flag?.defaultEnabled).toBe(true)
-    expect(flag?.surface).toBe('design')
-    // jill-atlas-main is where the invite flow lands (END_TO_END_VERSION).
-    expect(flag?.versions).toEqual(['jill-atlas-main', 'eric-atlas-e2e'])
+    for (const key of ['atlas-affidavit-v2', 'affidavit-v2-moment', 'affidavit-v2-state', 'affidavit-v2-pattern', 'affidavit-v2-language']) {
+      const flag = FEATURE_FLAGS.find((f) => f.key === key)
+      expect(flag?.defaultEnabled, key).toBe(true)
+      expect(flag?.surface, key).toBe('design')
+      // jill-atlas-main is where the invite flow lands (END_TO_END_VERSION).
+      expect(flag?.versions, key).toEqual(['jill-atlas-main', 'eric-atlas-e2e'])
+    }
+  })
+})
+
+/* The Affidavit Explorer's forms and patterns (2026-11-03). jsdom has no
+   layout, so every page reads as scrolled to its end on arrival — the scroll
+   gate itself is a browser check; what is pinned here is the rest. */
+describe('AffidavitModalV2 — the explorer’s forms', () => {
+  const ready = () => act(async () => { await new Promise((r) => requestAnimationFrame(() => r(null))) })
+
+  it('lists every explorer state on the State control, and defaults to Florida before the course begins', () => {
+    expect(FEATURE_FLAGS.find((f) => f.key === 'affidavit-v2-state')?.variants?.map((v) => v.value)).toEqual(
+      Object.keys(STATES).sort((a, b) => STATES[a]!.localeCompare(STATES[b]!)),
+    )
+    render(<AffidavitModalV2 onClose={() => {}} />)
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(FORMS.FL_LH_EN!.title)
+  })
+
+  it('reads the Florida notice in Spanish when the course language is Spanish', () => {
+    render(<AffidavitModalV2 onClose={() => {}} language="Spanish" />)
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(FORMS.FL_LH_ES!.title)
+    expect(screen.getByRole('dialog').getAttribute('lang')).toBe('es')
+  })
+
+  it('says so when a state has no affidavit at that moment', () => {
+    render(<AffidavitModalV2 onClose={() => {}} moment="post" state="FL" />)
+    expect(screen.getByText(/Florida has no affidavit after course exam/)).toBeTruthy()
+    expect((screen.getByRole('button', { name: 'I Agree' }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('pages through the form under one progress segment per page, ending on the form’s own button', async () => {
+    const form = FORMS.IL_PRE!
+    const onClose = vi.fn()
+    const { container } = render(<AffidavitModalV2 onClose={onClose} moment="pre" state="IL" pattern="page" />)
+    expect(container.ownerDocument.querySelectorAll('.aff2-prog i')).toHaveLength(form.pages.length)
+    for (let i = 0; i < form.pages.length - 1; i++) {
+      await ready()
+      fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    }
+    await ready()
+    expect(screen.getByRole('button', { name: 'Back' })).toBeTruthy()
+    const agree = screen.getByRole('button', { name: form.agreeLabel ?? 'I Agree' }) as HTMLButtonElement
+    expect(agree.disabled).toBe(true) // the signature is still empty
+    fireEvent.change(screen.getByLabelText(/Student Signature/), { target: { value: 'Jordan Navarro' } })
+    expect(agree.disabled).toBe(false)
+    fireEvent.click(agree)
+    expect(onClose).toHaveBeenCalled()
+  })
+
+  it('links out: the button waits for the document to be opened and the box to be ticked', () => {
+    const form = FORMS.IL_PRE!
+    render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="IL" pattern="link" />)
+    fireEvent.change(screen.getByLabelText(/Student Signature/), { target: { value: 'Jordan Navarro' } })
+    const agree = screen.getByRole('button', { name: form.agreeLabel ?? 'I Agree' }) as HTMLButtonElement
+    fireEvent.click(screen.getByLabelText(/I have read .* and swear/))
+    expect(agree.disabled).toBe(true) // not opened yet
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(form.title) }))
+    expect(screen.getByRole('status').textContent).toMatch(/Document opened/)
+    fireEvent.click(screen.getByRole('button', { name: 'Back to the affidavit' }))
+    expect(agree.disabled).toBe(false)
+  })
+
+  it('has no Link out after the course exam — it shows as Pagination', () => {
+    render(<AffidavitModalV2 onClose={() => {}} moment="post" state="IL" pattern="link" />)
+    expect(screen.queryByText(/I have read .* and swear/)).toBeNull()
+    expect(document.querySelectorAll('.aff2-prog i').length).toBe(FORMS.IL_POST!.pages.length)
+  })
+
+  it('pre-fills the learner and locks today’s date', () => {
+    render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="KY" pattern="link" />)
+    const dates = screen.getAllByLabelText(/Today.s Date/) as HTMLInputElement[]
+    expect(dates[0]!.readOnly).toBe(true)
+    expect(dates[0]!.value).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect((screen.getByLabelText(/^City/) as HTMLInputElement).value).toBe('Frankfort')
+  })
+
+  it('resolves every ready entry in the explorer to a form', () => {
+    for (const e of ENTRIES) {
+      const r = resolveAffidavit(e.m, e.st, 'English')
+      if (e.status === 'ready' || e.variants) expect(r.form, `${e.m} ${e.st}`).not.toBeNull()
+      else expect(r.form, `${e.m} ${e.st}`).toBeNull()
+    }
   })
 })

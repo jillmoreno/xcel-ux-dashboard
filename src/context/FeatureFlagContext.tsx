@@ -2261,7 +2261,91 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Affidavit V2',
     description:
-      'Which affidavit modal the End-to-End Demo’s Home opens. On: V2 — the page dims below the review bar and the demo and design controls, which stay usable while the modal is open. Off: V1, which covers the whole window.',
+      'Which affidavit modal the End-to-End Demo’s Home opens. On: V2 — the forms from the Affidavit Explorer, every state and moment, in Pagination or Link out; the page dims below the review bar and the demo and design controls, which stay usable while the modal is open. Off: V1, which covers the whole window.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  /* AFFIDAVIT V2'S FOUR CONTROLS — 2026-11-03, Afsana. The Affidavit
+     Explorer's own filters, moved onto the Design bar so the modal can stand
+     where it lives in the product. Read by `AffidavitModalV2` and nothing
+     else, so they only do anything while Affidavit V2 is on and the modal is
+     open (Eric's Affidavit control or `?affidavit=1` opens it). Variants and
+     names are the explorer's: `MOMENTS` and `STATES` in `affidavitForms.ts`.
+     Florida is the default state because it is the demo course's. */
+  {
+    key: 'affidavit-v2-moment',
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit moment',
+    description:
+      'Which of the three affidavits V2 shows: the one signed before the course begins, before the course exam, or after it. Each state has its own form for each moment, or none.',
+    variants: [
+      { value: 'pre', label: 'Before course begins' },
+      { value: 'exam', label: 'Before course exam' },
+      { value: 'post', label: 'After course exam' },
+    ],
+    defaultVariant: 'pre',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'affidavit-v2-state',
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit state',
+    description:
+      'Whose affidavit V2 shows. A state with no form at the chosen moment says so in the modal, as the explorer does.',
+    variants: [
+      { value: 'CA', label: 'California' },
+      { value: 'CO', label: 'Colorado' },
+      { value: 'CT', label: 'Connecticut' },
+      { value: 'FL', label: 'Florida' },
+      { value: 'IL', label: 'Illinois' },
+      { value: 'KY', label: 'Kentucky' },
+      { value: 'MN', label: 'Minnesota' },
+      { value: 'MS', label: 'Mississippi' },
+      { value: 'NV', label: 'Nevada' },
+      { value: 'NY', label: 'New York' },
+      { value: 'OH', label: 'Ohio' },
+      { value: 'OR', label: 'Oregon' },
+      { value: 'WV', label: 'West Virginia' },
+      { value: 'WI', label: 'Wisconsin' },
+    ],
+    defaultVariant: 'FL',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'affidavit-v2-pattern',
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit pattern',
+    description:
+      'How V2 presents the affidavit. Pagination: a page at a time, Next unlocking once the page is scrolled to its end. Link out: the document as a link, an “I have read” checkbox and the fields. After the course exam there is no Link out, so it shows as Pagination.',
+    variants: [
+      { value: 'page', label: 'Pagination' },
+      { value: 'link', label: 'Link out' },
+    ],
+    defaultVariant: 'page',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'affidavit-v2-language',
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit language',
+    description:
+      'The course language, for the forms that come in more than one — today, Florida’s pre-course Study-manual notices (English or Spanish). Every other form is English whatever this says.',
+    variants: [
+      { value: 'English', label: 'English' },
+      { value: 'Spanish', label: 'Spanish' },
+    ],
+    defaultVariant: 'English',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
