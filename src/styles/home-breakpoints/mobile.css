@@ -174,10 +174,17 @@
 /* The progress panel 24 in at the sides, the course card's own inset —
    from 32 (2026-11-04, Eric's request). */
 [data-home-bp='mobile'] div:has(> div > section[aria-label='Course progress']) {
-  padding-left: 24px !important;
+  /* 16 on the left, 8 less than the right's 24 (same day): the dial and its
+     eyebrow nearer the edge. */
+  padding-left: 16px !important;
   padding-right: 24px !important;
   /* 24 top and bottom too (same day): the top's 24 is the inner grid's own,
      so the panel's 8 goes; the bottom's 40 becomes 24. */
   padding-top: 0 !important;
   padding-bottom: 24px !important;
+}
+
+/* 14 from the dial to the upright rule, 2 less than the column gap (same day). */
+[data-home-bp='mobile'] div:has(> section[aria-label='Course progress']) > section[aria-label='Course progress'] {
+  margin-right: -2px !important;
 }
