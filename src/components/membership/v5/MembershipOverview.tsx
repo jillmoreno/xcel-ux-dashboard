@@ -49,6 +49,7 @@ import { useDeviceFrame } from '@/components/layout/DeviceFrameContext'
 import { ProgressTrackerCard } from '@/components/learning/ProgressTrackerCard'
 import { LearningPathDetailPanel, LearningPathDetailPanelContent } from '@/components/learning/LearningPathDetailPanel'
 import { AtlasSectionPageHeader } from '@/components/layout/AtlasSectionPageHeader'
+import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
 import {
   useLearningPathCardsForBrand,
@@ -263,6 +264,18 @@ export function MembershipOverview({
      Home's place with Back to Home and a page title — see `phoneInfoPage`
      below. The same state drives both; only the surface differs. */
   const phoneFrame = useFeatureFlag('home-breakpoint').variant === 'mobile'
+  /* HOME CLOSES THEM (2026-11-04, Eric: the logo should go to the learner
+     home). The pages live at Home's own address, so navigating there changes
+     nothing by itself; the header's Home and logo also fire this event. */
+  useEffect(() => {
+    const close = () => {
+      setExamDetailsOpen(false)
+      setOpenStepId(null)
+      setDetailOpen(false)
+    }
+    window.addEventListener(ATLAS_HOME_REFRESH, close)
+    return () => window.removeEventListener(ATLAS_HOME_REFRESH, close)
+  }, [])
   const openStepById = (id: string) => {
     if (id === EXAM_DETAILS_STEP_ID) setExamDetailsOpen(true)
     else setOpenStepId(id)

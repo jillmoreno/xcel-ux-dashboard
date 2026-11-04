@@ -373,10 +373,16 @@
    tests read — and the phone draws `data-short` in its place. */
 [data-home-bp='mobile'] .cre-atlas-meta-label {
   font-size: 0 !important;
+  /* A box the short label can size, so it centres on the row like the date
+     beside it — as a bare inline it had no height and sat high (same day). */
+  display: inline-flex !important;
+  align-items: center;
+  white-space: nowrap;
 }
 [data-home-bp='mobile'] .cre-atlas-meta-label::before {
   content: attr(data-short);
   font-size: 12px;
+  line-height: 14px;
 }
 
 /* The dial's figure and "Complete" 8 above the ring's centre (same day). */
