@@ -168,6 +168,13 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect((screen.getByLabelText(/^City/) as HTMLInputElement).value).toBe('Frankfort')
   })
 
+  it('asks the learner to confirm pre-filled details without boxing the checkbox in red', () => {
+    render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="KY" pattern="link" />)
+    const confirm = screen.getByLabelText(/I confirm that the above information is accurate/) as HTMLInputElement
+    expect(confirm.closest('.aff2-flag')).toBeNull()
+    expect(confirm.checked).toBe(false) // never pre-ticked: the learner vouches for it
+  })
+
   it('resolves every ready entry in the explorer to a form', () => {
     for (const e of ENTRIES) {
       const r = resolveAffidavit(e.m, e.st, 'English')

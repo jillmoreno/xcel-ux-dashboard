@@ -318,8 +318,16 @@ function FieldItem({ x, ctx }: { x: AffField; ctx: FieldCtx }): ReactNode {
         {x.flagGroup.map((y, i) => <FieldItem key={y.id ?? i} x={y} ctx={ctx} />)}
       </div>
     )
-  if (x.id && (ctx.form.flagFields ?? []).includes(x.id))
-    return <div className="aff2-flag"><Field x={x} ctx={ctx} /></div>
+  /* ⚠ `flagFields` IS NOT DRAWN (2026-11-04, Afsana: "remove the red
+     highlite for the checkbox"). In the explorer it boxes one field in red,
+     and on every form that uses it the field is the same one — "I confirm
+     that the above information is accurate". That box is there because the
+     form is pre-populated, in full or in part, from the learner's profile,
+     and the learner has to vouch for what was filled in for them; it stays
+     required, it just no longer looks like an error. Dropped here rather
+     than in `affidavitForms.ts`, which stays verbatim with the explorer.
+     The red `flagGroup` sections (names, SSN) are a different setting and
+     are untouched. */
   if (x.block) return <div className="aff2-fblock"><Blocks blocks={[x.block]} /></div>
   if (x.row) return <div className="aff2-row">{x.row.map((y, i) => <Field key={y.id ?? i} x={y} ctx={ctx} />)}</div>
   return <Field x={x} ctx={ctx} />
