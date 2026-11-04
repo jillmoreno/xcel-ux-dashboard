@@ -318,7 +318,7 @@ describe('Invite Flow V3 — the endings', () => {
     expect(screen.queryByText('Password requirements')).not.toBeInTheDocument()
     expect(screen.getByText(/^be 9-15 characters/)).toBeInTheDocument()
     expect(screen.getByText(/^use only the following special characters !@#\$%\^&\*\._-/)).toBeInTheDocument()
-    expect(screen.getByText(/^be different from username/)).toBeInTheDocument()
+    expect(screen.getByText(/^be different from email/)).toBeInTheDocument()
     const meter = screen.getByRole('meter', { name: 'Password strength' })
     expect(meter).toHaveAttribute('aria-valuenow', '0')
     await userEvent.click(screen.getByRole('button', { name: /demo learner’s password/ }))

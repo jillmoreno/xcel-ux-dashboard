@@ -23,7 +23,7 @@ export function InvitePasswordChecklistV3({
   style,
 }: {
   password: string
-  /** The learner's email — what "be different from username" compares against. */
+  /** The learner's email — what "be different from email" compares against. */
   username: string
   style?: CSSProperties
 }) {

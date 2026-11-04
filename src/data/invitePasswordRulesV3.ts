@@ -8,7 +8,7 @@
  * stricter policy. Seven flat rules, every one required, no nesting.
  *
  * ⚠ THE TWO "NOTHING WRONG YET" RULES READ UNMET ON AN EMPTY FIELD. "Use only
- * the following special characters" and "be different from username" are
+ * the following special characters" and "be different from email" are
  * true of an empty string, and a list that starts with two green ticks before
  * anything is typed reads as half-done. They tick from the first character.
  *
@@ -43,7 +43,8 @@ export const INVITE_PASSWORD_RULES_V3: readonly InvitePasswordRuleV3[] = [
   },
   {
     id: 'username',
-    label: 'be different from username',
+    /* "email", not "username" — the email is the username here (2026-11-04, Afsana). */
+    label: 'be different from email',
     test: (p, u) => p.length > 0 && p.toLowerCase() !== u.trim().toLowerCase(),
   },
 ]
