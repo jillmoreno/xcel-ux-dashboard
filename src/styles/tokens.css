@@ -7820,3 +7820,18 @@ thead .cre-admin-sticky-col { background: var(--admin-fill-soft); }
   --admin-cta-hover: var(--color-cta-600, var(--color-cta-500));
 }
 .cre-admin-soft:hover { background: var(--admin-brand-hover-bg) !important; }
+
+/* TABLE COLUMN TITLES IN TITLE CASE — 2026-11-03, Eric: "change all table
+   header column label styles to be upper lowercase each word". Every Atlas
+   Admin table, and the learner's account tables in the admin's style
+   (`cre-atlas-table`, set under the Quick Links layout). The labels are
+   authored in sentence case ("Last step"), so capitalize reads "Last Step";
+   the uppercase's 0.08em tracking goes with it. Important because the
+   admin's header styles are inline. */
+.cre-atlas-admin thead th,
+.cre-atlas-admin thead th button,
+.cre-atlas-table thead th,
+.cre-atlas-table thead th button {
+  text-transform: capitalize !important;
+  letter-spacing: normal !important;
+}
