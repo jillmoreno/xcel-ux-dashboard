@@ -61,10 +61,31 @@
   flex: none !important;
 }
 
-/* The header: 16 in, and the account pill shows its icon alone — the name does not fit beside the logo at 402. */
-[data-home-bp='mobile'] header {
+/* The header: the account pill shows its icon alone — the name does not fit beside the logo at 402. */
+/* FULL WIDTH (2026-11-04, Eric's request): the shell's header drops its 16
+   inset, so the English | Help band and the row under it (and its rule) run
+   edge to edge; the row keeps 16 inside, so the logo sits on the course
+   card's left edge and the menu button ends on its right. */
+[data-home-bp='mobile'] header:has(.cre-atlas-hdr) {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+[data-home-bp='mobile'] .cre-atlas-hdr > header {
   padding-left: 16px !important;
   padding-right: 16px !important;
+}
+/* The logo at 70% — 77 × 28, from 110 × 40. */
+[data-home-bp='mobile'] .cre-atlas-hdr-logo img {
+  width: 77px !important;
+  height: auto !important;
+}
+/* Home's pill gives way to the three-bar menu, last in the row after the
+   profile, the same 8 from it as the profile is from the alerts. */
+[data-home-bp='mobile'] .cre-atlas-hdr nav[aria-label='Primary'] {
+  display: none !important;
+}
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-burger {
+  display: inline-flex !important;
 }
 [data-home-bp='mobile'] .cre-atlas-hdr-pill:has(svg) {
   font-size: 0 !important;

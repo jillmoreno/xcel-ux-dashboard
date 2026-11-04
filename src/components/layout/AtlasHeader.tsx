@@ -1,5 +1,5 @@
 import type { MouseEvent, ReactNode } from 'react'
-import { AngleRightRegular, Bell, ChevronDown, CircleUser, FileText, LogOut, Receipt, User } from '@/icons'
+import { AngleRightRegular, Bars, Bell, ChevronDown, CircleUser, FileText, LogOut, Receipt, User } from '@/icons'
 import { AtlasHeaderMenu, AtlasHeaderMenuDivider, AtlasHeaderMenuItem } from './AtlasHeaderMenu'
 import './atlasHeader.css'
 
@@ -308,6 +308,20 @@ export function AtlasHeader({
               </AtlasHeaderMenuItem>
             </div>
           </AtlasHeaderMenu>
+          {/* THE PHONE'S MENU (2026-11-04, Eric's request) — the three-bar
+              button that stands in for the Primary nav at the Mobile
+              breakpoint. Hidden everywhere else (atlasHeader.css); shown, and
+              the nav hidden, by home-breakpoints/mobile.css. Trigger only: the
+              menu it opens is not designed yet. */}
+          <button
+            type="button"
+            className="cre-atlas-hdr-pill cre-atlas-hdr-pill--icon cre-atlas-hdr-burger"
+            aria-label="Menu"
+            aria-haspopup="menu"
+            aria-expanded={false}
+          >
+            <Bars size={20} aria-hidden style={{ width: (20 * 448) / 512 }} />
+          </button>
         </div>
       </header>
     </div>

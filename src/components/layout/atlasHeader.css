@@ -56,6 +56,11 @@
 .cre-atlas-hdr .cre-atlas-hdr-pill--icon {
   padding: 0 8px;
 }
+/* The phone's three-bar menu — drawn only at the Mobile breakpoint
+   (home-breakpoints/mobile.css). */
+.cre-atlas-hdr .cre-atlas-hdr-burger {
+  display: none;
+}
 /* 85% of the pill — 2026-10-20, Eric: the profile menu's Mode: Admin /
    Learner switch, "the basic style used in the header buttons but 15%
    smaller". Every size scales; the colours, weight and states stay the
