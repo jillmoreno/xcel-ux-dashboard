@@ -518,6 +518,7 @@
     <section id="build">
       <h2><span class="part">Part 3</span>Building a change, start to finish</h2>
       <p class="lead">This is the loop you will repeat for every piece of work. Each step is one sentence to Claude.</p>
+
       <ol class="steps">
         <li><b class="t">Start from main.</b>
           <div class="say"><span class="me">YOU</span><q>Fetch origin, then make a new branch called feat/short-name from origin/main and switch to it.</q></div>
@@ -546,6 +547,25 @@
         <li><b class="t">Keep going.</b><p>Each further change is step 2, then <code>/share-branch</code> again. Rebase every few days (<a href="#rebase">Part 2</a>) so the final merge is boring. When the next change is really a different piece of work, start a new branch for it rather than letting this one grow.</p></li>
       </ol>
       <div class="note"><p><b>Steps 5 to 9 are one command.</b> <code>/share-branch</code> runs the checks, commits, pushes, waits for the build and hands you the link, then opens the Refinement form — <a href="#refinement">Part 4</a>. The long way above is what it is doing, which is worth knowing for the day it stops halfway.</p></div>
+      <h3>First: which medium? &mdash; and it decides everything after</h3>
+      <p>Some of us explore in a standalone HTML file under <code>public/prototypes/</code> rather than in the product&rsquo;s React. Both are right, for different moments, and picking the wrong one is the mistake this section exists to prevent.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>You are&hellip;</th><th>Work in</th><th>Share with</th><th>Lands on</th></tr></thead>
+        <tbody>
+          <tr><td class="k">Still exploring</td><td>Your HTML prototype &mdash; fast, no build, no types, as many variations as you like</td><td><code>/share-branch</code></td><td>A <b>Refinement</b> row</td></tr>
+          <tr><td class="k">Decided</td><td>The product&rsquo;s React, in <code>src/</code>, behind a flag</td><td><code>/share-to-stage</code></td><td>The <b>Stage</b> build, and your surface&rsquo;s Prototypes row</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note warn"><p><b>Do not <code>/share-to-stage</code> an HTML file.</b> Stage feeds the Prototypes rows, and those rows open the <i>React</i> build &mdash; a document cannot show there. The share will succeed, the stage build will go up, and your row will look exactly as it did, which reads as a broken tool rather than the wrong door. This happened on 2026&#8209;11&#8209;04 and took a day to explain.</p></div>
+
+      <h3>When a prototype should become part of the product</h3>
+      <p>When you have settled on a direction and want it on your Prototypes row, it has to exist in React. You do not write that yourself, and you should not re&#8209;draw it by hand:</p>
+      <div class="say"><span class="me">YOU</span><q>/port-prototype &mdash; here is my Refinement link.</q></div>
+      <p>It opens your <i>running build</i> and reads the rendered page pane by pane before it writes a line of React. That matters: the first port done the other way &mdash; by reading the prototype&rsquo;s source &mdash; put a nav row in the wrong place, missed a whole right&#8209;hand rail and three pieces of copy, and took three passes. Everything it got wrong was visible in a browser in two minutes.</p>
+      <p>Your demo controls come across as <b>design&#8209;bar controls</b>, one per axis, opening on whatever your file opens on. A control your file builds and then hides is treated as a <i>question</i>, not an answer &mdash; you will be asked whether you had settled.</p>
+      <div class="note warn"><p><b>The review is yours, and only yours.</b> You will be handed a stage link and asked to open it beside your prototype and list anything that reads wrong. Do that properly &mdash; nobody else can judge whether a port is faithful, and the alternative is the design lead guessing on your behalf.</p></div>
+      <p>The bar is <b>no design decision is lost</b>, not pixel&#8209;identical. Where a row sits, what a button says, which panes show on which screen, the order of a card&rsquo;s parts &mdash; those are decisions, and say so if one is wrong. An icon the registry has no match for, or a card ten pixels narrower inside the product shell, is not worth your time.</p>
+      <p>Afterwards your work is in React, and that is the baseline. Your next version is a <i>change</i> to it &mdash; not a new file to be ported from scratch, which would repeat every drift in full.</p>
       <h3>Putting a decision on the design bar</h3>
       <p>A prototype carries two control bars, and only one of them is yours.</p>
       <div class="tablewrap"><table>
