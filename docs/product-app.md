@@ -4531,3 +4531,33 @@ Pinned in `CompassStudyPlanner.test.tsx` (the arithmetic by hand, every flow,
 and the Overview reading the same plan) and `AtlasTopNav.test.tsx` (the rail,
 the locked rows, the Learn page). The 2026-10-15 note above this one
 describes the OCT2 port that this replaced the same day.
+
+### Affidavit V2 — the Affidavit Explorer's forms on Home (2026-11-03 → 11-04, Afsana, `feat/affidavits`)
+
+`AffidavitModalV2` (`src/components/e2e/`) forks `AffidavitModal` behind
+`atlas-affidavit-v2` and renders the forms in `src/data/affidavitForms.ts`,
+ported from Afsana's Affidavit Explorer: every state, three moments (before
+the course begins, before the course exam, after it), Pagination or Link out.
+The Design bar's **Affidavit moment** (which replaced Eric's Affidavit control
+there), **state**, **pattern**, **language** and **line of authority** pick
+the form. The data file's header lists every place the forms now differ from
+the explorer; carry those over on the next port.
+
+**Where the wording came from, when it is not the explorer's:**
+
+- **Before course exam — Colorado, Connecticut, West Virginia, Wisconsin.**
+  The attestation text was **provided by Sarah on 11/04/26**; the explorer had
+  no document for these four at this moment. Sarah also confirmed the forms
+  may be titled **"<State> Pre-Exam Attestation"** — they had no preference on
+  what they are called. The learner confirms with a checkbox ("I have read
+  and understand the requirements above"), Afsana's choice over a typed
+  signature.
+- **After course exam — CO, CT, MN, NY, WI, WV.** Fields match each state's
+  own document exactly (Afsana's "State Specific Affidavit" folder): one name
+  field, not First / Middle / Last / Suffix, and each document's own labels.
+- **Non-state specific** (`GEN`) — XCEL's Generic Terms and Conditions (before
+  the course begins, English or Spanish by Affidavit language) and its PE
+  General Attestation (before the course exam), from Afsana's "Non-State
+  Specific" folder.
+
+Pinned in `AffidavitModalV2.test.tsx`.

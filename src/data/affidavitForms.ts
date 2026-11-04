@@ -41,6 +41,11 @@
  *   · 2026-11-04 — Minnesota, After course exam (`MN_POST`): no red box
  *     round "Company & Address where exam was completed" and its City,
  *     State and Zip Code. Afsana's change.
+ *   · 2026-11-04 — Colorado, Connecticut, West Virginia and Wisconsin,
+ *     Before course exam: a Pre-Exam Attestation each (`CO_EXAM` …), where
+ *     the explorer has "Doc not available yet". Wording provided by Sarah on
+ *     11/04/26; at the end of this file.
+ *   · 2026-11-04 — Non-state specific (`GEN`), at the end of this file.
  *
  * ⚠ THE EXPLORER IS AN ADMIN TOOL AND SOME OF THIS IS ITS BOOKKEEPING.
  * `status` (ready / received / missing) says whether the document has been
@@ -848,3 +853,31 @@ FORMS.GEN_EXAM={
   noPrefill:['fullname'],
   note:'Not in the explorer: added 2026-11-04 from the Non-State Specific folder. The button reads "Attest", as the document has it.'
 };
+
+/* ── BEFORE THE COURSE EXAM: CO, CT, WV, WI — added 2026-11-04 ───────────
+   The explorer had no pre-exam document for these four ("Doc not available
+   yet"). ⚠ THE WORDING WAS PROVIDED BY SARAH ON 11/04/26 — one attestation
+   for all four — and Sarah confirmed the forms may be titled "<State>
+   Pre-Exam Attestation", having no preference on what they are called.
+   (Relayed by Afsana; docs/product-app.md, "Affidavit V2", has the same note.)
+   The learner confirms with a checkbox that they read and understood it —
+   Afsana's choice over a typed signature. The button is Florida's pre-exam
+   "I Attest and Confirm". Nothing is pre-filled, so there is no "I confirm
+   that the above information is accurate" box. */
+const PRE_EXAM_ATTESTATION =
+  'I attest that I am the individual registered for this examination and that I will complete the exam independently under the supervision of a disinterested third-party proctor. The proctor may not be a family member, employer, subordinate, student, or any individual with a personal or professional interest in the outcome of the examination. I agree to comply with all examination and proctoring requirements and will not use unauthorized materials, devices, resources, artificial intelligence tools, or assistance from any person during the examination. I understand that any violation of these requirements may result in invalidation of exam results, denial of credit, and other disciplinary action.'
+for (const st of ['CO', 'CT', 'WV', 'WI']) {
+  const key = st + '_EXAM'
+  FORMS[key] = {
+    docHeader: STATES[st] + ' Pre-Exam Attestation',
+    title: STATES[st] + ' Pre-Exam Attestation',
+    agreeLabel: 'I Attest and Confirm',
+    source: 'Wording provided by Sarah, 11/04/26 · one attestation for CO, CT, WV and WI',
+    pages: [{ blocks: [{ p: PRE_EXAM_ATTESTATION }] }],
+    fields: [{ id: 'understood', type: 'checkbox', label: 'I have read and understand the requirements above.', required: true }],
+    note: 'Not in the explorer, which had no document for this state at this moment.',
+  }
+  const entry = ENTRIES.find((e) => e.m === 'exam' && e.st === st)
+  entry.status = 'ready'
+  entry.form = key
+}

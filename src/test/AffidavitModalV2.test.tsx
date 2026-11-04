@@ -344,6 +344,28 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(screen.getByText(/There’s no non-state specific affidavit after course exam/)).toBeTruthy()
   })
 
+  /* BEFORE THE COURSE EXAM IN CO, CT, WV AND WI (2026-11-04) — one
+     attestation, confirmed with a checkbox. */
+  it.each([
+    ['CO', 'Colorado'],
+    ['CT', 'Connecticut'],
+    ['WV', 'West Virginia'],
+    ['WI', 'Wisconsin'],
+  ])('%s before the course exam: the Pre-Exam Attestation, confirmed with a checkbox', async (st, name) => {
+    const onClose = vi.fn()
+    render(<AffidavitModalV2 onClose={onClose} moment="exam" state={st} pattern="page" />)
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(`${name} Pre-Exam Attestation`)
+    expect(screen.getByText(/I attest that I am the individual registered for this examination/)).toBeTruthy()
+    expect(screen.getByText(/artificial intelligence tools/)).toBeTruthy()
+    await ready()
+    const agree = screen.getByRole('button', { name: 'I Attest and Confirm' }) as HTMLButtonElement
+    expect(agree.disabled).toBe(true)
+    fireEvent.click(screen.getByLabelText(/I have read and understand the requirements above/))
+    expect(agree.disabled).toBe(false)
+    fireEvent.click(agree)
+    expect(onClose).toHaveBeenCalled()
+  })
+
   it('resolves every ready entry in the explorer to a form', () => {
     for (const e of ENTRIES) {
       const r = resolveAffidavit(e.m, e.st, 'English')
