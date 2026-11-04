@@ -121,7 +121,9 @@ export function CertificateActionPanel({
             </div>
           )}
 
-          <div style={bodyStyle}>
+          {/* In the card the facts sit 8 nearer the banner (2026-11-04,
+              Eric's request) — 8, from the column's 16. */}
+          <div style={inline ? { ...bodyStyle, marginTop: -8 } : bodyStyle}>
             {inline ? null : (
             <>
             <h3 style={titleStyle}>{data.title}</h3>
@@ -186,7 +188,8 @@ export function CertificateActionPanel({
             )}
           </div>
 
-          <div style={{ marginTop: 8 }}>
+          {/* …and 8 less under them: the column's 16 alone, not 16 + 8. */}
+          <div style={{ marginTop: inline ? 0 : 8 }}>
             <p style={whatToDoStyle}>What would you like to do?</p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
               {/* View Certificate leads on an issued one — it is the thing the

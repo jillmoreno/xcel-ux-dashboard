@@ -156,8 +156,9 @@ export function AtlasCertificateCard({
           <>
             <hr aria-hidden style={{ margin: '4px 0 0', border: 'none', borderTop: '1px solid var(--color-atlas-tan-300)' }} />
             {/* Clicks in here stay here — a card that opens would otherwise
-                take a tap on View Certificate as a tap to close. */}
-            <div onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()} style={{ cursor: 'default' }}>
+                take a tap on View Certificate as a tap to close. 8 more under
+                the rule than the details row's own 7 (2026-11-04). */}
+            <div onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()} style={{ cursor: 'default', paddingTop: 8 }}>
               {expanded}
             </div>
           </>
