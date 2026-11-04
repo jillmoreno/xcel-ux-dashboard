@@ -470,3 +470,24 @@
   grid-auto-rows: auto !important;
   gap: 16px !important;
 }
+
+/* THE PHONE'S INFORMATION PAGES (2026-11-04, Eric's request) — Exam
+   Information, a Get Licensed step and State Requirements, opened from the
+   three-bar menu as pages in Home's place (MembershipOverview,
+   `cre-phone-info-page`). Home's 16 at the sides and on top; the page header
+   (Back to Home and the title) flush in that; and the sheet's own header —
+   its Close, eyebrow and title — goes, since the page header says it. */
+[data-home-bp='mobile'] section:has(> .cre-phone-info-page) {
+  padding: 16px 16px 40px !important;
+}
+[data-home-bp='mobile'] .cre-phone-info-page > header {
+  padding: 0 !important;
+}
+[data-home-bp='mobile'] .cre-phone-info-body > div:first-child:not(:only-child) {
+  display: none !important;
+}
+[data-home-bp='mobile'] .cre-phone-info-body > div {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-top: 16px !important;
+}
