@@ -211,7 +211,9 @@ export function InvitedCheckoutPageV3() {
   /* ⚠ PHONE IS THE GUEST FORM'S ONLY FIELD OUTSIDE `PostalAddress`, so it is
      its own state rather than a tenth member of a type three other forms
      share. */
-  const [phone, setPhone] = useState(knownAccount ? E2E_LEARNER_PHONE : '')
+  /* An Atlas log-in fills the phone too, from the account (2026-11-04). */
+  const filledFromAccount = knownAccount || (v3Check.accountKnown && emailVerified)
+  const [phone, setPhone] = useState(filledFromAccount ? E2E_LEARNER_PHONE : '')
   /* ⚠ THE GATE IS A PRESS NOW, NOT A WATCHER — 2026-10-22, Jillienne: "there
      should be a save and continue that unlocks the next step". Payment used to
      open the moment the last field happened to be valid, which is a section
@@ -221,7 +223,7 @@ export function InvitedCheckoutPageV3() {
   /* …and the signed-in arm arrives SAVED: the account's details were
      confirmed when the account was made, so Payment is open from the first
      render. Editing a field withdraws that, as it does on every arm. */
-  const [studentSaved, setStudentSaved] = useState(knownAccount)
+  const [studentSaved, setStudentSaved] = useState(filledFromAccount)
   /* ⚠ PRESSING SAVE IS ALSO "I'VE FINISHED TYPING" — 2026-10-22. The error
      waited on blur alone, which is right while someone is still in the field
      and wrong at the moment they try to move on: with a mismatch the Save
@@ -370,7 +372,11 @@ export function InvitedCheckoutPageV3() {
         ? STUDENT_ADDRESS
         : { ...prev, first: identity.first.trim(), last: identity.last.trim() },
     )
-    setStudentSaved(false)
+    /* Logged in to an account that holds the details: the whole student
+       section arrives done, as the signed-in arm's does (2026-11-04, Afsana:
+       "their info. should be pre-populated"). */
+    if (v3Check.accountKnown) setPhone(E2E_LEARNER_PHONE)
+    setStudentSaved(v3Check.accountKnown)
     const next = new URLSearchParams(params)
     next.set(EMAIL_VERIFIED_PARAM, '1')
     /* `replace`, as the partner answer: the learner stays on the page they

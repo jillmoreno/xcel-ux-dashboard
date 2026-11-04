@@ -564,7 +564,9 @@ describe('Invite Flow V3 — not signed in to XCEL (OCD)', () => {
       expect(flow.screens.slice(0, 2)).toEqual(['cart', 'pc-modal'])
     }
     expect(ocdCartFlowV3(base, 'mixed', 'atlas').screens).toContain('drop-notice')
-    expect(emailCheckV3(ocdCartFlowV3(base, 'targeted', 'atlas')).second).toBe('login')
+    expect(emailCheckV3(ocdCartFlowV3(base, 'targeted', 'atlas'))).toEqual({ second: 'login', signsIn: false, accountKnown: true })
+    expect(emailCheckV3(ocdCartFlowV3(base, 'mixed', 'atlas')).accountKnown).toBe(true)
+    expect(emailCheckV3(ocdCartFlowV3(base, 'targeted', 'no-atlas')).accountKnown).toBe(false)
     expect(emailCheckV3(ocdCartFlowV3(base, 'targeted', 'no-atlas')).second).toBe('code')
     expect(verifiesEmailFirst(ocdCartFlowV3(base, 'none', 'atlas'))).toBe(false)
     /* Its controls are the signed-in flow's. */
@@ -715,6 +717,31 @@ describe('Invite Flow V3 — picking another flow restarts the walk', () => {
   })
 })
 
+describe('Invite Flow V3 — the OCD flows’ checkout after an Atlas log-in', () => {
+  for (const id of ['xcel-signed-out', 'xcel-signed-in']) {
+    it(`${id}: fills the learner’s details and locks the email`, async () => {
+      renderAt(
+        CHECKOUT,
+        `invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:${id},invite-v3-cart:targeted,invite-v3-email-account:atlas`,
+      )
+      /* The cart answers the partner question on a real walk; here, No. */
+      const no = screen.queryByRole('button', { name: 'NO' })
+      if (no) await userEvent.click(no)
+      await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+      await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+      await userEvent.type(screen.getByLabelText(/^Password/), 'anything')
+      await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      expect(screen.getByDisplayValue('Jordan')).toBeInTheDocument()
+      expect(screen.getByDisplayValue('sam@example.com')).toBeDisabled()
+      expect(screen.getByAltText('Locked')).toBeInTheDocument()
+      /* The phone too, so payment is open — nothing left to fill. */
+      expect(screen.getByDisplayValue('555 010 0199')).toBeInTheDocument()
+      expect(screen.queryByText(/Complete your student information/)).not.toBeInTheDocument()
+    })
+  }
+})
+
 describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
   const SIGNED_IN = 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-in'
   const base = INVITE_FLOWS_V3.find((f) => f.id === 'xcel-signed-in')!
@@ -725,7 +752,9 @@ describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
     expect(none.base).toBe('xcel-signed-in')
 
     const atlas = signedInFlowV3(base, 'targeted', 'atlas', true)
-    expect(emailCheckV3(atlas)).toEqual({ second: 'login', signsIn: false, accountKnown: false })
+    /* Logged in to Atlas: the checkout arrives filled (2026-11-04). */
+    expect(emailCheckV3(atlas)).toEqual({ second: 'login', signsIn: false, accountKnown: true })
+    expect(emailCheckV3(signedInFlowV3(base, 'targeted', 'no-atlas', true)).accountKnown).toBe(false)
     expect(inviteEndingV3(atlas)).toBe('ready')
     expect(atlas.base).toBe('b2c-guest')
 

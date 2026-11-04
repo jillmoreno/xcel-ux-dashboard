@@ -2843,7 +2843,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     defaultEnabled: true,
     defaultVariant: 'no-atlas',
     variants: [
-      { value: 'atlas', label: 'Atlas account', description: 'Log in, enter the rest at checkout, then Start course.' },
+      { value: 'atlas', label: 'Atlas account', description: 'Log in, the checkout filled from the account, then Start course.' },
       { value: 'no-atlas', label: 'No Atlas account', description: 'A code, enter the rest at checkout, then Create password.' },
     ],
     page: 'dashboard-rebrand',

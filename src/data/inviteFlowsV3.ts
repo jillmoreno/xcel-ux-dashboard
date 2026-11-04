@@ -294,7 +294,9 @@ export function emailCheckV3(flow: InviteFlowV3): {
   const signsIn = flow.screens.includes('signing-in')
   /* Filled when the walk skips the empty student form (`checkout-1`) — the
      Has Atlas flows, which sign in to an account that holds the details. The
-     signed-out OCD learner logs in too, but enters the rest at checkout. */
+     OCD learner whose email has Atlas too, since 2026-11-04 (Afsana: "after a
+     user with an atlas account signs in by entering their password, their
+     info. should be pre-populated"). */
   return { second, signsIn, accountKnown: !flow.screens.includes('checkout-1') }
 }
 
@@ -455,6 +457,8 @@ export function signedInFlowV3(
   }
   const check = email === 'atlas' ? ['verify-login-1', 'login-1', 'login-2'] : [...VERIFY, ...CODE]
   const ending = email === 'atlas' ? ['ready'] : NEW_PASSWORD
+  /* Logged in to Atlas: the checkout arrives filled from the account (2026-11-04). */
+  const student = email === 'atlas' ? [] : ['checkout-1']
   return {
     ...flow,
     base: signedOut ? 'b2c-guest' : 'xcel-signed-in',
@@ -463,7 +467,7 @@ export function signedInFlowV3(
       ...(cart === 'mixed' ? ['drop-notice'] : []),
       'signing-out',
       ...check,
-      'checkout-1',
+      ...student,
       ...CHECKOUT,
       'placing',
       ...ending,
@@ -479,6 +483,8 @@ export function ocdCartFlowV3(flow: InviteFlowV3, cart: V3CartContents, email: V
   if (cart === 'none') return { ...flow, base: 'b2c-guest', screens: ['cart', 'pc-modal', 'checkout-1', ...CHECKOUT] }
   const check = email === 'atlas' ? ['verify-login-1', 'login-1', 'login-2'] : [...VERIFY, ...CODE]
   const ending = email === 'atlas' ? ['ready'] : NEW_PASSWORD
+  /* Logged in to Atlas: the checkout arrives filled from the account (2026-11-04). */
+  const student = email === 'atlas' ? [] : ['checkout-1']
   return {
     ...flow,
     base: 'b2c-guest',
@@ -486,7 +492,7 @@ export function ocdCartFlowV3(flow: InviteFlowV3, cart: V3CartContents, email: V
       ...CART_START,
       ...(cart === 'mixed' ? ['drop-notice'] : []),
       ...check,
-      'checkout-1',
+      ...student,
       ...CHECKOUT,
       'placing',
       ...ending,
