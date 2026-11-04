@@ -458,3 +458,15 @@
 [data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > div:nth-child(3) {
   padding-bottom: 4px !important;
 }
+
+/* MY CERTIFICATES ON A PHONE (2026-11-04, Eric's request): Home's 16 at the
+   sides, the cards full width in one column, each as tall as its content —
+   the desktop grid's equal-height rows (`grid-auto-rows: 1fr`) go. */
+[data-home-bp='mobile'] section:has(div[style*='minmax(340px, 1fr)']) {
+  padding: 0 16px 40px !important;
+}
+[data-home-bp='mobile'] div[style*='minmax(340px, 1fr)'] {
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-auto-rows: auto !important;
+  gap: 16px !important;
+}
