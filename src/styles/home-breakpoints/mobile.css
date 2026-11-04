@@ -136,10 +136,11 @@
 [data-home-bp='mobile'] section[aria-label='Course progress'] {
   align-items: flex-start !important;
 }
+/* …centred over the dial (2026-11-04, Eric's request; it sat left). */
 [data-home-bp='mobile'] section[aria-label='Course progress'] > p:first-child {
-  align-self: flex-start !important;
+  align-self: center !important;
   width: min-content !important;
-  text-align: left !important;
+  text-align: center !important;
 }
 [data-home-bp='mobile'] section[aria-label='Course progress'] > div[aria-label^='Course progress'] {
   width: 100px !important;
