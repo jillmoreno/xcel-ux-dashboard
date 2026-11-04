@@ -183,3 +183,28 @@
 .cre-atlas-hdr .cre-atlas-dd:not(.is-open):hover {
   background-color: var(--atlas-hdr-tint);
 }
+
+/* THE PROFILE MENU'S ROWS IN QUICK LINKS' OWN STYLE (2026-11-04, Eric's
+   request), at every width — the card's 13/18 secondary text, a 13 icon in
+   an 18 box in the home-icon colour, 8 between, rows on its 34 pitch. Only
+   with `quickLinksMenu`, the switch that already gives these rows Quick
+   Links' hover. */
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item {
+  gap: 8px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--color-text-secondary);
+}
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item > span[aria-hidden]:first-child {
+  width: 18px;
+  color: var(--color-atlas-home-icon, var(--color-compass-page-button));
+}
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item > span[aria-hidden]:first-child svg {
+  width: 13px;
+  height: 13px;
+}
+/* The hover's blue again, after the resting ink above, or that would win. */
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:hover,
+.cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:focus-visible {
+  color: var(--color-compass-page-button);
+}
