@@ -1493,6 +1493,9 @@ function PlatformShellBody() {
                  heading, and only on the Atlas chrome that draws it. */
               title={active === 'certificates' ? 'My Certificates' : SECTION_TITLES[active]}
               onBack={() => handleSelect('dashboard')}
+              /* The phone's path runs through Profile on the other account
+                 pages — "Home / Profile / Transcripts" (2026-11-04). */
+              crumbs={isAccountSection(active) && active !== 'profile' ? [{ label: 'Profile', onClick: () => handleSelect('profile') }] : undefined}
               // My Courses centres its content; the header follows it — until
               // the rail goes and the cards run full width (2026-11-02).
               contentWidth={

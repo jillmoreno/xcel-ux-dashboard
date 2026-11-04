@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import { AngleLeftRegular } from '@/icons'
 import { pageHeaderWrapStyle } from './pageHeaderStyles'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 
 /**
  * The ATLAS copy of `SectionPageHeader` — 2026-10-06, Eric's request: "change
@@ -19,6 +20,7 @@ export function AtlasSectionPageHeader({
   contentWidth,
   indent,
   extraTop,
+  crumbs,
 }: {
   title: string
   onBack: () => void
@@ -32,7 +34,14 @@ export function AtlasSectionPageHeader({
   indent?: number
   /** More room above the crumb, on top of the shared 24 (2026-11-03). */
   extraTop?: number
+  /** The pages between Home and this one, for the phone's path crumb —
+   *  "Home / Profile / Transcripts" (2026-11-04). Each is a link. */
+  crumbs?: { label: string; onClick: () => void }[]
 }) {
+  /* ON A PHONE THE CRUMB IS A PATH (2026-11-04, Eric's request): "Home /
+     Profile / Transcripts" — Home and the pages between are links, the page
+     you are on is plain text, and "Back to Home" reads "Home". */
+  const phonePath = useFeatureFlag('home-breakpoint').variant === 'mobile'
   return (
     // No bottom padding (2026-10-06, Eric's request) — main's header style is 16;
     // the page's own 24 above its first row is the only gap left.
@@ -47,6 +56,23 @@ export function AtlasSectionPageHeader({
         ...(extraTop != null ? { paddingTop: 24 + extraTop } : null),
       }}
     >
+      {phonePath ? (
+        <nav aria-label="Breadcrumb" style={CRUMB_ROW}>
+          <button type="button" onClick={onBack} data-cta-id="nav.back-home" className="cre-link-action cre-cta-ink" style={CRUMB_BUTTON}>
+            Home
+          </button>
+          {(crumbs ?? []).map((c) => (
+            <span key={c.label} style={{ display: 'contents' }}>
+              <span aria-hidden style={CRUMB_SLASH}>/</span>
+              <button type="button" onClick={c.onClick} className="cre-link-action cre-cta-ink" style={CRUMB_BUTTON}>
+                {c.label}
+              </button>
+            </span>
+          ))}
+          <span aria-hidden style={CRUMB_SLASH}>/</span>
+          <span aria-current="page" style={CRUMB_CURRENT}>{title}</span>
+        </nav>
+      ) : (
       <p style={CRUMB_ROW}>
         <button
           type="button"
@@ -59,6 +85,7 @@ export function AtlasSectionPageHeader({
           Back to Home
         </button>
       </p>
+      )}
       {/* The course titles' class: one weight under the other headings
           (2026-10-06, Eric's request) — 400 under Source Serif 4. */}
       <h1 className="cre-compass-course-title" style={TITLE}>
@@ -91,6 +118,10 @@ const CRUMB_BUTTON: CSSProperties = {
   lineHeight: 'inherit',
   fontWeight: 600,
 }
+/* The phone's path: a slash between steps, and the page you are on in the
+   body's own ink, not a link's. */
+const CRUMB_SLASH: CSSProperties = { margin: '0 6px', color: 'var(--color-text-secondary)' }
+const CRUMB_CURRENT: CSSProperties = { color: 'var(--color-text-secondary)', fontWeight: 400 }
 /* Serif H5, 32/34 (2026-10-06: H1 64/64 first, then H3 44/46, then H4 38/40,
    then one more level down to this), scaled
    with the Headings control's face. Still an <h1> element: it is the page's

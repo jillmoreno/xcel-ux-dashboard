@@ -1731,6 +1731,10 @@ export function MembershipOverview({
     setOpenStepId(null)
     setDetailOpen(false)
   }
+  /* A step or the FAQ opened FROM Exam Information keeps it in the path:
+     "Home / Exam Information / How to schedule your exam". */
+  const fromExamInfo = examDetailsOpen && (Boolean(openStep) || openStepId === EXAM_FAQ_STEP_ID)
+  const infoCrumbs = fromExamInfo ? [{ label: 'Exam Information', onClick: () => setOpenStepId(null) }] : undefined
   const infoPage: { title: string; body: ReactNode } | null = !phoneFrame
     ? null
     : openStepId === EXAM_FAQ_STEP_ID
@@ -1745,7 +1749,7 @@ export function MembershipOverview({
   if (infoPage) {
     return (
       <div className="cre-phone-info-page">
-        <AtlasSectionPageHeader title={infoPage.title} onBack={closeInfo} />
+        <AtlasSectionPageHeader title={infoPage.title} onBack={closeInfo} crumbs={infoCrumbs} />
         <div className="cre-phone-info-body">{infoPage.body}</div>
       </div>
     )
