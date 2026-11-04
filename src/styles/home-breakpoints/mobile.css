@@ -151,7 +151,8 @@
   height: 100% !important;
 }
 [data-home-bp='mobile'] section[aria-label='Course progress'] > div[aria-label^='Course progress'] > div > span:first-child {
-  font-size: 28px !important;
+  /* 29 since the page's +1 (2026-11-04); 28 before. */
+  font-size: 29px !important;
   line-height: 24px !important;
 }
 
@@ -301,7 +302,8 @@
    Quick Links one the profile menu already wears. */
 [data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-item {
   gap: 8px !important;
-  font-size: 13px !important;
+  /* 14 since the page's +1 (2026-11-04); the card's 13 before. */
+  font-size: 14px !important;
   line-height: 18px !important;
   color: var(--color-text-secondary) !important;
 }
@@ -316,4 +318,52 @@
 [data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-item > span[aria-hidden]:first-child svg {
   width: 13px !important;
   height: 13px !important;
+}
+
+/* EVERY TEXT SIZE ON THE PHONE PAGE ONE PIXEL UP (2026-11-04, Eric's request)
+   — except the course title and the buttons: the CTAs, the header's pills
+   and the progress tabs (`:not(…)` below). Most sizes on the page are inline
+   pixels, so they are matched on the style attribute, size by size; the few
+   set by var or class follow after. The rules above that pin a size on the
+   phone (the dial's figure, the menu rows) carry their own +1. */
+[data-home-bp='mobile'] [style*="font-size: 10px"]:not(.cre-compass-primary, .cre-compass-secondary, [role='tab'], .cre-atlas-hdr-pill, .cre-compass-primary *, .cre-compass-secondary *, [role='tab'] *, .cre-atlas-hdr-pill *) {
+  font-size: 11px !important;
+}
+[data-home-bp='mobile'] [style*="font-size: 11px"]:not(.cre-compass-primary, .cre-compass-secondary, [role='tab'], .cre-atlas-hdr-pill, .cre-compass-primary *, .cre-compass-secondary *, [role='tab'] *, .cre-atlas-hdr-pill *) {
+  font-size: 12px !important;
+}
+[data-home-bp='mobile'] [style*="font-size: 12px"]:not(.cre-compass-primary, .cre-compass-secondary, [role='tab'], .cre-atlas-hdr-pill, .cre-compass-primary *, .cre-compass-secondary *, [role='tab'] *, .cre-atlas-hdr-pill *) {
+  font-size: 13px !important;
+}
+[data-home-bp='mobile'] [style*="font-size: 13px"]:not(.cre-compass-primary, .cre-compass-secondary, [role='tab'], .cre-atlas-hdr-pill, .cre-compass-primary *, .cre-compass-secondary *, [role='tab'] *, .cre-atlas-hdr-pill *) {
+  font-size: 14px !important;
+}
+[data-home-bp='mobile'] [style*="font-size: 14px"]:not(.cre-compass-primary, .cre-compass-secondary, [role='tab'], .cre-atlas-hdr-pill, .cre-compass-primary *, .cre-compass-secondary *, [role='tab'] *, .cre-atlas-hdr-pill *) {
+  font-size: 15px !important;
+}
+[data-home-bp='mobile'] [style*="font-size: 15px"]:not(.cre-compass-primary, .cre-compass-secondary, [role='tab'], .cre-atlas-hdr-pill, .cre-compass-primary *, .cre-compass-secondary *, [role='tab'] *, .cre-atlas-hdr-pill *) {
+  font-size: 16px !important;
+}
+[data-home-bp='mobile'] [style*="font-size: 16px"]:not(.cre-compass-primary, .cre-compass-secondary, [role='tab'], .cre-atlas-hdr-pill, .cre-compass-primary *, .cre-compass-secondary *, [role='tab'] *, .cre-atlas-hdr-pill *) {
+  font-size: 17px !important;
+}
+[data-home-bp='mobile'] [style*="font-size: 17px"]:not(.cre-compass-primary, .cre-compass-secondary, [role='tab'], .cre-atlas-hdr-pill, .cre-compass-primary *, .cre-compass-secondary *, [role='tab'] *, .cre-atlas-hdr-pill *) {
+  font-size: 18px !important;
+}
+[data-home-bp='mobile'] [style*="font-size: 18px"]:not(.cre-compass-primary, .cre-compass-secondary, [role='tab'], .cre-atlas-hdr-pill, .cre-compass-primary *, .cre-compass-secondary *, [role='tab'] *, .cre-atlas-hdr-pill *) {
+  font-size: 19px !important;
+}
+[data-home-bp='mobile'] [style*="font-size: 19px"]:not(.cre-compass-primary, .cre-compass-secondary, [role='tab'], .cre-atlas-hdr-pill, .cre-compass-primary *, .cre-compass-secondary *, [role='tab'] *, .cre-atlas-hdr-pill *) {
+  font-size: 20px !important;
+}
+[data-home-bp='mobile'] [style*="font-size: 20px"]:not(.cre-compass-primary, .cre-compass-secondary, [role='tab'], .cre-atlas-hdr-pill, .cre-compass-primary *, .cre-compass-secondary *, [role='tab'] *, .cre-atlas-hdr-pill *) {
+  font-size: 21px !important;
+}
+/* The steps' titles, sized by the H8 token. */
+[data-home-bp='mobile'] [style*="font-size: var(--type-atlas-h8-base-size"]:not(.cre-compass-primary, .cre-compass-secondary, [role='tab'], .cre-atlas-hdr-pill, .cre-compass-primary *, .cre-compass-secondary *, [role='tab'] *, .cre-atlas-hdr-pill *) {
+  font-size: calc(var(--type-atlas-h8-base-size, 20px) + 1px) !important;
+}
+/* English | Help, sized by their class. */
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-eyebrow-link {
+  font-size: 13px !important;
 }
