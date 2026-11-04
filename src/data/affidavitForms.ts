@@ -38,6 +38,9 @@
  *     Kept on purpose though no document has them: the "I confirm that the
  *     above information is accurate" checkbox (the product pre-fills these
  *     forms; Afsana, 2026-11-04) and the pre-filled, locked Today's Date.
+ *   · 2026-11-04 — Minnesota, After course exam (`MN_POST`): no red box
+ *     round "Company & Address where exam was completed" and its City,
+ *     State and Zip Code. Afsana's change.
  *
  * ⚠ THE EXPLORER IS AN ADMIN TOOL AND SOME OF THIS IS ITS BOOKKEEPING.
  * `status` (ready / received / missing) says whether the document has been
@@ -654,7 +657,8 @@ FORMS.CT_POST=(function(){
     {who:'student',blocks:[{h:'Student / Licensee Name and Certification'}],fields:[
       {id:'examname',label:'Name of Exam',readonly:true,value:'Certification Exam -Minnesota Life Prelciensing'},
       {id:'examdt',type:'datetime-local',label:'Date & Time of Exam Completion',required:true},
-      {flagGroup:addr('loc_','Company & Address where exam was completed',true)},
+      /* No red box (2026-11-04, Afsana); it was a `flagGroup`. */
+      ...addr('loc_','Company & Address where exam was completed',true),
       /* The document's own heading and one Name field (2026-11-04); it was First / Middle / Last / Suffix. */
       {block:{h4:'Student’s Full Legal Name, License Number, & DOB'}},
       {id:'name',label:'Name',required:true,placeholder:'Full legal name',ac:'name',sameAs:'fullname'},

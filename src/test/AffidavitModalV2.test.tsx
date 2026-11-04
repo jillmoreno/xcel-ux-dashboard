@@ -281,6 +281,13 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect((screen.getByLabelText(/Today.s Date/) as HTMLInputElement).readOnly).toBe(true)
   })
 
+  it('Minnesota: where the exam was completed is not boxed in red', () => {
+    render(<AffidavitModalV2 onClose={() => {}} moment="post" state="MN" pattern="page" />)
+    const company = screen.getByLabelText(/Company & Address where exam was completed/)
+    expect(company.closest('.aff2-flag')).toBeNull()
+    expect(document.querySelectorAll('.aff2-flag')).toHaveLength(0)
+  })
+
   it('Minnesota: the mailing address is optional, with no "same as" checkbox', () => {
     const fields = formFields('MN_POST')
     expect(fields.find((x) => x.id === 'mail_same')).toBeUndefined()
