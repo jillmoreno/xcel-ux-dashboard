@@ -16,7 +16,7 @@ import {
 import { PartnerCodeAskModal } from '@/components/e2e/PartnerCodeAsk'
 import { SigningOutDialog } from '@/components/e2e/SigningOutDialog'
 import { PartnerCodeEntryDialog, UnsupportedItemDialog } from '@/components/e2e/SignedInCartDialogs'
-import { SIGNING_OUT_MS, V3_DROPPED_PARAM, V3_SIGNED_OUT_PARAM, useV3SignedInCart } from '@/data/inviteFlowsV3'
+import { SIGNING_OUT_MS, V3_DROPPED_PARAM, V3_SIGNED_OUT_PARAM, useInviteFlowV3, useV3SignedInCart } from '@/data/inviteFlowsV3'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { INVITE_FLOW_VERSION_FLAG, resolveInviteFlowVersion } from '@/data/inviteFlowVersions'
 import { useEndToEndDemoParams, useEndToEndPageChrome } from './endToEndDemo'
@@ -61,7 +61,12 @@ export function XcelCartPage() {
   /* Checkout asks the signed-in learner the Partner Code question first,
      whatever the cart holds; what follows depends on the answer and the cart
      (`onSignedInAnswer`). Once signed out they are a guest like any other. */
-  const signedInAsk = signedInCart != null && !signedOut
+  /* ⚠ B2B → INVITE → CHECKOUT (2026-11-04, Afsana): the mixed cart comes
+     first, then the partner's invitation — so Checkout here hands over to the
+     invitation email, and the notice waits for the secure checkout. */
+  const invitedNext = useInviteFlowV3().id === 'invite-mixed-cart'
+  const signedInAsk = signedInCart != null && !signedOut && !invitedNext
+  const goToInvitation = () => navigate({ pathname: '/end-to-end-demo/email', search: params.toString() })
   /* WHERE CHECKOUT GOES. On the `page` arm the partner-code question is a step
      of its own between here and the checkout; on the `modal` arm the checkout
      draws it over itself, so this goes straight there. Flows that already have
@@ -138,7 +143,22 @@ export function XcelCartPage() {
   }
 
   return (
-    <div style={PAGE}>
+    <div
+      style={invitedNext ? { ...PAGE, cursor: 'pointer' } : PAGE}
+      /* B2B → Invite → Checkout: the cart is only the scene-setter, so a click
+         ANYWHERE on it moves the walk on to the invitation (2026-11-04,
+         Afsana). Capture phase, and stopped, so no control on the page —
+         Remove, the header's links — does its own thing first. */
+      onClickCapture={
+        invitedNext
+          ? (e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              goToInvitation()
+            }
+          : undefined
+      }
+    >
       {signingOut ? <SigningOutDialog /> : null}
       {entering ? <PartnerCodeEntryDialog onCancel={() => setEntering(false)} /> : null}
       {dropping && signedInCart ? (
@@ -237,9 +257,11 @@ export function XcelCartPage() {
                   className="cre-e2e-cta"
                   style={CHECKOUT}
                   onClick={() =>
-                    signedInAsk || asksHere
-                      ? setAsking(true)
-                      : navigate({ pathname: checkoutPath, search: params.toString() })
+                    invitedNext
+                      ? goToInvitation()
+                      : signedInAsk || asksHere
+                        ? setAsking(true)
+                        : navigate({ pathname: checkoutPath, search: params.toString() })
                   }
                 >
                   Checkout

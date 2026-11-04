@@ -717,6 +717,27 @@ describe('Invite Flow V3 — picking another flow restarts the walk', () => {
   })
 })
 
+describe('Invite Flow V3 — B2B → Invite → Checkout', () => {
+  const MIXED = 'invite-flow-version:v3,invite-v3-model:b2b-checkout,invite-v3-flow-b2b-checkout:invite-mixed-cart'
+
+  it('opens the checkout under “not supported”, then checks the invitation’s address', async () => {
+    renderAt(CHECKOUT, `${MIXED},invite-v3-email-account:no-atlas`)
+    const notice = screen.getByRole('dialog', { name: /1 item in your cart is not supported/ })
+    expect(notice).toHaveTextContent('New York Life and Health Flashcards')
+    /* Nothing else opens until the notice is answered. */
+    expect(screen.queryByRole('dialog', { name: 'Enter your one-time code' })).not.toBeInTheDocument()
+    await userEvent.click(within(notice).getByRole('button', { name: 'Proceed to checkout' }))
+    expect(screen.getByTestId('where').textContent).toContain('dropped=1')
+    expect(screen.getByRole('dialog', { name: 'Enter your one-time code' })).toHaveTextContent(E2E_LEARNER_EMAIL)
+  })
+
+  it('asks for a log-in after the notice when the address has Atlas', async () => {
+    renderAt(CHECKOUT, `${MIXED},invite-v3-email-account:atlas`)
+    await userEvent.click(screen.getByRole('button', { name: 'Proceed to checkout' }))
+    expect(screen.getByRole('dialog', { name: 'Log in to continue' })).toHaveTextContent(E2E_LEARNER_EMAIL)
+  })
+})
+
 describe('Invite Flow V3 — the OCD flows’ checkout after an Atlas log-in', () => {
   for (const id of ['xcel-signed-out', 'xcel-signed-in']) {
     it(`${id}: fills the learner’s details and locks the email`, async () => {
@@ -783,6 +804,28 @@ describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
       </MemoryRouter>,
     )
   }
+
+  it('B2B → Invite → Checkout: the mixed cart’s Checkout opens the invitation email', async () => {
+    cartAt('invite-flow-version:v3,invite-v3-model:b2b-checkout')
+    expect(screen.getByText('New York Life and Health Flashcards')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByTestId('where').textContent).toMatch(/^\/end-to-end-demo\/email\?/)
+  })
+
+  it('B2B → Invite → Checkout: a click anywhere on the cart opens the invitation', async () => {
+    cartAt('invite-flow-version:v3,invite-v3-model:b2b-checkout')
+    await userEvent.click(screen.getByRole('heading', { name: 'Your cart' }))
+    expect(screen.getByTestId('where').textContent).toMatch(/^\/end-to-end-demo\/email\?/)
+  })
+
+  it('B2B → Invite → Checkout: Remove does not empty the cart — it opens the invitation too', async () => {
+    cartAt('invite-flow-version:v3,invite-v3-model:b2b-checkout')
+    await userEvent.click(screen.getByRole('button', { name: 'Remove' }))
+    const where = screen.getByTestId('where').textContent!
+    expect(where).toMatch(/^\/end-to-end-demo\/email\?/)
+    expect(where).toContain('pkg=premier')
+  })
 
   it('shows My Training, not Log In, while signed in', () => {
     cartAt(`${SIGNED_IN},invite-v3-cart:targeted`)

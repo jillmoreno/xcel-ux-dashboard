@@ -2740,7 +2740,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        other's. `inviteFlowsV3.ts` carries the long form. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2b', 'invite:v3-b2b-direct-email', 'invite:v3-b2c', 'invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2b-direct-email', 'invite:v3-b2b-checkout', 'invite:v3-b2c', 'invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
     group: 'Navigation',
     label: 'Model type',
     description: 'Invite Flow V3 only. Which business model the flow belongs to: B2B invite (a partner’s QR code) or B2C guest checkout (direct from the public site’s cart). Picking one shows that model’s flows.',
@@ -2749,6 +2749,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     variants: [
       { value: 'b2b', label: 'B2B invite', description: 'A partner’s QR code. Partner pricing; the learner proves their email by code.' },
       { value: 'b2c', label: 'B2C guest', description: 'Direct from the public site’s cart. No partner.' },
+      { value: 'b2b-checkout', label: 'B2B → Invite → Checkout', description: 'A cart already holding a mixed order, then a partner’s invitation. Partner pricing; the unsupported item is dropped at checkout.' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -2809,6 +2810,24 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'invite-v3-flow-b2b-checkout',
+    /* V3's B2B → Invite → Checkout flows — one so far (2026-11-04, Afsana),
+       shown only while Model type is that model. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2b-checkout'],
+    group: 'Navigation',
+    label: 'Invite flow',
+    picker: 'sheet',
+    description: 'Invite Flow V3, B2B → Invite → Checkout. A cart holding a mixed order, the partner’s invitation, the product page; Purchase opens the checkout under “1 item in your cart is not supported”, then a log-in or a code (pick Email belongs to beside this).',
+    defaultEnabled: true,
+    defaultVariant: 'invite-mixed-cart',
+    variants: [
+      { value: 'invite-mixed-cart', label: 'Mixed cart, then invitation', description: 'Mixed cart, then the partner’s invitation. Purchase drops the unsupported item, then a log-in or a code.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'invite-v3-cart',
     /* THE OCD LEARNER'S CART — 2026-11-02, Afsana. Which of the three cases
        the "Signed in to XCEL (OCD)" flow walks — and, since 2026-11-03, "Not
@@ -2836,7 +2855,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Direct Email too (2026-11-04): the supplied address, after Purchase. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2b-direct-email', 'invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
+    surfaces: ['invite:v3-b2b-direct-email', 'invite:v3-b2b-checkout', 'invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
     group: 'Navigation',
     label: 'Email belongs to',
     description: 'Invite Flow V3 — B2B Direct Email (the supplied address, after Purchase), signed in to XCEL or not (targeted or mixed cart), and the alternative that asks for a partner code at Go to Cart. The email given at Verify your email: an Atlas account (log in, then Start course) or no Atlas account (a code, then Create password).',

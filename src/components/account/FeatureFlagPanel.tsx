@@ -180,6 +180,7 @@ const REBRAND_FLAGS = [
   'invite-v3-model',
   'invite-v3-flow-b2b',
   'invite-v3-flow-b2c',
+  'invite-v3-flow-b2b-checkout',
   'invite-v3-cart',
   'invite-v3-email-account',
   'partner-code-ask',

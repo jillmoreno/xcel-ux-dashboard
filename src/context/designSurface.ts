@@ -66,6 +66,9 @@ export type DesignSurfaceId =
   /* …and B2B's Direct Email flow, which adds the Email belongs to control
      (2026-11-04). */
   | 'invite:v3-b2b-direct-email'
+  /* …and the B2B → Invite → Checkout model (2026-11-04), its own flow
+     control and Email belongs to. */
+  | 'invite:v3-b2b-checkout'
   | 'invite:v3-b2c'
   /* …and B2C's signed-in OCD flow, which adds its cart and email controls
      (2026-11-02). */
@@ -127,6 +130,7 @@ export const DESIGN_SURFACE_LABELS: Record<DesignSurfaceId, string> = {
   invite: 'Invite & Checkout',
   'invite:v3-b2b': 'Invite Flow V3 · B2B invite',
   'invite:v3-b2b-direct-email': 'Invite Flow V3 · B2B invite',
+  'invite:v3-b2b-checkout': 'Invite Flow V3 · B2B → Invite → Checkout',
   'invite:v3-b2c': 'Invite Flow V3 · B2C guest checkout',
   'invite:v3-b2c-signed-in': 'Invite Flow V3 · B2C guest checkout',
   'invite:v3-b2c-pc-first': 'Invite Flow V3 · B2C guest checkout',
