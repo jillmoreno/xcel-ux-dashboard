@@ -379,7 +379,15 @@
   font-size: 12px;
 }
 
-/* The dial's figure and "Complete" 4 above the ring's centre (same day). */
+/* The dial's figure and "Complete" 8 above the ring's centre (same day). */
 [data-home-bp='mobile'] section[aria-label='Course progress'] > div[aria-label^='Course progress'] > div {
-  transform: translateY(-4px);
+  transform: translateY(-8px);
+}
+/* "Complete" spaced 0.18em letter to letter, which leaves 0.18em after its
+   last letter too and pulls its ink left of the box's centre; the same
+   on its left puts the word itself in the middle (Eric: "they look too far
+   to the left"). The figure's tracking is negative, so it already sits a
+   hair right, not left. */
+[data-home-bp='mobile'] section[aria-label='Course progress'] > div[aria-label^='Course progress'] > div > span:last-child {
+  padding-left: 0.18em;
 }
