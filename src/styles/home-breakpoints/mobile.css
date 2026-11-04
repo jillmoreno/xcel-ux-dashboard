@@ -188,3 +188,9 @@
 [data-home-bp='mobile'] div:has(> section[aria-label='Course progress']) > section[aria-label='Course progress'] {
   margin-right: -2px !important;
 }
+/* Estimated Completion's rule in the right column: 16 above and below, 8
+   less each way (same day) — above, the column's 11 gap plus 5 of margin. */
+[data-home-bp='mobile'] section[aria-label='Study pace'] > div:last-child {
+  margin-top: 5px !important;
+  padding-top: 16px !important;
+}
