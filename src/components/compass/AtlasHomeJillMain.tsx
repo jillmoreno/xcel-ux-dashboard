@@ -3156,6 +3156,8 @@ const PACE_PHONE_TABS: readonly { id: PacePhoneTab; label: string }[] = [
 /** The tab strip's height — the panel drops by it, and the strip sits in the
  *  space above, its bottom on the panel's top edge. */
 const PACE_TAB_H = 32
+/** Each tab's side padding — as much as the 11px titles leave on a 402 phone. */
+const PACE_TAB_PAD_X = 10
 /** The tabs' and the panel's outline — Neutral 100, a step lighter than the
  *  subtle border's 200 and not the panel's Tan 100 fill, so it shows. The
  *  inactive tabs take it as their fill. */
@@ -3187,9 +3189,10 @@ function PacePhoneTabs({ active, onSelect }: { active: PacePhoneTab; onSelect: (
               flex: '1 1 auto',
               boxSizing: 'border-box',
               height: on ? PACE_TAB_H + 1 : PACE_TAB_H,
-              padding: on ? '0 14px 1px' : '0 14px',
+              padding: on ? `0 ${PACE_TAB_PAD_X}px 1px` : `0 ${PACE_TAB_PAD_X}px`,
               textAlign: 'center',
-              fontSize: 10,
+              // 11, with the sides cut to fit all three on one line (same day).
+              fontSize: 11,
               letterSpacing: 'normal',
               whiteSpace: 'nowrap',
               cursor: on ? 'default' : 'pointer',
@@ -3203,7 +3206,8 @@ function PacePhoneTabs({ active, onSelect }: { active: PacePhoneTab; onSelect: (
                  the inactive ones the panel's lighter Tan 100 — and the
                  active title a weight up. */
               background: on ? PACE_TAB_STROKE : 'var(--color-atlas-tan-100)',
-              fontWeight: on ? 500 : 400,
+              // The active title another weight up — 600 (same day).
+              fontWeight: on ? 600 : 400,
             }}
           >
             {t.label}
