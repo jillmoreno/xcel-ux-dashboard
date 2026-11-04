@@ -174,6 +174,10 @@ export type WorkspaceSession = {
   /** The mark ids the conversation was started from. */
   sel: string[]
   msgs: WorkspaceThreadTurn[]
+  /** What came OUT of the session, as her card tags it — "Practice quiz",
+   *  "Review guide". The hero says it in lower case ("made flashcards"), the
+   *  session cards as a tag. '' where the session produced nothing. */
+  made: string
 }
 
 /**
@@ -194,6 +198,7 @@ export const COMPASS_WORKSPACE_SESSIONS: readonly WorkspaceSession[] = [
     when: 'Today · 10:40',
     pinned: true,
     sel: ['i2', 'i3'],
+    made: 'Flashcards',
     msgs: [
       {
         q: 'How is cash value different from the death benefit?',
@@ -212,6 +217,7 @@ export const COMPASS_WORKSPACE_SESSIONS: readonly WorkspaceSession[] = [
     when: 'Yesterday · 7:15 pm',
     pinned: false,
     sel: ['i1', 'i4'],
+    made: 'Practice quiz',
     msgs: [
       {
         q: 'Why does the term-or-permanent fork matter so much?',
@@ -226,6 +232,7 @@ export const COMPASS_WORKSPACE_SESSIONS: readonly WorkspaceSession[] = [
     when: 'Mon · 8:02 pm',
     pinned: false,
     sel: ['i6', 'i7'],
+    made: 'Review guide',
     msgs: [
       {
         q: 'Explain indemnity simply',
@@ -295,3 +302,77 @@ export const WORKSPACE_FILTERS: readonly { value: string; label: string }[] = [
   { value: 'rubi', label: 'Rubi' },
   { value: 'pointer', label: 'Pointers' },
 ]
+
+/* ── The Studio rail, and the home's nudge ────────────────────────────────
+ *
+ * ⚠ ADDED ON THE SECOND PASS (2026-11-04). The first port built this rail
+ * from the prototype's SOURCE and got a thin version of it: four Make
+ * buttons under a heading called "Make something". Opening her branch build
+ * showed what it actually renders — a Studio with a readiness block above
+ * six make actions (two of them Coming soon) and three artefacts she has
+ * already made. Everything below is read off that DOM, which is why it is
+ * right this time: her source is long and her render is the truth.
+ */
+
+/** Her readiness block, at the top of the Studio rail. */
+export const WORKSPACE_READINESS = {
+  examIn: 'Exam in 33 days',
+  progressLabel: 'Course progress',
+  progress: '14%',
+  focus: 'Focus next: cash value versus death benefit. Marked three times, practised none.',
+  cta: 'Take a 5-question check',
+}
+
+/** "Make from all marks" — six, and the last two are promises rather than
+ *  buttons. The Coming soon pair is hers and is the argument that a workspace
+ *  grows into conversation, not just revision. */
+export const WORKSPACE_MAKE: readonly { id: string; label: string; note: string; soon?: boolean }[] = [
+  { id: 'flashcards', label: 'Flashcards', note: 'Spaced to your exam date' },
+  { id: 'practice', label: 'Practice quiz', note: 'Exam style, with rationale' },
+  { id: 'guide', label: 'Review guide', note: 'One page per lesson' },
+  { id: 'audio', label: 'Audio recap', note: '5 minute commute review' },
+  { id: 'podcast', label: 'Podcast', note: 'A conversation about your marks', soon: true },
+  { id: 'simulation', label: 'Simulation', note: 'Practise the conversation, not the definition', soon: true },
+]
+
+/** "Created by me" — what the learner has already made, in her order. `also`
+ *  is the second home an artefact has ("also in Flashcards"); `cta` is the way
+ *  back into it, and the guide has a body instead because a one-page summary
+ *  IS its own preview. */
+export const WORKSPACE_CREATED: readonly {
+  id: string
+  title: string
+  from: string
+  also?: string
+  cta?: string
+  body?: string
+}[] = [
+  {
+    id: 'c1',
+    title: 'Cash value and term',
+    from: 'Made from 5 saved items',
+    also: 'Flashcards',
+    cta: 'Study the 8 cards →',
+  },
+  {
+    id: 'c2',
+    title: 'Practice quiz · term or permanent',
+    from: 'Made from 2 saved items',
+    also: 'Practice',
+    cta: 'Start 12 questions →',
+  },
+  {
+    id: 'c3',
+    title: 'Review guide · insurance basics',
+    from: 'Made from 2 saved items',
+    body: 'Insurance moves risk from you to the insurer for a premium. Indemnity puts you back where you were, never better off.',
+  },
+]
+
+/** The Rubi strip under the Pick-up hero. Dismissible — her `×` — and it is
+ *  the surface proposing its own next move, which is the whole Rubi idea. */
+export const WORKSPACE_NUDGE = {
+  eyebrow: 'Rubi',
+  text: 'You have marked cash value three times.',
+  cta: 'Start a workspace for it →',
+}

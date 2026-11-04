@@ -250,15 +250,17 @@ describe('the Compass rail is Anjani’s on Hybrid', () => {
     expect(locked).toEqual(['Practice', 'Flashcards', 'Exam Simulator'])
   })
 
-  it('gains a Workspace row when her Workspace is on, at the end, moving nothing', () => {
-    /* ⚠ THE ONE INVENTION IN THE WORKSPACE PORT (2026-11-04). Her v4 opens the
-       workspace from inside the course, not from the rail — there is no rail
-       row for it in her file at all — so where it sits here is a decision the
-       port had to make. Last, after Progress, is the least opinionated one
-       available: her five keep their order and nothing moves to make room.
-       If she wants it elsewhere, this is the test that says where it is. */
+  it('gains a Workspace row DIRECTLY AFTER LEARN when her Workspace is on', () => {
+    /* ⚠ HER POSITION, NOT A CHOICE — and this test said the opposite for
+       about two hours on 2026-11-04. The first port put the row last and
+       called the position "the one invention in the port", on the belief that
+       her v4 had no rail row. It has one: `addNav()` finds the Learn row
+       (`showScreen('course')`), clones it, and
+       `insertBefore(copy, anchor.nextSibling)`. Third. Jillienne opened the
+       Refinement link and the rail read Overview · Learn · Workspace ·
+       Study planner, which is what this now pins. */
     renderRail('hybrid-pacing')
-    expect(railOf()).toEqual(['Overview', 'Learn', 'Study planner', 'Ask Rubi', 'Progress', 'Workspace'])
+    expect(railOf()).toEqual(['Overview', 'Learn', 'Workspace', 'Study planner', 'Ask Rubi', 'Progress'])
   })
 
   it('a locked row explains itself on the first tap and opens the Exam prep dialog on the second', () => {

@@ -52,13 +52,27 @@ export const HYBRID_COMPASS_PAGES: CompassPageRow[] = [
  * flag, and a row that is sometimes absent is easier to get wrong than two
  * lists that are each always right.
  *
- * ⚠ IT GOES LAST, after Progress. Her prototype opens the workspace from
- * inside the course rather than from the rail at all — there is no rail row
- * for it in v4 — so its position here is the one invention in this port, and
- * it is the least opinionated one available: a new destination at the end,
- * where nothing moves to make room for it.
+ * ⚠ IT GOES DIRECTLY AFTER LEARN, and that is HERS, not a choice. Her
+ * `addNav()` finds the nav item whose onclick is `showScreen('course')` — the
+ * Learn row — clones it, relabels it Workspace and
+ * `insertBefore(copy, anchor.nextSibling)`. Third row, between Learn and
+ * Study planner.
+ *
+ * ⚠ THIS WAS WRONG UNTIL 2026-11-04 (second pass). The first port put the row
+ * LAST, after Progress, and said in a comment and a test that her file had no
+ * rail row at all so the position was the port's one invention. It did have
+ * one: `addNav()` was inside the block I extracted and I did not read it.
+ * Jillienne opened her Refinement link and the rail read Overview · Learn ·
+ * Workspace · Study planner. Her order, restored.
+ *
+ * ⚠ HER ICON IS A BOOKMARK (`M6 4h12v16l-6-4-6 4z`), not a notebook. This
+ * registry ships no bookmark, and inventing an SVG is a registry decision
+ * rather than a porting one, so `NotebookRegular` stands in and this note is
+ * the record. `Flag` was the other candidate and was rejected: `flag` is one
+ * of the workspace's own mark types, and the nav row is not that.
  */
 export const HYBRID_COMPASS_PAGES_WITH_WORKSPACE: CompassPageRow[] = [
-  ...HYBRID_COMPASS_PAGES,
+  ...HYBRID_COMPASS_PAGES.slice(0, 2),
   { id: 'workspace', label: 'Workspace', icon: NotebookRegular },
+  ...HYBRID_COMPASS_PAGES.slice(2),
 ]

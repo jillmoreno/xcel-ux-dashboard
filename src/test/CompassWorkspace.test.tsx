@@ -53,11 +53,49 @@ describe('Anjani’s Compass Workspace', () => {
     expect(screen.getByText(lede)).toBeTruthy()
     /* Pick up opens on the last CONVERSATION, not the newest marks — her
        `homeA2()`. The whole argument of this home is that a workspace
-       remembers a thread. */
-    expect(screen.getByRole('heading', { name: 'Pick up where you left off' })).toBeTruthy()
+       remembers a thread.
+
+       ⚠ "Pick up where you left off" is her EYEBROW, not the heading — the
+       heading is the conversation's own title, which is what you are
+       rejoining. The first port had it as an h2 and the session title as
+       plain text; corrected against her live build. */
+    expect(screen.getByText('Pick up where you left off')).toBeTruthy()
+    expect(
+      screen.getByRole('heading', { name: COMPASS_WORKSPACE_SESSIONS[0].title }),
+    ).toBeTruthy()
+    // Her hero names the speaker, and says what the session produced.
+    expect(screen.getByText('Rubi, last time:')).toBeTruthy()
+    expect(screen.getByText(/2 marks pinned · made flashcards/)).toBeTruthy()
     /* Twice over, and correctly: the hero names the conversation you are
        carrying on, and the make rail lists it among the saved ones. */
     expect(screen.getAllByText(COMPASS_WORKSPACE_SESSIONS[0].title).length).toBeGreaterThan(0)
+  })
+
+  it('carries the Studio, the Rubi strip and her session cards', () => {
+    /* ⚠ THE SECOND-PASS CASE. The first port built this surface from her
+       SOURCE and shipped a thin version: a right rail called "Make something"
+       with four buttons, no readiness block, no Coming-soon pair, no artefacts,
+       no Rubi strip, and the earlier sessions as a list. Opening her branch
+       build showed what she actually renders. These assertions are the parts
+       that were missing, so a third pass cannot quietly lose them again. */
+    render(<CompassWorkspace />)
+    // The Studio, not "Make something".
+    expect(screen.getByRole('region', { name: 'Studio' })).toBeTruthy()
+    expect(screen.getByText('Exam in 33 days')).toBeTruthy()
+    expect(screen.getByText('Make from all marks')).toBeTruthy()
+    expect(screen.getByText('Created by me')).toBeTruthy()
+    // Six make actions, the last two promises rather than buttons.
+    expect(screen.getAllByText('Coming soon')).toHaveLength(2)
+    expect(screen.getByRole('button', { name: /Podcast/ }).hasAttribute('disabled')).toBe(true)
+    // Her Rubi strip, and it can be declined.
+    expect(screen.getByText('You have marked cash value three times.')).toBeTruthy()
+    // Sessions as cards, with what each one made.
+    expect(screen.getByText('My sessions')).toBeTruthy()
+    /* "Practice quiz" is both a make action and the tag on the session that
+       produced one — so assert it on the CARD, not globally. */
+    const card = screen.getByRole('button', { name: /Term or permanent/ })
+    expect(within(card).getByText('Practice quiz')).toBeTruthy()
+    expect(within(card).getByText(/Yesterday · 7:15 pm · 2 marks/)).toBeTruthy()
   })
 
   it('renders every layout against every axis — no switch opens a blank screen', () => {
@@ -155,10 +193,20 @@ describe('Anjani’s Compass Workspace', () => {
     expect(WORKSPACE_KIND.object).toBe('Flag')
   })
 
-  it('her saved conversations carry their marks and their turns', () => {
+  it('the newest conversation is the hero; the rest are cards', () => {
+    /* Her split, and it is the home's argument: one thread you are rejoining,
+       and the others kept where you can see them. The first port listed all
+       three the same way, in the rail. */
     render(<CompassWorkspace layout="F" />)
-    const first = COMPASS_WORKSPACE_SESSIONS[0]
-    const sess = screen.getByRole('button', { name: new RegExp(first.title) })
-    expect(within(sess).getByText(`${first.sel.length} marks pinned`)).toBeTruthy()
+    const [hero, ...rest] = COMPASS_WORKSPACE_SESSIONS
+    // The newest is the hero — a heading with a Continue, not a card.
+    expect(screen.getByRole('heading', { name: hero.title })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Continue' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: new RegExp(hero.title) })).toBeNull()
+    // The others are cards, each saying what it made.
+    for (const sn of rest) {
+      const card = screen.getByRole('button', { name: new RegExp(sn.title) })
+      expect(within(card).getByText(sn.made)).toBeTruthy()
+    }
   })
 })

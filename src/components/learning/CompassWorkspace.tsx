@@ -2,6 +2,10 @@ import { useMemo, useState, type ReactNode } from 'react'
 
 import {
   COMPASS_WORKSPACE_SESSIONS,
+  WORKSPACE_CREATED,
+  WORKSPACE_MAKE,
+  WORKSPACE_NUDGE,
+  WORKSPACE_READINESS,
   WORKSPACE_FILTERS,
   WORKSPACE_GROUP_PLURAL,
   WORKSPACE_GROUP_TYPE,
@@ -70,6 +74,11 @@ import './compassWorkspace.css'
  *
  * ⚠ THREE OF HER SIX DEMO CONTROLS ARE HIDDEN IN HER FILE — see the long note
  * in `compassWorkspaceModel.ts`. This port exposes all six.
+ *
+ * ⚠ AND THE RAIL ROW IS HERS TOO. The first pass claimed her file had no rail
+ * row for the Workspace and put one last "as the port's one invention". Her
+ * `addNav()` inserts it directly after Learn; see `compassPages.ts`. There is
+ * no invention in this port — only the icon, which is a stand-in.
  */
 
 export type CompassWorkspaceProps = {
@@ -114,6 +123,7 @@ export function CompassWorkspace({
   const [state, setState] = useState<WorkspaceState>(EMPTY_WORKSPACE_STATE)
   const [assets, setAssets] = useState<WorkspaceAsset[]>([])
   const [toast, setToast] = useState('')
+  const [nudgeGone, setNudgeGone] = useState(false)
 
   const all = useMemo(() => savedMarks(layout, story), [layout, story])
   const list = useMemo(() => scopedMarks(all, state), [all, state])
@@ -213,6 +223,11 @@ export function CompassWorkspace({
           }}
         />
         <div className="cre-ws-body">
+          {/* ⚠ THE PASSAGE COMES FIRST, the provenance under it — hers, and the
+              first port had them the other way round. What the learner marked
+              is the thing; where it came from is the footnote. */}
+          <p className="cre-ws-quote">{mark.text}</p>
+          {mark.note && <p className="cre-ws-note">{mark.note}</p>}
           <div className="cre-ws-kind">
             {mark.type === 'rubi' ? <span className="rb">Rubi answer</span> : kindLabel(mark.type)}
             <span className="dot" />
@@ -230,8 +245,6 @@ export function CompassWorkspace({
               </>
             )}
           </div>
-          <p className="cre-ws-quote">{mark.text}</p>
-          {mark.note && <p className="cre-ws-note">{mark.note}</p>}
           <div className="cre-ws-acts">
             <button onClick={() => patch({ focus: mark.id, view: 'work' })}>Ask Rubi about this</button>
             {mark.thread && <span className="cre-ws-thread-n">{mark.thread.length} asked</span>}
@@ -429,63 +442,87 @@ export function CompassWorkspace({
     )
   }
 
-  /** The right rail: what you can make, and what you already made. */
-  const MakeRail = () => (
+  /**
+   * THE STUDIO — her right rail, and it is not a button list.
+   *
+   * ⚠ REBUILT ON THE SECOND PASS from her live build. The first port read her
+   * source and produced "Make something" with four buttons under it. What she
+   * actually renders is a Studio: a readiness block (what the exam is doing to
+   * you), SIX make actions of which two are Coming soon, and the artefacts you
+   * have already made. The order is the argument — where you stand, what you
+   * could make, what you made.
+   */
+  const StudioRail = () => (
     <div className="cre-ws-col cre-wsf-cr">
-      <section className="cre-ws-pane cre-wsf-right" aria-label="Make">
+      <section className="cre-ws-pane cre-wsf-right" aria-label="Studio">
         <div className="cre-wsnb-head">
-          <h4>Make something</h4>
+          <h4>Studio</h4>
           <span />
           <button
             className="cre-wsf-coll"
             aria-expanded={!state.colR}
-            aria-label={state.colR ? 'Show make' : 'Hide make'}
+            aria-label={state.colR ? 'Show Studio' : 'Hide Studio'}
             onClick={() => patch({ colR: !state.colR })}
           >
             ▤
           </button>
         </div>
-        <MakeBlock />
-        {assets.length > 0 && (
-          <div className="cre-ws-group">
-            <div className="cre-ws-stage">Made</div>
-            {assets.map((a) => (
-              <AssetCard key={a.id} asset={a} />
+
+        <div className="cre-ws-readiness">
+          <div className="cre-ws-stage">Readiness</div>
+          <div className="cre-ws-rline">
+            <b>{WORKSPACE_READINESS.examIn}</b>
+          </div>
+          <div className="cre-ws-rline">
+            <span>{WORKSPACE_READINESS.progressLabel}</span>
+            <b>{WORKSPACE_READINESS.progress}</b>
+          </div>
+          <p className="cre-ws-rfocus">{WORKSPACE_READINESS.focus}</p>
+          <button className="cre-ws-act" onClick={() => say(WORKSPACE_READINESS.cta)}>
+            {WORKSPACE_READINESS.cta}
+          </button>
+        </div>
+
+        <div className="cre-ws-group">
+          <div className="cre-ws-stage">Make from all marks</div>
+          <div className="cre-ws-make">
+            {WORKSPACE_MAKE.map((m) => (
+              <button
+                key={m.id}
+                disabled={m.soon}
+                onClick={() => (m.soon ? undefined : make(m.id, m.label))}
+              >
+                {m.label}
+                {m.soon && <em className="cre-ws-soon">Coming soon</em>}
+                <small>{m.note}</small>
+              </button>
             ))}
           </div>
-        )}
-        <SessionList />
-      </section>
-    </div>
-  )
+        </div>
 
-  /** Her saved Rubi conversations, in whichever of her three arrangements. */
-  const SessionList = () => (
-    <div className={`cre-wsf-sessions view-${sessionView}`}>
-      <div className="cre-ws-stage">Saved conversations</div>
-      {COMPASS_WORKSPACE_SESSIONS.map((s) => (
-        <button
-          key={s.id}
-          className={`cre-wsf-sess${state.session === s.id ? ' on' : ''}${s.pinned ? ' pin' : ''}`}
-          onClick={() => patch({ session: state.session === s.id ? null : s.id })}
-        >
-          <b>{s.title}</b>
-          {sessionView !== 'list' && <span className="when">{s.when}</span>}
-          <span className="marks">
-            {s.sel.length} {s.sel.length === 1 ? 'mark' : 'marks'} pinned
-          </span>
-          {state.session === s.id && (
-            <span className="cre-wsf-sessbody">
-              {s.msgs.map((m, i) => (
-                <span key={i} className="cre-wsf-turn">
-                  <span className="cre-wsf-q">{m.q}</span>
-                  <span className="cre-wsf-a">{m.a}</span>
-                </span>
-              ))}
-            </span>
-          )}
-        </button>
-      ))}
+        <div className="cre-ws-group">
+          <div className="cre-ws-stage">Created by me</div>
+          {assets.map((a) => (
+            <AssetCard key={a.id} asset={a} />
+          ))}
+          {WORKSPACE_CREATED.map((c) => (
+            <div className="cre-ws-asset" key={c.id}>
+              <b>{c.title}</b>
+              <span className="from">
+                {c.from}
+                {c.also && ` · also in ${c.also}`}
+              </span>
+              {c.body && <p className="cre-ws-abody">{c.body}</p>}
+              {c.cta && (
+                <div className="cre-ws-acts">
+                  <button onClick={() => say(c.cta!)}>{c.cta}</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+      </section>
     </div>
   )
 
@@ -605,12 +642,13 @@ export function CompassWorkspace({
         </div>
       )
     }
-    /* 'A' — Pick up, her default. ⚠ IT IS BUILT ROUND THE LAST SESSION, not
-       round recent marks: her `homeA2()` opens on the conversation you were
-       last having ("Pick up where you left off"), with the rest listed under
-       it. A port that showed the three newest marks instead would be a
-       different screen wearing her name — the whole argument of this home is
-       that a workspace remembers a THREAD, not a pile. */
+    /* 'A' — Pick up, her default, REBUILT on the second pass from her live
+       build. The first port had the shape right and the detail wrong: the
+       button said "Carry on" where hers says Continue, the hero printed the
+       raw Rubi answer where hers prefixes it "Rubi, last time:", the meta
+       dropped what the session MADE, the Rubi strip was missing outright and
+       the earlier sessions were a list where hers are cards. All of it below
+       is read off her DOM. */
     const [last, ...rest] = COMPASS_WORKSPACE_SESSIONS
     if (!all.length) {
       return (
@@ -625,46 +663,75 @@ export function CompassWorkspace({
     return (
       <div className="cre-ws-home pickup">
         <HomeHead />
+        <div className="cre-ws-stage">Pick up where you left off</div>
         <section className="cre-ws-hero" aria-labelledby="hLast">
-          <div>
-            <h2 id="hLast" className="cre-ws-stage">
-              Pick up where you left off
-            </h2>
+          <div className="cre-ws-herot">
             <div className="cre-ws-kicker">
               {last.ch} · {last.when}
             </div>
-            <div className="big">{last.title}</div>
-            <p>{last.msgs[0]?.a}</p>
+            <h2 id="hLast" className="big">
+              {last.title}
+            </h2>
+            {/* Hers names the speaker before the answer — the hero is a
+                conversation you are rejoining, not a card you are reading. */}
+            <p>
+              <span className="cre-ws-said">Rubi, last time:</span>{' '}
+              {last.msgs[last.msgs.length - 1]?.a}
+            </p>
             <div className="cre-ws-meta">
               {last.sel.length} {last.sel.length === 1 ? 'mark' : 'marks'} pinned
+              {last.made && ` · made ${last.made.toLowerCase()}`}
             </div>
           </div>
-          <div className="sp" />
-          <button className="cre-ws-act" onClick={() => patch({ session: last.id })}>
-            Carry on
+          <button className="cre-ws-act cre-ws-continue" onClick={() => patch({ session: last.id })}>
+            Continue
           </button>
         </section>
-        {rest.length > 0 && (
-          <div className="cre-ws-group">
-            <div className="cre-ws-stage">Earlier</div>
-            {rest.map((sn) => (
-              <button
-                key={sn.id}
-                className="cre-wsf-sess"
-                onClick={() => patch({ session: sn.id })}
-              >
-                <b>{sn.title}</b>
-                <span className="when">
-                  {sn.ch} · {sn.when}
-                </span>
-                <span className="marks">
-                  {sn.sel.length} {sn.sel.length === 1 ? 'mark' : 'marks'} pinned
-                </span>
-              </button>
-            ))}
+
+        {/* HER RUBI STRIP — the surface proposing its own next move. Dismissible,
+            because a suggestion you cannot decline is an instruction. */}
+        {!nudgeGone && (
+          <div className="cre-ws-nudge" role="note">
+            <span className="cre-ws-nudgek">{WORKSPACE_NUDGE.eyebrow}</span>
+            <span className="cre-ws-nudget">{WORKSPACE_NUDGE.text}</span>
+            <button className="cre-ws-nudgea" onClick={() => say(WORKSPACE_NUDGE.cta)}>
+              {WORKSPACE_NUDGE.cta}
+            </button>
+            <button className="cre-ws-nudgex" aria-label="Dismiss" onClick={() => setNudgeGone(true)}>
+              ×
+            </button>
           </div>
         )}
-        <MakeBlock />
+
+        {rest.length > 0 && (
+          <div className="cre-ws-group">
+            <div className="cre-ws-gh">
+              <h3>My sessions</h3>
+              <span className="cre-ws-count">{rest.length}</span>
+            </div>
+            {/* ⚠ THE SESSIONS AXIS LIVES HERE, not in the Studio. Her rail is
+                Readiness · Make from all marks · Created by me — no session
+                list — and "My sessions" is part of the home. The first port
+                put a list in the rail, which both duplicated these cards and
+                gave the axis the wrong home. */}
+            <div className={`cre-ws-sessgrid view-${sessionView}`}>
+              {rest.map((sn) => (
+                <button
+                  key={sn.id}
+                  className="cre-ws-sesscard"
+                  onClick={() => patch({ session: sn.id })}
+                >
+                  <span className="cre-ws-kicker">{sn.ch}</span>
+                  <b>{sn.title}</b>
+                  <span className="when">
+                    {sn.when} · {sn.sel.length} {sn.sel.length === 1 ? 'mark' : 'marks'}
+                  </span>
+                  {sn.made && <span className="cre-ws-made">{sn.made}</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     )
   }
@@ -931,7 +998,7 @@ export function CompassWorkspace({
           <div className="cre-ws-col cre-wsf-cm">
             <HomeView />
           </div>
-          {!state.colR && <MakeRail />}
+          {!state.colR && <StudioRail />}
         </>
       )
     }
@@ -939,7 +1006,7 @@ export function CompassWorkspace({
       <>
         {!state.colL && <CaptureRail />}
         <CoachPane />
-        {!state.colR && <MakeRail />}
+        {!state.colR && <StudioRail />}
       </>
     )
   })()

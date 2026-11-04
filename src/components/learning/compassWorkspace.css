@@ -608,3 +608,128 @@
 }
 .cre-ws .cre-ws-meta { font-size: 12px; color: var(--cre-ws-faint); margin-top: 10px; }
 .cre-ws .cre-ws-home .cre-ws-head { padding: 0 0 4px; max-width: none; }
+
+/* ---- SECOND PASS (2026-11-04): the Studio, the Rubi strip and her session
+   cards, read off her live branch build rather than her source. ---- */
+.cre-ws .cre-ws-kind { margin: 8px 0 0; }
+.cre-ws .cre-ws-readiness { padding-bottom: 6px; border-bottom: 1px solid var(--cre-ws-hairline); }
+.cre-ws .cre-ws-rline { display: flex; justify-content: space-between; font-size: 13px; color: var(--cre-ws-muted); margin-bottom: 4px; }
+.cre-ws .cre-ws-rline b { color: var(--cre-ws-ink); }
+.cre-ws .cre-ws-rfocus { font-size: 13px; line-height: 20px; color: var(--cre-ws-muted); margin: 8px 0 10px; }
+.cre-ws .cre-ws-soon {
+  float: right;
+  font-style: normal;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cre-ws-faint);
+  font-weight: 600;
+}
+.cre-ws .cre-ws-abody { font-size: 13px; line-height: 20px; color: var(--cre-ws-muted); margin: 8px 0 0; }
+
+/* the Rubi strip under the hero */
+.cre-ws .cre-ws-nudge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 0 14px;
+  font-size: 13px;
+  color: var(--cre-ws-muted);
+}
+.cre-ws .cre-ws-nudgek {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--cre-ws-terracotta);
+}
+.cre-ws .cre-ws-nudget { flex: 0 1 auto; }
+.cre-ws .cre-ws-nudgea {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cre-ws-steel);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-ws-nudgex {
+  border: 0;
+  background: none;
+  color: var(--cre-ws-faint);
+  cursor: pointer;
+  margin-left: auto;
+  line-height: 1;
+}
+
+/* the hero, as she draws it */
+.cre-ws .cre-ws-herot { flex: 1; min-width: 0; }
+.cre-ws .cre-ws-hero h2.big { margin: 0; }
+.cre-ws .cre-ws-said { font-weight: 600; color: var(--cre-ws-ink); }
+
+/* "My sessions" — cards, not a list */
+.cre-ws .cre-ws-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--cre-ws-fill);
+  color: var(--cre-ws-ink);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.cre-ws .cre-ws-sessgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.cre-ws .cre-ws-sesscard {
+  display: block;
+  text-align: left;
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 12px;
+  background: var(--cre-ws-surface);
+  padding: 14px 16px;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-ws-sesscard b {
+  display: block;
+  font-family: var(--font-heading-serif);
+  font-size: 16px;
+  line-height: 22px;
+  color: var(--cre-ws-ink);
+  margin: 6px 0 4px;
+}
+.cre-ws .cre-ws-sesscard .when { display: block; font-size: 12px; color: var(--cre-ws-faint); }
+.cre-ws .cre-ws-made {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--cre-ws-muted);
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+/* Her three session arrangements, on the home's cards. */
+.cre-ws .cre-ws-sessgrid.view-list { grid-template-columns: minmax(0, 1fr); }
+.cre-ws .cre-ws-sessgrid.view-time .cre-ws-sesscard .when { font-weight: 600; color: var(--cre-ws-muted); }
+.cre-ws .cre-ws-sessgrid.view-cards { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+
+/* ⚠ THE HERO TEXT TAKES THE WIDTH, the button only what it needs. With a
+   flexible spacer between them the two halves split 50/50 and her title
+   ("Cash value vs death benefit") wrapped one word per line inside the
+   product shell, where the centre column is narrower than her standalone
+   prototype's. Caught on the second pass by looking at it. */
+.cre-ws .cre-ws-hero { align-items: center; }
+.cre-ws .cre-ws-herot { flex: 1 1 auto; min-width: 0; }
+.cre-ws .cre-ws-continue { flex: 0 0 auto; align-self: center; }
+.cre-ws .cre-ws-hero h2.big { font-size: 26px; line-height: 32px; }
+@media (max-width: 1320px) {
+  .cre-ws .cre-ws-hero { padding: 20px 22px; gap: 16px; }
+  .cre-ws .cre-ws-hero h2.big { font-size: 22px; line-height: 28px; }
+}
