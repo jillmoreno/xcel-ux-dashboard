@@ -2322,7 +2322,7 @@ export function WhiteCourseMeta({
     >
       <span style={META_PAIR}>
         {icon}
-        <span style={{ ...META_LABEL, ...(tone ? { color: 'inherit' } : null) }}>
+        <span style={{ ...META_LABEL, ...(tone ? { color: 'inherit' } : null) }} className="cre-atlas-meta-label" data-short={expired ? 'Access Ended:' : 'Access Ends:'}>
           {expired ? 'Course Access Ended:' : 'Course Access Ends:'}
         </span>
         <span style={{ ...META_VALUE, ...(tone ? { color: 'inherit' } : null) }}>

@@ -367,3 +367,19 @@
 [data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-eyebrow-link {
   font-size: 13px !important;
 }
+
+/* "Access Ends:" on a phone, not "Course Access Ends:" (2026-11-04, Eric's
+   request). The label keeps its full text — what a screen reader and the
+   tests read — and the phone draws `data-short` in its place. */
+[data-home-bp='mobile'] .cre-atlas-meta-label {
+  font-size: 0 !important;
+}
+[data-home-bp='mobile'] .cre-atlas-meta-label::before {
+  content: attr(data-short);
+  font-size: 12px;
+}
+
+/* The dial's figure and "Complete" 4 above the ring's centre (same day). */
+[data-home-bp='mobile'] section[aria-label='Course progress'] > div[aria-label^='Course progress'] > div {
+  transform: translateY(-4px);
+}
