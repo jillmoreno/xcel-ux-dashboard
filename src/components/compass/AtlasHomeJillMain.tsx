@@ -85,7 +85,7 @@ import { getLicensedStepsFor, jurisdictionName } from '@/data/nyProducerRequirem
 import { defaultPreset, formatPaceDate, formatPaceDateLong, studyPace, daysUntil, dateFromIso, isoFromDate, NOT_STARTED_NIGHTS, PACE_STYLE_FLAG_KEY, PACE_STYLE_LABELS, resolvePaceStyle } from '@/lib/studyPace'
 import { paceIconFor } from './paceStyleIcon'
 import { clearExamDate, writeExamDate } from '@/data/examDateStore'
-import { courseExpiryTier, usableDaysLeft } from '@/data/courseExpiry'
+import { courseExpiryTier, daysUntilIso, usableDaysLeft } from '@/data/courseExpiry'
 import { AtlasCourseHeadRow, WhiteCourseMeta } from './AtlasHomeEricE2E'
 import { AtlasExamCalendar } from './AtlasExamCalendar'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
@@ -336,6 +336,10 @@ export function AtlasHomeJillMain({
   const walkSteps = true
   /* Which Study Pace card — the dial or the stepped states. A design-bar
      radiogroup; see `atlas-pace-card`. */
+  /* Whether Home's Quick Links reach My Courses and My Certificates
+     (2026-11-02). `LINKS_OFF` below silences every navigating row; these two
+     are real pages now, so they are let back through. */
+  const learningPagesLive = useFeatureFlag('atlas-home-opens-learning-pages').enabled
   const paceCard = useFeatureFlag('atlas-pace-card').variant ?? 'ring'
   /* Whether the column carries Exam readiness at all — a design-bar on/off,
      see `atlas-readiness-section`. */
@@ -510,6 +514,11 @@ export function AtlasHomeJillMain({
     binding: model.binding,
     days: model.daysToCeiling,
     dateIso: model.hardEndIso,
+    /* ⚠ THE EXAM'S OWN COUNT, from the exam date — not `daysToCeiling`, which
+       is the coursework deadline a review buffer earlier. See
+       `NoPaceReason.examDays`; deriving one from the other is the mistake that
+       file exists to prevent. */
+    examDays: examDate ? (daysUntilIso(examDate, today) ?? undefined) : undefined,
   }
   /*
    * ADD DATE, WIRED — 2026-10-20. Three pieces of state and nothing else: the
@@ -1539,6 +1548,10 @@ export function AtlasHomeJillMain({
         <AtlasJourneyLinksCard
           withoutCoursePages
           linksOff={LINKS_OFF}
+          /* …except the two learning-page rows, which are real pages now
+             (2026-11-02). `LINKS_OFF` was silencing the only way to click into
+             them. See `atlas-home-opens-learning-pages`. */
+          learningPagesLive={learningPagesLive}
           onOpenStep={onOpenStep}
           onOpenRequirements={onOpenRequirements}
           // Outlined in Secondary 100 darkened 5% (2026-10-13, Eric's request;

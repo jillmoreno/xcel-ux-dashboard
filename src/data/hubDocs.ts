@@ -58,7 +58,7 @@ export const HUB_DOCS: HubDoc[] = [
   },
   {
     id: 'about',
-    title: 'How to read this dashboard',
+    title: 'How to read the Hub',
     audience: 'Stakeholders · read once',
     blurb:
       'The orientation page a reviewer is sent to: what Prototypes means, what Refinement means, how to read a row, and why nothing they change in a prototype is saved.',

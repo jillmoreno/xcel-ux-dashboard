@@ -19,7 +19,8 @@ import { CourseLauncherProvider, useCourseLauncher } from './CourseLauncherConte
 import { ResourceLauncherProvider, useResourceLauncher } from './ResourceLauncherContext'
 import { CatalogPage } from '@/pages/CatalogPage'
 import { MyCoursesPage } from '@/pages/MyCoursesPage'
-import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
+import { AtlasAccountLinksCard, AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
+import { useAtlasAccountPages } from '@/components/account/useAtlasAccountPages'
 import { AtlasCourseCard } from '@/components/compass/AtlasCourseCard'
 import {
   ATLAS_COURSE_CARD_W,
@@ -27,6 +28,7 @@ import {
   ATLAS_MY_COURSES_ASIDE_W,
   ATLAS_MY_COURSES_WIDTH,
   ATLAS_HOME_COURSE_PARAM,
+  atlasCoursesFor,
   atlasHomeStateFor,
 } from '@/data/atlasCourseCards'
 import type { AtlasCourseCardData } from '@/components/compass/AtlasCourseCard'
@@ -50,7 +52,8 @@ import {
   AccountSectionLayout,
   AccountSectionPlaceholder,
 } from '@/components/account/AccountSectionLayout'
-import { isAccountSection } from '@/components/account/accountSections'
+import { isAccountSection, type AccountSectionId } from '@/components/account/accountSections'
+import { TranscriptsPanel } from '@/components/account/TranscriptsPanel'
 import { NotificationsPanel } from '@/components/notifications/NotificationsPanel'
 import { GiftRecipientsPanel } from '@/components/account/purchases/GiftRecipientsPanel'
 import { PurchasesSection } from '@/components/account/purchases/PurchasesPanel'
@@ -424,14 +427,31 @@ function PlatformShellBody() {
   // …and Eric/Atlas White's, which shows WIP's Certificates page (2026-10-14).
   const wipCertificates =
     active === 'certificates' && (shellVersion === 'eric-atlas-v3' || isEricAtlasWhiteLike(shellVersion))
-  /* The End-to-End Home's My Courses and Certificates (2026-11-02, Eric's
-     request): the title over the first card rather than over Quick Links,
-     which rises to the crumb's line — see `E2E_QUICK_LINKS_LIFT`. Only with
-     Quick Links on the left. */
+  /* QUICK LINKS OFF THE LEARNING PAGES on the baseline (2026-11-02) — read
+     here as well as in the two sections, because the Atlas page HEADER sets
+     its own width and has to stop centring when the cards stop centring.
+     See `atlas-pages-quick-links`; `MyCoursesSection` has the long note. */
+  /* ⚠ READ UNCONDITIONALLY, THEN ANDed — the same trap as in
+     `MyCoursesSection`. `isE2ELikeVersion(...) && useFeatureFlag(...)`
+     short-circuits the hook, so switching version in the picker changes the
+     hook COUNT between renders and React throws the shell away. */
+  const atlasQuickLinksMode = useFeatureFlag('atlas-pages-quick-links').variant
+  const atlasQuickLinksHidden = isE2ELikeVersion(shellVersion) && atlasQuickLinksMode !== 'shown'
+  /* …and with the rail SHOWN on the left (2026-11-03, Eric's request, as his
+     breakpoints branch): the title over the first card rather than over Quick
+     Links, which rises to the crumb's line — see `E2E_QUICK_LINKS_LIFT`. */
   const e2eQuickLinksLeft = useFeatureFlag('atlas-wip-quick-links-side').variant !== 'right'
+  /* …and the account pages, in the same layout (2026-11-03) — see
+     `useAtlasAccountPages`. */
+  const atlasAccountPage = useAtlasAccountPages() && isAccountSection(active)
+  /* The containers' 16 — see `--atlas-card-radius` on the grid. Read
+     unconditionally, ANDed after (the hook-count trap). */
+  const cardRadiusFlag = useFeatureFlag('atlas-card-radius-16').enabled
+  const cardRadius16 = cardRadiusFlag && atlasNav && isE2ELikeVersion(shellVersion)
   const e2eSectionIndent =
-    isE2ELikeVersion(shellVersion) && e2eQuickLinksLeft && (active === 'courses' || active === 'certificates')
-      ? WIP_QUICK_LINKS_W + 24
+    atlasAccountPage ||
+    (isE2ELikeVersion(shellVersion) && !atlasQuickLinksHidden && e2eQuickLinksLeft && (active === 'courses' || active === 'certificates'))
+      ? E2E_QUICK_LINKS_COLUMN_W + 24
       : undefined
   /* ⚠ THE ACCOUNT PAGES HAVE THEIR OWN NAV, AND IT IS NOT THIS ONE
      (2026-10-19, Jillienne: "clicking on profile should not show this random
@@ -1091,13 +1111,19 @@ function PlatformShellBody() {
         // edge, the same offset the rails pin at. Read by the Atlas home's
         // sticky left column (`LearnerFocusedBand`).
         ['--cre-shell-top' as string]: `${headerBottom}px`,
+        /* EVERY CONTAINER AT 16 on the learner and account pages (2026-11-03,
+           Eric's request) — the cards, panels and Quick Links read
+           `var(--atlas-card-radius, <their own>)`, so with this unset they
+           keep their own corners. Buttons and pills never read it. */
+        ...(cardRadius16 ? { ['--atlas-card-radius' as string]: '16px' } : null),
         // Eric/Atlas White's Home is on WHITE (2026-10-12, Eric's request;
         // Figma 312:1649) — the course header keeps its own panel.
         // …and its My Courses and Certificates, WIP's pages on White's white
         // (2026-10-14, Eric's request).
-        ...(atlasNav &&
+        // …and the account pages in that layout (2026-11-03, Eric's request).
+        ...((atlasNav &&
         (active === 'dashboard' || active === 'courses' || active === 'certificates') &&
-        isEricAtlasWhiteLike(shellVersion)
+        isEricAtlasWhiteLike(shellVersion)) || atlasAccountPage
           ? { background: 'var(--color-fixed-light)' }
           : atlasNav && (active === 'dashboard' || active === 'course' || active === 'resources')
             ? { background: 'var(--color-compass-page)' }
@@ -1456,11 +1482,27 @@ function PlatformShellBody() {
           // Atlas: its own copy — Serif H1 title, FA angle-left crumb (2026-10-06).
           atlasNav ? (
             <AtlasSectionPageHeader
-              title={SECTION_TITLES[active]}
+              /* "My Certificates" on the Atlas pages (2026-11-02): the heading
+                 read "Certificates" while the only link that reaches it — the
+                 Quick Links row — said "My Certificates", and My Courses next
+                 to it already carries the possessive.
+                 ⚠ NOT `SECTION_TITLES`, deliberately. That map also labels the
+                 left rail, the section tabs and the breadcrumb on every other
+                 version; renaming it there would rename the nav for Testing,
+                 Testing 2/3 and Hybrid as well. This is the page's own
+                 heading, and only on the Atlas chrome that draws it. */
+              title={active === 'certificates' ? 'My Certificates' : SECTION_TITLES[active]}
               onBack={() => handleSelect('dashboard')}
-              // My Courses centres its content; the header follows it.
-              contentWidth={active === 'courses' || wipCertificates ? ATLAS_MY_COURSES_WIDTH : undefined}
+              // My Courses centres its content; the header follows it — until
+              // the rail goes and the cards run full width (2026-11-02).
+              contentWidth={
+                ((active === 'courses' || wipCertificates) && !atlasQuickLinksHidden) || atlasAccountPage
+                  ? ATLAS_MY_COURSES_WIDTH
+                  : undefined
+              }
               indent={e2eSectionIndent}
+              // …and 16 lower, so the crumb's top is Quick Links' top (2026-11-03).
+              extraTop={e2eSectionIndent != null ? E2E_PAGE_DROP : undefined}
             />
           ) : (
           <SectionPageHeader
@@ -2280,7 +2322,8 @@ function SectionShell({
           : atlasHome || atlasResources
           ? 56
           : `${headerAbove ? 0 : 24}px ${
-              isAccountSection(active) ? ACCOUNT_SECTION_GUTTER : 40
+              // …except under the learning pages' header, which is set to 40.
+              isAccountSection(active) && !breadcrumbHeader ? ACCOUNT_SECTION_GUTTER : 40
             }px 64px`,
       }}
     >
@@ -2627,10 +2670,57 @@ function ShellResourcesPanel() {
 }
 
 /* My Courses in the shell. On the Atlas versions the filter column gives way to
-   Home V2's journey-links card (2026-10-05, the designer's request). */
+   Home V2's journey-links card (2026-10-05, the designer's request) — or, on the
+   BASELINE since 2026-11-02, to nothing at all: see `atlas-pages-quick-links`. */
 function MyCoursesSection() {
   const [params, setParams] = useSearchParams()
   const { brand } = useAccount()
+  /* ⚠ RESOLVED, NOT RAW — 2026-10-14, when End-to-End Demo became the default
+     and a bare `?demo=1` had to render Eric's page. See `resolveDashboardVersion`. */
+  const sectionVersion = resolveDashboardVersion(params.get('version'), brand)
+  const atlas = isAtlasCompassNavVersion(sectionVersion)
+  /* Eric/Atlas WIP (2026-10-13, Eric's request): Quick Links as a RIGHT rail,
+     with its Home's links — everything but the course's own Flashcards and
+     Exam Simulator. The other Atlas versions keep the left column and all. */
+  // WIP's page — and Eric/Atlas White's, a duplicate of it on a white page
+  // (2026-10-14, Eric's request).
+  const wip = (sectionVersion === 'eric-atlas-v3' || isEricAtlasWhiteLike(sectionVersion))
+  const white = isEricAtlasWhiteLike(sectionVersion)
+  const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
+  /*
+   * THE BASELINE — Jill/Atlas-Main and End-to-End Demo, the two versions the
+   * Atlas Learning and End-to-End rows actually open.
+   *
+   * ⚠ IT IS NOT `wip`. `isEricAtlasWhiteLike` is a SUPERSET of this: it covers
+   * White, the demo and Jill/Atlas-Main together, which is right for the
+   * styling it was written for and wrong for ownership. Everything below that
+   * says "the baseline only" asks THIS, so Eric's WIP and White keep the pages
+   * he asked for on 2026-10-13 (2026-11-02, Jillienne's scope choice).
+   */
+  const baseline = isE2ELikeVersion(sectionVersion)
+  /* THE LEARNER'S REAL LIBRARY, or the design's three cards (2026-11-02) — see
+     `atlas-courses-from-library`. It governs the ATLAS card's content; the
+     shared card reads the library inherently, because `MyCoursesPage` does.
+     ⚠ ANDed WITH `baseline` LIKE THE REST. It was not, for one commit, and
+     that silently replaced the content of ERIC's page: his WIP and White draw
+     the Atlas card, so a library default of ON reached straight through them
+     and swapped the three Figma cards for thirteen fixtures. His page, his
+     content — `AtlasLearningPages.test.tsx` pins it by name now. */
+  const fromLibraryFlag = useFeatureFlag('atlas-courses-from-library').enabled
+  /* Whether the card goes anywhere on the baseline. Eric's WIP and White wire
+     their first card themselves and are not gated on it. */
+  const ctaOpensCourse = useFeatureFlag('atlas-courses-open-course').enabled
+  /* Which card, and whether the rail is drawn — both the baseline's alone.
+     ⚠ READ UNCONDITIONALLY, THEN ANDed. `baseline && useFeatureFlag(...)`
+     short-circuits the hook, so switching versions in the picker would change
+     the hook COUNT between renders — React throws, and the page goes white. */
+  const cardStyle = useFeatureFlag('atlas-courses-card-style').variant
+  const quickLinksMode = useFeatureFlag('atlas-pages-quick-links').variant
+  const sharedCard = baseline && cardStyle !== 'atlas'
+  const quickLinksHidden = baseline && quickLinksMode !== 'shown'
+  const fromLibrary = baseline && fromLibraryFlag
+  const showQuickLinks = atlas && !quickLinksHidden
+  const cards = fromLibrary ? atlasCoursesFor(brand) : ATLAS_MY_COURSES
   /* THE CARD OPENS HOME IN ITS OWN STATE (2026-11-04, Eric's request) — see
      `atlasHomeStateFor`. The demo bar's Progress and Expires are set as if
      picked there, then Home opens on `?atlasCourse=`. */
@@ -2649,20 +2739,6 @@ function MyCoursesSection() {
     })
     window.scrollTo(0, 0)
   }
-  /* ⚠ RESOLVED, NOT RAW — 2026-10-14, when End-to-End Demo became the default
-     and a bare `?demo=1` had to render Eric's page. See `resolveDashboardVersion`. */
-  const sectionVersion = resolveDashboardVersion(params.get('version'), brand)
-  const atlas = isAtlasCompassNavVersion(sectionVersion)
-  /* Eric/Atlas WIP (2026-10-13, Eric's request): Quick Links as a RIGHT rail,
-     with its Home's links — everything but the course's own Flashcards and
-     Exam Simulator. The other Atlas versions keep the left column and all. */
-  // WIP's page — and Eric/Atlas White's, a duplicate of it on a white page
-  // (2026-10-14, Eric's request).
-  const wip = (sectionVersion === 'eric-atlas-v3' || isEricAtlasWhiteLike(sectionVersion))
-  const white = isEricAtlasWhiteLike(sectionVersion)
-  const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
-  // Up to the crumb's line on the End-to-End version (2026-11-02).
-  const e2eLift = isE2ELikeVersion(sectionVersion) && !quickLinksRight
   /* The Home course's card opens the Compass course page; the P&C card is the
      demo's invented course, so it is not wired. */
   const openCourse = () =>
@@ -2672,10 +2748,29 @@ function MyCoursesSection() {
       next.set('coursePage', 'course')
       return next
     })
+  /*
+   * WHICH CARD'S BUTTON WORKS, and the two arms are two owners.
+   *
+   * THE BASELINE: the flag decides, for every card. `!isE2ELikeVersion(...)`
+   * used to disable all three buttons here — Eric's promotion of 2026-10-15, so
+   * the demo could not walk out of itself — which left a page of courses where
+   * nothing at all was clickable.
+   *
+   * ERIC'S WIP / WHITE: unchanged, `i === 0` only. His surface, his call.
+   *
+   * ⚠ THE DESTINATION DOES NOT CARRY THE COURSE. Every card lands on the same
+   * `?section=course&coursePage=course` — the demo has one real course behind
+   * it. Logged as an open decision on the dev handoff rather than papered over
+   * with an id the course page would ignore.
+   */
+  const actionFor = (i: number): (() => void) | undefined => {
+    if (!baseline) return i === 0 ? openCourse : undefined
+    return ctaOpensCourse ? openCourse : undefined
+  }
   return (
     <MyCoursesPage
       embedded
-      aside={atlas ? <AtlasJourneyLinksCard withoutCoursePages={wip} style={wip ? (e2eLift ? WIP_QUICK_LINKS_LIFTED : WIP_QUICK_LINKS) : undefined} /> : undefined}
+      aside={showQuickLinks ? <AtlasJourneyLinksCard withoutCoursePages={wip} style={wip ? (baseline && !quickLinksRight ? WIP_QUICK_LINKS_LIFTED : WIP_QUICK_LINKS) : undefined} /> : undefined}
       // On the LEFT again on WIP (2026-10-13, Eric's request — its Home's
       // Quick Links moved left the same day); `asideRight` stays available.
       // …at the Home card's 230 (same day). The Design bar's Quick Links
@@ -2685,18 +2780,46 @@ function MyCoursesSection() {
       // Atlas: search, the status filter bar and View Archived are hidden — kept
       // for later, not removed (2026-10-06, Eric's request).
       hideListControls={atlas}
-      contentWidth={atlas ? ATLAS_MY_COURSES_WIDTH : undefined}
-      asideWidth={wip ? WIP_QUICK_LINKS_W : ATLAS_MY_COURSES_ASIDE_W}
-      // Atlas: the Figma course cards (213:3619) in place of the shared grid.
+      /* ⚠ AND THE SEARCH BOX EXPLICITLY, which `hideListControls` does NOT
+         cover. The page's header renders its own search whenever there is no
+         `aside` — so dropping the rail would have put a 360px search box on a
+         page whose every other control is deliberately hidden. */
+      hideSearch={atlas}
+      /* Centred at the October width while the rail is there; full width
+         without it, so the cards "shift over to the left" (2026-11-02). */
+      contentWidth={showQuickLinks ? ATLAS_MY_COURSES_WIDTH : undefined}
+      asideWidth={wip ? (baseline && !quickLinksRight ? E2E_QUICK_LINKS_COLUMN_W : WIP_QUICK_LINKS_W) : ATLAS_MY_COURSES_ASIDE_W}
+      /* THE SHARED CARD'S TWO PROPS (2026-11-02, Jillienne: "use the shared
+         course card, but update the course title to the serif font, do NOT put
+         a cta on the card"). The shared card has never had a call to action, so
+         "no CTA" is the card as it already is — what it has instead is a title
+         that links, which `onActivateCourse` re-points into the Atlas shell so
+         the learner does not lose the header on the way. */
+      cardTitleSerif={sharedCard}
+      onActivateCourse={sharedCard && ctaOpensCourse ? openCourse : undefined}
+      /* ⚠ NO `cards` ON THE SHARED ARM — that is the whole mechanism. Passing
+         nothing hands the list back to `MyCoursesPage`, which already renders
+         the real fixtures in a responsive grid with the \u22ee wired to its own
+         Course Details panel and an empty state behind it. */
       cards={
-        atlas ? (
+        !atlas || sharedCard ? undefined : cards.length === 0 ? (
+          /* AN EMPTY LIBRARY (2026-11-02). The Atlas arm replaces the page's
+             list wholesale, so it has to carry its own empty state or an
+             enrolment-free learner gets a title over blank space. */
+          <EmptyState
+            title="No courses yet"
+            description="Courses you enroll in will appear here."
+            actionLabel="Browse Catalog"
+            actionTo="/catalog"
+          />
+        ) : (
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, ${ATLAS_COURSE_CARD_W}px)`, gap: 16 }}>
-            {ATLAS_MY_COURSES.map((c, i) => (
+            {cards.map((c, i) => (
               <AtlasCourseCard
                 key={c.id}
                 data={c}
-                // Unwired on the End-to-End Demo (2026-10-15, Eric's request).
-                onAction={i === 0 && !isE2ELikeVersion(sectionVersion) ? openCourse : undefined}
+                // See `actionFor` — the baseline's flag, or Eric's first card.
+                onAction={actionFor(i)}
                 onOpen={() => openHomeFor(c)}
                 // White's active cards in Primary 100 on its white page
                 // (2026-10-14, Eric's request); completed cards keep no fill.
@@ -2704,24 +2827,74 @@ function MyCoursesSection() {
               />
             ))}
           </div>
-        ) : undefined
+        )
       }
     />
   )
 }
+/* An account page's frame: the shared sub-nav beside it, or — under
+   `useAtlasAccountPages` (2026-11-03) — My Certificates' layout, with the
+   account nav as a Quick Links card in Quick Links' place, at its width, lift
+   and gap. A component so it can read the hook; `SectionContent` cannot. */
+function AccountSection({
+  active,
+  onSelect,
+  body,
+}: {
+  active: AccountSectionId
+  onSelect: (id: AccountSectionId) => void
+  body: ReactNode
+}) {
+  const atlas = useAtlasAccountPages()
+  if (!atlas) {
+    return (
+      <AccountSectionLayout active={active} onSelect={onSelect}>
+        {body}
+      </AccountSectionLayout>
+    )
+  }
+  return (
+    <div
+      style={{
+        maxWidth: ATLAS_MY_COURSES_WIDTH,
+        margin: '24px auto 0',
+        display: 'grid',
+        gridTemplateColumns: `${E2E_QUICK_LINKS_COLUMN_W}px minmax(0, 1fr)`,
+        gap: 24,
+        alignItems: 'start',
+      }}
+    >
+      <AtlasAccountLinksCard active={active} onSelect={onSelect} style={WIP_QUICK_LINKS_LIFTED} />
+      <div style={{ minWidth: 0 }}>{body}</div>
+    </div>
+  )
+}
+
 /* Eric/Atlas WIP's Quick Links on My Courses and Certificates — its Home
    card's (AtlasHomeEricV3): 230 wide, 24 in, outlined in Secondary 100
    darkened 5%. */
 // 234, so the longest label's hover weight fits on one line (2026-10-14).
 const WIP_QUICK_LINKS_W = 234
 const WIP_QUICK_LINKS: CSSProperties = { border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)', padding: 24 }
-/* Its standard position on the End-to-End version (2026-11-02, Eric's
+/* Its standard position on the End-to-End version (2026-11-03, Eric's
    request): level with the "Back to Home" crumb, as Home's sits at the top of
    its page — the page header's crumb row and title (16.5 + 6 + 34) and the
-   24 the page keeps above its first row. The header steps right in exchange
-   (`indent`), over the first card. */
+   24 the page keeps above its first row — and 8 in from the column's edge —
+   so it sits exactly where Home's does, measured from the top nav and from
+   the left (2026-11-03, Eric's request: "the same on all pages"). The page
+   drops 16 to meet it (`E2E_PAGE_DROP`), so the crumb's top is its top, and
+   the header steps right over the first card (`indent`). */
+const E2E_PAGE_DROP = 16
 const E2E_QUICK_LINKS_LIFT = 16.5 + 6 + 34 + 24
-const WIP_QUICK_LINKS_LIFTED: CSSProperties = { ...WIP_QUICK_LINKS, marginTop: -E2E_QUICK_LINKS_LIFT }
+/* Its column: 8 in, the card's 234 and 8 more — with the page's own 24 gap
+   after it, the cards sit Home's 32 from Quick Links (2026-11-03). */
+const E2E_QUICK_LINKS_COLUMN_W = 8 + WIP_QUICK_LINKS_W + 8
+// …and Home's 20 corners, not the card's own 12 (2026-11-03).
+/* ⚠ 7.5 IN, NOT 8 (2026-11-04, Eric: the icons and text "shifting one or two
+   pixels to the right" from Home). These pages centre an odd 1081 column, so
+   8 in landed the card half a pixel right of Home's, which rounds to a visible
+   jump. 7.5 puts it on Home's exact x. */
+const WIP_QUICK_LINKS_LIFTED: CSSProperties = { ...WIP_QUICK_LINKS, marginTop: -E2E_QUICK_LINKS_LIFT, marginLeft: 7.5, width: WIP_QUICK_LINKS_W, flex: 'none', borderRadius: 'var(--atlas-card-radius, 20px)' }
 
 /* Certificates in the shell. Eric/Atlas WIP drops the page's search, result
    count and filter rail, and status tabs (2026-10-13, Eric's request), and
@@ -2736,24 +2909,66 @@ function CertificatesSection() {
   // (2026-10-14, Eric's request).
   const wip = (sectionVersion === 'eric-atlas-v3' || isEricAtlasWhiteLike(sectionVersion))
   const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
-  // Up to the crumb's line on the End-to-End version (2026-11-02).
-  const e2eLift = isE2ELikeVersion(sectionVersion) && !quickLinksRight
+  /* The baseline — see the long note in `MyCoursesSection`. Eric's WIP and
+     White keep the page he asked for; these two flags are hers. */
+  const baseline = isE2ELikeVersion(sectionVersion)
+  const quickLinksMode = useFeatureFlag('atlas-pages-quick-links').variant
+  const openDetail = useFeatureFlag('atlas-certificates-open-detail').enabled
+  /* Which card — the shared one by default since 2026-11-02; see
+     `atlas-certificates-card-style` for what the audit found. Read
+     unconditionally, ANDed after (the hook-count trap). */
+  const certCardStyle = useFeatureFlag('atlas-certificates-card-style').variant
+  const sharedCert = baseline && certCardStyle !== 'atlas'
+  const showQuickLinks = wip && !(baseline && quickLinksMode !== 'shown')
   return (
     <CertificatesPage
       embedded
       hideSearch
       hideListControls={wip}
       // The Home card's dimensions — 230 wide, 24 in, its Primary 200 outline
-      // (2026-10-13, Eric's request).
-      aside={wip ? <AtlasJourneyLinksCard withoutCoursePages style={e2eLift ? WIP_QUICK_LINKS_LIFTED : WIP_QUICK_LINKS} /> : undefined}
-      asideWidth={WIP_QUICK_LINKS_W}
+      // (2026-10-13, Eric's request). Off the baseline since 2026-11-02 —
+      // `atlas-pages-quick-links`.
+      aside={showQuickLinks ? <AtlasJourneyLinksCard withoutCoursePages style={baseline && !quickLinksRight ? WIP_QUICK_LINKS_LIFTED : WIP_QUICK_LINKS} /> : undefined}
+      asideWidth={baseline && !quickLinksRight ? E2E_QUICK_LINKS_COLUMN_W : WIP_QUICK_LINKS_W}
       asideRight={quickLinksRight}
-      contentWidth={wip ? ATLAS_MY_COURSES_WIDTH : undefined}
+      /* Centred at the October width while the rail is there; full width
+         without it, so the cards shift left (2026-11-02). */
+      contentWidth={showQuickLinks ? ATLAS_MY_COURSES_WIDTH : undefined}
+      /* EVERY CARD OPENS ITS DETAIL (2026-11-02) — the page had no way to open
+         a certificate at all: the card was clickable only when
+         `status === 'action-required'`, which `hideListControls` makes
+         unreachable, and the \u22ee called `console.info`. The baseline's, like
+         the rail above. */
+      atlasOpenAll={baseline && openDetail}
       // Figma 375:1311's cards (2026-10-13, Eric's request) — and the Life &
       // Health certificate as IN-PROGRESS: WIP's Home has that course under
       // way, so its certificate is not earned yet.
-      atlasCards={wip}
-      inProgressIds={wip ? ['cert-xcel-lh-prelicense'] : undefined}
+      /* The Atlas card only where the shared one has not taken over — Eric's
+         versions, and the baseline with the control turned over. */
+      atlasCards={wip && !sharedCert}
+      /*
+       * NO NOT-YET-EARNED CERTIFICATE ON THIS PAGE (2026-11-02, Jillienne:
+       * "there should not be an IN PROGRESS certificate, only Completed").
+       *
+       * It was never a record state — `cert-xcel-lh-prelicense` is
+       * `status: 'completed'` with a real issue date and a reporting date, and
+       * the not-yet-earned look was a presentational overlay this page painted
+       * over it. Dropping the overlay makes the card say what the record says.
+       *
+       * ⚠ THE CAPABILITY IS UNWIRED, NOT REMOVED. `CertificateCard`'s
+       * `inProgress`, `AtlasCertificateCard`'s, and the detail panel's matching
+       * state all stay — a certificate that genuinely is not issued yet must
+       * not fall through to the issued treatment and claim a date it has not
+       * got. Re-wiring is passing ids here again.
+       *
+       * Eric's versions keep the overlay he asked for on 2026-10-13: his Home
+       * has that course under way, so its certificate is not earned there.
+       */
+      // …and on the baseline with the Atlas card (2026-11-03, Eric's
+      // feat/quick-links, as his breakpoints row): Home has that course
+      // under way, so its certificate is not earned yet.
+      inProgressIds={wip && (!baseline || !sharedCert) ? ['cert-xcel-lh-prelicense'] : undefined}
+      sharedCardSerif={sharedCert}
       // White's cards: the guide's Secondary 100 fill with a 1px Secondary 200
       // outline (2026-10-14, Eric's request) — the tan ramp, by role, so the
       // other brands read the same tan.
@@ -2855,6 +3070,11 @@ function renderBody(
         // choice, because this function is not a component and cannot read a
         // flag itself.
         <PurchasesSection />
+      ) : active === 'transcripts' ? (
+        /* The course history (2026-11-02), from Figma 2009:28153. It was an
+           `AccountSectionPlaceholder` reading "Transcripts — not built yet",
+           which is what the TODO below used to cover. */
+        <TranscriptsPanel />
       ) : active === 'notifications' ? (
         // The header bell's "View all" lands here. It was an
         // `AccountSectionPlaceholder` until the bell shipped, which made the
@@ -2863,17 +3083,15 @@ function renderBody(
         // address rather than one of them being renamed.
         <NotificationsPanel />
       ) : (
-        // TODO(feature): the remaining two (Transcripts, My Purchases) are
-        // placeholders — real pages drop in here, still wrapped by
-        // AccountSectionLayout. It was four until 2026-09-30, when Licenses
-        // and Payment Methods were archived.
+        // TODO(feature): nothing is a placeholder here any more — Transcripts
+        // was the last one (2026-11-02). The branch stays because
+        // `AccountSectionId` is a union a future section joins, and a new id
+        // landing on a blank screen is worse than one landing on "not built
+        // yet". It was four placeholders until 2026-09-30, when Licenses and
+        // Payment Methods were archived, and two until today.
         <AccountSectionPlaceholder id={active} />
       )
-    return (
-      <AccountSectionLayout active={active} onSelect={(id) => onSelect(id)}>
-        {body}
-      </AccountSectionLayout>
-    )
+    return <AccountSection active={active} onSelect={(id) => onSelect(id)} body={body} />
   }
   // (Gift Recipients — purchase-for-others tracking — is an account section
   // above; `/account/gift-recipients` redirects here.)

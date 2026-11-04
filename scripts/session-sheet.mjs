@@ -401,7 +401,7 @@ git push origin session-$(date +%F)-slug</pre>
   <footer class="foot">
     <span>${rows.length} controls in the catalog</span>
     <span>src/data/testableCtas.ts</span>
-    <span>/promote-to-testing</span>
+    <span>/freeze-for-testing</span>
   </footer>
 </div>
 

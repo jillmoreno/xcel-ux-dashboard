@@ -176,6 +176,34 @@
   --color-success-800: #003615;
   --color-success-900: #001b0a;
 
+  /* PASS / MASTERY — the Compass palette's `--c-pass`, #2F7A5A, brought into
+     the React tokens (2026-11-02, the direct ask: completed certificates
+     "should take on this green color. and shades of it").
+
+     ⚠ NOT `success`. That ramp is Nectar's bright functional green (#018937 at
+     -500) and it is right for a toast or a form; this one is the deeper,
+     calmer green the Compass surfaces already use for "on track / mastery",
+     and it is the one the design-system audit documents as shared between the
+     two systems (`public/prototypes/xcel-design-system-audit.html`, where it
+     is listed as identical across both). The two greens exist for two jobs;
+     do not collapse them.
+
+     -500 IS THE AUDIT'S VALUE, unchanged. The rest of the ramp is derived from
+     it — hue 154, saturation 44% held, lightness stepped — so the shades are
+     this green's own and not a second opinion about it.
+
+     Contrast, on the card surface: -500 5.18:1, -600 7.39:1, -700 10.09:1 —
+     all AA as text. -100 through -400 are fills only. On the dark card, -300
+     reads 8.5:1, which is the stop the dark theme lifts a status word to. */
+  --color-pass-100: #daf1e7;
+  --color-pass-200: #b5e3cf;
+  --color-pass-300: #86d0b0;
+  --color-pass-400: #47b888;
+  --color-pass-500: #2f7a5a;
+  --color-pass-600: #256047;
+  --color-pass-700: #1c4a36;
+  --color-pass-800: #123023;
+
   --color-error-100: #f4cccc;
   --color-error-200: #ea9999;
   --color-error-300: #df6666;
@@ -3634,8 +3662,11 @@ a.cre-library-card-title::after {
 }
 
 .cre-cert-card {
-  --cert-accent: var(--color-success-500);
-  --cert-link: var(--color-success-700);
+  /* The fallback only — the component sets both per status. Moved onto the
+     pass ramp with the completed card (2026-11-02) so an unstyled card does
+     not flash the brighter functional green. */
+  --cert-accent: var(--color-pass-500);
+  --cert-link: var(--color-pass-700);
   box-shadow: var(--shadow-card);
   transition: transform 140ms ease, box-shadow 140ms ease;
 }
@@ -4494,6 +4525,13 @@ a.cre-library-card-title::after {
    text label — color is never the sole carrier of meaning, so a
    black-and-white printer still produces a readable handout. */
 @media print {
+  /* `.cre-print-hide` is the name to use (2026-11-02, when Transcripts got a
+     print view of its own and the chrome moved into `PrintDocumentShell`).
+     The study-calendar name is kept beside it rather than renamed: it is on
+     markup outside that shell too, and a print view that silently stops
+     hiding its toolbar puts the toolbar in the saved PDF — a failure nobody
+     sees until they open the file. */
+  .cre-print-hide,
   .cre-study-calendar-print-hide {
     display: none !important;
   }

@@ -335,13 +335,16 @@ describe('LinksPanel', () => {
     ])
     render(<LinksPanel />)
 
-    const withAuthor = await screen.findByText(/added 2026-09-10 · by Jill/)
-    expect(withAuthor).toBeInTheDocument()
-    // A trailing "·" reads as a value that failed to load — the same reason a
-    // self-paid Seat cell on the admin roster is blank rather than "n/a".
-    const without = screen.getByText(/added 2026-09-09/)
-    expect(without.textContent).not.toMatch(/·\s*$/)
-    expect(without.textContent).not.toMatch(/by\s*$/)
+    // THE ROW'S TAGS (2026-11-01) — who added it and when, as the outlined
+    // tags every section's row wears, rather than a meta line under the title.
+    const withAuthor = (await screen.findByText('With author')).closest<HTMLElement>('[data-row]')!
+    expect(within(withAuthor).getByText('Jill').textContent).toBe('Added by Jill')
+    expect(within(withAuthor).getByText('Added 2026-09-10')).toBeInTheDocument()
+    // No author → no author tag at all, rather than an empty one — an empty
+    // tag reads as a name that failed to load.
+    const without = screen.getByText('Without author').closest<HTMLElement>('[data-row]')!
+    expect(within(without).getByText('Added 2026-09-09')).toBeInTheDocument()
+    expect(within(without).queryByText(/Added by/)).toBeNull()
   })
 
   it('prefills Added by from this browser, but never reassigns on edit', async () => {
@@ -359,7 +362,9 @@ describe('LinksPanel', () => {
 
     // Editing: the RECORD's own author. Editing someone else's link must not
     // quietly reassign it to whoever is at this keyboard.
-    await user.click(screen.getByRole('button', { name: /Edit Someone elses/ }))
+    // Edit lives in the row's kebab now (2026-11-01), with every other board's.
+    await user.click(screen.getByRole('button', { name: 'Actions for Someone elses' }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Edit' }))
     expect(screen.getByLabelText(/Added by/)).toHaveValue('Dana')
     await user.click(screen.getByRole('button', { name: 'Save changes' }))
 
@@ -383,8 +388,7 @@ describe('LinksPanel', () => {
     await waitFor(() => expect(screen.getByText('3 links')).toBeInTheDocument())
     // Strip only the visually-hidden affordance text, not every em dash — the
     // titles here deliberately contain one.
-    const titles = screen
-      .getAllByRole('link')
+    const titles = [...document.querySelectorAll('.cre-uxlinks-title')]
       .map((a) => a.textContent?.replace(/\s*— opens in a new tab$/, '').trim())
     expect(titles).toEqual(['Newest — same day', 'Middle — same day', 'Oldest'])
   })
@@ -400,8 +404,7 @@ describe('LinksPanel', () => {
     ])
     render(<LinksPanel />)
     await waitFor(() => expect(screen.getByText('3 links')).toBeInTheDocument())
-    const titles = screen
-      .getAllByRole('link')
+    const titles = [...document.querySelectorAll('.cre-uxlinks-title')]
       .map((a) => a.textContent?.replace(/\s*— opens in a new tab$/, '').trim())
     expect(titles).toEqual(['Oldest, edited today', 'Added later, saved once', 'Added later, never edited'])
   })
@@ -424,8 +427,10 @@ describe('LinksPanel', () => {
 
     expect(container.querySelectorAll('.cre-uxlinks-row')).toHaveLength(1)
     expect(container.querySelectorAll('.cre-uxlinks-title')).toHaveLength(1)
-    // Edit + Remove.
-    expect(container.querySelectorAll('.cre-uxlinks-action')).toHaveLength(2)
+    // Edit + Remove are in the row's kebab since 2026-11-01 — one trigger, no
+    // bare icon buttons on the row.
+    expect(container.querySelectorAll('.cre-uxlinks-action')).toHaveLength(0)
+    expect(screen.getAllByRole('button', { name: /^Actions for / })).toHaveLength(1)
 
     const css = readFileSync(path.resolve(__dirname, '../styles/tokens.css'), 'utf8')
     const ruleFor = (selector: string) => {

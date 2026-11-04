@@ -41,7 +41,7 @@ import {
   type DragEvent,
   type ReactNode,
 } from 'react'
-import { Download, PenToSquare, Plus, Search, Trash, X } from '@/icons'
+import { ClipboardList, Download, PenToSquare, Plus, Search, Trash, X } from '@/icons'
 import { Modal } from '@/components/ui/Modal'
 import { Sheet } from '@/components/ui/Sheet'
 import type { QaSeverity, QaStatus } from '@/data/qaNotes'
@@ -62,6 +62,8 @@ import {
   type NoteIndex,
 } from '@/data/qaNoteStore'
 import { QaNoteForm } from './QaNoteForm'
+import { GeneratedThumb, THUMB_H, THUMB_W } from './GeneratedThumb'
+import { HubImageThumb, HubRow } from './HubRow'
 import { UX_TOKEN_BRIDGE } from './uxPaletteBridge'
 import {
   QA_SEVERITIES,
@@ -121,57 +123,6 @@ const SEVERITY_COLOR: Record<QaSeverity, string> = {
 }
 
 /* ── badges ───────────────────────────────────────────────────────────────── */
-
-const badgeBaseStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  height: 22,
-  // 12px on the left rather than 8px, to clear the 4px accent bar.
-  padding: '0 8px 0 12px',
-  borderRadius: 4,
-  // The 4px left edge is an INSET BOX-SHADOW, not a border. Both badge types set
-  // only that edge's colour, and a `borderColor` / `borderLeftColor` pair is a
-  // shorthand-plus-longhand mix that React warns about and can drop a value
-  // from. An inset shadow also costs no layout, which is the same reason the
-  // certificate cards draw their accent stroke this way.
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  fontWeight: 600,
-  lineHeight: 1,
-  color: 'var(--color-text-primary)',
-  whiteSpace: 'nowrap',
-  flex: 'none',
-}
-
-function StatusChip({ status }: { status: QaStatus }) {
-  const { edge, tint } = STATUS_COLOR[status]
-  return (
-    // The aria-label names the DIMENSION, not just the value: "Open" alone does
-    // not tell a screen-reader user whether they are hearing a status or a
-    // severity, and both are on every row.
-    <span
-      aria-label={`Status: ${status}`}
-      style={{ ...badgeBaseStyle, background: tint, boxShadow: `inset 4px 0 0 ${edge}` }}
-    >
-      {status}
-    </span>
-  )
-}
-
-function SeverityChip({ severity }: { severity: QaSeverity }) {
-  return (
-    <span
-      aria-label={`Severity: ${severity}`}
-      style={{
-        ...badgeBaseStyle,
-        background: 'transparent',
-        boxShadow: `inset 4px 0 0 ${SEVERITY_COLOR[severity]}`,
-      }}
-    >
-      {severity}
-    </span>
-  )
-}
 
 /* ── screenshots ──────────────────────────────────────────────────────────── */
 
@@ -427,33 +378,6 @@ const idStyle: CSSProperties = {
   letterSpacing: '0.04em',
 }
 
-const cardButtonStyle: CSSProperties = {
-  display: 'block',
-  width: '100%',
-  textAlign: 'left',
-  font: 'inherit',
-  background: 'var(--color-surface-card)',
-  border: '1px solid var(--color-border-subtle)',
-  borderRadius: 'var(--radius-lg)',
-  boxShadow: 'var(--shadow-card)',
-  padding: '12px 14px',
-  cursor: 'pointer',
-  // The hover accent is an inset shadow stacked in front of the card shadow, so
-  // it costs no layout and needs no transparent placeholder edge to reserve
-  // space. Same treatment as the certificate cards' left stroke.
-  transition: 'box-shadow 120ms ease, transform 120ms ease',
-}
-
-const cardTitleStyle: CSSProperties = {
-  display: 'block',
-  fontFamily: 'var(--font-body)',
-  fontSize: 15,
-  fontWeight: 600,
-  lineHeight: 1.4,
-  color: 'var(--color-text-primary)',
-  margin: '2px 0 0',
-}
-
 const contextStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 12,
@@ -461,119 +385,7 @@ const contextStyle: CSSProperties = {
   margin: '3px 0 0',
 }
 
-const cardMetaRowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 10,
-  flexWrap: 'wrap',
-  marginTop: 10,
-}
 
-
-
-/**
- * A row thumbnail, sized to be read rather than noticed.
- *
- * `contain`, not `cover`. At 40px a crop cost nothing because nothing was legible
- * anyway; at this size a `cover` crop would quietly hide the edges of a wide
- * screenshot, and the edges are where half of these findings live. Letterboxing
- * inside a fixed box keeps the right-hand column aligned down the list while
- * showing the whole capture.
- */
-const thumbStyle: CSSProperties = {
-  width: 128,
-  height: 88,
-  borderRadius: 4,
-  border: '1px solid var(--color-border-subtle)',
-  background: 'var(--color-neutral-50)',
-  objectFit: 'contain',
-  display: 'block',
-  flex: 'none',
-}
-
-/**
- * The card's two columns.
- *
- * `flex-wrap` rather than a container query: the right column is a fixed-size
- * group and the left one has a 240px floor, so when the card is too narrow to
- * hold both, the captures wrap underneath instead of squeezing the title. The
- * list renders at several widths — the shell, a narrow device frame — and this
- * needs no breakpoint chosen for each.
- */
-const cardRowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'flex-start',
-  justifyContent: 'space-between',
-  gap: 16,
-  flexWrap: 'wrap',
-}
-
-const cardMainStyle: CSSProperties = { flex: '1 1 240px', minWidth: 0 }
-
-const cardShotsStyle: CSSProperties = { flex: 'none' }
-
-const cardThumbRowStyle: CSSProperties = { display: 'flex', gap: 6 }
-
-/** Quiet on purpose. It says evidence exists beyond the comparison; the panel is
- *  where you go to look at it, and the whole card already opens the panel. */
-const contextHintStyle: CSSProperties = {
-  display: 'block',
-  marginTop: 4,
-  fontFamily: 'var(--font-body)',
-  fontSize: 11,
-  fontWeight: 600,
-  letterSpacing: '0.04em',
-  color: 'var(--color-text-tertiary)',
-  textAlign: 'right',
-}
-
-const thumbLabelStyle: CSSProperties = {
-  display: 'block',
-  marginTop: 3,
-  fontFamily: 'var(--font-body)',
-  fontSize: 10,
-  fontWeight: 700,
-  letterSpacing: '0.06em',
-  textTransform: 'uppercase',
-  color: 'var(--color-text-tertiary)',
-  textAlign: 'center',
-}
-
-/**
- * A 40px row thumbnail. Same fallback rule as the panel's full frames, at the
- * size where a dashed box with words in it would not fit — so a missing file
- * degrades to a plain dashed square.
- *
- * `alt=""`, deliberately. These are decorative duplicates of the panel's own
- * framed captures, which carry the descriptive alt text: the row already names
- * the finding, and the count they represent is announced by the panel. It also
- * removes a real artifact — a described `<img>` whose file is missing paints its
- * alt text at 40px until `onError` lands, so the row flashed a clipped
- * "Expe… Actua…" before settling into the placeholder.
- */
-function RowThumb({ src, label }: { src: string; label: string }) {
-  // The failed URL, not a boolean. A row thumbnail renders before the capture
-  // index has loaded, so its first src is the committed path — which 404s for a
-  // finding whose capture only exists as an upload. A boolean `broken` latched
-  // on that first failure and stayed latched when a good src arrived a tick
-  // later, so an uploaded capture showed in the panel and never in the row.
-  // "Broken" is a property of a URL; storing it as one fixes that by
-  // construction rather than by remembering to clear a flag.
-  const [failedSrc, setFailedSrc] = useState<string | null>(null)
-  // Labelled now they are big enough to compare. Two similar screenshots side by
-  // side are ambiguous without it, and the point of the pair is knowing which one
-  // is the reference.
-  return (
-    <span style={{ flex: 'none' }}>
-      {failedSrc === src ? (
-        <span aria-hidden style={{ ...thumbStyle, border: '1px dashed var(--color-neutral-light)' }} />
-      ) : (
-        <img src={src} alt="" onError={() => setFailedSrc(src)} style={thumbStyle} />
-      )}
-      <span style={thumbLabelStyle}>{label}</span>
-    </span>
-  )
-}
 
 function QaCard({
   note,
@@ -584,68 +396,84 @@ function QaCard({
   index: CaptureIndex
   onOpen: (note: MergedNote) => void
 }) {
-  const [hover, setHover] = useState(false)
   // Filled slots only, so the row still shows nothing for a finding whose
   // evidence lives in another finding's captures — and shows an uploaded
   // capture for one that has no committed path at all.
   const shown = filledSlots(captureSlotsFor(note, index))
-  // Context images are not shown on the card — the two columns are a comparison
-  // and a variable pile of supporting shots would take that away — but their
-  // EXISTENCE is worth knowing without opening the finding.
   const contextCount = contextSlotsFor(note, index).length
+  const first = shown[0]
+  const evidence = shown.length + contextCount
+  const lead = note.bullets.map(bulletText).filter(Boolean)
+  /* THE CARD IS `HubRow` (2026-11-01) — the same row every section draws.
+     Jillienne: "I want ALL of the pages to follow this similar UI so its
+     consistent." What a FINDING says in that anatomy:
+       thumbnail    its first capture (Expected, usually), or the generated
+                    mark when it has none yet.
+       title        the id, small and monospace, then the title.
+       description  its bullets, run together — the Sheet has them as a list.
+       tags         when it was logged · its severity · its status, the last
+                    two in their own colours so the triage pass still reads
+                    down the column.
+       status       how much evidence it carries, when it carries any.
+       kebab        Open finding.
+     The severity colour stays as the row's left stroke, where it was. */
   return (
     <li style={{ listStyle: 'none' }}>
-      <button
-        type="button"
-        onClick={() => onOpen(note)}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-        onFocus={() => setHover(true)}
-        onBlur={() => setHover(false)}
-        aria-haspopup="dialog"
-        style={{
-          ...cardButtonStyle,
-          boxShadow: hover
-            ? `inset 3px 0 0 ${SEVERITY_COLOR[note.severity]}, var(--shadow-card)`
-            : 'var(--shadow-card)',
-          transform: hover ? 'translateY(-1px)' : undefined,
-        }}
-      >
-        <span style={cardRowStyle}>
-          <span style={cardMainStyle}>
-            <span style={idStyle}>{note.id}</span>
-            {/* A span, not a `<p>`: this sits inside a button, which takes
-                phrasing content only. */}
-            <span style={cardTitleStyle}>{note.title}</span>
-            <span style={cardMetaRowStyle}>
-              <SeverityChip severity={note.severity} />
-              <StatusChip status={note.status} />
+      <HubRow
+        id={`qa-${note.id}`}
+        thumb={
+          first ? (
+            <HubImageThumb
+              src={first.capture ? captureUrl(first.capture) : first.committedSrc!}
+              width={THUMB_W}
+              height={THUMB_H}
+            />
+          ) : (
+            <GeneratedThumb accent="gold">
+              <ClipboardList size={34} />
+            </GeneratedThumb>
+          )
+        }
+        title={
+          <>
+            <span style={{ ...idStyle, marginRight: 8 }}>{note.id}</span>
+            {note.title}
+          </>
+        }
+        description={lead.length > 0 ? lead.join(' · ') : undefined}
+        tags={[
+          { key: 'logged', text: `Logged ${formatLoggedDate(note.loggedDate)}` },
+          {
+            key: 'severity',
+            text: note.severity,
+            srPrefix: 'Severity: ',
+            style: { border: `1px solid ${SEVERITY_COLOR[note.severity]}`, color: 'var(--ux-text)' },
+          },
+          {
+            key: 'status',
+            text: note.status,
+            srPrefix: 'Status: ',
+            style: {
+              border: `1px solid ${STATUS_COLOR[note.status].edge}`,
+              background: STATUS_COLOR[note.status].tint,
+              color: 'var(--ux-text)',
+            },
+          },
+        ]}
+        statusWidth={84}
+        status={
+          evidence > 0 ? (
+            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--ux-text-3)', whiteSpace: 'nowrap' }}>
+              {evidence} {evidence === 1 ? 'capture' : 'captures'}
             </span>
-          </span>
-          {/* Derived, never stored. Nothing renders when a finding has neither
-              a capture nor a context image, rather than an empty frame holding
-              the column open. */}
-          {(shown.length > 0 || contextCount > 0) && (
-            <span style={cardShotsStyle}>
-              <span style={cardThumbRowStyle}>
-                {shown.map((slot) => (
-                  <RowThumb
-                    key={slot.key}
-                    label={slot.label}
-                    src={slot.capture ? captureUrl(slot.capture) : slot.committedSrc!}
-                  />
-                ))}
-              </span>
-              {/* Reads correctly on its own as well as under the pair — a finding
-                  can have context images and no comparison yet, and then this is
-                  the only thing in the column. */}
-              {contextCount > 0 && (
-                <span style={contextHintStyle}>+{contextCount} context</span>
-              )}
-            </span>
-          )}
-        </span>
-      </button>
+          ) : null
+        }
+        onOpen={() => onOpen(note)}
+        openLabel={`Open ${note.id}: ${note.title}`}
+        actions={[{ id: 'open', label: 'Open finding', onSelect: () => onOpen(note) }]}
+        menuLabel={`Actions for ${note.id}`}
+        stroke={SEVERITY_COLOR[note.severity]}
+      />
     </li>
   )
 }

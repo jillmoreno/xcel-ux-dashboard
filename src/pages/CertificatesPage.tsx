@@ -41,6 +41,8 @@ export function CertificatesPage({
   atlasCardStyle,
   atlasBarColor,
   atlasInProgressPill,
+  atlasOpenAll = false,
+  sharedCardSerif = false,
 }: {
   embedded?: boolean
   hideSearch?: boolean
@@ -70,6 +72,20 @@ export function CertificatesPage({
   /** The in-progress cards' Certificate pill (`AtlasCertificateCard`'s
    *  `inProgressPill`; Eric/Atlas White's). */
   atlasInProgressPill?: CSSProperties
+  /**
+   * EVERY ATLAS CARD OPENS ITS DETAIL — 2026-11-02, Jillienne.
+   *
+   * ⚠ IT FIXES A PAGE WITH NO DOOR. Both certificate cards gate `clickable` on
+   * `status === 'action-required'`, and the Atlas page hides the status tabs
+   * (`hideListControls`), so the Action Required tab is unreachable and nothing
+   * on the page opened anything — while the ⋮ called `console.info`. Atlas
+   * only: the shared `CertificateCard` keeps its rule, which is still right for
+   * the tabbed page, where Action Required is one click away.
+   */
+  atlasOpenAll?: boolean
+  /** The shared card's title in the heading serif — the Atlas pages, which draw
+   *  it in place of `AtlasCertificateCard` since 2026-11-02. */
+  sharedCardSerif?: boolean
 } = {}) {
   const { brand } = useAccount()
   const all = useMemo(() => certificatesFor(brand), [brand])
@@ -272,9 +288,18 @@ export function CertificatesPage({
           )}
 
           {filtered.length === 0 ? (
+            /* ⚠ TWO DESCRIPTIONS, because the Atlas page has neither of the
+               things the original one names. `hideListControls` takes the
+               filter rail AND the status tabs, so "try clearing a filter, or
+               check another tab" sent the learner after controls that are not
+               on the page. */
             <EmptyState
-              title="No certificates here"
-              description="Try clearing a filter, or check another tab."
+              title="No certificates yet"
+              description={
+                hideListControls
+                  ? 'Certificates appear here as you complete your courses.'
+                  : 'Try clearing a filter, or check another tab.'
+              }
             />
           ) : (
             <div role="list" style={gridStyle}>
@@ -287,13 +312,20 @@ export function CertificatesPage({
                     <AtlasCertificateCard
                       data={cert}
                       onOpen={setDetailId}
+                      openAnyStatus={atlasOpenAll}
                       inProgress={inProgressIds?.includes(cert.id)}
                       style={atlasCardStyle}
                       barColor={atlasBarColor}
                       inProgressPill={atlasInProgressPill}
                     />
                   ) : (
-                    <CertificateCard data={cert} onOpen={setDetailId} />
+                    <CertificateCard
+                      data={cert}
+                      onOpen={setDetailId}
+                      openAnyStatus={atlasOpenAll}
+                      inProgress={inProgressIds?.includes(cert.id)}
+                      titleSerif={sharedCardSerif}
+                    />
                   )}
                 </div>
               ))}
@@ -303,7 +335,18 @@ export function CertificatesPage({
         {aside && asideRight ? aside : null}
       </div>
 
-      <CertificateActionPanel open={detailId != null} onClose={() => setDetailId(null)} data={detailRecord} />
+      {/* ⚠ `inProgress` IS PASSED FROM THE SAME LIST THE CARD READS. A
+          not-yet-earned certificate is still `status: 'completed'` in the
+          fixtures — Atlas draws it as in-progress from `inProgressIds`, a
+          presentational decision the record does not carry — so the panel has
+          to be told, or it would open the issued arm over a certificate the
+          learner has not earned. */}
+      <CertificateActionPanel
+        open={detailId != null}
+        onClose={() => setDetailId(null)}
+        data={detailRecord}
+        inProgress={detailId != null && (inProgressIds?.includes(detailId) ?? false)}
+      />
     </div>
   )
 }

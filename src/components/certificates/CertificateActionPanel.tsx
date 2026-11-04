@@ -1,31 +1,70 @@
 import type { CSSProperties } from 'react'
-import { ArrowLeft, CircleExclamation, PersonRunning } from '@/icons'
+import { ArrowLeft, CircleCheck, CircleExclamation, FileCertificateRegular, HourglassClock, PersonRunning } from '@/icons'
 import { Sheet } from '@/components/ui/Sheet'
-import { CERT_ACTION_META, type Certificate } from '@/data/certificateFixtures'
+import { CERT_ACTION_META, certificatePdfUrl, type Certificate } from '@/data/certificateFixtures'
+import { ReportingStatus } from './CertificateCard'
 
 /**
- * Certificate Details slide-over for an action-required certificate. One
- * component covers all five action variants (Survey / Affidavit / Proctored
- * Exam / Document / Payment) — the banner reason, pending label, and optional
- * explanation paragraph come from `CERT_ACTION_META`. Affidavit is the only
- * variant with an explanation block. From the 2.0 Certificates designs.
+ * CERTIFICATE DETAILS slide-over. From the 2.0 Certificates designs.
+ *
+ * THREE ARMS, and it had exactly one until 2026-11-02:
+ *
+ *   action required  the original. One component covers all five action
+ *                    variants (Survey / Affidavit / Proctored Exam / Document /
+ *                    Payment) — the banner reason, pending label and optional
+ *                    explanation paragraph come from `CERT_ACTION_META`.
+ *                    Affidavit is the only variant with an explanation block.
+ *                    UNCHANGED: every line it drew, it still draws.
+ *
+ *   issued           a certificate the learner has earned — the common case,
+ *                    and the one that had no arm at all. The body keyed off
+ *                    `CERT_ACTION_META[data.action]`, which an issued record
+ *                    has no `action` for, so the whole sheet rendered EMPTY
+ *                    under an "Action Required" banner. That is why no card
+ *                    anywhere opened one: `CertificateCard` and
+ *                    `AtlasCertificateCard` both gated `clickable` on
+ *                    action-required, which hid the hole rather than fixing it.
+ *
+ *   in progress      the certificate for a course still under way (the Atlas
+ *                    page's Life & Health card). Nothing has been issued, so
+ *                    there is no document and no reporting line — the sheet
+ *                    says what is outstanding and offers the course.
+ *
+ * ⚠ `inProgress` IS THE HOST'S WORD, NOT THE RECORD'S. A not-yet-earned
+ * certificate is still `status: 'completed'` in the fixtures — Atlas draws it
+ * as in-progress from `inProgressIds`, a presentational decision — so the panel
+ * cannot read it off `data` and has to be told. If that ever becomes a real
+ * record state, this prop is what collapses into it.
  */
 export function CertificateActionPanel({
   open,
   onClose,
   data,
+  inProgress = false,
 }: {
   open: boolean
   onClose: () => void
   data: Certificate | null
+  /** Draw the not-yet-earned arm — see the warning above. */
+  inProgress?: boolean
 }) {
   const meta = data?.action ? CERT_ACTION_META[data.action] : null
   const reason = meta && data ? meta.bannerReason.replaceAll('{state}', data.state) : ''
   const explanation = meta?.explanation && data ? meta.explanation.replaceAll('{state}', data.state) : null
+  /* An ISSUED certificate: not pending an action, and not still being earned.
+     Derived rather than passed, so the three arms cannot all be true at once. */
+  const issued = data != null && meta == null && !inProgress
+  /* ⚠ A PLACEHOLDER ROUTE, and deliberately the only one. `certificatePdfUrl`
+     returns the My Certificates list rather than a document — the real
+     certificate is "most likely a PDF viewer plugin, not an in-app page" (the
+     Atlas Home course-head handoff says so on its own View Certificate CTA).
+     Going through the helper keeps every door in the product on one placeholder
+     to replace, instead of this panel inventing a second. */
+  const pdfUrl = issued ? certificatePdfUrl(data) : null
 
   return (
     <Sheet open={open && data != null} onClose={onClose} title="Certificate Details" width={544}>
-      {data && meta && (
+      {data && (
         <div style={scrollStyle}>
           <button type="button" onClick={onClose} className="cre-link-action" style={backStyle}>
             <ArrowLeft size={16} aria-hidden />
@@ -33,16 +72,42 @@ export function CertificateActionPanel({
           </button>
           <h2 style={headingStyle}>Certificate Details</h2>
 
-          {/* Action Required banner */}
-          <div style={bannerStyle}>
-            <span aria-hidden style={bannerIconStyle}>
-              <CircleExclamation size={20} aria-hidden />
-            </span>
-            <div>
-              <p style={bannerTitleStyle}>Action Required</p>
-              <p style={bannerReasonStyle}>{reason}</p>
+          {/* THE BANNER — one per arm, same shape, three ramps. */}
+          {meta ? (
+            <div style={bannerStyle}>
+              <span aria-hidden style={bannerIconStyle}>
+                <CircleExclamation size={20} aria-hidden />
+              </span>
+              <div>
+                <p style={bannerTitleStyle}>Action Required</p>
+                <p style={bannerReasonStyle}>{reason}</p>
+              </div>
             </div>
-          </div>
+          ) : inProgress ? (
+            <div style={pendingBannerStyle}>
+              <span aria-hidden style={pendingBannerIconStyle}>
+                <HourglassClock size={20} aria-hidden />
+              </span>
+              <div>
+                <p style={pendingBannerTitleStyle}>Not Yet Earned</p>
+                <p style={pendingBannerReasonStyle}>
+                  This certificate is issued when you finish the course.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div style={issuedBannerStyle}>
+              <span aria-hidden style={issuedBannerIconStyle}>
+                <CircleCheck size={20} aria-hidden />
+              </span>
+              <div>
+                <p style={issuedBannerTitleStyle}>Certificate Issued</p>
+                <p style={issuedBannerReasonStyle}>
+                  {data.state} &middot; {data.hours} {data.hours === 1 ? 'hour' : 'hours'} &middot; {data.badge}
+                </p>
+              </div>
+            </div>
+          )}
 
           <div style={bodyStyle}>
             <h3 style={titleStyle}>{data.title}</h3>
@@ -59,19 +124,46 @@ export function CertificateActionPanel({
 
             <dl style={factsStyle}>
               <Fact label="Enrolled:" value={formatDate(data.enrolledDate)} />
-              <Fact label="Course Completed:" value={formatDate(data.completedDate)} />
+              {/* An in-progress course has not been completed, so the date
+                  would be a claim the card itself does not make. */}
+              {inProgress ? null : issued ? (
+                /* ⚠ ONE DATE UNDER THE CARD'S OWN LABEL. `Certificate` has no
+                   separate issued date — `completedDate` is both — and the
+                   Atlas card already prints it as "Certificate Issued". Saying
+                   "Course Completed" here would show a reviewer the same date
+                   under two names and read as a bug. Logged on the dev handoff
+                   as a real gap for engineering, not papered over with an
+                   invented second date. */
+                <Fact label="Certificate Issued:" value={formatDate(data.completedDate)} />
+              ) : (
+                <Fact label="Course Completed:" value={formatDate(data.completedDate)} />
+              )}
             </dl>
 
-            {explanation ? (
-              <div style={explanationBoxStyle}>
+            {meta ? (
+              explanation ? (
+                <div style={explanationBoxStyle}>
+                  <p style={pendingBoldStyle}>Certificate Pending: {meta.pendingLabel}</p>
+                  <p style={explanationTextStyle}>{explanation}</p>
+                </div>
+              ) : (
                 <p style={pendingBoldStyle}>Certificate Pending: {meta.pendingLabel}</p>
-                <p style={explanationTextStyle}>{explanation}</p>
-              </div>
-            ) : (
-              <p style={pendingBoldStyle}>Certificate Pending: {meta.pendingLabel}</p>
-            )}
+              )
+            ) : null}
 
-            {data.rosterReported && (
+            {/* The card's own Reporting Status line, through the card's own
+                component, so the two can never disagree. Issued only — nothing
+                has been reported for a certificate that does not exist yet. */}
+            {issued && data.reporting ? (
+              <div style={reportingRowStyle}>
+                <span style={{ color: 'var(--color-text-secondary)' }}>Reporting Status:</span>
+                <span style={{ fontWeight: 700 }}>
+                  <ReportingStatus reporting={data.reporting} />
+                </span>
+              </div>
+            ) : null}
+
+            {data.rosterReported && !inProgress && (
               <dl style={factsStyle}>
                 <Fact label="Roster Reported:" value={data.rosterReported} />
               </dl>
@@ -80,14 +172,24 @@ export function CertificateActionPanel({
 
           <div style={{ marginTop: 8 }}>
             <p style={whatToDoStyle}>What would you like to do?</p>
-            <button
-              type="button"
-              onClick={() => console.info('cert:go-to-course', data.id)}
-              style={actionTileStyle}
-            >
-              <PersonRunning size={26} aria-hidden style={{ color: 'var(--color-tertiary-600)' }} />
-              <span>Go to Course</span>
-            </button>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+              {/* View Certificate leads on an issued one — it is the thing the
+                  learner came for. See `pdfUrl` for what it opens today. */}
+              {pdfUrl ? (
+                <a href={pdfUrl} style={{ ...actionTileStyle, textDecoration: 'none' }}>
+                  <FileCertificateRegular size={26} aria-hidden style={{ color: 'var(--color-tertiary-600)' }} />
+                  <span>View Certificate</span>
+                </a>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => console.info('cert:go-to-course', data.id)}
+                style={actionTileStyle}
+              >
+                <PersonRunning size={26} aria-hidden style={{ color: 'var(--color-tertiary-600)' }} />
+                <span>{inProgress ? 'Continue Course' : 'Go to Course'}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -183,6 +285,49 @@ const bannerReasonStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 13,
   color: 'var(--color-warning-700)',
+}
+
+/* THE ISSUED AND IN-PROGRESS BANNERS (2026-11-02) — the Action Required
+   banner's shape on two other ramps, so the three arms read as one component
+   wearing three states rather than three different sheets.
+
+   SUCCESS for issued, INFO for not-yet-earned, and the text sits on the -700 /
+   -800 steps for the same reason `--color-status-success-text` is pinned to
+   -600: the -500 of either ramp does not clear AA on its own 100 tint. */
+const issuedBannerStyle: CSSProperties = {
+  ...bannerStyle,
+  background: 'var(--color-success-100)',
+  color: 'var(--color-success-800)',
+}
+const issuedBannerIconStyle: CSSProperties = {
+  ...bannerIconStyle,
+  border: '1.5px solid var(--color-success-400)',
+  color: 'var(--color-success-600)',
+}
+const issuedBannerTitleStyle: CSSProperties = { ...bannerTitleStyle, color: 'var(--color-success-800)' }
+const issuedBannerReasonStyle: CSSProperties = { ...bannerReasonStyle, color: 'var(--color-success-700)' }
+
+const pendingBannerStyle: CSSProperties = {
+  ...bannerStyle,
+  background: 'var(--color-info-100)',
+  color: 'var(--color-info-800)',
+}
+const pendingBannerIconStyle: CSSProperties = {
+  ...bannerIconStyle,
+  border: '1.5px solid var(--color-info-400)',
+  color: 'var(--color-info-700)',
+}
+const pendingBannerTitleStyle: CSSProperties = { ...bannerTitleStyle, color: 'var(--color-info-800)' }
+const pendingBannerReasonStyle: CSSProperties = { ...bannerReasonStyle, color: 'var(--color-info-800)' }
+
+/* The Reporting Status row — the facts list's type, laid out as a row because
+   its value is a component (the card's `ReportingStatus`), not a string. */
+const reportingRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  fontFamily: 'var(--font-body)',
+  fontSize: 14,
 }
 
 const bodyStyle: CSSProperties = {

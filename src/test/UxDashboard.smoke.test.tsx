@@ -12,6 +12,7 @@ import { PROTOTYPE_FEATURES, PROTOTYPE_SCOPES, componentPreviewUrl } from '@/dat
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
 import { HUB_DOCS } from '@/data/hubDocs'
 import { HANDOFF_IDS } from '@/data/handoffFeatures'
+import { HUB_HOST, STAGE_BRANCH, STAGE_ORIGIN, prototypeHref } from '@/data/stageBuild'
 
 /**
  * Smoke test for the XCEL dashboard.
@@ -41,7 +42,7 @@ function renderDashboard(initialPath = '/') {
 }
 
 /** The nav order is load-bearing — see `NAV_EYEBROWS` in UxDashboardPage.tsx.
- *  Ten sections since 2026-10-15: Design is retired with the Designers group
+ *  Twelve sections since 2026-10-15 (ten plus the two Team sections): Design is retired with the Designers group
  *  it headed, Explorations (was Exploration) moved up to sit under PRDs, and
  *  Archive and QA Notes sit under Dev Handoff, ungated. */
 const EXPECTED_SECTIONS = [
@@ -147,7 +148,7 @@ describe('XCEL dashboard — mount and nav', () => {
     // than deleted so that putting the link back is a deliberate act with a
     // failing test behind it, not something that drifts back in.
     renderDashboard()
-    expect(screen.queryByRole('link', { name: /How to read this dashboard/ })).toBeNull()
+    expect(screen.queryByRole('link', { name: /How to read the Hub/ })).toBeNull()
   })
 })
 
@@ -798,6 +799,79 @@ describe('Prototypes — one row per scope, every row the same build', () => {
     const order = PROTOTYPE_SCOPES.map((s) => s.id)
     const got = prototypeRows.map((f) => order.indexOf(f.prototypeScope!))
     expect(got, 'reorder the rows in prototypeFeatures.ts to match PROTOTYPE_SCOPES').toEqual([...got].sort((a, b) => a - b))
+  })
+
+  /* ── Main · Stage (2026-11-01) ─────────────────────────────────────────────
+   *
+   * Jillienne: "I want the prototype page to have both Main and Stage options
+   * there, not a new page in the rail." The section keeps its rows and gains a
+   * switch; the rule above ("every row is main's build") becomes "every row is
+   * main's build under Main, and the SAME path on the stage build under
+   * Stage". What is still refused is a row that opens anything else — the
+   * switch picks a build, never a different route. See `stageBuild.ts`. */
+  const openingRows = () => prototypeRows.filter((f) => !isPlaceholder(f) && f.to)
+  const hrefOf = (id: string) => document.querySelector(`[data-row="${id}"] a`)!.getAttribute('href')
+
+  it('the stage origin is the Netlify branch-deploy address of the `stage` branch on the Hub’s own site', () => {
+    // `HUB_URL` in PrototypeBar.tsx and `HUB_HOST` here are the same host:
+    // the stage address is derived from it, so a site rename moves both.
+    const bar = readFileSync(resolve(dirname(fileURLToPath(import.meta.url)), '../components/layout/PrototypeBar.tsx'), 'utf8')
+    expect(bar).toContain(`const HUB_URL = 'https://${HUB_HOST}/'`)
+    expect(STAGE_BRANCH).toBe('stage')
+    expect(STAGE_ORIGIN).toBe(`https://stage--${HUB_HOST}`)
+    // Same path, different origin — nothing about the route may change.
+    expect(prototypeHref('/dashboard-rebrand?demo=1', 'main')).toBe('/dashboard-rebrand?demo=1')
+    expect(prototypeHref('/dashboard-rebrand?demo=1', 'stage')).toBe(`${STAGE_ORIGIN}/dashboard-rebrand?demo=1`)
+  })
+
+  it('Prototypes carries a Main · Stage switch, Main by default, and no other section does', () => {
+    renderDashboard()
+    const group = screen.getByRole('radiogroup', { name: 'Which build the rows open' })
+    const radios = within(group).getAllByRole('radio')
+    expect(radios.map((r) => r.textContent)).toEqual(['Main', 'Stage'])
+    expect(radios[0]).toHaveAttribute('aria-checked', 'true')
+    expect(document.querySelector('[data-build-note]')!.textContent).toMatch(/main branch/i)
+    // Under Main every row that opens is exactly its authored `to` — the
+    // pre-switch behaviour, byte for byte.
+    for (const f of openingRows()) expect(hrefOf(f.id), f.id).toBe(f.to)
+  })
+
+  it('under Stage every row opens the SAME path on the stage origin, in a new tab, and the notes say so', async () => {
+    const user = userEvent.setup()
+    renderDashboard()
+    await user.click(screen.getByRole('radio', { name: 'Stage' }))
+    expect(screen.getByRole('radio', { name: 'Stage' })).toHaveAttribute('aria-checked', 'true')
+    for (const f of openingRows()) {
+      const a = document.querySelector(`[data-row="${f.id}"] a`)!
+      expect(a.getAttribute('href'), f.id).toBe(`${STAGE_ORIGIN}${f.to}`)
+      // Another origin opens in its own tab, like a document row does.
+      expect(a.getAttribute('target'), f.id).toBe('_blank')
+    }
+    // The placeholder still opens nothing — a switch does not build the Admin tool.
+    expect(document.querySelector('[data-placeholder="xcel-admin-coming-soon"] a')).toBeNull()
+    // Both cards are still there, in the same order, and neither claims to be main.
+    const groups = [...document.querySelectorAll('main [data-group]')]
+    expect(groups.map((g) => g.getAttribute('data-group'))).toEqual(['source-of-truth', 'in-progress'])
+    // The notes are one plain line each (2026-11-01): the stage view says
+    // "next release", and never claims to be what the product is right now.
+    expect(groups[0].textContent).toContain('next release')
+    expect(groups[0].textContent).not.toContain('right now')
+    expect(document.querySelector('[data-build-note]')!.textContent).toMatch(/stage branch/i)
+  })
+
+  it('the build is in the address — `?build=stage` — and absent for Main', async () => {
+    // Deep-linked to Stage, the switch opens on Stage.
+    renderDashboard('/?build=stage')
+    expect(screen.getByRole('radio', { name: 'Stage' })).toHaveAttribute('aria-checked', 'true')
+    for (const f of openingRows()) expect(hrefOf(f.id), f.id).toBe(`${STAGE_ORIGIN}${f.to}`)
+    // An unknown value is Main, not an empty board.
+    document.body.innerHTML = ''
+    renderDashboard('/?build=nonsense')
+    expect(screen.getByRole('radio', { name: 'Main' })).toHaveAttribute('aria-checked', 'true')
+    // The switch is Prototypes-only: Development shows no radiogroup.
+    const user = userEvent.setup()
+    await user.click(screen.getByRole('button', { name: /^Development/ }))
+    expect(screen.queryByRole('radiogroup', { name: 'Which build the rows open' })).toBeNull()
   })
 })
 

@@ -159,7 +159,7 @@ git diff --name-only origin/main...HEAD -- src | grep -Eiv 'components/compass/|
 
 **Anjani's branches are Compass.** She owns what that surface should be (see
 `PROTOTYPE_SCOPES` in `prototypeFeatures.ts`), and a row tagged `compass` is
-what `promote-to-prototype` later reads as a Compass-row decision of hers. If
+what `decide-defaults` later reads as a Compass-row decision of hers. If
 the heuristic says otherwise for a branch of hers, say so and let her pick.
 
 ### 7. Which FEATURE is this a chunk of? (2026-10-15)
@@ -295,7 +295,13 @@ A no is a perfectly good answer. Ask once.
 
 ## The other half
 
-`promote-to-prototype` runs on the PR before merge and ends by retiring the
+> **2026-11-01:** and a third — `share-to-stage`. Refinement is where a chunk
+> is discussed; when its owner decides it is the surface, `/share-to-stage`
+> puts it on the stage build (Prototypes → Stage on the Hub), and Jillienne's
+> `/release` puts stage on main. Same word, same shape: a share moves your
+> work somewhere others can see it, and never to main.
+
+`decide-defaults` runs on the PR before merge and ends by retiring the
 row. `retire-from-refinement` is the way out when the work did not ship.
 Between them the loop is: this skill puts the work on the table; those take it
 off once it is in Prototypes, or once it is not going there.

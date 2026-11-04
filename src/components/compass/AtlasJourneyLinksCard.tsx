@@ -53,6 +53,25 @@ export type AtlasJourneyLinksCardProps = {
    *  does silence are the ones that would walk out of the demo. */
   linksOff?: boolean
   /**
+   * LET THE TWO LEARNING-PAGE ROWS THROUGH anyway — 2026-11-02.
+   *
+   * ⚠ IT EXISTS BECAUSE `linksOff` OUTLIVED ITS REASON. That prop was set on
+   * 2026-10-15 to stop the demo walking out of itself, and at the time it was
+   * right: My Courses and My Certificates were drawn and inert, so clicking
+   * through landed a reviewer on a dead end with no way back. Both are real
+   * pages now, inside this same shell, each with a Back to Home — going there
+   * is going further INTO the product, not out of it. The rows were still
+   * silently doing nothing, which made the two pages unreachable by clicking
+   * on the one version the Atlas Learning row opens.
+   *
+   * ⚠ IT DOES NOT WEAKEN `linksOff` ANYWHERE ELSE. Flashcards and Exam
+   * Simulator — the rows that do leave — are not covered, and both hosts that
+   * set `linksOff` also pass `withoutCoursePages`, so those two are not drawn
+   * for them at all. The three information rows were never covered: they open
+   * a sheet over the page and close back to it.
+   */
+  learningPagesLive?: boolean
+  /**
    * WHICH ROW TO DRAW ACTIVE, instead of reading the URL — 2026-10-22.
    *
    * ⚠ IT EXISTS BECAUSE THE DEV HANDOFF CANNOT FAKE A URL ANY MORE. The
@@ -70,7 +89,7 @@ export type AtlasJourneyLinksCardProps = {
   activeSection?: string | null
 }
 
-export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, withoutCoursePages = false, titleRule = false, linksOff = false, activeSection }: AtlasJourneyLinksCardProps) {
+export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, withoutCoursePages = false, titleRule = false, linksOff = false, learningPagesLive = false, activeSection }: AtlasJourneyLinksCardProps) {
   const [params, setParams] = useSearchParams()
   /* Which link is the page you are on — the four that are pages; the three
      sheet links never are.
@@ -80,8 +99,10 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
   const section = activeSection === undefined ? params.get('section') : activeSection
   const coursePage = params.get('coursePage')
   const here = (s: string, page?: string) => section === s && (page ? coursePage === page : true)
-  const go = (section: string | null, extra?: Record<string, string>) =>
-    linksOff ? undefined : setParams((prev) => {
+  /* `off` is per-row now, not per-card: the two learning pages can be let
+     through while everything else `linksOff` covers stays silent. */
+  const go = (section: string | null, extra?: Record<string, string>, off: boolean = linksOff) =>
+    off ? undefined : setParams((prev) => {
       const next = new URLSearchParams(prev)
       if (section) next.set('section', section)
       else next.delete('section')
@@ -109,10 +130,10 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
         {SHOW_HOME_LINK ? (
           <SideLink icon={<HouseBlankRegular size={13} aria-hidden />} label="Home" active={section == null} onClick={() => go(null)} />
         ) : null}
-        <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" active={here('courses')} onClick={() => go('courses')} />
+        <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" active={here('courses')} onClick={() => go('courses', undefined, linksOff && !learningPagesLive)} />
         {/* 15% larger in WIP's card (2026-10-13, Eric's request): 15, not 13 —
             the wide certificate glyph read small beside the book. */}
-        <SideLink icon={<FileCertificateRegular size={withoutCoursePages ? 15 : 13} aria-hidden />} label="My Certificates" active={here('certificates')} onClick={() => go('certificates')} />
+        <SideLink icon={<FileCertificateRegular size={withoutCoursePages ? 15 : 13} aria-hidden />} label="My Certificates" active={here('certificates')} onClick={() => go('certificates', undefined, linksOff && !learningPagesLive)} />
         {withoutCoursePages ? null : (
         <>
         <SideLink icon={<NotebookRegular size={13} aria-hidden />} label="Flashcards" active={here('course', 'flashcards')} onClick={() => go('course', { coursePage: 'flashcards' })} />

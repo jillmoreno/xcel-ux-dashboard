@@ -80,3 +80,33 @@ describe('the tabs', () => {
   })
 })
 
+/**
+ * THE HERO SAYS WHAT THE CARD SAYS (2026-11-02, Jillienne, with the sheet's
+ * hero selected: "this ui in the sheet should match this from the card").
+ *
+ * The hero used to write its own one-liner — delivery, credit and hours joined
+ * by middots, with the state dropped to a second line in the secondary colour —
+ * off this file's own private copy of the label maps, the THIRD in the repo.
+ * Two surfaces describing one course two ways. It renders `CourseMeta` now, the
+ * card's own component, and these cases are what stops it drifting back: they
+ * assert the SHAPE the card draws, not just the words.
+ */
+describe('the hero meta matches the card', () => {
+  const ethics = () => course('xcel', 'mc-xcel-ethics')
+
+  it('puts the delivery on its own line and the rest in a rule-separated row', () => {
+    const data = ethics()
+    openSheet(data)
+    // Each token stands alone — the middot run joined them into one string, so
+    // querying them separately is itself the regression test.
+    expect(screen.getAllByText('Online').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Mandatory').length).toBeGreaterThan(0)
+    expect(screen.getAllByText(`${data.hours} Hours`).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(data.state).length).toBeGreaterThan(0)
+  })
+
+  it('no longer joins them with middots', () => {
+    openSheet(ethics())
+    expect(screen.queryByText(/Online · Mandatory/)).toBeNull()
+  })
+})

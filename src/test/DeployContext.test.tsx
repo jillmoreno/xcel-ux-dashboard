@@ -88,7 +88,7 @@ describe('netlify.toml sets the var for both non-production contexts', () => {
 describe('the prototype bar on a branch deploy', () => {
   it('shows the house icon on the production build', () => {
     renderBar()
-    expect(screen.getByLabelText('Prototype home')).toBeTruthy()
+    expect(screen.getByLabelText('Hub home')).toBeTruthy()
   })
 
   // `prototype-bar-branch-home` is OFF by default, so every visitor who has
@@ -96,7 +96,7 @@ describe('the prototype bar on a branch deploy', () => {
   it('drops the house icon on a branch deploy by default', () => {
     vi.stubEnv('VITE_DEPLOY_CONTEXT', 'branch-deploy')
     renderBar()
-    expect(screen.queryByLabelText('Prototype home')).toBeNull()
+    expect(screen.queryByLabelText('Hub home')).toBeNull()
   })
 
   // The designer switches it on in their own browser to get from the branch
@@ -104,7 +104,7 @@ describe('the prototype bar on a branch deploy', () => {
   it('keeps the house icon on a branch deploy once prototype-bar-branch-home is switched on', () => {
     vi.stubEnv('VITE_DEPLOY_CONTEXT', 'branch-deploy')
     renderBarBranchHomeOn()
-    expect(screen.getByLabelText('Prototype home')).toBeTruthy()
+    expect(screen.getByLabelText('Hub home')).toBeTruthy()
   })
 
   // The bar still has to WORK on a branch deploy — this asserts the removal is

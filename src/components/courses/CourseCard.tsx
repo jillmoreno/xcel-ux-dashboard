@@ -160,6 +160,21 @@ type Props = {
    * kebab stops propagation so it never triggers `onActivate`.
    */
   onKebab?: () => void
+  /**
+   * THE TITLE IN THE SERIF HEADING FACE — 2026-11-02, Jillienne, for the Atlas
+   * My Courses page: "use the shared course card, but update the course title
+   * to the serif font".
+   *
+   * ⚠ TYPE ONLY, and that is the point. The Atlas page now renders THIS card
+   * rather than `AtlasCourseCard`, so the two stop disagreeing about what a
+   * course card shows — the serif title is the one thing it keeps from the
+   * Atlas treatment, because the page's own `<h1>` is serif and a sans card
+   * title under it read as a different product. Nothing else about the card
+   * changes, which is why this is a prop and not a variant.
+   *
+   * Compact variants only; the full-size card has no Atlas host.
+   */
+  titleSerif?: boolean
 }
 
 const DELIVERY_ICON: Record<CourseDelivery, typeof Monitor> = {
@@ -269,6 +284,60 @@ function coverFilter(gated: boolean | undefined, expiry: CourseExpiryState): str
  * you just didn't pass. Progress and score are different numbers, and the row
  * holds both — the score rides in the label (`Failed: 62%`).
  */
+/**
+ * THE COURSE META ROWS — delivery on one line, then credit, hours and state
+ * separated by hairlines.
+ *
+ * ⚠ EXPORTED FOR THE SAME REASON `StatusRow` IS (2026-11-02, Jillienne, with
+ * the sheet's hero selected: "this ui in the sheet should match this from the
+ * card"). The Course Details sheet was writing its own version — one line,
+ * middots, the state dropped to a second line — off a THIRD private copy of
+ * the label maps, so the card and the sheet described one course two ways.
+ * Now the sheet renders this, and they cannot drift.
+ *
+ * `fontSize` because the hosts differ: the card is 12. The sheet takes the
+ * default so the two are identical, which is what was asked for.
+ */
+export function CourseMeta({ data, fontSize = 12 }: { data: CourseCardData; fontSize?: number }) {
+  const DeliveryIcon = DELIVERY_ICON[data.delivery]
+  const row: CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 8,
+    fontFamily: 'var(--font-body)',
+    fontSize,
+    fontWeight: 500,
+  }
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
+      <span style={row}>
+        <DeliveryIcon size={16} aria-hidden />
+        {DELIVERY_LABEL[data.delivery]}
+      </span>
+      <div style={row}>
+        <span>{BADGE_LABEL[data.badge]}</span>
+        <MetaRule />
+        <span>
+          {data.hours} {data.hours === 1 ? 'Hour' : 'Hours'}
+        </span>
+        {/* The state is the thing that separates two otherwise identical CE
+            courses in different jurisdictions, so it is last and never
+            trimmed — but a record without one draws no empty rule. */}
+        {data.state && (
+          <>
+            <MetaRule />
+            <span>{data.state}</span>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function MetaRule() {
+  return <span aria-hidden style={{ width: 1, height: 12, background: 'var(--color-border-subtle)' }} />
+}
+
 export function StatusRow({
   data,
   status,
@@ -343,6 +412,7 @@ export function CourseCard({
   tone,
   onActivate,
   onKebab,
+  titleSerif,
 }: Props) {
   const { loFi } = useLoFi()
   // Lo-Fi: keep the outer Card shell (so the grid layout and card
@@ -370,6 +440,7 @@ export function CourseCard({
         tone={tone}
         onActivate={onActivate}
         onKebab={onKebab}
+        titleSerif={titleSerif}
       />
     )
   const DeliveryIcon = DELIVERY_ICON[data.delivery]
@@ -520,6 +591,28 @@ export function CourseCard({
 }
 
 /**
+ * THE COMPACT TITLE'S FACE. Sans 14/600 is the card's own; serif is the Atlas
+ * page's (see `Props.titleSerif`).
+ *
+ * The serif steps UP to 16 because the heading serif reads noticeably smaller
+ * than Open Sans at the same number — matched by eye against the Atlas page's
+ * own headings. The line height is NOT set here: both call sites pin 20px so
+ * the two- and three-line clamps keep their exact heights, and a title that
+ * changed the clamp height would change the whole grid's row height with it.
+ *
+ * ⚠ THE 700 IS NOT A CHOICE, IT IS WHAT RENDERS. The Atlas font skin carries
+ * `[data-atlas-palette][data-atlas-font="playfair-2"] [style*="--font-heading-serif"]
+ * { font-weight: 700 !important }` in tokens.css, so every inline serif on an
+ * Atlas page is Bold whatever this says — `AtlasCourseCard` asks for 500 and
+ * `ATLAS_PAGE_TITLE` for 400, and both draw at 700. Written as 700 here so the
+ * source matches the screen and nobody "fixes" a weight that never applied.
+ */
+const TITLE_FACE = (serif: boolean): CSSProperties =>
+  serif
+    ? { fontFamily: 'var(--font-heading-serif)', fontSize: 16, fontWeight: 700, letterSpacing: '-0.01em' }
+    : { fontFamily: 'var(--font-body)', fontSize: 14, fontWeight: 600 }
+
+/**
  * Compact / catalog-style variant used on the My Courses page.
  *
  * Visual parity with `IndividualCourseCard`: same image header, smaller title
@@ -537,6 +630,7 @@ function CompactCourseCard({
   tone = 'light',
   onActivate,
   onKebab,
+  titleSerif = false,
 }: {
   data: CourseCardData
   dense?: boolean
@@ -547,6 +641,8 @@ function CompactCourseCard({
   tone?: 'light' | 'dark'
   onActivate?: () => void
   onKebab?: () => void
+  /** See `Props.titleSerif`. */
+  titleSerif?: boolean
 }) {
   /**
    * The Certificate Details sheet, opened by the pending marker.
@@ -661,9 +757,7 @@ function CompactCourseCard({
           />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
             {renderTitle({
-              fontFamily: 'var(--font-body)',
-              fontSize: 14,
-              fontWeight: 600,
+              ...TITLE_FACE(titleSerif),
               lineHeight: '20px',
               textDecoration: 'none',
               display: '-webkit-box',
@@ -935,9 +1029,7 @@ function CompactCourseCard({
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', padding: bodyPadding, gap: bodyGap, flex: 1 }}>
         {renderTitle({
-          fontFamily: 'var(--font-body)',
-          fontSize: 14,
-          fontWeight: 600,
+          ...TITLE_FACE(titleSerif),
           lineHeight: '20px',
           textDecoration: 'none',
           display: '-webkit-box',
@@ -946,43 +1038,7 @@ function CompactCourseCard({
           overflow: 'hidden',
           minHeight: dense ? undefined : 40,
         })}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              fontFamily: 'var(--font-body)',
-              fontSize: 12,
-              fontWeight: 500,
-            }}
-          >
-            <DeliveryIcon size={16} aria-hidden />
-            {DELIVERY_LABEL[data.delivery]}
-          </span>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              fontFamily: 'var(--font-body)',
-              fontSize: 12,
-              fontWeight: 500,
-            }}
-          >
-            <span>{BADGE_LABEL[data.badge]}</span>
-            <span aria-hidden style={{ width: 1, height: 12, background: 'var(--color-border-subtle)' }} />
-            <span>
-              {data.hours} {data.hours === 1 ? 'Hour' : 'Hours'}
-            </span>
-            {data.state && (
-              <>
-                <span aria-hidden style={{ width: 1, height: 12, background: 'var(--color-border-subtle)' }} />
-                <span>{data.state}</span>
-              </>
-            )}
-          </div>
-        </div>
+        <CourseMeta data={data} />
       </div>
       {/* Status + progress bar replaces the price slot (catalog footer position). */}
       <div style={{ display: 'flex', flexDirection: 'column', padding: progressPadding }}>

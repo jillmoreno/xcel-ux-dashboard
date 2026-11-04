@@ -330,10 +330,41 @@ describe('the ring card when no pace fits', () => {
 
   it('says so, instead of inventing a week count', () => {
     renderNoPace()
-    expect(screen.getByText('Not enough access left')).toBeTruthy()
+    expect(screen.getByText('Not Enough Time Remaining')).toBeTruthy()
     expect(screen.queryByText(/Week Goal/)).toBeNull()
     // The specific number that used to appear from nowhere.
     expect(screen.queryByText(/3 Week Goal/)).toBeNull()
+  })
+
+  /* ⚠ THE COUNT IS THE POINT OF THE 2026-11-03 WORDING. The line it replaced
+     restated the heading without saying how much time was left, so a learner
+     had to go and look. `days` is the model's count to the binding ceiling,
+     which on this arm is the access window. */
+  it('says how many days of access are left', () => {
+    render(<AtlasPaceRingCard percent={12} noPace={{ binding: 'access', days: 33, dateIso: '2026-06-13' }} />)
+    expect(screen.getByText('Your access expires in 33 days.')).toBeTruthy()
+  })
+
+  it('says "day", not "days", at one', () => {
+    render(<AtlasPaceRingCard percent={12} noPace={{ binding: 'access', days: 1, dateIso: '2026-05-12' }} />)
+    expect(screen.getByText('Your access expires in 1 day.')).toBeTruthy()
+  })
+
+  /* "in 0 days" reads as a bug rather than as urgency — the same reason the
+     course head's last usable day is a sentence instead of a figure. */
+  it('says "today" rather than counting zero', () => {
+    render(<AtlasPaceRingCard percent={12} noPace={{ binding: 'access', days: 0, dateIso: '2026-05-11' }} />)
+    expect(screen.getByText('Your access expires today.')).toBeTruthy()
+    expect(screen.queryByText(/in 0 days/)).toBeNull()
+  })
+
+  /* ⚠ AND IT INVENTS NOTHING WHEN IT HAS NO COUNT. A caller that passes no
+     reason — which is every surface that predates this shape — falls back to
+     the old line, which makes no numeric claim. */
+  it('makes no numeric claim when nothing was passed', () => {
+    renderNoPace()
+    expect(screen.getByText('No study pace fits in the time remaining.')).toBeTruthy()
+    expect(screen.queryByText(/expires in/)).toBeNull()
   })
 
   it('names no pace either — "Average" would contradict the line above it', () => {
@@ -343,7 +374,7 @@ describe('the ring card when no pace fits', () => {
 
   it('points at access, not at the planner', () => {
     renderNoPace()
-    expect(screen.getByText(/Extend your access to get a plan/)).toBeTruthy()
+    expect(screen.getByText(/Extend your access/)).toBeTruthy()
     // "Customize your pace here" aims at a planner with nothing to plan.
     expect(screen.queryByText(/further customize/)).toBeNull()
     expect(screen.queryByRole('button', { name: 'here' })).toBeNull()
@@ -355,15 +386,88 @@ describe('the ring card when no pace fits', () => {
    * out, and the one instruction on screen would have changed nothing.
    * `resolveCeiling` has always recorded which ceiling won, for exactly this
    * reason; the cards ignored it. */
-  it('names the EXAM when the exam is what bound, not access', () => {
+  /* ⚠ THE GUARD MOVED DOWN A LINE ON 2026-11-03, it did not go away. Both arms
+     now share the heading "Not Enough Time Remaining", so the heading can no
+     longer be what distinguishes them — the NOTE and the ADVICE carry it. This
+     case therefore asserts the note, and the one below it the advice. If both
+     notes ever converge too, the 2026-10-19 bug is back with nothing on screen
+     to reveal it. */
+  it('names the EXAM in its note when the exam is what bound, not access', () => {
     render(
       <AtlasPaceRingCard
         percent={0}
         noPace={{ binding: 'exam', days: -4, dateIso: '2026-05-07' }}
       />,
     )
-    expect(screen.getByText('Not enough time before your exam')).toBeTruthy()
-    expect(screen.queryByText('Not enough access left')).toBeNull()
+    expect(screen.getByText(/complete the coursework in the time remaining/)).toBeTruthy()
+    // The access note — a count of days left — must not appear here.
+    expect(screen.queryByText(/Your access expires/)).toBeNull()
+  })
+
+  /* ⚠ THE EXAM'S COUNT IS THE EXAM'S, NOT THE COURSEWORK DEADLINE'S. `days`
+     here is -4 — the coursework deadline is already behind us, which is one
+     of the ordinary ways into this state — while the exam itself is three
+     days off. A card that derived the exam from `days` would say "-4", or
+     "3" only by adding a buffer it should not know about. */
+  it('counts to the exam, not to the coursework deadline', () => {
+    render(
+      <AtlasPaceRingCard
+        percent={0}
+        noPace={{ binding: 'exam', days: -4, dateIso: '2026-05-07', examDays: 3 }}
+      />,
+    )
+    expect(screen.getByText(/Your Exam is in 3 days\./)).toBeTruthy()
+    expect(screen.queryByText(/-4/)).toBeNull()
+  })
+
+  /* Absent means say nothing — the second sentence stands on its own. */
+  it('omits the exam count when it was not given', () => {
+    render(
+      <AtlasPaceRingCard percent={0} noPace={{ binding: 'exam', days: -4, dateIso: '2026-05-07' }} />,
+    )
+    expect(screen.getByText('There is not enough time to complete the coursework in the time remaining.')).toBeTruthy()
+    expect(screen.queryByText(/Your Exam is/)).toBeNull()
+  })
+
+  /* A date left behind in the store goes negative; "in -3 days" is worse than
+     silence, and zero is "today" for the same reason as everywhere else. */
+  it('says nothing for a past exam, and "today" at zero', () => {
+    const { unmount } = render(
+      <AtlasPaceRingCard
+        percent={0}
+        noPace={{ binding: 'exam', days: -9, dateIso: '2026-05-02', examDays: -2 }}
+      />,
+    )
+    expect(screen.queryByText(/Your Exam is/)).toBeNull()
+    unmount()
+    render(
+      <AtlasPaceRingCard
+        percent={0}
+        noPace={{ binding: 'exam', days: -7, dateIso: '2026-05-04', examDays: 0 }}
+      />,
+    )
+    expect(screen.getByText(/Your Exam is today\./)).toBeTruthy()
+  })
+
+  /* The other half of the same guard, from the access side. */
+  it('names ACCESS in its note when access is what bound, not the exam', () => {
+    render(
+      <AtlasPaceRingCard percent={12} noPace={{ binding: 'access', days: 32, dateIso: '2026-06-13' }} />,
+    )
+    expect(screen.getByText('Your access expires in 32 days.')).toBeTruthy()
+    expect(screen.queryByText(/before your exam date/)).toBeNull()
+  })
+
+  it('gives both arms the same heading', () => {
+    const { unmount } = render(
+      <AtlasPaceRingCard percent={12} noPace={{ binding: 'access', days: 32, dateIso: '2026-06-13' }} />,
+    )
+    expect(screen.getByText('Not Enough Time Remaining')).toBeTruthy()
+    unmount()
+    render(
+      <AtlasPaceRingCard percent={0} noPace={{ binding: 'exam', days: -4, dateIso: '2026-05-07' }} />,
+    )
+    expect(screen.getByText('Not Enough Time Remaining')).toBeTruthy()
   })
 
   it('offers rescheduling on the exam arm, never extending access', () => {

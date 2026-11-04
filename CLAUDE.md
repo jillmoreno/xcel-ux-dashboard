@@ -44,12 +44,55 @@ there is one site since 2026-10-15, and they are given its link.
 
 | Section | Means | Rows | Lives in |
 |---|---|---|---|
-| **Prototypes** | this IS the product | one per surface, all on `main` | flag defaults on `main` |
+| **Prototypes · Main** | this IS the product — released | one per surface, all on `main` | flag defaults on `main` |
+| **Prototypes · Stage** | decided by its owner, not yet released | the same rows, all on `stage` | flag defaults on `stage` |
 | **Refinement** | under discussion | as many as you like | Netlify Blobs, authored on the page |
 
+**STAGE (2026-11-01).** A third place, between a Refinement link and `main`,
+because there was nothing between *decided* and *released*: an owner who had
+run `promote-to-prototype` had a commit of defaults on their branch and no
+way to show anyone the surface with them until Jillienne merged. `stage` is a
+long-lived branch Netlify builds like any other
+(`stage--ux-design-xceldashboard.netlify.app`). Owners merge into it with
+`/share-to-stage`; Jillienne merges IT into `main` with `/release`
+(`ship-to-main` kept as an alias). **It is NOT a section** — Jillienne: "I
+want the prototype page to have both Main and Stage options there, not a new
+page in the rail" — so Prototypes has a **Main · Stage** switch above its
+rows (`?build=stage` in the address) and the rows are the same rows; the
+switch picks which build each opens. `src/data/stageBuild.ts` holds the
+origin and the reasoning; the smoke test pins both views. Three decisions
+the skills encode: releases are **all at once** (owners stay in their lane,
+and `share-to-stage` refuses a branch that crosses into another owner's
+files); **owners or Jillienne push to stage**, nobody else; **conflicts move
+to the share** — `share-to-stage` merges stage INTO the branch, in the
+owner's checkout, so two owners in one file collide there and not in a
+release. The Hub cannot read stage from main (same password, cross-origin),
+so what is WAITING on stage is the To Do Board's **On Stage** column, which
+`share-to-stage` files into, not a tag on the rows.
+
+**THE VOCABULARY (2026-11-01).** Jillienne settled the words designers read,
+after an audit found the same thing under several names and one name on
+several things. In guides, About and UI copy: **routine** (not skill, not
+command); **the design lead (Jill)** for the role — defined once per guide as
+the person in charge of the project's GitHub repository, who owns `main` and
+releases — with "Jill" in conversational lines and "Jillienne" only in this
+file, code comments and commit history; **the Hub** for the site (never "the
+dashboard", which is the learner's; "gateway" and "UX Dashboard" are code and
+repo terms); **branch link** / **stage link** for a Netlify build address
+(not review link, not branch build); **review bar** for the dark bar (the
+component is still `PrototypeBar.tsx`); **Hide / Unhide / Show hidden** for
+the Refinement row action, so **Archive** means only the nav section; and
+**"promote" is retired as a designer word** — it had named four acts. The
+routines are now `share-component` · `share-branch` · `share-to-stage`
+(put work where people can see it), `decide-defaults` (a step inside
+share-to-stage; designers never type it), `freeze-for-testing`, and the
+design lead's `release`. Old names are alias skills. Code identifiers,
+paths and server fields did not change. Older paragraphs in this file keep
+the names they were written with; they are history.
+
 **THE TO DO BOARD (2026-10-15)** is the rail's last section and the one
-thing on it that is not about a prototype: four columns — To Do, Working On
-It, Ready For Refinement, Ready for Prototype and Handoff — that say who is
+thing on it that is not about a prototype: five columns — To Do, Working On
+It, Ready For Refinement, On Stage (2026-11-01), Ready for Prototype and Handoff — that say who is
 on what this week. Authored on the page like Refinement, on its own Blobs
 store, with its own people roster seeded from the same five names. Two rules
 are the SERVER's: a card in the handoff column is Jillienne's however it got
@@ -82,9 +125,13 @@ Each scope names an `owner`, and the owner both decides what that surface
 should be and runs `promote-to-prototype` for it on their own branch: Anjani
 for Compass, Eric for Atlas Learning, Afsana and Eric for Invite & Purchase,
 Cody for Admin, Jillienne for end to end. A promotion is a commit of defaults on a branch and
-reaches no stakeholder by itself. **Only Jillienne merges** — `ship-to-main`,
-which refuses a branch with a group its owner has not decided — **and only she
-sets the default dashboard version.** That is the lock, for every scope.
+reaches no stakeholder by itself. From 2026-11-01 the owner then runs
+`/share-to-stage` (which runs the promotion's questions itself if the branch
+has not answered them) and the surface is open to everyone on the stage build.
+**Only Jillienne releases** — `/release`, formerly `ship-to-main`, merges
+`stage` into `main` and refuses a stage with a group its owner has not
+decided — **and only she sets the default dashboard version.** That is the
+lock, for every scope. A branch never goes to main directly any more.
 **MAIN IS LOCKED TWICE (2026-10-29).** On GitHub, `main` carries a
 branch-protection rule — pull request required, code-owner review required,
 force-pushes and deletion refused, admins exempt — and `.github/CODEOWNERS`
@@ -95,7 +142,8 @@ refuses, for anyone but her, a push aimed at main, a switch onto main, a
 commit or merge while standing on it, and `gh pr merge` — with a message
 saying whose step it is. That is the explanation, and like the file guard it
 only sees Claude's commands. `MainProtection.test.ts` pins both halves. She is
-exempt from both, so `ship-to-main` is unchanged for her.
+exempt from both, so `release` is unchanged for her. `stage` carries no such
+rule: owners push to it, and that is the point.
 
 **Anyone promotes to Refinement**, and that door is unchanged —
 `share-branch` — `promote-to-refinement` until 2026-10-15, briefly `share`, and
@@ -108,7 +156,7 @@ Two things that follow, and both have bitten:
 - **A Refinement row pinned with `?ff=` tracks `main`,** so it goes stale
   silently when the component changes underneath — no error, it just quietly
   becomes something else. When something must NOT move (a user test, a
-  sign-off), that is `promote-to-testing`'s frozen branch, not a Refinement row.
+  sign-off), that is `freeze-for-testing`'s frozen branch, not a Refinement row.
 - **Refinement rows are not in git,** so there is no record of what was shown
   when. It is a working surface, not a decision log — the decisions log on a dev
   handoff is where a decision gets recorded.
@@ -125,8 +173,8 @@ strip both treat an archived row as off the board. Refinement only — the
 other three boards keep free-text authors and no archive.
 
 The ways in are already built: `share-branch` (a branch),
-`promote-component` (one widget's variants), `promote-to-prototype` (moving
-something into the source of truth). There is deliberately no "create a second
+`share-component` (one widget's variants), `share-to-stage` (moving a decided
+surface onto the stage build). There is deliberately no "create a second
 prototype" skill: a new SCOPE is a decision Jillienne makes in
 `PROTOTYPE_SCOPES`, and a second row for an existing scope is a Refinement
 job.
@@ -136,8 +184,8 @@ file per feature in `src/data/handoffs/`, written by `/dev-handoff-notes` on
 the designer's branch. It lands on the Development board as `not-ready` and
 **the status is the designer's from there** — set in the file, which is what
 everyone sees (the row's kebab is a per-browser override). The only guardrails
-are the two that already exist: `ship-to-main` is Jillienne's, and
-`promote-to-prototype` is the scope owner's (confirmed 2026-10-26: "promote to
+are the two that already exist: `release` (was `ship-to-main`) is Jillienne's,
+and `promote-to-prototype` / `share-to-stage` are the scope owner's (confirmed 2026-10-26: "promote to
 prototype stays with the owners"). The folder is deliberately OFF the protected
 list: until today the row lived in `prototypeFeatures.ts`, so the routine was
 one a designer could start and not finish. The file name is the id, which is
@@ -162,7 +210,8 @@ second door, so: **Design is retired** (it listed nothing; the team does not
 work in a design/development split), **Exploration is renamed Explorations
 and moved up to sit directly under PRDs** — the briefs and the documents
 answering them, side by side in the nav — and **Archive and QA Notes sit
-under Dev Handoff**, ungated. Ten sections. The two `archivedItems.ts` rows
+under Dev Handoff**, ungated. Twelve sections — those ten plus the two Team
+sections, To Do Board and Hub Resources. The two `archivedItems.ts` rows
 `design-section` and `designers-gate` say how it was wired.
 
 **Four rows went the same day, after the preview** — `xcel-lms` and
@@ -180,7 +229,7 @@ It is now three things, and where a new screen belongs depends on which:
 
 | Surface | Lives in | Reached at |
 |---|---|---|
-| The UX Dashboard gateway | `src/pages/UxDashboardPage.tsx` + friends | `/`, `/prototype/:id`, `/research-rationale`, `/qa-notes`, `/links`, `/prds` (eleven sections — Prototypes · Refinement · Research · Resources · PRDs · Explorations · Development · Done · Archive · QA Notes · To Do Board) |
+| The UX Dashboard gateway | `src/pages/UxDashboardPage.tsx` + friends | `/`, `/prototype/:id`, `/research-rationale`, `/qa-notes`, `/links`, `/prds` (twelve sections — Prototypes · Refinement · Research · Resources · PRDs · Explorations · Development · Done · Archive · QA Notes · To Do Board · Hub Resources) |
 | The XCEL product app | `src/pages/*`, `src/components/*` | `/dashboard-rebrand` + ~28 product routes |
 | The standalone prototypes | `public/prototypes/*.html` | `/prototypes/…`, opened in a tab or iframed |
 
@@ -214,7 +263,7 @@ scope — the product IS React here now, exactly as it is in the LMS.
    `CourseContentV2.tsx` is the worked example. The original is never touched, so
    you cannot conflict with whoever else is editing it. **Fork the layout, import
    the data:** if both versions duplicate the content, the comparison is no longer
-   about your change. Say `/promote-component` and it will do this with you.
+   about your change. Say `/share-component` and it will do this with you.
 3. **Share it — say `/share-branch`.** One command, and it was three until
    2026-10-15: it runs the type check and the tests, commits, pushes (Netlify
    builds your branch at its own address), waits for that build, and hands you
@@ -233,6 +282,14 @@ scope — the product IS React here now, exactly as it is in the LMS.
    reached Claude's feedback flow and the skill was not offered at all. It
    failed SILENTLY, and the plain-English triggers ("share this branch") kept
    working the whole time, which is what hid it.
+
+4. **Decided? Share it to stage — say `/share-to-stage`.** For a surface you
+   own. It asks the flag questions (`decide-defaults`) if your branch has not
+   answered them (which flag defaults become the surface's), merges today's
+   `stage` into your branch, runs the checks, pushes, moves `stage` to your
+   branch, waits for the stage build, and files the **On Stage** card. On the
+   Hub, Prototypes → **Stage** now opens your work; **Main** does not until
+   Jillienne runs `/release`. Then archive your Refinement row.
 
 **You never run the site on your own computer.** There is no localhost step; the
 branch build IS the preview. Nothing here needs a terminal — every step above is
@@ -322,7 +379,7 @@ file, so the two cannot drift apart.
 | `src/components/prototype/DesignControlsBar.tsx` | the design controls bar — you do not edit it to get a control on it (see below) |
 | `src/components/layout/AdminToolsMenu.tsx` | the robot — the UI/UX Demo Tools menu |
 | `.claude/hooks/`, `.claude/settings.json`, `.github/` | the two guards — the file guard and the main guard — the settings that wire them, and the CODEOWNERS file behind main's GitHub lock |
-| `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `share-branch` (was `promote-to-refinement`, kept as a pointer; `share` for one day), `promote-component`, `promote-to-testing`, `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
+| `.claude/skills/` | `release` (was `ship-to-main`), `share-to-stage`, `share-branch` (was `promote-to-refinement`; `share` for one day), `share-component` (was `promote-component`), `decide-defaults` (was `promote-to-prototype`, before that `promote-to-demo`), `freeze-for-testing` (was `promote-to-testing`), `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — every old name kept as an alias pointer. Jillienne's. Run them; don't edit them. |
 | `public/contributing/`, `public/designer-workflow/`, `public/about/` | the three guides (regenerate the PDFs if you do edit them) |
 
 ## Stack

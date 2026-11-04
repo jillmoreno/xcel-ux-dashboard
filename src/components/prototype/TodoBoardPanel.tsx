@@ -29,7 +29,7 @@
  * with the one everybody else is looking at.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Plus, Users } from '@/icons'
+import { Plus, User, Users } from '@/icons'
 import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu'
 import {
   AUTO_ASSIGN_OWNER,
@@ -64,6 +64,8 @@ import { TodoBoardAvatar } from './TodoBoardAvatar'
 import { UX_TOKEN_BRIDGE } from './uxPaletteBridge'
 import { CardSheet, ManagePeopleSheet } from './TodoBoardSheets'
 import { linkifyNote } from './linkifyNote'
+import { formatUpdated } from './formatUpdated'
+import { hubIconTagStyle, hubTagStyle } from './hubRowStyles'
 
 /* WHO ARCHIVED IT. The board has no sign-in — `addedBy` and `owner` are typed
    labels throughout — so this is the same kind of claim they are, and it is
@@ -574,7 +576,20 @@ function BoardCard({
             with no step in between and nothing to undo it. Reassigning is
             Edit card now: deliberate, and the same place every other change
             to a card is made. */}
-        <span style={ownerLabelStyle}>{ownerLabel(card.owner)}</span>
+        {/* THE SAME TAGS THE ROWS WEAR (2026-11-01, Jillienne: "I want ALL of
+            the pages to follow this similar UI"). The board stays a board —
+            five columns of 160px thumbnails would not fit, and the columns
+            are its whole meaning — but what a card SAYS about itself is said
+            the way every row says it: the owner as an outlined tag with the
+            user mark, and when the card last changed as an Updated tag. */}
+        <span style={{ ...hubIconTagStyle, ...ownerLabelStyle, maxWidth: '100%' }}>
+          <User size={11} aria-hidden style={{ flex: 'none' }} />
+          <span className="cre-visually-hidden">Owner: </span>
+          {ownerLabel(card.owner)}
+        </span>
+        {card.updatedAt && (
+          <span style={{ ...hubTagStyle, maxWidth: '100%' }}>Updated {formatUpdated(card.updatedAt)}</span>
+        )}
       </div>
     </article>
   )

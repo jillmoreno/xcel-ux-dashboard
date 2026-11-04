@@ -172,7 +172,9 @@ export function filterAvatarStyle(active: boolean): CSSProperties {
  */
 export const boardStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+  // Five since 2026-11-01 (On Stage). Still one row: the board is read left
+  // to right as a card's life, and wrapping would break the sentence.
+  gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
   gap: 16,
   alignItems: 'start',
   paddingBottom: 12,
@@ -322,6 +324,7 @@ export const cardNoteStyle: CSSProperties = {
 export const cardMetaStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
+  flexWrap: 'wrap',
   gap: 6,
   minWidth: 0,
 }
@@ -340,9 +343,6 @@ export const cardMetaStyle: CSSProperties = {
  */
 export const ownerLabelStyle: CSSProperties = {
   minWidth: 0,
-  fontSize: 11.5,
-  fontWeight: 600,
-  color: 'var(--ux-text-2)',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',

@@ -71,6 +71,8 @@ export function MyCoursesPage({
   contentWidth,
   asideWidth = 280,
   asideRight = false,
+  cardTitleSerif = false,
+  onActivateCourse,
 }: {
   embedded?: boolean
   hideSearch?: boolean
@@ -93,6 +95,21 @@ export function MyCoursesPage({
   /** The aside as a RIGHT rail, after the cards (Eric/Atlas WIP, 2026-10-13 —
    *  as its Home's right rail). Off: the left column, as before. */
   asideRight?: boolean
+  /** The card titles in the serif heading face — the Atlas baseline, 2026-11-02
+   *  (Jillienne). See `CourseCard`'s `titleSerif`. */
+  cardTitleSerif?: boolean
+  /**
+   * WHAT THE CARD OPENS, when the host owns the destination — the Atlas
+   * baseline, 2026-11-02.
+   *
+   * ⚠ IT CHANGES THE CARD'S SHAPE, not just its handler: `CourseCard` renders
+   * its title as a `<Link to="/courses/:id">` when nothing is passed, and as a
+   * plain span inside a card-level button when something is. Atlas passes one
+   * because `/courses/:id` leaves the Atlas shell — the learner would lose the
+   * header, the Quick Links and the way back. Absent, the shared link stands,
+   * which is right for `/my-learning/courses`.
+   */
+  onActivateCourse?: (course: MyCourseRecord) => void
 } = {}) {
   const [params, setParams] = useSearchParams()
   const { brand } = useAccount()
@@ -106,7 +123,15 @@ export function MyCoursesPage({
   // full-width. Only applies to the embedded (Dashboard Rebrand) Courses
   // section — the standalone /my-learning/courses page is untouched.
   const hideFiltersFlag = useFeatureFlag('courses-hide-filters').enabled
-  const hideFilters = embedded && hideFiltersFlag
+  /* ⚠ `hideListControls` TAKES THE FILTER COLUMN TOO (2026-11-02). It always
+     did in effect — every host that passed it also passed an `aside`, which
+     REPLACES this column, so the rail was never drawn beside hidden controls.
+     The Atlas baseline then dropped its aside (`atlas-pages-quick-links`) and
+     the rail reappeared: a result count, a Sort By and six filter accordions
+     on a page whose search, status tabs and View Archived are all deliberately
+     hidden. Hiding "the list controls" and leaving the filters is not a
+     position anyone held; it was an accident of the old call sites. */
+  const hideFilters = (embedded && hideFiltersFlag) || hideListControls
   /* THE SHELL DREW MY TITLE — `SectionPageHeader`, under the top nav
      (2026-10-02). So this header drops its `<h1>` and the search + view toggle
      restack underneath it rather than sitting opposite a title that is no
@@ -448,6 +473,8 @@ export function MyCoursesPage({
                     data={course}
                     compact
                     fluid
+                    titleSerif={cardTitleSerif}
+                    onActivate={onActivateCourse ? () => onActivateCourse(course) : undefined}
                     onKebab={() => setDetailsCourse(course)}
                   />
                 ))}

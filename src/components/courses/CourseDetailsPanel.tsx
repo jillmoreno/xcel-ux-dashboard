@@ -29,7 +29,7 @@ import { courseExpiryState, formatMilestoneDate } from '@/data/courseExpiry'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { getCourseImage } from '@/utils/courseImage'
 import { CourseInfoTabs } from './CourseInfoTabs'
-import { StatusRow, type CourseCardData, type CourseStatus } from './CourseCard'
+import { CourseMeta, StatusRow, type CourseCardData, type CourseStatus } from './CourseCard'
 
 /**
  * The post-purchase Course Details sheet — opened from a course card's kebab on
@@ -218,12 +218,14 @@ function CourseHero({ course }: { course: CourseCardData }) {
           background: `center / cover no-repeat url(${imageUrl})`,
         }}
       />
+      {/* THE CARD'S OWN META ROWS (2026-11-02, the direct ask: "this ui in the
+          sheet should match this from the card"). It was a hand-written
+          one-liner here — middots, and the state dropped to a second line in
+          the secondary colour — written off this file's own copy of the label
+          maps. Rendering `CourseMeta` is what stops the card and the sheet
+          describing one course two ways. */}
       <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <span style={heroMetaStyle}>
-          {DELIVERY_LABEL[course.delivery]} · {BADGE_LABEL[course.badge]} ·{' '}
-          {course.hours} {course.hours === 1 ? 'Hour' : 'Hours'}
-        </span>
-        <span style={heroStatesStyle}>{course.state}</span>
+        <CourseMeta data={course} />
       </div>
     </div>
   )
@@ -564,20 +566,6 @@ function catalogCourseFor(
   return catalog.find((c) => c.id === course.id) ?? catalog[0]
 }
 
-const DELIVERY_LABEL: Record<CourseCardData['delivery'], string> = {
-  online: 'Online',
-  'in-person': 'In Person',
-  classroom: 'Classroom',
-  video: 'Video',
-  podcast: 'Podcast',
-}
-
-const BADGE_LABEL: Record<CourseCardData['badge'], string> = {
-  mandatory: 'Mandatory',
-  elective: 'Elective',
-  'non-credit': 'Non-Credit',
-}
-
 /* ─── styles (tokens only) ─────────────────────────────────────────────── */
 
 const headerStyle: CSSProperties = {
@@ -625,27 +613,15 @@ const heroStyle: CSSProperties = {
   padding: '0 20px 16px',
 }
 
-const heroMetaStyle: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  fontWeight: 600,
-  color: 'var(--color-text-primary)',
-}
-
-const heroStatesStyle: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  color: 'var(--color-text-secondary)',
-}
-
+/* No rules above or below the progress bar (2026-11-02, the direct ask). The
+   zone was banded between two `border-subtle` hairlines; the spacing stays, so
+   the status row and the bar keep their place and only the lines go. */
 const statusZoneStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 12,
   padding: '16px 20px',
   background: 'var(--color-surface-card)',
-  borderTop: '1px solid var(--color-border-subtle)',
-  borderBottom: '1px solid var(--color-border-subtle)',
   marginBottom: 20,
 }
 
