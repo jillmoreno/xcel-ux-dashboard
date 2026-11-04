@@ -194,3 +194,8 @@
   margin-top: 5px !important;
   padding-top: 16px !important;
 }
+/* 20 from the upright rule to the right column, 4 more than the column gap
+   (same day). */
+[data-home-bp='mobile'] div:has(> section[aria-label='Course progress']) > section[aria-label='Study pace'] {
+  margin-left: 4px !important;
+}
