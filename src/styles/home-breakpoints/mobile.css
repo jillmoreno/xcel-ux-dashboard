@@ -6,6 +6,8 @@
 /* One column, 16 in from the device's edges. */
 [data-home-bp='mobile'] section:has(> .cre-dash-serif-headings) {
   padding: 24px 16px 40px !important;
+  /* 16 under the header, the same as the sides (2026-11-04, Eric's request). */
+  padding-top: 16px !important;
 }
 /* The page row (Quick Links | the course) stacks: the course first, Quick Links under it. */
 [data-home-bp='mobile'] div:has(> section[aria-label='Current course']) {
@@ -30,6 +32,31 @@
 /* The course card's panel: 24 in, not 40. */
 [data-home-bp='mobile'] section[aria-label='Current course'] > div:first-child {
   padding: 24px !important;
+  /* 40 less on top (2026-11-04, Eric's request): 48 above the eyebrow → 8,
+     then 8 back the same day → 16, then 4 more → 20. */
+  padding-top: 20px !important;
+  /* 16 to the Course Progress card under it, the page's side margin
+     (2026-11-04, Eric's request): the section's 24 gap less 8 — it was 8 of
+     margin plus that 24. */
+  margin-bottom: -8px !important;
+}
+/* The "Current course" eyebrow 4 closer to the course name — 4, from the
+   column's 8 (2026-11-04, Eric's request). */
+[data-home-bp='mobile'] section[aria-label='Current course'] p:has(+ .cre-atlas-home-course-title) {
+  margin-bottom: -4px !important;
+}
+/* …and the cover box that drew NOTHING at this width — its image is placed
+   absolutely inside a box with no height of its own — goes, with the 24 row
+   gap it still cost above the title. The header-button cover is untouched. */
+[data-home-bp='mobile'] section[aria-label='Current course'] > div:first-child > div:first-child > div:first-child:has(> img:only-child) {
+  display: none !important;
+}
+/* The course name one Atlas level down on a phone (2026-11-04, Eric's
+   request): H5, 32/34, from H4's 40/42. The class is repeated to outweigh the
+   brand's own `!important` size in tokens.css. */
+[data-home-bp='mobile'] section[aria-label='Current course'] .cre-atlas-home-course-title.cre-atlas-home-course-title.cre-atlas-home-course-title[style] {
+  font-size: var(--type-atlas-h5-base-size, 32px) !important;
+  line-height: var(--type-atlas-h5-base-line, 34px) !important;
 }
 [data-home-bp='mobile'] button[aria-label^='Course header'] {
   width: 100% !important;
@@ -46,12 +73,247 @@
   flex: none !important;
 }
 
-/* The header: 16 in, and the account pill shows its icon alone — the name does not fit beside the logo at 402. */
-[data-home-bp='mobile'] header {
+/* The header: the account pill shows its icon alone — the name does not fit beside the logo at 402. */
+/* FULL WIDTH (2026-11-04, Eric's request): the shell's header drops its 16
+   inset, so the English | Help band and the row under it (and its rule) run
+   edge to edge; the row keeps 16 inside, so the logo sits on the course
+   card's left edge and the menu button ends on its right. */
+[data-home-bp='mobile'] header:has(.cre-atlas-hdr) {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+[data-home-bp='mobile'] .cre-atlas-hdr > header {
   padding-left: 16px !important;
   padding-right: 16px !important;
+  /* 16 shallower (2026-11-04, Eric's request): 56, from 72. Every item is
+     centred on the row's middle; the logo's artwork fills its image top to
+     bottom, so centring the image centres what is seen. */
+  height: 56px !important;
+  align-items: center !important;
+}
+[data-home-bp='mobile'] .cre-atlas-hdr > header > * {
+  align-self: center !important;
+}
+/* The logo at 70% — 77 × 28, from 110 × 40. */
+[data-home-bp='mobile'] .cre-atlas-hdr-logo img {
+  width: 77px !important;
+  height: auto !important;
+  /* 1 lower than centred, by eye (2026-11-04, Eric's request). */
+  position: relative;
+  top: 1px;
+}
+/* Home's pill gives way to the three-bar menu, last in the row after the
+   profile, the same 8 from it as the profile is from the alerts. */
+[data-home-bp='mobile'] .cre-atlas-hdr nav[aria-label='Primary'] {
+  display: none !important;
+}
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-burger {
+  display: inline-flex !important;
+  /* The bars themselves 16 from the right edge (2026-11-04, Eric's request):
+     no right padding or border, so the glyph ends where the row's 16 inset
+     does. */
+  padding-right: 0 !important;
+  border-right-width: 0 !important;
+  /* No hover fill — a phone has no hover (same day). */
+  background-color: transparent !important;
 }
 [data-home-bp='mobile'] .cre-atlas-hdr-pill:has(svg) {
   font-size: 0 !important;
   gap: 0 !important;
+}
+
+/* The English | Help band: Help ends where the three bars do (2026-11-04,
+   Eric's request) — 16 in, where the bars end since the menu button lost
+   its right padding the same day. */
+[data-home-bp='mobile'] .cre-atlas-hdr > div:first-child {
+  padding-right: 16px !important;
+}
+
+/* COURSE PROGRESS ON A PHONE (2026-11-04, Eric's request): the eyebrow on two
+   lines, left aligned; the dial cut to 100 — as small as it goes with
+   "Complete" still inside at its own 10px — and the figure down to 28 so
+   "100%" fits too; both on the panel's left edge. */
+[data-home-bp='mobile'] section[aria-label='Course progress'] {
+  align-items: flex-start !important;
+}
+/* …centred over the dial (2026-11-04, Eric's request; it sat left). */
+[data-home-bp='mobile'] section[aria-label='Course progress']:not(.cre-atlas-pace-list-copy, .cre-atlas-pace-list-copy *) > p:first-child {
+  align-self: center !important;
+  width: min-content !important;
+  text-align: center !important;
+}
+[data-home-bp='mobile'] section[aria-label='Course progress'] > div[aria-label^='Course progress'] {
+  width: 100px !important;
+  height: 100px !important;
+}
+[data-home-bp='mobile'] section[aria-label='Course progress'] > div[aria-label^='Course progress'] > svg {
+  width: 100% !important;
+  height: 100% !important;
+}
+[data-home-bp='mobile'] section[aria-label='Course progress'] > div[aria-label^='Course progress'] > div > span:first-child {
+  font-size: 28px !important;
+  line-height: 24px !important;
+}
+
+/* …AND BESIDE STUDY PACE (2026-11-04, Eric's request): the dial a left
+   column, the panel's rule turned upright to its right, and Study Pace with
+   Estimated Completion stacked in the right column. */
+[data-home-bp='mobile'] div:not(.cre-atlas-pace-list-copy, .cre-atlas-pace-list-copy *):has(> section[aria-label='Course progress']) {
+  display: grid !important;
+  grid-template-columns: auto 1px minmax(0, 1fr) !important;
+  column-gap: 16px !important;
+  align-items: start !important;
+}
+[data-home-bp='mobile'] div:not(.cre-atlas-pace-list-copy, .cre-atlas-pace-list-copy *):has(> section[aria-label='Course progress']) > span {
+  width: 1px !important;
+  height: auto !important;
+  align-self: stretch !important;
+  margin: 0 !important;
+}
+
+/* The progress panel 24 in at the sides, the course card's own inset —
+   from 32 (2026-11-04, Eric's request). */
+[data-home-bp='mobile'] div:not(.cre-atlas-pace-list-copy, .cre-atlas-pace-list-copy *):has(> div > section[aria-label='Course progress']) {
+  /* 16 on the left, 8 less than the right's 24 (same day): the dial and its
+     eyebrow nearer the edge. */
+  padding-left: 16px !important;
+  padding-right: 24px !important;
+  /* 24 top and bottom too (same day): the top's 24 is the inner grid's own,
+     so the panel's 8 goes; the bottom's 40 becomes 24. */
+  padding-top: 0 !important;
+  padding-bottom: 24px !important;
+}
+
+/* 14 from the dial to the upright rule, 2 less than the column gap (same day). */
+[data-home-bp='mobile'] div:not(.cre-atlas-pace-list-copy, .cre-atlas-pace-list-copy *):has(> section[aria-label='Course progress']) > section[aria-label='Course progress'] {
+  margin-right: -2px !important;
+}
+/* Estimated Completion's rule in the right column: 16 above and below, 8
+   less each way (same day) — above, the column's 11 gap plus 5 of margin. */
+[data-home-bp='mobile'] section[aria-label='Study pace'] > div:last-child {
+  margin-top: 5px !important;
+  padding-top: 16px !important;
+}
+/* 20 from the upright rule to the right column, 4 more than the column gap
+   (same day). */
+[data-home-bp='mobile'] div:not(.cre-atlas-pace-list-copy, .cre-atlas-pace-list-copy *):has(> section[aria-label='Course progress']) > section[aria-label='Study pace'] {
+  margin-left: 4px !important;
+}
+
+/* THE LIST COPY of the progress panel (2026-11-04, Eric's request) — shown
+   here only, under the two-column panel, so the two can be compared; every
+   rule above that builds the columns skips it (`:not(.cre-atlas-pace-list-copy …)`).
+   24 all round, the course card's inset. */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy {
+  padding: 0 24px 24px !important;
+  /* The column's full width whatever it holds — one short row under the
+     tabs would otherwise shrink it to fit. */
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+/* Its rule under Course progress: 16 above and below, the same as the rule
+   over Estimated completion (same day) — the panel's 24 gap less 8 each way. */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy section[aria-label='Course progress'] + span {
+  margin: -8px 0 !important;
+}
+/* The calendar's box at the other two icons' 34 (from 30), so all three rows'
+   upright hairlines stand on one line (same day). */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy section[aria-label='Study pace'] > div:last-child > div > span:first-child {
+  width: 34px !important;
+}
+/* Each label 4 nearer its row — 7, from the column's 11 (same day). */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy section > p:first-child,
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy section[aria-label='Study pace'] > div:last-child > p:first-child {
+  margin-bottom: -4px !important;
+}
+
+/* ONE ROW AT A TIME, UNDER TABS (2026-11-04, Eric's request) — the list
+   layout with `data-tab` naming the row that shows. The tabs are the headers
+   now, so the in-panel labels and the rules between rows go. */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] section > p:first-child,
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] section[aria-label='Study pace'] > div:last-child > p:first-child,
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] section[aria-label='Course progress'] + span {
+  display: none !important;
+}
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab='progress'] section[aria-label='Study pace'],
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab='pace'] section[aria-label='Course progress'],
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab='pace'] section[aria-label='Study pace'] > div:last-child,
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab='completion'] section[aria-label='Course progress'],
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab='completion'] section[aria-label='Study pace'] > :not(:last-child) {
+  display: none !important;
+}
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab='completion'] section[aria-label='Study pace'] > div:last-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: none !important;
+}
+/* …and the column holding it stretches to the page's width: it is drawn at
+   `align-self: flex-start`, which a short tabbed panel would shrink. */
+[data-home-bp='mobile'] div:has(> .cre-atlas-pace-list-copy) {
+  align-self: stretch !important;
+}
+/* The tabbed body 8 tighter top and bottom — 16, from 24 (same day). */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] {
+  padding-bottom: 16px !important;
+}
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] > div:has(> section) {
+  padding-top: 16px !important;
+}
+
+/* The three-bar menu's own box shows with it (2026-11-04) — the trigger sits
+   in AtlasHeaderMenu's wrapper, which is hidden everywhere else. */
+[data-home-bp='mobile'] .cre-atlas-hdr div:has(> .cre-atlas-hdr-burger) {
+  display: flex !important;
+}
+/* QUICK LINKS LIVE IN THAT MENU ON A PHONE (2026-11-04, Eric's request), so
+   the card at the foot of the page goes. */
+[data-home-bp='mobile'] nav[aria-label='Quick links'] {
+  display: none !important;
+}
+
+/* THE STUDY JOURNEY UNDER THE CARDS, ON THE COURSE CARD'S TEXT LINE
+   (2026-11-04, Eric's request): its column the page's full width, and 24 in
+   at each side — the course card's own inset — so its steps start where
+   "Current course" does. */
+[data-home-bp='mobile'] div:has(> section[aria-label='Study journey']) {
+  width: 100% !important;
+  max-width: none !important;
+  align-self: stretch !important;
+}
+/* Every step's section in that column (Study journey, Pass State Exam, Get
+   Licensed…), and the rules between them, take the same inset. */
+/* 16 in, 8 less than the course card's 24 (2026-11-04, Eric's request). */
+[data-home-bp='mobile'] div:has(> section[aria-label='Study journey']) > section {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+[data-home-bp='mobile'] div:has(> section[aria-label='Study journey']) > span {
+  margin-left: 16px !important;
+  margin-right: 16px !important;
+}
+
+/* BOTH PHONE MENUS IN THE QUICK LINKS CARD'S ROWS (2026-11-04, Eric's
+   request) — the profile menu and the three-bar menu: 13/18 text in the
+   secondary ink, a 13 icon in its 18 box in the home-icon colour, 8 between,
+   and the rows on the card's 34 pitch (8 + 18 + 8). The hover stays the
+   Quick Links one the profile menu already wears. */
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-item {
+  gap: 8px !important;
+  font-size: 13px !important;
+  line-height: 18px !important;
+  color: var(--color-text-secondary) !important;
+}
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:hover,
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-quick .cre-atlas-hdr-item:focus-visible {
+  color: var(--color-compass-page-button) !important;
+}
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-item > span[aria-hidden]:first-child {
+  width: 18px !important;
+  color: var(--color-atlas-home-icon, var(--color-compass-page-button)) !important;
+}
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-item > span[aria-hidden]:first-child svg {
+  width: 13px !important;
+  height: 13px !important;
 }
