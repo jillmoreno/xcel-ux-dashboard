@@ -153,3 +153,26 @@
   font-size: 28px !important;
   line-height: 24px !important;
 }
+
+/* …AND BESIDE STUDY PACE (2026-11-04, Eric's request): the dial a left
+   column, the panel's rule turned upright to its right, and Study Pace with
+   Estimated Completion stacked in the right column. */
+[data-home-bp='mobile'] div:has(> section[aria-label='Course progress']) {
+  display: grid !important;
+  grid-template-columns: auto 1px minmax(0, 1fr) !important;
+  column-gap: 16px !important;
+  align-items: start !important;
+}
+[data-home-bp='mobile'] div:has(> section[aria-label='Course progress']) > span {
+  width: 1px !important;
+  height: auto !important;
+  align-self: stretch !important;
+  margin: 0 !important;
+}
+
+/* The progress panel 24 in at the sides, the course card's own inset —
+   from 32 (2026-11-04, Eric's request). */
+[data-home-bp='mobile'] div:has(> div > section[aria-label='Course progress']) {
+  padding-left: 24px !important;
+  padding-right: 24px !important;
+}
