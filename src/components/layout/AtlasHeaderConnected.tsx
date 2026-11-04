@@ -8,6 +8,10 @@ import { WHITE_COURSES, WHITE_COURSE_PARAM, WHITE_FIRST_COURSE_ID } from '@/data
 import { AtlasHeader } from './AtlasHeader'
 import { END_TO_END_VERSION } from '@/pages/endToEndDemo'
 import { ATLAS_HOME_REFRESH } from './atlasHomeRefresh'
+import { BookRegular, CircleInfoRegular, ClipboardListCheckRegular, FileCertificateRegular, PenFieldRegular } from '@/icons'
+import { ATLAS_OPEN_PARAM } from '@/components/compass/AtlasJourneyLinksCard'
+import { useMyCoursesCount } from '@/components/compass/useMyCoursesCount'
+import { GET_LICENSED_STEPS } from '@/data/nyProducerRequirements'
 
 /**
  * `AtlasHeader` IN THE REBRAND SHELL (2026-10-13) — the standalone header fed
@@ -49,6 +53,7 @@ export function AtlasHeaderConnected({
   /* The profile menu's links in Quick Links' hover, with the account pages'
      Quick Links layout (2026-11-03). */
   const quickLinksMenu = useAtlasAccountPages()
+  const coursesCount = useMyCoursesCount()
 
   const section = params.get('section')
   const current =
@@ -87,9 +92,22 @@ export function AtlasHeaderConnected({
           return `/end-to-end-demo?${next.toString()}`
         })()
       : undefined
+  /* THE PHONE'S MENU — Quick Links' rows, to the same places (2026-11-04,
+     Eric's request). The three information rows open their sheet on Home
+     through `?open=`, which is what the card does from any other page. */
+  const apply = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1]
+  const homeAndOpen = (what: string) => () => navigate(shell((n) => n.set(ATLAS_OPEN_PARAM, what)))
+  const phoneLinks = [
+    { label: 'My Courses', icon: <BookRegular size={18} />, count: coursesCount, onSelect: () => navigate(shell((n) => n.set('section', 'courses'))) },
+    { label: 'My Certificates', icon: <FileCertificateRegular size={18} />, onSelect: () => navigate(shell((n) => n.set('section', 'certificates'))) },
+    { label: 'Exam Information', icon: <CircleInfoRegular size={18} />, onSelect: homeAndOpen('exam-details') },
+    { label: 'Applying for a License', icon: <PenFieldRegular size={18} />, onSelect: homeAndOpen(`step:${apply.id}`) },
+    { label: 'State Requirements', icon: <ClipboardListCheckRegular size={18} />, onSelect: homeAndOpen('requirements') },
+  ]
   return (
     <AtlasHeader
       current={current}
+      phoneLinks={phoneLinks}
       onHelp={onHelp}
       quickLinksMenu={quickLinksMenu}
       modeMenu={

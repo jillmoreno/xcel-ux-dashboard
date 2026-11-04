@@ -58,7 +58,8 @@
 }
 /* The phone's three-bar menu — drawn only at the Mobile breakpoint
    (home-breakpoints/mobile.css). */
-.cre-atlas-hdr .cre-atlas-hdr-burger {
+.cre-atlas-hdr .cre-atlas-hdr-burger,
+.cre-atlas-hdr div:has(> .cre-atlas-hdr-burger) {
   display: none;
 }
 /* 85% of the pill — 2026-10-20, Eric: the profile menu's Mode: Admin /
