@@ -13,6 +13,7 @@ import { CertificateCard } from '@/components/certificates/CertificateCard'
 import { AtlasCertificateCard } from '@/components/certificates/AtlasCertificateCard'
 import { CertificateActionPanel } from '@/components/certificates/CertificateActionPanel'
 import { useAccount } from '@/context/AccountContext'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { certificatesFor, type CertificateStatus } from '@/data/certificateFixtures'
 
 type Tab = CertificateStatus
@@ -91,6 +92,14 @@ export function CertificatesPage({
   const all = useMemo(() => certificatesFor(brand), [brand])
   const [params, setParams] = useSearchParams()
   const [detailId, setDetailId] = useState<string | null>(null)
+  /* ON THE PHONE THE DETAILS OPEN IN THE CARD (2026-11-04, Eric's request):
+     the ⋮ — or a tap on a card that opens — expands that card with the
+     sheet's banner, facts and actions under its state and hours row, and a
+     second tap closes it. One open at a time. The sheet stays for every
+     other width. */
+  const phoneFrame = useFeatureFlag('home-breakpoint').variant === 'mobile'
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const toggleExpanded = (id: string) => setExpandedId((cur) => (cur === id ? null : id))
 
   const search = params.get('q') ?? ''
   const sort = params.get('sort') ?? 'recent'
@@ -311,7 +320,19 @@ export function CertificatesPage({
                   {atlasCards ? (
                     <AtlasCertificateCard
                       data={cert}
-                      onOpen={setDetailId}
+                      onOpen={phoneFrame ? toggleExpanded : setDetailId}
+                      onOptions={phoneFrame ? toggleExpanded : undefined}
+                      expanded={
+                        phoneFrame && expandedId === cert.id ? (
+                          <CertificateActionPanel
+                            inline
+                            open
+                            onClose={() => setExpandedId(null)}
+                            data={cert}
+                            inProgress={inProgressIds?.includes(cert.id) ?? false}
+                          />
+                        ) : undefined
+                      }
                       openAnyStatus={atlasOpenAll}
                       inProgress={inProgressIds?.includes(cert.id)}
                       style={atlasCardStyle}
