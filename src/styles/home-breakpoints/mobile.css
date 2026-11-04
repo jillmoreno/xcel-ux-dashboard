@@ -30,6 +30,21 @@
 /* The course card's panel: 24 in, not 40. */
 [data-home-bp='mobile'] section[aria-label='Current course'] > div:first-child {
   padding: 24px !important;
+  /* 40 less on top (2026-11-04, Eric's request): 48 above the eyebrow → 8. */
+  padding-top: 8px !important;
+}
+/* …and the cover box that drew NOTHING at this width — its image is placed
+   absolutely inside a box with no height of its own — goes, with the 24 row
+   gap it still cost above the title. The header-button cover is untouched. */
+[data-home-bp='mobile'] section[aria-label='Current course'] > div:first-child > div:first-child > div:first-child:has(> img:only-child) {
+  display: none !important;
+}
+/* The course name one Atlas level down on a phone (2026-11-04, Eric's
+   request): H5, 32/34, from H4's 40/42. The class is repeated to outweigh the
+   brand's own `!important` size in tokens.css. */
+[data-home-bp='mobile'] section[aria-label='Current course'] .cre-atlas-home-course-title.cre-atlas-home-course-title.cre-atlas-home-course-title[style] {
+  font-size: var(--type-atlas-h5-base-size, 32px) !important;
+  line-height: var(--type-atlas-h5-base-line, 34px) !important;
 }
 [data-home-bp='mobile'] button[aria-label^='Course header'] {
   width: 100% !important;
