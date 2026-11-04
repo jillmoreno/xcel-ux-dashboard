@@ -16,8 +16,10 @@
  * on the next port, or make them in the explorer first:
  *   · 2026-11-04 — Illinois, After course exam (`IL_POST`): no "Course
  *     Completion Roster upload form" heading and no red box around the roster
- *     section. Afsana's change. (California's after-exam form has the same
- *     heading, untouched; its red box is round the Student Legal Name.)
+ *     section. Afsana's change.
+ *   · 2026-11-04 — California, After course exam (`CA_POST_LH`): no "Course
+ *     Completion Roster upload form" heading. The heading only — its red box
+ *     round the Student Legal Name stays. Afsana's change.
  *
  * ⚠ THE EXPLORER IS AN ADMIN TOOL AND SOME OF THIS IS ITS BOOKKEEPING.
  * `status` (ready / received / missing) says whether the document has been
@@ -488,7 +490,8 @@ FORMS.CA_POST_LH={
     {id:'sig',label:'Student Signature',required:true,placeholder:'Type your full name',ac:'name'},
     {id:'date',type:'date',label:"Today's Date",required:true},
     {block:{p:'The date on this affidavit is the course completion date.'}},
-    {block:{h:'Course Completion Roster upload form',u:true}},
+    /* CHANGED FROM THE EXPLORER (2026-11-04, Afsana): the "Course Completion
+       Roster upload form" heading is gone; the sentence and fields stay. */
     {block:{p:'Education providers are required to collect and report the following information below upon course completion.'}},
     {id:'dob',type:'date',label:'Date of Birth',required:true,ac:'bday'},
     {id:'ssn4',label:'Last four of SSN',required:true,placeholder:'0000',inputmode:'numeric',maxlength:4,digits:4,ac:'off'},

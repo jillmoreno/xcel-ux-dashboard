@@ -226,6 +226,17 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(screen.getByText(/Education providers are required to collect/)).toBeTruthy()
   })
 
+  it('California after the exam: no roster heading, everything else kept', () => {
+    render(<AffidavitModalV2 onClose={() => {}} moment="post" state="CA" pattern="page" />)
+    const last = FORMS.CA_POST_LH!.pages.length - 1
+    for (let i = 0; i < last; i++) fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.queryByText('Course Completion Roster upload form')).toBeNull()
+    expect(screen.getByText(/Education providers are required to collect/)).toBeTruthy()
+    expect(screen.getByLabelText(/Last four of SSN/)).toBeTruthy()
+    // The Student Legal Name keeps its red box — only the heading went.
+    expect(screen.getByText('Student Legal Name (first and last name)').closest('.aff2-flag')).not.toBeNull()
+  })
+
   it('resolves every ready entry in the explorer to a form', () => {
     for (const e of ENTRIES) {
       const r = resolveAffidavit(e.m, e.st, 'English')
