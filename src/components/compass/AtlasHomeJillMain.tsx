@@ -1249,7 +1249,7 @@ export function AtlasHomeJillMain({
                     : WHITE_PROGRESS_PANEL
                   : { display: 'contents' }),
                 ...(phoneSwitch ? { position: 'relative' as const } : null),
-                ...(phoneAltLayout && phoneLayout === 'tabs' ? { marginTop: PACE_TAB_H, borderTopLeftRadius: 0, border: `1px solid ${PACE_TAB_STROKE}` } : null),
+                ...(phoneAltLayout && phoneLayout === 'tabs' ? { marginTop: PACE_TAB_H, borderTopLeftRadius: 0, borderTopRightRadius: 0, border: `1px solid ${PACE_TAB_STROKE}` } : null),
               }}
             >
             {phoneAltLayout && phoneLayout === 'tabs' ? <PacePhoneTabs active={phoneTab} onSelect={setPhoneTab} /> : null}
@@ -3174,7 +3174,7 @@ function PacePhoneTabs({ active, onSelect }: { active: PacePhoneTab; onSelect: (
     /* One pixel taller than the tabs and one left, so the active tab's
        outline meets the panel's own and its fill covers the panel's top
        stroke where they join; the inactive tabs stand on that stroke. */
-    <div role="tablist" aria-label="Course progress panel" style={{ position: 'absolute', left: -1, bottom: '100%', display: 'flex', alignItems: 'flex-start', gap: 4, height: PACE_TAB_H + 1, zIndex: 1 }}>
+    <div role="tablist" aria-label="Course progress panel" style={{ position: 'absolute', left: -1, right: -1, bottom: '100%', display: 'flex', alignItems: 'flex-start', gap: 4, height: PACE_TAB_H + 1, zIndex: 1 }}>
       {PACE_PHONE_TABS.map((t) => {
         const on = t.id === active
         return (
@@ -3188,6 +3188,8 @@ function PacePhoneTabs({ active, onSelect }: { active: PacePhoneTab; onSelect: (
               ...ATLAS_SECTION_EYEBROW,
               alignSelf: 'auto',
               display: 'block',
+              // Across the panel's whole width, each by its title's length.
+              flex: '1 1 auto',
               boxSizing: 'border-box',
               height: on ? PACE_TAB_H + 1 : PACE_TAB_H,
               padding: on ? '0 14px 1px' : '0 14px',

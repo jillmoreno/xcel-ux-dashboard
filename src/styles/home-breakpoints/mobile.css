@@ -252,3 +252,10 @@
 [data-home-bp='mobile'] div:has(> .cre-atlas-pace-list-copy) {
   align-self: stretch !important;
 }
+/* The tabbed body 8 tighter top and bottom — 16, from 24 (same day). */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] {
+  padding-bottom: 16px !important;
+}
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] > div:has(> section) {
+  padding-top: 16px !important;
+}
