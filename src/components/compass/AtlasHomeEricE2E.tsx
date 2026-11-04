@@ -37,6 +37,7 @@ import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag, useFeatureFlags, useCourseDemo } from '@/context/FeatureFlagContext'
 import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
 import { WHITE_COURSES, WHITE_COURSE_PARAM, whiteCourseFor } from '@/data/atlasWhiteCourses'
+import { ATLAS_HOME_COURSE_PARAM, atlasHomeCourseFor } from '@/data/atlasCourseCards'
 import {
   applyJourneySequencing,
   journeyStopsFor,
@@ -687,11 +688,16 @@ export function AtlasHomeEricE2E({
   const activeTab = tabs.find((t) => t.id === activeTabId) ?? tabs[0]
   // The demo's course: the one Invited Product Detail sells (2026-10-15,
   // Eric's request), in place of the course data's title.
-  const shownTitle = e2eTitle
-  const shownCover = activeTab?.coverUrl ?? coverUrl
+  /* A My Courses card's course, when the learner came from one (2026-11-04,
+     Eric's request) — its title and cover; the card set Progress and Expires
+     on its way here. See `atlasHomeStateFor`. */
+  const cardCourse = atlasHomeCourseFor(searchParams.get(ATLAS_HOME_COURSE_PARAM), e2eBrand)
+  const shownTitle = cardCourse?.title ?? e2eTitle
+  const shownCover = cardCourse?.imageUrl ?? activeTab?.coverUrl ?? coverUrl
   const selectCourse = (id: string) => {
     setParams((prev) => {
       const next = new URLSearchParams(prev)
+      next.delete(ATLAS_HOME_COURSE_PARAM)
       if (id === WHITE_COURSES[0].id) next.delete(WHITE_COURSE_PARAM)
       else next.set(WHITE_COURSE_PARAM, id)
       return next
