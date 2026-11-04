@@ -379,7 +379,7 @@ file, so the two cannot drift apart.
 | `src/components/prototype/DesignControlsBar.tsx` | the design controls bar — you do not edit it to get a control on it (see below) |
 | `src/components/layout/AdminToolsMenu.tsx` | the robot — the UI/UX Demo Tools menu |
 | `.claude/hooks/`, `.claude/settings.json`, `.github/` | the two guards — the file guard and the main guard — the settings that wire them, and the CODEOWNERS file behind main's GitHub lock |
-| `.claude/skills/` | `release` (was `ship-to-main`), `share-to-stage`, `share-branch` (was `promote-to-refinement`; `share` for one day), `share-component` (was `promote-component`), `decide-defaults` (was `promote-to-prototype`, before that `promote-to-demo`), `freeze-for-testing` (was `promote-to-testing`), `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — every old name kept as an alias pointer. Jillienne's. Run them; don't edit them. |
+| `.claude/skills/` | `release` (was `ship-to-main`), `share-to-stage`, `share-branch` (was `promote-to-refinement`; `share` for one day), `share-component` (was `promote-component`), `decide-defaults` (was `promote-to-prototype`, before that `promote-to-demo`), `freeze-for-testing` (was `promote-to-testing`), `retire-from-refinement`, `archive-a-feature`, `dev-handoff-notes` and `port-prototype` (2026-11-04) — every old name kept as an alias pointer. Jillienne's. Run them; don't edit them. |
 | `public/contributing/`, `public/designer-workflow/`, `public/about/` | the three guides (regenerate the PDFs if you do edit them) |
 
 ## Stack

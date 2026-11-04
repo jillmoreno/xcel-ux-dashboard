@@ -1,0 +1,181 @@
+---
+name: port-prototype
+description: Port a designer's standalone HTML prototype into the React product — faithfully, in one pass, by reading the RUNNING BUILD rather than the source. Covers finding the live build, capturing every pane's DOM before writing a line, what counts as a design decision versus a cosmetic, their demo controls becoming design-bar flags, and handing the port back to its designer for review instead of guessing. Trigger on "port this prototype", "port her work to React", "turn this HTML into React", "bring the prototype into the product", "/port-prototype".
+---
+
+# Skill: Port a prototype
+
+A designer's exploration lives in `public/prototypes/<name>.html` — one
+hand-authored file, thousands of lines, no build step. The Prototypes rows open
+the REACT product. Getting from one to the other is this skill.
+
+## ⚠ READ THE BUILD, NOT THE SOURCE
+
+**This is the whole skill. Everything else is detail.**
+
+On 2026-11-04 Anjani's 9,292-line Compass Workspace was ported by reading her
+file. It took three passes to get right, and every single thing that was wrong
+was visible in two minutes in a browser:
+
+| Got wrong by reading the source | Visible immediately in the build |
+|---|---|
+| Put the nav row last, and wrote in a comment AND a test that her file had no nav row | Her rail read `Overview · Learn · Workspace · Study planner` |
+| A right rail called "Make something" with four buttons | A **Studio**: readiness block, six make actions, two Coming soon, three artefacts already made |
+| The raw Rubi answer in the hero | `Rubi, last time: …` |
+| "Carry on" | **Continue** |
+| Marks listed provenance above passage | Passage first, provenance under it |
+| All three panes on the home | The home hides both side panes and goes one column |
+| The made-tag as a text pill | An icon with its name read aloud |
+
+The nav row was in a function called `addNav()` **inside the block already
+extracted**. Reading 9,000 lines of string-building JavaScript tells you the
+structure and lies to you about the result. A prototype is a program whose
+output is the design; run the program.
+
+So: **the first tool call of this skill opens the build. No React is written
+until every pane's DOM has been captured.**
+
+## Step 1 — find the running build, and open it
+
+The designer's Refinement row carries the link. If you do not have it, ask —
+do not go looking in the file.
+
+```
+https://<branch>--ux-design-xceldashboard.netlify.app/prototypes/<name>.html
+```
+
+Branch deploys of this site serve `public/prototypes/*` (the `BLOCKED` list in
+`scripts/public-redirects.mjs` only applies to the trimmed testing build), so
+the file is reachable. If it is not, the fallback is to copy the file under
+`public/prototypes/` in the primary checkout untracked and open it on the dev
+server — never to port from the source instead.
+
+Open it with the Browser pane and leave it open. You will come back to it
+after every pane you write.
+
+## Step 2 — capture every pane, before writing anything
+
+Walk the prototype the way a learner would, and at each screen record:
+
+```js
+// the shell, and which panes are actually showing
+const sh = document.querySelector('<their shell>')
+;[...sh.children].map((c) => ({ cls: c.className, display: getComputedStyle(c).display }))
+
+// every pane's text, in order
+el.innerText.split('\n').map((s) => s.trim()).filter(Boolean)
+
+// and the markup of anything repeated — a card, a row, a chip
+el.outerHTML.replace(/\s+/g, ' ')
+```
+
+⚠ **`display: none` is a design decision.** Panes hidden on one screen and
+shown on another are the designer saying what you are meant to be looking at.
+That is exactly what was missed twice above.
+
+⚠ **Capture the NAV as rendered.** Prototypes build their navigation at run
+time more often than not. Read the rail off the DOM; never conclude from the
+source that a row does not exist.
+
+⚠ **Click through the states.** Empty, loaded, one thing selected, something
+open. A card's selected state and an empty list's message are content.
+
+Write what you captured somewhere you can diff against — the scratchpad is
+fine. This is the specification; the file is not.
+
+## Step 3 — their demo controls become design-bar flags
+
+A prototype usually carries its own control bar. Each axis becomes a flag in
+`src/context/FeatureFlagContext.tsx`:
+
+```ts
+surface: 'design',          // the DESIGN bar, never the demo bar
+owner: '<designer id>',
+versions: ['<their version>'],
+surfaces: ['<surface id>'], // add it to src/context/designSurface.ts
+variants: [...],            // one per option, THEIR labels
+defaultVariant: '<the one their file opens on>',
+```
+
+⚠ **Their defaults become the committed defaults.** A Prototypes row opens at
+`?demo=1`, which forces committed defaults — so these ARE what Stage shows.
+Take them off the running build (what it opens on), not off a constant in the
+source, which may be overridden later in the file.
+
+⚠ **A control their file BUILDS AND THEN HIDES is a question, not an answer.**
+Anjani's v4 creates its Workspace, Home and Story choosers and removes them on
+a `setTimeout(…, 0)`. Expose them if the point of the port is to compare
+variations — but say so, and ask the designer whether they had settled.
+
+⚠ **Never edit `DemoControlsBar.tsx` or `DesignControlsBar.tsx`.** Both are
+protected. A flag with `surface: 'design'` appears on the bar by itself.
+
+## Step 4 — write it, against the capture
+
+- **Their words are theirs.** Every string a user reads is copied verbatim,
+  including a learner's first-person notes. Port structure, never rewrite copy.
+- **Prefix their class names.** These stylesheets are imported globally and
+  prototype classes (`.f-a`, `.r-c`, `.n`, `.big`) will escape onto the whole
+  app. Use `cre-<surface>-*` and scope every rule under the root, which is what
+  `compassAnjani.css` and `compassWorkspace.css` do.
+- **Map their palette to this repo's tokens**, in a header comment listing each
+  one. Never a raw hex. Check before inventing: `--color-compass-page-rubi`
+  already existed for the colour the first pass was about to approximate.
+- **Use the icon registry.** Where there is no match, use the nearest and say
+  so in a comment; do not add an SVG as part of a port.
+- **Port a sketch as a sketch.** Four of Anjani's six layouts are twenty lines
+  each. Filling them in makes them yours. Say which ones are thin in the flag
+  description so a reviewer reads them correctly.
+
+## Step 5 — compare, pane by pane, before you call it done
+
+Open the two side by side — their build in one tab, the dev server in another —
+and walk the same path through both. For each pane, diff your capture from
+step 2 against what you built.
+
+**The bar is: no design decision is lost.** It is NOT "pixel identical" —
+different shell, real routing, real tokens, dark mode and accessibility all
+make exact parity impossible, and chasing it wastes the designer's review on
+things that do not matter.
+
+| A decision — fix it | A cosmetic — let it go |
+|---|---|
+| where a nav row sits | the icon, where the registry has no match |
+| what a button says | 2px of padding |
+| which panes show on which screen | a serif that resolves differently |
+| the order of a card's parts | a card 10px narrower in the product shell |
+| a state that exists at all | a gradient the tokens cannot express |
+
+## Step 6 — hand it to the designer, not to the lead
+
+Share to stage (`/share-to-stage`), then send the DESIGNER the stage link with
+one question:
+
+> This is your ‹surface› ported to React. Open it beside your prototype and
+> tell me anything that reads wrong — I will have missed things. These four
+> layouts are ported as the sketches they are in your file; say if that is
+> wrong too.
+
+⚠ **The review belongs to the person who drew it.** On 2026-11-04 it landed on
+Jillienne instead, who had to find the rail row herself and send it back twice.
+The designer can judge fidelity at a glance and nobody else can.
+
+Then fix what they list, and only then is the port done.
+
+## Afterwards: diff, do not re-port
+
+Once a prototype is ported, the React is the baseline. When their next version
+arrives, **apply the delta** — diff their old file against their new one and
+port the change — rather than porting the new file from scratch. A re-port
+repeats every drift in full. This is what turns a port into a one-time cost
+instead of a recurring tax.
+
+## What NOT to port
+
+- Screens already in React from an earlier port. Check first: content parity is
+  a poor test (a restyle carries no new words), so compare the RENDER.
+- A restyle of a screen whose design has not been declared settled. Anjani's v4
+  restyles her planner, home and notebook — ~480 CSS rule lines, zero new copy
+  — and that was deliberately left on 2026-11-04. Ask before taking it.
+- Their sign-in screen, their dev toggles, their `?ws=1` deep links: scaffolding
+  for the prototype, not the product.
