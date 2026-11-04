@@ -21,6 +21,7 @@ export function AtlasHeaderMenu({
   align,
   selected = false,
   panelStyle,
+  triggerClassName,
   children,
 }: {
   /** What the pill shows. */
@@ -32,6 +33,9 @@ export function AtlasHeaderMenu({
   /** The trigger names the current page: filled, like a current nav pill. */
   selected?: boolean
   panelStyle: CSSProperties
+  /** Classes added to the trigger pill — the phone's three-bar menu takes the
+   *  icon pill and the class that shows it only at the Mobile breakpoint. */
+  triggerClassName?: string
   children: ReactNode
 }) {
   const [open, setOpen] = useState(false)
@@ -84,7 +88,7 @@ export function AtlasHeaderMenu({
       <button
         ref={triggerRef}
         type="button"
-        className={selected ? 'cre-atlas-hdr-pill is-selected' : 'cre-atlas-hdr-pill'}
+        className={`cre-atlas-hdr-pill${selected ? ' is-selected' : ''}${triggerClassName ? ` ${triggerClassName}` : ''}`}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={id}

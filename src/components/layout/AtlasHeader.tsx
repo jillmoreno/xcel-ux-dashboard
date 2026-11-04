@@ -64,6 +64,7 @@ export function AtlasHeader({
   extraNav = [],
   modeMenu,
   quickLinksMenu = false,
+  phoneLinks,
 }: {
   /** Which nav pill is filled. */
   current?: 'home' | 'courses' | null
@@ -93,6 +94,9 @@ export function AtlasHeader({
    *  the page-button blue, one weight up, and an angle-right at the far end
    *  (2026-11-03, Eric's request). Absent, the menu's own fill hover. */
   quickLinksMenu?: boolean
+  /** The phone's three-bar menu — Quick Links' rows (2026-11-04). Absent,
+   *  the menu opens empty; it is only drawn at the Mobile breakpoint. */
+  phoneLinks?: { label: string; icon?: ReactNode; count?: number | null; onSelect: () => void }[]
 }) {
   const trail = quickLinksMenu ? <AngleRightRegular size={13} aria-hidden /> : undefined
   const to = (k: keyof AtlasHeaderLinks) => links[k] ?? '#'
@@ -310,18 +314,36 @@ export function AtlasHeader({
           </AtlasHeaderMenu>
           {/* THE PHONE'S MENU (2026-11-04, Eric's request) — the three-bar
               button that stands in for the Primary nav at the Mobile
-              breakpoint. Hidden everywhere else (atlasHeader.css); shown, and
-              the nav hidden, by home-breakpoints/mobile.css. Trigger only: the
-              menu it opens is not designed yet. */}
-          <button
-            type="button"
-            className="cre-atlas-hdr-pill cre-atlas-hdr-pill--icon cre-atlas-hdr-burger"
-            aria-label="Menu"
-            aria-haspopup="menu"
-            aria-expanded={false}
+              breakpoint, hidden everywhere else (atlasHeader.css; shown by
+              home-breakpoints/mobile.css). It opens Quick Links — the card
+              the phone's Home no longer draws — in the profile menu's panel,
+              rows and hover. */}
+          <AtlasHeaderMenu
+            align="right"
+            triggerLabel="Menu"
+            triggerClassName="cre-atlas-hdr-pill--icon cre-atlas-hdr-burger"
+            trigger={<Bars size={20} aria-hidden style={{ width: (20 * 448) / 512 }} />}
+            panelStyle={PROFILE_PANEL}
           >
-            <Bars size={20} aria-hidden style={{ width: (20 * 448) / 512 }} />
-          </button>
+            <div className={quickLinksMenu ? 'cre-atlas-hdr-quick' : undefined} style={{ padding: '4px 0' }}>
+              {(phoneLinks ?? []).map((l) => (
+                <AtlasHeaderMenuItem trailing={trail} key={l.label} onSelect={l.onSelect} icon={l.icon}>
+                  {/* One span, so the row's flex gap does not open between the
+                      label and Quick Links' count — brackets in the label's
+                      weight, the figure bold. */}
+                  <span>
+                    {l.label}
+                    {l.count != null ? (
+                      <>
+                        {' ('}
+                        <strong style={{ fontWeight: 700 }}>{l.count}</strong>)
+                      </>
+                    ) : null}
+                  </span>
+                </AtlasHeaderMenuItem>
+              ))}
+            </div>
+          </AtlasHeaderMenu>
         </div>
       </header>
     </div>

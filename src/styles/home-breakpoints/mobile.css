@@ -259,3 +259,14 @@
 [data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] > div:has(> section) {
   padding-top: 16px !important;
 }
+
+/* The three-bar menu's own box shows with it (2026-11-04) — the trigger sits
+   in AtlasHeaderMenu's wrapper, which is hidden everywhere else. */
+[data-home-bp='mobile'] .cre-atlas-hdr div:has(> .cre-atlas-hdr-burger) {
+  display: flex !important;
+}
+/* QUICK LINKS LIVE IN THAT MENU ON A PHONE (2026-11-04, Eric's request), so
+   the card at the foot of the page goes. */
+[data-home-bp='mobile'] nav[aria-label='Quick links'] {
+  display: none !important;
+}
