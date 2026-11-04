@@ -62,3 +62,38 @@ export const ATLAS_COURSE_CARD_W = 255
  *  content"). The header takes the same width so the title lines up with it. */
 export const ATLAS_MY_COURSES_WIDTH =
   ATLAS_MY_COURSES_ASIDE_W + 24 + ATLAS_MY_COURSES.length * ATLAS_COURSE_CARD_W + (ATLAS_MY_COURSES.length - 1) * 16
+
+/**
+ * A CARD OPENS HOME IN ITS OWN STATE — 2026-11-04, Eric's request: "add click
+ * to take user back to learner home with it reloaded to the card's content and
+ * progress state".
+ *
+ * `?atlasCourse=<card id>` names the card; Home reads it for the course's
+ * title and cover (`atlasHomeCourseFor`). The progress and the access window
+ * are not URL state — they are the demo bar's Progress and Expires controls —
+ * so the card SETS those two (`atlasHomeStateFor`) on its way out, exactly as
+ * picking them on the bar would, and the bar then shows what Home is showing.
+ *
+ * ⚠ THE PROGRESS IS READ OFF THE CARD, NOT A RECORD. Completed → Ready 100%,
+ * Begin → Not Started 0%, anything still in play → Developing 36%. Its badge
+ * sets the window: Due Soon → 7 days, Expired → three days past, none → 30
+ * days (the bar's default).
+ */
+export const ATLAS_HOME_COURSE_PARAM = 'atlasCourse'
+
+export function atlasHomeStateFor(card: AtlasCourseCardData): { progress: string; expiry: string } {
+  const progress = card.completed
+    ? 'completed'
+    : card.actionLabel === 'Begin Course'
+      ? 'not-started'
+      : 'developing'
+  const expiry = card.badge === 'Expired' ? '-3' : card.badge === 'Due Soon' && !card.completed ? '7' : '30'
+  return { progress, expiry }
+}
+
+/** `?atlasCourse=` → that card's title and cover; null when the param is
+ *  absent or unknown. */
+export function atlasHomeCourseFor(id: string | null): AtlasCourseCardData | null {
+  if (!id) return null
+  return ATLAS_MY_COURSES.find((c) => c.id === id) ?? null
+}
