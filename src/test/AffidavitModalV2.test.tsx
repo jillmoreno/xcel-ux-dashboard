@@ -86,7 +86,7 @@ describe('AffidavitModalV2', () => {
   })
 
   it('is on by default on this branch, on the Design bar of both Homes that open it', () => {
-    for (const key of ['atlas-affidavit-v2', 'affidavit-v2-moment', 'affidavit-v2-state', 'affidavit-v2-pattern', 'affidavit-v2-language']) {
+    for (const key of ['atlas-affidavit-v2', 'affidavit-v2-moment', 'affidavit-v2-state', 'affidavit-v2-pattern', 'affidavit-v2-language', 'affidavit-v2-loa']) {
       const flag = FEATURE_FLAGS.find((f) => f.key === key)
       expect(flag?.defaultEnabled, key).toBe(true)
       expect(flag?.surface, key).toBe('design')
@@ -114,6 +114,32 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     render(<AffidavitModalV2 onClose={() => {}} language="Spanish" />)
     expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(FORMS.FL_LH_ES!.title)
     expect(screen.getByRole('dialog').getAttribute('lang')).toBe('es')
+  })
+
+  it('picks Florida’s before-course notice by line of authority and language — all four', () => {
+    const cases: [string, string, string][] = [
+      ['Life & Health', 'English', 'FL_LH_EN'],
+      ['Life & Health', 'Spanish', 'FL_LH_ES'],
+      ['Property & Casualty', 'English', 'FL_PC_EN'],
+      ['Property & Casualty', 'Spanish', 'FL_PC_ES'],
+    ]
+    for (const [loa, language, key] of cases) {
+      render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="FL" lineOfAuthority={loa} language={language} />)
+      expect(screen.getByRole('heading', { level: 2 }).textContent, key).toBe(FORMS[key]!.title)
+      cleanup()
+    }
+  })
+
+  it('shows a state’s own line when it has no form for the chosen one', () => {
+    // Ohio signs one after-exam form, for Property; asking for Life & Health still shows it.
+    expect(resolveAffidavit('post', 'OH', 'English', 'Life & Health').form).toBe(FORMS.OH_POST_P)
+    // A state with one form for every line ignores the control.
+    expect(resolveAffidavit('pre', 'IL', 'English', 'Property & Casualty').form).toBe(FORMS.IL_PRE)
+  })
+
+  it('offers every line of authority the explorer’s forms name', () => {
+    const lines = [...new Set(ENTRIES.flatMap((e) => Object.keys(e.variants ?? {})))].sort()
+    expect(FEATURE_FLAGS.find((f) => f.key === 'affidavit-v2-loa')?.variants?.map((v) => v.value).sort()).toEqual(lines)
   })
 
   it('says so when a state has no affidavit at that moment', () => {

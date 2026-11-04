@@ -10,14 +10,21 @@ export type ResolvedAffidavit = {
   loa?: string
 }
 
-/** The demo course is Life & Health, so that line is preferred where a state
- *  has one form per line. */
-export function resolveAffidavit(moment: AffidavitMoment, state: string, language: string): ResolvedAffidavit {
+/** Where a state signs one form per line of authority, the Design bar's
+ *  Line of authority picks it (Life & Health, the demo course's line, by
+ *  default); a state with no form for that line shows its first, as the
+ *  explorer's picker falls back. Language works the same way. */
+export function resolveAffidavit(
+  moment: AffidavitMoment,
+  state: string,
+  language: string,
+  lineOfAuthority = 'Life & Health',
+): ResolvedAffidavit {
   const entry = ENTRIES.find((e) => e.m === moment && e.st === state)
   if (!entry) return { entry, form: null }
   if (entry.variants) {
     const loas = Object.keys(entry.variants)
-    const loa = loas.includes('Life & Health') ? 'Life & Health' : loas[0]
+    const loa = loas.includes(lineOfAuthority) ? lineOfAuthority : loas[0]
     const byLang = loa ? entry.variants[loa] : undefined
     const key = byLang ? (byLang[language] ?? Object.values(byLang)[0]) : undefined
     return { entry, form: key ? (FORMS[key] ?? null) : null, loa }

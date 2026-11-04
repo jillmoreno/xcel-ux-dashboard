@@ -34,10 +34,11 @@ import './affidavitModalV2.css'
  * ⚠ IT IS HER AFFIDAVIT EXPLORER, IN THE PRODUCT. Every form, state and
  * moment comes from `affidavitForms.ts`, ported from the explorer verbatim;
  * this file is the explorer's `buildScreen` rebuilt in React, desktop only.
- * Three of the explorer's controls are on the Design bar instead of on the
- * page — Moment (`affidavit-v2-moment`), State (`affidavit-v2-state`) and
- * Pattern (`affidavit-v2-pattern`), plus Language for Florida's Spanish
- * notices. Left behind on purpose: the Full scroll pattern, the View
+ * The explorer's filters are on the Design bar instead of on the page —
+ * Moment (`affidavit-v2-moment`), State (`affidavit-v2-state`), Pattern
+ * (`affidavit-v2-pattern`), Line of authority (`affidavit-v2-loa`) and
+ * Language (`affidavit-v2-language`), the last two for the states that sign
+ * a form per line or per language. Left behind on purpose: the Full scroll pattern, the View
  * (device) control, the Question bank and the Notes.
  *
  * ⚠ THREE MOMENTS, NOT TWO. The explorer's are Before course begins, Before
@@ -355,6 +356,7 @@ export function AffidavitModalV2({
   state: stateProp,
   pattern: patternProp,
   language: languageProp,
+  lineOfAuthority: loaProp,
 }: {
   /** Accepted for parity with V1's call sites; V2's Moment control decides
    *  which affidavit shows (see the header). */
@@ -365,16 +367,19 @@ export function AffidavitModalV2({
   state?: string
   pattern?: AffidavitPattern
   language?: string
+  lineOfAuthority?: string
   initialAgreed?: boolean
 }) {
   const momentFlag = useFeatureFlag('affidavit-v2-moment').variant
   const stateFlag = useFeatureFlag('affidavit-v2-state').variant
   const patternFlag = useFeatureFlag('affidavit-v2-pattern').variant
   const languageFlag = useFeatureFlag('affidavit-v2-language').variant
+  const loaFlag = useFeatureFlag('affidavit-v2-loa').variant
   const moment = asMoment(momentProp ?? momentFlag)
   const state = stateProp ?? stateFlag ?? 'FL'
   const picked: AffidavitPattern = (patternProp ?? patternFlag) === 'link' ? 'link' : 'page'
   const language = languageProp ?? languageFlag ?? 'English'
+  const lineOfAuthority = loaProp ?? loaFlag ?? 'Life & Health'
   const chromeBottom = useChromeBottom()
 
   useEffect(() => {
@@ -385,7 +390,7 @@ export function AffidavitModalV2({
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  const { entry, form, loa } = resolveAffidavit(moment, state, language)
+  const { entry, form, loa } = resolveAffidavit(moment, state, language, lineOfAuthority)
   /* After the course exam (and on a `noLink` form) there is no Link out. */
   const pattern: AffidavitPattern = picked === 'link' && (moment === 'post' || form?.noLink) ? 'page' : picked
   const title = form
@@ -413,7 +418,7 @@ export function AffidavitModalV2({
           /* Keyed so a new form, state or pattern starts from page one with
              fresh answers — the explorer's Reset preview, done by the bar. */
           <AffidavitBody
-            key={`${moment}|${state}|${language}|${pattern}`}
+            key={`${moment}|${state}|${lineOfAuthority}|${language}|${pattern}`}
             form={form}
             state={state}
             pattern={pattern}

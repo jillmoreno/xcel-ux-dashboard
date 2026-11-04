@@ -160,6 +160,7 @@ const REBRAND_FLAGS = [
   'affidavit-v2-state',
   'affidavit-v2-pattern',
   'affidavit-v2-language',
+  'affidavit-v2-loa',
   'atlas-home-long-title',
   'atlas-v3-progress',
   'atlas-v3-link-tiles',

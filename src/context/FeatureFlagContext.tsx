@@ -2365,6 +2365,31 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'affidavit-v2-loa',
+    /* THE EXPLORER'S LINE OF AUTHORITY — 2026-11-04, Afsana: "you forgot to
+       pull in … line of authority". Some states sign a different form per
+       line: Florida before the course (Life & Health, Property & Casualty,
+       each in English and Spanish), California after the exam (Life &
+       Health) and Ohio after it (Property). The arms are every line those
+       forms name. A state that has no form for the chosen line shows its
+       first one, as the explorer's own picker falls back, and every state
+       that signs one form for all lines ignores this. */
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit line of authority',
+    description:
+      'For the states with a form per line of authority — Florida before the course begins (Life & Health or Property & Casualty), California and Ohio after the course exam. A state without a form for the chosen line shows its own; every other state ignores this.',
+    variants: [
+      { value: 'Life & Health', label: 'Life & Health' },
+      { value: 'Property & Casualty', label: 'Property & Casualty' },
+      { value: 'Property', label: 'Property' },
+    ],
+    defaultVariant: 'Life & Health',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-home-long-title',
     /* A REFERENCE TOGGLE beside Headings on the Design bar (2026-10-07, Eric's
        request: "add another toggle … to show this long title for reference").
