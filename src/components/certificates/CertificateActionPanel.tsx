@@ -69,6 +69,9 @@ export function CertificateActionPanel({
      Going through the helper keeps every door in the product on one placeholder
      to replace, instead of this panel inventing a second. */
   const pdfUrl = issued ? certificatePdfUrl(data) : null
+  /* In the card the banner's icon box sits on its first line's top, not the
+     middle of a two-line message (2026-11-04, Eric's request). */
+  const top = (st: CSSProperties): CSSProperties => (inline ? { ...st, alignItems: 'flex-start' } : st)
 
   return (
     <SheetOrInline inline={inline} open={open && data != null} onClose={onClose}>
@@ -86,7 +89,7 @@ export function CertificateActionPanel({
 
           {/* THE BANNER — one per arm, same shape, three ramps. */}
           {meta ? (
-            <div style={bannerStyle}>
+            <div style={top(bannerStyle)}>
               <span aria-hidden style={bannerIconStyle}>
                 <CircleExclamation size={20} aria-hidden />
               </span>
@@ -96,7 +99,7 @@ export function CertificateActionPanel({
               </div>
             </div>
           ) : inProgress ? (
-            <div style={pendingBannerStyle}>
+            <div style={top(pendingBannerStyle)}>
               <span aria-hidden style={pendingBannerIconStyle}>
                 <HourglassClock size={20} aria-hidden />
               </span>
@@ -108,7 +111,7 @@ export function CertificateActionPanel({
               </div>
             </div>
           ) : (
-            <div style={issuedBannerStyle}>
+            <div style={top(issuedBannerStyle)}>
               <span aria-hidden style={issuedBannerIconStyle}>
                 <CircleCheck size={20} aria-hidden />
               </span>
@@ -173,7 +176,11 @@ export function CertificateActionPanel({
                 component, so the two can never disagree. Issued only — nothing
                 has been reported for a certificate that does not exist yet. */}
             {issued && data.reporting ? (
-              <div style={reportingRowStyle}>
+              <div
+                /* In the card, 4 above it like the facts' own rows (2026-11-04),
+                   not the body's 8. */
+                style={inline ? { ...reportingRowStyle, marginTop: -4 } : reportingRowStyle}
+              >
                 <span style={{ color: 'var(--color-text-secondary)' }}>Reporting Status:</span>
                 <span style={{ fontWeight: 700 }}>
                   <ReportingStatus reporting={data.reporting} />
@@ -195,18 +202,18 @@ export function CertificateActionPanel({
               {/* View Certificate leads on an issued one — it is the thing the
                   learner came for. See `pdfUrl` for what it opens today. */}
               {pdfUrl ? (
-                <a href={pdfUrl} style={{ ...actionTileStyle, textDecoration: 'none' }}>
-                  <FileCertificateRegular size={26} aria-hidden style={{ color: 'var(--color-tertiary-600)' }} />
-                  <span>View Certificate</span>
+                <a href={pdfUrl} style={{ ...(inline ? rowTileStyle : actionTileStyle), textDecoration: 'none' }}>
+                  <FileCertificateRegular size={26} aria-hidden style={{ color: 'var(--color-tertiary-600)', flexShrink: 0 }} />
+                  <TileLabel text="View Certificate" twoLines={inline} />
                 </a>
               ) : null}
               <button
                 type="button"
                 onClick={() => console.info('cert:go-to-course', data.id)}
-                style={actionTileStyle}
+                style={inline ? rowTileStyle : actionTileStyle}
               >
-                <PersonRunning size={26} aria-hidden style={{ color: 'var(--color-tertiary-600)' }} />
-                <span>{inProgress ? 'Continue Course' : 'Go to Course'}</span>
+                <PersonRunning size={26} aria-hidden style={{ color: 'var(--color-tertiary-600)', flexShrink: 0 }} />
+                <TileLabel text={inProgress ? 'Continue Course' : 'Go to Course'} twoLines={inline} />
               </button>
             </div>
           </div>
@@ -224,6 +231,21 @@ function SheetOrInline({ inline, open, onClose, children }: { inline: boolean; o
     <Sheet open={open} onClose={onClose} title="Certificate Details" width={544}>
       {children}
     </Sheet>
+  )
+}
+
+/** A tile's label — in the card, on two lines broken at the last space
+ *  ("View / Certificate", "Go to / Course"), left aligned beside the icon. */
+function TileLabel({ text, twoLines }: { text: string; twoLines: boolean }) {
+  if (!twoLines) return <span>{text}</span>
+  const at = text.lastIndexOf(' ')
+  if (at < 0) return <span style={{ textAlign: 'left' }}>{text}</span>
+  return (
+    <span style={{ textAlign: 'left' }}>
+      {text.slice(0, at)}
+      <br />
+      {text.slice(at + 1)}
+    </span>
   )
 }
 
@@ -249,6 +271,31 @@ function formatDate(iso: string): string {
 /* In the card: its own column of the same 16 gap, no scroll and no padding —
    the card's are around it. */
 const inlineStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 16 }
+
+/* THE TILES ON THEIR SIDE, in the card (2026-11-04, Eric's request): the
+   icon left, the two-line label beside it, the pair sharing the row. */
+const rowTileStyle: CSSProperties = {
+  // Half the row each, so a lone tile is the same size as a pair's.
+  flex: '0 1 calc(50% - 6px)',
+  minWidth: 0,
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'flex-start',
+  gap: 12,
+  padding: '12px 16px',
+  background: 'var(--color-surface-card)',
+  border: '1px solid var(--color-border-subtle)',
+  borderRadius: 'var(--radius-lg)',
+  boxShadow: 'var(--shadow-card)',
+  cursor: 'pointer',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  fontWeight: 600,
+  color: 'var(--color-tertiary-700)',
+  textAlign: 'left',
+  lineHeight: 1.2,
+}
 
 const scrollStyle: CSSProperties = {
   flex: 1,
