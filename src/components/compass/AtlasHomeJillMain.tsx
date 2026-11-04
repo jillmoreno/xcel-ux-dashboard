@@ -1349,7 +1349,7 @@ export function AtlasHomeJillMain({
                 the same card under the first, its Course progress drawn as a
                 row like Study pace and Estimated completion. Drawn at the
                 Mobile breakpoint only, so the two can be compared there. */}
-            {phoneFrame && onWhite && paceCard === 'ring' && RingCard === AtlasPaceRingCardFigma ? (
+            {SHOW_PACE_LIST_COPY && phoneFrame && onWhite && paceCard === 'ring' && RingCard === AtlasPaceRingCardFigma ? (
               <div className="cre-atlas-pace-list-copy" style={{ ...WHITE_PROGRESS_PANEL, gap: 0 }}>
                 {cloneElement(ringCard, { listProgress: true })}
               </div>
@@ -2659,6 +2659,13 @@ const META_VALUE: CSSProperties = { fontWeight: 600, color: 'var(--color-text-pr
 /* Eric/Atlas White's Progress + Readiness panel (Figma 286:9455, 2026-10-14):
    a Primary 200 outline, 20 corners, 24 / 32 in, 16 between. The hairline
    between them is the design's #E7E0D6 — tan 300 is the nearest token. */
+/* THE PHONE'S LIST COPY OF THE PROGRESS PANEL — OFF, "for now" (2026-11-04,
+   Eric's request, the same day it was built). Set true to draw it again under
+   the two-column panel at the Mobile breakpoint: the card's `listProgress`
+   arm and its rules in home-breakpoints/mobile.css (`.cre-atlas-pace-list-copy`)
+   are kept as they were. */
+const SHOW_PACE_LIST_COPY = false
+
 const WHITE_PROGRESS_PANEL: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
