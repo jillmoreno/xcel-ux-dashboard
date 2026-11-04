@@ -6,6 +6,8 @@
 /* One column, 16 in from the device's edges. */
 [data-home-bp='mobile'] section:has(> .cre-dash-serif-headings) {
   padding: 24px 16px 40px !important;
+  /* 16 under the header, the same as the sides (2026-11-04, Eric's request). */
+  padding-top: 16px !important;
 }
 /* The page row (Quick Links | the course) stacks: the course first, Quick Links under it. */
 [data-home-bp='mobile'] div:has(> section[aria-label='Current course']) {
@@ -30,8 +32,9 @@
 /* The course card's panel: 24 in, not 40. */
 [data-home-bp='mobile'] section[aria-label='Current course'] > div:first-child {
   padding: 24px !important;
-  /* 40 less on top (2026-11-04, Eric's request): 48 above the eyebrow → 8. */
-  padding-top: 8px !important;
+  /* 40 less on top (2026-11-04, Eric's request): 48 above the eyebrow → 8,
+     then 8 back the same day → 16. */
+  padding-top: 16px !important;
 }
 /* …and the cover box that drew NOTHING at this width — its image is placed
    absolutely inside a box with no height of its own — goes, with the 24 row
