@@ -1274,7 +1274,7 @@ export function AtlasHomeJillMain({
                  hardcoded week count is how those two start describing
                  different plans. `HybridHomeV1` pins its 3 deliberately and
                  records the derivation it dropped — this one keeps it. */
-              phoneAltLayout ? cloneElement(ringCard, { listProgress: true }) : ringCard
+              phoneAltLayout ? cloneElement(ringCard, { listProgress: true, listPace: phoneLayout === 'list' }) : ringCard
             ) : completedView ? null : (
             <AtlasCourseProgressStates
               bare={onWhite}

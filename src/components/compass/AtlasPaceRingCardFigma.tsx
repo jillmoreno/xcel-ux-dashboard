@@ -60,6 +60,7 @@ export function AtlasPaceRingCardFigma({
   examWhenExpired = false,
   onCustomize,
   listProgress = false,
+  listPace = false,
 }: {
   percent: number
   /**
@@ -70,6 +71,14 @@ export function AtlasPaceRingCardFigma({
    * name's style. Absent is the big centred dial, unchanged.
    */
   listProgress?: boolean
+  /**
+   * STUDY PACE AS A LIST ROW TOO (2026-11-04) — the pace name beside the
+   * eyebrow, the hours on the goal's line, and "Customize your study pace
+   * here" in place of the starting-point sentence. Split from `listProgress`
+   * the same day: the phone's tabbed layout draws Course progress as a row
+   * but keeps Study pace exactly as the two-column card has it.
+   */
+  listPace?: boolean
   /**
    * Draw the Course progress section and stop.
    *
@@ -296,7 +305,7 @@ export function AtlasPaceRingCardFigma({
           Study pace
           {/* The list row names the pace up here, one weight up (2026-11-04,
               Eric's request) — it was the tag over the goal. */}
-          {listProgress && weeks != null ? (
+          {listPace && weeks != null ? (
             <>
               {' — '}
               <span style={{ fontWeight: 600 }}>{paceStyleName ?? PACE_NAME}</span>
@@ -329,7 +338,7 @@ export function AtlasPaceRingCardFigma({
               <span style={GOAL_FALLBACK}>{noPaceCopy.title}</span>
               <span style={GOAL_NOTE}>{noPaceCopy.note}</span>
             </span>
-          ) : listProgress ? (
+          ) : listPace ? (
             /* THE LIST ROW (2026-11-04, Eric's request): the pace name moved
                up beside the eyebrow, the hours on the goal's own line, and
                the customise link alone under it. */
@@ -398,7 +407,7 @@ export function AtlasPaceRingCardFigma({
              two ways. The customise link goes with the starting-point copy:
              it belonged to the sentence that offered it. */
           <p style={SMALL}>{withPlanLink(standingMessage, onCustomize)}</p>
-        ) : listProgress ? null : (
+        ) : listPace ? null : (
         <p style={SMALL}>
           Your default recommended study pace is just a starting point, you can further customize
           your pace{' '}
