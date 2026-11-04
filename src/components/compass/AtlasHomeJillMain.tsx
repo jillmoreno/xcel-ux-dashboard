@@ -3202,7 +3202,11 @@ function PacePhoneTabs({ active, onSelect }: { active: PacePhoneTab; onSelect: (
                  the inactive ones are a fill with no stroke. */
               border: on ? `1px solid ${PACE_TAB_STROKE}` : 'none',
               borderBottom: 'none',
-              background: on ? 'var(--color-atlas-tan-100)' : PACE_TAB_STROKE,
+              /* FLIPPED the same day: the active tab the darker Neutral 100,
+                 the inactive ones the panel's lighter Tan 100 — and the
+                 active title a weight up. */
+              background: on ? PACE_TAB_STROKE : 'var(--color-atlas-tan-100)',
+              fontWeight: on ? 500 : 400,
             }}
           >
             {t.label}
