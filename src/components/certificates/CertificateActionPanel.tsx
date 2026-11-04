@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { ArrowLeft, CircleCheck, CircleExclamation, FileCertificateRegular, HourglassClock, PersonRunning } from '@/icons'
 import { Sheet } from '@/components/ui/Sheet'
 import { CERT_ACTION_META, certificatePdfUrl, type Certificate } from '@/data/certificateFixtures'
@@ -41,12 +41,20 @@ export function CertificateActionPanel({
   onClose,
   data,
   inProgress = false,
+  inline = false,
 }: {
   open: boolean
   onClose: () => void
   data: Certificate | null
   /** Draw the not-yet-earned arm — see the warning above. */
   inProgress?: boolean
+  /**
+   * INSIDE THE CARD, NOT A SHEET (2026-11-04, Eric's request, for the phone):
+   * the same banner, facts and actions, drawn where the card puts them — no
+   * Sheet, no Back, no heading, and none of the title / profession / state row
+   * the card above already shows.
+   */
+  inline?: boolean
 }) {
   const meta = data?.action ? CERT_ACTION_META[data.action] : null
   const reason = meta && data ? meta.bannerReason.replaceAll('{state}', data.state) : ''
@@ -63,14 +71,18 @@ export function CertificateActionPanel({
   const pdfUrl = issued ? certificatePdfUrl(data) : null
 
   return (
-    <Sheet open={open && data != null} onClose={onClose} title="Certificate Details" width={544}>
+    <SheetOrInline inline={inline} open={open && data != null} onClose={onClose}>
       {data && (
-        <div style={scrollStyle}>
+        <div style={inline ? inlineStyle : scrollStyle}>
+          {inline ? null : (
+            <>
           <button type="button" onClick={onClose} className="cre-link-action" style={backStyle}>
             <ArrowLeft size={16} aria-hidden />
             Back
           </button>
           <h2 style={headingStyle}>Certificate Details</h2>
+            </>
+          )}
 
           {/* THE BANNER — one per arm, same shape, three ramps. */}
           {meta ? (
@@ -110,6 +122,8 @@ export function CertificateActionPanel({
           )}
 
           <div style={bodyStyle}>
+            {inline ? null : (
+            <>
             <h3 style={titleStyle}>{data.title}</h3>
             <span style={professionStyle}>{data.profession}</span>
             <div style={metaRowStyle}>
@@ -121,6 +135,8 @@ export function CertificateActionPanel({
               <Divider />
               <span>{data.badge}</span>
             </div>
+            </>
+            )}
 
             <dl style={factsStyle}>
               <Fact label="Enrolled:" value={formatDate(data.enrolledDate)} />
@@ -193,6 +209,17 @@ export function CertificateActionPanel({
           </div>
         </div>
       )}
+    </SheetOrInline>
+  )
+}
+
+/** The panel's host: the Sheet, or — `inline` — nothing at all, so the body
+ *  sits in whatever the caller puts it in. */
+function SheetOrInline({ inline, open, onClose, children }: { inline: boolean; open: boolean; onClose: () => void; children: ReactNode }) {
+  if (inline) return open ? <>{children}</> : null
+  return (
+    <Sheet open={open} onClose={onClose} title="Certificate Details" width={544}>
+      {children}
     </Sheet>
   )
 }
@@ -215,6 +242,10 @@ function formatDate(iso: string): string {
   if (!y || !m || !d) return iso
   return `${m}/${d}/${y}`
 }
+
+/* In the card: its own column of the same 16 gap, no scroll and no padding —
+   the card's are around it. */
+const inlineStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 16 }
 
 const scrollStyle: CSSProperties = {
   flex: 1,

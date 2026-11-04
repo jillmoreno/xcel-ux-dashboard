@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { FileCertificateRegular, MoreVertical } from '@/icons'
 import type { Certificate } from '@/data/certificateFixtures'
 import { ReportingStatus } from './CertificateCard'
@@ -35,6 +35,7 @@ export function AtlasCertificateCard({
   barColor,
   inProgressPill,
   openAnyStatus = false,
+  expanded,
 }: {
   data: Certificate
   /** A certificate not yet earned — the course is still under way (Eric/Atlas
@@ -68,6 +69,10 @@ export function AtlasCertificateCard({
   /** Kebab (⋮) menu click. Without one, the ⋮ opens the detail on a card that
    *  opens at all; failing that it falls back to a console stub. */
   onOptions?: (id: string) => void
+  /** The certificate's details opened IN the card, under its state and hours
+   *  row with a rule above (2026-11-04, the phone's kebab). Its own facts take
+   *  the place of the card's issued and reporting lines. */
+  expanded?: ReactNode
 }) {
   const isAction = data.status === 'action-required'
   const clickable = (isAction || openAnyStatus) && onOpen != null
@@ -147,13 +152,23 @@ export function AtlasCertificateCard({
           <span aria-hidden style={SEPARATOR} />
           <span>{data.badge}</span>
         </div>
-        {inProgress ? null : (
+        {expanded ? (
+          <>
+            <hr aria-hidden style={{ margin: '4px 0 0', border: 'none', borderTop: '1px solid var(--color-atlas-tan-300)' }} />
+            {/* Clicks in here stay here — a card that opens would otherwise
+                take a tap on View Certificate as a tap to close. */}
+            <div onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()} style={{ cursor: 'default' }}>
+              {expanded}
+            </div>
+          </>
+        ) : null}
+        {inProgress || expanded ? null : (
         <div style={DETAIL}>
           <span>{isAction ? 'Course Completed:' : 'Certificate Issued:'}</span>
           <span>{formatDate(data.completedDate)}</span>
         </div>
         )}
-        {data.reporting && !inProgress ? (
+        {data.reporting && !inProgress && !expanded ? (
           <div style={DETAIL}>
             <span>Reporting Status:</span>
             <span style={{ fontWeight: 700 }}>
