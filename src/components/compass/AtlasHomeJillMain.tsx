@@ -43,7 +43,7 @@
  * demo's Home can change without changing either. Its WIP branches (the
  * `onWhite` false sides) are carried over unchanged and never taken here.
  */
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { cloneElement, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { isEricAtlasWhiteLike, resolveDashboardVersion } from '@/data/dashboardVersions'
 import {
@@ -924,6 +924,150 @@ export function AtlasHomeJillMain({
     onSelectCourse?.(id)
   }
 
+  /* THE RING CARD, hoisted so the phone can draw it twice (2026-11-04, Eric's
+     request): as it is, and again under it as a list (`listProgress`) —
+     see `ringListCopy` below. One element, so the two cannot disagree. */
+  const ringCard = (
+    <RingCard
+      /* Ready 100%: the dial alone — no rule, no Study pace (2026-11-03,
+         Eric's request); a finished course has no plan left to pace. */
+      progressOnly={completedView}
+      /* The ladder carries the figure for every state now,
+         including 0 — see the note there. The `percent` prop is the
+         persona's and only stands in for a state with no figure. */
+      percent={progress.percent ?? percent}
+      /* ⚠ NO FALLBACK (2026-10-19). It was `: 3` — a week count
+         nothing had computed, printed at the one moment the model
+         has no plan to offer. `undefined` is what the card reads as
+         "no pace fits", and it is the same condition that already
+         empties the hours line and the completion date, so all
+         three now say the same thing instead of two vanishing while
+         the third made a number up. */
+      weeks={paceFit ? Math.max(1, Math.round(paceFit.days / 7)) : undefined}
+      /* The name and the glyph are the SAME choice as the figures
+         above — see `paceStyle`. The demo's card passes neither and
+         keeps the frozen "Average" it has always printed. */
+      paceStyleName={PACE_STYLE_LABELS[paceStyle]}
+      paceIcon={paceIconFor(paceStyle)}
+      /* ⚠ THE BOOKED EXAM, from the same store the prompt writes and
+         counted off the same `today` — 2026-10-20, the third screen's
+         "FLORIDA STATE EXAM / November 16 · 18 days".
+
+         This is the pair the mock could not make agree: the count
+         there read 18 beside a "29 Days" in Step 2 for one date,
+         because the calendar was on the wall clock and this column on
+         the fixture. Both are `daysUntil(examDate, today)` now, so
+         they are the same subtraction or neither renders.
+
+         The LABEL names the state, which is why the card takes it
+         rather than typing it — `state` is `jurisdictionName(path.state)`,
+         so it follows the Course control like every other fact here. */
+      exam={
+        examDate && examDays != null
+          ? {
+              label: state ? `${state} state exam`.toUpperCase() : 'STATE EXAM',
+              value: formatPaceDateLong(examDate),
+              /* The three arms moved into `inDaysNote` on
+                 2026-10-20 so this row and Estimated completion
+                 count in one voice — see the note there. */
+              note: inDaysNote(examDays),
+            }
+          : undefined
+      }
+      noPace={noPace}
+      /* ⚠ THE SAME `paceFit` THE WEEK COUNT READS, which is the
+         whole reason both live on this card: the span and the date
+         it lands on come from one model, so they cannot describe
+         two different plans. The states card's `expected` prop is
+         built from the same place for the same reason — see its
+         note there. */
+      /* ⚠ NO "AT CURRENT PACE" AT 0% (2026-10-16, Jillienne: "at 0%
+         remove this bit"). There is no current pace to be at — the
+         learner has not started, so the date is what the
+         RECOMMENDED plan would reach, not a projection from
+         anything they have done. The note would be claiming a
+         measurement that does not exist yet. The DATE stays: it is
+         the plan's, and the plan is real. */
+      /* ⚠ NO NOTE ON THE RING CARD SINCE 2026-10-19, and it is the
+         one-line row that decides it (Jillienne: "move this to the
+         right of the eyebrow - no need for 2 lines"). The label
+         takes 166 of the column's 272, which leaves room for a
+         date and not for a date plus a qualifier — with the note
+         the value wrapped to "May 24 · At / current pace", which
+         is two lines and an ugly break rather than the one line
+         that was asked for. "At current pace" was already
+         suppressed at 0% (there is no current pace before you
+         start); this drops it at every state, on the ring arm
+         only. The STATES card below still passes it. */
+      expected={
+        paceFit
+          ? {
+              /* The month written out — this figure stands alone
+                 at 19px, where the short form is for dates inside
+                 sentences. See `formatPaceDateLong`. */
+              value: formatPaceDateLong(paceFit.finishIso),
+              /* ⚠ A NOTE HERE AGAIN, AND IT IS A DIFFERENT ONE
+                 (2026-10-20, Jillienne: "add the days underneath
+                 this section too"). The note dropped on 10-19 was
+                 "At current pace" — a qualifier on the date, which
+                 had nowhere to go on a one-line row and was wrong
+                 at 0% anyway, where there is no current pace to be
+                 at. This is a COUNT, it is true at every state,
+                 and the row has a second line for it now.
+                 ⚠ `paceFit.days` — the model's own span, the same
+                 one the week goal is rounded from, so the date and
+                 the count cannot describe two different plans. */
+              note: inDaysNote(paceFit.days),
+            }
+          : undefined
+      }
+      /* THE MODEL'S OWN `minsPerWeek`, not `hoursRemaining / weeks`.
+         The model spreads the work over the nights a learner
+         actually studies; dividing the total myself would answer a
+         different question and disagree with the plan it sits
+         under. Rounded to the hour — the sentence says "about". */
+      hoursPerWeek={paceFit ? Math.max(1, Math.round(paceFit.minsPerWeek / 60)) : undefined}
+      /* So the card knows whether its last rule has anything below
+         it to divide — see `readinessBelow`. */
+      standingMessage={
+        atZeroProgress || !paceFit
+          ? undefined
+          : paceStandingMessage({
+              standing: paceStanding,
+              /* The model's own figure for this pace, so the
+                 sentence and the week goal above it cannot
+                 disagree about the plan. */
+              goalHoursPerWeek: Number.isFinite(paceFit.minsPerWeek) ? paceFit.minsPerWeek / 60 : 0,
+              weeks: Math.max(1, Math.round(paceFit.days / 7)),
+              finishIso: paceFit.finishIso,
+            })
+      }
+      readinessBelow={showReadiness}
+      /* Everything under the dial describes a plan, and there is
+         none once the window has closed — see the card's note. */
+      expired={expiryTier === 'expired'}
+      align={columnAlign}
+      /* ⚠ "HERE" GOES TO COMPASS'S STUDY PLANNER (2026-10-16,
+         Jillienne: "have the 'here' be a link to the study planner
+         of the compass application"). It was `onOpenStop(
+         'study-plan')` — the Atlas journey's own stop, a different
+         page with a similar name. `compassPage` seeds Compass's
+         page on arrival, the same param the lesson's exit uses. */
+      onCustomize={() =>
+        setParams(
+          (prev) => {
+            const next = new URLSearchParams(prev)
+            next.set('section', 'compass')
+            next.set('compassPage', 'study-planner')
+            next.delete('coursePage')
+            return next
+          },
+          { replace: true },
+        )
+      }
+    />
+  )
+
   return (
     // 40 between Quick Links and the course card on White, 8 more than WIP's
     // 32 (2026-10-14, Eric's request) — White's card has no padding of its own.
@@ -1098,144 +1242,7 @@ export function AtlasHomeJillMain({
                  hardcoded week count is how those two start describing
                  different plans. `HybridHomeV1` pins its 3 deliberately and
                  records the derivation it dropped — this one keeps it. */
-              <RingCard
-                /* Ready 100%: the dial alone — no rule, no Study pace (2026-11-03,
-                   Eric's request); a finished course has no plan left to pace. */
-                progressOnly={completedView}
-                /* The ladder carries the figure for every state now,
-                   including 0 — see the note there. The `percent` prop is the
-                   persona's and only stands in for a state with no figure. */
-                percent={progress.percent ?? percent}
-                /* ⚠ NO FALLBACK (2026-10-19). It was `: 3` — a week count
-                   nothing had computed, printed at the one moment the model
-                   has no plan to offer. `undefined` is what the card reads as
-                   "no pace fits", and it is the same condition that already
-                   empties the hours line and the completion date, so all
-                   three now say the same thing instead of two vanishing while
-                   the third made a number up. */
-                weeks={paceFit ? Math.max(1, Math.round(paceFit.days / 7)) : undefined}
-                /* The name and the glyph are the SAME choice as the figures
-                   above — see `paceStyle`. The demo's card passes neither and
-                   keeps the frozen "Average" it has always printed. */
-                paceStyleName={PACE_STYLE_LABELS[paceStyle]}
-                paceIcon={paceIconFor(paceStyle)}
-                /* ⚠ THE BOOKED EXAM, from the same store the prompt writes and
-                   counted off the same `today` — 2026-10-20, the third screen's
-                   "FLORIDA STATE EXAM / November 16 · 18 days".
-
-                   This is the pair the mock could not make agree: the count
-                   there read 18 beside a "29 Days" in Step 2 for one date,
-                   because the calendar was on the wall clock and this column on
-                   the fixture. Both are `daysUntil(examDate, today)` now, so
-                   they are the same subtraction or neither renders.
-
-                   The LABEL names the state, which is why the card takes it
-                   rather than typing it — `state` is `jurisdictionName(path.state)`,
-                   so it follows the Course control like every other fact here. */
-                exam={
-                  examDate && examDays != null
-                    ? {
-                        label: state ? `${state} state exam`.toUpperCase() : 'STATE EXAM',
-                        value: formatPaceDateLong(examDate),
-                        /* The three arms moved into `inDaysNote` on
-                           2026-10-20 so this row and Estimated completion
-                           count in one voice — see the note there. */
-                        note: inDaysNote(examDays),
-                      }
-                    : undefined
-                }
-                noPace={noPace}
-                /* ⚠ THE SAME `paceFit` THE WEEK COUNT READS, which is the
-                   whole reason both live on this card: the span and the date
-                   it lands on come from one model, so they cannot describe
-                   two different plans. The states card's `expected` prop is
-                   built from the same place for the same reason — see its
-                   note there. */
-                /* ⚠ NO "AT CURRENT PACE" AT 0% (2026-10-16, Jillienne: "at 0%
-                   remove this bit"). There is no current pace to be at — the
-                   learner has not started, so the date is what the
-                   RECOMMENDED plan would reach, not a projection from
-                   anything they have done. The note would be claiming a
-                   measurement that does not exist yet. The DATE stays: it is
-                   the plan's, and the plan is real. */
-                /* ⚠ NO NOTE ON THE RING CARD SINCE 2026-10-19, and it is the
-                   one-line row that decides it (Jillienne: "move this to the
-                   right of the eyebrow - no need for 2 lines"). The label
-                   takes 166 of the column's 272, which leaves room for a
-                   date and not for a date plus a qualifier — with the note
-                   the value wrapped to "May 24 · At / current pace", which
-                   is two lines and an ugly break rather than the one line
-                   that was asked for. "At current pace" was already
-                   suppressed at 0% (there is no current pace before you
-                   start); this drops it at every state, on the ring arm
-                   only. The STATES card below still passes it. */
-                expected={
-                  paceFit
-                    ? {
-                        /* The month written out — this figure stands alone
-                           at 19px, where the short form is for dates inside
-                           sentences. See `formatPaceDateLong`. */
-                        value: formatPaceDateLong(paceFit.finishIso),
-                        /* ⚠ A NOTE HERE AGAIN, AND IT IS A DIFFERENT ONE
-                           (2026-10-20, Jillienne: "add the days underneath
-                           this section too"). The note dropped on 10-19 was
-                           "At current pace" — a qualifier on the date, which
-                           had nowhere to go on a one-line row and was wrong
-                           at 0% anyway, where there is no current pace to be
-                           at. This is a COUNT, it is true at every state,
-                           and the row has a second line for it now.
-                           ⚠ `paceFit.days` — the model's own span, the same
-                           one the week goal is rounded from, so the date and
-                           the count cannot describe two different plans. */
-                        note: inDaysNote(paceFit.days),
-                      }
-                    : undefined
-                }
-                /* THE MODEL'S OWN `minsPerWeek`, not `hoursRemaining / weeks`.
-                   The model spreads the work over the nights a learner
-                   actually studies; dividing the total myself would answer a
-                   different question and disagree with the plan it sits
-                   under. Rounded to the hour — the sentence says "about". */
-                hoursPerWeek={paceFit ? Math.max(1, Math.round(paceFit.minsPerWeek / 60)) : undefined}
-                /* So the card knows whether its last rule has anything below
-                   it to divide — see `readinessBelow`. */
-                standingMessage={
-                  atZeroProgress || !paceFit
-                    ? undefined
-                    : paceStandingMessage({
-                        standing: paceStanding,
-                        /* The model's own figure for this pace, so the
-                           sentence and the week goal above it cannot
-                           disagree about the plan. */
-                        goalHoursPerWeek: Number.isFinite(paceFit.minsPerWeek) ? paceFit.minsPerWeek / 60 : 0,
-                        weeks: Math.max(1, Math.round(paceFit.days / 7)),
-                        finishIso: paceFit.finishIso,
-                      })
-                }
-                readinessBelow={showReadiness}
-                /* Everything under the dial describes a plan, and there is
-                   none once the window has closed — see the card's note. */
-                expired={expiryTier === 'expired'}
-                align={columnAlign}
-                /* ⚠ "HERE" GOES TO COMPASS'S STUDY PLANNER (2026-10-16,
-                   Jillienne: "have the 'here' be a link to the study planner
-                   of the compass application"). It was `onOpenStop(
-                   'study-plan')` — the Atlas journey's own stop, a different
-                   page with a similar name. `compassPage` seeds Compass's
-                   page on arrival, the same param the lesson's exit uses. */
-                onCustomize={() =>
-                  setParams(
-                    (prev) => {
-                      const next = new URLSearchParams(prev)
-                      next.set('section', 'compass')
-                      next.set('compassPage', 'study-planner')
-                      next.delete('coursePage')
-                      return next
-                    },
-                    { replace: true },
-                  )
-                }
-              />
+              ringCard
             ) : completedView ? null : (
             <AtlasCourseProgressStates
               bare={onWhite}
@@ -1329,6 +1336,16 @@ export function AtlasHomeJillMain({
             />
             )}
             </div>
+            {/* THE PROGRESS PANEL AGAIN, AS A LIST — 2026-11-04, Eric's request:
+                the same card under the first, its Course progress drawn as a
+                row like Study pace and Estimated completion. Hidden
+                everywhere but the Mobile breakpoint, which shows it
+                (home-breakpoints/mobile.css) so the two can be compared. */}
+            {onWhite && paceCard === 'ring' && RingCard === AtlasPaceRingCardFigma ? (
+              <div className="cre-atlas-pace-list-copy" style={{ ...WHITE_PROGRESS_PANEL, gap: 0, display: 'none' }}>
+                {cloneElement(ringCard, { listProgress: true })}
+              </div>
+            ) : null}
             {/* The link tiles at the BOTTOM of the column (2026-10-09, Eric's
                 request; they led it). */}
             {!SHOW_LINK_TILES ? null : stackedTiles ? (
