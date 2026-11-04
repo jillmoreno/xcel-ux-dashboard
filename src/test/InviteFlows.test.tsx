@@ -116,7 +116,10 @@ describe('the checkout audience flag', () => {
     it('…and leaves them exactly where they were on Atlas', () => {
       const onAtlas = onDesignBar(null)
       expect(onAtlas).toContain('atlas-home-long-title')
-      expect(onAtlas).toContain('atlas-affidavit')
+      /* Affidavit moment replaced the Affidavit control on Atlas's bar
+         (2026-11-04, `feat/affidavits`); the old one is panel-only now. */
+      expect(onAtlas).toContain('affidavit-v2-moment')
+      expect(onAtlas).not.toContain('atlas-affidavit')
       expect(onAtlas).toContain('atlas-brand-skin-v3')
       expect(onAtlas).toContain('atlas-readiness-section')
     })

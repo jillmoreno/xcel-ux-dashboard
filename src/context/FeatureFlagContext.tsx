@@ -2224,8 +2224,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        ⚠ `?affidavit=1` STILL WORKS. Arriving from Confirmation & Password
        opens the pre-course one, as it has since 2026-10-15 — this control is
        a second way in, not a replacement, and closing the modal clears both
-       so it does not spring back. */
-    surface: 'design',
+       so it does not spring back.
+
+       ⚠ OFF THE DESIGN BAR SINCE 2026-11-04 (`feat/affidavits`, Afsana) —
+       `affidavit-v2-moment` replaced it there, with an Off arm and the
+       explorer's three moments. Still in the Feature Flag panel, and both
+       Homes still honour it when Moment is Off, so `?ff=atlas-affidavit:pre`
+       links keep working. Restoring it to the bar is putting
+       `surface: 'design'` back on this row. */
     owner: 'eric',
     versions: ['eric-atlas-e2e'],
     group: 'Widgets',
@@ -2277,15 +2283,24 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surface: 'design',
     versions: ['jill-atlas-main', 'eric-atlas-e2e'],
     group: 'Widgets',
+    /* ⚠ IT REPLACED THE AFFIDAVIT CONTROL ON THE BAR (2026-11-04, Afsana:
+       "the affidavit control … is not there anymore, and is instead replaced
+       by affidavit moment"). Off is Home as it lands; any moment opens the
+       modal over it and adds the Study Journey's affidavit row, the two jobs
+       `atlas-affidavit` did. Both Homes read this first and fall back to
+       `atlas-affidavit`, which left the bar but is still in the Feature Flag
+       panel. With Affidavit V2 off, V1 opens: After course exam as its
+       post-course affidavit, the other two as its pre-course one. */
     label: 'Affidavit moment',
     description:
-      'Which of the three affidavits V2 shows: the one signed before the course begins, before the course exam, or after it. Each state has its own form for each moment, or none.',
+      'Opens the affidavit modal over Home, and says which of the three affidavits it shows: the one signed before the course begins, before the course exam, or after it. Each state has its own form for each moment, or none. Off: Home as it lands. Replaced the Affidavit control on the Design bar.',
     variants: [
+      { value: 'off', label: 'Off' },
       { value: 'pre', label: 'Before course begins' },
       { value: 'exam', label: 'Before course exam' },
       { value: 'post', label: 'After course exam' },
     ],
-    defaultVariant: 'pre',
+    defaultVariant: 'off',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { isEricAtlasWhiteLike, resolveDashboardVersion } from '@/data/dashboardVersions'
 import {
@@ -478,7 +478,11 @@ export function AtlasHomeEricE2E({
   /* The design bar's Affidavit control — read here because the journey below
      drops its first row when it is off, not only because the modal reads it. */
   const affidavitFlag = useFeatureFlag('atlas-affidavit')
-  const affidavitPick = affidavitFlag.variant ?? 'off'
+  /* The Design bar's Affidavit moment replaced that control on 2026-11-04
+     (Afsana, `feat/affidavits`): it is read first, and the old control —
+     still in the Feature Flag panel — only while Moment is Off. */
+  const affidavitMoment = useFeatureFlag('affidavit-v2-moment').variant ?? 'off'
+  const affidavitPick = affidavitMoment !== 'off' ? affidavitMoment : (affidavitFlag.variant ?? 'off')
   const stops = journeyStopsFor(path).filter((s) => s.id !== 'attestation-and-affidavit')
   /* ⚠ THE PATH'S OWN "in-progress" STOP NO LONGER DECIDES THIS (2026-10-16).
      The demo's Progress does — `currentRowIdx` below is the first row the
@@ -584,8 +588,11 @@ export function AtlasHomeEricE2E({
   /* The design bar's Affidavit control, and the invite flow's `?affidavit=1`
      as the pre-course one. `null` when neither asks for it. */
   const affidavitKind: AffidavitKind | null =
-    affidavitPick === 'pre' || affidavitPick === 'post'
-      ? affidavitPick
+    affidavitPick !== 'off'
+      ? // V1 knows two affidavits; Moment's "Before course exam" opens its pre-course one.
+        affidavitPick === 'post'
+        ? 'post'
+        : 'pre'
       : searchParams.get('affidavit') === '1'
         ? 'pre'
         : null
@@ -603,7 +610,21 @@ export function AtlasHomeEricE2E({
   // all follow. NB the card is hidden on Completed — the dropdown leaves it.
   const { setVariant } = useFeatureFlags()
   /* Closing the modal turns the control off, so it does not re-open. */
-  const setAffidavit = (v: string) => setVariant('atlas-affidavit', v)
+  const setAffidavit = (v: string) => {
+    setVariant('atlas-affidavit', v)
+    setVariant('affidavit-v2-moment', v)
+  }
+  /* Arriving with `?affidavit=1` opens the pre-course affidavit; say so on
+     the Design bar's Moment, or it would read Off over an open modal. Once
+     per arrival: closing clears the param and Moment in two updates, and a
+     second sync between them would open the modal again. */
+  const arrivedForAffidavit = searchParams.get('affidavit') === '1'
+  const affidavitArrivalSynced = useRef(false)
+  useEffect(() => {
+    if (!arrivedForAffidavit || affidavitArrivalSynced.current) return
+    affidavitArrivalSynced.current = true
+    if (affidavitPick === 'off') setVariant('affidavit-v2-moment', 'pre')
+  }, [arrivedForAffidavit, affidavitPick, setVariant])
   // The Top Nav's Home button starts the demo cards over (2026-10-12): Progress
   // back to Not Started (Readiness follows), and every card remounts.
   const [refreshKey, setRefreshKey] = useState(0)
