@@ -292,7 +292,17 @@ export function AtlasPaceRingCardFigma({
       ) : null}
       {progressOnly || expired ? null : (
       <section style={SECTION} aria-label="Study pace">
-        <p style={eyebrow}>Study pace</p>
+        <p style={eyebrow}>
+          Study pace
+          {/* The list row names the pace up here, one weight up (2026-11-04,
+              Eric's request) — it was the tag over the goal. */}
+          {listProgress && weeks != null ? (
+            <>
+              {' — '}
+              <span style={{ fontWeight: 600 }}>{paceStyleName ?? PACE_NAME}</span>
+            </>
+          ) : null}
+        </p>
         {/* ⚠ CENTRED, LIKE THE REST OF THE COLUMN'S CONTENT (2026-10-19,
             Jillienne: "have these be centered aligned to match the whole
             container of content"). Course progress centres its dial and
@@ -319,6 +329,30 @@ export function AtlasPaceRingCardFigma({
               <span style={GOAL_FALLBACK}>{noPaceCopy.title}</span>
               <span style={GOAL_NOTE}>{noPaceCopy.note}</span>
             </span>
+          ) : listProgress ? (
+            /* THE LIST ROW (2026-11-04, Eric's request): the pace name moved
+               up beside the eyebrow, the hours on the goal's own line, and
+               the customise link alone under it. */
+            <span style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
+              <span style={GOAL}>
+                {weeks} Week Goal
+                {hoursPerWeek != null ? (
+                  <span style={{ ...GOAL_NOTE, letterSpacing: 'normal', marginLeft: 6 }}>
+                    about {hoursPerWeek} hour{hoursPerWeek === 1 ? '' : 's'} / week
+                  </span>
+                ) : null}
+              </span>
+              <span style={GOAL_NOTE}>
+                Customize your study pace{' '}
+                {onCustomize ? (
+                  <button type="button" onClick={onCustomize} style={INLINE_LINK}>
+                    here
+                  </button>
+                ) : (
+                  'here'
+                )}
+              </span>
+            </span>
           ) : (
             <span style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
               <span style={GOAL_TAG}>{paceStyleName ?? PACE_NAME}</span>
@@ -326,21 +360,6 @@ export function AtlasPaceRingCardFigma({
               {hoursPerWeek != null ? (
                 <span style={GOAL_NOTE}>
                   about {hoursPerWeek} hour{hoursPerWeek === 1 ? '' : 's'} / week
-                  {/* The list row carries the customise link on this line, in
-                      place of the starting-point sentence below (2026-11-04,
-                      Eric's request). */}
-                  {listProgress ? (
-                    <>
-                      {' — customize your study pace '}
-                      {onCustomize ? (
-                        <button type="button" onClick={onCustomize} style={INLINE_LINK}>
-                          here
-                        </button>
-                      ) : (
-                        'here'
-                      )}
-                    </>
-                  ) : null}
                 </span>
               ) : null}
             </span>
@@ -540,7 +559,8 @@ function FigureRow({
 function MiniProgressDial({ percent, stroke }: { percent: number; stroke?: string }) {
   const pct = Math.max(0, Math.min(100, Math.round(percent)))
   const size = 34
-  const r = 15
+  /* 16 with a 2 arc: 34 across outside the arc, the gauge's own 34 (2026-11-04). */
+  const r = 16
   const c = 2 * Math.PI * r
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden style={{ display: 'block' }}>
@@ -551,7 +571,7 @@ function MiniProgressDial({ percent, stroke }: { percent: number; stroke?: strin
         r={r}
         fill="none"
         style={{ stroke: stroke ?? 'var(--color-compass-page-button)' }}
-        strokeWidth={3}
+        strokeWidth={2}
         strokeLinecap="round"
         strokeDasharray={`${(c * pct) / 100} ${c}`}
         transform={`rotate(-90 ${size / 2} ${size / 2})`}
