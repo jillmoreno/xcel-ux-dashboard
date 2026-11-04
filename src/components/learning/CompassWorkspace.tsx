@@ -1,5 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 
+import { ClipboardListCheckRegular, FileLinesRegular, NotebookRegular, Star, StarSolid } from '@/icons'
+
 import {
   COMPASS_WORKSPACE_SESSIONS,
   WORKSPACE_CREATED,
@@ -124,6 +126,10 @@ export function CompassWorkspace({
   const [assets, setAssets] = useState<WorkspaceAsset[]>([])
   const [toast, setToast] = useState('')
   const [nudgeGone, setNudgeGone] = useState(false)
+  /** Her session star — a real toggle on each card, seeded from the session's
+   *  own `pinned`. Per-session override, so starring one does not restate
+   *  the fixture. */
+  const [starred, setStarred] = useState<Record<string, boolean>>({})
 
   const all = useMemo(() => savedMarks(layout, story), [layout, story])
   const list = useMemo(() => scopedMarks(all, state), [all, state])
@@ -152,6 +158,16 @@ export function CompassWorkspace({
   const Dot = ({ type }: { type: WorkspaceMark['type'] }) => (
     <i className="cre-ws-ico" style={{ background: WORKSPACE_TYPE_COLOR[type] }} aria-hidden />
   )
+
+  /** What a session produced, as her glyph. Three artefacts, three icons from
+   *  the registry — she draws her own SVGs, this repo has a registry and the
+   *  convention is to use it. The NAME is the title and the screen-reader
+   *  text, so nothing is lost by the icon being approximate. */
+  const MadeIcon = ({ made }: { made: string }) => {
+    if (/flashcard/i.test(made)) return <NotebookRegular size={16} aria-hidden />
+    if (/practice|quiz/i.test(made)) return <ClipboardListCheckRegular size={16} aria-hidden />
+    return <FileLinesRegular size={16} aria-hidden />
+  }
 
   /** Her `filterBar()` — and it is two bars, not one. With marks pinned it
    *  becomes the action bar (what you can MAKE from them); with none it is
@@ -683,7 +699,7 @@ export function CompassWorkspace({
               {last.made && ` · made ${last.made.toLowerCase()}`}
             </div>
           </div>
-          <button className="cre-ws-act cre-ws-continue" onClick={() => patch({ session: last.id })}>
+          <button className="cre-ws-act cre-ws-continue" onClick={() => patch({ session: last.id, view: 'work' })}>
             Continue
           </button>
         </section>
@@ -716,18 +732,35 @@ export function CompassWorkspace({
                 gave the axis the wrong home. */}
             <div className={`cre-ws-sessgrid view-${sessionView}`}>
               {rest.map((sn) => (
-                <button
-                  key={sn.id}
-                  className="cre-ws-sesscard"
-                  onClick={() => patch({ session: sn.id })}
-                >
-                  <span className="cre-ws-kicker">{sn.ch}</span>
-                  <b>{sn.title}</b>
-                  <span className="when">
-                    {sn.when} · {sn.sel.length} {sn.sel.length === 1 ? 'mark' : 'marks'}
-                  </span>
-                  {sn.made && <span className="cre-ws-made">{sn.made}</span>}
-                </button>
+                <div className="cre-ws-sesscard" key={sn.id}>
+                  <button className="cre-ws-sessopen" onClick={() => patch({ session: sn.id, view: 'work' })}>
+                    <span className="cre-ws-kicker">{sn.ch}</span>
+                    <b>{sn.title}</b>
+                    <span className="when">
+                      {sn.when} · {sn.sel.length} {sn.sel.length === 1 ? 'mark' : 'marks'}
+                    </span>
+                    {sn.made && (
+                      /* ⚠ AN ICON, NOT A TAG. Hers draws what the session made
+                         as a glyph with the name in `title` and a screen-reader
+                         span — the card is about the conversation, and what it
+                         produced is a footnote you can see at a glance. The
+                         first port used a text pill, which gave it the weight
+                         of a heading. */
+                      <span className="cre-ws-made" title={sn.made}>
+                        <MadeIcon made={sn.made} />
+                        <span className="cre-ws-sr">{sn.made}</span>
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    className={`cre-ws-star${starred[sn.id] ?? sn.pinned ? ' on' : ''}`}
+                    aria-pressed={starred[sn.id] ?? sn.pinned}
+                    aria-label={`${starred[sn.id] ?? sn.pinned ? 'Unstar' : 'Star'} ${sn.title}`}
+                    onClick={() => setStarred((st) => ({ ...st, [sn.id]: !(st[sn.id] ?? sn.pinned) }))}
+                  >
+                    {(starred[sn.id] ?? sn.pinned) ? <StarSolid size={15} /> : <Star size={15} />}
+                  </button>
+                </div>
               ))}
             </div>
           </div>
@@ -738,7 +771,10 @@ export function CompassWorkspace({
 
   /* ── the six layouts ───────────────────────────────────────────────────── */
 
+  const onHome = state.view === 'home' && !markById(state.focus)
   const shellClass = (() => {
+    // Her home is one column whatever the layout's working shape is.
+    if (onHome && layout === 'F') return 'cre-ws-shell f is-home'
     if (layout === 'F') return 'cre-ws-shell f'
     if (layout === 'E') return 'cre-ws-shell note'
     if (layout === 'A') return 'cre-ws-shell three'
@@ -992,14 +1028,17 @@ export function CompassWorkspace({
        left, coach in the middle, make on the right, and the home views in
        place of the centre until a mark is chosen. */
     if (state.view === 'home' && !focused) {
+      /* ⚠ THE HOME HIDES BOTH SIDE PANES, and that is hers — measured on her
+         build, where `f-cl` and `f-cr` are `display:none` on the home and the
+         shell collapses to one column. It is a real decision, not a layout
+         accident: arriving at the workspace you are offered the thread you
+         left and the sessions you kept, not a filter rail and a Studio you
+         have not asked for yet. Both come back the moment a mark is open.
+         The first port drew all three at once. */
       return (
-        <>
-          {!state.colL && <CaptureRail />}
-          <div className="cre-ws-col cre-wsf-cm">
-            <HomeView />
-          </div>
-          {!state.colR && <StudioRail />}
-        </>
+        <div className="cre-ws-col cre-wsf-cm cre-ws-homecol">
+          <HomeView />
+        </div>
       )
     }
     return (

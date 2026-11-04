@@ -733,3 +733,53 @@
   .cre-ws .cre-ws-hero { padding: 20px 22px; gap: 16px; }
   .cre-ws .cre-ws-hero h2.big { font-size: 22px; line-height: 28px; }
 }
+
+/* ⚠ HER HOME IS ONE COLUMN. Measured on her build: `f-cl` and `f-cr` are
+   display:none on the home view and the shell collapses. Arriving at the
+   workspace you get the thread you left and the sessions you kept — the
+   marks rail and the Studio appear once a mark is open. */
+.cre-ws .cre-ws-shell.f.is-home { grid-template-columns: minmax(0, 1fr); }
+.cre-ws .cre-ws-homecol { max-width: 760px; }
+
+/* Her session card: an open button plus a star, side by side. */
+.cre-ws .cre-ws-sesscard { position: relative; display: flex; align-items: flex-start; padding: 0; border: 0; background: none; }
+.cre-ws .cre-ws-sessopen {
+  display: block;
+  flex: 1;
+  text-align: left;
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 12px;
+  background: var(--cre-ws-surface);
+  padding: 14px 40px 14px 16px;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-ws-sessopen b {
+  display: block;
+  font-family: var(--font-heading-serif);
+  font-size: 17px;
+  line-height: 23px;
+  color: var(--cre-ws-ink);
+  margin: 6px 0 4px;
+}
+.cre-ws .cre-ws-sessopen .when { display: block; font-size: 12px; color: var(--cre-ws-faint); }
+.cre-ws .cre-ws-made {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 12px;
+  color: var(--cre-ws-faint);
+  border: 0;
+  padding: 0;
+}
+.cre-ws .cre-ws-star {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: 0;
+  background: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--cre-ws-hairline);
+  line-height: 0;
+}
+.cre-ws .cre-ws-star.on { color: var(--cre-ws-steel); }

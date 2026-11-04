@@ -78,8 +78,14 @@ describe('Anjani’s Compass Workspace', () => {
        no Rubi strip, and the earlier sessions as a list. Opening her branch
        build showed what she actually renders. These assertions are the parts
        that were missing, so a third pass cannot quietly lose them again. */
+    const user = userEvent.setup()
     render(<CompassWorkspace />)
-    // The Studio, not "Make something".
+    /* ⚠ THE STUDIO IS NOT ON THE HOME. Hers hides both side panes there — see
+       the note at the home branch — so this opens a mark first. A test that
+       expected the Studio on arrival would be pinning the first port's
+       mistake, not her design. */
+    expect(screen.queryByRole('region', { name: 'Studio' })).toBeNull()
+    return user.click(screen.getByRole('button', { name: 'Continue' })).then(() => {
     expect(screen.getByRole('region', { name: 'Studio' })).toBeTruthy()
     expect(screen.getByText('Exam in 33 days')).toBeTruthy()
     expect(screen.getByText('Make from all marks')).toBeTruthy()
@@ -87,15 +93,24 @@ describe('Anjani’s Compass Workspace', () => {
     // Six make actions, the last two promises rather than buttons.
     expect(screen.getAllByText('Coming soon')).toHaveLength(2)
     expect(screen.getByRole('button', { name: /Podcast/ }).hasAttribute('disabled')).toBe(true)
-    // Her Rubi strip, and it can be declined.
+    })
+  })
+
+  it('her Rubi strip and her session cards are on the home', () => {
+    render(<CompassWorkspace />)
     expect(screen.getByText('You have marked cash value three times.')).toBeTruthy()
-    // Sessions as cards, with what each one made.
     expect(screen.getByText('My sessions')).toBeTruthy()
-    /* "Practice quiz" is both a make action and the tag on the session that
-       produced one — so assert it on the CARD, not globally. */
-    const card = screen.getByRole('button', { name: /Term or permanent/ })
+    /* ⚠ TWO BUTTONS PER CARD — hers is an open button plus a separate star,
+       and the star is a real toggle (`aria-pressed`, "Unstar <title>"). The
+       open button's name begins with the chapter, which is how they are told
+       apart here. ⚠ The computed name concatenates the card's spans with NO
+       separator, which is why these patterns have no space in them. */
+    const card = screen.getByRole('button', { name: /^Life insurance policy typesTerm or permanent/ })
+    // What the session made is an ICON with its name read aloud, not a tag.
     expect(within(card).getByText('Practice quiz')).toBeTruthy()
     expect(within(card).getByText(/Yesterday · 7:15 pm · 2 marks/)).toBeTruthy()
+    const star = screen.getByRole('button', { name: 'Star Term or permanent — the fork' })
+    expect(star.getAttribute('aria-pressed')).toBe('false')
   })
 
   it('renders every layout against every axis — no switch opens a blank screen', () => {
@@ -203,9 +218,10 @@ describe('Anjani’s Compass Workspace', () => {
     expect(screen.getByRole('heading', { name: hero.title })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Continue' })).toBeTruthy()
     expect(screen.queryByRole('button', { name: new RegExp(hero.title) })).toBeNull()
-    // The others are cards, each saying what it made.
+    // The others are cards, each saying what it made — the open button, told
+    // apart from its star by beginning with the chapter.
     for (const sn of rest) {
-      const card = screen.getByRole('button', { name: new RegExp(sn.title) })
+      const card = screen.getByRole('button', { name: new RegExp(`^${sn.ch}${sn.title}`) })
       expect(within(card).getByText(sn.made)).toBeTruthy()
     }
   })

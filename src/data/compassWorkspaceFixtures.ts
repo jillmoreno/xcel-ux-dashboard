@@ -174,9 +174,11 @@ export type WorkspaceSession = {
   /** The mark ids the conversation was started from. */
   sel: string[]
   msgs: WorkspaceThreadTurn[]
-  /** What came OUT of the session, as her card tags it — "Practice quiz",
-   *  "Review guide". The hero says it in lower case ("made flashcards"), the
-   *  session cards as a tag. '' where the session produced nothing. */
+  /** What came OUT of the session — "Flashcards", "Practice quiz",
+   *  "Review guide". The hero says it in lower case ("made flashcards"); the
+   *  session cards draw it as an ICON with the name read aloud, never as
+   *  visible text (her `h-madeic`, `title` + `.sr`). '' where the session
+   *  produced nothing. */
   made: string
 }
 
