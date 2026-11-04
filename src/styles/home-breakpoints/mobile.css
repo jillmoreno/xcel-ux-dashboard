@@ -391,3 +391,54 @@
 [data-home-bp='mobile'] section[aria-label='Course progress'] > div[aria-label^='Course progress'] > div > span:last-child {
   padding-left: 0.18em;
 }
+
+/* MY COURSES ON A PHONE (2026-11-04, Eric's request): Home's margins — 16 at
+   the sides — and the cards in one column, each laid on its side: a small
+   image on the left, the title, dates and button to its right. */
+[data-home-bp='mobile'] header:has([data-cta-id='nav.back-home']) {
+  padding: 16px 16px 0 !important;
+  max-width: none !important;
+}
+[data-home-bp='mobile'] section:has(div[style*='repeat(auto-fill, 255px)']) {
+  padding: 0 16px 40px !important;
+}
+/* The desktop grid's 250 column held Quick Links, which the phone puts in
+   the three-bar menu — so one column, and no room kept for it. */
+[data-home-bp='mobile'] div[style*='grid-template-columns: 250px'] {
+  display: block !important;
+  margin-top: 16px !important;
+}
+[data-home-bp='mobile'] div[style*='grid-template-columns: 250px'] > :has(nav[aria-label='Quick links']) {
+  display: none !important;
+}
+[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article {
+  grid-row: auto !important;
+  grid-template-rows: none !important;
+  grid-template-columns: 96px minmax(0, 1fr) !important;
+  column-gap: 16px !important;
+  row-gap: 8px !important;
+  padding: 16px !important;
+  align-items: start !important;
+}
+[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > :first-child {
+  grid-column: 1 !important;
+  grid-row: 1 / span 3 !important;
+  align-self: stretch !important;
+}
+[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > :first-child img {
+  height: 100% !important;
+  min-height: 96px !important;
+}
+[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > :not(:first-child) {
+  grid-column: 2 !important;
+}
+/* The title sits at the top of its column, its rule 8 under it. */
+[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > h3 {
+  padding: 0 0 8px !important;
+}
+[data-home-bp='mobile'] div[style*='repeat(auto-fill, 255px)'] > article > div:nth-child(3) {
+  padding-bottom: 4px !important;
+}
