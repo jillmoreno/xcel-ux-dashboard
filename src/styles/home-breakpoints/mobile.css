@@ -137,7 +137,7 @@
   align-items: flex-start !important;
 }
 /* …centred over the dial (2026-11-04, Eric's request; it sat left). */
-[data-home-bp='mobile'] section[aria-label='Course progress'] > p:first-child {
+[data-home-bp='mobile'] section[aria-label='Course progress']:not(.cre-atlas-pace-list-copy, .cre-atlas-pace-list-copy *) > p:first-child {
   align-self: center !important;
   width: min-content !important;
   text-align: center !important;
@@ -158,13 +158,13 @@
 /* …AND BESIDE STUDY PACE (2026-11-04, Eric's request): the dial a left
    column, the panel's rule turned upright to its right, and Study Pace with
    Estimated Completion stacked in the right column. */
-[data-home-bp='mobile'] div:has(> section[aria-label='Course progress']) {
+[data-home-bp='mobile'] div:not(.cre-atlas-pace-list-copy, .cre-atlas-pace-list-copy *):has(> section[aria-label='Course progress']) {
   display: grid !important;
   grid-template-columns: auto 1px minmax(0, 1fr) !important;
   column-gap: 16px !important;
   align-items: start !important;
 }
-[data-home-bp='mobile'] div:has(> section[aria-label='Course progress']) > span {
+[data-home-bp='mobile'] div:not(.cre-atlas-pace-list-copy, .cre-atlas-pace-list-copy *):has(> section[aria-label='Course progress']) > span {
   width: 1px !important;
   height: auto !important;
   align-self: stretch !important;
@@ -173,7 +173,7 @@
 
 /* The progress panel 24 in at the sides, the course card's own inset —
    from 32 (2026-11-04, Eric's request). */
-[data-home-bp='mobile'] div:has(> div > section[aria-label='Course progress']) {
+[data-home-bp='mobile'] div:not(.cre-atlas-pace-list-copy, .cre-atlas-pace-list-copy *):has(> div > section[aria-label='Course progress']) {
   /* 16 on the left, 8 less than the right's 24 (same day): the dial and its
      eyebrow nearer the edge. */
   padding-left: 16px !important;
@@ -185,7 +185,7 @@
 }
 
 /* 14 from the dial to the upright rule, 2 less than the column gap (same day). */
-[data-home-bp='mobile'] div:has(> section[aria-label='Course progress']) > section[aria-label='Course progress'] {
+[data-home-bp='mobile'] div:not(.cre-atlas-pace-list-copy, .cre-atlas-pace-list-copy *):has(> section[aria-label='Course progress']) > section[aria-label='Course progress'] {
   margin-right: -2px !important;
 }
 /* Estimated Completion's rule in the right column: 16 above and below, 8
@@ -196,6 +196,15 @@
 }
 /* 20 from the upright rule to the right column, 4 more than the column gap
    (same day). */
-[data-home-bp='mobile'] div:has(> section[aria-label='Course progress']) > section[aria-label='Study pace'] {
+[data-home-bp='mobile'] div:not(.cre-atlas-pace-list-copy, .cre-atlas-pace-list-copy *):has(> section[aria-label='Course progress']) > section[aria-label='Study pace'] {
   margin-left: 4px !important;
+}
+
+/* THE LIST COPY of the progress panel (2026-11-04, Eric's request) — shown
+   here only, under the two-column panel, so the two can be compared; every
+   rule above that builds the columns skips it (`:not(.cre-atlas-pace-list-copy …)`).
+   24 all round, the course card's inset. */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy {
+  display: flex !important;
+  padding: 0 24px 24px !important;
 }

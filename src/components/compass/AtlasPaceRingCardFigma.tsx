@@ -59,8 +59,17 @@ export function AtlasPaceRingCardFigma({
   expired = false,
   examWhenExpired = false,
   onCustomize,
+  listProgress = false,
 }: {
   percent: number
+  /**
+   * COURSE PROGRESS AS A LIST ROW (2026-11-04, Eric's request, for the phone):
+   * the section drawn the way Study pace and Estimated completion are — the
+   * eyebrow left, then a dial at the icons' 34 with nothing inside it, a
+   * hairline, and the figure at the goal's size over "Complete" in the pace
+   * name's style. Absent is the big centred dial, unchanged.
+   */
+  listProgress?: boolean
   /**
    * Draw the Course progress section and stop.
    *
@@ -225,7 +234,7 @@ export function AtlasPaceRingCardFigma({
           learner HAS GOT TO is the first thing they want; the plan for the
           rest follows from it. It sat under Study pace only because the dial
           used to live inside that card. */}
-      <section style={{ ...SECTION, alignItems: 'center' }} aria-label="Course progress">
+      <section style={listProgress ? SECTION : { ...SECTION, alignItems: 'center' }} aria-label="Course progress">
         {/* ⚠ "PROGRESS PAUSED" ONCE ACCESS HAS ENDED (2026-10-20,
             Jillienne). "Course progress" is a neutral label for a live
             figure; paused says the number is real and stopped, which is
@@ -234,7 +243,7 @@ export function AtlasPaceRingCardFigma({
             and a landmark that renames itself by its contents' state makes
             the page change shape under a screen-reader user. */}
         {/* Centred over the dial (2026-10-30, Eric) — the other eyebrows stay left. */}
-        <p style={{ ...eyebrow, textAlign: 'center' }}>{expired ? 'Progress paused' : 'Course progress'}</p>
+        <p style={{ ...eyebrow, textAlign: listProgress ? 'left' : 'center' }}>{expired ? 'Progress paused' : 'Course progress'}</p>
         {/* ⚠ ABOVE THE DIAL, NOT UNDER IT (2026-10-20, Jillienne: "when
             expired, move this above the graph and remove the divider
             line"). Under the dial it was the last thing on a truncated
@@ -252,7 +261,20 @@ export function AtlasPaceRingCardFigma({
             off.
           </p>
         ) : null}
-        <ProgressDial percent={percent} stroke={expired ? 'var(--color-neutral-800)' : undefined} />
+        {listProgress ? (
+          <div style={ICON_ROW}>
+            <span aria-hidden style={{ ...ICON, alignSelf: 'flex-start', marginTop: 3 }}>
+              <MiniProgressDial percent={percent} stroke={expired ? 'var(--color-neutral-800)' : undefined} />
+            </span>
+            <span aria-hidden style={{ ...ICON_RULE, marginTop: 3, marginBottom: 3 }} />
+            <span style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
+              <span style={GOAL}>{Math.max(0, Math.min(100, Math.round(percent)))}%</span>
+              <span style={GOAL_TAG}>Complete</span>
+            </span>
+          </div>
+        ) : (
+          <ProgressDial percent={percent} stroke={expired ? 'var(--color-neutral-800)' : undefined} />
+        )}
       </section>
       {/* ⚠ A RULE UNDER COURSE PROGRESS (2026-10-16). The two sections sat on
           a 24px gap alone, which reads as spacing rather than a boundary —
@@ -495,6 +517,31 @@ function FigureRow({
         {note ? <p style={EXPECTED_NOTE}>{note}</p> : null}
       </div>
     </div>
+  )
+}
+
+/** The list row's dial — the icons' 34, the ring's track and arc in
+ *  proportion, and no figure inside: the figure is the row's text beside it. */
+function MiniProgressDial({ percent, stroke }: { percent: number; stroke?: string }) {
+  const pct = Math.max(0, Math.min(100, Math.round(percent)))
+  const size = 34
+  const r = 15
+  const c = 2 * Math.PI * r
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden style={{ display: 'block' }}>
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" style={{ stroke: 'var(--color-atlas-nav-rule)' }} strokeWidth={1.5} />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        style={{ stroke: stroke ?? 'var(--color-compass-page-button)' }}
+        strokeWidth={3}
+        strokeLinecap="round"
+        strokeDasharray={`${(c * pct) / 100} ${c}`}
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+    </svg>
   )
 }
 
