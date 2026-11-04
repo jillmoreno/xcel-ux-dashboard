@@ -47,10 +47,15 @@ export type AtlasCourseCardData = {
 export function AtlasCourseCard({
   data,
   onAction,
+  onOpen,
   activeFill,
 }: {
   data: AtlasCourseCardData
   onAction?: () => void
+  /** The card itself clicked, anywhere but its button — Home in this card's
+   *  course and progress (2026-11-04, Eric's request). The button keeps its
+   *  own action. */
+  onOpen?: () => void
   /** The fill of an ACTIVE (not completed) card, in place of the course-card
    *  surface — Eric/Atlas White's Primary 100 (2026-10-14). Such a card drops
    *  its outline too (transparent, so it keeps its size). */
@@ -61,13 +66,27 @@ export function AtlasCourseCard({
     // back from the courses still in play.
     <article
       aria-label={data.title}
-      style={
-        data.completed
+      onClick={onOpen}
+      onKeyDown={
+        onOpen
+          ? (e) => {
+              if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault()
+                onOpen()
+              }
+            }
+          : undefined
+      }
+      tabIndex={onOpen ? 0 : undefined}
+      data-cta-id={onOpen ? 'my-courses.card-open-home' : undefined}
+      style={{
+        ...(data.completed
           ? { ...CARD, background: 'transparent' }
           : activeFill
             ? { ...CARD, background: activeFill, borderColor: 'transparent' }
-            : CARD
-      }
+            : CARD),
+        ...(onOpen ? { cursor: 'pointer' } : null),
+      }}
     >
       {/* The badge rides the image's top-left corner, 6px up and left of its
           frame — into the card's padding, which is left as it is (2026-10-06,
@@ -98,7 +117,12 @@ export function AtlasCourseCard({
         </span>
       </div>
       {data.completed ? (
-        <button type="button" disabled style={{ ...BUTTON, ...BUTTON_DONE }}>
+        <button
+          type="button"
+          disabled
+          // A disabled button swallows its click, so let it fall to the card.
+          style={{ ...BUTTON, ...BUTTON_DONE, ...(onOpen ? { pointerEvents: 'none' as const } : null) }}
+        >
           Completed
         </button>
       ) : (
@@ -109,9 +133,13 @@ export function AtlasCourseCard({
               ? 'cre-compass-secondary cre-atlas-card-secondary'
               : 'cre-compass-primary cre-compass-btn-primary'
           }
-          onClick={onAction}
+          onClick={(e) => {
+            // The button's own action, not the card's.
+            e.stopPropagation()
+            onAction?.()
+          }}
           disabled={!onAction}
-          style={BUTTON}
+          style={!onAction && onOpen ? { ...BUTTON, pointerEvents: 'none' } : BUTTON}
         >
           {data.actionLabel}
         </button>
