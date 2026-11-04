@@ -35,6 +35,10 @@
   /* 40 less on top (2026-11-04, Eric's request): 48 above the eyebrow → 8,
      then 8 back the same day → 16, then 4 more → 20. */
   padding-top: 20px !important;
+  /* 16 to the Course Progress card under it, the page's side margin
+     (2026-11-04, Eric's request): the section's 24 gap less 8 — it was 8 of
+     margin plus that 24. */
+  margin-bottom: -8px !important;
 }
 /* The "Current course" eyebrow 4 closer to the course name — 4, from the
    column's 8 (2026-11-04, Eric's request). */
