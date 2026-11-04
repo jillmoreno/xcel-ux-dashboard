@@ -355,7 +355,9 @@ export function AtlasHomeJillMain({
      cycled by a click on the panel's bottom-left corner: the two columns, the
      list (`listProgress`), and one row at a time under tabs. A demo toggle in
      page state, like the course head's cover click. */
-  const [phoneLayout, setPhoneLayout] = useState<'columns' | 'list' | 'tabs'>('columns')
+  // The tabs are the phone's default since 2026-11-04 (Eric's request); the
+  // corner still cycles on to the two columns and the list.
+  const [phoneLayout, setPhoneLayout] = useState<'columns' | 'list' | 'tabs'>('tabs')
   const [phoneTab, setPhoneTab] = useState<PacePhoneTab>('progress')
   /* Whether the column carries Exam readiness at all — a design-bar on/off,
      see `atlas-readiness-section`. */
