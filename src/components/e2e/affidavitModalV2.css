@@ -73,10 +73,25 @@
 .aff2-terms h3.is-u { text-decoration: underline; }
 .aff2-terms h4 { margin: 12px 0 6px; font-size: 14.5px; font-weight: 700; }
 .aff2-terms p { margin: 0 0 13px; font-size: 15px; line-height: 1.42; }
+/* ⚠ THE MARKERS ARE SET HERE, NOT INHERITED (2026-11-04). Tailwind's reset
+   gives every `ul` / `ol` `list-style: none`, so the explorer's lists — which
+   rely on the browser's default bullets and numbers — arrived as indented
+   lines with nothing in front of them (Kentucky's "I received a copy of the
+   catalog… / I understand… / My signature…", its numbered Terms of
+   Agreement). `is-plain` is the explorer's own unbulleted list (Ohio's exam
+   details) and stays bare. The opened document below gets the same rules. */
 .aff2-terms ul,
-.aff2-terms ol { margin: 0 0 14px; padding-left: 22px; font-size: 15px; line-height: 1.42; }
-.aff2-terms ul ul { list-style: circle; margin: 4px 0 0; }
-.aff2-terms ul.is-plain { list-style: none; padding-left: 18px; }
+.aff2-terms ol,
+.aff2-docbody ul,
+.aff2-docbody ol { margin: 0 0 14px; padding-left: 22px; font-size: 15px; line-height: 1.42; }
+.aff2-terms ul,
+.aff2-docbody ul { list-style: disc; }
+.aff2-terms ol,
+.aff2-docbody ol { list-style: decimal; }
+.aff2-terms ul ul,
+.aff2-docbody ul ul { list-style: circle; margin: 4px 0 0; }
+.aff2-terms ul.is-plain,
+.aff2-docbody ul.is-plain { list-style: none; padding-left: 18px; }
 .aff2-terms a { color: var(--color-aff-ink); }
 .aff2-terms .aff2-closing { font-style: italic; font-weight: 700; text-align: center; }
 

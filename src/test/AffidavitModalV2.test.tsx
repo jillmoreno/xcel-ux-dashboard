@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AffidavitModal } from '@/components/e2e/AffidavitModal'
@@ -199,6 +201,19 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     const confirm = screen.getByLabelText(/I confirm that the above information is accurate/) as HTMLInputElement
     expect(confirm.closest('.aff2-flag')).toBeNull()
     expect(confirm.checked).toBe(false) // never pre-ticked: the learner vouches for it
+  })
+
+  it('puts back the bullets and numbers Tailwind’s reset takes off every list', () => {
+    // jsdom applies no stylesheet, so the rule itself is what is pinned.
+    const css = readFileSync(resolve(__dirname, '../components/e2e/affidavitModalV2.css'), 'utf8')
+    expect(css).toMatch(/\.aff2-terms ul,\s*\.aff2-docbody ul \{ list-style: disc; \}/)
+    expect(css).toMatch(/\.aff2-terms ol,\s*\.aff2-docbody ol \{ list-style: decimal; \}/)
+    // Kentucky's "I received… / I understand… / My signature…" are a bulleted list, not a plain one.
+    const statements = FORMS.KY_PRE!.pages
+      .flatMap((p) => p.blocks ?? [])
+      .find((b) => b.ulh?.some((t) => t.startsWith('I received a copy of the catalog')))
+    expect(statements?.ulh).toHaveLength(3)
+    expect(statements?.plain).toBeUndefined()
   })
 
   it('resolves every ready entry in the explorer to a form', () => {
