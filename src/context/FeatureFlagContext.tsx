@@ -1595,8 +1595,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
      the two flags, not to re-hide them. */
   {
     key: 'compass-workspace',
-    /* THE SURFACE GATE. Off on `main` until this is released; ON on the
-       branch, which is what makes the branch build show the work. */
+    /* THE SURFACE GATE, and it is ON. The designer-workflow rule is that a new
+       surface is flagged with its default ON on the branch, so the branch and
+       stage builds show the work and the release is where it is decided.
+       Turning it off is how the Workspace is held back without unwiring it. */
     surface: 'design',
     owner: 'anjani',
     versions: ['eric-atlas-e2e'],
@@ -1604,7 +1606,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Workspace',
     description:
-      'Anjani\u2019s private study surface \u2014 everything a learner marked in their course, and what they can make from it. Ported from her v4 prototype; off until the Workspace is released.',
+      'Anjani\u2019s private study surface \u2014 everything a learner marked in their course, and what they can make from it. Ported from her v4 prototype (2026-11-04). ON, so the Compass rail carries a Workspace row and the five controls below it have something to drive.',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
