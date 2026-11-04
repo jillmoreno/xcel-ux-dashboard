@@ -205,6 +205,10 @@
    rule above that builds the columns skips it (`:not(.cre-atlas-pace-list-copy …)`).
    24 all round, the course card's inset. */
 [data-home-bp='mobile'] .cre-atlas-pace-list-copy {
-  display: flex !important;
   padding: 0 24px 24px !important;
+}
+/* Its rule under Course progress: 16 above and below, the same as the rule
+   over Estimated completion (same day) — the panel's 24 gap less 8 each way. */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy section[aria-label='Course progress'] + span {
+  margin: -8px 0 !important;
 }
