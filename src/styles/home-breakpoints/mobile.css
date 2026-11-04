@@ -270,3 +270,25 @@
 [data-home-bp='mobile'] nav[aria-label='Quick links'] {
   display: none !important;
 }
+
+/* THE STUDY JOURNEY UNDER THE CARDS, ON THE COURSE CARD'S TEXT LINE
+   (2026-11-04, Eric's request): its column the page's full width, and 24 in
+   at each side — the course card's own inset — so its steps start where
+   "Current course" does. */
+[data-home-bp='mobile'] div:has(> section[aria-label='Study journey']) {
+  width: 100% !important;
+  max-width: none !important;
+  align-self: stretch !important;
+}
+/* Every step's section in that column (Study journey, Pass State Exam, Get
+   Licensed…), and the rules between them, take the same inset. */
+[data-home-bp='mobile'] div:has(> section[aria-label='Study journey']) > section {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  padding-left: 24px !important;
+  padding-right: 24px !important;
+}
+[data-home-bp='mobile'] div:has(> section[aria-label='Study journey']) > span {
+  margin-left: 24px !important;
+  margin-right: 24px !important;
+}
