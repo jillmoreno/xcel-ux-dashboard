@@ -340,17 +340,19 @@ export function AtlasPaceRingCardFigma({
             </span>
           ) : listPace ? (
             /* THE LIST ROW (2026-11-04, Eric's request): the pace name moved
-               up beside the eyebrow, the hours on the goal's own line, and
-               the customise link alone under it. */
-            <span style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
+               up beside the eyebrow, the goal and its hours under it as on
+               the two-column card, then the customise link. */
+            <span style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
               <span style={GOAL}>
                 {weeks} Week Goal
-                {hoursPerWeek != null ? (
-                  <span style={{ ...GOAL_NOTE, letterSpacing: 'normal', marginLeft: 6 }}>
-                    about {hoursPerWeek} hour{hoursPerWeek === 1 ? '' : 's'} / week
-                  </span>
-                ) : null}
               </span>
+              {/* The hours under the goal, as on the two-column card (2026-11-04,
+                  Eric: moved back below, its own style). */}
+              {hoursPerWeek != null ? (
+                <span style={GOAL_NOTE}>
+                  about {hoursPerWeek} hour{hoursPerWeek === 1 ? '' : 's'} / week
+                </span>
+              ) : null}
               {/* Only where the starting-point sentence would be — at 0%.
                   Past it the standing message below reports the pace, as on
                   every other progress level (same day). */}
