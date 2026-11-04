@@ -3189,7 +3189,10 @@ function PacePhoneTabs({ active, onSelect }: { active: PacePhoneTab; onSelect: (
               flex: '1 1 auto',
               boxSizing: 'border-box',
               height: on ? PACE_TAB_H + 1 : PACE_TAB_H,
-              padding: on ? `0 ${PACE_TAB_PAD_X}px 1px` : `0 ${PACE_TAB_PAD_X}px`,
+              /* The title 1 lower, so 1 less under it (same day): the
+                 centred line's box starts 1 further down on both arms — the
+                 active tab's extra pixel is the one that covers the join. */
+              padding: on ? `1px ${PACE_TAB_PAD_X}px 0` : `2px ${PACE_TAB_PAD_X}px 0`,
               textAlign: 'center',
               // 11, with the sides cut to fit all three on one line (same day).
               fontSize: 11,
