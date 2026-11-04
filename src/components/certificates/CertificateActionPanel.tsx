@@ -210,7 +210,7 @@ export function CertificateActionPanel({
                   className={inline ? PRIMARY_CLASS : undefined}
                   style={{ ...(inline ? rowTileStyle : actionTileStyle), textDecoration: 'none' }}
                 >
-                  <FileCertificateRegular size={inline ? 20 : 26} aria-hidden style={inline ? INLINE_ICON : { color: 'var(--color-tertiary-600)' }} />
+                  <FileCertificateRegular size={inline ? 15 : 26} aria-hidden style={inline ? INLINE_ICON : { color: 'var(--color-tertiary-600)' }} />
                   <span>View Certificate</span>
                 </a>
               ) : null}
@@ -220,7 +220,7 @@ export function CertificateActionPanel({
                 className={inline ? PRIMARY_CLASS : undefined}
                 style={inline ? rowTileStyle : actionTileStyle}
               >
-                <PersonRunning size={inline ? 20 : 26} aria-hidden style={inline ? INLINE_ICON : { color: 'var(--color-tertiary-600)' }} />
+                <PersonRunning size={inline ? 15 : 26} aria-hidden style={inline ? INLINE_ICON : { color: 'var(--color-tertiary-600)' }} />
                 <span>{inProgress ? 'Continue Course' : 'Go to Course'}</span>
               </button>
             </div>
@@ -267,12 +267,16 @@ const inlineStyle: CSSProperties = { display: 'flex', flexDirection: 'column', g
 
 /* IN THE CARD THE ACTIONS ARE THE STANDARD PRIMARY BUTTON (2026-11-04,
    Eric's request) — the brand's filled button, white label, its icon kept at
-   20 (from the tiles' 26) on the left. Sized to their label, side by side;
+   15 (from the tiles' 26) on the left. Sized to their label, side by side;
    their sides 14, not 18, so the pair still shares one row at 402. */
 const PRIMARY_CLASS = 'cre-compass-primary cre-compass-btn-primary'
 const rowTileStyle: CSSProperties = {
   ...COMPASS_BUTTON,
-  padding: '11px 14px',
+  // 35 tall, My Courses' card buttons' height (same day, Eric's request);
+  // the icon down another quarter to 15.
+  height: 35,
+  minHeight: 0,
+  padding: '5px 14px',
 }
 const INLINE_ICON: CSSProperties = { flexShrink: 0, color: 'currentColor' }
 
