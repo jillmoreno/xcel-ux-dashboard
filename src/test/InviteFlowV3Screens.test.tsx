@@ -332,7 +332,7 @@ describe('Invite Flow V3 — the endings', () => {
   })
 
   it('sends a learner who already has Atlas straight to their course', () => {
-    renderAt(CONFIRMATION, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:has-atlas')
+    renderAt(CONFIRMATION, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:has-atlas-login')
     expect(screen.getByRole('heading', { name: 'Start learning' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Start Course' })).toBeInTheDocument()
     expect(screen.queryByLabelText(/Password/)).not.toBeInTheDocument()
@@ -340,7 +340,7 @@ describe('Invite Flow V3 — the endings', () => {
 
   it('opens "Taking you to your course" from Start Course and Confirm; a click outside closes it', async () => {
     for (const [ff, cta] of [
-      ['invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:has-atlas', 'Start Course'],
+      ['invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:has-atlas-login', 'Start Course'],
       [`${V3_B2B},invite-v3-flow-b2b:qr-net-new`, 'Confirm'],
     ] as const) {
       const { unmount } = renderAt(CONFIRMATION, ff)
@@ -368,7 +368,7 @@ describe('Invite Flow V3 — the endings', () => {
   })
 
   it('never shows V2’s "Confirm your email" ending on V3', () => {
-    for (const flow of ['qr-net-new', 'qr-ocd', 'qr-atlas-login', 'qr-atlas-auto']) {
+    for (const flow of ['qr-net-new', 'qr-ocd', 'qr-atlas-login']) {
       const { unmount } = renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:${flow}`)
       expect(screen.queryByText(/Confirm your email|Check your email/)).not.toBeInTheDocument()
       unmount()
@@ -405,30 +405,6 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
     }
   })
 
-  it('signs the automatic flows in straight after the email — no log-in, no code', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true })
-    try {
-      for (const ff of [
-        `${V3_B2B},invite-v3-flow-b2b:qr-atlas-auto`,
-        'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:has-atlas,partner-code-ask:modal&partner=no',
-      ]) {
-        const { unmount } = renderAt(CHECKOUT, ff)
-        await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
-        await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
-
-        expect(screen.getByRole('dialog', { name: 'Signing you in' })).toBeInTheDocument()
-        expect(screen.queryByRole('heading', { name: 'Log in to continue' })).not.toBeInTheDocument()
-        await act(() => vi.advanceTimersByTimeAsync(LOADING_HANDOFF_MS))
-        expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-        expect(screen.getByDisplayValue('Jordan')).toBeInTheDocument()
-        expect(screen.queryByText(/This is the address you verified/)).not.toBeInTheDocument()
-        unmount()
-      }
-    } finally {
-      vi.useRealTimers()
-    }
-  })
-
   it('holds on Signing you in after Log in on every log-in flow, then fills the checkout', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
@@ -454,8 +430,6 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
     const check = (id: string) => emailCheckV3(INVITE_FLOWS_V3.find((f) => f.id === id)!)
     expect(check('qr-atlas-login')).toEqual({ second: 'login', signsIn: true, accountKnown: true })
     expect(check('has-atlas-login')).toEqual({ second: 'login', signsIn: false, accountKnown: true })
-    expect(check('has-atlas')).toEqual({ second: 'none', signsIn: true, accountKnown: true })
-    expect(check('qr-atlas-auto')).toEqual({ second: 'none', signsIn: true, accountKnown: true })
     expect(check('net-new')).toEqual({ second: 'code', signsIn: false, accountKnown: false })
   })
 })
@@ -660,8 +634,7 @@ describe('Invite Flow V3 — not signed in to XCEL (OCD)', () => {
   })
 })
 
-describe('Invite Flow V3 — the partner-code alternative', () => {
-  const ALT = 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:pc-after-add'
+describe('Invite Flow V3 — the packages page', () => {
 
   function walkFrom(ff: string) {
     const search = `?ff=${ff}&lstate=Arizona&loa=Health&pkg=premier`
@@ -682,25 +655,9 @@ describe('Invite Flow V3 — the partner-code alternative', () => {
     )
   }
 
-  it('opens on “Added to your cart”, asks at Go to Cart, then Checkout goes straight on', async () => {
-    walkFrom(ALT)
-    const added = screen.getByRole('dialog', { name: 'Added to your cart' })
-    expect(added).toHaveTextContent('Arizona Health Pre-licensing Premier')
-
-    await userEvent.click(within(added).getByRole('button', { name: 'Go to Cart' }))
-    expect(screen.getByRole('dialog')).toHaveTextContent('Do you have a Partner Code?')
-    expect(screen.getByTestId('where').textContent).toMatch(/^\/end-to-end-demo\/packages\?/)
-
-    await userEvent.click(screen.getByRole('button', { name: 'NO' }))
-    expect(screen.getByRole('heading', { name: 'Your cart' })).toBeInTheDocument()
-    expect(screen.getByTestId('where').textContent).toContain('partner=no')
-
-    /* Answered already, so Checkout does not ask a second time. */
-    await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
-    expect(screen.getByText('Checkout page')).toBeInTheDocument()
-  })
-
-  it('leaves the other B2C flows adding by hand', () => {
+  /* The Go to Cart alternative, which opened here on “Added to your cart”,
+     was archived on 2026-11-05 — every B2C flow adds by hand. */
+  it('never opens on “Added to your cart”', () => {
     walkFrom('invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:net-new')
     expect(screen.queryByRole('dialog', { name: 'Added to your cart' })).not.toBeInTheDocument()
   })
@@ -747,27 +704,6 @@ describe('Invite Flow V3 — picking another flow restarts the walk', () => {
     const where = screen.getByTestId('where').textContent!
     expect(where).toMatch(/^\/end-to-end-demo\/cart\?/)
     expect(where).toContain('pkg=premier')
-  })
-})
-
-describe('Invite Flow V3 — B2B → Invite → Checkout', () => {
-  const MIXED = 'invite-flow-version:v3,invite-v3-model:b2b-checkout,invite-v3-flow-b2b-checkout:invite-mixed-cart'
-
-  it('opens the checkout under “not supported”, then checks the invitation’s address', async () => {
-    renderAt(CHECKOUT, `${MIXED},invite-v3-email-account:no-atlas`)
-    const notice = screen.getByRole('dialog', { name: /1 item in your cart is not supported/ })
-    expect(notice).toHaveTextContent('New York Life and Health Flashcards')
-    /* Nothing else opens until the notice is answered. */
-    expect(screen.queryByRole('dialog', { name: 'Enter your one-time code' })).not.toBeInTheDocument()
-    await userEvent.click(within(notice).getByRole('button', { name: 'Proceed to checkout' }))
-    expect(screen.getByTestId('where').textContent).toContain('dropped=1')
-    expect(screen.getByRole('dialog', { name: 'Enter your one-time code' })).toHaveTextContent(E2E_LEARNER_EMAIL)
-  })
-
-  it('asks for a log-in after the notice when the address has Atlas', async () => {
-    renderAt(CHECKOUT, `${MIXED},invite-v3-email-account:atlas`)
-    await userEvent.click(screen.getByRole('button', { name: 'Proceed to checkout' }))
-    expect(screen.getByRole('dialog', { name: 'Log in to continue' })).toHaveTextContent(E2E_LEARNER_EMAIL)
   })
 })
 
@@ -844,28 +780,6 @@ describe('Invite Flow V3 — signed in to XCEL (OCD)', () => {
       </MemoryRouter>,
     )
   }
-
-  it('B2B → Invite → Checkout: the mixed cart’s Checkout opens the invitation email', async () => {
-    cartAt('invite-flow-version:v3,invite-v3-model:b2b-checkout')
-    expect(screen.getByText('New York Life and Health Flashcards')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Checkout' }))
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(screen.getByTestId('where').textContent).toMatch(/^\/end-to-end-demo\/email\?/)
-  })
-
-  it('B2B → Invite → Checkout: a click anywhere on the cart opens the invitation', async () => {
-    cartAt('invite-flow-version:v3,invite-v3-model:b2b-checkout')
-    await userEvent.click(screen.getByRole('heading', { name: 'Your cart' }))
-    expect(screen.getByTestId('where').textContent).toMatch(/^\/end-to-end-demo\/email\?/)
-  })
-
-  it('B2B → Invite → Checkout: Remove does not empty the cart — it opens the invitation too', async () => {
-    cartAt('invite-flow-version:v3,invite-v3-model:b2b-checkout')
-    await userEvent.click(screen.getByRole('button', { name: 'Remove' }))
-    const where = screen.getByTestId('where').textContent!
-    expect(where).toMatch(/^\/end-to-end-demo\/email\?/)
-    expect(where).toContain('pkg=premier')
-  })
 
   it('shows My Training, not Log In, while signed in', () => {
     cartAt(`${SIGNED_IN},invite-v3-cart:targeted`)

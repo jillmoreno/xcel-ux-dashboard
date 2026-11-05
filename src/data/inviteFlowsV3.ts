@@ -34,22 +34,18 @@ import { ALL_US_STATES } from './licensedStatesFixtures'
  * need no change yet. `screens` is the file's order, kept as the build list.
  */
 
-export type InviteModelId = 'b2b' | 'b2c' | 'b2b-checkout'
+export type InviteModelId = 'b2b' | 'b2c'
 
 export type InviteFlowV3Id =
   | 'direct-email'
   | 'qr-net-new'
   | 'qr-ocd'
   | 'qr-atlas-login'
-  | 'qr-atlas-auto'
   | 'net-new'
   | 'ocd-no-atlas'
   | 'has-atlas-login'
-  | 'has-atlas'
   | 'xcel-signed-in'
   | 'xcel-signed-out'
-  | 'pc-after-add'
-  | 'invite-mixed-cart'
 
 export type InviteFlowV3 = {
   id: InviteFlowV3Id
@@ -63,12 +59,12 @@ export type InviteFlowV3 = {
 export const INVITE_MODELS: { id: InviteModelId; label: string; description: string }[] = [
   { id: 'b2b', label: 'B2B invite', description: 'A partner’s QR code. Partner pricing; the learner proves their email by code.' },
   { id: 'b2c', label: 'B2C guest', description: 'Direct from the public site’s cart. No partner.' },
-  {
-    id: 'b2b-checkout',
-    label: 'B2B → Invite → Checkout',
-    description: 'A cart already holding a mixed order, then a partner’s invitation. Partner pricing; the unsupported item is dropped at checkout.',
-  },
 ]
+
+/* ⚠ THREE FLOWS AND A MODEL TYPE WERE TAKEN OUT ON 2026-11-05 — the two
+   Automatic Sign-in Post OTP flows, the Go to Cart alternative and
+   B2B → Invite → Checkout. `archivedInviteFlowsV3.ts` holds them verbatim
+   and every re-wire step. */
 
 const QR_START = ['qr', 'variation-4', 'variation-4-filled', 'pdp']
 const CART_START = ['cart', 'pc-modal']
@@ -119,18 +115,6 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
     screens: [...QR_START, 'verify-login-1', 'verify-login-2', 'login-1', 'login-2', 'signing-in', ...CHECKOUT, 'placing', 'ready-login'],
   },
   {
-    id: 'qr-atlas-auto',
-    model: 'b2b',
-    label: 'QR: Has Atlas: Automatic Sign-in Post OTP',
-    description: 'Already on Atlas. After the email, signed in automatically — the checkout arrives filled.',
-    base: 'qr-social',
-    /* ⚠ NO SECOND STEP — 2026-11-03, Afsana: after the email and Continue,
-       "the signing you in modal needs to show, and then secure checkout page
-       with their info. pre-populated". It logged in first from 2026-10-30;
-       the file had a code (`code-1`/`code-2`). */
-    screens: [...QR_START, ...VERIFY, 'signing-in', ...CHECKOUT, 'placing', 'ready'],
-  },
-  {
     id: 'net-new',
     model: 'b2c',
     label: 'Net New: No OCD, No Atlas',
@@ -153,15 +137,6 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
     description: 'Already on Atlas. Email check opens a log-in widget before checkout.',
     base: 'b2c-guest',
     screens: [...CART_START, ...VERIFY, 'login-1', 'login-2', ...CHECKOUT, 'placing', 'ready'],
-  },
-  {
-    id: 'has-atlas',
-    model: 'b2c',
-    label: 'Has Atlas: Automatic Sign-in Post OTP',
-    description: 'Already on Atlas. After the email, signed in automatically — the checkout arrives filled.',
-    base: 'b2c-guest',
-    /* Straight to Signing you in after the email — see `qr-atlas-auto`. */
-    screens: [...CART_START, ...VERIFY, 'signing-in', ...CHECKOUT, 'placing-modal', 'ready'],
   },
   {
     /* SIGNED IN TO AN EXISTING XCEL (OCD) ACCOUNT — 2026-11-02, Afsana. Its
@@ -187,40 +162,6 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
     base: 'b2c-guest',
     screens: ['cart', ...CHECKOUT, 'placing', 'ready'],
   },
-  {
-    /* ⚠ AN ALTERNATIVE, NOT FROM THE FILE — 2026-11-03, Afsana: "immediate
-       check for partner code after clicking 'go to cart'". It opens where
-       V2's guest checkout puts the course in the cart — the packages page,
-       "Added to your cart" showing — and asks the Partner Code question at
-       Go to Cart instead of at Checkout. Your cart, then Checkout goes
-       straight to Verify your email; the rest is the usual walk, a code or a
-       log-in by the email given (`pcFirstFlowV3`). Its row in the picker is
-       light orange (`inviteFlow.css`). */
-    id: 'pc-after-add',
-    model: 'b2c',
-    label: 'Alternative: immediate check for partner code after clicking ‘go to cart’',
-    description: 'Starts at “Added to your cart”. Go to Cart asks for a partner code, then Your cart; Checkout goes straight to Verify your email — a code, or a log-in if the email has Atlas.',
-    base: 'b2c-guest',
-    screens: ['packages', 'added-to-cart', 'pc-modal', 'cart', ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
-  },
-  {
-    /* B2B → INVITE → CHECKOUT — 2026-11-04, Afsana. A learner whose cart
-       already holds a mixed order (a targeted course beside an item outside
-       the 526) receives a partner's invitation: the cart, the invitation
-       email, View invitation to the product page, then Purchase opens the
-       secure checkout under "1 item in your cart is not supported".
-       Proceeding drops the item and checks the invitation's address — a
-       log-in when it has Atlas, a code when it does not
-       (`invite-v3-email-account`, `inviteCheckoutFlowV3`). It walks as
-       Direct Email (`base`), so the partner's price holds. These are the
-       code's screens, the default. */
-    id: 'invite-mixed-cart',
-    model: 'b2b-checkout',
-    label: 'Mixed cart, then invitation',
-    description: 'Mixed cart, then the partner’s invitation. Purchase drops the unsupported item, then a log-in or a code.',
-    base: 'b2b2c-email',
-    screens: ['cart', 'email', 'pdp', 'drop-notice', ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
-  },
 ]
 
 export const INVITE_V3_MODEL_FLAG = 'invite-v3-model'
@@ -229,7 +170,6 @@ export const INVITE_V3_MODEL_FLAG = 'invite-v3-model'
 export const INVITE_V3_FLOW_FLAGS: Record<InviteModelId, string> = {
   b2b: 'invite-v3-flow-b2b',
   b2c: 'invite-v3-flow-b2c',
-  'b2b-checkout': 'invite-v3-flow-b2b-checkout',
 }
 
 /** V3 opens on B2B's first flow — Direct Email since 2026-11-03. */
@@ -238,7 +178,6 @@ export const DEFAULT_INVITE_MODEL: InviteModelId = 'b2b'
 export const DEFAULT_INVITE_FLOW_V3: Record<InviteModelId, InviteFlowV3Id> = {
   b2b: 'direct-email',
   b2c: 'net-new',
-  'b2b-checkout': 'invite-mixed-cart',
 }
 
 /** The Design bar surface V3 declares for a model — and, on B2C, a surface of
@@ -249,14 +188,10 @@ export function inviteV3Surface(
 ):
   | 'invite:v3-b2b'
   | 'invite:v3-b2b-direct-email'
-  | 'invite:v3-b2b-checkout'
   | 'invite:v3-b2c'
-  | 'invite:v3-b2c-signed-in'
-  | 'invite:v3-b2c-pc-first' {
-  if (model === 'b2b-checkout') return 'invite:v3-b2b-checkout'
+  | 'invite:v3-b2c-signed-in' {
   /* Direct Email carries Email belongs to (2026-11-04). */
   if (model === 'b2b') return flowId === 'direct-email' ? 'invite:v3-b2b-direct-email' : 'invite:v3-b2b'
-  if (flowId === 'pc-after-add') return 'invite:v3-b2c-pc-first'
   /* Both OCD flows carry Cart contents and Email belongs to. */
   return isOcdCartFlow(flowId) ? 'invite:v3-b2c-signed-in' : 'invite:v3-b2c'
 }
@@ -305,8 +240,8 @@ export function suppliesEmailV3(flow: InviteFlowV3): boolean {
  *
  *    second      `code` — a 6-digit code sent to it (`code-1`); `login` —
  *                the learner already has Atlas and signs in with a password
- *                (`login-1`); or `none` — the two automatic flows go straight
- *                on to "Signing you in" (2026-11-03).
+ *                (`login-1`); or `none` — straight on, which the two automatic
+ *                flows used until they were archived (2026-11-05).
  *    signsIn     a "Signing you in" hold before the checkout (`signing-in`).
  *                "Has Atlas: Open Log-In Widget" (B2C) goes straight on.
  *    accountKnown  the learner is signed in to an account they already have,
@@ -329,12 +264,10 @@ export function emailCheckV3(flow: InviteFlowV3): {
 }
 
 /** Where a V3 flow starts: the partner's QR code for B2B, the public site's
- *  cart for B2C — the first screen of each in the file — the invitation
- *  email for Direct Email, and the packages page for the alternative that
- *  asks at Go to Cart. */
+ *  cart for B2C — the first screen of each in the file — and the invitation
+ *  email for Direct Email. */
 export function entryPathV3(flow: InviteFlowV3): string {
   if (flow.screens[0] === 'email') return '/end-to-end-demo/email'
-  if (flow.screens[0] === 'packages') return '/end-to-end-demo/packages'
   if (flow.screens[0] === 'cart') return '/end-to-end-demo/cart'
   return flow.model === 'b2b' ? '/end-to-end-demo/qr' : '/end-to-end-demo/cart'
 }
@@ -346,19 +279,9 @@ export function entryPathV3(flow: InviteFlowV3): string {
  *  first screen (2026-10-30, Afsana: "make sure that all the B2C flows start
  *  with this screen", the cart). */
 export function v3ScreensFor(model: InviteModelId): readonly string[] {
-  if (model === 'b2b-checkout') {
-    return [
-      '/end-to-end-demo/cart',
-      '/end-to-end-demo/email',
-      '/end-to-end-demo',
-      '/end-to-end-demo/checkout',
-      '/end-to-end-demo/confirmation',
-    ]
-  }
   return model === 'b2b'
     ? ['/end-to-end-demo/email', '/end-to-end-demo/qr', '/end-to-end-demo', '/end-to-end-demo/checkout', '/end-to-end-demo/confirmation']
     : [
-        '/end-to-end-demo/packages',
         '/end-to-end-demo/cart',
         '/end-to-end-demo/checkout',
         '/end-to-end-demo/confirmation',
@@ -384,14 +307,11 @@ export function useInviteFlowV3(): InviteFlowV3 {
   const model = useInviteModel()
   const b2b = useFeatureFlag(INVITE_V3_FLOW_FLAGS.b2b).variant
   const b2c = useFeatureFlag(INVITE_V3_FLOW_FLAGS.b2c).variant
-  const b2bCheckout = useFeatureFlag(INVITE_V3_FLOW_FLAGS['b2b-checkout']).variant
   const cart = resolveV3Cart(useFeatureFlag(INVITE_V3_CART_FLAG).variant)
   const email = resolveV3EmailAccount(useFeatureFlag(INVITE_V3_EMAIL_ACCOUNT_FLAG).variant)
   const [params] = useSearchParams()
-  const flow = resolveInviteFlowV3(model, model === 'b2b' ? b2b : model === 'b2c' ? b2c : b2bCheckout)
-  if (flow.id === 'pc-after-add') return pcFirstFlowV3(flow, email)
+  const flow = resolveInviteFlowV3(model, model === 'b2b' ? b2b : b2c)
   if (flow.id === 'direct-email') return directEmailFlowV3(flow, email)
-  if (flow.id === 'invite-mixed-cart') return inviteCheckoutFlowV3(flow, email)
   if (flow.id === 'xcel-signed-out') return ocdCartFlowV3(flow, cart, email)
   return flow.id === 'xcel-signed-in'
     ? signedInFlowV3(flow, cart, email, params.get(V3_SIGNED_OUT_PARAM) === '1')
@@ -401,21 +321,6 @@ export function useInviteFlowV3(): InviteFlowV3 {
 /** The two OCD flows — signed in or not — whose cart decides the checkout. */
 export function isOcdCartFlow(id: InviteFlowV3Id | undefined): boolean {
   return id === 'xcel-signed-in' || id === 'xcel-signed-out'
-}
-
-/** The alternative's walk after Checkout, by the email given at Verify your
- *  email (`invite-v3-email-account`): a code and the full checkout, then a
- *  password; or, with Atlas, a log-in, the checkout filled from the account,
- *  then Start course — "Has Atlas: Open Log-In Widget"'s screens. */
-export function pcFirstFlowV3(flow: InviteFlowV3, email: V3EmailAccount): InviteFlowV3 {
-  const start = ['packages', 'added-to-cart', 'pc-modal', 'cart']
-  return {
-    ...flow,
-    screens:
-      email === 'atlas'
-        ? [...start, ...VERIFY, 'login-1', 'login-2', ...CHECKOUT, 'placing', 'ready']
-        : [...start, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
-  }
 }
 
 /** Direct Email's walk after Purchase, by whether the supplied address has
@@ -433,28 +338,6 @@ export function directEmailFlowV3(flow: InviteFlowV3, email: V3EmailAccount): In
         ? [...start, 'login-1', 'login-2', ...CHECKOUT, 'placing', 'ready']
         : [...start, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
   }
-}
-
-/** B2B → Invite → Checkout's walk after "not supported", by whether the
- *  invitation's address has Atlas — Direct Email's check, with the cart and
- *  the notice in front (2026-11-04). */
-export function inviteCheckoutFlowV3(flow: InviteFlowV3, email: V3EmailAccount): InviteFlowV3 {
-  const start = ['cart', 'email', 'pdp', 'drop-notice']
-  return {
-    ...flow,
-    screens:
-      email === 'atlas'
-        ? [...start, 'login-1', 'login-2', ...CHECKOUT, 'placing', 'ready']
-        : [...start, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
-  }
-}
-
-/** Does this flow open the checkout under "not supported", and is the item
- *  still to drop? B2B → Invite → Checkout's mixed cart, until Proceed. */
-export function useV3CheckoutDropNotice(): boolean {
-  const flow = useInviteFlowV3()
-  const [params] = useSearchParams()
-  return flow.id === 'invite-mixed-cart' && params.get(V3_DROPPED_PARAM) !== '1'
 }
 
 /* ── Signed in to XCEL (OCD) — 2026-11-02 ─────────────────────────────────
@@ -595,16 +478,6 @@ export function useV3SignedInCart(): {
   const version = resolveInviteFlowVersion(useFeatureFlag(INVITE_FLOW_VERSION_FLAG).variant)
   const cart = resolveV3Cart(useFeatureFlag(INVITE_V3_CART_FLAG).variant)
   if (version !== 'v3') return null
-  /* B2B → Invite → Checkout's cart is always mixed, and not signed in. */
-  if (flow.id === 'invite-mixed-cart') {
-    return {
-      cart: 'mixed',
-      signedIn: false,
-      line: null,
-      extra: params.get(V3_DROPPED_PARAM) !== '1' ? V3_NON_TARGETED_ITEM : null,
-      dropped: [V3_NON_TARGETED_ITEM.name],
-    }
-  }
   if (!isOcdCartFlow(flow.id)) return null
   const holdsExtra =
     cart === 'mixed' && params.get(V3_SIGNED_OUT_PARAM) !== '1' && params.get(V3_DROPPED_PARAM) !== '1'

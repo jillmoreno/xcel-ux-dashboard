@@ -190,10 +190,9 @@ function useInviteEntryPath(): string {
   return version === 'v3' ? entryPathV3(v3) : entryPathFor(flow)
 }
 
-/** V3's B2C flows start at the cart — or, for the alternative that asks at
- *  Go to Cart, at the packages page with it just added (2026-11-03). */
+/** V3's B2C flows start at the cart. */
 function startsWithCart(path: string): boolean {
-  return path === '/end-to-end-demo/cart' || path === '/end-to-end-demo/packages'
+  return path === '/end-to-end-demo/cart'
 }
 
 /** Only V3's B2C flows START at the cart, so a walk entering there with an

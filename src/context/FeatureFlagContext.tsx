@@ -2740,16 +2740,18 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        other's. `inviteFlowsV3.ts` carries the long form. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2b', 'invite:v3-b2b-direct-email', 'invite:v3-b2b-checkout', 'invite:v3-b2c', 'invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2b-direct-email', 'invite:v3-b2c', 'invite:v3-b2c-signed-in'],
     group: 'Navigation',
     label: 'Model type',
     description: 'Invite Flow V3 only. Which business model the flow belongs to: B2B invite (a partner’s QR code) or B2C guest checkout (direct from the public site’s cart). Picking one shows that model’s flows.',
     defaultEnabled: true,
     defaultVariant: 'b2b',
+    /* B2B → Invite → Checkout was a third model until 2026-11-05 —
+       `archivedInviteFlowsV3.ts`, with the two automatic sign-in flows and
+       the Go to Cart alternative. */
     variants: [
       { value: 'b2b', label: 'B2B invite', description: 'A partner’s QR code. Partner pricing; the learner proves their email by code.' },
       { value: 'b2c', label: 'B2C guest', description: 'Direct from the public site’s cart. No partner.' },
-      { value: 'b2b-checkout', label: 'B2B → Invite → Checkout', description: 'A cart already holding a mixed order, then a partner’s invitation. Partner pricing; the unsupported item is dropped at checkout.' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -2767,7 +2769,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Navigation',
     label: 'Invite flow',
     picker: 'sheet',
-    description: 'Invite Flow V3, B2B invite. Which invite flow the demo walks: Direct Email (the partner’s invitation, address supplied), or one of the four QR flows — net new, has OCD but no Atlas, or has Atlas, opening a log-in widget or signed in automatically after the email with the checkout filled.',
+    description: 'Invite Flow V3, B2B invite. Which invite flow the demo walks: Direct Email (the partner’s invitation, address supplied), or one of the three QR flows — net new, has OCD but no Atlas, or has Atlas with a log-in widget.',
     defaultEnabled: true,
     defaultVariant: 'direct-email',
     variants: [
@@ -2775,7 +2777,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'qr-net-new', label: 'QR: Net New: No OCD, No Atlas', description: 'New to XCEL. Verify email by code, full checkout, then create a password.' },
       { value: 'qr-ocd', label: 'QR: OCD, but no Atlas', description: 'Has an OCD account, no Atlas. Same screens as Net New for now.' },
       { value: 'qr-atlas-login', label: 'QR: Has Atlas: Open Log-In Widget', description: 'Already on Atlas. Email check opens a log-in widget; ends ready to log in.' },
-      { value: 'qr-atlas-auto', label: 'QR: Has Atlas: Automatic Sign-in Post OTP', description: 'Already on Atlas. After the email, signed in automatically — the checkout arrives filled.' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -2785,45 +2786,23 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        B2C. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2c', 'invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
+    surfaces: ['invite:v3-b2c', 'invite:v3-b2c-signed-in'],
     group: 'Navigation',
     /* "Guest checkout", not "Invite flow" — 2026-10-30, Afsana: the B2C flows
        "are actually not invite flows, rather they pertain to guest checkout".
        The key keeps its name so stored picks and shared links still work. */
     label: 'Guest checkout',
     picker: 'sheet',
-    description: 'Invite Flow V3, B2C guest checkout. Which guest checkout flow the demo walks: net new, has OCD but no Atlas, or has Atlas — opening a log-in widget, or signed in automatically after the email with the checkout filled; signed in to XCEL, or not; or the alternative that asks for a partner code at Go to Cart.',
+    description: 'Invite Flow V3, B2C guest checkout. Which guest checkout flow the demo walks: net new, has OCD but no Atlas, has Atlas with a log-in widget, or signed in to XCEL or not.',
     defaultEnabled: true,
     defaultVariant: 'net-new',
     variants: [
       { value: 'net-new', label: 'Net New: No OCD, No Atlas', description: 'New to XCEL. Verify email by code, full checkout, then create a password.' },
       { value: 'ocd-no-atlas', label: 'OCD, but no Atlas', description: 'Has an OCD account, no Atlas. Same screens as Net New for now.' },
       { value: 'has-atlas-login', label: 'Has Atlas: Open Log-In Widget', description: 'Already on Atlas. Email check opens a log-in widget before checkout.' },
-      { value: 'has-atlas', label: 'Has Atlas: Automatic Sign-in Post OTP', description: 'Already on Atlas. After the email, signed in automatically — the checkout arrives filled.' },
       /* Both descriptions in Afsana's words (2026-11-03). */
       { value: 'xcel-signed-in', label: 'Signed in to XCEL (OCD)', description: 'Signed in to an existing XCEL account. Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. If no partner code and all items are part of the 526 SKU list, or if they agree to drop unsupported items, they are signed out. The subsequent flow is affected by whether they have an Atlas account or not.' },
       { value: 'xcel-signed-out', label: 'Not signed in to XCEL (OCD)', description: 'Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. The subsequent flow is affected by whether they have an Atlas account or not.' },
-      /* Afsana's alternative (2026-11-03): its row is light orange in the
-         sheet — `inviteFlow.css`, keyed on this label. */
-      { value: 'pc-after-add', label: 'Alternative: immediate check for partner code after clicking ‘go to cart’', description: 'Starts at “Added to your cart”. Go to Cart asks for a partner code, then Your cart; Checkout goes straight to Verify your email — a code, or a log-in if the email has Atlas (pick Email belongs to beside this).' },
-    ],
-    page: 'dashboard-rebrand',
-  },
-  {
-    key: 'invite-v3-flow-b2b-checkout',
-    /* V3's B2B → Invite → Checkout flows — one so far (2026-11-04, Afsana),
-       shown only while Model type is that model. */
-    surface: 'design',
-    versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2b-checkout'],
-    group: 'Navigation',
-    label: 'Invite flow',
-    picker: 'sheet',
-    description: 'Invite Flow V3, B2B → Invite → Checkout. A cart holding a mixed order, the partner’s invitation, the product page; Purchase opens the checkout under “1 item in your cart is not supported”, then a log-in or a code (pick Email belongs to beside this).',
-    defaultEnabled: true,
-    defaultVariant: 'invite-mixed-cart',
-    variants: [
-      { value: 'invite-mixed-cart', label: 'Mixed cart, then invitation', description: 'Mixed cart, then the partner’s invitation. Purchase drops the unsupported item, then a log-in or a code.' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -2855,10 +2834,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Direct Email too (2026-11-04): the supplied address, after Purchase. */
     surface: 'design',
     versions: ['eric-atlas-e2e'],
-    surfaces: ['invite:v3-b2b-direct-email', 'invite:v3-b2b-checkout', 'invite:v3-b2c-signed-in', 'invite:v3-b2c-pc-first'],
+    surfaces: ['invite:v3-b2b-direct-email', 'invite:v3-b2c-signed-in'],
     group: 'Navigation',
     label: 'Email belongs to',
-    description: 'Invite Flow V3 — B2B Direct Email (the supplied address, after Purchase), signed in to XCEL or not (targeted or mixed cart), and the alternative that asks for a partner code at Go to Cart. The email given at Verify your email: an Atlas account (log in, then Start course) or no Atlas account (a code, then Create password).',
+    description: 'Invite Flow V3 — B2B Direct Email (the supplied address, after Purchase), and signed in to XCEL or not (targeted or mixed cart). The email given at Verify your email: an Atlas account (log in, then Start course) or no Atlas account (a code, then Create password).',
     defaultEnabled: true,
     defaultVariant: 'no-atlas',
     variants: [

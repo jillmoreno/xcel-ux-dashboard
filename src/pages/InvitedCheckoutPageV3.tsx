@@ -40,16 +40,12 @@ import { useV3DialogLayer } from '@/components/e2e/useV3DialogLayer'
 import { PartnerCodeAskModal } from '@/components/e2e/PartnerCodeAsk'
 import { VerifyEmailModalV3 } from '@/components/e2e/VerifyEmailModalV3'
 import {
-  V3_DROPPED_PARAM,
-  V3_NON_TARGETED_ITEM,
   emailCheckV3,
   suppliesEmailV3,
   useInviteFlowV3,
-  useV3CheckoutDropNotice,
   useV3SignedInCart,
   verifiesEmailFirst,
 } from '@/data/inviteFlowsV3'
-import { UnsupportedItemDialog } from '@/components/e2e/SignedInCartDialogs'
 import {
   EMAIL_VERIFIED_PARAM,
   readVerifiedIdentity,
@@ -149,7 +145,6 @@ export function InvitedCheckoutPageV3() {
   /* V3's Has Atlas flows sign in to an account the learner already has, so
      the checkout arrives with their details filled in (`checkout-1b`). */
   const v3Check = emailCheckV3(v3Flow)
-  const dropNotice = useV3CheckoutDropNotice()
   const emailVerified = useEmailVerified()
   const verifyingEmail = verifiesFirst && !emailVerified
   /* ⚠ READ ONCE, AT MOUNT, like the student state below: a `verified=1` link
@@ -429,21 +424,7 @@ export function InvitedCheckoutPageV3() {
           "Back to the course" is the way out, and it is a real one. */}
       {/* V3's email check (`VerifyEmailModalV3`, email only), after the
           partner question when a flow asks both — never two dialogs at once. */}
-      {/* B2B → Invite → Checkout (2026-11-04, Afsana): Purchase arrives under
-          "not supported". Proceed drops the item and the email check opens;
-          the ✕ goes back to the product page it came from. */}
-      {dropNotice ? (
-        <UnsupportedItemDialog
-          items={[V3_NON_TARGETED_ITEM.name]}
-          onCancel={() => navigate(`/end-to-end-demo?${params.toString()}`)}
-          onProceed={() => {
-            const next = new URLSearchParams(params)
-            next.set(V3_DROPPED_PARAM, '1')
-            setParams(next, { replace: true })
-          }}
-        />
-      ) : null}
-      {verifyingEmail && !askingForPartnerCode && !dropNotice ? (
+      {verifyingEmail && !askingForPartnerCode ? (
         <VerifyEmailModalV3
           onVerified={emailVerifiedWith}
           second={v3Check.second}

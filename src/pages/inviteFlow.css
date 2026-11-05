@@ -289,31 +289,14 @@
   opacity: 0;
 }
 
-/* ⚠ V3'S FLOWS IN LIGHT ORANGE, IN THE FLOW SHEETS — 2026-11-03, Afsana:
-   "color this row light orange" (the B2C alternative that asks at Go to
-   Cart), then the two automatic sign-in flows "as well". The sheet is the
-   Design bar's (`SheetPicker`, protected chrome), which draws every option
-   alike and has no field for a row colour, so each row is found by the label
-   it announces and tinted from here. `!important` because the card's colours
-   are inline. If a label changes, change it here too —
-   `InviteFlowsV3.test.ts` holds the two together. A `tone` on a variant,
-   drawn by the sheet itself, is the lasting fix, and it is Jillienne's file. */
-[role='radio'][aria-label^='Alternative: immediate check for partner code'],
-[role='radio'][aria-label^='QR: Has Atlas: Automatic Sign-in Post OTP'],
-[role='radio'][aria-label^='Has Atlas: Automatic Sign-in Post OTP'] {
-  background: var(--color-e2e-alt-flow) !important;
-  border-color: var(--color-e2e-alt-flow-line) !important;
-  color: var(--color-e2e-alt-flow-ink) !important;
-}
-[role='radio'][aria-label^='Alternative: immediate check for partner code'] span,
-[role='radio'][aria-label^='QR: Has Atlas: Automatic Sign-in Post OTP'] span,
-[role='radio'][aria-label^='Has Atlas: Automatic Sign-in Post OTP'] span {
-  color: var(--color-e2e-alt-flow-ink) !important;
-}
+/* V3's orange picker rows — the Go to Cart alternative and the two automatic
+   sign-in flows — went with those flows on 2026-11-05
+   (`archivedInviteFlowsV3.ts`). The tokens are still in `tokens.css`. */
 
 /* V3'S TWO OCD FLOWS, LIGHT GREEN — 2026-11-03, Afsana: "change the color of
    the tab/container for 'signed in to XCEL (OCD)' and 'not signed in to XCEL
-   (OCD)' green". Found and tinted as the orange rows above are. */
+   (OCD)' green". Each row is found by the label it announces and tinted from here; the
+   Design bar's sheet (protected) has no field for a row colour. */
 [role='radio'][aria-label^='Signed in to XCEL (OCD)'],
 [role='radio'][aria-label^='Not signed in to XCEL (OCD)'] {
   background: var(--color-e2e-ocd-flow) !important;
