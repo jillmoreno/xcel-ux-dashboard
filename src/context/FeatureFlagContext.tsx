@@ -1516,6 +1516,141 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-content-version',
+    /* WHOSE COURSE CONTENT — 2026-11-05, the direct ask: "a design tool
+       dropdown to show Anjanis Version (current), Jeffs Version (what I will
+       upload), and then a Refined Version (to come later)".
+
+       ⚠ IT SWITCHES THE LESSON, NOT ITS CHROME, and that is why it sits beside
+       `compass-session-chrome` rather than inside it. That flag is already
+       LABELLED "Course content" and asks a different question — whole screen
+       or under the global header — which it asks of whichever version is on
+       screen. This one picks WHICH content renders; the two compose.
+
+       ⚠ TWO ARMS ARE EMPTY ON PURPOSE AND SAY SO ON SCREEN. Jeff's HTML has
+       not been uploaded yet and the refined version does not exist, so each
+       draws a panel naming what is missing and how to get back
+       (`CompassCourseContent`). The tempting alternative — fall back to
+       Anjani's until the file lands — is the one to not take: a reviewer who
+       picks Jeff and sees a lesson believes they are looking at Jeff's work,
+       and nothing on the screen corrects them.
+
+       ⚠ PORTING JEFF'S FILE IS REPLACING ONE ARM, not rewiring this. The
+       dispatcher, the dropdown and the two placeholder panels are the whole
+       mechanism; `/port-prototype` fills an arm. Read his RUNNING BUILD when
+       that happens — the Workspace port's four passes are what that skill is
+       made of.
+
+       ⚠ `anjani` IS THE DEFAULT because it is what ships. The arm is the
+       question; the baseline is not — the same rule `compass-session-chrome`
+       states. So this flag changes nothing until someone picks. */
+    surface: 'design',
+    /* Compass is Anjani's scope (`PROTOTYPE_SCOPES`), so the control is hers
+       even though two of its arms are not. ⚠ `DesignerId` carries no `jeff` —
+       he authors content, not a dashboard version, and inventing a designer id
+       to label one variant would put an empty tab in the Dashboard Versions
+       sheet. The variant's own label is where his name belongs. */
+    owner: 'anjani',
+    /* The two versions the session is reachable from — the same pair
+       `compass-session-chrome` names, for the same reason: the Compass row
+       opens Eric's default with no `version=` pin, and `hybrid-pacing` is
+       where the control was first asked for. */
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:session'],
+    group: 'Widgets',
+    label: 'Course content version',
+    description:
+      'Which version of the lesson renders. Anjani’s is the seven-beat session in the product now (Video, Reading, Key terms, Infographic, Knowledge check, Worked example, Recap). Jeff’s and Refined are placeholders: each draws a panel naming what is missing instead of quietly falling back to hers, so nobody mistakes her lesson for his. Compose it with Course content above, which decides whether whichever version is on screen takes the whole screen or sits under the global header.',
+    variants: [
+      { value: 'anjani', label: 'Anjani’s version (current)', description: 'The session in the product now' },
+      { value: 'jeff', label: 'Jeff’s version', description: 'Not uploaded yet — draws a placeholder' },
+      { value: 'refined', label: 'Refined version', description: 'To come — draws a placeholder' },
+    ],
+    defaultVariant: 'anjani',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-jeff-start',
+    /* HIS DEMO SETTINGS, QUESTION ONE — "Start the course as", 2026-11-05.
+       `/port-prototype` step 3: a prototype's own control bar becomes flags on
+       the DESIGN bar rather than a dialog inside the product. His dialog is
+       `PROTOTYPE C · DEMO ONLY` and restarts the course on a pick; this is the
+       same act, in the place this Hub puts every other variation.
+
+       ⚠ `fresh` IS THE DEFAULT BECAUSE IT IS HIS. His `componentDidMount`
+       calls `restartCourse('fresh')` unless a remembered preference says
+       otherwise, and his own dialog labels it "Best for testing with
+       learners". The story arm is the stakeholder walkthrough.
+
+       ⚠ PICKING EITHER RESTARTS THE COURSE, which is also his: "Restarting
+       clears anything added in this session." A control that quietly kept the
+       session's notes while changing which lessons are complete would be a
+       third state neither arm describes.
+
+       ⚠ HIS "Remember on this device" IS NOT PORTED. It writes
+       `compassB.demo` to localStorage so his prototype reopens the same way;
+       on the Hub a Design control already persists the same way, so a second
+       mechanism for the same thing would be one more place for the two to
+       disagree. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:session'],
+    group: 'Widgets',
+    label: 'Course start (Jeff)',
+    description:
+      'How Jeff’s course player opens. New learner is his default: nothing complete, no markers, Lesson 1 current — what a learner test wants. Demo story restores his scripted progress — Lessons 1 and 2 complete, Lesson 3 in progress, with the seeded notes and flags — which is what a stakeholder walkthrough wants. Picking either restarts the course, as his dialog does. Only bites on the Jeff arm of Course content version.',
+    variants: [
+      { value: 'fresh', label: 'New learner', description: 'His default — nothing done yet' },
+      { value: 'story', label: 'Demo story', description: 'Lessons 1–2 complete, 9 markers' },
+    ],
+    defaultVariant: 'fresh',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-jeff-exam-tips',
+    /* HIS DEMO SETTINGS, THE SECOND CHECKBOX — "Exam tip callouts in lesson
+       sections and in Rubi's section summaries. Off by default." Ported as a
+       toggle because that is what it is, and left OFF for the same reason the
+       arm above opens on New learner: the default is his, not the port's.
+
+       ⚠ THE TIPS ARE REAL CONTENT, not decoration — one per section on nine
+       of his sections, written as exam advice. They are in the fixtures either
+       way; this decides whether they are drawn. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:session'],
+    group: 'Widgets',
+    label: 'Exam tips (Jeff)',
+    description:
+      'Jeff’s exam-tip callouts inside lesson sections. Off is his default. Only bites on the Jeff arm of Course content version.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-jeff-pointers',
+    /* HIS DEMO SETTINGS, THE FIRST CHECKBOX — "Show Rubi pointers · Pointer
+       cards above the prompt in Lesson 3." On by default, as his is.
+
+       ⚠ OFF MEANS NOT QUEUED, NOT QUEUED-AND-HIDDEN. His `queueNudge` returns
+       immediately when pointers are off, so turning them back on mid-session
+       does not deliver a backlog of three cards at once. That is the whole
+       difference between a control and a mute button. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:session'],
+    group: 'Widgets',
+    label: 'Rubi pointers (Jeff)',
+    description:
+      'Jeff’s pointer cards above the lesson. Three of them, all in Lesson 3: one when a scripted session resumes, one when the scenario check is answered wrongly, one when section 3.4 comes into view. Each opens a conversation in the Compass rail; each can be snoozed for an hour or dismissed for good. On is his default. Only bites on the Jeff arm of Course content version.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-surface',
     /* WHOSE COMPASS — 2026-10-15, the direct ask: "I want what she did to be
        put into the Prototype - Compass Learning section only."

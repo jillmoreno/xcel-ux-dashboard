@@ -100,6 +100,15 @@ const REBRAND_FLAGS = [
   'compass-workspace-rubi',
   'compass-workspace-view',
   'compass-panel',
+  // Which version of the lesson renders — Anjani's, Jeff's, or the refined one
+  // (2026-11-05). Listed here as well as on the Design bar for the same reason
+  // the Workspace axes are: the bar scopes it to `compass:session`, and a
+  // reviewer who is not inside a lesson still needs a way to reach it.
+  'compass-content-version',
+  // Jeff's own demo controls, ported as flags (2026-11-05).
+  'compass-jeff-start',
+  'compass-jeff-exam-tips',
+  'compass-jeff-pointers',
   'compass-planner-rubi',
   'compass-planner-return',
   'compass-planner-under',
