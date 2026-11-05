@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
 import { CompassWorkspace } from '@/components/learning/CompassWorkspace'
 import parity from './fixtures/compassWorkspaceParity.json'
 
@@ -22,9 +26,16 @@ import parity from './fixtures/compassWorkspaceParity.json'
  * the deck player, "Continue" vs "Carry on", "Rubi, last time:" and the four
  * Make names — before anybody looked.
  *
- * It also catches the three things TEXT CANNOT: the rail's order, the
- * takeover, and the width a folded pane collapses to. Those are in
- * `structure`, because they were three of the five misses.
+ * It also catches what TEXT CANNOT: the rail's order, the takeover, the width
+ * a folded pane collapses to, and the CHROME — whether a pane is a card or
+ * flat paper.
+ *
+ * ⚠ AND IT IS NOT ENOUGH, which four audits proved in one day. Strings all
+ * present, every node accounted for, and the surface still looked wrong:
+ * every pane was a rounded bordered card on a grey page where hers is flat
+ * white with a hairline between columns. A check can tell you the words are
+ * there and the boxes are there. Only a screenshot tells you it looks like
+ * the same product. Run this, then LOOK.
  *
  * ── HOW TO USE IT WHEN SHE SHIPS A NEW VERSION ────────────────────────────
  *
@@ -100,6 +111,35 @@ describe('Compass Workspace — parity with Anjani’s build', () => {
 
     await user.click(within(screen.getByRole('region', { name: 'Flashcards' })).getByRole('button', { name: 'Flip card' }))
     expect(missing(expected('deckFlipped'))).toEqual([])
+  })
+
+  it('the CHROME — flat, white, hairline column rules', () => {
+    /* ⚠ THE CATEGORY THAT GOT THROUGH THREE AUDITS. Her shell is `f-flat`:
+       white paper, panes with NO border and NO radius, and a 1px hairline on
+       the COLUMN doing all the separating. The port had every pane as a
+       rounded bordered card on a grey page — a different visual language
+       entirely, invisible to a string check and to counting nodes, and
+       obvious in one screenshot.
+
+       Asserted against the STYLESHEET TEXT, not computed style: jsdom does
+       not apply an imported CSS file, so a `getComputedStyle` check here
+       would pass against nothing. Same call `TodoBoard.test.tsx` makes for
+       its card borders. */
+    const css = readFileSync(
+      resolve(dirname(fileURLToPath(import.meta.url)), '../components/learning/compassWorkspace.css'),
+      'utf8',
+    )
+    const pane = /\.cre-ws \.cre-ws-pane \{[^}]*\}/.exec(css)?.[0] ?? ''
+    expect(pane, 'a pane must not be a card').toMatch(/border:\s*0/)
+    expect(pane).toMatch(/border-radius:\s*0/)
+    expect(pane).toMatch(/background:\s*none/)
+    // the hairlines live on the columns
+    expect(css).toMatch(/\.cre-wsf-cl \{ border-right: 1px solid/)
+    expect(css).toMatch(/\.cre-wsf-cr \{ border-left: 1px solid/)
+    // and the shell is flush
+    const shell = /\.cre-ws \.cre-ws-shell \{[^}]*\}/.exec(css)?.[0] ?? ''
+    expect(shell).toMatch(/gap:\s*0/)
+    expect(shell).toMatch(/padding:\s*0/)
   })
 
   it('the structure her text cannot carry — the rail, the takeover, the fold', () => {

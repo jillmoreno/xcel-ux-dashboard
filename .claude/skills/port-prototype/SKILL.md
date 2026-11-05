@@ -201,9 +201,17 @@ them.
 ⚠ **RE-CAPTURE, NEVER HAND-EDIT.** A fixture edited to make a test pass is a
 diff against the port's own opinion, which is worth nothing.
 
-⚠ **It is a floor, not a ceiling.** It cannot tell you the port FEELS like
-theirs. What it buys is that the designer's review is spent on judgement
-instead of on finding a missing rail.
+⚠ **CAPTURE THE CHROME TOO** — per pane: `backgroundColor`, `border`,
+`borderRadius`, and the shell's `gap` / `padding`. This is the category that
+got through three audits of the Workspace: every string present, every node
+accounted for, and the surface still wrong, because her panes are flat paper
+with a hairline between columns and the port had made each one a rounded
+bordered card on a grey page. Her shell class said `f-flat` the whole time.
+
+⚠ **AND IT IS STILL NOT ENOUGH.** A check tells you the words are there and
+the boxes are there. Only a SCREENSHOT tells you it looks like the same
+product. Run the suite, then look at the two side by side — the suite is what
+makes that look worth the designer's time, not a replacement for it.
 
 When they ship a new version: re-capture, overwrite the fixture, and whatever
 the suite reports IS the delta to port.
