@@ -44,7 +44,9 @@
 
   font-family: var(--font-body);
   color: var(--cre-ws-ink);
-  background: var(--color-surface-page);
+  /* ⚠ WHITE PAPER, not the grey page. Measured on her build: body and shell
+     are both #fff and nothing inside carries a card. Audit 3. */
+  background: var(--cre-ws-surface);
   min-height: 100%;
   padding-bottom: 80px;
 }
@@ -54,15 +56,18 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 14px 44px;
+  padding: 0 18px;
+  min-height: 58px;
   border-bottom: 1px solid var(--cre-ws-hairline);
   background: var(--cre-ws-surface);
   position: sticky;
   top: 0;
   z-index: 30;
 }
-.cre-ws .cre-wsf-bar-t { flex: 1; min-width: 0; }
-.cre-ws .cre-wsf-title { margin: 0; font-size: 15px; line-height: 20px; }
+/* ⚠ ONE LINE. "Workspace · New session ✎ ☆" reads as a breadcrumb; stacked,
+   it reads as a title with a subtitle, which is a different thing. */
+.cre-ws .cre-wsf-bar-t { flex: 1; min-width: 0; display: flex; align-items: center; gap: 2px; }
+.cre-ws .cre-wsf-title { margin: 0; font-size: 15px; line-height: 20px; flex: none; }
 .cre-ws .cre-wsf-homebtn {
   border: 0;
   background: none;
@@ -104,12 +109,16 @@
 }
 
 /* ---- the six shells. Her grids, unchanged. ---- */
+/* ⚠ FLUSH — her `f-flat`: gap 0, no padding, no max-width. The columns butt
+   up against hairline rules and each pane pads itself. Earlier passes gave
+   the shell a 24px gutter and every pane a rounded card, which is the "weird
+   layout with a different background colour". Audit 3. */
 .cre-ws .cre-ws-shell {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 24px 44px 120px;
+  max-width: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  gap: 24px;
+  gap: 0;
 }
 .cre-ws .cre-ws-shell.one { grid-template-columns: minmax(0, 1fr); }
 .cre-ws .cre-ws-shell.three { grid-template-columns: 270px minmax(0, 1fr) 300px; }
@@ -124,12 +133,16 @@
 .cre-ws .cre-ws-shell.f:not(:has(.cre-wsf-cl)):not(:has(.cre-wsf-cr)) { grid-template-columns: minmax(0, 1fr); }
 
 /* ---- panes ---- */
+/* ⚠ A PANE IS NOT A CARD. Transparent, no border, no radius — her measured
+   values. What separates the columns is a hairline on the COLUMN, below. */
 .cre-ws .cre-ws-pane {
-  border: 1px solid var(--cre-ws-hairline);
-  border-radius: 12px;
-  background: var(--cre-ws-surface);
-  padding: 16px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  padding: 22px 24px;
 }
+.cre-ws .cre-wsf-cl { border-right: 1px solid var(--cre-ws-hairline); }
+.cre-ws .cre-wsf-cr { border-left: 1px solid var(--cre-ws-hairline); }
 .cre-ws .cre-ws-pane h4 {
   font-size: 11px;
   letter-spacing: 0.16em;
@@ -799,7 +812,8 @@
   line-height: 1;
   font-size: 13px;
 }
-.cre-ws .cre-wsnb-pane { display: flex; flex-direction: column; gap: 14px; padding: 20px 22px; }
+/* Her centre pane breathes more than the rails: 28/36/18 measured. */
+.cre-ws .cre-wsnb-pane { display: flex; flex-direction: column; gap: 14px; padding: 28px 36px 18px; }
 .cre-ws .cre-wsnb-note {
   font-family: var(--font-heading-serif);
   font-size: 26px;
@@ -961,10 +975,9 @@
 .cre-ws .cre-wsf-rail {
   display: flex;
   justify-content: center;
-  padding: 16px 0;
-  border: 1px solid var(--cre-ws-hairline);
-  border-radius: 12px;
-  background: var(--cre-ws-surface);
+  padding: 18px 0;
+  border: 0;
+  background: none;
   height: 100%;
   box-sizing: border-box;
   align-items: flex-start;
@@ -973,8 +986,7 @@
 /* ---- THE WORKSPACE IS A TAKEOVER. It replaces the Compass shell, so it
    owns the full width under the XCEL header and sets its own gutters. ---- */
 .cre-ws { flex: 1; min-width: 0; }
-.cre-ws .cre-ws-shell { max-width: none; padding-left: 28px; padding-right: 28px; }
-.cre-ws .cre-ws-head { max-width: none; padding-left: 28px; padding-right: 28px; }
+.cre-ws .cre-ws-head { max-width: none; padding: 0 0 18px; }
 .cre-ws .cre-ws-homecol { max-width: 820px; margin: 0 auto; }
 
 /* ---- AUDIT 2 (2026-11-04): her home's real shape, measured.
@@ -1049,12 +1061,7 @@
 }
 
 /* The conversation scrolls; the composer is pinned under it (audit 2). */
-.cre-ws .cre-wsnb-pane { max-height: calc(100vh - 230px); }
-.cre-ws .cre-wsnb-scrollregion {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+/* ⚠ IT DOES NOT ACTUALLY SCROLL — hers is `overflow: visible`. What the
+   region buys is ORDER: the conversation, then the questions, the composer
+   and its hint beneath it. Audit 3 corrected the overflow I had assumed. */
+.cre-ws .cre-wsnb-scrollregion { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; }
