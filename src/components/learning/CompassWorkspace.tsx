@@ -584,6 +584,12 @@ export function CompassWorkspace({
     return (
       <div className="cre-ws-col cre-wsf-cm">
         <section className="cre-ws-pane cre-wsnb-pane" aria-label="Notebook with Rubi">
+          {/* ⚠ THE CONVERSATION SCROLLS, the composer does not. Hers is a
+              `.nb-scroll` region that takes the height, with the suggested
+              questions, the composer and its hint pinned under it — so a long
+              thread never pushes the thing you type into off the screen.
+              Earlier passes made the whole pane one flowing column. */}
+          <div className="cre-wsnb-scrollregion">
           {/* ⚠ A SESSION SCOPED TO ONE MARK GROWS A CONTEXT HEADER — hers,
               "Talking about · Note" over the passage. Pressing a suggested
               question is what creates it, and it is the thing that keeps a
@@ -635,6 +641,8 @@ export function CompassWorkspace({
               </div>
             </div>
           )}
+
+          </div>
 
           <div className="cre-ws-sugg">
             {WORKSPACE_SUGGESTED.map((q) => (
@@ -776,7 +784,8 @@ export function CompassWorkspace({
         </div>
 
         <div className="cre-ws-group">
-          <div className="cre-ws-stage">Make from all marks</div>
+          {/* h4, as hers — these are the pane's own sections, not eyebrows. */}
+          <h4>Make from all marks</h4>
           <div className="cre-ws-make">
             {WORKSPACE_MAKE.map((m) => (
               <button
@@ -793,7 +802,7 @@ export function CompassWorkspace({
         </div>
 
         <div className="cre-ws-group">
-          <div className="cre-ws-stage">Created by me</div>
+          <h4>Created by me</h4>
           {assets.map((a) => (
             <AssetCard key={a.id} asset={a} />
           ))}
@@ -966,73 +975,79 @@ export function CompassWorkspace({
     return (
       <div className="cre-ws-home pickup">
         <HomeHead />
-        <div className="cre-ws-stage">Pick up where you left off</div>
+        {/* ⚠ HER SHAPE, measured 2026-11-04 (audit 2): the hero is a SECTION
+            holding three things — the eyebrow, a grey CARD, and the Rubi
+            strip. Earlier passes made the section itself the card, lifted the
+            eyebrow out as a sibling and left the Rubi strip trailing after
+            the hero. Hers keeps the strip inside, directly under the card,
+            because it is a suggestion about the thing you are looking at. */}
         <section className="cre-ws-hero" aria-labelledby="hLast">
-          <div className="cre-ws-herot">
-            <div className="cre-ws-kicker">
-              {last.ch} · {last.when}
+          <h2 className="cre-ws-heroh">Pick up where you left off</h2>
+          <div className="cre-ws-herocard">
+            <div className="cre-ws-herot">
+              <div className="cre-ws-kicker">
+                {last.ch} · {last.when}
+              </div>
+              <div id="hLast" className="big">
+                {last.title}
+              </div>
+              <p>
+                <span className="cre-ws-said">Rubi, last time:</span>{' '}
+                {last.msgs[last.msgs.length - 1]?.a}
+              </p>
+              <div className="cre-ws-meta">
+                {last.sel.length} {last.sel.length === 1 ? 'mark' : 'marks'} pinned
+                {last.made && ` · made ${last.made.toLowerCase()}`}
+              </div>
             </div>
-            <h2 id="hLast" className="big">
-              {last.title}
-            </h2>
-            {/* Hers names the speaker before the answer — the hero is a
-                conversation you are rejoining, not a card you are reading. */}
-            <p>
-              <span className="cre-ws-said">Rubi, last time:</span>{' '}
-              {last.msgs[last.msgs.length - 1]?.a}
-            </p>
-            <div className="cre-ws-meta">
-              {last.sel.length} {last.sel.length === 1 ? 'mark' : 'marks'} pinned
-              {last.made && ` · made ${last.made.toLowerCase()}`}
-            </div>
+            <button
+              className="cre-ws-act cre-ws-continue"
+              onClick={() => patch({ session: last.id, view: 'work' })}
+            >
+              Continue
+            </button>
           </div>
-          <button className="cre-ws-act cre-ws-continue" onClick={() => patch({ session: last.id, view: 'work' })}>
-            Continue
-          </button>
+
+          {!nudgeGone && (
+            <p className="cre-ws-rubiline">
+              <span className="cre-ws-nudgek">{WORKSPACE_NUDGE.eyebrow}</span>
+              <span className="cre-ws-nudget">{WORKSPACE_NUDGE.text}</span>
+              <button className="cre-ws-nudgea" onClick={() => say(WORKSPACE_NUDGE.cta)}>
+                {WORKSPACE_NUDGE.cta}
+              </button>
+              <button
+                className="cre-ws-nudgex"
+                aria-label="Dismiss this suggestion"
+                onClick={() => setNudgeGone(true)}
+              >
+                ×
+              </button>
+            </p>
+          )}
         </section>
 
-        {/* HER RUBI STRIP — the surface proposing its own next move. Dismissible,
-            because a suggestion you cannot decline is an instruction. */}
-        {!nudgeGone && (
-          <div className="cre-ws-nudge" role="note">
-            <span className="cre-ws-nudgek">{WORKSPACE_NUDGE.eyebrow}</span>
-            <span className="cre-ws-nudget">{WORKSPACE_NUDGE.text}</span>
-            <button className="cre-ws-nudgea" onClick={() => say(WORKSPACE_NUDGE.cta)}>
-              {WORKSPACE_NUDGE.cta}
-            </button>
-            <button className="cre-ws-nudgex" aria-label="Dismiss this suggestion" onClick={() => setNudgeGone(true)}>
-              ×
-            </button>
-          </div>
-        )}
-
         {rest.length > 0 && (
-          <div className="cre-ws-group">
-            <div className="cre-ws-gh">
+          <section className="cre-ws-sessions">
+            <div className="cre-ws-sech">
               <h3>My sessions</h3>
               <span className="cre-ws-count">{rest.length}</span>
             </div>
-            {/* ⚠ THE SESSIONS AXIS LIVES HERE, not in the Studio. Her rail is
-                Readiness · Make from all marks · Created by me — no session
-                list — and "My sessions" is part of the home. The first port
-                put a list in the rail, which both duplicated these cards and
-                gave the axis the wrong home. */}
-            <div className={`cre-ws-sessgrid view-${sessionView}`}>
+            {/* ⚠ A SHELF, not a list — hers is a three-column grid of 281px
+                cards. Earlier passes stacked them full width, which made two
+                conversations look like a feed. */}
+            <div className={`cre-ws-shelf view-${sessionView}`}>
               {rest.map((sn) => (
                 <div className="cre-ws-sesscard" key={sn.id}>
-                  <button className="cre-ws-sessopen" onClick={() => patch({ session: sn.id, view: 'work' })}>
+                  <button
+                    className="cre-ws-sessopen"
+                    onClick={() => patch({ session: sn.id, view: 'work' })}
+                  >
                     <span className="cre-ws-kicker">{sn.ch}</span>
                     <b>{sn.title}</b>
                     <span className="when">
                       {sn.when} · {sn.sel.length} {sn.sel.length === 1 ? 'mark' : 'marks'}
                     </span>
                     {sn.made && (
-                      /* ⚠ AN ICON, NOT A TAG. Hers draws what the session made
-                         as a glyph with the name in `title` and a screen-reader
-                         span — the card is about the conversation, and what it
-                         produced is a footnote you can see at a glance. The
-                         first port used a text pill, which gave it the weight
-                         of a heading. */
                       <span className="cre-ws-made" title={sn.made}>
                         <MadeIcon made={sn.made} />
                         <span className="cre-ws-sr">{sn.made}</span>
@@ -1050,7 +1065,7 @@ export function CompassWorkspace({
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         )}
       </div>
     )

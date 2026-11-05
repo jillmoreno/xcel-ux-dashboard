@@ -62,10 +62,12 @@ describe('Anjani’s Compass Workspace', () => {
        heading is the conversation's own title, which is what you are
        rejoining. The first port had it as an h2 and the session title as
        plain text; corrected against her live build. */
-    expect(screen.getByText('Pick up where you left off')).toBeTruthy()
-    expect(
-      screen.getByRole('heading', { name: COMPASS_WORKSPACE_SESSIONS[0].title }),
-    ).toBeTruthy()
+    /* ⚠ HER SEMANTICS, and they are the opposite way round from the obvious
+       one: the HEADING is the eyebrow ("Pick up where you left off") and the
+       conversation's title is plain text inside the card. The section is
+       about picking up; the card is which thing you are picking up. */
+    expect(screen.getByRole('heading', { name: 'Pick up where you left off' })).toBeTruthy()
+    expect(screen.getByText(COMPASS_WORKSPACE_SESSIONS[0].title)).toBeTruthy()
     // Her hero names the speaker, and says what the session produced.
     expect(screen.getByText('Rubi, last time:')).toBeTruthy()
     expect(screen.getByText(/2 marks pinned · made flashcards/)).toBeTruthy()
@@ -335,8 +337,9 @@ describe('Anjani’s Compass Workspace', () => {
        three the same way, in the rail. */
     render(<CompassWorkspace layout="F" />)
     const [hero, ...rest] = COMPASS_WORKSPACE_SESSIONS
-    // The newest is the hero — a heading with a Continue, not a card.
-    expect(screen.getByRole('heading', { name: hero.title })).toBeTruthy()
+    // The newest is the hero card — named, with a Continue, and not a card
+    // in the shelf below.
+    expect(screen.getByText(hero.title)).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Continue' })).toBeTruthy()
     expect(screen.queryByRole('button', { name: new RegExp(hero.title) })).toBeNull()
     // The others are cards, each saying what it made — the open button, told

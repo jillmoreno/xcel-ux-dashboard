@@ -976,3 +976,85 @@
 .cre-ws .cre-ws-shell { max-width: none; padding-left: 28px; padding-right: 28px; }
 .cre-ws .cre-ws-head { max-width: none; padding-left: 28px; padding-right: 28px; }
 .cre-ws .cre-ws-homecol { max-width: 820px; margin: 0 auto; }
+
+/* ---- AUDIT 2 (2026-11-04): her home's real shape, measured.
+   `.f-home` max-width 1120 · hero = section > eyebrow + grey card + Rubi
+   strip · sessions = a three-column shelf of 281px cards. ---- */
+.cre-ws .cre-ws-homecol { max-width: 1120px; margin: 0 auto; }
+.cre-ws .cre-ws-home .cre-ws-head-t { max-width: 620px; }
+
+.cre-ws .cre-ws-home .cre-ws-hero {
+  display: block;
+  border: 0;
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0 0 24px;
+}
+.cre-ws .cre-ws-heroh {
+  font-size: 11px;
+  line-height: 15px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cre-ws-faint);
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+.cre-ws .cre-ws-herocard {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  border-radius: 16px;
+  background: var(--cre-ws-fill);
+  border: 1px solid var(--color-atlas-nav-active-fill);
+  padding: 24px 26px;
+}
+.cre-ws .cre-ws-herocard .big {
+  font-family: var(--font-heading-serif);
+  font-size: 26px;
+  line-height: 32px;
+  font-weight: 700;
+  color: var(--cre-ws-ink);
+  margin: 4px 0 0;
+}
+.cre-ws .cre-ws-herocard p { margin: 8px 0 0; font-size: 15px; line-height: 23px; color: var(--cre-ws-muted); }
+
+/* the strip belongs to the hero, under its card */
+.cre-ws .cre-ws-rubiline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--cre-ws-muted);
+}
+
+/* sessions: a shelf */
+.cre-ws .cre-ws-sessions { margin-top: 26px; }
+.cre-ws .cre-ws-sech { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.cre-ws .cre-ws-sech h3 {
+  font-family: var(--font-heading-serif);
+  font-size: 20px;
+  line-height: 26px;
+  color: var(--cre-ws-ink);
+  margin: 0;
+}
+.cre-ws .cre-ws-shelf { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.cre-ws .cre-ws-shelf.view-cards { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.cre-ws .cre-ws-shelf.view-time { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 900px) {
+  .cre-ws .cre-ws-shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* The conversation scrolls; the composer is pinned under it (audit 2). */
+.cre-ws .cre-wsnb-pane { max-height: calc(100vh - 230px); }
+.cre-ws .cre-wsnb-scrollregion {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
