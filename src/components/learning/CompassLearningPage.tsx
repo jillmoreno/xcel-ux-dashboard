@@ -123,8 +123,17 @@ export function CompassLearningPage({
   const railPages = workspaceOn ? HYBRID_COMPASS_PAGES_WITH_WORKSPACE : HYBRID_COMPASS_PAGES
   const resumeToVideo = resumeOpensSession && onStartSession ? () => onStartSession('course') : undefined
   const hybrid = anjani
-  /** The Workspace replaces the whole Compass shell, rail included. */
-  const workspaceTakeover = hybrid && workspaceOn && page === 'workspace'
+  /* ⚠ ONLY A SESSION TAKES OVER, not the Workspace page — 2026-11-04,
+     Jillienne: "workspace page should have a left nav option, its just the
+     new workspace that is a full-screen takeover". Measured on her build:
+     the Workspace HOME keeps her Compass rail at 220px and draws no
+     workspace bar; opening a session collapses the rail to 0 and the bar
+     appears. An earlier pass made the whole page a takeover, which lost the
+     rail on the one screen that still needs it. The Workspace reports its
+     own mode up, because the page owns the rail. */
+  const [workspaceInSession, setWorkspaceInSession] = useState(false)
+  const workspaceOpen = hybrid && workspaceOn && page === 'workspace'
+  const workspaceTakeover = workspaceOpen && workspaceInSession
   /* Option 3 only — the header and the rail both carry a Home there, so the
      sidebar's trail would be the third. See the prop. */
   const hideCrumb = useNavPlacement() === 'hybrid'
@@ -162,7 +171,7 @@ export function CompassLearningPage({
         timeRemaining={timeRemaining}
       />
       )}
-      {workspaceTakeover ? (
+      {workspaceOpen ? (
         /* HER WORKSPACE. It stands where the Study planner does — outside the
            scroll column — for the same reason: it is its own multi-column
            layout, and nesting it inside the column would collapse the three
@@ -174,6 +183,7 @@ export function CompassLearningPage({
           sessionView={workspaceSessions}
           rubiShape={workspaceRubi}
           deviceView={workspaceView}
+          onModeChange={setWorkspaceInSession}
           onClose={() => setPage('course')}
         />
       ) : hybrid && page === 'study-planner' ? (

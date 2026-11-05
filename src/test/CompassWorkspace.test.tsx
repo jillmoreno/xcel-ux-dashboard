@@ -37,11 +37,11 @@ import {
  */
 describe('Anjani’s Compass Workspace', () => {
   const lede = 'Everything you marked in your course, and what you can make from it. Only you can see this.'
-  /* ⚠ THE ANCHOR IS THE BAR, NOT THE LEDE. Her lede belongs to `homeHead()`
-     and so only appears on a home view — the five layouts that have no home
-     state never draw it. The bar's Workspace button is on every layout, which
-     is what makes it the honest "this rendered at all" assertion. */
-  const rendered = () => screen.getAllByRole('button', { name: 'Workspace' }).length
+  /* ⚠ THE ANCHOR IS THE ROOT. The lede is on the home only, and the BAR is
+     on a SESSION only (2026-11-04: the Workspace page keeps the Compass rail
+     and draws no bar of its own). The root element is the one thing every
+     mode has, which is what makes it the honest "this rendered at all". */
+  const rendered = () => document.querySelectorAll('.cre-ws[data-layout]').length
 
   it('opens on her defaults — Notebook, Pick up, Mid-journey', () => {
     /* ⚠ THE DEFAULTS ARE THE POINT. A Prototypes row opens at `?demo=1`, which

@@ -1,11 +1,23 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 
-import { ClipboardListCheckRegular, FileLinesRegular, NotebookRegular, Star, StarSolid } from '@/icons'
+import {
+  CircleLocationArrowRegular,
+  ClipboardListCheckRegular,
+  FileLinesRegular,
+  Flag,
+  NotebookRegular,
+  RubiMark,
+  Star,
+  StarSolid,
+  Thumbtack,
+} from '@/icons'
 
 import {
   COMPASS_WORKSPACE_SESSIONS,
   WORKSPACE_KIND,
   type WorkspaceMadeSpec,
+  type WorkspaceSession,
+  type WorkspaceThreadTurn,
   WORKSPACE_CREATED,
   WORKSPACE_MAKE,
   WORKSPACE_NUDGE,
@@ -109,6 +121,14 @@ export type CompassWorkspaceProps = {
   /** Closing the workspace. The prototype's `data-fsback`; the route decides
    *  what "back" means, so it is a prop rather than a navigation call. */
   onClose?: () => void
+  /** ⚠ ONLY A SESSION IS A TAKEOVER, not the Workspace page (2026-11-04,
+   *  Jillienne: "workspace page should have a left nav option, its just the
+   *  new workspace that is a full-screen takeover"). Measured on her build:
+   *  on the Workspace HOME her Compass rail is 220px and there is no
+   *  workspace bar; inside a session the rail is 0 and the bar is 58. The
+   *  page owns the rail, so the mode is reported up rather than decided
+   *  here. */
+  onModeChange?: (inSession: boolean) => void
 }
 
 /** The id a session carries before it is saved — her "New session". */
@@ -133,6 +153,7 @@ export function CompassWorkspace({
   rubiShape = 'M',
   deviceView = 'web',
   onClose,
+  onModeChange,
 }: CompassWorkspaceProps) {
   const [state, setState] = useState<WorkspaceState>(EMPTY_WORKSPACE_STATE)
   const [assets, setAssets] = useState<WorkspaceAsset[]>([])
@@ -144,10 +165,20 @@ export function CompassWorkspace({
    *  own `pinned`. Per-session override, so starring one does not restate
    *  the fixture. */
   const [starred, setStarred] = useState<Record<string, boolean>>({})
+  /** Sessions started in this visit. ⚠ THEY GO IN FRONT: her home's hero is
+   *  the NEWEST conversation and the shelf is the rest, so "+ New workspace"
+   *  puts an untitled one at the head and pushes the previous hero down into
+   *  the shelf. Measured — after creating one, her hero reads "Whole course ·
+   *  Just now / New session / 0 marks pinned" and "My sessions" goes to 3. */
+  const [made, setMade] = useState<WorkspaceSession[]>([])
+  const sessions = useMemo(() => [...made, ...COMPASS_WORKSPACE_SESSIONS], [made])
   /** The open deck — her artefacts open INTO the centre rather than away. */
   const [deck, setDeck] = useState<{ open: boolean; title: string; i: number; flipped: boolean; conf: Record<number, string> }>(
     { open: false, title: '', i: 0, flipped: false, conf: {} },
   )
+
+  const inSession = Boolean(state.session) || deck.open
+  useEffect(() => onModeChange?.(inSession), [inSession, onModeChange])
 
   const all = useMemo(() => savedMarks(layout, story), [layout, story])
   const list = useMemo(() => scopedMarks(all, state), [all, state])
@@ -156,7 +187,7 @@ export function CompassWorkspace({
   const openSessionName =
     state.session === NEW_SESSION
       ? WORKSPACE_COMPOSER.untitled
-      : (COMPASS_WORKSPACE_SESSIONS.find((x) => x.id === state.session)?.title ?? WORKSPACE_COMPOSER.untitled)
+      : (sessions.find((x) => x.id === state.session)?.title ?? WORKSPACE_COMPOSER.untitled)
   const focused = markById(state.focus)
 
   const patch = (next: Partial<WorkspaceState>) => setState((s) => ({ ...s, ...next }))
@@ -283,6 +314,70 @@ export function CompassWorkspace({
             {mark.thread && <span className="cre-ws-thread-n">{mark.thread.length} asked</span>}
           </div>
         </div>
+      </div>
+    )
+  }
+
+  /** The glyph a group heading carries — her type icons, in this registry's
+   *  equivalents: a document for notes, a flag for flags, the Rubi badge, a
+   *  location arrow for pointers. */
+  const GroupIcon = ({ group }: { group: string }) => {
+    const color = WORKSPACE_TYPE_COLOR[WORKSPACE_GROUP_TYPE[group]]
+    if (group === 'Note') return <FileLinesRegular size={17} style={{ color }} aria-hidden />
+    if (group === 'Rubi') return <RubiMark width={15} aria-hidden />
+    if (group === 'Pointer') return <CircleLocationArrowRegular size={17} style={{ color }} aria-hidden />
+    return <Flag size={17} style={{ color }} aria-hidden />
+  }
+
+  /**
+   * A MARK IN THE RAIL — her `.nb-src`, and it is NOT the card.
+   *
+   * ⚠ REBUILT 2026-11-04 (audit 4). The rail was drawing `MarkCard`: a square
+   * checkbox, the full passage, the learner's note and an "Ask Rubi" action.
+   * Hers is a compact ROW — a type-coloured PIN that does the pinning, the
+   * passage TRUNCATED to one or two lines, and a meta line under it. Nothing
+   * else. The rail is for finding a mark; the centre is for reading one, and
+   * drawing the reading view in the finding column made a list of eleven
+   * marks unscannable.
+   *
+   * ⚠ THE PIN IS THE CONTROL, not decoration. Hers is a map pin with
+   * `role="checkbox"` and "Pin to this session: …"; this registry has no map
+   * pin and ships a THUMBTACK, which says the same thing in the same place.
+   */
+  const RailMark = ({ mark }: { mark: WorkspaceMark }) => {
+    const on = Boolean(state.sel[mark.id])
+    const color = WORKSPACE_TYPE_COLOR[mark.type]
+    return (
+      <div className="cre-wsnb-src">
+        <div
+          className={`cre-wsf-pinsel${on ? ' on' : ''}`}
+          style={{ color }}
+          role="checkbox"
+          aria-checked={on}
+          tabIndex={0}
+          aria-label={`Pin to this session: ${mark.text}`}
+          title="Pin to this session"
+          onClick={() => togglePin(mark.id)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              togglePin(mark.id)
+            }
+          }}
+        >
+          <Thumbtack size={17} aria-hidden />
+        </div>
+        <button
+          className="cre-wsf-open"
+          aria-pressed={state.focus === mark.id}
+          aria-label={`Select ${WORKSPACE_KIND[mark.type]}: ${mark.text}`}
+          onClick={() => patch({ focus: mark.id, view: 'work', session: null })}
+        >
+          <span className="t">{mark.text}</span>
+          <span className="m">
+            {[WORKSPACE_KIND[mark.type], mark.where, mark.origin].filter(Boolean).join(' · ')}
+          </span>
+        </button>
       </div>
     )
   }
@@ -449,11 +544,14 @@ export function CompassWorkspace({
                   aria-expanded={open}
                   onClick={() => patch({ openGroup: { ...state.openGroup, [g.key]: !open } })}
                 >
-                  <Dot type={WORKSPACE_GROUP_TYPE[g.key]} />
+                  <span className="cv" aria-hidden>
+                    ⌄
+                  </span>
+                  <GroupIcon group={g.key} />
                   {WORKSPACE_GROUP_PLURAL[g.key] ?? g.key}
                   <span className="n">{g.marks.length}</span>
                 </button>
-                {open && g.marks.map((m) => <MarkCard key={m.id} mark={m} />)}
+                {open && g.marks.map((m) => <RailMark key={m.id} mark={m} />)}
               </div>
             )
           })}
@@ -557,7 +655,7 @@ export function CompassWorkspace({
    * this is what you do with them.
    */
   const SessionPane = () => {
-    const open = COMPASS_WORKSPACE_SESSIONS.find((x) => x.id === state.session)
+    const open = sessions.find((x) => x.id === state.session)
     /* The mark a scoped session is about — the first pinned one, which is
        what her "Ask Rubi about these" carries in. */
     const scopedTo = asked ? markById(pinned[0] ?? null) : undefined
@@ -604,8 +702,13 @@ export function CompassWorkspace({
           ) : (
             <h2 className="cre-wsnb-note">{open ? open.ch : 'Whole course'}</h2>
           )}
-          {open
-            ? open.msgs.map((m, i) => (
+          {/* ⚠ A NEW SESSION SHOWS THE OPENERS. Hers greets an empty session
+              with Rubi's read of the whole course and three questions worth
+              asking — an empty thread would be a blank page where the point
+              of the surface should be. Only a session that HAS turns shows
+              them instead. */}
+          {open && open.msgs.length
+            ? open.msgs.map((m: WorkspaceThreadTurn, i: number) => (
                 <div key={i}>
                   <p className="cre-wsf-q">{m.q}</p>
                   <div className="cre-ws-rb">
@@ -852,7 +955,23 @@ export function CompassWorkspace({
       </div>
       <button
         className="cre-ws-act ghost cre-ws-new"
-        onClick={() => patch({ session: NEW_SESSION, view: 'work', focus: null })}
+        onClick={() => {
+          const id = `new-${made.length + 1}`
+          setMade((m) => [
+            {
+              id,
+              title: WORKSPACE_COMPOSER.untitled,
+              ch: 'Whole course',
+              when: 'Just now',
+              pinned: false,
+              sel: [],
+              msgs: [],
+              made: '',
+            },
+            ...m,
+          ])
+          patch({ session: id, view: 'work', focus: null })
+        }}
       >
         <span aria-hidden>+</span> New workspace
       </button>
@@ -961,7 +1080,7 @@ export function CompassWorkspace({
        dropped what the session MADE, the Rubi strip was missing outright and
        the earlier sessions were a list where hers are cards. All of it below
        is read off her DOM. */
-    const [last, ...rest] = COMPASS_WORKSPACE_SESSIONS
+    const [last, ...rest] = sessions
     if (!all.length) {
       return (
         <div className="cre-ws-home pickup">
@@ -1381,6 +1500,10 @@ export function CompassWorkspace({
 
   return (
     <div className={`cre-ws device-${deviceView}`} data-layout={layout} data-home={home}>
+      {/* ⚠ THE BAR IS THE SESSION'S, not the page's — measured: 0px high on
+          her Workspace home, 58 inside a session. On the home the Compass
+          rail is still there and the page needs no second chrome. */}
+      {inSession && (
       <div className="cre-wsf-bar">
         <div className="cre-wsf-bar-t">
           <h1 className="cre-wsf-title">
@@ -1415,6 +1538,7 @@ export function CompassWorkspace({
           </button>
         </div>
       </div>
+      )}
 
       <div className={shellClass} id="wsShell" style={shellCols ? { gridTemplateColumns: shellCols } : undefined}>
         {body}

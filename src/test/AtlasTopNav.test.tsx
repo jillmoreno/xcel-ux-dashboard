@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { AtlasTopNav } from '@/components/layout/AtlasTopNav'
 import { atlasNavFor } from '@/components/layout/atlasNavVersion'
@@ -266,13 +267,21 @@ describe('the Compass rail is Anjani’s on Hybrid', () => {
     expect(railOf()).toEqual(['Overview', 'Learn', 'Workspace', 'Study planner', 'Ask Rubi', 'Progress'])
   })
 
-  it('the Workspace is a TAKEOVER — the Compass rail is not drawn at all', () => {
-    /* ⚠ 2026-11-04, Jillienne: "the new workspace is supposed to be in a full
-       screen takeover like the learn page". Measured on her build: entering
-       it collapses her Compass rail to width 0 and the workspace shell starts
-       at x=0. Four passes drew it inside the Compass page with the rail still
-       at 220px, which is what this now refuses. */
+  it('the Workspace PAGE keeps the rail; only a SESSION takes over', async () => {
+    /* ⚠ CORRECTED 2026-11-04, Jillienne: "workspace page should have a left
+       nav option, its just the new workspace that is a full-screen takeover."
+       Measured on her build — the Workspace HOME: rail 220px, workspace bar
+       0. Inside a session: rail 0, bar 58. One pass made the whole page a
+       takeover, which lost the rail on the one Workspace screen that still
+       needs it; this pins both halves. */
+    const user = userEvent.setup()
     renderRail('hybrid-pacing', '&compassPage=workspace')
+    // On the home the Compass rail is there and there is no second chrome.
+    expect(document.querySelector('nav[aria-label="Course pages"]')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Close workspace' })).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: /New workspace/ }))
+    // In a session it is gone, and the workspace's own bar is the chrome.
     expect(document.querySelector('nav[aria-label="Course pages"]')).toBeNull()
     expect(screen.getByRole('button', { name: 'Close workspace' })).toBeTruthy()
   })

@@ -1065,3 +1065,77 @@
    region buys is ORDER: the conversation, then the questions, the composer
    and its hint beneath it. Audit 3 corrected the overflow I had assumed. */
 .cre-ws .cre-wsnb-scrollregion { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; }
+
+/* ---- AUDIT 4: a mark in the RAIL is a compact row, not the card.
+   Hers: a type-coloured pin that does the pinning, the passage truncated,
+   a meta line under it. The rail is for FINDING a mark; the centre is for
+   reading one. ---- */
+.cre-ws .cre-wsnb-src { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; }
+.cre-ws .cre-wsf-pinsel {
+  flex: none;
+  margin-top: 1px;
+  cursor: pointer;
+  line-height: 0;
+  opacity: 0.85;
+}
+.cre-ws .cre-wsf-pinsel.on { opacity: 1; }
+.cre-ws .cre-wsf-pinsel.on::after {
+  content: '';
+  display: block;
+  height: 2px;
+  margin-top: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+.cre-ws .cre-wsf-open {
+  flex: 1;
+  min-width: 0;
+  display: block;
+  text-align: left;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+/* her passage: serif, two lines, then an ellipsis */
+.cre-ws .cre-wsf-open .t {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-family: var(--font-heading-serif);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--cre-ws-ink);
+}
+.cre-ws .cre-wsf-open .m {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--cre-ws-faint);
+}
+.cre-ws .cre-wsf-open[aria-pressed='true'] .t { font-weight: 600; }
+
+/* her group heading: chevron, type glyph, plural, count on the right */
+.cre-ws .cre-wsnb-chh {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 16px 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--cre-ws-faint);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-wsnb-chh .cv { font-size: 12px; line-height: 1; transition: transform 0.15s ease; }
+.cre-ws .cre-wsnb-chh.closed .cv { transform: rotate(-90deg); }
+.cre-ws .cre-wsnb-chh .n { margin-left: auto; letter-spacing: 0; }
