@@ -550,3 +550,36 @@
 [data-home-bp='mobile'] nav[aria-label='Breadcrumb'][style] {
   font-size: 12px !important;
 }
+
+/* The Study Journey's step titles ("Complete Coursework", "Pass State Exam"…)
+   at 27/29 on the phone (2026-11-05, Eric's request; 24 first) — the same
+   size as the progress module's values. */
+[data-home-bp='mobile'] p.cre-atlas-step-title[style] {
+  font-size: 27px !important;
+  line-height: 29px !important;
+}
+
+/* THE TABBED PROGRESS MODULE'S TYPE, from Figma (Atlas UX Design, node 659:585 —
+   2026-11-05, Eric's request). Tabs 12/16 in title case; the values ("0%",
+   "4 Week Goal", "June 5") Playfair 27/29; the eyebrows ("Complete",
+   "Average") 12. The rest of the panel was already at the Figma sizes. */
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] [role='tab'][style] {
+  font-size: 12px !important;
+  line-height: 16px !important;
+  text-transform: capitalize !important;
+}
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] [style*='font-size: 19px'] {
+  font-size: 27px !important;
+  line-height: 29px !important;
+}
+[data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] [style*='font-size: 10px'] {
+  font-size: 12px !important;
+}
+
+/* The Study Journey's row labels ("Pre-Licensing Education…", "Certification
+   Exam"…) at 16/18 on the phone (2026-11-05, Eric's request), from 14 / 18.
+   The current row's longer label can wrap to two lines at this size. */
+[data-home-bp='mobile'] span.cre-atlas-journey-label[style] {
+  font-size: 16px !important;
+  line-height: 18px !important;
+}

@@ -1140,7 +1140,7 @@ export function AtlasHomeEricE2E({
                   {/* Not on White (2026-10-14, Eric's request). */}
                   {onWhite ? null : ' · Study Journey'}
                 </p>
-                <p style={STEP_TITLE}>Congratulations!</p>
+                <p className="cre-atlas-step-title" style={STEP_TITLE}>Congratulations!</p>
                 <p style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }}>
                   You’ve completed your course and passed your course exams.{' '}
                   <span style={{ fontWeight: 600 }}>Time to get ready for your state exam!</span>
@@ -1157,7 +1157,7 @@ export function AtlasHomeEricE2E({
                   {/* Not on White (2026-10-14, Eric's request). */}
                   {onWhite ? null : ' · Study Journey'}
                 </p>
-                <p style={STEP_TITLE}>Complete Coursework</p>
+                <p className="cre-atlas-step-title" style={STEP_TITLE}>Complete Coursework</p>
               </div>
               <ol style={{ listStyle: 'none', margin: 0, padding: '3px 0', display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {journeyStops.map((stop, i) => (
@@ -1663,7 +1663,7 @@ function Step({
         <p style={STEP_EYEBROW}>Step {number}</p>
         {/* With `onTitle`, the title resets Set Exam Date to its first state —
             for demoing, so it keeps the title's look exactly. */}
-        <p style={STEP_TITLE} onClick={onTitle}>
+        <p className="cre-atlas-step-title" style={STEP_TITLE} onClick={onTitle}>
           {title}
         </p>
       </div>

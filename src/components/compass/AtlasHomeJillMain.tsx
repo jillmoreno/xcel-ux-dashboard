@@ -1468,7 +1468,7 @@ export function AtlasHomeJillMain({
                   {/* Not on White (2026-10-14, Eric's request). */}
                   {onWhite ? null : ' · Study Journey'}
                 </p>
-                <p style={STEP_TITLE}>Congratulations!</p>
+                <p className="cre-atlas-step-title" style={STEP_TITLE}>Congratulations!</p>
                 <p style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }}>
                   You’ve completed your course and passed your course exams.{' '}
                   <span style={{ fontWeight: 600 }}>Time to get ready for your state exam!</span>
@@ -1485,7 +1485,7 @@ export function AtlasHomeJillMain({
                   {/* Not on White (2026-10-14, Eric's request). */}
                   {onWhite ? null : ' · Study Journey'}
                 </p>
-                <p style={STEP_TITLE}>Complete Coursework</p>
+                <p className="cre-atlas-step-title" style={STEP_TITLE}>Complete Coursework</p>
               </div>
               <ol style={{ listStyle: 'none', margin: 0, padding: '3px 0', display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {journeyStops.map((stop, i) => (
@@ -1788,7 +1788,7 @@ function JourneyRow({
            underline; beside a calendar-exclamation that says the stop cannot
            be opened, it would be the one thing on the row still inviting a
            click. */
-        className={current && !expired ? 'cre-atlas-journey-link' : undefined}
+        className={current && !expired ? 'cre-atlas-journey-label cre-atlas-journey-link' : 'cre-atlas-journey-label'}
         style={{
           ...BODY_TEXT,
           flex: '1 1 0',
@@ -1796,6 +1796,14 @@ function JourneyRow({
           fontSize: 13,
           lineHeight: '18px',
           paddingTop: current ? 5 : 0,
+          /* ⚠ THE ROW GROWS WITH ITS LABEL (2026-11-05, Eric's request). The
+             space under the text is padding rather than whatever the row's
+             minHeight leaves over, so a label that wraps to two lines (the
+             current row's "… (0 of 36 completed)" at the phone's 16px) keeps
+             the same gap to the next row as a one-line label, and the spine,
+             which stretches with the row, grows with it. On one line the
+             padding lands exactly on the minHeight, so nothing moves. */
+          paddingBottom: 18,
           /* ⚠ EXPIRY FLATTENS THE ROW'S EMPHASIS (2026-10-20, Jillienne:
              "make the title not bold so it matches all the things below").
              SemiBold and the primary ink are how this row says "you are
@@ -2245,7 +2253,7 @@ function Step({
     <section aria-label={title} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
         <p style={STEP_EYEBROW}>Step {number}</p>
-        <p style={STEP_TITLE}>{title}</p>
+        <p className="cre-atlas-step-title" style={STEP_TITLE}>{title}</p>
       </div>
       {/* ⚠ A `div` ONLY WHERE BLOCK CONTENT CAN LAND — 2026-10-20, narrowed the
           same day it was widened.
