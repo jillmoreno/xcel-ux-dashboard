@@ -124,22 +124,12 @@ describe('Invite Flow V3 model types and flows', () => {
     )
   })
 
-  it('keys each green row on a real flow’s label', () => {
-    /* `inviteFlow.css` finds each row by the start of its label. The orange
-       rule went with the archived flows (2026-11-05). */
+  it('draws every flow row in the bar’s own style — no tinted rows', () => {
+    /* The orange rows went with the archived flows and the green ones on
+       2026-11-05: picked is white, unpicked is the white outline, as Model
+       type is. */
     const css = readFileSync(resolve(__dirname, '../pages/inviteFlow.css'), 'utf8')
-    const prefixesBefore = (token: string) => {
-      const rule = css.slice(0, css.indexOf(token))
-      const block = rule.slice(rule.lastIndexOf('}') + 1)
-      return [...block.matchAll(/aria-label\^='([^']+)'/g)].map((m) => m[1])
-    }
-    const green = prefixesBefore('var(--color-e2e-ocd-flow)')
-    const label = (id: string) => INVITE_FLOWS_V3.find((f) => f.id === id)!.label
-    const tinted = (prefixes: string[], id: string) => prefixes.some((p) => label(id).startsWith(p))
-    for (const id of ['xcel-signed-in', 'xcel-signed-out']) expect(tinted(green, id)).toBe(true)
-    for (const id of ['qr-atlas-login', 'direct-email']) {
-      expect(tinted(green, id)).toBe(false)
-    }
+    expect(css).not.toContain('var(--color-e2e-ocd-flow')
     expect(css).not.toContain('var(--color-e2e-alt-flow)')
   })
 

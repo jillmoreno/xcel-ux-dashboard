@@ -293,17 +293,8 @@
    sign-in flows — went with those flows on 2026-11-05
    (`archivedInviteFlowsV3.ts`). The tokens are still in `tokens.css`. */
 
-/* V3'S TWO OCD FLOWS, LIGHT GREEN — 2026-11-03, Afsana: "change the color of
-   the tab/container for 'signed in to XCEL (OCD)' and 'not signed in to XCEL
-   (OCD)' green". Each row is found by the label it announces and tinted from here; the
-   Design bar's sheet (protected) has no field for a row colour. */
-[role='radio'][aria-label^='Signed in to XCEL (OCD)'],
-[role='radio'][aria-label^='Not signed in to XCEL (OCD)'] {
-  background: var(--color-e2e-ocd-flow) !important;
-  border-color: var(--color-e2e-ocd-flow-line) !important;
-  color: var(--color-e2e-ocd-flow-ink) !important;
-}
-[role='radio'][aria-label^='Signed in to XCEL (OCD)'] span,
-[role='radio'][aria-label^='Not signed in to XCEL (OCD)'] span {
-  color: var(--color-e2e-ocd-flow-ink) !important;
-}
+/* V3's two OCD flows were light green from 2026-11-03 and lost it on
+   2026-11-05 — Afsana: the picked one takes the bar's white fill and the
+   other its white outline and text, like Model type. Once they were the only
+   B2C flows, the green set nothing apart. The `--color-e2e-ocd-flow*` tokens
+   are still in `tokens.css`. */
