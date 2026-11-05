@@ -98,6 +98,20 @@ describe('the On Stage card writer', () => {
     for (const name of exported) expect(EVENTS.has(name), `${name} is not a Netlify event`).toBe(true)
   })
 
+  it('⚠ says so when it has no credentials, rather than failing quietly', () => {
+    /* A BUILD HAS NO AMBIENT BLOBS CREDENTIALS — `getStore({name})` resolves
+       itself inside a function at runtime and throws during a build. The
+       plugin needs an explicit siteID and token, and when the token is
+       missing it has to SAY so in the deploy summary: a card that silently
+       stops being written is worse than no card, because the column goes on
+       being believed. */
+    expect(plugin).toMatch(/BLOBS_TOKEN/)
+    expect(plugin).toMatch(/process\.env\.SITE_ID/)
+    expect(plugin).toMatch(/no Blobs credentials/)
+    /* And it must pass them, not hope for ambient ones. */
+    expect(plugin).toMatch(/getStore\(\{ name: STORE_NAME, consistency: 'strong', siteID, token \}\)/)
+  })
+
   it('does nothing on any branch but stage', () => {
     expect(plugin).toMatch(/if \(branch !== 'stage'\) return/)
   })

@@ -80,7 +80,32 @@ export const onSuccess = async ({ utils }) => {
        still on stage, and still worth one card, tagged with none. */
     const wanted = scopes.length ? scopes : ['']
 
-    const store = getStore({ name: STORE_NAME, consistency: 'strong' })
+    /* ⚠ A BUILD HAS NO AMBIENT BLOBS CREDENTIALS, which is the thing the
+       first working version of this plugin got wrong: `getStore({name})`
+       resolves itself inside a FUNCTION at runtime, and throws during a build
+       with "The environment has not been configured to use Netlify Blobs".
+       So the pair has to be explicit — the same pair `netlify/lib/store.ts`
+       already documents for the two-site era, with Netlify's own `SITE_ID` as
+       the fallback for the id half.
+
+       The token is the one secret this needs. Without it the plugin says so
+       in the deploy summary and returns, rather than failing quietly: a card
+       that silently stops being written is worse than no card, because the
+       column goes on being believed. */
+    const siteID = process.env.BLOBS_SITE_ID?.trim() || process.env.SITE_ID?.trim()
+    const token = process.env.BLOBS_TOKEN?.trim() || process.env.NETLIFY_AUTH_TOKEN?.trim()
+    if (!siteID || !token) {
+      utils.status.show({
+        title: 'On Stage card',
+        summary: 'Not filed — no Blobs credentials on this build',
+        text:
+          'Set BLOBS_TOKEN (a Netlify personal access token) as a site environment variable. ' +
+          'SITE_ID is provided by Netlify; BLOBS_SITE_ID overrides it. ' +
+          'Until then the card is the prefilled form in /share-to-stage.',
+      })
+      return
+    }
+    const store = getStore({ name: STORE_NAME, consistency: 'strong', siteID, token })
     const { blobs } = await store.list()
     const keys = blobs.map((b) => b.key).filter((k) => /^card-\d{3}$/.test(k))
     const cards = (await Promise.all(keys.map((k) => store.get(k, { type: 'json' })))).filter(Boolean)
