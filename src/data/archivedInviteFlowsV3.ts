@@ -59,6 +59,19 @@
  *       `UnsupportedItemDialog` (Cancel → the product page, Proceed →
  *       `dropped=1`), and `!dropNotice` on the email check.
  *
+ *   THREE B2C FLOWS, LATER THE SAME DAY (`net-new`, `ocd-no-atlas`,
+ *   `has-atlas-login`) — Afsana: "wouldn't this make sense since we have
+ *   'signed in to xcel (ocd)' and 'not signed in to xcel (ocd)'". Not signed
+ *   in, with Email belongs to at No Atlas, is Net New's walk screen for
+ *   screen (and OCD but no Atlas's, which was the same); at Has Atlas it is
+ *   the log-in. The last commit that ran them is `2670641c`.
+ *     - The rows and flag variants below; `DEFAULT_INVITE_FLOW_V3.b2c` and
+ *       the flag's `defaultVariant` were `net-new`.
+ *     - The tests at `2670641c` that walk these ids (`InviteFlowsV3.test.ts`,
+ *       `InviteFlowV3Screens.test.tsx`).
+ *     - The `invite:v3-b2c` surface is still declared, though no remaining
+ *       B2C flow returns it — these were the flows that did.
+ *
  * ⚠ NOT ARCHIVED WITH THEM: `UnsupportedItemDialog`, "Signing you in" and the
  * Partner Code question are all still used by the flows that remain.
  * ⚠ NO `ARCHIVED_ITEMS` ROW YET — `archivedItems.ts` is the design lead's
@@ -83,6 +96,30 @@ export const ARCHIVED_INVITE_MODELS_V3 = [
 ]
 
 export const ARCHIVED_INVITE_FLOWS_V3 = [
+  {
+    id: 'net-new',
+    model: 'b2c',
+    label: 'Net New: No OCD, No Atlas',
+    description: 'New to XCEL. Verify email by code, full checkout, then create a password.',
+    base: 'b2c-guest',
+    screens: [...CART_START, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
+  },
+  {
+    id: 'ocd-no-atlas',
+    model: 'b2c',
+    label: 'OCD, but no Atlas',
+    description: 'Has an OCD account, no Atlas. Same screens as Net New for now.',
+    base: 'b2c-guest',
+    screens: [...CART_START, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
+  },
+  {
+    id: 'has-atlas-login',
+    model: 'b2c',
+    label: 'Has Atlas: Open Log-In Widget',
+    description: 'Already on Atlas. Email check opens a log-in widget before checkout.',
+    base: 'b2c-guest',
+    screens: [...CART_START, ...VERIFY, 'login-1', 'login-2', ...CHECKOUT, 'placing', 'ready'],
+  },
   {
     id: 'qr-atlas-auto',
     model: 'b2b',
@@ -175,6 +212,9 @@ export const ARCHIVED_INVITE_V3_FLAG_VARIANTS = {
     { value: 'qr-atlas-auto', label: 'QR: Has Atlas: Automatic Sign-in Post OTP', description: 'Already on Atlas. After the email, signed in automatically — the checkout arrives filled.' },
   ],
   'invite-v3-flow-b2c': [
+    { value: 'net-new', label: 'Net New: No OCD, No Atlas', description: 'New to XCEL. Verify email by code, full checkout, then create a password.' },
+    { value: 'ocd-no-atlas', label: 'OCD, but no Atlas', description: 'Has an OCD account, no Atlas. Same screens as Net New for now.' },
+    { value: 'has-atlas-login', label: 'Has Atlas: Open Log-In Widget', description: 'Already on Atlas. Email check opens a log-in widget before checkout.' },
     { value: 'has-atlas', label: 'Has Atlas: Automatic Sign-in Post OTP', description: 'Already on Atlas. After the email, signed in automatically — the checkout arrives filled.' },
     { value: 'pc-after-add', label: 'Alternative: immediate check for partner code after clicking ‘go to cart’', description: 'Starts at “Added to your cart”. Go to Cart asks for a partner code, then Your cart; Checkout goes straight to Verify your email — a code, or a log-in if the email has Atlas (pick Email belongs to beside this).' },
   ],

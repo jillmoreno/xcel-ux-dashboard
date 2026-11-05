@@ -41,9 +41,6 @@ export type InviteFlowV3Id =
   | 'qr-net-new'
   | 'qr-ocd'
   | 'qr-atlas-login'
-  | 'net-new'
-  | 'ocd-no-atlas'
-  | 'has-atlas-login'
   | 'xcel-signed-in'
   | 'xcel-signed-out'
 
@@ -64,7 +61,9 @@ export const INVITE_MODELS: { id: InviteModelId; label: string; description: str
 /* ⚠ THREE FLOWS AND A MODEL TYPE WERE TAKEN OUT ON 2026-11-05 — the two
    Automatic Sign-in Post OTP flows, the Go to Cart alternative and
    B2B → Invite → Checkout. `archivedInviteFlowsV3.ts` holds them verbatim
-   and every re-wire step. */
+   and every re-wire step. The same day, three more B2C flows — Net New,
+   OCD but no Atlas and Has Atlas: Open Log-In Widget — which the Not signed
+   in to XCEL (OCD) flow walks exactly, through Email belongs to. */
 
 const QR_START = ['qr', 'variation-4', 'variation-4-filled', 'pdp']
 const CART_START = ['cart', 'pc-modal']
@@ -115,30 +114,6 @@ export const INVITE_FLOWS_V3: InviteFlowV3[] = [
     screens: [...QR_START, 'verify-login-1', 'verify-login-2', 'login-1', 'login-2', 'signing-in', ...CHECKOUT, 'placing', 'ready-login'],
   },
   {
-    id: 'net-new',
-    model: 'b2c',
-    label: 'Net New: No OCD, No Atlas',
-    description: 'New to XCEL. Verify email by code, full checkout, then create a password.',
-    base: 'b2c-guest',
-    screens: [...CART_START, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
-  },
-  {
-    id: 'ocd-no-atlas',
-    model: 'b2c',
-    label: 'OCD, but no Atlas',
-    description: 'Has an OCD account, no Atlas. Same screens as Net New for now.',
-    base: 'b2c-guest',
-    screens: [...CART_START, ...VERIFY, ...CODE, 'checkout-1', ...CHECKOUT, 'placing', ...NEW_PASSWORD],
-  },
-  {
-    id: 'has-atlas-login',
-    model: 'b2c',
-    label: 'Has Atlas: Open Log-In Widget',
-    description: 'Already on Atlas. Email check opens a log-in widget before checkout.',
-    base: 'b2c-guest',
-    screens: [...CART_START, ...VERIFY, 'login-1', 'login-2', ...CHECKOUT, 'placing', 'ready'],
-  },
-  {
     /* SIGNED IN TO AN EXISTING XCEL (OCD) ACCOUNT — 2026-11-02, Afsana. Its
        screens depend on the cart and the email given, so this row is only the
        starting point: `signedInFlowV3` works out the walk. */
@@ -172,12 +147,13 @@ export const INVITE_V3_FLOW_FLAGS: Record<InviteModelId, string> = {
   b2c: 'invite-v3-flow-b2c',
 }
 
-/** V3 opens on B2B's first flow — Direct Email since 2026-11-03. */
+/** V3 opens on B2B's first flow — Direct Email since 2026-11-03. B2C opens
+ *  on Not signed in to XCEL (OCD), a guest from the start, since 2026-11-05. */
 export const DEFAULT_INVITE_MODEL: InviteModelId = 'b2b'
 
 export const DEFAULT_INVITE_FLOW_V3: Record<InviteModelId, InviteFlowV3Id> = {
   b2b: 'direct-email',
-  b2c: 'net-new',
+  b2c: 'xcel-signed-out',
 }
 
 /** The Design bar surface V3 declares for a model — and, on B2C, a surface of
@@ -243,7 +219,6 @@ export function suppliesEmailV3(flow: InviteFlowV3): boolean {
  *                (`login-1`); or `none` — straight on, which the two automatic
  *                flows used until they were archived (2026-11-05).
  *    signsIn     a "Signing you in" hold before the checkout (`signing-in`).
- *                "Has Atlas: Open Log-In Widget" (B2C) goes straight on.
  *    accountKnown  the learner is signed in to an account they already have,
  *                so the checkout arrives with their details filled in
  *                (`checkout-1b`).

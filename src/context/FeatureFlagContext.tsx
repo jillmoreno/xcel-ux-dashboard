@@ -2793,13 +2793,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        The key keeps its name so stored picks and shared links still work. */
     label: 'Guest checkout',
     picker: 'sheet',
-    description: 'Invite Flow V3, B2C guest checkout. Which guest checkout flow the demo walks: net new, has OCD but no Atlas, has Atlas with a log-in widget, or signed in to XCEL or not.',
+    description: 'Invite Flow V3, B2C guest checkout. Which guest checkout flow the demo walks: signed in to XCEL or not.',
     defaultEnabled: true,
-    defaultVariant: 'net-new',
+    defaultVariant: 'xcel-signed-out',
     variants: [
-      { value: 'net-new', label: 'Net New: No OCD, No Atlas', description: 'New to XCEL. Verify email by code, full checkout, then create a password.' },
-      { value: 'ocd-no-atlas', label: 'OCD, but no Atlas', description: 'Has an OCD account, no Atlas. Same screens as Net New for now.' },
-      { value: 'has-atlas-login', label: 'Has Atlas: Open Log-In Widget', description: 'Already on Atlas. Email check opens a log-in widget before checkout.' },
       /* Both descriptions in Afsana's words (2026-11-03). */
       { value: 'xcel-signed-in', label: 'Signed in to XCEL (OCD)', description: 'Signed in to an existing XCEL account. Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. If no partner code and all items are part of the 526 SKU list, or if they agree to drop unsupported items, they are signed out. The subsequent flow is affected by whether they have an Atlas account or not.' },
       { value: 'xcel-signed-out', label: 'Not signed in to XCEL (OCD)', description: 'Presence of a partner code dictates next steps. If they have a partner code, cart items affect next steps. The subsequent flow is affected by whether they have an Atlas account or not.' },

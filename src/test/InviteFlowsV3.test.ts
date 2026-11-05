@@ -73,21 +73,22 @@ describe('Invite Flow V3 model types and flows', () => {
     expect(keys).not.toContain(INVITE_V3_FLOW_FLAGS.b2c)
   })
 
-  it('carries six of the file’s flows, plus Direct Email and the two OCD flows', () => {
-    expect(INVITE_FLOWS_V3).toHaveLength(9)
+  it('carries three of the file’s flows, plus Direct Email and the two OCD flows', () => {
+    expect(INVITE_FLOWS_V3).toHaveLength(6)
     expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2b')).toHaveLength(4)
-    expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2c')).toHaveLength(5)
+    expect(INVITE_FLOWS_V3.filter((f) => f.model === 'b2c').map((f) => f.id)).toEqual(['xcel-signed-in', 'xcel-signed-out'])
     expect(INVITE_FLOWS_V3.find((f) => f.id === 'qr-net-new')?.label).toBe('QR: Net New: No OCD, No Atlas')
   })
 
   it('no longer offers the flows archived on 2026-11-05, and a stored pick falls back to the default', () => {
     const ids: string[] = INVITE_FLOWS_V3.map((f) => f.id)
-    for (const gone of ['qr-atlas-auto', 'has-atlas', 'pc-after-add', 'invite-mixed-cart']) {
+    for (const gone of ['qr-atlas-auto', 'has-atlas', 'pc-after-add', 'invite-mixed-cart', 'net-new', 'ocd-no-atlas', 'has-atlas-login']) {
       expect(ids).not.toContain(gone)
     }
     expect(resolveInviteFlowV3('b2b', 'qr-atlas-auto').id).toBe(DEFAULT_INVITE_FLOW_V3.b2b)
     expect(resolveInviteFlowV3('b2c', 'has-atlas').id).toBe(DEFAULT_INVITE_FLOW_V3.b2c)
     expect(resolveInviteFlowV3('b2c', 'pc-after-add').id).toBe(DEFAULT_INVITE_FLOW_V3.b2c)
+    expect(resolveInviteFlowV3('b2c', 'net-new').id).toBe('xcel-signed-out')
     expect(resolveInviteModel('b2b-checkout')).toBe(DEFAULT_INVITE_MODEL)
     expect(FEATURE_FLAGS.some((f) => f.key === 'invite-v3-flow-b2b-checkout')).toBe(false)
   })
@@ -136,7 +137,7 @@ describe('Invite Flow V3 model types and flows', () => {
     const label = (id: string) => INVITE_FLOWS_V3.find((f) => f.id === id)!.label
     const tinted = (prefixes: string[], id: string) => prefixes.some((p) => label(id).startsWith(p))
     for (const id of ['xcel-signed-in', 'xcel-signed-out']) expect(tinted(green, id)).toBe(true)
-    for (const id of ['net-new', 'has-atlas-login', 'qr-atlas-login', 'direct-email']) {
+    for (const id of ['qr-atlas-login', 'direct-email']) {
       expect(tinted(green, id)).toBe(false)
     }
     expect(css).not.toContain('var(--color-e2e-alt-flow)')

@@ -342,7 +342,7 @@ describe('Invite Flow V3 — the email check', () => {
   })
 
   it('asks after the partner question on a B2C flow, never both at once', async () => {
-    renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:net-new,partner-code-ask:modal')
+    renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out,partner-code-ask:modal')
     expect(screen.queryByRole('dialog', { name: 'Enter your email to continue' })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: /^no$/i }))
     expect(screen.getByRole('dialog', { name: 'Enter your email to continue' })).toBeInTheDocument()
@@ -431,7 +431,7 @@ describe('Invite Flow V3 — the endings', () => {
   })
 
   it('sends a learner who already has Atlas straight to their course', () => {
-    renderAt(CONFIRMATION, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:has-atlas-login')
+    renderAt(CONFIRMATION, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out,invite-v3-email-account:atlas')
     expect(screen.getByRole('heading', { name: 'Start learning' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Start Course' })).toBeInTheDocument()
     expect(screen.queryByLabelText(/Password/)).not.toBeInTheDocument()
@@ -439,7 +439,7 @@ describe('Invite Flow V3 — the endings', () => {
 
   it('opens "Taking you to your course" from Start Course and Confirm; a click outside closes it', async () => {
     for (const [ff, cta] of [
-      ['invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:has-atlas-login', 'Start Course'],
+      ['invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out,invite-v3-email-account:atlas', 'Start Course'],
       [`${V3_B2B},invite-v3-flow-b2b:qr-net-new`, 'Confirm'],
     ] as const) {
       const { unmount } = renderAt(CONFIRMATION, ff)
@@ -507,7 +507,7 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
   it('holds on Signing you in after Log in on every log-in flow, then fills the checkout', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     try {
-      renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:has-atlas-login,partner-code-ask:modal&partner=no')
+      renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out,invite-v3-email-account:atlas,partner-code-ask:modal&partner=no')
       await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
       await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
       await userEvent.type(screen.getByLabelText(/^Password/), 'anything')
@@ -528,20 +528,21 @@ describe('Invite Flow V3 — the Has Atlas sign-in', () => {
     }
     const check = (id: string) => emailCheckV3(INVITE_FLOWS_V3.find((f) => f.id === id)!)
     expect(check('qr-atlas-login')).toEqual({ second: 'login', signsIn: true, accountKnown: true })
-    expect(check('has-atlas-login')).toEqual({ second: 'login', signsIn: false, accountKnown: true })
-    expect(check('net-new')).toEqual({ second: 'code', signsIn: false, accountKnown: false })
+    const ocd = INVITE_FLOWS_V3.find((f) => f.id === 'xcel-signed-out')!
+    expect(emailCheckV3(ocdCartFlowV3(ocd, 'targeted', 'atlas'))).toEqual({ second: 'login', signsIn: false, accountKnown: true })
+    expect(emailCheckV3(ocdCartFlowV3(ocd, 'targeted', 'no-atlas'))).toEqual({ second: 'code', signsIn: false, accountKnown: false })
   })
 })
 
 describe('Invite Flow V3 — the B2C cart', () => {
   it('starts B2B at the QR code and B2C at the cart', () => {
     expect(entryPathV3(INVITE_FLOWS_V3.find((f) => f.id === 'qr-ocd')!)).toBe('/end-to-end-demo/qr')
-    expect(entryPathV3(INVITE_FLOWS_V3.find((f) => f.id === 'ocd-no-atlas')!)).toBe('/end-to-end-demo/cart')
+    expect(entryPathV3(INVITE_FLOWS_V3.find((f) => f.id === 'xcel-signed-out')!)).toBe('/end-to-end-demo/cart')
   })
 
   it('asks the Partner Code question over the cart, then opens the checkout', async () => {
     const path = '/end-to-end-demo/cart'
-    const ff = 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:net-new'
+    const ff = 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out'
     const search = `?ff=${ff}&lstate=Arizona&loa=Health&pkg=premier`
     window.history.replaceState({}, '', `${path}${search}`)
     render(
@@ -567,7 +568,7 @@ describe('Invite Flow V3 — the B2C cart', () => {
 
   it('closes the Partner Code question with its ✕, staying on the cart', async () => {
     const path = '/end-to-end-demo/cart'
-    const search = '?ff=invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:net-new&lstate=Arizona&loa=Health&pkg=premier'
+    const search = '?ff=invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out&lstate=Arizona&loa=Health&pkg=premier'
     window.history.replaceState({}, '', `${path}${search}`)
     render(
       <MemoryRouter initialEntries={[`${path}${search}`]}>
@@ -639,7 +640,7 @@ describe('Invite Flow V3 — every B2C flow starts at the cart', () => {
 
   for (const from of ['/end-to-end-demo/find', '/end-to-end-demo/qr', '/end-to-end-demo/email']) {
     it(`sends a B2C walk arriving at ${from} to the filled cart`, () => {
-      arriveAt(from, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:ocd-no-atlas')
+      arriveAt(from, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out')
       const where = screen.getByTestId('where').textContent!
       expect(where).toMatch(/^\/end-to-end-demo\/cart\?/)
       expect(where).toContain('lstate=Arizona')
@@ -757,7 +758,7 @@ describe('Invite Flow V3 — the packages page', () => {
   /* The Go to Cart alternative, which opened here on “Added to your cart”,
      was archived on 2026-11-05 — every B2C flow adds by hand. */
   it('never opens on “Added to your cart”', () => {
-    walkFrom('invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:net-new')
+    walkFrom('invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out')
     expect(screen.queryByRole('dialog', { name: 'Added to your cart' })).not.toBeInTheDocument()
   })
 })
@@ -798,8 +799,8 @@ describe('Invite Flow V3 — picking another flow restarts the walk', () => {
   })
 
   it('B2C: from the checkout to the new flow’s filled cart', async () => {
-    midWalk(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2c', 'invite-v3-flow-b2c', 'has-atlas-login')
-    await userEvent.click(screen.getByRole('button', { name: 'pick has-atlas-login' }))
+    midWalk(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2c', 'invite-v3-flow-b2c', 'xcel-signed-in')
+    await userEvent.click(screen.getByRole('button', { name: 'pick xcel-signed-in' }))
     const where = screen.getByTestId('where').textContent!
     expect(where).toMatch(/^\/end-to-end-demo\/cart\?/)
     expect(where).toContain('pkg=premier')
