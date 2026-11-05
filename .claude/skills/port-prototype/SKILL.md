@@ -172,6 +172,42 @@ protected. A flag with `surface: 'design'` appears on the bar by itself.
   each. Filling them in makes them yours. Say which ones are thin in the flag
   description so a reviewer reads them correctly.
 
+## Step 4b — capture a PARITY FIXTURE, and let a test do the diffing
+
+The capture from step 2 is not just notes — commit it, and write a test that
+asserts your React renders every string in it. `CompassWorkspaceParity.test.tsx`
+and `fixtures/compassWorkspaceParity.json` are the worked example.
+
+```js
+// run in their build, per mode; this is what the fixture holds
+const strings = (root) => {
+  const out = new Set()
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+  let n; while ((n = w.nextNode())) {
+    const t = (n.textContent || '').replace(/\s+/g, ' ').trim()
+    if (t.length > 2 && t.length < 200) out.add(t)
+  }
+  root.querySelectorAll('[aria-label],[placeholder],[title]').forEach((e) =>
+    ['aria-label', 'placeholder', 'title'].forEach((a) => e.getAttribute(a) && out.add(e.getAttribute(a))))
+  return [...out]
+}
+```
+
+Also record the things TEXT CANNOT CARRY — the nav's order, the widths a
+folded pane collapses to, whether their shell is a takeover. Three of the
+Workspace's five misses were structural and no string check would have found
+them.
+
+⚠ **RE-CAPTURE, NEVER HAND-EDIT.** A fixture edited to make a test pass is a
+diff against the port's own opinion, which is worth nothing.
+
+⚠ **It is a floor, not a ceiling.** It cannot tell you the port FEELS like
+theirs. What it buys is that the designer's review is spent on judgement
+instead of on finding a missing rail.
+
+When they ship a new version: re-capture, overwrite the fixture, and whatever
+the suite reports IS the delta to port.
+
 ## Step 5 — compare, pane by pane, before you call it done
 
 Open the two side by side — their build in one tab, the dev server in another —

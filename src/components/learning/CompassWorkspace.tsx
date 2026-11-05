@@ -4,6 +4,7 @@ import { ClipboardListCheckRegular, FileLinesRegular, NotebookRegular, Star, Sta
 
 import {
   COMPASS_WORKSPACE_SESSIONS,
+  WORKSPACE_KIND,
   type WorkspaceMadeSpec,
   WORKSPACE_CREATED,
   WORKSPACE_MAKE,
@@ -220,7 +221,7 @@ export function CompassWorkspace({
         </button>
       </div>
     ) : (
-      <div className="cre-ws-bar">
+      <div className="cre-ws-bar" role="group" aria-label="Filter by type">
         {WORKSPACE_FILTERS.map((f) => {
           const n = countOfType(all, state.scope, f.value)
           if (f.value !== 'all' && !n) return null
@@ -266,22 +267,16 @@ export function CompassWorkspace({
               is the thing; where it came from is the footnote. */}
           <p className="cre-ws-quote">{mark.text}</p>
           {mark.note && <p className="cre-ws-note">{mark.note}</p>}
+          {/* ⚠ ONE STRING, joined by " · ". Hers reads "Note · Video · 0:48"
+              as text; the first passes drew the separators as CSS dots, which
+              look the same and are not the same — a screen reader runs the
+              parts together and a parity check cannot see the line at all.
+              The KIND here is `Rubi`, not `Rubi answer`: her rail names the
+              type, and only a focused card calls it an answer. */}
           <div className="cre-ws-kind">
-            {mark.type === 'rubi' ? <span className="rb">Rubi answer</span> : kindLabel(mark.type)}
-            <span className="dot" />
-            {mark.where}
-            {showChapter && (
-              <>
-                <span className="dot" />
-                {mark.ch}
-              </>
-            )}
-            {mark.origin && (
-              <>
-                <span className="dot" />
-                <span className="cre-ws-origin">{mark.origin}</span>
-              </>
-            )}
+            {[WORKSPACE_KIND[mark.type], mark.where, showChapter ? mark.ch : null, mark.origin]
+              .filter(Boolean)
+              .join(' · ')}
           </div>
           <div className="cre-ws-acts">
             <button onClick={() => patch({ focus: mark.id, view: 'work' })}>Ask Rubi about this</button>
@@ -666,7 +661,7 @@ export function CompassWorkspace({
               aria-label={WORKSPACE_COMPOSER.placeholder}
             />
             <span className="cre-ws-scope">{WORKSPACE_COMPOSER.scope}</span>
-            <button className="cre-ws-send" aria-label="Ask" onClick={() => say('Asking Rubi')}>
+            <button className="cre-ws-send" aria-label="Send" onClick={() => say('Asking Rubi')}>
               ↑
             </button>
           </div>
@@ -1005,7 +1000,7 @@ export function CompassWorkspace({
             <button className="cre-ws-nudgea" onClick={() => say(WORKSPACE_NUDGE.cta)}>
               {WORKSPACE_NUDGE.cta}
             </button>
-            <button className="cre-ws-nudgex" aria-label="Dismiss" onClick={() => setNudgeGone(true)}>
+            <button className="cre-ws-nudgex" aria-label="Dismiss this suggestion" onClick={() => setNudgeGone(true)}>
               ×
             </button>
           </div>
