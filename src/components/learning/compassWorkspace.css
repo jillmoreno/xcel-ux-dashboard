@@ -783,3 +783,93 @@
   line-height: 0;
 }
 .cre-ws .cre-ws-star.on { color: var(--cre-ws-steel); }
+
+/* ---- A SESSION — the Notebook with Rubi (third pass, 2026-11-04).
+   Found by clicking "+ New workspace": her centre becomes a scoped
+   conversation, and the bar above it a breadcrumb. ---- */
+.cre-ws .cre-wsf-barsess { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; }
+.cre-ws .cre-wsf-sep { color: var(--cre-ws-faint); }
+.cre-ws .cre-wsf-sess { font-size: 15px; color: var(--cre-ws-muted); }
+.cre-ws .cre-wsf-mini {
+  border: 0;
+  background: none;
+  padding: 2px;
+  color: var(--cre-ws-faint);
+  cursor: pointer;
+  line-height: 1;
+  font-size: 13px;
+}
+.cre-ws .cre-wsnb-pane { display: flex; flex-direction: column; gap: 14px; padding: 20px 22px; }
+.cre-ws .cre-wsnb-note {
+  font-family: var(--font-heading-serif);
+  font-size: 26px;
+  line-height: 32px;
+  color: var(--cre-ws-ink);
+  margin: 0 0 4px;
+}
+/* A Rubi block: her mark, then the text. */
+.cre-ws .cre-ws-rb { display: flex; gap: 10px; align-items: flex-start; }
+.cre-ws .cre-ws-rmk {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  margin-top: 5px;
+  border-radius: 50%;
+  border: 2px solid var(--cre-ws-terracotta);
+}
+.cre-ws .cre-ws-rb .tx { font-size: 15px; line-height: 24px; color: var(--cre-ws-ink); }
+.cre-ws .cre-ws-rb .tx b { font-weight: 700; }
+
+/* The three she offers. */
+.cre-ws .cre-ws-sugg { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.cre-ws .cre-ws-sugg button {
+  border: 1px solid var(--cre-ws-hairline);
+  background: var(--cre-ws-surface);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--cre-ws-muted);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+/* The composer, and the scope promise under it. */
+.cre-ws .cre-wsnb-comp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 999px;
+  background: var(--cre-ws-surface);
+  padding: 6px 8px 6px 6px;
+}
+.cre-ws .cre-wsnb-comp input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  font-size: 14px;
+  font-family: var(--font-body);
+  color: var(--cre-ws-ink);
+  padding: 6px 2px;
+}
+.cre-ws .cre-wsnb-comp input:focus { outline: none; }
+.cre-ws .cre-ws-plus,
+.cre-ws .cre-ws-send {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--cre-ws-hairline);
+  background: var(--cre-ws-surface);
+  color: var(--cre-ws-muted);
+  cursor: pointer;
+  line-height: 1;
+}
+.cre-ws .cre-ws-send { border-color: var(--cre-ws-steel); background: var(--cre-ws-steel); color: var(--color-neutral-50); }
+.cre-ws .cre-ws-scope { flex: none; font-size: 12px; color: var(--cre-ws-faint); }
+.cre-ws .cre-ws-caption { margin: 0; text-align: center; font-size: 12px; color: var(--cre-ws-faint); }
+
+/* Her Studio tiles are a two-up grid, not a list. */
+.cre-ws .cre-ws-make { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cre-ws .cre-ws-readiness .cre-ws-stage { display: flex; justify-content: space-between; gap: 10px; }

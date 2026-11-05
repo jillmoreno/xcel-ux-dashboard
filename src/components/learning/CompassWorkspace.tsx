@@ -8,6 +8,9 @@ import {
   WORKSPACE_MAKE,
   WORKSPACE_NUDGE,
   WORKSPACE_READINESS,
+  WORKSPACE_COMPOSER,
+  WORKSPACE_SESSION_OPENERS,
+  WORKSPACE_SUGGESTED,
   WORKSPACE_FILTERS,
   WORKSPACE_GROUP_PLURAL,
   WORKSPACE_GROUP_TYPE,
@@ -101,6 +104,9 @@ export type CompassWorkspaceProps = {
   onClose?: () => void
 }
 
+/** The id a session carries before it is saved — her "New session". */
+const NEW_SESSION = 'new'
+
 /** What the four Make buttons produce. Her labels and her sub-lines. */
 const MAKE_ACTIONS = [
   { id: 'flashcards', label: 'Make flashcards', kind: 'Practice' },
@@ -135,6 +141,10 @@ export function CompassWorkspace({
   const list = useMemo(() => scopedMarks(all, state), [all, state])
   const chapters = useMemo(() => markChapters(all), [all])
   const pinned = pinnedIds(state)
+  const openSessionName =
+    state.session === NEW_SESSION
+      ? WORKSPACE_COMPOSER.untitled
+      : (COMPASS_WORKSPACE_SESSIONS.find((x) => x.id === state.session)?.title ?? WORKSPACE_COMPOSER.untitled)
   const focused = markById(state.focus)
 
   const patch = (next: Partial<WorkspaceState>) => setState((s) => ({ ...s, ...next }))
@@ -395,6 +405,94 @@ export function CompassWorkspace({
     )
   }
 
+  /**
+   * A SESSION — the Notebook with Rubi, and what "+ New workspace" opens.
+   *
+   * ⚠ A MODE, NOT A DIALOG, and it is the thing two earlier passes missed
+   * entirely because nothing renders until the button is pressed. Her centre
+   * becomes a scoped conversation: what Rubi makes of what you have marked,
+   * three questions worth asking, and a composer. The marks are the input;
+   * this is what you do with them.
+   */
+  const SessionPane = () => {
+    const open = COMPASS_WORKSPACE_SESSIONS.find((x) => x.id === state.session)
+    /* Her emphasis is data, not markup — the phrases she wants the eye to
+       catch — so it is applied here rather than baked into the string. */
+    const emphasise = (text: string, bold: string[]): ReactNode[] => {
+      let parts: ReactNode[] = [text]
+      for (const b of bold) {
+        const next: ReactNode[] = []
+        for (const part of parts) {
+          if (typeof part !== 'string' || !part.includes(b)) {
+            next.push(part)
+            continue
+          }
+          part.split(b).forEach((chunk, i) => {
+            if (i > 0) next.push(<b key={`${b}-${next.length}`}>{b}</b>)
+            next.push(chunk)
+          })
+        }
+        parts = next
+      }
+      return parts
+    }
+    return (
+      <div className="cre-ws-col cre-wsf-cm">
+        <section className="cre-ws-pane cre-wsnb-pane" aria-label="Notebook with Rubi">
+          <h2 className="cre-wsnb-note">{open ? open.ch : 'Whole course'}</h2>
+          {open
+            ? open.msgs.map((m, i) => (
+                <div key={i}>
+                  <p className="cre-wsf-q">{m.q}</p>
+                  <div className="cre-ws-rb">
+                    <span className="cre-ws-rmk" aria-hidden />
+                    <div className="tx">
+                      <span className="cre-ws-sr">Rubi: </span>
+                      {m.a}
+                    </div>
+                  </div>
+                </div>
+              ))
+            : WORKSPACE_SESSION_OPENERS.map((r) => (
+                <div className="cre-ws-rb" key={r.id}>
+                  <span className="cre-ws-rmk" aria-hidden />
+                  <div className="tx">
+                    <span className="cre-ws-sr">Rubi: </span>
+                    {emphasise(r.text, r.bold)}
+                  </div>
+                </div>
+              ))}
+
+          <div className="cre-ws-sugg">
+            {WORKSPACE_SUGGESTED.map((q) => (
+              <button key={q} onClick={() => say(q)}>
+                {q}
+              </button>
+            ))}
+          </div>
+
+          {/* Her composer. The caption under it is the scope promise — Rubi
+              answers from THIS course and THESE marks, not the internet. */}
+          <div className="cre-wsnb-comp">
+            <button className="cre-ws-plus" aria-label="Add to this session" onClick={() => say('Add')}>
+              +
+            </button>
+            <input
+              type="text"
+              placeholder={WORKSPACE_COMPOSER.placeholder}
+              aria-label={WORKSPACE_COMPOSER.placeholder}
+            />
+            <span className="cre-ws-scope">{WORKSPACE_COMPOSER.scope}</span>
+            <button className="cre-ws-send" aria-label="Ask" onClick={() => say('Asking Rubi')}>
+              ↑
+            </button>
+          </div>
+          <p className="cre-ws-caption">{WORKSPACE_COMPOSER.caption}</p>
+        </section>
+      </div>
+    )
+  }
+
   /** The centre of the Notebook: one mark and its Rubi thread, or the pile. */
   const CoachPane = () => (
     <div className="cre-ws-col cre-wsf-cm">
@@ -557,7 +655,10 @@ export function CompassWorkspace({
           Everything you marked in your course, and what you can make from it. Only you can see this.
         </div>
       </div>
-      <button className="cre-ws-act ghost cre-ws-new" onClick={() => say('New workspace')}>
+      <button
+        className="cre-ws-act ghost cre-ws-new"
+        onClick={() => patch({ session: NEW_SESSION, view: 'work', focus: null })}
+      >
         <span aria-hidden>+</span> New workspace
       </button>
     </div>
@@ -1027,6 +1128,18 @@ export function CompassWorkspace({
     /* F — Notebook, her default and the fullest of the six: capture on the
        left, coach in the middle, make on the right, and the home views in
        place of the centre until a mark is chosen. */
+    /* A session takes the centre. Her "+ New workspace" and every Continue
+       land here; the marks rail and the Studio stay, because a session is
+       about what you marked. */
+    if (state.session) {
+      return (
+        <>
+          {!state.colL && <CaptureRail />}
+          <SessionPane />
+          {!state.colR && <StudioRail />}
+        </>
+      )
+    }
     if (state.view === 'home' && !focused) {
       /* ⚠ THE HOME HIDES BOTH SIDE PANES, and that is hers — measured on her
          build, where `f-cl` and `f-cr` are `display:none` on the home and the
@@ -1063,6 +1176,22 @@ export function CompassWorkspace({
               Workspace
             </button>
           </h1>
+          {/* Her `fBarSess` — the bar becomes a breadcrumb once a session is
+              open, and the session can be renamed and starred from it. */}
+          {state.session && (
+            <span className="cre-wsf-barsess">
+              <span className="cre-wsf-sep" aria-hidden>
+                ·
+              </span>
+              <span className="cre-wsf-sess">{openSessionName}</span>
+              <button className="cre-wsf-mini" aria-label="Rename this session" title="Rename" onClick={() => say('Rename')}>
+                ✎
+              </button>
+              <button className="cre-wsf-mini" aria-label="Star this session" title="Star" onClick={() => say('Starred')}>
+                ☆
+              </button>
+            </span>
+          )}
         </div>
         <div className="cre-wsf-bar-a">
           <button className="cre-wsf-iconbtn" aria-label="Close workspace" title="Close workspace" onClick={onClose}>

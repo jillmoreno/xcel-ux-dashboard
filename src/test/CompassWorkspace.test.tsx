@@ -7,6 +7,7 @@ import {
   COMPASS_WORKSPACE_MARKS,
   COMPASS_WORKSPACE_SESSIONS,
   WORKSPACE_KIND,
+  WORKSPACE_SUGGESTED,
 } from '@/data/compassWorkspaceFixtures'
 import {
   WORKSPACE_DEVICE_VIEWS,
@@ -111,6 +112,37 @@ describe('Anjani’s Compass Workspace', () => {
     expect(within(card).getByText(/Yesterday · 7:15 pm · 2 marks/)).toBeTruthy()
     const star = screen.getByRole('button', { name: 'Star Term or permanent — the fork' })
     expect(star.getAttribute('aria-pressed')).toBe('false')
+  })
+
+  it('“+ New workspace” opens a session — the Notebook with Rubi', async () => {
+    /* ⚠ THE THIRD-PASS CASE, and the one that says most about how this port
+       went. "+ New workspace" opens a MODE: the centre becomes a scoped
+       conversation with Rubi's read of your marks, three suggested questions
+       and a composer, and the bar becomes a breadcrumb you can rename and
+       star. Two passes of reading her source and one of reading her home
+       missed it completely, because nothing renders until the button is
+       pressed. A test exists so a fourth pass cannot lose it. */
+    const user = userEvent.setup()
+    render(<CompassWorkspace />)
+    expect(screen.queryByRole('region', { name: 'Notebook with Rubi' })).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: /New workspace/ }))
+    const pane = screen.getByRole('region', { name: 'Notebook with Rubi' })
+    /* Rubi's read of the marks. ⚠ Matched on a fragment her emphasis does
+       NOT split: "cash value" and "term versus permanent" are wrapped in
+       <b>, so a regex spanning them finds nothing. That the text IS split is
+       the point — the bolding is data, applied at render. */
+    expect(within(pane).getByText(/that is where a check would help most/)).toBeTruthy()
+    expect(within(pane).getByText('term versus permanent').tagName).toBe('B')
+    expect(within(pane).getByText('Memory hook:').tagName).toBe('B')
+    // The three she offers.
+    for (const q of WORKSPACE_SUGGESTED) expect(within(pane).getByRole('button', { name: q })).toBeTruthy()
+    // The composer, and the scope promise under it.
+    expect(within(pane).getByPlaceholderText('Ask a question or create something')).toBeTruthy()
+    expect(within(pane).getByText('Rubi answers from your course and what you have marked.')).toBeTruthy()
+    // The bar becomes a breadcrumb for the untitled session.
+    expect(screen.getByText('New session')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Rename this session' })).toBeTruthy()
   })
 
   it('renders every layout against every axis — no switch opens a blank screen', () => {

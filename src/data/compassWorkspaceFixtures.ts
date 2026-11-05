@@ -378,3 +378,51 @@ export const WORKSPACE_NUDGE = {
   text: 'You have marked cash value three times.',
   cta: 'Start a workspace for it →',
 }
+
+/* ── A SESSION — what "+ New workspace" opens (2026-11-04, third pass) ─────
+ *
+ * ⚠ FOUND BY CLICKING, which is the whole lesson of this port. Her
+ * "+ New workspace" button opens a MODE, not a dialog: the centre becomes a
+ * Notebook with Rubi — a scoped heading, Rubi's read of what you have marked,
+ * three suggested questions and a composer — and the bar above it becomes
+ * "Workspace · New session" with a rename and a star. Two passes of reading
+ * her source and one of reading her home missed it entirely, because nothing
+ * renders until the button is pressed.
+ *
+ * This is arguably the point of the whole surface: the marks are the input
+ * and the conversation is what you do with them.
+ */
+
+/** Rubi's opening read of the whole course, in a new session. `bold` marks
+ *  the phrases her file emphasises — they are the terms she wants the eye to
+ *  catch, so they are data rather than markup. */
+export const WORKSPACE_SESSION_OPENERS: readonly { id: string; text: string; bold: string[] }[] = [
+  {
+    id: 'r1',
+    text: 'What you have marked covers term versus permanent, what cash value is and who it belongs to, and the two softeners at the end of a term. You have come back to cash value three times — that is where a check would help most.',
+    bold: ['term versus permanent', 'cash value'],
+  },
+  {
+    id: 'r2',
+    text: 'Memory hook: Term → rented → nothing left at the end. Permanent → owned → cash value is yours while alive.',
+    bold: ['Memory hook:'],
+  },
+]
+
+/** The three she offers under the opener. Questions a learner would not think
+ *  to ask, which is what makes them worth suggesting. */
+export const WORKSPACE_SUGGESTED: readonly string[] = [
+  'What is most likely on the exam here?',
+  'Explain cash value a different way',
+  'Where am I still weak?',
+]
+
+/** Her composer, verbatim — including the line under it, which is the scope
+ *  promise: Rubi answers from THIS course and THESE marks, not the internet. */
+export const WORKSPACE_COMPOSER = {
+  placeholder: 'Ask a question or create something',
+  scope: 'All marks',
+  caption: 'Rubi answers from your course and what you have marked.',
+  /** The name a session carries until it is renamed. */
+  untitled: 'New session',
+}
