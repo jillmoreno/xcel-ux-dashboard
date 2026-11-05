@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { cardRecord, existingCard, scopesFor } from '../../netlify/plugins/stage-card/index.js'
+import { cardRecord, existingCard, scopesFor } from '../../netlify/plugins/stage-card/card.js'
 
 /**
  * THE ON STAGE CARD'S WRITER — `netlify/plugins/stage-card`, 2026-11-05.
@@ -23,6 +23,7 @@ import { cardRecord, existingCard, scopesFor } from '../../netlify/plugins/stage
 const here = dirname(fileURLToPath(import.meta.url))
 const fn = readFileSync(resolve(here, '../../netlify/functions/todo-board.ts'), 'utf8')
 const plugin = readFileSync(resolve(here, '../../netlify/plugins/stage-card/index.js'), 'utf8')
+const card = readFileSync(resolve(here, '../../netlify/plugins/stage-card/card.js'), 'utf8')
 
 describe('the On Stage card writer', () => {
   it('⚠ writes exactly the fields the server would', () => {
@@ -57,10 +58,10 @@ describe('the On Stage card writer', () => {
        the board draws. Both are re-declared in the plugin because it cannot
        import TypeScript; both are pinned here. */
     const roster = /SEED_PEOPLE = \[([^\]]+)\]/.exec(fn)?.[1] ?? ''
-    const mineRoster = /ROSTER = \[([^\]]+)\]/.exec(plugin)?.[1] ?? ''
+    const mineRoster = /ROSTER = \[([^\]]+)\]/.exec(card)?.[1] ?? ''
     expect(mineRoster.replace(/\s/g, '')).toBe(roster.replace(/\s/g, ''))
     expect(fn).toMatch(/COLUMNS = \[[^\]]*'stage'/)
-    expect(plugin).toMatch(/const COLUMN = 'stage'/)
+    expect(card).toMatch(/COLUMN = 'stage'/)
   })
 
   it('⚠ never fails the build', () => {
@@ -70,6 +71,31 @@ describe('the On Stage card writer', () => {
        so this looks for the CALL. */
     expect(plugin).not.toMatch(/failBuild\s*\(/)
     expect(plugin).toMatch(/catch \(err\)/)
+  })
+
+  it('⚠ exports event handlers and nothing else', () => {
+    /* THE MISTAKE THIS CASE EXISTS FOR, and it cost a stage deploy. Netlify
+       reads every named export of a plugin as an EVENT NAME: exporting
+       `cardRecord` from `index.js` failed the build with "Invalid event
+       'cardRecord'" before the plugin ever ran — so a card-writing
+       convenience took the whole deploy down, which is precisely what its own
+       try/catch was written to prevent. The handlers live in `index.js`; the
+       testable parts live in `card.js`. */
+    const EVENTS = new Set([
+      'onPreBuild',
+      'onBuild',
+      'onPostBuild',
+      'onSuccess',
+      'onError',
+      'onEnd',
+      'onDev',
+      'onPreDev',
+    ])
+    const exported = [...plugin.matchAll(/^export (?:const|function|async function) (\w+)/gm)].map(
+      (m) => m[1],
+    )
+    expect(exported.length).toBeGreaterThan(0)
+    for (const name of exported) expect(EVENTS.has(name), `${name} is not a Netlify event`).toBe(true)
   })
 
   it('does nothing on any branch but stage', () => {
