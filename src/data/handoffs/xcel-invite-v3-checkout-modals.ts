@@ -24,7 +24,7 @@ const feature: PrototypeFeature = {
   devStatus: 'not-ready',
   surface: 'invite',
   owner: 'Afsana',
-  lastUpdated: '2026-11-05T18:44:14Z',
+  lastUpdated: '2026-11-05T19:13:39Z',
   accent: 'gold',
   icon: 'flag',
   brands: ['xcel'],
@@ -134,7 +134,7 @@ const feature: PrototypeFeature = {
           { name: 'Complete', when: 'All six digits are in. Confirm turns on.' },
           { name: 'Resend counting down', when: 'For 10 minutes after the code is sent: "Didn’t receive the code? Resend code in 10:00", counting down.', why: 'The code is valid for those 10 minutes, so a second code before then would only race the first.' },
           { name: 'Resend available', when: 'The countdown has reached 0:00. "Resend code" becomes a link.' },
-          { name: 'Code resent', when: 'Resend code was clicked. "We sent a new code to [email]." appears, the boxes clear and the countdown restarts.' },
+          { name: 'Code resent', when: 'Resend code was clicked. A light green banner appears above "To verify your email address…" — a check icon and "A new code has been sent." — the boxes clear and the countdown restarts.', why: 'The learner pressed a link and the modal otherwise looks the same as before; the banner confirms the request went through, where they are already reading.' },
           { name: 'Invalid code', when: 'Confirm with a wrong code. Red text under the boxes — "Invalid code. Please try again." — and a red stroke along the bottom of each box. Changing any digit clears both.', why: 'The learner needs to know the code was read and refused, not that nothing happened.' },
           { name: 'Expired code', when: 'Confirm after the 10 minutes have run out. Red text under the boxes — "The code has expired. Request another code." — with the same red stroke. Changing a digit or Resend code clears it.', why: 'Expired and wrong need different fixes — retyping will not help an expired code — so they say different things.' },
           { name: 'With Use a different email', when: 'The learner typed the email themselves: QR code, social link and B2C guest arrivals.' },
@@ -143,7 +143,7 @@ const feature: PrototypeFeature = {
         ctas: [
           { name: 'Digit boxes', does: 'One digit each. Typing moves to the next box, Backspace on an empty box goes back, the arrow keys move between boxes, and a pasted code fills all six. Anything that is not a digit is dropped.' },
           { name: 'Confirm', does: 'Off until all six digits are in. Then checks the code: right → the email is verified and the checkout opens with it locked; wrong → Invalid code; after 10 minutes → Expired code.' },
-          { name: 'Resend code', does: 'Only once the countdown ends. Sends a new code, clears the boxes and any error, and restarts the 10 minutes.' },
+          { name: 'Resend code', does: 'Only once the countdown ends. Sends a new code, shows the green Code resent banner, clears the boxes and any error, and restarts the 10 minutes.' },
           { name: 'Use a different email', does: 'Back to Enter your email to continue. Not shown on Direct Email.' },
         ],
         statesMatrix: [
@@ -161,6 +161,9 @@ const feature: PrototypeFeature = {
             { role: 'Digit box', token: '--color-e2e-field' },
             { role: 'Digit box border', token: '--color-e2e-card-outline' },
             { role: 'Error text and stroke', token: '--color-error-600' },
+            { role: 'Code resent banner — fill', token: '--color-success-100' },
+            { role: 'Code resent banner — border', token: '--color-success-200' },
+            { role: 'Code resent banner — text and icon', token: '--color-success-700' },
             { role: 'Countdown and notes', token: '--color-text-secondary' },
             { role: 'Primary button', token: '--color-xcel-brick-600' },
             { role: 'Disabled button', token: '--color-e2e-form-locked' },
@@ -173,6 +176,7 @@ const feature: PrototypeFeature = {
           responsive: [
             'Boxes 54 × 66, 12px apart, 28px digits, centred. 8px between the row and the error line.',
             'Resend group: 13px notes, 10px apart, under Confirm.',
+            'Code resent banner: between the heading’s rule and the lead, full width; padding 10px 12px, radius 6px, 1px border; 16px check icon, 8px gap; text 14px / 20px.',
           ],
           sources: [
             'The final prototype is the source of truth — the first and third Live Preview routes.',
@@ -425,6 +429,12 @@ const feature: PrototypeFeature = {
           owner: 'Jill and Engineering',
         },
         {
+          question: 'How long should the Code resent banner stay up?',
+          decision: 'Open. The prototype keeps it until the modal closes. It could instead fade after a few seconds, or clear when the learner starts typing the new code.',
+          status: 'Needs weigh-in',
+          owner: 'Design and Engineering',
+        },
+        {
           question: 'How long does Signing you out… show?',
           decision: 'Open. Long enough to read why they are being signed out — that is the only requirement. The prototype uses four seconds.',
           status: 'Needs weigh-in',
@@ -463,6 +473,7 @@ const feature: PrototypeFeature = {
       ],
       openItems: [
         'Decide how Enter your email behaves after a signed-in XCEL (OCD) learner is signed out — shown, pre-filled, locked.',
+        'Set how long the Code resent banner stays up.',
         'Set how long Signing you out… shows.',
         'Set the Resend link wait, and whether Check your email states the wait and the link’s validity.',
         'Design the code email failing to send.',

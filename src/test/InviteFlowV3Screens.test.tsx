@@ -217,7 +217,11 @@ describe('Invite Flow V3 — the email check', () => {
 
       for (let i = 0; i < 600; i++) await act(() => vi.advanceTimersByTimeAsync(1000))
       await userEvent.click(within(dialog).getByRole('button', { name: 'Resend code' }))
-      expect(dialog).toHaveTextContent('We sent a new code to sam@example.com.')
+      /* A light green banner over the lead, not a line under the countdown. */
+      const banner = within(dialog).getByRole('status')
+      expect(banner).toHaveTextContent(/^A new code has been sent\.$/)
+      expect(banner.compareDocumentPosition(within(dialog).getByText(/^To verify your email address/)) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+      expect(dialog).not.toHaveTextContent('We sent a new code')
       expect(dialog).toHaveTextContent('Resend code in 10:00')
     } finally {
       vi.useRealTimers()

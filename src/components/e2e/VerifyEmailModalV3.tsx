@@ -13,6 +13,7 @@ import {
   type VerifiedIdentity,
 } from '@/data/inviteVerification'
 import { looksLikeEmail } from '@/data/inviteFlows'
+import { CircleCheckSolid } from '@/icons'
 import { V3_EXPIRED_DEMO_CODE, V3_INVALID_DEMO_CODE, V3_WRONG_DEMO_PASSWORD } from '@/data/inviteFlowsV3'
 import { E2E_LEARNER_EMAIL, E2E_LEARNER_FIRST } from '@/pages/endToEndDemo'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
@@ -287,6 +288,15 @@ function CodeStep({
           Enter your one-time code
         </h2>
         <div aria-hidden style={RULE} />
+        {/* Code resent — a light green banner over the lead (2026-11-05,
+            Afsana), replacing the line under the countdown. It stays until the
+            modal closes; how long it should persist is the team's call. */}
+        {resent ? (
+          <p role="status" style={RESENT_BANNER}>
+            <CircleCheckSolid size={16} aria-hidden style={{ flex: 'none' }} />
+            <span>A new code has been sent.</span>
+          </p>
+        ) : null}
         <p id="verify-email-lead" style={LEAD}>
           To verify your email address, enter the 6-digit code we sent to{' '}
           <strong style={{ fontWeight: 800 }}>{identity.email.trim()}</strong>. Be sure to check your spam or junk
@@ -363,11 +373,6 @@ function CodeStep({
             </button>
           )}
         </p>
-        {resent ? (
-          <p role="status" style={NOTE}>
-            We sent a new code to {identity.email.trim()}.
-          </p>
-        ) : null}
         {onChangeEmail ? (
           <button type="button" className="cre-e2e-textlink" style={TEXT_LINK} onClick={onChangeEmail}>
             Use a different email
@@ -638,6 +643,22 @@ const FIELD: CSSProperties = {
   fontSize: 14,
   color: 'var(--color-text-primary)',
   border: '1px solid var(--color-e2e-card-outline)',
+}
+
+/* Code resent — light green, the success scale's lightest fill. */
+const RESENT_BANNER: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  margin: '4px 0',
+  padding: '10px 12px',
+  borderRadius: 6,
+  border: '1px solid var(--color-success-200)',
+  background: 'var(--color-success-100)',
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontSize: 14,
+  lineHeight: '20px',
+  color: 'var(--color-success-700)',
 }
 
 /* Smaller than the lead's 14 (2026-11-05, Afsana), in the error red. */
