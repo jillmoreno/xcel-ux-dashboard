@@ -183,11 +183,24 @@ export function savedMarks(layout: WorkspaceLayout, story: WorkspaceStory): read
   return COMPASS_WORKSPACE_MARKS.filter((m) => keep.includes(m.id))
 }
 
-/** Scope → type → search, in her order. Search reads the passage AND the
+/**
+ * A filter chip names a GROUP, not a raw type.
+ *
+ * ⚠ THE DIFFERENCE IS SIX VERSUS ONE. Six mark types collapse into four
+ * groups — `bookmark` and `object` both file under Flag — so her "Flags"
+ * chip reads 6 while there is exactly ONE mark whose type is literally
+ * `flag`. The port compared `m.type === filter` and showed 1, which made the
+ * chip disagree with the group heading directly beneath it.
+ */
+function inFilterGroup(mark: WorkspaceMark, filter: string): boolean {
+  return WORKSPACE_KIND[mark.type] === WORKSPACE_KIND[filter as WorkspaceMarkType]
+}
+
+/** Scope → group → search, in her order. Search reads the passage AND the
  *  learner's own note, which is the whole reason it is useful. */
 export function scopedMarks(all: readonly WorkspaceMark[], state: WorkspaceState): readonly WorkspaceMark[] {
   let base = state.scope === 'all' ? all : all.filter((m) => m.ch === state.scope)
-  if (state.filter !== 'all') base = base.filter((m) => m.type === state.filter)
+  if (state.filter !== 'all') base = base.filter((m) => inFilterGroup(m, state.filter))
   if (state.q) {
     const q = state.q.toLowerCase()
     base = base.filter((m) => `${m.text} ${m.note ?? ''}`.toLowerCase().includes(q))
@@ -232,7 +245,8 @@ export function groupMarks(marks: readonly WorkspaceMark[]): { key: string; mark
  *  the moment one of them is chosen. */
 export function countOfType(all: readonly WorkspaceMark[], scope: string, type: string): number {
   const base = scope === 'all' ? all : all.filter((m) => m.ch === scope)
-  return type === 'all' ? base.length : base.filter((m) => m.type === type).length
+  // By GROUP, so a chip and the heading under it never disagree — see above.
+  return type === 'all' ? base.length : base.filter((m) => inFilterGroup(m, type)).length
 }
 
 /** "Saved", "Note", "Flag", "Pointer" — or her Rubi treatment, which the

@@ -16,6 +16,7 @@ import {
   COMPASS_WORKSPACE_SESSIONS,
   WORKSPACE_KIND,
   type WorkspaceMadeSpec,
+  type WorkspaceMarkType,
   type WorkspaceSession,
   type WorkspaceThreadTurn,
   WORKSPACE_CREATED,
@@ -298,7 +299,7 @@ export function CompassWorkspace({
               aria-pressed={state.filter === f.value}
               onClick={() => patch({ filter: f.value })}
             >
-              {f.value !== 'all' && Dot({ type: f.value as WorkspaceMark['type'] })}
+              {f.value !== 'all' && TypeIcon({ type: f.value as WorkspaceMarkType, size: 16 })}
               {f.label} <span className="cre-wsf-n">{n}</span>
             </button>
           )
@@ -353,16 +354,31 @@ export function CompassWorkspace({
     )
   }
 
-  /** The glyph a group heading carries — her type icons, in this registry's
-   *  equivalents: a document for notes, a flag for flags, the Rubi badge, a
-   *  location arrow for pointers. */
-  const GroupIcon = ({ group }: { group: string }) => {
-    const color = WORKSPACE_TYPE_COLOR[WORKSPACE_GROUP_TYPE[group]]
-    if (group === 'Note') return <FileLinesRegular size={17} style={{ color }} aria-hidden />
-    if (group === 'Rubi') return <RubiMark width={15} aria-hidden />
-    if (group === 'Pointer') return <CircleLocationArrowRegular size={17} style={{ color }} aria-hidden />
-    return <Flag size={17} style={{ color }} aria-hidden />
+  /**
+   * THE TYPE GLYPH — and there is ONE set, used by the filter chips and the
+   * group headings alike, exactly as hers is.
+   *
+   * ⚠ THE CHIPS CARRIED A COLOURED DOT until 2026-11-04 (audit 6). Hers
+   * carry the same glyph the group heading does — a document for notes, a
+   * flag for flags, the Rubi badge, an arrow for pointers — each stroked in
+   * the type's own colour. A dot says "there is a category here"; the glyph
+   * says WHICH, and it is what lets the chip row and the groups below it read
+   * as the same vocabulary rather than two.
+   *
+   * The Rubi badge is the registry's own `RubiMark`, which is the hexagon her
+   * file draws. The pointer is this repo's nearest — a location arrow in a
+   * circle where hers has no circle; the one glyph still approximated.
+   */
+  const TypeIcon = ({ type, size = 17 }: { type: WorkspaceMarkType; size?: number }) => {
+    const color = WORKSPACE_TYPE_COLOR[type]
+    if (type === 'note') return <FileLinesRegular size={size} style={{ color }} aria-hidden />
+    if (type === 'rubi') return <RubiMark width={size - 2} aria-hidden />
+    if (type === 'pointer') return <CircleLocationArrowRegular size={size} style={{ color }} aria-hidden />
+    return <Flag size={size} style={{ color }} aria-hidden />
   }
+
+  const GroupIcon = ({ group }: { group: string }) =>
+    TypeIcon({ type: WORKSPACE_GROUP_TYPE[group] })
 
   /**
    * A MARK IN THE RAIL — her `.nb-src`, and it is NOT the card.

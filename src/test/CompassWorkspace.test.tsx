@@ -349,6 +349,23 @@ describe('Anjani’s Compass Workspace', () => {
     expect(make.textContent).not.toContain('select items first')
   })
 
+  it('a chip counts its GROUP, so it never disagrees with the heading below', async () => {
+    /* ⚠ SIX VERSUS ONE. `bookmark` and `object` file under Flag, so her
+       "Flags" chip reads 6 while exactly one mark has the literal type
+       `flag`. The port compared `m.type === filter` and showed 1 — a chip
+       contradicting the group heading an inch beneath it. */
+    const user = userEvent.setup()
+    render(<CompassWorkspace />)
+    await user.click(screen.getByRole('button', { name: /New workspace/ }))
+    /* The chip and the group heading share a name ("Flags 6") — which is the
+       point — so the chip is reached through its own group. */
+    const chips = () => within(screen.getByRole('group', { name: 'Filter by type' }))
+    expect(chips().getByRole('button', { name: /^Flags/ }).textContent).toContain('6')
+    // and filtering by it keeps all six, not the one
+    await user.click(chips().getByRole('button', { name: /^Flags/ }))
+    expect(screen.getAllByRole('checkbox').length).toBe(6)
+  })
+
   it('six mark types collapse into four groups, and that is deliberate', () => {
     /* `bookmark` and `object` both file under Flag. It looks like a mistake
        and is not: a bookmark and a knowledge check are both "something I

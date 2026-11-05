@@ -1164,3 +1164,10 @@
   font-weight: 600;
   color: var(--cre-ws-steel);
 }
+
+/* ---- AUDIT 6: the chips carry the TYPE GLYPH, as hers do — the same icon
+   the group heading below uses, so the chip row and the groups read as one
+   vocabulary. They carried a coloured dot before. ---- */
+.cre-ws .cre-ws-chip { gap: 7px; padding: 6px 13px; }
+.cre-ws .cre-ws-chip svg { flex: none; }
+.cre-ws .cre-ws-chip .cre-wsf-n { margin-left: 2px; }
