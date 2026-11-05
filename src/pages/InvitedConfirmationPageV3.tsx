@@ -20,15 +20,16 @@
  *
  * The left panel is the same on both: the thank-you, the confirmation number,
  * the product and the total — V2 guest checkout's light receipt since
- * 2026-11-03 (`ConfirmationReceiptV3`). Either button holds on the flow's loading page
- * and lands on the learning dashboard, the way V2's ending does.
+ * 2026-11-03 (`ConfirmationReceiptV3`). Either button opens "Taking you to your course"
+ * over the page, loading until a click outside closes it (2026-11-05) — it
+ * used to hold on the loading page and land on the learning dashboard.
  */
-import { useEffect, useState, type CSSProperties } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useState, type CSSProperties } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import { PartnerHeader } from '@/components/e2e/PartnerHeader'
 import { TopoBackground } from '@/components/e2e/TopoBackground'
-import { LOADING_HANDOFF_MS, XcelLoadingPage } from '@/components/e2e/XcelLoadingPage'
+import { TakingYouToCourseDialog } from '@/components/e2e/TakingYouToCourseDialog'
 import { InvitePasswordChecklistV3 } from '@/components/e2e/InvitePasswordChecklistV3'
 import { ConfirmationReceiptV3 } from '@/components/e2e/ConfirmationReceiptV3'
 import { CART_PACKAGE_PARAM, cartPackage } from '@/data/xcelCourseFinder'
@@ -43,11 +44,8 @@ import { meetsInvitePasswordRulesV3 } from '@/data/invitePasswordRulesV3'
 import { readVerifiedIdentity } from '@/data/inviteVerification'
 import {
   useEndToEndCourseTitle,
-  E2E_JOURNEY_FULL,
-  E2E_JOURNEY_PARAM,
   E2E_LEARNER_EMAIL,
   E2E_LEARNER_FIRST,
-  END_TO_END_VERSION,
   useEndToEndDemoParams,
   useEndToEndPageChrome,
 } from './endToEndDemo'
@@ -56,7 +54,6 @@ import './inviteFlow.css'
 export function InvitedConfirmationPageV3() {
   useEndToEndDemoParams()
   useEndToEndPageChrome('Thank you for your order | XCEL')
-  const navigate = useNavigate()
   const [params] = useSearchParams()
   const ending = inviteEndingV3(useInviteFlowV3())
   /* The address the code came back from, when the flow verified one; the demo
@@ -72,6 +69,9 @@ export function InvitedConfirmationPageV3() {
   const [confirmShown, setConfirmShown] = useState(false)
   const mismatch = confirm.length > 0 && confirm !== password
   const ready = meetsInvitePasswordRulesV3(password, learnerEmail) && confirm === password
+  /* "Taking you to your course" — 2026-11-05, Afsana. Start Course and
+     Confirm both open it over the page; it loads until a click
+     outside closes it. */
   const [signingIn, setSigningIn] = useState(false)
 
   /* What was bought, and for how much — V2's ending's reading of the same
@@ -91,22 +91,6 @@ export function InvitedConfirmationPageV3() {
   const lineOfAuthority = params.get(INVITE_LOA_PARAM) ?? ''
   const purchased =
     pkg?.name ?? (state && lineOfAuthority ? `${state} ${lineOfAuthority} Pre-licensing` : advertised)
-
-  /* The same hand-off as V2's ending: the loading page for
-     `LOADING_HANDOFF_MS`, then the learning dashboard with `journey=full`.
-     `replace`, and cleared on unmount. */
-  useEffect(() => {
-    if (!signingIn) return
-    const timer = window.setTimeout(() => {
-      navigate(
-        `/dashboard-rebrand?demo=1&version=${END_TO_END_VERSION}&${E2E_JOURNEY_PARAM}=${E2E_JOURNEY_FULL}`,
-        { replace: true },
-      )
-    }, LOADING_HANDOFF_MS)
-    return () => window.clearTimeout(timer)
-  }, [signingIn, navigate])
-
-  if (signingIn) return <XcelLoadingPage message="Taking you to your learning dashboard" />
 
   return (
     <div style={PAGE}>
@@ -212,7 +196,7 @@ export function InvitedConfirmationPageV3() {
                   style={ready ? CTA_ON : CTA_OFF}
                   onClick={() => setSigningIn(true)}
                 >
-                  Save Password &amp; Log In
+                  Confirm
                 </button>
                 {/* The demo fill — V2's corner, in the same place. */}
                 <button
@@ -241,6 +225,7 @@ export function InvitedConfirmationPageV3() {
           </div>
         </section>
       </main>
+      {signingIn ? <TakingYouToCourseDialog onClose={() => setSigningIn(false)} /> : null}
     </div>
   )
 }

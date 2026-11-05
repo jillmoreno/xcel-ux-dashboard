@@ -175,7 +175,9 @@ export function VerifyEmailModalV3({
             onChangeEmail={suppliedEmail ? undefined : () => setStep('email')}
           />
         ) : step === 'login' ? (
-          <LoginStep email={email} onLoggedIn={done} />
+          /* Log in always holds on "Signing you in" (2026-11-05, Afsana),
+             whether or not the flow's `signsIn` does. */
+          <LoginStep email={email} onLoggedIn={() => setStep('signing-in')} />
         ) : (
           <div style={SIGNING_IN}>
             <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
