@@ -14,8 +14,9 @@ the REACT product. Getting from one to the other is this skill.
 **This is the whole skill. Everything else is detail.**
 
 On 2026-11-04 Anjani's 9,292-line Compass Workspace was ported by reading her
-file. It took three passes to get right, and every single thing that was wrong
-was visible in two minutes in a browser:
+file. It took FOUR passes, and the design lead found every miss. Everything
+that was wrong was visible in minutes in a browser — most of it just by
+looking, the rest by pressing a button:
 
 | Got wrong by reading the source | Visible immediately in the build |
 |---|---|
@@ -26,6 +27,9 @@ was visible in two minutes in a browser:
 | Marks listed provenance above passage | Passage first, provenance under it |
 | All three panes on the home | The home hides both side panes and goes one column |
 | The made-tag as a text pill | An icon with its name read aloud |
+| No session mode at all | **"+ New workspace" opens the Notebook with Rubi** — the surface's whole reason for existing |
+| No deck player | Opening a deck replaces the centre: *1 of 8*, flip, three confidence answers, prev/next |
+| "It made something" | Four Make actions, four names, three payload shapes — a CTA, a body, an audio player |
 
 The nav row was in a function called `addNav()` **inside the block already
 extracted**. Reading 9,000 lines of string-building JavaScript tells you the
@@ -77,8 +81,49 @@ That is exactly what was missed twice above.
 time more often than not. Read the rail off the DOM; never conclude from the
 source that a row does not exist.
 
-⚠ **Click through the states.** Empty, loaded, one thing selected, something
-open. A card's selected state and an empty list's message are content.
+## Step 2b — press every control, and write down what each one DOES
+
+⚠ **This is not "click around". It is an inventory, and it is the step that
+decides whether the port takes one pass or four.** On 2026-11-04 the Compass
+Workspace was ported three times and still missing two whole modes, because
+nothing renders until a button is pressed and nobody had pressed them.
+
+Enumerate first, so you cannot quietly skip one:
+
+```js
+const scr = document.querySelector('<their screen>')
+const ctrls = [...scr.querySelectorAll('button,[role=button],select,input,a[href],[onclick]')]
+  .map((e) => ({
+    label: (e.getAttribute('aria-label') || e.textContent || e.placeholder || '').trim(),
+    data: [...e.attributes].filter((a) => a.name.startsWith('data-')).map((a) => a.name).join(','),
+  }))
+// group by data-attribute: prototypes name their actions there, and the
+// distinct names ARE the list of behaviours you have to account for
+```
+
+The Workspace had 71 controls in 21 distinct actions. Press **one of each**,
+and after every press record three things:
+
+1. **what replaced the centre** — a new mode, or nothing
+2. **what changed elsewhere** — a new row in a side rail, a changed bar
+3. **the toast**, verbatim, if one fires
+
+⚠ **A button that makes something is not done when it fires.** Her four Make
+actions each produce a differently-named artefact with a different payload —
+one gets a CTA, one gets a body of text, one gets an audio player. "It made
+something" is not the finding; the four names and the three payload shapes are.
+
+⚠ **Count the modes before you write any React.** A mode is anything that
+replaces the main pane: a conversation, a player, a wizard, a detail. The
+Workspace has at least five, and three of them are only reachable by pressing
+something. If your port has fewer modes than your inventory, it is not done.
+
+⚠ **Press the thing you think is decorative.** "+ New workspace" looks like a
+button that opens a dialog. It opens the surface's entire reason for existing.
+
+⚠ **Click through the states too.** Empty, loaded, one thing selected,
+something open. A card's selected state and an empty list's message are
+content.
 
 Write what you captured somewhere you can diff against — the scratchpad is
 fine. This is the specification; the file is not.
