@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { cardRecord, existingCard, scopesFor } from '../../netlify/plugins/stage-card/card.js'
+import { cardRecord, existingCard, pathFor, scopesFor } from '../../netlify/plugins/stage-card/card.js'
 
 /**
  * THE ON STAGE CARD'S WRITER — `netlify/plugins/stage-card`, 2026-11-05.
@@ -110,6 +110,22 @@ describe('the On Stage card writer', () => {
     expect(plugin).toMatch(/no Blobs credentials/)
     /* And it must pass them, not hope for ambient ones. */
     expect(plugin).toMatch(/getStore\(\{ name: STORE_NAME, consistency: 'strong', siteID, token \}\)/)
+  })
+
+  it('⚠ links to the SURFACE, not to the site', () => {
+    /* The first card the plugin wrote linked to `/dashboard-rebrand?demo=1`,
+       which lands on Atlas Home. The Design controls are scoped by surface, so
+       the control that switches the very thing the card was about was not on
+       the bar when you arrived — the link has to open a LESSON for Compass,
+       and the right door for every other scope. */
+    expect(pathFor('compass')).toContain('section=compass')
+    expect(pathFor('compass')).toContain('session=1')
+    expect(pathFor('invite')).toContain('/end-to-end-demo')
+    expect(pathFor('atlas')).toContain('section=dashboard')
+    /* Everything carries `?demo=1`: a Prototypes-style walk, committed
+       defaults, which is what a reviewer should land in. */
+    for (const s of ['compass', 'atlas', 'invite', 'admin', 'end-to-end', ''])
+      expect(pathFor(s)).toContain('demo=1')
   })
 
   it('does nothing on any branch but stage', () => {

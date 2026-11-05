@@ -70,6 +70,30 @@ export function existingCard(cards, scope) {
   return cards.find((c) => c.column === COLUMN && c.scope === scope && c.archived !== true) ?? null
 }
 
+/**
+ * WHERE A SCOPE'S WORK ACTUALLY IS — the path the card should link to.
+ *
+ * ⚠ THE SURFACE IS THE DESTINATION, NOT THE SITE. The first card linked to
+ * `/dashboard-rebrand?demo=1`, which lands on Atlas Home — and the Design
+ * controls are scoped by SURFACE, so the control that switches the thing the
+ * card is about was not on the bar when you got there. A card whose link does
+ * not open the work is a card that wastes the one minute it was written to
+ * save.
+ */
+export function pathFor(scope) {
+  return (
+    {
+      /* Inside a LESSON: `compass:session` is where Anjani's and Jeff's
+         versions are switched. `?section=compass` alone is the overview. */
+      compass: '/dashboard-rebrand?demo=1&section=compass&session=1',
+      atlas: '/dashboard-rebrand?demo=1&section=dashboard',
+      invite: '/end-to-end-demo?demo=1',
+      admin: '/dashboard-rebrand?demo=1',
+      'end-to-end': '/dashboard-rebrand?demo=1',
+    }[scope] ?? '/dashboard-rebrand?demo=1'
+  )
+}
+
 /** The scope's name as the board should read it. */
 export function titleFor(scope) {
   return (

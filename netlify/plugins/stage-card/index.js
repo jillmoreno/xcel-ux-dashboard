@@ -39,7 +39,7 @@
 
 import { getStore } from '@netlify/blobs'
 import { execSync } from 'node:child_process'
-import { COLUMN, STAGE_URL, STORE_NAME, cardRecord, existingCard, scopesFor, titleFor } from './card.js'
+import { COLUMN, STAGE_URL, STORE_NAME, cardRecord, existingCard, pathFor, scopesFor, titleFor } from './card.js'
 
 /**
  * ⚠ THIS FILE EXPORTS EVENT HANDLERS AND NOTHING ELSE. Netlify reads every
@@ -115,7 +115,7 @@ export const onSuccess = async ({ utils }) => {
     let nextId = keys.reduce((m, k) => Math.max(m, Number(k.slice(5))), 0)
 
     for (const scope of wanted) {
-      const note = `${subject} · staged ${today}${author ? ` by ${author}` : ''} · ${STAGE_URL}/dashboard-rebrand?demo=1`
+      const note = `${subject} · staged ${today}${author ? ` by ${author}` : ''} · ${STAGE_URL}${pathFor(scope)}`
       const found = existingCard(cards, scope)
       const record = found
         ? { ...cardRecord({ ...found, note, scope, position: found.position, addedDate: found.addedDate, owner: found.owner }), id: found.id, title: found.title }

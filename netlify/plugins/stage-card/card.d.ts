@@ -12,6 +12,7 @@ export const STORE_NAME: string
 export const COLUMN: string
 export const STAGE_URL: string
 export function titleFor(scope: string): string
+export function pathFor(scope: string): string
 export type StageCardRecord = {
   id: string
   title: string
