@@ -3,7 +3,7 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSPropert
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
-import { AngleDownSolid, AngleRightSolid, BallotCheckLight, CrownSolid, ShieldCheckSolid, ChartLineUpLight, FaceGrinLight, FileCertificateLight, RubiMark, RubiWordmark } from '@/icons'
+import { AngleDownSolid, AngleRightSolid, BallotCheckLight, ChartLineUpLight, CrownSolid, FaceGrinLight, FileCertificateLight, FileCertificateSolid, RubiMark, RubiWordmark, ShieldCheckSolid } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
@@ -96,14 +96,32 @@ export function TwoPackageProductDetailPage() {
   const [chosen, setPicked] = useState<PackageId>('premier')
   /* The design bar's Products (2026-10-28, Eric): the multi-product page, or the single-product one — Premier alone, its card
      the only one and the comparison its own list. Single always has Premier picked, whatever was picked before the switch. */
-  const single = useFeatureFlag('pdp-products').variant === 'single'
+  /* …and a STANDARD single-product page beside it (2026-11-05, Eric: "Duplicate this page and make it a Standard Product page in
+     the product dropdown"): the same page with Standard alone — its card, its own "includes" list (only the rows Standard has), its
+     strip without the crown or the guarantee, and no Pass Guarantee in the rail, since Standard does not carry one. The variant
+     `single` is the Premier one (labelled "Premier" since the same day). */
+  const productsVariant = useFeatureFlag('pdp-products').variant
+  const soloId: PackageId | null = productsVariant === 'single' ? 'premier' : productsVariant === 'standard' ? 'standard' : null
+  const single = soloId !== null
+  const standardOnly = soloId === 'standard'
   /* The single page's course head — A, B or C (2026-10-29, Eric; C the default, A and B kept to draw on). */
   const singleHead = useFeatureFlag('pdp-single-head').variant ?? 'c'
   // D's head shows Premier on both pages — packages[0] is Standard on the multi-product page.
   const PREMIER = PACKAGES.find((p) => p.id === 'premier') ?? PACKAGES[0]
   const STANDARD = PACKAGES.find((p) => p.id === 'standard') ?? PACKAGES[0]
-  const picked: PackageId = single ? 'premier' : chosen
-  const packages = single ? PACKAGES.filter((p) => p.id === 'premier') : PACKAGES
+  const picked: PackageId = soloId ?? chosen
+  const packages = soloId ? PACKAGES.filter((p) => p.id === soloId) : PACKAGES
+  // The comparison's rows: all of them across both packages, or on a single page only the ones its package includes.
+  const comparison = soloId ? COMPARISON.filter((row) => row[soloId]) : COMPARISON
+  /* THE TRAINING STEPS (2026-11-05, Eric: everything the live product pages say that this one did not — "but try to keep them worded
+     more concisely"): what each part holds, the score to aim for, the 24-hour tip, what Part 1 unlocks, and the fourth step, Pass
+     Your Exam! On the Standard page first, then on Premier and the multi-product page too (same day). */
+  const howItWorks = standardOnly
+    ? HOW_IT_WORKS
+    : HOW_IT_WORKS.map((step) =>
+        // Where Premier's extras come in — the end of Step 2, as on the staging Premier page (same day, Eric). Not on Standard's.
+        step.number === '02' ? { ...step, body: `${step.body} Now’s the time for your recorded review class and flashcards.` } : step,
+      )
   /* Change state or line: the selector slid open under the heading (2026-10-28, Eric). Nothing opens it now (2026-10-29, Eric: the link
      no longer does), so it stays shut; the panel is kept for when something does. */
   const changeOpen = false
@@ -263,8 +281,9 @@ export function TwoPackageProductDetailPage() {
     const buy = (style: CSSProperties) => (
       <button
         type="button"
-        className={`cre-e2e-add-to-cart ${p.id === 'premier' ? 'cre-e2e-cta' : `cre-e2e-outline${on ? '' : ' cre-e2e-outline--quiet'}`}`}
-        style={{ ...style, ...(p.id === 'premier' ? SOLID_BUY_WEIGHT : null) }}
+        // The solid Purchase is Premier's beside Standard — and the only package's on a single page, Standard's included (2026-11-05).
+        className={`cre-e2e-add-to-cart ${p.id === 'premier' || single ? 'cre-e2e-cta' : `cre-e2e-outline${on ? '' : ' cre-e2e-outline--quiet'}`}`}
+        style={{ ...style, ...(p.id === 'premier' || single ? SOLID_BUY_WEIGHT : null) }}
         onClick={(e) => {
           e.stopPropagation()
           purchase(p.id)
@@ -320,12 +339,12 @@ export function TwoPackageProductDetailPage() {
             {!lift && !bare && p.id === 'premier' ? (
               <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, fontFamily: 'var(--font-e2e-avenir)', marginBottom: plain ? 0 : -8 }}>
                 {/* Plain (Single head E), 8 more under it (2026-10-30, Eric). */}
-                with Pass Guarantee
+                with Prepared to Pass Promise
               </button>
             ) : !lift && !bare ? (
               /* Standard keeps the link's line, empty, so the two cards' prices and Purchases stay level (2026-10-30, Eric). */
               <span aria-hidden style={{ ...LINK, fontFamily: 'var(--font-e2e-avenir)', marginBottom: -8, visibility: 'hidden' }}>
-                with Pass Guarantee
+                with Prepared to Pass Promise
               </span>
             ) : null}
             {lift ? <span style={{ position: 'relative', top: -lift.price, alignSelf: lift.center ? 'center' : 'flex-start' }}>{prices}</span> : prices}
@@ -344,7 +363,12 @@ export function TwoPackageProductDetailPage() {
   }
 
   /* Copies B and C's PREMIER PACKAGE | Includes our Pass Guarantee strip (Figma 573:3972; 2026-10-29, Eric). */
-  const packageStripRow = (
+  const packageStripRow = standardOnly ? (
+    // Standard's strip: its name alone — no crown, and no guarantee to include (2026-11-05, Eric).
+    <div style={PACKAGE_STRIP_ROW_C}>
+      <span style={{ ...PACKAGE_STRIP_LABEL_C, color: 'var(--color-text-primary)' }}>Standard package</span>
+    </div>
+  ) : (
     <div style={PACKAGE_STRIP_ROW_C}>
       {/* A crown at its left, the shield's gap and size (2026-10-29, Eric). */}
       <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--color-text-primary)' }}>
@@ -354,7 +378,7 @@ export function TwoPackageProductDetailPage() {
       <span aria-hidden style={PACKAGE_STRIP_RULE_C} />
       <span style={PACKAGE_STRIP_GUARANTEE_C}>
         <ShieldCheckSolid size={14} aria-hidden />
-        <span style={{ paddingTop: 1 }}>Includes our Pass Guarantee</span>
+        <span style={{ paddingTop: 1 }}>Includes our Prepared to Pass Promise</span>
       </span>
     </div>
   )
@@ -461,7 +485,9 @@ export function TwoPackageProductDetailPage() {
               {/* At the rail's Pass Guarantee body size, 15 / 21 (2026-10-30, Eric; was 18 / 27). */}
               <p style={{ ...SIDE_BODY, marginBottom: -8 }}>
                 Updated every year, our packages make complex insurance concepts simple.{' '}
-                <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
+                <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, be exam-ready in as little as 2 weeks,{' '}
+              {/* "As little as 2 weeks" on every page but Standard's own description, which says it already (2026-11-05, Eric). */}
+              and{' '}
                 <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
               </p>
             </div>
@@ -482,7 +508,7 @@ export function TwoPackageProductDetailPage() {
               )}
               <div style={single ? PREMIER_TILE_D : { ...PREMIER_TILE_D, ...PACKAGE_DIVIDE_D }}>
                 {/* PASS GUARANTEE under the rule between the packages, 16 below it (2026-10-29, Eric; hung from it, then 16 down). */}
-                <span style={{ ...TOP_BADGE, alignSelf: 'center', marginTop: 16 }}>Pass Guarantee</span>
+                <span style={{ ...TOP_BADGE, alignSelf: 'center', marginTop: 16 }}>Prepared to Pass Promise</span>
                 {/* 24 under the tab (2026-10-29, Eric; 16, then 8 more). */}
                 <span style={{ ...PACKAGE_LABEL_D, position: 'static', marginTop: 24 }}>
                   <CrownSolid size={14} aria-hidden />
@@ -508,14 +534,16 @@ export function TwoPackageProductDetailPage() {
               simplified approach…". */}
           <p style={single ? { ...BODY, gridColumn: '1 / -1' } : BODY}>
             Updated every year, our packages make complex insurance concepts simple.{' '}
-            <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
+            <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, be exam-ready in as little as 2 weeks,{' '}
+              {/* "As little as 2 weeks" on every page but Standard's own description, which says it already (2026-11-05, Eric). */}
+              and{' '}
             <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
           </p>
         </div>
         {single ? (
           <div style={{ ...HEAD_PACKAGE, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
             {/* The multi page's card sizes (2026-10-29, Eric): its --cp, so the title, price and button condense the same way. */}
-            <span style={{ ...TOP_BADGE, alignSelf: 'center' }}>Pass Guarantee</span>
+            <span style={{ ...TOP_BADGE, alignSelf: 'center' }}>Prepared to Pass Promise</span>
             {renderCard(packages[0])}
           </div>
         ) : null}
@@ -541,11 +569,29 @@ export function TwoPackageProductDetailPage() {
               {renderCard(packages[0], true, { price: 0 })}
             </div>
             {/* 8 further from the Purchase and 8 nearer the table below (2026-10-29, Eric). */}
+            {standardOnly ? (
+              /* Standard's own description, shorter than the live page's (2026-11-05, Eric). */
+              <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
+                A solid foundation without the extras. Our 3-part training program and AI study partner can have you{' '}
+                <strong style={{ fontWeight: 800 }}>exam-ready in as little as 2 weeks</strong>
+                {' '}— ideal if you’re self-motivated and like to learn on your own.
+              </p>
+            ) : soloId === 'premier' ? (
+              /* Premier's own description, as Standard's is (same day, Eric) — the live Premier description, shortened. */
+              <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
+                Everything in Standard, plus flashcards, a recorded exam review class and{' '}
+                our <strong style={{ fontWeight: 800 }}>Prepared to Pass Promise</strong> — ideal if you want more ways to study, to be exam-ready in{' '}
+                as little as 2 weeks, and to <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
+              </p>
+            ) : (
             <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
               Updated every year, our packages make complex insurance concepts simple.{' '}
-              <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
+              <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, be exam-ready in as little as 2 weeks,{' '}
+              {/* "As little as 2 weeks" on every page but Standard's own description, which says it already (2026-11-05, Eric). */}
+              and{' '}
               <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
             </p>
+            )}
           </div>
         ) : null}
         {/* COPY E (2026-10-30, Eric): B duplicated, the multi page's Premier card for its pricing. */}
@@ -566,11 +612,29 @@ export function TwoPackageProductDetailPage() {
               {renderCard(PREMIER, false, undefined, 'plain')}
             </div>
             {/* 8 further from the Purchase and 8 nearer the table below (2026-10-29, Eric). */}
+            {standardOnly ? (
+              /* Standard's own description, shorter than the live page's (2026-11-05, Eric). */
+              <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
+                A solid foundation without the extras. Our 3-part training program and AI study partner can have you{' '}
+                <strong style={{ fontWeight: 800 }}>exam-ready in as little as 2 weeks</strong>
+                {' '}— ideal if you’re self-motivated and like to learn on your own.
+              </p>
+            ) : soloId === 'premier' ? (
+              /* Premier's own description, as Standard's is (same day, Eric) — the live Premier description, shortened. */
+              <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
+                Everything in Standard, plus flashcards, a recorded exam review class and{' '}
+                our <strong style={{ fontWeight: 800 }}>Prepared to Pass Promise</strong> — ideal if you want more ways to study, to be exam-ready in{' '}
+                as little as 2 weeks, and to <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
+              </p>
+            ) : (
             <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
               Updated every year, our packages make complex insurance concepts simple.{' '}
-              <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
+              <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, be exam-ready in as little as 2 weeks,{' '}
+              {/* "As little as 2 weeks" on every page but Standard's own description, which says it already (2026-11-05, Eric). */}
+              and{' '}
               <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
             </p>
+            )}
           </div>
         ) : null}
         {/* COPY C (2026-10-29, Eric): B again, under it, for more comparison — its own HEAD_WITH_PACKAGE_C / HEAD_PACKAGE_C. */}
@@ -593,7 +657,9 @@ export function TwoPackageProductDetailPage() {
             </div>
             <p style={{ ...BODY, gridColumn: '1 / -1', gridRow: 3, marginTop: 8, marginBottom: -8 }}>
               Updated every year, our packages make complex insurance concepts simple.{' '}
-              <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, and{' '}
+              <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, be exam-ready in as little as 2 weeks,{' '}
+              {/* "As little as 2 weeks" on every page but Standard's own description, which says it already (2026-11-05, Eric). */}
+              and{' '}
               <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
             </p>
           </div>
@@ -605,6 +671,27 @@ export function TwoPackageProductDetailPage() {
             <div style={SIDE_BOXES}>
               <div style={SIDE_BOX_PAIR}>
                 {/* Course Specs moved to the course information box under the training program (2026-10-29, Eric). */}
+                {/* OUR PASS GUARANTEE — Figma 572:3910 (2026-10-29, Eric): the rail's first module at first, its last (2026-10-30, Eric), and FIRST again (2026-11-05, Eric: "move the Pass Guarantee to the top of the right rail"), in the rail's own type (the title in
+                    the rail's serif 20 / 24, the copy 15 / 21, the link the page's). Unframed now, like the modules under it, with a
+                    rule between (2026-10-29, Eric; it had the design's 1 edge, 8 corners, 32 in). */}
+                {standardOnly ? null : (
+                <>
+                <section style={{ ...SIDE_SECTION, alignItems: 'flex-start' }}>
+                  {/* "Prepared to Pass Promise", the name the staging Premier page uses — everywhere this page said "Pass Guarantee" (2026-11-05,
+                      Eric: "rename it"). */}
+                  <h2 style={SIDE_TITLE}>Prepared to Pass Promise</h2>
+                  <p style={SIDE_BODY}>
+                    We’ll prepare you to pass your state licensing exam on the first try.
+                  </p>
+                  {/* Avenir set here, as on the welcome link — outside a paragraph it had inherited the page's default face. */}
+                  <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, display: 'block', fontFamily: 'var(--font-e2e-avenir)' }}>
+                    Prepared to Pass Promise Policy
+                    <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
+                  </button>
+                </section>
+                <hr aria-hidden style={SIDE_RULE} />
+                </>
+                )}
                 {/* What You'll Learn, in the rail too — the body's list in the rail's type (2026-10-28, Eric). */}
                 <section style={SIDE_SECTION}>
                   <h2 style={SIDE_TITLE}>What You'll Learn</h2>
@@ -635,21 +722,6 @@ export function TwoPackageProductDetailPage() {
                       <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
                     </button>
                   </div>
-                </section>
-                <hr aria-hidden style={SIDE_RULE} />
-                {/* OUR PASS GUARANTEE — Figma 572:3910 (2026-10-29, Eric): the rail's first module at first, its last now (2026-10-30, Eric), in the rail's own type (the title in
-                    the rail's serif 20 / 24, the copy 15 / 21, the link the page's). Unframed now, like the modules under it, with a
-                    rule between (2026-10-29, Eric; it had the design's 1 edge, 8 corners, 32 in). */}
-                <section style={{ ...SIDE_SECTION, alignItems: 'flex-start' }}>
-                  <h2 style={SIDE_TITLE}>Our Pass Guarantee</h2>
-                  <p style={SIDE_BODY}>
-                    We’ll prepare you to pass your state licensing exam on the first try.
-                  </p>
-                  {/* Avenir set here, as on the welcome link — outside a paragraph it had inherited the page's default face. */}
-                  <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, display: 'block', fontFamily: 'var(--font-e2e-avenir)' }}>
-                    Pass Guarantee Policy
-                    <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
-                  </button>
                 </section>
               </div>
             </div>
@@ -778,7 +850,7 @@ export function TwoPackageProductDetailPage() {
                     </thead>
                   )}
                   <tbody>
-                    {COMPARISON.map((row, r) => (
+                    {comparison.map((row, r) => (
                       <tr key={r}>
                         {/* No rule under the last row (2026-10-27, Eric). */}
                         <th
@@ -786,7 +858,7 @@ export function TwoPackageProductDetailPage() {
                           style={{
                             ...COMPARE_FEATURE,
                             paddingLeft: 0,
-                            ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null),
+                            ...(r === comparison.length - 1 ? { borderBottom: 'none' } : null),
                             ...(single && r === 0 ? COMPARE_FIRST_RULE : null),
                           }}
                         >
@@ -800,8 +872,11 @@ export function TwoPackageProductDetailPage() {
                             </button>
                           ) : null}
                         </th>
-                        {packages.map((p) => row[p.id]).map((has, i) => (
-                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(packages[i].id === 'premier' ? PREMIER_SHADE : null), ...(r === COMPARISON.length - 1 ? { borderBottom: 'none' } : null), ...(single && r === 0 ? COMPARE_FIRST_RULE : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
+                        {/* Single, no check column (2026-11-05, Eric: "remove the column in the table with the check boxes and allow the
+                            left column to expand") — every row is in the one package, so a column of ticks said nothing; the feature
+                            takes the full width. */}
+                        {single ? null : packages.map((p) => row[p.id]).map((has, i) => (
+                          <td key={i} style={{ ...COMPARE_CELL, ...COMPARE_MARK, ...(packages[i].id === 'premier' ? PREMIER_SHADE : null), ...(r === comparison.length - 1 ? { borderBottom: 'none' } : null), ...(single && r === 0 ? COMPARE_FIRST_RULE : null), color: has ? 'var(--color-xcel-brick)' : 'var(--color-neutral-500)' }}>
                             <span aria-hidden>{has ? '✓' : '—'}</span>
                             <span className="cre-visually-hidden">{has ? 'Included' : 'Not included'}</span>
                           </td>
@@ -852,9 +927,15 @@ export function TwoPackageProductDetailPage() {
                 {/* The three parts as xcelsolutions.com's home page draws them (2026-10-28, Eric): the number in brick beside each,
                     a slab-serif title, the copy in grey, a #DDD rule between parts. */}
                 <ol style={STEPS}>
-                  {HOW_IT_WORKS.map((step, i) => (
-                    <li key={step.number} style={i < HOW_IT_WORKS.length - 1 ? STEP : { ...STEP, ...STEP_LAST }}>
-                      <span aria-hidden style={STEP_NUMBER}>{step.number}</span>
+                  {howItWorks.map((step, i) => (
+                    <li key={step.number} style={i < howItWorks.length - 1 ? STEP : { ...STEP, ...STEP_LAST }}>
+                      {/* Step 4 wears a solid file certificate in the number's place and size (2026-11-05, Eric) — the licence it
+                          ends with, where 01–03 count the parts. */}
+                      {step.number === '04' ? (
+                        <FileCertificateSolid aria-hidden style={STEP_ICON} />
+                      ) : (
+                        <span aria-hidden style={STEP_NUMBER}>{step.number}</span>
+                      )}
                       <div style={{ minWidth: 0 }}>
                         <h3 style={STEP_TITLE}>{step.title}</h3>
                         <p style={STEP_BODY}>{step.body}</p>
@@ -1120,7 +1201,7 @@ const PACKAGES: {
     was: '$299.00',
     badge: 'Best Value', // (2026-10-30, Eric; was 'Pass Guarantee')
     description:
-      'Our Premier package adds flashcards, a recorded review class, and our Pass Guarantee to the standard package and is ideal for those looking to maximize their studying with various learning formats.',
+      'Our Premier package adds flashcards, a recorded review class, and our Prepared to Pass Promise to the standard package and is ideal for those looking to maximize their studying with various learning formats.',
     diffTitle: 'Everything in Standard plus:',
     diffs: [
       {
@@ -1128,7 +1209,7 @@ const PACKAGES: {
         detail: 'Play, pause, fast-forward, and rewind a recorded version of our 1-day Exam Review class.',
       },
       { title: 'Flashcards - Life, Health, and Accident Insurance', detail: '800+ flashcards to test & reinforce your knowledge of fundamentals.' },
-      { title: 'Pass Guarantee', detail: 'Our Pass Guarantee comes with the Premier package.' },
+      { title: 'Prepared to Pass Promise', detail: 'Our Prepared to Pass Promise comes with the Premier package.' },
     ],
   }
 ]
@@ -1136,9 +1217,9 @@ const PACKAGES: {
 /* The comparison grid — Eric's CoWork table, 2026-10-27, verbatim. */
 const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; premier: boolean; link?: string }[] = [
   // First since 2026-11-03 (Eric), and "Prepared 2 Pass" — a Learn more link after it (2026-10-29, Eric).
-  { feature: 'Pass Guarantee (Prepared 2 Pass Promise)', standard: false, premier: true, link: 'Learn More' },
+  { feature: 'Prepared to Pass Promise', /* (2026-11-05, Eric; was 'Pass Guarantee (Prepared 2 Pass Promise)') */ standard: false, premier: true, link: 'Learn More' },
   // The 3-part training program row is gone (2026-10-29, Eric) — its three parts are the rows that follow.
-  { feature: 'Pre-licensing Course', detail: 'Online, self-paced fundamentals course that meets all state requirements', standard: true, premier: true },
+  { feature: 'Pre-licensing Course', detail: 'Online, self-paced fundamentals course that satisfies any state requirement' /* the live pages' claim (2026-11-05, Eric; was 'meets all') */, standard: true, premier: true },
   { feature: 'Prep Review Course', detail: 'Condensed review of key material, weighted to the state exam outline', standard: true, premier: true },
   { feature: 'Exam Simulators', detail: '3 simulators weighted by topic, unlimited retakes', standard: true, premier: true },
   {
@@ -1161,7 +1242,9 @@ const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; p
     detail: 'Built-in AI tutor with real-time guidance and answers', standard: true, premier: true },
   {
     feature: 'Recorded Livestream Exam Review (Life and Health, English)',
-    detail: 'Recording of a one-day exam review class with playback controls',
+    // What it is for, from the staging Premier page, shorter (2026-11-05, Eric; was 'Recording of a one-day exam review class with
+    // playback controls').
+    detail: 'Our one-day review class, recorded — for the Life and Health topics students find hardest',
     standard: false,
     premier: true,
   },
@@ -1275,25 +1358,33 @@ const BENEFIT_TILES: { Icon: typeof FaceGrinLight; text: string; maxWidth: numbe
   { Icon: FileCertificateLight, text: 'Become licensed in a few weeks', maxWidth: 89, units: 512, viewWidth: 576, scale: 0.915 },
 ]
 
-/* The three parts, in xcelsolutions.com's home-page words (2026-10-28, Eric; were this PDP's Step 1–3 and a Pass Your Exam! line). */
+
+/* The four steps (2026-11-05, Eric) — the live product pages' How It Works, shortened: each part's contents, its target score, the
+   24-hour tip, what Part 1 unlocks, and Step 4. They replaced the three in xcelsolutions.com's home-page words (2026-10-28), which
+   ran: 01 Pre-License Education Builds a Solid Foundation, 02 Exam-Focused Prep That Gets You Ready to Pass, 03 Take Unlimited
+   Practice Exams — git has their copy. */
 const HOW_IT_WORKS: { number: string; title: string; body: string }[] = [
   {
     number: '01',
     title: 'Pre-License Education Builds a Solid Foundation',
-    body: 'Our pre-licensing courses deliver easy-to-follow content and teach key concepts through engaging videos, review notes, and practice questions. Now, with AI-powered learning from Rubi™, you can get instant answers, real-world examples, and multi-language support.',
+    body: 'Keywords, streamlined lessons, short videos, review notes and chapter exams — with Rubi™ for instant answers along the way. Aim for 70% or better on the course exams.',
   },
   {
     number: '02',
     title: 'Exam-Focused Prep That Gets You Ready to Pass',
-    body: 'After Part 1, you’ll unlock the Prep Review Course, with clear, exam-focused content that helps you focus on what matters most. Rubi™ continues to support your progress, helping you understand tough concepts and build exam-day confidence.',
+    body: 'Finishing Part 1 unlocks the Prep Review Course and the exam simulators — the parts students value most. The review keeps only what matters, weighted like the state exam. Aim for 80% or better.',
   },
   {
     number: '03',
     title: 'Take Unlimited Practice Exams',
-    body: 'There are three exam simulators. Each simulator is weighted by topic to match the state exam, allows for unlimited retakes, and can only be unlocked by completing the previous exam. The exam environment is meant to mimic the state exam.',
+    body: 'Three simulators, weighted like the state exam, with unlimited retakes — each unlocks the next. Aim for 85% or better, and revisit them at least 24 hours before your exam.',
+  },
+  {
+    number: '04',
+    title: 'Pass Your Exam!',
+    body: 'Finish all three parts and you’ll know everything you need to pass on your first attempt.',
   },
 ]
-
 
 const PAGE: CSSProperties = {
   minHeight: '100vh',
@@ -1580,6 +1671,10 @@ const STEP_LAST: CSSProperties = { marginBottom: 0 } // keeps its rule underneat
 // Number and title in the rail's heading size, 20 / 24 (2026-10-28, Eric; the site's 28 / 34); the copy back in BODY's 18 / 27.
 const STEP_NUMBER: CSSProperties = { ...SIDE_TITLE, flex: 'none', color: 'var(--color-xcel-brick)' }
 const STEP_TITLE: CSSProperties = SIDE_TITLE
+/* Step 4's icon: the numbers' brick, 20 tall centred on the title's 24 line, in a box as wide as a two-digit number (25.2) so its
+   title starts where 01–03's do (2026-11-05, Eric). */
+// 4 higher than centred (same day, Eric's requests: up 7, then back down 3) — marginTop -2, from 2.
+const STEP_ICON: CSSProperties = { flex: 'none', width: 25.2, height: 20, marginTop: -2, color: 'var(--color-xcel-brick)' }
 const STEP_BODY: CSSProperties = { ...BODY, marginTop: 7, color: 'var(--color-text-secondary)' } // 7 under the title (2026-10-28, Eric: 11, then 4 less; the site's 15)
 
 /* Figma 558:3578, then opened up (2026-10-28, Eric): no fills, a 1 #DDD rule over the row like the one under it, and a 1 rule

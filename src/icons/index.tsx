@@ -82,6 +82,7 @@ import BallotCheckLightSvg from './ballot-check-light.svg?react'
 import FaceSmileLightSvg from './face-smile-light.svg?react'
 import FaceGrinLightSvg from './face-grin-light.svg?react'
 import FileCertificateLightSvg from './file-certificate-light.svg?react'
+import FileCertificateSolidSvg from './file-certificate-solid.svg?react'
 import HourglassClockThinSvg from './hourglass-clock-thin.svg?react'
 import HourglassClockLightSvg from './hourglass-clock-light.svg?react'
 import PenToSquareSolidSvg from './pen-to-square-solid.svg?react'
@@ -339,6 +340,7 @@ export const BallotCheckLight = makeIcon(BallotCheckLightSvg) // FA: ballot-chec
 export const FaceSmileLight = makeIcon(FaceSmileLightSvg) // FA: face-smile (light)
 export const FaceGrinLight = makeIcon(FaceGrinLightSvg) // FA: face-grin (light)
 export const FileCertificateLight = makeIcon(FileCertificateLightSvg) // FA: file-certificate (light)
+export const FileCertificateSolid = makeIcon(FileCertificateSolidSvg) // FA: file-certificate (solid)
 export const HourglassClockThin = makeIcon(HourglassClockThinSvg) // FA: hourglass-clock (thin)
 export const HourglassClockLight = makeIcon(HourglassClockLightSvg) // FA: hourglass-clock (light)
 export const PenToSquareSolid = makeIcon(PenToSquareSolidSvg) // FA: pen-to-square (solid)

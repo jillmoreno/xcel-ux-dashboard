@@ -2663,12 +2663,15 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Layout',
     label: 'Products',
     description:
-      'The two-package PDP as a multi-product page \u2014 the default, Standard and Premier side by side \u2014 or a single-product page, Premier alone with its own \u201cincludes\u201d list.',
+      'The two-package PDP as a multi-product page \u2014 the default, Standard and Premier side by side \u2014 or a single-product page for one of them: Premier, or Standard, each alone with its own \u201cincludes\u201d list.',
     defaultEnabled: true,
     defaultVariant: 'multi',
     variants: [
       { value: 'multi', label: 'Multi-product', description: 'Standard and Premier side by side, with the comparison grid. The default.' },
-      { value: 'single', label: 'Single product', description: 'Premier alone, the grid captioned \u201cPackage includes:\u201d with only its column.' },
+      /* `single` is the Premier page — its value kept so links pinned to it still open it; labelled Premier since 2026-11-05. */
+      { value: 'single', label: 'Premier', description: 'Premier alone, the grid captioned \u201cPackage includes:\u201d as a list of what it includes.' },
+      /* STANDARD (2026-11-05, Eric: "Duplicate this page and make it a Standard Product page in the product dropdown"). */
+      { value: 'standard', label: 'Standard', description: 'Standard alone — its card, the rows it includes, no crown and no Pass Guarantee.' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -2683,27 +2686,32 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        b — PREMIER PACKAGE | Pass Guarantee over the title, the price and
            Purchase under it, left.
        c — the same strip over a dark title, the price and Purchase far right
-           past a rule, the Purchase on the title's baseline. THE DEFAULT.
+           past a rule, the Purchase on the title's baseline. The default
+           until 2026-11-05.
        d — C, with the crown and PREMIER PACKAGE over the price on the
            guarantee's baseline, and Includes our Pass Guarantee alone at the
            left (2026-10-29, Eric: "save D as a version as well").
        e — B, with the multi-product page's Premier card for its pricing
            (2026-10-30, Eric).
 
+       ⚠ B IS THE DEFAULT, AND OFF THE DESIGN BAR (2026-11-05, Eric: "make the
+       B heading section the default and then hide the dropdown for it"). The
+       other four are kept, reachable with `?ff=pdp-single-head:<letter>`; to
+       put the control back, restore `surface: 'design'` here.
+
        Single-product only; the multi-product page has its own head. */
-    surface: 'design',
     versions: ['eric-atlas-e2e'],
     surfaces: ['invite'],
     group: 'Layout',
     label: 'Single head',
     description:
-      'The single-product PDP\u2019s course head: A, the boxed price tile beside the title; B, the package strip over the title with the price under it; C, the strip over the title with the price far right \u2014 the default; D, C with PREMIER PACKAGE over the price; or E, B with the multi page\u2019s Premier card.',
+      'The single-product PDP\u2019s course head: A, the boxed price tile beside the title; B, the package strip over the title with the price under it \u2014 the default; C, the strip over the title with the price far right; D, C with PREMIER PACKAGE over the price; or E, B with the multi page\u2019s Premier card.',
     defaultEnabled: true,
-    defaultVariant: 'c',
+    defaultVariant: 'b',
     variants: [
       { value: 'a', label: 'A', description: 'The title beside a boxed price tile with its PASS GUARANTEE tab.' },
-      { value: 'b', label: 'B', description: 'The package strip over the title, the price and Purchase under it.' },
-      { value: 'c', label: 'C', description: 'The package strip over a dark title, the price far right past a rule. The default.' },
+      { value: 'b', label: 'B', description: 'The package strip over the title, the price and Purchase under it. The default.' },
+      { value: 'c', label: 'C', description: 'The package strip over a dark title, the price far right past a rule.' },
       { value: 'd', label: 'D', description: 'C with the crown and PREMIER PACKAGE over the price, Includes our Pass Guarantee alone at the left.' },
       { value: 'e', label: 'E', description: 'B with the multi-product page\u2019s Premier card in place of its price and Purchase.' },
     ],
