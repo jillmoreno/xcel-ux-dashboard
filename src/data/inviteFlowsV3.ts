@@ -450,6 +450,21 @@ export function ocdCartFlowV3(flow: InviteFlowV3, cart: V3CartContents, email: V
  *  clear it with the rest of the walk (`INVITE_WALK_PARAMS`). */
 export const V3_DROPPED_PARAM = 'dropped'
 
+/** The one code V3's demo turns down — 2026-11-05, Afsana: a wrong code shows
+ *  "Invalid code. Please try again." under the boxes. Every other six digits
+ *  is accepted, as before, so the walk never needs a real inbox. */
+export const V3_INVALID_DEMO_CODE = '000000'
+
+/** The code V3's demo treats as expired — 2026-11-05, Afsana: "The code has
+ *  expired. Request another code." A code confirmed after the 10-minute
+ *  countdown has run out says the same; this is the shortcut for a review
+ *  that will not wait ten minutes. */
+export const V3_EXPIRED_DEMO_CODE = '999999'
+
+/** The one password V3's demo turns down at Log in to continue — 2026-11-05,
+ *  Afsana: "We couldn't log you in. Please try again." under the field. */
+export const V3_WRONG_DEMO_PASSWORD = 'wrong'
+
 /** The line a cart, checkout and receipt list — a course package's fields. */
 export type V3CartLine = { name: string; price: string; listPrice: string; includes: string[] }
 

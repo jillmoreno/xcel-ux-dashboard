@@ -242,6 +242,101 @@ describe('Invite Flow V3 — the email check', () => {
     expect(screen.getByText(/This is the address you verified/)).toBeInTheDocument()
   })
 
+  it('turns down the demo’s wrong code under the boxes, and clears it when a digit changes', async () => {
+    renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+    await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    await userEvent.type(screen.getByLabelText('Digit 1 of 6'), '000000')
+    await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
+
+    const error = screen.getByRole('alert')
+    expect(error).toHaveTextContent('Invalid code. Please try again.')
+    expect(screen.getByRole('heading', { name: 'Enter your one-time code' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Digit 1 of 6')).toHaveAttribute('aria-describedby', 'code-invalid')
+    /* The red stroke along the bottom of every box. */
+    for (let i = 1; i <= 6; i++) {
+      expect(screen.getByLabelText(`Digit ${i} of 6`).style.boxShadow).toBe('inset 0 -2px 0 var(--color-error-600)')
+    }
+    expect(screen.getByTestId('where').textContent).not.toContain('verified=1')
+
+    await userEvent.type(screen.getByLabelText('Digit 6 of 6'), '1')
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('says an expired code has expired — the demo’s 999999, or any code after the 10 minutes', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+      await userEvent.type(screen.getByLabelText(/Email address/), 'sam@example.com')
+      await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+      await userEvent.type(screen.getByLabelText('Digit 1 of 6'), '999999')
+      await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
+      expect(screen.getByRole('alert')).toHaveTextContent('The code has expired. Request another code.')
+      expect(screen.getByLabelText('Digit 1 of 6').style.boxShadow).toBe('inset 0 -2px 0 var(--color-error-600)')
+
+      /* A good code after the countdown has run out is expired too. */
+      await userEvent.type(screen.getByLabelText('Digit 6 of 6'), '1')
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+      for (let i = 0; i < 600; i++) await act(() => vi.advanceTimersByTimeAsync(1000))
+      await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
+      expect(screen.getByRole('alert')).toHaveTextContent('The code has expired. Request another code.')
+
+      /* Resend clears it and starts a fresh 10 minutes. */
+      await userEvent.click(screen.getByRole('button', { name: 'Resend code' }))
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('turns down the demo’s wrong password on Log in, and clears it when the password changes', async () => {
+    renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-atlas-login`)
+    await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
+    await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+    const password = screen.getByLabelText(/^Password/)
+    await userEvent.type(password, 'wrong')
+    await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
+
+    expect(screen.getByRole('alert')).toHaveTextContent('We couldn’t log you in. Please try again.')
+    expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
+    expect(password).toHaveAttribute('aria-describedby', 'login-failed')
+    expect(password.style.boxShadow).toBe('inset 0 -2px 0 var(--color-error-600)')
+
+    await userEvent.type(password, '!')
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('Forgot password? says a reset link went to the address; Resend link waits; Back to sign in returns', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      renderAt(CHECKOUT, `${V3_B2B},invite-v3-flow-b2b:qr-atlas-login`)
+      await userEvent.type(screen.getByLabelText(/Email address/), 'jordan@example.com')
+      await userEvent.click(screen.getByRole('button', { name: 'Continue' }))
+      await userEvent.click(screen.getByRole('button', { name: 'Forgot password?' }))
+
+      const dialog = screen.getByRole('dialog', { name: 'Check your email' })
+      expect(dialog).toHaveTextContent(
+        'We sent a password reset link to jordan@example.com. Follow the instructions in the email to reset your password. Be sure to check your spam or junk folders.',
+      )
+      expect(within(dialog).getByText('jordan@example.com').tagName).toBe('STRONG')
+      expect(within(dialog).queryByLabelText(/^Password/)).not.toBeInTheDocument()
+
+      /* A link just went out, so Resend link waits — and again after each resend. */
+      const resend = within(dialog).getByRole('button', { name: 'Resend link' })
+      expect(resend).toBeDisabled()
+      for (let i = 0; i < 30; i++) await act(() => vi.advanceTimersByTimeAsync(1000))
+      expect(resend).toBeEnabled()
+      await userEvent.click(resend)
+      expect(resend).toBeDisabled()
+      expect(within(dialog).queryByRole('status')).not.toBeInTheDocument()
+
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Back to sign in' }))
+      expect(screen.getByRole('heading', { name: 'Log in to continue' })).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it('asks after the partner question on a B2C flow, never both at once', async () => {
     renderAt(CHECKOUT, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:net-new,partner-code-ask:modal')
     expect(screen.queryByRole('dialog', { name: 'Enter your email to continue' })).not.toBeInTheDocument()

@@ -13,6 +13,7 @@ import {
   type VerifiedIdentity,
 } from '@/data/inviteVerification'
 import { looksLikeEmail } from '@/data/inviteFlows'
+import { V3_EXPIRED_DEMO_CODE, V3_INVALID_DEMO_CODE, V3_WRONG_DEMO_PASSWORD } from '@/data/inviteFlowsV3'
 import { E2E_LEARNER_EMAIL, E2E_LEARNER_FIRST } from '@/pages/endToEndDemo'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
 import { XcelLoadingStatus } from '@/components/e2e/XcelLoadingStatus'
@@ -202,6 +203,10 @@ function CodeStep({
 }) {
   const [digits, setDigits] = useState<string[]>(() => Array(VERIFICATION_CODE_LENGTH).fill(''))
   const [resent, setResent] = useState(false)
+  /* A wrong or an expired code — 2026-11-05, Afsana. Cleared as soon as a
+     digit changes. */
+  const [codeError, setCodeError] = useState<'invalid' | 'expired' | null>(null)
+  const invalid = codeError !== null
   /* Resend unlocks when the code expires — 10 minutes, counted down under
      Confirm (2026-11-03, Afsana). */
   const [secondsLeft, setSecondsLeft] = useState(RESEND_AFTER_S)
@@ -220,6 +225,7 @@ function CodeStep({
 
   const setDigit = (i: number, value: string) => {
     const clean = value.replace(/\D/g, '')
+    setCodeError(null)
     setDigits((prev) => {
       const next = [...prev]
       /* A paste or an autofill landing in one box spreads from here. */
@@ -265,7 +271,11 @@ function CodeStep({
       style={BODY}
       onSubmit={(e) => {
         e.preventDefault()
-        if (ready) onVerified()
+        if (!ready) return
+        /* The code expires with the countdown — 10 minutes. */
+        if (entered === V3_EXPIRED_DEMO_CODE || secondsLeft <= 0) setCodeError('expired')
+        else if (entered === V3_INVALID_DEMO_CODE) setCodeError('invalid')
+        else onVerified()
       }}
       noValidate
     >
@@ -303,11 +313,18 @@ function CodeStep({
               onKeyDown={(e) => onKey(i, e)}
               onPaste={(e) => onPaste(i, e)}
               onFocus={(e) => e.target.select()}
+              aria-invalid={invalid}
+              aria-describedby={invalid ? 'code-invalid' : undefined}
               className="cre-e2e-input"
-              style={CODE_BOX}
+              style={invalid ? { ...CODE_BOX, ...CODE_BOX_INVALID } : CODE_BOX}
             />
           ))}
         </div>
+        {invalid ? (
+          <p id="code-invalid" role="alert" style={INVALID}>
+            {codeError === 'expired' ? 'The code has expired. Request another code.' : 'Invalid code. Please try again.'}
+          </p>
+        ) : null}
       </div>
 
       <div style={ACTIONS}>
@@ -336,6 +353,7 @@ function CodeStep({
               style={TEXT_LINK}
               onClick={() => {
                 setResent(true)
+                setCodeError(null)
                 setSecondsLeft(RESEND_AFTER_S)
                 setDigits(Array(VERIFICATION_CODE_LENGTH).fill(''))
                 inputs.current[0]?.focus()
@@ -362,6 +380,10 @@ function CodeStep({
 
 const RESEND_AFTER_S = 10 * 60
 
+/* How long Resend link stays off after a reset link is sent — the demo's
+   stand-in for whatever the system allows (2026-11-05). */
+const RESEND_LINK_AFTER_S = 30
+
 /** 600 → "10:00", 59 → "0:59". */
 function formatCountdown(seconds: number): string {
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
@@ -373,13 +395,70 @@ function formatCountdown(seconds: number): string {
 function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => void }) {
   const [password, setPassword] = useState('')
   const [shown, setShown] = useState(false)
+  /* A wrong password — 2026-11-05, Afsana, as the code step's wrong code.
+     Cleared as soon as the password changes. */
+  const [failed, setFailed] = useState(false)
+  /* Forgot password? — 2026-11-05, Afsana: the modal says a reset link went
+     to the address, bold, and to follow the email's instructions. */
+  const [resetSent, setResetSent] = useState(false)
+  /* Resend link waits after every send, the first included (2026-11-05,
+     Afsana: "disabled for a bit until the system enables the user to make
+     another request"). The real wait is the system's; the demo's is
+     `RESEND_LINK_AFTER_S`. */
+  const [linkWait, setLinkWait] = useState(0)
+  useEffect(() => {
+    if (linkWait <= 0) return
+    const t = window.setTimeout(() => setLinkWait((s) => s - 1), 1000)
+    return () => window.clearTimeout(t)
+  }, [linkWait])
+  const canResend = linkWait <= 0
   const ready = password !== ''
+  if (resetSent) {
+    return (
+      <div style={BODY}>
+        <img src="/brand/xcel-logo.webp" alt="XCEL Insurance Training by Colibri" style={CODE_LOGO} />
+        <div style={HEAD}>
+          <h2 id="verify-email-title" style={TITLE}>
+            Check your email
+          </h2>
+          <div aria-hidden style={RULE} />
+          <p id="verify-email-lead" style={LEAD}>
+            We sent a password reset link to <strong style={{ fontWeight: 800 }}>{email.trim()}</strong>. Follow the
+            instructions in the email to reset your password. Be sure to check your spam or junk folders.
+          </p>
+        </div>
+        {/* Resend link, primary, over Back to sign in, secondary (2026-11-05,
+            Afsana). Back is the way out — the modal has no ✕. */}
+        <div style={ACTIONS}>
+          <button
+            type="button"
+            className="cre-e2e-cta"
+            disabled={!canResend}
+            aria-disabled={!canResend}
+            style={canResend ? CTA : CTA_OFF}
+            onClick={() => setLinkWait(RESEND_LINK_AFTER_S)}
+          >
+            Resend link
+          </button>
+          <button
+            type="button"
+            style={CTA_SECONDARY}
+            onClick={() => setResetSent(false)}
+          >
+            Back to sign in
+          </button>
+        </div>
+      </div>
+    )
+  }
   return (
     <form
       style={BODY}
       onSubmit={(e) => {
         e.preventDefault()
-        if (ready) onLoggedIn()
+        if (!ready) return
+        if (password === V3_WRONG_DEMO_PASSWORD) setFailed(true)
+        else onLoggedIn()
       }}
       noValidate
     >
@@ -411,8 +490,13 @@ function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => voi
                 autoComplete="current-password"
                 placeholder="Enter your password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{ ...FIELD, paddingRight: 40 }}
+                onChange={(e) => {
+                  setPassword(e.target.value)
+                  setFailed(false)
+                }}
+                aria-invalid={failed}
+                aria-describedby={failed ? 'login-failed' : undefined}
+                style={failed ? { ...FIELD, paddingRight: 40, ...FIELD_INVALID } : { ...FIELD, paddingRight: 40 }}
               />
               <button
                 type="button"
@@ -431,7 +515,19 @@ function LoginStep({ email, onLoggedIn }: { email: string; onLoggedIn: () => voi
               </button>
             </span>
           </label>
-          <button type="button" style={FORGOT} title="Not wired in this prototype">
+          {failed ? (
+            <p id="login-failed" role="alert" style={INVALID}>
+              We couldn’t log you in. Please try again.
+            </p>
+          ) : null}
+          <button
+            type="button"
+            style={FORGOT}
+            onClick={() => {
+              setResetSent(true)
+              setLinkWait(RESEND_LINK_AFTER_S)
+            }}
+          >
             Forgot password?
           </button>
         </div>
@@ -544,6 +640,15 @@ const FIELD: CSSProperties = {
   border: '1px solid var(--color-e2e-card-outline)',
 }
 
+/* Smaller than the lead's 14 (2026-11-05, Afsana), in the error red. */
+const INVALID: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontSize: 12,
+  lineHeight: '16px',
+  color: 'var(--color-error-600)',
+}
+
 const NOTE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-e2e-avenir)',
@@ -578,6 +683,14 @@ const CODE_BOX: CSSProperties = {
   border: '1px solid var(--color-e2e-card-outline)',
 }
 
+/* A wrong code: a red stroke along the bottom of each box (2026-11-05,
+   Afsana). An inset shadow rather than `borderBottom`, so it never fights the
+   `border` shorthand above. */
+const CODE_BOX_INVALID: CSSProperties = { boxShadow: 'inset 0 -2px 0 var(--color-error-600)' }
+
+/* The same stroke under the log-in password on a wrong password. */
+const FIELD_INVALID: CSSProperties = CODE_BOX_INVALID
+
 const ACTIONS: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
@@ -600,6 +713,15 @@ const CTA: CSSProperties = {
   alignSelf: 'stretch',
   width: '100%',
   boxSizing: 'border-box',
+}
+
+/* The secondary — the primary's size and shape, outlined in the brick
+   (2026-11-05, Afsana: Check your email's Back to sign in). */
+const CTA_SECONDARY: CSSProperties = {
+  ...CTA,
+  border: '1px solid var(--color-xcel-brick-600)',
+  background: 'var(--color-fixed-light)',
+  color: 'var(--color-xcel-brick-600)',
 }
 
 const CTA_OFF: CSSProperties = {

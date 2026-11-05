@@ -17,6 +17,7 @@ import {
   ExpiredCourseCardPreview,
   QuickLinksHoverDemo,
 } from './AtlasHandoffPreviews'
+import { inviteV3StateRenders } from './inviteV3HandoffStateImages'
 
 /**
  * LIVE RENDERS FOR THE ATLAS HOME DEV-HANDOFF VARIANTS, keyed by handoff
@@ -108,6 +109,10 @@ const steps = (what: string, ff: string) => () =>
   createElement(AtlasStepsFrame, { title: `Study Journey — ${what}`, ff })
 
 const ATLAS_VARIANT_RENDERS: Record<string, VariantRenders> = {
+  /* The invite flow's two handoffs — captures, not live renders, because
+     every one of their states is a modal or page reached by walking the flow.
+     `inviteV3HandoffStateImages.ts` says why that is the exception. */
+  ...inviteV3StateRenders(),
   /* Four sections, in the order the panel draws them: the dial, the pace, the
      exam row, then readiness. */
   'atlas-home-panel': {
