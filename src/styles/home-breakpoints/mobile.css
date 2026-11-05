@@ -283,16 +283,18 @@
 }
 /* Every step's section in that column (Study journey, Pass State Exam, Get
    Licensed…), and the rules between them, take the same inset. */
-/* 16 in, 8 less than the course card's 24 (2026-11-04, Eric's request). */
+/* 8 in, so the column's text sits 24 from the device's edges — the phone's
+   inset for text not in a card (2026-11-05, Eric's request; 16 in, 32 from
+   the edge, since 2026-11-04). */
 [data-home-bp='mobile'] div:has(> section[aria-label='Study journey']) > section {
   box-sizing: border-box !important;
   width: 100% !important;
-  padding-left: 16px !important;
-  padding-right: 16px !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
 }
 [data-home-bp='mobile'] div:has(> section[aria-label='Study journey']) > span {
-  margin-left: 16px !important;
-  margin-right: 16px !important;
+  margin-left: 8px !important;
+  margin-right: 8px !important;
 }
 
 /* BOTH PHONE MENUS IN THE QUICK LINKS CARD'S ROWS (2026-11-04, Eric's
@@ -381,7 +383,7 @@
 }
 [data-home-bp='mobile'] .cre-atlas-meta-label::before {
   content: attr(data-short);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 14px;
 }
 
@@ -402,7 +404,8 @@
    the sides — and the cards in one column, each laid on its side: a small
    image on the left, the title, dates and button to its right. */
 [data-home-bp='mobile'] header:has([data-cta-id='nav.back-home']) {
-  padding: 16px 16px 0 !important;
+  /* 24 at the sides — the phone's text inset (2026-11-05, below). */
+  padding: 16px 24px 0 !important;
   max-width: none !important;
 }
 [data-home-bp='mobile'] section:has(div[style*='repeat(auto-fill, 255px)']) {
@@ -491,7 +494,7 @@
    (Back to Home and the title) flush in that; and the sheet's own header —
    its Close, eyebrow and title — goes, since the page header says it. */
 [data-home-bp='mobile'] section:has(> .cre-phone-info-page) {
-  padding: 16px 16px 40px !important;
+  padding: 16px 24px 40px !important;
 }
 [data-home-bp='mobile'] .cre-phone-info-page > header {
   padding: 0 !important;
@@ -510,7 +513,7 @@
    style: Home's 16 at the sides, one column, and no My Account card — the
    profile menu in the header carries those four links. */
 [data-home-bp='mobile'] section:has(nav[aria-label='Account sections']) {
-  padding: 0 16px 40px !important;
+  padding: 0 24px 40px !important;
 }
 [data-home-bp='mobile'] nav[aria-label='Account sections'] {
   display: none !important;
@@ -548,7 +551,8 @@
 /* The phone's breadcrumb 2 smaller — 12, from the page's +1 14 (2026-11-04,
    Eric's request). `[style]` only to outrank that rule. */
 [data-home-bp='mobile'] nav[aria-label='Breadcrumb'][style] {
-  font-size: 12px !important;
+  /* 13 since 2026-11-05 — the phone's 13px floor, below. */
+  font-size: 13px !important;
 }
 
 /* The Study Journey's step titles ("Complete Coursework", "Pass State Exam"…)
@@ -563,10 +567,16 @@
    2026-11-05, Eric's request). Tabs 12/16 in title case; the values ("0%",
    "4 Week Goal", "June 5") Playfair 27/29; the eyebrows ("Complete",
    "Average") 12. The rest of the panel was already at the Figma sizes. */
+/* Tabs 13 (2026-11-05, one up from Figma's 12, Eric's request) — their side
+   padding 8 rather than 10 so all three still fit 370: the widest case, with
+   Estimated Completion semi-bold, is 305px of text + 48 padding + 10 of gaps
+   and border, leaving ~9 to spare. */
 [data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] [role='tab'][style] {
-  font-size: 12px !important;
+  font-size: 13px !important;
   line-height: 16px !important;
   text-transform: capitalize !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
 }
 [data-home-bp='mobile'] .cre-atlas-pace-list-copy[data-tab] [style*='font-size: 19px'] {
   font-size: 27px !important;
@@ -582,4 +592,259 @@
 [data-home-bp='mobile'] span.cre-atlas-journey-label[style] {
   font-size: 16px !important;
   line-height: 18px !important;
+}
+
+/* ⚠ THE PHONE'S SMALLEST TYPE IS 13px (2026-11-05, Eric's request), except
+   the EYEBROWS — the letter-spaced capitals ("Current course", "Step 1",
+   "Average") — which keep their 11–12. Every inline size under 13 is lifted
+   to it, over the +1 rule above; an eyebrow is recognised by its inline
+   `text-transform: uppercase`. The notification count is left alone: it
+   lives in a 16px badge and 13 would burst it. Children inherit, which is
+   what lifts the Access Ends date and the "here" link. Line heights under
+   15 open to 16 so the lifted lines do not touch. */
+[data-home-bp='mobile'] :is([style*='font-size: 9px'], [style*='font-size: 10px'], [style*='font-size: 11px'], [style*='font-size: 12px'], [style*='font-size: 12.5px']):not([style*='uppercase'], [style*='uppercase'] *, .cre-atlas-hdr-badge, [aria-label*='notification' i] *)[style] {
+  font-size: 13px !important;
+}
+[data-home-bp='mobile'] :is([style*='font-size: 9px'], [style*='font-size: 10px'], [style*='font-size: 11px'], [style*='font-size: 12px'], [style*='font-size: 12.5px']):is([style*='line-height: 1'][style*='px']):not([style*='uppercase'], [style*='uppercase'] *, [aria-label*='notification' i] *):is([style*='line-height: 11px'], [style*='line-height: 12px'], [style*='line-height: 13px'], [style*='line-height: 14px']) {
+  line-height: 16px !important;
+}
+/* …and the profile menu's Admin / Learner pills, sized by class (11.9). */
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-pill--sm {
+  font-size: 13px;
+}
+/* …and the account tables' column titles (Transcripts, My Purchases): their
+   inline style still says uppercase, but they read in title case now, so they
+   are not eyebrows and take the floor too. */
+[data-home-bp='mobile'] table thead th[style],
+[data-home-bp='mobile'] table thead th[style] * {
+  font-size: 13px !important;
+  line-height: 16px !important;
+}
+
+/* ⚠ TEXT 24 IN, CARDS 16 IN (2026-11-05, Eric's request: "for text that is
+   not contained in a ruled border or a color background, make the left and
+   right padding 24"). The page headers (breadcrumb and title), the info pages
+   and the account pages now pad 24 at the sides — above — and Home's Study
+   Journey sits at 24; the boxed things keep the 16 they had, pulled back out
+   over the extra 8: the info pages' fact grids, exam rows and notice, and the
+   account pages' cards and tables. Controls in the text column (Transcripts'
+   search and filter pills, the exam-date prompt on Home) move with the text. */
+[data-home-bp='mobile'] .cre-phone-info-page dl:is([style*='border'], [style*='background']),
+[data-home-bp='mobile'] .cre-phone-info-page p[style*='padding: 12px 14px'],
+[data-home-bp='mobile'] section:has(nav[aria-label='Account sections']) :is(div, section)[style*='border: 1px solid var(--admin-rule)'],
+[data-home-bp='mobile'] section:has(nav[aria-label='Account sections']) :is(div, section)[style*='background: var(--color-surface-card)'] {
+  margin-left: -8px !important;
+  margin-right: -8px !important;
+}
+/* EXAM INFORMATION'S THREE ROWS AS A RULED LIST (2026-11-05, Eric's request):
+   no box round each, the text across the column's full 24-to-24 width, a rule
+   between them, and the hover kept — its tint reaches 8 past the text on each
+   side (padding 8, margin -8) so it reads as the row and not a highlight on
+   the words; the chevron still nudges. */
+[data-home-bp='mobile'] .cre-phone-info-page ul:has(> li > .cre-exam-row) {
+  gap: 0 !important;
+  /* ON A SECONDARY 200 BAND, edge to edge on the device (same day, Eric's
+     request): out over the page's 24 at each side, 24 back in so the rows
+     keep their places, and 16 above the first row and below the last. */
+  background: var(--color-secondary-200);
+  margin-left: -24px !important;
+  margin-right: -24px !important;
+  /* 4 above the first row and below the last (same day, Eric's request;
+     16 first, then none). */
+  padding: 4px 24px !important;
+}
+[data-home-bp='mobile'] .cre-phone-info-page li:has(> .cre-exam-row) + li:has(> .cre-exam-row) {
+  /* Neutral 100 — one level lighter than the border-subtle 200 (same day,
+     Eric's request), and the rule under the list matches, below. */
+  border-top: 1px solid var(--color-neutral-100);
+  /* Secondary 300 on the band (same day, Eric's request) — Neutral 100 all
+     but vanished on its Secondary 200. */
+  border-top-color: var(--color-secondary-300);
+}
+[data-home-bp='mobile'] .cre-phone-info-page .cre-exam-row[style] {
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent;
+  width: calc(100% + 16px) !important;
+  margin: 0 -8px !important;
+  /* 18 under, 4 more than the 14 over (same day, Eric's request). */
+  padding: 14px 8px 18px !important;
+  /* The chevron 16 in from the row's right edge (same day, Eric's request —
+     the row runs from 16 to 16 on the device, its -8 margins, so the angle
+     ends 32 from the device's edge). */
+  padding-right: 16px !important;
+}
+/* ON TAP, NOT ON HOVER (same day, Eric's request — "since this is mobile"):
+   a phone has no pointer resting on a row, and a hover style there sticks to
+   whatever was last touched. So hover does nothing, and the row answers the
+   press instead — Secondary 100 on the band's 200, corners rounded 8, the
+   chevron nudging right — for as long as the finger is down. The browser's
+   own grey tap flash is off so it is the only feedback. */
+[data-home-bp='mobile'] .cre-phone-info-page .cre-exam-row[style] {
+  -webkit-tap-highlight-color: transparent;
+}
+[data-home-bp='mobile'] .cre-phone-info-page .cre-exam-row[style]:hover {
+  background: transparent;
+}
+[data-home-bp='mobile'] .cre-phone-info-page .cre-exam-row[style]:hover svg {
+  transform: none;
+}
+[data-home-bp='mobile'] .cre-phone-info-page .cre-exam-row[style]:active {
+  background: var(--color-secondary-100);
+  border-radius: 8px !important;
+}
+[data-home-bp='mobile'] .cre-phone-info-page .cre-exam-row[style]:active svg {
+  transform: translateX(2px);
+}
+/* The rule under the list, before Governing Agency, with no space above it —
+   it sits right under the last row, like the rules between them (same day,
+   Eric's request; 22 above on desktop). */
+[data-home-bp='mobile'] .cre-phone-info-page ul:has(> li > .cre-exam-row) + div[style*='height: 1px'] {
+  margin-top: 0 !important;
+  /* The line itself gone (same day, Eric's request) — the band ends the list
+     now — but its 18 below is kept, the space before Governing Agency. */
+  background: transparent !important;
+}
+/* The glyph, not its 13 box, measured: the angle is 5px wide and centred in
+   the box, so the box hangs 3.4 past the padding. */
+[data-home-bp='mobile'] .cre-phone-info-page .cre-exam-row > svg {
+  margin-right: -3.4px;
+}
+/* GOVERNING AGENCY ON THE PHONE (same day, Eric's request): 8 more between
+   its entries — Name, Phone, Website, Address (6 → 14) — and 2 less between
+   an entry's label and the value that wraps under it (6 → 4). Phone's label
+   and number share a line, so the 6 beside them stays. */
+[data-home-bp='mobile'] .cre-phone-info-page section > h3 + dl[style] {
+  gap: 14px !important;
+}
+[data-home-bp='mobile'] .cre-phone-info-page section > h3 + dl[style] > div[style] {
+  row-gap: 4px !important;
+}
+/* …and a colon after each label — "Name:", "Phone:", "Website:", "Address:"
+   (same day, Eric's request). */
+[data-home-bp='mobile'] .cre-phone-info-page section > h3 + dl[style] dt::after {
+  content: ':';
+}
+/* …SUPERSEDED THE SAME DAY: the labels as EYEBROWS (Eric's request) — the
+   fact band's label style, `proseFactLabelStyle` at the phone's +1: 11/14
+   semi-bold capitals, 0.08em apart, in the secondary ink — each over its
+   value, Phone's too, and so no colon. */
+[data-home-bp='mobile'] .cre-phone-info-page section > h3 + dl[style] > div[style] {
+  flex-direction: column !important;
+}
+[data-home-bp='mobile'] .cre-phone-info-page section > h3 + dl[style] dt[style] {
+  font-size: 11px !important;
+  line-height: 14px !important;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary) !important;
+}
+[data-home-bp='mobile'] .cre-phone-info-page section > h3 + dl[style] dt[style]::after {
+  content: none;
+}
+/* …and the plain values (the agency's name, its address) bold, the weight of
+   the phone and website links beside them (same day, Eric's request). Their
+   grey stays — only the links are blue. */
+[data-home-bp='mobile'] .cre-phone-info-page section > h3 + dl[style] dd {
+  font-weight: 700;
+}
+/* The Governing Agency heading at 15, the size of the exam rows' titles above
+   it ("Common questions"), so the two bolds read the same (same day, Eric's
+   request; 14 by the +1 rule). */
+[data-home-bp='mobile'] .cre-phone-info-page section > h3[style]:has(+ dl) {
+  /* Playfair 22/24 since later the same day (Eric's request) — a serif
+     section title under the page's Playfair one; 15 Open Sans bold first. */
+  font-family: var(--font-heading-serif) !important;
+  /* 27/29 — the step titles' size on Home (same day; 22/24 first). */
+  font-size: 27px !important;
+  line-height: 29px !important;
+  /* 4 more above it — 22 under the rule, from 18 (same day). Padding, not
+     margin: a 4 margin collapses into the rule's 18. */
+  padding-top: 4px !important;
+}
+/* ⚠ THE SHEET BODY'S SCROLL BOX CLIPPED THE ROWS (found the same day): it is
+   `overflow-y: auto`, which clips sideways too, at the 24 text inset — so the
+   rows' -8 reach, their hover tint and the chevrons at their ends vanished.
+   On the phone the page scrolls, not this box, so it can let them out. */
+[data-home-bp='mobile'] .cre-phone-info-body > div[style*='overflow-y: auto'] {
+  overflow: visible !important;
+}
+
+/* THE INFO PAGES' FACT GRIDS AS A BAND (2026-11-05, Eric's request — "the same
+   type of full browser width section" as Exam Information's rows): Schedule
+   State Exam's Handled by · Jurisdiction · Fee, and the same grid on the other
+   info pages. Edge to edge in Secondary 200, 4 above and below, the text on
+   the page's 24 inset — and AS A LIST, one fact a row with a Secondary 300
+   rule between each (same day; two across with a rule between them came
+   first, and three across would only fit Florida with 7 at each rule). */
+[data-home-bp='mobile'] .cre-phone-info-page dl[style*='minmax(130px'] {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 0 !important;
+  background: var(--color-secondary-200) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  margin-left: -24px !important;
+  margin-right: -24px !important;
+  padding: 4px 24px !important;
+}
+[data-home-bp='mobile'] .cre-phone-info-page dl[style*='minmax(130px'] > div[style] {
+  background: transparent !important;
+  padding: 12px 0 !important;
+}
+[data-home-bp='mobile'] .cre-phone-info-page dl[style*='minmax(130px'] > div[style] + div {
+  border-top: 1px solid var(--color-secondary-300);
+}
+[data-home-bp='mobile'] .cre-phone-info-page dl[style*='minmax(130px'] > div[style]:nth-child(n + 3) {
+  border-top: 1px solid var(--color-secondary-300);
+}
+[data-home-bp='mobile'] .cre-phone-info-page dl[style*='minmax(130px'] > div[style]:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+/* …and a 1px rule between its entries (same day, Eric's request): 12 above
+   and 12 below each, in place of the 14 gap; Neutral 100, the rule over the
+   section on the same white. */
+[data-home-bp='mobile'] .cre-phone-info-page section > h3 + dl[style] {
+  gap: 0 !important;
+}
+[data-home-bp='mobile'] .cre-phone-info-page section > h3 + dl[style] > div[style] + div {
+  border-top: 1px solid var(--color-neutral-100);
+  margin-top: 12px;
+  padding-top: 12px;
+}
+/* …and one over the first entry, Name, too (same day). */
+[data-home-bp='mobile'] .cre-phone-info-page section > h3 + dl[style] > div[style]:first-child {
+  border-top: 1px solid var(--color-neutral-100);
+  padding-top: 12px;
+}
+/* "MORE INFORMATION" (was "OTHER DETAILS") OVER THE NOTES UNDER THE FACT BAND (same day, Eric's
+   request) — Schedule State Exam's Registration / Exam fee / OnVUE list, and
+   the same list after the band on the other Get Licensed steps. The fact
+   band's eyebrow style, 8 above the first row. */
+[data-home-bp='mobile'] .cre-phone-info-page div:has(> dl[style*='minmax(130px']) + section:has(> ul)::before {
+  /* "More information", 12 above the first row (same day, Eric's request;
+     "Other details" and 8 first). */
+  content: 'More information';
+  display: block;
+  margin-bottom: 12px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+/* …its rows without bullets, and 4 more between them — 11, from 7 (same
+   day, Eric's request). */
+[data-home-bp='mobile'] .cre-phone-info-page div:has(> dl[style*='minmax(130px']) + section > ul > li > span[style*='border-radius: 50%'] {
+  display: none !important;
+}
+[data-home-bp='mobile'] .cre-phone-info-page div:has(> dl[style*='minmax(130px']) + section > ul > li[style] {
+  margin-bottom: 11px !important;
+}
+/* …and no rule over it (same day, Eric's request): the fact band ends the
+   section above. Its spacing (20 + 16) stays. */
+[data-home-bp='mobile'] .cre-phone-info-page div:has(> dl[style*='minmax(130px']) + section[style*='border-top'] {
+  border-top-color: transparent !important;
 }

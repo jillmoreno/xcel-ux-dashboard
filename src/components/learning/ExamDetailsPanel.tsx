@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
-import { ArrowLeft, ChevronRight, X } from '@/icons'
+import { AngleRightRegular, ArrowLeft, ChevronRight, X } from '@/icons'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { examFactsFor, jurisdictionName } from '@/data/nyProducerRequirements'
 import { useExamDate } from '@/data/examDateStore'
 import { EXAM_FAQ, examDetailRows } from '@/data/examDetails'
@@ -50,6 +51,9 @@ export function ExamDetailsPanel({
   // Playfair on the Atlas versions (2026-11-03) — see `useSheetTitleSerif`.
   const titleSerif = useSheetTitleSerif()
   const sheetInset = useSheetInset()
+  /* On the phone the rows' chevron is Font Awesome's angle-right one weight
+     up — Regular, not the Light `ChevronRight` (2026-11-05, Eric's request). */
+  const RowChevron = useFeatureFlag('home-breakpoint').variant === 'mobile' ? AngleRightRegular : ChevronRight
   const where = jurisdictionName(state)
   /* THE VENDOR FOLLOWS THE JURISDICTION (2026-10-15). "PSI" was written into
      the sub-line, so a Florida sitting — Pearson VUE, in person only — was
@@ -83,7 +87,7 @@ export function ExamDetailsPanel({
                   <span style={rowLabelStyle}>{row.label}</span>
                   <span style={rowDetailStyle}>{row.detail}</span>
                 </span>
-                <ChevronRight size={13} aria-hidden style={rowChevronStyle} />
+                <RowChevron size={13} aria-hidden style={rowChevronStyle} />
               </button>
             </li>
           ))}
