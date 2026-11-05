@@ -8,6 +8,8 @@ import {
   COMPASS_WORKSPACE_SESSIONS,
   WORKSPACE_KIND,
   WORKSPACE_SUGGESTED,
+  WORKSPACE_DECK,
+  WORKSPACE_MAKE_RESULT,
 } from '@/data/compassWorkspaceFixtures'
 import {
   WORKSPACE_DEVICE_VIEWS,
@@ -145,6 +147,68 @@ describe('Anjani’s Compass Workspace', () => {
     expect(screen.getByRole('button', { name: 'Rename this session' })).toBeTruthy()
   })
 
+  it('opening a deck replaces the centre, and asks before it shows', async () => {
+    /* ⚠ THE FOURTH-PASS CASE. A deck is a MODE, found only by pressing the
+       CTA on an artefact. Her pedagogy is in the ORDER and is the one thing
+       not to rearrange: the confidence question comes BEFORE the flip,
+       because an answer you have already seen teaches nothing. */
+    const user = userEvent.setup()
+    render(<CompassWorkspace />)
+    await user.click(screen.getByRole('button', { name: /New workspace/ }))
+    await user.click(screen.getByRole('button', { name: /Study the 8 cards/ }))
+
+    /* ⚠ RE-QUERIED after every interaction, never held. The pane re-renders
+       on each click and a captured element is a detached node by the time the
+       next assertion runs — which is what made this case fail first time. */
+    const deck = () => screen.getByRole('region', { name: 'Flashcards' })
+    expect(within(deck()).getByText('1 of 8')).toBeTruthy()
+    expect(within(deck()).getByText(WORKSPACE_DECK[0].term)).toBeTruthy()
+    // Asked before shown: the definition is not on the page yet.
+    expect(within(deck()).getByText('How sure are you before you flip?')).toBeTruthy()
+    expect(within(deck()).queryByText(WORKSPACE_DECK[0].def)).toBeNull()
+
+    await user.click(within(deck()).getByRole('button', { name: 'Flip card' }))
+    expect(within(deck()).getByText(WORKSPACE_DECK[0].def)).toBeTruthy()
+    expect(within(deck()).getByText(WORKSPACE_DECK[0].ex)).toBeTruthy()
+
+    // Next re-hides the back — every card asks before it shows.
+    await user.click(within(deck()).getByRole('button', { name: 'Next card' }))
+    expect(within(deck()).getByText('2 of 8')).toBeTruthy()
+    expect(within(deck()).queryByText(WORKSPACE_DECK[1].def)).toBeNull()
+  })
+
+  it('each Make produces HER artefact, with its own name and payload', async () => {
+    /* ⚠ Four actions, four names, three payload shapes — a CTA, a body, an
+       audio player. Three passes stored the button's label and an "Open →",
+       which made four different outcomes look like one. */
+    const user = userEvent.setup()
+    render(<CompassWorkspace layout="A" />)
+    await user.click(screen.getAllByRole('checkbox')[0])
+
+    await user.click(screen.getAllByRole('button', { name: /^Review guide/ })[0])
+    expect(screen.getByText(WORKSPACE_MAKE_RESULT.guide.title)).toBeTruthy()
+    expect(screen.getByText(WORKSPACE_MAKE_RESULT.guide.body!)).toBeTruthy()
+
+    await user.click(screen.getAllByRole('button', { name: /^Audio recap/ })[0])
+    expect(screen.getByText(WORKSPACE_MAKE_RESULT.audio.title)).toBeTruthy()
+    // the audio payload is a player, not a link
+    expect(screen.getByText('0:41 / 3:12')).toBeTruthy()
+  })
+
+  it('a suggested question scopes the session to the mark it is about', async () => {
+    /* Her "Talking about · Note" header — what keeps a conversation about a
+       mark from drifting into the whole course. */
+    const user = userEvent.setup()
+    render(<CompassWorkspace />)
+    await user.click(screen.getByRole('button', { name: /New workspace/ }))
+    const pane = () => screen.getByRole('region', { name: 'Notebook with Rubi' })
+    expect(within(pane()).getByText('Whole course')).toBeTruthy()
+
+    await user.click(within(pane()).getByRole('button', { name: WORKSPACE_SUGGESTED[0] }))
+    expect(screen.getByText(/that is where a check would help most/)).toBeTruthy()
+    expect(screen.getByText(WORKSPACE_SUGGESTED[0], { selector: 'p' })).toBeTruthy()
+  })
+
   it('renders every layout against every axis — no switch opens a blank screen', () => {
     /* The combinatorial case, and the reason it is worth its runtime: six
        layouts times the other five axes is where a port like this breaks, and
@@ -225,7 +289,9 @@ describe('Anjani’s Compass Workspace', () => {
 
   it('the make actions are dead until something is pinned, and say why', () => {
     render(<CompassWorkspace layout="D" />)
-    const make = screen.getAllByRole('button', { name: /Make flashcards/ })[0]
+    /* Her labels — Flashcards, Practice quiz, Review guide, Audio recap —
+       not the invented "Make flashcards" of the first pass. */
+    const make = screen.getAllByRole('button', { name: /^Flashcards/ })[0]
     expect(make.hasAttribute('disabled')).toBe(true)
     expect(make.textContent).toContain('select items first')
   })

@@ -873,3 +873,83 @@
 /* Her Studio tiles are a two-up grid, not a list. */
 .cre-ws .cre-ws-make { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .cre-ws .cre-ws-readiness .cre-ws-stage { display: flex; justify-content: space-between; gap: 10px; }
+
+/* ---- THE DECK PLAYER, the scoped conversation, and Make's payloads
+   (2026-11-04, the sweep). None of this renders in her prototype until a
+   control is pressed, which is why four passes shipped without it. ---- */
+.cre-ws .cre-wsf-deckbar { display: flex; align-items: center; gap: 12px; }
+.cre-ws .cre-wsf-decktitle {
+  font-family: var(--font-heading-serif);
+  font-size: 18px;
+  line-height: 24px;
+  color: var(--cre-ws-ink);
+}
+.cre-ws .cre-wsf-deckpos { margin-left: auto; font-size: 12px; color: var(--cre-ws-faint); }
+.cre-ws .cre-wsf-iconbtn {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 8px;
+  background: var(--cre-ws-surface);
+  color: var(--cre-ws-muted);
+  cursor: pointer;
+  line-height: 1;
+}
+.cre-ws .cre-wsf-iconbtn:disabled { opacity: 0.4; cursor: default; }
+
+.cre-ws .cre-ws-fc {
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 14px;
+  background: var(--cre-ws-surface);
+  padding: 28px 24px;
+  text-align: center;
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+}
+.cre-ws .cre-ws-fcterm {
+  font-family: var(--font-heading-serif);
+  font-size: 28px;
+  line-height: 34px;
+  color: var(--cre-ws-ink);
+}
+.cre-ws .cre-ws-fcq { font-size: 13px; color: var(--cre-ws-faint); }
+.cre-ws .cre-ws-fcconf { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.cre-ws .cre-ws-fcconf button {
+  border: 1px solid var(--cre-ws-hairline);
+  background: var(--cre-ws-surface);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  color: var(--cre-ws-muted);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+.cre-ws .cre-ws-fcconf button[aria-pressed='true'] { background: var(--cre-ws-fill); color: var(--cre-ws-ink); font-weight: 600; }
+.cre-ws .cre-ws-fcback { display: grid; gap: 10px; justify-items: center; }
+.cre-ws .cre-ws-fcdef { font-size: 15px; line-height: 23px; color: var(--cre-ws-ink); max-width: 46ch; }
+.cre-ws .cre-ws-fcex { font-size: 13px; line-height: 20px; color: var(--cre-ws-faint); max-width: 46ch; }
+.cre-ws .cre-wsf-decknav { display: flex; gap: 8px; justify-content: center; }
+
+/* "Talking about · Note" */
+.cre-ws .cre-ws-about {
+  border-left: 2px solid var(--cre-ws-fill);
+  padding-left: 12px;
+}
+.cre-ws .cre-ws-asked { display: grid; gap: 10px; }
+
+/* Make's audio payload */
+.cre-ws .cre-ws-audio { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; color: var(--cre-ws-faint); }
+.cre-ws .cre-ws-audio button {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid var(--cre-ws-steel);
+  background: var(--cre-ws-steel);
+  color: var(--color-neutral-50);
+  cursor: pointer;
+  line-height: 1;
+  font-size: 11px;
+}

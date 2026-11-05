@@ -426,3 +426,126 @@ export const WORKSPACE_COMPOSER = {
   /** The name a session carries until it is renamed. */
   untitled: 'New session',
 }
+
+/* ── THE DECK, AND WHAT MAKE PRODUCES (2026-11-04, the sweep) ─────────────
+ *
+ * ⚠ FOUND BY PRESSING EVERY CONTROL. Four passes of this port shipped
+ * without any of it, because none of it renders until a button is pressed:
+ * opening an artefact replaces the centre with a card player, and each Make
+ * action produces a differently-named artefact with a different payload.
+ * `port-prototype`'s step 2b exists because of this.
+ */
+
+/** One flashcard. Her front is a TERM — the deck is vocabulary drilled from
+ *  what the learner marked — and the back is a definition plus the caveat
+ *  that makes it exam-proof. */
+export type WorkspaceCard = { term: string; def: string; ex: string }
+
+/** Her eight, in her order — and the order is a teaching order, not
+ *  alphabetical: cash value first because it is the one the learner has come
+ *  back to three times, then the fork it belongs to, then the rest. */
+export const WORKSPACE_DECK: readonly WorkspaceCard[] = [
+  {
+    term: 'Cash value',
+    def: 'The savings balance that builds inside a permanent policy. The owner can borrow against it while alive.',
+    ex: 'Borrowing against it reduces the death benefit.',
+  },
+  {
+    term: 'Term insurance',
+    def: 'Coverage for a set period that builds no cash value. When the term ends, the coverage ends.',
+    ex: 'A 20-year term policy on a mortgage.',
+  },
+  {
+    term: 'Permanent insurance',
+    def: 'Coverage that lasts your whole life and builds cash value.',
+    ex: 'Whole life is the most common form.',
+  },
+  {
+    term: 'Death benefit',
+    def: 'The amount paid to the beneficiary when the insured dies.',
+    ex: 'The beneficiary does not receive the cash value as well.',
+  },
+  {
+    term: 'Renewable',
+    def: 'Lets the owner extend a term policy without proving insurability again, usually at a higher premium.',
+    ex: 'Priced at the insured person\u2019s age at renewal.',
+  },
+  {
+    term: 'Convertible',
+    def: 'Lets the owner exchange a term policy for a permanent one without a new medical exam.',
+    ex: 'Useful when health has changed.',
+  },
+  {
+    term: 'Indemnity',
+    def: 'Restores the insured to the same financial position as before the loss, never a better one.',
+    ex: 'Why claims pay the value lost, not a round number.',
+  },
+  {
+    term: 'Premium',
+    def: 'The payment the policy owner makes to keep coverage in force.',
+    ex: 'Level for the term you choose on term insurance.',
+  },
+]
+
+/** The deck player's own copy. The confidence question comes BEFORE the flip,
+ *  which is the pedagogy: she asks you to commit before you are shown. */
+export const WORKSPACE_DECK_UI = {
+  eyebrow: 'Flashcards · created by me',
+  question: 'How sure are you before you flip?',
+  confidence: [
+    { value: 'know', label: 'I know this' },
+    { value: 'unsure', label: 'Not sure' },
+    { value: 'new', label: 'New to me' },
+  ],
+  flip: 'Flip card',
+  practise: 'Practise this with Rubi',
+  back: 'Back to the notebook',
+}
+
+/** What each Make action produces — her names, not the button's label, and
+ *  three different payload shapes. `cta` opens the thing; `body` IS the thing
+ *  (a one-page summary previews itself); `audio` draws a player. */
+export type WorkspaceMadeSpec = {
+  title: string
+  also?: string
+  cta?: string
+  body?: string
+  audio?: { at: string; of: string }
+  toast: string
+}
+
+export const WORKSPACE_MAKE_RESULT: Readonly<Record<string, WorkspaceMadeSpec>> = {
+  flashcards: {
+    title: 'Flashcards from what you marked',
+    also: 'Flashcards',
+    cta: 'Study the 8 cards \u2192',
+    toast: 'Flashcards from what you marked \u2014 also in Flashcards',
+  },
+  practice: {
+    title: 'Practice set \u00b7 12 questions',
+    also: 'Practice',
+    cta: 'Start 12 questions \u2192',
+    toast: 'Practice set \u00b7 12 questions \u2014 also in Practice',
+  },
+  guide: {
+    title: 'Summary of what you marked',
+    body: 'Term is rented coverage for a fixed window with no savings attached. Permanent is owned coverage that also builds cash value you can borrow against while alive.',
+    toast: 'Summary of what you marked saved here',
+  },
+  audio: {
+    title: 'Audio recap \u00b7 3 min',
+    audio: { at: '0:41', of: '3:12' },
+    toast: 'Audio recap \u00b7 3 min saved here',
+  },
+}
+
+/** The composer's `+`. Her label, and her toast. */
+export const WORKSPACE_UPLOAD = {
+  label: 'Add your own content',
+  toast: 'Upload \u2014 tagged to the whole course',
+}
+
+/** The context header a session grows when it is scoped to one mark —
+ *  "Talking about \u00b7 Note" above the passage. Pressing a suggested
+ *  question is what creates it. */
+export const WORKSPACE_TALKING_ABOUT = 'Talking about'

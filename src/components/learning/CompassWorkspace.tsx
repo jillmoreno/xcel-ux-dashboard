@@ -4,6 +4,7 @@ import { ClipboardListCheckRegular, FileLinesRegular, NotebookRegular, Star, Sta
 
 import {
   COMPASS_WORKSPACE_SESSIONS,
+  type WorkspaceMadeSpec,
   WORKSPACE_CREATED,
   WORKSPACE_MAKE,
   WORKSPACE_NUDGE,
@@ -11,6 +12,11 @@ import {
   WORKSPACE_COMPOSER,
   WORKSPACE_SESSION_OPENERS,
   WORKSPACE_SUGGESTED,
+  WORKSPACE_DECK,
+  WORKSPACE_DECK_UI,
+  WORKSPACE_MAKE_RESULT,
+  WORKSPACE_TALKING_ABOUT,
+  WORKSPACE_UPLOAD,
   WORKSPACE_FILTERS,
   WORKSPACE_GROUP_PLURAL,
   WORKSPACE_GROUP_TYPE,
@@ -107,17 +113,16 @@ export type CompassWorkspaceProps = {
 /** The id a session carries before it is saved — her "New session". */
 const NEW_SESSION = 'new'
 
-/** What the four Make buttons produce. Her labels and her sub-lines. */
-const MAKE_ACTIONS = [
-  { id: 'flashcards', label: 'Make flashcards', kind: 'Practice' },
-  { id: 'practice', label: 'Build a practice set', kind: 'Questions' },
-  { id: 'summary', label: 'Write a summary', kind: 'One page' },
-  { id: 'podcast', label: 'Make an audio recap', kind: '3 minutes' },
-] as const
+/* ⚠ ONE LIST OF MAKE ACTIONS, hers (`WORKSPACE_MAKE`). There were two until
+   the sweep — a four-item list invented in the first pass using the ids
+   `summary` and `podcast`, beside her six using `guide` and `audio`. The ids
+   did not match `WORKSPACE_MAKE_RESULT`, so two of the four buttons fired and
+   produced nothing at all, silently. A second vocabulary for the same thing
+   is how that happens. */
 
 /** A generated artefact — what a Make button leaves behind. Empty until
  *  something is made, exactly as `WS.assets` starts empty. */
-type WorkspaceAsset = { id: string; kind: string; title: string; from: number }
+type WorkspaceAsset = { id: string; kind: string; from: number; spec: WorkspaceMadeSpec }
 
 export function CompassWorkspace({
   layout = 'F',
@@ -132,10 +137,16 @@ export function CompassWorkspace({
   const [assets, setAssets] = useState<WorkspaceAsset[]>([])
   const [toast, setToast] = useState('')
   const [nudgeGone, setNudgeGone] = useState(false)
+  /** The suggested question that was pressed, and Rubi's reply to it. */
+  const [asked, setAsked] = useState('')
   /** Her session star — a real toggle on each card, seeded from the session's
    *  own `pinned`. Per-session override, so starring one does not restate
    *  the fixture. */
   const [starred, setStarred] = useState<Record<string, boolean>>({})
+  /** The open deck — her artefacts open INTO the centre rather than away. */
+  const [deck, setDeck] = useState<{ open: boolean; title: string; i: number; flipped: boolean; conf: Record<number, string> }>(
+    { open: false, title: '', i: 0, flipped: false, conf: {} },
+  )
 
   const all = useMemo(() => savedMarks(layout, story), [layout, story])
   const list = useMemo(() => scopedMarks(all, state), [all, state])
@@ -154,10 +165,17 @@ export function CompassWorkspace({
     setToast(m)
     window.setTimeout(() => setToast(''), 2000)
   }
-  const make = (kind: string, label: string) => {
+  /* ⚠ A MAKE PRODUCES HER ARTEFACT, not a restatement of the button. Each of
+     the four has its own NAME, and one of three payloads: a CTA that opens
+     it, a body that IS it (a one-page summary previews itself), or an audio
+     player. The first three passes stored the button's label and an "Open →",
+     which made four different outcomes look like one. */
+  const make = (kind: string) => {
     if (!pinned.length) return
-    setAssets((a) => [{ id: `a${a.length + 1}`, kind, title: label, from: pinned.length }, ...a])
-    say(`${label} — from ${pinned.length} ${pinned.length === 1 ? 'mark' : 'marks'}`)
+    const spec = WORKSPACE_MAKE_RESULT[kind]
+    if (!spec) return
+    setAssets((a) => [{ id: `a${a.length + 1}`, kind, from: pinned.length, spec }, ...a])
+    say(spec.toast)
   }
 
   /* ── shared pieces ─────────────────────────────────────────────────────── */
@@ -192,15 +210,9 @@ export function CompassWorkspace({
         <button className="cre-ws-act" onClick={() => say('Asking Rubi about these')}>
           Ask Rubi about these
         </button>
-        {MAKE_ACTIONS.map((a) => (
-          <button key={a.id} className="cre-ws-act ghost" onClick={() => make(a.id, a.label)}>
-            {a.id === 'flashcards'
-              ? 'Flashcards'
-              : a.id === 'practice'
-                ? 'Practice set'
-                : a.id === 'summary'
-                  ? 'Summary'
-                  : 'Audio recap'}
+        {WORKSPACE_MAKE.filter((a) => !a.soon).map((a) => (
+          <button key={a.id} className="cre-ws-act ghost" onClick={() => make(a.id)}>
+            {a.label}
           </button>
         ))}
         <button className="cre-ws-act q" onClick={clearPins}>
@@ -300,12 +312,13 @@ export function CompassWorkspace({
     const sfx = n ? ` from ${n} selected` : ' — select items first'
     return (
       <div className="cre-ws-make">
-        {MAKE_ACTIONS.map((a) => (
-          <button key={a.id} disabled={!n} onClick={() => make(a.id, a.label)}>
+        {WORKSPACE_MAKE.map((a) => (
+          <button key={a.id} disabled={!n || a.soon} onClick={() => make(a.id)}>
             {a.label}
+            {a.soon && <em className="cre-ws-soon">Coming soon</em>}
             <small>
-              {a.kind}
-              {sfx}
+              {a.note}
+              {a.soon ? '' : sfx}
             </small>
           </button>
         ))}
@@ -313,15 +326,39 @@ export function CompassWorkspace({
     )
   }
 
+  /** An artefact in Created by me. ⚠ THREE PAYLOAD SHAPES, hers: a CTA that
+   *  opens the thing, a body that IS the thing, or an audio player. */
   const AssetCard = ({ asset }: { asset: WorkspaceAsset }) => (
     <div className="cre-ws-asset">
-      <b>{asset.title}</b>
+      <b>{asset.spec.title}</b>
       <span className="from">
-        From {asset.from} {asset.from === 1 ? 'mark' : 'marks'}
+        Made from {asset.from} saved {asset.from === 1 ? 'item' : 'items'}
+        {asset.spec.also && ` · also in ${asset.spec.also}`}
       </span>
-      <div className="cre-ws-acts">
-        <button onClick={() => say(`Opening ${asset.title.toLowerCase()}`)}>Open →</button>
-      </div>
+      {asset.spec.body && <p className="cre-ws-abody">{asset.spec.body}</p>}
+      {asset.spec.audio && (
+        <div className="cre-ws-audio">
+          <button aria-label={`Play ${asset.spec.title}`} onClick={() => say('Playing')}>
+            ▶
+          </button>
+          <span>
+            {asset.spec.audio.at} / {asset.spec.audio.of}
+          </span>
+        </div>
+      )}
+      {asset.spec.cta && (
+        <div className="cre-ws-acts">
+          <button
+            onClick={() =>
+              asset.kind === 'flashcards'
+                ? setDeck({ open: true, title: asset.spec.title, i: 0, flipped: false, conf: {} })
+                : say(asset.spec.cta!)
+            }
+          >
+            {asset.spec.cta}
+          </button>
+        </div>
+      )}
     </div>
   )
 
@@ -406,6 +443,91 @@ export function CompassWorkspace({
   }
 
   /**
+   * THE DECK PLAYER — what opening an artefact does (2026-11-04, the sweep).
+   *
+   * ⚠ A MODE, and the fourth pass of this port is the first to have it. Her
+   * deck replaces the centre entirely: a back-bar, a position, the term, and
+   * — before the flip — a question asking you to commit. That order is the
+   * pedagogy and is the one thing not to rearrange: she asks how sure you are
+   * BEFORE she shows you, because an answer you have already seen teaches
+   * nothing.
+   */
+  const DeckPane = () => {
+    const card = WORKSPACE_DECK[deck.i]
+    return (
+      <div className="cre-ws-col cre-wsf-cm">
+        <section className="cre-ws-pane cre-wsnb-pane" aria-label="Flashcards">
+          <div className="cre-wsf-deckbar">
+            <button
+              className="cre-wsf-iconbtn"
+              aria-label={WORKSPACE_DECK_UI.back}
+              title={WORKSPACE_DECK_UI.back}
+              onClick={() => setDeck({ open: false, title: '', i: 0, flipped: false, conf: {} })}
+            >
+              ‹
+            </button>
+            <div>
+              <div className="cre-ws-stage">{WORKSPACE_DECK_UI.eyebrow}</div>
+              <div className="cre-wsf-decktitle">{deck.title}</div>
+            </div>
+            <span className="cre-wsf-deckpos">
+              {deck.i + 1} of {WORKSPACE_DECK.length}
+            </span>
+          </div>
+
+          <div className="cre-ws-fc" aria-live="polite">
+            <div className="cre-ws-fcterm">{card.term}</div>
+            <div className="cre-ws-fcq">{WORKSPACE_DECK_UI.question}</div>
+            <div className="cre-ws-fcconf" role="group" aria-label={`Confidence for ${card.term}`}>
+              {WORKSPACE_DECK_UI.confidence.map((c) => (
+                <button
+                  key={c.value}
+                  aria-pressed={deck.conf[deck.i] === c.value}
+                  onClick={() => setDeck((d) => ({ ...d, conf: { ...d.conf, [d.i]: c.value } }))}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+            {deck.flipped ? (
+              <div className="cre-ws-fcback">
+                <div className="cre-ws-fcdef">{card.def}</div>
+                <div className="cre-ws-fcex">{card.ex}</div>
+                <button className="cre-ws-act ghost" onClick={() => say(WORKSPACE_DECK_UI.practise)}>
+                  {WORKSPACE_DECK_UI.practise}
+                </button>
+              </div>
+            ) : (
+              <button className="cre-ws-act cre-ws-flip" onClick={() => setDeck((d) => ({ ...d, flipped: true }))}>
+                {WORKSPACE_DECK_UI.flip}
+              </button>
+            )}
+          </div>
+
+          <div className="cre-wsf-decknav">
+            <button
+              className="cre-wsf-iconbtn"
+              aria-label="Previous card"
+              disabled={deck.i === 0}
+              onClick={() => setDeck((d) => ({ ...d, i: d.i - 1, flipped: false }))}
+            >
+              ‹
+            </button>
+            <button
+              className="cre-wsf-iconbtn"
+              aria-label="Next card"
+              disabled={deck.i >= WORKSPACE_DECK.length - 1}
+              onClick={() => setDeck((d) => ({ ...d, i: d.i + 1, flipped: false }))}
+            >
+              ›
+            </button>
+          </div>
+        </section>
+      </div>
+    )
+  }
+
+  /**
    * A SESSION — the Notebook with Rubi, and what "+ New workspace" opens.
    *
    * ⚠ A MODE, NOT A DIALOG, and it is the thing two earlier passes missed
@@ -416,6 +538,9 @@ export function CompassWorkspace({
    */
   const SessionPane = () => {
     const open = COMPASS_WORKSPACE_SESSIONS.find((x) => x.id === state.session)
+    /* The mark a scoped session is about — the first pinned one, which is
+       what her "Ask Rubi about these" carries in. */
+    const scopedTo = asked ? markById(pinned[0] ?? null) : undefined
     /* Her emphasis is data, not markup — the phrases she wants the eye to
        catch — so it is applied here rather than baked into the string. */
     const emphasise = (text: string, bold: string[]): ReactNode[] => {
@@ -439,7 +564,20 @@ export function CompassWorkspace({
     return (
       <div className="cre-ws-col cre-wsf-cm">
         <section className="cre-ws-pane cre-wsnb-pane" aria-label="Notebook with Rubi">
-          <h2 className="cre-wsnb-note">{open ? open.ch : 'Whole course'}</h2>
+          {/* ⚠ A SESSION SCOPED TO ONE MARK GROWS A CONTEXT HEADER — hers,
+              "Talking about · Note" over the passage. Pressing a suggested
+              question is what creates it, and it is the thing that keeps a
+              conversation about a mark from drifting into the whole course. */}
+          {scopedTo ? (
+            <div className="cre-ws-about">
+              <div className="cre-ws-stage">
+                {WORKSPACE_TALKING_ABOUT} · {kindLabel(scopedTo.type)}
+              </div>
+              <p className="cre-ws-quote">{scopedTo.text}</p>
+            </div>
+          ) : (
+            <h2 className="cre-wsnb-note">{open ? open.ch : 'Whole course'}</h2>
+          )}
           {open
             ? open.msgs.map((m, i) => (
                 <div key={i}>
@@ -463,9 +601,24 @@ export function CompassWorkspace({
                 </div>
               ))}
 
+          {asked && (
+            <div className="cre-ws-asked">
+              <p className="cre-wsf-q">{asked}</p>
+              <div className="cre-ws-rb">
+                <span className="cre-ws-rmk" aria-hidden />
+                <div className="tx">
+                  <span className="cre-ws-sr">Rubi: </span>
+                  The fork between term and permanent, and what cash value does, come up most. Expect a trap
+                  about whether the beneficiary receives the cash value as well as the death benefit — they do
+                  not.
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="cre-ws-sugg">
             {WORKSPACE_SUGGESTED.map((q) => (
-              <button key={q} onClick={() => say(q)}>
+              <button key={q} onClick={() => setAsked(q)}>
                 {q}
               </button>
             ))}
@@ -474,7 +627,12 @@ export function CompassWorkspace({
           {/* Her composer. The caption under it is the scope promise — Rubi
               answers from THIS course and THESE marks, not the internet. */}
           <div className="cre-wsnb-comp">
-            <button className="cre-ws-plus" aria-label="Add to this session" onClick={() => say('Add')}>
+            <button
+              className="cre-ws-plus"
+              aria-label={WORKSPACE_UPLOAD.label}
+              title={WORKSPACE_UPLOAD.label}
+              onClick={() => say(WORKSPACE_UPLOAD.toast)}
+            >
               +
             </button>
             <input
@@ -604,7 +762,7 @@ export function CompassWorkspace({
               <button
                 key={m.id}
                 disabled={m.soon}
-                onClick={() => (m.soon ? undefined : make(m.id, m.label))}
+                onClick={() => (m.soon ? undefined : make(m.id))}
               >
                 {m.label}
                 {m.soon && <em className="cre-ws-soon">Coming soon</em>}
@@ -629,7 +787,15 @@ export function CompassWorkspace({
               {c.body && <p className="cre-ws-abody">{c.body}</p>}
               {c.cta && (
                 <div className="cre-ws-acts">
-                  <button onClick={() => say(c.cta!)}>{c.cta}</button>
+                  <button
+                    onClick={() =>
+                      /^Study/.test(c.cta!)
+                        ? setDeck({ open: true, title: c.title, i: 0, flipped: false, conf: {} })
+                        : say(c.cta!)
+                    }
+                  >
+                    {c.cta}
+                  </button>
                 </div>
               )}
             </div>
@@ -1131,6 +1297,15 @@ export function CompassWorkspace({
     /* A session takes the centre. Her "+ New workspace" and every Continue
        land here; the marks rail and the Studio stay, because a session is
        about what you marked. */
+    if (deck.open) {
+      return (
+        <>
+          {!state.colL && <CaptureRail />}
+          <DeckPane />
+          {!state.colR && <StudioRail />}
+        </>
+      )
+    }
     if (state.session) {
       return (
         <>
