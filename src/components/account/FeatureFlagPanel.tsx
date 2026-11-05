@@ -109,6 +109,9 @@ const REBRAND_FLAGS = [
   'compass-jeff-start',
   'compass-jeff-exam-tips',
   'compass-jeff-pointers',
+  // The Readiness prototype (2026-11-05) and which of its sixteen states.
+  'compass-overview-version',
+  'compass-readiness-stage',
   'compass-planner-rubi',
   'compass-planner-return',
   'compass-planner-under',

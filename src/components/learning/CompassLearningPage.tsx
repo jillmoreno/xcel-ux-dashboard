@@ -6,6 +6,7 @@ import { useDeclareDesignSurface, type DesignSurfaceId } from '@/context/designS
 import { CompassRail } from './CompassRail'
 import { CompassLearningOverview, OverviewHeader } from './CompassLearningOverview'
 import { CompassCourseLanding } from './CompassCourseLanding'
+import { CompassReadinessOverview } from './CompassReadinessOverview'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { CompassWorkspace } from './CompassWorkspace'
 import type {
@@ -111,6 +112,10 @@ export function CompassLearningPage({
      rather than inside the component so the component stays a plain function
      of its props: a test can render all six layouts without a flag provider,
      and the Variants deck can put two of them side by side. */
+  /* HIS READINESS PROTOTYPE — 2026-11-05. Read here with the other Compass
+     controls so the body stays a plain function of its props. */
+  const overviewV2 = useFeatureFlag('compass-overview-version').variant === 'v2'
+  const readinessStage = useFeatureFlag('compass-readiness-stage').variant ?? 'p2'
   const workspaceOn = useFeatureFlag('compass-workspace').enabled
   const workspaceLayout = useFeatureFlag('compass-workspace-layout').variant as WorkspaceLayout
   const workspaceHome = useFeatureFlag('compass-workspace-home').variant as WorkspaceHome
@@ -200,7 +205,12 @@ export function CompassLearningPage({
                 journey" — on her surface (2026-10-15, "the overview page does
                 not match anjanis link"); the Figma frame's "Let's get started /
                 Compass Learning" with the exam strip stays on the atlas arm. */}
-            {hybrid ? (
+            {/* ⚠ THE V2 OVERVIEW BRINGS ITS OWN HEADER — "Your exam prep",
+                with the licence, the exam date and the Readiness phase on one
+                line. Leaving hers above it stacked two headers and two
+                different claims about what the page is, which is the
+                two-logos mistake in another costume. */}
+            {overviewV2 ? null : hybrid ? (
               <OverviewHeader />
             ) : (
               <header style={headerStyle}>
@@ -211,10 +221,19 @@ export function CompassLearningPage({
                 <ExamDateStrip />
               </header>
             )}
-            <CompassLearningOverview
-              onStartSession={onStartSession ? () => onStartSession('overview') : undefined}
-              onViewPlan={() => setPage('study-planner')}
-            />
+            {/* ⚠ THE READINESS PROTOTYPE IS AN ARM OF THE OVERVIEW, not a
+                new page — 2026-11-05. His V2 rebuilds this same screen around
+                Readiness, so it replaces the body rather than sitting beside
+                it, and `compass-overview-version` is what chooses. Anjani's
+                is the default because it is what ships. */}
+            {overviewV2 ? (
+              <CompassReadinessOverview stage={readinessStage} />
+            ) : (
+              <CompassLearningOverview
+                onStartSession={onStartSession ? () => onStartSession('overview') : undefined}
+                onViewPlan={() => setPage('study-planner')}
+              />
+            )}
           </>
         ) : hybrid && page === 'course' ? (
           /* Resume lesson opens the session at its first beat, the video

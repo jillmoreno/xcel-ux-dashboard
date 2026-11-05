@@ -1651,6 +1651,84 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-overview-version',
+    /* WHOSE OVERVIEW — 2026-11-05, from `Compass-Overview-Prototype-V2_2`.
+       Anjani's shipped Overview ("Your learning journey", the 62% ring and
+       the assignments table) against the V2 prototype, which rebuilds the
+       page around READINESS.
+
+       ⚠ `anjani` IS THE DEFAULT because it is what ships, the same rule every
+       other version control here follows: the arm is the question, the
+       baseline is not.
+
+       ⚠ THE V2 ARM IS TWO PAGES, not one, and the stage control below picks
+       between them — his prototype holds sixteen states across three series,
+       and whether Readiness is a phase after the course (the `p` series) or a
+       signal running beside it (the `u` series) is the decision the whole
+       prototype exists to support. Porting one and calling it the design
+       would settle that quietly. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:overview'],
+    group: 'Widgets',
+    label: 'Overview version',
+    description:
+      'Which Compass Overview renders. Anjani’s is what ships — her learning journey, the 62% ring, the assignments table. V2 is the Readiness prototype (2026-10-30): the page rebuilt around a three-arc Readiness ring, a blueprint-weighted topic table and what the learner’s confidence says against their answers. Pick the stage with Readiness stage.',
+    variants: [
+      { value: 'anjani', label: 'Anjani’s overview (current)', description: 'What ships today' },
+      { value: 'v2', label: 'Readiness V2', description: 'The 2026-10-30 prototype' },
+    ],
+    defaultVariant: 'anjani',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-readiness-stage',
+    /* WHICH OF HIS SIXTEEN STATES — his own stage picker, as a design control.
+       Three series: `q` walks the QE course (⚠ Readiness does not exist until
+       q8, which is the prototype's first argument), `p` is the exam-prep page
+       after the course, `u` is the unified one where lessons and practice run
+       side by side.
+
+       ⚠ THE STAGE PICKS THE PAGE. A `p` stage draws "Your exam prep"; a `q`
+       or `u` stage draws "Your learning journey". That is his structure, not
+       a convenience: the two pages ARE the two answers, and a stage belongs
+       to one of them.
+
+       ⚠ `p2` IS THE DEFAULT because it is the state the two standalone
+       exports show (Readiness 58%), and the one the design conversation has
+       been about. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:overview'],
+    group: 'Widgets',
+    label: 'Readiness stage',
+    description:
+      'Which of the prototype’s sixteen states the Overview shows. Q1–Q8 walk the QE course and Readiness only appears at Q8. P1–P3 are the exam-prep page: establishing, 58% Developing, 86% Ready. U1–U5 are the unified page where course progress and Readiness sit side by side. Only bites on the V2 arm of Overview version.',
+    variants: [
+      { value: 'q1', label: 'Q1 · First-time learner · 0%', description: 'The QE course' },
+      { value: 'q2', label: 'Q2 · QE 20% · Continue your course', description: 'The QE course' },
+      { value: 'q3', label: 'Q3 · QE 50% · Continue your course', description: 'The QE course' },
+      { value: 'q4', label: 'Q4 · QE 80% · You’re almost there', description: 'The QE course' },
+      { value: 'q5', label: 'Q5 · Lessons complete · affidavit next', description: 'The QE course' },
+      { value: 'q6', label: 'Q6 · Final course exam open', description: 'The QE course' },
+      { value: 'q7', label: 'Q7 · Survey and certificate next', description: 'The QE course' },
+      { value: 'q8', label: 'Q8 · QE complete · Readiness appears', description: 'The QE course' },
+      { value: 'p1', label: 'P1 · Establishing Readiness', description: 'Exam prep' },
+      { value: 'p2', label: 'P2 · Readiness 58% · exam preparation', description: 'Exam prep' },
+      { value: 'p3', label: 'P3 · Readiness 86% · Ready to pass', description: 'Exam prep' },
+      { value: 'u1', label: 'U1 · Starting · not enough data', description: 'Learning journey' },
+      { value: 'u2', label: 'U2 · Course 36% · building Readiness', description: 'Learning journey' },
+      { value: 'u3', label: 'U3 · Course 61% · Readiness 62%', description: 'Learning journey' },
+      { value: 'u4', label: 'U4 · Course complete · Readiness 80%', description: 'Learning journey' },
+      { value: 'u5', label: 'U5 · Simulator passed · Ready to pass', description: 'Learning journey' },    ],
+    defaultVariant: 'p2',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-surface',
     /* WHOSE COMPASS — 2026-10-15, the direct ask: "I want what she did to be
        put into the Prototype - Compass Learning section only."
