@@ -106,6 +106,7 @@ export function CompassLearningPage({
      go back to being inert, which is what it was until 2026-10-16 and what
      the landing page's own note explains. */
   const resumeOpensSession = useFeatureFlag('compass-resume-opens-session').enabled
+
   /* ANJANI'S WORKSPACE AND ITS SIX AXES — 2026-11-04, from her v4. Read here
      rather than inside the component so the component stays a plain function
      of its props: a test can render all six layouts without a flag provider,
@@ -122,6 +123,8 @@ export function CompassLearningPage({
   const railPages = workspaceOn ? HYBRID_COMPASS_PAGES_WITH_WORKSPACE : HYBRID_COMPASS_PAGES
   const resumeToVideo = resumeOpensSession && onStartSession ? () => onStartSession('course') : undefined
   const hybrid = anjani
+  /** The Workspace replaces the whole Compass shell, rail included. */
+  const workspaceTakeover = hybrid && workspaceOn && page === 'workspace'
   /* Option 3 only — the header and the rail both carry a Home there, so the
      sidebar's trail would be the third. See the prop. */
   const hideCrumb = useNavPlacement() === 'hybrid'
@@ -136,7 +139,15 @@ export function CompassLearningPage({
           `CompassSidebar` and was rejected: hers has the XCEL lockup where that
           one has a crumb and a progress bar, no row icons, and a footer of
           course hours / exam date / the learner. */}
-      {hybrid ? (
+      {/* ⚠ THE WORKSPACE IS A TAKEOVER — 2026-11-04, Jillienne: "the new
+          workspace is supposed to be in a full screen takeover like the learn
+          page". Measured on her build: entering it collapses the Compass rail
+          to width 0 and the workspace shell starts at x=0, spanning the whole
+          viewport under the XCEL header alone. So the rail is not rendered
+          here at all while the Workspace is open — the workspace's own bar,
+          with its Close, is the only chrome. Three passes drew it inside the
+          Compass page with the rail still at 220px. */}
+      {workspaceTakeover ? null : hybrid ? (
         <CompassRail page={page} onSelectPage={setPage} pages={railPages} />
       ) : (
       <CompassSidebar
@@ -151,7 +162,7 @@ export function CompassLearningPage({
         timeRemaining={timeRemaining}
       />
       )}
-      {hybrid && workspaceOn && page === 'workspace' ? (
+      {workspaceTakeover ? (
         /* HER WORKSPACE. It stands where the Study planner does — outside the
            scroll column — for the same reason: it is its own multi-column
            layout, and nesting it inside the column would collapse the three

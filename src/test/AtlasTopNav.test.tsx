@@ -216,9 +216,12 @@ describe('the Compass rail is Anjani’s on Hybrid', () => {
       (li.textContent ?? '').trim(),
     )
 
-  function renderRail(version: string) {
+  function renderRail(version: string, extra = '') {
+    /* `extra` goes through the ROUTER, not `window.location`: the page is
+       seeded from `useSearchParams`, where `?ff=` is read off the window. Two
+       doors, and using the wrong one renders the default page silently. */
     render(
-      <MemoryRouter initialEntries={[`/dashboard-rebrand?version=${version}&section=compass`]}>
+      <MemoryRouter initialEntries={[`/dashboard-rebrand?version=${version}&section=compass${extra}`]}>
         <AccountProvider>
           <FeatureFlagProvider>
             <CompassLearningPage
@@ -261,6 +264,17 @@ describe('the Compass rail is Anjani’s on Hybrid', () => {
        Study planner, which is what this now pins. */
     renderRail('hybrid-pacing')
     expect(railOf()).toEqual(['Overview', 'Learn', 'Workspace', 'Study planner', 'Ask Rubi', 'Progress'])
+  })
+
+  it('the Workspace is a TAKEOVER — the Compass rail is not drawn at all', () => {
+    /* ⚠ 2026-11-04, Jillienne: "the new workspace is supposed to be in a full
+       screen takeover like the learn page". Measured on her build: entering
+       it collapses her Compass rail to width 0 and the workspace shell starts
+       at x=0. Four passes drew it inside the Compass page with the rail still
+       at 220px, which is what this now refuses. */
+    renderRail('hybrid-pacing', '&compassPage=workspace')
+    expect(document.querySelector('nav[aria-label="Course pages"]')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Close workspace' })).toBeTruthy()
   })
 
   it('a locked row explains itself on the first tap and opens the Exam prep dialog on the second', () => {

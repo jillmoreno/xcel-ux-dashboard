@@ -953,3 +953,26 @@
   line-height: 1;
   font-size: 11px;
 }
+
+/* ---- A COLLAPSED PANE is a 56px rail, not a removed column (2026-11-04).
+   Hers keeps the toggle where it was, so the way back is where the way out
+   was, and the centre barely moves. ---- */
+.cre-ws .cre-ws-col.is-collapsed { min-width: 0; }
+.cre-ws .cre-wsf-rail {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+  border: 1px solid var(--cre-ws-hairline);
+  border-radius: 12px;
+  background: var(--cre-ws-surface);
+  height: 100%;
+  box-sizing: border-box;
+  align-items: flex-start;
+}
+
+/* ---- THE WORKSPACE IS A TAKEOVER. It replaces the Compass shell, so it
+   owns the full width under the XCEL header and sets its own gutters. ---- */
+.cre-ws { flex: 1; min-width: 0; }
+.cre-ws .cre-ws-shell { max-width: none; padding-left: 28px; padding-right: 28px; }
+.cre-ws .cre-ws-head { max-width: none; padding-left: 28px; padding-right: 28px; }
+.cre-ws .cre-ws-homecol { max-width: 820px; margin: 0 auto; }

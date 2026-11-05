@@ -362,6 +362,31 @@ export function CompassWorkspace({
     </div>
   )
 
+  /**
+   * A COLLAPSED PANE — her `f-rail`, 56px, not a removed column.
+   *
+   * ⚠ MEASURED, and the first four passes had it wrong: collapsing dropped
+   * the column entirely, so the grid went 300px·1fr·320px → 1fr·320px and the
+   * centre jumped. Hers keeps a 56px strip holding the same toggle, now
+   * `aria-expanded="false"` and labelled "Show …" — so the layout barely
+   * moves and the way back is where the way out was.
+   */
+  const CollapsedRail = ({ side, label }: { side: 'L' | 'R'; label: string }) => (
+    <div className={`cre-ws-col ${side === 'L' ? 'cre-wsf-cl' : 'cre-wsf-cr'} is-collapsed`}>
+      <nav className="cre-wsf-rail" aria-label={`${label}, collapsed`}>
+        <button
+          className="cre-wsf-coll"
+          aria-expanded={false}
+          aria-label={`Show ${label}`}
+          title={`Show ${label}`}
+          onClick={() => patch(side === 'L' ? { colL: false } : { colR: false })}
+        >
+          ▤
+        </button>
+      </nav>
+    </div>
+  )
+
   /** The left rail of the Notebook layout: scope, search, chips, then the
    *  marks grouped. Her broad-to-narrow order — where, then what, then which. */
   const CaptureRail = () => {
@@ -375,7 +400,7 @@ export function CompassWorkspace({
             <button
               className="cre-wsf-coll"
               aria-expanded={!state.colL}
-              aria-label={state.colL ? 'Show your marks' : 'Hide your marks'}
+              aria-label="Hide your marks"
               onClick={() => patch({ colL: !state.colL })}
             >
               ▤
@@ -733,7 +758,7 @@ export function CompassWorkspace({
           <button
             className="cre-wsf-coll"
             aria-expanded={!state.colR}
-            aria-label={state.colR ? 'Show Studio' : 'Hide Studio'}
+            aria-label="Hide Studio"
             onClick={() => patch({ colR: !state.colR })}
           >
             ▤
@@ -1039,6 +1064,12 @@ export function CompassWorkspace({
   /* ── the six layouts ───────────────────────────────────────────────────── */
 
   const onHome = state.view === 'home' && !markById(state.focus)
+  /* ⚠ HER GRID, and the collapse is part of it: 56px where a pane is folded,
+     not a missing column. Measured — `56px 833px 56px` with both folded. */
+  const shellCols =
+    layout === 'F' && !onHome
+      ? `${state.colL ? '56px' : '300px'} minmax(0,1fr) ${state.colR ? '56px' : '320px'}`
+      : undefined
   const shellClass = (() => {
     // Her home is one column whatever the layout's working shape is.
     if (onHome && layout === 'F') return 'cre-ws-shell f is-home'
@@ -1300,18 +1331,18 @@ export function CompassWorkspace({
     if (deck.open) {
       return (
         <>
-          {!state.colL && <CaptureRail />}
+          {state.colL ? <CollapsedRail side="L" label="Your marks" /> : <CaptureRail />}
           <DeckPane />
-          {!state.colR && <StudioRail />}
+          {state.colR ? <CollapsedRail side="R" label="Studio" /> : <StudioRail />}
         </>
       )
     }
     if (state.session) {
       return (
         <>
-          {!state.colL && <CaptureRail />}
+          {state.colL ? <CollapsedRail side="L" label="Your marks" /> : <CaptureRail />}
           <SessionPane />
-          {!state.colR && <StudioRail />}
+          {state.colR ? <CollapsedRail side="R" label="Studio" /> : <StudioRail />}
         </>
       )
     }
@@ -1331,9 +1362,9 @@ export function CompassWorkspace({
     }
     return (
       <>
-        {!state.colL && <CaptureRail />}
+        {state.colL ? <CollapsedRail side="L" label="Your marks" /> : <CaptureRail />}
         <CoachPane />
-        {!state.colR && <StudioRail />}
+        {state.colR ? <CollapsedRail side="R" label="Studio" /> : <StudioRail />}
       </>
     )
   })()
@@ -1375,7 +1406,7 @@ export function CompassWorkspace({
         </div>
       </div>
 
-      <div className={shellClass} id="wsShell">
+      <div className={shellClass} id="wsShell" style={shellCols ? { gridTemplateColumns: shellCols } : undefined}>
         {body}
       </div>
 

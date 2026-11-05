@@ -209,6 +209,29 @@ describe('Anjani’s Compass Workspace', () => {
     expect(screen.getByText(WORKSPACE_SUGGESTED[0], { selector: 'p' })).toBeTruthy()
   })
 
+  it('a folded pane is a 56px rail, not a missing column', async () => {
+    /* ⚠ MEASURED ON HER BUILD: `56px 1fr 320px` with the left folded,
+       `56px 1fr 56px` with both. The first four passes dropped the column
+       entirely, so the centre jumped and the way back vanished with it. Hers
+       keeps the toggle where it was. */
+    const user = userEvent.setup()
+    render(<CompassWorkspace />)
+    await user.click(screen.getByRole('button', { name: /New workspace/ }))
+
+    await user.click(screen.getByRole('button', { name: 'Hide your marks' }))
+    expect(screen.getByRole('navigation', { name: 'Your marks, collapsed' })).toBeTruthy()
+    const reopen = screen.getByRole('button', { name: 'Show Your marks' })
+    expect(reopen.getAttribute('aria-expanded')).toBe('false')
+
+    await user.click(screen.getByRole('button', { name: 'Hide Studio' }))
+    expect(screen.getByRole('navigation', { name: 'Studio, collapsed' })).toBeTruthy()
+
+    // And back again, from the rail the fold left behind.
+    await user.click(screen.getByRole('button', { name: 'Show Your marks' }))
+    expect(screen.queryByRole('navigation', { name: 'Your marks, collapsed' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Hide your marks' })).toBeTruthy()
+  })
+
   it('renders every layout against every axis — no switch opens a blank screen', () => {
     /* The combinatorial case, and the reason it is worth its runtime: six
        layouts times the other five axes is where a port like this breaks, and
