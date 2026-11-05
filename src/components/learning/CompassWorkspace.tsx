@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 
 import {
   CircleLocationArrowRegular,
@@ -143,7 +143,7 @@ const NEW_SESSION = 'new'
 
 /** A generated artefact — what a Make button leaves behind. Empty until
  *  something is made, exactly as `WS.assets` starts empty. */
-type WorkspaceAsset = { id: string; kind: string; from: number; spec: WorkspaceMadeSpec }
+type WorkspaceAsset = { id: string; kind: string; from: number; spec: WorkspaceMadeSpec; thisSession?: boolean }
 
 export function CompassWorkspace({
   layout = 'F',
@@ -155,6 +155,16 @@ export function CompassWorkspace({
   onClose,
   onModeChange,
 }: CompassWorkspaceProps) {
+  /* ⚠ THE PIECES BELOW ARE CALLED, NOT MOUNTED — `{FilterBar()}`, never
+     `<FilterBar />`. Defined inside this component they are a NEW function on
+     every render, so React treats each as a different component type and
+     unmounts and remounts the entire subtree on every state change. That is
+     not just waste: it replaces every DOM node, so a click target captured a
+     moment earlier is detached by the time the click lands. It cost an
+     afternoon of "the Make tiles do nothing" that were in fact firing on
+     whichever tile had moved into that position. Calling them inlines the
+     JSX with no component boundary at all. Keyed list items wrap the call in
+     a `<Fragment key=…>` for the same reason. */
   const [state, setState] = useState<WorkspaceState>(EMPTY_WORKSPACE_STATE)
   const [assets, setAssets] = useState<WorkspaceAsset[]>([])
   const [toast, setToast] = useState('')
@@ -202,12 +212,37 @@ export function CompassWorkspace({
      it, a body that IS it (a one-page summary previews itself), or an audio
      player. The first three passes stored the button's label and an "Open →",
      which made four different outcomes look like one. */
+  /**
+   * MAKE SOMETHING — and three things four passes had wrong.
+   *
+   * ⚠ IT IS NEVER GATED ON A PIN. The rail says "Make from ALL marks" and
+   * means it: her tiles are live with nothing pinned. The port disabled them
+   * until something was selected, which made the Studio look broken on
+   * arrival — the one state every reviewer sees first.
+   *
+   * ⚠ IT OPENS WHAT IT MADE, where there is something to open. Flashcards
+   * drops you straight into the deck; the other three save and stay, because
+   * the deck is the only player that exists. Making a thing and leaving you
+   * on the page you were on is a different product.
+   *
+   * ⚠ AND IT BADGES THE SESSION. Hers tags what this visit produced "This
+   * session", so a new row is distinguishable from the three already there.
+   */
   const make = (kind: string) => {
-    if (!pinned.length) return
     const spec = WORKSPACE_MAKE_RESULT[kind]
     if (!spec) return
-    setAssets((a) => [{ id: `a${a.length + 1}`, kind, from: pinned.length, spec }, ...a])
+    /* ⚠ THE ONE RULE I COULD NOT READ off her build: what N counts in "Made
+       from N saved items" when nothing is pinned. Her `data-tog` sits on both
+       the pin and the row, so driving it from a script toggles twice and the
+       numbers come back inconsistent. The pinned count where there is one,
+       the marks in scope otherwise — true to "from all marks", and flagged
+       here rather than guessed silently. */
+    const from = pinned.length || list.length
+    setAssets((a) => [{ id: `a${a.length + 1}`, kind, from, spec, thisSession: true }, ...a])
     say(spec.toast)
+    if (kind === 'flashcards') {
+      setDeck({ open: true, title: spec.title, i: 0, flipped: false, conf: {} })
+    }
   }
 
   /* ── shared pieces ─────────────────────────────────────────────────────── */
@@ -263,7 +298,7 @@ export function CompassWorkspace({
               aria-pressed={state.filter === f.value}
               onClick={() => patch({ filter: f.value })}
             >
-              {f.value !== 'all' && <Dot type={f.value as WorkspaceMark['type']} />}
+              {f.value !== 'all' && Dot({ type: f.value as WorkspaceMark['type'] })}
               {f.label} <span className="cre-wsf-n">{n}</span>
             </button>
           )
@@ -389,7 +424,7 @@ export function CompassWorkspace({
       onClick={() => togglePin(mark.id)}
       aria-pressed={Boolean(state.sel[mark.id])}
     >
-      <Dot type={mark.type} />
+      {Dot({ type: mark.type })}
       <span>{mark.text}</span>
     </button>
   )
@@ -398,18 +433,23 @@ export function CompassWorkspace({
    *  with nothing pinned, and the sub-line says why rather than leaving a dead
    *  button to be puzzled over. */
   const MakeBlock = () => {
-    const n = pinned.length
-    const sfx = n ? ` from ${n} selected` : ' — select items first'
+    /* ⚠ NO "select items first" ANY MORE. These make from ALL marks; the
+       suffix was the port's own invention, and it told reviewers the Studio
+       was waiting on them when it was not. */
     return (
       <div className="cre-ws-make">
         {WORKSPACE_MAKE.map((a) => (
-          <button key={a.id} disabled={!n || a.soon} onClick={() => make(a.id)}>
-            {a.label}
-            {a.soon && <em className="cre-ws-soon">Coming soon</em>}
-            <small>
-              {a.note}
-              {a.soon ? '' : sfx}
-            </small>
+          <button
+            key={a.id}
+            aria-disabled={a.soon || undefined}
+            className={a.soon ? 'cre-wsf-soon' : undefined}
+            onClick={() => (a.soon ? say(`${a.label} — coming soon`) : make(a.id))}
+          >
+            <b>
+              {a.label}
+              {a.soon && <span className="cre-ws-soon">Coming soon</span>}
+            </b>
+            <small>{a.note}</small>
           </button>
         ))}
       </div>
@@ -421,6 +461,7 @@ export function CompassWorkspace({
   const AssetCard = ({ asset }: { asset: WorkspaceAsset }) => (
     <div className="cre-ws-asset">
       <b>{asset.spec.title}</b>
+      {asset.thisSession && <span className="cre-ws-thissession">This session</span>}
       <span className="from">
         Made from {asset.from} saved {asset.from === 1 ? 'item' : 'items'}
         {asset.spec.also && ` · also in ${asset.spec.also}`}
@@ -523,7 +564,7 @@ export function CompassWorkspace({
             value={state.q}
             onChange={(e) => patch({ q: e.target.value })}
           />
-          <FilterBar />
+          {FilterBar()}
           {pinned.length > 0 && (
             <div className="cre-wsf-pinbar" aria-live="polite">
               <span>{pinned.length} pinned</span>
@@ -547,11 +588,11 @@ export function CompassWorkspace({
                   <span className="cv" aria-hidden>
                     ⌄
                   </span>
-                  <GroupIcon group={g.key} />
+                  {GroupIcon({ group: g.key })}
                   {WORKSPACE_GROUP_PLURAL[g.key] ?? g.key}
                   <span className="n">{g.marks.length}</span>
                 </button>
-                {open && g.marks.map((m) => <RailMark key={m.id} mark={m} />)}
+                {open && g.marks.map((m) => <Fragment key={m.id}>{RailMark({ mark: m })}</Fragment>)}
               </div>
             )
           })}
@@ -793,7 +834,7 @@ export function CompassWorkspace({
             </div>
             <p className="cre-ws-quote big">{focused.text}</p>
             {focused.note && <p className="cre-ws-note">{focused.note}</p>}
-            <RubiThread mark={focused} />
+            {RubiThread({ mark: focused })}
           </>
         ) : (
           <>
@@ -804,7 +845,7 @@ export function CompassWorkspace({
               </span>
             </div>
             {list.length ? (
-              list.map((m) => <MarkCard key={m.id} mark={m} showChapter />)
+              list.map((m) => <Fragment key={m.id}>{MarkCard({ mark: m, showChapter: true })}</Fragment>)
             ) : (
               <div className="cre-ws-empty">Nothing here yet.</div>
             )}
@@ -893,11 +934,17 @@ export function CompassWorkspace({
             {WORKSPACE_MAKE.map((m) => (
               <button
                 key={m.id}
-                disabled={m.soon}
-                onClick={() => (m.soon ? undefined : make(m.id))}
+                /* ⚠ `aria-disabled`, NOT `disabled` — hers. A promise you can
+                   still reach with the keyboard and that announces itself as
+                   not-yet is kinder than one taken out of the tab order. */
+                aria-disabled={m.soon || undefined}
+                className={m.soon ? 'cre-wsf-soon' : undefined}
+                onClick={() => (m.soon ? say(`${m.label} — coming soon`) : make(m.id))}
               >
-                {m.label}
-                {m.soon && <em className="cre-ws-soon">Coming soon</em>}
+                <b>
+                  {m.label}
+                  {m.soon && <span className="cre-ws-soon">Coming soon</span>}
+                </b>
                 <small>{m.note}</small>
               </button>
             ))}
@@ -907,7 +954,7 @@ export function CompassWorkspace({
         <div className="cre-ws-group">
           <h4>Created by me</h4>
           {assets.map((a) => (
-            <AssetCard key={a.id} asset={a} />
+            <Fragment key={a.id}>{AssetCard({ asset: a })}</Fragment>
           ))}
           {WORKSPACE_CREATED.map((c) => (
             <div className="cre-ws-asset" key={c.id}>
@@ -982,17 +1029,17 @@ export function CompassWorkspace({
     if (home === 'B') {
       return (
         <div className="cre-ws-home shelf">
-          <HomeHead />
+          {HomeHead()}
           <div className="cre-ws-stage">Everything you have made</div>
           {assets.length ? (
-            assets.map((a) => <AssetCard key={a.id} asset={a} />)
+            assets.map((a) => <Fragment key={a.id}>{AssetCard({ asset: a })}</Fragment>)
           ) : (
             <div className="cre-ws-empty">Nothing made yet. Pin a few marks and make something.</div>
           )}
           <div className="cre-ws-stage">Your marks</div>
           <div className="cre-ws-shelfgrid">
             {all.map((m) => (
-              <MiniMark key={m.id} mark={m} />
+              <Fragment key={m.id}>{MiniMark({ mark: m })}</Fragment>
             ))}
           </div>
         </div>
@@ -1001,7 +1048,7 @@ export function CompassWorkspace({
     if (home === 'C') {
       return (
         <div className="cre-ws-home chapters">
-          <HomeHead />
+          {HomeHead()}
           {chapters.map((ch) => {
             const marks = all.filter((m) => m.ch === ch)
             return (
@@ -1011,7 +1058,7 @@ export function CompassWorkspace({
                   <span>{marks.length}</span>
                 </div>
                 {marks.map((m) => (
-                  <MiniMark key={m.id} mark={m} />
+                  <Fragment key={m.id}>{MiniMark({ mark: m })}</Fragment>
                 ))}
               </div>
             )
@@ -1023,7 +1070,7 @@ export function CompassWorkspace({
       const today = all.slice(0, 4)
       return (
         <div className="cre-ws-home today">
-          <HomeHead />
+          {HomeHead()}
           <div className="cre-ws-hero">
             <div>
               <div className="cre-ws-stage">Today</div>
@@ -1039,7 +1086,7 @@ export function CompassWorkspace({
             </button>
           </div>
           {today.map((m) => (
-            <MarkCard key={m.id} mark={m} showChapter />
+            <Fragment key={m.id}>{MarkCard({ mark: m, showChapter: true })}</Fragment>
           ))}
         </div>
       )
@@ -1047,7 +1094,7 @@ export function CompassWorkspace({
     if (home === 'E') {
       return (
         <div className="cre-ws-home map">
-          <HomeHead />
+          {HomeHead()}
           <div className="cre-ws-stage">Your course, and where you left marks</div>
           <div className="cre-ws-map">
             {chapters.map((ch) => {
@@ -1084,7 +1131,7 @@ export function CompassWorkspace({
     if (!all.length) {
       return (
         <div className="cre-ws-home pickup">
-          <HomeHead />
+          {HomeHead()}
           <div className="cre-ws-empty">
             Nothing marked yet. Bookmark, note or flag something in your course and it lands here.
           </div>
@@ -1093,7 +1140,7 @@ export function CompassWorkspace({
     }
     return (
       <div className="cre-ws-home pickup">
-        <HomeHead />
+        {HomeHead()}
         {/* ⚠ HER SHAPE, measured 2026-11-04 (audit 2): the hero is a SECTION
             holding three things — the eyebrow, a grey CARD, and the Rubi
             strip. Earlier passes made the section itself the card, lifted the
@@ -1168,7 +1215,7 @@ export function CompassWorkspace({
                     </span>
                     {sn.made && (
                       <span className="cre-ws-made" title={sn.made}>
-                        <MadeIcon made={sn.made} />
+                        {MadeIcon({ made: sn.made })}
                         <span className="cre-ws-sr">{sn.made}</span>
                       </span>
                     )}
@@ -1225,16 +1272,16 @@ export function CompassWorkspace({
                   {all
                     .filter((m) => m.ch === ch)
                     .map((m) => (
-                      <MiniMark key={m.id} mark={m} />
+                      <Fragment key={m.id}>{MiniMark({ mark: m })}</Fragment>
                     ))}
                 </div>
               ))}
             </div>
           </div>
           <div className="cre-ws-col">
-            <FilterBar />
+            {FilterBar()}
             {show.length ? (
-              show.map((m) => <MarkCard key={m.id} mark={m} showChapter />)
+              show.map((m) => <Fragment key={m.id}>{MarkCard({ mark: m, showChapter: true })}</Fragment>)
             ) : (
               <div className="cre-ws-empty">Nothing here yet.</div>
             )}
@@ -1242,9 +1289,9 @@ export function CompassWorkspace({
           <div className="cre-ws-col">
             <div className="cre-ws-pane cre-ws-sticky">
               <h4>Generate</h4>
-              <MakeBlock />
+              {MakeBlock()}
               {assets.map((a) => (
-                <AssetCard key={a.id} asset={a} />
+                <Fragment key={a.id}>{AssetCard({ asset: a })}</Fragment>
               ))}
             </div>
           </div>
@@ -1279,20 +1326,20 @@ export function CompassWorkspace({
             <div className="cre-ws-group">
               <div className="cre-ws-stage">Generate</div>
               {assets.map((a) => (
-                <AssetCard key={a.id} asset={a} />
+                <Fragment key={a.id}>{AssetCard({ asset: a })}</Fragment>
               ))}
             </div>
           )}
           <div className="cre-ws-group">
             <div className="cre-ws-stage">Capture</div>
-            <FilterBar />
+            {FilterBar()}
             {chapters.map((ch) => (
               <div key={ch}>
                 <div className="cre-ws-minih">{ch}</div>
                 {all
                   .filter((m) => m.ch === ch)
                   .map((m) => (
-                    <MiniMark key={m.id} mark={m} />
+                    <Fragment key={m.id}>{MiniMark({ mark: m })}</Fragment>
                   ))}
               </div>
             ))}
@@ -1335,13 +1382,13 @@ export function CompassWorkspace({
             </div>
           </div>
           <div className="cre-ws-col">
-            <FilterBar />
+            {FilterBar()}
             <div className="cre-ws-gh">
               <h3>{state.filter === 'all' ? group : kindLabel(state.filter as WorkspaceMark['type'])}</h3>
               <span>{shown.length}</span>
             </div>
             {shown.map((m) => (
-              <MarkCard key={m.id} mark={m} showChapter />
+              <Fragment key={m.id}>{MarkCard({ mark: m, showChapter: true })}</Fragment>
             ))}
           </div>
         </>
@@ -1356,9 +1403,9 @@ export function CompassWorkspace({
           <div className="cre-ws-board">
             <div className="cre-ws-pane wide">
               <h4>Capture</h4>
-              <FilterBar />
+              {FilterBar()}
               {all.slice(0, 3).map((m) => (
-                <MarkCard key={m.id} mark={m} showChapter />
+                <Fragment key={m.id}>{MarkCard({ mark: m, showChapter: true })}</Fragment>
               ))}
               <div className="cre-ws-acts">
                 <button onClick={() => patch({ filter: 'all', scope: 'all' })}>
@@ -1368,9 +1415,9 @@ export function CompassWorkspace({
             </div>
             <div className="cre-ws-pane">
               <h4>Generate</h4>
-              <MakeBlock />
+              {MakeBlock()}
               {assets.map((a) => (
-                <AssetCard key={a.id} asset={a} />
+                <Fragment key={a.id}>{AssetCard({ asset: a })}</Fragment>
               ))}
             </div>
             <div className="cre-ws-pane">
@@ -1444,7 +1491,7 @@ export function CompassWorkspace({
           <div className="cre-ws-col">
             <div className="cre-ws-pane cre-ws-sticky">
               <h4>Make something</h4>
-              <MakeBlock />
+              {MakeBlock()}
             </div>
           </div>
         </>
@@ -1460,18 +1507,18 @@ export function CompassWorkspace({
     if (deck.open) {
       return (
         <>
-          {state.colL ? <CollapsedRail side="L" label="Your marks" /> : <CaptureRail />}
-          <DeckPane />
-          {state.colR ? <CollapsedRail side="R" label="Studio" /> : <StudioRail />}
+          {state.colL ? CollapsedRail({ side: "L", label: "Your marks" }) : CaptureRail()}
+          {DeckPane()}
+          {state.colR ? CollapsedRail({ side: "R", label: "Studio" }) : StudioRail()}
         </>
       )
     }
     if (state.session) {
       return (
         <>
-          {state.colL ? <CollapsedRail side="L" label="Your marks" /> : <CaptureRail />}
-          <SessionPane />
-          {state.colR ? <CollapsedRail side="R" label="Studio" /> : <StudioRail />}
+          {state.colL ? CollapsedRail({ side: "L", label: "Your marks" }) : CaptureRail()}
+          {SessionPane()}
+          {state.colR ? CollapsedRail({ side: "R", label: "Studio" }) : StudioRail()}
         </>
       )
     }
@@ -1485,15 +1532,15 @@ export function CompassWorkspace({
          The first port drew all three at once. */
       return (
         <div className="cre-ws-col cre-wsf-cm cre-ws-homecol">
-          <HomeView />
+          {HomeView()}
         </div>
       )
     }
     return (
       <>
-        {state.colL ? <CollapsedRail side="L" label="Your marks" /> : <CaptureRail />}
-        <CoachPane />
-        {state.colR ? <CollapsedRail side="R" label="Studio" /> : <StudioRail />}
+        {state.colL ? CollapsedRail({ side: "L", label: "Your marks" }) : CaptureRail()}
+        {CoachPane()}
+        {state.colR ? CollapsedRail({ side: "R", label: "Studio" }) : StudioRail()}
       </>
     )
   })()

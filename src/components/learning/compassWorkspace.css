@@ -1139,3 +1139,28 @@
 .cre-ws .cre-wsnb-chh .cv { font-size: 12px; line-height: 1; transition: transform 0.15s ease; }
 .cre-ws .cre-wsnb-chh.closed .cv { transform: rotate(-90deg); }
 .cre-ws .cre-wsnb-chh .n { margin-left: auto; letter-spacing: 0; }
+
+/* ---- AUDIT 5: the Make tiles are live with nothing pinned, the Coming soon
+   pair is aria-disabled rather than removed from the tab order, and what this
+   visit produced is badged. ---- */
+.cre-ws .cre-ws-make button b { display: block; font-weight: 600; }
+.cre-ws .cre-ws-make button .cre-ws-soon {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cre-ws-faint);
+  font-weight: 600;
+  float: none;
+}
+.cre-ws .cre-ws-make button.cre-wsf-soon { opacity: 0.55; cursor: default; }
+.cre-ws .cre-ws-thissession {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--cre-ws-steel);
+}

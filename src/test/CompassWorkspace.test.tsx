@@ -97,7 +97,12 @@ describe('Anjani’s Compass Workspace', () => {
     expect(screen.getByText('Created by me')).toBeTruthy()
     // Six make actions, the last two promises rather than buttons.
     expect(screen.getAllByText('Coming soon')).toHaveLength(2)
-    expect(screen.getByRole('button', { name: /Podcast/ }).hasAttribute('disabled')).toBe(true)
+    /* ⚠ `aria-disabled`, not `disabled` — hers. A promise stays reachable by
+       keyboard and announces itself; the port had removed both from the tab
+       order. */
+    const soon = screen.getByRole('button', { name: /Podcast/ })
+    expect(soon.getAttribute('aria-disabled')).toBe('true')
+    expect(soon.hasAttribute('disabled')).toBe(false)
     })
   })
 
@@ -185,16 +190,20 @@ describe('Anjani’s Compass Workspace', () => {
        which made four different outcomes look like one. */
     const user = userEvent.setup()
     render(<CompassWorkspace layout="A" />)
-    await user.click(screen.getAllByRole('checkbox')[0])
 
+    /* ⚠ HER IDS — `summary` and `podcast`. An earlier pass renamed them
+       `guide` and `audio` because it read better, and her `data-mk` and this
+       table stopped describing the same thing. */
     await user.click(screen.getAllByRole('button', { name: /^Review guide/ })[0])
-    expect(screen.getByText(WORKSPACE_MAKE_RESULT.guide.title)).toBeTruthy()
-    expect(screen.getByText(WORKSPACE_MAKE_RESULT.guide.body!)).toBeTruthy()
+    expect(screen.getByText(WORKSPACE_MAKE_RESULT.summary.title)).toBeTruthy()
+    expect(screen.getByText(WORKSPACE_MAKE_RESULT.summary.body!)).toBeTruthy()
 
     await user.click(screen.getAllByRole('button', { name: /^Audio recap/ })[0])
-    expect(screen.getByText(WORKSPACE_MAKE_RESULT.audio.title)).toBeTruthy()
+    expect(screen.getByText(WORKSPACE_MAKE_RESULT.podcast.title)).toBeTruthy()
     // the audio payload is a player, not a link
     expect(screen.getByText('0:41 / 3:12')).toBeTruthy()
+    // and what this visit produced is badged
+    expect(screen.getAllByText('This session').length).toBeGreaterThan(0)
   })
 
   it('a suggested question scopes the session to the mark it is about', async () => {
@@ -232,6 +241,21 @@ describe('Anjani’s Compass Workspace', () => {
     await user.click(screen.getByRole('button', { name: 'Show Your marks' }))
     expect(screen.queryByRole('navigation', { name: 'Your marks, collapsed' })).toBeNull()
     expect(screen.getByRole('button', { name: 'Hide your marks' })).toBeTruthy()
+  })
+
+  it('making flashcards opens the deck it just made', async () => {
+    /* ⚠ A MAKE OPENS WHAT IT MADE, where there is something to open. Hers
+       drops you straight into the deck; the other three save and stay,
+       because the deck is the only player that exists. Making a thing and
+       leaving you on the page you were on is a different product. */
+    const user = userEvent.setup()
+    render(<CompassWorkspace />)
+    await user.click(screen.getByRole('button', { name: /New workspace/ }))
+    expect(screen.queryByRole('region', { name: 'Flashcards' })).toBeNull()
+
+    await user.click(screen.getAllByRole('button', { name: /^Flashcards/ })[0])
+    expect(screen.getByRole('region', { name: 'Flashcards' })).toBeTruthy()
+    expect(screen.getByText('1 of 8')).toBeTruthy()
   })
 
   it('renders every layout against every axis — no switch opens a blank screen', () => {
@@ -312,13 +336,17 @@ describe('Anjani’s Compass Workspace', () => {
     })
   })
 
-  it('the make actions are dead until something is pinned, and say why', () => {
+  it('the make actions are LIVE with nothing pinned — "from all marks"', () => {
+    /* ⚠ THIS TEST ASSERTED THE OPPOSITE until 2026-11-04 (audit 5), and it
+       was pinning the port's own invention: the tiles were disabled until
+       something was selected and said "select items first". Hers are live on
+       arrival with zero pinned, because the rail says "Make from ALL marks"
+       and means it. A disabled Studio is what every reviewer saw first. */
     render(<CompassWorkspace layout="D" />)
-    /* Her labels — Flashcards, Practice quiz, Review guide, Audio recap —
-       not the invented "Make flashcards" of the first pass. */
     const make = screen.getAllByRole('button', { name: /^Flashcards/ })[0]
-    expect(make.hasAttribute('disabled')).toBe(true)
-    expect(make.textContent).toContain('select items first')
+    expect(make.hasAttribute('disabled')).toBe(false)
+    expect(make.getAttribute('aria-disabled')).toBeNull()
+    expect(make.textContent).not.toContain('select items first')
   })
 
   it('six mark types collapse into four groups, and that is deliberate', () => {

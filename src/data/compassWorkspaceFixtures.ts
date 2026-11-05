@@ -327,14 +327,20 @@ export const WORKSPACE_READINESS = {
 
 /** "Make from all marks" — six, and the last two are promises rather than
  *  buttons. The Coming soon pair is hers and is the argument that a workspace
- *  grows into conversation, not just revision. */
+ *  grows into conversation, not just revision.
+ *
+ *  ⚠ THE IDS ARE HERS: `summary` for Review guide, `podcast` for Audio recap.
+ *  An earlier pass renamed them `guide` and `audio`, which read better and
+ *  meant her `data-mk` and this table no longer described the same thing.
+ *  The two Coming soon tiles carry no make id at all in her file — they are
+ *  `data-soon`, not `data-mk` — so theirs are prefixed here to say so. */
 export const WORKSPACE_MAKE: readonly { id: string; label: string; note: string; soon?: boolean }[] = [
   { id: 'flashcards', label: 'Flashcards', note: 'Spaced to your exam date' },
   { id: 'practice', label: 'Practice quiz', note: 'Exam style, with rationale' },
-  { id: 'guide', label: 'Review guide', note: 'One page per lesson' },
-  { id: 'audio', label: 'Audio recap', note: '5 minute commute review' },
-  { id: 'podcast', label: 'Podcast', note: 'A conversation about your marks', soon: true },
-  { id: 'simulation', label: 'Simulation', note: 'Practise the conversation, not the definition', soon: true },
+  { id: 'summary', label: 'Review guide', note: 'One page per lesson' },
+  { id: 'podcast', label: 'Audio recap', note: '5 minute commute review' },
+  { id: 'soon-podcast', label: 'Podcast', note: 'A conversation about your marks', soon: true },
+  { id: 'soon-simulation', label: 'Simulation', note: 'Practise the conversation, not the definition', soon: true },
 ]
 
 /** "Created by me" — what the learner has already made, in her order. `also`
@@ -527,12 +533,12 @@ export const WORKSPACE_MAKE_RESULT: Readonly<Record<string, WorkspaceMadeSpec>> 
     cta: 'Start 12 questions \u2192',
     toast: 'Practice set \u00b7 12 questions \u2014 also in Practice',
   },
-  guide: {
+  summary: {
     title: 'Summary of what you marked',
     body: 'Term is rented coverage for a fixed window with no savings attached. Permanent is owned coverage that also builds cash value you can borrow against while alive.',
     toast: 'Summary of what you marked saved here',
   },
-  audio: {
+  podcast: {
     title: 'Audio recap \u00b7 3 min',
     audio: { at: '0:41', of: '3:12' },
     toast: 'Audio recap \u00b7 3 min saved here',
