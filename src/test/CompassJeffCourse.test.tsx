@@ -374,6 +374,66 @@ describe('Jeff’s course player — parity with his build', () => {
     expect(screen.getByPlaceholderText('Listening… speak your question')).toBeTruthy()
   })
 
+  it('⚠ a conversation belongs to a section, and says so', async () => {
+    /* THE LAST PIECE OF HIS DESIGN TO BE PORTED, and the one a flat
+       transcript quietly loses: every question in his prototype is asked FROM
+       somewhere. The rail shows one conversation at a time, headed by the
+       lesson and section it hangs off, with a way back to the rest. */
+    const user = userEvent.setup()
+    renderCourse('compass-jeff-start:story')
+    await user.click(screen.getAllByRole('button', { name: 'Open' })[0])
+    expect(screen.getByRole('button', { name: /All conversations/ })).toBeTruthy()
+    /* ⚠ The header is one line split across elements ("L1 · Section 1.4 ·
+       Go to section"), so it is read off the node rather than matched as
+       text. The first conversation in course order is L1's, not L3's. */
+    expect(document.querySelector('.cre-jc-thread-at')?.textContent).toMatch(/L1 · Section 1\.4/)
+    expect(screen.getByRole('button', { name: 'Go to section' })).toBeTruthy()
+    /* ⚠ AND THE CHIPS CHANGE: inside a conversation they are about what was
+       just said, not about the lesson. */
+    expect(screen.getByRole('button', { name: 'Explain it simpler' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Summarize this lesson' })).toBeNull()
+  })
+
+  it('⚠ a reply joins the open conversation rather than starting another', async () => {
+    /* THE BUG THIS CASE EXISTS FOR. With no section chosen, the first pass
+       invented an anchor from the lesson's first section, so every reply
+       started a NEW thread and the "Replying in …" line above the prompt was
+       never true. His rule: a selection anchors a new thread, a CHOSEN
+       section anchors a new thread, and anything else joins the open one. */
+    const user = userEvent.setup()
+    renderCourse('compass-jeff-start:story')
+    const before = screen.getAllByText('Rubi conversation').length
+    await user.click(screen.getAllByRole('button', { name: 'Open' })[0])
+    expect(screen.getByText(/Replying in/)).toBeTruthy()
+    await user.click(screen.getByRole('button', { name: 'Explain it simpler' }))
+    await user.click(screen.getByRole('button', { name: /All conversations/ }))
+    expect(screen.getAllByText('Rubi conversation').length).toBe(before)
+  })
+
+  it('New question leaves the conversation', async () => {
+    const user = userEvent.setup()
+    renderCourse('compass-jeff-start:story')
+    await user.click(screen.getAllByRole('button', { name: 'Open' })[0])
+    await user.click(screen.getByRole('button', { name: 'New question' }))
+    expect(screen.queryByText(/Replying in/)).toBeNull()
+    /* Back to the lesson's own chips. */
+    expect(screen.getByRole('button', { name: 'Summarize this lesson' })).toBeTruthy()
+  })
+
+  it('⚠ the context chips change the answer, or the + menu is decoration', async () => {
+    /* `contextNotes`. Attach your exam details and the answer says something
+       about YOUR exam and cites it. Without this the tray collects things and
+       nothing happens, which is a feature that demonstrates nothing. */
+    const user = userEvent.setup()
+    renderCourse('compass-jeff-start:story')
+    await user.click(screen.getByRole('button', { name: 'Add context or upload' }))
+    await user.click(screen.getByRole('menuitem', { name: /My exam details/ }))
+    await user.click(screen.getByRole('button', { name: 'Add exam details' }))
+    await user.click(screen.getByRole('button', { name: 'Summarize this lesson' }))
+    expect(screen.getByText(/For your Texas exam|Your Texas .* exam tests this/)).toBeTruthy()
+    expect(screen.getByText(/Your exam details/)).toBeTruthy()
+  })
+
   it('⚠ the numbers are his, not a near miss', () => {
     /* Three of these were wrong in the first pass and all three looked
        plausible: every section counted as read the moment the lesson opened

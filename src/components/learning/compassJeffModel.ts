@@ -446,3 +446,93 @@ export function notebookReply(
  * transcript either.
  */
 export const maskDigits = (q: string) => q.replace(/\d{4,}/g, (d) => d.replace(/\d/g, '•'))
+
+/* ── Conversations ─────────────────────────────────────────────────────── */
+
+export type JeffMsg = { who: 'user' | 'rubi'; text: string; src?: string; quiz?: number; pending?: true }
+
+export type JeffLiveThread = {
+  id: string
+  lesson: string
+  /** ⚠ THE SECTION IT BELONGS TO. Every question is asked FROM somewhere. */
+  anchor: string
+  topic: string
+  title: string
+  date: string
+  msgs: JeffMsg[]
+}
+
+/**
+ * WHAT THE CONTEXT CHIPS ACTUALLY DO TO AN ANSWER — his `contextNotes`.
+ *
+ * ⚠ THIS IS THE PAYOFF OF THE + MENU, and without it the whole tray is
+ * decoration: you attach your exam details, your upload, a marker — and the
+ * answer says something different because of it, and cites them. A port that
+ * collected context and then answered identically would be demonstrating a
+ * feature that does nothing.
+ */
+export function contextNotes(
+  items: { kind: string; label: string; state?: string; line?: string; mtype?: string; date?: string; full?: string; gist?: string; ref?: string; handbook?: true }[],
+  topic: string,
+): { text: string; src: string } {
+  const parts: string[] = []
+  const srcs: string[] = []
+  for (const c of items) {
+    if (c.kind === 'exam') {
+      parts.push(
+        topic === 'domicile'
+          ? `For your ${c.state} exam: a company incorporated in ${c.state} is domestic there, one from Ohio is foreign, and one from Bermuda is alien.`
+          : `Your ${c.state} ${c.line} exam tests this the same way the course teaches it.`,
+      )
+      srcs.push('Your exam details')
+    } else if (c.kind === 'file' && c.handbook) {
+      parts.push(
+        'Your Texas Candidate Handbook (p. 12) lists the same insurer types. Heads up: it says “authorized insurer” where the course says “admitted insurer.” They mean the same thing.',
+      )
+      srcs.push(`Your upload · ${c.label}, p. 12`)
+    } else if (c.kind === 'file' || c.kind === 'photo') {
+      parts.push(`I also checked “${c.label}”. It lines up with the course on this point.`)
+      srcs.push(`Your upload · ${c.label}`)
+    } else if (c.kind === 'link') {
+      parts.push(
+        `The page you linked (${c.label}) is consistent with this, but treat the course as the source for your exam.`,
+      )
+      srcs.push(`Your link · ${c.label}`)
+    } else if (c.kind === 'marker') {
+      parts.push(`This connects to your ${c.mtype ?? 'marker'}: “${c.label}”`)
+      srcs.push(`Your ${c.mtype ?? 'marker'}${c.date ? `, ${c.date}` : ''}`)
+    } else if (c.kind === 'lib') {
+      parts.push(`Your “${c.label}” covers this too, if you want to review it next.`)
+      srcs.push('My Library')
+    } else if (c.kind === 'course') {
+      parts.push(`It ties to ${c.full ?? c.label}${c.gist ? `: ${c.gist}` : ''}`)
+      srcs.push(c.ref ?? c.label)
+    }
+  }
+  return { text: parts.join(' '), src: srcs.join(' · ') }
+}
+
+/**
+ * A SECTION SUMMARY, BUILT FROM THE SECTION — his `sec-summary` branch.
+ *
+ * ⚠ IT READS THE ACTUAL CONTENT rather than returning a canned line: the
+ * paragraphs if there are any, else the bullets, else the definitions, plus
+ * the infographic's rows as sentences. That is what makes "summarize this
+ * section" answerable for 36 sections without 36 written answers.
+ */
+export function sectionSummary(lesson: JeffLesson, num: string, examTips: boolean): { text: string; src: string } {
+  const sec = lesson.secs.find((s) => s.num === num)
+  if (!sec) return { text: '', src: '' }
+  let body = sec.paras?.length
+    ? sec.paras.join(' ')
+    : sec.bullets?.length
+      ? sec.bullets.join(' ')
+      : (sec.defs ?? []).map((d) => `${d.term}: ${d.def}`).join(' ')
+  if (sec.rows?.length) {
+    body += ` ${sec.rows.map((r) => `${r.a} selling in ${r.c} is ${r.d.toLowerCase()}.`).join(' ')}`
+  }
+  return {
+    text: `In short: ${body}${sec.tip && examTips ? ` Exam tip: ${sec.tip}` : ''}`,
+    src: `${lesson.id} · Section ${num}`,
+  }
+}

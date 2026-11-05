@@ -12,7 +12,26 @@ import {
   type JeffLesson,
 } from '@/data/compassJeffFixtures'
 
-export type JeffCtxItem = { key: string; kind: string; label: string }
+/**
+ * ⚠ A CONTEXT ITEM CARRIES MORE THAN ITS LABEL, and `contextNotes` reads the
+ * rest: the exam's state and line, a marker's type and date, a course item's
+ * full name and gist. Passing only `{kind, label}` (the first pass) produced
+ * "For your undefined exam:" — an answer that is worse than no answer,
+ * because it looks like the feature works.
+ */
+export type JeffCtxItem = {
+  key: string
+  kind: string
+  label: string
+  state?: string
+  line?: string
+  mtype?: string
+  date?: string
+  full?: string
+  gist?: string
+  ref?: string
+  handbook?: true
+}
 
 /**
  * HIS "+" — ADD CONTEXT, UPLOAD.
@@ -57,7 +76,18 @@ export function CompassJeffAddContext({
   const addPicked = () => {
     const items = rows
       .filter((r) => r.key && picked[r.key])
-      .map((r) => ({ key: r.key!, kind: r.kind!, label: r.chip ?? short(r.label) }))
+      .map((r) => ({
+        key: r.key!,
+        kind: r.kind!,
+        label: r.chip ?? short(r.label),
+        /* The fields `contextNotes` reads, carried from the row. */
+        mtype: r.mtype,
+        date: r.date,
+        full: r.full,
+        gist: r.gist,
+        ref: r.ref,
+        handbook: r.handbook,
+      }))
     if (items.length) onAdd(items)
     close()
   }
@@ -181,7 +211,15 @@ export function CompassJeffAddContext({
                   type="button"
                   className="cre-jc-continue"
                   onClick={() => {
-                    onAdd([{ key: 'exam', kind: 'exam', label: `${exam.state} · ${exam.line}` }])
+                    onAdd([
+                      {
+                        key: 'exam',
+                        kind: 'exam',
+                        label: `${exam.state} · ${exam.line}`,
+                        state: exam.state,
+                        line: exam.line,
+                      },
+                    ])
                     close()
                   }}
                 >
@@ -276,6 +314,12 @@ const PICK_TITLE: Record<string, string> = {
 type Row = {
   key?: string
   kind?: string
+  mtype?: string
+  date?: string
+  full?: string
+  gist?: string
+  ref?: string
+  handbook?: true
   /** What the picker row reads. */
   label: string
   /** ⚠ WHAT THE CHIP READS, which is not the same string. His `shortLabel`
@@ -305,6 +349,9 @@ function pickRows(
         kind: 'course',
         label: `${l.id} · ${l.title}`,
         chip: short(`${l.id} · ${l.title}`),
+        full: `${l.id} (${l.title})`,
+        gist: `${l.intro.split('. ')[0]}.`,
+        ref: l.id,
         sub: `Whole lesson · ${l.secs.length} sections`,
       },
       ...l.secs.map((c) => ({
@@ -319,11 +366,11 @@ function pickRows(
     const of = (k: string) => markers.filter((m) => m.kind === k)
     return [
       { head: 'Notes', label: '' },
-      ...of('Note').map((m) => ({ key: `note:${m.id}`, kind: 'marker', label: m.label, chip: short(`Note · ${m.label}`), sub: `${m.lesson} · Section ${m.num}` })),
+      ...of('Note').map((m) => ({ key: `note:${m.id}`, kind: 'marker', mtype: 'note', label: m.label, chip: short(`Note · ${m.label}`), sub: `${m.lesson} · Section ${m.num}` })),
       { head: 'Flags', label: '' },
-      ...of('Flag').map((m) => ({ key: `flag:${m.id}`, kind: 'marker', label: m.label, chip: short(`Flag · ${m.label}`), sub: `${m.lesson} · Section ${m.num}` })),
+      ...of('Flag').map((m) => ({ key: `flag:${m.id}`, kind: 'marker', mtype: 'flag', label: m.label, chip: short(`Flag · ${m.label}`), sub: `${m.lesson} · Section ${m.num}` })),
       { head: 'Rubi conversations', label: '' },
-      ...of('Rubi conversation').map((m) => ({ key: `chat:${m.id}`, kind: 'marker', label: m.label, chip: short(`Chat · ${m.label}`), sub: `${m.lesson} · Section ${m.num}` })),
+      ...of('Rubi conversation').map((m) => ({ key: `chat:${m.id}`, kind: 'marker', mtype: 'conversation', label: m.label, chip: short(`Chat · ${m.label}`), sub: `${m.lesson} · Section ${m.num}` })),
     ]
   }
   if (kind === 'library') {
@@ -331,7 +378,16 @@ function pickRows(
   }
   if (kind === 'file' || kind === 'photo') {
     const list = kind === 'file' ? JEFF_SAMPLES.file : JEFF_SAMPLES.photo
-    return list.map((f) => ({ key: `${kind}:${f.label}`, kind, label: f.label, chip: short(f.label), sub: f.sub }))
+    return list.map((f) => ({
+      key: `${kind}:${f.label}`,
+      kind,
+      label: f.label,
+      chip: short(f.label),
+      sub: f.sub,
+      /* His handbook gets its own answer — the one that flags the course's
+         "admitted" against the handbook's "authorized". */
+      handbook: 'handbook' in f && f.handbook ? (true as const) : undefined,
+    }))
   }
   return []
 }
