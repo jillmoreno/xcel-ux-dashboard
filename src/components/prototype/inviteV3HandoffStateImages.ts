@@ -70,7 +70,8 @@ const STATE_IMAGES: Record<string, Record<string, string>> = {
 }
 
 /** The captures as the registry's renders — one `<img>` per state, at its
- *  own size and never wider than the column. */
+ *  own size and never wider than the column. Every file is a 2x capture
+ *  (headless Chrome, device scale factor 2). */
 export function inviteV3StateRenders(): Record<string, Record<string, () => ReactNode>> {
   return Object.fromEntries(
     Object.entries(STATE_IMAGES).map(([componentId, states]) => [
@@ -81,8 +82,16 @@ export function inviteV3StateRenders(): Record<string, Record<string, () => Reac
           () =>
             createElement('img', {
               src,
+              /* Captured at 2x — drawn at half its pixel size, so it is sharp
+                 on a retina screen and the right size on any. */
+              srcSet: `${src} 2x`,
               alt: name,
               loading: 'lazy',
+              /* The column stretches an image to its own width, which drew a
+                 472px modal at 845. Pin it to half its pixels once known. */
+              onLoad: (e: { currentTarget: HTMLImageElement }) => {
+                e.currentTarget.style.width = `${e.currentTarget.naturalWidth / 2}px`
+              },
               style: { display: 'block', maxWidth: '100%', height: 'auto', borderRadius: 8 },
             }),
         ]),
