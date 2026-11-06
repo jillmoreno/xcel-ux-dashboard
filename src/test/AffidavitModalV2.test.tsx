@@ -4,10 +4,10 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AffidavitModal } from '@/components/e2e/AffidavitModal'
 import { AffidavitModalV2 } from '@/components/e2e/AffidavitModalV2'
-import { resolveAffidavit } from '@/components/e2e/affidavitModalV2Util'
+import { resolveAffidavit, withoutMiddle } from '@/components/e2e/affidavitModalV2Util'
 import { MemoryRouter } from 'react-router-dom'
 import { FEATURE_FLAGS, FeatureFlagProvider, designControlsFor, useFeatureFlags } from '@/context/FeatureFlagContext'
-import { ENTRIES, FORMS, SSN_REASON, STATES, type AffField } from '@/data/affidavitForms'
+import { ENTRIES, FORMS, SIGNED_FORMS, SSN_REASON, STATES, type AffField } from '@/data/affidavitForms'
 
 /**
  * AFFIDAVIT V2 — 2026-11-03, Afsana. The first change V2 makes: the modal
@@ -167,6 +167,8 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     const agree = screen.getByRole('button', { name: form.agreeLabel ?? 'I Agree' }) as HTMLButtonElement
     expect(agree.disabled).toBe(true) // the signature is still empty
     fireEvent.change(screen.getByLabelText(/Student Signature/), { target: { value: 'Jordan Navarro' } })
+    expect(agree.disabled).toBe(true) // and the pre-filled name not yet confirmed
+    fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
     expect(agree.disabled).toBe(false)
     fireEvent.click(agree)
     expect(onClose).toHaveBeenCalled()
@@ -176,6 +178,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     const form = FORMS.IL_PRE!
     render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="IL" pattern="link" />)
     fireEvent.change(screen.getByLabelText(/Student Signature/), { target: { value: 'Jordan Navarro' } })
+    fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
     const agree = screen.getByRole('button', { name: form.agreeLabel ?? 'I Agree' }) as HTMLButtonElement
     fireEvent.click(screen.getByLabelText(/I have read .* and swear/))
     expect(agree.disabled).toBe(true) // not opened yet
@@ -244,25 +247,31 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
 
   /* THE SIX STATE-SPECIFIC FINAL AFFIDAVITS match their documents field for
      field (2026-11-04, Afsana's "State Specific Affidavit" folder) — the
-     documents' own labels, in the documents' order. The one addition is the
-     product's "I confirm that the above information is accurate", kept on
-     purpose and left out of these lists. */
+     documents' own labels, in the documents' order — with one exception since
+     2026-11-06: the student's name and signature are the standard block every
+     signed form uses (First / Middle / Last Name, pre-filled, then an empty
+     Student Signature), in the place of the document's own name and signature.
+     The product's "I confirm that the above information is accurate" is kept
+     on purpose and left out of these lists. */
+  const SIGNER = ['First Name', 'Middle Name', 'Last Name', 'Student Signature']
   const STATE_DOCUMENT_FIELDS: Record<string, string[]> = {
-    NY_POST: ['Full Name', 'Today’s Date'],
-    CO_POST: ['Course Name', 'Date of Pre-licensing Final Exam', 'Student Full Name', 'Date', 'Relationship to Examinee', 'Proctor Address', 'Proctor Name (print)', 'Proctor Signature'],
-    CT_POST: ['Course Name', 'Date of Prelicensing Final Exam', 'Student Full Name', 'Date', 'Relationship to Examinee', 'Proctor Address', 'Proctor Name (print)', 'Proctor Signature'],
+    NY_POST: [...SIGNER, 'Today’s Date'],
+    CO_POST: ['Course Name', 'Date of Pre-licensing Final Exam', ...SIGNER, 'Date', 'Relationship to Examinee', 'Proctor Address', 'Proctor Name (print)', 'Proctor Signature'],
+    CT_POST: ['Course Name', 'Date of Prelicensing Final Exam', ...SIGNER, 'Date', 'Relationship to Examinee', 'Proctor Address', 'Proctor Name (print)', 'Proctor Signature'],
     MN_POST: [
       'Name of Exam', 'Date & Time of Exam Completion', 'Company & Address where exam was completed', 'City', 'State', 'Zip Code',
-      'Name', 'License #', 'Date of Birth',
+      'First Name', 'Middle Name', 'Last Name', 'License #', 'Date of Birth',
       'Business Address', 'City', 'State', 'Zip Code',
       'Mailing Address (if different than above)', 'City', 'State', 'Zip Code',
       'Daytime Phone', 'E-mail', 'Student Signature', 'Date',
       'Proctor’s Full Legal Name', 'Note your type of relationship to the student.', 'Proctor Signature', 'Date', 'Employer & Job Title',
       'Business Address', 'City', 'State', 'Zip Code', 'Business/Daytime Phone', 'E-mail',
     ],
-    WI_POST: ['Student Full Name', 'Today’s Date', 'Proctor Full Address', 'Proctor Phone Number', 'Proctor Full Name', 'Relationship to Examinee', 'Today’s Date'],
-    WV_POST: ['Student Full Name', 'Relationship to Examinee', 'Proctor Full Name', 'Today’s Date'],
+    WI_POST: [...SIGNER, 'Today’s Date', 'Proctor Full Address', 'Proctor Phone Number', 'Proctor Full Name', 'Relationship to Examinee', 'Today’s Date'],
+    WV_POST: [...SIGNER, 'Relationship to Examinee', 'Proctor Full Name', 'Today’s Date'],
   }
+  const flatAll = (l: AffField[] = []): AffField[] =>
+    l.flatMap((x) => (x.flagGroup ? flatAll(x.flagGroup) : x.depGroup ? flatAll(x.items) : x.block ? [] : x.row ? x.row : [x]))
   const formFields = (key: string) => {
     const flat = (l: AffField[] = []): AffField[] =>
       l.flatMap((x) => (x.flagGroup ? flat(x.flagGroup) : x.depGroup ? flat(x.items) : x.block ? [] : x.row ? x.row : [x]))
@@ -270,20 +279,56 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     return flat(f.pages.flatMap((p) => p.fields ?? []).concat(f.fields)).filter((x) => x.id !== 'agree')
   }
 
-  it.each(Object.keys(STATE_DOCUMENT_FIELDS))('%s asks for exactly the fields on its state document', (key) => {
+  it.each(Object.keys(STATE_DOCUMENT_FIELDS))('%s asks for the fields on its state document, signed the standard way', (key) => {
     // The data writes Today's Date with a straight apostrophe; compare the words.
     const norm = (s?: string) => (s ?? '').replace(/[’']/g, '’')
     expect(formFields(key).map((x) => norm(x.label))).toEqual(STATE_DOCUMENT_FIELDS[key])
   })
 
-  it('never splits a name on the state-specific forms, and leaves e-signature names empty', () => {
-    for (const key of Object.keys(STATE_DOCUMENT_FIELDS)) {
+  /* ONE WAY TO SIGN (2026-11-06, after the Nov 5 review): every form with a
+     signature line or label shows the same block, whatever the document
+     calls it. */
+  it('signs every form that has a signature the same way: names pre-filled, the signature typed', () => {
+    expect(SIGNED_FORMS).toHaveLength(15)
+    for (const key of SIGNED_FORMS) {
       const ids = formFields(key).map((x) => x.id)
-      for (const split of ['first', 'middle', 'last', 'suffix']) expect(ids, `${key} ${split}`).not.toContain(split)
+      for (const id of ['first', 'middle', 'last', 'sig']) expect(ids, `${key} ${id}`).toContain(id)
+      for (const id of ['suffix', 'fullname', 'name']) expect(ids, `${key} ${id}`).not.toContain(id)
+      expect(ids.filter((id) => id === 'sig'), key).toHaveLength(1)
+      expect(ids.indexOf('last'), key).toBeLessThan(ids.indexOf('sig'))
+      const f = FORMS[key]!
+      const all = flatAll(f.fields.concat(...f.pages.map((p) => p.fields ?? [])))
+      expect(all.some((x) => x.id === 'agree'), `${key} confirm box`).toBe(true)
     }
     render(<AffidavitModalV2 onClose={() => {}} moment="post" state="NY" pattern="page" />)
-    expect((screen.getByLabelText(/^Full Name/) as HTMLInputElement).value).toBe('')
+    expect((screen.getByLabelText(/^First Name/) as HTMLInputElement).value).toBe('Jordan')
+    expect((screen.getByLabelText(/^Middle Name/) as HTMLInputElement).value).toBe('Lee')
+    expect((screen.getByLabelText(/^Last Name/) as HTMLInputElement).value).toBe('Navarro')
+    expect((screen.getByLabelText(/Student Signature/) as HTMLInputElement).value).toBe('')
+    expect(screen.getByText('Student E-Signature:')).toBeTruthy() // the document's own label stays
     expect((screen.getByLabelText(/Today.s Date/) as HTMLInputElement).readOnly).toBe(true)
+  })
+
+  it('signs Illinois’s terms — a signature line and nothing else — with the names above it', () => {
+    expect(formFields('IL_PRE').map((x) => x.id)).toEqual(['first', 'middle', 'last', 'sig'])
+  })
+
+  it('leaves the forms with no signature alone: the enrollment agreements and the name-only terms', () => {
+    for (const key of ['KY_PRE', 'NV_PRE', 'OR_PRE', 'CA_PRE', 'GEN_PRE_EN']) expect(SIGNED_FORMS).not.toContain(key)
+    expect(formFields('GEN_PRE_EN').map((x) => x.id)).toEqual(['fullname'])
+  })
+
+  /* MIDDLE NAME IS UNDECIDED (2026-11-06): a Design bar control. */
+  it('drops Middle Name when the Design bar’s Affidavit middle name is Off', () => {
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'affidavit-v2-middle')!
+    expect(flag.surface).toBe('design')
+    expect(flag.defaultVariant).toBe('show')
+    for (const key of SIGNED_FORMS) {
+      const f = withoutMiddle(FORMS[key]!)
+      const ids = flatAll(f.fields.concat(...f.pages.map((p) => p.fields ?? []))).map((x) => x.id)
+      expect(ids, key).not.toContain('middle')
+      expect(ids, key).toContain('first')
+    }
   })
 
   it('Minnesota: where the exam was completed is not boxed in red', () => {
@@ -387,13 +432,13 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
 
   /* PENNSYLVANIA (2026-11-06), from the compliance sheet. Not in the PRD —
      an open question; affidavitForms.ts has it. */
-  it('Pennsylvania before the course exam: its affidavit, one Full Name line, signed with Attest', async () => {
+  it('Pennsylvania before the course exam: its affidavit, signed the standard way, with Attest', async () => {
     render(<AffidavitModalV2 onClose={() => {}} moment="exam" state="PA" pattern="page" />)
     expect(screen.getByRole('heading', { level: 2 }).textContent).toBe('Pennsylvania Pre-Licensing Affidavit')
     expect(screen.getByText(/sanction by the Pennsylvania Department of Insurance/)).toBeTruthy()
     expect(screen.getByText('Student E-Signature:')).toBeTruthy()
-    expect((screen.getByLabelText(/^Full Name/) as HTMLInputElement).value).toBe('')
-    expect(screen.queryByLabelText(/First Name/)).toBeNull()
+    expect((screen.getByLabelText(/^First Name/) as HTMLInputElement).value).toBe('Jordan')
+    expect((screen.getByLabelText(/Student Signature/) as HTMLInputElement).value).toBe('')
     expect(screen.getByRole('button', { name: 'Attest' })).toBeTruthy()
     expect(STATES.PA).toBe('Pennsylvania')
     expect(FEATURE_FLAGS.find((f) => f.key === 'affidavit-v2-state')!.variants!.some((v) => v.value === 'PA')).toBe(true)

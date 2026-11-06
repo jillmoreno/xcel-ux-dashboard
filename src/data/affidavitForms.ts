@@ -930,3 +930,51 @@ FORMS.PA_EXAM={
   noPrefill:['fullname'],
   note:'Not in the explorer: added 2026-11-06 from the compliance team\'s affidavit sheet. The PRD says Pennsylvania eliminated pre-licensing on 29 Apr 2025; to be confirmed with compliance.'
 };
+
+/* ── ONE WAY TO SIGN — 2026-11-06 ────────────────────────────────────────
+   The Nov 5 product & design review (Amrita, Nick): signatures are kept the
+   same on every form, for audit and reporting, whatever the document calls
+   the field ("Student Signature", "Student E-Signature", a Full Name line
+   under either). Afsana's call for now: EVERYWHERE A SIGNATURE APPEARS the
+   learner sees First Name and Last Name, pre-filled from their account
+   (Middle Name too, while the Design bar's "Affidavit middle name" is on —
+   undecided), and an empty Student Signature box to type their name in.
+   Suffix goes: no document asks for one.
+
+   What counts as "a signature appears": the document has a signature line or
+   a signature label — the 15 forms below. NOT the enrollment agreements (KY,
+   NV, OR), whose text says "my signature below" but which show no field, nor
+   the name-only and nothing-to-fill forms; those are an open question.
+   The document's own headings stay (they say where the signature is); the
+   names take the place of the document's name field(s), the signature box
+   the place of its signature line, or follows the names where it had none.
+   Proctor fields are untouched. With the names pre-filled, every one of these
+   forms carries the "I confirm that the above information is accurate" box. */
+const NAME_ROW: AffField = {row:[
+  {id:'first',label:'First Name',required:true,placeholder:'First name',ac:'given-name'},
+  {id:'middle',label:'Middle Name',placeholder:'Middle name',ac:'additional-name'},
+  {id:'last',label:'Last Name',required:true,placeholder:'Last name',ac:'family-name'},
+]}
+const SIGNATURE: AffField = {id:'sig',label:'Student Signature',required:true,placeholder:'Type your full name',ac:'name'}
+const CONFIRM: AffField = {id:'agree',type:'checkbox',label:'I confirm that the above information is accurate',required:true}
+const NAME_IDS = ['first','middle','last','suffix','fullname','name']
+const isName = (x: AffField) => (x.id != null && NAME_IDS.includes(x.id)) || (x.row ?? []).some((y) => y.id != null && NAME_IDS.includes(y.id))
+export const SIGNED_FORMS = ['IL_PRE','OH_PRE','FL_EXAM','MN_EXAM','CA_POST_LH','IL_POST','OH_POST_P','NY_POST','CO_POST','CT_POST','MN_POST','WV_POST','WI_POST','GEN_EXAM','PA_EXAM']
+for (const key of SIGNED_FORMS) {
+  const form = FORMS[key]
+  let named = false, signed = false
+  const has = (l: AffField[] | undefined, id: string): boolean => (l ?? []).some((x) => x.id === id || has(x.flagGroup, id) || has(x.row, id))
+  // Does the document have its own signature line anywhere (not just in this list)?
+  const lineSig = has(form.fields.concat(...form.pages.map((p) => p.fields ?? [])), 'sig')
+  const rewrite = (list: AffField[]): AffField[] => list.flatMap((x) => {
+    if (x.flagGroup) return [{ ...x, flagGroup: rewrite(x.flagGroup) }]
+    if (isName(x)) { if (named) return []; named = true; return [NAME_ROW, ...(lineSig ? [] : (signed = true, [SIGNATURE]))] }
+    if (x.id === 'sig') { if (signed) return []; signed = true; return named ? [SIGNATURE] : (named = true, [NAME_ROW, SIGNATURE]) }
+    return [x]
+  })
+  form.pages = form.pages.map((p) => (p.fields ? { ...p, fields: rewrite(p.fields) } : p))
+  form.fields = rewrite(form.fields)
+  const all = form.fields.concat(...form.pages.map((p) => p.fields ?? []))
+  if (!has(all, 'agree')) form.fields.push(CONFIRM)
+  form.noPrefill = (form.noPrefill ?? []).filter((id) => !NAME_IDS.includes(id))
+}

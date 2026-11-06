@@ -4555,6 +4555,22 @@ the explorer; carry those over on the next port.
 - **After course exam — CO, CT, MN, NY, WI, WV.** Fields match each state's
   own document exactly (Afsana's "State Specific Affidavit" folder): one name
   field, not First / Middle / Last / Suffix, and each document's own labels.
+  **Except the name and signature, since 2026-11-06** (next bullet).
+- **One way to sign** (2026-11-06). The Nov 5 product & design review
+  (Amrita, Nick) settled that signatures are captured the same way on every
+  form, whatever the document calls the field, so audit and reporting read
+  one shape. Afsana's call for now: **everywhere a signature appears** (a
+  signature line or label — 15 forms, `SIGNED_FORMS` in the data file) the
+  learner sees **First Name and Last Name, pre-filled** from the account, then
+  an **empty Student Signature** box to type their name in, and the "I
+  confirm that the above information is accurate" box. Suffix is gone (no
+  document asks for one). **Middle Name is undecided** — it is part of a
+  legal name — so it is the Design bar's **Affidavit middle name** (Shown /
+  Off; `affidavit-v2-middle`). The document's own labels ("Student
+  E-Signature:") stay. Proctor fields are untouched. **Open:** whether the
+  forms with a name but no signature (California and the generic terms) and
+  the enrollment agreements (KY, NV, OR: "my signature below" with no field)
+  take the same name block.
 - **Non-state specific** (`GEN`) — XCEL's Generic Terms and Conditions (before
   the course begins, English or Spanish by Affidavit language) and its PE
   General Attestation (before the course exam), from Afsana's "Non-State

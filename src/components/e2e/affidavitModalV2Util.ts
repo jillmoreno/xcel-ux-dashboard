@@ -1,4 +1,4 @@
-import { ENTRIES, FORMS, type AffEntry, type AffForm, type AffidavitMoment } from '@/data/affidavitForms'
+import { ENTRIES, FORMS, type AffEntry, type AffField, type AffForm, type AffidavitMoment } from '@/data/affidavitForms'
 
 /* Split out of AffidavitModalV2.tsx so that file exports components only (fast
    refresh) — the same split as demoBarUtil.ts beside DemoBar.tsx. */
@@ -34,4 +34,12 @@ export function resolveAffidavit(
     return { entry, form: key ? (FORMS[key] ?? null) : null, loa }
   }
   return { entry, form: entry.status === 'ready' && entry.form ? (FORMS[entry.form] ?? null) : null }
+}
+
+/** The form without its Middle Name field — the Design bar's "Affidavit
+ *  middle name" set to Off (2026-11-06, undecided). */
+export function withoutMiddle(form: AffForm): AffForm {
+  const strip = (l: AffField[] | undefined): AffField[] | undefined =>
+    l?.filter((x) => x.id !== 'middle').map((x) => (x.row ? { ...x, row: strip(x.row) } : x.flagGroup ? { ...x, flagGroup: strip(x.flagGroup) } : x))
+  return { ...form, fields: strip(form.fields) ?? [], pages: form.pages.map((p) => (p.fields ? { ...p, fields: strip(p.fields) } : p)) }
 }

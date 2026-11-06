@@ -2568,6 +2568,25 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'affidavit-v2-middle',
+    /* UNDECIDED (2026-11-06, Afsana): is Middle Name part of the legal name
+       a signature captures? On every form that has a signature, the name
+       sits above it as First / Middle / Last, pre-filled; Off drops Middle. */
+    surface: 'design',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit middle name',
+    description:
+      'Whether the name above every affidavit signature includes Middle Name (pre-filled, optional) — undecided. First and Last Name are always there.',
+    variants: [
+      { value: 'show', label: 'Shown' },
+      { value: 'hide', label: 'Off' },
+    ],
+    defaultVariant: 'show',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'affidavit-v2-loa',
     /* THE EXPLORER'S LINE OF AUTHORITY — 2026-11-04, Afsana: "you forgot to
        pull in … line of authority". Some states sign a different form per

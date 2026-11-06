@@ -23,7 +23,7 @@ import {
   type AffidavitMoment,
 } from '@/data/affidavitForms'
 import type { AffidavitKind } from './AffidavitModal'
-import { resolveAffidavit } from './affidavitModalV2Util'
+import { resolveAffidavit, withoutMiddle } from './affidavitModalV2Util'
 import './affidavitModalV2.css'
 
 /**
@@ -148,8 +148,9 @@ function prefillVals(f: AffForm, st: string): { vals: Vals; readOnly: string[] }
     first: 'Jordan', middle: 'Lee', last: 'Navarro', addr1: '1420 Maple Avenue', addr2: 'Apt 3B', city, state: st, zip,
     phone: '(555) 214-7788', email: 'jordan.navarro@example.com', date: today, s_date: today, sigdate: today,
     examdate: today, examdt: `${today}T10:30`, course: `${STATES[st] ?? ''} Life & Health Prelicensing`,
-    // The state-specific forms ask for one name field (2026-11-04); where it
-    // is a signature (NY, CO, CT, WI, WV) the form's `noPrefill` leaves it empty.
+    // The name-only forms that keep one Full Name line (2026-11-04). On every
+    // form with a signature the name is First / Middle / Last, pre-filled, and
+    // the Student Signature box is left empty for the learner (2026-11-06).
     fullname: 'Jordan Lee Navarro',
   }
   const vals: Vals = {}
@@ -378,6 +379,7 @@ export function AffidavitModalV2({
   const patternFlag = useFeatureFlag('affidavit-v2-pattern').variant
   const languageFlag = useFeatureFlag('affidavit-v2-language').variant
   const loaFlag = useFeatureFlag('affidavit-v2-loa').variant
+  const middleFlag = useFeatureFlag('affidavit-v2-middle').variant
   const moment = asMoment(momentProp ?? momentFlag)
   const state = stateProp ?? stateFlag ?? 'FL'
   const picked: AffidavitPattern = (patternProp ?? patternFlag) === 'link' ? 'link' : 'page'
@@ -393,7 +395,9 @@ export function AffidavitModalV2({
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
 
-  const { entry, form, loa } = resolveAffidavit(moment, state, language, lineOfAuthority)
+  const resolved = resolveAffidavit(moment, state, language, lineOfAuthority)
+  const { entry, loa } = resolved
+  const form = resolved.form && middleFlag === 'hide' ? withoutMiddle(resolved.form) : resolved.form
   /* After the course exam (and on a `noLink` form) there is no Link out. */
   const pattern: AffidavitPattern = picked === 'link' && (moment === 'post' || form?.noLink) ? 'page' : picked
   const title = form
@@ -421,7 +425,7 @@ export function AffidavitModalV2({
           /* Keyed so a new form, state or pattern starts from page one with
              fresh answers — the explorer's Reset preview, done by the bar. */
           <AffidavitBody
-            key={`${moment}|${state}|${lineOfAuthority}|${language}|${pattern}`}
+            key={`${moment}|${state}|${lineOfAuthority}|${language}|${pattern}|${middleFlag}`}
             form={form}
             state={state}
             pattern={pattern}
