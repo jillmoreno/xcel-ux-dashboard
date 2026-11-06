@@ -2524,6 +2524,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'NY', label: 'New York' },
       { value: 'OH', label: 'Ohio' },
       { value: 'OR', label: 'Oregon' },
+      // 2026-11-06: on the compliance team's affidavit sheet; see affidavitForms.ts for the PRD question.
+      { value: 'PA', label: 'Pennsylvania' },
       { value: 'WV', label: 'West Virginia' },
       { value: 'WI', label: 'Wisconsin' },
       // Not a state (2026-11-04): XCEL's generic forms — `GEN` in affidavitForms.ts.

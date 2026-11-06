@@ -7,7 +7,7 @@ import { AffidavitModalV2 } from '@/components/e2e/AffidavitModalV2'
 import { resolveAffidavit } from '@/components/e2e/affidavitModalV2Util'
 import { MemoryRouter } from 'react-router-dom'
 import { FEATURE_FLAGS, FeatureFlagProvider, designControlsFor, useFeatureFlags } from '@/context/FeatureFlagContext'
-import { ENTRIES, FORMS, STATES, type AffField } from '@/data/affidavitForms'
+import { ENTRIES, FORMS, SSN_REASON, STATES, type AffField } from '@/data/affidavitForms'
 
 /**
  * AFFIDAVIT V2 — 2026-11-03, Afsana. The first change V2 makes: the modal
@@ -219,22 +219,24 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(statements?.plain).toBeUndefined()
   })
 
-  it('Illinois after the exam: no roster heading and no red box, the SSN field kept', () => {
+  it('Illinois after the exam: no roster heading and no red box, the SSN field kept, with the sheet’s reason for it', () => {
     render(<AffidavitModalV2 onClose={() => {}} moment="post" state="IL" pattern="page" />)
     const last = FORMS.IL_POST!.pages.length - 1
     for (let i = 0; i < last; i++) fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     expect(screen.queryByText('Course Completion Roster upload form')).toBeNull()
     const ssn = screen.getByLabelText(/Full SSN/)
     expect(ssn.closest('.aff2-flag')).toBeNull()
-    expect(screen.getByText(/Education providers are required to collect/)).toBeTruthy()
+    expect(screen.queryByText(/Education providers are required to collect/)).toBeNull()
+    expect(screen.getByText(SSN_REASON)).toBeTruthy()
   })
 
-  it('California after the exam: no roster heading, everything else kept', () => {
+  it('California after the exam: no roster heading, the sheet’s SSN reason in place of the old sentence', () => {
     render(<AffidavitModalV2 onClose={() => {}} moment="post" state="CA" pattern="page" />)
     const last = FORMS.CA_POST_LH!.pages.length - 1
     for (let i = 0; i < last; i++) fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     expect(screen.queryByText('Course Completion Roster upload form')).toBeNull()
-    expect(screen.getByText(/Education providers are required to collect/)).toBeTruthy()
+    expect(screen.queryByText(/Education providers are required to collect/)).toBeNull()
+    expect(screen.getByText(SSN_REASON)).toBeTruthy()
     expect(screen.getByLabelText(/Last four of SSN/)).toBeTruthy()
     // The Student Legal Name keeps its red box — only the heading went.
     expect(screen.getByText('Student Legal Name (first and last name)').closest('.aff2-flag')).not.toBeNull()
@@ -364,6 +366,37 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(agree.disabled).toBe(false)
     fireEvent.click(agree)
     expect(onClose).toHaveBeenCalled()
+  })
+
+  /* THE SSN WORDING (2026-11-06): the compliance sheet's "SSN Veribage",
+     directly above the SSN field on CA, IL and both Ohio forms. */
+  it('puts the sheet’s SSN wording above every SSN field — directly above it on both Ohio forms', () => {
+    const forms = { CA_POST_LH: 'ssn4', IL_POST: 'ssn', OH_PRE: 'ssn4', OH_POST_P: 'ssn4' }
+    for (const [key, id] of Object.entries(forms)) {
+      const flat = (fs: AffField[]): AffField[] => fs.flatMap((f) => (f.flagGroup ? flat(f.flagGroup) : [f]))
+      const fields = flat(FORMS[key]!.fields)
+      const at = fields.findIndex((f) => f.id === id)
+      expect(at, key).toBeGreaterThan(0)
+      const reason = fields.findIndex((f) => f.block?.p === SSN_REASON)
+      expect(reason, key).toBeGreaterThanOrEqual(0)
+      expect(reason, key).toBeLessThan(at)
+      // CA and IL: where the old "Education providers …" sentence was (CA's sits above Date of Birth).
+      if (key.startsWith('OH')) expect(reason, key).toBe(at - 1)
+    }
+  })
+
+  /* PENNSYLVANIA (2026-11-06), from the compliance sheet. Not in the PRD —
+     an open question; affidavitForms.ts has it. */
+  it('Pennsylvania before the course exam: its affidavit, one Full Name line, signed with Attest', async () => {
+    render(<AffidavitModalV2 onClose={() => {}} moment="exam" state="PA" pattern="page" />)
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe('Pennsylvania Pre-Licensing Affidavit')
+    expect(screen.getByText(/sanction by the Pennsylvania Department of Insurance/)).toBeTruthy()
+    expect(screen.getByText('Student E-Signature:')).toBeTruthy()
+    expect((screen.getByLabelText(/^Full Name/) as HTMLInputElement).value).toBe('')
+    expect(screen.queryByLabelText(/First Name/)).toBeNull()
+    expect(screen.getByRole('button', { name: 'Attest' })).toBeTruthy()
+    expect(STATES.PA).toBe('Pennsylvania')
+    expect(FEATURE_FLAGS.find((f) => f.key === 'affidavit-v2-state')!.variants!.some((v) => v.value === 'PA')).toBe(true)
   })
 
   it('resolves every ready entry in the explorer to a form', () => {

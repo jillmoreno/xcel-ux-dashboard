@@ -89,6 +89,12 @@ export type AffEntry = {
 }
 
 export const MOMENTS: { id: AffidavitMoment; label: string }[] =[{id:'pre',label:'Before course begins'},{id:'exam',label:'Before course exam'},{id:'post',label:'After course exam'}];
+/* Why the SSN is asked for — the "SSN Veribage" column of the compliance
+   team's XCEL-PE_Affidavits_and_EAs.xlsx (2026-11-06), the same sentence for
+   CA (last 4), IL (full SSN) and both Ohio forms (last 4). The sheet has two
+   spaces in "a  course"; one is kept. */
+export const SSN_REASON =
+  'This information will enable the Commissioner to properly identify and assign credit to students who have completed a course.'
 export const DOCS: { id: string; label: string }[] =[{id:'privacy',label:'Privacy statement'},{id:'enroll',label:'Enrollment agreement'},{id:'reg',label:'Registration form'},{id:'manual',label:'Study-manual notice'},{id:'terms',label:'Terms and conditions'}];
 export const STATES: Record<string, string> ={CA:'California',CO:'Colorado',CT:'Connecticut',FL:'Florida',IL:'Illinois',KY:'Kentucky',MN:'Minnesota',MS:'Mississippi',NV:'Nevada',NY:'New York',OH:'Ohio',OR:'Oregon',WI:'Wisconsin',WV:'West Virginia'};
 export const STATUS: Record<string, string> ={ready:'In the explorer',received:'Doc received, not added yet',missing:'Doc not available yet'};
@@ -370,6 +376,8 @@ FORMS.NV_PRE={
   ],
   fields:[
     base[1], base[2],
+    /* 2026-11-06, Afsana: the compliance sheet's SSN wording, above the field. */
+    {block:{p:SSN_REASON}},
     {id:'ssn4',label:'Last 4 of SSN',required:true,placeholder:'0000',inputmode:'numeric',maxlength:4,digits:4,ac:'off'},
     {id:'dob',type:'date',label:'Date of Birth',required:true,ac:'bday'},
     pick('addr1'), pick('addr2'), pick('city'), pick('state'), pick('zip'), pick('phone'),
@@ -520,7 +528,8 @@ FORMS.CA_POST_LH={
     {block:{p:'The date on this affidavit is the course completion date.'}},
     /* CHANGED FROM THE EXPLORER (2026-11-04, Afsana): the "Course Completion
        Roster upload form" heading is gone; the sentence and fields stay. */
-    {block:{p:'Education providers are required to collect and report the following information below upon course completion.'}},
+    /* 2026-11-06, Afsana: the compliance sheet's SSN wording replaces "Education providers are required to collect and report …". */
+    {block:{p:SSN_REASON}},
     {id:'dob',type:'date',label:'Date of Birth',required:true,ac:'bday'},
     {id:'ssn4',label:'Last four of SSN',required:true,placeholder:'0000',inputmode:'numeric',maxlength:4,digits:4,ac:'off'},
     FORMS.KY_PRE.fields[0]
@@ -546,7 +555,8 @@ FORMS.IL_POST={
        "Course Completion Roster upload form" heading is gone, and so is the
        red box (a `flagGroup`) around it; the sentence and the Full SSN field
        stay, in the order they were. */
-    {block:{p:'Education providers are required to collect and report the following information below upon course completion.'}},
+    /* 2026-11-06, Afsana: the compliance sheet's SSN wording replaces "Education providers are required to collect and report …". */
+    {block:{p:SSN_REASON}},
     {id:'ssn',label:'Full SSN',required:true,placeholder:'000-00-0000',inputmode:'numeric',maxlength:11,digits:9,ac:'off'},
     FORMS.KY_PRE.fields[0]
   ],
@@ -567,6 +577,8 @@ FORMS.OH_POST_P={
       {block:{h4:'Student E-Signature:'}},
       FORMS.KY_PRE.fields[1],FORMS.KY_PRE.fields[2],
       {id:'examdate',type:'date',label:'Date Exam was completed',required:true},
+      /* 2026-11-06, Afsana: the compliance sheet's SSN wording, above the field. */
+      {block:{p:SSN_REASON}},
       {id:'ssn4',label:'Last 4 of SSN',required:true,placeholder:'0000',inputmode:'numeric',maxlength:4,digits:4,ac:'off'},
       {id:'phone',type:'tel',label:'Phone Number',required:true,placeholder:'(555) 000-0000',ac:'tel'},
       {id:'date',type:'date',label:"Today's Date",required:true},
@@ -881,3 +893,36 @@ for (const st of ['CO', 'CT', 'WV', 'WI']) {
   entry.status = 'ready'
   entry.form = key
 }
+
+/* ── BEFORE THE COURSE EXAM: PENNSYLVANIA — added 2026-11-06 ─────────────
+   Not in the explorer. It is a row on the compliance team's sheet
+   (XCEL-PE_Affidavits_and_EAs.xlsx: "PA PE-Pre Final Affidavit", Final
+   Affidavit, Pre, "Affidavit State Form" FALSE), and the Word doc is in the
+   _XCEL-PE Affidavits and EAs folder. ⚠ OPEN QUESTION (Afsana, 2026-11-06):
+   Pennsylvania was not listed in the Compliance and Regulatory Data
+   Foundations PRD (Confluence, ATLAS space) — check with compliance which is
+   right before this is treated as a decided state. Fields as the document
+   has them — Student E-Signature, one Full Name line, Today's Date — and its
+   button, "Attest". Today's Date is pre-filled, so the "I confirm that the
+   above information is accurate" box stays, as it does for New York. */
+STATES.PA = 'Pennsylvania'
+ENTRIES.push({m:'exam',st:'PA',status:'ready',form:'PA_EXAM'})
+FORMS.PA_EXAM={
+  docHeader:'Pennsylvania Pre-Licensing Affidavit',
+  title:'Pennsylvania Pre-Licensing Affidavit',
+  agreeLabel:'Attest',
+  source:'Word doc · PA PE-Pre Final Affidavit',
+  pages:[{blocks:[
+    {p:'By submitting this form, the undersigned student acknowledges that the online course examination must be completed unassisted by any person, the course material or other materials. The student also acknowledges that a violation of these standards shall result in loss of course credit and administrative sanction by the Pennsylvania Department of Insurance.'},
+    {p:'The student further declares that he/she has been actively engaged in one-hundred percent of the online pre-licensing course, and has completed one hundred percent of the review questions for each particular section/chapter before proceeding to the next section/chapter.'}
+  ]}],
+  fields:[
+    {block:{h4:'Student E-Signature:'}},
+    {id:'fullname',label:'Full Name',required:true,placeholder:'Type your full name',ac:'name'},
+    {id:'date',type:'date',label:"Today's Date",required:true},
+    /* Written out: by this point in the file KY_PRE.fields[0] is a name row, not this box. */
+    {id:'agree',type:'checkbox',label:'I confirm that the above information is accurate',required:true}
+  ],
+  noPrefill:['fullname'],
+  note:'Not in the explorer: added 2026-11-06 from the compliance team\'s affidavit sheet. Pennsylvania is not in the Compliance and Regulatory Data Foundations PRD; to be confirmed.'
+};

@@ -4559,5 +4559,35 @@ the explorer; carry those over on the next port.
   the course begins, English or Spanish by Affidavit language) and its PE
   General Attestation (before the course exam), from Afsana's "Non-State
   Specific" folder.
+- **Before course exam — Pennsylvania** (2026-11-06), from the compliance
+  sheet below. ⚠ Pennsylvania is **not listed in the Compliance and
+  Regulatory Data Foundations PRD** (Confluence, ATLAS space) — to be checked
+  against the PRD and with compliance before it counts as decided.
+- **The SSN wording** (2026-11-06) — the sheet's "SSN Veribage" column:
+  *"This information will enable the Commissioner to properly identify and
+  assign credit to students who have completed a course."* It replaces
+  "Education providers are required to collect and report …" on California
+  and Illinois after the exam, and sits directly above Last 4 of SSN on both
+  Ohio forms (`SSN_REASON` in the data file).
+
+**The list of documents to build is the compliance team's sheet** —
+`XCEL-PE_Affidavits_and_EAs.xlsx`, Regulatory Accreditation and Compliance
+Team Site → Compass Documents → Financial Services. Last checked against
+**2026-11-06** (the sheet was last edited 2026-11-04; its note says it covers
+the documents shared as of 10/29/2026). Every row is built except Mississippi
+("Still waiting on a response"). Every row the sheet marks **Affidavit State
+Form = TRUE** (CO, CT, MN after the exam, NY, WI, WV) must match its document
+**field for field, 1:1**. Two things the build has that the sheet does not:
+
+- **The four Pre-Exam Attestations for CO, CT, WV and WI** are not on the
+  sheet yet; their wording came from Sarah directly on 11/04/26 (above).
+- ⚠ **OPEN — Ohio's "OH PE-Pre & Post Final Affidavit".** The sheet lists it
+  as Pre & Post, and the document's note says one form serves both because
+  of the different lines of authority (Ohio does not allow both on one form,
+  and OCD cannot attach two post-final affidavits). The document holds only
+  the **Property** affidavit. Built: after the course exam, Property only.
+  Unresolved: should it also show before the course exam, and is a Life &
+  Health version coming? Raise it on every pass over these forms until it is
+  answered.
 
 Pinned in `AffidavitModalV2.test.tsx`.
