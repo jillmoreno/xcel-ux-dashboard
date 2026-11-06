@@ -4576,12 +4576,29 @@ the Design bar, which is Jill's file, so for now they are dropped.
   E-Signature:") stay. Proctor fields are untouched. **Names are taken the same way
   too** (Afsana, same day): the forms with a name and no signature —
   California's and the generic terms, and the KY, NV and OR enrollment
-  agreements (whose documents say "my signature below" but show no field) —
+  agreements ("Full Name", in the image of the form at the end of each Word
+  doc) —
   take the same pre-filled name block, with no signature box
   (`NAMED_FORMS`). "Full Legal Name", "Full Name" and "Student Name" are one
   data point.
   The three fields are labelled **Legal First Name, Legal Middle Name, Legal
   Last Name** (Afsana, 2026-11-06).
+- ⚠ **WAITING ON NICK AND AMRITA (2026-11-06)** — nothing below is changed
+  until they answer:
+  - **Addresses, student and proctor.** Whether, and how, to standardize
+    them. The documents differ: Ohio's registration asks for one "Full
+    Residence(Home) Address" line and the KY, NV and OR agreements a
+    "Residence Address" (built as Address Line 1 / 2, City, State, Zip, and
+    labelled without "Residence"); Minnesota after the exam asks for Business
+    and Mailing addresses split into City, State and Zip Code; the proctor
+    address is one line on CO and CT ("street address, city, state, zip
+    code") and WI ("Proctor Full Address"), split on Minnesota.
+  - **Proctor name and signature.** Whether they are standardized too, and
+    if so whether they match the student's (Legal First / Middle / Last Name
+    and a typed signature). Today they follow each document: CO and CT
+    "Proctor Name (print)" and "Proctor Signature", WV and WI a "Proctor
+    E-Signature:" label over "Proctor Full Name", Minnesota "Proctor's Full
+    Legal Name" and "Proctor Signature".
 - **Non-state specific** (`GEN`) — XCEL's Generic Terms and Conditions (before
   the course begins, English or Spanish by Affidavit language) and its PE
   General Attestation (before the course exam), from Afsana's "Non-State

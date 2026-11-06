@@ -946,8 +946,10 @@ FORMS.PA_EXAM={
 
    What counts as "a signature appears": the document has a signature line or
    a signature label — the 15 forms below. NOT the enrollment agreements (KY,
-   NV, OR), whose text says "my signature below" but which show no field, nor
-   the name-only and nothing-to-fill forms; those are an open question.
+   NV, OR): their fields are an image at the end of the Word doc (Full Name,
+   Residence Address, Phone, Email or Oregon's extra ones, Today's Date, a
+   Confirmation button and the XCEL Compliance Manager's signature), with no
+   signature for the student. Nor the name-only and nothing-to-fill forms.
    The document's own headings stay (they say where the signature is); the
    names take the place of the document's name field(s), the signature box
    the place of its signature line, or follows the names where it had none.
@@ -966,8 +968,8 @@ export const SIGNED_FORMS = ['IL_PRE','OH_PRE','FL_EXAM','MN_EXAM','CA_POST_LH',
 /* AND ONE WAY TO TAKE A NAME (2026-11-06, Afsana: "Yes, standardize"). The
    forms that ask for a name but have no signature — California's and the
    generic terms ("Student Name", "Student Full Name") and the KY, NV and OR
-   enrollment agreements (First / Middle / Last / Suffix, from the explorer;
-   their documents show no field) — take the same name block, pre-filled,
+   enrollment agreements ("Full Name", in the image of the fields at the end
+   of each Word doc) — take the same name block, pre-filled,
    with no signature box. "Full Legal Name", "Full Name" and "Student Name"
    are one data point, the learner's name, so they are captured one way. */
 export const NAMED_FORMS = ['CA_PRE','GEN_PRE_EN','GEN_PRE_ES','KY_PRE','NV_PRE','OR_PRE']
