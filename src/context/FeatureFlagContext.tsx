@@ -2672,6 +2672,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'single', label: 'Premier', description: 'Premier alone, the grid captioned \u201cPackage includes:\u201d as a list of what it includes.' },
       /* STANDARD (2026-11-05, Eric: "Duplicate this page and make it a Standard Product page in the product dropdown"). */
       { value: 'standard', label: 'Standard', description: 'Standard alone — its card, the rows it includes, no crown and no Pass Guarantee.' },
+      /* CALIFORNIA (2026-11-06, Eric) — the Premier page, written for California. */
+      { value: 'california', label: 'California', description: 'The Premier page for California \u2014 Premier alone, the state California.' },
     ],
     page: 'dashboard-rebrand',
   },

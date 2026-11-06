@@ -287,3 +287,10 @@
   outline: 2px solid var(--color-mail-accent);
   outline-offset: 2px;
 }
+
+/* A text link whose words wrap to a second line drops its chevron
+   (2026-11-06, Eric) — TwoPackageProductDetailPage marks it. */
+.cre-e2e-textlink.is-multiline > svg {
+  /* !important: the icon carries an inline display of its own. */
+  display: none !important;
+}

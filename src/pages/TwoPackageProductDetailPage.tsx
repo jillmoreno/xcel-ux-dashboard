@@ -3,7 +3,7 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSPropert
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
-import { AngleDownSolid, AngleRightSolid, BallotCheckLight, ChartLineUpLight, CrownSolid, FaceGrinLight, FileCertificateLight, FileCertificateSolid, RubiMark, RubiWordmark, ShieldCheckSolid } from '@/icons'
+import { AngleDownSolid, ArrowDownSolid, AngleRightRegular, AngleRightSolid, BallotCheckLight, BookThin, CardsBlankThin, ChartLineUpLight, CrownSolid, FaceGrinLight, FileCertificateLight, FileCertificateSolid, RubiMark, RubiWordmark, ShieldCheckSolid } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
@@ -101,8 +101,12 @@ export function TwoPackageProductDetailPage() {
      strip without the crown or the guarantee, and no Pass Guarantee in the rail, since Standard does not carry one. The variant
      `single` is the Premier one (labelled "Premier" since the same day). */
   const productsVariant = useFeatureFlag('pdp-products').variant
-  const soloId: PackageId | null = productsVariant === 'single' ? 'premier' : productsVariant === 'standard' ? 'standard' : null
+  // California is the Premier page, written for California (2026-11-06, Eric: "Redo the California page based on the premier page
+  // instead" — the multi page first, then Standard's).
+  const soloId: PackageId | null =
+    productsVariant === 'single' || productsVariant === 'california' ? 'premier' : productsVariant === 'standard' ? 'standard' : null
   const single = soloId !== null
+  const california = productsVariant === 'california'
   const standardOnly = soloId === 'standard'
   /* The single page's course head — A, B or C (2026-10-29, Eric; C the default, A and B kept to draw on). */
   const singleHead = useFeatureFlag('pdp-single-head').variant ?? 'c'
@@ -111,6 +115,8 @@ export function TwoPackageProductDetailPage() {
   const STANDARD = PACKAGES.find((p) => p.id === 'standard') ?? PACKAGES[0]
   const picked: PackageId = soloId ?? chosen
   const packages = soloId ? PACKAGES.filter((p) => p.id === soloId) : PACKAGES
+  // The course tabs put Premier first (2026-11-06, Eric); the packages themselves keep their order.
+  const courseTabPackages = [...packages].sort((a, b) => Number(b.id === 'premier') - Number(a.id === 'premier'))
   // The comparison's rows: all of them across both packages, or on a single page only the ones its package includes.
   const comparison = soloId ? COMPARISON.filter((row) => row[soloId]) : COMPARISON
   /* THE TRAINING STEPS (2026-11-05, Eric: everything the live product pages say that this one did not — "but try to keep them worded
@@ -130,7 +136,15 @@ export function TwoPackageProductDetailPage() {
   const [optionsOpen, setOptionsOpen] = useState(false)
   /* The state and line of authority the page is written for — the selector's two choices (2026-10-28, Eric). Every "Florida" and
      "Life and Health" on the page follows them; `localize` rewrites the data's own copies (titles, the course name, the specs). */
-  const [place, setPlace] = useState('Florida')
+  /* THE CALIFORNIA PAGE (2026-11-06, Eric: "add a new version of this page to the products design control labeled California") —
+     the Premier page written for California: the state starts there instead of Florida, so every "Florida" the page
+     localizes reads California. Switching Products to or from it re-points the state; the selector still changes it after. */
+  const [place, setPlace] = useState(productsVariant === 'california' ? 'California' : 'Florida')
+  const [lastVariant, setLastVariant] = useState(productsVariant)
+  if (lastVariant !== productsVariant) {
+    setLastVariant(productsVariant)
+    if (productsVariant === 'california' || lastVariant === 'california') setPlace(productsVariant === 'california' ? 'California' : 'Florida')
+  }
   const [line, setLine] = useState('Life and Health')
   const localize = (text: string) => text.replaceAll('Florida', place).replaceAll('Life and Health', line)
   /* THE CARDS PIN (2026-10-27, Eric): 40 under the top of the browser, for the rest of the page. The packages ground is three
@@ -138,6 +152,32 @@ export function TwoPackageProductDetailPage() {
      the ground's end. The ground's fade runs over the heading and the cards, so both are measured (offsetHeight ignores the
      pin). Once pinned, a tan backdrop covers from the browser's top to under the cards, so what scrolls up
      disappears there rather than showing beneath them. */
+  /* A TEXT LINK THAT WRAPS LOSES ITS CHEVRON (2026-11-06, Eric: "remove the angle right icon from links if the link has to go to two
+     lines of text"). Each `.cre-e2e-textlink` is measured — its TEXT only, so hiding the chevron cannot make it fit and flip back —
+     and marked `is-multiline` when that text takes more than one line; inviteFlow.css hides the chevron then. Re-measured whenever the
+     page resizes, since whether a link wraps depends on its column's width. */
+  const pageRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const root = pageRef.current
+    if (!root) return
+    const measure = () => {
+      root.querySelectorAll<HTMLElement>('.cre-e2e-textlink').forEach((link) => {
+        const tops = new Set<number>()
+        link.childNodes.forEach((node) => {
+          if (node.nodeType !== Node.TEXT_NODE || !node.textContent?.trim()) return
+          const range = document.createRange()
+          range.selectNodeContents(node)
+          for (const rect of range.getClientRects()) tops.add(Math.round(rect.top))
+        })
+        // A <br> inside the link is two lines by design.
+        link.classList.toggle('is-multiline', tops.size > 1 || !!link.querySelector('br'))
+      })
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(root)
+    return () => observer.disconnect()
+  })
   const headRef = useRef<HTMLDivElement>(null)
   const cardsRef = useRef<HTMLDivElement>(null)
   const trayRef = useRef<HTMLDivElement>(null)
@@ -223,7 +263,6 @@ export function TwoPackageProductDetailPage() {
       window.removeEventListener('scroll', check, { capture: true })
     }
   }, [compact, miniTray, unpinned])
-  const pkg = PACKAGES.find((p) => p.id === picked)!
   const welcomeRef = useRef<HTMLParagraphElement>(null)
   useEvenLines(welcomeRef, `${place} ${line}`)
   useEffect(() => {
@@ -283,7 +322,12 @@ export function TwoPackageProductDetailPage() {
         type="button"
         // The solid Purchase is Premier's beside Standard — and the only package's on a single page, Standard's included (2026-11-05).
         className={`cre-e2e-add-to-cart ${p.id === 'premier' || single ? 'cre-e2e-cta' : `cre-e2e-outline${on ? '' : ' cre-e2e-outline--quiet'}`}`}
-        style={{ ...style, ...(p.id === 'premier' || single ? SOLID_BUY_WEIGHT : null) }}
+        style={{
+          ...style,
+          ...(p.id === 'premier' || single ? SOLID_BUY_WEIGHT : null),
+          // On a single page the label 1 lower (2026-11-06, Eric) — 2 more padding on top in a fixed-height box moves it down 1.
+          ...(single ? { paddingTop: 'calc(4px + -2px * var(--cp, 0))' } : null),
+        }}
         onClick={(e) => {
           e.stopPropagation()
           purchase(p.id)
@@ -388,7 +432,7 @@ export function TwoPackageProductDetailPage() {
   ))
 
   return (
-    <div style={PAGE}>
+    <div ref={pageRef} style={PAGE}>
       <StandaloneBrowserChrome />
       {/* THE TOP MINI CARD TRAY (2026-10-28, Eric): full width, sliding down from the top of the browser once the cards on the page have
           scrolled off it, and back up when they return. A zero-height sticky row holds a clip the tray slides out of, so it is
@@ -563,6 +607,8 @@ export function TwoPackageProductDetailPage() {
               {place} {line}
               <br />
               <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
+              {/* "…Package Premier" on the California page (2026-11-06, Eric's request). */}
+              {california ? ' Premier' : null}
             </h2>
             <div style={{ ...HEAD_PACKAGE_B, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
               {/* The price left, over the Purchase's left edge (2026-10-29, Eric). */}
@@ -571,20 +617,28 @@ export function TwoPackageProductDetailPage() {
             {/* 8 further from the Purchase and 8 nearer the table below (2026-10-29, Eric). */}
             {standardOnly ? (
               /* Standard's own description, shorter than the live page's (2026-11-05, Eric). */
-              <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
+              <p style={{ ...BODY, marginTop: 8, marginBottom: 0 /* 8 more under it on every page (2026-11-06, Eric; was -8) */ }}>
                 A solid foundation without the extras. Our 3-part training program and AI study partner can have you{' '}
                 <strong style={{ fontWeight: 800 }}>exam-ready in as little as 2 weeks</strong>
                 {' '}— ideal if you’re self-motivated and like to learn on your own.
               </p>
+            ) : california ? (
+              /* California's description, word for word and unbolded (2026-11-06, Eric: "change this text to this … Do not bold any
+                 of it") — the live California Premier copy, "Pass Guarantee" and all. */
+              <p style={{ ...BODY, marginTop: 8, marginBottom: 0 }}>
+                Our Premier package adds flashcards, a recorded review class, and our Pass Guarantee to the standard package and is ideal
+                for those looking to maximize their studying with various learning formats. This package includes the mandatory
+                stand-alone 12-hour California Code and Ethics Course.
+              </p>
             ) : soloId === 'premier' ? (
               /* Premier's own description, as Standard's is (same day, Eric) — the live Premier description, shortened. */
-              <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
+              <p style={{ ...BODY, marginTop: 8, marginBottom: 0 /* 8 more under it on every page (2026-11-06, Eric; was -8) */ }}>
                 Everything in Standard, plus flashcards, a recorded exam review class and{' '}
                 our <strong style={{ fontWeight: 800 }}>Prepared to Pass Promise</strong> — ideal if you want more ways to study, to be exam-ready in{' '}
                 as little as 2 weeks, and to <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
               </p>
             ) : (
-            <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
+            <p style={{ ...BODY, marginTop: 8, marginBottom: 0 /* 8 more under it on every page (2026-11-06, Eric; was -8) */ }}>
               Updated every year, our packages make complex insurance concepts simple.{' '}
               <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, be exam-ready in as little as 2 weeks,{' '}
               {/* "As little as 2 weeks" on every page but Standard's own description, which says it already (2026-11-05, Eric). */}
@@ -614,20 +668,28 @@ export function TwoPackageProductDetailPage() {
             {/* 8 further from the Purchase and 8 nearer the table below (2026-10-29, Eric). */}
             {standardOnly ? (
               /* Standard's own description, shorter than the live page's (2026-11-05, Eric). */
-              <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
+              <p style={{ ...BODY, marginTop: 8, marginBottom: 0 /* 8 more under it on every page (2026-11-06, Eric; was -8) */ }}>
                 A solid foundation without the extras. Our 3-part training program and AI study partner can have you{' '}
                 <strong style={{ fontWeight: 800 }}>exam-ready in as little as 2 weeks</strong>
                 {' '}— ideal if you’re self-motivated and like to learn on your own.
               </p>
+            ) : california ? (
+              /* California's description, word for word and unbolded (2026-11-06, Eric: "change this text to this … Do not bold any
+                 of it") — the live California Premier copy, "Pass Guarantee" and all. */
+              <p style={{ ...BODY, marginTop: 8, marginBottom: 0 }}>
+                Our Premier package adds flashcards, a recorded review class, and our Pass Guarantee to the standard package and is ideal
+                for those looking to maximize their studying with various learning formats. This package includes the mandatory
+                stand-alone 12-hour California Code and Ethics Course.
+              </p>
             ) : soloId === 'premier' ? (
               /* Premier's own description, as Standard's is (same day, Eric) — the live Premier description, shortened. */
-              <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
+              <p style={{ ...BODY, marginTop: 8, marginBottom: 0 /* 8 more under it on every page (2026-11-06, Eric; was -8) */ }}>
                 Everything in Standard, plus flashcards, a recorded exam review class and{' '}
                 our <strong style={{ fontWeight: 800 }}>Prepared to Pass Promise</strong> — ideal if you want more ways to study, to be exam-ready in{' '}
                 as little as 2 weeks, and to <strong style={{ fontWeight: 800 }}>pass the {place} exam the first time.</strong>
               </p>
             ) : (
-            <p style={{ ...BODY, marginTop: 8, marginBottom: -8 }}>
+            <p style={{ ...BODY, marginTop: 8, marginBottom: 0 /* 8 more under it on every page (2026-11-06, Eric; was -8) */ }}>
               Updated every year, our packages make complex insurance concepts simple.{' '}
               <strong style={{ fontWeight: 800 }}>Learn faster</strong> with interactive lessons and quizzes, be exam-ready in as little as 2 weeks,{' '}
               {/* "As little as 2 weeks" on every page but Standard's own description, which says it already (2026-11-05, Eric). */}
@@ -831,7 +893,34 @@ export function TwoPackageProductDetailPage() {
                 <table style={COMPARE}>
                   {/* In 'Select your package:''s style, 8 in like the column text below it (2026-10-27, Eric). */}
                   <caption style={{ ...SIDE_TITLE, textAlign: 'left', paddingBottom: 20 }}>
+                    {/* "Package includes:" on California too again (2026-11-06, Eric — after "Included in this package:" and "Courses included…"). */}
                     {single ? 'Package includes:' : 'Compare packages:'}
+                    {/* THE CALIFORNIA PACKAGE'S THREE PRODUCTS — Figma 668:1357 (2026-11-06, Eric: "add this below package includes" and
+                        retitle it "Included in this package:"). Three tiles across the column: the course itself, then the Code and
+                        Ethics course and the flashcards, each a link with its chevron. Not wired. */}
+                    {california ? (
+                      <span style={INCLUDED_ROW}>
+                        {/* Each tile as wide as its two lines, and the room left over shared out evenly, a rule centred in each gap (same
+                            day, Eric: "have the cards fit to the width of their text … to make the spacing look more even"). */}
+                        {CALIFORNIA_INCLUDED.map(({ Icon, label, link }, i) => (
+                          <Fragment key={label}>
+                            {i > 0 ? <span aria-hidden style={INCLUDED_RULE} /> : null}
+                            <span style={INCLUDED_TILE} className={link ? 'cre-e2e-included-tile' : undefined}>
+                              <Icon aria-hidden style={INCLUDED_ICON} />
+                              <span style={INCLUDED_LABEL}>
+                                {label.split('\n').map((part, j) => (
+                                  <Fragment key={part}>
+                                    {j > 0 ? <br /> : null}
+                                    {part}
+                                  </Fragment>
+                                ))}
+                              </span>
+                              {link ? <AngleRightRegular aria-hidden style={INCLUDED_CHEVRON} /> : null}
+                            </span>
+                          </Fragment>
+                        ))}
+                      </span>
+                    ) : null}
                   </caption>
                   {/* Single, no header row and so no rules over it: one column of checks under "Package includes:" says it
                       (2026-10-28, Eric). */}
@@ -944,92 +1033,30 @@ export function TwoPackageProductDetailPage() {
                   ))}
                 </ol>
               </section>
-              {/* OTHER COURSE INFORMATION (2026-10-29, Eric): Regulatory Information and the state reporting fee, moved out of the
-                  rail into two columns under the training program, in the rail's own type. What to Expect went back to the rail. */}
-              {/* No title now, on a tan ground like the packages' — its 10 corners and 32 padding, out to the same edges (2026-10-29, Eric). */}
-              <section aria-label="Other course information" style={OTHER_INFO_GROUND}>
-                <div style={OTHER_INFO}>
-                    {/* Course Specs, first, out of the rail (2026-10-29, Eric). */}
-                    <section style={SIDE_SECTION}>
-                      {/* "Course Specifications", on two lines like the other two (2026-10-29, Eric; was "Course Specs"); each spec's
-                          value under its name, as Regulatory Information's are. */}
-                      <h2 style={SIDE_TITLE}>
-                        Course
-                        <br />
-                        Specifications
-                      </h2>
-                      {/* A rule under each title, the column's width (2026-10-29, Eric). */}
-                      <hr aria-hidden style={OTHER_INFO_HR} />
-                      <dl style={{ ...SIDE_BODY, margin: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                        {TRAINING_SPECS.map(([term, value]) => (
-                          <div key={term} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                            <dt>{term}</dt>
-                            <dd style={{ margin: 0, fontWeight: 800 }}>{localize(value)}</dd>
-                          </div>
-                        ))}
-                      </dl>
-                    </section>
-                    <section style={SIDE_SECTION}>
-                      <h2 style={SIDE_TITLE}>
-                        {/* Broken after the first word (2026-10-29, Eric). */}
-                        Regulatory
-                        <br />
-                        Information
-                      </h2>
-                      {/* A rule under each title, the column's width (2026-10-29, Eric). */}
-                      <hr aria-hidden style={OTHER_INFO_HR} />
-                      {/* 14 between every group, the link included (2026-10-28, Eric; was 18, and 28 to the link). */}
-                      <div style={{ ...PARAGRAPHS, gap: 14 }}>
-                        <dl style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                          {[
-                            ['Course Provided By:', 'XCEL Solutions LLC.'],
-                            ['Course Name:', localize(pkg.courseName)],
-                            ['Approved course ID:', '1191656'],
-                          ].map(([term, value]) => (
-                            <div key={term} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                              <dt>{term}</dt>
-                              <dd style={{ margin: 0, fontWeight: 800 }}>{noWidow(value)}</dd>
-                            </div>
-                          ))}
-                        </dl>
-                        {/* A rule over the link, to give it focus (2026-10-29, Eric). */}
-                        <hr aria-hidden style={OTHER_INFO_HR} />
-                        <p style={SIDE_BODY}>
-                          <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={LINK}>
-                            {/* Two lines, broken after "Insurance" (2026-10-29, Eric). */}
-                            {place} Insurance
-                            <br />
-                            Licensing Requirements
-                            <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
-                          </button>
-                        </p>
-                      </div>
-                    </section>
-                    {/* The state reporting fee — Figma 542:2304 (2026-10-27, Eric). */}
-                    <section style={SIDE_SECTION}>
-                      <h2 style={SIDE_TITLE}>
-                        State Reporting
-                        <br />
-                        Fee Required
-                      </h2>
-                      {/* A rule under each title, the column's width (2026-10-29, Eric). */}
-                      <hr aria-hidden style={OTHER_INFO_HR} />
-                      {/* The fee as the other columns' facts — its amount under its name, in Heavy — then a rule over the link, as in
-                          Regulatory Information (2026-10-29, Eric). */}
-                      <div style={{ ...SIDE_BODY, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                        <dl style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                          <dt>{STATE_ABBR[place] ?? place} fee due at checkout:</dt>
-                          <dd style={{ margin: 0, fontWeight: 800 }}>{STATE_FEE}</dd>
-                        </dl>
-                        <hr aria-hidden style={OTHER_INFO_HR} />
-                        <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, display: 'block' }}>
-                          100% transparent pricing
-                          <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
-                        </button>
-                      </div>
-                    </section>
-                </div>
-              </section>
+              {/* ADDITIONAL COURSE INFORMATION (2026-11-06, Eric) — the California page's tabbed section on every page, replacing the
+                  three columns (Course Specifications · Regulatory Information · State Reporting Fee) that sat here since 2026-10-29.
+                  California: its two courses. The multi-product page: one tab per package, opening on the package picked. The
+                  Premier and Standard pages: their own course, in one tab. */}
+              {california ? (
+                <CourseInfoTabs courses={CALIFORNIA_COURSES} place="California" abbr="CA" />
+              ) : (
+                <CourseInfoTabs
+                  key={picked}
+                  courses={courseTabPackages.map((p) => ({
+                    tab: localize(p.courseName),
+                    specs: TRAINING_SPECS.map(([term, value]) => [term, localize(value)] as [string, string]),
+                    regulatory: [
+                      ['Course Provided By:', 'XCEL Solutions LLC.'],
+                      ['Course Name:', localize(p.courseName)],
+                      ['Approved course ID:', '1191656'],
+                    ],
+                    fee: STATE_FEE,
+                  }))}
+                  initial={Math.max(0, courseTabPackages.findIndex((p) => p.id === picked))}
+                  place={place}
+                  abbr={STATE_ABBR[place] ?? place}
+                />
+              )}
             </div>
           </div>
         </main>
@@ -1221,7 +1248,7 @@ const COMPARISON: { feature: ReactNode; detail?: ReactNode; standard: boolean; p
   // The 3-part training program row is gone (2026-10-29, Eric) — its three parts are the rows that follow.
   { feature: 'Pre-licensing Course', detail: 'Online, self-paced fundamentals course that satisfies any state requirement' /* the live pages' claim (2026-11-05, Eric; was 'meets all') */, standard: true, premier: true },
   { feature: 'Prep Review Course', detail: 'Condensed review of key material, weighted to the state exam outline', standard: true, premier: true },
-  { feature: 'Exam Simulators', detail: '3 simulators weighted by topic, unlimited retakes', standard: true, premier: true },
+  { feature: 'Exam Simulators', detail: '3 simulators weighted by topic, unlimited retakes, weighted by topic to match the state exam' /* (2026-11-06, Eric) */, standard: true, premier: true },
   {
     feature: 'Extended Access',
     detail: '30 days for the Pre-licensing Course, then 30 days for the Prep Review Course and simulators',
@@ -1608,30 +1635,9 @@ const SIDE_RULE: CSSProperties = {
 
 
 // 20 on 24 (2026-10-15, Eric's request: 2 up from 18/22).
-/* Other course information's two columns, 300 wide and 32 apart, each starting level (2026-10-29, Eric; was three, a third each). */
-// Course Specs, Regulatory Information, the fee (2026-10-29, Eric): three equal columns 32 apart, no rules between them now (was two
-// 300 columns, 48 either side of a rule, then the left one up to 240, then three with a rule 32 either side).
-const OTHER_INFO: CSSProperties = { display: 'grid', // Each column 10 narrower than a third of the room (2026-10-29, Eric), reaching both edges, about 63 apart. Only a rule under each
-  // title and one over each link now — the gutter rules and the rules between facts came and went the same day.
-  gridTemplateColumns: 'repeat(3, calc((100% - 96px) / 3 - 10px))',
-  justifyContent: 'space-between', // 48 apart (2026-10-29, Eric: 32, 40, then 48)
-  alignItems: 'start' }
-/* Their tan ground: the packages ground's Secondary 100, 10 corners and 32 padding, pulled out over SHARED's 32 sides so its edges
-   line up with the packages ground above and its text with the text. */
-// Every rule in the course information box in a "Secondary 250" — halfway between 200 and 300, which the palette has no token for
-// (2026-10-29, Eric; 300, then 200). The rail's are 300.
+// The three-column Other Course Information (OTHER_INFO, OTHER_INFO_GROUND, OTHER_INFO_HR) gave way to CourseInfoTabs on 2026-11-06.
+// A "Secondary 250" — halfway between 200 and 300, which the palette has no token for (2026-10-29, Eric).
 const SECONDARY_250 = 'color-mix(in srgb, var(--color-secondary-200), var(--color-secondary-300))'
-const OTHER_INFO_HR: CSSProperties = { ...SIDE_RULE, background: SECONDARY_250 }
-const OTHER_INFO_GROUND: CSSProperties = {
-  marginRight: -32,
-  marginLeft: -32,
-  paddingTop: 32,
-  paddingRight: 32,
-  paddingBottom: 32,
-  paddingLeft: 32,
-  borderRadius: 10,
-  // No fill now (2026-10-29, Eric; was the packages' Secondary 100) — the padding kept, so nothing moves.
-}
 const SIDE_TITLE: CSSProperties = { ...SECTION_TITLE, fontSize: 20, lineHeight: '24px' }
 
 
@@ -1750,7 +1756,6 @@ const LEARN_STROKE: CSSProperties = {
   background: 'var(--color-secondary-400)', // one lighter (2026-10-30, Eric; was 500)
 }
 
-const PARAGRAPHS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 20 }
 
 /* Each heading, 3 to its checked line, 15 to the next heading; the intro
    line 20 above the first. */
@@ -2425,6 +2430,59 @@ const COMPARE_FEATURE: CSSProperties = {
 }
 /* Single, with no header row, the rule over the first item stays (2026-10-28, Eric). */
 const COMPARE_FIRST_RULE: CSSProperties = { borderTop: `1px solid ${COMPARE_RULE}` }
+/* California's three included products — Figma 668:1357 (2026-11-06, Eric): three 220 tiles 8 apart across the 676 column, each a
+   1 Secondary-tan edge (#E7E0D6) and 10 corners, 13 / 16 / 12 / 16 in; a 24 Font Awesome Thin icon in the darker brick (#7B1618),
+   12 from its label in Avenir Medium 11 / 14; the linked two end in a Regular angle-right in the same brick. 21 under the title. */
+const CALIFORNIA_INCLUDED: { Icon: typeof BookThin; label: string; link: boolean }[] = [
+  // Without "California" (same day, Eric's request) — the page's title says the state, and at 13 the labels then stay on two lines.
+  // Each label broken where it reads best (same day), so its tile is as wide as its longer line — the design's own breaks.
+  { Icon: BookThin, label: 'Life and Health\nPre-licensing course', link: false },
+  { Icon: BookThin, label: 'Code and Ethics\nPre-licensing course', link: true },
+  { Icon: CardsBlankThin, label: 'Flashcards - Life, Health,\nand Accident Insurance', link: true },
+]
+const INCLUDED_DARK_BRICK = 'color-mix(in srgb, var(--color-xcel-brick) 80%, black)' // #7B1618, as BENEFIT_ICON
+/* Unboxed (same day, Eric's request): no edge and no inset round each, a vertical rule in the tile edge's tan between them instead —
+   16 either side of it, the first tile flush left and the last flush right; the icons at the top of their text, the chevrons still
+   centred on the tile. */
+// The tiles at their text's width and the rules between them as items of their own, all spread with space-between — so the space
+// either side of each rule is the same everywhere (same day; equal thirds left the gaps uneven round shorter labels).
+// A rule over them, the table's own (same day, Eric's request): 16 under the title and 20 over the tiles (16, then 4 more).
+const INCLUDED_ROW: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'stretch',
+  marginTop: 16,
+  paddingTop: 20,
+  borderTop: `1px solid ${COMPARE_RULE}`,
+}
+// 12 either side of the rules and 8 from icon to text to chevron (same day, Eric: every label on two lines at most — at 16 and 12 the
+// Code and Ethics label took three in a 631 column).
+const INCLUDED_TILE: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  flex: 'none',
+}
+const INCLUDED_RULE: CSSProperties = { flex: 'none', width: 1, background: '#E7E0D6' }
+// Centred on the tile again, and 4 more to its right — 12 to the text (same day, Eric's request).
+// 28 (same day, Eric: "about the same height as the two lines of text based off of the tallest icon", then "just a visual height
+// of the text"): the labels' ink runs 29 from the first line's ascenders to the second's descenders (the 32 is the line boxes), and the
+// cards glyph — the taller, overhanging its box by 4% — is 29 at 28; the book takes the same size. 24, then 31, first.
+// 1 above centre (same day, Eric's request), nudged so the row's height is untouched.
+const INCLUDED_ICON: CSSProperties = { flex: 'none', alignSelf: 'center', position: 'relative', top: -1, marginRight: 4, width: 28, height: 28, color: INCLUDED_DARK_BRICK }
+const INCLUDED_LABEL: CSSProperties = {
+  flex: 'none',
+  alignSelf: 'flex-start', // the text's top on the icon's, whatever its line count (same day)
+  whiteSpace: 'nowrap', // the label's own break only
+  fontFamily: 'var(--font-e2e-avenir)',
+  fontWeight: 500,
+  fontSize: 13, // 13 / 16 (same day, Eric's request; the design's 11 / 14)
+  lineHeight: '16px',
+  color: 'var(--color-text-primary)',
+  textAlign: 'left',
+}
+// 8 more to its left — 16 from the text (same day, Eric's request).
+const INCLUDED_CHEVRON: CSSProperties = { flex: 'none', marginLeft: 8, width: 7, height: 14, color: INCLUDED_DARK_BRICK }
 const COMPARE_CELL: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
@@ -2437,4 +2495,139 @@ const COMPARE_CELL: CSSProperties = {
   paddingLeft: 8,
   paddingRight: 8,
   borderBottom: `1px solid ${COMPARE_RULE}`,
+}
+
+/* CALIFORNIA'S ADDITIONAL COURSE INFORMATION — Figma 673:2003 (2026-11-06, Eric). On the California page it replaces the three
+   columns above: one tab per course in the package, each opening that course's details, regulatory info and state fee in three
+   columns 28 either side of a 1 Secondary 100 rule. Nunito Sans and Roboto Slab in the design are the page's Avenir and serif.
+   The tab's state is its weight alone, one step heavier when chosen (Eric: "simply increase the text weight by one"). */
+type CourseTab = { tab: string | [string, string]; specs: [string, string][]; regulatory: [string, string][]; fee: string }
+const CALIFORNIA_COURSES: CourseTab[] = [
+  {
+    tab: ['California Life and Health Pre-', 'licensing with Ethics Premier'],
+    specs: TRAINING_SPECS,
+    regulatory: [
+      ['Course Provided By:', 'XCEL Solutions LLC.'],
+      ['Course Name:', 'California Life and Health Pre-licensing Premier'],
+      ['Approved course ID:', '383034'],
+    ],
+    fee: '$6.00',
+  },
+  {
+    // Not in the design — the second course's facts are PLACEHOLDERS (12 hours is the course's own; the fee is invented; the ID is Eric's).
+    tab: ['California Code and', 'Ethics Pre-licensing'],
+    specs: [
+      ['Format:', 'Online Self-Paced'],
+      ['Education Type:', 'Pre-licensing Education'],
+      ['Line of Authority:', 'Code and Ethics'],
+      ['Language:', 'English'],
+      ['Credit Hours:', '12'],
+    ],
+    regulatory: [
+      ['Course Provided By:', 'XCEL Solutions LLC.'],
+      ['Course Name:', 'California Code and Ethics Pre-licensing'],
+      ['Approved course ID:', '386934'],
+    ],
+    fee: '$6.00',
+  },
+]
+// Strokes as style / width / colour longhands: `border` beside `borderTop: 'none'` loses its other three sides in React.
+const CI_TAB: CSSProperties = {
+  padding: '14px 32px 8px', borderStyle: 'solid', borderWidth: '1px 1px 0', borderColor: 'var(--color-secondary-100)', borderRadius: '10px 10px 0 0', cursor: 'pointer',
+  fontFamily: 'var(--font-e2e-avenir)', fontSize: 13, lineHeight: '17px', color: 'var(--color-text-primary)', textAlign: 'left',
+}
+const CI_PANEL: CSSProperties = {
+  background: 'var(--color-secondary-100)', borderStyle: 'solid', borderWidth: '0 1px 1px', borderColor: 'var(--color-secondary-200)', borderRadius: '0 10px 10px 10px', padding: '24px 32px 32px',
+}
+// Headers and columns on one grid, so each header sits over its column: 165 / 1 / 165 / 1 / 165, 28 either side of the rules.
+const CI_GRID: CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1px 1fr 1px 1fr', columnGap: 28 }
+const CI_TEXT: CSSProperties = { fontFamily: 'var(--font-e2e-avenir)', fontSize: 13, color: 'var(--color-text-primary)' }
+const CI_HEAD: CSSProperties = { ...CI_TEXT, margin: 0, lineHeight: '18px', display: 'flex', alignItems: 'center', gap: 6 }
+const CI_ARROW: CSSProperties = { width: 9, height: 9, color: 'var(--color-secondary-500)', marginBottom: 2 }
+const CI_RULE: CSSProperties = { background: 'var(--color-secondary-200)' } // 200 on the panel's 100 (300, then back a level)
+const CI_DL: CSSProperties = { ...CI_TEXT, lineHeight: '16px', margin: 0, display: 'flex', flexDirection: 'column', gap: 16 }
+const CI_LINK: CSSProperties = { ...CI_TEXT, lineHeight: '18px', fontWeight: 800, color: 'var(--color-xcel-brick)', padding: 0, background: 'none', border: 0, textAlign: 'left', cursor: 'pointer' }
+
+function CourseFacts({ rows, valueWeight = 800 }: { rows: [string, string][]; valueWeight?: number }) {
+  return (
+    <dl style={CI_DL}>
+      {rows.map(([term, value]) => (
+        <div key={term} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <dt>{term}</dt>
+          <dd style={{ margin: 0, fontWeight: valueWeight }}>{value}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
+function CourseInfoTabs({ courses, place, abbr, initial = 0 }: { courses: CourseTab[]; place: string; abbr: string; initial?: number }) {
+  const [active, setActive] = useState(initial)
+  const course = courses[active] ?? courses[0]
+  return (
+    <section aria-label="Additional course information" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <h2 style={{ ...SIDE_TITLE, margin: 0 }}>Additional Course Information:</h2>
+      <div>
+        <div role="tablist" aria-label="Courses in this package" style={{ display: 'flex', gap: 4 }}>
+          {courses.map((c, i) => (
+            <button
+              key={typeof c.tab === 'string' ? c.tab : c.tab.join(' ')}
+              type="button"
+              role="tab"
+              aria-selected={i === active}
+              onClick={() => setActive(i)}
+              style={{
+                ...CI_TAB,
+                // Reversed (same day, Eric): the chosen tab in the panel's Secondary 100, the other white on a Secondary 200 edge.
+                ...(i === active
+                  ? { background: 'var(--color-secondary-100)', borderColor: 'var(--color-secondary-200)' } // always set, or a switch clears it
+                  : { background: 'white', borderColor: 'var(--color-secondary-200)' }),
+                fontWeight: i === active ? 500 : 400,
+              }}
+            >
+              {typeof c.tab === 'string' ? (
+                c.tab
+              ) : (
+                <>
+                  {c.tab[0]}
+                  <br />
+                  {c.tab[1]}
+                </>
+              )}
+            </button>
+          ))}
+        </div>
+        <div role="tabpanel" style={CI_PANEL}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={CI_GRID}>
+              {['Course Details', 'Regulatory Info', 'State Reporting Fee'].map((h, i) => (
+                <p key={h} style={{ ...CI_HEAD, gridColumn: i * 2 + 1 }}>
+                  {h}
+                  <ArrowDownSolid aria-hidden style={CI_ARROW} />
+                </p>
+              ))}
+            </div>
+            <div aria-hidden style={{ ...CI_RULE, height: 1 }} />
+          </div>
+          <div style={{ ...CI_GRID, marginTop: 16, alignItems: 'start' }}>
+            <CourseFacts rows={course.specs} />
+            <div aria-hidden /> {/* the rule's 1 kept, unruled (same day, Eric), so each column stays under its heading */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <CourseFacts rows={course.regulatory} />
+              <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={CI_LINK}>
+                {place} Insurance Licensing Requirements
+              </button>
+            </div>
+            <div aria-hidden /> {/* the rule's 1 kept, unruled (same day, Eric), so each column stays under its heading */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <CourseFacts rows={[[`${abbr} fee due at checkout:`, course.fee]]} valueWeight={700} />
+              <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={CI_LINK}>
+                100% transparent pricing
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
 }
