@@ -103,6 +103,11 @@ export type CompassPage =
   | 'resources'
   | 'readiness'
   | 'rubi-insights'
+  /* THE WORKSPACE — 2026-11-04, from Anjani's v4. A page rather than a mode of
+     Learn: it has its own rail row, its own design surface and six controls of
+     its own. Gated on `compass-workspace`; `HYBRID_COMPASS_PAGES` only offers
+     the row when that flag is on. */
+  | 'workspace'
 
 const COMPASS_PAGES: {
   id: CompassPage

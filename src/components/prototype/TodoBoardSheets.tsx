@@ -203,6 +203,12 @@ function CardBody({
       note,
       owner: assigned ? AUTO_ASSIGN_OWNER : owner,
       column,
+      /* CARRIED, NOT EDITED. The scope says which Prototypes surface the card
+         is about, and it is set by `/share-to-stage`, not by a person — there
+         is no control for it in this form. But every write is a whole-record
+         PUT, so an edit that dropped it would take the row's "Staged" tag
+         down with it. Same trap as the archive fields; same fix. */
+      scope: card?.scope ?? seed?.scope ?? '',
       // An edit keeps its place in the column; the server puts a new card at
       // the end. Moving a card is the board's job, not this form's — which is
       // why there is no position control here.

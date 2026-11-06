@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { AtlasTopNav } from '@/components/layout/AtlasTopNav'
 import { atlasNavFor } from '@/components/layout/atlasNavVersion'
@@ -35,6 +36,14 @@ function Search() {
    rather than the router. `afterEach` puts the URL back. */
 function atlasArm() {
   window.history.replaceState({}, '', '/dashboard-rebrand?ff=compass-surface:atlas')
+}
+/* HER RAIL WITHOUT THE WORKSPACE — 2026-11-04. `compass-workspace` defaults
+   ON, so the rail carries a sixth row wherever it is not turned off. The two
+   cases that pin HER five rows pin them with it off, because those five are
+   her 2026-10-15 design and the Workspace is an addition on top; the case
+   below them pins the sixth. Same `?ff=` door as `atlasArm`. */
+function noWorkspace() {
+  window.history.replaceState({}, '', '/dashboard-rebrand?ff=compass-workspace:off')
 }
 afterEach(() => window.history.replaceState({}, '', '/'))
 function renderNav(search: string, expanding = false) {
@@ -208,9 +217,12 @@ describe('the Compass rail is Anjani’s on Hybrid', () => {
       (li.textContent ?? '').trim(),
     )
 
-  function renderRail(version: string) {
+  function renderRail(version: string, extra = '') {
+    /* `extra` goes through the ROUTER, not `window.location`: the page is
+       seeded from `useSearchParams`, where `?ff=` is read off the window. Two
+       doors, and using the wrong one renders the default page silently. */
     render(
-      <MemoryRouter initialEntries={[`/dashboard-rebrand?version=${version}&section=compass`]}>
+      <MemoryRouter initialEntries={[`/dashboard-rebrand?version=${version}&section=compass${extra}`]}>
         <AccountProvider>
           <FeatureFlagProvider>
             <CompassLearningPage
@@ -233,12 +245,45 @@ describe('the Compass rail is Anjani’s on Hybrid', () => {
        simulator · Progress) became five with icons — Overview · Learn · Study
        planner · Ask Rubi · Progress — and Flashcards and Exam Simulator moved
        under an EXAM PREP rule as locked rows beside Practice. */
+    noWorkspace()
     renderRail('hybrid-pacing')
     expect(railOf()).toEqual(['Overview', 'Learn', 'Study planner', 'Ask Rubi', 'Progress'])
     const locked = [...document.querySelectorAll('ul[aria-label="Exam prep"] li')].map(
       (li) => li.querySelector('.cre-rail__locked-tx')?.textContent,
     )
     expect(locked).toEqual(['Practice', 'Flashcards', 'Exam Simulator'])
+  })
+
+  it('gains a Workspace row DIRECTLY AFTER LEARN when her Workspace is on', () => {
+    /* ⚠ HER POSITION, NOT A CHOICE — and this test said the opposite for
+       about two hours on 2026-11-04. The first port put the row last and
+       called the position "the one invention in the port", on the belief that
+       her v4 had no rail row. It has one: `addNav()` finds the Learn row
+       (`showScreen('course')`), clones it, and
+       `insertBefore(copy, anchor.nextSibling)`. Third. Jillienne opened the
+       Refinement link and the rail read Overview · Learn · Workspace ·
+       Study planner, which is what this now pins. */
+    renderRail('hybrid-pacing')
+    expect(railOf()).toEqual(['Overview', 'Learn', 'Workspace', 'Study planner', 'Ask Rubi', 'Progress'])
+  })
+
+  it('the Workspace PAGE keeps the rail; only a SESSION takes over', async () => {
+    /* ⚠ CORRECTED 2026-11-04, Jillienne: "workspace page should have a left
+       nav option, its just the new workspace that is a full-screen takeover."
+       Measured on her build — the Workspace HOME: rail 220px, workspace bar
+       0. Inside a session: rail 0, bar 58. One pass made the whole page a
+       takeover, which lost the rail on the one Workspace screen that still
+       needs it; this pins both halves. */
+    const user = userEvent.setup()
+    renderRail('hybrid-pacing', '&compassPage=workspace')
+    // On the home the Compass rail is there and there is no second chrome.
+    expect(document.querySelector('nav[aria-label="Course pages"]')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Close workspace' })).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: /New workspace/ }))
+    // In a session it is gone, and the workspace's own bar is the chrome.
+    expect(document.querySelector('nav[aria-label="Course pages"]')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Close workspace' })).toBeTruthy()
   })
 
   it('a locked row explains itself on the first tap and opens the Exam prep dialog on the second', () => {
@@ -339,6 +384,7 @@ describe('Hybrid’s Course row opens Anjani’s course landing', () => {
     /* ⚠ REBUILT 2026-10-15: her five modules became a two-part gated course —
        see `compassCourseLandingFixtures` for what changed and why "Not proven"
        left this page. */
+    noWorkspace()
     openCourse('hybrid-pacing')
     expect(railOf()).toHaveLength(5)
     expect(screen.getByRole('region', { name: 'Learn page' })).toBeTruthy()

@@ -30,11 +30,11 @@ import { QaNotesPanel } from '@/components/prototype/QaNotesPanel'
 import { DemoPanel, LinksPanel, PrdsPanel, ResearchPanel } from '@/components/prototype/LinksPanel'
 import { TodoBoardPanel } from '@/components/prototype/TodoBoardPanel'
 import { LINK_PRODUCTS, readLastAuthor, useLinkCount, type LinkProduct } from '@/data/linkStore'
-import { formatUpdated } from '@/components/prototype/formatUpdated'
+import { formatStamp, formatUpdated } from '@/components/prototype/formatUpdated'
 import { useDemoCount } from '@/data/demoStore'
 import { useResearchCount } from '@/data/researchStore'
 import { usePrdCount } from '@/data/prdStore'
-import { isTodoColumn, useTodoBoardCount } from '@/data/todoBoardStore'
+import { isPrototypeScope, isTodoColumn, useStagedScopes, useTodoBoardCount, type TodoCard } from '@/data/todoBoardStore'
 import { useQaNoteCount } from '@/data/qaNoteStore'
 import { UX_TOKEN_BRIDGE, mirrorPaletteToRoot } from '@/components/prototype/uxPaletteBridge'
 import {
@@ -1293,18 +1293,25 @@ export function UxDashboardPage() {
     // validated here — the roster is the board's, and `resolveOwner` answers
     // for it once the endpoint has.
     const column = params.get('column')
+    const scope = params.get('scope')
     return {
       title: params.get('title') ?? '',
       note: params.get('note') ?? '',
       owner: params.get('owner') ?? '',
       column: isTodoColumn(column) ? column : undefined,
+      /* `/share-to-stage` names the surface it just staged, so the card it
+         files can be matched to a Prototypes row (2026-11-04). Validated
+         against the catalog for the same reason `column` is — a scope nobody
+         has heard of should land as a card with no tag, not as a card
+         claiming a row that does not exist. */
+      scope: isPrototypeScope(scope) ? scope : undefined,
     }
   })
   const consumeTodoPrefill = useCallback(() => {
     setParams(
       (prev) => {
         const p = new URLSearchParams(prev)
-        for (const k of ['add', 'title', 'note', 'owner', 'column']) p.delete(k)
+        for (const k of ['add', 'title', 'note', 'owner', 'column', 'scope']) p.delete(k)
         return p
       },
       { replace: true },
@@ -1406,6 +1413,14 @@ export function UxDashboardPage() {
      See `stageBuild.ts` for why this is a switch on Prototypes and not a
      section of its own. */
   const [build, setBuild] = useState<PrototypeBuild>(() => parsePrototypeBuild(params.get('build')))
+  /* WHAT IS WAITING ON STAGE, by surface — the On Stage column's cards, read
+     from the Hub's own store (2026-11-04). This is what lets a Prototypes row
+     SAY that its owner staged something, which until now it could not: the
+     Main · Stage switch changed a row's href and nothing else, so a designer
+     who ran `/share-to-stage` flipped to Stage and saw a card identical to
+     the one under Main. See `useStagedScopes` for why reading a card is
+     allowed where reading the stage build is not. */
+  const staged = useStagedScopes()
 
   /* The other half of the share link: whatever the board is filtered to is in
      the address, so copying it copies the view. `replace` so a filter does not
@@ -1647,6 +1662,7 @@ export function UxDashboardPage() {
                dev-cycle action, archive included). */
             archive={rowArchive.available && showStatus ? { state: 'can', onSet: setArchived } : undefined}
             build={section === 'prototypes' ? build : undefined}
+            staged={section === 'prototypes' && f.prototypeScope ? staged[f.prototypeScope] : undefined}
           />
         ))}
       </div>
@@ -2069,6 +2085,11 @@ type ProjectRowProps = {
    *  section's Main · Stage switch says otherwise. Rows outside Prototypes
    *  ignore it: nothing else on the Hub opens a build of the product. */
   build?: PrototypeBuild
+  /** The live On Stage card naming this row's surface, when there is one
+   *  (2026-11-04) — the Hub's record that the owner has staged this surface
+   *  and it is waiting on a release. Absent on every row outside Prototypes,
+   *  and on a Prototypes row whose surface has nothing staged. */
+  staged?: TodoCard
 }
 
 function ProjectRow({
@@ -2084,6 +2105,7 @@ function ProjectRow({
   onSetRollup,
   archive,
   build = 'main',
+  staged,
 }: ProjectRowProps) {
   const [copied, setCopied] = useState(false)
   const Icon = ICONS[feature.icon] ?? Grid
@@ -2099,13 +2121,33 @@ function ProjectRow({
      "don't remove the work, just hide users from clicking on it"). Either
      kind draws the generated mark, not a live frame — see `hasPreview`. */
   const placeholder = feature.status === 'coming-soon'
+  const isPrototypeRow = feature.category === 'prototype'
+  /* ⚠ THE PICTURE DOES NOT FOLLOW THE BUILD, and that was TRIED and reverted
+     on 2026-11-04 — do not re-add it without reading this.
+
+     The idea is obvious: under Stage, frame the stage build so the thumbnail
+     shows the staged work instead of main's. `primaryPreviewSrc` still takes
+     an `origin` for it. What it actually renders is a BLACK BOX. The stage
+     build is a separate Netlify origin behind its own copy of the site
+     password, an iframe to it carries no credentials from this origin, and
+     the frame loads Netlify's password page — which paints dark and says
+     nothing. Measured on the local netlify dev server with a staged Compass
+     card: the row's picture went from a screenshot of the product to an empty
+     dark rectangle, i.e. the card looked WORSE under Stage, which is the
+     opposite of what the Stage tag is there to do.
+
+     So the TAG carries the stage news and the picture stays main's. The row
+     is honest either way: under Stage it says "Staged Nov 4 · Anjani" and
+     opens the stage build in a new tab, where the viewer authenticates once
+     and sees the real thing. A thumbnail that can only work after the viewer
+     has already been where the thumbnail is sending them is not a
+     thumbnail. */
   const preview = primaryPreviewSrc(feature)
   // A placeholder shows the GENERATED mark whatever it has on record — Jillienne
   // on the preview, 2026-10-14: "make that image a default icon image like the
   // admin tool to show it's disabled". A live frame of the surface behind a
   // held-back row read as an invitation; the abstract mark reads as closed.
   const hasPreview = !placeholder && Boolean(feature.thumbnail || preview)
-  const isPrototypeRow = feature.category === 'prototype'
   /* A Prototypes row's `to` is a same-origin path on main's build; under the
      section's Stage switch the same path opens on the stage origin instead
      (`stageBuild.ts`). Every other row is what it always was. */
@@ -2125,9 +2167,48 @@ function ProjectRow({
   // Owner, then Updated, then the scope LAST — 2026-10-15, Jillienne on the
   // live site: "move these top ones to the bottom". Who and when lead; what
   // door it is closes the stack.
+  /* THE STAGED TAG (2026-11-04) — the row's answer to "my share worked, why
+     does this card look the same?".
+
+     Two spellings of one fact, because the two builds are asking different
+     questions of it:
+
+       • Under STAGE, the row IS the staged thing, so the tag says WHEN and by
+         WHOM — "Staged Nov 4 · Anjani" — drawn in the accent so it reads as
+         the one thing on the card that changed. That is the confirmation the
+         switch owed the designer who ran `/share-to-stage`.
+       • Under MAIN, the row is the RELEASED surface and the staged work is
+         not in it. A tag that said "Staged" there would be a lie about what
+         the row opens. It says "Waiting on stage" instead — quiet, muted, and
+         really a signpost: there is a reason to flip the switch, and without
+         it nobody would know to.
+
+     Nothing is drawn when the surface has nothing staged, which is the normal
+     state of four rows out of five. Archiving the On Stage card is how a
+     release clears this — see `useStagedScopes`. */
+  const stagedTag: HubRowTag | null = !staged
+    ? null
+    : build === 'stage'
+      ? {
+          key: 'staged',
+          text: `Staged ${formatStamp(staged.addedDate)}${staged.owner ? ` · ${staged.owner}` : ''}`,
+          style: { borderColor: 'var(--ux-accent)', color: 'var(--ux-accent)' },
+          // The card's own title, so hovering says WHAT was staged — the row
+          // has no room for a chunk name and the board is where it lives.
+          title: staged.title,
+        }
+      : {
+          key: 'staged',
+          text: 'Waiting on stage',
+          style: { color: 'var(--ux-text-3)' },
+          title: `${staged.title} — staged ${formatStamp(staged.addedDate)}${staged.owner ? ` by ${staged.owner}` : ''}. Switch to Stage to open it.`,
+        }
   const prototypeTags: HubRowTag[] = [
     { key: 'owner', text: owner ?? '', icon: <User size={11} aria-hidden style={{ flex: 'none' }} />, srPrefix: 'Owner: ' },
     { key: 'updated', text: feature.lastUpdated ? `Updated ${formatUpdated(feature.lastUpdated)}` : '' },
+    // Above the scope, below Updated: the stack reads who · when · what is
+    // pending · which door, and the pending line belongs with the dates.
+    ...(stagedTag ? [stagedTag] : []),
     { key: 'scope', text: prototypeScopeLabel(feature.prototypeScope) || '' },
   ].filter((t) => t.text)
   // Three labels, answering "how much of the product is this?":
