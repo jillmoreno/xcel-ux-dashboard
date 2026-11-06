@@ -4560,9 +4560,13 @@ the explorer; carry those over on the next port.
   General Attestation (before the course exam), from Afsana's "Non-State
   Specific" folder.
 - **Before course exam — Pennsylvania** (2026-11-06), from the compliance
-  sheet below. ⚠ Pennsylvania is **not listed in the Compliance and
-  Regulatory Data Foundations PRD** (Confluence, ATLAS space) — to be checked
-  against the PRD and with compliance before it counts as decided.
+  sheet below. ⚠ **The sheet and the PRD disagree.** The Compliance
+  and Regulatory Data Foundations PRD (Confluence, ATLAS space — checked
+  2026-11-06 against the page as last edited 2026-10-20) does not count
+  Pennsylvania among its 19 regulated states: tables A10 and A11 say it
+  **eliminated pre-licensing on 29 Apr 2025**, and that the state's licensing
+  tab "still says 'student affidavit'". Built from the sheet; compliance to
+  say whether XCEL still shows it before it counts as decided.
 - **The SSN wording** (2026-11-06) — the sheet's "SSN Veribage" column:
   *"This information will enable the Commissioner to properly identify and
   assign credit to students who have completed a course."* It replaces
@@ -4587,7 +4591,10 @@ Form = TRUE** (CO, CT, MN after the exam, NY, WI, WV) must match its document
   and OCD cannot attach two post-final affidavits). The document holds only
   the **Property** affidavit. Built: after the course exam, Property only.
   Unresolved: should it also show before the course exam, and is a Life &
-  Health version coming? Raise it on every pass over these forms until it is
+  Health version coming? The PRD's Ohio profile (checked 2026-11-06) lists
+  only a "Post-exam learner affidavit" and says Ohio is silent on a pre-exam
+  attestation, which points to after the exam only — it says nothing about a
+  Life & Health version. Raise it on every pass over these forms until it is
   answered.
 
 Pinned in `AffidavitModalV2.test.tsx`.

@@ -899,9 +899,13 @@ for (const st of ['CO', 'CT', 'WV', 'WI']) {
    (XCEL-PE_Affidavits_and_EAs.xlsx: "PA PE-Pre Final Affidavit", Final
    Affidavit, Pre, "Affidavit State Form" FALSE), and the Word doc is in the
    _XCEL-PE Affidavits and EAs folder. ⚠ OPEN QUESTION (Afsana, 2026-11-06):
-   Pennsylvania was not listed in the Compliance and Regulatory Data
-   Foundations PRD (Confluence, ATLAS space) — check with compliance which is
-   right before this is treated as a decided state. Fields as the document
+   the sheet and the PRD disagree. The Compliance and Regulatory Data
+   Foundations PRD (Confluence, ATLAS space; checked 2026-11-06 against the
+   page as last edited 2026-10-20) does not count Pennsylvania among its 19
+   regulated states: its tables A10 and A11 say Pennsylvania ELIMINATED
+   pre-licensing on 29 Apr 2025, and that the state's licensing tab "still
+   says 'student affidavit'". Compliance to say whether XCEL still shows this
+   affidavit (the sheet is dated 10/29/2026) before it counts as decided. Fields as the document
    has them — Student E-Signature, one Full Name line, Today's Date — and its
    button, "Attest". Today's Date is pre-filled, so the "I confirm that the
    above information is accurate" box stays, as it does for New York. */
@@ -924,5 +928,5 @@ FORMS.PA_EXAM={
     {id:'agree',type:'checkbox',label:'I confirm that the above information is accurate',required:true}
   ],
   noPrefill:['fullname'],
-  note:'Not in the explorer: added 2026-11-06 from the compliance team\'s affidavit sheet. Pennsylvania is not in the Compliance and Regulatory Data Foundations PRD; to be confirmed.'
+  note:'Not in the explorer: added 2026-11-06 from the compliance team\'s affidavit sheet. The PRD says Pennsylvania eliminated pre-licensing on 29 Apr 2025; to be confirmed with compliance.'
 };
