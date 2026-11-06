@@ -4567,10 +4567,13 @@ the explorer; carry those over on the next port.
   document asks for one). **Middle Name is undecided** — it is part of a
   legal name — so it is the Design bar's **Affidavit middle name** (Shown /
   Off; `affidavit-v2-middle`). The document's own labels ("Student
-  E-Signature:") stay. Proctor fields are untouched. **Open:** whether the
-  forms with a name but no signature (California and the generic terms) and
-  the enrollment agreements (KY, NV, OR: "my signature below" with no field)
-  take the same name block.
+  E-Signature:") stay. Proctor fields are untouched. **Names are taken the same way
+  too** (Afsana, same day): the forms with a name and no signature —
+  California's and the generic terms, and the KY, NV and OR enrollment
+  agreements (whose documents say "my signature below" but show no field) —
+  take the same pre-filled name block, with no signature box
+  (`NAMED_FORMS`). "Full Legal Name", "Full Name" and "Student Name" are one
+  data point.
 - **Non-state specific** (`GEN`) — XCEL's Generic Terms and Conditions (before
   the course begins, English or Spanish by Affidavit language) and its PE
   General Attestation (before the course exam), from Afsana's "Non-State

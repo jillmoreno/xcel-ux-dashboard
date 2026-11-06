@@ -960,15 +960,24 @@ const CONFIRM: AffField = {id:'agree',type:'checkbox',label:'I confirm that the 
 const NAME_IDS = ['first','middle','last','suffix','fullname','name']
 const isName = (x: AffField) => (x.id != null && NAME_IDS.includes(x.id)) || (x.row ?? []).some((y) => y.id != null && NAME_IDS.includes(y.id))
 export const SIGNED_FORMS = ['IL_PRE','OH_PRE','FL_EXAM','MN_EXAM','CA_POST_LH','IL_POST','OH_POST_P','NY_POST','CO_POST','CT_POST','MN_POST','WV_POST','WI_POST','GEN_EXAM','PA_EXAM']
-for (const key of SIGNED_FORMS) {
+/* AND ONE WAY TO TAKE A NAME (2026-11-06, Afsana: "Yes, standardize"). The
+   forms that ask for a name but have no signature — California's and the
+   generic terms ("Student Name", "Student Full Name") and the KY, NV and OR
+   enrollment agreements (First / Middle / Last / Suffix, from the explorer;
+   their documents show no field) — take the same name block, pre-filled,
+   with no signature box. "Full Legal Name", "Full Name" and "Student Name"
+   are one data point, the learner's name, so they are captured one way. */
+export const NAMED_FORMS = ['CA_PRE','GEN_PRE_EN','GEN_PRE_ES','KY_PRE','NV_PRE','OR_PRE']
+for (const key of [...SIGNED_FORMS, ...NAMED_FORMS]) {
   const form = FORMS[key]
+  const sign = SIGNED_FORMS.includes(key)
   let named = false, signed = false
   const has = (l: AffField[] | undefined, id: string): boolean => (l ?? []).some((x) => x.id === id || has(x.flagGroup, id) || has(x.row, id))
   // Does the document have its own signature line anywhere (not just in this list)?
   const lineSig = has(form.fields.concat(...form.pages.map((p) => p.fields ?? [])), 'sig')
   const rewrite = (list: AffField[]): AffField[] => list.flatMap((x) => {
     if (x.flagGroup) return [{ ...x, flagGroup: rewrite(x.flagGroup) }]
-    if (isName(x)) { if (named) return []; named = true; return [NAME_ROW, ...(lineSig ? [] : (signed = true, [SIGNATURE]))] }
+    if (isName(x)) { if (named) return []; named = true; return [NAME_ROW, ...(lineSig || !sign ? [] : (signed = true, [SIGNATURE]))] }
     if (x.id === 'sig') { if (signed) return []; signed = true; return named ? [SIGNATURE] : (named = true, [NAME_ROW, SIGNATURE]) }
     return [x]
   })

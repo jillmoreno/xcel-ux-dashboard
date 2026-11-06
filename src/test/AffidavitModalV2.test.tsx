@@ -7,7 +7,7 @@ import { AffidavitModalV2 } from '@/components/e2e/AffidavitModalV2'
 import { resolveAffidavit, withoutMiddle } from '@/components/e2e/affidavitModalV2Util'
 import { MemoryRouter } from 'react-router-dom'
 import { FEATURE_FLAGS, FeatureFlagProvider, designControlsFor, useFeatureFlags } from '@/context/FeatureFlagContext'
-import { ENTRIES, FORMS, SIGNED_FORMS, SSN_REASON, STATES, type AffField } from '@/data/affidavitForms'
+import { ENTRIES, FORMS, NAMED_FORMS, SIGNED_FORMS, SSN_REASON, STATES, type AffField } from '@/data/affidavitForms'
 
 /**
  * AFFIDAVIT V2 — 2026-11-03, Afsana. The first change V2 makes: the modal
@@ -313,9 +313,18 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(formFields('IL_PRE').map((x) => x.id)).toEqual(['first', 'middle', 'last', 'sig'])
   })
 
-  it('leaves the forms with no signature alone: the enrollment agreements and the name-only terms', () => {
-    for (const key of ['KY_PRE', 'NV_PRE', 'OR_PRE', 'CA_PRE', 'GEN_PRE_EN']) expect(SIGNED_FORMS).not.toContain(key)
-    expect(formFields('GEN_PRE_EN').map((x) => x.id)).toEqual(['fullname'])
+  /* AND ONE WAY TO TAKE A NAME (2026-11-06): the forms that ask for a name
+     with no signature take the same name block, and no signature box. */
+  it('takes the name the same way on the forms with a name and no signature', () => {
+    expect(NAMED_FORMS).toEqual(['CA_PRE', 'GEN_PRE_EN', 'GEN_PRE_ES', 'KY_PRE', 'NV_PRE', 'OR_PRE'])
+    for (const key of NAMED_FORMS) {
+      const ids = formFields(key).map((x) => x.id)
+      for (const id of ['first', 'middle', 'last']) expect(ids, `${key} ${id}`).toContain(id)
+      for (const id of ['suffix', 'fullname', 'name', 'sig']) expect(ids, `${key} ${id}`).not.toContain(id)
+      const f = FORMS[key]!
+      expect(flatAll(f.fields.concat(...f.pages.map((pg) => pg.fields ?? []))).some((x) => x.id === 'agree'), key).toBe(true)
+    }
+    expect(formFields('GEN_PRE_EN').map((x) => x.id)).toEqual(['first', 'middle', 'last'])
   })
 
   /* MIDDLE NAME IS UNDECIDED (2026-11-06): a Design bar control. */
@@ -354,12 +363,12 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(screen.queryByText(/Reconocimiento de los Términos y Condiciones/)).toBeNull()
     expect(screen.queryByRole('button', { name: 'Next' })).toBeNull() // one page, the English one
     await ready()
-    const name = screen.getByLabelText(/Student Full Name/) as HTMLInputElement
-    expect(name.value).toBe('') // typed, not pre-filled: it is the signature
-    expect(screen.queryByLabelText(/I confirm that the above information is accurate/)).toBeNull()
+    // The standard name block since 2026-11-06: pre-filled, so confirmed.
+    expect((screen.getByLabelText(/^First Name/) as HTMLInputElement).value).toBe('Jordan')
+    expect(screen.queryByLabelText(/Student Signature/)).toBeNull()
     const agree = screen.getByRole('button', { name: 'I Agree' }) as HTMLButtonElement
     expect(agree.disabled).toBe(true)
-    fireEvent.change(name, { target: { value: 'Jordan Navarro' } })
+    fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
     fireEvent.click(agree)
     expect(onClose).toHaveBeenCalled()
   })
