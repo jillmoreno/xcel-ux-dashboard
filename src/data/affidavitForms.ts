@@ -938,7 +938,7 @@ FORMS.PA_EXAM={
    under either). Afsana's call for now: EVERYWHERE A SIGNATURE APPEARS the
    learner sees First Name and Last Name, pre-filled from their account
    (Middle Name too, while the Design bar's "Affidavit middle name" is on —
-   undecided), and an empty Student Signature box to type their name in.
+   undecided) — labelled "Legal First / Middle / Last Name" (Afsana, same day), and an empty Student Signature box to type their name in.
    Suffix goes: no document asks for one.
 
    What counts as "a signature appears": the document has a signature line or
@@ -951,9 +951,9 @@ FORMS.PA_EXAM={
    Proctor fields are untouched. With the names pre-filled, every one of these
    forms carries the "I confirm that the above information is accurate" box. */
 const NAME_ROW: AffField = {row:[
-  {id:'first',label:'First Name',required:true,placeholder:'First name',ac:'given-name'},
-  {id:'middle',label:'Middle Name',placeholder:'Middle name',ac:'additional-name'},
-  {id:'last',label:'Last Name',required:true,placeholder:'Last name',ac:'family-name'},
+  {id:'first',label:'Legal First Name',required:true,placeholder:'Legal first name',ac:'given-name'},
+  {id:'middle',label:'Legal Middle Name',placeholder:'Legal middle name',ac:'additional-name'},
+  {id:'last',label:'Legal Last Name',required:true,placeholder:'Legal last name',ac:'family-name'},
 ]}
 const SIGNATURE: AffField = {id:'sig',label:'Student Signature',required:true,placeholder:'Type your full name',ac:'name'}
 const CONFIRM: AffField = {id:'agree',type:'checkbox',label:'I confirm that the above information is accurate',required:true}

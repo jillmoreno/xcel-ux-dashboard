@@ -4574,6 +4574,8 @@ the explorer; carry those over on the next port.
   take the same pre-filled name block, with no signature box
   (`NAMED_FORMS`). "Full Legal Name", "Full Name" and "Student Name" are one
   data point.
+  The three fields are labelled **Legal First Name, Legal Middle Name, Legal
+  Last Name** (Afsana, 2026-11-06).
 - **Non-state specific** (`GEN`) — XCEL's Generic Terms and Conditions (before
   the course begins, English or Spanish by Affidavit language) and its PE
   General Attestation (before the course exam), from Afsana's "Non-State

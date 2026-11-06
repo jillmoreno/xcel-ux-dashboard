@@ -253,14 +253,14 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
      Student Signature), in the place of the document's own name and signature.
      The product's "I confirm that the above information is accurate" is kept
      on purpose and left out of these lists. */
-  const SIGNER = ['First Name', 'Middle Name', 'Last Name', 'Student Signature']
+  const SIGNER = ['Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'Student Signature']
   const STATE_DOCUMENT_FIELDS: Record<string, string[]> = {
     NY_POST: [...SIGNER, 'Today’s Date'],
     CO_POST: ['Course Name', 'Date of Pre-licensing Final Exam', ...SIGNER, 'Date', 'Relationship to Examinee', 'Proctor Address', 'Proctor Name (print)', 'Proctor Signature'],
     CT_POST: ['Course Name', 'Date of Prelicensing Final Exam', ...SIGNER, 'Date', 'Relationship to Examinee', 'Proctor Address', 'Proctor Name (print)', 'Proctor Signature'],
     MN_POST: [
       'Name of Exam', 'Date & Time of Exam Completion', 'Company & Address where exam was completed', 'City', 'State', 'Zip Code',
-      'First Name', 'Middle Name', 'Last Name', 'License #', 'Date of Birth',
+      'Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'License #', 'Date of Birth',
       'Business Address', 'City', 'State', 'Zip Code',
       'Mailing Address (if different than above)', 'City', 'State', 'Zip Code',
       'Daytime Phone', 'E-mail', 'Student Signature', 'Date',
@@ -301,9 +301,9 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
       expect(all.some((x) => x.id === 'agree'), `${key} confirm box`).toBe(true)
     }
     render(<AffidavitModalV2 onClose={() => {}} moment="post" state="NY" pattern="page" />)
-    expect((screen.getByLabelText(/^First Name/) as HTMLInputElement).value).toBe('Jordan')
-    expect((screen.getByLabelText(/^Middle Name/) as HTMLInputElement).value).toBe('Lee')
-    expect((screen.getByLabelText(/^Last Name/) as HTMLInputElement).value).toBe('Navarro')
+    expect((screen.getByLabelText(/^Legal First Name/) as HTMLInputElement).value).toBe('Jordan')
+    expect((screen.getByLabelText(/^Legal Middle Name/) as HTMLInputElement).value).toBe('Lee')
+    expect((screen.getByLabelText(/^Legal Last Name/) as HTMLInputElement).value).toBe('Navarro')
     expect((screen.getByLabelText(/Student Signature/) as HTMLInputElement).value).toBe('')
     expect(screen.getByText('Student E-Signature:')).toBeTruthy() // the document's own label stays
     expect((screen.getByLabelText(/Today.s Date/) as HTMLInputElement).readOnly).toBe(true)
@@ -364,7 +364,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(screen.queryByRole('button', { name: 'Next' })).toBeNull() // one page, the English one
     await ready()
     // The standard name block since 2026-11-06: pre-filled, so confirmed.
-    expect((screen.getByLabelText(/^First Name/) as HTMLInputElement).value).toBe('Jordan')
+    expect((screen.getByLabelText(/^Legal First Name/) as HTMLInputElement).value).toBe('Jordan')
     expect(screen.queryByLabelText(/Student Signature/)).toBeNull()
     const agree = screen.getByRole('button', { name: 'I Agree' }) as HTMLButtonElement
     expect(agree.disabled).toBe(true)
@@ -446,7 +446,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(screen.getByRole('heading', { level: 2 }).textContent).toBe('Pennsylvania Pre-Licensing Affidavit')
     expect(screen.getByText(/sanction by the Pennsylvania Department of Insurance/)).toBeTruthy()
     expect(screen.getByText('Student E-Signature:')).toBeTruthy()
-    expect((screen.getByLabelText(/^First Name/) as HTMLInputElement).value).toBe('Jordan')
+    expect((screen.getByLabelText(/^Legal First Name/) as HTMLInputElement).value).toBe('Jordan')
     expect((screen.getByLabelText(/Student Signature/) as HTMLInputElement).value).toBe('')
     expect(screen.getByRole('button', { name: 'Attest' })).toBeTruthy()
     expect(STATES.PA).toBe('Pennsylvania')
