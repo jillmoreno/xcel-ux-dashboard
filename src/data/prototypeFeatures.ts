@@ -1250,6 +1250,54 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     livePreviewUrl: `${PROTOTYPE_BASE}/xcel-lms-walkthrough.html`,
     brands: ['xcel'],
   },
+  /* ⚠ THE TWO READINESS STATES, AND ONLY THE TWO (2026-11-06). Anjani's
+     Compass Overview V2 explores Readiness across sixteen states, but those
+     live in a Design-canvas EXPORT whose runtime re-fetches its own page and
+     mis-slices it when served over http — the page renders its own JavaScript
+     as text. Tested twice; a sibling `.dc.html` does not help, because the
+     second request is for the page itself. So the prototype cannot be a row
+     here without shipping a modified copy of her file, and these two
+     self-contained exports of the states that matter can.
+
+     The sixteen states ARE in the product, ported, behind the Design bar's
+     Overview version → Readiness V2 and Readiness stage controls. */
+  {
+    id: 'xcel-compass-readiness-58',
+    title: 'Compass Readiness — Developing (58%)',
+    accent: 'blue',
+    /* ⚠ `monitor`, not a gauge — the icon set here is four names wide
+       (grid · calendar · flag · monitor) and a readiness dial is not one of
+       them. Adding an icon is a registry decision, not a row's to make. */
+    icon: 'monitor',
+    blurb:
+      'The Compass Overview rebuilt around exam Readiness, mid-journey. A three-arc ring reads outside in — Exam Simulator, practice coverage, Readiness — over a blueprint-weighted table of the five exam topics that expands into sub-topics, and a panel comparing what the learner answered against how sure they were. Readiness comes from Exam Prep practice only; course lessons do not feed it.',
+    tileBlurb:
+      '58% · Developing. The ring, the topic table and the confidence panel at the point where the work is still ahead of you.',
+    kind: 'explore',
+    kindLabel: 'Standalone HTML',
+    status: 'ready',
+    category: 'exploration',
+    externalUrl: `${PROTOTYPE_BASE}/xcel-compass-readiness-58.html`,
+    livePreviewUrl: `${PROTOTYPE_BASE}/xcel-compass-readiness-58.html`,
+    brands: ['xcel'],
+  },
+  {
+    id: 'xcel-compass-readiness-86',
+    title: 'Compass Readiness — Ready to pass (86%)',
+    accent: 'blue',
+    icon: 'monitor',
+    blurb:
+      'The same page once every topic has reached Ready: the recommended activity becomes "Book your Florida state exam", the rings close, and the confidence panel reads "Calibrated. The confidence gap is closed." Booking happens in Atlas and opens only when all five topics are at 85%.',
+    tileBlurb:
+      '86% · Ready. The end state of the same design — what it looks like when the page has nothing left to ask for.',
+    kind: 'explore',
+    kindLabel: 'Standalone HTML',
+    status: 'ready',
+    category: 'exploration',
+    externalUrl: `${PROTOTYPE_BASE}/xcel-compass-readiness-86.html`,
+    livePreviewUrl: `${PROTOTYPE_BASE}/xcel-compass-readiness-86.html`,
+    brands: ['xcel'],
+  },
   {
     id: 'xcel-wireframes',
     title: 'XCEL LMS — Wireframes & Overlap',

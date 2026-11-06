@@ -185,6 +185,13 @@ describe('section routing (sectionOf)', () => {
     // The Atlas vs. Compass typography and color audit (2026-10-27) — an
     // exploration with no document; its gateway page carries the findings.
     'xcel-design-system-audit': 'exploration',
+    /* The two Compass Readiness states (2026-11-06). ⚠ ONLY TWO ROWS for a
+       sixteen-state prototype: the rest live in a Design-canvas export that
+       cannot be served (its runtime re-fetches its own page and mis-slices
+       it), so the states are in the PRODUCT behind the Design bar instead,
+       and these two self-contained exports stand for the design here. */
+    'xcel-compass-readiness-58': 'exploration',
+    'xcel-compass-readiness-86': 'exploration',
     // `xcel-course-entry` (the repo's first authored dev handoff, 2026-09-24)
     // stood here until 2026-10-15 — archived, `course-entry-handoff`. Both
     // handoffs were removed as "not ready"; Development lists nothing now.
