@@ -224,6 +224,13 @@ export type FeatureFlagDefinition = {
    *  live flag values (see `liveFlagsForDesignBarRef`). 2026-11-04, Afsana:
    *  Line of authority goes when Affidavit state is Non-state specific. */
   hiddenWhen?: { flag: string; variants: string[] }
+  /** Optional: leave some of this control's VARIANTS off the Design bar
+   *  while another control is on an arm — `hide[arm]` lists them. The one
+   *  currently picked always stays, so the bar never shows a value it does
+   *  not list. Read live, like `hiddenWhen`. 2026-11-06, Afsana: each
+   *  Affidavit moment lists only the states that have a form at it. (Greying
+   *  them out instead needs a disabled option on the bar, which is Jill's.) */
+  variantsHiddenWhen?: { flag: string; hide: Record<string, string[]> }
 }
 
 /* ─── pages ────────────────────────────────────────────────────────── */
@@ -302,6 +309,25 @@ export const FLAG_DESIGNERS: { id: DesignerId; label: string }[] = [
 const liveFlagsForDesignBarRef: { current: Record<string, FeatureFlagState> | null } = { current: null }
 
 export function designControlsFor(
+  versionId: string,
+  versionOwner: DesignerId,
+  surface?: string | null,
+): FeatureFlagDefinition[] {
+  /* `variantsHiddenWhen` — some arms off the bar while another control is on
+     a named arm (2026-11-06). The picked arm stays, whatever the rule says. */
+  return designControlsUnnarrowed(versionId, versionOwner, surface).map((def) => {
+    if (!def.variantsHiddenWhen || !def.variants) return def
+    const { flag, hide } = def.variantsHiddenWhen
+    const other = FEATURE_FLAGS.find((f) => f.key === flag)
+    const arm = liveFlagsForDesignBarRef.current?.[flag]?.variant ?? other?.defaultVariant
+    const gone = (arm != null && hide[arm]) || []
+    if (!gone.length) return def
+    const picked = liveFlagsForDesignBarRef.current?.[def.key]?.variant ?? def.defaultVariant
+    return { ...def, variants: def.variants.filter((v) => v.value === picked || !gone.includes(v.value)) }
+  })
+}
+
+function designControlsUnnarrowed(
   versionId: string,
   versionOwner: DesignerId,
   /* The surface on screen (`DesignSurfaceContext`), or null off a declared
@@ -2531,6 +2557,17 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       // Not a state (2026-11-04): XCEL's generic forms — `GEN` in affidavitForms.ts.
       { value: 'GEN', label: 'Non-state specific' },
     ],
+    /* N/A AT A MOMENT IS OFF THE LIST (2026-11-06, Afsana): each moment lists
+       the states with a form at it. Worked out from affidavitForms.ts, and
+       AffidavitModalV2.test.tsx fails if the forms and this list part. */
+    variantsHiddenWhen: {
+      flag: 'affidavit-v2-moment',
+      hide: {
+        pre: ['CO', 'CT', 'MS', 'NY', 'WI', 'WV', 'PA'],
+        exam: ['CA', 'IL', 'KY', 'MS', 'NV', 'NY', 'OH', 'OR'],
+        post: ['FL', 'KY', 'MS', 'NV', 'OR', 'GEN', 'PA'],
+      },
+    },
     defaultVariant: 'FL',
     defaultEnabled: true,
     page: 'dashboard-rebrand',

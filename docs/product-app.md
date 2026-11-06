@@ -4543,6 +4543,12 @@ there), **state**, **pattern**, **language** and **line of authority** pick
 the form. The data file's header lists every place the forms now differ from
 the explorer; carry those over on the next port.
 
+**Affidavit state lists only the states with a form at the chosen moment**
+(2026-11-06, Afsana) — `variantsHiddenWhen` on `affidavit-v2-state`, read
+live like `hiddenWhen`. The state already picked stays listed. Afsana asked
+for the N/A states greyed out and unclickable; that needs a disabled option on
+the Design bar, which is Jill's file, so for now they are dropped.
+
 **Where the wording came from, when it is not the explorer's:**
 
 - **Before course exam — Colorado, Connecticut, West Virginia, Wisconsin.**

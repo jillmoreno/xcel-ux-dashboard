@@ -493,4 +493,46 @@ describe('the Design bar’s affidavit controls', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Florida' }))
     expect(controls()).toContain('affidavit-v2-loa')
   })
+
+  /* N/A STATES LEAVE THE LIST (2026-11-06): each moment lists the states that
+     have a form at it. */
+  it('lists, for each moment, only the states that have a form at it — worked out from the forms', () => {
+    const rule = FEATURE_FLAGS.find((f) => f.key === 'affidavit-v2-state')!.variantsHiddenWhen!
+    expect(rule.flag).toBe('affidavit-v2-moment')
+    for (const m of ['pre', 'exam', 'post'] as const) {
+      const none = Object.keys(STATES).filter((st) => !resolveAffidavit(m, st, 'English').form)
+      expect([...rule.hide[m]!].sort(), m).toEqual(none.sort())
+    }
+  })
+
+  it('narrows Affidavit state as Affidavit moment changes, keeping the state picked', () => {
+    function States() {
+      const { setVariant } = useFeatureFlags()
+      const state = designControlsFor('jill-atlas-main', 'jill').find((f) => f.key === 'affidavit-v2-state')!
+      return (
+        <>
+          <output data-testid="states">{state.variants!.map((v) => v.value).join(' ')}</output>
+          {(['off', 'pre', 'exam', 'post'] as const).map((m) => (
+            <button key={m} type="button" onClick={() => setVariant('affidavit-v2-moment', m)}>{m}</button>
+          ))}
+        </>
+      )
+    }
+    render(
+      <MemoryRouter>
+        <FeatureFlagProvider>
+          <States />
+        </FeatureFlagProvider>
+      </MemoryRouter>,
+    )
+    const states = () => screen.getByTestId('states').textContent!.split(' ')
+    expect(states()).toContain('NY') // Off: every state
+    fireEvent.click(screen.getByRole('button', { name: 'pre' }))
+    expect(states()).not.toContain('NY')
+    expect(states()).toContain('FL')
+    fireEvent.click(screen.getByRole('button', { name: 'post' }))
+    expect(states()).toContain('FL') // no form after the exam, but it is the one picked
+    expect(states()).not.toContain('KY')
+    expect(states()).toContain('NY')
+  })
 })
