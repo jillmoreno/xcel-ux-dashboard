@@ -117,6 +117,22 @@
   /* No hover fill — a phone has no hover (same day). */
   background-color: transparent !important;
 }
+/* …but the open fill, as the alerts and profile have (2026-11-05, Eric's
+   request): the header tint while its menu is open. */
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-burger[aria-expanded='true'] {
+  background-color: var(--atlas-hdr-tint) !important;
+}
+/* THE THREE HEADER BUTTONS 6 IN AT THE SIDES — alerts, profile, menu (same
+   day, Eric's request; 4 first; 8 for the icon pills before, the menu 0 at its
+   right). The menu's box reaches 6 past the row's 16 inset so its bars still
+   end there. */
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-pill:has(svg) {
+  padding-left: 6px !important;
+  padding-right: 6px !important;
+}
+[data-home-bp='mobile'] .cre-atlas-hdr .cre-atlas-hdr-burger {
+  margin-right: -6px !important;
+}
 [data-home-bp='mobile'] .cre-atlas-hdr-pill:has(svg) {
   font-size: 0 !important;
   gap: 0 !important;
