@@ -872,8 +872,11 @@ FORMS.GEN_EXAM={
    for all four — and Sarah confirmed the forms may be titled "<State>
    Pre-Exam Attestation", having no preference on what they are called.
    (Relayed by Afsana; docs/product-app.md, "Affidavit V2", has the same note.)
-   The learner confirms with a checkbox that they read and understood it —
-   Afsana's choice over a typed signature. The button is Florida's pre-exam
+   The learner confirmed with a checkbox that they read and understood it —
+   Afsana's choice over a typed signature — until 2026-11-06, when she took
+   that box out ("remove the second checkbox … I have read and understand the
+   requirements above"): the button alone attests. Link out keeps its own
+   "I have read …" box, as every Link out form does. The button is Florida's pre-exam
    "I Attest and Confirm". Nothing is pre-filled, so there is no "I confirm
    that the above information is accurate" box. */
 const PRE_EXAM_ATTESTATION =
@@ -886,7 +889,7 @@ for (const st of ['CO', 'CT', 'WV', 'WI']) {
     agreeLabel: 'I Attest and Confirm',
     source: 'Wording provided by Sarah, 11/04/26 · one attestation for CO, CT, WV and WI',
     pages: [{ blocks: [{ p: PRE_EXAM_ATTESTATION }] }],
-    fields: [{ id: 'understood', type: 'checkbox', label: 'I have read and understand the requirements above.', required: true }],
+    fields: [],
     note: 'Not in the explorer, which had no document for this state at this moment.',
   }
   const entry = ENTRIES.find((e) => e.m === 'exam' && e.st === st)

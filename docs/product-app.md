@@ -4555,9 +4555,9 @@ the Design bar, which is Jill's file, so for now they are dropped.
   The attestation text was **provided by Sarah on 11/04/26**; the explorer had
   no document for these four at this moment. Sarah also confirmed the forms
   may be titled **"<State> Pre-Exam Attestation"** — they had no preference on
-  what they are called. The learner confirms with a checkbox ("I have read
-  and understand the requirements above"), Afsana's choice over a typed
-  signature.
+  what they are called. There is no box to tick (2026-11-06, Afsana took out
+  its "I have read and understand the requirements above" checkbox): the "I
+  Attest and Confirm" button attests.
 - **After course exam — CO, CT, MN, NY, WI, WV.** Fields match each state's
   own document exactly (Afsana's "State Specific Affidavit" folder): one name
   field, not First / Middle / Last / Suffix, and each document's own labels.
