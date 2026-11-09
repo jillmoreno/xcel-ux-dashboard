@@ -11,6 +11,7 @@ import {
 } from '@/icons'
 import { JEFF_MVP_PAGES, JEFF_MVP_RAIL, type JeffMvpPage } from '@/data/compassJeffMvpFixtures'
 import { CompassJeffMvpReadiness } from './CompassJeffMvpReadiness'
+import { CompassJeffMvpLearn } from './CompassJeffMvpLearn'
 import './compassJeffMvp.css'
 
 /**
@@ -56,6 +57,8 @@ export function CompassJeffMvpShell({
       <CompassJeffMvpRail page={page} onSelectPage={onSelectPage} />
       {page === 'readiness' ? (
         <CompassJeffMvpReadiness onSelectPage={onSelectPage} />
+      ) : page === 'learn' ? (
+        <CompassJeffMvpLearn />
       ) : (
         <CompassJeffMvpPending page={page} />
       )}
@@ -184,25 +187,41 @@ export function CompassJeffMvpPending({ page }: { page: JeffMvpPage }) {
   )
 }
 
-/** The heading block every ported page shares: the tag, the title, the lead,
- *  and whatever the page puts top right. */
+/**
+ * The heading block every ported page shares: the tag, the title, the lead,
+ * and whatever the page puts top right.
+ *
+ * ⚠ `ruled` AND `leadClass` ARE PER-PAGE, not decoration. His Readiness header
+ * carries a 1px ink rule and a 680px lead at 1.55; his Learn header carries no
+ * rule and a 600px lead at 1.5. Measured on both — see the stylesheet.
+ */
 export function CompassJeffMvpHead({
   title,
   lead,
   aside,
+  ruled,
+  leadClass,
 }: {
   title: string
   lead: string
   aside?: ReactNode
+  ruled?: boolean
+  leadClass?: string
 }) {
   return (
-    <header className="cjm-head">
+    <header className={ruled ? 'cjm-head cjm-head--ruled' : 'cjm-head'}>
       <div style={{ minWidth: 0 }}>
         <CompassJeffMvpTag />
         <h1 className="cjm-h1 cjm-serif">{title}</h1>
-        <p className="cjm-lead">{lead}</p>
+        <p className={leadClass ? `cjm-lead ${leadClass}` : 'cjm-lead'}>{lead}</p>
       </div>
       {aside}
     </header>
   )
+}
+
+/** His column: a 1100px measure centred inside the page's own padding. Every
+ *  page of his uses it, so it lives here rather than in each one. */
+export function CompassJeffMvpColumn({ children }: { children: ReactNode }) {
+  return <div className="cjm-page__col">{children}</div>
 }

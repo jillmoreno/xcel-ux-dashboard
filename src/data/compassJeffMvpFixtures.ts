@@ -61,7 +61,7 @@ export const JEFF_MVP_RAIL = {
 /** Every page his rail can reach, and whether this port has built it yet. */
 export const JEFF_MVP_PAGES = [
   { page: 'overview', label: 'Overview', ported: false },
-  { page: 'learn', label: 'Learn', ported: false },
+  { page: 'learn', label: 'Learn', ported: true },
   { page: 'study-planner', label: 'Study planner', ported: false },
   { page: 'prep-review', label: 'Prep Review', ported: false },
   { page: 'practice', label: 'Practice', ported: false },
@@ -1087,4 +1087,994 @@ export const JEFF_MVP_READINESS_COPY = {
   footnote:
     'Readiness comes from Exam Prep practice only. Course lessons build Progress, not Readiness. Ready means 85 or higher in every topic.',
   askRubi: 'Ask Rubi',
+} as const
+
+/**
+ * THE LEARN PAGE — his second rail row, ported 2026-11-09.
+ *
+ * Nineteen chapters of a Qualifying Education course, each one of three
+ * states, with a "where you left off" card above and the certification exam
+ * below.
+ *
+ * ⚠ ONLY CHAPTER 2 IS AUTHORED. Its lessons are titled "Lesson 1: Stock and
+ * Mutual Insurers" and so on; every other chapter carries bare outline topics
+ * ("Introduction", "Elements of a legal contract"). That asymmetry is HIS —
+ * Chapter 2 is the chapter his `Course.dc.html` actually plays — and it is
+ * left exactly as it arrived. Normalising the other eighteen into "Lesson n:"
+ * would invent eighteen chapters of content he has not written.
+ *
+ * ⚠ A LOCKED CHAPTER STILL OPENS, and shows BOTH its lock message and its
+ * lessons: `showLessons: isOpen`, `showLockMsg: isOpen && isLocked`. That is
+ * the page's own promise in the lead — "a locked step tells you exactly what
+ * opens it" — and it is why `lockMsg` is on every chapter including the two
+ * that are not locked.
+ *
+ * ⚠ `status` IS AN EMPTY STRING ON A LOCKED CHAPTER. The word "Locked" a
+ * reviewer sees is template text keyed off `isLocked`, not data. Left as he
+ * wrote it so the component decides rather than the fixture.
+ *
+ * ⚠ HIS PROGRESS FIGURE IS CHAPTER 2's ON ALL NINETEEN ROWS — `progPct` is
+ * computed once from the current chapter and attached to every chapter. It is
+ * harmless because the bar renders only under `isCurrent`, and it is carried
+ * verbatim rather than "fixed": a fixture that disagreed with his output
+ * would be the port having an opinion.
+ */
+export const JEFF_MVP_LEARN = {
+  chapters: [
+    {
+      n: 1,
+      title: 'Basic Principles of Life and Health Insurance',
+      eyebrow: 'Chapter 1 · 7 lessons',
+      state: 'done',
+      status: 'Completed',
+      statusTone: 'green',
+      hasAction: true,
+      action: 'Review',
+      actionLabel: 'Review Chapter 1: Basic Principles of Life and Health Insurance',
+      chevLabel: 'Expand Chapter 1',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 0.',
+      exam: {
+        title: 'Chapter 1 exam',
+        done: true,
+        locked: false,
+        note: 'Completed'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'done'
+        },
+        {
+          label: 'Benefits and the costs of insurance to society / professional designations',
+          state: 'done'
+        },
+        {
+          label: 'Risk / loss exposure',
+          state: 'done'
+        },
+        {
+          label: 'Insurance / indemnity / pay on behalf of / methods of handling risk / risk management techniques',
+          state: 'done'
+        },
+        {
+          label: 'Elements of insurable risks / ideally insurable risk / rate filing and forms services',
+          state: 'done'
+        },
+        {
+          label: 'Federal regulation',
+          state: 'done'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'done'
+        }
+      ]
+    },
+    {
+      n: 2,
+      title: 'Insurers and Insurance Markets',
+      eyebrow: 'Chapter 2 · 7 lessons · You are here',
+      state: 'current',
+      status: 'In progress',
+      statusTone: 'steel-deep',
+      hasAction: true,
+      action: 'Resume',
+      actionLabel: 'Resume Chapter 2: Insurers and Insurance Markets',
+      chevLabel: 'Collapse Chapter 2',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 1.',
+      exam: {
+        title: 'Chapter 2 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 7 lessons'
+      },
+      lessons: [
+        {
+          label: 'Lesson 1: Stock and Mutual Insurers',
+          state: 'done'
+        },
+        {
+          label: 'Lesson 2: Mutualization and Demutualization',
+          state: 'done'
+        },
+        {
+          label: 'Lesson 3: Domestic, Foreign and Alien Insurers',
+          state: 'current'
+        },
+        {
+          label: 'Lesson 4: Admitted and Non-admitted Insurers',
+          state: 'locked'
+        },
+        {
+          label: 'Lesson 5: Standard, Surplus Lines and Residual Markets',
+          state: 'locked'
+        },
+        {
+          label: 'Lesson 6: Participating and Nonparticipating Policies',
+          state: 'locked'
+        },
+        {
+          label: 'Lesson 7: Chapter Review and Quick Check',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 3,
+      title: 'Legal Concepts of Insurance',
+      eyebrow: 'Chapter 3 · 7 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 3: Legal Concepts of Insurance',
+      chevLabel: 'Expand Chapter 3',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 2.',
+      exam: {
+        title: 'Chapter 3 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 7 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'Elements of a legal contract',
+          state: 'locked'
+        },
+        {
+          label: 'Contracts of adhesion / aleatory / unilateral / conditional',
+          state: 'locked'
+        },
+        {
+          label: 'Insurable interest and utmost good faith',
+          state: 'locked'
+        },
+        {
+          label: 'Representations, warranties and concealment',
+          state: 'locked'
+        },
+        {
+          label: 'Agency law / authority of the agent',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 4,
+      title: 'Life Insurance Policy Types',
+      eyebrow: 'Chapter 4 · 7 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 4: Life Insurance Policy Types',
+      chevLabel: 'Expand Chapter 4',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 3.',
+      exam: {
+        title: 'Chapter 4 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 7 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'Term life insurance',
+          state: 'locked'
+        },
+        {
+          label: 'Whole life insurance',
+          state: 'locked'
+        },
+        {
+          label: 'Universal life insurance',
+          state: 'locked'
+        },
+        {
+          label: 'Variable and variable universal life',
+          state: 'locked'
+        },
+        {
+          label: 'Special-use policies',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 5,
+      title: 'Life Insurance Provisions, Options, and Riders',
+      eyebrow: 'Chapter 5 · 7 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 5: Life Insurance Provisions, Options, and Riders',
+      chevLabel: 'Expand Chapter 5',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 4.',
+      exam: {
+        title: 'Chapter 5 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 7 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'Standard policy provisions',
+          state: 'locked'
+        },
+        {
+          label: 'Nonforfeiture options',
+          state: 'locked'
+        },
+        {
+          label: 'Dividend options',
+          state: 'locked'
+        },
+        {
+          label: 'Settlement options',
+          state: 'locked'
+        },
+        {
+          label: 'Policy riders',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 6,
+      title: 'Life Insurance Premiums Proceeds and Beneficiaries',
+      eyebrow: 'Chapter 6 · 6 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 6: Life Insurance Premiums Proceeds and Beneficiaries',
+      chevLabel: 'Expand Chapter 6',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 5.',
+      exam: {
+        title: 'Chapter 6 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 6 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'Premium factors and modes',
+          state: 'locked'
+        },
+        {
+          label: 'Beneficiary designations',
+          state: 'locked'
+        },
+        {
+          label: 'Proceeds and settlement',
+          state: 'locked'
+        },
+        {
+          label: 'Taxation of premiums and proceeds',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 7,
+      title: 'Life Insurance Underwriting and Policy Issue',
+      eyebrow: 'Chapter 7 · 7 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 7: Life Insurance Underwriting and Policy Issue',
+      chevLabel: 'Expand Chapter 7',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 6.',
+      exam: {
+        title: 'Chapter 7 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 7 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'The application',
+          state: 'locked'
+        },
+        {
+          label: 'Field underwriting',
+          state: 'locked'
+        },
+        {
+          label: 'Sources of underwriting information',
+          state: 'locked'
+        },
+        {
+          label: 'Risk classification',
+          state: 'locked'
+        },
+        {
+          label: 'Policy delivery',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 8,
+      title: 'Group Life Insurance',
+      eyebrow: 'Chapter 8 · 6 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 8: Group Life Insurance',
+      chevLabel: 'Expand Chapter 8',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 7.',
+      exam: {
+        title: 'Chapter 8 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 6 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'Group insurance principles',
+          state: 'locked'
+        },
+        {
+          label: 'Group term life',
+          state: 'locked'
+        },
+        {
+          label: 'Group permanent life',
+          state: 'locked'
+        },
+        {
+          label: 'Conversion privileges',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 9,
+      title: 'Annuities',
+      eyebrow: 'Chapter 9 · 7 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 9: Annuities',
+      chevLabel: 'Expand Chapter 9',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 8.',
+      exam: {
+        title: 'Chapter 9 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 7 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'Annuity structure and parties',
+          state: 'locked'
+        },
+        {
+          label: 'Accumulation and annuitization',
+          state: 'locked'
+        },
+        {
+          label: 'Fixed, indexed and variable annuities',
+          state: 'locked'
+        },
+        {
+          label: 'Annuity payout options',
+          state: 'locked'
+        },
+        {
+          label: 'Taxation of annuities',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 10,
+      title: 'Uses of Life Insurance',
+      eyebrow: 'Chapter 10 · 6 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 10: Uses of Life Insurance',
+      chevLabel: 'Expand Chapter 10',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 9.',
+      exam: {
+        title: 'Chapter 10 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 6 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'Personal uses',
+          state: 'locked'
+        },
+        {
+          label: 'Business uses',
+          state: 'locked'
+        },
+        {
+          label: 'Buy-sell and key person coverage',
+          state: 'locked'
+        },
+        {
+          label: 'Estate planning',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 11,
+      title: 'Retirement Plans',
+      eyebrow: 'Chapter 11 · 6 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 11: Retirement Plans',
+      chevLabel: 'Expand Chapter 11',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 10.',
+      exam: {
+        title: 'Chapter 11 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 6 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'Qualified vs. nonqualified plans',
+          state: 'locked'
+        },
+        {
+          label: 'Individual retirement accounts (IRAs)',
+          state: 'locked'
+        },
+        {
+          label: 'Employer-sponsored plans',
+          state: 'locked'
+        },
+        {
+          label: '401(k) and 403(b) plans',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 12,
+      title: 'Social Security',
+      eyebrow: 'Chapter 12 · 5 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 12: Social Security',
+      chevLabel: 'Expand Chapter 12',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 11.',
+      exam: {
+        title: 'Chapter 12 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 5 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'Eligibility and insured status',
+          state: 'locked'
+        },
+        {
+          label: 'Retirement benefits',
+          state: 'locked'
+        },
+        {
+          label: 'Survivor and disability benefits',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 13,
+      title: 'Health and Accident Insurance',
+      eyebrow: 'Chapter 13 · 5 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 13: Health and Accident Insurance',
+      chevLabel: 'Expand Chapter 13',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 12.',
+      exam: {
+        title: 'Chapter 13 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 5 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'Types of health coverage',
+          state: 'locked'
+        },
+        {
+          label: 'Accidental death and dismemberment',
+          state: 'locked'
+        },
+        {
+          label: 'Limited and special risk policies',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 14,
+      title: 'Health Insurance Providers',
+      eyebrow: 'Chapter 14 · 6 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 14: Health Insurance Providers',
+      chevLabel: 'Expand Chapter 14',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 13.',
+      exam: {
+        title: 'Chapter 14 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 6 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'Commercial insurers',
+          state: 'locked'
+        },
+        {
+          label: 'Service providers',
+          state: 'locked'
+        },
+        {
+          label: 'Health maintenance organizations (HMOs)',
+          state: 'locked'
+        },
+        {
+          label: 'PPOs and POS plans',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 15,
+      title: 'Medical Expense Insurance',
+      eyebrow: 'Chapter 15 · 6 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 15: Medical Expense Insurance',
+      chevLabel: 'Expand Chapter 15',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 14.',
+      exam: {
+        title: 'Chapter 15 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 6 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'Basic medical expense',
+          state: 'locked'
+        },
+        {
+          label: 'Major medical',
+          state: 'locked'
+        },
+        {
+          label: 'Cost-sharing provisions',
+          state: 'locked'
+        },
+        {
+          label: 'Health savings accounts',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 16,
+      title: 'Disability Income Insurance',
+      eyebrow: 'Chapter 16 · 6 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 16: Disability Income Insurance',
+      chevLabel: 'Expand Chapter 16',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 15.',
+      exam: {
+        title: 'Chapter 16 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 6 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'Definitions of disability',
+          state: 'locked'
+        },
+        {
+          label: 'Benefit and elimination periods',
+          state: 'locked'
+        },
+        {
+          label: 'Individual and group disability',
+          state: 'locked'
+        },
+        {
+          label: 'Business disability coverage',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 17,
+      title: 'Health Insurance Plans for Seniors',
+      eyebrow: 'Chapter 17 · 6 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 17: Health Insurance Plans for Seniors',
+      chevLabel: 'Expand Chapter 17',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 16.',
+      exam: {
+        title: 'Chapter 17 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 6 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'Medicare Parts A and B',
+          state: 'locked'
+        },
+        {
+          label: 'Medicare Advantage and Part D',
+          state: 'locked'
+        },
+        {
+          label: 'Medicare supplement policies',
+          state: 'locked'
+        },
+        {
+          label: 'Long-term care insurance',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 18,
+      title: 'Health Insurance Policy Provisions',
+      eyebrow: 'Chapter 18 · 6 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 18: Health Insurance Policy Provisions',
+      chevLabel: 'Expand Chapter 18',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 17.',
+      exam: {
+        title: 'Chapter 18 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 6 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'Mandatory uniform provisions',
+          state: 'locked'
+        },
+        {
+          label: 'Optional uniform provisions',
+          state: 'locked'
+        },
+        {
+          label: 'Other provisions and clauses',
+          state: 'locked'
+        },
+        {
+          label: 'Renewability',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    },
+    {
+      n: 19,
+      title: 'Health Insurance Underwriting and Policy Issue',
+      eyebrow: 'Chapter 19 · 5 lessons',
+      state: 'locked',
+      status: '',
+      statusTone: 'muted',
+      hasAction: false,
+      action: 'Review',
+      actionLabel: 'Review Chapter 19: Health Insurance Underwriting and Policy Issue',
+      chevLabel: 'Expand Chapter 19',
+      progPct: '29%',
+      progAria: 'Chapter 2: 2 of 7 lessons complete',
+      lockMsg: 'Opens when you finish Chapter 18.',
+      exam: {
+        title: 'Chapter 19 exam',
+        done: false,
+        locked: true,
+        note: 'Opens after all 5 lessons'
+      },
+      lessons: [
+        {
+          label: 'Introduction',
+          state: 'locked'
+        },
+        {
+          label: 'The application',
+          state: 'locked'
+        },
+        {
+          label: 'Risk classification',
+          state: 'locked'
+        },
+        {
+          label: 'Policy delivery',
+          state: 'locked'
+        },
+        {
+          label: 'Chapter Summary',
+          state: 'locked'
+        }
+      ]
+    }
+  ]
+} as const
+
+/**
+ * HIS LEARN PROSE AND FIGURES. Template text rather than data — transcribed
+ * from the page as rendered at 1440px.
+ *
+ * ⚠ THE HEADER FIGURES ARE HARD-CODED IN HIS TEMPLATE, including the ring's
+ * `stroke-dasharray`. "180.0 314.2" on a circle of r=50 is 57.3% of the
+ * circumference, while the label beside it reads 61% and "22 of 36 lessons"
+ * is 61.1%. His arc is a little short of his number. Carried VERBATIM: the
+ * mismatch is three pixels wide, it is his, and a port that quietly corrected
+ * it would be the one place a reviewer's screenshot disagreed with the
+ * designer's.
+ */
+export const JEFF_MVP_LEARN_COPY = {
+  title: 'Your Course',
+  lead: 'Work through it from the top. Each step opens the next one, and a locked step tells you exactly what opens it.',
+
+  resumeEyebrow: 'Where you left off',
+  resumeTitle: 'Chapter 2 · Insurers and Insurance Markets',
+  resumeLesson: 'Lesson 3: Domestic, Foreign and Alien Insurers',
+  resumeCta: 'Resume lesson',
+  /* The thin bar inside the resume card — his Chapter 2 figure again. */
+  resumePct: '29%',
+
+  courseEyebrow: '19 chapters · 28 of 40 hours',
+  courseTitle: 'Qualifying Education',
+  courseSub: 'Florida Life and Health Pre-licensing',
+  courseStatus: 'Completed',
+  courseLessons: '22 of 36 lessons',
+  coursePct: '61%',
+  /* viewBox 0 0 120 120 at 72px, r=50, stroke 12, rotate(-90 60 60). */
+  courseRingDash: '180.0 314.2',
+  courseRingAria: 'Qualifying Education 61% complete, 22 of 36 lessons',
+
+  /* Shown when `isLocked`; his `status` field is empty on those rows. */
+  lockedWord: 'Locked',
+  examEyebrow: 'Exam',
+  examCta: 'Take exam',
+  examReviewCta: 'Review exam',
+
+  finalEyebrow: 'Final exam',
+  finalTitle: 'Certification Exam',
+  finalExamTitle: 'Certification Exam: Florida Life and Health Pre-licensing',
+  finalNote: 'Opens after all 19 chapters',
+  finalStatus: 'Locked',
 } as const

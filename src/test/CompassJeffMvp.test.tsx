@@ -6,7 +6,10 @@ import { AccountProvider } from '@/context/AccountContext'
 import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { CompassJeffMvpShell } from '@/components/learning/CompassJeffMvpShell'
 import { CompassJeffMvpReadiness } from '@/components/learning/CompassJeffMvpReadiness'
+import { CompassJeffMvpLearn } from '@/components/learning/CompassJeffMvpLearn'
 import {
+  JEFF_MVP_LEARN as LEARN,
+  JEFF_MVP_LEARN_COPY as LCOPY,
   JEFF_MVP_PAGES,
   JEFF_MVP_RAIL,
   JEFF_MVP_READINESS as RD,
@@ -43,6 +46,18 @@ function renderShell(page: Parameters<typeof CompassJeffMvpShell>[0]['page'] = '
       <AccountProvider>
         <FeatureFlagProvider>
           <CompassJeffMvpShell page={page} onSelectPage={() => {}} />
+        </FeatureFlagProvider>
+      </AccountProvider>
+    </MemoryRouter>,
+  )
+}
+
+function renderLearn() {
+  return render(
+    <MemoryRouter>
+      <AccountProvider>
+        <FeatureFlagProvider>
+          <CompassJeffMvpLearn />
         </FeatureFlagProvider>
       </AccountProvider>
     </MemoryRouter>,
@@ -234,7 +249,7 @@ describe('Jeff’s Compass MVP — the pages not built yet', () => {
        the only `ported: true` row today; when the next page lands, this test
        is the reminder to flip its flag. */
     const ported = JEFF_MVP_PAGES.filter((p) => p.ported).map((p) => p.page)
-    expect(ported).toEqual(['readiness'])
+    expect(ported).toEqual(['learn', 'readiness'])
     for (const p of JEFF_MVP_PAGES) {
       if (p.ported) continue
       const { unmount } = renderShell(p.page)
@@ -268,5 +283,119 @@ describe('Jeff’s Compass MVP — the control', () => {
 
   it('names his surface on the bar', () => {
     expect(DESIGN_SURFACE_LABELS['compass:jeff-mvp']).toBe('Compass · Jeff’s MVP')
+  })
+})
+
+describe('Jeff’s Compass MVP — the Learn page against his build', () => {
+  it('renders every string his page renders', () => {
+    const { container } = renderLearn()
+    const mine = flat(container.textContent ?? '')
+    const missing = parity.learn.filter((s) => !mine.includes(flat(s)))
+    expect(missing).toEqual([])
+  })
+
+  it('draws nineteen chapters, one done, one current, seventeen locked', () => {
+    renderLearn()
+    const states = LEARN.chapters.map((c) => c.state)
+    expect(states.length).toBe(19)
+    expect(states.filter((s) => s === 'done').length).toBe(1)
+    expect(states.filter((s) => s === 'current').length).toBe(1)
+    expect(states.filter((s) => s === 'locked').length).toBe(17)
+  })
+
+  it('gives every chapter exactly one state', () => {
+    /* ⚠ The styling branches on all three independently; a chapter that was
+       somehow both done and locked would render as neither. */
+    for (const c of LEARN.chapters) {
+      expect(['done', 'current', 'locked']).toContain(c.state)
+    }
+  })
+
+  it('opens the current chapter and only that one', () => {
+    const { container } = renderLearn()
+    const open = container.querySelectorAll('.cjm-ch.is-open')
+    expect(open.length).toBe(1)
+    expect(open[0].className).toContain('cjm-ch--current')
+    // its seven lessons are on screen; a locked chapter's are not
+    expect(screen.getByText('Lesson 1: Stock and Mutual Insurers')).toBeInTheDocument()
+    expect(screen.queryByText('Elements of a legal contract')).toBeNull()
+  })
+
+  it('opens a LOCKED chapter, showing the message AND the lessons', async () => {
+    /* ⚠ THE DETAIL MOST LIKELY TO BE LOST, because every instinct says a
+       locked row should not expand. His `showLessons: isOpen` and
+       `showLockMsg: isOpen && isLocked` say otherwise, and the page's lead
+       promises it: "a locked step tells you exactly what opens it". */
+    const user = userEvent.setup()
+    const { container } = renderLearn()
+    await user.click(screen.getByRole('button', { name: 'Expand Chapter 3' }))
+    const ch3 = flat(container.querySelectorAll('.cjm-ch')[2].textContent ?? '')
+    for (const s of parity.learnChapter3Locked) expect(ch3).toContain(flat(s))
+  })
+
+  it('keeps his lesson labels exactly as they arrived, Chapter 2 included', () => {
+    /* ⚠ ONLY CHAPTER 2 IS AUTHORED — its lessons are "Lesson n: …" and every
+       other chapter carries bare outline topics. Normalising the other
+       eighteen would invent content he has not written. */
+    expect(LEARN.chapters[1].lessons[0].label).toBe('Lesson 1: Stock and Mutual Insurers')
+    expect(LEARN.chapters[0].lessons[0].label).toBe('Introduction')
+    expect(LEARN.chapters[2].lessons[0].label).toBe('Introduction')
+    const prefixed = LEARN.chapters.filter((c) => c.lessons[0].label.startsWith('Lesson '))
+    expect(prefixed.map((c) => c.n)).toEqual([2])
+  })
+
+  it('draws the progress bar under the current chapter only', () => {
+    /* ⚠ His `progPct` is Chapter 2's figure on all nineteen rows. Trusting the
+       data instead of his template would draw nineteen identical 29% bars. */
+    const { container } = renderLearn()
+    const chapterBars = container.querySelectorAll('.cjm-bar--ch')
+    expect(chapterBars.length).toBe(1)
+    expect(LEARN.chapters.every((c) => c.progPct === '29%')).toBe(true)
+  })
+
+  it('gives an action only to the chapters that have one', () => {
+    renderLearn()
+    expect(screen.getByRole('button', { name: LEARN.chapters[0].actionLabel })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: LEARN.chapters[1].actionLabel })).toBeInTheDocument()
+    // a locked chapter has `hasAction: false` — no Review button, just a chevron
+    expect(screen.queryByRole('button', { name: LEARN.chapters[2].actionLabel })).toBeNull()
+    expect(LEARN.chapters.filter((c) => c.hasAction).length).toBe(2)
+  })
+
+  it('draws a locked exam as a visible, inert button', () => {
+    /* ⚠ VISIBLE AND DISABLED, not hidden. His markup carries `disabled
+       aria-disabled` and a padlock: the learner should see the exam exists
+       and that it is shut. */
+    renderLearn()
+    const takes = screen.getAllByRole('button', { name: new RegExp(LCOPY.examCta) })
+    expect(takes.length).toBeGreaterThan(0)
+    for (const t of takes) expect(t).toBeDisabled()
+  })
+
+  it('says "Locked" on a locked chapter even though his data says nothing', () => {
+    /* His `status` is '' when locked; the word is template text keyed off the
+       state. Pinned so a later pass does not "fix" the fixture by typing
+       "Locked" into it. */
+    expect(LEARN.chapters[2].status).toBe('')
+    renderLearn()
+    expect(screen.getAllByText(LCOPY.lockedWord).length).toBe(18) // 17 chapters + the final exam
+  })
+
+  it('carries his ring dasharray verbatim, label mismatch and all', () => {
+    /* ⚠ 180.0 of a 314.2 circumference is 57.3%; the label beside it reads
+       61%. His arc is short of his own number. Carried rather than corrected
+       — see the fixture note. */
+    renderLearn()
+    expect(LCOPY.courseRingDash).toBe('180.0 314.2')
+    expect(screen.getByLabelText(LCOPY.courseRingAria)).toBeInTheDocument()
+  })
+
+  it('has no header rule, where Readiness has one', () => {
+    /* Measured on both of his pages. A shared rule would draw a line across
+       the top of eleven pages that do not have one. */
+    const { container } = renderLearn()
+    expect(container.querySelector('.cjm-head--ruled')).toBeNull()
+    const r = renderReadiness()
+    expect(r.container.querySelector('.cjm-head--ruled')).toBeTruthy()
   })
 })

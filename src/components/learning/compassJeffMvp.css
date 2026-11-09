@@ -158,35 +158,63 @@
 
 /* ---------- the page ---------- */
 
+/* ⚠ HIS FRAME, MEASURED, AND IT IS THE SAME ON EVERY PAGE — `padding: 38px
+   44px 72px` on a `max-width: 1100px` column centred with `margin: 0 auto`.
+   Checked against Overview, Learn, Practice and Readiness: identical. The
+   first pass guessed 28/40/64 on 1180 and left-aligned, which was close
+   enough to look deliberate and wrong on all four counts. */
 .cjm-page {
   position: relative;
-  flex: 1;
+  flex: 999 1 560px;
   min-width: 0;
   box-sizing: border-box;
-  padding: 28px 40px 64px;
-  max-width: 1180px;
+  padding: 38px 44px 72px;
+}
+.cjm-page__col {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 .cjm-head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 32px;
+}
+/* ⚠ THE INK RULE IS READINESS'S, NOT THE SHELL'S. Measured on both pages:
+   his Readiness header carries a 1px #1F1D18 bottom border (it comes from a
+   class, not an inline style, which is why grepping the markup for it finds
+   nothing — probe the computed style). Learn has no rule at all. Putting it
+   in `.cjm-head` would draw a line across the top of eleven pages that do not
+   have one. */
+.cjm-head--ruled {
   padding-bottom: 18px;
   border-bottom: 1px solid var(--cjm-ink);
 }
+/* His: Playfair 34px/1.15, weight 500, -0.02em. */
 .cjm-h1 {
-  margin: 0 0 10px;
+  margin: 0;
   font-size: 34px;
-  line-height: 1.12;
-  font-weight: 400;
+  line-height: 1.15;
+  font-weight: 500;
+  letter-spacing: -0.02em;
   color: var(--cjm-ink);
 }
+/* ⚠ THE LEAD IS PER-PAGE, and the differences are small enough to look like
+   noise and are his: Learn is 15px/1.5 capped at 600px with an 8px gap;
+   Readiness is 15px/1.55 capped at 680px with a 6px gap. One shared value
+   would be wrong on whichever page did not get picked. */
 .cjm-lead {
-  margin: 0;
-  max-width: 62ch;
-  font-size: 14px;
-  line-height: 1.6;
+  margin: 8px 0 0;
+  max-width: 600px;
+  font-size: 15px;
+  line-height: 1.5;
   color: var(--cjm-body);
+}
+.cjm-lead--readiness {
+  margin: 6px 0 0;
+  max-width: 680px;
+  line-height: 1.55;
 }
 .cjm-live {
   margin-top: 44px;
@@ -838,4 +866,360 @@
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* ============ the Learn page ============ */
+
+/* The ring behind the course gauge is paler than the Readiness one. */
+.cjm {
+  --cjm-ring-pale: #eceef0;
+  --cjm-card-edge: #dcdee1;
+  --cjm-ch-rule: #e6e6e6;
+  --cjm-locked-tile: #f3f3f3;
+  --cjm-locked-ink: #5b5560;
+}
+
+/* ---------- where you left off ---------- */
+
+.cjm-resume {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 30px;
+  padding: 20px;
+  border: 1px solid var(--cjm-card-edge);
+  border-radius: 14px;
+  background: var(--cjm-steel-wash);
+}
+.cjm-resume__thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 96px;
+  width: 96px;
+  height: 60px;
+  border-radius: 8px;
+  background: var(--cjm-white);
+}
+.cjm-resume__play {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  background: var(--cjm-steel-pressed);
+  color: var(--cjm-body);
+}
+.cjm-resume__text {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+.cjm-resume__title {
+  margin: 2px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-resume__lesson {
+  margin: 2px 0 8px;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+
+/* The thin progress rule — his 222px × 3px, used in the resume card and under
+   the current chapter's title. */
+.cjm-bar {
+  display: block;
+  width: 222px;
+  max-width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: #d8dee4;
+  overflow: hidden;
+}
+.cjm-bar--ch {
+  margin-top: 3px;
+}
+.cjm-bar__fill {
+  display: block;
+  height: 3px;
+  background: var(--cjm-steel-deep);
+}
+
+/* ---------- the course card ---------- */
+
+.cjm-course {
+  margin-top: 32px;
+  border: 1px solid var(--cjm-card-edge);
+  border-radius: 14px;
+  background: var(--cjm-white);
+  overflow: hidden;
+}
+.cjm-course__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 20px;
+  border-bottom: 1px solid var(--cjm-card-edge);
+}
+.cjm-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--cjm-steel-pressed);
+  color: var(--cjm-body);
+}
+.cjm-course__name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cjm-course__name .cjm-h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 500;
+}
+.cjm-course__sub {
+  margin: 2px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--cjm-steel-deep);
+}
+.cjm-course__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex: 0 0 auto;
+  text-align: right;
+}
+.cjm-course__done {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cjm-green);
+}
+.cjm-course__of {
+  font-size: 13px;
+  color: var(--cjm-muted);
+  white-space: nowrap;
+}
+.cjm-course__ring {
+  display: flex;
+  justify-content: center;
+  flex: 0 0 120px;
+  width: 120px;
+}
+.cjm-course__pct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--cjm-ink);
+}
+
+/* ---------- a chapter ---------- */
+
+.cjm-ch + .cjm-ch,
+.cjm-ch:first-of-type {
+  border-top: 1px solid var(--cjm-ch-rule);
+}
+.cjm-ch--current {
+  background: var(--cjm-steel-wash);
+}
+.cjm-ch__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+}
+.cjm-tile--mark {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+}
+.cjm-ch--done .cjm-tile--mark {
+  background: var(--cjm-steel-pressed);
+  color: var(--cjm-ink);
+}
+.cjm-ch--current .cjm-tile--mark {
+  background: var(--cjm-white);
+  color: var(--cjm-ink);
+}
+.cjm-ch--locked .cjm-tile--mark {
+  background: var(--cjm-locked-tile);
+  color: var(--cjm-locked-ink);
+}
+.cjm-ch__name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cjm-ch__eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-ch--current .cjm-ch__eyebrow {
+  color: var(--cjm-steel-deep);
+}
+.cjm-ch__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-ch--locked .cjm-ch__title {
+  font-weight: 400;
+  color: var(--cjm-locked-ink);
+}
+.cjm-ch__status {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cjm-muted);
+  white-space: nowrap;
+}
+/* A locked chapter has no action button; the space is held so the chevrons of
+   all nineteen rows line up. */
+.cjm-ch__noaction {
+  flex: 0 0 96px;
+}
+
+.cjm-ch__body {
+  padding: 0 20px 18px 62px;
+}
+.cjm-ch__lock {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+
+/* ---------- lessons ---------- */
+
+.cjm-lessons {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cjm-lesson {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 14px;
+  color: var(--cjm-body);
+}
+.cjm-lesson__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 16px;
+  width: 16px;
+  color: var(--cjm-muted);
+}
+.cjm-lesson--done .cjm-lesson__mark {
+  color: var(--cjm-green);
+}
+.cjm-lesson--current .cjm-lesson__mark {
+  color: var(--cjm-steel-deep);
+}
+.cjm-lesson__label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cjm-lesson--current .cjm-lesson__label {
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-lesson--locked .cjm-lesson__label {
+  color: var(--cjm-muted);
+}
+.cjm-lesson__act {
+  flex: 0 0 auto;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--cjm-steel-deep);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---------- an exam strip ---------- */
+
+.cjm-exam {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--cjm-card-edge);
+  border-radius: 10px;
+  background: var(--cjm-white);
+}
+.cjm-course > .cjm-exam {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+.cjm-tile--exam {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: var(--cjm-locked-tile);
+  color: var(--cjm-locked-ink);
+}
+.cjm-exam--done .cjm-tile--exam {
+  background: var(--cjm-steel-pressed);
+  color: var(--cjm-green);
+}
+.cjm-exam__name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cjm-exam__eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-exam__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-body);
+}
+.cjm-exam--done .cjm-exam__title {
+  color: var(--cjm-ink);
+}
+.cjm-exam__note {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: var(--cjm-muted);
+  white-space: nowrap;
+}
+/* ⚠ VISIBLE AND INERT, not hidden. His markup is `disabled aria-disabled` with
+   a padlock: the learner should see the exam exists and that it is shut. */
+.cjm-btn--locked {
+  background: var(--cjm-steel-pressed);
+  border-color: var(--cjm-steel-pressed);
+  color: var(--cjm-locked-ink);
+  cursor: not-allowed;
 }

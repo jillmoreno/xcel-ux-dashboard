@@ -5,7 +5,7 @@ import {
   JEFF_MVP_READINESS_COPY as COPY,
   type JeffMvpPage,
 } from '@/data/compassJeffMvpFixtures'
-import { CompassJeffMvpHead } from './CompassJeffMvpShell'
+import { CompassJeffMvpColumn, CompassJeffMvpHead } from './CompassJeffMvpShell'
 import './compassJeffMvp.css'
 
 /**
@@ -58,9 +58,12 @@ export function CompassJeffMvpReadiness({
         {COPY.askRubi}
       </button>
 
+      <CompassJeffMvpColumn>
       <CompassJeffMvpHead
         title={COPY.title}
         lead={COPY.lead}
+        ruled
+        leadClass="cjm-lead--readiness"
         aside={
           <p className="cjm-live">
             <span className="cjm-live__dot" aria-hidden />
@@ -335,6 +338,7 @@ export function CompassJeffMvpReadiness({
           {COPY.footnote}
         </p>
       </section>
+      </CompassJeffMvpColumn>
     </div>
   )
 }
