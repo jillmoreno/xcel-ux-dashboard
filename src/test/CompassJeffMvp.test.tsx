@@ -11,8 +11,16 @@ import { CompassJeffMvpOverview } from '@/components/learning/CompassJeffMvpOver
 import { CompassJeffMvpPractice } from '@/components/learning/CompassJeffMvpPractice'
 import { CompassJeffMvpPrep } from '@/components/learning/CompassJeffMvpPrep'
 import { CompassJeffMvpPlanner } from '@/components/learning/CompassJeffMvpPlanner'
+import { CompassJeffMvpFlashcards } from '@/components/learning/CompassJeffMvpFlashcards'
+import { CompassJeffMvpSimulator } from '@/components/learning/CompassJeffMvpSimulator'
 import {
+  JEFF_MVP_FLASHCARDS as FC,
+  JEFF_MVP_FLASHCARDS_COPY as FCOPY,
   JEFF_MVP_LEARN as LEARN,
+  JEFF_MVP_SIMULATOR as SIM,
+  JEFF_MVP_SIMULATOR_COPY as SCOPY,
+  JEFF_MVP_SUBPAGES,
+  flashcardsMatches,
   JEFF_MVP_PLANNER as PLAN,
   JEFF_MVP_PLANNER_COPY as PLCOPY,
   JEFF_MVP_PREP as PREP,
@@ -76,6 +84,8 @@ function wrap(node: React.ReactNode) {
 }
 const renderPrep = () => wrap(<CompassJeffMvpPrep />)
 const renderPlanner = () => wrap(<CompassJeffMvpPlanner />)
+const renderFlashcards = () => wrap(<CompassJeffMvpFlashcards />)
+const renderSimulator = () => wrap(<CompassJeffMvpSimulator />)
 
 function renderPractice() {
   return render(
@@ -288,18 +298,18 @@ describe('Jeff’s Compass MVP — the pages not built yet', () => {
     /* ⚠ THE DECISION THIS PINS, and it is the one `CompassContentPending`
        made first: a silent fallback renders shipped work under Jeff's name,
        the reviewer believes it is his, and nothing on screen corrects them. */
-    /* Flashcards, because Practice is ported now. Whichever page this names
-       must be one `JEFF_MVP_PAGES` still marks unported — the test below
-       walks them all, so this one only has to pick a live example. */
-    renderShell('flashcards')
-    expect(screen.getByRole('region', { name: /Flashcards — not ported yet/ })).toBeInTheDocument()
+    /* ⚠ A SUB-PAGE NOW, because every rail row is ported. The panel's job is
+       unchanged: name what is missing rather than render something else in
+       its place. */
+    renderShell('practice-session')
+    expect(screen.getByRole('region', { name: /Question set — not ported yet/ })).toBeInTheDocument()
     expect(screen.getByText(/not in the React port yet/)).toBeInTheDocument()
     // and it must NOT have rendered any ported surface in its place
     expect(screen.queryByText(COPY.topicsTitle)).toBeNull()
   })
 
   it('keeps the rail on an unported page, so there is a way out', () => {
-    renderShell('exam-simulator')
+    renderShell('flashcard-study')
     expect(screen.getByRole('navigation', { name: 'Compass pages' })).toBeInTheDocument()
   })
 
@@ -308,8 +318,10 @@ describe('Jeff’s Compass MVP — the pages not built yet', () => {
        the only `ported: true` row today; when the next page lands, this test
        is the reminder to flip its flag. */
     const ported = JEFF_MVP_PAGES.filter((p) => p.ported).map((p) => p.page)
-    expect(ported).toEqual(['overview', 'learn', 'study-planner', 'prep-review', 'practice', 'readiness'])
-    for (const p of JEFF_MVP_PAGES) {
+    expect(ported).toEqual(JEFF_MVP_PAGES.map((p) => p.page)) // all eight rail rows
+    /* The sub-pages are what is left; each must still say so rather than
+       render something else. */
+    for (const p of JEFF_MVP_SUBPAGES) {
       if (p.ported) continue
       const { unmount } = renderShell(p.page)
       expect(screen.getByRole('region', { name: new RegExp(`${p.label} — not ported yet`) })).toBeInTheDocument()
@@ -807,5 +819,130 @@ describe('Jeff’s Compass MVP — the Study planner against his build', () => {
     expect(PLAN.daysAway).toBe(59)
     expect(PLAN.weekTitle).toContain('Sep 20')
     expect(PLAN.week.filter((c) => c.isToday).map((c) => c.longDate)).toEqual(['Tue, Sep 22'])
+  })
+})
+
+describe('Jeff’s Compass MVP — Flashcards against his build', () => {
+  const user = () => userEvent.setup()
+
+  it('renders his default state, which is CARDS not table', async () => {
+    /* ⚠ Practice opens in table; this opens in cards. Both defaults are his. */
+    const { container } = renderFlashcards()
+    const mine = flat(container.textContent ?? '')
+    expect(parity.flashcards_default.filter((s) => !mine.includes(flat(s)))).toEqual([])
+    expect(screen.getByRole('button', { name: /^Cards$/ })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('renders his table, subtopics and bookmarked states', async () => {
+    const u = user()
+    const { container } = renderFlashcards()
+    await u.click(screen.getByRole('button', { name: /^Table$/ }))
+    let mine = flat(container.textContent ?? '')
+    expect(parity.flashcards_table.filter((s) => !mine.includes(flat(s)))).toEqual([])
+    await u.click(screen.getByRole('button', { name: /^Cards$/ }))
+    await u.click(screen.getByRole('tab', { name: /Subtopics/ }))
+    mine = flat(container.textContent ?? '')
+    expect(parity.flashcards_subtopics.filter((s) => !mine.includes(flat(s)))).toEqual([])
+    await u.click(screen.getByRole('tab', { name: /Bookmarked/ }))
+    mine = flat(container.textContent ?? '')
+    expect(parity.flashcards_bookmarked.filter((s) => !mine.includes(flat(s)))).toEqual([])
+  })
+
+  it('filters and empties to his states', async () => {
+    const u = user()
+    const { container } = renderFlashcards()
+    await u.click(screen.getByRole('button', { name: /^Medium$/ }))
+    let mine = flat(container.textContent ?? '')
+    expect(parity.flashcards_filter_medium.filter((s) => !mine.includes(flat(s)))).toEqual([])
+    await u.click(screen.getByRole('button', { name: /^Medium$/ }))
+    await u.click(screen.getByRole('button', { name: /^Low$/ }))
+    mine = flat(container.textContent ?? '')
+    expect(parity.flashcards_filter_empty.filter((s) => !mine.includes(flat(s)))).toEqual([])
+    expect(screen.getByText(FCOPY.emptyTitle)).toBeInTheDocument()
+  })
+
+  it('uses its OWN filter rule, not Practice’s', () => {
+    /* ⚠ Practice requires `started` on both halves; this does not, because
+       every deck has a confidence and a band whether studied or not. Reusing
+       `practiceMatches` here would empty the page. */
+    const deck = FC.topics[0]
+    expect(flashcardsMatches(deck, [deck.conf], [], false)).toBe(true)
+    expect(flashcardsMatches(deck, ['Low'], [], false)).toBe(false)
+    expect(flashcardsMatches(deck, [], [], true)).toBe(deck.bm > 0)
+  })
+
+  it('treats Bookmarked as its own pool, not a filter on Subtopics', () => {
+    expect(FC.topics.length).toBe(9)
+    expect(FC.subtopics.length).toBe(33)
+    expect(FC.bookmarked.length).toBe(15)
+    expect(FC.bookmarked.every((d) => d.bm > 0)).toBe(true)
+    // the badge is dropped there — it would be on every row
+    expect(FC.bookmarked.every((d) => !d.hasBm)).toBe(true)
+    expect(FC.heads.bookmarked).not.toBe(FC.heads.subtopics)
+  })
+})
+
+describe('Jeff’s Compass MVP — the Exam Simulator against his build', () => {
+  it('renders every string his page renders', () => {
+    const { container } = renderSimulator()
+    const mine = flat(container.textContent ?? '')
+    expect(parity.simulator.filter((s) => !mine.includes(flat(s)))).toEqual([])
+  })
+
+  it('draws the gate without enforcing it, as his does', () => {
+    /* ⚠ "Unlocks at 80% readiness" over a learner at 62%, and all three sims
+       say Ready with working buttons. Making the buttons obey would invent an
+       interaction he has not designed; hiding the gate would drop the rule.
+       Both halves are his, and the tension is what to show him. */
+    expect(SIM.gate.rowMeta).toMatch(/Unlocks at 80%/)
+    expect(SIM.practiceFirst.ready).toBe(62)
+    expect(SIM.sims.every((s) => s.status === 'Ready')).toBe(true)
+    renderSimulator()
+    const takes = screen.getAllByRole('button', { name: SCOPY.takeExam })
+    expect(takes.length).toBe(3)
+    for (const t of takes) expect(t).not.toBeDisabled()
+  })
+
+  it('gives the gate row no button of its own', () => {
+    expect(SIM.gate.hasBtn).toBe(false)
+  })
+
+  it('opens the provider modal with nothing preselected and Start disabled', async () => {
+    /* ⚠ A modal that opened with a provider ticked would answer the question
+       the modal exists to ask. */
+    const user = userEvent.setup()
+    const { container } = renderSimulator()
+    await user.click(screen.getAllByRole('button', { name: SCOPY.takeExam })[0])
+    const mine = flat(container.textContent ?? '')
+    expect(parity.simulatorModal.filter((s) => !mine.includes(flat(s)))).toEqual([])
+    for (const r of screen.getAllByRole('radio')) expect(r).toHaveAttribute('aria-checked', 'false')
+    expect(screen.getByRole('button', { name: SCOPY.startExam })).toBeDisabled()
+  })
+
+  it('takes the provider’s name into the Start label once picked', async () => {
+    const user = userEvent.setup()
+    renderSimulator()
+    await user.click(screen.getAllByRole('button', { name: SCOPY.takeExam })[0])
+    await user.click(screen.getByRole('radio', { name: /PSI/ }))
+    const start = screen.getByRole('button', { name: SCOPY.startExamFmt('PSI') })
+    expect(start).not.toBeDisabled()
+  })
+})
+
+describe('Jeff’s Compass MVP — the sub-pages', () => {
+  it('keeps them out of the rail', () => {
+    /* ⚠ A study session is reached from a deck, not from the sidebar. Folding
+       these into `JEFF_MVP_PAGES` would put them in the rail, which is not
+       where he put them. */
+    const railPages = [...JEFF_MVP_RAIL.primary, ...JEFF_MVP_RAIL.examPrep].map((r) => r.page)
+    for (const sub of JEFF_MVP_SUBPAGES) {
+      expect(railPages).not.toContain(sub.page)
+      expect(JEFF_MVP_PAGES.map((p) => p.page)).not.toContain(sub.page)
+    }
+  })
+
+  it('names the page each is reached from', () => {
+    const railPages = JEFF_MVP_PAGES.map((p) => p.page)
+    for (const sub of JEFF_MVP_SUBPAGES) expect(railPages).toContain(sub.from)
   })
 })

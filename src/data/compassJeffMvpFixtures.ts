@@ -65,12 +65,31 @@ export const JEFF_MVP_PAGES = [
   { page: 'study-planner', label: 'Study planner', ported: true },
   { page: 'prep-review', label: 'Prep Review', ported: true },
   { page: 'practice', label: 'Practice', ported: true },
-  { page: 'flashcards', label: 'Flashcards', ported: false },
-  { page: 'exam-simulator', label: 'Exam Simulator', ported: false },
+  { page: 'flashcards', label: 'Flashcards', ported: true },
+  { page: 'exam-simulator', label: 'Exam Simulator', ported: true },
   { page: 'readiness', label: 'Readiness', ported: true },
 ] as const
 
-export type JeffMvpPage = (typeof JEFF_MVP_PAGES)[number]['page']
+/**
+ * The pages his rail CANNOT reach — reached from a row, a card or a CTA on
+ * one of the eight above.
+ *
+ * ⚠ A SEPARATE LIST ON PURPOSE. `JEFF_MVP_PAGES` is the rail, and a test
+ * asserts it matches `JEFF_MVP_RAIL` exactly in both directions. Folding
+ * these in would break that check — or, worse, pass it by putting a
+ * Flashcard study session in the sidebar, which is not where he put it.
+ */
+export const JEFF_MVP_SUBPAGES = [
+  { page: 'practice-session', label: 'Question set', from: 'practice', ported: false },
+  { page: 'flashcard-topic', label: 'Flashcards topic', from: 'flashcards', ported: false },
+  { page: 'flashcard-study', label: 'Study session', from: 'flashcards', ported: false },
+  { page: 'exam-session', label: 'Simulated exam', from: 'exam-simulator', ported: false },
+  { page: 'course', label: 'Lesson', from: 'learn', ported: false },
+] as const
+
+export type JeffMvpPage =
+  | (typeof JEFF_MVP_PAGES)[number]['page']
+  | (typeof JEFF_MVP_SUBPAGES)[number]['page']
 
 /**
  * THE READINESS PAGE — his sixth rail row, and the first page ported.
@@ -6267,4 +6286,2777 @@ export const JEFF_MVP_PLANNER_COPY = {
     { kind: 'struck', label: 'Day off', tone: 'muted' },
     { kind: 'square', label: 'Exam day', tone: 'ink' },
   ],
+} as const
+
+/**
+ * THE FLASHCARDS PAGE — his sixth rail row, ported 2026-11-09.
+ *
+ * Practice's sibling in shape — two recommendations, three tabs, a view
+ * toggle, confidence and Readiness filters — and NOT its twin in behaviour.
+ *
+ * ⚠ ITS FILTER RULE IS DIFFERENT FROM PRACTICE'S, and the difference matters.
+ * Practice requires `started` on both halves, so an unstarted set can never
+ * match. Flashcards has no such test: every deck has a confidence and a band
+ * whether or not it has been studied, so the filter simply compares them. Two
+ * sibling pages, two rules — sharing one would quietly change what one of
+ * them shows.
+ *
+ * ⚠ IT OPENS IN CARDS, WHERE PRACTICE OPENS IN TABLE. His default `view` on
+ * this page is cards; on Practice it is table. Both are his.
+ *
+ * ⚠ THE RESULTS NOTE IS COMPUTED, and it changes shape under a filter:
+ * unfiltered it reads "9 topics · 252 cards"; filtered it reads "Showing 0 of
+ * 9 topics · 0 cards". `flashcardsNote` ports that; the suite checks it
+ * against his render in both states.
+ *
+ * ⚠ THE THIRD TAB IS A DIFFERENT POOL, not a filter on the second. Bookmarked
+ * lists the 15 subtopics that have bookmarks, with the card count relabelled
+ * ("3 bookmarked · of 30 cards") and the bookmark badge dropped, because in
+ * that list it would be on every row.
+ */
+/** Typed, not `as const` — three arrays of one shape, as with Practice. */
+export type JeffMvpDeck = {
+  isTopic: boolean
+  title: string
+  eyebrow: string
+  hasEyebrow: boolean
+  cards: number
+  cardsLabel: string
+  ready: number
+  conf: string
+  bm: number
+  hasBm: boolean
+  confBg: string
+  confBorder: string
+  confInk: string
+  band: string
+  bandTone: string
+  badgeBg: string
+  badgeBorder: string
+  segs: { flex: number; height: number; tone?: string }[]
+}
+export type JeffMvpDeckRec = {
+  kind: string
+  kindTone: string
+  topic: string
+  title: string
+  why: string
+  meta: string
+  cta: string
+  ready: number
+  reviewed: number
+  readyLabel: string
+  covLabel: string
+  timeLabel: string
+  rowMeta: string
+  band: string
+  bandInk: string
+  bandBg: string
+  bandBorder: string
+  readyTone: string
+  readyDash: string
+  covDash: string
+  ringAria: string
+}
+export type JeffMvpFlashcards = {
+  start: JeffMvpDeckRec
+  upNext: JeffMvpDeckRec
+  tabs: { label: string; sub: string }[]
+  views: { label: string }[]
+  confPills: JeffMvpPracticePill[]
+  readyPills: JeffMvpPracticePill[]
+  bmPillLabel: string
+  heads: { topics: string; subtopics: string; bookmarked: string }
+  colNames: { topics: string; subtopics: string; bookmarked: string }
+  topics: JeffMvpDeck[]
+  subtopics: JeffMvpDeck[]
+  bookmarked: JeffMvpDeck[]
+}
+
+export const JEFF_MVP_FLASHCARDS: JeffMvpFlashcards = {
+  start: {
+    kind: 'Start here',
+    kindTone: 'rubi',
+    topic: 'Florida Insurance Laws and Rules',
+    title: 'Agent licensing and appointments',
+    why: 'Your lowest readiness right now. A focused round on these 14 cards is the biggest lift.',
+    meta: '14 cards · about 7 min',
+    cta: 'Study Deck',
+    ready: 38,
+    reviewed: 56,
+    readyLabel: 'Readiness',
+    covLabel: 'Reviewed',
+    timeLabel: '7 min',
+    rowMeta: '',
+    band: 'Beginner',
+    bandInk: 'beginner-ink',
+    bandBg: 'beginner-wash',
+    bandBorder: 'edge',
+    readyTone: 'beginner-bar',
+    readyDash: '124.2 999',
+    covDash: '140.7 999',
+    ringAria: 'Readiness 38%, Beginner. Reviewed 56%: 8 of 14 cards reviewed.'
+  },
+  upNext: {
+    kind: 'Up next',
+    kindTone: 'steel-deep',
+    topic: 'Florida Insurance Laws and Rules',
+    title: 'Unfair trade practices',
+    why: 'Your next lowest subtopic. Study it once the first set feels solid.',
+    meta: '12 cards · about 6 min',
+    cta: 'Study Deck',
+    ready: 44,
+    reviewed: 62,
+    readyLabel: 'Readiness',
+    covLabel: 'Reviewed',
+    timeLabel: '',
+    rowMeta: 'Readiness 44% · Reviewed 62% · about 6 min',
+    band: 'Developing',
+    bandInk: 'developing-ink',
+    bandBg: 'developing-wash',
+    bandBorder: 'developing-edge',
+    readyTone: 'amber',
+    readyDash: '107.8 999',
+    covDash: '113.0 999',
+    ringAria: 'Readiness 44%, Developing. Reviewed 62%: 7 of 12 cards reviewed.'
+  },
+  tabs: [
+    {
+      label: 'Topics',
+      sub: '9 topics · 252 cards'
+    },
+    {
+      label: 'Subtopics',
+      sub: '33 subtopics · 252 cards'
+    },
+    {
+      label: 'Bookmarked',
+      sub: '24 cards · 15 subtopics'
+    }
+  ],
+  views: [
+    {
+      label: 'Table'
+    },
+    {
+      label: 'Cards'
+    }
+  ],
+  confPills: [
+    {
+      label: 'Low',
+      bg: 'white',
+      border: 'conf-low-edge',
+      ink: 'conf-low-ink'
+    },
+    {
+      label: 'Medium',
+      bg: 'white',
+      border: 'conf-med-edge',
+      ink: 'conf-med-ink'
+    },
+    {
+      label: 'High',
+      bg: 'white',
+      border: 'conf-high-edge',
+      ink: 'conf-high-ink'
+    }
+  ],
+  readyPills: [
+    {
+      label: 'Beginner',
+      bg: 'beginner-wash',
+      border: 'edge',
+      ink: 'beginner-ink'
+    },
+    {
+      label: 'Developing',
+      bg: 'developing-wash',
+      border: 'developing-edge',
+      ink: 'developing-ink'
+    },
+    {
+      label: 'Proficient',
+      bg: 'proficient-wash',
+      border: 'steel-edge',
+      ink: 'proficient-ink'
+    },
+    {
+      label: 'Ready',
+      bg: 'ready-wash',
+      border: 'ready-edge',
+      ink: 'ready-ink'
+    }
+  ],
+  bmPillLabel: 'Bookmarked',
+  heads: {
+    topics: 'From your courses · by topic',
+    subtopics: 'From your courses · by subtopic',
+    bookmarked: 'Your bookmarked cards · by subtopic'
+  },
+  colNames: {
+    topics: 'Topic',
+    subtopics: 'Deck',
+    bookmarked: 'Deck'
+  },
+  topics: [
+    {
+      isTopic: true,
+      title: 'Overview of the Insurance Industry',
+      eyebrow: '',
+      hasEyebrow: false,
+      cards: 30,
+      cardsLabel: '30 cards · 4 subtopics',
+      ready: 70,
+      conf: 'Medium',
+      bm: 3,
+      hasBm: true,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: true,
+      title: 'General Insurance Principles and Concepts',
+      eyebrow: '',
+      hasEyebrow: false,
+      cards: 30,
+      cardsLabel: '30 cards · 4 subtopics',
+      ready: 69,
+      conf: 'Medium',
+      bm: 3,
+      hasBm: true,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: true,
+      title: 'Property and Casualty Insurance Principles and Concepts',
+      eyebrow: '',
+      hasEyebrow: false,
+      cards: 27,
+      cardsLabel: '27 cards · 3 subtopics',
+      ready: 60,
+      conf: 'Medium',
+      bm: 3,
+      hasBm: true,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: true,
+      title: 'Property and Casualty Insurance Policy Provisions',
+      eyebrow: '',
+      hasEyebrow: false,
+      cards: 34,
+      cardsLabel: '34 cards · 5 subtopics',
+      ready: 63,
+      conf: 'Medium',
+      bm: 6,
+      hasBm: true,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: true,
+      title: 'Dwelling Property (DP) Insurance Policies',
+      eyebrow: '',
+      hasEyebrow: false,
+      cards: 18,
+      cardsLabel: '18 cards · 3 subtopics',
+      ready: 58,
+      conf: 'Medium',
+      bm: 1,
+      hasBm: true,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: true,
+      title: 'Homeowners (HO) Insurance Policies',
+      eyebrow: '',
+      hasEyebrow: false,
+      cards: 24,
+      cardsLabel: '24 cards · 3 subtopics',
+      ready: 70,
+      conf: 'Medium',
+      bm: 3,
+      hasBm: true,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: true,
+      title: 'Personal Automobile Policies (PAP)',
+      eyebrow: '',
+      hasEyebrow: false,
+      cards: 24,
+      cardsLabel: '24 cards · 4 subtopics',
+      ready: 72,
+      conf: 'Medium',
+      bm: 1,
+      hasBm: true,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: true,
+      title: 'Other Personal Lines Insurance',
+      eyebrow: '',
+      hasEyebrow: false,
+      cards: 7,
+      cardsLabel: '7 cards · 2 subtopics',
+      ready: 56,
+      conf: 'Medium',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: true,
+      title: 'Florida Insurance Laws and Rules',
+      eyebrow: '',
+      hasEyebrow: false,
+      cards: 58,
+      cardsLabel: '58 cards · 5 subtopics',
+      ready: 56,
+      conf: 'Medium',
+      bm: 4,
+      hasBm: true,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    }
+  ],
+  subtopics: [
+    {
+      isTopic: false,
+      title: 'Insurers: types and structure',
+      eyebrow: 'Overview of the Insurance Industry',
+      hasEyebrow: true,
+      cards: 8,
+      cardsLabel: '8 cards',
+      ready: 82,
+      conf: 'High',
+      bm: 1,
+      hasBm: true,
+      confBg: 'conf-high-bg',
+      confBorder: 'conf-high-edge',
+      confInk: 'conf-high-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Producers and distribution',
+      eyebrow: 'Overview of the Insurance Industry',
+      hasEyebrow: true,
+      cards: 7,
+      cardsLabel: '7 cards',
+      ready: 74,
+      conf: 'Medium',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Insurance regulation basics',
+      eyebrow: 'Overview of the Insurance Industry',
+      hasEyebrow: true,
+      cards: 8,
+      cardsLabel: '8 cards',
+      ready: 68,
+      conf: 'Medium',
+      bm: 2,
+      hasBm: true,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Reinsurance',
+      eyebrow: 'Overview of the Insurance Industry',
+      hasEyebrow: true,
+      cards: 7,
+      cardsLabel: '7 cards',
+      ready: 55,
+      conf: 'Low',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Risk, perils and hazards',
+      eyebrow: 'General Insurance Principles and Concepts',
+      hasEyebrow: true,
+      cards: 8,
+      cardsLabel: '8 cards',
+      ready: 86,
+      conf: 'High',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-high-bg',
+      confBorder: 'conf-high-edge',
+      confInk: 'conf-high-ink',
+      band: 'Ready',
+      bandTone: 'ready-ink',
+      badgeBg: 'ready-wash',
+      badgeBorder: 'ready-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'green'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Insurable interest and indemnity',
+      eyebrow: 'General Insurance Principles and Concepts',
+      hasEyebrow: true,
+      cards: 7,
+      cardsLabel: '7 cards',
+      ready: 71,
+      conf: 'Medium',
+      bm: 1,
+      hasBm: true,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Elements of an insurance contract',
+      eyebrow: 'General Insurance Principles and Concepts',
+      hasEyebrow: true,
+      cards: 8,
+      cardsLabel: '8 cards',
+      ready: 66,
+      conf: 'Medium',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Law of large numbers and underwriting',
+      eyebrow: 'General Insurance Principles and Concepts',
+      hasEyebrow: true,
+      cards: 7,
+      cardsLabel: '7 cards',
+      ready: 52,
+      conf: 'Low',
+      bm: 2,
+      hasBm: true,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Property vs. liability exposures',
+      eyebrow: 'Property and Casualty Insurance Principles and Concepts',
+      hasEyebrow: true,
+      cards: 9,
+      cardsLabel: '9 cards',
+      ready: 70,
+      conf: 'Medium',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Negligence and legal liability',
+      eyebrow: 'Property and Casualty Insurance Principles and Concepts',
+      hasEyebrow: true,
+      cards: 9,
+      cardsLabel: '9 cards',
+      ready: 48,
+      conf: 'Low',
+      bm: 3,
+      hasBm: true,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Direct and indirect losses',
+      eyebrow: 'Property and Casualty Insurance Principles and Concepts',
+      hasEyebrow: true,
+      cards: 9,
+      cardsLabel: '9 cards',
+      ready: 63,
+      conf: 'Medium',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Policy structure: declarations, insuring agreement, conditions and exclusions',
+      eyebrow: 'Property and Casualty Insurance Policy Provisions',
+      hasEyebrow: true,
+      cards: 9,
+      cardsLabel: '9 cards',
+      ready: 72,
+      conf: 'Medium',
+      bm: 2,
+      hasBm: true,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Definitions and endorsements',
+      eyebrow: 'Property and Casualty Insurance Policy Provisions',
+      hasEyebrow: true,
+      cards: 6,
+      cardsLabel: '6 cards',
+      ready: 81,
+      conf: 'High',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-high-bg',
+      confBorder: 'conf-high-edge',
+      confInk: 'conf-high-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Deductibles and coinsurance',
+      eyebrow: 'Property and Casualty Insurance Policy Provisions',
+      hasEyebrow: true,
+      cards: 7,
+      cardsLabel: '7 cards',
+      ready: 46,
+      conf: 'Low',
+      bm: 3,
+      hasBm: true,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Loss valuation: actual cash value vs. replacement cost',
+      eyebrow: 'Property and Casualty Insurance Policy Provisions',
+      hasEyebrow: true,
+      cards: 6,
+      cardsLabel: '6 cards',
+      ready: 54,
+      conf: 'Low',
+      bm: 1,
+      hasBm: true,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Cancellation, nonrenewal and other insurance',
+      eyebrow: 'Property and Casualty Insurance Policy Provisions',
+      hasEyebrow: true,
+      cards: 6,
+      cardsLabel: '6 cards',
+      ready: 63,
+      conf: 'Medium',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'DP-1, DP-2 and DP-3 forms',
+      eyebrow: 'Dwelling Property (DP) Insurance Policies',
+      hasEyebrow: true,
+      cards: 6,
+      cardsLabel: '6 cards',
+      ready: 64,
+      conf: 'Medium',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Covered perils and property',
+      eyebrow: 'Dwelling Property (DP) Insurance Policies',
+      hasEyebrow: true,
+      cards: 6,
+      cardsLabel: '6 cards',
+      ready: 51,
+      conf: 'Low',
+      bm: 1,
+      hasBm: true,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Exclusions and conditions',
+      eyebrow: 'Dwelling Property (DP) Insurance Policies',
+      hasEyebrow: true,
+      cards: 6,
+      cardsLabel: '6 cards',
+      ready: 60,
+      conf: 'Medium',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'HO policy forms',
+      eyebrow: 'Homeowners (HO) Insurance Policies',
+      hasEyebrow: true,
+      cards: 8,
+      cardsLabel: '8 cards',
+      ready: 84,
+      conf: 'High',
+      bm: 1,
+      hasBm: true,
+      confBg: 'conf-high-bg',
+      confBorder: 'conf-high-edge',
+      confInk: 'conf-high-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Section I property coverages',
+      eyebrow: 'Homeowners (HO) Insurance Policies',
+      hasEyebrow: true,
+      cards: 8,
+      cardsLabel: '8 cards',
+      ready: 69,
+      conf: 'Medium',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Section II liability coverages',
+      eyebrow: 'Homeowners (HO) Insurance Policies',
+      hasEyebrow: true,
+      cards: 8,
+      cardsLabel: '8 cards',
+      ready: 57,
+      conf: 'Low',
+      bm: 2,
+      hasBm: true,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Liability coverage (Part A)',
+      eyebrow: 'Personal Automobile Policies (PAP)',
+      hasEyebrow: true,
+      cards: 6,
+      cardsLabel: '6 cards',
+      ready: 88,
+      conf: 'High',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-high-bg',
+      confBorder: 'conf-high-edge',
+      confInk: 'conf-high-ink',
+      band: 'Ready',
+      bandTone: 'ready-ink',
+      badgeBg: 'ready-wash',
+      badgeBorder: 'ready-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'green'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Medical payments and uninsured motorists',
+      eyebrow: 'Personal Automobile Policies (PAP)',
+      hasEyebrow: true,
+      cards: 6,
+      cardsLabel: '6 cards',
+      ready: 73,
+      conf: 'Medium',
+      bm: 1,
+      hasBm: true,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Physical damage coverage',
+      eyebrow: 'Personal Automobile Policies (PAP)',
+      hasEyebrow: true,
+      cards: 6,
+      cardsLabel: '6 cards',
+      ready: 67,
+      conf: 'Medium',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Duties after an accident',
+      eyebrow: 'Personal Automobile Policies (PAP)',
+      hasEyebrow: true,
+      cards: 6,
+      cardsLabel: '6 cards',
+      ready: 59,
+      conf: 'Low',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Personal umbrella and inland marine',
+      eyebrow: 'Other Personal Lines Insurance',
+      hasEyebrow: true,
+      cards: 4,
+      cardsLabel: '4 cards',
+      ready: 62,
+      conf: 'Medium',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Flood and specialty coverages',
+      eyebrow: 'Other Personal Lines Insurance',
+      hasEyebrow: true,
+      cards: 3,
+      cardsLabel: '3 cards',
+      ready: 49,
+      conf: 'Low',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Agent licensing and appointments',
+      eyebrow: 'Florida Insurance Laws and Rules',
+      hasEyebrow: true,
+      cards: 14,
+      cardsLabel: '14 cards',
+      ready: 38,
+      conf: 'Low',
+      bm: 2,
+      hasBm: true,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Beginner',
+      bandTone: 'beginner-ink',
+      badgeBg: 'beginner-wash',
+      badgeBorder: 'edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Unfair trade practices',
+      eyebrow: 'Florida Insurance Laws and Rules',
+      hasEyebrow: true,
+      cards: 12,
+      cardsLabel: '12 cards',
+      ready: 44,
+      conf: 'Low',
+      bm: 1,
+      hasBm: true,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Florida Insurance Guaranty Association',
+      eyebrow: 'Florida Insurance Laws and Rules',
+      hasEyebrow: true,
+      cards: 10,
+      cardsLabel: '10 cards',
+      ready: 61,
+      conf: 'Medium',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Policy cancellation and nonrenewal rules',
+      eyebrow: 'Florida Insurance Laws and Rules',
+      hasEyebrow: true,
+      cards: 12,
+      cardsLabel: '12 cards',
+      ready: 66,
+      conf: 'Medium',
+      bm: 1,
+      hasBm: true,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Citizens Property Insurance',
+      eyebrow: 'Florida Insurance Laws and Rules',
+      hasEyebrow: true,
+      cards: 10,
+      cardsLabel: '10 cards',
+      ready: 79,
+      conf: 'High',
+      bm: 0,
+      hasBm: false,
+      confBg: 'conf-high-bg',
+      confBorder: 'conf-high-edge',
+      confInk: 'conf-high-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    }
+  ],
+  bookmarked: [
+    {
+      isTopic: false,
+      title: 'Insurers: types and structure',
+      eyebrow: 'Overview of the Insurance Industry',
+      hasEyebrow: true,
+      cards: 8,
+      cardsLabel: '1 bookmarked · of 8 cards',
+      ready: 82,
+      conf: 'High',
+      bm: 1,
+      hasBm: false,
+      confBg: 'conf-high-bg',
+      confBorder: 'conf-high-edge',
+      confInk: 'conf-high-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Insurance regulation basics',
+      eyebrow: 'Overview of the Insurance Industry',
+      hasEyebrow: true,
+      cards: 8,
+      cardsLabel: '2 bookmarked · of 8 cards',
+      ready: 68,
+      conf: 'Medium',
+      bm: 2,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Insurable interest and indemnity',
+      eyebrow: 'General Insurance Principles and Concepts',
+      hasEyebrow: true,
+      cards: 7,
+      cardsLabel: '1 bookmarked · of 7 cards',
+      ready: 71,
+      conf: 'Medium',
+      bm: 1,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Law of large numbers and underwriting',
+      eyebrow: 'General Insurance Principles and Concepts',
+      hasEyebrow: true,
+      cards: 7,
+      cardsLabel: '2 bookmarked · of 7 cards',
+      ready: 52,
+      conf: 'Low',
+      bm: 2,
+      hasBm: false,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Negligence and legal liability',
+      eyebrow: 'Property and Casualty Insurance Principles and Concepts',
+      hasEyebrow: true,
+      cards: 9,
+      cardsLabel: '3 bookmarked · of 9 cards',
+      ready: 48,
+      conf: 'Low',
+      bm: 3,
+      hasBm: false,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Policy structure: declarations, insuring agreement, conditions and exclusions',
+      eyebrow: 'Property and Casualty Insurance Policy Provisions',
+      hasEyebrow: true,
+      cards: 9,
+      cardsLabel: '2 bookmarked · of 9 cards',
+      ready: 72,
+      conf: 'Medium',
+      bm: 2,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Deductibles and coinsurance',
+      eyebrow: 'Property and Casualty Insurance Policy Provisions',
+      hasEyebrow: true,
+      cards: 7,
+      cardsLabel: '3 bookmarked · of 7 cards',
+      ready: 46,
+      conf: 'Low',
+      bm: 3,
+      hasBm: false,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Loss valuation: actual cash value vs. replacement cost',
+      eyebrow: 'Property and Casualty Insurance Policy Provisions',
+      hasEyebrow: true,
+      cards: 6,
+      cardsLabel: '1 bookmarked · of 6 cards',
+      ready: 54,
+      conf: 'Low',
+      bm: 1,
+      hasBm: false,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Covered perils and property',
+      eyebrow: 'Dwelling Property (DP) Insurance Policies',
+      hasEyebrow: true,
+      cards: 6,
+      cardsLabel: '1 bookmarked · of 6 cards',
+      ready: 51,
+      conf: 'Low',
+      bm: 1,
+      hasBm: false,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'HO policy forms',
+      eyebrow: 'Homeowners (HO) Insurance Policies',
+      hasEyebrow: true,
+      cards: 8,
+      cardsLabel: '1 bookmarked · of 8 cards',
+      ready: 84,
+      conf: 'High',
+      bm: 1,
+      hasBm: false,
+      confBg: 'conf-high-bg',
+      confBorder: 'conf-high-edge',
+      confInk: 'conf-high-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Section II liability coverages',
+      eyebrow: 'Homeowners (HO) Insurance Policies',
+      hasEyebrow: true,
+      cards: 8,
+      cardsLabel: '2 bookmarked · of 8 cards',
+      ready: 57,
+      conf: 'Low',
+      bm: 2,
+      hasBm: false,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Medical payments and uninsured motorists',
+      eyebrow: 'Personal Automobile Policies (PAP)',
+      hasEyebrow: true,
+      cards: 6,
+      cardsLabel: '1 bookmarked · of 6 cards',
+      ready: 73,
+      conf: 'Medium',
+      bm: 1,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Agent licensing and appointments',
+      eyebrow: 'Florida Insurance Laws and Rules',
+      hasEyebrow: true,
+      cards: 14,
+      cardsLabel: '2 bookmarked · of 14 cards',
+      ready: 38,
+      conf: 'Low',
+      bm: 2,
+      hasBm: false,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Beginner',
+      bandTone: 'beginner-ink',
+      badgeBg: 'beginner-wash',
+      badgeBorder: 'edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Unfair trade practices',
+      eyebrow: 'Florida Insurance Laws and Rules',
+      hasEyebrow: true,
+      cards: 12,
+      cardsLabel: '1 bookmarked · of 12 cards',
+      ready: 44,
+      conf: 'Low',
+      bm: 1,
+      hasBm: false,
+      confBg: 'conf-low-bg',
+      confBorder: 'conf-low-edge',
+      confInk: 'conf-low-ink',
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      badgeBg: 'developing-wash',
+      badgeBorder: 'developing-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      isTopic: false,
+      title: 'Policy cancellation and nonrenewal rules',
+      eyebrow: 'Florida Insurance Laws and Rules',
+      hasEyebrow: true,
+      cards: 12,
+      cardsLabel: '1 bookmarked · of 12 cards',
+      ready: 66,
+      conf: 'Medium',
+      bm: 1,
+      hasBm: false,
+      confBg: 'conf-med-bg',
+      confBorder: 'conf-med-edge',
+      confInk: 'conf-med-ink',
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      badgeBg: 'proficient-wash',
+      badgeBorder: 'steel-edge',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    }
+  ]
+}
+
+/** His Flashcards prose, transcribed from the rendered page. */
+export const JEFF_MVP_FLASHCARDS_COPY = {
+  title: 'Flashcards',
+  course: 'Florida Life and Health Pre-licensing',
+  lead: 'Generated from your course content. Sort by confidence and save your own sets.',
+  rubiEyebrow: 'Rubi recommends',
+  readinessLabel: 'Readiness',
+  reviewedLabel: 'Reviewed',
+  aboutLabel: 'About',
+  filterBy: 'Filter by:',
+  confidenceLabel: 'Confidence',
+  readinessFilterLabel: 'Readiness',
+  clearFilters: 'Clear filters',
+  confidenceWord: 'confidence',
+  /* ⚠ THE READINESS WORD CARRIES ITS NUMBER HERE — "readiness, 70%" — where
+     Practice's card said only "readiness". His, on both views of this page. */
+  readinessWordFmt: (pct: number) => `readiness, ${pct}%`,
+  bookmarkedWord: 'bookmarked',
+  startDeck: 'Start Deck',
+  studyDeck: 'Study Deck',
+  actionCol: 'Action',
+  cardsCol: 'Cards',
+  confidenceCol: 'Confidence',
+  readinessCol: 'Readiness',
+  emptyTitle: 'Nothing matches these filters',
+  emptyBody:
+    'Try another confidence or readiness level, or clear the filters to see everything.',
+} as const
+
+/**
+ * HIS FLASHCARDS FILTER — `pass()` from this page's `baseVals`.
+ *
+ * ⚠ IT IS NOT PRACTICE'S RULE. There, both halves require the set to have
+ * been started; here there is no such test, because every deck carries a
+ * confidence and a band whether or not it has been studied. Two sibling
+ * pages, two rules, and `practiceMatches` must not be reused here.
+ */
+export function flashcardsMatches(
+  deck: { conf: string; band: string; bm: number },
+  conf: readonly string[],
+  ready: readonly string[],
+  bookmarkedOnly: boolean,
+): boolean {
+  return (
+    (!conf.length || conf.includes(deck.conf)) &&
+    (!ready.length || ready.includes(deck.band)) &&
+    (!bookmarkedOnly || deck.bm > 0)
+  )
+}
+
+/**
+ * HIS RESULTS NOTE, which changes shape under a filter: "9 topics · 252
+ * cards" becomes "Showing 0 of 9 topics · 0 cards".
+ *
+ * ⚠ TWO DETAILS THAT LOOK LIKE ROUNDING AND ARE NOT:
+ *   · the card word is " bookmarked cards" on the Bookmarked tab and
+ *     " cards" everywhere else;
+ *   · the unfiltered total is the CONSTANT 252 on the other two tabs — his
+ *     `total = tab === 'bookmarked' ? bmCards : 252` — not a sum over the
+ *     pool. It happens to equal the sum today, which is exactly why a port
+ *     that summed instead would pass every check and drift the first time he
+ *     adds a deck.
+ */
+export const JEFF_MVP_FLASHCARD_TOTAL = 252
+
+export function flashcardsNote(
+  shown: readonly { cards: number; bm: number }[],
+  pool: readonly { cards: number; bm: number }[],
+  noun: string,
+  filtered: boolean,
+  bookmarkedTab: boolean,
+): string {
+  const cardsShown = shown.reduce((n, d) => n + (bookmarkedTab ? d.bm : d.cards), 0)
+  const total = bookmarkedTab ? pool.reduce((n, d) => n + d.bm, 0) : JEFF_MVP_FLASHCARD_TOTAL
+  const word = bookmarkedTab ? ' bookmarked cards' : ' cards'
+  return filtered
+    ? `Showing ${shown.length} of ${pool.length} ${noun} · ${cardsShown}${word}`
+    : `${pool.length} ${noun} · ${total}${word}`
+}
+
+/**
+ * THE EXAM SIMULATOR — his seventh rail row, ported 2026-11-09.
+ *
+ * Three full-length simulated exams behind a readiness gate, and a modal that
+ * asks WHICH TESTING PROVIDER to imitate before starting one.
+ *
+ * ⚠ THE GATE IS DRAWN BUT NOT ENFORCED, and that is his. The second
+ * recommendation reads "Exam gate · 100 Question Timed Exam Simulator ·
+ * Unlocks at 80% readiness" against a learner at 62% — yet all three sims
+ * below it say "Ready" and every Take exam button works. His `hasBtn` on the
+ * gate row is false (no CTA on the gate itself), while `readyCount` is 3.
+ * Carried as he built it: the gate states the rule, the list does not yet
+ * apply it. Making the buttons obey would be inventing an interaction he has
+ * not designed, and hiding the gate would drop the rule.
+ *
+ * ⚠ HIS TWO RECOMMENDATIONS LABEL THEIR BUTTON WITH DIFFERENT KEYS — r1 uses
+ * `btnLabel` ("Start set"), r2 uses `cta` ("View exams"). One job, two names,
+ * on one page. Reading only `cta` leaves the first button blank, which is how
+ * this first rendered; the fixture reads `cta ?? btnLabel`.
+ *
+ * ⚠ THE PROVIDER MODAL IS THE PAGE'S REAL ARGUMENT. "This simulates your
+ * actual exam day experience: the same screens, tools and timing you'll see
+ * from your testing provider." Three providers, none preselected, and Start
+ * stays DISABLED until one is picked — the label changing from "Start exam"
+ * to "Start PSI exam" as it does.
+ */
+export const JEFF_MVP_SIMULATOR = {
+  practiceFirst: {
+    kind: 'Practice first',
+    kindTone: 'rubi',
+    topic: 'P&C insurance terms and concepts',
+    title: 'Property and Casualty Insurance Principles and Concepts',
+    why: 'Your readiness is 62%. Exam-ready is 80% or higher with every topic at Proficient. Your lowest set is at 9%, so a focused round there will lift your readiness the most.',
+    cta: 'Start set',
+    hasBtn: true,
+    ready: 62,
+    gate: 80,
+    covLabel: 'Exam gate',
+    covNote: '· 80% needed',
+    timeLabel: '20 min',
+    band: 'Developing',
+    bandInk: 'developing-ink',
+    bandBg: 'developing-wash',
+    bandBorder: 'developing-edge',
+    readyTone: 'amber',
+    readyDash: '202.6 999',
+    covDash: '201.1 999',
+    ringAria: 'Readiness 62%, Developing. Exam gate 80%.'
+  },
+  gate: {
+    kind: 'Exam gate',
+    kindTone: 'muted',
+    topic: '',
+    title: '100 Question Timed Exam Simulator',
+    why: '',
+    cta: 'View exams',
+    hasBtn: false,
+    ready: 62,
+    gate: 80,
+    covLabel: '',
+    covNote: '',
+    timeLabel: '',
+    rowMeta: 'Unlocks at 80% readiness',
+    band: 'Developing',
+    bandInk: 'developing-ink',
+    bandBg: 'developing-wash',
+    bandBorder: 'developing-edge',
+    readyTone: 'amber',
+    readyDash: '202.6 999',
+    covDash: '201.1 999',
+    ringAria: 'Readiness 62%, Developing. Exam gate 80%.'
+  },
+  simCount: 3,
+  sims: [
+    {
+      title: '200 Question Exam Simulator: Florida Personal Lines',
+      meta: '200 questions · untimed · pause anytime',
+      timed: false,
+      status: 'Ready'
+    },
+    {
+      title: '100 Question Exam Simulator: Florida Personal Lines',
+      meta: '100 questions · untimed · pause anytime',
+      timed: false,
+      status: 'Ready'
+    },
+    {
+      title: '100 Question Timed Exam Simulator: Florida Personal Lines',
+      meta: '100 questions · 2 hours, like test day',
+      timed: true,
+      status: 'Ready'
+    }
+  ],
+  providers: [
+    {
+      name: 'Pearson VUE',
+      note: 'Matches the Pearson VUE test screens, tools and timer'
+    },
+    {
+      name: 'PSI',
+      note: 'Matches the PSI test screens, tools and timer'
+    },
+    {
+      name: 'Prometric',
+      note: 'Matches the Prometric test screens, tools and timer'
+    }
+  ]
+} as const
+
+/** His Exam Simulator prose, transcribed from the rendered page. */
+export const JEFF_MVP_SIMULATOR_COPY = {
+  title: 'Exam Simulator',
+  course: 'Florida Life and Health Pre-licensing',
+  lead: 'Full-length practice exams built like the real state exam. A locked simulator tells you exactly what opens it.',
+  rubiEyebrow: 'Rubi recommends',
+  readinessLabel: 'Readiness',
+  gateLabel: 'Exam gate',
+  aboutLabel: 'About',
+  simsHeading: 'Simulated exams',
+  simsCountFmt: (n: number) => `${n} exams`,
+  timedPill: 'Timed',
+  takeExam: 'Take exam',
+  footnote:
+    'Simulator scores count toward your Readiness. Take one when your topics reach Proficient for the most useful result.',
+
+  modalTitle: 'Choose your exam provider',
+  modalBody:
+    'This simulates your actual exam day experience: the same screens, tools and timing you’ll see from your testing provider. Pick the provider you’re booked with so test day feels familiar.',
+  modalHelp: 'Not sure? Check your exam confirmation email. It names your provider.',
+  cancel: 'Cancel',
+  /* ⚠ THE LABEL TAKES THE PROVIDER'S NAME once one is picked — "Start exam"
+     becomes "Start PSI exam". It is the one place the modal confirms the
+     choice back, and the button is DISABLED until then. */
+  startExam: 'Start exam',
+  startExamFmt: (provider: string) => `Start ${provider} exam`,
 } as const

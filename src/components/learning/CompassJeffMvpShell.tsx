@@ -9,13 +9,20 @@ import {
   Library,
   Notebook,
 } from '@/icons'
-import { JEFF_MVP_PAGES, JEFF_MVP_RAIL, type JeffMvpPage } from '@/data/compassJeffMvpFixtures'
+import {
+  JEFF_MVP_PAGES,
+  JEFF_MVP_RAIL,
+  JEFF_MVP_SUBPAGES,
+  type JeffMvpPage,
+} from '@/data/compassJeffMvpFixtures'
 import { CompassJeffMvpReadiness } from './CompassJeffMvpReadiness'
 import { CompassJeffMvpLearn } from './CompassJeffMvpLearn'
 import { CompassJeffMvpOverview } from './CompassJeffMvpOverview'
 import { CompassJeffMvpPractice } from './CompassJeffMvpPractice'
 import { CompassJeffMvpPrep } from './CompassJeffMvpPrep'
 import { CompassJeffMvpPlanner } from './CompassJeffMvpPlanner'
+import { CompassJeffMvpFlashcards } from './CompassJeffMvpFlashcards'
+import { CompassJeffMvpSimulator } from './CompassJeffMvpSimulator'
 import './compassJeffMvp.css'
 
 /**
@@ -78,6 +85,10 @@ export function CompassJeffMvpShell({
         <CompassJeffMvpPrep />
       ) : page === 'study-planner' ? (
         <CompassJeffMvpPlanner />
+      ) : page === 'flashcards' ? (
+        <CompassJeffMvpFlashcards onSelectPage={onSelectPage} />
+      ) : page === 'exam-simulator' ? (
+        <CompassJeffMvpSimulator onSelectPage={onSelectPage} />
       ) : (
         <CompassJeffMvpPending page={page} />
       )}
@@ -105,7 +116,8 @@ export function CompassJeffMvpShell({
  *     registry ships no layers glyph. Library — a bank of sets — is the nearest
  *     meaning, and Practice IS a bank of sets in his design.
  */
-const RAIL_ICONS: Record<JeffMvpPage, typeof HouseRegular> = {
+/* Keyed by RAIL page only — the sub-pages have no rail row, by construction. */
+const RAIL_ICONS: Record<(typeof JEFF_MVP_PAGES)[number]['page'], typeof HouseRegular> = {
   overview: HouseRegular,
   learn: BookOpenRegular,
   'study-planner': CalendarRegular,
@@ -124,7 +136,7 @@ export function CompassJeffMvpRail({
   onSelectPage: (p: JeffMvpPage) => void
 }) {
   const row = (r: { page: string; label: string }) => {
-    const id = r.page as JeffMvpPage
+    const id = r.page as (typeof JEFF_MVP_PAGES)[number]['page']
     const Icon = RAIL_ICONS[id]
     return (
       <li key={id}>
@@ -168,7 +180,13 @@ export function CompassJeffMvpRail({
  * state that also removes the navigation is a dead end.
  */
 export function CompassJeffMvpPending({ page }: { page: JeffMvpPage }) {
-  const label = JEFF_MVP_PAGES.find((p) => p.page === page)?.label ?? page
+  /* ⚠ LOOKS IN BOTH LISTS. Since every rail row is ported, the only pages
+     that reach this panel are the SUB-pages — a question set, a study
+     session, a lesson — which live in their own list by design. */
+  const label =
+    JEFF_MVP_PAGES.find((p) => p.page === page)?.label ??
+    JEFF_MVP_SUBPAGES.find((p) => p.page === page)?.label ??
+    page
   return (
     <div className="cjm-page">
       <div className="cjm-pending" role="region" aria-label={`${label} — not ported yet`}>

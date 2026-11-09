@@ -2496,3 +2496,200 @@
   font-size: 11px;
   font-weight: 600;
 }
+
+/* ============ Flashcards ============ */
+
+.cjm-fc__resultshead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+}
+.cjm-fc__note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-fc__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.cjm-fc__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 10px;
+  background: var(--cjm-white);
+}
+.cjm-fc__cardpills {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+}
+.cjm-fc__cardtitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-fc__cardmeta {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+.cjm-fc__bm {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+.cjm-fc__bm b {
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-fc__card .cjm-btn {
+  margin-top: auto;
+}
+.cjm-fc__table {
+  margin-top: 14px;
+}
+
+/* ============ the Exam Simulator ============ */
+
+.cjm-sim__heading {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-sim__row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--cjm-ch-rule);
+}
+.cjm-sim__name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cjm-sim__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pill--timed {
+  background: var(--cjm-developing-wash);
+  border: 1px solid var(--cjm-developing-edge);
+  color: var(--cjm-developing-ink);
+  font-size: 11px;
+}
+.cjm-sim__meta {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+
+/* ---------- the provider modal ---------- */
+
+.cjm-sim__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgb(31 29 24 / 42%);
+}
+.cjm-sim__modal {
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 26px 28px;
+  border-radius: 14px;
+  background: var(--cjm-white);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 28%);
+}
+.cjm-sim__modaltitle {
+  margin: 4px 0 10px;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--cjm-ink);
+}
+.cjm-sim__providers {
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cjm-sim__prov {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 15px;
+  border: 1px solid var(--cjm-card-edge2);
+  border-radius: 10px;
+  background: var(--cjm-white);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cjm-sim__prov.is-on {
+  border: 2px solid var(--cjm-steel-deep);
+  background: var(--cjm-steel-panel);
+}
+.cjm-sim__provdot {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  border: 1.5px solid #9fa6b0;
+  border-radius: 50%;
+}
+.cjm-sim__prov.is-on .cjm-sim__provdot {
+  border-color: var(--cjm-steel-deep);
+  background: radial-gradient(var(--cjm-steel-deep) 0 45%, transparent 46%);
+}
+.cjm-sim__prov b {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-sim__provnote {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-sim__help {
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-sim__modalfoot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+.cjm-sim__modalfoot .cjm-cta[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
