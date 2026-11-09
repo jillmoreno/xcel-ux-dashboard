@@ -20,6 +20,8 @@ import type {
 import { useNavPlacement } from '@/components/layout/navPlacement'
 import { CompassStudyPlanner } from './CompassStudyPlanner'
 import { CompassPlanProvider } from './CompassPlanContext'
+import { CompassJeffMvpShell } from './CompassJeffMvpShell'
+import type { JeffMvpPage } from '@/data/compassJeffMvpFixtures'
 
 /**
  * COMPASS LEARNING — the top nav's second destination (Figma 765:3471).
@@ -92,7 +94,15 @@ export function CompassLearningPage({
      controls for THIS page rather than all seven on every one of them. The
      page lives in state here and (apart from the seed above) never reaches the
      URL, so publishing it is the only way the bar can know. */
-  useDeclareDesignSurface(`compass:${page}` as DesignSurfaceId)
+  /* JEFF'S COMPASS MVP — 2026-11-09. Read before the surface is declared
+     because it CHANGES the surface: his MVP is one surface for all thirteen of
+     his pages, so the Compass version dropdown stays on the Design bar
+     wherever in his rail a reviewer has got to. Declaring `compass:readiness`
+     from his Readiness page would take the control off the bar and strand
+     them there. */
+  const jeffMvp = useFeatureFlag('compass-mvp-version').variant === 'jeff'
+  const [jeffPage, setJeffPage] = useState<JeffMvpPage>('readiness')
+  useDeclareDesignSurface(jeffMvp ? 'compass:jeff-mvp' : (`compass:${page}` as DesignSurfaceId))
   /* ⚠ ANJANI'S COMPASS IS A FLAG, NOT A VERSION — 2026-10-15. From 2026-10-08
      her rail and course landing were gated on `isHybridVersion`, which was
      right while Hybrid was the default: the Compass Prototypes row opens the
@@ -147,6 +157,16 @@ export function CompassLearningPage({
        Tonight card and the Study planner read one plan, and switching rows
        must not reset it. See `CompassPlanContext`. */
     <CompassPlanProvider>
+    {/* ⚠ HIS MVP REPLACES THE RAIL AS WELL AS THE BODY, and that is the whole
+        reason it is a surface rather than a page arm. His rail is three
+        learning rows, an EXAM PREP rule and five exam-prep rows below it —
+        Anjani's locks those five behind a gate dialog. Rendering his pages
+        inside her rail would show his design making her argument. */}
+    {jeffMvp ? (
+      <div style={pageStyle}>
+        <CompassJeffMvpShell page={jeffPage} onSelectPage={setJeffPage} />
+      </div>
+    ) : (
     <div style={pageStyle}>
       {/* ⚠ HER RAIL IS A DIFFERENT OBJECT, not the shared one relabelled — see
           `CompassRail`. The first pass swapped only the row list inside
@@ -250,6 +270,7 @@ export function CompassLearningPage({
       </div>
       )}
     </div>
+    )}
     </CompassPlanProvider>
   )
 }

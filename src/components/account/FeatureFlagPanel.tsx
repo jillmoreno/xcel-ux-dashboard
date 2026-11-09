@@ -112,6 +112,11 @@ const REBRAND_FLAGS = [
   // The Readiness prototype (2026-11-05) and which of its sixteen states.
   'compass-overview-version',
   'compass-readiness-stage',
+  // Jeff's thirteen-page Compass MVP (2026-11-09). Here for the same reason
+  // `compass-content-version` is: the bar scopes it to his own surface and the
+  // Overview, and a reviewer who has landed anywhere else in Compass still
+  // needs a way to reach it.
+  'compass-mvp-version',
   'compass-planner-rubi',
   'compass-planner-return',
   'compass-planner-under',

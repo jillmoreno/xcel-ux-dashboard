@@ -1651,6 +1651,50 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-mvp-version',
+    /* WHOSE COMPASS — 2026-11-09, from `Compass-Prototype-MVP111926_v2.html`,
+       on the direct ask: "jeff has given me another prototype, and this needs
+       to get populated into my repo. page by page. with a tag that shows its
+       jeffs version."
+
+       ⚠ IT REPLACES THE WHOLE SURFACE, not one page of it, which is what makes
+       it different from `compass-content-version` (his LESSON) and
+       `compass-overview-version` (one page's body). His MVP is a thirteen-page
+       Compass with its own rail — three learning rows, an EXAM PREP rule, five
+       exam-prep rows — so there is no honest way to show one of his pages
+       inside the product's own navigation. The rail is part of the argument.
+
+       ⚠ `current` IS THE DEFAULT because it is what ships — the rule every
+       version control here follows: the arm is the question, the baseline is
+       not.
+
+       ⚠ THE ARM IS BEING FILLED PAGE BY PAGE. Readiness is ported; the other
+       seven rail rows draw a panel naming what is missing and pointing at the
+       document on the Hub. A silent fallback to the product's own page would
+       render shipped work under Jeff's name with nothing on screen to correct
+       a reviewer — the same decision `CompassContentPending` records.
+
+       ⚠ SCOPED TO HIS SURFACE AND THE OVERVIEW, so it is reachable from where
+       a reviewer starts (the Compass landing page) and still on the bar
+       wherever in his MVP they got to. Without the second scope, picking his
+       version would take its own dropdown off the bar. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:jeff-mvp', 'compass:overview'],
+    group: 'Widgets',
+    label: 'Compass version',
+    description:
+      'Which Compass a reviewer is in. Current is what ships — Anjani’s rail and pages. Jeff’s MVP is his thirteen-page prototype of 2026-11-09, with his own rail: Overview, Learn and Study planner, then an EXAM PREP rule over Prep Review, Practice, Flashcards, Exam Simulator and Readiness. Ported page by page; Readiness is built, the rest say so. The whole prototype is on the Hub under Explorations.',
+    variants: [
+      { value: 'current', label: 'Current', description: 'What ships today' },
+      { value: 'jeff', label: 'Jeff’s MVP', description: 'His thirteen-page prototype' },
+    ],
+    defaultVariant: 'current',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-overview-version',
     /* WHOSE OVERVIEW — 2026-11-05, from `Compass-Overview-Prototype-V2_2`.
        Anjani's shipped Overview ("Your learning journey", the 62% ring and
