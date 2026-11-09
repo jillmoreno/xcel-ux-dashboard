@@ -81,7 +81,7 @@ export const JEFF_MVP_PAGES = [
  */
 export const JEFF_MVP_SUBPAGES = [
   { page: 'practice-session', label: 'Question set', from: 'practice', ported: false },
-  { page: 'flashcard-topic', label: 'Flashcards topic', from: 'flashcards', ported: false },
+  { page: 'flashcard-topic', label: 'Flashcards topic', from: 'flashcards', ported: true },
   { page: 'flashcard-study', label: 'Study session', from: 'flashcards', ported: false },
   { page: 'exam-session', label: 'Simulated exam', from: 'exam-simulator', ported: false },
   { page: 'course', label: 'Lesson', from: 'learn', ported: false },
@@ -9059,4 +9059,618 @@ export const JEFF_MVP_SIMULATOR_COPY = {
      choice back, and the button is DISABLED until then. */
   startExam: 'Start exam',
   startExamFmt: (provider: string) => `Start ${provider} exam`,
+} as const
+
+/**
+ * A FLASHCARDS TOPIC — reached from a deck on the Flashcards page, never from
+ * the rail. Ported 2026-11-09.
+ *
+ * One topic's five subtopics, each with a Readiness band, a card count and
+ * what is due; above them, "Study all 34 cards" and three ways to study it.
+ *
+ * ⚠ THE THREE MODES ARE ROUTES INTO A SESSION, NOT FILTERS ON THIS LIST.
+ * Spaced Repetition, Confidence and Bookmarked Flashcards each start a study
+ * session ordered differently; the subtopic list below does not change when
+ * one is picked. Treating them as filters — which their shape invites — would
+ * make the page look like it was doing something it is not.
+ */
+export const JEFF_MVP_FC_TOPIC = {
+  topicTitle: 'Property and Casualty Insurance Policy Provisions',
+  topicMeta: 'Topic · 5 subtopics · 34 cards · 6 due today',
+  studyAllLabel: 'Study all 34 cards',
+  listNote: '5 subtopics · in course order',
+  modes: [
+    {
+      key: 'spaced',
+      label: 'Spaced Repetition',
+      note: '',
+      count: null
+    },
+    {
+      key: 'confidence',
+      label: 'Confidence',
+      note: '',
+      count: null
+    },
+    {
+      key: 'bookmarked',
+      label: 'Bookmarked Flashcards',
+      note: '',
+      count: null
+    }
+  ],
+  subs: [
+    {
+      title: 'Policy structure: declarations, insuring agreement, conditions and exclusions',
+      cards: 9,
+      due: 0,
+      hasDue: false,
+      conf: 72,
+      bm: 2,
+      showBm: false,
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      barTone: 'steel-light',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      title: 'Definitions and endorsements',
+      cards: 6,
+      due: 0,
+      hasDue: false,
+      conf: 81,
+      bm: 0,
+      showBm: false,
+      band: 'Proficient',
+      bandTone: 'proficient-ink',
+      barTone: 'steel-light',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'steel-light'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      title: 'Deductibles and coinsurance',
+      cards: 7,
+      due: 3,
+      hasDue: true,
+      conf: 46,
+      bm: 3,
+      showBm: false,
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      barTone: 'amber',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      title: 'Loss valuation: actual cash value vs. replacement cost',
+      cards: 6,
+      due: 2,
+      hasDue: true,
+      conf: 54,
+      bm: 1,
+      showBm: false,
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      barTone: 'amber',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    },
+    {
+      title: 'Cancellation, nonrenewal and other insurance',
+      cards: 6,
+      due: 1,
+      hasDue: true,
+      conf: 63,
+      bm: 0,
+      showBm: false,
+      band: 'Developing',
+      bandTone: 'developing-ink',
+      barTone: 'amber',
+      segs: [
+        {
+          flex: 40,
+          height: 5,
+          tone: 'edge'
+        },
+        {
+          flex: 25,
+          height: 5,
+          tone: 'amber'
+        },
+        {
+          flex: 20,
+          height: 5,
+          tone: 'hairline'
+        },
+        {
+          flex: 15,
+          height: 5,
+          tone: 'hairline'
+        }
+      ]
+    }
+  ]
+} as const
+
+/** His Flashcards-topic prose. */
+export const JEFF_MVP_FC_TOPIC_COPY = {
+  crumbRoot: 'Flashcards',
+  subtopicsHeading: 'Subtopics',
+  subtopicEyebrow: 'Subtopic',
+  readinessLabel: 'Readiness',
+  study: 'Study',
+  cardsFmt: (cards: number, due: number) =>
+    due > 0 ? `${cards} cards · ${due} due` : `${cards} cards`,
+} as const
+
+/**
+ * THE SIMULATED EXAM — reached from the Exam Simulator's provider modal,
+ * never from the rail. Ported 2026-11-09.
+ *
+ * NINE SCREENS, not one: intro · terms · three tutorial pages · the exam ·
+ * done · results · guided review. It is a rehearsal of a Pearson VUE sitting,
+ * and the whole point is that it does not look like the rest of Compass —
+ * its own chrome, its own green nav, its own timer.
+ *
+ * ⚠ ITS PREVIEW IS DETERMINISTIC. "Skip to results (preview)" fills a FIXED
+ * nineteen-answer `SAMPLE` array — there is no `Math.random` anywhere in his
+ * page — which scores 6/19, 32%. That is what makes a results screen
+ * parity-checkable at all, and it is why the fixture carries that exact
+ * state rather than an empty one.
+ *
+ * ⚠ THE RESULTS ARE HELD BACK ON PURPOSE. Finishing lands on a "done" screen
+ * that says the score is withheld "just like the real wait", with a Reveal
+ * link. Collapsing that into the results screen would remove the one beat
+ * the simulation is imitating.
+ *
+ * ⚠ THE REVIEW ASKS BEFORE IT EXPLAINS. Each question opens with a prompt —
+ * "You got this one. Could you explain to a client why the other three don't
+ * fit?" — and the explanation stays hidden behind "Walk me through it"
+ * (`rvHidden`). Showing both at once would turn a tutor into a mark scheme.
+ */
+export const JEFF_MVP_EXAM_SESSION = {
+  providerName: 'Pearson VUE',
+  blueprint: [
+    {
+      name: 'Life Insurance Basics',
+      pct: 22,
+      w: '100%'
+    },
+    {
+      name: 'Policy Provisions, Options & Riders',
+      pct: 22,
+      w: '100%'
+    },
+    {
+      name: 'Annuities',
+      pct: 20,
+      w: '91%'
+    },
+    {
+      name: 'Health Insurance',
+      pct: 18,
+      w: '82%'
+    },
+    {
+      name: 'Florida Laws & Regulations',
+      pct: 18,
+      w: '82%'
+    }
+  ],
+  tutorial: [
+    {
+      title: 'Navigating the exam',
+      top: 'Page 1 of 3',
+      paras: [
+        'Use Next and Back at the bottom of the screen to move between questions, or jump to any question from the list on the left.',
+        'Select an answer by choosing the option. You can change it any time before you finish the test.'
+      ]
+    },
+    {
+      title: 'Time remaining',
+      top: 'Page 2 of 3',
+      paras: [
+        'The clock at the top right shows the time left in the current section. It keeps running even if you step away.',
+        'When the clock reaches zero, the exam ends and any unanswered questions are scored as incorrect.'
+      ]
+    },
+    {
+      title: 'Flagging questions',
+      top: 'Page 3 of 3',
+      paras: [
+        'Not sure about an answer? Choose Flag for review. Flagged questions show a flag in the question list so you can come back before you finish.',
+        'When you’re ready, choose Start the Test. The 2 hour 30 minute section clock starts right away.'
+      ]
+    }
+  ],
+  timerIntro: {
+    label: 'Introduction Time Remaining',
+    text: '15:00'
+  },
+  timerExam: {
+    label: 'Section Time Remaining',
+    text: '2:30:00'
+  },
+  exam: {
+    top: 'Question 1 of 19',
+    sub: 'Section: Content Section',
+    qNum: 1,
+    qTotal: 19,
+    stem: 'For a life insurance policy, when must insurable interest exist?',
+    opts: [
+      {
+        letter: 'A',
+        text: 'At the time of application'
+      },
+      {
+        letter: 'B',
+        text: 'At the time of the insured’s death'
+      },
+      {
+        letter: 'C',
+        text: 'At both application and the insured’s death'
+      },
+      {
+        letter: 'D',
+        text: 'Only when the beneficiary isn’t a family member'
+      }
+    ],
+    nav: [
+      {
+        word: 'Question',
+        num: '1'
+      },
+      {
+        word: 'Question',
+        num: '2'
+      },
+      {
+        word: 'Question',
+        num: '3'
+      },
+      {
+        word: 'Question',
+        num: '4'
+      },
+      {
+        word: 'Question',
+        num: '5'
+      },
+      {
+        word: 'Question',
+        num: '6'
+      },
+      {
+        word: 'Question',
+        num: '7'
+      },
+      {
+        word: 'Question',
+        num: '8'
+      },
+      {
+        word: 'Question',
+        num: '9'
+      },
+      {
+        word: 'Question',
+        num: '10'
+      },
+      {
+        word: 'Question',
+        num: '11'
+      },
+      {
+        word: 'Question',
+        num: '12'
+      },
+      {
+        word: 'Question',
+        num: '13'
+      },
+      {
+        word: 'Question',
+        num: '14'
+      },
+      {
+        word: 'Question',
+        num: '15'
+      },
+      {
+        word: 'Question',
+        num: '16'
+      },
+      {
+        word: 'Question',
+        num: '17'
+      },
+      {
+        word: 'Question',
+        num: '18'
+      },
+      {
+        word: 'Question',
+        num: '19'
+      }
+    ],
+    flagText: 'Flag for review'
+  },
+  results: {
+    pct: 32,
+    right: 6,
+    total: 19,
+    ringDash: '124.7 389.6',
+    ringTone: 'steel-deep',
+    statusLabel: 'Not ready yet',
+    statusHead: 'Close, a bit more to go',
+    statusText: 'You need 70% to pass, so you’re 38 points away. Focus on Policy Provisions, Options & Riders first, then retake.',
+    statusBg: 'developing-wash',
+    statusBorder: 'developing-edge',
+    statusInk: 'developing-ink',
+    topics: [
+      {
+        name: 'Policy Provisions, Options & Riders',
+        right: 0,
+        n: 4,
+        pct: 0,
+        w: '2%',
+        tone: 'score-bad'
+      },
+      {
+        name: 'Health Insurance',
+        right: 1,
+        n: 4,
+        pct: 25,
+        w: '25%',
+        tone: 'score-bad'
+      },
+      {
+        name: 'Annuities',
+        right: 1,
+        n: 3,
+        pct: 33,
+        w: '33%',
+        tone: 'score-bad'
+      },
+      {
+        name: 'Florida Laws & Regulations',
+        right: 1,
+        n: 3,
+        pct: 33,
+        w: '33%',
+        tone: 'score-bad'
+      },
+      {
+        name: 'Life Insurance Basics',
+        right: 3,
+        n: 5,
+        pct: 60,
+        w: '60%',
+        tone: '#B7791F'
+      }
+    ],
+    rubiTip: 'Start with Policy Provisions, Options & Riders: you got 0 of 4. A short practice round there will move your score the most, and I can take you back to the lesson if a concept feels shaky.',
+    feedback: [
+      'Yes',
+      'Somewhat',
+      'Not really'
+    ]
+  },
+  review: {
+    filters: [
+      'All (19)',
+      'Got wrong (13)',
+      'Got right (6)'
+    ],
+    count: 19,
+    pos: 1,
+    num: 1,
+    topic: 'Life Insurance Basics',
+    stem: 'For a life insurance policy, when must insurable interest exist?',
+    badge: 'You got this one',
+    prompt: 'You got this one. Could you explain to a client why the other three don’t fit? Hint: think about when the insurer is deciding whether to take on the risk.',
+    explain: 'In life insurance, insurable interest only has to exist when the policy is issued, at application. It doesn’t need to exist at the time of death, which is why a former spouse can still collect on a policy bought during the marriage.',
+    opts: [
+      {
+        letter: 'A',
+        text: 'At the time of application',
+        isCorrect: true,
+        isYours: true
+      },
+      {
+        letter: 'B',
+        text: 'At the time of the insured’s death',
+        isCorrect: false,
+        isYours: false
+      },
+      {
+        letter: 'C',
+        text: 'At both application and the insured’s death',
+        isCorrect: false,
+        isYours: false
+      },
+      {
+        letter: 'D',
+        text: 'Only when the beneficiary isn’t a family member',
+        isCorrect: false,
+        isYours: false
+      }
+    ]
+  }
+} as const
+
+/** His simulated-exam prose, transcribed from each rendered screen. */
+export const JEFF_MVP_EXAM_SESSION_COPY = {
+  exitLabel: 'Exit simulator',
+  shellTitle: 'Simulated exam · Florida Life & Health',
+  candidate: 'Candidate: Jordan Navarro',
+  testLine: 'Test: Florida Life & Health (simulated)',
+  finishTest: 'Finish Test',
+
+  /* --- intro --- */
+  introEyebrow: 'Exam simulator · Pearson VUE',
+  introTitle: 'Florida Life & Health: Simulated Exam',
+  introLead:
+    'A full-length rehearsal of exam day. You’ll move through the same check-in, tutorial and test screens you’ll see at the Pearson VUE test center, then review your results with Rubi.',
+  treatHeading: 'Treat this like the real thing',
+  treatBullets: [
+    'Find a quiet spot and set aside the full 2 hours 30 minutes.',
+    'Put away notes, your phone and the course. The real exam allows none of them.',
+    'Answer every question. A blank answer is scored as incorrect, so a guess is always better.',
+  ],
+  expectHeading: 'What to expect',
+  blueprintNote: 'How questions are spread across the exam',
+  expectBullets: [
+    'Multiple choice: four options, one correct answer.',
+    'The clock runs continuously. Flag questions you want to revisit before you finish.',
+    'No hints, rationales or Rubi during the exam. Afterward, Rubi walks you through every question.',
+  ],
+  glanceHeading: 'Exam at a glance',
+  glance: [
+    { label: 'Questions', value: '100' },
+    { label: 'Time limit', value: '2 hours 30 minutes' },
+    { label: 'Passing score', value: '70%' },
+    { label: 'Test screens', value: 'Pearson VUE' },
+  ],
+  beginExam: 'Begin exam',
+  /* ⚠ HIS OWN DISCLAIMER, in his words. The at-a-glance block says 100
+     questions and the simulator serves 19 — he says so rather than hiding
+     it, and so does this port. */
+  prototypeNote:
+    'Prototype: 19 sample questions are served so you can walk the full flow quickly.',
+
+  /* --- terms --- */
+  termsTitle: 'Agree to Terms',
+  termsLead:
+    'Before you begin, read and accept the Non-Disclosure Agreement and General Terms of Use.',
+  ndaHeading: 'Non-Disclosure Agreement and General Terms of Use',
+  ndaParas: [
+    'This exam is confidential and is protected by law. It is made available to you, the candidate, solely to assess your knowledge and competency in the subject matter it covers.',
+    'You agree not to disclose, publish, reproduce or transmit any part of this exam, in any form or by any means, including verbal, written or electronic, for any purpose.',
+    'You understand that disclosing exam content, or giving or receiving help during the exam, may result in your score being canceled and further action by the licensing authority.',
+    'This is a practice simulation. It mirrors the real check-in step so test day feels familiar, and nothing you enter here leaves Compass.',
+  ],
+  agreeLabel:
+    'I have read and agree to the Non-Disclosure Agreement and General Terms of Use.',
+  continueLabel: 'Continue',
+
+  /* --- tutorial and exam --- */
+  back: 'Back',
+  next: 'Next',
+  backArrow: '← Back',
+  nextArrow: 'Next →',
+  startTest: 'Start the Test',
+  flagged: 'Flagged',
+  skipPreview: 'Skip to results (preview)',
+  answeredFmt: (answered: number, total: number, flagged: number) =>
+    `${answered} of ${total} answered · ${flagged} flagged`,
+
+  /* --- done --- */
+  doneTitle: 'Results',
+  doneParas: [
+    'You have completed this exam. On test day, your official score report is printed at the test center and handed to you before you leave.',
+    'In this simulation your score is held back for a moment, just like the real wait. Practice results don’t affect your official record.',
+  ],
+  reveal: 'Reveal practice results ›',
+
+  /* --- results --- */
+  byTopic: 'By topic · weakest first',
+  rubiTipHeading: 'Rubi’s tip',
+  feedbackQuestion: 'Did this simulation feel like it prepared you?',
+  retake: 'Retake',
+  donePreviewing: 'Done previewing',
+  reviewWithRubi: 'Review with Rubi',
+
+  /* --- review --- */
+  reviewTitle: 'Guided review with Rubi',
+  reviewLead: 'We’ll go one question at a time. I’ll ask first, then explain.',
+  reviewByTopicFmt: (right: number, total: number) => `By topic · ${right}/${total} overall`,
+  correctAnswer: 'Correct answer',
+  yourAnswer: 'Your answer',
+  walkMeThrough: 'Walk me through it',
+  prevQuestion: 'Previous question',
+  nextQuestion: 'Next question',
+  backToResults: 'Back to results',
+  questionFmt: (n: number, topic: string) => `Question ${n} · ${topic}`,
 } as const

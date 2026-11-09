@@ -100,14 +100,27 @@ export function CompassLearningPage({
      wherever in his rail a reviewer has got to. Declaring `compass:readiness`
      from his Readiness page would take the control off the bar and strand
      them there. */
-  const jeffMvp = useFeatureFlag('compass-mvp-version').variant === 'jeff'
+  const mvpVersion = useFeatureFlag('compass-mvp-version').variant
+  /* THE THIRD VERSION — 2026-11-09. `refined` is Jeff's shell with the
+     Readiness page rebuilt against the research; it shares his rail and his
+     other pages, so it goes through the same branch with one prop set. */
+  const refined = mvpVersion === 'refined'
+  const jeffMvp = mvpVersion === 'jeff' || refined
   /* ⚠ OVERVIEW, AS HIS EXPORT OPENS — changed 2026-11-09 when the Overview
      was ported. It was 'readiness' for one page's worth of work, because
      landing a reviewer on a "not ported yet" panel is worse than landing them
      on the wrong page. Now that his first rail row exists, the default is his
-     again. */
-  const [jeffPage, setJeffPage] = useState<JeffMvpPage>('overview')
-  useDeclareDesignSurface(jeffMvp ? 'compass:jeff-mvp' : (`compass:${page}` as DesignSurfaceId))
+     again.
+
+     ⚠ EXCEPT ON THE REFINED ARM, which opens on READINESS: it is the one page
+     of that version that differs, and a reviewer who picked "Refined" and
+     landed on Jeff's Overview would have no way to tell the switch had
+     happened. Seeded once, like the page above — picking a rail row after
+     that is the reviewer's, not the flag's. */
+  const [jeffPage, setJeffPage] = useState<JeffMvpPage>(refined ? 'readiness' : 'overview')
+  useDeclareDesignSurface(
+    refined ? 'compass:refined' : jeffMvp ? 'compass:jeff-mvp' : (`compass:${page}` as DesignSurfaceId),
+  )
   /* ⚠ ANJANI'S COMPASS IS A FLAG, NOT A VERSION — 2026-10-15. From 2026-10-08
      her rail and course landing were gated on `isHybridVersion`, which was
      right while Hybrid was the default: the Compass Prototypes row opens the
@@ -169,7 +182,11 @@ export function CompassLearningPage({
         inside her rail would show his design making her argument. */}
     {jeffMvp ? (
       <div style={pageStyle}>
-        <CompassJeffMvpShell page={jeffPage} onSelectPage={setJeffPage} />
+        <CompassJeffMvpShell
+          page={jeffPage}
+          onSelectPage={setJeffPage}
+          readiness={refined ? 'refined' : 'jeff'}
+        />
       </div>
     ) : (
     <div style={pageStyle}>

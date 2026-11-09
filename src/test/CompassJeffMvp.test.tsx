@@ -341,7 +341,9 @@ describe('Jeff’s Compass MVP — the control', () => {
     expect(flag).toBeTruthy()
     expect(flag?.surface).toBe('design')
     expect(flag?.defaultVariant).toBe('current')
-    expect(flag?.variants?.map((v) => v.value)).toEqual(['current', 'jeff'])
+    /* Three arms since 2026-11-09: what ships, his, and the Refined rebuild of
+       his Readiness page — see `CompassReadinessRefined.test.tsx`. */
+    expect(flag?.variants?.map((v) => v.value)).toEqual(['current', 'jeff', 'refined'])
   })
 
   it('is scoped so it is reachable from the Overview and stays on his surface', () => {

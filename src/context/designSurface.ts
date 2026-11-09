@@ -49,6 +49,11 @@ export type DesignSurfaceId =
      what moves between his pages, and a reviewer switching back expects the
      dropdown to still be on the bar wherever in his MVP they got to. */
   | 'compass:jeff-mvp'
+  /* THE REFINED COMPASS — 2026-11-09. Jeff's shell with the Readiness page
+     rebuilt against the research. Its own surface rather than his, so the
+     Design bar names what is on screen — the bar's label is how a reviewer
+     tells the three versions apart now that the pages carry no badge. */
+  | 'compass:refined'
   /* ⚠ THE INVITE & PURCHASE FLOW — 2026-10-22, Jillienne: "these design
      controls should not show when the Start is set to Invite & Checkout, they
      should display for Atlas."
@@ -128,6 +133,7 @@ export const DESIGN_SURFACE_LABELS: Record<DesignSurfaceId, string> = {
   'compass:progress': 'Compass · Progress',
   'compass:workspace': 'Compass · Workspace',
   'compass:jeff-mvp': 'Compass · Jeff’s MVP',
+  'compass:refined': 'Compass · Refined',
   invite: 'Invite & Checkout',
   'invite:v3-b2b': 'Invite Flow V3 · B2B invite',
   'invite:v3-b2b-direct-email': 'Invite Flow V3 · B2B invite',

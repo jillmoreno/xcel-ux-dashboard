@@ -1677,18 +1677,28 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        ⚠ SCOPED TO HIS SURFACE AND THE OVERVIEW, so it is reachable from where
        a reviewer starts (the Compass landing page) and still on the bar
        wherever in his MVP they got to. Without the second scope, picking his
-       version would take its own dropdown off the bar. */
+       version would take its own dropdown off the bar.
+
+       ⚠ THE THIRD ARM IS `refined` — 2026-11-09, Jillienne: "I want a 3rd
+       page, so there is Anjanis Version, Jeffs Version, and the REFINED
+       Version." It is Jeff's shell — his rail, his other pages — with the
+       Readiness row opening `CompassReadinessRefined`: his page rebuilt
+       against Nina Conrad's "Compass Rapid Insights: Your Exam Prep" research
+       (Nov 2026) on the house Compass tokens. One page so far; it opens on
+       Readiness because that is the page that differs. Its surface is
+       `compass:refined`, scoped here for the same reason his is. */
     surface: 'design',
     owner: 'anjani',
     versions: ['hybrid-pacing', 'eric-atlas-e2e'],
-    surfaces: ['compass:jeff-mvp', 'compass:overview'],
+    surfaces: ['compass:jeff-mvp', 'compass:refined', 'compass:overview'],
     group: 'Widgets',
     label: 'Compass version',
     description:
-      'Which Compass a reviewer is in. Current is what ships — Anjani’s rail and pages. Jeff’s MVP is his thirteen-page prototype of 2026-11-09, with his own rail: Overview, Learn and Study planner, then an EXAM PREP rule over Prep Review, Practice, Flashcards, Exam Simulator and Readiness. Ported page by page; Readiness is built, the rest say so. The whole prototype is on the Hub under Explorations.',
+      'Which Compass a reviewer is in. Current is what ships — Anjani’s rail and pages. Jeff’s MVP is his thirteen-page prototype of 2026-11-09, with his own rail: Overview, Learn and Study planner, then an EXAM PREP rule over Prep Review, Practice, Flashcards, Exam Simulator and Readiness. Refined is Jeff’s shell with the Readiness page rebuilt against the Nov 2026 "Your Exam Prep" research — one ring with the level inside it, the gap to Ready stated as time against the exam date, plain language, and every topic and sub-topic on one comparable scale. The whole prototype is on the Hub under Explorations.',
     variants: [
       { value: 'current', label: 'Current', description: 'What ships today' },
       { value: 'jeff', label: 'Jeff’s MVP', description: 'His thirteen-page prototype' },
+      { value: 'refined', label: 'Refined', description: 'Readiness rebuilt on the research' },
     ],
     defaultVariant: 'current',
     defaultEnabled: true,

@@ -16,6 +16,7 @@ import {
   type JeffMvpPage,
 } from '@/data/compassJeffMvpFixtures'
 import { CompassJeffMvpReadiness } from './CompassJeffMvpReadiness'
+import { CompassReadinessRefined } from './CompassReadinessRefined'
 import { CompassJeffMvpLearn } from './CompassJeffMvpLearn'
 import { CompassJeffMvpOverview } from './CompassJeffMvpOverview'
 import { CompassJeffMvpPractice } from './CompassJeffMvpPractice'
@@ -23,6 +24,7 @@ import { CompassJeffMvpPrep } from './CompassJeffMvpPrep'
 import { CompassJeffMvpPlanner } from './CompassJeffMvpPlanner'
 import { CompassJeffMvpFlashcards } from './CompassJeffMvpFlashcards'
 import { CompassJeffMvpSimulator } from './CompassJeffMvpSimulator'
+import { CompassJeffMvpFlashcardTopic } from './CompassJeffMvpFlashcardTopic'
 import './compassJeffMvp.css'
 
 /**
@@ -66,15 +68,26 @@ import './compassJeffMvp.css'
 export function CompassJeffMvpShell({
   page,
   onSelectPage,
+  readiness = 'jeff',
 }: {
   page: JeffMvpPage
   onSelectPage: (p: JeffMvpPage) => void
+  /** WHICH READINESS PAGE THE RAIL ROW OPENS — 2026-11-09. `jeff` is his, as
+   *  ported; `refined` is `CompassReadinessRefined`, his page rebuilt against
+   *  the research. The third Compass version IS this prop: same rail, same
+   *  other pages, one row different. A second shell for one swapped page
+   *  would have meant two rails to keep in step. */
+  readiness?: 'jeff' | 'refined'
 }) {
   return (
     <div className="cjm cjm-shell">
       <CompassJeffMvpRail page={page} onSelectPage={onSelectPage} />
       {page === 'readiness' ? (
-        <CompassJeffMvpReadiness onSelectPage={onSelectPage} />
+        readiness === 'refined' ? (
+          <CompassReadinessRefined onSelectPage={onSelectPage} />
+        ) : (
+          <CompassJeffMvpReadiness onSelectPage={onSelectPage} />
+        )
       ) : page === 'learn' ? (
         <CompassJeffMvpLearn />
       ) : page === 'overview' ? (
@@ -89,6 +102,8 @@ export function CompassJeffMvpShell({
         <CompassJeffMvpFlashcards onSelectPage={onSelectPage} />
       ) : page === 'exam-simulator' ? (
         <CompassJeffMvpSimulator onSelectPage={onSelectPage} />
+      ) : page === 'flashcard-topic' ? (
+        <CompassJeffMvpFlashcardTopic onSelectPage={onSelectPage} />
       ) : (
         <CompassJeffMvpPending page={page} />
       )}
