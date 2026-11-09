@@ -20,11 +20,18 @@ import './compassJeffMvp.css'
  * JEFF'S COMPASS MVP — the shell, 2026-11-09, from
  * `public/prototypes/xcel-compass-mvp.html`.
  *
- * Thirteen pages behind one rail. Jillienne's ask: "this needs to get
- * populated into my repo. page by page. with a tag that shows its jeffs
- * version." So this is the rail and the tag, and the pages arrive one at a
- * time underneath it — Readiness first, the rest drawn as rows that say what
- * they are waiting for rather than as rows that are not there.
+ * Thirteen pages behind one rail, arriving one at a time — the rest drawn as
+ * rows that say what they are waiting for rather than as rows that are not
+ * there.
+ *
+ * ⚠ NO PER-PAGE VERSION BADGE. There was one for four pages (2026-11-09, from
+ * "with a tag that shows its jeffs version"); Jillienne had it removed the
+ * same day, looking at it on screen. What says whose version is on screen is
+ * the Design bar — it names the surface "Compass · Jeff's MVP" and its
+ * Compass version control reads "Jeff's MVP" — which is where every other
+ * version in this app is declared. A badge in the page content was the port
+ * answering a question the chrome already answers, and it sat in every
+ * screenshot.
  *
  * ⚠ A SEPARATE SHELL, NOT A FLAG THROUGH `CompassLearningPage`. His rail is a
  * different object: three learning rows, an EXAM PREP rule, and five more
@@ -144,25 +151,6 @@ export function CompassJeffMvpRail({
 }
 
 /**
- * THE TAG — "with a tag that shows its jeffs version".
- *
- * ⚠ IT SAYS WHOSE AND WHAT, not just whose. A reviewer three pages in needs to
- * know this is Jeff's MVP rather than Jeff's course player, which is a
- * different file behind a different control on a different surface.
- *
- * ⚠ IT IS NOT A CONTROL. The Design bar's dropdown is how you leave; a tag
- * that looked clickable would invite a reviewer to try to dismiss the one
- * thing on screen telling them what they are looking at.
- */
-export function CompassJeffMvpTag() {
-  return (
-    <p className="cjm-tag" data-testid="jeff-mvp-tag">
-      Jeff’s version · Compass MVP
-    </p>
-  )
-}
-
-/**
  * A ROW HIS RAIL REACHES THAT THIS PORT HAS NOT BUILT YET.
  *
  * ⚠ IT DOES NOT FALL BACK TO THE PRODUCT'S OWN PAGE, for the reason
@@ -178,7 +166,6 @@ export function CompassJeffMvpPending({ page }: { page: JeffMvpPage }) {
   return (
     <div className="cjm-page">
       <div className="cjm-pending" role="region" aria-label={`${label} — not ported yet`}>
-        <CompassJeffMvpTag />
         <h1>{label}</h1>
         <p>
           This page is in Jeff’s prototype and is not in the React port yet. It is being ported page
@@ -222,7 +209,6 @@ export function CompassJeffMvpHead({
   return (
     <header className={ruled ? 'cjm-head cjm-head--ruled' : 'cjm-head'}>
       <div style={{ minWidth: 0 }}>
-        <CompassJeffMvpTag />
         <h1 className="cjm-h1 cjm-serif">{title}</h1>
         {lead ? <p className={leadClass ? `cjm-lead ${leadClass}` : 'cjm-lead'}>{lead}</p> : null}
         {below}

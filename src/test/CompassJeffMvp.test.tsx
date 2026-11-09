@@ -250,15 +250,18 @@ describe('Jeff’s Compass MVP — the rail and the tag', () => {
     expect(current.map((b) => b.textContent?.trim())).toEqual(['Readiness'])
   })
 
-  it('tags every ported page as Jeff’s, and says which prototype', () => {
-    renderShell('readiness')
-    expect(screen.getByTestId('jeff-mvp-tag')).toHaveTextContent('Jeff’s version · Compass MVP')
-  })
-
-  it('tags the pages that are not ported yet too', () => {
-    // A reviewer landing on an empty page still needs to know whose it is.
-    renderShell('practice')
-    expect(screen.getByTestId('jeff-mvp-tag')).toBeInTheDocument()
+  it('puts no version badge in the page content', () => {
+    /* ⚠ REMOVED 2026-11-09, by Jillienne looking at it on screen. The Design
+       bar is what declares which version is rendering — it names the surface
+       "Compass · Jeff's MVP" and carries the Compass version control — and
+       that is where every other version in this app is declared. A badge in
+       the content was the port answering a question the chrome already
+       answers, and it sat in every screenshot. Pinned so it does not come
+       back with the next page. */
+    const { container } = renderShell('readiness')
+    expect(container.querySelector('.cjm-tag')).toBeNull()
+    expect(screen.queryByTestId('jeff-mvp-tag')).toBeNull()
+    expect(flat(container.textContent ?? '')).not.toContain(flat('Jeff’s version'))
   })
 })
 

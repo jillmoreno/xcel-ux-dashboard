@@ -816,30 +816,6 @@
   cursor: pointer;
 }
 
-/* ---------- the version tag ---------- */
-
-/* ⚠ ON EVERY PORTED PAGE, by Jillienne's ask ("with a tag that shows its
-   jeffs version"). It is a STATEMENT, not a control — the control is the
-   Design bar's dropdown — so it is not a button and takes no click. It sits
-   with the page title rather than floating, because a floating badge over a
-   screenshot is the first thing cropped out of a review deck. */
-.cjm-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin-bottom: 10px;
-  padding: 4px 11px;
-  border: 1px solid var(--cjm-developing-edge);
-  border-radius: 999px;
-  background: var(--cjm-developing-wash);
-  color: var(--cjm-developing-ink);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
 /* ---------- a page his rail reaches that is not ported yet ---------- */
 
 .cjm-pending {
