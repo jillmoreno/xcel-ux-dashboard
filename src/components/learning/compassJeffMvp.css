@@ -1715,3 +1715,387 @@
   font-size: 13px;
   font-weight: 600;
 }
+
+/* ============ the Practice page ============ */
+
+.cjm {
+  --cjm-conf-low-bg: #f7d9d9;
+  --cjm-conf-low-edge: #efb2b2;
+  --cjm-conf-low-ink: #a20000;
+  --cjm-conf-med-bg: #fef3df;
+  --cjm-conf-med-edge: #fbca68;
+  --cjm-conf-med-ink: #694c11;
+  --cjm-conf-high-bg: #d9ede1;
+  --cjm-conf-high-edge: #b3dcc3;
+  --cjm-conf-high-ink: #015623;
+  --cjm-beginner-bar: #a39a86;
+  --cjm-row-rule: #e6e6e6;
+  /* The weakest-set ring's two tracks: warm behind Readiness, cool behind
+     coverage. His, and not interchangeable. */
+  --cjm-ring-warm: #e7e2d9;
+  --cjm-ring-steel-track: #e1e6ed;
+}
+
+.cjm-pr__lead {
+  position: relative;
+  margin: 12px 0 0;
+  padding-right: 32px;
+  max-width: 760px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--cjm-body);
+}
+.cjm-pr__dismiss {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--cjm-muted);
+  cursor: pointer;
+}
+.cjm-pr__dismiss:hover {
+  background: var(--color-neutral-100);
+}
+
+/* ---------- the two recommendations ---------- */
+
+.cjm-pr__rec {
+  margin-top: 28px;
+  border: 1px solid var(--cjm-steel-edge);
+  border-radius: 16px;
+  background: var(--cjm-steel-panel);
+  overflow: hidden;
+}
+.cjm-pr__receyebrow {
+  margin: 0;
+  padding: 24px 28px 0;
+}
+.cjm-pr__weakest {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding: 12px 28px 24px;
+}
+.cjm-pr__ring {
+  flex: 0 0 auto;
+}
+.cjm-pr__ringmid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cjm-pr__recbody {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+.cjm-pr__rectopic {
+  margin: 6px 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-pr__rectitle {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--cjm-ink);
+}
+.cjm-pr__recstats {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-pr__recstats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.cjm-pr__recstats b {
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pr__spaced {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 28px;
+  border-top: 1px solid var(--cjm-steel-edge);
+  background: var(--cjm-white);
+}
+.cjm-pr__spaced .cjm-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  flex: 0 0 auto;
+}
+.cjm-pr__spacedtitle {
+  margin: 0;
+  flex: 1 1 240px;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pr__due {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-pr__due b {
+  font-weight: 600;
+  color: var(--cjm-rubi);
+}
+
+/* ---------- tabs, views, filters ---------- */
+
+.cjm-pr__bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+  border-bottom: 1px solid var(--cjm-hairline);
+}
+.cjm-tabs--flush {
+  margin-top: 0;
+  border-bottom: 0;
+}
+.cjm-pr__views {
+  display: inline-flex;
+  gap: 4px;
+  margin-bottom: 10px;
+  padding: 3px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 8px;
+}
+.cjm-pr__view {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cjm-body);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.cjm-pr__view.is-on {
+  background: var(--cjm-steel-pressed);
+  color: var(--cjm-steel-deep);
+  font-weight: 600;
+}
+
+.cjm-pr__filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-top: 18px;
+}
+.cjm-pr__filterby {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-pr__filtergroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cjm-pr__filterlabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cjm-faint);
+}
+.cjm-fpill {
+  padding: 5px 14px;
+  border: 1px solid;
+  border-radius: 999px;
+  background: var(--cjm-white);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cjm-fpill.is-on {
+  box-shadow: 0 0 0 2px var(--cjm-steel-wash);
+}
+
+/* ---------- groups and the table ---------- */
+
+.cjm-pr__group {
+  margin-top: 26px;
+}
+.cjm-pr__grouphead {
+  margin-bottom: 10px;
+}
+.cjm-pr__grouptitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pr__groupmeta {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+.cjm-pr__table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.cjm-pr__table th {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--cjm-hairline);
+  background: var(--cjm-paper);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--cjm-muted);
+}
+.cjm-pr__table td {
+  padding: 13px 16px;
+  border-top: 1px solid var(--cjm-row-rule);
+  vertical-align: middle;
+  font-size: 14px;
+  color: var(--cjm-body);
+}
+.cjm-pr__table tbody tr:first-child td {
+  border-top: 0;
+}
+.cjm-pr__seteyebrow {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-pr__settitle {
+  display: block;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pr__bmk {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--cjm-muted);
+}
+.cjm-pill--conf {
+  flex-direction: column;
+  gap: 0;
+  line-height: 1.25;
+}
+.cjm-pr__confword {
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.85;
+}
+.cjm-pill--beginner {
+  background: var(--cjm-beginner-wash);
+  border: 1px solid var(--cjm-edge);
+  color: var(--cjm-beginner-ink);
+  flex-direction: column;
+  gap: 0;
+  line-height: 1.25;
+}
+.cjm-pr__dash {
+  color: var(--cjm-faint);
+}
+.cjm-pr__status {
+  display: block;
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-bar--set {
+  width: 150px;
+  max-width: 100%;
+  margin-top: 6px;
+}
+.cjm-pr__action {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ---------- the cards view ---------- */
+
+.cjm-pr__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+.cjm-pr__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 10px;
+  background: var(--cjm-white);
+}
+.cjm-pr__cardpills {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+}
+.cjm-pr__card .cjm-btn {
+  margin-top: auto;
+}
+
+/* ---------- the empty state ---------- */
+
+.cjm-pr__empty {
+  margin-top: 26px;
+  padding: 40px 28px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 12px;
+  background: var(--cjm-paper);
+  text-align: center;
+}
+.cjm-pr__emptytitle {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pr__emptybody {
+  margin: 0 auto 16px;
+  max-width: 48ch;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--cjm-muted);
+}

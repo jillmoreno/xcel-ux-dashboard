@@ -13,6 +13,7 @@ import { JEFF_MVP_PAGES, JEFF_MVP_RAIL, type JeffMvpPage } from '@/data/compassJ
 import { CompassJeffMvpReadiness } from './CompassJeffMvpReadiness'
 import { CompassJeffMvpLearn } from './CompassJeffMvpLearn'
 import { CompassJeffMvpOverview } from './CompassJeffMvpOverview'
+import { CompassJeffMvpPractice } from './CompassJeffMvpPractice'
 import './compassJeffMvp.css'
 
 /**
@@ -62,6 +63,8 @@ export function CompassJeffMvpShell({
         <CompassJeffMvpLearn />
       ) : page === 'overview' ? (
         <CompassJeffMvpOverview onSelectPage={onSelectPage} />
+      ) : page === 'practice' ? (
+        <CompassJeffMvpPractice onSelectPage={onSelectPage} />
       ) : (
         <CompassJeffMvpPending page={page} />
       )}

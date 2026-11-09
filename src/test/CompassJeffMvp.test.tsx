@@ -8,8 +8,12 @@ import { CompassJeffMvpShell } from '@/components/learning/CompassJeffMvpShell'
 import { CompassJeffMvpReadiness } from '@/components/learning/CompassJeffMvpReadiness'
 import { CompassJeffMvpLearn } from '@/components/learning/CompassJeffMvpLearn'
 import { CompassJeffMvpOverview } from '@/components/learning/CompassJeffMvpOverview'
+import { CompassJeffMvpPractice } from '@/components/learning/CompassJeffMvpPractice'
 import {
   JEFF_MVP_LEARN as LEARN,
+  JEFF_MVP_PRACTICE as PR,
+  JEFF_MVP_PRACTICE_COPY as PCOPY,
+  practiceMatches,
   JEFF_MVP_OVERVIEW as OV,
   JEFF_MVP_OVERVIEW_COPY as OCOPY,
   JEFF_MVP_LEARN_COPY as LCOPY,
@@ -49,6 +53,18 @@ function renderShell(page: Parameters<typeof CompassJeffMvpShell>[0]['page'] = '
       <AccountProvider>
         <FeatureFlagProvider>
           <CompassJeffMvpShell page={page} onSelectPage={() => {}} />
+        </FeatureFlagProvider>
+      </AccountProvider>
+    </MemoryRouter>,
+  )
+}
+
+function renderPractice() {
+  return render(
+    <MemoryRouter>
+      <AccountProvider>
+        <FeatureFlagProvider>
+          <CompassJeffMvpPractice />
         </FeatureFlagProvider>
       </AccountProvider>
     </MemoryRouter>,
@@ -251,15 +267,18 @@ describe('Jeff’s Compass MVP — the pages not built yet', () => {
     /* ⚠ THE DECISION THIS PINS, and it is the one `CompassContentPending`
        made first: a silent fallback renders shipped work under Jeff's name,
        the reviewer believes it is his, and nothing on screen corrects them. */
-    renderShell('practice')
-    expect(screen.getByRole('region', { name: /Practice — not ported yet/ })).toBeInTheDocument()
+    /* Flashcards, because Practice is ported now. Whichever page this names
+       must be one `JEFF_MVP_PAGES` still marks unported — the test below
+       walks them all, so this one only has to pick a live example. */
+    renderShell('flashcards')
+    expect(screen.getByRole('region', { name: /Flashcards — not ported yet/ })).toBeInTheDocument()
     expect(screen.getByText(/not in the React port yet/)).toBeInTheDocument()
-    // and it must NOT have rendered the product's own Practice surface
+    // and it must NOT have rendered any ported surface in its place
     expect(screen.queryByText(COPY.topicsTitle)).toBeNull()
   })
 
   it('keeps the rail on an unported page, so there is a way out', () => {
-    renderShell('flashcards')
+    renderShell('exam-simulator')
     expect(screen.getByRole('navigation', { name: 'Compass pages' })).toBeInTheDocument()
   })
 
@@ -268,7 +287,7 @@ describe('Jeff’s Compass MVP — the pages not built yet', () => {
        the only `ported: true` row today; when the next page lands, this test
        is the reminder to flip its flag. */
     const ported = JEFF_MVP_PAGES.filter((p) => p.ported).map((p) => p.page)
-    expect(ported).toEqual(['overview', 'learn', 'readiness'])
+    expect(ported).toEqual(['overview', 'learn', 'practice', 'readiness'])
     for (const p of JEFF_MVP_PAGES) {
       if (p.ported) continue
       const { unmount } = renderShell(p.page)
@@ -528,5 +547,131 @@ describe('Jeff’s Compass MVP — the Overview against his build', () => {
        two numbers — so Learn's is a slip. Both carried verbatim. */
     expect(OCOPY.progressRingDash).toBe('192.0 314.2')
     expect(LCOPY.courseRingDash).toBe('180.0 314.2')
+  })
+})
+
+describe('Jeff’s Compass MVP — Practice against his build', () => {
+  const user = () => userEvent.setup()
+
+  it('renders every string his default state renders', () => {
+    const { container } = renderPractice()
+    const mine = flat(container.textContent ?? '')
+    expect(parity.practice_topics_table.filter((s) => !mine.includes(flat(s)))).toEqual([])
+  })
+
+  it('regroups, not filters, when the tab changes', async () => {
+    /* ⚠ Topics gives five groups of 21 sets; Subtopics gives ONE group of the
+       same 21 with a topic eyebrow on each; Bookmarked gives the 2 that have
+       bookmarks. Three groupings, stored separately, because his `groups` is
+       rebuilt per tab. */
+    expect(PR.topics.length).toBe(5)
+    expect(PR.subtopics.length).toBe(1)
+    expect(PR.bookmarked.length).toBe(1)
+    const count = (g: typeof PR.topics) => g.reduce((n, x) => n + x.sets.length, 0)
+    expect(count(PR.topics)).toBe(21)
+    expect(count(PR.subtopics)).toBe(21)
+    expect(count(PR.bookmarked)).toBe(2)
+
+    const u = user()
+    const { container } = renderPractice()
+    await u.click(screen.getByRole('tab', { name: /Subtopics/ }))
+    let mine = flat(container.textContent ?? '')
+    expect(parity.practice_subtopics_table.filter((s) => !mine.includes(flat(s)))).toEqual([])
+    await u.click(screen.getByRole('tab', { name: /Bookmarked/ }))
+    mine = flat(container.textContent ?? '')
+    expect(parity.practice_bookmarked_table.filter((s) => !mine.includes(flat(s)))).toEqual([])
+  })
+
+  it('renders his cards view', async () => {
+    const u = user()
+    const { container } = renderPractice()
+    await u.click(screen.getByRole('button', { name: /^Cards$/ }))
+    const mine = flat(container.textContent ?? '')
+    expect(parity.practice_topics_cards.filter((s) => !mine.includes(flat(s)))).toEqual([])
+  })
+
+  it('filters to his result, and empties to his empty state', async () => {
+    /* ⚠ THE FILTERS ARE DERIVED, not stored — the one place this port departs
+       from "render what he rendered". These two assertions are what make that
+       safe: the derived output is checked against his captured render. */
+    const u = user()
+    const { container } = renderPractice()
+    await u.click(screen.getByRole('button', { name: /^Low$/ }))
+    let mine = flat(container.textContent ?? '')
+    expect(parity.practice_filter_low.filter((s) => !mine.includes(flat(s)))).toEqual([])
+
+    await u.click(screen.getByRole('button', { name: /^Low$/ }))
+    await u.click(screen.getByRole('button', { name: /^High$/ }))
+    mine = flat(container.textContent ?? '')
+    expect(parity.practice_filter_empty.filter((s) => !mine.includes(flat(s)))).toEqual([])
+    expect(screen.getByText(PCOPY.emptyTitle)).toBeInTheDocument()
+  })
+
+  it('never matches an unstarted set, whatever the filter', () => {
+    /* ⚠ HIS RULE, AND THE REASON THE EMPTY STATE EXISTS. Both halves require
+       `started`, so an unstarted set cannot match on confidence OR band — it
+       is hidden, not shown unmatched. Picking High empties the page because
+       nothing has been practised well yet. */
+    const all = PR.topics.flatMap((g) => g.sets)
+    const unstarted = all.filter((s) => !s.started)
+    expect(unstarted.length).toBeGreaterThan(0)
+    for (const s of unstarted) {
+      expect(practiceMatches(s, ['Low'], [])).toBe(false)
+      expect(practiceMatches(s, [], ['Beginner'])).toBe(false)
+      // …but no filter at all still shows it
+      expect(practiceMatches(s, [], [])).toBe(true)
+    }
+    // and High matches nothing at all, started or not
+    expect(all.some((s) => practiceMatches(s, ['High'], []))).toBe(false)
+  })
+
+  it('shows a dash for an unstarted set rather than its stored band', () => {
+    /* ⚠ His data carries a band and a confidence on unstarted sets so the
+       filter has something to test. Printing them would put a Readiness band
+       on a set nobody has opened. */
+    const unstarted = PR.topics[0].sets.find((s) => !s.started)!
+    expect(unstarted.band).toBeTruthy()
+    expect(unstarted.conf).toBeTruthy()
+    expect(unstarted.status).toBe(PCOPY.notStarted)
+    renderPractice()
+    const dashes = screen.getAllByText(PCOPY.dash)
+    expect(dashes.length).toBeGreaterThan(0)
+  })
+
+  it('labels the confidence pill in both views and the band only on a card', async () => {
+    /* ⚠ ASYMMETRIC, AND HIS. The first pass assumed the table labelled
+       neither and lost the word from twenty-one rows. */
+    const u = user()
+    const { container } = renderPractice()
+    const tableWords = container.querySelectorAll('.cjm-pr__table .cjm-pr__confword')
+    expect(tableWords.length).toBeGreaterThan(0)
+    expect([...tableWords].every((w) => w.textContent === PCOPY.confidenceWord)).toBe(true)
+    await u.click(screen.getByRole('button', { name: /^Cards$/ }))
+    expect(screen.getAllByText(PCOPY.readinessWord).length).toBeGreaterThan(0)
+  })
+
+  it('offers Clear filters only once something is filtered', async () => {
+    const u = user()
+    renderPractice()
+    expect(screen.queryByRole('button', { name: PCOPY.clearFilters })).toBeNull()
+    await u.click(screen.getByRole('button', { name: /^Low$/ }))
+    expect(screen.getAllByRole('button', { name: PCOPY.clearFilters }).length).toBeGreaterThan(0)
+  })
+
+  it('dismisses the lead, as his does', async () => {
+    const u = user()
+    renderPractice()
+    expect(screen.getByText(PCOPY.lead)).toBeInTheDocument()
+    await u.click(screen.getByRole('button', { name: PCOPY.dismissLabel }))
+    expect(screen.queryByText(PCOPY.lead)).toBeNull()
+  })
+
+  it('drops a group whose every set is filtered out', () => {
+    /* A header over nothing is worse than no header. */
+    const low = PR.topics
+      .map((g) => g.sets.filter((s) => practiceMatches(s, ['Low'], [])))
+      .filter((sets) => sets.length > 0)
+    expect(low.length).toBe(2)
+    expect(PR.topics.length).toBe(5)
   })
 })

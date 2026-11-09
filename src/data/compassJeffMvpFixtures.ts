@@ -64,7 +64,7 @@ export const JEFF_MVP_PAGES = [
   { page: 'learn', label: 'Learn', ported: true },
   { page: 'study-planner', label: 'Study planner', ported: false },
   { page: 'prep-review', label: 'Prep Review', ported: false },
-  { page: 'practice', label: 'Practice', ported: false },
+  { page: 'practice', label: 'Practice', ported: true },
   { page: 'flashcards', label: 'Flashcards', ported: false },
   { page: 'exam-simulator', label: 'Exam Simulator', ported: false },
   { page: 'readiness', label: 'Readiness', ported: true },
@@ -3228,3 +3228,1146 @@ export const JEFF_MVP_OVERVIEW_COPY = {
   footnote:
     'Two separate signals: lessons build Progress, Exam Prep practice builds Readiness. Course activity doesn’t change your Readiness.',
 } as const
+
+/**
+ * THE PRACTICE PAGE — the heart of his EXAM PREP group, ported 2026-11-09.
+ *
+ * Two recommendations over a filterable catalogue of twenty-one question
+ * sets. It is the page the other two ported pages point at: every Practice
+ * button on Readiness and the Overview lands here.
+ *
+ * ⚠ THREE TABS ARE THREE GROUPINGS, NOT A FILTER. Topics gives five groups of
+ * sets; Subtopics gives one flat group of the same twenty-one with a topic
+ * eyebrow on each row; Bookmarked gives the two sets that have bookmarks,
+ * with their counts. His `groups` is rebuilt per tab, so all three are stored.
+ *
+ * ⚠ THE FILTERS ARE DERIVED, NOT STORED, and that is the one place this
+ * fixture departs from "store what he rendered". His rule is four lines and
+ * explicit (`pass()` in his `baseVals`), and storing the cross-product of
+ * three confidence levels and four Readiness bands would be fifty-odd
+ * snapshots of the same twenty-one sets. `practiceMatches` ports the rule;
+ * the suite checks the derived result against his rendered output for the
+ * filtered and empty states.
+ *
+ * ⚠ HIS FILTER ONLY EVER MATCHES STARTED SETS — `x.started && …` on both
+ * halves. Filtering by Low confidence therefore hides every not-started set
+ * rather than showing them as unmatched, and the empty state says why in his
+ * own words: "Confidence and Readiness appear once you start a set."
+ *
+ * ⚠ BAND AND CONFIDENCE ARE STORED ON NOT-STARTED SETS TOO. His table draws
+ * "—" for both there; the values exist so the filter has something to test.
+ * Reading them as display data would put a Readiness band on a set nobody
+ * has opened.
+ */
+/**
+ * ⚠ THE PRACTICE FIXTURE IS TYPED RATHER THAN `as const`, unlike the three
+ * above it. Its three tabs are three arrays of the SAME shape, and `as const`
+ * gives each a distinct tuple-of-literals type — so `PR[tab]`, where `tab` is
+ * a union, is a union of three incompatible array types and nothing can be
+ * written that renders all three. Declaring the shape once is the fix, and it
+ * costs nothing the other fixtures need: those are read a field at a time.
+ */
+export type JeffMvpPracticeSet = {
+  title: string
+  topic: string
+  hasEyebrow: boolean
+  bmk: number
+  hasBmk: boolean
+  bmkText: string
+  started: boolean
+  band: string
+  conf: string
+  confBg: string
+  confBorder: string
+  confInk: string
+  status: string
+  barW: string
+  barMin: string
+  aria: string
+}
+export type JeffMvpPracticeGroup = {
+  id: string
+  title: string
+  meta: string
+  hasHeader: boolean
+  sets: JeffMvpPracticeSet[]
+}
+export type JeffMvpPracticePill = { label: string; bg: string; border: string; ink: string }
+export type JeffMvpPracticeRec = {
+  kind: string
+  kindTone: string
+  topic: string
+  title: string
+  why: string
+  meta: string
+  cta: string
+  ready: number
+  cov: number
+  covLabel: string
+  covDetail: string
+  covNote: string
+  timeLabel: string
+  hasDue: boolean
+  due: string
+  rowMeta: string
+  band: string
+  bandInk: string
+  bandBg: string
+  bandBorder: string
+  readyTone: string
+  readyDash: string
+  covDash: string
+  ringAria: string
+}
+export type JeffMvpPractice = {
+  weakest: JeffMvpPracticeRec
+  spaced: JeffMvpPracticeRec
+  tabs: { label: string; sub: string }[]
+  views: { label: string }[]
+  confPills: JeffMvpPracticePill[]
+  readyPills: JeffMvpPracticePill[]
+  topics: JeffMvpPracticeGroup[]
+  subtopics: JeffMvpPracticeGroup[]
+  bookmarked: JeffMvpPracticeGroup[]
+}
+
+export const JEFF_MVP_PRACTICE: JeffMvpPractice = {
+  weakest: {
+    kind: 'Weakest set',
+    kindTone: 'rubi',
+    topic: 'P&C insurance terms and concepts',
+    title: 'Property and Casualty Insurance Principles and Concepts',
+    why: 'Your lowest set. You’ve seen only 12 of its 68 questions so far, so a focused round here is the biggest lift to your Readiness.',
+    meta: '68 questions · about 20 min',
+    cta: 'Start set',
+    ready: 9,
+    cov: 18,
+    covLabel: 'Coverage',
+    covDetail: '12 of 68 questions answered',
+    covNote: '· 12 of 68 questions',
+    timeLabel: '20 min',
+    hasDue: false,
+    due: '',
+    rowMeta: '',
+    band: 'Beginner',
+    bandInk: 'beginner-ink',
+    bandBg: 'beginner-wash',
+    bandBorder: 'edge',
+    readyTone: 'beginner-bar',
+    readyDash: '29.4 999',
+    covDash: '45.2 999',
+    ringAria: 'Readiness 9%, Beginner. Coverage 18%: 12 of 68 questions answered.'
+  },
+  spaced: {
+    kind: 'Spaced review',
+    kindTone: 'steel-deep',
+    topic: 'P&C insurance terms and concepts',
+    title: 'Overview of the Insurance Industry',
+    why: 'Due for review. You last practiced this 6 days ago, so a short round now helps it stick.',
+    meta: '30 questions · due today',
+    cta: 'Start set',
+    ready: 34,
+    cov: 100,
+    covLabel: 'Coverage',
+    covDetail: '30 of 30 questions answered',
+    covNote: '',
+    timeLabel: '',
+    hasDue: true,
+    due: 'Due today',
+    rowMeta: 'last practiced 6 days ago',
+    band: 'Beginner',
+    bandInk: 'beginner-ink',
+    bandBg: 'beginner-wash',
+    bandBorder: 'edge',
+    readyTone: 'beginner-bar',
+    readyDash: '83.3 999',
+    covDash: '182.2 999',
+    ringAria: 'Readiness 34%, Beginner. Coverage 100%: 30 of 30 questions answered.'
+  },
+  tabs: [
+    {
+      label: 'Topics',
+      sub: '5 topics · 21 sets'
+    },
+    {
+      label: 'Subtopics',
+      sub: '21 sets'
+    },
+    {
+      label: 'Bookmarked',
+      sub: '3 questions · 2 sets'
+    }
+  ],
+  views: [
+    {
+      label: 'Table'
+    },
+    {
+      label: 'Cards'
+    }
+  ],
+  confPills: [
+    {
+      label: 'Low',
+      bg: 'white',
+      border: 'conf-low-edge',
+      ink: 'conf-low-ink'
+    },
+    {
+      label: 'Medium',
+      bg: 'white',
+      border: 'conf-med-edge',
+      ink: 'conf-med-ink'
+    },
+    {
+      label: 'High',
+      bg: 'white',
+      border: 'conf-high-edge',
+      ink: 'conf-high-ink'
+    }
+  ],
+  readyPills: [
+    {
+      label: 'Beginner',
+      bg: 'beginner-wash',
+      border: 'edge',
+      ink: 'beginner-ink'
+    },
+    {
+      label: 'Developing',
+      bg: 'developing-wash',
+      border: 'developing-edge',
+      ink: 'developing-ink'
+    },
+    {
+      label: 'Proficient',
+      bg: 'proficient-wash',
+      border: 'steel-edge',
+      ink: 'proficient-ink'
+    },
+    {
+      label: 'Ready',
+      bg: 'ready-wash',
+      border: 'ready-edge',
+      ink: 'ready-ink'
+    }
+  ],
+  topics: [
+    {
+      id: 'grp-0',
+      title: 'Types of casualty policies',
+      meta: '1 of 206 questions correct · 0%',
+      hasHeader: true,
+      sets: [
+        {
+          title: 'Prep Review: Types of Casualty Insurance Policies - Personal Lines - Pearson Vue',
+          topic: 'Types of casualty policies',
+          hasEyebrow: false,
+          bmk: 2,
+          hasBmk: false,
+          bmkText: '2 bookmarked',
+          started: true,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: '1 of 45 correct · 2%',
+          barW: '2%',
+          barMin: '6px',
+          aria: '1 of 45 correct'
+        },
+        {
+          title: 'Personal Automobile Policies (PAP)',
+          topic: 'Types of casualty policies',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Prep Review Exam: Types of Casualty Insurance Policies - Personal Lines - Pearson Vue',
+          topic: 'Types of casualty policies',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Types of casualty policies',
+          topic: 'Types of casualty policies',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Umbrella and excess liability',
+          topic: 'Types of casualty policies',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        }
+      ]
+    },
+    {
+      id: 'grp-1',
+      title: 'Property and casualty insurance terms and related concepts',
+      meta: '1 of 375 questions correct · 0%',
+      hasHeader: true,
+      sets: [
+        {
+          title: 'General Insurance Principles and Concepts',
+          topic: 'Property and casualty insurance terms and related concepts',
+          hasEyebrow: false,
+          bmk: 1,
+          hasBmk: false,
+          bmkText: '1 bookmarked',
+          started: true,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: '1 of 60 correct · 2%',
+          barW: '2%',
+          barMin: '6px',
+          aria: '1 of 60 correct'
+        },
+        {
+          title: 'Overview of the Insurance Industry',
+          topic: 'Property and casualty insurance terms and related concepts',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: true,
+          band: 'Beginner',
+          conf: 'Medium',
+          confBg: 'conf-med-bg',
+          confBorder: 'conf-med-edge',
+          confInk: 'conf-med-ink',
+          status: '0 of 30 correct · 0%',
+          barW: '0%',
+          barMin: '0px',
+          aria: '0 of 30 correct'
+        },
+        {
+          title: 'Property and Casualty Insurance Principles and Concepts',
+          topic: 'Property and casualty insurance terms and related concepts',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: true,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: '0 of 68 correct · 0%',
+          barW: '0%',
+          barMin: '0px',
+          aria: '0 of 68 correct'
+        },
+        {
+          title: 'Property and casualty insurance terms and related concepts',
+          topic: 'Property and casualty insurance terms and related concepts',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Property and Casualty Insurance Terms and Related Concepts Review',
+          topic: 'Property and casualty insurance terms and related concepts',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        }
+      ]
+    },
+    {
+      id: 'grp-2',
+      title: 'Florida statutes, rules and regulations',
+      meta: '0 of 321 questions correct · 0%',
+      hasHeader: true,
+      sets: [
+        {
+          title: 'Florida laws common to all lines (agents, licensing, the Department)',
+          topic: 'Florida statutes, rules and regulations',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Florida laws for personal lines (policies, claims, auto, hurricane)',
+          topic: 'Florida statutes, rules and regulations',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Florida Personal Lines Laws and Rules.',
+          topic: 'Florida statutes, rules and regulations',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Prep Review: Florida Personal Lines Laws and Rules',
+          topic: 'Florida statutes, rules and regulations',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        }
+      ]
+    },
+    {
+      id: 'grp-3',
+      title: 'Property and casualty policy provisions and contract law',
+      meta: '0 of 190 questions correct · 0%',
+      hasHeader: true,
+      sets: [
+        {
+          title: 'Property and Casualty Insurance Policy Provisions',
+          topic: 'Property and casualty policy provisions and contract law',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Property and Casualty Insurance Policy Provisions and Contract Law Review',
+          topic: 'Property and casualty policy provisions and contract law',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Property and casualty policy provisions and contract law',
+          topic: 'Property and casualty policy provisions and contract law',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        }
+      ]
+    },
+    {
+      id: 'grp-4',
+      title: 'Types of property policies',
+      meta: '0 of 232 questions correct · 0%',
+      hasHeader: true,
+      sets: [
+        {
+          title: 'Dwelling Property (DP) Insurance Policies',
+          topic: 'Types of property policies',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Homeowners (HO) Insurance Policies',
+          topic: 'Types of property policies',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Other Personal Lines Insurance',
+          topic: 'Types of property policies',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Types of property policies',
+          topic: 'Types of property policies',
+          hasEyebrow: false,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        }
+      ]
+    }
+  ],
+  subtopics: [
+    {
+      id: 'grp-flat',
+      title: 'All subtopic sets',
+      meta: '',
+      hasHeader: false,
+      sets: [
+        {
+          title: 'Prep Review: Types of Casualty Insurance Policies - Personal Lines - Pearson Vue',
+          topic: 'Types of casualty policies',
+          hasEyebrow: true,
+          bmk: 2,
+          hasBmk: false,
+          bmkText: '2 bookmarked',
+          started: true,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: '1 of 45 correct · 2%',
+          barW: '2%',
+          barMin: '6px',
+          aria: '1 of 45 correct'
+        },
+        {
+          title: 'Personal Automobile Policies (PAP)',
+          topic: 'Types of casualty policies',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Prep Review Exam: Types of Casualty Insurance Policies - Personal Lines - Pearson Vue',
+          topic: 'Types of casualty policies',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Types of casualty policies',
+          topic: 'Types of casualty policies',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Umbrella and excess liability',
+          topic: 'Types of casualty policies',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'General Insurance Principles and Concepts',
+          topic: 'Property and casualty insurance terms and related concepts',
+          hasEyebrow: true,
+          bmk: 1,
+          hasBmk: false,
+          bmkText: '1 bookmarked',
+          started: true,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: '1 of 60 correct · 2%',
+          barW: '2%',
+          barMin: '6px',
+          aria: '1 of 60 correct'
+        },
+        {
+          title: 'Overview of the Insurance Industry',
+          topic: 'Property and casualty insurance terms and related concepts',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: true,
+          band: 'Beginner',
+          conf: 'Medium',
+          confBg: 'conf-med-bg',
+          confBorder: 'conf-med-edge',
+          confInk: 'conf-med-ink',
+          status: '0 of 30 correct · 0%',
+          barW: '0%',
+          barMin: '0px',
+          aria: '0 of 30 correct'
+        },
+        {
+          title: 'Property and Casualty Insurance Principles and Concepts',
+          topic: 'Property and casualty insurance terms and related concepts',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: true,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: '0 of 68 correct · 0%',
+          barW: '0%',
+          barMin: '0px',
+          aria: '0 of 68 correct'
+        },
+        {
+          title: 'Property and casualty insurance terms and related concepts',
+          topic: 'Property and casualty insurance terms and related concepts',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Property and Casualty Insurance Terms and Related Concepts Review',
+          topic: 'Property and casualty insurance terms and related concepts',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Florida laws common to all lines (agents, licensing, the Department)',
+          topic: 'Florida statutes, rules and regulations',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Florida laws for personal lines (policies, claims, auto, hurricane)',
+          topic: 'Florida statutes, rules and regulations',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Florida Personal Lines Laws and Rules.',
+          topic: 'Florida statutes, rules and regulations',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Prep Review: Florida Personal Lines Laws and Rules',
+          topic: 'Florida statutes, rules and regulations',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Property and Casualty Insurance Policy Provisions',
+          topic: 'Property and casualty policy provisions and contract law',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Property and Casualty Insurance Policy Provisions and Contract Law Review',
+          topic: 'Property and casualty policy provisions and contract law',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Property and casualty policy provisions and contract law',
+          topic: 'Property and casualty policy provisions and contract law',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Dwelling Property (DP) Insurance Policies',
+          topic: 'Types of property policies',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Homeowners (HO) Insurance Policies',
+          topic: 'Types of property policies',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Other Personal Lines Insurance',
+          topic: 'Types of property policies',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        },
+        {
+          title: 'Types of property policies',
+          topic: 'Types of property policies',
+          hasEyebrow: true,
+          bmk: 0,
+          hasBmk: false,
+          bmkText: '0 bookmarked',
+          started: false,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: 'Not started',
+          barW: '0%',
+          barMin: '0px',
+          aria: ''
+        }
+      ]
+    }
+  ],
+  bookmarked: [
+    {
+      id: 'grp-flat',
+      title: 'Bookmarked sets',
+      meta: '',
+      hasHeader: false,
+      sets: [
+        {
+          title: 'Prep Review: Types of Casualty Insurance Policies - Personal Lines - Pearson Vue',
+          topic: 'Types of casualty policies',
+          hasEyebrow: true,
+          bmk: 2,
+          hasBmk: true,
+          bmkText: '2 bookmarked',
+          started: true,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: '1 of 45 correct · 2%',
+          barW: '2%',
+          barMin: '6px',
+          aria: '1 of 45 correct'
+        },
+        {
+          title: 'General Insurance Principles and Concepts',
+          topic: 'Property and casualty insurance terms and related concepts',
+          hasEyebrow: true,
+          bmk: 1,
+          hasBmk: true,
+          bmkText: '1 bookmarked',
+          started: true,
+          band: 'Beginner',
+          conf: 'Low',
+          confBg: 'conf-low-bg',
+          confBorder: 'conf-low-edge',
+          confInk: 'conf-low-ink',
+          status: '1 of 60 correct · 2%',
+          barW: '2%',
+          barMin: '6px',
+          aria: '1 of 60 correct'
+        }
+      ]
+    }
+  ]
+}
+
+/**
+ * HIS PRACTICE PROSE. Template text, transcribed from the rendered page.
+ *
+ * ⚠ THE LEAD IS DISMISSIBLE — his `introOpen` / `dismissIntro`. It opens on,
+ * and closing it is remembered for the session only.
+ */
+export const JEFF_MVP_PRACTICE_COPY = {
+  title: 'Practice',
+  course: 'Florida Life and Health Pre-licensing',
+  lead: 'Answer, review, repeat to get Exam Day Ready. Build custom sessions for weak topics. Rubi reviews answers and links to course refreshers.',
+  dismissLabel: 'Dismiss',
+
+  rubiEyebrow: 'Rubi recommends',
+  readinessLabel: 'Readiness',
+  aboutLabel: 'About',
+
+  filterBy: 'Filter by:',
+  confidenceLabel: 'Confidence',
+  readinessFilterLabel: 'Readiness',
+  clearFilters: 'Clear filters',
+
+  /* The table's five column heads. The last is a blank cell over the action
+     column, which is why his header row reads SET · CONFIDENCE · READINESS ·
+     PROGRESS and then a visually-hidden "Action". */
+  cols: ['Set', 'Confidence', 'Readiness', 'Progress'],
+  actionCol: 'Action',
+  notStarted: 'Not started',
+  startSet: 'Start set',
+  /* ⚠ ASYMMETRIC, AND IT IS HIS. The CONFIDENCE pill is labelled in BOTH
+     views — "Low / confidence" — but the Readiness band is labelled only on a
+     card, never in the table. Measured on his render; the first pass assumed
+     the table labelled neither (the column heads say it) and lost the word
+     from twenty-one rows. */
+  confidenceWord: 'confidence',
+  readinessWord: 'readiness',
+  dash: '—',
+
+  emptyTitle: 'No sets match these filters',
+  emptyBody:
+    'Confidence and Readiness appear once you start a set. Try another level, or clear the filters to see everything.',
+} as const
+
+/**
+ * HIS FILTER RULE, PORTED — `pass()` from his `baseVals`.
+ *
+ * ⚠ BOTH HALVES REQUIRE `started`. An unstarted set has no confidence and no
+ * Readiness to compare, so it cannot match a filter on either; his page hides
+ * it rather than showing it as unmatched. That is why picking High confidence
+ * empties the page completely, and why the empty state explains itself in
+ * terms of starting a set rather than of the filter.
+ *
+ * ⚠ EMPTY SELECTION MEANS "NO FILTER", not "match nothing" — `!sel.length` is
+ * the first test on each half.
+ */
+export function practiceMatches(
+  set: { started: boolean; conf: string; band: string },
+  conf: readonly string[],
+  ready: readonly string[],
+): boolean {
+  const byConf = !conf.length || (set.started && conf.includes(set.conf))
+  const byReady = !ready.length || (set.started && ready.includes(set.band))
+  return byConf && byReady
+}
