@@ -267,7 +267,7 @@ export function CompassJeffMvpReadiness({
                     type="button"
                     className="cjm-chev"
                     aria-expanded={expanded}
-                    aria-label={r.chevLabel}
+                    aria-label={expanded ? r.collapseLabel : r.expandLabel}
                     onClick={() => setOpen((o) => ({ ...o, [r.name]: !expanded }))}
                   >
                     <ChevronDown

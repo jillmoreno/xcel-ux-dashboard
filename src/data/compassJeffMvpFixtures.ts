@@ -60,7 +60,7 @@ export const JEFF_MVP_RAIL = {
 
 /** Every page his rail can reach, and whether this port has built it yet. */
 export const JEFF_MVP_PAGES = [
-  { page: 'overview', label: 'Overview', ported: false },
+  { page: 'overview', label: 'Overview', ported: true },
   { page: 'learn', label: 'Learn', ported: true },
   { page: 'study-planner', label: 'Study planner', ported: false },
   { page: 'prep-review', label: 'Prep Review', ported: false },
@@ -288,7 +288,8 @@ export const JEFF_MVP_READINESS = {
         }
       ],
       toggleLabel: 'Hide 3 sub-topics',
-      chevLabel: 'Collapse Annuities sub-topics'
+      expandLabel: 'Expand Annuities sub-topics',
+      collapseLabel: 'Collapse Annuities sub-topics'
     },
     {
       name: 'Policy Provisions',
@@ -481,7 +482,8 @@ export const JEFF_MVP_READINESS = {
         }
       ],
       toggleLabel: 'Show 4 sub-topics',
-      chevLabel: 'Expand Policy Provisions sub-topics'
+      expandLabel: 'Expand Policy Provisions sub-topics',
+      collapseLabel: 'Collapse Policy Provisions sub-topics'
     },
     {
       name: 'Insurance Regulation',
@@ -640,7 +642,8 @@ export const JEFF_MVP_READINESS = {
         }
       ],
       toggleLabel: 'Show 3 sub-topics',
-      chevLabel: 'Expand Insurance Regulation sub-topics'
+      expandLabel: 'Expand Insurance Regulation sub-topics',
+      collapseLabel: 'Collapse Insurance Regulation sub-topics'
     },
     {
       name: 'Health Insurance',
@@ -799,7 +802,8 @@ export const JEFF_MVP_READINESS = {
         }
       ],
       toggleLabel: 'Show 3 sub-topics',
-      chevLabel: 'Expand Health Insurance sub-topics'
+      expandLabel: 'Expand Health Insurance sub-topics',
+      collapseLabel: 'Collapse Health Insurance sub-topics'
     },
     {
       name: 'Life Insurance',
@@ -958,7 +962,8 @@ export const JEFF_MVP_READINESS = {
         }
       ],
       toggleLabel: 'Show 3 sub-topics',
-      chevLabel: 'Expand Life Insurance sub-topics'
+      expandLabel: 'Expand Life Insurance sub-topics',
+      collapseLabel: 'Collapse Life Insurance sub-topics'
     }
   ],
   bandHelp: [
@@ -2077,4 +2082,1149 @@ export const JEFF_MVP_LEARN_COPY = {
   finalExamTitle: 'Certification Exam: Florida Life and Health Pre-licensing',
   finalNote: 'Opens after all 19 chapters',
   finalStatus: 'Locked',
+} as const
+
+/**
+ * THE OVERVIEW — his first rail row, and the page his own export opens on.
+ * Ported 2026-11-09.
+ *
+ * ⚠ IT IS TWO TABLES, NOT ONE. The tab strip under the two stat cards swaps
+ * the whole lower half: "Readiness" draws five exam topics plus the Exam
+ * Simulator, scored out of 85; "Course progress" draws five course topics
+ * scored in lessons. The TITLE, the SUMMARY and the COLUMN HEADS all change
+ * with it — this is not one table with a filter. Both states are extracted,
+ * each with every row open.
+ *
+ * ⚠ THE LAST READINESS ROW IS NOT A TOPIC. The Exam Simulator row carries
+ * `hasPie: false`, `noBand: true` and `noExpand: true`: no share-of-exam
+ * wedge, no Readiness band, no chevron, and "Uses all topics" where a band
+ * would be. Rendering it like the five above it would claim a Readiness score
+ * for something his design deliberately leaves unscored.
+ *
+ * ⚠ THE THREE-ARC RING'S OUTER ARC IS EMPTY ON PURPOSE — `0 483.8`, with a
+ * BUTT cap rather than the round caps the other two use, because a round cap
+ * on a zero-length arc draws a dot. Nought of three simulator exams taken is
+ * the state his page is in, and the ring says so by showing nothing.
+ */
+export const JEFF_MVP_OVERVIEW = {
+  tabs: [
+    {
+      label: 'Readiness',
+      sub: '62% · Developing · by topic and sub-topic'
+    },
+    {
+      label: 'Course progress',
+      sub: '61% · 22 of 36 lessons'
+    }
+  ],
+  readiness: {
+    tableTitle: 'Your prep by exam topic',
+    summary: '0 of 5 topics Ready · Annuities is the biggest lift',
+    tableNote: 'Ready at 85% · from Exam Prep practice only · bar = share of the exam',
+    rows: [
+      {
+        name: 'Life Insurance',
+        weight: '22% of exam',
+        hasPie: true,
+        barW: '22%',
+        practice: '30 of 60 answered',
+        hasCov: true,
+        covPct: '50%',
+        hasBand: true,
+        band: 'Proficient',
+        bandTone: 'proficient-ink',
+        bandBg: 'proficient-wash',
+        bandBorder: 'steel-edge',
+        num: '74',
+        bandNote: '',
+        last: '5 days ago',
+        action: 'Practice',
+        isPrimary: false,
+        canExpand: true,
+        expanded: false,
+        expandLabel: 'Expand Life Insurance sub-topics',
+        collapseLabel: 'Collapse Life Insurance sub-topics',
+        subs: [
+          {
+            name: 'Policy types: term, whole, universal',
+            num: '67',
+            weight: 600,
+            note: 'Weakest',
+            noteTone: 'rubi',
+            segs: [
+              {
+                flex: 40,
+                height: 5,
+                tone: 'edge'
+              },
+              {
+                flex: 25,
+                height: 5,
+                tone: 'amber'
+              },
+              {
+                flex: 20,
+                height: 5,
+                tone: 'steel-light'
+              },
+              {
+                flex: 15,
+                height: 5,
+                tone: 'hairline'
+              }
+            ],
+            barTone: 'steel-light',
+            band: 'Proficient',
+            bandTone: 'proficient-ink',
+            bandBg: 'proficient-wash',
+            bandBorder: 'steel-edge',
+            rubi: true,
+            rubiCta: 'Practice',
+            mins: '12 min'
+          },
+          {
+            name: 'Underwriting & insurable interest',
+            num: '76',
+            weight: 400,
+            note: '',
+            noteTone: 'muted',
+            segs: [
+              {
+                flex: 40,
+                height: 5,
+                tone: 'edge'
+              },
+              {
+                flex: 25,
+                height: 5,
+                tone: 'amber'
+              },
+              {
+                flex: 20,
+                height: 5,
+                tone: 'steel-light'
+              },
+              {
+                flex: 15,
+                height: 5,
+                tone: 'hairline'
+              }
+            ],
+            barTone: 'steel-light',
+            band: 'Proficient',
+            bandTone: 'proficient-ink',
+            bandBg: 'proficient-wash',
+            bandBorder: 'steel-edge',
+            rubi: false,
+            rubiCta: '',
+            mins: ''
+          },
+          {
+            name: 'Owners & beneficiaries',
+            num: '79',
+            weight: 400,
+            note: '',
+            noteTone: 'muted',
+            segs: [
+              {
+                flex: 40,
+                height: 5,
+                tone: 'edge'
+              },
+              {
+                flex: 25,
+                height: 5,
+                tone: 'amber'
+              },
+              {
+                flex: 20,
+                height: 5,
+                tone: 'steel-light'
+              },
+              {
+                flex: 15,
+                height: 5,
+                tone: 'hairline'
+              }
+            ],
+            barTone: 'steel-light',
+            band: 'Proficient',
+            bandTone: 'proficient-ink',
+            bandBg: 'proficient-wash',
+            bandBorder: 'steel-edge',
+            rubi: false,
+            rubiCta: '',
+            mins: ''
+          }
+        ]
+      },
+      {
+        name: 'Policy Provisions',
+        weight: '22% of exam',
+        hasPie: true,
+        barW: '22%',
+        practice: '26 of 60 answered',
+        hasCov: true,
+        covPct: '43%',
+        hasBand: true,
+        band: 'Developing',
+        bandTone: 'developing-ink',
+        bandBg: 'developing-wash',
+        bandBorder: 'developing-edge',
+        num: '58',
+        bandNote: '',
+        last: '2 days ago',
+        action: 'Practice',
+        isPrimary: false,
+        canExpand: true,
+        expanded: false,
+        expandLabel: 'Expand Policy Provisions sub-topics',
+        collapseLabel: 'Collapse Policy Provisions sub-topics',
+        subs: [
+          {
+            name: 'Riders',
+            num: '47',
+            weight: 600,
+            note: 'Weakest',
+            noteTone: 'rubi',
+            segs: [
+              {
+                flex: 40,
+                height: 5,
+                tone: 'edge'
+              },
+              {
+                flex: 25,
+                height: 5,
+                tone: 'amber'
+              },
+              {
+                flex: 20,
+                height: 5,
+                tone: 'hairline'
+              },
+              {
+                flex: 15,
+                height: 5,
+                tone: 'hairline'
+              }
+            ],
+            barTone: 'amber',
+            band: 'Developing',
+            bandTone: 'developing-ink',
+            bandBg: 'developing-wash',
+            bandBorder: 'developing-edge',
+            rubi: true,
+            rubiCta: 'Practice',
+            mins: '12 min'
+          },
+          {
+            name: 'Nonforfeiture options',
+            num: '55',
+            weight: 400,
+            note: '',
+            noteTone: 'muted',
+            segs: [
+              {
+                flex: 40,
+                height: 5,
+                tone: 'edge'
+              },
+              {
+                flex: 25,
+                height: 5,
+                tone: 'amber'
+              },
+              {
+                flex: 20,
+                height: 5,
+                tone: 'hairline'
+              },
+              {
+                flex: 15,
+                height: 5,
+                tone: 'hairline'
+              }
+            ],
+            barTone: 'amber',
+            band: 'Developing',
+            bandTone: 'developing-ink',
+            bandBg: 'developing-wash',
+            bandBorder: 'developing-edge',
+            rubi: false,
+            rubiCta: '',
+            mins: ''
+          },
+          {
+            name: 'Settlement options',
+            num: '63',
+            weight: 400,
+            note: '',
+            noteTone: 'muted',
+            segs: [
+              {
+                flex: 40,
+                height: 5,
+                tone: 'edge'
+              },
+              {
+                flex: 25,
+                height: 5,
+                tone: 'amber'
+              },
+              {
+                flex: 20,
+                height: 5,
+                tone: 'hairline'
+              },
+              {
+                flex: 15,
+                height: 5,
+                tone: 'hairline'
+              }
+            ],
+            barTone: 'amber',
+            band: 'Developing',
+            bandTone: 'developing-ink',
+            bandBg: 'developing-wash',
+            bandBorder: 'developing-edge',
+            rubi: false,
+            rubiCta: '',
+            mins: ''
+          },
+          {
+            name: 'Grace period & reinstatement',
+            num: '67',
+            weight: 400,
+            note: '',
+            noteTone: 'muted',
+            segs: [
+              {
+                flex: 40,
+                height: 5,
+                tone: 'edge'
+              },
+              {
+                flex: 25,
+                height: 5,
+                tone: 'amber'
+              },
+              {
+                flex: 20,
+                height: 5,
+                tone: 'steel-light'
+              },
+              {
+                flex: 15,
+                height: 5,
+                tone: 'hairline'
+              }
+            ],
+            barTone: 'steel-light',
+            band: 'Proficient',
+            bandTone: 'proficient-ink',
+            bandBg: 'proficient-wash',
+            bandBorder: 'steel-edge',
+            rubi: false,
+            rubiCta: '',
+            mins: ''
+          }
+        ]
+      },
+      {
+        name: 'Annuities',
+        weight: '20% of exam',
+        hasPie: true,
+        barW: '20%',
+        practice: '22 of 55 answered',
+        hasCov: true,
+        covPct: '40%',
+        hasBand: true,
+        band: 'Developing',
+        bandTone: 'developing-ink',
+        bandBg: 'developing-wash',
+        bandBorder: 'developing-edge',
+        num: '52',
+        bandNote: '',
+        last: 'Today',
+        action: 'Practice',
+        isPrimary: true,
+        canExpand: true,
+        expanded: true,
+        expandLabel: 'Expand Annuities sub-topics',
+        collapseLabel: 'Collapse Annuities sub-topics',
+        subs: [
+          {
+            name: 'Variable annuities',
+            num: '41',
+            weight: 600,
+            note: 'Weakest',
+            noteTone: 'rubi',
+            segs: [
+              {
+                flex: 40,
+                height: 5,
+                tone: 'edge'
+              },
+              {
+                flex: 25,
+                height: 5,
+                tone: 'amber'
+              },
+              {
+                flex: 20,
+                height: 5,
+                tone: 'hairline'
+              },
+              {
+                flex: 15,
+                height: 5,
+                tone: 'hairline'
+              }
+            ],
+            barTone: 'amber',
+            band: 'Developing',
+            bandTone: 'developing-ink',
+            bandBg: 'developing-wash',
+            bandBorder: 'developing-edge',
+            rubi: true,
+            rubiCta: 'Practice',
+            mins: '12 min'
+          },
+          {
+            name: 'Annuity taxation',
+            num: '55',
+            weight: 400,
+            note: '',
+            noteTone: 'muted',
+            segs: [
+              {
+                flex: 40,
+                height: 5,
+                tone: 'edge'
+              },
+              {
+                flex: 25,
+                height: 5,
+                tone: 'amber'
+              },
+              {
+                flex: 20,
+                height: 5,
+                tone: 'hairline'
+              },
+              {
+                flex: 15,
+                height: 5,
+                tone: 'hairline'
+              }
+            ],
+            barTone: 'amber',
+            band: 'Developing',
+            bandTone: 'developing-ink',
+            bandBg: 'developing-wash',
+            bandBorder: 'developing-edge',
+            rubi: false,
+            rubiCta: '',
+            mins: ''
+          },
+          {
+            name: 'Fixed and indexed annuities',
+            num: '58',
+            weight: 400,
+            note: '',
+            noteTone: 'muted',
+            segs: [
+              {
+                flex: 40,
+                height: 5,
+                tone: 'edge'
+              },
+              {
+                flex: 25,
+                height: 5,
+                tone: 'amber'
+              },
+              {
+                flex: 20,
+                height: 5,
+                tone: 'hairline'
+              },
+              {
+                flex: 15,
+                height: 5,
+                tone: 'hairline'
+              }
+            ],
+            barTone: 'amber',
+            band: 'Developing',
+            bandTone: 'developing-ink',
+            bandBg: 'developing-wash',
+            bandBorder: 'developing-edge',
+            rubi: false,
+            rubiCta: '',
+            mins: ''
+          }
+        ]
+      },
+      {
+        name: 'Health Insurance',
+        weight: '18% of exam',
+        hasPie: true,
+        barW: '18%',
+        practice: '24 of 45 answered',
+        hasCov: true,
+        covPct: '53%',
+        hasBand: true,
+        band: 'Proficient',
+        bandTone: 'proficient-ink',
+        bandBg: 'proficient-wash',
+        bandBorder: 'steel-edge',
+        num: '66',
+        bandNote: '',
+        last: '4 days ago',
+        action: 'Practice',
+        isPrimary: false,
+        canExpand: true,
+        expanded: false,
+        expandLabel: 'Expand Health Insurance sub-topics',
+        collapseLabel: 'Collapse Health Insurance sub-topics',
+        subs: [
+          {
+            name: 'Disability income',
+            num: '59',
+            weight: 600,
+            note: 'Weakest',
+            noteTone: 'rubi',
+            segs: [
+              {
+                flex: 40,
+                height: 5,
+                tone: 'edge'
+              },
+              {
+                flex: 25,
+                height: 5,
+                tone: 'amber'
+              },
+              {
+                flex: 20,
+                height: 5,
+                tone: 'hairline'
+              },
+              {
+                flex: 15,
+                height: 5,
+                tone: 'hairline'
+              }
+            ],
+            barTone: 'amber',
+            band: 'Developing',
+            bandTone: 'developing-ink',
+            bandBg: 'developing-wash',
+            bandBorder: 'developing-edge',
+            rubi: true,
+            rubiCta: 'Practice',
+            mins: '12 min'
+          },
+          {
+            name: 'Medical expense plans',
+            num: '68',
+            weight: 400,
+            note: '',
+            noteTone: 'muted',
+            segs: [
+              {
+                flex: 40,
+                height: 5,
+                tone: 'edge'
+              },
+              {
+                flex: 25,
+                height: 5,
+                tone: 'amber'
+              },
+              {
+                flex: 20,
+                height: 5,
+                tone: 'steel-light'
+              },
+              {
+                flex: 15,
+                height: 5,
+                tone: 'hairline'
+              }
+            ],
+            barTone: 'steel-light',
+            band: 'Proficient',
+            bandTone: 'proficient-ink',
+            bandBg: 'proficient-wash',
+            bandBorder: 'steel-edge',
+            rubi: false,
+            rubiCta: '',
+            mins: ''
+          },
+          {
+            name: 'Medicare & supplements',
+            num: '71',
+            weight: 400,
+            note: '',
+            noteTone: 'muted',
+            segs: [
+              {
+                flex: 40,
+                height: 5,
+                tone: 'edge'
+              },
+              {
+                flex: 25,
+                height: 5,
+                tone: 'amber'
+              },
+              {
+                flex: 20,
+                height: 5,
+                tone: 'steel-light'
+              },
+              {
+                flex: 15,
+                height: 5,
+                tone: 'hairline'
+              }
+            ],
+            barTone: 'steel-light',
+            band: 'Proficient',
+            bandTone: 'proficient-ink',
+            bandBg: 'proficient-wash',
+            bandBorder: 'steel-edge',
+            rubi: false,
+            rubiCta: '',
+            mins: ''
+          }
+        ]
+      },
+      {
+        name: 'Insurance Regulation',
+        weight: '18% of exam',
+        hasPie: true,
+        barW: '18%',
+        practice: '20 of 45 answered',
+        hasCov: true,
+        covPct: '44%',
+        hasBand: true,
+        band: 'Developing',
+        bandTone: 'developing-ink',
+        bandBg: 'developing-wash',
+        bandBorder: 'developing-edge',
+        num: '61',
+        bandNote: '',
+        last: '6 days ago',
+        action: 'Practice',
+        isPrimary: false,
+        canExpand: true,
+        expanded: false,
+        expandLabel: 'Expand Insurance Regulation sub-topics',
+        collapseLabel: 'Collapse Insurance Regulation sub-topics',
+        subs: [
+          {
+            name: 'Florida licensing rules',
+            num: '54',
+            weight: 600,
+            note: 'Weakest',
+            noteTone: 'rubi',
+            segs: [
+              {
+                flex: 40,
+                height: 5,
+                tone: 'edge'
+              },
+              {
+                flex: 25,
+                height: 5,
+                tone: 'amber'
+              },
+              {
+                flex: 20,
+                height: 5,
+                tone: 'hairline'
+              },
+              {
+                flex: 15,
+                height: 5,
+                tone: 'hairline'
+              }
+            ],
+            barTone: 'amber',
+            band: 'Developing',
+            bandTone: 'developing-ink',
+            bandBg: 'developing-wash',
+            bandBorder: 'developing-edge',
+            rubi: true,
+            rubiCta: 'Practice',
+            mins: '12 min'
+          },
+          {
+            name: 'Unfair trade practices',
+            num: '63',
+            weight: 400,
+            note: '',
+            noteTone: 'muted',
+            segs: [
+              {
+                flex: 40,
+                height: 5,
+                tone: 'edge'
+              },
+              {
+                flex: 25,
+                height: 5,
+                tone: 'amber'
+              },
+              {
+                flex: 20,
+                height: 5,
+                tone: 'hairline'
+              },
+              {
+                flex: 15,
+                height: 5,
+                tone: 'hairline'
+              }
+            ],
+            barTone: 'amber',
+            band: 'Developing',
+            bandTone: 'developing-ink',
+            bandBg: 'developing-wash',
+            bandBorder: 'developing-edge',
+            rubi: false,
+            rubiCta: '',
+            mins: ''
+          },
+          {
+            name: 'Replacement & agent duties',
+            num: '66',
+            weight: 400,
+            note: '',
+            noteTone: 'muted',
+            segs: [
+              {
+                flex: 40,
+                height: 5,
+                tone: 'edge'
+              },
+              {
+                flex: 25,
+                height: 5,
+                tone: 'amber'
+              },
+              {
+                flex: 20,
+                height: 5,
+                tone: 'steel-light'
+              },
+              {
+                flex: 15,
+                height: 5,
+                tone: 'hairline'
+              }
+            ],
+            barTone: 'steel-light',
+            band: 'Proficient',
+            bandTone: 'proficient-ink',
+            bandBg: 'proficient-wash',
+            bandBorder: 'steel-edge',
+            rubi: false,
+            rubiCta: '',
+            mins: ''
+          }
+        ]
+      },
+      {
+        name: 'Exam Simulator',
+        weight: 'All topics · 3 full exams',
+        hasPie: false,
+        barW: '0%',
+        practice: '0 of 3 taken',
+        hasCov: false,
+        covPct: '0%',
+        hasBand: false,
+        band: '',
+        bandTone: '',
+        bandBg: '',
+        bandBorder: '',
+        num: '',
+        bandNote: 'Uses all topics',
+        last: '—',
+        action: 'Take Exam',
+        isPrimary: false,
+        canExpand: false,
+        expanded: false,
+        expandLabel: 'Expand Exam Simulator sub-topics',
+        collapseLabel: 'Collapse Exam Simulator sub-topics',
+        subs: []
+      }
+    ]
+  },
+  progress: {
+    tableTitle: 'Course progress by topic',
+    summary: '22 of 36 lessons · 1 of 5 topics complete',
+    tableNote: 'From your course lessons · open in any order',
+    rows: [
+      {
+        name: 'Life Insurance',
+        weight: '8 lessons',
+        lessons: '8 of 8 · complete',
+        tone: 'green',
+        pct: '100%',
+        barTone: 'green',
+        aria: '100% of lessons complete',
+        action: 'Review',
+        isPrimary: false,
+        isText: true,
+        canExpand: true,
+        expandLabel: 'Expand Life Insurance lessons',
+        collapseLabel: 'Collapse Life Insurance lessons',
+        lessonList: [
+          {
+            label: 'Lesson 1: What life insurance does',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 2',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 3',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 4',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 5',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 6',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 7',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 8: Owners, insureds and beneficiaries',
+            status: 'Complete',
+            tone: 'green'
+          }
+        ]
+      },
+      {
+        name: 'Policy Provisions',
+        weight: '8 lessons',
+        lessons: '6 of 8 · in progress',
+        tone: 'steel-deep',
+        pct: '75%',
+        barTone: 'steel',
+        aria: '75% of lessons complete',
+        action: 'Resume lesson',
+        isPrimary: true,
+        isText: false,
+        canExpand: true,
+        expandLabel: 'Expand Policy Provisions lessons',
+        collapseLabel: 'Collapse Policy Provisions lessons',
+        lessonList: [
+          {
+            label: 'Lesson 9',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 10',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 11',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 12',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 13',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 14',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 15',
+            status: 'In progress',
+            tone: 'steel-deep'
+          },
+          {
+            label: 'Lesson 16',
+            status: 'Not started',
+            tone: 'muted'
+          }
+        ]
+      },
+      {
+        name: 'Annuities',
+        weight: '7 lessons',
+        lessons: '4 of 7 · in progress',
+        tone: 'steel-deep',
+        pct: '57%',
+        barTone: 'steel',
+        aria: '57% of lessons complete',
+        action: 'Resume lesson',
+        isPrimary: false,
+        isText: false,
+        canExpand: true,
+        expandLabel: 'Expand Annuities lessons',
+        collapseLabel: 'Collapse Annuities lessons',
+        lessonList: [
+          {
+            label: 'Lesson 17',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 18',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 19: How annuities are funded',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 20',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 21',
+            status: 'In progress',
+            tone: 'steel-deep'
+          },
+          {
+            label: 'Lesson 22',
+            status: 'Not started',
+            tone: 'muted'
+          },
+          {
+            label: 'Lesson 23',
+            status: 'Not started',
+            tone: 'muted'
+          }
+        ]
+      },
+      {
+        name: 'Health Insurance',
+        weight: '7 lessons',
+        lessons: '3 of 7 · in progress',
+        tone: 'steel-deep',
+        pct: '43%',
+        barTone: 'steel',
+        aria: '43% of lessons complete',
+        action: 'Resume lesson',
+        isPrimary: false,
+        isText: false,
+        canExpand: true,
+        expandLabel: 'Expand Health Insurance lessons',
+        collapseLabel: 'Collapse Health Insurance lessons',
+        lessonList: [
+          {
+            label: 'Lesson 24',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 25',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 26',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 27',
+            status: 'In progress',
+            tone: 'steel-deep'
+          },
+          {
+            label: 'Lesson 28',
+            status: 'Not started',
+            tone: 'muted'
+          },
+          {
+            label: 'Lesson 29',
+            status: 'Not started',
+            tone: 'muted'
+          },
+          {
+            label: 'Lesson 30: Disability income insurance',
+            status: 'Not started',
+            tone: 'muted'
+          }
+        ]
+      },
+      {
+        name: 'Insurance Regulation',
+        weight: '6 lessons',
+        lessons: '1 of 6 · in progress',
+        tone: 'steel-deep',
+        pct: '17%',
+        barTone: 'steel',
+        aria: '17% of lessons complete',
+        action: 'Resume lesson',
+        isPrimary: false,
+        isText: false,
+        canExpand: true,
+        expandLabel: 'Expand Insurance Regulation lessons',
+        collapseLabel: 'Collapse Insurance Regulation lessons',
+        lessonList: [
+          {
+            label: 'Lesson 31',
+            status: 'Complete',
+            tone: 'green'
+          },
+          {
+            label: 'Lesson 32',
+            status: 'In progress',
+            tone: 'steel-deep'
+          },
+          {
+            label: 'Lesson 33',
+            status: 'Not started',
+            tone: 'muted'
+          },
+          {
+            label: 'Lesson 34',
+            status: 'Not started',
+            tone: 'muted'
+          },
+          {
+            label: 'Lesson 35',
+            status: 'Not started',
+            tone: 'muted'
+          },
+          {
+            label: 'Lesson 36',
+            status: 'Not started',
+            tone: 'muted'
+          }
+        ]
+      }
+    ]
+  }
+} as const
+
+/**
+ * HIS OVERVIEW PROSE AND FIGURES. Template text rather than data, transcribed
+ * from the page as rendered at 1440px.
+ *
+ * ⚠ THE COURSE RING HERE IS RIGHT WHERE LEARN'S IS WRONG. Both draw 61% on a
+ * circle of r=50 (circumference 314.2); this one's dasharray is 192.0, which
+ * IS 61%. The Learn page's is 180.0, which is 57.3%. Same designer, same
+ * figure, two numbers — so Learn's is a slip rather than a decision, and both
+ * are carried verbatim with this note as the record. Worth raising with Jeff;
+ * it is a one-character fix on his side.
+ */
+export const JEFF_MVP_OVERVIEW_COPY = {
+  title: 'Your learning journey',
+  course: 'Florida Life and Health Pre-licensing',
+  access: 'Access ends Jan 20, 2027',
+  phasePill: 'Learn + prepare',
+  accessPill: 'Open access · move freely',
+
+  nextEyebrow: 'Learn + prepare · Readiness 62%',
+  nextTitle: 'Your next step: Learn Annuities',
+  nextBody:
+    'Rubi picks what moves you forward next. Annuities is your weakest topic and you still have 3 lessons left there — learn them first, then practice.',
+  nextSetEyebrow: 'Recommended next',
+  nextSetTitle: 'Lesson: Annuities',
+  nextSetMeta: '3 lessons left · about 25 min · biggest lift',
+  nextCta: 'Start lesson',
+  nextAlt: 'Practice instead',
+
+  rubiEyebrow: 'Rubi recommends',
+  rubiTitle: 'Annuities',
+  rubiBody:
+    '20% of your exam and your lowest topic at 52%. Variable annuities is the weakest sub-topic, and you still have 3 Annuities lessons left — start with the content, then practice to move your Readiness.',
+  rubiCta: 'Start Annuities lesson · 25 min',
+
+  continueEyebrow: 'Continue preparing',
+  continueCards: [
+    { page: 'practice', title: 'Practice', body: 'Exam-style questions by topic. This is what builds Readiness.' },
+    { page: 'flashcards', title: 'Flashcards', body: 'Rubi builds sets from weak topics and cards you mark.' },
+    { page: 'exam-simulator', title: 'Exam Simulator', body: '150 questions · 165 min · full exam conditions.' },
+  ],
+  continueCta: 'Open',
+
+  readyEyebrow: 'Readiness to pass',
+  readySource: 'from Exam Prep practice only',
+  readyBand: 'Developing',
+  /* viewBox 168 drawn at 200px, three arcs at r=77/64/51, stroke 9. The outer
+     one is the simulator and is empty — see the fixture note on its cap. */
+  ringAria: 'Exam Simulator 0%, practice coverage 46%, Readiness 62',
+  ringArcs: [
+    { r: 77, tone: 'violet', dash: '0 483.8', cap: 'butt' },
+    { r: 64, tone: 'steel', dash: '185.1 402.1', cap: 'round' },
+    { r: 51, tone: 'amber', dash: '198.7 320.4', cap: 'round' },
+  ],
+  /* Four measured rows, then the one that is not a measure: "Book your exam"
+     has a HOLLOW dot and stacks its two lines, because it is the thing none of
+     the arcs is tracking. */
+  readyLegend: [
+    { dotTone: 'amber', label: 'Readiness', value: '62% of 85% · 23 to Ready' },
+    { dotTone: 'steel', label: 'Practice questions', value: '122 of 265 covered' },
+    { dotTone: 'steel-light', label: 'Flashcards', value: '8 due' },
+    { dotTone: 'violet', label: 'Exam Simulator (3)', value: '0 of 3 · open' },
+  ],
+  bookLabel: 'Book your exam',
+  bookValue: 'Ready (85%) in every topic · in Atlas',
+  readyCaption:
+    'All five topics · blueprint-weighted · rings, outside in: simulator · practice · Readiness',
+
+  progressEyebrow: 'Your course progress',
+  progressSource: 'from your course lessons',
+  progressPct: '61%',
+  progressWord: 'Lessons',
+  progressRingDash: '192.0 314.2',
+  progressRingAria: 'QE course 61% complete',
+  progressCourse: 'QE course',
+  progressLessons: '22 of 36 lessons',
+  progressNote: 'Lessons open in any order.',
+
+  /* The Readiness table's five column heads; the progress table has three. */
+  readinessCols: ['Total percentage of exam', 'Practice', 'Readiness', 'Last practiced', 'Next'],
+  progressCols: ['Topic', 'Lessons · course', 'Next'],
+  subEyebrow: 'Readiness by sub-topic',
+  /* On every sub-row — his `rubiCta` carries it only on the weakest one. */
+  subCta: 'Practice',
+  startHere: 'Start here',
+  aboutMins: 'About',
+
+  footnote:
+    'Two separate signals: lessons build Progress, Exam Prep practice builds Readiness. Course activity doesn’t change your Readiness.',
 } as const

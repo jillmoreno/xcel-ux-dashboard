@@ -42,6 +42,17 @@
   --cjm-steel-light: #8fb0c9;
   --cjm-steel-edge: #c7d5e2;
   --cjm-steel-wash: #f4f7fa;
+  /* ⚠ TWO STEEL WASHES, ONE DIGIT APART, AND BOTH ARE HIS. #F4F7FA is the
+     card ground (Learn's resume card, the workspace's Rubi tab); #F5F8FB is
+     the FEATURED panel — Readiness's "Do this next", the Overview's next-step
+     panel and its selected tab. The first pass used one for both, which is
+     invisible on screen and wrong in the one place it matters: a reviewer
+     comparing his export and the port side by side on the same monitor. */
+  --cjm-steel-panel: #f5f8fb;
+  --cjm-ring-cool: #e6e8eb;
+  --cjm-violet: #6b4fa0;
+  --cjm-rule-sand: #efebe2;
+  --cjm-bar-track: #d8dee4;
   --cjm-steel-pressed: #e9ecef;
   --cjm-control-edge: #c9d1d7;
   --cjm-rule-warm: #e0dbcd;
@@ -241,8 +252,8 @@
 .cjm-next {
   margin-top: 26px;
   border: 1px solid var(--cjm-steel-edge);
-  border-radius: 10px;
-  background: var(--cjm-steel-wash);
+  border-radius: 16px;
+  background: var(--cjm-steel-panel);
   overflow: hidden;
 }
 .cjm-next__body {
@@ -936,7 +947,7 @@
   max-width: 100%;
   height: 3px;
   border-radius: 2px;
-  background: #d8dee4;
+  background: var(--cjm-bar-track);
   overflow: hidden;
 }
 .cjm-bar--ch {
@@ -1222,4 +1233,485 @@
   border-color: var(--cjm-steel-pressed);
   color: var(--cjm-locked-ink);
   cursor: not-allowed;
+}
+
+/* ============ the Overview ============ */
+
+.cjm-ov__course {
+  margin: 4px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--cjm-steel-deep);
+}
+.cjm-ov__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-pill--phase {
+  background: var(--cjm-steel-panel);
+  border: 1px solid var(--cjm-steel-edge);
+  color: var(--cjm-steel-deep);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cjm-pill--quiet {
+  background: var(--color-neutral-100);
+  color: var(--cjm-muted);
+  font-weight: 400;
+}
+.cjm-pill--band {
+  background: var(--cjm-developing-wash);
+  border: 1px solid var(--cjm-developing-edge);
+  color: var(--cjm-developing-ink);
+  font-size: 11px;
+}
+
+/* The Overview's next-step panel is two columns, not three — no ring. */
+.cjm-next__body--ov {
+  grid-template-columns: 1fr auto;
+}
+.cjm-eyebrow--steel {
+  color: var(--cjm-steel-deep);
+}
+.cjm-eyebrow--rubi {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--cjm-rubi);
+  font-weight: 700;
+}
+
+/* ---------- two-up rows ---------- */
+
+/* ⚠ HIS FLEX RATIOS ARE NOT 1:1 AND THAT IS WHY THINGS FIT. Measured off his
+   markup: Rubi 1/340, Continue 2/480; Readiness-to-pass 1.3/440, Course
+   progress 1/380. Giving all four `1 1 380px` — which is what the first pass
+   did — makes the Readiness card too narrow, and its legend's label/value
+   pairs wrap onto two lines each. The ratios are load-bearing layout, not
+   taste. */
+.cjm-twoup {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 32px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 16px;
+  background: var(--cjm-white);
+  overflow: hidden;
+}
+.cjm-rubi {
+  flex: 1 1 340px;
+  min-width: 0;
+  padding: 28px 30px;
+  /* His cream — the one warm panel on the page, and it is Rubi's. */
+  background: #fffcf8;
+}
+.cjm-rubi__title {
+  margin: 4px 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-rubi .cjm-cta {
+  margin-top: 16px;
+}
+.cjm-continue {
+  flex: 2 1 480px;
+  min-width: 0;
+  padding: 28px 30px;
+  border-left: 1px solid var(--cjm-hairline);
+}
+.cjm-continue__cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+.cjm-mini {
+  padding: 14px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 10px;
+}
+.cjm-mini__icon {
+  display: inline-flex;
+  color: var(--cjm-steel-deep);
+}
+.cjm-mini__title {
+  margin: 10px 0 5px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-mini__body {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--cjm-body);
+}
+.cjm-link--flush {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 0;
+  text-decoration: none;
+}
+
+/* ---------- the two measures ---------- */
+
+.cjm-stat {
+  flex: 1.3 1 440px;
+  min-width: 0;
+  padding: 26px 30px 28px;
+}
+.cjm-stat + .cjm-stat {
+  flex: 1 1 380px;
+  border-left: 1px solid var(--cjm-hairline);
+}
+.cjm-stat__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 16px;
+}
+.cjm-stat__source {
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-stat__body {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.cjm-rings,
+.cjm-lessonring {
+  flex: 0 0 auto;
+}
+.cjm-rings__band {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cjm-lessonring__mid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.cjm-lessonring__mid b {
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--cjm-ink);
+}
+.cjm-lessonring__mid span {
+  margin-top: 3px;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-legend {
+  flex: 1 1 220px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cjm-legend li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--cjm-rule-sand);
+}
+.cjm-legend__pair {
+  flex: 1 1 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-legend__pair b {
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+/* The fifth row stacks, and both lines are muted — it is not a measure. */
+.cjm-legend__stack {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-legend__stack b {
+  font-weight: 600;
+  color: var(--cjm-muted);
+}
+.cjm-dot--lg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+}
+.cjm-dot--hollow {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 12px;
+  border: 1.5px solid var(--cjm-faint);
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+.cjm-stat__text {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+.cjm-stat__pair {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--cjm-rule-sand);
+  font-size: 14px;
+  color: var(--cjm-body);
+}
+.cjm-stat__pair b {
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-stat__note,
+.cjm-stat__caption {
+  margin: 0;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-stat__caption {
+  margin-top: 16px;
+}
+
+/* ---------- the tab strip ---------- */
+
+.cjm-tabs {
+  display: flex;
+  gap: 0;
+  margin-top: 28px;
+  border-bottom: 1px solid var(--cjm-hairline);
+}
+.cjm-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 20px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--cjm-body);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cjm-tab.is-on {
+  border-bottom-color: var(--cjm-steel-deep);
+  background: var(--cjm-steel-panel);
+  color: var(--cjm-ink);
+}
+.cjm-tab__label {
+  font-size: 15px;
+  font-weight: 600;
+}
+.cjm-tab.is-on .cjm-tab__label {
+  font-weight: 600;
+}
+.cjm-tab__sub {
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+
+/* ---------- the table ---------- */
+
+.cjm-tablehead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 26px;
+}
+.cjm-tablehead__note {
+  margin: 0;
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+.cjm-table {
+  margin-top: 14px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.cjm-table__row {
+  display: grid;
+  gap: 18px;
+  align-items: center;
+  padding: 14px 18px;
+}
+.cjm-table__row--r {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.8fr) auto;
+}
+.cjm-table__row--p {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.5fr) auto;
+}
+.cjm-table__head {
+  background: var(--color-neutral-50, #faf9f6);
+  border-bottom: 1px solid var(--cjm-hairline);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-trow + .cjm-trow {
+  border-top: 1px solid var(--cjm-hairline);
+}
+.cjm-trow.is-open {
+  background: var(--cjm-steel-panel);
+}
+.cjm-trow__name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  font-size: 15px;
+}
+.cjm-trow__name b {
+  display: block;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-trow__weight {
+  display: block;
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+/* The share-of-exam wedge: a short upright track whose fill is the topic's
+   weight. The simulator row keeps the space and draws nothing. */
+.cjm-wedge {
+  display: flex;
+  flex-direction: column-reverse;
+  flex: 0 0 6px;
+  width: 6px;
+  height: 30px;
+  border-radius: 3px;
+  background: var(--cjm-track-empty);
+  overflow: hidden;
+}
+.cjm-wedge--none {
+  background: transparent;
+}
+.cjm-wedge__fill {
+  display: block;
+  width: 6px;
+  background: var(--cjm-steel-deep);
+}
+.cjm-trow__practice {
+  min-width: 0;
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-bar--cov {
+  width: 100%;
+  max-width: 160px;
+  margin-top: 6px;
+}
+.cjm-trow__band {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.cjm-trow__num {
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-trow__nonote,
+.cjm-trow__last {
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-trow__next {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.cjm-trow__plain {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cjm-steel-deep);
+}
+.cjm-chev--none {
+  visibility: hidden;
+}
+.cjm-trow .cjm-subs {
+  margin: 0 18px 16px 48px;
+}
+
+/* the course-progress lesson list */
+.cjm-llist {
+  margin: 0 18px 14px 48px;
+  padding: 0;
+  list-style: none;
+  border-left: 2px solid var(--cjm-hairline);
+}
+.cjm-llist li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0 7px 16px;
+  font-size: 13.5px;
+  color: var(--cjm-body);
+}
+.cjm-llist__label {
+  flex: 1 1 auto;
+}
+.cjm-llist__status {
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+/* The course-progress row's meter: his fixed 140px track, then the figure. */
+.cjm-lbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+.cjm-lbar__track {
+  flex: 0 0 140px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--cjm-ring-pale);
+  overflow: hidden;
+}
+.cjm-lbar__fill {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+}
+.cjm-lbar b {
+  font-size: 13px;
+  font-weight: 600;
 }

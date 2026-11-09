@@ -101,7 +101,12 @@ export function CompassLearningPage({
      from his Readiness page would take the control off the bar and strand
      them there. */
   const jeffMvp = useFeatureFlag('compass-mvp-version').variant === 'jeff'
-  const [jeffPage, setJeffPage] = useState<JeffMvpPage>('readiness')
+  /* ⚠ OVERVIEW, AS HIS EXPORT OPENS — changed 2026-11-09 when the Overview
+     was ported. It was 'readiness' for one page's worth of work, because
+     landing a reviewer on a "not ported yet" panel is worse than landing them
+     on the wrong page. Now that his first rail row exists, the default is his
+     again. */
+  const [jeffPage, setJeffPage] = useState<JeffMvpPage>('overview')
   useDeclareDesignSurface(jeffMvp ? 'compass:jeff-mvp' : (`compass:${page}` as DesignSurfaceId))
   /* ⚠ ANJANI'S COMPASS IS A FLAG, NOT A VERSION — 2026-10-15. From 2026-10-08
      her rail and course landing were gated on `isHybridVersion`, which was

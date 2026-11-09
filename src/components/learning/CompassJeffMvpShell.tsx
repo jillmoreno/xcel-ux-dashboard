@@ -12,6 +12,7 @@ import {
 import { JEFF_MVP_PAGES, JEFF_MVP_RAIL, type JeffMvpPage } from '@/data/compassJeffMvpFixtures'
 import { CompassJeffMvpReadiness } from './CompassJeffMvpReadiness'
 import { CompassJeffMvpLearn } from './CompassJeffMvpLearn'
+import { CompassJeffMvpOverview } from './CompassJeffMvpOverview'
 import './compassJeffMvp.css'
 
 /**
@@ -59,6 +60,8 @@ export function CompassJeffMvpShell({
         <CompassJeffMvpReadiness onSelectPage={onSelectPage} />
       ) : page === 'learn' ? (
         <CompassJeffMvpLearn />
+      ) : page === 'overview' ? (
+        <CompassJeffMvpOverview onSelectPage={onSelectPage} />
       ) : (
         <CompassJeffMvpPending page={page} />
       )}
@@ -201,19 +204,25 @@ export function CompassJeffMvpHead({
   aside,
   ruled,
   leadClass,
+  below,
 }: {
   title: string
-  lead: string
+  /** Omitted on the Overview, which carries a course line and a meta row
+   *  instead of a paragraph. */
+  lead?: string
   aside?: ReactNode
   ruled?: boolean
   leadClass?: string
+  /** What the Overview puts under its title in place of a lead. */
+  below?: ReactNode
 }) {
   return (
     <header className={ruled ? 'cjm-head cjm-head--ruled' : 'cjm-head'}>
       <div style={{ minWidth: 0 }}>
         <CompassJeffMvpTag />
         <h1 className="cjm-h1 cjm-serif">{title}</h1>
-        <p className={leadClass ? `cjm-lead ${leadClass}` : 'cjm-lead'}>{lead}</p>
+        {lead ? <p className={leadClass ? `cjm-lead ${leadClass}` : 'cjm-lead'}>{lead}</p> : null}
+        {below}
       </div>
       {aside}
     </header>

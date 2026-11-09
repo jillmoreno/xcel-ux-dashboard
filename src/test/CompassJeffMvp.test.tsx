@@ -7,8 +7,11 @@ import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext
 import { CompassJeffMvpShell } from '@/components/learning/CompassJeffMvpShell'
 import { CompassJeffMvpReadiness } from '@/components/learning/CompassJeffMvpReadiness'
 import { CompassJeffMvpLearn } from '@/components/learning/CompassJeffMvpLearn'
+import { CompassJeffMvpOverview } from '@/components/learning/CompassJeffMvpOverview'
 import {
   JEFF_MVP_LEARN as LEARN,
+  JEFF_MVP_OVERVIEW as OV,
+  JEFF_MVP_OVERVIEW_COPY as OCOPY,
   JEFF_MVP_LEARN_COPY as LCOPY,
   JEFF_MVP_PAGES,
   JEFF_MVP_RAIL,
@@ -46,6 +49,18 @@ function renderShell(page: Parameters<typeof CompassJeffMvpShell>[0]['page'] = '
       <AccountProvider>
         <FeatureFlagProvider>
           <CompassJeffMvpShell page={page} onSelectPage={() => {}} />
+        </FeatureFlagProvider>
+      </AccountProvider>
+    </MemoryRouter>,
+  )
+}
+
+function renderOverview() {
+  return render(
+    <MemoryRouter>
+      <AccountProvider>
+        <FeatureFlagProvider>
+          <CompassJeffMvpOverview />
         </FeatureFlagProvider>
       </AccountProvider>
     </MemoryRouter>,
@@ -126,8 +141,12 @@ describe('Jeff’s Compass MVP — the Readiness page against his build', () => 
        also the "Also worth a look" strip at the top of the page, which is how
        this test failed on its first run. The disclosure's own state is the
        thing being tested. */
-    const chevron = screen.getByRole('button', { name: policy.chevLabel })
+    const chevron = screen.getByRole('button', { name: policy.expandLabel })
     expect(chevron).toHaveAttribute('aria-expanded', 'false')
+    /* ⚠ THE LABEL FLIPS WITH THE STATE, as his does. A fixture that carried
+       one captured string told a screen-reader user to collapse a shut row —
+       which is what the all-open extraction produced on the Overview, and
+       what this page shipped with for two days. */
     expect(screen.getAllByText(COPY.subEyebrow).length).toBe(1)
     await user.click(chevron)
     expect(screen.getAllByText(COPY.subEyebrow).length).toBe(2)
@@ -249,7 +268,7 @@ describe('Jeff’s Compass MVP — the pages not built yet', () => {
        the only `ported: true` row today; when the next page lands, this test
        is the reminder to flip its flag. */
     const ported = JEFF_MVP_PAGES.filter((p) => p.ported).map((p) => p.page)
-    expect(ported).toEqual(['learn', 'readiness'])
+    expect(ported).toEqual(['overview', 'learn', 'readiness'])
     for (const p of JEFF_MVP_PAGES) {
       if (p.ported) continue
       const { unmount } = renderShell(p.page)
@@ -397,5 +416,117 @@ describe('Jeff’s Compass MVP — the Learn page against his build', () => {
     expect(container.querySelector('.cjm-head--ruled')).toBeNull()
     const r = renderReadiness()
     expect(r.container.querySelector('.cjm-head--ruled')).toBeTruthy()
+  })
+})
+
+describe('Jeff’s Compass MVP — the Overview against his build', () => {
+  it('renders every string his Readiness tab renders', () => {
+    const { container } = renderOverview()
+    const mine = flat(container.textContent ?? '')
+    const missing = parity.overviewReadiness.filter((s) => !mine.includes(flat(s)))
+    expect(missing).toEqual([])
+  })
+
+  it('swaps the whole table when the tab changes, not just its rows', async () => {
+    /* ⚠ TITLE, SUMMARY, NOTE AND COLUMN HEADS ALL CHANGE. It is two tables,
+       not one with a filter — which is why there are two fixtures. */
+    const user = userEvent.setup()
+    const { container } = renderOverview()
+    expect(screen.getByText(OV.readiness.tableTitle)).toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: /Course progress/ }))
+    expect(screen.getByText(OV.progress.tableTitle)).toBeInTheDocument()
+    expect(screen.queryByText(OV.readiness.tableTitle)).toBeNull()
+    expect(screen.getByText(OV.progress.summary)).toBeInTheDocument()
+    const mine = flat(container.textContent ?? '')
+    const missing = parity.overviewProgress.filter((s) => !mine.includes(flat(s)))
+    expect(missing).toEqual([])
+  })
+
+  it('marks the selected tab, and only one', () => {
+    renderOverview()
+    const tabs = screen.getAllByRole('tab')
+    expect(tabs.length).toBe(2)
+    expect(tabs.filter((t) => t.getAttribute('aria-selected') === 'true').length).toBe(1)
+  })
+
+  it('does not score the Exam Simulator row like a topic', () => {
+    /* ⚠ No share-of-exam wedge, no band, no chevron — his `hasPie: false`,
+       `noBand: true`, `noExpand: true`. Drawing it like the five above would
+       claim a Readiness score his design withholds. */
+    const sim = OV.readiness.rows[OV.readiness.rows.length - 1]
+    expect(sim.name).toBe('Exam Simulator')
+    expect(sim.hasPie).toBe(false)
+    expect(sim.hasBand).toBe(false)
+    expect(sim.canExpand).toBe(false)
+    expect(sim.bandNote).toBe('Uses all topics')
+    renderOverview()
+    expect(screen.queryByRole('button', { name: /Expand Exam Simulator/ })).toBeNull()
+  })
+
+  it('opens Annuities on arrival and nothing else', () => {
+    /* ⚠ The all-open extraction exists to populate `subs`; taking `expanded`
+       from it too made all six rows arrive open. */
+    const open = OV.readiness.rows.filter((r) => r.expanded)
+    expect(open.map((r) => r.name)).toEqual(['Annuities'])
+    renderOverview()
+    expect(screen.getAllByText(OCOPY.subEyebrow).length).toBe(1)
+  })
+
+  it('flips the chevron label with the state, as his does', async () => {
+    /* ⚠ THE BUG THIS PINS: a label captured from the all-open extraction says
+       "Collapse" on every row, so a screen-reader user is told to collapse a
+       row that is shut. Both labels are in the fixture. */
+    const user = userEvent.setup()
+    renderOverview()
+    const row = OV.readiness.rows[0]
+    const chev = screen.getByRole('button', { name: row.expandLabel })
+    expect(row.expandLabel).toMatch(/^Expand /)
+    expect(row.collapseLabel).toMatch(/^Collapse /)
+    await user.click(chev)
+    expect(screen.getByRole('button', { name: row.collapseLabel })).toBeInTheDocument()
+  })
+
+  it('gives every sub-row a Practice button, not just the weakest', () => {
+    /* ⚠ His `rubiCta` is "Practice" on the weakest row and EMPTY on the rest;
+       rendering it directly drops the button from two rows in three. What
+       differs is fill and destination, not presence. */
+    renderOverview()
+    const subs = OV.readiness.rows.find((r) => r.name === 'Annuities')!.subs
+    expect(subs.length).toBe(3)
+    for (const s of subs) {
+      expect(screen.getByRole('button', { name: `Practice ${s.name}` })).toBeInTheDocument()
+    }
+    expect(subs.filter((s) => s.rubi).length).toBe(1)
+  })
+
+  it('draws the simulator arc empty, with a butt cap', () => {
+    /* ⚠ Nought of three taken. A round cap on a zero-length arc draws a dot,
+       which reads as "a little bit done". */
+    const outer = OCOPY.ringArcs[0]
+    expect(outer.dash).toBe('0 483.8')
+    expect(outer.cap).toBe('butt')
+    expect(OCOPY.ringArcs.filter((a) => a.cap === 'round').length).toBe(2)
+  })
+
+  it('shows the course percentage as text, not only as a bar width', async () => {
+    const user = userEvent.setup()
+    renderOverview()
+    await user.click(screen.getByRole('tab', { name: /Course progress/ }))
+    for (const r of OV.progress.rows) expect(screen.getByText(r.pct)).toBeInTheDocument()
+  })
+
+  it('leaves a completed topic’s Review as text, not a button', () => {
+    /* His `isText` — only the in-progress rows get a control. */
+    const done = OV.progress.rows.find((r) => r.isText)
+    expect(done?.name).toBe('Life Insurance')
+    expect(done?.action).toBe('Review')
+  })
+
+  it('carries a ring dasharray that agrees with its label, unlike Learn’s', () => {
+    /* Both draw 61% on r=50 (circumference 314.2). This one is 192.0, which
+       IS 61%; Learn's is 180.0, which is 57.3%. Same designer, same figure,
+       two numbers — so Learn's is a slip. Both carried verbatim. */
+    expect(OCOPY.progressRingDash).toBe('192.0 314.2')
+    expect(LCOPY.courseRingDash).toBe('180.0 314.2')
   })
 })
