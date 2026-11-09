@@ -2075,3 +2075,424 @@
   line-height: 1.55;
   color: var(--cjm-muted);
 }
+
+/* ============ Prep Review ============ */
+
+.cjm-prep__course {
+  margin-top: 4px;
+}
+.cjm-prep__titlerow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+/* His outline pill — transparent ground, steel rule. The one word that says
+   this page gates nothing. */
+.cjm-pill--optional {
+  background: transparent;
+  border: 1px solid var(--cjm-steel-edge);
+  color: var(--cjm-steel-deep);
+  padding: 2px 10px;
+  font-size: 13px;
+}
+.cjm-prep__band {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cjm-developing-ink);
+}
+/* An exam row that is a sibling of the chapters rather than nested inside
+   one: full-bleed, ruled like a chapter, no inner card. */
+.cjm-exam--flat {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--cjm-ch-rule);
+  border-radius: 0;
+  padding: 14px 20px;
+}
+
+/* ============ the Study planner ============ */
+
+.cjm {
+  --cjm-card-edge2: #dcdee1;
+  --cjm-late-wash: #fdf4f4;
+  --cjm-cell-off: #eef0f2;
+  --cjm-today-edge: #1f2a33;
+}
+
+.cjm-pl__stats {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  flex-wrap: wrap;
+  margin-top: 28px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 14px;
+  background: var(--cjm-white);
+  overflow: hidden;
+}
+.cjm-pl__stat {
+  flex: 1 1 220px;
+  min-width: 0;
+  padding: 20px 24px;
+}
+.cjm-pl__stat + .cjm-pl__stat {
+  border-left: 1px solid var(--cjm-hairline);
+}
+.cjm-pl__statbig {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 6px 0 0;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pl__statsub {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-pl__change {
+  margin: 20px 24px;
+  flex: 0 0 auto;
+}
+
+/* ---------- the pace editor ---------- */
+
+.cjm-pl__editor {
+  margin-top: 16px;
+  padding: 22px 24px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 14px;
+  background: var(--cjm-paper);
+}
+.cjm-pl__paces {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.cjm-pl__pace {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 16px;
+  border: 1px solid var(--cjm-card-edge2);
+  border-radius: 10px;
+  background: var(--cjm-white);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cjm-pl__pace.is-on {
+  border-color: var(--cjm-steel-deep);
+  box-shadow: inset 0 0 0 1px var(--cjm-steel-deep);
+}
+.cjm-pl__pacename {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pl__pacetotal {
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-pl__paceper,
+.cjm-pl__pacefinish {
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+.cjm-pl__pacefinish {
+  margin-top: 4px;
+  font-weight: 600;
+}
+.cjm-pl__spread,
+.cjm-pl__weektotal {
+  margin: 18px 0 0;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-pl__weektotal {
+  margin-top: 4px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pl__sliders {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px 20px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.cjm-pl__sliders li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.cjm-pl__sliderday {
+  flex: 0 0 32px;
+  color: var(--cjm-muted);
+}
+.cjm-pl__slidertrack {
+  flex: 1 1 auto;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--cjm-ring-pale);
+  overflow: hidden;
+}
+.cjm-pl__sliderfill {
+  display: block;
+  height: 5px;
+  background: var(--cjm-steel-deep);
+}
+.cjm-pl__slidertext {
+  flex: 0 0 52px;
+  text-align: right;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+
+/* ---------- the calendar ---------- */
+
+.cjm-pl__cal {
+  margin-top: 28px;
+}
+.cjm-pl__calhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.cjm-pl__caltitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pl__views {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 8px;
+}
+.cjm-pl__view {
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cjm-body);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.cjm-pl__view.is-on {
+  background: var(--cjm-steel-deep);
+  color: #fff;
+  font-weight: 600;
+}
+.cjm-pl__hint {
+  margin: 14px 0 12px;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-pl__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+.cjm-pl__dow {
+  padding-bottom: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-pl__cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 150px;
+  padding: 10px;
+  border: 1px solid var(--cjm-rule-warm);
+  border-radius: 10px;
+  background: var(--cjm-white);
+}
+/* The full plan is nine weeks of the same cells at a shorter height. */
+.cjm-pl__grid--full .cjm-pl__cell {
+  min-height: 96px;
+}
+.cjm-pl__cell.is-today {
+  border: 2px solid var(--cjm-today-edge);
+}
+.cjm-pl__cell.is-off {
+  background: var(--cjm-cell-off);
+}
+.cjm-pl__cell.is-exam {
+  border-color: var(--cjm-ink);
+}
+.cjm-pl__celltop {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cjm-pl__date {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pl__date.is-struck {
+  text-decoration: line-through;
+  font-weight: 400;
+  color: var(--cjm-muted);
+}
+.cjm-pl__today {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cjm-steel-deep);
+}
+.cjm-pl__session {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-left: 8px;
+  border-left: 2px solid var(--cjm-steel-deep);
+  font-size: 12.5px;
+}
+.cjm-pl__session.is-review {
+  border-left-color: var(--cjm-amber);
+}
+.cjm-pl__topic {
+  color: var(--cjm-ink);
+}
+.cjm-pl__dur {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--cjm-muted);
+}
+.cjm-pl__offword {
+  font-size: 12.5px;
+  color: var(--cjm-muted);
+}
+.cjm-pl__skip {
+  margin-top: auto;
+  align-self: flex-start;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--cjm-steel-deep);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cjm-pl__pop {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  z-index: 5;
+  width: 230px;
+  padding: 12px 14px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 10px;
+  background: var(--cjm-white);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 14%);
+}
+.cjm-pl__pop--left {
+  left: 0;
+}
+.cjm-pl__pop--right {
+  right: 0;
+}
+.cjm-pl__popsub {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--cjm-muted);
+}
+.cjm-pl__poptitle {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-pl__popnote {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--cjm-body);
+}
+.cjm-pl__legend {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--cjm-hairline);
+  font-size: 13px;
+  color: var(--cjm-body);
+}
+.cjm-pl__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cjm-pl__swbar {
+  width: 2px;
+  height: 14px;
+}
+.cjm-pl__swsq {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+.cjm-pl__swstruck {
+  text-decoration: line-through;
+  color: var(--cjm-muted);
+}
+
+/* The spaced-review line: a second entry in the cell, amber-ruled. */
+.cjm-pl__review {
+  padding-left: 8px;
+  border-left: 2px solid var(--cjm-amber);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--cjm-amber-deep, #835b16);
+}
+
+/* Exam day is a dark cell with its own label in white. */
+.cjm-pl__cell.is-exam {
+  background: var(--cjm-ink);
+  border-color: var(--cjm-ink);
+}
+.cjm-pl__cell.is-exam .cjm-pl__date {
+  color: #fff;
+}
+.cjm-pl__examday {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+.cjm-pl__today {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--cjm-today-edge);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}

@@ -62,8 +62,8 @@ export const JEFF_MVP_RAIL = {
 export const JEFF_MVP_PAGES = [
   { page: 'overview', label: 'Overview', ported: true },
   { page: 'learn', label: 'Learn', ported: true },
-  { page: 'study-planner', label: 'Study planner', ported: false },
-  { page: 'prep-review', label: 'Prep Review', ported: false },
+  { page: 'study-planner', label: 'Study planner', ported: true },
+  { page: 'prep-review', label: 'Prep Review', ported: true },
   { page: 'practice', label: 'Practice', ported: true },
   { page: 'flashcards', label: 'Flashcards', ported: false },
   { page: 'exam-simulator', label: 'Exam Simulator', ported: false },
@@ -4371,3 +4371,1900 @@ export function practiceMatches(
   const byReady = !ready.length || (set.started && ready.includes(set.band))
   return byConf && byReady
 }
+
+/**
+ * THE PREP REVIEW PAGE — his fourth rail row, first of the EXAM PREP group,
+ * ported 2026-11-09.
+ *
+ * Structurally Learn's cousin and deliberately NOT Learn: six chapters with
+ * an exam after most of them, and NOTHING LOCKED. His lead says why —
+ * "Optional review before your state exam. Every chapter and review exam is
+ * open, so take them in any order." Where Learn gates each step on the one
+ * before, this page gates nothing, and the header carries an "Optional" pill
+ * to say so.
+ *
+ * ⚠ ONE FLAT LIST, NOT CHAPTERS WITH EXAMS INSIDE THEM. His `rows` interleaves
+ * chapter and exam rows as siblings (`isChapter` / `isExam`), which is why
+ * CHAPTER 5 SIMPLY HAS NO EXAM — five exams for six chapters. Nesting them
+ * the way Learn does would force an empty exam slot onto that chapter, and
+ * the only honest thing to put in it would be something he did not write.
+ *
+ * ⚠ AN EXAM ROW DOES NOT EXPAND. His gives it `lessons: []` and a no-op
+ * toggle, so it draws no chevron at all.
+ *
+ * ⚠ LESSONS ARE GENERATED, NOT AUTHORED — "Lesson 1", "Lesson 2" … up to the
+ * chapter's count, with the first unfinished one marked current. That is his
+ * placeholder content and it is carried as-is; inventing titles for twenty
+ * lessons would be writing his course for him.
+ */
+export const JEFF_MVP_PREP = {
+  rows: [
+    {
+      kind: 'chapter',
+      n: 1,
+      title: 'Prep Review: Types of Casualty Insurance Policies - Personal Lines - Pearson Vue',
+      eyebrow: 'Chapter 1 · 3 lessons',
+      eyebrowTone: 'steel-deep',
+      inProgress: true,
+      status: 'In progress',
+      statusTone: 'steel-deep',
+      action: 'Resume',
+      actionLabel: 'Resume Chapter 1: Prep Review: Types of Casualty Insurance Policies - Personal Lines - Pearson Vue',
+      progPct: '33%',
+      progAria: 'Chapter 1: 1 of 3 lessons complete',
+      expanded: false,
+      expandLabel: 'Expand Chapter 1',
+      collapseLabel: 'Collapse Chapter 1',
+      lessons: [
+        {
+          label: 'Lesson 1',
+          state: 'done'
+        },
+        {
+          label: 'Lesson 2',
+          state: 'current'
+        },
+        {
+          label: 'Lesson 3',
+          state: 'todo'
+        }
+      ]
+    },
+    {
+      kind: 'exam',
+      title: 'Prep Review Exam: Types of Casualty Insurance Policies - Personal Lines - Pearson Vue',
+      actionLabel: 'Take exam: Prep Review Exam: Types of Casualty Insurance Policies - Personal Lines - Pearson Vue'
+    },
+    {
+      kind: 'chapter',
+      n: 2,
+      title: 'Prep Review: Types of Property Insurance Policies - Personal Lines - Pearson Vue',
+      eyebrow: 'Chapter 2 · 9 lessons',
+      eyebrowTone: 'muted',
+      inProgress: false,
+      status: '',
+      statusTone: 'muted',
+      action: 'Start',
+      actionLabel: 'Start Chapter 2: Prep Review: Types of Property Insurance Policies - Personal Lines - Pearson Vue',
+      progPct: '0%',
+      progAria: 'Chapter 2: 0 of 9 lessons complete',
+      expanded: false,
+      expandLabel: 'Expand Chapter 2',
+      collapseLabel: 'Collapse Chapter 2',
+      lessons: [
+        {
+          label: 'Lesson 1',
+          state: 'todo'
+        },
+        {
+          label: 'Lesson 2',
+          state: 'todo'
+        },
+        {
+          label: 'Lesson 3',
+          state: 'todo'
+        },
+        {
+          label: 'Lesson 4',
+          state: 'todo'
+        },
+        {
+          label: 'Lesson 5',
+          state: 'todo'
+        },
+        {
+          label: 'Lesson 6',
+          state: 'todo'
+        },
+        {
+          label: 'Lesson 7',
+          state: 'todo'
+        },
+        {
+          label: 'Lesson 8',
+          state: 'todo'
+        },
+        {
+          label: 'Lesson 9',
+          state: 'todo'
+        }
+      ]
+    },
+    {
+      kind: 'exam',
+      title: 'Prep Review Exam: Types of Property Insurance Policies - Personal Lines - Pearson Vue',
+      actionLabel: 'Take exam: Prep Review Exam: Types of Property Insurance Policies - Personal Lines - Pearson Vue'
+    },
+    {
+      kind: 'chapter',
+      n: 3,
+      title: 'Property and Casualty Insurance Terms and Related Concepts Review',
+      eyebrow: 'Chapter 3 · 2 lessons',
+      eyebrowTone: 'muted',
+      inProgress: false,
+      status: '',
+      statusTone: 'muted',
+      action: 'Start',
+      actionLabel: 'Start Chapter 3: Property and Casualty Insurance Terms and Related Concepts Review',
+      progPct: '0%',
+      progAria: 'Chapter 3: 0 of 2 lessons complete',
+      expanded: false,
+      expandLabel: 'Expand Chapter 3',
+      collapseLabel: 'Collapse Chapter 3',
+      lessons: [
+        {
+          label: 'Lesson 1',
+          state: 'todo'
+        },
+        {
+          label: 'Lesson 2',
+          state: 'todo'
+        }
+      ]
+    },
+    {
+      kind: 'exam',
+      title: 'Property and Casualty Insurance Terms and Related Concepts Review Exam',
+      actionLabel: 'Take exam: Property and Casualty Insurance Terms and Related Concepts Review Exam'
+    },
+    {
+      kind: 'chapter',
+      n: 4,
+      title: 'Property and Casualty Insurance Policy Provisions and Contract Law Review',
+      eyebrow: 'Chapter 4 · 2 lessons',
+      eyebrowTone: 'muted',
+      inProgress: false,
+      status: '',
+      statusTone: 'muted',
+      action: 'Start',
+      actionLabel: 'Start Chapter 4: Property and Casualty Insurance Policy Provisions and Contract Law Review',
+      progPct: '0%',
+      progAria: 'Chapter 4: 0 of 2 lessons complete',
+      expanded: false,
+      expandLabel: 'Expand Chapter 4',
+      collapseLabel: 'Collapse Chapter 4',
+      lessons: [
+        {
+          label: 'Lesson 1',
+          state: 'todo'
+        },
+        {
+          label: 'Lesson 2',
+          state: 'todo'
+        }
+      ]
+    },
+    {
+      kind: 'exam',
+      title: 'Property and Casualty Insurance Policy Provisions and Contract Law Review Exam',
+      actionLabel: 'Take exam: Property and Casualty Insurance Policy Provisions and Contract Law Review Exam'
+    },
+    {
+      kind: 'chapter',
+      n: 5,
+      title: 'Prep Review: Florida Insurance Laws',
+      eyebrow: 'Chapter 5 · 2 lessons',
+      eyebrowTone: 'muted',
+      inProgress: false,
+      status: '',
+      statusTone: 'muted',
+      action: 'Start',
+      actionLabel: 'Start Chapter 5: Prep Review: Florida Insurance Laws',
+      progPct: '0%',
+      progAria: 'Chapter 5: 0 of 2 lessons complete',
+      expanded: false,
+      expandLabel: 'Expand Chapter 5',
+      collapseLabel: 'Collapse Chapter 5',
+      lessons: [
+        {
+          label: 'Lesson 1',
+          state: 'todo'
+        },
+        {
+          label: 'Lesson 2',
+          state: 'todo'
+        }
+      ]
+    },
+    {
+      kind: 'chapter',
+      n: 6,
+      title: 'Prep Review: Florida Personal Lines Laws and Rules',
+      eyebrow: 'Chapter 6 · 2 lessons',
+      eyebrowTone: 'muted',
+      inProgress: false,
+      status: '',
+      statusTone: 'muted',
+      action: 'Start',
+      actionLabel: 'Start Chapter 6: Prep Review: Florida Personal Lines Laws and Rules',
+      progPct: '0%',
+      progAria: 'Chapter 6: 0 of 2 lessons complete',
+      expanded: false,
+      expandLabel: 'Expand Chapter 6',
+      collapseLabel: 'Collapse Chapter 6',
+      lessons: [
+        {
+          label: 'Lesson 1',
+          state: 'todo'
+        },
+        {
+          label: 'Lesson 2',
+          state: 'todo'
+        }
+      ]
+    },
+    {
+      kind: 'exam',
+      title: 'Prep Review Exam: Florida Personal Lines Laws and Rules',
+      actionLabel: 'Take exam: Prep Review Exam: Florida Personal Lines Laws and Rules'
+    }
+  ]
+} as const
+
+/**
+ * HIS PREP REVIEW PROSE AND FIGURES, transcribed from the rendered page.
+ *
+ * ⚠ THE RING MYSTERY, SOLVED — and it changes what to tell Jeff. Three of his
+ * pages draw a 72px ring from a 120 viewBox at r=50 (circumference 314.2):
+ *
+ *     page         dash    on r=50   on r=47   his label
+ *     Overview     192.0     61.1%     65.0%      61%
+ *     Learn        180.0     57.3%     61.0%      61%
+ *     Prep Review  182.8     58.2%     61.9%      62%
+ *
+ * Learn and Prep Review are EXACT on r=47; the Overview is exact on r=50. So
+ * this is not "Learn's number looks wrong" — it is two pages whose arc length
+ * was computed for a 47-radius circle and then drawn on a 50-radius one. Both
+ * under-draw by about four points. All three are carried verbatim, and the
+ * pattern is what to raise with him: one formula, two pages, one radius out
+ * of step.
+ */
+export const JEFF_MVP_PREP_COPY = {
+  title: 'Prep Review',
+  course: 'Florida Life and Health Pre-licensing',
+  lead: 'Optional review before your state exam. Every chapter and review exam is open, so take them in any order.',
+
+  resumeEyebrow: 'Where you left off',
+  resumeTitle: 'Chapter 1 · Prep Review: Types of Casualty Insurance Policies',
+  resumeCta: 'Resume lesson',
+
+  cardEyebrow: '6 chapters · 1 of 20 lessons',
+  cardTitle: 'Prep Review',
+  optionalPill: 'Optional',
+  band: 'Developing',
+  chaptersDone: '0 of 6 chapters complete',
+  ringPct: '62%',
+  /* See the note above: exact for r=47, drawn at r=50. His, kept. */
+  ringDash: '182.8 314.2',
+  ringAria: 'Prep Review readiness 62%, developing',
+
+  examEyebrow: 'Exam',
+  examCta: 'Take exam',
+} as const
+
+/**
+ * THE STUDY PLANNER — his third rail row, ported 2026-11-09.
+ *
+ * A plan that rebuilds itself: an exam date, a weekly pace, and a calendar
+ * where marking a day off pushes its session to the next study day. His lead
+ * is the promise — "Your plan rebuilds itself when life gets in the way."
+ *
+ * ⚠ IT IS NOT ANJANI'S STUDY PLANNER. `CompassStudyPlanner` has been in this
+ * repo since 2026-10-08 and is hers, on her rail, with her model
+ * (`compassStudyPlannerModel.ts`). This is a different designer's answer to
+ * the same screen and lives beside it, like every other page of his MVP.
+ *
+ * ⚠ TWO CALENDARS, NOT ONE WITH A ZOOM. "This week" is 7 cells at 150px;
+ * "Full plan" is 63 — nine weeks from today to exam day — at 96px, under a
+ * different title ("Sep 22 to exam day"). Both are stored.
+ *
+ * ⚠ HIS PROTOTYPE'S TODAY IS TUESDAY 22 SEPTEMBER 2026, hard-coded in
+ * `planConst()` as `T0`. Every date on this page is computed from it, which
+ * is why the week reads Sep 20–26 and the exam is 59 days away regardless of
+ * when anyone opens it. Carried as data rather than recomputed from the real
+ * clock: a planner that silently re-dated itself would stop matching the
+ * screenshots his review is based on.
+ *
+ * ⚠ EACH CELL CARRIES ITS OWN HOVER CARD — what skipping that day would do
+ * ("Policy provisions moves to Wed, Sep 23."), and for a day with nothing
+ * planned, "Mark it off so nothing moves here." That sentence IS the feature;
+ * a calendar that only showed the sessions would be a different design.
+ */
+/** Typed rather than `as const`, for the reason the Practice fixture is — the
+ *  two calendars are arrays of one shape, and literal tuple types make them
+ *  mutually unassignable. */
+export type JeffMvpPlannerCell = {
+  date: string
+  dow: string
+  longDate: string
+  aria: string
+  isToday: boolean
+  isExam: boolean
+  isOff: boolean
+  hasSession: boolean
+  topic: string
+  dur: string
+  review: boolean
+  struck: boolean
+  canSkip: boolean
+  disabled: boolean
+  popTitle: string
+  popSub: string
+  popNote: string
+  popSide: string
+}
+export type JeffMvpPlanner = {
+  daysAway: number
+  paceName: string
+  weekTotal: string
+  finishLabel: string
+  finishNote: string
+  finishTone: string
+  weekTitle: string
+  fullTitle: string
+  views: string[]
+  week: JeffMvpPlannerCell[]
+  full: JeffMvpPlannerCell[]
+  paces: {
+    name: string
+    suggested: boolean
+    total: string
+    perDay: string
+    finish: string
+    finishTone: string
+    late: boolean
+  }[]
+  sliders: { label: string; value: number; text: string }[]
+}
+
+export const JEFF_MVP_PLANNER: JeffMvpPlanner = {
+  daysAway: 59,
+  paceName: 'Steady',
+  weekTotal: '7h 30m',
+  finishLabel: 'Nov 11',
+  finishNote: '9 days before your exam',
+  finishTone: 'green',
+  weekTitle: 'This week · Sep 20 – 26',
+  fullTitle: 'Sep 22 to exam day',
+  views: [
+    'This week',
+    'Full plan'
+  ],
+  week: [
+    {
+      date: 'Sep 20',
+      dow: 'Sun',
+      longDate: 'Sun, Sep 20',
+      aria: 'Sun, Sep 20',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: false,
+      canSkip: false,
+      disabled: true,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'left'
+    },
+    {
+      date: '21',
+      dow: 'Mon',
+      longDate: 'Mon, Sep 21',
+      aria: 'Mon, Sep 21',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: false,
+      canSkip: false,
+      disabled: true,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'left'
+    },
+    {
+      date: '22',
+      dow: 'Tue',
+      longDate: 'Tue, Sep 22',
+      aria: 'Tue, Sep 22, today: Policy provisions, 1h 30m',
+      isToday: true,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Policy provisions',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Policy provisions · 1h 30m',
+      popNote: 'Policy provisions moves to Wed, Sep 23.',
+      popSide: 'left'
+    },
+    {
+      date: '23',
+      dow: 'Wed',
+      longDate: 'Wed, Sep 23',
+      aria: 'Wed, Sep 23: Annuities, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Annuities',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Annuities · 1h 30m',
+      popNote: 'Annuities moves to Thu, Sep 24.',
+      popSide: 'left'
+    },
+    {
+      date: '24',
+      dow: 'Thu',
+      longDate: 'Thu, Sep 24',
+      aria: 'Thu, Sep 24: Health & disability, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Health & disability',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Health & disability · 1h 30m',
+      popNote: 'Health & disability moves to Fri, Sep 25.',
+      popSide: 'right'
+    },
+    {
+      date: '25',
+      dow: 'Fri',
+      longDate: 'Fri, Sep 25',
+      aria: 'Fri, Sep 25: Taxation, 1h 30m, plus spaced review',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Taxation',
+      dur: '1h 30m',
+      review: true,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Taxation · 1h 30m',
+      popNote: 'Taxation moves to Mon, Sep 28.',
+      popSide: 'right'
+    },
+    {
+      date: '26',
+      dow: 'Sat',
+      longDate: 'Sat, Sep 26',
+      aria: 'Sat, Sep 26: day off',
+      isToday: false,
+      isExam: false,
+      isOff: true,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: true,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'right'
+    }
+  ],
+  full: [
+    {
+      date: 'Sep 20',
+      dow: 'Sun',
+      longDate: 'Sun, Sep 20',
+      aria: 'Sun, Sep 20',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: false,
+      canSkip: false,
+      disabled: true,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'left'
+    },
+    {
+      date: '21',
+      dow: 'Mon',
+      longDate: 'Mon, Sep 21',
+      aria: 'Mon, Sep 21',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: false,
+      canSkip: false,
+      disabled: true,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'left'
+    },
+    {
+      date: '22',
+      dow: 'Tue',
+      longDate: 'Tue, Sep 22',
+      aria: 'Tue, Sep 22, today: Policy provisions, 1h 30m',
+      isToday: true,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Policy provisions',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Policy provisions · 1h 30m',
+      popNote: 'Policy provisions moves to Wed, Sep 23.',
+      popSide: 'left'
+    },
+    {
+      date: '23',
+      dow: 'Wed',
+      longDate: 'Wed, Sep 23',
+      aria: 'Wed, Sep 23: Annuities, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Annuities',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Annuities · 1h 30m',
+      popNote: 'Annuities moves to Thu, Sep 24.',
+      popSide: 'left'
+    },
+    {
+      date: '24',
+      dow: 'Thu',
+      longDate: 'Thu, Sep 24',
+      aria: 'Thu, Sep 24: Health & disability, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Health & disability',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Health & disability · 1h 30m',
+      popNote: 'Health & disability moves to Fri, Sep 25.',
+      popSide: 'right'
+    },
+    {
+      date: '25',
+      dow: 'Fri',
+      longDate: 'Fri, Sep 25',
+      aria: 'Fri, Sep 25: Taxation, 1h 30m, plus spaced review',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Taxation',
+      dur: '1h 30m',
+      review: true,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Taxation · 1h 30m',
+      popNote: 'Taxation moves to Mon, Sep 28.',
+      popSide: 'right'
+    },
+    {
+      date: '26',
+      dow: 'Sat',
+      longDate: 'Sat, Sep 26',
+      aria: 'Sat, Sep 26: day off',
+      isToday: false,
+      isExam: false,
+      isOff: true,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: true,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'right'
+    },
+    {
+      date: '27',
+      dow: 'Sun',
+      longDate: 'Sun, Sep 27',
+      aria: 'Sun, Sep 27: day off',
+      isToday: false,
+      isExam: false,
+      isOff: true,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: true,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'left'
+    },
+    {
+      date: '28',
+      dow: 'Mon',
+      longDate: 'Mon, Sep 28',
+      aria: 'Mon, Sep 28: Federal rules, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Federal rules',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Federal rules · 1h 30m',
+      popNote: 'Federal rules moves to Tue, Sep 29.',
+      popSide: 'left'
+    },
+    {
+      date: '29',
+      dow: 'Tue',
+      longDate: 'Tue, Sep 29',
+      aria: 'Tue, Sep 29: Riders, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Riders',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Riders · 1h 30m',
+      popNote: 'Riders moves to Wed, Sep 30.',
+      popSide: 'left'
+    },
+    {
+      date: '30',
+      dow: 'Wed',
+      longDate: 'Wed, Sep 30',
+      aria: 'Wed, Sep 30: Policy provisions, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Policy provisions',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Policy provisions · 1h 30m',
+      popNote: 'Policy provisions moves to Thu, Oct 1.',
+      popSide: 'left'
+    },
+    {
+      date: 'Oct 1',
+      dow: 'Thu',
+      longDate: 'Thu, Oct 1',
+      aria: 'Thu, Oct 1: Annuities, 1h 30m, plus spaced review',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Annuities',
+      dur: '1h 30m',
+      review: true,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Annuities · 1h 30m',
+      popNote: 'Annuities moves to Fri, Oct 2.',
+      popSide: 'right'
+    },
+    {
+      date: '2',
+      dow: 'Fri',
+      longDate: 'Fri, Oct 2',
+      aria: 'Fri, Oct 2: Health & disability, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Health & disability',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Health & disability · 1h 30m',
+      popNote: 'Health & disability moves to Mon, Oct 5.',
+      popSide: 'right'
+    },
+    {
+      date: '3',
+      dow: 'Sat',
+      longDate: 'Sat, Oct 3',
+      aria: 'Sat, Oct 3: day off',
+      isToday: false,
+      isExam: false,
+      isOff: true,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: true,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'right'
+    },
+    {
+      date: '4',
+      dow: 'Sun',
+      longDate: 'Sun, Oct 4',
+      aria: 'Sun, Oct 4: day off',
+      isToday: false,
+      isExam: false,
+      isOff: true,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: true,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'left'
+    },
+    {
+      date: '5',
+      dow: 'Mon',
+      longDate: 'Mon, Oct 5',
+      aria: 'Mon, Oct 5: Taxation, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Taxation',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Taxation · 1h 30m',
+      popNote: 'Taxation moves to Tue, Oct 6.',
+      popSide: 'left'
+    },
+    {
+      date: '6',
+      dow: 'Tue',
+      longDate: 'Tue, Oct 6',
+      aria: 'Tue, Oct 6: Federal rules, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Federal rules',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Federal rules · 1h 30m',
+      popNote: 'Federal rules moves to Wed, Oct 7.',
+      popSide: 'left'
+    },
+    {
+      date: '7',
+      dow: 'Wed',
+      longDate: 'Wed, Oct 7',
+      aria: 'Wed, Oct 7: Riders, 1h 30m, plus spaced review',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Riders',
+      dur: '1h 30m',
+      review: true,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Riders · 1h 30m',
+      popNote: 'Riders moves to Thu, Oct 8.',
+      popSide: 'left'
+    },
+    {
+      date: '8',
+      dow: 'Thu',
+      longDate: 'Thu, Oct 8',
+      aria: 'Thu, Oct 8: Policy provisions, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Policy provisions',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Policy provisions · 1h 30m',
+      popNote: 'Policy provisions moves to Fri, Oct 9.',
+      popSide: 'right'
+    },
+    {
+      date: '9',
+      dow: 'Fri',
+      longDate: 'Fri, Oct 9',
+      aria: 'Fri, Oct 9: Annuities, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Annuities',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Annuities · 1h 30m',
+      popNote: 'Annuities moves to Mon, Oct 12.',
+      popSide: 'right'
+    },
+    {
+      date: '10',
+      dow: 'Sat',
+      longDate: 'Sat, Oct 10',
+      aria: 'Sat, Oct 10: day off',
+      isToday: false,
+      isExam: false,
+      isOff: true,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: true,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'right'
+    },
+    {
+      date: '11',
+      dow: 'Sun',
+      longDate: 'Sun, Oct 11',
+      aria: 'Sun, Oct 11: day off',
+      isToday: false,
+      isExam: false,
+      isOff: true,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: true,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'left'
+    },
+    {
+      date: '12',
+      dow: 'Mon',
+      longDate: 'Mon, Oct 12',
+      aria: 'Mon, Oct 12: Health & disability, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Health & disability',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Health & disability · 1h 30m',
+      popNote: 'Health & disability moves to Tue, Oct 13.',
+      popSide: 'left'
+    },
+    {
+      date: '13',
+      dow: 'Tue',
+      longDate: 'Tue, Oct 13',
+      aria: 'Tue, Oct 13: Taxation, 1h 30m, plus spaced review',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Taxation',
+      dur: '1h 30m',
+      review: true,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Taxation · 1h 30m',
+      popNote: 'Taxation moves to Wed, Oct 14.',
+      popSide: 'left'
+    },
+    {
+      date: '14',
+      dow: 'Wed',
+      longDate: 'Wed, Oct 14',
+      aria: 'Wed, Oct 14: Federal rules, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Federal rules',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Federal rules · 1h 30m',
+      popNote: 'Federal rules moves to Thu, Oct 15.',
+      popSide: 'left'
+    },
+    {
+      date: '15',
+      dow: 'Thu',
+      longDate: 'Thu, Oct 15',
+      aria: 'Thu, Oct 15: Riders, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Riders',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Riders · 1h 30m',
+      popNote: 'Riders moves to Fri, Oct 16.',
+      popSide: 'right'
+    },
+    {
+      date: '16',
+      dow: 'Fri',
+      longDate: 'Fri, Oct 16',
+      aria: 'Fri, Oct 16: Policy provisions, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Policy provisions',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Policy provisions · 1h 30m',
+      popNote: 'Policy provisions moves to Mon, Oct 19.',
+      popSide: 'right'
+    },
+    {
+      date: '17',
+      dow: 'Sat',
+      longDate: 'Sat, Oct 17',
+      aria: 'Sat, Oct 17: day off',
+      isToday: false,
+      isExam: false,
+      isOff: true,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: true,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'right'
+    },
+    {
+      date: '18',
+      dow: 'Sun',
+      longDate: 'Sun, Oct 18',
+      aria: 'Sun, Oct 18: day off',
+      isToday: false,
+      isExam: false,
+      isOff: true,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: true,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'left'
+    },
+    {
+      date: '19',
+      dow: 'Mon',
+      longDate: 'Mon, Oct 19',
+      aria: 'Mon, Oct 19: Annuities, 1h 30m, plus spaced review',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Annuities',
+      dur: '1h 30m',
+      review: true,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Annuities · 1h 30m',
+      popNote: 'Annuities moves to Tue, Oct 20.',
+      popSide: 'left'
+    },
+    {
+      date: '20',
+      dow: 'Tue',
+      longDate: 'Tue, Oct 20',
+      aria: 'Tue, Oct 20: Health & disability, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Health & disability',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Health & disability · 1h 30m',
+      popNote: 'Health & disability moves to Wed, Oct 21.',
+      popSide: 'left'
+    },
+    {
+      date: '21',
+      dow: 'Wed',
+      longDate: 'Wed, Oct 21',
+      aria: 'Wed, Oct 21: Taxation, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Taxation',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Taxation · 1h 30m',
+      popNote: 'Taxation moves to Thu, Oct 22.',
+      popSide: 'left'
+    },
+    {
+      date: '22',
+      dow: 'Thu',
+      longDate: 'Thu, Oct 22',
+      aria: 'Thu, Oct 22: Federal rules, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Federal rules',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Federal rules · 1h 30m',
+      popNote: 'Federal rules moves to Fri, Oct 23.',
+      popSide: 'right'
+    },
+    {
+      date: '23',
+      dow: 'Fri',
+      longDate: 'Fri, Oct 23',
+      aria: 'Fri, Oct 23: Riders, 1h 30m, plus spaced review',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Riders',
+      dur: '1h 30m',
+      review: true,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Riders · 1h 30m',
+      popNote: 'Riders moves to Mon, Oct 26.',
+      popSide: 'right'
+    },
+    {
+      date: '24',
+      dow: 'Sat',
+      longDate: 'Sat, Oct 24',
+      aria: 'Sat, Oct 24: day off',
+      isToday: false,
+      isExam: false,
+      isOff: true,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: true,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'right'
+    },
+    {
+      date: '25',
+      dow: 'Sun',
+      longDate: 'Sun, Oct 25',
+      aria: 'Sun, Oct 25: day off',
+      isToday: false,
+      isExam: false,
+      isOff: true,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: true,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'left'
+    },
+    {
+      date: '26',
+      dow: 'Mon',
+      longDate: 'Mon, Oct 26',
+      aria: 'Mon, Oct 26: Policy provisions, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Policy provisions',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Policy provisions · 1h 30m',
+      popNote: 'Policy provisions moves to Tue, Oct 27.',
+      popSide: 'left'
+    },
+    {
+      date: '27',
+      dow: 'Tue',
+      longDate: 'Tue, Oct 27',
+      aria: 'Tue, Oct 27: Annuities, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Annuities',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Annuities · 1h 30m',
+      popNote: 'Annuities moves to Wed, Oct 28.',
+      popSide: 'left'
+    },
+    {
+      date: '28',
+      dow: 'Wed',
+      longDate: 'Wed, Oct 28',
+      aria: 'Wed, Oct 28: Health & disability, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Health & disability',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Health & disability · 1h 30m',
+      popNote: 'Health & disability moves to Thu, Oct 29.',
+      popSide: 'left'
+    },
+    {
+      date: '29',
+      dow: 'Thu',
+      longDate: 'Thu, Oct 29',
+      aria: 'Thu, Oct 29: Taxation, 1h 30m, plus spaced review',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Taxation',
+      dur: '1h 30m',
+      review: true,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Taxation · 1h 30m',
+      popNote: 'Taxation moves to Fri, Oct 30.',
+      popSide: 'right'
+    },
+    {
+      date: '30',
+      dow: 'Fri',
+      longDate: 'Fri, Oct 30',
+      aria: 'Fri, Oct 30: Federal rules, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Federal rules',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Federal rules · 1h 30m',
+      popNote: 'Federal rules moves to Mon, Nov 2.',
+      popSide: 'right'
+    },
+    {
+      date: '31',
+      dow: 'Sat',
+      longDate: 'Sat, Oct 31',
+      aria: 'Sat, Oct 31: day off',
+      isToday: false,
+      isExam: false,
+      isOff: true,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: true,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'right'
+    },
+    {
+      date: 'Nov 1',
+      dow: 'Sun',
+      longDate: 'Sun, Nov 1',
+      aria: 'Sun, Nov 1: day off',
+      isToday: false,
+      isExam: false,
+      isOff: true,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: true,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'left'
+    },
+    {
+      date: '2',
+      dow: 'Mon',
+      longDate: 'Mon, Nov 2',
+      aria: 'Mon, Nov 2: Riders, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Riders',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Riders · 1h 30m',
+      popNote: 'Riders moves to Tue, Nov 3.',
+      popSide: 'left'
+    },
+    {
+      date: '3',
+      dow: 'Tue',
+      longDate: 'Tue, Nov 3',
+      aria: 'Tue, Nov 3: Policy provisions, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Policy provisions',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Policy provisions · 1h 30m',
+      popNote: 'Policy provisions moves to Wed, Nov 4.',
+      popSide: 'left'
+    },
+    {
+      date: '4',
+      dow: 'Wed',
+      longDate: 'Wed, Nov 4',
+      aria: 'Wed, Nov 4: Annuities, 1h 30m, plus spaced review',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Annuities',
+      dur: '1h 30m',
+      review: true,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Annuities · 1h 30m',
+      popNote: 'Annuities moves to Thu, Nov 5.',
+      popSide: 'left'
+    },
+    {
+      date: '5',
+      dow: 'Thu',
+      longDate: 'Thu, Nov 5',
+      aria: 'Thu, Nov 5: Health & disability, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Health & disability',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Health & disability · 1h 30m',
+      popNote: 'Health & disability moves to Fri, Nov 6.',
+      popSide: 'right'
+    },
+    {
+      date: '6',
+      dow: 'Fri',
+      longDate: 'Fri, Nov 6',
+      aria: 'Fri, Nov 6: Taxation, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Taxation',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Taxation · 1h 30m',
+      popNote: 'Taxation moves to Mon, Nov 9.',
+      popSide: 'right'
+    },
+    {
+      date: '7',
+      dow: 'Sat',
+      longDate: 'Sat, Nov 7',
+      aria: 'Sat, Nov 7: day off',
+      isToday: false,
+      isExam: false,
+      isOff: true,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: true,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'right'
+    },
+    {
+      date: '8',
+      dow: 'Sun',
+      longDate: 'Sun, Nov 8',
+      aria: 'Sun, Nov 8: day off',
+      isToday: false,
+      isExam: false,
+      isOff: true,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: true,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'left'
+    },
+    {
+      date: '9',
+      dow: 'Mon',
+      longDate: 'Mon, Nov 9',
+      aria: 'Mon, Nov 9: Federal rules, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Federal rules',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Federal rules · 1h 30m',
+      popNote: 'Federal rules moves to Tue, Nov 10.',
+      popSide: 'left'
+    },
+    {
+      date: '10',
+      dow: 'Tue',
+      longDate: 'Tue, Nov 10',
+      aria: 'Tue, Nov 10: Riders, 1h 30m, plus spaced review',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Riders',
+      dur: '1h 30m',
+      review: true,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Riders · 1h 30m',
+      popNote: 'Riders moves to Wed, Nov 11.',
+      popSide: 'left'
+    },
+    {
+      date: '11',
+      dow: 'Wed',
+      longDate: 'Wed, Nov 11',
+      aria: 'Wed, Nov 11: Policy provisions, 1h 30m',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: true,
+      topic: 'Policy provisions',
+      dur: '1h 30m',
+      review: false,
+      struck: false,
+      canSkip: true,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Policy provisions · 1h 30m',
+      popNote: 'Policy provisions moves to Thu, Nov 12.',
+      popSide: 'left'
+    },
+    {
+      date: '12',
+      dow: 'Thu',
+      longDate: 'Thu, Nov 12',
+      aria: 'Thu, Nov 12',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: false,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'right'
+    },
+    {
+      date: '13',
+      dow: 'Fri',
+      longDate: 'Fri, Nov 13',
+      aria: 'Fri, Nov 13',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: false,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'right'
+    },
+    {
+      date: '14',
+      dow: 'Sat',
+      longDate: 'Sat, Nov 14',
+      aria: 'Sat, Nov 14',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: false,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'right'
+    },
+    {
+      date: '15',
+      dow: 'Sun',
+      longDate: 'Sun, Nov 15',
+      aria: 'Sun, Nov 15',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: false,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'left'
+    },
+    {
+      date: '16',
+      dow: 'Mon',
+      longDate: 'Mon, Nov 16',
+      aria: 'Mon, Nov 16',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: false,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'left'
+    },
+    {
+      date: '17',
+      dow: 'Tue',
+      longDate: 'Tue, Nov 17',
+      aria: 'Tue, Nov 17',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: false,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'left'
+    },
+    {
+      date: '18',
+      dow: 'Wed',
+      longDate: 'Wed, Nov 18',
+      aria: 'Wed, Nov 18',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: false,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'left'
+    },
+    {
+      date: '19',
+      dow: 'Thu',
+      longDate: 'Thu, Nov 19',
+      aria: 'Thu, Nov 19',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: false,
+      canSkip: false,
+      disabled: false,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'right'
+    },
+    {
+      date: '20',
+      dow: 'Fri',
+      longDate: 'Fri, Nov 20',
+      aria: 'Fri, Nov 20, exam day',
+      isToday: false,
+      isExam: true,
+      isOff: false,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: false,
+      canSkip: false,
+      disabled: true,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'right'
+    },
+    {
+      date: '21',
+      dow: 'Sat',
+      longDate: 'Sat, Nov 21',
+      aria: 'Sat, Nov 21',
+      isToday: false,
+      isExam: false,
+      isOff: false,
+      hasSession: false,
+      topic: '',
+      dur: '',
+      review: false,
+      struck: false,
+      canSkip: false,
+      disabled: true,
+      popTitle: 'I can’t study this day',
+      popSub: 'Nothing planned.',
+      popNote: 'Mark it off so nothing moves here.',
+      popSide: 'right'
+    }
+  ],
+  paces: [
+    {
+      name: 'Accelerated',
+      suggested: false,
+      total: '12h 30m',
+      perDay: '2h 30m',
+      finish: 'Finishes Oct 22',
+      finishTone: 'green',
+      late: false
+    },
+    {
+      name: 'Steady',
+      suggested: true,
+      total: '7h 30m',
+      perDay: '1h 30m',
+      finish: 'Finishes Nov 11',
+      finishTone: 'green',
+      late: false
+    },
+    {
+      name: 'Relaxed',
+      suggested: false,
+      total: '5h',
+      perDay: '1h',
+      finish: 'Won’t finish before your exam',
+      finishTone: 'conf-low-ink',
+      late: true
+    }
+  ],
+  sliders: [
+    {
+      label: 'Sun',
+      value: 0,
+      text: '0m'
+    },
+    {
+      label: 'Mon',
+      value: 90,
+      text: '1h 30m'
+    },
+    {
+      label: 'Tue',
+      value: 90,
+      text: '1h 30m'
+    },
+    {
+      label: 'Wed',
+      value: 90,
+      text: '1h 30m'
+    },
+    {
+      label: 'Thu',
+      value: 90,
+      text: '1h 30m'
+    },
+    {
+      label: 'Fri',
+      value: 90,
+      text: '1h 30m'
+    },
+    {
+      label: 'Sat',
+      value: 0,
+      text: '0m'
+    }
+  ]
+}
+
+/** His Study planner prose, transcribed from the rendered page. */
+export const JEFF_MVP_PLANNER_COPY = {
+  title: 'Study planner',
+  course: 'Florida Life and Health Pre-licensing',
+  lead: 'Set your exam date and how much you can study each week. Your plan rebuilds itself when life gets in the way.',
+
+  goalLabel: 'Goal date (your exam)',
+  daysAwaySuffix: 'days away',
+  paceLabel: 'Your pace',
+  weekSuffix: 'a week',
+  finishLabel: 'Course finishes',
+  changePace: 'Change pace',
+  donePace: 'Done',
+
+  pickPace: 'Pick a pace',
+  suggested: 'Suggested',
+  perDaySuffix: 'on study days',
+  spreadNote: 'Spread it across your week · weekends can be different from weekdays',
+
+  skipHint: 'Can’t study on a day? Point at it and choose Skip, or pick several days.',
+  pickSeveral: 'Pick several days…',
+  skip: 'Skip',
+  today: 'Today',
+  off: 'Off',
+  /* Its own line in the cell, with an amber rule — not a tint on the
+     session above it. */
+  spacedReview: 'Spaced review',
+  /* Drawn INSIDE the exam-day cell, which is dark — hence white text. */
+  examDay: 'Exam day',
+
+  /**
+   * ⚠ THE "DAY OFF" SWATCH IS A STRUCK-THROUGH SAMPLE DATE, not a colour
+   * chip — his legend literally renders the numeral 14 with a line through
+   * it, because that is what a day off looks like in the grid above. The
+   * other three ARE chips: a 2×14 bar for a session, the same in amber for a
+   * spaced review, and a 12px ink square for exam day. Four entries, three
+   * different shapes, and the odd one is the one that teaches the gesture.
+   */
+  legendSample: '14',
+  legend: [
+    { kind: 'bar', label: 'Study session', tone: 'steel-deep' },
+    { kind: 'bar', label: 'Spaced review', tone: 'amber' },
+    { kind: 'struck', label: 'Day off', tone: 'muted' },
+    { kind: 'square', label: 'Exam day', tone: 'ink' },
+  ],
+} as const

@@ -14,6 +14,8 @@ import { CompassJeffMvpReadiness } from './CompassJeffMvpReadiness'
 import { CompassJeffMvpLearn } from './CompassJeffMvpLearn'
 import { CompassJeffMvpOverview } from './CompassJeffMvpOverview'
 import { CompassJeffMvpPractice } from './CompassJeffMvpPractice'
+import { CompassJeffMvpPrep } from './CompassJeffMvpPrep'
+import { CompassJeffMvpPlanner } from './CompassJeffMvpPlanner'
 import './compassJeffMvp.css'
 
 /**
@@ -72,6 +74,10 @@ export function CompassJeffMvpShell({
         <CompassJeffMvpOverview onSelectPage={onSelectPage} />
       ) : page === 'practice' ? (
         <CompassJeffMvpPractice onSelectPage={onSelectPage} />
+      ) : page === 'prep-review' ? (
+        <CompassJeffMvpPrep />
+      ) : page === 'study-planner' ? (
+        <CompassJeffMvpPlanner />
       ) : (
         <CompassJeffMvpPending page={page} />
       )}

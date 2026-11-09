@@ -9,8 +9,14 @@ import { CompassJeffMvpReadiness } from '@/components/learning/CompassJeffMvpRea
 import { CompassJeffMvpLearn } from '@/components/learning/CompassJeffMvpLearn'
 import { CompassJeffMvpOverview } from '@/components/learning/CompassJeffMvpOverview'
 import { CompassJeffMvpPractice } from '@/components/learning/CompassJeffMvpPractice'
+import { CompassJeffMvpPrep } from '@/components/learning/CompassJeffMvpPrep'
+import { CompassJeffMvpPlanner } from '@/components/learning/CompassJeffMvpPlanner'
 import {
   JEFF_MVP_LEARN as LEARN,
+  JEFF_MVP_PLANNER as PLAN,
+  JEFF_MVP_PLANNER_COPY as PLCOPY,
+  JEFF_MVP_PREP as PREP,
+  JEFF_MVP_PREP_COPY as PPCOPY,
   JEFF_MVP_PRACTICE as PR,
   JEFF_MVP_PRACTICE_COPY as PCOPY,
   practiceMatches,
@@ -58,6 +64,18 @@ function renderShell(page: Parameters<typeof CompassJeffMvpShell>[0]['page'] = '
     </MemoryRouter>,
   )
 }
+
+function wrap(node: React.ReactNode) {
+  return render(
+    <MemoryRouter>
+      <AccountProvider>
+        <FeatureFlagProvider>{node}</FeatureFlagProvider>
+      </AccountProvider>
+    </MemoryRouter>,
+  )
+}
+const renderPrep = () => wrap(<CompassJeffMvpPrep />)
+const renderPlanner = () => wrap(<CompassJeffMvpPlanner />)
 
 function renderPractice() {
   return render(
@@ -290,7 +308,7 @@ describe('Jeff’s Compass MVP — the pages not built yet', () => {
        the only `ported: true` row today; when the next page lands, this test
        is the reminder to flip its flag. */
     const ported = JEFF_MVP_PAGES.filter((p) => p.ported).map((p) => p.page)
-    expect(ported).toEqual(['overview', 'learn', 'practice', 'readiness'])
+    expect(ported).toEqual(['overview', 'learn', 'study-planner', 'prep-review', 'practice', 'readiness'])
     for (const p of JEFF_MVP_PAGES) {
       if (p.ported) continue
       const { unmount } = renderShell(p.page)
@@ -676,5 +694,118 @@ describe('Jeff’s Compass MVP — Practice against his build', () => {
       .filter((sets) => sets.length > 0)
     expect(low.length).toBe(2)
     expect(PR.topics.length).toBe(5)
+  })
+})
+
+describe('Jeff’s Compass MVP — Prep Review against his build', () => {
+  it('renders every string his page renders', () => {
+    const { container } = renderPrep()
+    const mine = flat(container.textContent ?? '')
+    expect(parity.prepReview.filter((s) => !mine.includes(flat(s)))).toEqual([])
+  })
+
+  it('locks nothing — this is the optional page', () => {
+    /* ⚠ The whole difference from Learn, and the thing a later pass is most
+       likely to "fix" by reaching for Learn's locked styling. */
+    const { container } = renderPrep()
+    expect(container.querySelector('.cjm-ch--locked')).toBeNull()
+    expect(container.querySelector('.cjm-btn--locked')).toBeNull()
+    expect(screen.getByText(PPCOPY.optionalPill)).toBeInTheDocument()
+    const takes = screen.getAllByRole('button', { name: /Take exam/ })
+    for (const t of takes) expect(t).not.toBeDisabled()
+  })
+
+  it('interleaves chapters and exams, and leaves Chapter 5 without one', () => {
+    /* ⚠ Five exams for six chapters. Nesting exams inside chapters the way
+       Learn does would force an empty slot onto that chapter. */
+    const kinds = PREP.rows.map((r) => r.kind)
+    expect(kinds.filter((k) => k === 'chapter').length).toBe(6)
+    expect(kinds.filter((k) => k === 'exam').length).toBe(5)
+    expect(kinds).toEqual([
+      'chapter', 'exam', 'chapter', 'exam', 'chapter', 'exam',
+      'chapter', 'exam', 'chapter', 'chapter', 'exam',
+    ])
+  })
+
+  it('expands a chapter into his generated lessons', async () => {
+    const user = userEvent.setup()
+    renderPrep()
+    expect(screen.queryByText('Lesson 1')).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Expand Chapter 1' }))
+    expect(screen.getByText('Lesson 1')).toBeInTheDocument()
+    expect(screen.getByText('Lesson 3')).toBeInTheDocument()
+  })
+
+  it('carries the ring dash his page carries, mismatch and all', () => {
+    /* ⚠ 182.8 is exact for r=47; the circle is drawn at r=50. Learn's 180.0
+       has the same shape of error, the Overview's 192.0 does not — see the
+       fixture note. All three verbatim. */
+    expect(PPCOPY.ringDash).toBe('182.8 314.2')
+  })
+})
+
+describe('Jeff’s Compass MVP — the Study planner against his build', () => {
+  it('renders every string his default week renders', () => {
+    const { container } = renderPlanner()
+    const mine = flat(container.textContent ?? '')
+    expect(parity.planner.filter((s) => !mine.includes(flat(s)))).toEqual([])
+  })
+
+  it('opens his pace editor', async () => {
+    const user = userEvent.setup()
+    const { container } = renderPlanner()
+    await user.click(screen.getByRole('button', { name: new RegExp(PLCOPY.changePace) }))
+    const mine = flat(container.textContent ?? '')
+    expect(parity.plannerEditing.filter((s) => !mine.includes(flat(s)))).toEqual([])
+  })
+
+  it('keeps the pace that will not finish, and says so', () => {
+    /* ⚠ His Relaxed option reads "Won’t finish before your exam". Dropping it
+       would hide the trade-off the editor exists to show. */
+    const late = PLAN.paces.filter((p) => p.late)
+    expect(late.length).toBe(1)
+    expect(late[0].name).toBe('Relaxed')
+    expect(late[0].finish).toMatch(/Won’t finish/)
+  })
+
+  it('swaps to a 63-cell full plan with its own title', async () => {
+    /* ⚠ Two calendars, not one with a zoom: 7 cells and 63, different titles
+       and heights. */
+    expect(PLAN.week.length).toBe(7)
+    expect(PLAN.full.length).toBe(63)
+    expect(PLAN.weekTitle).not.toBe(PLAN.fullTitle)
+    const user = userEvent.setup()
+    const { container } = renderPlanner()
+    await user.click(screen.getByRole('button', { name: /^Full plan$/ }))
+    const mine = flat(container.textContent ?? '')
+    expect(parity.plannerFull.filter((s) => !mine.includes(flat(s)))).toEqual([])
+  })
+
+  it('draws a spaced review as its own line beside the session', () => {
+    /* ⚠ THE BUG THIS PINS: `review` is an extra element, not a tint on the
+       session. Reading it as a modifier silently dropped the words. */
+    const both = PLAN.week.filter((c) => c.hasSession && c.review)
+    expect(both.length).toBe(1)
+    expect(both[0].topic).toBe('Taxation')
+    renderPlanner()
+    expect(screen.getByText('Taxation')).toBeInTheDocument()
+    expect(screen.getAllByText(PLCOPY.spacedReview).length).toBeGreaterThan(1) // cell + legend
+  })
+
+  it('tells each day what skipping it would move', () => {
+    /* ⚠ The hover card IS the feature — "Policy provisions moves to Wed, Sep
+       23." and, for an empty day, "Mark it off so nothing moves here." */
+    const withSession = PLAN.week.find((c) => c.hasSession)!
+    expect(withSession.popNote).toMatch(/moves to/)
+    const empty = PLAN.week.find((c) => !c.hasSession && c.isOff)!
+    expect(empty.popNote).toMatch(/nothing moves here/)
+  })
+
+  it('keeps his fixed prototype dates rather than today’s', () => {
+    /* ⚠ His `T0` is Tue 22 Sep 2026. Recomputing from the clock would stop
+       the page matching the screenshots his review is based on. */
+    expect(PLAN.daysAway).toBe(59)
+    expect(PLAN.weekTitle).toContain('Sep 20')
+    expect(PLAN.week.filter((c) => c.isToday).map((c) => c.longDate)).toEqual(['Tue, Sep 22'])
   })
 })
