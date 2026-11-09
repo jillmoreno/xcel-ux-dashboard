@@ -779,10 +779,7 @@ export function TwoPackageProductDetailPage() {
                         <span>{noWidow(line)}</span>
                       </div>
                     ))}
-                    <button type="button" className="cre-e2e-textlink cre-e2e-textlink--brick" style={{ ...LINK, display: 'block', marginTop: -2 }}>
-                      Recommended study plan
-                      <AngleRightSolid size={15} aria-hidden style={LINK_CHEVRON} />
-                    </button>
+                    {/* No "Recommended study plan" link now (2026-11-09, Eric). */}
                   </div>
                 </section>
               </div>
