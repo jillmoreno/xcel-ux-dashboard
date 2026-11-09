@@ -1299,6 +1299,30 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     brands: ['xcel'],
   },
   {
+    id: 'xcel-compass-mvp',
+    title: "Compass MVP — Jeff's version (13 pages)",
+    accent: 'blue',
+    icon: 'monitor',
+    blurb:
+      "Jeff's whole Compass, not one screen of it: thirteen pages behind a Pages menu at the bottom left — Overview, Learn, the Chapter 2 lesson with Rubi and the Workspace, Prep Review, Flashcards (topic and study session), Practice (and a question set), Readiness, Study planner, and the Exam Simulator with a simulated Pearson VUE sitting. The rail groups the last five under EXAM PREP, which is the structural argument: learning and exam preparation are two modes of one product, and Readiness is what connects them.",
+    tileBlurb:
+      "Thirteen pages of Compass as one document. Use the Pages menu, bottom left, to move between them.",
+    kind: 'explore',
+    kindLabel: 'Standalone HTML',
+    status: 'ready',
+    category: 'exploration',
+    /* ⚠ THIS ONE SERVES, where `compass-prototype-b-v3.html` could not. Both
+       are design-canvas exports, but v3's runtime re-fetched its own page over
+       http and mis-sliced the template, printing its own JavaScript as text —
+       which is why that file is still not on a row. This export inlines every
+       page in a `PAGES` map and injects it with `iframe.srcdoc`, taking React
+       from a blob URL, so it has nothing to re-fetch. Verified rendering over
+       http on all thirteen pages before this row was written. */
+    externalUrl: `${PROTOTYPE_BASE}/xcel-compass-mvp.html`,
+    livePreviewUrl: `${PROTOTYPE_BASE}/xcel-compass-mvp.html`,
+    brands: ['xcel'],
+  },
+  {
     id: 'xcel-wireframes',
     title: 'XCEL LMS — Wireframes & Overlap',
     accent: 'blue',

@@ -192,6 +192,7 @@ describe('section routing (sectionOf)', () => {
        and these two self-contained exports stand for the design here. */
     'xcel-compass-readiness-58': 'exploration',
     'xcel-compass-readiness-86': 'exploration',
+    'xcel-compass-mvp': 'exploration',
     // `xcel-course-entry` (the repo's first authored dev handoff, 2026-09-24)
     // stood here until 2026-10-15 — archived, `course-entry-handoff`. Both
     // handoffs were removed as "not ready"; Development lists nothing now.
