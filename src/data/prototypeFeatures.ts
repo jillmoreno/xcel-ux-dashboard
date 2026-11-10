@@ -1348,6 +1348,32 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     livePreviewUrl: `${PROTOTYPE_BASE}/xcel-pace-presets.html`,
     brands: ['xcel'],
   },
+  /* THE AFFIDAVIT MODAL IN THE HOUSE STYLE (2026-11-10). The production LMS's
+     "Ohio Property Pre-Licensing Insurance Affidavit" modal — warning banner,
+     linked PDF, attestation, legal name, typed signature, exam date, I Agree —
+     rebuilt on the XCEL tokens as a standalone page. Same content and flow;
+     the skin and the hierarchy are what it explores. It is NOT the End-to-End
+     Demo's `AffidavitModal.tsx` (Figma 428:3054), which is the pre-course
+     affidavit and a different document; this page is its sibling, not its
+     replacement. `?state=filled|error|signed` for the handoff gallery. No
+     `devStatus`, like every Exploration row (see the pace-presets note). */
+  {
+    id: 'xcel-affidavit-modal',
+    title: 'Affidavit modal — the house style',
+    accent: 'blue',
+    icon: 'flag',
+    blurb:
+      "The LMS's pre-exam affidavit as an XCEL form: Charcoal serif title on white instead of a coloured header, a warning that stays but stops shouting, the PDF and its attestation grouped as one thing, legal name and typed signature as the form, and one Brick I Agree that comes on only when the signature matches the name and the exam date is real. Every colour is a token from the XCEL brand block.",
+    tileBlurb:
+      'The production affidavit modal, re-skinned on our tokens. Four states: empty, filled, error, signed.',
+    kind: 'explore',
+    kindLabel: 'Standalone HTML',
+    status: 'ready',
+    category: 'exploration',
+    externalUrl: `${PROTOTYPE_BASE}/xcel-affidavit-modal.html`,
+    livePreviewUrl: `${PROTOTYPE_BASE}/xcel-affidavit-modal.html`,
+    brands: ['xcel'],
+  },
   {
     /*
      * ATLAS vs. COMPASS — TYPOGRAPHY & COLOR AUDIT (2026-10-27). An exploration

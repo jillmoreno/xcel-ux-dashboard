@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Affidavit modal · house style</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Open+Sans:wght@400;600;700&display=swap">
+<style>
+/* ─────────────────────────────────────────────────────────────────────────
+   XCEL AFFIDAVIT MODAL — a standalone exploration (2026-11-10).
+
+   The production LMS's "Ohio Property Pre-Licensing Insurance Affidavit"
+   modal, rebuilt on the XCEL brand tokens. Same content, same flow; the skin
+   and the hierarchy are what changed. Every colour below is a value from
+   `src/styles/tokens.css` `[data-brand='xcel']`, named in the comment beside
+   it. Nothing here is a colour that file does not have.
+
+   Sibling: `src/components/e2e/AffidavitModal.tsx` (the End-to-End Demo's
+   pre-course affidavit, Figma 428:3054). This page borrows its title serif,
+   its Brick primary button and its hidden-checkbox-drawn-as-a-square pattern
+   so the two read as one family.
+   ───────────────────────────────────────────────────────────────────────── */
+:root {
+  --font-body: 'Open Sans', system-ui, -apple-system, sans-serif;
+  --font-heading-serif: 'DM Serif Display', Georgia, 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Times New Roman', serif;
+
+  --ink: #3a3a3a;            /* --color-text-primary  (Charcoal) */
+  --ink-2: #666666;          /* --color-text-secondary (Gray) */
+  --ink-3: #737373;          /* --color-text-tertiary */
+  --primary: #2d5872;        /* --color-primary-500 (San Juan) */
+  --primary-100: #e9eef2;    /* --color-primary-100 */
+  --brick: #9a1b1e;          /* --color-xcel-brick / --color-cta-500 */
+  --brick-600: #7f1619;      /* --color-cta-600 (hover) */
+  --brick-100: #f7e3e3;      /* --color-cta-100 */
+  --warn-100: #fdf0d4;       /* --color-warning-100 */
+  --warn-300: #fbd27e;       /* --color-warning-300 */
+  --warn-700: #956c18;       /* --color-warning-700 */
+  --ok-500: #018937;         /* --color-success-500 */
+  --ok-100: #cce7d7;         /* --color-success-100 */
+  --n-100: #ececec;          /* --color-neutral-100 */
+  --n-200: #d9d9d9;          /* --color-neutral-200 */
+  --n-300: #c7c7c7;          /* --color-neutral-300 */
+  --white: #ffffff;          /* --color-fixed-light */
+  --outline: #e5e7eb;        /* --color-e2e-form-outline */
+  --shadow: rgb(0 0 0 / 0.05); /* --color-e2e-form-shadow */
+  --scrim: rgb(0 0 0 / 0.5); /* --color-e2e-scrim */
+  --tint: #f5f2ee;           /* tertiary 10% tint — the live site's section background */
+
+  --radius-md: 8px;          /* --radius-md */
+  --radius-xl: 16px;         /* --radius-xl */
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--tint);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── The stand-in page behind — flat, low detail, the modal is the subject ── */
+.page { min-height: 100vh; display: flex; flex-direction: column; }
+.topbar {
+  display: flex; align-items: center; gap: 32px;
+  padding: 14px 36px; min-height: 68px; background: var(--white);
+  border-bottom: 1px solid var(--outline);
+}
+.logo { display: flex; flex-direction: column; line-height: 1; gap: 3px; }
+.logo b { font-weight: 800; font-size: 26px; letter-spacing: .02em; color: var(--brick); }
+.logo span { font-size: 10px; color: var(--ink); }
+.topbar nav { display: flex; gap: 24px; font-size: 14px; color: var(--ink); }
+.topbar .me { margin-left: auto; font-size: 14px; color: var(--ink); }
+.body { flex: 1; display: grid; grid-template-columns: 220px 1fr; }
+.rail { background: var(--white); border-right: 1px solid var(--outline); padding: 28px 16px; display: grid; gap: 4px; align-content: start; }
+.rail a { padding: 9px 12px; border-radius: var(--radius-md); font-size: 14px; color: var(--ink); text-decoration: none; }
+.rail a[aria-current] { background: var(--n-100); }
+.main { padding: 40px 48px; display: grid; gap: 20px; align-content: start; }
+.eyebrow { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+.main h1 { margin: 0; font: 400 30px/1.2 var(--font-heading-serif); color: var(--ink); }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.card { background: var(--white); border: 1px solid var(--outline); border-radius: 12px; height: 140px; }
+.reopen {
+  justify-self: start; display: none; align-items: center; gap: 8px;
+  padding: 10px 16px; border-radius: var(--radius-md); border: 1px solid var(--n-300);
+  background: var(--white); color: var(--primary); font: 600 14px var(--font-body); cursor: pointer;
+}
+.reopen:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+body.closed .reopen { display: inline-flex; }
+
+/* ── Scrim + modal ── */
+.scrim {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  background: var(--scrim);
+}
+body.closed .scrim { display: none; }
+
+.modal {
+  position: relative; width: 560px; max-width: 100%; max-height: calc(100vh - 48px);
+  display: flex; flex-direction: column;
+  background: var(--white);
+  border: 1px solid var(--outline);
+  border-radius: var(--radius-xl);
+  filter: drop-shadow(0 4px 6px var(--shadow)) drop-shadow(0 12px 32px rgb(0 0 0 / 0.12));
+}
+.modal__scroll { overflow: auto; padding: 40px 40px 8px; display: flex; flex-direction: column; gap: 20px; }
+
+.close {
+  position: absolute; top: 14px; right: 14px; width: 36px; height: 36px;
+  display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%;
+  background: none; color: var(--ink-2); cursor: pointer;
+}
+.close:hover { background: var(--n-100); color: var(--ink); }
+.close:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Title: the heading serif in Charcoal on white — no coloured header bar. */
+.title { margin: 0; padding-right: 40px; font: 400 24px/32px var(--font-heading-serif); color: var(--ink); }
+.subtitle { margin: 4px 0 0; font-size: 13px; color: var(--ink-2); }
+
+/* Warning: stays, stops yelling. Sentence case, 600, warning ramp. */
+.notice {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 10px 12px; border-radius: var(--radius-md);
+  background: var(--warn-100); border: 1px solid var(--warn-300); color: var(--warn-700);
+  font-size: 13px; font-weight: 600; line-height: 1.4;
+}
+.notice svg { flex: 0 0 16px; margin-top: 1px; }
+
+.intro { margin: 0; font-size: 14px; color: var(--ink); }
+
+/* Document + attestation — one group, one hairline between them. */
+.doc {
+  border: 1px solid var(--outline); border-radius: var(--radius-md); overflow: hidden;
+}
+.doc__row {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  background: var(--n-100); color: var(--ink); text-decoration: none;
+}
+.doc__row:hover .doc__name { text-decoration: underline; }
+.doc__row:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
+.doc__icon { flex: 0 0 20px; color: var(--ink-2); }
+.doc__name { flex: 1; font-weight: 600; font-size: 14px; color: var(--primary); }
+.doc__meta { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
+.doc__ext { flex: 0 0 16px; color: var(--primary); }
+
+.attest {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 12px 14px; border-top: 1px solid var(--outline);
+  font-size: 14px; color: var(--ink); cursor: pointer; position: relative;
+}
+.attest input {
+  position: absolute; width: 18px; height: 18px; margin: 0; opacity: 0; cursor: pointer;
+}
+.box {
+  flex: 0 0 18px; width: 18px; height: 18px; margin-top: 1px; border-radius: 4px;
+  border: 1.5px solid var(--primary); background: var(--white); color: var(--white);
+  display: grid; place-items: center; transition: background .12s;
+}
+.attest input:checked + .box { background: var(--primary); }
+.attest input:focus-visible + .box { outline: 2px solid var(--primary); outline-offset: 2px; }
+.box svg { opacity: 0; }
+.attest input:checked + .box svg { opacity: 1; }
+.attest.is-error .box { border-color: var(--brick); }
+.req { color: var(--brick); font-weight: 700; }
+
+/* The form */
+.form { display: grid; gap: 16px; }
+.row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 520px) { .row3 { grid-template-columns: 1fr; } }
+.field { display: grid; gap: 6px; }
+.field label { font-size: 13px; font-weight: 600; color: var(--ink); }
+.field input {
+  height: 40px; padding: 0 12px; width: 100%;
+  border: 1px solid var(--n-300); border-radius: var(--radius-md);
+  font: 400 14px var(--font-body); color: var(--ink); background: var(--white);
+}
+.field input::placeholder { color: var(--ink-3); }
+.field input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary); }
+.field.is-error input { border-color: var(--brick); }
+.field.is-error input:focus { box-shadow: 0 0 0 2px var(--brick); }
+.hint { font-size: 12px; color: var(--ink-3); margin: 0; }
+.err { font-size: 12px; color: var(--brick); margin: 0; display: none; }
+.field.is-error .err, .attest.is-error + .err { display: block; }
+.attest-err { padding: 0 14px 10px; }
+
+/* Footer: one primary action, Brick. Off until the form is valid. */
+.footer {
+  display: flex; align-items: center; justify-content: flex-end; gap: 20px;
+  padding: 16px 40px 32px;
+}
+.footer .state { margin-right: auto; font-size: 12px; color: var(--ink-3); }
+.btn {
+  padding: 14px 24px; border: 0; border-radius: var(--radius-md);
+  font: 700 15px/1 var(--font-body); color: var(--white); background: var(--brick); cursor: pointer;
+}
+.btn:hover { background: var(--brick-600); }
+.btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.btn:disabled { background: var(--ink-2); cursor: not-allowed; }
+.link { padding: 0; border: 0; background: none; font: 700 13px var(--font-body); color: var(--primary); cursor: pointer; }
+.link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Signed */
+.signed {
+  display: none; flex-direction: column; align-items: center; text-align: center; gap: 12px;
+  padding: 56px 40px 64px;
+}
+.signed__mark { width: 56px; height: 56px; border-radius: 50%; background: var(--ok-100); color: var(--ok-500); display: grid; place-items: center; }
+.signed h2 { margin: 0; font: 400 24px/32px var(--font-heading-serif); color: var(--ink); }
+.signed p { margin: 0; font-size: 14px; color: var(--ink-2); }
+.modal.is-signed .modal__scroll, .modal.is-signed .footer { display: none; }
+.modal.is-signed .signed { display: flex; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .modal { animation: rise .18s ease-out; }
+  @keyframes rise { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Backdrop: a flat stand-in for Atlas Home ── -->
+<div class="page" aria-hidden="true" id="page">
+  <header class="topbar">
+    <div class="logo"><b>XCEL</b><span>Insurance Training <small>by Colibri</small></span></div>
+    <nav><span>Home</span><span>My Courses</span><span>Certificates</span></nav>
+    <div class="me">Jordan Navarro</div>
+  </header>
+  <div class="body">
+    <aside class="rail">
+      <a aria-current="page">Overview</a><a>Learn</a><a>Study planner</a><a>Progress</a>
+    </aside>
+    <main class="main">
+      <div>
+        <div class="eyebrow">Ohio Property Pre-Licensing</div>
+        <h1>Welcome back, Jordan</h1>
+      </div>
+      <div class="cards"><div class="card"></div><div class="card"></div><div class="card"></div></div>
+      <button type="button" class="reopen" id="reopen">Reopen the affidavit</button>
+    </main>
+  </div>
+</div>
+
+<!-- ── The modal ── -->
+<div class="scrim" id="scrim">
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="aff-title" aria-describedby="aff-intro">
+    <button type="button" class="close" id="close" aria-label="Close">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+
+    <div class="modal__scroll">
+      <div>
+        <h2 class="title" id="aff-title">Ohio Property Pre-Licensing Insurance Affidavit</h2>
+        <p class="subtitle">Before your final exam</p>
+      </div>
+
+      <div class="notice" role="note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3z"/><path d="M12 10v4M12 17.5v.5"/></svg>
+        <span>This must be completed and signed by you, the student. Nobody can sign it on your behalf.</span>
+      </div>
+
+      <p class="intro" id="aff-intro">Read the affidavit, confirm you've read it, then sign below with your legal name.</p>
+
+      <form id="form" novalidate>
+        <div class="doc">
+          <a class="doc__row" href="#" id="doclink" target="_blank" rel="noopener">
+            <svg class="doc__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
+            <span class="doc__name">Ohio Property Pre-Licensing Insurance Affidavit</span>
+            <span class="doc__meta">PDF · opens in a new tab</span>
+            <svg class="doc__ext" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>
+          </a>
+          <label class="attest" id="attest-wrap">
+            <input type="checkbox" id="attest" name="attest" required aria-required="true" aria-describedby="attest-err">
+            <span class="box" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+            </span>
+            <span>I have read the Ohio Property Pre-Licensing Insurance Affidavit and swear that the statements in it are true. <span class="req" aria-hidden="true">*</span></span>
+          </label>
+          <p class="err attest-err" id="attest-err">Confirm you've read the affidavit to continue.</p>
+        </div>
+
+        <div class="form">
+          <div class="row3">
+            <div class="field" data-field>
+              <label for="first">Legal first name <span class="req" aria-hidden="true">*</span></label>
+              <input id="first" name="first" autocomplete="given-name" required aria-required="true" aria-describedby="first-err">
+              <p class="err" id="first-err">Enter your legal first name.</p>
+            </div>
+            <div class="field" data-field>
+              <label for="middle">Legal middle name</label>
+              <input id="middle" name="middle" autocomplete="additional-name">
+            </div>
+            <div class="field" data-field>
+              <label for="last">Legal last name <span class="req" aria-hidden="true">*</span></label>
+              <input id="last" name="last" autocomplete="family-name" required aria-required="true" aria-describedby="last-err">
+              <p class="err" id="last-err">Enter your legal last name.</p>
+            </div>
+          </div>
+
+          <div class="field" data-field>
+            <label for="sig">Signature <span class="req" aria-hidden="true">*</span></label>
+            <input id="sig" name="sig" placeholder="Type your full legal name" autocomplete="off" required aria-required="true" aria-describedby="sig-hint sig-err">
+            <p class="hint" id="sig-hint">Typing your name here counts as your signature. It must match your first and last name above.</p>
+            <p class="err" id="sig-err">Your signature must match your first and last name exactly.</p>
+          </div>
+
+          <div class="field" data-field style="max-width: 240px">
+            <label for="date">Date exam was completed <span class="req" aria-hidden="true">*</span></label>
+            <input id="date" name="date" type="date" required aria-required="true" aria-describedby="date-err">
+            <p class="err" id="date-err">Enter the date you completed the exam. It can't be in the future.</p>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="footer">
+      <span class="state" id="state" aria-live="polite">Complete every required field to continue.</span>
+      <button type="button" class="link" id="cancel">Cancel</button>
+      <button type="submit" class="btn" id="agree" form="form" disabled>I Agree</button>
+    </div>
+
+    <div class="signed" aria-live="polite">
+      <div class="signed__mark">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+      </div>
+      <h2>Affidavit signed</h2>
+      <p id="signed-by"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id)
+  const modal = $('modal'), scrim = $('scrim'), form = $('form')
+  const attest = $('attest'), attestWrap = $('attest-wrap')
+  const first = $('first'), middle = $('middle'), last = $('last'), sig = $('sig'), date = $('date')
+  const agree = $('agree'), state = $('state')
+  const touched = new Set()
+  let lastFocus = null
+
+  const todayISO = () => {
+    const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
+    return d.toISOString().slice(0, 10)
+  }
+  date.max = todayISO()
+
+  const fieldOf = (input) => input.closest('.field')
+  const expectedSig = () => `${first.value.trim()} ${last.value.trim()}`.replace(/\s+/g, ' ').trim()
+  const sigOk = () => sig.value.trim().replace(/\s+/g, ' ').toLowerCase() === expectedSig().toLowerCase() && expectedSig().length > 1
+  const dateOk = () => !!date.value && date.value <= todayISO()
+
+  const checks = [
+    [first, () => first.value.trim().length > 0],
+    [last,  () => last.value.trim().length > 0],
+    [sig,   sigOk],
+    [date,  dateOk],
+  ]
+
+  function paint(force) {
+    let allOk = attest.checked
+    attestWrap.classList.toggle('is-error', !attest.checked && (force || touched.has('attest')))
+    for (const [el, ok] of checks) {
+      const good = ok(); allOk = allOk && good
+      fieldOf(el).classList.toggle('is-error', !good && (force || touched.has(el.id)))
+      el.setAttribute('aria-invalid', String(!good && (force || touched.has(el.id))))
+    }
+    agree.disabled = !allOk
+    state.textContent = allOk ? 'Everything is in order.' : 'Complete every required field to continue.'
+    return allOk
+  }
+
+  ;[first, middle, last, sig, date].forEach((el) => {
+    el.addEventListener('blur', () => { touched.add(el.id); paint() })
+    el.addEventListener('input', () => {
+      if (el === first || el === last) touched.has('sig') && paint()
+      paint()
+    })
+  })
+  attest.addEventListener('change', () => { touched.add('attest'); paint() })
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault()
+    if (!paint(true)) {
+      const bad = !attest.checked ? attest : checks.find(([, ok]) => !ok())?.[0]
+      bad && bad.focus()
+      return
+    }
+    const when = new Date(date.value + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
+    $('signed-by').textContent = `Signed by ${expectedSig()} · exam completed ${when}`
+    modal.classList.add('is-signed')
+    setTimeout(close, 1400)
+  })
+
+  function open() {
+    lastFocus = document.activeElement
+    document.body.classList.remove('closed')
+    $('page').setAttribute('aria-hidden', 'true')
+    modal.classList.remove('is-signed')
+    attest.focus()
+  }
+  function close() {
+    document.body.classList.add('closed')
+    $('page').removeAttribute('aria-hidden')
+    $('reopen').focus()
+  }
+  $('close').addEventListener('click', close)
+  $('cancel').addEventListener('click', close)
+  $('reopen').addEventListener('click', open)
+  scrim.addEventListener('mousedown', (e) => { if (e.target === scrim) close() })
+  $('doclink').addEventListener('click', (e) => e.preventDefault()) // no real PDF in the exploration
+
+  // Focus trap + Escape
+  document.addEventListener('keydown', (e) => {
+    if (document.body.classList.contains('closed')) return
+    if (e.key === 'Escape') { close(); return }
+    if (e.key !== 'Tab') return
+    const f = [...modal.querySelectorAll('button:not([disabled]), [href], input:not([disabled])')]
+      .filter((el) => el.offsetParent !== null)
+    if (!f.length) return
+    const i = f.indexOf(document.activeElement)
+    if (e.shiftKey && (i <= 0)) { e.preventDefault(); f[f.length - 1].focus() }
+    else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus() }
+  })
+
+  // ?state= for the handoff gallery: empty (default) · filled · error · signed
+  const st = new URLSearchParams(location.search).get('state')
+  const fill = () => { first.value = 'Jordan'; middle.value = 'Lee'; last.value = 'Navarro'; sig.value = 'Jordan Navarro'; date.value = todayISO(); attest.checked = true }
+  if (st === 'filled') { fill(); paint() }
+  else if (st === 'error') {
+    first.value = 'Jordan'; last.value = 'Navarro'; sig.value = 'J. Navarro'
+    const future = new Date(); future.setDate(future.getDate() + 3); date.value = future.toISOString().slice(0, 10)
+    ;['attest', 'first', 'last', 'sig', 'date'].forEach((k) => touched.add(k)); paint(true)
+  }
+  else if (st === 'signed') { fill(); paint(); $('signed-by').textContent = 'Signed by Jordan Navarro · exam completed today'; modal.classList.add('is-signed') }
+  else paint()
+
+  if (st !== 'signed') attest.focus()
+})()
+</script>
+</body>
+</html>

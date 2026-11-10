@@ -182,6 +182,8 @@ describe('section routing (sectionOf)', () => {
     // Added 2026-09-22 — see the row's own note in `prototypeFeatures.ts` for
     // why this page stopped being masthead-only and took a tile.
     'xcel-pace-presets': 'exploration',
+    // The production affidavit modal rebuilt on the XCEL tokens (2026-11-10).
+    'xcel-affidavit-modal': 'exploration',
     // The Atlas vs. Compass typography and color audit (2026-10-27) — an
     // exploration with no document; its gateway page carries the findings.
     'xcel-design-system-audit': 'exploration',
