@@ -64,14 +64,17 @@ describe('AffidavitModalHouseStyle', () => {
     expect(onClose).toHaveBeenCalledTimes(2)
   })
 
-  /* Jill, 2026-11-10: her three off-ramp values stay in the component, named,
-     until she decides whether they belong in the XCEL ramp — not in tokens.css. */
-  it('takes every other colour from a token, and keeps Jill’s three as named constants', () => {
+  /* Jill's three values went into the XCEL block on her yes (2026-11-11). */
+  it('takes every colour from a token, Jill’s three included, and they live once, in the XCEL block', () => {
     const src = readFileSync(resolve(__dirname, '../components/e2e/AffidavitModalHouseStyle.tsx'), 'utf8')
-    expect([...src.matchAll(/#[0-9a-f]{6}\b/gi)].map((m) => m[0]).sort()).toEqual(['#105f69', '#3d5a73', '#bcebf1'])
-    for (const name of ['CTA', 'STUDENT_FILL', 'STUDENT_INK']) expect(src, name).toMatch(new RegExp(`const ${name} = '#[0-9a-f]{6}' // Jill, 2026-11-10`))
+    expect(src).not.toMatch(/#[0-9a-f]{3,6}\b/i)
     const tokens = readFileSync(resolve(__dirname, '../styles/tokens.css'), 'utf8')
-    expect(tokens).not.toMatch(/xcel-affidavit/)
+    const xcel = tokens.slice(tokens.indexOf("[data-brand='xcel'] {"))
+    const block = xcel.slice(0, xcel.indexOf('\n}'))
+    for (const t of ['--color-xcel-affidavit-cta: #3d5a73', '--color-xcel-affidavit-student-fill: #bcebf1', '--color-xcel-affidavit-student-ink: #105f69']) {
+      expect(block, t).toContain(t)
+      expect(tokens.split(t.split(':')[0] + ':').length - 1, t).toBe(1)
+    }
   })
 
   it('the student’s notice is teal with a person; the proctor’s amber with a triangle', () => {

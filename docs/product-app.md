@@ -4154,11 +4154,12 @@ trips fast refresh's components-only lint rule (Afsana's call). Same API —
   completed" field** — those are open on the state-forms modal
   (`feat/affidavits`) and are decided there. I Agree waits for the box, First
   name, Last name and Signature.
-- **Jill's three off-ramp colours are constants in the component, not
-  tokens** (her follow-up, 2026-11-10): the CTA #3d5a73 and the student
-  notice's #bcebf1 / #105f69, each commented as hers. `tokens.css` is not
-  touched on this branch, so two branches cannot collide over the same lines;
-  if she puts them in the ramp, each becomes a token entry and a one-line swap.
+- **Jill's three colours are XCEL tokens** (2026-11-11, on her yes; they
+  sat in the component as named constants for a day while she decided):
+  `--color-xcel-affidavit-cta` #3d5a73, and the student notice's
+  `--color-xcel-affidavit-student-fill` #bcebf1 and
+  `--color-xcel-affidavit-student-ink` #105f69, at the end of the
+  `[data-brand='xcel']` block.
 - **No hairline above I Agree** (same follow-up). Body padding 30/30/8 with
   20px between sections; footer 16/30/32, so the button lines up with the
   fields; the ✕'s 36px target overhangs by 9px so its glyph sits flush with

@@ -224,13 +224,10 @@ function Field({
 
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
-/* ⚠ THREE OF JILL'S VALUES THAT ARE NOT TOKENS (Jill, 2026-11-10). Kept here
-   rather than in tokens.css, at her request, while she decides whether any
-   belongs in the XCEL ramp — if one does, it becomes a token entry and this
-   line becomes a `var(...)`. */
-const CTA = '#3d5a73' // Jill, 2026-11-10 — the affidavit's primary CTA; not in the ramp
-const STUDENT_FILL = '#bcebf1' // Jill, 2026-11-10 — between --color-info-100 and -200
-const STUDENT_INK = '#105f69' // Jill, 2026-11-10 — between --color-info-700 and -800; 5.69:1 on the fill
+/* Jill's three values (2026-11-10), tokens in the XCEL block since 2026-11-11. */
+const CTA = 'var(--color-xcel-affidavit-cta)'
+const STUDENT_FILL = 'var(--color-xcel-affidavit-student-fill)'
+const STUDENT_INK = 'var(--color-xcel-affidavit-student-ink)'
 
 const SCRIM: CSSProperties = {
   position: 'fixed',
