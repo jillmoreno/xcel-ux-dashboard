@@ -64,13 +64,34 @@ describe('AffidavitModalHouseStyle', () => {
     expect(onClose).toHaveBeenCalledTimes(2)
   })
 
-  it('takes every colour from a token, and Jill’s three new values live once, in the XCEL block', () => {
+  /* Jill, 2026-11-10: her three off-ramp values stay in the component, named,
+     until she decides whether they belong in the XCEL ramp — not in tokens.css. */
+  it('takes every other colour from a token, and keeps Jill’s three as named constants', () => {
     const src = readFileSync(resolve(__dirname, '../components/e2e/AffidavitModalHouseStyle.tsx'), 'utf8')
-    expect(src).not.toMatch(/#[0-9a-f]{3,6}\b/i)
+    expect([...src.matchAll(/#[0-9a-f]{6}\b/gi)].map((m) => m[0]).sort()).toEqual(['#105f69', '#3d5a73', '#bcebf1'])
+    for (const name of ['CTA', 'STUDENT_FILL', 'STUDENT_INK']) expect(src, name).toMatch(new RegExp(`const ${name} = '#[0-9a-f]{6}' // Jill, 2026-11-10`))
     const tokens = readFileSync(resolve(__dirname, '../styles/tokens.css'), 'utf8')
-    const xcel = tokens.slice(tokens.indexOf("[data-brand='xcel'] {"))
-    for (const t of ['--color-xcel-affidavit-cta: #3d5a73', '--color-xcel-affidavit-student-fill: #bcebf1', '--color-xcel-affidavit-student-ink: #105f69'])
-      expect(xcel.slice(0, xcel.indexOf('\n}')), t).toContain(t)
+    expect(tokens).not.toMatch(/xcel-affidavit/)
+  })
+
+  it('the student’s notice is teal with a person; the proctor’s amber with a triangle', () => {
+    render(<AffidavitModalHouseStyle kind="pre" onClose={() => {}} />)
+    const student = screen.getByRole('note')
+    expect(student.style.borderColor).toBe('var(--color-info-500)')
+    const studentIcon = student.querySelector('svg')!.outerHTML
+    cleanup()
+    render(<AffidavitModalHouseStyle kind="pre" onClose={() => {}} actor="proctor" />)
+    const proctor = screen.getByRole('note')
+    expect(proctor.style.borderColor).toBe('var(--color-warning-300)')
+    expect(proctor.style.background).toBe('var(--color-warning-100)')
+    expect(proctor.querySelector('svg')!.outerHTML).not.toBe(studentIcon)
+  })
+
+  it('has no hairline above I Agree', () => {
+    render(<AffidavitModalHouseStyle kind="pre" onClose={() => {}} />)
+    const footer = screen.getByRole('button', { name: 'I Agree' }).parentElement!
+    expect(footer.style.borderTop).toBe('')
+    expect(footer.style.padding).toBe('16px 30px 32px')
   })
 
   it('is on the Design bar of both Homes that open the modal, House style by default, the proctor off', () => {

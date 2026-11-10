@@ -224,6 +224,14 @@ function Field({
 
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
+/* ⚠ THREE OF JILL'S VALUES THAT ARE NOT TOKENS (Jill, 2026-11-10). Kept here
+   rather than in tokens.css, at her request, while she decides whether any
+   belongs in the XCEL ramp — if one does, it becomes a token entry and this
+   line becomes a `var(...)`. */
+const CTA = '#3d5a73' // Jill, 2026-11-10 — the affidavit's primary CTA; not in the ramp
+const STUDENT_FILL = '#bcebf1' // Jill, 2026-11-10 — between --color-info-100 and -200
+const STUDENT_INK = '#105f69' // Jill, 2026-11-10 — between --color-info-700 and -800; 5.69:1 on the fill
+
 const SCRIM: CSSProperties = {
   position: 'fixed',
   inset: 0,
@@ -273,7 +281,8 @@ const TITLE: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 
-/* A 36px round hit area, the icon in Gray. */
+/* A 36px round hit area, the 18px icon in Gray. It overhangs the padding by
+   9px so the GLYPH, not the target, sits flush with I Agree's right edge. */
 const CLOSE: CSSProperties = {
   flex: '0 0 36px',
   width: 36,
@@ -301,9 +310,9 @@ const NOTICE: CSSProperties = {
 /* Teal for the student, so the two actors never read alike at a glance. */
 const NOTICE_STUDENT: CSSProperties = {
   ...NOTICE,
-  background: 'var(--color-xcel-affidavit-student-fill)',
+  background: STUDENT_FILL,
   borderColor: 'var(--color-info-500)',
-  color: 'var(--color-xcel-affidavit-student-ink)',
+  color: STUDENT_INK,
 }
 const NOTICE_PROCTOR: CSSProperties = {
   ...NOTICE,
@@ -391,15 +400,16 @@ const INPUT: CSSProperties = {
 
 const HINT: CSSProperties = { margin: 0, fontSize: 12, color: 'var(--color-text-tertiary)' }
 
-/* A hairline above, then I Agree alone. No status line, no Cancel. */
+/* I Agree alone, no hairline above it (Jill, 2026-11-10: the button carries
+   that edge). No status line, no Cancel. The 30px sides match the body, so
+   the button lines up with the fields. */
 const FOOTER: CSSProperties = {
   display: 'flex',
   justifyContent: 'flex-end',
-  padding: '16px 30px 24px',
-  borderTop: '1px solid var(--color-e2e-form-outline)',
+  padding: '16px 30px 32px',
 }
 
-/* Off: Gray, not-allowed, no opacity trick. On: Jill's CTA colour (--color-xcel-affidavit-cta), San Juan on hover. */
+/* Off: Gray, not-allowed, no opacity trick. On: Jill's CTA, San Juan on hover. */
 const AGREE: CSSProperties = {
   padding: '14px 24px',
   border: 'none',
@@ -412,7 +422,7 @@ const AGREE: CSSProperties = {
   color: 'var(--color-fixed-light)',
   cursor: 'not-allowed',
 }
-const AGREE_ON: CSSProperties = { ...AGREE, background: 'var(--color-xcel-affidavit-cta)', cursor: 'pointer' }
+const AGREE_ON: CSSProperties = { ...AGREE, background: CTA, cursor: 'pointer' }
 
 const HOVER_CSS = `
 .affidavit-hs-close:hover { background: var(--color-neutral-100); color: var(--color-text-primary); }

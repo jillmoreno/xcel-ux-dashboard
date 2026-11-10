@@ -2473,14 +2473,16 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   {
     key: 'affidavit-modal-proctor',
     /* The house-style modal's notice, for the proctor (2026-11-11, Afsana):
-       the amber PROCTOR ACTION REQUIRED in place of the student's teal one.
+       amber, the triangle and PROCTOR ACTION REQUIRED, in place of the
+       student's teal, the person and STUDENT ACTION REQUIRED — the colour and
+       the icon change with the actor, not only the words (Jill, 2026-11-10).
        Read only when "Affidavit modal" is House style. */
     surface: 'design',
     owner: 'afsana',
     versions: ['jill-atlas-main', 'eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Proctor actor',
-    description: 'Show the warning\u2019s PROCTOR ACTION REQUIRED eyebrow instead of the student one.',
+    description: 'Show the proctor\u2019s warning \u2014 amber with the triangle \u2014 instead of the student\u2019s teal.',
     defaultEnabled: false,
     page: 'dashboard-rebrand',
   },
