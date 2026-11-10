@@ -43,7 +43,7 @@
  * demo's Home can change without changing either. Its WIP branches (the
  * `onWhite` false sides) are carried over unchanged and never taken here.
  */
-import { cloneElement, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { cloneElement, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { ATLAS_SECTION_EYEBROW } from './atlasSectionEyebrow'
 import { useSearchParams } from 'react-router-dom'
 import { isEricAtlasWhiteLike, resolveDashboardVersion } from '@/data/dashboardVersions'
@@ -54,7 +54,7 @@ import {
 } from '@/pages/endToEndDemo'
 import { AffidavitModal, type AffidavitKind } from '@/components/e2e/AffidavitModal'
 import { useAccount } from '@/context/AccountContext'
-import {
+import { AngleDownRegular,
   AngleRightRegular,
   AngleRightSolid,
   BookOpen,
@@ -170,6 +170,14 @@ const V3_LEFT_W = 296
 /** V3's course tabs — off on 2026-10-08, back on the same day (Eric's
  *  request: "add the course tabs back to the top"). */
 const SHOW_COURSE_TABS: boolean = true
+
+/** Each course tab's progress, by position — a rung of the Progress demo control (2026-11-10, Eric): Florida Life and Health
+ *  Not Started 0%, New York Life Property and Casualty Developing 36%, New York Education Funding Exam Simulators Completed 95%. */
+const TAB_PROGRESS: readonly string[] = ['not-started', 'developing', 'simulators-done']
+
+/* THE COURSE BOXES (2026-11-10, Eric) — a row of outlined course boxes ABOVE the course card, the picked one carrying an
+   angle-down — or the tab strip IN the card's head: the design bar's Course tabs control (`atlas-course-tabs-place`) picks
+   which. Both drive the same pick and progress. */
 
 /** The two link tiles under the Readiness card (Certificates, Active
  *  courses) — off on WIP 2026-10-13 (Eric's request: "remove"); the right
@@ -351,6 +359,12 @@ export function AtlasHomeJillMain({
      only — see `ringListCopy` below. Rendered, not hidden: a hidden copy is
      still a second copy of every figure on the card. */
   const phoneFrame = useFeatureFlag('home-breakpoint').variant === 'mobile'
+  // Above the card or in it — the design bar's Course tabs (2026-11-10, Eric).
+  const coursePlace = useFeatureFlag('atlas-course-tabs-place').variant ?? 'above'
+  const coursePickerAbove = coursePlace === 'above'
+  const SHOW_COURSE_BOXES = coursePickerAbove
+  // Off (same day, Eric): neither the boxes nor the tabs.
+  const showInCardTabs = coursePlace === 'in-card'
   /* THREE PHONE LAYOUTS FOR THE PROGRESS PANEL (2026-11-04, Eric's request),
      cycled by a click on the panel's bottom-left corner: the two columns, the
      list (`listProgress`), and one row at a time under tabs. A demo toggle in
@@ -368,17 +382,7 @@ export function AtlasHomeJillMain({
      then) — which state the module opens on, its figure, and the readiness
      band with it. */
   const progressPickRaw = useFeatureFlag('atlas-v3-progress').variant ?? 'not-started'
-  // White's course-head panel, measured so Quick Links can take its height
-  // (2026-10-14, Eric's request).
-  const [headEl, setHeadEl] = useState<HTMLDivElement | null>(null)
-  const [headH, setHeadH] = useState<number | undefined>(undefined)
-  useEffect(() => {
-    // No reset when it goes: the height is only read on White, where it exists.
-    if (!headEl) return
-    const ro = new ResizeObserver(() => setHeadH(headEl.getBoundingClientRect().height))
-    ro.observe(headEl)
-    return () => ro.disconnect()
-  }, [headEl])
+  // (White's course-head panel was measured here so Quick Links could take its height — 2026-10-14 to 2026-11-10.)
   const go = (section: string, coursePage?: string) =>
     LINKS_OFF ? undefined : setParams((prev) => {
       const next = new URLSearchParams(prev)
@@ -919,6 +923,8 @@ export function AtlasHomeJillMain({
      an invented "New York Property & Casualty" (Figma 188:1006), picked in
      page state. */
   const tabs = courses ?? WHITE_COURSES.map((c, i) => (i === 0 ? { id: c.id, title: currentTitle, coverUrl } : c))
+  // 32 off the head's top when the tabs show it (2026-11-10, Eric: "remove 32 pixels of padding above the courses tabs").
+  const headTop: CSSProperties | null = showInCardTabs && SHOW_COURSE_TABS && tabs.length > 1 ? { paddingTop: WHITE_HEAD_PAD - 24 } : null // 32 off, then 8 back (same day, Eric) — 16
   // Which course-header layout is up — flipped by clicking the cover.
   const [whiteHead, setWhiteHead] = useState(false)
   const activeTabId = whiteCourseFor(searchParams.get(WHITE_COURSE_PARAM))
@@ -929,7 +935,9 @@ export function AtlasHomeJillMain({
      Eric's request) — its title and cover; the card set Progress and Expires
      on its way here. See `atlasHomeStateFor`. */
   const cardCourse = atlasHomeCourseFor(searchParams.get(ATLAS_HOME_COURSE_PARAM), e2eBrand)
-  const shownTitle = cardCourse?.title ?? e2eTitle
+  // A course tab's title too, not only its cover (2026-11-10, Eric: "clicking one of the course tabs, change the course image and
+  // title"); the first tab is the demo's own course, so it keeps the demo's title.
+  const shownTitle = cardCourse?.title ?? (activeTab && activeTab.id !== tabs[0]?.id ? activeTab.title : e2eTitle)
   const shownCover = cardCourse?.imageUrl ?? activeTab?.coverUrl ?? coverUrl
   const selectCourse = (id: string) => {
     setParams((prev) => {
@@ -939,6 +947,10 @@ export function AtlasHomeJillMain({
       else next.set(WHITE_COURSE_PARAM, id)
       return next
     })
+    // Each tab opens its course at its own progress, set as if picked on the demo bar's Progress control — which still moves it
+    // freely afterwards (2026-11-10, Eric). The first tab is the demo's own course, at the control's default, Not Started.
+    const tabProgress = TAB_PROGRESS[tabs.findIndex((t) => t.id === id)]
+    if (tabProgress) setVariant('atlas-v3-progress', tabProgress)
     onSelectCourse?.(id)
   }
 
@@ -1141,8 +1153,14 @@ export function AtlasHomeJillMain({
             header. revert that and move the expiration line back where it
             was"). The line is under the title, where it has always been;
             only the ground changed. */}
+        {/* THE COURSE BOXES — above the card (2026-11-10, Eric): the tabs' courses and pick as outlined boxes after a "Courses:"
+            label centred on them, in the tab strip's eyebrow. All on ONE line: the picked course always its whole title, in
+            SemiBold with a Regular angle-down after it; the others cut to an ellipsis as far as the line needs (same day, Eric —
+            after an hour with the picked course left out). */}
+        {SHOW_COURSE_BOXES && tabs.length > 1 ? (
+          <CourseBoxes courses={tabs} pickedId={activeTab?.id ?? path.id} onPick={selectCourse} />
+        ) : null}
         <div
-          ref={onWhite ? setHeadEl : undefined}
           style={
             onWhite
               ? expiryTier === 'expired'
@@ -1154,14 +1172,17 @@ export function AtlasHomeJillMain({
                      card in another state. `--color-atlas-tan-100` is what
                      the left column is drawn on, so the expired card and the
                      dial beside it are now one material. */
-                  { ...WHITE_COURSE_HEAD, background: 'var(--color-atlas-tan-100)' }
-                : WHITE_COURSE_HEAD
+                  { ...WHITE_COURSE_HEAD, ...headTop, background: 'var(--color-atlas-tan-100)' }
+                : { ...WHITE_COURSE_HEAD, ...headTop }
               : { display: 'contents' }
           }
         >
-        {/* No tabs on White (2026-10-14, Eric's request). */}
-        {SHOW_COURSE_TABS && !onWhite && tabs.length > 1 ? (
-          <AtlasCourseTabs courses={tabs} activeId={activeTab?.id ?? path.id} onSelect={selectCourse} onAllCourses={onAllCourses ?? (() => go('courses'))} />
+        {/* The tabs back on White's head (2026-11-10, Eric: "load the tabs in the course card top"; off since 2026-10-14). */}
+        {showInCardTabs && SHOW_COURSE_TABS && tabs.length > 1 ? (
+          // 8 less under the tabs than the head's 24 gap (2026-11-10, Eric) — on White, where the head is a column.
+          <div style={onWhite ? { marginBottom: -8 } : { display: 'contents' }}>
+            <AtlasCourseTabs courses={tabs} activeId={activeTab?.id ?? path.id} onSelect={selectCourse} onAllCourses={onAllCourses ?? (() => go('courses'))} keepActiveOpen />
+          </div>
         ) : null}
         {/* 32, the row below's gap (2026-10-13, Eric's request), so the title
             block starts on the vertical rule under it; it was 40. */}
@@ -1186,6 +1207,8 @@ export function AtlasHomeJillMain({
         ) : (
         <AtlasCourseHeadRow
           onWhite={onWhite}
+          // 8 off the cover's 12 (2026-11-10, Eric) — the cover alone; the panel round it keeps its own.
+          coverRadius={4}
           cover={shownCover ?? undefined}
           title={shownTitle}
           meta={courseMeta}
@@ -1610,12 +1633,13 @@ export function AtlasHomeJillMain({
           onOpenRequirements={onOpenRequirements}
           // Outlined in Secondary 100 darkened 5% (2026-10-13, Eric's request;
           // 15% was tried and reverted); the exam-date card keeps Primary 200.
-          // On White, as tall as the course-head panel beside it (2026-10-14,
-          // Eric's request).
+          // Its content's height now (2026-11-10, Eric: "fit the quick links box to its content") — on White it was as tall
+          // as the course-head panel beside it since 2026-10-14.
           style={{
             ...RAIL_CARD_BORDER,
             border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)',
-            ...(onWhite && headH ? { height: headH } : null),
+            // 8 more under the last link than the card's 24 (2026-11-10, Eric).
+            paddingBottom: 32,
             // …and its 20 corners (same day).
             ...(onWhite ? { borderRadius: 'var(--atlas-card-radius, 20px)' } : null),
           }}
@@ -2725,9 +2749,15 @@ const WHITE_COURSE_HEAD: CSSProperties = {
   // The tab bar's rule — and the active tab, which shares it — in Primary 200,
   // so they show on the panel's Primary 100 (same day).
   ['--color-atlas-outlined-card' as string]: 'var(--color-primary-200)',
+  // The active course tab at half the rule's Primary 200 (2026-11-10, Eric: "reduce the active tab fill color by 50%").
+  ['--atlas-course-tab-active' as string]: 'color-mix(in srgb, var(--color-primary-200) 50%, transparent)',
   // 40 all round (2026-10-14, Eric's requests: 32, then 24, then 32 with the
   // top trimmed to 24, then 16, back to 32 once the tabs were hidden, 48, 40).
-  padding: WHITE_HEAD_PAD,
+  // Longhands, so the top can be trimmed when the tabs show (2026-11-10) — React drops a longhand mixed with `padding`.
+  paddingTop: WHITE_HEAD_PAD,
+  paddingRight: WHITE_HEAD_PAD,
+  paddingBottom: WHITE_HEAD_PAD,
+  paddingLeft: WHITE_HEAD_PAD,
   // 8 more below it, before the Progress row (2026-10-14, Eric's requests:
   // 8, then 8 more; 8 less on 2026-10-15).
   marginBottom: 8,
@@ -3253,4 +3283,159 @@ const PACE_LAYOUT_SWITCH: CSSProperties = {
   background: 'transparent',
   cursor: 'pointer',
   zIndex: 1,
+}
+
+/* The course boxes over the course card (2026-11-10, Eric): outlined, 8 apart, wrapping when the titles need two rows; 8 above
+   the card's head (see COURSE_BOXES). (The picked course had a box too, SemiBold with a Regular angle-down, until the same day.) */
+// 8 to the card: the section's 24 gap, less 16 (same day, Eric: 40 — the gap plus a 16 margin — then 16, then 8).
+const COURSE_BOXES: CSSProperties = { display: 'flex', flexWrap: 'nowrap', alignItems: 'center', gap: 8, minWidth: 0, marginBottom: -16 }
+// The tab strip's "Courses:" eyebrow (AtlasCourseTabs' LABEL), 4 clear of the first box — the row's 8 gap less 4 (same day,
+// Eric: 12, then 8 less).
+const COURSE_BOXES_LABEL: CSSProperties = {
+  flex: 'none',
+  marginRight: -4,
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  lineHeight: '16.5px',
+  letterSpacing: '0.16em',
+  textTransform: 'uppercase',
+  color: 'var(--color-compass-page-eyebrow)',
+}
+const COURSE_BOX: CSSProperties = {
+  // The others give way: shrinkable down to an ellipsis, so the row stays one line.
+  flex: '0 1 auto',
+  minWidth: 0,
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 8,
+  paddingTop: 8,
+  paddingRight: 14,
+  paddingBottom: 8,
+  paddingLeft: 14,
+  borderStyle: 'solid',
+  borderWidth: 1,
+  borderColor: 'var(--color-secondary-200)', // (same day, Eric; Primary 200, then Secondary 100, then 200)
+  borderRadius: 8,
+  background: 'transparent',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  lineHeight: '18px',
+  fontWeight: 400,
+  color: 'var(--color-text-primary)',
+  textAlign: 'left',
+  cursor: 'pointer',
+}
+// The picked course never shrinks — its whole title, SemiBold, its angle-down 8 after it.
+const COURSE_BOX_PICKED: CSSProperties = { ...COURSE_BOX, flex: 'none', fontWeight: 600, background: 'var(--color-secondary-100)' }
+const COURSE_BOX_TITLE: CSSProperties = { minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+const COURSE_BOX_ICON: CSSProperties = { flex: 'none', width: 12, height: 12 }
+
+/**
+ * THE COURSE BOXES, SLIDING (2026-11-10, Eric: "instead of an instant transition make the course buttons use a horizontal slide
+ * effect with some ease in and out"). A flex box cannot animate between its natural width and a shrunk one, so each box is
+ * given a measured `max-width` and that transitions. Natural widths come from an invisible copy of the row with nothing cut;
+ * the room left after the label is shared by water-filling — the OPEN box (the hovered one, else the picked one) at its whole
+ * title, the others at most an even share of what remains, the narrow ones keeping their natural width.
+ */
+function CourseBoxes({ courses, pickedId, onPick }: { courses: AtlasCourseTab[]; pickedId: string; onPick: (id: string) => void }) {
+  const [hovered, setHovered] = useState<string | null>(null)
+  const rowRef = useRef<HTMLElement>(null)
+  const labelRef = useRef<HTMLSpanElement>(null)
+  const ghostRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const [natural, setNatural] = useState<number[]>([])
+  const [room, setRoom] = useState(0)
+  useLayoutEffect(() => {
+    const row = rowRef.current
+    if (!row) return
+    const measure = () => {
+      const label = labelRef.current?.getBoundingClientRect().width ?? 0
+      // The row's gaps: one after the label (less its −4) and one between each box.
+      setRoom(row.clientWidth - label - 4 - COURSE_BOXES_GAP * (courses.length - 1))
+      const next = courses.map((_, i) => Math.ceil(ghostRefs.current[i]?.getBoundingClientRect().width ?? 0))
+      setNatural((prev) => (prev.length === next.length && prev.every((v, i) => v === next[i]) ? prev : next))
+    }
+    measure()
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure)
+    ro?.observe(row)
+    return () => ro?.disconnect()
+  }, [courses, pickedId, hovered])
+  const open = courses.findIndex((c) => c.id === (hovered ?? pickedId))
+  const caps = natural.length === courses.length && room > 0 ? fillRow(natural, room, open) : []
+  return (
+    <nav ref={rowRef} aria-label="Your courses" style={{ ...COURSE_BOXES, position: 'relative' }}>
+      <span ref={labelRef} style={COURSE_BOXES_LABEL}>Courses:</span>
+      {courses.map((t, i) => {
+        const picked = t.id === pickedId
+        return (
+          <button
+            key={t.id}
+            type="button"
+            aria-current={picked ? 'true' : undefined}
+            onClick={() => onPick(t.id)}
+            onMouseEnter={() => setHovered(t.id)}
+            onMouseLeave={() => setHovered((v) => (v === t.id ? null : v))}
+            onFocus={() => setHovered(t.id)}
+            onBlur={() => setHovered((v) => (v === t.id ? null : v))}
+            // Hovered, a box takes the picked one's SemiBold (same day, Eric).
+            style={{ ...(picked ? COURSE_BOX_PICKED : COURSE_BOX), ...(hovered === t.id ? { fontWeight: 600 } : null), flex: 'none', maxWidth: caps[i] ?? natural[i] ?? 'none', transition: COURSE_BOX_SLIDE }}
+          >
+            <span style={COURSE_BOX_TITLE}>{t.title}</span>
+            {picked ? <AngleDownRegular aria-hidden style={COURSE_BOX_ICON} /> : null}
+          </button>
+        )
+      })}
+      {/* The measuring copy: every box at its whole title, in its own look, out of sight and out of the way. */}
+      <span aria-hidden style={COURSE_BOXES_GHOST}>
+        {courses.map((t, i) => (
+          <button
+            key={t.id}
+            ref={(el) => {
+              ghostRefs.current[i] = el
+            }}
+            type="button"
+            tabIndex={-1}
+            style={{ ...(t.id === pickedId ? COURSE_BOX_PICKED : COURSE_BOX), ...(hovered === t.id ? { fontWeight: 600 } : null), flex: 'none' }}
+          >
+            <span style={COURSE_BOX_TITLE}>{t.title}</span>
+            {t.id === pickedId ? <AngleDownRegular style={COURSE_BOX_ICON} /> : null}
+          </button>
+        ))}
+      </span>
+    </nav>
+  )
+}
+
+/** Water-fill: the open box whole, the rest no wider than an even share of what is left. Undefined = its natural width. */
+function fillRow(natural: number[], room: number, open: number): (number | undefined)[] {
+  const caps: (number | undefined)[] = natural.map(() => undefined)
+  const rest = natural.map((_, i) => i).filter((i) => i !== open)
+  let left = room - (open >= 0 ? natural[open] : 0)
+  if (rest.reduce((sum, i) => sum + natural[i], 0) <= left) return caps
+  const sorted = [...rest].sort((a, b) => natural[a] - natural[b])
+  for (let k = 0; k < sorted.length; k++) {
+    const share = left / (sorted.length - k)
+    if (natural[sorted[k]] <= share) {
+      left -= natural[sorted[k]]
+      continue
+    }
+    for (const i of sorted.slice(k)) caps[i] = Math.max(48, Math.floor(share))
+    break
+  }
+  return caps
+}
+const COURSE_BOXES_GAP = 8
+const COURSE_BOX_SLIDE = 'max-width 280ms cubic-bezier(0.45, 0, 0.55, 1)' // ease-in-out
+const COURSE_BOXES_GHOST: CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  display: 'flex',
+  gap: COURSE_BOXES_GAP,
+  visibility: 'hidden',
+  pointerEvents: 'none',
+  whiteSpace: 'nowrap',
+  // A 0×0 window: the boxes inside still lay out at their natural width, but nothing can widen the page.
+  width: 0,
+  height: 0,
+  overflow: 'hidden',
 }

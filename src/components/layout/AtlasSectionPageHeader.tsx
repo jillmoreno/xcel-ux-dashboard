@@ -21,6 +21,7 @@ export function AtlasSectionPageHeader({
   indent,
   extraTop,
   crumbs,
+  path = false,
 }: {
   title: string
   onBack: () => void
@@ -37,11 +38,13 @@ export function AtlasSectionPageHeader({
   /** The pages between Home and this one, for the phone's path crumb —
    *  "Home / Profile / Transcripts" (2026-11-04). Each is a link. */
   crumbs?: { label: string; onClick: () => void }[]
+  /** The path crumb on every width, not just the phone's — the My Account pages, "Home / My Account / Profile" (2026-11-10). */
+  path?: boolean
 }) {
   /* ON A PHONE THE CRUMB IS A PATH (2026-11-04, Eric's request): "Home /
      Profile / Transcripts" — Home and the pages between are links, the page
      you are on is plain text, and "Back to Home" reads "Home". */
-  const phonePath = useFeatureFlag('home-breakpoint').variant === 'mobile'
+  const phonePath = useFeatureFlag('home-breakpoint').variant === 'mobile' || path
   return (
     // No bottom padding (2026-10-06, Eric's request) — main's header style is 16;
     // the page's own 24 above its first row is the only gap left.
@@ -58,13 +61,13 @@ export function AtlasSectionPageHeader({
     >
       {phonePath ? (
         <nav aria-label="Breadcrumb" style={CRUMB_ROW}>
-          <button type="button" onClick={onBack} data-cta-id="nav.back-home" className="cre-link-action cre-cta-ink" style={CRUMB_BUTTON}>
+          <button type="button" onClick={onBack} data-cta-id="nav.back-home" className="cre-crumb-link cre-cta-ink" style={CRUMB_BUTTON}>
             Home
           </button>
           {(crumbs ?? []).map((c) => (
             <span key={c.label} style={{ display: 'contents' }}>
               <span aria-hidden style={CRUMB_SLASH}>/</span>
-              <button type="button" onClick={c.onClick} className="cre-link-action cre-cta-ink" style={CRUMB_BUTTON}>
+              <button type="button" onClick={c.onClick} className="cre-crumb-link cre-cta-ink" style={CRUMB_BUTTON}>
                 {c.label}
               </button>
             </span>
@@ -78,7 +81,7 @@ export function AtlasSectionPageHeader({
           type="button"
           onClick={onBack}
           data-cta-id="nav.back-home"
-          className="cre-link-action cre-cta-ink"
+          className="cre-crumb-link cre-cta-ink"
           style={CRUMB_BUTTON}
         >
           <AngleLeftRegular size={13} aria-hidden />

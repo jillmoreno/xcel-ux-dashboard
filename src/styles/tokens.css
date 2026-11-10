@@ -8114,3 +8114,18 @@ thead .cre-admin-sticky-col { background: var(--admin-fill-soft); }
   text-transform: capitalize !important;
   letter-spacing: normal !important;
 }
+
+/* THE PAGE HEADER'S CRUMB LINKS — "Back to Home" and the path's Home / My Account (2026-11-10, Eric: "remove the underlined
+   hover state and replace it with going darker"). `.cre-link-action`'s darkening without its underline. */
+.cre-crumb-link {
+  text-decoration: none;
+  transition: filter 120ms ease;
+}
+.cre-crumb-link:hover {
+  filter: brightness(0.7);
+}
+.cre-crumb-link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 2px;
+}

@@ -30,6 +30,9 @@ export type AtlasCourseTabsProps = {
    *  2026-10-07 (Eric's request: "remove the All Courses link next to the
    *  tabs") — kept, not deleted; pass `showAllCourses` to bring it back. */
   showAllCourses?: boolean
+  /** The active tab always at its whole title, as a hovered one is — the others share what is left (2026-11-10, Eric:
+   *  "make sure the active course tab shows the whole course title when it is active"). Jill/Atlas-Main's Home passes it. */
+  keepActiveOpen?: boolean
 }
 
 /* The narrowest a shortened tab gets — a few letters and the ellipsis. */
@@ -49,13 +52,12 @@ const TAB_GAP = 4
  * every tab is `min(natural, c)`, never under TAB_MIN. Returns a max-width per
  * tab, or `undefined` for a tab that keeps its natural width.
  */
-function tabCaps(natural: number[], room: number, open: number | null): (number | undefined)[] {
+function tabCaps(natural: number[], room: number, openTabs: number[]): (number | undefined)[] {
   const caps: (number | undefined)[] = natural.map(() => undefined)
   let avail = room - TAB_GAP * Math.max(0, natural.length - 1)
-  const idx = natural.map((_, i) => i).filter((i) => i !== open)
-  if (open != null) {
-    avail -= natural[open]
-  }
+  const idx = natural.map((_, i) => i).filter((i) => !openTabs.includes(i))
+  for (const i of openTabs) avail -= natural[i]
+  const open = openTabs.length ? openTabs[0] : null
   const total = idx.reduce((sum, i) => sum + natural[i], 0)
   if (total <= avail) return caps
   const sorted = [...idx].sort((a, b) => natural[a] - natural[b])
@@ -76,7 +78,7 @@ function tabCaps(natural: number[], room: number, open: number | null): (number 
   return caps
 }
 
-export function AtlasCourseTabs({ courses, activeId, onSelect, onAllCourses, showAllCourses = false }: AtlasCourseTabsProps) {
+export function AtlasCourseTabs({ courses, activeId, onSelect, onAllCourses, showAllCourses = false, keepActiveOpen = false }: AtlasCourseTabsProps) {
   const scroller = useRef<HTMLDivElement>(null)
   const [edges, setEdges] = useState({ left: false, right: false })
   /* Natural widths, measured from the tabs themselves (`scrollWidth` is the
@@ -99,7 +101,9 @@ export function AtlasCourseTabs({ courses, activeId, onSelect, onAllCourses, sho
     if (el) ro?.observe(el)
     return () => ro?.disconnect()
   }, [sizeTabs, courses])
-  const caps = natural.length === courses.length && room > 0 ? tabCaps(natural, room, openIdx) : []
+  const activeIdx = courses.findIndex((c) => c.id === activeId)
+  const openTabs = [...new Set([...(keepActiveOpen && activeIdx >= 0 ? [activeIdx] : []), ...(openIdx != null ? [openIdx] : [])])]
+  const caps = natural.length === courses.length && room > 0 ? tabCaps(natural, room, openTabs) : []
 
   const measure = useCallback(() => {
     const el = scroller.current
@@ -131,7 +135,7 @@ export function AtlasCourseTabs({ courses, activeId, onSelect, onAllCourses, sho
   useEffect(() => {
     const id = requestAnimationFrame(measure)
     return () => cancelAnimationFrame(id)
-  }, [measure, natural, room, openIdx])
+  }, [measure, natural, room, openIdx, activeId])
 
   /* Keep the current tab in view — scrolls the strip only, never the page. */
   useEffect(() => {
@@ -273,7 +277,8 @@ const TAB_ACTIVE: CSSProperties = {
   ...TAB_BASE,
   fontWeight: 600,
   borderRadius: '8px 8px 0 0',
-  background: 'var(--color-atlas-outlined-card, var(--color-compass-page-card))',
+  // `--atlas-course-tab-active` lets a host fill the active tab apart from the strip's rule (2026-11-10, Jill/Atlas-Main's Home).
+  background: 'var(--atlas-course-tab-active, var(--color-atlas-outlined-card, var(--color-compass-page-card)))',
   cursor: 'default',
 }
 const ARROW: CSSProperties = {

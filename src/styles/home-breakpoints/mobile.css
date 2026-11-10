@@ -864,3 +864,11 @@
 [data-home-bp='mobile'] .cre-phone-info-page div:has(> dl[style*='minmax(130px']) + section[style*='border-top'] {
   border-top-color: transparent !important;
 }
+
+/* THE TRANSCRIPT CARD'S BODY — 11 / 14 (2026-11-10, Eric). In a class, not inline, so neither the +1 rule nor the 13px floor above
+   reaches it; this card is the one place on the phone that goes under the floor, on Eric's say. See TranscriptsPanel.tsx. */
+[data-home-bp='mobile'] .cre-transcript-card-line,
+[data-home-bp='mobile'] .cre-transcript-card-line * {
+  font-size: 11px !important;
+  line-height: 14px !important;
+}

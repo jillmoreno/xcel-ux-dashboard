@@ -115,7 +115,8 @@ describe('the checkout audience flag', () => {
 
     it('…and leaves them exactly where they were on Atlas', () => {
       const onAtlas = onDesignBar(null)
-      expect(onAtlas).toContain('atlas-home-long-title')
+      // Long title left the bar on 2026-11-10 (Eric); Course tabs, added that day, stands in as the Atlas-only control.
+      expect(onAtlas).toContain('atlas-course-tabs-place')
       expect(onAtlas).toContain('atlas-affidavit')
       expect(onAtlas).toContain('atlas-brand-skin-v3')
       expect(onAtlas).toContain('atlas-readiness-section')

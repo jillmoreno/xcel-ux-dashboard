@@ -2249,7 +2249,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        worst case a heading face has to wrap — in place of the fixture's. Off
        (default), the real title. V2 only: the long title lives in
        `AtlasHomeEricV2`, so on any other version this would change nothing. */
-    surface: 'design',
+    // surface: 'design', — Off the design bar (2026-11-10, Eric: "remove the long title … design controls") — stays at its default, off.
     owner: 'eric',
     versions: ['eric-atlas-v2', 'eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
     group: 'Widgets',
@@ -2640,6 +2640,27 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       'The three-step “Your Journey at a Glance” panel beside the password card, after the learner validates their email. Off — the default — leaves the card centred on the page by itself.',
     defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-course-tabs-place',
+    /* WHERE HOME'S COURSE PICKER SITS — 2026-11-10, Eric: "give me a toggle in the design controls to switch between the course
+       tab location for above card or in card". Above: the outlined course boxes over the course card ("Courses:", the picked
+       course whole with its angle-down, the others cut to fit one line). In card: the tab strip in the card's head. Same
+       courses, same pick, same progress per course either way. Jill/Atlas-Main's Home (AtlasHomeJillMain). */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    group: 'Layout',
+    label: 'Course tabs',
+    description:
+      'Where Home\u2019s course picker sits. Above card: outlined course boxes over the course card, the picked one whole with an angle-down. In card: the tab strip in the card\u2019s head. Off: neither.',
+    variants: [
+      { value: 'above', label: 'Above card', description: 'Outlined course boxes over the course card' },
+      { value: 'in-card', label: 'In card', description: 'The tab strip in the course card\u2019s head' },
+      { value: 'off', label: 'Off', description: 'No course picker \u2014 the card shows its course alone (2026-11-10)' },
+    ],
+    defaultVariant: 'above',
+    defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
   {
@@ -3150,7 +3171,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        course and certificate cards and the account pages' cards read. Off:
        each keeps its own (20, 12, 8). Baseline versions only. ON on this
        branch, per the flag rule. */
-    surface: 'design',
+    // surface: 'design', — Off the design bar (2026-11-10, Eric: "remove the … containers 16 corners design controls") — stays at its default, on.
     owner: 'eric',
     versions: ['eric-atlas-e2e'],
     group: 'Layout',

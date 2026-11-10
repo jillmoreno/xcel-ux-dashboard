@@ -116,7 +116,14 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
       for (const [k, v] of Object.entries(extra ?? {})) next.set(k, v)
       return next
     })
-  const homeAndOpen = (what: string) => () => go(null, { [ATLAS_OPEN_PARAM]: what })
+  /* OFF HOME, THE SHEET OPENS WHERE YOU ARE (2026-11-10, Eric: "do not reload to the homepage") — the request goes on the
+     current page's URL and `AtlasInfoSheets` answers it there. On Home, and on the phone (where these are Home's own pages),
+     it still goes Home. */
+  const phone = useFeatureFlag('home-breakpoint').variant === 'mobile'
+  const homeAndOpen = (what: string) => () =>
+    params.get('section') && !phone
+      ? go(params.get('section'), { [ATLAS_OPEN_PARAM]: what, ...(coursePage ? { coursePage } : null) }, false)
+      : go(null, { [ATLAS_OPEN_PARAM]: what })
   const apply = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1]
 
   return (

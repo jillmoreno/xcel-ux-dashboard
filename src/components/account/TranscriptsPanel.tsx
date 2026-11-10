@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { PillTabs, type PillTabItem } from '@/components/ui/PillTabs'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { useAccount } from '@/context/AccountContext'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { useAtlasAccountPages } from './useAtlasAccountPages'
 import { AtlasFilterPills } from './AtlasFilterPills'
 import { ATLAS_FIRST_CELL, ATLAS_NAME_CELL, ATLAS_TABLE_CARD, ATLAS_TD, ATLAS_TH, ATLAS_THEAD } from './atlasAccountTableStyles'
@@ -71,6 +72,8 @@ export function TranscriptsPanel() {
      the header's bottom line, and that line 1px rather than 2. */
   const atlasFrame = useAtlasAccountPages()
   const cell = atlasFrame ? ATLAS_TD : BODY_CELL
+  // The phone frame (2026-11-10, Eric) — the first row as a card above the table there.
+  const phone = useFeatureFlag('home-breakpoint').variant === 'mobile'
 
   /*
    * ONE TRANSCRIPT OR SEVERAL — the whole of the export decision.
@@ -206,6 +209,30 @@ export function TranscriptsPanel() {
           }
         />
       ) : (
+        <>
+        {/* THE TOP ROW AS A CARD (2026-11-10, Eric: "use the data in the top row of the table to create a card version of it and
+            place it above the table"). On the phone only: the course name, then each column's label over its value, stacked —
+            in the table's own edge and corners. It follows the sort and the filter, because it is whatever row is first. */}
+        {phone && SHOW_ROW_CARD ? (
+          <section aria-label={`${rows[0].title} — the first transcript`} style={{ ...(atlasFrame ? ATLAS_TABLE_CARD : tableWrapStyle), ...ROW_CARD }}>
+            <h3 style={ROW_CARD_TITLE}>{rows[0].title}</h3>
+            <dl style={ROW_CARD_LIST}>
+              {[
+                ['License Type/Profession', rows[0].profession],
+                ['State', rows[0].state],
+                ['Hours', String(rows[0].hours)],
+                ['Date Enrolled', formatTranscriptDate(rows[0].enrolledDate)],
+                ['Date Completed', formatTranscriptDate(rows[0].completedDate)],
+              ].map(([term, value]) => (
+                <div key={term} className="cre-transcript-card-line" style={ROW_CARD_ITEM}>
+                  <dt style={ROW_CARD_TERM}>{term}:</dt>{' '}
+                  {/* Only the licence type's value on a line of its own (same day, Eric). */}
+                  <dd style={{ ...ROW_CARD_VALUE, ...(term === 'License Type/Profession' && { display: 'block' }) }}>{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        ) : null}
         <div style={atlasFrame ? ATLAS_TABLE_CARD : tableWrapStyle}>
           <table className={atlasFrame ? 'cre-atlas-table' : undefined} style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-body)' }}>
             <caption className="cre-visually-hidden">
@@ -282,6 +309,7 @@ export function TranscriptsPanel() {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       <ExportTranscriptSheet
@@ -428,3 +456,30 @@ const headerButtonStyle: CSSProperties = {
   letterSpacing: 'inherit',
   cursor: 'pointer',
 }
+
+// Hidden for now (2026-11-10, Eric: "hide card for now") — true brings it back as it was.
+const SHOW_ROW_CARD = false
+/* The first row as a card (2026-11-10, Eric): the table's edge, 16 above the table, 16 / 20 in. */
+const ROW_CARD: CSSProperties = { marginBottom: 16, paddingTop: 16, paddingRight: 20, paddingBottom: 16, paddingLeft: 20 }
+const ROW_CARD_TITLE: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 15,
+  lineHeight: '20px',
+  fontWeight: 600,
+  color: 'var(--admin-ink)',
+}
+const ROW_CARD_LIST: CSSProperties = { margin: '12px 0 0', display: 'flex', flexDirection: 'column' }
+// Each label and its value on one line, the value straight after the colon and wrapping only when it runs out of room — no rules,
+// and the label in the body type rather than the header's eyebrow (same day, Eric).
+const ROW_CARD_ITEM: CSSProperties = {
+  paddingTop: 4,
+  paddingBottom: 4,
+  fontFamily: 'var(--font-body)',
+  // 11 / 14 (same day, Eric) — set in mobile.css as `.cre-transcript-card-line`, not here: an inline size is what the phone's
+  // +1 rule and its 13px floor both match, and they would draw it 13.
+  color: 'var(--admin-ink)', // the card's one dark text colour, the title's (same day, Eric)
+}
+// The label Regular and its data SemiBold (same day, Eric; was the other way round).
+const ROW_CARD_TERM: CSSProperties = { display: 'inline', fontWeight: 400 }
+const ROW_CARD_VALUE: CSSProperties = { display: 'inline', margin: 0, fontWeight: 600 }

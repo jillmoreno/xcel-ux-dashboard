@@ -123,6 +123,7 @@ import {
 import { CompassLearningPage } from '@/components/learning/CompassLearningPage'
 import { CompassSessionPage } from '@/components/learning/CompassSessionPage'
 import { HomePageHeader } from './HomePageHeader'
+import { AtlasInfoSheets } from '@/components/compass/AtlasInfoSheets'
 import { AtlasSectionPageHeader } from './AtlasSectionPageHeader'
 import { SectionBackCrumb, SectionPageHeader } from './SectionPageHeader'
 import { ATLAS_HEADER_V2_HEIGHT, useAtlasHeaderV2 } from './atlasHeaderV2'
@@ -1478,6 +1479,8 @@ function PlatformShellBody() {
             `SectionPanel` so the section keeps its own 40px gutter without the
             header being nested inside the padded `<section>`. `SectionShell`
             drops its top gutter in exchange — see `headerAbove` there. */}
+        {/* The Quick Links' sheets over a section page, so they open where you are (2026-11-10) — see AtlasInfoSheets. */}
+        {atlasNav && active !== 'dashboard' ? <AtlasInfoSheets /> : null}
         {sectionHeader && !launcher.courseId ? (
           // Atlas: its own copy — Serif H1 title, FA angle-left crumb (2026-10-06).
           atlasNav ? (
@@ -1493,9 +1496,13 @@ function PlatformShellBody() {
                  heading, and only on the Atlas chrome that draws it. */
               title={active === 'certificates' ? 'My Certificates' : SECTION_TITLES[active]}
               onBack={() => handleSelect('dashboard')}
-              /* The phone's path runs through Profile on the other account
-                 pages — "Home / Profile / Transcripts" (2026-11-04). */
-              crumbs={isAccountSection(active) && active !== 'profile' ? [{ label: 'Profile', onClick: () => handleSelect('profile') }] : undefined}
+              /* THE MY ACCOUNT PAGES' PATH — "Home / My Account / Profile" on every width (2026-11-10, Eric; until then the
+                 phone's alone, and through Profile: "Home / Profile / Transcripts"). My Account opens its first page, Profile. */
+              crumbs={isAccountSection(active) ? [{ label: 'My Account', onClick: () => handleSelect('profile') }] : undefined}
+              // Every section page of the End-to-End family a path too since the same day — the Quick Links pages read "Home /
+              // My Courses", "Home / My Certificates" (Eric: "make the quick links pages breadcrumb align with the profile pages").
+              // Hybrid and the other Atlas versions keep Back to Home.
+              path={isAccountSection(active) || isE2ELikeVersion(shellVersion)}
               // My Courses centres its content; the header follows it — until
               // the rail goes and the cards run full width (2026-11-02).
               contentWidth={

@@ -2026,9 +2026,12 @@ export function AtlasCourseHeadRow({
   onPurchaseExtension,
   onViewCertificate,
   tier = 'normal',
+  coverRadius = 12,
 }: {
   onWhite: boolean
   cover?: string
+  /** The cover's corners on White — 12, or a host's own (Jill/Atlas-Main's 4, 2026-11-10). */
+  coverRadius?: number
   title: string
   /** The Expires · days-to-complete row — see `WhiteCourseMeta`. */
   meta?: ReactNode
@@ -2121,7 +2124,7 @@ export function AtlasCourseHeadRow({
               ...COVER_FRAME,
               ...COVER_TOGGLE,
               ...(onWhite
-                ? { borderRadius: 12, width: V3_LEFT_W - WHITE_HEAD_PAD, flex: '0 1 auto', minWidth: 224 }
+                ? { borderRadius: coverRadius, width: V3_LEFT_W - WHITE_HEAD_PAD, flex: '0 1 auto', minWidth: 224 }
                 : null),
             }}
           >
