@@ -108,11 +108,11 @@ body.closed .scrim { display: none; }
   border-radius: var(--radius-xl);
   filter: drop-shadow(0 4px 6px var(--shadow)) drop-shadow(0 12px 32px rgb(0 0 0 / 0.12));
 }
-.modal__scroll { overflow: auto; padding: 40px 40px 8px; display: flex; flex-direction: column; gap: 20px; }
+.modal__scroll { overflow: auto; padding: 30px 30px 8px; display: flex; flex-direction: column; gap: 20px; }
 
 .titlerow { display: flex; align-items: center; gap: 12px; }
 .close {
-  flex: 0 0 36px; width: 36px; height: 36px;
+  flex: 0 0 36px; width: 36px; height: 36px; margin-right: -9px;
   display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%;
   background: none; color: var(--ink-2); cursor: pointer;
 }
@@ -172,7 +172,7 @@ body.closed .scrim { display: none; }
 .req { color: var(--brick); font-weight: 700; }
 
 /* The form */
-.form { display: grid; gap: 16px; }
+.form { display: grid; gap: 16px; margin-top: 20px; }
 .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 @media (max-width: 520px) { .row3 { grid-template-columns: 1fr; } }
 .field { display: grid; gap: 6px; }
@@ -195,7 +195,7 @@ body.closed .scrim { display: none; }
    (2026-11-10) — the button's own disabled state says what is missing. */
 .footer {
   display: flex; align-items: center; justify-content: flex-end;
-  padding: 16px 40px 32px; margin-top: 8px; border-top: 1px solid var(--outline);
+  padding: 16px 30px 32px; margin-top: 8px;
 }
 .btn {
   padding: 14px 24px; border: 0; border-radius: var(--radius-md);
