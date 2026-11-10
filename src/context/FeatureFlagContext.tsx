@@ -2428,6 +2428,63 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'affidavit-modal-house-style',
+    /* THE HOUSE-STYLE AFFIDAVIT MODAL — 2026-11-11, Afsana
+       (`feat/affidavit-modal-v2`), from Jill's exploration
+       (`public/prototypes/xcel-affidavit-modal.html`) and her brief. Picks
+       which build the End-to-End Demo's Home opens: `AffidavitModal.tsx`
+       (Current) or `AffidavitModalHouseStyle.tsx`.
+
+       ⚠ DEFAULT House style, the "flags default ON on your branch" rule, so
+       the branch link shows it. Whether it stays is decided at share-to-stage.
+
+       ⚠ SCOPED TO BOTH HOMES THAT OPEN THE MODAL, not only
+       `eric-atlas-e2e` as the brief had it. `jill-atlas-main` is
+       `END_TO_END_VERSION`, the Home the End-to-End Demo and the Prototypes
+       rows open — scoped to Eric's alone, that Home would show the house style
+       with no control to switch it back. The `owner` is a label; `versions`
+       is what puts it on the bar. No `surfaces`: Atlas Home declares none
+       (`designSurface.ts`), and a null surface shows a flag wherever its
+       versions put it.
+
+       ⚠ NOT THE STATE FORMS. `atlas-affidavit-v2` on `feat/affidavits` is a
+       different question — which affidavit, per state and moment — and the
+       call sites say which wins. See the comment at either call site. */
+    surface: 'design',
+    owner: 'afsana',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit modal',
+    description:
+      'Which build of the arrival affidavit the End-to-End Demo opens: the current modal, or Afsana\u2019s house-style rebuild (2026-11-11).',
+    variants: [
+      { value: 'current', label: 'Current', description: 'AffidavitModal.tsx \u2014 the Figma 428:3054 build.' },
+      {
+        value: 'house-style',
+        label: 'House style',
+        description:
+          'AffidavitModalHouseStyle.tsx \u2014 Charcoal title row, a notice naming who must act, the PDF and its attestation grouped, name and typed signature, one #3d5a73 I Agree.',
+      },
+    ],
+    defaultVariant: 'house-style',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'affidavit-modal-proctor',
+    /* The house-style modal's notice, for the proctor (2026-11-11, Afsana):
+       the amber PROCTOR ACTION REQUIRED in place of the student's teal one.
+       Read only when "Affidavit modal" is House style. */
+    surface: 'design',
+    owner: 'afsana',
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Proctor actor',
+    description: 'Show the warning\u2019s PROCTOR ACTION REQUIRED eyebrow instead of the student one.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-home-long-title',
     /* A REFERENCE TOGGLE beside Headings on the Design bar (2026-10-07, Eric's
        request: "add another toggle … to show this long title for reference").

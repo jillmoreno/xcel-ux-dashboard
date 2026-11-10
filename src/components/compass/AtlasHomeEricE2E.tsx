@@ -8,6 +8,7 @@ import {
   useWalkStudyJourneySteps,
 } from '@/pages/endToEndDemo'
 import { AffidavitModal, type AffidavitKind } from '@/components/e2e/AffidavitModal'
+import { AffidavitModalHouseStyle } from '@/components/e2e/AffidavitModalHouseStyle'
 import { useAccount } from '@/context/AccountContext'
 import {
   AngleRightRegular,
@@ -601,6 +602,26 @@ export function AtlasHomeEricE2E({
   const { setVariant } = useFeatureFlags()
   /* Closing the modal turns the control off, so it does not re-open. */
   const setAffidavit = (v: string) => setVariant('atlas-affidavit', v)
+  /* WHICH BUILD OF THE MODAL (2026-11-11, Afsana) — the Design bar's
+     "Affidavit modal": the house-style rebuild, or the current one.
+     ⚠ TWO SEPARATE QUESTIONS. `feat/affidavits` adds `atlas-affidavit-v2`
+     at this same spot — WHICH affidavit opens, per state and moment. This
+     flag is how it LOOKS. Until the two are joined (a later job), the house
+     style wins when it is on, and otherwise this falls through to whatever
+     the state-forms switch does. */
+  const houseStyleAffidavit = useFeatureFlag('affidavit-modal-house-style').variant === 'house-style'
+  const proctorActor = useFeatureFlag('affidavit-modal-proctor').enabled
+  const closeAffidavit = () => {
+    setAffidavit('off')
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('affidavit')
+        return next
+      },
+      { replace: true },
+    )
+  }
   // The Top Nav's Home button starts the demo cards over (2026-10-12): Progress
   // back to Not Started (Readiness follows), and every card remounts.
   const [refreshKey, setRefreshKey] = useState(0)
@@ -1263,20 +1284,11 @@ export function AtlasHomeEricE2E({
           learner signs on arriving, and it is what the flow has always
           opened. */}
       {affidavitKind ? (
-        <AffidavitModal
-          kind={affidavitKind}
-          onClose={() => {
-            setAffidavit('off')
-            setParams(
-              (prev) => {
-                const next = new URLSearchParams(prev)
-                next.delete('affidavit')
-                return next
-              },
-              { replace: true },
-            )
-          }}
-        />
+        houseStyleAffidavit ? (
+          <AffidavitModalHouseStyle kind={affidavitKind} actor={proctorActor ? 'proctor' : 'student'} onClose={closeAffidavit} />
+        ) : (
+          <AffidavitModal kind={affidavitKind} onClose={closeAffidavit} />
+        )
       ) : null}
     </div>
   )

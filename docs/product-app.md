@@ -4131,6 +4131,40 @@ same defect as the Membership Plan card and the Account Details "Member" pill �
 predicate turns something off, sweep for the places that ask the TIER instead.**
 
 
+## The affidavit modal in the house style (2026-11-11, Afsana)
+
+`src/components/e2e/AffidavitModalHouseStyle.tsx` — Jill's exploration of the
+affidavit modal (`public/prototypes/xcel-affidavit-modal.html`) as a product
+component, beside `AffidavitModal.tsx`, which is untouched — its two titles
+are repeated in the new file rather than exported, because exporting them
+trips fast refresh's components-only lint rule (Afsana's call). Same API —
+`kind`, `onClose`, `initialAgreed` — plus `actor: 'student' | 'proctor'`.
+
+- **The Design bar's "Affidavit modal"** (`affidavit-modal-house-style`,
+  Current · House style, House style on this branch) picks which one both
+  Homes open; **"Proctor actor"** (`affidavit-modal-proctor`, off) swaps the
+  student's teal notice for the proctor's amber one. Both are scoped to
+  `jill-atlas-main` AND `eric-atlas-e2e` — the brief named Eric's alone, but
+  the End-to-End Demo opens Jill's, which would then show the house style
+  with no switch. Open it with `?affidavit=1`, or the bar's Affidavit control
+  on Eric's version.
+- **Where it leaves the brief:** the student's notice is teal with a person
+  (Jill's exploration moved it from amber the same evening); and **no inline
+  error messages, no signature-must-match-the-name rule and no "Date exam was
+  completed" field** — those are open on the state-forms modal
+  (`feat/affidavits`) and are decided there. I Agree waits for the box, First
+  name, Last name and Signature.
+- **Three new XCEL tokens**, Jill's values that the ramps do not carry yet:
+  `--color-xcel-affidavit-cta` (#3d5a73), `--color-xcel-affidavit-student-fill`
+  (#bcebf1) and `--color-xcel-affidavit-student-ink` (#105f69).
+- ⚠ **NOT THE STATE FORMS.** `feat/affidavits` adds `AffidavitModalV2.tsx` and
+  `atlas-affidavit-v2` at the same call sites: WHICH affidavit opens, per state
+  and moment. This is how it LOOKS. Until the two are joined — a later job —
+  the house style wins when it is on, and otherwise the call site falls
+  through to the state-forms switch.
+- The Atlas Home handoff gallery (`AtlasHandoffPreviews.tsx`) still renders
+  the original: that handoff documents what shipped.
+
 ## The 2026-09-08 migration — the product app, XCEL only
 
 The Common LMS product app was copied in and stripped to one brand. It is the

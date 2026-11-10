@@ -834,6 +834,16 @@
   /* No `--podcast-*` overrides: XCEL has no podcast product, so inheriting
      CRE's palette is correct (same as STC). Budget the full 15-token set if a
      podcast surface ever appears. */
+
+  /* THE HOUSE-STYLE AFFIDAVIT MODAL (2026-11-11, Afsana — from Jill's
+     exploration, `public/prototypes/xcel-affidavit-modal.html`). Three
+     decisions of Jill's that the ramps do not carry yet, kept here so the
+     modal keeps the every-colour-is-a-token rule and each value lives once. */
+  --color-xcel-affidavit-cta: #3d5a73; /* Jill, 2026-11-10 — the affidavit modal's primary CTA; not yet in the brand ramp */
+  /* The student's notice is teal, so it never reads like the proctor's amber.
+     Its border is --color-info-500 exactly; these two sit between ramp stops. */
+  --color-xcel-affidavit-student-fill: #bcebf1; /* between --color-info-100 and -200 */
+  --color-xcel-affidavit-student-ink: #105f69;  /* between --color-info-700 and -800; 5.69:1 on the fill */
 }
 
 /* ============================================================================
