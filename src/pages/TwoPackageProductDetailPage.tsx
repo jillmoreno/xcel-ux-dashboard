@@ -606,9 +606,8 @@ export function TwoPackageProductDetailPage() {
               {/* A break after the line of authority (2026-10-29, Eric). In the page's dark text, not brick (2026-10-30, Eric). */}
               {place} {line}
               <br />
-              <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> Package
-              {/* "…Package Premier" on the California page (2026-11-06, Eric's request). */}
-              {california ? ' Premier' : null}
+              {/* California: "…Pre-licensing With Ethics Premier" (2026-11-10, Eric; "…Package Premier" from 2026-11-06). */}
+              <span style={{ whiteSpace: 'nowrap' }}>Pre-licensing</span> {california ? 'With Ethics Premier' : 'Package'}
             </h2>
             <div style={{ ...HEAD_PACKAGE_B, '--cp': compact ? 1 : 0, '--px': compact ? 1 : 0, '--py': compact ? 1 : 0 } as CSSProperties}>
               {/* The price left, over the Purchase's left edge (2026-10-29, Eric). */}
