@@ -1355,7 +1355,8 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
      the skin and the hierarchy are what it explores. It is NOT the End-to-End
      Demo's `AffidavitModal.tsx` (Figma 428:3054), which is the pre-course
      affidavit and a different document; this page is its sibling, not its
-     replacement. `?state=filled|error|signed` for the handoff gallery. No
+     replacement. `?state=filled|error` and `?actor=proctor` for the handoff
+     gallery; there is no signed state — a valid I Agree just closes. No
      `devStatus`, like every Exploration row (see the pace-presets note). */
   {
     id: 'xcel-affidavit-modal',
@@ -1363,9 +1364,9 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     accent: 'blue',
     icon: 'flag',
     blurb:
-      "The LMS's pre-exam affidavit as an XCEL form: Charcoal serif title on white instead of a coloured header, a warning that stays but stops shouting, the PDF and its attestation grouped as one thing, legal name and typed signature as the form, and one Brick I Agree that comes on only when the signature matches the name and the exam date is real. Every colour is a token from the XCEL brand block.",
+      "The LMS's pre-exam affidavit as an XCEL form: Charcoal serif title sharing one row with the ✕ instead of a coloured header, a warning that stops shouting but names who must act in its eyebrow, the PDF and its attestation grouped as one thing, name and typed signature as the form, and a footer carrying one #3d5a73 I Agree — no status line, no Cancel — that comes on only when the signature matches the name and the exam date is real. Revised the evening of 2026-11-10 to the decisions in Afsana's V2 brief; the signed panel went with them.",
     tileBlurb:
-      'The production affidavit modal, re-skinned on our tokens. Four states: empty, filled, error, signed.',
+      'The production affidavit modal, re-skinned on our tokens. Three states: empty, filled, error — plus ?actor=proctor.',
     kind: 'explore',
     kindLabel: 'Standalone HTML',
     status: 'ready',

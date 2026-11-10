@@ -34,11 +34,11 @@
   --brick: #9a1b1e;          /* --color-xcel-brick / --color-cta-500 */
   --brick-600: #7f1619;      /* --color-cta-600 (hover) */
   --brick-100: #f7e3e3;      /* --color-cta-100 */
+  --cta: #3d5a73;            /* --color-xcel-affidavit-cta — Jill, 2026-11-10;
+                                the affidavit's primary CTA, not yet in the ramp */
   --warn-100: #fdf0d4;       /* --color-warning-100 */
   --warn-300: #fbd27e;       /* --color-warning-300 */
   --warn-700: #956c18;       /* --color-warning-700 */
-  --ok-500: #018937;         /* --color-success-500 */
-  --ok-100: #cce7d7;         /* --color-success-100 */
   --n-100: #ececec;          /* --color-neutral-100 */
   --n-200: #d9d9d9;          /* --color-neutral-200 */
   --n-300: #c7c7c7;          /* --color-neutral-300 */
@@ -110,26 +110,30 @@ body.closed .scrim { display: none; }
 }
 .modal__scroll { overflow: auto; padding: 40px 40px 8px; display: flex; flex-direction: column; gap: 20px; }
 
+.titlerow { display: flex; align-items: center; gap: 12px; }
 .close {
-  position: absolute; top: 14px; right: 14px; width: 36px; height: 36px;
+  flex: 0 0 36px; width: 36px; height: 36px;
   display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%;
   background: none; color: var(--ink-2); cursor: pointer;
 }
 .close:hover { background: var(--n-100); color: var(--ink); }
 .close:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 
-/* Title: the heading serif in Charcoal on white — no coloured header bar. */
-.title { margin: 0; padding-right: 40px; font: 400 24px/32px var(--font-heading-serif); color: var(--ink); }
-.subtitle { margin: 4px 0 0; font-size: 13px; color: var(--ink-2); }
+/* Title: the heading serif in Charcoal on white — no coloured header bar.
+   One row with the ✕, vertically centred, and no subtitle (2026-11-10). */
+.title { flex: 1; margin: 0; font: 400 20px/28px var(--font-heading-serif); color: var(--ink); }
 
 /* Warning: stays, stops yelling. Sentence case, 600, warning ramp. */
 .notice {
   display: flex; gap: 10px; align-items: flex-start;
   padding: 10px 12px; border-radius: var(--radius-md);
   background: var(--warn-100); border: 1px solid var(--warn-300); color: var(--warn-700);
-  font-size: 13px; font-weight: 600; line-height: 1.4;
 }
-.notice svg { flex: 0 0 16px; margin-top: 1px; }
+.notice svg { flex: 0 0 16px; margin-top: 2px; }
+.notice__text { display: grid; gap: 2px; }
+/* The one place uppercase is allowed, because it names who must act. */
+.notice__eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.notice__body { font-size: 13px; font-weight: 600; line-height: 1.4; }
 
 .intro { margin: 0; font-size: 14px; color: var(--ink); }
 
@@ -145,7 +149,6 @@ body.closed .scrim { display: none; }
 .doc__row:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 .doc__icon { flex: 0 0 20px; color: var(--ink-2); }
 .doc__name { flex: 1; font-weight: 600; font-size: 14px; color: var(--primary); }
-.doc__meta { font-size: 12px; color: var(--ink-3); white-space: nowrap; }
 .doc__ext { flex: 0 0 16px; color: var(--primary); }
 
 .attest {
@@ -188,32 +191,19 @@ body.closed .scrim { display: none; }
 .field.is-error .err, .attest.is-error + .err { display: block; }
 .attest-err { padding: 0 14px 10px; }
 
-/* Footer: one primary action, Brick. Off until the form is valid. */
+/* Footer: a hairline, then one primary action. No status line, no Cancel
+   (2026-11-10) — the button's own disabled state says what is missing. */
 .footer {
-  display: flex; align-items: center; justify-content: flex-end; gap: 20px;
-  padding: 16px 40px 32px;
+  display: flex; align-items: center; justify-content: flex-end;
+  padding: 16px 40px 32px; margin-top: 8px; border-top: 1px solid var(--outline);
 }
-.footer .state { margin-right: auto; font-size: 12px; color: var(--ink-3); }
 .btn {
   padding: 14px 24px; border: 0; border-radius: var(--radius-md);
-  font: 700 15px/1 var(--font-body); color: var(--white); background: var(--brick); cursor: pointer;
+  font: 700 15px/1 var(--font-body); color: var(--white); background: var(--cta); cursor: pointer;
 }
-.btn:hover { background: var(--brick-600); }
+.btn:hover { background: var(--primary); }
 .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .btn:disabled { background: var(--ink-2); cursor: not-allowed; }
-.link { padding: 0; border: 0; background: none; font: 700 13px var(--font-body); color: var(--primary); cursor: pointer; }
-.link:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-
-/* Signed */
-.signed {
-  display: none; flex-direction: column; align-items: center; text-align: center; gap: 12px;
-  padding: 56px 40px 64px;
-}
-.signed__mark { width: 56px; height: 56px; border-radius: 50%; background: var(--ok-100); color: var(--ok-500); display: grid; place-items: center; }
-.signed h2 { margin: 0; font: 400 24px/32px var(--font-heading-serif); color: var(--ink); }
-.signed p { margin: 0; font-size: 14px; color: var(--ink-2); }
-.modal.is-signed .modal__scroll, .modal.is-signed .footer { display: none; }
-.modal.is-signed .signed { display: flex; }
 
 @media (prefers-reduced-motion: no-preference) {
   .modal { animation: rise .18s ease-out; }
@@ -248,29 +238,29 @@ body.closed .scrim { display: none; }
 <!-- ── The modal ── -->
 <div class="scrim" id="scrim">
   <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="aff-title" aria-describedby="aff-intro">
-    <button type="button" class="close" id="close" aria-label="Close">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
-
     <div class="modal__scroll">
-      <div>
+      <div class="titlerow">
         <h2 class="title" id="aff-title">Ohio Property Pre-Licensing Insurance Affidavit</h2>
-        <p class="subtitle">Before your final exam</p>
+        <button type="button" class="close" id="close" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
       </div>
 
       <div class="notice" role="note">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3z"/><path d="M12 10v4M12 17.5v.5"/></svg>
-        <span>This must be completed and signed by you, the student. Nobody can sign it on your behalf.</span>
+        <span class="notice__text">
+          <span class="notice__eyebrow" id="notice-eyebrow">Student action required</span>
+          <span class="notice__body">You must complete and sign this affidavit yourself. Someone else cannot sign it on your behalf.</span>
+        </span>
       </div>
 
-      <p class="intro" id="aff-intro">Read the affidavit, confirm you've read it, then sign below with your legal name.</p>
+      <p class="intro" id="aff-intro">Read the affidavit, confirm you've read it, then sign below with your name.</p>
 
       <form id="form" novalidate>
         <div class="doc">
           <a class="doc__row" href="#" id="doclink" target="_blank" rel="noopener">
             <svg class="doc__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
             <span class="doc__name">Ohio Property Pre-Licensing Insurance Affidavit</span>
-            <span class="doc__meta">PDF · opens in a new tab</span>
             <svg class="doc__ext" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>
           </a>
           <label class="attest" id="attest-wrap">
@@ -278,7 +268,7 @@ body.closed .scrim { display: none; }
             <span class="box" aria-hidden="true">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
             </span>
-            <span>I have read the Ohio Property Pre-Licensing Insurance Affidavit and swear that the statements in it are true. <span class="req" aria-hidden="true">*</span></span>
+            <span>I confirm that I have read the affidavit and that all statements contained in it are true and accurate. <span class="req" aria-hidden="true">*</span></span>
           </label>
           <p class="err attest-err" id="attest-err">Confirm you've read the affidavit to continue.</p>
         </div>
@@ -286,25 +276,25 @@ body.closed .scrim { display: none; }
         <div class="form">
           <div class="row3">
             <div class="field" data-field>
-              <label for="first">Legal first name <span class="req" aria-hidden="true">*</span></label>
+              <label for="first">First name <span class="req" aria-hidden="true">*</span></label>
               <input id="first" name="first" autocomplete="given-name" required aria-required="true" aria-describedby="first-err">
-              <p class="err" id="first-err">Enter your legal first name.</p>
+              <p class="err" id="first-err">Enter your first name.</p>
             </div>
             <div class="field" data-field>
-              <label for="middle">Legal middle name</label>
+              <label for="middle">Middle name</label>
               <input id="middle" name="middle" autocomplete="additional-name">
             </div>
             <div class="field" data-field>
-              <label for="last">Legal last name <span class="req" aria-hidden="true">*</span></label>
+              <label for="last">Last name <span class="req" aria-hidden="true">*</span></label>
               <input id="last" name="last" autocomplete="family-name" required aria-required="true" aria-describedby="last-err">
-              <p class="err" id="last-err">Enter your legal last name.</p>
+              <p class="err" id="last-err">Enter your last name.</p>
             </div>
           </div>
 
           <div class="field" data-field>
             <label for="sig">Signature <span class="req" aria-hidden="true">*</span></label>
-            <input id="sig" name="sig" placeholder="Type your full legal name" autocomplete="off" required aria-required="true" aria-describedby="sig-hint sig-err">
-            <p class="hint" id="sig-hint">Typing your name here counts as your signature. It must match your first and last name above.</p>
+            <input id="sig" name="sig" placeholder="Type your full name" autocomplete="off" required aria-required="true" aria-describedby="sig-hint sig-err">
+            <p class="hint" id="sig-hint">Typing your name here counts as your signature.</p>
             <p class="err" id="sig-err">Your signature must match your first and last name exactly.</p>
           </div>
 
@@ -318,17 +308,7 @@ body.closed .scrim { display: none; }
     </div>
 
     <div class="footer">
-      <span class="state" id="state" aria-live="polite">Complete every required field to continue.</span>
-      <button type="button" class="link" id="cancel">Cancel</button>
       <button type="submit" class="btn" id="agree" form="form" disabled>I Agree</button>
-    </div>
-
-    <div class="signed" aria-live="polite">
-      <div class="signed__mark">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
-      </div>
-      <h2>Affidavit signed</h2>
-      <p id="signed-by"></p>
     </div>
   </div>
 </div>
@@ -339,7 +319,7 @@ body.closed .scrim { display: none; }
   const modal = $('modal'), scrim = $('scrim'), form = $('form')
   const attest = $('attest'), attestWrap = $('attest-wrap')
   const first = $('first'), middle = $('middle'), last = $('last'), sig = $('sig'), date = $('date')
-  const agree = $('agree'), state = $('state')
+  const agree = $('agree')
   const touched = new Set()
   let lastFocus = null
 
@@ -370,7 +350,6 @@ body.closed .scrim { display: none; }
       el.setAttribute('aria-invalid', String(!good && (force || touched.has(el.id))))
     }
     agree.disabled = !allOk
-    state.textContent = allOk ? 'Everything is in order.' : 'Complete every required field to continue.'
     return allOk
   }
 
@@ -390,17 +369,13 @@ body.closed .scrim { display: none; }
       bad && bad.focus()
       return
     }
-    const when = new Date(date.value + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-    $('signed-by').textContent = `Signed by ${expectedSig()} · exam completed ${when}`
-    modal.classList.add('is-signed')
-    setTimeout(close, 1400)
+    close()
   })
 
   function open() {
     lastFocus = document.activeElement
     document.body.classList.remove('closed')
     $('page').setAttribute('aria-hidden', 'true')
-    modal.classList.remove('is-signed')
     attest.focus()
   }
   function close() {
@@ -409,7 +384,6 @@ body.closed .scrim { display: none; }
     $('reopen').focus()
   }
   $('close').addEventListener('click', close)
-  $('cancel').addEventListener('click', close)
   $('reopen').addEventListener('click', open)
   scrim.addEventListener('mousedown', (e) => { if (e.target === scrim) close() })
   $('doclink').addEventListener('click', (e) => e.preventDefault()) // no real PDF in the exploration
@@ -427,8 +401,13 @@ body.closed .scrim { display: none; }
     else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus() }
   })
 
-  // ?state= for the handoff gallery: empty (default) · filled · error · signed
-  const st = new URLSearchParams(location.search).get('state')
+  // ?state= for the handoff gallery: empty (default) · filled · error. There is no
+  // signed state — a valid I Agree closes the modal (Jill, 2026-11-10).
+  // ?actor=proctor flips the warning's eyebrow, the way Afsana's `affidavit-modal-proctor`
+  // flag will do it on the Design bar.
+  const params = new URLSearchParams(location.search)
+  const st = params.get('state')
+  if (params.get('actor') === 'proctor') $('notice-eyebrow').textContent = 'Proctor action required'
   const fill = () => { first.value = 'Jordan'; middle.value = 'Lee'; last.value = 'Navarro'; sig.value = 'Jordan Navarro'; date.value = todayISO(); attest.checked = true }
   if (st === 'filled') { fill(); paint() }
   else if (st === 'error') {
@@ -436,10 +415,9 @@ body.closed .scrim { display: none; }
     const future = new Date(); future.setDate(future.getDate() + 3); date.value = future.toISOString().slice(0, 10)
     ;['attest', 'first', 'last', 'sig', 'date'].forEach((k) => touched.add(k)); paint(true)
   }
-  else if (st === 'signed') { fill(); paint(); $('signed-by').textContent = 'Signed by Jordan Navarro · exam completed today'; modal.classList.add('is-signed') }
   else paint()
 
-  if (st !== 'signed') attest.focus()
+  attest.focus()
 })()
 </script>
 </body>

@@ -792,15 +792,23 @@ facts on adjacent lines.
 
 [xcel-affidavit-modal.html](public/prototypes/xcel-affidavit-modal.html), a row
 (`xcel-affidavit-modal`). The production LMS's *Ohio Property Pre-Licensing
-Insurance Affidavit* modal — warning banner, linked PDF, attestation, legal
-name, typed signature, exam date, one I Agree — rebuilt on the XCEL brand
-tokens with the same content and flow. What it argues: the modal needs no
-coloured header (Charcoal serif on white, as every other XCEL surface), the
-warning earns its place without shouting (`warning-100/300/700`, sentence
-case), the PDF and the attestation about it are ONE group, and the primary
-button is Brick and off until the signature matches the typed name and the
-exam date is not in the future. Every colour is a value from the
-`[data-brand='xcel']` block, named in a comment. `?state=filled|error|signed`
+Insurance Affidavit* modal — warning banner, linked PDF, attestation, name,
+typed signature, exam date, one I Agree — rebuilt on the XCEL brand tokens
+with the same content and flow. What it argues: the modal needs no coloured
+header (Charcoal serif on white, as every other XCEL surface, with the title
+and the ✕ on one row and no subtitle), the warning earns its place without
+shouting (`warning-100/300/700`) but still NAMES who must act in an uppercase
+eyebrow — `STUDENT ACTION REQUIRED`, or `PROCTOR ACTION REQUIRED` at
+`?actor=proctor` — the PDF and the attestation about it are ONE group, and the
+footer carries one button and nothing else: no status line, no Cancel, I Agree
+off until the signature matches the typed name and the exam date is not in the
+future. **Revised the same evening** (2026-11-10), from the decisions written
+into Afsana's V2 brief: the signed-confirmation panel is gone — a valid I Agree
+simply closes — and the CTA is `#3d5a73`, a value the brand ramp does not have
+yet and the one colour on the page that is not a token (see
+`prompts/affidavit-modal-afsana.md`, which assigns the `tokens.css` entry
+`--color-xcel-affidavit-cta` to her branch). Every other colour is a value from
+the `[data-brand='xcel']` block, named in a comment. `?state=filled|error`
 renders the other states for a handoff gallery. It is the sibling of the
 End-to-End Demo's `AffidavitModal.tsx` (the pre-course affidavit), not a
 replacement — making it one is a `/share-component` job with this page as
