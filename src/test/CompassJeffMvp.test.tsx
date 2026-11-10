@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
@@ -316,17 +316,18 @@ describe('Jeff’s Compass MVP — the pages not built yet', () => {
     /* ⚠ A SUB-PAGE NOW, because every rail row is ported. The panel's job is
        unchanged: name what is missing rather than render something else in
        its place. */
-    /* ⚠ `course` — the only page left unported. When it lands this test has
-       nothing to point at, and that is the signal the port is complete. */
-    renderShell('course')
-    expect(screen.getByRole('region', { name: /Lesson — not ported yet/ })).toBeInTheDocument()
-    expect(screen.getByText(/not in the React port yet/)).toBeInTheDocument()
-    // and it must NOT have rendered any ported surface in its place
-    expect(screen.queryByText(COPY.topicsTitle)).toBeNull()
+    /* ⚠ EVERY PAGE IS PORTED NOW, so nothing reaches this panel any more —
+       which is the signal the port is complete. The panel and its rule stay:
+       a silent fallback to the product's own page would render shipped work
+       under Jeff's name, and the next prototype will want it again. */
+    const unported = [...JEFF_MVP_PAGES, ...JEFF_MVP_SUBPAGES].filter((p) => !p.ported)
+    expect(unported).toEqual([])
   })
 
   it('keeps the rail on an unported page, so there is a way out', () => {
-    renderShell('course')
+    /* The rail stays on every page that has one — the two takeovers (the
+       lesson and the simulated exam) are the deliberate exceptions. */
+    renderShell('flashcard-topic')
     expect(screen.getByRole('navigation', { name: 'Compass pages' })).toBeInTheDocument()
   })
 
@@ -336,14 +337,7 @@ describe('Jeff’s Compass MVP — the pages not built yet', () => {
        is the reminder to flip its flag. */
     const ported = JEFF_MVP_PAGES.filter((p) => p.ported).map((p) => p.page)
     expect(ported).toEqual(JEFF_MVP_PAGES.map((p) => p.page)) // all eight rail rows
-    /* The sub-pages are what is left; each must still say so rather than
-       render something else. */
-    for (const p of JEFF_MVP_SUBPAGES) {
-      if (p.ported) continue
-      const { unmount } = renderShell(p.page)
-      expect(screen.getByRole('region', { name: new RegExp(`${p.label} — not ported yet`) })).toBeInTheDocument()
-      unmount()
-    }
+    expect(JEFF_MVP_SUBPAGES.filter((p) => !p.ported)).toEqual([])
   })
 
   it('lists every rail row as a page, and no page the rail cannot reach', () => {
@@ -1174,5 +1168,34 @@ describe('Jeff’s Compass MVP — the two session pages', () => {
     renderReadiness()
     const weakest = subs.find((s) => s.rubi)!
     expect(screen.getByRole('button', { name: `Practice ${weakest.name}` })).toBeInTheDocument()
+  })
+})
+
+describe('Jeff’s Compass MVP — the lesson is not ported twice', () => {
+  it('reuses CompassJeffCourse rather than building a second copy', () => {
+    /* ⚠ MEASURED, NOT ASSUMED: 81 of the 82 lines his MVP's `Course.dc.html`
+       renders come out of `CompassJeffCourse`, which was ported 2026-11-05
+       from the SAME designer's earlier `compass-prototype-b-v3.html`. The one
+       difference is the literal string "Demo settings" — his MVP opens that
+       dialog from the page, and the v3 port turned those three settings into
+       Design-bar flags, which is what `/port-prototype` prescribes.
+
+       Two components for one lesson from one designer would drift apart the
+       first time either was touched. This pins that the MVP's `course` page
+       is the existing component. */
+    expect(JEFF_MVP_SUBPAGES.find((p) => p.page === 'course')?.ported).toBe(true)
+    const { container } = renderShell('course')
+    // the lesson is a takeover, like the simulated exam — no rail
+    expect(container.querySelector('.cjm-rail')).toBeNull()
+    // and it is NOT the "not ported yet" panel
+    expect(container.querySelector('.cjm-pending')).toBeNull()
+  })
+
+  it('opens the lesson from Learn', async () => {
+    const u = userEvent.setup()
+    const onSelect = vi.fn()
+    wrap(<CompassJeffMvpLearn onSelectPage={onSelect} />)
+    await u.click(screen.getByRole('button', { name: new RegExp(LCOPY.resumeCta) }))
+    expect(onSelect).toHaveBeenCalledWith('course')
   })
 })

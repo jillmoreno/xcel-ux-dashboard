@@ -10,7 +10,11 @@ import {
   LockRegular,
   RubiLogo,
 } from '@/icons'
-import { JEFF_MVP_LEARN as LEARN, JEFF_MVP_LEARN_COPY as COPY } from '@/data/compassJeffMvpFixtures'
+import {
+  JEFF_MVP_LEARN as LEARN,
+  JEFF_MVP_LEARN_COPY as COPY,
+  type JeffMvpPage,
+} from '@/data/compassJeffMvpFixtures'
 import { CompassJeffMvpColumn, CompassJeffMvpHead } from './CompassJeffMvpShell'
 import './compassJeffMvp.css'
 
@@ -36,7 +40,15 @@ import './compassJeffMvp.css'
  * fixture from his three booleans and collapsed into one field, so a chapter
  * cannot be styled as both. The suite pins that exactly one state is set.
  */
-export function CompassJeffMvpLearn() {
+export function CompassJeffMvpLearn({
+  onSelectPage,
+}: {
+  onSelectPage?: (p: JeffMvpPage) => void
+} = {}) {
+  /* ⚠ RESUME OPENS THE LESSON — `CompassJeffCourse`, which is this same
+     designer's lesson ported from his earlier file. See the shell's note on
+     why there is one component for it rather than two. */
+  const openLesson = () => onSelectPage?.('course')
   /* Chapter 2 is open on arrival because it is the current one — his
      `isOpen`. Seeded from the fixture rather than hard-coded, so the chapter
      that opens is the one his data says is current. */
@@ -67,7 +79,7 @@ export function CompassJeffMvpLearn() {
               <span className="cjm-bar__fill" style={{ width: COPY.resumePct }} />
             </span>
           </div>
-          <button type="button" className="cjm-cta">
+          <button type="button" className="cjm-cta" onClick={openLesson}>
             {COPY.resumeCta}
             <ChevronRight size={13} aria-hidden />
           </button>
@@ -122,6 +134,7 @@ export function CompassJeffMvpLearn() {
                       type="button"
                       className={c.state === 'current' ? 'cjm-btn cjm-btn--primary' : 'cjm-btn'}
                       aria-label={c.actionLabel}
+                      onClick={openLesson}
                     >
                       {c.action}
                     </button>

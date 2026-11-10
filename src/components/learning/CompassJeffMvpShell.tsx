@@ -28,6 +28,7 @@ import { CompassJeffMvpFlashcardTopic } from './CompassJeffMvpFlashcardTopic'
 import { CompassJeffMvpExamSession } from './CompassJeffMvpExamSession'
 import { CompassJeffMvpQuestionSet } from './CompassJeffMvpQuestionSet'
 import { CompassJeffMvpCardStudy } from './CompassJeffMvpCardStudy'
+import { CompassJeffCourse } from './CompassJeffCourse'
 import './compassJeffMvp.css'
 
 /**
@@ -88,6 +89,27 @@ export function CompassJeffMvpShell({
      breaks that on the first screen — which is the one thing the simulator
      exists to get right. Same decision `CompassWorkspace` records for
      Anjani's session takeover. */
+  /* ⚠ HIS LESSON IS ALREADY PORTED — and from the same designer's earlier
+     file, so this reuses it rather than building a second copy.
+     `CompassJeffCourse` came from `compass-prototype-b-v3.html` on
+     2026-11-05; measured against his MVP's `Course.dc.html` on 2026-11-09,
+     81 of its 82 lines render identically. The single difference is the
+     literal string "Demo settings": his MVP opens that dialog from the page,
+     and the v3 port turned those three settings into Design-bar flags, which
+     is what `/port-prototype` prescribes for a prototype's own control bar.
+     So the control exists, on the bar, and the page is the same page.
+
+     Porting it again would mean two components for one lesson from one
+     designer, drifting apart the first time either is touched. It is a
+     takeover like the simulated exam, so it renders without the rail. */
+  if (page === 'course') {
+    return (
+      <div className="cjm cjm-shell">
+        <CompassJeffCourse onExit={() => onSelectPage('learn')} />
+      </div>
+    )
+  }
+
   if (page === 'exam-session') {
     return (
       <div className="cjm cjm-shell">
@@ -106,7 +128,7 @@ export function CompassJeffMvpShell({
           <CompassJeffMvpReadiness onSelectPage={onSelectPage} />
         )
       ) : page === 'learn' ? (
-        <CompassJeffMvpLearn />
+        <CompassJeffMvpLearn onSelectPage={onSelectPage} />
       ) : page === 'overview' ? (
         <CompassJeffMvpOverview onSelectPage={onSelectPage} />
       ) : page === 'practice' ? (

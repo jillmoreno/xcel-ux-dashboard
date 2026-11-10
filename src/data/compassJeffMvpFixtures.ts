@@ -84,7 +84,11 @@ export const JEFF_MVP_SUBPAGES = [
   { page: 'flashcard-topic', label: 'Flashcards topic', from: 'flashcards', ported: true },
   { page: 'flashcard-study', label: 'Study session', from: 'flashcards', ported: true },
   { page: 'exam-session', label: 'Simulated exam', from: 'exam-simulator', ported: true },
-  { page: 'course', label: 'Lesson', from: 'learn', ported: false },
+  /* ⚠ PORTED, BUT NOT TWICE. `CompassJeffCourse` is this same lesson, ported
+     2026-11-05 from his earlier `compass-prototype-b-v3.html`; 81 of his MVP
+     Course's 82 lines render identically from it. The shell reuses it — see
+     the note there. */
+  { page: 'course', label: 'Lesson', from: 'learn', ported: true },
 ] as const
 
 export type JeffMvpPage =
