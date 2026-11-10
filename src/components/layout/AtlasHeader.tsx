@@ -238,7 +238,7 @@ export function AtlasHeader({
                     alone, at the pill's own weight, as it was. */}
                 {modeMenu ? (
                   <span>
-                    <span style={{ fontWeight: 600 }}>{user.name}</span> <span style={{ fontWeight: 400 }}>({modeMenu.mode === 'admin' ? 'Admin Mode' : 'Learner Mode'})</span>
+                    <span style={{ fontWeight: 600 }}>{user.name}</span> <span style={{ fontWeight: 400, fontSize: 12 /* 2 under the name's 14 (2026-11-10, Eric) */ }}>({modeMenu.mode === 'admin' ? 'Admin Mode' : 'Learner Mode'})</span>
                   </span>
                 ) : (
                   user.name
