@@ -364,7 +364,6 @@ export function AffidavitModalV2({
   onClose,
   moment: momentProp,
   state: stateProp,
-  pattern: patternProp,
   language: languageProp,
   lineOfAuthority: loaProp,
 }: {
@@ -375,20 +374,17 @@ export function AffidavitModalV2({
   /** Overrides for the Design bar's controls — tests and the handoff. */
   moment?: AffidavitMoment
   state?: string
-  pattern?: AffidavitPattern
   language?: string
   lineOfAuthority?: string
   initialAgreed?: boolean
 }) {
   const momentFlag = useFeatureFlag('affidavit-v2-moment').variant
   const stateFlag = useFeatureFlag('affidavit-v2-state').variant
-  const patternFlag = useFeatureFlag('affidavit-v2-pattern').variant
   const languageFlag = useFeatureFlag('affidavit-v2-language').variant
   const loaFlag = useFeatureFlag('affidavit-v2-loa').variant
   const middleFlag = useFeatureFlag('affidavit-v2-middle').variant
   const moment = asMoment(momentProp ?? momentFlag)
   const state = stateProp ?? stateFlag ?? 'FL'
-  const picked: AffidavitPattern = (patternProp ?? patternFlag) === 'link' ? 'link' : 'page'
   const language = languageProp ?? languageFlag ?? 'English'
   const lineOfAuthority = loaProp ?? loaFlag ?? 'Life & Health'
   const chromeBottom = useChromeBottom()
@@ -404,8 +400,11 @@ export function AffidavitModalV2({
   const resolved = resolveAffidavit(moment, state, language, lineOfAuthority)
   const { entry, loa } = resolved
   const form = resolved.form && middleFlag === 'hide' ? withoutMiddle(resolved.form) : resolved.form
-  /* After the course exam (and on a `noLink` form) there is no Link out. */
-  const pattern: AffidavitPattern = picked === 'link' && (moment === 'post' || form?.noLink) ? 'page' : picked
+  /* LINK OUT IS THE PATTERN (2026-11-10, Afsana): the Design bar's Pagination
+     choice is gone. Pagination is not a choice but part of the forms that
+     need it — after the course exam, where the student and the exam monitor
+     each have a page (CO, CT), and any `noLink` form — which show in full. */
+  const pattern: AffidavitPattern = moment === 'post' || form?.noLink ? 'page' : 'link'
   const title = form
     ? form.title
     : entry
@@ -553,9 +552,7 @@ function AffidavitBody({
           {hasFields ? (
             <>
               <hr className="aff2-rule" />
-              {/* The kept page's own text, less what only the linked document says — KY/NV/OR's
-                  "By clicking on the confirmation button below…" (2026-11-10, Afsana). */}
-              {form.linkKeep != null ? <Blocks blocks={(form.pages[form.linkKeep]?.blocks ?? []).filter((b) => !b.docOnly)} /> : null}
+              {form.linkKeep != null ? <Blocks blocks={form.pages[form.linkKeep]?.blocks ?? []} /> : null}
               {form.pages.map((p, i) =>
                 p.fields ? (
                   <div key={i}>

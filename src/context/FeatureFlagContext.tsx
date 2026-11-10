@@ -2579,12 +2579,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Affidavit pattern',
     description:
-      'How V2 presents the affidavit. Pagination: a page at a time, Next unlocking once the page is scrolled to its end. Link out: the document as a link, an “I have read” checkbox and the fields. After the course exam there is no Link out, so it shows as Pagination.',
-    variants: [
-      { value: 'page', label: 'Pagination' },
-      { value: 'link', label: 'Link out' },
-    ],
-    defaultVariant: 'page',
+      'How V2 presents the affidavit: Link out — the document as a link, an “I have read” checkbox and the fields. The only pattern since 2026-11-10 (Afsana): Pagination is no longer a choice, only part of the forms that need it — after the course exam, where the student and the exam monitor each have a page, the form shows in full, a page at a time.',
+    variants: [{ value: 'link', label: 'Link out' }],
+    defaultVariant: 'link',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },

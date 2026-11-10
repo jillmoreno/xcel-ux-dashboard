@@ -4537,7 +4537,8 @@ describes the OCT2 port that this replaced the same day.
 `AffidavitModalV2` (`src/components/e2e/`) forks `AffidavitModal` behind
 `atlas-affidavit-v2` and renders the forms in `src/data/affidavitForms.ts`,
 ported from Afsana's Affidavit Explorer: every state, three moments (before
-the course begins, before the course exam, after it), Pagination or Link out.
+the course begins, before the course exam, after it), in Link out — the
+only pattern since 2026-11-10 (see below).
 The Design bar's **Affidavit moment** (which replaced Eric's Affidavit control
 there), **state**, **pattern**, **language** and **line of authority** pick
 the form. The data file's header lists every place the forms now differ from
@@ -4601,11 +4602,17 @@ the Design bar, which is Jill's file, so for now they are dropped.
   the rest keep "Must be completed by the student". On the state-specific
   forms it is per student page: Colorado's (and CT's) third page, the Student
   Certification Statement, has nothing to sign, so it says "completed by".
-- **Link out, enrollment agreements (2026-11-10, Afsana).** KY, NV and OR
-  keep their last page in the modal in Link out, less its "By clicking on the
-  confirmation button below, you agree to the terms of this Enrollment
-  Agreement." — that sentence is in the document the link opens (`docOnly`
-  on the block), and Pagination still shows it.
+- **Link out is the only pattern (2026-11-10, Afsana).** The Design bar's
+  **Affidavit pattern** offers Link out alone; Pagination is no longer a
+  choice but part of the forms that need it: after the course exam (where
+  CO, CT, MN, WV and WI give the student and the exam monitor a page each)
+  and any `noLink` form, the form shows in full, a page at a time. Before
+  the course begins and before the course exam, every form links out. The
+  same day the KY, NV and OR enrollment agreements stopped keeping their last
+  page in the modal (`linkKeep` removed): "By clicking on the confirmation
+  button below, you agree to the terms of this Enrollment Agreement." and the
+  "I received a copy of the catalog…" bullets are in the document the link
+  opens. Ohio's registration and Minnesota's pre-exam form still keep theirs.
 - **Smaller fixes (2026-11-09, Afsana).** Ohio's registration (before the
   course) loses its "TO BE COMPLETED BY STUDENT:" heading — the banner says
   it. California's after-exam affidavit loses the red box round the name and
