@@ -489,7 +489,8 @@ function CalendarRow({
     >
       <p style={EXPECTED_LABEL}>{label}</p>
       <div style={ICON_ROW}>
-        <span aria-hidden style={{ ...ICON, width: 30, justifyContent: 'center', paddingTop: 2 }}>
+        {/* 34 wide, the gauge's own slot, so this hairline sits on Study pace's (2026-11-10, Eric; it was 30, 4 to the left). */}
+        <span aria-hidden style={{ ...ICON, width: 34, justifyContent: 'center', paddingTop: 2 }}>
           <CalendarThin size={34} aria-hidden />
         </span>
         <span aria-hidden style={{ ...ICON_RULE, marginTop: 2, marginBottom: 2 }} />
