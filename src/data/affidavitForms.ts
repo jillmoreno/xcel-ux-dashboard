@@ -527,7 +527,7 @@ FORMS.CA_POST_LH={
   fields:[
     /* CHANGED FROM THE DOCUMENT (2026-11-09, Afsana): no red box round the
        name, and no "Student Legal Name (first and last name)" heading — the
-       Legal First / Middle / Last Name labels say it. */
+       First / Middle / Last Name labels say it ("Legal" until 2026-11-11). */
     FORMS.KY_PRE.fields[1],FORMS.KY_PRE.fields[2],
     {id:'sig',label:'Student Signature',required:true,placeholder:'Type your full name',ac:'name'},
     {id:'date',type:'date',label:"Today's Date",required:true},
@@ -971,7 +971,7 @@ FORMS.PA_EXAM={
    under either). Afsana's call for now: EVERYWHERE A SIGNATURE APPEARS the
    learner sees First Name and Last Name, pre-filled from their account
    (Middle Name too, while the Design bar's "Affidavit middle name" is on —
-   undecided) — labelled "Legal First / Middle / Last Name" (Afsana, same day), and an empty Student Signature box to type their name in.
+   undecided) — labelled "First / Middle / Last Name" (Afsana — "Legal" dropped 2026-11-11), and an empty Student Signature box to type their name in.
    Suffix goes: no document asks for one.
 
    What counts as "a signature appears": the document has a signature line or
@@ -986,9 +986,9 @@ FORMS.PA_EXAM={
    Proctor fields are untouched. With the names pre-filled, every one of these
    forms carries the "I confirm that the above information is accurate" box. */
 const NAME_ROW: AffField = {row:[
-  {id:'first',label:'Legal First Name',required:true,placeholder:'Legal first name',ac:'given-name'},
-  {id:'middle',label:'Legal Middle Name',placeholder:'Legal middle name',ac:'additional-name'},
-  {id:'last',label:'Legal Last Name',required:true,placeholder:'Legal last name',ac:'family-name'},
+  {id:'first',label:'First Name',required:true,placeholder:'First name',ac:'given-name'},
+  {id:'middle',label:'Middle Name',placeholder:'Middle name',ac:'additional-name'},
+  {id:'last',label:'Last Name',required:true,placeholder:'Last name',ac:'family-name'},
 ]}
 const SIGNATURE: AffField = {id:'sig',label:'Student Signature',required:true,placeholder:'Type your full name',ac:'name'}
 const CONFIRM: AffField = {id:'agree',type:'checkbox',label:'I confirm that the above information is accurate',required:true}
@@ -1046,7 +1046,7 @@ const unsign = (list: AffField[] | undefined): AffField[] | undefined => list?.f
 /* ── THE PROCTOR, THE SAME WAY — 2026-11-09 (Afsana) ─────────────────────
    Settles two of the questions that were waiting on Nick and Amrita: the
    proctor's name, signature and address are taken exactly as the student's
-   are. Name: Legal First / Middle / Last Name (Middle follows the Design bar's
+   are. Name: First / Middle / Last Name (Middle follows the Design bar's
    "Affidavit middle name"), never pre-filled — the learner's account is not
    the proctor's. Signature: a "Signature" box to type their name in, where
    the document had its signature line (CO, CT, MN) or right after the names
@@ -1057,9 +1057,9 @@ const unsign = (list: AffField[] | undefined): AffField[] | undefined => list?.f
    (its "Business Address" heading went 2026-11-10). The proctor banner says whose they are, so these labels do not
    say "Proctor" — nor does WI's "Phone Number" (2026-11-10). */
 const P_NAME_ROW: AffField = {row:[
-  {id:'p_first',label:'Legal First Name',required:true,placeholder:'Legal first name',ac:'off'},
-  {id:'p_middle',label:'Legal Middle Name',placeholder:'Legal middle name',ac:'off'},
-  {id:'p_last',label:'Legal Last Name',required:true,placeholder:'Legal last name',ac:'off'},
+  {id:'p_first',label:'First Name',required:true,placeholder:'First name',ac:'off'},
+  {id:'p_middle',label:'Middle Name',placeholder:'Middle name',ac:'off'},
+  {id:'p_last',label:'Last Name',required:true,placeholder:'Last name',ac:'off'},
 ]}
 const P_SIGNATURE: AffField = {id:'p_sig',label:'Signature',required:true,placeholder:'Type your full name',ac:'off'}
 const P_ADDRESS: AffField[] = [

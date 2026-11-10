@@ -4582,8 +4582,9 @@ the Design bar, which is Jill's file, so for now they are dropped.
   take the same pre-filled name block, with no signature box
   (`NAMED_FORMS`). "Full Legal Name", "Full Name" and "Student Name" are one
   data point.
-  The three fields are labelled **Legal First Name, Legal Middle Name, Legal
-  Last Name** (Afsana, 2026-11-06).
+  The three fields are labelled **First Name, Middle Name, Last Name** —
+  "Legal" dropped 2026-11-11 (Afsana), the proctor's too; it was Legal First
+  / Middle / Last Name from 2026-11-06.
 - **Whose fields (2026-11-09, Afsana).** The six **state-specific**
   affidavits — the after-exam forms in the "State Specific Affidavit" folder,
   `STATE_SPECIFIC_FORMS` (CO, CT, MN, NY, WI, WV) — keep their student and
@@ -4598,10 +4599,14 @@ the Design bar, which is Jill's file, so for now they are dropped.
   name block and the signature box already say it. Done as a pass at the end
   of `affidavitForms.ts`, so the explorer's text above it stays verbatim.
   On a form the student signs (it has a Signature box) the banner reads
-  **"Must be completed and signed by the student"** (2026-11-10, Afsana);
-  the rest keep "Must be completed by the student". On the state-specific
-  forms it is per student page: Colorado's (and CT's) third page, the Student
-  Certification Statement, has nothing to sign, so it says "completed by".
+  **"Must be completed and signed by the student"** (2026-11-10, Afsana),
+  **in cyan** since 2026-11-11 (`.aff2-banner.is-student`,
+  `--color-aff-banner-student*`); the proctor's banner stays amber.
+  **"Must be completed by the student" is gone (2026-11-11, Afsana):** the
+  student is the only one using the modal, so a page they fill without
+  signing — Florida before the course begins, the enrollment agreements,
+  Colorado's (and CT's) Student Certification Statement page — has no
+  banner at all. It is per student page on the state-specific forms.
   The proctor's page works the same way, naming the document's word for
   them: **"Must be completed and signed by exam monitor"** on CO, CT and WI,
   **"Must be completed and signed by the proctor"** on WV and MN (`proctorWord`;
@@ -4678,7 +4683,7 @@ the Design bar, which is Jill's file, so for now they are dropped.
 - **The proctor, the same way (2026-11-09, Afsana)** — this settled what
   had been waiting on Nick and Amrita since 2026-11-06. On the five forms
   with a proctor (`PROCTOR_FORMS`: CO, CT, MN, WV, WI after the exam) the
-  proctor's **name** is Legal First / Middle / Last Name (never pre-filled;
+  proctor's **name** is First / Middle / Last Name (never pre-filled;
   Middle follows the Design bar's toggle), the **signature** is a
   "Signature" box (where the document had its signature line, or after the
   names on WV and WI, whose "Proctor E-Signature:" heading went), and the

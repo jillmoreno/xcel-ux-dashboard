@@ -349,15 +349,16 @@ function Fields({ list, ctx }: { list: AffField[] | undefined; ctx: FieldCtx }) 
    certification page with nothing to sign does not say "signed" (2026-11-10). */
 function WhoBanner({ who, form, signs }: { who?: 'student' | 'proctor'; form: AffForm; signs?: AffField[] }) {
   if (!who) return null
-  const text =
-    who === 'student'
-      ? // A form the student signs says so (2026-11-10, Afsana).
-        flatList(signs).some((x) => x.id === 'sig')
-        ? 'Must be completed and signed by the student'
-        : 'Must be completed by the student'
-      : // The document's word for them — "exam monitor" on CO, CT and WI, "the proctor" on WV and MN —
-        // and "signed" when they sign there, as the student's banner does (2026-11-10, Afsana).
-        `Must be completed${flatList(signs).some((x) => x.id === 'p_sig') ? ' and signed' : ''} by ${form.proctorWord ?? 'the proctor'}`
+  if (who === 'student') {
+    /* Only where the student signs, and in cyan (2026-11-11, Afsana). "Must be
+       completed by the student" is gone: the student is the only one using
+       the modal, so a page they fill without signing needs no banner. */
+    if (!flatList(signs).some((x) => x.id === 'sig')) return null
+    return <div className="aff2-banner is-student" role="note">Must be completed and signed by the student</div>
+  }
+  // The document's word for them — "exam monitor" on CO, CT and WI, "the proctor" on WV and MN —
+  // and "signed" when they sign there (2026-11-10, Afsana). Stays amber.
+  const text = `Must be completed${flatList(signs).some((x) => x.id === 'p_sig') ? ' and signed' : ''} by ${form.proctorWord ?? 'the proctor'}`
   return <div className="aff2-banner" role="note">{text}</div>
 }
 

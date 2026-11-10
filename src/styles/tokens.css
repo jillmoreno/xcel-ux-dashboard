@@ -7740,6 +7740,11 @@ a.cre-library-card-title::after {
   --color-aff-banner: #fff0d1;
   --color-aff-banner-rule: #a86400;
   --color-aff-banner-ink: #4f3000;
+  /* The student's banner, cyan (2026-11-11, Afsana) — the info ramp's 100 /
+     600 / 800, pinned like the rest so it holds in both themes. */
+  --color-aff-banner-student: #d2f1f6;
+  --color-aff-banner-student-rule: #1897a8;
+  --color-aff-banner-student-ink: #0c4b53;
   --color-aff-link: #1f5f8b;
   --color-aff-link-ground: #f6f8fa;
   --color-aff-link-rule: #c9d3dc;

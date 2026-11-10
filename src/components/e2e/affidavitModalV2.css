@@ -179,6 +179,12 @@
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }
+/* The student's banner is cyan; the proctor's stays amber (2026-11-11, Afsana). */
+.aff2-banner.is-student {
+  border-color: var(--color-aff-banner-student-rule);
+  background: var(--color-aff-banner-student);
+  color: var(--color-aff-banner-student-ink);
+}
 
 /* Link out */
 .aff2-link {
