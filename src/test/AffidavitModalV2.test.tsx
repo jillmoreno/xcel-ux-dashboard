@@ -415,10 +415,10 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     CT_POST: ['Course Name', 'Date of Prelicensing Final Exam', ...SIGNER, 'Date', 'Relationship to Examinee', ...ADDRESS, ...SIGNER],
     MN_POST: [
       'Name of Exam', 'Exam Completion Date', 'Time of Exam Completion', ...ADDRESS,
-      'Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'License #', 'Date of Birth',
+      'Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'Date of Birth',
       ...ADDRESS, 'Phone Number', 'Email Address', 'Signature', 'Today’s Date',
       'Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'Relationship to Examinee', 'Signature', 'Today’s Date',
-      ...ADDRESS, 'Phone Number', 'Email Address',
+      ...ADDRESS, 'Phone Number',
     ],
     WI_POST: [...SIGNER, 'Today’s Date', ...ADDRESS, 'Phone Number', ...SIGNER, 'Relationship to Examinee', 'Today’s Date'],
     WV_POST: [...SIGNER, 'Relationship to Examinee', ...SIGNER, 'Today’s Date'],
@@ -501,6 +501,12 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(document.querySelectorAll('.aff2-flag')).toHaveLength(0)
     for (const h of ['Student / Licensee Name and Certification', 'Student’s Full Legal Name, License Number, & DOB', 'Must match exam'])
       expect(screen.queryByText(h), h).toBeNull()
+  })
+
+  /* ⚠ OPEN — whether they should come back is still to be decided. */
+  it('Minnesota: no License # for the student and no email for the proctor, as OCD', () => {
+    const ids = JSON.stringify(FORMS.MN_POST!.pages)
+    expect(ids).not.toMatch(/"id":"(license|p_email)"/)
   })
 
   it('Minnesota: exam date and time pre-filled and locked; the student’s address pre-filled; no mailing address or employer', () => {

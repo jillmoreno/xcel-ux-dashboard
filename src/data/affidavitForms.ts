@@ -690,15 +690,15 @@ FORMS.CT_POST=(function(){
        address, city, state, zip). The student's Business Address is the
        student's standard address, pre-filled (OCD: student address, city,
        state, zip). No Mailing Address (OCD has none). Phone Number, Email
-       Address and Today's Date, the standard labels. License # stays —
-       OCD does not collect it, and nobody yet knows why. */
+       Address and Today's Date, the standard labels. No License # — OCD
+       does not collect it (⚠ OPEN, see the proctor note below). */
     {who:'student',blocks:[],fields:[
       {id:'examname',label:'Name of Exam',readonly:true,value:'Certification Exam -Minnesota Life Prelciensing'},
       {row:[{id:'examdate',type:'date',label:'Exam Completion Date',required:true},{id:'examtime',type:'time',label:'Time of Exam Completion',required:true}]},
       {block:{h4:'Address where exam was completed'}},
       ...stdAddr('loc_'),
       {id:'name',label:'Name',required:true,placeholder:'Full legal name',ac:'name',sameAs:'fullname'},
-      {row:[{id:'license',label:'License #',required:true,placeholder:'License number'},{id:'dob',type:'date',label:'Date of Birth',required:true,ac:'bday'}]},
+      {id:'dob',type:'date',label:'Date of Birth',required:true,ac:'bday'},
       ...['addr1','addr2','city','state','zip'].map((id)=>FORMS.KY_PRE.fields.find((x)=>x.id===id)),
       {row:[{id:'phone',type:'tel',label:'Phone Number',required:true,placeholder:'(555) 000-0000',ac:'tel'},{id:'email',type:'email',label:'Email Address',required:true,placeholder:'Enter email address',ac:'email'}]},
       {block:{p:'<em><strong>I certify that I personally completed the above-named exam without outside assistance of any kind.</strong></em>'}},
@@ -712,9 +712,10 @@ FORMS.CT_POST=(function(){
        "(check one)". No Employer & Job Title (OCD has none). The address is
        the standard five fields (OCD: proctor address, city, state, zip). Today's
        Date is ours — OCD has no date for the exam monitor — pre-filled and
-       locked. ⚠ OPEN: OCD collects neither License # nor the proctor's
-       e-mail. Kept (as License # and Email Address) until it is decided
-       whether to keep them, make them optional, or drop them as OCD does. */
+       locked. No Email Address. ⚠ OPEN: the PDF asks for the student's
+       License # and the proctor's e-mail; OCD collects neither, so both were
+       dropped to match it (2026-11-10, Afsana). Still to decide whether they
+       should come back, required or optional. */
     {who:'proctor',blocks:[],fields:[
       {id:'p_name',label:'Proctor’s Full Legal Name',required:true,placeholder:'Proctor full legal name'},
       {id:'p_rel',type:'radio',label:'Relationship to Examinee',required:true,options:['Co-Worker (neither above or below the line of supervision)','Librarian','Neighbor']},
@@ -722,7 +723,7 @@ FORMS.CT_POST=(function(){
       {id:'p_sig',label:'Proctor Signature',required:true,placeholder:'Proctor types full name'},
       {id:'p_date',type:'date',label:"Today's Date",required:true,sameAs:'sigdate'},
       {id:'p_addr',label:'Address',required:true},
-      {row:[{id:'p_phone',type:'tel',label:'Phone Number',required:true,placeholder:'(555) 000-0000'},{id:'p_email',type:'email',label:'Email Address',required:true,placeholder:'Enter email address'}]}
+      {id:'p_phone',type:'tel',label:'Phone Number',required:true,placeholder:'(555) 000-0000'}
     ]}
   ],
   fields:[],

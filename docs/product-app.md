@@ -4626,10 +4626,12 @@ the Design bar, which is Jill's file, so for now they are dropped.
   address fields (OCD: proctor address, city, state, zip); Today's Date,
   pre-filled and locked, though OCD has no date for the exam monitor; Phone
   Number.
-  - ⚠ **OPEN: License # and the proctor's email.** OCD collects neither
-    (nobody on the design side knows why it skips the license). Both stay
-    for now, required. To decide: keep them, make them optional, or drop
-    them as OCD does.
+  - **No License # for the student, no Email Address for the proctor**
+    (2026-11-10, Afsana) — the PDF asks for both, OCD collects neither, and
+    the form follows OCD.
+  - ⚠ **OPEN: should they come back?** Nobody on the design side knows why
+    OCD skips them. To decide: leave them out as OCD does, or bring them
+    back, required or optional.
 - **One size, and Home holds still (2026-11-10, Afsana).** Every affidavit
   modal is 720 × 688 (less on a short window), whatever the form or
   pattern. Until then only Pagination held 688px (`is-tall`, now gone) and
