@@ -744,6 +744,75 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   })
 })
 
+/* THE HOUSE STYLE IS A SWITCH, NOT A SECOND MODAL (2026-11-10, Jill). The
+   Design bar's "Affidavit modal" puts one class on the root and a block of
+   scoped CSS does the rest, so the two arms share their markup and cannot
+   drift. These pin all three halves of that: the class follows the flag, the
+   CSS that differs is scoped to it, and the parts the Current skin hides are
+   still in the DOM. */
+describe('the Design bar’s Affidavit modal skin', () => {
+  function Skin() {
+    const { setVariant } = useFeatureFlags()
+    return (
+      <>
+        <button type="button" onClick={() => setVariant('affidavit-modal-house-style', 'current')}>Current</button>
+        <button type="button" onClick={() => setVariant('affidavit-modal-house-style', 'house-style')}>House style</button>
+        <AffidavitModalV2 onClose={() => {}} moment="pre" state="OH" />
+      </>
+    )
+  }
+
+  function renderSkin() {
+    render(
+      <MemoryRouter>
+        <FeatureFlagProvider>
+          <Skin />
+        </FeatureFlagProvider>
+      </MemoryRouter>,
+    )
+    return () => screen.getByRole('dialog').className
+  }
+
+  it('wears is-house by default, drops it on Current, and takes it back', () => {
+    const cls = renderSkin()
+    // Default House style — the branch rule: a flag's default is ON on the
+    // branch that introduces it, so the branch build shows the work.
+    expect(cls()).toContain('is-house')
+    fireEvent.click(screen.getByRole('button', { name: 'Current' }))
+    expect(cls()).toBe('aff2-modal')
+    fireEvent.click(screen.getByRole('button', { name: 'House style' }))
+    expect(cls()).toContain('is-house')
+  })
+
+  it('keeps one markup: the eyebrow and the icon are in the DOM on Current too', () => {
+    renderSkin()
+    const banner = () => screen.getAllByRole('note')[0]!
+    expect(banner().querySelector('.aff2-banner__eyebrow')?.textContent).toBe('Student action required')
+    fireEvent.click(screen.getByRole('button', { name: 'Current' }))
+    // Hidden by CSS, not unrendered — jsdom has no stylesheet, so the node
+    // being present IS the assertion. If this ever starts failing, someone has
+    // made the banner conditional and the two arms can drift again.
+    expect(banner().querySelector('.aff2-banner__eyebrow')?.textContent).toBe('Student action required')
+    expect(banner().querySelector('.aff2-banner__body')?.textContent).toBe('Must be completed and signed by the student')
+  })
+
+  it('scopes every rule that differs, so Afsana’s skin is the file’s default', () => {
+    const css = readFileSync(resolve(__dirname, '../components/e2e/affidavitModalV2.css'), 'utf8')
+    // Her originals, unqualified.
+    expect(css).toMatch(/\.aff2-head \{[^}]*background: var\(--color-aff-navy\)/)
+    expect(css).toMatch(/\.aff2-foot \{[^}]*border-top: 1px solid var\(--color-aff-line\)/)
+    expect(css).toMatch(/\.aff2-btn \{[^}]*background: var\(--color-aff-navy\)/)
+    // The house style, every rule behind the class.
+    for (const sel of ['.aff2-head', '.aff2-close', '.aff2-banner', '.aff2-foot', '.aff2-btn']) {
+      expect(css, sel).toContain(`.aff2-modal.is-house ${sel}`)
+    }
+    // The CTA colour appears only inside the house-style block.
+    const house = css.slice(css.indexOf('.aff2-modal.is-house'))
+    expect(css.indexOf('--color-aff-cta')).toBeGreaterThan(css.indexOf('.aff2-modal.is-house'))
+    expect(house).toContain('--color-aff-cta')
+  })
+})
+
 /* LINE OF AUTHORITY LEAVES THE BAR FOR NON-STATE SPECIFIC (2026-11-04) —
    `hiddenWhen` on `affidavit-v2-loa`, read live by `designControlsFor`. */
 describe('the Design bar’s affidavit controls', () => {
