@@ -548,6 +548,24 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(screen.getByRole('note').textContent).toBe('Must be completed by the student') // a name, no signature
   })
 
+  it('says "signed" only on the student page that has the signature — not Colorado’s certification statement', async () => {
+    render(<AffidavitModalV2 onClose={() => {}} moment="post" state="CO" pattern="link" />)
+    // Colorado has no Link out, so it pages; walk to the third page.
+    expect(screen.getByRole('note').textContent).toBe('Must be completed and signed by the student')
+    fireEvent.change(screen.getAllByLabelText(/^Signature/)[0]!, { target: { value: 'Jordan Navarro' } })
+    fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
+    await ready()
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    for (const [id, v] of [['Address Line 1', '1 Main St'], ['City', 'Denver'], ['Zip', '80202'], ['Legal First Name', 'Pat'], ['Legal Last Name', 'Lee'], ['Signature', 'Pat Lee']])
+      fireEvent.change(screen.getByLabelText(new RegExp(`^${id}`)), { target: { value: v } })
+    fireEvent.change(screen.getByLabelText(/^State/), { target: { value: 'CO' } })
+    fireEvent.click(screen.getByLabelText(/^Librarian/))
+    await ready()
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.getByText('Student Certification Statement:')).toBeTruthy()
+    expect(screen.getByRole('note').textContent).toBe('Must be completed by the student')
+  })
+
   /* PENNSYLVANIA (2026-11-06), from the compliance sheet. Not in the PRD —
      an open question; affidavitForms.ts has it. */
   it('Pennsylvania before the course exam: its affidavit, signed the standard way, with Attest', async () => {

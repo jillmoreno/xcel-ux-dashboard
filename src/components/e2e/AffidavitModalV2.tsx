@@ -343,12 +343,15 @@ function Fields({ list, ctx }: { list: AffField[] | undefined; ctx: FieldCtx }) 
   return <div className="aff2-fld">{list.map((x, i) => <FieldItem key={x.id ?? i} x={x} ctx={ctx} />)}</div>
 }
 
-function WhoBanner({ who, form }: { who?: 'student' | 'proctor'; form: AffForm }) {
+/* `signs`: the fields under this banner include the student's Signature box —
+   the whole form for a form-level banner, the page for a student page, so a
+   certification page with nothing to sign does not say "signed" (2026-11-10). */
+function WhoBanner({ who, form, signs }: { who?: 'student' | 'proctor'; form: AffForm; signs?: AffField[] }) {
   if (!who) return null
   const text =
     who === 'student'
       ? // A form the student signs says so (2026-11-10, Afsana).
-        flatFields(form).some((x) => x.id === 'sig')
+        flatList(signs).some((x) => x.id === 'sig')
         ? 'Must be completed and signed by the student'
         : 'Must be completed by the student'
       : (form.proctorBanner ?? `Must be completed by the ${form.proctorWord ?? 'proctor'}`)
@@ -513,7 +516,7 @@ function AffidavitBody({
     return (
       <>
         <div ref={terms} className="aff2-terms" tabIndex={0} aria-label="Affidavit text">
-          <WhoBanner who={form.who} form={form} />
+          <WhoBanner who={form.who} form={form} signs={flatFields(form)} />
           <p>
             Before you begin, you must review the attached {form.title}
             {hasFields ? ' and complete the form below:' : '.'}
@@ -554,7 +557,7 @@ function AffidavitBody({
               {form.pages.map((p, i) =>
                 p.fields ? (
                   <div key={i}>
-                    <WhoBanner who={p.who} form={form} />
+                    <WhoBanner who={p.who} form={form} signs={p.fields} />
                     <Fields list={p.fields} ctx={ctx} />
                   </div>
                 ) : null,
@@ -597,7 +600,11 @@ function AffidavitBody({
       </div>
       <div ref={terms} className="aff2-terms" tabIndex={0} aria-label="Affidavit text" onScroll={check}>
         {/* A form that is the student's alone carries its banner at the top of the first page (2026-11-09). */}
-        <WhoBanner who={current?.who ?? (page === 0 ? form.who : undefined)} form={form} />
+        {current?.who ? (
+          <WhoBanner who={current.who} form={form} signs={current.fields} />
+        ) : (
+          <WhoBanner who={page === 0 ? form.who : undefined} form={form} signs={flatFields(form)} />
+        )}
         <Blocks blocks={current?.blocks ?? []} />
         <Fields list={pageFields} ctx={ctx} />
         {page === last ? (

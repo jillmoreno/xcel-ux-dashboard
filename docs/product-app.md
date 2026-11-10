@@ -4598,7 +4598,9 @@ the Design bar, which is Jill's file, so for now they are dropped.
   of `affidavitForms.ts`, so the explorer's text above it stays verbatim.
   On a form the student signs (it has a Signature box) the banner reads
   **"Must be completed and signed by the student"** (2026-11-10, Afsana);
-  the rest keep "Must be completed by the student".
+  the rest keep "Must be completed by the student". On the state-specific
+  forms it is per student page: Colorado's (and CT's) third page, the Student
+  Certification Statement, has nothing to sign, so it says "completed by".
 - **Smaller fixes (2026-11-09, Afsana).** Ohio's registration (before the
   course) loses its "TO BE COMPLETED BY STUDENT:" heading — the banner says
   it. California's after-exam affidavit loses the red box round the name and
