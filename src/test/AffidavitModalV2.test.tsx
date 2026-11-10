@@ -537,6 +537,17 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(screen.getAllByRole('note')).toHaveLength(1)
   })
 
+  /* 2026-11-10, Afsana: a form the student signs says "completed and signed". */
+  it('says "completed and signed by the student" on every form the student signs', () => {
+    for (const [moment, state] of [['pre', 'IL'], ['post', 'CA'], ['exam', 'GEN'], ['post', 'CO']] as const) {
+      const { unmount } = render(<AffidavitModalV2 onClose={() => {}} moment={moment} state={state} pattern="page" />)
+      expect(screen.getAllByRole('note')[0]!.textContent, `${moment} ${state}`).toBe('Must be completed and signed by the student')
+      unmount()
+    }
+    render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="KY" pattern="page" />)
+    expect(screen.getByRole('note').textContent).toBe('Must be completed by the student') // a name, no signature
+  })
+
   /* PENNSYLVANIA (2026-11-06), from the compliance sheet. Not in the PRD —
      an open question; affidavitForms.ts has it. */
   it('Pennsylvania before the course exam: its affidavit, signed the standard way, with Attest', async () => {

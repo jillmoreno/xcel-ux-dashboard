@@ -4596,6 +4596,9 @@ the Design bar, which is Jill's file, so for now they are dropped.
   E-Signature:" heading**, state-specific ones included: the banner, the
   name block and the signature box already say it. Done as a pass at the end
   of `affidavitForms.ts`, so the explorer's text above it stays verbatim.
+  On a form the student signs (it has a Signature box) the banner reads
+  **"Must be completed and signed by the student"** (2026-11-10, Afsana);
+  the rest keep "Must be completed by the student".
 - **Smaller fixes (2026-11-09, Afsana).** Ohio's registration (before the
   course) loses its "TO BE COMPLETED BY STUDENT:" heading — the banner says
   it. California's after-exam affidavit loses the red box round the name and

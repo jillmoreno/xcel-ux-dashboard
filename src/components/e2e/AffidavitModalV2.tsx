@@ -347,7 +347,10 @@ function WhoBanner({ who, form }: { who?: 'student' | 'proctor'; form: AffForm }
   if (!who) return null
   const text =
     who === 'student'
-      ? 'Must be completed by the student'
+      ? // A form the student signs says so (2026-11-10, Afsana).
+        flatFields(form).some((x) => x.id === 'sig')
+        ? 'Must be completed and signed by the student'
+        : 'Must be completed by the student'
       : (form.proctorBanner ?? `Must be completed by the ${form.proctorWord ?? 'proctor'}`)
   return <div className="aff2-banner" role="note">{text}</div>
 }
