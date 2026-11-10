@@ -689,17 +689,23 @@ FORMS.CT_POST=(function(){
        was completed" heading over the standard five address fields (OCD:
        address, city, state, zip). The student's Business Address is the
        student's standard address, pre-filled (OCD: student address, city,
-       state, zip). No Mailing Address (OCD has none). Phone Number, Email
-       Address and Today's Date, the standard labels. No License # — OCD
-       does not collect it (⚠ OPEN, see the proctor note below). */
+       state, zip). Phone Number, Email
+       Address and Today's Date, the standard labels.
+       ⚑ Later the same day, Sarah: License # and the Mailing Address are on
+       the state form, so we collect them, whatever OCD does. Both are back —
+       License # required, the Mailing Address optional "(if different than
+       above)" as the document has it. */
     {who:'student',blocks:[],fields:[
       {id:'examname',label:'Name of Exam',readonly:true,value:'Certification Exam -Minnesota Life Prelciensing'},
       {row:[{id:'examdate',type:'date',label:'Exam Completion Date',required:true},{id:'examtime',type:'time',label:'Time of Exam Completion',required:true}]},
       {block:{h4:'Address where exam was completed'}},
       ...stdAddr('loc_'),
       {id:'name',label:'Name',required:true,placeholder:'Full legal name',ac:'name',sameAs:'fullname'},
-      {id:'dob',type:'date',label:'Date of Birth',required:true,ac:'bday'},
+      {row:[{id:'license',label:'License #',required:true,placeholder:'License number'},{id:'dob',type:'date',label:'Date of Birth',required:true,ac:'bday'}]},
       ...['addr1','addr2','city','state','zip'].map((id)=>FORMS.KY_PRE.fields.find((x)=>x.id===id)),
+      /* Back 2026-11-10 (Sarah: it is on the state form): optional, as the document has it. */
+      {block:{h4:'Mailing Address (if different than above)'}},
+      ...stdAddr('mail_').map(({required,...f})=>f),
       {row:[{id:'phone',type:'tel',label:'Phone Number',required:true,placeholder:'(555) 000-0000',ac:'tel'},{id:'email',type:'email',label:'Email Address',required:true,placeholder:'Enter email address',ac:'email'}]},
       {block:{p:'<em><strong>I certify that I personally completed the above-named exam without outside assistance of any kind.</strong></em>'}},
       {id:'sig',label:'Student Signature',required:true,placeholder:'Type your full name',ac:'name'},
@@ -709,27 +715,27 @@ FORMS.CT_POST=(function(){
     /* The proctor's side (2026-11-10, Afsana): no "Proctor Name and
        Certification" heading. Relationship to Examinee is OCD's three
        choices, as radio buttons the way Colorado's are, without OCD's
-       "(check one)". No Employer & Job Title (OCD has none). The address is
+       "(check one)". Employer & Job Title is back (see below). The address is
        the standard five fields (OCD: proctor address, city, state, zip). Today's
        Date is ours — OCD has no date for the exam monitor — pre-filled and
-       locked. No Email Address. ⚠ OPEN: the PDF asks for the student's
-       License # and the proctor's e-mail; OCD collects neither, so both were
-       dropped to match it (2026-11-10, Afsana). Still to decide whether they
-       should come back, required or optional. */
+       locked. ⚑ Sarah, the same day: Employer & Job Title and the proctor's
+       e-mail are on the state form, so both are back and required (as
+       "Employer & Job Title" and "Email Address"), whatever OCD does. */
     {who:'proctor',blocks:[],fields:[
       {id:'p_name',label:'Proctor’s Full Legal Name',required:true,placeholder:'Proctor full legal name'},
       {id:'p_rel',type:'radio',label:'Relationship to Examinee',required:true,options:['Co-Worker (neither above or below the line of supervision)','Librarian','Neighbor']},
       {block:{p:'I certify that I am at least 18 years of age, with no financial or other conflict of interest with respect to a student’s successful completion of the examination. I verified the identity of the student listed above on this form (i.e. valid photo ID), and I ensured that the exam was completed without outside assistance of any kind (i.e. human, study material, notes, computer, cell phone, etc.), and that I physically monitored the student throughout the entire exam process.'}},
       {id:'p_sig',label:'Proctor Signature',required:true,placeholder:'Proctor types full name'},
       {id:'p_date',type:'date',label:"Today's Date",required:true,sameAs:'sigdate'},
+      {id:'p_job',label:'Employer & Job Title',required:true,placeholder:'Employer and job title'},
       {id:'p_addr',label:'Address',required:true},
-      {id:'p_phone',type:'tel',label:'Phone Number',required:true,placeholder:'(555) 000-0000'}
+      {row:[{id:'p_phone',type:'tel',label:'Phone Number',required:true,placeholder:'(555) 000-0000'},{id:'p_email',type:'email',label:'Email Address',required:true,placeholder:'Enter email address'}]}
     ]}
   ],
   fields:[],
   flagFields:['agree'],
   lock:['examdate','examtime','p_date'],
-  note:'This is a generic proctor affidavit (Rev 1.17.23) with "Name of Exam" pre-filled for Minnesota Life, shown read-only. Two pages: the student’s section, then the proctor’s. Since 2026-11-10 its fields follow OCD and the standard fields, not the PDF: no Mailing Address and no Employer & Job Title. The "I confirm that the above information is accurate" checkbox ends the student section. Exam Completion Date and Time of Exam Completion are pre-filled and locked. The proctor’s Today’s Date is pre-filled to match the student’s and locked.'
+  note:'This is a generic proctor affidavit (Rev 1.17.23) with "Name of Exam" pre-filled for Minnesota Life, shown read-only. Two pages: the student’s section, then the proctor’s. Since 2026-11-10 its fields follow OCD and the standard fields, plus what OCD skips but the state form asks for: the student’s License # and optional Mailing Address, the proctor’s Employer & Job Title and Email Address. The "I confirm that the above information is accurate" checkbox ends the student section. Exam Completion Date and Time of Exam Completion are pre-filled and locked. The proctor’s Today’s Date is pre-filled to match the student’s and locked.'
   };
 })();
 FORMS.WV_POST={

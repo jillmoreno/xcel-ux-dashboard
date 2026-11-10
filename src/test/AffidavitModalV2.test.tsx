@@ -415,16 +415,17 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   const SIGNER = ['Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'Signature']
   /* And the proctor's name, signature and address the same way (2026-11-09). */
   const ADDRESS = ['Address Line 1', 'Address Line 2 (Optional)', 'City', 'State', 'Zip']
+  const MAILING = ADDRESS // MN's, all optional — the labels are the same
   const STATE_DOCUMENT_FIELDS: Record<string, string[]> = {
     NY_POST: [...SIGNER, 'Today’s Date'],
     CO_POST: ['Course Name', 'Date of Pre-licensing Final Exam', ...SIGNER, 'Date', 'Relationship to Examinee', ...ADDRESS, ...SIGNER],
     CT_POST: ['Course Name', 'Date of Prelicensing Final Exam', ...SIGNER, 'Date', 'Relationship to Examinee', ...ADDRESS, ...SIGNER],
     MN_POST: [
       'Name of Exam', 'Exam Completion Date', 'Time of Exam Completion', ...ADDRESS,
-      'Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'Date of Birth',
-      ...ADDRESS, 'Phone Number', 'Email Address', 'Signature', 'Today’s Date',
+      'Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'License #', 'Date of Birth',
+      ...ADDRESS, ...MAILING, 'Phone Number', 'Email Address', 'Signature', 'Today’s Date',
       'Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'Relationship to Examinee', 'Signature', 'Today’s Date',
-      ...ADDRESS, 'Phone Number',
+      'Employer & Job Title', ...ADDRESS, 'Phone Number', 'Email Address',
     ],
     WI_POST: [...SIGNER, 'Today’s Date', ...ADDRESS, 'Phone Number', ...SIGNER, 'Relationship to Examinee', 'Today’s Date'],
     WV_POST: [...SIGNER, 'Relationship to Examinee', ...SIGNER, 'Today’s Date'],
@@ -509,13 +510,19 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
       expect(screen.queryByText(h), h).toBeNull()
   })
 
-  /* ⚠ OPEN — whether they should come back is still to be decided. */
-  it('Minnesota: no License # for the student and no email for the proctor, as OCD', () => {
-    const ids = JSON.stringify(FORMS.MN_POST!.pages)
-    expect(ids).not.toMatch(/"id":"(license|p_email)"/)
+  /* Sarah, 2026-11-10: what is on the state form is collected, whatever OCD
+     skips — License #, the Mailing Address, Employer & Job Title, the
+     proctor's e-mail. */
+  it('Minnesota: collects what the state form asks for — the mailing address optional', () => {
+    const fields = formFields('MN_POST')
+    const req = (id: string) => fields.find((x) => x.id === id)?.required
+    expect(['license', 'p_job', 'p_email'].map(req)).toEqual([true, true, true])
+    expect(['mail_addr1', 'mail_city', 'mail_state', 'mail_zip'].map(req)).toEqual([undefined, undefined, undefined, undefined])
+    render(<AffidavitModalV2 onClose={() => {}} moment="post" state="MN" />)
+    expect(screen.getByText('Mailing Address (if different than above)')).toBeTruthy()
   })
 
-  it('Minnesota: exam date and time pre-filled and locked; the student’s address pre-filled; no mailing address or employer', () => {
+  it('Minnesota: exam date and time pre-filled and locked; the student’s address pre-filled', () => {
     render(<AffidavitModalV2 onClose={() => {}} moment="post" state="MN" />)
     const date = screen.getByLabelText(/^Exam Completion Date/) as HTMLInputElement
     const time = screen.getByLabelText(/^Time of Exam Completion/) as HTMLInputElement
@@ -524,7 +531,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect((screen.getAllByLabelText(/^Address Line 1/)[1] as HTMLInputElement).value).toBe('1420 Maple Avenue')
     expect((screen.getAllByLabelText(/^Address Line 1/)[0] as HTMLInputElement).value).toBe('') // where the exam was
     const ids = formFields('MN_POST').map((x) => x.id)
-    for (const id of ['examdt', 'mail_addr', 'bus_addr', 'p_job', 'p_bus_addr']) expect(ids, id).not.toContain(id)
+    for (const id of ['examdt', 'bus_addr', 'p_bus_addr']) expect(ids, id).not.toContain(id)
     const rel = formFields('MN_POST').find((x) => x.id === 'p_rel')!
     expect([rel.type, rel.label, rel.options]).toEqual(['radio', 'Relationship to Examinee', ['Co-Worker (neither above or below the line of supervision)', 'Librarian', 'Neighbor']])
   })

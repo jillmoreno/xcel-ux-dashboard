@@ -4616,22 +4616,24 @@ the Design bar, which is Jill's file, so for now they are dropped.
   fields (OCD: address, city, state, zip; the PDF: "Company & Address where
   exam was completed"); the PDF's Business Address is the student's own
   standard address, pre-filled (OCD: student address, city, state, zip);
-  **no Mailing Address** (OCD has none); Phone Number, Email Address and
+  **a Mailing Address** (see ⚑ below; OCD has none); Phone Number, Email Address and
   Today's Date (no "Must match exam"). Proctor page: no "Proctor Name and
   Certification" heading; banner "Must be completed and signed by the
   proctor"; **Relationship to Examinee** as radio buttons — OCD's
   Co-Worker / Librarian / Neighbor, without OCD's "(check one)", as Colorado
   has it — not the PDF's open "Note your type of relationship to the
-  student."; **no Employer & Job Title** (OCD has none); the standard five
+  student."; **Employer & Job Title** (see ⚑ below; OCD has none); the standard five
   address fields (OCD: proctor address, city, state, zip); Today's Date,
   pre-filled and locked, though OCD has no date for the exam monitor; Phone
   Number.
-  - **No License # for the student, no Email Address for the proctor**
-    (2026-11-10, Afsana) — the PDF asks for both, OCD collects neither, and
-    the form follows OCD.
-  - ⚠ **OPEN: should they come back?** Nobody on the design side knows why
-    OCD skips them. To decide: leave them out as OCD does, or bring them
-    back, required or optional.
+  - **⚑ What OCD skips but the state form asks for, we collect (2026-11-10,
+    Sarah, via Afsana).** So four fields came back the same day, overriding
+    the "no" above: the student's **License #** (required, beside Date of
+    Birth), the student's **Mailing Address** (optional, under "Mailing
+    Address (if different than above)", as the document has it), the
+    proctor's **Employer & Job Title** (required) and the proctor's **Email
+    Address** (required, beside Phone Number). Rule of thumb for MN: OCD
+    sets the shape and the labels; the state form sets what is collected.
 - **The link shows no document (2026-11-10, Afsana).** In Link out,
   clicking the document's link only marks it opened — "Document opened."
   appears and the button can unlock — and nothing draws what the document
