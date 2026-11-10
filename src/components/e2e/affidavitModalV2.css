@@ -333,6 +333,7 @@
   width: 560px;
   height: auto;
   max-height: 100%;
+  border: 1px solid var(--color-aff-line);
   border-radius: var(--radius-xl);
   box-shadow: 0 4px 6px rgb(0 0 0 / 0.05), 0 12px 32px rgb(0 0 0 / 0.12);
 }
@@ -360,7 +361,7 @@
 }
 .aff2-modal.is-house .aff2-head h2 {
   font: 400 20px/28px var(--font-heading-serif);
-  color: var(--color-aff-label);
+  color: var(--color-aff-house-ink);
 }
 
 /* ⚠ THE OVERHANG IS DELIBERATE. The X is 18px centred in a 36px target, so
@@ -372,7 +373,7 @@
   margin-right: -9px;
   border: 0;
   border-radius: 50%;
-  color: var(--color-aff-muted-ink);
+  color: var(--color-aff-hint);
 }
 .aff2-modal.is-house .aff2-close svg { width: 18px; height: 18px; }
 .aff2-modal.is-house .aff2-close:hover { background: var(--color-aff-chip); color: var(--color-aff-ink); }
@@ -382,6 +383,7 @@
    never read alike at a glance. */
 .aff2-modal.is-house .aff2-banner {
   display: flex;
+  border-radius: var(--radius-md);
   gap: 10px;
   align-items: flex-start;
   text-align: left;
@@ -404,7 +406,7 @@
 .aff2-modal.is-house .aff2-banner__body { font-size: 13px; font-weight: 600; line-height: 1.4; }
 
 /* No rule above the button — it holds that edge on its own. */
-.aff2-modal.is-house .aff2-foot { padding: 18px 30px 30px; border-top: 0; }
+.aff2-modal.is-house .aff2-foot { margin-top: 8px; padding: 16px 30px 32px; border-top: 0; }
 .aff2-modal.is-house .aff2-btn {
   background: var(--color-aff-cta);
   border-radius: var(--radius-md);
@@ -424,3 +426,36 @@
 }
 .aff2-modal.is-house .aff2-hint { font-size: 12px; }
 .aff2-modal.is-house .aff2-btn:hover:not(:disabled) { background: var(--color-aff-cta-hover); }
+
+/* THE TYPE AND DOCUMENT COLOURS (Jill, 2026-11-10). The frame and the chrome
+   were not the whole of it: the body scale, the ink, the document row and the
+   attestation square are the exploration's too. Afsana's are 15px on #111
+   with 700 labels and a pale blue link row; these are 14px on Charcoal with
+   600 labels and neutral-100 under a San Juan link. */
+.aff2-modal.is-house .aff2-terms p,
+.aff2-modal.is-house .aff2-terms ul,
+.aff2-modal.is-house .aff2-terms ol { font-size: 14px; color: var(--color-aff-house-ink); }
+.aff2-modal.is-house .aff2-fld label { font-weight: 600; color: var(--color-aff-house-ink); }
+.aff2-modal.is-house .aff2-hint { font-size: 12px; }
+
+/* The linked document: a neutral row, the name in San Juan at the body size,
+   grouped with the attestation under one hairline. */
+.aff2-modal.is-house .aff2-link {
+  gap: 12px;
+  padding: 12px 14px;
+  border-color: var(--color-aff-line);
+  border-radius: var(--radius-md);
+  background: var(--color-aff-house-row);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-aff-house-link);
+}
+
+/* An 18px square in San Juan, as the exploration draws it. */
+.aff2-modal.is-house .aff2-chk { gap: 10px; font-size: 14px; }
+.aff2-modal.is-house .aff2-fld .aff2-chk input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-aff-house-link);
+}
+.aff2-modal.is-house .aff2-fld .aff2-radio input { accent-color: var(--color-aff-house-link); }

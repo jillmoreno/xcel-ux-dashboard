@@ -7754,6 +7754,14 @@ a.cre-library-card-title::after {
      ramp; hover is --color-primary-500's value, pinned like the rest. */
   --color-aff-cta: #3d5a73;
   --color-aff-cta-hover: #2d5872;
+  /* The house style's type and document colours, off the exploration page:
+     Charcoal ink (--color-text-primary's value), San Juan links
+     (--color-primary-500's), and neutral-100 under the document row. Pinned
+     rather than referenced, like everything else here, so the modal holds in
+     dark mode. */
+  --color-aff-house-ink: #3a3a3a;
+  --color-aff-house-link: #2d5872;
+  --color-aff-house-row: #ececec;
   --color-aff-link: #1f5f8b;
   --color-aff-link-ground: #f6f8fa;
   --color-aff-link-rule: #c9d3dc;
