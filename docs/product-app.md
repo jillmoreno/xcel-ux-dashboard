@@ -4644,9 +4644,13 @@ the Design bar, which is Jill's file, so for now they are dropped.
   **affidavit** and complete the form below:" — "attestation" where the
   form's title says Attestation (CO, CT, WV, WI and MN before the course
   exam, Non-state specific before the course exam), "affidavit" for every
-  other form, the enrollment agreements, Florida's notices and the terms
-  and conditions included. It used to name the document's title ("review
-  the attached …").
+  other affidavit — and the rest by what they are (same day): **enrollment
+  agreement** (KY, NV, OR), **notice** (Florida), **terms and conditions**
+  (CA and Non-state specific before the course begins), **registration
+  form** (Ohio before the course begins). `docWord` on the form, set by the
+  `DOC_WORD` pass at the end of `affidavitForms.ts`; `docWordFor` falls back
+  to the title. It used to name the document's title ("review the attached
+  …").
 - **The link shows no document (2026-11-10, Afsana).** In Link out,
   clicking the document's link only marks it opened — "Document opened."
   appears and the button can unlock — and nothing draws what the document

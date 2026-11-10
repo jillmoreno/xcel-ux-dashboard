@@ -17,6 +17,7 @@ import {
   MOMENTS,
   STATES,
   STATUS,
+  docWordFor,
   type AffBlock,
   type AffEntry,
   type AffField,
@@ -552,10 +553,9 @@ function AffidavitBody({
         <div ref={terms} className="aff2-terms" tabIndex={0} aria-label="Affidavit text">
           <WhoBanner who={form.who} form={form} signs={flatFields(form)} />
           {/* Says what to do with the link, and calls the document what it is (2026-11-11, Afsana):
-              "attestation" where its title says Attestation, "affidavit" otherwise. */}
+              `docWordFor` in affidavitForms.ts. */}
           <p>
-            Before you begin, you must click the link below to review the{' '}
-            {/attestation/i.test(form.title) ? 'attestation' : 'affidavit'}
+            Before you begin, you must click the link below to review the {docWordFor(form)}
             {hasFields ? ' and complete the form below:' : '.'}
           </p>
           <button

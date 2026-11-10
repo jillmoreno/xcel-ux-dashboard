@@ -88,6 +88,8 @@ export type AffForm = {
   agreeLabel?: string; flagFields?: string[]; noPrefill?: string[]; lock?: string[]
   /** A page of the document kept in the modal in Link out. No form uses it since 2026-11-10 (Afsana): the document's text is behind its link. */
   linkKeep?: number; noLink?: boolean; proctorWord?: string; lang?: string
+  /** What Link out's sentence calls the document — "click the link below to review the …". Unset: "attestation" if the title says so, else "affidavit" (2026-11-11, Afsana). */
+  docWord?: string
   /** The whole form is the student's: one "Must be completed by the student" banner at the top (non-state-specific forms, 2026-11-09). */
   who?: "student"
 }
@@ -1092,3 +1094,17 @@ for (const [key, form] of Object.entries(FORMS) as [string, AffForm][]) {
   form.pages = form.pages.map((p) => ({ ...p, blocks: p.blocks?.filter((b) => !eSig(b)).map(fine), fields: unsign(p.fields) }))
   form.fields = unsign(form.fields) ?? []
 }
+
+/* WHAT EACH DOCUMENT IS (2026-11-11, Afsana). Link out's sentence — "click
+   the link below to review the …" — names the document. Most are affidavits
+   or attestations and their titles say which; these are neither, and are
+   called what they are. */
+const DOC_WORD: Record<string, string> = {
+  KY_PRE: 'enrollment agreement', NV_PRE: 'enrollment agreement', OR_PRE: 'enrollment agreement',
+  FL_LH_EN: 'notice', FL_LH_ES: 'notice', FL_PC_EN: 'notice', FL_PC_ES: 'notice',
+  CA_PRE: 'terms and conditions', GEN_PRE_EN: 'terms and conditions', GEN_PRE_ES: 'terms and conditions',
+  OH_PRE: 'registration form',
+}
+for (const [key, word] of Object.entries(DOC_WORD)) FORMS[key].docWord = word
+export const docWordFor = (form: AffForm): string =>
+  form.docWord ?? (/attestation/i.test(form.title) ? 'attestation' : 'affidavit')

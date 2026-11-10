@@ -216,10 +216,15 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
 
   /* 2026-11-11, Afsana: the sentence says to click the link, and names the
      document an attestation or an affidavit by its title. */
-  it('links out: tells the student to click the link to review the attestation or affidavit', () => {
+  it('links out: tells the student to click the link to review the document, by what it is', () => {
     const FORM = ' and complete the form below:'
     // Colorado's attestation and Florida's notice have nothing to fill in, so the sentence ends there.
-    for (const [moment, state, end] of [['pre', 'IL', 'affidavit' + FORM], ['exam', 'CO', 'attestation.'], ['exam', 'GEN', 'attestation' + FORM], ['pre', 'FL', 'affidavit.']] as const) {
+    // The documents that are neither affidavit nor attestation are called what they are.
+    for (const [moment, state, end] of [
+      ['pre', 'IL', 'affidavit' + FORM], ['exam', 'CO', 'attestation.'], ['exam', 'GEN', 'attestation' + FORM],
+      ['pre', 'FL', 'notice.'], ['pre', 'KY', 'enrollment agreement' + FORM], ['pre', 'CA', 'terms and conditions' + FORM],
+      ['pre', 'GEN', 'terms and conditions' + FORM], ['pre', 'OH', 'registration form' + FORM], ['post', 'NY', 'affidavit' + FORM],
+    ] as const) {
       const { unmount } = render(<AffidavitModalV2 onClose={() => {}} moment={moment} state={state} />)
       expect(screen.getByText(/^Before you begin/).textContent, `${moment} ${state}`).toBe(
         `Before you begin, you must click the link below to review the ${end}`,
