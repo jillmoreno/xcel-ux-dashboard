@@ -166,6 +166,7 @@ const REBRAND_FLAGS = [
   'atlas-heading-font',
   'atlas-affidavit',
   'atlas-affidavit-v2',
+  'affidavit-modal-house-style',
   'affidavit-v2-moment',
   'affidavit-v2-state',
   'affidavit-v2-pattern',

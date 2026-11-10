@@ -2473,6 +2473,44 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'affidavit-modal-house-style',
+    /* HOW THE AFFIDAVIT LOOKS (2026-11-10) — Afsana's original skin, read off
+       her Affidavit Explorer's XCEL mock, or Jill's house style: the serif
+       title on white instead of the navy bar, the close aligned to the
+       button's glyph, an eyebrow naming who must act over the document's own
+       sentence, no rule above the footer, a #3d5a73 primary.
+
+       ⚠ A SKIN, NOT A SECOND MODAL. It is one class on `.aff2-modal` and a
+       block of scoped CSS; `AffidavitModalV2` renders the same markup either
+       way, for all sixteen states. The Ohio-only `AffidavitModalHouseStyle`
+       on `feat/affidavit-modal-v2` was the spec this came from and is not
+       carried forward.
+
+       ⚠ WHICH affidavit opens is `affidavit-v2-moment` and `-state`; whether
+       V2 opens at all is `atlas-affidavit-v2`, below. This is only how it
+       looks, and it reads nothing else.
+
+       ⚠ DEFAULT House style, the "flags default ON on your branch" rule, so
+       the branch build shows the work. Whether it stays is decided at
+       share-to-stage. */
+    surface: 'design',
+    /* ⚠ NO `owner`, like the affidavit flags around it. `afsana` is not in
+       `DesignerId` on this branch — that entry is on Jill's
+       `feat/affidavit-modal-house-style` and would have to arrive with it.
+       `versions` is what puts a control on the bar; `owner` is a label. */
+    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
+    group: 'Widgets',
+    label: 'Affidavit modal',
+    description: 'How the affidavit looks: Afsana’s original skin, or Jill’s house style.',
+    variants: [
+      { value: 'current', label: 'Current', description: 'The navy header and the centred banner.' },
+      { value: 'house-style', label: 'House style', description: 'Serif title on white, an eyebrow naming who must act, a #3d5a73 primary.' },
+    ],
+    defaultVariant: 'house-style',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-affidavit-v2',
     /* AFFIDAVIT V2 — 2026-11-03, Afsana (`feat/affidavits`). On: the
        End-to-End Home opens `AffidavitModalV2`; off: V1, untouched. Its first

@@ -52,8 +52,11 @@ describe('AffidavitModalV2', () => {
       unmount()
       return c
     }
-    expect(cls('CA')).toBe('aff2-modal')
-    expect(cls('CT')).toBe('aff2-modal')
+    /* The Design bar's skin class rides along on the root (2026-11-10); what
+       this pins is that the SIZE does not change with the form or pattern,
+       so compare the two rather than spelling the class out. */
+    expect(cls('CA')).toBe(cls('CT'))
+    expect(cls('CA')).not.toMatch(/is-tall/)
     const css = readFileSync(resolve(__dirname, '../components/e2e/affidavitModalV2.css'), 'utf8')
     expect(css).toMatch(/\.aff2-modal \{[^}]*\bheight: 688px;/)
     expect(css).not.toMatch(/is-tall/)

@@ -401,6 +401,11 @@ export function AffidavitModalV2({
   const momentFlag = useFeatureFlag('affidavit-v2-moment').variant
   const stateFlag = useFeatureFlag('affidavit-v2-state').variant
   const languageFlag = useFeatureFlag('affidavit-v2-language').variant
+  /* The Design bar's "Affidavit modal" (Jill, 2026-11-10) — Afsana's original
+     skin, or the house style. One class on the root; every rule that differs
+     is scoped to it in `affidavitModalV2.css`, so the markup is identical
+     either way and the two arms cannot drift. */
+  const houseStyle = useFeatureFlag('affidavit-modal-house-style').variant === 'house-style'
   const loaFlag = useFeatureFlag('affidavit-v2-loa').variant
   const middleFlag = useFeatureFlag('affidavit-v2-middle').variant
   const moment = asMoment(momentProp ?? momentFlag)
@@ -444,7 +449,7 @@ export function AffidavitModalV2({
         aria-modal="true"
         aria-labelledby="affidavit-v2-title"
         lang={form?.lang}
-        className="aff2-modal"
+        className={houseStyle ? 'aff2-modal is-house' : 'aff2-modal'}
       >
         <div className="aff2-head">
           <h2 id="affidavit-v2-title">{title}</h2>
