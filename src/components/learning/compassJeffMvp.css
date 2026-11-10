@@ -2766,3 +2766,582 @@
   color: var(--cjm-muted);
   white-space: nowrap;
 }
+
+/* ============ the simulated exam (vendor chrome) ============ */
+
+/* ⚠ IT DELIBERATELY DOES NOT LOOK LIKE COMPASS. A simulator whose chrome
+   matched the app you revised in would not be simulating anything — so this
+   block borrows the test-centre look: a dark bar, a green question list, a
+   timer, and no Compass rail at all. */
+.cjm-vx {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #f3f4f5;
+  font-family: var(--font-body);
+  color: var(--cjm-vx-ink, #262626);
+}
+.cjm-vx__bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 18px;
+  background: #1f2a33;
+  color: #fff;
+  font-size: 13px;
+}
+.cjm-vx__exit {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 6px;
+  background: transparent;
+  padding: 5px 11px;
+  color: #fff;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.cjm-vx__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+}
+.cjm-vx__provider {
+  opacity: 0.85;
+}
+.cjm-vx__page {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 32px 36px 56px;
+}
+
+/* ---------- intro ---------- */
+
+.cjm-vx__intro {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.cjm-vx__intromain {
+  flex: 1.6 1 460px;
+  min-width: 0;
+}
+.cjm-vx__h1 {
+  margin: 0 0 10px;
+  font-size: 26px;
+  font-weight: 600;
+  color: #1f1d18;
+}
+.cjm-vx__h2 {
+  margin: 26px 0 10px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1f1d18;
+}
+.cjm-vx__note,
+.cjm-vx__para {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #42464f;
+}
+.cjm-vx__bullets {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cjm-vx__bullets li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #42464f;
+}
+.cjm-vx__bullets svg {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  color: var(--cjm-green);
+}
+.cjm-vx__blueprint {
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+.cjm-vx__blueprint li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 13.5px;
+}
+.cjm-vx__bpname {
+  flex: 0 0 240px;
+}
+.cjm-vx__bptrack {
+  flex: 1 1 auto;
+  height: 8px;
+  border-radius: 4px;
+  background: #e3e5e8;
+  overflow: hidden;
+}
+.cjm-vx__bpfill {
+  display: block;
+  height: 8px;
+  background: var(--cjm-steel-deep);
+}
+.cjm-vx__bppct {
+  flex: 0 0 42px;
+  text-align: right;
+  font-weight: 600;
+}
+.cjm-vx__glance {
+  flex: 1 1 280px;
+  min-width: 0;
+  align-self: flex-start;
+  padding: 22px 24px;
+  border: 1px solid #dcdee1;
+  border-radius: 12px;
+  background: #fff;
+}
+.cjm-vx__glance dl {
+  margin: 12px 0 18px;
+}
+.cjm-vx__glance div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 9px 0;
+  border-bottom: 1px solid #ecedef;
+  font-size: 13.5px;
+}
+.cjm-vx__glance dt {
+  color: #615c55;
+}
+.cjm-vx__glance dd {
+  margin: 0;
+  font-weight: 600;
+  color: #1f1d18;
+}
+.cjm-vx__glance .cjm-cta {
+  width: 100%;
+}
+.cjm-vx__proto {
+  margin: 14px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #8e939b;
+}
+
+/* ---------- terms and other dialogs ---------- */
+
+.cjm-vx__dialog {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 26px 28px;
+  border: 1px solid #dcdee1;
+  border-radius: 12px;
+  background: #fff;
+}
+.cjm-vx__nda {
+  max-height: 260px;
+  overflow: auto;
+  margin: 14px 0 18px;
+  padding: 16px 18px;
+  border: 1px solid #e3e5e8;
+  border-radius: 8px;
+  background: #fbfbfc;
+}
+.cjm-vx__nda p {
+  margin: 0 0 10px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #42464f;
+}
+.cjm-vx__agree {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  color: #42464f;
+  cursor: pointer;
+}
+.cjm-vx__box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #555;
+  border-radius: 3px;
+  background: #fff;
+  color: #fff;
+}
+.cjm-vx__box.is-on {
+  border-color: #3e7b27;
+  background: #3e7b27;
+}
+.cjm-vx__dialogfoot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+.cjm-vx__dialogfoot .cjm-cta[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- the vendor test shell ---------- */
+
+.cjm-vx__shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: #fff;
+}
+.cjm-vx__shellbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 9px 16px;
+  border-bottom: 1px solid #c9cdd2;
+  background: #eceef0;
+  font-size: 12.5px;
+}
+.cjm-vx__shelltop {
+  font-weight: 700;
+}
+.cjm-vx__shellsub {
+  flex: 1 1 auto;
+  color: #42464f;
+}
+.cjm-vx__timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cjm-vx__timer b {
+  font-variant-numeric: tabular-nums;
+}
+.cjm-vx__finish {
+  border: 1px solid #8a8a8a;
+  border-radius: 4px;
+  background: #fff;
+  padding: 5px 12px;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.cjm-vx__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.cjm-vx__nav {
+  flex: 0 0 230px;
+  padding: 14px;
+  border-right: 1px solid #c9cdd2;
+  background: #f7f8f9;
+  font-size: 12.5px;
+  overflow: auto;
+}
+.cjm-vx__navtest,
+.cjm-vx__navcand {
+  margin: 0 0 4px;
+  color: #42464f;
+}
+.cjm-vx__pages,
+.cjm-vx__qlist {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.cjm-vx__pages li,
+.cjm-vx__qlist li {
+  padding: 6px 9px;
+  border-radius: 3px;
+}
+/* ⚠ HIS GREEN, not a Compass token — the vendor's selected row. */
+.cjm-vx__pages li.is-on,
+.cjm-vx__qlist li.is-on {
+  background: #24511a;
+  color: #fff;
+  font-weight: 700;
+}
+.cjm-vx__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 24px 28px;
+  overflow: auto;
+}
+.cjm-vx__qnum {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.cjm-vx__flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 14px;
+  border: 1px solid #8a8a8a;
+  border-radius: 4px;
+  background: #fff;
+  padding: 5px 11px;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.cjm-vx__flag.is-on {
+  border-color: #b54708;
+  color: #b54708;
+}
+.cjm-vx__stem {
+  margin: 0 0 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #1f1d18;
+}
+.cjm-vx__opts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cjm-vx__opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  border: 1px solid #c9cdd2;
+  border-radius: 6px;
+  background: #fff;
+  padding: 11px 14px;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  color: #262626;
+  cursor: pointer;
+}
+.cjm-vx__opt.is-on {
+  border-color: #24511a;
+  box-shadow: inset 0 0 0 1px #24511a;
+}
+.cjm-vx__opt.is-correct {
+  border-color: var(--cjm-ready-edge);
+  background: var(--cjm-right-wash);
+}
+.cjm-vx__opt.is-yours {
+  border-color: var(--cjm-ready-edge);
+}
+.cjm-vx__letter {
+  flex: 0 0 22px;
+  font-weight: 700;
+}
+.cjm-vx__tag {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cjm-ready-ink);
+  white-space: nowrap;
+}
+.cjm-vx__foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-top: 1px solid #c9cdd2;
+  background: #eceef0;
+}
+.cjm-vx__counts {
+  flex: 1 1 auto;
+  font-size: 12.5px;
+  color: #42464f;
+}
+.cjm-vx__navbtn {
+  border: 1px solid #8a8a8a;
+  border-radius: 4px;
+  background: #fff;
+  padding: 6px 16px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.cjm-vx__navbtn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.cjm-vx__skip {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--cjm-steel-deep);
+  font: inherit;
+  font-size: 12.5px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.cjm-vx__flagdemo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: #b54708;
+}
+.cjm-vx__flagdemo span {
+  color: #42464f;
+}
+
+/* ---------- results and review ---------- */
+
+.cjm-vx__results {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 26px 28px;
+  border: 1px solid #dcdee1;
+  border-radius: 12px;
+  background: #fff;
+}
+.cjm-vx__score,
+.cjm-vx__reviewside {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.cjm-vx__reviewside {
+  flex: 1 1 280px;
+  align-items: stretch;
+}
+.cjm-vx__scoremid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+}
+.cjm-vx__scoremid b {
+  font-size: 30px;
+  color: #1f1d18;
+}
+.cjm-vx__scoremid span {
+  font-size: 13px;
+  color: #615c55;
+}
+.cjm-vx__resultsbody {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+.cjm-vx__topics {
+  margin: 8px 0 18px;
+  padding: 0;
+  list-style: none;
+}
+.cjm-vx__topics li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13.5px;
+}
+.cjm-vx__topicname {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cjm-vx__topictrack {
+  flex: 0 0 110px;
+  height: 7px;
+  border-radius: 4px;
+  background: #e3e5e8;
+  overflow: hidden;
+}
+.cjm-vx__topicfill {
+  display: block;
+  height: 7px;
+}
+.cjm-vx__topicnum {
+  flex: 0 0 auto;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.cjm-vx__rubi {
+  margin: 18px 0;
+  padding: 16px 18px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 10px;
+  background: #fffcf8;
+}
+.cjm-vx__fb {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 0;
+}
+.cjm-vx__resultsfoot {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.cjm-vx__pos {
+  margin: 10px 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+.cjm-vx__rvfilters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.cjm-vx__badge {
+  display: inline-block;
+  margin: 4px 0 12px;
+  padding: 3px 10px;
+  border: 1px solid var(--cjm-badge-edge);
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: var(--cjm-body);
+}
+
+/* A tutorial page's demo of the control it describes. */
+.cjm-vx__demo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 0;
+}
+.cjm-vx__demo .cjm-vx__navbtn {
+  display: inline-block;
+}
+.cjm-vx__demo--timer {
+  gap: 8px;
+  font-size: 12.5px;
+  color: #42464f;
+}
+.cjm-vx__demo--timer b {
+  font-variant-numeric: tabular-nums;
+}

@@ -83,7 +83,7 @@ export const JEFF_MVP_SUBPAGES = [
   { page: 'practice-session', label: 'Question set', from: 'practice', ported: false },
   { page: 'flashcard-topic', label: 'Flashcards topic', from: 'flashcards', ported: true },
   { page: 'flashcard-study', label: 'Study session', from: 'flashcards', ported: false },
-  { page: 'exam-session', label: 'Simulated exam', from: 'exam-simulator', ported: false },
+  { page: 'exam-session', label: 'Simulated exam', from: 'exam-simulator', ported: true },
   { page: 'course', label: 'Lesson', from: 'learn', ported: false },
 ] as const
 
@@ -9638,10 +9638,19 @@ export const JEFF_MVP_EXAM_SESSION_COPY = {
   /* --- tutorial and exam --- */
   back: 'Back',
   next: 'Next',
-  backArrow: '← Back',
-  nextArrow: 'Next →',
   startTest: 'Start the Test',
+  /**
+   * ⚠ EACH TUTORIAL PAGE DEMONSTRATES THE CONTROL IT DESCRIBES, inside the
+   * body — page 1 shows the nav buttons, page 2 the section clock, page 3 the
+   * flag. The FOOTER is always a plain Back / Next (Back / Start the Test on
+   * the last). The first pass put the arrows in the footer and the flag in
+   * the body, which read fine and was his layout turned inside out: a
+   * tutorial that tells you about a button without showing it is just prose.
+   */
+  demoBackArrow: '← Back',
+  demoNextArrow: 'Next →',
   flagged: 'Flagged',
+  flaggedSample: 'Question 7',
   skipPreview: 'Skip to results (preview)',
   answeredFmt: (answered: number, total: number, flagged: number) =>
     `${answered} of ${total} answered · ${flagged} flagged`,

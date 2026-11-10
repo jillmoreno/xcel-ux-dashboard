@@ -25,6 +25,7 @@ import { CompassJeffMvpPlanner } from './CompassJeffMvpPlanner'
 import { CompassJeffMvpFlashcards } from './CompassJeffMvpFlashcards'
 import { CompassJeffMvpSimulator } from './CompassJeffMvpSimulator'
 import { CompassJeffMvpFlashcardTopic } from './CompassJeffMvpFlashcardTopic'
+import { CompassJeffMvpExamSession } from './CompassJeffMvpExamSession'
 import './compassJeffMvp.css'
 
 /**
@@ -79,6 +80,20 @@ export function CompassJeffMvpShell({
    *  would have meant two rails to keep in step. */
   readiness?: 'jeff' | 'refined'
 }) {
+  /* ⚠ THE SIMULATED EXAM TAKES THE WHOLE SURFACE, RAIL INCLUDED. Every other
+     page of his MVP renders beside the Compass rail; this one must not. It is
+     imitating a Pearson VUE test centre, and a Compass sidebar down the left
+     breaks that on the first screen — which is the one thing the simulator
+     exists to get right. Same decision `CompassWorkspace` records for
+     Anjani's session takeover. */
+  if (page === 'exam-session') {
+    return (
+      <div className="cjm cjm-shell">
+        <CompassJeffMvpExamSession onSelectPage={onSelectPage} />
+      </div>
+    )
+  }
+
   return (
     <div className="cjm cjm-shell">
       <CompassJeffMvpRail page={page} onSelectPage={onSelectPage} />

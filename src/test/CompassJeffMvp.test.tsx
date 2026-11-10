@@ -13,7 +13,12 @@ import { CompassJeffMvpPrep } from '@/components/learning/CompassJeffMvpPrep'
 import { CompassJeffMvpPlanner } from '@/components/learning/CompassJeffMvpPlanner'
 import { CompassJeffMvpFlashcards } from '@/components/learning/CompassJeffMvpFlashcards'
 import { CompassJeffMvpSimulator } from '@/components/learning/CompassJeffMvpSimulator'
+import { CompassJeffMvpFlashcardTopic } from '@/components/learning/CompassJeffMvpFlashcardTopic'
+import { CompassJeffMvpExamSession } from '@/components/learning/CompassJeffMvpExamSession'
 import {
+  JEFF_MVP_EXAM_SESSION as EXS,
+  JEFF_MVP_EXAM_SESSION_COPY as XCOPY,
+  JEFF_MVP_FC_TOPIC as FTOPIC,
   JEFF_MVP_FLASHCARDS as FC,
   JEFF_MVP_FLASHCARDS_COPY as FCOPY,
   JEFF_MVP_LEARN as LEARN,
@@ -86,6 +91,8 @@ const renderPrep = () => wrap(<CompassJeffMvpPrep />)
 const renderPlanner = () => wrap(<CompassJeffMvpPlanner />)
 const renderFlashcards = () => wrap(<CompassJeffMvpFlashcards />)
 const renderSimulator = () => wrap(<CompassJeffMvpSimulator />)
+const renderFcTopic = () => wrap(<CompassJeffMvpFlashcardTopic />)
+const renderExamSession = () => wrap(<CompassJeffMvpExamSession />)
 
 function renderPractice() {
   return render(
@@ -946,5 +953,127 @@ describe('Jeff’s Compass MVP — the sub-pages', () => {
   it('names the page each is reached from', () => {
     const railPages = JEFF_MVP_PAGES.map((p) => p.page)
     for (const sub of JEFF_MVP_SUBPAGES) expect(railPages).toContain(sub.from)
+  })
+})
+
+describe('Jeff’s Compass MVP — the Flashcards topic', () => {
+  it('renders every string his page renders', () => {
+    const { container } = renderFcTopic()
+    const mine = flat(container.textContent ?? '')
+    expect(parity.flashcardTopic.filter((s) => !mine.includes(flat(s)))).toEqual([])
+  })
+
+  it('shows "due" only when something is due', () => {
+    /* A row reading "9 cards · 0 due" would make nothing look like
+       something — his `hasDue`. */
+    const none = FTOPIC.subs.find((s) => !s.hasDue)!
+    const some = FTOPIC.subs.find((s) => s.hasDue)!
+    expect(none.due).toBe(0)
+    expect(some.due).toBeGreaterThan(0)
+    renderFcTopic()
+    expect(screen.getByText(`${some.cards} cards · ${some.due} due`)).toBeInTheDocument()
+    expect(screen.getByText(`${none.cards} cards`)).toBeInTheDocument()
+  })
+
+  it('carries a breadcrumb, because it has no rail row', () => {
+    const { container } = renderFcTopic()
+    expect(container.querySelector('.cjm-crumb')).toBeTruthy()
+  })
+})
+
+describe('Jeff’s Compass MVP — the simulated exam', () => {
+  const user = () => userEvent.setup()
+
+  it('walks all nine of his screens, each matching his render', async () => {
+    /* ⚠ NINE SCREENS, and the suite walks the whole flow rather than
+       sampling: intro · terms · three tutorial pages · exam · done ·
+       results · review. The two ports before this one each shipped with a
+       gap found by walking everything. */
+    const u = user()
+    const { container } = renderExamSession()
+    const check = (key: keyof typeof parity) => {
+      const mine = flat(container.textContent ?? '')
+      expect((parity[key] as string[]).filter((s) => !mine.includes(flat(s)))).toEqual([])
+    }
+    check('examSession_intro')
+    await u.click(screen.getByRole('button', { name: XCOPY.beginExam }))
+    check('examSession_terms')
+    await u.click(screen.getByRole('checkbox'))
+    await u.click(screen.getByRole('button', { name: XCOPY.continueLabel }))
+    check('examSession_tut1')
+    await u.click(screen.getByRole('button', { name: new RegExp(`^${XCOPY.next}$`) }))
+    check('examSession_tut2')
+    await u.click(screen.getByRole('button', { name: new RegExp(`^${XCOPY.next}$`) }))
+    check('examSession_tut3')
+    await u.click(screen.getByRole('button', { name: XCOPY.startTest }))
+    check('examSession_exam')
+    await u.click(screen.getByRole('button', { name: XCOPY.skipPreview }))
+    check('examSession_done')
+    await u.click(screen.getByRole('button', { name: XCOPY.reveal }))
+    check('examSession_results')
+    await u.click(screen.getByRole('button', { name: XCOPY.reviewWithRubi }))
+    check('examSession_review')
+  })
+
+  it('keeps Continue disabled until the terms are accepted', async () => {
+    const u = user()
+    renderExamSession()
+    await u.click(screen.getByRole('button', { name: XCOPY.beginExam }))
+    expect(screen.getByRole('button', { name: XCOPY.continueLabel })).toBeDisabled()
+    await u.click(screen.getByRole('checkbox'))
+    expect(screen.getByRole('button', { name: XCOPY.continueLabel })).not.toBeDisabled()
+  })
+
+  it('holds the score back behind a Reveal, as his does', async () => {
+    /* ⚠ The withheld beat is the thing being simulated. Collapsing "done"
+       into "results" would remove it. */
+    const u = user()
+    renderExamSession()
+    await u.click(screen.getByRole('button', { name: XCOPY.beginExam }))
+    await u.click(screen.getByRole('checkbox'))
+    await u.click(screen.getByRole('button', { name: XCOPY.continueLabel }))
+    await u.click(screen.getByRole('button', { name: new RegExp(`^${XCOPY.next}$`) }))
+    await u.click(screen.getByRole('button', { name: new RegExp(`^${XCOPY.next}$`) }))
+    await u.click(screen.getByRole('button', { name: XCOPY.startTest }))
+    await u.click(screen.getByRole('button', { name: XCOPY.skipPreview }))
+    expect(screen.queryByText(`${EXS.results.pct}%`)).toBeNull()
+    await u.click(screen.getByRole('button', { name: XCOPY.reveal }))
+    expect(screen.getByText(`${EXS.results.pct}%`)).toBeInTheDocument()
+  })
+
+  it('scores his fixed sample at 6 of 19', () => {
+    /* ⚠ No `Math.random` anywhere on his page — "Skip to results" fills a
+       FIXED nineteen-answer array. That determinism is what makes a results
+       screen checkable at all. */
+    expect(EXS.results.right).toBe(6)
+    expect(EXS.results.total).toBe(19)
+    expect(EXS.results.pct).toBe(32)
+  })
+
+  it('asks before it explains, in the guided review', async () => {
+    /* ⚠ Showing the prompt and the explanation together turns a tutor into a
+       mark scheme. His `rvHidden` keeps the second behind a click. */
+    const u = user()
+    renderExamSession()
+    for (const step of [XCOPY.beginExam]) await u.click(screen.getByRole('button', { name: step }))
+    await u.click(screen.getByRole('checkbox'))
+    await u.click(screen.getByRole('button', { name: XCOPY.continueLabel }))
+    await u.click(screen.getByRole('button', { name: new RegExp(`^${XCOPY.next}$`) }))
+    await u.click(screen.getByRole('button', { name: new RegExp(`^${XCOPY.next}$`) }))
+    await u.click(screen.getByRole('button', { name: XCOPY.startTest }))
+    await u.click(screen.getByRole('button', { name: XCOPY.skipPreview }))
+    await u.click(screen.getByRole('button', { name: XCOPY.reveal }))
+    await u.click(screen.getByRole('button', { name: XCOPY.reviewWithRubi }))
+    expect(screen.getByText(EXS.review.prompt)).toBeInTheDocument()
+    expect(screen.queryByText(EXS.review.explain)).toBeNull()
+    await u.click(screen.getByRole('button', { name: XCOPY.walkMeThrough }))
+    expect(screen.getByText(EXS.review.explain)).toBeInTheDocument()
+  })
+
+  it('renders without the Compass rail', () => {
+    /* ⚠ A sidebar down the left breaks the simulation on the first screen. */
+    const { container } = renderShell('exam-session')
+    expect(container.querySelector('.cjm-rail')).toBeNull()
+    expect(container.querySelector('.cjm-vx')).toBeTruthy()
   })
 })
