@@ -4604,10 +4604,11 @@ the Design bar, which is Jill's file, so for now they are dropped.
   Certification Statement, has nothing to sign, so it says "completed by".
 - **Link out is the only pattern (2026-11-10, Afsana).** The Design bar's
   **Affidavit pattern** offers Link out alone; Pagination is no longer a
-  choice but part of the forms that need it: after the course exam (where
-  CO, CT, MN, WV and WI give the student and the exam monitor a page each)
-  and any `noLink` form, the form shows in full, a page at a time. Before
-  the course begins and before the course exam, every form links out. The
+  choice but part of the forms that need it: where the student and the
+  exam monitor each have a page (CO, CT, MN, WV and WI after the course
+  exam) and any `noLink` form, the form shows in full, a page at a time.
+  Every other form links out, in all three moments — California, Illinois,
+  Ohio and New York after the exam included (Afsana, same day). The
   same day the KY, NV and OR enrollment agreements stopped keeping their last
   page in the modal (`linkKeep` removed): "By clicking on the confirmation
   button below, you agree to the terms of this Enrollment Agreement." and the

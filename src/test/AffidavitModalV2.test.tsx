@@ -201,10 +201,21 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(agree.disabled).toBe(false)
   })
 
-  it('has no Link out after the course exam — it shows as Pagination', () => {
-    render(<AffidavitModalV2 onClose={() => {}} moment="post" state="IL" />)
-    expect(screen.queryByText(/I have read .* and swear/)).toBeNull()
-    expect(document.querySelectorAll('.aff2-prog i').length).toBe(FORMS.IL_POST!.pages.length)
+  /* 2026-11-10, Afsana: after the exam, only the forms with an exam monitor's
+     page show in full; the rest link out like every other moment. */
+  it('links out after the course exam too, unless the exam monitor has a page', () => {
+    for (const state of ['CA', 'IL', 'OH', 'NY']) {
+      const { unmount } = render(<AffidavitModalV2 onClose={() => {}} moment="post" state={state} />)
+      expect(screen.getByLabelText(/I have read .* and swear/), state).toBeTruthy()
+      expect(document.querySelector('.aff2-prog'), state).toBeNull()
+      unmount()
+    }
+    for (const state of ['CO', 'CT', 'MN', 'WV', 'WI']) {
+      const { unmount } = render(<AffidavitModalV2 onClose={() => {}} moment="post" state={state} />)
+      expect(screen.queryByLabelText(/I have read .* and swear/), state).toBeNull()
+      expect(document.querySelector('.aff2-prog'), state).not.toBeNull()
+      unmount()
+    }
   })
 
   it('pre-fills the learner and locks today’s date', () => {

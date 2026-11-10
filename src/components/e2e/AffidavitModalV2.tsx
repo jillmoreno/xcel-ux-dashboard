@@ -402,9 +402,10 @@ export function AffidavitModalV2({
   const form = resolved.form && middleFlag === 'hide' ? withoutMiddle(resolved.form) : resolved.form
   /* LINK OUT IS THE PATTERN (2026-11-10, Afsana): the Design bar's Pagination
      choice is gone. Pagination is not a choice but part of the forms that
-     need it — after the course exam, where the student and the exam monitor
-     each have a page (CO, CT), and any `noLink` form — which show in full. */
-  const pattern: AffidavitPattern = moment === 'post' || form?.noLink ? 'page' : 'link'
+     need it — where the student and the exam monitor each have a page (CO,
+     CT, MN, WV, WI after the exam), and any `noLink` form — which show in
+     full. Every other form links out, after the exam too (CA, IL, OH, NY). */
+  const pattern: AffidavitPattern = form?.noLink || form?.pages.some((p) => p.who === 'proctor') ? 'page' : 'link'
   const title = form
     ? form.title
     : entry

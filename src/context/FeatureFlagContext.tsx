@@ -2579,7 +2579,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Affidavit pattern',
     description:
-      'How V2 presents the affidavit: Link out — the document as a link, an “I have read” checkbox and the fields. The only pattern since 2026-11-10 (Afsana): Pagination is no longer a choice, only part of the forms that need it — after the course exam, where the student and the exam monitor each have a page, the form shows in full, a page at a time.',
+      'How V2 presents the affidavit: Link out — the document as a link, an “I have read” checkbox and the fields. The only pattern since 2026-11-10 (Afsana): Pagination is no longer a choice, only part of the forms that need it — where the student and the exam monitor each have a page (after the course exam in CO, CT, MN, WV and WI), the form shows in full, a page at a time.',
     variants: [{ value: 'link', label: 'Link out' }],
     defaultVariant: 'link',
     defaultEnabled: true,
