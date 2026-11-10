@@ -4613,7 +4613,9 @@ the Design bar, which is Jill's file, so for now they are dropped.
   page in the modal (`linkKeep` removed): "By clicking on the confirmation
   button below, you agree to the terms of this Enrollment Agreement." and the
   "I received a copy of the catalog…" bullets are in the document the link
-  opens. Ohio's registration and Minnesota's pre-exam form still keep theirs.
+  opens. So, later that day, does Minnesota's pre-exam Student Attestation
+  (and Ohio's registration's last page, empty by then): **no form keeps any
+  of its document in the modal** — `linkKeep` is unused.
 - **Smaller fixes (2026-11-09, Afsana).** Ohio's registration (before the
   course) loses its "TO BE COMPLETED BY STUDENT:" heading — the banner says
   it. California's after-exam affidavit loses the red box round the name and

@@ -82,6 +82,7 @@ export type AffForm = {
   docHeader?: string; title: string; source?: string; note?: string
   pages: AffPage[]; fields: AffField[]; after?: AffBlock[]
   agreeLabel?: string; flagFields?: string[]; noPrefill?: string[]; lock?: string[]
+  /** A page of the document kept in the modal in Link out. No form uses it since 2026-11-10 (Afsana): the document's text is behind its link. */
   linkKeep?: number; noLink?: boolean; proctorWord?: string; proctorBanner?: string; lang?: string
   /** The whole form is the student's: one "Must be completed by the student" banner at the top (non-state-specific forms, 2026-11-09). */
   who?: "student"
@@ -388,7 +389,6 @@ FORMS.NV_PRE={
     {id:'sig',label:'Student Signature',required:true,placeholder:'Type your full name',ac:'name'},
     pick('agree')
   ],
-  linkKeep:3,
   agreeLabel:'I Attest and Confirm',
   flagFields:['agree'],
   note:'Fields follow the Word doc’s student section, using the same name and address fields as the other states. Last 4 of SSN must be exactly 4 digits. The "I confirm that the above information is accurate" checkbox (highlighted in red) comes after Student Signature, and the button reads "I Attest and Confirm".'
@@ -510,8 +510,7 @@ FORMS.MN_EXAM={
   fields:[FORMS.KY_PRE.fields[1],FORMS.KY_PRE.fields[2],{id:'date',type:'date',label:"Today's Date",required:true},FORMS.KY_PRE.fields[0]],
   flagFields:['agree'],
   noPrefill:['first','middle','last','suffix'],
-  linkKeep:2,
-  note:'The student’s typed name acts as the signature (the doc’s "Student E-Signature" heading is dropped, 2026-11-09); the doc has no separate signature line. In Link out, the Student Attestation stays in the modal. Because the typed name is the signature, the name fields are not pre-filled. The "I confirm that the above information is accurate" checkbox (highlighted in red) is the last field.'
+  note:'The student’s typed name acts as the signature (the doc’s "Student E-Signature" heading is dropped, 2026-11-09); the doc has no separate signature line. In Link out, the Student Attestation is in the linked document only (2026-11-10). Because the typed name is the signature, the name fields are not pre-filled. The "I confirm that the above information is accurate" checkbox (highlighted in red) is the last field.'
 };
 FORMS.CA_POST_LH={
   docHeader:'California Prelicensing Affidavit',

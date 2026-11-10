@@ -330,10 +330,17 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
 
   /* 2026-11-10, Afsana: in Link out the enrollment agreements' "By clicking on
      the confirmation button below…" is left to the linked document. */
+  it('keeps none of a document’s text in the modal in Link out — Minnesota’s Student Attestation included', () => {
+    expect(Object.entries(FORMS).filter(([, f]) => f!.linkKeep != null).map(([k]) => k)).toEqual([])
+    render(<AffidavitModalV2 onClose={() => {}} moment="exam" state="MN" />)
+    expect(screen.queryByText(/I declare that I will personally complete this exam/)).toBeNull()
+    expect(screen.getByLabelText(/^Legal First Name/)).toBeTruthy() // the fields stay
+    expect(openDoc().getByText(/I declare that I will personally complete this exam/)).toBeTruthy()
+  })
+
   it('Link out leaves the enrollment agreements’ last page — the sentence and its bullets — to the linked document', () => {
     const SENTENCE = /By clicking on the confirmation button below/
     for (const state of ['KY', 'NV', 'OR']) {
-      expect(FORMS[`${state}_PRE`]!.linkKeep, state).toBeUndefined()
       const { unmount } = render(<AffidavitModalV2 onClose={() => {}} moment="pre" state={state} />)
       expect(screen.queryByText(SENTENCE), state).toBeNull()
       expect(screen.queryByText(/I received a copy of the catalog/), state).toBeNull()
