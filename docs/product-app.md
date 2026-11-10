@@ -4590,9 +4590,9 @@ the Design bar, which is Jill's file, so for now they are dropped.
   **Every other form, in all three moments, is the student's alone** and now
   carries the same "Must be completed by the student" banner once, at the
   top (first page in Pagination, above the link in Link out; `who` on the
-  form). Because the banner says whose the fields are, those forms' signature
-  box is plain **Signature** — the state-specific forms keep **Student
-  Signature**, beside a proctor's. And **no form keeps a "Student
+  form). Because a banner says whose the fields are, **every signature box
+  is plain Signature** — the state-specific forms too, where the student
+  page's banner says it (Afsana, same day). And **no form keeps a "Student
   E-Signature:" heading**, state-specific ones included: the banner, the
   name block and the signature box already say it. Done as a pass at the end
   of `affidavitForms.ts`, so the explorer's text above it stays verbatim.

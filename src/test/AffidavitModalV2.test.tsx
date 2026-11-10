@@ -250,10 +250,10 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
      documents' own labels, in the documents' order — with one exception since
      2026-11-06: the student's name and signature are the standard block every
      signed form uses (First / Middle / Last Name, pre-filled, then an empty
-     Student Signature), in the place of the document's own name and signature.
+     Signature), in the place of the document's own name and signature.
      The product's "I confirm that the above information is accurate" is kept
      on purpose and left out of these lists. */
-  const SIGNER = ['Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'Student Signature']
+  const SIGNER = ['Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'Signature']
   const STATE_DOCUMENT_FIELDS: Record<string, string[]> = {
     NY_POST: [...SIGNER, 'Today’s Date'],
     CO_POST: ['Course Name', 'Date of Pre-licensing Final Exam', ...SIGNER, 'Date', 'Relationship to Examinee', 'Proctor Address', 'Proctor Name (print)', 'Proctor Signature'],
@@ -263,7 +263,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
       'Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'License #', 'Date of Birth',
       'Business Address', 'City', 'State', 'Zip Code',
       'Mailing Address (if different than above)', 'City', 'State', 'Zip Code',
-      'Daytime Phone', 'E-mail', 'Student Signature', 'Date',
+      'Daytime Phone', 'E-mail', 'Signature', 'Date',
       'Proctor’s Full Legal Name', 'Note your type of relationship to the student.', 'Proctor Signature', 'Date', 'Employer & Job Title',
       'Business Address', 'City', 'State', 'Zip Code', 'Business/Daytime Phone', 'E-mail',
     ],
@@ -304,7 +304,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect((screen.getByLabelText(/^Legal First Name/) as HTMLInputElement).value).toBe('Jordan')
     expect((screen.getByLabelText(/^Legal Middle Name/) as HTMLInputElement).value).toBe('Lee')
     expect((screen.getByLabelText(/^Legal Last Name/) as HTMLInputElement).value).toBe('Navarro')
-    expect((screen.getByLabelText(/Student Signature/) as HTMLInputElement).value).toBe('')
+    expect((screen.getByLabelText(/^Signature/) as HTMLInputElement).value).toBe('')
     expect(screen.queryByText('Student E-Signature:')).toBeNull() // dropped everywhere, 2026-11-09
     expect((screen.getByLabelText(/Today.s Date/) as HTMLInputElement).readOnly).toBe(true)
   })
@@ -365,7 +365,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     await ready()
     // The standard name block since 2026-11-06: pre-filled, so confirmed.
     expect((screen.getByLabelText(/^Legal First Name/) as HTMLInputElement).value).toBe('Jordan')
-    expect(screen.queryByLabelText(/Student Signature/)).toBeNull()
+    expect(screen.queryByLabelText(/^Signature/)).toBeNull()
     const agree = screen.getByRole('button', { name: 'I Agree' }) as HTMLButtonElement
     expect(agree.disabled).toBe(true)
     fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
@@ -442,7 +442,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
 
   /* WHOSE FIELDS (2026-11-09, Afsana). The six state-specific affidavits keep
      their student / proctor pages; every other form, all three moments, is
-     the student's alone and says so once at the top — so its signature box is
+     the student's alone and says so once at the top. Every signature box is
      plain "Signature", and no form keeps a "Student E-Signature:" heading. */
   it('every non-state-specific form says once, at the top, that the student completes it', () => {
     expect(STATE_SPECIFIC_FORMS).toEqual(['CO_POST', 'CT_POST', 'MN_POST', 'NY_POST', 'WI_POST', 'WV_POST'])
@@ -450,7 +450,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     for (const [key, f] of Object.entries(FORMS)) {
       const stateSpecific = STATE_SPECIFIC_FORMS.includes(key)
       expect(f!.who, key).toBe(stateSpecific ? undefined : 'student')
-      for (const l of sigLabels(key)) expect(l, key).toBe(stateSpecific ? 'Student Signature' : 'Signature')
+      for (const l of sigLabels(key)) expect(l, key).toBe('Signature')
       // Headings live in page blocks and in field blocks, at any depth.
       expect(JSON.stringify([f!.pages, f!.fields, f!.after]), key).not.toMatch(/"h4?":"Student E-Signature/)
     }

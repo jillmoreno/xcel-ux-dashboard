@@ -1000,21 +1000,22 @@ for (const key of [...SIGNED_FORMS, ...NAMED_FORMS]) {
    six after-exam forms below) split into student and proctor pages, each with
    its "Must be completed by the student / proctor" banner. Every other form —
    all three moments — is the student's alone, so it gets the same student
-   banner once, at the top. The banner says whose the fields are, so on those
-   forms the signature box is plain "Signature", not "Student Signature".
+   banner once, at the top. The banner says whose the fields are, so the
+   signature box is plain "Signature", not "Student Signature" — on the
+   state-specific forms too, where the student page's banner says it
+   (Afsana, same day).
    And no form keeps a "Student E-Signature:" heading: the banner, the name
    block and the signature box already say it. */
 export const STATE_SPECIFIC_FORMS = ['CO_POST','CT_POST','MN_POST','NY_POST','WI_POST','WV_POST']
 const eSig = (b: AffBlock) => /^Student E-Signature:?$/.test((b.h ?? b.h4 ?? '').trim())
-const unsign = (list: AffField[] | undefined, plain: boolean): AffField[] | undefined => list?.flatMap((x) => {
+const unsign = (list: AffField[] | undefined): AffField[] | undefined => list?.flatMap((x) => {
   if (x.block && eSig(x.block)) return []
-  if (x.flagGroup) return [{ ...x, flagGroup: unsign(x.flagGroup, plain) }]
-  if (x.row) return [{ ...x, row: unsign(x.row, plain) }]
-  return [plain && x.id === 'sig' ? { ...x, label: 'Signature' } : x]
+  if (x.flagGroup) return [{ ...x, flagGroup: unsign(x.flagGroup) }]
+  if (x.row) return [{ ...x, row: unsign(x.row) }]
+  return [x.id === 'sig' ? { ...x, label: 'Signature' } : x]
 })
 for (const [key, form] of Object.entries(FORMS) as [string, AffForm][]) {
-  const plain = !STATE_SPECIFIC_FORMS.includes(key)
-  if (plain) form.who = 'student'
-  form.pages = form.pages.map((p) => ({ ...p, blocks: p.blocks?.filter((b) => !eSig(b)), fields: unsign(p.fields, plain) }))
-  form.fields = unsign(form.fields, plain) ?? []
+  if (!STATE_SPECIFIC_FORMS.includes(key)) form.who = 'student'
+  form.pages = form.pages.map((p) => ({ ...p, blocks: p.blocks?.filter((b) => !eSig(b)), fields: unsign(p.fields) }))
+  form.fields = unsign(form.fields) ?? []
 }
