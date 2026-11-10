@@ -4602,23 +4602,30 @@ the Design bar, which is Jill's file, so for now they are dropped.
   its "Student Legal Name (first and last name)" heading, and Ohio's
   after-exam affidavit loses the red box round the whole form. "The date on
   this affidavit is the course completion date." is smaller print
-  (`aff2-fine`) on every form that has it (`COMPLETION_DATE_NOTE`).
-- ⚠ **WAITING ON NICK AND AMRITA (2026-11-06)** — nothing below is changed
-  until they answer:
-  - **Addresses, student and proctor.** Whether, and how, to standardize
-    them. The documents differ: Ohio's registration asks for one "Full
-    Residence(Home) Address" line and the KY, NV and OR agreements a
-    "Residence Address" (built as Address Line 1 / 2, City, State, Zip, and
-    labelled without "Residence"); Minnesota after the exam asks for Business
-    and Mailing addresses split into City, State and Zip Code; the proctor
-    address is one line on CO and CT ("street address, city, state, zip
-    code") and WI ("Proctor Full Address"), split on Minnesota.
-  - **Proctor name and signature.** Whether they are standardized too, and
-    if so whether they match the student's (Legal First / Middle / Last Name
-    and a typed signature). Today they follow each document: CO and CT
-    "Proctor Name (print)" and "Proctor Signature", WV and WI a "Proctor
-    E-Signature:" label over "Proctor Full Name", Minnesota "Proctor's Full
-    Legal Name" and "Proctor Signature".
+  (`aff2-fine`, black — not grey, 2026-11-09) on every form that has it
+  (`COMPLETION_DATE_NOTE`).
+- **The proctor, the same way (2026-11-09, Afsana)** — this settled what
+  had been waiting on Nick and Amrita since 2026-11-06. On the five forms
+  with a proctor (`PROCTOR_FORMS`: CO, CT, MN, WV, WI after the exam) the
+  proctor's **name** is Legal First / Middle / Last Name (never pre-filled;
+  Middle follows the Design bar's toggle), the **signature** is a
+  "Signature" box (where the document had its signature line, or after the
+  names on WV and WI, whose "Proctor E-Signature:" heading went), and the
+  **address** is the student's five fields — Address Line 1, Address Line 2
+  (Optional), City, State, Zip. That replaced CO/CT's "Proctor Name (print)",
+  "Proctor Signature" and one-line "Proctor Address" with its "(street
+  address, city, state, zip code)" hint; WV/WI's "Proctor Full Name"; WI's
+  "Proctor Full Address"; Minnesota's "Proctor's Full Legal Name" and
+  split Business Address (kept as a "Business Address" heading over the
+  five fields). WI's "Proctor Phone Number" is unchanged. The same day CO
+  (and CT, its copy) lost the "Student Signature:" heading and the
+  underlined "To be completed and Signed by Exam Monitor" heading, CT lost
+  the "mm/dd/yyyy" hint under its exam date, and the course-completion-date
+  sentence went back to black (it stays the smaller size). **Still as the
+  documents have them:** the student's own address variants — Ohio's
+  registration ("Full Residence(Home) Address", built as the five fields) and
+  Minnesota's student Company & Address, Business and Mailing addresses
+  (split into City, State and Zip Code, no Line 2).
 - **Non-state specific** (`GEN`) — XCEL's Generic Terms and Conditions (before
   the course begins, English or Spanish by Affidavit language) and its PE
   General Attestation (before the course exam), from Afsana's "Non-State

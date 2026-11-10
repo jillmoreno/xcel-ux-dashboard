@@ -7,7 +7,7 @@ import { AffidavitModalV2 } from '@/components/e2e/AffidavitModalV2'
 import { resolveAffidavit, withoutMiddle } from '@/components/e2e/affidavitModalV2Util'
 import { MemoryRouter } from 'react-router-dom'
 import { FEATURE_FLAGS, FeatureFlagProvider, designControlsFor, useFeatureFlags } from '@/context/FeatureFlagContext'
-import { ENTRIES, FORMS, NAMED_FORMS, SIGNED_FORMS, COMPLETION_DATE_NOTE, SSN_REASON, STATE_SPECIFIC_FORMS, STATES, type AffField } from '@/data/affidavitForms'
+import { ENTRIES, FORMS, NAMED_FORMS, SIGNED_FORMS, COMPLETION_DATE_NOTE, PROCTOR_FORMS, SSN_REASON, STATE_SPECIFIC_FORMS, STATES, type AffField } from '@/data/affidavitForms'
 
 /**
  * AFFIDAVIT V2 — 2026-11-03, Afsana. The first change V2 makes: the modal
@@ -264,6 +264,39 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(screen.getByLabelText(/Last 4 of SSN/)).toBeTruthy()
   })
 
+  it('Colorado and Connecticut after the exam: no signature or exam-monitor headings, no date hint', () => {
+    for (const key of ['CO_POST', 'CT_POST']) {
+      const text = JSON.stringify(FORMS[key])
+      expect(text, key).not.toContain('Student Signature:')
+      expect(text, key).not.toContain('To be completed and Signed by Exam Monitor')
+      expect(text, key).not.toContain('street address, city, state, zip code')
+      expect(text, key).not.toContain('mm/dd/yyyy')
+    }
+  })
+
+  it('takes the proctor’s name, signature and address the way it takes the student’s — never pre-filled', async () => {
+    expect(PROCTOR_FORMS.sort()).toEqual(['CO_POST', 'CT_POST', 'MN_POST', 'WI_POST', 'WV_POST'])
+    for (const key of PROCTOR_FORMS) {
+      const ids = FORMS[key]!.pages.filter((p) => p.who === 'proctor').flatMap((p) => flatAll(p.fields)).map((x) => x.id)
+      for (const id of ['p_first', 'p_middle', 'p_last', 'p_sig']) expect(ids, `${key} ${id}`).toContain(id)
+      expect(ids, key).not.toContain('p_name')
+      expect(ids.indexOf('p_last'), key).toBeLessThan(ids.indexOf('p_sig'))
+      const labels = FORMS[key]!.pages.flatMap((p) => flatAll(p.fields)).map((x) => x.label ?? '')
+      expect(labels.filter((l) => /^Proctor/.test(l)), key).toEqual(key === 'WI_POST' ? ['Proctor Phone Number'] : [])
+      expect(JSON.stringify(FORMS[key]), key).not.toContain('Proctor E-Signature')
+    }
+    render(<AffidavitModalV2 onClose={() => {}} moment="post" state="WV" pattern="page" />)
+    // The student's names are pre-filled; on the next page the proctor's are not.
+    expect((screen.getByLabelText(/^Legal First Name/) as HTMLInputElement).value).toBe('Jordan')
+    fireEvent.change(screen.getByLabelText(/^Signature/), { target: { value: 'Jordan Navarro' } })
+    fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
+    await ready()
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.getByText('Must be completed by the proctor')).toBeTruthy()
+    expect((screen.getByLabelText(/^Legal First Name/) as HTMLInputElement).value).toBe('')
+    expect((screen.getByLabelText(/^Signature/) as HTMLInputElement).value).toBe('')
+  })
+
   it('sets the course-completion-date sentence in smaller print wherever it appears', () => {
     const withIt = Object.entries(FORMS).filter(([, f]) => JSON.stringify(f).includes(COMPLETION_DATE_NOTE)).map(([k]) => k)
     expect(withIt.length).toBeGreaterThanOrEqual(4)
@@ -281,21 +314,23 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
      The product's "I confirm that the above information is accurate" is kept
      on purpose and left out of these lists. */
   const SIGNER = ['Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'Signature']
+  /* And the proctor's name, signature and address the same way (2026-11-09). */
+  const ADDRESS = ['Address Line 1', 'Address Line 2 (Optional)', 'City', 'State', 'Zip']
   const STATE_DOCUMENT_FIELDS: Record<string, string[]> = {
     NY_POST: [...SIGNER, 'Today’s Date'],
-    CO_POST: ['Course Name', 'Date of Pre-licensing Final Exam', ...SIGNER, 'Date', 'Relationship to Examinee', 'Proctor Address', 'Proctor Name (print)', 'Proctor Signature'],
-    CT_POST: ['Course Name', 'Date of Prelicensing Final Exam', ...SIGNER, 'Date', 'Relationship to Examinee', 'Proctor Address', 'Proctor Name (print)', 'Proctor Signature'],
+    CO_POST: ['Course Name', 'Date of Pre-licensing Final Exam', ...SIGNER, 'Date', 'Relationship to Examinee', ...ADDRESS, ...SIGNER],
+    CT_POST: ['Course Name', 'Date of Prelicensing Final Exam', ...SIGNER, 'Date', 'Relationship to Examinee', ...ADDRESS, ...SIGNER],
     MN_POST: [
       'Name of Exam', 'Date & Time of Exam Completion', 'Company & Address where exam was completed', 'City', 'State', 'Zip Code',
       'Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'License #', 'Date of Birth',
       'Business Address', 'City', 'State', 'Zip Code',
       'Mailing Address (if different than above)', 'City', 'State', 'Zip Code',
       'Daytime Phone', 'E-mail', 'Signature', 'Date',
-      'Proctor’s Full Legal Name', 'Note your type of relationship to the student.', 'Proctor Signature', 'Date', 'Employer & Job Title',
-      'Business Address', 'City', 'State', 'Zip Code', 'Business/Daytime Phone', 'E-mail',
+      'Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'Note your type of relationship to the student.', 'Signature', 'Date', 'Employer & Job Title',
+      ...ADDRESS, 'Business/Daytime Phone', 'E-mail',
     ],
-    WI_POST: [...SIGNER, 'Today’s Date', 'Proctor Full Address', 'Proctor Phone Number', 'Proctor Full Name', 'Relationship to Examinee', 'Today’s Date'],
-    WV_POST: [...SIGNER, 'Relationship to Examinee', 'Proctor Full Name', 'Today’s Date'],
+    WI_POST: [...SIGNER, 'Today’s Date', ...ADDRESS, 'Proctor Phone Number', ...SIGNER, 'Relationship to Examinee', 'Today’s Date'],
+    WV_POST: [...SIGNER, 'Relationship to Examinee', ...SIGNER, 'Today’s Date'],
   }
   const flatAll = (l: AffField[] = []): AffField[] =>
     l.flatMap((x) => (x.flagGroup ? flatAll(x.flagGroup) : x.depGroup ? flatAll(x.items) : x.block ? [] : x.row ? x.row : [x]))

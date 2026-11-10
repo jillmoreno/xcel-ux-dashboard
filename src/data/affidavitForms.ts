@@ -627,14 +627,14 @@ FORMS.CO_POST={
       {id:'course',label:'Course Name',required:true,placeholder:'Course name'},
       {id:'examdate',type:'date',label:'Date of Pre-licensing Final Exam',required:true},
       {block:{p:'I affirm that I personally completed the entire study material of the course. I also affirm that I completed the exam without assistance from any course material, other than source material, or from any person(s).'}},
-      {block:{h4:'Student Signature:'}},
+      /* The document's "Student Signature:" heading is gone (2026-11-09, Afsana); CT follows, being a copy. */
       /* One field, as the document has it (2026-11-04); it was First / Middle / Last / Suffix. */
       {id:'fullname',label:'Student Full Name',required:true,placeholder:'Type your full name',ac:'name'},
       {id:'date',type:'date',label:'Date',required:true},
       FORMS.KY_PRE.fields[0]
     ]},
+    /* The underlined "To be completed and Signed by Exam Monitor" heading is gone (2026-11-09, Afsana): the banner above says it. */
     {who:'proctor',blocks:[],fields:[
-      {block:{h:'To be completed and Signed by Exam Monitor',u:true}},
       {id:'rel',type:'radio',label:'Relationship to Examinee',required:true,options:['Co-Worker (neither above or below the line of supervision)','Librarian','Licensed Agent']},
       /* One line, as the document has it (2026-11-04); it was Address Line 1 / 2, City, State and Zip. */
       {id:'p_addr',label:'Proctor Address',required:true,placeholder:'Street address, city, state, zip code',ac:'off',help:'street address, city, state, zip code'},
@@ -659,7 +659,7 @@ FORMS.CT_POST=(function(){
   c.docHeader='Connecticut Pre-licensing Insurance';
   c.title='Connecticut Pre-licensing Insurance - Affidavit of Personal Responsibility';
   c.source='Word doc · CT PE-Post Final Affidavit';
-  {const d=c.pages[0].fields.find(x=>x.id==='examdate');d.label='Date of Prelicensing Final Exam';d.help='mm/dd/yyyy';}
+  {const d=c.pages[0].fields.find(x=>x.id==='examdate');d.label='Date of Prelicensing Final Exam';} // its "mm/dd/yyyy" hint went 2026-11-09 (Afsana)
   const cert=c.pages[2].blocks[1];cert.p=cert.p.replace('Colorado Division of Insurance','Connecticut Department of Insurance');
   c.note='Same structure as Colorado’s affidavit: the student’s affirmation, the exam monitor (proctor) section, and the Student Certification Statement. The doc’s "Circle one" relationship becomes radio buttons, and the one-line proctor address is split into address fields.';
   c.note+=' The "I confirm that the above information is accurate" checkbox (highlighted in red) sits right above the Exam Monitor section.';
@@ -1018,6 +1018,50 @@ const unsign = (list: AffField[] | undefined): AffField[] | undefined => list?.f
   if (x.row) return [{ ...x, row: unsign(x.row) }]
   return [x.id === 'sig' ? { ...x, label: 'Signature' } : x]
 })
+/* ── THE PROCTOR, THE SAME WAY — 2026-11-09 (Afsana) ─────────────────────
+   Settles two of the questions that were waiting on Nick and Amrita: the
+   proctor's name, signature and address are taken exactly as the student's
+   are. Name: Legal First / Middle / Last Name (Middle follows the Design bar's
+   "Affidavit middle name"), never pre-filled — the learner's account is not
+   the proctor's. Signature: a "Signature" box to type their name in, where
+   the document had its signature line (CO, CT, MN) or right after the names
+   where it had none (WV, WI — whose "Proctor E-Signature:" heading goes, as
+   the student's did). Address: Address Line 1, Address Line 2 (Optional),
+   City, State, Zip — CO/CT's one line with its "(street address, city,
+   state, zip code)" and WI's "Proctor Full Address" alike; Minnesota's
+   proctor "Business Address" keeps that word as a heading over the same five
+   fields. The proctor banner says whose they are, so these labels do not
+   say "Proctor" (WI's "Proctor Phone Number" is unchanged). */
+const P_NAME_ROW: AffField = {row:[
+  {id:'p_first',label:'Legal First Name',required:true,placeholder:'Legal first name',ac:'off'},
+  {id:'p_middle',label:'Legal Middle Name',placeholder:'Legal middle name',ac:'off'},
+  {id:'p_last',label:'Legal Last Name',required:true,placeholder:'Legal last name',ac:'off'},
+]}
+const P_SIGNATURE: AffField = {id:'p_sig',label:'Signature',required:true,placeholder:'Type your full name',ac:'off'}
+const P_ADDRESS: AffField[] = [
+  {id:'p_addr1',label:'Address Line 1',required:true,placeholder:'Street address',ac:'off'},
+  {id:'p_addr2',label:'Address Line 2 (Optional)',placeholder:'Apt, suite, unit, etc.',ac:'off'},
+  {id:'p_city',label:'City',required:true,placeholder:'City',ac:'off'},
+  {id:'p_state',type:'select',label:'State',required:true,placeholder:'Select state',ac:'off',options:'AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY'.split(' ')},
+  {id:'p_zip',label:'Zip',required:true,placeholder:'ZIP code',ac:'off',inputmode:'numeric'},
+]
+const P_OLD_ADDR = ['p_bus_city', 'p_bus_state', 'p_bus_zip']
+export const PROCTOR_FORMS = Object.keys(FORMS).filter((k) => FORMS[k].pages.some((p) => p.who === 'proctor'))
+for (const key of PROCTOR_FORMS) {
+  const form = FORMS[key]
+  const lineSig = form.pages.some((p) => p.who === 'proctor' && (p.fields ?? []).some((x) => x.id === 'p_sig'))
+  form.pages = form.pages.map((p) => p.who !== 'proctor' || !p.fields ? p : { ...p, fields: p.fields.flatMap((x): AffField[] => {
+    if (x.block && /^Proctor E-Signature:?$/.test(x.block.h4 ?? '')) return []
+    if (x.id === 'p_name') return lineSig ? [P_NAME_ROW] : [P_NAME_ROW, P_SIGNATURE]
+    if (x.id === 'p_sig') return [P_SIGNATURE]
+    if (x.id === 'p_addr') return P_ADDRESS
+    if (x.id === 'p_bus_addr') return [{ block: { h4: 'Business Address' } }, ...P_ADDRESS]
+    if (x.id != null && P_OLD_ADDR.includes(x.id)) return []
+    if (x.row && x.row.every((y) => y.id != null && P_OLD_ADDR.includes(y.id))) return []
+    return [x]
+  }) })
+}
+
 /* And "The date on this affidavit is the course completion date." is set in
    smaller print wherever it appears (2026-11-09, Afsana): a side note, not a
    statement the student is signing. */

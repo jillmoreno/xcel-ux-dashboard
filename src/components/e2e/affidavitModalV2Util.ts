@@ -40,6 +40,6 @@ export function resolveAffidavit(
  *  middle name" set to Off (2026-11-06, undecided). */
 export function withoutMiddle(form: AffForm): AffForm {
   const strip = (l: AffField[] | undefined): AffField[] | undefined =>
-    l?.filter((x) => x.id !== 'middle').map((x) => (x.row ? { ...x, row: strip(x.row) } : x.flagGroup ? { ...x, flagGroup: strip(x.flagGroup) } : x))
+    l?.filter((x) => x.id !== 'middle' && x.id !== 'p_middle').map((x) => (x.row ? { ...x, row: strip(x.row) } : x.flagGroup ? { ...x, flagGroup: strip(x.flagGroup) } : x))
   return { ...form, fields: strip(form.fields) ?? [], pages: form.pages.map((p) => (p.fields ? { ...p, fields: strip(p.fields) } : p)) }
 }

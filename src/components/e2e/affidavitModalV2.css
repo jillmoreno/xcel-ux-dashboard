@@ -286,4 +286,4 @@
 .aff2-row:has(> :nth-child(3)) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
 /* Side notes under the fields, e.g. "The date on this affidavit is the course completion date." (2026-11-09). */
-.aff2-terms p.aff2-fine { font-size: 13px; color: var(--color-aff-hint); }
+.aff2-terms p.aff2-fine { font-size: 13px; }
