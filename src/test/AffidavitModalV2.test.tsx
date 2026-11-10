@@ -313,7 +313,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
     await ready()
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
-    expect(screen.getByText('Must be completed and signed by proctor')).toBeTruthy()
+    expect(screen.getByText('Must be completed and signed by the proctor')).toBeTruthy()
     expect((screen.getByLabelText(/^Legal First Name/) as HTMLInputElement).value).toBe('')
     expect((screen.getByLabelText(/^Signature/) as HTMLInputElement).value).toBe('')
   })
@@ -355,9 +355,9 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   /* 2026-11-10, Afsana: the proctor's banner names the document's word for
      them and, since every proctor page has a Signature, says "signed". */
   it('names the exam monitor on CO, CT and WI and the proctor on WV and MN', () => {
-    const word = (k: string) => FORMS[k]!.proctorWord ?? 'proctor'
+    const word = (k: string) => FORMS[k]!.proctorWord ?? 'the proctor'
     expect(['CO_POST', 'CT_POST', 'WI_POST'].map(word)).toEqual(['exam monitor', 'exam monitor', 'exam monitor'])
-    expect(['WV_POST', 'MN_POST'].map(word)).toEqual(['proctor', 'the proctor']) // MN: "by the proctor", as Afsana wrote it
+    expect(['WV_POST', 'MN_POST'].map(word)).toEqual(['the proctor', 'the proctor']) // "by the proctor" (2026-11-10)
     for (const key of PROCTOR_FORMS)
       expect(FORMS[key]!.pages.filter((p) => p.who === 'proctor').some((p) => flatAll(p.fields).some((x) => x.id === 'p_sig')), key).toBe(true)
   })

@@ -710,10 +710,11 @@ FORMS.CT_POST=(function(){
        Certification" heading. Relationship to Examinee is OCD's three
        choices, as radio buttons the way Colorado's are, without OCD's
        "(check one)". No Employer & Job Title (OCD has none). The address is
-       the standard five fields (OCD: proctor address, state, zip). Today's
+       the standard five fields (OCD: proctor address, city, state, zip). Today's
        Date is ours — OCD has no date for the exam monitor — pre-filled and
-       locked. ⚠ E-mail: OCD does not collect it; kept, as Email Address,
-       until that is decided. */
+       locked. ⚠ OPEN: OCD collects neither License # nor the proctor's
+       e-mail. Kept (as License # and Email Address) until it is decided
+       whether to keep them, make them optional, or drop them as OCD does. */
     {who:'proctor',blocks:[],fields:[
       {id:'p_name',label:'Proctor’s Full Legal Name',required:true,placeholder:'Proctor full legal name'},
       {id:'p_rel',type:'radio',label:'Relationship to Examinee',required:true,options:['Co-Worker (neither above or below the line of supervision)','Librarian','Neighbor']},
@@ -726,7 +727,6 @@ FORMS.CT_POST=(function(){
   ],
   fields:[],
   flagFields:['agree'],
-  proctorWord:'the proctor', // "Must be completed and signed by the proctor" (2026-11-10, Afsana)
   lock:['examdate','examtime','p_date'],
   note:'This is a generic proctor affidavit (Rev 1.17.23) with "Name of Exam" pre-filled for Minnesota Life, shown read-only. Two pages: the student’s section, then the proctor’s. Since 2026-11-10 its fields follow OCD and the standard fields, not the PDF: no Mailing Address and no Employer & Job Title. The "I confirm that the above information is accurate" checkbox ends the student section. Exam Completion Date and Time of Exam Completion are pre-filled and locked. The proctor’s Today’s Date is pre-filled to match the student’s and locked.'
   };

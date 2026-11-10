@@ -4604,7 +4604,7 @@ the Design bar, which is Jill's file, so for now they are dropped.
   Certification Statement, has nothing to sign, so it says "completed by".
   The proctor's page works the same way, naming the document's word for
   them: **"Must be completed and signed by exam monitor"** on CO, CT and WI,
-  **"Must be completed and signed by proctor"** on WV and MN (`proctorWord`;
+  **"Must be completed and signed by the proctor"** on WV and MN (`proctorWord`;
   2026-11-10, Afsana — `proctorBanner` is gone).
 - **Minnesota after the exam follows OCD (2026-11-10, Afsana)** — where
   the PDF and OCD (what production shows today) differ, OCD and the standard
@@ -4623,13 +4623,13 @@ the Design bar, which is Jill's file, so for now they are dropped.
   Co-Worker / Librarian / Neighbor, without OCD's "(check one)", as Colorado
   has it — not the PDF's open "Note your type of relationship to the
   student."; **no Employer & Job Title** (OCD has none); the standard five
-  address fields (OCD: proctor address, state, zip — no city); Today's Date,
+  address fields (OCD: proctor address, city, state, zip); Today's Date,
   pre-filled and locked, though OCD has no date for the exam monitor; Phone
   Number.
-  - ⚠ **License #** stays, but OCD does not collect a license number and
-    nobody on the design side knows why.
-  - ⚠ **The proctor's email** stays, as Email Address, but OCD does not
-    collect it. Undecided.
+  - ⚠ **OPEN: License # and the proctor's email.** OCD collects neither
+    (nobody on the design side knows why it skips the license). Both stay
+    for now, required. To decide: keep them, make them optional, or drop
+    them as OCD does.
 - **Titles (2026-11-10, Afsana).** Minnesota's before-course form is
   "Minnesota Prelicensing Terms and Conditions Pre-Course Affidavit"; the
   non-state-specific pre-exam form is "Prelicensing Education Insurance -

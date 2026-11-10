@@ -354,9 +354,9 @@ function WhoBanner({ who, form, signs }: { who?: 'student' | 'proctor'; form: Af
         flatList(signs).some((x) => x.id === 'sig')
         ? 'Must be completed and signed by the student'
         : 'Must be completed by the student'
-      : // The document's word for them — "exam monitor" on CO, CT and WI, "proctor" elsewhere —
+      : // The document's word for them — "exam monitor" on CO, CT and WI, "the proctor" on WV and MN —
         // and "signed" when they sign there, as the student's banner does (2026-11-10, Afsana).
-        `Must be completed${flatList(signs).some((x) => x.id === 'p_sig') ? ' and signed' : ''} by ${form.proctorWord ?? 'proctor'}`
+        `Must be completed${flatList(signs).some((x) => x.id === 'p_sig') ? ' and signed' : ''} by ${form.proctorWord ?? 'the proctor'}`
   return <div className="aff2-banner" role="note">{text}</div>
 }
 
