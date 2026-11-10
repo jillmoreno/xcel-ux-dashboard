@@ -4601,6 +4601,11 @@ the Design bar, which is Jill's file, so for now they are dropped.
   the rest keep "Must be completed by the student". On the state-specific
   forms it is per student page: Colorado's (and CT's) third page, the Student
   Certification Statement, has nothing to sign, so it says "completed by".
+- **Link out, enrollment agreements (2026-11-10, Afsana).** KY, NV and OR
+  keep their last page in the modal in Link out, less its "By clicking on the
+  confirmation button below, you agree to the terms of this Enrollment
+  Agreement." — that sentence is in the document the link opens (`docOnly`
+  on the block), and Pagination still shows it.
 - **Smaller fixes (2026-11-09, Afsana).** Ohio's registration (before the
   course) loses its "TO BE COMPLETED BY STUDENT:" heading — the banner says
   it. California's after-exam affidavit loses the red box round the name and

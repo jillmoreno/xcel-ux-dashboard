@@ -553,7 +553,9 @@ function AffidavitBody({
           {hasFields ? (
             <>
               <hr className="aff2-rule" />
-              {form.linkKeep != null ? <Blocks blocks={form.pages[form.linkKeep]?.blocks ?? []} /> : null}
+              {/* The kept page's own text, less what only the linked document says — KY/NV/OR's
+                  "By clicking on the confirmation button below…" (2026-11-10, Afsana). */}
+              {form.linkKeep != null ? <Blocks blocks={(form.pages[form.linkKeep]?.blocks ?? []).filter((b) => !b.docOnly)} /> : null}
               {form.pages.map((p, i) =>
                 p.fields ? (
                   <div key={i}>

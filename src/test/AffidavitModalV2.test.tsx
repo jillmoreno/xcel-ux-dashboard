@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AffidavitModal } from '@/components/e2e/AffidavitModal'
 import { AffidavitModalV2 } from '@/components/e2e/AffidavitModalV2'
@@ -305,6 +305,20 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     expect(screen.getByRole('note').textContent).toBe('Must be completed and signed by exam monitor')
     expect(screen.getByLabelText(/^Phone Number/)).toBeTruthy()
+  })
+
+  /* 2026-11-10, Afsana: in Link out the enrollment agreements' "By clicking on
+     the confirmation button below…" is left to the linked document. */
+  it('Link out leaves "By clicking on the confirmation button below" to the linked document', () => {
+    const SENTENCE = /By clicking on the confirmation button below/
+    for (const state of ['KY', 'NV', 'OR']) {
+      const { unmount } = render(<AffidavitModalV2 onClose={() => {}} moment="pre" state={state} pattern="link" />)
+      expect(screen.queryByText(SENTENCE), state).toBeNull()
+      expect(screen.getByText(/I received a copy of the catalog/), state).toBeTruthy() // the rest of the kept page stays
+      fireEvent.click(screen.getByRole('button', { name: new RegExp(FORMS[`${state}_PRE`]!.title) }))
+      expect(within(screen.getByRole('document')).getByText(SENTENCE), state).toBeTruthy()
+      unmount()
+    }
   })
 
   it('sets the course-completion-date sentence in smaller print wherever it appears', () => {

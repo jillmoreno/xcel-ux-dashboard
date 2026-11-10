@@ -66,6 +66,8 @@ export type AffidavitMoment = "pre" | "exam" | "post"
 
 export type AffBlock = {
   h?: string; u?: boolean; h4?: string; p?: string; closing?: string; pageOnly?: boolean; plain?: boolean
+  /** In the linked document (and Pagination) but not in Link out's modal, which links to it (2026-11-10). */
+  docOnly?: boolean
   /** Smaller print, for a side note under the fields (2026-11-09). */
   fine?: boolean
   ul?: (string | { t: string; sub: string[] })[]; ulh?: string[]; ol?: string[]; olh?: string[]
@@ -182,7 +184,7 @@ export const FORMS: Record<string, AffForm> ={
         {p:'Forms may be located at <a href="https://kcpe.ky.gov/Pages/index.aspx" target="_blank" rel="noopener"><strong>http://www.kcpe.ky.gov/</strong></a>'}
       ]},
       {blocks:[
-        {p:'By clicking on the confirmation button below, you agree to the terms of this Enrollment Agreement.'},
+        {p:'By clicking on the confirmation button below, you agree to the terms of this Enrollment Agreement.',docOnly:true},
         {ulh:['I received a copy of the catalog <strong>(<a href="https://prepare2pass.com/XCEL_Kentucky_Catalog_2026.pdf" target="_blank" rel="noopener">Kentucky School Catalog</a>)</strong> and understand that is part of the enrollment agreement.','I understand this enrollment agreement constitutes a binding contract.','<strong>My signature below signifies that I have read and understand all aspects of this agreement, I am at least 18 years of age, and I do recognize my legal responsibilities in regard to this contract.</strong>']}
       ]}
     ],
@@ -271,7 +273,7 @@ FORMS.NV_PRE={
       {p:'The form can be found on CPE website - <a href="http://cpe.nv.gov/uploadedFiles/cpenvgov/content/Students/Complaint%20Form%20Initial%202021.pdf" target="_blank" rel="noopener"><strong>www.cpe.nv.gov</strong></a>'}
     ]},
     {blocks:[
-      {p:'By clicking on the confirmation button below, you agree to the terms of this Enrollment Agreement.'},
+      {p:'By clicking on the confirmation button below, you agree to the terms of this Enrollment Agreement.',docOnly:true},
       {ulh:['I received a copy of the catalog <strong>(<a href="https://prepare2pass.com/XCEL_Nevada_Catalog_2026.pdf" target="_blank" rel="noopener">Nevada School Catalog</a>)</strong> and understand that is part of the enrollment agreement.','I understand this enrollment agreement constitutes a binding contract.','<strong>My signature below signifies that I have read and understand all aspects of this agreement, I am at least 18 years of age, and I also had the opportunity to ask questions.</strong>']}
     ]}
   ],
@@ -316,7 +318,7 @@ FORMS.NV_PRE={
       {p:'Any inquiry a student may have regarding this contract may be made in writing to XCEL Solutions LLC, Compliance Department, 218 Liberty Street, Warren, PA 16365 or via email <a href="mailto:compliance@xcelsolutions.com"><strong>compliance@xcelsolutions.com</strong></a> and or to the Higher Education Coordinating Commission, Private Career Schools Licensing Unit, 3225 25th Street SE, Salem, OR, or by calling (503) 947-5751.'}
     ]},
     {blocks:[
-      {p:'By clicking on the confirmation button below, you agree to the terms of this Enrollment Agreement.'},
+      {p:'By clicking on the confirmation button below, you agree to the terms of this Enrollment Agreement.',docOnly:true},
       {ulh:['I received a copy of the catalog <strong>(<a href="https://prepare2pass.com/XCEL_OR_Catalog_2026.pdf" target="_blank" rel="noopener">Oregon school catalog</a>)</strong> and understand that is part of the enrollment agreement.','I understand this enrollment agreement constitutes a binding contract.','<strong>My signature below signifies that I have read and understand all aspects of this agreement, I am at least 18 years of age, and do recognize my legal responsibilities in regard to this contract.</strong>']}
     ]}
   ],
