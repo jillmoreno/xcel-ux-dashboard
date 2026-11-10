@@ -125,6 +125,12 @@ describe('AffidavitModalV2', () => {
 /* The Affidavit Explorer's forms and patterns (2026-11-03). jsdom has no
    layout, so every page reads as scrolled to its end on arrival — the scroll
    gate itself is a browser check; what is pinned here is the rest. */
+/* The banner is an eyebrow over the document's own sentence (Jill,
+   2026-11-10), so `.textContent` runs the two together. These read the halves
+   apart, which is what every assertion below actually means. */
+const bannerBody = (el: HTMLElement) => el.querySelector('.aff2-banner__body')?.textContent
+const bannerEyebrow = (el: HTMLElement) => el.querySelector('.aff2-banner__eyebrow')?.textContent
+
 describe('AffidavitModalV2 — the explorer’s forms', () => {
   /* Link out is the only pattern (2026-11-10): the document's text is behind
      its link. Since the same day the link only marks it opened and the modal
@@ -372,7 +378,9 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
     await ready()
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
-    expect(screen.getByRole('note').textContent).toBe('Must be completed and signed by exam monitor')
+    const monitorNote = screen.getByRole('note')
+    expect(bannerBody(monitorNote)).toBe('Must be completed and signed by exam monitor')
+    expect(bannerEyebrow(monitorNote)).toBe('Proctor action required')
     expect(screen.getByLabelText(/^Phone Number/)).toBeTruthy()
   })
 
@@ -662,7 +670,8 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     for (const [moment, state] of [['pre', 'OH'], ['post', 'IL']] as const) {
       const { unmount } = render(<AffidavitModalV2 onClose={() => {}} moment={moment} state={state} />)
       const banner = screen.getAllByRole('note')[0]!
-      expect(banner.textContent).toBe('Must be completed and signed by the student')
+      expect(bannerBody(banner)).toBe('Must be completed and signed by the student')
+      expect(bannerEyebrow(banner)).toBe('Student action required')
       expect(banner.parentElement!.firstElementChild).toBe(banner)
       unmount()
     }
@@ -676,7 +685,8 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     for (const [moment, state] of [['pre', 'IL'], ['post', 'CA'], ['exam', 'GEN'], ['post', 'CO']] as const) {
       const { unmount } = render(<AffidavitModalV2 onClose={() => {}} moment={moment} state={state} />)
       const note = screen.getAllByRole('note')[0]!
-      expect(note.textContent, `${moment} ${state}`).toBe('Must be completed and signed by the student')
+      expect(bannerBody(note), `${moment} ${state}`).toBe('Must be completed and signed by the student')
+      expect(bannerEyebrow(note), `${moment} ${state}`).toBe('Student action required')
       expect(note.classList.contains('is-student'), `${moment} ${state}`).toBe(true)
       unmount()
     }
@@ -693,7 +703,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   it('puts the banner only on the student page that has the signature — not Colorado’s certification statement', async () => {
     render(<AffidavitModalV2 onClose={() => {}} moment="post" state="CO" />)
     // Colorado has no Link out, so it pages; walk to the third page.
-    expect(screen.getByRole('note').textContent).toBe('Must be completed and signed by the student')
+    expect(bannerBody(screen.getByRole('note'))).toBe('Must be completed and signed by the student')
     fireEvent.change(screen.getAllByLabelText(/^Signature/)[0]!, { target: { value: 'Jordan Navarro' } })
     fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
     await ready()

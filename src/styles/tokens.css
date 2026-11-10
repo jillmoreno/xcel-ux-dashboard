@@ -7740,11 +7740,20 @@ a.cre-library-card-title::after {
   --color-aff-banner: #fff0d1;
   --color-aff-banner-rule: #a86400;
   --color-aff-banner-ink: #4f3000;
-  /* The student's banner, cyan (2026-11-11, Afsana) — the info ramp's 100 /
-     600 / 800, pinned like the rest so it holds in both themes. */
-  --color-aff-banner-student: #d2f1f6;
-  --color-aff-banner-student-rule: #1897a8;
-  --color-aff-banner-student-ink: #0c4b53;
+  /* The student's banner, cyan (2026-11-11, Afsana) — pinned like the rest so
+     it holds in both themes. ⚠ THE VALUES ARE JILL'S, not the ramp's
+     (2026-11-10): the rule is --color-info-500 exactly, and the fill and ink
+     sit between ramp steps — #bcebf1 between info-100 and -200, #105f69
+     between -700 and -800. 5.69:1, where Afsana's ramp-step trio was 7.8:1
+     and the proctor's amber is 4.19:1. Afsana reached the same decision
+     independently, in info-100/600/800; these are the ones Jill drew. */
+  --color-aff-banner-student: #bcebf1;
+  --color-aff-banner-student-rule: #1fbdd2;
+  --color-aff-banner-student-ink: #105f69;
+  /* The house style's primary action (Jill, 2026-11-10) — not in the brand
+     ramp; hover is --color-primary-500's value, pinned like the rest. */
+  --color-aff-cta: #3d5a73;
+  --color-aff-cta-hover: #2d5872;
   --color-aff-link: #1f5f8b;
   --color-aff-link-ground: #f6f8fa;
   --color-aff-link-rule: #c9d3dc;

@@ -10,7 +10,7 @@ import {
 } from 'react'
 import { createPortal } from 'react-dom'
 import { acquireBodyScrollLock } from '@/utils/bodyScrollLock'
-import { ArrowUpRightFromSquare, Check, FileText, X } from '@/icons'
+import { ArrowUpRightFromSquare, Check, FileText, TriangleExclamation, User, X } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import {
   DOCS,
@@ -348,6 +348,21 @@ function Fields({ list, ctx }: { list: AffField[] | undefined; ctx: FieldCtx }) 
 /* `signs`: the fields under this banner include the student's Signature box —
    the whole form for a form-level banner, the page for a student page, so a
    certification page with nothing to sign does not say "signed" (2026-11-10). */
+/* The banner's shape, shared by both actors (Jill, 2026-11-10): an eyebrow
+   naming who must ACT, the document's own sentence under it, and an icon that
+   differs so the two never read alike at a glance. */
+function Banner({ tone, eyebrow, children }: { tone: 'student' | 'proctor'; eyebrow: string; children: ReactNode }) {
+  return (
+    <div className={tone === 'student' ? 'aff2-banner is-student' : 'aff2-banner'} role="note">
+      {tone === 'student' ? <User size={16} aria-hidden /> : <TriangleExclamation size={16} aria-hidden />}
+      <span className="aff2-banner__text">
+        <span className="aff2-banner__eyebrow">{eyebrow}</span>
+        <span className="aff2-banner__body">{children}</span>
+      </span>
+    </div>
+  )
+}
+
 function WhoBanner({ who, form, signs }: { who?: 'student' | 'proctor'; form: AffForm; signs?: AffField[] }) {
   if (!who) return null
   if (who === 'student') {
@@ -355,12 +370,12 @@ function WhoBanner({ who, form, signs }: { who?: 'student' | 'proctor'; form: Af
        completed by the student" is gone: the student is the only one using
        the modal, so a page they fill without signing needs no banner. */
     if (!flatList(signs).some((x) => x.id === 'sig')) return null
-    return <div className="aff2-banner is-student" role="note">Must be completed and signed by the student</div>
+    return <Banner tone="student" eyebrow="Student action required">Must be completed and signed by the student</Banner>
   }
   // The document's word for them — "exam monitor" on CO, CT and WI, "the proctor" on WV and MN —
   // and "signed" when they sign there (2026-11-10, Afsana). Stays amber.
   const text = `Must be completed${flatList(signs).some((x) => x.id === 'p_sig') ? ' and signed' : ''} by ${form.proctorWord ?? 'the proctor'}`
-  return <div className="aff2-banner" role="note">{text}</div>
+  return <Banner tone="proctor" eyebrow="Proctor action required">{text}</Banner>
 }
 
 /* ── The modal ──────────────────────────────────────────────────────────── */
@@ -434,7 +449,7 @@ export function AffidavitModalV2({
         <div className="aff2-head">
           <h2 id="affidavit-v2-title">{title}</h2>
           <button type="button" className="aff2-close" aria-label="Close" onClick={onClose}>
-            <X size={15} aria-hidden />
+            <X size={18} aria-hidden />
           </button>
         </div>
         {form ? (
