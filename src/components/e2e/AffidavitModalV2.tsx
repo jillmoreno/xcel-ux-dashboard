@@ -194,7 +194,7 @@ function Blocks({ blocks, whole = false }: { blocks: AffBlock[]; whole?: boolean
         if (b.olh) return <ol key={i}>{b.olh.map((t, k) => <li key={k} dangerouslySetInnerHTML={html(t)} />)}</ol>
         if (b.ol) return <ol key={i}>{b.ol.map((t, k) => <li key={k}>{t}</li>)}</ol>
         if (b.closing) return <p key={i} className="aff2-closing">{b.closing}</p>
-        if (b.p) return <p key={i} dangerouslySetInnerHTML={html(b.p)} />
+        if (b.p) return <p key={i} className={b.fine ? 'aff2-fine' : undefined} dangerouslySetInnerHTML={html(b.p)} />
         if (b.table)
           return (
             <table key={i} className="aff2-tbl">

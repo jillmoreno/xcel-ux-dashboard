@@ -19,7 +19,8 @@
  *     section. Afsana's change.
  *   · 2026-11-04 — California, After course exam (`CA_POST_LH`): no "Course
  *     Completion Roster upload form" heading. The heading only — its red box
- *     round the Student Legal Name stays. Afsana's change.
+ *     round the Student Legal Name stays. Afsana's change. (Both went on
+ *     2026-11-09: no red box, no "Student Legal Name" heading.)
  *   · 2026-11-04 — THE SIX STATE-SPECIFIC FINAL AFFIDAVITS (`CO_POST`,
  *     `CT_POST`, `MN_POST`, `NY_POST`, `WI_POST`, `WV_POST`) match their
  *     state documents field for field, from Afsana's "State Specific
@@ -65,6 +66,8 @@ export type AffidavitMoment = "pre" | "exam" | "post"
 
 export type AffBlock = {
   h?: string; u?: boolean; h4?: string; p?: string; closing?: string; pageOnly?: boolean; plain?: boolean
+  /** Smaller print, for a side note under the fields (2026-11-09). */
+  fine?: boolean
   ul?: (string | { t: string; sub: string[] })[]; ulh?: string[]; ol?: string[]; olh?: string[]
   table?: { title: string; head: string[]; rows: string[][] }
 }
@@ -372,9 +375,10 @@ FORMS.NV_PRE={
       {ul:['If any course (sold individually or in a package) is accessed, the course/package is non-refundable.','Textbooks and shipping are non-refundable.','Any refunds for packages that included a physical textbook will be refunded less a $24.95 refund fee.']},
       {p:'To request a refund, please contact us at 866-559-9235.'}
     ]},
-    {blocks:[
-      {h:'TO BE COMPLETED BY STUDENT:'}
-    ]}
+    /* CHANGED FROM THE DOCUMENT (2026-11-09, Afsana): its "TO BE COMPLETED BY
+       STUDENT:" heading is gone — the student banner at the top says it. The
+       page stays, holding the fields. */
+    {blocks:[]}
   ],
   fields:[
     base[1], base[2],
@@ -521,10 +525,10 @@ FORMS.CA_POST_LH={
     {p:'The student further declares that he/she has been actively engaged in one hundred percent of the online pre-licensing course, has completed the total number of required training hours identified above, and has completed one hundred percent of the review questions for each particular section/chapter before proceeding to the next section/chapter.'}
   ]}],
   fields:[
-    {flagGroup:[
-      {block:{h4:'Student Legal Name (first and last name)'}},
-      FORMS.KY_PRE.fields[1],FORMS.KY_PRE.fields[2]
-    ]},
+    /* CHANGED FROM THE DOCUMENT (2026-11-09, Afsana): no red box round the
+       name, and no "Student Legal Name (first and last name)" heading — the
+       Legal First / Middle / Last Name labels say it. */
+    FORMS.KY_PRE.fields[1],FORMS.KY_PRE.fields[2],
     {id:'sig',label:'Student Signature',required:true,placeholder:'Type your full name',ac:'name'},
     {id:'date',type:'date',label:"Today's Date",required:true},
     {block:{p:'The date on this affidavit is the course completion date.'}},
@@ -538,7 +542,7 @@ FORMS.CA_POST_LH={
   ],
   flagFields:['agree'],
   agreeLabel:'I Attest and Confirm',
-  note:'Includes the Course Completion Roster section (date of birth and last four of SSN) from the same Word doc. Only the Life & Health version has been provided so far. The button reads "I Attest and Confirm". The "I confirm that the above information is accurate" checkbox (highlighted in red) is the last field. The Student Legal Name section is highlighted in red.'
+  note:'Includes the Course Completion Roster section (date of birth and last four of SSN) from the same Word doc. Only the Life & Health version has been provided so far. The button reads "I Attest and Confirm". The "I confirm that the above information is accurate" checkbox is the last field.'
 };
 FORMS.IL_POST={
   docHeader:'Illinois Life Prelicensing Affidavit',
@@ -574,8 +578,8 @@ FORMS.OH_POST_P={
     {p:'I declare that I personally completed the entire study material of the course including one hundred percent of the online pre-licensing course. I also declare that I completed the comprehensive final exam unassisted by any person(s), course material or other materials.'},
     {p:'I further acknowledge that a violation of these standards shall result in loss of course credit and administrative sanction by the Ohio Department of Insurance.'}
   ]}],
+  /* No red box (2026-11-09, Afsana); the whole form was a `flagGroup`. */
   fields:[
-    {flagGroup:[
       {block:{h4:'Student E-Signature:'}},
       FORMS.KY_PRE.fields[1],FORMS.KY_PRE.fields[2],
       {id:'examdate',type:'date',label:'Date Exam was completed',required:true},
@@ -586,11 +590,10 @@ FORMS.OH_POST_P={
       {id:'date',type:'date',label:"Today's Date",required:true},
       {block:{p:'The date on this affidavit is the course completion date.'}},
       FORMS.KY_PRE.fields[0]
-    ]}
   ],
   noPrefill:['first','middle','last','suffix'],
   lock:['examdate'],
-  note:'Internal note from the Word doc: this one form is used for both the pre- and post-final affidavit because of the different lines of authority. Ohio rule says both can’t be on one form, and OCD can’t attach 2 post-final affidavits. Only the Property version has been provided so far. The name fields are the e-signature, so they are not pre-filled. Date Exam was completed is pre-filled and locked. The entire form is highlighted in red.'
+  note:'Internal note from the Word doc: this one form is used for both the pre- and post-final affidavit because of the different lines of authority. Ohio rule says both can’t be on one form, and OCD can’t attach 2 post-final affidavits. Only the Property version has been provided so far. The name fields are the e-signature, so they are not pre-filled. Date Exam was completed is pre-filled and locked.'
 };
 FORMS.NY_POST={
   docHeader:'New York Pre-Licensing Post Final Affidavit',
@@ -1010,12 +1013,18 @@ export const STATE_SPECIFIC_FORMS = ['CO_POST','CT_POST','MN_POST','NY_POST','WI
 const eSig = (b: AffBlock) => /^Student E-Signature:?$/.test((b.h ?? b.h4 ?? '').trim())
 const unsign = (list: AffField[] | undefined): AffField[] | undefined => list?.flatMap((x) => {
   if (x.block && eSig(x.block)) return []
+  if (x.block) return [{ ...x, block: fine(x.block) }]
   if (x.flagGroup) return [{ ...x, flagGroup: unsign(x.flagGroup) }]
   if (x.row) return [{ ...x, row: unsign(x.row) }]
   return [x.id === 'sig' ? { ...x, label: 'Signature' } : x]
 })
+/* And "The date on this affidavit is the course completion date." is set in
+   smaller print wherever it appears (2026-11-09, Afsana): a side note, not a
+   statement the student is signing. */
+export const COMPLETION_DATE_NOTE = 'The date on this affidavit is the course completion date.'
+const fine = (b: AffBlock): AffBlock => (b.p === COMPLETION_DATE_NOTE ? { ...b, fine: true } : b)
 for (const [key, form] of Object.entries(FORMS) as [string, AffForm][]) {
   if (!STATE_SPECIFIC_FORMS.includes(key)) form.who = 'student'
-  form.pages = form.pages.map((p) => ({ ...p, blocks: p.blocks?.filter((b) => !eSig(b)), fields: unsign(p.fields) }))
+  form.pages = form.pages.map((p) => ({ ...p, blocks: p.blocks?.filter((b) => !eSig(b)).map(fine), fields: unsign(p.fields) }))
   form.fields = unsign(form.fields) ?? []
 }

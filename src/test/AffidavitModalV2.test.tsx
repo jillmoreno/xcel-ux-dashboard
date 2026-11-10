@@ -7,7 +7,7 @@ import { AffidavitModalV2 } from '@/components/e2e/AffidavitModalV2'
 import { resolveAffidavit, withoutMiddle } from '@/components/e2e/affidavitModalV2Util'
 import { MemoryRouter } from 'react-router-dom'
 import { FEATURE_FLAGS, FeatureFlagProvider, designControlsFor, useFeatureFlags } from '@/context/FeatureFlagContext'
-import { ENTRIES, FORMS, NAMED_FORMS, SIGNED_FORMS, SSN_REASON, STATE_SPECIFIC_FORMS, STATES, type AffField } from '@/data/affidavitForms'
+import { ENTRIES, FORMS, NAMED_FORMS, SIGNED_FORMS, COMPLETION_DATE_NOTE, SSN_REASON, STATE_SPECIFIC_FORMS, STATES, type AffField } from '@/data/affidavitForms'
 
 /**
  * AFFIDAVIT V2 — 2026-11-03, Afsana. The first change V2 makes: the modal
@@ -241,8 +241,35 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(screen.queryByText(/Education providers are required to collect/)).toBeNull()
     expect(screen.getByText(SSN_REASON)).toBeTruthy()
     expect(screen.getByLabelText(/Last four of SSN/)).toBeTruthy()
-    // The Student Legal Name keeps its red box — only the heading went.
-    expect(screen.getByText('Student Legal Name (first and last name)').closest('.aff2-flag')).not.toBeNull()
+    // Since 2026-11-09: no red box round the name, and no "Student Legal Name" heading.
+    expect(screen.queryByText('Student Legal Name (first and last name)')).toBeNull()
+    expect(screen.getByLabelText(/^Legal First Name/).closest('.aff2-flag')).toBeNull()
+  })
+
+  /* 2026-11-09, Afsana: Ohio's registration loses "TO BE COMPLETED BY
+     STUDENT:" (the banner says it), Ohio's after-exam affidavit loses its red
+     box, and "The date on this affidavit is the course completion date." is
+     smaller print on every form that has it. */
+  it('Ohio: no "to be completed by student" heading before the course, no red box after the exam', async () => {
+    const { unmount } = render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="OH" pattern="page" />)
+    for (let i = 0; i < FORMS.OH_PRE!.pages.length - 1; i++) {
+      await ready()
+      fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    }
+    expect(screen.queryByText(/TO BE COMPLETED BY STUDENT/i)).toBeNull()
+    expect(screen.getByLabelText(/^Legal First Name/)).toBeTruthy()
+    unmount()
+    const { container } = render(<AffidavitModalV2 onClose={() => {}} moment="post" state="OH" pattern="page" />)
+    expect(container.ownerDocument.querySelector('.aff2-flag')).toBeNull()
+    expect(screen.getByLabelText(/Last 4 of SSN/)).toBeTruthy()
+  })
+
+  it('sets the course-completion-date sentence in smaller print wherever it appears', () => {
+    const withIt = Object.entries(FORMS).filter(([, f]) => JSON.stringify(f).includes(COMPLETION_DATE_NOTE)).map(([k]) => k)
+    expect(withIt.length).toBeGreaterThanOrEqual(4)
+    for (const key of withIt) expect(JSON.stringify(FORMS[key]), key).not.toMatch(/"p":"The date on this affidavit is the course completion date\."(?!,"fine":true)/)
+    render(<AffidavitModalV2 onClose={() => {}} moment="post" state="IL" pattern="page" />)
+    expect(screen.getByText(COMPLETION_DATE_NOTE).className).toBe('aff2-fine')
   })
 
   /* THE SIX STATE-SPECIFIC FINAL AFFIDAVITS match their documents field for

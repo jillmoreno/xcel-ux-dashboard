@@ -4596,6 +4596,13 @@ the Design bar, which is Jill's file, so for now they are dropped.
   E-Signature:" heading**, state-specific ones included: the banner, the
   name block and the signature box already say it. Done as a pass at the end
   of `affidavitForms.ts`, so the explorer's text above it stays verbatim.
+- **Smaller fixes (2026-11-09, Afsana).** Ohio's registration (before the
+  course) loses its "TO BE COMPLETED BY STUDENT:" heading — the banner says
+  it. California's after-exam affidavit loses the red box round the name and
+  its "Student Legal Name (first and last name)" heading, and Ohio's
+  after-exam affidavit loses the red box round the whole form. "The date on
+  this affidavit is the course completion date." is smaller print
+  (`aff2-fine`) on every form that has it (`COMPLETION_DATE_NOTE`).
 - ⚠ **WAITING ON NICK AND AMRITA (2026-11-06)** — nothing below is changed
   until they answer:
   - **Addresses, student and proctor.** Whether, and how, to standardize
