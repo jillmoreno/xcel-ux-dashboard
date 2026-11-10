@@ -80,9 +80,9 @@ export const JEFF_MVP_PAGES = [
  * Flashcard study session in the sidebar, which is not where he put it.
  */
 export const JEFF_MVP_SUBPAGES = [
-  { page: 'practice-session', label: 'Question set', from: 'practice', ported: false },
+  { page: 'practice-session', label: 'Question set', from: 'practice', ported: true },
   { page: 'flashcard-topic', label: 'Flashcards topic', from: 'flashcards', ported: true },
-  { page: 'flashcard-study', label: 'Study session', from: 'flashcards', ported: false },
+  { page: 'flashcard-study', label: 'Study session', from: 'flashcards', ported: true },
   { page: 'exam-session', label: 'Simulated exam', from: 'exam-simulator', ported: true },
   { page: 'course', label: 'Lesson', from: 'learn', ported: false },
 ] as const
@@ -9682,4 +9682,271 @@ export const JEFF_MVP_EXAM_SESSION_COPY = {
   nextQuestion: 'Next question',
   backToResults: 'Back to results',
   questionFmt: (n: number, topic: string) => `Question ${n} · ${topic}`,
+} as const
+
+/**
+ * A PRACTICE QUESTION SET — reached from a Practice row or the Readiness
+ * page's weakest sub-topic, never from the rail. Ported 2026-11-09.
+ *
+ * ⚠ IT ASKS HOW SURE YOU ARE BEFORE IT WILL TAKE THE ANSWER. Picking an
+ * option reveals "How sure are you?" — Not confident · Unsure · Very
+ * confident — and Submit stays disabled until BOTH are set
+ * (`canSubmit = a.pick != null && !!a.conf`). That is the whole reason the
+ * Practice and Flashcards pages can filter by confidence at all: the
+ * confidence is the learner's own, collected here, not inferred from scores.
+ *
+ * ⚠ AND IT ANSWERS THE CONFIDENCE BACK. Getting it wrong while "Very
+ * confident" adds a line his page calls `calib` — "You were sure on this one,
+ * so it's worth a closer look." Confidence is not just collected, it is used.
+ *
+ * ⚠ THE EXPLANATION IS BEHIND A TOGGLE, labelled "Show explanation" /
+ * "Hide explanation", not open by default — the same ask-before-telling shape
+ * the simulated exam's guided review uses.
+ */
+export const JEFF_MVP_QUESTION_SET = {
+  total: 5,
+  pos: 1,
+  stem: 'Ted is covered by an HO-3 policy and is insured to value. The covered dwelling has a replacement value of $200,000 and Ted carries $160,000 of coverage. If a fire causes a total loss, how much will the policy pay?',
+  why: 'Ted is insured to value: $160,000 is 80% of the $200,000 replacement value, so losses settle at replacement cost, but never above the Coverage A limit. On a total loss the policy pays its limit, $160,000.',
+  opts: [
+    {
+      key: 'A',
+      text: '$80,000'
+    },
+    {
+      key: 'B',
+      text: '$200,000'
+    },
+    {
+      key: 'C',
+      text: '$40,000'
+    },
+    {
+      key: 'D',
+      text: '$160,000'
+    }
+  ],
+  sure: [
+    {
+      label: 'Not confident'
+    },
+    {
+      label: 'Unsure'
+    },
+    {
+      label: 'Very confident'
+    }
+  ],
+  answerKey: 'D',
+  feedback: 'Correct — the answer is D.',
+  explainShow: 'Show explanation',
+  explainHide: 'Hide explanation',
+  nextLabel: 'Next question',
+  sortLabel: 'Confidence',
+  railTabs: [
+    {
+      label: 'Rubi',
+      tab: 'rubi',
+      count: '0',
+      aria: 'Open Workspace: Rubi, 0 questions'
+    },
+    {
+      label: 'Notes',
+      tab: 'notes',
+      count: '0',
+      aria: 'Open Workspace: Notes, 0 notes'
+    },
+    {
+      label: 'Bookmarks',
+      tab: 'bookmarks',
+      count: '0',
+      aria: 'Open Workspace: Bookmarks, 0 bookmarks'
+    }
+  ],
+  calcKeys: [
+    {
+      label: 'C',
+      aria: 'Clear'
+    },
+    {
+      label: '⌫',
+      aria: 'Backspace'
+    },
+    {
+      label: '%',
+      aria: 'Percent'
+    },
+    {
+      label: '÷',
+      aria: 'Divide'
+    },
+    {
+      label: '7',
+      aria: '7'
+    },
+    {
+      label: '8',
+      aria: '8'
+    },
+    {
+      label: '9',
+      aria: '9'
+    },
+    {
+      label: '×',
+      aria: 'Multiply'
+    },
+    {
+      label: '4',
+      aria: '4'
+    },
+    {
+      label: '5',
+      aria: '5'
+    },
+    {
+      label: '6',
+      aria: '6'
+    },
+    {
+      label: '−',
+      aria: 'Subtract'
+    },
+    {
+      label: '1',
+      aria: '1'
+    },
+    {
+      label: '2',
+      aria: '2'
+    },
+    {
+      label: '3',
+      aria: '3'
+    },
+    {
+      label: '+',
+      aria: 'Add'
+    },
+    {
+      label: '0',
+      aria: '0'
+    },
+    {
+      label: '00',
+      aria: '00'
+    },
+    {
+      label: '.',
+      aria: 'Decimal point'
+    },
+    {
+      label: '=',
+      aria: 'Equals'
+    }
+  ]
+} as const
+
+/** His question-set prose. */
+export const JEFF_MVP_QUESTION_SET_COPY = {
+  crumbRoot: 'Practice',
+  title: 'Types of Casualty Insurance Policies',
+  meta: 'Prep Review · Personal Lines · Pearson Vue · 5 questions',
+  confidenceLabel: 'Confidence',
+  sureQuestion: 'How sure are you?',
+  submit: 'Submit',
+  youFelt: 'You felt',
+  explanationHeading: 'Explanation',
+  askRubi: 'Ask Rubi',
+  reviewInCourse: 'Review in course',
+  progressFmt: (pos: number, total: number) => `${pos} / ${total}`,
+  questionFmt: (pos: number, total: number, set: string) =>
+    `Question ${pos} of ${total} · ${set}`,
+  setName: 'Prep Review: Types of Casualty Insurance Policies - Personal Lines - Pearson Vue',
+} as const
+
+/**
+ * A FLASHCARD STUDY SESSION — reached from a deck or a subtopic, never from
+ * the rail. Ported 2026-11-09, the last of his thirteen but one.
+ *
+ * ⚠ BOTH FACES ARE IN THE DOM AT ONCE. His card is a CSS flip, not a swap:
+ * the term and the definition are both rendered and one is turned away. That
+ * is why his `innerText` carries both on either face, and why a port that
+ * swapped the content would read as correct on screen and fail every parity
+ * check — and, more to the point, would lose the flip.
+ *
+ * ⚠ THE RATING IS THE POINT OF THE SCREEN. Flipping reveals "How well did
+ * you know it?" with three levels — Still learning · Almost · Got it, keyed
+ * 1/2/3 — and that rating is the confidence the Flashcards page then filters
+ * by. Same relationship the question set has with Practice: the learner's own
+ * judgement, collected where they are best placed to give it.
+ */
+export const JEFF_MVP_CARD_STUDY = {
+  total: 7,
+  pos: 4,
+  deckTitle: 'Other Personal Lines Insurance',
+  deckSub: 'Topic · 7 cards in the course · 7 in this preview',
+  term: 'Personal articles floater',
+  def: 'Scheduled, broad coverage for specific valuable items, each written with its own stated amount of insurance.',
+  cardAria: 'Term: Personal articles floater. Select to flip.',
+  sortLabel: 'Confidence',
+  saveLabel: 'Save set',
+  bmLabel: 'Bookmark this card',
+  rates: [
+    {
+      level: 'Low',
+      label: 'Still learning',
+      tone: 'conf-low-ink',
+      bg: 'late-wash'
+    },
+    {
+      level: 'Medium',
+      label: 'Almost',
+      tone: 'conf-med-ink',
+      bg: '#FFFAF0'
+    },
+    {
+      level: 'High',
+      label: 'Got it',
+      tone: 'conf-high-ink',
+      bg: '#F2F9F5'
+    }
+  ],
+  legend: [
+    {
+      text: 'Not rated',
+      bg: '#F3F3F3'
+    },
+    {
+      text: 'Still learning',
+      bg: 'late-wash'
+    },
+    {
+      text: 'Almost',
+      bg: '#FFFAF0'
+    },
+    {
+      text: 'Got it',
+      bg: '#F2F9F5'
+    }
+  ],
+  next: {
+    has: true,
+    title: 'Agent licensing and appointments',
+    meta: 'Florida Insurance Laws and Rules · 14 cards · about 7 min',
+    why: 'Your lowest readiness right now, so a round here moves your score the most.'
+  }
+} as const
+
+/** His card-study prose. */
+export const JEFF_MVP_CARD_STUDY_COPY = {
+  crumbRoot: 'Flashcards',
+  termLabel: 'Term',
+  flipHint: 'Press Space to flip · ← → to move between cards',
+  howWell: 'How well did you know it?',
+  previous: 'Previous',
+  next: 'Next',
+  flip: 'Flip',
+  space: 'SPACE',
+  progressFmt: (pos: number, total: number) => `${pos} / ${total}`,
 } as const

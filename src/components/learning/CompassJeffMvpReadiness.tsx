@@ -317,10 +317,16 @@ export function CompassJeffMvpReadiness({
                         ) : (
                           <span />
                         )}
+                        {/* ⚠ THE WEAKEST SUB-TOPIC OPENS A QUESTION SET, every
+                            other one opens the Practice page — his two hrefs,
+                            `PracticeSession` against `Practice`. This page's
+                            thesis in one link, and it pointed at Practice for
+                            both until the question set existed to point at. */}
                         <button
                           type="button"
                           className={s.rubi ? 'cjm-btn cjm-btn--primary' : 'cjm-btn'}
-                          onClick={go('practice')}
+                          aria-label={`Practice ${s.name}`}
+                          onClick={go(s.rubi ? 'practice-session' : 'practice')}
                         >
                           {COPY.practiceCta}
                         </button>

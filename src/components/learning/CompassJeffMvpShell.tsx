@@ -26,6 +26,8 @@ import { CompassJeffMvpFlashcards } from './CompassJeffMvpFlashcards'
 import { CompassJeffMvpSimulator } from './CompassJeffMvpSimulator'
 import { CompassJeffMvpFlashcardTopic } from './CompassJeffMvpFlashcardTopic'
 import { CompassJeffMvpExamSession } from './CompassJeffMvpExamSession'
+import { CompassJeffMvpQuestionSet } from './CompassJeffMvpQuestionSet'
+import { CompassJeffMvpCardStudy } from './CompassJeffMvpCardStudy'
 import './compassJeffMvp.css'
 
 /**
@@ -119,6 +121,10 @@ export function CompassJeffMvpShell({
         <CompassJeffMvpSimulator onSelectPage={onSelectPage} />
       ) : page === 'flashcard-topic' ? (
         <CompassJeffMvpFlashcardTopic onSelectPage={onSelectPage} />
+      ) : page === 'practice-session' ? (
+        <CompassJeffMvpQuestionSet onSelectPage={onSelectPage} />
+      ) : page === 'flashcard-study' ? (
+        <CompassJeffMvpCardStudy onSelectPage={onSelectPage} />
       ) : (
         <CompassJeffMvpPending page={page} />
       )}

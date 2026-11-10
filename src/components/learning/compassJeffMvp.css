@@ -3345,3 +3345,322 @@
 .cjm-vx__demo--timer b {
   font-variant-numeric: tabular-nums;
 }
+
+/* ============ a question set ============ */
+
+.cjm-qs__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--cjm-hairline);
+}
+.cjm-qs__meta {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-qs__headright {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 0 0 auto;
+}
+.cjm-qs__pos {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-qs__qline {
+  margin: 22px 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-qs__stem {
+  margin: 0 0 20px;
+  max-width: 70ch;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--cjm-ink);
+}
+.cjm-qs__opts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 640px;
+}
+.cjm-qs__opt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+  border: 1px solid var(--cjm-control-edge);
+  border-radius: 9px;
+  background: var(--cjm-white);
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+  color: var(--cjm-ink);
+  cursor: pointer;
+}
+.cjm-qs__opt.is-on {
+  border-color: var(--cjm-steel-deep);
+  box-shadow: inset 0 0 0 1px var(--cjm-steel-deep);
+}
+.cjm-qs__opt.is-right {
+  border-color: var(--cjm-ready-edge);
+  background: var(--cjm-right-wash);
+}
+.cjm-qs__key {
+  flex: 0 0 auto;
+  font-weight: 700;
+  color: var(--cjm-steel-deep);
+}
+.cjm-qs__sure {
+  margin-top: 22px;
+}
+.cjm-qs__sureq {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-qs__sureopts {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cjm-qs__submit {
+  margin-top: 22px;
+}
+.cjm-qs__submit[disabled] {
+  background: var(--cjm-control-edge);
+  color: var(--cjm-body);
+  cursor: not-allowed;
+}
+.cjm-qs__after {
+  margin-top: 22px;
+}
+.cjm-qs__fb {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--cjm-ready-ink);
+}
+.cjm-qs__felt {
+  margin: 0;
+  font-size: 13px;
+  color: var(--cjm-muted);
+}
+.cjm-qs__felt b {
+  color: var(--cjm-ink);
+}
+.cjm-qs__explain {
+  margin: 18px 0 0;
+  padding: 18px 20px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 10px;
+  background: var(--cjm-paper);
+}
+.cjm-qs__explain .cjm-btn {
+  margin-top: 12px;
+}
+.cjm-qs__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+/* The closed workspace rail his session pages carry down the right edge. */
+.cjm-wsrail {
+  position: sticky;
+  top: 24px;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 0 56px;
+  padding: 8px 6px;
+  border-left: 1px solid var(--cjm-hairline);
+}
+.cjm-wsrail__tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 9px 6px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--cjm-body);
+  font: inherit;
+  cursor: pointer;
+}
+.cjm-wsrail__tab:hover {
+  background: var(--color-neutral-100);
+}
+.cjm-wsrail__count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cjm-muted);
+}
+
+/* His question-set header: a 44px tile, a 28px serif title, the meta line. */
+.cjm-qs__tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--cjm-steel-pressed);
+  color: var(--cjm-body);
+}
+.cjm-qs__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--cjm-ink);
+}
+.cjm-qs__head {
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+/* ============ a card study session ============ */
+
+/* ⚠ ONE CARD, TWO FACES, BOTH IN THE DOM — a CSS flip, not a content swap. */
+.cjm-cs__card {
+  display: block;
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  min-height: 260px;
+  margin: 26px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  perspective: 1200px;
+}
+.cjm-cs__face {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 28px 30px;
+  border: 1px solid var(--cjm-hairline);
+  border-radius: 14px;
+  background: var(--cjm-white);
+  backface-visibility: hidden;
+  transition: transform 0.4s;
+}
+.cjm-cs__front {
+  transform: rotateY(0deg);
+}
+.cjm-cs__back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+.cjm-cs__card.is-back .cjm-cs__front {
+  transform: rotateY(-180deg);
+}
+.cjm-cs__card.is-back .cjm-cs__back {
+  transform: rotateY(0deg);
+}
+.cjm-cs__term {
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 26px;
+  color: var(--cjm-ink);
+}
+.cjm-cs__hint {
+  margin-top: auto;
+  font-size: 12.5px;
+  color: var(--cjm-faint);
+}
+.cjm-cs__termsm {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cjm-muted);
+}
+.cjm-cs__def {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--cjm-body);
+}
+.cjm-cs__rate {
+  margin-top: 22px;
+}
+.cjm-cs__ratq {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--cjm-ink);
+}
+.cjm-cs__rates {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cjm-cs__rateopt {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 16px;
+  border: 1px solid;
+  border-radius: 8px;
+  background: var(--cjm-white);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cjm-cs__rateopt b {
+  font-variant-numeric: tabular-nums;
+}
+.cjm-cs__nav,
+.cjm-cs__tools {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.cjm-cs__nav kbd {
+  padding: 1px 6px;
+  border: 1px solid var(--cjm-control-edge);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 11px;
+}
+
+/* His 40×40 icon buttons under the card. */
+.cjm-cs__tbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--cjm-control-edge);
+  border-radius: 8px;
+  background: var(--cjm-white);
+  color: var(--cjm-body);
+  cursor: pointer;
+}
+.cjm-cs__tbtn[aria-pressed='true'] {
+  border-color: var(--cjm-steel-deep);
+  color: var(--cjm-steel-deep);
+}

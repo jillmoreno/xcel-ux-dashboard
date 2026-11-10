@@ -364,7 +364,7 @@ function ReadinessTable({
                         type="button"
                         className={s.rubi ? 'cjm-btn cjm-btn--primary' : 'cjm-btn'}
                         aria-label={`Practice ${s.name}`}
-                        onClick={go('practice')}
+                        onClick={go(s.rubi ? 'practice-session' : 'practice')}
                       >
                         {COPY.subCta}
                       </button>

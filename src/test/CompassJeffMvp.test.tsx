@@ -15,8 +15,14 @@ import { CompassJeffMvpFlashcards } from '@/components/learning/CompassJeffMvpFl
 import { CompassJeffMvpSimulator } from '@/components/learning/CompassJeffMvpSimulator'
 import { CompassJeffMvpFlashcardTopic } from '@/components/learning/CompassJeffMvpFlashcardTopic'
 import { CompassJeffMvpExamSession } from '@/components/learning/CompassJeffMvpExamSession'
+import { CompassJeffMvpQuestionSet } from '@/components/learning/CompassJeffMvpQuestionSet'
+import { CompassJeffMvpCardStudy } from '@/components/learning/CompassJeffMvpCardStudy'
 import {
+  JEFF_MVP_CARD_STUDY as CS,
+  JEFF_MVP_CARD_STUDY_COPY as CSCOPY,
   JEFF_MVP_EXAM_SESSION as EXS,
+  JEFF_MVP_QUESTION_SET as QS,
+  JEFF_MVP_QUESTION_SET_COPY as QCOPY,
   JEFF_MVP_EXAM_SESSION_COPY as XCOPY,
   JEFF_MVP_FC_TOPIC as FTOPIC,
   JEFF_MVP_FLASHCARDS as FC,
@@ -93,6 +99,8 @@ const renderFlashcards = () => wrap(<CompassJeffMvpFlashcards />)
 const renderSimulator = () => wrap(<CompassJeffMvpSimulator />)
 const renderFcTopic = () => wrap(<CompassJeffMvpFlashcardTopic />)
 const renderExamSession = () => wrap(<CompassJeffMvpExamSession />)
+const renderQuestionSet = () => wrap(<CompassJeffMvpQuestionSet />)
+const renderCardStudy = () => wrap(<CompassJeffMvpCardStudy />)
 
 function renderPractice() {
   return render(
@@ -308,15 +316,17 @@ describe('Jeff’s Compass MVP — the pages not built yet', () => {
     /* ⚠ A SUB-PAGE NOW, because every rail row is ported. The panel's job is
        unchanged: name what is missing rather than render something else in
        its place. */
-    renderShell('practice-session')
-    expect(screen.getByRole('region', { name: /Question set — not ported yet/ })).toBeInTheDocument()
+    /* ⚠ `course` — the only page left unported. When it lands this test has
+       nothing to point at, and that is the signal the port is complete. */
+    renderShell('course')
+    expect(screen.getByRole('region', { name: /Lesson — not ported yet/ })).toBeInTheDocument()
     expect(screen.getByText(/not in the React port yet/)).toBeInTheDocument()
     // and it must NOT have rendered any ported surface in its place
     expect(screen.queryByText(COPY.topicsTitle)).toBeNull()
   })
 
   it('keeps the rail on an unported page, so there is a way out', () => {
-    renderShell('flashcard-study')
+    renderShell('course')
     expect(screen.getByRole('navigation', { name: 'Compass pages' })).toBeInTheDocument()
   })
 
@@ -1075,5 +1085,94 @@ describe('Jeff’s Compass MVP — the simulated exam', () => {
     const { container } = renderShell('exam-session')
     expect(container.querySelector('.cjm-rail')).toBeNull()
     expect(container.querySelector('.cjm-vx')).toBeTruthy()
+  })
+})
+
+describe('Jeff’s Compass MVP — the two session pages', () => {
+  const user = () => userEvent.setup()
+
+  it('walks the question set through all five of his states', async () => {
+    const u = user()
+    const { container } = renderQuestionSet()
+    const check = (k: keyof typeof parity) => {
+      const mine = flat(container.textContent ?? '')
+      expect((parity[k] as string[]).filter((s) => !mine.includes(flat(s)))).toEqual([])
+    }
+    check('questionSet_start')
+    await u.click(screen.getByRole('button', { name: /160,000/ }))
+    check('questionSet_picked')
+    await u.click(screen.getByRole('button', { name: 'Very confident' }))
+    check('questionSet_sure')
+    await u.click(screen.getByRole('button', { name: QCOPY.submit }))
+    check('questionSet_submitted')
+    await u.click(screen.getByRole('button', { name: QS.explainShow }))
+    check('questionSet_explained')
+  })
+
+  it('will not take the answer until it knows how sure you are', async () => {
+    /* ⚠ THIS IS WHERE THE CONFIDENCE ON PRACTICE AND FLASHCARDS COMES FROM.
+       Both of those pages filter by a confidence the learner declared here.
+       Skipping this step would leave both filters measuring nothing. */
+    const u = user()
+    renderQuestionSet()
+    expect(screen.queryByText(QCOPY.sureQuestion)).toBeNull()
+    expect(screen.getByRole('button', { name: QCOPY.submit })).toBeDisabled()
+    await u.click(screen.getByRole('button', { name: /160,000/ }))
+    expect(screen.getByText(QCOPY.sureQuestion)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: QCOPY.submit })).toBeDisabled()
+    await u.click(screen.getByRole('button', { name: 'Very confident' }))
+    expect(screen.getByRole('button', { name: QCOPY.submit })).not.toBeDisabled()
+  })
+
+  it('keeps Ask Rubi available whether or not the explanation is open', async () => {
+    /* ⚠ It is the way OUT of the explanation, not a part of it. Nesting it
+       inside the panel hid it in the state where a stuck learner most wants
+       it. */
+    const u = user()
+    renderQuestionSet()
+    await u.click(screen.getByRole('button', { name: /160,000/ }))
+    await u.click(screen.getByRole('button', { name: 'Very confident' }))
+    await u.click(screen.getByRole('button', { name: QCOPY.submit }))
+    expect(screen.getByRole('button', { name: new RegExp(QCOPY.askRubi) })).toBeInTheDocument()
+    await u.click(screen.getByRole('button', { name: QS.explainShow }))
+    expect(screen.getByRole('button', { name: new RegExp(QCOPY.askRubi) })).toBeInTheDocument()
+  })
+
+  it('renders both card faces at once, and rates on the back', async () => {
+    /* ⚠ A CSS flip, not a content swap — his `innerText` carries both faces
+       either way. Swapping would look right and lose the flip. */
+    const u = user()
+    const { container } = renderCardStudy()
+    /* The term appears on BOTH faces — large on the front, small above the
+       definition on the back — which is the point being asserted. */
+    expect(screen.getAllByText(CS.term).length).toBe(2)
+    expect(screen.getByText(CS.def)).toBeInTheDocument()
+    let mine = flat(container.textContent ?? '')
+    expect(parity.cardStudy_front.filter((s) => !mine.includes(flat(s)))).toEqual([])
+    expect(screen.queryByText(CSCOPY.howWell)).toBeNull()
+    await u.click(screen.getByRole('button', { name: CS.cardAria }))
+    mine = flat(container.textContent ?? '')
+    expect(parity.cardStudy_back.filter((s) => !mine.includes(flat(s)))).toEqual([])
+    expect(screen.getByText(CSCOPY.howWell)).toBeInTheDocument()
+  })
+
+  it('labels its icon buttons without printing the labels', () => {
+    /* ⚠ His `bmLabel` / `saveLabel` are aria-labels on 40×40 icon buttons,
+       not captions. Printing them put two phrases on the page that are not
+       on his. */
+    const { container } = renderCardStudy()
+    expect(screen.getByRole('button', { name: CS.bmLabel })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: CS.saveLabel })).toBeInTheDocument()
+    expect(flat(container.textContent ?? '')).not.toContain(flat(CS.bmLabel))
+  })
+
+  it('sends the weakest sub-topic to a question set and the rest to Practice', () => {
+    /* ⚠ His two hrefs. This page's thesis in one link, and it pointed at
+       Practice for both until the question set existed to point at. */
+    const subs = RD.rows[0].subs
+    expect(subs.filter((s) => s.rubi).length).toBe(1)
+    renderReadiness()
+    const weakest = subs.find((s) => s.rubi)!
+    expect(screen.getByRole('button', { name: `Practice ${weakest.name}` })).toBeInTheDocument()
   })
 })
