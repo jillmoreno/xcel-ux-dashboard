@@ -246,7 +246,7 @@ export type FeatureFlagDefinition = {
  * ⚠ IT IS A FILTER, NOT A PERMISSION. Both designers see both tabs and can flip
  * anything in either. Nothing here gates who may change what.
  */
-export type DesignerId = 'jill' | 'eric' | 'anjani'
+export type DesignerId = 'jill' | 'eric' | 'anjani' | 'afsana'
 
 /** The tab strip's order and labels. The FIRST entry is the default selection,
  *  so reordering this changes which tab the panel opens on.
@@ -258,11 +258,20 @@ export type DesignerId = 'jill' | 'eric' | 'anjani'
  * `DashboardVersionsPanel`'s owner filter. It does not change what the
  * Feature Flag panel shows: that filters by the ACTIVE VERSION's owner, which
  * for her flags is still reached through their own `versions` arrays
- * (`designControlsFor`), not through this id. */
+ * (`designControlsFor`), not through this id.
+ *
+ * ⚠ `afsana` ADDED 2026-11-10, the same way and for the same reason: she
+ * co-owns the Invite & Purchase scope (`PROTOTYPE_SCOPES`) and is about to
+ * author her first flags (the affidavit modal V2 switch on the Design bar),
+ * which need an `owner` that is hers rather than borrowing Eric's. Labeling
+ * only — she owns no dashboard version either, so her Dashboard Versions tab
+ * renders empty, and her flags reach the bar through their own `versions`
+ * arrays. Last, so she does not become the default tab by accident. */
 export const FLAG_DESIGNERS: { id: DesignerId; label: string }[] = [
   { id: 'jill', label: 'Jill' },
   { id: 'eric', label: 'Eric' },
   { id: 'anjani', label: 'Anjani' },
+  { id: 'afsana', label: 'Afsana' },
 ]
 
 /** A flag's (or a version's) owner, resolving the absent case in ONE place so
