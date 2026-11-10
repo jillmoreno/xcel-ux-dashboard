@@ -255,6 +255,46 @@ describe('Finding 5 — the topic view turns a score into a next action', () => 
   })
 })
 
+describe('The Readiness to Pass flag — the tested rings, with a key that matches', () => {
+  it('is a design control scoped to the Refined surface, defaulting to the single ring', () => {
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'compass-refined-readiness-hero')
+    expect(flag?.surface).toBe('design')
+    expect(flag?.surfaces).toEqual(['compass:refined'])
+    expect(flag?.defaultVariant).toBe('single')
+    expect(flag?.variants?.map((v) => v.value)).toEqual(['single', 'rings'])
+  })
+
+  it('draws three rings and a three-item key — one line per ring, no more', () => {
+    const { container } = wrap(<CompassReadinessRefined hero="rings" />)
+    const arcs = container.querySelectorAll(
+      '.cre-rdr-ring__arc, .cre-rdr-ring__arc--practice, .cre-rdr-ring__arc--simulators',
+    )
+    const keyRows = container.querySelectorAll('.cre-rdr-key li')
+    expect(arcs).toHaveLength(3)
+    expect(keyRows).toHaveLength(arcs.length)
+    const t = text(container)
+    expect(t).toContain('122 of 265 answered')
+    expect(t).toContain('1 of 3 taken')
+    /* "Book your exam" was the item that broke the tested key — a one-time
+       task cannot fill a ring — so it is not in this one. */
+    expect(t).not.toMatch(/book your exam/i)
+  })
+
+  it('keeps the level inside the ring on the rings arm too', () => {
+    wrap(<CompassReadinessRefined hero="rings" />)
+    const ring = screen.getByRole('img', { name: /Readiness 62 out of 100, Developing/ })
+    const center = ring.parentElement?.querySelector('.cre-rdr-ring__center')
+    expect(text(center as HTMLElement)).toBe('62Developing')
+  })
+
+  it('reaches the page through the shell', () => {
+    const { container } = wrap(
+      <CompassJeffMvpShell page="readiness" onSelectPage={() => {}} readiness="refined" readinessHero="rings" />,
+    )
+    expect(container.querySelector('.cre-rdr-ring--three')).toBeTruthy()
+  })
+})
+
 describe('The third Compass version', () => {
   it('is the third arm of the Compass version control', () => {
     const flag = FEATURE_FLAGS.find((f) => f.key === 'compass-mvp-version')

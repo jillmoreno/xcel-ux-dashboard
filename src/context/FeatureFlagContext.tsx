@@ -1705,6 +1705,50 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-refined-readiness-hero',
+    /* THE READINESS TO PASS SECTION, on the Refined page — 2026-11-09,
+       Jillienne: "Add a feature flag concept that focuses on the Readiness to
+       Pass section and make a variant that still includes the 3 ringed
+       version that was tested as users seemed to like it."
+
+       The research cut both ways on the rings. Insight 2: many participants
+       named them the most helpful part of the page and called them
+       motivating — "I would love filling those rings up." Insight 3: the
+       rings confused the people who noticed the KEY had more items than the
+       graphic had rings. Recommendation 1 is explicit that either answer is
+       acceptable — "make the number of rings match the number of items in the
+       key, OR simplify the graphic". The Refined page shipped the second; this
+       flag puts the first beside it.
+
+       ⚠ THE `rings` ARM IS THREE RINGS AND A THREE-ITEM KEY, one to one. That
+       is the whole fix. The tested graphic had three rings and a five-item
+       breakdown (Readiness · Practice questions · Flashcards · Exam Simulator
+       · Book your exam), and "Book your exam" was the worst offender — a
+       one-time task cannot fill like a progress ring. Here every ring is a
+       thing that fills: Readiness (a score), Practice questions (a count),
+       Exam simulators (a count). Nothing in the key lacks a ring; no ring
+       lacks a line in the key.
+
+       ⚠ `single` IS THE DEFAULT because it is what the Refined page was built
+       as; the arm is the question. Scoped to the Refined surface only — it is
+       a decision about one section of one page. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined'],
+    group: 'Widgets',
+    label: 'Readiness to Pass',
+    description:
+      'How the Readiness to Pass section draws the score on the Refined page. Single ring is one arc with the level inside it, and questions answered as a labelled bar beneath — the simplest reading of the research. Three rings keeps the concentric graphic learners called motivating, with a key that matches it ring for ring: Readiness, Practice questions, Exam simulators.',
+    variants: [
+      { value: 'single', label: 'Single ring', description: 'One arc, the level inside it' },
+      { value: 'rings', label: 'Three rings', description: 'Readiness · Practice questions · Exam simulators' },
+    ],
+    defaultVariant: 'single',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-overview-version',
     /* WHOSE OVERVIEW — 2026-11-05, from `Compass-Overview-Prototype-V2_2`.
        Anjani's shipped Overview ("Your learning journey", the 62% ring and

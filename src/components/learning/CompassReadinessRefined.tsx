@@ -76,11 +76,26 @@ import './compassReadinessRefined.css'
  * a function of the fixture, which is the only way the clarified copy stays
  * true when the numbers change.
  */
+/**
+ * THE READINESS TO PASS SECTION HAS TWO ARMS — the `compass-refined-readiness-
+ * hero` flag (2026-11-09). `single` is the page as built: one arc, the level
+ * inside it, questions answered as a labelled bar. `rings` brings back the
+ * concentric graphic the research's learners called motivating ("I would love
+ * filling those rings up"), with the one change that answers the confusion it
+ * caused: THREE rings and a THREE-item key, one to one. Readiness · Practice
+ * questions · Exam simulators — every ring is a thing that fills, and nothing
+ * in the key is missing a ring. "Book your exam", the item that broke the
+ * tested version, is not a ring here because it is not a quantity.
+ */
+export type RefinedHeroStyle = 'single' | 'rings'
+
 export function CompassReadinessRefined({
   data = REFINED_READINESS,
+  hero = 'single',
   onSelectPage,
 }: {
   data?: RefinedReadiness
+  hero?: RefinedHeroStyle
   onSelectPage?: (p: JeffMvpPage) => void
 }) {
   const go = (p: JeffMvpPage) => () => onSelectPage?.(p)
@@ -115,8 +130,12 @@ export function CompassReadinessRefined({
         </header>
 
         {/* ---------- the score ---------- */}
-        <section className="cre-rdr-hero" aria-label="Readiness to pass">
-          <ReadinessRing score={data.overall} bandKey={band.key} bandLabel={band.label} />
+        <section className="cre-rdr-hero" aria-label="Readiness to pass" data-hero={hero}>
+          {hero === 'rings' ? (
+            <ThreeRings data={data} bandKey={band.key} bandLabel={band.label} />
+          ) : (
+            <ReadinessRing score={data.overall} bandKey={band.key} bandLabel={band.label} />
+          )}
 
           <div className="cre-rdr-hero__read">
             <p className="cre-rdr-eyebrow">Readiness to pass</p>
@@ -149,21 +168,51 @@ export function CompassReadinessRefined({
               </div>
             </dl>
 
-            <div className="cre-rdr-answered">
-              <div className="cre-rdr-answered__row">
-                <span>Practice questions answered</span>
-                <b>
-                  {data.questionsAnswered} of {data.questionsTotal}
-                </b>
+            {hero === 'rings' ? (
+              /* THE KEY. Three rows for three rings, outside in, each with the
+                 ring's own colour — so a reader can run a finger from arc to
+                 line. The research's complaint was a key with MORE items than
+                 rings; the test asserts these two counts are equal. */
+              <ul className="cre-rdr-key">
+                <li>
+                  <span className="cre-rdr-dot" data-band={band.key} aria-hidden />
+                  <span className="cre-rdr-key__label">Readiness</span>
+                  <b>
+                    {data.overall} · {band.label}
+                  </b>
+                </li>
+                <li>
+                  <span className="cre-rdr-dot" data-ring="practice" aria-hidden />
+                  <span className="cre-rdr-key__label">Practice questions</span>
+                  <b>
+                    {data.questionsAnswered} of {data.questionsTotal} answered
+                  </b>
+                </li>
+                <li>
+                  <span className="cre-rdr-dot" data-ring="simulators" aria-hidden />
+                  <span className="cre-rdr-key__label">Exam simulators</span>
+                  <b>
+                    {data.simulatorsTaken} of {data.simulatorsTotal} taken
+                  </b>
+                </li>
+              </ul>
+            ) : (
+              <div className="cre-rdr-answered">
+                <div className="cre-rdr-answered__row">
+                  <span>Practice questions answered</span>
+                  <b>
+                    {data.questionsAnswered} of {data.questionsTotal}
+                  </b>
+                </div>
+                <span className="cre-rdr-answered__bar" aria-hidden>
+                  <span style={{ width: `${Math.round((data.questionsAnswered / data.questionsTotal) * 100)}%` }} />
+                </span>
+                <p className="cre-rdr-note">
+                  Your score is based only on the questions you have answered. Answering more makes it
+                  more accurate.
+                </p>
               </div>
-              <span className="cre-rdr-answered__bar" aria-hidden>
-                <span style={{ width: `${Math.round((data.questionsAnswered / data.questionsTotal) * 100)}%` }} />
-              </span>
-              <p className="cre-rdr-note">
-                Your score is based only on the questions you have answered. Answering more makes it
-                more accurate.
-              </p>
-            </div>
+            )}
           </div>
         </section>
 
@@ -411,6 +460,61 @@ function ReadinessRing({ score, bandKey, bandLabel }: { score: number; bandKey: 
       </svg>
       <div className="cre-rdr-ring__center" aria-hidden>
         <span className="cre-rdr-ring__num serif">{score}</span>
+        <span className="cre-rdr-ring__band">{bandLabel}</span>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Three concentric rings, outside in: Readiness (coloured by band), Practice
+ * questions, Exam simulators. The centre still carries the number AND the
+ * level — finding 1 holds on both arms. The Ready mark sits on the OUTER
+ * ring only, because only that ring is a score with a threshold; a count has
+ * no "ready at".
+ */
+function ThreeRings({ data, bandKey, bandLabel }: { data: RefinedReadiness; bandKey: ReadinessBandKey; bandLabel: string }) {
+  const rings = [
+    { r: 70, pct: data.overall / 100, cls: 'cre-rdr-ring__arc' },
+    { r: 55, pct: data.questionsAnswered / data.questionsTotal, cls: 'cre-rdr-ring__arc--practice' },
+    { r: 40, pct: data.simulatorsTaken / data.simulatorsTotal, cls: 'cre-rdr-ring__arc--simulators' },
+  ]
+  const readyAngle = (READY_AT / 100) * 360
+  return (
+    <div className="cre-rdr-ring cre-rdr-ring--three" data-band={bandKey}>
+      <svg
+        viewBox="0 0 160 160"
+        width="160"
+        height="160"
+        role="img"
+        aria-label={`Readiness ${data.overall} out of 100, ${bandLabel}. ${data.questionsAnswered} of ${data.questionsTotal} practice questions answered. ${data.simulatorsTaken} of ${data.simulatorsTotal} exam simulators taken. Ready starts at ${READY_AT}.`}
+      >
+        <g transform="rotate(-90 80 80)">
+          {rings.map((ring) => {
+            const c = 2 * Math.PI * ring.r
+            return (
+              <g key={ring.r}>
+                <circle cx="80" cy="80" r={ring.r} fill="none" className="cre-rdr-ring__track" strokeWidth="10" />
+                <circle
+                  cx="80"
+                  cy="80"
+                  r={ring.r}
+                  fill="none"
+                  className={ring.cls}
+                  strokeWidth="10"
+                  strokeLinecap="round"
+                  strokeDasharray={`${Math.min(1, ring.pct) * c} ${c}`}
+                />
+              </g>
+            )
+          })}
+        </g>
+        <g transform={`rotate(${readyAngle - 90} 80 80)`}>
+          <line x1="142" y1="80" x2="154" y2="80" className="cre-rdr-ring__mark" strokeWidth="2" />
+        </g>
+      </svg>
+      <div className="cre-rdr-ring__center" aria-hidden>
+        <span className="cre-rdr-ring__num cre-rdr-ring__num--sm serif">{data.overall}</span>
         <span className="cre-rdr-ring__band">{bandLabel}</span>
       </div>
     </div>

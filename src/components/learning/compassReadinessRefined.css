@@ -34,6 +34,7 @@
   --rdr-rubi: var(--color-compass-page-rubi);
   --rdr-rubi-wash: #fbf1ec;
   --rdr-track: #e6e8eb;
+  --rdr-violet: #6b4fa0;
 
   /* the four levels */
   --rdr-beginner: #9a948a;
@@ -221,6 +222,48 @@
 }
 .cre-rdr .cre-rdr-ring__mark {
   stroke: var(--rdr-ready);
+}
+/* The three-ring arm (`compass-refined-readiness-hero: rings`). The two inner
+   rings are COUNTS, not scores, so they take the steel and the violet the
+   house Readiness page already uses for practice and the Exam Simulator
+   (`compassReadiness.css`), never a band colour — a band colour on a count
+   would say it has a level. */
+.cre-rdr .cre-rdr-ring__arc--practice,
+.cre-rdr [data-ring='practice'] {
+  stroke: var(--rdr-steel);
+  background: var(--rdr-steel);
+}
+.cre-rdr .cre-rdr-ring__arc--simulators,
+.cre-rdr [data-ring='simulators'] {
+  stroke: var(--rdr-violet);
+  background: var(--rdr-violet);
+}
+.cre-rdr .cre-rdr-ring__num--sm {
+  font-size: 26px;
+}
+.cre-rdr .cre-rdr-ring--three .cre-rdr-ring__band {
+  padding: 2px 7px;
+  font-size: 9.5px;
+}
+.cre-rdr .cre-rdr-key {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--rdr-rule);
+  list-style: none;
+}
+.cre-rdr .cre-rdr-key li {
+  display: grid;
+  grid-template-columns: 9px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--rdr-body);
+}
+.cre-rdr .cre-rdr-key b {
+  color: var(--rdr-ink);
+  font-variant-numeric: tabular-nums;
 }
 .cre-rdr .cre-rdr-ring__center {
   position: absolute;
@@ -524,6 +567,15 @@
   height: 9px;
   border-radius: 50%;
   background: var(--band);
+}
+.cre-rdr .cre-rdr-dot[data-ring] {
+  background: var(--ring-dot);
+}
+.cre-rdr .cre-rdr-dot[data-ring='practice'] {
+  --ring-dot: var(--rdr-steel);
+}
+.cre-rdr .cre-rdr-dot[data-ring='simulators'] {
+  --ring-dot: var(--rdr-violet);
 }
 
 /* The one grid every topic row and every sub-topic row shares — that is what

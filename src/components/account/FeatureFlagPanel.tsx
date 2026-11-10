@@ -117,6 +117,9 @@ const REBRAND_FLAGS = [
   // Overview, and a reviewer who has landed anywhere else in Compass still
   // needs a way to reach it.
   'compass-mvp-version',
+  // The Refined Readiness page's hero — single ring vs the tested three rings
+  // (2026-11-09). Only bites on the Refined arm of Compass version.
+  'compass-refined-readiness-hero',
   'compass-planner-rubi',
   'compass-planner-return',
   'compass-planner-under',

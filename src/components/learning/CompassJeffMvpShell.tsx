@@ -16,7 +16,7 @@ import {
   type JeffMvpPage,
 } from '@/data/compassJeffMvpFixtures'
 import { CompassJeffMvpReadiness } from './CompassJeffMvpReadiness'
-import { CompassReadinessRefined } from './CompassReadinessRefined'
+import { CompassReadinessRefined, type RefinedHeroStyle } from './CompassReadinessRefined'
 import { CompassJeffMvpLearn } from './CompassJeffMvpLearn'
 import { CompassJeffMvpOverview } from './CompassJeffMvpOverview'
 import { CompassJeffMvpPractice } from './CompassJeffMvpPractice'
@@ -73,6 +73,7 @@ export function CompassJeffMvpShell({
   page,
   onSelectPage,
   readiness = 'jeff',
+  readinessHero,
 }: {
   page: JeffMvpPage
   onSelectPage: (p: JeffMvpPage) => void
@@ -82,6 +83,10 @@ export function CompassJeffMvpShell({
    *  other pages, one row different. A second shell for one swapped page
    *  would have meant two rails to keep in step. */
   readiness?: 'jeff' | 'refined'
+  /** The Refined page's Readiness to Pass section — `compass-refined-
+   *  readiness-hero`, read by the page that owns the flags and passed down,
+   *  so this shell stays a plain function of its props. Ignored on Jeff's. */
+  readinessHero?: RefinedHeroStyle
 }) {
   /* ⚠ THE SIMULATED EXAM TAKES THE WHOLE SURFACE, RAIL INCLUDED. Every other
      page of his MVP renders beside the Compass rail; this one must not. It is
@@ -123,7 +128,7 @@ export function CompassJeffMvpShell({
       <CompassJeffMvpRail page={page} onSelectPage={onSelectPage} />
       {page === 'readiness' ? (
         readiness === 'refined' ? (
-          <CompassReadinessRefined onSelectPage={onSelectPage} />
+          <CompassReadinessRefined hero={readinessHero} onSelectPage={onSelectPage} />
         ) : (
           <CompassJeffMvpReadiness onSelectPage={onSelectPage} />
         )

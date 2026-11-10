@@ -87,6 +87,11 @@ export type RefinedReadiness = {
   trend: readonly RefinedTrendPoint[]
   questionsAnswered: number
   questionsTotal: number
+  /** Full-length exam simulators sat so far — the third ring on the
+   *  three-ring hero, and the activity the research's Prototype 2 learners
+   *  pointed at when they said why "Ready" was believable. */
+  simulatorsTaken: number
+  simulatorsTotal: number
   /** ISO date of the learner's planned state exam. */
   plannedExamOn: string
   /** "Today" for the demo — fixed so the page is stable in a screenshot and
@@ -118,6 +123,8 @@ export const REFINED_READINESS: RefinedReadiness = {
   ],
   questionsAnswered: 122,
   questionsTotal: 265,
+  simulatorsTaken: 1,
+  simulatorsTotal: 3,
   today: '2026-11-09',
   plannedExamOn: '2027-01-18',
   topics: [

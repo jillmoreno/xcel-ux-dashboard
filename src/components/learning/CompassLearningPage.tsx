@@ -22,6 +22,7 @@ import { CompassStudyPlanner } from './CompassStudyPlanner'
 import { CompassPlanProvider } from './CompassPlanContext'
 import { CompassJeffMvpShell } from './CompassJeffMvpShell'
 import type { JeffMvpPage } from '@/data/compassJeffMvpFixtures'
+import type { RefinedHeroStyle } from './CompassReadinessRefined'
 
 /**
  * COMPASS LEARNING — the top nav's second destination (Figma 765:3471).
@@ -118,6 +119,10 @@ export function CompassLearningPage({
      happened. Seeded once, like the page above — picking a rail row after
      that is the reviewer's, not the flag's. */
   const [jeffPage, setJeffPage] = useState<JeffMvpPage>(refined ? 'readiness' : 'overview')
+  /* The Refined page's Readiness to Pass section — single ring (default) or
+     the tested three rings with a matching key. Read here with the other
+     Compass controls; the page is a plain function of its props. */
+  const refinedHero = useFeatureFlag('compass-refined-readiness-hero').variant as RefinedHeroStyle
   useDeclareDesignSurface(
     refined ? 'compass:refined' : jeffMvp ? 'compass:jeff-mvp' : (`compass:${page}` as DesignSurfaceId),
   )
@@ -186,6 +191,7 @@ export function CompassLearningPage({
           page={jeffPage}
           onSelectPage={setJeffPage}
           readiness={refined ? 'refined' : 'jeff'}
+          readinessHero={refinedHero}
         />
       </div>
     ) : (
