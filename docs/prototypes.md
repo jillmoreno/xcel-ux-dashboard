@@ -797,9 +797,12 @@ typed signature, exam date, one I Agree — rebuilt on the XCEL brand tokens
 with the same content and flow. What it argues: the modal needs no coloured
 header (Charcoal serif on white, as every other XCEL surface, with the title
 and the ✕ on one row and no subtitle), the warning earns its place without
-shouting (`warning-100/300/700`) but still NAMES who must act in an uppercase
-eyebrow — `STUDENT ACTION REQUIRED`, or `PROCTOR ACTION REQUIRED` at
-`?actor=proctor` — the PDF and the attestation about it are ONE group, and the
+shouting but still NAMES who must act — in an uppercase eyebrow, and in the
+banner's own skin: the student's is the info/teal ramp with a person icon
+(`#bcebf1` fill, `--color-info-500` border, `#105f69` ink, 5.69:1), the
+proctor's at `?actor=proctor` is the amber with the triangle
+(`warning-100/300/700`, 4.19:1), so the two actors never read alike at a
+glance. Two of the three teals are Jill's values between ramp steps — the PDF and the attestation about it are ONE group, and the
 footer carries one button and nothing else: no status line, no Cancel, I Agree
 off until the signature matches the typed name and the exam date is not in the
 future. **Revised the same evening** (2026-11-10), from the decisions written

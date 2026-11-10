@@ -15,7 +15,9 @@
    modal, rebuilt on the XCEL brand tokens. Same content, same flow; the skin
    and the hierarchy are what changed. Every colour below is a value from
    `src/styles/tokens.css` `[data-brand='xcel']`, named in the comment beside
-   it. Nothing here is a colour that file does not have.
+   it, WITH THREE EXCEPTIONS — all decisions of Jill's that the ramps do not
+   carry yet, each marked ⚠ below: the CTA `#3d5a73`, and two of the student
+   notice's three teals.
 
    Sibling: `src/components/e2e/AffidavitModal.tsx` (the End-to-End Demo's
    pre-course affidavit, Figma 428:3054). This page borrows its title serif,
@@ -39,6 +41,13 @@
   --warn-100: #fdf0d4;       /* --color-warning-100 */
   --warn-300: #fbd27e;       /* --color-warning-300 */
   --warn-700: #956c18;       /* --color-warning-700 */
+  /* THE STUDENT NOTICE (2026-11-10). Amber is the PROCTOR's; the student's
+     warning is the info/teal ramp, so the two actors never read alike at a
+     glance. Jill's three values — only the middle one is a token. */
+  --info-500: #1fbdd2;       /* --color-info-500 — exact */
+  --info-fill: #bcebf1;      /* ⚠ between --color-info-100 #d2f1f6 and -200 #a5e4ed */
+  --info-ink: #105f69;       /* ⚠ between --color-info-700 #12717e and -800 #0c4b53;
+                                5.69:1 on the fill — the amber pair is 4.19:1 */
   --n-100: #ececec;          /* --color-neutral-100 */
   --n-200: #d9d9d9;          /* --color-neutral-200 */
   --n-300: #c7c7c7;          /* --color-neutral-300 */
@@ -127,8 +136,13 @@ body.closed .scrim { display: none; }
 .notice {
   display: flex; gap: 10px; align-items: flex-start;
   padding: 10px 12px; border-radius: var(--radius-md);
-  background: var(--warn-100); border: 1px solid var(--warn-300); color: var(--warn-700);
+  background: var(--info-fill); border: 1px solid var(--info-500); color: var(--info-ink);
 }
+/* ?actor=proctor — the amber, and the triangle instead of the person. */
+.notice.is-proctor { background: var(--warn-100); border-color: var(--warn-300); color: var(--warn-700); }
+.notice__icon--proctor { display: none; }
+.notice.is-proctor .notice__icon--student { display: none; }
+.notice.is-proctor .notice__icon--proctor { display: block; }
 .notice svg { flex: 0 0 16px; margin-top: 2px; }
 .notice__text { display: grid; gap: 2px; }
 /* The one place uppercase is allowed, because it names who must act. */
@@ -246,8 +260,9 @@ body.closed .scrim { display: none; }
         </button>
       </div>
 
-      <div class="notice" role="note">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3z"/><path d="M12 10v4M12 17.5v.5"/></svg>
+      <div class="notice" role="note" id="notice">
+        <svg class="notice__icon notice__icon--student" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <svg class="notice__icon notice__icon--proctor" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3z"/><path d="M12 10v4M12 17.5v.5"/></svg>
         <span class="notice__text">
           <span class="notice__eyebrow" id="notice-eyebrow">Student action required</span>
           <span class="notice__body">You must complete and sign this affidavit yourself. Someone else cannot sign it on your behalf.</span>
@@ -407,7 +422,10 @@ body.closed .scrim { display: none; }
   // flag will do it on the Design bar.
   const params = new URLSearchParams(location.search)
   const st = params.get('state')
-  if (params.get('actor') === 'proctor') $('notice-eyebrow').textContent = 'Proctor action required'
+  if (params.get('actor') === 'proctor') {
+    $('notice').classList.add('is-proctor')
+    $('notice-eyebrow').textContent = 'Proctor action required'
+  }
   const fill = () => { first.value = 'Jordan'; middle.value = 'Lee'; last.value = 'Navarro'; sig.value = 'Jordan Navarro'; date.value = todayISO(); attest.checked = true }
   if (st === 'filled') { fill(); paint() }
   else if (st === 'error') {

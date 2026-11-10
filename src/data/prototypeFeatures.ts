@@ -1364,7 +1364,7 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     accent: 'blue',
     icon: 'flag',
     blurb:
-      "The LMS's pre-exam affidavit as an XCEL form: Charcoal serif title sharing one row with the ✕ instead of a coloured header, a warning that stops shouting but names who must act in its eyebrow, the PDF and its attestation grouped as one thing, name and typed signature as the form, and a footer carrying one #3d5a73 I Agree — no status line, no Cancel — that comes on only when the signature matches the name and the exam date is real. Revised the evening of 2026-11-10 to the decisions in Afsana's V2 brief; the signed panel went with them.",
+      "The LMS's pre-exam affidavit as an XCEL form: Charcoal serif title sharing one row with the ✕ instead of a coloured header, a warning that stops shouting but names who must act twice over — an eyebrow, and a teal-and-person skin for the student against the amber-and-triangle one the proctor gets — the PDF and its attestation grouped as one thing, name and typed signature as the form, and a footer carrying one #3d5a73 I Agree — no status line, no Cancel — that comes on only when the signature matches the name and the exam date is real. Revised the evening of 2026-11-10 to the decisions in Afsana's V2 brief; the signed panel went with them.",
     tileBlurb:
       'The production affidavit modal, re-skinned on our tokens. Three states: empty, filled, error — plus ?actor=proctor.',
     kind: 'explore',
