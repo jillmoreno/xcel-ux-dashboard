@@ -4639,6 +4639,14 @@ the Design bar, which is Jill's file, so for now they are dropped.
     proctor's **Employer & Job Title** (required) and the proctor's **Email
     Address** (required, beside Phone Number). Rule of thumb for MN: OCD
     sets the shape and the labels; the state form sets what is collected.
+- **The sentence over the link (2026-11-11, Afsana)** reads "Before you
+  begin, you must click the link below to review the **attestation** /
+  **affidavit** and complete the form below:" — "attestation" where the
+  form's title says Attestation (CO, CT, WV, WI and MN before the course
+  exam, Non-state specific before the course exam), "affidavit" for every
+  other form, the enrollment agreements, Florida's notices and the terms
+  and conditions included. It used to name the document's title ("review
+  the attached …").
 - **The link shows no document (2026-11-10, Afsana).** In Link out,
   clicking the document's link only marks it opened — "Document opened."
   appears and the button can unlock — and nothing draws what the document

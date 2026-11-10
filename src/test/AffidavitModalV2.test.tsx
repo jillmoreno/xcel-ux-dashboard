@@ -214,6 +214,20 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(screen.getByText('Must be completed and signed by the student')).toBeTruthy()
   })
 
+  /* 2026-11-11, Afsana: the sentence says to click the link, and names the
+     document an attestation or an affidavit by its title. */
+  it('links out: tells the student to click the link to review the attestation or affidavit', () => {
+    const FORM = ' and complete the form below:'
+    // Colorado's attestation and Florida's notice have nothing to fill in, so the sentence ends there.
+    for (const [moment, state, end] of [['pre', 'IL', 'affidavit' + FORM], ['exam', 'CO', 'attestation.'], ['exam', 'GEN', 'attestation' + FORM], ['pre', 'FL', 'affidavit.']] as const) {
+      const { unmount } = render(<AffidavitModalV2 onClose={() => {}} moment={moment} state={state} />)
+      expect(screen.getByText(/^Before you begin/).textContent, `${moment} ${state}`).toBe(
+        `Before you begin, you must click the link below to review the ${end}`,
+      )
+      unmount()
+    }
+  })
+
   it('links out: the button waits for the document to be opened and the box to be ticked', () => {
     const form = FORMS.IL_PRE!
     render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="IL" />)
