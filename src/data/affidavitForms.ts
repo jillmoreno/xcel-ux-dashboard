@@ -36,6 +36,10 @@
  *       - MN's Mailing Address is optional "(if different than above)",
  *         with no "same as my business address" checkbox; its proctor Date
  *         carries "Must match course &/or exam".
+ *       (Several of these went 2026-11-09 → 11-10: the proctor's standard
+ *       name, signature and address; CO/CT's address hint and CT's date
+ *       hint; and Minnesota's form brought into line with OCD — see its
+ *       comment.)
  *     Kept on purpose though no document has them: the "I confirm that the
  *     above information is accurate" checkbox (the product pre-fills these
  *     forms; Afsana, 2026-11-04) and the pre-filled, locked Today's Date.
@@ -665,48 +669,66 @@ FORMS.CT_POST=(function(){
 })();
 (function(){
   const ST='AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY'.split(' ');
-  const addr=(pre,label,req)=>[
-    {id:pre+'addr',label:label,required:req,placeholder:'Street address'},
-    {id:pre+'city',label:'City',required:req,placeholder:'City'},
-    {row:[{id:pre+'state',type:'select',label:'State',required:req,placeholder:'Select state',options:ST},{id:pre+'zip',label:'Zip Code',required:req,placeholder:'ZIP code',inputmode:'numeric'}]}];
+  /* The standard five address fields, for an address that is not the learner's own (2026-11-10). */
+  const stdAddr=(pre)=>[
+    {id:pre+'addr1',label:'Address Line 1',required:true,placeholder:'Street address',ac:'off'},
+    {id:pre+'addr2',label:'Address Line 2 (Optional)',placeholder:'Apt, suite, unit, etc.',ac:'off'},
+    {id:pre+'city',label:'City',required:true,placeholder:'City',ac:'off'},
+    {id:pre+'state',type:'select',label:'State',required:true,placeholder:'Select state',ac:'off',options:ST},
+    {id:pre+'zip',label:'Zip',required:true,placeholder:'ZIP code',ac:'off',inputmode:'numeric'}];
   FORMS.MN_POST={
   docHeader:'Generic Document',
   title:'Pre-License Course EXAM Proctor Affidavit',
   source:'PDF · MN PE-Post Final Affidavit (Generic Document, Rev 1.17.23)',
   pages:[
-    {who:'student',blocks:[{h:'Student / Licensee Name and Certification'}],fields:[
+    /* ⚑ 2026-11-10, Afsana — MINNESOTA AFTER THE EXAM, BROUGHT INTO LINE WITH
+       OCD AND THE STANDARD FIELDS. No "Student / Licensee Name and
+       Certification" or "Student’s Full Legal Name, License Number, & DOB"
+       headings. Date & Time of Exam Completion is two fields, both pre-filled
+       and locked. Where the exam was completed: OCD's "Address where exam
+       was completed" heading over the standard five address fields (OCD:
+       address, city, state, zip). The student's Business Address is the
+       student's standard address, pre-filled (OCD: student address, city,
+       state, zip). No Mailing Address (OCD has none). Phone Number, Email
+       Address and Today's Date, the standard labels. License # stays —
+       OCD does not collect it, and nobody yet knows why. */
+    {who:'student',blocks:[],fields:[
       {id:'examname',label:'Name of Exam',readonly:true,value:'Certification Exam -Minnesota Life Prelciensing'},
-      {id:'examdt',type:'datetime-local',label:'Date & Time of Exam Completion',required:true},
-      /* No red box (2026-11-04, Afsana); it was a `flagGroup`. */
-      ...addr('loc_','Company & Address where exam was completed',true),
-      /* The document's own heading and one Name field (2026-11-04); it was First / Middle / Last / Suffix. */
-      {block:{h4:'Student’s Full Legal Name, License Number, & DOB'}},
+      {row:[{id:'examdate',type:'date',label:'Exam Completion Date',required:true},{id:'examtime',type:'time',label:'Time of Exam Completion',required:true}]},
+      {block:{h4:'Address where exam was completed'}},
+      ...stdAddr('loc_'),
       {id:'name',label:'Name',required:true,placeholder:'Full legal name',ac:'name',sameAs:'fullname'},
       {row:[{id:'license',label:'License #',required:true,placeholder:'License number'},{id:'dob',type:'date',label:'Date of Birth',required:true,ac:'bday'}]},
-      ...addr('bus_','Business Address',true),
-      /* As the document has it (2026-11-04): optional, under its own "(if different than above)". The explorer's "same as my business address" checkbox is gone. */
-      ...addr('mail_','Mailing Address (if different than above)',false),
-      {row:[{id:'phone',type:'tel',label:'Daytime Phone',required:true,placeholder:'(555) 000-0000',ac:'tel'},{id:'email',type:'email',label:'E-mail',required:true,placeholder:'Enter email address',ac:'email'}]},
+      ...['addr1','addr2','city','state','zip'].map((id)=>FORMS.KY_PRE.fields.find((x)=>x.id===id)),
+      {row:[{id:'phone',type:'tel',label:'Phone Number',required:true,placeholder:'(555) 000-0000',ac:'tel'},{id:'email',type:'email',label:'Email Address',required:true,placeholder:'Enter email address',ac:'email'}]},
       {block:{p:'<em><strong>I certify that I personally completed the above-named exam without outside assistance of any kind.</strong></em>'}},
       {id:'sig',label:'Student Signature',required:true,placeholder:'Type your full name',ac:'name'},
-      {id:'sigdate',type:'date',label:'Date',required:true,help:'Must match exam'},
+      {id:'sigdate',type:'date',label:"Today's Date",required:true},
       FORMS.KY_PRE.fields[0]
     ]},
-    {who:'proctor',blocks:[{h:'Proctor Name and Certification',u:true}],fields:[
+    /* The proctor's side (2026-11-10, Afsana): no "Proctor Name and
+       Certification" heading. Relationship to Examinee is OCD's three
+       choices, as radio buttons the way Colorado's are, without OCD's
+       "(check one)". No Employer & Job Title (OCD has none). The address is
+       the standard five fields (OCD: proctor address, state, zip). Today's
+       Date is ours — OCD has no date for the exam monitor — pre-filled and
+       locked. ⚠ E-mail: OCD does not collect it; kept, as Email Address,
+       until that is decided. */
+    {who:'proctor',blocks:[],fields:[
       {id:'p_name',label:'Proctor’s Full Legal Name',required:true,placeholder:'Proctor full legal name'},
-      {id:'p_rel',label:'Note your type of relationship to the student.',required:true,placeholder:'Relationship to the student'},
+      {id:'p_rel',type:'radio',label:'Relationship to Examinee',required:true,options:['Co-Worker (neither above or below the line of supervision)','Librarian','Neighbor']},
       {block:{p:'I certify that I am at least 18 years of age, with no financial or other conflict of interest with respect to a student’s successful completion of the examination. I verified the identity of the student listed above on this form (i.e. valid photo ID), and I ensured that the exam was completed without outside assistance of any kind (i.e. human, study material, notes, computer, cell phone, etc.), and that I physically monitored the student throughout the entire exam process.'}},
       {id:'p_sig',label:'Proctor Signature',required:true,placeholder:'Proctor types full name'},
-      {id:'p_date',type:'date',label:'Date',required:true,sameAs:'sigdate',help:'Must match course &/or exam'},
-      {id:'p_job',label:'Employer & Job Title',required:true,placeholder:'Employer and job title'},
-      ...addr('p_bus_','Business Address',true),
-      {row:[{id:'p_phone',type:'tel',label:'Business/Daytime Phone',required:true,placeholder:'(555) 000-0000'},{id:'p_email',type:'email',label:'E-mail',required:true,placeholder:'Enter email address'}]}
+      {id:'p_date',type:'date',label:"Today's Date",required:true,sameAs:'sigdate'},
+      {id:'p_addr',label:'Address',required:true},
+      {row:[{id:'p_phone',type:'tel',label:'Phone Number',required:true,placeholder:'(555) 000-0000'},{id:'p_email',type:'email',label:'Email Address',required:true,placeholder:'Enter email address'}]}
     ]}
   ],
   fields:[],
   flagFields:['agree'],
-  lock:['examdt','p_date'],
-  note:'This is a generic proctor affidavit (Rev 1.17.23) with "Name of Exam" pre-filled for Minnesota Life, shown read-only. Two pages: the student’s section, then the proctor’s. Optional: Middle Name and Suffix. Mailing Address has a “same as business address” checkbox; when it’s unchecked, the mailing address fields are required. The "I confirm that the above information is accurate" checkbox (highlighted in red) ends the student section. Date & Time of Exam Completion is pre-filled and locked. The Company & Address where exam was completed fields are highlighted in red. The proctor’s Date is pre-filled to match the student’s Date and locked.'
+  proctorWord:'the proctor', // "Must be completed and signed by the proctor" (2026-11-10, Afsana)
+  lock:['examdate','examtime','p_date'],
+  note:'This is a generic proctor affidavit (Rev 1.17.23) with "Name of Exam" pre-filled for Minnesota Life, shown read-only. Two pages: the student’s section, then the proctor’s. Since 2026-11-10 its fields follow OCD and the standard fields, not the PDF: no Mailing Address and no Employer & Job Title. The "I confirm that the above information is accurate" checkbox ends the student section. Exam Completion Date and Time of Exam Completion are pre-filled and locked. The proctor’s Today’s Date is pre-filled to match the student’s and locked.'
   };
 })();
 FORMS.WV_POST={
@@ -1024,9 +1046,8 @@ const unsign = (list: AffField[] | undefined): AffField[] | undefined => list?.f
    where it had none (WV, WI — whose "Proctor E-Signature:" heading goes, as
    the student's did). Address: Address Line 1, Address Line 2 (Optional),
    City, State, Zip — CO/CT's one line with its "(street address, city,
-   state, zip code)" and WI's "Proctor Full Address" alike; Minnesota's
-   proctor "Business Address" keeps that word as a heading over the same five
-   fields. The proctor banner says whose they are, so these labels do not
+   state, zip code)" and WI's "Proctor Full Address" alike, and Minnesota's
+   (its "Business Address" heading went 2026-11-10). The proctor banner says whose they are, so these labels do not
    say "Proctor" — nor does WI's "Phone Number" (2026-11-10). */
 const P_NAME_ROW: AffField = {row:[
   {id:'p_first',label:'Legal First Name',required:true,placeholder:'Legal first name',ac:'off'},
@@ -1041,7 +1062,6 @@ const P_ADDRESS: AffField[] = [
   {id:'p_state',type:'select',label:'State',required:true,placeholder:'Select state',ac:'off',options:'AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY'.split(' ')},
   {id:'p_zip',label:'Zip',required:true,placeholder:'ZIP code',ac:'off',inputmode:'numeric'},
 ]
-const P_OLD_ADDR = ['p_bus_city', 'p_bus_state', 'p_bus_zip']
 export const PROCTOR_FORMS = Object.keys(FORMS).filter((k) => FORMS[k].pages.some((p) => p.who === 'proctor'))
 for (const key of PROCTOR_FORMS) {
   const form = FORMS[key]
@@ -1051,9 +1071,6 @@ for (const key of PROCTOR_FORMS) {
     if (x.id === 'p_name') return lineSig ? [P_NAME_ROW] : [P_NAME_ROW, P_SIGNATURE]
     if (x.id === 'p_sig') return [P_SIGNATURE]
     if (x.id === 'p_addr') return P_ADDRESS
-    if (x.id === 'p_bus_addr') return [{ block: { h4: 'Business Address' } }, ...P_ADDRESS]
-    if (x.id != null && P_OLD_ADDR.includes(x.id)) return []
-    if (x.row && x.row.every((y) => y.id != null && P_OLD_ADDR.includes(y.id))) return []
     return [x]
   }) })
 }

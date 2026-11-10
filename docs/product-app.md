@@ -4606,6 +4606,30 @@ the Design bar, which is Jill's file, so for now they are dropped.
   them: **"Must be completed and signed by exam monitor"** on CO, CT and WI,
   **"Must be completed and signed by proctor"** on WV and MN (`proctorWord`;
   2026-11-10, Afsana — `proctorBanner` is gone).
+- **Minnesota after the exam follows OCD (2026-11-10, Afsana)** — where
+  the PDF and OCD (what production shows today) differ, OCD and the standard
+  fields win. Student page: no "Student / Licensee Name and Certification"
+  or "Student's Full Legal Name, License Number, & DOB" headings; **Exam
+  Completion Date** and **Time of Exam Completion** (was one Date & Time
+  field), both pre-filled and locked; where the exam was completed is an
+  "Address where exam was completed" heading over the standard five address
+  fields (OCD: address, city, state, zip; the PDF: "Company & Address where
+  exam was completed"); the PDF's Business Address is the student's own
+  standard address, pre-filled (OCD: student address, city, state, zip);
+  **no Mailing Address** (OCD has none); Phone Number, Email Address and
+  Today's Date (no "Must match exam"). Proctor page: no "Proctor Name and
+  Certification" heading; banner "Must be completed and signed by the
+  proctor"; **Relationship to Examinee** as radio buttons — OCD's
+  Co-Worker / Librarian / Neighbor, without OCD's "(check one)", as Colorado
+  has it — not the PDF's open "Note your type of relationship to the
+  student."; **no Employer & Job Title** (OCD has none); the standard five
+  address fields (OCD: proctor address, state, zip — no city); Today's Date,
+  pre-filled and locked, though OCD has no date for the exam monitor; Phone
+  Number.
+  - ⚠ **License #** stays, but OCD does not collect a license number and
+    nobody on the design side knows why.
+  - ⚠ **The proctor's email** stays, as Email Address, but OCD does not
+    collect it. Undecided.
 - **Titles (2026-11-10, Afsana).** Minnesota's before-course form is
   "Minnesota Prelicensing Terms and Conditions Pre-Course Affidavit"; the
   non-state-specific pre-exam form is "Prelicensing Education Insurance -

@@ -357,7 +357,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   it('names the exam monitor on CO, CT and WI and the proctor on WV and MN', () => {
     const word = (k: string) => FORMS[k]!.proctorWord ?? 'proctor'
     expect(['CO_POST', 'CT_POST', 'WI_POST'].map(word)).toEqual(['exam monitor', 'exam monitor', 'exam monitor'])
-    expect(['WV_POST', 'MN_POST'].map(word)).toEqual(['proctor', 'proctor'])
+    expect(['WV_POST', 'MN_POST'].map(word)).toEqual(['proctor', 'the proctor']) // MN: "by the proctor", as Afsana wrote it
     for (const key of PROCTOR_FORMS)
       expect(FORMS[key]!.pages.filter((p) => p.who === 'proctor').some((p) => flatAll(p.fields).some((x) => x.id === 'p_sig')), key).toBe(true)
   })
@@ -391,13 +391,11 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     CO_POST: ['Course Name', 'Date of Pre-licensing Final Exam', ...SIGNER, 'Date', 'Relationship to Examinee', ...ADDRESS, ...SIGNER],
     CT_POST: ['Course Name', 'Date of Prelicensing Final Exam', ...SIGNER, 'Date', 'Relationship to Examinee', ...ADDRESS, ...SIGNER],
     MN_POST: [
-      'Name of Exam', 'Date & Time of Exam Completion', 'Company & Address where exam was completed', 'City', 'State', 'Zip Code',
+      'Name of Exam', 'Exam Completion Date', 'Time of Exam Completion', ...ADDRESS,
       'Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'License #', 'Date of Birth',
-      'Business Address', 'City', 'State', 'Zip Code',
-      'Mailing Address (if different than above)', 'City', 'State', 'Zip Code',
-      'Daytime Phone', 'E-mail', 'Signature', 'Date',
-      'Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'Note your type of relationship to the student.', 'Signature', 'Date', 'Employer & Job Title',
-      ...ADDRESS, 'Business/Daytime Phone', 'E-mail',
+      ...ADDRESS, 'Phone Number', 'Email Address', 'Signature', 'Today’s Date',
+      'Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'Relationship to Examinee', 'Signature', 'Today’s Date',
+      ...ADDRESS, 'Phone Number', 'Email Address',
     ],
     WI_POST: [...SIGNER, 'Today’s Date', ...ADDRESS, 'Phone Number', ...SIGNER, 'Relationship to Examinee', 'Today’s Date'],
     WV_POST: [...SIGNER, 'Relationship to Examinee', ...SIGNER, 'Today’s Date'],
@@ -472,17 +470,28 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     }
   })
 
-  it('Minnesota: where the exam was completed is not boxed in red', () => {
+  /* 2026-11-10, Afsana: Minnesota after the exam follows OCD and the
+     standard fields rather than the PDF. */
+  it('Minnesota: where the exam was completed is the standard address, not boxed in red', () => {
     render(<AffidavitModalV2 onClose={() => {}} moment="post" state="MN" />)
-    const company = screen.getByLabelText(/Company & Address where exam was completed/)
-    expect(company.closest('.aff2-flag')).toBeNull()
+    expect(screen.getByText('Address where exam was completed')).toBeTruthy()
     expect(document.querySelectorAll('.aff2-flag')).toHaveLength(0)
+    for (const h of ['Student / Licensee Name and Certification', 'Student’s Full Legal Name, License Number, & DOB', 'Must match exam'])
+      expect(screen.queryByText(h), h).toBeNull()
   })
 
-  it('Minnesota: the mailing address is optional, with no "same as" checkbox', () => {
-    const fields = formFields('MN_POST')
-    expect(fields.find((x) => x.id === 'mail_same')).toBeUndefined()
-    expect(fields.filter((x) => x.id?.startsWith('mail_')).every((x) => !x.required)).toBe(true)
+  it('Minnesota: exam date and time pre-filled and locked; the student’s address pre-filled; no mailing address or employer', () => {
+    render(<AffidavitModalV2 onClose={() => {}} moment="post" state="MN" />)
+    const date = screen.getByLabelText(/^Exam Completion Date/) as HTMLInputElement
+    const time = screen.getByLabelText(/^Time of Exam Completion/) as HTMLInputElement
+    expect([date.readOnly, time.readOnly, time.value]).toEqual([true, true, '10:30'])
+    expect(date.value).not.toBe('')
+    expect((screen.getAllByLabelText(/^Address Line 1/)[1] as HTMLInputElement).value).toBe('1420 Maple Avenue')
+    expect((screen.getAllByLabelText(/^Address Line 1/)[0] as HTMLInputElement).value).toBe('') // where the exam was
+    const ids = formFields('MN_POST').map((x) => x.id)
+    for (const id of ['examdt', 'mail_addr', 'bus_addr', 'p_job', 'p_bus_addr']) expect(ids, id).not.toContain(id)
+    const rel = formFields('MN_POST').find((x) => x.id === 'p_rel')!
+    expect([rel.type, rel.label, rel.options]).toEqual(['radio', 'Relationship to Examinee', ['Co-Worker (neither above or below the line of supervision)', 'Librarian', 'Neighbor']])
   })
 
   /* NON-STATE SPECIFIC (2026-11-04) — XCEL's own forms, from Afsana's

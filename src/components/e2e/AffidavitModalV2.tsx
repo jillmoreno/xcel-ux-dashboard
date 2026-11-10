@@ -147,7 +147,7 @@ function prefillVals(f: AffForm, st: string): { vals: Vals; readOnly: string[] }
   const P: Vals = {
     first: 'Jordan', middle: 'Lee', last: 'Navarro', addr1: '1420 Maple Avenue', addr2: 'Apt 3B', city, state: st, zip,
     phone: '(555) 214-7788', email: 'jordan.navarro@example.com', date: today, s_date: today, sigdate: today,
-    examdate: today, examdt: `${today}T10:30`, course: `${STATES[st] ?? ''} Life & Health Prelicensing`,
+    examdate: today, examdt: `${today}T10:30`, examtime: '10:30', course: `${STATES[st] ?? ''} Life & Health Prelicensing`,
     // The name-only forms that keep one Full Name line (2026-11-04). On every
     // form with a signature the name is First / Middle / Last, pre-filled, and
     // the Student Signature box is left empty for the learner (2026-11-06).
