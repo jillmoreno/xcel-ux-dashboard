@@ -510,6 +510,7 @@ function AffidavitBody({
     return (
       <>
         <div ref={terms} className="aff2-terms" tabIndex={0} aria-label="Affidavit text">
+          <WhoBanner who={form.who} form={form} />
           <p>
             Before you begin, you must review the attached {form.title}
             {hasFields ? ' and complete the form below:' : '.'}
@@ -592,7 +593,8 @@ function AffidavitBody({
         {form.pages.map((_, k) => <i key={k} className={k <= page ? 'is-on' : undefined} />)}
       </div>
       <div ref={terms} className="aff2-terms" tabIndex={0} aria-label="Affidavit text" onScroll={check}>
-        <WhoBanner who={current?.who} form={form} />
+        {/* A form that is the student's alone carries its banner at the top of the first page (2026-11-09). */}
+        <WhoBanner who={current?.who ?? (page === 0 ? form.who : undefined)} form={form} />
         <Blocks blocks={current?.blocks ?? []} />
         <Fields list={pageFields} ctx={ctx} />
         {page === last ? (

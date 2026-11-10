@@ -80,6 +80,8 @@ export type AffForm = {
   pages: AffPage[]; fields: AffField[]; after?: AffBlock[]
   agreeLabel?: string; flagFields?: string[]; noPrefill?: string[]; lock?: string[]
   linkKeep?: number; noLink?: boolean; proctorWord?: string; proctorBanner?: string; lang?: string
+  /** The whole form is the student's: one "Must be completed by the student" banner at the top (non-state-specific forms, 2026-11-09). */
+  who?: "student"
 }
 export type AffEntry = {
   m: AffidavitMoment; doc?: string; st: string; status: "ready" | "received" | "missing"; form?: string
@@ -508,7 +510,7 @@ FORMS.MN_EXAM={
   flagFields:['agree'],
   noPrefill:['first','middle','last','suffix'],
   linkKeep:2,
-  note:'The student’s typed name under "Student E-Signature" acts as the signature; the doc has no separate signature line. In Link out, the Student Attestation stays in the modal. Because the typed name is the signature, the name fields are not pre-filled. The "I confirm that the above information is accurate" checkbox (highlighted in red) is the last field.'
+  note:'The student’s typed name acts as the signature (the doc’s "Student E-Signature" heading is dropped, 2026-11-09); the doc has no separate signature line. In Link out, the Student Attestation stays in the modal. Because the typed name is the signature, the name fields are not pre-filled. The "I confirm that the above information is accurate" checkbox (highlighted in red) is the last field.'
 };
 FORMS.CA_POST_LH={
   docHeader:'California Prelicensing Affidavit',
@@ -991,4 +993,28 @@ for (const key of [...SIGNED_FORMS, ...NAMED_FORMS]) {
   const all = form.fields.concat(...form.pages.map((p) => p.fields ?? []))
   if (!has(all, 'agree')) form.fields.push(CONFIRM)
   form.noPrefill = (form.noPrefill ?? []).filter((id) => !NAME_IDS.includes(id))
+}
+
+/* ── WHOSE FIELDS — 2026-11-09 (Afsana) ──────────────────────────────────
+   The state-specific affidavits (the "State Specific Affidavit" folder: the
+   six after-exam forms below) split into student and proctor pages, each with
+   its "Must be completed by the student / proctor" banner. Every other form —
+   all three moments — is the student's alone, so it gets the same student
+   banner once, at the top. The banner says whose the fields are, so on those
+   forms the signature box is plain "Signature", not "Student Signature".
+   And no form keeps a "Student E-Signature:" heading: the banner, the name
+   block and the signature box already say it. */
+export const STATE_SPECIFIC_FORMS = ['CO_POST','CT_POST','MN_POST','NY_POST','WI_POST','WV_POST']
+const eSig = (b: AffBlock) => /^Student E-Signature:?$/.test((b.h ?? b.h4 ?? '').trim())
+const unsign = (list: AffField[] | undefined, plain: boolean): AffField[] | undefined => list?.flatMap((x) => {
+  if (x.block && eSig(x.block)) return []
+  if (x.flagGroup) return [{ ...x, flagGroup: unsign(x.flagGroup, plain) }]
+  if (x.row) return [{ ...x, row: unsign(x.row, plain) }]
+  return [plain && x.id === 'sig' ? { ...x, label: 'Signature' } : x]
+})
+for (const [key, form] of Object.entries(FORMS) as [string, AffForm][]) {
+  const plain = !STATE_SPECIFIC_FORMS.includes(key)
+  if (plain) form.who = 'student'
+  form.pages = form.pages.map((p) => ({ ...p, blocks: p.blocks?.filter((b) => !eSig(b)), fields: unsign(p.fields, plain) }))
+  form.fields = unsign(form.fields, plain) ?? []
 }

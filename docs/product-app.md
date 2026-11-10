@@ -4572,8 +4572,8 @@ the Design bar, which is Jill's file, so for now they are dropped.
   confirm that the above information is accurate" box. Suffix is gone (no
   document asks for one). **Middle Name is undecided** — it is part of a
   legal name — so it is the Design bar's **Affidavit middle name** (Shown /
-  Off; `affidavit-v2-middle`). The document's own labels ("Student
-  E-Signature:") stay. Proctor fields are untouched. **Names are taken the same way
+  Off; `affidavit-v2-middle`). The document's own "Student
+  E-Signature:" heading stayed until 2026-11-09 (see below). Proctor fields are untouched. **Names are taken the same way
   too** (Afsana, same day): the forms with a name and no signature —
   California's and the generic terms, and the KY, NV and OR enrollment
   agreements ("Full Name", in the image of the form at the end of each Word
@@ -4583,6 +4583,19 @@ the Design bar, which is Jill's file, so for now they are dropped.
   data point.
   The three fields are labelled **Legal First Name, Legal Middle Name, Legal
   Last Name** (Afsana, 2026-11-06).
+- **Whose fields (2026-11-09, Afsana).** The six **state-specific**
+  affidavits — the after-exam forms in the "State Specific Affidavit" folder,
+  `STATE_SPECIFIC_FORMS` (CO, CT, MN, NY, WI, WV) — keep their student and
+  proctor pages, each with its own "Must be completed by the …" banner.
+  **Every other form, in all three moments, is the student's alone** and now
+  carries the same "Must be completed by the student" banner once, at the
+  top (first page in Pagination, above the link in Link out; `who` on the
+  form). Because the banner says whose the fields are, those forms' signature
+  box is plain **Signature** — the state-specific forms keep **Student
+  Signature**, beside a proctor's. And **no form keeps a "Student
+  E-Signature:" heading**, state-specific ones included: the banner, the
+  name block and the signature box already say it. Done as a pass at the end
+  of `affidavitForms.ts`, so the explorer's text above it stays verbatim.
 - ⚠ **WAITING ON NICK AND AMRITA (2026-11-06)** — nothing below is changed
   until they answer:
   - **Addresses, student and proctor.** Whether, and how, to standardize

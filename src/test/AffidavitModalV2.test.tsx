@@ -7,7 +7,7 @@ import { AffidavitModalV2 } from '@/components/e2e/AffidavitModalV2'
 import { resolveAffidavit, withoutMiddle } from '@/components/e2e/affidavitModalV2Util'
 import { MemoryRouter } from 'react-router-dom'
 import { FEATURE_FLAGS, FeatureFlagProvider, designControlsFor, useFeatureFlags } from '@/context/FeatureFlagContext'
-import { ENTRIES, FORMS, NAMED_FORMS, SIGNED_FORMS, SSN_REASON, STATES, type AffField } from '@/data/affidavitForms'
+import { ENTRIES, FORMS, NAMED_FORMS, SIGNED_FORMS, SSN_REASON, STATE_SPECIFIC_FORMS, STATES, type AffField } from '@/data/affidavitForms'
 
 /**
  * AFFIDAVIT V2 — 2026-11-03, Afsana. The first change V2 makes: the modal
@@ -166,7 +166,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(screen.getByRole('button', { name: 'Back' })).toBeTruthy()
     const agree = screen.getByRole('button', { name: form.agreeLabel ?? 'I Agree' }) as HTMLButtonElement
     expect(agree.disabled).toBe(true) // the signature is still empty
-    fireEvent.change(screen.getByLabelText(/Student Signature/), { target: { value: 'Jordan Navarro' } })
+    fireEvent.change(screen.getByLabelText(/^Signature/), { target: { value: 'Jordan Navarro' } })
     expect(agree.disabled).toBe(true) // and the pre-filled name not yet confirmed
     fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
     expect(agree.disabled).toBe(false)
@@ -177,7 +177,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   it('links out: the button waits for the document to be opened and the box to be ticked', () => {
     const form = FORMS.IL_PRE!
     render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="IL" pattern="link" />)
-    fireEvent.change(screen.getByLabelText(/Student Signature/), { target: { value: 'Jordan Navarro' } })
+    fireEvent.change(screen.getByLabelText(/^Signature/), { target: { value: 'Jordan Navarro' } })
     fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
     const agree = screen.getByRole('button', { name: form.agreeLabel ?? 'I Agree' }) as HTMLButtonElement
     fireEvent.click(screen.getByLabelText(/I have read .* and swear/))
@@ -305,7 +305,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect((screen.getByLabelText(/^Legal Middle Name/) as HTMLInputElement).value).toBe('Lee')
     expect((screen.getByLabelText(/^Legal Last Name/) as HTMLInputElement).value).toBe('Navarro')
     expect((screen.getByLabelText(/Student Signature/) as HTMLInputElement).value).toBe('')
-    expect(screen.getByText('Student E-Signature:')).toBeTruthy() // the document's own label stays
+    expect(screen.queryByText('Student E-Signature:')).toBeNull() // dropped everywhere, 2026-11-09
     expect((screen.getByLabelText(/Today.s Date/) as HTMLInputElement).readOnly).toBe(true)
   })
 
@@ -391,7 +391,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     await ready()
     expect(screen.getByText('Student Attestation:')).toBeTruthy()
-    expect(screen.getByText('Student E-Signature:')).toBeTruthy()
+    expect(screen.queryByText('Student E-Signature:')).toBeNull()
     expect(screen.getByRole('button', { name: 'Attest' })).toBeTruthy()
   })
 
@@ -440,15 +440,40 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     }
   })
 
+  /* WHOSE FIELDS (2026-11-09, Afsana). The six state-specific affidavits keep
+     their student / proctor pages; every other form, all three moments, is
+     the student's alone and says so once at the top — so its signature box is
+     plain "Signature", and no form keeps a "Student E-Signature:" heading. */
+  it('every non-state-specific form says once, at the top, that the student completes it', () => {
+    expect(STATE_SPECIFIC_FORMS).toEqual(['CO_POST', 'CT_POST', 'MN_POST', 'NY_POST', 'WI_POST', 'WV_POST'])
+    const sigLabels = (key: string) => flatAll(formFields(key)).filter((x) => x.id === 'sig').map((x) => x.label)
+    for (const [key, f] of Object.entries(FORMS)) {
+      const stateSpecific = STATE_SPECIFIC_FORMS.includes(key)
+      expect(f!.who, key).toBe(stateSpecific ? undefined : 'student')
+      for (const l of sigLabels(key)) expect(l, key).toBe(stateSpecific ? 'Student Signature' : 'Signature')
+      // Headings live in page blocks and in field blocks, at any depth.
+      expect(JSON.stringify([f!.pages, f!.fields, f!.after]), key).not.toMatch(/"h4?":"Student E-Signature/)
+    }
+    for (const pattern of ['page', 'link'] as const) {
+      const { unmount } = render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="CA" pattern={pattern} />)
+      const banner = screen.getByRole('note')
+      expect(banner.textContent).toBe('Must be completed by the student')
+      expect(banner.parentElement!.firstElementChild).toBe(banner)
+      unmount()
+    }
+    render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="IL" pattern="page" />)
+    expect(screen.getAllByRole('note')).toHaveLength(1)
+  })
+
   /* PENNSYLVANIA (2026-11-06), from the compliance sheet. Not in the PRD —
      an open question; affidavitForms.ts has it. */
   it('Pennsylvania before the course exam: its affidavit, signed the standard way, with Attest', async () => {
     render(<AffidavitModalV2 onClose={() => {}} moment="exam" state="PA" pattern="page" />)
     expect(screen.getByRole('heading', { level: 2 }).textContent).toBe('Pennsylvania Pre-Licensing Affidavit')
     expect(screen.getByText(/sanction by the Pennsylvania Department of Insurance/)).toBeTruthy()
-    expect(screen.getByText('Student E-Signature:')).toBeTruthy()
+    expect(screen.queryByText('Student E-Signature:')).toBeNull()
     expect((screen.getByLabelText(/^Legal First Name/) as HTMLInputElement).value).toBe('Jordan')
-    expect((screen.getByLabelText(/Student Signature/) as HTMLInputElement).value).toBe('')
+    expect((screen.getByLabelText(/^Signature/) as HTMLInputElement).value).toBe('')
     expect(screen.getByRole('button', { name: 'Attest' })).toBeTruthy()
     expect(STATES.PA).toBe('Pennsylvania')
     expect(FEATURE_FLAGS.find((f) => f.key === 'affidavit-v2-state')!.variants!.some((v) => v.value === 'PA')).toBe(true)
