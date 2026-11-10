@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
+import { acquireBodyScrollLock } from '@/utils/bodyScrollLock'
 import { ArrowUpRightFromSquare, Check, FileText, X } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import {
@@ -391,6 +392,11 @@ export function AffidavitModalV2({
   const lineOfAuthority = loaProp ?? loaFlag ?? 'Life & Health'
   const chromeBottom = useChromeBottom()
 
+  /* Home stays put while the modal is up (2026-11-10, Afsana): only the
+     modal scrolls, and the learner leaves by agreeing or by its X. The same
+     refcounted lock the shared Modal and Sheet use, so <html> is locked too. */
+  useEffect(() => acquireBodyScrollLock(), [])
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -421,7 +427,7 @@ export function AffidavitModalV2({
         aria-modal="true"
         aria-labelledby="affidavit-v2-title"
         lang={form?.lang}
-        className={`aff2-modal${form && pattern === 'page' ? ' is-tall' : ''}`}
+        className="aff2-modal"
       >
         <div className="aff2-head">
           <h2 id="affidavit-v2-title">{title}</h2>

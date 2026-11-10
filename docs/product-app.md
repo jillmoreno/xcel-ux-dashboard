@@ -4630,6 +4630,15 @@ the Design bar, which is Jill's file, so for now they are dropped.
     (nobody on the design side knows why it skips the license). Both stay
     for now, required. To decide: keep them, make them optional, or drop
     them as OCD does.
+- **One size, and Home holds still (2026-11-10, Afsana).** Every affidavit
+  modal is 720 × 688 (less on a short window), whatever the form or
+  pattern. Until then only Pagination held 688px (`is-tall`, now gone) and
+  a Link out modal shrank to its content — which is why California after the
+  exam stood shorter than Connecticut. While the modal is open Home does not
+  scroll (`acquireBodyScrollLock`, the shared Modal's lock, which locks
+  `<html>` too); the modal's own text scrolls, with `overscroll-behavior:
+  contain`, and the learner leaves by its button or its X. It stays centred
+  on the area below the review bars, as on 2026-11-04.
 - **Titles (2026-11-10, Afsana).** Minnesota's before-course form is
   "Minnesota Prelicensing Terms and Conditions Pre-Course Affidavit"; the
   non-state-specific pre-exam form is "Prelicensing Education Insurance -

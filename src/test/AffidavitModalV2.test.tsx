@@ -36,6 +36,29 @@ afterEach(() => {
 })
 
 describe('AffidavitModalV2', () => {
+  /* 2026-11-10, Afsana: Home does not scroll behind the modal, and every
+     affidavit is the same size — Link out no longer shrinks to its content. */
+  it('locks Home’s scrolling while it is open, and gives it back on close', () => {
+    const { unmount } = render(<AffidavitModalV2 onClose={() => {}} moment="post" state="CA" />)
+    expect([document.documentElement.style.overflow, document.body.style.overflow]).toEqual(['hidden', 'hidden'])
+    unmount()
+    expect([document.documentElement.style.overflow, document.body.style.overflow]).toEqual(['', ''])
+  })
+
+  it('is one size whatever the form or pattern: CA after the exam (Link out) as CT (pages)', () => {
+    const cls = (state: string) => {
+      const { unmount } = render(<AffidavitModalV2 onClose={() => {}} moment="post" state={state} />)
+      const c = screen.getByRole('dialog').className
+      unmount()
+      return c
+    }
+    expect(cls('CA')).toBe('aff2-modal')
+    expect(cls('CT')).toBe('aff2-modal')
+    const css = readFileSync(resolve(__dirname, '../components/e2e/affidavitModalV2.css'), 'utf8')
+    expect(css).toMatch(/\.aff2-modal \{[^}]*\bheight: 688px;/)
+    expect(css).not.toMatch(/is-tall/)
+  })
+
   it('dims the page from below the lowest bar, not from the top of the window', () => {
     bar('cre-prototype-bar', 44)
     bar('cre-demo-controls', 96)

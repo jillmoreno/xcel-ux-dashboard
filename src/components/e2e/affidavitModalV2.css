@@ -10,6 +10,11 @@
   flex-direction: column;
   width: 720px;
   max-width: 100%;
+  /* ONE SIZE FOR EVERY AFFIDAVIT (2026-11-10, Afsana). Until then only
+     Pagination held 688px and a Link out modal shrank to its content, so CA
+     after the exam stood shorter than CT. Now every form, either pattern,
+     is 720 × 688 (less on a short window), and its text scrolls inside. */
+  height: 688px;
   max-height: 100%;
   overflow: hidden;
   border-radius: 6px;
@@ -19,8 +24,6 @@
   color: var(--color-aff-ink);
   color-scheme: light;
 }
-/* Pagination holds its height, so Next/Back never make the modal jump. */
-.aff2-modal.is-tall { height: 688px; }
 
 .aff2-head {
   flex-shrink: 0;
@@ -60,6 +63,7 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: scroll;
+  overscroll-behavior: contain; /* scrolling stops at the modal's edge, never Home's */
   margin: 20px 32px 0;
   padding: 22px 22px 8px;
   border: 1px solid var(--color-aff-line);
@@ -233,6 +237,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 32px clamp(18px, 8%, 120px);
   font-family: 'Times New Roman', Times, serif;
   color: var(--color-aff-ink);
