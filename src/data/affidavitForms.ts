@@ -749,6 +749,7 @@ FORMS.WI_POST={
   agreeLabel:'Attest',
   source:'Word doc · WI PE-Post Final Affidavit',
   proctorWord:'exam monitor',
+  proctorBanner:'Must be completed and signed by exam monitor', // as Colorado's (2026-11-10, Afsana)
   pages:[
     {who:'student',blocks:[{p:'I affirm that I personally completed the entire study material of the course. I also affirm that I completed the exam without assistance from any course material, other than source material, or from any person(s).'}],fields:[
       {block:{h4:'Student E-Signature:'}},
@@ -759,7 +760,7 @@ FORMS.WI_POST={
     ]},
     {who:'proctor',blocks:[{h:'To be completed and signed by Exam Monitor'}],fields:[
       {id:'p_addr',label:'Proctor Full Address',required:true,placeholder:'Street, city, state, ZIP',ac:'street-address'},
-      {id:'p_phone',type:'tel',label:'Proctor Phone Number',required:true,placeholder:'(555) 000-0000',ac:'tel'},
+      {id:'p_phone',type:'tel',label:'Phone Number',required:true,placeholder:'(555) 000-0000',ac:'tel'},
       {block:{p:'I declare that I personally observed the above-named individual during the completion of this examination and also observed that the candidate received no outside assistance in completing the examination. I attest that as an approved proctor I am an impartial disinterested third party or currently licensed agent with no family or financial relationship to the student per section Ins. 26.09 (3), Wis. Adm. Code.'}},
       {block:{h4:'Proctor E-Signature:'}},
       {id:'p_name',label:'Proctor Full Name',required:true,placeholder:'Proctor full name'},
@@ -1031,7 +1032,7 @@ const unsign = (list: AffField[] | undefined): AffField[] | undefined => list?.f
    state, zip code)" and WI's "Proctor Full Address" alike; Minnesota's
    proctor "Business Address" keeps that word as a heading over the same five
    fields. The proctor banner says whose they are, so these labels do not
-   say "Proctor" (WI's "Proctor Phone Number" is unchanged). */
+   say "Proctor" — nor does WI's "Phone Number" (2026-11-10). */
 const P_NAME_ROW: AffField = {row:[
   {id:'p_first',label:'Legal First Name',required:true,placeholder:'Legal first name',ac:'off'},
   {id:'p_middle',label:'Legal Middle Name',placeholder:'Legal middle name',ac:'off'},

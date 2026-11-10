@@ -4617,7 +4617,9 @@ the Design bar, which is Jill's file, so for now they are dropped.
   address, city, state, zip code)" hint; WV/WI's "Proctor Full Name"; WI's
   "Proctor Full Address"; Minnesota's "Proctor's Full Legal Name" and
   split Business Address (kept as a "Business Address" heading over the
-  five fields). WI's "Proctor Phone Number" is unchanged. The same day CO
+  five fields). WI's "Proctor Phone Number" became "Phone Number", and its
+  proctor banner reads "Must be completed and signed by exam monitor", as
+  Colorado's does (2026-11-10). The same day CO
   (and CT, its copy) lost the "Student Signature:" heading and the
   underlined "To be completed and Signed by Exam Monitor" heading, CT lost
   the "mm/dd/yyyy" hint under its exam date, and the course-completion-date

@@ -282,7 +282,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
       expect(ids, key).not.toContain('p_name')
       expect(ids.indexOf('p_last'), key).toBeLessThan(ids.indexOf('p_sig'))
       const labels = FORMS[key]!.pages.flatMap((p) => flatAll(p.fields)).map((x) => x.label ?? '')
-      expect(labels.filter((l) => /^Proctor/.test(l)), key).toEqual(key === 'WI_POST' ? ['Proctor Phone Number'] : [])
+      expect(labels.filter((l) => /^Proctor/.test(l)), key).toEqual([])
       expect(JSON.stringify(FORMS[key]), key).not.toContain('Proctor E-Signature')
     }
     render(<AffidavitModalV2 onClose={() => {}} moment="post" state="WV" pattern="page" />)
@@ -295,6 +295,16 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(screen.getByText('Must be completed by the proctor')).toBeTruthy()
     expect((screen.getByLabelText(/^Legal First Name/) as HTMLInputElement).value).toBe('')
     expect((screen.getByLabelText(/^Signature/) as HTMLInputElement).value).toBe('')
+  })
+
+  it('Wisconsin after the exam: the exam monitor’s banner says "completed and signed"', async () => {
+    render(<AffidavitModalV2 onClose={() => {}} moment="post" state="WI" pattern="page" />)
+    fireEvent.change(screen.getByLabelText(/^Signature/), { target: { value: 'Jordan Navarro' } })
+    fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
+    await ready()
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+    expect(screen.getByRole('note').textContent).toBe('Must be completed and signed by exam monitor')
+    expect(screen.getByLabelText(/^Phone Number/)).toBeTruthy()
   })
 
   it('sets the course-completion-date sentence in smaller print wherever it appears', () => {
@@ -329,7 +339,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
       'Legal First Name', 'Legal Middle Name', 'Legal Last Name', 'Note your type of relationship to the student.', 'Signature', 'Date', 'Employer & Job Title',
       ...ADDRESS, 'Business/Daytime Phone', 'E-mail',
     ],
-    WI_POST: [...SIGNER, 'Today’s Date', ...ADDRESS, 'Proctor Phone Number', ...SIGNER, 'Relationship to Examinee', 'Today’s Date'],
+    WI_POST: [...SIGNER, 'Today’s Date', ...ADDRESS, 'Phone Number', ...SIGNER, 'Relationship to Examinee', 'Today’s Date'],
     WV_POST: [...SIGNER, 'Relationship to Examinee', ...SIGNER, 'Today’s Date'],
   }
   const flatAll = (l: AffField[] = []): AffField[] =>
