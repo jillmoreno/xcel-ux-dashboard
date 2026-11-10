@@ -4632,6 +4632,12 @@ the Design bar, which is Jill's file, so for now they are dropped.
   - ⚠ **OPEN: should they come back?** Nobody on the design side knows why
     OCD skips them. To decide: leave them out as OCD does, or bring them
     back, required or optional.
+- **The link shows no document (2026-11-10, Afsana).** In Link out,
+  clicking the document's link only marks it opened — "Document opened."
+  appears and the button can unlock — and nothing draws what the document
+  looks like; there is no "Back to the affidavit" view. Kept, unwired, as
+  `LinkedDocument` in `AffidavitModalV2.tsx`, whose comment has the re-wire
+  steps; the tests render it directly to pin each document's text.
 - **One size, and Home holds still (2026-11-10, Afsana).** Every affidavit
   modal is 720 × 688 (less on a short window), whatever the form or
   pattern. Until then only Pagination held 688px (`is-tall`, now gone) and

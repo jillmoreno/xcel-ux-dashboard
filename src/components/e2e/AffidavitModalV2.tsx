@@ -469,6 +469,32 @@ export function AffidavitModalV2({
   )
 }
 
+/** The linked document, drawn over the affidavit with a "Back to the
+ *  affidavit" button. ⚑ UNWIRED 2026-11-10, Afsana: clicking the link in
+ *  Link out now only marks the document opened ("Document opened." stays),
+ *  and nothing shows what the document looks like. Kept so bringing it back
+ *  is a re-wire: in AffidavitBody's Link out branch, add a `docOpen` state,
+ *  set it in the link's onClick beside `setOpened(true)`, and render
+ *  `{docOpen ? <LinkedDocument form={form} onBack={() => setDocOpen(false)} /> : null}`
+ *  after `.aff2-foot`. The `.aff2-doc` styles were never removed. The tests
+ *  still render it directly, to pin each document's text. */
+export function LinkedDocument({ form, onBack }: { form: AffForm; onBack: () => void }) {
+  return (
+    <div className="aff2-doc" role="document" aria-label={form.title}>
+      <div className="aff2-tab"><b>{form.title}</b></div>
+      <div className="aff2-docbody" tabIndex={0}>
+        {form.docHeader ? <p className="aff2-dt">{form.docHeader}</p> : null}
+        {form.pages.map((p, i) => <Blocks key={i} blocks={p.blocks ?? []} whole />)}
+      </div>
+      <div className="aff2-docfoot">
+        <button type="button" className="aff2-btn" onClick={onBack}>
+          Back to the affidavit
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function AffidavitBody({
   form,
   state,
@@ -485,7 +511,6 @@ function AffidavitBody({
   const [page, setPage] = useState(0)
   const [reached, setReached] = useState<Record<number, boolean>>({})
   const [opened, setOpened] = useState(false)
-  const [docOpen, setDocOpen] = useState(false)
   const terms = useRef<HTMLDivElement>(null)
   const last = form.pages.length - 1
 
@@ -532,10 +557,7 @@ function AffidavitBody({
           <button
             type="button"
             className="aff2-link"
-            onClick={() => {
-              setOpened(true)
-              setDocOpen(true)
-            }}
+            onClick={() => setOpened(true)}
           >
             <FileText size={26} aria-hidden />
             <span>{form.title}</span>
@@ -580,20 +602,6 @@ function AffidavitBody({
             {agreeLabel}
           </button>
         </div>
-        {docOpen ? (
-          <div className="aff2-doc" role="document" aria-label={form.title}>
-            <div className="aff2-tab"><b>{form.title}</b></div>
-            <div className="aff2-docbody" tabIndex={0}>
-              {form.docHeader ? <p className="aff2-dt">{form.docHeader}</p> : null}
-              {form.pages.map((p, i) => <Blocks key={i} blocks={p.blocks ?? []} whole />)}
-            </div>
-            <div className="aff2-docfoot">
-              <button type="button" className="aff2-btn" onClick={() => setDocOpen(false)}>
-                Back to the affidavit
-              </button>
-            </div>
-          </div>
-        ) : null}
       </>
     )
   }
