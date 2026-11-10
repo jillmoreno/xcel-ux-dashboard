@@ -3,7 +3,7 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState, type CSSPropert
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { E2E_ORIGINAL_PRICE, E2E_PARTNER_NAME, E2E_PARTNER_PRICE, useEndToEndDemoParams } from './endToEndDemo'
 import { PARTNER_HEADER_HEIGHT, PartnerHeader } from '@/components/e2e/PartnerHeader'
-import { AngleDownSolid, ArrowDownSolid, AngleRightRegular, AngleRightSolid, BallotCheckLight, BookThin, CardsBlankThin, ChartLineUpLight, CrownSolid, FaceGrinLight, FileCertificateLight, FileCertificateSolid, RubiMark, RubiWordmark, ShieldCheckSolid } from '@/icons'
+import { AngleDownSolid, ArrowDownSolid, AngleRightSolid, BallotCheckLight, BookThin, CardsBlankThin, ChartLineUpLight, CrownSolid, FaceGrinLight, FileCertificateLight, FileCertificateSolid, RubiMark, RubiWordmark, ShieldCheckSolid } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import './inviteFlow.css'
@@ -912,7 +912,7 @@ export function TwoPackageProductDetailPage() {
                                   </Fragment>
                                 ))}
                               </span>
-                              {link ? <AngleRightRegular aria-hidden style={INCLUDED_CHEVRON} /> : null}
+                              {/* No chevron on the linked tiles now (2026-11-10, Eric). */}
                             </span>
                           </Fragment>
                         ))}
@@ -2478,8 +2478,6 @@ const INCLUDED_LABEL: CSSProperties = {
   color: 'var(--color-text-primary)',
   textAlign: 'left',
 }
-// 8 more to its left — 16 from the text (same day, Eric's request).
-const INCLUDED_CHEVRON: CSSProperties = { flex: 'none', marginLeft: 8, width: 7, height: 14, color: INCLUDED_DARK_BRICK }
 const COMPARE_CELL: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',
   fontWeight: 800,
