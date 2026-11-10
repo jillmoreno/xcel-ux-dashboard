@@ -313,7 +313,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
     await ready()
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
-    expect(screen.getByText('Must be completed by the proctor')).toBeTruthy()
+    expect(screen.getByText('Must be completed and signed by proctor')).toBeTruthy()
     expect((screen.getByLabelText(/^Legal First Name/) as HTMLInputElement).value).toBe('')
     expect((screen.getByLabelText(/^Signature/) as HTMLInputElement).value).toBe('')
   })
@@ -350,6 +350,21 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
       expect(doc.getByText(/I received a copy of the catalog/), state).toBeTruthy()
       unmount()
     }
+  })
+
+  /* 2026-11-10, Afsana: the proctor's banner names the document's word for
+     them and, since every proctor page has a Signature, says "signed". */
+  it('names the exam monitor on CO, CT and WI and the proctor on WV and MN', () => {
+    const word = (k: string) => FORMS[k]!.proctorWord ?? 'proctor'
+    expect(['CO_POST', 'CT_POST', 'WI_POST'].map(word)).toEqual(['exam monitor', 'exam monitor', 'exam monitor'])
+    expect(['WV_POST', 'MN_POST'].map(word)).toEqual(['proctor', 'proctor'])
+    for (const key of PROCTOR_FORMS)
+      expect(FORMS[key]!.pages.filter((p) => p.who === 'proctor').some((p) => flatAll(p.fields).some((x) => x.id === 'p_sig')), key).toBe(true)
+  })
+
+  it('titles Minnesota’s terms with the state’s name, as Illinois’s are not', () => {
+    expect(FORMS.MN_PRE!.title).toBe('Minnesota Prelicensing Terms and Conditions Pre-Course Affidavit')
+    expect(FORMS.IL_PRE!.title).toBe('Terms and Conditions Pre-Course Affidavit')
   })
 
   it('sets the course-completion-date sentence in smaller print wherever it appears', () => {
@@ -504,7 +519,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   it('Non-state specific, before the course exam: the general attestation, signed with Attest', async () => {
     render(<AffidavitModalV2 onClose={() => {}} moment="exam" state="GEN" />)
     expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(
-      'Prelicensing Education Insurance - Proctor acknowledgement and Student attestation',
+      'Prelicensing Education Insurance - Proctor Acknowledgement and Student Attestation',
     )
     expect(screen.queryByText('Student E-Signature:')).toBeNull()
     expect(screen.getByRole('button', { name: 'Attest' })).toBeTruthy()

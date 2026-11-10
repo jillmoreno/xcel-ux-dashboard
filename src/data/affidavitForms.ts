@@ -83,7 +83,7 @@ export type AffForm = {
   pages: AffPage[]; fields: AffField[]; after?: AffBlock[]
   agreeLabel?: string; flagFields?: string[]; noPrefill?: string[]; lock?: string[]
   /** A page of the document kept in the modal in Link out. No form uses it since 2026-11-10 (Afsana): the document's text is behind its link. */
-  linkKeep?: number; noLink?: boolean; proctorWord?: string; proctorBanner?: string; lang?: string
+  linkKeep?: number; noLink?: boolean; proctorWord?: string; lang?: string
   /** The whole form is the student's: one "Must be completed by the student" banner at the top (non-state-specific forms, 2026-11-09). */
   who?: "student"
 }
@@ -208,7 +208,7 @@ export const FORMS: Record<string, AffForm> ={
   },
   MN_PRE:{
     docHeader:'Minnesota Prelicensing',
-    title:'Terms and Conditions Pre-Course Affidavit',
+    title:'Minnesota Prelicensing Terms and Conditions Pre-Course Affidavit', // 2026-11-10, Afsana
     source:'PDF · MN PE-Terms and Conditions-Pre-Course Affidavit',
     pages:[
       {blocks:[
@@ -616,8 +616,9 @@ FORMS.CO_POST={
   docHeader:'Colorado Pre-licensing Insurance',
   title:'Colorado Pre-licensing Insurance - Affidavit of Personal Responsibility',
   source:'Word doc · CO PE-Post Final Affidavit',
-  proctorWord:'exam monitor (proctor)',
-  proctorBanner:'Must be completed and signed by exam monitor',
+  /* "Must be completed and signed by exam monitor" — the banner names the
+     document's word for the proctor, and "signed" when they sign (2026-11-10). */
+  proctorWord:'exam monitor',
   pages:[
     {who:'student',blocks:[],fields:[
       {id:'course',label:'Course Name',required:true,placeholder:'Course name'},
@@ -660,7 +661,6 @@ FORMS.CT_POST=(function(){
   c.note='Same structure as Colorado’s affidavit: the student’s affirmation, the exam monitor (proctor) section, and the Student Certification Statement. The doc’s "Circle one" relationship becomes radio buttons, and the one-line proctor address is split into address fields.';
   c.note+=' The "I confirm that the above information is accurate" checkbox (highlighted in red) sits right above the Exam Monitor section.';
   c.note+=' Course Name and Date of Prelicensing Final Exam are pre-filled and locked. No Link out option: the student and proctor complete many fields, so the form is always shown in full.';
-  delete c.proctorBanner;
   return c;
 })();
 (function(){
@@ -745,7 +745,6 @@ FORMS.WI_POST={
   agreeLabel:'Attest',
   source:'Word doc · WI PE-Post Final Affidavit',
   proctorWord:'exam monitor',
-  proctorBanner:'Must be completed and signed by exam monitor', // as Colorado's (2026-11-10, Afsana)
   pages:[
     {who:'student',blocks:[{p:'I affirm that I personally completed the entire study material of the course. I also affirm that I completed the exam without assistance from any course material, other than source material, or from any person(s).'}],fields:[
       {block:{h4:'Student E-Signature:'}},
@@ -843,7 +842,7 @@ FORMS.GEN_PRE_ES={
 };
 FORMS.GEN_EXAM={
   docHeader:'XCEL PE General Attestation (non-state specific)',
-  title:'Prelicensing Education Insurance - Proctor acknowledgement and Student attestation',
+  title:'Prelicensing Education Insurance - Proctor Acknowledgement and Student Attestation', // capitalized 2026-11-10, Afsana
   agreeLabel:'Attest',
   source:'Word doc · XCEL PE General Pre-Final Attestation',
   pages:[
