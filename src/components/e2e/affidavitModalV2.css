@@ -324,10 +324,39 @@
 /* No coloured header: the serif title on white, sharing one row with the
    close, as every other XCEL surface does. 28px on the right matches the
    footer so the close's glyph and the primary button line up. */
+/* THE FRAME. ⚠ 560 AND CONTENT-SIZED OVERRIDES THE ONE-SIZE RULE above
+   (Jill, 2026-11-10, asked for knowingly): Afsana pinned 720 x 688 so CA did
+   not stand shorter than CT. Under this skin heights differ by form again and
+   the long state documents are narrower. `max-height: 100%` keeps the cap, so
+   a long form still scrolls inside rather than running off the screen. */
+.aff2-modal.is-house {
+  width: 560px;
+  height: auto;
+  max-height: 100%;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 4px 6px rgb(0 0 0 / 0.05), 0 12px 32px rgb(0 0 0 / 0.12);
+}
+
+/* 30px all round — the head, the scrolling body and the footer share it, so
+   the title, the document and the button line up on one edge. */
 .aff2-modal.is-house .aff2-head {
-  padding: 18px 28px 18px 32px;
+  padding: 30px 30px 0;
   background: var(--color-fixed-light);
   color: var(--color-aff-label);
+}
+/* ⚠ NO INNER VIEWPORT (Jill, 2026-11-10). Afsana's document sits in a
+   bordered box with its own always-on scrollbar; under this skin the border,
+   the radius, the inset padding and the permanent bar all go, so the text
+   reads as part of the modal. Scrolling STAYS — `auto`, so the bar appears
+   only when a form is too long — because at 560 wide the long state
+   documents are not reachable without it. */
+.aff2-modal.is-house .aff2-terms {
+  margin: 20px 30px 0;
+  padding: 0;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 0;
+  scrollbar-width: auto;
 }
 .aff2-modal.is-house .aff2-head h2 {
   font: 400 20px/28px var(--font-heading-serif);
@@ -375,6 +404,23 @@
 .aff2-modal.is-house .aff2-banner__body { font-size: 13px; font-weight: 600; line-height: 1.4; }
 
 /* No rule above the button — it holds that edge on its own. */
-.aff2-modal.is-house .aff2-foot { border-top: 0; }
-.aff2-modal.is-house .aff2-btn { background: var(--color-aff-cta); font-weight: 700; }
+.aff2-modal.is-house .aff2-foot { padding: 18px 30px 30px; border-top: 0; }
+.aff2-modal.is-house .aff2-btn {
+  background: var(--color-aff-cta);
+  border-radius: var(--radius-md);
+  font: 700 15px var(--font-body);
+}
+
+/* The type scale off the exploration page: smaller labels over shorter
+   inputs, and a quieter hint. The faces are the product's own tokens —
+   `--font-heading-serif` resolves to Playfair here, NOT the DM Serif Display
+   the standalone page pulled from Google. */
+.aff2-modal.is-house .aff2-fld label { font-size: 13px; }
+.aff2-modal.is-house .aff2-fld input:not([type='checkbox']):not([type='radio']),
+.aff2-modal.is-house .aff2-fld select {
+  height: 40px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+}
+.aff2-modal.is-house .aff2-hint { font-size: 12px; }
 .aff2-modal.is-house .aff2-btn:hover:not(:disabled) { background: var(--color-aff-cta-hover); }
