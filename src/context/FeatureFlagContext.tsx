@@ -1729,9 +1729,24 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Exam simulators (a count). Nothing in the key lacks a ring; no ring
        lacks a line in the key.
 
-       ⚠ `single` IS THE DEFAULT because it is what the Refined page was built
-       as; the arm is the question. Scoped to the Refined surface only — it is
-       a decision about one section of one page. */
+       ⚠ `rings` IS THE DEFAULT SINCE 2026-11-10 — Jillienne, looking at it:
+       "i want this to be built into the refined view for Readiness." It was
+       `single` for a day, because that is what the Refined page was first
+       built as.
+
+       The research supports the move rather than merely permitting it.
+       Insight 3's objection was never the rings themselves — it was that the
+       KEY listed five things and the graphic drew three, so two lines had no
+       ring. This arm fixes exactly that: three rings, three key lines, one
+       to one. With the mismatch gone, Insight 2 is what is left — learners
+       called the concentric graphic the most helpful part of the page and
+       said they would love filling it up.
+
+       `single` STAYS as the arm, not deleted. It is the simpler answer the
+       same recommendation allows, it is one click away on the bar, and the
+       decision between them is still open until someone watches a learner
+       use this one. Scoped to the Refined surface only — a decision about
+       one section of one page. */
     surface: 'design',
     owner: 'anjani',
     versions: ['hybrid-pacing', 'eric-atlas-e2e'],
@@ -1739,12 +1754,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Readiness to Pass',
     description:
-      'How the Readiness to Pass section draws the score on the Refined page. Single ring is one arc with the level inside it, and questions answered as a labelled bar beneath — the simplest reading of the research. Three rings keeps the concentric graphic learners called motivating, with a key that matches it ring for ring: Readiness, Practice questions, Exam simulators.',
+      'How the Readiness to Pass section draws the score on the Refined page. Three rings is what it shows: the concentric graphic learners called motivating, with a key that matches it ring for ring — Readiness, Practice questions, Exam simulators — which is the fix for the one thing the research faulted (a five-item key over a three-ring graphic). Single ring is the simpler alternative the same recommendation allows: one arc with the level inside it, and questions answered as a labelled bar beneath.',
     variants: [
-      { value: 'single', label: 'Single ring', description: 'One arc, the level inside it' },
       { value: 'rings', label: 'Three rings', description: 'Readiness · Practice questions · Exam simulators' },
+      { value: 'single', label: 'Single ring', description: 'One arc, the level inside it' },
     ],
-    defaultVariant: 'single',
+    defaultVariant: 'rings',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },

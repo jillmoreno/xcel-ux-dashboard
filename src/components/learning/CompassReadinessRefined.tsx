@@ -78,20 +78,34 @@ import './compassReadinessRefined.css'
  */
 /**
  * THE READINESS TO PASS SECTION HAS TWO ARMS — the `compass-refined-readiness-
- * hero` flag (2026-11-09). `single` is the page as built: one arc, the level
- * inside it, questions answered as a labelled bar. `rings` brings back the
- * concentric graphic the research's learners called motivating ("I would love
- * filling those rings up"), with the one change that answers the confusion it
- * caused: THREE rings and a THREE-item key, one to one. Readiness · Practice
- * questions · Exam simulators — every ring is a thing that fills, and nothing
- * in the key is missing a ring. "Book your exam", the item that broke the
- * tested version, is not a ring here because it is not a quantity.
+ * hero` flag (2026-11-09). `rings` is the concentric graphic the research's
+ * learners called motivating ("I would love filling those rings up"), with
+ * the one change that answers the confusion it caused: THREE rings and a
+ * THREE-item key, one to one. Readiness · Practice questions · Exam
+ * simulators — every ring is a thing that fills, and nothing in the key is
+ * missing a ring. "Book your exam", the item that broke the tested version,
+ * is not a ring here because it is not a quantity. `single` is the page as
+ * first built: one arc, the level inside it, questions answered as a
+ * labelled bar.
+ *
+ * ⚠ `rings` IS THE DEFAULT SINCE 2026-11-10, on the direct ask. It was
+ * `single` for a day.
+ *
+ * ⚠ THE DEFAULT LIVES IN TWO PLACES AND BOTH MUST MOVE TOGETHER: the flag's
+ * `defaultVariant` in `FeatureFlagContext`, and the `hero =` fallback below,
+ * which is what renders when this component is used directly — in a test, in
+ * the Variants deck, or anywhere the flag is not in scope. They disagreed for
+ * the length of one commit on 2026-11-10: the flag said `rings`, the
+ * component still said `single`, and the page a reviewer opened was decided
+ * by which of the two happened to be asked. A test now renders the shell with
+ * no flag set and asserts the rings, which is the only way that drift shows
+ * up as a failure rather than as a screenshot nobody can reproduce.
  */
 export type RefinedHeroStyle = 'single' | 'rings'
 
 export function CompassReadinessRefined({
   data = REFINED_READINESS,
-  hero = 'single',
+  hero = 'rings',
   onSelectPage,
 }: {
   data?: RefinedReadiness

@@ -145,8 +145,28 @@ describe('Finding 3 — one ring; questions answered is a count, not a second ri
 })
 
 describe('Finding 7 — the overall score is not repeated across the page', () => {
-  it('shows 62 exactly twice: the ring and the end of the trend line', () => {
-    const { container } = wrap(<CompassReadinessRefined />)
+  /**
+   * ⚠ THE TWO ARMS ANSWER FINDING 7 DIFFERENTLY, and since 2026-11-10 the
+   * default is the one that answers it less well. That is a trade-off taken
+   * deliberately, not an oversight, so it is pinned on both arms rather than
+   * relaxed on one:
+   *
+   *   `single` shows 62 TWICE — the ring and the end of the trend line. That
+   *   is Finding 7 honoured exactly.
+   *
+   *   `rings` shows it THREE times, because its key gives every ring its
+   *   value and the Readiness ring's value is the score. Dropping the number
+   *   from that one row would leave "Readiness — Developing" above two rows
+   *   that both carry counts, which trades one inconsistency for another.
+   *
+   * The research cut both ways here: Finding 7 says do not repeat the score;
+   * Insight 2 says the rings were the most helpful thing on the page. The
+   * default now follows Insight 2. If a later session wants Finding 7 back
+   * exactly, the lever is the key row, and this is the note that says what it
+   * costs.
+   */
+  it('shows 62 exactly twice on the single-ring arm: the ring and the trend line', () => {
+    const { container } = wrap(<CompassReadinessRefined hero="single" />)
     /* Counted per TEXT NODE, not on the joined textContent — adjacent nodes
        concatenate ("62" + "Developing" → "62Developing") and a word boundary
        never falls between a digit and a letter. No sub-topic on this learner
@@ -159,6 +179,24 @@ describe('Finding 7 — the overall score is not repeated across the page', () =
       if (/\b62\b/.test(n.textContent ?? '')) hits.push(n.parentElement?.getAttribute('class') ?? '')
     }
     expect(hits).toHaveLength(2)
+    expect(hits.some((c) => c.includes('cre-rdr-ring__num'))).toBe(true)
+    expect(hits.some((c) => c.includes('cre-rdr-chart__now'))).toBe(true)
+  })
+
+  it('shows it three times on the rings arm — the key carries it too', () => {
+    /* The cost of the 2026-11-10 default, stated rather than hidden. If this
+       count ever changes, someone has edited the key and should say why. */
+    const { container } = wrap(<CompassReadinessRefined hero="rings" />)
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT)
+    const hits: string[] = []
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      if (/\b62\b/.test(n.textContent ?? '')) hits.push(n.parentElement?.getAttribute('class') ?? '')
+    }
+    expect(hits).toHaveLength(3)
+    /* The ring centre and the trend line, as on the single arm — plus one
+       more with NO class of its own: the key's value cell, which is a bare
+       text node beside "Developing". */
+    expect(hits.filter((c) => c === '')).toHaveLength(1)
     expect(hits.some((c) => c.includes('cre-rdr-ring__num'))).toBe(true)
     expect(hits.some((c) => c.includes('cre-rdr-chart__now'))).toBe(true)
   })
@@ -256,12 +294,27 @@ describe('Finding 5 — the topic view turns a score into a next action', () => 
 })
 
 describe('The Readiness to Pass flag — the tested rings, with a key that matches', () => {
-  it('is a design control scoped to the Refined surface, defaulting to the single ring', () => {
+  it('is a design control scoped to the Refined surface, defaulting to the three rings', () => {
+    /* ⚠ `rings` SINCE 2026-11-10, on the direct ask — it was `single` for a
+       day. The research supports the move rather than merely allowing it:
+       Insight 3's objection was the KEY listing five things over a
+       three-ring graphic, not the rings, and this arm makes it one to one.
+       `single` stays as the arm; the decision is still open. */
     const flag = FEATURE_FLAGS.find((f) => f.key === 'compass-refined-readiness-hero')
     expect(flag?.surface).toBe('design')
     expect(flag?.surfaces).toEqual(['compass:refined'])
-    expect(flag?.defaultVariant).toBe('single')
-    expect(flag?.variants?.map((v) => v.value)).toEqual(['single', 'rings'])
+    expect(flag?.defaultVariant).toBe('rings')
+    expect(flag?.variants?.map((v) => v.value)).toEqual(['rings', 'single'])
+  })
+
+  it('shows the three rings with no flag set at all', () => {
+    /* The point of the change: a reviewer who opens Refined · Readiness and
+       touches nothing sees the tested graphic. */
+    const { container } = wrap(
+      <CompassJeffMvpShell page="readiness" onSelectPage={() => {}} readiness="refined" />,
+    )
+    expect(container.querySelector('.cre-rdr-ring--three')).toBeTruthy()
+    expect(text(container)).toContain('1 of 3 taken')
   })
 
   it('draws three rings and a three-item key — one line per ring, no more', () => {
