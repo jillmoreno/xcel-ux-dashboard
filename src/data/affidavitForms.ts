@@ -698,8 +698,11 @@ FORMS.CT_POST=(function(){
        License # (optional since 2026-11-11, below), the Mailing Address optional "(if different than
        above)" as the document has it. */
     {who:'student',blocks:[],fields:[
-      {id:'examname',label:'Name of Exam',readonly:true,value:'Certification Exam -Minnesota Life Prelciensing'},
+      {id:'examname',label:'Name of Exam',required:true,readonly:true, // asterisked like the other required fields (2026-11-11, Afsana)
+       value:'Certification Exam -Minnesota Life Prelciensing'},
       {row:[{id:'examdate',type:'date',label:'Exam Completion Date',required:true},{id:'examtime',type:'time',label:'Time of Exam Completion',required:true}]},
+      /* Optional (Patrick, via Afsana, 2026-11-11): most learners will not sit the exam at a company. */
+      {id:'loc_company',label:'Company where exam was completed',placeholder:'Company name'},
       {block:{h4:'Address where exam was completed'}},
       ...stdAddr('loc_'),
       {id:'name',label:'Name',required:true,placeholder:'Full legal name',ac:'name',sameAs:'fullname'},

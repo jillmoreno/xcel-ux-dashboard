@@ -1,12 +1,14 @@
 import {
   useCallback,
   useEffect,
+  useImperativeHandle,
   useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
   type HTMLAttributes,
   type ReactNode,
+  type Ref,
 } from 'react'
 import { createPortal } from 'react-dom'
 import { acquireBodyScrollLock } from '@/utils/bodyScrollLock'
@@ -172,12 +174,51 @@ function isFilled(list: FlatField[], vals: Vals): boolean {
   return list
     .filter((x) => x.required && !(x._dep && vals[x._dep] === 'y'))
     .every((x) => {
-      const v = (vals[x.id ?? ''] ?? '').trim()
+      // A read-only field carries its own value (MN's Name of Exam).
+      const v = (x.readonly ? (x.value ?? '') : (vals[x.id ?? ''] ?? '')).trim()
       if (v === '') return false
       if (x.type === 'email' && v.indexOf('@') <= 0) return false
       if (x.digits && !new RegExp(`^\\d{${x.digits}}$`).test(v.replace(/[\s-]/g, ''))) return false
       return true
     })
+}
+
+/** A sample answer for one field, for the quick-fill below. Prefixed ids
+ *  (`p_` the proctor's, `loc_` / `mail_` an address) borrow the profile's
+ *  value for the bare id; the proctor is a second person, Alex Morgan. */
+function sampleFor(x: FlatField, st: string): string {
+  const id = x.id ?? ''
+  const bare = id.replace(/^(p_|loc_|mail_)/, '')
+  const proctor = id.startsWith('p_')
+  if (x.type === 'checkbox') return 'y'
+  if (x.type === 'radio' || x.type === 'select') return x.options?.includes(st) ? st : (x.options?.[0] ?? '')
+  if (x.type === 'date') return isoToday()
+  if (x.type === 'time') return '10:30'
+  if (x.type === 'tel') return proctor ? '(555) 389-1204' : '(555) 214-7788'
+  if (x.type === 'email') return proctor ? 'alex.morgan@example.com' : 'jordan.navarro@example.com'
+  if (x.digits) return '123456789'.slice(0, x.digits)
+  const [city, zip] = SAMPLE_ADDR[st] ?? ['Springfield', '62701']
+  const S: Vals = {
+    first: proctor ? 'Alex' : 'Jordan', middle: proctor ? 'J' : 'Lee', last: proctor ? 'Morgan' : 'Navarro',
+    name: proctor ? 'Alex Morgan' : 'Jordan Lee Navarro', fullname: proctor ? 'Alex Morgan' : 'Jordan Lee Navarro',
+    sig: proctor ? 'Alex Morgan' : 'Jordan Lee Navarro', addr1: proctor ? '88 Library Lane' : '1420 Maple Avenue', addr: '88 Library Lane',
+    city, zip, license: '1234567', employer: 'Hennepin County Library', jobtitle: 'Librarian',
+  }
+  return S[bare] ?? 'Sample'
+}
+
+/** QUICK-FILL (2026-11-11, Afsana): a click on the top of the modal fills
+ *  every required field still empty, so a review can reach the primary CTA
+ *  without typing. What is already there — the profile's pre-fill, anything
+ *  the reviewer typed, a locked field — is left as it is. */
+function quickFill(f: AffForm, st: string, vals: Vals, readOnly: string[]): Vals {
+  const next = { ...vals }
+  flatFields(f).forEach((x) => {
+    if (!x.id || !x.required || x.readonly || readOnly.includes(x.id)) return
+    if (isFilled([x], next)) return
+    next[x.id] = sampleFor(x, st)
+  })
+  return next
 }
 
 /* ── Rendering blocks and fields ────────────────────────────────────────── */
@@ -257,7 +298,7 @@ function Field({ x, ctx }: { x: AffField; ctx: FieldCtx }) {
   if (x.readonly)
     return (
       <div>
-        <label htmlFor={id}>{x.label}</label>
+        <label htmlFor={id}>{label}</label>
         <input id={id} type="text" readOnly value={x.value ?? ''} className="is-ro" />
       </div>
     )
@@ -413,6 +454,8 @@ export function AffidavitModalV2({
   const language = languageProp ?? languageFlag ?? 'English'
   const lineOfAuthority = loaProp ?? loaFlag ?? 'Life & Health'
   const chromeBottom = useChromeBottom()
+  /* The quick-fill, reached from the header (see `quickFill`). */
+  const body = useRef<{ fill: () => void }>(null)
 
   /* Home stays put while the modal is up (2026-11-10, Afsana): only the
      modal scrolls, and the learner leaves by agreeing or by its X. The same
@@ -451,9 +494,20 @@ export function AffidavitModalV2({
         lang={form?.lang}
         className={houseStyle ? 'aff2-modal is-house' : 'aff2-modal'}
       >
-        <div className="aff2-head">
+        {/* A click anywhere on the top fills the required fields (2026-11-11,
+            Afsana) — a review shortcut, so it has no visible affordance
+            beyond the tooltip. The ✕ stops the click from reaching it. */}
+        <div className="aff2-head" onClick={() => body.current?.fill()} title="Click to fill the required fields">
           <h2 id="affidavit-v2-title">{title}</h2>
-          <button type="button" className="aff2-close" aria-label="Close" onClick={onClose}>
+          <button
+            type="button"
+            className="aff2-close"
+            aria-label="Close"
+            onClick={(e) => {
+              e.stopPropagation()
+              onClose()
+            }}
+          >
             <X size={18} aria-hidden />
           </button>
         </div>
@@ -466,6 +520,7 @@ export function AffidavitModalV2({
             state={state}
             pattern={pattern}
             onAgree={onClose}
+            ref={body}
           />
         ) : (
           <>
@@ -522,11 +577,13 @@ function AffidavitBody({
   state,
   pattern,
   onAgree,
+  ref,
 }: {
   form: AffForm
   state: string
   pattern: AffidavitPattern
   onAgree: () => void
+  ref?: Ref<{ fill: () => void }>
 }) {
   const uid = 'aff2'
   const [{ vals, readOnly }, setForm] = useState(() => prefillVals(form, state))
@@ -540,6 +597,19 @@ function AffidavitBody({
     setForm((prev) => ({ ...prev, vals: { ...prev.vals, [id]: value } }))
   }, [])
   const ctx: FieldCtx = { uid, form, vals, readOnly, set }
+
+  /* The quick-fill also clears the two gates that are not fields: the
+     document counts as opened (Link out), and every page as read to its
+     end (Pagination), so the primary CTA comes on. */
+  useImperativeHandle(ref, () => ({
+    fill: () => {
+      // `linkread` is Link out's own "I have read …" box, not one of the form's fields.
+      const extra: Vals = pattern === 'link' ? { linkread: 'y' } : {}
+      setForm((prev) => ({ ...prev, vals: { ...quickFill(form, state, prev.vals, prev.readOnly), ...extra } }))
+      setOpened(true)
+      setReached(Object.fromEntries(form.pages.map((_, i) => [i, true])))
+    },
+  }), [form, state, pattern])
 
   /* Scrolled to the end of this page? A page shorter than the box is read on
      arrival. Pagination only — Link out has no scroll gate. */

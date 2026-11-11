@@ -4648,6 +4648,23 @@ the Design bar, which is Jill's file, so for now they are dropped.
     one resident licence (the state you live in), plus one non-resident
     licence for every other state you are licensed to sell in. This field is
     the state License #, not the NPN.
+- **Quick-fill: click the top of the modal (2026-11-11, Afsana).** A click
+  anywhere on the header (the title row, not the ✕) fills every required
+  field still empty with a sample answer — Jordan Lee Navarro for the
+  student, Alex Morgan for the proctor, today for dates, the first option
+  for radios and selects — ticks the required boxes, counts a Link out
+  document as opened and every page as read, so the primary CTA (or Next)
+  comes on. What is already there is kept: the profile's pre-fill, a locked
+  field, anything typed. A review shortcut with only a tooltip to show for
+  it ("Click to fill the required fields"); `quickFill` and `sampleFor` in
+  `AffidavitModalV2.tsx`. ⚠ It is live in every build, a frozen user-test
+  build included — a participant who clicks the title gets a filled form.
+- **Minnesota's "Company where exam was completed" (2026-11-11, Patrick via
+  Afsana)** sits right above "Address where exam was completed", optional:
+  most learners will not sit the exam at a company.
+- **Minnesota's Name of Exam is asterisked (2026-11-11, Afsana)**, like
+  every other required field. It is read-only, so a read-only field now
+  shows its asterisk and counts as filled from its own value.
 - **The sentence over the link (2026-11-11, Afsana)** reads "Before you
   begin, you must click the link below to review the **attestation** /
   **affidavit** and complete the form below:" — "attestation" where the

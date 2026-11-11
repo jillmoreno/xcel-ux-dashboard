@@ -456,7 +456,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     CO_POST: ['Course Name', 'Date of Pre-licensing Final Exam', ...SIGNER, 'Date', 'Relationship to Examinee', ...ADDRESS, ...SIGNER],
     CT_POST: ['Course Name', 'Date of Prelicensing Final Exam', ...SIGNER, 'Date', 'Relationship to Examinee', ...ADDRESS, ...SIGNER],
     MN_POST: [
-      'Name of Exam', 'Exam Completion Date', 'Time of Exam Completion', ...ADDRESS,
+      'Name of Exam', 'Exam Completion Date', 'Time of Exam Completion', 'Company where exam was completed', ...ADDRESS,
       'First Name', 'Middle Name', 'Last Name', 'License #', 'Date of Birth',
       ...ADDRESS, ...MAILING, 'Phone Number', 'Email Address', 'Signature', 'Today’s Date',
       'First Name', 'Middle Name', 'Last Name', 'Relationship to Examinee', 'Signature', 'Today’s Date',
@@ -566,6 +566,8 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(['p_employer', 'p_jobtitle', 'p_email'].map(req)).toEqual([true, true, true])
     // License # is optional (2026-11-11): most learners are taking the exam that gets them one.
     expect(req('license')).toBeUndefined()
+    // Company where exam was completed is optional too (Patrick, 2026-11-11): most learners won't sit it at a company.
+    expect(req('loc_company')).toBeUndefined()
     expect(['mail_addr1', 'mail_city', 'mail_state', 'mail_zip'].map(req)).toEqual([undefined, undefined, undefined, undefined])
     render(<AffidavitModalV2 onClose={() => {}} moment="post" state="MN" />)
     expect(screen.getByText('Mailing Address (if different than above)')).toBeTruthy()
@@ -774,6 +776,70 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
    drift. These pin all three halves of that: the class follows the flag, the
    CSS that differs is scoped to it, and the parts the Current skin hides are
    still in the DOM. */
+/* QUICK-FILL (2026-11-11, Afsana): a click on the top of the modal fills the
+   required fields still empty, so the primary CTA comes on without typing. */
+describe('the quick-fill on the top of the modal', () => {
+  afterEach(() => {
+    cleanup()
+    document.body.innerHTML = ''
+  })
+
+  const head = () => document.querySelector('.aff2-head') as HTMLElement
+  const primary = () => {
+    const btns = [...document.querySelectorAll<HTMLButtonElement>('.aff2-foot .aff2-btn:not(.is-sec)')]
+    return btns[btns.length - 1]
+  }
+
+  /* Every form the Design bar can reach: each moment and state, in each
+     language and line of authority the entry offers. */
+  const cases = [...new Set(ENTRIES.map((e) => `${e.m}|${e.st}`))].flatMap((k) => {
+    const [m, st] = k.split('|') as [AffidavitMoment, string]
+    return ['English', 'Spanish'].flatMap((language) =>
+      ['Life & Health', 'Property & Casualty', 'Property'].map((loa) => ({ m, st, language, loa, form: resolveAffidavit(m, st, language, loa).form })),
+    )
+  }).filter((c, i, all) => c.form && all.findIndex((d) => d.form === c.form) === i)
+
+  it.each(cases.map((c) => [`${c.st} ${c.m} ${c.language} ${c.loa}`, c] as const))('%s: one click on the top turns the primary CTA on', (_, c) => {
+    render(<AffidavitModalV2 onClose={() => {}} moment={c.m} state={c.st} language={c.language} lineOfAuthority={c.loa} />)
+    expect(primary().disabled).toBe(true)
+    fireEvent.click(head())
+    // Pagination: Next is on for every page, through to the last.
+    for (let i = 0; i < 6 && primary().textContent === 'Next'; i++) {
+      expect(primary().disabled, `Next on page ${i + 1}`).toBe(false)
+      fireEvent.click(primary())
+    }
+    expect(primary().disabled).toBe(false)
+  })
+
+  it('leaves what is already there — the profile’s pre-fill and what the reviewer typed', () => {
+    render(<AffidavitModalV2 onClose={() => {}} moment="post" state="MN" />)
+    const city = screen.getAllByLabelText(/^City/)[1] as HTMLInputElement // the Business Address, pre-filled
+    const before = city.value
+    const sig = screen.getAllByLabelText(/^Signature/)[0] as HTMLInputElement // the student's
+    fireEvent.change(sig, { target: { value: 'J. Navarro' } })
+    fireEvent.click(head())
+    expect(city.value).toBe(before)
+    expect(sig.value).toBe('J. Navarro')
+  })
+
+  it('the ✕ closes without filling', () => {
+    const onClose = vi.fn()
+    render(<AffidavitModalV2 onClose={onClose} moment="pre" state="OH" />)
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }))
+    expect(onClose).toHaveBeenCalledTimes(1)
+    expect(primary().disabled).toBe(true)
+  })
+})
+
+/* MN after the exam: Name of Exam is asterisked like the other required
+   fields (2026-11-11, Afsana), and being read-only it still counts as filled. */
+it('Minnesota: Name of Exam carries its asterisk', () => {
+  render(<AffidavitModalV2 onClose={() => {}} moment="post" state="MN" />)
+  expect((screen.getByLabelText('Name of Exam *') as HTMLInputElement).readOnly).toBe(true)
+  cleanup()
+  document.body.innerHTML = ''
+})
+
 describe('the Design bar’s Affidavit modal skin', () => {
   function Skin() {
     const { setVariant } = useFeatureFlags()
