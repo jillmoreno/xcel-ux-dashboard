@@ -253,7 +253,14 @@ export const REFINED_NEXT_EYEBROW = 'Your next step'
 export const REFINED_RUBI_INTRO = {
   /** The label this replaces, so the swap is targeted rather than global. */
   replacesLabel: 'Rubi · your study partner',
-  label: 'Rubi · Learning support',
+  /** ⚠ "Meet Rubi", NOT "Rubi" — 2026-11-11. The eyebrow named the section;
+   *  this names the MOMENT. It is an introduction, and on the toast it is the
+   *  first thing a learner reads on their first visit, so telling them what
+   *  is about to happen beats labelling the box it happens in.
+   *
+   *  ⚠ THE BAND TAKES IT TOO. Both surfaces read this object, and at 0% they
+   *  are the same introduction — one in the corner, one in the page. */
+  label: 'Meet Rubi - Your Learning Support',
   /** ⚠ THE TITLE IS A FUNCTION OF THE LEARNER NOW — 2026-11-11: "incorporate
    *  the users name, so it would be Hi Jordan, I'm Rubi." A greeting that
    *  does not use the name it has is a greeting addressed to nobody, and the
@@ -262,7 +269,12 @@ export const REFINED_RUBI_INTRO = {
    *  because a demo persona without a first name is a state this has to
    *  survive. */
   title: (firstName?: string) => (firstName ? `Hi ${firstName}, I'm Rubi` : "Hi, I'm Rubi"),
-  why: "I can explain a term, give an example or recap a lesson whenever you ask. At the start of a session, I'll check in with a short welcome. You can pause my offers any time.",
+  /** ⚠ HER OFFER, THEN HER LIMITS — 2026-11-11, hers verbatim. The previous
+   *  line opened with what she can do and closed with "you can pause my
+   *  offers any time", which reads as a disclaimer; this opens with why she
+   *  is there and closes on "you're always in control", which says the same
+   *  thing as reassurance. */
+  why: "I'm here to help make learning easier. Ask me to explain a term, share an example, or recap a lesson whenever you need. I'll check in with a quick welcome at the start of each session, but you're always in control.",
   cta: 'Talk with Rubi',
   dismiss: 'Not now',
   /** ⚠ UNUSED SINCE 2026-11-11, "remove this". It was the toast's navy
