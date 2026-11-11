@@ -1,4 +1,4 @@
-import { REFINED_COURSE } from '@/data/compassRefinedCopy'
+import { REFINED_COURSE, REFINED_OVERVIEW_TITLE } from '@/data/compassRefinedCopy'
 import { useState } from 'react'
 import { CircleCheck, Clock, FileText, RubiLogo } from '@/icons'
 import { PathLine, ReadinessRing, TopicTable } from './CompassRefinedParts'
@@ -61,7 +61,7 @@ export function CompassRefinedJourney({ stage = 'u3' }: { stage?: string }) {
           </span>
           <span className="crf-rd-brow__access">{REFINED_COURSE.access}</span>
         </p>
-          <h1 className="serif crf-rd-h1">Your learning journey</h1>
+          <h1 className="serif crf-rd-h1">{REFINED_OVERVIEW_TITLE}</h1>
         </header>
       {/* ⚠ THE GREETING AND THE META ROW ARE GONE — 2026-11-11,
           Jillienne on both: "these 2 lines also fall into that catagory of

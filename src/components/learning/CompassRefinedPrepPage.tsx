@@ -1,4 +1,4 @@
-import { REFINED_COURSE } from '@/data/compassRefinedCopy'
+import { REFINED_COURSE, REFINED_OVERVIEW_TITLE } from '@/data/compassRefinedCopy'
 import { RubiLogo } from '@/icons'
 import { Band, PathLine, ReadinessRing, TopicTable } from './CompassRefinedParts'
 import {
@@ -48,7 +48,7 @@ export function CompassRefinedPrepPage({ stage = 'p2' }: { stage?: string }) {
           </span>
           <span className="crf-rd-brow__access">{REFINED_COURSE.access}</span>
         </p>
-          <h1 className="serif crf-rd-h1">Your exam prep</h1>
+          <h1 className="serif crf-rd-h1">{REFINED_OVERVIEW_TITLE}</h1>
         </header>
       {/* ⚠ THE GREETING AND THE META ROW ARE GONE — 2026-11-11,
           Jillienne on both: "these 2 lines also fall into that catagory of

@@ -11,6 +11,8 @@ import {
   type RefinedSlot,
 } from '@/components/learning/compassRefinedPages'
 import { JEFF_MVP_PAGES, JEFF_MVP_SUBPAGES } from '@/data/compassJeffMvpFixtures'
+import { REFINED_OVERVIEW_TITLE } from '@/data/compassRefinedCopy'
+import { READINESS_STAGES } from '@/data/compassReadinessFixtures'
 
 /**
  * THE SEAM BETWEEN REFINED AND JEFF'S — 2026-11-10.
@@ -101,12 +103,12 @@ describe('the course eyebrow is on every page', () => {
   it('is the page title above it, not instead of it', () => {
     const { container } = wrap(<CompassRefinedShell page="overview" onSelectPage={() => {}} />)
     const h1 = container.querySelector('h1')
-    /* ⚠ "YOUR EXAM PREP", NOT "YOUR LEARNING JOURNEY" — 2026-11-10. Refined's
-       Overview is the stage-aware page now, and its default stage is `p2`,
-       which is in the PREP series. The journey title is what the `u` and `q`
-       series draw; the page's title is a function of the learner's state,
-       which is the whole reason that page was brought across. */
-    expect(h1?.textContent).toBe('Your exam prep')
+    /* ⚠ THIS ASSERTED "YOUR EXAM PREP" FOR A DAY, and the assertion was
+       describing the bug. The title was a function of the learner's state, so
+       the default (`p2`, the prep series) renamed the page while the rail row
+       still read Overview. One title now, pinned across all sixteen states
+       below. */
+    expect(h1?.textContent).toBe(REFINED_OVERVIEW_TITLE)
     /* The eyebrow precedes the title in the DOM, which is what makes it an
        eyebrow rather than a subtitle — the course line sat UNDER the title. */
     const brow = container.querySelector('.crf-rd-brow')!
@@ -242,6 +244,28 @@ describe('the page starts straight after the header', () => {
         el?.tagName,
         `${page}: ${el?.tagName}.${[...(el?.classList ?? [])].join('.')} stands between the header and the page`,
       ).not.toBe('P')
+    })
+  }
+})
+
+/**
+ * THE OVERVIEW IS CALLED ONE THING — 2026-11-11, Jillienne on the default
+ * state: "why does this say exam prep when we are on the overview page".
+ *
+ * ⚠ SIXTEEN STATES, TWO COMPONENTS, ONE TITLE. The P series renders a
+ * different component from the Q and U series, and each used to carry its own
+ * hardcoded title — so the page renamed itself three states out of sixteen
+ * while the rail row did not. This walks every state rather than the two
+ * components, because the failure was never visible on a component: it was
+ * visible on a reviewer landing on p2.
+ */
+describe('the Overview keeps its name through every learner state', () => {
+  for (const stage of READINESS_STAGES) {
+    it(`${stage.key} — ${stage.label}`, () => {
+      const { container } = wrap(
+        <CompassRefinedShell page="overview" onSelectPage={() => {}} stage={stage.key} />,
+      )
+      expect(container.querySelector('header h1')?.textContent).toBe(REFINED_OVERVIEW_TITLE)
     })
   }
 })

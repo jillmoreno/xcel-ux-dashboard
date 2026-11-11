@@ -28,3 +28,27 @@ export const REFINED_COURSE = {
    *  that are now gone. */
   access: 'Access ends Jan 20, 2027',
 } as const
+
+/**
+ * THE OVERVIEW'S TITLE — one string for all sixteen states, 2026-11-11.
+ *
+ * ⚠ IT USED TO CHANGE WITH THE LEARNER'S PHASE. Jeff's prototype retitles the
+ * page "Your exam prep" on the three P states and "Your learning journey" on
+ * the other thirteen, on the argument that after the course this page becomes
+ * a different page. Jillienne, landing on the default state: "why does this
+ * say exam prep when we are on the overview page" — the rail row says
+ * Overview, the page said something else, and nothing on screen reconciled
+ * them. A learner who clicks Overview and arrives somewhere differently named
+ * has to work out whether they went to the wrong place.
+ *
+ * ⚠ THE PHASE IS NOT LOST, it stops being the page's NAME. "Overview = Your
+ * Learning Journey, and then there can be a small marker near it describing
+ * the phase of the journey. We can touch on that later because it would
+ * likely be described in the first widget of the overview page." So the
+ * marker is deliberately not built yet — it belongs with that widget.
+ *
+ * ⚠ ONE CONSTANT, TWO COMPONENTS. The P series and the U/Q series are
+ * different components; a string typed into both is two strings that agree
+ * today. `CompassRefinedShell.test.tsx` holds every state to this one.
+ */
+export const REFINED_OVERVIEW_TITLE = 'Your learning journey'
