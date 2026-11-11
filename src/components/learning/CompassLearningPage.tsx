@@ -22,7 +22,7 @@ import { CompassStudyPlanner } from './CompassStudyPlanner'
 import { CompassPlanProvider } from './CompassPlanContext'
 import { CompassJeffMvpShell } from './CompassJeffMvpShell'
 import { CompassRefinedShell } from './CompassRefinedShell'
-import type { JeffMvpPage } from '@/data/compassJeffMvpFixtures'
+import { JEFF_MVP_PAGES, JEFF_MVP_SUBPAGES, type JeffMvpPage } from '@/data/compassJeffMvpFixtures'
 import type { RefinedHeroStyle } from './CompassReadinessRefined'
 import type { FocusLayout } from './CompassRefinedFocus'
 
@@ -120,7 +120,23 @@ export function CompassLearningPage({
      landed on Jeff's Overview would have no way to tell the switch had
      happened. Seeded once, like the page above — picking a rail row after
      that is the reviewer's, not the flag's. */
-  const [jeffPage, setJeffPage] = useState<JeffMvpPage>(refined ? 'readiness' : 'overview')
+  /* ⚠ AND IT IS SEEDABLE FROM THE URL, like Anjani's page above — 2026-11-11.
+     `compassPage` named only HER page, so there was no way to open his MVP or
+     Refined anywhere but their landing page. That is fine for a reviewer who
+     will click the rail; it is not fine for a /review link, which iframes the
+     same route three times to compare ONE card and got three copies of the
+     Readiness page instead. A deep link that cannot reach the page being
+     reviewed makes the review page useless for this whole version.
+     ⚠ ONE PARAM FOR BOTH ARMS, and the value decides which list it belongs
+     to — an id his rail does not know falls through to the seed below rather
+     than rendering the not-ported panel. */
+  const [jeffPage, setJeffPage] = useState<JeffMvpPage>(() => {
+    const asked = seedParams.get('compassPage')
+    const known =
+      JEFF_MVP_PAGES.some((p) => p.page === asked) || JEFF_MVP_SUBPAGES.some((p) => p.page === asked)
+    if (asked && known) return asked as JeffMvpPage
+    return refined ? 'readiness' : 'overview'
+  })
   /* The Refined page's Readiness to Pass section — single ring (default) or
      the tested three rings with a matching key. Read here with the other
      Compass controls; the page is a plain function of its props. */
