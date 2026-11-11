@@ -178,6 +178,12 @@ export const REFINED_PACE = {
     'Your default recommended study pace is just a starting point, you can further customize your pace',
   /** The word that carries the link, so the sentence can be split around it. */
   dayOneAction: 'here',
+  /** ⚠ THE SAME OFFER, SET APART — 2026-11-11: "add a variant of this that
+   *  shows Change here as a simple text style link on the right under the
+   *  content." On the `link` arm the sentence closes itself and the action
+   *  stands under it, right-set: a note and a control rather than a note you
+   *  have to read to the end of to find the control. */
+  dayOneLink: 'Change here',
 } as const
 
 /**

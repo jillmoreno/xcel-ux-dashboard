@@ -816,12 +816,21 @@
    stage pages use `crf-rd-eyebrow` for the teaching BANNER's eyebrow (u1 and
    u5), so the course eyebrow landing on it restyled a different element on
    two of the sixteen states. Caught on u3, where both are on screen. */
+/* ⚠ THE COURSE NAME TAKES HER 700 NAVY — 2026-11-11, #243645. The whole
+   eyebrow was `--color-compass-page-muted`, which put the course and the
+   access date in one voice; the course is the thing the platform is about and
+   the date is a fact about it. The date stays muted below, so the two now
+   read as a name and its footnote rather than as one grey line.
+
+   ⚠ NOT IN `tokens.css`. It is a neutral from her ramp, not the Compass
+   palette this page otherwise uses, and promoting a brand colour into the
+   system is a bigger decision than one eyebrow. Same call as the beige. */
 .crf-rd .crf-rd-brow {
   display: flex;
   align-items: center;
   gap: 7px;
   margin: 0 0 7px;
-  color: var(--color-compass-page-muted);
+  color: #243645;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -834,6 +843,7 @@
   opacity: 0.55;
 }
 .crf-rd .crf-rd-brow__access {
+  color: var(--color-compass-page-muted);
   text-transform: none;
   letter-spacing: 0.01em;
   font-weight: 400;
@@ -1458,4 +1468,46 @@
 .crf-rd .crf-focus--panel.crf-focus--swap .crf-focus__prog {
   border-right: 0;
   border-left: 1px solid var(--crf-beige-300);
+}
+
+/* ---------- the next step's mark, two shapes — 2026-11-11 ----------
+   "make a variant of this that has the icon 40 px by 40 px in a graphical
+   circle with the course details beside it, trying to explore different
+   variations to help with vertical spacing of this widget."
+
+   ⚠ THE ASK NAMES ITS OWN PURPOSE. `stacked` spends a row of height on the
+   glyph; `circle` puts it beside the title and meta so the three occupy one
+   block. The other half of the card is three ruled rows, and the two halves
+   have to end up a similar height — which is the thing being explored, not
+   the icon. */
+.crf-rd .crf-focus__card--circle .crf-focus__body {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.crf-rd .crf-focus__card--circle .crf-focus__mark {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  margin: 2px 0 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--rd-white);
+  border: 1px solid var(--rd-steel-edge);
+}
+
+/* The day-one note's offer, set under the sentence instead of inside it.
+   2026-11-11 — see `compass-overview-pace-note`. */
+.crf-rd .crf-focus__notelink {
+  display: block;
+  margin: 6px 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--rd-steel-deep);
+  text-decoration: underline;
+  cursor: pointer;
 }

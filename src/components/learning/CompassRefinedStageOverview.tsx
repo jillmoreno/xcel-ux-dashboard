@@ -1,5 +1,5 @@
 import { CompassRefinedJourney } from './CompassRefinedJourney'
-import type { FocusLayout } from './CompassRefinedFocus'
+import type { FocusOptions } from './compassRefinedFocusModel'
 import { CompassRefinedPrepPage } from './CompassRefinedPrepPage'
 import { seriesOf } from './compassReadinessModel'
 import './compassRefinedJourney.css'
@@ -15,16 +15,13 @@ import './compassRefinedJourney.css'
  */
 export function CompassRefinedStageOverview({
   stage = 'p2',
-  layout,
-  swap,
+  focus,
 }: {
   stage?: string
-  /** `compass-overview-focus`, for the course series' merged card. */
-  layout?: FocusLayout
-  /** `compass-overview-focus-swap`. */
-  swap?: boolean
+  /** The first widget's open decisions — see `FocusOptions`. */
+  focus?: FocusOptions
 }) {
   const series = seriesOf(stage)
   if (series === 'prep') return <CompassRefinedPrepPage stage={stage} />
-  return <CompassRefinedJourney stage={stage} layout={layout} swap={swap} />
+  return <CompassRefinedJourney stage={stage} focus={focus} />
 }

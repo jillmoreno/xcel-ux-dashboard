@@ -1791,6 +1791,72 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-overview-pace-note',
+    /* HOW THE DAY-ONE NOTE OFFERS ITS ACTION — 2026-11-11: "add a variant of
+       this that shows Change here as a simple text style link on the right
+       under the content."
+
+       ⚠ ONE QUESTION: whether the action is IN the sentence or under it.
+       `inline` is the Atlas card's own shape, where "here" is the last word
+       you read. `link` closes the sentence and sets "Change here" beneath it
+       on the right, which is where a control usually sits — the reader
+       decides whether to act after reading, rather than discovering the
+       control mid-clause.
+
+       ⚠ INLINE IS THE BASELINE because it is what Atlas does and what this
+       note was ported as; the arm is the question.
+
+       ⚠ IT ONLY EXISTS AT 0%, like the note it styles. Past the first state
+       there is nothing here to arrange. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined'],
+    group: 'Widgets',
+    label: 'Pace note action',
+    description:
+      'Whether the day-one pace note carries its offer inside the sentence or under it. Inline ends "\u2026customize your pace here." as Atlas\u2019s card does. Link closes the sentence and sets "Change here" beneath it on the right, so the control is where a control usually is rather than inside a clause. Only visible at 0%, which is the only state the note appears in.',
+    variants: [
+      { value: 'inline', label: 'Inline', description: '"here" ends the sentence' },
+      { value: 'link', label: 'Link below', description: '"Change here", right-set' },
+    ],
+    defaultVariant: 'inline',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-overview-next-mark',
+    /* THE NEXT SECTION'S MARK — 2026-11-11: "make a variant of this that has
+       the icon 40 px by 40 px in a graphical circle with the course details
+       beside it, trying to explore different variations to help with vertical
+       spacing of this widget."
+
+       ⚠ THE ASK NAMES ITS OWN PURPOSE: vertical spacing. `stacked` puts the
+       glyph on its own line above the title, which costs a row of height on a
+       card whose other half is three ruled rows; `circle` sets a 40px disc
+       beside the title and meta, so the three of them occupy one block
+       instead of two. Which one wins is a question about how tall this widget
+       should be, not about the icon.
+
+       ⚠ STACKED IS THE BASELINE because it is what the mark became on
+       2026-11-11 when the tile was dropped; the arm is the question. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined'],
+    group: 'Widgets',
+    label: 'Next step mark',
+    description:
+      'How the next section\u2019s icon is drawn. Stacked puts the glyph on its own line above the title. Circle sets it at 40px inside a disc with the title and meta beside it, which takes a row of height out of the card \u2014 the point of the variant, since the other half of the card is three ruled rows and the two halves have to end up a similar height.',
+    variants: [
+      { value: 'stacked', label: 'Stacked', description: 'Glyph above the title' },
+      { value: 'circle', label: 'Circle', description: '40px disc, details beside' },
+    ],
+    defaultVariant: 'stacked',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-refined-readiness-hero',
     /* THE READINESS TO PASS SECTION, on the Refined page — 2026-11-09,
        Jillienne: "Add a feature flag concept that focuses on the Readiness to

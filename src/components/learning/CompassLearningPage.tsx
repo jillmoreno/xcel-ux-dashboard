@@ -24,7 +24,12 @@ import { CompassJeffMvpShell } from './CompassJeffMvpShell'
 import { CompassRefinedShell } from './CompassRefinedShell'
 import { JEFF_MVP_PAGES, JEFF_MVP_SUBPAGES, type JeffMvpPage } from '@/data/compassJeffMvpFixtures'
 import type { RefinedHeroStyle } from './CompassReadinessRefined'
-import type { FocusLayout } from './CompassRefinedFocus'
+import type {
+  FocusLayout,
+  FocusOptions,
+  NextMarkStyle,
+  PaceNoteStyle,
+} from './compassRefinedFocusModel'
 
 /**
  * COMPASS LEARNING — the top nav's second destination (Figma 765:3471).
@@ -145,8 +150,17 @@ export function CompassLearningPage({
      arrangements while the shape is being decided. Read here with the other
      Compass controls so every component below stays a plain function of its
      props. */
-  const overviewFocus = useFeatureFlag('compass-overview-focus').variant as FocusLayout
-  const overviewFocusSwap = useFeatureFlag('compass-overview-focus-swap').enabled
+  /* ⚠ ONE OBJECT, FOUR DECISIONS — 2026-11-11. They were separate props and
+     a fifth was arriving; each had to be declared, destructured and forwarded
+     through four components, which is the friction that stops a variant being
+     tried. Read here, as every other Compass flag is, so the components below
+     stay plain functions of their props. */
+  const overviewFocus: FocusOptions = {
+    layout: useFeatureFlag('compass-overview-focus').variant as FocusLayout,
+    swap: useFeatureFlag('compass-overview-focus-swap').enabled,
+    paceNote: useFeatureFlag('compass-overview-pace-note').variant as PaceNoteStyle,
+    nextMark: useFeatureFlag('compass-overview-next-mark').variant as NextMarkStyle,
+  }
   useDeclareDesignSurface(
     refined ? 'compass:refined' : jeffMvp ? 'compass:jeff-mvp' : (`compass:${page}` as DesignSurfaceId),
   )
@@ -224,7 +238,6 @@ export function CompassLearningPage({
             readinessHero={refinedHero}
             stage={readinessStage}
             focus={overviewFocus}
-            focusSwap={overviewFocusSwap}
           />
         ) : (
           <CompassJeffMvpShell page={jeffPage} onSelectPage={setJeffPage} />

@@ -1,5 +1,6 @@
 import { REFINED_COURSE, REFINED_OVERVIEW_TITLE } from '@/data/compassRefinedCopy'
-import { CompassRefinedFocus, type FocusLayout } from './CompassRefinedFocus'
+import { CompassRefinedFocus } from './CompassRefinedFocus'
+import { FOCUS_DEFAULTS, type FocusOptions } from './compassRefinedFocusModel'
 import { REFINED_RUBI_INTRO } from '@/data/compassRefinedCopy'
 import { useState } from 'react'
 import { CircleCheck, Clock, FileText, RubiLogo } from '@/icons'
@@ -38,16 +39,13 @@ import './compassRefinedJourney.css'
  */
 export function CompassRefinedJourney({
   stage = 'u3',
-  layout = 'split',
-  swap = false,
+  focus = FOCUS_DEFAULTS,
 }: {
   stage?: string
-  /** `compass-overview-focus` — which of the three arrangements of Course
-   *  Progress and Your Next Step draws. Passed in, so this stays a plain
-   *  function of its props. */
-  layout?: FocusLayout
-  /** `compass-overview-focus-swap`. */
-  swap?: boolean
+  /** Every design decision open on the first widget, as one object — see
+   *  `FocusOptions`. Passed in, so this stays a plain function of its
+   *  props. */
+  focus?: FocusOptions
 }) {
   const m = journeyStage(stage)
   const [tab, setTab] = useState(0)
@@ -136,8 +134,7 @@ export function CompassRefinedJourney({
           <CompassRefinedFocus
             hero={m.hero?.title ? m.hero : undefined}
             prog={m.prog}
-            layout={layout}
-            swap={swap}
+            options={focus}
           />
           {/* ⚠ THE FOUR REGULATED STEPS KEEP THEIR OWN BLOCK. Lessons,
               affidavit, final exam, survey-and-certificate — their ORDER is

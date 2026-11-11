@@ -19,6 +19,13 @@ import {
   type RefinedSectionKind,
 } from '@/data/compassRefinedCourse'
 import type { Hero, Prog } from './compassReadinessModel'
+import {
+  FOCUS_DEFAULTS,
+  type FocusLayout,
+  type FocusOptions,
+  type NextMarkStyle,
+  type PaceNoteStyle,
+} from './compassRefinedFocusModel'
 
 /**
  * WHAT THE NEXT SECTION IS, DRAWN AS A TILE — 2026-11-11, from the direct
@@ -41,9 +48,6 @@ const SECTION_ICON: Record<RefinedSectionKind, typeof BookOpenRegular> = {
   affidavit: PenFieldRegular,
   survey: ClipboardList,
 }
-
-/** Which of the three arrangements draws. `compass-overview-focus`. */
-export type FocusLayout = 'split' | 'panel' | 'figures'
 
 /**
  * COURSE PROGRESS AND YOUR NEXT STEP, AS ONE COMPONENT — 2026-11-11,
@@ -79,17 +83,13 @@ export type FocusLayout = 'split' | 'panel' | 'figures'
 export function CompassRefinedFocus({
   hero,
   prog,
-  layout = 'split',
-  swap = false,
+  options = FOCUS_DEFAULTS,
 }: {
   hero?: Hero
   prog?: Prog
-  layout?: FocusLayout
-  /** `compass-overview-focus-swap` — Your Next Step on the left instead.
-   *  A toggle rather than a fourth arrangement, so it combines with any of
-   *  them; see the flag's own note. */
-  swap?: boolean
+  options?: FocusOptions
 }) {
+  const { layout, swap } = options
   /* ⚠ EITHER HALF MAY BE ABSENT and the component still has to read. Early
      states have no hero; the prep series has no QE ring. A missing half
      collapses the grid rather than leaving a hole where it was. */
@@ -100,8 +100,8 @@ export function CompassRefinedFocus({
       className={`crf-focus crf-focus--${layout}${swap ? ' crf-focus--swap' : ''}`}
       aria-label="Where you are and what to do next"
     >
-      {prog ? <FocusProgress prog={prog} layout={layout} /> : null}
-      {hero ? <FocusNext hero={hero} next={nextSection(prog)} /> : null}
+      {prog ? <FocusProgress prog={prog} layout={layout} paceNote={options.paceNote} /> : null}
+      {hero ? <FocusNext hero={hero} next={nextSection(prog)} mark={options.nextMark} /> : null}
     </section>
   )
 }
@@ -125,7 +125,15 @@ export function CompassRefinedFocus({
  * would have put the disagreement on screen; it is recorded in
  * `REFINED_PACE` instead, to settle when the figures become real.
  */
-function FocusProgress({ prog, layout }: { prog: Prog; layout: FocusLayout }) {
+function FocusProgress({
+  prog,
+  layout,
+  paceNote,
+}: {
+  prog: Prog
+  layout: FocusLayout
+  paceNote: PaceNoteStyle
+}) {
   /* ⚠ COUNTED AGAINST THE REAL COURSE — 2026-11-11, "these are the actual
      sections from the florida life and health course. Lets update the demo
      data for the refined section to match." Forty-one sections, not Jeff's
@@ -183,11 +191,26 @@ function FocusProgress({ prog, layout }: { prog: Prog; layout: FocusLayout }) {
                 started and a stale one for anybody else. */}
             {done === 0 ? (
               <dd className="crf-focus__dayone">
-                {REFINED_PACE.dayOne}{' '}
-                <button type="button" className="crf-focus__inlink">
-                  {REFINED_PACE.dayOneAction}
-                </button>
-                .
+                {/* ⚠ TWO WAYS TO OFFER THE SAME CHANGE — 2026-11-11. `inline`
+                    is Atlas's own shape, where "here" is the last word of the
+                    sentence; `link` closes the sentence and sets the control
+                    under it on the right, where a control usually is. */}
+                {paceNote === 'link' ? (
+                  <>
+                    {REFINED_PACE.dayOne}.
+                    <button type="button" className="crf-focus__notelink">
+                      {REFINED_PACE.dayOneLink}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {REFINED_PACE.dayOne}{' '}
+                    <button type="button" className="crf-focus__inlink">
+                      {REFINED_PACE.dayOneAction}
+                    </button>
+                    .
+                  </>
+                )}
               </dd>
             ) : null}
           </div>
@@ -221,10 +244,18 @@ function FocusProgress({ prog, layout }: { prog: Prog; layout: FocusLayout }) {
  * and a time. The step's position in the regulated four is still on the page:
  * the numbered steps list sits under this card.
  */
-function FocusNext({ hero, next }: { hero: Hero; next?: RefinedSection }) {
+function FocusNext({
+  hero,
+  next,
+  mark = 'stacked',
+}: {
+  hero: Hero
+  next?: RefinedSection
+  mark?: NextMarkStyle
+}) {
   return (
     <div className="crf-focus__next">
-      <div className="crf-focus__card">
+      <div className={`crf-focus__card crf-focus__card--${mark}`}>
         {/* ⚠ NO DATE, AND NOT HIS LABEL — 2026-11-11. His carried the day
             ("Your next step · Tonight, Tue Jun 16") and the lead-in itself
             varied by state ("Recommended next" on some). One eyebrow on all
@@ -243,8 +274,13 @@ function FocusNext({ hero, next }: { hero: Hero; next?: RefinedSection }) {
             with the eyebrow above and the actions below, so they sat hard
             under the eyebrow with all the slack beneath them. */}
         <div className="crf-focus__body">
+          {/* ⚠ TWO SHAPES, ONE QUESTION: how tall this card is. `stacked`
+              gives the glyph its own line; `circle` sets a 40px disc beside
+              the title and meta so the three occupy one block instead of two.
+              The other half of the card is three ruled rows, and the two
+              halves have to end up a similar height. */}
           <span className="crf-focus__mark" aria-hidden>
-            <SectionIcon kind={next?.kind} />
+            <SectionIcon kind={next?.kind} size={mark === 'circle' ? 19 : 17} />
           </span>
           <p className="crf-focus__lessonname">{next?.title ?? hero.next ?? hero.title}</p>
           {/* ⚠ HOW LONG AND HOW FAR, NOT WHAT IT COVERS — 2026-11-11. His
@@ -332,9 +368,9 @@ function nextSection(prog?: Prog): RefinedSection | undefined {
 
 /** The tile's glyph, by what the next section is. Unknown falls back to the
  *  lesson book rather than an empty tile. */
-function SectionIcon({ kind }: { kind?: RefinedSectionKind }) {
+function SectionIcon({ kind, size = 17 }: { kind?: RefinedSectionKind; size?: number }) {
   const Icon = SECTION_ICON[kind ?? 'lesson'] ?? BookOpenRegular
-  return <Icon size={17} aria-hidden />
+  return <Icon size={size} aria-hidden />
 }
 
 /**

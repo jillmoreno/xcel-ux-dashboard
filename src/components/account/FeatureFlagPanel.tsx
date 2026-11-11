@@ -123,6 +123,8 @@ const REBRAND_FLAGS = [
   // arrangements, flipped from the bar while the shape is being decided.
   'compass-overview-focus',
   'compass-overview-focus-swap',
+  'compass-overview-pace-note',
+  'compass-overview-next-mark',
   'compass-refined-readiness-hero',
   'compass-planner-rubi',
   'compass-planner-return',
