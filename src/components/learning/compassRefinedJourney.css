@@ -1541,3 +1541,18 @@
   display: inline;
   margin: 0;
 }
+
+/* The floating Ask Rubi on the stage pages — 2026-11-11, "this should also be
+   on the overview page."
+
+   ⚠ IT BORROWS `crf-ask` AND RE-ANCHORS IT. That rule positions against
+   `crf-page`, which these pages are not; `crf-rd` is the page here, so it
+   needs the positioning context and the button needs to sit inside this
+   page's own padding rather than the other one's. */
+.crf-rd {
+  position: relative;
+}
+.crf-rd .crf-rd-ask-float {
+  right: 0;
+  top: 0;
+}

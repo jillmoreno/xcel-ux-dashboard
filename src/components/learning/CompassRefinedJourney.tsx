@@ -2,9 +2,8 @@ import { REFINED_COURSE, REFINED_OVERVIEW_TITLE } from '@/data/compassRefinedCop
 import { CompassRefinedFocus } from './CompassRefinedFocus'
 import { FOCUS_DEFAULTS, type FocusOptions } from './compassRefinedFocusModel'
 import { REFINED_RUBI_INTRO } from '@/data/compassRefinedCopy'
-import { useState } from 'react'
 import { CircleCheck, Clock, FileText, RubiLogo } from '@/icons'
-import { PathLine, ReadinessRing, TopicTable } from './CompassRefinedParts'
+import { PathLine, ReadinessRing } from './CompassRefinedParts'
 import {
   journeyStage,
   type Hero as HeroModel,
@@ -12,7 +11,6 @@ import {
   type PathRow,
   type Prog,
   type Ring,
-  type TopicRow,
 } from './compassReadinessModel'
 import './compassRefinedJourney.css'
 
@@ -48,15 +46,24 @@ export function CompassRefinedJourney({
   focus?: FocusOptions
 }) {
   const m = journeyStage(stage)
-  const [tab, setTab] = useState(0)
-  const tabs = m.tabs ?? []
-  /* His tabs carry their own selected flag; a click moves it. */
-  const activeTab = tabs.length ? tab : 0
-  const showPrep = m.prepTable && (!tabs.length || activeTab === 0)
-  const showStd = m.stdTable || (tabs.length > 0 && activeTab === 1)
+  /* ⚠ THE TAB STATE WENT WITH THE TABLE — 2026-11-11. `tab`, `activeTab`,
+     `showPrep` and `showStd` existed only to pick which of his two topic
+     tables drew and which tab was lit; with the section unwired they were
+     state nothing read. `m.tabs`, `m.rows` and `m.prows` are untouched in
+     the model, so they come back with the JSX. */
 
   return (
     <div className="crf-rd" data-stage={m.stage}>
+      {/* ⚠ THE FLOATING ASK RUBI, AS THE MVP PAGES CARRY IT — 2026-11-11:
+          "this should also be on the overview page." Every other Refined page
+          has it top right; the Overview was the one that did not, so the way
+          to reach her moved depending on which page you were on. The Rubi
+          CARD further down is a different offer — an introduction, or a
+          suggestion — and neither is "I have a question now". */}
+      <button type="button" className="crf-ask crf-rd-ask-float">
+        <RubiLogo size={17} aria-hidden />
+        Ask Rubi
+      </button>
       {/* ⚠ A REAL `header`, holding the eyebrow and the title and nothing
           else — 2026-11-10. These pages drew both as loose paragraphs in
           the page, so there was no element that WAS the header and nothing
@@ -200,45 +207,14 @@ export function CompassRefinedJourney({
         </div>
       )}
 
-      {/* ---- the table, with his tabs over it ---- */}
-      <section className="crf-rd-table" aria-label={m.tableTitle}>
-        {tabs.length > 0 && (
-          /* ⚠ THE TABS ARE THE ARGUMENT MADE INTERACTIVE: you cannot see both
-             signals at once, because they are not one thing. */
-          <div className="crf-rd-tabs" role="tablist">
-            {tabs.map((t, i) => (
-              <button
-                key={t.label}
-                type="button"
-                role="tab"
-                aria-selected={i === activeTab}
-                className={`crf-rd-tab${i === activeTab ? ' is-on' : ''}`}
-                onClick={() => setTab(i)}
-              >
-                <b>{t.label}</b>
-                <span className="crf-rd-note">{t.sub}</span>
-              </button>
-            ))}
-          </div>
-        )}
-        <div className="crf-rd-table-head">
-          <div>
-            <h2 className="crf-rd-h2">{showStd && tabs.length ? 'Your lessons by topic' : m.tableTitle}</h2>
-            <p className="crf-rd-summary">{m.summary}</p>
-          </div>
-          <p className="crf-rd-note">{m.tableNote}</p>
-        </div>
-        {showPrep && !showStd ? (
-          <TopicTable rows={(m.prows ?? []) as TopicRow[]} variant="prep" />
-        ) : (
-          <TopicTable
-            rows={(m.rows ?? []) as TopicRow[]}
-            variant="lessons"
-            colLessons={m.colLessons !== false}
-            colReady={!!m.colReady}
-          />
-        )}
-      </section>
+      {/* ⚠ "YOUR LESSONS BY TOPIC" IS UNWIRED — 2026-11-11, "remove this
+          section for now." The table, its tabs and the expandable topic rows
+          came out together; `m.tableTitle`, `m.summary`, `m.tableNote`,
+          `m.rows`, `m.prows` and `m.tabs` are all still in the model, and the
+          block is one `git show` away — it was the only thing between the
+          Rubi card and the gate line. FOR NOW is the operative half: nothing
+          about the data or the stage fixtures changed, so restoring it is
+          putting the JSX back, not rebuilding it. */}
 
       <p className="crf-rd-gate">{m.gate}</p>
     </div>

@@ -32,6 +32,16 @@ export function CompassRefinedPrepPage({ stage = 'p2' }: { stage?: string }) {
   const m = prepStage(stage)
   return (
     <div className="crf-rd" data-stage={m.stage}>
+      {/* ⚠ THE FLOATING ASK RUBI, AS THE MVP PAGES CARRY IT — 2026-11-11:
+          "this should also be on the overview page." Every other Refined page
+          has it top right; the Overview was the one that did not, so the way
+          to reach her moved depending on which page you were on. The Rubi
+          CARD further down is a different offer — an introduction, or a
+          suggestion — and neither is "I have a question now". */}
+      <button type="button" className="crf-ask crf-rd-ask-float">
+        <RubiLogo size={17} aria-hidden />
+        Ask Rubi
+      </button>
       {/* ⚠ A REAL `header`, holding the eyebrow and the title and nothing
           else — 2026-11-10. These pages drew both as loose paragraphs in
           the page, so there was no element that WAS the header and nothing
