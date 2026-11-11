@@ -192,31 +192,22 @@ function FocusNext({ hero, next }: { hero: Hero; next?: RefinedSection }) {
   return (
     <div className="crf-focus__next">
       <div className="crf-focus__card">
-        {/* ⚠ THE TILE SAYS WHAT KIND OF THING IS NEXT — 2026-11-11. A reader
-            scanning this card sees "Chapter 4 Exam: Life Insurance Policy
-            Types" and has to read to the third word to learn it is an exam;
-            the icon says it before the title does. `aria-hidden`, because the
-            title already carries the word. */}
-        <div className="crf-focus__head">
-          <span className="crf-tile crf-focus__tile" aria-hidden>
-            <SectionIcon kind={next?.kind} />
-          </span>
-          <div style={{ minWidth: 0 }}>
         {/* ⚠ NO DATE, AND NOT HIS LABEL — 2026-11-11. His carried the day
             ("Your next step · Tonight, Tue Jun 16") and the lead-in itself
             varied by state ("Recommended next" on some). One eyebrow on all
             sixteen; see `REFINED_NEXT_EYEBROW`. */}
         <p className="crf-focus__label">{REFINED_NEXT_EYEBROW}</p>
-        {/* ⚠ A REAL SECTION OF THE REAL COURSE — 2026-11-11. His value was
-            "Lesson 1: What life insurance does", which is not a row of the
-            Florida Life & Health list. The section is chosen by the same
-            stage percentage that drives the count opposite, so the two halves
-            always describe one learner. His string is the fallback for the
-            states that carry no progress to pick from. */}
+        {/* ⚠ UNDER THE EYEBROW, OVER THE TITLE, AND ON NO GROUND OF ITS OWN —
+            2026-11-11: "icon should be below the eyebrow. above the course
+            title section, not white background". It was a white tile beside
+            the title, which on this blue half read as a second card edge. A
+            bare glyph in its own line is a mark on the section rather than a
+            box in it. `aria-hidden`, because the title says the word. */}
+        <span className="crf-focus__mark" aria-hidden>
+          <SectionIcon kind={next?.kind} />
+        </span>
         <p className="crf-focus__lessonname">{next?.title ?? hero.next ?? hero.title}</p>
-            {hero.meta ? <p className="crf-focus__note">{hero.meta}</p> : null}
-          </div>
-        </div>
+        {hero.meta ? <p className="crf-focus__note">{hero.meta}</p> : null}
         <div className="crf-focus__cta">
           {hero.cta ? (
             <button type="button" className="crf-focus__go">

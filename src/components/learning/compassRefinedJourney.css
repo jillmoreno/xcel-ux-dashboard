@@ -953,7 +953,7 @@
    the two eyebrows share a line. */
 .crf-rd .crf-focus__next {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   padding: 22px 26px 22px;
   min-width: 0;
   /* What to do NEXT — the cool half, as it was. */
@@ -963,7 +963,15 @@
    edge sitting inside the card; on the hero's tinted ground that is a box in
    a box. The vertical hairline between the halves is the whole separation the
    reference draws. */
+/* ⚠ A COLUMN THAT FILLS ITS HALF — 2026-11-11: "CTA and link should always
+   be fixed at the bottom of the section." The actions had floated under the
+   meta line, so their height moved with the title's: a two-line lesson name
+   pushed them down and a one-line name left them mid-card, and the two halves
+   never agreed on a baseline. `margin-top: auto` on the action row puts them
+   on the floor of the card whatever is above them. */
 .crf-rd .crf-focus__card {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   box-sizing: border-box;
 }
@@ -995,11 +1003,23 @@
 
 /* ⚠ THE EYEBROWS STAY LEFT WHERE THE CONTENT IS CENTRED, which is Atlas's own
    pattern on this card: "the label left, the thing it names centred". */
+/* ⚠ 600, NOT 700 — AND THE COLOUR DOES NOT MOVE, 2026-11-11: "I think its
+   too bold and needs to be a little more light gray that still passes
+   accessibility."
+
+   Measured before changing anything. `--rd-muted` is rgb(112,107,99): 5.29:1
+   on the white half, but only 4.61:1 on the blue one — a hair over the 4.5
+   floor that 11px text needs, so there is no room to lighten it. Every
+   candidate a step lighter lands between 3.6 and 4.2 on the blue and fails.
+
+   What was making it read heavy is the WEIGHT. 700 at 11px with 0.08em
+   tracking is a lot of ink for a label; 600 lifts it without touching
+   contrast, which is the half of the ask that could be met. */
 .crf-rd .crf-focus__eyebrow {
   align-self: flex-start;
   margin: 0;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--rd-muted);
@@ -1115,9 +1135,9 @@
   background: var(--rd-white);
 }
 .crf-rd .crf-focus__label {
-  margin: 0 0 2px;
-  font-size: 10px;
-  font-weight: 700;
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--rd-muted);
@@ -1136,8 +1156,9 @@
 .crf-rd .crf-focus__cta {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 10px;
+  gap: 16px;
+  margin-top: auto;
+  padding-top: 14px;
   flex-wrap: wrap;
 }
 
@@ -1259,4 +1280,13 @@
   width: 32px;
   height: 32px;
   margin-top: 1px;
+}
+
+/* The next-step mark — the glyph alone, on the section's own ground.
+   2026-11-11: "not white background". It had been `crf-tile`, a white badge,
+   which on the blue half read as a second card edge inside the card. */
+.crf-rd .crf-focus__mark {
+  display: inline-flex;
+  margin-bottom: 8px;
+  color: var(--rd-steel-deep);
 }
