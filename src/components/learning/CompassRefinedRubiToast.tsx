@@ -50,11 +50,17 @@ export function CompassRefinedRubiToast({
       </div>
       <h2 className="crf-rd-toast__title">{REFINED_RUBI_INTRO.title(user.firstName)}</h2>
       <p className="crf-rd-toast__why">{REFINED_RUBI_INTRO.why}</p>
+      {/* ⚠ "Start the course" IS GONE — 2026-11-11, "remove this". It had led
+          as the navy primary, on the reasoning that a toast greeting somebody
+          who has not begun should not make meeting the tutor the first ask.
+          With it removed, "Talk with Rubi" takes the navy rather than staying
+          outlined beside nothing: her first instruction for this toast was
+          "in the style with the navy button", and a card whose only real
+          action is an outline has no primary at all.
+          The course is still one click away — the next-step card opposite is
+          "Start lesson", and it is the one that was always meant to carry it. */}
       <div className="crf-rd-toast__cta">
         <button type="button" className="crf-rd-toast__go">
-          {REFINED_RUBI_INTRO.start}
-        </button>
-        <button type="button" className="crf-rd-toast__alt">
           {REFINED_RUBI_INTRO.cta}
         </button>
         {/* Dismissing from here and from the × are the same act. */}

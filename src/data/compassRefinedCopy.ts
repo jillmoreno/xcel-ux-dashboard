@@ -265,11 +265,11 @@ export const REFINED_RUBI_INTRO = {
   why: "I can explain a term, give an example or recap a lesson whenever you ask. At the start of a session, I'll check in with a short welcome. You can pause my offers any time.",
   cta: 'Talk with Rubi',
   dismiss: 'Not now',
-  /** ⚠ THE TOAST'S PRIMARY — 2026-11-11. On the card Rubi's own offer led;
-   *  on a first-run toast the learner has not started the course yet, and
-   *  "Talk with Rubi" as the only primary makes meeting the tutor the first
-   *  thing the product asks of them. Starting leads; she is the alternative
-   *  to starting, which is the honest order. */
+  /** ⚠ UNUSED SINCE 2026-11-11, "remove this". It was the toast's navy
+   *  primary for an hour — the reasoning being that a greeting to somebody
+   *  who has not begun should not make meeting the tutor the first ask. The
+   *  string stays because the reasoning might come back; nothing renders it,
+   *  and the next-step card opposite carries starting instead. */
   start: 'Start the course',
   close: 'Dismiss',
 } as const
