@@ -16,7 +16,7 @@ export type FocusLayout = 'split' | 'panel' | 'figures'
 export type PaceNoteStyle = 'inline' | 'link'
 
 /** How the next section's mark is drawn. `compass-overview-next-mark`. */
-export type NextMarkStyle = 'stacked' | 'circle'
+export type NextMarkStyle = 'stacked' | 'tile'
 
 /**
  * EVERY DESIGN DECISION OPEN ON THIS CARD, AS ONE PROP — 2026-11-11.

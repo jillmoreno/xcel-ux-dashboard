@@ -1492,21 +1492,30 @@
    block. The other half of the card is three ruled rows, and the two halves
    have to end up a similar height — which is the thing being explored, not
    the icon. */
-.crf-rd .crf-focus__card--circle .crf-focus__body {
+.crf-rd .crf-focus__card--tile .crf-focus__body {
   display: flex;
   align-items: flex-start;
   gap: 14px;
 }
-.crf-rd .crf-focus__card--circle .crf-focus__mark {
+/* ⚠ A ROUNDED SQUARE, NOT A DISC — 2026-11-11: "make the icon a square
+   version like used on the Your Course Page." That page's badge is
+   `crf-tile`: a 36px square at 8px radius. This keeps the 40px the variant
+   was asked for and takes the shape. */
+.crf-rd .crf-focus__card--tile .crf-focus__mark {
   flex: 0 0 40px;
   width: 40px;
   height: 40px;
   margin: 2px 0 0;
-  border-radius: 50%;
+  border-radius: 10px;
   display: grid;
   place-items: center;
   background: var(--rd-white);
   border: 1px solid var(--rd-steel-edge);
+}
+/* The name on its own line, its figures under it — "wrap the text so its
+   course title and then the other text on the 2nd line". */
+.crf-rd .crf-focus__bodytext {
+  min-width: 0;
 }
 
 /* The day-one note's offer, set under the sentence instead of inside it.

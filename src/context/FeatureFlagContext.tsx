@@ -1833,10 +1833,17 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
 
        ⚠ THE ASK NAMES ITS OWN PURPOSE: vertical spacing. `stacked` puts the
        glyph on its own line above the title, which costs a row of height on a
-       card whose other half is three ruled rows; `circle` sets a 40px disc
-       beside the title and meta, so the three of them occupy one block
-       instead of two. Which one wins is a question about how tall this widget
-       should be, not about the icon.
+       card whose other half is three ruled rows; `tile` sets a 40px badge
+       beside the title and meta, so they occupy one block instead of two.
+       Which one wins is a question about how tall this widget should be, not
+       about the icon.
+
+       ⚠ THE ARM WAS `circle` FOR AN HOUR. "make the icon a square version
+       like used on the Your Course Page" — so it is the Learn page's rounded
+       square now, and the VALUE was renamed with it rather than leaving a
+       `circle` that draws a square. Any `?ff=compass-overview-next-mark:
+       circle` link from that hour falls back to the default; the flag is a
+       day old and the bar is how it has been used.
 
        ⚠ STACKED IS THE BASELINE because it is what the mark became on
        2026-11-11 when the tile was dropped; the arm is the question. */
@@ -1847,10 +1854,10 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Next step mark',
     description:
-      'How the next section\u2019s icon is drawn. Stacked puts the glyph on its own line above the title. Circle sets it at 40px inside a disc with the title and meta beside it, which takes a row of height out of the card \u2014 the point of the variant, since the other half of the card is three ruled rows and the two halves have to end up a similar height.',
+      'How the next section\u2019s icon is drawn. Stacked puts the glyph on its own line above the title. Tile sets it at 40px inside a rounded square \u2014 the badge the Your Course page uses \u2014 with the title and its figures stacked beside it, which takes a row of height out of the card. That is the point of the variant: the other half is three ruled rows, and the two halves have to end up a similar height.',
     variants: [
       { value: 'stacked', label: 'Stacked', description: 'Glyph above the title' },
-      { value: 'circle', label: 'Circle', description: '40px disc, details beside' },
+      { value: 'tile', label: 'Tile', description: '40px badge, details beside' },
     ],
     defaultVariant: 'stacked',
     defaultEnabled: true,

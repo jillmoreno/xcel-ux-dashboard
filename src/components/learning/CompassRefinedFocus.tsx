@@ -278,24 +278,32 @@ function FocusNext({
             under the eyebrow with all the slack beneath them. */}
         <div className="crf-focus__body">
           {/* ⚠ TWO SHAPES, ONE QUESTION: how tall this card is. `stacked`
-              gives the glyph its own line; `circle` sets a 40px disc beside
-              the title and meta so the three occupy one block instead of two.
-              The other half of the card is three ruled rows, and the two
+              gives the glyph its own line; `tile` sets a 40px badge beside
+              the title and its figures so they occupy one block instead of
+              two. The other half of the card is three ruled rows, and the two
               halves have to end up a similar height. */}
           <span className="crf-focus__mark" aria-hidden>
-            <SectionIcon kind={next?.kind} size={mark === 'circle' ? 19 : 17} />
+            <SectionIcon kind={next?.kind} size={mark === 'tile' ? 19 : 17} />
           </span>
-          <p className="crf-focus__lessonname">{next?.title ?? hero.next ?? hero.title}</p>
-          {/* ⚠ HOW LONG AND HOW FAR, NOT WHAT IT COVERS — 2026-11-11. His
-              line ran "1h 40m · insurable interest · how a policy pays": a
-              duration and two topics, and the topics are what the TITLE above
-              already says. The dot is the drawn one the progress rows use, so
-              the two halves separate things the same way. */}
-          <p className="crf-focus__note">
-            {REFINED_NEXT_META.parts}
-            <span aria-hidden className="crf-focus__sep" />
-            {REFINED_NEXT_META.approx} {durationOf(hero.meta)}
-          </p>
+          {/* ⚠ THE NAME AND ITS FIGURES ARE ONE COLUMN — 2026-11-11: "wrap
+              the text so its course title and then the other text on the 2nd
+              line." Beside the tile they had been two more items on the
+              mark's flex row, so a long course name and its figures competed
+              for one line. The wrapper is inert on `stacked`, where the body
+              is a plain block. */}
+          <div className="crf-focus__bodytext">
+            <p className="crf-focus__lessonname">{next?.title ?? hero.next ?? hero.title}</p>
+            {/* ⚠ HOW LONG AND HOW FAR, NOT WHAT IT COVERS — 2026-11-11. His
+                line ran "1h 40m · insurable interest · how a policy pays": a
+                duration and two topics, and the topics are what the TITLE
+                above already says. The dot is the drawn one the progress rows
+                use, so the two halves separate things the same way. */}
+            <p className="crf-focus__note">
+              {REFINED_NEXT_META.parts}
+              <span aria-hidden className="crf-focus__sep" />
+              {REFINED_NEXT_META.approx} {durationOf(hero.meta)}
+            </p>
+          </div>
         </div>
         {/* ⚠ ONE ACTION — 2026-11-11, on "Set my study pace": "remove this."
             `hero.alt` is the stage's secondary, and on this card it competed
