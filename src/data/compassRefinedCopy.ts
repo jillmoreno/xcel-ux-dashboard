@@ -51,7 +51,17 @@ export const REFINED_COURSE = {
  * different components; a string typed into both is two strings that agree
  * today. `CompassRefinedShell.test.tsx` holds every state to this one.
  */
-export const REFINED_OVERVIEW_TITLE = 'Your Learning Journey'
+/* ⚠ THE RAIL'S WORD LEADS THE TITLE — 2026-11-11: "Change this to Overview -
+   Your Learning Journey". The row says Overview and the page said Your
+   Learning Journey, which is the mismatch that started this thread on
+   2026-11-10 ("why does this say exam prep when we are on the overview
+   page"). Naming both settles it in one line instead of making the reader
+   hold the equivalence.
+
+   ⚠ A HYPHEN, NOT AN EN DASH, and it is hers verbatim. The course's own rows
+   are punctuated the same way — "Course Introduction - Life and Health
+   Pre-licensing" — so the page agrees with the data it lists. */
+export const REFINED_OVERVIEW_TITLE = 'Overview - Your Learning Journey'
 
 /**
  * EVERY PAGE TITLE, IN ONE PLACE AND IN TITLE CASE — 2026-11-11, Jillienne:
@@ -98,7 +108,10 @@ export const REFINED_PAGE_TITLES = {
  */
 export const REFINED_RAIL_LABELS: Record<string, string> = {
   overview: 'Overview',
-  learn: 'Learn',
+  /* ⚠ "Your Course", NOT "Learn" — 2026-11-11. The row opened a page titled
+     "Your Course" and called itself something else; this is the same row/page
+     agreement the title-case pass made for Study Planner. */
+  learn: 'Your Course',
   'study-planner': 'Study Planner',
   'prep-review': 'Prep Review',
   practice: 'Practice',
@@ -278,3 +291,17 @@ export const REFINED_NEXT_META = {
  * `innerText`.
  */
 export const REFINED_RAIL_TOP_GROUP = 'Your learning'
+
+/**
+ * THE RING'S SUB-LABEL — 2026-11-11, on "Lessons": "Complete".
+ *
+ * ⚠ IT NAMES WHAT THE FIGURE IS, NOT WHAT IS BEING COUNTED. The row beneath
+ * already says "Completed Lessons · 0 of 41", so "0% / LESSONS" repeated the
+ * noun and left the percentage unexplained — per cent of what? "0% /
+ * COMPLETE" says it. It is also what `AtlasPaceRingCard` puts under its own
+ * dial, so the two surfaces label the same figure the same way.
+ *
+ * ⚠ ONE WORD FOR EVERY STATE. `prog.ringLab` is "Lessons" on all sixteen, so
+ * nothing varies that this replaces.
+ */
+export const REFINED_RING_LABEL = 'Complete'

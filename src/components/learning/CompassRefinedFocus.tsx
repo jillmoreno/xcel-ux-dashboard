@@ -10,6 +10,7 @@ import {
   REFINED_NEXT_META,
   REFINED_PACE,
   REFINED_PROGRESS_LINES,
+  REFINED_RING_LABEL,
 } from '@/data/compassRefinedCopy'
 import {
   REFINED_COURSE_SECTIONS,
@@ -79,10 +80,15 @@ export function CompassRefinedFocus({
   hero,
   prog,
   layout = 'split',
+  swap = false,
 }: {
   hero?: Hero
   prog?: Prog
   layout?: FocusLayout
+  /** `compass-overview-focus-swap` — Your Next Step on the left instead.
+   *  A toggle rather than a fourth arrangement, so it combines with any of
+   *  them; see the flag's own note. */
+  swap?: boolean
 }) {
   /* ⚠ EITHER HALF MAY BE ABSENT and the component still has to read. Early
      states have no hero; the prep series has no QE ring. A missing half
@@ -91,7 +97,7 @@ export function CompassRefinedFocus({
 
   return (
     <section
-      className={`crf-focus crf-focus--${layout}`}
+      className={`crf-focus crf-focus--${layout}${swap ? ' crf-focus--swap' : ''}`}
       aria-label="Where you are and what to do next"
     >
       {prog ? <FocusProgress prog={prog} layout={layout} /> : null}
@@ -298,7 +304,10 @@ function Ring({ prog, size }: { prog: Prog; size: number }) {
       </svg>
       <span className="crf-focus__ringnum">
         <b>{prog.pct}</b>
-        <span>{prog.ringLab}</span>
+        {/* ⚠ "Complete", NOT his "Lessons" — 2026-11-11. The row beneath
+            already says "Completed Lessons · 0 of 41", so repeating the noun
+            left the percentage unexplained. See `REFINED_RING_LABEL`. */}
+        <span>{REFINED_RING_LABEL}</span>
       </span>
     </div>
   )
