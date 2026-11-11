@@ -336,7 +336,12 @@ describe('day-one copy appears at 0% and nowhere else', () => {
   it('the pace note is there on the first state', () => {
     const { container } = at('q1')
     const note = container.querySelector('.crf-focus__dayone')
-    expect(note?.textContent).toContain('just a starting point')
+    /* ⚠ THE OFFER, NOT THE SENTENCE — 2026-11-11, when `link` became the
+       default. On that arm the explanation is gone and only the control
+       remains, so asserting the prose would pin the arm rather than the
+       behaviour this case is about: that something appears at 0%. */
+    expect(note).toBeTruthy()
+    expect(note?.textContent).toContain('Adjust')
   })
 
   it('and gone on every state after it', () => {

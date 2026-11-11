@@ -1803,8 +1803,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        decides whether to act after reading, rather than discovering the
        control mid-clause.
 
-       ⚠ INLINE IS THE BASELINE because it is what Atlas does and what this
-       note was ported as; the arm is the question.
+       ⚠ `link` IS THE BASELINE SINCE 2026-11-11 — "set this as the default."
+       It was `inline` for the hour the arm existed, on the usual rule that
+       the baseline is what shipped. The rule bends here because nothing
+       shipped: this note is Refined's own, written the same day, and the
+       explanation it carried turned out to be the part that could go — a
+       learner on day one does not need telling that a default is a default.
+       `inline` stays as the arm holding Atlas's shape.
 
        ⚠ IT ONLY EXISTS AT 0%, like the note it styles. Past the first state
        there is nothing here to arrange. */
@@ -1815,12 +1820,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Pace note action',
     description:
-      'Whether the day-one pace note carries its offer inside the sentence or under it. Inline ends "\u2026customize your pace here." as Atlas\u2019s card does. Link closes the sentence and sets "Change here" beneath it on the right, so the control is where a control usually is rather than inside a clause. Only visible at 0%, which is the only state the note appears in.',
+      'Whether the day-one pace note explains itself or just offers the change. Link \u2014 the default since 2026-11-11 \u2014 drops the note entirely and puts "Adjust" on the Study Pace row, on the reasoning that a learner on day one does not need telling that a default is a default. Inline keeps Atlas\u2019s shape: the sentence about the pace being a starting point, ending "\u2026customize your pace here." Only visible at 0%, the one state the note appears in.',
     variants: [
       { value: 'inline', label: 'Inline', description: '"here" ends the sentence' },
-      { value: 'link', label: 'Link below', description: '"Change here", right-set' },
+      { value: 'link', label: 'Link below', description: '"Adjust", on the row' },
     ],
-    defaultVariant: 'inline',
+    defaultVariant: 'link',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },

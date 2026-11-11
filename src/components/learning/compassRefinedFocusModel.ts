@@ -40,6 +40,10 @@ export type FocusOptions = {
 export const FOCUS_DEFAULTS: FocusOptions = {
   layout: 'split',
   swap: false,
-  paceNote: 'inline',
+  /* ⚠ `link` SINCE 2026-11-11, following the flag — see
+     `compass-overview-pace-note`. These two defaults have to agree or a
+     component rendered without options draws something the bar never
+     shows. */
+  paceNote: 'link',
   nextMark: 'stacked',
 }
