@@ -2602,7 +2602,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       flag: 'affidavit-v2-moment',
       hide: {
         pre: ['CO', 'CT', 'MS', 'NY', 'WI', 'WV', 'PA'],
-        exam: ['CA', 'IL', 'KY', 'MS', 'NV', 'NY', 'OH', 'OR'],
+        exam: ['CA', 'IL', 'KY', 'NV', 'NY', 'OH', 'OR'],
         post: ['FL', 'KY', 'MS', 'NV', 'OR', 'GEN', 'PA'],
       },
     },

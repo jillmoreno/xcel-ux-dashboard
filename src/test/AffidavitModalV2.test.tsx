@@ -120,7 +120,7 @@ describe('AffidavitModalV2', () => {
   it('has no language control: Florida and Non-state specific open in English', () => {
     expect(FEATURE_FLAGS.find((f) => f.key === 'affidavit-v2-language')).toBeUndefined()
     for (const v of ['jill-atlas-main', 'eric-atlas-e2e'])
-      expect(designControlsFor(v, null, null).map((f) => f.label), v).not.toContain('Affidavit language')
+      expect(designControlsFor(v, v === 'jill-atlas-main' ? 'jill' : 'eric').map((f) => f.label), v).not.toContain('Affidavit language')
     render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="FL" />)
     expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(FORMS.FL_LH_EN!.title)
     cleanup()
@@ -512,7 +512,7 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
      signature line or label shows the same block, whatever the document
      calls it. */
   it('signs every form that has a signature the same way: names pre-filled, the signature typed', () => {
-    expect(SIGNED_FORMS).toHaveLength(15)
+    expect(SIGNED_FORMS).toHaveLength(16)
     for (const key of SIGNED_FORMS) {
       const ids = formFields(key).map((x) => x.id)
       for (const id of ['first', 'middle', 'last', 'sig']) expect(ids, `${key} ${id}`).toContain(id)
@@ -776,6 +776,21 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(screen.getByRole('button', { name: 'Attest' })).toBeTruthy()
     expect(STATES.PA).toBe('Pennsylvania')
     expect(FEATURE_FLAGS.find((f) => f.key === 'affidavit-v2-state')!.variants!.some((v) => v.value === 'PA')).toBe(true)
+  })
+
+  /* MISSISSIPPI (2026-11-11), read off the screenshot in its Word doc —
+     Pennsylvania's wording, with Mississippi's regulator. */
+  it('Mississippi before the course exam: its affidavit, signed the standard way, with I Attest and Confirm', async () => {
+    render(<AffidavitModalV2 onClose={() => {}} moment="exam" state="MS" />)
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe('Mississippi Pre-Licensing Affidavit')
+    expect(screen.queryByText('Student E-Signature:')).toBeNull()
+    expect(openDoc('exam', 'MS').getByText(/sanction by the Mississippi Insurance Department/)).toBeTruthy()
+    expect((screen.getByLabelText(/^First Name/) as HTMLInputElement).value).toBe('Jordan')
+    expect(screen.getByLabelText(/^Last Name/)).toBeTruthy()
+    expect((screen.getByLabelText(/^Signature/) as HTMLInputElement).value).toBe('')
+    expect(screen.getByLabelText(/^Today's Date/)).toBeTruthy()
+    expect(screen.getByLabelText(/I confirm that the above information is accurate/)).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'I Attest and Confirm' })).toBeTruthy()
   })
 
   it('resolves every ready entry in the explorer to a form', () => {

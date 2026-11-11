@@ -1007,6 +1007,38 @@ FORMS.PA_EXAM={
   note:'Not in the explorer: added 2026-11-06 from the compliance team\'s affidavit sheet. The PRD says Pennsylvania eliminated pre-licensing on 29 Apr 2025; to be confirmed with compliance.'
 };
 
+/* ── BEFORE THE COURSE EXAM: MISSISSIPPI — added 2026-11-11 ──────────────
+   From Afsana's "Non-State Specific/before course exam" folder: Mississippi
+   Pre-Exam Attestation.docx, whose only content is a screenshot of OCD's
+   "Affidavit Preview" — read off the image. Its wording is Pennsylvania's,
+   word for word, but for the regulator ("the Mississippi Insurance
+   Department"). Its fields — Student E-Signature: First Name, Last Name,
+   Today's date — and its button, "I attest and confirm", in the house case
+   Florida and the four pre-exam attestations already use. The name fields are
+   standardised by the signing pass below (First / Middle / Last, a Signature
+   box, the "I confirm …" box), as every signed form is. */
+ENTRIES.push({m:'exam',st:'MS',status:'ready',form:'MS_EXAM'})
+FORMS.MS_EXAM={
+  docHeader:'Mississippi Pre-Licensing Affidavit',
+  title:'Mississippi Pre-Licensing Affidavit',
+  agreeLabel:'I Attest and Confirm',
+  source:'Word doc · Mississippi Pre-Exam Attestation (a screenshot of the OCD affidavit preview)',
+  pages:[{blocks:[
+    {p:'By submitting this form, the undersigned student acknowledges that the online course examination must be completed unassisted by any person, the course material or other materials. The student also acknowledges that a violation of these standards shall result in loss of course credit and administrative sanction by the Mississippi Insurance Department.'},
+    {p:'The student further declares that he/she has been actively engaged in one-hundred percent of the online pre-licensing course, and has completed one hundred percent of the review questions for each particular section/chapter before proceeding to the next section/chapter.'}
+  ]}],
+  fields:[
+    {block:{h4:'Student E-Signature:'}},
+    {row:[
+      {id:'first',label:'First Name',required:true,placeholder:'First name',ac:'given-name'},
+      {id:'last',label:'Last Name',required:true,placeholder:'Last name',ac:'family-name'}
+    ]},
+    {id:'date',type:'date',label:"Today's Date",required:true},
+    {id:'agree',type:'checkbox',label:'I confirm that the above information is accurate',required:true}
+  ],
+  note:'Not in the explorer: added 2026-11-11 from the Non-State Specific folder\'s Mississippi Pre-Exam Attestation (a screenshot).'
+};
+
 /* ── ONE WAY TO SIGN — 2026-11-06 ────────────────────────────────────────
    The Nov 5 product & design review (Amrita, Nick): signatures are kept the
    same on every form, for audit and reporting, whatever the document calls
@@ -1037,7 +1069,7 @@ const SIGNATURE: AffField = {id:'sig',label:'Student Signature',required:true,pl
 const CONFIRM: AffField = {id:'agree',type:'checkbox',label:'I confirm that the above information is accurate',required:true}
 const NAME_IDS = ['first','middle','last','suffix','fullname','name']
 const isName = (x: AffField) => (x.id != null && NAME_IDS.includes(x.id)) || (x.row ?? []).some((y) => y.id != null && NAME_IDS.includes(y.id))
-export const SIGNED_FORMS = ['IL_PRE','OH_PRE','FL_EXAM','MN_EXAM','CA_POST_LH','IL_POST','OH_POST_P','NY_POST','CO_POST','CT_POST','MN_POST','WV_POST','WI_POST','GEN_EXAM','PA_EXAM']
+export const SIGNED_FORMS = ['IL_PRE','OH_PRE','FL_EXAM','MN_EXAM','CA_POST_LH','IL_POST','OH_POST_P','NY_POST','CO_POST','CT_POST','MN_POST','WV_POST','WI_POST','GEN_EXAM','PA_EXAM','MS_EXAM']
 /* AND ONE WAY TO TAKE A NAME (2026-11-06, Afsana: "Yes, standardize"). The
    forms that ask for a name but have no signature — California's and the
    generic terms ("Student Name", "Student Full Name") and the KY, NV and OR

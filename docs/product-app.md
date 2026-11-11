@@ -4774,6 +4774,13 @@ the Design bar, which is Jill's file, so for now they are dropped.
   **eliminated pre-licensing on 29 Apr 2025**, and that the state's licensing
   tab "still says 'student affidavit'". Built from the sheet; compliance to
   say whether XCEL still shows it before it counts as decided.
+- **Before course exam — Mississippi** (2026-11-11), from Afsana's
+  "Non-State Specific/before course exam" folder: *Mississippi Pre-Exam
+  Attestation.docx*, which is only a screenshot of OCD's affidavit preview,
+  so the title, text and fields were read off the image. The wording is
+  Pennsylvania's word for word, but with "the Mississippi Insurance
+  Department". Its First Name · Last Name · Today's date take the standard
+  signing (`SIGNED_FORMS`), and its button is "I Attest and Confirm".
 - **The SSN wording** (2026-11-06) — the sheet's "SSN Veribage" column:
   *"This information will enable the Commissioner to properly identify and
   assign credit to students who have completed a course."* It replaces
