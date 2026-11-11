@@ -4633,12 +4633,21 @@ the Design bar, which is Jill's file, so for now they are dropped.
   Number.
   - **⚑ What OCD skips but the state form asks for, we collect (2026-11-10,
     Sarah, via Afsana).** So four fields came back the same day, overriding
-    the "no" above: the student's **License #** (required, beside Date of
+    the "no" above: the student's **License #** (beside Date of
     Birth), the student's **Mailing Address** (optional, under "Mailing
     Address (if different than above)", as the document has it), the
     proctor's **Employer & Job Title** (required) and the proctor's **Email
     Address** (required, beside Phone Number). Rule of thumb for MN: OCD
     sets the shape and the labels; the state form sets what is collected.
+  - **License # is optional (2026-11-11, Afsana).** Most learners have no
+    licence yet — they are studying for the exam that gets them one — so the
+    field stays, without its asterisk. Patrick's distinction, which matters
+    for CE because states differ in which they require us to collect: the
+    **NPN** (National Producer Number) is one per person, nationwide, and lets
+    states track a producer across states; a **License #** is state-issued —
+    one resident licence (the state you live in), plus one non-resident
+    licence for every other state you are licensed to sell in. This field is
+    the state License #, not the NPN.
 - **The sentence over the link (2026-11-11, Afsana)** reads "Before you
   begin, you must click the link below to review the **attestation** /
   **affidavit** and complete the form below:" — "attestation" where the

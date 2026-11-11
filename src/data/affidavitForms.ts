@@ -695,7 +695,7 @@ FORMS.CT_POST=(function(){
        Address and Today's Date, the standard labels.
        ⚑ Later the same day, Sarah: License # and the Mailing Address are on
        the state form, so we collect them, whatever OCD does. Both are back —
-       License # required, the Mailing Address optional "(if different than
+       License # (optional since 2026-11-11, below), the Mailing Address optional "(if different than
        above)" as the document has it. */
     {who:'student',blocks:[],fields:[
       {id:'examname',label:'Name of Exam',readonly:true,value:'Certification Exam -Minnesota Life Prelciensing'},
@@ -703,7 +703,11 @@ FORMS.CT_POST=(function(){
       {block:{h4:'Address where exam was completed'}},
       ...stdAddr('loc_'),
       {id:'name',label:'Name',required:true,placeholder:'Full legal name',ac:'name',sameAs:'fullname'},
-      {row:[{id:'license',label:'License #',required:true,placeholder:'License number'},{id:'dob',type:'date',label:'Date of Birth',required:true,ac:'bday'}]},
+      /* License # is OPTIONAL (2026-11-11, Afsana): most learners have none yet — they are studying for the exam that gets them one.
+         Patrick's distinction, which matters for CE, where states differ in which they require: the NPN (National Producer
+         Number) is one per person, nationwide; a License # is state-issued — one resident licence, plus one non-resident
+         licence per other state the person is licensed in. This field is the state License #, not the NPN. */
+      {row:[{id:'license',label:'License #',placeholder:'License number'},{id:'dob',type:'date',label:'Date of Birth',required:true,ac:'bday'}]},
       /* Named the way the exam's address is (2026-11-11, Afsana). */
       {block:{h4:'Business Address'}},
       ...['addr1','addr2','city','state','zip'].map((id)=>FORMS.KY_PRE.fields.find((x)=>x.id===id)),

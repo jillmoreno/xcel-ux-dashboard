@@ -563,7 +563,9 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   it('Minnesota: collects what the state form asks for — the mailing address optional', () => {
     const fields = formFields('MN_POST')
     const req = (id: string) => fields.find((x) => x.id === id)?.required
-    expect(['license', 'p_employer', 'p_jobtitle', 'p_email'].map(req)).toEqual([true, true, true, true])
+    expect(['p_employer', 'p_jobtitle', 'p_email'].map(req)).toEqual([true, true, true])
+    // License # is optional (2026-11-11): most learners are taking the exam that gets them one.
+    expect(req('license')).toBeUndefined()
     expect(['mail_addr1', 'mail_city', 'mail_state', 'mail_zip'].map(req)).toEqual([undefined, undefined, undefined, undefined])
     render(<AffidavitModalV2 onClose={() => {}} moment="post" state="MN" />)
     expect(screen.getByText('Mailing Address (if different than above)')).toBeTruthy()
