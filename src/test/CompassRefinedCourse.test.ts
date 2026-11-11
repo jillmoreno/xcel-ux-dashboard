@@ -83,3 +83,31 @@ describe('the course list', () => {
     )
   })
 })
+
+/**
+ * THE ICON BESIDE THE NEXT STEP — 2026-11-11, Jillienne: "If its a Lesson, an
+ * open book icon, if its an exam, a document style icon with a checkmark … 
+ * affidavit = document with signature, survey = checkbox list icon."
+ *
+ * ⚠ WHAT IS PINNED IS THE KIND, NOT THE GLYPH. Which SVG reads as "a document
+ * with a checkmark" is a judgement about this registry and may be revisited;
+ * that an exam row is typed `exam` is the thing the mapping stands on, and it
+ * is the thing a transcription slip would break.
+ */
+describe('every section has a kind an icon can be chosen from', () => {
+  it('types every row, and uses only the four kinds', () => {
+    const kinds = new Set(REFINED_COURSE_SECTIONS.map((s) => s.kind))
+    expect([...kinds].sort()).toEqual(['exam', 'lesson'])
+  })
+
+  it('types a row as an exam when and only when its title says Exam', () => {
+    /* ⚠ THE TITLE IS THE EVIDENCE. Every exam row in the course names itself
+       one, so a row typed `lesson` whose title says Exam — or the reverse —
+       is a transcription slip, and it would show as the wrong icon on the
+       Overview rather than as a failure anywhere else. */
+    for (const s of REFINED_COURSE_SECTIONS) {
+      const says = /\bExam\b/.test(s.title)
+      expect(s.kind === 'exam', `${s.title} is typed ${s.kind}`).toBe(says)
+    }
+  })
+})

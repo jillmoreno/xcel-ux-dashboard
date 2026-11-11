@@ -1228,3 +1228,29 @@
   font-weight: 400;
   color: var(--rd-muted);
 }
+
+/* ---------- the next-step tile, 2026-11-11 ----------
+   "this style icon, should be included in the your next step section based on
+   what the next step actually is."
+
+   ⚠ THE TILE IS THE LEARN PAGE'S `crf-tile`, borrowed rather than redrawn, so
+   the two surfaces badge a thing the same way. Only its ground changes: that
+   one sits on white and takes a steel wash, this one sits ON the steel wash
+   and would disappear into it. */
+.crf-rd .crf-focus__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+.crf-rd .crf-focus__tile {
+  background: var(--rd-white);
+  border: 1px solid var(--rd-steel-edge);
+  color: var(--rd-steel-deep);
+  /* A shade smaller than the Learn page's 36px: there it heads a whole
+     section, here it marks one line. */
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  margin-top: 1px;
+}

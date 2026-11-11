@@ -1,4 +1,10 @@
-import { ArrowRight } from '@/icons'
+import {
+  ArrowRight,
+  BallotCheckRegular,
+  BookOpenRegular,
+  ClipboardList,
+  PenFieldRegular,
+} from '@/icons'
 import {
   REFINED_NEXT_EYEBROW,
   REFINED_PACE,
@@ -7,8 +13,32 @@ import {
 import {
   REFINED_COURSE_SECTIONS,
   REFINED_COURSE_TOTALS,
+  type RefinedSection,
+  type RefinedSectionKind,
 } from '@/data/compassRefinedCourse'
 import type { Hero, Prog } from './compassReadinessModel'
+
+/**
+ * WHAT THE NEXT SECTION IS, DRAWN AS A TILE — 2026-11-11, from the direct
+ * ask. The tile itself is `crf-tile`, the badge the Learn page's course
+ * header already uses, so the two surfaces mark a thing the same way.
+ *
+ * ⚠ THE ICONS ARE HERS, mapped onto this registry: an open book for a
+ * lesson; `ballot-check` for an exam, which is the page-with-checkmarks in
+ * this set and the nearest thing to "a document style icon with a
+ * checkmark"; `pen-field` for an affidavit, a signature line with a pen;
+ * `clipboard-list` for a survey.
+ *
+ * ⚠ TWO OF THE FOUR ARE UNREACHABLE TODAY and that is deliberate — see
+ * `RefinedSectionKind`. An unknown kind falls back to the lesson book rather
+ * than rendering an empty tile.
+ */
+const SECTION_ICON: Record<RefinedSectionKind, typeof BookOpenRegular> = {
+  lesson: BookOpenRegular,
+  exam: BallotCheckRegular,
+  affidavit: PenFieldRegular,
+  survey: ClipboardList,
+}
 
 /** Which of the three arrangements draws. `compass-overview-focus`. */
 export type FocusLayout = 'split' | 'panel' | 'figures'
@@ -158,10 +188,20 @@ function FocusProgress({ prog, layout }: { prog: Prog; layout: FocusLayout }) {
  * and a time. The step's position in the regulated four is still on the page:
  * the numbered steps list sits under this card.
  */
-function FocusNext({ hero, next }: { hero: Hero; next?: string }) {
+function FocusNext({ hero, next }: { hero: Hero; next?: RefinedSection }) {
   return (
     <div className="crf-focus__next">
       <div className="crf-focus__card">
+        {/* ⚠ THE TILE SAYS WHAT KIND OF THING IS NEXT — 2026-11-11. A reader
+            scanning this card sees "Chapter 4 Exam: Life Insurance Policy
+            Types" and has to read to the third word to learn it is an exam;
+            the icon says it before the title does. `aria-hidden`, because the
+            title already carries the word. */}
+        <div className="crf-focus__head">
+          <span className="crf-tile crf-focus__tile" aria-hidden>
+            <SectionIcon kind={next?.kind} />
+          </span>
+          <div style={{ minWidth: 0 }}>
         {/* ⚠ NO DATE, AND NOT HIS LABEL — 2026-11-11. His carried the day
             ("Your next step · Tonight, Tue Jun 16") and the lead-in itself
             varied by state ("Recommended next" on some). One eyebrow on all
@@ -173,8 +213,10 @@ function FocusNext({ hero, next }: { hero: Hero; next?: string }) {
             stage percentage that drives the count opposite, so the two halves
             always describe one learner. His string is the fallback for the
             states that carry no progress to pick from. */}
-        <p className="crf-focus__lessonname">{next ?? hero.next ?? hero.title}</p>
-        {hero.meta ? <p className="crf-focus__note">{hero.meta}</p> : null}
+        <p className="crf-focus__lessonname">{next?.title ?? hero.next ?? hero.title}</p>
+            {hero.meta ? <p className="crf-focus__note">{hero.meta}</p> : null}
+          </div>
+        </div>
         <div className="crf-focus__cta">
           {hero.cta ? (
             <button type="button" className="crf-focus__go">
@@ -235,11 +277,18 @@ function Ring({ prog, size }: { prog: Prog; size: number }) {
  * two halves derived the learner's position separately they would disagree
  * the first time a percentage landed on a boundary.
  */
-function nextSection(prog?: Prog): string | undefined {
+function nextSection(prog?: Prog): RefinedSection | undefined {
   if (!prog) return undefined
   const pct = Number.parseFloat(prog.pct) || 0
   const done = Math.round((pct / 100) * REFINED_COURSE_TOTALS.sections)
   /* Past the end is the end: a finished course has nothing after it, and the
      hero's own copy is the honest thing to show there. */
-  return REFINED_COURSE_SECTIONS[done]?.title
+  return REFINED_COURSE_SECTIONS[done]
+}
+
+/** The tile's glyph, by what the next section is. Unknown falls back to the
+ *  lesson book rather than an empty tile. */
+function SectionIcon({ kind }: { kind?: RefinedSectionKind }) {
+  const Icon = SECTION_ICON[kind ?? 'lesson'] ?? BookOpenRegular
+  return <Icon size={17} aria-hidden />
 }

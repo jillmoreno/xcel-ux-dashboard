@@ -30,7 +30,20 @@
  * somebody has the real thing.
  */
 
-export type RefinedSectionKind = 'lesson' | 'exam'
+/**
+ * WHAT A SECTION IS, which decides the icon beside it — 2026-11-11,
+ * Jillienne: "If its a Lesson, an open book icon, if its an exam, a document
+ * style icon with a checkmark, if its something else, let me know and we will
+ * assign an icon. affidavit = document with signature, survey = checkbox list
+ * icon."
+ *
+ * ⚠ ONLY `lesson` AND `exam` OCCUR IN THE COURSE LIST TODAY. All forty-one
+ * rows are one or the other. `affidavit` and `survey` are here because she
+ * named them and because the regulated four steps — lessons, affidavit, final
+ * exam, survey and certificate — say they are coming; they have their icons
+ * waiting rather than being decided in a hurry when a row needs one.
+ */
+export type RefinedSectionKind = 'lesson' | 'exam' | 'affidavit' | 'survey'
 
 export type RefinedSection = {
   /** Position in the list the learner walks, 1-based. */
