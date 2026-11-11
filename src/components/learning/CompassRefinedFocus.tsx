@@ -190,28 +190,31 @@ function FocusProgress({
                 a starting point is a true thing to offer somebody who has not
                 started and a stale one for anybody else. */}
             {done === 0 ? (
-              <dd className="crf-focus__dayone">
-                {/* ⚠ TWO WAYS TO OFFER THE SAME CHANGE — 2026-11-11. `inline`
-                    is Atlas's own shape, where "here" is the last word of the
-                    sentence; `link` closes the sentence and sets the control
-                    under it on the right, where a control usually is. */}
-                {paceNote === 'link' ? (
-                  <>
-                    {REFINED_PACE.dayOne}.
-                    <button type="button" className="crf-focus__notelink">
-                      {REFINED_PACE.dayOneLink}
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    {REFINED_PACE.dayOne}{' '}
-                    <button type="button" className="crf-focus__inlink">
-                      {REFINED_PACE.dayOneAction}
-                    </button>
-                    .
-                  </>
-                )}
-              </dd>
+              /* ⚠ TWO ANSWERS TO "HOW DO WE OFFER THE CHANGE?", and they are
+                 not two layouts of one thing — 2026-11-11, clarified: "when
+                 the link below is on, i mean i want the entire beige
+                 container gone, and just the simple link."
+
+                 `inline` keeps Atlas's note: the sentence explains that the
+                 pace is a default and offers "here" as its last word.
+                 `link` drops the explanation with the box — the offer alone,
+                 on the reasoning that a learner on day one does not need to
+                 be told a default is a default, only that it can change. */
+              paceNote === 'link' ? (
+                <dd className="crf-focus__dayone crf-focus__dayone--bare">
+                  <button type="button" className="crf-focus__notelink">
+                    {REFINED_PACE.dayOneLink}
+                  </button>
+                </dd>
+              ) : (
+                <dd className="crf-focus__dayone">
+                  {REFINED_PACE.dayOne}{' '}
+                  <button type="button" className="crf-focus__inlink">
+                    {REFINED_PACE.dayOneAction}
+                  </button>
+                  .
+                </dd>
+              )
             ) : null}
           </div>
           <div>

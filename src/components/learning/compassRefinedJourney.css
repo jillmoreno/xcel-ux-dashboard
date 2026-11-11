@@ -1511,3 +1511,15 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* The `link` arm of the day-one note: no box, no sentence, just the offer.
+   2026-11-11 — "i want the entire beige container gone, and just the simple
+   link". It keeps the row's full width so the link can sit hard right, under
+   the pace value it belongs to. */
+.crf-rd .crf-focus__figures dd.crf-focus__dayone--bare {
+  padding: 0;
+  background: none;
+}
+.crf-rd .crf-focus__dayone--bare .crf-focus__notelink {
+  margin-top: 0;
+}
