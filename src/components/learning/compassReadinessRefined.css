@@ -857,3 +857,16 @@
 .cre-rdr .cre-rdr-ring__num.serif {
   font-family: var(--font-heading-serif), Georgia, serif;
 }
+
+/* ---------- one page title, 2026-11-10 ----------
+   "make all the titles 32px semibold to match." This page's title was the
+   outlier at 40px/700 — it is Refined's own and was set before there was a
+   set to match. 32/40/600 is the shared shape; see the note in
+   `compassRefined.css` for why 32px keeps the display face and why the
+   tracking goes. */
+.cre-rdr .cre-rdr-h1 {
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: normal;
+}

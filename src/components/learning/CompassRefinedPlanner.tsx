@@ -53,7 +53,6 @@ export function CompassRefinedPlanner() {
           title={COPY.title}
           below={
             <>
-              <p className="crf-ov__course crf-prep__course">{COPY.course}</p>
               <p className="crf-lead">{COPY.lead}</p>
             </>
           }

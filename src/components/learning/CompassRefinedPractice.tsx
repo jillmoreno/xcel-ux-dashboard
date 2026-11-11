@@ -87,7 +87,6 @@ export function CompassRefinedPractice({
           title={COPY.title}
           below={
             <>
-              <p className="crf-ov__course">{COPY.course}</p>
               {/* ⚠ DISMISSIBLE, as his is — `introOpen` / `dismissIntro`. */}
               {intro ? (
                 <p className="crf-pr__lead">

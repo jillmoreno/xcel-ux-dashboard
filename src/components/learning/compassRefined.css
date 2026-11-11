@@ -3787,3 +3787,87 @@
    rather than deleted from it. Nothing in Refined's markup carries the class,
    so the rule matches nothing; removing it would mean editing the frozen copy,
    which is the one thing that keeps the fork auditable. */
+
+/* ---------- one page title, 2026-11-10 ----------
+   "make all the titles 32px semibold to match."
+
+   ⚠ THEY DID NOT MATCH, and that is the whole of this. Three page titles had
+   three shapes: the shared head at 34px/500 with -0.02em tracking, the
+   session titles at 28px/500, and Refined's own Readiness at 40px/700. The
+   first two are Jeff's measurements carried through the port; the third is
+   this version's. Nobody chose the set.
+
+   ⚠ 32px IS ON THE LINE, NOT UNDER IT, so these keep the display face — the
+   rule above is "below 32px". The type reference's H2 is 32/40, which is the
+   line height here. Playfair is a variable face (300–900) on this build, so
+   600 is a real weight rather than a synthesised one — checked in the
+   browser, because `font-synthesis-weight: none` means a missing weight would
+   quietly render as the nearest one instead of failing.
+
+   ⚠ THE TRACKING GOES. His -0.02em was part of a 34px setting; keeping it on
+   one of three titles would be the inconsistency this rule exists to remove.
+   Matching means matching. */
+.crf .crf-h1,
+.crf .crf-qs__title {
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: normal;
+}
+/* The session titles come up from 28px, so they also cross into the display
+   face — a page title is a page title whichever screen it is on. */
+.crf .crf-qs__title {
+  font-family: var(--font-heading-serif), Georgia, serif;
+}
+
+/* ⚠ TWO h1s ARE DELIBERATELY NOT IN THIS RULE.
+   `crf-vx__h1` is the SIMULATED EXAM's title (26px/600, system ink). Those
+   screens imitate a Pearson VUE test centre, which is the one thing that
+   prototype exists to get right; dressing them in the product's display face
+   would make them look like the product. They are not Compass's pages, they
+   are Compass's picture of somewhere else.
+   The not-ported panel's bare `<h1>` is scaffolding that names a missing
+   page, not a design surface, and it leaves when the last slot is ported. */
+
+/* ---------- Ask Rubi, 2026-11-10 ----------
+   Two changes on the button, from the reference.
+
+   ⚠ THE MARK IS RUBI'S RED, not the button's ink. It drew in `--crf-ink`
+   because the SVG fills with `currentColor` and nothing had said otherwise —
+   so Rubi's mark looked like a generic icon on a generic pill. Her own colour
+   is already a token here (`--crf-rubi`, the `--color-compass-page-rubi`
+   the rest of Compass uses for her), and the rail's Ask Rubi row has used it
+   since 2026-10-15. This makes the two agree.
+
+   ⚠ IT GROWS ON HOVER, which is new — there was no hover state on this button
+   at all, so it was the one floating control on the page that gave nothing
+   back. The lift and the deeper shadow come from the product's own idiom
+   (`translateY(-3px) scale(1.02)` on the Home cards); 1.04 here because the
+   pill is small enough that 1.02 reads as a wobble rather than a response. */
+.crf-ask {
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
+}
+.crf-ask svg {
+  color: var(--crf-rubi);
+}
+.crf-ask:hover {
+  transform: scale(1.04);
+  box-shadow: 0 10px 26px rgb(0 0 0 / 14%);
+  border-color: var(--crf-edge);
+}
+.crf-ask:active {
+  transform: scale(1.01);
+}
+/* ⚠ THE GROWTH IS MOTION, so it goes where motion is unwelcome. The colour
+   and the shadow stay — they carry the same information without moving. */
+@media (prefers-reduced-motion: reduce) {
+  .crf-ask,
+  .crf-ask:hover,
+  .crf-ask:active {
+    transform: none;
+    transition: box-shadow 0.16s ease, border-color 0.16s ease;
+  }
+}
