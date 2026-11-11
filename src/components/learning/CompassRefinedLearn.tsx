@@ -1,4 +1,4 @@
-import { REFINED_CHAPTERS, REFINED_COURSE_HEADER } from './compassRefinedLearnCourse'
+import { REFINED_CHAPTERS, REFINED_COURSE_HEADER, REFINED_RESUME as RESUME } from './compassRefinedLearnCourse'
 import { REFINED_PAGE_TITLES } from '@/data/compassRefinedCopy'
 import { useState } from 'react'
 import {
@@ -77,10 +77,17 @@ export function CompassRefinedLearn({
           </span>
           <div className="crf-resume__text">
             <p className="crf-eyebrow">{COPY.resumeEyebrow}</p>
-            <p className="crf-resume__title">{COPY.resumeTitle}</p>
-            <p className="crf-resume__lesson">{COPY.resumeLesson}</p>
+            {/* ⚠ THE CHAPTER THE LEARNER IS IN, not a typed one — 2026-11-11. It read
+                "Chapter 2 · Insurers and Insurance Markets", which is not a
+                chapter of this course at all, and it kept saying "Resume
+                lesson" after the page stopped having anything in progress. */}
+            <p className="crf-resume__title">{RESUME.title}</p>
+            {/* The lesson inside it, where the chapter's lessons are ported; the
+                chapter's own name otherwise, rather than a lesson from
+                somewhere else. */}
+            {RESUME.lesson ? <p className="crf-resume__lesson">{RESUME.lesson}</p> : null}
             <span className="crf-bar" role="img" aria-label={REFINED_CHAPTERS[2]?.progAria}>
-              <span className="crf-bar__fill" style={{ width: COPY.resumePct }} />
+              <span className="crf-bar__fill" style={{ width: `${REFINED_COURSE_HEADER.pct}%` }} />
             </span>
           </div>
           <button type="button" className="crf-cta" onClick={openLesson}>
@@ -104,7 +111,7 @@ export function CompassRefinedLearn({
               <p className="crf-course__sub">{COPY.courseSub}</p>
             </div>
             <div className="crf-course__stat">
-              <span className="crf-course__done">{COPY.courseStatus}</span>
+              <span className="crf-course__done">{REFINED_COURSE_HEADER.status}</span>
               <span className="crf-course__of">
                 {REFINED_COURSE_HEADER.done} of {REFINED_COURSE_HEADER.sections} sections
               </span>
@@ -312,7 +319,17 @@ function CourseRing() {
   return (
     <div className="crf-course__ring">
       <div style={{ position: 'relative', width: 72, height: 72 }}>
-        <svg viewBox="0 0 120 120" width="72" height="72" role="img" aria-label={COPY.courseRingAria}>
+        {/* ⚠ THE ARC IS COMPUTED — 2026-11-11. It drew his `courseRingDash`,
+            a hard-coded 180/314 for 61%, beside a caption that now counts the
+            real course: a 61% ring over "1 of 41 sections". A figure and its
+            picture disagreeing is the one thing a progress ring must not do. */}
+        <svg
+          viewBox="0 0 120 120"
+          width="72"
+          height="72"
+          role="img"
+          aria-label={`Qualifying Education ${REFINED_COURSE_HEADER.pct}% complete, ${REFINED_COURSE_HEADER.done} of ${REFINED_COURSE_HEADER.sections} sections`}
+        >
           <g transform="rotate(-90 60 60)">
             <circle cx="60" cy="60" r="50" fill="none" stroke="var(--cjm-ring-pale)" strokeWidth="12" />
             <circle
@@ -322,13 +339,13 @@ function CourseRing() {
               fill="none"
               stroke="var(--cjm-steel)"
               strokeWidth="12"
-              strokeDasharray={COPY.courseRingDash}
+              strokeDasharray={`${((REFINED_COURSE_HEADER.pct / 100) * 2 * Math.PI * 50).toFixed(1)} ${(2 * Math.PI * 50).toFixed(1)}`}
               strokeLinecap="round"
             />
           </g>
         </svg>
         <span className="crf-course__pct" aria-hidden>
-          {COPY.coursePct}
+          {REFINED_COURSE_HEADER.pct}%
         </span>
       </div>
     </div>

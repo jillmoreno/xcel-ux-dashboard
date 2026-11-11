@@ -1,5 +1,9 @@
 import { JEFF_MVP_LEARN } from '@/data/compassJeffMvpFixtures'
-import { REFINED_COURSE_SECTIONS, REFINED_COURSE_TOTALS } from '@/data/compassRefinedCourse'
+import {
+  REFINED_COURSE_PROGRESS,
+  REFINED_COURSE_SECTIONS,
+  REFINED_COURSE_TOTALS,
+} from '@/data/compassRefinedCourse'
 
 /**
  * THE YOUR COURSE PAGE, BUILT FROM THE REAL COURSE — 2026-11-11: "update
@@ -89,14 +93,22 @@ export const REFINED_CHAPTERS: RefinedChapter[] = LESSON_ROWS.map((s, i) => {
   )
   const lessons = his ? [...his.lessons] : []
 
-  /* ⚠ THE TWO NEW ROWS TAKE A STATE FROM THEIR NEIGHBOURS, not from nothing.
-     His story is "Chapter 1 complete, Chapter 2 in progress, the rest
-     locked"; an Introduction that precedes a finished Chapter 1 is finished,
-     and a Florida laws chapter at the far end of a locked run is locked.
-     Inventing a third state for them would have put the page in a condition
-     no learner can reach. */
-  const fallbackState = i === 0 ? 'done' : 'locked'
-  const state = his?.state ?? fallbackState
+  /* ⚠ THE STATE COMES FROM THE COURSE'S OWN PROGRESS, not from his chapter.
+     Taking it from `his` broke the page the moment lessons were matched by
+     title: his Chapter 2 was the `current` one, the course's Chapter 2 is a
+     different chapter, so nothing was current and the page still offered
+     "Resume lesson". Deriving it from position cannot produce that.
+
+     ⚠ AND THE POSITION IS HERS, from the upload: the Course Introduction
+     complete with a score, Chapter 1 open with a Continue button, everything
+     after it not started. `REFINED_COURSE_PROGRESS` is the same object the
+     Overview counts against, so the two pages tell one story. */
+  const state =
+    s.n < REFINED_COURSE_PROGRESS.currentN
+      ? 'done'
+      : s.n === REFINED_COURSE_PROGRESS.currentN
+        ? 'current'
+        : 'locked'
 
   return {
     n: i + 1,
@@ -110,13 +122,18 @@ export const REFINED_CHAPTERS: RefinedChapter[] = LESSON_ROWS.map((s, i) => {
       .filter(Boolean)
       .join(' · '),
     state,
-    status: his?.status ?? (state === 'done' ? 'Completed' : ''),
-    statusTone: his?.statusTone ?? (state === 'done' ? 'green' : 'muted'),
+    /* The word follows the state, not his fixture — a chapter cannot read
+       "Completed" because his copy of it was. */
+    status: state === 'done' ? 'Completed' : state === 'current' ? 'In progress' : '',
+    statusTone: state === 'done' ? 'green' : state === 'current' ? 'steel' : 'muted',
     progPct: his?.progPct,
     progAria: his?.progAria,
-    hasAction: his?.hasAction,
-    action: his?.action,
-    actionLabel: his?.actionLabel,
+    /* ⚠ THE ACTION FOLLOWS THE STATE, NOT HIS FIXTURE. His Chapter 1 was
+       complete and carried "Review"; this course's Chapter 1 is in progress,
+       and a chapter you have not finished cannot be reviewed. */
+    hasAction: state !== 'locked',
+    action: state === 'done' ? 'Review' : 'Resume',
+    actionLabel: `${state === 'done' ? 'Review' : 'Resume'} ${s.title}`,
     chevLabel: his?.chevLabel ?? `Expand ${title}`,
     lockMsg: his?.lockMsg,
     /* ⚠ THE EXAM IS THE COURSE'S NEXT ROW, named as the course names it.
@@ -132,7 +149,17 @@ export const REFINED_CHAPTERS: RefinedChapter[] = LESSON_ROWS.map((s, i) => {
             note: his?.exam?.note,
           }
         : undefined,
-    lessons,
+    /* ⚠ AND THE LESSONS FOLLOW IT TOO. His were all `done`, because his
+       Chapter 1 was finished — rendered under a chapter marked In progress
+       they put seven completed lessons inside something unfinished, which is
+       the kind of contradiction a reviewer reads as a bug in the product
+       rather than in the demo data. A chapter in progress opens on its first
+       lesson; a locked one has started nothing. */
+    lessons: lessons.map((l, li) => ({
+      ...l,
+      state:
+        state === 'done' ? 'done' : state === 'current' ? (li === 0 ? 'current' : 'todo') : 'todo',
+    })),
   }
 })
 
@@ -148,6 +175,36 @@ export const REFINED_COURSE_HEADER = {
   sections: REFINED_COURSE_TOTALS.sections,
   exams: REFINED_COURSE_TOTALS.exams,
   eyebrow: `${REFINED_CHAPTERS.length} chapters · ${REFINED_COURSE_TOTALS.exams} exams`,
-  /** Sections finished over the real total, for the ring's caption. */
-  done: REFINED_CHAPTERS.filter((c) => c.state === 'done').length,
+  /** ⚠ THE WORD FOLLOWS THE FIGURE. The header read "Completed" beside "1 of
+   *  41 sections" — his status string, kept while everything around it
+   *  changed. A course is complete when its sections are. */
+  status:
+    REFINED_COURSE_PROGRESS.done >= REFINED_COURSE_TOTALS.sections ? 'Completed' : 'In progress',
+  /** ⚠ SECTIONS FINISHED, COUNTED IN SECTIONS. The page read "2 of 41
+   *  sections" against a 61% ring — two different claims about one learner,
+   *  because the figure counted CHAPTERS and the denominator counted every
+   *  row. Both are sections now, and the ring reads the same fraction. */
+  done: REFINED_COURSE_PROGRESS.done,
+  pct: Math.round((REFINED_COURSE_PROGRESS.done / REFINED_COURSE_TOTALS.sections) * 100),
 }
+
+/**
+ * WHERE THE LEARNER LEFT OFF — read off the course, not typed.
+ *
+ * ⚠ THE CARD NAMED A CHAPTER THIS COURSE DOES NOT HAVE. It read "Chapter 2 ·
+ * Insurers and Insurance Markets" — his outline's Chapter 2, which the
+ * Florida list does not contain — and went on offering "Resume lesson" after
+ * the page had nothing in progress at all. Both failures are the same one:
+ * the card was a string beside the data rather than a reading of it.
+ */
+export const REFINED_RESUME = (() => {
+  const current = REFINED_CHAPTERS.find((c) => c.state === 'current')
+  const open = current?.lessons.find((l) => l.state === 'current') ?? current?.lessons[0]
+  return {
+    title: current ? [current.label, current.title].filter(Boolean).join(' · ') : '',
+    /* ⚠ ONLY WHEN THE CHAPTER'S LESSONS ARE PORTED. Chapter 1 has his; the
+       Introduction and Chapter 2 do not, and naming a lesson they do not
+       contain is the mistake this object exists to stop. */
+    lesson: open ? open.label : '',
+  }
+})()
