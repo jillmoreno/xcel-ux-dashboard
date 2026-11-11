@@ -855,3 +855,24 @@
 .crf-rd :is(h2, h3, h4, h5, h6) {
   font-family: var(--font-body);
 }
+
+/* ---------- the page's own padding, 2026-11-10 ----------
+   "what happened to the padding on the overview page?" — I took it away
+   without noticing.
+
+   ⚠ THIS PAGE NEVER CARRIED ITS OWN. On the current version it renders
+   inside `CompassLearningPage`'s padded column, so `.cre-rd` only ever
+   needed a max-width. Refined's shell puts it directly beside the rail, the
+   way the MVP pages sit — and those get their 38/44/72 from `.crf-page`,
+   which this page is not. So it rendered flush to the rail and to the top of
+   the viewport while every other Refined page had a margin.
+
+   The values are `.crf-page`'s exactly, not new ones: the complaint is that
+   this page stopped matching its neighbours, so matching them is the fix. */
+.crf-rd {
+  flex: 999 1 560px;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 38px 44px 72px;
+  margin: 0 auto;
+}
