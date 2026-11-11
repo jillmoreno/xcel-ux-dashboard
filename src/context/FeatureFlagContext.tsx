@@ -2885,8 +2885,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `archivedInviteFlowsV3.ts`, with the two automatic sign-in flows and
        the Go to Cart alternative. */
     variants: [
-      { value: 'b2b', label: 'B2B invite', description: 'A partner’s QR code. Partner pricing; the learner proves their email by code.' },
-      { value: 'b2c', label: 'B2C guest', description: 'Direct from the public site’s cart. No partner.' },
+      { value: 'b2b', label: 'B2B2C', description: 'A partner’s QR code. Partner pricing; the learner proves their email by code.' },
+      { value: 'b2c', label: 'B2C', description: 'Direct from the public site’s cart. No partner.' },
     ],
     page: 'dashboard-rebrand',
   },
