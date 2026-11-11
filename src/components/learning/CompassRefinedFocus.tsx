@@ -155,8 +155,13 @@ function FocusProgress({ prog, layout }: { prog: Prog; layout: FocusLayout }) {
             <dt>{REFINED_PROGRESS_LINES.pace}</dt>
             <dd>
               {REFINED_PACE.name} <span aria-hidden>|</span> {REFINED_PACE.goal}
-              {/* The "smaller text underneath", under the VALUE rather than
-                  the row, so it stays with the thing it qualifies. */}
+              {/* ⚠ ON THE SAME LINE NOW, SPLIT BY A DOT — 2026-11-11: "move
+                  these so they are in the same line, divided by a small
+                  circle, still different font weights". It had been a second
+                  line under the value. The dot is a drawn circle rather than
+                  a "·", which at this size reads as punctuation in the
+                  sentence rather than as a divider between two of them. */}
+              <span aria-hidden className="crf-focus__sep" />
               <span className="crf-focus__under">{REFINED_PACE.hours}</span>
             </dd>
           </div>
@@ -164,6 +169,7 @@ function FocusProgress({ prog, layout }: { prog: Prog; layout: FocusLayout }) {
             <dt>{REFINED_PROGRESS_LINES.completion}</dt>
             <dd>
               {REFINED_PACE.completion}
+              <span aria-hidden className="crf-focus__sep" />
               <span className="crf-focus__under">{REFINED_PACE.completionIn}</span>
             </dd>
           </div>

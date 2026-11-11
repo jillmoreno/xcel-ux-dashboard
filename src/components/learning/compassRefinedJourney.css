@@ -1269,15 +1269,30 @@
   font-weight: 600;
   color: var(--rd-ink);
   text-align: right;
+  /* The row is label | value, and the value is now two phrases: let it wrap
+     inside its own column rather than pushing the label off the left. */
+  min-width: 0;
 }
-/* "smaller text underneath" — the hours, and the days to completion. Its own
-   line under the VALUE, so it stays with the thing it qualifies. */
+/* ⚠ INLINE, NOT A SECOND LINE — 2026-11-11: "move these so they are in the
+   same line, divided by a small circle, still different font weights." So the
+   weights stay apart (the value at 600, this at 400) and only the line
+   breaks: one row, two registers, a dot between. */
 .crf-rd .crf-focus__under {
-  display: block;
-  margin-top: 2px;
   font-size: 12px;
   font-weight: 400;
   color: var(--rd-muted);
+}
+/* The small circle. Drawn rather than typed: a "·" at this size reads as
+   punctuation inside the phrase, and these are two phrases. */
+.crf-rd .crf-focus__sep {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin: 0 7px;
+  border-radius: 50%;
+  background: var(--rd-muted);
+  vertical-align: middle;
+  opacity: 0.6;
 }
 
 /* ---------- the next-step tile, 2026-11-11 ----------
