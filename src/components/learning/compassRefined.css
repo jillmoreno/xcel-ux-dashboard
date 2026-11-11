@@ -3853,10 +3853,24 @@
 .crf-ask svg {
   color: var(--crf-rubi);
 }
+/* ⚠ THE STROKE IS REDUCED, not removed — 2026-11-10, the direct ask. It was
+   the full `--crf-hairline` (#e0dbcd), which is a RULE colour: right for a
+   line drawn across a page, too present as an outline on a small white pill
+   that a shadow is already lifting off the ground. At 45% toward the pill's
+   own white it still closes the shape where the shadow is weakest — the top
+   edge — without reading as a drawn border.
+
+   ⚠ AND THE HOVER NO LONGER DARKENS IT. The first pass stepped it to
+   `--crf-edge` (#c3bba5), which is heavier than the resting stroke this ask
+   is lightening — reducing the stroke and then restoring it on contact is
+   the same stroke, half the time. The lift and the deeper shadow are the
+   hover; the outline stays out of it. */
+.crf-ask {
+  border-color: color-mix(in srgb, var(--crf-hairline) 45%, var(--crf-white));
+}
 .crf-ask:hover {
   transform: scale(1.04);
   box-shadow: 0 10px 26px rgb(0 0 0 / 14%);
-  border-color: var(--crf-edge);
 }
 .crf-ask:active {
   transform: scale(1.01);

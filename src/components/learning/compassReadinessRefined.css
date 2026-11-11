@@ -870,3 +870,16 @@
   font-weight: 600;
   letter-spacing: normal;
 }
+
+/* ---------- the Ask Rubi pill's stroke, 2026-11-10 ----------
+   "reduce stroke on pill". Asked on the Practice page's button, applied here
+   too because this page has its OWN Ask Rubi — a different button with the
+   same 1px `#e0dbcd` outline, and leaving it heavier would make the stroke
+   the thing that tells you which page you are on.
+
+   ⚠ THE STROKE ONLY. The two buttons also differ in label, size and whether
+   the text is red — those came from this page's own rebuild and are design
+   decisions, not drift, so they are left for whoever decides them. */
+.cre-rdr .cre-rdr-ask {
+  border-color: color-mix(in srgb, var(--rdr-rule) 45%, var(--rdr-card));
+}
