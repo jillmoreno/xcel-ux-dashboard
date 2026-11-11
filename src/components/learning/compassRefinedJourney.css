@@ -1286,12 +1286,22 @@
   border-bottom: 0;
   padding-bottom: 2px;
 }
+/* ⚠ REGULAR TEXT, NOT AN EYEBROW — 2026-11-11: "these should be regular
+   style." They were 10px/700 uppercase with 0.08em tracking, which is the
+   bar's eyebrow treatment — right for a label that heads a SECTION, wrong for
+   one half of a label/value pair read across a line. Three of them in a
+   column also made the bay look like three sections rather than three facts.
+
+   ⚠ AND THE SIZE COMES UP WITH THE CASE. 10px is a size that only works
+   uppercase and tracked; as sentence-case body text it reads as fine print.
+   13px matches the value opposite, so the row is one line of text with two
+   weights rather than two kinds of type. */
 .crf-rd .crf-focus__figures dt {
   flex: 0 0 auto;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
   color: var(--rd-muted);
 }
 /* ⚠ 13px, DOWN FROM 15 — 2026-11-11, Jillienne on "8 of 41": "what is this
