@@ -294,16 +294,16 @@ function FocusNext({
             {REFINED_NEXT_META.approx} {durationOf(hero.meta)}
           </p>
         </div>
+        {/* ⚠ ONE ACTION — 2026-11-11, on "Set my study pace": "remove this."
+            `hero.alt` is the stage's secondary, and on this card it competed
+            with the primary for a decision the card is not asking: the half
+            opposite already offers the pace change, in the day-one note. A
+            next-step card with two actions makes the next step a choice. */}
         <div className="crf-focus__cta">
           {hero.cta ? (
             <button type="button" className="crf-focus__go">
               {hero.cta}
               <ArrowRight size={13} aria-hidden />
-            </button>
-          ) : null}
-          {hero.alt ? (
-            <button type="button" className="crf-focus__quiet">
-              {hero.alt}
             </button>
           ) : null}
         </div>
