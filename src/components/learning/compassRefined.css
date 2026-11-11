@@ -1,0 +1,3693 @@
+/* REFINED'S STYLESHEET — a frozen fork of `compassJeffMvp.css`, 2026-11-10.
+
+   ⚠ A COPY, BECAUSE REFINED FREEZES ON FORK. Jillienne's call, asked
+   directly: a page that Refined takes over stops moving when Jeff's does. He
+   hands over a new prototype every few weeks, and a restyle in one of them
+   would otherwise shift pages she had already settled.
+
+   ⚠ IT IS A MECHANICAL RENAME OF HIS FILE AT THE MOMENT OF THE FORK —
+   `cjm` → `crf`, nothing else — and that is what makes the fork auditable:
+   `CompassRefinedShell.test.tsx` normalises the prefixes and compares the
+   two renders, so the only differences that survive are the ones somebody
+   decided. Every Refined change lands on top of this line, not inside the
+   copy.
+
+   ⚠ THE HOUSE TOKENS COME WITH IT. His palette block is already
+   `--color-compass-page-*` / `--color-primary-*` with two locals, so freezing
+   against him does not freeze against the system — a token change still
+   reaches Refined, which is the half that should keep moving.
+
+   ⚠ DEAD RULES ARE EXPECTED AND ARE NOT TIDIED. This is a photograph of his
+   stylesheet; pruning it would mean deciding, rule by rule, what Refined will
+   never use — before the pages have been audited. They go as pages are
+   refined and their markup settles.
+
+   What follows is his file, verbatim but for the prefix. His own notes are
+   kept because they explain measurements that are still true of this copy. */
+
+/* JEFF'S COMPASS MVP (2026-11-09) — from
+   `public/prototypes/xcel-compass-mvp.html`, thirteen pages ported one at a
+   time. Readiness is the first.
+
+   ⚠ HIS PALETTE IS THE COMPASS SYSTEM THIS REPO ALREADY MAPS, twice:
+   `compassWorkspace.css` (2026-11-04) and `compassReadiness.css`
+   (2026-11-05). The mapping is repeated here rather than re-decided, and the
+   four Readiness BANDS are the part that is new — his levels carry an ink, a
+   wash and an edge each, and the track behind them is a lighter set again:
+
+     ink          #1F1D18  → --color-compass-page-heading
+     body         #42464F  → --color-compass-page-body
+     muted        #615C55  → --color-compass-page-muted
+     hairline     #E6E2D8  → --color-compass-page-rule
+     edge         #C3BBA5  (her stronger rule)
+     steel        #3D5A73  → --color-primary-500
+     steel-deep   #2F4A63  → --color-primary-600
+     green        #2F7A5A  → --color-success-700
+     rubi         #B4552F  → --color-compass-page-rubi
+     amber        #C08A2E  (Readiness itself)
+
+   ⚠ IT DOES NOT IMPORT `compassAnjani.css` OR `compassReadiness.css`, and
+   that is deliberate rather than lazy. His rail is the same SHAPE as hers —
+   three rows, an EXAM PREP rule, more rows — but hers locks the five below
+   the rule and his navigates to them, and the two will be edited by different
+   people for different reasons. Sharing the class names would mean her
+   next rail change silently moves his page.
+
+   ⚠ EVERY RULE IS SCOPED UNDER `.crf`. */
+
+.crf {
+  --crf-ink: var(--color-compass-page-heading);
+  --crf-body: var(--color-compass-page-body);
+  --crf-muted: var(--color-compass-page-muted);
+  --crf-faint: var(--color-text-tertiary);
+  --crf-hairline: var(--color-compass-page-rule);
+  --crf-edge: #c3bba5;
+  --crf-white: var(--color-surface-card);
+  --crf-paper: #faf9f6;
+  --crf-steel: var(--color-primary-500);
+  --crf-steel-deep: var(--color-primary-600);
+  --crf-steel-light: #8fb0c9;
+  --crf-steel-edge: #c7d5e2;
+  --crf-steel-wash: #f4f7fa;
+  /* ⚠ TWO STEEL WASHES, ONE DIGIT APART, AND BOTH ARE HIS. #F4F7FA is the
+     card ground (Learn's resume card, the workspace's Rubi tab); #F5F8FB is
+     the FEATURED panel — Readiness's "Do this next", the Overview's next-step
+     panel and its selected tab. The first pass used one for both, which is
+     invisible on screen and wrong in the one place it matters: a reviewer
+     comparing his export and the port side by side on the same monitor. */
+  --crf-steel-panel: #f5f8fb;
+  --crf-ring-cool: #e6e8eb;
+  --crf-violet: #6b4fa0;
+  --crf-rule-sand: #efebe2;
+  --crf-bar-track: #d8dee4;
+  --crf-steel-pressed: #e9ecef;
+  --crf-control-edge: #c9d1d7;
+  --crf-rule-warm: #e0dbcd;
+  --crf-rule-cool: #e1e5e8;
+  --crf-amber: #c08a2e;
+  --crf-green: var(--color-success-700);
+  --crf-rubi: var(--color-compass-page-rubi);
+  --crf-transparent: transparent;
+  /* The chart and ring furniture, which is cooler than the page's warm rules:
+     the ring's unfilled track, the trend gridlines, and the area under the
+     line. */
+  --crf-ring-track: #e2e7ec;
+  --crf-grid: #dcdee1;
+  --crf-area: #eef3f8;
+
+  /* The four Readiness levels. Ink is the pill's text, wash its ground, edge
+     its border; the `track-` set is the band meter behind the marker, which is
+     deliberately paler so the marker reads as the only hard edge on it. */
+  --crf-beginner-ink: #514b55;
+  --crf-beginner-wash: #f1efea;
+  --crf-developing-ink: #694912;
+  --crf-developing-wash: #fbf1e4;
+  --crf-developing-edge: #eccfa5;
+  --crf-proficient-ink: #375167;
+  --crf-proficient-wash: #eaf1f7;
+  --crf-ready-ink: #225740;
+  --crf-ready-wash: #e7f1ec;
+  --crf-ready-edge: #bfe0cd;
+  --crf-track-empty: #e9e5dc;
+  --crf-track-developing: #f4e1c2;
+  --crf-track-proficient: #d6e3ee;
+  --crf-track-ready: #cde5d7;
+
+  font-family: var(--font-body);
+  color: var(--crf-ink);
+}
+.crf .crf-serif {
+  font-family: var(--font-heading-serif), Georgia, serif;
+}
+
+/* ---------- the shell ---------- */
+
+.crf-shell {
+  display: flex;
+  align-items: flex-start;
+  min-height: 0;
+  flex: 1;
+}
+
+/* ---------- his rail ---------- */
+
+.crf-rail {
+  flex: 0 0 222px;
+  width: 222px;
+  align-self: stretch;
+  box-sizing: border-box;
+  padding: 24px 18px 36px 20px;
+  border-right: 1px solid var(--crf-hairline);
+  background: var(--crf-white);
+}
+.crf-rail__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.crf-rail__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--crf-body);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+.crf-rail__row:hover {
+  background: var(--color-neutral-100);
+}
+.crf-rail__row[aria-current='page'] {
+  background: var(--crf-steel-pressed);
+  color: var(--crf-steel-deep);
+  font-weight: 600;
+}
+.crf-rail__row svg {
+  flex: 0 0 auto;
+}
+/* The EXAM PREP rule. His heading sits ON the rule rather than above it, with
+   a short lead-in line to its left and the rest of the rule to its right. */
+.crf-rail__group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 6px;
+  padding: 0 12px;
+  color: var(--crf-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.crf-rail__group::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--crf-hairline);
+}
+
+/* ---------- the page ---------- */
+
+/* ⚠ HIS FRAME, MEASURED, AND IT IS THE SAME ON EVERY PAGE — `padding: 38px
+   44px 72px` on a `max-width: 1100px` column centred with `margin: 0 auto`.
+   Checked against Overview, Learn, Practice and Readiness: identical. The
+   first pass guessed 28/40/64 on 1180 and left-aligned, which was close
+   enough to look deliberate and wrong on all four counts. */
+.crf-page {
+  position: relative;
+  flex: 999 1 560px;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 38px 44px 72px;
+}
+.crf-page__col {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.crf-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+}
+/* ⚠ THE INK RULE IS READINESS'S, NOT THE SHELL'S. Measured on both pages:
+   his Readiness header carries a 1px #1F1D18 bottom border (it comes from a
+   class, not an inline style, which is why grepping the markup for it finds
+   nothing — probe the computed style). Learn has no rule at all. Putting it
+   in `.crf-head` would draw a line across the top of eleven pages that do not
+   have one. */
+.crf-head--ruled {
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--crf-ink);
+}
+/* His: Playfair 34px/1.15, weight 500, -0.02em. */
+.crf-h1 {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.15;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--crf-ink);
+}
+/* ⚠ THE LEAD IS PER-PAGE, and the differences are small enough to look like
+   noise and are his: Learn is 15px/1.5 capped at 600px with an 8px gap;
+   Readiness is 15px/1.55 capped at 680px with a 6px gap. One shared value
+   would be wrong on whichever page did not get picked. */
+.crf-lead {
+  margin: 8px 0 0;
+  max-width: 600px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--crf-body);
+}
+.crf-lead--readiness {
+  margin: 6px 0 0;
+  max-width: 680px;
+  line-height: 1.55;
+}
+.crf-live {
+  margin-top: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--color-neutral-100);
+  color: var(--crf-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.crf-live__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--crf-green);
+}
+
+/* ---------- do this next ---------- */
+
+.crf-next {
+  margin-top: 26px;
+  border: 1px solid var(--crf-steel-edge);
+  border-radius: 16px;
+  background: var(--crf-steel-panel);
+  overflow: hidden;
+}
+.crf-next__body {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 28px;
+  align-items: center;
+  padding: 22px 26px;
+}
+.crf-next__mid {
+  min-width: 0;
+  padding-left: 28px;
+  border-left: 1px solid var(--crf-steel-edge);
+}
+.crf-next__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 6px;
+  color: var(--crf-rubi);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.crf-next__title {
+  margin: 0 0 8px;
+  font-size: 26px;
+  line-height: 1.15;
+  font-weight: 400;
+  color: var(--crf-ink);
+}
+.crf-next__text {
+  margin: 0;
+  max-width: 54ch;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--crf-body);
+}
+.crf-next__set {
+  flex: 0 0 auto;
+  min-width: 212px;
+  padding-left: 28px;
+  border-left: 1px solid var(--crf-steel-edge);
+}
+.crf-eyebrow {
+  margin: 0 0 5px;
+  color: var(--crf-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.crf-set__title {
+  margin: 0 0 3px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-set__meta {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  color: var(--crf-muted);
+}
+.crf-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--crf-steel-deep);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.crf-link {
+  display: inline-block;
+  margin-left: 14px;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--crf-steel-deep);
+  font: inherit;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.crf-next__also {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 26px;
+  border-top: 1px solid var(--crf-steel-edge);
+  background: var(--crf-white);
+  font-size: 13px;
+  color: var(--crf-body);
+}
+.crf-next__also p {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+.crf-next__also strong {
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+
+/* ---------- the ring ---------- */
+
+.crf-ring {
+  flex: 0 0 auto;
+  text-align: center;
+}
+.crf-ring__svg {
+  display: block;
+}
+.crf-ring__pct {
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 26px;
+  fill: var(--crf-ink);
+}
+.crf-ring__word {
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  fill: var(--crf-muted);
+}
+.crf-ring__legend {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12.5px;
+  color: var(--crf-body);
+}
+.crf-ring__legend li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 4px;
+}
+.crf-ring__legend b {
+  margin-left: auto;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+/* ---------- the trend card ---------- */
+
+.crf-card {
+  margin-top: 22px;
+  padding: 22px 26px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 10px;
+  background: var(--crf-white);
+}
+.crf-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+}
+.crf-card__text {
+  margin: 0;
+  max-width: 56ch;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--crf-body);
+}
+.crf-card__text strong {
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-stats {
+  display: flex;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+}
+.crf-stats div {
+  padding: 0 20px;
+}
+.crf-stats div:last-child {
+  padding-right: 0;
+}
+.crf-stats dt {
+  margin: 0 0 2px;
+  color: var(--crf-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.crf-stats dd {
+  margin: 0;
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 24px;
+  line-height: 1;
+}
+.crf-chart {
+  position: relative;
+  margin-top: 22px;
+}
+.crf-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.crf-chart__axis {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--crf-muted);
+}
+.crf-chart__axis span:last-child {
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-caption {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--crf-hairline);
+  font-size: 12.5px;
+  color: var(--crf-muted);
+}
+
+/* ---------- readiness by topic ---------- */
+
+.crf-topics {
+  margin-top: 34px;
+}
+.crf-topics__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+.crf-h2 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 400;
+  color: var(--crf-ink);
+}
+.crf-topics__sub {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.crf-topics__legend {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--crf-body);
+}
+.crf-topics__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.crf-marker-key {
+  width: 11px;
+  height: 11px;
+  border: 2px solid var(--crf-ink);
+  border-radius: 50%;
+  background: var(--crf-white);
+}
+.crf-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--crf-steel-deep);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.crf-help__panel {
+  margin: 14px 0 0;
+  padding: 0;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 10px;
+  list-style: none;
+  overflow: hidden;
+}
+.crf-help__panel li {
+  display: grid;
+  grid-template-columns: 112px 72px 1fr;
+  gap: 14px;
+  align-items: baseline;
+  padding: 11px 16px;
+  font-size: 13px;
+  color: var(--crf-body);
+}
+.crf-help__panel li + li {
+  border-top: 1px solid var(--crf-hairline);
+}
+.crf-help__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-help__range {
+  color: var(--crf-muted);
+}
+
+/* ---------- a topic row ---------- */
+
+.crf-row {
+  padding: 20px 0 16px;
+  border-top: 1px solid var(--crf-hairline);
+}
+.crf-row:first-of-type {
+  margin-top: 18px;
+}
+.crf-row__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+.crf-row__name {
+  margin: 0 0 3px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-row__meta {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--crf-muted);
+}
+.crf-row__right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 0 0 auto;
+}
+.crf-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--crf-green);
+  font-size: 13px;
+  font-weight: 600;
+}
+/* The band meter. Four segments sized by his `flex`, with the marker absolutely
+   placed at the score — `left` is a percentage of the whole track, which is
+   what makes 52/100 land inside the Developing segment rather than at the
+   segment's own midpoint. */
+.crf-track {
+  position: relative;
+  display: flex;
+  margin: 14px 0 0;
+  border-radius: 5px;
+}
+.crf-track__seg {
+  display: block;
+}
+.crf-track__marker {
+  position: absolute;
+  top: 50%;
+  width: 13px;
+  height: 13px;
+  border: 2.5px solid var(--crf-ink);
+  border-radius: 50%;
+  background: var(--crf-white);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.crf-track__labels {
+  display: flex;
+  margin-top: 6px;
+  font-size: 12px;
+}
+.crf-track__labels span {
+  display: block;
+}
+.crf-row__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 12px;
+}
+.crf-gap {
+  font-size: 12.5px;
+  color: var(--crf-muted);
+}
+.crf-foot-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.crf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 16px;
+  border: 1px solid var(--crf-control-edge);
+  border-radius: 7px;
+  background: var(--crf-white);
+  color: var(--crf-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.crf-btn--primary {
+  border-color: var(--crf-steel-deep);
+  background: var(--crf-steel-deep);
+  color: #fff;
+}
+.crf-chev {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--crf-muted);
+  cursor: pointer;
+}
+.crf-chev:hover {
+  background: var(--color-neutral-100);
+}
+
+/* ---------- sub-topics ---------- */
+
+.crf-subs {
+  margin: 14px 0 0 0;
+  padding: 0 0 0 18px;
+  border-left: 2px solid var(--crf-hairline);
+  list-style: none;
+}
+.crf-subs__eyebrow {
+  margin: 0 0 8px;
+  color: var(--crf-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* ⚠ SIX COLUMNS FOR SIX CHILDREN — name, note, bar, band, when, button. It
+   was five for one pass and the Practice button wrapped onto a full-width row
+   of its own under every sub-topic, which looked deliberate and was not. */
+.crf-sub {
+  display: grid;
+  grid-template-columns: 1fr auto 46px auto auto auto;
+  gap: 16px;
+  align-items: center;
+  padding: 11px 0;
+}
+.crf-sub + .crf-sub {
+  border-top: 1px solid var(--crf-hairline);
+}
+.crf-sub__name {
+  min-width: 0;
+  font-size: 14px;
+  color: var(--crf-ink);
+}
+.crf-sub__note {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.crf-sub__bar {
+  display: flex;
+  width: 46px;
+  flex: 0 0 auto;
+}
+.crf-sub__band {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-sub__band b {
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-sub__when {
+  text-align: right;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--crf-rubi);
+}
+.crf-sub__when span {
+  display: block;
+  color: var(--crf-muted);
+}
+
+/* ---------- the footnote and Ask Rubi ---------- */
+
+.crf-footnote {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 30px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--crf-hairline);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--crf-muted);
+}
+/* ⚠ IT SITS ABOVE THE LIVE CHIP, NOT BESIDE IT. His button is pinned to the
+   top right of the content area and the "Live · Updated just now" chip sits
+   lower, inside the header block. A first pass floated the button and the two
+   shared a line, which read as one toolbar and is not his layout. */
+.crf-ask {
+  position: absolute;
+  right: 40px;
+  top: 24px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 999px;
+  background: var(--crf-white);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 10%);
+  color: var(--crf-ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---------- a page his rail reaches that is not ported yet ---------- */
+
+.crf-pending {
+  margin: 48px auto 0;
+  max-width: 560px;
+  padding: 28px 32px 24px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 10px;
+  background: var(--crf-white);
+}
+.crf-pending h1 {
+  margin: 0 0 12px;
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 24px;
+  line-height: 1.2;
+  color: var(--crf-ink);
+}
+.crf-pending p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--crf-body);
+}
+.crf-pending p:last-child {
+  margin-bottom: 0;
+  color: var(--crf-muted);
+}
+
+/* His own `clip: rect(0 0 0 0)` span, as a class. Used for the delta's
+   " points in 3 weeks", which is in his DOM and not on his screen. */
+.crf-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ============ the Learn page ============ */
+
+/* The ring behind the course gauge is paler than the Readiness one. */
+.crf {
+  --crf-ring-pale: #eceef0;
+  --crf-card-edge: #dcdee1;
+  --crf-ch-rule: #e6e6e6;
+  --crf-locked-tile: #f3f3f3;
+  --crf-locked-ink: #5b5560;
+}
+
+/* ---------- where you left off ---------- */
+
+.crf-resume {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 30px;
+  padding: 20px;
+  border: 1px solid var(--crf-card-edge);
+  border-radius: 14px;
+  background: var(--crf-steel-wash);
+}
+.crf-resume__thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 96px;
+  width: 96px;
+  height: 60px;
+  border-radius: 8px;
+  background: var(--crf-white);
+}
+.crf-resume__play {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  background: var(--crf-steel-pressed);
+  color: var(--crf-body);
+}
+.crf-resume__text {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+.crf-resume__title {
+  margin: 2px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-resume__lesson {
+  margin: 2px 0 8px;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+
+/* The thin progress rule — his 222px × 3px, used in the resume card and under
+   the current chapter's title. */
+.crf-bar {
+  display: block;
+  width: 222px;
+  max-width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--crf-bar-track);
+  overflow: hidden;
+}
+.crf-bar--ch {
+  margin-top: 3px;
+}
+.crf-bar__fill {
+  display: block;
+  height: 3px;
+  background: var(--crf-steel-deep);
+}
+
+/* ---------- the course card ---------- */
+
+.crf-course {
+  margin-top: 32px;
+  border: 1px solid var(--crf-card-edge);
+  border-radius: 14px;
+  background: var(--crf-white);
+  overflow: hidden;
+}
+.crf-course__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 20px;
+  border-bottom: 1px solid var(--crf-card-edge);
+}
+.crf-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--crf-steel-pressed);
+  color: var(--crf-body);
+}
+.crf-course__name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.crf-course__name .crf-h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 500;
+}
+.crf-course__sub {
+  margin: 2px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--crf-steel-deep);
+}
+.crf-course__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex: 0 0 auto;
+  text-align: right;
+}
+.crf-course__done {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--crf-green);
+}
+.crf-course__of {
+  font-size: 13px;
+  color: var(--crf-muted);
+  white-space: nowrap;
+}
+.crf-course__ring {
+  display: flex;
+  justify-content: center;
+  flex: 0 0 120px;
+  width: 120px;
+}
+.crf-course__pct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--crf-ink);
+}
+
+/* ---------- a chapter ---------- */
+
+.crf-ch + .crf-ch,
+.crf-ch:first-of-type {
+  border-top: 1px solid var(--crf-ch-rule);
+}
+.crf-ch--current {
+  background: var(--crf-steel-wash);
+}
+.crf-ch__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+}
+.crf-tile--mark {
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+}
+.crf-ch--done .crf-tile--mark {
+  background: var(--crf-steel-pressed);
+  color: var(--crf-ink);
+}
+.crf-ch--current .crf-tile--mark {
+  background: var(--crf-white);
+  color: var(--crf-ink);
+}
+.crf-ch--locked .crf-tile--mark {
+  background: var(--crf-locked-tile);
+  color: var(--crf-locked-ink);
+}
+.crf-ch__name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.crf-ch__eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--crf-muted);
+}
+.crf-ch--current .crf-ch__eyebrow {
+  color: var(--crf-steel-deep);
+}
+.crf-ch__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-ch--locked .crf-ch__title {
+  font-weight: 400;
+  color: var(--crf-locked-ink);
+}
+.crf-ch__status {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--crf-muted);
+  white-space: nowrap;
+}
+/* A locked chapter has no action button; the space is held so the chevrons of
+   all nineteen rows line up. */
+.crf-ch__noaction {
+  flex: 0 0 96px;
+}
+
+.crf-ch__body {
+  padding: 0 20px 18px 62px;
+}
+.crf-ch__lock {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+
+/* ---------- lessons ---------- */
+
+.crf-lessons {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.crf-lesson {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 14px;
+  color: var(--crf-body);
+}
+.crf-lesson__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 16px;
+  width: 16px;
+  color: var(--crf-muted);
+}
+.crf-lesson--done .crf-lesson__mark {
+  color: var(--crf-green);
+}
+.crf-lesson--current .crf-lesson__mark {
+  color: var(--crf-steel-deep);
+}
+.crf-lesson__label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.crf-lesson--current .crf-lesson__label {
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-lesson--locked .crf-lesson__label {
+  color: var(--crf-muted);
+}
+.crf-lesson__act {
+  flex: 0 0 auto;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--crf-steel-deep);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---------- an exam strip ---------- */
+
+.crf-exam {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border: 1px solid var(--crf-card-edge);
+  border-radius: 10px;
+  background: var(--crf-white);
+}
+.crf-course > .crf-exam {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+.crf-tile--exam {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: var(--crf-locked-tile);
+  color: var(--crf-locked-ink);
+}
+.crf-exam--done .crf-tile--exam {
+  background: var(--crf-steel-pressed);
+  color: var(--crf-green);
+}
+.crf-exam__name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.crf-exam__eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--crf-muted);
+}
+.crf-exam__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--crf-body);
+}
+.crf-exam--done .crf-exam__title {
+  color: var(--crf-ink);
+}
+.crf-exam__note {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: var(--crf-muted);
+  white-space: nowrap;
+}
+/* ⚠ VISIBLE AND INERT, not hidden. His markup is `disabled aria-disabled` with
+   a padlock: the learner should see the exam exists and that it is shut. */
+.crf-btn--locked {
+  background: var(--crf-steel-pressed);
+  border-color: var(--crf-steel-pressed);
+  color: var(--crf-locked-ink);
+  cursor: not-allowed;
+}
+
+/* ============ the Overview ============ */
+
+.crf-ov__course {
+  margin: 4px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--crf-steel-deep);
+}
+.crf-ov__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-pill--phase {
+  background: var(--crf-steel-panel);
+  border: 1px solid var(--crf-steel-edge);
+  color: var(--crf-steel-deep);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.crf-pill--quiet {
+  background: var(--color-neutral-100);
+  color: var(--crf-muted);
+  font-weight: 400;
+}
+.crf-pill--band {
+  background: var(--crf-developing-wash);
+  border: 1px solid var(--crf-developing-edge);
+  color: var(--crf-developing-ink);
+  font-size: 11px;
+}
+
+/* The Overview's next-step panel is two columns, not three — no ring. */
+.crf-next__body--ov {
+  grid-template-columns: 1fr auto;
+}
+.crf-eyebrow--steel {
+  color: var(--crf-steel-deep);
+}
+.crf-eyebrow--rubi {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--crf-rubi);
+  font-weight: 700;
+}
+
+/* ---------- two-up rows ---------- */
+
+/* ⚠ HIS FLEX RATIOS ARE NOT 1:1 AND THAT IS WHY THINGS FIT. Measured off his
+   markup: Rubi 1/340, Continue 2/480; Readiness-to-pass 1.3/440, Course
+   progress 1/380. Giving all four `1 1 380px` — which is what the first pass
+   did — makes the Readiness card too narrow, and its legend's label/value
+   pairs wrap onto two lines each. The ratios are load-bearing layout, not
+   taste. */
+.crf-twoup {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 32px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 16px;
+  background: var(--crf-white);
+  overflow: hidden;
+}
+.crf-rubi {
+  flex: 1 1 340px;
+  min-width: 0;
+  padding: 28px 30px;
+  /* His cream — the one warm panel on the page, and it is Rubi's. */
+  background: #fffcf8;
+}
+.crf-rubi__title {
+  margin: 4px 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-rubi .crf-cta {
+  margin-top: 16px;
+}
+.crf-continue {
+  flex: 2 1 480px;
+  min-width: 0;
+  padding: 28px 30px;
+  border-left: 1px solid var(--crf-hairline);
+}
+.crf-continue__cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+.crf-mini {
+  padding: 14px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 10px;
+}
+.crf-mini__icon {
+  display: inline-flex;
+  color: var(--crf-steel-deep);
+}
+.crf-mini__title {
+  margin: 10px 0 5px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-mini__body {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--crf-body);
+}
+.crf-link--flush {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 0;
+  text-decoration: none;
+}
+
+/* ---------- the two measures ---------- */
+
+.crf-stat {
+  flex: 1.3 1 440px;
+  min-width: 0;
+  padding: 26px 30px 28px;
+}
+.crf-stat + .crf-stat {
+  flex: 1 1 380px;
+  border-left: 1px solid var(--crf-hairline);
+}
+.crf-stat__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 0 16px;
+}
+.crf-stat__source {
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-stat__body {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.crf-rings,
+.crf-lessonring {
+  flex: 0 0 auto;
+}
+.crf-rings__band {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.crf-lessonring__mid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.crf-lessonring__mid b {
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--crf-ink);
+}
+.crf-lessonring__mid span {
+  margin-top: 3px;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--crf-muted);
+}
+.crf-legend {
+  flex: 1 1 220px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.crf-legend li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--crf-rule-sand);
+}
+.crf-legend__pair {
+  flex: 1 1 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--crf-body);
+}
+.crf-legend__pair b {
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+/* The fifth row stacks, and both lines are muted — it is not a measure. */
+.crf-legend__stack {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-legend__stack b {
+  font-weight: 600;
+  color: var(--crf-muted);
+}
+.crf-dot--lg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+}
+.crf-dot--hollow {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 12px;
+  border: 1.5px solid var(--crf-faint);
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+.crf-stat__text {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+.crf-stat__pair {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--crf-rule-sand);
+  font-size: 14px;
+  color: var(--crf-body);
+}
+.crf-stat__pair b {
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-stat__note,
+.crf-stat__caption {
+  margin: 0;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-stat__caption {
+  margin-top: 16px;
+}
+
+/* ---------- the tab strip ---------- */
+
+.crf-tabs {
+  display: flex;
+  gap: 0;
+  margin-top: 28px;
+  border-bottom: 1px solid var(--crf-hairline);
+}
+.crf-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 20px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--crf-body);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.crf-tab.is-on {
+  border-bottom-color: var(--crf-steel-deep);
+  background: var(--crf-steel-panel);
+  color: var(--crf-ink);
+}
+.crf-tab__label {
+  font-size: 15px;
+  font-weight: 600;
+}
+.crf-tab.is-on .crf-tab__label {
+  font-weight: 600;
+}
+.crf-tab__sub {
+  font-size: 12.5px;
+  color: var(--crf-muted);
+}
+
+/* ---------- the table ---------- */
+
+.crf-tablehead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 26px;
+}
+.crf-tablehead__note {
+  margin: 0;
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  color: var(--crf-muted);
+}
+.crf-table {
+  margin-top: 14px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.crf-table__row {
+  display: grid;
+  gap: 18px;
+  align-items: center;
+  padding: 14px 18px;
+}
+.crf-table__row--r {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.8fr) auto;
+}
+.crf-table__row--p {
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.5fr) auto;
+}
+.crf-table__head {
+  background: var(--color-neutral-50, #faf9f6);
+  border-bottom: 1px solid var(--crf-hairline);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--crf-muted);
+}
+.crf-trow + .crf-trow {
+  border-top: 1px solid var(--crf-hairline);
+}
+.crf-trow.is-open {
+  background: var(--crf-steel-panel);
+}
+.crf-trow__name {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  font-size: 15px;
+}
+.crf-trow__name b {
+  display: block;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-trow__weight {
+  display: block;
+  font-size: 12.5px;
+  color: var(--crf-muted);
+}
+/* The share-of-exam wedge: a short upright track whose fill is the topic's
+   weight. The simulator row keeps the space and draws nothing. */
+.crf-wedge {
+  display: flex;
+  flex-direction: column-reverse;
+  flex: 0 0 6px;
+  width: 6px;
+  height: 30px;
+  border-radius: 3px;
+  background: var(--crf-track-empty);
+  overflow: hidden;
+}
+.crf-wedge--none {
+  background: transparent;
+}
+.crf-wedge__fill {
+  display: block;
+  width: 6px;
+  background: var(--crf-steel-deep);
+}
+.crf-trow__practice {
+  min-width: 0;
+  font-size: 13px;
+  color: var(--crf-body);
+}
+.crf-bar--cov {
+  width: 100%;
+  max-width: 160px;
+  margin-top: 6px;
+}
+.crf-trow__band {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.crf-trow__num {
+  font-size: 13px;
+  color: var(--crf-body);
+}
+.crf-trow__nonote,
+.crf-trow__last {
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-trow__next {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.crf-trow__plain {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--crf-steel-deep);
+}
+.crf-chev--none {
+  visibility: hidden;
+}
+.crf-trow .crf-subs {
+  margin: 0 18px 16px 48px;
+}
+
+/* the course-progress lesson list */
+.crf-llist {
+  margin: 0 18px 14px 48px;
+  padding: 0;
+  list-style: none;
+  border-left: 2px solid var(--crf-hairline);
+}
+.crf-llist li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0 7px 16px;
+  font-size: 13.5px;
+  color: var(--crf-body);
+}
+.crf-llist__label {
+  flex: 1 1 auto;
+}
+.crf-llist__status {
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+/* The course-progress row's meter: his fixed 140px track, then the figure. */
+.crf-lbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+.crf-lbar__track {
+  flex: 0 0 140px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--crf-ring-pale);
+  overflow: hidden;
+}
+.crf-lbar__fill {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+}
+.crf-lbar b {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ============ the Practice page ============ */
+
+.crf {
+  --crf-conf-low-bg: #f7d9d9;
+  --crf-conf-low-edge: #efb2b2;
+  --crf-conf-low-ink: #a20000;
+  --crf-conf-med-bg: #fef3df;
+  --crf-conf-med-edge: #fbca68;
+  --crf-conf-med-ink: #694c11;
+  --crf-conf-high-bg: #d9ede1;
+  --crf-conf-high-edge: #b3dcc3;
+  --crf-conf-high-ink: #015623;
+  --crf-beginner-bar: #a39a86;
+  --crf-row-rule: #e6e6e6;
+  /* The weakest-set ring's two tracks: warm behind Readiness, cool behind
+     coverage. His, and not interchangeable. */
+  --crf-ring-warm: #e7e2d9;
+  --crf-ring-steel-track: #e1e6ed;
+}
+
+.crf-pr__lead {
+  position: relative;
+  margin: 12px 0 0;
+  padding-right: 32px;
+  max-width: 760px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--crf-body);
+}
+.crf-pr__dismiss {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--crf-muted);
+  cursor: pointer;
+}
+.crf-pr__dismiss:hover {
+  background: var(--color-neutral-100);
+}
+
+/* ---------- the two recommendations ---------- */
+
+.crf-pr__rec {
+  margin-top: 28px;
+  border: 1px solid var(--crf-steel-edge);
+  border-radius: 16px;
+  background: var(--crf-steel-panel);
+  overflow: hidden;
+}
+.crf-pr__receyebrow {
+  margin: 0;
+  padding: 24px 28px 0;
+}
+.crf-pr__weakest {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+  padding: 12px 28px 24px;
+}
+.crf-pr__ring {
+  flex: 0 0 auto;
+}
+.crf-pr__ringmid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.crf-pr__recbody {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+.crf-pr__rectopic {
+  margin: 6px 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--crf-muted);
+}
+.crf-pr__rectitle {
+  margin: 0 0 8px;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--crf-ink);
+}
+.crf-pr__recstats {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: var(--crf-body);
+}
+.crf-pr__recstats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.crf-pr__recstats b {
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-pr__spaced {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 28px;
+  border-top: 1px solid var(--crf-steel-edge);
+  background: var(--crf-white);
+}
+.crf-pr__spaced .crf-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  flex: 0 0 auto;
+}
+.crf-pr__spacedtitle {
+  margin: 0;
+  flex: 1 1 240px;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-pr__due {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-pr__due b {
+  font-weight: 600;
+  color: var(--crf-rubi);
+}
+
+/* ---------- tabs, views, filters ---------- */
+
+.crf-pr__bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+  border-bottom: 1px solid var(--crf-hairline);
+}
+.crf-tabs--flush {
+  margin-top: 0;
+  border-bottom: 0;
+}
+.crf-pr__views {
+  display: inline-flex;
+  gap: 4px;
+  margin-bottom: 10px;
+  padding: 3px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 8px;
+}
+.crf-pr__view {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--crf-body);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.crf-pr__view.is-on {
+  background: var(--crf-steel-pressed);
+  color: var(--crf-steel-deep);
+  font-weight: 600;
+}
+
+.crf-pr__filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-top: 18px;
+}
+.crf-pr__filterby {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--crf-muted);
+}
+.crf-pr__filtergroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.crf-pr__filterlabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--crf-faint);
+}
+.crf-fpill {
+  padding: 5px 14px;
+  border: 1px solid;
+  border-radius: 999px;
+  background: var(--crf-white);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.crf-fpill.is-on {
+  box-shadow: 0 0 0 2px var(--crf-steel-wash);
+}
+
+/* ---------- groups and the table ---------- */
+
+.crf-pr__group {
+  margin-top: 26px;
+}
+.crf-pr__grouphead {
+  margin-bottom: 10px;
+}
+.crf-pr__grouptitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-pr__groupmeta {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--crf-muted);
+}
+.crf-pr__table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.crf-pr__table th {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--crf-hairline);
+  background: var(--crf-paper);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--crf-muted);
+}
+.crf-pr__table td {
+  padding: 13px 16px;
+  border-top: 1px solid var(--crf-row-rule);
+  vertical-align: middle;
+  font-size: 14px;
+  color: var(--crf-body);
+}
+.crf-pr__table tbody tr:first-child td {
+  border-top: 0;
+}
+.crf-pr__seteyebrow {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--crf-muted);
+}
+.crf-pr__settitle {
+  display: block;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-pr__bmk {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--crf-muted);
+}
+.crf-pill--conf {
+  flex-direction: column;
+  gap: 0;
+  line-height: 1.25;
+}
+.crf-pr__confword {
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.85;
+}
+.crf-pill--beginner {
+  background: var(--crf-beginner-wash);
+  border: 1px solid var(--crf-edge);
+  color: var(--crf-beginner-ink);
+  flex-direction: column;
+  gap: 0;
+  line-height: 1.25;
+}
+.crf-pr__dash {
+  color: var(--crf-faint);
+}
+.crf-pr__status {
+  display: block;
+  font-size: 13px;
+  color: var(--crf-body);
+}
+.crf-bar--set {
+  width: 150px;
+  max-width: 100%;
+  margin-top: 6px;
+}
+.crf-pr__action {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ---------- the cards view ---------- */
+
+.crf-pr__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+.crf-pr__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 10px;
+  background: var(--crf-white);
+}
+.crf-pr__cardpills {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+}
+.crf-pr__card .crf-btn {
+  margin-top: auto;
+}
+
+/* ---------- the empty state ---------- */
+
+.crf-pr__empty {
+  margin-top: 26px;
+  padding: 40px 28px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 12px;
+  background: var(--crf-paper);
+  text-align: center;
+}
+.crf-pr__emptytitle {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-pr__emptybody {
+  margin: 0 auto 16px;
+  max-width: 48ch;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--crf-muted);
+}
+
+/* ============ Prep Review ============ */
+
+.crf-prep__course {
+  margin-top: 4px;
+}
+.crf-prep__titlerow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+/* His outline pill — transparent ground, steel rule. The one word that says
+   this page gates nothing. */
+.crf-pill--optional {
+  background: transparent;
+  border: 1px solid var(--crf-steel-edge);
+  color: var(--crf-steel-deep);
+  padding: 2px 10px;
+  font-size: 13px;
+}
+.crf-prep__band {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--crf-developing-ink);
+}
+/* An exam row that is a sibling of the chapters rather than nested inside
+   one: full-bleed, ruled like a chapter, no inner card. */
+.crf-exam--flat {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--crf-ch-rule);
+  border-radius: 0;
+  padding: 14px 20px;
+}
+
+/* ============ the Study planner ============ */
+
+.crf {
+  --crf-card-edge2: #dcdee1;
+  --crf-late-wash: #fdf4f4;
+  --crf-cell-off: #eef0f2;
+  --crf-today-edge: #1f2a33;
+}
+
+.crf-pl__stats {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  flex-wrap: wrap;
+  margin-top: 28px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 14px;
+  background: var(--crf-white);
+  overflow: hidden;
+}
+.crf-pl__stat {
+  flex: 1 1 220px;
+  min-width: 0;
+  padding: 20px 24px;
+}
+.crf-pl__stat + .crf-pl__stat {
+  border-left: 1px solid var(--crf-hairline);
+}
+.crf-pl__statbig {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 6px 0 0;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-pl__statsub {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-pl__change {
+  margin: 20px 24px;
+  flex: 0 0 auto;
+}
+
+/* ---------- the pace editor ---------- */
+
+.crf-pl__editor {
+  margin-top: 16px;
+  padding: 22px 24px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 14px;
+  background: var(--crf-paper);
+}
+.crf-pl__paces {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.crf-pl__pace {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 16px;
+  border: 1px solid var(--crf-card-edge2);
+  border-radius: 10px;
+  background: var(--crf-white);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.crf-pl__pace.is-on {
+  border-color: var(--crf-steel-deep);
+  box-shadow: inset 0 0 0 1px var(--crf-steel-deep);
+}
+.crf-pl__pacename {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-pl__pacetotal {
+  font-size: 13px;
+  color: var(--crf-body);
+}
+.crf-pl__paceper,
+.crf-pl__pacefinish {
+  font-size: 12.5px;
+  color: var(--crf-muted);
+}
+.crf-pl__pacefinish {
+  margin-top: 4px;
+  font-weight: 600;
+}
+.crf-pl__spread,
+.crf-pl__weektotal {
+  margin: 18px 0 0;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-pl__weektotal {
+  margin-top: 4px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-pl__sliders {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px 20px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.crf-pl__sliders li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.crf-pl__sliderday {
+  flex: 0 0 32px;
+  color: var(--crf-muted);
+}
+.crf-pl__slidertrack {
+  flex: 1 1 auto;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--crf-ring-pale);
+  overflow: hidden;
+}
+.crf-pl__sliderfill {
+  display: block;
+  height: 5px;
+  background: var(--crf-steel-deep);
+}
+.crf-pl__slidertext {
+  flex: 0 0 52px;
+  text-align: right;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+
+/* ---------- the calendar ---------- */
+
+.crf-pl__cal {
+  margin-top: 28px;
+}
+.crf-pl__calhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.crf-pl__caltitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-pl__views {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 8px;
+}
+.crf-pl__view {
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--crf-body);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.crf-pl__view.is-on {
+  background: var(--crf-steel-deep);
+  color: #fff;
+  font-weight: 600;
+}
+.crf-pl__hint {
+  margin: 14px 0 12px;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-pl__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+.crf-pl__dow {
+  padding-bottom: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--crf-muted);
+}
+.crf-pl__cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 150px;
+  padding: 10px;
+  border: 1px solid var(--crf-rule-warm);
+  border-radius: 10px;
+  background: var(--crf-white);
+}
+/* The full plan is nine weeks of the same cells at a shorter height. */
+.crf-pl__grid--full .crf-pl__cell {
+  min-height: 96px;
+}
+.crf-pl__cell.is-today {
+  border: 2px solid var(--crf-today-edge);
+}
+.crf-pl__cell.is-off {
+  background: var(--crf-cell-off);
+}
+.crf-pl__cell.is-exam {
+  border-color: var(--crf-ink);
+}
+.crf-pl__celltop {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.crf-pl__date {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-pl__date.is-struck {
+  text-decoration: line-through;
+  font-weight: 400;
+  color: var(--crf-muted);
+}
+.crf-pl__today {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--crf-steel-deep);
+}
+.crf-pl__session {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-left: 8px;
+  border-left: 2px solid var(--crf-steel-deep);
+  font-size: 12.5px;
+}
+.crf-pl__session.is-review {
+  border-left-color: var(--crf-amber);
+}
+.crf-pl__topic {
+  color: var(--crf-ink);
+}
+.crf-pl__dur {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--crf-muted);
+}
+.crf-pl__offword {
+  font-size: 12.5px;
+  color: var(--crf-muted);
+}
+.crf-pl__skip {
+  margin-top: auto;
+  align-self: flex-start;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--crf-steel-deep);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.crf-pl__pop {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  z-index: 5;
+  width: 230px;
+  padding: 12px 14px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 10px;
+  background: var(--crf-white);
+  box-shadow: 0 10px 28px rgb(0 0 0 / 14%);
+}
+.crf-pl__pop--left {
+  left: 0;
+}
+.crf-pl__pop--right {
+  right: 0;
+}
+.crf-pl__popsub {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--crf-muted);
+}
+.crf-pl__poptitle {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-pl__popnote {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--crf-body);
+}
+.crf-pl__legend {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--crf-hairline);
+  font-size: 13px;
+  color: var(--crf-body);
+}
+.crf-pl__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.crf-pl__swbar {
+  width: 2px;
+  height: 14px;
+}
+.crf-pl__swsq {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+.crf-pl__swstruck {
+  text-decoration: line-through;
+  color: var(--crf-muted);
+}
+
+/* The spaced-review line: a second entry in the cell, amber-ruled. */
+.crf-pl__review {
+  padding-left: 8px;
+  border-left: 2px solid var(--crf-amber);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--crf-amber-deep, #835b16);
+}
+
+/* Exam day is a dark cell with its own label in white. */
+.crf-pl__cell.is-exam {
+  background: var(--crf-ink);
+  border-color: var(--crf-ink);
+}
+.crf-pl__cell.is-exam .crf-pl__date {
+  color: #fff;
+}
+.crf-pl__examday {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+.crf-pl__today {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--crf-today-edge);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ============ Flashcards ============ */
+
+.crf-fc__resultshead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+}
+.crf-fc__note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-fc__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.crf-fc__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 10px;
+  background: var(--crf-white);
+}
+.crf-fc__cardpills {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+}
+.crf-fc__cardtitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-fc__cardmeta {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--crf-muted);
+}
+.crf-fc__bm {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--crf-muted);
+}
+.crf-fc__bm b {
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-fc__card .crf-btn {
+  margin-top: auto;
+}
+.crf-fc__table {
+  margin-top: 14px;
+}
+
+/* ============ the Exam Simulator ============ */
+
+.crf-sim__heading {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-sim__row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--crf-ch-rule);
+}
+.crf-sim__name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.crf-sim__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-pill--timed {
+  background: var(--crf-developing-wash);
+  border: 1px solid var(--crf-developing-edge);
+  color: var(--crf-developing-ink);
+  font-size: 11px;
+}
+.crf-sim__meta {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--crf-muted);
+}
+
+/* ---------- the provider modal ---------- */
+
+.crf-sim__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgb(31 29 24 / 42%);
+}
+.crf-sim__modal {
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow: auto;
+  padding: 26px 28px;
+  border-radius: 14px;
+  background: var(--crf-white);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 28%);
+}
+.crf-sim__modaltitle {
+  margin: 4px 0 10px;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--crf-ink);
+}
+.crf-sim__providers {
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.crf-sim__prov {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 15px;
+  border: 1px solid var(--crf-card-edge2);
+  border-radius: 10px;
+  background: var(--crf-white);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.crf-sim__prov.is-on {
+  border: 2px solid var(--crf-steel-deep);
+  background: var(--crf-steel-panel);
+}
+.crf-sim__provdot {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  border: 1.5px solid #9fa6b0;
+  border-radius: 50%;
+}
+.crf-sim__prov.is-on .crf-sim__provdot {
+  border-color: var(--crf-steel-deep);
+  background: radial-gradient(var(--crf-steel-deep) 0 45%, transparent 46%);
+}
+.crf-sim__prov b {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-sim__provnote {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-sim__help {
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-sim__modalfoot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+.crf-sim__modalfoot .crf-cta[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============ a Flashcards topic ============ */
+
+/* ⚠ A BREADCRUMB BECAUSE THE PAGE HAS NO RAIL ROW. The rail cannot show where
+   you are on a page it does not list. */
+.crf-crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-crumb__link {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--crf-steel-deep);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.crf-crumb__here {
+  color: var(--crf-ink);
+}
+.crf-ftopic__head {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--crf-hairline);
+}
+.crf-ftopic__modes {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.crf-ftopic__list {
+  margin-top: 26px;
+}
+.crf-ftopic__listhead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 8px;
+}
+.crf-ftopic__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) auto auto auto;
+  gap: 20px;
+  align-items: center;
+  padding: 16px 0;
+  border-top: 1px solid var(--crf-row-rule);
+}
+.crf-ftopic__name {
+  min-width: 0;
+}
+.crf-ftopic__band {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  color: var(--crf-body);
+}
+.crf-ftopic__band b {
+  font-weight: 600;
+}
+.crf-ftopic__cards {
+  font-size: 13px;
+  color: var(--crf-muted);
+  white-space: nowrap;
+}
+
+/* ============ the simulated exam (vendor chrome) ============ */
+
+/* ⚠ IT DELIBERATELY DOES NOT LOOK LIKE COMPASS. A simulator whose chrome
+   matched the app you revised in would not be simulating anything — so this
+   block borrows the test-centre look: a dark bar, a green question list, a
+   timer, and no Compass rail at all. */
+.crf-vx {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #f3f4f5;
+  font-family: var(--font-body);
+  color: var(--crf-vx-ink, #262626);
+}
+.crf-vx__bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 18px;
+  background: #1f2a33;
+  color: #fff;
+  font-size: 13px;
+}
+.crf-vx__exit {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 6px;
+  background: transparent;
+  padding: 5px 11px;
+  color: #fff;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.crf-vx__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-weight: 600;
+}
+.crf-vx__provider {
+  opacity: 0.85;
+}
+.crf-vx__page {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 32px 36px 56px;
+}
+
+/* ---------- intro ---------- */
+
+.crf-vx__intro {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.crf-vx__intromain {
+  flex: 1.6 1 460px;
+  min-width: 0;
+}
+.crf-vx__h1 {
+  margin: 0 0 10px;
+  font-size: 26px;
+  font-weight: 600;
+  color: #1f1d18;
+}
+.crf-vx__h2 {
+  margin: 26px 0 10px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1f1d18;
+}
+.crf-vx__note,
+.crf-vx__para {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #42464f;
+}
+.crf-vx__bullets {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.crf-vx__bullets li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #42464f;
+}
+.crf-vx__bullets svg {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  color: var(--crf-green);
+}
+.crf-vx__blueprint {
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+.crf-vx__blueprint li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 13.5px;
+}
+.crf-vx__bpname {
+  flex: 0 0 240px;
+}
+.crf-vx__bptrack {
+  flex: 1 1 auto;
+  height: 8px;
+  border-radius: 4px;
+  background: #e3e5e8;
+  overflow: hidden;
+}
+.crf-vx__bpfill {
+  display: block;
+  height: 8px;
+  background: var(--crf-steel-deep);
+}
+.crf-vx__bppct {
+  flex: 0 0 42px;
+  text-align: right;
+  font-weight: 600;
+}
+.crf-vx__glance {
+  flex: 1 1 280px;
+  min-width: 0;
+  align-self: flex-start;
+  padding: 22px 24px;
+  border: 1px solid #dcdee1;
+  border-radius: 12px;
+  background: #fff;
+}
+.crf-vx__glance dl {
+  margin: 12px 0 18px;
+}
+.crf-vx__glance div {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 9px 0;
+  border-bottom: 1px solid #ecedef;
+  font-size: 13.5px;
+}
+.crf-vx__glance dt {
+  color: #615c55;
+}
+.crf-vx__glance dd {
+  margin: 0;
+  font-weight: 600;
+  color: #1f1d18;
+}
+.crf-vx__glance .crf-cta {
+  width: 100%;
+}
+.crf-vx__proto {
+  margin: 14px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #8e939b;
+}
+
+/* ---------- terms and other dialogs ---------- */
+
+.crf-vx__dialog {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 26px 28px;
+  border: 1px solid #dcdee1;
+  border-radius: 12px;
+  background: #fff;
+}
+.crf-vx__nda {
+  max-height: 260px;
+  overflow: auto;
+  margin: 14px 0 18px;
+  padding: 16px 18px;
+  border: 1px solid #e3e5e8;
+  border-radius: 8px;
+  background: #fbfbfc;
+}
+.crf-vx__nda p {
+  margin: 0 0 10px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #42464f;
+}
+.crf-vx__agree {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  color: #42464f;
+  cursor: pointer;
+}
+.crf-vx__box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #555;
+  border-radius: 3px;
+  background: #fff;
+  color: #fff;
+}
+.crf-vx__box.is-on {
+  border-color: #3e7b27;
+  background: #3e7b27;
+}
+.crf-vx__dialogfoot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+.crf-vx__dialogfoot .crf-cta[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- the vendor test shell ---------- */
+
+.crf-vx__shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: #fff;
+}
+.crf-vx__shellbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 9px 16px;
+  border-bottom: 1px solid #c9cdd2;
+  background: #eceef0;
+  font-size: 12.5px;
+}
+.crf-vx__shelltop {
+  font-weight: 700;
+}
+.crf-vx__shellsub {
+  flex: 1 1 auto;
+  color: #42464f;
+}
+.crf-vx__timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.crf-vx__timer b {
+  font-variant-numeric: tabular-nums;
+}
+.crf-vx__finish {
+  border: 1px solid #8a8a8a;
+  border-radius: 4px;
+  background: #fff;
+  padding: 5px 12px;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.crf-vx__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.crf-vx__nav {
+  flex: 0 0 230px;
+  padding: 14px;
+  border-right: 1px solid #c9cdd2;
+  background: #f7f8f9;
+  font-size: 12.5px;
+  overflow: auto;
+}
+.crf-vx__navtest,
+.crf-vx__navcand {
+  margin: 0 0 4px;
+  color: #42464f;
+}
+.crf-vx__pages,
+.crf-vx__qlist {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.crf-vx__pages li,
+.crf-vx__qlist li {
+  padding: 6px 9px;
+  border-radius: 3px;
+}
+/* ⚠ HIS GREEN, not a Compass token — the vendor's selected row. */
+.crf-vx__pages li.is-on,
+.crf-vx__qlist li.is-on {
+  background: #24511a;
+  color: #fff;
+  font-weight: 700;
+}
+.crf-vx__main {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 24px 28px;
+  overflow: auto;
+}
+.crf-vx__qnum {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.crf-vx__flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 14px;
+  border: 1px solid #8a8a8a;
+  border-radius: 4px;
+  background: #fff;
+  padding: 5px 11px;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.crf-vx__flag.is-on {
+  border-color: #b54708;
+  color: #b54708;
+}
+.crf-vx__stem {
+  margin: 0 0 16px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #1f1d18;
+}
+.crf-vx__opts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.crf-vx__opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  border: 1px solid #c9cdd2;
+  border-radius: 6px;
+  background: #fff;
+  padding: 11px 14px;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  color: #262626;
+  cursor: pointer;
+}
+.crf-vx__opt.is-on {
+  border-color: #24511a;
+  box-shadow: inset 0 0 0 1px #24511a;
+}
+.crf-vx__opt.is-correct {
+  border-color: var(--crf-ready-edge);
+  background: var(--crf-right-wash);
+}
+.crf-vx__opt.is-yours {
+  border-color: var(--crf-ready-edge);
+}
+.crf-vx__letter {
+  flex: 0 0 22px;
+  font-weight: 700;
+}
+.crf-vx__tag {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--crf-ready-ink);
+  white-space: nowrap;
+}
+.crf-vx__foot {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-top: 1px solid #c9cdd2;
+  background: #eceef0;
+}
+.crf-vx__counts {
+  flex: 1 1 auto;
+  font-size: 12.5px;
+  color: #42464f;
+}
+.crf-vx__navbtn {
+  border: 1px solid #8a8a8a;
+  border-radius: 4px;
+  background: #fff;
+  padding: 6px 16px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.crf-vx__navbtn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.crf-vx__skip {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--crf-steel-deep);
+  font: inherit;
+  font-size: 12.5px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.crf-vx__flagdemo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: #b54708;
+}
+.crf-vx__flagdemo span {
+  color: #42464f;
+}
+
+/* ---------- results and review ---------- */
+
+.crf-vx__results {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 26px 28px;
+  border: 1px solid #dcdee1;
+  border-radius: 12px;
+  background: #fff;
+}
+.crf-vx__score,
+.crf-vx__reviewside {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.crf-vx__reviewside {
+  flex: 1 1 280px;
+  align-items: stretch;
+}
+.crf-vx__scoremid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+}
+.crf-vx__scoremid b {
+  font-size: 30px;
+  color: #1f1d18;
+}
+.crf-vx__scoremid span {
+  font-size: 13px;
+  color: #615c55;
+}
+.crf-vx__resultsbody {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+.crf-vx__topics {
+  margin: 8px 0 18px;
+  padding: 0;
+  list-style: none;
+}
+.crf-vx__topics li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 13.5px;
+}
+.crf-vx__topicname {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.crf-vx__topictrack {
+  flex: 0 0 110px;
+  height: 7px;
+  border-radius: 4px;
+  background: #e3e5e8;
+  overflow: hidden;
+}
+.crf-vx__topicfill {
+  display: block;
+  height: 7px;
+}
+.crf-vx__topicnum {
+  flex: 0 0 auto;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.crf-vx__rubi {
+  margin: 18px 0;
+  padding: 16px 18px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 10px;
+  background: #fffcf8;
+}
+.crf-vx__fb {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 0;
+}
+.crf-vx__resultsfoot {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.crf-vx__pos {
+  margin: 10px 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+.crf-vx__rvfilters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.crf-vx__badge {
+  display: inline-block;
+  margin: 4px 0 12px;
+  padding: 3px 10px;
+  border: 1px solid var(--crf-badge-edge);
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: var(--crf-body);
+}
+
+/* A tutorial page's demo of the control it describes. */
+.crf-vx__demo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 0;
+}
+.crf-vx__demo .crf-vx__navbtn {
+  display: inline-block;
+}
+.crf-vx__demo--timer {
+  gap: 8px;
+  font-size: 12.5px;
+  color: #42464f;
+}
+.crf-vx__demo--timer b {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============ a question set ============ */
+
+.crf-qs__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--crf-hairline);
+}
+.crf-qs__meta {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-qs__headright {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 0 0 auto;
+}
+.crf-qs__pos {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-qs__qline {
+  margin: 22px 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--crf-muted);
+}
+.crf-qs__stem {
+  margin: 0 0 20px;
+  max-width: 70ch;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--crf-ink);
+}
+.crf-qs__opts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 640px;
+}
+.crf-qs__opt {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+  border: 1px solid var(--crf-control-edge);
+  border-radius: 9px;
+  background: var(--crf-white);
+  font: inherit;
+  font-size: 15px;
+  text-align: left;
+  color: var(--crf-ink);
+  cursor: pointer;
+}
+.crf-qs__opt.is-on {
+  border-color: var(--crf-steel-deep);
+  box-shadow: inset 0 0 0 1px var(--crf-steel-deep);
+}
+.crf-qs__opt.is-right {
+  border-color: var(--crf-ready-edge);
+  background: var(--crf-right-wash);
+}
+.crf-qs__key {
+  flex: 0 0 auto;
+  font-weight: 700;
+  color: var(--crf-steel-deep);
+}
+.crf-qs__sure {
+  margin-top: 22px;
+}
+.crf-qs__sureq {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-qs__sureopts {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.crf-qs__submit {
+  margin-top: 22px;
+}
+.crf-qs__submit[disabled] {
+  background: var(--crf-control-edge);
+  color: var(--crf-body);
+  cursor: not-allowed;
+}
+.crf-qs__after {
+  margin-top: 22px;
+}
+.crf-qs__fb {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--crf-ready-ink);
+}
+.crf-qs__felt {
+  margin: 0;
+  font-size: 13px;
+  color: var(--crf-muted);
+}
+.crf-qs__felt b {
+  color: var(--crf-ink);
+}
+.crf-qs__explain {
+  margin: 18px 0 0;
+  padding: 18px 20px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 10px;
+  background: var(--crf-paper);
+}
+.crf-qs__explain .crf-btn {
+  margin-top: 12px;
+}
+.crf-qs__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+/* The closed workspace rail his session pages carry down the right edge. */
+.crf-wsrail {
+  position: sticky;
+  top: 24px;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 0 0 56px;
+  padding: 8px 6px;
+  border-left: 1px solid var(--crf-hairline);
+}
+.crf-wsrail__tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 9px 6px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--crf-body);
+  font: inherit;
+  cursor: pointer;
+}
+.crf-wsrail__tab:hover {
+  background: var(--color-neutral-100);
+}
+.crf-wsrail__count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--crf-muted);
+}
+
+/* His question-set header: a 44px tile, a 28px serif title, the meta line. */
+.crf-qs__tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--crf-steel-pressed);
+  color: var(--crf-body);
+}
+.crf-qs__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--crf-ink);
+}
+.crf-qs__head {
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+/* ============ a card study session ============ */
+
+/* ⚠ ONE CARD, TWO FACES, BOTH IN THE DOM — a CSS flip, not a content swap. */
+.crf-cs__card {
+  display: block;
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  min-height: 260px;
+  margin: 26px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  perspective: 1200px;
+}
+.crf-cs__face {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 28px 30px;
+  border: 1px solid var(--crf-hairline);
+  border-radius: 14px;
+  background: var(--crf-white);
+  backface-visibility: hidden;
+  transition: transform 0.4s;
+}
+.crf-cs__front {
+  transform: rotateY(0deg);
+}
+.crf-cs__back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+.crf-cs__card.is-back .crf-cs__front {
+  transform: rotateY(-180deg);
+}
+.crf-cs__card.is-back .crf-cs__back {
+  transform: rotateY(0deg);
+}
+.crf-cs__term {
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 26px;
+  color: var(--crf-ink);
+}
+.crf-cs__hint {
+  margin-top: auto;
+  font-size: 12.5px;
+  color: var(--crf-faint);
+}
+.crf-cs__termsm {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--crf-muted);
+}
+.crf-cs__def {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--crf-body);
+}
+.crf-cs__rate {
+  margin-top: 22px;
+}
+.crf-cs__ratq {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--crf-ink);
+}
+.crf-cs__rates {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.crf-cs__rateopt {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 16px;
+  border: 1px solid;
+  border-radius: 8px;
+  background: var(--crf-white);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.crf-cs__rateopt b {
+  font-variant-numeric: tabular-nums;
+}
+.crf-cs__nav,
+.crf-cs__tools {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.crf-cs__nav kbd {
+  padding: 1px 6px;
+  border: 1px solid var(--crf-control-edge);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 11px;
+}
+
+/* His 40×40 icon buttons under the card. */
+.crf-cs__tbtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--crf-control-edge);
+  border-radius: 8px;
+  background: var(--crf-white);
+  color: var(--crf-body);
+  cursor: pointer;
+}
+.crf-cs__tbtn[aria-pressed='true'] {
+  border-color: var(--crf-steel-deep);
+  color: var(--crf-steel-deep);
+}

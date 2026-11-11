@@ -48,33 +48,49 @@ describe('the Refined slot map', () => {
     expect(slots).toEqual([...ALL_PAGES, 'rail'].sort())
   })
 
-  it('starts every slot on his except the one page Refined owns', () => {
-    const refinedSlots = (Object.keys(REFINED_PAGE_SOURCE) as RefinedSlot[]).filter(
-      (s) => refinedSourceFor(s) !== 'jeff',
+  it('leaves the lesson his, and nothing else', () => {
+    /* ⚠ ONE SLOT, AND THE REASON IS STRUCTURAL. The 2026-11-10 header change
+       reaches every page that draws a header; `CompassJeffCourse` is a
+       full-window takeover that draws none and carries no `cjm-` class, so
+       it was outside the fork. When the lesson is refined, this list empties
+       and the case says so. */
+    const his = (Object.keys(REFINED_PAGE_SOURCE) as RefinedSlot[]).filter(
+      (s) => refinedSourceFor(s) === 'jeff',
     )
-    /* Readiness, and only Readiness — `CompassReadinessRefined`, 2026-11-09.
-       When this list grows, the page that joined it is a page someone
-       deliberately refined, and its own suite should say what changed. */
-    expect(refinedSlots).toEqual(['readiness'])
+    expect(his).toEqual(['course'])
   })
 })
 
-describe('the two shells draw the same pages until a slot is flipped', () => {
-  /* The lesson and the simulated exam are takeovers that render without the
-     rail; they go through the same branch in both shells and are compared
-     here like any other page. */
+/**
+ * THE FORK WAS FAITHFUL — the check that makes a 4,800-line copy reviewable.
+ *
+ * Refined's page set is a mechanical fork of his: `cjm` → `crf`, nothing
+ * else, taken at the moment of the fork. So normalising the prefix back
+ * should make the two renders identical, and every difference that survives
+ * is one somebody decided. Without this, a wholesale copy is a diff nobody
+ * can read, and a typo in it looks exactly like a design decision.
+ *
+ * ⚠ READINESS IS EXCLUDED, and it is the only one. It was refined on
+ * 2026-11-09, before the fork, and is a different page by intent —
+ * `CompassReadinessRefined.test.tsx` is what holds it to the research.
+ */
+describe('Refined’s pages are his, prefix for prefix', () => {
+  const DELIBERATELY_DIFFERENT = new Set(['readiness'])
+
   for (const page of ALL_PAGES) {
-    if (refinedSourceFor(page as RefinedSlot) !== 'jeff') continue
-    it(`${page} is his, byte for byte`, () => {
+    if (DELIBERATELY_DIFFERENT.has(page)) continue
+    it(`${page}`, () => {
       const his = wrap(<CompassJeffMvpShell page={page} onSelectPage={() => {}} />)
       const hisHtml = his.container.innerHTML
       his.unmount()
       const refined = wrap(<CompassRefinedShell page={page} onSelectPage={() => {}} />)
-      /* ⚠ THE WRAPPER CARRIES ONE EXTRA CLASS and nothing else. `crf` is the
-         override hook Refined's stylesheet hangs off; stripping it is what
-         makes this a comparison of the PAGE rather than of the wrapper. */
-      const refinedHtml = refined.container.innerHTML.replace('cjm cjm-shell crf', 'cjm cjm-shell')
-      expect(refinedHtml).toBe(hisHtml)
+      /* `crf` back to `cjm` — the whole of the fork's mechanical difference.
+         `crf-shell` is the one class the shell renames rather than copies. */
+      const normalised = refined.container.innerHTML
+        .replace(/\bcrf-shell\b/g, 'cjm-shell')
+        .replace(/\bcrf-/g, 'cjm-')
+        .replace(/(class="|\s)crf(\s|")/g, '$1cjm$2')
+      expect(normalised).toBe(hisHtml)
     })
   }
 })

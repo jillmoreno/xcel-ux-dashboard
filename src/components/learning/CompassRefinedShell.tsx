@@ -1,23 +1,23 @@
-import { CompassJeffMvpRail, CompassJeffMvpPending } from './CompassJeffMvpShell'
-import { CompassJeffMvpReadiness } from './CompassJeffMvpReadiness'
+import { CompassRefinedRail, CompassRefinedPending } from './CompassRefinedChrome'
+import { CompassRefinedReadiness } from './CompassRefinedReadiness'
 import { CompassReadinessRefined, type RefinedHeroStyle } from './CompassReadinessRefined'
-import { CompassJeffMvpLearn } from './CompassJeffMvpLearn'
-import { CompassJeffMvpOverview } from './CompassJeffMvpOverview'
-import { CompassJeffMvpPractice } from './CompassJeffMvpPractice'
-import { CompassJeffMvpPrep } from './CompassJeffMvpPrep'
-import { CompassJeffMvpPlanner } from './CompassJeffMvpPlanner'
-import { CompassJeffMvpFlashcards } from './CompassJeffMvpFlashcards'
-import { CompassJeffMvpSimulator } from './CompassJeffMvpSimulator'
-import { CompassJeffMvpFlashcardTopic } from './CompassJeffMvpFlashcardTopic'
-import { CompassJeffMvpExamSession } from './CompassJeffMvpExamSession'
-import { CompassJeffMvpQuestionSet } from './CompassJeffMvpQuestionSet'
-import { CompassJeffMvpCardStudy } from './CompassJeffMvpCardStudy'
+import { CompassRefinedLearn } from './CompassRefinedLearn'
+import { CompassRefinedOverview } from './CompassRefinedOverview'
+import { CompassRefinedPractice } from './CompassRefinedPractice'
+import { CompassRefinedPrep } from './CompassRefinedPrep'
+import { CompassRefinedPlanner } from './CompassRefinedPlanner'
+import { CompassRefinedFlashcards } from './CompassRefinedFlashcards'
+import { CompassRefinedSimulator } from './CompassRefinedSimulator'
+import { CompassRefinedFlashcardTopic } from './CompassRefinedFlashcardTopic'
+import { CompassRefinedExamSession } from './CompassRefinedExamSession'
+import { CompassRefinedQuestionSet } from './CompassRefinedQuestionSet'
+import { CompassRefinedCardStudy } from './CompassRefinedCardStudy'
 import { CompassJeffCourse } from './CompassJeffCourse'
 import { refinedSourceFor } from './compassRefinedPages'
 import type { JeffMvpPage } from '@/data/compassJeffMvpFixtures'
 /* ⚠ HIS STYLESHEET, BECAUSE MOST SLOTS ARE STILL HIS. It leaves when the
    last slot does; a forked page brings its own and uses none of it. */
-import './compassJeffMvp.css'
+import './compassRefined.css'
 
 /**
  * THE REFINED COMPASS — its own shell, 2026-11-10.
@@ -72,22 +72,22 @@ export function CompassRefinedShell({
      what the slot map is for. */
   if (page === 'course') {
     return (
-      <div className="cjm cjm-shell crf">
+      <div className="crf crf-shell">
         <CompassJeffCourse onExit={() => onSelectPage('learn')} />
       </div>
     )
   }
   if (page === 'exam-session') {
     return (
-      <div className="cjm cjm-shell crf">
-        <CompassJeffMvpExamSession onSelectPage={onSelectPage} />
+      <div className="crf crf-shell">
+        <CompassRefinedExamSession onSelectPage={onSelectPage} />
       </div>
     )
   }
 
   return (
-    <div className="cjm cjm-shell crf">
-      <CompassJeffMvpRail page={page} onSelectPage={onSelectPage} />
+    <div className="crf crf-shell">
+      <CompassRefinedRail page={page} onSelectPage={onSelectPage} />
       <RefinedPage page={page} onSelectPage={onSelectPage} readinessHero={readinessHero} />
     </div>
   )
@@ -118,7 +118,7 @@ function RefinedPage({
     return source === 'refined' ? (
       <CompassReadinessRefined hero={readinessHero} onSelectPage={onSelectPage} />
     ) : (
-      <CompassJeffMvpReadiness onSelectPage={onSelectPage} />
+      <CompassRefinedReadiness onSelectPage={onSelectPage} />
     )
   }
 
@@ -128,26 +128,26 @@ function RefinedPage({
      for "what did Refined change here?". */
   switch (page) {
     case 'learn':
-      return <CompassJeffMvpLearn onSelectPage={onSelectPage} />
+      return <CompassRefinedLearn onSelectPage={onSelectPage} />
     case 'overview':
-      return <CompassJeffMvpOverview onSelectPage={onSelectPage} />
+      return <CompassRefinedOverview onSelectPage={onSelectPage} />
     case 'practice':
-      return <CompassJeffMvpPractice onSelectPage={onSelectPage} />
+      return <CompassRefinedPractice onSelectPage={onSelectPage} />
     case 'prep-review':
-      return <CompassJeffMvpPrep />
+      return <CompassRefinedPrep />
     case 'study-planner':
-      return <CompassJeffMvpPlanner />
+      return <CompassRefinedPlanner />
     case 'flashcards':
-      return <CompassJeffMvpFlashcards onSelectPage={onSelectPage} />
+      return <CompassRefinedFlashcards onSelectPage={onSelectPage} />
     case 'exam-simulator':
-      return <CompassJeffMvpSimulator onSelectPage={onSelectPage} />
+      return <CompassRefinedSimulator onSelectPage={onSelectPage} />
     case 'flashcard-topic':
-      return <CompassJeffMvpFlashcardTopic onSelectPage={onSelectPage} />
+      return <CompassRefinedFlashcardTopic onSelectPage={onSelectPage} />
     case 'practice-session':
-      return <CompassJeffMvpQuestionSet onSelectPage={onSelectPage} />
+      return <CompassRefinedQuestionSet onSelectPage={onSelectPage} />
     case 'flashcard-study':
-      return <CompassJeffMvpCardStudy onSelectPage={onSelectPage} />
+      return <CompassRefinedCardStudy onSelectPage={onSelectPage} />
     default:
-      return <CompassJeffMvpPending page={page} />
+      return <CompassRefinedPending page={page} />
   }
 }

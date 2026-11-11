@@ -11,9 +11,14 @@ import type { JeffMvpPage } from '@/data/compassJeffMvpFixtures'
  * versions would have stopped being two versions on the first change. This
  * map is what makes each page independently forkable.
  *
- * ⚠ EVERY ENTRY STARTS AT `jeff`, and that is the point of landing it on its
- * own: nothing moves on screen the day the shell arrives. A page becomes
- * Refined's when there is a reason, not in advance.
+ * ⚠ EVERY ENTRY STARTED AT `jeff` when this map landed, so that the shell
+ * itself moved nothing. They are nearly all `refined` now, and the reason is
+ * worth keeping: Jillienne's first instruction for Refined was a change to
+ * the page HEADER on every page — the course name as an eyebrow, the two
+ * pills gone, the access date beside it — and nine of his pages draw their
+ * header from one component. "On every page" is not a lazy fork; it is this
+ * one. The lesson is the only slot still his, because it is a takeover that
+ * draws no header.
  *
  * HOW TO FORK ONE — the project's own rule (CLAUDE.md step 2, `CourseContentV2`
  * is the worked example), applied here:
@@ -76,23 +81,30 @@ export type RefinedSource = 'jeff' | 'anjani' | 'refined'
 export type RefinedSlot = JeffMvpPage | 'rail'
 
 export const REFINED_PAGE_SOURCE: Record<RefinedSlot, RefinedSource> = {
-  rail: 'jeff',
-  overview: 'jeff',
-  learn: 'jeff',
-  'study-planner': 'jeff',
-  'prep-review': 'jeff',
-  practice: 'jeff',
-  flashcards: 'jeff',
-  'exam-simulator': 'jeff',
-  /* The one page that is already Refined's — `CompassReadinessRefined`,
-     2026-11-09, his page rebuilt against Nina Conrad's "Compass Rapid
-     Insights: Your Exam Prep". It is what every other row is heading for. */
+  rail: 'refined',
+  overview: 'refined',
+  learn: 'refined',
+  'study-planner': 'refined',
+  'prep-review': 'refined',
+  practice: 'refined',
+  flashcards: 'refined',
+  'exam-simulator': 'refined',
+  /* ⚠ READINESS IS THE ONE PAGE THAT WAS REFINED BEFORE THE FORK —
+     `CompassReadinessRefined`, 2026-11-09, rebuilt against Nina Conrad's
+     "Compass Rapid Insights: Your Exam Prep". Every other slot below says
+     `refined` because Refined's HEADER changed on 2026-11-10 and nine pages
+     draw their header from one component; this one says it because the page
+     itself is a different design. */
   readiness: 'refined',
+  /* ⚠ THE LESSON IS STILL HIS, and is the one slot that is. `CompassJeffCourse`
+     is a full-window takeover with its own stylesheet and no `cjm-` class in
+     it, so the header rule that forked everything else does not reach it. It
+     forks when somebody refines the lesson. */
   course: 'jeff',
-  'practice-session': 'jeff',
-  'flashcard-topic': 'jeff',
-  'flashcard-study': 'jeff',
-  'exam-session': 'jeff',
+  'practice-session': 'refined',
+  'flashcard-topic': 'refined',
+  'flashcard-study': 'refined',
+  'exam-session': 'refined',
 }
 
 /** Reading the map, with a named fallback rather than an `undefined` that
