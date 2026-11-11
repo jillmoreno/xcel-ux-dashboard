@@ -229,7 +229,12 @@ export function CompassRefinedJourney({
           about the data or the stage fixtures changed, so restoring it is
           putting the JSX back, not rebuilding it. */}
 
-      <p className="crf-rd-gate">{m.gate}</p>
+      {/* ⚠ THE GATE LINE IS UNWIRED — 2026-11-11, "remove". It read
+          "Lessons open in order. Exam Prep and Readiness open after your
+          certificate. Nothing on this page grades you during the course." —
+          three rules in one sentence, closing a page that no longer carries
+          the table those rules were written over. `m.gate` is untouched in
+          every stage fixture, so it comes back with one line. */}
     </div>
   )
 }

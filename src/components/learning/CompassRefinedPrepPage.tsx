@@ -187,7 +187,7 @@ export function CompassRefinedPrepPage({ stage = 'p2' }: { stage?: string }) {
         )}
       </section>
 
-      <p className="crf-rd-gate">{m.gate}</p>
+      {/* The gate line is unwired here too — see `CompassRefinedJourney`. */}
     </div>
   )
 }
