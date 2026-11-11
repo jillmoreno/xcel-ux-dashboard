@@ -908,10 +908,18 @@
   border: 1px solid var(--rd-steel-edge);
   border-radius: 14px;
   overflow: hidden;
-  /* ⚠ A SHADE DEEPER THAN `--rd-steel-wash` ALONE. That token is #f5f8fb and
-     measured as white against this page's own off-white ground, so the card
-     read as untinted where the reference card reads as tinted. */
-  background: color-mix(in srgb, var(--rd-steel-edge) 22%, var(--rd-steel-wash));
+  /* ⚠ NO GROUND OF ITS OWN — 2026-11-11, "have the course progress side be
+     more of a beige color background and the your next step remains light
+     blue". The halves carry their own now, so a card colour here would show
+     only in the 1px the border covers.
+
+     ⚠ THE BEIGE RAMP IS HERS, given as hex with the ask: 100 #f3f1ed,
+     200 #e7e3db, 300 #dbd6c9. It is NOT in `tokens.css` — adding a brand
+     neutral ramp to the system is a bigger decision than one card's ground,
+     so it lives here until somebody makes it. */
+  --crf-beige-100: #f3f1ed;
+  --crf-beige-200: #e7e3db;
+  --crf-beige-300: #dbd6c9;
 }
 /* ⚠ ONE HALF ONLY, AND THE GRID COLLAPSES. Early states carry no hero and the
    prep series carries no QE ring; a fixed two-column grid would leave an
@@ -932,12 +940,21 @@
   gap: 14px;
   padding: 22px 26px 22px;
   text-align: left;
+  /* Where the learner HAS GOT TO — the warm half. */
+  background: var(--crf-beige-100);
 }
+/* ⚠ TOP-ALIGNED, NOT CENTRED — 2026-11-11, "should be horizontally aligned
+   with the Course Progress eyebrow". Centring floated this half against the
+   taller one, so its eyebrow sat below the other and the two halves looked
+   like two unrelated blocks rather than one row. Same padding as the left, so
+   the two eyebrows share a line. */
 .crf-rd .crf-focus__next {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   padding: 22px 26px 22px;
   min-width: 0;
+  /* What to do NEXT — the cool half, as it was. */
+  background: color-mix(in srgb, var(--rd-steel-edge) 22%, var(--rd-steel-wash));
 }
 /* ⚠ NO NESTED CARD — 2026-11-11. It was a white panel with its own accent
    edge sitting inside the card; on the hero's tinted ground that is a box in
@@ -998,11 +1015,15 @@
   align-items: center;
   line-height: 1.1;
 }
-/* ⚠ NOT SERIF, THOUGH THE CARD SHE POINTED AT SETS ITS "0%" IN PLAYFAIR.
-   That figure is 26px, and the rule of 2026-11-10 is that anything below 32px
-   is Open Sans — the old card predates it. Matching it here would reopen the
-   decision on one number. Flagged rather than silently done either way. */
+/* ⚠ PLAYFAIR, AND IT IS A DELIBERATE EXCEPTION TO THE 32px RULE — 2026-11-11,
+   Jillienne on this figure: "this should be the playfair font." It renders at
+   30px, under the line drawn on 2026-11-10 ("anything below 32 px should be
+   open sans"). The rule was about HEADINGS picking the display face up by
+   accident; this is the one number the widget exists to show, and she asked
+   for it by name after seeing it set in Open Sans. The exception is named
+   here so the next person to apply the rule does not quietly undo it. */
 .crf-rd .crf-focus__ringnum b {
+  font-family: var(--font-heading-serif), Georgia, serif;
   font-size: 30px;
   font-weight: 700;
   color: var(--rd-ink);
@@ -1119,18 +1140,18 @@
 
 /* ---------- 1 · SPLIT — a vertical rule, two peers on one ground ---------- */
 .crf-rd .crf-focus--split .crf-focus__next {
-  border-left: 1px solid var(--rd-steel-edge);
+  border-left: 1px solid var(--crf-beige-300);
 }
 
 /* ---------- 2 · PANEL — the ground does the separating ----------
    State and action are different kinds of thing; a tinted left bay says so
    without drawing a line through the card. */
-/* ⚠ `panel` NOW DEEPENS THE LEFT BAY rather than tinting it — the whole card
-   is tinted since it took the hero's ground, so a tint on one half is no
-   longer a difference. */
+/* ⚠ `panel` DEEPENS THE BEIGE a step, now that the two halves already differ
+   by ground. Its original difference — tinting one half — became the default
+   with the beige, so what is left is how FAR apart the two grounds sit. */
 .crf-rd .crf-focus--panel .crf-focus__prog {
-  background: color-mix(in srgb, var(--rd-steel-edge) 28%, var(--rd-steel-wash));
-  border-right: 1px solid var(--rd-steel-edge);
+  background: var(--crf-beige-200);
+  border-right: 1px solid var(--crf-beige-300);
 }
 
 /* ---------- 3 · FIGURES — Atlas's labelled rows, ring beside them ----------
