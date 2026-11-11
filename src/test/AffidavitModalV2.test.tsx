@@ -343,6 +343,11 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
   })
 
   it('Colorado and Connecticut after the exam: no signature or exam-monitor headings, no date hint', () => {
+    // Wisconsin's exam-monitor heading went too (2026-11-11): the amber banner says it.
+    expect(JSON.stringify(FORMS.WI_POST).toLowerCase()).not.toContain('to be completed and signed by exam monitor')
+    // And West Virginia's "TO BE COMPLETED BY THE PROCTOR", the same day and for the same reason.
+    expect(JSON.stringify(FORMS.WV_POST).toLowerCase()).not.toContain('to be completed by the proctor')
+    expect(JSON.stringify(FORMS.WV_POST).toLowerCase()).not.toContain('to be completed by the student')
     for (const key of ['CO_POST', 'CT_POST']) {
       const text = JSON.stringify(FORMS[key])
       expect(text, key).not.toContain('Student Signature:')

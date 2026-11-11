@@ -746,14 +746,16 @@ FORMS.WV_POST={
   agreeLabel:'Attest',
   source:'Word doc · WV PE-Post Final Affidavit',
   pages:[
-    {who:'student',blocks:[{h:'TO BE COMPLETED BY THE STUDENT'}],fields:[
+    /* The "TO BE COMPLETED BY THE STUDENT" heading is gone (2026-11-11, Afsana): the cyan banner above says it. */
+    {who:'student',blocks:[],fields:[
       {block:{p:'I declare that I completed the exam with no assistance from any person(s), course material, or any additional source of information. This exam will be proctored by an approved proctor who is an impartial, disinterested third party with no financial relationship to the student.'}},
       {block:{h4:'Student E-Signature:'}},
       /* One field, as the document has it (2026-11-04); it was First / Middle / Last / Suffix. */
       {id:'fullname',label:'Student Full Name',required:true,placeholder:'Type your full name',ac:'name'},
       FORMS.KY_PRE.fields[0]
     ]},
-    {who:'proctor',blocks:[{h:'TO BE COMPLETED BY THE PROCTOR'}],fields:[
+    /* The "TO BE COMPLETED BY THE PROCTOR" heading is gone (2026-11-11, Afsana): the amber banner above says it. */
+    {who:'proctor',blocks:[],fields:[
       {block:{p:'I certify that I am at least 18 years of age and a disinterested third party with no conflict of interest. A disinterest 3rd party is an individual with no family relationship or financial interest in the examinee\'s success on the exam. Co-work proctors must not be above or below in the student\'s line of supervision. I verified the identity of the student listed above on this form (i.e. valid photo id), and ensured that the exam was completed without outside assistance of any kind (i.e. human, study material, notes, computer, cell phone, etc.) and that I physically monitored the student throughout the entire exam process.'}},
       {id:'rel',type:'radio',label:'Relationship to Examinee',required:true,options:['Co-Worker (neither above or below the line of supervision)','Librarian','Licensed Agent']},
       {block:{h4:'Proctor E-Signature:'}},
@@ -784,7 +786,8 @@ FORMS.WI_POST={
       {id:'s_date',type:'date',label:"Today's Date",required:true},
       FORMS.KY_PRE.fields[0]
     ]},
-    {who:'proctor',blocks:[{h:'To be completed and signed by Exam Monitor'}],fields:[
+    /* The "To be completed and signed by Exam Monitor" heading is gone (2026-11-11, Afsana): the banner above says it, as on CO and CT. */
+    {who:'proctor',blocks:[],fields:[
       {id:'p_addr',label:'Proctor Full Address',required:true,placeholder:'Street, city, state, ZIP',ac:'street-address'},
       {id:'p_phone',type:'tel',label:'Phone Number',required:true,placeholder:'(555) 000-0000',ac:'tel'},
       {block:{p:'I declare that I personally observed the above-named individual during the completion of this examination and also observed that the candidate received no outside assistance in completing the examination. I attest that as an approved proctor I am an impartial disinterested third party or currently licensed agent with no family or financial relationship to the student per section Ins. 26.09 (3), Wis. Adm. Code.'}},
