@@ -360,7 +360,7 @@ export function AtlasHomeJillMain({
      still a second copy of every figure on the card. */
   const phoneFrame = useFeatureFlag('home-breakpoint').variant === 'mobile'
   // Above the card or in it — the design bar's Course tabs (2026-11-10, Eric).
-  const coursePlace = useFeatureFlag('atlas-course-tabs-place').variant ?? 'above'
+  const coursePlace = useFeatureFlag('atlas-course-tabs-place').variant ?? 'off'
   const coursePickerAbove = coursePlace === 'above'
   const SHOW_COURSE_BOXES = coursePickerAbove
   // Off (same day, Eric): neither the boxes nor the tabs.
