@@ -269,12 +269,15 @@ export const REFINED_RUBI_INTRO = {
    *  because a demo persona without a first name is a state this has to
    *  survive. */
   title: (firstName?: string) => (firstName ? `Hi ${firstName}, I'm Rubi` : "Hi, I'm Rubi"),
-  /** ⚠ HER OFFER, THEN HER LIMITS — 2026-11-11, hers verbatim. The previous
-   *  line opened with what she can do and closed with "you can pause my
-   *  offers any time", which reads as a disclaimer; this opens with why she
-   *  is there and closes on "you're always in control", which says the same
-   *  thing as reassurance. */
-  why: "I'm here to help make learning easier. Ask me to explain a term, share an example, or recap a lesson whenever you need. I'll check in with a quick welcome at the start of each session, but you're always in control.",
+  /** ⚠ HERS VERBATIM, AND THE THIRD DRAFT TODAY — 2026-11-11. Each one moved
+   *  the same sentence further from terms-of-service and closer to an
+   *  introduction: the port's line listed what she can do and closed "you can
+   *  pause my offers any time"; the second opened with why she is there and
+   *  closed "you're always in control"; this one drops the reassurance
+   *  entirely and says what she will DO unprompted — "pop in with helpful
+   *  tips and reminders". Naming the interruption is a better promise than
+   *  promising it can be stopped. */
+  why: "I'm here to make learning a little easier. Ask me to explain a concept, share an example, or recap a lesson whenever you need. I'll also pop in with helpful tips and reminders as you work through your learning.",
   cta: 'Talk with Rubi',
   dismiss: 'Not now',
   /** ⚠ UNUSED SINCE 2026-11-11, "remove this". It was the toast's navy
