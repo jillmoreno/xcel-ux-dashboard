@@ -4648,6 +4648,17 @@ the Design bar, which is Jill's file, so for now they are dropped.
     one resident licence (the state you live in), plus one non-resident
     licence for every other state you are licensed to sell in. This field is
     the state License #, not the NPN.
+- **The Student Certification Statement ends the student's page (2026-11-11,
+  Afsana: "to streamline UX").** On CO, CT, WV and WI after the exam it was a
+  third page of its own, which sent the student back after the exam
+  monitor's page with nothing to fill in. It now follows the student's last
+  field, and "I confirm that the above information is accurate" moves below
+  it as the page's last row; each form
+  is two pages: the student's, then the exam monitor's. Done by one pass
+  after `WI_POST` in `affidavitForms.ts`; the forms' own `pages` still read
+  as the Word docs have them. ⚠ WV's and WI's statement says "By clicking
+  the button below" — on the student's page that button is Next, not
+  Attest. Compliance's wording, left verbatim.
 - **Quick-fill: click the top of the modal (2026-11-11, Afsana).** A click
   anywhere on the header (the title row, not the ✕) fills every required
   field still empty with a sample answer — Jordan Lee Navarro for the

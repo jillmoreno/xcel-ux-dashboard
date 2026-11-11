@@ -821,6 +821,30 @@ FORMS.WI_POST={
   note:'Same three-part structure as WV (student, exam monitor, certification statement). The button reads "Attest". Student Full Name becomes the First/Middle/Last/Suffix rows; the doc’s "check one" relationship becomes radio buttons. Unlike WV, the proctor also gives an address and phone number, and the options include Neighbor instead of Licensed Agent. The "I confirm that the above information is accurate" checkbox (highlighted in red) ends the student section. The name fields are the e-signature, so they are not pre-filled.'
 };
 
+/* THE STUDENT CERTIFICATION STATEMENT JOINS THE STUDENT'S PAGE (2026-11-11,
+   Afsana: "to streamline UX"). On CO, CT, WV and WI after the exam it was a
+   third page of its own — the student came back to it after the exam
+   monitor's page, with nothing to fill in. It now ends the student's page,
+   after its last field, with the "I confirm …" box as the very last row,
+   and each form is two pages: the student's, then the
+   exam monitor's. The documents' order (and the notes above, which say
+   "three-part") describe the Word docs, not the modal. ⚠ WV's and WI's
+   wording says "By clicking the button below"; on the student's page the
+   button below is Next, not Attest — compliance's text, left verbatim. */
+for (const key of ['CO_POST', 'CT_POST', 'WV_POST', 'WI_POST']) {
+  const f = FORMS[key]!
+  const cert = f.pages[f.pages.length - 1]!
+  if (cert.who !== 'student' || cert.fields?.length) throw new Error(`${key}: expected a fieldless student page last`)
+  const fields = f.pages[0]!.fields!
+  fields.push(...(cert.blocks ?? []).map((b) => ({ block: b })))
+  /* "I confirm that the above information is accurate" is the last row,
+     below the statement (2026-11-11, Afsana). Moved within this page only;
+     the checkbox object itself is shared with other forms. */
+  const at = fields.findIndex((x) => x.id === 'agree')
+  if (at >= 0) fields.push(...fields.splice(at, 1))
+  f.pages.pop()
+}
+
 /* Before course begins: the confirm checkbox goes after the last student field (Today's Date), just above the
    Compliance Manager signature. Done here, after every form has grabbed KY_PRE.fields[0..2] by index. NV shares this array.
    (The explorer's own fix-up, kept as it is.) */

@@ -729,22 +729,23 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(css).toMatch(/\.aff2-banner\.is-student \{[^}]*--color-aff-banner-student\)/)
   })
 
-  it('puts the banner only on the student page that has the signature — not Colorado’s certification statement', async () => {
-    render(<AffidavitModalV2 onClose={() => {}} moment="post" state="CO" />)
-    // Colorado has no Link out, so it pages; walk to the third page.
+  /* 2026-11-11, Afsana: the Student Certification Statement is no longer a
+     third page of its own — it ends the student's page, after the last
+     field, so the form is two pages: the student's, then the exam monitor's. */
+  it.each(['CO', 'CT', 'WV', 'WI'])('%s after the exam: the certification statement ends the student’s page, two pages in all', (state) => {
+    const f = FORMS[`${state}_POST`]!
+    expect(f.pages.map((p) => p.who)).toEqual(['student', 'proctor'])
+    const fields = f.pages[0]!.fields!
+    const at = fields.findIndex((x) => x.block?.h === 'Student Certification Statement:')
+    expect(at).toBeGreaterThan(0)
+    // After every field but one: the statement's paragraph, then "I confirm …" as the last row.
+    expect(fields.slice(at + 1, -1).every((x) => x.block)).toBe(true)
+    expect(fields[fields.length - 1]!.id).toBe('agree')
+
+    render(<AffidavitModalV2 onClose={() => {}} moment="post" state={state} />)
+    expect(document.querySelectorAll('.aff2-prog i')).toHaveLength(2)
     expect(bannerBody(screen.getByRole('note'))).toBe('Must be completed and signed by the student')
-    fireEvent.change(screen.getAllByLabelText(/^Signature/)[0]!, { target: { value: 'Jordan Navarro' } })
-    fireEvent.click(screen.getByLabelText(/I confirm that the above information is accurate/))
-    await ready()
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
-    for (const [id, v] of [['Address Line 1', '1 Main St'], ['City', 'Denver'], ['Zip', '80202'], ['First Name', 'Pat'], ['Last Name', 'Lee'], ['Signature', 'Pat Lee']])
-      fireEvent.change(screen.getByLabelText(new RegExp(`^${id}`)), { target: { value: v } })
-    fireEvent.change(screen.getByLabelText(/^State/), { target: { value: 'CO' } })
-    fireEvent.click(screen.getByLabelText(/^Librarian/))
-    await ready()
-    fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     expect(screen.getByText('Student Certification Statement:')).toBeTruthy()
-    expect(screen.queryByRole('note')).toBeNull() // nothing to sign here, so no banner (2026-11-11)
   })
 
   /* PENNSYLVANIA (2026-11-06), from the compliance sheet. Not in the PRD —
