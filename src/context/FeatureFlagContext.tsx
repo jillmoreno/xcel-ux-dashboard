@@ -1760,6 +1760,37 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-overview-focus-swap',
+    /* WHICH SIDE EACH HALF SITS ON — 2026-11-11: "make a variant of this
+       component, that can be toggled in the design tools, where the 2
+       sections are swapped."
+
+       ⚠ ITS OWN TOGGLE, NOT A FOURTH ARM of `compass-overview-focus`. Which
+       half leads and what separates the halves are different questions: as an
+       arm you could not see `panel` swapped, and the three arrangements would
+       become six names for two decisions. On/off against the arm gives all
+       six combinations and still reads as one question each.
+
+       ⚠ OFF IS PROGRESS-FIRST, because that is what the card was asked for on
+       the day it was built ("Course Progress on the left, and the Your Next
+       Step on the right"). The arm is the question; the baseline is not.
+
+       ⚠ IT IS A LAYOUT SWAP, NOT A CONTENT ONE. The same two halves draw
+       either way round — only the column they occupy changes, and the divider
+       goes with them. Nothing is re-styled for its new side, which is what
+       makes the comparison about position alone. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined'],
+    group: 'Widgets',
+    label: 'Swap the halves',
+    description:
+      'Puts Your Next Step on the left and Course Progress on the right, which is the reverse of how the card was first asked for. A toggle rather than a fourth arrangement, so it combines with any of the three \u2014 the arrangement decides what SEPARATES the halves, this decides which one leads. The wider bay follows the progress half whichever side it is on.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-refined-readiness-hero',
     /* THE READINESS TO PASS SECTION, on the Refined page — 2026-11-09,
        Jillienne: "Add a feature flag concept that focuses on the Readiness to

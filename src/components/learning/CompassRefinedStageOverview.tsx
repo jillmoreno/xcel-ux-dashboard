@@ -16,12 +16,15 @@ import './compassRefinedJourney.css'
 export function CompassRefinedStageOverview({
   stage = 'p2',
   layout,
+  swap,
 }: {
   stage?: string
   /** `compass-overview-focus`, for the course series' merged card. */
   layout?: FocusLayout
+  /** `compass-overview-focus-swap`. */
+  swap?: boolean
 }) {
   const series = seriesOf(stage)
   if (series === 'prep') return <CompassRefinedPrepPage stage={stage} />
-  return <CompassRefinedJourney stage={stage} layout={layout} />
+  return <CompassRefinedJourney stage={stage} layout={layout} swap={swap} />
 }

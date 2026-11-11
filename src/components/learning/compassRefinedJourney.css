@@ -1427,3 +1427,35 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+/* ---------- the halves swapped, 2026-11-11 ----------
+   "make a variant of this component, that can be toggled in the design tools,
+   where the 2 sections are swapped."
+
+   ⚠ ORDER AND COLUMNS BOTH, or only one of them moves. `order` puts Your Next
+   Step first; the template has to flip with it, or the wider bay stays on the
+   left and the progress half arrives into a column sized for the other one.
+
+   ⚠ AND THE DIVIDER FOLLOWS. On `split` it is a left border on the next-step
+   half; swapped, that half is the first thing on the row and its left border
+   would draw down the card's own edge. It moves to the progress half, which
+   is now the second. */
+.crf-rd .crf-focus--swap {
+  grid-template-columns: minmax(280px, 1fr) minmax(0, 1.35fr);
+}
+.crf-rd .crf-focus--swap .crf-focus__next {
+  order: 1;
+}
+.crf-rd .crf-focus--swap .crf-focus__prog {
+  order: 2;
+}
+.crf-rd .crf-focus--split.crf-focus--swap .crf-focus__next {
+  border-left: 0;
+}
+.crf-rd .crf-focus--split.crf-focus--swap .crf-focus__prog {
+  border-left: 1px solid var(--color-border-subtle);
+}
+.crf-rd .crf-focus--panel.crf-focus--swap .crf-focus__prog {
+  border-right: 0;
+  border-left: 1px solid var(--crf-beige-300);
+}

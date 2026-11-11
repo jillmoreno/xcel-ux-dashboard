@@ -39,12 +39,15 @@ import './compassRefinedJourney.css'
 export function CompassRefinedJourney({
   stage = 'u3',
   layout = 'split',
+  swap = false,
 }: {
   stage?: string
   /** `compass-overview-focus` — which of the three arrangements of Course
    *  Progress and Your Next Step draws. Passed in, so this stays a plain
    *  function of its props. */
   layout?: FocusLayout
+  /** `compass-overview-focus-swap`. */
+  swap?: boolean
 }) {
   const m = journeyStage(stage)
   const [tab, setTab] = useState(0)
@@ -134,6 +137,7 @@ export function CompassRefinedJourney({
             hero={m.hero?.title ? m.hero : undefined}
             prog={m.prog}
             layout={layout}
+            swap={swap}
           />
           {/* ⚠ THE FOUR REGULATED STEPS KEEP THEIR OWN BLOCK. Lessons,
               affidavit, final exam, survey-and-certificate — their ORDER is

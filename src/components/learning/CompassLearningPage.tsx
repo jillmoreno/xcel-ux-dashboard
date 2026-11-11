@@ -146,6 +146,7 @@ export function CompassLearningPage({
      Compass controls so every component below stays a plain function of its
      props. */
   const overviewFocus = useFeatureFlag('compass-overview-focus').variant as FocusLayout
+  const overviewFocusSwap = useFeatureFlag('compass-overview-focus-swap').enabled
   useDeclareDesignSurface(
     refined ? 'compass:refined' : jeffMvp ? 'compass:jeff-mvp' : (`compass:${page}` as DesignSurfaceId),
   )
@@ -223,6 +224,7 @@ export function CompassLearningPage({
             readinessHero={refinedHero}
             stage={readinessStage}
             focus={overviewFocus}
+            focusSwap={overviewFocusSwap}
           />
         ) : (
           <CompassJeffMvpShell page={jeffPage} onSelectPage={setJeffPage} />

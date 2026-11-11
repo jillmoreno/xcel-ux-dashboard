@@ -122,6 +122,7 @@ const REBRAND_FLAGS = [
   // The Overview's merged Progress + Next step card (2026-11-11) — three
   // arrangements, flipped from the bar while the shape is being decided.
   'compass-overview-focus',
+  'compass-overview-focus-swap',
   'compass-refined-readiness-hero',
   'compass-planner-rubi',
   'compass-planner-return',

@@ -61,6 +61,7 @@ export function CompassRefinedShell({
   readinessHero,
   stage,
   focus,
+  focusSwap,
 }: {
   page: JeffMvpPage
   onSelectPage: (p: JeffMvpPage) => void
@@ -72,6 +73,8 @@ export function CompassRefinedShell({
   stage?: string
   /** `compass-overview-focus` — the Overview's merged Progress/Next card. */
   focus?: FocusLayout
+  /** `compass-overview-focus-swap` — which half leads. */
+  focusSwap?: boolean
 }) {
   /* ⚠ THE TWO TAKEOVERS ARE HIS DECISIONS AND ARE READ FIRST, before the rail
      is drawn — the simulated exam is imitating a Pearson VUE test centre and
@@ -102,6 +105,7 @@ export function CompassRefinedShell({
         readinessHero={readinessHero}
         stage={stage}
         focus={focus}
+        focusSwap={focusSwap}
       />
     </div>
   )
@@ -121,6 +125,7 @@ function RefinedPage({
   readinessHero,
   stage,
   focus,
+  focusSwap,
 }: {
   page: JeffMvpPage
   onSelectPage: (p: JeffMvpPage) => void
@@ -129,6 +134,7 @@ function RefinedPage({
    *  Overview draws. Read by `CompassLearningPage` and passed down. */
   stage?: string
   focus?: FocusLayout
+  focusSwap?: boolean
 }) {
   const source = refinedSourceFor(page)
 
@@ -158,7 +164,7 @@ function RefinedPage({
          doing what it was built for — one page of Refined answering to a
          different component. `CompassRefinedOverview` is kept unreferenced,
          by the archive convention, so going back is a one-line change. */
-      return <CompassRefinedStageOverview stage={stage} layout={focus} />
+      return <CompassRefinedStageOverview stage={stage} layout={focus} swap={focusSwap} />
     case 'practice':
       return <CompassRefinedPractice onSelectPage={onSelectPage} />
     case 'prep-review':
