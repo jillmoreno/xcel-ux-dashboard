@@ -1155,12 +1155,30 @@
   text-transform: uppercase;
   color: var(--rd-muted);
 }
+/* ⚠ PLAYFAIR, AND THE SECOND NAMED EXCEPTION TO THE 32px RULE — 2026-11-11:
+   "have this be playfair font, same color as the main title of the page." It
+   renders at 15px, well under the line drawn on 2026-11-10; the ring figure
+   was the first exception, an hour earlier.
+
+   Both were asked for by name after being seen set in Open Sans, which is
+   what the rule is for — it stops headings picking the display face up by
+   ACCIDENT, and neither of these did. Worth restating the rule as "Open Sans
+   below 32px unless named" rather than leaving it absolute with two holes in
+   it; the test's allow-list is where that would live.
+
+   ⚠ AND THE COLOUR DID NOT ALREADY MATCH, though it looked as though it
+   should: `.crf-rd` sets `--rd-ink` (#1f1d18) and this took it, but the page
+   title computes to #3a3a3a — `--color-text-primary`, inherited from above
+   the Compass page rather than from the block it sits in. Two inks a shade
+   apart on one screen, which is exactly the kind of difference nobody sees
+   and everybody feels. Measured both; this now reads the title's. */
 .crf-rd .crf-focus__lessonname {
   margin: 0 0 3px;
-  font-size: 15px;
-  font-weight: 700;
+  font-family: var(--font-heading-serif), Georgia, serif;
+  font-size: 17px;
+  font-weight: 600;
   line-height: 1.3;
-  color: var(--rd-ink);
+  color: var(--color-text-primary);
 }
 .crf-rd .crf-focus__lessonname svg {
   color: var(--rd-rubi);
