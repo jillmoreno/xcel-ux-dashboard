@@ -327,7 +327,7 @@ FORMS.NV_PRE={
   ],
   fields:[
     base[1], base[2], pick('addr1'), pick('addr2'), pick('city'), pick('state'), pick('zip'), pick('phone'),
-    {id:'dob',type:'date',label:'Full Date of Birth',required:true,ac:'bday'},
+    {id:'dob',type:'date',label:'Date of Birth',required:true,ac:'bday'},
     {id:'gender',type:'select',label:'Gender',required:true,placeholder:'Select gender',options:['M','F']},
     {id:'veteran',type:'select',label:'Veteran',required:true,placeholder:'Select',options:['Y','N']},
     {id:'county',type:'select',label:'County of Oregon you reside in',required:true,placeholder:'Select county',options:counties},

@@ -475,6 +475,18 @@ describe('AffidavitModalV2 — the explorer’s forms', () => {
     expect(formFields(key).map((x) => norm(x.label))).toEqual(STATE_DOCUMENT_FIELDS[key])
   })
 
+  /* 2026-11-11, Afsana: one label for a date of birth, whatever the document
+     calls it — Oregon's said "Full Date of Birth". */
+  it('labels every date of birth "Date of Birth"', () => {
+    const dobs = Object.keys(FORMS).flatMap((key) =>
+      formFields(key)
+        .filter((x) => x.id === 'dob' || x.ac === 'bday' || /birth/i.test(x.label ?? ''))
+        .map((x) => `${key}: ${x.label}`),
+    )
+    expect(dobs.length).toBeGreaterThan(0)
+    for (const d of dobs) expect(d).toMatch(/: Date of Birth$/)
+  })
+
   /* ONE WAY TO SIGN (2026-11-06, after the Nov 5 review): every form with a
      signature line or label shows the same block, whatever the document
      calls it. */
