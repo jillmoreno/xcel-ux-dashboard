@@ -8,6 +8,7 @@ import { useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, FIELD_LABEL, HEADING, INPUT, PILL } from './adminStyles'
 import { downloadCsv } from './csv'
 import { EnterpriseHeader } from './enterpriseUi'
+import { SortHeader, useTableSort } from './tableSort'
 
 /**
  * ATLAS ADMIN — COMPLIANCE REPORT (2026-10-20). The reference's
@@ -70,6 +71,13 @@ export function AtlasAdminCompliancePage() {
         (!q || `${p.name} ${p.license}`.toLowerCase().includes(q)),
     )
   }, [producers, filter, line, dept, manager, state, query])
+  // Sortable from its headers (2026-11-10, Eric) — see tableSort.tsx.
+  const { sorted, sort, cycle, headerProps } = useTableSort(
+    rows,
+    (p, key) =>
+      key === 'Status' ? CE_STATUS_LABEL[p.status] : key === 'Name' ? p.name : key === 'License' ? p.license : key === 'Hours' ? p.hoursDone / p.hoursRequired : p.deadlineDays,
+    ['Hours', 'Deadline'],
+  )
   const owing = producers.filter((p) => p.status !== 'compliant' && p.status !== 'review')
 
   const remind = (ps: Producer[]) => {
@@ -180,14 +188,18 @@ export function AtlasAdminCompliancePage() {
             <thead>
               <tr>
                 {['Status', 'Name', 'License', 'Hours', 'Deadline', ''].map((h) => (
-                  <th key={h} style={TH}>
-                    {h}
+                  <th key={h} style={TH} {...(h ? headerProps(h) : {})}>
+                    {h ? (
+                      <SortHeader sortKey={h} sort={sort} onSort={cycle}>
+                        {h}
+                      </SortHeader>
+                    ) : null}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {rows.slice(0, shown).map((p) => {
+              {sorted.slice(0, shown).map((p) => {
                 const pct = Math.round((100 * p.hoursDone) / p.hoursRequired)
                 return (
                   <tr key={p.id} style={{ borderTop: '1px solid var(--admin-rule)' }}>

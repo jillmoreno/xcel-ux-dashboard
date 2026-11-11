@@ -5,6 +5,7 @@ import { ChartSimple, CircleCheck, Clock, CircleXmarkThin, TriangleExclamation, 
 import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { BUTTON_OUTLINE, CARD, EYEBROW, HEADING, PILL } from './adminStyles'
 import { EnterpriseHeader, StatTile } from './enterpriseUi'
+import { SortHeader, useTableSort, type SortValue } from './tableSort'
 
 /**
  * ATLAS ADMIN — PASS RATE & EARLY RISK (2026-10-20). The reference's
@@ -43,6 +44,36 @@ export function AtlasAdminPassRatePage() {
         .filter((r): r is Risk => r !== null)
         .sort((a, b) => (a.priority === b.priority ? b.learner.lastActiveDays - a.learner.lastActiveDays : a.priority === 'high' ? -1 : 1)),
     [learners, now],
+  )
+
+  // Sortable from its headers (2026-11-10, Eric) — see tableSort.tsx.
+  const cohortSort = useTableSort(
+    PASS_COHORTS,
+    (c, key): SortValue =>
+      key === 'Cohort' ? c.cohort
+      : key === 'Program' ? c.program
+      : key === 'Total learners' ? c.total
+      : key === 'Passed' ? c.passed
+      : key === 'Failed' ? c.failed
+      : key === 'Pending' ? c.pending
+      : key === 'Pass rate' ? rate(c.passed, c.failed)
+      : key === 'Avg attempts' ? c.attempts
+      : key === 'Avg time' ? c.weeks
+      : null,
+    ['Total learners', 'Passed', 'Failed', 'Pending', 'Pass rate', 'Avg attempts', 'Avg time'],
+  )
+  // Sortable from its headers (2026-11-10, Eric) — see tableSort.tsx.
+  const riskSort = useTableSort(
+    candidates,
+    (r, key): SortValue =>
+      key === 'Priority' ? (r.priority === 'high' ? 2 : 1)
+      : key === 'Learner' ? r.learner.name
+      : key === 'Program' ? r.learner.course
+      : key === 'Tags' ? r.tags.join(', ')
+      : key === 'Suggested action' ? r.action
+      : key === 'Last contact' ? (contacted[r.learner.id] ? Date.parse(`${contacted[r.learner.id]}, ${new Date(now).getFullYear()}`) : null)
+      : null,
+    ['Priority', 'Last contact'],
   )
 
   const contact = (r: Risk) => {
@@ -116,14 +147,16 @@ export function AtlasAdminPassRatePage() {
               <thead style={{ background: 'var(--admin-fill-soft)' }}>
                 <tr>
                   {['Cohort', 'Program', 'Total learners', 'Passed', 'Failed', 'Pending', 'Pass rate', 'Avg attempts', 'Avg time'].map((h) => (
-                    <th key={h} style={TH}>
-                      {h}
+                    <th key={h} {...cohortSort.headerProps(h)} style={TH}>
+                      <SortHeader sortKey={h} sort={cohortSort.sort} onSort={cohortSort.cycle}>
+                        {h}
+                      </SortHeader>
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {PASS_COHORTS.map((c) => (
+                {cohortSort.sorted.map((c) => (
                   <tr key={c.cohort + c.program} style={{ borderTop: '1px solid var(--admin-rule)' }}>
                     <td style={{ ...TD, fontWeight: 600, color: 'var(--admin-ink)' }}>{c.cohort}</td>
                     <td style={{ ...TD, color: 'var(--admin-text)' }}>{c.program}</td>
@@ -156,14 +189,18 @@ export function AtlasAdminPassRatePage() {
                 <thead style={{ background: 'var(--admin-fill-soft)' }}>
                   <tr>
                     {['Priority', 'Learner', 'Program', 'Tags', 'Suggested action', 'Last contact', ''].map((h) => (
-                      <th key={h} style={TH}>
-                        {h}
+                      <th key={h} {...(h ? riskSort.headerProps(h) : {})} style={TH}>
+                        {h ? (
+                          <SortHeader sortKey={h} sort={riskSort.sort} onSort={riskSort.cycle}>
+                            {h}
+                          </SortHeader>
+                        ) : null}
                       </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {candidates.map((r) => (
+                  {riskSort.sorted.map((r) => (
                     <tr key={r.learner.id} style={{ borderTop: '1px solid var(--admin-rule)' }}>
                       <td style={TD}>
                         <span style={{ ...PILL, fontSize: 10, letterSpacing: '0.06em', ...(r.priority === 'high' ? { background: 'var(--admin-brand-tint)', color: 'var(--admin-brand)' } : { background: 'var(--admin-amber-tint)', color: 'var(--admin-amber)' }) }}>{r.priority.toUpperCase()}</span>

@@ -5,6 +5,7 @@ import { Download, MagnifyingGlass, Plus, Sparkles } from '@/icons'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, HEADING, INPUT, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
 import { parseRuleSentence } from './ruleDraft'
+import { SortHeader, useTableSort } from './tableSort'
 
 /**
  * ATLAS ADMIN — ASSIGNMENT RULES (2026-10-20). The reference's /assignments
@@ -27,6 +28,13 @@ export function AtlasAdminAssignmentsPage() {
   const visible = useMemo(
     () => rules.filter((r) => r.status === tab && (!query.trim() || r.name.toLowerCase().includes(query.trim().toLowerCase()))),
     [rules, tab, query],
+  )
+
+  // Sortable from its headers (2026-11-10, Eric) — see tableSort.tsx.
+  const { sorted, sort, cycle, headerProps } = useTableSort(
+    visible,
+    (r, key) => (key === 'Name' ? r.name : key === 'Start / due / end' ? r.schedule.start : key === 'Schedule' ? (r.processed ? 'Processed' : 'Pending') : key === 'Students' ? r.students : r.status),
+    ['Start / due / end', 'Students'],
   )
 
   const go = (path: string, state?: unknown) => navigate(`${ADMIN_BASE}/assignments${path}${window.location.search}`, { state })
@@ -124,14 +132,16 @@ export function AtlasAdminAssignmentsPage() {
             <thead style={{ background: 'var(--admin-fill-soft)' }}>
               <tr>
                 {['Name', 'Start / due / end', 'Schedule', 'Students', 'Status'].map((h) => (
-                  <th key={h} style={TH}>
-                    {h}
+                  <th key={h} style={TH} {...headerProps(h)}>
+                    <SortHeader sortKey={h} sort={sort} onSort={cycle}>
+                      {h}
+                    </SortHeader>
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {visible.slice(0, shown).map((r) => (
+              {sorted.slice(0, shown).map((r) => (
                 <tr
                   key={r.id}
                   className="cre-admin-row"

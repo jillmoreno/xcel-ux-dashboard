@@ -5,6 +5,7 @@ import { ArrowLeft, Download } from '@/icons'
 import { ADMIN_BASE, ADMIN_EMAIL, useAdminStore } from './adminStore'
 import { BUTTON_OUTLINE, CARD, EYEBROW, HEADING, INPUT, PILL } from './adminStyles'
 import { downloadCsv } from './csv'
+import { SortHeader, useTableSort } from './tableSort'
 
 /**
  * ATLAS ADMIN — INTERNAL (2026-10-20). The reference's /internal/* pages,
@@ -33,7 +34,13 @@ export function AtlasAdminPortalAnalyticsPage() {
   const { events } = useAdminStore()
   const [kind, setKind] = useState('all')
   const kinds = useMemo(() => [...new Set(events.map((e) => e.event))], [events])
-  const shown = events.filter((e) => kind === 'all' || e.event === kind)
+  const shown = useMemo(() => events.filter((e) => kind === 'all' || e.event === kind), [events, kind])
+  // Sortable from its headers (2026-11-10, Eric) — see tableSort.tsx.
+  const { sorted, sort, cycle, headerProps } = useTableSort(
+    shown,
+    (e, key) => (key === 'When' ? new Date(e.at) : key === 'Event' ? (EVENT_LABEL[e.event] ?? e.event) : key === 'Path' ? e.path.replace(ADMIN_BASE, '') || '/' : ADMIN_EMAIL),
+    ['When'],
+  )
   const pages = useMemo(() => {
     const counts = new Map<string, number>()
     events.filter((e) => e.event === 'page_view').forEach((e) => counts.set(e.path, (counts.get(e.path) ?? 0) + 1))
@@ -95,14 +102,16 @@ export function AtlasAdminPortalAnalyticsPage() {
           <thead style={{ background: 'var(--admin-fill-soft)' }}>
             <tr>
               {['When', 'Event', 'Path', 'User'].map((h) => (
-                <th key={h} style={TH}>
-                  {h}
+                <th key={h} style={TH} {...headerProps(h)}>
+                  <SortHeader sortKey={h} sort={sort} onSort={cycle}>
+                    {h}
+                  </SortHeader>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {shown.slice(0, 100).map((e) => (
+            {sorted.slice(0, 100).map((e) => (
               <tr key={e.id} style={{ borderTop: '1px solid var(--admin-rule)' }}>
                 <td style={{ ...TD, whiteSpace: 'nowrap', color: 'var(--admin-text)' }}>{new Date(e.at).toLocaleTimeString('en-US')}</td>
                 <td style={TD}>

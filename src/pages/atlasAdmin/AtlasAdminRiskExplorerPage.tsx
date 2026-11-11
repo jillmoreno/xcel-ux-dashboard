@@ -7,6 +7,7 @@ import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { BUTTON_OUTLINE, CARD, INPUT, PILL } from './adminStyles'
 import { downloadCsv } from './csv'
 import { EnterpriseHeader } from './enterpriseUi'
+import { SortHeader, useTableSort } from './tableSort'
 
 /**
  * ATLAS ADMIN — RISK EXPLORER (2026-10-20). The reference's
@@ -48,6 +49,23 @@ export function AtlasAdminRiskExplorerPage() {
   const cohorts = useMemo(() => [...new Set(risks.map((r) => cohortOf(r.learner, now)))], [risks, now])
   const counts = (Object.keys(RISK_LABEL) as RiskType[]).map((t) => [t, risks.filter((r) => r.type === t).length] as const)
   const shown = risks.filter((r) => (type === 'all' || r.type === type) && (cohort === 'all' || cohortOf(r.learner, now) === cohort) && (manager === 'all' || r.learner.team === manager))
+  // Sortable from its headers (2026-11-10, Eric) — see tableSort.tsx.
+  const { sorted, sort, cycle, headerProps } = useTableSort(
+    shown,
+    (r, key) => {
+      switch (key) {
+        case 'learner': return r.learner.name
+        case 'risk': return RISK_LABEL[r.type]
+        case 'reason': return r.reason
+        case 'program': return r.learner.course
+        case 'progress': return r.learner.contentPct ?? 0
+        case 'manager': return r.learner.team
+        case 'lastActivity': return -r.learner.lastActiveDays // most recent first
+        default: return null
+      }
+    },
+    ['progress', 'lastActivity'],
+  )
 
   const nudge = (r: Risk) => {
     addTouch({ learnerId: r.learner.id, kind: 'nudge', note: `Risk explorer: ${RISK_LABEL[r.type]}` })
@@ -103,15 +121,18 @@ export function AtlasAdminRiskExplorerPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead style={{ background: 'var(--admin-fill-soft)' }}>
               <tr>
-                {['Learner', 'Risk type', 'Reason', 'Program', 'Progress', 'Manager', 'Last activity', ''].map((h) => (
-                  <th key={h} style={TH}>
-                    {h}
+                {([['learner', 'Learner'], ['risk', 'Risk type'], ['reason', 'Reason'], ['program', 'Program'], ['progress', 'Progress'], ['manager', 'Manager'], ['lastActivity', 'Last activity']] as const).map(([k, h]) => (
+                  <th key={k} style={TH} {...headerProps(k)}>
+                    <SortHeader sortKey={k} sort={sort} onSort={cycle}>
+                      {h}
+                    </SortHeader>
                   </th>
                 ))}
+                <th style={TH} />
               </tr>
             </thead>
             <tbody>
-              {shown.map((r) => (
+              {sorted.map((r) => (
                 <tr key={r.learner.id} style={{ borderTop: '1px solid var(--admin-rule)' }}>
                   <td style={TD}>
                     <Link to={`${ADMIN_BASE}/students/recruit/${encodeURIComponent(r.learner.id)}${window.location.search}`} style={{ display: 'block', fontWeight: 600, color: 'var(--admin-ink)', textDecoration: 'none' }}>

@@ -4,6 +4,7 @@ import type { Learner } from '@/data/atlasAdmin/learners'
 import { Download, Play } from '@/icons'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { BUTTON_OUTLINE, CARD, EYEBROW, HEADING, INPUT } from './adminStyles'
+import { SortHeader, useTableSort } from './tableSort'
 
 /**
  * ATLAS ADMIN — VIDEO ENGAGEMENT (2026-10-20). The reference's
@@ -71,6 +72,13 @@ export function AtlasAdminVideoEngagementPage() {
     const picks = pool.length <= 5 ? pool : [0.05, 0.3, 0.5, 0.7, 0.92].map((f) => pool[Math.floor(f * (pool.length - 1))])
     return picks.map((l, i) => ({ learner: l, cells: cellsFor(l, i) }))
   }, [learners, period])
+
+  // Sortable from its headers (2026-11-10, Eric) — see tableSort.tsx.
+  const { sorted, sort, cycle, headerProps } = useTableSort(
+    rows,
+    (r, key) => (key === 'learner' ? r.learner.name : r.cells[VIDEOS.findIndex((x) => x.id === key)]?.pct ?? null),
+    VIDEOS.map((x) => x.id),
+  )
 
   const started = rows.flatMap((r) => r.cells).filter((c) => c.pct !== null)
   const teamAvg = started.length ? Math.round(started.reduce((n, c) => n + c.pct!, 0) / started.length) : 0
@@ -144,16 +152,22 @@ export function AtlasAdminVideoEngagementPage() {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr>
-              <th style={{ ...TH, textAlign: 'left' }}>Learner</th>
+              <th style={{ ...TH, textAlign: 'left' }} {...headerProps('learner')}>
+                <SortHeader sortKey="learner" sort={sort} onSort={cycle}>
+                  Learner
+                </SortHeader>
+              </th>
               {VIDEOS.map((x) => (
-                <th key={x.id} style={TH} title={x.title}>
-                  {x.short}
+                <th key={x.id} style={TH} title={x.title} {...headerProps(x.id)}>
+                  <SortHeader sortKey={x.id} sort={sort} onSort={cycle} align="center">
+                    {x.short}
+                  </SortHeader>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ learner: l, cells }) => (
+            {sorted.map(({ learner: l, cells }) => (
               <tr key={l.id} style={{ borderTop: '1px solid var(--admin-rule)' }}>
                 <td style={{ padding: '10px 16px' }}>
                   <Link to={`${ADMIN_BASE}/students/recruit/${encodeURIComponent(l.id)}${window.location.search}`} style={{ color: 'var(--admin-ink)', textDecoration: 'none' }}>

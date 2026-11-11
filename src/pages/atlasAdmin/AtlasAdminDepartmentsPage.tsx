@@ -4,10 +4,11 @@ import { ADMIN_DEPARTMENTS, ADMIN_USER } from '@/data/atlasAdmin/learners'
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, FIELD_LABEL, INPUT, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
+import { SortHeader, useTableSort } from './tableSort'
 
 /**
  * ATLAS ADMIN — DEPARTMENT COMPARISON (2026-10-20). The reference's
- * /reports/team-comparison: every department in one table, sortable, with
+ * /reports/team-comparison: every department in one table, sortable (the shared 3-click cycle, 2026-11-10), with
  * Export and Create a department. A row opens Students filtered to it.
  *
  * Every figure is counted off the store's roster, so it agrees with Students:
@@ -32,10 +33,10 @@ const COLUMNS: { key: SortKey; label: string; numeric: boolean }[] = [
 export function AtlasAdminDepartmentsPage() {
   const { learners, addedDepartments, addDepartment, showToast } = useAdminStore()
   const navigate = useNavigate()
-  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: 'pipeline', dir: -1 })
   const [creating, setCreating] = useState(false)
 
-  const rows = useMemo<Row[]>(() => {
+  // The table's own order — what the third click returns to: pipeline, highest first.
+  const departments = useMemo<Row[]>(() => {
     const named = [...ADMIN_DEPARTMENTS, ...addedDepartments.map((d) => d.name)]
     const leads = new Map<string, string>(addedDepartments.map((d) => [d.name, d.lead]))
     const all = named.map<Row>((name) => {
@@ -51,12 +52,16 @@ export function AtlasAdminDepartmentsPage() {
         yours: false,
       }
     })
-    const sorted = all.sort((a, b) => {
-      const av = a[sort.key]
-      const bv = b[sort.key]
-      const cmp = typeof av === 'number' && typeof bv === 'number' ? av - bv : String(av).localeCompare(String(bv))
-      return cmp * sort.dir || a.name.localeCompare(b.name)
-    })
+    return all.sort((a, b) => b.pipeline - a.pipeline || a.name.localeCompare(b.name))
+  }, [learners, addedDepartments])
+  // Sortable from its headers (2026-11-10, Eric) — see tableSort.tsx.
+  const { sorted, sort, cycle, headerProps } = useTableSort(
+    departments,
+    (r, key) => r[key as SortKey],
+    COLUMNS.filter((c) => c.numeric).map((c) => c.key),
+  )
+  // The admin's own department stays last, whatever the sort.
+  const rows = useMemo<Row[]>(() => {
     const own = learners.filter((l) => l.team === ADMIN_USER.department)
     return [
       ...sorted,
@@ -70,10 +75,7 @@ export function AtlasAdminDepartmentsPage() {
         yours: true,
       },
     ]
-  }, [learners, addedDepartments, sort])
-
-  const toggleSort = (key: SortKey) =>
-    setSort((s) => (s.key === key ? { key, dir: s.dir === 1 ? -1 : 1 } : { key, dir: COLUMNS.find((c) => c.key === key)!.numeric ? -1 : 1 }))
+  }, [learners, sorted])
 
   const open = (name: string) => navigate(`${ADMIN_BASE}/students?${withParam('department', name)}`)
 
@@ -113,19 +115,13 @@ export function AtlasAdminDepartmentsPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 15 }}>
             <thead style={{ background: 'var(--admin-fill-soft)' }}>
               <tr>
-                {COLUMNS.map((c) => {
-                  const on = sort.key === c.key
-                  return (
-                    <th key={c.key} aria-sort={on ? (sort.dir === 1 ? 'ascending' : 'descending') : 'none'} style={{ ...TH, textAlign: c.numeric ? 'right' : 'left' }}>
-                      <button type="button" onClick={() => toggleSort(c.key)} style={{ ...SORT_BUTTON, color: on ? 'var(--admin-ink)' : 'var(--admin-muted)' }}>
-                        {c.label}
-                        <span aria-hidden style={{ width: 10, opacity: on ? 1 : 0 }}>
-                          {sort.dir === 1 ? '↑' : '↓'}
-                        </span>
-                      </button>
-                    </th>
-                  )
-                })}
+                {COLUMNS.map((c) => (
+                  <th key={c.key} {...headerProps(c.key)} style={{ ...TH, textAlign: c.numeric ? 'right' : 'left' }}>
+                    <SortHeader sortKey={c.key} sort={sort} onSort={cycle} align={c.numeric ? 'right' : 'left'}>
+                      {c.label}
+                    </SortHeader>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -213,20 +209,15 @@ function withParam(key: string, value: string) {
 }
 
 const CRUMB: CSSProperties = { fontSize: 13, fontWeight: 600, color: 'var(--admin-muted)', textDecoration: 'none' }
-const TH: CSSProperties = { padding: '10px 16px', whiteSpace: 'nowrap' }
-const SORT_BUTTON: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 4,
-  padding: 0,
-  border: 'none',
-  background: 'none',
-  fontFamily: 'inherit',
+/* The header type the old sort buttons carried; `SortHeader` inherits it from the th. */
+const TH: CSSProperties = {
+  padding: '10px 16px',
+  whiteSpace: 'nowrap',
   fontSize: 12,
   fontWeight: 700,
   textTransform: 'uppercase',
   letterSpacing: '0.08em',
-  cursor: 'pointer',
+  color: 'var(--admin-muted)',
 }
 const TD: CSSProperties = { padding: '12px 16px' }
 const NUM: CSSProperties = { ...TD, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: 'var(--admin-ink)' }

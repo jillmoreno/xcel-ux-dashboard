@@ -6,6 +6,7 @@ import { useAdminStore } from './adminStore'
 import { BUTTON_BRAND, CARD, EYEBROW, HEADING, PILL } from './adminStyles'
 import { downloadCsv } from './csv'
 import { EnterpriseHeader } from './enterpriseUi'
+import { SortHeader, useTableSort } from './tableSort'
 
 /**
  * ATLAS ADMIN — PROOF & AUDIT (2026-10-20). The reference's
@@ -53,6 +54,14 @@ export function AtlasAdminAuditPage() {
         return { id: `${r.who}-${i}`, name: r.name, who: r.who, type: r.type, activity: date, completed: date, transcript: `TR-${date.slice(0, 4)}-${String(i + 1).padStart(4, '0')}`, credits: r.credits, status: r.status }
       })
   }, [learners, now])
+
+  // Sortable from its headers (2026-11-10, Eric) — see tableSort.tsx.
+  const { sorted, sort, cycle, headerProps } = useTableSort(
+    records,
+    (r, key) =>
+      key === 'Learner' ? r.name : key === 'Activity type' ? r.type : key === 'Activity date' ? r.activity : key === 'Completion date' ? r.completed : key === 'Transcript ID' ? r.transcript : key === 'CE credits' ? r.credits || null : r.status,
+    ['Activity date', 'Completion date', 'CE credits'],
+  )
 
   const exportCsv = () => {
     downloadCsv('audit-report.csv', [['Learner', 'ID', 'Activity type', 'Activity date', 'Completion date', 'Transcript ID', 'CE credits', 'Status'], ...records.map((r) => [r.name, r.who, r.type, r.activity, r.completed, r.transcript, r.credits, r.status])])
@@ -146,14 +155,16 @@ export function AtlasAdminAuditPage() {
             <thead style={{ background: 'var(--admin-fill-soft)' }}>
               <tr>
                 {['Learner', 'Activity type', 'Activity date', 'Completion date', 'Transcript ID', 'CE credits', 'Status'].map((h) => (
-                  <th key={h} style={TH}>
-                    {h}
+                  <th key={h} style={TH} {...headerProps(h)}>
+                    <SortHeader sortKey={h} sort={sort} onSort={cycle}>
+                      {h}
+                    </SortHeader>
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {records.slice(0, shown).map((r) => (
+              {sorted.slice(0, shown).map((r) => (
                 <tr key={r.id} style={{ borderTop: '1px solid var(--admin-rule)' }}>
                   <td style={TD}>
                     <span style={{ display: 'block', color: 'var(--admin-ink)' }}>{r.name}</span>

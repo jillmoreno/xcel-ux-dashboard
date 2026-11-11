@@ -1,11 +1,12 @@
 import { useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { addDays, audienceLabel, formatDay, matchAudience, trainingById, type AssignmentRule } from '@/data/atlasAdmin/assignments'
+import { addDays, audienceLabel, formatDay, matchAudience, trainingById, type AssignmentRule, type Training } from '@/data/atlasAdmin/assignments'
 import type { Learner } from '@/data/atlasAdmin/learners'
 import { ArrowLeft, BookOpen, CalendarRegular, Envelope, PenToSquare, Users } from '@/icons'
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, FIELD_LABEL, HEADING, INPUT, PILL } from './adminStyles'
+import { SortHeader, useTableSort } from './tableSort'
 
 /**
  * ATLAS ADMIN — ONE ASSIGNMENT RULE (2026-10-20). The reference's
@@ -88,26 +89,7 @@ export function AtlasAdminRulePage() {
                 {training.courses.length} courses in program {coursesOpen ? '⌃' : '⌄'}
               </button>
               {coursesOpen ? (
-                <table style={{ width: '100%', marginTop: 8, borderCollapse: 'collapse', fontSize: 12, border: '1px solid var(--admin-rule)' }}>
-                  <thead style={{ background: 'var(--admin-fill-soft)' }}>
-                    <tr>
-                      {['Course', 'Type', 'Due'].map((h) => (
-                        <th key={h} style={{ ...EYEBROW, fontSize: 9, padding: '8px 10px', textAlign: 'left' }}>
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {training.courses.map((c) => (
-                      <tr key={c.name} style={{ borderTop: '1px solid var(--admin-rule)' }}>
-                        <td style={CELL}>{c.name}</td>
-                        <td style={{ ...CELL, color: 'var(--admin-text)' }}>{c.type}</td>
-                        <td style={{ ...CELL, color: 'var(--admin-text)', whiteSpace: 'nowrap' }}>{formatDay(addDays(rule.schedule.start, c.dueDays))}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <CoursesTable courses={training.courses} start={rule.schedule.start} />
               ) : null}
             </>
           ) : null}
@@ -183,6 +165,36 @@ export function AtlasAdminRulePage() {
         />
       ) : null}
     </div>
+  )
+}
+
+/** The program's courses — its own component so the table can hold its sort hook (it renders conditionally). */
+function CoursesTable({ courses, start }: { courses: NonNullable<Training['courses']>; start: string }) {
+  // Sortable from its headers (2026-11-10, Eric) — see tableSort.tsx.
+  const { sorted, sort, cycle, headerProps } = useTableSort(courses, (c, key) => (key === 'course' ? c.name : key === 'type' ? c.type : c.dueDays), ['due'])
+  return (
+    <table style={{ width: '100%', marginTop: 8, borderCollapse: 'collapse', fontSize: 12, border: '1px solid var(--admin-rule)' }}>
+      <thead style={{ background: 'var(--admin-fill-soft)' }}>
+        <tr>
+          {([['course', 'Course'], ['type', 'Type'], ['due', 'Due']] as const).map(([k, h]) => (
+            <th key={k} style={{ ...EYEBROW, fontSize: 9, padding: '8px 10px', textAlign: 'left' }} {...headerProps(k)}>
+              <SortHeader sortKey={k} sort={sort} onSort={cycle}>
+                {h}
+              </SortHeader>
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {sorted.map((c) => (
+          <tr key={c.name} style={{ borderTop: '1px solid var(--admin-rule)' }}>
+            <td style={CELL}>{c.name}</td>
+            <td style={{ ...CELL, color: 'var(--admin-text)' }}>{c.type}</td>
+            <td style={{ ...CELL, color: 'var(--admin-text)', whiteSpace: 'nowrap' }}>{formatDay(addDays(start, c.dueDays))}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   )
 }
 

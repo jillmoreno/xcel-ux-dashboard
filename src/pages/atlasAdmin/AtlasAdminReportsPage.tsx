@@ -7,6 +7,7 @@ import { CadenceDialog, PeopleDialog } from './adminDialogs'
 import { ADMIN_BASE, ADMIN_EMAIL, DAYS, TIMES, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, BUTTON_RADIUS, SWITCH, SWITCH_KNOB as KNOB, switchKnobLeft, TABLE_HEAD, CARD, EYEBROW, FIELD_LABEL, HEADING, INPUT, PAGE_H1, PAGE_SUB, PILL } from './adminStyles'
 import { ChipMenu, MenuItem } from './adminUi'
+import { SortHeader, leadingNumber, useTableSort, type SortValue } from './tableSort'
 
 /**
  * ATLAS ADMIN · REPORTS — rebuilt from colibri-b2b.vercel.app/reports
@@ -61,6 +62,14 @@ export function AtlasAdminReportsPage() {
     // Favourites first, as the reference lists them.
     return base.sort((a, b) => Number(!!b.favorite) - Number(!!a.favorite) || by(a, b))
   }, [reports, tab, category, sort, search])
+
+  // Sortable from its headers (2026-11-10, Eric) — see tableSort.tsx.
+  const { sorted, sort: colSort, cycle, headerProps } = useTableSort(
+    list,
+    (r, key): SortValue =>
+      key === 'name' ? r.name : key === 'description' ? r.description : key === 'category' ? r.category : key === 'when' ? (tab === 'scheduled' ? r.scheduled : new Date(r.lastRun)) : null,
+    tab === 'scheduled' ? [] : ['when'],
+  )
 
   const patch = (id: string, p: Partial<ReportDef>) => setReports((rs) => rs.map((r) => (r.id === id ? { ...r, ...p } : r)))
   const duplicate = (r: ReportDef) => {
@@ -241,15 +250,23 @@ export function AtlasAdminReportsPage() {
               <th style={{ ...TH, width: 36 }}>
                 <span className="cre-visually-hidden">Favorite</span>
               </th>
-              <th style={TH}>Report name</th>
-              <th style={TH}>Description</th>
-              <th style={TH}>Category</th>
-              <th style={TH}>{tab === 'scheduled' ? 'Schedule' : 'Last run'}</th>
+              <th {...headerProps('name')} style={TH}>
+                <SortHeader sortKey="name" sort={colSort} onSort={cycle}>Report name</SortHeader>
+              </th>
+              <th {...headerProps('description')} style={TH}>
+                <SortHeader sortKey="description" sort={colSort} onSort={cycle}>Description</SortHeader>
+              </th>
+              <th {...headerProps('category')} style={TH}>
+                <SortHeader sortKey="category" sort={colSort} onSort={cycle}>Category</SortHeader>
+              </th>
+              <th {...headerProps('when')} style={TH}>
+                <SortHeader sortKey="when" sort={colSort} onSort={cycle}>{tab === 'scheduled' ? 'Schedule' : 'Last run'}</SortHeader>
+              </th>
               <th style={{ ...TH, textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {list.map((r) => (
+            {sorted.map((r) => (
               <tr key={r.id} className="cre-admin-row" style={{ borderTop: '1px solid var(--admin-rule)' }}>
                 <td style={{ ...TD, paddingLeft: 16 }}>
                   <button
@@ -348,6 +365,26 @@ export function AtlasAdminReportsPage() {
 
 /* ── Running a report ───────────────────────────────────────────────────── */
 
+/** A run's cells are formatted strings; each column sorts by what is behind them (REPORT_COLUMNS' order). */
+const RUN_DATES = new Set(['Assigned date', 'Last active', 'Exam date'])
+const RUN_NUMBERS = new Set(['% Complete', 'Score'])
+const RUN_DESC_FIRST = REPORT_COLUMNS.flatMap((c, j) => (RUN_DATES.has(c) || RUN_NUMBERS.has(c) || c === 'Time spent' ? [String(j)] : []))
+function runValue(row: string[], key: string): SortValue {
+  const j = Number(key)
+  const col = REPORT_COLUMNS[j]
+  const v = row[j]
+  if (RUN_DATES.has(col)) {
+    const t = Date.parse(v)
+    return Number.isNaN(t) ? null : t
+  }
+  if (RUN_NUMBERS.has(col)) return leadingNumber(v)
+  if (col === 'Time spent') {
+    const m = v.match(/(\d+)h (\d+)m/)
+    return m ? Number(m[1]) * 60 + Number(m[2]) : null
+  }
+  return v
+}
+
 function ReportRun({
   report,
   onBack,
@@ -375,6 +412,8 @@ function ReportRun({
     () => reportRows(learners).filter((r) => (!status || r[2] === status) && (!department || r[3] === department)),
     [learners, status, department],
   )
+  // Sortable from its headers (2026-11-10, Eric) — see tableSort.tsx.
+  const { sorted, sort, cycle, headerProps } = useTableSort(rows, runValue, RUN_DESC_FIRST)
   const exportCsv = () => {
     const csv = [REPORT_COLUMNS as readonly string[], ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
     const a = document.createElement('a')
@@ -460,15 +499,17 @@ function ReportRun({
           <table style={{ minWidth: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 12.5 }}>
             <thead style={{ position: 'sticky', top: 0, background: 'var(--admin-fill-soft)' }}>
               <tr>
-                {REPORT_COLUMNS.map((c) => (
-                  <th key={c} style={{ ...TH, fontSize: 10.5 }}>
-                    {c}
+                {REPORT_COLUMNS.map((c, j) => (
+                  <th key={c} {...headerProps(String(j))} style={{ ...TH, fontSize: 10.5 }}>
+                    <SortHeader sortKey={String(j)} sort={sort} onSort={cycle}>
+                      {c}
+                    </SortHeader>
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {rows.map((r, i) => (
+              {sorted.map((r, i) => (
                 <tr key={i} style={{ borderTop: '1px solid var(--admin-rule)' }}>
                   {r.map((v, j) => (
                     <td key={j} style={{ ...TD, padding: '9px 12px', whiteSpace: 'nowrap', color: j === 0 ? 'var(--admin-ink)' : 'var(--admin-text)' }}>

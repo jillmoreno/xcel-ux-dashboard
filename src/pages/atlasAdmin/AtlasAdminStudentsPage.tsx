@@ -19,6 +19,7 @@ import { ATLAS_BUTTON_PRIMARY, ATLAS_BUTTON_SECONDARY, CARD, CHIP, CHIP_ON, EYEB
 import { ChipMenu, MenuItem, PreparedPill, ReadinessCell, StagePill, StatusDial, StatusNote, StatusPill } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
 import { StudentsEmptyState } from './StudentsEmptyState'
+import { SortHeader, useTableSort, type SortValue } from './tableSort'
 
 /**
  * ATLAS ADMIN · STUDENTS — rebuilt from colibri-b2b.vercel.app/students
@@ -206,9 +207,13 @@ export function AtlasAdminStudentsPage() {
     return list.sort(byNeed)
   }, [ADMIN_LEARNERS, bucket, department, location, inLocation, role, search, quick])
 
-  const sortLabel =
-    bucket === 'not-started' ? 'days since enrollment' : bucket === 'prepared' ? 'missing exam date' : 'who needs you first'
-  const visible = rows.slice(0, shown)
+  // Sortable from its headers (2026-11-10, Eric) — see tableSort.tsx.
+  const { sorted, sort, cycle, headerProps } = useTableSort(rows, rosterValue, ROSTER_DESC_FIRST)
+  const sortedCol = sort ? ROSTER_COLS.find((c) => c.key === sort.key) : undefined
+  const sortLabel = sortedCol
+    ? `${[sortedCol.label, sortedCol.label2].filter(Boolean).join(' ')} ${sort?.dir === -1 ? '↓' : '↑'}`
+    : bucket === 'not-started' ? 'days since enrollment' : bucket === 'prepared' ? 'missing exam date' : 'who needs you first'
+  const visible = sorted.slice(0, shown)
   const allVisibleSelected = visible.length > 0 && visible.every((l) => selected.has(l.id))
 
   const pickBucket = (b: PipelineBucket) => {
@@ -668,14 +673,16 @@ export function AtlasAdminStudentsPage() {
                   />
                 </th>
                 {ROSTER_COLS.slice(1).map((c) => (
-                  <th key={c.key} style={{ ...TH, verticalAlign: 'bottom' }}>
-                    {c.label}
-                    {c.label2 ? (
-                      <>
-                        <br />
-                        {c.label2}
-                      </>
-                    ) : null}
+                  <th key={c.key} {...headerProps(c.key)} style={{ ...TH, verticalAlign: 'bottom' }}>
+                    <SortHeader sortKey={c.key} sort={sort} onSort={cycle}>
+                      {c.label}
+                      {c.label2 ? (
+                        <>
+                          <br />
+                          {c.label2}
+                        </>
+                      ) : null}
+                    </SortHeader>
                   </th>
                 ))}
               </tr>
@@ -862,6 +869,33 @@ const ROSTER_COLS: { key: string; label?: string; label2?: string; width?: numbe
   { key: 'active', label: 'Last active', width: 108 },
   { key: 'exam', label: 'Exam date', width: 112 },
 ]
+/** What each roster column sorts by — the number or date behind the cell, not its words. */
+const PREPARED_RANK: Record<string, number> = { prepared: 2, 'needs-work': 1, 'not-started': 0 }
+function rosterValue(l: Learner, key: string): SortValue {
+  switch (key) {
+    case 'learner':
+      return l.name
+    case 'team':
+      return l.team
+    case 'content':
+      return l.contentPct
+    case 'prep':
+      return l.prepPct
+    case 'readiness':
+      return l.score
+    case 'prepared':
+      return l.preparedToPass === null ? null : PREPARED_RANK[l.preparedToPass]
+    case 'stage':
+      return STAGE_LABEL[l.stage]
+    case 'active':
+      return -l.lastActiveDays // most recent first on the first click
+    case 'exam':
+      return l.examDate ? new Date(l.examDate) : null
+    default:
+      return null
+  }
+}
+const ROSTER_DESC_FIRST = ['content', 'prep', 'readiness', 'prepared', 'active', 'exam']
 /* Below this the card scrolls sideways — Learner keeps 262px, its longest email. */
 const ROSTER_MIN = ROSTER_COLS.reduce((n, c) => n + (c.width ?? 262), 0)
 const CHECKBOX: CSSProperties = { width: 16, height: 16, accentColor: 'var(--admin-brand)', cursor: 'pointer' }

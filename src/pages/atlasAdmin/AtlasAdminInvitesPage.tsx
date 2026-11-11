@@ -6,6 +6,7 @@ import { ADMIN_BASE, useAdminStore } from './adminStore'
 import { ATLAS_BUTTON_PRIMARY, BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, PAGE_H1, PAGE_SUB, PILL, STATUS_CARD, STATUS_COUNT, TABLE_HEAD } from './adminStyles'
 import { StatusDial, StatusNote, StatusPill } from './adminUi'
 import { InviteLearnersDialog } from './InviteLearnersDialog'
+import { SortHeader, useTableSort, type SortValue } from './tableSort'
 
 /**
  * ATLAS ADMIN · INVITES — rebuilt from colibri-b2b.vercel.app/invites
@@ -46,6 +47,24 @@ function dateTime(hours: number) {
   return `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
 }
 
+/** What each column sorts by — the timestamp behind a date, not its words. Fewer hours ago = more recent = larger. */
+function inviteValue(inv: Invite, key: string): SortValue {
+  switch (key) {
+    case 'name':
+      return inv.name ?? inv.email
+    case 'status':
+      return STATUS_LABEL[inv.status]
+    case 'lastStep':
+      return inv.lastStepHoursAgo === null ? null : -inv.lastStepHoursAgo
+    case 'sent':
+      return -inv.sentHoursAgo
+    case 'method':
+      return inv.method
+    default:
+      return null
+  }
+}
+
 export function AtlasAdminInvitesPage() {
   const navigate = useNavigate()
   // As on Students: Lite sets the tiles on the page, stroked in primary 200.
@@ -61,7 +80,9 @@ export function AtlasAdminInvitesPage() {
     const q = search.trim().toLowerCase()
     return invites.filter((i) => TEST[filter](i) && (!q || `${i.name ?? ''} ${i.email}`.toLowerCase().includes(q)))
   }, [invites, filter, search])
-  const visible = rows.slice(0, shown)
+  // Sortable from its headers (2026-11-10, Eric) — see tableSort.tsx.
+  const { sorted, sort, cycle, headerProps } = useTableSort(rows, inviteValue, ['lastStep', 'sent'])
+  const visible = sorted.slice(0, shown)
 
   const pick = (f: Filter) => {
     setFilter((cur) => (cur === f && f !== 'all' ? 'all' : f))
@@ -278,11 +299,21 @@ export function AtlasAdminInvitesPage() {
             </colgroup>
             <thead style={{ background: 'var(--admin-fill-soft)' }}>
               <tr>
-                <th style={{ ...TH, paddingLeft: 20 }}>Name</th>
-                <th style={TH}>Status</th>
-                <th style={TH}>Last step</th>
-                <th style={TH}>Sent date</th>
-                <th style={TH}>Method</th>
+                <th {...headerProps('name')} style={{ ...TH, paddingLeft: 20 }}>
+                  <SortHeader sortKey="name" sort={sort} onSort={cycle}>Name</SortHeader>
+                </th>
+                <th {...headerProps('status')} style={TH}>
+                  <SortHeader sortKey="status" sort={sort} onSort={cycle}>Status</SortHeader>
+                </th>
+                <th {...headerProps('lastStep')} style={TH}>
+                  <SortHeader sortKey="lastStep" sort={sort} onSort={cycle}>Last step</SortHeader>
+                </th>
+                <th {...headerProps('sent')} style={TH}>
+                  <SortHeader sortKey="sent" sort={sort} onSort={cycle}>Sent date</SortHeader>
+                </th>
+                <th {...headerProps('method')} style={TH}>
+                  <SortHeader sortKey="method" sort={sort} onSort={cycle}>Method</SortHeader>
+                </th>
                 <th style={TH}>
                   <span className="cre-visually-hidden">Actions</span>
                 </th>

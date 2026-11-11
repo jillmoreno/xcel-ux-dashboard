@@ -6,6 +6,7 @@ import { MagnifyingGlass, Plus } from '@/icons'
 import { AdminDialog } from './AdminDialog'
 import { ADMIN_BASE, companySlug, useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, FIELD_LABEL, HEADING, INPUT } from './adminStyles'
+import { SortHeader, useTableSort } from './tableSort'
 
 /**
  * ATLAS ADMIN — ORGANIZATION (2026-10-20). The reference's /organization:
@@ -67,6 +68,12 @@ export function AtlasAdminOrganizationPage() {
   const rows = base
     .map((r) => ({ ...r, ...edits[r.id] }))
     .filter((r) => !query.trim() || `${r.name} ${r.code}`.toLowerCase().includes(query.trim().toLowerCase()))
+  // Sortable from its headers (2026-11-10, Eric) — see tableSort.tsx.
+  const { sorted, sort, cycle, headerProps } = useTableSort(
+    rows,
+    (r, key) => (key === 'name' ? r.name : key === 'code' ? r.code : key === 'members' ? r.members : r.status === 'active' ? 'Active' : 'Archived'),
+    ['members'],
+  )
 
   // The roster's own name for a department, whatever it has been renamed to.
   const deptName = (r: Row) => (base.find((b) => b.id === r.id) ?? r).name.replace(`${ADMIN_COMPANY} - `, '')
@@ -147,16 +154,18 @@ export function AtlasAdminOrganizationPage() {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                 <thead style={{ background: 'var(--admin-fill-soft)' }}>
                   <tr>
-                    {['Name', 'Internal code ID', 'Members', 'Status'].map((h) => (
-                      <th key={h} style={TH}>
-                        {h}
+                    {([['name', 'Name'], ['code', 'Internal code ID'], ['members', 'Members'], ['status', 'Status']] as const).map(([k, h]) => (
+                      <th key={k} style={TH} {...headerProps(k)}>
+                        <SortHeader sortKey={k} sort={sort} onSort={cycle}>
+                          {h}
+                        </SortHeader>
                       </th>
                     ))}
                     <th style={{ ...TH, textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((r) => (
+                  {sorted.map((r) => (
                     <tr key={r.id} style={{ borderTop: '1px solid var(--admin-rule)', opacity: r.status === 'archived' ? 0.6 : 1 }}>
                       <td style={{ ...TD, color: 'var(--admin-ink)', paddingLeft: r.child ? 32 : 16 }}>
                         {r.child ? <span style={{ color: 'var(--admin-faint)' }}>↳ </span> : null}

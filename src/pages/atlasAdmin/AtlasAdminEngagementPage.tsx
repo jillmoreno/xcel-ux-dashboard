@@ -5,6 +5,7 @@ import { Download, Sparkles } from '@/icons'
 import { AdminDialog } from './AdminDialog'
 import { useAdminStore } from './adminStore'
 import { BUTTON_BRAND, BUTTON_OUTLINE, CARD, EYEBROW, HEADING, INPUT, PILL } from './adminStyles'
+import { SortHeader, useTableSort } from './tableSort'
 
 /**
  * ATLAS ADMIN — ENGAGEMENT ANALYTICS (2026-10-20). The reference's
@@ -99,6 +100,30 @@ export function AtlasAdminEngagementPage() {
     }).filter((r) => r.total > 0)
     return rows.sort((a, b) => b.completion - a.completion)
   }, [learners, state, period])
+
+  // Sortable from its headers (2026-11-10, Eric) — see tableSort.tsx.
+  // Rank stays the row's completion rank whichever way the table is sorted; it sorts 1 first.
+  const TREND_ORDER: Record<string, number> = { up: 1, flat: 0, down: -1 }
+  const { sorted: benchmarkSorted, sort, cycle, headerProps } = useTableSort(
+    benchmark,
+    (r, key) =>
+      key === 'Rank'
+        ? benchmark.indexOf(r)
+        : key === 'Department'
+          ? r.name
+          : key === 'Completion'
+            ? r.completion
+            : key === 'Avg quiz'
+              ? r.quiz
+              : key === 'Velocity'
+                ? r.velocity
+                : key === 'Engagement'
+                  ? r.engagement
+                  : key === 'Active'
+                    ? r.active
+                    : TREND_ORDER[r.trend],
+    ['Completion', 'Avg quiz', 'Velocity', 'Engagement', 'Active', 'Trend'],
+  )
 
   /** Twelve weeks of active learners, oldest first, from last-active days. */
   const weeks = useMemo(() => {
@@ -287,36 +312,41 @@ export function AtlasAdminEngagementPage() {
             <thead style={{ background: 'var(--admin-fill-soft)' }}>
               <tr>
                 {['Rank', 'Department', 'Completion', 'Avg quiz', 'Velocity', 'Engagement', 'Active', 'Trend'].map((h, i) => (
-                  <th key={h} style={{ ...TH, textAlign: i < 2 ? 'left' : 'center' }}>
-                    {h}
+                  <th key={h} style={{ ...TH, textAlign: i < 2 ? 'left' : 'center' }} {...headerProps(h)}>
+                    <SortHeader sortKey={h} sort={sort} onSort={cycle} align={i < 2 ? 'left' : 'center'}>
+                      {h}
+                    </SortHeader>
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {benchmark.map((r, i) => (
-                <tr key={r.name} style={{ borderTop: '1px solid var(--admin-rule)' }}>
-                  <td style={TD}>
-                    <span style={{ ...RANK, ...(i < 3 ? { background: 'var(--admin-amber-tint)', color: 'var(--admin-amber)' } : null) }}>{i + 1}</span>
-                  </td>
-                  <td style={TD}>
-                    <strong style={{ display: 'block', fontWeight: 600, color: 'var(--admin-ink)' }}>{r.name}</strong>
-                    <span style={{ fontSize: 11, color: 'var(--admin-muted)' }}>{r.states}</span>
-                  </td>
-                  <td style={{ ...TDC, fontWeight: 700, color: r.completion >= 50 ? 'var(--admin-success-ink)' : 'var(--admin-amber)' }}>{r.completion}%</td>
-                  <td style={TDC}>{r.quiz}%</td>
-                  <td style={TDC}>{r.velocity}</td>
-                  <td style={TDC}>
-                    <span style={{ ...PILL, padding: '4px 8px', background: r.engagement >= 50 ? 'var(--admin-success-tint)' : 'var(--admin-amber-tint)', color: r.engagement >= 50 ? 'var(--admin-success-ink)' : 'var(--admin-amber)' }}>{r.engagement}</span>
-                  </td>
-                  <td style={TDC}>
-                    {r.active}/{r.total}
-                  </td>
-                  <td style={{ ...TDC, fontSize: 15, color: r.trend === 'up' ? 'var(--admin-success-ink)' : r.trend === 'down' ? 'var(--admin-brand)' : 'var(--admin-text)' }} aria-label={r.trend}>
-                    {r.trend === 'up' ? '↑' : r.trend === 'down' ? '↓' : '→'}
-                  </td>
-                </tr>
-              ))}
+              {benchmarkSorted.map((r) => {
+                const i = benchmark.indexOf(r)
+                return (
+                  <tr key={r.name} style={{ borderTop: '1px solid var(--admin-rule)' }}>
+                    <td style={TD}>
+                      <span style={{ ...RANK, ...(i < 3 ? { background: 'var(--admin-amber-tint)', color: 'var(--admin-amber)' } : null) }}>{i + 1}</span>
+                    </td>
+                    <td style={TD}>
+                      <strong style={{ display: 'block', fontWeight: 600, color: 'var(--admin-ink)' }}>{r.name}</strong>
+                      <span style={{ fontSize: 11, color: 'var(--admin-muted)' }}>{r.states}</span>
+                    </td>
+                    <td style={{ ...TDC, fontWeight: 700, color: r.completion >= 50 ? 'var(--admin-success-ink)' : 'var(--admin-amber)' }}>{r.completion}%</td>
+                    <td style={TDC}>{r.quiz}%</td>
+                    <td style={TDC}>{r.velocity}</td>
+                    <td style={TDC}>
+                      <span style={{ ...PILL, padding: '4px 8px', background: r.engagement >= 50 ? 'var(--admin-success-tint)' : 'var(--admin-amber-tint)', color: r.engagement >= 50 ? 'var(--admin-success-ink)' : 'var(--admin-amber)' }}>{r.engagement}</span>
+                    </td>
+                    <td style={TDC}>
+                      {r.active}/{r.total}
+                    </td>
+                    <td style={{ ...TDC, fontSize: 15, color: r.trend === 'up' ? 'var(--admin-success-ink)' : r.trend === 'down' ? 'var(--admin-brand)' : 'var(--admin-text)' }} aria-label={r.trend}>
+                      {r.trend === 'up' ? '↑' : r.trend === 'down' ? '↓' : '→'}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
