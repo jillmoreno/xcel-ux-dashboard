@@ -1214,7 +1214,15 @@
   justify-content: space-between;
   gap: 16px;
   padding: 9px 0 10px;
-  border-bottom: 1px solid var(--rd-steel-edge);
+  /* ⚠ A NEUTRAL HAIRLINE, NOT THE STEEL ONE — 2026-11-11: "these divider
+     lines should be a light gray. not blue." They were `--rd-steel-edge`
+     (#c7d5e2), which is the card's BORDER colour: right around a blue bay,
+     wrong as a rule inside the white one, where it tinted every row.
+
+     ⚠ AND NOT `--rd-hairline` EITHER, which would have been the obvious
+     reach — that is #e0dbcd, a warm beige from Jeff's palette. Light grey
+     was the ask, so this is the system's own neutral subtle border. */
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 .crf-rd .crf-focus__figures > div:last-child {
   border-bottom: 0;
