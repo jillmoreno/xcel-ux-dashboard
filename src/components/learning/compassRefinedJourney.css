@@ -1552,10 +1552,13 @@
 .crf-rd {
   position: relative;
 }
-.crf-rd .crf-rd-ask-float {
-  right: 0;
-  top: 0;
-}
+/* ⚠ NO OFFSET OF ITS OWN — 2026-11-11: "spacing for this is off compared
+   with the other pages." It had `right: 0; top: 0`, which pins it to the
+   padding box's corner; `crf-ask`'s own rule is 40/24 and that is what every
+   MVP page draws. Measured both: Practice 40 and 24, this 0 and 0. The
+   override goes and the shared rule applies, so the pill cannot drift from
+   the pages it is copied from. `.crf-rd` still needs `position: relative`
+   above — that is the half this page genuinely lacked. */
 
 /* ---------- Rubi's first-run toast — 2026-11-11 ----------
    "a message should appear where the ask rubi is, like a toast alert, in the

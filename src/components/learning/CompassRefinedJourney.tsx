@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAccount } from '@/context/AccountContext'
 import { REFINED_COURSE, REFINED_OVERVIEW_TITLE } from '@/data/compassRefinedCopy'
 import { CompassRefinedFocus } from './CompassRefinedFocus'
 import { FOCUS_DEFAULTS, type FocusOptions } from './compassRefinedFocusModel'
@@ -358,8 +359,16 @@ function ProgressRing({ prog }: { prog?: Prog }) {
  * right block without this file being edited. See `REFINED_RUBI_INTRO`.
  */
 function RubiBlock({ focus }: { focus: { label: string; title: string; why: string; cta: string } }) {
+  /* ⚠ THE NAME COMES FROM THE ACCOUNT, not a prop — 2026-11-11. Every test
+     here already wraps in `AccountProvider`, and threading a first name
+     through four components to reach one greeting is the friction the focus
+     options were bundled to remove. Flags stay read at the top; the learner
+     is not a flag. */
+  const { user } = useAccount()
   const intro = focus.label === REFINED_RUBI_INTRO.replacesLabel
-  const copy = intro ? REFINED_RUBI_INTRO : focus
+  const copy = intro
+    ? { ...REFINED_RUBI_INTRO, title: REFINED_RUBI_INTRO.title(user.firstName) }
+    : focus
   return (
     <section className="crf-rd-rubi crf-rd-rubi--card" aria-label={copy.label}>
       <p className="crf-rd-eyebrow crf-rd-rubi-eyebrow">

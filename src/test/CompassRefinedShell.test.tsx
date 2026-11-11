@@ -355,7 +355,10 @@ describe('day-one copy appears at 0% and nowhere else', () => {
   it('Rubi introduces herself where the stage carries an introduction', () => {
     const { container } = at('q1')
     const rubi = container.querySelector('.crf-rd-rubi')
-    expect(rubi?.textContent).toContain("Hi, I'm Rubi")
+    /* ⚠ BY NAME — 2026-11-11, "incorporate the users name". The account's
+       persona is Jordan, and asserting the NAME rather than the greeting is
+       what proves the title is built from the learner instead of typed. */
+    expect(rubi?.textContent).toContain("Hi Jordan, I'm Rubi")
     expect([...container.querySelectorAll('.crf-rd-rubi-actions button')].map((b) => b.textContent)).toEqual(
       ['Talk with Rubi', 'Not now'],
     )
@@ -367,7 +370,7 @@ describe('day-one copy appears at 0% and nowhere else', () => {
        because there is nothing for declining a suggestion to mean here. */
     const { container } = at('q3')
     const rubi = container.querySelector('.crf-rd-rubi')
-    expect(rubi?.textContent).not.toContain("Hi, I'm Rubi")
+    expect(rubi?.textContent).not.toContain("I'm Rubi")
     expect(container.querySelectorAll('.crf-rd-rubi-actions button')).toHaveLength(1)
   })
 })

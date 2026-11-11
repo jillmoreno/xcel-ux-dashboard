@@ -1,5 +1,6 @@
 import { RubiLogo, X } from '@/icons'
 import { REFINED_RUBI_INTRO } from '@/data/compassRefinedCopy'
+import { useAccount } from '@/context/AccountContext'
 
 /**
  * RUBI'S FIRST-RUN TOAST — 2026-11-11: "when a user first lands here, (at
@@ -29,6 +30,8 @@ export function CompassRefinedRubiToast({
   /** Closes the toast and hands the corner back to the Ask Rubi pill. */
   onDismiss: () => void
 }) {
+  /* Her greeting uses the learner's name — see `REFINED_RUBI_INTRO.title`. */
+  const { user } = useAccount()
   return (
     <aside className="crf-rd-toast" aria-label={REFINED_RUBI_INTRO.label}>
       <div className="crf-rd-toast__head">
@@ -45,7 +48,7 @@ export function CompassRefinedRubiToast({
           <X size={14} aria-hidden />
         </button>
       </div>
-      <h2 className="crf-rd-toast__title">{REFINED_RUBI_INTRO.title}</h2>
+      <h2 className="crf-rd-toast__title">{REFINED_RUBI_INTRO.title(user.firstName)}</h2>
       <p className="crf-rd-toast__why">{REFINED_RUBI_INTRO.why}</p>
       <div className="crf-rd-toast__cta">
         <button type="button" className="crf-rd-toast__go">
