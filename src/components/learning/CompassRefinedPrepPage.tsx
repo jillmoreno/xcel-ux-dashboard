@@ -1,5 +1,5 @@
 import { REFINED_COURSE } from '@/data/compassRefinedCopy'
-import { CircleCheck, RubiLogo } from '@/icons'
+import { RubiLogo } from '@/icons'
 import { Band, PathLine, ReadinessRing, TopicTable } from './CompassRefinedParts'
 import {
   prepStage,
@@ -50,22 +50,16 @@ export function CompassRefinedPrepPage({ stage = 'p2' }: { stage?: string }) {
         </p>
           <h1 className="serif crf-rd-h1">Your exam prep</h1>
         </header>
-      {/* ⚠ THE GREETING IS PAGE CONTENT, NOT HEADER — 2026-11-10,
-          "there should never be copy between the eyebrow and title - or
-          after it". It sat BETWEEN the eyebrow and the title, which put a
-          sentence in the middle of the one thing every page shares. */}
-      <p className="crf-rd-hello">{m.hello}</p>
-      <p className="crf-rd-meta">
-        <span>Life &amp; Health · Florida 2-15</span>
-        <span aria-hidden>·</span>
-        <span>{m.metaLine}</span>
-        <span aria-hidden>·</span>
-        <b className="crf-rd-phase">{m.phase}</b>
-        <span className="crf-rd-cert">
-          <CircleCheck size={14} aria-hidden />
-          QE course complete · certificate Jul 18
-        </span>
-      </p>
+      {/* ⚠ THE GREETING AND THE META ROW ARE GONE — 2026-11-11,
+          Jillienne on both: "these 2 lines also fall into that catagory of
+          not needed." They were the last copy standing between the header
+          and the page, moved below the title the day before rather than
+          removed; this finishes it. Every fact they carried is on the page
+          already — the readiness figure in the Readiness-to-Pass panel, the
+          exam date in the ring's own read-out, the certificate in the
+          evidence list — so the row was a summary of the screen under it.
+          `m.hello`, `m.metaLine`, `m.phase` and `m.pathway` stay in the
+          shared model: the current version still draws them. */}
 
       {/* ---- recommended next ---- */}
       <section className="crf-rd-next" aria-label="Recommended next">

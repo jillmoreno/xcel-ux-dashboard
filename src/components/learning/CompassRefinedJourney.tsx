@@ -63,23 +63,16 @@ export function CompassRefinedJourney({ stage = 'u3' }: { stage?: string }) {
         </p>
           <h1 className="serif crf-rd-h1">Your learning journey</h1>
         </header>
-      {/* ⚠ THE GREETING IS PAGE CONTENT, NOT HEADER — 2026-11-10,
-          "there should never be copy between the eyebrow and title - or
-          after it". It sat BETWEEN the eyebrow and the title, which put a
-          sentence in the middle of the one thing every page shares. */}
-      <p className="crf-rd-hello">{m.hello}</p>
-      <p className="crf-rd-meta">
-        <span>Life &amp; Health · Florida 2-15</span>
-        <span aria-hidden>·</span>
-        <span>{m.metaLine}</span>
-        {/* ⚠ THE TWO PILLS GO HERE TOO — 2026-11-10, "Remove Learn + Prepare
-            Pill" and "Remove open access-move freely". They were removed from
-            the MVP Overview's header the same day; this page is Refined's
-            Overview now, and it was drawing them again. `m.phase` and
-            `m.pathway` stay in the model — this page stopped rendering them,
-            which is not the same as deciding they are wrong for the version
-            that still does. */}
-      </p>
+      {/* ⚠ THE GREETING AND THE META ROW ARE GONE — 2026-11-11,
+          Jillienne on both: "these 2 lines also fall into that catagory of
+          not needed." They were the last copy standing between the header
+          and the page, moved below the title the day before rather than
+          removed; this finishes it. Every fact they carried is on the page
+          already — the readiness figure in the Readiness-to-Pass panel, the
+          exam date in the ring's own read-out, the certificate in the
+          evidence list — so the row was a summary of the screen under it.
+          `m.hello`, `m.metaLine`, `m.phase` and `m.pathway` stay in the
+          shared model: the current version still draws them. */}
 
       {/* ⚠ THE BANNER IS A TEACHING MOMENT, not decoration: it appears only
           where the rules of the surface change (u1, when open access starts;

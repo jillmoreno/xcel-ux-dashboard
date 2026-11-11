@@ -216,3 +216,32 @@ describe('the page header holds nothing but the eyebrow and the title', () => {
     })
   }
 })
+
+/**
+ * AND NOTHING BETWEEN THE HEADER AND THE PAGE — 2026-11-11, Jillienne on the
+ * stage Overview's greeting and meta row: "these 2 lines also fall into that
+ * catagory of not needed."
+ *
+ * ⚠ THE HEADER CASE ABOVE WOULD NOT HAVE CAUGHT THESE. They were siblings of
+ * the header, not children of it — the day before, they had been moved OUT of
+ * it to satisfy exactly that rule. Passing that case is why they survived, so
+ * this one asks the other half of the question: what follows the header is
+ * the page, not more header.
+ */
+describe('the page starts straight after the header', () => {
+  for (const page of RAIL_PAGES) {
+    it(`${page}`, () => {
+      const { container } = wrap(<CompassRefinedShell page={page} onSelectPage={() => {}} />)
+      const header = container.querySelector('header')!
+      let el = header.nextElementSibling
+      /* A lead is page content and is allowed — it is what the header's own
+         `lead` prop became. A SECOND loose paragraph after it is the shape
+         this case exists to refuse. */
+      if (el?.tagName === 'P' || el?.classList.contains('crf-pagelead')) el = el.nextElementSibling
+      expect(
+        el?.tagName,
+        `${page}: ${el?.tagName}.${[...(el?.classList ?? [])].join('.')} stands between the header and the page`,
+      ).not.toBe('P')
+    })
+  }
+})
