@@ -320,3 +320,54 @@ describe('every page title is title case, and the rail agrees', () => {
     })
   }
 })
+
+/**
+ * TWO THINGS THAT ONLY APPEAR AT THE START — 2026-11-11.
+ *
+ * Both are the same shape of decision: copy that is true on day one and stale
+ * every day after. Atlas settled the first of them on 2026-10-19 and its flag
+ * note says so in as many words; these cases keep Refined agreeing with it
+ * without the two surfaces sharing a line of code.
+ */
+describe('day-one copy appears at 0% and nowhere else', () => {
+  const at = (stage: string) =>
+    wrap(<CompassRefinedShell page="overview" onSelectPage={() => {}} stage={stage} />)
+
+  it('the pace note is there on the first state', () => {
+    const { container } = at('q1')
+    const note = container.querySelector('.crf-focus__dayone')
+    expect(note?.textContent).toContain('just a starting point')
+  })
+
+  it('and gone on every state after it', () => {
+    /* ⚠ EVERY state, not a sampled one. The gate is arithmetic on the stage's
+       percentage, so the state that breaks it would be whichever one happens
+       to round to zero — exactly the one a spot check misses. */
+    for (const stage of READINESS_STAGES) {
+      if (stage.key === 'q1') continue
+      const { container, unmount } = at(stage.key)
+      const note = container.querySelector('.crf-focus__dayone')
+      expect(note, `${stage.key} still shows the day-one pace note`).toBeNull()
+      unmount()
+    }
+  })
+
+  it('Rubi introduces herself where the stage carries an introduction', () => {
+    const { container } = at('q1')
+    const rubi = container.querySelector('.crf-rd-rubi')
+    expect(rubi?.textContent).toContain("Hi, I'm Rubi")
+    expect([...container.querySelectorAll('.crf-rd-rubi-actions button')].map((b) => b.textContent)).toEqual(
+      ['Talk with Rubi', 'Not now'],
+    )
+  })
+
+  it('and leaves the task suggestions alone', () => {
+    /* ⚠ THE SWAP IS BY LABEL, so this is the half that proves it is targeted:
+       a state whose Rubi is a task keeps its own words and gets no "Not now",
+       because there is nothing for declining a suggestion to mean here. */
+    const { container } = at('q3')
+    const rubi = container.querySelector('.crf-rd-rubi')
+    expect(rubi?.textContent).not.toContain("Hi, I'm Rubi")
+    expect(container.querySelectorAll('.crf-rd-rubi-actions button')).toHaveLength(1)
+  })
+})

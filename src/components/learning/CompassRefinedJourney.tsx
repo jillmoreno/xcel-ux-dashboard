@@ -1,5 +1,6 @@
 import { REFINED_COURSE, REFINED_OVERVIEW_TITLE } from '@/data/compassRefinedCopy'
 import { CompassRefinedFocus, type FocusLayout } from './CompassRefinedFocus'
+import { REFINED_RUBI_INTRO } from '@/data/compassRefinedCopy'
 import { useState } from 'react'
 import { CircleCheck, Clock, FileText, RubiLogo } from '@/icons'
 import { PathLine, ReadinessRing, TopicTable } from './CompassRefinedParts'
@@ -174,17 +175,7 @@ export function CompassRefinedJourney({
       {(m.focus?.title || m.tools?.length) && (
         <div className="crf-rd-focus-row">
           {m.focus?.title ? (
-            <section className="crf-rd-rubi crf-rd-rubi--card" aria-label={m.focus.label}>
-              <p className="crf-rd-eyebrow crf-rd-rubi-eyebrow">
-                <RubiLogo size={15} aria-hidden />
-                {m.focus.label}
-              </p>
-              <h3 className="crf-rd-rubi-title">{m.focus.title}</h3>
-              <p className="crf-rd-rubi-why">{m.focus.why}</p>
-              <button type="button" className="crf-rd-rubi-cta">
-                {m.focus.cta}
-              </button>
-            </section>
+            <RubiBlock focus={m.focus} />
           ) : null}
           {m.tools?.length ? (
             <section className="crf-rd-tools" aria-label={m.toolsTitle}>
@@ -360,5 +351,41 @@ function ProgressRing({ prog }: { prog?: Prog }) {
         {prog.hasSeat && <p className="crf-rd-note">{prog.seat}</p>}
       </div>
     </div>
+  )
+}
+
+/**
+ * RUBI — the stage's own block, or Refined's introduction.
+ *
+ * ⚠ THE SWAP IS BY LABEL, not by stage number. Two of the sixteen states
+ * carry the introduction and the rest carry a task suggestion; matching the
+ * label means a stage that gains or loses the introduction later takes the
+ * right block without this file being edited. See `REFINED_RUBI_INTRO`.
+ */
+function RubiBlock({ focus }: { focus: { label: string; title: string; why: string; cta: string } }) {
+  const intro = focus.label === REFINED_RUBI_INTRO.replacesLabel
+  const copy = intro ? REFINED_RUBI_INTRO : focus
+  return (
+    <section className="crf-rd-rubi crf-rd-rubi--card" aria-label={copy.label}>
+      <p className="crf-rd-eyebrow crf-rd-rubi-eyebrow">
+        <RubiLogo size={15} aria-hidden />
+        {copy.label}
+      </p>
+      <h3 className="crf-rd-rubi-title">{copy.title}</h3>
+      <p className="crf-rd-rubi-why">{copy.why}</p>
+      <div className="crf-rd-rubi-actions">
+        <button type="button" className="crf-rd-rubi-cta">
+          {copy.cta}
+        </button>
+        {/* ⚠ ONLY THE INTRODUCTION OFFERS A WAY OUT. A task suggestion that
+            can be declined needs somewhere for the decline to go; an
+            introduction's is simply "not now". */}
+        {intro ? (
+          <button type="button" className="crf-rd-rubi-quiet">
+            {REFINED_RUBI_INTRO.dismiss}
+          </button>
+        ) : null}
+      </div>
+    </section>
   )
 }

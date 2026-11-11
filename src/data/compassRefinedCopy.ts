@@ -145,6 +145,26 @@ export const REFINED_PACE = {
   /** Month + Day, as asked — the long form is the smaller line under it. */
   completion: 'Jul 18',
   completionIn: 'in 18 days',
+  /**
+   * ⚠ DAY-ONE COPY, AND ONLY DAY ONE — 2026-11-11: "have this message be
+   * under the Study pace section, but only when the user is at 0%."
+   *
+   * The same call Atlas made on 2026-10-19, in the same words. "Your default
+   * recommended study pace is just a starting point" is true on day one and
+   * stale every day after, because by then the learner HAS a pace and how it
+   * is going is the thing worth the line. `atlas-pace-standing` was added
+   * there for exactly this, and its own note reads "at 0% it is ignored" —
+   * so the two surfaces now agree without sharing a line of code.
+   *
+   * ⚠ WHAT REPLACES IT PAST 0% IS NOT DECIDED HERE. Atlas swaps in one of
+   * five standings from `paceStanding.ts`. Refined shows nothing yet rather
+   * than borrowing those sentences: they are scaled from a goal this card's
+   * figures do not have — see this object's own warning above.
+   */
+  dayOne:
+    'Your default recommended study pace is just a starting point, you can further customize your pace',
+  /** The word that carries the link, so the sentence can be split around it. */
+  dayOneAction: 'here',
 } as const
 
 /**
@@ -184,3 +204,34 @@ export const REFINED_PROGRESS_LINES = {
  * `innerText`.
  */
 export const REFINED_NEXT_EYEBROW = 'Your next step'
+
+/**
+ * RUBI'S INTRODUCTION — 2026-11-11, "update the Rubi section to match the
+ * screenshot."
+ *
+ * ⚠ IT REPLACES ONE BLOCK, NOT EVERY RUBI. The stage fixtures put a
+ * task-specific Rubi on most states — "Recap beneficiary terms", "Practice ·
+ * 12 min" — and only two of the sixteen carry the INTRODUCTION, labelled
+ * "Rubi · your study partner". The screenshot is that one: a first meeting,
+ * not a suggestion. So Refined swaps the block whose label matches and leaves
+ * the task Rubis alone; replacing all of them would have thrown away the
+ * per-stage content to satisfy a note about day one.
+ *
+ * ⚠ IT SAYS WHAT SHE WILL DO, where his said what she is. "Ask me anything,
+ * any time" over "I'm grounded in your Florida course" is a claim about
+ * scope; this names the three things she does, when she will interrupt, and
+ * how to stop her — which is the part a learner meeting an AI tutor actually
+ * wants settled.
+ *
+ * ⚠ AND IT CAN BE DECLINED. "Not now" beside the primary is new: an
+ * introduction with one button is not an introduction, it is a prompt.
+ */
+export const REFINED_RUBI_INTRO = {
+  /** The label this replaces, so the swap is targeted rather than global. */
+  replacesLabel: 'Rubi · your study partner',
+  label: 'Rubi · Learning support',
+  title: "Hi, I'm Rubi",
+  why: "I can explain a term, give an example or recap a lesson whenever you ask. At the start of a session, I'll check in with a short welcome. You can pause my offers any time.",
+  cta: 'Talk with Rubi',
+  dismiss: 'Not now',
+} as const

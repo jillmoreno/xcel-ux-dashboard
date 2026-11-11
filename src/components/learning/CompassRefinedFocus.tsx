@@ -175,6 +175,22 @@ function FocusProgress({ prog, layout }: { prog: Prog; layout: FocusLayout }) {
           </div>
         </dl>
       </div>
+
+      {/* ⚠ ONLY AT 0% — 2026-11-11, and the same rule Atlas settled on
+          2026-10-19. The sentence offers a starting point, which is a true
+          thing to say to somebody who has not started and a stale one to
+          anybody else. Past 0% the row above already reports the pace, and
+          what should replace this is a standing nobody has written for this
+          card yet. */}
+      {done === 0 ? (
+        <p className="crf-focus__dayone">
+          {REFINED_PACE.dayOne}{' '}
+          <button type="button" className="crf-focus__inlink">
+            {REFINED_PACE.dayOneAction}
+          </button>
+          .
+        </p>
+      ) : null}
     </div>
   )
 }

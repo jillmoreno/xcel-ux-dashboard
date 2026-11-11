@@ -1358,3 +1358,43 @@
   margin: auto 0;
   min-width: 0;
 }
+
+/* The day-one pace note, under the three lines and only at 0% — 2026-11-11.
+   It sits outside the figure rows because it is not one: a sentence about the
+   pace, not a reading of it. */
+.crf-rd .crf-focus__dayone {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--rd-muted);
+}
+.crf-rd .crf-focus__inlink {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--rd-steel-deep);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Rubi's actions — the primary and the way out, on one row. 2026-11-11.
+   The CTA keeps its own rule above; this only places the pair. */
+.crf-rd .crf-rd-rubi-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.crf-rd .crf-rd-rubi-quiet {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rd-ink);
+  text-decoration: underline;
+  cursor: pointer;
+}
