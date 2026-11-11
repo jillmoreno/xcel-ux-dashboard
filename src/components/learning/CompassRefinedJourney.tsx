@@ -386,14 +386,12 @@ function RubiBlock({ focus }: { focus: { label: string; title: string; why: stri
         <button type="button" className="crf-rd-rubi-cta">
           {copy.cta}
         </button>
-        {/* ⚠ ONLY THE INTRODUCTION OFFERS A WAY OUT. A task suggestion that
-            can be declined needs somewhere for the decline to go; an
-            introduction's is simply "not now". */}
-        {intro ? (
-          <button type="button" className="crf-rd-rubi-quiet">
-            {REFINED_RUBI_INTRO.dismiss}
-          </button>
-        ) : null}
+        {/* ⚠ NO "Not now" HERE — 2026-11-11, "remove the not now link". It
+            belonged on the TOAST, which interrupts and therefore has to be
+            dismissible. This band is part of the page: there is nothing to
+            decline, and a decline that only hides a section a learner did not
+            ask to see is a control for the sake of symmetry. The toast keeps
+            its own. */}
       </div>
       </div>
     </section>

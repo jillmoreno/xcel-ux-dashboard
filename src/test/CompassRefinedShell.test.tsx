@@ -364,8 +364,11 @@ describe('day-one copy appears at 0% and nowhere else', () => {
        persona is Jordan, and asserting the NAME rather than the greeting is
        what proves the title is built from the learner instead of typed. */
     expect(rubi?.textContent).toContain("Hi Jordan, I'm Rubi")
+    /* ⚠ ONE ACTION, AND NO "Not now" — 2026-11-11. The decline belongs on
+       the toast, which interrupts; this band is part of the page and there is
+       nothing to decline. */
     expect([...container.querySelectorAll('.crf-rd-rubi-actions button')].map((b) => b.textContent)).toEqual(
-      ['Talk with Rubi', 'Not now'],
+      ['Talk with Rubi'],
     )
   })
 

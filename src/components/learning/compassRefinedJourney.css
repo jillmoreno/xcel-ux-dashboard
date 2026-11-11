@@ -1733,18 +1733,21 @@
    ⚠ NO ARROW, THOUGH THE SHAPE IS SHARED. The arrow on "Resume lesson" says
    the click moves you forward through the course; talking to Rubi does not,
    and borrowing the glyph would borrow that claim. */
+/* ⚠ THE BLUE, STILL SECONDARY — 2026-11-11: "use the blue color, but keep it
+   secondary." So the edge and the label take `--rd-steel-deep`, the fill
+   stays white: it reads as the product's action rather than a neutral one,
+   without competing with the filled Resume lesson opposite. */
 .crf-rd .crf-rd-rubi--card .crf-rd-rubi-cta {
   padding: 9px 16px;
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--rd-steel-deep);
   border-radius: 8px;
   background: var(--rd-white);
-  color: var(--color-text-primary);
+  color: var(--rd-steel-deep);
   font: inherit;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
 }
 .crf-rd .crf-rd-rubi--card .crf-rd-rubi-cta:hover {
-  border-color: var(--rd-edge);
-  background: var(--crf-beige-50);
+  background: var(--rd-steel-wash);
 }
