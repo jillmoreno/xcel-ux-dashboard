@@ -905,7 +905,13 @@
      two halves divided by a hairline and nothing nested inside it. This was
      a white card with a white sub-card on the right, which is two boxes
      saying what one panel says. */
-  border: 1px solid var(--rd-steel-edge);
+  /* ⚠ A NEUTRAL STROKE — 2026-11-11: "make the stroke around this section the
+     light gray too." It was `--rd-steel-edge` (#c7d5e2), the blue it has
+     carried since the card took the hero's ground; with the progress bay now
+     white and its rows ruled in grey, a blue outline was the last blue thing
+     on that half. Same token as those rules, so the card and its rows are
+     drawn in one line colour. */
+  border: 1px solid var(--color-border-subtle);
   border-radius: 14px;
   overflow: hidden;
   /* ⚠ NO GROUND OF ITS OWN — 2026-11-11, "have the course progress side be
@@ -1163,10 +1169,12 @@
 }
 
 /* ---------- 1 · SPLIT — a vertical rule, two peers on one ground ---------- */
-/* A steel hairline, not the beige one: on `split` it now divides white from
-   blue, and a warm line between two cool grounds reads as a stray. */
+/* ⚠ THE DIVIDER FOLLOWS THE OUTLINE — the same neutral grey. It was steel to
+   match a steel border; with the border grey, a blue line down the middle
+   would be the only one left and would read as a stray rather than as a
+   choice. One stroke colour on the whole card. */
 .crf-rd .crf-focus--split .crf-focus__next {
-  border-left: 1px solid var(--rd-steel-edge);
+  border-left: 1px solid var(--color-border-subtle);
 }
 
 /* ---------- 2 · PANEL — the ground does the separating ----------
