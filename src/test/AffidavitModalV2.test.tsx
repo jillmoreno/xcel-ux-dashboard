@@ -811,6 +811,25 @@ describe('the Design bar’s Affidavit modal skin', () => {
     expect(css.indexOf('--color-aff-cta')).toBeGreaterThan(css.indexOf('.aff2-modal.is-house'))
     expect(house).toContain('--color-aff-cta')
   })
+
+  /* 2026-11-11, Afsana: "disabled until they can click". The house rule
+     outranked `.aff2-btn:disabled`, so a disabled CTA looked live. */
+  it('greys a disabled CTA under the house style too, not only under the original', () => {
+    const css = readFileSync(resolve(__dirname, '../components/e2e/affidavitModalV2.css'), 'utf8')
+    expect(css).toMatch(/\.aff2-btn:disabled \{[^}]*background: var\(--color-aff-disabled\)/)
+    expect(css).toMatch(/\.aff2-modal\.is-house \.aff2-btn:disabled \{[^}]*background: var\(--color-aff-disabled\)/)
+    // And it comes after the house button rule, so it wins on order as well as weight.
+    expect(css.indexOf('.aff2-modal.is-house .aff2-btn:disabled')).toBeGreaterThan(css.indexOf('.aff2-modal.is-house .aff2-btn {'))
+  })
+
+  it('draws Back as an outlined grey secondary under the house style, not a navy primary', () => {
+    const css = readFileSync(resolve(__dirname, '../components/e2e/affidavitModalV2.css'), 'utf8')
+    const rule = css.match(/\.aff2-modal\.is-house \.aff2-btn\.is-sec \{([^}]*)\}/)?.[1] ?? ''
+    expect(rule).toContain('border: 1px solid var(--color-aff-input-rule)')
+    expect(rule).toContain('background: var(--color-fixed-light)')
+    expect(rule).not.toContain('--color-aff-cta')
+    expect(css.indexOf('.aff2-modal.is-house .aff2-btn.is-sec {')).toBeGreaterThan(css.indexOf('.aff2-modal.is-house .aff2-btn {'))
+  })
 })
 
 /* LINE OF AUTHORITY LEAVES THE BAR FOR NON-STATE SPECIFIC (2026-11-04) —

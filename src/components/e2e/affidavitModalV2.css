@@ -412,6 +412,19 @@
   border-radius: var(--radius-md);
   font: 700 15px var(--font-body);
 }
+/* ⚠ The rule above outranks the base `.aff2-btn:disabled`, so until
+   2026-11-11 a disabled I Agree / Next looked exactly like an enabled one
+   under the house style — it just did nothing when clicked (Afsana: "disabled
+   until they can click"). Restated here at the same weight. */
+.aff2-modal.is-house .aff2-btn:disabled { background: var(--color-aff-disabled); cursor: not-allowed; }
+/* Back is an outlined secondary in grey (Afsana, 2026-11-11). The house
+   button rule above painted it navy too, for the same reason as :disabled. */
+.aff2-modal.is-house .aff2-btn.is-sec {
+  border: 1px solid var(--color-aff-input-rule);
+  background: var(--color-fixed-light);
+  color: var(--color-aff-muted-ink);
+}
+.aff2-modal.is-house .aff2-btn.is-sec:hover { background: var(--color-aff-chip); }
 
 /* The type scale off the exploration page: smaller labels over shorter
    inputs, and a quieter hint. The faces are the product's own tokens —
