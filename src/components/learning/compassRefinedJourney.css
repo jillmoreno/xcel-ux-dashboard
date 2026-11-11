@@ -899,10 +899,19 @@
   align-items: stretch;
   gap: 0;
   margin: 0 0 18px;
-  border: 1px solid var(--rd-hairline);
+  /* ⚠ THE HERO'S OWN GROUND — 2026-11-11, "this is the style that the first
+     widget should be. but with the progress and Your Next Step." The card she
+     pointed at is Jeff's hero: one tinted panel with a soft steel edge, the
+     two halves divided by a hairline and nothing nested inside it. This was
+     a white card with a white sub-card on the right, which is two boxes
+     saying what one panel says. */
+  border: 1px solid var(--rd-steel-edge);
   border-radius: 14px;
   overflow: hidden;
-  background: var(--rd-white);
+  /* ⚠ A SHADE DEEPER THAN `--rd-steel-wash` ALONE. That token is #f5f8fb and
+     measured as white against this page's own off-white ground, so the card
+     read as untinted where the reference card reads as tinted. */
+  background: color-mix(in srgb, var(--rd-steel-edge) 22%, var(--rd-steel-wash));
 }
 /* ⚠ ONE HALF ONLY, AND THE GRID COLLAPSES. Early states carry no hero and the
    prep series carries no QE ring; a fixed two-column grid would leave an
@@ -930,17 +939,13 @@
   padding: 22px 26px 22px;
   min-width: 0;
 }
-/* ⚠ A CARD WITH AN ACCENT EDGE, as the mock draws it: a rounded panel on the
-   page's own ground with one coloured rule down its left side. The edge is
-   what makes it read as the thing to do rather than another box. */
+/* ⚠ NO NESTED CARD — 2026-11-11. It was a white panel with its own accent
+   edge sitting inside the card; on the hero's tinted ground that is a box in
+   a box. The vertical hairline between the halves is the whole separation the
+   reference draws. */
 .crf-rd .crf-focus__card {
   width: 100%;
   box-sizing: border-box;
-  padding: 14px 16px 15px;
-  border: 1px solid var(--rd-hairline);
-  border-left: 3px solid var(--rd-steel);
-  border-radius: 10px;
-  background: var(--rd-white);
 }
 .crf-rd .crf-focus__go {
   display: inline-flex;
@@ -993,8 +998,12 @@
   align-items: center;
   line-height: 1.1;
 }
+/* ⚠ NOT SERIF, THOUGH THE CARD SHE POINTED AT SETS ITS "0%" IN PLAYFAIR.
+   That figure is 26px, and the rule of 2026-11-10 is that anything below 32px
+   is Open Sans — the old card predates it. Matching it here would reopen the
+   decision on one number. Flagged rather than silently done either way. */
 .crf-rd .crf-focus__ringnum b {
-  font-size: 26px;
+  font-size: 30px;
   font-weight: 700;
   color: var(--rd-ink);
 }
@@ -1110,15 +1119,18 @@
 
 /* ---------- 1 · SPLIT — a vertical rule, two peers on one ground ---------- */
 .crf-rd .crf-focus--split .crf-focus__next {
-  border-left: 1px solid var(--rd-hairline);
+  border-left: 1px solid var(--rd-steel-edge);
 }
 
 /* ---------- 2 · PANEL — the ground does the separating ----------
    State and action are different kinds of thing; a tinted left bay says so
    without drawing a line through the card. */
+/* ⚠ `panel` NOW DEEPENS THE LEFT BAY rather than tinting it — the whole card
+   is tinted since it took the hero's ground, so a tint on one half is no
+   longer a difference. */
 .crf-rd .crf-focus--panel .crf-focus__prog {
-  background: var(--rd-paper);
-  border-right: 1px solid var(--rd-hairline);
+  background: color-mix(in srgb, var(--rd-steel-edge) 28%, var(--rd-steel-wash));
+  border-right: 1px solid var(--rd-steel-edge);
 }
 
 /* ---------- 3 · FIGURES — Atlas's labelled rows, ring beside them ----------
@@ -1134,22 +1146,34 @@
 .crf-rd .crf-focus__figrow {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 24px;
   width: 100%;
 }
 .crf-rd .crf-focus__figures {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 0;
   margin: 0;
   min-width: 0;
+  flex: 1;
 }
-.crf-rd .crf-focus__figures div {
+/* ⚠ THE ROW IS THE OLD CARD'S ROW: label left, value hard right, a hairline
+   under it. The last one draws no rule — a line under the final row is a line
+   under nothing. */
+.crf-rd .crf-focus__figures > div {
   display: flex;
-  flex-direction: column;
-  gap: 1px;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 0 10px;
+  border-bottom: 1px solid var(--rd-steel-edge);
+}
+.crf-rd .crf-focus__figures > div:last-child {
+  border-bottom: 0;
+  padding-bottom: 2px;
 }
 .crf-rd .crf-focus__figures dt {
+  flex: 0 0 auto;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -1161,13 +1185,14 @@
   font-size: 15px;
   font-weight: 600;
   color: var(--rd-ink);
+  text-align: right;
 }
-/* "smaller text underneath" — the hours, and the days to completion. */
+/* "smaller text underneath" — the hours, and the days to completion. Its own
+   line under the VALUE, so it stays with the thing it qualifies. */
 .crf-rd .crf-focus__under {
+  display: block;
+  margin-top: 2px;
   font-size: 12px;
   font-weight: 400;
   color: var(--rd-muted);
-}
-.crf-rd .crf-focus__figures > div {
-  gap: 2px;
 }

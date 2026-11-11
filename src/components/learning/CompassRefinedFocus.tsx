@@ -106,6 +106,12 @@ function FocusProgress({ prog, layout }: { prog: Prog; layout: FocusLayout }) {
       <p className="crf-focus__eyebrow">Course Progress</p>
       <div className="crf-focus__figrow">
         <Ring prog={prog} size={layout === 'figures' ? 104 : 132} />
+        {/* ⚠ LABEL LEFT, VALUE RIGHT, A HAIRLINE BETWEEN — 2026-11-11, from
+            the old Course-progress card she pointed at: "QE course" on the
+            left and "0 of 36 lessons" hard right on one baseline, ruled
+            underneath. It also reads her own spec more literally than the
+            stacked version did — "Completed Lessons - 0 of 36" is one line
+            with a value at the end of it, not a label over a figure. */}
         <dl className="crf-focus__figures">
           <div>
             <dt>{REFINED_PROGRESS_LINES.lessons}</dt>
@@ -115,14 +121,17 @@ function FocusProgress({ prog, layout }: { prog: Prog; layout: FocusLayout }) {
             <dt>{REFINED_PROGRESS_LINES.pace}</dt>
             <dd>
               {REFINED_PACE.name} <span aria-hidden>|</span> {REFINED_PACE.goal}
+              {/* The "smaller text underneath", under the VALUE rather than
+                  the row, so it stays with the thing it qualifies. */}
+              <span className="crf-focus__under">{REFINED_PACE.hours}</span>
             </dd>
-            {/* The "smaller text underneath", as asked. */}
-            <dd className="crf-focus__under">{REFINED_PACE.hours}</dd>
           </div>
           <div>
             <dt>{REFINED_PROGRESS_LINES.completion}</dt>
-            <dd>{REFINED_PACE.completion}</dd>
-            <dd className="crf-focus__under">{REFINED_PACE.completionIn}</dd>
+            <dd>
+              {REFINED_PACE.completion}
+              <span className="crf-focus__under">{REFINED_PACE.completionIn}</span>
+            </dd>
           </div>
         </dl>
       </div>
@@ -179,20 +188,24 @@ function FocusNext({ hero, next }: { hero: Hero; next?: string }) {
 /** His ring, at whatever size the arrangement wants. */
 function Ring({ prog, size }: { prog: Prog; size: number }) {
   const pct = Number.parseFloat(prog.pct) || 0
-  const r = 64
+  /* ⚠ A THINNER RING ON A WIDER RADIUS — 2026-11-11, matching the old Course
+     progress card: 150px of ring drawn with a light hairline track, where
+     this was an 11px stroke that read as a donut. The radius grows with the
+     stroke shrinking so the ring occupies the same box. */
+  const r = 70
   const c = 2 * Math.PI * r
   return (
     <div className="crf-focus__ring">
       <svg viewBox="0 0 168 168" width={size} height={size} role="img" aria-label={prog.aria ?? `${prog.pct} complete`}>
         <g transform="rotate(-90 84 84)">
-          <circle cx="84" cy="84" r={r} fill="none" className="crf-rd-track" strokeWidth="11" />
+          <circle cx="84" cy="84" r={r} fill="none" className="crf-rd-track" strokeWidth="7" />
           <circle
             cx="84"
             cy="84"
             r={r}
             fill="none"
             stroke={`var(--rd-${prog.ringColor ?? 'steel'})`}
-            strokeWidth="11"
+            strokeWidth="7"
             strokeDasharray={`${((pct / 100) * c).toFixed(1)} ${c.toFixed(1)}`}
             strokeLinecap="butt"
           />
