@@ -1286,22 +1286,24 @@
   border-bottom: 0;
   padding-bottom: 2px;
 }
-/* ⚠ REGULAR TEXT, NOT AN EYEBROW — 2026-11-11: "these should be regular
-   style." They were 10px/700 uppercase with 0.08em tracking, which is the
-   bar's eyebrow treatment — right for a label that heads a SECTION, wrong for
-   one half of a label/value pair read across a line. Three of them in a
-   column also made the bay look like three sections rather than three facts.
+/* ⚠ EYEBROW SHAPE AT REGULAR WEIGHT — 2026-11-11, in two steps: "these
+   should be regular style", then "keep these regular style, but all caps.
+   Eyebrow style."
 
-   ⚠ AND THE SIZE COMES UP WITH THE CASE. 10px is a size that only works
-   uppercase and tracked; as sentence-case body text it reads as fine print.
-   13px matches the value opposite, so the row is one line of text with two
-   weights rather than two kinds of type. */
+   So the capitals and the tracking come back and the WEIGHT does not. What
+   made these heavy was 700, not the case: 10px/700 uppercase is the bar's
+   label, and three of them stacked made the bay look like three sections
+   rather than three facts about one learner. At 400 the same shape reads as
+   a label on a row.
+
+   ⚠ 11px, BETWEEN THE TWO EARLIER SIZES. 10 was set for 700 and goes thin at
+   400; 13 was set for sentence case and is loud in capitals. */
 .crf-rd .crf-focus__figures dt {
   flex: 0 0 auto;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 400;
-  letter-spacing: normal;
-  text-transform: none;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--rd-muted);
 }
 /* ⚠ 13px, DOWN FROM 15 — 2026-11-11, Jillienne on "8 of 41": "what is this
@@ -1522,14 +1524,20 @@
   cursor: pointer;
 }
 
-/* The `link` arm of the day-one note: no box, no sentence, just the offer.
-   2026-11-11 — "i want the entire beige container gone, and just the simple
-   link". It keeps the row's full width so the link can sit hard right, under
-   the pace value it belongs to. */
+/* The `link` arm of the day-one note: no box, no sentence, and on the row
+   itself. 2026-11-11, in two steps — "i want the entire beige container gone,
+   and just the simple link", then "add this in the same line as the Study
+   Pace".
+
+   ⚠ NO `width: 100%`, which is the whole of it. The base rule gives the note
+   the full row so it wraps to its own line; without it the `dd` stays a flex
+   item and the row reads label · value · control across one line. */
 .crf-rd .crf-focus__figures dd.crf-focus__dayone--bare {
+  width: auto;
   padding: 0;
   background: none;
 }
 .crf-rd .crf-focus__dayone--bare .crf-focus__notelink {
-  margin-top: 0;
+  display: inline;
+  margin: 0;
 }

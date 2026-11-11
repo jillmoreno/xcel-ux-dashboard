@@ -154,7 +154,11 @@ export const REFINED_PACE = {
      disagreement to settle when the figures become real. */
   name: 'Average',
   goal: '1 Week Goal',
-  hours: 'about 12 hours/week',
+  /* ⚠ PARENTHESISED AND ABBREVIATED — 2026-11-11: "change to (12hr / wk)".
+     It read "about 12 hours/week". The brackets do what the dot before it
+     does — mark this as a qualifier on the goal rather than a second fact —
+     so the row now says it twice; worth deciding which one goes. */
+  hours: '(12hr / wk)',
   /** Month + Day, as asked — the long form is the smaller line under it. */
   completion: 'Jul 18',
   completionIn: 'in 18 days',
@@ -178,12 +182,13 @@ export const REFINED_PACE = {
     'Your default recommended study pace is just a starting point, you can further customize your pace',
   /** The word that carries the link, so the sentence can be split around it. */
   dayOneAction: 'here',
-  /** ⚠ THE SAME OFFER, SET APART — 2026-11-11: "add a variant of this that
-   *  shows Change here as a simple text style link on the right under the
-   *  content." On the `link` arm the sentence closes itself and the action
-   *  stands under it, right-set: a note and a control rather than a note you
-   *  have to read to the end of to find the control. */
-  dayOneLink: 'Change here',
+  /** ⚠ ONE WORD, ON THE ROW — 2026-11-11, twice. It began as "Change here"
+   *  under a closed sentence; then "add this in the same line as the Study
+   *  Pace, change to 'Adjust'". On the row it is not a sentence's offer any
+   *  more, it is the row's control — and a control at the end of a line
+   *  reading "Study Pace · Average | 1 Week Goal · (12hr / wk)" needs one
+   *  verb, not a phrase pointing at itself. */
+  dayOneLink: 'Adjust',
 } as const
 
 /**
