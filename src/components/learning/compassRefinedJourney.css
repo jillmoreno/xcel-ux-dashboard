@@ -1246,6 +1246,9 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  /* The Study Pace row carries a third child at 0% — the day-one note — and
+     it belongs on its own line beneath the value, not beside it. */
+  flex-wrap: wrap;
   gap: 16px;
   padding: 9px 0 10px;
   /* ⚠ A NEUTRAL HAIRLINE, NOT THE STEEL ONE — 2026-11-11: "these divider
@@ -1359,14 +1362,29 @@
   min-width: 0;
 }
 
-/* The day-one pace note, under the three lines and only at 0% — 2026-11-11.
-   It sits outside the figure rows because it is not one: a sentence about the
-   pace, not a reading of it. */
-.crf-rd .crf-focus__dayone {
-  margin: 12px 0 0;
+/* The day-one pace note — inside the Study Pace row, in its own beige box.
+   2026-11-11: "in a container that is light beige."
+
+   ⚠ FULL WIDTH AND LEFT-SET, against a row whose values are right-aligned.
+   It is a sentence, not a figure: reading it from the right edge back would
+   be the row's alignment applied to the wrong kind of content. The beige is
+   her own 100 — the lightest of the three she gave — because this sits on
+   white and has to read as a note rather than as a second card. */
+/* ⚠ THE SELECTOR CARRIES `dd` DELIBERATELY. `.crf-rd .crf-focus__figures dd`
+   sets right-alignment and 600 weight for the VALUES, and it outranks a
+   two-class selector — so this box inherited both and the sentence set itself
+   from the right edge. Matching the same shape is what lets it win. */
+.crf-rd .crf-focus__figures dd.crf-focus__dayone {
+  width: 100%;
+  margin: 2px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--crf-beige-100);
   font-size: 12px;
+  font-weight: 400;
   line-height: 1.5;
-  color: var(--rd-muted);
+  text-align: left;
+  color: var(--rd-body);
 }
 .crf-rd .crf-focus__inlink {
   padding: 0;

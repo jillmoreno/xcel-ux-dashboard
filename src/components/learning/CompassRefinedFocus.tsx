@@ -164,6 +164,25 @@ function FocusProgress({ prog, layout }: { prog: Prog; layout: FocusLayout }) {
               <span aria-hidden className="crf-focus__sep" />
               <span className="crf-focus__under">{REFINED_PACE.hours}</span>
             </dd>
+            {/* ⚠ INSIDE THE STUDY PACE ROW — 2026-11-11: "put this right
+                under the Study pace section. in a container that is light
+                beige." It had been the last thing in the bay, under Estimated
+                Completion, which put a sentence about the PACE below a row
+                about the finish date. It is a `dd` so the list stays a list;
+                the row wraps and it takes the full width beneath the value.
+
+                ⚠ ONLY AT 0%, and the same rule Atlas settled on 2026-10-19:
+                a starting point is a true thing to offer somebody who has not
+                started and a stale one for anybody else. */}
+            {done === 0 ? (
+              <dd className="crf-focus__dayone">
+                {REFINED_PACE.dayOne}{' '}
+                <button type="button" className="crf-focus__inlink">
+                  {REFINED_PACE.dayOneAction}
+                </button>
+                .
+              </dd>
+            ) : null}
           </div>
           <div>
             <dt>{REFINED_PROGRESS_LINES.completion}</dt>
@@ -176,21 +195,6 @@ function FocusProgress({ prog, layout }: { prog: Prog; layout: FocusLayout }) {
         </dl>
       </div>
 
-      {/* ⚠ ONLY AT 0% — 2026-11-11, and the same rule Atlas settled on
-          2026-10-19. The sentence offers a starting point, which is a true
-          thing to say to somebody who has not started and a stale one to
-          anybody else. Past 0% the row above already reports the pace, and
-          what should replace this is a standing nobody has written for this
-          card yet. */}
-      {done === 0 ? (
-        <p className="crf-focus__dayone">
-          {REFINED_PACE.dayOne}{' '}
-          <button type="button" className="crf-focus__inlink">
-            {REFINED_PACE.dayOneAction}
-          </button>
-          .
-        </p>
-      ) : null}
     </div>
   )
 }
