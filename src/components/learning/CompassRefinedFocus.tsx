@@ -1,5 +1,9 @@
 import { ArrowRight } from '@/icons'
-import { REFINED_PACE, REFINED_PROGRESS_LINES } from '@/data/compassRefinedCopy'
+import {
+  REFINED_NEXT_EYEBROW,
+  REFINED_PACE,
+  REFINED_PROGRESS_LINES,
+} from '@/data/compassRefinedCopy'
 import {
   REFINED_COURSE_SECTIONS,
   REFINED_COURSE_TOTALS,
@@ -158,7 +162,11 @@ function FocusNext({ hero, next }: { hero: Hero; next?: string }) {
   return (
     <div className="crf-focus__next">
       <div className="crf-focus__card">
-        {hero.nextLabel ? <p className="crf-focus__label">{hero.nextLabel}</p> : null}
+        {/* ⚠ NO DATE, AND NOT HIS LABEL — 2026-11-11. His carried the day
+            ("Your next step · Tonight, Tue Jun 16") and the lead-in itself
+            varied by state ("Recommended next" on some). One eyebrow on all
+            sixteen; see `REFINED_NEXT_EYEBROW`. */}
+        <p className="crf-focus__label">{REFINED_NEXT_EYEBROW}</p>
         {/* ⚠ A REAL SECTION OF THE REAL COURSE — 2026-11-11. His value was
             "Lesson 1: What life insurance does", which is not a row of the
             Florida Life & Health list. The section is chosen by the same

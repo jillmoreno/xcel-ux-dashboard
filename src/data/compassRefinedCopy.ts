@@ -162,3 +162,25 @@ export const REFINED_PROGRESS_LINES = {
   pace: 'Study Pace',
   completion: 'Estimated Completion',
 } as const
+
+/**
+ * THE NEXT-STEP EYEBROW — 2026-11-11, Jillienne: "remove the date from here,
+ * just Your Next Step".
+ *
+ * ⚠ A CONSTANT, NOT A TRIM OF HIS STRING. `hero.nextLabel` carries a date on
+ * every state — "Your next step · Tonight, Tue Jun 16", "Recommended next ·
+ * Tonight, Wed Jul 29" — so cutting at the "·" would leave the LABEL varying
+ * too: "Your next step" on some states and "Recommended next" on others, for
+ * no reason a reviewer could see. One eyebrow on all sixteen.
+ *
+ * ⚠ THE DATE IS NOT LOST TO THE PAGE. "Tonight, Tue Jun 16" is the only place
+ * the card said WHEN, and the meta line under the section still carries the
+ * duration and the pacing ("1h 40m · on pace for Jul 15"). If the day turns
+ * out to matter, it belongs with that line rather than in the eyebrow.
+ *
+ * ⚠ SENTENCE CASE HERE, CAPITALS ON SCREEN. The stylesheet uppercases this,
+ * the way `JEFF_MVP_RAIL.groupLabel` is uppercased — typing "YOUR NEXT STEP"
+ * would double-transform nowhere and break any parity check that reads
+ * `innerText`.
+ */
+export const REFINED_NEXT_EYEBROW = 'Your next step'

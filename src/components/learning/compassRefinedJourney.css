@@ -1180,9 +1180,20 @@
   text-transform: uppercase;
   color: var(--rd-muted);
 }
+/* ⚠ 13px, DOWN FROM 15 — 2026-11-11, Jillienne on "8 of 41": "what is this
+   font size? it seems excessively large?" It was 15/600, which is exactly the
+   LESSON TITLE's size on the other half of the card — so a data value was
+   competing with the one heading in the widget, and the eye landed on the
+   count instead of on what to do next. It is also a wide jump from its own
+   10px label.
+
+   13 keeps it clearly above the 12px line beneath it and clearly below the
+   15px title opposite. The old Course-progress card set the same figure at
+   12px as a muted note; this stays a shade larger and in full ink, because
+   here it IS the row's content rather than a caption on a name. */
 .crf-rd .crf-focus__figures dd {
   margin: 0;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--rd-ink);
   text-align: right;
