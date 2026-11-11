@@ -7,6 +7,7 @@ import {
 } from '@/icons'
 import {
   REFINED_NEXT_EYEBROW,
+  REFINED_NEXT_META,
   REFINED_PACE,
   REFINED_PROGRESS_LINES,
 } from '@/data/compassRefinedCopy'
@@ -240,7 +241,16 @@ function FocusNext({ hero, next }: { hero: Hero; next?: RefinedSection }) {
             <SectionIcon kind={next?.kind} />
           </span>
           <p className="crf-focus__lessonname">{next?.title ?? hero.next ?? hero.title}</p>
-          {hero.meta ? <p className="crf-focus__note">{hero.meta}</p> : null}
+          {/* ⚠ HOW LONG AND HOW FAR, NOT WHAT IT COVERS — 2026-11-11. His
+              line ran "1h 40m · insurable interest · how a policy pays": a
+              duration and two topics, and the topics are what the TITLE above
+              already says. The dot is the drawn one the progress rows use, so
+              the two halves separate things the same way. */}
+          <p className="crf-focus__note">
+            {REFINED_NEXT_META.parts}
+            <span aria-hidden className="crf-focus__sep" />
+            {REFINED_NEXT_META.approx} {durationOf(hero.meta)}
+          </p>
         </div>
         <div className="crf-focus__cta">
           {hero.cta ? (
@@ -316,4 +326,20 @@ function nextSection(prog?: Prog): RefinedSection | undefined {
 function SectionIcon({ kind }: { kind?: RefinedSectionKind }) {
   const Icon = SECTION_ICON[kind ?? 'lesson'] ?? BookOpenRegular
   return <Icon size={17} aria-hidden />
+}
+
+/**
+ * THE DURATION OUT OF HIS META LINE.
+ *
+ * ⚠ THE FIRST SEGMENT, BY CONSTRUCTION. Every state writes it the same way —
+ * "1h 40m · insurable interest · how a policy pays", "25 min · on pace for
+ * Jul 15" — so the time is whatever precedes the first separator. Reusing it
+ * keeps the figure his; retyping it would have been a third invented number
+ * on a card that already carries two.
+ */
+function durationOf(meta?: string): string {
+  const first = meta?.split('·')[0]?.trim()
+  /* No meta, or a line that does not start with a time: say nothing rather
+     than printing "about undefined". */
+  return first && /\d/.test(first) ? first : ''
 }

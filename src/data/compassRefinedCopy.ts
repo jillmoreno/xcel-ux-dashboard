@@ -235,3 +235,28 @@ export const REFINED_RUBI_INTRO = {
   cta: 'Talk with Rubi',
   dismiss: 'Not now',
 } as const
+
+/**
+ * WHAT THE NEXT SECTION COSTS — 2026-11-11: "change this to 3 sections (small
+ * dot) appx time to complete".
+ *
+ * His line was "1h 40m · insurable interest · how a policy pays": a duration
+ * followed by two topics. The topics are what the section is ABOUT, which the
+ * title above already says; what a learner weighing "do I start this now?"
+ * needs is how long it is and how far in they would get.
+ *
+ * ⚠ THE SECTION COUNT IS INVENTED, like the pace figures. The course list has
+ * forty-one rows and no sub-structure — "do not worry about the course
+ * content right now" — so nothing here knows that the Course Introduction has
+ * three parts. One number stands for every row until the real shape arrives,
+ * which is honest about being a placeholder and dishonest about varying.
+ *
+ * ⚠ THE DURATION IS NOT INVENTED. It is the first segment of his own meta
+ * line, reused rather than retyped, so the time on screen stays whatever his
+ * fixture says for that state.
+ */
+export const REFINED_NEXT_META = {
+  parts: '3 sections',
+  /** Prefixes the duration lifted from the stage's own meta line. */
+  approx: 'about',
+} as const
