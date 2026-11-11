@@ -62,7 +62,10 @@ export function CompassRefinedLearn({
         Ask Rubi
       </button>
       <CompassRefinedColumn>
-        <CompassRefinedHead title={COPY.title} lead={COPY.lead} />
+        <CompassRefinedHead title={COPY.title} />
+        {/* ⚠ OUTSIDE THE HEADER — 2026-11-10. The header is the eyebrow and
+            the title; a lead is page content and renders as page content. */}
+        <p className="crf-lead">{COPY.lead}</p>
 
         {/* ---------- where you left off ---------- */}
         <section className="crf-resume" aria-label={COPY.resumeEyebrow}>

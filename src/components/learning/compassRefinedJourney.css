@@ -876,3 +876,10 @@
   padding: 38px 44px 72px;
   margin: 0 auto;
 }
+
+/* The header element, 2026-11-10 — the eyebrow and the title, nothing else.
+   It carries no layout of its own; the spacing it used to get from the loose
+   paragraphs is unchanged. */
+.crf-rd .crf-rd-head {
+  min-width: 0;
+}

@@ -59,18 +59,19 @@ export function CompassRefinedReadiness({
       </button>
 
       <CompassRefinedColumn>
-      <CompassRefinedHead
-        title={COPY.title}
-        lead={COPY.lead}
-        ruled
-        leadClass="crf-lead--readiness"
-        aside={
-          <p className="crf-live">
-            <span className="crf-live__dot" aria-hidden />
-            {COPY.liveChip}
-          </p>
-        }
-      />
+      <CompassRefinedHead title={COPY.title} ruled />
+      {/* ⚠ OUTSIDE THE HEADER — 2026-11-10, "there should never be copy
+          between the eyebrow and title - or after it". The lead and the live
+          chip were the header's `lead` and `aside`; they are page content,
+          and they sit under the header's rule where the page begins. The chip
+          keeps its row so it stays to the right of the lead. */}
+      <div className="crf-pagelead">
+        <p className="crf-lead crf-lead--readiness">{COPY.lead}</p>
+        <p className="crf-live">
+          <span className="crf-live__dot" aria-hidden />
+          {COPY.liveChip}
+        </p>
+      </div>
 
       {/* ---------- do this next ---------- */}
       <section className="crf-next" aria-label={COPY.nextTitle}>

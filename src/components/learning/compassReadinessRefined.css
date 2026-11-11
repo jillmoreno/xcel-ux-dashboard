@@ -883,3 +883,14 @@
 .cre-rdr .cre-rdr-ask {
   border-color: color-mix(in srgb, var(--rdr-rule) 45%, var(--rdr-card));
 }
+
+/* The lead row, now that it is outside the header — 2026-11-10. It keeps the
+   header's own layout (lead left, chip right, aligned to the top) because
+   what moved is where the row SITS, not what it looks like. */
+.cre-rdr .cre-rdr-pagelead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 0 0 4px;
+}

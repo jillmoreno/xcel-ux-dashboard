@@ -148,16 +148,24 @@ export function CompassReadinessRefined({
               <span className="cre-rdr-eyebrow__access">{REFINED_COURSE.access}</span>
             </p>
             <h1 className="cre-rdr-h1 serif">Your readiness</h1>
-            <p className="cre-rdr-lead">
-              How likely you are to pass, based on your practice answers across every exam topic — and
-              the one thing to do next.
-            </p>
           </div>
+        </header>
+        {/* ⚠ OUTSIDE THE HEADER — 2026-11-10, "there should never be copy
+            between the eyebrow and title - or after it. every page should
+            have eyebrow/title, and everything else is separate from that
+            component." The lead and the exam-date chip were inside it; they
+            are page content and they keep their row, so the chip still sits
+            to the right of the lead. */}
+        <div className="cre-rdr-pagelead">
+          <p className="cre-rdr-lead">
+            How likely you are to pass, based on your practice answers across every exam topic — and
+            the one thing to do next.
+          </p>
           <p className="cre-rdr-exam">
             <CalendarRegular size={14} aria-hidden />
             Exam {formatExamDate(data.plannedExamOn)} · {weeksToExam(data)} weeks away
           </p>
-        </header>
+        </div>
 
         {/* ---------- the score ---------- */}
         <section className="cre-rdr-hero" aria-label="Readiness to pass" data-hero={hero}>

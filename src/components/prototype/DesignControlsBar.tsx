@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { Fragment, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Check, ChevronDown, Flag, Sliders, X } from '@/icons'
 import { Sheet } from '@/components/ui/Sheet'
@@ -445,19 +445,40 @@ function DesignControl({
       panelLabel={def.label}
       /* Wider when the rows carry a second line — at 240 her nudge titles
          wrap onto three lines and the menu stops scanning. */
-      panelMinWidth={variants.some((v) => v.detail) ? 310 : 240}
+      /* ⚠ A SECTIONED MENU GETS THE WIDER PANEL TOO — 2026-11-10. Grouping
+         is for a LONG list, and a long list's rows are long: at 240 the
+         Readiness stage's sixteen rows each wrapped to two lines, which
+         undoes the scanning the headings were added for. A row that wraps is
+         wider than the panel, not taller than it. */
+      panelMinWidth={variants.some((v) => v.detail || v.section) ? 310 : 240}
     >
       {/* ⚠ A ROW IS UP TO THREE THINGS, and which ones it has is the
           variant's business: the short `label` — her numbered badge — then
           `description` as the row's title and `detail` beneath it. A variant
           carrying only a label renders exactly what it always did, so every
           other dropdown on this bar is untouched. */}
-      {variants.map((v) => {
+      {variants.map((v, i) => {
         const active = v.value === current
         const twoLine = Boolean(v.description)
+        /* ⚠ A HEADING WHEN THE SECTION CHANGES — 2026-11-10, "add the divider
+           lines in the dropdown we worked on to show like in this screen shot
+           with the subheaders". The variants' own ORDER is the grouping: a
+           heading is drawn wherever this row's `section` differs from the one
+           above it, so there is no second list to keep in step and a row
+           cannot land in a group it is not next to. A flag that sets no
+           `section` draws nothing, which is every other dropdown on the bar.
+
+           ⚠ THE FIRST GROUP TAKES NO RULE. The panel's own top edge is
+           already a line; a second one 6px below it reads as a mistake. */
+        const heading = v.section && v.section !== variants[i - 1]?.section ? v.section : null
         return (
+          <Fragment key={`${v.value}-group`}>
+          {heading ? (
+            <p role="presentation" style={i === 0 ? ROW_SECTION_FIRST : ROW_SECTION}>
+              {heading}
+            </p>
+          ) : null}
           <button
-            key={v.value}
             type="button"
             role="radio"
             aria-checked={active}
@@ -483,6 +504,7 @@ function DesignControl({
             )}
             {active && <Check size={15} aria-hidden />}
           </button>
+          </Fragment>
         )
       })}
       {/* Her menu's closing note — a rule about the options above it, not a
@@ -715,6 +737,26 @@ const SHEET_NOTE: CSSProperties = {
   fontSize: 12,
   lineHeight: '18px',
   color: 'var(--color-text-secondary)',
+}
+
+/* The group heading inside a dropdown — 2026-11-10. It takes the bar's own
+   eyebrow shape (the one `SHEET_DEFAULT` and the panel use) rather than a new
+   one, and the rule above it is what separates the groups. */
+const ROW_SECTION_FIRST: CSSProperties = {
+  margin: '2px 2px 4px',
+  padding: '0 8px',
+  fontSize: 10,
+  fontWeight: 700,
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: 'var(--color-text-tertiary, var(--color-text-secondary))',
+}
+
+const ROW_SECTION: CSSProperties = {
+  ...ROW_SECTION_FIRST,
+  marginTop: 8,
+  paddingTop: 8,
+  borderTop: '1px solid var(--color-border-subtle, rgb(0 0 0 / 0.08))',
 }
 
 const ROW_BADGE: CSSProperties = {

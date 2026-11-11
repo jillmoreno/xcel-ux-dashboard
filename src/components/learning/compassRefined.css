@@ -3885,3 +3885,12 @@
     transition: box-shadow 0.16s ease, border-color 0.16s ease;
   }
 }
+
+/* The lead row on a page whose lead used to live in the header — 2026-11-10.
+   Same layout the header gave it: lead left, chip right, tops aligned. */
+.crf .crf-pagelead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}

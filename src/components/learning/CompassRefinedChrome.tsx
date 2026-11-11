@@ -156,24 +156,27 @@ export function CompassRefinedPending({ page }: { page: JeffMvpPage }) {
  * carries a 1px ink rule and a 680px lead at 1.55; his Learn header carries no
  * rule and a 600px lead at 1.5. Measured on both — see the stylesheet.
  */
-export function CompassRefinedHead({
-  title,
-  lead,
-  aside,
-  ruled,
-  leadClass,
-  below,
-}: {
-  title: string
-  /** Omitted on the Overview, which carries a course line and a meta row
-   *  instead of a paragraph. */
-  lead?: string
-  aside?: ReactNode
-  ruled?: boolean
-  leadClass?: string
-  /** What the Overview puts under its title in place of a lead. */
-  below?: ReactNode
-}) {
+/**
+ * THE PAGE HEADER — eyebrow and title, and nothing else.
+ *
+ * ⚠ THAT IS A RULE, NOT A SHAPE IT HAPPENS TO HAVE — 2026-11-10, Jillienne:
+ * "there should never be copy between the eyebrow and title - or after it.
+ * every page should have eyebrow/title, and everything else is separate from
+ * that component."
+ *
+ * It used to take `lead`, `below`, `leadClass` and `aside`, and the pages
+ * used all four: a paragraph under the title here, a dismissible intro there,
+ * an exam-date chip top right. So "the header" meant something different on
+ * every page, and the eyebrow and title — the two things that ARE the same on
+ * every page — were buried among the differences. The props are gone rather
+ * than deprecated; a page that wants a lead renders one after this component,
+ * where it is page content and reads as page content.
+ *
+ * ⚠ `ruled` STAYS, because the rule belongs to the header: it is the line
+ * BETWEEN the header and whatever the page puts next, which is the separation
+ * this change is about. Readiness is the page that carries one.
+ */
+export function CompassRefinedHead({ title, ruled }: { title: string; ruled?: boolean }) {
   return (
     <header className={ruled ? 'crf-head crf-head--ruled' : 'crf-head'}>
       <div style={{ minWidth: 0 }}>
@@ -190,10 +193,7 @@ export function CompassRefinedHead({
           <span className="crf-head__access">{REFINED_COURSE.access}</span>
         </p>
         <h1 className="crf-h1">{title}</h1>
-        {lead ? <p className={leadClass ? `crf-lead ${leadClass}` : 'crf-lead'}>{lead}</p> : null}
-        {below}
       </div>
-      {aside}
     </header>
   )
 }

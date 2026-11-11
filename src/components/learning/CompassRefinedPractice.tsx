@@ -83,27 +83,25 @@ export function CompassRefinedPractice({
         Ask Rubi
       </button>
       <CompassRefinedColumn>
-        <CompassRefinedHead
-          title={COPY.title}
-          below={
-            <>
-              {/* ⚠ DISMISSIBLE, as his is — `introOpen` / `dismissIntro`. */}
-              {intro ? (
-                <p className="crf-pr__lead">
-                  {COPY.lead}
-                  <button
-                    type="button"
-                    className="crf-pr__dismiss"
-                    aria-label={COPY.dismissLabel}
-                    onClick={() => setIntro(false)}
-                  >
-                    <X size={13} aria-hidden />
-                  </button>
-                </p>
-              ) : null}
-            </>
-          }
-        />
+        <CompassRefinedHead title={COPY.title} />
+        {/* ⚠ OUTSIDE THE HEADER — 2026-11-10. The header is the eyebrow and
+            the title; a lead is page content, and a DISMISSIBLE one doubly
+            so — it can disappear, and a header that can lose half of itself
+            was never a header.
+            ⚠ DISMISSIBLE, as his is — `introOpen` / `dismissIntro`. */}
+        {intro ? (
+          <p className="crf-pr__lead">
+            {COPY.lead}
+            <button
+              type="button"
+              className="crf-pr__dismiss"
+              aria-label={COPY.dismissLabel}
+              onClick={() => setIntro(false)}
+            >
+              <X size={13} aria-hidden />
+            </button>
+          </p>
+        ) : null}
 
         {/* ---------- the two recommendations ---------- */}
         <section className="crf-pr__rec" aria-label={PR.weakest.title}>

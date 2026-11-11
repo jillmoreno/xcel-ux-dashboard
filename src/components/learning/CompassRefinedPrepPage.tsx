@@ -32,19 +32,29 @@ export function CompassRefinedPrepPage({ stage = 'p2' }: { stage?: string }) {
   const m = prepStage(stage)
   return (
     <div className="crf-rd" data-stage={m.stage}>
-      {/* ⚠ THE COURSE EYEBROW — 2026-11-10. It is the FIRST thing on
-          the page, above the greeting: an eyebrow labels the page, and the
-          greeting is addressed to the learner. Below the greeting it read as
-          a third stacked line of header rather than the context for it. */}
-      <p className="crf-rd-brow">
-        <span>{REFINED_COURSE.name}</span>
-        <span className="crf-rd-brow__dot" aria-hidden>
-          ·
-        </span>
-        <span className="crf-rd-brow__access">{REFINED_COURSE.access}</span>
-      </p>
+      {/* ⚠ A REAL `header`, holding the eyebrow and the title and nothing
+          else — 2026-11-10. These pages drew both as loose paragraphs in
+          the page, so there was no element that WAS the header and nothing
+          to keep copy out of it. */}
+      <header className="crf-rd-head">
+        {/* ⚠ THE COURSE EYEBROW — 2026-11-10. It is the FIRST thing on
+            the page, above the greeting: an eyebrow labels the page, and the
+            greeting is addressed to the learner. Below the greeting it read as
+            a third stacked line of header rather than the context for it. */}
+        <p className="crf-rd-brow">
+          <span>{REFINED_COURSE.name}</span>
+          <span className="crf-rd-brow__dot" aria-hidden>
+            ·
+          </span>
+          <span className="crf-rd-brow__access">{REFINED_COURSE.access}</span>
+        </p>
+          <h1 className="serif crf-rd-h1">Your exam prep</h1>
+        </header>
+      {/* ⚠ THE GREETING IS PAGE CONTENT, NOT HEADER — 2026-11-10,
+          "there should never be copy between the eyebrow and title - or
+          after it". It sat BETWEEN the eyebrow and the title, which put a
+          sentence in the middle of the one thing every page shares. */}
       <p className="crf-rd-hello">{m.hello}</p>
-      <h1 className="serif crf-rd-h1">Your exam prep</h1>
       <p className="crf-rd-meta">
         <span>Life &amp; Health · Florida 2-15</span>
         <span aria-hidden>·</span>

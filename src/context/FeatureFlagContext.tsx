@@ -90,6 +90,18 @@ export type FeatureFlagVariant = {
    * it where the two genuinely differ.
    */
   badge?: string
+  /**
+   * THE GROUP THIS ROW BELONGS TO, in a dropdown — 2026-11-10, Jillienne on
+   * the Readiness stage menu: "add the divider lines in the dropdown we
+   * worked on to show like in this screen shot with the subheaders".
+   *
+   * ⚠ A STRING ON THE ROW, NOT A LIST OF GROUPS, so a flag that wants no
+   * grouping writes nothing and renders exactly as it always did. The bar
+   * starts a new heading whenever this value CHANGES down the list, which
+   * means the variants' own order is the grouping — there is no second place
+   * to keep in step, and a row cannot end up in a group it is not next to.
+   */
+  section?: string
 }
 
 export type FeatureFlagDefinition = {
@@ -1825,36 +1837,45 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Readiness stage',
     description:
       'Which of the prototype’s sixteen states the Overview shows. Q1–Q8 walk the QE course and Readiness only appears at Q8. P1–P3 are the exam-prep page: establishing, 58% Developing, 86% Ready. U1–U5 are the unified page where course progress and Readiness sit side by side. Only bites on the V2 arm of Overview version.',
-    /* ⚠ FOUR FIELDS PER ROW, NOT TWO — 2026-11-10, "fix the ui for this so it
-       can be read". A two-line row on this bar is `badge` · `description` ·
-       `detail`, and the badge is a FIXED 19px square meant for a key like
-       "Q1". This flag had been giving it the whole label — "Q1 · First-time
-       learner · 0%" crammed into nineteen pixels — so sixteen rows drew their
-       text on top of each other and the menu was unreadable.
+    /* ⚠ ONE LINE AND A SECTION — 2026-11-10, twice over.
 
-       The bug was in this data, not in the bar: `DesignControlsBar` renders
-       every other dropdown correctly from the same code. `label` still has to
-       be the long string, because it is what the COLLAPSED control shows
-       ("P2 · Readiness 58% · exam preparation"); what was missing is the
-       badge, and the series moving from `description` to `detail` so the row
-       reads key, state, series down the page. */
+       The menu was unreadable first: a two-line row on this bar is `badge` ·
+       `description` · `detail`, and the badge is a FIXED 19px square meant
+       for a key like "Q1". This flag had been handing it the whole label,
+       "Q1 · First-time learner · 0%", crammed into nineteen pixels, so
+       sixteen rows drew their text on top of each other. The bug was in this
+       data, not in the bar — every other dropdown renders correctly from the
+       same code.
+
+       The first fix split each row into badge · state · series. Jillienne's
+       own answer is better and is what is here: ONE line carrying the whole
+       label, with the series as a GROUP HEADING over a divider. The series
+       repeated on sixteen rows ("The QE course" eight times) is noise; said
+       once over the four rows it covers, it is structure. `label` also stays
+       the long string because it is what the COLLAPSED control shows.
+
+       ⚠ THE SECTIONS SPLIT THE Q SERIES IN TWO. Q1–Q4 are lessons and Q5–Q8
+       are the wrap-up — the affidavit, the final exam, the survey, the
+       certificate — which the fixtures already treat as one series. The
+       heading is where that distinction is visible to a reviewer choosing a
+       state, and it is her grouping, not the fixtures'. */
     variants: [
-      { value: 'q1', badge: 'Q1', label: 'Q1 · First-time learner · 0%', description: 'First-time learner · 0%', detail: 'The QE course' },
-      { value: 'q2', badge: 'Q2', label: 'Q2 · QE 20% · Continue your course', description: 'QE 20% · Continue your course', detail: 'The QE course' },
-      { value: 'q3', badge: 'Q3', label: 'Q3 · QE 50% · Continue your course', description: 'QE 50% · Continue your course', detail: 'The QE course' },
-      { value: 'q4', badge: 'Q4', label: 'Q4 · QE 80% · You’re almost there', description: 'QE 80% · You’re almost there', detail: 'The QE course' },
-      { value: 'q5', badge: 'Q5', label: 'Q5 · Lessons complete · affidavit next', description: 'Lessons complete · affidavit next', detail: 'The QE course' },
-      { value: 'q6', badge: 'Q6', label: 'Q6 · Final course exam open', description: 'Final course exam open', detail: 'The QE course' },
-      { value: 'q7', badge: 'Q7', label: 'Q7 · Survey and certificate next', description: 'Survey and certificate next', detail: 'The QE course' },
-      { value: 'q8', badge: 'Q8', label: 'Q8 · QE complete · Readiness appears', description: 'QE complete · Readiness appears', detail: 'The QE course' },
-      { value: 'p1', badge: 'P1', label: 'P1 · Establishing Readiness', description: 'Establishing Readiness', detail: 'Exam prep' },
-      { value: 'p2', badge: 'P2', label: 'P2 · Readiness 58% · exam preparation', description: 'Readiness 58% · exam preparation', detail: 'Exam prep' },
-      { value: 'p3', badge: 'P3', label: 'P3 · Readiness 86% · Ready to pass', description: 'Readiness 86% · Ready to pass', detail: 'Exam prep' },
-      { value: 'u1', badge: 'U1', label: 'U1 · Starting · not enough data', description: 'Starting · not enough data', detail: 'Learning journey' },
-      { value: 'u2', badge: 'U2', label: 'U2 · Course 36% · building Readiness', description: 'Course 36% · building Readiness', detail: 'Learning journey' },
-      { value: 'u3', badge: 'U3', label: 'U3 · Course 61% · Readiness 62%', description: 'Course 61% · Readiness 62%', detail: 'Learning journey' },
-      { value: 'u4', badge: 'U4', label: 'U4 · Course complete · Readiness 80%', description: 'Course complete · Readiness 80%', detail: 'Learning journey' },
-      { value: 'u5', badge: 'U5', label: 'U5 · Simulator passed · Ready to pass', description: 'Simulator passed · Ready to pass', detail: 'Learning journey' },    ],
+      { value: 'q1', label: 'Q1 · First-time learner · 0%', section: 'Regulated FL · QE lessons' },
+      { value: 'q2', label: 'Q2 · QE 20% · Continue your course', section: 'Regulated FL · QE lessons' },
+      { value: 'q3', label: 'Q3 · QE 50% · Continue your course', section: 'Regulated FL · QE lessons' },
+      { value: 'q4', label: 'Q4 · QE 80% · You’re almost there', section: 'Regulated FL · QE lessons' },
+      { value: 'q5', label: 'Q5 · Lessons complete · affidavit next', section: 'Regulated FL · Wrap-up' },
+      { value: 'q6', label: 'Q6 · Final course exam open', section: 'Regulated FL · Wrap-up' },
+      { value: 'q7', label: 'Q7 · Survey and certificate next', section: 'Regulated FL · Wrap-up' },
+      { value: 'q8', label: 'Q8 · QE complete · Readiness appears', section: 'Regulated FL · Wrap-up' },
+      { value: 'p1', label: 'P1 · Establishing Readiness', section: 'Regulated FL · Exam Prep' },
+      { value: 'p2', label: 'P2 · Readiness 58% · exam preparation', section: 'Regulated FL · Exam Prep' },
+      { value: 'p3', label: 'P3 · Readiness 86% · Ready to pass', section: 'Regulated FL · Exam Prep' },
+      { value: 'u1', label: 'U1 · Starting · not enough data', section: 'Unregulated · move freely' },
+      { value: 'u2', label: 'U2 · Course 36% · building Readiness', section: 'Unregulated · move freely' },
+      { value: 'u3', label: 'U3 · Course 61% · Readiness 62%', section: 'Unregulated · move freely' },
+      { value: 'u4', label: 'U4 · Course complete · Readiness 80%', section: 'Unregulated · move freely' },
+      { value: 'u5', label: 'U5 · Simulator passed · Ready to pass', section: 'Unregulated · move freely' },    ],
     defaultVariant: 'p2',
     defaultEnabled: true,
     page: 'dashboard-rebrand',

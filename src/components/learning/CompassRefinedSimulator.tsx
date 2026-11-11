@@ -48,14 +48,10 @@ export function CompassRefinedSimulator({
         Ask Rubi
       </button>
       <CompassRefinedColumn>
-        <CompassRefinedHead
-          title={COPY.title}
-          below={
-            <>
-              <p className="crf-lead">{COPY.lead}</p>
-            </>
-          }
-        />
+        <CompassRefinedHead title={COPY.title} />
+        {/* ⚠ OUTSIDE THE HEADER — 2026-11-10. The header is the eyebrow and
+            the title; a lead is page content and renders as page content. */}
+        <p className="crf-lead">{COPY.lead}</p>
 
         {/* ---------- practice first, and the gate ---------- */}
         <section className="crf-pr__rec" aria-label={SIM.practiceFirst.title}>

@@ -183,3 +183,36 @@ describe('the page Refined owns', () => {
      been vacuous (a component takes one props object however many fields it
      destructures) and a `toString()` grep breaks under minification. */
 })
+
+/**
+ * THE HEADER IS THE EYEBROW AND THE TITLE — 2026-11-10, Jillienne: "there
+ * should never be copy between the eyebrow and title - or after it. every
+ * page should have eyebrow/title, and everything else is separate from that
+ * component."
+ *
+ * ⚠ THIS IS THE CASE THAT KEEPS IT TRUE. The header used to take `lead`,
+ * `below`, `leadClass` and `aside`, and seven pages used them — so "the
+ * header" meant something different on every page. The props are gone, but a
+ * page can always put a paragraph back inside the `<header>` by hand, and
+ * nothing else would notice.
+ */
+describe('the page header holds nothing but the eyebrow and the title', () => {
+  for (const page of RAIL_PAGES) {
+    it(`${page}`, () => {
+      const { container } = wrap(<CompassRefinedShell page={page} onSelectPage={() => {}} />)
+      const header = container.querySelector('header')
+      expect(header, `${page} draws no header element`).toBeTruthy()
+      /* Exactly two things, in this order, however the page wraps them. */
+      const brow = header!.querySelector('.crf-head__eyebrow, .cre-rdr-eyebrow, .crf-rd-brow')
+      const h1 = header!.querySelector('h1')
+      expect(brow, `${page}: no course eyebrow in the header`).toBeTruthy()
+      expect(h1, `${page}: no title in the header`).toBeTruthy()
+      /* ⚠ NOTHING BETWEEN THEM, which is the half that was wrong on the
+         stage pages — the greeting sat between the eyebrow and the title. */
+      expect(brow!.nextElementSibling).toBe(h1)
+      /* ⚠ AND NOTHING AFTER. A `<p>` anywhere in the header is a lead that
+         has crept back in; the one on each page belongs under it. */
+      expect([...header!.querySelectorAll('p')].filter((p) => p !== brow)).toEqual([])
+    })
+  }
+})
