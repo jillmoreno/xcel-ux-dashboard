@@ -923,6 +923,12 @@
      200 #e7e3db, 300 #dbd6c9. It is NOT in `tokens.css` — adding a brand
      neutral ramp to the system is a bigger decision than one card's ground,
      so it lives here until somebody makes it. */
+  /* ⚠ A 50 BELOW HER RAMP — 2026-11-11: "make the beige lighter". Her set
+     starts at 100 (#f3f1ed) and that was the note's ground; lighter than the
+     lightest she gave means mixing toward white rather than picking from the
+     three, so it is named for where it sits rather than pretending to be one
+     of hers. */
+  --crf-beige-50: color-mix(in srgb, #f3f1ed 55%, #fff);
   --crf-beige-100: #f3f1ed;
   --crf-beige-200: #e7e3db;
   --crf-beige-300: #dbd6c9;
@@ -1247,9 +1253,14 @@
   align-items: baseline;
   justify-content: space-between;
   /* The Study Pace row carries a third child at 0% — the day-one note — and
-     it belongs on its own line beneath the value, not beside it. */
+     it belongs on its own line beneath the value, not beside it.
+     ⚠ THE TWO GAPS ARE SET APART — 2026-11-11: "reduce the spacing above it."
+     The space above the note was the row's own 16px gap, not its margin, so
+     trimming the margin would have moved nothing. Only the pace row ever
+     wraps, so the row-gap reaches that note and nothing else. */
   flex-wrap: wrap;
-  gap: 16px;
+  column-gap: 16px;
+  row-gap: 8px;
   padding: 9px 0 10px;
   /* ⚠ A NEUTRAL HAIRLINE, NOT THE STEEL ONE — 2026-11-11: "these divider
      lines should be a light gray. not blue." They were `--rd-steel-edge`
@@ -1376,10 +1387,10 @@
    from the right edge. Matching the same shape is what lets it win. */
 .crf-rd .crf-focus__figures dd.crf-focus__dayone {
   width: 100%;
-  margin: 2px 0 0;
+  margin: 0;
   padding: 10px 12px;
   border-radius: 8px;
-  background: var(--crf-beige-100);
+  background: var(--crf-beige-50);
   font-size: 12px;
   font-weight: 400;
   line-height: 1.5;
