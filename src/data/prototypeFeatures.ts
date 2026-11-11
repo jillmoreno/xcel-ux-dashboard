@@ -1298,6 +1298,83 @@ const AUTHORED_FEATURES: PrototypeFeature[] = [
     livePreviewUrl: `${PROTOTYPE_BASE}/xcel-compass-readiness-86.html`,
     brands: ['xcel'],
   },
+  /*
+   * THE THREE COMPASS VERSIONS, ONE ROW EACH — 2026-11-10, Jillienne: "I
+   * wanted 3 different rows. 1 per version, and i dont want it in the
+   * refinement section."
+   *
+   * ⚠ EXPLORATIONS, NOT PROTOTYPES, and the reason is mechanical rather than
+   * taste. Prototypes holds ONE row per scope and every row is `main`'s build
+   * with no pins — `UxDashboard.smoke.test.tsx` refuses a second `compass`
+   * row in as many words ("a second row for a scope is a Refinement job") and
+   * refuses `?ff=` on any row there. Three rows that each pin a version is
+   * exactly the shape that rule exists to stop, so they live where a row may
+   * argue rather than report.
+   *
+   * ⚠ THEY ARE ROUTES, WHERE EVERY OTHER EXPLORATION IS A DOCUMENT, and that
+   * is deliberate: the three versions are IN the product behind one flag, and
+   * a document of any of them would be a second copy to keep in step. The
+   * type has always allowed it (`to` is explore-only, not prototype-only);
+   * nothing here is bent to make it work.
+   *
+   * ⚠ AN `?ff=` PIN TRACKS `main`, which CLAUDE.md names as the thing that has
+   * bitten before: when `compass-mvp-version` changes underneath, these rows
+   * go stale silently — no error, they just quietly become something else.
+   * That is the accepted cost of a row per version. If one of these ever has
+   * to NOT move (a user test, a sign-off), that is `freeze-for-testing`'s
+   * frozen branch, not a row here.
+   *
+   * ⚠ ANJANI'S ROW PINS `current` RATHER THAN OMITTING THE PARAM. The arm is
+   * the flag's default today, so the pin changes nothing — until the default
+   * moves, at which point the row that says "Anjani's version" would open
+   * somebody else's. The pin is what keeps the title true.
+   */
+  {
+    id: 'xcel-compass-v-anjani',
+    title: "Compass — Anjani's version",
+    accent: 'teal',
+    icon: 'monitor',
+    blurb:
+      "Compass as it ships: her rail — Overview, Learn, Workspace, Study planner, Ask Rubi, Progress — over an EXAM PREP group whose three rows are LOCKED behind the exam-prep gate. The Overview is the learning journey, the 62% ring and the assignments table. This is the baseline the other two rows are arguing with, and the one the Prototypes Compass row opens.",
+    tileBlurb:
+      "What ships today — her six-row rail, the learning journey Overview, and exam prep behind a gate.",
+    kind: 'explore',
+    status: 'ready',
+    category: 'exploration',
+    to: '/dashboard-rebrand?demo=1&section=compass&ff=compass-mvp-version:current',
+    brands: ['xcel'],
+  },
+  {
+    id: 'xcel-compass-v-jeff',
+    title: "Compass — Jeff's version",
+    accent: 'blue',
+    icon: 'monitor',
+    blurb:
+      "His thirteen-page MVP of 2026-11-09, ported into the product: a different rail — Overview, Learn and Study planner, then an EXAM PREP rule over Prep Review, Practice, Flashcards, Exam Simulator and Readiness, all of them reachable rather than gated. The structural argument is that row order: planning is part of learning, exam prep is what follows it, and Readiness is what the other four feed.",
+    tileBlurb:
+      "His eight-row rail with exam prep open rather than gated, and Readiness as the thing it all feeds.",
+    kind: 'explore',
+    status: 'ready',
+    category: 'exploration',
+    to: '/dashboard-rebrand?demo=1&section=compass&ff=compass-mvp-version:jeff',
+    brands: ['xcel'],
+  },
+  {
+    id: 'xcel-compass-v-refined',
+    title: 'Compass — Refined version',
+    accent: 'gold',
+    icon: 'monitor',
+    blurb:
+      "The third answer, built page by page from the other two. Today it is Jeff's shell with the Readiness page rebuilt against Nina Conrad's \u201cCompass Rapid Insights: Your Exam Prep\u201d (Nov 2026) \u2014 one comparable scale for every topic, the gap to Ready stated as time against the exam date, and plain language throughout. The remaining pages are being audited one at a time against both versions, with titles brought into line across the set as each lands.",
+    tileBlurb:
+      "Being composed page by page from both versions. Readiness is rebuilt on the research; the rest is in progress.",
+    kind: 'explore',
+    status: 'ready',
+    inProgress: true,
+    category: 'exploration',
+    to: '/dashboard-rebrand?demo=1&section=compass&ff=compass-mvp-version:refined',
+    brands: ['xcel'],
+  },
   {
     id: 'xcel-compass-mvp',
     title: "Compass MVP — Jeff's version (13 pages)",

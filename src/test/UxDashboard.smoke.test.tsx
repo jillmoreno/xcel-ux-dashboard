@@ -193,6 +193,14 @@ describe('section routing (sectionOf)', () => {
     'xcel-compass-readiness-58': 'exploration',
     'xcel-compass-readiness-86': 'exploration',
     'xcel-compass-mvp': 'exploration',
+    /* THE THREE VERSION ROWS (2026-11-10) — one per arm of
+       `compass-mvp-version`. ⚠ EXPLORATIONS, NOT PROTOTYPES: the block below
+       refuses a second row for the `compass` scope and refuses `?ff=` on any
+       Prototypes row, which is exactly what three pinned versions would be.
+       See the rows' own note in `prototypeFeatures.ts`. */
+    'xcel-compass-v-anjani': 'exploration',
+    'xcel-compass-v-jeff': 'exploration',
+    'xcel-compass-v-refined': 'exploration',
     // `xcel-course-entry` (the repo's first authored dev handoff, 2026-09-24)
     // stood here until 2026-10-15 — archived, `course-entry-handoff`. Both
     // handoffs were removed as "not ready"; Development lists nothing now.
@@ -601,10 +609,22 @@ describe('the Prototypes row opens the committed configuration', () => {
     // the guard entirely.
     //
     // ⚠ TWO SINCE 2026-10-14, both Prototypes rows. The guided-row trap above
-    // is unchanged; a `to` is still only ever a Prototypes row's.
+    // is unchanged.
+    //
+    // ⚠ AND THREE EXPLORATION ROWS SINCE 2026-11-10 — the Compass version
+    // rows. A `to` was only ever a Prototypes row's until then, and the line
+    // that said so is retired rather than quietly dropped: the three versions
+    // live in the PRODUCT behind one flag, so a row per version is a route
+    // with an `?ff=` pin or it is a second copy of the surface to keep in
+    // step. They are `explore` rows, so the guided-row trap above does not
+    // reach them. What this assertion still catches is the thing it was
+    // written for: any OTHER row growing a `to` by accident.
     expect(PROTOTYPE_FEATURES.filter((f) => f.to).map((f) => f.id).sort()).toEqual([
       'xcel-atlas-learning',
       'xcel-compass',
+      'xcel-compass-v-anjani',
+      'xcel-compass-v-jeff',
+      'xcel-compass-v-refined',
       'xcel-dashboard',
       'xcel-invite',
     ])
