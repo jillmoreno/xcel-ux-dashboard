@@ -55,7 +55,7 @@ export function CompassRefinedQuestionSet({
             <Library size={20} />
           </span>
           <div style={{ minWidth: 0 }}>
-            <h1 className="crf-qs__title crf-serif">{COPY.title}</h1>
+            <h1 className="crf-qs__title">{COPY.title}</h1>
             <p className="crf-qs__meta">{COPY.meta}</p>
           </div>
           <div className="crf-qs__headright">

@@ -81,7 +81,7 @@ export function CompassRefinedReadiness({
               <RubiLogo size={13} aria-hidden />
               {COPY.nextEyebrow} {RD.overall}%
             </p>
-            <h2 className="crf-next__title crf-serif">{COPY.nextTitle}</h2>
+            <h2 className="crf-next__title">{COPY.nextTitle}</h2>
             <p className="crf-next__text">{COPY.nextBody}</p>
           </div>
           <div className="crf-next__set">
@@ -118,7 +118,7 @@ export function CompassRefinedReadiness({
             {RD.stats.map((s) => (
               <div key={s.label} style={{ borderLeft: s.ruled ? '1px solid var(--cjm-rule-warm)' : undefined }}>
                 <dt>{s.label}</dt>
-                <dd className="crf-serif" style={{ color: `var(--cjm-${s.tone})` }}>
+                <dd style={{ color: `var(--cjm-${s.tone})` }}>
                   {s.value}
                 </dd>
               </div>
@@ -133,7 +133,7 @@ export function CompassRefinedReadiness({
       <section className="crf-topics" aria-label={COPY.topicsTitle}>
         <div className="crf-topics__head">
           <div style={{ minWidth: 0 }}>
-            <h2 className="crf-h2 crf-serif">{COPY.topicsTitle}</h2>
+            <h2 className="crf-h2">{COPY.topicsTitle}</h2>
             <p className="crf-topics__sub">{COPY.topicsSub}</p>
             <p className="crf-card__text">{COPY.topicsBody}</p>
           </div>
@@ -393,7 +393,7 @@ function ReadinessRing() {
             gap: 3,
           }}
         >
-          <span className="crf-serif" style={{ fontSize: 28, lineHeight: 1 }}>
+          <span style={{ fontSize: 28, lineHeight: 1 }}>
             {RD.overall}%
           </span>
           <span

@@ -50,7 +50,7 @@ export function CompassRefinedFlashcardTopic({
 
         <header className="crf-ftopic__head">
           <p className="crf-eyebrow">{TOPIC.topicMeta}</p>
-          <h1 className="crf-h1 crf-serif">{TOPIC.topicTitle}</h1>
+          <h1 className="crf-h1">{TOPIC.topicTitle}</h1>
           <div className="crf-ftopic__modes">
             <button type="button" className="crf-cta" onClick={go('flashcard-study')}>
               <Notebook size={14} aria-hidden />

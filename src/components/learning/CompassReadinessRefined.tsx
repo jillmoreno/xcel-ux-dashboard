@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { REFINED_COURSE } from '@/data/compassRefinedCopy'
 import { BookOpenRegular, CalendarRegular, ChevronDown, CircleInfoRegular, Clock, RubiLogo } from '@/icons'
 import {
   READINESS_BANDS,
@@ -131,6 +132,21 @@ export function CompassReadinessRefined({
       <div className="cre-rdr-col">
         <header className="cre-rdr-head">
           <div>
+            {/* ⚠ THE COURSE EYEBROW — 2026-11-10, "the eyebrow should exist on
+                EVERY page". This page has its own header rather than the
+                shared `CompassRefinedHead`, because it is the one page that
+                was refined before the fork; so the eyebrow is repeated here
+                rather than inherited. Two copies of four lines, against
+                routing this page's header through a component built for a
+                different layout — the markup is the same shape and the
+                stylesheet below gives it the same rules. */}
+            <p className="cre-rdr-eyebrow">
+              <span>{REFINED_COURSE.name}</span>
+              <span className="cre-rdr-eyebrow__dot" aria-hidden>
+                ·
+              </span>
+              <span className="cre-rdr-eyebrow__access">{REFINED_COURSE.access}</span>
+            </p>
             <h1 className="cre-rdr-h1 serif">Your readiness</h1>
             <p className="cre-rdr-lead">
               How likely you are to pass, based on your practice answers across every exam topic — and
@@ -153,7 +169,7 @@ export function CompassReadinessRefined({
 
           <div className="cre-rdr-hero__read">
             <p className="cre-rdr-eyebrow">Readiness to pass</p>
-            <h2 className="cre-rdr-h2 serif">
+            <h2 className="cre-rdr-h2">
               You’re {band.label}. Ready starts at {READY_AT}.
             </h2>
             <p className="cre-rdr-body">
@@ -163,20 +179,20 @@ export function CompassReadinessRefined({
             <dl className="cre-rdr-facts">
               <div>
                 <dt>Ready at</dt>
-                <dd className="serif" data-tone="ready">
+                <dd data-tone="ready">
                   {READY_AT}
                 </dd>
               </div>
               <div>
                 <dt>Last {data.trendWeeks} weeks</dt>
-                <dd className="serif" data-tone="steel">
+                <dd data-tone="steel">
                   {data.delta > 0 ? '+' : ''}
                   {data.delta} pts
                 </dd>
               </div>
               <div>
                 <dt>Your pace</dt>
-                <dd className="serif" data-tone="steel">
+                <dd data-tone="steel">
                   {formatPace(pacePerWeek(data))} / week
                 </dd>
               </div>
@@ -237,7 +253,7 @@ export function CompassReadinessRefined({
               <RubiLogo size={13} aria-hidden />
               Do this next
             </p>
-            <h2 className="cre-rdr-h2 serif">Practice {weakest.sub.name}</h2>
+            <h2 className="cre-rdr-h2">Practice {weakest.sub.name}</h2>
             <p className="cre-rdr-body">
               It is your lowest sub-topic, scoring <strong>{weakest.sub.score}</strong>, inside{' '}
               {weakest.topic.name} ({weakest.topic.weight}% of the exam). Raising it is the fastest way
@@ -290,7 +306,7 @@ export function CompassReadinessRefined({
         <section className="cre-rdr-topics" aria-label="Readiness by topic">
           <div className="cre-rdr-topics__head">
             <div>
-              <h2 className="cre-rdr-h2 serif">Readiness by topic</h2>
+              <h2 className="cre-rdr-h2">Readiness by topic</h2>
               <p className="cre-rdr-subline">
                 {ready} of {data.topics.length} topics Ready · weakest first
               </p>
@@ -340,7 +356,7 @@ export function CompassReadinessRefined({
                     </p>
                   </div>
                   <ScoreBar score={t.score} label={`${t.name}: ${t.score} out of 100, ${tb.label}`} />
-                  <span className="cre-rdr-score serif" data-band={tb.key}>
+                  <span className="cre-rdr-score" data-band={tb.key}>
                     {t.score}
                   </span>
                   <span className="cre-rdr-level" data-band={tb.key}>
@@ -645,7 +661,7 @@ function SubTopicRow({
         <span className="cre-rdr-sub__when">{lastPracticedLabel(sub.lastPracticedDaysAgo)}</span>
       </span>
       <ScoreBar thin score={sub.score} label={`${sub.name}: ${sub.score} out of 100, ${b.label}`} />
-      <span className="cre-rdr-score cre-rdr-score--sm serif" data-band={b.key}>
+      <span className="cre-rdr-score cre-rdr-score--sm" data-band={b.key}>
         {sub.score}
       </span>
       <span className="cre-rdr-level" data-band={b.key}>

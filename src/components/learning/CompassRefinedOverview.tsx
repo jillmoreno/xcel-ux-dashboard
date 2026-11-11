@@ -49,27 +49,23 @@ export function CompassRefinedOverview({
         Ask Rubi
       </button>
       <CompassRefinedColumn>
-        <CompassRefinedHead
-          title={COPY.title}
-          ruled
-          below={
-            <>
-              <p className="crf-ov__course">{COPY.course}</p>
-              <p className="crf-ov__meta">
-                <span>{COPY.access}</span>
-                <span className="crf-pill crf-pill--phase">{COPY.phasePill}</span>
-                <span className="crf-pill crf-pill--quiet">{COPY.accessPill}</span>
-              </p>
-            </>
-          }
-        />
+        {/* ⚠ NO `below` ANY MORE — 2026-11-10. His Overview put the course
+            name, the access date and two pills under the title; the course
+            and the date are the head's eyebrow on every page now, and the
+            pills were removed on the direct ask ("Remove Learn + Prepare
+            Pill", "Remove open access-move freely"). Both said something
+            about access that the eyebrow's date already says, and they said
+            it only here. `COPY.course`, `.access`, `.phasePill` and
+            `.accessPill` stay in his fixture — this page stopped reading
+            them, which is not the same as deciding they are wrong for his. */}
+        <CompassRefinedHead title={COPY.title} ruled />
 
         {/* ---------- your next step ---------- */}
         <section className="crf-next" aria-label={COPY.nextTitle}>
           <div className="crf-next__body crf-next__body--ov">
             <div style={{ minWidth: 0 }}>
               <p className="crf-eyebrow crf-eyebrow--steel">{COPY.nextEyebrow}</p>
-              <h2 className="crf-next__title crf-serif">{COPY.nextTitle}</h2>
+              <h2 className="crf-next__title">{COPY.nextTitle}</h2>
               <p className="crf-next__text">{COPY.nextBody}</p>
             </div>
             <div className="crf-next__set">
@@ -204,7 +200,7 @@ export function CompassRefinedOverview({
         {/* ---------- the table ---------- */}
         <div className="crf-tablehead">
           <div style={{ minWidth: 0 }}>
-            <h2 className="crf-h2 crf-serif">{table.tableTitle}</h2>
+            <h2 className="crf-h2">{table.tableTitle}</h2>
             <p className="crf-topics__sub">{table.summary}</p>
           </div>
           <p className="crf-tablehead__note">{table.tableNote}</p>
@@ -528,7 +524,7 @@ function LessonRing() {
           </g>
         </svg>
         <span className="crf-lessonring__mid" aria-hidden>
-          <b className="crf-serif">{COPY.progressPct}</b>
+          <b>{COPY.progressPct}</b>
           <span>{COPY.progressWord}</span>
         </span>
       </div>

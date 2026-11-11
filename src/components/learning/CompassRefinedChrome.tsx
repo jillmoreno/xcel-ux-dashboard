@@ -15,6 +15,7 @@ import {
   JEFF_MVP_SUBPAGES,
   type JeffMvpPage,
 } from '@/data/compassJeffMvpFixtures'
+import { REFINED_COURSE } from '@/data/compassRefinedCopy'
 import './compassRefined.css'
 
 /**
@@ -176,7 +177,19 @@ export function CompassRefinedHead({
   return (
     <header className={ruled ? 'crf-head crf-head--ruled' : 'crf-head'}>
       <div style={{ minWidth: 0 }}>
-        <h1 className="crf-h1 crf-serif">{title}</h1>
+        {/* ⚠ THE COURSE EYEBROW, ON EVERY PAGE — 2026-11-10. It is rendered
+            here rather than passed in because it is the same on all of them:
+            "this entire platform is about that 1 course". A prop would invite
+            a page to leave it out, which is the state this replaced. The
+            access date rides beside it, dot-separated. */}
+        <p className="crf-head__eyebrow">
+          <span>{REFINED_COURSE.name}</span>
+          <span className="crf-head__dot" aria-hidden>
+            ·
+          </span>
+          <span className="crf-head__access">{REFINED_COURSE.access}</span>
+        </p>
+        <h1 className="crf-h1">{title}</h1>
         {lead ? <p className={leadClass ? `crf-lead ${leadClass}` : 'crf-lead'}>{lead}</p> : null}
         {below}
       </div>

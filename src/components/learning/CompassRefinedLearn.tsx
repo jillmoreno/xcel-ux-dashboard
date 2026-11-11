@@ -93,7 +93,7 @@ export function CompassRefinedLearn({
             </span>
             <div className="crf-course__name">
               <p className="crf-eyebrow">{COPY.courseEyebrow}</p>
-              <h2 className="crf-h2 crf-serif">{COPY.courseTitle}</h2>
+              <h2 className="crf-h2">{COPY.courseTitle}</h2>
               <p className="crf-course__sub">{COPY.courseSub}</p>
             </div>
             <div className="crf-course__stat">
@@ -202,7 +202,7 @@ export function CompassRefinedLearn({
             </span>
             <div className="crf-course__name">
               <p className="crf-eyebrow">{COPY.finalEyebrow}</p>
-              <h2 className="crf-h2 crf-serif">{COPY.finalTitle}</h2>
+              <h2 className="crf-h2">{COPY.finalTitle}</h2>
             </div>
             <span className="crf-ch__status">{COPY.finalStatus}</span>
           </header>
@@ -307,7 +307,7 @@ function CourseRing() {
             />
           </g>
         </svg>
-        <span className="crf-course__pct crf-serif" aria-hidden>
+        <span className="crf-course__pct" aria-hidden>
           {COPY.coursePct}
         </span>
       </div>

@@ -3691,3 +3691,99 @@
   border-color: var(--crf-steel-deep);
   color: var(--crf-steel-deep);
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   REFINED'S OWN DECISIONS
+   ------------------------------------------------------------------------
+   Everything above this line is the photograph of Jeff's stylesheet taken at
+   the fork. Everything below is a decision somebody made for Refined, and it
+   lands here rather than inside the copy so that "what has Refined changed?"
+   is one section rather than a diff against 3,666 lines. Source order does
+   the overriding; no `!important` and no raised specificity are needed.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ---------- the course eyebrow, 2026-11-10 ----------
+   "The Florida Life & Health Pre-licensing should be an eyebrow about the
+   title. And the eyebrow should exist on EVERY page because this entire
+   platform is about that 1 course!"
+
+   ⚠ IT TAKES HIS OWN EYEBROW IDIOM rather than inventing one — 11px, 600,
+   0.08em, uppercase, which is `crf-subs__eyebrow` and `crf-next__eyebrow`
+   to within half a pixel. A new eyebrow shape on top of a page that already
+   has two would read as a third kind of thing.
+
+   ⚠ MUTED, NOT STEEL. His course line was 17px/600 in steel-deep, which is
+   the weight of a subtitle — right when it sat under the title as the second
+   thing you read, wrong above it where it would compete with the title it is
+   labelling. An eyebrow names the context; the title is still the headline. */
+.crf-head__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 7px;
+  color: var(--crf-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  flex-wrap: wrap;
+}
+/* The small dot divider — "move the Access ends to the right of the florida
+   eyebrow with a small dot divider". `aria-hidden` in the markup, so it is a
+   separator for the eye and silence for a screen reader. */
+.crf-head__dot {
+  /* ⚠ THE EYEBROW'S OWN INK, not the hairline. It was `--crf-hairline`
+     first and measured at rgb(224,219,205) against the page — a rule
+     colour on a 11px glyph, invisible at reading distance, so the eyebrow
+     read as two phrases jammed together. A separator has to be seen to
+     separate. This is also what every other dot in the product does
+     ("Exam Jan 18 · 10 weeks away"), so the eyebrow matches them. */
+  color: inherit;
+  opacity: 0.55;
+}
+/* ⚠ THE DATE IS NOT UPPERCASED. "Access ends Jan 20, 2027" carries a month
+   abbreviation and a year; small-caps on a date reads as a label rather than
+   a fact, and `Jan` becomes `JAN`. So the eyebrow's transform is undone for
+   this span alone, and its letter-spacing with it. */
+.crf-head__access {
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-weight: 400;
+}
+
+/* ---------- the type rule, 2026-11-10 ----------
+   "Header should be [the display serif]. Anything below 32 px should be open
+   sans and NOT [the display serif]."
+
+   ⚠ THE RULE IS STRUCTURAL, NOT A LIST OF OVERRIDES. His `crf-serif` class
+   put the display face on 22 elements, 21 of them under 32px — section
+   headings at 24 and 26, card titles at 28, percentages at 19. The class is
+   gone from Refined's markup entirely rather than redefined, because a class
+   named `serif` that sets the sans face is a trap for whoever reads it next.
+   The face now lives on the one element that is over 32px.
+
+   ⚠ SO EVERYTHING ELSE INHERITS `--font-body` from the shell, which is Open
+   Sans. Nothing below needs to say so; the absence of a rule IS the rule,
+   and that is what keeps a 28px heading from quietly becoming serif again
+   when someone adds a class. */
+/* ⚠ OPEN SANS HAS TO BE SAID, and the browser is what said so. Dropping the
+   `serif` class did NOT leave these on Open Sans: a heading with no family of
+   its own inherits `--font-heading`, which is LATO on this build — so the
+   24px and 26px headings came back as Lato, a third face nobody asked for.
+   "Anything below 32 px should be open sans" is only true if it is declared.
+   Measured in the running build before this rule existed. */
+.crf :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-body);
+}
+/* The one element over the line. It follows the rule above, so it wins on
+   source order as well as on specificity. `--font-heading-serif` resolves to
+   Playfair on this build (the `playfair-2` face is loaded and active), which
+   is the face the type reference names. */
+.crf .crf-h1 {
+  font-family: var(--font-heading-serif), Georgia, serif;
+}
+/* ⚠ HIS `.crf .crf-serif` RULE IS DEAD and is left in the photograph above
+   rather than deleted from it. Nothing in Refined's markup carries the class,
+   so the rule matches nothing; removing it would mean editing the frozen copy,
+   which is the one thing that keeps the fork auditable. */

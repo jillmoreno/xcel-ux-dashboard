@@ -62,35 +62,96 @@ describe('the Refined slot map', () => {
 })
 
 /**
- * THE FORK WAS FAITHFUL — the check that makes a 4,800-line copy reviewable.
+ * REFINED'S FIRST DESIGN DECISIONS — 2026-11-10, the page header.
  *
- * Refined's page set is a mechanical fork of his: `cjm` → `crf`, nothing
- * else, taken at the moment of the fork. So normalising the prefix back
- * should make the two renders identical, and every difference that survives
- * is one somebody decided. Without this, a wholesale copy is a diff nobody
- * can read, and a typo in it looks exactly like a design decision.
- *
- * ⚠ READINESS IS EXCLUDED, and it is the only one. It was refined on
- * 2026-11-09, before the fork, and is a different page by intent —
- * `CompassReadinessRefined.test.tsx` is what holds it to the research.
+ * The fork that made these possible was proved inert in its own commit:
+ * every page rendered identically to Jeff's once the prefix was normalised.
+ * That check retires here, because the pages deliberately differ now. What
+ * replaces it is narrower and more useful — the four things that were asked
+ * for, held page by page, so a later edit cannot quietly undo one of them on
+ * eleven pages and leave it on the twelfth.
  */
-describe('Refined’s pages are his, prefix for prefix', () => {
-  const DELIBERATELY_DIFFERENT = new Set(['readiness'])
+describe('the course eyebrow is on every page', () => {
+  /* ⚠ THE RAIL PAGES, NOT THE SESSIONS. "Every page" is every page with a
+     header; a question set, a flashcard study session and the simulated exam
+     are full-window sessions that draw no page header at all, and the
+     simulated exam is imitating a Pearson VUE test centre — a course eyebrow
+     on that screen breaks the one thing it exists to get right. */
+  const HEADED = RAIL_PAGES
 
-  for (const page of ALL_PAGES) {
-    if (DELIBERATELY_DIFFERENT.has(page)) continue
+  for (const page of HEADED) {
     it(`${page}`, () => {
-      const his = wrap(<CompassJeffMvpShell page={page} onSelectPage={() => {}} />)
-      const hisHtml = his.container.innerHTML
-      his.unmount()
-      const refined = wrap(<CompassRefinedShell page={page} onSelectPage={() => {}} />)
-      /* `crf` back to `cjm` — the whole of the fork's mechanical difference.
-         `crf-shell` is the one class the shell renames rather than copies. */
-      const normalised = refined.container.innerHTML
-        .replace(/\bcrf-shell\b/g, 'cjm-shell')
-        .replace(/\bcrf-/g, 'cjm-')
-        .replace(/(class="|\s)crf(\s|")/g, '$1cjm$2')
-      expect(normalised).toBe(hisHtml)
+      const { container } = wrap(<CompassRefinedShell page={page} onSelectPage={() => {}} />)
+      const brow = container.querySelector('.crf-head__eyebrow, .cre-rdr-eyebrow')
+      expect(brow, `${page} draws no course eyebrow`).toBeTruthy()
+      const t = (brow?.textContent ?? '').replace(/\s+/g, ' ')
+      expect(t).toContain('Florida Life and Health Pre-licensing')
+      /* ⚠ THE DATE RIDES BESIDE IT, dot-separated — the direct ask. It was a
+         line in the Overview's meta row and appeared on no other page. */
+      expect(t).toContain('Access ends Jan 20, 2027')
+      expect(t).toContain('·')
+    })
+  }
+
+  it('is his page title above it, not instead of it', () => {
+    const { container } = wrap(<CompassRefinedShell page="overview" onSelectPage={() => {}} />)
+    const h1 = container.querySelector('h1')
+    expect(h1?.textContent).toBe('Your learning journey')
+    /* The eyebrow precedes the title in the DOM, which is what makes it an
+       eyebrow rather than a subtitle — his course line sat UNDER the title. */
+    const brow = container.querySelector('.crf-head__eyebrow')!
+    expect(brow.compareDocumentPosition(h1!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+})
+
+describe('the two pills are gone', () => {
+  it('from the Overview header, where they were the only place they appeared', () => {
+    const { container } = wrap(<CompassRefinedShell page="overview" onSelectPage={() => {}} />)
+    const t = (container.textContent ?? '').replace(/\s+/g, ' ')
+    expect(t).not.toContain('Open access · move freely')
+    /* ⚠ BY CLASS, NOT BY STRING, and the difference bit once. "Learn +
+       prepare" is ALSO the Your-next-step eyebrow ("Learn + prepare ·
+       Readiness 62%"), which is a different element and was not what was
+       asked to go. Asserting on the words would delete a section's eyebrow
+       the next time someone made this pass. */
+    expect(container.querySelectorAll('.crf-pill--phase')).toHaveLength(0)
+    expect(container.querySelectorAll('.crf-pill--quiet')).toHaveLength(0)
+    /* ⚠ HIS STILL HAS THEM. The removal is Refined's decision, not a repair
+       of his page — if this stops being true, the fork has leaked. */
+    const his = wrap(<CompassJeffMvpShell page="overview" onSelectPage={() => {}} />)
+    expect(his.container.textContent).toContain('Open access · move freely')
+  })
+})
+
+describe('nothing under 32px is set in the display serif', () => {
+  /* ⚠ THE CLASS IS GONE, NOT REDEFINED. His `serif` class put the display
+     face on 22 elements, 21 of them under 32px. Refined drops the class from
+     the markup and puts the face on the one element over the line, so a 28px
+     heading cannot quietly become serif again by picking the class up. */
+  for (const page of ALL_PAGES) {
+    /* ⚠ THE LESSON IS EXEMPT BECAUSE IT IS STILL HIS. `course` is the one
+       slot `compassRefinedPages.ts` leaves at `jeff` — a full-window takeover
+       with its own stylesheet, outside the header fork — so its five serif
+       headings are Jeff's decision, not a leak. It joins this case the day
+       the lesson is refined. */
+    if (refinedSourceFor(page as RefinedSlot) === 'jeff') continue
+    it(`${page}`, () => {
+      const { container } = wrap(<CompassRefinedShell page={page} onSelectPage={() => {}} />)
+      expect(container.querySelectorAll('.crf-serif')).toHaveLength(0)
+      /* ⚠ AN ALLOW-LIST, BECAUSE JSDOM HAS NO LAYOUT. The rule is about
+         rendered size and the stylesheets are stubbed in this environment, so
+         nothing here can read a font-size. These two were measured in the
+         running build and are the only elements over 32px that carry the
+         class: the Readiness title (40px) and the hero's ring figure, which
+         is 26px in its base rule and 40px inside the hero. Anything else
+         picking the class up fails, which is what this case is for. */
+      const OVER_32 = ['cre-rdr-h1', 'cre-rdr-ring__num']
+      for (const el of container.querySelectorAll('.serif')) {
+        expect(
+          OVER_32.some((c) => el.classList.contains(c)),
+          `${el.tagName}.${[...el.classList].join('.')} is under 32px and must not be serif`,
+        ).toBe(true)
+      }
     })
   }
 })

@@ -121,7 +121,7 @@ export function CompassRefinedPractice({
             <SetRing rec={PR.weakest} />
             <div className="crf-pr__recbody">
               <p className="crf-pr__rectopic">{PR.weakest.topic}</p>
-              <h2 className="crf-pr__rectitle crf-serif">{PR.weakest.title}</h2>
+              <h2 className="crf-pr__rectitle">{PR.weakest.title}</h2>
               <p className="crf-card__text">{PR.weakest.why}</p>
               <p className="crf-pr__recstats">
                 <span>

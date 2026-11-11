@@ -92,7 +92,7 @@ export function CompassRefinedFlashcards({
             <DeckRing rec={FC.start} />
             <div className="crf-pr__recbody">
               <p className="crf-pr__rectopic">{FC.start.topic}</p>
-              <h2 className="crf-pr__rectitle crf-serif">{FC.start.title}</h2>
+              <h2 className="crf-pr__rectitle">{FC.start.title}</h2>
               <p className="crf-card__text">{FC.start.why}</p>
               <p className="crf-pr__recstats">
                 <span>

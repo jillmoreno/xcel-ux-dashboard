@@ -84,7 +84,7 @@ export function CompassRefinedPrep() {
             <div className="crf-course__name">
               <p className="crf-eyebrow">{COPY.cardEyebrow}</p>
               <div className="crf-prep__titlerow">
-                <h2 className="crf-h2 crf-serif">{COPY.cardTitle}</h2>
+                <h2 className="crf-h2">{COPY.cardTitle}</h2>
                 {/* ⚠ THE WHOLE POINT OF THE PAGE, in one pill. */}
                 <span className="crf-pill crf-pill--optional">{COPY.optionalPill}</span>
               </div>
@@ -110,7 +110,7 @@ export function CompassRefinedPrep() {
                     />
                   </g>
                 </svg>
-                <span className="crf-course__pct crf-serif" aria-hidden>
+                <span className="crf-course__pct" aria-hidden>
                   {COPY.ringPct}
                 </span>
               </div>

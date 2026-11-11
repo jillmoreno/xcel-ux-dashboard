@@ -49,7 +49,7 @@ export function CompassRefinedCardStudy({
             <Notebook size={20} />
           </span>
           <div style={{ minWidth: 0 }}>
-            <h1 className="crf-qs__title crf-serif">{CS.deckTitle}</h1>
+            <h1 className="crf-qs__title">{CS.deckTitle}</h1>
             <p className="crf-qs__meta">{CS.deckSub}</p>
           </div>
           <div className="crf-qs__headright">

@@ -98,7 +98,7 @@ function Intro({ onBegin }: { onBegin: () => void }) {
       <div className="crf-vx__intro">
         <div className="crf-vx__intromain">
           <p className="crf-eyebrow">{COPY.introEyebrow}</p>
-          <h1 className="crf-h1 crf-serif">{COPY.introTitle}</h1>
+          <h1 className="crf-h1">{COPY.introTitle}</h1>
           <p className="crf-lead">{COPY.introLead}</p>
 
           <h2 className="crf-vx__h2">{COPY.treatHeading}</h2>
@@ -409,7 +409,7 @@ function Results({ onReview, onDone }: { onReview: () => void; onDone: () => voi
               </g>
             </svg>
             <span className="crf-vx__scoremid" aria-hidden>
-              <b className="crf-serif">{r.pct}%</b>
+              <b>{r.pct}%</b>
               <span>
                 {r.right}/{r.total}
               </span>

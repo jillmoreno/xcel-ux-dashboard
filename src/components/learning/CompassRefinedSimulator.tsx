@@ -68,7 +68,7 @@ export function CompassRefinedSimulator({
             <GateRing rec={SIM.practiceFirst} />
             <div className="crf-pr__recbody">
               <p className="crf-pr__rectopic">{SIM.practiceFirst.topic}</p>
-              <h2 className="crf-pr__rectitle crf-serif">{SIM.practiceFirst.title}</h2>
+              <h2 className="crf-pr__rectitle">{SIM.practiceFirst.title}</h2>
               <p className="crf-card__text">{SIM.practiceFirst.why}</p>
               <p className="crf-pr__recstats">
                 <span>
@@ -146,7 +146,7 @@ export function CompassRefinedSimulator({
         <div className="crf-sim__scrim" role="dialog" aria-modal aria-label={COPY.modalTitle}>
           <div className="crf-sim__modal">
             <p className="crf-eyebrow">{modal}</p>
-            <h2 className="crf-sim__modaltitle crf-serif">{COPY.modalTitle}</h2>
+            <h2 className="crf-sim__modaltitle">{COPY.modalTitle}</h2>
             <p className="crf-card__text">{COPY.modalBody}</p>
             <ul className="crf-sim__providers">
               {SIM.providers.map((p) => (
