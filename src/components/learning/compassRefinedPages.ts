@@ -19,19 +19,47 @@ import type { JeffMvpPage } from '@/data/compassJeffMvpFixtures'
  * is the worked example), applied here:
  *
  *   1. copy `CompassJeffMvpOverview.tsx` → `CompassRefinedOverview.tsx`
- *   2. flip this map's `overview` to `'refined'`
- *   3. change the copy
+ *   2. give the copy its own class prefix and its own stylesheet, on HOUSE
+ *      COMPASS TOKENS — see the freeze rule below
+ *   3. flip this map's `overview` to `'refined'`
+ *   4. change the copy
  *
  * His file is untouched, so his arm cannot move. No conditionals threaded
  * through a shared page, which is the thing the fork rule exists to prevent.
  *
- * ⚠ THE LAYOUT FORKS; THE DATA DOES NOT. A Refined page imports
- * `compassJeffMvpFixtures.ts` like his does — "fork the layout, import the
- * data: if both versions duplicate the content, the comparison is no longer
- * about your change". Same for the stylesheet: a forked page keeps his
- * `cjm-*` classes and takes Refined-only rules under the shell's `crf`
- * wrapper, so 3,666 lines of his CSS are not copied per page and a later fix
- * to his styles is still one fix.
+ * ⚠ THE DATA IS SHARED BY DEFAULT AND FORKED ON PURPOSE — 2026-11-10,
+ * Jillienne: "even the data and styles if i decide to change in refined, do
+ * it." A Refined page imports `compassJeffMvpFixtures.ts` like his does, so
+ * that three versions showing the same learner are comparable — CLAUDE.md's
+ * "fork the layout, import the data: if both versions duplicate the content,
+ * the comparison is no longer about your change". That rule is about
+ * ACCIDENTAL divergence: two copies of the same words drifting apart until
+ * the versions differ for reasons nobody chose.
+ *
+ * It is not a rule against changing the words. Bringing the page titles into
+ * line across the set is one of the things Refined exists to do, and a title
+ * is a fixture — so when Refined's answer to a page includes different copy,
+ * that fixture forks with the layout and the commit says which words changed
+ * and why. A deliberate content difference IS a design decision and should be
+ * visible as one; what the shared default prevents is the same decision being
+ * made twice by accident.
+ *
+ * ⚠ THE STYLES FREEZE ON FORK — 2026-11-10, Jillienne's call, asked
+ * directly: a forked page takes its own stylesheet and stops moving when
+ * Jeff's does. The alternative (keep his `cjm-*` classes, override under a
+ * wrapper) was cheaper and was rejected for the reason that decides it: he
+ * hands over a new prototype every few weeks, and a restyle in one of them
+ * would shift pages she had already settled, without anyone asking for it.
+ *
+ * ⚠ IT FREEZES ONTO THE HOUSE TOKENS, NOT ONTO A COPY OF HIS CSS, and that
+ * is what makes the rule cheap instead of a 3,666-line duplication per page.
+ * `CompassReadinessRefined` — the one page already forked, 2026-11-09 — uses
+ * none of his classes: its own `cre-rdr-*` prefix, its own stylesheet, and
+ * `--color-compass-page-*` / `--color-primary-*` throughout, on the direct
+ * ask ("Move to house Compass tokens"). Every page after it follows that
+ * page, so Refined converges on the system rather than on a snapshot of his
+ * palette. A forked page that still wants one of his looks copies that rule,
+ * and the copy is then Refined's to change.
  *
  * ⚠ `anjani` IS IN THE UNION AND IS NOT YET USED. Four rows have a real
  * choice between the two designers — Overview, Learn, Study planner and

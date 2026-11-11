@@ -15,8 +15,9 @@ import { CompassJeffMvpCardStudy } from './CompassJeffMvpCardStudy'
 import { CompassJeffCourse } from './CompassJeffCourse'
 import { refinedSourceFor } from './compassRefinedPages'
 import type { JeffMvpPage } from '@/data/compassJeffMvpFixtures'
+/* ⚠ HIS STYLESHEET, BECAUSE MOST SLOTS ARE STILL HIS. It leaves when the
+   last slot does; a forked page brings its own and uses none of it. */
 import './compassJeffMvp.css'
-import './compassRefined.css'
 
 /**
  * THE REFINED COMPASS — its own shell, 2026-11-10.
@@ -42,10 +43,16 @@ import './compassRefined.css'
  * step, which is the cost the fork rule asks you to weigh, not a cost to pay
  * by default.
  *
- * ⚠ THE `crf` CLASS IS THE OVERRIDE HOOK. Refined-only CSS is written under
- * it (`.crf .cjm-head { … }`) so a forked page can keep his classes and
- * diverge only where it means to, instead of carrying a copy of his 3,666
- * line stylesheet.
+ * ⚠ THE `crf` CLASS IS A MARKER, NOT AN OVERRIDE HOOK, and it has no rules
+ * of its own. It was briefly the hook for Refined-only CSS written against
+ * his classes (`.crf .cjm-head { … }`); that approach went the same day,
+ * when the styles were decided to FREEZE on fork instead — a forked page
+ * takes its own prefix and its own stylesheet on house Compass tokens, the
+ * way `CompassReadinessRefined` already does, so there is nothing of his
+ * left to override. See `compassRefinedPages.ts` for the rule and why.
+ *
+ * What the class is still for: saying in the DOM which shell drew the page,
+ * which is what the inert-refactor test strips before comparing the two.
  */
 export function CompassRefinedShell({
   page,
