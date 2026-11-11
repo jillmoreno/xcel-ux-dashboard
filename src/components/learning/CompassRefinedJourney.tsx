@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { REFINED_COURSE, REFINED_OVERVIEW_TITLE } from '@/data/compassRefinedCopy'
 import { CompassRefinedFocus } from './CompassRefinedFocus'
 import { FOCUS_DEFAULTS, type FocusOptions } from './compassRefinedFocusModel'
@@ -12,6 +13,7 @@ import {
   type Prog,
   type Ring,
 } from './compassReadinessModel'
+import { CompassRefinedRubiToast } from './CompassRefinedRubiToast'
 import './compassRefinedJourney.css'
 
 /**
@@ -46,6 +48,13 @@ export function CompassRefinedJourney({
   focus?: FocusOptions
 }) {
   const m = journeyStage(stage)
+  /* ⚠ RUBI'S FIRST-RUN TOAST — 2026-11-11. Shown at 0% in the Ask Rubi
+     pill's place; dismissing hands the corner back to the pill, which is
+     also how a learner finds out where she lives. The gate is the same
+     arithmetic the card opposite uses, so the toast and the day-one pace
+     note appear and go together. */
+  const [rubiToast, setRubiToast] = useState(true)
+  const atStart = (Number.parseFloat(m.prog?.pct ?? '0') || 0) === 0
   /* ⚠ THE TAB STATE WENT WITH THE TABLE — 2026-11-11. `tab`, `activeTab`,
      `showPrep` and `showStd` existed only to pick which of his two topic
      tables drew and which tab was lit; with the section unwired they were
@@ -60,10 +69,14 @@ export function CompassRefinedJourney({
           to reach her moved depending on which page you were on. The Rubi
           CARD further down is a different offer — an introduction, or a
           suggestion — and neither is "I have a question now". */}
-      <button type="button" className="crf-ask crf-rd-ask-float">
-        <RubiLogo size={17} aria-hidden />
-        Ask Rubi
-      </button>
+      {atStart && rubiToast ? (
+        <CompassRefinedRubiToast onDismiss={() => setRubiToast(false)} />
+      ) : (
+        <button type="button" className="crf-ask crf-rd-ask-float">
+          <RubiLogo size={17} aria-hidden />
+          Ask Rubi
+        </button>
+      )}
       {/* ⚠ A REAL `header`, holding the eyebrow and the title and nothing
           else — 2026-11-10. These pages drew both as loose paragraphs in
           the page, so there was no element that WAS the header and nothing
@@ -348,6 +361,11 @@ function RubiBlock({ focus }: { focus: { label: string; title: string; why: stri
         <RubiLogo size={15} aria-hidden />
         {copy.label}
       </p>
+      {/* ⚠ ONE ROW, NOT FOUR BLOCKS — 2026-11-11, from the mock: the title,
+          the body and the actions across a single line under the eyebrow. The
+          stacked card spent four full-width blocks on what is, on most
+          states, one sentence and one button. */}
+      <div className="crf-rd-rubi-row">
       <h3 className="crf-rd-rubi-title">{copy.title}</h3>
       <p className="crf-rd-rubi-why">{copy.why}</p>
       <div className="crf-rd-rubi-actions">
@@ -362,6 +380,7 @@ function RubiBlock({ focus }: { focus: { label: string; title: string; why: stri
             {REFINED_RUBI_INTRO.dismiss}
           </button>
         ) : null}
+      </div>
       </div>
     </section>
   )

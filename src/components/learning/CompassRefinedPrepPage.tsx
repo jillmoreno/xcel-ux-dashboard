@@ -30,6 +30,10 @@ import './compassRefinedJourney.css'
  */
 export function CompassRefinedPrepPage({ stage = 'p2' }: { stage?: string }) {
   const m = prepStage(stage)
+  /* ⚠ NO FIRST-RUN TOAST ON THIS PAGE — 2026-11-11. The toast greets
+     somebody at 0%, and this is the EXAM PREP series: the course is already
+     complete by p1, so there is no first landing here to greet. The Ask Rubi
+     pill is the whole of her presence in this corner. */
   return (
     <div className="crf-rd" data-stage={m.stage}>
       {/* ⚠ THE FLOATING ASK RUBI, AS THE MVP PAGES CARRY IT — 2026-11-11:
