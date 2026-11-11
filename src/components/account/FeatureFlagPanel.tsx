@@ -202,6 +202,7 @@ const REBRAND_FLAGS = [
   'invite-v3-flow-b2c',
   'invite-v3-cart',
   'invite-v3-email-account',
+  'invite-v3-password-card',
   'partner-code-ask',
   'order-confirmation-style',
   'split-journey-rail',

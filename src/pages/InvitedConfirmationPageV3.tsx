@@ -26,6 +26,7 @@
  */
 import { useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { StandaloneBrowserChrome } from '@/components/layout/BrowserChromeBar'
 import { PartnerHeader } from '@/components/e2e/PartnerHeader'
 import { TopoBackground } from '@/components/e2e/TopoBackground'
@@ -73,6 +74,8 @@ export function InvitedConfirmationPageV3() {
      Confirm both open it over the page; it loads until a click
      outside closes it. */
   const [signingIn, setSigningIn] = useState(false)
+  /* The card's header — 2026-11-11, Afsana: four options on the Design bar. */
+  const cardOption = useFeatureFlag('invite-v3-password-card').variant ?? 'option-1'
 
   /* What was bought, and for how much — V2's ending's reading of the same
      address, so the receipt agrees with the checkout. */
@@ -112,17 +115,41 @@ export function InvitedConfirmationPageV3() {
             <p style={CARD_EYEBROW}>Last step</p>
             {ending === 'create-password' ? (
               <>
-                <h2 id="sign-in" style={CARD_TITLE}>
-                  Create your password
-                </h2>
-                <div aria-hidden style={CARD_RULE} />
-                <label style={FIELD_GROUP}>
-                  <span style={FIELD_LABEL}>Email</span>
-                  <span style={{ ...INPUT_SHELL, background: 'var(--color-e2e-form-locked-v3)' }}>
-                    <span style={{ flex: '1 0 0', minWidth: 1 }}>{learnerEmail}</span>
-                    <img src="/brand/confirmation/lock.svg" alt="Locked" width={16} height={16} style={{ display: 'block' }} />
-                  </span>
-                </label>
+                {cardOption === 'option-1' ? (
+                  <>
+                    <h2 id="sign-in" style={CARD_TITLE}>
+                      Create your password
+                    </h2>
+                    <div aria-hidden style={CARD_RULE} />
+                    <label style={FIELD_GROUP}>
+                      <span style={FIELD_LABEL}>Email</span>
+                      <span style={{ ...INPUT_SHELL, background: 'var(--color-e2e-form-locked-v3)' }}>
+                        <span style={{ flex: '1 0 0', minWidth: 1 }}>{learnerEmail}</span>
+                        <img src="/brand/confirmation/lock.svg" alt="Locked" width={16} height={16} style={{ display: 'block' }} />
+                      </span>
+                    </label>
+                  </>
+                ) : (
+                  <>
+                    <h2 id="sign-in" style={CARD_TITLE}>
+                      {cardOption === 'option-4' ? (
+                        <>
+                          Finish setting up your account for <span style={TITLE_EMAIL}>{learnerEmail}</span>
+                        </>
+                      ) : (
+                        'Finish setting up your account'
+                      )}
+                    </h2>
+                    <div aria-hidden style={CARD_RULE} />
+                    {cardOption === 'option-3' ? (
+                      <p style={CARD_BODY}>
+                        Create a password to access your course for <strong style={BODY_EMAIL}>{learnerEmail}</strong>.
+                      </p>
+                    ) : (
+                      <p style={CARD_BODY}>Create a password to access your course.</p>
+                    )}
+                  </>
+                )}
                 <label style={FIELD_GROUP}>
                   <span style={FIELD_LABEL}>Password</span>
                   <span style={INPUT_SHELL}>
@@ -310,7 +337,15 @@ const CARD_BODY: CSSProperties = {
   color: 'var(--color-text-secondary)',
 }
 
-const FIELD_GROUP: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 }
+/* Option 3: the address in the subtext, bold and allowed to break — a long
+   one would otherwise push the card wider than 440. */
+const BODY_EMAIL: CSSProperties = { fontWeight: 800, color: 'var(--color-text-primary)', overflowWrap: 'anywhere' }
+
+/* Option 4: the address in the title — allowed to break, since a long one
+   would otherwise push the card wider than 440. */
+const TITLE_EMAIL: CSSProperties = { overflowWrap: 'anywhere' }
+
+const FIELD_GROUP: CSSProperties ={ display: 'flex', flexDirection: 'column', gap: 6 }
 
 const FIELD_LABEL: CSSProperties = {
   fontFamily: 'var(--font-e2e-avenir)',

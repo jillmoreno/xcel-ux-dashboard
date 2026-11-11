@@ -3151,6 +3151,29 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'invite-v3-password-card',
+    /* THE CREATE PASSWORD CARD'S HEADER — 2026-11-11, Afsana: options 2–4
+       frame the step as finishing the account rather than making a password,
+       and drop the locked Email field. They differ only in how the email is
+       shown: not at all, bold in the subtext, or in the title.
+       Option 1 is the card as it was. */
+    surface: 'design',
+    versions: ['eric-atlas-e2e'],
+    surfaces: ['invite:v3-b2b', 'invite:v3-b2b-direct-email', 'invite:v3-b2c', 'invite:v3-b2c-signed-in'],
+    group: 'Navigation',
+    label: 'Create password card',
+    description: 'Invite Flow V3, the Create password ending. Option 1: "Create your password" with the locked Email field. Option 2: "Finish setting up your account", a line saying why, no Email field. Option 3: the same, with the email bold at the end of that line. Option 4: the same as 2, with the email in the title.',
+    defaultEnabled: true,
+    defaultVariant: 'option-1',
+    variants: [
+      { value: 'option-1', label: 'Option 1', description: 'Create your password, with the locked Email field.' },
+      { value: 'option-2', label: 'Option 2', description: 'Finish setting up your account. No Email field.' },
+      { value: 'option-3', label: 'Option 3', description: 'Option 2, with the email in bold at the end of the subtext.' },
+      { value: 'option-4', label: 'Option 4', description: 'Finish setting up your account for the email.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'invite-v3-email-account',
     /* Which way "Verify your email" goes for the signed-out OCD learner — a
        log-in when the email they give has Atlas, a code when it does not.

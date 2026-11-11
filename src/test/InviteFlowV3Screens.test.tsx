@@ -430,6 +430,36 @@ describe('Invite Flow V3 — the endings', () => {
     expect(meter).not.toHaveAttribute('aria-valuenow', '0')
   })
 
+  it('draws the Create password card as the Design bar option says', () => {
+    const at = (option: string) => renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:qr-net-new,invite-v3-password-card:${option}`)
+
+    const one = at('option-1')
+    expect(screen.getByRole('heading', { name: 'Create your password' })).toBeInTheDocument()
+    expect(screen.getByAltText('Locked')).toBeInTheDocument()
+    one.unmount()
+
+    for (const option of ['option-2', 'option-3']) {
+      const { unmount } = at(option)
+      expect(screen.getByRole('heading', { name: 'Finish setting up your account' })).toBeInTheDocument()
+      expect(screen.getByText(/^Create a password to access your course/)).toBeInTheDocument()
+      expect(screen.queryByAltText('Locked')).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Confirm' })).toBeInTheDocument()
+      unmount()
+    }
+
+    /* Option 3: the email in the subtext, bold — never in the title. */
+    const three = at('option-3')
+    const line = screen.getByText(/^Create a password to access your course for/)
+    expect(line.querySelector('strong')).toHaveTextContent(/@/)
+    three.unmount()
+
+    /* Option 4: the email in the title, and the subtext as option 2's. */
+    at('option-4')
+    expect(screen.getByRole('heading', { name: /^Finish setting up your account for .+@/ })).toBeInTheDocument()
+    expect(screen.getByText('Create a password to access your course.')).toBeInTheDocument()
+    expect(screen.queryByAltText('Locked')).not.toBeInTheDocument()
+  })
+
   it('sends a learner who already has Atlas straight to their course', () => {
     renderAt(CONFIRMATION, 'invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out,invite-v3-email-account:atlas')
     expect(screen.getByRole('heading', { name: 'Start learning' })).toBeInTheDocument()
