@@ -1,3 +1,4 @@
+import { REFINED_PAGE_TITLES } from '@/data/compassRefinedCopy'
 import { useState } from 'react'
 import {
   Award,
@@ -62,7 +63,7 @@ export function CompassRefinedLearn({
         Ask Rubi
       </button>
       <CompassRefinedColumn>
-        <CompassRefinedHead title={COPY.title} />
+        <CompassRefinedHead title={REFINED_PAGE_TITLES['learn']} />
         {/* ⚠ OUTSIDE THE HEADER — 2026-11-10. The header is the eyebrow and
             the title; a lead is page content and renders as page content. */}
         <p className="crf-lead">{COPY.lead}</p>

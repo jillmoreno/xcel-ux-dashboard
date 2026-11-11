@@ -1,3 +1,4 @@
+import { REFINED_PAGE_TITLES } from '@/data/compassRefinedCopy'
 import { useState } from 'react'
 import { ArrowRotateLeft, Bullseye, Clock, Grid, RubiLogo, Table, X } from '@/icons'
 import {
@@ -83,7 +84,7 @@ export function CompassRefinedPractice({
         Ask Rubi
       </button>
       <CompassRefinedColumn>
-        <CompassRefinedHead title={COPY.title} />
+        <CompassRefinedHead title={REFINED_PAGE_TITLES['practice']} />
         {/* ⚠ OUTSIDE THE HEADER — 2026-11-10. The header is the eyebrow and
             the title; a lead is page content, and a DISMISSIBLE one doubly
             so — it can disappear, and a header that can lose half of itself

@@ -1,3 +1,4 @@
+import { REFINED_PAGE_TITLES } from '@/data/compassRefinedCopy'
 import { useState } from 'react'
 import { ArrowRight, ChevronDown, ClipboardList, Library, Notebook, RubiLogo } from '@/icons'
 import {
@@ -58,7 +59,7 @@ export function CompassRefinedOverview({
             it only here. `COPY.course`, `.access`, `.phasePill` and
             `.accessPill` stay in his fixture — this page stopped reading
             them, which is not the same as deciding they are wrong for his. */}
-        <CompassRefinedHead title={COPY.title} ruled />
+        <CompassRefinedHead title={REFINED_PAGE_TITLES['overview']} ruled />
 
         {/* ---------- your next step ---------- */}
         <section className="crf-next" aria-label={COPY.nextTitle}>

@@ -15,7 +15,7 @@ import {
   JEFF_MVP_SUBPAGES,
   type JeffMvpPage,
 } from '@/data/compassJeffMvpFixtures'
-import { REFINED_COURSE } from '@/data/compassRefinedCopy'
+import { REFINED_COURSE, REFINED_RAIL_LABELS } from '@/data/compassRefinedCopy'
 import './compassRefined.css'
 
 /**
@@ -91,7 +91,12 @@ export function CompassRefinedRail({
           onClick={() => onSelectPage(id)}
         >
           <Icon size={15} aria-hidden />
-          {r.label}
+          {/* ⚠ HIS ROWS, REFINED'S WORDS — 2026-11-11, "title case everywhere".
+              The row list, its order and its grouping are still
+              `JEFF_MVP_RAIL`; only the label is looked up, so a row he adds
+              appears here and falls back to his spelling until somebody
+              decides Refined's. */}
+          {REFINED_RAIL_LABELS[id] ?? r.label}
         </button>
       </li>
     )

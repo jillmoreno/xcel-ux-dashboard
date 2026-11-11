@@ -51,4 +51,58 @@ export const REFINED_COURSE = {
  * different components; a string typed into both is two strings that agree
  * today. `CompassRefinedShell.test.tsx` holds every state to this one.
  */
-export const REFINED_OVERVIEW_TITLE = 'Your learning journey'
+export const REFINED_OVERVIEW_TITLE = 'Your Learning Journey'
+
+/**
+ * EVERY PAGE TITLE, IN ONE PLACE AND IN TITLE CASE — 2026-11-11, Jillienne:
+ * "title case everywhere".
+ *
+ * ⚠ THE SET WAS MIXED AND NOBODY CHOSE IT. "Your Course", "Prep Review",
+ * "Exam Simulator" and "Flashcards" were title case; "Your readiness",
+ * "Study planner" and "Your learning journey" were sentence case. Both
+ * conventions came through the port from different screens of Jeff's file, so
+ * the rail and the pages disagreed with each other and with themselves.
+ *
+ * ⚠ THE MAP IS THE WHOLE SET, not just the three that changed. Listing only
+ * the exceptions would mean the convention lives nowhere you can read it, and
+ * the next page added would be a coin toss. `CompassRefinedShell.test.tsx`
+ * holds every rail page's title to this map and every title in it to the
+ * convention.
+ *
+ * ⚠ IT IS A FORK OF HIS WORDS, and the data rule covers it: a fixture forks
+ * when Refined decides different words. `JEFF_MVP_*.title` keeps its own
+ * casing — the version that still draws them is not changing.
+ */
+export const REFINED_PAGE_TITLES = {
+  overview: REFINED_OVERVIEW_TITLE,
+  learn: 'Your Course',
+  'study-planner': 'Study Planner',
+  'prep-review': 'Prep Review',
+  practice: 'Practice',
+  flashcards: 'Flashcards',
+  'exam-simulator': 'Exam Simulator',
+  readiness: 'Your Readiness',
+} as const
+
+/**
+ * THE RAIL'S ROW LABELS, held to the same rule.
+ *
+ * ⚠ ONLY "Study planner" MOVED, and the rail is where it mattered most: the
+ * row and the page it opens were spelled differently from each other.
+ *
+ * ⚠ THE "Exam prep" GROUP LABEL IS DELIBERATELY NOT HERE. Its capitals are
+ * `text-transform` — the fixture says "Exam prep" and the stylesheet
+ * uppercases it, which the 2026-11-05 parity run recorded the hard way. Title
+ * casing the string would change nothing on screen and would break the parity
+ * check against his `innerText`.
+ */
+export const REFINED_RAIL_LABELS: Record<string, string> = {
+  overview: 'Overview',
+  learn: 'Learn',
+  'study-planner': 'Study Planner',
+  'prep-review': 'Prep Review',
+  practice: 'Practice',
+  flashcards: 'Flashcards',
+  'exam-simulator': 'Exam Simulator',
+  readiness: 'Readiness',
+}

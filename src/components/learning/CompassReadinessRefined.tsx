@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { REFINED_COURSE } from '@/data/compassRefinedCopy'
+import { REFINED_COURSE, REFINED_PAGE_TITLES } from '@/data/compassRefinedCopy'
 import { BookOpenRegular, CalendarRegular, ChevronDown, CircleInfoRegular, Clock, RubiLogo } from '@/icons'
 import {
   READINESS_BANDS,
@@ -147,7 +147,7 @@ export function CompassReadinessRefined({
               </span>
               <span className="cre-rdr-eyebrow__access">{REFINED_COURSE.access}</span>
             </p>
-            <h1 className="cre-rdr-h1 serif">Your readiness</h1>
+            <h1 className="cre-rdr-h1 serif">{REFINED_PAGE_TITLES.readiness}</h1>
           </div>
         </header>
         {/* ⚠ OUTSIDE THE HEADER — 2026-11-10, "there should never be copy

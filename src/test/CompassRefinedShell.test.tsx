@@ -11,7 +11,11 @@ import {
   type RefinedSlot,
 } from '@/components/learning/compassRefinedPages'
 import { JEFF_MVP_PAGES, JEFF_MVP_SUBPAGES } from '@/data/compassJeffMvpFixtures'
-import { REFINED_OVERVIEW_TITLE } from '@/data/compassRefinedCopy'
+import {
+  REFINED_OVERVIEW_TITLE,
+  REFINED_PAGE_TITLES,
+  REFINED_RAIL_LABELS,
+} from '@/data/compassRefinedCopy'
 import { READINESS_STAGES } from '@/data/compassReadinessFixtures'
 
 /**
@@ -266,6 +270,53 @@ describe('the Overview keeps its name through every learner state', () => {
         <CompassRefinedShell page="overview" onSelectPage={() => {}} stage={stage.key} />,
       )
       expect(container.querySelector('header h1')?.textContent).toBe(REFINED_OVERVIEW_TITLE)
+    })
+  }
+})
+
+/**
+ * TITLE CASE, EVERYWHERE — 2026-11-11, Jillienne: "title case everywhere".
+ *
+ * ⚠ THE SET WAS MIXED AND NOBODY CHOSE IT: "Your Course" and "Prep Review"
+ * against "Your readiness" and "Study planner", both conventions arriving
+ * through the port from different screens of one file. Two cases here, and
+ * they fail for different reasons: one if a page stops reading the map, the
+ * other if something sentence-cased is written INTO it.
+ */
+describe('every page title is title case, and the rail agrees', () => {
+  /* Lower-case words a title may legitimately contain — articles, short
+     prepositions, conjunctions — and never as the first word. None of the
+     current titles use one; the list is here so "Ready to Pass" would pass
+     when somebody writes it. */
+  const MINOR = new Set(['a', 'an', 'and', 'as', 'at', 'by', 'for', 'in', 'of', 'on', 'or', 'the', 'to'])
+
+  for (const [key, title] of Object.entries(REFINED_PAGE_TITLES)) {
+    it(`${key} — "${title}"`, () => {
+      title.split(' ').forEach((word, i) => {
+        if (i > 0 && MINOR.has(word)) return
+        expect(word[0], `"${title}": "${word}" is not capitalised`).toBe(word[0].toUpperCase())
+      })
+    })
+  }
+
+  it('the rail row and the page it opens are spelled the same way', () => {
+    /* ⚠ THE ONE THAT ACTUALLY BIT. The rail read "Study planner" and its page
+       read "Study Planner" — the same words, two spellings, one click apart.
+       Only the rows whose label IS the page's name are held to this; Learn
+       opens "Your Course" and Readiness opens "Your Readiness" by design. */
+    for (const key of ['prep-review', 'practice', 'flashcards', 'exam-simulator', 'study-planner']) {
+      expect(REFINED_RAIL_LABELS[key]).toBe(REFINED_PAGE_TITLES[key as keyof typeof REFINED_PAGE_TITLES])
+    }
+  })
+
+  for (const page of RAIL_PAGES) {
+    it(`${page} draws its title from the map`, () => {
+      const { container } = wrap(<CompassRefinedShell page={page} onSelectPage={() => {}} />)
+      const expected =
+        page === 'overview'
+          ? REFINED_OVERVIEW_TITLE
+          : REFINED_PAGE_TITLES[page as keyof typeof REFINED_PAGE_TITLES]
+      expect(container.querySelector('header h1')?.textContent).toBe(expected)
     })
   }
 })

@@ -1,3 +1,4 @@
+import { REFINED_PAGE_TITLES } from '@/data/compassRefinedCopy'
 import { useState } from 'react'
 import { ChevronDown, CircleInfoRegular, Clock, RubiLogo } from '@/icons'
 import {
@@ -59,7 +60,7 @@ export function CompassRefinedReadiness({
       </button>
 
       <CompassRefinedColumn>
-      <CompassRefinedHead title={COPY.title} ruled />
+      <CompassRefinedHead title={REFINED_PAGE_TITLES['readiness']} ruled />
       {/* ⚠ OUTSIDE THE HEADER — 2026-11-10, "there should never be copy
           between the eyebrow and title - or after it". The lead and the live
           chip were the header's `lead` and `aside`; they are page content,
