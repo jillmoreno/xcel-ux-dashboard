@@ -73,7 +73,12 @@ export const onSuccess = async ({ utils }) => {
       .split('\n')
       .map((s) => s.trim())
       .filter(Boolean)
-    const subject = sh('git log -1 --format=%s') || 'Staged'
+    /* ⚠ SKIP MERGE COMMITS. Sharing to stage merges stage into the branch
+       first, so the tip is usually a merge — and "Merge remote-tracking
+       branch 'origin/stage' into feat/x" is the least useful sentence the
+       board could carry. The last commit that did something is the one worth
+       quoting. */
+    const subject = sh('git log -1 --no-merges --format=%s') || sh('git log -1 --format=%s') || 'Staged'
     const author = (sh('git log -1 --format=%an') || '').split(' ')[0]
     const scopes = scopesFor(paths)
     /* A branch that changed only docs, tests or skills has no scope — it is

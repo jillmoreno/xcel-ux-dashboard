@@ -128,6 +128,15 @@ describe('the On Stage card writer', () => {
       expect(pathFor(s)).toContain('demo=1')
   })
 
+  it('⚠ quotes the last real commit, not the merge', () => {
+    /* `/share-to-stage` merges stage into the branch before pushing, so the
+       tip is normally a merge commit. The first card to land after a merge
+       read "Merge remote-tracking branch 'origin/stage' into
+       feat/jeff-course-content", which tells a reader nothing about what is
+       waiting for them. */
+    expect(plugin).toMatch(/git log -1 --no-merges --format=%s/)
+  })
+
   it('does nothing on any branch but stage', () => {
     expect(plugin).toMatch(/if \(branch !== 'stage'\) return/)
   })

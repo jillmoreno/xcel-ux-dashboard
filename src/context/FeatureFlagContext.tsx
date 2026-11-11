@@ -1651,6 +1651,197 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-mvp-version',
+    /* WHOSE COMPASS — 2026-11-09, from `Compass-Prototype-MVP111926_v2.html`,
+       on the direct ask: "jeff has given me another prototype, and this needs
+       to get populated into my repo. page by page. with a tag that shows its
+       jeffs version."
+
+       ⚠ IT REPLACES THE WHOLE SURFACE, not one page of it, which is what makes
+       it different from `compass-content-version` (his LESSON) and
+       `compass-overview-version` (one page's body). His MVP is a thirteen-page
+       Compass with its own rail — three learning rows, an EXAM PREP rule, five
+       exam-prep rows — so there is no honest way to show one of his pages
+       inside the product's own navigation. The rail is part of the argument.
+
+       ⚠ `current` IS THE DEFAULT because it is what ships — the rule every
+       version control here follows: the arm is the question, the baseline is
+       not.
+
+       ⚠ THE ARM IS BEING FILLED PAGE BY PAGE. Readiness is ported; the other
+       seven rail rows draw a panel naming what is missing and pointing at the
+       document on the Hub. A silent fallback to the product's own page would
+       render shipped work under Jeff's name with nothing on screen to correct
+       a reviewer — the same decision `CompassContentPending` records.
+
+       ⚠ SCOPED TO HIS SURFACE AND THE OVERVIEW, so it is reachable from where
+       a reviewer starts (the Compass landing page) and still on the bar
+       wherever in his MVP they got to. Without the second scope, picking his
+       version would take its own dropdown off the bar.
+
+       ⚠ THE THIRD ARM IS `refined` — 2026-11-09, Jillienne: "I want a 3rd
+       page, so there is Anjanis Version, Jeffs Version, and the REFINED
+       Version." It is Jeff's shell — his rail, his other pages — with the
+       Readiness row opening `CompassReadinessRefined`: his page rebuilt
+       against Nina Conrad's "Compass Rapid Insights: Your Exam Prep" research
+       (Nov 2026) on the house Compass tokens. One page so far; it opens on
+       Readiness because that is the page that differs. Its surface is
+       `compass:refined`, scoped here for the same reason his is. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:jeff-mvp', 'compass:refined', 'compass:overview'],
+    group: 'Widgets',
+    label: 'Compass version',
+    description:
+      'Which Compass a reviewer is in. Current is what ships — Anjani’s rail and pages. Jeff’s MVP is his thirteen-page prototype of 2026-11-09, with his own rail: Overview, Learn and Study planner, then an EXAM PREP rule over Prep Review, Practice, Flashcards, Exam Simulator and Readiness. Refined is Jeff’s shell with the Readiness page rebuilt against the Nov 2026 "Your Exam Prep" research — one ring with the level inside it, the gap to Ready stated as time against the exam date, plain language, and every topic and sub-topic on one comparable scale. The whole prototype is on the Hub under Explorations.',
+    variants: [
+      { value: 'current', label: 'Current', description: 'What ships today' },
+      { value: 'jeff', label: 'Jeff’s MVP', description: 'His thirteen-page prototype' },
+      { value: 'refined', label: 'Refined', description: 'Readiness rebuilt on the research' },
+    ],
+    defaultVariant: 'current',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-refined-readiness-hero',
+    /* THE READINESS TO PASS SECTION, on the Refined page — 2026-11-09,
+       Jillienne: "Add a feature flag concept that focuses on the Readiness to
+       Pass section and make a variant that still includes the 3 ringed
+       version that was tested as users seemed to like it."
+
+       The research cut both ways on the rings. Insight 2: many participants
+       named them the most helpful part of the page and called them
+       motivating — "I would love filling those rings up." Insight 3: the
+       rings confused the people who noticed the KEY had more items than the
+       graphic had rings. Recommendation 1 is explicit that either answer is
+       acceptable — "make the number of rings match the number of items in the
+       key, OR simplify the graphic". The Refined page shipped the second; this
+       flag puts the first beside it.
+
+       ⚠ THE `rings` ARM IS THREE RINGS AND A THREE-ITEM KEY, one to one. That
+       is the whole fix. The tested graphic had three rings and a five-item
+       breakdown (Readiness · Practice questions · Flashcards · Exam Simulator
+       · Book your exam), and "Book your exam" was the worst offender — a
+       one-time task cannot fill like a progress ring. Here every ring is a
+       thing that fills: Readiness (a score), Practice questions (a count),
+       Exam simulators (a count). Nothing in the key lacks a ring; no ring
+       lacks a line in the key.
+
+       ⚠ `rings` IS THE DEFAULT SINCE 2026-11-10 — Jillienne, looking at it:
+       "i want this to be built into the refined view for Readiness." It was
+       `single` for a day, because that is what the Refined page was first
+       built as.
+
+       The research supports the move rather than merely permitting it.
+       Insight 3's objection was never the rings themselves — it was that the
+       KEY listed five things and the graphic drew three, so two lines had no
+       ring. This arm fixes exactly that: three rings, three key lines, one
+       to one. With the mismatch gone, Insight 2 is what is left — learners
+       called the concentric graphic the most helpful part of the page and
+       said they would love filling it up.
+
+       `single` STAYS as the arm, not deleted. It is the simpler answer the
+       same recommendation allows, it is one click away on the bar, and the
+       decision between them is still open until someone watches a learner
+       use this one. Scoped to the Refined surface only — a decision about
+       one section of one page. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:refined'],
+    group: 'Widgets',
+    label: 'Readiness to Pass',
+    description:
+      'How the Readiness to Pass section draws the score on the Refined page. Three rings is what it shows: the concentric graphic learners called motivating, with a key that matches it ring for ring — Readiness, Practice questions, Exam simulators — which is the fix for the one thing the research faulted (a five-item key over a three-ring graphic). Single ring is the simpler alternative the same recommendation allows: one arc with the level inside it, and questions answered as a labelled bar beneath.',
+    variants: [
+      { value: 'rings', label: 'Three rings', description: 'Readiness · Practice questions · Exam simulators' },
+      { value: 'single', label: 'Single ring', description: 'One arc, the level inside it' },
+    ],
+    defaultVariant: 'rings',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-overview-version',
+    /* WHOSE OVERVIEW — 2026-11-05, from `Compass-Overview-Prototype-V2_2`.
+       Anjani's shipped Overview ("Your learning journey", the 62% ring and
+       the assignments table) against the V2 prototype, which rebuilds the
+       page around READINESS.
+
+       ⚠ `anjani` IS THE DEFAULT because it is what ships, the same rule every
+       other version control here follows: the arm is the question, the
+       baseline is not.
+
+       ⚠ THE V2 ARM IS TWO PAGES, not one, and the stage control below picks
+       between them — his prototype holds sixteen states across three series,
+       and whether Readiness is a phase after the course (the `p` series) or a
+       signal running beside it (the `u` series) is the decision the whole
+       prototype exists to support. Porting one and calling it the design
+       would settle that quietly. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:overview'],
+    group: 'Widgets',
+    label: 'Overview version',
+    description:
+      'Which Compass Overview renders. Anjani’s is what ships — her learning journey, the 62% ring, the assignments table. V2 is the Readiness prototype (2026-10-30): the page rebuilt around a three-arc Readiness ring, a blueprint-weighted topic table and what the learner’s confidence says against their answers. Pick the stage with Readiness stage.',
+    variants: [
+      { value: 'anjani', label: 'Anjani’s overview (current)', description: 'What ships today' },
+      { value: 'v2', label: 'Readiness V2', description: 'The 2026-10-30 prototype' },
+    ],
+    defaultVariant: 'anjani',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'compass-readiness-stage',
+    /* WHICH OF HIS SIXTEEN STATES — his own stage picker, as a design control.
+       Three series: `q` walks the QE course (⚠ Readiness does not exist until
+       q8, which is the prototype's first argument), `p` is the exam-prep page
+       after the course, `u` is the unified one where lessons and practice run
+       side by side.
+
+       ⚠ THE STAGE PICKS THE PAGE. A `p` stage draws "Your exam prep"; a `q`
+       or `u` stage draws "Your learning journey". That is his structure, not
+       a convenience: the two pages ARE the two answers, and a stage belongs
+       to one of them.
+
+       ⚠ `p2` IS THE DEFAULT because it is the state the two standalone
+       exports show (Readiness 58%), and the one the design conversation has
+       been about. */
+    surface: 'design',
+    owner: 'anjani',
+    versions: ['hybrid-pacing', 'eric-atlas-e2e'],
+    surfaces: ['compass:overview'],
+    group: 'Widgets',
+    label: 'Readiness stage',
+    description:
+      'Which of the prototype’s sixteen states the Overview shows. Q1–Q8 walk the QE course and Readiness only appears at Q8. P1–P3 are the exam-prep page: establishing, 58% Developing, 86% Ready. U1–U5 are the unified page where course progress and Readiness sit side by side. Only bites on the V2 arm of Overview version.',
+    variants: [
+      { value: 'q1', label: 'Q1 · First-time learner · 0%', description: 'The QE course' },
+      { value: 'q2', label: 'Q2 · QE 20% · Continue your course', description: 'The QE course' },
+      { value: 'q3', label: 'Q3 · QE 50% · Continue your course', description: 'The QE course' },
+      { value: 'q4', label: 'Q4 · QE 80% · You’re almost there', description: 'The QE course' },
+      { value: 'q5', label: 'Q5 · Lessons complete · affidavit next', description: 'The QE course' },
+      { value: 'q6', label: 'Q6 · Final course exam open', description: 'The QE course' },
+      { value: 'q7', label: 'Q7 · Survey and certificate next', description: 'The QE course' },
+      { value: 'q8', label: 'Q8 · QE complete · Readiness appears', description: 'The QE course' },
+      { value: 'p1', label: 'P1 · Establishing Readiness', description: 'Exam prep' },
+      { value: 'p2', label: 'P2 · Readiness 58% · exam preparation', description: 'Exam prep' },
+      { value: 'p3', label: 'P3 · Readiness 86% · Ready to pass', description: 'Exam prep' },
+      { value: 'u1', label: 'U1 · Starting · not enough data', description: 'Learning journey' },
+      { value: 'u2', label: 'U2 · Course 36% · building Readiness', description: 'Learning journey' },
+      { value: 'u3', label: 'U3 · Course 61% · Readiness 62%', description: 'Learning journey' },
+      { value: 'u4', label: 'U4 · Course complete · Readiness 80%', description: 'Learning journey' },
+      { value: 'u5', label: 'U5 · Simulator passed · Ready to pass', description: 'Learning journey' },    ],
+    defaultVariant: 'p2',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'compass-surface',
     /* WHOSE COMPASS — 2026-10-15, the direct ask: "I want what she did to be
        put into the Prototype - Compass Learning section only."

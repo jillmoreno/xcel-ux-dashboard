@@ -43,6 +43,17 @@ export type DesignSurfaceId =
      Rubi reply shape and the device frame. Scoped here, none of those six
      reach the Learn page, which renders no workspace at all. */
   | 'compass:workspace'
+  /* JEFF'S COMPASS MVP — 2026-11-09. One surface for all thirteen of his
+     pages rather than one per page, because the control that matters on it is
+     the same everywhere: which version of Compass am I looking at. His rail is
+     what moves between his pages, and a reviewer switching back expects the
+     dropdown to still be on the bar wherever in his MVP they got to. */
+  | 'compass:jeff-mvp'
+  /* THE REFINED COMPASS — 2026-11-09. Jeff's shell with the Readiness page
+     rebuilt against the research. Its own surface rather than his, so the
+     Design bar names what is on screen — the bar's label is how a reviewer
+     tells the three versions apart now that the pages carry no badge. */
+  | 'compass:refined'
   /* ⚠ THE INVITE & PURCHASE FLOW — 2026-10-22, Jillienne: "these design
      controls should not show when the Start is set to Invite & Checkout, they
      should display for Atlas."
@@ -121,6 +132,8 @@ export const DESIGN_SURFACE_LABELS: Record<DesignSurfaceId, string> = {
   'compass:study-planner': 'Compass · Study planner',
   'compass:progress': 'Compass · Progress',
   'compass:workspace': 'Compass · Workspace',
+  'compass:jeff-mvp': 'Compass · Jeff’s MVP',
+  'compass:refined': 'Compass · Refined',
   invite: 'Invite & Checkout',
   'invite:v3-b2b': 'Invite Flow V3 · B2B2C',
   'invite:v3-b2b-direct-email': 'Invite Flow V3 · B2B2C',

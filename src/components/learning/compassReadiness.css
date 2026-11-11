@@ -1,0 +1,784 @@
+/* THE READINESS PAGES (2026-11-05) — "Your exam prep" and "Your learning
+   journey", from `Compass-Overview-Prototype-V2_2.html`.
+
+   ⚠ HIS PALETTE IS ANJANI'S COMPASS SYSTEM, which this repo already maps.
+   `compassWorkspace.css` did the same mapping for her Workspace on
+   2026-11-04, and these are the same colours doing the same jobs, so the
+   mapping is repeated here rather than re-decided:
+
+     ink        #1F1D18  → --color-compass-page-heading
+     body       #42464F  → --color-compass-page-body
+     muted      #615C55  → --color-compass-page-muted
+     faint      #8E939B  → --color-text-tertiary
+     hairline   #E6E2D8  → --color-compass-page-rule
+     edge       #C3BBA5  → --color-compass-page-edge-ish (her stronger rule)
+     steel      #3D5A73  → --color-primary-500   (#2d5872 — the same decision)
+     steel-deep #2F4A63  → --color-primary-600
+     green      #2F7A5A  → --color-success-700
+     amber-deep #835B16  → --color-warning-700
+     rubi       #B4552F  → --color-compass-page-rubi
+
+   The rest — the washes, the violet the Exam Simulator ring uses, the amber
+   that is Readiness itself — have no token here and are declared once below.
+   A tone is never written as a hex anywhere else: the fixture carries NAMES,
+   and this block is where a name becomes a colour.
+
+   ⚠ EVERY RULE IS SCOPED UNDER `.cre-rd`. */
+
+.cre-rd {
+  --rd-ink: var(--color-compass-page-heading);
+  --rd-body: var(--color-compass-page-body);
+  --rd-muted: var(--color-compass-page-muted);
+  --rd-faint: var(--color-text-tertiary);
+  --rd-hairline: var(--color-compass-page-rule);
+  --rd-edge: #c3bba5;
+  --rd-wash: #efebe2;
+  --rd-paper: #faf9f6;
+  --rd-white: #fff;
+  --rd-steel: var(--color-primary-500);
+  --rd-steel-deep: var(--color-primary-600);
+  --rd-steel-light: #8fb0c9;
+  --rd-steel-edge: #c7d5e2;
+  --rd-steel-wash: #f5f8fb;
+  --rd-amber: #c08a2e;
+  --rd-amber-deep: var(--color-warning-700);
+  --rd-amber-edge: #a87420;
+  --rd-amber-wash: #f6e8cc;
+  --rd-green: var(--color-success-700);
+  --rd-green-deep: #1f6b3a;
+  --rd-green-edge: #b9d6c4;
+  --rd-green-wash: #f1f7f3;
+  --rd-rubi: var(--color-compass-page-rubi);
+  --rd-violet: #6b4fa0;
+
+  font-family: var(--font-body);
+  color: var(--rd-ink);
+  max-width: 1180px;
+}
+.cre-rd .serif {
+  font-family: var(--font-heading-serif), Georgia, serif;
+}
+
+.cre-rd .cre-rd-hello {
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: var(--rd-muted);
+}
+.cre-rd .cre-rd-h1 {
+  margin: 0 0 8px;
+  font-size: 40px;
+  line-height: 1.1;
+  font-weight: 700;
+}
+.cre-rd .cre-rd-h2 {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+.cre-rd .cre-rd-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--rd-hairline);
+  font-size: 14px;
+  color: var(--rd-muted);
+}
+.cre-rd .cre-rd-phase {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rd-green);
+}
+.cre-rd .cre-rd-cert {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--rd-wash);
+  font-size: 13px;
+}
+.cre-rd .cre-rd-eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--rd-ink);
+}
+.cre-rd .cre-rd-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--rd-muted);
+}
+.cre-rd .cre-rd-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--rd-muted);
+}
+
+/* ---- recommended next ---- */
+.cre-rd .cre-rd-next {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 22px 24px;
+  margin-bottom: 18px;
+  border: 1px solid var(--rd-steel-edge);
+  border-radius: 14px;
+  background: var(--rd-steel-wash);
+}
+.cre-rd .cre-rd-next > div:first-child {
+  flex: 1 1 420px;
+}
+.cre-rd .cre-rd-next-title {
+  margin: 0 0 6px;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+.cre-rd .cre-rd-next-sub,
+.cre-rd .cre-rd-covers {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--rd-muted);
+}
+.cre-rd .cre-rd-covers {
+  margin-top: 8px;
+}
+.cre-rd .cre-rd-next-aside {
+  flex: 1 1 240px;
+  max-width: 300px;
+  padding-left: 22px;
+  border-left: 1px solid var(--rd-steel-edge);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--rd-body);
+}
+.cre-rd .cre-rd-next-aside p {
+  margin: 0;
+}
+.cre-rd .cre-rd-next-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.cre-rd .cre-rd-primary {
+  min-height: 44px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--rd-steel-deep);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.cre-rd .cre-rd-primary.cre-rd-small {
+  min-height: 34px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+.cre-rd .cre-rd-quiet {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--rd-muted);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.cre-rd .cre-rd-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cre-rd .cre-rd-link--rubi {
+  color: var(--rd-rubi);
+}
+
+/* ---- readiness + Rubi ---- */
+.cre-rd .cre-rd-pair {
+  display: flex;
+  gap: 0;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
+  border: 1px solid var(--rd-hairline);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+}
+.cre-rd .cre-rd-ready {
+  flex: 1 1 520px;
+  padding: 20px 24px;
+}
+.cre-rd .cre-rd-ready-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.cre-rd .cre-rd-ready-body {
+  display: flex;
+  gap: 22px;
+  align-items: flex-start;
+}
+.cre-rd .cre-rd-ring {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  flex: 0 0 200px;
+}
+.cre-rd .cre-rd-track {
+  stroke: #e6e8eb;
+}
+.cre-rd .cre-rd-pill {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: inline-block;
+  padding: 4px 8px;
+  border: 1.5px solid;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--rd-steel-deep);
+  white-space: nowrap;
+}
+.cre-rd .cre-rd-path {
+  flex: 1 1 auto;
+  min-width: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cre-rd .cre-rd-path-row {
+  display: grid;
+  grid-template-columns: 12px minmax(120px, auto) 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rd-hairline);
+  font-size: 13px;
+}
+.cre-rd .cre-rd-path-row:last-child {
+  border-bottom: 0;
+}
+.cre-rd .cre-rd-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 6px;
+}
+.cre-rd .cre-rd-path-label {
+  font-weight: 600;
+}
+.cre-rd .cre-rd-path-bar {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--rd-hairline);
+  overflow: hidden;
+}
+.cre-rd .cre-rd-path-bar > span {
+  display: block;
+  height: 5px;
+  border-radius: 3px;
+}
+.cre-rd .cre-rd-path-value {
+  white-space: nowrap;
+}
+.cre-rd .cre-rd-basis {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--rd-muted);
+}
+
+/* ⚠ RUBI'S PANEL IS THE WARM ONE — the only cream surface on the page, which
+   is how her system marks "this is Rubi talking" rather than a label. */
+.cre-rd .cre-rd-rubi {
+  flex: 1 1 360px;
+  padding: 20px 24px;
+  border-left: 1px solid var(--rd-hairline);
+  background: var(--rd-paper);
+}
+.cre-rd .cre-rd-rubi-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--rd-rubi);
+}
+.cre-rd .cre-rd-rubi-path {
+  color: var(--rd-muted);
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 400;
+}
+.cre-rd .cre-rd-rubi-title {
+  margin: 6px 0 8px;
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+.cre-rd .cre-rd-rubi-why {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--rd-body);
+}
+.cre-rd .cre-rd-rubi-effect {
+  margin: 0 0 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rd-hairline);
+  font-size: 13px;
+}
+.cre-rd .cre-rd-rubi-cta {
+  min-height: 42px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--rd-rubi);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ---- the topic table ---- */
+.cre-rd .cre-rd-table-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.cre-rd .cre-rd-summary {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--rd-muted);
+}
+.cre-rd .cre-rd-grid {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.cre-rd .cre-rd-grid th {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--rd-edge);
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rd-muted);
+  font-weight: 600;
+}
+.cre-rd .cre-rd-grid td {
+  padding: 14px 10px;
+  border-bottom: 1px solid var(--rd-hairline);
+  vertical-align: middle;
+}
+.cre-rd .cre-rd-right {
+  text-align: right;
+}
+.cre-rd .cre-rd-expander {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cre-rd .cre-rd-expander b {
+  display: block;
+  font-size: 15px;
+}
+.cre-rd .cre-rd-weight {
+  display: block;
+  font-size: 12px;
+  color: var(--rd-muted);
+}
+.cre-rd .cre-rd-cov {
+  display: block;
+  width: 150px;
+  height: 5px;
+  margin-top: 6px;
+  border-radius: 3px;
+  background: var(--rd-hairline);
+  overflow: hidden;
+}
+.cre-rd .cre-rd-cov > span {
+  display: block;
+  height: 5px;
+  background: var(--rd-steel);
+}
+.cre-rd .cre-rd-readiness {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.cre-rd .cre-rd-band {
+  display: inline-flex;
+  width: 54px;
+  gap: 2px;
+}
+.cre-rd .cre-rd-band > span {
+  display: block;
+  height: 5px;
+  border-radius: 1px;
+}
+.cre-rd .cre-rd-band--wide {
+  width: 260px;
+}
+/* One cell per question. */
+.cre-rd .cre-rd-cells {
+  display: flex;
+  gap: 2px;
+}
+.cre-rd .cre-rd-cells > span {
+  flex: 1 1 0;
+  height: 14px;
+  border-radius: 2px;
+}
+.cre-rd .cre-rd-subs > td {
+  padding-top: 0;
+  background: var(--rd-paper);
+}
+.cre-rd .cre-rd-subs-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0 6px;
+}
+.cre-rd .cre-rd-sub {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.4fr) 1.4fr auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 0;
+  border-top: 1px solid var(--rd-hairline);
+  font-size: 13px;
+}
+.cre-rd .cre-rd-sub-name {
+  font-weight: 600;
+}
+
+/* ---- confidence ---- */
+.cre-rd .cre-rd-evidence {
+  margin-top: 28px;
+}
+.cre-rd .cre-rd-evidence-pair {
+  display: flex;
+  gap: 0;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--rd-edge);
+}
+.cre-rd .cre-rd-ev {
+  flex: 1 1 360px;
+  padding: 18px 24px 18px 0;
+}
+.cre-rd .cre-rd-ev + .cre-rd-ev {
+  padding-left: 24px;
+  border-left: 1px solid var(--rd-hairline);
+}
+.cre-rd .cre-rd-ev-head {
+  margin: 6px 0 12px;
+  font-size: 20px;
+  font-weight: 700;
+}
+.cre-rd .cre-rd-ev-bar {
+  display: grid;
+  grid-template-columns: 110px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 13px;
+  color: var(--rd-muted);
+}
+.cre-rd .cre-rd-ev p {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+.cre-rd .cre-rd-ev-links {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.cre-rd .cre-rd-gate {
+  margin: 26px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--rd-hairline);
+  font-size: 12px;
+  color: var(--rd-muted);
+}
+
+/* ---- the journey page ---- */
+.cre-rd .cre-rd-cert--phase {
+  background: var(--rd-steel-wash);
+  color: var(--rd-steel-deep);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+/* ⚠ THE BANNER ONLY APPEARS WHERE THE RULES CHANGE, so it is allowed to be
+   loud: a numbered list of how this surface works. */
+.cre-rd .cre-rd-banner {
+  margin-bottom: 18px;
+  padding: 16px 20px;
+  border: 1px solid var(--rd-steel-edge);
+  border-radius: 12px;
+  background: var(--rd-steel-wash);
+}
+.cre-rd .cre-rd-banner ol {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+.cre-rd .cre-rd-banner li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1 1 260px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--rd-body);
+}
+.cre-rd .cre-rd-banner b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  border-radius: 50%;
+  background: var(--rd-steel-deep);
+  color: #fff;
+  font-size: 11px;
+}
+.cre-rd .cre-rd-progress {
+  flex: 1 1 360px;
+  padding: 20px 24px;
+  border-left: 1px solid var(--rd-hairline);
+}
+.cre-rd .cre-rd-qe {
+  margin-bottom: 26px;
+  padding: 20px 24px;
+  border: 1px solid var(--rd-hairline);
+  border-radius: 14px;
+  background: #fff;
+}
+.cre-rd .cre-rd-qe-body {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.cre-rd .cre-rd-prog {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.cre-rd .cre-rd-prog-ring {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  flex: 0 0 150px;
+}
+.cre-rd .cre-rd-prog-num {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+}
+.cre-rd .cre-rd-prog-num b {
+  font-size: 26px;
+  font-weight: 700;
+}
+.cre-rd .cre-rd-prog-num span {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rd-muted);
+}
+.cre-rd .cre-rd-prog-side p {
+  margin: 0 0 6px;
+}
+.cre-rd .cre-rd-prog-side b {
+  display: block;
+  font-size: 15px;
+}
+.cre-rd .cre-rd-empty {
+  margin: 14px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--rd-muted);
+}
+.cre-rd .cre-rd-steps {
+  flex: 1 1 320px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cre-rd .cre-rd-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rd-hairline);
+}
+.cre-rd .cre-rd-steps li:last-child {
+  border-bottom: 0;
+}
+.cre-rd .cre-rd-step-n {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  border-radius: 50%;
+  border: 1px solid var(--rd-edge);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rd-muted);
+}
+.cre-rd .cre-rd-steps li.is-done .cre-rd-step-n {
+  background: var(--rd-green);
+  border-color: var(--rd-green);
+  color: #fff;
+}
+.cre-rd .cre-rd-steps li.is-current .cre-rd-step-n {
+  background: var(--rd-steel-deep);
+  border-color: var(--rd-steel-deep);
+  color: #fff;
+}
+.cre-rd .cre-rd-steps b {
+  display: block;
+  font-size: 14px;
+}
+.cre-rd .cre-rd-step-status {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+}
+.cre-rd .cre-rd-focus-row {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
+}
+.cre-rd .cre-rd-rubi--card {
+  flex: 1 1 320px;
+  border: 1px solid var(--rd-hairline);
+  border-left: 0;
+  border-radius: 14px;
+}
+.cre-rd .cre-rd-tools {
+  flex: 2 1 520px;
+}
+.cre-rd .cre-rd-tools-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.cre-rd .cre-rd-tool {
+  flex: 1 1 180px;
+  padding: 14px 16px;
+  border: 1px solid var(--rd-hairline);
+  border-radius: 12px;
+  background: #fff;
+}
+.cre-rd .cre-rd-tool b {
+  display: block;
+  margin: 8px 0 4px;
+  font-size: 15px;
+}
+.cre-rd .cre-rd-tool-icon {
+  color: var(--rd-steel);
+}
+.cre-rd .cre-rd-tool-status {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+/* The tabs over the table. */
+.cre-rd .cre-rd-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--rd-hairline);
+}
+.cre-rd .cre-rd-tab {
+  padding: 10px 16px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  color: var(--rd-body);
+}
+.cre-rd .cre-rd-tab b {
+  display: block;
+  font-size: 15px;
+}
+.cre-rd .cre-rd-tab.is-on {
+  border-bottom-color: var(--rd-steel-deep);
+  background: var(--rd-steel-wash);
+  color: var(--rd-ink);
+}
+/* The share-of-the-exam pie. */
+.cre-rd .cre-rd-pie {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  border-radius: 50%;
+}
+
+.cre-rd .cre-rd-lpct {
+  margin-left: 10px;
+  font-weight: 700;
+}
+
+.cre-rd .cre-rd-ready--intro {
+  margin-bottom: 26px;
+  border: 1px solid var(--rd-green-edge);
+  border-radius: 14px;
+  background: var(--rd-paper);
+}
+.cre-rd .cre-rd-path-row--intro {
+  grid-template-columns: minmax(160px, 1.4fr) 1fr auto;
+}
