@@ -1,5 +1,5 @@
-import { GaugeThin, RubiLogo } from '@/icons'
-import { REFINED_PACE } from '@/data/compassRefinedCopy'
+import { ArrowRight } from '@/icons'
+import { REFINED_PACE, REFINED_PROGRESS_LINES } from '@/data/compassRefinedCopy'
 import type { Hero, Prog } from './compassReadinessModel'
 
 /** Which of the three arrangements draws. `compass-overview-focus`. */
@@ -61,109 +61,96 @@ export function CompassRefinedFocus({
   )
 }
 
-/** THE LEFT HALF — where the learner has got to, and the plan for the rest. */
+/**
+ * THE LEFT HALF — where the learner has got to, and the plan for the rest.
+ *
+ * ⚠ THREE LINES, NOT A PARAGRAPH — 2026-11-11, Jillienne: "this needs to be 3
+ * simple lines / Completed Lessons - 0 of 36 / Study Pace - Average | 1 Week
+ * Goal (about 12 hours/week) smaller text underneath. / Estimated Completion
+ * - Month + Day (in 18 days) smaller text underneath."
+ *
+ * It had been Atlas's gauge row over a sentence over a link. The sentence was
+ * `prog.note`, which is a different shape every stage, so the half read
+ * differently on every state the reviewer flipped to. Three labelled lines
+ * say the same facts in the same places each time.
+ *
+ * ⚠ THE STAGE'S OWN SENTENCE IS GONE WITH IT. It was the per-state truth and
+ * it now disagrees with the figures above it — q1's note still says six weeks
+ * and ten hours against the panel's one-week goal and twelve. Keeping both
+ * would have put the disagreement on screen; it is recorded in
+ * `REFINED_PACE` instead, to settle when the figures become real.
+ */
 function FocusProgress({ prog, layout }: { prog: Prog; layout: FocusLayout }) {
-  /* ⚠ COURSE PROGRESS LEADS, which is `AtlasPaceRingCard`'s own order and was
-     Jillienne's call there on 2026-10-16: "move course progress to the top -
-     shift everything else down". Where you have got to is the thing you came
-     for; the plan for the rest follows from it. */
+  /* ⚠ "0 of 36", NOT "0 of 36 lessons". The label already says Lessons, and
+     his value carries the word — so only a TRAILING "lessons" is stripped.
+     Later stages read "36 of 36 lessons · complete", where the word is not at
+     the end and the sentence needs it. */
+  const lessons = prog.lessonsVal.replace(/\s+lessons$/, '')
+
   return (
     <div className="crf-focus__prog">
       <p className="crf-focus__eyebrow">Course Progress</p>
-
-      {layout === 'figures' ? (
-        /* The ring beside its figures, Atlas's labelled-row idiom. */
-        <div className="crf-focus__figrow">
-          <Ring prog={prog} size={104} />
-          <dl className="crf-focus__figures">
-            <div>
-              <dt>Lessons</dt>
-              <dd>{prog.lessonsVal}</dd>
-            </div>
-            <div>
-              <dt>{REFINED_PACE.name}</dt>
-              <dd>{REFINED_PACE.goal}</dd>
-            </div>
-            <div>
-              <dt>Each week</dt>
-              <dd>{REFINED_PACE.hours}</dd>
-            </div>
-          </dl>
-        </div>
-      ) : (
-        <>
-          <Ring prog={prog} size={132} />
-          <p className="crf-focus__lessons">{prog.lessonsVal}</p>
-        </>
-      )}
-
-      {/* ⚠ A RULE BETWEEN THE FIGURE AND THE PLAN, as Atlas draws one
-          (2026-10-16): "the two sections sat on a 24px gap alone, which reads
-          as spacing rather than a boundary". On `figures` the rows already
-          carry the pace, so a second statement of it would be the duplication
-          this merge exists to remove. */}
-      {layout === 'figures' ? null : (
-        <>
-          <span aria-hidden className="crf-focus__rule" />
-          <p className="crf-focus__eyebrow">{REFINED_PACE.eyebrow}</p>
-          <p className="crf-focus__pace">
-            <span aria-hidden className="crf-focus__gauge">
-              <GaugeThin size={30} aria-hidden />
-            </span>
-            <span>
-              <b>
-                {REFINED_PACE.name} <span aria-hidden>|</span> {REFINED_PACE.goal}
-              </b>
-              <span className="crf-focus__hours">{REFINED_PACE.hours}</span>
-            </span>
-          </p>
-        </>
-      )}
-
-      {/* ⚠ THE STAGE'S OWN SENTENCE, KEPT. It is the only per-state truth in
-          this half — "On pace · 6 lessons this week", "Lessons complete Jul
-          15. Access ends Jul 31." — and the invented pace figures above it
-          are the same on every state. */}
-      {prog.note ? <p className="crf-focus__note">{prog.note}</p> : null}
-      <button type="button" className="crf-focus__link">
-        {REFINED_PACE.action}
-      </button>
+      <div className="crf-focus__figrow">
+        <Ring prog={prog} size={layout === 'figures' ? 104 : 132} />
+        <dl className="crf-focus__figures">
+          <div>
+            <dt>{REFINED_PROGRESS_LINES.lessons}</dt>
+            <dd>{lessons}</dd>
+          </div>
+          <div>
+            <dt>{REFINED_PROGRESS_LINES.pace}</dt>
+            <dd>
+              {REFINED_PACE.name} <span aria-hidden>|</span> {REFINED_PACE.goal}
+            </dd>
+            {/* The "smaller text underneath", as asked. */}
+            <dd className="crf-focus__under">{REFINED_PACE.hours}</dd>
+          </div>
+          <div>
+            <dt>{REFINED_PROGRESS_LINES.completion}</dt>
+            <dd>{REFINED_PACE.completion}</dd>
+            <dd className="crf-focus__under">{REFINED_PACE.completionIn}</dd>
+          </div>
+        </dl>
+      </div>
     </div>
   )
 }
 
-/** THE RIGHT HALF — the one thing to do next. */
+/**
+ * THE RIGHT HALF — the one thing to do next.
+ *
+ * ⚠ IT IS THE LESSON CARD AND NOTHING ELSE — 2026-11-11, "the right side of
+ * the component should better match this UI", with a mock of four lines: the
+ * eyebrow, the lesson, its meta, and the two actions on one row.
+ *
+ * ⚠ SO THE HERO'S OWN HEADLINE GOES. `hero.eyebrow` ("Step 1 of 4 · Lessons")
+ * and `hero.title` ("Start your QE course") and `hero.sub` were a second
+ * heading on a page that already has one, saying what the stage is rather
+ * than what to do. The eyebrow here is `hero.nextLabel` — "Your next step ·
+ * Tonight, Mon Jun 8" — which is the only one of them that names an action
+ * and a time. The step's position in the regulated four is still on the page:
+ * the numbered steps list sits under this card.
+ */
 function FocusNext({ hero }: { hero: Hero }) {
   return (
-    <div className="crf-focus__next" style={{ background: `var(--rd-${hero.bg})` }}>
-      <p className="crf-focus__eyebrow" style={{ color: `var(--rd-${hero.color})` }}>
-        {hero.eyebrow}
-      </p>
-      <h2 className="crf-focus__title">{hero.title}</h2>
-      {hero.sub ? <p className="crf-focus__sub">{hero.sub}</p> : null}
-
-      {hero.next ? (
-        <div className="crf-focus__lesson">
-          {hero.nextLabel ? <p className="crf-focus__label">{hero.nextLabel}</p> : null}
-          <p className="crf-focus__lessonname">
-            <RubiLogo size={13} aria-hidden />
-            <b>{hero.next}</b>
-          </p>
-          {hero.meta ? <p className="crf-focus__note">{hero.meta}</p> : null}
+    <div className="crf-focus__next">
+      <div className="crf-focus__card">
+        {hero.nextLabel ? <p className="crf-focus__label">{hero.nextLabel}</p> : null}
+        <p className="crf-focus__lessonname">{hero.next ?? hero.title}</p>
+        {hero.meta ? <p className="crf-focus__note">{hero.meta}</p> : null}
+        <div className="crf-focus__cta">
+          {hero.cta ? (
+            <button type="button" className="crf-focus__go">
+              {hero.cta}
+              <ArrowRight size={13} aria-hidden />
+            </button>
+          ) : null}
+          {hero.alt ? (
+            <button type="button" className="crf-focus__quiet">
+              {hero.alt}
+            </button>
+          ) : null}
         </div>
-      ) : null}
-
-      <div className="crf-focus__cta">
-        {hero.cta ? (
-          <button type="button" className="crf-rd-primary" style={{ background: `var(--rd-${hero.ctaBg})` }}>
-            {hero.cta}
-          </button>
-        ) : null}
-        {hero.alt ? (
-          <button type="button" className="crf-rd-quiet">
-            {hero.alt}
-          </button>
-        ) : null}
       </div>
     </div>
   )

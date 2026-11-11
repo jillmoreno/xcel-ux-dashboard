@@ -132,12 +132,33 @@ export const REFINED_RAIL_LABELS: Record<string, string> = {
  * them before any of this reaches a stakeholder.
  */
 export const REFINED_PACE = {
-  eyebrow: 'Study Pace',
-  /** The pace's name, as Compass's planner heads it. */
+  /* ⚠ THE FIGURES ARE JILLIENNE'S, 2026-11-11, given with the three-line
+     spec: "Study Pace - Average | 1 Week Goal (about 12 hours/week)" and
+     "Estimated Completion - Month + Day (in 18 days)". They replace the ones
+     invented the hour before (6 Week Goal, about 10 hours / week) — hers are
+     the ones to carry. Still not a real plan: no pace engine has produced
+     them, and q1's own note still says six weeks and ten hours, which is the
+     disagreement to settle when the figures become real. */
   name: 'Average',
-  /** Atlas's "N Week Goal", beside the name. */
-  goal: '6 Week Goal',
-  hours: 'about 10 hours / week',
-  /** Atlas closes the section with a way to change it. */
-  action: 'Customize your pace',
+  goal: '1 Week Goal',
+  hours: 'about 12 hours/week',
+  /** Month + Day, as asked — the long form is the smaller line under it. */
+  completion: 'Jul 18',
+  completionIn: 'in 18 days',
+} as const
+
+/**
+ * THE THREE LINES — 2026-11-11, Jillienne: "this needs to be 3 simple lines /
+ * Completed Lessons - 0 of 36 / Study Pace - Average | 1 Week Goal (about 12
+ * hours/week) smaller text underneath. / Estimated Completion - Month + Day
+ * (in 18 days) smaller text underneath."
+ *
+ * ⚠ THE LABELS LIVE HERE, NOT IN THE COMPONENT, for the reason every other
+ * string in this file does: they are Refined's words, and the next person to
+ * change one should find all three together rather than three JSX literals.
+ */
+export const REFINED_PROGRESS_LINES = {
+  lessons: 'Completed Lessons',
+  pace: 'Study Pace',
+  completion: 'Estimated Completion',
 } as const
