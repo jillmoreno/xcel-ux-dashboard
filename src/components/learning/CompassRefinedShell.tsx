@@ -2,7 +2,7 @@ import { CompassRefinedRail, CompassRefinedPending } from './CompassRefinedChrom
 import { CompassRefinedReadiness } from './CompassRefinedReadiness'
 import { CompassReadinessRefined, type RefinedHeroStyle } from './CompassReadinessRefined'
 import { CompassRefinedLearn } from './CompassRefinedLearn'
-import { CompassRefinedOverview } from './CompassRefinedOverview'
+import { CompassRefinedStageOverview } from './CompassRefinedStageOverview'
 import { CompassRefinedPractice } from './CompassRefinedPractice'
 import { CompassRefinedPrep } from './CompassRefinedPrep'
 import { CompassRefinedPlanner } from './CompassRefinedPlanner'
@@ -58,12 +58,16 @@ export function CompassRefinedShell({
   page,
   onSelectPage,
   readinessHero,
+  stage,
 }: {
   page: JeffMvpPage
   onSelectPage: (p: JeffMvpPage) => void
   /** `compass-refined-readiness-hero`, read by `CompassLearningPage` and
    *  passed down so this shell stays a plain function of its props. */
   readinessHero?: RefinedHeroStyle
+  /** `compass-readiness-stage` — which of the sixteen learner states the
+   *  Overview draws. Read by `CompassLearningPage`, for the same reason. */
+  stage?: string
 }) {
   /* ⚠ THE TWO TAKEOVERS ARE HIS DECISIONS AND ARE READ FIRST, before the rail
      is drawn — the simulated exam is imitating a Pearson VUE test centre and
@@ -88,7 +92,12 @@ export function CompassRefinedShell({
   return (
     <div className="crf crf-shell">
       <CompassRefinedRail page={page} onSelectPage={onSelectPage} />
-      <RefinedPage page={page} onSelectPage={onSelectPage} readinessHero={readinessHero} />
+      <RefinedPage
+        page={page}
+        onSelectPage={onSelectPage}
+        readinessHero={readinessHero}
+        stage={stage}
+      />
     </div>
   )
 }
@@ -105,10 +114,14 @@ function RefinedPage({
   page,
   onSelectPage,
   readinessHero,
+  stage,
 }: {
   page: JeffMvpPage
   onSelectPage: (p: JeffMvpPage) => void
   readinessHero?: RefinedHeroStyle
+  /** `compass-readiness-stage` — which of the sixteen learner states the
+   *  Overview draws. Read by `CompassLearningPage` and passed down. */
+  stage?: string
 }) {
   const source = refinedSourceFor(page)
 
@@ -130,7 +143,15 @@ function RefinedPage({
     case 'learn':
       return <CompassRefinedLearn onSelectPage={onSelectPage} />
     case 'overview':
-      return <CompassRefinedOverview onSelectPage={onSelectPage} />
+      /* ⚠ THE STAGE-AWARE OVERVIEW, NOT THE MVP'S — 2026-11-10, Jillienne:
+         "jeffs version has all of this logic built in, will that also be
+         carried over to refined?" It was not: the sixteen learner states are
+         his Oct 30 prototype, ported onto the CURRENT version's Overview, and
+         his thirteen-page MVP reads no flags at all. This is the slot map
+         doing what it was built for — one page of Refined answering to a
+         different component. `CompassRefinedOverview` is kept unreferenced,
+         by the archive convention, so going back is a one-line change. */
+      return <CompassRefinedStageOverview stage={stage} />
     case 'practice':
       return <CompassRefinedPractice onSelectPage={onSelectPage} />
     case 'prep-review':

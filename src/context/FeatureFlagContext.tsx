@@ -1815,7 +1815,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surface: 'design',
     owner: 'anjani',
     versions: ['hybrid-pacing', 'eric-atlas-e2e'],
-    surfaces: ['compass:overview'],
+    /* ⚠ REFINED TOO, SINCE 2026-11-10. Its Overview renders the same
+       stage-aware page (forked as `CompassRefinedJourney` /
+       `CompassRefinedPrepPage`), so the control has to be reachable from
+       there or the sixteen states are only switchable from the version the
+       reviewer just left. */
+    surfaces: ['compass:overview', 'compass:refined'],
     group: 'Widgets',
     label: 'Readiness stage',
     description:

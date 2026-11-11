@@ -82,7 +82,12 @@ describe('the course eyebrow is on every page', () => {
   for (const page of HEADED) {
     it(`${page}`, () => {
       const { container } = wrap(<CompassRefinedShell page={page} onSelectPage={() => {}} />)
-      const brow = container.querySelector('.crf-head__eyebrow, .cre-rdr-eyebrow')
+      /* Three headers draw it: the shared head, the Refined Readiness page's
+         own, and the stage-aware Overview's — each with its own prefix
+         because each page is frozen on its own fork. */
+      const brow = container.querySelector(
+        '.crf-head__eyebrow, .cre-rdr-eyebrow, .crf-rd-brow',
+      )
       expect(brow, `${page} draws no course eyebrow`).toBeTruthy()
       const t = (brow?.textContent ?? '').replace(/\s+/g, ' ')
       expect(t).toContain('Florida Life and Health Pre-licensing')
@@ -93,13 +98,18 @@ describe('the course eyebrow is on every page', () => {
     })
   }
 
-  it('is his page title above it, not instead of it', () => {
+  it('is the page title above it, not instead of it', () => {
     const { container } = wrap(<CompassRefinedShell page="overview" onSelectPage={() => {}} />)
     const h1 = container.querySelector('h1')
-    expect(h1?.textContent).toBe('Your learning journey')
+    /* ⚠ "YOUR EXAM PREP", NOT "YOUR LEARNING JOURNEY" — 2026-11-10. Refined's
+       Overview is the stage-aware page now, and its default stage is `p2`,
+       which is in the PREP series. The journey title is what the `u` and `q`
+       series draw; the page's title is a function of the learner's state,
+       which is the whole reason that page was brought across. */
+    expect(h1?.textContent).toBe('Your exam prep')
     /* The eyebrow precedes the title in the DOM, which is what makes it an
-       eyebrow rather than a subtitle — his course line sat UNDER the title. */
-    const brow = container.querySelector('.crf-head__eyebrow')!
+       eyebrow rather than a subtitle — the course line sat UNDER the title. */
+    const brow = container.querySelector('.crf-rd-brow')!
     expect(brow.compareDocumentPosition(h1!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 })
@@ -145,7 +155,7 @@ describe('nothing under 32px is set in the display serif', () => {
          class: the Readiness title (40px) and the hero's ring figure, which
          is 26px in its base rule and 40px inside the hero. Anything else
          picking the class up fails, which is what this case is for. */
-      const OVER_32 = ['cre-rdr-h1', 'cre-rdr-ring__num']
+      const OVER_32 = ['cre-rdr-h1', 'cre-rdr-ring__num', 'crf-rd-h1']
       for (const el of container.querySelectorAll('.serif')) {
         expect(
           OVER_32.some((c) => el.classList.contains(c)),

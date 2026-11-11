@@ -199,6 +199,7 @@ export function CompassLearningPage({
             page={jeffPage}
             onSelectPage={setJeffPage}
             readinessHero={refinedHero}
+            stage={readinessStage}
           />
         ) : (
           <CompassJeffMvpShell page={jeffPage} onSelectPage={setJeffPage} />
