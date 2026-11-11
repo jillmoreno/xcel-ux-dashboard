@@ -2623,22 +2623,18 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
-  {
-    key: 'affidavit-v2-language',
-    surface: 'design',
-    versions: ['jill-atlas-main', 'eric-atlas-e2e'],
-    group: 'Widgets',
-    label: 'Affidavit language',
-    description:
-      'The course language, for the forms that come in more than one — Florida’s pre-course Study-manual notices and the Non-state specific Terms and Conditions (English or Spanish). Every other form is English whatever this says.',
-    variants: [
-      { value: 'English', label: 'English' },
-      { value: 'Spanish', label: 'Spanish' },
-    ],
-    defaultVariant: 'English',
-    defaultEnabled: true,
-    page: 'dashboard-rebrand',
-  },
+  /* `affidavit-v2-language` — "Affidavit language", English / Spanish — LEFT
+     THE DESIGN BAR on 2026-11-11 (Afsana, on Amrita's word): the legal
+     documents are kept as they are, and a document that carries both
+     languages is shown whole; the learner reads whichever they need,
+     whatever the course language. So the modal is always English and there
+     is nothing to choose. The Spanish forms (FL_LH_ES, FL_PC_ES, GEN_PRE_ES)
+     stay in affidavitForms.ts, unwired. To restore: put this entry back here
+     (surface 'design', versions ['jill-atlas-main', 'eric-atlas-e2e'],
+     variants English / Spanish, default English), add the key back to
+     REBRAND_FLAGS in FeatureFlagPanel.tsx, and in AffidavitModalV2.tsx read
+     it again: `const languageFlag = useFeatureFlag('affidavit-v2-language').variant`
+     and `language = languageProp ?? languageFlag ?? 'English'`. */
   {
     key: 'affidavit-v2-middle',
     /* UNDECIDED (2026-11-06, Afsana): is Middle Name part of the legal name

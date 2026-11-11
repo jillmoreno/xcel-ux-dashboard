@@ -40,9 +40,9 @@ import './affidavitModalV2.css'
  * this file is the explorer's `buildScreen` rebuilt in React, desktop only.
  * The explorer's filters are on the Design bar instead of on the page —
  * Moment (`affidavit-v2-moment`), State (`affidavit-v2-state`), Pattern
- * (`affidavit-v2-pattern`), Line of authority (`affidavit-v2-loa`) and
- * Language (`affidavit-v2-language`), the last two for the states that sign
- * a form per line or per language. Left behind on purpose: the Full scroll pattern, the View
+ * (`affidavit-v2-pattern`) and Line of authority (`affidavit-v2-loa`), the
+ * last for the states that sign a form per line. Language left the bar on
+ * 2026-11-11 (the documents carry both languages; see FeatureFlagContext). Left behind on purpose: the Full scroll pattern, the View
  * (device) control, the Question bank and the Notes.
  *
  * ⚠ THREE MOMENTS, NOT TWO. The explorer's are Before course begins, Before
@@ -441,7 +441,6 @@ export function AffidavitModalV2({
 }) {
   const momentFlag = useFeatureFlag('affidavit-v2-moment').variant
   const stateFlag = useFeatureFlag('affidavit-v2-state').variant
-  const languageFlag = useFeatureFlag('affidavit-v2-language').variant
   /* The Design bar's "Affidavit modal" (Jill, 2026-11-10) — Afsana's original
      skin, or the house style. One class on the root; every rule that differs
      is scoped to it in `affidavitModalV2.css`, so the markup is identical
@@ -451,7 +450,10 @@ export function AffidavitModalV2({
   const middleFlag = useFeatureFlag('affidavit-v2-middle').variant
   const moment = asMoment(momentProp ?? momentFlag)
   const state = stateProp ?? stateFlag ?? 'FL'
-  const language = languageProp ?? languageFlag ?? 'English'
+  /* No language control since 2026-11-11 (Afsana, on Amrita's word): a
+     document in both languages is shown whole, so the modal is English. The
+     prop stays so the kept Spanish forms can still be rendered by a test. */
+  const language = languageProp ?? 'English'
   const lineOfAuthority = loaProp ?? loaFlag ?? 'Life & Health'
   const chromeBottom = useChromeBottom()
   /* The quick-fill, reached from the header (see `quickFill`). */

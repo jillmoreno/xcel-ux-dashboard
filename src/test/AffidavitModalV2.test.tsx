@@ -114,8 +114,24 @@ describe('AffidavitModalV2', () => {
     expect(scrimOf().style.zIndex).toBe('1000')
   })
 
+  /* 2026-11-11, Afsana, on Amrita's word: the documents are kept as they are
+     and carry both languages, so there is no language to choose — the modal
+     is English, and the Spanish forms stay in the data, unwired. */
+  it('has no language control: Florida and Non-state specific open in English', () => {
+    expect(FEATURE_FLAGS.find((f) => f.key === 'affidavit-v2-language')).toBeUndefined()
+    for (const v of ['jill-atlas-main', 'eric-atlas-e2e'])
+      expect(designControlsFor(v, null, null).map((f) => f.label), v).not.toContain('Affidavit language')
+    render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="FL" />)
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(FORMS.FL_LH_EN!.title)
+    cleanup()
+    render(<AffidavitModalV2 onClose={() => {}} moment="pre" state="GEN" />)
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(FORMS.GEN_PRE_EN!.title)
+    // Kept, so a restore is a re-wire.
+    expect([FORMS.FL_LH_ES, FORMS.FL_PC_ES, FORMS.GEN_PRE_ES].every(Boolean)).toBe(true)
+  })
+
   it('is on by default on this branch, on the Design bar of both Homes that open it', () => {
-    for (const key of ['atlas-affidavit-v2', 'affidavit-v2-moment', 'affidavit-v2-state', 'affidavit-v2-pattern', 'affidavit-v2-language', 'affidavit-v2-loa']) {
+    for (const key of ['atlas-affidavit-v2', 'affidavit-v2-moment', 'affidavit-v2-state', 'affidavit-v2-pattern', 'affidavit-v2-loa']) {
       const flag = FEATURE_FLAGS.find((f) => f.key === key)
       expect(flag?.defaultEnabled, key).toBe(true)
       expect(flag?.surface, key).toBe('design')

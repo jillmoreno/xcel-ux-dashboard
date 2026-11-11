@@ -4648,6 +4648,17 @@ the Design bar, which is Jill's file, so for now they are dropped.
     one resident licence (the state you live in), plus one non-resident
     licence for every other state you are licensed to sell in. This field is
     the state License #, not the NPN.
+- **No language control (2026-11-11, Afsana, on Amrita's word).** The
+  Design bar's "Affidavit language" (English / Spanish) is gone. Amrita: the
+  legal documents are kept as they are and not modified; a learner reads the
+  English or the Spanish in them as they see fit; if Florida requires the
+  notice in both languages, so be it. Whatever the course language, the
+  learner is shown the original document, which carries both, so the modal
+  is English and there is nothing to choose. The Spanish forms (`FL_LH_ES`,
+  `FL_PC_ES`, `GEN_PRE_ES`) stay in `affidavitForms.ts`, unwired, and the
+  `language` prop still reaches them for the tests; the restore steps are
+  in the comment where the flag was, in `FeatureFlagContext.tsx`. Not yet in
+  the Archive table — `archivedItems.ts` is Jillienne's.
 - **The Student Certification Statement ends the student's page (2026-11-11,
   Afsana: "to streamline UX").** On CO, CT, WV and WI after the exam it was a
   third page of its own, which sent the student back after the exam
