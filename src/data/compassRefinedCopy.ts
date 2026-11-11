@@ -260,3 +260,21 @@ export const REFINED_NEXT_META = {
   /** Prefixes the duration lifted from the stage's own meta line. */
   approx: 'about',
 } as const
+
+/**
+ * THE RAIL'S TOP GROUP — 2026-11-11: "Exam Prep Sections off the bottom
+ * section, We need a top section called Your Learning (same styling)".
+ *
+ * ⚠ HIS RAIL LABELS ONE GROUP AND NOT THE OTHER. "Exam prep" rules off the
+ * five rows below it, which makes the three above an unnamed remainder —
+ * readable only as "everything that is not exam prep". Naming both makes the
+ * split his row order already argues for ("planning is part of learning, and
+ * what sits under EXAM PREP is what you do once the course is behind you")
+ * visible instead of implied.
+ *
+ * ⚠ SENTENCE CASE HERE, CAPITALS ON SCREEN — the same trap `JEFF_MVP_RAIL.
+ * groupLabel` carries: the stylesheet uppercases it, so typing "YOUR
+ * LEARNING" would double-transform nowhere and break a parity check reading
+ * `innerText`.
+ */
+export const REFINED_RAIL_TOP_GROUP = 'Your learning'

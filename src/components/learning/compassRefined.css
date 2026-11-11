@@ -3894,3 +3894,11 @@
   justify-content: space-between;
   gap: 24px;
 }
+
+/* The rail's first group label — 2026-11-11. Same rule and type as "Exam
+   prep"; only the top margin goes, because the rail's own 24px padding is
+   already above it and 18 more would push the first row off the fold on a
+   short viewport. */
+.crf .crf-rail__group--first {
+  margin-top: 0;
+}

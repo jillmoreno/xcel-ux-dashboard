@@ -15,7 +15,11 @@ import {
   JEFF_MVP_SUBPAGES,
   type JeffMvpPage,
 } from '@/data/compassJeffMvpFixtures'
-import { REFINED_COURSE, REFINED_RAIL_LABELS } from '@/data/compassRefinedCopy'
+import {
+  REFINED_COURSE,
+  REFINED_RAIL_LABELS,
+  REFINED_RAIL_TOP_GROUP,
+} from '@/data/compassRefinedCopy'
 import './compassRefined.css'
 
 /**
@@ -104,6 +108,13 @@ export function CompassRefinedRail({
   return (
     <aside className="crf-rail">
       <nav aria-label="Compass pages">
+        {/* ⚠ BOTH GROUPS ARE NAMED NOW — 2026-11-11. His rail rules off the
+            exam-prep five and leaves the three above unlabelled, so they read
+            as "everything that is not exam prep". The rule his row order
+            already argues — planning belongs to learning, and what follows
+            the rule is what you do once the course is behind you — is only
+            half visible with one label. */}
+        <p className="crf-rail__group crf-rail__group--first">{REFINED_RAIL_TOP_GROUP}</p>
         <ul className="crf-rail__list">{JEFF_MVP_RAIL.primary.map(row)}</ul>
         {/* ⚠ "Exam prep" IS THE STRING; the capitals are `text-transform`. His
             data says "Exam prep" and his CSS uppercases it — typing the
