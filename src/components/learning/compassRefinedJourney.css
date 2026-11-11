@@ -940,8 +940,11 @@
   gap: 14px;
   padding: 22px 26px 22px;
   text-align: left;
-  /* Where the learner HAS GOT TO — the warm half. */
-  background: var(--crf-beige-100);
+  /* ⚠ WHITE — 2026-11-11, "make this background white", reversing the beige
+     asked for an hour earlier after seeing it on screen. The ramp is kept and
+     is what the `panel` arm now draws, so the beige is still a click away
+     rather than deleted on a first look. */
+  background: var(--rd-white);
 }
 /* ⚠ TOP-ALIGNED, NOT CENTRED — 2026-11-11, "should be horizontally aligned
    with the Course Progress eyebrow". Centring floated this half against the
@@ -1139,18 +1142,21 @@
 }
 
 /* ---------- 1 · SPLIT — a vertical rule, two peers on one ground ---------- */
+/* A steel hairline, not the beige one: on `split` it now divides white from
+   blue, and a warm line between two cool grounds reads as a stray. */
 .crf-rd .crf-focus--split .crf-focus__next {
-  border-left: 1px solid var(--crf-beige-300);
+  border-left: 1px solid var(--rd-steel-edge);
 }
 
 /* ---------- 2 · PANEL — the ground does the separating ----------
    State and action are different kinds of thing; a tinted left bay says so
    without drawing a line through the card. */
-/* ⚠ `panel` DEEPENS THE BEIGE a step, now that the two halves already differ
-   by ground. Its original difference — tinting one half — became the default
-   with the beige, so what is left is how FAR apart the two grounds sit. */
+/* ⚠ `panel` IS WHERE THE BEIGE LIVES NOW. It was the arm that tinted the
+   progress bay; the beige became that tint for an hour and then came back out
+   of the default, so this is the arm it belongs to — white against blue on
+   `split`, warm against cool here. */
 .crf-rd .crf-focus--panel .crf-focus__prog {
-  background: var(--crf-beige-200);
+  background: var(--crf-beige-100);
   border-right: 1px solid var(--crf-beige-300);
 }
 
