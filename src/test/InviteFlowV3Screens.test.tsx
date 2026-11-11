@@ -16,6 +16,7 @@ import { XcelPackagesPage } from '@/pages/XcelPackagesPage'
 import { InviteFlowEntrySync } from '@/pages/EndToEndPageSync'
 import { LOADING_HANDOFF_MS } from '@/components/e2e/XcelLoadingPage'
 import { E2E_LEARNER_EMAIL } from '@/pages/endToEndDemo'
+import { SETTING_UP_MS } from '@/pages/InvitedConfirmationPageV3'
 import {
   INVITE_FLOWS_V3,
   emailCheckV3,
@@ -396,7 +397,7 @@ describe('Invite Flow V3 — the endings', () => {
   it('asks a new learner to create a password, gated on the rules', async () => {
     renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
     expect(screen.getByRole('heading', { name: 'Thank you for your order, Jordan!' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Create your password' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Finish setting up your account' })).toBeInTheDocument()
     const save = screen.getByRole('button', { name: 'Confirm' })
     expect(save).toBeDisabled()
     await userEvent.click(screen.getByRole('button', { name: /demo learner’s password/ }))
@@ -430,33 +431,11 @@ describe('Invite Flow V3 — the endings', () => {
     expect(meter).not.toHaveAttribute('aria-valuenow', '0')
   })
 
-  it('draws the Create password card as the Design bar option says', () => {
-    const at = (option: string) => renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:qr-net-new,invite-v3-password-card:${option}`)
-
-    const one = at('option-1')
-    expect(screen.getByRole('heading', { name: 'Create your password' })).toBeInTheDocument()
-    expect(screen.getByAltText('Locked')).toBeInTheDocument()
-    one.unmount()
-
-    for (const option of ['option-2', 'option-3']) {
-      const { unmount } = at(option)
-      expect(screen.getByRole('heading', { name: 'Finish setting up your account' })).toBeInTheDocument()
-      expect(screen.getByText(/^Create a password to access your course/)).toBeInTheDocument()
-      expect(screen.queryByAltText('Locked')).not.toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'Confirm' })).toBeInTheDocument()
-      unmount()
-    }
-
-    /* Option 3: the email in the subtext, bold — never in the title. */
-    const three = at('option-3')
-    const line = screen.getByText(/^Create a password to access your course for/)
+  it('frames the password step as finishing the account, with the address in bold', () => {
+    renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+    expect(screen.getByRole('heading', { name: 'Finish setting up your account' })).toBeInTheDocument()
+    const line = screen.getByText(/^Create a password to set up your account for/)
     expect(line.querySelector('strong')).toHaveTextContent(/@/)
-    three.unmount()
-
-    /* Option 4: the email in the title, and the subtext as option 2's. */
-    at('option-4')
-    expect(screen.getByRole('heading', { name: /^Finish setting up your account for .+@/ })).toBeInTheDocument()
-    expect(screen.getByText('Create a password to access your course.')).toBeInTheDocument()
     expect(screen.queryByAltText('Locked')).not.toBeInTheDocument()
   })
 
@@ -467,7 +446,7 @@ describe('Invite Flow V3 — the endings', () => {
     expect(screen.queryByLabelText(/Password/)).not.toBeInTheDocument()
   })
 
-  it('opens "Taking you to your course" from Start Course and Confirm; a click outside closes it', async () => {
+  it('opens "Setting up your account" from Start Course and Confirm; a click outside closes it', async () => {
     for (const [ff, cta] of [
       ['invite-flow-version:v3,invite-v3-model:b2c,invite-v3-flow-b2c:xcel-signed-out,invite-v3-email-account:atlas', 'Start Course'],
       [`${V3_B2B},invite-v3-flow-b2b:qr-net-new`, 'Confirm'],
@@ -475,15 +454,32 @@ describe('Invite Flow V3 — the endings', () => {
       const { unmount } = renderAt(CONFIRMATION, ff)
       if (cta === 'Confirm') await userEvent.click(screen.getByRole('button', { name: /demo learner’s password/ }))
       await userEvent.click(screen.getByRole('button', { name: cta }))
-      const dialog = screen.getByRole('dialog', { name: 'Taking you to your course' })
-      expect(within(dialog).getByRole('status')).toHaveTextContent('Taking you to your course…')
+      const dialog = screen.getByRole('dialog', { name: 'Setting up your account' })
+      expect(within(dialog).getByRole('status')).toHaveTextContent('Setting up your account…')
       expect(within(dialog).getByAltText('XCEL Insurance Training by Colibri')).toBeInTheDocument()
+      /* It replaced "Taking you to your course" (2026-11-11) — never both. */
+      expect(screen.queryByRole('dialog', { name: 'Taking you to your course' })).not.toBeInTheDocument()
       /* A click inside keeps it loading; only the scrim closes it. */
       await userEvent.click(within(dialog).getByRole('status'))
-      expect(screen.getByRole('dialog', { name: 'Taking you to your course' })).toBeInTheDocument()
+      expect(screen.getByRole('dialog', { name: 'Setting up your account' })).toBeInTheDocument()
       await userEvent.click(dialog.parentElement!)
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
       unmount()
+    }
+  })
+
+  it('lands on Atlas learner Home after the demo’s four seconds of Setting up your account', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      renderAt(CONFIRMATION, `${V3_B2B},invite-v3-flow-b2b:qr-net-new`)
+      await userEvent.click(screen.getByRole('button', { name: /demo learner’s password/ }))
+      await userEvent.click(screen.getByRole('button', { name: 'Confirm' }))
+      await act(() => vi.advanceTimersByTimeAsync(SETTING_UP_MS - 500))
+      expect(screen.getByTestId('where')).toHaveTextContent('/end-to-end-demo/confirmation')
+      await act(() => vi.advanceTimersByTimeAsync(600))
+      expect(screen.getByTestId('where')).toHaveTextContent(/^\/dashboard-rebrand\?demo=1&.*journey=full/)
+    } finally {
+      vi.useRealTimers()
     }
   })
 
