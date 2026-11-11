@@ -1,5 +1,9 @@
 import { ArrowRight } from '@/icons'
 import { REFINED_PACE, REFINED_PROGRESS_LINES } from '@/data/compassRefinedCopy'
+import {
+  REFINED_COURSE_SECTIONS,
+  REFINED_COURSE_TOTALS,
+} from '@/data/compassRefinedCourse'
 import type { Hero, Prog } from './compassReadinessModel'
 
 /** Which of the three arrangements draws. `compass-overview-focus`. */
@@ -56,7 +60,7 @@ export function CompassRefinedFocus({
       aria-label="Where you are and what to do next"
     >
       {prog ? <FocusProgress prog={prog} layout={layout} /> : null}
-      {hero ? <FocusNext hero={hero} /> : null}
+      {hero ? <FocusNext hero={hero} next={nextSection(prog)} /> : null}
     </section>
   )
 }
@@ -81,11 +85,21 @@ export function CompassRefinedFocus({
  * `REFINED_PACE` instead, to settle when the figures become real.
  */
 function FocusProgress({ prog, layout }: { prog: Prog; layout: FocusLayout }) {
-  /* ⚠ "0 of 36", NOT "0 of 36 lessons". The label already says Lessons, and
-     his value carries the word — so only a TRAILING "lessons" is stripped.
-     Later stages read "36 of 36 lessons · complete", where the word is not at
-     the end and the sentence needs it. */
-  const lessons = prog.lessonsVal.replace(/\s+lessons$/, '')
+  /* ⚠ COUNTED AGAINST THE REAL COURSE — 2026-11-11, "these are the actual
+     sections from the florida life and health course. Lets update the demo
+     data for the refined section to match." Forty-one sections, not Jeff's
+     thirty-six, and the course's own instruction counts them all: "Complete
+     all lessons in the list below."
+
+     ⚠ THE STAGE STILL DRIVES IT. The done figure is the stage's own
+     percentage against the real total rather than a number typed here, so
+     flipping through q1–u5 still walks a learner forward — it now walks them
+     through the course that exists. Replacing the sixteen stage fixtures
+     outright would have left their rings, bars and copy describing a
+     different course; see the note in `compassRefinedCourse.ts`. */
+  const pct = Number.parseFloat(prog.pct) || 0
+  const done = Math.round((pct / 100) * REFINED_COURSE_TOTALS.sections)
+  const lessons = `${done} of ${REFINED_COURSE_TOTALS.sections}`
 
   return (
     <div className="crf-focus__prog">
@@ -131,12 +145,18 @@ function FocusProgress({ prog, layout }: { prog: Prog; layout: FocusLayout }) {
  * and a time. The step's position in the regulated four is still on the page:
  * the numbered steps list sits under this card.
  */
-function FocusNext({ hero }: { hero: Hero }) {
+function FocusNext({ hero, next }: { hero: Hero; next?: string }) {
   return (
     <div className="crf-focus__next">
       <div className="crf-focus__card">
         {hero.nextLabel ? <p className="crf-focus__label">{hero.nextLabel}</p> : null}
-        <p className="crf-focus__lessonname">{hero.next ?? hero.title}</p>
+        {/* ⚠ A REAL SECTION OF THE REAL COURSE — 2026-11-11. His value was
+            "Lesson 1: What life insurance does", which is not a row of the
+            Florida Life & Health list. The section is chosen by the same
+            stage percentage that drives the count opposite, so the two halves
+            always describe one learner. His string is the fallback for the
+            states that carry no progress to pick from. */}
+        <p className="crf-focus__lessonname">{next ?? hero.next ?? hero.title}</p>
         {hero.meta ? <p className="crf-focus__note">{hero.meta}</p> : null}
         <div className="crf-focus__cta">
           {hero.cta ? (
@@ -184,4 +204,21 @@ function Ring({ prog, size }: { prog: Prog; size: number }) {
       </span>
     </div>
   )
+}
+
+/**
+ * THE SECTION THE LEARNER IS ABOUT TO OPEN.
+ *
+ * ⚠ THE SAME ARITHMETIC AS THE COUNT OPPOSITE, deliberately: done sections
+ * from the stage's percentage, and the next one is the row after them. If the
+ * two halves derived the learner's position separately they would disagree
+ * the first time a percentage landed on a boundary.
+ */
+function nextSection(prog?: Prog): string | undefined {
+  if (!prog) return undefined
+  const pct = Number.parseFloat(prog.pct) || 0
+  const done = Math.round((pct / 100) * REFINED_COURSE_TOTALS.sections)
+  /* Past the end is the end: a finished course has nothing after it, and the
+     hero's own copy is the honest thing to show there. */
+  return REFINED_COURSE_SECTIONS[done]?.title
 }
