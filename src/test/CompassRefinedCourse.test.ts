@@ -1,4 +1,9 @@
 import { describe, expect, it } from 'vitest'
+import { JEFF_MVP_LEARN } from '@/data/compassJeffMvpFixtures'
+import {
+  REFINED_CHAPTERS,
+  REFINED_COURSE_HEADER,
+} from '@/components/learning/compassRefinedLearnCourse'
 import {
   REFINED_COURSE_PROGRESS,
   REFINED_COURSE_SECTIONS,
@@ -108,6 +113,84 @@ describe('every section has a kind an icon can be chosen from', () => {
     for (const s of REFINED_COURSE_SECTIONS) {
       const says = /\bExam\b/.test(s.title)
       expect(s.kind === 'exam', `${s.title} is typed ${s.kind}`).toBe(says)
+    }
+  })
+})
+
+/**
+ * THE YOUR COURSE PAGE AGAINST THE REAL COURSE — 2026-11-11, "update based on
+ * the actual course details i uploaded."
+ *
+ * ⚠ THE PAGE AND THE OVERVIEW USED TO COUNT DIFFERENTLY: one said "22 of 36
+ * lessons" while the other said "0 of 41", because each had its own hand-kept
+ * list of the same course. These cases hold the derived chapters to the
+ * course rather than to a number typed twice.
+ */
+describe('the Your Course page is built from the course list', () => {
+  it('has a chapter for every lesson row, introduction and laws included', () => {
+    expect(REFINED_CHAPTERS).toHaveLength(REFINED_COURSE_TOTALS.lessons)
+    expect(REFINED_CHAPTERS[0].fullTitle).toContain('Course Introduction')
+    expect(REFINED_CHAPTERS.at(-1)?.fullTitle).toBe(
+      'Florida Life and Health Laws, Rules, and Regulations',
+    )
+  })
+
+  it('pairs each chapter with the exam the course lists after it', () => {
+    /* ⚠ THE INTRODUCTION HAS NONE, and that is the course's shape rather
+       than a gap: it runs straight into Chapter 1. Everything else is
+       followed by its own exam. */
+    expect(REFINED_CHAPTERS[0].exam).toBeUndefined()
+    for (const c of REFINED_CHAPTERS.slice(1)) {
+      expect(c.exam, `${c.fullTitle} has no exam`).toBeTruthy()
+      /* ⚠ NAMED AS THE COURSE NAMES IT. His nested exam read "Chapter 2
+         exam"; the course calls it "Chapter 2 Exam: Nature of Insurance",
+         and that is the string a learner sees in the list. */
+      expect(c.exam?.title).toMatch(/Exam/)
+    }
+  })
+
+  it('keeps the double-numbered labels in the eyebrow and the name in the title', () => {
+    /* The split is on the course's own punctuation — "<label>: <name>" — so
+       "Life & Health Chapter 13 | Health Chapter 4" stays visible where a
+       chapter number belongs instead of being dropped for the short name. */
+    const thirteen = REFINED_CHAPTERS.find((c) => c.title === 'Health and Accident Insurance')
+    expect(thirteen?.label).toBe('Life & Health Chapter 13 | Health Chapter 4')
+  })
+
+  it('counts its header off the course, not off a typed figure', () => {
+    expect(REFINED_COURSE_HEADER.sections).toBe(41)
+    expect(REFINED_COURSE_HEADER.chapters).toBe(REFINED_CHAPTERS.length)
+    expect(REFINED_COURSE_HEADER.eyebrow).toBe('21 chapters · 20 exams')
+  })
+})
+
+/**
+ * ⚠ LESSONS BELONG TO THE CHAPTER THEY NAME — 2026-11-11.
+ *
+ * His outline and the course's agree on almost every chapter, and diverge on
+ * one: his Chapter 2 is "Insurers and Insurance Markets" where the course's
+ * is "Nature of Insurance". Mapping by position put his lessons about stock
+ * and mutual insurers under a chapter about the nature of insurance — the
+ * right heading over the wrong contents, which nothing on screen corrects.
+ */
+describe('a chapter only carries lessons that are its own', () => {
+  it('leaves the chapters his outline does not cover empty', () => {
+    const byTitle = (t: string) => REFINED_CHAPTERS.find((c) => c.title === t)
+    expect(byTitle('Nature of Insurance')?.lessons).toEqual([])
+    expect(REFINED_CHAPTERS[0].lessons).toEqual([])
+    expect(REFINED_CHAPTERS.at(-1)?.lessons).toEqual([])
+  })
+
+  it('and never shows one chapter’s lessons under another’s name', () => {
+    /* The guard that matters: every chapter with lessons took them from a
+       chapter of his with the SAME name. */
+    for (const c of REFINED_CHAPTERS) {
+      if (!c.lessons.length) continue
+      const his = JEFF_MVP_LEARN.chapters.find(
+        (x) => x.title.toLowerCase() === c.title.toLowerCase(),
+      )
+      expect(his, `${c.title} has lessons but no chapter of his by that name`).toBeTruthy()
+      expect(his?.lessons.length).toBe(c.lessons.length)
     }
   })
 })

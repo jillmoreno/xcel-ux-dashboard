@@ -1,3 +1,4 @@
+import { REFINED_CHAPTERS, REFINED_COURSE_HEADER } from './compassRefinedLearnCourse'
 import { REFINED_PAGE_TITLES } from '@/data/compassRefinedCopy'
 import { useState } from 'react'
 import {
@@ -12,7 +13,6 @@ import {
   RubiLogo,
 } from '@/icons'
 import {
-  JEFF_MVP_LEARN as LEARN,
   JEFF_MVP_LEARN_COPY as COPY,
   type JeffMvpPage,
 } from '@/data/compassJeffMvpFixtures'
@@ -54,7 +54,7 @@ export function CompassRefinedLearn({
      `isOpen`. Seeded from the fixture rather than hard-coded, so the chapter
      that opens is the one his data says is current. */
   const [open, setOpen] = useState<Record<number, boolean>>({})
-  const isOpen = (c: (typeof LEARN.chapters)[number]) => open[c.n] ?? c.state === 'current'
+  const isOpen = (c: (typeof REFINED_CHAPTERS)[number]) => open[c.n] ?? c.state === 'current'
 
   return (
     <div className="crf-page">
@@ -79,7 +79,7 @@ export function CompassRefinedLearn({
             <p className="crf-eyebrow">{COPY.resumeEyebrow}</p>
             <p className="crf-resume__title">{COPY.resumeTitle}</p>
             <p className="crf-resume__lesson">{COPY.resumeLesson}</p>
-            <span className="crf-bar" role="img" aria-label={LEARN.chapters[1].progAria}>
+            <span className="crf-bar" role="img" aria-label={REFINED_CHAPTERS[2]?.progAria}>
               <span className="crf-bar__fill" style={{ width: COPY.resumePct }} />
             </span>
           </div>
@@ -96,18 +96,28 @@ export function CompassRefinedLearn({
               <GraduationCap size={16} />
             </span>
             <div className="crf-course__name">
-              <p className="crf-eyebrow">{COPY.courseEyebrow}</p>
+              {/* ⚠ COUNTED, NOT TYPED — his read "19 chapters · 28 of 40 hours", a
+                  chapter count that was wrong by two and an hours figure
+                  nothing produces. */}
+              <p className="crf-eyebrow">{REFINED_COURSE_HEADER.eyebrow}</p>
               <h2 className="crf-h2">{COPY.courseTitle}</h2>
               <p className="crf-course__sub">{COPY.courseSub}</p>
             </div>
             <div className="crf-course__stat">
               <span className="crf-course__done">{COPY.courseStatus}</span>
-              <span className="crf-course__of">{COPY.courseLessons}</span>
+              <span className="crf-course__of">
+                {REFINED_COURSE_HEADER.done} of {REFINED_COURSE_HEADER.sections} sections
+              </span>
             </div>
             <CourseRing />
           </header>
 
-          {LEARN.chapters.map((c) => {
+          {/* ⚠ THE REAL COURSE, NOT A SECOND LIST OF IT — 2026-11-11. These were
+              nineteen chapters typed into his fixture while the Overview
+              counted forty-one rows of `compassRefinedCourse.ts`; two
+              hand-kept lists of one course is how "22 of 36 lessons" ended up
+              on this page. See `compassRefinedLearnCourse.ts`. */}
+          {REFINED_CHAPTERS.map((c) => {
             const expanded = isOpen(c)
             return (
               <article
@@ -185,12 +195,18 @@ export function CompassRefinedLearn({
                         </li>
                       ))}
                     </ul>
-                    <ExamRow
-                      title={c.exam.title}
-                      note={c.exam.note}
-                      locked={c.exam.locked}
-                      done={c.exam.done}
-                    />
+                    {/* ⚠ THE INTRODUCTION HAS NO EXAM, and that is the
+                        course's shape rather than a gap — it runs straight
+                        into Chapter 1. Every other chapter is followed by
+                        one. */}
+                    {c.exam ? (
+                      <ExamRow
+                        title={c.exam.title}
+                        note={c.exam.note ?? ''}
+                        locked={c.exam.locked ?? c.state === 'locked'}
+                        done={c.exam.done ?? false}
+                      />
+                    ) : null}
                   </div>
                 ) : null}
               </article>
