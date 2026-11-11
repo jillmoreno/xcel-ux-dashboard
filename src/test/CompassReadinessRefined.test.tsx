@@ -6,6 +6,7 @@ import { AccountProvider } from '@/context/AccountContext'
 import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { DESIGN_SURFACE_LABELS } from '@/context/designSurface'
 import { CompassJeffMvpShell } from '@/components/learning/CompassJeffMvpShell'
+import { CompassRefinedShell } from '@/components/learning/CompassRefinedShell'
 import { CompassReadinessRefined } from '@/components/learning/CompassReadinessRefined'
 import {
   READY_AT,
@@ -311,7 +312,7 @@ describe('The Readiness to Pass flag — the tested rings, with a key that match
     /* The point of the change: a reviewer who opens Refined · Readiness and
        touches nothing sees the tested graphic. */
     const { container } = wrap(
-      <CompassJeffMvpShell page="readiness" onSelectPage={() => {}} readiness="refined" />,
+      <CompassRefinedShell page="readiness" onSelectPage={() => {}} />,
     )
     expect(container.querySelector('.cre-rdr-ring--three')).toBeTruthy()
     expect(text(container)).toContain('1 of 3 taken')
@@ -342,7 +343,7 @@ describe('The Readiness to Pass flag — the tested rings, with a key that match
 
   it('reaches the page through the shell', () => {
     const { container } = wrap(
-      <CompassJeffMvpShell page="readiness" onSelectPage={() => {}} readiness="refined" readinessHero="rings" />,
+      <CompassRefinedShell page="readiness" onSelectPage={() => {}} readinessHero="rings" />,
     )
     expect(container.querySelector('.cre-rdr-ring--three')).toBeTruthy()
   })
@@ -359,9 +360,14 @@ describe('The third Compass version', () => {
     expect(DESIGN_SURFACE_LABELS['compass:refined']).toBe('Compass · Refined')
   })
 
-  it('renders inside Jeff’s shell when the shell is told to, and his page otherwise', () => {
+  /* ⚠ TWO SHELLS SINCE 2026-11-10. This read "renders inside Jeff's shell
+     when the shell is told to" while Refined WAS his shell with a prop set.
+     It is its own shell now — `CompassRefinedShell` — so that Refined pages
+     can be edited without editing his, and the pairing this case checks is
+     the same one: Refined's Readiness against his. */
+  it('draws the Refined page in the Refined shell, and his in his', () => {
     const refined = wrap(
-      <CompassJeffMvpShell page="readiness" onSelectPage={() => {}} readiness="refined" />,
+      <CompassRefinedShell page="readiness" onSelectPage={() => {}} />,
     )
     expect(refined.container.querySelector('.cre-rdr')).toBeTruthy()
     expect(refined.container.querySelector('.cjm-next')).toBeNull()

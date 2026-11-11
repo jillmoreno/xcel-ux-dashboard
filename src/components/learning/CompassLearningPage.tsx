@@ -21,6 +21,7 @@ import { useNavPlacement } from '@/components/layout/navPlacement'
 import { CompassStudyPlanner } from './CompassStudyPlanner'
 import { CompassPlanProvider } from './CompassPlanContext'
 import { CompassJeffMvpShell } from './CompassJeffMvpShell'
+import { CompassRefinedShell } from './CompassRefinedShell'
 import type { JeffMvpPage } from '@/data/compassJeffMvpFixtures'
 import type { RefinedHeroStyle } from './CompassReadinessRefined'
 
@@ -185,14 +186,23 @@ export function CompassLearningPage({
         learning rows, an EXAM PREP rule and five exam-prep rows below it —
         Anjani's locks those five behind a gate dialog. Rendering his pages
         inside her rail would show his design making her argument. */}
+    {/* ⚠ TWO SHELLS SINCE 2026-11-10, not one with a prop. Refined was
+        `CompassJeffMvpShell` with `readiness='refined'` — his rail, his
+        twelve other pages, one swap — so there was no file a Refined page
+        could be edited in without editing HIS. `CompassRefinedShell` is that
+        seam; every slot in it still points at his component, so nothing moved
+        on screen the day it landed. See `compassRefinedPages.ts`. */}
     {jeffMvp ? (
       <div style={pageStyle}>
-        <CompassJeffMvpShell
-          page={jeffPage}
-          onSelectPage={setJeffPage}
-          readiness={refined ? 'refined' : 'jeff'}
-          readinessHero={refinedHero}
-        />
+        {refined ? (
+          <CompassRefinedShell
+            page={jeffPage}
+            onSelectPage={setJeffPage}
+            readinessHero={refinedHero}
+          />
+        ) : (
+          <CompassJeffMvpShell page={jeffPage} onSelectPage={setJeffPage} />
+        )}
       </div>
     ) : (
     <div style={pageStyle}>

@@ -16,7 +16,6 @@ import {
   type JeffMvpPage,
 } from '@/data/compassJeffMvpFixtures'
 import { CompassJeffMvpReadiness } from './CompassJeffMvpReadiness'
-import { CompassReadinessRefined, type RefinedHeroStyle } from './CompassReadinessRefined'
 import { CompassJeffMvpLearn } from './CompassJeffMvpLearn'
 import { CompassJeffMvpOverview } from './CompassJeffMvpOverview'
 import { CompassJeffMvpPractice } from './CompassJeffMvpPractice'
@@ -48,6 +47,16 @@ import './compassJeffMvp.css'
  * answering a question the chrome already answers, and it sat in every
  * screenshot.
  *
+ * ⚠ REFINED LEFT THIS FILE ON 2026-11-10. It was an arm of this shell — a
+ * `readiness` prop choosing `CompassReadinessRefined` over his page — on the
+ * reasoning that a second shell for one swapped page would mean two rails to
+ * keep in step. That held while Refined differed by ONE page. Jillienne's ask
+ * that day was to select a component on the Refined version and edit it
+ * "without affecting Jeffs", and a prop cannot give you that: every other
+ * page was literally his component. `CompassRefinedShell` is the seam, and it
+ * still draws his rail and his pages through this file, so the two rails the
+ * old note was protecting are still one rail.
+ *
  * ⚠ A SEPARATE SHELL, NOT A FLAG THROUGH `CompassLearningPage`. His rail is a
  * different object: three learning rows, an EXAM PREP rule, and five more
  * BELOW it that NAVIGATE — where Anjani's locks hers behind a gate dialog.
@@ -72,21 +81,9 @@ import './compassJeffMvp.css'
 export function CompassJeffMvpShell({
   page,
   onSelectPage,
-  readiness = 'jeff',
-  readinessHero,
 }: {
   page: JeffMvpPage
   onSelectPage: (p: JeffMvpPage) => void
-  /** WHICH READINESS PAGE THE RAIL ROW OPENS — 2026-11-09. `jeff` is his, as
-   *  ported; `refined` is `CompassReadinessRefined`, his page rebuilt against
-   *  the research. The third Compass version IS this prop: same rail, same
-   *  other pages, one row different. A second shell for one swapped page
-   *  would have meant two rails to keep in step. */
-  readiness?: 'jeff' | 'refined'
-  /** The Refined page's Readiness to Pass section — `compass-refined-
-   *  readiness-hero`, read by the page that owns the flags and passed down,
-   *  so this shell stays a plain function of its props. Ignored on Jeff's. */
-  readinessHero?: RefinedHeroStyle
 }) {
   /* ⚠ THE SIMULATED EXAM TAKES THE WHOLE SURFACE, RAIL INCLUDED. Every other
      page of his MVP renders beside the Compass rail; this one must not. It is
@@ -127,11 +124,7 @@ export function CompassJeffMvpShell({
     <div className="cjm cjm-shell">
       <CompassJeffMvpRail page={page} onSelectPage={onSelectPage} />
       {page === 'readiness' ? (
-        readiness === 'refined' ? (
-          <CompassReadinessRefined hero={readinessHero} onSelectPage={onSelectPage} />
-        ) : (
-          <CompassJeffMvpReadiness onSelectPage={onSelectPage} />
-        )
+        <CompassJeffMvpReadiness onSelectPage={onSelectPage} />
       ) : page === 'learn' ? (
         <CompassJeffMvpLearn onSelectPage={onSelectPage} />
       ) : page === 'overview' ? (
